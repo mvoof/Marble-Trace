@@ -24,4 +24,11 @@ dist-ssr
 *.sln
 *.sw?
 target/
+
+# IDE specific
 .continue/
+.claude
+.agent
+CLAUDE.md
+GEMINI.md
+.playwright-mcp
