@@ -1,0 +1,58 @@
+name: Setup Dependencies
+description: Sets up Node.js, Rust, and platform-specific dependencies for Tauri applications
+inputs:
+  node-version:
+    description: 'Node.js version to use'
+    required: true
+    default: '20'
+  platform:
+    description: 'Runner platform (e.g., ubuntu-latest, windows-latest, macos-latest)'
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v5
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Cache Node.js modules
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: ${{ runner.os }}-node-
+
+    - name: Install Frontend Dependencies
+      run: npm ci
+      shell: bash
+
+    - name: Cache Rust dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo
+          ./src-tauri/target
+        key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: ${{ runner.os }}-rust-
+
+    - name: Install Rust stable
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ inputs.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+    - name: Install Dependencies (Ubuntu only)
+      if: inputs.platform == 'ubuntu-latest'
+      run: |
+        sudo apt update
+        sudo apt install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf rpm
+      shell: bash
+
+    # TODO: Add macOS support
+    # - name: Install Dependencies (macOS only)
+    # if: inputs.platform == 'macos-latest'
+    # run: |
+    # brew install webkit2gtk libappindicator librsvg

@@ -1,0 +1,3 @@
+# Ignore all files also from .gitignore
+src-tauri/target/
+src-tauri/gen/schemas
