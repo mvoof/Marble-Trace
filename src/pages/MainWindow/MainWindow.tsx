@@ -10,6 +10,7 @@ import { ConnectionStatus } from './components/ConnectionStatus';
 import { WidgetsPage } from './components/WidgetsPage';
 import { SettingsPage } from './components/SettingsPage';
 import styles from './MainWindow.module.scss';
+import Logo from '../../assets/logo.svg?react';
 
 const { Content, Header } = Layout;
 const { Title } = Typography;
@@ -43,9 +44,13 @@ export const MainWindow = () => {
     <ConfigProvider theme={{ algorithm: theme.darkAlgorithm }}>
       <Layout className={styles.layout}>
         <Header className={styles.header}>
-          <Title level={4} style={{ margin: 0 }}>
-            Marble Trace
-          </Title>
+          <div className={styles.headerTitleWrapper}>
+            <Logo className={styles.logo} />
+
+            <Title level={4} style={{ margin: 0 }}>
+              Marble Trace
+            </Title>
+          </div>
           <ConnectionStatus />
         </Header>
         <Layout>

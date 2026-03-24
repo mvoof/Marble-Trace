@@ -13,6 +13,20 @@
   padding: 0 24px;
 }
 
+.headerTitleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  height: 60px;
+  color: #fafafa;
+  width: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
 .content {
   padding: 16px;
   overflow: auto;
