@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "tauri-app-template",
+  "productName": "Marble Trace",
   "version": "0.1.0",
-  "identifier": "com.voof.tauri-app-template",
+  "identifier": "com.voof.marble-trace",
   "build": {
     "frontendDist": "../build",
     "devUrl": "http://localhost:1420",
@@ -10,15 +10,19 @@
     "beforeBuildCommand": "npm run build"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "label": "main",
-        "title": "Template for Tauri App",
-        "width": 900,
-        "height": 700,
+        "title": "Marble Trace",
+        "width": 800,
+        "height": 600,
         "resizable": true,
         "fullscreen": false,
-        "visible": true
+        "visible": true,
+        "transparent": false,
+        "decorations": true,
+        "alwaysOnTop": false
       }
     ],
     "security": {

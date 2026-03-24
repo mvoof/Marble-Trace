@@ -32,3 +32,4 @@ target/
 CLAUDE.md
 GEMINI.md
 .playwright-mcp
+.mcp.json

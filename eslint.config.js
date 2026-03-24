@@ -79,5 +79,6 @@ export default defineConfig([
     'node_modules/',
     'src-tauri/target/',
     'src-tauri/gen/schemas/',
+    'src/bindings.ts',
   ]),
 ]);

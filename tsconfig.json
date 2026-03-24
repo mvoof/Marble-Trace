@@ -23,6 +23,7 @@
   },
   "include": ["src"],
   "exclude": [
+    "src/bindings.ts",
     "node_modules",
     "dist",
     "build",

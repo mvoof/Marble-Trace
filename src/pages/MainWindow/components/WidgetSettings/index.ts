@@ -1,0 +1,1 @@
+export { WidgetSettings } from './WidgetSettings';
