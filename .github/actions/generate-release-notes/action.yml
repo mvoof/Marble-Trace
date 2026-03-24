@@ -1,0 +1,39 @@
+name: 'Generate Release Notes'
+description: 'Generates release notes based on git commit history'
+outputs:
+  release_body:
+    description: "The generated release notes"
+    value: ${{ steps.generate.outputs.body }}
+runs:
+  using: "composite"
+  steps:
+    - name: Generate Notes
+      id: generate
+      shell: bash
+      run: |
+        echo "Fetching tags..."
+        git fetch --tags --force
+        
+        CURRENT_TAG=${GITHUB_REF#refs/tags/}
+        echo "Current Tag: $CURRENT_TAG"
+        
+        # Try to find the previous tag
+        PREV_TAG=$(git describe --tags --abbrev=0 "$CURRENT_TAG^" 2>/dev/null || echo "")
+        
+        echo "Previous Tag: $PREV_TAG"
+        
+        if [ -z "$PREV_TAG" ]; then
+          echo "No previous tag found. Generating log from start."
+          CHANGELOG=$(git log --no-merges --pretty=format:"* %s (%h)" "$CURRENT_TAG")
+        else
+          echo "Generating log from $PREV_TAG to $CURRENT_TAG"
+          CHANGELOG=$(git log --no-merges --pretty=format:"* %s (%h)" "$PREV_TAG..$CURRENT_TAG")
+        fi
+        
+        # Prepare multiline string for output
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "body<<$EOF" >> $GITHUB_OUTPUT
+        echo "## Changes in $CURRENT_TAG" >> $GITHUB_OUTPUT
+        echo "" >> $GITHUB_OUTPUT
+        echo "$CHANGELOG" >> $GITHUB_OUTPUT
+        echo "$EOF" >> $GITHUB_OUTPUT
