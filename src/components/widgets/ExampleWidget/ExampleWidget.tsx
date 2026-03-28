@@ -326,7 +326,7 @@ export const ExampleWidget = observer(() => {
 
       <span className={styles.sectionTitle}>{'\n— Test variable —\n'}</span>
       <span className={styles.row}>
-        <span className={styles.label}>Position</span>
+        <span className={styles.label}>Air temp</span>
         <span className={styles.value}>{data.air_temp} °C</span>
         {'\n'}
       </span>
