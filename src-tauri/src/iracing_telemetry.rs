@@ -1,7 +1,6 @@
 use crate::telemetry_frame::TelemetryFrame;
 use futures::StreamExt;
-use pitwall::Pitwall;
-use pitwall::UpdateRate;
+use pitwall::{Pitwall, UpdateRate};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;

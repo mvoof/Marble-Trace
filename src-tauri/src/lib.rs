@@ -1,7 +1,7 @@
-mod iracing;
+mod iracing_telemetry;
 mod telemetry_frame;
 
-use iracing::{start_telemetry_stream, stop_telemetry_stream, TelemetryState};
+use iracing_telemetry::{start_telemetry_stream, stop_telemetry_stream, TelemetryState};
 use specta::TypeCollection;
 use specta_typescript::Typescript;
 use std::sync::atomic::AtomicBool;
