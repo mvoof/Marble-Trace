@@ -17,7 +17,7 @@
     "format:check": "prettier --check \"./**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.9.0",
+    "@tauri-apps/api": "~2.10",
     "@tauri-apps/plugin-global-shortcut": "^2.3.1",
     "@tauri-apps/plugin-store": "^2.4.2",
     "antd": "^6.3.3",
@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
-    "@tauri-apps/cli": "^2.9.0",
+    "@tauri-apps/cli": "^2.10.1",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
