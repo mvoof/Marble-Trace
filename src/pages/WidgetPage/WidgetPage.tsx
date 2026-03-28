@@ -4,11 +4,13 @@ import { useWidgetTelemetry } from '../../hooks/useWidgetTelemetry';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { ExampleWidget } from '../../components/widgets/ExampleWidget';
+import { DashWidget } from '../../components/widgets/DashWidget';
 import { WidgetWrapper } from '../../components/widgets/WidgetWrapper';
 import styles from './WidgetPage.module.scss';
 
 const WIDGET_MAP: Record<string, React.ComponentType> = {
   example: ExampleWidget,
+  dash: DashWidget,
 };
 
 export const WidgetPage = () => {
