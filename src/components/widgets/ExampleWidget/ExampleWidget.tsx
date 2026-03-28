@@ -321,6 +321,7 @@ export const ExampleWidget = observer(() => {
         <span className={styles.value}>
           {fmtTime(data.session_time_remain)}
         </span>
+        {'\n'}
       </span>
 
       <span className={styles.sectionTitle}>{'\n— Test variable —\n'}</span>

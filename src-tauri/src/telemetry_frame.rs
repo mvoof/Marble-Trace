@@ -80,4 +80,6 @@ pub struct TelemetryFrame {
     pub on_pit_road: Option<bool>,
     #[field_name = "IsOnTrack"]
     pub is_on_track: Option<bool>,
+    #[field_name = "AirTemp"]
+    pub air_temp: Option<f32>,
 }
