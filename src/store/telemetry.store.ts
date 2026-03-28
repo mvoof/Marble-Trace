@@ -1,7 +1,8 @@
 import { makeAutoObservable } from 'mobx';
-import { UnlistenFn } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 
-import { commands, events, type TelemetryFrame } from '../bindings';
+import type { TelemetryFrame } from '../types/bindings';
 
 class TelemetryStore {
   frame: TelemetryFrame | null = null;
@@ -25,19 +26,22 @@ class TelemetryStore {
     this.unlisten = null;
 
     try {
-      await commands.stopTelemetryStream();
+      await invoke('stop_telemetry_stream');
     } catch {
       // ignore
     }
 
     if (this.initId !== currentId) return;
 
-    this.unlisten = await events.telemetryFrameEvent.listen((event) => {
-      if (this.frameCount % 60 === 0) {
-        console.log('[Telemetry] frame #%d:', this.frameCount, event.payload);
+    this.unlisten = await listen<TelemetryFrame>(
+      'telemetry-frame-event',
+      (event) => {
+        if (this.frameCount % 60 === 0) {
+          console.log('[Telemetry] frame #%d:', this.frameCount, event.payload);
+        }
+        this.updateFrame(event.payload);
       }
-      this.updateFrame(event.payload);
-    });
+    );
 
     if (this.initId !== currentId) {
       this.unlisten();
@@ -46,12 +50,16 @@ class TelemetryStore {
     }
 
     this.unlistenDebug?.();
-    this.unlistenDebug = await events.telemetryDebugEvent.listen((event) => {
-      console.log('[Telemetry Rust]', event.payload);
-    });
+    this.unlistenDebug = await listen<string>(
+      'telemetry-debug-event',
+      (event) => {
+        console.log('[Telemetry Rust]', event.payload);
+      }
+    );
 
     this.unlistenDisconnect?.();
-    this.unlistenDisconnect = await events.telemetryDisconnectedEvent.listen(
+    this.unlistenDisconnect = await listen(
+      'telemetry-disconnected-event',
       () => {
         if (this.initId === currentId) {
           console.log(
@@ -65,7 +73,7 @@ class TelemetryStore {
     console.log('[Telemetry] Starting telemetry stream...');
 
     try {
-      await commands.startTelemetryStream();
+      await invoke('start_telemetry_stream');
 
       if (this.initId === currentId) {
         console.log('[Telemetry] Stream started');
@@ -88,7 +96,7 @@ class TelemetryStore {
     this.unlistenDisconnect = null;
 
     try {
-      await commands.stopTelemetryStream();
+      await invoke('stop_telemetry_stream');
     } catch {
       // ignore
     }
@@ -99,19 +107,23 @@ class TelemetryStore {
   /** Widget windows: listen-only, no stream start/stop */
   async startWidgetListener() {
     this.unlisten?.();
-    this.unlisten = await events.telemetryFrameEvent.listen((event) => {
-      if (this.frameCount % 60 === 0) {
-        console.log(
-          '[Widget Telemetry] frame #%d:',
-          this.frameCount,
-          event.payload
-        );
+    this.unlisten = await listen<TelemetryFrame>(
+      'telemetry-frame-event',
+      (event) => {
+        if (this.frameCount % 60 === 0) {
+          console.log(
+            '[Widget Telemetry] frame #%d:',
+            this.frameCount,
+            event.payload
+          );
+        }
+        this.updateFrame(event.payload);
       }
-      this.updateFrame(event.payload);
-    });
+    );
 
     this.unlistenDisconnect?.();
-    this.unlistenDisconnect = await events.telemetryDisconnectedEvent.listen(
+    this.unlistenDisconnect = await listen(
+      'telemetry-disconnected-event',
       () => {
         console.log('[Widget Telemetry] Stream disconnected');
         this.setDisconnected();

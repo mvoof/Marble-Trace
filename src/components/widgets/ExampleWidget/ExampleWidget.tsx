@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { telemetryStore } from '../../../store/telemetry.store';
 import styles from './ExampleWidget.module.scss';
-import { TelemetryFrame } from '../../../bindings';
+import type { TelemetryFrame } from '../../../types/bindings';
 
 const fmt = (v: number | null | undefined, decimals = 1): string =>
   v != null ? v.toFixed(decimals) : '—';

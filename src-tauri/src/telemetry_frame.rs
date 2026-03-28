@@ -1,7 +1,6 @@
 use pitwall::PitwallFrame;
 use serde::{Deserialize, Serialize};
 use specta::Type;
-use tauri_specta::Event;
 
 #[derive(PitwallFrame, Serialize, Deserialize, Type, Debug, Clone)]
 pub struct TelemetryFrame {
@@ -82,12 +81,3 @@ pub struct TelemetryFrame {
     #[field_name = "IsOnTrack"]
     pub is_on_track: Option<bool>,
 }
-
-#[derive(Serialize, Deserialize, Debug, Clone, Type, Event)]
-pub struct TelemetryFrameEvent(pub TelemetryFrame);
-
-#[derive(Serialize, Deserialize, Debug, Clone, Type, Event)]
-pub struct TelemetryDebugEvent(pub String);
-
-#[derive(Serialize, Deserialize, Debug, Clone, Type, Event)]
-pub struct TelemetryDisconnectedEvent(pub ());

@@ -1,14 +1,11 @@
-use crate::telemetry_frame::{
-    TelemetryDebugEvent, TelemetryDisconnectedEvent, TelemetryFrame, TelemetryFrameEvent,
-};
+use crate::telemetry_frame::TelemetryFrame;
 use futures::StreamExt;
+use pitwall::Pitwall;
 use pitwall::UpdateRate;
-use pitwall_tauri::Pitwall;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
-use tauri::{AppHandle, State};
-use tauri_specta::Event;
+use tauri::{AppHandle, Emitter, State};
 use tokio::time::sleep;
 
 pub struct TelemetryState {
@@ -16,7 +13,6 @@ pub struct TelemetryState {
 }
 
 #[tauri::command]
-#[specta::specta]
 pub async fn start_telemetry_stream(
     app: AppHandle,
     state: State<'_, TelemetryState>,
@@ -44,16 +40,19 @@ pub async fn start_telemetry_stream(
         let mut stream = std::pin::pin!(stream);
         let mut count: u64 = 0;
 
-        TelemetryDebugEvent("Stream loop started, waiting for first frame...".into())
-            .emit(&app_clone)
+        app_clone
+            .emit(
+                "telemetry-debug-event",
+                "Stream loop started, waiting for first frame...",
+            )
             .ok();
 
         eprintln!("[telemetry] Stream loop started, waiting for frames...");
 
         while let Some(frame) = stream.next().await {
             if !running.load(Ordering::SeqCst) {
-                TelemetryDebugEvent("Stream stopped by user".into())
-                    .emit(&app_clone)
+                app_clone
+                    .emit("telemetry-debug-event", "Stream stopped by user")
                     .ok();
                 break;
             }
@@ -66,14 +65,14 @@ pub async fn start_telemetry_stream(
                     frame.speed, frame.rpm, frame.gear
                 );
 
-                TelemetryDebugEvent(msg.clone()).emit(&app_clone).ok();
+                app_clone.emit("telemetry-debug-event", &msg).ok();
                 eprintln!("[telemetry] {}", msg);
             }
 
-            if let Err(e) = TelemetryFrameEvent(frame).emit(&app) {
+            if let Err(e) = app.emit("telemetry-frame-event", &frame) {
                 let msg = format!("Failed to emit frame: {}", e);
 
-                TelemetryDebugEvent(msg.clone()).emit(&app_clone).ok();
+                app_clone.emit("telemetry-debug-event", &msg).ok();
                 eprintln!("[telemetry] {}", msg);
                 break;
             }
@@ -85,11 +84,11 @@ pub async fn start_telemetry_stream(
             count, was_running
         );
 
-        TelemetryDebugEvent(msg.clone()).emit(&app_clone).ok();
+        app_clone.emit("telemetry-debug-event", &msg).ok();
         eprintln!("[telemetry] {}", msg);
 
         if was_running {
-            TelemetryDisconnectedEvent(()).emit(&app_clone).ok();
+            app_clone.emit("telemetry-disconnected-event", &()).ok();
         }
     });
 
@@ -97,7 +96,6 @@ pub async fn start_telemetry_stream(
 }
 
 #[tauri::command]
-#[specta::specta]
 pub async fn stop_telemetry_stream(state: State<'_, TelemetryState>) -> Result<(), String> {
     state.running.store(false, Ordering::SeqCst);
     eprintln!("Telemetry stream stopped");

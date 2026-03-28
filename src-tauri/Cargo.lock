@@ -1740,17 +1740,16 @@ dependencies = [
  "futures",
  "log",
  "pitwall",
- "pitwall-tauri",
  "serde",
  "serde_json",
  "specta",
+ "specta-serde",
  "specta-typescript",
  "tauri",
  "tauri-build",
  "tauri-plugin-global-shortcut",
  "tauri-plugin-mcp-bridge",
  "tauri-plugin-store",
- "tauri-specta",
  "tokio",
  "tracing",
 ]
@@ -2349,12 +2348,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "paste"
-version = "1.0.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
-
-[[package]]
 name = "percent-encoding"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2519,7 +2512,6 @@ dependencies = [
  "pitwall-derive",
  "serde",
  "serde_yaml_ng",
- "specta",
  "thiserror 2.0.17",
  "tokio",
  "tokio-stream",
@@ -2539,21 +2531,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.112",
-]
-
-[[package]]
-name = "pitwall-tauri"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4da2a27aab55d22a385c62cf52275b354612c508ff86ceaaf32f3314a3a2349"
-dependencies = [
- "futures",
- "pitwall",
- "serde",
- "specta",
- "tauri",
- "tauri-specta",
- "tokio",
 ]
 
 [[package]]
@@ -3388,7 +3365,6 @@ version = "2.0.0-rc.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab7f01e9310a820edd31c80fde3cae445295adde21a3f9416517d7d65015b971"
 dependencies = [
- "paste",
  "specta-macros",
  "thiserror 1.0.69",
 ]
@@ -3621,7 +3597,6 @@ dependencies = [
  "serde_json",
  "serde_repr",
  "serialize-to-javascript",
- "specta",
  "swift-rs",
  "tauri-build",
  "tauri-macros",
@@ -3827,34 +3802,6 @@ dependencies = [
  "webview2-com",
  "windows 0.61.3",
  "wry",
-]
-
-[[package]]
-name = "tauri-specta"
-version = "2.0.0-rc.21"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b23c0132dd3cf6064e5cd919b82b3f47780e9280e7b5910babfe139829b76655"
-dependencies = [
- "heck 0.5.0",
- "serde",
- "serde_json",
- "specta",
- "specta-typescript",
- "tauri",
- "tauri-specta-macros",
- "thiserror 2.0.17",
-]
-
-[[package]]
-name = "tauri-specta-macros"
-version = "2.0.0-rc.16"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a4aa93823e07859546aa796b8a5d608190cd8037a3a5dce3eb63d491c34bda8"
-dependencies = [
- "heck 0.5.0",
- "proc-macro2",
- "quote",
- "syn 2.0.112",
 ]
 
 [[package]]

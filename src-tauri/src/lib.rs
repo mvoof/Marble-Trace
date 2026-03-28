@@ -2,53 +2,44 @@ mod iracing;
 mod telemetry_frame;
 
 use iracing::{start_telemetry_stream, stop_telemetry_stream, TelemetryState};
+use specta::TypeCollection;
 use specta_typescript::Typescript;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
-use tauri::{generate_context, Builder as TauriBuilder, Manager, WindowEvent, Wry};
-use tauri_specta::{collect_commands, collect_events, Builder as SpectaBuilder};
-use telemetry_frame::{TelemetryDebugEvent, TelemetryDisconnectedEvent, TelemetryFrameEvent};
+use tauri::{generate_context, generate_handler, Builder, Manager, WindowEvent};
+use telemetry_frame::TelemetryFrame;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let builder = SpectaBuilder::<Wry>::new()
-        .commands(collect_commands![
-            start_telemetry_stream,
-            stop_telemetry_stream
-        ])
-        .events(collect_events![
-            TelemetryFrameEvent,
-            TelemetryDebugEvent,
-            TelemetryDisconnectedEvent
-        ]);
+    let mut types = TypeCollection::default();
+    let types = types.register::<TelemetryFrame>();
 
-    #[cfg(debug_assertions)]
-    builder
-        .export(Typescript::default(), "../src/bindings.ts")
-        .expect("Failed to export typescript bindings");
+    Typescript::default()
+        .export_to("../src/types/bindings.ts", types)
+        .unwrap();
 
-    let mut builder_app = TauriBuilder::default()
+    let mut builder = Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build());
 
     #[cfg(debug_assertions)]
     {
-        builder_app = builder_app.plugin(tauri_plugin_mcp_bridge::init());
+        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
     }
 
-    builder_app
-        .invoke_handler(builder.invoke_handler())
+    builder
+        .invoke_handler(generate_handler![
+            start_telemetry_stream,
+            stop_telemetry_stream
+        ])
         .manage(TelemetryState {
             running: Arc::new(AtomicBool::new(false)),
-        })
-        .setup(move |app| {
-            builder.mount_events(app);
-            Ok(())
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {
                 if window.label() == "main" {
                     let app = window.app_handle();
+
                     for (label, win) in app.webview_windows() {
                         if label != "main" {
                             let _ = win.destroy();
