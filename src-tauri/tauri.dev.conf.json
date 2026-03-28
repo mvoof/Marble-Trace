@@ -1,7 +1,7 @@
 {
   "identifier": "com.voof.marble-trace",
   "bundle": {
-    "targets": ["nsis", "appimage"],
+    "targets": ["nsis"],
     "createUpdaterArtifacts": false
   }
 }
