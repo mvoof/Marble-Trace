@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "identifier": "com.voof.marble-trace",
   "build": {
-    "frontendDist": "../build",
+    "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
