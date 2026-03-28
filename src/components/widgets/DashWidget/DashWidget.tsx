@@ -66,16 +66,19 @@ export const DashWidget = observer(() => {
           <span className={styles.gearLabel}>GEAR</span>
           <span className={styles.gearValue}>{gear}</span>
         </div>
+
         <div className={styles.speedContainer}>
           <span className={styles.speedValue}>{speedKmh}</span>
           <span className={styles.speedUnit}>KM/H</span>
         </div>
       </article>
+
       <article className={styles.rpmContainer}>
         <div className={styles.rpmLabelRow}>
           <span>RPM</span>
           <span className={styles.rpmValue}>{rpm}</span>
         </div>
+
         <div className={styles.rpmBarOuter}>
           <div
             className={styles.rpmBarInner}
