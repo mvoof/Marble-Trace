@@ -55,6 +55,7 @@ jobs:
 
   build-app:
     name: Build App
+    environment: pr-review
     needs: [check-changes, lint]
     if: ${{ needs.check-changes.outputs.app == 'true' }}
     strategy:
