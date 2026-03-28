@@ -51,8 +51,10 @@ export const MainWindow = () => {
               Marble Trace
             </Title>
           </div>
+
           <ConnectionStatus />
         </Header>
+
         <Layout>
           <Layout.Sider width={200} theme="dark" className={styles.sider}>
             <Menu
@@ -62,6 +64,7 @@ export const MainWindow = () => {
               onSelect={({ key }) => setActivePage(key as PageKey)}
             />
           </Layout.Sider>
+
           <Content className={styles.content}>
             {activePage === 'widgets' && <WidgetsPage />}
             {activePage === 'settings' && <SettingsPage />}

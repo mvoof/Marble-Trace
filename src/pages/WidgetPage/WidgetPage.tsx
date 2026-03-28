@@ -27,6 +27,7 @@ export const WidgetPage = () => {
       await appSettingsStore.initWidgetListener();
       setReady(true);
     };
+
     init();
 
     return () => {

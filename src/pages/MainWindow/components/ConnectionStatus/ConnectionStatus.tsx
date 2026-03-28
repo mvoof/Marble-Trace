@@ -8,12 +8,14 @@ export const ConnectionStatus = observer(() => {
   const { isConnected, error } = telemetryStore;
 
   const status = error ? 'error' : isConnected ? 'connected' : 'waiting';
+
   const statusText =
     status === 'error'
       ? 'Error'
       : status === 'connected'
         ? 'Connected'
         : 'Waiting for iRacing...';
+
   const badgeStatus =
     status === 'error'
       ? 'error'

@@ -24,6 +24,7 @@ export const WidgetSettings = observer(
     }
 
     const widget = widgetSettingsStore.getWidget(widgetId);
+
     if (!widget) {
       return <Text type="secondary">Widget not found</Text>;
     }
@@ -44,8 +45,10 @@ export const WidgetSettings = observer(
                 }
               />
             </Col>
+
             <Col span={12}>
               <Text>Y</Text>
+
               <InputNumber
                 style={{ width: '100%' }}
                 value={widget.y}
@@ -56,9 +59,11 @@ export const WidgetSettings = observer(
               />
             </Col>
           </Row>
+
           <Row gutter={16}>
             <Col span={12}>
               <Text>Width</Text>
+
               <InputNumber
                 style={{ width: '100%' }}
                 value={widget.width}
@@ -69,6 +74,7 @@ export const WidgetSettings = observer(
                 }
               />
             </Col>
+
             <Col span={12}>
               <Text>Height</Text>
               <InputNumber
@@ -82,8 +88,10 @@ export const WidgetSettings = observer(
               />
             </Col>
           </Row>
+
           <Flex vertical>
             <Text>Scale: {widget.scale.toFixed(1)}</Text>
+
             <Slider
               min={0.5}
               max={3}
@@ -94,8 +102,10 @@ export const WidgetSettings = observer(
               }
             />
           </Flex>
+
           <Flex vertical>
             <Text>Opacity: {Math.round((widget.opacity ?? 0.8) * 100)}%</Text>
+
             <Slider
               min={0.1}
               max={1}
@@ -106,8 +116,10 @@ export const WidgetSettings = observer(
               }
             />
           </Flex>
+
           <Flex vertical>
             <Text>Background Color</Text>
+
             <ColorPicker
               value={widget.backgroundColor ?? '#000000'}
               onChange={(color) =>
@@ -119,6 +131,7 @@ export const WidgetSettings = observer(
               }
             />
           </Flex>
+
           <HotkeyRecorder widgetId={widgetId} currentHotkey={widget.hotkey} />
         </Flex>
       </Card>
@@ -142,11 +155,13 @@ const HotkeyRecorder = ({
       e.preventDefault();
 
       const parts: string[] = [];
+
       if (e.ctrlKey) parts.push('Ctrl');
       if (e.shiftKey) parts.push('Shift');
       if (e.altKey) parts.push('Alt');
 
       const key = e.key;
+
       if (!['Control', 'Shift', 'Alt', 'Meta'].includes(key)) {
         parts.push(key.length === 1 ? key.toUpperCase() : key);
         setPendingKey(parts.join('+'));
@@ -158,14 +173,17 @@ const HotkeyRecorder = ({
 
   const applyHotkey = async () => {
     if (!pendingKey) return;
+
     widgetSettingsStore.updateField(widgetId, 'hotkey', pendingKey);
     await appSettingsStore.registerWidgetHotkey(widgetId, pendingKey);
+
     setPendingKey(null);
   };
 
   const clearHotkey = async () => {
     widgetSettingsStore.updateField(widgetId, 'hotkey', '');
     await appSettingsStore.unregisterWidgetHotkey(widgetId);
+
     setPendingKey(null);
   };
 
@@ -175,6 +193,7 @@ const HotkeyRecorder = ({
         Toggle Hotkey:{' '}
         {currentHotkey ? <Tag color="blue">{currentHotkey}</Tag> : 'None'}
       </Text>
+
       <Flex gap={8}>
         <Button
           size="small"
@@ -188,14 +207,17 @@ const HotkeyRecorder = ({
         >
           {recording ? 'Press a key...' : 'Record Hotkey'}
         </Button>
+
         {pendingKey && (
           <>
             <Tag color="green">{pendingKey}</Tag>
+
             <Button size="small" type="primary" onClick={applyHotkey}>
               Apply
             </Button>
           </>
         )}
+
         {currentHotkey && (
           <Button size="small" danger onClick={clearHotkey}>
             Clear

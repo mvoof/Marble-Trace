@@ -14,6 +14,7 @@ export const WidgetsPage = () => {
       <Sider width={260} theme="dark" className={styles.sider}>
         <WidgetList onSelect={setSelectedWidget} />
       </Sider>
+
       <Content className={styles.content}>
         <WidgetSettings widgetId={selectedWidget} />
       </Content>

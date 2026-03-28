@@ -21,6 +21,7 @@ const WidgetListItem = observer(
 
       if (checked) {
         const config = widgetSettingsStore.getWidget(widget.id);
+
         if (config) {
           await windowManagerStore.openWidget(config);
         }

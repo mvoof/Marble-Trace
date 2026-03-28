@@ -58,13 +58,16 @@ const EMPTY_FRAME: TelemetryFrame = {
   car_left_right: null,
   on_pit_road: null,
   is_on_track: null,
+  air_temp: null,
 };
 
 export const ExampleWidget = observer(() => {
   const { frame, isConnected, error } = telemetryStore;
   const data = frame ?? EMPTY_FRAME;
+
   const statusLine = !isConnected
-    ? error
+    ? //TODO: use antd icon
+      error
       ? `⚠ ${error}\n`
       : '⏳ Waiting for iRacing...\n'
     : '';
@@ -78,36 +81,43 @@ export const ExampleWidget = observer(() => {
         </span>
       )}
       <span className={styles.sectionTitle}>{'— Driver —\n'}</span>
+
       <span className={styles.row}>
         <span className={styles.label}>Speed</span>
         <span className={styles.value}>{fmt(data.speed)} m/s</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>RPM</span>
         <span className={styles.value}>{fmt(data.rpm, 0)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Gear</span>
         <span className={styles.value}>{data.gear}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Throttle</span>
         <span className={styles.value}>{fmtPct(data.throttle)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Brake</span>
         <span className={styles.value}>{fmtPct(data.brake)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Clutch</span>
         <span className={styles.value}>{fmtPct(data.clutch)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Steering</span>
         <span className={styles.value}>
@@ -115,12 +125,15 @@ export const ExampleWidget = observer(() => {
         </span>
         {'\n'}
       </span>
+
       <span className={styles.sectionTitle}>{'\n— Laps —\n'}</span>
+
       <span className={styles.row}>
         <span className={styles.label}>Lap</span>
         <span className={styles.value}>{data.lap ?? '—'}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Lap Time</span>
         <span className={styles.value}>
@@ -128,47 +141,57 @@ export const ExampleWidget = observer(() => {
         </span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Last Lap</span>
         <span className={styles.value}>{fmtTime(data.lap_last_lap_time)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Best Lap</span>
         <span className={styles.value}>{fmtTime(data.lap_best_lap_time)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Lap Dist%</span>
         <span className={styles.value}>{fmtPct(data.lap_dist_pct)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Lap Dist</span>
         <span className={styles.value}>{fmt(data.lap_dist, 0)} m</span>
         {'\n'}
       </span>
+
       <span className={styles.sectionTitle}>{'\n— Dynamics —\n'}</span>
+
       <span className={styles.row}>
         <span className={styles.label}>Velocity X</span>
         <span className={styles.value}>{fmt(data.velocity_x, 2)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Velocity Y</span>
         <span className={styles.value}>{fmt(data.velocity_y, 2)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Velocity Z</span>
         <span className={styles.value}>{fmt(data.velocity_z, 2)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Yaw Rate</span>
         <span className={styles.value}>{fmt(data.yaw_rate, 3)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Pitch</span>
         <span className={styles.value}>{fmt(data.pitch, 3)}</span>
@@ -179,11 +202,13 @@ export const ExampleWidget = observer(() => {
         <span className={styles.value}>{fmt(data.roll, 3)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Lat Accel</span>
         <span className={styles.value}>{fmt(data.lat_accel, 2)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Long Accel</span>
         <span className={styles.value}>{fmt(data.long_accel, 2)}</span>
@@ -195,11 +220,13 @@ export const ExampleWidget = observer(() => {
         <span className={styles.value}>{fmt(data.fuel_level, 2)} L</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Fuel%</span>
         <span className={styles.value}>{fmtPct(data.fuel_level_pct)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Fuel Use/h</span>
         <span className={styles.value}>
@@ -207,32 +234,38 @@ export const ExampleWidget = observer(() => {
         </span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Oil Temp</span>
         <span className={styles.value}>{fmt(data.oil_temp)}°C</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Oil Press</span>
         <span className={styles.value}>{fmt(data.oil_press, 1)} bar</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Water Temp</span>
         <span className={styles.value}>{fmt(data.water_temp)}°C</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Voltage</span>
         <span className={styles.value}>{fmt(data.voltage, 1)} V</span>
         {'\n'}
       </span>
+
       <span className={styles.sectionTitle}>{'\n— Session —\n'}</span>
       <span className={styles.row}>
         <span className={styles.label}>Position</span>
         <span className={styles.value}>{data.player_car_position ?? '—'}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Class Pos</span>
         <span className={styles.value}>
@@ -240,46 +273,61 @@ export const ExampleWidget = observer(() => {
         </span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Session #</span>
         <span className={styles.value}>{data.session_num ?? '—'}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>State</span>
         <span className={styles.value}>{data.session_state ?? '—'}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Flags</span>
         <span className={styles.value}>{data.session_flags ?? '—'}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>On Pit</span>
         <span className={styles.value}>{fmtBool(data.on_pit_road)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>On Track</span>
         <span className={styles.value}>{fmtBool(data.is_on_track)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Car L/R</span>
         <span className={styles.value}>{data.car_left_right ?? '—'}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Sess Time</span>
         <span className={styles.value}>{fmtTime(data.session_time)}</span>
         {'\n'}
       </span>
+
       <span className={styles.row}>
         <span className={styles.label}>Remaining</span>
         <span className={styles.value}>
           {fmtTime(data.session_time_remain)}
         </span>
+      </span>
+
+      <span className={styles.sectionTitle}>{'\n— Test variable —\n'}</span>
+      <span className={styles.row}>
+        <span className={styles.label}>Position</span>
+        <span className={styles.value}>{data.air_temp} °C</span>
+        {'\n'}
       </span>
     </pre>
   );
