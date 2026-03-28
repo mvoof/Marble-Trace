@@ -1,46 +1,48 @@
-name: Lingvo Injector App Release
+name: Release
 
 on:
   push:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
-  release-build:
-    permissions:
-      contents: write
+  build:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, windows-latest]
-        # platform: [ubuntu-latest, windows-latest, macos-latest] # Uncomment for macOS support
+        platform: [windows-latest]
 
     runs-on: ${{ matrix.platform }}
-
     environment: release
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
       - name: Setup Dependencies
         uses: ./.github/actions/setup-dependencies
         with:
           node-version: '20'
           platform: ${{ matrix.platform }}
 
-      - name: Build and Sign Tauri Application
+      - name: Generate Release Notes
+        id: notes
+        uses: ./.github/actions/generate-release-notes
+
+      - name: Build Tauri Application
+        id: tauri
         uses: tauri-apps/tauri-action@v0
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          releaseDraft: true
           tagName: ${{ github.ref_name }}
-          includeUpdaterJson: true
-          releaseName: ${{ github.ref_name }}
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: tauri-build-artifacts-${{ matrix.platform }}-${{ github.ref_name }}
-          path: src-tauri/target/release/bundle/*
+          releaseName: 'Marble Trace v${{ github.ref_name }}'
+          releaseBody: ${{ steps.notes.outputs.release_body }}
+          releaseDraft: true
+          prerelease: false

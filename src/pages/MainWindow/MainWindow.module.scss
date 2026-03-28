@@ -1,0 +1,33 @@
+.layout {
+  min-height: 100vh;
+}
+
+.sider {
+  border-right: 1px solid #303030;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.headerTitleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  height: 60px;
+  color: #fafafa;
+  width: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+.content {
+  padding: 16px;
+  overflow: auto;
+}

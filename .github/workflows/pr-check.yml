@@ -1,18 +1,22 @@
-name: Check PR
+name: PR Check
 
 on:
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   check-changes:
     name: Check Changes
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: read
     outputs:
-      code: ${{ steps.filter.outputs.code }}
-      docs: ${{ steps.filter.outputs.docs }}
+      app: ${{ steps.filter.outputs.app }}
       ci: ${{ steps.filter.outputs.ci }}
     steps:
       - uses: actions/checkout@v5
@@ -24,21 +28,19 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            code:
+            app:
               - 'src/**'
               - 'src-tauri/**'
               - 'package.json'
-            docs:
-              - 'docs/**'
-              - '*.md'
+              - 'package-lock.json'
             ci:
               - '.github/**'
 
-  lint-and-format-check:
-    name: Lint & Format
+  lint:
+    name: Lint
     needs: check-changes
     runs-on: ubuntu-latest
-    if: ${{ needs.check-changes.outputs.code == 'true' }}
+    if: ${{ needs.check-changes.outputs.app == 'true' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -50,16 +52,15 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
-        shell: bash
 
-  tauri-build-check:
+  build-app:
     name: Build App
-    needs: [check-changes, lint-and-format-check]
-    if: ${{ needs.check-changes.outputs.code == 'true' }}
+    needs: [check-changes, lint]
+    if: ${{ needs.check-changes.outputs.app == 'true' }}
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, windows-latest]
+        platform: [windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v5
@@ -70,11 +71,10 @@ jobs:
           node-version: '20'
           platform: ${{ matrix.platform }}
 
-      - name: Run Tauri Build
+      - name: Build Tauri App
         run: npm run tauri:build:dev
-        shell: bash
 
-      - name: Upload Combined Build Artifact
+      - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-build
@@ -82,57 +82,31 @@ jobs:
           compression-level: 6
           if-no-files-found: warn
 
-  docs-check:
-    name: Docs Check
-    needs: check-changes
-    runs-on: ubuntu-latest
-    if: ${{ needs.check-changes.outputs.docs == 'true' }}
-    steps:
-      - uses: actions/checkout@v5
-      - name: Pass Docs Check
-        run: echo "Documentation changes detected, passing check"
-        shell: bash
-
-  ci-check:
-    name: CI Check
-    needs: check-changes
-    runs-on: ubuntu-latest
-    if: ${{ needs.check-changes.outputs.ci == 'true' }}
-    steps:
-      - uses: actions/checkout@v5
-      - name: Pass CI Check
-        run: echo "CI changes detected, passing check"
-        shell: bash
-
   status-check:
-    name: PR Final Status
-    needs: [check-changes, lint-and-format-check, tauri-build-check]
+    name: PR Status
+    needs: [check-changes, lint, build-app]
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
-      - name: Set Workflow Status
+      - name: Check Status
         run: |
-          echo "Code changes: ${{ needs.check-changes.outputs.code }}"
-          echo "Docs changes: ${{ needs.check-changes.outputs.docs }}"
-          echo "Lint result: ${{ needs.lint-and-format-check.result }}"
-          echo "Build result: ${{ needs.tauri-build-check.result }}"
-          if [ "${{ needs.check-changes.outputs.code }}" != "true" ]; then
-            echo "No code changes detected, setting workflow status to success"
+          echo "App changes: ${{ needs.check-changes.outputs.app }}"
+          echo "Lint result: ${{ needs.lint.result }}"
+          echo "Build result: ${{ needs.build-app.result }}"
+
+          if [ "${{ needs.check-changes.outputs.app }}" != "true" ]; then
+            echo "No code changes, passing"
             exit 0
-          else
-            lint_result="${{ needs.lint-and-format-check.result }}"
-            build_result="${{ needs.tauri-build-check.result }}"
-            if [ "$lint_result" == "success" ] || [ "$lint_result" == "skipped" ]; then
-              if [ "$build_result" == "success" ] || [ "$build_result" == "skipped" ]; then
-                echo "All required jobs passed or skipped, setting workflow status to success"
-                exit 0
-              else
-                echo "Build job failed, setting workflow status to failure"
-                exit 1
-              fi
-            else
-              echo "Lint job failed, setting workflow status to failure"
-              exit 1
-            fi
           fi
-        shell: bash
+
+          if [ "${{ needs.lint.result }}" != "success" ] && [ "${{ needs.lint.result }}" != "skipped" ]; then
+            echo "Lint failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.build-app.result }}" != "success" ] && [ "${{ needs.build-app.result }}" != "skipped" ]; then
+            echo "Build failed"
+            exit 1
+          fi
+
+          echo "All checks passed"

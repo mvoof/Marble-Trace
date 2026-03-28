@@ -1,0 +1,12 @@
+@use 'variables' as *;
+
+.widget-window {
+  background: transparent;
+  overflow: hidden;
+
+  html,
+  body,
+  #root {
+    background: transparent;
+  }
+}
