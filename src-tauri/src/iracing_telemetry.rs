@@ -6,6 +6,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, State};
 use tokio::time::sleep;
+use tracing::{debug, info, warn};
 
 pub struct TelemetryState {
     pub running: Arc<AtomicBool>,
@@ -19,15 +20,15 @@ pub async fn start_telemetry_stream(
     state.running.store(false, Ordering::SeqCst);
     sleep(Duration::from_millis(50)).await;
 
-    eprintln!("[telemetry] Connecting to iRacing...");
+    info!("Connecting to iRacing...");
 
     let connection = Pitwall::connect()
         .await
         .map_err(|e| format!("Failed to connect to iRacing: {}", e))?;
-    eprintln!("[telemetry] Connected to iRacing successfully");
+    info!("Connected to iRacing successfully");
 
     let stream = connection.subscribe::<TelemetryFrame>(UpdateRate::Native);
-    eprintln!("[telemetry] Subscribed to telemetry stream");
+    debug!("Subscribed to telemetry stream");
 
     let running = state.running.clone();
     running.store(true, Ordering::SeqCst);
@@ -39,52 +40,33 @@ pub async fn start_telemetry_stream(
         let mut stream = std::pin::pin!(stream);
         let mut count: u64 = 0;
 
-        app_clone
-            .emit(
-                "telemetry-debug-event",
-                "Stream loop started, waiting for first frame...",
-            )
-            .ok();
-
-        eprintln!("[telemetry] Stream loop started, waiting for frames...");
+        debug!("Stream loop started, waiting for frames...");
 
         while let Some(frame) = stream.next().await {
             if !running.load(Ordering::SeqCst) {
-                app_clone
-                    .emit("telemetry-debug-event", "Stream stopped by user")
-                    .ok();
+                debug!("Stream stopped by user");
                 break;
             }
 
             count += 1;
 
             if count == 1 {
-                let msg = format!(
-                    "First frame received! speed={}, rpm={}, gear={}",
-                    frame.speed, frame.rpm, frame.gear
+                info!(
+                    speed = frame.speed,
+                    rpm = frame.rpm,
+                    gear = frame.gear,
+                    "First frame received"
                 );
-
-                app_clone.emit("telemetry-debug-event", &msg).ok();
-                eprintln!("[telemetry] {}", msg);
             }
 
             if let Err(e) = app.emit("telemetry-frame-event", &frame) {
-                let msg = format!("Failed to emit frame: {}", e);
-
-                app_clone.emit("telemetry-debug-event", &msg).ok();
-                eprintln!("[telemetry] {}", msg);
+                warn!("Failed to emit frame: {}", e);
                 break;
             }
         }
 
         let was_running = running.swap(false, Ordering::SeqCst);
-        let msg = format!(
-            "Stream ended after {} frames (was_running={})",
-            count, was_running
-        );
-
-        app_clone.emit("telemetry-debug-event", &msg).ok();
-        eprintln!("[telemetry] {}", msg);
+        info!(count, was_running, "Stream ended");
 
         if was_running {
             app_clone.emit("telemetry-disconnected-event", &()).ok();
@@ -97,7 +79,7 @@ pub async fn start_telemetry_stream(
 #[tauri::command]
 pub async fn stop_telemetry_stream(state: State<'_, TelemetryState>) -> Result<(), String> {
     state.running.store(false, Ordering::SeqCst);
-    eprintln!("Telemetry stream stopped");
+    debug!("Telemetry stream stopped");
 
     Ok(())
 }

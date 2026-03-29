@@ -6,6 +6,7 @@ import { useTelemetry } from '../../hooks/useTelemetry';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { windowManagerStore } from '../../store/window-manager.store';
 import { appSettingsStore } from '../../store/app-settings.store';
+import { unitsStore } from '../../store/units.store';
 import { ConnectionStatus } from './components/ConnectionStatus';
 import { WidgetsPage } from './components/WidgetsPage';
 import { SettingsPage } from './components/SettingsPage';
@@ -30,6 +31,7 @@ export const MainWindow = () => {
   useEffect(() => {
     const init = async () => {
       await widgetSettingsStore.loadSettings();
+      await unitsStore.loadSettings();
       await appSettingsStore.init();
       await windowManagerStore.restoreEnabledWidgets();
     };

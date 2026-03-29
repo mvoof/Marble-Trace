@@ -8,9 +8,17 @@ use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use tauri::{generate_context, generate_handler, Builder, Manager, WindowEvent};
 use telemetry_frame::TelemetryFrame;
+use tracing_subscriber::EnvFilter;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| EnvFilter::new("marble_trace_lib=info")),
+        )
+        .init();
+
     let mut types = TypeCollection::default();
     let types = types.register::<TelemetryFrame>();
 

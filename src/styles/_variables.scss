@@ -6,11 +6,45 @@ $color-text-accent: #00ff00;
 $color-text-muted: #888;
 $color-border: rgba(255, 255, 255, 0.15);
 
+// Semantic colors
+$color-positive: #00ff00;
+$color-warning: #ffcc00;
+$color-danger: #ff3333;
+$color-info: #3399ff;
+$color-neutral: #888888;
+
+// Input-specific colors
+$color-throttle: #00ff00;
+$color-brake: #ff3333;
+$color-clutch: #3399ff;
+
 // Typography
 $font-mono: 'Courier New', Courier, monospace;
 $font-size-widget: 13px;
 $line-height-widget: 1.4;
 
+// Typography scale
+$font-size-xs: 10px;
+$font-size-sm: 12px;
+$font-size-md: 14px;
+$font-size-lg: 20px;
+$font-size-xl: 32px;
+$font-size-2xl: 48px;
+$font-size-3xl: 64px;
+
 // Spacing
 $widget-padding: 12px 16px;
 $widget-border-radius: 4px;
+
+// Spacing scale
+$space-xs: 2px;
+$space-sm: 4px;
+$space-md: 8px;
+$space-lg: 12px;
+$space-xl: 16px;
+
+// Bar sizes
+$bar-height-sm: 4px;
+$bar-height-md: 8px;
+$bar-height-lg: 12px;
+$bar-border-radius: 4px;

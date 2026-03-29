@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useWidgetTelemetry } from '../../hooks/useWidgetTelemetry';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
+import { unitsStore } from '../../store/units.store';
 import { ExampleWidget } from '../../components/widgets/ExampleWidget';
 import { DashWidget } from '../../components/widgets/DashWidget';
 import { WidgetWrapper } from '../../components/widgets/WidgetWrapper';
@@ -25,6 +26,8 @@ export const WidgetPage = () => {
 
     const init = async () => {
       await widgetSettingsStore.loadSettings();
+      await unitsStore.loadSettings();
+      await unitsStore.initWidgetListener();
       await widgetSettingsStore.initWidgetListener();
       await appSettingsStore.initWidgetListener();
       setReady(true);
@@ -34,6 +37,7 @@ export const WidgetPage = () => {
 
     return () => {
       widgetSettingsStore.dispose();
+      unitsStore.dispose();
       appSettingsStore.disposeWidgetListener();
     };
   }, []);

@@ -1,0 +1,49 @@
+@use '../../../../styles/variables' as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: $font-size-sm;
+}
+
+.label {
+  color: $color-text-muted;
+}
+
+.valueText {
+  color: $color-text-primary;
+}
+
+.track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: $bar-border-radius;
+  overflow: hidden;
+}
+
+.height-sm {
+  height: $bar-height-sm;
+}
+
+.height-md {
+  height: $bar-height-md;
+}
+
+.height-lg {
+  height: $bar-height-lg;
+}
+
+.fill {
+  height: 100%;
+  background: $color-text-accent;
+  border-radius: $bar-border-radius;
+}
+
+.animated {
+  transition: width 0.05s linear;
+}
