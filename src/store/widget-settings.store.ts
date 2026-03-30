@@ -24,8 +24,8 @@ interface WidgetFieldUpdate {
 
 const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
-    id: 'dash',
-    label: 'Dashboard (Gear, Speed, RPM)',
+    id: 'speed',
+    label: 'Speed (Gear, Speed, RPM)',
     enabled: true,
     x: 400,
     y: 100,
@@ -35,6 +35,19 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     opacity: 0.9,
     backgroundColor: '#000000',
     hotkey: 'F10',
+  },
+  {
+    id: 'input-trace',
+    label: 'Input Trace (Throttle, Brake, Clutch)',
+    enabled: false,
+    x: 400,
+    y: 300,
+    width: 260,
+    height: 260,
+    scale: 1,
+    opacity: 0.9,
+    backgroundColor: '#000000',
+    hotkey: 'F11',
   },
   {
     id: 'example',
@@ -69,8 +82,14 @@ class WidgetSettingsStore {
       if (!saved) {
         this.widgets = [...DEFAULT_WIDGETS];
       } else {
-        // Merge: keep saved settings, but add any new widgets from DEFAULT_WIDGETS
-        const merged = [...saved];
+        // Migrate renamed widget IDs
+        const merged = saved.map((w) => {
+          if (w.id === 'dash') {
+            return { ...w, id: 'speed', label: 'Speed (Gear, Speed, RPM)' };
+          }
+
+          return w;
+        });
 
         for (const defaultWidget of DEFAULT_WIDGETS) {
           if (!merged.find((w) => w.id === defaultWidget.id)) {

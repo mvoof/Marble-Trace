@@ -5,3 +5,5 @@ export { DataGrid } from './DataGrid';
 export type { DataGridColumn } from './DataGrid';
 export { StatusIndicator } from './StatusIndicator';
 export { SectionDivider } from './SectionDivider';
+export { CanvasTrace } from './CanvasTrace';
+export type { CanvasTraceChannel } from './CanvasTrace';

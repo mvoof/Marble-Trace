@@ -6,6 +6,15 @@
   align-items: flex-end;
 }
 
+.gearBox {
+  border: 1px solid $color-border;
+  border-radius: 6px;
+  padding: $space-sm $space-md;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .rpmRow {
   display: flex;
   justify-content: space-between;

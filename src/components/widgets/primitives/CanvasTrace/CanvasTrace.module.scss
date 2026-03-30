@@ -1,0 +1,14 @@
+@use '../../../../styles/variables' as *;
+
+.container {
+  display: block;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: $bar-border-radius;
+  overflow: hidden;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+}

@@ -10,9 +10,9 @@ import {
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import { DataValue } from '../primitives/DataValue';
 import { ProgressBar } from '../primitives/ProgressBar';
-import styles from './DashWidget.module.scss';
+import styles from './SpeedWidget.module.scss';
 
-export const DashWidget = observer(() => {
+export const SpeedWidget = observer(() => {
   const { frame } = telemetryStore;
   const { formatSpeed, speedUnit } = useUnits();
 
@@ -23,13 +23,15 @@ export const DashWidget = observer(() => {
   return (
     <WidgetPanel minWidth={240}>
       <span className={styles.topRow}>
-        <DataValue
-          label="GEAR"
-          value={gear}
-          size="3xl"
-          align="center"
-          color="#00ff00"
-        />
+        <span className={styles.gearBox}>
+          <DataValue
+            label="GEAR"
+            value={gear}
+            size="3xl"
+            align="center"
+            color="#00ff00"
+          />
+        </span>
 
         <DataValue
           label=""
