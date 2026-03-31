@@ -31,5 +31,6 @@ target/
 .agent
 CLAUDE.md
 GEMINI.md
+AGENTS.md
 .playwright-mcp
 .mcp.json
