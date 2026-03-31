@@ -111,6 +111,24 @@ export const SettingsPage = observer(() => {
           </Flex>
         </Flex>
       </Card>
+      <Card title="Game Integration">
+        <Flex vertical gap={8}>
+          <Space>
+            <Switch
+              checked={appSettingsStore.hideWidgetsWhenGameClosed}
+              onChange={(v) => appSettingsStore.setHideWidgetsWhenGameClosed(v)}
+            />
+
+            <Text>Hide widgets when iRacing is not running</Text>
+          </Space>
+
+          <Text type="secondary">
+            Widgets will automatically show when iRacing connects and hide when
+            it disconnects.
+          </Text>
+        </Flex>
+      </Card>
+
       <Card title="Units">
         <Flex vertical gap={8}>
           <Text>Measurement System</Text>

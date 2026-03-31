@@ -20,56 +20,77 @@ pub async fn start_telemetry_stream(
     state.running.store(false, Ordering::SeqCst);
     sleep(Duration::from_millis(50)).await;
 
-    info!("Connecting to iRacing...");
-
-    let connection = Pitwall::connect()
-        .await
-        .map_err(|e| format!("Failed to connect to iRacing: {}", e))?;
-    info!("Connected to iRacing successfully");
-
-    let stream = connection.subscribe::<TelemetryFrame>(UpdateRate::Native);
-    debug!("Subscribed to telemetry stream");
-
     let running = state.running.clone();
     running.store(true, Ordering::SeqCst);
 
     let app_clone = app.clone();
 
     tokio::spawn(async move {
-        let _connection = connection;
-        let mut stream = std::pin::pin!(stream);
-        let mut count: u64 = 0;
-
-        debug!("Stream loop started, waiting for frames...");
-
-        while let Some(frame) = stream.next().await {
+        loop {
             if !running.load(Ordering::SeqCst) {
                 debug!("Stream stopped by user");
                 break;
             }
 
-            count += 1;
+            app_clone.emit("telemetry-status-event", "waiting").ok();
+            info!("Waiting for iRacing...");
 
-            if count == 1 {
-                info!(
-                    speed = frame.speed,
-                    rpm = frame.rpm,
-                    gear = frame.gear,
-                    "First frame received"
-                );
+            let connection = loop {
+                if !running.load(Ordering::SeqCst) {
+                    return;
+                }
+
+                match Pitwall::connect().await {
+                    Ok(conn) => break conn,
+                    Err(_) => {
+                        sleep(Duration::from_secs(3)).await;
+                    }
+                }
+            };
+
+            info!("Connected to iRacing successfully");
+            app_clone.emit("telemetry-status-event", "connected").ok();
+
+            let stream = connection.subscribe::<TelemetryFrame>(UpdateRate::Native);
+            debug!("Subscribed to telemetry stream");
+
+            let mut stream = std::pin::pin!(stream);
+            let mut count: u64 = 0;
+
+            while let Some(frame) = stream.next().await {
+                if !running.load(Ordering::SeqCst) {
+                    debug!("Stream stopped by user");
+                    return;
+                }
+
+                count += 1;
+
+                if count == 1 {
+                    info!(
+                        speed = frame.speed,
+                        rpm = frame.rpm,
+                        gear = frame.gear,
+                        "First frame received"
+                    );
+                }
+
+                if let Err(e) = app_clone.emit("telemetry-frame-event", &frame) {
+                    warn!("Failed to emit frame: {}", e);
+                    break;
+                }
             }
 
-            if let Err(e) = app.emit("telemetry-frame-event", &frame) {
-                warn!("Failed to emit frame: {}", e);
+            info!(count, "Stream ended, will retry connection...");
+            app_clone
+                .emit("telemetry-status-event", "disconnected")
+                .ok();
+            app_clone.emit("telemetry-disconnected-event", &()).ok();
+
+            if !running.load(Ordering::SeqCst) {
                 break;
             }
-        }
 
-        let was_running = running.swap(false, Ordering::SeqCst);
-        info!(count, was_running, "Stream ended");
-
-        if was_running {
-            app_clone.emit("telemetry-disconnected-event", &()).ok();
+            sleep(Duration::from_secs(2)).await;
         }
     });
 

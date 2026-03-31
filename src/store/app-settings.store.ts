@@ -13,11 +13,13 @@ const DEFAULT_DRAG_HOTKEY = 'F9';
 
 interface AppSettings {
   dragHotkey: string;
+  hideWidgetsWhenGameClosed: boolean;
 }
 
 class AppSettingsStore {
   dragMode = false;
   dragHotkey: string = DEFAULT_DRAG_HOTKEY;
+  hideWidgetsWhenGameClosed = false;
 
   private store: Store | null = null;
   private unlisten: UnlistenFn | null = null;
@@ -45,6 +47,8 @@ class AppSettingsStore {
     runInAction(() => {
       if (saved) {
         this.dragHotkey = saved.dragHotkey || DEFAULT_DRAG_HOTKEY;
+        this.hideWidgetsWhenGameClosed =
+          saved.hideWidgetsWhenGameClosed ?? false;
       }
     });
 
@@ -68,6 +72,11 @@ class AppSettingsStore {
   async toggleDragMode() {
     this.dragMode = !this.dragMode;
     await emit('drag-mode-changed', this.dragMode);
+  }
+
+  async setHideWidgetsWhenGameClosed(value: boolean) {
+    this.hideWidgetsWhenGameClosed = value;
+    await this.saveSettings();
   }
 
   async setDragHotkey(hotkey: string) {
@@ -141,6 +150,7 @@ class AppSettingsStore {
     if (!this.store) return;
     await this.store.set('settings', {
       dragHotkey: this.dragHotkey,
+      hideWidgetsWhenGameClosed: this.hideWidgetsWhenGameClosed,
     });
     await this.store.save();
   }
