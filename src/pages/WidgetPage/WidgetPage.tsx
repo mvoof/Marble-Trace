@@ -1,32 +1,65 @@
 import React, { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useParams } from 'react-router-dom';
 import { useWidgetTelemetry } from '../../hooks/useWidgetTelemetry';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { unitsStore } from '../../store/units.store';
 import { ExampleWidget } from '../../components/widgets/ExampleWidget';
-import { SpeedWidget } from '../../components/widgets/SpeedWidget';
+import {
+  SpeedWidget,
+  SpeedWidgetAlt,
+} from '../../components/widgets/SpeedWidget';
 import { InputTraceWidget } from '../../components/widgets/InputTraceWidget';
 import { WidgetWrapper } from '../../components/widgets/WidgetWrapper';
 import styles from './WidgetPage.module.scss';
 
-interface WidgetEntry {
+interface WidgetVariant {
   component: React.ComponentType;
   designWidth: number;
   designHeight: number;
 }
 
+interface WidgetEntry {
+  variants: Record<string, WidgetVariant>;
+  defaultVariant: string;
+}
+
 const WIDGET_MAP: Record<string, WidgetEntry> = {
-  example: { component: ExampleWidget, designWidth: 400, designHeight: 600 },
-  speed: { component: SpeedWidget, designWidth: 400, designHeight: 145 },
+  example: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: ExampleWidget,
+        designWidth: 400,
+        designHeight: 600,
+      },
+    },
+  },
+  speed: {
+    defaultVariant: 'default',
+    variants: {
+      default: { component: SpeedWidget, designWidth: 400, designHeight: 145 },
+      alternative: {
+        component: SpeedWidgetAlt,
+        designWidth: 900,
+        designHeight: 280,
+      },
+    },
+  },
   'input-trace': {
-    component: InputTraceWidget,
-    designWidth: 260,
-    designHeight: 260,
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: InputTraceWidget,
+        designWidth: 260,
+        designHeight: 260,
+      },
+    },
   },
 };
 
-export const WidgetPage = () => {
+export const WidgetPage = observer(() => {
   const { id } = useParams<{ id: string }>();
   const [ready, setReady] = useState(false);
 
@@ -62,7 +95,11 @@ export const WidgetPage = () => {
     return <pre className={styles.widgetPage}>Unknown widget: {id}</pre>;
   }
 
-  const { component: WidgetComponent, designWidth, designHeight } = widgetEntry;
+  const variantKey = getWidgetVariant(id, widgetEntry.defaultVariant);
+  const variant =
+    widgetEntry.variants[variantKey] ??
+    widgetEntry.variants[widgetEntry.defaultVariant];
+  const { component: WidgetComponent, designWidth, designHeight } = variant;
 
   return (
     <section className={styles.widgetPage}>
@@ -75,4 +112,13 @@ export const WidgetPage = () => {
       </WidgetWrapper>
     </section>
   );
-};
+});
+
+function getWidgetVariant(id: string, defaultVariant: string): string {
+  if (id === 'speed') {
+    const settings = widgetSettingsStore.getSpeedSettings();
+    return settings.designVariant ?? defaultVariant;
+  }
+
+  return defaultVariant;
+}

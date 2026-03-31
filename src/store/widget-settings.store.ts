@@ -4,8 +4,10 @@ import { emit, listen, UnlistenFn } from '@tauri-apps/api/event';
 
 export type SpeedWidgetFocusMode = 'speed' | 'gear';
 export type RpmColorTheme = 'custom' | 'gradient' | 'classic';
+export type SpeedWidgetVariant = 'default' | 'alternative';
 
 export interface SpeedWidgetSettings {
+  designVariant: SpeedWidgetVariant;
   focusMode: SpeedWidgetFocusMode;
   rpmColorTheme: RpmColorTheme;
   rpmColorLow: string;
@@ -67,6 +69,7 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     hotkey: 'F10',
     customSettings: {
       speed: {
+        designVariant: 'default',
         focusMode: 'speed',
         rpmColorTheme: 'custom',
         rpmColorLow: '#22c55e',
@@ -228,6 +231,7 @@ class WidgetSettingsStore {
     const widget = this.getWidget('speed');
     return (
       widget?.customSettings?.speed ?? {
+        designVariant: 'default',
         focusMode: 'speed',
         rpmColorTheme: 'custom',
         rpmColorLow: '#22c55e',
