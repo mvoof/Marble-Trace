@@ -1,52 +1,65 @@
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../store/telemetry.store';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { useUnits } from '../../../hooks/useUnits';
-import {
-  formatGear,
-  formatRpm,
-  clampNormalized,
-} from '../../../utils/telemetry-format';
+import { formatGear } from '../../../utils/telemetry-format';
 import { WidgetPanel } from '../primitives/WidgetPanel';
-import { DataValue } from '../primitives/DataValue';
-import { ProgressBar } from '../primitives/ProgressBar';
+import { RpmBar } from '../primitives/RpmBar';
+import { GearStrip } from '../primitives/GearStrip';
 import styles from './SpeedWidget.module.scss';
 
 export const SpeedWidget = observer(() => {
   const { frame } = telemetryStore;
   const { formatSpeed, speedUnit } = useUnits();
+  const settings = widgetSettingsStore.getSpeedSettings();
 
   const speed = frame ? formatSpeed(frame.speed) : '0';
   const rpm = frame ? Math.round(frame.rpm) : 0;
-  const gear = formatGear(frame?.gear ?? 0);
+  const gear = frame?.gear ?? 0;
+  const gearDisplay = formatGear(gear);
+
+  const isGearFocused = settings.focusMode === 'gear';
+
+  const rpmColors = {
+    low: settings.rpmColorLow,
+    mid: settings.rpmColorMid,
+    high: settings.rpmColorHigh,
+    limit: settings.rpmColorLimit,
+  };
 
   return (
-    <WidgetPanel minWidth={240}>
-      <span className={styles.topRow}>
-        <span className={styles.gearBox}>
-          <DataValue
-            label="GEAR"
-            value={gear}
-            size="3xl"
-            align="center"
-            color="#00ff00"
-          />
+    <WidgetPanel minWidth={320} gap={5} className={styles.speedPanel}>
+      <RpmBar
+        rpm={rpm}
+        colors={rpmColors}
+        colorTheme={settings.rpmColorTheme}
+      />
+
+      <span
+        className={`${styles.centerDisplay} ${isGearFocused ? styles.focusGear : styles.focusSpeed}`}
+      >
+        <span className={styles.mainVal}>
+          {isGearFocused ? gearDisplay : speed}
         </span>
 
-        <DataValue
-          label=""
-          value={speed}
-          unit={speedUnit}
-          size="2xl"
-          align="right"
-        />
+        <span
+          className={styles.subVal}
+          style={
+            isGearFocused
+              ? { color: settings.rpmColorLimit, letterSpacing: '1px' }
+              : undefined
+          }
+        >
+          {isGearFocused ? `${speed} ${speedUnit}` : speedUnit}
+        </span>
       </span>
 
-      <ProgressBar value={clampNormalized(rpm / 10000)} gradient height="md" />
-
-      <span className={styles.rpmRow}>
-        <span className={styles.rpmLabel}>RPM</span>
-        <span className={styles.rpmValue}>{formatRpm(rpm)}</span>
+      <span
+        className={styles.bottomSection}
+        style={{ opacity: isGearFocused ? 0 : 1 }}
+      >
+        <GearStrip gear={gear} accentColor={settings.rpmColorLimit} />
       </span>
     </WidgetPanel>
   );

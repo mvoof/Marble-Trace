@@ -2,6 +2,22 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { load, Store } from '@tauri-apps/plugin-store';
 import { emit, listen, UnlistenFn } from '@tauri-apps/api/event';
 
+export type SpeedWidgetFocusMode = 'speed' | 'gear';
+export type RpmColorTheme = 'custom' | 'gradient' | 'classic';
+
+export interface SpeedWidgetSettings {
+  focusMode: SpeedWidgetFocusMode;
+  rpmColorTheme: RpmColorTheme;
+  rpmColorLow: string;
+  rpmColorMid: string;
+  rpmColorHigh: string;
+  rpmColorLimit: string;
+}
+
+export interface WidgetCustomSettings {
+  speed?: SpeedWidgetSettings;
+}
+
 export interface WidgetConfig {
   id: string;
   label: string;
@@ -14,12 +30,13 @@ export interface WidgetConfig {
   opacity: number;
   backgroundColor: string;
   hotkey: string;
+  customSettings?: WidgetCustomSettings;
 }
 
 interface WidgetFieldUpdate {
   id: string;
   field: keyof WidgetConfig;
-  value: number | string | boolean;
+  value: number | string | boolean | WidgetCustomSettings;
 }
 
 const DEFAULT_WIDGETS: WidgetConfig[] = [
@@ -29,12 +46,22 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: true,
     x: 400,
     y: 100,
-    width: 280,
-    height: 180,
+    width: 360,
+    height: 200,
     scale: 1,
     opacity: 0.9,
     backgroundColor: '#000000',
     hotkey: 'F10',
+    customSettings: {
+      speed: {
+        focusMode: 'speed',
+        rpmColorTheme: 'custom',
+        rpmColorLow: '#22c55e',
+        rpmColorMid: '#eab308',
+        rpmColorHigh: '#ef4444',
+        rpmColorLimit: '#ff4d00',
+      },
+    },
   },
   {
     id: 'input-trace',
@@ -112,7 +139,14 @@ class WidgetSettingsStore {
 
         if (widget) {
           runInAction(() => {
-            (widget[field] as number | string | boolean) = value;
+            if (field === 'customSettings') {
+              widget.customSettings = value as WidgetCustomSettings;
+            } else {
+              (widget[field] as number | string | boolean) = value as
+                | number
+                | string
+                | boolean;
+            }
           });
         }
       }
@@ -163,6 +197,36 @@ class WidgetSettingsStore {
       widget.height = height;
 
       this.debouncedSave();
+    }
+  }
+
+  getSpeedSettings(): SpeedWidgetSettings {
+    const widget = this.getWidget('speed');
+    return (
+      widget?.customSettings?.speed ?? {
+        focusMode: 'speed',
+        rpmColorTheme: 'custom',
+        rpmColorLow: '#22c55e',
+        rpmColorMid: '#eab308',
+        rpmColorHigh: '#ef4444',
+        rpmColorLimit: '#ff4d00',
+      }
+    );
+  }
+
+  updateCustomSettings(id: string, settings: WidgetCustomSettings) {
+    const widget = this.widgets.find((w) => w.id === id);
+
+    if (widget) {
+      widget.customSettings = { ...widget.customSettings, ...settings };
+
+      this.debouncedSave();
+
+      emit('widget-settings-changed', {
+        id,
+        field: 'customSettings',
+        value: widget.customSettings,
+      });
     }
   }
 

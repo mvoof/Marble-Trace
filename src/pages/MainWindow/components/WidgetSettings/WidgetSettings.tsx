@@ -11,8 +11,16 @@ import {
   Flex,
   Button,
   Tag,
+  Select,
+  Segmented,
+  Divider,
 } from 'antd';
-import { widgetSettingsStore } from '../../../../store/widget-settings.store';
+import {
+  widgetSettingsStore,
+  type SpeedWidgetSettings,
+  type SpeedWidgetFocusMode,
+  type RpmColorTheme,
+} from '../../../../store/widget-settings.store';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 
 const { Title, Text } = Typography;
@@ -133,6 +141,13 @@ export const WidgetSettings = observer(
           </Flex>
 
           <HotkeyRecorder widgetId={widgetId} currentHotkey={widget.hotkey} />
+
+          {widgetId === 'speed' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <SpeedSettings />
+            </>
+          )}
         </Flex>
       </Card>
     );
@@ -227,3 +242,112 @@ const HotkeyRecorder = ({
     </Flex>
   );
 };
+
+const SpeedSettings = observer(() => {
+  const settings = widgetSettingsStore.getSpeedSettings();
+
+  const update = (partial: Partial<SpeedWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('speed', {
+      speed: { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Speed Widget
+      </Title>
+
+      <Flex vertical gap={4}>
+        <Text>Focus Mode</Text>
+
+        <Segmented
+          value={settings.focusMode}
+          options={[
+            { label: 'Speed', value: 'speed' },
+            { label: 'Gear', value: 'gear' },
+          ]}
+          onChange={(v) => update({ focusMode: v as SpeedWidgetFocusMode })}
+        />
+      </Flex>
+
+      <Flex vertical gap={4}>
+        <Text>RPM Color Theme</Text>
+
+        <Select
+          value={settings.rpmColorTheme}
+          onChange={(v) => update({ rpmColorTheme: v as RpmColorTheme })}
+          options={[
+            { label: 'Custom', value: 'custom' },
+            { label: 'Gradient', value: 'gradient' },
+            { label: 'Classic', value: 'classic' },
+          ]}
+        />
+      </Flex>
+
+      {settings.rpmColorTheme === 'custom' && (
+        <Row gutter={[12, 8]}>
+          <Col span={6}>
+            <Flex vertical align="center" gap={4}>
+              <Text type="secondary">Low</Text>
+
+              <ColorPicker
+                value={settings.rpmColorLow}
+                onChange={(c) => update({ rpmColorLow: c.toHexString() })}
+                size="small"
+              />
+            </Flex>
+          </Col>
+
+          <Col span={6}>
+            <Flex vertical align="center" gap={4}>
+              <Text type="secondary">Mid</Text>
+
+              <ColorPicker
+                value={settings.rpmColorMid}
+                onChange={(c) => update({ rpmColorMid: c.toHexString() })}
+                size="small"
+              />
+            </Flex>
+          </Col>
+
+          <Col span={6}>
+            <Flex vertical align="center" gap={4}>
+              <Text type="secondary">High</Text>
+
+              <ColorPicker
+                value={settings.rpmColorHigh}
+                onChange={(c) => update({ rpmColorHigh: c.toHexString() })}
+                size="small"
+              />
+            </Flex>
+          </Col>
+
+          <Col span={6}>
+            <Flex vertical align="center" gap={4}>
+              <Text type="secondary">Limit</Text>
+
+              <ColorPicker
+                value={settings.rpmColorLimit}
+                onChange={(c) => update({ rpmColorLimit: c.toHexString() })}
+                size="small"
+              />
+            </Flex>
+          </Col>
+        </Row>
+      )}
+
+      {settings.rpmColorTheme !== 'custom' && (
+        <Flex vertical gap={4}>
+          <Text type="secondary">Limit Color</Text>
+
+          <ColorPicker
+            value={settings.rpmColorLimit}
+            onChange={(c) => update({ rpmColorLimit: c.toHexString() })}
+            size="small"
+          />
+        </Flex>
+      )}
+    </Flex>
+  );
+});

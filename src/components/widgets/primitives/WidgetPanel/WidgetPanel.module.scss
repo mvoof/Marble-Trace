@@ -1,7 +1,7 @@
 @use '../../../../styles/variables' as *;
 
 .panel {
-  font-family: $font-mono;
+  font-family: $font-widget;
   color: $color-text-primary;
   padding: $widget-padding;
   background: var(--widget-bg-color, $color-bg-widget);

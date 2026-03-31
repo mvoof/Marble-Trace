@@ -1,0 +1,1 @@
+export { GearStrip } from './GearStrip';

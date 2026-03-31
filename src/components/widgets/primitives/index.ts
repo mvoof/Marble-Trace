@@ -7,3 +7,5 @@ export { StatusIndicator } from './StatusIndicator';
 export { SectionDivider } from './SectionDivider';
 export { CanvasTrace } from './CanvasTrace';
 export type { CanvasTraceChannel } from './CanvasTrace';
+export { RpmBar } from './RpmBar';
+export { GearStrip } from './GearStrip';
