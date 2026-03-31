@@ -21,6 +21,7 @@ class WindowManagerStore {
       x: config.x,
       y: config.y,
       decorations: false,
+      shadow: false,
       transparent: true,
       alwaysOnTop: true,
       resizable: true,
