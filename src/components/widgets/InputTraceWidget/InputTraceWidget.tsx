@@ -1,56 +1,77 @@
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../store/telemetry.store';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import { ProgressBar } from '../primitives/ProgressBar';
 import { CanvasTrace } from '../primitives/CanvasTrace';
 import type { CanvasTraceChannel } from '../primitives/CanvasTrace';
+import styles from './InputTraceWidget.module.scss';
 
 export const InputTraceWidget = observer(() => {
   const { frame } = telemetryStore;
+  const settings = widgetSettingsStore.getInputTraceSettings();
 
   const throttle = frame?.throttle ?? 0;
   const brake = frame?.brake ?? 0;
   const clutch = frame?.clutch != null ? 1 - frame.clutch : null;
 
-  const channels: CanvasTraceChannel[] = [
-    { value: throttle, color: '#00ff00' },
-    { value: brake, color: '#ff3333' },
-  ];
+  const channels: CanvasTraceChannel[] = [];
 
-  if (clutch !== null) {
-    channels.push({ value: clutch, color: '#3399ff' });
+  if (settings.showThrottle) {
+    channels.push({ value: throttle, color: settings.throttleColor });
   }
+
+  if (settings.showBrake) {
+    channels.push({ value: brake, color: settings.brakeColor });
+  }
+
+  if (settings.showClutch && clutch !== null) {
+    channels.push({ value: clutch, color: settings.clutchColor });
+  }
+
+  const showBars = settings.barMode !== 'hidden';
+  const isVertical = settings.barMode === 'vertical';
 
   return (
     <WidgetPanel minWidth={220}>
-      <ProgressBar
-        label="THR"
-        value={throttle}
-        color="#00ff00"
-        showValue
-        height="md"
-      />
+      {showBars && (
+        <span
+          className={isVertical ? styles.barsVertical : styles.barsHorizontal}
+        >
+          {settings.showThrottle && (
+            <ProgressBar
+              label="THR"
+              value={throttle}
+              color={settings.throttleColor}
+              showValue
+              height="lg"
+            />
+          )}
 
-      <ProgressBar
-        label="BRK"
-        value={brake}
-        color="#ff3333"
-        showValue
-        height="md"
-      />
+          {settings.showBrake && (
+            <ProgressBar
+              label="BRK"
+              value={brake}
+              color={settings.brakeColor}
+              showValue
+              height="lg"
+            />
+          )}
 
-      {clutch !== null && (
-        <ProgressBar
-          label="CLT"
-          value={clutch}
-          color="#3399ff"
-          showValue
-          height="md"
-        />
+          {settings.showClutch && clutch !== null && (
+            <ProgressBar
+              label="CLT"
+              value={clutch}
+              color={settings.clutchColor}
+              showValue
+              height="lg"
+            />
+          )}
+        </span>
       )}
 
-      <CanvasTrace channels={channels} height={80} />
+      <CanvasTrace channels={channels} height={80} lineWidth={2.5} />
     </WidgetPanel>
   );
 });

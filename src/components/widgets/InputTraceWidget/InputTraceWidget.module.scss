@@ -1,1 +1,17 @@
 // InputTraceWidget layout — visual styling handled by primitives
+
+.barsHorizontal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.barsVertical {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  width: 100%;
+  height: 80px;
+  align-items: flex-end;
+}

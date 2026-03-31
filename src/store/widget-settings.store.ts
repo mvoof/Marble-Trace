@@ -14,8 +14,21 @@ export interface SpeedWidgetSettings {
   rpmColorLimit: string;
 }
 
+export type InputTraceBarMode = 'horizontal' | 'vertical' | 'hidden';
+
+export interface InputTraceSettings {
+  showThrottle: boolean;
+  showBrake: boolean;
+  showClutch: boolean;
+  throttleColor: string;
+  brakeColor: string;
+  clutchColor: string;
+  barMode: InputTraceBarMode;
+}
+
 export interface WidgetCustomSettings {
   speed?: SpeedWidgetSettings;
+  'input-trace'?: InputTraceSettings;
 }
 
 export interface WidgetConfig {
@@ -75,6 +88,17 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     opacity: 0.9,
     backgroundColor: '#1a1a1a',
     hotkey: 'F11',
+    customSettings: {
+      'input-trace': {
+        showThrottle: true,
+        showBrake: true,
+        showClutch: true,
+        throttleColor: '#00ff00',
+        brakeColor: '#ff3333',
+        clutchColor: '#3399ff',
+        barMode: 'horizontal',
+      },
+    },
   },
   {
     id: 'example',
@@ -210,6 +234,21 @@ class WidgetSettingsStore {
         rpmColorMid: '#eab308',
         rpmColorHigh: '#ef4444',
         rpmColorLimit: '#ff4d00',
+      }
+    );
+  }
+
+  getInputTraceSettings(): InputTraceSettings {
+    const widget = this.getWidget('input-trace');
+    return (
+      widget?.customSettings?.['input-trace'] ?? {
+        showThrottle: true,
+        showBrake: true,
+        showClutch: true,
+        throttleColor: '#00ff00',
+        brakeColor: '#ff3333',
+        clutchColor: '#3399ff',
+        barMode: 'horizontal',
       }
     );
   }

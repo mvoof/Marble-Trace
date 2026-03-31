@@ -13,12 +13,16 @@ import {
   Select,
   Segmented,
   Divider,
+  Switch,
+  Space,
 } from 'antd';
 import {
   widgetSettingsStore,
   type SpeedWidgetSettings,
   type SpeedWidgetFocusMode,
   type RpmColorTheme,
+  type InputTraceSettings,
+  type InputTraceBarMode,
 } from '../../../../store/widget-settings.store';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 
@@ -117,6 +121,13 @@ export const WidgetSettings = observer(
             <>
               <Divider style={{ margin: '8px 0' }} />
               <SpeedSettings />
+            </>
+          )}
+
+          {widgetId === 'input-trace' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <InputTraceSettingsPanel />
             </>
           )}
         </Flex>
@@ -319,6 +330,92 @@ const SpeedSettings = observer(() => {
           />
         </Flex>
       )}
+    </Flex>
+  );
+});
+
+const InputTraceSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getInputTraceSettings();
+
+  const update = (partial: Partial<InputTraceSettings>) => {
+    widgetSettingsStore.updateCustomSettings('input-trace', {
+      'input-trace': { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Input Trace
+      </Title>
+
+      <Flex vertical gap={8}>
+        <Text>Channels</Text>
+
+        <Space direction="vertical">
+          <Space>
+            <Switch
+              checked={settings.showThrottle}
+              onChange={(v) => update({ showThrottle: v })}
+              size="small"
+            />
+
+            <Text>Throttle</Text>
+
+            <ColorPicker
+              value={settings.throttleColor}
+              onChange={(c) => update({ throttleColor: c.toHexString() })}
+              size="small"
+            />
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showBrake}
+              onChange={(v) => update({ showBrake: v })}
+              size="small"
+            />
+
+            <Text>Brake</Text>
+
+            <ColorPicker
+              value={settings.brakeColor}
+              onChange={(c) => update({ brakeColor: c.toHexString() })}
+              size="small"
+            />
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showClutch}
+              onChange={(v) => update({ showClutch: v })}
+              size="small"
+            />
+
+            <Text>Clutch</Text>
+
+            <ColorPicker
+              value={settings.clutchColor}
+              onChange={(c) => update({ clutchColor: c.toHexString() })}
+              size="small"
+            />
+          </Space>
+        </Space>
+      </Flex>
+
+      <Flex vertical gap={4}>
+        <Text>Progress Bars</Text>
+
+        <Segmented
+          value={settings.barMode}
+          options={[
+            { label: 'Horizontal', value: 'horizontal' },
+            { label: 'Vertical', value: 'vertical' },
+            { label: 'Hidden', value: 'hidden' },
+          ]}
+          onChange={(v) => update({ barMode: v as InputTraceBarMode })}
+        />
+      </Flex>
     </Flex>
   );
 });
