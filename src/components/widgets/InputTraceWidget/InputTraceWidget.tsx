@@ -11,7 +11,7 @@ export const InputTraceWidget = observer(() => {
 
   const throttle = frame?.throttle ?? 0;
   const brake = frame?.brake ?? 0;
-  const clutch = frame?.clutch ?? null;
+  const clutch = frame?.clutch != null ? 1 - frame.clutch : null;
 
   const channels: CanvasTraceChannel[] = [
     { value: throttle, color: '#00ff00' },
