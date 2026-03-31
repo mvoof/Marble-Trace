@@ -14,7 +14,7 @@ export const InputTraceWidget = observer(() => {
 
   const throttle = frame?.throttle ?? 0;
   const brake = frame?.brake ?? 0;
-  const clutch = frame?.clutch != null ? 1 - frame.clutch : null;
+  const clutch = frame?.clutch != null ? 1 - frame.clutch : 0;
 
   const channels: CanvasTraceChannel[] = [];
 
@@ -26,7 +26,7 @@ export const InputTraceWidget = observer(() => {
     channels.push({ value: brake, color: settings.brakeColor });
   }
 
-  if (settings.showClutch && clutch !== null) {
+  if (settings.showClutch) {
     channels.push({ value: clutch, color: settings.clutchColor });
   }
 
@@ -34,44 +34,91 @@ export const InputTraceWidget = observer(() => {
   const isVertical = settings.barMode === 'vertical';
 
   return (
-    <WidgetPanel minWidth={220}>
-      {showBars && (
-        <span
-          className={isVertical ? styles.barsVertical : styles.barsHorizontal}
-        >
-          {settings.showThrottle && (
-            <ProgressBar
-              label="THR"
-              value={throttle}
-              color={settings.throttleColor}
-              showValue
-              height="lg"
-            />
+    <WidgetPanel minWidth={220} direction={isVertical ? 'row' : 'column'}>
+      {isVertical ? (
+        <>
+          <span className={styles.chartArea}>
+            <CanvasTrace channels={channels} lineWidth={2.5} />
+          </span>
+
+          {showBars && (
+            <span className={styles.barsVertical}>
+              {settings.showThrottle && (
+                <ProgressBar
+                  label="THR"
+                  value={throttle}
+                  color={settings.throttleColor}
+                  showValue
+                  height="lg"
+                  vertical
+                />
+              )}
+
+              {settings.showBrake && (
+                <ProgressBar
+                  label="BRK"
+                  value={brake}
+                  color={settings.brakeColor}
+                  showValue
+                  height="lg"
+                  vertical
+                />
+              )}
+
+              {settings.showClutch && (
+                <ProgressBar
+                  label="CLT"
+                  value={clutch}
+                  color={settings.clutchColor}
+                  showValue
+                  height="lg"
+                  vertical
+                />
+              )}
+            </span>
+          )}
+        </>
+      ) : (
+        <>
+          {showBars && (
+            <span className={styles.barsHorizontal}>
+              {settings.showThrottle && (
+                <ProgressBar
+                  label="THR"
+                  value={throttle}
+                  color={settings.throttleColor}
+                  showValue
+                  height="lg"
+                />
+              )}
+
+              {settings.showBrake && (
+                <ProgressBar
+                  label="BRK"
+                  value={brake}
+                  color={settings.brakeColor}
+                  showValue
+                  height="lg"
+                />
+              )}
+
+              {settings.showClutch && (
+                <ProgressBar
+                  label="CLT"
+                  value={clutch}
+                  color={settings.clutchColor}
+                  showValue
+                  height="lg"
+                />
+              )}
+            </span>
           )}
 
-          {settings.showBrake && (
-            <ProgressBar
-              label="BRK"
-              value={brake}
-              color={settings.brakeColor}
-              showValue
-              height="lg"
-            />
-          )}
-
-          {settings.showClutch && clutch !== null && (
-            <ProgressBar
-              label="CLT"
-              value={clutch}
-              color={settings.clutchColor}
-              showValue
-              height="lg"
-            />
-          )}
-        </span>
+          <span className={styles.chartArea}>
+            <CanvasTrace channels={channels} lineWidth={2.5} />
+          </span>
+        </>
       )}
-
-      <CanvasTrace channels={channels} height={80} lineWidth={2.5} />
     </WidgetPanel>
   );
 });

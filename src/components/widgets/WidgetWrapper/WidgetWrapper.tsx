@@ -15,11 +15,18 @@ interface WidgetWrapperProps {
   widgetId: string;
   designWidth: number;
   designHeight: number;
+  fillMode?: boolean;
   children: ReactNode;
 }
 
 export const WidgetWrapper = observer(
-  ({ widgetId, designWidth, designHeight, children }: WidgetWrapperProps) => {
+  ({
+    widgetId,
+    designWidth,
+    designHeight,
+    fillMode = false,
+    children,
+  }: WidgetWrapperProps) => {
     const { dragMode } = appSettingsStore;
     const widget = widgetSettingsStore.getWidget(widgetId);
     const wrapperRef = useRef<HTMLElement>(null);
@@ -31,6 +38,8 @@ export const WidgetWrapper = observer(
     }, [dragMode]);
 
     useEffect(() => {
+      if (fillMode) return;
+
       const el = wrapperRef.current;
       if (!el) return;
 
@@ -47,7 +56,7 @@ export const WidgetWrapper = observer(
       observer.observe(el);
 
       return () => observer.disconnect();
-    }, [designWidth, designHeight]);
+    }, [designWidth, designHeight, fillMode]);
 
     const handleMouseDown = useCallback(
       (e: React.MouseEvent) => {
@@ -82,12 +91,16 @@ export const WidgetWrapper = observer(
 
         <span
           className={styles.content}
-          style={{
-            width: designWidth,
-            height: designHeight,
-            transform: `scale(${scale})`,
-            transformOrigin: 'center center',
-          }}
+          style={
+            fillMode
+              ? undefined
+              : {
+                  width: designWidth,
+                  height: designHeight,
+                  transform: `scale(${scale})`,
+                  transformOrigin: 'center center',
+                }
+          }
         >
           {children}
         </span>

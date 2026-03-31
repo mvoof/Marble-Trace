@@ -18,6 +18,7 @@ interface WidgetVariant {
   component: React.ComponentType;
   designWidth: number;
   designHeight: number;
+  fillMode?: boolean;
 }
 
 interface WidgetEntry {
@@ -54,6 +55,7 @@ const WIDGET_MAP: Record<string, WidgetEntry> = {
         component: InputTraceWidget,
         designWidth: 260,
         designHeight: 260,
+        fillMode: true,
       },
     },
   },
@@ -99,7 +101,12 @@ export const WidgetPage = observer(() => {
   const variant =
     widgetEntry.variants[variantKey] ??
     widgetEntry.variants[widgetEntry.defaultVariant];
-  const { component: WidgetComponent, designWidth, designHeight } = variant;
+  const {
+    component: WidgetComponent,
+    designWidth,
+    designHeight,
+    fillMode,
+  } = variant;
 
   return (
     <section className={styles.widgetPage}>
@@ -107,6 +114,7 @@ export const WidgetPage = observer(() => {
         widgetId={id}
         designWidth={designWidth}
         designHeight={designHeight}
+        fillMode={fillMode}
       >
         <WidgetComponent />
       </WidgetWrapper>

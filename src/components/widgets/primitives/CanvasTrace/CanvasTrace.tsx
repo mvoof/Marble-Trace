@@ -14,6 +14,7 @@ interface CanvasTraceProps {
   bufferSize?: number;
   height?: number;
   lineWidth?: number;
+  fillContainer?: boolean;
 }
 
 export const CanvasTrace = ({
@@ -21,6 +22,7 @@ export const CanvasTrace = ({
   bufferSize = 300,
   height = 80,
   lineWidth = 1.5,
+  fillContainer = true,
 }: CanvasTraceProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bufferRef = useRef<number[][]>([]);
@@ -95,10 +97,13 @@ export const CanvasTrace = ({
       const entry = entries[0];
 
       if (entry) {
-        const { width } = entry.contentRect;
+        const { width, height: containerHeight } = entry.contentRect;
+        const resolvedHeight = fillContainer ? containerHeight : height;
+
+        if (width <= 0 || resolvedHeight <= 0) return;
 
         canvas.width = width * window.devicePixelRatio;
-        canvas.height = height * window.devicePixelRatio;
+        canvas.height = resolvedHeight * window.devicePixelRatio;
 
         const ctx = canvas.getContext('2d');
 
@@ -107,7 +112,7 @@ export const CanvasTrace = ({
         }
 
         canvas.style.width = `${width}px`;
-        canvas.style.height = `${height}px`;
+        canvas.style.height = `${resolvedHeight}px`;
       }
     });
 
@@ -139,7 +144,7 @@ export const CanvasTrace = ({
       cancelAnimationFrame(rafRef.current);
       resizeObserver.disconnect();
     };
-  }, [bufferSize, height, draw]);
+  }, [bufferSize, height, fillContainer, draw]);
 
   return (
     <span className={styles.container}>
