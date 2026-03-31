@@ -59,6 +59,14 @@ const EMPTY_FRAME: TelemetryFrame = {
   on_pit_road: null,
   is_on_track: null,
   air_temp: null,
+  shift_indicator_pct: null,
+  shift_grind_rpm: null,
+  driver_car_sl_first_rpm: null,
+  driver_car_sl_shift_rpm: null,
+  driver_car_sl_last_rpm: null,
+  driver_car_sl_blink_rpm: null,
+  driver_car_red_line: null,
+  driver_car_idle_rpm: null,
 };
 
 export const ExampleWidget = observer(() => {

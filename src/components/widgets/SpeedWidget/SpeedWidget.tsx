@@ -19,6 +19,9 @@ export const SpeedWidget = observer(() => {
   const gear = frame?.gear ?? 0;
   const gearDisplay = formatGear(gear);
 
+  const maxRpm = frame?.driver_car_red_line ?? 10000;
+  const shiftRpm = frame?.driver_car_sl_shift_rpm ?? undefined;
+
   const isGearFocused = settings.focusMode === 'gear';
 
   const rpmColors = {
@@ -32,6 +35,8 @@ export const SpeedWidget = observer(() => {
     <WidgetPanel minWidth={320} gap={4} className={styles.speedPanel}>
       <RpmBar
         rpm={rpm}
+        maxRpm={maxRpm}
+        shiftRpm={shiftRpm}
         colors={rpmColors}
         colorTheme={settings.rpmColorTheme}
       />
