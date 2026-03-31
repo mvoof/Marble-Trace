@@ -29,7 +29,7 @@ export const SpeedWidget = observer(() => {
   };
 
   return (
-    <WidgetPanel minWidth={320} gap={5} className={styles.speedPanel}>
+    <WidgetPanel minWidth={320} gap={4} className={styles.speedPanel}>
       <RpmBar
         rpm={rpm}
         colors={rpmColors}

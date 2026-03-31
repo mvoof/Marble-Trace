@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import styles from './GearStrip.module.scss';
 
 const GEARS = ['R', 'N', '1', '2', '3', '4', '5', '6'];
-const ITEM_WIDTH = 24;
+const ITEM_WIDTH = 20;
 
 interface GearStripProps {
   gear: number;

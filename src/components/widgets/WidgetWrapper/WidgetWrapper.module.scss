@@ -4,13 +4,31 @@
   width: 100%;
   height: 100%;
   position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bgGradient {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
 }
 
 .dragging {
   cursor: grab;
   outline: 2px dashed $color-text-accent;
   outline-offset: -2px;
-  border-radius: $widget-border-radius;
 
   &:active {
     cursor: grabbing;

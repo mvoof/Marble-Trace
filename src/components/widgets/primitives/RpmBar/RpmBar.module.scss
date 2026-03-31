@@ -3,7 +3,7 @@
 .wrapper {
   position: relative;
   width: 92%;
-  height: 48px;
+  height: 36px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -45,7 +45,7 @@
 
 .segment {
   width: 8px;
-  height: 42px;
+  height: 32px;
   background-color: rgba(255, 255, 255, 0.02);
   clip-path: polygon(0% 5%, 20% 5%, 100% 50%, 20% 95%, 0% 95%, 80% 50%);
   transition:

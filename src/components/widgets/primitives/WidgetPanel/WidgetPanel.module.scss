@@ -4,8 +4,6 @@
   font-family: $font-widget;
   color: $color-text-primary;
   padding: $widget-padding;
-  background: var(--widget-bg-color, $color-bg-widget);
-  border-radius: $widget-border-radius;
   box-sizing: border-box;
   width: 100%;
   height: 100%;
