@@ -50,7 +50,7 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 145,
     scale: 1,
     opacity: 0.9,
-    backgroundColor: '#000000',
+    backgroundColor: '#1a1a1a',
     hotkey: 'F10',
     customSettings: {
       speed: {
@@ -73,7 +73,7 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 260,
     scale: 1,
     opacity: 0.9,
-    backgroundColor: '#000000',
+    backgroundColor: '#1a1a1a',
     hotkey: 'F11',
   },
   {
@@ -86,7 +86,7 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 600,
     scale: 1,
     opacity: 0.8,
-    backgroundColor: '#000000',
+    backgroundColor: '#1a1a1a',
     hotkey: 'F8',
   },
 ];

@@ -10,10 +10,20 @@ import { InputTraceWidget } from '../../components/widgets/InputTraceWidget';
 import { WidgetWrapper } from '../../components/widgets/WidgetWrapper';
 import styles from './WidgetPage.module.scss';
 
-const WIDGET_MAP: Record<string, React.ComponentType> = {
-  example: ExampleWidget,
-  speed: SpeedWidget,
-  'input-trace': InputTraceWidget,
+interface WidgetEntry {
+  component: React.ComponentType;
+  designWidth: number;
+  designHeight: number;
+}
+
+const WIDGET_MAP: Record<string, WidgetEntry> = {
+  example: { component: ExampleWidget, designWidth: 400, designHeight: 600 },
+  speed: { component: SpeedWidget, designWidth: 400, designHeight: 145 },
+  'input-trace': {
+    component: InputTraceWidget,
+    designWidth: 260,
+    designHeight: 260,
+  },
 };
 
 export const WidgetPage = () => {
@@ -44,17 +54,23 @@ export const WidgetPage = () => {
     };
   }, []);
 
-  const WidgetComponent = id ? WIDGET_MAP[id] : null;
+  const widgetEntry = id ? WIDGET_MAP[id] : null;
 
   if (!ready) return null;
 
-  if (!WidgetComponent || !id) {
+  if (!widgetEntry || !id) {
     return <pre className={styles.widgetPage}>Unknown widget: {id}</pre>;
   }
 
+  const { component: WidgetComponent, designWidth, designHeight } = widgetEntry;
+
   return (
     <section className={styles.widgetPage}>
-      <WidgetWrapper widgetId={id}>
+      <WidgetWrapper
+        widgetId={id}
+        designWidth={designWidth}
+        designHeight={designHeight}
+      >
         <WidgetComponent />
       </WidgetWrapper>
     </section>

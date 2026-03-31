@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   InputNumber,
-  Slider,
   Typography,
   Card,
   Row,
@@ -98,38 +97,10 @@ export const WidgetSettings = observer(
           </Row>
 
           <Flex vertical>
-            <Text>Scale: {widget.scale.toFixed(1)}</Text>
-
-            <Slider
-              min={0.5}
-              max={3}
-              step={0.1}
-              value={widget.scale}
-              onChange={(v) =>
-                widgetSettingsStore.updateField(widgetId, 'scale', v)
-              }
-            />
-          </Flex>
-
-          <Flex vertical>
-            <Text>Opacity: {Math.round((widget.opacity ?? 0.8) * 100)}%</Text>
-
-            <Slider
-              min={0.1}
-              max={1}
-              step={0.05}
-              value={widget.opacity ?? 0.8}
-              onChange={(v) =>
-                widgetSettingsStore.updateField(widgetId, 'opacity', v)
-              }
-            />
-          </Flex>
-
-          <Flex vertical>
             <Text>Background Color</Text>
 
             <ColorPicker
-              value={widget.backgroundColor ?? '#000000'}
+              value={widget.backgroundColor ?? '#1a1a1a'}
               onChange={(color) =>
                 widgetSettingsStore.updateField(
                   widgetId,
