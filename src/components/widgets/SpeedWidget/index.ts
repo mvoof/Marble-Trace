@@ -1,1 +1,1 @@
-export * from './SpeedWidgetAlt';
+export * from './SpeedWidget';

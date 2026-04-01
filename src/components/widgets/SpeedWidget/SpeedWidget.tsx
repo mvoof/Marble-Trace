@@ -6,7 +6,7 @@ import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { useUnits } from '../../../hooks/useUnits';
 import { formatGear } from '../../../utils/telemetry-format';
 import { WidgetPanel } from '../primitives/WidgetPanel';
-import styles from './SpeedWidgetAlt.module.scss';
+import styles from './SpeedWidget.module.scss';
 
 const CIRCLE_R = 90;
 const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_R;
@@ -21,7 +21,7 @@ function getShiftZoneColor(
   return colors.low;
 }
 
-export const SpeedWidgetAlt = observer(() => {
+export const SpeedWidget = observer(() => {
   const { frame, driverInfo } = telemetryStore;
   const { formatSpeed, speedUnit } = useUnits();
   const settings = widgetSettingsStore.getSpeedSettings();

@@ -6,7 +6,7 @@ import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { unitsStore } from '../../store/units.store';
 import { ExampleWidget } from '../../components/widgets/ExampleWidget';
-import { SpeedWidgetAlt } from '../../components/widgets/SpeedWidget';
+import { SpeedWidget } from '../../components/widgets/SpeedWidget';
 import { InputTraceWidget } from '../../components/widgets/InputTraceWidget';
 import { WidgetWrapper } from '../../components/widgets/WidgetWrapper';
 import styles from './WidgetPage.module.scss';
@@ -38,7 +38,7 @@ const WIDGET_MAP: Record<string, WidgetEntry> = {
     defaultVariant: 'default',
     variants: {
       default: {
-        component: SpeedWidgetAlt,
+        component: SpeedWidget,
         designWidth: 900,
         designHeight: 280,
       },
