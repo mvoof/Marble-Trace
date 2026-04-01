@@ -22,9 +22,10 @@
 
 .track {
   display: block;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: $bar-border-radius;
   overflow: hidden;
+  position: relative;
 }
 
 .height-sm {
@@ -42,8 +43,11 @@
 .fill {
   display: block;
   height: 100%;
-  background: $color-text-accent;
+  background-color: $color-text-accent;
   border-radius: $bar-border-radius;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .animated {

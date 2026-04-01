@@ -41,8 +41,6 @@ export interface WidgetConfig {
   y: number;
   width: number;
   height: number;
-  scale: number;
-  opacity: number;
   backgroundColor: string;
   hotkey: string;
   customSettings?: WidgetCustomSettings;
@@ -63,8 +61,6 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 100,
     width: 400,
     height: 145,
-    scale: 1,
-    opacity: 0.9,
     backgroundColor: '#1a1a1a',
     hotkey: 'F10',
     customSettings: {
@@ -87,8 +83,6 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 300,
     width: 260,
     height: 260,
-    scale: 1,
-    opacity: 0.9,
     backgroundColor: '#1a1a1a',
     hotkey: 'F11',
     customSettings: {
@@ -111,8 +105,6 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 100,
     width: 400,
     height: 600,
-    scale: 1,
-    opacity: 0.8,
     backgroundColor: '#1a1a1a',
     hotkey: 'F8',
   },

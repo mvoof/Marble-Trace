@@ -14,7 +14,7 @@ export const InputTraceWidget = observer(() => {
 
   const throttle = frame?.throttle ?? 0;
   const brake = frame?.brake ?? 0;
-  const clutch = frame?.clutch != null ? 1 - frame.clutch : 0;
+  const clutch = frame?.clutch ?? 0;
 
   const channels: CanvasTraceChannel[] = [];
 
@@ -38,7 +38,7 @@ export const InputTraceWidget = observer(() => {
       {isVertical ? (
         <>
           <span className={styles.chartArea}>
-            <CanvasTrace channels={channels} lineWidth={2.5} />
+            <CanvasTrace channels={channels} lineWidth={3.5} />
           </span>
 
           {showBars && (
@@ -115,7 +115,7 @@ export const InputTraceWidget = observer(() => {
           )}
 
           <span className={styles.chartArea}>
-            <CanvasTrace channels={channels} lineWidth={2.5} />
+            <CanvasTrace channels={channels} lineWidth={3.5} />
           </span>
         </>
       )}

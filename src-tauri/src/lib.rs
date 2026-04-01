@@ -1,11 +1,13 @@
 mod iracing_telemetry;
 mod telemetry_frame;
 
-use iracing_telemetry::{start_telemetry_stream, stop_telemetry_stream, TelemetryState};
+use iracing_telemetry::{
+    get_last_driver_info, start_telemetry_stream, stop_telemetry_stream, TelemetryState,
+};
 use specta::TypeCollection;
 use specta_typescript::Typescript;
 use std::sync::atomic::AtomicBool;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use tauri::{generate_context, generate_handler, Builder, Manager, WindowEvent};
 use telemetry_frame::TelemetryFrame;
 use tracing_subscriber::EnvFilter;
@@ -38,10 +40,12 @@ pub fn run() {
     builder
         .invoke_handler(generate_handler![
             start_telemetry_stream,
-            stop_telemetry_stream
+            stop_telemetry_stream,
+            get_last_driver_info
         ])
         .manage(TelemetryState {
             running: Arc::new(AtomicBool::new(false)),
+            last_driver_info: Arc::new(Mutex::new(None)),
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {

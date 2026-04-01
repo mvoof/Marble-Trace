@@ -5,6 +5,17 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import type { TelemetryFrame } from '../types/bindings';
 import { debug } from '../utils/debug';
 
+export interface DriverInfo {
+  DriverCarRedLine: number | null;
+  DriverCarIdleRPM: number | null;
+  DriverCarSLFirstRPM: number | null;
+  DriverCarSLShiftRPM: number | null;
+  DriverCarSLLastRPM: number | null;
+  DriverCarSLBlinkRPM: number | null;
+  DriverCarFuelMaxLtr: number | null;
+  DriverCarGearNumForward: number | null;
+}
+
 export type TelemetryStatus =
   | 'waiting'
   | 'connected'
@@ -13,6 +24,7 @@ export type TelemetryStatus =
 
 class TelemetryStore {
   frame: TelemetryFrame | null = null;
+  driverInfo: DriverInfo | null = null;
   isConnected = false;
   status: TelemetryStatus = 'waiting';
   error: string | null = null;
@@ -70,9 +82,26 @@ class TelemetryStore {
       })
     );
 
+    this.unlistens.push(
+      await listen<DriverInfo>('session-driver-info-event', (event) => {
+        if (this.initId === currentId) {
+          debug.telemetry('driver info received: %o', event.payload);
+          this.updateDriverInfo(event.payload);
+        }
+      })
+    );
+
     debug.telemetry('starting stream...');
 
     try {
+      // Fetch initial driver info if available
+      const initialInfo = await invoke<DriverInfo | null>(
+        'get_last_driver_info'
+      );
+      if (initialInfo && this.initId === currentId) {
+        this.updateDriverInfo(initialInfo);
+      }
+
       await invoke('start_telemetry_stream');
 
       if (this.initId === currentId) {
@@ -125,10 +154,33 @@ class TelemetryStore {
         this.setStatus(event.payload as TelemetryStatus);
       })
     );
+
+    this.unlistens.push(
+      await listen<DriverInfo>('session-driver-info-event', (event) => {
+        debug.telemetry('[widget] driver info: %o', event.payload);
+        this.updateDriverInfo(event.payload);
+      })
+    );
+
+    // Fetch initial driver info if available
+    try {
+      const initialInfo = await invoke<DriverInfo | null>(
+        'get_last_driver_info'
+      );
+      if (initialInfo) {
+        this.updateDriverInfo(initialInfo);
+      }
+    } catch (err) {
+      debug.telemetry('Failed to fetch initial driver info: %o', err);
+    }
   }
 
   stopWidgetListener() {
     this.disposeListeners();
+  }
+
+  updateDriverInfo(info: DriverInfo) {
+    this.driverInfo = info;
   }
 
   updateFrame(frame: TelemetryFrame) {
@@ -164,6 +216,7 @@ class TelemetryStore {
     this.isConnected = false;
     this.status = 'disconnected';
     this.frame = null;
+    this.driverInfo = null;
   }
 
   private disposeListeners() {

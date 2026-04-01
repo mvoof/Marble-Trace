@@ -16,6 +16,7 @@ interface RpmBarProps {
   rpm: number;
   maxRpm?: number;
   shiftRpm?: number;
+  shiftIndicatorPct?: number;
   colors: RpmColors;
   colorTheme?: RpmColorTheme;
 }
@@ -64,14 +65,18 @@ export const RpmBar = ({
   rpm,
   maxRpm = 10000,
   shiftRpm,
+  shiftIndicatorPct,
   colors,
   colorTheme = 'custom',
 }: RpmBarProps) => {
-  const activeLimit = Math.floor((rpm / maxRpm) * SEGMENT_COUNT);
-  const shiftPct = shiftRpm ? (shiftRpm / maxRpm) * 100 : 85;
-  const isRedline = shiftRpm ? rpm >= shiftRpm * 0.97 : rpm >= maxRpm * 0.94;
+  const scaleMax = shiftRpm ?? maxRpm;
+  const fillPct = Math.min(rpm / scaleMax, 1);
+  const activeLimit = Math.floor(fillPct * SEGMENT_COUNT);
+  const shiftPct = 85;
+  const isRedline =
+    shiftIndicatorPct != null ? shiftIndicatorPct >= 0.97 : fillPct >= 0.97;
 
-  const labels = useMemo(() => generateLabels(maxRpm), [maxRpm]);
+  const labels = useMemo(() => generateLabels(scaleMax), [scaleMax]);
 
   const segments = useMemo(() => {
     return Array.from({ length: SEGMENT_COUNT }, (_, i) => {
@@ -89,23 +94,25 @@ export const RpmBar = ({
 
   const labelStyles = useMemo(() => {
     return labels.map(({ value }) => {
-      if (value < rpm - 350) {
-        return {
-          color: 'rgba(255, 255, 255, 0.02)',
-          transform: 'scale(0.85)',
-        };
+      const diff = Math.abs(rpm - value);
+      const isNearMax = Math.abs(scaleMax - value) < 500;
+      const isCurrentRange = diff < 1500;
+
+      // Only show numbers near current RPM or at the very end of the scale
+      if (!isNearMax && !isCurrentRange) {
+        return { opacity: 0, transform: 'scale(0.5)' };
       }
 
-      const diff = Math.abs(rpm - value);
       const proximity = Math.max(0, 1 - diff / 1500);
-      const baseOp = rpm > value ? 0.02 : 0.15;
+      const baseOp = rpm > value ? 0.05 : 0.2;
 
       return {
-        color: `rgba(255, 255, 255, ${baseOp + proximity * 0.85})`,
-        transform: `scale(${1 + proximity * 0.15})`,
+        color: `rgba(255, 255, 255, ${baseOp + proximity * 0.8})`,
+        transform: `scale(${1 + proximity * 0.2})`,
+        opacity: 1,
       };
     });
-  }, [rpm, labels]);
+  }, [rpm, labels, scaleMax]);
 
   return (
     <span className={styles.wrapper}>
@@ -126,8 +133,12 @@ export const RpmBar = ({
           const isActive = i < activeLimit;
           const dist = isActive ? activeLimit - 1 - i : 0;
           const isLeading = isActive && dist === 0;
-          const segmentRatio = i / SEGMENT_COUNT;
-          const tailOpacity = Math.pow(segmentRatio, 2);
+
+          // Tail opacity: more aggressive falloff (shorter tail)
+          // Also apply a general gradient based on position to make the start more transparent
+          const posRatio = i / SEGMENT_COUNT;
+          const posFade = 0.2 + posRatio * 0.8; // Start at 20% opacity, end at 100%
+          const tailFade = Math.pow(0.85, dist); // Exponential falloff for the tail
 
           return (
             <span
@@ -139,10 +150,12 @@ export const RpmBar = ({
                       backgroundColor: seg.color,
                       opacity: isLeading
                         ? 1
-                        : Math.max(0.05, (1 - dist * 0.15) * tailOpacity),
-                      boxShadow: isLeading ? `0 0 10px ${seg.color}` : 'none',
+                        : Math.max(0.02, tailFade * posFade),
+                      boxShadow: isLeading ? `0 0 12px ${seg.color}` : 'none',
                     }
-                  : undefined
+                  : {
+                      opacity: 0.05 * posFade,
+                    }
               }
             />
           );

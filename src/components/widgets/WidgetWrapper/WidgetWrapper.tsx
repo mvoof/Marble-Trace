@@ -9,6 +9,7 @@ import { observer } from 'mobx-react-lite';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { appSettingsStore } from '../../../store/app-settings.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { telemetryStore } from '../../../store/telemetry.store';
 import styles from './WidgetWrapper.module.scss';
 
 interface WidgetWrapperProps {
@@ -38,22 +39,25 @@ export const WidgetWrapper = observer(
     }, [dragMode]);
 
     useEffect(() => {
-      if (fillMode) return;
-
       const el = wrapperRef.current;
       if (!el) return;
 
-      const observer = new ResizeObserver((entries) => {
-        const entry = entries[0];
-        if (!entry) return;
+      const updateScale = () => {
+        const { width, height } = el.getBoundingClientRect();
 
-        const { width, height } = entry.contentRect;
+        // Calculate scale to fit while preserving aspect ratio
         const scaleX = width / designWidth;
         const scaleY = height / designHeight;
-        setScale(Math.min(scaleX, scaleY));
-      });
+        const newScale = Math.min(scaleX, scaleY);
 
+        setScale(newScale);
+      };
+
+      const observer = new ResizeObserver(updateScale);
       observer.observe(el);
+
+      // Initial update
+      updateScale();
 
       return () => observer.disconnect();
     }, [designWidth, designHeight, fillMode]);
@@ -68,6 +72,13 @@ export const WidgetWrapper = observer(
     );
 
     const backgroundColor = widget?.backgroundColor ?? '#1a1a1a';
+    const isConnected = telemetryStore.status === 'connected';
+    const shouldHide =
+      appSettingsStore.hideWidgetsWhenGameClosed && !isConnected && !dragMode;
+
+    if (shouldHide) {
+      return null;
+    }
 
     return (
       // eslint-disable-next-line jsx-a11y/no-static-element-interactions
@@ -93,7 +104,7 @@ export const WidgetWrapper = observer(
           className={styles.content}
           style={
             fillMode
-              ? undefined
+              ? { width: '100%', height: '100%' }
               : {
                   width: designWidth,
                   height: designHeight,

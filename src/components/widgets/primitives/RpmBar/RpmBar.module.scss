@@ -58,6 +58,16 @@
   // active state applied via inline styles
 }
 
+.blinking {
+  animation: rpm-blink 0.15s steps(2, start) infinite;
+}
+
+@keyframes rpm-blink {
+  to {
+    opacity: 0;
+  }
+}
+
 .redline {
   animation: alert-flash 0.05s infinite;
 }

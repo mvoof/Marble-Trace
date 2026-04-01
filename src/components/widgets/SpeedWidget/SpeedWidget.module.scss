@@ -48,7 +48,9 @@
   }
 
   .subVal {
-    font-size: $font-size-md;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: $color-text-muted;
   }
 }
 

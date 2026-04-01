@@ -86,16 +86,4 @@ pub struct TelemetryFrame {
     pub shift_indicator_pct: Option<f32>,
     #[field_name = "ShiftGrindRPM"]
     pub shift_grind_rpm: Option<f32>,
-    #[field_name = "DriverCarSLFirstRPM"]
-    pub driver_car_sl_first_rpm: Option<f32>,
-    #[field_name = "DriverCarSLShiftRPM"]
-    pub driver_car_sl_shift_rpm: Option<f32>,
-    #[field_name = "DriverCarSLLastRPM"]
-    pub driver_car_sl_last_rpm: Option<f32>,
-    #[field_name = "DriverCarSLBlinkRPM"]
-    pub driver_car_sl_blink_rpm: Option<f32>,
-    #[field_name = "DriverCarRedLine"]
-    pub driver_car_red_line: Option<f32>,
-    #[field_name = "DriverCarIdleRPM"]
-    pub driver_car_idle_rpm: Option<f32>,
 }

@@ -19,8 +19,10 @@ export const SpeedWidget = observer(() => {
   const gear = frame?.gear ?? 0;
   const gearDisplay = formatGear(gear);
 
-  const maxRpm = frame?.driver_car_red_line ?? 10000;
-  const shiftRpm = frame?.driver_car_sl_shift_rpm ?? undefined;
+  const { driverInfo } = telemetryStore;
+  const maxRpm = driverInfo?.DriverCarRedLine ?? 10000;
+  const shiftRpm = driverInfo?.DriverCarSLBlinkRPM ?? undefined;
+  const shiftIndicatorPct = frame?.shift_indicator_pct ?? undefined;
 
   const isGearFocused = settings.focusMode === 'gear';
 
@@ -37,6 +39,7 @@ export const SpeedWidget = observer(() => {
         rpm={rpm}
         maxRpm={maxRpm}
         shiftRpm={shiftRpm}
+        shiftIndicatorPct={shiftIndicatorPct}
         colors={rpmColors}
         colorTheme={settings.rpmColorTheme}
       />

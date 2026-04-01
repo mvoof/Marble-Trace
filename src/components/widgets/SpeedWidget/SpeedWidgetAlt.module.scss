@@ -60,7 +60,7 @@
 
 .circleProgress {
   fill: none;
-  stroke-width: 8;
+  stroke-width: 11;
   stroke-linecap: round;
   stroke-dasharray: 565.48;
   stroke-dashoffset: 565.48;
@@ -73,27 +73,31 @@
   font-size: 9rem;
   font-weight: 700;
   margin-top: -5px;
-  transition: color 0.2s;
   line-height: 1;
+  color: #fff;
+}
+
+.centerLabel {
+  position: absolute;
+  bottom: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 @keyframes limit-blink {
-  0% {
+  0%,
+  49.9% {
     opacity: 1;
-    transform: scale(1);
   }
-
-  50% {
-    opacity: 0.2;
-    transform: scale(1.05);
-  }
-
+  50%,
   100% {
-    opacity: 1;
-    transform: scale(1);
+    opacity: 0;
   }
 }
 
 .blinkAlert {
-  animation: limit-blink 0.1s infinite;
+  animation: limit-blink 0.12s infinite !important;
+  transition: none !important;
 }
