@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { reaction } from 'mobx';
 import { Layout, Typography, theme, Menu } from 'antd';
 import { ConfigProvider } from 'antd';
-import { LayoutGrid, Settings } from 'lucide-react';
+import { LayoutGrid, Settings, Bug } from 'lucide-react';
 import { useTelemetry } from '../../hooks/useTelemetry';
-import { telemetryStore } from '../../store/telemetry.store';
+import { telemetryConnection } from '../../store/iracing';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { windowManagerStore } from '../../store/window-manager.store';
 import { appSettingsStore } from '../../store/app-settings.store';
@@ -12,17 +12,19 @@ import { unitsStore } from '../../store/units.store';
 import { ConnectionStatus } from './components/ConnectionStatus';
 import { WidgetsPage } from './components/WidgetsPage';
 import { SettingsPage } from './components/SettingsPage';
+import { TelemetryDebugPage } from './components/TelemetryDebugPage';
 import styles from './MainWindow.module.scss';
 import Logo from '../../assets/logo.svg?react';
 
 const { Content, Header } = Layout;
 const { Title } = Typography;
 
-type PageKey = 'widgets' | 'settings';
+type PageKey = 'widgets' | 'settings' | 'telemetry-debug';
 
 const MENU_ITEMS = [
   { key: 'widgets', icon: <LayoutGrid size={16} />, label: 'Widgets' },
   { key: 'settings', icon: <Settings size={16} />, label: 'Settings' },
+  { key: 'telemetry-debug', icon: <Bug size={16} />, label: 'Debug Data' },
 ];
 
 export const MainWindow = () => {
@@ -41,7 +43,7 @@ export const MainWindow = () => {
 
     const disposeAutoHide = reaction(
       () => ({
-        status: telemetryStore.status,
+        status: telemetryConnection.status,
         hide: appSettingsStore.hideWidgetsWhenGameClosed,
       }),
       ({ status, hide }) => {
@@ -89,6 +91,7 @@ export const MainWindow = () => {
           <Content className={styles.content}>
             {activePage === 'widgets' && <WidgetsPage />}
             {activePage === 'settings' && <SettingsPage />}
+            {activePage === 'telemetry-debug' && <TelemetryDebugPage />}
           </Content>
         </Layout>
       </Layout>

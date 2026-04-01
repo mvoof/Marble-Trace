@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/telemetry.store';
+import { carDynamicsStore, sessionStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { useUnits } from '../../../hooks/useUnits';
 import { formatGear } from '../../../utils/telemetry-format';
@@ -22,7 +22,8 @@ function getShiftZoneColor(
 }
 
 export const SpeedWidget = observer(() => {
-  const { frame, driverInfo } = telemetryStore;
+  const frame = carDynamicsStore.frame;
+  const driverInfo = sessionStore.driverInfo;
   const { formatSpeed, speedUnit } = useUnits();
   const settings = widgetSettingsStore.getSpeedSettings();
 
@@ -42,7 +43,9 @@ export const SpeedWidget = observer(() => {
 
   // Anchor for 100% RPM fill. Start with session info, but refine with shift_indicator_pct.
   const initialMax =
-    driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
+    driverInfo?.driver_car_sl_shift_rpm ||
+    driverInfo?.driver_car_red_line ||
+    10000;
   const maxShiftRpmRef = useRef(initialMax);
   const hasRefinedRef = useRef(false);
   const lastDriverInfoRef = useRef(driverInfo);

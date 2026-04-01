@@ -2719,6 +2719,7 @@ dependencies = [
  "pitwall-derive",
  "serde",
  "serde_yaml_ng",
+ "specta",
  "thiserror 2.0.18",
  "tokio",
  "tokio-stream",

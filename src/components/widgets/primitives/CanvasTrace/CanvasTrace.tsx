@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { reaction } from 'mobx';
 
-import { telemetryStore } from '../../../../store/telemetry.store';
+import { carInputsStore } from '../../../../store/iracing';
 import styles from './CanvasTrace.module.scss';
 
 export interface CanvasTraceChannel {
@@ -119,7 +119,7 @@ export const CanvasTrace = ({
     resizeObserver.observe(canvas.parentElement ?? canvas);
 
     const disposeReaction = reaction(
-      () => telemetryStore.frame,
+      () => carInputsStore.frame,
       () => {
         const currentChannels = channelsRef.current;
         const sample = currentChannels.map((ch) => ch.value);

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { appSettingsStore } from '../../../store/app-settings.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { telemetryStore } from '../../../store/telemetry.store';
+import { telemetryConnection } from '../../../store/iracing';
 import styles from './WidgetWrapper.module.scss';
 
 interface WidgetWrapperProps {
@@ -56,7 +56,7 @@ export const WidgetWrapper = observer(
     );
 
     const backgroundColor = widget?.backgroundColor ?? '#1a1a1a';
-    const isConnected = telemetryStore.status === 'connected';
+    const isConnected = telemetryConnection.status === 'connected';
     const shouldHide =
       appSettingsStore.hideWidgetsWhenGameClosed && !isConnected && !dragMode;
 

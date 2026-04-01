@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
-import { telemetryStore } from '../store/telemetry.store';
 
-export function useWidgetTelemetry() {
+import { telemetryConnection } from '../store/iracing';
+
+export const useWidgetTelemetry = () => {
   useEffect(() => {
-    telemetryStore.startWidgetListener();
+    telemetryConnection.startWidgetListener();
 
     return () => {
-      telemetryStore.stopWidgetListener();
+      telemetryConnection.stopWidgetListener();
     };
   }, []);
-}
+};

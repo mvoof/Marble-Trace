@@ -1,15 +1,16 @@
-mod iracing_telemetry;
-mod telemetry_frame;
+mod iracing;
 
-use iracing_telemetry::{
-    get_last_driver_info, start_telemetry_stream, stop_telemetry_stream, TelemetryState,
+use iracing::{
+    get_last_session_info, start_telemetry_stream, stop_telemetry_stream,
+    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, EnvironmentFrame,
+    LapTimingFrame, SessionFrame, TelemetryState,
 };
+use pitwall::SessionInfo;
 use specta::TypeCollection;
 use specta_typescript::Typescript;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
 use tauri::{generate_context, generate_handler, Builder, Manager, WindowEvent};
-use telemetry_frame::TelemetryFrame;
 use tracing_subscriber::EnvFilter;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -22,10 +23,17 @@ pub fn run() {
         .init();
 
     let mut types = TypeCollection::default();
-    let types = types.register::<TelemetryFrame>();
+    types
+        .register::<CarDynamicsFrame>()
+        .register::<CarInputsFrame>()
+        .register::<CarStatusFrame>()
+        .register::<LapTimingFrame>()
+        .register::<SessionFrame>()
+        .register::<EnvironmentFrame>()
+        .register::<SessionInfo>();
 
     Typescript::default()
-        .export_to("../src/types/bindings.ts", types)
+        .export_to("../src/types/bindings.ts", &types)
         .unwrap();
 
     let mut builder = Builder::default()
@@ -41,11 +49,11 @@ pub fn run() {
         .invoke_handler(generate_handler![
             start_telemetry_stream,
             stop_telemetry_stream,
-            get_last_driver_info
+            get_last_session_info
         ])
         .manage(TelemetryState {
             running: Arc::new(AtomicBool::new(false)),
-            last_driver_info: Arc::new(Mutex::new(None)),
+            last_session_info: Arc::new(Mutex::new(None)),
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {

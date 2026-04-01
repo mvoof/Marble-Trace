@@ -94,17 +94,6 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
       },
     },
   },
-  {
-    id: 'example',
-    label: 'Telemetry Debug',
-    enabled: false,
-    x: 100,
-    y: 100,
-    width: 400,
-    height: 600,
-    backgroundColor: '#1a1a1a',
-    hotkey: 'F8',
-  },
 ];
 
 class WidgetSettingsStore {

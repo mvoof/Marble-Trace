@@ -1,1 +1,0 @@
-export { ExampleWidget } from './ExampleWidget';

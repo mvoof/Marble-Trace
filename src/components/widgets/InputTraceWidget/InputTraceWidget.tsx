@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/telemetry.store';
+import { carInputsStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import { ProgressBar } from '../primitives/ProgressBar';
@@ -9,7 +9,7 @@ import type { CanvasTraceChannel } from '../primitives/CanvasTrace';
 import styles from './InputTraceWidget.module.scss';
 
 export const InputTraceWidget = observer(() => {
-  const { frame } = telemetryStore;
+  const frame = carInputsStore.frame;
   const settings = widgetSettingsStore.getInputTraceSettings();
 
   const throttle = frame?.throttle ?? 0;

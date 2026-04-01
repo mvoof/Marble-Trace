@@ -1,8 +1,10 @@
 import { observer } from 'mobx-react-lite';
 import { Badge, Typography } from 'antd';
 import type { PresetStatusColorType } from 'antd/es/_util/colors';
-import { telemetryStore } from '../../../../store/telemetry.store';
-import type { TelemetryStatus } from '../../../../store/telemetry.store';
+import {
+  telemetryConnection,
+  type TelemetryStatus,
+} from '../../../../store/iracing';
 
 const { Text } = Typography;
 
@@ -17,7 +19,7 @@ const STATUS_CONFIG: Record<
 };
 
 export const ConnectionStatus = observer(() => {
-  const { status } = telemetryStore;
+  const { status } = telemetryConnection;
   const config = STATUS_CONFIG[status];
 
   return <Badge status={config.badge} text={<Text>{config.text}</Text>} />;
