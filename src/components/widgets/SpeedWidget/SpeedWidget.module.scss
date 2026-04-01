@@ -15,8 +15,9 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  width: 280px;
-  height: 300px;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
   z-index: 1;
 }
 
@@ -45,10 +46,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 300px;
-  height: 300px;
+  flex: 0 0 auto;
+  height: 100%;
+  aspect-ratio: 1;
   z-index: 1;
-  flex-shrink: 0;
   overflow: visible;
   transition: transform 0.1s;
 }
@@ -89,7 +90,7 @@
 
 .centerLabel {
   position: absolute;
-  bottom: 12px;
+  bottom: 0.75rem;
   font-size: 1rem;
   font-weight: 700;
   text-transform: uppercase;

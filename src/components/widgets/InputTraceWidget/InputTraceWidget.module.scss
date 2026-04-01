@@ -1,9 +1,11 @@
+@use '../../../styles/variables' as *;
+
 // InputTraceWidget layout — visual styling handled by primitives
 
 .barsHorizontal {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: $space-md;
   width: 100%;
   flex-shrink: 0;
 }
@@ -11,7 +13,7 @@
 .barsVertical {
   display: flex;
   flex-direction: row;
-  gap: 8px;
+  gap: $space-md;
   flex-shrink: 0;
   height: 100%;
 }

@@ -21,28 +21,27 @@ $color-clutch: #3399ff;
 // Typography
 $font-mono: 'Courier New', Courier, monospace;
 $font-widget: 'Rajdhani', sans-serif;
-$font-size-widget: 13px;
+$font-size-widget: 0.8125rem;
 $line-height-widget: 1.4;
 
 // Typography scale
-$font-size-xs: 10px;
-$font-size-sm: 12px;
-$font-size-md: 14px;
-$font-size-lg: 20px;
-$font-size-xl: 32px;
-$font-size-2xl: 48px;
-$font-size-3xl: 64px;
+$font-size-xs: 0.625rem;
+$font-size-sm: 0.75rem;
+$font-size-md: 0.875rem;
+$font-size-lg: 1.25rem;
+$font-size-xl: 2rem;
+$font-size-2xl: 3rem;
+$font-size-3xl: 4rem;
 
 // Spacing
-$widget-padding: 12px 16px;
 $widget-border-radius: 4px;
 
 // Spacing scale
-$space-xs: 2px;
-$space-sm: 4px;
-$space-md: 8px;
-$space-lg: 12px;
-$space-xl: 16px;
+$space-xs: 0.125rem;
+$space-sm: 0.25rem;
+$space-md: 0.5rem;
+$space-lg: 0.75rem;
+$space-xl: 1rem;
 
 // Bar sizes
 $bar-height-sm: 8px;

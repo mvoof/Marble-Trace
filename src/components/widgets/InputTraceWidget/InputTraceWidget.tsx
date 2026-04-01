@@ -37,12 +37,12 @@ export const InputTraceWidget = observer(() => {
     <WidgetPanel minWidth={220} direction={isVertical ? 'row' : 'column'}>
       {isVertical ? (
         <>
-          <span className={styles.chartArea}>
+          <div className={styles.chartArea}>
             <CanvasTrace channels={channels} lineWidth={3.5} />
-          </span>
+          </div>
 
           {showBars && (
-            <span className={styles.barsVertical}>
+            <div className={styles.barsVertical}>
               {settings.showThrottle && (
                 <ProgressBar
                   label="THR"
@@ -75,13 +75,13 @@ export const InputTraceWidget = observer(() => {
                   vertical
                 />
               )}
-            </span>
+            </div>
           )}
         </>
       ) : (
         <>
           {showBars && (
-            <span className={styles.barsHorizontal}>
+            <div className={styles.barsHorizontal}>
               {settings.showThrottle && (
                 <ProgressBar
                   label="THR"
@@ -111,12 +111,12 @@ export const InputTraceWidget = observer(() => {
                   height="lg"
                 />
               )}
-            </span>
+            </div>
           )}
 
-          <span className={styles.chartArea}>
+          <div className={styles.chartArea}>
             <CanvasTrace channels={channels} lineWidth={3.5} />
-          </span>
+          </div>
         </>
       )}
     </WidgetPanel>

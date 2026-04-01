@@ -36,29 +36,29 @@ export const ProgressBar = ({
 
   if (vertical) {
     return (
-      <span className={styles.verticalContainer}>
-        <span
+      <div className={styles.verticalContainer}>
+        <div
           className={`${styles.verticalTrack} ${styles[`width-${height}`]}`}
           style={backgroundColor ? { background: backgroundColor } : undefined}
         >
-          <span
+          <div
             className={`${styles.verticalFill} ${transition ? styles.verticalAnimated : ''}`}
             style={{
               height: `${clamped * 100}%`,
               ...(fillColor ? { background: fillColor } : {}),
             }}
           />
-        </span>
+        </div>
 
         {label && <span className={styles.verticalLabel}>{label}</span>}
-      </span>
+      </div>
     );
   }
 
   return (
-    <span className={styles.container}>
+    <div className={styles.container}>
       {(label || showValue) && (
-        <span className={styles.labelRow}>
+        <div className={styles.labelRow}>
           {label && <span className={styles.label}>{label}</span>}
 
           {showValue && (
@@ -66,21 +66,21 @@ export const ProgressBar = ({
               {Math.round(clamped * 100)}%
             </span>
           )}
-        </span>
+        </div>
       )}
 
-      <span
+      <div
         className={`${styles.track} ${styles[`height-${height}`]}`}
         style={backgroundColor ? { background: backgroundColor } : undefined}
       >
-        <span
+        <div
           className={`${styles.fill} ${transition ? styles.animated : ''}`}
           style={{
             width: `${clamped * 100}%`,
             ...(fillColor ? { background: fillColor } : {}),
           }}
         />
-      </span>
-    </span>
+      </div>
+    </div>
   );
 };

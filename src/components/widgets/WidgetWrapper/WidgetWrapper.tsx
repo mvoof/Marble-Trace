@@ -87,7 +87,7 @@ export const WidgetWrapper = observer(
         className={`${styles.wrapper} ${dragMode ? styles.dragging : ''}`}
         onMouseDown={handleMouseDown}
       >
-        <span
+        <div
           className={styles.bgGradient}
           style={{
             background: `radial-gradient(circle, ${backgroundColor} 0%, #0a0a0a 100%)`,
@@ -100,7 +100,7 @@ export const WidgetWrapper = observer(
           </section>
         )}
 
-        <span
+        <div
           className={styles.content}
           style={
             fillMode
@@ -114,7 +114,7 @@ export const WidgetWrapper = observer(
           }
         >
           {children}
-        </span>
+        </div>
       </section>
     );
   }

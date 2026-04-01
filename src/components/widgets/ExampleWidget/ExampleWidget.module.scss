@@ -5,7 +5,7 @@
   font-size: $font-size-widget;
   color: $color-text-primary;
   background: var(--widget-bg-color, $color-bg-widget);
-  padding: $widget-padding;
+  padding: $space-lg $space-xl;
   margin: 0;
   border-radius: $widget-border-radius;
   white-space: pre;

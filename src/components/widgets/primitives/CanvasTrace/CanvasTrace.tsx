@@ -147,8 +147,8 @@ export const CanvasTrace = ({
   }, [bufferSize, height, fillContainer, draw]);
 
   return (
-    <span className={styles.container}>
+    <div className={styles.container}>
       <canvas ref={canvasRef} className={styles.canvas} />
-    </span>
+    </div>
   );
 };

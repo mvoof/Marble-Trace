@@ -81,14 +81,14 @@ export const SpeedWidget = observer(() => {
       gap={32}
       className={styles.altPanel}
     >
-      <span className={styles.statBlock}>
-        <span className={styles.value}>{rpm}</span>
+      <div className={styles.statBlock}>
+        <div className={styles.value}>{rpm}</div>
         <span className={styles.label} style={{ color: rpmColors.limit }}>
           RPM
         </span>
-      </span>
+      </div>
 
-      <span className={styles.gearContainer}>
+      <div className={styles.gearContainer}>
         <svg className={styles.gearSvg} viewBox="0 0 300 300">
           <circle className={styles.circleBg} cx="150" cy="150" r={CIRCLE_R} />
 
@@ -108,18 +108,18 @@ export const SpeedWidget = observer(() => {
           />
         </svg>
 
-        <span className={styles.gearValue}>{centerValue}</span>
-      </span>
+        <div className={styles.gearValue}>{centerValue}</div>
+      </div>
 
-      <span className={styles.statBlock}>
-        <span className={styles.value}>
+      <div className={styles.statBlock}>
+        <div className={styles.value}>
           {isGearFocused ? speed : gearDisplay}
-        </span>
+        </div>
 
         <span className={styles.label} style={{ color: rpmColors.limit }}>
           {isGearFocused ? speedUnit : 'GEAR'}
         </span>
-      </span>
+      </div>
     </WidgetPanel>
   );
 });
