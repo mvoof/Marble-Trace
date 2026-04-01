@@ -12,6 +12,7 @@ interface ProgressBarProps {
   gradient?: boolean;
   transition?: boolean;
   vertical?: boolean;
+  rounded?: boolean;
 }
 
 function gradientColor(value: number): string {
@@ -30,6 +31,7 @@ export const ProgressBar = ({
   gradient = false,
   transition = true,
   vertical = false,
+  rounded = true,
 }: ProgressBarProps) => {
   const clamped = Math.max(0, Math.min(1, value));
   const fillColor = gradient ? gradientColor(clamped) : color;
@@ -38,11 +40,11 @@ export const ProgressBar = ({
     return (
       <div className={styles.verticalContainer}>
         <div
-          className={`${styles.verticalTrack} ${styles[`width-${height}`]}`}
+          className={`${styles.verticalTrack} ${styles[`width-${height}`]}${!rounded ? ` ${styles.noRadius}` : ''}`}
           style={backgroundColor ? { background: backgroundColor } : undefined}
         >
           <div
-            className={`${styles.verticalFill} ${transition ? styles.verticalAnimated : ''}`}
+            className={`${styles.verticalFill} ${transition ? styles.verticalAnimated : ''}${!rounded ? ` ${styles.noRadius}` : ''}`}
             style={{
               height: `${clamped * 100}%`,
               ...(fillColor ? { background: fillColor } : {}),
@@ -70,11 +72,11 @@ export const ProgressBar = ({
       )}
 
       <div
-        className={`${styles.track} ${styles[`height-${height}`]}`}
+        className={`${styles.track} ${styles[`height-${height}`]}${!rounded ? ` ${styles.noRadius}` : ''}`}
         style={backgroundColor ? { background: backgroundColor } : undefined}
       >
         <div
-          className={`${styles.fill} ${transition ? styles.animated : ''}`}
+          className={`${styles.fill} ${transition ? styles.animated : ''}${!rounded ? ` ${styles.noRadius}` : ''}`}
           style={{
             width: `${clamped * 100}%`,
             ...(fillColor ? { background: fillColor } : {}),

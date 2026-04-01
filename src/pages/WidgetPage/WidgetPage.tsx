@@ -15,7 +15,6 @@ interface WidgetVariant {
   component: React.ComponentType;
   designWidth: number;
   designHeight: number;
-  fillMode?: boolean;
 }
 
 interface WidgetEntry {
@@ -39,22 +38,35 @@ const WIDGET_MAP: Record<string, WidgetEntry> = {
     variants: {
       default: {
         component: SpeedWidget,
-        designWidth: 1000,
-        designHeight: 340,
+        designWidth: 290,
+        designHeight: 80,
       },
     },
   },
   'input-trace': {
-    defaultVariant: 'default',
+    defaultVariant: 'horizontal',
     variants: {
-      default: {
+      horizontal: {
         component: InputTraceWidget,
-        designWidth: 260,
-        designHeight: 260,
-        fillMode: true,
+        designWidth: 400,
+        designHeight: 220,
+      },
+      vertical: {
+        component: InputTraceWidget,
+        designWidth: 400,
+        designHeight: 110,
       },
     },
   },
+};
+
+const getWidgetVariant = (id: string, entry: WidgetEntry): string => {
+  if (id === 'input-trace') {
+    const settings = widgetSettingsStore.getInputTraceSettings();
+    return settings.barMode === 'vertical' ? 'vertical' : 'horizontal';
+  }
+
+  return entry.defaultVariant;
 };
 
 export const WidgetPage = observer(() => {
@@ -93,16 +105,11 @@ export const WidgetPage = observer(() => {
     return <pre className={styles.widgetPage}>Unknown widget: {id}</pre>;
   }
 
-  const variantKey = widgetEntry.defaultVariant;
+  const variantKey = getWidgetVariant(id, widgetEntry);
   const variant =
     widgetEntry.variants[variantKey] ??
     widgetEntry.variants[widgetEntry.defaultVariant];
-  const {
-    component: WidgetComponent,
-    designWidth,
-    designHeight,
-    fillMode,
-  } = variant;
+  const { component: WidgetComponent, designWidth, designHeight } = variant;
 
   return (
     <section className={styles.widgetPage}>
@@ -110,7 +117,6 @@ export const WidgetPage = observer(() => {
         widgetId={id}
         designWidth={designWidth}
         designHeight={designHeight}
-        fillMode={fillMode}
       >
         <WidgetComponent />
       </WidgetWrapper>

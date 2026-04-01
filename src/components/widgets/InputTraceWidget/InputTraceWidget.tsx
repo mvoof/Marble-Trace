@@ -34,7 +34,11 @@ export const InputTraceWidget = observer(() => {
   const isVertical = settings.barMode === 'vertical';
 
   return (
-    <WidgetPanel minWidth={220} direction={isVertical ? 'row' : 'column'}>
+    <WidgetPanel
+      minWidth={400}
+      direction={isVertical ? 'row' : 'column'}
+      gap={8}
+    >
       {isVertical ? (
         <>
           <div className={styles.chartArea}>
@@ -43,36 +47,33 @@ export const InputTraceWidget = observer(() => {
 
           {showBars && (
             <div className={styles.barsVertical}>
-              {settings.showThrottle && (
+              {settings.showClutch && (
                 <ProgressBar
-                  label="THR"
-                  value={throttle}
-                  color={settings.throttleColor}
-                  showValue
+                  value={clutch}
+                  color={settings.clutchColor}
                   height="lg"
                   vertical
+                  rounded={false}
                 />
               )}
 
               {settings.showBrake && (
                 <ProgressBar
-                  label="BRK"
                   value={brake}
                   color={settings.brakeColor}
-                  showValue
                   height="lg"
                   vertical
+                  rounded={false}
                 />
               )}
 
-              {settings.showClutch && (
+              {settings.showThrottle && (
                 <ProgressBar
-                  label="CLT"
-                  value={clutch}
-                  color={settings.clutchColor}
-                  showValue
+                  value={throttle}
+                  color={settings.throttleColor}
                   height="lg"
                   vertical
+                  rounded={false}
                 />
               )}
             </div>
@@ -84,31 +85,28 @@ export const InputTraceWidget = observer(() => {
             <div className={styles.barsHorizontal}>
               {settings.showThrottle && (
                 <ProgressBar
-                  label="THR"
                   value={throttle}
                   color={settings.throttleColor}
-                  showValue
                   height="lg"
+                  rounded={false}
                 />
               )}
 
               {settings.showBrake && (
                 <ProgressBar
-                  label="BRK"
                   value={brake}
                   color={settings.brakeColor}
-                  showValue
                   height="lg"
+                  rounded={false}
                 />
               )}
 
               {settings.showClutch && (
                 <ProgressBar
-                  label="CLT"
                   value={clutch}
                   color={settings.clutchColor}
-                  showValue
                   height="lg"
+                  rounded={false}
                 />
               )}
             </div>

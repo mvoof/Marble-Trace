@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useCallback,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import React, { useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { appSettingsStore } from '../../../store/app-settings.store';
@@ -16,22 +10,14 @@ interface WidgetWrapperProps {
   widgetId: string;
   designWidth: number;
   designHeight: number;
-  fillMode?: boolean;
   children: ReactNode;
 }
 
 export const WidgetWrapper = observer(
-  ({
-    widgetId,
-    designWidth,
-    designHeight,
-    fillMode = false,
-    children,
-  }: WidgetWrapperProps) => {
+  ({ widgetId, designWidth, designHeight, children }: WidgetWrapperProps) => {
     const { dragMode } = appSettingsStore;
     const widget = widgetSettingsStore.getWidget(widgetId);
     const wrapperRef = useRef<HTMLElement>(null);
-    const [scale, setScale] = useState(1);
 
     useEffect(() => {
       const appWindow = getCurrentWebviewWindow();
@@ -42,25 +28,23 @@ export const WidgetWrapper = observer(
       const el = wrapperRef.current;
       if (!el) return;
 
+      const BASE_FONT_SIZE = 16;
+
       const updateScale = () => {
         const { width, height } = el.getBoundingClientRect();
-
-        // Calculate scale to fit while preserving aspect ratio
         const scaleX = width / designWidth;
         const scaleY = height / designHeight;
-        const newScale = Math.min(scaleX, scaleY);
+        const scale = Math.min(scaleX, scaleY);
 
-        setScale(newScale);
+        document.documentElement.style.fontSize = `${scale * BASE_FONT_SIZE}px`;
       };
 
       const observer = new ResizeObserver(updateScale);
       observer.observe(el);
-
-      // Initial update
       updateScale();
 
       return () => observer.disconnect();
-    }, [designWidth, designHeight, fillMode]);
+    }, [designWidth, designHeight]);
 
     const handleMouseDown = useCallback(
       (e: React.MouseEvent) => {
@@ -100,21 +84,7 @@ export const WidgetWrapper = observer(
           </section>
         )}
 
-        <div
-          className={styles.content}
-          style={
-            fillMode
-              ? { width: '100%', height: '100%' }
-              : {
-                  width: designWidth,
-                  height: designHeight,
-                  transform: `scale(${scale})`,
-                  transformOrigin: 'center center',
-                }
-          }
-        >
-          {children}
-        </div>
+        <div className={styles.content}>{children}</div>
       </section>
     );
   }

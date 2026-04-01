@@ -5,7 +5,7 @@
 .barsHorizontal {
   display: flex;
   flex-direction: column;
-  gap: $space-md;
+  gap: $space-sm;
   width: 100%;
   flex-shrink: 0;
 }
@@ -13,7 +13,7 @@
 .barsVertical {
   display: flex;
   flex-direction: row;
-  gap: $space-md;
+  gap: $space-sm;
   flex-shrink: 0;
   height: 100%;
 }

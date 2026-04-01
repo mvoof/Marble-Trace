@@ -4,13 +4,12 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 2rem;
-  padding: 2rem;
-  overflow: visible;
+  gap: 0.5rem;
+  padding: 0 0.25rem;
+  overflow: hidden;
 }
 
 .statBlock {
-  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -22,23 +21,21 @@
 }
 
 .value {
-  font-size: 8.5rem;
+  font-size: 2.5rem;
   font-weight: 600;
   line-height: 1;
-  letter-spacing: -2px;
+  letter-spacing: -1px;
   font-variant-numeric: tabular-nums;
   color: #fff;
-  min-width: 4ch;
   text-align: center;
 }
 
 .label {
-  position: absolute;
-  bottom: 0;
-  font-size: 1.75rem;
+  margin-top: 0.1rem;
+  font-size: 0.55rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 .gearContainer {
@@ -51,7 +48,6 @@
   aspect-ratio: 1;
   z-index: 1;
   overflow: visible;
-  transition: transform 0.1s;
 }
 
 .gearSvg {
@@ -78,23 +74,22 @@
 }
 
 .gearValue {
-  font-size: 8.5rem;
+  font-size: 3rem;
   font-weight: 700;
   line-height: 1;
   color: #fff;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -2px;
-  min-width: 3ch;
+  letter-spacing: -1px;
   text-align: center;
 }
 
 .centerLabel {
   position: absolute;
-  bottom: 0.75rem;
-  font-size: 1rem;
+  bottom: 0.25rem;
+  font-size: 0.45rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 @keyframes limit-blink {

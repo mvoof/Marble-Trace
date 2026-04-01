@@ -75,12 +75,7 @@ export const SpeedWidget = observer(() => {
   const centerValue = isGearFocused ? gearDisplay : speed;
 
   return (
-    <WidgetPanel
-      minWidth={400}
-      direction="row"
-      gap={32}
-      className={styles.altPanel}
-    >
+    <WidgetPanel direction="row" className={styles.altPanel}>
       <div className={styles.statBlock}>
         <div className={styles.value}>{rpm}</div>
         <span className={styles.label} style={{ color: rpmColors.limit }}>

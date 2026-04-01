@@ -57,8 +57,8 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: true,
     x: 400,
     y: 100,
-    width: 400,
-    height: 145,
+    width: 290,
+    height: 80,
     backgroundColor: '#1a1a1a',
     hotkey: 'F10',
     customSettings: {
@@ -78,8 +78,8 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 400,
     y: 300,
-    width: 260,
-    height: 260,
+    width: 400,
+    height: 220,
     backgroundColor: '#1a1a1a',
     hotkey: 'F11',
     customSettings: {
@@ -249,7 +249,20 @@ class WidgetSettingsStore {
     const widget = this.widgets.find((w) => w.id === id);
 
     if (widget) {
+      const oldBarMode = widget.customSettings?.['input-trace']?.barMode;
       widget.customSettings = { ...widget.customSettings, ...settings };
+
+      // Handle Input Trace dimension changes based on bar mode
+      const newBarMode = settings['input-trace']?.barMode;
+      if (id === 'input-trace' && newBarMode && newBarMode !== oldBarMode) {
+        if (newBarMode === 'vertical') {
+          widget.width = 400;
+          widget.height = 110;
+        } else {
+          widget.width = 400;
+          widget.height = 220;
+        }
+      }
 
       this.debouncedSave();
 
