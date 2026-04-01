@@ -8,7 +8,7 @@ import { formatGear } from '../../../utils/telemetry-format';
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import styles from './SpeedWidget.module.scss';
 
-const CIRCLE_R = 90;
+const CIRCLE_R = 105;
 const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_R;
 
 function getShiftZoneColor(
@@ -89,20 +89,21 @@ export const SpeedWidget = observer(() => {
       </span>
 
       <span className={styles.gearContainer}>
-        <svg className={styles.gearSvg} viewBox="0 0 200 200">
-          <circle className={styles.circleBg} cx="100" cy="100" r={CIRCLE_R} />
+        <svg className={styles.gearSvg} viewBox="0 0 300 300">
+          <circle className={styles.circleBg} cx="150" cy="150" r={CIRCLE_R} />
 
           <circle
             className={`${styles.circleProgress} ${isLimit ? styles.blinkAlert : ''}`}
-            cx="100"
-            cy="100"
+            cx="150"
+            cy="150"
             r={CIRCLE_R}
             style={{
+              strokeDasharray: CIRCUMFERENCE,
               stroke: zoneColor,
               strokeDashoffset: offset,
               filter: isLimit
                 ? `drop-shadow(0 0 15px ${rpmColors.limit})`
-                : 'none',
+                : 'drop-shadow(0 0 0px transparent)',
             }}
           />
         </svg>

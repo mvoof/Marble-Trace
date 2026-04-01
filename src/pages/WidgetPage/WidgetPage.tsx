@@ -39,8 +39,8 @@ const WIDGET_MAP: Record<string, WidgetEntry> = {
     variants: {
       default: {
         component: SpeedWidget,
-        designWidth: 900,
-        designHeight: 280,
+        designWidth: 1000,
+        designHeight: 340,
       },
     },
   },
