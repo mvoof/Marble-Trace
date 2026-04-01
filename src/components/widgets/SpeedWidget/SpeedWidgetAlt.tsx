@@ -73,7 +73,6 @@ export const SpeedWidgetAlt = observer(() => {
   const isLimit = shiftIndicatorPct >= 0.99 || displayPct >= 1;
 
   const centerValue = isGearFocused ? gearDisplay : speed;
-  const centerLabel = isGearFocused ? 'GEAR' : speedUnit;
 
   return (
     <WidgetPanel
@@ -109,15 +108,13 @@ export const SpeedWidgetAlt = observer(() => {
         </svg>
 
         <span className={styles.gearValue}>{centerValue}</span>
-        <span className={styles.centerLabel} style={{ color: rpmColors.limit }}>
-          {centerLabel}
-        </span>
       </span>
 
       <span className={styles.statBlock}>
         <span className={styles.value}>
           {isGearFocused ? speed : gearDisplay}
         </span>
+
         <span className={styles.label} style={{ color: rpmColors.limit }}>
           {isGearFocused ? speedUnit : 'GEAR'}
         </span>
