@@ -117,7 +117,7 @@ pub async fn start_telemetry_stream(
             let running_session = running.clone();
             let last_session_info_clone = last_session_info.clone();
 
-            tokio::spawn(async move {
+            let session_task = tokio::spawn(async move {
                 let mut stream = std::pin::pin!(session_stream);
 
                 while let Some(session) = stream.next().await {
@@ -151,26 +151,58 @@ pub async fn start_telemetry_stream(
             let mut stream = std::pin::pin!(telemetry_stream);
             let mut count: u64 = 0;
 
-            while let Some(frame) = stream.next().await {
+            loop {
                 if !running.load(Ordering::SeqCst) {
                     debug!("Stream stopped by user");
                     return;
                 }
 
-                count += 1;
+                match tokio::time::timeout(Duration::from_secs(3), stream.next()).await {
+                    Ok(Some(frame)) => {
+                        count += 1;
 
-                if count == 1 {
-                    info!(
-                        speed = frame.speed,
-                        rpm = frame.rpm,
-                        gear = frame.gear,
-                        "First telemetry frame received"
-                    );
+                        if count == 1 {
+                            info!(
+                                speed = frame.speed,
+                                rpm = frame.rpm,
+                                gear = frame.gear,
+                                "First telemetry frame received"
+                            );
+                        }
+
+                        // Decompose AllFieldsFrame into domain frames and emit each
+                        emit_domain_frames(&app_clone, &frame);
+                    }
+                    Ok(None) => {
+                        // Stream ended
+                        break;
+                    }
+                    Err(_) => {
+                        // Timeout (no frames for 3s)
+                        // Check if the process is actually gone
+                        let is_running = std::process::Command::new("tasklist")
+                            .arg("/FI")
+                            .arg("IMAGENAME eq iRacingSim64.exe")
+                            .output()
+                            .map(|o| String::from_utf8_lossy(&o.stdout).contains("iRacingSim64.exe"))
+                            .unwrap_or(false);
+
+                        if !is_running {
+                            warn!("iRacingSim64.exe is not running. Disconnecting.");
+                            break;
+                        } else {
+                            debug!("No telemetry for 3s, but process is running. Waiting...");
+                            app_clone.emit("iracing://status", "waiting").ok();
+                            // Do not break, let the loop continue and wait for the next frame
+                        }
+                    }
                 }
-
-                // Decompose AllFieldsFrame into domain frames and emit each
-                emit_domain_frames(&app_clone, &frame);
             }
+
+            // Important: Abort the session task so it releases its connection handles.
+            // If handles are kept alive, the OS won't clean up the shared memory,
+            // and the next `connect()` will falsely succeed.
+            session_task.abort();
 
             info!(count, "Stream ended, will retry connection...");
 
@@ -186,9 +218,31 @@ pub async fn start_telemetry_stream(
                 break;
             }
 
-            sleep(Duration::from_secs(1)).await;
+            // Wait for iRacing process before attempting reconnect
             app_clone.emit("iracing://status", "waiting").ok();
-            sleep(Duration::from_secs(1)).await;
+
+            loop {
+                if !running.load(Ordering::SeqCst) {
+                    break;
+                }
+
+                let is_running = std::process::Command::new("tasklist")
+                    .arg("/FI")
+                    .arg("IMAGENAME eq iRacingSim64.exe")
+                    .output()
+                    .map(|o| {
+                        String::from_utf8_lossy(&o.stdout)
+                            .contains("iRacingSim64.exe")
+                    })
+                    .unwrap_or(false);
+
+                if is_running {
+                    debug!("iRacing process detected, attempting reconnect...");
+                    break;
+                }
+
+                sleep(Duration::from_secs(3)).await;
+            }
         }
     });
 
