@@ -20,7 +20,6 @@ import {
   widgetSettingsStore,
   type SpeedWidgetSettings,
   type SpeedWidgetFocusMode,
-  type SpeedWidgetVariant,
   type RpmColorTheme,
   type InputTraceSettings,
   type InputTraceBarMode,
@@ -240,19 +239,6 @@ const SpeedSettings = observer(() => {
       <Title level={5} style={{ margin: 0 }}>
         Speed Widget
       </Title>
-
-      <Flex vertical gap={4}>
-        <Text>Design Variant</Text>
-
-        <Segmented
-          value={settings.designVariant ?? 'default'}
-          options={[
-            { label: 'Default', value: 'default' },
-            { label: 'Alternative', value: 'alternative' },
-          ]}
-          onChange={(v) => update({ designVariant: v as SpeedWidgetVariant })}
-        />
-      </Flex>
 
       <Flex vertical gap={4}>
         <Text>Focus Mode</Text>

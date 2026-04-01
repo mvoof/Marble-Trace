@@ -6,10 +6,7 @@ import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { unitsStore } from '../../store/units.store';
 import { ExampleWidget } from '../../components/widgets/ExampleWidget';
-import {
-  SpeedWidget,
-  SpeedWidgetAlt,
-} from '../../components/widgets/SpeedWidget';
+import { SpeedWidgetAlt } from '../../components/widgets/SpeedWidget';
 import { InputTraceWidget } from '../../components/widgets/InputTraceWidget';
 import { WidgetWrapper } from '../../components/widgets/WidgetWrapper';
 import styles from './WidgetPage.module.scss';
@@ -40,8 +37,7 @@ const WIDGET_MAP: Record<string, WidgetEntry> = {
   speed: {
     defaultVariant: 'default',
     variants: {
-      default: { component: SpeedWidget, designWidth: 400, designHeight: 145 },
-      alternative: {
+      default: {
         component: SpeedWidgetAlt,
         designWidth: 900,
         designHeight: 280,
@@ -97,7 +93,7 @@ export const WidgetPage = observer(() => {
     return <pre className={styles.widgetPage}>Unknown widget: {id}</pre>;
   }
 
-  const variantKey = getWidgetVariant(id, widgetEntry.defaultVariant);
+  const variantKey = widgetEntry.defaultVariant;
   const variant =
     widgetEntry.variants[variantKey] ??
     widgetEntry.variants[widgetEntry.defaultVariant];
@@ -121,12 +117,3 @@ export const WidgetPage = observer(() => {
     </section>
   );
 });
-
-function getWidgetVariant(id: string, defaultVariant: string): string {
-  if (id === 'speed') {
-    const settings = widgetSettingsStore.getSpeedSettings();
-    return settings.designVariant ?? defaultVariant;
-  }
-
-  return defaultVariant;
-}
