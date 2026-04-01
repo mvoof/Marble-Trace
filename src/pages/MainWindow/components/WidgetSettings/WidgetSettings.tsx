@@ -115,7 +115,11 @@ export const WidgetSettings = observer(
             />
           </Flex>
 
-          <HotkeyRecorder widgetId={widgetId} currentHotkey={widget.hotkey} />
+          <HotkeyRecorder
+            key={widgetId}
+            widgetId={widgetId}
+            currentHotkey={widget.hotkey}
+          />
 
           {widgetId === 'speed' && (
             <>
