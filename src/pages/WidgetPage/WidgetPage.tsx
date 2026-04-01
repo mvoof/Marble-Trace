@@ -5,6 +5,7 @@ import { useWidgetTelemetry } from '../../hooks/useWidgetTelemetry';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { unitsStore } from '../../store/units.store';
+import { TelemetryDebugWidget } from '../../components/widgets/TelemetryDebugWidget';
 
 import { SpeedWidget } from '../../components/widgets/SpeedWidget';
 import { InputTraceWidget } from '../../components/widgets/InputTraceWidget';
@@ -23,6 +24,16 @@ interface WidgetEntry {
 }
 
 const WIDGET_MAP: Record<string, WidgetEntry> = {
+  example: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: TelemetryDebugWidget,
+        designWidth: 400,
+        designHeight: 700,
+      },
+    },
+  },
   speed: {
     defaultVariant: 'default',
     variants: {
