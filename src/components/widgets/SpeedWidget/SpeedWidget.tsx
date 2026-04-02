@@ -43,9 +43,7 @@ export const SpeedWidget = observer(() => {
 
   // Anchor for 100% RPM fill. Start with session info, but refine with shift_indicator_pct.
   const initialMax =
-    driverInfo?.driver_car_sl_shift_rpm ||
-    driverInfo?.driver_car_red_line ||
-    10000;
+    driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
   const maxShiftRpmRef = useRef(initialMax);
   const hasRefinedRef = useRef(false);
   const lastDriverInfoRef = useRef(driverInfo);

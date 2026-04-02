@@ -44,12 +44,12 @@ class SessionStore {
 
   /** Convenience getter: driver info (RPM limits, fuel capacity, gear count, etc.) */
   get driverInfo(): DriverInfoData | null {
-    return this.sessionInfo?.driver_info ?? null;
+    return this.sessionInfo?.DriverInfo ?? null;
   }
 
   /** Convenience getter: weekend/track info (track name, length, weather config, etc.) */
   get weekendInfo(): WeekendInfo | null {
-    return this.sessionInfo?.weekend_info ?? null;
+    return this.sessionInfo?.WeekendInfo ?? null;
   }
 
   reset() {
