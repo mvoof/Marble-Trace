@@ -3,6 +3,7 @@ import type { UnitSystem } from '../store/units.store';
 const MPS_TO_KMH = 3.6;
 const MPS_TO_MPH = 2.23694;
 const LITERS_TO_GAL = 0.264172;
+const METERS_TO_FEET = 3.28084;
 
 export function formatSpeed(mps: number, system: UnitSystem): string {
   const factor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
@@ -37,6 +38,18 @@ export function formatFuel(liters: number, system: UnitSystem): string {
 
 export function fuelUnit(system: UnitSystem): string {
   return system === 'metric' ? 'L' : 'GAL';
+}
+
+export function formatDistance(meters: number, system: UnitSystem): string {
+  if (system === 'imperial') {
+    return (meters * METERS_TO_FEET).toFixed(1);
+  }
+
+  return meters.toFixed(1);
+}
+
+export function distanceUnit(system: UnitSystem): string {
+  return system === 'metric' ? 'м' : 'ft';
 }
 
 export function formatGear(gear: number): string {

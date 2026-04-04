@@ -1,3 +1,7 @@
+import { observer } from 'mobx-react-lite';
+
+import { useUnits } from '../../../../hooks/useUnits';
+
 import styles from '../RadarBarWidget.module.scss';
 
 const COLORS = {
@@ -18,7 +22,9 @@ interface RadarBarProps {
   side: 'left' | 'right';
 }
 
-export const RadarBar = ({ active, dist, side }: RadarBarProps) => {
+export const RadarBar = observer(({ active, dist, side }: RadarBarProps) => {
+  const { formatDistance, distanceUnit } = useUnits();
+
   if (!active) {
     return <div className={styles.bar} />;
   }
@@ -66,10 +72,11 @@ export const RadarBar = ({ active, dist, side }: RadarBarProps) => {
           className={styles.pillText}
           style={{ transform: `rotate(${rotation})` }}
         >
-          {dist > 0 ? '+' : ''}
-          {dist.toFixed(1)}м
+          {dist > 0 ? '+' : dist < 0 ? '-' : ''}
+          {formatDistance(Math.abs(dist))}
+          {distanceUnit}
         </span>
       </div>
     </div>
   );
-};
+});
