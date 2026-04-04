@@ -2,35 +2,19 @@ import { observer } from 'mobx-react-lite';
 
 import { useUnits } from '../../../../hooks/useUnits';
 import type { RadarDistances, SpotterState } from '../../../../utils/proximity';
+import {
+  CAR_WIDTH,
+  CAR_LENGTH,
+  CAR_CORNER_RADIUS,
+  SIDE_CAR_LATERAL_OFFSET,
+  getCarColor,
+  getSideCarColor,
+} from '../../../../utils/radar-constants';
 
 import styles from './RadarDisplay.module.scss';
 
-// === CONSTANTS ===
-const SCALE = 22;
-const CAR_W = 1.8;
-const CAR_H = 4.4;
-const CAR_R = 0.2;
-const LATERAL_OFFSET = CAR_W + 0.6;
-
-const COLORS = {
-  danger: 'rgba(255, 42, 85, 0.7)', // Опасно (до 1м)
-  warning: 'rgba(234, 178, 8, 0.7)', // Внимание (до 2м)
-  safe: 'rgba(34, 197, 94, 0.7)', // Безопасно (> 2м)
-  grid: 'rgba(255, 255, 255, 0.1)',
-};
-
-const getCarColor = (dist: number): string => {
-  if (dist <= 1.0) return COLORS.danger;
-  if (dist <= 2.0) return COLORS.warning;
-  return COLORS.safe;
-};
-
-const getSideCarColor = (dist: number): string => {
-  const absDist = Math.abs(dist);
-  if (absDist <= 0.5) return COLORS.danger;
-  if (absDist <= 1.5) return COLORS.warning;
-  return COLORS.safe;
-};
+/** Pixels per meter — controls SVG zoom level */
+const PX_PER_METER = 22;
 
 interface CarIconProps {
   color?: string;
@@ -39,11 +23,11 @@ interface CarIconProps {
 
 const CarIcon = ({ color = 'currentColor', opacity = 1 }: CarIconProps) => (
   <rect
-    x={-(CAR_W * SCALE) / 2}
-    y={-(CAR_H * SCALE) / 2}
-    width={CAR_W * SCALE}
-    height={CAR_H * SCALE}
-    rx={CAR_R * SCALE}
+    x={-(CAR_WIDTH * PX_PER_METER) / 2}
+    y={-(CAR_LENGTH * PX_PER_METER) / 2}
+    width={CAR_WIDTH * PX_PER_METER}
+    height={CAR_LENGTH * PX_PER_METER}
+    rx={CAR_CORNER_RADIUS * PX_PER_METER}
     fill={color}
     opacity={opacity}
     className={styles.carIcon}
@@ -53,31 +37,32 @@ const CarIcon = ({ color = 'currentColor', opacity = 1 }: CarIconProps) => (
 interface RadarDisplayProps {
   radarDistances: RadarDistances;
   spotter: SpotterState;
+  /** Max distance (meters) at which cars are rendered on the radar */
+  renderRange: number;
 }
 
 export const RadarDisplay = observer(
-  ({ radarDistances, spotter }: RadarDisplayProps) => {
+  ({ radarDistances, spotter, renderRange }: RadarDisplayProps) => {
     const { formatDistance, distanceUnit } = useUnits();
     const { frontDist, rearDist, sideCars } = radarDistances;
 
-    // For this high-zoom proximity radar, we use a smaller visual range
-    const VISUAL_MAX_DIST = 10.0;
+    const showFront = frontDist < renderRange;
+    const showRear = rearDist < renderRange;
 
-    const showFront = frontDist < VISUAL_MAX_DIST;
-    const showRear = rearDist < VISUAL_MAX_DIST;
-
-    const frontColor = showFront ? getCarColor(frontDist) : COLORS.safe;
-    const rearColor = showRear ? getCarColor(rearDist) : COLORS.safe;
+    const frontColor = showFront
+      ? getCarColor(frontDist)
+      : getCarColor(Infinity);
+    const rearColor = showRear ? getCarColor(rearDist) : getCarColor(Infinity);
 
     const frontOpacity = showFront
-      ? Math.max(0.01, 0.9 - frontDist / VISUAL_MAX_DIST)
+      ? Math.max(0.01, 0.9 - frontDist / renderRange)
       : 0;
     const rearOpacity = showRear
-      ? Math.max(0.01, 0.9 - rearDist / VISUAL_MAX_DIST)
+      ? Math.max(0.01, 0.9 - rearDist / renderRange)
       : 0;
 
-    const frontBumperY = -(CAR_H / 2) * SCALE;
-    const rearBumperY = (CAR_H / 2) * SCALE;
+    const frontBumperY = -(CAR_LENGTH / 2) * PX_PER_METER;
+    const rearBumperY = (CAR_LENGTH / 2) * PX_PER_METER;
 
     return (
       <div className={styles.radarContainer}>
@@ -100,6 +85,7 @@ export const RadarDisplay = observer(
                 className={styles.hatchLine}
               />
             </pattern>
+
             {spotter.left && sideCars.leftDist !== null && (
               <linearGradient id="cone-left" x1="100%" y1="0%" x2="0%" y2="0%">
                 <stop
@@ -114,6 +100,7 @@ export const RadarDisplay = observer(
                 />
               </linearGradient>
             )}
+
             {spotter.right && sideCars.rightDist !== null && (
               <linearGradient id="cone-right" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop
@@ -130,7 +117,7 @@ export const RadarDisplay = observer(
             )}
           </defs>
 
-          {/* ОСИ (Крестовина) ДЛЯ ОРИЕНТИРОВАНИЯ */}
+          {/* Guide crosshair lines */}
           <g
             stroke="currentColor"
             strokeWidth="1"
@@ -141,26 +128,26 @@ export const RadarDisplay = observer(
             <line x1="0" y1={-240} x2="0" y2={240} />
           </g>
 
-          {/* ЦЕНТРАЛЬНАЯ ЗАШТРИХОВАННАЯ ЗОНА (Бок-о-бок) */}
+          {/* Side-by-side blind spot hatched zone */}
           <rect
             x="-120"
-            y={-(CAR_H * SCALE) / 2}
+            y={-(CAR_LENGTH * PX_PER_METER) / 2}
             width="240"
-            height={CAR_H * SCALE}
+            height={CAR_LENGTH * PX_PER_METER}
             fill="url(#hatch-pattern)"
           />
 
-          {/* Spotter Glow Cones */}
-          {/* {spotter.left && sideCars.leftDist !== null && ( */}
+          {/* Spotter glow cone — left */}
           <polygon
-            points={`${-((CAR_W / 2) * SCALE)},${frontBumperY} -150,-180 -150,180 ${-((CAR_W / 2) * SCALE)},${rearBumperY}`}
+            points={`${-((CAR_WIDTH / 2) * PX_PER_METER)},${frontBumperY} -150,-180 -150,180 ${-((CAR_WIDTH / 2) * PX_PER_METER)},${rearBumperY}`}
             fill="url(#cone-left)"
             className={styles.carTransition}
           />
-          {/* )} */}
+
+          {/* Spotter glow cone — right */}
           {spotter.right && sideCars.rightDist !== null && (
             <polygon
-              points={`${(CAR_W / 2) * SCALE},${frontBumperY} 150,-180 150,180 ${(CAR_W / 2) * SCALE},${rearBumperY}`}
+              points={`${(CAR_WIDTH / 2) * PX_PER_METER},${frontBumperY} 150,-180 150,180 ${(CAR_WIDTH / 2) * PX_PER_METER},${rearBumperY}`}
               fill="url(#cone-right)"
               className={styles.carTransition}
             />
@@ -169,7 +156,7 @@ export const RadarDisplay = observer(
           {/* Opponent AHEAD */}
           {showFront && (
             <g
-              transform={`translate(0, ${-(frontDist * SCALE) - CAR_H * SCALE})`}
+              transform={`translate(0, ${-(frontDist * PX_PER_METER) - CAR_LENGTH * PX_PER_METER})`}
               className={styles.carTransition}
             >
               <CarIcon opacity={frontOpacity} color={frontColor} />
@@ -183,7 +170,7 @@ export const RadarDisplay = observer(
           {/* Opponent BEHIND */}
           {showRear && (
             <g
-              transform={`translate(0, ${rearDist * SCALE + CAR_H * SCALE})`}
+              transform={`translate(0, ${rearDist * PX_PER_METER + CAR_LENGTH * PX_PER_METER})`}
               className={styles.carTransition}
             >
               <CarIcon opacity={rearOpacity} color={rearColor} />
@@ -197,7 +184,7 @@ export const RadarDisplay = observer(
           {/* Opponent LEFT (spotter) */}
           {spotter.left && sideCars.leftDist !== null && (
             <g
-              transform={`translate(${-(LATERAL_OFFSET * SCALE)}, ${-(sideCars.leftDist * SCALE)})`}
+              transform={`translate(${-(SIDE_CAR_LATERAL_OFFSET * PX_PER_METER)}, ${-(sideCars.leftDist * PX_PER_METER)})`}
               className={styles.carTransition}
             >
               <CarIcon
@@ -214,7 +201,7 @@ export const RadarDisplay = observer(
           {/* Opponent RIGHT (spotter) */}
           {spotter.right && sideCars.rightDist !== null && (
             <g
-              transform={`translate(${LATERAL_OFFSET * SCALE}, ${-(sideCars.rightDist * SCALE)})`}
+              transform={`translate(${SIDE_CAR_LATERAL_OFFSET * PX_PER_METER}, ${-(sideCars.rightDist * PX_PER_METER)})`}
               className={styles.carTransition}
             >
               <CarIcon

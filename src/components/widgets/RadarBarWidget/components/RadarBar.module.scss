@@ -1,0 +1,33 @@
+@use '../../../../styles/variables' as *;
+
+.bar {
+  width: 28px;
+  height: 100%;
+  border: 1px solid #1e2430;
+  background-color: rgba(17, 21, 28, 0.863);
+  position: relative;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+}
+
+.pill {
+  position: absolute;
+  left: 2px;
+  width: calc(100% - 4px);
+  transition: all 0.1s linear;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.95;
+}
+
+.pillText {
+  color: #ffffff;
+  font-family: $font-widget;
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+  transform-origin: center;
+}

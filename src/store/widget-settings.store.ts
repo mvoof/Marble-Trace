@@ -27,12 +27,15 @@ export interface InputTraceSettings {
 }
 
 export type RadarVisibilityMode = 'always' | 'proximity';
+export type RadarBarDisplayMode = 'both' | 'active-only';
 
 export interface RadarSettings {
   visibilityMode: RadarVisibilityMode;
   proximityThreshold: number;
   hideDelay: number;
   barSpacing?: number;
+  /** radar-bar: show both bars or only the side with a detected car */
+  barDisplayMode?: RadarBarDisplayMode;
 }
 
 export interface WidgetCustomSettings {
@@ -144,6 +147,7 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
         proximityThreshold: 3,
         hideDelay: 2,
         barSpacing: 0,
+        barDisplayMode: 'both',
       },
     },
   },
@@ -311,12 +315,17 @@ class WidgetSettingsStore {
     const widget = this.getWidget(id);
     const defaults: RadarSettings =
       id === 'proximity-radar'
-        ? { visibilityMode: 'proximity', proximityThreshold: 5, hideDelay: 2 }
+        ? {
+            visibilityMode: 'proximity',
+            proximityThreshold: 5,
+            hideDelay: 2,
+          }
         : {
             visibilityMode: 'proximity',
             proximityThreshold: 3,
             hideDelay: 2,
             barSpacing: 0,
+            barDisplayMode: 'both',
           };
     return widget?.customSettings?.[id] ?? defaults;
   }

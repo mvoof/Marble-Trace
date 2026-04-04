@@ -15,8 +15,8 @@ import { RadarBar } from './components/RadarBar';
 
 import styles from './RadarBarWidget.module.scss';
 
-/** Max longitudinal search range — cars within this range are candidates for side bars */
-const MAX_SIDE_DIST = 10.0;
+/** Longitudinal search radius (meters) — cars within this range are candidates for side bars */
+const CAR_SEARCH_RADIUS = 10.0;
 
 interface RadarBarWidgetProps {
   onVisibilityChange?: (visible: boolean) => void;
@@ -44,7 +44,7 @@ export const RadarBarWidget = observer(
         carIdx,
         playerCarIdx,
         trackLength,
-        MAX_SIDE_DIST,
+        CAR_SEARCH_RADIUS,
         carLeftRight
       );
     }, [carIdx, playerCarIdx, trackLength, carLeftRight]);
@@ -73,6 +73,10 @@ export const RadarBarWidget = observer(
 
     if (!visible) return null;
 
+    const activeOnly = radarSettings.barDisplayMode === 'active-only';
+    const showLeft = activeOnly ? spotter.left : true;
+    const showRight = activeOnly ? spotter.right : true;
+
     return (
       <WidgetPanel
         className={styles.root}
@@ -80,17 +84,25 @@ export const RadarBarWidget = observer(
         gap={0}
         direction="row"
       >
-        <RadarBar
-          active={1}
-          dist={sideCars.leftDist ?? 0}
-          side="left"
-        />
+        {showLeft && (
+          <div className={styles.leftSlot}>
+            <RadarBar
+              active={spotter.left}
+              dist={sideCars.leftDist ?? 0}
+              side="left"
+            />
+          </div>
+        )}
 
-        <RadarBar
-          active={spotter.right}
-          dist={sideCars.rightDist ?? 0}
-          side="right"
-        />
+        {showRight && (
+          <div className={styles.rightSlot}>
+            <RadarBar
+              active={spotter.right}
+              dist={sideCars.rightDist ?? 0}
+              side="right"
+            />
+          </div>
+        )}
       </WidgetPanel>
     );
   }

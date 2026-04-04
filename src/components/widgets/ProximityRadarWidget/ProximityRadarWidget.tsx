@@ -15,7 +15,11 @@ import { RadarDisplay } from './components/RadarDisplay';
 
 import styles from './ProximityRadarWidget.module.scss';
 
-const MAX_RADAR_DIST = 30;
+/** Longitudinal search radius (meters) — cars within this range are computed */
+const CAR_SEARCH_RADIUS = 30;
+
+/** Max distance (meters) at which cars are visually rendered on the radar display */
+const RADAR_RENDER_RANGE = 10;
 
 interface ProximityRadarWidgetProps {
   onVisibilityChange?: (visible: boolean) => void;
@@ -44,7 +48,7 @@ export const ProximityRadarWidget = observer(
         carIdx,
         playerCarIdx,
         trackLength,
-        MAX_RADAR_DIST,
+        CAR_SEARCH_RADIUS,
         carLeftRight
       );
     }, [carIdx, playerCarIdx, trackLength, carLeftRight]);
@@ -74,7 +78,11 @@ export const ProximityRadarWidget = observer(
 
     return (
       <WidgetPanel className={styles.root} minWidth={100} gap={0}>
-        <RadarDisplay radarDistances={radarDistances} spotter={spotter} />
+        <RadarDisplay
+          radarDistances={radarDistances}
+          spotter={spotter}
+          renderRange={RADAR_RENDER_RANGE}
+        />
       </WidgetPanel>
     );
   }

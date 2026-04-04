@@ -1,16 +1,11 @@
 import { observer } from 'mobx-react-lite';
 
 import { useUnits } from '../../../../hooks/useUnits';
+import { CAR_LENGTH, getBarPillColor } from '../../../../utils/radar-constants';
 
-import styles from '../RadarBarWidget.module.scss';
+import styles from './RadarBar.module.scss';
 
-const COLORS = {
-  danger: '#ff2a55',
-  warning: '#eab308',
-  safe: '#22c55e',
-};
-
-const CAR_H = 4.4;
+/** Minimum visible pill height to prevent invisible slivers */
 const MIN_PILL_PERCENT = 8;
 
 interface RadarBarProps {
@@ -30,15 +25,13 @@ export const RadarBar = observer(({ active, dist, side }: RadarBarProps) => {
   }
 
   // Pill position: 0% = our front bumper (top), 100% = our rear bumper (bottom)
-  // Opponent car is also CAR_H long
-  let topPercent = (100 * -dist) / CAR_H;
-  let bottomPercent = (100 * (CAR_H - dist)) / CAR_H;
+  const topPercent = (100 * -dist) / CAR_LENGTH;
+  const bottomPercent = (100 * (CAR_LENGTH - dist)) / CAR_LENGTH;
 
   let clampedTop = Math.max(0, Math.min(100, topPercent));
-  let clampedBottom = Math.max(0, Math.min(100, bottomPercent));
+  const clampedBottom = Math.max(0, Math.min(100, bottomPercent));
   let heightPercent = clampedBottom - clampedTop;
 
-  // If spotter is active but pill is tiny (iRacing lag/edge), show minimum pill at the edge
   if (heightPercent < MIN_PILL_PERCENT) {
     heightPercent = MIN_PILL_PERCENT;
 
@@ -46,15 +39,8 @@ export const RadarBar = observer(({ active, dist, side }: RadarBarProps) => {
     if (bottomPercent <= 0) clampedTop = 0;
   }
 
-  // Color based on how close centers are (closer to 0 = more danger)
   const absDist = Math.abs(dist);
-  const color =
-    absDist <= 1.0
-      ? COLORS.danger
-      : absDist <= 2.5
-        ? COLORS.warning
-        : COLORS.safe;
-
+  const color = getBarPillColor(absDist);
   const rotation = side === 'left' ? '-90deg' : '90deg';
 
   return (

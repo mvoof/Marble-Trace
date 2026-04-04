@@ -25,6 +25,7 @@ import {
   type InputTraceBarMode,
   type RadarSettings,
   type RadarVisibilityMode,
+  type RadarBarDisplayMode,
 } from '../../../../store/widget-settings.store';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 
@@ -524,18 +525,35 @@ const RadarSettingsPanel = observer(
         )}
 
         {widgetId === 'radar-bar' && (
-          <Flex vertical gap={4}>
-            <Text>Bar Spacing (px)</Text>
+          <>
+            <Flex vertical gap={4}>
+              <Text>Bar Display</Text>
 
-            <InputNumber
-              style={{ width: '100%' }}
-              value={settings.barSpacing ?? 0}
-              min={0}
-              max={1000}
-              step={10}
-              onChange={(v) => v !== null && update({ barSpacing: v })}
-            />
-          </Flex>
+              <Segmented
+                value={settings.barDisplayMode ?? 'both'}
+                options={[
+                  { label: 'Both Sides', value: 'both' },
+                  { label: 'Active Only', value: 'active-only' },
+                ]}
+                onChange={(v) =>
+                  update({ barDisplayMode: v as RadarBarDisplayMode })
+                }
+              />
+            </Flex>
+
+            <Flex vertical gap={4}>
+              <Text>Bar Spacing (px)</Text>
+
+              <InputNumber
+                style={{ width: '100%' }}
+                value={settings.barSpacing ?? 0}
+                min={0}
+                max={1000}
+                step={10}
+                onChange={(v) => v !== null && update({ barSpacing: v })}
+              />
+            </Flex>
+          </>
         )}
       </Flex>
     );
