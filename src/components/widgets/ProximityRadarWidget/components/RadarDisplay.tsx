@@ -10,9 +10,9 @@ const CAR_R = 0.2;
 const LATERAL_OFFSET = CAR_W + 0.6;
 
 const COLORS = {
-  danger: '#ff2a55', // Опасно (до 1м)
-  warning: '#eab308', // Внимание (до 2м)
-  safe: '#22c55e', // Безопасно (> 2м)
+  danger: 'rgba(255, 42, 85, 0.7)', // Опасно (до 1м)
+  warning: 'rgba(234, 178, 8, 0.7)', // Внимание (до 2м)
+  safe: 'rgba(34, 197, 94, 0.7)', // Безопасно (> 2м)
   grid: 'rgba(255, 255, 255, 0.1)',
 };
 
@@ -44,7 +44,6 @@ const CarIcon = ({ color = 'currentColor', opacity = 1 }: CarIconProps) => (
     fill={color}
     opacity={opacity}
     className={styles.carIcon}
-    // style={{ color } as CSSProperties}
   />
 );
 
@@ -69,10 +68,10 @@ export const RadarDisplay = ({
   const rearColor = showRear ? getCarColor(rearDist) : COLORS.safe;
 
   const frontOpacity = showFront
-    ? Math.max(0.2, 1 - frontDist / VISUAL_MAX_DIST)
+    ? Math.max(0.01, 0.9 - frontDist / VISUAL_MAX_DIST)
     : 0;
   const rearOpacity = showRear
-    ? Math.max(0.2, 1 - rearDist / VISUAL_MAX_DIST)
+    ? Math.max(0.01, 0.9 - rearDist / VISUAL_MAX_DIST)
     : 0;
 
   const frontBumperY = -(CAR_H / 2) * SCALE;
@@ -150,13 +149,13 @@ export const RadarDisplay = ({
         />
 
         {/* Spotter Glow Cones */}
-        {spotter.left && sideCars.leftDist !== null && (
-          <polygon
-            points={`${-((CAR_W / 2) * SCALE)},${frontBumperY} -150,-180 -150,180 ${-((CAR_W / 2) * SCALE)},${rearBumperY}`}
-            fill="url(#cone-left)"
-            className={styles.carTransition}
-          />
-        )}
+        {/* {spotter.left && sideCars.leftDist !== null && ( */}
+        <polygon
+          points={`${-((CAR_W / 2) * SCALE)},${frontBumperY} -150,-180 -150,180 ${-((CAR_W / 2) * SCALE)},${rearBumperY}`}
+          fill="url(#cone-left)"
+          className={styles.carTransition}
+        />
+        {/* )} */}
         {spotter.right && sideCars.rightDist !== null && (
           <polygon
             points={`${(CAR_W / 2) * SCALE},${frontBumperY} 150,-180 150,180 ${(CAR_W / 2) * SCALE},${rearBumperY}`}
