@@ -1,8 +1,4 @@
-import type {
-  FrontRearDistances,
-  SideCarDistances,
-  SpotterState,
-} from '../../../../utils/proximity';
+import type { RadarDistances, SpotterState } from '../../../../utils/proximity';
 
 import styles from '../ProximityRadarWidget.module.scss';
 
@@ -51,19 +47,17 @@ const CarIcon = ({ fill = '#ffffff', opacity = 1 }: CarIconProps) => (
 );
 
 interface RadarDisplayProps {
-  distances: FrontRearDistances;
+  radarDistances: RadarDistances;
   spotter: SpotterState;
-  sideCars: SideCarDistances;
   maxDist: number;
 }
 
 export const RadarDisplay = ({
-  distances,
+  radarDistances,
   spotter,
-  sideCars,
   maxDist,
 }: RadarDisplayProps) => {
-  const { frontDist, rearDist } = distances;
+  const { frontDist, rearDist, sideCars } = radarDistances;
 
   const showFront = frontDist < maxDist;
   const showRear = rearDist < maxDist;
@@ -74,9 +68,43 @@ export const RadarDisplay = ({
   const frontOpacity = showFront ? Math.max(0.2, 1 - frontDist / maxDist) : 0;
   const rearOpacity = showRear ? Math.max(0.2, 1 - rearDist / maxDist) : 0;
 
+  const frontBumperY = -(CAR_H / 2) * SCALE;
+  const rearBumperY = (CAR_H / 2) * SCALE;
+
   return (
     <div className={styles.radarContainer}>
       <svg viewBox="-100 -200 200 400" className={styles.radarSvg}>
+        <defs>
+          {spotter.left && sideCars.leftDist !== null && (
+            <linearGradient id="cone-left" x1="100%" y1="0%" x2="0%" y2="0%">
+              <stop
+                offset="0%"
+                stopColor={getSideCarColor(sideCars.leftDist)}
+                stopOpacity="0.4"
+              />
+              <stop
+                offset="100%"
+                stopColor={getSideCarColor(sideCars.leftDist)}
+                stopOpacity="0"
+              />
+            </linearGradient>
+          )}
+          {spotter.right && sideCars.rightDist !== null && (
+            <linearGradient id="cone-right" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop
+                offset="0%"
+                stopColor={getSideCarColor(sideCars.rightDist)}
+                stopOpacity="0.4"
+              />
+              <stop
+                offset="100%"
+                stopColor={getSideCarColor(sideCars.rightDist)}
+                stopOpacity="0"
+              />
+            </linearGradient>
+          )}
+        </defs>
+
         {/* Road lane markers */}
         <g stroke={COLORS.grid} strokeWidth="1.5" strokeDasharray="6 6">
           <line x1={-30} y1={-200} x2={-30} y2={200} opacity="0.3" />
@@ -133,6 +161,22 @@ export const RadarDisplay = ({
             20m
           </text>
         </g>
+
+        {/* Spotter Glow Cones */}
+        {spotter.left && sideCars.leftDist !== null && (
+          <polygon
+            points={`${-((CAR_W / 2) * SCALE)},${frontBumperY} -100,-180 -100,180 ${-((CAR_W / 2) * SCALE)},${rearBumperY}`}
+            fill="url(#cone-left)"
+            className={styles.carTransition}
+          />
+        )}
+        {spotter.right && sideCars.rightDist !== null && (
+          <polygon
+            points={`${(CAR_W / 2) * SCALE},${frontBumperY} 100,-180 100,180 ${(CAR_W / 2) * SCALE},${rearBumperY}`}
+            fill="url(#cone-right)"
+            className={styles.carTransition}
+          />
+        )}
 
         {/* Opponent AHEAD */}
         {showFront && (
@@ -197,7 +241,7 @@ export const RadarDisplay = ({
         )}
 
         {/* Player car (center) */}
-        <CarIcon />
+        <CarIcon fill="#475569" />
       </svg>
     </div>
   );

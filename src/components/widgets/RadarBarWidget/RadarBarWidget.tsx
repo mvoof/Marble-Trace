@@ -5,7 +5,7 @@ import { WidgetPanel } from '../primitives/WidgetPanel';
 import { useCarIdx, useSession } from '../../../hooks/useIracingData';
 import {
   computeNearbyCars,
-  computeSideCarDistances,
+  computeRadarDistances,
   parseTrackLength,
   parseSpotterState,
 } from '../../../utils/proximity';
@@ -49,15 +49,16 @@ export const RadarBarWidget = observer(
       );
     }, [carIdx, playerCarIdx, trackLength, carLeftRight]);
 
-    const sideCars = useMemo(
-      () => computeSideCarDistances(nearbyCars),
-      [nearbyCars]
-    );
-
     const spotter = useMemo(
       () => parseSpotterState(carLeftRight),
       [carLeftRight]
     );
+
+    const radarDistances = useMemo(
+      () => computeRadarDistances(nearbyCars, spotter),
+      [nearbyCars, spotter]
+    );
+    const sideCars = radarDistances.sideCars;
 
     const visible = useRadarVisibility(
       nearbyCars,

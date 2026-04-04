@@ -87,6 +87,87 @@ export const computeSideCarDistances = (
   return { leftDist, rightDist };
 };
 
+export interface RadarDistances {
+  /** Distance to closest car ahead (meters), Infinity if none */
+  frontDist: number;
+  /** Distance to closest car behind (meters), Infinity if none */
+  rearDist: number;
+  /** Distances for cars currently on the side according to the spotter */
+  sideCars: SideCarDistances;
+}
+
+/**
+ * Unified radar logic middleware.
+ * Ensures a single opponent car appears in only one visual zone.
+ *
+ * Rules:
+ * 1. If spotter indicates left/right, find the closest car on that side. Exclude its carIdx.
+ * 2. From REMAINING cars, find the closest front car (longitudinalDist > 2.2).
+ * 3. From REMAINING cars, find the closest rear car (longitudinalDist < -2.2).
+ */
+export const computeRadarDistances = (
+  nearbyCars: NearbyCarInfo[],
+  spotter: SpotterState
+): RadarDistances => {
+  let leftDist: number | null = null;
+  let rightDist: number | null = null;
+  let leftIdx = -1;
+  let rightIdx = -1;
+
+  let leftClearance = Infinity;
+  let rightClearance = Infinity;
+
+  // Step 1: Side Zones (Priority #1)
+  if (spotter.left || spotter.right) {
+    for (const car of nearbyCars) {
+      if (
+        spotter.left &&
+        car.lateralSide === 'left' &&
+        car.clearance < leftClearance
+      ) {
+        leftClearance = car.clearance;
+        leftDist = car.longitudinalDist;
+        leftIdx = car.carIdx;
+      }
+      if (
+        spotter.right &&
+        car.lateralSide === 'right' &&
+        car.clearance < rightClearance
+      ) {
+        rightClearance = car.clearance;
+        rightDist = car.longitudinalDist;
+        rightIdx = car.carIdx;
+      }
+    }
+  }
+
+  let frontDist = Infinity;
+  let rearDist = Infinity;
+
+  // Car half-length threshold for front/rear classification
+  const BUMPER_THRESHOLD = 2.2;
+
+  // Step 2 & 3: Front and Rear Zones from REMAINING cars
+  for (const car of nearbyCars) {
+    // Exclude cars already assigned to the sides
+    if (car.carIdx === leftIdx || car.carIdx === rightIdx) {
+      continue;
+    }
+
+    if (car.longitudinalDist > BUMPER_THRESHOLD) {
+      frontDist = Math.min(frontDist, car.longitudinalDist);
+    } else if (car.longitudinalDist < -BUMPER_THRESHOLD) {
+      rearDist = Math.min(rearDist, Math.abs(car.longitudinalDist));
+    }
+  }
+
+  return {
+    frontDist,
+    rearDist,
+    sideCars: { leftDist, rightDist },
+  };
+};
+
 export const parseSpotterState = (carLeftRight: number): SpotterState => ({
   left:
     carLeftRight === CarLeftRight.CarLeft ||
