@@ -3,29 +3,29 @@ import type { RadarDistances, SpotterState } from '../../../../utils/proximity';
 import styles from '../ProximityRadarWidget.module.scss';
 
 // === CONSTANTS ===
-const SCALE = 12;
+const SCALE = 22;
 const CAR_W = 1.8;
 const CAR_H = 4.4;
-const CAR_R = 0.8;
-const LATERAL_OFFSET = CAR_W + 1.2;
+const CAR_R = 0.2;
+const LATERAL_OFFSET = CAR_W + 0.6;
 
 const COLORS = {
-  danger: '#ff2a55',
-  warning: '#eab308',
-  safe: '#22c55e',
+  danger: '#ff2a55', // Опасно (до 1м)
+  warning: '#eab308', // Внимание (до 2м)
+  safe: '#22c55e', // Безопасно (> 2м)
   grid: 'rgba(255, 255, 255, 0.1)',
 };
 
 const getCarColor = (dist: number): string => {
-  if (dist <= 5.0) return COLORS.danger;
-  if (dist <= 15.0) return COLORS.warning;
+  if (dist <= 1.0) return COLORS.danger;
+  if (dist <= 2.0) return COLORS.warning;
   return COLORS.safe;
 };
 
 const getSideCarColor = (dist: number): string => {
   const absDist = Math.abs(dist);
-  if (absDist <= 1.0) return COLORS.danger;
-  if (absDist <= 2.5) return COLORS.warning;
+  if (absDist <= 0.5) return COLORS.danger;
+  if (absDist <= 1.5) return COLORS.warning;
   return COLORS.safe;
 };
 
@@ -49,32 +49,53 @@ const CarIcon = ({ fill = '#ffffff', opacity = 1 }: CarIconProps) => (
 interface RadarDisplayProps {
   radarDistances: RadarDistances;
   spotter: SpotterState;
-  maxDist: number;
 }
 
 export const RadarDisplay = ({
   radarDistances,
   spotter,
-  maxDist,
 }: RadarDisplayProps) => {
   const { frontDist, rearDist, sideCars } = radarDistances;
 
-  const showFront = frontDist < maxDist;
-  const showRear = rearDist < maxDist;
+  // For this high-zoom proximity radar, we use a smaller visual range
+  const VISUAL_MAX_DIST = 10.0;
+
+  const showFront = frontDist < VISUAL_MAX_DIST;
+  const showRear = rearDist < VISUAL_MAX_DIST;
 
   const frontColor = showFront ? getCarColor(frontDist) : COLORS.safe;
   const rearColor = showRear ? getCarColor(rearDist) : COLORS.safe;
 
-  const frontOpacity = showFront ? Math.max(0.2, 1 - frontDist / maxDist) : 0;
-  const rearOpacity = showRear ? Math.max(0.2, 1 - rearDist / maxDist) : 0;
+  const frontOpacity = showFront
+    ? Math.max(0.2, 1 - frontDist / VISUAL_MAX_DIST)
+    : 0;
+  const rearOpacity = showRear
+    ? Math.max(0.2, 1 - rearDist / VISUAL_MAX_DIST)
+    : 0;
 
   const frontBumperY = -(CAR_H / 2) * SCALE;
   const rearBumperY = (CAR_H / 2) * SCALE;
 
   return (
     <div className={styles.radarContainer}>
-      <svg viewBox="-100 -200 200 400" className={styles.radarSvg}>
+      <svg viewBox="-120 -240 240 480" className={styles.radarSvg}>
         <defs>
+          <pattern
+            id="hatch-pattern"
+            width="8"
+            height="8"
+            patternUnits="userSpaceOnUse"
+            patternTransform="rotate(45)"
+          >
+            <line
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="8"
+              stroke="rgba(255,255,255,0.05)"
+              strokeWidth="2"
+            />
+          </pattern>
           {spotter.left && sideCars.leftDist !== null && (
             <linearGradient id="cone-left" x1="100%" y1="0%" x2="0%" y2="0%">
               <stop
@@ -105,94 +126,37 @@ export const RadarDisplay = ({
           )}
         </defs>
 
-        {/* Road lane markers */}
-        <g stroke={COLORS.grid} strokeWidth="1.5" strokeDasharray="6 6">
-          <line x1={-30} y1={-200} x2={-30} y2={200} opacity="0.3" />
-          <line x1={30} y1={-200} x2={30} y2={200} opacity="0.3" />
+        {/* ОСИ (Крестовина) ДЛЯ ОРИЕНТИРОВАНИЯ */}
+        <g
+          stroke="#ffffff"
+          strokeWidth="1"
+          strokeDasharray="4 4"
+          opacity="0.15"
+        >
+          <line x1={-120} y1="0" x2={120} y2="0" />
+          <line x1="0" y1={-240} x2="0" y2={240} />
         </g>
 
-        {/* Distance markers */}
-        <g stroke={COLORS.grid} strokeWidth="1" opacity="0.2">
-          <line
-            x1={-30}
-            y1={-(10 * SCALE + CAR_H * SCALE)}
-            x2={30}
-            y2={-(10 * SCALE + CAR_H * SCALE)}
-          />
-          <text
-            x="38"
-            y={-(10 * SCALE + CAR_H * SCALE)}
-            fill="#fff"
-            fontSize="8"
-            alignmentBaseline="middle"
-            fontFamily="Rajdhani, sans-serif"
-          >
-            10m
-          </text>
-
-          <line
-            x1={-30}
-            y1={-(20 * SCALE + CAR_H * SCALE)}
-            x2={30}
-            y2={-(20 * SCALE + CAR_H * SCALE)}
-          />
-          <text
-            x="38"
-            y={-(20 * SCALE + CAR_H * SCALE)}
-            fill="#fff"
-            fontSize="8"
-            alignmentBaseline="middle"
-            fontFamily="Rajdhani, sans-serif"
-          >
-            20m
-          </text>
-
-          <line
-            x1={-30}
-            y1={10 * SCALE + CAR_H * SCALE}
-            x2={30}
-            y2={10 * SCALE + CAR_H * SCALE}
-          />
-          <text
-            x="38"
-            y={10 * SCALE + CAR_H * SCALE}
-            fill="#fff"
-            fontSize="8"
-            alignmentBaseline="middle"
-            fontFamily="Rajdhani, sans-serif"
-          >
-            10m
-          </text>
-
-          <line
-            x1={-30}
-            y1={20 * SCALE + CAR_H * SCALE}
-            x2={30}
-            y2={20 * SCALE + CAR_H * SCALE}
-          />
-          <text
-            x="38"
-            y={20 * SCALE + CAR_H * SCALE}
-            fill="#fff"
-            fontSize="8"
-            alignmentBaseline="middle"
-            fontFamily="Rajdhani, sans-serif"
-          >
-            20m
-          </text>
-        </g>
+        {/* ЦЕНТРАЛЬНАЯ ЗАШТРИХОВАННАЯ ЗОНА (Бок-о-бок) */}
+        <rect
+          x="-120"
+          y={-(CAR_H * SCALE) / 2}
+          width="240"
+          height={CAR_H * SCALE}
+          fill="url(#hatch-pattern)"
+        />
 
         {/* Spotter Glow Cones */}
         {spotter.left && sideCars.leftDist !== null && (
           <polygon
-            points={`${-((CAR_W / 2) * SCALE)},${frontBumperY} -100,-180 -100,180 ${-((CAR_W / 2) * SCALE)},${rearBumperY}`}
+            points={`${-((CAR_W / 2) * SCALE)},${frontBumperY} -150,-180 -150,180 ${-((CAR_W / 2) * SCALE)},${rearBumperY}`}
             fill="url(#cone-left)"
             className={styles.carTransition}
           />
         )}
         {spotter.right && sideCars.rightDist !== null && (
           <polygon
-            points={`${(CAR_W / 2) * SCALE},${frontBumperY} 100,-180 100,180 ${(CAR_W / 2) * SCALE},${rearBumperY}`}
+            points={`${(CAR_W / 2) * SCALE},${frontBumperY} 150,-180 150,180 ${(CAR_W / 2) * SCALE},${rearBumperY}`}
             fill="url(#cone-right)"
             className={styles.carTransition}
           />
@@ -206,7 +170,7 @@ export const RadarDisplay = ({
           >
             <CarIcon opacity={frontOpacity} fill={frontColor} />
             <text
-              y={(-CAR_H * SCALE) / 2 - 6}
+              y={(-CAR_H * SCALE) / 2 - 8}
               textAnchor="middle"
               dominantBaseline="auto"
               fill={frontColor}
@@ -214,7 +178,7 @@ export const RadarDisplay = ({
               fontWeight="bold"
               fontFamily="Rajdhani, sans-serif"
             >
-              {frontDist.toFixed(1)}
+              {frontDist.toFixed(1)}м
             </text>
           </g>
         )}
@@ -227,7 +191,7 @@ export const RadarDisplay = ({
           >
             <CarIcon opacity={rearOpacity} fill={rearColor} />
             <text
-              y={(CAR_H * SCALE) / 2 + 14}
+              y={(CAR_H * SCALE) / 2 + 16}
               textAnchor="middle"
               dominantBaseline="auto"
               fill={rearColor}
@@ -235,7 +199,7 @@ export const RadarDisplay = ({
               fontWeight="bold"
               fontFamily="Rajdhani, sans-serif"
             >
-              {rearDist.toFixed(1)}
+              {rearDist.toFixed(1)}м
             </text>
           </g>
         )}

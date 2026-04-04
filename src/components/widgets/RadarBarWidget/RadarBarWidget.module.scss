@@ -26,9 +26,9 @@
 // Opponent pill inside the bar
 .pill {
   position: absolute;
-  left: 0;
-  width: 100%;
-  border-radius: 14px;
+  left: 2px;
+  width: calc(100% - 4px);
+  border-radius: 6px;
   transition: all 0.1s linear;
   display: flex;
   align-items: center;

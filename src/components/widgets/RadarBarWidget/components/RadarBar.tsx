@@ -67,7 +67,7 @@ export const RadarBar = ({ active, dist, side }: RadarBarProps) => {
           style={{ transform: `rotate(${rotation})` }}
         >
           {dist > 0 ? '+' : ''}
-          {dist.toFixed(1)}
+          {dist.toFixed(1)}м
         </span>
       </div>
     </div>

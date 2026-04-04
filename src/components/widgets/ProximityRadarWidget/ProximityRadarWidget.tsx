@@ -74,11 +74,7 @@ export const ProximityRadarWidget = observer(
 
     return (
       <WidgetPanel className={styles.root} minWidth={100} gap={0}>
-        <RadarDisplay
-          radarDistances={radarDistances}
-          spotter={spotter}
-          maxDist={MAX_RADAR_DIST}
-        />
+        <RadarDisplay radarDistances={radarDistances} spotter={spotter} />
       </WidgetPanel>
     );
   }
