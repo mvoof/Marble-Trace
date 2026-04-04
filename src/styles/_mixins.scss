@@ -1,0 +1,28 @@
+@mixin flex-center($direction: row, $gap: 0) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: $direction;
+  gap: $gap;
+}
+
+@mixin absolute-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+@mixin widget-panel-base {
+  background: var(--widget-bg, rgba(0, 0, 0, 0.8));
+  border-radius: $widget-border-radius;
+  overflow: hidden;
+  position: relative;
+}
+
+@mixin text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

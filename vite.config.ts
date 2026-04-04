@@ -1,8 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// @ts-expect-error process is a nodejs global
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // eslint-disable-next-line no-undef
 const host = process.env.TAURI_DEV_HOST;
 
@@ -17,6 +21,23 @@ export default defineConfig(async () => ({
     }),
   ],
   base: './',
+
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `
+          @use "@/styles/variables" as *;
+          @use "@/styles/mixins" as *;
+        `,
+      },
+    },
+  },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
