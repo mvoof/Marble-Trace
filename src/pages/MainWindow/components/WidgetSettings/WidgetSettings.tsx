@@ -23,6 +23,8 @@ import {
   type RpmColorTheme,
   type InputTraceSettings,
   type InputTraceBarMode,
+  type RadarSettings,
+  type RadarVisibilityMode,
 } from '../../../../store/widget-settings.store';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 
@@ -100,20 +102,45 @@ export const WidgetSettings = observer(
             </Col>
           </Row>
 
-          <Flex vertical>
-            <Text>Background Color</Text>
+          {widgetId !== 'radar-bar' && (
+            <Row gutter={16}>
+              <Col span={12}>
+                <Flex vertical>
+                  <Text>Background Center</Text>
 
-            <ColorPicker
-              value={widget.backgroundColor ?? '#1a1a1a'}
-              onChange={(color) =>
-                widgetSettingsStore.updateField(
-                  widgetId,
-                  'backgroundColor',
-                  color.toHexString()
-                )
-              }
-            />
-          </Flex>
+                  <ColorPicker
+                    value={widget.backgroundColor ?? '#1a1a1a'}
+                    allowClear
+                    onChange={(color) =>
+                      widgetSettingsStore.updateField(
+                        widgetId,
+                        'backgroundColor',
+                        color.toHexString()
+                      )
+                    }
+                  />
+                </Flex>
+              </Col>
+
+              <Col span={12}>
+                <Flex vertical>
+                  <Text>Background Edge</Text>
+
+                  <ColorPicker
+                    value={widget.backgroundColorEdge ?? '#0a0a0a'}
+                    allowClear
+                    onChange={(color) =>
+                      widgetSettingsStore.updateField(
+                        widgetId,
+                        'backgroundColorEdge',
+                        color.toHexString()
+                      )
+                    }
+                  />
+                </Flex>
+              </Col>
+            </Row>
+          )}
 
           <HotkeyRecorder
             key={widgetId}
@@ -132,6 +159,15 @@ export const WidgetSettings = observer(
             <>
               <Divider style={{ margin: '8px 0' }} />
               <InputTraceSettingsPanel />
+            </>
+          )}
+
+          {(widgetId === 'proximity-radar' || widgetId === 'radar-bar') && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <RadarSettingsPanel
+                widgetId={widgetId as 'proximity-radar' | 'radar-bar'}
+              />
             </>
           )}
         </Flex>
@@ -423,3 +459,85 @@ const InputTraceSettingsPanel = observer(() => {
     </Flex>
   );
 });
+
+const RadarSettingsPanel = observer(
+  ({ widgetId }: { widgetId: 'proximity-radar' | 'radar-bar' }) => {
+    const settings = widgetSettingsStore.getRadarSettings(widgetId);
+
+    const update = (partial: Partial<RadarSettings>) => {
+      widgetSettingsStore.updateCustomSettings(widgetId, {
+        [widgetId]: { ...settings, ...partial },
+      });
+    };
+
+    return (
+      <Flex vertical gap={12}>
+        <Title level={5} style={{ margin: 0 }}>
+          Radar Settings
+        </Title>
+
+        <Flex vertical gap={4}>
+          <Text>Visibility</Text>
+
+          <Segmented
+            value={settings.visibilityMode}
+            options={[
+              { label: 'Always', value: 'always' },
+              { label: 'Proximity', value: 'proximity' },
+            ]}
+            onChange={(v) =>
+              update({ visibilityMode: v as RadarVisibilityMode })
+            }
+          />
+        </Flex>
+
+        {settings.visibilityMode === 'proximity' && (
+          <>
+            <Flex vertical gap={4}>
+              <Text>Show when car within (m)</Text>
+
+              <InputNumber
+                style={{ width: '100%' }}
+                value={settings.proximityThreshold}
+                min={1}
+                max={20}
+                step={0.5}
+                onChange={(v) =>
+                  v !== null && update({ proximityThreshold: v })
+                }
+              />
+            </Flex>
+
+            <Flex vertical gap={4}>
+              <Text>Hide delay (seconds)</Text>
+
+              <InputNumber
+                style={{ width: '100%' }}
+                value={settings.hideDelay}
+                min={0}
+                max={30}
+                step={0.5}
+                onChange={(v) => v !== null && update({ hideDelay: v })}
+              />
+            </Flex>
+          </>
+        )}
+
+        {widgetId === 'radar-bar' && (
+          <Flex vertical gap={4}>
+            <Text>Bar Spacing (px)</Text>
+
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.barSpacing ?? 0}
+              min={0}
+              max={1000}
+              step={10}
+              onChange={(v) => v !== null && update({ barSpacing: v })}
+            />
+          </Flex>
+        )}
+      </Flex>
+    );
+  }
+);

@@ -56,6 +56,7 @@ export const WidgetWrapper = observer(
     );
 
     const backgroundColor = widget?.backgroundColor ?? '#1a1a1a';
+    const backgroundColorEdge = widget?.backgroundColorEdge ?? '#0a0a0a';
     const isConnected = telemetryConnection.status === 'connected';
     const shouldHide =
       appSettingsStore.hideWidgetsWhenGameClosed && !isConnected && !dragMode;
@@ -69,22 +70,18 @@ export const WidgetWrapper = observer(
       <section
         ref={wrapperRef}
         className={`${styles.wrapper} ${dragMode ? styles.dragging : ''}`}
+        style={{
+          background: `radial-gradient(circle, ${backgroundColor} 0%, ${backgroundColorEdge} 100%)`,
+        }}
         onMouseDown={handleMouseDown}
       >
-        <div
-          className={styles.bgGradient}
-          style={{
-            background: `radial-gradient(circle, ${backgroundColor} 0%, #0a0a0a 100%)`,
-          }}
-        />
-
         {dragMode && (
           <section className={styles.dragOverlay}>
             <span className={styles.dragLabel}>DRAG MODE</span>
           </section>
         )}
 
-        <div className={styles.content}>{children}</div>
+        {children}
       </section>
     );
   }

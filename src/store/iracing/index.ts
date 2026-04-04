@@ -15,6 +15,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 
 import type {
   CarDynamicsFrame,
+  CarIdxFrame,
   CarInputsFrame,
   CarStatusFrame,
   EnvironmentFrame,
@@ -25,6 +26,7 @@ import type {
 import { debug } from '../../utils/debug';
 
 import { carDynamicsStore } from './car-dynamics.store';
+import { carIdxStore } from './car-idx.store';
 import { carInputsStore } from './car-inputs.store';
 import { carStatusStore } from './car-status.store';
 import { environmentStore } from './environment.store';
@@ -169,6 +171,7 @@ class TelemetryConnection {
 
   private resetAllStores() {
     carDynamicsStore.reset();
+    carIdxStore.reset();
     carInputsStore.reset();
     carStatusStore.reset();
     lapTimingStore.reset();
@@ -193,6 +196,13 @@ class TelemetryConnection {
           carDynamicsStore.updateFrame(event.payload);
         }
       )
+    );
+
+    this.unlistens.push(
+      await listen<CarIdxFrame>('iracing://telemetry/car-idx', (event) => {
+        if (this.initId !== guardId) return;
+        carIdxStore.updateFrame(event.payload);
+      })
     );
 
     this.unlistens.push(
@@ -282,6 +292,7 @@ export const telemetryConnection = new TelemetryConnection();
 
 // Re-export all domain stores
 export { carDynamicsStore } from './car-dynamics.store';
+export { carIdxStore } from './car-idx.store';
 export { carInputsStore } from './car-inputs.store';
 export { carStatusStore } from './car-status.store';
 export { environmentStore } from './environment.store';

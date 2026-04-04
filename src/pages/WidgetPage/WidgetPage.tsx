@@ -9,6 +9,8 @@ import { TelemetryDebugWidget } from '../../components/widgets/TelemetryDebugWid
 
 import { SpeedWidget } from '../../components/widgets/SpeedWidget';
 import { InputTraceWidget } from '../../components/widgets/InputTraceWidget';
+import { ProximityRadarWidget } from '../../components/widgets/ProximityRadarWidget';
+import { RadarBarWidget } from '../../components/widgets/RadarBarWidget';
 import { WidgetWrapper } from '../../components/widgets/WidgetWrapper';
 import styles from './WidgetPage.module.scss';
 
@@ -56,6 +58,26 @@ const WIDGET_MAP: Record<string, WidgetEntry> = {
         component: InputTraceWidget,
         designWidth: 400,
         designHeight: 110,
+      },
+    },
+  },
+  'proximity-radar': {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: ProximityRadarWidget,
+        designWidth: 200,
+        designHeight: 300,
+      },
+    },
+  },
+  'radar-bar': {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: RadarBarWidget,
+        designWidth: 800,
+        designHeight: 380,
       },
     },
   },

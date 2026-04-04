@@ -26,9 +26,20 @@ export interface InputTraceSettings {
   barMode: InputTraceBarMode;
 }
 
+export type RadarVisibilityMode = 'always' | 'proximity';
+
+export interface RadarSettings {
+  visibilityMode: RadarVisibilityMode;
+  proximityThreshold: number;
+  hideDelay: number;
+  barSpacing?: number;
+}
+
 export interface WidgetCustomSettings {
   speed?: SpeedWidgetSettings;
   'input-trace'?: InputTraceSettings;
+  'proximity-radar'?: RadarSettings;
+  'radar-bar'?: RadarSettings;
 }
 
 export interface WidgetConfig {
@@ -40,6 +51,7 @@ export interface WidgetConfig {
   width: number;
   height: number;
   backgroundColor: string;
+  backgroundColorEdge: string;
   hotkey: string;
   customSettings?: WidgetCustomSettings;
 }
@@ -60,6 +72,7 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     width: 290,
     height: 80,
     backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
     hotkey: 'F10',
     customSettings: {
       speed: {
@@ -81,6 +94,7 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     width: 400,
     height: 220,
     backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
     hotkey: 'F11',
     customSettings: {
       'input-trace': {
@@ -95,6 +109,45 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     },
   },
   {
+    id: 'proximity-radar',
+    label: 'Proximity Radar',
+    enabled: false,
+    x: 600,
+    y: 300,
+    width: 300,
+    height: 300,
+    backgroundColor: 'transparent',
+    backgroundColorEdge: 'transparent',
+    hotkey: 'F6',
+    customSettings: {
+      'proximity-radar': {
+        visibilityMode: 'proximity',
+        proximityThreshold: 5,
+        hideDelay: 2,
+      },
+    },
+  },
+  {
+    id: 'radar-bar',
+    label: 'Radar Bar',
+    enabled: false,
+    x: 200,
+    y: 300,
+    width: 800,
+    height: 380,
+    backgroundColor: 'transparent',
+    backgroundColorEdge: 'transparent',
+    hotkey: 'F7',
+    customSettings: {
+      'radar-bar': {
+        visibilityMode: 'proximity',
+        proximityThreshold: 3,
+        hideDelay: 2,
+        barSpacing: 0,
+      },
+    },
+  },
+  {
     id: 'example',
     label: 'Telemetry Debug',
     enabled: false,
@@ -103,6 +156,7 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     width: 400,
     height: 700,
     backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
     hotkey: 'F8',
   },
 ];
@@ -137,6 +191,14 @@ class WidgetSettingsStore {
         for (const defaultWidget of DEFAULT_WIDGETS) {
           if (!merged.find((w) => w.id === defaultWidget.id)) {
             merged.push(defaultWidget);
+          }
+        }
+
+        // Migrate: add backgroundColorEdge if missing
+        for (const w of merged) {
+          if (!w.backgroundColorEdge) {
+            const def = DEFAULT_WIDGETS.find((d) => d.id === w.id);
+            w.backgroundColorEdge = def?.backgroundColorEdge ?? '#0a0a0a';
           }
         }
 
@@ -243,6 +305,20 @@ class WidgetSettingsStore {
         barMode: 'horizontal',
       }
     );
+  }
+
+  getRadarSettings(id: 'proximity-radar' | 'radar-bar'): RadarSettings {
+    const widget = this.getWidget(id);
+    const defaults: RadarSettings =
+      id === 'proximity-radar'
+        ? { visibilityMode: 'proximity', proximityThreshold: 5, hideDelay: 2 }
+        : {
+            visibilityMode: 'proximity',
+            proximityThreshold: 3,
+            hideDelay: 2,
+            barSpacing: 0,
+          };
+    return widget?.customSettings?.[id] ?? defaults;
   }
 
   updateCustomSettings(id: string, settings: WidgetCustomSettings) {

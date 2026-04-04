@@ -9,6 +9,7 @@
  */
 import {
   carDynamicsStore,
+  carIdxStore,
   carInputsStore,
   carStatusStore,
   environmentStore,
@@ -18,6 +19,9 @@ import {
 
 /** Car dynamics: speed, rpm, gear, steering, g-forces, shift indicators */
 export const useCarDynamics = () => carDynamicsStore.frame;
+
+/** Per-car index data: lap distances, positions, pit status, CarLeftRight */
+export const useCarIdx = () => carIdxStore.frame;
 
 /** Driver inputs: throttle, brake, clutch pedal positions */
 export const useCarInputs = () => carInputsStore.frame;

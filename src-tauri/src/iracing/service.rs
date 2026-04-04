@@ -28,8 +28,8 @@ use tokio::time::sleep;
 use tracing::{debug, info, warn};
 
 use super::frames::{
-    AllFieldsFrame, CarDynamicsFrame, CarInputsFrame, CarStatusFrame,
-    EnvironmentFrame, LapTimingFrame, SessionFrame,
+    AllFieldsFrame, CarDynamicsFrame, CarIdxFrame, CarInputsFrame,
+    CarStatusFrame, EnvironmentFrame, LapTimingFrame, SessionFrame,
 };
 
 /// Shared state for the iRacing telemetry connection.
@@ -264,6 +264,7 @@ pub async fn stop_telemetry_stream(
 /// and emits each as a separate Tauri event.
 fn emit_domain_frames(app: &AppHandle, frame: &AllFieldsFrame) {
     let car_dynamics = CarDynamicsFrame::from(frame);
+    let car_idx = CarIdxFrame::from(frame);
     let car_inputs = CarInputsFrame::from(frame);
     let car_status = CarStatusFrame::from(frame);
     let lap_timing = LapTimingFrame::from(frame);
@@ -274,6 +275,10 @@ fn emit_domain_frames(app: &AppHandle, frame: &AllFieldsFrame) {
         app.emit("iracing://telemetry/car-dynamics", &car_dynamics)
     {
         warn!("Failed to emit car dynamics: {}", e);
+    }
+
+    if let Err(e) = app.emit("iracing://telemetry/car-idx", &car_idx) {
+        warn!("Failed to emit car idx: {}", e);
     }
 
     if let Err(e) = app.emit("iracing://telemetry/car-inputs", &car_inputs) {

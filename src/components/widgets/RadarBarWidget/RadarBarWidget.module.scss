@@ -1,0 +1,49 @@
+@use '../../../styles/variables' as *;
+
+.root {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+// === RadarBar (pill indicator) ===
+
+.bar {
+  width: 28px;
+  height: 100%;
+  border-radius: 14px;
+  border: 1px solid #1e2430;
+  background-color: #11151c;
+  position: relative;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.5),
+    inset 0 0 10px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+}
+
+// Opponent pill inside the bar
+.pill {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  border-radius: 14px;
+  transition: all 0.1s linear;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.95;
+}
+
+// Distance text inside pill
+.pillText {
+  color: #ffffff;
+  font-family: $font-widget;
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+  transform-origin: center;
+}

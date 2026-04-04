@@ -7,6 +7,7 @@
 ///
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 pub mod car_dynamics;
+pub mod car_idx;
 pub mod car_inputs;
 pub mod car_status;
 pub mod environment;
@@ -14,6 +15,7 @@ pub mod lap_timing;
 pub mod session;
 
 pub use car_dynamics::CarDynamicsFrame;
+pub use car_idx::CarIdxFrame;
 pub use car_inputs::CarInputsFrame;
 pub use car_status::CarStatusFrame;
 pub use environment::EnvironmentFrame;
@@ -124,6 +126,16 @@ pub(crate) struct AllFieldsFrame {
     // === Environment ===
     #[field_name = "AirTemp"]
     pub air_temp: Option<f32>,
+
+    // === Car Index (per-car arrays) ===
+    #[field_name = "CarIdxLapDistPct"]
+    pub car_idx_lap_dist_pct: Vec<f32>,
+    #[field_name = "CarIdxOnPitRoad"]
+    pub car_idx_on_pit_road: Vec<bool>,
+    #[field_name = "CarIdxPosition"]
+    pub car_idx_position: Vec<i32>,
+    #[field_name = "CarIdxClassPosition"]
+    pub car_idx_class_position: Vec<i32>,
 }
 
 // === Domain frame decomposition ===
@@ -199,6 +211,18 @@ impl From<&AllFieldsFrame> for SessionFrame {
             session_state: f.session_state,
             session_flags: f.session_flags,
             session_num: f.session_num,
+        }
+    }
+}
+
+impl From<&AllFieldsFrame> for CarIdxFrame {
+    fn from(f: &AllFieldsFrame) -> Self {
+        Self {
+            car_idx_lap_dist_pct: f.car_idx_lap_dist_pct.clone(),
+            car_idx_on_pit_road: f.car_idx_on_pit_road.clone(),
+            car_idx_position: f.car_idx_position.clone(),
+            car_idx_class_position: f.car_idx_class_position.clone(),
+            car_left_right: f.car_left_right,
         }
     }
 }
