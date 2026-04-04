@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, type CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { carDynamicsStore, sessionStore } from '../../../store/iracing';
@@ -86,21 +86,30 @@ export const SpeedWidget = observer(() => {
 
       <div className={styles.gearContainer}>
         <svg className={styles.gearSvg} viewBox="0 0 300 300">
-          <circle className={styles.circleBg} cx="150" cy="150" r={CIRCLE_R} />
+          <circle
+            className={styles.circleBg}
+            cx="150"
+            cy="150"
+            r={CIRCLE_R}
+            stroke="currentColor"
+          />
 
           <circle
             className={`${styles.circleProgress} ${isLimit ? styles.blinkAlert : ''}`}
             cx="150"
             cy="150"
             r={CIRCLE_R}
-            style={{
-              strokeDasharray: CIRCUMFERENCE,
-              stroke: zoneColor,
-              strokeDashoffset: offset,
-              filter: isLimit
-                ? `drop-shadow(0 0 15px ${rpmColors.limit})`
-                : 'drop-shadow(0 0 0px transparent)',
-            }}
+            stroke="currentColor"
+            style={
+              {
+                strokeDasharray: CIRCUMFERENCE,
+                color: zoneColor,
+                strokeDashoffset: offset,
+                filter: isLimit
+                  ? `drop-shadow(0 0 15px ${rpmColors.limit})`
+                  : 'drop-shadow(0 0 0px transparent)',
+              } as CSSProperties
+            }
           />
         </svg>
 

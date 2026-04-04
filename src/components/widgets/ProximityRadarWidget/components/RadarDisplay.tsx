@@ -30,20 +30,21 @@ const getSideCarColor = (dist: number): string => {
 };
 
 interface CarIconProps {
-  fill?: string;
+  color?: string;
   opacity?: number;
 }
 
-const CarIcon = ({ fill = '#ffffff', opacity = 1 }: CarIconProps) => (
+const CarIcon = ({ color = 'currentColor', opacity = 1 }: CarIconProps) => (
   <rect
     x={-(CAR_W * SCALE) / 2}
     y={-(CAR_H * SCALE) / 2}
     width={CAR_W * SCALE}
     height={CAR_H * SCALE}
     rx={CAR_R * SCALE}
-    fill={fill}
+    fill={color}
     opacity={opacity}
     className={styles.carIcon}
+    // style={{ color } as CSSProperties}
   />
 );
 
@@ -93,8 +94,9 @@ export const RadarDisplay = ({
               y1="0"
               x2="0"
               y2="8"
-              stroke="rgba(255,255,255,0.05)"
+              stroke="currentColor"
               strokeWidth="2"
+              className={styles.hatchLine}
             />
           </pattern>
           {spotter.left && sideCars.leftDist !== null && (
@@ -129,10 +131,10 @@ export const RadarDisplay = ({
 
         {/* ОСИ (Крестовина) ДЛЯ ОРИЕНТИРОВАНИЯ */}
         <g
-          stroke="#ffffff"
+          stroke="currentColor"
           strokeWidth="1"
           strokeDasharray="4 4"
-          opacity="0.15"
+          className={styles.gridLine}
         >
           <line x1={-120} y1="0" x2={120} y2="0" />
           <line x1="0" y1={-240} x2="0" y2={240} />
@@ -169,7 +171,7 @@ export const RadarDisplay = ({
             transform={`translate(0, ${-(frontDist * SCALE) - CAR_H * SCALE})`}
             className={styles.carTransition}
           >
-            <CarIcon opacity={frontOpacity} fill={frontColor} />
+            <CarIcon opacity={frontOpacity} color={frontColor} />
             <text y="-18" className={styles.radarMeasurementText}>
               {frontDist.toFixed(1)}м
             </text>
@@ -182,7 +184,7 @@ export const RadarDisplay = ({
             transform={`translate(0, ${rearDist * SCALE + CAR_H * SCALE})`}
             className={styles.carTransition}
           >
-            <CarIcon opacity={rearOpacity} fill={rearColor} />
+            <CarIcon opacity={rearOpacity} color={rearColor} />
             <text y="18" className={styles.radarMeasurementText}>
               {rearDist.toFixed(1)}м
             </text>
@@ -195,7 +197,7 @@ export const RadarDisplay = ({
             transform={`translate(${-(LATERAL_OFFSET * SCALE)}, ${-(sideCars.leftDist * SCALE)})`}
             className={styles.carTransition}
           >
-            <CarIcon opacity={0.8} fill={getSideCarColor(sideCars.leftDist)} />
+            <CarIcon opacity={0.8} color={getSideCarColor(sideCars.leftDist)} />
             <text y="0" className={styles.radarMeasurementText}>
               {Math.abs(sideCars.leftDist).toFixed(1)}м
             </text>
@@ -208,7 +210,10 @@ export const RadarDisplay = ({
             transform={`translate(${LATERAL_OFFSET * SCALE}, ${-(sideCars.rightDist * SCALE)})`}
             className={styles.carTransition}
           >
-            <CarIcon opacity={0.8} fill={getSideCarColor(sideCars.rightDist)} />
+            <CarIcon
+              opacity={0.8}
+              color={getSideCarColor(sideCars.rightDist)}
+            />
             <text y="0" className={styles.radarMeasurementText}>
               {Math.abs(sideCars.rightDist).toFixed(1)}м
             </text>
@@ -216,7 +221,7 @@ export const RadarDisplay = ({
         )}
 
         {/* Player car (center) */}
-        <CarIcon fill="currentColor" />
+        <CarIcon color="currentColor" />
       </svg>
     </div>
   );

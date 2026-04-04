@@ -25,7 +25,8 @@
 }
 
 .radarMeasurementText {
-  fill: #ffffff;
+  fill: currentColor;
+  color: #ffffff;
   font-size: 11px;
   font-weight: bold;
   text-anchor: middle;
@@ -35,5 +36,13 @@
 }
 
 .carIcon {
-  color: #fafafac0;
+  color: rgba(250, 250, 250, 0.7);
+}
+
+.gridLine {
+  color: rgba(255, 255, 255, 0.15);
+}
+
+.hatchLine {
+  color: rgba(255, 255, 255, 0.05);
 }
