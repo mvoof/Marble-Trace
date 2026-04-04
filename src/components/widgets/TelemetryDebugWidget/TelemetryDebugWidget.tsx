@@ -86,12 +86,12 @@ export const TelemetryDebugWidget = observer(() => {
           label="Remain"
           value={`${fmt(sessionFrame?.session_time_remain)} s`}
         />
-        <Row label="Redline" value={fmt(driverInfo?.driver_car_red_line, 0)} />
+        <Row label="Redline" value={fmt(driverInfo?.DriverCarRedLine, 0)} />
         <Row
           label="Fuel Max"
-          value={`${fmt(driverInfo?.driver_car_fuel_max_ltr)} L`}
+          value={`${fmt(driverInfo?.DriverCarFuelMaxLtr)} L`}
         />
-        <Row label="Track" value={weekendInfo?.track_name ?? '—'} />
+        <Row label="Track" value={weekendInfo?.TrackName ?? '—'} />
       </div>
     </WidgetPanel>
   );
