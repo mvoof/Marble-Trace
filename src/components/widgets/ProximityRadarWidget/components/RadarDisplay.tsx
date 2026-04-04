@@ -113,10 +113,15 @@ export const RadarDisplay = ({
 
         {/* Distance markers */}
         <g stroke={COLORS.grid} strokeWidth="1" opacity="0.2">
-          <line x1={-30} y1={-(10 * SCALE)} x2={30} y2={-(10 * SCALE)} />
+          <line
+            x1={-30}
+            y1={-(10 * SCALE + CAR_H * SCALE)}
+            x2={30}
+            y2={-(10 * SCALE + CAR_H * SCALE)}
+          />
           <text
             x="38"
-            y={-(10 * SCALE)}
+            y={-(10 * SCALE + CAR_H * SCALE)}
             fill="#fff"
             fontSize="8"
             alignmentBaseline="middle"
@@ -125,10 +130,15 @@ export const RadarDisplay = ({
             10m
           </text>
 
-          <line x1={-30} y1={-(20 * SCALE)} x2={30} y2={-(20 * SCALE)} />
+          <line
+            x1={-30}
+            y1={-(20 * SCALE + CAR_H * SCALE)}
+            x2={30}
+            y2={-(20 * SCALE + CAR_H * SCALE)}
+          />
           <text
             x="38"
-            y={-(20 * SCALE)}
+            y={-(20 * SCALE + CAR_H * SCALE)}
             fill="#fff"
             fontSize="8"
             alignmentBaseline="middle"
@@ -137,10 +147,15 @@ export const RadarDisplay = ({
             20m
           </text>
 
-          <line x1={-30} y1={10 * SCALE} x2={30} y2={10 * SCALE} />
+          <line
+            x1={-30}
+            y1={10 * SCALE + CAR_H * SCALE}
+            x2={30}
+            y2={10 * SCALE + CAR_H * SCALE}
+          />
           <text
             x="38"
-            y={10 * SCALE}
+            y={10 * SCALE + CAR_H * SCALE}
             fill="#fff"
             fontSize="8"
             alignmentBaseline="middle"
@@ -149,10 +164,15 @@ export const RadarDisplay = ({
             10m
           </text>
 
-          <line x1={-30} y1={20 * SCALE} x2={30} y2={20 * SCALE} />
+          <line
+            x1={-30}
+            y1={20 * SCALE + CAR_H * SCALE}
+            x2={30}
+            y2={20 * SCALE + CAR_H * SCALE}
+          />
           <text
             x="38"
-            y={20 * SCALE}
+            y={20 * SCALE + CAR_H * SCALE}
             fill="#fff"
             fontSize="8"
             alignmentBaseline="middle"

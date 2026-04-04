@@ -146,6 +146,7 @@ export const computeRadarDistances = (
 
   // Car half-length threshold for front/rear classification
   const BUMPER_THRESHOLD = 2.2;
+  const CAR_LENGTH = 2 * BUMPER_THRESHOLD;
 
   // Step 2 & 3: Front and Rear Zones from REMAINING cars
   for (const car of nearbyCars) {
@@ -155,9 +156,11 @@ export const computeRadarDistances = (
     }
 
     if (car.longitudinalDist > BUMPER_THRESHOLD) {
-      frontDist = Math.min(frontDist, car.longitudinalDist);
+      const gap = Math.max(0, car.longitudinalDist - CAR_LENGTH);
+      frontDist = Math.min(frontDist, gap);
     } else if (car.longitudinalDist < -BUMPER_THRESHOLD) {
-      rearDist = Math.min(rearDist, Math.abs(car.longitudinalDist));
+      const gap = Math.max(0, Math.abs(car.longitudinalDist) - CAR_LENGTH);
+      rearDist = Math.min(rearDist, gap);
     }
   }
 
