@@ -115,6 +115,33 @@ shift_indicator_pct: number | null;
  */
 shift_grind_rpm: number | null }
 
+export type CarIdxFrame = { 
+/**
+ * Percentage distance around lap for each car (-1 = not on track)
+ * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlapdistpct/
+ */
+car_idx_lap_dist_pct: number[]; 
+/**
+ * Whether each car is on pit road
+ * @see https://sajax.github.io/irsdkdocs/telemetry/caridxonpitroad/
+ */
+car_idx_on_pit_road: boolean[]; 
+/**
+ * Overall race position for each car
+ * @see https://sajax.github.io/irsdkdocs/telemetry/caridxposition/
+ */
+car_idx_position: number[]; 
+/**
+ * Class position for each car
+ * @see https://sajax.github.io/irsdkdocs/telemetry/caridxclassposition/
+ */
+car_idx_class_position: number[]; 
+/**
+ * Proximity indicator bit field for cars nearby
+ * @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
+ */
+car_left_right: number | null }
+
 export type CarInputsFrame = { 
 /**
  * Throttle pedal position: 0.0 (released) to 1.0 (fully pressed)

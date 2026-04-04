@@ -2,8 +2,8 @@ mod iracing;
 
 use iracing::{
     get_last_session_info, start_telemetry_stream, stop_telemetry_stream,
-    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, EnvironmentFrame,
-    LapTimingFrame, SessionFrame, TelemetryState,
+    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame,
+    EnvironmentFrame, LapTimingFrame, SessionFrame, TelemetryState,
 };
 use pitwall::SessionInfo;
 use specta::TypeCollection;
@@ -25,6 +25,7 @@ pub fn run() {
     let mut types = TypeCollection::default();
     types
         .register::<CarDynamicsFrame>()
+        .register::<CarIdxFrame>()
         .register::<CarInputsFrame>()
         .register::<CarStatusFrame>()
         .register::<LapTimingFrame>()

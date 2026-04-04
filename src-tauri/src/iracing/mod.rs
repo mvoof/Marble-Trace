@@ -35,8 +35,8 @@ pub mod frames;
 pub mod service;
 
 pub use frames::{
-    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, EnvironmentFrame,
-    LapTimingFrame, SessionFrame,
+    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame,
+    EnvironmentFrame, LapTimingFrame, SessionFrame,
 };
 pub use service::{
     get_last_session_info, start_telemetry_stream, stop_telemetry_stream,

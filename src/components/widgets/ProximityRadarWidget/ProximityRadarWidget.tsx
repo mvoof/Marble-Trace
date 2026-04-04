@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '../primitives/WidgetPanel';
@@ -18,59 +18,75 @@ import styles from './ProximityRadarWidget.module.scss';
 
 const MAX_RADAR_DIST = 30;
 
-export const ProximityRadarWidget = observer(() => {
-  const carIdx = useCarIdx();
-  const { driverInfo, weekendInfo } = useSession();
-  const radarSettings = widgetSettingsStore.getRadarSettings('proximity-radar');
+interface ProximityRadarWidgetProps {
+  onVisibilityChange?: (visible: boolean) => void;
+}
 
-  const playerCarIdx = driverInfo?.DriverCarIdx ?? null;
-  const trackLengthStr = weekendInfo?.TrackLength ?? '';
-  const trackLength = useMemo(
-    () => parseTrackLength(trackLengthStr),
-    [trackLengthStr]
-  );
+export const ProximityRadarWidget = observer(
+  ({ onVisibilityChange }: ProximityRadarWidgetProps) => {
+    const carIdx = useCarIdx();
+    const { driverInfo, weekendInfo } = useSession();
+    const radarSettings =
+      widgetSettingsStore.getRadarSettings('proximity-radar');
 
-  const carLeftRight = carIdx?.car_left_right ?? 0;
-
-  const nearbyCars = useMemo(() => {
-    if (!carIdx || playerCarIdx === null || trackLength <= 0) return [];
-
-    return computeNearbyCars(
-      carIdx,
-      playerCarIdx,
-      trackLength,
-      MAX_RADAR_DIST,
-      carLeftRight
+    const playerCarIdx = driverInfo?.DriverCarIdx ?? null;
+    const trackLengthStr = weekendInfo?.TrackLength ?? '';
+    const trackLength = useMemo(
+      () => parseTrackLength(trackLengthStr),
+      [trackLengthStr]
     );
-  }, [carIdx, playerCarIdx, trackLength, carLeftRight]);
 
-  const distances = useMemo(
-    () => computeFrontRearDistances(nearbyCars),
-    [nearbyCars]
-  );
+    const carLeftRight = carIdx?.car_left_right ?? 0;
 
-  const spotter = useMemo(
-    () => parseSpotterState(carLeftRight),
-    [carLeftRight]
-  );
+    const nearbyCars = useMemo(() => {
+      if (!carIdx || playerCarIdx === null || trackLength <= 0) return [];
 
-  const sideCars = useMemo(
-    () => computeSideCarDistances(nearbyCars),
-    [nearbyCars]
-  );
+      return computeNearbyCars(
+        carIdx,
+        playerCarIdx,
+        trackLength,
+        MAX_RADAR_DIST,
+        carLeftRight
+      );
+    }, [carIdx, playerCarIdx, trackLength, carLeftRight]);
 
-  const visible = useRadarVisibility(nearbyCars, radarSettings);
+    const distances = useMemo(
+      () => computeFrontRearDistances(nearbyCars),
+      [nearbyCars]
+    );
 
-  if (!visible) return null;
+    const spotter = useMemo(
+      () => parseSpotterState(carLeftRight),
+      [carLeftRight]
+    );
 
-  return (
-    <WidgetPanel className={styles.root} minWidth={100} gap={0}>
-      <RadarDisplay
-        distances={distances}
-        spotter={spotter}
-        sideCars={sideCars}
-        maxDist={MAX_RADAR_DIST}
-      />
-    </WidgetPanel>
-  );
-});
+    const sideCars = useMemo(
+      () => computeSideCarDistances(nearbyCars),
+      [nearbyCars]
+    );
+
+    const visible = useRadarVisibility(
+      nearbyCars,
+      radarSettings,
+      spotter.left || spotter.right
+    );
+
+    // Notify parent wrapper about visibility changes
+    useEffect(() => {
+      onVisibilityChange?.(visible);
+    }, [visible, onVisibilityChange]);
+
+    if (!visible) return null;
+
+    return (
+      <WidgetPanel className={styles.root} minWidth={100} gap={0}>
+        <RadarDisplay
+          distances={distances}
+          spotter={spotter}
+          sideCars={sideCars}
+          maxDist={MAX_RADAR_DIST}
+        />
+      </WidgetPanel>
+    );
+  }
+);

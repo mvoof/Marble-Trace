@@ -92,9 +92,14 @@ const getWidgetVariant = (id: string, entry: WidgetEntry): string => {
   return entry.defaultVariant;
 };
 
+interface BaseWidgetProps {
+  onVisibilityChange?: (visible: boolean) => void;
+}
+
 export const WidgetPage = observer(() => {
   const { id } = useParams<{ id: string }>();
   const [ready, setReady] = useState(false);
+  const [visible, setVisible] = useState(true);
 
   useWidgetTelemetry();
 
@@ -133,6 +138,7 @@ export const WidgetPage = observer(() => {
     widgetEntry.variants[variantKey] ??
     widgetEntry.variants[widgetEntry.defaultVariant];
   const { component: WidgetComponent, designWidth, designHeight } = variant;
+  const Component = WidgetComponent as React.ComponentType<BaseWidgetProps>;
 
   return (
     <section className={styles.widgetPage}>
@@ -140,8 +146,9 @@ export const WidgetPage = observer(() => {
         widgetId={id}
         designWidth={designWidth}
         designHeight={designHeight}
+        visible={visible}
       >
-        <WidgetComponent />
+        <Component onVisibilityChange={setVisible} />
       </WidgetWrapper>
     </section>
   );
