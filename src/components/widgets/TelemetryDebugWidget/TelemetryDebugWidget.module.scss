@@ -1,0 +1,41 @@
+.widget {
+  padding: $space-md;
+  color: #ccc;
+  font-family: monospace;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  overflow-y: auto;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+.waiting {
+  color: $color-warning;
+  margin-bottom: $space-sm;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-xs $space-md;
+}
+
+.sectionTitle {
+  color: $color-info;
+  font-weight: bold;
+  margin-bottom: $space-xs;
+  margin-top: $space-sm;
+  grid-column: 1 / -1;
+  text-transform: uppercase;
+}
+
+.label {
+  color: #888;
+}
+
+.value {
+  color: #fff;
+  text-align: right;
+}

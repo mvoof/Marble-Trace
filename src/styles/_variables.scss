@@ -6,11 +6,45 @@ $color-text-accent: #00ff00;
 $color-text-muted: #888;
 $color-border: rgba(255, 255, 255, 0.15);
 
+// Semantic colors
+$color-positive: #00ff00;
+$color-warning: #ffcc00;
+$color-danger: #ff3333;
+$color-info: #3399ff;
+$color-neutral: #888888;
+
+// Input-specific colors
+$color-throttle: #00ff00;
+$color-brake: #ff3333;
+$color-clutch: #3399ff;
+
 // Typography
 $font-mono: 'Courier New', Courier, monospace;
-$font-size-widget: 13px;
+$font-widget: 'Rajdhani', sans-serif;
+$font-size-widget: 0.8125rem;
 $line-height-widget: 1.4;
 
+// Typography scale
+$font-size-xs: 0.625rem;
+$font-size-sm: 0.75rem;
+$font-size-md: 0.875rem;
+$font-size-lg: 1.25rem;
+$font-size-xl: 2rem;
+$font-size-2xl: 3rem;
+$font-size-3xl: 4rem;
+
 // Spacing
-$widget-padding: 12px 16px;
 $widget-border-radius: 4px;
+
+// Spacing scale
+$space-xs: 0.125rem;
+$space-sm: 0.25rem;
+$space-md: 0.5rem;
+$space-lg: 0.75rem;
+$space-xl: 1rem;
+
+// Bar sizes
+$bar-height-sm: 8px;
+$bar-height-md: 12px;
+$bar-height-lg: 18px;
+$bar-border-radius: 4px;

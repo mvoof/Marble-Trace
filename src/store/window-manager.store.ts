@@ -21,6 +21,7 @@ class WindowManagerStore {
       x: config.x,
       y: config.y,
       decorations: false,
+      shadow: false,
       transparent: true,
       alwaysOnTop: true,
       resizable: true,
@@ -94,9 +95,17 @@ class WindowManagerStore {
 
   async restoreEnabledWidgets() {
     for (const config of widgetSettingsStore.widgets) {
-      if (config.enabled) {
+      if (config.enabled && !this.openWindows.has(config.id)) {
         await this.openWidget(config);
       }
+    }
+  }
+
+  async hideAllWidgets() {
+    const ids = Array.from(this.openWindows.keys());
+
+    for (const id of ids) {
+      await this.closeWidget(id);
     }
   }
 }

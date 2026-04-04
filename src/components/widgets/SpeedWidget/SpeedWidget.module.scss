@@ -1,0 +1,102 @@
+.altPanel {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 0.25rem;
+  overflow: hidden;
+}
+
+.statBlock {
+  @include flex-center(column);
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  z-index: 1;
+}
+
+.value {
+  font-size: $font-size-2xl;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  text-align: center;
+}
+
+.label {
+  margin-top: 0.1rem;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.gearContainer {
+  position: relative;
+  @include flex-center;
+  flex: 0 0 auto;
+  height: 100%;
+  aspect-ratio: 1;
+  z-index: 1;
+  overflow: visible;
+}
+
+.gearSvg {
+  position: absolute;
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.circleBg {
+  fill: none;
+  color: rgba(255, 255, 255, 0.05);
+  stroke-width: 6;
+}
+
+.circleProgress {
+  fill: none;
+  stroke-width: 11;
+  stroke-linecap: round;
+  transition:
+    stroke-dashoffset 0.05s linear,
+    stroke 0.2s ease;
+}
+
+.gearValue {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+  text-align: center;
+}
+
+.centerLabel {
+  position: absolute;
+  bottom: 0.25rem;
+  font-size: 0.45rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@keyframes limit-blink {
+  0%,
+  49.9% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.blinkAlert {
+  animation: limit-blink 0.12s infinite !important;
+  transition: none !important;
+}

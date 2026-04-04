@@ -9,9 +9,11 @@ import {
   Tag,
   Switch,
   Flex,
+  Segmented,
 } from 'antd';
 import type { InputRef } from 'antd';
 import { appSettingsStore } from '../../../../store/app-settings.store';
+import { unitsStore, type UnitSystem } from '../../../../store/units.store';
 
 const { Title, Text } = Typography;
 
@@ -107,6 +109,38 @@ export const SettingsPage = observer(() => {
               )}
             </Space>
           </Flex>
+        </Flex>
+      </Card>
+      <Card title="Game Integration">
+        <Flex vertical gap={8}>
+          <Space>
+            <Switch
+              checked={appSettingsStore.hideWidgetsWhenGameClosed}
+              onChange={(v) => appSettingsStore.setHideWidgetsWhenGameClosed(v)}
+            />
+
+            <Text>Hide widgets when iRacing is not running</Text>
+          </Space>
+
+          <Text type="secondary">
+            Widgets will automatically show when iRacing connects and hide when
+            it disconnects.
+          </Text>
+        </Flex>
+      </Card>
+
+      <Card title="Units">
+        <Flex vertical gap={8}>
+          <Text>Measurement System</Text>
+
+          <Segmented
+            options={[
+              { label: 'Metric (km/h, °C, L)', value: 'metric' },
+              { label: 'Imperial (mph, °F, gal)', value: 'imperial' },
+            ]}
+            value={unitsStore.system}
+            onChange={(value) => unitsStore.setSystem(value as UnitSystem)}
+          />
         </Flex>
       </Card>
     </Flex>

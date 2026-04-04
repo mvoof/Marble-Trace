@@ -1,5 +1,11 @@
 # Marble Trace
 
+<p align="center">
+  <img src="https://github.com/Marble-Trace/blob/main/docs/assets/app-icon.png" width="80px" alt="Marble Trace">
+</p>
+
+---
+
 iRacing telemetry overlay built with Tauri v2 + React 19 + Rust + MobX.
 
 ## Architecture

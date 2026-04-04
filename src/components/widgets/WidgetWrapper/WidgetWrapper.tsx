@@ -1,24 +1,57 @@
-import React, { useEffect, useCallback, type ReactNode } from 'react';
+import React, { useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { appSettingsStore } from '../../../store/app-settings.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { telemetryConnection } from '../../../store/iracing';
 import styles from './WidgetWrapper.module.scss';
 
 interface WidgetWrapperProps {
   widgetId: string;
+  designWidth: number;
+  designHeight: number;
   children: ReactNode;
+  visible?: boolean;
 }
 
 export const WidgetWrapper = observer(
-  ({ widgetId, children }: WidgetWrapperProps) => {
+  ({
+    widgetId,
+    designWidth,
+    designHeight,
+    children,
+    visible = true,
+  }: WidgetWrapperProps) => {
     const { dragMode } = appSettingsStore;
     const widget = widgetSettingsStore.getWidget(widgetId);
+    const wrapperRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
       const appWindow = getCurrentWebviewWindow();
       appWindow.setIgnoreCursorEvents(!dragMode).catch(console.error);
     }, [dragMode]);
+
+    useEffect(() => {
+      const el = wrapperRef.current;
+      if (!el) return;
+
+      const BASE_FONT_SIZE = 16;
+
+      const updateScale = () => {
+        const { width, height } = el.getBoundingClientRect();
+        const scaleX = width / designWidth;
+        const scaleY = height / designHeight;
+        const scale = Math.min(scaleX, scaleY);
+
+        document.documentElement.style.fontSize = `${scale * BASE_FONT_SIZE}px`;
+      };
+
+      const observer = new ResizeObserver(updateScale);
+      observer.observe(el);
+      updateScale();
+
+      return () => observer.disconnect();
+    }, [designWidth, designHeight]);
 
     const handleMouseDown = useCallback(
       (e: React.MouseEvent) => {
@@ -29,20 +62,25 @@ export const WidgetWrapper = observer(
       [dragMode]
     );
 
-    const opacity = widget?.opacity ?? 0.8;
-    const backgroundColor = widget?.backgroundColor ?? '#000000';
-    const scale = widget?.scale ?? 1;
+    const backgroundColor = widget?.backgroundColor ?? '#1a1a1a';
+    const backgroundColorEdge = widget?.backgroundColorEdge ?? '#0a0a0a';
+    const isConnected = telemetryConnection.status === 'connected';
+    const shouldHide =
+      (appSettingsStore.hideWidgetsWhenGameClosed &&
+        !isConnected &&
+        !dragMode) ||
+      (!visible && !dragMode);
 
     return (
       // eslint-disable-next-line jsx-a11y/no-static-element-interactions
       <section
+        ref={wrapperRef}
         className={`${styles.wrapper} ${dragMode ? styles.dragging : ''}`}
         style={{
-          opacity,
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ['--widget-bg-color' as any]: backgroundColor,
+          background: shouldHide
+            ? 'transparent'
+            : `radial-gradient(circle, ${backgroundColor} 0%, ${backgroundColorEdge} 100%)`,
+          visibility: shouldHide ? 'hidden' : 'visible',
         }}
         onMouseDown={handleMouseDown}
       >
@@ -51,6 +89,7 @@ export const WidgetWrapper = observer(
             <span className={styles.dragLabel}>DRAG MODE</span>
           </section>
         )}
+
         {children}
       </section>
     );

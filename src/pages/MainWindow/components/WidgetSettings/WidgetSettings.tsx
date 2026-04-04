@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   InputNumber,
-  Slider,
   Typography,
   Card,
   Row,
@@ -11,8 +10,23 @@ import {
   Flex,
   Button,
   Tag,
+  Select,
+  Segmented,
+  Divider,
+  Switch,
+  Space,
 } from 'antd';
-import { widgetSettingsStore } from '../../../../store/widget-settings.store';
+import {
+  widgetSettingsStore,
+  type SpeedWidgetSettings,
+  type SpeedWidgetFocusMode,
+  type RpmColorTheme,
+  type InputTraceSettings,
+  type InputTraceBarMode,
+  type RadarSettings,
+  type RadarVisibilityMode,
+  type RadarBarDisplayMode,
+} from '../../../../store/widget-settings.store';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 
 const { Title, Text } = Typography;
@@ -89,50 +103,74 @@ export const WidgetSettings = observer(
             </Col>
           </Row>
 
-          <Flex vertical>
-            <Text>Scale: {widget.scale.toFixed(1)}</Text>
+          {widgetId !== 'radar-bar' && (
+            <Row gutter={16}>
+              <Col span={12}>
+                <Flex vertical>
+                  <Text>Background Center</Text>
 
-            <Slider
-              min={0.5}
-              max={3}
-              step={0.1}
-              value={widget.scale}
-              onChange={(v) =>
-                widgetSettingsStore.updateField(widgetId, 'scale', v)
-              }
-            />
-          </Flex>
+                  <ColorPicker
+                    value={widget.backgroundColor ?? '#1a1a1a'}
+                    allowClear
+                    onChange={(color) =>
+                      widgetSettingsStore.updateField(
+                        widgetId,
+                        'backgroundColor',
+                        color.toHexString()
+                      )
+                    }
+                  />
+                </Flex>
+              </Col>
 
-          <Flex vertical>
-            <Text>Opacity: {Math.round((widget.opacity ?? 0.8) * 100)}%</Text>
+              <Col span={12}>
+                <Flex vertical>
+                  <Text>Background Edge</Text>
 
-            <Slider
-              min={0.1}
-              max={1}
-              step={0.05}
-              value={widget.opacity ?? 0.8}
-              onChange={(v) =>
-                widgetSettingsStore.updateField(widgetId, 'opacity', v)
-              }
-            />
-          </Flex>
+                  <ColorPicker
+                    value={widget.backgroundColorEdge ?? '#0a0a0a'}
+                    allowClear
+                    onChange={(color) =>
+                      widgetSettingsStore.updateField(
+                        widgetId,
+                        'backgroundColorEdge',
+                        color.toHexString()
+                      )
+                    }
+                  />
+                </Flex>
+              </Col>
+            </Row>
+          )}
 
-          <Flex vertical>
-            <Text>Background Color</Text>
+          <HotkeyRecorder
+            key={widgetId}
+            widgetId={widgetId}
+            currentHotkey={widget.hotkey}
+          />
 
-            <ColorPicker
-              value={widget.backgroundColor ?? '#000000'}
-              onChange={(color) =>
-                widgetSettingsStore.updateField(
-                  widgetId,
-                  'backgroundColor',
-                  color.toHexString()
-                )
-              }
-            />
-          </Flex>
+          {widgetId === 'speed' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <SpeedSettings />
+            </>
+          )}
 
-          <HotkeyRecorder widgetId={widgetId} currentHotkey={widget.hotkey} />
+          {widgetId === 'input-trace' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <InputTraceSettingsPanel />
+            </>
+          )}
+
+          {(widgetId === 'proximity-radar' || widgetId === 'radar-bar') && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <RadarSettingsPanel
+                widgetId={widgetId as 'proximity-radar' | 'radar-bar'}
+              />
+            </>
+          )}
         </Flex>
       </Card>
     );
@@ -227,3 +265,297 @@ const HotkeyRecorder = ({
     </Flex>
   );
 };
+
+const SpeedSettings = observer(() => {
+  const settings = widgetSettingsStore.getSpeedSettings();
+
+  const update = (partial: Partial<SpeedWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('speed', {
+      speed: { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Speed Widget
+      </Title>
+
+      <Flex vertical gap={4}>
+        <Text>Focus Mode</Text>
+
+        <Segmented
+          value={settings.focusMode}
+          options={[
+            { label: 'Speed', value: 'speed' },
+            { label: 'Gear', value: 'gear' },
+          ]}
+          onChange={(v) => update({ focusMode: v as SpeedWidgetFocusMode })}
+        />
+      </Flex>
+
+      <Flex vertical gap={4}>
+        <Text>RPM Color Theme</Text>
+
+        <Select
+          value={settings.rpmColorTheme}
+          onChange={(v) => update({ rpmColorTheme: v as RpmColorTheme })}
+          options={[
+            { label: 'Custom', value: 'custom' },
+            { label: 'Gradient', value: 'gradient' },
+            { label: 'Classic', value: 'classic' },
+          ]}
+        />
+      </Flex>
+
+      {settings.rpmColorTheme === 'custom' && (
+        <Row gutter={[12, 8]}>
+          <Col span={6}>
+            <Flex vertical align="center" gap={4}>
+              <Text type="secondary">Low</Text>
+
+              <ColorPicker
+                value={settings.rpmColorLow}
+                onChange={(c) => update({ rpmColorLow: c.toHexString() })}
+                size="small"
+              />
+            </Flex>
+          </Col>
+
+          <Col span={6}>
+            <Flex vertical align="center" gap={4}>
+              <Text type="secondary">Mid</Text>
+
+              <ColorPicker
+                value={settings.rpmColorMid}
+                onChange={(c) => update({ rpmColorMid: c.toHexString() })}
+                size="small"
+              />
+            </Flex>
+          </Col>
+
+          <Col span={6}>
+            <Flex vertical align="center" gap={4}>
+              <Text type="secondary">High</Text>
+
+              <ColorPicker
+                value={settings.rpmColorHigh}
+                onChange={(c) => update({ rpmColorHigh: c.toHexString() })}
+                size="small"
+              />
+            </Flex>
+          </Col>
+
+          <Col span={6}>
+            <Flex vertical align="center" gap={4}>
+              <Text type="secondary">Limit</Text>
+
+              <ColorPicker
+                value={settings.rpmColorLimit}
+                onChange={(c) => update({ rpmColorLimit: c.toHexString() })}
+                size="small"
+              />
+            </Flex>
+          </Col>
+        </Row>
+      )}
+
+      {settings.rpmColorTheme !== 'custom' && (
+        <Flex vertical gap={4}>
+          <Text type="secondary">Limit Color</Text>
+
+          <ColorPicker
+            value={settings.rpmColorLimit}
+            onChange={(c) => update({ rpmColorLimit: c.toHexString() })}
+            size="small"
+          />
+        </Flex>
+      )}
+    </Flex>
+  );
+});
+
+const InputTraceSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getInputTraceSettings();
+
+  const update = (partial: Partial<InputTraceSettings>) => {
+    widgetSettingsStore.updateCustomSettings('input-trace', {
+      'input-trace': { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Input Trace
+      </Title>
+
+      <Flex vertical gap={8}>
+        <Text>Channels</Text>
+
+        <Space direction="vertical">
+          <Space>
+            <Switch
+              checked={settings.showThrottle}
+              onChange={(v) => update({ showThrottle: v })}
+              size="small"
+            />
+
+            <Text>Throttle</Text>
+
+            <ColorPicker
+              value={settings.throttleColor}
+              onChange={(c) => update({ throttleColor: c.toHexString() })}
+              size="small"
+            />
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showBrake}
+              onChange={(v) => update({ showBrake: v })}
+              size="small"
+            />
+
+            <Text>Brake</Text>
+
+            <ColorPicker
+              value={settings.brakeColor}
+              onChange={(c) => update({ brakeColor: c.toHexString() })}
+              size="small"
+            />
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showClutch}
+              onChange={(v) => update({ showClutch: v })}
+              size="small"
+            />
+
+            <Text>Clutch</Text>
+
+            <ColorPicker
+              value={settings.clutchColor}
+              onChange={(c) => update({ clutchColor: c.toHexString() })}
+              size="small"
+            />
+          </Space>
+        </Space>
+      </Flex>
+
+      <Flex vertical gap={4}>
+        <Text>Progress Bars</Text>
+
+        <Segmented
+          value={settings.barMode}
+          options={[
+            { label: 'Horizontal', value: 'horizontal' },
+            { label: 'Vertical', value: 'vertical' },
+            { label: 'Hidden', value: 'hidden' },
+          ]}
+          onChange={(v) => update({ barMode: v as InputTraceBarMode })}
+        />
+      </Flex>
+    </Flex>
+  );
+});
+
+const RadarSettingsPanel = observer(
+  ({ widgetId }: { widgetId: 'proximity-radar' | 'radar-bar' }) => {
+    const settings = widgetSettingsStore.getRadarSettings(widgetId);
+
+    const update = (partial: Partial<RadarSettings>) => {
+      widgetSettingsStore.updateCustomSettings(widgetId, {
+        [widgetId]: { ...settings, ...partial },
+      });
+    };
+
+    return (
+      <Flex vertical gap={12}>
+        <Title level={5} style={{ margin: 0 }}>
+          Radar Settings
+        </Title>
+
+        <Flex vertical gap={4}>
+          <Text>Visibility</Text>
+
+          <Segmented
+            value={settings.visibilityMode}
+            options={[
+              { label: 'Always', value: 'always' },
+              { label: 'Proximity', value: 'proximity' },
+            ]}
+            onChange={(v) =>
+              update({ visibilityMode: v as RadarVisibilityMode })
+            }
+          />
+        </Flex>
+
+        {settings.visibilityMode === 'proximity' && (
+          <>
+            <Flex vertical gap={4}>
+              <Text>Show when car within (m)</Text>
+
+              <InputNumber
+                style={{ width: '100%' }}
+                value={settings.proximityThreshold}
+                min={1}
+                max={20}
+                step={0.5}
+                onChange={(v) =>
+                  v !== null && update({ proximityThreshold: v })
+                }
+              />
+            </Flex>
+
+            <Flex vertical gap={4}>
+              <Text>Hide delay (seconds)</Text>
+
+              <InputNumber
+                style={{ width: '100%' }}
+                value={settings.hideDelay}
+                min={0}
+                max={30}
+                step={0.5}
+                onChange={(v) => v !== null && update({ hideDelay: v })}
+              />
+            </Flex>
+          </>
+        )}
+
+        {widgetId === 'radar-bar' && (
+          <>
+            <Flex vertical gap={4}>
+              <Text>Bar Display</Text>
+
+              <Segmented
+                value={settings.barDisplayMode ?? 'both'}
+                options={[
+                  { label: 'Both Sides', value: 'both' },
+                  { label: 'Active Only', value: 'active-only' },
+                ]}
+                onChange={(v) =>
+                  update({ barDisplayMode: v as RadarBarDisplayMode })
+                }
+              />
+            </Flex>
+
+            <Flex vertical gap={4}>
+              <Text>Bar Spacing (px)</Text>
+
+              <InputNumber
+                style={{ width: '100%' }}
+                value={settings.barSpacing ?? 0}
+                min={0}
+                max={1000}
+                step={10}
+                onChange={(v) => v !== null && update({ barSpacing: v })}
+              />
+            </Flex>
+          </>
+        )}
+      </Flex>
+    );
+  }
+);

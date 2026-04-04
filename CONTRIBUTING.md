@@ -3,7 +3,7 @@
 
 ## Creating an issue
 
-Before creating an issue please ensure that the problem is not [already reported](https://github.com/sc-localization/VerseBridge/issues).
+Before creating an issue please ensure that the problem is not [already reported](https://github.com/mvoof/Marble-Trace/issues).
 
 ## How to Contribute
 
@@ -12,8 +12,8 @@ Before creating an issue please ensure that the problem is not [already reported
    First, create your own copy of the repository by clicking the "Fork" button on GitHub. Then, clone your fork to your local machine:
 
    ```sh
-   git clone https://github.com/mvoof/reponame.git
-   cd reponame
+   git clone https://github.com/your-username/Marble-Trace.git
+   cd Marble-Trace
    ```
 
 2. **Create a New Branch**
@@ -26,6 +26,13 @@ Before creating an issue please ensure that the problem is not [already reported
    Implement your feature or fix the bug. Be sure to follow the project's coding style and add tests if necessary.
 
 4. **Commit Changes**
+
+   Before committing, ensure your code is clean and functional:
+   - Run linting and formatting: `npm run lint` and `npm run format`
+   - Build the application to check for compilation errors: `npm run tauri:build:release`
+   - Run the application to verify your changes: `npm run tauri dev`
+
+   Once verified, commit your changes:
 
    ```sh
    git add .
