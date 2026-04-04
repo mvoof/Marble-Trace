@@ -1,6 +1,6 @@
 import type { RadarDistances, SpotterState } from '../../../../utils/proximity';
 
-import styles from '../ProximityRadarWidget.module.scss';
+import styles from './RadarDisplay.module.scss';
 
 // === CONSTANTS ===
 const SCALE = 22;
@@ -43,6 +43,7 @@ const CarIcon = ({ fill = '#ffffff', opacity = 1 }: CarIconProps) => (
     rx={CAR_R * SCALE}
     fill={fill}
     opacity={opacity}
+    className={styles.carIcon}
   />
 );
 
@@ -169,15 +170,7 @@ export const RadarDisplay = ({
             className={styles.carTransition}
           >
             <CarIcon opacity={frontOpacity} fill={frontColor} />
-            <text
-              y={(-CAR_H * SCALE) / 2 - 8}
-              textAnchor="middle"
-              dominantBaseline="auto"
-              fill={frontColor}
-              fontSize="14"
-              fontWeight="bold"
-              fontFamily="Rajdhani, sans-serif"
-            >
+            <text y="-18" className={styles.radarMeasurementText}>
               {frontDist.toFixed(1)}м
             </text>
           </g>
@@ -190,15 +183,7 @@ export const RadarDisplay = ({
             className={styles.carTransition}
           >
             <CarIcon opacity={rearOpacity} fill={rearColor} />
-            <text
-              y={(CAR_H * SCALE) / 2 + 16}
-              textAnchor="middle"
-              dominantBaseline="auto"
-              fill={rearColor}
-              fontSize="14"
-              fontWeight="bold"
-              fontFamily="Rajdhani, sans-serif"
-            >
+            <text y="18" className={styles.radarMeasurementText}>
               {rearDist.toFixed(1)}м
             </text>
           </g>
@@ -211,6 +196,9 @@ export const RadarDisplay = ({
             className={styles.carTransition}
           >
             <CarIcon opacity={0.8} fill={getSideCarColor(sideCars.leftDist)} />
+            <text y="0" className={styles.radarMeasurementText}>
+              {Math.abs(sideCars.leftDist).toFixed(1)}м
+            </text>
           </g>
         )}
 
@@ -221,11 +209,14 @@ export const RadarDisplay = ({
             className={styles.carTransition}
           >
             <CarIcon opacity={0.8} fill={getSideCarColor(sideCars.rightDist)} />
+            <text y="0" className={styles.radarMeasurementText}>
+              {Math.abs(sideCars.rightDist).toFixed(1)}м
+            </text>
           </g>
         )}
 
         {/* Player car (center) */}
-        <CarIcon fill="#475569" />
+        <CarIcon fill="currentColor" />
       </svg>
     </div>
   );
