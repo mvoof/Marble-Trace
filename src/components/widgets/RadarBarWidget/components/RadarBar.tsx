@@ -65,7 +65,6 @@ export const RadarBar = observer(({ active, dist, side }: RadarBarProps) => {
           top: `${clampedTop}%`,
           height: `${heightPercent}%`,
           backgroundColor: color,
-          boxShadow: `0 0 15px ${color}80, inset 0 0 8px rgba(255, 255, 255, 0.2)`,
         }}
       >
         <span

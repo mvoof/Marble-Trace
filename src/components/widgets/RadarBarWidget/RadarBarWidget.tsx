@@ -81,7 +81,7 @@ export const RadarBarWidget = observer(
         direction="row"
       >
         <RadarBar
-          active={spotter.left}
+          active={1}
           dist={sideCars.leftDist ?? 0}
           side="left"
         />
