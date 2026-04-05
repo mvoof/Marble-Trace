@@ -11,6 +11,9 @@ import { SpeedWidget } from '../../components/widgets/SpeedWidget';
 import { InputTraceWidget } from '../../components/widgets/InputTraceWidget';
 import { ProximityRadarWidget } from '../../components/widgets/ProximityRadarWidget';
 import { RadarBarWidget } from '../../components/widgets/RadarBarWidget';
+import { StandingsWidget } from '../../components/widgets/StandingsWidget';
+import { RelativeWidget } from '../../components/widgets/RelativeWidget';
+import { TrackMapWidget } from '../../components/widgets/TrackMapWidget';
 import { WidgetWrapper } from '../../components/widgets/WidgetWrapper';
 import styles from './WidgetPage.module.scss';
 
@@ -78,6 +81,36 @@ const WIDGET_MAP: Record<string, WidgetEntry> = {
         component: RadarBarWidget,
         designWidth: 800,
         designHeight: 380,
+      },
+    },
+  },
+  standings: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: StandingsWidget,
+        designWidth: 700,
+        designHeight: 500,
+      },
+    },
+  },
+  relative: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: RelativeWidget,
+        designWidth: 350,
+        designHeight: 500,
+      },
+    },
+  },
+  'track-map': {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: TrackMapWidget,
+        designWidth: 400,
+        designHeight: 400,
       },
     },
   },

@@ -26,6 +26,13 @@ import {
   type RadarSettings,
   type RadarVisibilityMode,
   type RadarBarDisplayMode,
+  type StandingsWidgetSettings,
+  type StandingsGroupMode,
+  type StandingsViewMode,
+  type RelativeWidgetSettings,
+  type RelativeLinearMapPosition,
+  type TrackMapWidgetSettings,
+  type TrackMapLegendPosition,
 } from '../../../../store/widget-settings.store';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 
@@ -169,6 +176,27 @@ export const WidgetSettings = observer(
               <RadarSettingsPanel
                 widgetId={widgetId as 'proximity-radar' | 'radar-bar'}
               />
+            </>
+          )}
+
+          {widgetId === 'standings' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <StandingsSettingsPanel />
+            </>
+          )}
+
+          {widgetId === 'relative' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <RelativeSettingsPanel />
+            </>
+          )}
+
+          {widgetId === 'track-map' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <TrackMapSettingsPanel />
             </>
           )}
         </Flex>
@@ -559,3 +587,279 @@ const RadarSettingsPanel = observer(
     );
   }
 );
+
+const StandingsSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getStandingsSettings();
+
+  const update = (partial: Partial<StandingsWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('standings', {
+      standings: { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Standings
+      </Title>
+
+      <Flex vertical gap={4}>
+        <Text>Group Mode</Text>
+
+        <Segmented
+          value={settings.groupMode}
+          options={[
+            { label: 'Overall', value: 'overall' },
+            { label: 'By Class', value: 'class' },
+          ]}
+          onChange={(v) => update({ groupMode: v as StandingsGroupMode })}
+        />
+      </Flex>
+
+      <Flex vertical gap={4}>
+        <Text>View Mode</Text>
+
+        <Segmented
+          value={settings.viewMode}
+          options={[
+            { label: 'Full', value: 'full' },
+            { label: 'Around Player', value: 'around-player' },
+            { label: 'Limit + Pin', value: 'limit-pin' },
+          ]}
+          onChange={(v) => update({ viewMode: v as StandingsViewMode })}
+        />
+      </Flex>
+
+      {settings.viewMode === 'around-player' && (
+        <Flex vertical gap={4}>
+          <Text>Cars Ahead / Behind</Text>
+
+          <Select
+            value={settings.aroundPlayerCount}
+            onChange={(v) => update({ aroundPlayerCount: v })}
+            options={[
+              { label: '1', value: 1 },
+              { label: '2', value: 2 },
+              { label: '3', value: 3 },
+              { label: '5', value: 5 },
+            ]}
+          />
+        </Flex>
+      )}
+
+      {settings.viewMode === 'limit-pin' && (
+        <Flex vertical gap={4}>
+          <Text>Max Rows per Class</Text>
+
+          <Select
+            value={settings.maxRowsPerClass}
+            onChange={(v) => update({ maxRowsPerClass: v })}
+            options={[
+              { label: 'Top 2', value: 2 },
+              { label: 'Top 3', value: 3 },
+              { label: 'Top 5', value: 5 },
+              { label: 'Top 10', value: 10 },
+            ]}
+          />
+        </Flex>
+      )}
+
+      <Divider style={{ margin: '4px 0' }} />
+
+      <Flex vertical gap={8}>
+        <Text>Columns</Text>
+
+        <Space direction="vertical">
+          <Space>
+            <Switch
+              checked={settings.showPosChange}
+              onChange={(v) => update({ showPosChange: v })}
+              size="small"
+            />
+            <Text>Position Change (+/-)</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showLiveIR}
+              onChange={(v) => update({ showLiveIR: v })}
+              size="small"
+            />
+            <Text>Live iR Change</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showPitStops}
+              onChange={(v) => update({ showPitStops: v })}
+              size="small"
+            />
+            <Text>Pit Stops</Text>
+          </Space>
+        </Space>
+      </Flex>
+
+      <Divider style={{ margin: '4px 0' }} />
+
+      <Flex vertical gap={8}>
+        <Text>Header</Text>
+
+        <Space direction="vertical">
+          <Space>
+            <Switch
+              checked={settings.showColumnHeaders}
+              onChange={(v) => update({ showColumnHeaders: v })}
+              size="small"
+            />
+            <Text>Column Names</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showSessionHeader}
+              onChange={(v) => update({ showSessionHeader: v })}
+              size="small"
+            />
+            <Text>Session Info</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showWeather}
+              onChange={(v) => update({ showWeather: v })}
+              size="small"
+            />
+            <Text>Weather</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showSOF}
+              onChange={(v) => update({ showSOF: v })}
+              size="small"
+            />
+            <Text>SOF</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showTotalDrivers}
+              onChange={(v) => update({ showTotalDrivers: v })}
+              size="small"
+            />
+            <Text>Total Drivers</Text>
+          </Space>
+        </Space>
+      </Flex>
+    </Flex>
+  );
+});
+
+const RelativeSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getRelativeSettings();
+
+  const update = (partial: Partial<RelativeWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('relative', {
+      relative: { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Relative
+      </Title>
+
+      <Space>
+        <Switch
+          checked={settings.showLinearMap}
+          onChange={(v) => update({ showLinearMap: v })}
+          size="small"
+        />
+        <Text>Linear Map</Text>
+      </Space>
+
+      {settings.showLinearMap && (
+        <Flex vertical gap={4}>
+          <Text>Map Position</Text>
+
+          <Select
+            value={settings.linearMapPosition}
+            onChange={(v) =>
+              update({ linearMapPosition: v as RelativeLinearMapPosition })
+            }
+            options={[
+              { label: 'Top', value: 'top' },
+              { label: 'Bottom', value: 'bottom' },
+              { label: 'Left', value: 'left' },
+              { label: 'Right', value: 'right' },
+            ]}
+          />
+        </Flex>
+      )}
+    </Flex>
+  );
+});
+
+const TrackMapSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getTrackMapSettings();
+
+  const update = (partial: Partial<TrackMapWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('track-map', {
+      'track-map': { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Track Map
+      </Title>
+
+      <Space>
+        <Switch
+          checked={settings.showLegend}
+          onChange={(v) => update({ showLegend: v })}
+          size="small"
+        />
+        <Text>Class Legend</Text>
+      </Space>
+
+      {settings.showLegend && (
+        <Flex vertical gap={4}>
+          <Text>Legend Position</Text>
+
+          <Segmented
+            value={settings.legendPosition}
+            options={[
+              { label: 'Left', value: 'left' },
+              { label: 'Right', value: 'right' },
+              { label: 'Hidden', value: 'hidden' },
+            ]}
+            onChange={(v) =>
+              update({ legendPosition: v as TrackMapLegendPosition })
+            }
+          />
+        </Flex>
+      )}
+
+      <Space>
+        <Switch
+          checked={settings.showSectors}
+          onChange={(v) => update({ showSectors: v })}
+          size="small"
+        />
+        <Text>Sectors</Text>
+      </Space>
+
+      <Space>
+        <Switch
+          checked={settings.showCornerNumbers}
+          onChange={(v) => update({ showCornerNumbers: v })}
+          size="small"
+        />
+        <Text>Corner Numbers</Text>
+      </Space>
+    </Flex>
+  );
+});

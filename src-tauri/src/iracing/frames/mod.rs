@@ -136,6 +136,18 @@ pub(crate) struct AllFieldsFrame {
     pub car_idx_position: Vec<i32>,
     #[field_name = "CarIdxClassPosition"]
     pub car_idx_class_position: Vec<i32>,
+    #[field_name = "CarIdxLap"]
+    pub car_idx_lap: Vec<i32>,
+    #[field_name = "CarIdxLastLapTime"]
+    pub car_idx_last_lap_time: Vec<f32>,
+    #[field_name = "CarIdxBestLapTime"]
+    pub car_idx_best_lap_time: Vec<f32>,
+    #[field_name = "CarIdxF2Time"]
+    pub car_idx_f2_time: Vec<f32>,
+    #[field_name = "CarIdxEstTime"]
+    pub car_idx_est_time: Vec<f32>,
+    #[field_name = "CarIdxTrackSurface"]
+    pub car_idx_track_surface: Vec<i32>,
 }
 
 // === Domain frame decomposition ===
@@ -222,6 +234,12 @@ impl From<&AllFieldsFrame> for CarIdxFrame {
             car_idx_on_pit_road: f.car_idx_on_pit_road.clone(),
             car_idx_position: f.car_idx_position.clone(),
             car_idx_class_position: f.car_idx_class_position.clone(),
+            car_idx_lap: f.car_idx_lap.clone(),
+            car_idx_last_lap_time: f.car_idx_last_lap_time.clone(),
+            car_idx_best_lap_time: f.car_idx_best_lap_time.clone(),
+            car_idx_f2_time: f.car_idx_f2_time.clone(),
+            car_idx_est_time: f.car_idx_est_time.clone(),
+            car_idx_track_surface: f.car_idx_track_surface.clone(),
             car_left_right: f.car_left_right,
         }
     }

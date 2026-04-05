@@ -1,0 +1,413 @@
+@use '../../../styles/variables' as *;
+
+.standings {
+  font-family: $font-widget;
+  color: $color-text-primary;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: $font-size-sm;
+}
+
+.sessionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-sm $space-md;
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  border-bottom: 1px solid $color-border;
+}
+
+.sessionLeft {
+  display: flex;
+  gap: $space-lg;
+  font-weight: 700;
+  color: $color-text-primary;
+}
+
+.sessionRight {
+  display: flex;
+  gap: $space-lg;
+}
+
+.sessionDriverCount {
+  display: flex;
+  align-items: center;
+  gap: $space-xs;
+  color: $color-text-muted;
+}
+
+.sessionDriverCountValue {
+  color: $color-text-primary;
+  font-weight: 700;
+}
+
+.sofValue {
+  color: $color-warning;
+}
+
+.tableWrap {
+  flex: 1 1 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  &::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+  }
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+  font-family: $font-widget;
+}
+
+.thead {
+  font-family: 'Orbitron', sans-serif;
+  text-transform: uppercase;
+  font-size: 0.5625rem;
+  color: $color-text-muted;
+  border-bottom: 1px solid $color-border;
+}
+
+.th {
+  padding: $space-xs $space-sm;
+  text-align: left;
+  font-weight: 600;
+}
+
+.thCenter {
+  text-align: center;
+}
+
+.thRight {
+  text-align: right;
+}
+
+// Class group header
+.classHeader {
+  position: relative;
+}
+
+.classHeaderInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-sm $space-md;
+  margin-top: $space-sm;
+  margin-bottom: $space-xs;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+}
+
+.classHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: $space-lg;
+}
+
+.className {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: $font-size-sm;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.classBadge {
+  display: flex;
+  align-items: center;
+  gap: $space-xs;
+  background: rgba(0, 0, 0, 0.5);
+  padding: $space-xs $space-sm;
+  border-radius: 4px;
+  font-size: 0.5625rem;
+  font-family: $font-widget;
+  color: $color-text-muted;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.classBadgeValue {
+  color: $color-text-primary;
+  font-weight: 700;
+}
+
+.classHeaderLine {
+  flex: 1;
+  height: 1px;
+  margin-left: $space-lg;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), transparent);
+}
+
+// Driver row
+.driverRow {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+}
+
+.driverRowPlayer {
+  background-color: rgba(245, 158, 11, 0.15);
+  box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.2);
+}
+
+.driverRowOffTrack {
+  opacity: 0.4;
+}
+
+.td {
+  padding: $space-xs $space-sm;
+  vertical-align: middle;
+}
+
+.tdCenter {
+  text-align: center;
+}
+
+.tdRight {
+  text-align: right;
+}
+
+// Position
+.posCell {
+  font-weight: 700;
+  font-size: $font-size-md;
+}
+
+.posCellPlayer {
+  color: #f59e0b;
+}
+
+// Position change
+.posChangeUp {
+  color: $color-positive;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-xs;
+  font-weight: 700;
+}
+
+.posChangeDown {
+  color: $color-danger;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-xs;
+  font-weight: 700;
+}
+
+.posChangeNeutral {
+  color: $color-text-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Car number
+.carNumber {
+  font-family: $font-widget;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.carNumberPlayer {
+  color: #fbbf24;
+}
+
+// Driver name
+.driverNameCell {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  max-width: 10rem;
+}
+
+.driverName {
+  font-weight: 600;
+  font-size: $font-size-sm;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: $color-text-primary;
+}
+
+.driverNamePlayer {
+  color: #f59e0b;
+}
+
+.pitBadge {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  padding: 0 $space-sm;
+  border-radius: 3px;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+// Class badge (in overall mode)
+.classBadgeInline {
+  padding: 0 $space-sm;
+  border-radius: 3px;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  color: #18181b;
+}
+
+// License badge
+.licenseBadge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.5625rem;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.licenseClass {
+  font-weight: 700;
+  color: white;
+  padding: 0 $space-sm;
+}
+
+.licenseRating {
+  background: rgba(255, 255, 255, 0.05);
+  color: $color-text-muted;
+  padding: 0 $space-xs;
+  font-family: $font-widget;
+}
+
+.licA {
+  background: #2563eb;
+}
+
+.licB {
+  background: #16a34a;
+}
+
+.licC {
+  background: #eab308;
+}
+
+.licD {
+  background: #ea580c;
+}
+
+.licR {
+  background: #dc2626;
+}
+
+// iRating
+.irating {
+  font-family: $font-widget;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  text-align: right;
+  min-width: 2rem;
+}
+
+// Incidents
+.incidents {
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
+
+.incidentsNearDQ {
+  color: $color-danger;
+  font-weight: 700;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// Gap column
+.gapLeader {
+  color: $color-text-muted;
+  font-size: $font-size-xs;
+}
+
+.gapValue {
+  color: $color-text-primary;
+  font-size: $font-size-sm;
+}
+
+// Lap time columns
+.lastLap {
+  font-family: $font-widget;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+}
+
+.bestLap {
+  font-family: $font-widget;
+  font-size: $font-size-xs;
+  color: #c084fc;
+}
+
+// Separator row
+.separatorRow {
+  position: relative;
+}
+
+.separatorInner {
+  position: relative;
+  padding: $space-xs 0;
+}
+
+.separatorLine {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.3;
+}
+
+.separatorLineInner {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.5),
+    transparent
+  );
+}
+
+.separatorDots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-text-muted;
+}

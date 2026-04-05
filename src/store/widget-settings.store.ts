@@ -38,11 +38,48 @@ export interface RadarSettings {
   barDisplayMode?: RadarBarDisplayMode;
 }
 
+export type StandingsGroupMode = 'overall' | 'class';
+export type StandingsViewMode = 'full' | 'around-player' | 'limit-pin';
+
+export interface StandingsWidgetSettings {
+  groupMode: StandingsGroupMode;
+  viewMode: StandingsViewMode;
+  aroundPlayerCount: number;
+  maxRowsPerClass: number;
+  showPosChange: boolean;
+  showLiveIR: boolean;
+  showPitStops: boolean;
+  showColumnHeaders: boolean;
+  showSessionHeader: boolean;
+  showWeather: boolean;
+  showSOF: boolean;
+  showTotalDrivers: boolean;
+}
+
+export type RelativeLinearMapPosition = 'top' | 'bottom' | 'left' | 'right';
+
+export interface RelativeWidgetSettings {
+  showLinearMap: boolean;
+  linearMapPosition: RelativeLinearMapPosition;
+}
+
+export type TrackMapLegendPosition = 'left' | 'right' | 'hidden';
+
+export interface TrackMapWidgetSettings {
+  showLegend: boolean;
+  legendPosition: TrackMapLegendPosition;
+  showSectors: boolean;
+  showCornerNumbers: boolean;
+}
+
 export interface WidgetCustomSettings {
   speed?: SpeedWidgetSettings;
   'input-trace'?: InputTraceSettings;
   'proximity-radar'?: RadarSettings;
   'radar-bar'?: RadarSettings;
+  standings?: StandingsWidgetSettings;
+  relative?: RelativeWidgetSettings;
+  'track-map'?: TrackMapWidgetSettings;
 }
 
 export interface WidgetConfig {
@@ -148,6 +185,72 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
         hideDelay: 2,
         barSpacing: 0,
         barDisplayMode: 'both',
+      },
+    },
+  },
+  {
+    id: 'standings',
+    label: 'Standings',
+    enabled: false,
+    x: 50,
+    y: 50,
+    width: 700,
+    height: 500,
+    backgroundColor: '#0a0a0f',
+    backgroundColorEdge: '#050508',
+    hotkey: 'F3',
+    customSettings: {
+      standings: {
+        groupMode: 'class',
+        viewMode: 'full',
+        aroundPlayerCount: 2,
+        maxRowsPerClass: 5,
+        showPosChange: true,
+        showLiveIR: false,
+        showPitStops: false,
+        showColumnHeaders: true,
+        showSessionHeader: true,
+        showWeather: true,
+        showSOF: true,
+        showTotalDrivers: true,
+      },
+    },
+  },
+  {
+    id: 'relative',
+    label: 'Relative',
+    enabled: false,
+    x: 50,
+    y: 300,
+    width: 350,
+    height: 500,
+    backgroundColor: '#0a0a0f',
+    backgroundColorEdge: '#050508',
+    hotkey: 'F4',
+    customSettings: {
+      relative: {
+        showLinearMap: true,
+        linearMapPosition: 'top',
+      },
+    },
+  },
+  {
+    id: 'track-map',
+    label: 'Track Map',
+    enabled: false,
+    x: 800,
+    y: 50,
+    width: 400,
+    height: 400,
+    backgroundColor: 'transparent',
+    backgroundColorEdge: 'transparent',
+    hotkey: 'F5',
+    customSettings: {
+      'track-map': {
+        showLegend: true,
+        legendPosition: 'right',
+        showSectors: true,
+        showCornerNumbers: true,
       },
     },
   },
@@ -307,6 +410,48 @@ class WidgetSettingsStore {
         brakeColor: '#ff3333',
         clutchColor: '#3399ff',
         barMode: 'horizontal',
+      }
+    );
+  }
+
+  getStandingsSettings(): StandingsWidgetSettings {
+    const widget = this.getWidget('standings');
+    return (
+      widget?.customSettings?.standings ?? {
+        groupMode: 'class',
+        viewMode: 'full',
+        aroundPlayerCount: 2,
+        maxRowsPerClass: 5,
+        showPosChange: true,
+        showLiveIR: false,
+        showPitStops: false,
+        showColumnHeaders: true,
+        showSessionHeader: true,
+        showWeather: true,
+        showSOF: true,
+        showTotalDrivers: true,
+      }
+    );
+  }
+
+  getRelativeSettings(): RelativeWidgetSettings {
+    const widget = this.getWidget('relative');
+    return (
+      widget?.customSettings?.relative ?? {
+        showLinearMap: true,
+        linearMapPosition: 'top',
+      }
+    );
+  }
+
+  getTrackMapSettings(): TrackMapWidgetSettings {
+    const widget = this.getWidget('track-map');
+    return (
+      widget?.customSettings?.['track-map'] ?? {
+        showLegend: true,
+        legendPosition: 'right',
+        showSectors: true,
+        showCornerNumbers: true,
       }
     );
   }

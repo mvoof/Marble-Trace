@@ -6,7 +6,6 @@ iRacing telemetry overlay built with Tauri v2 + React 19 + Rust + MobX.
   <img src="https://github.com/mvoof/Marble-Trace/blob/main/docs/assets/app-icon.png" width="100px" alt="Marble Trace">
 </p>
 
-
 ## Architecture
 
 - **Main window** — standard window with Ant Design UI for managing widgets and settings
