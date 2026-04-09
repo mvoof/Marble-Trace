@@ -53,6 +53,11 @@ pub struct CarIdxFrame {
     /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxtracksurface/
     pub car_idx_track_surface: Vec<i32>,
 
+    /// Tire compound index per car. Maps into DriverInfo.DriverTires[].
+    /// -1 = unknown.
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxtirecompound/
+    pub car_idx_tire_compound: Vec<i32>,
+
     /// Proximity indicator bit field for cars nearby
     /// @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
     pub car_left_right: Option<i32>,

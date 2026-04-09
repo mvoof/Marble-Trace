@@ -27,8 +27,7 @@ import {
   type RadarVisibilityMode,
   type RadarBarDisplayMode,
   type StandingsWidgetSettings,
-  type StandingsGroupMode,
-  type StandingsViewMode,
+  type StandingsFilterMode,
   type RelativeWidgetSettings,
   type RelativeLinearMapPosition,
   type TrackMapWidgetSettings,
@@ -604,65 +603,40 @@ const StandingsSettingsPanel = observer(() => {
       </Title>
 
       <Flex vertical gap={4}>
-        <Text>Group Mode</Text>
+        <Space>
+          <Switch
+            checked={settings.groupByClass}
+            onChange={(v) => update({ groupByClass: v })}
+            size="small"
+            disabled={settings.filterMode === 'around-player'}
+          />
+          <Text>Group by Class</Text>
+        </Space>
 
-        <Segmented
-          value={settings.groupMode}
-          options={[
-            { label: 'Overall', value: 'overall' },
-            { label: 'By Class', value: 'class' },
-          ]}
-          onChange={(v) => update({ groupMode: v as StandingsGroupMode })}
-        />
+        <Text type="secondary" style={{ fontSize: 11 }}>
+          Separate standings into class blocks. Disabled when Around Player
+          filter is active.
+        </Text>
       </Flex>
 
       <Flex vertical gap={4}>
-        <Text>View Mode</Text>
+        <Text>Filter Mode</Text>
 
         <Segmented
-          value={settings.viewMode}
+          value={settings.filterMode}
           options={[
-            { label: 'Full', value: 'full' },
+            { label: 'All', value: 'all' },
             { label: 'Around Player', value: 'around-player' },
-            { label: 'Limit + Pin', value: 'limit-pin' },
+            { label: 'Top + Pin', value: 'top-and-pin' },
           ]}
-          onChange={(v) => update({ viewMode: v as StandingsViewMode })}
+          onChange={(v) => update({ filterMode: v as StandingsFilterMode })}
         />
+
+        <Text type="secondary" style={{ fontSize: 11 }}>
+          All = whole field. Around Player = your row centered with neighbours.
+          Top + Pin = top N of each class with you pinned at the bottom.
+        </Text>
       </Flex>
-
-      {settings.viewMode === 'around-player' && (
-        <Flex vertical gap={4}>
-          <Text>Cars Ahead / Behind</Text>
-
-          <Select
-            value={settings.aroundPlayerCount}
-            onChange={(v) => update({ aroundPlayerCount: v })}
-            options={[
-              { label: '1', value: 1 },
-              { label: '2', value: 2 },
-              { label: '3', value: 3 },
-              { label: '5', value: 5 },
-            ]}
-          />
-        </Flex>
-      )}
-
-      {settings.viewMode === 'limit-pin' && (
-        <Flex vertical gap={4}>
-          <Text>Max Rows per Class</Text>
-
-          <Select
-            value={settings.maxRowsPerClass}
-            onChange={(v) => update({ maxRowsPerClass: v })}
-            options={[
-              { label: 'Top 2', value: 2 },
-              { label: 'Top 3', value: 3 },
-              { label: 'Top 5', value: 5 },
-              { label: 'Top 10', value: 10 },
-            ]}
-          />
-        </Flex>
-      )}
 
       <Divider style={{ margin: '4px 0' }} />
 
@@ -681,11 +655,29 @@ const StandingsSettingsPanel = observer(() => {
 
           <Space>
             <Switch
-              checked={settings.showLiveIR}
-              onChange={(v) => update({ showLiveIR: v })}
+              checked={settings.showBrand}
+              onChange={(v) => update({ showBrand: v })}
               size="small"
             />
-            <Text>Live iR Change</Text>
+            <Text>Brand</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showTire}
+              onChange={(v) => update({ showTire: v })}
+              size="small"
+            />
+            <Text>Tire</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showIrChange}
+              onChange={(v) => update({ showIrChange: v })}
+              size="small"
+            />
+            <Text>ΔiR (estimate)</Text>
           </Space>
 
           <Space>
@@ -694,9 +686,15 @@ const StandingsSettingsPanel = observer(() => {
               onChange={(v) => update({ showPitStops: v })}
               size="small"
             />
-            <Text>Pit Stops</Text>
+            <Text>Pit Stops (player only)</Text>
           </Space>
         </Space>
+
+        <Text type="secondary" style={{ fontSize: 11 }}>
+          Tire shows the session compound (iRacing does not expose per-driver
+          tire data). ΔiR is an Elo-based projection, not real iRacing data. Pit
+          Stops are counted on the frontend for the player only.
+        </Text>
       </Flex>
 
       <Divider style={{ margin: '4px 0' }} />
@@ -770,14 +768,20 @@ const RelativeSettingsPanel = observer(() => {
         Relative
       </Title>
 
-      <Space>
-        <Switch
-          checked={settings.showLinearMap}
-          onChange={(v) => update({ showLinearMap: v })}
-          size="small"
-        />
-        <Text>Linear Map</Text>
-      </Space>
+      <Flex vertical gap={4}>
+        <Space>
+          <Switch
+            checked={settings.showLinearMap}
+            onChange={(v) => update({ showLinearMap: v })}
+            size="small"
+          />
+          <Text>Linear Map</Text>
+        </Space>
+
+        <Text type="secondary" style={{ fontSize: 11 }}>
+          Shows a compact track strip with all cars relative to you.
+        </Text>
+      </Flex>
 
       {settings.showLinearMap && (
         <Flex vertical gap={4}>
@@ -795,6 +799,11 @@ const RelativeSettingsPanel = observer(() => {
               { label: 'Right', value: 'right' },
             ]}
           />
+
+          <Text type="secondary" style={{ fontSize: 11 }}>
+            Which edge the linear map sticks to. The driver list always fills
+            the remaining space.
+          </Text>
         </Flex>
       )}
     </Flex>

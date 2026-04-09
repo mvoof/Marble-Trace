@@ -90,7 +90,7 @@ const WIDGET_MAP: Record<string, WidgetEntry> = {
       default: {
         component: StandingsWidget,
         designWidth: 700,
-        designHeight: 500,
+        designHeight: 400,
       },
     },
   },
@@ -100,7 +100,7 @@ const WIDGET_MAP: Record<string, WidgetEntry> = {
       default: {
         component: RelativeWidget,
         designWidth: 350,
-        designHeight: 500,
+        designHeight: 400,
       },
     },
   },

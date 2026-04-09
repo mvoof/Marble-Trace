@@ -1,7 +1,8 @@
 @use '../../../styles/variables' as *;
 
 .standings {
-  font-family: $font-widget;
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
   color: $color-text-primary;
   width: 100%;
   height: 100%;
@@ -9,18 +10,21 @@
   flex-direction: column;
   overflow: hidden;
   font-size: $font-size-sm;
+  border-radius: 6px;
 }
 
+// Session header (top bar)
 .sessionHeader {
+  background: rgba(24, 24, 27, 0.8);
+  padding: $space-md;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: $space-sm $space-md;
-  font-family: 'Orbitron', sans-serif;
+  border-bottom: 1px solid rgba(39, 39, 42, 1);
+  font-family: $font-mono;
   text-transform: uppercase;
-  font-size: $font-size-xs;
+  font-size: clamp(0.625rem, 0.8vw, 0.8125rem);
   color: $color-text-muted;
-  border-bottom: 1px solid $color-border;
 }
 
 .sessionLeft {
@@ -28,18 +32,21 @@
   gap: $space-lg;
   font-weight: 700;
   color: $color-text-primary;
+  font-size: clamp(0.75rem, 1vw, 1rem);
 }
 
 .sessionRight {
   display: flex;
   gap: $space-lg;
+  align-items: center;
 }
 
 .sessionDriverCount {
   display: flex;
   align-items: center;
   gap: $space-xs;
-  color: $color-text-muted;
+  color: $color-text-primary;
+  margin-right: $space-sm;
 }
 
 .sessionDriverCountValue {
@@ -48,9 +55,10 @@
 }
 
 .sofValue {
-  color: $color-warning;
+  color: rgba(234, 179, 8, 0.8);
 }
 
+// Table wrapper
 .tableWrap {
   flex: 1 1 0;
   overflow-y: auto;
@@ -74,21 +82,30 @@
   width: 100%;
   border-collapse: collapse;
   white-space: nowrap;
-  font-family: $font-widget;
+  font-family: $font-mono;
+  text-align: left;
+  font-size: $font-size-md;
 }
 
+// Table header
 .thead {
-  font-family: 'Orbitron', sans-serif;
+  background: rgba(24, 24, 27, 0.5);
+  font-family: $font-mono;
   text-transform: uppercase;
-  font-size: 0.5625rem;
-  color: $color-text-muted;
-  border-bottom: 1px solid $color-border;
+  font-size: clamp(0.625rem, 0.75vw, 0.6875rem);
+  letter-spacing: 0.06em;
+  color: rgba(161, 161, 170, 1);
+  border-bottom: 1px solid rgba(39, 39, 42, 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .th {
-  padding: $space-xs $space-sm;
+  padding: $space-md;
   text-align: left;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .thCenter {
@@ -102,30 +119,37 @@
 // Class group header
 .classHeader {
   position: relative;
+
+  td {
+    padding: 0;
+  }
 }
 
 .classHeaderInner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: $space-sm $space-md;
-  margin-top: $space-sm;
-  margin-bottom: $space-xs;
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(8px);
+  padding: $space-md $space-lg;
+  margin: $space-md 0 $space-sm 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
 }
 
 .classHeaderLeft {
   display: flex;
   align-items: center;
-  gap: $space-lg;
+  gap: $space-xl;
+}
+
+.classStats {
+  display: flex;
+  gap: $space-md;
 }
 
 .className {
-  font-family: 'Orbitron', sans-serif;
   font-weight: 900;
-  font-size: $font-size-sm;
+  font-size: $font-size-md;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -133,14 +157,15 @@
 .classBadge {
   display: flex;
   align-items: center;
-  gap: $space-xs;
+  gap: $space-md;
   background: rgba(0, 0, 0, 0.5);
-  padding: $space-xs $space-sm;
+  padding: $space-xs $space-md;
   border-radius: 4px;
-  font-size: 0.5625rem;
-  font-family: $font-widget;
+  font-size: $font-size-xs;
+  font-family: $font-mono;
   color: $color-text-muted;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .classBadgeValue {
@@ -151,31 +176,33 @@
 .classHeaderLine {
   flex: 1;
   height: 1px;
-  margin-left: $space-lg;
+  margin-left: 1.5rem;
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), transparent);
 }
 
 // Driver row
 .driverRow {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  transition: background-color 0.15s;
+  border-bottom: 1px solid rgba(39, 39, 42, 0.5);
+  position: relative;
+  transition: background-color 0.2s;
+  line-height: 1.15;
 
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.03);
+  &:hover:not(.driverRowPlayer) {
+    background-color: rgba(39, 39, 42, 0.3);
   }
 }
 
 .driverRowPlayer {
-  background-color: rgba(245, 158, 11, 0.15);
-  box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.2);
+  background-color: rgba(245, 158, 11, 0.2);
+  box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.3);
 }
 
 .driverRowOffTrack {
-  opacity: 0.4;
+  opacity: 0.5;
 }
 
 .td {
-  padding: $space-xs $space-sm;
+  padding: $space-md;
   vertical-align: middle;
 }
 
@@ -190,34 +217,41 @@
 // Position
 .posCell {
   font-weight: 700;
-  font-size: $font-size-md;
+  font-size: clamp(0.875rem, 1.05vw, 1.0625rem);
+  padding-left: $space-xl;
 }
 
 .posCellPlayer {
-  color: #f59e0b;
+  color: #fbbf24;
+}
+
+.posCellSmall {
+  padding-left: $space-md;
 }
 
 // Position change
 .posChangeUp {
-  color: $color-positive;
+  color: #22c55e;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: $font-size-xs;
+  font-family: $font-mono;
+  font-size: $font-size-sm;
   font-weight: 700;
 }
 
 .posChangeDown {
-  color: $color-danger;
+  color: #ef4444;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: $font-size-xs;
+  font-family: $font-mono;
+  font-size: $font-size-sm;
   font-weight: 700;
 }
 
 .posChangeNeutral {
-  color: $color-text-muted;
+  color: rgba(113, 113, 122, 1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -225,78 +259,133 @@
 
 // Car number
 .carNumber {
-  font-family: $font-widget;
-  font-size: $font-size-sm;
+  font-family: $font-mono;
+  font-size: clamp(0.8125rem, 1vw, 1rem);
   color: $color-text-muted;
 }
 
 .carNumberPlayer {
-  color: #fbbf24;
+  color: #fcd34d;
 }
 
 // Driver name
 .driverNameCell {
   display: flex;
   align-items: center;
-  gap: $space-sm;
+  font-weight: 600;
   max-width: 10rem;
 }
 
 .driverName {
-  font-weight: 600;
-  font-size: $font-size-sm;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: clamp(0.875rem, 1.05vw, 1.0625rem);
   color: $color-text-primary;
 }
 
+// Brand label
+.brandLabel {
+  font-family: $font-mono;
+  font-size: clamp(0.75rem, 0.9vw, 0.9375rem);
+  color: $color-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+// Tire badge — circular pill with translucent fill (matches example reference)
+.tireBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.75rem;
+  font-family: $font-mono;
+  border: 1px solid;
+}
+
+.tireEmpty {
+  color: rgba(113, 113, 122, 0.6);
+  font-size: 0.8125rem;
+}
+
+.tireSoft {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.tireMed {
+  color: #eab308;
+  border-color: rgba(234, 179, 8, 0.5);
+  background: rgba(234, 179, 8, 0.1);
+}
+
+.tireHard {
+  color: #e5e7eb;
+  border-color: rgba(161, 161, 170, 0.5);
+  background: rgba(161, 161, 170, 0.1);
+}
+
+.tireWet {
+  color: #60a5fa;
+  border-color: rgba(96, 165, 250, 0.5);
+  background: rgba(96, 165, 250, 0.1);
+}
+
 .driverNamePlayer {
-  color: #f59e0b;
+  color: #fbbf24;
 }
 
 .pitBadge {
-  background: rgba(234, 179, 8, 0.15);
+  background: rgba(234, 179, 8, 0.2);
   color: #eab308;
-  border: 1px solid rgba(234, 179, 8, 0.25);
-  padding: 0 $space-sm;
-  border-radius: 3px;
-  font-size: 0.5625rem;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  padding: $space-xs $space-md;
+  border-radius: 4px;
+  font-size: $font-size-xs;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  margin-left: $space-md;
   flex-shrink: 0;
 }
 
 // Class badge (in overall mode)
 .classBadgeInline {
-  padding: 0 $space-sm;
-  border-radius: 3px;
-  font-size: 0.5625rem;
+  padding: $space-xs $space-sm;
+  border-radius: 4px;
+  color: black;
   font-weight: 700;
-  color: #18181b;
+  font-size: 0.6875rem;
+  text-align: center;
+  display: inline-block;
 }
 
 // License badge
 .licenseBadge {
   display: inline-flex;
   align-items: center;
-  font-size: 0.5625rem;
-  border-radius: 3px;
+  font-size: 0.6875rem;
+  border-radius: 4px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(113, 113, 122, 0.5);
 }
 
 .licenseClass {
   font-weight: 700;
   color: white;
-  padding: 0 $space-sm;
+  padding: $space-xs $space-sm;
 }
 
 .licenseRating {
-  background: rgba(255, 255, 255, 0.05);
-  color: $color-text-muted;
-  padding: 0 $space-xs;
-  font-family: $font-widget;
+  background: rgba(39, 39, 42, 1);
+  color: $color-text-primary;
+  padding: $space-xs $space-xs;
+  font-family: $font-mono;
 }
 
 .licA {
@@ -308,7 +397,7 @@
 }
 
 .licC {
-  background: #eab308;
+  background: #ca8a04;
 }
 
 .licD {
@@ -319,25 +408,51 @@
   background: #dc2626;
 }
 
+// License + iRating wrapper
+.licWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-sm;
+}
+
 // iRating
 .irating {
-  font-family: $font-widget;
-  font-size: $font-size-sm;
+  font-size: clamp(0.8125rem, 0.95vw, 0.9375rem);
+  font-family: $font-mono;
   color: $color-text-muted;
+  width: 2.25rem;
   text-align: right;
-  min-width: 2rem;
+}
+
+// iR change
+.irChange {
+  font-size: 0.6875rem;
+  font-family: $font-mono;
+  font-weight: 700;
+  width: 1.5rem;
+  text-align: left;
+}
+
+.irChangeUp {
+  color: #22c55e;
+}
+
+.irChangeDown {
+  color: #ef4444;
 }
 
 // Incidents
 .incidents {
-  font-size: $font-size-sm;
+  font-size: 0.8125rem;
+  text-align: center;
   color: $color-text-muted;
 }
 
 .incidentsNearDQ {
-  color: $color-danger;
+  color: #ef4444;
   font-weight: 700;
-  animation: pulse 1.5s ease-in-out infinite;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes pulse {
@@ -351,38 +466,51 @@
   }
 }
 
+// Pit stops
+.pitStops {
+  font-family: $font-mono;
+  font-size: $font-size-sm;
+  text-align: center;
+  color: rgba(113, 113, 122, 1);
+}
+
+.pitStopsActive {
+  color: $color-text-primary;
+}
+
 // Gap column
 .gapLeader {
-  color: $color-text-muted;
-  font-size: $font-size-xs;
+  color: $color-text-primary;
+  font-size: clamp(0.8125rem, 0.95vw, 0.9375rem);
 }
 
 .gapValue {
   color: $color-text-primary;
-  font-size: $font-size-sm;
+  font-size: clamp(0.8125rem, 0.95vw, 0.9375rem);
 }
 
 // Lap time columns
 .lastLap {
-  font-family: $font-widget;
-  font-size: $font-size-xs;
+  font-family: $font-mono;
+  font-size: clamp(0.75rem, 0.9vw, 0.9375rem);
   color: $color-text-muted;
 }
 
 .bestLap {
-  font-family: $font-widget;
-  font-size: $font-size-xs;
-  color: #c084fc;
+  font-family: $font-mono;
+  font-size: clamp(0.75rem, 0.9vw, 0.9375rem);
+  color: rgba(192, 132, 252, 0.85);
+  padding-right: $space-lg;
 }
 
 // Separator row
 .separatorRow {
-  position: relative;
+  background: rgba(24, 24, 27, 0.4);
 }
 
 .separatorInner {
+  padding: $space-md;
   position: relative;
-  padding: $space-xs 0;
 }
 
 .separatorLine {
@@ -397,17 +525,14 @@
 .separatorLineInner {
   width: 100%;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.5),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, white, transparent);
 }
 
 .separatorDots {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $color-text-muted;
+  color: rgba(113, 113, 122, 1);
+  position: relative;
+  z-index: 10;
 }

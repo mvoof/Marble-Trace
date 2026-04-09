@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useVisibleRowCount } from '../../../hooks/useVisibleRowCount';
 import { observer } from 'mobx-react-lite';
 import {
   ChevronUp,
@@ -12,8 +13,11 @@ import {
 import { WidgetPanel } from '../primitives';
 import { useCarIdx, useSession } from '../../../hooks/useIracingData';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { pitStopsStore } from '../../../store/pit-stops.store';
 import { formatLapTime } from '../../../utils/telemetry-format';
-import type { Driver } from '../../../types/bindings';
+import { parseClassColor } from '../../../utils/class-color';
+import { computeProjectedIrDelta } from '../../../utils/iracing-irating';
+import type { Driver, QualifyResult } from '../../../types/bindings';
 
 import styles from './StandingsWidget.module.scss';
 
@@ -21,9 +25,13 @@ interface DriverEntry {
   carIdx: number;
   userName: string;
   carNumber: string;
+  carClassId: number;
   carClass: string;
   carClassShortName: string;
   carClassColor: string;
+  carScreenName: string;
+  /** TireCompoundType label resolved via DriverInfo.DriverTires (e.g. Soft/Wet) */
+  tireCompound: string;
   position: number;
   classPosition: number;
   startPos: number;
@@ -46,6 +54,7 @@ interface DriverGroup {
   classShortName: string;
   classColor: string;
   totalDrivers: number;
+  classSof: number;
   drivers: (DriverEntry | SeparatorEntry)[];
 }
 
@@ -71,9 +80,87 @@ const TRACK_SURFACE_IN_PIT_STALL = 1;
 const NEAR_DQ_INCIDENT_THRESHOLD = 15;
 
 const formatIRating = (ir: number): string => {
-  if (ir >= 10000) return `${(ir / 1000).toFixed(1)}k`;
   if (ir >= 1000) return `${(ir / 1000).toFixed(1)}k`;
   return ir.toString();
+};
+
+// iRacing sometimes returns class names like "GT3 Class" or "Ferrari GT3 Class".
+// The widget should show short tags ("GT3", "LMP2") — strip the trailing
+// " Class" suffix, collapse the "Class N" rel-speed fallback into "CN", and
+// trim whitespace.
+// Detect category tag (GT3, GT4, LMP2, …) inside a car screen name like
+// "Mercedes-AMG GT3 2020" or "Audi R8 LMS GT3".
+const CATEGORY_REGEX = /\b(GTP|LMP1|LMP2|LMP3|GTE|GT3|GT4|GT2|TCR|CUP)\b/i;
+
+const deriveClassFromCar = (carName: string | null | undefined): string => {
+  if (!carName) return '';
+  const m = CATEGORY_REGEX.exec(carName);
+  return m ? m[1].toUpperCase() : '';
+};
+
+const formatClassShortName = (
+  rawClassName: string | null | undefined,
+  carScreenName?: string | null
+): string => {
+  if (rawClassName) {
+    const trimmed = rawClassName.replace(/\s*class\s*$/i, '').trim();
+    // Fallback "Class 50" produced from CarClassRelSpeed → try car name first.
+    if (/^class\s+\d+$/i.test(rawClassName.trim())) {
+      const fromCar = deriveClassFromCar(carScreenName);
+      if (fromCar) return fromCar;
+      const m = /^class\s+(\d+)$/i.exec(rawClassName.trim());
+      return m ? `C${m[1]}` : trimmed;
+    }
+    if (trimmed) return trimmed;
+  }
+  return deriveClassFromCar(carScreenName) || '';
+};
+
+// Default fallback class color for sessions where iRacing does not expose
+// CarClassColor (single-make multi-class fields, etc.). Picks a stable hue
+// per class id so each class still gets a distinct stripe.
+const FALLBACK_CLASS_COLORS = [
+  '#fbbf24',
+  '#60a5fa',
+  '#22c55e',
+  '#f87171',
+  '#a78bfa',
+  '#f472b6',
+  '#34d399',
+  '#fb923c',
+];
+
+const fallbackClassColor = (classId: number): string => {
+  if (classId < 0) return '#888';
+  return FALLBACK_CLASS_COLORS[classId % FALLBACK_CLASS_COLORS.length];
+};
+
+const computeClassSof = (drivers: DriverEntry[]): number => {
+  if (drivers.length === 0) return 0;
+  const total = drivers.reduce((sum, d) => sum + d.iRating, 0);
+  return Math.round(total / drivers.length);
+};
+
+const TIRE_CLASS_MAP: Record<string, string> = {
+  S: styles.tireSoft,
+  M: styles.tireMed,
+  H: styles.tireHard,
+  W: styles.tireWet,
+};
+
+const TireBadge = ({ tire }: { tire: string }) => {
+  if (!tire) return <span className={styles.tireEmpty}>-</span>;
+  // First char of compound type ("Soft" → S, "Wet" → W, "Hard" → H, …).
+  const code = tire.charAt(0).toUpperCase();
+  const cls = TIRE_CLASS_MAP[code] ?? styles.tireMed;
+  return <span className={`${styles.tireBadge} ${cls}`}>{code}</span>;
+};
+
+// Pull a short brand label out of the full car screen name (e.g.
+// "Ferrari 488 GT3 Evo 2020" → "Ferrari").
+const formatBrand = (screenName: string): string => {
+  if (!screenName) return '';
+  return screenName.split(' ')[0] ?? screenName;
 };
 
 const LicenseBadge = ({ licString }: { licString: string }) => {
@@ -92,14 +179,35 @@ const LicenseBadge = ({ licString }: { licString: string }) => {
 
 export const StandingsWidget = observer(() => {
   const carIdx = useCarIdx();
-  const { sessionInfo, driverInfo } = useSession();
+  const { sessionInfo, driverInfo, weekendInfo } = useSession();
   const settings = widgetSettingsStore.getStandingsSettings();
+  const { ref: tableWrapRef, count: visibleRowCount } =
+    useVisibleRowCount<HTMLDivElement>(2, 5, 'tbody tr');
 
   const playerCarIdx = driverInfo?.DriverCarIdx ?? -1;
   const drivers = useMemo(
     (): Driver[] => driverInfo?.Drivers ?? [],
     [driverInfo?.Drivers]
   );
+
+  const qualifyResults = useMemo((): Map<number, number> => {
+    const map = new Map<number, number>();
+    const results: QualifyResult[] =
+      sessionInfo?.QualifyResultsInfo?.Results ?? [];
+
+    for (const r of results) {
+      if (r.CarIdx != null && r.Position != null) {
+        map.set(r.CarIdx, r.Position + 1);
+      }
+    }
+
+    return map;
+  }, [sessionInfo?.QualifyResultsInfo]);
+
+  // DriverInfo.DriverTires maps TireIndex → compound type label
+  // ("Hard"/"Soft"/"Wet"/...). The live per-car index comes from
+  // car_idx_tire_compound in the telemetry frame.
+  const driverTires = driverInfo?.DriverTires ?? [];
 
   const driverEntries = useMemo((): DriverEntry[] => {
     if (!carIdx || drivers.length === 0) return [];
@@ -109,24 +217,44 @@ export const StandingsWidget = observer(() => {
         const idx = d.CarIdx;
         if (d.CarIsPaceCar === 1 || d.IsSpectator === 1) return false;
         if (idx >= carIdx.car_idx_position.length) return false;
+        // Always keep the player even when they have no race position yet
+        // (e.g. in practice, qualifying, or before the green flag).
+        if (idx === playerCarIdx) return true;
         if (carIdx.car_idx_position[idx] <= 0) return false;
         return true;
       })
       .map((d): DriverEntry => {
         const idx = d.CarIdx;
+        const rawClass =
+          d.CarClassShortName ||
+          (d.CarClassRelSpeed != null
+            ? `Class ${d.CarClassRelSpeed}`
+            : 'Class');
+        const classLabel =
+          formatClassShortName(rawClass, d.CarScreenName) || rawClass;
 
         return {
           carIdx: idx,
           userName: d.UserName,
-          carNumber: d.CarNumber,
-          carClass: d.CarClassShortName ?? 'Unknown',
-          carClassShortName: d.CarClassShortName ?? '?',
+          carNumber: d.CarNumber ?? '',
+          carClassId: d.CarClassID ?? -1,
+          carClass: classLabel,
+          carClassShortName: classLabel,
           carClassColor: d.CarClassColor
-            ? `#${d.CarClassColor.replace(/^0x/i, '')}`
-            : '#888888',
+            ? parseClassColor(d.CarClassColor)
+            : fallbackClassColor(d.CarClassID ?? -1),
+          carScreenName: d.CarScreenName ?? '',
+          tireCompound: ((): string => {
+            const tireIdx = carIdx.car_idx_tire_compound?.[idx] ?? -1;
+            if (tireIdx < 0) return '';
+            return (
+              driverTires.find((t) => t.TireIndex === tireIdx)
+                ?.TireCompoundType ?? ''
+            );
+          })(),
           position: carIdx.car_idx_position[idx] ?? 0,
           classPosition: carIdx.car_idx_class_position[idx] ?? 0,
-          startPos: d.CarIdx,
+          startPos: qualifyResults.get(idx) ?? 0,
           lap: carIdx.car_idx_lap?.[idx] ?? 0,
           lapDistPct: carIdx.car_idx_lap_dist_pct[idx] ?? 0,
           lastLapTime: carIdx.car_idx_last_lap_time?.[idx] ?? -1,
@@ -142,34 +270,57 @@ export const StandingsWidget = observer(() => {
         };
       })
       .sort((a, b) => a.position - b.position);
-  }, [carIdx, drivers, playerCarIdx]);
+  }, [carIdx, drivers, playerCarIdx, qualifyResults, driverTires]);
+
+  const overallSof = useMemo(
+    () => computeClassSof(driverEntries),
+    [driverEntries]
+  );
+
+  // Projected iR change (Elo estimate). Only computed when the column is on.
+  const irDeltaMap = useMemo(() => {
+    if (!settings.showIrChange) return new Map<number, number>();
+    return computeProjectedIrDelta(
+      driverEntries.map((d) => ({
+        carIdx: d.carIdx,
+        classId: d.carClassId,
+        classPosition: d.classPosition,
+        iRating: d.iRating,
+      }))
+    );
+  }, [driverEntries, settings.showIrChange]);
 
   const displayGroups = useMemo((): DriverGroup[] => {
     if (driverEntries.length === 0) return [];
 
+    // `around-player` always overrides class grouping (matches the example).
     const groupByClass =
-      settings.groupMode === 'class' && settings.viewMode !== 'around-player';
+      settings.groupByClass && settings.filterMode !== 'around-player';
 
     let groups: DriverGroup[];
 
     if (groupByClass) {
-      const classMap = new Map<string, DriverEntry[]>();
+      const classMap = new Map<number, DriverEntry[]>();
 
       for (const d of driverEntries) {
-        const existing = classMap.get(d.carClass);
+        const existing = classMap.get(d.carClassId);
 
         if (existing) {
           existing.push(d);
         } else {
-          classMap.set(d.carClass, [d]);
+          classMap.set(d.carClassId, [d]);
         }
       }
 
-      groups = Array.from(classMap.entries()).map(([cls, driversInClass]) => ({
-        className: cls,
-        classShortName: driversInClass[0]?.carClassShortName ?? cls,
+      groups = Array.from(classMap.entries()).map(([, driversInClass]) => ({
+        className: driversInClass[0]?.carClass ?? 'Class',
+        classShortName:
+          driversInClass[0]?.carClassShortName ??
+          driversInClass[0]?.carClass ??
+          'Class',
         classColor: driversInClass[0]?.carClassColor ?? '#888',
         totalDrivers: driversInClass.length,
+        classSof: computeClassSof(driversInClass),
         drivers: driversInClass.sort(
           (a, b) => a.classPosition - b.classPosition
         ),
@@ -181,22 +332,23 @@ export const StandingsWidget = observer(() => {
           classShortName: '',
           classColor: '',
           totalDrivers: driverEntries.length,
+          classSof: overallSof,
           drivers: [...driverEntries],
         },
       ];
     }
 
-    if (settings.viewMode === 'around-player') {
+    if (settings.filterMode === 'around-player') {
       const allDrivers = [...driverEntries];
       const playerIdx = allDrivers.findIndex((d) => d.isPlayer);
 
       if (playerIdx === -1) return [];
 
-      const start = Math.max(0, playerIdx - settings.aroundPlayerCount);
-      const end = Math.min(
-        allDrivers.length,
-        playerIdx + settings.aroundPlayerCount + 1
-      );
+      const total = visibleRowCount;
+      const half = Math.floor(total / 2);
+      let start = Math.max(0, playerIdx - half);
+      let end = Math.min(allDrivers.length, start + total);
+      start = Math.max(0, end - total);
 
       return [
         {
@@ -204,52 +356,81 @@ export const StandingsWidget = observer(() => {
           classShortName: '',
           classColor: '',
           totalDrivers: allDrivers.length,
+          classSof: overallSof,
           drivers: allDrivers.slice(start, end),
         },
       ];
     }
 
-    if (settings.viewMode === 'limit-pin') {
-      groups = groups.map((group) => {
-        const driversOnly = group.drivers.filter(
-          (d) => !isSeparator(d)
-        ) as DriverEntry[];
+    // Apply maxVisibleRows limit. For overall mode it caps the single group;
+    // for by-class mode it caps the *total* across groups by distributing the
+    // budget proportionally to each class' size, then guarantees the player
+    // row is preserved in their class group.
+    if (
+      settings.filterMode === 'all' ||
+      settings.filterMode === 'top-and-pin'
+    ) {
+      const totalBudget = visibleRowCount;
+      const totalDrivers = groups.reduce(
+        (sum, g) =>
+          sum +
+          (g.drivers.filter((d) => !isSeparator(d)) as DriverEntry[]).length,
+        0
+      );
 
-        if (driversOnly.length <= settings.maxRowsPerClass) return group;
+      if (totalDrivers > totalBudget && groups.length > 0) {
+        groups = groups.map((group) => {
+          const driversOnly = group.drivers.filter(
+            (d) => !isSeparator(d)
+          ) as DriverEntry[];
 
-        const playerIdx = driversOnly.findIndex((d) => d.isPlayer);
-        const visible: (DriverEntry | SeparatorEntry)[] = driversOnly.slice(
-          0,
-          settings.maxRowsPerClass
-        );
+          const share =
+            groups.length === 1
+              ? totalBudget
+              : Math.max(
+                  1,
+                  Math.floor((driversOnly.length / totalDrivers) * totalBudget)
+                );
 
-        if (playerIdx >= settings.maxRowsPerClass) {
-          visible.push({ isSeparator: true, id: `sep-${group.className}` });
-          visible.push(driversOnly[playerIdx]);
-        }
+          if (driversOnly.length <= share) return group;
 
-        return { ...group, drivers: visible };
-      });
+          const playerIdx = driversOnly.findIndex((d) => d.isPlayer);
+          const visible: (DriverEntry | SeparatorEntry)[] = driversOnly.slice(
+            0,
+            share
+          );
+
+          if (playerIdx >= share) {
+            visible.push({ isSeparator: true, id: `sep-${group.className}` });
+            visible.push(driversOnly[playerIdx]);
+          }
+
+          return { ...group, drivers: visible };
+        });
+      }
     }
 
     return groups;
-  }, [driverEntries, settings]);
+  }, [driverEntries, settings, overallSof, visibleRowCount]);
 
-  const weekendInfo = sessionInfo?.WeekendInfo;
   const sessionData = sessionInfo?.SessionInfo;
   const currentSession =
     sessionData?.Sessions?.[sessionData.CurrentSessionNum ?? 0];
   const showGroupHeaders =
-    settings.groupMode === 'class' && settings.viewMode !== 'around-player';
+    settings.groupByClass && settings.filterMode !== 'around-player';
+  const trackName = weekendInfo?.TrackDisplayName ?? '';
 
   return (
     <WidgetPanel className={styles.standings} gap={0}>
       {settings.showSessionHeader && (
         <div className={styles.sessionHeader}>
           <div className={styles.sessionLeft}>
+            {trackName && <span>{trackName}</span>}
+
             {currentSession && (
               <span>{currentSession.SessionType?.toUpperCase()}</span>
             )}
+
             {currentSession?.SessionLaps && (
               <span>Laps: {currentSession.SessionLaps}</span>
             )}
@@ -273,34 +454,63 @@ export const StandingsWidget = observer(() => {
               <span>Trk: {weekendInfo.TrackSurfaceTemp}</span>
             )}
 
-            {settings.showSOF && weekendInfo?.MinDrivers != null && (
+            {settings.showSOF && (
               <span className={styles.sofValue}>
-                SOF: {weekendInfo.MinDrivers}
+                SOF: {formatIRating(overallSof)}
               </span>
             )}
           </div>
         </div>
       )}
 
-      <div className={styles.tableWrap}>
+      <div ref={tableWrapRef} className={styles.tableWrap}>
         <table className={styles.table}>
           {settings.showColumnHeaders && (
             <thead className={styles.thead}>
               <tr>
                 <th className={styles.th}>Pos</th>
+
                 {settings.showPosChange && (
                   <th className={`${styles.th} ${styles.thCenter}`}>+/-</th>
                 )}
+
                 <th className={styles.th}>#</th>
                 <th className={styles.th}>Driver</th>
+
+                {settings.showBrand && (
+                  <th className={`${styles.th} ${styles.thCenter}`}>Brand</th>
+                )}
+
+                {settings.showTire && (
+                  <th className={`${styles.th} ${styles.thCenter}`}>Tire</th>
+                )}
+
                 {!showGroupHeaders && (
                   <th className={`${styles.th} ${styles.thCenter}`}>Class</th>
                 )}
+
                 <th className={`${styles.th} ${styles.thCenter}`}>Lic / iR</th>
-                <th className={`${styles.th} ${styles.thCenter}`}>Inc</th>
-                {settings.showPitStops && (
-                  <th className={`${styles.th} ${styles.thCenter}`}>Pit</th>
+
+                {settings.showIrChange && (
+                  <th
+                    className={`${styles.th} ${styles.thCenter}`}
+                    title="Projected iR change (Elo estimate, not real iRacing data)"
+                  >
+                    ΔiR*
+                  </th>
                 )}
+
+                <th className={`${styles.th} ${styles.thCenter}`}>Inc</th>
+
+                {settings.showPitStops && (
+                  <th
+                    className={`${styles.th} ${styles.thCenter}`}
+                    title="Pit stops (player only — iRacing does not expose this per-driver)"
+                  >
+                    Stops
+                  </th>
+                )}
+
                 <th className={`${styles.th} ${styles.thRight}`}>Gap</th>
                 <th className={`${styles.th} ${styles.thRight}`}>Last</th>
                 <th className={`${styles.th} ${styles.thRight}`}>Best</th>
@@ -315,6 +525,8 @@ export const StandingsWidget = observer(() => {
                 group={group}
                 showGroupHeader={showGroupHeaders}
                 settings={settings}
+                irDeltaMap={irDeltaMap}
+                playerPitStops={pitStopsStore.playerStops}
               />
             ))}
           </tbody>
@@ -329,43 +541,53 @@ const ClassGroup = observer(
     group,
     showGroupHeader,
     settings,
+    irDeltaMap,
+    playerPitStops,
   }: {
     group: DriverGroup;
     showGroupHeader: boolean;
     settings: ReturnType<typeof widgetSettingsStore.getStandingsSettings>;
+    irDeltaMap: Map<number, number>;
+    playerPitStops: number;
   }) => (
     <>
-      {showGroupHeader && group.classColor && (
+      {showGroupHeader && (
         <tr className={styles.classHeader}>
           <td colSpan={100}>
             <div
               className={styles.classHeaderInner}
               style={{
-                background: `linear-gradient(90deg, ${group.classColor}25 0%, rgba(10,10,15,0.5) 40%, transparent 100%)`,
+                background: `linear-gradient(90deg, ${group.classColor}25 0%, rgba(24,24,27,0.5) 40%, transparent 100%)`,
                 borderLeft: `3px solid ${group.classColor}`,
               }}
             >
               <div className={styles.classHeaderLeft}>
                 <span
                   className={styles.className}
-                  style={{ color: group.classColor }}
+                  style={{
+                    color: group.classColor,
+                    textShadow: `0 0 12px ${group.classColor}80`,
+                  }}
                 >
                   {group.classShortName}
                 </span>
 
-                <span className={styles.classBadge}>
-                  <Trophy size={10} style={{ color: group.classColor }} />
-                  <span className={styles.classBadgeValue}>
-                    {group.totalDrivers}
+                <div className={styles.classStats}>
+                  <span className={styles.classBadge}>
+                    <Trophy size={14} style={{ color: group.classColor }} />
+                    SOF
+                    <span className={styles.classBadgeValue}>
+                      {formatIRating(group.classSof)}
+                    </span>
                   </span>
-                </span>
 
-                <span className={styles.classBadge}>
-                  <Users size={10} />
-                  <span className={styles.classBadgeValue}>
-                    {group.totalDrivers}
+                  <span className={styles.classBadge}>
+                    <Users size={14} />
+                    <span className={styles.classBadgeValue}>
+                      {group.totalDrivers}
+                    </span>
                   </span>
-                </span>
+                </div>
               </div>
 
               <div className={styles.classHeaderLine} />
@@ -399,6 +621,8 @@ const ClassGroup = observer(
             driver={entry}
             showGroupHeaders={showGroupHeader}
             settings={settings}
+            irDelta={irDeltaMap.get(entry.carIdx)}
+            playerPitStops={playerPitStops}
           />
         );
       })}
@@ -411,10 +635,14 @@ const DriverRow = observer(
     driver,
     showGroupHeaders,
     settings,
+    irDelta,
+    playerPitStops,
   }: {
     driver: DriverEntry;
     showGroupHeaders: boolean;
     settings: ReturnType<typeof widgetSettingsStore.getStandingsSettings>;
+    irDelta: number | undefined;
+    playerPitStops: number;
   }) => {
     const isPit =
       driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
@@ -434,7 +662,7 @@ const DriverRow = observer(
       <tr className={rowClass}>
         <td className={styles.td}>
           <span
-            className={`${styles.posCell} ${driver.isPlayer ? styles.posCellPlayer : ''}`}
+            className={`${styles.posCell} ${driver.isPlayer ? styles.posCellPlayer : ''} ${showGroupHeaders ? styles.posCellSmall : ''}`}
           >
             {pos}
           </span>
@@ -466,6 +694,20 @@ const DriverRow = observer(
           </div>
         </td>
 
+        {settings.showBrand && (
+          <td className={`${styles.td} ${styles.tdCenter}`}>
+            <span className={styles.brandLabel} title={driver.carScreenName}>
+              {formatBrand(driver.carScreenName)}
+            </span>
+          </td>
+        )}
+
+        {settings.showTire && (
+          <td className={`${styles.td} ${styles.tdCenter}`}>
+            <TireBadge tire={driver.tireCompound} />
+          </td>
+        )}
+
         {!showGroupHeaders && (
           <td className={`${styles.td} ${styles.tdCenter}`}>
             <span
@@ -478,19 +720,19 @@ const DriverRow = observer(
         )}
 
         <td className={`${styles.td} ${styles.tdCenter}`}>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.25rem',
-            }}
-          >
+          <span className={styles.licWrap}>
             <LicenseBadge licString={driver.licString} />
             <span className={styles.irating}>
               {formatIRating(driver.iRating)}
             </span>
           </span>
         </td>
+
+        {settings.showIrChange && (
+          <td className={`${styles.td} ${styles.tdCenter}`}>
+            <IrChangeCell delta={irDelta} />
+          </td>
+        )}
 
         <td className={`${styles.td} ${styles.tdCenter}`}>
           <span className={nearDQ ? styles.incidentsNearDQ : styles.incidents}>
@@ -500,7 +742,15 @@ const DriverRow = observer(
 
         {settings.showPitStops && (
           <td className={`${styles.td} ${styles.tdCenter}`}>
-            <span className={styles.incidents}>{isPit ? 'In' : '-'}</span>
+            {driver.isPlayer ? (
+              <span
+                className={`${styles.pitStops} ${playerPitStops > 0 ? styles.pitStopsActive : ''}`}
+              >
+                {playerPitStops}
+              </span>
+            ) : (
+              <span className={styles.pitStops}>—</span>
+            )}
           </td>
         )}
 
@@ -541,6 +791,14 @@ const PosChange = ({
   position: number;
   startPos: number;
 }) => {
+  if (startPos === 0) {
+    return (
+      <span className={styles.posChangeNeutral}>
+        <Minus size={10} />
+      </span>
+    );
+  }
+
   const diff = startPos - position;
 
   if (diff > 0) {
@@ -564,6 +822,24 @@ const PosChange = ({
   return (
     <span className={styles.posChangeNeutral}>
       <Minus size={10} />
+    </span>
+  );
+};
+
+const IrChangeCell = ({ delta }: { delta: number | undefined }) => {
+  if (delta == null || delta === 0) {
+    return <span className={styles.irChange}>—</span>;
+  }
+
+  const cls =
+    delta > 0
+      ? `${styles.irChange} ${styles.irChangeUp}`
+      : `${styles.irChange} ${styles.irChangeDown}`;
+
+  return (
+    <span className={cls}>
+      {delta > 0 ? '▲' : '▼'}
+      {Math.abs(delta)}
     </span>
   );
 };

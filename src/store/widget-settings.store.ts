@@ -38,22 +38,23 @@ export interface RadarSettings {
   barDisplayMode?: RadarBarDisplayMode;
 }
 
-export type StandingsGroupMode = 'overall' | 'class';
-export type StandingsViewMode = 'full' | 'around-player' | 'limit-pin';
+export type StandingsFilterMode = 'all' | 'around-player' | 'top-and-pin';
 
 export interface StandingsWidgetSettings {
-  groupMode: StandingsGroupMode;
-  viewMode: StandingsViewMode;
-  aroundPlayerCount: number;
-  maxRowsPerClass: number;
+  groupByClass: boolean;
+  filterMode: StandingsFilterMode;
   showPosChange: boolean;
-  showLiveIR: boolean;
-  showPitStops: boolean;
   showColumnHeaders: boolean;
   showSessionHeader: boolean;
   showWeather: boolean;
   showSOF: boolean;
   showTotalDrivers: boolean;
+  showBrand: boolean;
+  showTire: boolean;
+  /** Projected iR change column (Elo-based estimate, not real SDK data) */
+  showIrChange: boolean;
+  /** Player-only pit stop counter (counted on the frontend) */
+  showPitStops: boolean;
 }
 
 export type RelativeLinearMapPosition = 'top' | 'bottom' | 'left' | 'right';
@@ -201,18 +202,18 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     hotkey: 'F3',
     customSettings: {
       standings: {
-        groupMode: 'class',
-        viewMode: 'full',
-        aroundPlayerCount: 2,
-        maxRowsPerClass: 5,
+        groupByClass: true,
+        filterMode: 'all',
         showPosChange: true,
-        showLiveIR: false,
-        showPitStops: false,
         showColumnHeaders: true,
         showSessionHeader: true,
         showWeather: true,
         showSOF: true,
         showTotalDrivers: true,
+        showBrand: true,
+        showTire: true,
+        showIrChange: false,
+        showPitStops: true,
       },
     },
   },
@@ -416,22 +417,42 @@ class WidgetSettingsStore {
 
   getStandingsSettings(): StandingsWidgetSettings {
     const widget = this.getWidget('standings');
-    return (
-      widget?.customSettings?.standings ?? {
-        groupMode: 'class',
-        viewMode: 'full',
-        aroundPlayerCount: 2,
-        maxRowsPerClass: 5,
-        showPosChange: true,
-        showLiveIR: false,
-        showPitStops: false,
-        showColumnHeaders: true,
-        showSessionHeader: true,
-        showWeather: true,
-        showSOF: true,
-        showTotalDrivers: true,
+    // Tolerate the legacy shape (`groupMode` / `viewMode` / `maxRowsPerClass`)
+    // so users that already persisted older settings get migrated transparently.
+    const saved = (widget?.customSettings?.standings ?? {}) as Partial<
+      StandingsWidgetSettings & {
+        groupMode?: 'overall' | 'class';
+        viewMode?: 'full' | 'around-player' | 'limit-pin';
+        maxRowsPerClass?: number;
       }
-    );
+    >;
+
+    const migratedGroupByClass =
+      saved.groupByClass ??
+      (saved.groupMode ? saved.groupMode === 'class' : true);
+
+    const migratedFilterMode: StandingsFilterMode =
+      saved.filterMode ??
+      (saved.viewMode === 'around-player'
+        ? 'around-player'
+        : saved.viewMode === 'limit-pin'
+          ? 'top-and-pin'
+          : 'all');
+
+    return {
+      groupByClass: migratedGroupByClass,
+      filterMode: migratedFilterMode,
+      showPosChange: saved.showPosChange ?? true,
+      showColumnHeaders: saved.showColumnHeaders ?? true,
+      showSessionHeader: saved.showSessionHeader ?? true,
+      showWeather: saved.showWeather ?? true,
+      showSOF: saved.showSOF ?? true,
+      showTotalDrivers: saved.showTotalDrivers ?? true,
+      showBrand: saved.showBrand ?? true,
+      showTire: saved.showTire ?? true,
+      showIrChange: saved.showIrChange ?? false,
+      showPitStops: saved.showPitStops ?? true,
+    };
   }
 
   getRelativeSettings(): RelativeWidgetSettings {

@@ -59,7 +59,7 @@ export const TrackMapWidget = observer(() => {
 
         return {
           carIdx: idx,
-          carNumber: d.CarNumber,
+          carNumber: d.CarNumber ?? '',
           carClassColor: d.CarClassColor
             ? `#${d.CarClassColor.replace(/^0x/i, '')}`
             : '#888888',

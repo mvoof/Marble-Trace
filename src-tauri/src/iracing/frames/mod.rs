@@ -148,6 +148,8 @@ pub(crate) struct AllFieldsFrame {
     pub car_idx_est_time: Vec<f32>,
     #[field_name = "CarIdxTrackSurface"]
     pub car_idx_track_surface: Vec<i32>,
+    #[field_name = "CarIdxTireCompound"]
+    pub car_idx_tire_compound: Vec<i32>,
 }
 
 // === Domain frame decomposition ===
@@ -240,6 +242,7 @@ impl From<&AllFieldsFrame> for CarIdxFrame {
             car_idx_f2_time: f.car_idx_f2_time.clone(),
             car_idx_est_time: f.car_idx_est_time.clone(),
             car_idx_track_surface: f.car_idx_track_surface.clone(),
+            car_idx_tire_compound: f.car_idx_tire_compound.clone(),
             car_left_right: f.car_left_right,
         }
     }

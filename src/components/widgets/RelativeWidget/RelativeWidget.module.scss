@@ -1,12 +1,14 @@
 @use '../../../styles/variables' as *;
 
 .relative {
-  font-family: $font-widget;
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
   color: $color-text-primary;
   width: 100%;
   height: 100%;
   display: flex;
   overflow: hidden;
+  border-radius: 6px;
 }
 
 .relativeColumn {
@@ -17,12 +19,16 @@
   flex-direction: row;
 }
 
+// Driver list
 .driverList {
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  justify-content: flex-start;
 
   &::-webkit-scrollbar {
     width: 2px;
@@ -42,60 +48,70 @@
 .driverRow {
   display: flex;
   align-items: center;
-  padding: $space-xs $space-sm;
+  padding: $space-md;
   position: relative;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  min-height: 2.5rem;
+  border-bottom: 1px solid rgba(39, 39, 42, 0.4);
+  background: rgba(24, 24, 27, 0.2);
 }
 
 .driverRowPlayer {
-  background-color: rgba(245, 158, 11, 0.15);
-  box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.2);
+  background-color: rgba(245, 158, 11, 0.2);
+  box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.3);
   z-index: 10;
 }
 
 .driverRowPit {
-  opacity: 0.35;
-  filter: grayscale(0.5);
+  opacity: 0.4;
+  filter: grayscale(100%);
 }
 
+// Placeholder row used to keep the player vertically centered when there are
+// not enough cars above/below.
+.driverRowPlaceholder {
+  flex: 0 0 auto;
+  min-height: 2.25rem;
+  border-bottom: 1px solid rgba(39, 39, 42, 0.2);
+  background: rgba(24, 24, 27, 0.1);
+}
+
+// Class stripe
 .classStripe {
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
-  width: 3px;
+  width: 6px;
 }
 
-// Number block
+// Number block (position + car number stacked)
 .numberBlock {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 2rem;
-  margin-left: $space-sm;
+  margin-left: $space-md;
   flex-shrink: 0;
 }
 
 .driverPosition {
-  font-size: 0.5rem;
-  color: $color-text-muted;
+  font-size: 0.5625rem;
+  color: rgba(113, 113, 122, 1);
   line-height: 1;
-  font-family: $font-widget;
+  font-family: $font-mono;
 }
 
 .driverCarNumber {
   font-weight: 700;
-  font-size: $font-size-sm;
+  font-size: $font-size-md;
   line-height: 1;
-  font-family: $font-widget;
+  font-family: $font-mono;
 }
 
 // Info block
 .infoBlock {
   flex: 1 1 0;
-  margin-left: $space-sm;
+  margin-left: $space-md;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -105,12 +121,12 @@
 .infoTop {
   display: flex;
   align-items: center;
-  gap: $space-sm;
+  gap: $space-md;
 }
 
 .driverName {
   font-weight: 700;
-  font-size: $font-size-sm;
+  font-size: $font-size-md;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -119,27 +135,30 @@
 }
 
 .driverNamePlayer {
-  color: #f59e0b;
+  color: #fbbf24;
 }
 
 .pitTag {
-  font-size: 0.5rem;
-  background: rgba(234, 179, 8, 0.15);
+  background: rgba(234, 179, 8, 0.2);
   color: #eab308;
-  padding: 0 $space-sm;
-  border-radius: 3px;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  padding: $space-xs $space-md;
+  border-radius: 4px;
+  font-size: $font-size-xs;
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   flex-shrink: 0;
 }
 
+// Details row (class, license, iR, lap status)
 .infoBottom {
   display: flex;
   align-items: center;
-  gap: $space-sm;
+  gap: $space-md;
   font-size: $font-size-xs;
-  font-family: $font-widget;
-  margin-top: 1px;
+  font-family: $font-mono;
+  margin-top: $space-xs;
 }
 
 .classLabel {
@@ -147,7 +166,7 @@
 }
 
 .metaSeparator {
-  color: rgba(255, 255, 255, 0.15);
+  color: rgba(113, 113, 122, 1);
 }
 
 .licInfo {
@@ -155,41 +174,41 @@
 }
 
 .irInfo {
-  color: $color-text-muted;
+  color: rgba(113, 113, 122, 1);
 }
 
 .lapStatusLapping {
   color: $color-info;
   font-weight: 700;
-  font-size: 0.5rem;
+  font-size: 0.5625rem;
 }
 
 .lapStatusLapped {
   color: #f97316;
   font-weight: 700;
-  font-size: 0.5rem;
+  font-size: 0.5625rem;
 }
 
-// F2 Time block
+// F2 Time (gap) block
 .f2Block {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 2px;
-  width: 4.5rem;
+  width: 5rem;
   flex-shrink: 0;
-  padding-right: $space-sm;
+  padding-right: $space-md;
 }
 
 .f2Time {
-  font-family: $font-widget;
+  font-family: $font-mono;
   font-weight: 700;
-  font-size: $font-size-lg;
+  font-size: 1.125rem;
   text-align: right;
 }
 
 .f2Positive {
-  color: #f87171;
+  color: #ef4444;
 }
 
 .f2Negative {
@@ -197,45 +216,57 @@
 }
 
 .f2Player {
-  color: #f59e0b;
+  color: #fbbf24;
+}
+
+// Trend arrows
+.trendUp {
+  color: #22c55e;
+  flex-shrink: 0;
+}
+
+.trendDown {
+  color: #ef4444;
+  flex-shrink: 0;
 }
 
 // Linear map
 .linearMap {
+  background: rgba(24, 24, 27, 1);
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
 }
 
 .linearMapHorizontal {
-  height: 1.75rem;
+  height: 2rem;
   width: 100%;
 }
 
 .linearMapVertical {
-  width: 1.75rem;
+  width: 2rem;
   height: 100%;
 }
 
 .linearMapBorderBottom {
-  border-top: 1px solid $color-border;
+  border-top: 1px solid rgba(39, 39, 42, 1);
 }
 
 .linearMapBorderTop {
-  border-bottom: 1px solid $color-border;
+  border-bottom: 1px solid rgba(39, 39, 42, 1);
 }
 
 .linearMapBorderLeft {
-  border-right: 1px solid $color-border;
+  border-right: 1px solid rgba(39, 39, 42, 1);
 }
 
 .linearMapBorderRight {
-  border-left: 1px solid $color-border;
+  border-left: 1px solid rgba(39, 39, 42, 1);
 }
 
 .mapCenterLine {
   position: absolute;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.2);
   z-index: 0;
 }
 
@@ -255,14 +286,15 @@
 
 .mapDot {
   position: absolute;
-  width: 1rem;
-  height: 1rem;
+  width: 1.25rem;
+  height: 1.25rem;
   border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.6);
+  border: 1px solid black;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all 0.3s;
   z-index: 10;
 }
 
@@ -272,8 +304,9 @@
 }
 
 .mapDotNumber {
-  font-size: 0.45rem;
+  font-size: 0.5625rem;
   font-weight: 700;
   color: white;
   line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
 }
