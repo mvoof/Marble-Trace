@@ -89,7 +89,7 @@ const WIDGET_MAP: Record<string, WidgetEntry> = {
     variants: {
       default: {
         component: StandingsWidget,
-        designWidth: 700,
+        designWidth: 750,
         designHeight: 400,
       },
     },

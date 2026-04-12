@@ -11,13 +11,16 @@ import {
 } from 'lucide-react';
 
 import { WidgetPanel } from '../primitives';
-import { useCarIdx, useSession } from '../../../hooks/useIracingData';
+import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { pitStopsStore } from '../../../store/pit-stops.store';
 import { formatLapTime } from '../../../utils/telemetry-format';
-import { parseClassColor } from '../../../utils/class-color';
+import {
+  parseClassColor,
+  fallbackClassColor,
+} from '../../../utils/class-color';
 import { computeProjectedIrDelta } from '../../../utils/iracing-irating';
-import type { Driver, QualifyResult } from '../../../types/bindings';
+import type { Driver } from '../../../types/bindings';
 
 import styles from './StandingsWidget.module.scss';
 
@@ -26,7 +29,6 @@ interface DriverEntry {
   userName: string;
   carNumber: string;
   carClassId: number;
-  carClass: string;
   carClassShortName: string;
   carClassColor: string;
   carScreenName: string;
@@ -34,7 +36,8 @@ interface DriverEntry {
   tireCompound: string;
   position: number;
   classPosition: number;
-  startPos: number;
+  startPosOverall: number;
+  startPosClass: number;
   lap: number;
   lapDistPct: number;
   lastLapTime: number;
@@ -79,60 +82,14 @@ const TRACK_SURFACE_OFF_TRACK = 0;
 const TRACK_SURFACE_IN_PIT_STALL = 1;
 const NEAR_DQ_INCIDENT_THRESHOLD = 15;
 
+const shortenClassName = (name: string): string => {
+  if (name.length <= 6) return name;
+  return name.split(' ')[0] ?? name;
+};
+
 const formatIRating = (ir: number): string => {
   if (ir >= 1000) return `${(ir / 1000).toFixed(1)}k`;
   return ir.toString();
-};
-
-// iRacing sometimes returns class names like "GT3 Class" or "Ferrari GT3 Class".
-// The widget should show short tags ("GT3", "LMP2") — strip the trailing
-// " Class" suffix, collapse the "Class N" rel-speed fallback into "CN", and
-// trim whitespace.
-// Detect category tag (GT3, GT4, LMP2, …) inside a car screen name like
-// "Mercedes-AMG GT3 2020" or "Audi R8 LMS GT3".
-const CATEGORY_REGEX = /\b(GTP|LMP1|LMP2|LMP3|GTE|GT3|GT4|GT2|TCR|CUP)\b/i;
-
-const deriveClassFromCar = (carName: string | null | undefined): string => {
-  if (!carName) return '';
-  const m = CATEGORY_REGEX.exec(carName);
-  return m ? m[1].toUpperCase() : '';
-};
-
-const formatClassShortName = (
-  rawClassName: string | null | undefined,
-  carScreenName?: string | null
-): string => {
-  if (rawClassName) {
-    const trimmed = rawClassName.replace(/\s*class\s*$/i, '').trim();
-    // Fallback "Class 50" produced from CarClassRelSpeed → try car name first.
-    if (/^class\s+\d+$/i.test(rawClassName.trim())) {
-      const fromCar = deriveClassFromCar(carScreenName);
-      if (fromCar) return fromCar;
-      const m = /^class\s+(\d+)$/i.exec(rawClassName.trim());
-      return m ? `C${m[1]}` : trimmed;
-    }
-    if (trimmed) return trimmed;
-  }
-  return deriveClassFromCar(carScreenName) || '';
-};
-
-// Default fallback class color for sessions where iRacing does not expose
-// CarClassColor (single-make multi-class fields, etc.). Picks a stable hue
-// per class id so each class still gets a distinct stripe.
-const FALLBACK_CLASS_COLORS = [
-  '#fbbf24',
-  '#60a5fa',
-  '#22c55e',
-  '#f87171',
-  '#a78bfa',
-  '#f472b6',
-  '#34d399',
-  '#fb923c',
-];
-
-const fallbackClassColor = (classId: number): string => {
-  if (classId < 0) return '#888';
-  return FALLBACK_CLASS_COLORS[classId % FALLBACK_CLASS_COLORS.length];
 };
 
 const computeClassSof = (drivers: DriverEntry[]): number => {
@@ -178,11 +135,11 @@ const LicenseBadge = ({ licString }: { licString: string }) => {
 };
 
 export const StandingsWidget = observer(() => {
-  const carIdx = useCarIdx();
-  const { sessionInfo, driverInfo, weekendInfo } = useSession();
+  const carIdx = telemetryStore.carIdx;
+  const { sessionInfo, driverInfo, weekendInfo } = telemetryStore;
   const settings = widgetSettingsStore.getStandingsSettings();
   const { ref: tableWrapRef, count: visibleRowCount } =
-    useVisibleRowCount<HTMLDivElement>(2, 5, 'tbody tr');
+    useVisibleRowCount<HTMLDivElement>(2, 5, `tbody tr.${styles.driverRow}`);
 
   const playerCarIdx = driverInfo?.DriverCarIdx ?? -1;
   const drivers = useMemo(
@@ -190,60 +147,40 @@ export const StandingsWidget = observer(() => {
     [driverInfo?.Drivers]
   );
 
-  const qualifyResults = useMemo((): Map<number, number> => {
-    const map = new Map<number, number>();
-    const results: QualifyResult[] =
-      sessionInfo?.QualifyResultsInfo?.Results ?? [];
-
-    for (const r of results) {
-      if (r.CarIdx != null && r.Position != null) {
-        map.set(r.CarIdx, r.Position + 1);
-      }
-    }
-
-    return map;
-  }, [sessionInfo?.QualifyResultsInfo]);
-
-  // DriverInfo.DriverTires maps TireIndex → compound type label
-  // ("Hard"/"Soft"/"Wet"/...). The live per-car index comes from
-  // car_idx_tire_compound in the telemetry frame.
-  const driverTires = driverInfo?.DriverTires ?? [];
+  const startPositions = telemetryStore.startPositions;
 
   const driverEntries = useMemo((): DriverEntry[] => {
     if (!carIdx || drivers.length === 0) return [];
 
-    return drivers
-      .filter((d) => {
-        const idx = d.CarIdx;
-        if (d.CarIsPaceCar === 1 || d.IsSpectator === 1) return false;
-        if (idx >= carIdx.car_idx_position.length) return false;
-        // Always keep the player even when they have no race position yet
-        // (e.g. in practice, qualifying, or before the green flag).
-        if (idx === playerCarIdx) return true;
-        if (carIdx.car_idx_position[idx] <= 0) return false;
-        return true;
-      })
-      .map((d): DriverEntry => {
-        const idx = d.CarIdx;
-        const rawClass =
-          d.CarClassShortName ||
-          (d.CarClassRelSpeed != null
-            ? `Class ${d.CarClassRelSpeed}`
-            : 'Class');
-        const classLabel =
-          formatClassShortName(rawClass, d.CarScreenName) || rawClass;
+    const driverTires = driverInfo?.DriverTires ?? [];
 
+    return drivers
+      .filter((driver) => {
+        const idx = driver.CarIdx;
+        if (driver.CarIsPaceCar === 1 || driver.IsSpectator === 1) return false;
+        if (idx >= carIdx.car_idx_position.length) return false;
+        // Always keep the player even when they have no race position yet.
+        if (idx === playerCarIdx) return true;
+        // Show drivers that have a position OR are on track (lap dist > 0).
+        // Before the green flag, positions may be 0 but cars are already on grid.
+        const pos = carIdx.car_idx_position[idx] ?? 0;
+        const lapDistPct = carIdx.car_idx_lap_dist_pct[idx] ?? -1;
+        if (pos > 0) return true;
+        if (lapDistPct >= 0) return true;
+        return false;
+      })
+      .map((driver): DriverEntry => {
+        const idx = driver.CarIdx;
         return {
           carIdx: idx,
-          userName: d.UserName,
-          carNumber: d.CarNumber ?? '',
-          carClassId: d.CarClassID ?? -1,
-          carClass: classLabel,
-          carClassShortName: classLabel,
-          carClassColor: d.CarClassColor
-            ? parseClassColor(d.CarClassColor)
-            : fallbackClassColor(d.CarClassID ?? -1),
-          carScreenName: d.CarScreenName ?? '',
+          userName: driver.UserName,
+          carNumber: driver.CarNumber ?? '',
+          carClassId: driver.CarClassID ?? -1,
+          carClassShortName: driver.CarClassShortName ?? '',
+          carClassColor: driver.CarClassColor
+            ? parseClassColor(driver.CarClassColor)
+            : fallbackClassColor(driver.CarClassID ?? -1),
+          carScreenName: driver.CarScreenName ?? '',
           tireCompound: ((): string => {
             const tireIdx = carIdx.car_idx_tire_compound?.[idx] ?? -1;
             if (tireIdx < 0) return '';
@@ -254,23 +191,30 @@ export const StandingsWidget = observer(() => {
           })(),
           position: carIdx.car_idx_position[idx] ?? 0,
           classPosition: carIdx.car_idx_class_position[idx] ?? 0,
-          startPos: qualifyResults.get(idx) ?? 0,
+          startPosOverall: startPositions.get(idx)?.overall ?? 0,
+          startPosClass: startPositions.get(idx)?.class ?? 0,
           lap: carIdx.car_idx_lap?.[idx] ?? 0,
           lapDistPct: carIdx.car_idx_lap_dist_pct[idx] ?? 0,
           lastLapTime: carIdx.car_idx_last_lap_time?.[idx] ?? -1,
           bestLapTime: carIdx.car_idx_best_lap_time?.[idx] ?? -1,
           f2Time: carIdx.car_idx_f2_time?.[idx] ?? 0,
           trackSurface: carIdx.car_idx_track_surface?.[idx] ?? -1,
-          iRating: d.IRating ?? 0,
-          licString: d.LicString ?? 'R 0.00',
-          licColor: d.LicColor ?? '000000',
-          incidents: d.CurDriverIncidentCount ?? 0,
+          iRating: driver.IRating ?? 0,
+          licString: driver.LicString ?? 'R 0.00',
+          licColor: driver.LicColor ?? '000000',
+          incidents: driver.CurDriverIncidentCount ?? 0,
           isPlayer: idx === playerCarIdx,
           onPitRoad: carIdx.car_idx_on_pit_road[idx] ?? false,
         };
       })
-      .sort((a, b) => a.position - b.position);
-  }, [carIdx, drivers, playerCarIdx, qualifyResults, driverTires]);
+      .sort((a, b) => {
+        // When positions are assigned, sort by position.
+        // Before the green flag (pos 0), fall back to qualify/grid position.
+        const posA = a.position > 0 ? a.position : a.startPosOverall || 999;
+        const posB = b.position > 0 ? b.position : b.startPosOverall || 999;
+        return posA - posB;
+      });
+  }, [carIdx, drivers, playerCarIdx, startPositions, driverInfo?.DriverTires]);
 
   const overallSof = useMemo(
     () => computeClassSof(driverEntries),
@@ -313,11 +257,8 @@ export const StandingsWidget = observer(() => {
       }
 
       groups = Array.from(classMap.entries()).map(([, driversInClass]) => ({
-        className: driversInClass[0]?.carClass ?? 'Class',
-        classShortName:
-          driversInClass[0]?.carClassShortName ??
-          driversInClass[0]?.carClass ??
-          'Class',
+        className: driversInClass[0]?.carClassShortName ?? 'Class',
+        classShortName: driversInClass[0]?.carClassShortName ?? 'Class',
         classColor: driversInClass[0]?.carClassColor ?? '#888',
         totalDrivers: driversInClass.length,
         classSof: computeClassSof(driversInClass),
@@ -362,52 +303,46 @@ export const StandingsWidget = observer(() => {
       ];
     }
 
-    // Apply maxVisibleRows limit. For overall mode it caps the single group;
-    // for by-class mode it caps the *total* across groups by distributing the
-    // budget proportionally to each class' size, then guarantees the player
-    // row is preserved in their class group.
-    if (
-      settings.filterMode === 'all' ||
-      settings.filterMode === 'top-and-pin'
-    ) {
-      const totalBudget = visibleRowCount;
-      const totalDrivers = groups.reduce(
-        (sum, g) =>
-          sum +
-          (g.drivers.filter((d) => !isSeparator(d)) as DriverEntry[]).length,
-        0
-      );
+    // "all" mode: cap rows to visibleRowCount, distribute budget
+    // proportionally across classes. If player is not in the visible
+    // portion of their class, pin them at the bottom with a separator.
+    const totalBudget = visibleRowCount;
+    const totalDrivers = groups.reduce(
+      (sum, g) =>
+        sum +
+        (g.drivers.filter((d) => !isSeparator(d)) as DriverEntry[]).length,
+      0
+    );
 
-      if (totalDrivers > totalBudget && groups.length > 0) {
-        groups = groups.map((group) => {
-          const driversOnly = group.drivers.filter(
-            (d) => !isSeparator(d)
-          ) as DriverEntry[];
+    if (totalDrivers > totalBudget && groups.length > 0) {
+      groups = groups.map((group) => {
+        const driversOnly = group.drivers.filter(
+          (d) => !isSeparator(d)
+        ) as DriverEntry[];
 
-          const share =
-            groups.length === 1
-              ? totalBudget
-              : Math.max(
-                  1,
-                  Math.floor((driversOnly.length / totalDrivers) * totalBudget)
-                );
+        const share =
+          groups.length === 1
+            ? totalBudget
+            : Math.max(
+                1,
+                Math.floor((driversOnly.length / totalDrivers) * totalBudget)
+              );
 
-          if (driversOnly.length <= share) return group;
+        if (driversOnly.length <= share) return group;
 
-          const playerIdx = driversOnly.findIndex((d) => d.isPlayer);
-          const visible: (DriverEntry | SeparatorEntry)[] = driversOnly.slice(
-            0,
-            share
-          );
+        const playerIdx = driversOnly.findIndex((d) => d.isPlayer);
+        const visible: (DriverEntry | SeparatorEntry)[] = driversOnly.slice(
+          0,
+          share
+        );
 
-          if (playerIdx >= share) {
-            visible.push({ isSeparator: true, id: `sep-${group.className}` });
-            visible.push(driversOnly[playerIdx]);
-          }
+        if (playerIdx >= share) {
+          visible.push({ isSeparator: true, id: `sep-${group.className}` });
+          visible.push(driversOnly[playerIdx]);
+        }
 
-          return { ...group, drivers: visible };
-        });
-      }
+        return { ...group, drivers: visible };
+      });
     }
 
     return groups;
@@ -465,6 +400,24 @@ export const StandingsWidget = observer(() => {
 
       <div ref={tableWrapRef} className={styles.tableWrap}>
         <table className={styles.table}>
+          <colgroup>
+            <col className={styles.colPos} />
+            {settings.showPosChange && <col className={styles.colPosChange} />}
+            <col className={styles.colNum} />
+            <col className={styles.colName} />{' '}
+            {/* Driver name — takes remaining space */}
+            {settings.showBrand && <col className={styles.colBrand} />}
+            {settings.showTire && <col className={styles.colTire} />}
+            {!showGroupHeaders && <col className={styles.colClass} />}
+            <col className={styles.colLic} />
+            {settings.showIrChange && <col className={styles.colIrChange} />}
+            <col className={styles.colInc} />
+            {settings.showPitStops && <col className={styles.colStops} />}
+            <col className={styles.colGap} />
+            <col className={styles.colLap} />
+            <col className={styles.colLap} />
+          </colgroup>
+
           {settings.showColumnHeaders && (
             <thead className={styles.thead}>
               <tr>
@@ -670,7 +623,12 @@ const DriverRow = observer(
 
         {settings.showPosChange && (
           <td className={`${styles.td} ${styles.tdCenter}`}>
-            <PosChange position={pos} startPos={driver.startPos} />
+            <PosChange
+              position={pos}
+              startPos={
+                showGroupHeaders ? driver.startPosClass : driver.startPosOverall
+              }
+            />
           </td>
         )}
 
@@ -682,7 +640,7 @@ const DriverRow = observer(
           </span>
         </td>
 
-        <td className={styles.td}>
+        <td className={`${styles.td} ${styles.tdDriverName}`}>
           <div className={styles.driverNameCell}>
             <span
               className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
@@ -714,7 +672,7 @@ const DriverRow = observer(
               className={styles.classBadgeInline}
               style={{ backgroundColor: driver.carClassColor }}
             >
-              {driver.carClassShortName}
+              {shortenClassName(driver.carClassShortName)}
             </span>
           </td>
         )}

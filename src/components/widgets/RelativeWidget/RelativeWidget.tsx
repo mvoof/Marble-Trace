@@ -3,41 +3,16 @@ import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
 import { WidgetPanel } from '../primitives';
-import { useCarIdx, useSession } from '../../../hooks/useIracingData';
+import { telemetryStore } from '../../../store/iracing';
 import { useVisibleRowCount } from '../../../hooks/useVisibleRowCount';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { parseClassColor } from '../../../utils/class-color';
+import {
+  parseClassColor,
+  formatClassShortName,
+} from '../../../utils/class-color';
 import type { Driver } from '../../../types/bindings';
 
 import styles from './RelativeWidget.module.scss';
-
-// iRacing class names sometimes include " Class" suffix; widgets use the
-// short form (e.g. "GT3", "LMP2"). When iRacing only exposes a generic
-// "Class N" we try to derive a category tag from the car screen name.
-const CATEGORY_REGEX = /\b(GTP|LMP1|LMP2|LMP3|GTE|GT3|GT4|GT2|TCR|CUP)\b/i;
-
-const deriveClassFromCar = (carName: string | null | undefined): string => {
-  if (!carName) return '';
-  const m = CATEGORY_REGEX.exec(carName);
-  return m ? m[1].toUpperCase() : '';
-};
-
-const formatClassShortName = (
-  rawClassName: string | null | undefined,
-  carScreenName?: string | null
-): string => {
-  if (rawClassName) {
-    const trimmed = rawClassName.replace(/\s*class\s*$/i, '').trim();
-    if (/^class\s+\d+$/i.test(rawClassName.trim())) {
-      const fromCar = deriveClassFromCar(carScreenName);
-      if (fromCar) return fromCar;
-      const m = /^class\s+(\d+)$/i.exec(rawClassName.trim());
-      return m ? `C${m[1]}` : trimmed;
-    }
-    if (trimmed) return trimmed;
-  }
-  return deriveClassFromCar(carScreenName) || '';
-};
 
 interface PlaceholderEntry {
   isPlaceholder: true;
@@ -71,14 +46,14 @@ const TRACK_SURFACE_IN_PIT_STALL = 1;
 const TRACK_SURFACE_ON_TRACK = 3;
 
 export const RelativeWidget = observer(() => {
-  const carIdx = useCarIdx();
-  const { driverInfo } = useSession();
+  const carIdx = telemetryStore.carIdx;
+  const { driverInfo } = telemetryStore;
   const settings = widgetSettingsStore.getRelativeSettings();
   const prevF2TimesRef = useRef<Map<number, number>>(new Map());
   const prevF2PctRef = useRef<Map<number, number>>(new Map());
   const lastSnapshotTimeRef = useRef<number>(0);
   const { ref: driverListRef, count: visibleRowCount } =
-    useVisibleRowCount<HTMLDivElement>(2.75, 3);
+    useVisibleRowCount<HTMLDivElement>(2.75, 3, `.${styles.driverRow}`);
 
   const playerCarIdx = driverInfo?.DriverCarIdx ?? -1;
   const drivers = useMemo(
@@ -106,10 +81,12 @@ export const RelativeWidget = observer(() => {
         const idx = d.CarIdx;
         if (d.CarIsPaceCar === 1 || d.IsSpectator === 1) return false;
         if (idx >= carIdx.car_idx_position.length) return false;
-        // Always keep the player even when they have no race position yet.
         if (idx === playerCarIdx) return true;
-        if (carIdx.car_idx_position[idx] <= 0) return false;
-        return true;
+        const pos = carIdx.car_idx_position[idx] ?? 0;
+        const lapDistPct = carIdx.car_idx_lap_dist_pct[idx] ?? -1;
+        if (pos > 0) return true;
+        if (lapDistPct >= 0) return true;
+        return false;
       })
       .map((d): RelativeEntry => {
         const idx = d.CarIdx;
@@ -118,8 +95,11 @@ export const RelativeWidget = observer(() => {
           (d.CarClassRelSpeed != null
             ? `Class ${d.CarClassRelSpeed}`
             : 'Class');
-        const classLabel =
-          formatClassShortName(rawClass, d.CarScreenName) || rawClass;
+        const classLabel = formatClassShortName(
+          rawClass,
+          d.CarScreenName,
+          d.CarClassID
+        );
 
         return {
           carIdx: idx,
@@ -356,7 +336,7 @@ const DriverRow = observer(
           style={{ backgroundColor: driver.carClassColor }}
         />
 
-        <div className={styles.numberBlock}>
+        <div className={styles.posBlock}>
           <span className={styles.driverPosition}>{driver.position}</span>
           <span
             className={styles.driverCarNumber}
@@ -367,17 +347,15 @@ const DriverRow = observer(
         </div>
 
         <div className={styles.infoBlock}>
-          <div className={styles.infoTop}>
-            <span
-              className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
-            >
-              {driver.userName.toUpperCase()}
-            </span>
+          <span
+            className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
+          >
+            {driver.userName.toUpperCase()}
+          </span>
 
-            {isPit && <span className={styles.pitTag}>Pit</span>}
-          </div>
+          <div className={styles.details}>
+            {isPit && <span className={styles.pitTag}>PIT</span>}
 
-          <div className={styles.infoBottom}>
             <span
               className={styles.classLabel}
               style={{ color: driver.carClassColor }}

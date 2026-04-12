@@ -9,8 +9,7 @@
  */
 import { makeAutoObservable, reaction } from 'mobx';
 
-import { carIdxStore } from './iracing/car-idx.store';
-import { sessionStore } from './iracing/session.store';
+import { telemetryStore } from './iracing/telemetry.store';
 
 class PitStopsStore {
   playerStops = 0;
@@ -24,7 +23,7 @@ class PitStopsStore {
     // Reset whenever the session identity changes.
     reaction(
       () => {
-        const wi = sessionStore.weekendInfo;
+        const wi = telemetryStore.weekendInfo;
         if (!wi) return null;
         return `${wi.SessionID ?? ''}:${wi.SubSessionID ?? ''}`;
       },
@@ -40,8 +39,8 @@ class PitStopsStore {
     // Count false→true transitions of the player's pit road flag.
     reaction(
       () => {
-        const driverCarIdx = sessionStore.driverInfo?.DriverCarIdx ?? -1;
-        const frame = carIdxStore.frame;
+        const driverCarIdx = telemetryStore.driverInfo?.DriverCarIdx ?? -1;
+        const frame = telemetryStore.carIdx;
         if (!frame || driverCarIdx < 0) return false;
         return frame.car_idx_on_pit_road?.[driverCarIdx] ?? false;
       },

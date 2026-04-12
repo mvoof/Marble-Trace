@@ -38,7 +38,7 @@ export interface RadarSettings {
   barDisplayMode?: RadarBarDisplayMode;
 }
 
-export type StandingsFilterMode = 'all' | 'around-player' | 'top-and-pin';
+export type StandingsFilterMode = 'all' | 'around-player';
 
 export interface StandingsWidgetSettings {
   groupByClass: boolean;
@@ -432,12 +432,10 @@ class WidgetSettingsStore {
       (saved.groupMode ? saved.groupMode === 'class' : true);
 
     const migratedFilterMode: StandingsFilterMode =
-      saved.filterMode ??
-      (saved.viewMode === 'around-player'
-        ? 'around-player'
-        : saved.viewMode === 'limit-pin'
-          ? 'top-and-pin'
-          : 'all');
+      saved.filterMode === 'top-and-pin'
+        ? 'all'
+        : (saved.filterMode ??
+          (saved.viewMode === 'around-player' ? 'around-player' : 'all'));
 
     return {
       groupByClass: migratedGroupByClass,

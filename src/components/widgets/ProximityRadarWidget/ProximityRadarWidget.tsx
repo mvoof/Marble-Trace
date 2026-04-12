@@ -2,7 +2,7 @@ import { useMemo, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '../primitives/WidgetPanel';
-import { useCarIdx, useSession } from '../../../hooks/useIracingData';
+import { telemetryStore } from '../../../store/iracing';
 import {
   computeNearbyCars,
   computeRadarDistances,
@@ -27,8 +27,8 @@ interface ProximityRadarWidgetProps {
 
 export const ProximityRadarWidget = observer(
   ({ onVisibilityChange }: ProximityRadarWidgetProps) => {
-    const carIdx = useCarIdx();
-    const { driverInfo, weekendInfo } = useSession();
+    const carIdx = telemetryStore.carIdx;
+    const { driverInfo, weekendInfo } = telemetryStore;
     const radarSettings =
       widgetSettingsStore.getRadarSettings('proximity-radar');
 

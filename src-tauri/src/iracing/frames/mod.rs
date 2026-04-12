@@ -58,6 +58,8 @@ pub(crate) struct AllFieldsFrame {
     pub pitch: Option<f32>,
     #[field_name = "Roll"]
     pub roll: Option<f32>,
+    #[field_name = "Yaw"]
+    pub yaw: Option<f32>,
     #[field_name = "ShiftIndicatorPct"]
     pub shift_indicator_pct: Option<f32>,
     #[field_name = "ShiftGrindRPM"]
@@ -166,6 +168,7 @@ impl From<&AllFieldsFrame> for CarDynamicsFrame {
             velocity_z: f.velocity_z,
             lat_accel: f.lat_accel,
             long_accel: f.long_accel,
+            yaw: f.yaw,
             yaw_rate: f.yaw_rate,
             pitch: f.pitch,
             roll: f.roll,

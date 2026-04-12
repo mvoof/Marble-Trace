@@ -19,36 +19,22 @@
   flex-direction: row;
 }
 
-// Driver list
+// Driver list — no scroll, rows beyond window are not rendered
 .driverList {
   display: flex;
   flex-direction: column;
   flex: 1 1 0;
   min-width: 0;
   min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   justify-content: flex-start;
-
-  &::-webkit-scrollbar {
-    width: 2px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 2px;
-  }
 }
 
-// Driver row
+// Driver row — single-line horizontal layout
 .driverRow {
   display: flex;
   align-items: center;
-  padding: $space-md;
+  padding: $space-xs $space-md;
   position: relative;
   border-bottom: 1px solid rgba(39, 39, 42, 0.4);
   background: rgba(24, 24, 27, 0.2);
@@ -80,48 +66,40 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 6px;
+  width: 4px;
 }
 
-// Number block (position + car number stacked)
-.numberBlock {
+// Position + car number block (inline)
+.posBlock {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  margin-left: $space-md;
+  align-items: baseline;
+  gap: $space-xs;
+  width: 2.25rem;
+  margin-left: $space-sm;
   flex-shrink: 0;
 }
 
 .driverPosition {
-  font-size: 0.5625rem;
+  font-size: 0.75rem;
   color: rgba(113, 113, 122, 1);
-  line-height: 1;
   font-family: $font-mono;
 }
 
 .driverCarNumber {
   font-weight: 700;
   font-size: $font-size-md;
-  line-height: 1;
   font-family: $font-mono;
 }
 
-// Info block
+// Info block — single row: name + details inline
 .infoBlock {
   flex: 1 1 0;
-  margin-left: $space-md;
+  margin-left: $space-sm;
   overflow: hidden;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.infoTop {
-  display: flex;
   align-items: center;
-  gap: $space-md;
+  gap: $space-sm;
+  justify-content: space-between;
 }
 
 .driverName {
@@ -132,6 +110,8 @@
   white-space: nowrap;
   text-transform: uppercase;
   color: $color-text-primary;
+  flex-shrink: 1;
+  margin-right: auto;
 }
 
 .driverNamePlayer {
@@ -142,23 +122,23 @@
   background: rgba(234, 179, 8, 0.2);
   color: #eab308;
   border: 1px solid rgba(234, 179, 8, 0.3);
-  padding: $space-xs $space-md;
+  padding: 1px 3px;
   border-radius: 4px;
-  font-size: $font-size-xs;
+  font-size: 0.625rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   flex-shrink: 0;
 }
 
-// Details row (class, license, iR, lap status)
-.infoBottom {
+// Details (class, lic, iR, lap status) — inline with name
+.details {
   display: flex;
   align-items: center;
-  gap: $space-md;
+  gap: $space-xs;
   font-size: $font-size-xs;
   font-family: $font-mono;
-  margin-top: $space-xs;
+  flex-shrink: 0;
 }
 
 .classLabel {
@@ -180,13 +160,13 @@
 .lapStatusLapping {
   color: $color-info;
   font-weight: 700;
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
 }
 
 .lapStatusLapped {
   color: #f97316;
   font-weight: 700;
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
 }
 
 // F2 Time (gap) block
@@ -195,15 +175,15 @@
   align-items: center;
   justify-content: flex-end;
   gap: 2px;
-  width: 5rem;
+  width: 4.25rem;
   flex-shrink: 0;
-  padding-right: $space-md;
+  padding-right: $space-xs;
 }
 
 .f2Time {
   font-family: $font-mono;
   font-weight: 700;
-  font-size: 1.125rem;
+  font-size: 1rem;
   text-align: right;
 }
 
@@ -304,7 +284,7 @@
 }
 
 .mapDotNumber {
-  font-size: 0.5625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   color: white;
   line-height: 1;

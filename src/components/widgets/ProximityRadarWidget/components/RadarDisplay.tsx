@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { useUnits } from '../../../../hooks/useUnits';
+import { unitsStore } from '../../../../store/units.store';
 import type { RadarDistances, SpotterState } from '../../../../utils/proximity';
 import {
   CAR_WIDTH,
@@ -43,7 +43,7 @@ interface RadarDisplayProps {
 
 export const RadarDisplay = observer(
   ({ radarDistances, spotter, renderRange }: RadarDisplayProps) => {
-    const { formatDistance, distanceUnit } = useUnits();
+    const { formatDistance, distanceUnit } = unitsStore;
     const { frontDist, rearDist, sideCars } = radarDistances;
 
     const showFront = frontDist < renderRange;

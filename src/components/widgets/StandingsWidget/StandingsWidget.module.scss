@@ -58,33 +58,61 @@
   color: rgba(234, 179, 8, 0.8);
 }
 
-// Table wrapper
+// Table wrapper — no scroll, rows beyond window are not rendered
 .tableWrap {
   flex: 1 1 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  &::-webkit-scrollbar {
-    width: 3px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 2px;
-  }
+  overflow: hidden;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  white-space: nowrap;
+  table-layout: fixed;
   font-family: $font-mono;
   text-align: left;
   font-size: $font-size-md;
+  white-space: nowrap;
+}
+
+// Column widths — percentage-based so the name column always has room
+.colPos {
+  width: 3.5%;
+}
+.colPosChange {
+  width: 3.5%;
+}
+.colNum {
+  width: 3.5%;
+}
+.colName {
+  width: auto;
+}
+.colBrand {
+  width: 6%;
+}
+.colTire {
+  width: 3.5%;
+}
+.colClass {
+  width: 5%;
+}
+.colLic {
+  width: 9%;
+}
+.colIrChange {
+  width: 4%;
+}
+.colInc {
+  width: 3.5%;
+}
+.colStops {
+  width: 4%;
+}
+.colGap {
+  width: 6%;
+}
+.colLap {
+  width: 7%;
 }
 
 // Table header
@@ -102,7 +130,7 @@
 }
 
 .th {
-  padding: $space-md;
+  padding: $space-sm $space-sm;
   text-align: left;
   font-weight: 600;
   white-space: nowrap;
@@ -202,8 +230,9 @@
 }
 
 .td {
-  padding: $space-md;
+  padding: $space-sm $space-md;
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .tdCenter {
@@ -218,7 +247,6 @@
 .posCell {
   font-weight: 700;
   font-size: clamp(0.875rem, 1.05vw, 1.0625rem);
-  padding-left: $space-xl;
 }
 
 .posCellPlayer {
@@ -226,7 +254,7 @@
 }
 
 .posCellSmall {
-  padding-left: $space-md;
+  font-size: clamp(0.8125rem, 1vw, 1rem);
 }
 
 // Position change
@@ -268,12 +296,16 @@
   color: #fcd34d;
 }
 
-// Driver name
+// Driver name — absorbs remaining space via colName auto width.
+.tdDriverName {
+  overflow: hidden;
+}
+
 .driverNameCell {
   display: flex;
   align-items: center;
   font-weight: 600;
-  max-width: 10rem;
+  overflow: hidden;
 }
 
 .driverName {
@@ -500,7 +532,6 @@
   font-family: $font-mono;
   font-size: clamp(0.75rem, 0.9vw, 0.9375rem);
   color: rgba(192, 132, 252, 0.85);
-  padding-right: $space-lg;
 }
 
 // Separator row

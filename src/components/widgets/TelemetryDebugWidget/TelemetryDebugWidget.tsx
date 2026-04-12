@@ -1,16 +1,12 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
-  useCarDynamics,
-  useCarInputs,
-  useCarStatus,
-  useEnvironment,
-  useLapTiming,
-  useSession,
-} from '../../../hooks/useIracingData';
-import { telemetryConnection } from '../../../store/iracing';
+  telemetryConnectionStore,
+  telemetryStore,
+} from '../../../store/iracing';
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import styles from './TelemetryDebugWidget.module.scss';
+import { toJS } from 'mobx';
 
 const fmt = (v: number | null | undefined, decimals = 1): string =>
   v != null ? v.toFixed(decimals) : '—';
@@ -23,13 +19,24 @@ const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
 );
 
 export const TelemetryDebugWidget = observer(() => {
-  const { status } = telemetryConnection;
-  const carDynamics = useCarDynamics();
-  const carInputs = useCarInputs();
-  const carStatus = useCarStatus();
-  const lapTiming = useLapTiming();
-  const { frame: sessionFrame, driverInfo, weekendInfo } = useSession();
-  const environment = useEnvironment();
+  const { status } = telemetryConnectionStore;
+  const carDynamics = telemetryStore.carDynamics;
+  const carInputs = telemetryStore.carInputs;
+  const carStatus = telemetryStore.carStatus;
+  const lapTiming = telemetryStore.lapTiming;
+  const sessionFrame = telemetryStore.session;
+  const { driverInfo, weekendInfo } = telemetryStore;
+
+  const hasLoggedRef = useRef(false); // Создаем флаг "уже вывели в консоль"
+
+  useEffect(() => {
+    // Если данные появились и мы еще их не выводили
+    if (driverInfo && !hasLoggedRef.current) {
+      console.log('DRIVER INFO (ONCE):', toJS(driverInfo));
+      hasLoggedRef.current = true; // Ставим флаг, чтобы больше не выводить
+    }
+  }, [driverInfo]); // Следим за изменением driverInfo
+  const environment = telemetryStore.environment;
 
   const isConnected = status === 'connected';
 

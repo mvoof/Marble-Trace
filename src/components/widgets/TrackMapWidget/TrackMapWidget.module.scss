@@ -128,6 +128,58 @@
   color: $color-text-primary;
 }
 
+// Recording overlay (shown when no track data exists)
+.recordingOverlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  gap: $space-lg;
+  padding: $space-xl;
+}
+
+.recordingTitle {
+  font-family: 'Orbitron', sans-serif;
+  font-size: $font-size-md;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: $color-text-primary;
+}
+
+.recordingMessage {
+  font-family: $font-widget;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+  text-align: center;
+}
+
+.progressBarWrap {
+  width: 80%;
+  max-width: 15rem;
+  height: 0.5rem;
+  background: rgba(39, 39, 42, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid $color-border;
+}
+
+.progressBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-positive, #60a5fa);
+  border-radius: 4px;
+  transition: width 0.3s ease-out;
+}
+
+.progressLabel {
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  font-variant-numeric: tabular-nums;
+}
+
 // SVG text
 .cornerLabel {
   font-family: $font-widget;
@@ -188,4 +240,11 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   fill: white;
+}
+
+.sectorLabel {
+  font-family: $font-mono;
+  font-size: 10px;
+  font-weight: 700;
+  fill: rgba(255, 255, 255, 0.6);
 }

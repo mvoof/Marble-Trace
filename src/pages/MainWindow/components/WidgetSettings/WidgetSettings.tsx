@@ -627,14 +627,13 @@ const StandingsSettingsPanel = observer(() => {
           options={[
             { label: 'All', value: 'all' },
             { label: 'Around Player', value: 'around-player' },
-            { label: 'Top + Pin', value: 'top-and-pin' },
           ]}
           onChange={(v) => update({ filterMode: v as StandingsFilterMode })}
         />
 
         <Text type="secondary" style={{ fontSize: 11 }}>
-          All = whole field. Around Player = your row centered with neighbours.
-          Top + Pin = top N of each class with you pinned at the bottom.
+          All = whole field, player pinned at bottom if not visible. Around
+          Player = your row centered with neighbours.
         </Text>
       </Flex>
 

@@ -93,6 +93,11 @@ export type CarDynamicsFrame = {
    */
   long_accel: number | null;
   /**
+   * Yaw angle (heading) in radians
+   * @see https://sajax.github.io/irsdkdocs/telemetry/yaw/
+   */
+  yaw: number | null;
+  /**
    * Yaw rate (rotation speed) in rad/s
    * @see https://sajax.github.io/irsdkdocs/telemetry/yawrate/
    */

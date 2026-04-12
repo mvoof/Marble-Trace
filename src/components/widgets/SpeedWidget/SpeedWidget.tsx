@@ -1,9 +1,9 @@
 import { useRef, type CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { carDynamicsStore, sessionStore } from '../../../store/iracing';
+import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { useUnits } from '../../../hooks/useUnits';
+import { unitsStore } from '../../../store/units.store';
 import { formatGear } from '../../../utils/telemetry-format';
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import styles from './SpeedWidget.module.scss';
@@ -22,9 +22,9 @@ function getShiftZoneColor(
 }
 
 export const SpeedWidget = observer(() => {
-  const frame = carDynamicsStore.frame;
-  const driverInfo = sessionStore.driverInfo;
-  const { formatSpeed, speedUnit } = useUnits();
+  const frame = telemetryStore.carDynamics;
+  const driverInfo = telemetryStore.driverInfo;
+  const { formatSpeed, speedUnit } = unitsStore;
   const settings = widgetSettingsStore.getSpeedSettings();
 
   const speed = frame ? formatSpeed(frame.speed) : '0';
