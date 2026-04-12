@@ -10,14 +10,18 @@ import {
   Switch,
   Flex,
   Segmented,
+  message,
 } from 'antd';
 import type { InputRef } from 'antd';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 import { unitsStore, type UnitSystem } from '../../../../store/units.store';
+import { downloadSnapshot } from '../../../../storybook/capture-snapshot';
 
 const { Title, Text } = Typography;
+const isDev = import.meta.env.DEV;
 
 export const SettingsPage = observer(() => {
+  const [messageApi, contextHolder] = message.useMessage();
   const [recording, setRecording] = useState(false);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const inputRef = useRef<InputRef>(null);
@@ -59,8 +63,15 @@ export const SettingsPage = observer(() => {
     }
   };
 
+  const handleCaptureSnapshot = () => {
+    downloadSnapshot('iracing');
+    messageApi.success('Snapshot saved — place the JSON in test-data/');
+  };
+
   return (
     <Flex vertical gap={16}>
+      {contextHolder}
+
       <Title level={4} style={{ margin: 0 }}>
         Settings
       </Title>
@@ -143,6 +154,18 @@ export const SettingsPage = observer(() => {
           />
         </Flex>
       </Card>
+      {isDev && (
+        <Card title="Dev Tools">
+          <Flex vertical gap={8}>
+            <Text type="secondary">
+              Capture current telemetry state as a JSON snapshot for Storybook
+              fixtures. Place the downloaded file in <code>test-data/</code>.
+            </Text>
+
+            <Button onClick={handleCaptureSnapshot}>Capture Snapshot</Button>
+          </Flex>
+        </Card>
+      )}
     </Flex>
   );
 });

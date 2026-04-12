@@ -96,12 +96,12 @@ Most iRacing overlays are either bloated desktop apps or locked behind subscript
 
 ## Prerequisites
 
-| Tool | Version |
-|---|---|
-| [Node.js](https://nodejs.org/) | 18+ |
-| [Rust](https://rustup.rs/) | 1.70+ |
-| [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) | — |
-| Windows | iRacing SDK is Windows-only |
+| Tool                                                                | Version                     |
+| ------------------------------------------------------------------- | --------------------------- |
+| [Node.js](https://nodejs.org/)                                      | 18+                         |
+| [Rust](https://rustup.rs/)                                          | 1.70+                       |
+| [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) | —                           |
+| Windows                                                             | iRacing SDK is Windows-only |
 
 ## Setup
 
