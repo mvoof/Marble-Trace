@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ChevronUp, ChevronDown } from 'lucide-react';
 
 import { WidgetPanel } from '../primitives';
 import { telemetryStore } from '../../../store/iracing';
@@ -12,38 +11,13 @@ import {
 } from '../../../utils/class-color';
 import type { Driver } from '../../../types/bindings';
 
+import { DriverRow } from './DriverRow/DriverRow';
+import { LinearMap } from './LinearMap/LinearMap';
+import { TREND_SAMPLE_INTERVAL_MS } from './relative-utils';
+import { isPlaceholder } from './types';
+import type { RelativeEntry, PlaceholderEntry } from './types';
+
 import styles from './RelativeWidget.module.scss';
-
-interface PlaceholderEntry {
-  isPlaceholder: true;
-  key: string;
-}
-
-const isPlaceholder = (
-  e: RelativeEntry | PlaceholderEntry
-): e is PlaceholderEntry => 'isPlaceholder' in e;
-
-interface RelativeEntry {
-  carIdx: number;
-  userName: string;
-  carNumber: string;
-  carClassId: number;
-  carClass: string;
-  carClassShortName: string;
-  carClassColor: string;
-  position: number;
-  lap: number;
-  lapDistPct: number;
-  f2Time: number;
-  trackSurface: number;
-  iRating: number;
-  licString: string;
-  isPlayer: boolean;
-  onPitRoad: boolean;
-}
-
-const TRACK_SURFACE_IN_PIT_STALL = 1;
-const TRACK_SURFACE_ON_TRACK = 3;
 
 export const RelativeWidget = observer(() => {
   const carIdx = telemetryStore.carIdx;
@@ -53,7 +27,7 @@ export const RelativeWidget = observer(() => {
   const prevF2PctRef = useRef<Map<number, number>>(new Map());
   const lastSnapshotTimeRef = useRef<number>(0);
   const { ref: driverListRef, count: visibleRowCount } =
-    useVisibleRowCount<HTMLDivElement>(2.75, 3, `.${styles.driverRow}`);
+    useVisibleRowCount<HTMLDivElement>(2.75, 3, '[data-relative-row]');
 
   const playerCarIdx = driverInfo?.DriverCarIdx ?? -1;
   const drivers = useMemo(
@@ -67,8 +41,6 @@ export const RelativeWidget = observer(() => {
     const playerLapDistPct =
       playerCarIdx >= 0 ? (carIdx.car_idx_lap_dist_pct[playerCarIdx] ?? 0) : 0;
 
-    // Relative position to player (mod 1.0, in range [-0.5, 0.5]).
-    // Cars AHEAD have positive diff, BEHIND have negative.
     const relativeDiff = (other: number): number => {
       let diff = other - playerLapDistPct;
       if (diff < -0.5) diff += 1;
@@ -123,18 +95,14 @@ export const RelativeWidget = observer(() => {
       .sort((a, b) => relativeDiff(b.lapDistPct) - relativeDiff(a.lapDistPct));
   }, [carIdx, drivers, playerCarIdx]);
 
-  const TREND_SAMPLE_INTERVAL_MS = 2000;
-
   const [trendMap, setTrendMap] = useState<Map<number, number>>(new Map());
 
   useEffect(() => {
     const now = Date.now();
-
     if (now - lastSnapshotTimeRef.current < TREND_SAMPLE_INTERVAL_MS) return;
 
     const prevSnapshot = prevF2TimesRef.current;
     const newTrends = new Map<number, number>();
-
     const playerEntry = entries.find((e) => e.isPlayer);
 
     for (const entry of entries) {
@@ -143,35 +111,27 @@ export const RelativeWidget = observer(() => {
       const prevData = prevSnapshot.get(entry.carIdx);
       if (prevData === undefined) continue;
 
-      // Primary: use f2Time delta if f2Time is actually changing
       const f2Delta = entry.f2Time - prevData;
       if (Math.abs(f2Delta) > 0.01) {
         newTrends.set(entry.carIdx, f2Delta);
         continue;
       }
 
-      // Fallback: compute gap trend from lapDistPct relative to player
       if (playerEntry) {
-        const prevPlayerData = prevSnapshot.get(playerEntry.carIdx);
-        if (prevPlayerData !== undefined) {
-          const prevPlayerPct =
-            prevF2PctRef.current.get(playerEntry.carIdx) ?? 0;
-          const prevPct = prevF2PctRef.current.get(entry.carIdx) ?? 0;
+        const prevPlayerPct = prevF2PctRef.current.get(playerEntry.carIdx) ?? 0;
+        const prevPct = prevF2PctRef.current.get(entry.carIdx) ?? 0;
 
-          let prevGap = prevPct - prevPlayerPct;
-          if (prevGap < -0.5) prevGap += 1;
-          if (prevGap > 0.5) prevGap -= 1;
+        let prevGap = prevPct - prevPlayerPct;
+        if (prevGap < -0.5) prevGap += 1;
+        if (prevGap > 0.5) prevGap -= 1;
 
-          let currGap = entry.lapDistPct - playerEntry.lapDistPct;
-          if (currGap < -0.5) currGap += 1;
-          if (currGap > 0.5) currGap -= 1;
+        let currGap = entry.lapDistPct - playerEntry.lapDistPct;
+        if (currGap < -0.5) currGap += 1;
+        if (currGap > 0.5) currGap -= 1;
 
-          const gapDelta = Math.abs(currGap) - Math.abs(prevGap);
-          if (Math.abs(gapDelta) > 0.0001) {
-            // gapDelta > 0 means gap growing (pulling away), < 0 means closing
-            // Convert to match f2Time convention: positive = car ahead gaining
-            newTrends.set(entry.carIdx, gapDelta);
-          }
+        const gapDelta = Math.abs(currGap) - Math.abs(prevGap);
+        if (Math.abs(gapDelta) > 0.0001) {
+          newTrends.set(entry.carIdx, gapDelta);
         }
       }
     }
@@ -189,22 +149,15 @@ export const RelativeWidget = observer(() => {
     lastSnapshotTimeRef.current = now;
   }, [entries]);
 
-  // Player is ALWAYS rendered in the geometric center of the list. If there
-  // are not enough cars above/below, we pad with placeholder rows so the
-  // player never drifts away from the middle.
   const displayEntries = useMemo((): (RelativeEntry | PlaceholderEntry)[] => {
     const total = visibleRowCount;
     const half = Math.floor(total / 2);
-
     const playerIdx = entries.findIndex((e) => e.isPlayer);
-    if (playerIdx === -1) {
-      // No player in session yet — just clip from the top.
-      return entries.slice(0, total);
-    }
+
+    if (playerIdx === -1) return entries.slice(0, total);
 
     const result: (RelativeEntry | PlaceholderEntry)[] = [];
 
-    // Cars above the player (closest gap first → topmost row).
     for (let i = half; i > 0; i -= 1) {
       const idx = playerIdx - i;
       if (idx >= 0) result.push(entries[idx]);
@@ -213,7 +166,6 @@ export const RelativeWidget = observer(() => {
 
     result.push(entries[playerIdx]);
 
-    // Cars below the player.
     const below = total - result.length;
     for (let i = 1; i <= below; i += 1) {
       const idx = playerIdx + i;
@@ -272,202 +224,3 @@ export const RelativeWidget = observer(() => {
     </WidgetPanel>
   );
 });
-
-const DriverRow = observer(
-  ({
-    driver,
-    player,
-    trendDelta,
-  }: {
-    driver: RelativeEntry;
-    player: RelativeEntry | null;
-    trendDelta: number;
-  }) => {
-    const isPit =
-      driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
-
-    let lapStatus: 'lapping' | 'lapped' | null = null;
-
-    if (!driver.isPlayer && player) {
-      if (driver.lap > player.lap) lapStatus = 'lapping';
-      else if (driver.lap < player.lap) lapStatus = 'lapped';
-    }
-
-    const f2TimeStr =
-      driver.f2Time > 0
-        ? `+${driver.f2Time.toFixed(1)}`
-        : driver.f2Time < 0
-          ? driver.f2Time.toFixed(1)
-          : '0.0';
-
-    const f2Class = driver.isPlayer
-      ? styles.f2Player
-      : driver.f2Time > 0
-        ? styles.f2Positive
-        : driver.f2Time < 0
-          ? styles.f2Negative
-          : styles.f2Player;
-
-    // Trend: closing = gap is shrinking (absolute f2Time decreasing)
-    let trendIcon: React.ReactNode = null;
-
-    if (!driver.isPlayer && Math.abs(trendDelta) > 0.00005) {
-      // trendDelta < 0 = gap shrinking (closing), > 0 = gap growing (pulling away)
-      trendIcon =
-        trendDelta < 0 ? (
-          <ChevronUp size={16} className={styles.trendUp} />
-        ) : (
-          <ChevronDown size={16} className={styles.trendDown} />
-        );
-    }
-
-    const rowClass = [
-      styles.driverRow,
-      driver.isPlayer ? styles.driverRowPlayer : '',
-      isPit ? styles.driverRowPit : '',
-    ]
-      .filter(Boolean)
-      .join(' ');
-
-    return (
-      <div className={rowClass}>
-        <div
-          className={styles.classStripe}
-          style={{ backgroundColor: driver.carClassColor }}
-        />
-
-        <div className={styles.posBlock}>
-          <span className={styles.driverPosition}>{driver.position}</span>
-          <span
-            className={styles.driverCarNumber}
-            style={{ color: driver.carClassColor }}
-          >
-            {driver.carNumber}
-          </span>
-        </div>
-
-        <div className={styles.infoBlock}>
-          <span
-            className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
-          >
-            {driver.userName.toUpperCase()}
-          </span>
-
-          <div className={styles.details}>
-            {isPit && <span className={styles.pitTag}>PIT</span>}
-
-            <span
-              className={styles.classLabel}
-              style={{ color: driver.carClassColor }}
-            >
-              {driver.carClassShortName}
-            </span>
-
-            <span className={styles.metaSeparator}>|</span>
-            <span className={styles.licInfo}>{driver.licString}</span>
-            <span className={styles.irInfo}>
-              {formatIRating(driver.iRating)}
-            </span>
-
-            {lapStatus && (
-              <>
-                <span className={styles.metaSeparator}>|</span>
-                <span
-                  className={
-                    lapStatus === 'lapping'
-                      ? styles.lapStatusLapping
-                      : styles.lapStatusLapped
-                  }
-                >
-                  {lapStatus === 'lapping' ? 'LAPPING' : 'LAPPED'}
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className={styles.f2Block}>
-          {trendIcon}
-          <span className={`${styles.f2Time} ${f2Class}`}>
-            {driver.isPlayer ? '-' : f2TimeStr}
-          </span>
-        </div>
-      </div>
-    );
-  }
-);
-
-const LinearMap = observer(
-  ({
-    entries,
-    player,
-    position,
-    isHorizontal,
-  }: {
-    entries: RelativeEntry[];
-    player: RelativeEntry | null;
-    position: string;
-    isHorizontal: boolean;
-  }) => {
-    const borderClass =
-      {
-        top: styles.linearMapBorderTop,
-        bottom: styles.linearMapBorderBottom,
-        left: styles.linearMapBorderLeft,
-        right: styles.linearMapBorderRight,
-      }[position] ?? '';
-
-    const sizeClass = isHorizontal
-      ? styles.linearMapHorizontal
-      : styles.linearMapVertical;
-
-    return (
-      <div className={`${styles.linearMap} ${sizeClass} ${borderClass}`}>
-        <div
-          className={`${styles.mapCenterLine} ${
-            isHorizontal ? styles.mapCenterLineH : styles.mapCenterLineV
-          }`}
-        />
-
-        {player &&
-          entries.map((d) => {
-            if (d.trackSurface !== TRACK_SURFACE_ON_TRACK && !d.isPlayer)
-              return null;
-
-            let diff = d.lapDistPct - player.lapDistPct;
-            if (diff < -0.5) diff += 1;
-            if (diff > 0.5) diff -= 1;
-
-            const pct = diff * 100 + 50;
-            const style: React.CSSProperties = {
-              backgroundColor: d.carClassColor,
-              transform: 'translate(-50%, -50%)',
-            };
-
-            if (isHorizontal) {
-              style.left = `${pct}%`;
-              style.top = '50%';
-            } else {
-              style.top = `${50 - diff * 100}%`;
-              style.left = '50%';
-            }
-
-            return (
-              <div
-                key={d.carIdx}
-                className={`${styles.mapDot} ${d.isPlayer ? styles.mapDotPlayer : ''}`}
-                style={style}
-              >
-                <span className={styles.mapDotNumber}>{d.carNumber}</span>
-              </div>
-            );
-          })}
-      </div>
-    );
-  }
-);
-
-const formatIRating = (ir: number): string => {
-  if (ir >= 1000) return `${(ir / 1000).toFixed(1)}k`;
-  return ir.toString();
-};

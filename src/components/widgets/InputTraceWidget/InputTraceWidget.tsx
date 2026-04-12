@@ -3,9 +3,10 @@ import { observer } from 'mobx-react-lite';
 import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { WidgetPanel } from '../primitives/WidgetPanel';
-import { ProgressBar } from '../primitives/ProgressBar';
 import { CanvasTrace } from '../primitives/CanvasTrace';
 import type { CanvasTraceChannel } from '../primitives/CanvasTrace';
+import { InputBars } from './InputBars/InputBars';
+
 import styles from './InputTraceWidget.module.scss';
 
 export const InputTraceWidget = observer(() => {
@@ -18,17 +19,12 @@ export const InputTraceWidget = observer(() => {
 
   const channels: CanvasTraceChannel[] = [];
 
-  if (settings.showThrottle) {
+  if (settings.showThrottle)
     channels.push({ value: throttle, color: settings.throttleColor });
-  }
-
-  if (settings.showBrake) {
+  if (settings.showBrake)
     channels.push({ value: brake, color: settings.brakeColor });
-  }
-
-  if (settings.showClutch) {
+  if (settings.showClutch)
     channels.push({ value: clutch, color: settings.clutchColor });
-  }
 
   const showBars = settings.barMode !== 'hidden';
   const isVertical = settings.barMode === 'vertical';
@@ -46,70 +42,25 @@ export const InputTraceWidget = observer(() => {
           </div>
 
           {showBars && (
-            <div className={styles.barsVertical}>
-              {settings.showClutch && (
-                <ProgressBar
-                  value={clutch}
-                  color={settings.clutchColor}
-                  height="lg"
-                  vertical
-                  rounded={false}
-                />
-              )}
-
-              {settings.showBrake && (
-                <ProgressBar
-                  value={brake}
-                  color={settings.brakeColor}
-                  height="lg"
-                  vertical
-                  rounded={false}
-                />
-              )}
-
-              {settings.showThrottle && (
-                <ProgressBar
-                  value={throttle}
-                  color={settings.throttleColor}
-                  height="lg"
-                  vertical
-                  rounded={false}
-                />
-              )}
-            </div>
+            <InputBars
+              throttle={throttle}
+              brake={brake}
+              clutch={clutch}
+              settings={settings}
+              isVertical
+            />
           )}
         </>
       ) : (
         <>
           {showBars && (
-            <div className={styles.barsHorizontal}>
-              {settings.showThrottle && (
-                <ProgressBar
-                  value={throttle}
-                  color={settings.throttleColor}
-                  height="lg"
-                  rounded={false}
-                />
-              )}
-
-              {settings.showBrake && (
-                <ProgressBar
-                  value={brake}
-                  color={settings.brakeColor}
-                  height="lg"
-                  rounded={false}
-                />
-              )}
-
-              {settings.showClutch && (
-                <ProgressBar
-                  value={clutch}
-                  color={settings.clutchColor}
-                  height="lg"
-                  rounded={false}
-                />
-              )}
-            </div>
+            <InputBars
+              throttle={throttle}
+              brake={brake}
+              clutch={clutch}
+              settings={settings}
+              isVertical={false}
+            />
           )}
 
           <div className={styles.chartArea}>

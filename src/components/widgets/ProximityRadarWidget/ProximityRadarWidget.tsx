@@ -11,7 +11,7 @@ import {
 } from '../../../utils/proximity';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { useRadarVisibility } from '../../../hooks/useRadarVisibility';
-import { RadarDisplay } from './components/RadarDisplay';
+import { RadarDisplay } from './RadarDisplay/RadarDisplay';
 
 import styles from './ProximityRadarWidget.module.scss';
 
