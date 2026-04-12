@@ -186,7 +186,7 @@ export const TrackMapWidget = observer(() => {
       const name = formatClassShortName(
         rawClass,
         d.CarScreenName,
-        d.CarClassID
+        d.CarClassID ?? undefined
       );
 
       if (!map.has(name)) {
