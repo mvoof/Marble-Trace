@@ -432,7 +432,7 @@ class WidgetSettingsStore {
       (saved.groupMode ? saved.groupMode === 'class' : true);
 
     const migratedFilterMode: StandingsFilterMode =
-      saved.filterMode === 'top-and-pin'
+      (saved.filterMode as string) === 'top-and-pin'
         ? 'all'
         : (saved.filterMode ??
           (saved.viewMode === 'around-player' ? 'around-player' : 'all'));

@@ -69,7 +69,7 @@ export const RelativeWidget = observer(() => {
         const classLabel = formatClassShortName(
           rawClass,
           d.CarScreenName,
-          d.CarClassID
+          d.CarClassID ?? undefined
         );
 
         return {
