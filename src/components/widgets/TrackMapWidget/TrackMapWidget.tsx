@@ -49,12 +49,15 @@ export const TrackMapWidget = observer(() => {
   );
 
   const recorderRef = useRef(new TrackRecorder());
+  const hasSavedRef = useRef(false);
   const [recordingProgress, setRecordingProgress] = useState(0);
   const [trackData, setTrackData] = useState<TrackData | null>(null);
   const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
     if (!trackId) return;
+
+    hasSavedRef.current = false;
 
     const loadTrack = async () => {
       try {
@@ -125,6 +128,7 @@ export const TrackMapWidget = observer(() => {
     if (lapDistPct < 0) return;
 
     if (!recorder.isRecording && !recorder.isComplete && speed > 5) {
+      hasSavedRef.current = false;
       recorder.start();
       setIsRecording(true);
     }
@@ -133,7 +137,8 @@ export const TrackMapWidget = observer(() => {
       recorder.tick(speed, yaw, lapDistPct, sessionTime);
       setRecordingProgress(recorder.progress);
 
-      if (recorder.isComplete) {
+      if (recorder.isComplete && !hasSavedRef.current) {
+        hasSavedRef.current = true;
         const { svgPath, viewBox } = recorder.buildSvgPath();
         const points = recorder.getPoints();
         setTrackData({ svgPath, viewBox, points });
