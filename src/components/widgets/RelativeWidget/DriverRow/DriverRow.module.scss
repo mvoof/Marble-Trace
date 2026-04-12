@@ -1,0 +1,172 @@
+@use '../../../../styles/variables' as *;
+
+// Driver row — single-line horizontal layout
+.driverRow {
+  display: flex;
+  align-items: center;
+  padding: $space-xs $space-md;
+  position: relative;
+  border-bottom: 1px solid rgba(39, 39, 42, 0.4);
+  background: rgba(24, 24, 27, 0.2);
+}
+
+.driverRowPlayer {
+  background-color: rgba(245, 158, 11, 0.2);
+  box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.3);
+  z-index: 10;
+}
+
+.driverRowPit {
+  opacity: 0.4;
+  filter: grayscale(100%);
+}
+
+// Class stripe
+.classStripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+
+// Position + car number block (inline)
+.posBlock {
+  display: flex;
+  align-items: baseline;
+  gap: $space-xs;
+  width: 2.25rem;
+  margin-left: $space-sm;
+  flex-shrink: 0;
+}
+
+.driverPosition {
+  font-size: 0.75rem;
+  color: rgba(113, 113, 122, 1);
+  font-family: $font-mono;
+}
+
+.driverCarNumber {
+  font-weight: 700;
+  font-size: $font-size-md;
+  font-family: $font-mono;
+}
+
+// Info block — single row: name + details inline
+.infoBlock {
+  flex: 1 1 0;
+  margin-left: $space-sm;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  justify-content: space-between;
+}
+
+.driverName {
+  font-weight: 700;
+  font-size: $font-size-md;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: uppercase;
+  color: $color-text-primary;
+  flex-shrink: 1;
+  margin-right: auto;
+}
+
+.driverNamePlayer {
+  color: #fbbf24;
+}
+
+.pitTag {
+  background: rgba(234, 179, 8, 0.2);
+  color: #eab308;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  padding: 1px 3px;
+  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+// Details (class, lic, iR, lap status) — inline with name
+.details {
+  display: flex;
+  align-items: center;
+  gap: $space-xs;
+  font-size: $font-size-xs;
+  font-family: $font-mono;
+  flex-shrink: 0;
+}
+
+.classLabel {
+  font-weight: 700;
+}
+
+.metaSeparator {
+  color: rgba(113, 113, 122, 1);
+}
+
+.licInfo {
+  color: $color-text-muted;
+}
+
+.irInfo {
+  color: rgba(113, 113, 122, 1);
+}
+
+.lapStatusLapping {
+  color: $color-info;
+  font-weight: 700;
+  font-size: 0.6875rem;
+}
+
+.lapStatusLapped {
+  color: #f97316;
+  font-weight: 700;
+  font-size: 0.6875rem;
+}
+
+// F2 Time (gap) block
+.f2Block {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  width: 4.25rem;
+  flex-shrink: 0;
+  padding-right: $space-xs;
+}
+
+.f2Time {
+  font-family: $font-mono;
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: right;
+}
+
+.f2Positive {
+  color: #ef4444;
+}
+
+.f2Negative {
+  color: #60a5fa;
+}
+
+.f2Player {
+  color: #fbbf24;
+}
+
+// Trend arrows
+.trendUp {
+  color: #22c55e;
+  flex-shrink: 0;
+}
+
+.trendDown {
+  color: #ef4444;
+  flex-shrink: 0;
+}

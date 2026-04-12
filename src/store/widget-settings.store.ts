@@ -38,11 +38,49 @@ export interface RadarSettings {
   barDisplayMode?: RadarBarDisplayMode;
 }
 
+export type StandingsFilterMode = 'all' | 'around-player';
+
+export interface StandingsWidgetSettings {
+  groupByClass: boolean;
+  filterMode: StandingsFilterMode;
+  showPosChange: boolean;
+  showColumnHeaders: boolean;
+  showSessionHeader: boolean;
+  showWeather: boolean;
+  showSOF: boolean;
+  showTotalDrivers: boolean;
+  showBrand: boolean;
+  showTire: boolean;
+  /** Projected iR change column (Elo-based estimate, not real SDK data) */
+  showIrChange: boolean;
+  /** Player-only pit stop counter (counted on the frontend) */
+  showPitStops: boolean;
+}
+
+export type RelativeLinearMapPosition = 'top' | 'bottom' | 'left' | 'right';
+
+export interface RelativeWidgetSettings {
+  showLinearMap: boolean;
+  linearMapPosition: RelativeLinearMapPosition;
+}
+
+export type TrackMapLegendPosition = 'left' | 'right' | 'hidden';
+
+export interface TrackMapWidgetSettings {
+  showLegend: boolean;
+  legendPosition: TrackMapLegendPosition;
+  showSectors: boolean;
+  showCornerNumbers: boolean;
+}
+
 export interface WidgetCustomSettings {
   speed?: SpeedWidgetSettings;
   'input-trace'?: InputTraceSettings;
   'proximity-radar'?: RadarSettings;
   'radar-bar'?: RadarSettings;
+  standings?: StandingsWidgetSettings;
+  relative?: RelativeWidgetSettings;
+  'track-map'?: TrackMapWidgetSettings;
 }
 
 export interface WidgetConfig {
@@ -148,6 +186,72 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
         hideDelay: 2,
         barSpacing: 0,
         barDisplayMode: 'both',
+      },
+    },
+  },
+  {
+    id: 'standings',
+    label: 'Standings',
+    enabled: false,
+    x: 50,
+    y: 50,
+    width: 700,
+    height: 500,
+    backgroundColor: '#0a0a0f',
+    backgroundColorEdge: '#050508',
+    hotkey: 'F3',
+    customSettings: {
+      standings: {
+        groupByClass: true,
+        filterMode: 'all',
+        showPosChange: true,
+        showColumnHeaders: true,
+        showSessionHeader: true,
+        showWeather: true,
+        showSOF: true,
+        showTotalDrivers: true,
+        showBrand: true,
+        showTire: true,
+        showIrChange: false,
+        showPitStops: true,
+      },
+    },
+  },
+  {
+    id: 'relative',
+    label: 'Relative',
+    enabled: false,
+    x: 50,
+    y: 300,
+    width: 350,
+    height: 500,
+    backgroundColor: '#0a0a0f',
+    backgroundColorEdge: '#050508',
+    hotkey: 'F4',
+    customSettings: {
+      relative: {
+        showLinearMap: true,
+        linearMapPosition: 'top',
+      },
+    },
+  },
+  {
+    id: 'track-map',
+    label: 'Track Map',
+    enabled: false,
+    x: 800,
+    y: 50,
+    width: 400,
+    height: 400,
+    backgroundColor: 'transparent',
+    backgroundColorEdge: 'transparent',
+    hotkey: 'F5',
+    customSettings: {
+      'track-map': {
+        showLegend: true,
+        legendPosition: 'right',
+        showSectors: true,
+        showCornerNumbers: true,
       },
     },
   },
@@ -307,6 +411,66 @@ class WidgetSettingsStore {
         brakeColor: '#ff3333',
         clutchColor: '#3399ff',
         barMode: 'horizontal',
+      }
+    );
+  }
+
+  getStandingsSettings(): StandingsWidgetSettings {
+    const widget = this.getWidget('standings');
+    // Tolerate the legacy shape (`groupMode` / `viewMode` / `maxRowsPerClass`)
+    // so users that already persisted older settings get migrated transparently.
+    const saved = (widget?.customSettings?.standings ?? {}) as Partial<
+      StandingsWidgetSettings & {
+        groupMode?: 'overall' | 'class';
+        viewMode?: 'full' | 'around-player' | 'limit-pin';
+        maxRowsPerClass?: number;
+      }
+    >;
+
+    const migratedGroupByClass =
+      saved.groupByClass ??
+      (saved.groupMode ? saved.groupMode === 'class' : true);
+
+    const migratedFilterMode: StandingsFilterMode =
+      saved.filterMode === 'top-and-pin'
+        ? 'all'
+        : (saved.filterMode ??
+          (saved.viewMode === 'around-player' ? 'around-player' : 'all'));
+
+    return {
+      groupByClass: migratedGroupByClass,
+      filterMode: migratedFilterMode,
+      showPosChange: saved.showPosChange ?? true,
+      showColumnHeaders: saved.showColumnHeaders ?? true,
+      showSessionHeader: saved.showSessionHeader ?? true,
+      showWeather: saved.showWeather ?? true,
+      showSOF: saved.showSOF ?? true,
+      showTotalDrivers: saved.showTotalDrivers ?? true,
+      showBrand: saved.showBrand ?? true,
+      showTire: saved.showTire ?? true,
+      showIrChange: saved.showIrChange ?? false,
+      showPitStops: saved.showPitStops ?? true,
+    };
+  }
+
+  getRelativeSettings(): RelativeWidgetSettings {
+    const widget = this.getWidget('relative');
+    return (
+      widget?.customSettings?.relative ?? {
+        showLinearMap: true,
+        linearMapPosition: 'top',
+      }
+    );
+  }
+
+  getTrackMapSettings(): TrackMapWidgetSettings {
+    const widget = this.getWidget('track-map');
+    return (
+      widget?.customSettings?.['track-map'] ?? {
+        showLegend: true,
+        legendPosition: 'right',
+        showSectors: true,
+        showCornerNumbers: true,
       }
     );
   }

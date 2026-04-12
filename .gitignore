@@ -28,6 +28,7 @@ target/
 # IDE specific
 .continue/
 .claude
+.gemini
 .agent
 CLAUDE.md
 GEMINI.md

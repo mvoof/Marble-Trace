@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 
-import { telemetryConnection } from '../store/iracing';
+import { telemetryConnectionStore } from '../store/iracing';
 
 export const useTelemetry = () => {
   useEffect(() => {
-    telemetryConnection.startStream();
+    telemetryConnectionStore.startStream();
 
     return () => {
-      telemetryConnection.stopStream();
+      telemetryConnectionStore.stopStream();
     };
   }, []);
 };

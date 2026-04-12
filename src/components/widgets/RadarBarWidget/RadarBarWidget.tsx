@@ -2,7 +2,7 @@ import { useMemo, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '../primitives/WidgetPanel';
-import { useCarIdx, useSession } from '../../../hooks/useIracingData';
+import { telemetryStore } from '../../../store/iracing';
 import {
   computeNearbyCars,
   computeRadarDistances,
@@ -11,7 +11,7 @@ import {
 } from '../../../utils/proximity';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { useRadarVisibility } from '../../../hooks/useRadarVisibility';
-import { RadarBar } from './components/RadarBar';
+import { RadarBar } from './RadarBar/RadarBar';
 
 import styles from './RadarBarWidget.module.scss';
 
@@ -24,8 +24,8 @@ interface RadarBarWidgetProps {
 
 export const RadarBarWidget = observer(
   ({ onVisibilityChange }: RadarBarWidgetProps) => {
-    const carIdx = useCarIdx();
-    const { driverInfo, weekendInfo } = useSession();
+    const carIdx = telemetryStore.carIdx;
+    const { driverInfo, weekendInfo } = telemetryStore;
     const radarSettings = widgetSettingsStore.getRadarSettings('radar-bar');
 
     const playerCarIdx = driverInfo?.DriverCarIdx ?? null;

@@ -1,0 +1,112 @@
+@use '../../../styles/variables' as *;
+
+.standings {
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+  color: $color-text-primary;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: $font-size-sm;
+  border-radius: 6px;
+}
+
+// Table wrapper — no scroll, rows beyond window are not rendered
+.tableWrap {
+  flex: 1 1 0;
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-family: $font-mono;
+  text-align: left;
+  font-size: $font-size-md;
+  white-space: nowrap;
+}
+
+// Column widths — percentage-based so the name column always has room
+.colPos {
+  width: 3.5%;
+}
+
+.colPosChange {
+  width: 3.5%;
+}
+
+.colNum {
+  width: 3.5%;
+}
+
+.colName {
+  width: auto;
+}
+
+.colBrand {
+  width: 6%;
+}
+
+.colTire {
+  width: 3.5%;
+}
+
+.colClass {
+  width: 5%;
+}
+
+.colLic {
+  width: 9%;
+}
+
+.colIrChange {
+  width: 4%;
+}
+
+.colInc {
+  width: 3.5%;
+}
+
+.colStops {
+  width: 4%;
+}
+
+.colGap {
+  width: 6%;
+}
+
+.colLap {
+  width: 7%;
+}
+
+// Table header
+.thead {
+  background: rgba(24, 24, 27, 0.5);
+  font-family: $font-mono;
+  text-transform: uppercase;
+  font-size: clamp(0.625rem, 0.75vw, 0.6875rem);
+  letter-spacing: 0.06em;
+  color: rgba(161, 161, 170, 1);
+  border-bottom: 1px solid rgba(39, 39, 42, 0.5);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.th {
+  padding: $space-sm $space-sm;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.thCenter {
+  text-align: center;
+}
+
+.thRight {
+  text-align: right;
+}

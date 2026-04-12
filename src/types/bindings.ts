@@ -93,6 +93,11 @@ export type CarDynamicsFrame = {
    */
   long_accel: number | null;
   /**
+   * Yaw angle (heading) in radians
+   * @see https://sajax.github.io/irsdkdocs/telemetry/yaw/
+   */
+  yaw: number | null;
+  /**
    * Yaw rate (rotation speed) in rad/s
    * @see https://sajax.github.io/irsdkdocs/telemetry/yawrate/
    */
@@ -140,6 +145,43 @@ export type CarIdxFrame = {
    * @see https://sajax.github.io/irsdkdocs/telemetry/caridxclassposition/
    */
   car_idx_class_position: number[];
+  /**
+   * Current lap number for each car
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlap/
+   */
+  car_idx_lap: number[];
+  /**
+   * Last lap time in seconds for each car (-1 = no time)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlastlaptime/
+   */
+  car_idx_last_lap_time: number[];
+  /**
+   * Best lap time in seconds for each car (-1 = no time)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxbestlaptime/
+   */
+  car_idx_best_lap_time: number[];
+  /**
+   * Race time behind leader or fastest car in seconds
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxf2time/
+   */
+  car_idx_f2_time: number[];
+  /**
+   * Estimated time around track for each car in seconds
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxesttime/
+   */
+  car_idx_est_time: number[];
+  /**
+   * Track surface type for each car (irsdk_TrkLoc enum)
+   * -1=NotInWorld, 0=OffTrack, 1=InPitStall, 2=AproachingPits, 3=OnTrack
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxtracksurface/
+   */
+  car_idx_track_surface: number[];
+  /**
+   * Tire compound index per car. Maps into DriverInfo.DriverTires[].
+   * -1 = unknown.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxtirecompound/
+   */
+  car_idx_tire_compound: number[];
   /**
    * Proximity indicator bit field for cars nearby
    * @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/

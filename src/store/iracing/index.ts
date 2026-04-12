@@ -1,14 +1,3 @@
-/**
- * iRacing telemetry connection orchestrator.
- *
- * Manages the lifecycle of all iRacing telemetry event listeners:
- * - Subscribes to 6 domain telemetry events + session info + status events
- * - Routes each event payload to the appropriate MobX store
- * - Provides startStream/stopStream for main window, startWidgetListener/stopWidgetListener for widgets
- *
- * @see https://sajax.github.io/irsdkdocs/telemetry/
- * @see https://sajax.github.io/irsdkdocs/yaml/
- */
 import { makeAutoObservable } from 'mobx';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
@@ -25,13 +14,7 @@ import type {
 } from '../../types/bindings';
 import { debug } from '../../utils/debug';
 
-import { carDynamicsStore } from './car-dynamics.store';
-import { carIdxStore } from './car-idx.store';
-import { carInputsStore } from './car-inputs.store';
-import { carStatusStore } from './car-status.store';
-import { environmentStore } from './environment.store';
-import { lapTimingStore } from './lap-timing.store';
-import { sessionStore } from './session.store';
+import { telemetryStore } from './telemetry.store';
 
 export type TelemetryStatus =
   | 'waiting'
@@ -81,7 +64,7 @@ class TelemetryConnection {
       );
 
       if (initialInfo && this.initId === currentId) {
-        sessionStore.updateSessionInfo(initialInfo);
+        telemetryStore.updateSessionInfo(initialInfo);
       }
 
       await invoke('start_telemetry_stream');
@@ -123,7 +106,7 @@ class TelemetryConnection {
       );
 
       if (initialInfo) {
-        sessionStore.updateSessionInfo(initialInfo);
+        telemetryStore.updateSessionInfo(initialInfo);
       }
     } catch (err) {
       debug.telemetry('Failed to fetch initial session info: %o', err);
@@ -143,10 +126,10 @@ class TelemetryConnection {
       this.error = null;
     } else if (status === 'waiting') {
       this.isConnected = false;
-      this.resetAllStores();
+      telemetryStore.reset();
     } else if (status === 'disconnected') {
       this.isConnected = false;
-      this.resetAllStores();
+      telemetryStore.reset();
     }
   }
 
@@ -159,7 +142,7 @@ class TelemetryConnection {
   private setDisconnected() {
     this.isConnected = false;
     this.status = 'disconnected';
-    this.resetAllStores();
+    telemetryStore.reset();
   }
 
   private onFrameReceived() {
@@ -169,19 +152,7 @@ class TelemetryConnection {
     this.error = null;
   }
 
-  private resetAllStores() {
-    carDynamicsStore.reset();
-    carIdxStore.reset();
-    carInputsStore.reset();
-    carStatusStore.reset();
-    lapTimingStore.reset();
-    sessionStore.reset();
-    environmentStore.reset();
-  }
-
-  /** Subscribe to all iRacing telemetry events */
   private async subscribeAllEvents(guardId: number) {
-    // Domain telemetry events
     this.unlistens.push(
       await listen<CarDynamicsFrame>(
         'iracing://telemetry/car-dynamics',
@@ -193,7 +164,7 @@ class TelemetryConnection {
           }
 
           this.onFrameReceived();
-          carDynamicsStore.updateFrame(event.payload);
+          telemetryStore.updateCarDynamics(event.payload);
         }
       )
     );
@@ -201,7 +172,7 @@ class TelemetryConnection {
     this.unlistens.push(
       await listen<CarIdxFrame>('iracing://telemetry/car-idx', (event) => {
         if (this.initId !== guardId) return;
-        carIdxStore.updateFrame(event.payload);
+        telemetryStore.updateCarIdx(event.payload);
       })
     );
 
@@ -210,7 +181,7 @@ class TelemetryConnection {
         'iracing://telemetry/car-inputs',
         (event) => {
           if (this.initId !== guardId) return;
-          carInputsStore.updateFrame(event.payload);
+          telemetryStore.updateCarInputs(event.payload);
         }
       )
     );
@@ -220,7 +191,7 @@ class TelemetryConnection {
         'iracing://telemetry/car-status',
         (event) => {
           if (this.initId !== guardId) return;
-          carStatusStore.updateFrame(event.payload);
+          telemetryStore.updateCarStatus(event.payload);
         }
       )
     );
@@ -230,7 +201,7 @@ class TelemetryConnection {
         'iracing://telemetry/lap-timing',
         (event) => {
           if (this.initId !== guardId) return;
-          lapTimingStore.updateFrame(event.payload);
+          telemetryStore.updateLapTiming(event.payload);
         }
       )
     );
@@ -238,7 +209,7 @@ class TelemetryConnection {
     this.unlistens.push(
       await listen<SessionFrame>('iracing://telemetry/session', (event) => {
         if (this.initId !== guardId) return;
-        sessionStore.updateFrame(event.payload);
+        telemetryStore.updateSession(event.payload);
       })
     );
 
@@ -247,21 +218,19 @@ class TelemetryConnection {
         'iracing://telemetry/environment',
         (event) => {
           if (this.initId !== guardId) return;
-          environmentStore.updateFrame(event.payload);
+          telemetryStore.updateEnvironment(event.payload);
         }
       )
     );
 
-    // Session info (YAML, on change)
     this.unlistens.push(
       await listen<SessionInfo>('iracing://session-info', (event) => {
         if (this.initId !== guardId) return;
         debug.telemetry('session info received: %o', event.payload);
-        sessionStore.updateSessionInfo(event.payload);
+        telemetryStore.updateSessionInfo(event.payload);
       })
     );
 
-    // Connection status
     this.unlistens.push(
       await listen<string>('iracing://status', (event) => {
         if (this.initId !== guardId) return;
@@ -287,14 +256,6 @@ class TelemetryConnection {
   }
 }
 
-/** Singleton connection orchestrator */
-export const telemetryConnection = new TelemetryConnection();
+export const telemetryConnectionStore = new TelemetryConnection();
 
-// Re-export all domain stores
-export { carDynamicsStore } from './car-dynamics.store';
-export { carIdxStore } from './car-idx.store';
-export { carInputsStore } from './car-inputs.store';
-export { carStatusStore } from './car-status.store';
-export { environmentStore } from './environment.store';
-export { lapTimingStore } from './lap-timing.store';
-export { sessionStore } from './session.store';
+export { telemetryStore } from './telemetry.store';

@@ -1,0 +1,59 @@
+@use '../../../../styles/variables' as *;
+
+.legend {
+  position: absolute;
+  top: $space-md;
+  padding: $space-md;
+  border-radius: 4px;
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid $color-border;
+  z-index: 40;
+}
+
+.legendRight {
+  right: $space-md;
+  text-align: right;
+}
+
+.legendLeft {
+  left: $space-md;
+  text-align: left;
+}
+
+.legendTitle {
+  font-family: 'Orbitron', sans-serif;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  margin-bottom: $space-sm;
+}
+
+.legendItems {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  font-size: 0.5625rem;
+  font-weight: 700;
+}
+
+.legendDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendLabel {
+  color: $color-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

@@ -45,6 +45,10 @@ pub struct CarDynamicsFrame {
     /// @see https://sajax.github.io/irsdkdocs/telemetry/longaccel/
     pub long_accel: Option<f32>,
 
+    /// Yaw angle (heading) in radians
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/yaw/
+    pub yaw: Option<f32>,
+
     /// Yaw rate (rotation speed) in rad/s
     /// @see https://sajax.github.io/irsdkdocs/telemetry/yawrate/
     pub yaw_rate: Option<f32>,

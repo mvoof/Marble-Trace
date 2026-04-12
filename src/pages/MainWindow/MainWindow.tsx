@@ -4,7 +4,7 @@ import { Layout, Typography, theme, Menu } from 'antd';
 import { ConfigProvider } from 'antd';
 import { LayoutGrid, Settings } from 'lucide-react';
 import { useTelemetry } from '../../hooks/useTelemetry';
-import { telemetryConnection } from '../../store/iracing';
+import { telemetryConnectionStore } from '../../store/iracing';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { windowManagerStore } from '../../store/window-manager.store';
 import { appSettingsStore } from '../../store/app-settings.store';
@@ -41,7 +41,7 @@ export const MainWindow = () => {
 
     const disposeAutoHide = reaction(
       () => ({
-        status: telemetryConnection.status,
+        status: telemetryConnectionStore.status,
         hide: appSettingsStore.hideWidgetsWhenGameClosed,
       }),
       ({ status, hide }) => {

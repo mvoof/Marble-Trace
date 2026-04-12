@@ -1,30 +1,20 @@
-import { useRef, type CSSProperties } from 'react';
+import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { carDynamicsStore, sessionStore } from '../../../store/iracing';
+import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { useUnits } from '../../../hooks/useUnits';
+import { unitsStore } from '../../../store/units.store';
 import { formatGear } from '../../../utils/telemetry-format';
 import { WidgetPanel } from '../primitives/WidgetPanel';
+import { GearCircle } from './GearCircle/GearCircle';
+import { getShiftZoneColor } from './speed-utils';
+
 import styles from './SpeedWidget.module.scss';
 
-const CIRCLE_R = 105;
-const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_R;
-
-function getShiftZoneColor(
-  pct: number,
-  colors: { low: string; mid: string; high: string; limit: string }
-): string {
-  if (pct >= 1) return colors.limit;
-  if (pct >= 0.7) return colors.high;
-  if (pct >= 0.35) return colors.mid;
-  return colors.low;
-}
-
 export const SpeedWidget = observer(() => {
-  const frame = carDynamicsStore.frame;
-  const driverInfo = sessionStore.driverInfo;
-  const { formatSpeed, speedUnit } = useUnits();
+  const frame = telemetryStore.carDynamics;
+  const driverInfo = telemetryStore.driverInfo;
+  const { formatSpeed, speedUnit } = unitsStore;
   const settings = widgetSettingsStore.getSpeedSettings();
 
   const speed = frame ? formatSpeed(frame.speed) : '0';
@@ -41,22 +31,18 @@ export const SpeedWidget = observer(() => {
     limit: settings.rpmColorLimit,
   };
 
-  // Anchor for 100% RPM fill. Start with session info, but refine with shift_indicator_pct.
   const initialMax =
     driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
   const maxShiftRpmRef = useRef(initialMax);
   const hasRefinedRef = useRef(false);
   const lastDriverInfoRef = useRef(driverInfo);
 
-  // Reset anchor if the car/session changes
   if (lastDriverInfoRef.current !== driverInfo) {
     maxShiftRpmRef.current = initialMax;
     hasRefinedRef.current = false;
     lastDriverInfoRef.current = driverInfo;
   }
 
-  // If we hit the shift point (pct=1), the current RPM is our 100% mark.
-  // We refine the anchor once to match the actual car's shift point.
   if (shiftIndicatorPct >= 1 && rpm > 0) {
     if (!hasRefinedRef.current || rpm > maxShiftRpmRef.current) {
       maxShiftRpmRef.current = rpm;
@@ -64,15 +50,10 @@ export const SpeedWidget = observer(() => {
     }
   }
 
-  // The visual fill is linear based on RPM relative to the anchor
   const currentMax = maxShiftRpmRef.current || initialMax;
   const displayPct = Math.min(Math.max(rpm / currentMax, 0), 1);
-  const offset = CIRCUMFERENCE - displayPct * CIRCUMFERENCE;
   const zoneColor = getShiftZoneColor(displayPct, rpmColors);
-
-  // Blink when the game says shift OR when we visually hit 100%
   const isLimit = shiftIndicatorPct >= 0.99 || displayPct >= 1;
-
   const centerValue = isGearFocused ? gearDisplay : speed;
 
   return (
@@ -84,43 +65,18 @@ export const SpeedWidget = observer(() => {
         </span>
       </div>
 
-      <div className={styles.gearContainer}>
-        <svg className={styles.gearSvg} viewBox="0 0 300 300">
-          <circle
-            className={styles.circleBg}
-            cx="150"
-            cy="150"
-            r={CIRCLE_R}
-            stroke="currentColor"
-          />
-
-          <circle
-            className={`${styles.circleProgress} ${isLimit ? styles.blinkAlert : ''}`}
-            cx="150"
-            cy="150"
-            r={CIRCLE_R}
-            stroke="currentColor"
-            style={
-              {
-                strokeDasharray: CIRCUMFERENCE,
-                color: zoneColor,
-                strokeDashoffset: offset,
-                filter: isLimit
-                  ? `drop-shadow(0 0 15px ${rpmColors.limit})`
-                  : 'drop-shadow(0 0 0px transparent)',
-              } as CSSProperties
-            }
-          />
-        </svg>
-
-        <div className={styles.gearValue}>{centerValue}</div>
-      </div>
+      <GearCircle
+        displayPct={displayPct}
+        zoneColor={zoneColor}
+        isLimit={isLimit}
+        centerValue={centerValue}
+        rpmLimitColor={rpmColors.limit}
+      />
 
       <div className={styles.statBlock}>
         <div className={styles.value}>
           {isGearFocused ? speed : gearDisplay}
         </div>
-
         <span className={styles.label} style={{ color: rpmColors.limit }}>
           {isGearFocused ? speedUnit : 'GEAR'}
         </span>

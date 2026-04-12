@@ -1,0 +1,45 @@
+@use '../../../../styles/variables' as *;
+
+.sessionHeader {
+  background: rgba(24, 24, 27, 0.8);
+  padding: $space-md;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(39, 39, 42, 1);
+  font-family: $font-mono;
+  text-transform: uppercase;
+  font-size: clamp(0.625rem, 0.8vw, 0.8125rem);
+  color: $color-text-muted;
+}
+
+.sessionLeft {
+  display: flex;
+  gap: $space-lg;
+  font-weight: 700;
+  color: $color-text-primary;
+  font-size: clamp(0.75rem, 1vw, 1rem);
+}
+
+.sessionRight {
+  display: flex;
+  gap: $space-lg;
+  align-items: center;
+}
+
+.sessionDriverCount {
+  display: flex;
+  align-items: center;
+  gap: $space-xs;
+  color: $color-text-primary;
+  margin-right: $space-sm;
+}
+
+.sessionDriverCountValue {
+  color: $color-text-primary;
+  font-weight: 700;
+}
+
+.sofValue {
+  color: rgba(234, 179, 8, 0.8);
+}

@@ -26,6 +26,12 @@ import {
   type RadarSettings,
   type RadarVisibilityMode,
   type RadarBarDisplayMode,
+  type StandingsWidgetSettings,
+  type StandingsFilterMode,
+  type RelativeWidgetSettings,
+  type RelativeLinearMapPosition,
+  type TrackMapWidgetSettings,
+  type TrackMapLegendPosition,
 } from '../../../../store/widget-settings.store';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 
@@ -169,6 +175,27 @@ export const WidgetSettings = observer(
               <RadarSettingsPanel
                 widgetId={widgetId as 'proximity-radar' | 'radar-bar'}
               />
+            </>
+          )}
+
+          {widgetId === 'standings' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <StandingsSettingsPanel />
+            </>
+          )}
+
+          {widgetId === 'relative' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <RelativeSettingsPanel />
+            </>
+          )}
+
+          {widgetId === 'track-map' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <TrackMapSettingsPanel />
             </>
           )}
         </Flex>
@@ -559,3 +586,288 @@ const RadarSettingsPanel = observer(
     );
   }
 );
+
+const StandingsSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getStandingsSettings();
+
+  const update = (partial: Partial<StandingsWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('standings', {
+      standings: { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Standings
+      </Title>
+
+      <Flex vertical gap={4}>
+        <Space>
+          <Switch
+            checked={settings.groupByClass}
+            onChange={(v) => update({ groupByClass: v })}
+            size="small"
+            disabled={settings.filterMode === 'around-player'}
+          />
+          <Text>Group by Class</Text>
+        </Space>
+
+        <Text type="secondary" style={{ fontSize: 11 }}>
+          Separate standings into class blocks. Disabled when Around Player
+          filter is active.
+        </Text>
+      </Flex>
+
+      <Flex vertical gap={4}>
+        <Text>Filter Mode</Text>
+
+        <Segmented
+          value={settings.filterMode}
+          options={[
+            { label: 'All', value: 'all' },
+            { label: 'Around Player', value: 'around-player' },
+          ]}
+          onChange={(v) => update({ filterMode: v as StandingsFilterMode })}
+        />
+
+        <Text type="secondary" style={{ fontSize: 11 }}>
+          All = whole field, player pinned at bottom if not visible. Around
+          Player = your row centered with neighbours.
+        </Text>
+      </Flex>
+
+      <Divider style={{ margin: '4px 0' }} />
+
+      <Flex vertical gap={8}>
+        <Text>Columns</Text>
+
+        <Space direction="vertical">
+          <Space>
+            <Switch
+              checked={settings.showPosChange}
+              onChange={(v) => update({ showPosChange: v })}
+              size="small"
+            />
+            <Text>Position Change (+/-)</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showBrand}
+              onChange={(v) => update({ showBrand: v })}
+              size="small"
+            />
+            <Text>Brand</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showTire}
+              onChange={(v) => update({ showTire: v })}
+              size="small"
+            />
+            <Text>Tire</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showIrChange}
+              onChange={(v) => update({ showIrChange: v })}
+              size="small"
+            />
+            <Text>ΔiR (estimate)</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showPitStops}
+              onChange={(v) => update({ showPitStops: v })}
+              size="small"
+            />
+            <Text>Pit Stops (player only)</Text>
+          </Space>
+        </Space>
+
+        <Text type="secondary" style={{ fontSize: 11 }}>
+          Tire shows the session compound (iRacing does not expose per-driver
+          tire data). ΔiR is an Elo-based projection, not real iRacing data. Pit
+          Stops are counted on the frontend for the player only.
+        </Text>
+      </Flex>
+
+      <Divider style={{ margin: '4px 0' }} />
+
+      <Flex vertical gap={8}>
+        <Text>Header</Text>
+
+        <Space direction="vertical">
+          <Space>
+            <Switch
+              checked={settings.showColumnHeaders}
+              onChange={(v) => update({ showColumnHeaders: v })}
+              size="small"
+            />
+            <Text>Column Names</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showSessionHeader}
+              onChange={(v) => update({ showSessionHeader: v })}
+              size="small"
+            />
+            <Text>Session Info</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showWeather}
+              onChange={(v) => update({ showWeather: v })}
+              size="small"
+            />
+            <Text>Weather</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showSOF}
+              onChange={(v) => update({ showSOF: v })}
+              size="small"
+            />
+            <Text>SOF</Text>
+          </Space>
+
+          <Space>
+            <Switch
+              checked={settings.showTotalDrivers}
+              onChange={(v) => update({ showTotalDrivers: v })}
+              size="small"
+            />
+            <Text>Total Drivers</Text>
+          </Space>
+        </Space>
+      </Flex>
+    </Flex>
+  );
+});
+
+const RelativeSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getRelativeSettings();
+
+  const update = (partial: Partial<RelativeWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('relative', {
+      relative: { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Relative
+      </Title>
+
+      <Flex vertical gap={4}>
+        <Space>
+          <Switch
+            checked={settings.showLinearMap}
+            onChange={(v) => update({ showLinearMap: v })}
+            size="small"
+          />
+          <Text>Linear Map</Text>
+        </Space>
+
+        <Text type="secondary" style={{ fontSize: 11 }}>
+          Shows a compact track strip with all cars relative to you.
+        </Text>
+      </Flex>
+
+      {settings.showLinearMap && (
+        <Flex vertical gap={4}>
+          <Text>Map Position</Text>
+
+          <Select
+            value={settings.linearMapPosition}
+            onChange={(v) =>
+              update({ linearMapPosition: v as RelativeLinearMapPosition })
+            }
+            options={[
+              { label: 'Top', value: 'top' },
+              { label: 'Bottom', value: 'bottom' },
+              { label: 'Left', value: 'left' },
+              { label: 'Right', value: 'right' },
+            ]}
+          />
+
+          <Text type="secondary" style={{ fontSize: 11 }}>
+            Which edge the linear map sticks to. The driver list always fills
+            the remaining space.
+          </Text>
+        </Flex>
+      )}
+    </Flex>
+  );
+});
+
+const TrackMapSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getTrackMapSettings();
+
+  const update = (partial: Partial<TrackMapWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('track-map', {
+      'track-map': { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Track Map
+      </Title>
+
+      <Space>
+        <Switch
+          checked={settings.showLegend}
+          onChange={(v) => update({ showLegend: v })}
+          size="small"
+        />
+        <Text>Class Legend</Text>
+      </Space>
+
+      {settings.showLegend && (
+        <Flex vertical gap={4}>
+          <Text>Legend Position</Text>
+
+          <Segmented
+            value={settings.legendPosition}
+            options={[
+              { label: 'Left', value: 'left' },
+              { label: 'Right', value: 'right' },
+              { label: 'Hidden', value: 'hidden' },
+            ]}
+            onChange={(v) =>
+              update({ legendPosition: v as TrackMapLegendPosition })
+            }
+          />
+        </Flex>
+      )}
+
+      <Space>
+        <Switch
+          checked={settings.showSectors}
+          onChange={(v) => update({ showSectors: v })}
+          size="small"
+        />
+        <Text>Sectors</Text>
+      </Space>
+
+      <Space>
+        <Switch
+          checked={settings.showCornerNumbers}
+          onChange={(v) => update({ showCornerNumbers: v })}
+          size="small"
+        />
+        <Text>Corner Numbers</Text>
+      </Space>
+    </Flex>
+  );
+});
