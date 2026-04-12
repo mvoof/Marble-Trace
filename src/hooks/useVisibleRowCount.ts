@@ -52,16 +52,25 @@ export const useVisibleRowCount = <T extends HTMLElement>(
       setCount((prev) => (prev === next ? prev : next));
     };
 
+    let rafId = 0;
+    const scheduleMeasure = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(measure);
+    };
+
     measure();
-    const ro = new ResizeObserver(measure);
+    const ro = new ResizeObserver(scheduleMeasure);
     ro.observe(el);
     // Root font-size also changes when WidgetWrapper rescales — observe that.
-    const rootRo = new ResizeObserver(measure);
+    const rootRo = new ResizeObserver(scheduleMeasure);
     rootRo.observe(document.documentElement);
     // Re-measure when children appear/change (real rows replacing placeholders).
-    const mo = new MutationObserver(measure);
+    // Uses scheduleMeasure so back-to-back DOM mutations from a React re-render
+    // are coalesced into a single rAF tick, preventing oscillation loops.
+    const mo = new MutationObserver(scheduleMeasure);
     mo.observe(el, { childList: true, subtree: false });
     return () => {
+      cancelAnimationFrame(rafId);
       ro.disconnect();
       rootRo.disconnect();
       mo.disconnect();
