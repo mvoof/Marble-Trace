@@ -37,3 +37,6 @@ AGENTS.md
 .mcp.json
 *storybook.log
 storybook-static
+
+# Telemetry snapshots (captured from live iRacing sessions)
+test-data/*.json
