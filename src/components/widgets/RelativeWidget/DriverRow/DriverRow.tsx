@@ -24,18 +24,21 @@ export const DriverRow = observer(
       else if (driver.lap < player.lap) lapStatus = 'lapped';
     }
 
+    const relativeGap =
+      driver.isPlayer || !player ? 0 : driver.f2Time - player.f2Time;
+
     const f2TimeStr =
-      driver.f2Time > 0
-        ? `+${driver.f2Time.toFixed(1)}`
-        : driver.f2Time < 0
-          ? driver.f2Time.toFixed(1)
+      relativeGap > 0
+        ? `+${relativeGap.toFixed(1)}`
+        : relativeGap < 0
+          ? relativeGap.toFixed(1)
           : '0.0';
 
     const f2Class = driver.isPlayer
       ? styles.f2Player
-      : driver.f2Time > 0
+      : relativeGap > 0
         ? styles.f2Positive
-        : driver.f2Time < 0
+        : relativeGap < 0
           ? styles.f2Negative
           : styles.f2Player;
 
