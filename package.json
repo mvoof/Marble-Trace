@@ -2,8 +2,11 @@
   "name": "marble-trace",
   "description": "iRacing Telemetry Overlay",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.2.0",
   "type": "module",
+  "repository": {
+    "url": "https://github.com/mvoof/Marble-Trace"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
