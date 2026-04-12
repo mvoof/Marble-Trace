@@ -1,23 +1,107 @@
-# Marble Trace
-
-iRacing telemetry overlay built with Tauri v2 + React 19 + Rust + MobX.
-
 <p align="center">
-  <img src="https://github.com/mvoof/Marble-Trace/blob/main/docs/assets/app-icon.png" width="100px" alt="Marble Trace">
+  <img src="docs/assets/marble-trace-logo.svg" width="220px" alt="Marble Trace logo">
 </p>
 
-## Architecture
+<h1 align="center">Marble Trace</h1>
 
-- **Main window** — standard window with Ant Design UI for managing widgets and settings
-- **Widget windows** — transparent, always-on-top, frameless overlay windows rendered over the game
-- **Telemetry flow:** Rust (pitwall stream) → `app.emit("telemetry-frame")` → all windows listen via `@tauri-apps/api/event`
+<p align="center">
+  <strong>Open-source iRacing telemetry overlay — beautiful, lightweight, always on top.</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/mvoof/Marble-Trace/releases"><img src="https://img.shields.io/github/v/release/mvoof/Marble-Trace?style=flat-square" alt="Latest release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/mvoof/Marble-Trace?style=flat-square" alt="MIT License"></a>
+  <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen?style=flat-square" alt="Contributions welcome"></a>
+  <img src="https://img.shields.io/badge/platform-Windows-blue?style=flat-square" alt="Windows only">
+  <img src="https://img.shields.io/badge/built%20with-Tauri%20v2-purple?style=flat-square" alt="Tauri v2">
+</p>
+
+---
+
+## Why Marble Trace?
+
+Most iRacing overlays are either bloated desktop apps or locked behind subscriptions. **Marble Trace** is different:
+
+- **Zero overhead** — a tiny Rust backend reads telemetry directly via the iRacing SDK; the UI is a transparent frameless window that floats above the sim.
+- **Fully modular** — enable only the widgets you need. Each widget lives in its own transparent window and can be repositioned independently.
+- **Open source** — MIT licensed. Extend it, theme it, submit a PR.
+- **Modern stack** — Tauri v2 + React 19 + MobX + Ant Design. Fast, type-safe, easy to hack on.
+
+---
+
+## Widgets
+
+### Speed & RPM
+
+> Live RPM ring, current gear, speed, and redline blink alert.
+
+<!-- Screenshot placeholder: docs/assets/screenshots/speed-widget.png -->
+<!-- <img src="docs/assets/screenshots/speed-widget.png" alt="Speed widget" width="300"> -->
+
+---
+
+### Input Trace
+
+> Throttle / brake / clutch bars with a scrolling history canvas — see your trail, spot bad habits.
+
+<!-- Screenshot placeholder: docs/assets/screenshots/input-trace-widget.png -->
+<!-- <img src="docs/assets/screenshots/input-trace-widget.png" alt="Input Trace widget" width="300"> -->
+
+---
+
+### Standings
+
+> Full race standings table with multi-class support, SOF, qualify deltas, brand & tire info, and a configurable row budget. Stays readable at any widget size.
+
+<!-- Screenshot placeholder: docs/assets/screenshots/standings-widget.png -->
+<!-- <img src="docs/assets/screenshots/standings-widget.png" alt="Standings widget" width="400"> -->
+
+---
+
+### Relative
+
+> Relative timing sorted by F2Time — player always centred. Closing/gap trend arrows, lap status (lapping/lapped), class stripes, and an optional linear track map anchored to any edge.
+
+<!-- Screenshot placeholder: docs/assets/screenshots/relative-widget.png -->
+<!-- <img src="docs/assets/screenshots/relative-widget.png" alt="Relative widget" width="360"> -->
+
+---
+
+### Track Map
+
+> SVG overhead track map with every car's position, class-coloured dots, P1 / YOU labels, class legend, and sector markers — recorded from your own lap data.
+
+<!-- Screenshot placeholder: docs/assets/screenshots/track-map-widget.png -->
+<!-- <img src="docs/assets/screenshots/track-map-widget.png" alt="Track Map widget" width="300"> -->
+
+---
+
+### Proximity Radar
+
+> Circular radar centred on your car with a 10 m render range, bumper-to-bumper gap labels, sector masks, and spotter cones. Supports always-on or proximity-triggered visibility with a configurable hide delay.
+
+<!-- Screenshot placeholder: docs/assets/screenshots/proximity-radar-widget.png -->
+<!-- <img src="docs/assets/screenshots/proximity-radar-widget.png" alt="Proximity Radar widget" width="260"> -->
+
+---
+
+### Radar Bar
+
+> Two slim vertical bars (left / right) at the screen edges — a quick-glance indicator for side-by-side situations. Pill-shaped car indicator, configurable bar spacing, and the same proximity visibility modes as the radar.
+
+<!-- Screenshot placeholder: docs/assets/screenshots/radar-bar-widget.png -->
+<!-- <img src="docs/assets/screenshots/radar-bar-widget.png" alt="Radar Bar widget" width="200"> -->
+
+---
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) 18+
-- [Rust](https://rustup.rs/) 1.70+
-- [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/)
-- Windows (iRacing SDK is Windows-only)
+| Tool | Version |
+|---|---|
+| [Node.js](https://nodejs.org/) | 18+ |
+| [Rust](https://rustup.rs/) | 1.70+ |
+| [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) | — |
+| Windows | iRacing SDK is Windows-only |
 
 ## Setup
 
@@ -37,56 +121,37 @@ npm run tauri dev
 npm run tauri:build:release
 ```
 
-## Adding a New Widget
+---
 
-1. Create a component in `src/components/widgets/YourWidget/`
-2. Register it in `src/pages/WidgetPage/WidgetPage.tsx` → `WIDGET_MAP`
-3. Add a default config entry in `src/store/widget-settings.store.ts` → `DEFAULT_WIDGETS`
-4. The widget receives telemetry via `telemetryStore` (MobX observable, import from `src/store/telemetry.store.ts`)
+## Architecture overview
 
-## Available Telemetry Fields
+```
+iRacing SDK
+    │  (pitwall crate)
+    ▼
+Rust service (src-tauri/)
+    │  app.emit("iracing://telemetry/*")
+    ▼
+MobX stores (src/store/)
+    │  observer()
+    ▼
+Widget windows  ←──────── Main window (widget list + settings)
+(transparent overlays)
+```
 
-| Field                       | Type              | Description                               |
-| --------------------------- | ----------------- | ----------------------------------------- |
-| `speed`                     | `number`          | Speed in m/s                              |
-| `rpm`                       | `number`          | Engine RPM                                |
-| `gear`                      | `number`          | Current gear (-1=R, 0=N, 1-8)             |
-| `throttle`                  | `number`          | Throttle position (0.0–1.0)               |
-| `brake`                     | `number`          | Brake position (0.0–1.0)                  |
-| `steering_wheel_angle`      | `number`          | Steering angle in radians                 |
-| `fuel_level`                | `number`          | Fuel level in liters                      |
-| `oil_temp`                  | `number`          | Oil temperature °C                        |
-| `water_temp`                | `number`          | Water temperature °C                      |
-| `lap_current_lap_time`      | `number`          | Current lap time in seconds               |
-| `clutch`                    | `number \| null`  | Clutch position (0.0–1.0)                 |
-| `lap`                       | `number \| null`  | Current lap number                        |
-| `lap_dist`                  | `number \| null`  | Distance traveled on current lap (meters) |
-| `lap_dist_pct`              | `number \| null`  | Lap completion percentage (0.0–1.0)       |
-| `lap_last_lap_time`         | `number \| null`  | Last completed lap time (seconds)         |
-| `lap_best_lap_time`         | `number \| null`  | Best lap time in session (seconds)        |
-| `session_time`              | `number \| null`  | Session elapsed time (seconds)            |
-| `session_time_remain`       | `number \| null`  | Session remaining time (seconds)          |
-| `session_state`             | `number \| null`  | Session state code                        |
-| `session_flags`             | `number \| null`  | Session flags bitmask                     |
-| `session_num`               | `number \| null`  | Session number                            |
-| `velocity_x`                | `number \| null`  | Lateral velocity (m/s)                    |
-| `velocity_y`                | `number \| null`  | Vertical velocity (m/s)                   |
-| `velocity_z`                | `number \| null`  | Longitudinal velocity (m/s)               |
-| `yaw_rate`                  | `number \| null`  | Yaw rate (rad/s)                          |
-| `pitch`                     | `number \| null`  | Pitch angle (rad)                         |
-| `roll`                      | `number \| null`  | Roll angle (rad)                          |
-| `lat_accel`                 | `number \| null`  | Lateral acceleration (m/s²)               |
-| `long_accel`                | `number \| null`  | Longitudinal acceleration (m/s²)          |
-| `fuel_level_pct`            | `number \| null`  | Fuel level percentage (0.0–1.0)           |
-| `fuel_use_per_hour`         | `number \| null`  | Fuel consumption rate (L/h)               |
-| `oil_press`                 | `number \| null`  | Oil pressure (bar)                        |
-| `voltage`                   | `number \| null`  | Battery voltage (V)                       |
-| `player_car_position`       | `number \| null`  | Overall race position                     |
-| `player_car_class_position` | `number \| null`  | In-class race position                    |
-| `car_left_right`            | `number \| null`  | Spotter car-left-right indicator          |
-| `on_pit_road`               | `boolean \| null` | Whether car is on pit road                |
-| `is_on_track`               | `boolean \| null` | Whether car is on track                   |
+- **Telemetry events:** `iracing://telemetry/car-dynamics`, `car-inputs`, `car-status`, `lap-timing`, `session`, `environment`, `car-idx`, plus `iracing://session-info` and `iracing://status`
+- **Widget drag mode:** toggle with `F9` (configurable) — green border appears, drag to reposition, position is persisted
+- **Unit system:** metric / imperial, toggle in Settings, synced across all windows
+
+---
+
+## Contributing
+
+Contributions, bug reports, and feature requests are very welcome!
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
+
+---
 
 ## License
 
-MIT
+Distributed under the [MIT License](LICENSE). © 2026 voof
