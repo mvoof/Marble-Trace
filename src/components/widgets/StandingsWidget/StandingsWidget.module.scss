@@ -13,51 +13,6 @@
   border-radius: 6px;
 }
 
-// Session header (top bar)
-.sessionHeader {
-  background: rgba(24, 24, 27, 0.8);
-  padding: $space-md;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(39, 39, 42, 1);
-  font-family: $font-mono;
-  text-transform: uppercase;
-  font-size: clamp(0.625rem, 0.8vw, 0.8125rem);
-  color: $color-text-muted;
-}
-
-.sessionLeft {
-  display: flex;
-  gap: $space-lg;
-  font-weight: 700;
-  color: $color-text-primary;
-  font-size: clamp(0.75rem, 1vw, 1rem);
-}
-
-.sessionRight {
-  display: flex;
-  gap: $space-lg;
-  align-items: center;
-}
-
-.sessionDriverCount {
-  display: flex;
-  align-items: center;
-  gap: $space-xs;
-  color: $color-text-primary;
-  margin-right: $space-sm;
-}
-
-.sessionDriverCountValue {
-  color: $color-text-primary;
-  font-weight: 700;
-}
-
-.sofValue {
-  color: rgba(234, 179, 8, 0.8);
-}
-
 // Table wrapper — no scroll, rows beyond window are not rendered
 .tableWrap {
   flex: 1 1 0;
@@ -78,39 +33,51 @@
 .colPos {
   width: 3.5%;
 }
+
 .colPosChange {
   width: 3.5%;
 }
+
 .colNum {
   width: 3.5%;
 }
+
 .colName {
   width: auto;
 }
+
 .colBrand {
   width: 6%;
 }
+
 .colTire {
   width: 3.5%;
 }
+
 .colClass {
   width: 5%;
 }
+
 .colLic {
   width: 9%;
 }
+
 .colIrChange {
   width: 4%;
 }
+
 .colInc {
   width: 3.5%;
 }
+
 .colStops {
   width: 4%;
 }
+
 .colGap {
   width: 6%;
 }
+
 .colLap {
   width: 7%;
 }
@@ -142,428 +109,4 @@
 
 .thRight {
   text-align: right;
-}
-
-// Class group header
-.classHeader {
-  position: relative;
-
-  td {
-    padding: 0;
-  }
-}
-
-.classHeaderInner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: $space-md $space-lg;
-  margin: $space-md 0 $space-sm 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-}
-
-.classHeaderLeft {
-  display: flex;
-  align-items: center;
-  gap: $space-xl;
-}
-
-.classStats {
-  display: flex;
-  gap: $space-md;
-}
-
-.className {
-  font-weight: 900;
-  font-size: $font-size-md;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.classBadge {
-  display: flex;
-  align-items: center;
-  gap: $space-md;
-  background: rgba(0, 0, 0, 0.5);
-  padding: $space-xs $space-md;
-  border-radius: 4px;
-  font-size: $font-size-xs;
-  font-family: $font-mono;
-  color: $color-text-muted;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.classBadgeValue {
-  color: $color-text-primary;
-  font-weight: 700;
-}
-
-.classHeaderLine {
-  flex: 1;
-  height: 1px;
-  margin-left: 1.5rem;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), transparent);
-}
-
-// Driver row
-.driverRow {
-  border-bottom: 1px solid rgba(39, 39, 42, 0.5);
-  position: relative;
-  transition: background-color 0.2s;
-  line-height: 1.15;
-
-  &:hover:not(.driverRowPlayer) {
-    background-color: rgba(39, 39, 42, 0.3);
-  }
-}
-
-.driverRowPlayer {
-  background-color: rgba(245, 158, 11, 0.2);
-  box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.3);
-}
-
-.driverRowOffTrack {
-  opacity: 0.5;
-}
-
-.td {
-  padding: $space-sm $space-md;
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-.tdCenter {
-  text-align: center;
-}
-
-.tdRight {
-  text-align: right;
-}
-
-// Position
-.posCell {
-  font-weight: 700;
-  font-size: clamp(0.875rem, 1.05vw, 1.0625rem);
-}
-
-.posCellPlayer {
-  color: #fbbf24;
-}
-
-.posCellSmall {
-  font-size: clamp(0.8125rem, 1vw, 1rem);
-}
-
-// Position change
-.posChangeUp {
-  color: #22c55e;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: $font-mono;
-  font-size: $font-size-sm;
-  font-weight: 700;
-}
-
-.posChangeDown {
-  color: #ef4444;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: $font-mono;
-  font-size: $font-size-sm;
-  font-weight: 700;
-}
-
-.posChangeNeutral {
-  color: rgba(113, 113, 122, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-// Car number
-.carNumber {
-  font-family: $font-mono;
-  font-size: clamp(0.8125rem, 1vw, 1rem);
-  color: $color-text-muted;
-}
-
-.carNumberPlayer {
-  color: #fcd34d;
-}
-
-// Driver name — absorbs remaining space via colName auto width.
-.tdDriverName {
-  overflow: hidden;
-}
-
-.driverNameCell {
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-  overflow: hidden;
-}
-
-.driverName {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: clamp(0.875rem, 1.05vw, 1.0625rem);
-  color: $color-text-primary;
-}
-
-// Brand label
-.brandLabel {
-  font-family: $font-mono;
-  font-size: clamp(0.75rem, 0.9vw, 0.9375rem);
-  color: $color-text-muted;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-// Tire badge — circular pill with translucent fill (matches example reference)
-.tireBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.4rem;
-  height: 1.4rem;
-  border-radius: 50%;
-  font-weight: 800;
-  font-size: 0.75rem;
-  font-family: $font-mono;
-  border: 1px solid;
-}
-
-.tireEmpty {
-  color: rgba(113, 113, 122, 0.6);
-  font-size: 0.8125rem;
-}
-
-.tireSoft {
-  color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.5);
-  background: rgba(239, 68, 68, 0.1);
-}
-
-.tireMed {
-  color: #eab308;
-  border-color: rgba(234, 179, 8, 0.5);
-  background: rgba(234, 179, 8, 0.1);
-}
-
-.tireHard {
-  color: #e5e7eb;
-  border-color: rgba(161, 161, 170, 0.5);
-  background: rgba(161, 161, 170, 0.1);
-}
-
-.tireWet {
-  color: #60a5fa;
-  border-color: rgba(96, 165, 250, 0.5);
-  background: rgba(96, 165, 250, 0.1);
-}
-
-.driverNamePlayer {
-  color: #fbbf24;
-}
-
-.pitBadge {
-  background: rgba(234, 179, 8, 0.2);
-  color: #eab308;
-  border: 1px solid rgba(234, 179, 8, 0.3);
-  padding: $space-xs $space-md;
-  border-radius: 4px;
-  font-size: $font-size-xs;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-left: $space-md;
-  flex-shrink: 0;
-}
-
-// Class badge (in overall mode)
-.classBadgeInline {
-  padding: $space-xs $space-sm;
-  border-radius: 4px;
-  color: black;
-  font-weight: 700;
-  font-size: 0.6875rem;
-  text-align: center;
-  display: inline-block;
-}
-
-// License badge
-.licenseBadge {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.6875rem;
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid rgba(113, 113, 122, 0.5);
-}
-
-.licenseClass {
-  font-weight: 700;
-  color: white;
-  padding: $space-xs $space-sm;
-}
-
-.licenseRating {
-  background: rgba(39, 39, 42, 1);
-  color: $color-text-primary;
-  padding: $space-xs $space-xs;
-  font-family: $font-mono;
-}
-
-.licA {
-  background: #2563eb;
-}
-
-.licB {
-  background: #16a34a;
-}
-
-.licC {
-  background: #ca8a04;
-}
-
-.licD {
-  background: #ea580c;
-}
-
-.licR {
-  background: #dc2626;
-}
-
-// License + iRating wrapper
-.licWrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $space-sm;
-}
-
-// iRating
-.irating {
-  font-size: clamp(0.8125rem, 0.95vw, 0.9375rem);
-  font-family: $font-mono;
-  color: $color-text-muted;
-  width: 2.25rem;
-  text-align: right;
-}
-
-// iR change
-.irChange {
-  font-size: 0.6875rem;
-  font-family: $font-mono;
-  font-weight: 700;
-  width: 1.5rem;
-  text-align: left;
-}
-
-.irChangeUp {
-  color: #22c55e;
-}
-
-.irChangeDown {
-  color: #ef4444;
-}
-
-// Incidents
-.incidents {
-  font-size: 0.8125rem;
-  text-align: center;
-  color: $color-text-muted;
-}
-
-.incidentsNearDQ {
-  color: #ef4444;
-  font-weight: 700;
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
-  }
-}
-
-// Pit stops
-.pitStops {
-  font-family: $font-mono;
-  font-size: $font-size-sm;
-  text-align: center;
-  color: rgba(113, 113, 122, 1);
-}
-
-.pitStopsActive {
-  color: $color-text-primary;
-}
-
-// Gap column
-.gapLeader {
-  color: $color-text-primary;
-  font-size: clamp(0.8125rem, 0.95vw, 0.9375rem);
-}
-
-.gapValue {
-  color: $color-text-primary;
-  font-size: clamp(0.8125rem, 0.95vw, 0.9375rem);
-}
-
-// Lap time columns
-.lastLap {
-  font-family: $font-mono;
-  font-size: clamp(0.75rem, 0.9vw, 0.9375rem);
-  color: $color-text-muted;
-}
-
-.bestLap {
-  font-family: $font-mono;
-  font-size: clamp(0.75rem, 0.9vw, 0.9375rem);
-  color: rgba(192, 132, 252, 0.85);
-}
-
-// Separator row
-.separatorRow {
-  background: rgba(24, 24, 27, 0.4);
-}
-
-.separatorInner {
-  padding: $space-md;
-  position: relative;
-}
-
-.separatorLine {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.3;
-}
-
-.separatorLineInner {
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, white, transparent);
-}
-
-.separatorDots {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(113, 113, 122, 1);
-  position: relative;
-  z-index: 10;
 }
