@@ -24,7 +24,6 @@ export const RelativeWidget = observer(() => {
   const { driverInfo } = telemetryStore;
   const settings = widgetSettingsStore.getRelativeSettings();
   const prevF2TimesRef = useRef<Map<number, number>>(new Map());
-  const prevF2PctRef = useRef<Map<number, number>>(new Map());
   const lastSnapshotTimeRef = useRef<number>(0);
   const { ref: driverListRef, count: visibleRowCount } =
     useVisibleRowCount<HTMLDivElement>(2.75, 3, '[data-relative-row]');
@@ -105,32 +104,20 @@ export const RelativeWidget = observer(() => {
     const newTrends = new Map<number, number>();
     const playerEntry = entries.find((e) => e.isPlayer);
 
-    for (const entry of entries) {
-      if (entry.isPlayer) continue;
+    if (playerEntry) {
+      const prevPlayerF2 = prevSnapshot.get(playerEntry.carIdx);
 
-      const prevData = prevSnapshot.get(entry.carIdx);
-      if (prevData === undefined) continue;
+      for (const entry of entries) {
+        if (entry.isPlayer) continue;
 
-      const f2Delta = entry.f2Time - prevData;
-      if (Math.abs(f2Delta) > 0.01) {
-        newTrends.set(entry.carIdx, f2Delta);
-        continue;
-      }
+        const prevEntryF2 = prevSnapshot.get(entry.carIdx);
+        if (prevEntryF2 === undefined || prevPlayerF2 === undefined) continue;
 
-      if (playerEntry) {
-        const prevPlayerPct = prevF2PctRef.current.get(playerEntry.carIdx) ?? 0;
-        const prevPct = prevF2PctRef.current.get(entry.carIdx) ?? 0;
+        const currRelGap = entry.f2Time - playerEntry.f2Time;
+        const prevRelGap = prevEntryF2 - prevPlayerF2;
+        const gapDelta = currRelGap - prevRelGap;
 
-        let prevGap = prevPct - prevPlayerPct;
-        if (prevGap < -0.5) prevGap += 1;
-        if (prevGap > 0.5) prevGap -= 1;
-
-        let currGap = entry.lapDistPct - playerEntry.lapDistPct;
-        if (currGap < -0.5) currGap += 1;
-        if (currGap > 0.5) currGap -= 1;
-
-        const gapDelta = Math.abs(currGap) - Math.abs(prevGap);
-        if (Math.abs(gapDelta) > 0.0001) {
+        if (Math.abs(gapDelta) > 0.01) {
           newTrends.set(entry.carIdx, gapDelta);
         }
       }
@@ -139,13 +126,10 @@ export const RelativeWidget = observer(() => {
     setTrendMap(newTrends);
 
     const newTimes = new Map<number, number>();
-    const newPcts = new Map<number, number>();
     for (const entry of entries) {
       newTimes.set(entry.carIdx, entry.f2Time);
-      newPcts.set(entry.carIdx, entry.lapDistPct);
     }
     prevF2TimesRef.current = newTimes;
-    prevF2PctRef.current = newPcts;
     lastSnapshotTimeRef.current = now;
   }, [entries]);
 
