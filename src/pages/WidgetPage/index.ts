@@ -1,1 +1,0 @@
-export { WidgetPage } from './WidgetPage';

@@ -97,12 +97,6 @@ export interface WidgetConfig {
   customSettings?: WidgetCustomSettings;
 }
 
-interface WidgetFieldUpdate {
-  id: string;
-  field: keyof WidgetConfig;
-  value: number | string | boolean | WidgetCustomSettings;
-}
-
 export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'speed',
@@ -269,11 +263,17 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   },
 ];
 
+interface WidgetFieldUpdate {
+  id: string;
+  field: keyof WidgetConfig;
+  value: number | string | boolean | WidgetCustomSettings;
+}
+
 class WidgetSettingsStore {
   widgets: WidgetConfig[] = [];
   private store: Store | null = null;
   private saveTimeout: ReturnType<typeof setTimeout> | null = null;
-  private unlisten: UnlistenFn | null = null;
+  private overlayUnlisten: UnlistenFn | null = null;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -315,9 +315,26 @@ class WidgetSettingsStore {
     });
   }
 
-  /** Listen for widget setting changes from other windows (used by widget windows). */
-  async initWidgetListener() {
-    this.unlisten = await listen<WidgetFieldUpdate>(
+  private debouncedSave() {
+    if (this.saveTimeout) clearTimeout(this.saveTimeout);
+
+    this.saveTimeout = setTimeout(() => this.saveSettings(), 500);
+  }
+
+  private async saveSettings() {
+    if (!this.store) return;
+
+    await this.store.set('widgets', this.widgets);
+    await this.store.save();
+  }
+
+  getWidget(id: string): WidgetConfig | undefined {
+    return this.widgets.find((w) => w.id === id);
+  }
+
+  /** Called by the overlay window to sync settings changes from the main window. */
+  async initOverlayListener() {
+    this.overlayUnlisten = await listen<WidgetFieldUpdate>(
       'widget-settings-changed',
       (event) => {
         const { id, field, value } = event.payload;
@@ -339,25 +356,9 @@ class WidgetSettingsStore {
     );
   }
 
-  dispose() {
-    this.unlisten?.();
-  }
-
-  private debouncedSave() {
-    if (this.saveTimeout) clearTimeout(this.saveTimeout);
-
-    this.saveTimeout = setTimeout(() => this.saveSettings(), 500);
-  }
-
-  private async saveSettings() {
-    if (!this.store) return;
-
-    await this.store.set('widgets', this.widgets);
-    await this.store.save();
-  }
-
-  getWidget(id: string): WidgetConfig | undefined {
-    return this.widgets.find((w) => w.id === id);
+  disposeOverlayListener() {
+    this.overlayUnlisten?.();
+    this.overlayUnlisten = null;
   }
 
   setWidgetEnabled(id: string, enabled: boolean) {

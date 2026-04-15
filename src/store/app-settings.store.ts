@@ -7,7 +7,6 @@ import {
   unregisterAll,
 } from '@tauri-apps/plugin-global-shortcut';
 import { widgetSettingsStore } from './widget-settings.store';
-import { windowManagerStore } from './window-manager.store';
 
 const DEFAULT_DRAG_HOTKEY = 'F9';
 
@@ -22,11 +21,9 @@ class AppSettingsStore {
   hideWidgetsWhenGameClosed = false;
 
   private store: Store | null = null;
-  private unlisten: UnlistenFn | null = null;
-  private unlistenRequest: UnlistenFn | null = null;
-  private widgetUnlistens: UnlistenFn[] = [];
   private registeredWidgetHotkeys: Map<string, string> = new Map();
   private initId = 0;
+  private overlayUnlisten: UnlistenFn | null = null;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -56,22 +53,28 @@ class AppSettingsStore {
     if (this.initId !== currentId) return;
 
     await this.registerAllWidgetHotkeys();
-    if (this.initId !== currentId) return;
-
-    this.unlisten = await listen<boolean>('drag-mode-changed', (event) => {
-      runInAction(() => {
-        this.dragMode = event.payload;
-      });
-    });
-
-    this.unlistenRequest = await listen('request-drag-mode', async () => {
-      await emit('drag-mode-changed', this.dragMode);
-    });
   }
 
-  async toggleDragMode() {
+  toggleDragMode() {
     this.dragMode = !this.dragMode;
-    await emit('drag-mode-changed', this.dragMode);
+    emit('drag-mode-changed', this.dragMode).catch(console.error);
+  }
+
+  /** Called by the overlay window to sync dragMode from the main window. */
+  async initOverlayListener() {
+    this.overlayUnlisten = await listen<boolean>(
+      'drag-mode-changed',
+      (event) => {
+        runInAction(() => {
+          this.dragMode = event.payload;
+        });
+      }
+    );
+  }
+
+  disposeOverlayListener() {
+    this.overlayUnlisten?.();
+    this.overlayUnlisten = null;
   }
 
   async setHideWidgetsWhenGameClosed(value: boolean) {
@@ -98,9 +101,10 @@ class AppSettingsStore {
       await this.unregisterKey(hotkey);
       await register(hotkey, async (event) => {
         if (event.state === 'Pressed') {
-          await windowManagerStore.toggleWidget(widgetId);
-          const isOpen = windowManagerStore.isOpen(widgetId);
-          widgetSettingsStore.setWidgetEnabled(widgetId, isOpen);
+          const widget = widgetSettingsStore.getWidget(widgetId);
+          if (widget) {
+            widgetSettingsStore.setWidgetEnabled(widgetId, !widget.enabled);
+          }
         }
       });
       this.registeredWidgetHotkeys.set(widgetId, hotkey);
@@ -128,9 +132,9 @@ class AppSettingsStore {
   private async registerDragHotkey() {
     try {
       await this.unregisterKey(this.dragHotkey);
-      await register(this.dragHotkey, async (event) => {
+      await register(this.dragHotkey, (event) => {
         if (event.state === 'Pressed') {
-          await this.toggleDragMode();
+          this.toggleDragMode();
         }
       });
     } catch (e) {
@@ -155,28 +159,8 @@ class AppSettingsStore {
     await this.store.save();
   }
 
-  async initWidgetListener() {
-    const unsub = await listen<boolean>('drag-mode-changed', (event) => {
-      runInAction(() => {
-        this.dragMode = event.payload;
-      });
-    });
-    this.widgetUnlistens.push(unsub);
-
-    await emit('request-drag-mode');
-  }
-
-  disposeWidgetListener() {
-    for (const unsub of this.widgetUnlistens) {
-      unsub();
-    }
-    this.widgetUnlistens = [];
-  }
-
   async dispose() {
     this.initId++;
-    this.unlisten?.();
-    this.unlistenRequest?.();
     await unregisterAll();
     this.registeredWidgetHotkeys.clear();
   }

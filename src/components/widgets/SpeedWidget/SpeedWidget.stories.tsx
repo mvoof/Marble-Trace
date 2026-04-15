@@ -1,13 +1,16 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { runInAction } from 'mobx';
 import { SpeedWidget } from './SpeedWidget';
+import { WidgetScaler } from '../../WidgetScaler';
 import { telemetryStore } from '../../../store/iracing';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import {
+  widgetSettingsStore,
+  DEFAULT_WIDGETS,
+} from '../../../store/widget-settings.store';
 import type { SpeedWidgetSettings } from '../../../store/widget-settings.store';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
-import { DEFAULT_WIDGETS } from '../../../store/widget-settings.store';
-import { runInAction } from 'mobx';
 
 const DESIGN_WIDTH = 290;
 const DESIGN_HEIGHT = 80;
@@ -16,21 +19,22 @@ const realSnapshot = snapshot as TelemetrySnapshot;
 
 interface SpeedWidgetStoryArgs extends SpeedWidgetSettings {
   snapshot: TelemetrySnapshot;
+  containerWidth: number;
+  containerHeight: number;
 }
 
 const SpeedWidgetStory = ({
   snapshot: snap,
+  containerWidth,
+  containerHeight,
   ...settings
 }: SpeedWidgetStoryArgs) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (widgetSettingsStore.widgets.length === 0) {
       runInAction(() => {
         widgetSettingsStore.widgets = [...DEFAULT_WIDGETS];
       });
     }
-
     widgetSettingsStore.updateCustomSettings('speed', { speed: settings });
   }, [settings]);
 
@@ -47,38 +51,15 @@ const SpeedWidgetStory = ({
     return () => telemetryStore.reset();
   }, [snap]);
 
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const updateScale = () => {
-      const { width, height } = el.getBoundingClientRect();
-      const scale = Math.min(width / DESIGN_WIDTH, height / DESIGN_HEIGHT);
-      document.documentElement.style.fontSize = `${scale * 16}px`;
-    };
-
-    const observer = new ResizeObserver(updateScale);
-    observer.observe(el);
-    updateScale();
-
-    return () => {
-      observer.disconnect();
-      document.documentElement.style.fontSize = '';
-    };
-  }, []);
-
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: DESIGN_WIDTH,
-        height: DESIGN_HEIGHT,
-        background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      <SpeedWidget />
+    <div style={{ width: containerWidth, height: containerHeight }}>
+      <WidgetScaler
+        designWidth={DESIGN_WIDTH}
+        designHeight={DESIGN_HEIGHT}
+        background="radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)"
+      >
+        <SpeedWidget />
+      </WidgetScaler>
     </div>
   );
 };
@@ -90,6 +71,16 @@ const meta: Meta<SpeedWidgetStoryArgs> = {
     layout: 'centered',
   },
   argTypes: {
+    containerWidth: {
+      control: { type: 'range', min: 100, max: 800, step: 10 },
+      description: 'Container width (px)',
+      table: { category: 'Container' },
+    },
+    containerHeight: {
+      control: { type: 'range', min: 40, max: 400, step: 10 },
+      description: 'Container height (px)',
+      table: { category: 'Container' },
+    },
     focusMode: {
       control: 'radio',
       options: ['speed', 'gear'],
@@ -127,6 +118,8 @@ const meta: Meta<SpeedWidgetStoryArgs> = {
     },
   },
   args: {
+    containerWidth: DESIGN_WIDTH,
+    containerHeight: DESIGN_HEIGHT,
     focusMode: 'speed',
     rpmColorTheme: 'custom',
     rpmColorLow: '#22c55e',
@@ -142,8 +135,14 @@ export default meta;
 type Story = StoryObj<SpeedWidgetStoryArgs>;
 
 export const Default: Story = {
+  args: { focusMode: 'gear' },
+};
+
+export const Scaled2x: Story = {
   args: {
     focusMode: 'gear',
+    containerWidth: DESIGN_WIDTH * 2,
+    containerHeight: DESIGN_HEIGHT * 2,
   },
 };
 
@@ -159,13 +158,22 @@ export const Redline: Story = {
         speed: 62.0,
       },
     },
-
     focusMode: 'gear',
   },
 };
 
 export const NoData: Story = {
   args: {
-    snapshot: { capturedAt: new Date().toISOString() },
+    snapshot: {
+      capturedAt: new Date().toISOString(),
+      carDynamics: null,
+      carIdx: null,
+      carInputs: null,
+      carStatus: null,
+      environment: null,
+      lapTiming: null,
+      session: null,
+      sessionInfo: null,
+    },
   },
 };
