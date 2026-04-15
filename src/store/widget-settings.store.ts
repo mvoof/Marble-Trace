@@ -103,7 +103,7 @@ interface WidgetFieldUpdate {
   value: number | string | boolean | WidgetCustomSettings;
 }
 
-const DEFAULT_WIDGETS: WidgetConfig[] = [
+export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'speed',
     label: 'Speed (Gear, Speed, RPM)',
