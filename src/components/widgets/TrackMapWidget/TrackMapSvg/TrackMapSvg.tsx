@@ -4,15 +4,9 @@ import { getPointAtPct } from '../../../../utils/track-recorder';
 import type { Sector } from '../../../../types/bindings';
 import type { CarOnTrack } from '../types';
 
-import styles from './TrackMapSvg.module.scss';
+import { SECTOR_ARC_COLORS } from '../track-map-utils';
 
-const SECTOR_ARC_COLORS = [
-  '#eab308',
-  '#3b82f6',
-  '#a855f7',
-  '#10b981',
-  '#ef4444',
-];
+import styles from './TrackMapSvg.module.scss';
 
 interface TrackMapSvgProps {
   svgPath: string;

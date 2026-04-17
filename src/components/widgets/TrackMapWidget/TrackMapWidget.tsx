@@ -1,10 +1,12 @@
 import { WidgetPanel } from '../primitives';
 import type { TrackPoint } from '../../../utils/track-recorder';
 import type { TrackMapWidgetSettings } from '../../../store/widget-settings.store';
+import type { Sector } from '../../../types/bindings';
 
 import { RecordingOverlay } from './RecordingOverlay/RecordingOverlay';
 import { ClassLegend } from './ClassLegend/ClassLegend';
 import { TrackMapSvg } from './TrackMapSvg/TrackMapSvg';
+import { SectorTimesStrip } from './SectorTimesStrip/SectorTimesStrip';
 import type { CarOnTrack } from './types';
 
 import styles from './TrackMapWidget.module.scss';
@@ -20,11 +22,6 @@ interface ClassColor {
   color: string;
 }
 
-interface SectorInfo {
-  SectorNum: number | null;
-  SectorStartPct: number | null;
-}
-
 interface TrackMapWidgetProps {
   cars: CarOnTrack[];
   classColors: ClassColor[];
@@ -34,7 +31,8 @@ interface TrackMapWidgetProps {
   recordingProgress: number;
   playerYaw: number | undefined;
   settings: TrackMapWidgetSettings;
-  sectors: SectorInfo[] | null | undefined;
+  sectors: Sector[] | null | undefined;
+  sectorTimes: (number | null)[];
 }
 
 export const TrackMapWidget = ({
@@ -47,6 +45,7 @@ export const TrackMapWidget = ({
   playerYaw,
   settings,
   sectors,
+  sectorTimes,
 }: TrackMapWidgetProps) => {
   if (!trackData) {
     return (
@@ -59,6 +58,13 @@ export const TrackMapWidget = ({
       </WidgetPanel>
     );
   }
+
+  const visibleSectors = settings.showSectors ? sectors : null;
+  const sectorEntries =
+    visibleSectors
+      ?.filter((s) => s.SectorNum != null && s.SectorStartPct != null)
+      .sort((a, b) => (a.SectorStartPct ?? 0) - (b.SectorStartPct ?? 0))
+      .map((s) => ({ sectorNum: s.SectorNum! })) ?? [];
 
   return (
     <WidgetPanel className={styles.trackMap} gap={0}>
@@ -74,9 +80,13 @@ export const TrackMapWidget = ({
         viewBox={trackData.viewBox}
         points={trackData.points}
         cars={cars}
-        sectors={settings.showSectors ? sectors : null}
+        sectors={visibleSectors}
         playerYaw={playerYaw}
       />
+
+      {settings.showSectors && sectorEntries.length > 0 && (
+        <SectorTimesStrip sectors={sectorEntries} sectorTimes={sectorTimes} />
+      )}
     </WidgetPanel>
   );
 };

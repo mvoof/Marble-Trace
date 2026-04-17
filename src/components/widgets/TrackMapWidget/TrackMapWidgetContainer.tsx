@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { listen } from '@tauri-apps/api/event';
 
@@ -40,6 +40,11 @@ export const TrackMapWidgetContainer = observer(() => {
   const [recordingProgress, setRecordingProgress] = useState(0);
   const [trackData, setTrackData] = useState<TrackData | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+
+  const [sectorTimes, setSectorTimes] = useState<(number | null)[]>([]);
+  const lastSectorIdxRef = useRef(-1);
+  const sectorEntryTimeRef = useRef(-1);
+  const lastLapRef = useRef(-1);
 
   useEffect(() => {
     if (!trackId) return;
@@ -163,6 +168,66 @@ export const TrackMapWidgetContainer = observer(() => {
     }
   }, [carDynamics, lapTiming, sessionFrame, trackData, saveTrack]);
 
+  useEffect(() => {
+    const sectors =
+      sessionInfo?.SplitTimeInfo?.Sectors?.filter(
+        (s) => s.SectorStartPct != null && s.SectorNum != null
+      ).sort((a, b) => (a.SectorStartPct ?? 0) - (b.SectorStartPct ?? 0)) ?? [];
+
+    setSectorTimes(new Array(sectors.length).fill(null));
+    lastSectorIdxRef.current = -1;
+    sectorEntryTimeRef.current = -1;
+    lastLapRef.current = -1;
+  }, [sessionInfo?.SplitTimeInfo?.Sectors]);
+
+  useEffect(() => {
+    if (!lapTiming || !sessionFrame || !sessionInfo) return;
+
+    const sectors =
+      sessionInfo.SplitTimeInfo?.Sectors?.filter(
+        (s) => s.SectorStartPct != null && s.SectorNum != null
+      ).sort((a, b) => (a.SectorStartPct ?? 0) - (b.SectorStartPct ?? 0)) ?? [];
+
+    if (sectors.length === 0) return;
+
+    const lapDistPct = lapTiming.lap_dist_pct ?? -1;
+    const sessionTime = sessionFrame.session_time ?? 0;
+    const currentLap = lapTiming.lap ?? 0;
+
+    if (lapDistPct < 0) return;
+
+    if (currentLap !== lastLapRef.current && lastLapRef.current >= 0) {
+      lastSectorIdxRef.current = -1;
+      sectorEntryTimeRef.current = -1;
+      setSectorTimes(new Array(sectors.length).fill(null));
+    }
+    lastLapRef.current = currentLap;
+
+    let currentSectorIdx = 0;
+    for (let i = sectors.length - 1; i >= 0; i--) {
+      if ((sectors[i].SectorStartPct ?? 0) <= lapDistPct) {
+        currentSectorIdx = i;
+        break;
+      }
+    }
+
+    if (currentSectorIdx !== lastSectorIdxRef.current) {
+      if (lastSectorIdxRef.current >= 0 && sectorEntryTimeRef.current >= 0) {
+        const elapsed = sessionTime - sectorEntryTimeRef.current;
+        if (elapsed > 0 && elapsed < 600) {
+          const prevIdx = lastSectorIdxRef.current;
+          setSectorTimes((prev) => {
+            const next = [...prev];
+            next[prevIdx] = elapsed;
+            return next;
+          });
+        }
+      }
+      lastSectorIdxRef.current = currentSectorIdx;
+      sectorEntryTimeRef.current = sessionTime;
+    }
+  }, [lapTiming, sessionFrame, sessionInfo]);
+
   const playerYaw = useMemo(() => {
     if (settings.rotationMode !== 'heading-up') return undefined;
     if (playerCarIdx < 0 || !carDynamics) return undefined;
@@ -214,6 +279,7 @@ export const TrackMapWidgetContainer = observer(() => {
       playerYaw={playerYaw}
       settings={settings}
       sectors={sessionInfo?.SplitTimeInfo?.Sectors}
+      sectorTimes={sectorTimes}
     />
   );
 });

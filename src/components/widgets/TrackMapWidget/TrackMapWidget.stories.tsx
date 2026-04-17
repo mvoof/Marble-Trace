@@ -2,56 +2,29 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TrackMapWidget } from './TrackMapWidget';
 import { WidgetScaler } from '../../WidgetScaler';
-import {
-  parseClassColor,
-  formatClassShortName,
-} from '../../../utils/class-color';
-import type { TrackPoint } from '../../../utils/track-recorder';
+import { computeDriverEntries } from '../widget-utils';
 import type { TrackMapWidgetSettings } from '../../../store/widget-settings.store';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import type { CarOnTrack } from './types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
+import tracksData from '../../../../test-data/tracks.json';
 
 const DESIGN_WIDTH = 400;
 const DESIGN_HEIGHT = 400;
 
 const realSnapshot = snapshot as TelemetrySnapshot;
 
-const generateSyntheticOval = (): {
-  points: TrackPoint[];
-  svgPath: string;
-  viewBox: string;
-} => {
-  const rx = 180;
-  const ry = 70;
-  const numPoints = 300;
-  const points: TrackPoint[] = [];
-
-  for (let i = 0; i <= numPoints; i++) {
-    const pct = i / numPoints;
-    const angle = pct * 2 * Math.PI - Math.PI / 2;
-    points.push({
-      x: parseFloat((rx * Math.cos(angle)).toFixed(1)),
-      y: parseFloat((ry * Math.sin(angle)).toFixed(1)),
-      pct: i === numPoints ? 1.0 : pct,
-    });
-  }
-
-  const xs = points.map((p) => p.x);
-  const ys = points.map((p) => p.y);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
-  const pad = 25;
-
-  const viewBox = `${(minX - pad).toFixed(0)} ${(minY - pad).toFixed(0)} ${(maxX - minX + pad * 2).toFixed(0)} ${(maxY - minY + pad * 2).toFixed(0)}`;
-  const svgPath = `M ${points.map((p) => `${p.x} ${p.y}`).join(' L ')}`;
-
-  return { points, svgPath, viewBox };
+const storedTracks = tracksData as {
+  'recorded-tracks': Record<
+    string,
+    {
+      svgPath: string;
+      viewBox: string;
+      points: { x: number; y: number; pct: number }[];
+    }
+  >;
 };
-
-const syntheticTrack = generateSyntheticOval();
+const realTrack = Object.values(storedTracks['recorded-tracks'])[0] ?? null;
 
 const DEFAULT_SETTINGS: TrackMapWidgetSettings = {
   showLegend: true,
@@ -68,57 +41,41 @@ interface TrackMapStoryArgs extends TrackMapWidgetSettings {
 }
 
 const computeCars = (snap: TelemetrySnapshot): CarOnTrack[] => {
-  const carIdx = snap.carIdx;
-  const drivers = snap.sessionInfo?.DriverInfo?.Drivers ?? [];
-  const playerCarIdx = snap.sessionInfo?.DriverInfo?.DriverCarIdx ?? -1;
-  if (!carIdx || drivers.length === 0) return [];
-
-  return drivers
-    .filter((d) => {
-      const idx = d.CarIdx;
-      if (d.CarIsPaceCar === 1 || d.IsSpectator === 1) return false;
-      if (idx >= carIdx.car_idx_position.length) return false;
-      const pos = carIdx.car_idx_position[idx] ?? 0;
-      const pct = carIdx.car_idx_lap_dist_pct[idx] ?? -1;
-      return pos > 0 || pct >= 0;
-    })
-    .map((d): CarOnTrack => {
-      const idx = d.CarIdx;
-      return {
-        carIdx: idx,
-        carNumber: d.CarNumber ?? '',
-        carClassColor: d.CarClassColor
-          ? parseClassColor(d.CarClassColor)
-          : '#888888',
-        lapDistPct: carIdx.car_idx_lap_dist_pct[idx] ?? 0,
-        trackSurface: carIdx.car_idx_track_surface?.[idx] ?? -1,
-        isPlayer: idx === playerCarIdx,
-        position: carIdx.car_idx_position[idx] ?? 0,
-      };
-    });
+  const entries = computeDriverEntries(
+    snap.carIdx,
+    snap.sessionInfo?.DriverInfo ?? null
+  );
+  return entries.map((e) => ({
+    carIdx: e.carIdx,
+    carNumber: e.carNumber,
+    carClassColor: e.carClassColor,
+    carClassId: e.carClassId,
+    lapDistPct: e.lapDistPct,
+    trackSurface: e.trackSurface,
+    isPlayer: e.isPlayer,
+    position: e.position,
+    classPosition: e.classPosition,
+  }));
 };
 
 const computeClassColors = (snap: TelemetrySnapshot) => {
-  const drivers = snap.sessionInfo?.DriverInfo?.Drivers ?? [];
-  const map = new Map<string, string>();
-  for (const d of drivers) {
-    const rawClass =
-      d.CarClassShortName ||
-      (d.CarClassRelSpeed != null ? `Class ${d.CarClassRelSpeed}` : 'Class');
-    const name = formatClassShortName(
-      rawClass,
-      d.CarScreenName,
-      d.CarClassID ?? undefined
-    );
-    if (!map.has(name)) {
-      map.set(
-        name,
-        d.CarClassColor ? parseClassColor(d.CarClassColor) : '#888888'
-      );
+  const entries = computeDriverEntries(
+    snap.carIdx,
+    snap.sessionInfo?.DriverInfo ?? null
+  );
+  const seen = new Map<number, { name: string; color: string }>();
+  for (const e of entries) {
+    if (!seen.has(e.carClassId)) {
+      seen.set(e.carClassId, {
+        name: e.carClassShortName,
+        color: e.carClassColor,
+      });
     }
   }
-  return Array.from(map.entries()).map(([name, color]) => ({ name, color }));
+  return Array.from(seen.values());
 };
+
+const MOCK_SECTOR_TIMES: (number | null)[] = [31.423, 45.102, 29.851, null];
 
 const TrackMapWidgetStory = ({
   snapshot: snap,
@@ -139,13 +96,14 @@ const TrackMapWidgetStory = ({
         <TrackMapWidget
           cars={cars}
           classColors={classColors}
-          trackData={syntheticTrack}
+          trackData={realTrack}
           trackName="Lime Rock Park"
           isRecording={false}
           recordingProgress={0}
           playerYaw={undefined}
           settings={settings}
           sectors={snap.sessionInfo?.SplitTimeInfo?.Sectors}
+          sectorTimes={MOCK_SECTOR_TIMES}
         />
       </WidgetScaler>
     </div>
@@ -174,6 +132,7 @@ const TrackMapRecordingStory = ({
         playerYaw={undefined}
         settings={settings}
         sectors={undefined}
+        sectorTimes={[]}
       />
     </WidgetScaler>
   </div>
@@ -241,6 +200,10 @@ export const LegendLeft: Story = {
 
 export const NoLegend: Story = {
   args: { showLegend: false },
+};
+
+export const NoSectors: Story = {
+  args: { showSectors: false },
 };
 
 export const Recording: Story = {
