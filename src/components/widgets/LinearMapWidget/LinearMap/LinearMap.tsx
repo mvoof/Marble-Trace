@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { TRACK_SURFACE_ON_TRACK } from '../relative-utils';
-import type { RelativeEntry } from '../types';
+import { TRACK_SURFACE_ON_TRACK } from '../../RelativeWidget/relative-utils';
+import type { RelativeEntry } from '../../RelativeWidget/types';
 
 import styles from './LinearMap.module.scss';
 

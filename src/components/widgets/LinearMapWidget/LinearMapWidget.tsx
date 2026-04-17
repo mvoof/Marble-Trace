@@ -1,6 +1,6 @@
 import { WidgetPanel } from '../primitives';
 import type { LinearMapWidgetSettings } from '../../../store/widget-settings.store';
-import { LinearMap } from '../RelativeWidget/LinearMap/LinearMap';
+import { LinearMap } from './LinearMap/LinearMap';
 import type { RelativeEntry } from '../RelativeWidget/types';
 
 import styles from './LinearMapWidget.module.scss';
