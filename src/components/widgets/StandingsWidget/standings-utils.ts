@@ -9,28 +9,74 @@ export const NEAR_DQ_INCIDENT_THRESHOLD = 15;
 export const NO_CLASS_LABEL = 'No Class';
 export const NO_CLASS_COLOR = '#888888';
 
-const CLASS_CATEGORY_REGEX =
-  /\b(GTP|LMP1|LMP2|LMP3|GTE|GT3|GT4|GT2|TCR|CUP|MX-?5)\b/i;
+const BADGE_EXCEPTIONS: Record<string, string> = {
+  'Formula Vee': 'FVee',
+  'Ray FF1600': 'FF1600',
+  'Global Mazda MX-5 Cup': 'MX-5',
+  "Legends Ford '34 Coupe": 'Legends',
+  'Skip Barber Formula 2000': 'Skippy',
+  'Dirt Sprint Car': 'Sprint',
+  'Dirt Late Model': 'DLM',
+};
 
-const MAX_BADGE_LABEL_LENGTH = 6;
+const BRANDS_TO_STRIP = [
+  'Toyota ',
+  'Cadillac ',
+  'Porsche ',
+  'Ferrari ',
+  'BMW ',
+  'Mercedes-AMG ',
+  'Dallara ',
+  'Chevrolet ',
+  'Ford ',
+  'Aston Martin ',
+  'Audi ',
+  'McLaren ',
+  'Honda ',
+  'Hyundai ',
+  'Nissan ',
+  'Radical ',
+  'Renault ',
+  'Volkswagen ',
+];
 
-/**
- * Build a compact badge label from CarScreenNameShort.
- * Prefers a recognised racing category tag (GT3, LMP2, CUP, …); otherwise
- * falls back to the first word, truncated to fit a small badge.
- */
-export const shortenClassLabel = (screenNameShort: string): string => {
+const FLUFF_TO_STRIP = [
+  ' Racecar',
+  ' Cup',
+  ' Series',
+  ' Global',
+  ' Track',
+  ' Sprint',
+  ' Lite',
+];
+
+export const getCompactBadgeName = (screenNameShort: string): string => {
   if (!screenNameShort) return '—';
 
-  const match = CLASS_CATEGORY_REGEX.exec(screenNameShort);
+  if (BADGE_EXCEPTIONS[screenNameShort])
+    return BADGE_EXCEPTIONS[screenNameShort];
 
-  if (match) return match[1].toUpperCase();
+  let badge = screenNameShort;
 
-  const firstWord = screenNameShort.split(/\s+/)[0] ?? screenNameShort;
+  for (const brand of BRANDS_TO_STRIP) {
+    if (badge.startsWith(brand)) {
+      badge = badge.slice(brand.length);
+      break;
+    }
+  }
 
-  return firstWord.length <= MAX_BADGE_LABEL_LENGTH
-    ? firstWord
-    : firstWord.slice(0, MAX_BADGE_LABEL_LENGTH);
+  for (const fluff of FLUFF_TO_STRIP) {
+    badge = badge.replace(fluff, '');
+  }
+
+  badge = badge.trim();
+
+  if (badge.length > 8) {
+    const abbr = badge.match(/[A-Z0-9]/g)?.join('') ?? '';
+    if (abbr.length > 1 && abbr.length <= 5) return abbr;
+  }
+
+  return badge;
 };
 
 export const formatIRating = (ir: number): string => {
@@ -92,12 +138,13 @@ export const computeStandingsEntries = (
         carNumber: driver.CarNumber ?? '',
         carClassId: driver.CarClassID ?? -1,
         carClassShortName:
-          shortenClassLabel(driver.CarScreenNameShort ?? '') || NO_CLASS_LABEL,
+          getCompactBadgeName(driver.CarScreenNameShort ?? '') ||
+          NO_CLASS_LABEL,
         carClassColor: driver.CarClassColor
           ? parseClassColor(driver.CarClassColor)
           : NO_CLASS_COLOR,
         carScreenName: driver.CarScreenName ?? '',
-        carScreenNameShort: driver.CarScreenNameShort ?? '',
+        carScreenNameShort: driver.CarScreenNameShort || NO_CLASS_LABEL,
         tireCompound: ((): string => {
           const tireIdx = carIdx.car_idx_tire_compound?.[idx] ?? -1;
 

@@ -57,8 +57,8 @@ export const StandingsWidget = ({
           const first = driversInClass[0];
           return {
             classId,
-            className: first.carClassShortName,
-            classShortName: first.carClassShortName,
+            className: first.carScreenNameShort,
+            classShortName: first.carScreenNameShort,
             classColor: first.carClassColor,
             totalDrivers: driversInClass.length,
             classSof: computeClassSof(driversInClass),
