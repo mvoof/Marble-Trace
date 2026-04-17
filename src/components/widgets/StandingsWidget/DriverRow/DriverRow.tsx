@@ -135,6 +135,9 @@ export const DriverRow = observer(
     const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
     const nearDQ = driver.incidents >= NEAR_DQ_INCIDENT_THRESHOLD;
     const pos = showGroupHeaders ? driver.classPosition : driver.position;
+    const isLeader = showGroupHeaders
+      ? driver.classPosition === 1
+      : driver.position === 1;
 
     const rowClass = [
       styles.driverRow,
@@ -246,7 +249,7 @@ export const DriverRow = observer(
         )}
 
         <td className={`${styles.td} ${styles.tdRight}`}>
-          {driver.position === 1 ? (
+          {isLeader ? (
             <span className={styles.gapLeader}>Leader</span>
           ) : driver.f2Time > 0 ? (
             <span className={styles.gapValue}>+{driver.f2Time.toFixed(1)}</span>

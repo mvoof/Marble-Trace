@@ -13,8 +13,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: $space-md $space-lg;
-  margin: $space-md 0 $space-sm 0;
+  padding: 0.5em 0.75em;
+  margin: 0.5em 0 0.25em;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px);
@@ -23,17 +23,17 @@
 .classHeaderLeft {
   display: flex;
   align-items: center;
-  gap: $space-xl;
+  gap: 1em;
 }
 
 .classStats {
   display: flex;
-  gap: $space-md;
+  gap: 0.5em;
 }
 
 .className {
   font-weight: 900;
-  font-size: $font-size-md;
+  font-size: 0.875em;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -41,11 +41,11 @@
 .classBadge {
   display: flex;
   align-items: center;
-  gap: $space-md;
+  gap: 0.5em;
   background: rgba(0, 0, 0, 0.5);
-  padding: $space-xs $space-md;
+  padding: 0.125em 0.5em;
   border-radius: 4px;
-  font-size: $font-size-xs;
+  font-size: 0.625em;
   font-family: $font-mono;
   color: $color-text-muted;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -60,7 +60,7 @@
 .classHeaderLine {
   flex: 1;
   height: 1px;
-  margin-left: 1.5rem;
+  margin-left: 1.5em;
   background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), transparent);
 }
 
@@ -70,7 +70,7 @@
 }
 
 .separatorInner {
-  padding: $space-md;
+  padding: 0.5em;
   position: relative;
 }
 

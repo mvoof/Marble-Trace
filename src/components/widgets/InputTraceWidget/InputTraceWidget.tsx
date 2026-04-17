@@ -1,22 +1,24 @@
-import { observer } from 'mobx-react-lite';
-
-import { telemetryStore } from '../../../store/iracing';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import { CanvasTrace } from '../primitives/CanvasTrace';
 import type { CanvasTraceChannel } from '../primitives/CanvasTrace';
+import type { InputTraceSettings } from '../../../store/widget-settings.store';
 import { InputBars } from './InputBars/InputBars';
 
 import styles from './InputTraceWidget.module.scss';
 
-export const InputTraceWidget = observer(() => {
-  const frame = telemetryStore.carInputs;
-  const settings = widgetSettingsStore.getInputTraceSettings();
+interface InputTraceWidgetProps {
+  throttle: number;
+  brake: number;
+  clutch: number;
+  settings: InputTraceSettings;
+}
 
-  const throttle = frame?.throttle ?? 0;
-  const brake = frame?.brake ?? 0;
-  const clutch = frame?.clutch != null ? 1 - frame.clutch : 0;
-
+export const InputTraceWidget = ({
+  throttle,
+  brake,
+  clutch,
+  settings,
+}: InputTraceWidgetProps) => {
   const channels: CanvasTraceChannel[] = [];
 
   if (settings.showThrottle)
@@ -70,4 +72,4 @@ export const InputTraceWidget = observer(() => {
       )}
     </WidgetPanel>
   );
-});
+};

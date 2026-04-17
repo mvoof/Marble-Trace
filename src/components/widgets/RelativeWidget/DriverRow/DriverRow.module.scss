@@ -4,7 +4,7 @@
 .driverRow {
   display: flex;
   align-items: center;
-  padding: $space-xs $space-md;
+  padding: 0.125em 0.5em;
   position: relative;
   border-bottom: 1px solid rgba(39, 39, 42, 0.4);
   background: rgba(24, 24, 27, 0.2);
@@ -34,38 +34,38 @@
 .posBlock {
   display: flex;
   align-items: baseline;
-  gap: $space-xs;
-  width: 2.25rem;
-  margin-left: $space-sm;
+  gap: 0.125em;
+  width: 2.25em;
+  margin-left: 0.25em;
   flex-shrink: 0;
 }
 
 .driverPosition {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: rgba(113, 113, 122, 1);
   font-family: $font-mono;
 }
 
 .driverCarNumber {
   font-weight: 700;
-  font-size: $font-size-md;
+  font-size: 0.875em;
   font-family: $font-mono;
 }
 
 // Info block — single row: name + details inline
 .infoBlock {
   flex: 1 1 0;
-  margin-left: $space-sm;
+  margin-left: 0.25em;
   overflow: hidden;
   display: flex;
   align-items: center;
-  gap: $space-sm;
+  gap: 0.25em;
   justify-content: space-between;
 }
 
 .driverName {
   font-weight: 700;
-  font-size: $font-size-md;
+  font-size: 0.875em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -85,7 +85,7 @@
   border: 1px solid rgba(234, 179, 8, 0.3);
   padding: 1px 3px;
   border-radius: 4px;
-  font-size: 0.625rem;
+  font-size: 0.625em;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -96,8 +96,8 @@
 .details {
   display: flex;
   align-items: center;
-  gap: $space-xs;
-  font-size: $font-size-xs;
+  gap: 0.125em;
+  font-size: 0.625em;
   font-family: $font-mono;
   flex-shrink: 0;
 }
@@ -121,13 +121,13 @@
 .lapStatusLapping {
   color: $color-info;
   font-weight: 700;
-  font-size: 0.6875rem;
+  font-size: 0.6875em;
 }
 
 .lapStatusLapped {
   color: #f97316;
   font-weight: 700;
-  font-size: 0.6875rem;
+  font-size: 0.6875em;
 }
 
 // F2 Time (gap) block
@@ -136,15 +136,15 @@
   align-items: center;
   justify-content: flex-end;
   gap: 2px;
-  width: 4.25rem;
+  width: 4.25em;
   flex-shrink: 0;
-  padding-right: $space-xs;
+  padding-right: 0.125em;
 }
 
 .f2Time {
   font-family: $font-mono;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1em;
   text-align: right;
 }
 

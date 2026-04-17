@@ -27,13 +27,15 @@ import {
   type RadarVisibilityMode,
   type RadarBarDisplayMode,
   type StandingsWidgetSettings,
-  type StandingsFilterMode,
-  type RelativeWidgetSettings,
-  type RelativeLinearMapPosition,
   type TrackMapWidgetSettings,
   type TrackMapLegendPosition,
+  type TrackMapRotationMode,
+  type LinearMapWidgetSettings,
+  type LinearMapOrientation,
 } from '../../../../store/widget-settings.store';
 import { appSettingsStore } from '../../../../store/app-settings.store';
+import { emit } from '@tauri-apps/api/event';
+import { appDataDir } from '@tauri-apps/api/path';
 
 const { Title, Text } = Typography;
 
@@ -185,10 +187,10 @@ export const WidgetSettings = observer(
             </>
           )}
 
-          {widgetId === 'relative' && (
+          {widgetId === 'linear-map' && (
             <>
               <Divider style={{ margin: '8px 0' }} />
-              <RelativeSettingsPanel />
+              <LinearMapSettingsPanel />
             </>
           )}
 
@@ -608,32 +610,13 @@ const StandingsSettingsPanel = observer(() => {
             checked={settings.groupByClass}
             onChange={(v) => update({ groupByClass: v })}
             size="small"
-            disabled={settings.filterMode === 'around-player'}
           />
           <Text>Group by Class</Text>
         </Space>
 
         <Text type="secondary" style={{ fontSize: 11 }}>
-          Separate standings into class blocks. Disabled when Around Player
-          filter is active.
-        </Text>
-      </Flex>
-
-      <Flex vertical gap={4}>
-        <Text>Filter Mode</Text>
-
-        <Segmented
-          value={settings.filterMode}
-          options={[
-            { label: 'All', value: 'all' },
-            { label: 'Around Player', value: 'around-player' },
-          ]}
-          onChange={(v) => update({ filterMode: v as StandingsFilterMode })}
-        />
-
-        <Text type="secondary" style={{ fontSize: 11 }}>
-          All = whole field, player pinned at bottom if not visible. Around
-          Player = your row centered with neighbours.
+          Separate standings into class blocks. If player is not in the visible
+          top rows, they are always pinned at the bottom.
         </Text>
       </Flex>
 
@@ -752,65 +735,40 @@ const StandingsSettingsPanel = observer(() => {
   );
 });
 
-const RelativeSettingsPanel = observer(() => {
-  const settings = widgetSettingsStore.getRelativeSettings();
+const LinearMapSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getLinearMapSettings();
 
-  const update = (partial: Partial<RelativeWidgetSettings>) => {
-    widgetSettingsStore.updateCustomSettings('relative', {
-      relative: { ...settings, ...partial },
+  const update = (partial: Partial<LinearMapWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('linear-map', {
+      'linear-map': { ...settings, ...partial },
     });
   };
 
   return (
     <Flex vertical gap={12}>
       <Title level={5} style={{ margin: 0 }}>
-        Relative
+        Linear Map
       </Title>
 
       <Flex vertical gap={4}>
-        <Space>
-          <Switch
-            checked={settings.showLinearMap}
-            onChange={(v) => update({ showLinearMap: v })}
-            size="small"
-          />
-          <Text>Linear Map</Text>
-        </Space>
+        <Text>Orientation</Text>
 
-        <Text type="secondary" style={{ fontSize: 11 }}>
-          Shows a compact track strip with all cars relative to you.
-        </Text>
+        <Segmented
+          value={settings.orientation}
+          options={[
+            { label: 'Horizontal', value: 'horizontal' },
+            { label: 'Vertical', value: 'vertical' },
+          ]}
+          onChange={(v) => update({ orientation: v as LinearMapOrientation })}
+        />
       </Flex>
-
-      {settings.showLinearMap && (
-        <Flex vertical gap={4}>
-          <Text>Map Position</Text>
-
-          <Select
-            value={settings.linearMapPosition}
-            onChange={(v) =>
-              update({ linearMapPosition: v as RelativeLinearMapPosition })
-            }
-            options={[
-              { label: 'Top', value: 'top' },
-              { label: 'Bottom', value: 'bottom' },
-              { label: 'Left', value: 'left' },
-              { label: 'Right', value: 'right' },
-            ]}
-          />
-
-          <Text type="secondary" style={{ fontSize: 11 }}>
-            Which edge the linear map sticks to. The driver list always fills
-            the remaining space.
-          </Text>
-        </Flex>
-      )}
     </Flex>
   );
 });
 
 const TrackMapSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getTrackMapSettings();
+  const [tracksPath, setTracksPath] = useState<string | null>(null);
 
   const update = (partial: Partial<TrackMapWidgetSettings>) => {
     widgetSettingsStore.updateCustomSettings('track-map', {
@@ -818,11 +776,43 @@ const TrackMapSettingsPanel = observer(() => {
     });
   };
 
+  const handleRerecord = async () => {
+    await emit('track-map:clear');
+  };
+
+  const handleShowPath = async () => {
+    try {
+      const dir = await appDataDir();
+      setTracksPath(`${dir}tracks.json`);
+    } catch {
+      setTracksPath('Could not resolve path');
+    }
+  };
+
+  const handleCopyPath = async () => {
+    if (tracksPath) {
+      await navigator.clipboard.writeText(tracksPath);
+    }
+  };
+
   return (
     <Flex vertical gap={12}>
       <Title level={5} style={{ margin: 0 }}>
         Track Map
       </Title>
+
+      <Flex vertical gap={4}>
+        <Text>Map Rotation</Text>
+
+        <Segmented
+          value={settings.rotationMode}
+          options={[
+            { label: 'Fixed (North up)', value: 'fixed' },
+            { label: 'Heading up', value: 'heading-up' },
+          ]}
+          onChange={(v) => update({ rotationMode: v as TrackMapRotationMode })}
+        />
+      </Flex>
 
       <Space>
         <Switch
@@ -868,6 +858,40 @@ const TrackMapSettingsPanel = observer(() => {
         />
         <Text>Corner Numbers</Text>
       </Space>
+
+      <Divider style={{ margin: '4px 0' }} />
+
+      <Flex vertical gap={8}>
+        <Text>Track Data</Text>
+
+        <Button size="small" danger onClick={handleRerecord}>
+          Re-record current track
+        </Button>
+
+        <Text type="secondary" style={{ fontSize: 11 }}>
+          Clears the saved map for the current track and starts a new recording
+          on your next lap.
+        </Text>
+
+        {!tracksPath ? (
+          <Button size="small" onClick={handleShowPath}>
+            Show tracks.json path
+          </Button>
+        ) : (
+          <Flex vertical gap={4}>
+            <Text
+              type="secondary"
+              style={{ fontSize: 11, wordBreak: 'break-all' }}
+            >
+              {tracksPath}
+            </Text>
+
+            <Button size="small" onClick={handleCopyPath}>
+              Copy path
+            </Button>
+          </Flex>
+        )}
+      </Flex>
     </Flex>
   );
 });

@@ -12,6 +12,7 @@ interface WidgetContainerProps {
   designHeight: number;
   children: ReactNode;
   visible?: boolean;
+  adaptive?: boolean;
 }
 
 export const WidgetContainer = observer(
@@ -21,6 +22,7 @@ export const WidgetContainer = observer(
     designHeight,
     children,
     visible = true,
+    adaptive = false,
   }: WidgetContainerProps) => {
     const { dragMode } = appSettingsStore;
     const widget = widgetSettingsStore.getWidget(widgetId);
@@ -158,6 +160,7 @@ export const WidgetContainer = observer(
             designWidth={designWidth}
             designHeight={designHeight}
             background={background}
+            adaptive={adaptive}
           >
             {children}
           </WidgetScaler>

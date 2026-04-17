@@ -1,13 +1,7 @@
-import { useEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { runInAction } from 'mobx';
+
 import { SpeedWidget } from './SpeedWidget';
 import { WidgetScaler } from '../../WidgetScaler';
-import { telemetryStore } from '../../../store/iracing';
-import {
-  widgetSettingsStore,
-  DEFAULT_WIDGETS,
-} from '../../../store/widget-settings.store';
 import type { SpeedWidgetSettings } from '../../../store/widget-settings.store';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
@@ -16,6 +10,15 @@ const DESIGN_WIDTH = 290;
 const DESIGN_HEIGHT = 80;
 
 const realSnapshot = snapshot as TelemetrySnapshot;
+
+const DEFAULT_SETTINGS: SpeedWidgetSettings = {
+  focusMode: 'speed',
+  rpmColorTheme: 'custom',
+  rpmColorLow: '#22c55e',
+  rpmColorMid: '#eab308',
+  rpmColorHigh: '#ef4444',
+  rpmColorLimit: '#ff4d00',
+};
 
 interface SpeedWidgetStoryArgs extends SpeedWidgetSettings {
   snapshot: TelemetrySnapshot;
@@ -29,27 +32,14 @@ const SpeedWidgetStory = ({
   containerHeight,
   ...settings
 }: SpeedWidgetStoryArgs) => {
-  useEffect(() => {
-    if (widgetSettingsStore.widgets.length === 0) {
-      runInAction(() => {
-        widgetSettingsStore.widgets = [...DEFAULT_WIDGETS];
-      });
-    }
-    widgetSettingsStore.updateCustomSettings('speed', { speed: settings });
-  }, [settings]);
-
-  useEffect(() => {
-    if (snap.carDynamics) telemetryStore.updateCarDynamics(snap.carDynamics);
-    if (snap.carInputs) telemetryStore.updateCarInputs(snap.carInputs);
-    if (snap.carStatus) telemetryStore.updateCarStatus(snap.carStatus);
-    if (snap.environment) telemetryStore.updateEnvironment(snap.environment);
-    if (snap.lapTiming) telemetryStore.updateLapTiming(snap.lapTiming);
-    if (snap.session) telemetryStore.updateSession(snap.session);
-    if (snap.sessionInfo) telemetryStore.updateSessionInfo(snap.sessionInfo);
-    if (snap.carIdx) telemetryStore.updateCarIdx(snap.carIdx);
-
-    return () => telemetryStore.reset();
-  }, [snap]);
+  const frame = snap.carDynamics;
+  const driverInfo = snap.sessionInfo?.DriverInfo;
+  const speed = frame ? `${Math.round(frame.speed * 3.6)}` : '0';
+  const rpm = frame ? Math.round(frame.rpm) : 0;
+  const gear = frame?.gear ?? 0;
+  const shiftIndicatorPct = frame?.shift_indicator_pct ?? 0;
+  const maxShiftRpm =
+    driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
 
   return (
     <div style={{ width: containerWidth, height: containerHeight }}>
@@ -58,7 +48,15 @@ const SpeedWidgetStory = ({
         designHeight={DESIGN_HEIGHT}
         background="radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)"
       >
-        <SpeedWidget />
+        <SpeedWidget
+          speed={speed}
+          speedUnit="km/h"
+          rpm={rpm}
+          gear={gear}
+          shiftIndicatorPct={shiftIndicatorPct}
+          maxShiftRpm={maxShiftRpm}
+          settings={settings}
+        />
       </WidgetScaler>
     </div>
   );
@@ -120,12 +118,7 @@ const meta: Meta<SpeedWidgetStoryArgs> = {
   args: {
     containerWidth: DESIGN_WIDTH,
     containerHeight: DESIGN_HEIGHT,
-    focusMode: 'speed',
-    rpmColorTheme: 'custom',
-    rpmColorLow: '#22c55e',
-    rpmColorMid: '#eab308',
-    rpmColorHigh: '#ef4444',
-    rpmColorLimit: '#ff4d00',
+    ...DEFAULT_SETTINGS,
     snapshot: realSnapshot,
   },
 };

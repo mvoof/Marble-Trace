@@ -42,6 +42,7 @@ export const OverlayCanvas = observer(() => {
           component: WidgetComponent,
           designWidth,
           designHeight,
+          adaptive,
         } = variant;
 
         return (
@@ -51,6 +52,7 @@ export const OverlayCanvas = observer(() => {
             designWidth={designWidth}
             designHeight={designHeight}
             visible={visibilityMap[widget.id] ?? true}
+            adaptive={adaptive}
           >
             <WidgetComponent
               onVisibilityChange={(v) => handleVisibilityChange(widget.id, v)}

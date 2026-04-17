@@ -1,0 +1,74 @@
+import type { Meta, StoryObj } from '@storybook/react-vite';
+
+import { RelativeWidget } from './RelativeWidget';
+import { WidgetScaler } from '../../WidgetScaler';
+import { computeRelativeEntries } from './relative-utils';
+import type { RelativeEntry } from './types';
+import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
+import snapshot from '../../../../test-data/iracing-1776008424511.json';
+
+const DESIGN_WIDTH = 350;
+const DESIGN_HEIGHT = 400;
+
+const realSnapshot = snapshot as TelemetrySnapshot;
+
+interface RelativeStoryArgs {
+  snapshot: TelemetrySnapshot;
+}
+
+const RelativeWidgetStory = ({ snapshot: snap }: RelativeStoryArgs) => {
+  const entries: RelativeEntry[] = computeRelativeEntries(
+    snap.carIdx,
+    snap.sessionInfo?.DriverInfo ?? null
+  );
+
+  return (
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <WidgetScaler
+        designWidth={DESIGN_WIDTH}
+        designHeight={DESIGN_HEIGHT}
+        background="radial-gradient(circle, #0a0a0f 0%, #050508 100%)"
+        adaptive
+      >
+        <RelativeWidget entries={entries} />
+      </WidgetScaler>
+    </div>
+  );
+};
+
+const meta: Meta<RelativeStoryArgs> = {
+  title: 'Widgets/RelativeWidget',
+  component: RelativeWidgetStory,
+  parameters: {
+    layout: 'fullscreen',
+  },
+  argTypes: {
+    snapshot: {
+      table: { disable: true },
+    },
+  },
+  args: {
+    snapshot: realSnapshot,
+  },
+};
+
+export default meta;
+
+type Story = StoryObj<RelativeStoryArgs>;
+
+export const Default: Story = {};
+
+export const NoData: Story = {
+  args: {
+    snapshot: {
+      carIdx: null,
+      sessionInfo: null,
+      carDynamics: null,
+      carInputs: null,
+      carStatus: null,
+      lapTiming: null,
+      session: null,
+      environment: null,
+    } as unknown as TelemetrySnapshot,
+  },
+};

@@ -38,7 +38,7 @@ export interface RadarSettings {
   barDisplayMode?: RadarBarDisplayMode;
 }
 
-export type StandingsFilterMode = 'all' | 'around-player';
+export type StandingsFilterMode = 'all';
 
 export interface StandingsWidgetSettings {
   groupByClass: boolean;
@@ -57,20 +57,25 @@ export interface StandingsWidgetSettings {
   showPitStops: boolean;
 }
 
-export type RelativeLinearMapPosition = 'top' | 'bottom' | 'left' | 'right';
-
 export interface RelativeWidgetSettings {
-  showLinearMap: boolean;
-  linearMapPosition: RelativeLinearMapPosition;
+  placeholder?: never;
 }
 
 export type TrackMapLegendPosition = 'left' | 'right' | 'hidden';
+export type TrackMapRotationMode = 'fixed' | 'heading-up';
 
 export interface TrackMapWidgetSettings {
   showLegend: boolean;
   legendPosition: TrackMapLegendPosition;
   showSectors: boolean;
   showCornerNumbers: boolean;
+  rotationMode: TrackMapRotationMode;
+}
+
+export type LinearMapOrientation = 'horizontal' | 'vertical';
+
+export interface LinearMapWidgetSettings {
+  orientation: LinearMapOrientation;
 }
 
 export interface WidgetCustomSettings {
@@ -81,6 +86,7 @@ export interface WidgetCustomSettings {
   standings?: StandingsWidgetSettings;
   relative?: RelativeWidgetSettings;
   'track-map'?: TrackMapWidgetSettings;
+  'linear-map'?: LinearMapWidgetSettings;
 }
 
 export interface WidgetConfig {
@@ -223,10 +229,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     backgroundColorEdge: '#050508',
     hotkey: 'F4',
     customSettings: {
-      relative: {
-        showLinearMap: true,
-        linearMapPosition: 'top',
-      },
+      relative: {},
     },
   },
   {
@@ -246,6 +249,24 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         legendPosition: 'right',
         showSectors: true,
         showCornerNumbers: true,
+        rotationMode: 'heading-up',
+      },
+    },
+  },
+  {
+    id: 'linear-map',
+    label: 'Linear Map',
+    enabled: false,
+    x: 50,
+    y: 820,
+    width: 400,
+    height: 40,
+    backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
+    hotkey: '',
+    customSettings: {
+      'linear-map': {
+        orientation: 'horizontal',
       },
     },
   },
@@ -373,6 +394,9 @@ class WidgetSettingsStore {
       widget.y = y;
 
       this.debouncedSave();
+
+      emit('widget-settings-changed', { id, field: 'x', value: x });
+      emit('widget-settings-changed', { id, field: 'y', value: y });
     }
   }
 
@@ -384,6 +408,9 @@ class WidgetSettingsStore {
       widget.height = height;
 
       this.debouncedSave();
+
+      emit('widget-settings-changed', { id, field: 'width', value: width });
+      emit('widget-settings-changed', { id, field: 'height', value: height });
     }
   }
 
@@ -423,8 +450,9 @@ class WidgetSettingsStore {
     const saved = (widget?.customSettings?.standings ?? {}) as Partial<
       StandingsWidgetSettings & {
         groupMode?: 'overall' | 'class';
-        viewMode?: 'full' | 'around-player' | 'limit-pin';
+        viewMode?: string;
         maxRowsPerClass?: number;
+        filterMode?: string;
       }
     >;
 
@@ -432,11 +460,7 @@ class WidgetSettingsStore {
       saved.groupByClass ??
       (saved.groupMode ? saved.groupMode === 'class' : true);
 
-    const migratedFilterMode: StandingsFilterMode =
-      (saved.filterMode as string) === 'top-and-pin'
-        ? 'all'
-        : (saved.filterMode ??
-          (saved.viewMode === 'around-player' ? 'around-player' : 'all'));
+    const migratedFilterMode: StandingsFilterMode = 'all';
 
     return {
       groupByClass: migratedGroupByClass,
@@ -455,23 +479,27 @@ class WidgetSettingsStore {
   }
 
   getRelativeSettings(): RelativeWidgetSettings {
-    const widget = this.getWidget('relative');
-    return (
-      widget?.customSettings?.relative ?? {
-        showLinearMap: true,
-        linearMapPosition: 'top',
-      }
-    );
+    return {};
   }
 
   getTrackMapSettings(): TrackMapWidgetSettings {
     const widget = this.getWidget('track-map');
+    const saved: Partial<TrackMapWidgetSettings> =
+      widget?.customSettings?.['track-map'] ?? {};
+    return {
+      showLegend: saved.showLegend ?? true,
+      legendPosition: saved.legendPosition ?? 'right',
+      showSectors: saved.showSectors ?? true,
+      showCornerNumbers: saved.showCornerNumbers ?? true,
+      rotationMode: saved.rotationMode ?? 'heading-up',
+    };
+  }
+
+  getLinearMapSettings(): LinearMapWidgetSettings {
+    const widget = this.getWidget('linear-map');
     return (
-      widget?.customSettings?.['track-map'] ?? {
-        showLegend: true,
-        legendPosition: 'right',
-        showSectors: true,
-        showCornerNumbers: true,
+      widget?.customSettings?.['linear-map'] ?? {
+        orientation: 'horizontal',
       }
     );
   }

@@ -1,0 +1,30 @@
+import { WidgetPanel } from '../primitives';
+import type { LinearMapWidgetSettings } from '../../../store/widget-settings.store';
+import { LinearMap } from '../RelativeWidget/LinearMap/LinearMap';
+import type { RelativeEntry } from '../RelativeWidget/types';
+
+import styles from './LinearMapWidget.module.scss';
+
+interface LinearMapWidgetProps {
+  entries: RelativeEntry[];
+  settings: LinearMapWidgetSettings;
+}
+
+export const LinearMapWidget = ({
+  entries,
+  settings,
+}: LinearMapWidgetProps) => {
+  const player = entries.find((e) => e.isPlayer) ?? null;
+  const isHorizontal = settings.orientation === 'horizontal';
+
+  return (
+    <WidgetPanel className={styles.linearMapWidget} gap={0}>
+      <LinearMap
+        entries={entries}
+        player={player}
+        position={isHorizontal ? 'bottom' : 'right'}
+        isHorizontal={isHorizontal}
+      />
+    </WidgetPanel>
+  );
+};

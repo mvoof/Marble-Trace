@@ -1,12 +1,3 @@
-export interface PlaceholderEntry {
-  isPlaceholder: true;
-  key: string;
-}
-
-export const isPlaceholder = (
-  e: RelativeEntry | PlaceholderEntry
-): e is PlaceholderEntry => 'isPlaceholder' in e;
-
 export interface RelativeEntry {
   carIdx: number;
   userName: string;

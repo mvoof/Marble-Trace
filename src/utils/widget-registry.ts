@@ -1,12 +1,13 @@
 import React from 'react';
-import { TelemetryDebugWidget } from '../components/widgets/TelemetryDebugWidget';
-import { SpeedWidget } from '../components/widgets/SpeedWidget';
-import { InputTraceWidget } from '../components/widgets/InputTraceWidget';
-import { ProximityRadarWidget } from '../components/widgets/ProximityRadarWidget';
-import { RadarBarWidget } from '../components/widgets/RadarBarWidget';
-import { StandingsWidget } from '../components/widgets/StandingsWidget';
-import { RelativeWidget } from '../components/widgets/RelativeWidget';
-import { TrackMapWidget } from '../components/widgets/TrackMapWidget';
+import { TelemetryDebugWidgetContainer } from '../components/widgets/TelemetryDebugWidget/TelemetryDebugWidgetContainer';
+import { SpeedWidgetContainer } from '../components/widgets/SpeedWidget/SpeedWidgetContainer';
+import { InputTraceWidgetContainer } from '../components/widgets/InputTraceWidget/InputTraceWidgetContainer';
+import { ProximityRadarWidgetContainer } from '../components/widgets/ProximityRadarWidget/ProximityRadarWidgetContainer';
+import { RadarBarWidgetContainer } from '../components/widgets/RadarBarWidget/RadarBarWidgetContainer';
+import { StandingsWidgetContainer } from '../components/widgets/StandingsWidget/StandingsWidgetContainer';
+import { RelativeWidgetContainer } from '../components/widgets/RelativeWidget/RelativeWidgetContainer';
+import { TrackMapWidgetContainer } from '../components/widgets/TrackMapWidget/TrackMapWidgetContainer';
+import { LinearMapWidgetContainer } from '../components/widgets/LinearMapWidget/LinearMapWidgetContainer';
 import { widgetSettingsStore } from '../store/widget-settings.store';
 
 export interface WidgetVariant {
@@ -15,6 +16,8 @@ export interface WidgetVariant {
   }>;
   designWidth: number;
   designHeight: number;
+  /** Use adaptive font-size scaling instead of transform: scale() */
+  adaptive?: boolean;
 }
 
 export interface WidgetEntry {
@@ -27,7 +30,7 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     defaultVariant: 'default',
     variants: {
       default: {
-        component: TelemetryDebugWidget,
+        component: TelemetryDebugWidgetContainer,
         designWidth: 400,
         designHeight: 700,
       },
@@ -38,7 +41,7 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     defaultVariant: 'default',
     variants: {
       default: {
-        component: SpeedWidget,
+        component: SpeedWidgetContainer,
         designWidth: 290,
         designHeight: 80,
       },
@@ -49,12 +52,12 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     defaultVariant: 'horizontal',
     variants: {
       horizontal: {
-        component: InputTraceWidget,
+        component: InputTraceWidgetContainer,
         designWidth: 400,
         designHeight: 220,
       },
       vertical: {
-        component: InputTraceWidget,
+        component: InputTraceWidgetContainer,
         designWidth: 400,
         designHeight: 110,
       },
@@ -65,7 +68,7 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     defaultVariant: 'default',
     variants: {
       default: {
-        component: ProximityRadarWidget,
+        component: ProximityRadarWidgetContainer,
         designWidth: 200,
         designHeight: 300,
       },
@@ -76,7 +79,7 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     defaultVariant: 'default',
     variants: {
       default: {
-        component: RadarBarWidget,
+        component: RadarBarWidgetContainer,
         designWidth: 800,
         designHeight: 380,
       },
@@ -87,9 +90,10 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     defaultVariant: 'default',
     variants: {
       default: {
-        component: StandingsWidget,
+        component: StandingsWidgetContainer,
         designWidth: 750,
         designHeight: 400,
+        adaptive: true,
       },
     },
   },
@@ -98,9 +102,10 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     defaultVariant: 'default',
     variants: {
       default: {
-        component: RelativeWidget,
+        component: RelativeWidgetContainer,
         designWidth: 350,
         designHeight: 400,
+        adaptive: true,
       },
     },
   },
@@ -109,9 +114,20 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     defaultVariant: 'default',
     variants: {
       default: {
-        component: TrackMapWidget,
+        component: TrackMapWidgetContainer,
         designWidth: 400,
         designHeight: 400,
+      },
+    },
+  },
+
+  'linear-map': {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: LinearMapWidgetContainer,
+        designWidth: 400,
+        designHeight: 40,
       },
     },
   },
