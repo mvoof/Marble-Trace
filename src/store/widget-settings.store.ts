@@ -255,7 +255,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         legendPosition: 'right',
         showSectors: true,
         showCornerNumbers: true,
-        rotationMode: 'heading-up',
+        rotationMode: 'fixed',
       },
     },
   },
@@ -504,7 +504,7 @@ class WidgetSettingsStore {
       legendPosition: saved.legendPosition ?? 'right',
       showSectors: saved.showSectors ?? true,
       showCornerNumbers: saved.showCornerNumbers ?? true,
-      rotationMode: saved.rotationMode ?? 'heading-up',
+      rotationMode: saved.rotationMode ?? 'fixed',
     };
   }
 
