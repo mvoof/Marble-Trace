@@ -1,8 +1,9 @@
 import { ChevronUp, ChevronDown, Minus } from 'lucide-react';
 import { formatLapTime } from '../../../../utils/telemetry-format';
 import {
-  shortenClassName,
+  shortenClassLabel,
   formatBrand,
+  NO_CLASS_COLOR,
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
   NEAR_DQ_INCIDENT_THRESHOLD,
@@ -204,9 +205,12 @@ export const DriverRow = ({
         <td className={`${styles.td} ${styles.tdCenter}`}>
           <span
             className={styles.classBadgeInline}
-            style={{ backgroundColor: driver.carClassColor }}
+            style={{
+              backgroundColor: driver.carClassColor || NO_CLASS_COLOR,
+            }}
+            title={driver.carScreenNameShort || 'No Class'}
           >
-            {shortenClassName(driver.carClassShortName)}
+            {shortenClassLabel(driver.carScreenNameShort)}
           </span>
         </td>
       )}

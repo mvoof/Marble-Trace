@@ -1,17 +1,32 @@
 import type { CarIdxFrame, DriverInfoData } from '../../../types/bindings';
-import {
-  parseClassColor,
-  fallbackClassColor,
-} from '../../../utils/class-color';
+import { parseClassColor } from '../../../utils/class-color';
 import type { DriverEntry } from './types';
 
 export const TRACK_SURFACE_OFF_TRACK = 0;
 export const TRACK_SURFACE_IN_PIT_STALL = 1;
 export const NEAR_DQ_INCIDENT_THRESHOLD = 15;
 
-export const shortenClassName = (name: string): string => {
-  if (name.length <= 6) return name;
-  return name.split(' ')[0] ?? name;
+export const NO_CLASS_LABEL = 'No Class';
+export const NO_CLASS_COLOR = '#888888';
+
+const CLASS_CATEGORY_REGEX =
+  /\b(GTP|LMP1|LMP2|LMP3|GTE|GT3|GT4|GT2|TCR|CUP|MX-?5)\b/i;
+
+const MAX_BADGE_LABEL_LENGTH = 6;
+
+/**
+ * Build a compact badge label from CarScreenNameShort.
+ * Prefers a recognised racing category tag (GT3, LMP2, CUP, …); otherwise
+ * falls back to the first word, truncated to fit a small badge.
+ */
+export const shortenClassLabel = (screenNameShort: string): string => {
+  if (!screenNameShort) return '—';
+  const match = CLASS_CATEGORY_REGEX.exec(screenNameShort);
+  if (match) return match[1].toUpperCase();
+  const firstWord = screenNameShort.split(/\s+/)[0] ?? screenNameShort;
+  return firstWord.length <= MAX_BADGE_LABEL_LENGTH
+    ? firstWord
+    : firstWord.slice(0, MAX_BADGE_LABEL_LENGTH);
 };
 
 export const formatIRating = (ir: number): string => {
@@ -63,8 +78,9 @@ export const computeStandingsEntries = (
         carClassShortName: driver.CarClassShortName ?? '',
         carClassColor: driver.CarClassColor
           ? parseClassColor(driver.CarClassColor)
-          : fallbackClassColor(driver.CarClassID ?? -1),
+          : NO_CLASS_COLOR,
         carScreenName: driver.CarScreenName ?? '',
+        carScreenNameShort: driver.CarScreenNameShort ?? '',
         tireCompound: ((): string => {
           const tireIdx = carIdx.car_idx_tire_compound?.[idx] ?? -1;
           if (tireIdx < 0) return '';

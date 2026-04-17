@@ -6,6 +6,7 @@ export interface DriverEntry {
   carClassShortName: string;
   carClassColor: string;
   carScreenName: string;
+  carScreenNameShort: string;
   /** TireCompoundType label resolved via DriverInfo.DriverTires (e.g. Soft/Wet) */
   tireCompound: string;
   position: number;
