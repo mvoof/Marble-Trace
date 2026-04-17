@@ -21,9 +21,13 @@ const MAX_BADGE_LABEL_LENGTH = 6;
  */
 export const shortenClassLabel = (screenNameShort: string): string => {
   if (!screenNameShort) return '—';
+
   const match = CLASS_CATEGORY_REGEX.exec(screenNameShort);
+
   if (match) return match[1].toUpperCase();
+
   const firstWord = screenNameShort.split(/\s+/)[0] ?? screenNameShort;
+
   return firstWord.length <= MAX_BADGE_LABEL_LENGTH
     ? firstWord
     : firstWord.slice(0, MAX_BADGE_LABEL_LENGTH);
@@ -31,17 +35,21 @@ export const shortenClassLabel = (screenNameShort: string): string => {
 
 export const formatIRating = (ir: number): string => {
   if (ir >= 1000) return `${(ir / 1000).toFixed(1)}k`;
+
   return ir.toString();
 };
 
 export const computeClassSof = (drivers: DriverEntry[]): number => {
   if (drivers.length === 0) return 0;
+
   const total = drivers.reduce((sum, d) => sum + d.iRating, 0);
+
   return Math.round(total / drivers.length);
 };
 
 export const formatBrand = (screenName: string): string => {
   if (!screenName) return '';
+
   return screenName.split(' ')[0] ?? screenName;
 };
 
@@ -51,6 +59,7 @@ export const computeStandingsEntries = (
   startPositions: Map<number, { overall: number; class: number }>
 ): DriverEntry[] => {
   const allDrivers = driverInfo?.Drivers ?? [];
+
   if (!carIdx || allDrivers.length === 0) return [];
 
   const playerCarIdx = driverInfo?.DriverCarIdx ?? -1;
@@ -59,23 +68,31 @@ export const computeStandingsEntries = (
   return allDrivers
     .filter((driver) => {
       const idx = driver.CarIdx;
+
       if (driver.CarIsPaceCar === 1 || driver.IsSpectator === 1) return false;
+
       if (idx >= carIdx.car_idx_position.length) return false;
+
       if (idx === playerCarIdx) return true;
+
       const pos = carIdx.car_idx_position[idx] ?? 0;
       const lapDistPct = carIdx.car_idx_lap_dist_pct[idx] ?? -1;
+
       if (pos > 0) return true;
       if (lapDistPct >= 0) return true;
+
       return false;
     })
     .map((driver): DriverEntry => {
       const idx = driver.CarIdx;
+
       return {
         carIdx: idx,
         userName: driver.UserName,
         carNumber: driver.CarNumber ?? '',
         carClassId: driver.CarClassID ?? -1,
-        carClassShortName: driver.CarClassShortName ?? '',
+        carClassShortName:
+          shortenClassLabel(driver.CarScreenNameShort ?? '') || NO_CLASS_LABEL,
         carClassColor: driver.CarClassColor
           ? parseClassColor(driver.CarClassColor)
           : NO_CLASS_COLOR,
@@ -83,7 +100,9 @@ export const computeStandingsEntries = (
         carScreenNameShort: driver.CarScreenNameShort ?? '',
         tireCompound: ((): string => {
           const tireIdx = carIdx.car_idx_tire_compound?.[idx] ?? -1;
+
           if (tireIdx < 0) return '';
+
           return (
             driverTires.find((t) => t.TireIndex === tireIdx)
               ?.TireCompoundType ?? ''
@@ -110,6 +129,7 @@ export const computeStandingsEntries = (
     .sort((a, b) => {
       const posA = a.position > 0 ? a.position : a.startPosOverall || 999;
       const posB = b.position > 0 ? b.position : b.startPosOverall || 999;
+
       return posA - posB;
     });
 };

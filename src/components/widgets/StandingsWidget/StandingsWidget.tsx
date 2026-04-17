@@ -7,11 +7,7 @@ import type { StandingsWidgetSettings } from '../../../store/widget-settings.sto
 
 import { SessionHeader } from './SessionHeader/SessionHeader';
 import { ClassGroup } from './ClassGroup/ClassGroup';
-import {
-  computeClassSof,
-  NO_CLASS_COLOR,
-  NO_CLASS_LABEL,
-} from './standings-utils';
+import { computeClassSof } from './standings-utils';
 import { isSeparator } from './types';
 import type { DriverEntry, DriverGroup, SeparatorEntry } from './types';
 
@@ -58,16 +54,12 @@ export const StandingsWidget = ({
 
       groups = Array.from(classMap.entries()).map(
         ([classId, driversInClass]) => {
-          const screenNameShort =
-            driversInClass[0]?.carScreenNameShort?.trim() ?? '';
-          const rawColor = driversInClass[0]?.carClassColor ?? '';
-          const displayName = screenNameShort || NO_CLASS_LABEL;
-          const displayColor = rawColor || NO_CLASS_COLOR;
+          const first = driversInClass[0];
           return {
             classId,
-            className: displayName,
-            classShortName: displayName,
-            classColor: displayColor,
+            className: first.carClassShortName,
+            classShortName: first.carClassShortName,
+            classColor: first.carClassColor,
             totalDrivers: driversInClass.length,
             classSof: computeClassSof(driversInClass),
             drivers: driversInClass.sort(
