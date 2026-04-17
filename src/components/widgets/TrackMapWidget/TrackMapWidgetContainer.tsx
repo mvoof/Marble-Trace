@@ -4,13 +4,9 @@ import { listen } from '@tauri-apps/api/event';
 
 import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import {
-  parseClassColor,
-  formatClassShortName,
-} from '../../../utils/class-color';
+import { computeDriverEntries } from '../widget-utils';
 import { TrackRecorder } from '../../../utils/track-recorder';
 import type { TrackPoint } from '../../../utils/track-recorder';
-import type { Driver } from '../../../types/bindings';
 
 import { TrackMapWidget } from './TrackMapWidget';
 import type { CarOnTrack, StoredTracks } from './types';
@@ -38,11 +34,6 @@ export const TrackMapWidgetContainer = observer(() => {
   const trackId = weekendInfo?.TrackID?.toString() ?? '';
   const trackName = weekendInfo?.TrackDisplayName ?? '';
   const trackConfig = weekendInfo?.TrackConfigName ?? '';
-
-  const drivers = useMemo(
-    (): Driver[] => driverInfo?.Drivers ?? [],
-    [driverInfo?.Drivers]
-  );
 
   const recorderRef = useRef(new TrackRecorder());
   const hasSavedRef = useRef(false);
@@ -178,57 +169,39 @@ export const TrackMapWidgetContainer = observer(() => {
     return carDynamics.yaw ?? undefined;
   }, [settings.rotationMode, playerCarIdx, carDynamics]);
 
-  const cars = useMemo((): CarOnTrack[] => {
-    if (!carIdx || drivers.length === 0) return [];
+  const driverEntries = useMemo(
+    () => computeDriverEntries(carIdx, driverInfo),
+    [carIdx, driverInfo]
+  );
 
-    return drivers
-      .filter((d) => {
-        const idx = d.CarIdx;
-        if (d.CarIsPaceCar === 1 || d.IsSpectator === 1) return false;
-        if (idx >= carIdx.car_idx_position.length) return false;
-        const pos = carIdx.car_idx_position[idx] ?? 0;
-        const pct = carIdx.car_idx_lap_dist_pct[idx] ?? -1;
-        return pos > 0 || pct >= 0;
-      })
-      .map((d): CarOnTrack => {
-        const idx = d.CarIdx;
-        return {
-          carIdx: idx,
-          carNumber: d.CarNumber ?? '',
-          carClassColor: d.CarClassColor
-            ? parseClassColor(d.CarClassColor)
-            : '#888888',
-          lapDistPct: carIdx.car_idx_lap_dist_pct[idx] ?? 0,
-          trackSurface: carIdx.car_idx_track_surface?.[idx] ?? -1,
-          isPlayer: idx === playerCarIdx,
-          position: carIdx.car_idx_position[idx] ?? 0,
-        };
-      });
-  }, [carIdx, drivers, playerCarIdx]);
+  const cars = useMemo(
+    (): CarOnTrack[] =>
+      driverEntries.map((e) => ({
+        carIdx: e.carIdx,
+        carNumber: e.carNumber,
+        carClassColor: e.carClassColor,
+        carClassId: e.carClassId,
+        lapDistPct: e.lapDistPct,
+        trackSurface: e.trackSurface,
+        isPlayer: e.isPlayer,
+        position: e.position,
+        classPosition: e.classPosition,
+      })),
+    [driverEntries]
+  );
 
   const classColors = useMemo(() => {
-    const map = new Map<string, string>();
-
-    for (const d of drivers) {
-      const rawClass =
-        d.CarClassShortName ||
-        (d.CarClassRelSpeed != null ? `Class ${d.CarClassRelSpeed}` : 'Class');
-      const name = formatClassShortName(
-        rawClass,
-        d.CarScreenName,
-        d.CarClassID ?? undefined
-      );
-
-      if (!map.has(name)) {
-        map.set(
-          name,
-          d.CarClassColor ? parseClassColor(d.CarClassColor) : '#888888'
-        );
+    const seen = new Map<number, { name: string; color: string }>();
+    for (const e of driverEntries) {
+      if (!seen.has(e.carClassId)) {
+        seen.set(e.carClassId, {
+          name: e.carClassShortName,
+          color: e.carClassColor,
+        });
       }
     }
-
-    return Array.from(map.entries()).map(([name, color]) => ({ name, color }));
-  }, [drivers]);
+    return Array.from(seen.values());
+  }, [driverEntries]);
 
   return (
     <TrackMapWidget

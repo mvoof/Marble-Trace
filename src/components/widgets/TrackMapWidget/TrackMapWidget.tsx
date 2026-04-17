@@ -74,7 +74,7 @@ export const TrackMapWidget = ({
         viewBox={trackData.viewBox}
         points={trackData.points}
         cars={cars}
-        sectors={sectors}
+        sectors={settings.showSectors ? sectors : null}
         playerYaw={playerYaw}
       />
     </WidgetPanel>

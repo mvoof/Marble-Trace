@@ -4,10 +4,12 @@ export interface CarOnTrack {
   carIdx: number;
   carNumber: string;
   carClassColor: string;
+  carClassId: number;
   lapDistPct: number;
   trackSurface: number;
   isPlayer: boolean;
   position: number;
+  classPosition: number;
 }
 
 export interface StoredTrackData {

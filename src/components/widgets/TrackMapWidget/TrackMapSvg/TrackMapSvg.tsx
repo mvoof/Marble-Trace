@@ -1,9 +1,18 @@
+import { useRef, useState, useEffect } from 'react';
 import type { TrackPoint } from '../../../../utils/track-recorder';
 import { getPointAtPct } from '../../../../utils/track-recorder';
 import type { Sector } from '../../../../types/bindings';
 import type { CarOnTrack } from '../types';
 
 import styles from './TrackMapSvg.module.scss';
+
+const SECTOR_ARC_COLORS = [
+  '#eab308',
+  '#3b82f6',
+  '#a855f7',
+  '#10b981',
+  '#ef4444',
+];
 
 interface TrackMapSvgProps {
   svgPath: string;
@@ -29,6 +38,19 @@ export const TrackMapSvg = ({
   const rotationDeg =
     playerYaw != null ? playerYaw * (180 / Math.PI) : undefined;
 
+  const pathRef = useRef<SVGPathElement>(null);
+  const [pathLength, setPathLength] = useState(0);
+
+  useEffect(() => {
+    if (pathRef.current) {
+      setPathLength(pathRef.current.getTotalLength());
+    }
+  }, [svgPath]);
+
+  const validSectors = sectors?.filter(
+    (s) => s.SectorStartPct != null && s.SectorNum != null
+  );
+
   return (
     <svg viewBox={viewBox} className={styles.svgContainer}>
       <g
@@ -51,6 +73,7 @@ export const TrackMapSvg = ({
 
         {/* Track surface */}
         <path
+          ref={pathRef}
           d={svgPath}
           fill="none"
           stroke="#0f172a"
@@ -59,39 +82,90 @@ export const TrackMapSvg = ({
           strokeLinecap="round"
         />
 
-        {/* Sector markers */}
-        {points.length > 0 &&
-          sectors?.map((sector) => {
-            if (sector.SectorStartPct == null || sector.SectorNum == null)
-              return null;
-
-            const { x, y } = getPointAtPct(points, sector.SectorStartPct);
+        {/* Sector colored arcs */}
+        {pathLength > 0 &&
+          validSectors?.map((sector, i) => {
+            const nextSector = validSectors[i + 1];
+            const endPct = nextSector?.SectorStartPct ?? 1.0;
+            const startDist = (sector.SectorStartPct ?? 0) * pathLength;
+            const sectorLen =
+              (endPct - (sector.SectorStartPct ?? 0)) * pathLength;
+            const color =
+              SECTOR_ARC_COLORS[
+                ((sector.SectorNum ?? 1) - 1) % SECTOR_ARC_COLORS.length
+              ];
 
             return (
-              <g key={sector.SectorNum} transform={`translate(${x}, ${y})`}>
-                <circle
-                  r="6"
-                  fill="rgba(255,255,255,0.15)"
-                  stroke="rgba(255,255,255,0.5)"
-                  strokeWidth="1.5"
-                />
-                <text
-                  textAnchor="middle"
-                  dy="-12"
-                  className={styles.sectorLabel}
-                >
-                  S{sector.SectorNum}
-                </text>
+              <path
+                key={`arc-${sector.SectorNum}`}
+                d={svgPath}
+                fill="none"
+                stroke={color}
+                strokeWidth="2.5"
+                strokeLinecap="butt"
+                strokeDasharray={`0 ${startDist} ${sectorLen} ${pathLength}`}
+                className={styles.sectorArc}
+              />
+            );
+          })}
+
+        {/* Sector direction arrows */}
+        {points.length > 0 &&
+          validSectors?.map((sector) => {
+            const pct = sector.SectorStartPct ?? 0;
+            const color =
+              SECTOR_ARC_COLORS[
+                ((sector.SectorNum ?? 1) - 1) % SECTOR_ARC_COLORS.length
+              ];
+            const { x, y } = getPointAtPct(points, pct);
+            const next = getPointAtPct(points, Math.min(pct + 0.01, 0.999));
+            const angle = Math.atan2(next.y - y, next.x - x) * (180 / Math.PI);
+
+            return (
+              <g
+                key={`arrow-${sector.SectorNum}`}
+                transform={`translate(${x},${y}) rotate(${angle})`}
+              >
+                <polygon points="-5,-4 6,0 -5,4" fill={color} opacity="0.9" />
               </g>
             );
           })}
+
+        {/* Start/Finish marker */}
+        {points.length > 0 &&
+          (() => {
+            const { x, y } = getPointAtPct(points, 0);
+            const next = getPointAtPct(points, 0.01);
+            const angle = Math.atan2(next.y - y, next.x - x) * (180 / Math.PI);
+            return (
+              <g transform={`translate(${x},${y}) rotate(${angle})`}>
+                <line
+                  x1="0"
+                  y1="-14"
+                  x2="0"
+                  y2="14"
+                  stroke="white"
+                  strokeWidth="3"
+                  opacity="0.85"
+                />
+                <text
+                  x="0"
+                  y="-18"
+                  textAnchor="middle"
+                  className={styles.sfLabel}
+                >
+                  S/F
+                </text>
+              </g>
+            );
+          })()}
 
         {/* Cars */}
         {points.length > 0 &&
           cars.map((car) => {
             const { x, y } = getPointAtPct(points, car.lapDistPct);
-            const isP1 = car.position === 1;
-            const showLabel = car.isPlayer || isP1;
+            const isClassLeader = car.classPosition === 1 && !car.isPlayer;
+            const showLabel = car.isPlayer || isClassLeader;
 
             return (
               <g key={car.carIdx} transform={`translate(${x}, ${y})`}>
