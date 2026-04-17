@@ -6,18 +6,11 @@ import {
   TRACK_SURFACE_OFF_TRACK,
   NEAR_DQ_INCIDENT_THRESHOLD,
 } from '../../widget-utils';
+import { PitBadge, ClassBadge, LicenseBadge } from '../../primitives';
 import type { DriverEntry } from '../../widget-utils';
 import type { StandingsWidgetSettings } from '../../../../store/widget-settings.store';
 
 import styles from './DriverRow.module.scss';
-
-const LICENSE_CLASS_MAP: Record<string, string> = {
-  A: styles.licA,
-  B: styles.licB,
-  C: styles.licC,
-  D: styles.licD,
-  R: styles.licR,
-};
 
 const TIRE_CLASS_MAP: Record<string, string> = {
   S: styles.tireSoft,
@@ -31,20 +24,6 @@ const TireBadge = ({ tire }: { tire: string }) => {
   const code = tire.charAt(0).toUpperCase();
   const cls = TIRE_CLASS_MAP[code] ?? styles.tireMed;
   return <span className={`${styles.tireBadge} ${cls}`}>{code}</span>;
-};
-
-const LicenseBadge = ({ licString }: { licString: string }) => {
-  const parts = licString.split(' ');
-  const licClass = parts[0] ?? '';
-  const rating = parts[1] ?? '';
-  const classStyle = LICENSE_CLASS_MAP[licClass] ?? styles.licR;
-
-  return (
-    <span className={styles.licenseBadge}>
-      <span className={`${styles.licenseClass} ${classStyle}`}>{licClass}</span>
-      <span className={styles.licenseRating}>{rating}</span>
-    </span>
-  );
 };
 
 const PosChange = ({
@@ -181,7 +160,7 @@ export const DriverRow = ({
             {driver.userName}
           </span>
 
-          {isPit && <span className={styles.pitBadge}>Pit</span>}
+          {isPit && <PitBadge />}
         </div>
       </td>
 
@@ -201,19 +180,19 @@ export const DriverRow = ({
 
       {!showGroupHeaders && (
         <td className={`${styles.td} ${styles.tdCenter}`}>
-          <span
-            className={styles.classBadgeInline}
-            style={{ backgroundColor: driver.carClassColor }}
-            title={driver.carClassShortName}
-          >
-            {driver.carClassShortName}
-          </span>
+          <ClassBadge
+            color={driver.carClassColor}
+            label={driver.carClassShortName}
+          />
         </td>
       )}
 
       <td className={`${styles.td} ${styles.tdCenter}`}>
         <span className={styles.licWrap}>
-          <LicenseBadge licString={driver.licString} />
+          <LicenseBadge
+            licString={driver.licString}
+            className={styles.licBadge}
+          />
           <span className={styles.irating}>
             {formatIRating(driver.iRating)}
           </span>

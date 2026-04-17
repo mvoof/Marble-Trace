@@ -96,6 +96,7 @@
 .driverNameCell {
   display: flex;
   align-items: center;
+  gap: 0.5em;
   font-weight: 600;
   overflow: hidden;
 }
@@ -110,20 +111,6 @@
 
 .driverNamePlayer {
   color: #fbbf24;
-}
-
-.pitBadge {
-  background: rgba(234, 179, 8, 0.2);
-  color: #eab308;
-  border: 1px solid rgba(234, 179, 8, 0.3);
-  padding: 0.125em 0.5em;
-  border-radius: 4px;
-  font-size: 0.625em;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-left: 0.5em;
-  flex-shrink: 0;
 }
 
 // Brand label
@@ -178,58 +165,8 @@
   background: rgba(96, 165, 250, 0.1);
 }
 
-// Class badge inline (overall mode)
-.classBadgeInline {
-  padding: 0.125em 0.25em;
-  border-radius: 4px;
-  color: black;
-  font-weight: 700;
+.licBadge {
   font-size: 0.6875em;
-  text-align: center;
-  display: inline-block;
-}
-
-// License badge
-.licenseBadge {
-  display: inline-flex;
-  align-items: center;
-  font-size: 0.6875em;
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid rgba(113, 113, 122, 0.5);
-}
-
-.licenseClass {
-  font-weight: 700;
-  color: white;
-  padding: 0.125em 0.25em;
-}
-
-.licenseRating {
-  background: rgba(39, 39, 42, 1);
-  color: $color-text-primary;
-  padding: 0.125em 0.125em;
-  font-family: $font-mono;
-}
-
-.licA {
-  background: #2563eb;
-}
-
-.licB {
-  background: #16a34a;
-}
-
-.licC {
-  background: #ca8a04;
-}
-
-.licD {
-  background: #ea580c;
-}
-
-.licR {
-  background: #dc2626;
 }
 
 .licWrap {

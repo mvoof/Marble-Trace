@@ -1,34 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { TRACK_SURFACE_IN_PIT_STALL } from '../../widget-utils';
-import { formatIRating } from '../../widget-utils';
+import { TRACK_SURFACE_IN_PIT_STALL, formatIRating } from '../../widget-utils';
+import { PitBadge, ClassBadge, LicenseBadge } from '../../primitives';
 import type { RelativeWidgetSettings } from '../../../../store/widget-settings.store';
 import type { DriverEntry } from '../../widget-utils';
 
 import styles from './DriverRow.module.scss';
-
-const LICENSE_CLASS_MAP: Record<string, string> = {
-  A: styles.licA,
-  B: styles.licB,
-  C: styles.licC,
-  D: styles.licD,
-  R: styles.licR,
-};
-
-const LicenseBadge = ({ licString }: { licString: string }) => {
-  const parts = licString.split(' ');
-  const licClass = parts[0] ?? '';
-  const rating = parts[1] ?? '';
-  const classStyle = LICENSE_CLASS_MAP[licClass] ?? styles.licR;
-
-  return (
-    <span className={styles.licenseBadge}>
-      <span className={`${styles.licenseClass} ${classStyle}`}>{licClass}</span>
-      <span className={styles.licenseRating}>{rating}</span>
-    </span>
-  );
-};
 
 interface DriverRowProps {
   driver: DriverEntry;
@@ -103,17 +81,13 @@ export const DriverRow = observer(
           </span>
 
           <div className={styles.details}>
-            {settings.showPitIndicator && isPit && (
-              <span className={styles.pitTag}>PIT</span>
-            )}
+            {settings.showPitIndicator && isPit && <PitBadge />}
 
             {settings.showClassBadge && (
-              <span
-                className={styles.classBadge}
-                style={{ backgroundColor: driver.carClassColor }}
-              >
-                {driver.carClassShortName}
-              </span>
+              <ClassBadge
+                color={driver.carClassColor}
+                label={driver.carClassShortName}
+              />
             )}
 
             {settings.showIRatingBadge && (

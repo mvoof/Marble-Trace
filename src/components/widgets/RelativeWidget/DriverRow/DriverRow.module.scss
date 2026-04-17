@@ -86,29 +86,6 @@
   color: #fbbf24;
 }
 
-.pitTag {
-  background: rgba(234, 179, 8, 0.2);
-  color: #eab308;
-  border: 1px solid rgba(234, 179, 8, 0.3);
-  padding: 1px 3px;
-  border-radius: 4px;
-  font-size: 0.625em;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  flex-shrink: 0;
-}
-
-// Class badge (colored background like standings overall mode)
-.classBadge {
-  padding: 0.125em 0.25em;
-  border-radius: 4px;
-  color: black;
-  font-weight: 700;
-  font-size: 0.6875em;
-  flex-shrink: 0;
-}
-
 // Details row (class, lic, iR) — inline with name
 .details {
   display: flex;
@@ -125,48 +102,6 @@
 
 .irInfo {
   color: rgba(113, 113, 122, 1);
-}
-
-// License badge (matches standings style)
-.licenseBadge {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid rgba(113, 113, 122, 0.5);
-}
-
-.licenseClass {
-  font-weight: 700;
-  color: white;
-  padding: 0.125em 0.25em;
-}
-
-.licenseRating {
-  background: rgba(39, 39, 42, 1);
-  color: $color-text-primary;
-  padding: 0.125em 0.125em;
-  font-family: $font-mono;
-}
-
-.licA {
-  background: #2563eb;
-}
-
-.licB {
-  background: #16a34a;
-}
-
-.licC {
-  background: #ca8a04;
-}
-
-.licD {
-  background: #ea580c;
-}
-
-.licR {
-  background: #dc2626;
 }
 
 // F2 Time (gap) block

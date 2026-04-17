@@ -61,28 +61,21 @@ export const RelativeWidget = ({ entries, settings }: RelativeWidgetProps) => {
   }, [entries]);
 
   const displayEntries = useMemo((): DriverEntry[] => {
-    const total = visibleRowCount;
-    const half = Math.floor(total / 2);
     const playerIdx = entries.findIndex((e) => e.isPlayer);
 
-    if (playerIdx === -1) return entries.slice(0, total);
+    if (playerIdx === -1) return entries.slice(0, visibleRowCount);
 
-    const result: DriverEntry[] = [];
+    const total = Math.min(visibleRowCount, entries.length);
+    const half = Math.floor(total / 2);
 
-    for (let i = half; i > 0; i -= 1) {
-      const idx = playerIdx - i;
-      if (idx >= 0) result.push(entries[idx]);
-    }
+    const aboveAvail = playerIdx;
+    const belowAvail = entries.length - playerIdx - 1;
 
-    result.push(entries[playerIdx]);
+    let above = Math.min(half, aboveAvail);
+    let below = Math.min(total - 1 - above, belowAvail);
+    above = Math.min(total - 1 - below, aboveAvail);
 
-    const below = total - result.length;
-    for (let i = 1; i <= below; i += 1) {
-      const idx = playerIdx + i;
-      if (idx < entries.length) result.push(entries[idx]);
-    }
-
-    return result;
+    return entries.slice(playerIdx - above, playerIdx + below + 1);
   }, [entries, visibleRowCount]);
 
   const player = entries.find((e) => e.isPlayer);
