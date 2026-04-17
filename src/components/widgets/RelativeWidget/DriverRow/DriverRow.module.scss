@@ -4,7 +4,7 @@
 .driverRow {
   display: flex;
   align-items: center;
-  padding: $space-xs $space-md;
+  padding: 0.125em 0.5em;
   position: relative;
   border-bottom: 1px solid rgba(39, 39, 42, 0.4);
   background: rgba(24, 24, 27, 0.2);
@@ -30,42 +30,49 @@
   width: 4px;
 }
 
-// Position + car number block (inline)
+// Position + car number block
 .posBlock {
   display: flex;
   align-items: baseline;
-  gap: $space-xs;
-  width: 2.25rem;
-  margin-left: $space-sm;
+  gap: 0.2em;
+  width: 2.5em;
+  margin-left: 0.25em;
   flex-shrink: 0;
 }
 
+// Position — primary emphasis
 .driverPosition {
-  font-size: 0.75rem;
-  color: rgba(113, 113, 122, 1);
+  font-weight: 700;
+  font-size: 0.9375em;
+  color: $color-text-primary;
   font-family: $font-mono;
 }
 
+.driverPositionPlayer {
+  color: #fbbf24;
+}
+
+// Car number — secondary, muted
 .driverCarNumber {
-  font-weight: 700;
-  font-size: $font-size-md;
+  font-size: 0.6875em;
   font-family: $font-mono;
+  color: rgba(113, 113, 122, 0.8);
 }
 
 // Info block — single row: name + details inline
 .infoBlock {
   flex: 1 1 0;
-  margin-left: $space-sm;
+  margin-left: 0.25em;
   overflow: hidden;
   display: flex;
   align-items: center;
-  gap: $space-sm;
+  gap: 0.25em;
   justify-content: space-between;
 }
 
 .driverName {
   font-weight: 700;
-  font-size: $font-size-md;
+  font-size: 0.875em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -79,55 +86,22 @@
   color: #fbbf24;
 }
 
-.pitTag {
-  background: rgba(234, 179, 8, 0.2);
-  color: #eab308;
-  border: 1px solid rgba(234, 179, 8, 0.3);
-  padding: 1px 3px;
-  border-radius: 4px;
-  font-size: 0.625rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  flex-shrink: 0;
-}
-
-// Details (class, lic, iR, lap status) — inline with name
+// Details row (class, lic, iR) — inline with name
 .details {
   display: flex;
   align-items: center;
-  gap: $space-xs;
-  font-size: $font-size-xs;
+  gap: 0.2em;
+  font-size: 0.625em;
   font-family: $font-mono;
   flex-shrink: 0;
-}
-
-.classLabel {
-  font-weight: 700;
 }
 
 .metaSeparator {
   color: rgba(113, 113, 122, 1);
 }
 
-.licInfo {
-  color: $color-text-muted;
-}
-
 .irInfo {
   color: rgba(113, 113, 122, 1);
-}
-
-.lapStatusLapping {
-  color: $color-info;
-  font-weight: 700;
-  font-size: 0.6875rem;
-}
-
-.lapStatusLapped {
-  color: #f97316;
-  font-weight: 700;
-  font-size: 0.6875rem;
 }
 
 // F2 Time (gap) block
@@ -136,15 +110,15 @@
   align-items: center;
   justify-content: flex-end;
   gap: 2px;
-  width: 4.25rem;
+  width: 4.25em;
   flex-shrink: 0;
-  padding-right: $space-xs;
+  padding-right: 0.125em;
 }
 
 .f2Time {
   font-family: $font-mono;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1em;
   text-align: right;
 }
 

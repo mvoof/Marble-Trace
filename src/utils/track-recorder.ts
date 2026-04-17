@@ -39,6 +39,7 @@ export class TrackRecorder {
   private complete = false;
   private startPct = -1;
   private prevTime = 0;
+  private wrapCount = 0;
 
   get isRecording(): boolean {
     return this.recording;
@@ -66,6 +67,7 @@ export class TrackRecorder {
     this.complete = false;
     this.startPct = -1;
     this.prevTime = 0;
+    this.wrapCount = 0;
   }
 
   /**
@@ -102,12 +104,15 @@ export class TrackRecorder {
     // Convert to standard math: x = east, y = north
     const dx = speed * Math.sin(yaw) * dt;
     const dy = speed * Math.cos(yaw) * dt;
-    this.x -= dx; // Negate to match real-world track direction
-    this.y -= dy; // SVG y-axis is inverted
+    this.x += dx; // east = positive x = right in SVG (standard map orientation)
+    this.y -= dy; // north = negative y = up in SVG
 
     // Sample at regular intervals
     let pctDiff = lapDistPct - this.lastPct;
-    if (pctDiff < -0.5) pctDiff += 1; // Lap wrap
+    if (pctDiff < -0.5) {
+      pctDiff += 1; // Lap wrap
+      this.wrapCount++;
+    }
     if (pctDiff > 0.5) pctDiff -= 1;
 
     if (Math.abs(pctDiff) >= SAMPLE_INTERVAL_PCT) {
@@ -115,9 +120,10 @@ export class TrackRecorder {
       this.lastPct = lapDistPct;
     }
 
-    // Check if lap is complete (crossed start/finish)
-    let totalPct = lapDistPct - this.startPct;
-    if (totalPct < 0) totalPct += 1;
+    // Check if lap is complete.
+    // Use wrapCount to handle starting near pct=0: without it, when startPct≈0 and
+    // lapDistPct wraps back to ~0, totalPct resets to 0 requiring a second full lap.
+    const totalPct = lapDistPct - this.startPct + this.wrapCount;
     if (totalPct >= 0.99 && this.points.length > 50) {
       // Close the loop
       this.points.push({ x: this.points[0].x, y: this.points[0].y, pct: 1 });

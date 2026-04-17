@@ -19,7 +19,7 @@ class UnitsStore {
   system: UnitSystem = 'metric';
 
   private store: Store | null = null;
-  private unlisten: UnlistenFn | null = null;
+  private overlayUnlisten: UnlistenFn | null = null;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -42,12 +42,20 @@ class UnitsStore {
     emit('units-changed', system);
   }
 
-  async initWidgetListener() {
-    this.unlisten = await listen<UnitSystem>('units-changed', (event) => {
-      runInAction(() => {
-        this.system = event.payload;
-      });
-    });
+  async initOverlayListener() {
+    this.overlayUnlisten = await listen<UnitSystem>(
+      'units-changed',
+      (event) => {
+        runInAction(() => {
+          this.system = event.payload;
+        });
+      }
+    );
+  }
+
+  disposeOverlayListener() {
+    this.overlayUnlisten?.();
+    this.overlayUnlisten = null;
   }
 
   formatSpeed(mps: number) {
@@ -80,10 +88,6 @@ class UnitsStore {
 
   get distanceUnit() {
     return _distanceUnit(this.system);
-  }
-
-  dispose() {
-    this.unlisten?.();
   }
 
   private async saveSettings() {

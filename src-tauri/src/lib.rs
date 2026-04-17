@@ -59,12 +59,8 @@ pub fn run() {
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {
                 if window.label() == "main" {
-                    let app = window.app_handle();
-
-                    for (label, win) in app.webview_windows() {
-                        if label != "main" {
-                            let _ = win.destroy();
-                        }
+                    if let Some(overlay) = window.app_handle().get_webview_window("overlay") {
+                        let _ = overlay.destroy();
                     }
                 }
             }

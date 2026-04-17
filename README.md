@@ -96,12 +96,12 @@ Most iRacing overlays are either bloated desktop apps or locked behind subscript
 
 ## Prerequisites
 
-| Tool | Version |
-|---|---|
-| [Node.js](https://nodejs.org/) | 18+ |
-| [Rust](https://rustup.rs/) | 1.70+ |
-| [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) | — |
-| Windows | iRacing SDK is Windows-only |
+| Tool                                                                | Version                     |
+| ------------------------------------------------------------------- | --------------------------- |
+| [Node.js](https://nodejs.org/)                                      | 18+                         |
+| [Rust](https://rustup.rs/)                                          | 1.70+                       |
+| [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) | —                           |
+| Windows                                                             | iRacing SDK is Windows-only |
 
 ## Setup
 
@@ -142,6 +142,65 @@ Widget windows  ←──────── Main window (widget list + settings)
 - **Telemetry events:** `iracing://telemetry/car-dynamics`, `car-inputs`, `car-status`, `lap-timing`, `session`, `environment`, `car-idx`, plus `iracing://session-info` and `iracing://status`
 - **Widget drag mode:** toggle with `F9` (configurable) — green border appears, drag to reposition, position is persisted
 - **Unit system:** metric / imperial, toggle in Settings, synced across all windows
+
+---
+
+## Storybook — widget development without the game
+
+Storybook lets you develop and test widgets in the browser using real telemetry data captured from a live iRacing session.
+
+### Launch
+
+```bash
+npm run storybook
+# → http://localhost:6006
+```
+
+### Capturing a telemetry snapshot
+
+For stories to display real data (car positions, lap times, RPM, etc.) you need a snapshot from a live session.
+
+1. Start iRacing and join any session
+2. Launch the app: `npm run tauri dev`
+3. Open **Settings → Dev Tools → Capture Snapshot**
+4. A file `iracing-<timestamp>.json` will be downloaded
+5. Move it to the `test-data/` folder, e.g. `test-data/gt3-race.json`
+
+> The Capture Snapshot button is only available in dev builds (`npm run tauri dev`).
+
+### Using a snapshot in a Story
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { MyWidget } from './MyWidget';
+import { withTelemetry } from '../../../storybook/telemetryDecorator';
+import snapshot from '../../../../test-data/gt3-race.json';
+
+const meta: Meta<typeof MyWidget> = {
+  title: 'Widgets/MyWidget',
+  component: MyWidget,
+};
+export default meta;
+
+type Story = StoryObj<typeof MyWidget>;
+
+export const Default: Story = {
+  decorators: [withTelemetry(snapshot)],
+};
+```
+
+The `withTelemetry` decorator populates all MobX stores (`carDynamics`, `carIdx`, `sessionInfo`, etc.) before the component renders and resets them on cleanup. No changes to the widget components are needed — they read from the same `telemetryStore` as in the live app.
+
+### Layout
+
+```
+test-data/               ← telemetry snapshots (git-ignored)
+src/storybook/
+  __mocks__/             ← mocks for @tauri-apps/* APIs
+  snapshot.types.ts      ← TelemetrySnapshot type
+  capture-snapshot.ts    ← downloadSnapshot()
+  telemetryDecorator.tsx ← withTelemetry(snapshot)
+```
 
 ---
 

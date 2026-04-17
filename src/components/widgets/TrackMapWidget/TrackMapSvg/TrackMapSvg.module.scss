@@ -52,9 +52,15 @@
   fill: white;
 }
 
-.sectorLabel {
-  font-family: $font-mono;
+.sectorArc {
+  pointer-events: none;
+}
+
+.sfLabel {
+  font-family: 'Rajdhani', sans-serif;
   font-size: 10px;
   font-weight: 700;
-  fill: rgba(255, 255, 255, 0.6);
+  fill: white;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
 }

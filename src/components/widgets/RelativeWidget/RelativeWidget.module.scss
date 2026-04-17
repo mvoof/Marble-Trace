@@ -7,16 +7,9 @@
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   overflow: hidden;
   border-radius: 6px;
-}
-
-.relativeColumn {
-  flex-direction: column;
-}
-
-.relativeRow {
-  flex-direction: row;
 }
 
 // Driver list — no scroll, rows beyond window are not rendered
@@ -28,13 +21,4 @@
   min-height: 0;
   overflow: hidden;
   justify-content: flex-start;
-}
-
-// Placeholder row used to keep the player vertically centered when there are
-// not enough cars above/below.
-.driverRowPlaceholder {
-  flex: 0 0 auto;
-  min-height: 2.25rem;
-  border-bottom: 1px solid rgba(39, 39, 42, 0.2);
-  background: rgba(24, 24, 27, 0.1);
 }

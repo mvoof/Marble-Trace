@@ -4,7 +4,6 @@ import {
   widgetSettingsStore,
   WidgetConfig,
 } from '../../../../store/widget-settings.store';
-import { windowManagerStore } from '../../../../store/window-manager.store';
 
 const { Text } = Typography;
 
@@ -16,18 +15,8 @@ const WidgetListItem = observer(
     widget: WidgetConfig;
     onSelect: (id: string) => void;
   }) => {
-    const handleToggle = async (checked: boolean) => {
+    const handleToggle = (checked: boolean) => {
       widgetSettingsStore.setWidgetEnabled(widget.id, checked);
-
-      if (checked) {
-        const config = widgetSettingsStore.getWidget(widget.id);
-
-        if (config) {
-          await windowManagerStore.openWidget(config);
-        }
-      } else {
-        await windowManagerStore.closeWidget(widget.id);
-      }
     };
 
     return (

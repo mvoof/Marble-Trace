@@ -1,5 +1,5 @@
 import { Users } from 'lucide-react';
-import { formatIRating } from '../standings-utils';
+import { formatIRating } from '../../widget-utils';
 import type { DriverEntry } from '../types';
 import type { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import type { SessionInfoData, WeekendInfo } from '../../../../types/bindings';
