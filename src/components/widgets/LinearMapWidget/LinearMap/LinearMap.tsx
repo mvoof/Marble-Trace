@@ -8,26 +8,17 @@ import styles from './LinearMap.module.scss';
 interface LinearMapProps {
   entries: RelativeEntry[];
   player: RelativeEntry | null;
-  position: string;
   isHorizontal: boolean;
 }
 
 export const LinearMap = observer(
-  ({ entries, player, position, isHorizontal }: LinearMapProps) => {
-    const borderClass =
-      {
-        top: styles.linearMapBorderTop,
-        bottom: styles.linearMapBorderBottom,
-        left: styles.linearMapBorderLeft,
-        right: styles.linearMapBorderRight,
-      }[position] ?? '';
-
+  ({ entries, player, isHorizontal }: LinearMapProps) => {
     const sizeClass = isHorizontal
       ? styles.linearMapHorizontal
       : styles.linearMapVertical;
 
     return (
-      <div className={`${styles.linearMap} ${sizeClass} ${borderClass}`}>
+      <div className={`${styles.linearMap} ${sizeClass}`}>
         <div
           className={`${styles.mapCenterLine} ${isHorizontal ? styles.mapCenterLineH : styles.mapCenterLineV}`}
         />

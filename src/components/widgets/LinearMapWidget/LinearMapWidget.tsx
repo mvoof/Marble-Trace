@@ -22,7 +22,6 @@ export const LinearMapWidget = ({
       <LinearMap
         entries={entries}
         player={player}
-        position={isHorizontal ? 'bottom' : 'right'}
         isHorizontal={isHorizontal}
       />
     </WidgetPanel>
