@@ -23,7 +23,10 @@ export const OverlayCanvas = observer(() => {
   }, [dragMode]);
 
   const handleVisibilityChange = (id: string, visible: boolean) => {
-    setVisibilityMap((prev) => ({ ...prev, [id]: visible }));
+    setVisibilityMap((prev) => {
+      if (prev[id] === visible) return prev;
+      return { ...prev, [id]: visible };
+    });
   };
 
   const enabledWidgets = widgetSettingsStore.widgets.filter((w) => w.enabled);

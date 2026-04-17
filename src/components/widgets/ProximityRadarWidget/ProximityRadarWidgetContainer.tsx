@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../store/iracing';
@@ -60,9 +60,12 @@ export const ProximityRadarWidgetContainer = observer(
       spotter.left || spotter.right
     );
 
+    const onVisibilityChangeRef = useRef(onVisibilityChange);
+    onVisibilityChangeRef.current = onVisibilityChange;
+
     useEffect(() => {
-      onVisibilityChange?.(visible);
-    }, [visible, onVisibilityChange]);
+      onVisibilityChangeRef.current?.(visible);
+    }, [visible]);
 
     if (!visible) return null;
 
