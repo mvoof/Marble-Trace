@@ -9,6 +9,9 @@ Captured telemetry snapshots and recorded track data for Storybook.
 | `iracing-1776008424511.json` | iRacing telemetry snapshot — GT3 race at Lime Rock Park (4 sectors, multi-car) |
 | `tracks.json`                | Recorded track geometry — Lime Rock Park (track ID 508, 469 points, version 2) |
 
+> [!IMPORTANT]  
+> Storybook components require both a telemetry snapshot and a track file to function correctly.
+
 ## How to capture a telemetry snapshot
 
 1. Launch iRacing and join a session
