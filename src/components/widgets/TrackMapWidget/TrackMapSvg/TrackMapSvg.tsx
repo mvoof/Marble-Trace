@@ -30,7 +30,7 @@ export const TrackMapSvg = ({
   const cx = vbX + vbW / 2;
   const cy = vbY + vbH / 2;
   const rotationDeg =
-    playerYaw != null ? playerYaw * (180 / Math.PI) : undefined;
+    playerYaw != null ? -playerYaw * (180 / Math.PI) : undefined;
 
   const pathRef = useRef<SVGPathElement>(null);
   const [pathLength, setPathLength] = useState(0);

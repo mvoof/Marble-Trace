@@ -102,8 +102,8 @@ export class TrackRecorder {
     // Convert to standard math: x = east, y = north
     const dx = speed * Math.sin(yaw) * dt;
     const dy = speed * Math.cos(yaw) * dt;
-    this.x -= dx; // Negate to match real-world track direction
-    this.y -= dy; // SVG y-axis is inverted
+    this.x += dx; // east = positive x = right in SVG (standard map orientation)
+    this.y -= dy; // north = negative y = up in SVG
 
     // Sample at regular intervals
     let pctDiff = lapDistPct - this.lastPct;

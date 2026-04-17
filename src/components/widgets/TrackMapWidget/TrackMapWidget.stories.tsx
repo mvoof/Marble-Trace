@@ -85,6 +85,10 @@ const TrackMapWidgetStory = ({
 }: TrackMapStoryArgs) => {
   const cars = computeCars(snap);
   const classColors = computeClassColors(snap);
+  const playerYaw =
+    settings.rotationMode === 'heading-up'
+      ? (snap.carDynamics?.yaw ?? undefined)
+      : undefined;
 
   return (
     <div style={{ width: containerWidth, height: containerHeight }}>
@@ -100,7 +104,7 @@ const TrackMapWidgetStory = ({
           trackName="Lime Rock Park"
           isRecording={false}
           recordingProgress={0}
-          playerYaw={undefined}
+          playerYaw={playerYaw}
           settings={settings}
           sectors={snap.sessionInfo?.SplitTimeInfo?.Sectors}
           sectorTimes={MOCK_SECTOR_TIMES}
@@ -174,6 +178,11 @@ const meta: Meta<TrackMapStoryArgs> = {
     },
     showCornerNumbers: {
       control: 'boolean',
+      table: { category: 'Widget Settings' },
+    },
+    rotationMode: {
+      control: 'radio',
+      options: ['fixed', 'heading-up'],
       table: { category: 'Widget Settings' },
     },
     snapshot: {
