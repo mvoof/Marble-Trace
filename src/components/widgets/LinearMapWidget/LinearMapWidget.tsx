@@ -1,12 +1,12 @@
 import { WidgetPanel } from '../primitives';
 import type { LinearMapWidgetSettings } from '../../../store/widget-settings.store';
 import { LinearMap } from './LinearMap/LinearMap';
-import type { RelativeEntry } from '../RelativeWidget/types';
+import type { DriverEntry } from '../widget-utils';
 
 import styles from './LinearMapWidget.module.scss';
 
 interface LinearMapWidgetProps {
-  entries: RelativeEntry[];
+  entries: DriverEntry[];
   settings: LinearMapWidgetSettings;
 }
 

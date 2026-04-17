@@ -1,13 +1,13 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { TRACK_SURFACE_ON_TRACK } from '../../RelativeWidget/relative-utils';
-import type { RelativeEntry } from '../../RelativeWidget/types';
+import { TRACK_SURFACE_ON_TRACK } from '../../widget-utils';
+import type { DriverEntry } from '../../widget-utils';
 
 import styles from './LinearMap.module.scss';
 
 interface LinearMapProps {
-  entries: RelativeEntry[];
-  player: RelativeEntry | null;
+  entries: DriverEntry[];
+  player: DriverEntry | null;
   isHorizontal: boolean;
 }
 

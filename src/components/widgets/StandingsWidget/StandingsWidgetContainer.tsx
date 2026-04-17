@@ -4,13 +4,13 @@ import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { pitStopsStore } from '../../../store/pit-stops.store';
 import { computeProjectedIrDelta } from '../../../utils/iracing-irating';
-import { computeStandingsEntries, computeClassSof } from './standings-utils';
+import { computeDriverEntries, computeClassSof } from '../widget-utils';
 import { StandingsWidget } from './StandingsWidget';
 
 export const StandingsWidgetContainer = observer(() => {
   const settings = widgetSettingsStore.getStandingsSettings();
 
-  const driverEntries = computeStandingsEntries(
+  const driverEntries = computeDriverEntries(
     telemetryStore.carIdx,
     telemetryStore.driverInfo,
     telemetryStore.startPositions

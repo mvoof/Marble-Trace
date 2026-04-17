@@ -58,7 +58,9 @@ export interface StandingsWidgetSettings {
 }
 
 export interface RelativeWidgetSettings {
-  placeholder?: never;
+  showIRatingBadge: boolean;
+  showClassBadge: boolean;
+  showPitIndicator: boolean;
 }
 
 export type TrackMapLegendPosition = 'left' | 'right' | 'hidden';
@@ -229,7 +231,11 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     backgroundColorEdge: '#050508',
     hotkey: 'F4',
     customSettings: {
-      relative: {},
+      relative: {
+        showIRatingBadge: true,
+        showClassBadge: true,
+        showPitIndicator: true,
+      },
     },
   },
   {
@@ -479,7 +485,14 @@ class WidgetSettingsStore {
   }
 
   getRelativeSettings(): RelativeWidgetSettings {
-    return {};
+    const widget = this.getWidget('relative');
+    const saved: Partial<RelativeWidgetSettings> =
+      widget?.customSettings?.relative ?? {};
+    return {
+      showIRatingBadge: saved.showIRatingBadge ?? true,
+      showClassBadge: saved.showClassBadge ?? true,
+      showPitIndicator: saved.showPitIndicator ?? true,
+    };
   }
 
   getTrackMapSettings(): TrackMapWidgetSettings {

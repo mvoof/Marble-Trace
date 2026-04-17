@@ -27,6 +27,7 @@ import {
   type RadarVisibilityMode,
   type RadarBarDisplayMode,
   type StandingsWidgetSettings,
+  type RelativeWidgetSettings,
   type TrackMapWidgetSettings,
   type TrackMapLegendPosition,
   type TrackMapRotationMode,
@@ -184,6 +185,13 @@ export const WidgetSettings = observer(
             <>
               <Divider style={{ margin: '8px 0' }} />
               <StandingsSettingsPanel />
+            </>
+          )}
+
+          {widgetId === 'relative' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <RelativeSettingsPanel />
             </>
           )}
 
@@ -588,6 +596,53 @@ const RadarSettingsPanel = observer(
     );
   }
 );
+
+const RelativeSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getRelativeSettings();
+
+  const update = (partial: Partial<RelativeWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('relative', {
+      relative: { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Relative
+      </Title>
+
+      <Space direction="vertical">
+        <Space>
+          <Switch
+            checked={settings.showClassBadge}
+            onChange={(v) => update({ showClassBadge: v })}
+            size="small"
+          />
+          <Text>Class Badge</Text>
+        </Space>
+
+        <Space>
+          <Switch
+            checked={settings.showIRatingBadge}
+            onChange={(v) => update({ showIRatingBadge: v })}
+            size="small"
+          />
+          <Text>License / iRating</Text>
+        </Space>
+
+        <Space>
+          <Switch
+            checked={settings.showPitIndicator}
+            onChange={(v) => update({ showPitIndicator: v })}
+            size="small"
+          />
+          <Text>Pit Indicator</Text>
+        </Space>
+      </Space>
+    </Flex>
+  );
+});
 
 const StandingsSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getStandingsSettings();

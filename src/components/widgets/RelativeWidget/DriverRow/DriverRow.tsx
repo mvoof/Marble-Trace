@@ -1,28 +1,46 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { TRACK_SURFACE_IN_PIT_STALL, formatIRating } from '../relative-utils';
-import type { RelativeEntry } from '../types';
+import { TRACK_SURFACE_IN_PIT_STALL } from '../../widget-utils';
+import { formatIRating } from '../../widget-utils';
+import type { RelativeWidgetSettings } from '../../../../store/widget-settings.store';
+import type { DriverEntry } from '../../widget-utils';
 
 import styles from './DriverRow.module.scss';
 
+const LICENSE_CLASS_MAP: Record<string, string> = {
+  A: styles.licA,
+  B: styles.licB,
+  C: styles.licC,
+  D: styles.licD,
+  R: styles.licR,
+};
+
+const LicenseBadge = ({ licString }: { licString: string }) => {
+  const parts = licString.split(' ');
+  const licClass = parts[0] ?? '';
+  const rating = parts[1] ?? '';
+  const classStyle = LICENSE_CLASS_MAP[licClass] ?? styles.licR;
+
+  return (
+    <span className={styles.licenseBadge}>
+      <span className={`${styles.licenseClass} ${classStyle}`}>{licClass}</span>
+      <span className={styles.licenseRating}>{rating}</span>
+    </span>
+  );
+};
+
 interface DriverRowProps {
-  driver: RelativeEntry;
-  player: RelativeEntry | null;
+  driver: DriverEntry;
+  player: DriverEntry | null;
   trendDelta: number;
+  settings: RelativeWidgetSettings;
 }
 
 export const DriverRow = observer(
-  ({ driver, player, trendDelta }: DriverRowProps) => {
+  ({ driver, player, trendDelta, settings }: DriverRowProps) => {
     const isPit =
       driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
-
-    let lapStatus: 'lapping' | 'lapped' | null = null;
-
-    if (!driver.isPlayer && player) {
-      if (driver.lap > player.lap) lapStatus = 'lapping';
-      else if (driver.lap < player.lap) lapStatus = 'lapped';
-    }
 
     const relativeGap =
       driver.isPlayer || !player ? 0 : driver.f2Time - player.f2Time;
@@ -69,13 +87,12 @@ export const DriverRow = observer(
         />
 
         <div className={styles.posBlock}>
-          <span className={styles.driverPosition}>{driver.position}</span>
           <span
-            className={styles.driverCarNumber}
-            style={{ color: driver.carClassColor }}
+            className={`${styles.driverPosition} ${driver.isPlayer ? styles.driverPositionPlayer : ''}`}
           >
-            {driver.carNumber}
+            {driver.position}
           </span>
+          <span className={styles.driverCarNumber}>{driver.carNumber}</span>
         </div>
 
         <div className={styles.infoBlock}>
@@ -86,32 +103,25 @@ export const DriverRow = observer(
           </span>
 
           <div className={styles.details}>
-            {isPit && <span className={styles.pitTag}>PIT</span>}
+            {settings.showPitIndicator && isPit && (
+              <span className={styles.pitTag}>PIT</span>
+            )}
 
-            <span
-              className={styles.classLabel}
-              style={{ color: driver.carClassColor }}
-            >
-              {driver.carClassShortName}
-            </span>
+            {settings.showClassBadge && (
+              <span
+                className={styles.classBadge}
+                style={{ backgroundColor: driver.carClassColor }}
+              >
+                {driver.carClassShortName}
+              </span>
+            )}
 
-            <span className={styles.metaSeparator}>|</span>
-            <span className={styles.licInfo}>{driver.licString}</span>
-            <span className={styles.irInfo}>
-              {formatIRating(driver.iRating)}
-            </span>
-
-            {lapStatus && (
+            {settings.showIRatingBadge && (
               <>
                 <span className={styles.metaSeparator}>|</span>
-                <span
-                  className={
-                    lapStatus === 'lapping'
-                      ? styles.lapStatusLapping
-                      : styles.lapStatusLapped
-                  }
-                >
-                  {lapStatus === 'lapping' ? 'LAPPING' : 'LAPPED'}
+                <LicenseBadge licString={driver.licString} />
+                <span className={styles.irInfo}>
+                  {formatIRating(driver.iRating)}
                 </span>
               </>
             )}

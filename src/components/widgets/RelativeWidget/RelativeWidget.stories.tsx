@@ -2,8 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RelativeWidget } from './RelativeWidget';
 import { WidgetScaler } from '../../WidgetScaler';
-import { computeRelativeEntries } from './relative-utils';
-import type { RelativeEntry } from './types';
+import { computeDriverEntries, sortByRelativeLapDist } from '../widget-utils';
+import type { DriverEntry } from '../widget-utils';
+import type { RelativeWidgetSettings } from '../../../store/widget-settings.store';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
 
@@ -12,7 +13,13 @@ const DESIGN_HEIGHT = 400;
 
 const realSnapshot = snapshot as TelemetrySnapshot;
 
-interface RelativeStoryArgs {
+const DEFAULT_SETTINGS: RelativeWidgetSettings = {
+  showIRatingBadge: true,
+  showClassBadge: true,
+  showPitIndicator: true,
+};
+
+interface RelativeStoryArgs extends RelativeWidgetSettings {
   snapshot: TelemetrySnapshot;
   containerWidth: number;
   containerHeight: number;
@@ -22,10 +29,12 @@ const RelativeWidgetStory = ({
   snapshot: snap,
   containerWidth,
   containerHeight,
+  ...settings
 }: RelativeStoryArgs) => {
-  const entries: RelativeEntry[] = computeRelativeEntries(
-    snap.carIdx,
-    snap.sessionInfo?.DriverInfo ?? null
+  const playerCarIdx = snap.sessionInfo?.DriverInfo?.DriverCarIdx ?? -1;
+  const entries: DriverEntry[] = sortByRelativeLapDist(
+    computeDriverEntries(snap.carIdx, snap.sessionInfo?.DriverInfo ?? null),
+    playerCarIdx
   );
 
   return (
@@ -36,7 +45,7 @@ const RelativeWidgetStory = ({
         background="radial-gradient(circle, #0a0a0f 0%, #050508 100%)"
         adaptive
       >
-        <RelativeWidget entries={entries} />
+        <RelativeWidget entries={entries} settings={settings} />
       </WidgetScaler>
     </div>
   );
@@ -59,6 +68,21 @@ const meta: Meta<RelativeStoryArgs> = {
       description: 'Container height (px)',
       table: { category: 'Container' },
     },
+    showClassBadge: {
+      control: 'boolean',
+      description: 'Show class badge',
+      table: { category: 'Settings' },
+    },
+    showIRatingBadge: {
+      control: 'boolean',
+      description: 'Show license / iRating badge',
+      table: { category: 'Settings' },
+    },
+    showPitIndicator: {
+      control: 'boolean',
+      description: 'Show pit indicator',
+      table: { category: 'Settings' },
+    },
     snapshot: {
       table: { disable: true },
     },
@@ -67,6 +91,7 @@ const meta: Meta<RelativeStoryArgs> = {
     containerWidth: DESIGN_WIDTH,
     containerHeight: DESIGN_HEIGHT,
     snapshot: realSnapshot,
+    ...DEFAULT_SETTINGS,
   },
 };
 
@@ -88,5 +113,13 @@ export const NoData: Story = {
       session: null,
       environment: null,
     } as unknown as TelemetrySnapshot,
+  },
+};
+
+export const Minimal: Story = {
+  args: {
+    showClassBadge: false,
+    showIRatingBadge: false,
+    showPitIndicator: false,
   },
 };

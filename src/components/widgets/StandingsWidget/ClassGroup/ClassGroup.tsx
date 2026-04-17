@@ -2,7 +2,7 @@ import { Trophy, Users, MoreHorizontal } from 'lucide-react';
 import { isSeparator } from '../types';
 import type { DriverGroup } from '../types';
 import type { StandingsWidgetSettings } from '../../../../store/widget-settings.store';
-import { formatIRating } from '../standings-utils';
+import { formatIRating } from '../../widget-utils';
 import { DriverRow } from '../DriverRow/DriverRow';
 
 import styles from './ClassGroup.module.scss';

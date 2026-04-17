@@ -2,18 +2,20 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { WidgetPanel } from '../primitives';
 import { useVisibleRowCount } from '../../../hooks/useVisibleRowCount';
+import type { RelativeWidgetSettings } from '../../../store/widget-settings.store';
 
 import { DriverRow } from './DriverRow/DriverRow';
-import { TREND_SAMPLE_INTERVAL_MS } from './relative-utils';
-import type { RelativeEntry } from './types';
+import { TREND_SAMPLE_INTERVAL_MS } from '../widget-utils';
+import type { DriverEntry } from '../widget-utils';
 
 import styles from './RelativeWidget.module.scss';
 
 interface RelativeWidgetProps {
-  entries: RelativeEntry[];
+  entries: DriverEntry[];
+  settings: RelativeWidgetSettings;
 }
 
-export const RelativeWidget = ({ entries }: RelativeWidgetProps) => {
+export const RelativeWidget = ({ entries, settings }: RelativeWidgetProps) => {
   const prevF2TimesRef = useRef<Map<number, number>>(new Map());
   const lastSnapshotTimeRef = useRef<number>(0);
   const { ref: driverListRef, count: visibleRowCount } =
@@ -58,14 +60,14 @@ export const RelativeWidget = ({ entries }: RelativeWidgetProps) => {
     lastSnapshotTimeRef.current = now;
   }, [entries]);
 
-  const displayEntries = useMemo((): RelativeEntry[] => {
+  const displayEntries = useMemo((): DriverEntry[] => {
     const total = visibleRowCount;
     const half = Math.floor(total / 2);
     const playerIdx = entries.findIndex((e) => e.isPlayer);
 
     if (playerIdx === -1) return entries.slice(0, total);
 
-    const result: RelativeEntry[] = [];
+    const result: DriverEntry[] = [];
 
     for (let i = half; i > 0; i -= 1) {
       const idx = playerIdx - i;
@@ -94,6 +96,7 @@ export const RelativeWidget = ({ entries }: RelativeWidgetProps) => {
             driver={entry}
             player={player ?? null}
             trendDelta={trendMap.get(entry.carIdx) ?? 0}
+            settings={settings}
           />
         ))}
       </div>

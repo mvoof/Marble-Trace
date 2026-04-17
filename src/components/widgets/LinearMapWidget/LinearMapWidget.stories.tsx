@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { LinearMapWidget } from './LinearMapWidget';
 import { WidgetScaler } from '../../WidgetScaler';
-import { computeRelativeEntries } from '../RelativeWidget/relative-utils';
+import { computeDriverEntries, sortByRelativeLapDist } from '../widget-utils';
 import type { LinearMapWidgetSettings } from '../../../store/widget-settings.store';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
@@ -21,9 +21,10 @@ const LinearMapWidgetStory = ({
   containerHeight,
   ...settings
 }: LinearMapStoryArgs) => {
-  const entries = computeRelativeEntries(
-    snap.carIdx,
-    snap.sessionInfo?.DriverInfo ?? null
+  const playerCarIdx = snap.sessionInfo?.DriverInfo?.DriverCarIdx ?? -1;
+  const entries = sortByRelativeLapDist(
+    computeDriverEntries(snap.carIdx, snap.sessionInfo?.DriverInfo ?? null),
+    playerCarIdx
   );
   const isHorizontal = settings.orientation === 'horizontal';
   const designWidth = isHorizontal ? 400 : 40;

@@ -5,8 +5,8 @@ import {
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
   NEAR_DQ_INCIDENT_THRESHOLD,
-} from '../standings-utils';
-import type { DriverEntry } from '../types';
+} from '../../widget-utils';
+import type { DriverEntry } from '../../widget-utils';
 import type { StandingsWidgetSettings } from '../../../../store/widget-settings.store';
 
 import styles from './DriverRow.module.scss';

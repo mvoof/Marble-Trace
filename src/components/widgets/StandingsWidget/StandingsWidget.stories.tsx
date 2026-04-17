@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { StandingsWidget } from './StandingsWidget';
 import { WidgetScaler } from '../../WidgetScaler';
-import { computeStandingsEntries, computeClassSof } from './standings-utils';
+import { computeDriverEntries, computeClassSof } from '../widget-utils';
 import { computeProjectedIrDelta } from '../../../utils/iracing-irating';
 import type { StandingsWidgetSettings } from '../../../store/widget-settings.store';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
@@ -40,7 +40,7 @@ const StandingsWidgetStory = ({
   containerHeight,
   ...settings
 }: StandingsStoryArgs) => {
-  const driverEntries = computeStandingsEntries(
+  const driverEntries = computeDriverEntries(
     snap.carIdx,
     snap.sessionInfo?.DriverInfo ?? null,
     new Map()
