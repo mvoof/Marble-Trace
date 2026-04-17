@@ -84,10 +84,7 @@ export const TrackMapSvg = ({
             const startDist = (sector.SectorStartPct ?? 0) * pathLength;
             const sectorLen =
               (endPct - (sector.SectorStartPct ?? 0)) * pathLength;
-            const color =
-              SECTOR_ARC_COLORS[
-                ((sector.SectorNum ?? 1) - 1) % SECTOR_ARC_COLORS.length
-              ];
+            const color = SECTOR_ARC_COLORS[i % SECTOR_ARC_COLORS.length];
 
             return (
               <path
@@ -105,12 +102,9 @@ export const TrackMapSvg = ({
 
         {/* Sector direction arrows */}
         {points.length > 0 &&
-          validSectors?.map((sector) => {
+          validSectors?.map((sector, i) => {
             const pct = sector.SectorStartPct ?? 0;
-            const color =
-              SECTOR_ARC_COLORS[
-                ((sector.SectorNum ?? 1) - 1) % SECTOR_ARC_COLORS.length
-              ];
+            const color = SECTOR_ARC_COLORS[i % SECTOR_ARC_COLORS.length];
             const { x, y } = getPointAtPct(points, pct);
             const next = getPointAtPct(points, Math.min(pct + 0.01, 0.999));
             const angle = Math.atan2(next.y - y, next.x - x) * (180 / Math.PI);

@@ -27,4 +27,4 @@ export interface StoredTracks {
 }
 
 export const TRACKS_STORE_KEY = 'recorded-tracks';
-export const TRACK_DATA_VERSION = 3;
+export const TRACK_DATA_VERSION = 4;

@@ -100,12 +100,14 @@ export class TrackRecorder {
     if (dt <= 0 || dt > 1) return; // Skip invalid or large gaps
 
     // Dead reckoning: integrate position
-    // iRacing Yaw: 0 = north, positive = clockwise
-    // Convert to standard math: x = east, y = north
-    const dx = speed * Math.sin(yaw) * dt;
+    // iRacing Yaw: 0 = north, positive = counter-clockwise (West is positive)
+    // Standard math angle (0=East, CCW): theta = PI/2 + yaw
+    // x = r * cos(theta) = r * cos(PI/2 + yaw) = -r * sin(yaw)
+    // y = r * sin(theta) = r * sin(PI/2 + yaw) = r * cos(yaw)
+    const dx = -speed * Math.sin(yaw) * dt;
     const dy = speed * Math.cos(yaw) * dt;
-    this.x += dx; // east = positive x = right in SVG (standard map orientation)
-    this.y -= dy; // north = negative y = up in SVG
+    this.x += dx; // West = negative x = left in SVG
+    this.y -= dy; // North = negative y = up in SVG
 
     // Sample at regular intervals
     let pctDiff = lapDistPct - this.lastPct;
@@ -121,12 +123,8 @@ export class TrackRecorder {
     }
 
     // Check if lap is complete.
-    // Use wrapCount to handle starting near pct=0: without it, when startPct≈0 and
-    // lapDistPct wraps back to ~0, totalPct resets to 0 requiring a second full lap.
     const totalPct = lapDistPct - this.startPct + this.wrapCount;
-    if (totalPct >= 0.99 && this.points.length > 50) {
-      // Close the loop
-      this.points.push({ x: this.points[0].x, y: this.points[0].y, pct: 1 });
+    if (totalPct >= 0.995 && this.points.length > 50) {
       this.complete = true;
       this.recording = false;
     }
@@ -136,7 +134,8 @@ export class TrackRecorder {
    * Build an SVG path and viewBox from recorded points.
    */
   buildSvgPath(): { svgPath: string; viewBox: string } {
-    if (this.points.length < 3) {
+    const pts = this.getSortedPoints();
+    if (pts.length < 3) {
       return { svgPath: '', viewBox: '0 0 100 100' };
     }
 
@@ -146,7 +145,7 @@ export class TrackRecorder {
     let maxX = -Infinity;
     let maxY = -Infinity;
 
-    for (const p of this.points) {
+    for (const p of pts) {
       minX = Math.min(minX, p.x);
       minY = Math.min(minY, p.y);
       maxX = Math.max(maxX, p.x);
@@ -162,13 +161,15 @@ export class TrackRecorder {
     const vbW = width + padding * 2;
     const vbH = height + padding * 2;
 
-    // Build SVG path with smooth curves (catmull-rom → cubic bezier)
-    const pts = this.points;
+    // Build SVG path
     let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
 
     for (let i = 1; i < pts.length; i++) {
       d += ` L ${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)}`;
     }
+
+    // Close the path
+    d += ' Z';
 
     return {
       svgPath: d,
@@ -176,8 +177,23 @@ export class TrackRecorder {
     };
   }
 
+  /**
+   * Returns points sorted by lapDistPct.
+   * This ensures getPointAtPct (binary search) works and path starts at S/F.
+   */
+  private getSortedPoints(): TrackPoint[] {
+    if (this.points.length === 0) return [];
+
+    // Create a copy and sort by pct
+    const sorted = [...this.points].sort((a, b) => a.pct - b.pct);
+
+    // Ensure we have something close to pct=0 and pct=1 if we want a clean loop
+    // For now, just sorting is enough as dead reckoning coordinates are continuous
+    return sorted;
+  }
+
   getPoints(): TrackPoint[] {
-    return [...this.points];
+    return this.getSortedPoints();
   }
 }
 
