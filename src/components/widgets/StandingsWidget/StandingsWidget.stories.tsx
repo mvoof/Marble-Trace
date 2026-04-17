@@ -30,10 +30,14 @@ const DEFAULT_SETTINGS: StandingsWidgetSettings = {
 
 interface StandingsStoryArgs extends StandingsWidgetSettings {
   snapshot: TelemetrySnapshot;
+  containerWidth: number;
+  containerHeight: number;
 }
 
 const StandingsWidgetStory = ({
   snapshot: snap,
+  containerWidth,
+  containerHeight,
   ...settings
 }: StandingsStoryArgs) => {
   const driverEntries = computeStandingsEntries(
@@ -54,7 +58,7 @@ const StandingsWidgetStory = ({
     : new Map<number, number>();
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <div style={{ width: containerWidth, height: containerHeight }}>
       <WidgetScaler
         designWidth={DESIGN_WIDTH}
         designHeight={DESIGN_HEIGHT}
@@ -79,9 +83,19 @@ const meta: Meta<StandingsStoryArgs> = {
   title: 'Widgets/StandingsWidget',
   component: StandingsWidgetStory,
   parameters: {
-    layout: 'fullscreen',
+    layout: 'centered',
   },
   argTypes: {
+    containerWidth: {
+      control: { type: 'range', min: 400, max: 1400, step: 10 },
+      description: 'Container width (px)',
+      table: { category: 'Container' },
+    },
+    containerHeight: {
+      control: { type: 'range', min: 200, max: 1200, step: 10 },
+      description: 'Container height (px)',
+      table: { category: 'Container' },
+    },
     filterMode: {
       control: 'radio',
       options: ['all'],
@@ -136,6 +150,8 @@ const meta: Meta<StandingsStoryArgs> = {
     },
   },
   args: {
+    containerWidth: DESIGN_WIDTH,
+    containerHeight: DESIGN_HEIGHT,
     ...DEFAULT_SETTINGS,
     snapshot: realSnapshot,
   },

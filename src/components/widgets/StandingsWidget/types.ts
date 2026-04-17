@@ -32,6 +32,7 @@ export interface SeparatorEntry {
 }
 
 export interface DriverGroup {
+  classId: number;
   className: string;
   classShortName: string;
   classColor: string;

@@ -14,16 +14,22 @@ const realSnapshot = snapshot as TelemetrySnapshot;
 
 interface RelativeStoryArgs {
   snapshot: TelemetrySnapshot;
+  containerWidth: number;
+  containerHeight: number;
 }
 
-const RelativeWidgetStory = ({ snapshot: snap }: RelativeStoryArgs) => {
+const RelativeWidgetStory = ({
+  snapshot: snap,
+  containerWidth,
+  containerHeight,
+}: RelativeStoryArgs) => {
   const entries: RelativeEntry[] = computeRelativeEntries(
     snap.carIdx,
     snap.sessionInfo?.DriverInfo ?? null
   );
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <div style={{ width: containerWidth, height: containerHeight }}>
       <WidgetScaler
         designWidth={DESIGN_WIDTH}
         designHeight={DESIGN_HEIGHT}
@@ -40,14 +46,26 @@ const meta: Meta<RelativeStoryArgs> = {
   title: 'Widgets/RelativeWidget',
   component: RelativeWidgetStory,
   parameters: {
-    layout: 'fullscreen',
+    layout: 'centered',
   },
   argTypes: {
+    containerWidth: {
+      control: { type: 'range', min: 200, max: 800, step: 10 },
+      description: 'Container width (px)',
+      table: { category: 'Container' },
+    },
+    containerHeight: {
+      control: { type: 'range', min: 200, max: 1000, step: 10 },
+      description: 'Container height (px)',
+      table: { category: 'Container' },
+    },
     snapshot: {
       table: { disable: true },
     },
   },
   args: {
+    containerWidth: DESIGN_WIDTH,
+    containerHeight: DESIGN_HEIGHT,
     snapshot: realSnapshot,
   },
 };

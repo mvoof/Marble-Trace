@@ -52,19 +52,27 @@ export const StandingsWidget = ({
         }
       }
 
-      groups = Array.from(classMap.entries()).map(([, driversInClass]) => ({
-        className: driversInClass[0]?.carClassShortName ?? 'Class',
-        classShortName: driversInClass[0]?.carClassShortName ?? 'Class',
-        classColor: driversInClass[0]?.carClassColor ?? '#888',
-        totalDrivers: driversInClass.length,
-        classSof: computeClassSof(driversInClass),
-        drivers: driversInClass.sort(
-          (a, b) => a.classPosition - b.classPosition
-        ),
-      }));
+      groups = Array.from(classMap.entries()).map(
+        ([classId, driversInClass]) => {
+          const shortName = driversInClass[0]?.carClassShortName?.trim();
+          const fallbackName = `Class ${classId}`;
+          return {
+            classId,
+            className: shortName || fallbackName,
+            classShortName: shortName || fallbackName,
+            classColor: driversInClass[0]?.carClassColor ?? '#888',
+            totalDrivers: driversInClass.length,
+            classSof: computeClassSof(driversInClass),
+            drivers: driversInClass.sort(
+              (a, b) => a.classPosition - b.classPosition
+            ),
+          };
+        }
+      );
     } else {
       groups = [
         {
+          classId: -1,
           className: 'Overall',
           classShortName: '',
           classColor: '',
@@ -111,7 +119,7 @@ export const StandingsWidget = ({
         );
 
         if (playerIdx >= share) {
-          visible.push({ isSeparator: true, id: `sep-${group.className}` });
+          visible.push({ isSeparator: true, id: `sep-${group.classId}` });
           visible.push(driversOnly[playerIdx]);
         }
 
@@ -211,7 +219,7 @@ export const StandingsWidget = ({
           <tbody>
             {displayGroups.map((group) => (
               <ClassGroup
-                key={group.className}
+                key={group.classId}
                 group={group}
                 showGroupHeader={showGroupHeaders}
                 settings={settings}
