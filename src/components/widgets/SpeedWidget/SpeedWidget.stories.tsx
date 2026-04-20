@@ -6,8 +6,8 @@ import type { SpeedWidgetSettings } from '../../../store/widget-settings.store';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
 
-const DESIGN_WIDTH = 290;
-const DESIGN_HEIGHT = 80;
+const DESIGN_WIDTH = 360;
+const DESIGN_HEIGHT = 110;
 
 const realSnapshot = snapshot as TelemetrySnapshot;
 
@@ -152,6 +152,22 @@ export const Redline: Story = {
       },
     },
     focusMode: 'gear',
+  },
+};
+
+export const SpeedFocusHighSpeed: Story = {
+  args: {
+    focusMode: 'speed',
+    snapshot: {
+      ...realSnapshot,
+      carDynamics: {
+        ...realSnapshot.carDynamics!,
+        speed: 83.3,
+        rpm: 6500,
+        gear: 5,
+        shift_indicator_pct: 0.72,
+      },
+    },
   },
 };
 

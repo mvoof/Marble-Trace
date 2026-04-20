@@ -14,21 +14,23 @@
   flex: 1 1 0;
   min-width: 0;
   height: 100%;
+  overflow: hidden;
   z-index: 1;
 }
 
 .value {
-  font-size: $font-size-2xl;
+  font-size: 2.625rem;
   font-weight: 600;
   line-height: 1;
   letter-spacing: -1px;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   color: #fff;
   text-align: center;
 }
 
 .label {
-  margin-top: 0.1rem;
+  margin-top: 0.125rem;
   font-size: $font-size-xs;
   font-weight: 700;
   text-transform: uppercase;

@@ -1,4 +1,4 @@
-export const CIRCLE_R = 105;
+export const CIRCLE_R = 130;
 export const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_R;
 
 export const getShiftZoneColor = (

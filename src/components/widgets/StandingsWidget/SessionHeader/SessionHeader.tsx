@@ -1,5 +1,7 @@
+import { observer } from 'mobx-react-lite';
 import { Users } from 'lucide-react';
 import { formatIRating } from '../../widget-utils';
+import { unitsStore } from '../../../../store/units.store';
 import type { DriverEntry } from '../types';
 import type { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import type { SessionInfoData, WeekendInfo } from '../../../../types/bindings';
@@ -14,55 +16,81 @@ interface SessionHeaderProps {
   overallSof: number;
 }
 
-export const SessionHeader = ({
-  settings,
-  sessionInfo,
-  weekendInfo,
-  driverEntries,
-  overallSof,
-}: SessionHeaderProps) => {
-  const sessions = sessionInfo?.Sessions;
-  const currentSession = sessions?.[sessionInfo?.CurrentSessionNum ?? 0];
-  const trackName = weekendInfo?.TrackDisplayName ?? '';
-
-  return (
-    <div className={styles.sessionHeader}>
-      <div className={styles.sessionLeft}>
-        {trackName && <span>{trackName}</span>}
-
-        {currentSession && (
-          <span>{currentSession.SessionType?.toUpperCase()}</span>
-        )}
-
-        {currentSession?.SessionLaps && (
-          <span>Laps: {currentSession.SessionLaps}</span>
-        )}
-      </div>
-
-      <div className={styles.sessionRight}>
-        {settings.showTotalDrivers && (
-          <span className={styles.sessionDriverCount}>
-            <Users size={10} />
-            <span className={styles.sessionDriverCountValue}>
-              {driverEntries.length}
-            </span>
-          </span>
-        )}
-
-        {settings.showWeather && weekendInfo?.TrackAirTemp && (
-          <span>Air: {weekendInfo.TrackAirTemp}</span>
-        )}
-
-        {settings.showWeather && weekendInfo?.TrackSurfaceTemp && (
-          <span>Trk: {weekendInfo.TrackSurfaceTemp}</span>
-        )}
-
-        {settings.showSOF && (
-          <span className={styles.sofValue}>
-            SOF: {formatIRating(overallSof)}
-          </span>
-        )}
-      </div>
-    </div>
-  );
+const parseIRacingTemp = (
+  tempStr: string | null | undefined
+): number | null => {
+  if (!tempStr) return null;
+  const match = tempStr.match(/^(\d+(?:\.\d+)?)/);
+  return match ? parseFloat(match[1]) : null;
 };
+
+export const SessionHeader = observer(
+  ({
+    settings,
+    sessionInfo,
+    weekendInfo,
+    driverEntries,
+    overallSof,
+  }: SessionHeaderProps) => {
+    const sessions = sessionInfo?.Sessions;
+    const currentSession = sessions?.[sessionInfo?.CurrentSessionNum ?? 0];
+    const trackName = weekendInfo?.TrackDisplayName ?? '';
+
+    const airCelsius = parseIRacingTemp(weekendInfo?.TrackAirTemp);
+    const trkCelsius = parseIRacingTemp(weekendInfo?.TrackSurfaceTemp);
+    const tempUnit = unitsStore.tempUnit;
+    const airStr =
+      airCelsius !== null
+        ? `${unitsStore.formatTemp(airCelsius)}${tempUnit}`
+        : null;
+    const trkStr =
+      trkCelsius !== null
+        ? `${unitsStore.formatTemp(trkCelsius)}${tempUnit}`
+        : null;
+
+    return (
+      <div className={styles.sessionHeader}>
+        <div className={styles.sessionLeft}>
+          {trackName && <span className={styles.trackName}>{trackName}</span>}
+
+          {currentSession && (
+            <span>{currentSession.SessionType?.toUpperCase()}</span>
+          )}
+
+          {currentSession?.SessionLaps && (
+            <span>Laps: {currentSession.SessionLaps}</span>
+          )}
+        </div>
+
+        <div className={styles.sessionRight}>
+          {settings.showTotalDrivers && (
+            <span className={styles.sessionDriverCount}>
+              <Users size={10} />
+              <span className={styles.sessionDriverCountValue}>
+                {driverEntries.length}
+              </span>
+            </span>
+          )}
+
+          {settings.showWeather && airStr && (
+            <span>
+              Air: <span className={styles.tempValue}>{airStr}</span>
+            </span>
+          )}
+
+          {settings.showWeather && trkStr && (
+            <span>
+              Trk: <span className={styles.tempValue}>{trkStr}</span>
+            </span>
+          )}
+
+          {settings.showSOF && (
+            <span className={styles.sofValue}>
+              SOF: {formatIRating(overallSof)}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  }
+);

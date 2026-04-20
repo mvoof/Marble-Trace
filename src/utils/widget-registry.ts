@@ -42,8 +42,8 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     variants: {
       default: {
         component: SpeedWidgetContainer,
-        designWidth: 290,
-        designHeight: 80,
+        designWidth: 360,
+        designHeight: 110,
       },
     },
   },
@@ -103,7 +103,7 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     variants: {
       default: {
         component: RelativeWidgetContainer,
-        designWidth: 350,
+        designWidth: 420,
         designHeight: 400,
         adaptive: true,
       },
@@ -122,12 +122,19 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
   },
 
   'linear-map': {
-    defaultVariant: 'default',
+    defaultVariant: 'horizontal',
     variants: {
-      default: {
+      horizontal: {
         component: LinearMapWidgetContainer,
         designWidth: 400,
         designHeight: 40,
+        adaptive: true,
+      },
+      vertical: {
+        component: LinearMapWidgetContainer,
+        designWidth: 40,
+        designHeight: 400,
+        adaptive: true,
       },
     },
   },
@@ -142,6 +149,12 @@ export const resolveWidgetVariant = (
   if (id === 'input-trace') {
     const settings = widgetSettingsStore.getInputTraceSettings();
     variantKey = settings.barMode === 'vertical' ? 'vertical' : 'horizontal';
+  }
+
+  if (id === 'linear-map') {
+    const settings = widgetSettingsStore.getLinearMapSettings();
+    variantKey =
+      settings.orientation === 'vertical' ? 'vertical' : 'horizontal';
   }
 
   return entry.variants[variantKey] ?? entry.variants[entry.defaultVariant];

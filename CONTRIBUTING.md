@@ -39,13 +39,34 @@ Before creating an issue please ensure that the problem is not [already reported
    git commit -m "feat: add new super feature"
    ```
 
-5. **Push Changes**
+5. **Keep Your Branch Up to Date**
+
+   Before pushing, make sure your branch is rebased on top of the latest `main` to avoid merge conflicts and keep the history clean:
+
+   ```sh
+   git fetch origin
+   git rebase origin/main
+   ```
+
+   If conflicts arise, resolve them, then continue:
+
+   ```sh
+   git rebase --continue
+   ```
+
+6. **Push Changes**
 
    ```sh
    git push -u origin feature/short-description
    ```
 
-6. **Create a Pull Request**
+   If you had to rebase after already pushing, use `--force-with-lease`:
+
+   ```sh
+   git push --force-with-lease
+   ```
+
+7. **Create a Pull Request**
 
 ## Commit messages
 

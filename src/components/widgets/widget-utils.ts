@@ -96,7 +96,8 @@ export const formatIRating = (ir: number): string => {
 
 export const formatBrand = (screenName: string): string => {
   if (!screenName) return '';
-  return screenName.split(' ')[0] ?? screenName;
+  const firstWord = screenName.split(' ')[0] ?? screenName;
+  return firstWord.slice(0, 3).toUpperCase();
 };
 
 // ─── Types ────────────────────────────────────────────────────────────────

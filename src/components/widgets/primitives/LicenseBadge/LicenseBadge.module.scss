@@ -1,36 +1,30 @@
 .licenseBadge {
   display: inline-flex;
   align-items: center;
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid rgba(113, 113, 122, 0.5);
-}
-
-.licenseClass {
+  border-radius: 3px;
   font-weight: 700;
   color: white;
-  padding: 0.125em 0.25em;
-}
-
-.licenseRating {
-  background: rgba(39, 39, 42, 1);
-  color: rgba(228, 228, 231, 0.9);
-  padding: 0.125em 0.125em;
-  font-family: monospace;
+  padding: 0.15em 0.35em;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .licA {
   background: #2563eb;
 }
+
 .licB {
   background: #16a34a;
 }
+
 .licC {
   background: #ca8a04;
 }
+
 .licD {
   background: #ea580c;
 }
+
 .licR {
   background: #dc2626;
 }

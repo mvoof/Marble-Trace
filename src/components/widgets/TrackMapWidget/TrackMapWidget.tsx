@@ -68,24 +68,29 @@ export const TrackMapWidget = ({
 
   return (
     <WidgetPanel className={styles.trackMap} gap={0}>
-      {settings.showLegend && settings.legendPosition !== 'hidden' && (
-        <ClassLegend
-          classes={classColors}
-          position={settings.legendPosition === 'right' ? 'right' : 'left'}
+      <div className={styles.svgWrapper}>
+        <TrackMapSvg
+          svgPath={trackData.svgPath}
+          viewBox={trackData.viewBox}
+          points={trackData.points}
+          cars={cars}
+          sectors={visibleSectors}
+          playerYaw={playerYaw}
         />
-      )}
+      </div>
 
-      <TrackMapSvg
-        svgPath={trackData.svgPath}
-        viewBox={trackData.viewBox}
-        points={trackData.points}
-        cars={cars}
-        sectors={visibleSectors}
-        playerYaw={playerYaw}
-      />
+      {(settings.showLegend ||
+        (settings.showSectors && sectorEntries.length > 0)) && (
+        <div className={styles.bottomBar}>
+          {settings.showLegend && <ClassLegend classes={classColors} />}
 
-      {settings.showSectors && sectorEntries.length > 0 && (
-        <SectorTimesStrip sectors={sectorEntries} sectorTimes={sectorTimes} />
+          {settings.showSectors && sectorEntries.length > 0 && (
+            <SectorTimesStrip
+              sectors={sectorEntries}
+              sectorTimes={sectorTimes}
+            />
+          )}
+        </div>
       )}
     </WidgetPanel>
   );

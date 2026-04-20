@@ -22,7 +22,7 @@
 }
 
 .td {
-  padding: 0.25em 0.5em;
+  padding: 0.3em 0.65em;
   vertical-align: middle;
   white-space: nowrap;
 }
@@ -38,7 +38,7 @@
 // Position
 .posCell {
   font-weight: 700;
-  font-size: 0.875em;
+  font-size: 0.9375em;
 }
 
 .posCellPlayer {
@@ -46,7 +46,7 @@
 }
 
 .posCellSmall {
-  font-size: 0.8125em;
+  font-size: 0.875em;
 }
 
 // Position change
@@ -80,7 +80,7 @@
 // Car number
 .carNumber {
   font-family: $font-mono;
-  font-size: 0.8125em;
+  font-size: 0.875em;
   color: $color-text-muted;
 }
 
@@ -105,12 +105,19 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.875em;
+  font-size: 0.9375em;
   color: $color-text-primary;
 }
 
 .driverNamePlayer {
   color: #fbbf24;
+}
+
+// Class badge — block fill for table column
+.classBadgeFull {
+  display: block;
+  text-align: center;
+  width: 100%;
 }
 
 // Brand label
@@ -166,7 +173,7 @@
 }
 
 .licBadge {
-  font-size: 0.6875em;
+  font-size: 0.75em;
 }
 
 .licWrap {
@@ -177,7 +184,7 @@
 }
 
 .irating {
-  font-size: 0.8125em;
+  font-size: 0.875em;
   font-family: $font-mono;
   color: $color-text-muted;
   width: 2.25em;
@@ -240,23 +247,23 @@
 // Gap column
 .gapLeader {
   color: $color-text-primary;
-  font-size: 0.8125em;
+  font-size: 0.875em;
 }
 
 .gapValue {
   color: $color-text-primary;
-  font-size: 0.8125em;
+  font-size: 0.875em;
 }
 
 // Lap time columns
 .lastLap {
   font-family: $font-mono;
-  font-size: 0.75em;
+  font-size: 0.8125em;
   color: $color-text-muted;
 }
 
 .bestLap {
   font-family: $font-mono;
-  font-size: 0.75em;
+  font-size: 0.8125em;
   color: rgba(192, 132, 252, 0.85);
 }

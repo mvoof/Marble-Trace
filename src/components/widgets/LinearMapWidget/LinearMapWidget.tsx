@@ -18,7 +18,7 @@ export const LinearMapWidget = ({
   const isHorizontal = settings.orientation === 'horizontal';
 
   return (
-    <WidgetPanel className={styles.linearMapWidget} gap={0}>
+    <WidgetPanel className={styles.linearMapWidget} gap={0} minWidth={0}>
       <LinearMap
         entries={entries}
         player={player}

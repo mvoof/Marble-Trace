@@ -4,7 +4,7 @@
 .driverRow {
   display: flex;
   align-items: center;
-  padding: 0.125em 0.5em;
+  padding: 0.25em 0.625em;
   position: relative;
   border-bottom: 1px solid rgba(39, 39, 42, 0.4);
   background: rgba(24, 24, 27, 0.2);
@@ -34,16 +34,16 @@
 .posBlock {
   display: flex;
   align-items: baseline;
-  gap: 0.2em;
-  width: 2.5em;
-  margin-left: 0.25em;
+  gap: 0.25em;
+  width: 3em;
+  margin-left: 0.375em;
   flex-shrink: 0;
 }
 
 // Position — primary emphasis
 .driverPosition {
   font-weight: 700;
-  font-size: 0.9375em;
+  font-size: 1em;
   color: $color-text-primary;
   font-family: $font-mono;
 }
@@ -54,54 +54,52 @@
 
 // Car number — secondary, muted
 .driverCarNumber {
-  font-size: 0.6875em;
+  font-size: 0.75em;
   font-family: $font-mono;
   color: rgba(113, 113, 122, 0.8);
 }
 
-// Info block — single row: name + details inline
+// Info block — name only, takes all remaining space
 .infoBlock {
   flex: 1 1 0;
-  margin-left: 0.25em;
+  margin-left: 0.375em;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  gap: 0.25em;
-  justify-content: space-between;
+  min-width: 0;
 }
 
 .driverName {
   font-weight: 700;
-  font-size: 0.875em;
+  font-size: 0.9375em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   text-transform: uppercase;
   color: $color-text-primary;
-  flex-shrink: 1;
-  margin-right: auto;
+  display: block;
 }
 
 .driverNamePlayer {
   color: #fbbf24;
 }
 
-// Details row (class, lic, iR) — inline with name
+// Badges block — separate column, fixed width, right of name
 .details {
   display: flex;
   align-items: center;
-  gap: 0.2em;
-  font-size: 0.625em;
+  gap: 0.3em;
   font-family: $font-mono;
   flex-shrink: 0;
-}
-
-.metaSeparator {
-  color: rgba(113, 113, 122, 1);
+  margin-left: 0.375em;
 }
 
 .irInfo {
+  font-size: 0.75em;
   color: rgba(113, 113, 122, 1);
+}
+
+// License badge size override for this context
+.licBadge {
+  font-size: 0.6875em;
 }
 
 // F2 Time (gap) block
@@ -110,7 +108,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 2px;
-  width: 4.25em;
+  width: 5em;
   flex-shrink: 0;
   padding-right: 0.125em;
 }

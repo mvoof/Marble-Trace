@@ -10,6 +10,8 @@
   flex-direction: column;
   overflow: hidden;
   border-radius: 6px;
+  // Override WidgetPanel background so empty space below rows stays transparent
+  background: transparent !important;
 }
 
 // Driver list — no scroll, rows beyond window are not rendered
