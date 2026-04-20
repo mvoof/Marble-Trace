@@ -174,9 +174,7 @@ export const WidgetSettings = observer(
           {(widgetId === 'proximity-radar' || widgetId === 'radar-bar') && (
             <>
               <Divider style={{ margin: '8px 0' }} />
-              <RadarSettingsPanel
-                widgetId={widgetId as 'proximity-radar' | 'radar-bar'}
-              />
+              <RadarSettingsPanel widgetId={widgetId} />
             </>
           )}
 

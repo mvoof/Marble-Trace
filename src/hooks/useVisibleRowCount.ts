@@ -29,7 +29,7 @@ export const useVisibleRowCount = <T extends HTMLElement>(
       let firstReal: HTMLElement | null = null;
 
       if (rowSelector) {
-        firstReal = el.querySelector(rowSelector) as HTMLElement | null;
+        firstReal = el.querySelector(rowSelector);
       } else {
         firstReal =
           Array.from(el.children).find(

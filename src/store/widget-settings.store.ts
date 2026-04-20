@@ -402,10 +402,7 @@ class WidgetSettingsStore {
             if (field === 'customSettings') {
               widget.customSettings = value as WidgetCustomSettings;
             } else {
-              (widget[field] as number | string | boolean) = value as
-                | number
-                | string
-                | boolean;
+              widget[field] = value as number | string | boolean;
             }
           });
         }

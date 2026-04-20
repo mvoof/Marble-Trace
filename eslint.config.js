@@ -18,18 +18,41 @@ export default defineConfig([
   }, // 2. TypeScript
   {
     files: ['**/*.{ts,tsx}'],
+    ignores: ['**/*.stories.{ts,tsx}'],
     languageOptions: {
       parser,
       parserOptions: {
         sourceType: 'module',
         ecmaVersion: 'latest',
+        project: ['./tsconfig.json', './tsconfig.node.json'],
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     plugins: {
       '@typescript-eslint': tseslint,
     },
     rules: {
-      ...tseslint.configs.recommended.rules,
+      ...tseslint.configs['recommended-type-checked'].rules,
+      '@typescript-eslint/unbound-method': 'off',
+    },
+  },
+  {
+    files: ['**/*.stories.{ts,tsx}'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+        project: './tsconfig.stories.json',
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
+    rules: {
+      ...tseslint.configs['recommended-type-checked'].rules,
+      '@typescript-eslint/unbound-method': 'off',
     },
   }, // 3. React + a11y + Hooks
   {
