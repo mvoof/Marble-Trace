@@ -15,6 +15,7 @@ interface TrackMapSvgProps {
   cars: CarOnTrack[];
   sectors: Sector[] | null | undefined;
   playerYaw?: number;
+  sfLabel?: string;
 }
 
 export const TrackMapSvg = ({
@@ -24,6 +25,7 @@ export const TrackMapSvg = ({
   cars,
   sectors,
   playerYaw,
+  sfLabel = 'S/F',
 }: TrackMapSvgProps) => {
   const parts = viewBox.split(' ').map(Number);
   const [vbX, vbY, vbW, vbH] = parts;
@@ -142,7 +144,7 @@ export const TrackMapSvg = ({
                   textAnchor="middle"
                   className={styles.sfLabel}
                 >
-                  S/F
+                  {sfLabel}
                 </text>
               </g>
             );
