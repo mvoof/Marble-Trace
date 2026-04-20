@@ -35,6 +35,7 @@ const LinearMapWidgetStory = ({
       <WidgetScaler
         designWidth={designWidth}
         designHeight={designHeight}
+        adaptive
         background="#1a1a1a"
       >
         <LinearMapWidget entries={entries} settings={settings} />
