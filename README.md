@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/marble-trace-logo.svg" width="220px" alt="Marble Trace logo" style="color:white">
+  <img src="docs/assets/logo.svg" width="220px" alt="Marble Trace logo" style="color:white">
 </p>
 
 <h1 align="center">Marble Trace</h1>
