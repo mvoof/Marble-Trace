@@ -30,14 +30,10 @@ const DEFAULT_SETTINGS: StandingsWidgetSettings = {
 
 interface StandingsStoryArgs extends StandingsWidgetSettings {
   snapshot: TelemetrySnapshot;
-  containerWidth: number;
-  containerHeight: number;
 }
 
 const StandingsWidgetStory = ({
   snapshot: snap,
-  containerWidth,
-  containerHeight,
   ...settings
 }: StandingsStoryArgs) => {
   const driverEntries = computeDriverEntries(
@@ -58,7 +54,7 @@ const StandingsWidgetStory = ({
     : new Map<number, number>();
 
   return (
-    <div style={{ width: containerWidth, height: containerHeight }}>
+    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
       <WidgetScaler
         designWidth={DESIGN_WIDTH}
         designHeight={DESIGN_HEIGHT}
@@ -85,73 +81,7 @@ const meta: Meta<StandingsStoryArgs> = {
   parameters: {
     layout: 'centered',
   },
-  argTypes: {
-    containerWidth: {
-      control: { type: 'range', min: 400, max: 1400, step: 10 },
-      description: 'Container width (px)',
-      table: { category: 'Container' },
-    },
-    containerHeight: {
-      control: { type: 'range', min: 200, max: 1200, step: 10 },
-      description: 'Container height (px)',
-      table: { category: 'Container' },
-    },
-    filterMode: {
-      control: 'radio',
-      options: ['all'],
-      table: { category: 'Widget Settings' },
-    },
-    groupByClass: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    showPosChange: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    showColumnHeaders: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    showSessionHeader: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    showWeather: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    showSOF: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    showTotalDrivers: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    showBrand: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    showTire: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    showIrChange: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    showPitStops: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    snapshot: {
-      table: { disable: true },
-    },
-  },
   args: {
-    containerWidth: DESIGN_WIDTH,
-    containerHeight: DESIGN_HEIGHT,
     ...DEFAULT_SETTINGS,
     snapshot: realSnapshot,
   },
@@ -164,9 +94,11 @@ type Story = StoryObj<StandingsStoryArgs>;
 export const Default: Story = {};
 
 export const NoGrouping: Story = {
-  args: {
-    groupByClass: false,
-  },
+  args: { groupByClass: false },
+};
+
+export const FullFeatures: Story = {
+  args: { showIrChange: true },
 };
 
 export const Minimal: Story = {

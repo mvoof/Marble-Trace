@@ -22,14 +22,10 @@ const DEFAULT_SETTINGS: SpeedWidgetSettings = {
 
 interface SpeedWidgetStoryArgs extends SpeedWidgetSettings {
   snapshot: TelemetrySnapshot;
-  containerWidth: number;
-  containerHeight: number;
 }
 
 const SpeedWidgetStory = ({
   snapshot: snap,
-  containerWidth,
-  containerHeight,
   ...settings
 }: SpeedWidgetStoryArgs) => {
   const frame = snap.carDynamics;
@@ -42,7 +38,7 @@ const SpeedWidgetStory = ({
     driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
 
   return (
-    <div style={{ width: containerWidth, height: containerHeight }}>
+    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
       <WidgetScaler
         designWidth={DESIGN_WIDTH}
         designHeight={DESIGN_HEIGHT}
@@ -68,56 +64,7 @@ const meta: Meta<SpeedWidgetStoryArgs> = {
   parameters: {
     layout: 'centered',
   },
-  argTypes: {
-    containerWidth: {
-      control: { type: 'range', min: 100, max: 800, step: 10 },
-      description: 'Container width (px)',
-      table: { category: 'Container' },
-    },
-    containerHeight: {
-      control: { type: 'range', min: 40, max: 400, step: 10 },
-      description: 'Container height (px)',
-      table: { category: 'Container' },
-    },
-    focusMode: {
-      control: 'radio',
-      options: ['speed', 'gear'],
-      description: 'Which value is displayed in the centre ring',
-      table: { category: 'Widget Settings' },
-    },
-    rpmColorTheme: {
-      control: 'radio',
-      options: ['custom', 'gradient', 'classic'],
-      description: 'RPM bar colour mode',
-      table: { category: 'Widget Settings' },
-    },
-    rpmColorLow: {
-      control: 'color',
-      description: 'RPM colour — low zone (custom theme only)',
-      table: { category: 'Widget Settings' },
-    },
-    rpmColorMid: {
-      control: 'color',
-      description: 'RPM colour — mid zone (custom theme only)',
-      table: { category: 'Widget Settings' },
-    },
-    rpmColorHigh: {
-      control: 'color',
-      description: 'RPM colour — high zone (custom theme only)',
-      table: { category: 'Widget Settings' },
-    },
-    rpmColorLimit: {
-      control: 'color',
-      description: 'RPM colour — redline / shift indicator',
-      table: { category: 'Widget Settings' },
-    },
-    snapshot: {
-      table: { disable: true },
-    },
-  },
   args: {
-    containerWidth: DESIGN_WIDTH,
-    containerHeight: DESIGN_HEIGHT,
     ...DEFAULT_SETTINGS,
     snapshot: realSnapshot,
   },
@@ -127,20 +74,57 @@ export default meta;
 
 type Story = StoryObj<SpeedWidgetStoryArgs>;
 
-export const Default: Story = {
+export const Default: Story = {};
+
+export const GearFocus: Story = {
   args: { focusMode: 'gear' },
 };
 
+export const GradientTheme: Story = {
+  args: { rpmColorTheme: 'gradient' },
+};
+
+export const ClassicTheme: Story = {
+  args: { rpmColorTheme: 'classic' },
+};
+
 export const Scaled2x: Story = {
-  args: {
-    focusMode: 'gear',
-    containerWidth: DESIGN_WIDTH * 2,
-    containerHeight: DESIGN_HEIGHT * 2,
+  args: { focusMode: 'gear' },
+  render: ({ snapshot: snap, ...settings }) => {
+    const frame = snap.carDynamics;
+    const driverInfo = snap.sessionInfo?.DriverInfo;
+    const speed = frame ? `${Math.round(frame.speed * 3.6)}` : '0';
+    const rpm = frame ? Math.round(frame.rpm) : 0;
+    const gear = frame?.gear ?? 0;
+    const shiftIndicatorPct = frame?.shift_indicator_pct ?? 0;
+    const maxShiftRpm =
+      driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
+
+    return (
+      <div style={{ width: DESIGN_WIDTH * 2, height: DESIGN_HEIGHT * 2 }}>
+        <WidgetScaler
+          designWidth={DESIGN_WIDTH}
+          designHeight={DESIGN_HEIGHT}
+          background="radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)"
+        >
+          <SpeedWidget
+            speed={speed}
+            speedUnit="km/h"
+            rpm={rpm}
+            gear={gear}
+            shiftIndicatorPct={shiftIndicatorPct}
+            maxShiftRpm={maxShiftRpm}
+            settings={settings}
+          />
+        </WidgetScaler>
+      </div>
+    );
   },
 };
 
 export const Redline: Story = {
   args: {
+    focusMode: 'gear',
     snapshot: {
       ...realSnapshot,
       carDynamics: {
@@ -151,7 +135,6 @@ export const Redline: Story = {
         speed: 62.0,
       },
     },
-    focusMode: 'gear',
   },
 };
 

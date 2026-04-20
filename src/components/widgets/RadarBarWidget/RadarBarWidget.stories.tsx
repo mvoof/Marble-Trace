@@ -73,14 +73,10 @@ const DEFAULT_SETTINGS: RadarSettings = {
 
 interface RadarBarStoryArgs extends RadarSettings {
   snapshot: TelemetrySnapshot;
-  containerWidth: number;
-  containerHeight: number;
 }
 
 const RadarBarWidgetStory = ({
   snapshot: snap,
-  containerWidth,
-  containerHeight,
   ...settings
 }: RadarBarStoryArgs) => {
   const carIdx = snap.carIdx;
@@ -112,7 +108,7 @@ const RadarBarWidgetStory = ({
   );
 
   return (
-    <div style={{ width: containerWidth, height: containerHeight }}>
+    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
       <WidgetScaler
         designWidth={DESIGN_WIDTH}
         designHeight={DESIGN_HEIGHT}
@@ -138,46 +134,7 @@ const meta: Meta<RadarBarStoryArgs> = {
       values: [{ name: 'dark', value: '#1a1a2e' }],
     },
   },
-  argTypes: {
-    containerWidth: {
-      control: { type: 'range', min: 200, max: 1200, step: 10 },
-      description: 'Container width (px)',
-      table: { category: 'Container' },
-    },
-    containerHeight: {
-      control: { type: 'range', min: 100, max: 800, step: 10 },
-      description: 'Container height (px)',
-      table: { category: 'Container' },
-    },
-    visibilityMode: {
-      control: 'radio',
-      options: ['always', 'proximity'],
-      table: { category: 'Widget Settings' },
-    },
-    barDisplayMode: {
-      control: 'radio',
-      options: ['both', 'active-only'],
-      table: { category: 'Widget Settings' },
-    },
-    proximityThreshold: {
-      control: { type: 'range', min: 1, max: 20, step: 0.5 },
-      table: { category: 'Widget Settings' },
-    },
-    hideDelay: {
-      control: { type: 'range', min: 0, max: 30, step: 0.5 },
-      table: { category: 'Widget Settings' },
-    },
-    barSpacing: {
-      control: { type: 'range', min: 0, max: 500, step: 10 },
-      table: { category: 'Widget Settings' },
-    },
-    snapshot: {
-      table: { disable: true },
-    },
-  },
   args: {
-    containerWidth: DESIGN_WIDTH,
-    containerHeight: DESIGN_HEIGHT,
     ...DEFAULT_SETTINGS,
     snapshot: realSnapshot,
   },
@@ -215,6 +172,20 @@ export const ActiveOnly: Story = {
   args: {
     barDisplayMode: 'active-only',
     snapshot: { ...realSnapshot, carIdx: carIdxCarRight },
+  },
+};
+
+export const ProximityMode: Story = {
+  args: {
+    visibilityMode: 'proximity',
+    snapshot: { ...realSnapshot, carIdx: carIdxCarLeft },
+  },
+};
+
+export const WideSpacing: Story = {
+  args: {
+    barSpacing: 200,
+    snapshot: { ...realSnapshot, carIdx: carIdxCarLeft },
   },
 };
 

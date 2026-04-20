@@ -43,49 +43,6 @@ const meta: Meta<FlagsWidgetStoryArgs> = {
   title: 'Widgets/FlagsWidget',
   component: FlagsWidgetStory,
   parameters: { layout: 'centered' },
-  argTypes: {
-    flag: {
-      control: 'select',
-      options: [
-        'none',
-        'green',
-        'yellow',
-        'red',
-        'blue',
-        'white',
-        'checkered',
-        'black',
-        'meatball',
-        'debris',
-      ],
-      table: { category: 'Flag' },
-    },
-    blinkOn: {
-      control: 'boolean',
-      table: { category: 'Flag' },
-    },
-    blocksX: {
-      control: { type: 'range', min: 1, max: 20, step: 1 },
-      table: { category: 'Matrix' },
-    },
-    blocksY: {
-      control: { type: 'range', min: 1, max: 6, step: 1 },
-      table: { category: 'Matrix' },
-    },
-    variant: {
-      control: 'radio',
-      options: ['overlay', 'under-mirror', 'standalone'],
-      table: { category: 'Settings' },
-    },
-    cutoutWidth: {
-      control: { type: 'range', min: 0, max: 10, step: 2 },
-      table: { category: 'Settings' },
-    },
-    cutoutHeight: {
-      control: { type: 'range', min: 0, max: 3, step: 1 },
-      table: { category: 'Settings' },
-    },
-  },
   args: {
     flag: 'none',
     blinkOn: true,

@@ -11,16 +11,14 @@ const realSnapshot = snapshot as TelemetrySnapshot;
 
 interface LinearMapStoryArgs extends LinearMapWidgetSettings {
   snapshot: TelemetrySnapshot;
-  containerWidth: number;
-  containerHeight: number;
 }
 
-const LinearMapWidgetStory = ({
-  snapshot: snap,
-  containerWidth,
-  containerHeight,
-  ...settings
-}: LinearMapStoryArgs) => {
+const makeStory = (
+  snap: TelemetrySnapshot,
+  settings: LinearMapWidgetSettings,
+  containerWidth: number,
+  containerHeight: number
+) => {
   const playerCarIdx = snap.sessionInfo?.DriverInfo?.DriverCarIdx ?? -1;
   const entries = sortByRelativeLapDist(
     computeDriverEntries(snap.carIdx, snap.sessionInfo?.DriverInfo ?? null),
@@ -44,35 +42,18 @@ const LinearMapWidgetStory = ({
   );
 };
 
+const LinearMapWidgetStory = ({
+  snapshot: snap,
+  ...settings
+}: LinearMapStoryArgs) => makeStory(snap, settings, 400, 40);
+
 const meta: Meta<LinearMapStoryArgs> = {
   title: 'Widgets/LinearMapWidget',
   component: LinearMapWidgetStory,
   parameters: {
     layout: 'centered',
   },
-  argTypes: {
-    containerWidth: {
-      control: { type: 'range', min: 40, max: 800, step: 10 },
-      description: 'Container width (px)',
-      table: { category: 'Container' },
-    },
-    containerHeight: {
-      control: { type: 'range', min: 40, max: 800, step: 10 },
-      description: 'Container height (px)',
-      table: { category: 'Container' },
-    },
-    orientation: {
-      control: 'radio',
-      options: ['horizontal', 'vertical'],
-      table: { category: 'Widget Settings' },
-    },
-    snapshot: {
-      table: { disable: true },
-    },
-  },
   args: {
-    containerWidth: 400,
-    containerHeight: 40,
     orientation: 'horizontal',
     snapshot: realSnapshot,
   },
@@ -85,18 +66,14 @@ type Story = StoryObj<LinearMapStoryArgs>;
 export const Horizontal: Story = {};
 
 export const Vertical: Story = {
-  args: {
-    orientation: 'vertical',
-    containerWidth: 40,
-    containerHeight: 400,
-  },
+  args: { orientation: 'vertical' },
+  render: ({ snapshot: snap, ...settings }) =>
+    makeStory(snap, settings, 40, 400),
 };
 
 export const HorizontalWide: Story = {
-  args: {
-    containerWidth: 700,
-    containerHeight: 50,
-  },
+  render: ({ snapshot: snap, ...settings }) =>
+    makeStory(snap, settings, 700, 50),
 };
 
 export const NoData: Story = {

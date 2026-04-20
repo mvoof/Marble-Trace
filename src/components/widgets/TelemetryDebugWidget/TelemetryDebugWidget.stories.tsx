@@ -12,16 +12,12 @@ const realSnapshot = snapshot as TelemetrySnapshot;
 
 interface TelemetryDebugStoryArgs {
   snapshot: TelemetrySnapshot;
-  containerWidth: number;
-  containerHeight: number;
 }
 
 const TelemetryDebugWidgetStory = ({
   snapshot: snap,
-  containerWidth,
-  containerHeight,
 }: TelemetryDebugStoryArgs) => (
-  <div style={{ width: containerWidth, height: containerHeight }}>
+  <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
     <WidgetScaler
       designWidth={DESIGN_WIDTH}
       designHeight={DESIGN_HEIGHT}
@@ -48,24 +44,7 @@ const meta: Meta<TelemetryDebugStoryArgs> = {
   parameters: {
     layout: 'centered',
   },
-  argTypes: {
-    containerWidth: {
-      control: { type: 'range', min: 200, max: 800, step: 10 },
-      description: 'Container width (px)',
-      table: { category: 'Container' },
-    },
-    containerHeight: {
-      control: { type: 'range', min: 200, max: 1200, step: 10 },
-      description: 'Container height (px)',
-      table: { category: 'Container' },
-    },
-    snapshot: {
-      table: { disable: true },
-    },
-  },
   args: {
-    containerWidth: DESIGN_WIDTH,
-    containerHeight: DESIGN_HEIGHT,
     snapshot: realSnapshot,
   },
 };
