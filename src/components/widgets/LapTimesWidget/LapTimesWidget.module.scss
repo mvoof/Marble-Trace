@@ -1,0 +1,38 @@
+@use '../../../styles/variables' as *;
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-md $space-xl;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0 $space-xl;
+}
+
+.label {
+  font-family: $font-widget;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: $color-text-muted;
+}
+
+.value {
+  font-family: $font-widget;
+  font-size: $font-size-lg;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: $color-text-primary;
+  white-space: nowrap;
+}
+
+.valueAccent {
+  color: $color-text-accent;
+}

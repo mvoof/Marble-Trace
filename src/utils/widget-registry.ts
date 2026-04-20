@@ -10,6 +10,11 @@ import { TrackMapWidgetContainer } from '../components/widgets/TrackMapWidget/Tr
 import { LinearMapWidgetContainer } from '../components/widgets/LinearMapWidget/LinearMapWidgetContainer';
 import { FlagsWidgetContainer } from '../components/widgets/FlagsWidget/FlagsWidgetContainer';
 import { ChassisWidgetContainer } from '../components/widgets/ChassisWidget/ChassisWidgetContainer';
+import { LapDeltaWidgetContainer } from '../components/widgets/LapDeltaWidget/LapDeltaWidgetContainer';
+import { LapTimesWidgetContainer } from '../components/widgets/LapTimesWidget/LapTimesWidgetContainer';
+import { SessionWidgetContainer } from '../components/widgets/SessionWidget/SessionWidgetContainer';
+import { TimerWidgetContainer } from '../components/widgets/TimerWidget/TimerWidgetContainer';
+import { WeatherWidgetContainer } from '../components/widgets/WeatherWidget/WeatherWidgetContainer';
 import { widgetSettingsStore } from '../store/widget-settings.store';
 
 export interface WidgetVariant {
@@ -159,6 +164,61 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
         component: ChassisWidgetContainer,
         designWidth: 460,
         designHeight: 320,
+      },
+    },
+  },
+
+  'lap-delta': {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: LapDeltaWidgetContainer,
+        designWidth: 320,
+        designHeight: 90,
+      },
+    },
+  },
+
+  'lap-times': {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: LapTimesWidgetContainer,
+        designWidth: 300,
+        designHeight: 120,
+      },
+    },
+  },
+
+  session: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: SessionWidgetContainer,
+        designWidth: 300,
+        designHeight: 100,
+      },
+    },
+  },
+
+  timer: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: TimerWidgetContainer,
+        designWidth: 280,
+        designHeight: 80,
+      },
+    },
+  },
+
+  weather: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: WeatherWidgetContainer,
+        designWidth: 300,
+        designHeight: 200,
       },
     },
   },

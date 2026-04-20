@@ -1,0 +1,26 @@
+@use '../../../../styles/variables' as *;
+
+.compass {
+  display: block;
+  flex-shrink: 0;
+}
+
+.faceGroup {
+  transition: transform 0.3s ease;
+}
+
+.arrowGroup {
+  transition: transform 0.3s ease;
+}
+
+.cardinalLabel {
+  font-family: $font-widget;
+  font-size: 9px;
+  font-weight: 700;
+  fill: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0;
+}
+
+.cardinalNorth {
+  fill: rgba(255, 255, 255, 0.95);
+}

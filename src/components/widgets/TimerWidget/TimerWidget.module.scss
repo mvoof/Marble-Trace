@@ -1,0 +1,42 @@
+@use '../../../styles/variables' as *;
+
+.timeRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-height: 0;
+  padding: $space-md $space-xl 0;
+}
+
+.countdownLabel {
+  font-family: $font-widget;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: $color-text-muted;
+}
+
+.time {
+  font-family: $font-widget;
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: #fff;
+  letter-spacing: -1px;
+  white-space: nowrap;
+}
+
+.sessionLabel {
+  font-family: $font-widget;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: $color-text-accent;
+  text-align: center;
+  padding: 0 $space-xl $space-md;
+}

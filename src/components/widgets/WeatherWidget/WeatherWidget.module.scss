@@ -1,0 +1,134 @@
+@use '../../../styles/variables' as *;
+
+.topSection {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: $space-md $space-xl $space-md $space-md;
+  gap: $space-md;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.compassWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.windInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
+  gap: $space-xs;
+}
+
+.windSpeed {
+  font-family: $font-widget;
+  font-size: $font-size-lg;
+  font-weight: 700;
+  color: $color-text-primary;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.windCardinal {
+  font-family: $font-widget;
+  font-size: $font-size-md;
+  font-weight: 700;
+  color: $color-info;
+  letter-spacing: 1px;
+}
+
+.windLabel {
+  font-family: $font-widget;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: $color-text-muted;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0 $space-xl;
+}
+
+.tempRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: $space-sm $space-xl;
+  gap: $space-md;
+}
+
+.tempItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: $space-sm;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.tempDivider {
+  width: 1px;
+  height: 1.2em;
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.tempIcon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.tempLabel {
+  font-family: $font-widget;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: $color-text-muted;
+}
+
+.tempValue {
+  font-family: $font-widget;
+  font-size: $font-size-md;
+  font-weight: 600;
+  color: $color-text-primary;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.tempUnit {
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  margin-left: 1px;
+}
+
+.skiesRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: $space-sm;
+  padding: $space-sm $space-xl;
+}
+
+.skiesIcon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.skiesText {
+  font-family: $font-widget;
+  font-size: $font-size-sm;
+  color: $color-text-muted;
+}
