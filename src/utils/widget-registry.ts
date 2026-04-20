@@ -42,8 +42,8 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     variants: {
       default: {
         component: SpeedWidgetContainer,
-        designWidth: 290,
-        designHeight: 80,
+        designWidth: 360,
+        designHeight: 110,
       },
     },
   },
