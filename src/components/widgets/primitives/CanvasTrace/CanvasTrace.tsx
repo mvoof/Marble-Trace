@@ -1,7 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { reaction } from 'mobx';
 
-import { telemetryStore } from '../../../../store/iracing';
 import styles from './CanvasTrace.module.scss';
 
 export interface CanvasTraceChannel {
@@ -118,20 +116,6 @@ export const CanvasTrace = ({
 
     resizeObserver.observe(canvas.parentElement ?? canvas);
 
-    const disposeReaction = reaction(
-      () => telemetryStore.carInputs,
-      () => {
-        const currentChannels = channelsRef.current;
-        const sample = currentChannels.map((ch) => ch.value);
-
-        bufferRef.current.push(sample);
-
-        if (bufferRef.current.length > bufferSize) {
-          bufferRef.current.shift();
-        }
-      }
-    );
-
     const animate = () => {
       draw();
       rafRef.current = requestAnimationFrame(animate);
@@ -140,11 +124,25 @@ export const CanvasTrace = ({
     rafRef.current = requestAnimationFrame(animate);
 
     return () => {
-      disposeReaction();
       cancelAnimationFrame(rafRef.current);
       resizeObserver.disconnect();
     };
-  }, [bufferSize, height, fillContainer, draw]);
+  }, [height, fillContainer, draw]);
+
+  // Sample current channel values after each render with fresh data.
+  // Using useEffect (not a MobX reaction) ensures we read channelsRef AFTER
+  // React has updated it, avoiding a 1-frame stale-read delay.
+  useEffect(() => {
+    if (channels.length === 0) return;
+
+    const sample = channels.map((ch) => ch.value);
+
+    bufferRef.current.push(sample);
+
+    if (bufferRef.current.length > bufferSize) {
+      bufferRef.current.shift();
+    }
+  }, [channels, bufferSize]);
 
   return (
     <div className={styles.container}>

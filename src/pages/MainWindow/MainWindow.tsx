@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
-import { reaction } from 'mobx';
 import { Layout, Typography, theme, Menu } from 'antd';
 import { ConfigProvider } from 'antd';
 import { LayoutGrid, Settings } from 'lucide-react';
 import { useTelemetry } from '../../hooks/useTelemetry';
-import { telemetryConnectionStore } from '../../store/iracing';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
-import { windowManagerStore } from '../../store/window-manager.store';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { unitsStore } from '../../store/units.store';
 import { ConnectionStatus } from './components/ConnectionStatus';
@@ -35,28 +32,10 @@ export const MainWindow = () => {
       await widgetSettingsStore.loadSettings();
       await unitsStore.loadSettings();
       await appSettingsStore.init();
-      await windowManagerStore.restoreEnabledWidgets();
     };
     init();
 
-    const disposeAutoHide = reaction(
-      () => ({
-        status: telemetryConnectionStore.status,
-        hide: appSettingsStore.hideWidgetsWhenGameClosed,
-      }),
-      ({ status, hide }) => {
-        if (!hide) return;
-
-        if (status === 'connected') {
-          windowManagerStore.restoreEnabledWidgets();
-        } else if (status === 'waiting' || status === 'disconnected') {
-          windowManagerStore.hideAllWidgets();
-        }
-      }
-    );
-
     return () => {
-      disposeAutoHide();
       appSettingsStore.dispose();
     };
   }, []);

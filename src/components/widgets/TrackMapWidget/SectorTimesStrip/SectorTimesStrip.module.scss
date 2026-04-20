@@ -1,0 +1,49 @@
+@use '../../../../styles/variables' as *;
+
+.strip {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 0.4em;
+  padding: 0.35em 0.5em;
+  pointer-events: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.2em 0.5em;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.35em;
+  backdrop-filter: blur(4px);
+}
+
+.dot {
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.label {
+  font-family: $font-widget;
+  font-size: 0.62em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.time {
+  font-family: $font-mono;
+  font-size: 0.68em;
+  font-weight: 700;
+  color: $color-text-primary;
+  letter-spacing: 0.02em;
+}

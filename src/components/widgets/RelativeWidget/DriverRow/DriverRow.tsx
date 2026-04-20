@@ -1,28 +1,24 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { TRACK_SURFACE_IN_PIT_STALL, formatIRating } from '../relative-utils';
-import type { RelativeEntry } from '../types';
+import { TRACK_SURFACE_IN_PIT_STALL, formatIRating } from '../../widget-utils';
+import { PitBadge, ClassBadge, LicenseBadge } from '../../primitives';
+import type { RelativeWidgetSettings } from '../../../../store/widget-settings.store';
+import type { DriverEntry } from '../../widget-utils';
 
 import styles from './DriverRow.module.scss';
 
 interface DriverRowProps {
-  driver: RelativeEntry;
-  player: RelativeEntry | null;
+  driver: DriverEntry;
+  player: DriverEntry | null;
   trendDelta: number;
+  settings: RelativeWidgetSettings;
 }
 
 export const DriverRow = observer(
-  ({ driver, player, trendDelta }: DriverRowProps) => {
+  ({ driver, player, trendDelta, settings }: DriverRowProps) => {
     const isPit =
       driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
-
-    let lapStatus: 'lapping' | 'lapped' | null = null;
-
-    if (!driver.isPlayer && player) {
-      if (driver.lap > player.lap) lapStatus = 'lapping';
-      else if (driver.lap < player.lap) lapStatus = 'lapped';
-    }
 
     const relativeGap =
       driver.isPlayer || !player ? 0 : driver.f2Time - player.f2Time;
@@ -69,13 +65,12 @@ export const DriverRow = observer(
         />
 
         <div className={styles.posBlock}>
-          <span className={styles.driverPosition}>{driver.position}</span>
           <span
-            className={styles.driverCarNumber}
-            style={{ color: driver.carClassColor }}
+            className={`${styles.driverPosition} ${driver.isPlayer ? styles.driverPositionPlayer : ''}`}
           >
-            {driver.carNumber}
+            {driver.position}
           </span>
+          <span className={styles.driverCarNumber}>{driver.carNumber}</span>
         </div>
 
         <div className={styles.infoBlock}>
@@ -86,32 +81,21 @@ export const DriverRow = observer(
           </span>
 
           <div className={styles.details}>
-            {isPit && <span className={styles.pitTag}>PIT</span>}
+            {settings.showPitIndicator && isPit && <PitBadge />}
 
-            <span
-              className={styles.classLabel}
-              style={{ color: driver.carClassColor }}
-            >
-              {driver.carClassShortName}
-            </span>
+            {settings.showClassBadge && (
+              <ClassBadge
+                color={driver.carClassColor}
+                label={driver.carClassShortName}
+              />
+            )}
 
-            <span className={styles.metaSeparator}>|</span>
-            <span className={styles.licInfo}>{driver.licString}</span>
-            <span className={styles.irInfo}>
-              {formatIRating(driver.iRating)}
-            </span>
-
-            {lapStatus && (
+            {settings.showIRatingBadge && (
               <>
                 <span className={styles.metaSeparator}>|</span>
-                <span
-                  className={
-                    lapStatus === 'lapping'
-                      ? styles.lapStatusLapping
-                      : styles.lapStatusLapped
-                  }
-                >
-                  {lapStatus === 'lapping' ? 'LAPPING' : 'LAPPED'}
+                <LicenseBadge licString={driver.licString} />
+                <span className={styles.irInfo}>
+                  {formatIRating(driver.iRating)}
                 </span>
               </>
             )}

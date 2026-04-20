@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from 'eslint-plugin-storybook';
+
 import { defineConfig, globalIgnores } from 'eslint/config';
 import globals from 'globals';
 import js from '@eslint/js';
@@ -12,9 +15,7 @@ export default defineConfig([
   // 1. Base rules JS
   {
     ...js.configs.recommended,
-  },
-
-  // 2. TypeScript
+  }, // 2. TypeScript
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
@@ -30,9 +31,7 @@ export default defineConfig([
     rules: {
       ...tseslint.configs.recommended.rules,
     },
-  },
-
-  // 3. React + a11y + Hooks
+  }, // 3. React + a11y + Hooks
   {
     files: ['**/*.{jsx,tsx}'],
     plugins: {
@@ -49,9 +48,7 @@ export default defineConfig([
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
     },
-  },
-
-  // 4. Global
+  }, // 4. Global
   {
     languageOptions: {
       ecmaVersion: 'latest',
@@ -61,9 +58,7 @@ export default defineConfig([
         ...globals.es2020,
       },
     },
-  },
-
-  // 5. Prettier
+  }, // 5. Prettier
   {
     plugins: { prettier },
     rules: {
@@ -73,12 +68,14 @@ export default defineConfig([
       'react/prop-types': 'off',
     },
   },
-
   globalIgnores([
     'dist/',
     'node_modules/',
     'src-tauri/target/',
     'src-tauri/gen/schemas/',
     'src/bindings.ts',
+    'src/storybook/__mocks__/**',
+    '.storybook/**',
   ]),
+  ...storybook.configs['flat/recommended'],
 ]);

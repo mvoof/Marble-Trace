@@ -1,12 +1,19 @@
 import React, { useEffect, useRef } from 'react';
-import { observer } from 'mobx-react-lite';
-import {
-  telemetryConnectionStore,
-  telemetryStore,
-} from '../../../store/iracing';
-import { WidgetPanel } from '../primitives/WidgetPanel';
-import styles from './TelemetryDebugWidget.module.scss';
 import { toJS } from 'mobx';
+
+import { WidgetPanel } from '../primitives/WidgetPanel';
+import type {
+  CarDynamicsFrame,
+  CarInputsFrame,
+  CarStatusFrame,
+  LapTimingFrame,
+  SessionFrame,
+  DriverInfoData,
+  WeekendInfo,
+  EnvironmentFrame,
+} from '../../../types/bindings';
+
+import styles from './TelemetryDebugWidget.module.scss';
 
 const fmt = (v: number | null | undefined, decimals = 1): string =>
   v != null ? v.toFixed(decimals) : '—';
@@ -18,25 +25,37 @@ const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
   </>
 );
 
-export const TelemetryDebugWidget = observer(() => {
-  const { status } = telemetryConnectionStore;
-  const carDynamics = telemetryStore.carDynamics;
-  const carInputs = telemetryStore.carInputs;
-  const carStatus = telemetryStore.carStatus;
-  const lapTiming = telemetryStore.lapTiming;
-  const sessionFrame = telemetryStore.session;
-  const { driverInfo, weekendInfo } = telemetryStore;
+interface TelemetryDebugWidgetProps {
+  status: string;
+  carDynamics: CarDynamicsFrame | null;
+  carInputs: CarInputsFrame | null;
+  carStatus: CarStatusFrame | null;
+  lapTiming: LapTimingFrame | null;
+  session: SessionFrame | null;
+  driverInfo: DriverInfoData | null;
+  weekendInfo: WeekendInfo | null;
+  environment: EnvironmentFrame | null;
+}
 
-  const hasLoggedRef = useRef(false); // Создаем флаг "уже вывели в консоль"
+export const TelemetryDebugWidget = ({
+  status,
+  carDynamics,
+  carInputs,
+  carStatus,
+  lapTiming,
+  session,
+  driverInfo,
+  weekendInfo,
+  environment,
+}: TelemetryDebugWidgetProps) => {
+  const hasLoggedRef = useRef(false);
 
   useEffect(() => {
-    // Если данные появились и мы еще их не выводили
     if (driverInfo && !hasLoggedRef.current) {
       console.log('DRIVER INFO (ONCE):', toJS(driverInfo));
-      hasLoggedRef.current = true; // Ставим флаг, чтобы больше не выводить
+      hasLoggedRef.current = true;
     }
-  }, [driverInfo]); // Следим за изменением driverInfo
-  const environment = telemetryStore.environment;
+  }, [driverInfo]);
 
   const isConnected = status === 'connected';
 
@@ -89,10 +108,7 @@ export const TelemetryDebugWidget = observer(() => {
         <Row label="Pos" value={`P${lapTiming?.player_car_position ?? '—'}`} />
 
         <span className={styles.sectionTitle}>Session</span>
-        <Row
-          label="Remain"
-          value={`${fmt(sessionFrame?.session_time_remain)} s`}
-        />
+        <Row label="Remain" value={`${fmt(session?.session_time_remain)} s`} />
         <Row label="Redline" value={fmt(driverInfo?.DriverCarRedLine, 0)} />
         <Row
           label="Fuel Max"
@@ -102,4 +118,4 @@ export const TelemetryDebugWidget = observer(() => {
       </div>
     </WidgetPanel>
   );
-});
+};

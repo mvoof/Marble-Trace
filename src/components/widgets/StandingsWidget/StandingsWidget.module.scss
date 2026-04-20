@@ -9,7 +9,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-size: $font-size-sm;
+  font-size: 1em;
   border-radius: 6px;
 }
 
@@ -22,28 +22,32 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout: auto;
   font-family: $font-mono;
   text-align: left;
-  font-size: $font-size-md;
+  font-size: 0.875em;
   white-space: nowrap;
 }
 
-// Column widths — percentage-based so the name column always has room
+// Column widths — min-width hints; name column stretches to fill remaining space
 .colPos {
   width: 3.5%;
+  min-width: 2em;
 }
 
 .colPosChange {
   width: 3.5%;
+  min-width: 2em;
 }
 
 .colNum {
   width: 3.5%;
+  min-width: 2em;
 }
 
 .colName {
-  width: auto;
+  width: 100%;
+  min-width: 4em;
 }
 
 .colBrand {
@@ -87,7 +91,7 @@
   background: rgba(24, 24, 27, 0.5);
   font-family: $font-mono;
   text-transform: uppercase;
-  font-size: clamp(0.625rem, 0.75vw, 0.6875rem);
+  font-size: 0.625em;
   letter-spacing: 0.06em;
   color: rgba(161, 161, 170, 1);
   border-bottom: 1px solid rgba(39, 39, 42, 0.5);
@@ -97,7 +101,7 @@
 }
 
 .th {
-  padding: $space-sm $space-sm;
+  padding: 0.25em 0.25em;
   text-align: left;
   font-weight: 600;
   white-space: nowrap;

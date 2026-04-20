@@ -4,10 +4,12 @@ export interface CarOnTrack {
   carIdx: number;
   carNumber: string;
   carClassColor: string;
+  carClassId: number;
   lapDistPct: number;
   trackSurface: number;
   isPlayer: boolean;
   position: number;
+  classPosition: number;
 }
 
 export interface StoredTrackData {
@@ -25,4 +27,4 @@ export interface StoredTracks {
 }
 
 export const TRACKS_STORE_KEY = 'recorded-tracks';
-export const TRACK_DATA_VERSION = 2;
+export const TRACK_DATA_VERSION = 4;

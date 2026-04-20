@@ -2,37 +2,37 @@
 
 .sessionHeader {
   background: rgba(24, 24, 27, 0.8);
-  padding: $space-md;
+  padding: 0.5em;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid rgba(39, 39, 42, 1);
   font-family: $font-mono;
   text-transform: uppercase;
-  font-size: clamp(0.625rem, 0.8vw, 0.8125rem);
+  font-size: 0.625em;
   color: $color-text-muted;
 }
 
 .sessionLeft {
   display: flex;
-  gap: $space-lg;
+  gap: 0.75em;
   font-weight: 700;
   color: $color-text-primary;
-  font-size: clamp(0.75rem, 1vw, 1rem);
+  font-size: 0.75em;
 }
 
 .sessionRight {
   display: flex;
-  gap: $space-lg;
+  gap: 0.75em;
   align-items: center;
 }
 
 .sessionDriverCount {
   display: flex;
   align-items: center;
-  gap: $space-xs;
+  gap: 0.125em;
   color: $color-text-primary;
-  margin-right: $space-sm;
+  margin-right: 0.25em;
 }
 
 .sessionDriverCountValue {

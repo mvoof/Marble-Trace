@@ -38,7 +38,7 @@ export interface RadarSettings {
   barDisplayMode?: RadarBarDisplayMode;
 }
 
-export type StandingsFilterMode = 'all' | 'around-player';
+export type StandingsFilterMode = 'all';
 
 export interface StandingsWidgetSettings {
   groupByClass: boolean;
@@ -57,20 +57,27 @@ export interface StandingsWidgetSettings {
   showPitStops: boolean;
 }
 
-export type RelativeLinearMapPosition = 'top' | 'bottom' | 'left' | 'right';
-
 export interface RelativeWidgetSettings {
-  showLinearMap: boolean;
-  linearMapPosition: RelativeLinearMapPosition;
+  showIRatingBadge: boolean;
+  showClassBadge: boolean;
+  showPitIndicator: boolean;
 }
 
 export type TrackMapLegendPosition = 'left' | 'right' | 'hidden';
+export type TrackMapRotationMode = 'fixed' | 'heading-up';
 
 export interface TrackMapWidgetSettings {
   showLegend: boolean;
   legendPosition: TrackMapLegendPosition;
   showSectors: boolean;
   showCornerNumbers: boolean;
+  rotationMode: TrackMapRotationMode;
+}
+
+export type LinearMapOrientation = 'horizontal' | 'vertical';
+
+export interface LinearMapWidgetSettings {
+  orientation: LinearMapOrientation;
 }
 
 export interface WidgetCustomSettings {
@@ -81,6 +88,7 @@ export interface WidgetCustomSettings {
   standings?: StandingsWidgetSettings;
   relative?: RelativeWidgetSettings;
   'track-map'?: TrackMapWidgetSettings;
+  'linear-map'?: LinearMapWidgetSettings;
 }
 
 export interface WidgetConfig {
@@ -97,13 +105,7 @@ export interface WidgetConfig {
   customSettings?: WidgetCustomSettings;
 }
 
-interface WidgetFieldUpdate {
-  id: string;
-  field: keyof WidgetConfig;
-  value: number | string | boolean | WidgetCustomSettings;
-}
-
-const DEFAULT_WIDGETS: WidgetConfig[] = [
+export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'speed',
     label: 'Speed (Gear, Speed, RPM)',
@@ -230,8 +232,9 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
     hotkey: 'F4',
     customSettings: {
       relative: {
-        showLinearMap: true,
-        linearMapPosition: 'top',
+        showIRatingBadge: true,
+        showClassBadge: true,
+        showPitIndicator: true,
       },
     },
   },
@@ -252,6 +255,24 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
         legendPosition: 'right',
         showSectors: true,
         showCornerNumbers: true,
+        rotationMode: 'fixed',
+      },
+    },
+  },
+  {
+    id: 'linear-map',
+    label: 'Linear Map',
+    enabled: false,
+    x: 50,
+    y: 820,
+    width: 400,
+    height: 40,
+    backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
+    hotkey: '',
+    customSettings: {
+      'linear-map': {
+        orientation: 'horizontal',
       },
     },
   },
@@ -269,11 +290,17 @@ const DEFAULT_WIDGETS: WidgetConfig[] = [
   },
 ];
 
+interface WidgetFieldUpdate {
+  id: string;
+  field: keyof WidgetConfig;
+  value: number | string | boolean | WidgetCustomSettings;
+}
+
 class WidgetSettingsStore {
   widgets: WidgetConfig[] = [];
   private store: Store | null = null;
   private saveTimeout: ReturnType<typeof setTimeout> | null = null;
-  private unlisten: UnlistenFn | null = null;
+  private overlayUnlisten: UnlistenFn | null = null;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -315,9 +342,26 @@ class WidgetSettingsStore {
     });
   }
 
-  /** Listen for widget setting changes from other windows (used by widget windows). */
-  async initWidgetListener() {
-    this.unlisten = await listen<WidgetFieldUpdate>(
+  private debouncedSave() {
+    if (this.saveTimeout) clearTimeout(this.saveTimeout);
+
+    this.saveTimeout = setTimeout(() => this.saveSettings(), 500);
+  }
+
+  private async saveSettings() {
+    if (!this.store) return;
+
+    await this.store.set('widgets', this.widgets);
+    await this.store.save();
+  }
+
+  getWidget(id: string): WidgetConfig | undefined {
+    return this.widgets.find((w) => w.id === id);
+  }
+
+  /** Called by the overlay window to sync settings changes from the main window. */
+  async initOverlayListener() {
+    this.overlayUnlisten = await listen<WidgetFieldUpdate>(
       'widget-settings-changed',
       (event) => {
         const { id, field, value } = event.payload;
@@ -339,25 +383,9 @@ class WidgetSettingsStore {
     );
   }
 
-  dispose() {
-    this.unlisten?.();
-  }
-
-  private debouncedSave() {
-    if (this.saveTimeout) clearTimeout(this.saveTimeout);
-
-    this.saveTimeout = setTimeout(() => this.saveSettings(), 500);
-  }
-
-  private async saveSettings() {
-    if (!this.store) return;
-
-    await this.store.set('widgets', this.widgets);
-    await this.store.save();
-  }
-
-  getWidget(id: string): WidgetConfig | undefined {
-    return this.widgets.find((w) => w.id === id);
+  disposeOverlayListener() {
+    this.overlayUnlisten?.();
+    this.overlayUnlisten = null;
   }
 
   setWidgetEnabled(id: string, enabled: boolean) {
@@ -372,6 +400,9 @@ class WidgetSettingsStore {
       widget.y = y;
 
       this.debouncedSave();
+
+      emit('widget-settings-changed', { id, field: 'x', value: x });
+      emit('widget-settings-changed', { id, field: 'y', value: y });
     }
   }
 
@@ -383,6 +414,9 @@ class WidgetSettingsStore {
       widget.height = height;
 
       this.debouncedSave();
+
+      emit('widget-settings-changed', { id, field: 'width', value: width });
+      emit('widget-settings-changed', { id, field: 'height', value: height });
     }
   }
 
@@ -422,8 +456,9 @@ class WidgetSettingsStore {
     const saved = (widget?.customSettings?.standings ?? {}) as Partial<
       StandingsWidgetSettings & {
         groupMode?: 'overall' | 'class';
-        viewMode?: 'full' | 'around-player' | 'limit-pin';
+        viewMode?: string;
         maxRowsPerClass?: number;
+        filterMode?: string;
       }
     >;
 
@@ -431,11 +466,7 @@ class WidgetSettingsStore {
       saved.groupByClass ??
       (saved.groupMode ? saved.groupMode === 'class' : true);
 
-    const migratedFilterMode: StandingsFilterMode =
-      (saved.filterMode as string) === 'top-and-pin'
-        ? 'all'
-        : (saved.filterMode ??
-          (saved.viewMode === 'around-player' ? 'around-player' : 'all'));
+    const migratedFilterMode: StandingsFilterMode = 'all';
 
     return {
       groupByClass: migratedGroupByClass,
@@ -455,22 +486,33 @@ class WidgetSettingsStore {
 
   getRelativeSettings(): RelativeWidgetSettings {
     const widget = this.getWidget('relative');
-    return (
-      widget?.customSettings?.relative ?? {
-        showLinearMap: true,
-        linearMapPosition: 'top',
-      }
-    );
+    const saved: Partial<RelativeWidgetSettings> =
+      widget?.customSettings?.relative ?? {};
+    return {
+      showIRatingBadge: saved.showIRatingBadge ?? true,
+      showClassBadge: saved.showClassBadge ?? true,
+      showPitIndicator: saved.showPitIndicator ?? true,
+    };
   }
 
   getTrackMapSettings(): TrackMapWidgetSettings {
     const widget = this.getWidget('track-map');
+    const saved: Partial<TrackMapWidgetSettings> =
+      widget?.customSettings?.['track-map'] ?? {};
+    return {
+      showLegend: saved.showLegend ?? true,
+      legendPosition: saved.legendPosition ?? 'right',
+      showSectors: saved.showSectors ?? true,
+      showCornerNumbers: saved.showCornerNumbers ?? true,
+      rotationMode: saved.rotationMode ?? 'fixed',
+    };
+  }
+
+  getLinearMapSettings(): LinearMapWidgetSettings {
+    const widget = this.getWidget('linear-map');
     return (
-      widget?.customSettings?.['track-map'] ?? {
-        showLegend: true,
-        legendPosition: 'right',
-        showSectors: true,
-        showCornerNumbers: true,
+      widget?.customSettings?.['linear-map'] ?? {
+        orientation: 'horizontal',
       }
     );
   }

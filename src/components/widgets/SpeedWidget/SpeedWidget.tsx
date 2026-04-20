@@ -1,28 +1,32 @@
-import { useRef } from 'react';
-import { observer } from 'mobx-react-lite';
-
-import { telemetryStore } from '../../../store/iracing';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { unitsStore } from '../../../store/units.store';
-import { formatGear } from '../../../utils/telemetry-format';
 import { WidgetPanel } from '../primitives/WidgetPanel';
+import type { SpeedWidgetSettings } from '../../../store/widget-settings.store';
+import { formatGear } from '../../../utils/telemetry-format';
 import { GearCircle } from './GearCircle/GearCircle';
 import { getShiftZoneColor } from './speed-utils';
 
 import styles from './SpeedWidget.module.scss';
 
-export const SpeedWidget = observer(() => {
-  const frame = telemetryStore.carDynamics;
-  const driverInfo = telemetryStore.driverInfo;
-  const { formatSpeed, speedUnit } = unitsStore;
-  const settings = widgetSettingsStore.getSpeedSettings();
+interface SpeedWidgetProps {
+  speed: string;
+  speedUnit: string;
+  rpm: number;
+  gear: number;
+  shiftIndicatorPct: number;
+  maxShiftRpm: number;
+  settings: SpeedWidgetSettings;
+}
 
-  const speed = frame ? formatSpeed(frame.speed) : '0';
-  const rpm = frame ? Math.round(frame.rpm) : 0;
-  const gear = frame?.gear ?? 0;
+export const SpeedWidget = ({
+  speed,
+  speedUnit,
+  rpm,
+  gear,
+  shiftIndicatorPct,
+  maxShiftRpm,
+  settings,
+}: SpeedWidgetProps) => {
   const gearDisplay = formatGear(gear);
   const isGearFocused = settings.focusMode === 'gear';
-  const shiftIndicatorPct = frame?.shift_indicator_pct ?? 0;
 
   const rpmColors = {
     low: settings.rpmColorLow,
@@ -31,27 +35,7 @@ export const SpeedWidget = observer(() => {
     limit: settings.rpmColorLimit,
   };
 
-  const initialMax =
-    driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
-  const maxShiftRpmRef = useRef(initialMax);
-  const hasRefinedRef = useRef(false);
-  const lastDriverInfoRef = useRef(driverInfo);
-
-  if (lastDriverInfoRef.current !== driverInfo) {
-    maxShiftRpmRef.current = initialMax;
-    hasRefinedRef.current = false;
-    lastDriverInfoRef.current = driverInfo;
-  }
-
-  if (shiftIndicatorPct >= 1 && rpm > 0) {
-    if (!hasRefinedRef.current || rpm > maxShiftRpmRef.current) {
-      maxShiftRpmRef.current = rpm;
-      hasRefinedRef.current = true;
-    }
-  }
-
-  const currentMax = maxShiftRpmRef.current || initialMax;
-  const displayPct = Math.min(Math.max(rpm / currentMax, 0), 1);
+  const displayPct = Math.min(Math.max(rpm / (maxShiftRpm || 1), 0), 1);
   const zoneColor = getShiftZoneColor(displayPct, rpmColors);
   const isLimit = shiftIndicatorPct >= 0.99 || displayPct >= 1;
   const centerValue = isGearFocused ? gearDisplay : speed;
@@ -83,4 +67,4 @@ export const SpeedWidget = observer(() => {
       </div>
     </WidgetPanel>
   );
-});
+};

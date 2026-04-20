@@ -1,0 +1,1 @@
+export { LicenseBadge } from './LicenseBadge';
