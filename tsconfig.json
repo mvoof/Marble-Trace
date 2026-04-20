@@ -27,10 +27,11 @@
   "include": ["src"],
   "exclude": [
     "src/bindings.ts",
+    "src/**/*.stories.tsx",
     "node_modules",
     "dist",
     "build",
-    "./eslint.config.js" // <-- Add this line
+    "./eslint.config.js"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
