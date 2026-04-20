@@ -77,7 +77,7 @@ export const TrackMapWidgetContainer = observer(() => {
       }
     };
 
-    loadTrack();
+    void loadTrack();
   }, [trackId]);
 
   const saveTrack = useCallback(
@@ -129,10 +129,10 @@ export const TrackMapWidgetContainer = observer(() => {
 
   useEffect(() => {
     const unlisten = listen('track-map:clear', () => {
-      clearCurrentTrack();
+      void clearCurrentTrack();
     });
     return () => {
-      unlisten.then((fn) => fn());
+      void unlisten.then((fn) => fn());
     };
   }, [clearCurrentTrack]);
 
@@ -163,7 +163,7 @@ export const TrackMapWidgetContainer = observer(() => {
         const points = recorder.getPoints();
         setTrackData({ svgPath, viewBox, points });
         setIsRecording(false);
-        saveTrack(svgPath, viewBox, points);
+        void saveTrack(svgPath, viewBox, points);
       }
     }
   }, [carDynamics, lapTiming, sessionFrame, trackData, saveTrack]);

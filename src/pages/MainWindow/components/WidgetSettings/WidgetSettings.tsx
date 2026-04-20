@@ -284,14 +284,26 @@ const HotkeyRecorder = ({
           <>
             <Tag color="green">{pendingKey}</Tag>
 
-            <Button size="small" type="primary" onClick={applyHotkey}>
+            <Button
+              size="small"
+              type="primary"
+              onClick={() => {
+                void applyHotkey();
+              }}
+            >
               Apply
             </Button>
           </>
         )}
 
         {currentHotkey && (
-          <Button size="small" danger onClick={clearHotkey}>
+          <Button
+            size="small"
+            danger
+            onClick={() => {
+              void clearHotkey();
+            }}
+          >
             Clear
           </Button>
         )}
@@ -907,7 +919,13 @@ const TrackMapSettingsPanel = observer(() => {
       <Flex vertical gap={8}>
         <Text>Track Data</Text>
 
-        <Button size="small" danger onClick={handleRerecord}>
+        <Button
+          size="small"
+          danger
+          onClick={() => {
+            void handleRerecord();
+          }}
+        >
           Re-record current track
         </Button>
 
@@ -917,7 +935,12 @@ const TrackMapSettingsPanel = observer(() => {
         </Text>
 
         {!tracksPath ? (
-          <Button size="small" onClick={handleShowPath}>
+          <Button
+            size="small"
+            onClick={() => {
+              void handleShowPath();
+            }}
+          >
             Show tracks.json path
           </Button>
         ) : (
@@ -929,7 +952,12 @@ const TrackMapSettingsPanel = observer(() => {
               {tracksPath}
             </Text>
 
-            <Button size="small" onClick={handleCopyPath}>
+            <Button
+              size="small"
+              onClick={() => {
+                void handleCopyPath();
+              }}
+            >
               Copy path
             </Button>
           </Flex>

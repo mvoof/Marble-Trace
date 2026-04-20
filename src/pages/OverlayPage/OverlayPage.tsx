@@ -25,7 +25,7 @@ export const OverlayPage = () => {
       await appSettingsStore.initOverlayListener();
     };
 
-    init();
+    void init();
 
     return () => {
       widgetSettingsStore.disposeOverlayListener();

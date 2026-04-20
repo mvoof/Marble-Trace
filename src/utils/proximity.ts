@@ -171,7 +171,9 @@ export const computeRadarDistances = (
   };
 };
 
-export const parseSpotterState = (carLeftRight: number): SpotterState => ({
+export const parseSpotterState = (
+  carLeftRight: CarLeftRight
+): SpotterState => ({
   left:
     carLeftRight === CarLeftRight.CarLeft ||
     carLeftRight === CarLeftRight.CarLeftRight ||
@@ -207,7 +209,7 @@ export const computeNearbyCars = (
   playerCarIdx: number,
   trackLengthMeters: number,
   maxDistMeters: number,
-  carLeftRight: number
+  carLeftRight: CarLeftRight
 ): NearbyCarInfo[] => {
   const { car_idx_lap_dist_pct, car_idx_on_pit_road } = carIdxFrame;
   const playerDistPct = car_idx_lap_dist_pct[playerCarIdx];

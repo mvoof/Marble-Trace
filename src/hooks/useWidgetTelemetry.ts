@@ -7,7 +7,7 @@ import { telemetryConnectionStore } from '../store/iracing';
  */
 export const useWidgetTelemetry = () => {
   useEffect(() => {
-    telemetryConnectionStore.startWidgetListener();
-    return () => telemetryConnectionStore.stopWidgetListener();
+    void telemetryConnectionStore.startWidgetListener();
+    return () => void telemetryConnectionStore.stopWidgetListener();
   }, []);
 };

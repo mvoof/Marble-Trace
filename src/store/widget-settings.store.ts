@@ -375,7 +375,9 @@ class WidgetSettingsStore {
   private debouncedSave() {
     if (this.saveTimeout) clearTimeout(this.saveTimeout);
 
-    this.saveTimeout = setTimeout(() => this.saveSettings(), 500);
+    this.saveTimeout = setTimeout(() => {
+      void this.saveSettings();
+    }, 500);
   }
 
   private async saveSettings() {
@@ -428,8 +430,8 @@ class WidgetSettingsStore {
 
       this.debouncedSave();
 
-      emit('widget-settings-changed', { id, field: 'x', value: x });
-      emit('widget-settings-changed', { id, field: 'y', value: y });
+      void emit('widget-settings-changed', { id, field: 'x', value: x });
+      void emit('widget-settings-changed', { id, field: 'y', value: y });
     }
   }
 
@@ -442,8 +444,16 @@ class WidgetSettingsStore {
 
       this.debouncedSave();
 
-      emit('widget-settings-changed', { id, field: 'width', value: width });
-      emit('widget-settings-changed', { id, field: 'height', value: height });
+      void emit('widget-settings-changed', {
+        id,
+        field: 'width',
+        value: width,
+      });
+      void emit('widget-settings-changed', {
+        id,
+        field: 'height',
+        value: height,
+      });
     }
   }
 
@@ -596,7 +606,7 @@ class WidgetSettingsStore {
 
       this.debouncedSave();
 
-      emit('widget-settings-changed', {
+      void emit('widget-settings-changed', {
         id,
         field: 'customSettings',
         value: widget.customSettings,
@@ -616,7 +626,7 @@ class WidgetSettingsStore {
 
       this.debouncedSave();
 
-      emit('widget-settings-changed', { id, field, value });
+      void emit('widget-settings-changed', { id, field, value });
     }
   }
 }

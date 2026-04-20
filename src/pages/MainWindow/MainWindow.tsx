@@ -33,10 +33,10 @@ export const MainWindow = () => {
       await unitsStore.loadSettings();
       await appSettingsStore.init();
     };
-    init();
+    void init();
 
     return () => {
-      appSettingsStore.dispose();
+      void appSettingsStore.dispose();
     };
   }, []);
 
