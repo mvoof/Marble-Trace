@@ -8,7 +8,7 @@ import type { RelativeWidgetSettings } from '../../../store/widget-settings.stor
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
 
-const DESIGN_WIDTH = 350;
+const DESIGN_WIDTH = 420;
 const DESIGN_HEIGHT = 400;
 
 const realSnapshot = snapshot as TelemetrySnapshot;

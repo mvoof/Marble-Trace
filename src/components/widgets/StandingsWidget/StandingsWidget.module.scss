@@ -25,7 +25,7 @@
   table-layout: auto;
   font-family: $font-mono;
   text-align: left;
-  font-size: 0.875em;
+  font-size: 0.9375em;
   white-space: nowrap;
 }
 
@@ -51,7 +51,7 @@
 }
 
 .colBrand {
-  width: 6%;
+  width: 7%;
 }
 
 .colTire {
@@ -63,7 +63,7 @@
 }
 
 .colLic {
-  width: 9%;
+  width: 11%;
 }
 
 .colIrChange {
@@ -91,7 +91,7 @@
   background: rgba(24, 24, 27, 0.5);
   font-family: $font-mono;
   text-transform: uppercase;
-  font-size: 0.625em;
+  font-size: 0.6875em;
   letter-spacing: 0.06em;
   color: rgba(161, 161, 170, 1);
   border-bottom: 1px solid rgba(39, 39, 42, 0.5);
@@ -101,7 +101,7 @@
 }
 
 .th {
-  padding: 0.25em 0.25em;
+  padding: 0.35em 0.5em;
   text-align: left;
   font-weight: 600;
   white-space: nowrap;

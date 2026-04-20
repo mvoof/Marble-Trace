@@ -168,9 +168,7 @@ const meta: Meta<TrackMapStoryArgs> = {
       table: { category: 'Widget Settings' },
     },
     legendPosition: {
-      control: 'radio',
-      options: ['left', 'right', 'hidden'],
-      table: { category: 'Widget Settings' },
+      table: { disable: true },
     },
     showSectors: {
       control: 'boolean',
@@ -202,10 +200,6 @@ export default meta;
 type Story = StoryObj<TrackMapStoryArgs>;
 
 export const Default: Story = {};
-
-export const LegendLeft: Story = {
-  args: { legendPosition: 'left' },
-};
 
 export const NoLegend: Story = {
   args: { showLegend: false },

@@ -103,7 +103,7 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     variants: {
       default: {
         component: RelativeWidgetContainer,
-        designWidth: 350,
+        designWidth: 420,
         designHeight: 400,
         adaptive: true,
       },

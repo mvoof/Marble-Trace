@@ -14,17 +14,14 @@ interface LicenseBadgeProps {
 }
 
 export const LicenseBadge = ({ licString, className }: LicenseBadgeProps) => {
-  const parts = licString.split(' ');
-  const licClass = parts[0] ?? '';
-  const rating = parts[1] ?? '';
-  const classStyle = LICENSE_CLASS_MAP[licClass] ?? styles.licR;
+  const letter = (licString || 'R').charAt(0).toUpperCase();
+  const classStyle = LICENSE_CLASS_MAP[letter] ?? styles.licR;
 
   return (
     <span
-      className={`${styles.licenseBadge}${className ? ` ${className}` : ''}`}
+      className={`${styles.licenseBadge} ${classStyle}${className ? ` ${className}` : ''}`}
     >
-      <span className={`${styles.licenseClass} ${classStyle}`}>{licClass}</span>
-      <span className={styles.licenseRating}>{rating}</span>
+      {licString}
     </span>
   );
 };

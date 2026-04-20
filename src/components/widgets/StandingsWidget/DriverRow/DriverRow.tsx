@@ -183,6 +183,7 @@ export const DriverRow = ({
           <ClassBadge
             color={driver.carClassColor}
             label={driver.carClassShortName}
+            className={styles.classBadgeFull}
           />
         </td>
       )}

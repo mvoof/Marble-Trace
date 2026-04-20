@@ -61,6 +61,7 @@ export interface RelativeWidgetSettings {
   showIRatingBadge: boolean;
   showClassBadge: boolean;
   showPitIndicator: boolean;
+  abbreviateNames: boolean;
 }
 
 export type TrackMapLegendPosition = 'left' | 'right' | 'hidden';
@@ -225,7 +226,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 50,
     y: 300,
-    width: 350,
+    width: 420,
     height: 500,
     backgroundColor: '#0a0a0f',
     backgroundColorEdge: '#050508',
@@ -492,6 +493,7 @@ class WidgetSettingsStore {
       showIRatingBadge: saved.showIRatingBadge ?? true,
       showClassBadge: saved.showClassBadge ?? true,
       showPitIndicator: saved.showPitIndicator ?? true,
+      abbreviateNames: saved.abbreviateNames ?? true,
     };
   }
 

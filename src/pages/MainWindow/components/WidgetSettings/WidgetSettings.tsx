@@ -29,7 +29,6 @@ import {
   type StandingsWidgetSettings,
   type RelativeWidgetSettings,
   type TrackMapWidgetSettings,
-  type TrackMapLegendPosition,
   type TrackMapRotationMode,
   type LinearMapWidgetSettings,
   type LinearMapOrientation,
@@ -639,6 +638,15 @@ const RelativeSettingsPanel = observer(() => {
           />
           <Text>Pit Indicator</Text>
         </Space>
+
+        <Space>
+          <Switch
+            checked={settings.abbreviateNames}
+            onChange={(v) => update({ abbreviateNames: v })}
+            size="small"
+          />
+          <Text>Abbreviate Names</Text>
+        </Space>
       </Space>
     </Flex>
   );
@@ -877,24 +885,6 @@ const TrackMapSettingsPanel = observer(() => {
         />
         <Text>Class Legend</Text>
       </Space>
-
-      {settings.showLegend && (
-        <Flex vertical gap={4}>
-          <Text>Legend Position</Text>
-
-          <Segmented
-            value={settings.legendPosition}
-            options={[
-              { label: 'Left', value: 'left' },
-              { label: 'Right', value: 'right' },
-              { label: 'Hidden', value: 'hidden' },
-            ]}
-            onChange={(v) =>
-              update({ legendPosition: v as TrackMapLegendPosition })
-            }
-          />
-        </Flex>
-      )}
 
       <Space>
         <Switch

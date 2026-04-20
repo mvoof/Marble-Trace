@@ -2,6 +2,12 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { TRACK_SURFACE_IN_PIT_STALL, formatIRating } from '../../widget-utils';
+
+const abbreviateName = (fullName: string): string => {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length < 2) return fullName.toUpperCase();
+  return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`.toUpperCase();
+};
 import { PitBadge, ClassBadge, LicenseBadge } from '../../primitives';
 import type { RelativeWidgetSettings } from '../../../../store/widget-settings.store';
 import type { DriverEntry } from '../../widget-utils';
@@ -70,36 +76,40 @@ export const DriverRow = observer(
           >
             {driver.position}
           </span>
-          <span className={styles.driverCarNumber}>{driver.carNumber}</span>
+          <span className={styles.driverCarNumber}>#{driver.carNumber}</span>
         </div>
 
         <div className={styles.infoBlock}>
           <span
             className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
           >
-            {driver.userName.toUpperCase()}
+            {settings.abbreviateNames
+              ? abbreviateName(driver.userName)
+              : driver.userName.toUpperCase()}
           </span>
+        </div>
 
-          <div className={styles.details}>
-            {settings.showPitIndicator && isPit && <PitBadge />}
+        <div className={styles.details}>
+          {settings.showPitIndicator && isPit && <PitBadge />}
 
-            {settings.showClassBadge && (
-              <ClassBadge
-                color={driver.carClassColor}
-                label={driver.carClassShortName}
+          {settings.showClassBadge && (
+            <ClassBadge
+              color={driver.carClassColor}
+              label={driver.carClassShortName}
+            />
+          )}
+
+          {settings.showIRatingBadge && (
+            <>
+              <LicenseBadge
+                licString={driver.licString}
+                className={styles.licBadge}
               />
-            )}
-
-            {settings.showIRatingBadge && (
-              <>
-                <span className={styles.metaSeparator}>|</span>
-                <LicenseBadge licString={driver.licString} />
-                <span className={styles.irInfo}>
-                  {formatIRating(driver.iRating)}
-                </span>
-              </>
-            )}
-          </div>
+              <span className={styles.irInfo}>
+                {formatIRating(driver.iRating)}
+              </span>
+            </>
+          )}
         </div>
 
         <div className={styles.f2Block}>

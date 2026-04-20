@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import styles from './WidgetPanel.module.scss';
 
@@ -8,6 +8,7 @@ interface WidgetPanelProps {
   minWidth?: number;
   direction?: 'column' | 'row';
   gap?: number;
+  style?: CSSProperties;
 }
 
 export const WidgetPanel = ({
@@ -16,6 +17,7 @@ export const WidgetPanel = ({
   minWidth = 200,
   direction = 'column',
   gap = 12,
+  style,
 }: WidgetPanelProps) => (
   <section
     className={`${styles.panel} ${className ?? ''}`}
@@ -23,6 +25,7 @@ export const WidgetPanel = ({
       minWidth,
       flexDirection: direction,
       gap,
+      ...style,
     }}
   >
     {children}
