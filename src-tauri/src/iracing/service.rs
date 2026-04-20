@@ -14,6 +14,7 @@
 /// - `iracing://telemetry/lap-timing` — LapTimingFrame (60Hz)
 /// - `iracing://telemetry/session` — SessionFrame (60Hz)
 /// - `iracing://telemetry/environment` — EnvironmentFrame (60Hz)
+/// - `iracing://telemetry/chassis` — ChassisFrame (60Hz)
 /// - `iracing://session-info` — pitwall SessionInfo (on YAML change)
 /// - `iracing://status` — connection status string
 /// - `iracing://disconnected` — disconnect signal
@@ -29,7 +30,7 @@ use tracing::{debug, info, warn};
 
 use super::frames::{
     AllFieldsFrame, CarDynamicsFrame, CarIdxFrame, CarInputsFrame,
-    CarStatusFrame, EnvironmentFrame, LapTimingFrame, SessionFrame,
+    CarStatusFrame, ChassisFrame, EnvironmentFrame, LapTimingFrame, SessionFrame,
 };
 
 /// Shared state for the iRacing telemetry connection.
@@ -267,6 +268,7 @@ fn emit_domain_frames(app: &AppHandle, frame: &AllFieldsFrame) {
     let car_idx = CarIdxFrame::from(frame);
     let car_inputs = CarInputsFrame::from(frame);
     let car_status = CarStatusFrame::from(frame);
+    let chassis = ChassisFrame::from(frame);
     let lap_timing = LapTimingFrame::from(frame);
     let session = SessionFrame::from(frame);
     let environment = EnvironmentFrame::from(frame);
@@ -301,5 +303,9 @@ fn emit_domain_frames(app: &AppHandle, frame: &AllFieldsFrame) {
         app.emit("iracing://telemetry/environment", &environment)
     {
         warn!("Failed to emit environment: {}", e);
+    }
+
+    if let Err(e) = app.emit("iracing://telemetry/chassis", &chassis) {
+        warn!("Failed to emit chassis: {}", e);
     }
 }

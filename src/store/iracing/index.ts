@@ -7,6 +7,7 @@ import type {
   CarIdxFrame,
   CarInputsFrame,
   CarStatusFrame,
+  ChassisFrame,
   EnvironmentFrame,
   LapTimingFrame,
   SessionFrame,
@@ -221,6 +222,13 @@ class TelemetryConnection {
           telemetryStore.updateEnvironment(event.payload);
         }
       )
+    );
+
+    this.unlistens.push(
+      await listen<ChassisFrame>('iracing://telemetry/chassis', (event) => {
+        if (this.initId !== guardId) return;
+        telemetryStore.updateChassis(event.payload);
+      })
     );
 
     this.unlistens.push(

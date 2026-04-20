@@ -35,7 +35,7 @@ pub mod frames;
 pub mod service;
 
 pub use frames::{
-    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame,
+    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame,
     EnvironmentFrame, LapTimingFrame, SessionFrame,
 };
 pub use service::{

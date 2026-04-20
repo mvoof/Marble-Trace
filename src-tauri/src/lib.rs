@@ -2,7 +2,7 @@ mod iracing;
 
 use iracing::{
     get_last_session_info, start_telemetry_stream, stop_telemetry_stream,
-    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame,
+    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame,
     EnvironmentFrame, LapTimingFrame, SessionFrame, TelemetryState,
 };
 use pitwall::SessionInfo;
@@ -28,6 +28,7 @@ pub fn run() {
         .register::<CarIdxFrame>()
         .register::<CarInputsFrame>()
         .register::<CarStatusFrame>()
+        .register::<ChassisFrame>()
         .register::<LapTimingFrame>()
         .register::<SessionFrame>()
         .register::<EnvironmentFrame>()

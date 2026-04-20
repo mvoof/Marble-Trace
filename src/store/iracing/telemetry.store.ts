@@ -5,6 +5,7 @@ import type {
   CarIdxFrame,
   CarInputsFrame,
   CarStatusFrame,
+  ChassisFrame,
   EnvironmentFrame,
   LapTimingFrame,
   SessionFrame,
@@ -19,6 +20,7 @@ class TelemetryStore {
   carIdx: CarIdxFrame | null = null;
   carInputs: CarInputsFrame | null = null;
   carStatus: CarStatusFrame | null = null;
+  chassis: ChassisFrame | null = null;
   environment: EnvironmentFrame | null = null;
   lapTiming: LapTimingFrame | null = null;
   session: SessionFrame | null = null;
@@ -80,6 +82,10 @@ class TelemetryStore {
     this.carStatus = frame;
   }
 
+  updateChassis(frame: ChassisFrame) {
+    this.chassis = frame;
+  }
+
   updateEnvironment(frame: EnvironmentFrame) {
     this.environment = frame;
   }
@@ -102,6 +108,7 @@ class TelemetryStore {
     this.carIdx = null;
     this.carInputs = null;
     this.carStatus = null;
+    this.chassis = null;
     this.environment = null;
     this.lapTiming = null;
     this.session = null;

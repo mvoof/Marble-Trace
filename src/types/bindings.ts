@@ -261,6 +261,49 @@ export type CarStatusFrame = {
   car_left_right: number | null;
 };
 
+export type ChassisFrame = {
+  lf_ride_height: number | null;
+  rf_ride_height: number | null;
+  lr_ride_height: number | null;
+  rr_ride_height: number | null;
+  lf_shock_defl: number | null;
+  rf_shock_defl: number | null;
+  lr_shock_defl: number | null;
+  rr_shock_defl: number | null;
+  lf_temp_cl: number | null;
+  lf_temp_cm: number | null;
+  lf_temp_cr: number | null;
+  rf_temp_cl: number | null;
+  rf_temp_cm: number | null;
+  rf_temp_cr: number | null;
+  lr_temp_cl: number | null;
+  lr_temp_cm: number | null;
+  lr_temp_cr: number | null;
+  rr_temp_cl: number | null;
+  rr_temp_cm: number | null;
+  rr_temp_cr: number | null;
+  lf_pressure: number | null;
+  rf_pressure: number | null;
+  lr_pressure: number | null;
+  rr_pressure: number | null;
+  lf_wear_l: number | null;
+  lf_wear_m: number | null;
+  lf_wear_r: number | null;
+  rf_wear_l: number | null;
+  rf_wear_m: number | null;
+  rf_wear_r: number | null;
+  lr_wear_l: number | null;
+  lr_wear_m: number | null;
+  lr_wear_r: number | null;
+  rr_wear_l: number | null;
+  rr_wear_m: number | null;
+  rr_wear_r: number | null;
+  lf_brake_temp: number | null;
+  rf_brake_temp: number | null;
+  lr_brake_temp: number | null;
+  rr_brake_temp: number | null;
+};
+
 /**
  * Individual driver data (from Drivers list)
  */

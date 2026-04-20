@@ -307,6 +307,18 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     },
   },
   {
+    id: 'chassis',
+    label: 'Chassis (Tires & Suspension)',
+    enabled: false,
+    x: 100,
+    y: 100,
+    width: 460,
+    height: 320,
+    backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
+    hotkey: '',
+  },
+  {
     id: 'example',
     label: 'Telemetry Debug',
     enabled: false,

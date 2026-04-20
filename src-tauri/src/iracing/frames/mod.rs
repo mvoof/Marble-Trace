@@ -10,6 +10,7 @@ pub mod car_dynamics;
 pub mod car_idx;
 pub mod car_inputs;
 pub mod car_status;
+pub mod chassis;
 pub mod environment;
 pub mod lap_timing;
 pub mod session;
@@ -18,6 +19,7 @@ pub use car_dynamics::CarDynamicsFrame;
 pub use car_idx::CarIdxFrame;
 pub use car_inputs::CarInputsFrame;
 pub use car_status::CarStatusFrame;
+pub use chassis::ChassisFrame;
 pub use environment::EnvironmentFrame;
 pub use lap_timing::LapTimingFrame;
 pub use session::SessionFrame;
@@ -128,6 +130,98 @@ pub(crate) struct AllFieldsFrame {
     // === Environment ===
     #[field_name = "AirTemp"]
     pub air_temp: Option<f32>,
+
+    // === Chassis — Ride Height (meters) ===
+    #[field_name = "LFrideHeight"]
+    pub lf_ride_height: Option<f32>,
+    #[field_name = "RFrideHeight"]
+    pub rf_ride_height: Option<f32>,
+    #[field_name = "LRrideHeight"]
+    pub lr_ride_height: Option<f32>,
+    #[field_name = "RRrideHeight"]
+    pub rr_ride_height: Option<f32>,
+
+    // === Chassis — Shock Deflection (meters) ===
+    #[field_name = "LFshockDefl"]
+    pub lf_shock_defl: Option<f32>,
+    #[field_name = "RFshockDefl"]
+    pub rf_shock_defl: Option<f32>,
+    #[field_name = "LRshockDefl"]
+    pub lr_shock_defl: Option<f32>,
+    #[field_name = "RRshockDefl"]
+    pub rr_shock_defl: Option<f32>,
+
+    // === Chassis — Tire Temperatures °C (inner/middle/outer) ===
+    #[field_name = "LFtempCL"]
+    pub lf_temp_cl: Option<f32>,
+    #[field_name = "LFtempCM"]
+    pub lf_temp_cm: Option<f32>,
+    #[field_name = "LFtempCR"]
+    pub lf_temp_cr: Option<f32>,
+    #[field_name = "RFtempCL"]
+    pub rf_temp_cl: Option<f32>,
+    #[field_name = "RFtempCM"]
+    pub rf_temp_cm: Option<f32>,
+    #[field_name = "RFtempCR"]
+    pub rf_temp_cr: Option<f32>,
+    #[field_name = "LRtempCL"]
+    pub lr_temp_cl: Option<f32>,
+    #[field_name = "LRtempCM"]
+    pub lr_temp_cm: Option<f32>,
+    #[field_name = "LRtempCR"]
+    pub lr_temp_cr: Option<f32>,
+    #[field_name = "RRtempCL"]
+    pub rr_temp_cl: Option<f32>,
+    #[field_name = "RRtempCM"]
+    pub rr_temp_cm: Option<f32>,
+    #[field_name = "RRtempCR"]
+    pub rr_temp_cr: Option<f32>,
+
+    // === Chassis — Tire Pressure (kPa) ===
+    #[field_name = "LFpressure"]
+    pub lf_pressure: Option<f32>,
+    #[field_name = "RFpressure"]
+    pub rf_pressure: Option<f32>,
+    #[field_name = "LRpressure"]
+    pub lr_pressure: Option<f32>,
+    #[field_name = "RRpressure"]
+    pub rr_pressure: Option<f32>,
+
+    // === Chassis — Tire Wear (0.0–1.0, inner/middle/outer) ===
+    #[field_name = "LFwearL"]
+    pub lf_wear_l: Option<f32>,
+    #[field_name = "LFwearM"]
+    pub lf_wear_m: Option<f32>,
+    #[field_name = "LFwearR"]
+    pub lf_wear_r: Option<f32>,
+    #[field_name = "RFwearL"]
+    pub rf_wear_l: Option<f32>,
+    #[field_name = "RFwearM"]
+    pub rf_wear_m: Option<f32>,
+    #[field_name = "RFwearR"]
+    pub rf_wear_r: Option<f32>,
+    #[field_name = "LRwearL"]
+    pub lr_wear_l: Option<f32>,
+    #[field_name = "LRwearM"]
+    pub lr_wear_m: Option<f32>,
+    #[field_name = "LRwearR"]
+    pub lr_wear_r: Option<f32>,
+    #[field_name = "RRwearL"]
+    pub rr_wear_l: Option<f32>,
+    #[field_name = "RRwearM"]
+    pub rr_wear_m: Option<f32>,
+    #[field_name = "RRwearR"]
+    pub rr_wear_r: Option<f32>,
+
+    // === Chassis — Brake Disc Temperature (°C) ===
+    #[field_name = "LFbrakeTemp"]
+    pub lf_brake_temp: Option<f32>,
+    #[field_name = "RFbrakeTemp"]
+    pub rf_brake_temp: Option<f32>,
+    #[field_name = "LRbrakeTemp"]
+    pub lr_brake_temp: Option<f32>,
+    #[field_name = "RRbrakeTemp"]
+    pub rr_brake_temp: Option<f32>,
 
     // === Car Index (per-car arrays) ===
     #[field_name = "CarIdxLapDistPct"]
@@ -255,6 +349,53 @@ impl From<&AllFieldsFrame> for EnvironmentFrame {
     fn from(f: &AllFieldsFrame) -> Self {
         Self {
             air_temp: f.air_temp,
+        }
+    }
+}
+
+impl From<&AllFieldsFrame> for ChassisFrame {
+    fn from(f: &AllFieldsFrame) -> Self {
+        Self {
+            lf_ride_height: f.lf_ride_height,
+            rf_ride_height: f.rf_ride_height,
+            lr_ride_height: f.lr_ride_height,
+            rr_ride_height: f.rr_ride_height,
+            lf_shock_defl: f.lf_shock_defl,
+            rf_shock_defl: f.rf_shock_defl,
+            lr_shock_defl: f.lr_shock_defl,
+            rr_shock_defl: f.rr_shock_defl,
+            lf_temp_cl: f.lf_temp_cl,
+            lf_temp_cm: f.lf_temp_cm,
+            lf_temp_cr: f.lf_temp_cr,
+            rf_temp_cl: f.rf_temp_cl,
+            rf_temp_cm: f.rf_temp_cm,
+            rf_temp_cr: f.rf_temp_cr,
+            lr_temp_cl: f.lr_temp_cl,
+            lr_temp_cm: f.lr_temp_cm,
+            lr_temp_cr: f.lr_temp_cr,
+            rr_temp_cl: f.rr_temp_cl,
+            rr_temp_cm: f.rr_temp_cm,
+            rr_temp_cr: f.rr_temp_cr,
+            lf_pressure: f.lf_pressure,
+            rf_pressure: f.rf_pressure,
+            lr_pressure: f.lr_pressure,
+            rr_pressure: f.rr_pressure,
+            lf_wear_l: f.lf_wear_l,
+            lf_wear_m: f.lf_wear_m,
+            lf_wear_r: f.lf_wear_r,
+            rf_wear_l: f.rf_wear_l,
+            rf_wear_m: f.rf_wear_m,
+            rf_wear_r: f.rf_wear_r,
+            lr_wear_l: f.lr_wear_l,
+            lr_wear_m: f.lr_wear_m,
+            lr_wear_r: f.lr_wear_r,
+            rr_wear_l: f.rr_wear_l,
+            rr_wear_m: f.rr_wear_m,
+            rr_wear_r: f.rr_wear_r,
+            lf_brake_temp: f.lf_brake_temp,
+            rf_brake_temp: f.rf_brake_temp,
+            lr_brake_temp: f.lr_brake_temp,
+            rr_brake_temp: f.rr_brake_temp,
         }
     }
 }
