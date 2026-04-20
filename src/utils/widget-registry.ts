@@ -8,6 +8,7 @@ import { StandingsWidgetContainer } from '../components/widgets/StandingsWidget/
 import { RelativeWidgetContainer } from '../components/widgets/RelativeWidget/RelativeWidgetContainer';
 import { TrackMapWidgetContainer } from '../components/widgets/TrackMapWidget/TrackMapWidgetContainer';
 import { LinearMapWidgetContainer } from '../components/widgets/LinearMapWidget/LinearMapWidgetContainer';
+import { FlagsWidgetContainer } from '../components/widgets/FlagsWidget/FlagsWidgetContainer';
 import { widgetSettingsStore } from '../store/widget-settings.store';
 
 export interface WidgetVariant {
@@ -135,6 +136,17 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
         designWidth: 40,
         designHeight: 400,
         adaptive: true,
+      },
+    },
+  },
+
+  flags: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: FlagsWidgetContainer,
+        designWidth: 630,
+        designHeight: 189,
       },
     },
   },

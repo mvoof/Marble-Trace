@@ -81,6 +81,14 @@ export interface LinearMapWidgetSettings {
   orientation: LinearMapOrientation;
 }
 
+export type FlagsVariant = 'overlay' | 'under-mirror' | 'standalone';
+
+export interface FlagsWidgetSettings {
+  variant: FlagsVariant;
+  cutoutWidth: number;
+  cutoutHeight: number;
+}
+
 export interface WidgetCustomSettings {
   speed?: SpeedWidgetSettings;
   'input-trace'?: InputTraceSettings;
@@ -90,6 +98,7 @@ export interface WidgetCustomSettings {
   relative?: RelativeWidgetSettings;
   'track-map'?: TrackMapWidgetSettings;
   'linear-map'?: LinearMapWidgetSettings;
+  flags?: FlagsWidgetSettings;
 }
 
 export interface WidgetConfig {
@@ -236,6 +245,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showIRatingBadge: true,
         showClassBadge: true,
         showPitIndicator: true,
+        abbreviateNames: true,
       },
     },
   },
@@ -274,6 +284,25 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     customSettings: {
       'linear-map': {
         orientation: 'horizontal',
+      },
+    },
+  },
+  {
+    id: 'flags',
+    label: 'LED Flags',
+    enabled: false,
+    x: 760,
+    y: 0,
+    width: 630,
+    height: 189,
+    backgroundColor: 'transparent',
+    backgroundColorEdge: 'transparent',
+    hotkey: '',
+    customSettings: {
+      flags: {
+        variant: 'overlay',
+        cutoutWidth: 6,
+        cutoutHeight: 1,
       },
     },
   },
@@ -515,6 +544,17 @@ class WidgetSettingsStore {
     return (
       widget?.customSettings?.['linear-map'] ?? {
         orientation: 'horizontal',
+      }
+    );
+  }
+
+  getFlagsSettings(): FlagsWidgetSettings {
+    const widget = this.getWidget('flags');
+    return (
+      widget?.customSettings?.flags ?? {
+        variant: 'overlay',
+        cutoutWidth: 6,
+        cutoutHeight: 1,
       }
     );
   }
