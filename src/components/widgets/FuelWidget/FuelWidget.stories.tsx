@@ -44,6 +44,7 @@ export const Default: Story = {
     pitWindowStart: null,
     pitWindowEnd: null,
     showChart: false,
+    chartType: 'bar',
     lapFuelHistory: [],
   },
 };
@@ -62,6 +63,7 @@ export const ShortFuel: Story = {
     pitWindowStart: 29,
     pitWindowEnd: 31,
     showChart: false,
+    chartType: 'bar',
     lapFuelHistory: [],
   },
 };
@@ -80,11 +82,12 @@ export const PitWarning: Story = {
     pitWindowStart: 34,
     pitWindowEnd: 36,
     showChart: false,
+    chartType: 'bar',
     lapFuelHistory: [],
   },
 };
 
-export const WithChart: Story = {
+export const WithBarChart: Story = {
   args: {
     fuelLevel: 35.0,
     fuelMax: 70,
@@ -98,6 +101,26 @@ export const WithChart: Story = {
     pitWindowStart: null,
     pitWindowEnd: null,
     showChart: true,
+    chartType: 'bar',
+    lapFuelHistory: [2.3, 2.1, 2.25, 2.15, 2.2, 2.18, 2.22, 2.14],
+  },
+};
+
+export const WithLineChart: Story = {
+  args: {
+    fuelLevel: 35.0,
+    fuelMax: 70,
+    avgPerLap: 2.18,
+    lapsRemaining: 16.1,
+    lapsToFinish: 14,
+    shortage: 4.48,
+    fuelToAddWithBuffer: 0,
+    fuelSavePerLap: null,
+    pitWarning: false,
+    pitWindowStart: null,
+    pitWindowEnd: null,
+    showChart: true,
+    chartType: 'line',
     lapFuelHistory: [2.3, 2.1, 2.25, 2.15, 2.2, 2.18, 2.22, 2.14],
   },
 };
@@ -116,6 +139,7 @@ export const ShortFuelWithChart: Story = {
     pitWindowStart: 27,
     pitWindowEnd: 29,
     showChart: true,
+    chartType: 'bar',
     lapFuelHistory: [2.3, 2.1, 2.25, 2.15, 2.2, 2.38, 2.42, 2.35],
   },
 };
@@ -134,6 +158,7 @@ export const NoData: Story = {
     pitWindowStart: null,
     pitWindowEnd: null,
     showChart: false,
+    chartType: 'bar',
     lapFuelHistory: [],
   },
 };

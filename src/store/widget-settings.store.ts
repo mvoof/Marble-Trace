@@ -100,6 +100,7 @@ export interface WeatherWidgetSettings {
 export interface FuelWidgetSettings {
   showChart: boolean;
   pitWarningLaps: number;
+  chartType: 'line' | 'bar';
 }
 
 export interface WidgetCustomSettings {
@@ -429,6 +430,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
       fuel: {
         showChart: false,
         pitWarningLaps: 3,
+        chartType: 'bar',
       },
     },
   },
@@ -699,6 +701,7 @@ class WidgetSettingsStore {
       widget?.customSettings?.fuel ?? {
         showChart: false,
         pitWarningLaps: 3,
+        chartType: 'bar',
       }
     );
   }

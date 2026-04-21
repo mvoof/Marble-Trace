@@ -230,7 +230,7 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
       default: {
         component: FuelWidgetContainer,
         designWidth: 240,
-        designHeight: 220,
+        designHeight: 340,
       },
     },
   },

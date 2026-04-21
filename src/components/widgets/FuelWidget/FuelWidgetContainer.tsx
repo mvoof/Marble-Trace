@@ -81,6 +81,7 @@ export const FuelWidgetContainer = observer(() => {
       pitWindowStart={calc.pitWindowStart}
       pitWindowEnd={calc.pitWindowEnd}
       showChart={settings.showChart}
+      chartType={settings.chartType}
       lapFuelHistory={lapFuelHistory}
     />
   );
