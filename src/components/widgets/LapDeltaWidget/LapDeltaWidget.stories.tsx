@@ -5,7 +5,7 @@ import { LapDeltaWidget } from './LapDeltaWidget';
 import { WidgetScaler } from '../../WidgetScaler';
 
 const DESIGN_WIDTH = 240;
-const DESIGN_HEIGHT = 140;
+const DESIGN_HEIGHT = 160;
 
 const wrap = (props: ComponentProps<typeof LapDeltaWidget>) => (
   <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
@@ -36,9 +36,7 @@ export const Default: Story = {
     deltaState: 'behind',
     currentLap: 12,
     totalLaps: '38',
-    s1Delta: null,
-    s2Delta: null,
-    s3Delta: null,
+    sectorDeltas: [null, null, null],
   },
 };
 
@@ -48,9 +46,7 @@ export const Ahead: Story = {
     deltaState: 'ahead',
     currentLap: 8,
     totalLaps: '38',
-    s1Delta: null,
-    s2Delta: null,
-    s3Delta: null,
+    sectorDeltas: [null, null, null],
   },
 };
 
@@ -60,9 +56,27 @@ export const WithSectors: Story = {
     deltaState: 'behind',
     currentLap: 5,
     totalLaps: '30',
-    s1Delta: 0.1,
-    s2Delta: -0.05,
-    s3Delta: 0.26,
+    sectorDeltas: [0.1, -0.05, 0.26],
+  },
+};
+
+export const TwoSectors: Story = {
+  args: {
+    deltaFormatted: '-0.180',
+    deltaState: 'ahead',
+    currentLap: 7,
+    totalLaps: '20',
+    sectorDeltas: [-0.12, -0.06],
+  },
+};
+
+export const FiveSectors: Story = {
+  args: {
+    deltaFormatted: '+0.540',
+    deltaState: 'behind',
+    currentLap: 3,
+    totalLaps: '15',
+    sectorDeltas: [0.05, -0.03, 0.18, 0.22, 0.1],
   },
 };
 
@@ -72,9 +86,7 @@ export const NearZero: Story = {
     deltaState: 'neutral',
     currentLap: 1,
     totalLaps: '38',
-    s1Delta: null,
-    s2Delta: null,
-    s3Delta: null,
+    sectorDeltas: [null, null, null],
   },
 };
 
@@ -84,9 +96,7 @@ export const Unlimited: Story = {
     deltaState: 'ahead',
     currentLap: 3,
     totalLaps: 'unlimited',
-    s1Delta: null,
-    s2Delta: null,
-    s3Delta: null,
+    sectorDeltas: [null, null, null],
   },
 };
 
@@ -96,8 +106,6 @@ export const NoData: Story = {
     deltaState: 'neutral',
     currentLap: null,
     totalLaps: null,
-    s1Delta: null,
-    s2Delta: null,
-    s3Delta: null,
+    sectorDeltas: [],
   },
 };

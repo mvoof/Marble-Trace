@@ -15,6 +15,7 @@ import { LapTimesWidgetContainer } from '../components/widgets/LapTimesWidget/La
 import { SessionWidgetContainer } from '../components/widgets/SessionWidget/SessionWidgetContainer';
 import { TimerWidgetContainer } from '../components/widgets/TimerWidget/TimerWidgetContainer';
 import { WeatherWidgetContainer } from '../components/widgets/WeatherWidget/WeatherWidgetContainer';
+import { FuelWidgetContainer } from '../components/widgets/FuelWidget/FuelWidgetContainer';
 import { widgetSettingsStore } from '../store/widget-settings.store';
 
 export interface WidgetVariant {
@@ -219,6 +220,17 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
         component: WeatherWidgetContainer,
         designWidth: 240,
         designHeight: 280,
+      },
+    },
+  },
+
+  fuel: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: FuelWidgetContainer,
+        designWidth: 240,
+        designHeight: 220,
       },
     },
   },

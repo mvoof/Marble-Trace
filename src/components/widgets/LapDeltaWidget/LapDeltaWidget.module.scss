@@ -39,7 +39,7 @@
 
 .sectorGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(var(--sector-cols, 3), 1fr);
   gap: 4px;
   padding: 0 $space-md $space-md;
   font-family: $font-mono;

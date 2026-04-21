@@ -97,6 +97,11 @@ export interface WeatherWidgetSettings {
   showHumidity: boolean;
 }
 
+export interface FuelWidgetSettings {
+  showChart: boolean;
+  pitWarningLaps: number;
+}
+
 export interface WidgetCustomSettings {
   speed?: SpeedWidgetSettings;
   'input-trace'?: InputTraceSettings;
@@ -108,6 +113,7 @@ export interface WidgetCustomSettings {
   'linear-map'?: LinearMapWidgetSettings;
   flags?: FlagsWidgetSettings;
   weather?: WeatherWidgetSettings;
+  fuel?: FuelWidgetSettings;
 }
 
 export interface WidgetConfig {
@@ -408,6 +414,24 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
       },
     },
   },
+  {
+    id: 'fuel',
+    label: 'Fuel Strategy',
+    enabled: false,
+    x: 760,
+    y: 500,
+    width: 240,
+    height: 220,
+    backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
+    hotkey: '',
+    customSettings: {
+      fuel: {
+        showChart: false,
+        pitWarningLaps: 3,
+      },
+    },
+  },
 ];
 
 interface WidgetFieldUpdate {
@@ -665,6 +689,16 @@ class WidgetSettingsStore {
         showTrackTemp: true,
         showWind: true,
         showHumidity: true,
+      }
+    );
+  }
+
+  getFuelSettings(): FuelWidgetSettings {
+    const widget = this.getWidget('fuel');
+    return (
+      widget?.customSettings?.fuel ?? {
+        showChart: false,
+        pitWarningLaps: 3,
       }
     );
   }

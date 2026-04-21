@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import type { DeltaState } from './lap-delta-utils';
 
@@ -8,9 +10,7 @@ interface LapDeltaWidgetProps {
   deltaState: DeltaState;
   currentLap: number | null;
   totalLaps: string | null;
-  s1Delta: number | null;
-  s2Delta: number | null;
-  s3Delta: number | null;
+  sectorDeltas: (number | null)[];
 }
 
 const DELTA_STATE_CLASS: Record<DeltaState, string> = {
@@ -40,18 +40,15 @@ const formatLapCount = (
   return `LAP ${cur}/${tot}`;
 };
 
-const SECTORS = ['S1', 'S2', 'S3'] as const;
-
 export const LapDeltaWidget = ({
   deltaFormatted,
   deltaState,
   currentLap,
   totalLaps,
-  s1Delta,
-  s2Delta,
-  s3Delta,
+  sectorDeltas,
 }: LapDeltaWidgetProps) => {
-  const sectorValues = [s1Delta, s2Delta, s3Delta];
+  const sectorCount = sectorDeltas.length;
+  const cols = sectorCount === 0 ? 3 : Math.min(sectorCount, 3);
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={200}>
@@ -66,13 +63,15 @@ export const LapDeltaWidget = ({
         {deltaFormatted}
       </div>
 
-      <div className={styles.sectorGrid}>
-        {SECTORS.map((label, i) => {
-          const val = sectorValues[i];
+      <div
+        className={styles.sectorGrid}
+        style={{ '--sector-cols': cols } as CSSProperties}
+      >
+        {sectorDeltas.map((val, i) => {
           const cls = sectorStateClass(val);
           return (
-            <div key={label} className={`${styles.sectorCell} ${cls}`}>
-              <span className={styles.sectorLabel}>{label}</span>
+            <div key={i} className={`${styles.sectorCell} ${cls}`}>
+              <span className={styles.sectorLabel}>{`S${i + 1}`}</span>
               <span className={styles.sectorValue}>
                 {formatSectorDelta(val)}
               </span>
