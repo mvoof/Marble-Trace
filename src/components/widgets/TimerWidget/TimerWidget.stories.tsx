@@ -4,8 +4,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { TimerWidget } from './TimerWidget';
 import { WidgetScaler } from '../../WidgetScaler';
 
-const DESIGN_WIDTH = 280;
-const DESIGN_HEIGHT = 80;
+const DESIGN_WIDTH = 240;
+const DESIGN_HEIGHT = 120;
 
 const wrap = (props: ComponentProps<typeof TimerWidget>) => (
   <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
@@ -30,42 +30,67 @@ export default meta;
 
 type Story = StoryObj<typeof TimerWidget>;
 
-export const Default: Story = {
-  args: {
-    displayTime: '0:45:30',
-    sessionTypeLabel: 'PRACTICE',
-    isCountdown: true,
-  },
-};
-
 export const Race: Story = {
   args: {
-    displayTime: '0:08:12',
     sessionTypeLabel: 'RACE',
-    isCountdown: true,
+    flagState: 'green',
+    timeMain: '00:45:',
+    timeSeconds: '12',
+    currentLap: 12,
+    totalLaps: '38',
+    position: 4,
+    totalDrivers: 28,
   },
 };
 
-export const Elapsed: Story = {
+export const FinalMinutes: Story = {
   args: {
-    displayTime: '1:23:45',
+    sessionTypeLabel: 'RACE',
+    flagState: 'final',
+    timeMain: '00:04:',
+    timeSeconds: '22',
+    currentLap: 35,
+    totalLaps: '38',
+    position: 2,
+    totalDrivers: 28,
+  },
+};
+
+export const Checkered: Story = {
+  args: {
+    sessionTypeLabel: 'RACE',
+    flagState: 'checkered',
+    timeMain: '00:00:',
+    timeSeconds: '00',
+    currentLap: 38,
+    totalLaps: '38',
+    position: 1,
+    totalDrivers: 28,
+  },
+};
+
+export const Practice: Story = {
+  args: {
     sessionTypeLabel: 'PRACTICE',
-    isCountdown: false,
-  },
-};
-
-export const ZeroRemain: Story = {
-  args: {
-    displayTime: '0:00:00',
-    sessionTypeLabel: 'QUALIFYING',
-    isCountdown: true,
+    flagState: 'green',
+    timeMain: '00:18:',
+    timeSeconds: '45',
+    currentLap: 3,
+    totalLaps: 'unlimited',
+    position: null,
+    totalDrivers: null,
   },
 };
 
 export const NoData: Story = {
   args: {
-    displayTime: '—',
     sessionTypeLabel: 'SESSION',
-    isCountdown: false,
+    flagState: 'green',
+    timeMain: '00:00:',
+    timeSeconds: '00',
+    currentLap: null,
+    totalLaps: null,
+    position: null,
+    totalDrivers: null,
   },
 };

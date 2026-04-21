@@ -4,8 +4,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { WeatherWidget } from './WeatherWidget';
 import { WidgetScaler } from '../../WidgetScaler';
 
-const DESIGN_WIDTH = 300;
-const DESIGN_HEIGHT = 200;
+const DESIGN_WIDTH = 240;
+const DESIGN_HEIGHT = 280;
 
 const wrap = (props: ComponentProps<typeof WeatherWidget>) => (
   <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
@@ -30,8 +30,17 @@ export default meta;
 
 type Story = StoryObj<typeof WeatherWidget>;
 
+const allVisible = {
+  showCompass: true,
+  showAirTemp: true,
+  showTrackTemp: true,
+  showWind: true,
+  showHumidity: true,
+};
+
 export const Default: Story = {
   args: {
+    ...allVisible,
     windBearing: 315,
     carYawDeg: 0,
     windSpeedFormatted: '12 KM/H',
@@ -39,13 +48,13 @@ export const Default: Story = {
     airTempFormatted: '22.4',
     trackTempFormatted: '38.1',
     tempUnit: '°C',
-    skiesText: 'Partly Cloudy',
-    skiesIcon: 'cloud-sun',
+    humidity: '62%',
   },
 };
 
 export const StrongWindNorth: Story = {
   args: {
+    ...allVisible,
     windBearing: 0,
     carYawDeg: 0,
     windSpeedFormatted: '48 KM/H',
@@ -53,13 +62,13 @@ export const StrongWindNorth: Story = {
     airTempFormatted: '18.0',
     trackTempFormatted: '25.5',
     tempUnit: '°C',
-    skiesText: 'Overcast',
-    skiesIcon: 'cloud',
+    humidity: '74%',
   },
 };
 
 export const HeadingWest: Story = {
   args: {
+    ...allVisible,
     windBearing: 0,
     carYawDeg: 90,
     windSpeedFormatted: '20 KM/H',
@@ -67,13 +76,14 @@ export const HeadingWest: Story = {
     airTempFormatted: '24.0',
     trackTempFormatted: '40.2',
     tempUnit: '°C',
-    skiesText: 'Clear',
-    skiesIcon: 'sun',
+    humidity: '55%',
   },
 };
 
-export const ClearSky: Story = {
+export const NoCompass: Story = {
   args: {
+    ...allVisible,
+    showCompass: false,
     windBearing: 180,
     carYawDeg: 45,
     windSpeedFormatted: '8 KM/H',
@@ -81,27 +91,13 @@ export const ClearSky: Story = {
     airTempFormatted: '30.2',
     trackTempFormatted: '52.8',
     tempUnit: '°C',
-    skiesText: 'Clear',
-    skiesIcon: 'sun',
-  },
-};
-
-export const Rainy: Story = {
-  args: {
-    windBearing: 270,
-    carYawDeg: 180,
-    windSpeedFormatted: '35 KM/H',
-    windCardinal: 'W',
-    airTempFormatted: '12.1',
-    trackTempFormatted: '14.0',
-    tempUnit: '°C',
-    skiesText: 'Rain',
-    skiesIcon: 'cloud-rain',
+    humidity: '40%',
   },
 };
 
 export const NoData: Story = {
   args: {
+    ...allVisible,
     windBearing: 0,
     carYawDeg: 0,
     windSpeedFormatted: '—',
@@ -109,7 +105,6 @@ export const NoData: Story = {
     airTempFormatted: '—',
     trackTempFormatted: '—',
     tempUnit: '°C',
-    skiesText: '',
-    skiesIcon: 'sun',
+    humidity: '—',
   },
 };

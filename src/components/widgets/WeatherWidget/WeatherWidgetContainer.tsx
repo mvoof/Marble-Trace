@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../store/iracing';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { unitsStore } from '../../../store/units.store';
 import {
   bearingToCardinal,
   formatWindSpeed,
-  getSkiesIconType,
   parseWeekendFloat,
   radsToBearing,
 } from './weather-utils';
@@ -16,6 +16,7 @@ export const WeatherWidgetContainer = observer(() => {
   const env = telemetryStore.environment;
   const carDynamics = telemetryStore.carDynamics;
   const { system, formatTemp, tempUnit } = unitsStore;
+  const settings = widgetSettingsStore.getWeatherSettings();
 
   const windVelMps = parseWeekendFloat(weekendInfo?.TrackWindVel);
   const windDirRad = parseWeekendFloat(weekendInfo?.TrackWindDir);
@@ -30,7 +31,8 @@ export const WeatherWidgetContainer = observer(() => {
   const carYawRad = carDynamics?.yaw ?? 0;
   const carYawDeg = carYawRad * (180 / Math.PI);
 
-  const skiesText = weekendInfo?.TrackSkies ?? '';
+  const rawHumidity = parseWeekendFloat(weekendInfo?.TrackRelativeHumidity);
+  const humidity = rawHumidity !== null ? `${Math.round(rawHumidity)}%` : '—';
 
   return (
     <WeatherWidget
@@ -41,8 +43,12 @@ export const WeatherWidgetContainer = observer(() => {
       airTempFormatted={formatTemp(airTempC)}
       trackTempFormatted={formatTemp(trackTempC)}
       tempUnit={tempUnit}
-      skiesText={skiesText}
-      skiesIcon={getSkiesIconType(skiesText)}
+      humidity={humidity}
+      showCompass={settings.showCompass}
+      showAirTemp={settings.showAirTemp}
+      showTrackTemp={settings.showTrackTemp}
+      showWind={settings.showWind}
+      showHumidity={settings.showHumidity}
     />
   );
 });

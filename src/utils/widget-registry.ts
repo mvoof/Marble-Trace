@@ -173,8 +173,8 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     variants: {
       default: {
         component: LapDeltaWidgetContainer,
-        designWidth: 320,
-        designHeight: 90,
+        designWidth: 240,
+        designHeight: 140,
       },
     },
   },
@@ -184,8 +184,8 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     variants: {
       default: {
         component: LapTimesWidgetContainer,
-        designWidth: 300,
-        designHeight: 120,
+        designWidth: 260,
+        designHeight: 160,
       },
     },
   },
@@ -206,8 +206,8 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     variants: {
       default: {
         component: TimerWidgetContainer,
-        designWidth: 280,
-        designHeight: 80,
+        designWidth: 240,
+        designHeight: 120,
       },
     },
   },
@@ -217,8 +217,8 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     variants: {
       default: {
         component: WeatherWidgetContainer,
-        designWidth: 300,
-        designHeight: 200,
+        designWidth: 240,
+        designHeight: 280,
       },
     },
   },

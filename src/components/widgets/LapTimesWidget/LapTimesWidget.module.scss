@@ -1,38 +1,76 @@
 @use '../../../styles/variables' as *;
 
-.row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: $space-md $space-xl;
-  flex: 1 1 0;
-  min-height: 0;
+.header {
+  padding: $space-md $space-md $space-sm;
 }
 
-.divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.08);
-  margin: 0 $space-xl;
+.headerLabel {
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 60px 1fr 64px;
+  align-items: baseline;
+  font-family: $font-mono;
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid transparent;
+  margin: 0 $space-sm 2px;
+
+  &.rowLast {
+    border-left-color: #ef4444;
+
+    .delta {
+      color: #ef4444;
+    }
+  }
+
+  &.rowBest {
+    border-left-color: #fbbf24;
+
+    .delta {
+      color: #fbbf24;
+    }
+  }
+
+  &.rowOptimal {
+    border-left-color: #22c55e;
+
+    .delta {
+      color: #22c55e;
+    }
+  }
+
+  &.rowP1 {
+    border-left-color: #e0e0e0;
+
+    .delta {
+      color: #e0e0e0;
+    }
+  }
 }
 
 .label {
-  font-family: $font-widget;
-  font-size: $font-size-xs;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
+  font-size: 10px;
   color: $color-text-muted;
+  letter-spacing: 1px;
 }
 
-.value {
-  font-family: $font-widget;
-  font-size: $font-size-lg;
-  font-weight: 600;
+.time {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
   font-variant-numeric: tabular-nums;
-  color: $color-text-primary;
-  white-space: nowrap;
 }
 
-.valueAccent {
-  color: $color-text-accent;
+.delta {
+  font-size: 11px;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: $color-text-muted;
 }

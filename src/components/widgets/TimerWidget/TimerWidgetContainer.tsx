@@ -1,30 +1,71 @@
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../store/iracing';
-import { formatSessionTime } from '../../../utils/telemetry-format';
+import type { FlagState } from './TimerWidget';
 import { TimerWidget } from './TimerWidget';
+
+const SESSION_FLAG_CHECKERED = 0x0001;
+
+const resolveFlagState = (
+  flags: number | null,
+  remainSeconds: number | null
+): FlagState => {
+  if (flags !== null && (flags & SESSION_FLAG_CHECKERED) !== 0)
+    return 'checkered';
+  if (remainSeconds !== null && remainSeconds >= 0 && remainSeconds < 300)
+    return 'final';
+  return 'green';
+};
+
+const splitTime = (seconds: number): { main: string; secs: string } => {
+  const total = Math.max(0, Math.floor(seconds));
+  const h = String(Math.floor(total / 3600)).padStart(2, '0');
+  const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+  const s = String(total % 60).padStart(2, '0');
+  return { main: `${h}:${m}:`, secs: s };
+};
 
 export const TimerWidgetContainer = observer(() => {
   const session = telemetryStore.session;
   const sessions = telemetryStore.sessionInfo?.SessionInfo?.Sessions ?? [];
+  const driverInfo = telemetryStore.driverInfo;
+  const carIdx = telemetryStore.carIdx;
+  const lap = telemetryStore.lapTiming;
+
   const sessionNum = session?.session_num ?? null;
   const currentSession =
     sessionNum !== null ? (sessions[sessionNum] ?? null) : null;
-
   const sessionTypeLabel =
     currentSession?.SessionType?.toUpperCase() ?? 'SESSION';
 
   const remain = session?.session_time_remain ?? null;
   const elapsed = session?.session_time ?? null;
   const isCountdown = remain !== null && remain >= 0;
+  const rawSeconds = isCountdown ? (remain ?? 0) : (elapsed ?? 0);
 
-  const displayTime = formatSessionTime(isCountdown ? remain : elapsed);
+  const { main: timeMain, secs: timeSeconds } = splitTime(rawSeconds);
+
+  const flagState = resolveFlagState(session?.session_flags ?? null, remain);
+
+  const playerCarIdx = driverInfo?.DriverCarIdx ?? null;
+  const currentLap =
+    playerCarIdx !== null ? (carIdx?.car_idx_lap[playerCarIdx] ?? null) : null;
+  const totalLaps =
+    sessionNum !== null ? (currentSession?.SessionLaps ?? null) : null;
+
+  const position = lap?.player_car_position ?? null;
+  const totalDrivers = driverInfo?.Drivers?.length ?? null;
 
   return (
     <TimerWidget
-      displayTime={displayTime}
       sessionTypeLabel={sessionTypeLabel}
-      isCountdown={isCountdown}
+      flagState={flagState}
+      timeMain={timeMain}
+      timeSeconds={timeSeconds}
+      currentLap={currentLap}
+      totalLaps={totalLaps}
+      position={position}
+      totalDrivers={totalDrivers}
     />
   );
 });

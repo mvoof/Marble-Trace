@@ -89,6 +89,14 @@ export interface FlagsWidgetSettings {
   cutoutHeight: number;
 }
 
+export interface WeatherWidgetSettings {
+  showCompass: boolean;
+  showAirTemp: boolean;
+  showTrackTemp: boolean;
+  showWind: boolean;
+  showHumidity: boolean;
+}
+
 export interface WidgetCustomSettings {
   speed?: SpeedWidgetSettings;
   'input-trace'?: InputTraceSettings;
@@ -99,6 +107,7 @@ export interface WidgetCustomSettings {
   'track-map'?: TrackMapWidgetSettings;
   'linear-map'?: LinearMapWidgetSettings;
   flags?: FlagsWidgetSettings;
+  weather?: WeatherWidgetSettings;
 }
 
 export interface WidgetConfig {
@@ -336,8 +345,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 400,
     y: 200,
-    width: 320,
-    height: 90,
+    width: 240,
+    height: 140,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
@@ -348,8 +357,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 400,
     y: 300,
-    width: 300,
-    height: 120,
+    width: 260,
+    height: 160,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
@@ -372,8 +381,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 50,
     y: 310,
-    width: 280,
-    height: 80,
+    width: 240,
+    height: 120,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
@@ -384,11 +393,20 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 760,
     y: 200,
-    width: 300,
-    height: 200,
+    width: 240,
+    height: 280,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
+    customSettings: {
+      weather: {
+        showCompass: true,
+        showAirTemp: true,
+        showTrackTemp: true,
+        showWind: true,
+        showHumidity: true,
+      },
+    },
   },
 ];
 
@@ -634,6 +652,19 @@ class WidgetSettingsStore {
         variant: 'overlay',
         cutoutWidth: 6,
         cutoutHeight: 1,
+      }
+    );
+  }
+
+  getWeatherSettings(): WeatherWidgetSettings {
+    const widget = this.getWidget('weather');
+    return (
+      widget?.customSettings?.weather ?? {
+        showCompass: true,
+        showAirTemp: true,
+        showTrackTemp: true,
+        showWind: true,
+        showHumidity: true,
       }
     );
   }

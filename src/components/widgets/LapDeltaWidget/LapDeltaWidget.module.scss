@@ -1,93 +1,90 @@
 @use '../../../styles/variables' as *;
 
-.deltaRow {
+.header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  padding: $space-sm $space-xl 0;
-  flex: 1 1 0;
-  min-height: 0;
+  padding: $space-md $space-md $space-xs;
+}
+
+.headerLabel {
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  letter-spacing: 1px;
 }
 
 .delta {
+  text-align: center;
   font-family: $font-widget;
-  font-size: $font-size-xl;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  font-size: 2.75rem;
   line-height: 1;
   letter-spacing: -1px;
-  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  padding: $space-xs $space-md $space-sm;
 }
 
 .deltaAhead {
-  color: $color-positive;
+  color: #22c55e;
 }
 
 .deltaBehind {
-  color: $color-danger;
+  color: #ef4444;
 }
 
 .deltaNeutral {
-  color: $color-text-primary;
+  color: #fbbf24;
 }
 
-.barTrack {
-  position: relative;
-  height: $bar-height-md;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: $bar-border-radius;
-  margin: 0 $space-xl;
-  overflow: hidden;
+.sectorGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 0 $space-md $space-md;
+  font-family: $font-mono;
 }
 
-.barCenter {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateX(-50%);
+.sectorCell {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px 6px;
+  border-left: 3px solid transparent;
+
+  &.sectorAhead {
+    border-left-color: #22c55e;
+
+    .sectorValue {
+      color: #22c55e;
+    }
+  }
+
+  &.sectorBehind {
+    border-left-color: #ef4444;
+
+    .sectorValue {
+      color: #ef4444;
+    }
+  }
+
+  &.sectorNeutral {
+    border-left-color: #fbbf24;
+
+    .sectorValue {
+      color: #fbbf24;
+    }
+  }
 }
 
-.barFill {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  border-radius: $bar-border-radius;
-  transition: width 0.15s ease;
+.sectorLabel {
+  display: block;
+  font-size: 9px;
+  color: $color-text-muted;
+  letter-spacing: 1px;
 }
 
-.barFillAhead {
-  right: 50%;
-  background: $color-positive;
-}
-
-.barFillBehind {
-  left: 50%;
-  background: $color-danger;
-}
-
-.reference {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $space-md;
-  padding: 0 $space-xl $space-sm;
-}
-
-.referenceLabel {
-  font-family: $font-widget;
-  font-size: $font-size-xs;
+.sectorValue {
+  display: block;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 2px;
-  color: $color-text-muted;
-}
-
-.referenceValue {
-  font-family: $font-widget;
-  font-size: $font-size-xs;
-  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: $color-text-muted;
 }

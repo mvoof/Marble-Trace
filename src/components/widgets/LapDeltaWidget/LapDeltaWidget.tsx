@@ -6,9 +6,11 @@ import styles from './LapDeltaWidget.module.scss';
 interface LapDeltaWidgetProps {
   deltaFormatted: string;
   deltaState: DeltaState;
-  barPct: number;
-  bestLapFormatted: string;
-  hasDelta: boolean;
+  currentLap: number | null;
+  totalLaps: string | null;
+  s1Delta: number | null;
+  s2Delta: number | null;
+  s3Delta: number | null;
 }
 
 const DELTA_STATE_CLASS: Record<DeltaState, string> = {
@@ -17,43 +19,66 @@ const DELTA_STATE_CLASS: Record<DeltaState, string> = {
   neutral: styles.deltaNeutral,
 };
 
+const sectorStateClass = (v: number | null): string => {
+  if (v === null) return styles.sectorNeutral;
+  if (v < -0.001) return styles.sectorAhead;
+  if (v > 0.001) return styles.sectorBehind;
+  return styles.sectorNeutral;
+};
+
+const formatSectorDelta = (v: number | null): string => {
+  if (v === null) return '--';
+  return (v >= 0 ? '+' : '') + v.toFixed(2);
+};
+
+const formatLapCount = (
+  current: number | null,
+  total: string | null
+): string => {
+  const cur = current !== null ? current : '—';
+  const tot = total && total.toLowerCase() !== 'unlimited' ? total : '∞';
+  return `LAP ${cur}/${tot}`;
+};
+
+const SECTORS = ['S1', 'S2', 'S3'] as const;
+
 export const LapDeltaWidget = ({
   deltaFormatted,
   deltaState,
-  barPct,
-  bestLapFormatted,
-  hasDelta,
+  currentLap,
+  totalLaps,
+  s1Delta,
+  s2Delta,
+  s3Delta,
 }: LapDeltaWidgetProps) => {
-  const deltaClass = DELTA_STATE_CLASS[deltaState];
-  const fillWidthPct = `${barPct * 50}%`;
+  const sectorValues = [s1Delta, s2Delta, s3Delta];
 
   return (
-    <WidgetPanel direction="column" gap={4} minWidth={200}>
-      <div className={styles.deltaRow}>
-        <span className={`${styles.delta} ${deltaClass}`}>
-          {deltaFormatted}
+    <WidgetPanel direction="column" gap={0} minWidth={200}>
+      <div className={styles.header}>
+        <span className={styles.headerLabel}>Δ OPTIMAL</span>
+        <span className={styles.headerLabel}>
+          {formatLapCount(currentLap, totalLaps)}
         </span>
       </div>
 
-      <div className={styles.barTrack}>
-        <div className={styles.barCenter} />
-        {hasDelta && deltaState === 'ahead' && (
-          <div
-            className={`${styles.barFill} ${styles.barFillAhead}`}
-            style={{ width: fillWidthPct }}
-          />
-        )}
-        {hasDelta && deltaState === 'behind' && (
-          <div
-            className={`${styles.barFill} ${styles.barFillBehind}`}
-            style={{ width: fillWidthPct }}
-          />
-        )}
+      <div className={`${styles.delta} ${DELTA_STATE_CLASS[deltaState]}`}>
+        {deltaFormatted}
       </div>
 
-      <div className={styles.reference}>
-        <span className={styles.referenceLabel}>BEST</span>
-        <span className={styles.referenceValue}>{bestLapFormatted}</span>
+      <div className={styles.sectorGrid}>
+        {SECTORS.map((label, i) => {
+          const val = sectorValues[i];
+          const cls = sectorStateClass(val);
+          return (
+            <div key={label} className={`${styles.sectorCell} ${cls}`}>
+              <span className={styles.sectorLabel}>{label}</span>
+              <span className={styles.sectorValue}>
+                {formatSectorDelta(val)}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </WidgetPanel>
   );

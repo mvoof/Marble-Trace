@@ -60,9 +60,9 @@ class TelemetryConnection {
     debug.telemetry('starting stream...');
 
     try {
-      const initialInfo = await invoke<SessionInfo | null>(
+      const initialInfo = (await invoke(
         'get_last_session_info'
-      );
+      )) as SessionInfo | null;
 
       if (initialInfo && this.initId === currentId) {
         telemetryStore.updateSessionInfo(initialInfo);
@@ -102,9 +102,9 @@ class TelemetryConnection {
     await this.subscribeAllEvents(this.initId);
 
     try {
-      const initialInfo = await invoke<SessionInfo | null>(
+      const initialInfo = (await invoke(
         'get_last_session_info'
-      );
+      )) as SessionInfo | null;
 
       if (initialInfo) {
         telemetryStore.updateSessionInfo(initialInfo);

@@ -20,6 +20,16 @@ const TICK_INNER_MAJOR = 42;
 const TICK_INNER_MINOR = 44;
 const LABEL_RADIUS = 36;
 
+const ARROW_COLOR = 'rgba(255,255,255,0.65)';
+
+const PIXEL_TAIL = [
+  { y: -28, size: 3, opacity: 1.0 },
+  { y: -20, size: 2.8, opacity: 0.75 },
+  { y: -13, size: 2.4, opacity: 0.55 },
+  { y: -7, size: 1.8, opacity: 0.35 },
+  { y: -1, size: 1.2, opacity: 0.18 },
+];
+
 export const WindCompass = ({
   windBearing,
   carYawDeg,
@@ -92,20 +102,28 @@ export const WindCompass = ({
       </g>
 
       <g transform={`rotate(${arrowRotation})`} className={styles.arrowGroup}>
-        <line
-          x1="0"
-          y1="8"
-          x2="0"
-          y2="-36"
-          stroke="#3399ff"
-          strokeWidth="2"
-          strokeLinecap="round"
+        <polygon points="0,-44 -5,-32 5,-32" fill={ARROW_COLOR} />
+
+        {PIXEL_TAIL.map(({ y, size: s, opacity }) => (
+          <rect
+            key={y}
+            x={-s / 2}
+            y={y}
+            width={s}
+            height={s}
+            fill={ARROW_COLOR}
+            opacity={opacity}
+          />
+        ))}
+
+        <polygon
+          points="0,8 -3.5,18 3.5,18"
+          fill={ARROW_COLOR}
+          opacity={0.45}
         />
-        <polygon points="0,-44 -5,-32 5,-32" fill="#3399ff" />
-        <circle r="3.5" fill="#3399ff" />
       </g>
 
-      <circle r="2" fill="rgba(255,255,255,0.6)" />
+      <circle r="2" fill="rgba(255,255,255,0.5)" />
     </svg>
   );
 };

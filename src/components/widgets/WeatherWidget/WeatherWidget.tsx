@@ -1,15 +1,4 @@
-import type { ReactNode } from 'react';
-import {
-  Cloud,
-  CloudRain,
-  CloudSun,
-  MapPin,
-  Sun,
-  Thermometer,
-} from 'lucide-react';
-
 import { WidgetPanel } from '../primitives/WidgetPanel';
-import type { SkiesIconType } from './weather-utils';
 import { WindCompass } from './WindCompass/WindCompass';
 
 import styles from './WeatherWidget.module.scss';
@@ -22,16 +11,13 @@ interface WeatherWidgetProps {
   airTempFormatted: string;
   trackTempFormatted: string;
   tempUnit: string;
-  skiesText: string;
-  skiesIcon: SkiesIconType;
+  humidity: string;
+  showCompass: boolean;
+  showAirTemp: boolean;
+  showTrackTemp: boolean;
+  showWind: boolean;
+  showHumidity: boolean;
 }
-
-const SKIES_ICON_MAP: Record<SkiesIconType, ReactNode> = {
-  sun: <Sun size={14} />,
-  'cloud-sun': <CloudSun size={14} />,
-  cloud: <Cloud size={14} />,
-  'cloud-rain': <CloudRain size={14} />,
-};
 
 export const WeatherWidget = ({
   windBearing,
@@ -41,61 +27,67 @@ export const WeatherWidget = ({
   airTempFormatted,
   trackTempFormatted,
   tempUnit,
-  skiesText,
-  skiesIcon,
+  humidity,
+  showCompass,
+  showAirTemp,
+  showTrackTemp,
+  showWind,
+  showHumidity,
 }: WeatherWidgetProps) => (
-  <WidgetPanel direction="column" gap={0} minWidth={200}>
-    <div className={styles.topSection}>
-      <div className={styles.compassWrapper}>
+  <WidgetPanel direction="column" gap={0} minWidth={180}>
+    <div className={styles.header}>
+      <span className={styles.headerLabel}>CONDITIONS</span>
+    </div>
+
+    {showCompass && (
+      <div className={styles.compassBlock}>
         <WindCompass
           windBearing={windBearing}
           carYawDeg={carYawDeg}
-          size={110}
+          size={86}
         />
+        <div className={styles.compassInfo}>
+          <span className={styles.windSpeed}>{windSpeedFormatted}</span>
+          <span className={styles.windCardinal}>{windCardinal}</span>
+        </div>
       </div>
+    )}
 
-      <div className={styles.windInfo}>
-        <span className={styles.windSpeed}>{windSpeedFormatted}</span>
-        <span className={styles.windCardinal}>{windCardinal}</span>
-        <span className={styles.windLabel}>WIND</span>
-      </div>
-    </div>
-
-    <div className={styles.divider} />
-
-    <div className={styles.tempRow}>
-      <div className={styles.tempItem}>
-        <span className={styles.tempIcon} style={{ color: '#3399ff' }}>
-          <Thermometer size={13} />
-        </span>
-        <span className={styles.tempLabel}>AIR</span>
-        <span className={styles.tempValue}>
+    {showAirTemp && (
+      <div className={styles.infoBlock}>
+        <span className={styles.infoLabel}>AIR</span>
+        <span className={styles.infoValue}>
           {airTempFormatted}
-          <span className={styles.tempUnit}>{tempUnit}</span>
+          <span className={styles.infoUnit}>{tempUnit}</span>
         </span>
       </div>
+    )}
 
-      <div className={styles.tempDivider} />
-
-      <div className={styles.tempItem}>
-        <span className={styles.tempIcon} style={{ color: '#ff9933' }}>
-          <MapPin size={13} />
-        </span>
-        <span className={styles.tempLabel}>TRACK</span>
-        <span className={styles.tempValue}>
+    {showTrackTemp && (
+      <div className={styles.infoBlock}>
+        <span className={styles.infoLabel}>TRACK</span>
+        <span className={styles.infoValue}>
           {trackTempFormatted}
-          <span className={styles.tempUnit}>{tempUnit}</span>
+          <span className={styles.infoUnit}>{tempUnit}</span>
         </span>
       </div>
-    </div>
+    )}
 
-    <div className={styles.divider} />
+    {showWind && (
+      <div className={styles.infoBlock}>
+        <span className={styles.infoLabel}>WIND</span>
+        <span className={styles.infoValue}>
+          {windSpeedFormatted}
+          <span className={styles.infoSubValue}> {windCardinal}</span>
+        </span>
+      </div>
+    )}
 
-    <div className={styles.skiesRow}>
-      <span className={styles.skiesIcon} style={{ color: '#aaaaaa' }}>
-        {SKIES_ICON_MAP[skiesIcon]}
-      </span>
-      <span className={styles.skiesText}>{skiesText || 'Unknown'}</span>
-    </div>
+    {showHumidity && (
+      <div className={styles.infoBlock}>
+        <span className={styles.infoLabel}>HUM.</span>
+        <span className={styles.infoValue}>{humidity}</span>
+      </div>
+    )}
   </WidgetPanel>
 );

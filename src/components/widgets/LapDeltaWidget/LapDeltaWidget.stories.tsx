@@ -4,8 +4,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { LapDeltaWidget } from './LapDeltaWidget';
 import { WidgetScaler } from '../../WidgetScaler';
 
-const DESIGN_WIDTH = 320;
-const DESIGN_HEIGHT = 90;
+const DESIGN_WIDTH = 240;
+const DESIGN_HEIGHT = 140;
 
 const wrap = (props: ComponentProps<typeof LapDeltaWidget>) => (
   <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
@@ -34,9 +34,11 @@ export const Default: Story = {
   args: {
     deltaFormatted: '+1.234',
     deltaState: 'behind',
-    barPct: 0.41,
-    bestLapFormatted: '1:33.756',
-    hasDelta: true,
+    currentLap: 12,
+    totalLaps: '38',
+    s1Delta: null,
+    s2Delta: null,
+    s3Delta: null,
   },
 };
 
@@ -44,39 +46,47 @@ export const Ahead: Story = {
   args: {
     deltaFormatted: '-0.456',
     deltaState: 'ahead',
-    barPct: 0.15,
-    bestLapFormatted: '1:33.756',
-    hasDelta: true,
+    currentLap: 8,
+    totalLaps: '38',
+    s1Delta: null,
+    s2Delta: null,
+    s3Delta: null,
+  },
+};
+
+export const WithSectors: Story = {
+  args: {
+    deltaFormatted: '+0.312',
+    deltaState: 'behind',
+    currentLap: 5,
+    totalLaps: '30',
+    s1Delta: 0.1,
+    s2Delta: -0.05,
+    s3Delta: 0.26,
   },
 };
 
 export const NearZero: Story = {
   args: {
     deltaFormatted: '+0.023',
-    deltaState: 'behind',
-    barPct: 0.008,
-    bestLapFormatted: '1:33.756',
-    hasDelta: true,
-  },
-};
-
-export const MaxBehind: Story = {
-  args: {
-    deltaFormatted: '+3.000',
-    deltaState: 'behind',
-    barPct: 1.0,
-    bestLapFormatted: '1:33.756',
-    hasDelta: true,
-  },
-};
-
-export const NoBestLap: Story = {
-  args: {
-    deltaFormatted: '—',
     deltaState: 'neutral',
-    barPct: 0,
-    bestLapFormatted: '—',
-    hasDelta: false,
+    currentLap: 1,
+    totalLaps: '38',
+    s1Delta: null,
+    s2Delta: null,
+    s3Delta: null,
+  },
+};
+
+export const Unlimited: Story = {
+  args: {
+    deltaFormatted: '-0.780',
+    deltaState: 'ahead',
+    currentLap: 3,
+    totalLaps: 'unlimited',
+    s1Delta: null,
+    s2Delta: null,
+    s3Delta: null,
   },
 };
 
@@ -84,8 +94,10 @@ export const NoData: Story = {
   args: {
     deltaFormatted: '—',
     deltaState: 'neutral',
-    barPct: 0,
-    bestLapFormatted: '—',
-    hasDelta: false,
+    currentLap: null,
+    totalLaps: null,
+    s1Delta: null,
+    s2Delta: null,
+    s3Delta: null,
   },
 };
