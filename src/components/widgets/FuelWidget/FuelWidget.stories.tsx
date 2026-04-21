@@ -5,7 +5,7 @@ import { FuelWidget } from './FuelWidget';
 import { WidgetScaler } from '../../WidgetScaler';
 
 const DESIGN_WIDTH = 220;
-const DESIGN_HEIGHT = 210;
+const DESIGN_HEIGHT = 300;
 
 const wrap = (props: ComponentProps<typeof FuelWidget>) => (
   <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
@@ -39,6 +39,7 @@ export const Default: Story = {
     lapsToFinish: 15,
     shortage: 7.8,
     fuelToAddWithBuffer: 0,
+    fuelSavePerLap: null,
     pitWarning: false,
     pitWindowStart: null,
     pitWindowEnd: null,
@@ -56,6 +57,7 @@ export const ShortFuel: Story = {
     lapsToFinish: 15,
     shortage: -11.28,
     fuelToAddWithBuffer: 13.63,
+    fuelSavePerLap: 0.75,
     pitWarning: true,
     pitWindowStart: 29,
     pitWindowEnd: 31,
@@ -73,6 +75,7 @@ export const PitWarning: Story = {
     lapsToFinish: 13,
     shortage: 3.15,
     fuelToAddWithBuffer: 2.1,
+    fuelSavePerLap: null,
     pitWarning: true,
     pitWindowStart: 34,
     pitWindowEnd: 36,
@@ -90,11 +93,30 @@ export const WithChart: Story = {
     lapsToFinish: 14,
     shortage: 4.48,
     fuelToAddWithBuffer: 0,
+    fuelSavePerLap: null,
     pitWarning: false,
     pitWindowStart: null,
     pitWindowEnd: null,
     showChart: true,
     lapFuelHistory: [2.3, 2.1, 2.25, 2.15, 2.2, 2.18, 2.22, 2.14],
+  },
+};
+
+export const ShortFuelWithChart: Story = {
+  args: {
+    fuelLevel: 18.5,
+    fuelMax: 70,
+    avgPerLap: 2.35,
+    lapsRemaining: 7.9,
+    lapsToFinish: 15,
+    shortage: -16.75,
+    fuelToAddWithBuffer: 19.1,
+    fuelSavePerLap: 1.12,
+    pitWarning: true,
+    pitWindowStart: 27,
+    pitWindowEnd: 29,
+    showChart: true,
+    lapFuelHistory: [2.3, 2.1, 2.25, 2.15, 2.2, 2.38, 2.42, 2.35],
   },
 };
 
@@ -107,6 +129,7 @@ export const NoData: Story = {
     lapsToFinish: null,
     shortage: null,
     fuelToAddWithBuffer: null,
+    fuelSavePerLap: null,
     pitWarning: false,
     pitWindowStart: null,
     pitWindowEnd: null,

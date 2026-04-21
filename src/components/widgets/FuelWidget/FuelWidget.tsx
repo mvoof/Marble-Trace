@@ -14,10 +14,11 @@ interface FuelWidgetProps {
   fuelMax: number | null;
   avgPerLap: FuelCalculations['avgPerLap'];
   lapsRemaining: FuelCalculations['lapsRemaining'];
+  lapsToFinish: FuelCalculations['lapsToFinish'];
   shortage: FuelCalculations['shortage'];
   fuelToAddWithBuffer: FuelCalculations['fuelToAddWithBuffer'];
+  fuelSavePerLap: FuelCalculations['fuelSavePerLap'];
   pitWarning: FuelCalculations['pitWarning'];
-  lapsToFinish: FuelCalculations['lapsToFinish'];
   pitWindowStart: FuelCalculations['pitWindowStart'];
   pitWindowEnd: FuelCalculations['pitWindowEnd'];
   showChart: boolean;
@@ -31,7 +32,8 @@ const statusClass = (shortage: number | null): string => {
 
 const statusText = (shortage: number | null): string => {
   if (shortage === null) return 'SAFE';
-  return shortage >= 0 ? 'SAFE' : 'SHORT';
+  if (shortage < 0) return 'SHORT';
+  return `SAFE +${shortage.toFixed(1)}L`;
 };
 
 const valueClass = (shortage: number | null): string => {
@@ -89,8 +91,10 @@ export const FuelWidget = ({
   fuelMax,
   avgPerLap,
   lapsRemaining,
+  lapsToFinish,
   shortage,
   fuelToAddWithBuffer,
+  fuelSavePerLap,
   pitWarning,
   pitWindowStart,
   pitWindowEnd,
@@ -102,16 +106,16 @@ export const FuelWidget = ({
       ? Math.min(fuelLevel / fuelMax, 1)
       : null;
 
-  const shortageSign = shortage !== null ? (shortage >= 0 ? '+' : '-') : '';
-  const shortageText =
-    shortage !== null
-      ? `${shortageSign}${Math.abs(shortage).toFixed(1)} L`
-      : '—';
-
+  const isShort = shortage !== null && shortage < 0;
   const windowText =
     pitWindowStart !== null && pitWindowEnd !== null
       ? `LAP ${pitWindowStart}–${pitWindowEnd}`
       : '—';
+
+  const lapsDisplay =
+    lapsRemaining !== null && lapsToFinish !== null
+      ? `${formatLaps(lapsRemaining)} / ${formatLaps(lapsToFinish)}`
+      : formatLaps(lapsRemaining);
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={200}>
@@ -146,33 +150,37 @@ export const FuelWidget = ({
         </div>
 
         <div className={styles.row}>
-          <span className={styles.rowLabel}>LAPS LEFT</span>
+          <span className={styles.rowLabel}>LEFT / FINISH</span>
           <span className={`${styles.rowValue} ${valueClass(shortage)}`}>
-            {formatLaps(lapsRemaining)}
+            {lapsDisplay}
           </span>
         </div>
 
-        <div className={styles.row}>
-          <span className={styles.rowLabel}>
-            {shortage !== null && shortage < 0 ? 'SHORTAGE' : 'MARGIN'}
-          </span>
-          <span className={`${styles.rowValue} ${valueClass(shortage)}`}>
-            {shortageText}
-          </span>
-        </div>
-
-        {!pitWarning && fuelToAddWithBuffer !== null && (
+        {fuelSavePerLap !== null ? (
           <div className={styles.row}>
-            <span className={styles.rowLabel}>FILL +1</span>
-            <span className={`${styles.rowValue} ${styles.rowValueMuted}`}>
-              {formatFuelLiters(fuelToAddWithBuffer)}
+            <span className={styles.rowLabel}>SAVE/LAP</span>
+            <span className={`${styles.rowValue} ${styles.rowValueWarn}`}>
+              {fuelSavePerLap.toFixed(2)} L
             </span>
           </div>
+        ) : (
+          !isShort &&
+          fuelToAddWithBuffer !== null &&
+          fuelToAddWithBuffer > 0 && (
+            <div className={styles.row}>
+              <span className={styles.rowLabel}>FILL +1 LAP</span>
+              <span className={`${styles.rowValue} ${styles.rowValueMuted}`}>
+                {formatFuelLiters(fuelToAddWithBuffer)}
+              </span>
+            </div>
+          )
         )}
       </div>
 
       {pitWarning && (
-        <div className={styles.pitWarning}>
+        <div
+          className={`${styles.pitWarning} ${isShort ? styles.pitWarningUrgent : ''}`}
+        >
           <div className={styles.pitWarningHeader}>
             <span className={styles.pitWarningHeaderLabel}>PIT WINDOW</span>
             <span className={styles.pitWarningWindow}>{windowText}</span>
@@ -187,7 +195,9 @@ export const FuelWidget = ({
                 incl. +1 lap buffer
               </span>
             </div>
-            <span className={styles.pitWarningAmount}>
+            <span
+              className={`${styles.pitWarningAmount} ${isShort ? styles.pitWarningAmountDanger : ''}`}
+            >
               {fuelToAddWithBuffer !== null
                 ? fuelToAddWithBuffer.toFixed(1)
                 : '—'}

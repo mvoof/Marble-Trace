@@ -6,6 +6,8 @@ export interface FuelCalculations {
   shortage: number | null;
   fuelToAdd: number | null;
   fuelToAddWithBuffer: number | null;
+  /** Liters per lap to save when in deficit; null when surplus or unknown */
+  fuelSavePerLap: number | null;
   pitWarning: boolean;
   pitWindowStart: number | null;
   pitWindowEnd: number | null;
@@ -44,6 +46,7 @@ export const computeFuel = (params: {
       shortage: null,
       fuelToAdd: null,
       fuelToAddWithBuffer: null,
+      fuelSavePerLap: null,
       pitWarning: false,
       pitWindowStart: null,
       pitWindowEnd: null,
@@ -62,6 +65,7 @@ export const computeFuel = (params: {
       shortage: null,
       fuelToAdd: null,
       fuelToAddWithBuffer: null,
+      fuelSavePerLap: null,
       pitWarning: false,
       pitWindowStart: null,
       pitWindowEnd: null,
@@ -80,6 +84,7 @@ export const computeFuel = (params: {
       shortage: null,
       fuelToAdd: null,
       fuelToAddWithBuffer: null,
+      fuelSavePerLap: null,
       pitWarning: false,
       pitWindowStart: null,
       pitWindowEnd: null,
@@ -135,6 +140,15 @@ export const computeFuel = (params: {
     shortage !== null &&
     (shortage < 0 || shortage < pitWarningLaps * avgPerLap);
 
+  // How much to save per remaining lap to avoid a pit stop
+  const fuelSavePerLap =
+    shortage !== null &&
+    shortage < 0 &&
+    lapsToFinish !== null &&
+    lapsToFinish > 0
+      ? Math.abs(shortage) / lapsToFinish
+      : null;
+
   return {
     avgPerLap,
     lapsRemaining,
@@ -142,6 +156,7 @@ export const computeFuel = (params: {
     shortage,
     fuelToAdd,
     fuelToAddWithBuffer,
+    fuelSavePerLap,
     pitWarning,
     pitWindowStart,
     pitWindowEnd,
