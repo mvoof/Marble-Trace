@@ -35,7 +35,7 @@ export const WindCompass = ({
   carYawDeg,
   size = 120,
 }: WindCompassProps) => {
-  const arrowRotation = windBearing - carYawDeg;
+  const arrowRotation = windBearing + carYawDeg;
 
   return (
     <svg
@@ -44,7 +44,7 @@ export const WindCompass = ({
       viewBox="-60 -60 120 120"
       className={styles.compass}
     >
-      <g transform={`rotate(${-carYawDeg})`} className={styles.faceGroup}>
+      <g transform={`rotate(${carYawDeg})`} className={styles.faceGroup}>
         <circle
           r={RADIUS + 4}
           stroke="rgba(255,255,255,0.15)"
