@@ -177,14 +177,14 @@ pub(crate) struct AllFieldsFrame {
     #[field_name = "RRtempCR"]
     pub rr_temp_cr: Option<f32>,
 
-    // === Chassis — Tire Pressure (kPa) ===
-    #[field_name = "LFpressure"]
+    // === Chassis — Tire Cold Pressure (kPa) ===
+    #[field_name = "LFcoldPressure"]
     pub lf_pressure: Option<f32>,
-    #[field_name = "RFpressure"]
+    #[field_name = "RFcoldPressure"]
     pub rf_pressure: Option<f32>,
-    #[field_name = "LRpressure"]
+    #[field_name = "LRcoldPressure"]
     pub lr_pressure: Option<f32>,
-    #[field_name = "RRpressure"]
+    #[field_name = "RRcoldPressure"]
     pub rr_pressure: Option<f32>,
 
     // === Chassis — Tire Wear (0.0–1.0, inner/middle/outer) ===

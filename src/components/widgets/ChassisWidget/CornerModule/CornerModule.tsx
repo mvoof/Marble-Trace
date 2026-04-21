@@ -1,4 +1,3 @@
-import { getTempColor, getBrakeColor } from '../chassis-utils';
 import type { CornerData } from '../types';
 import styles from './CornerModule.module.scss';
 
@@ -60,7 +59,7 @@ export const CornerModule = ({
   const { isPunctured, isBrakeOverheated } = data;
   const hasDamage = isSuspensionBent || isBrakeOverheated;
 
-  const brakeColor = getBrakeColor(data.brakeTemp);
+  const brakeColor = data.brakeTempColor;
 
   const rhFormatted = data.rideHeight.toFixed(lengthUnit === 'mm' ? 1 : 2);
   const shkFormatted = data.shockDefl.toFixed(lengthUnit === 'mm' ? 1 : 2);
@@ -95,7 +94,7 @@ export const CornerModule = ({
               className={styles.tireFill}
               style={{
                 height: `${Math.max(5, data.wearL * 100)}%`,
-                backgroundColor: getTempColor(data.tempL),
+                backgroundColor: data.tempColorL,
               }}
             />
           </div>
@@ -104,7 +103,7 @@ export const CornerModule = ({
               className={styles.tireFill}
               style={{
                 height: `${Math.max(5, data.wearM * 100)}%`,
-                backgroundColor: getTempColor(data.tempM),
+                backgroundColor: data.tempColorM,
               }}
             />
           </div>
@@ -113,7 +112,7 @@ export const CornerModule = ({
               className={styles.tireFill}
               style={{
                 height: `${Math.max(5, data.wearR * 100)}%`,
-                backgroundColor: getTempColor(data.tempR),
+                backgroundColor: data.tempColorR,
               }}
             />
           </div>
@@ -123,28 +122,20 @@ export const CornerModule = ({
             >
               {pressureFormatted}
             </span>
+            <span className={styles.pressureUnit}>{data.pressureUnit}</span>
           </div>
         </div>
 
         <div className={styles.tempRow}>
-          <span
-            className={styles.tempValue}
-            style={{ color: getTempColor(data.tempL) }}
-          >
+          <span className={styles.tempValue} style={{ color: data.tempColorL }}>
             {Math.round(data.tempL)}
             <span className={styles.tempUnit}>{tempUnit}</span>
           </span>
-          <span
-            className={styles.tempValue}
-            style={{ color: getTempColor(data.tempM) }}
-          >
+          <span className={styles.tempValue} style={{ color: data.tempColorM }}>
             {Math.round(data.tempM)}
             <span className={styles.tempUnit}>{tempUnit}</span>
           </span>
-          <span
-            className={styles.tempValue}
-            style={{ color: getTempColor(data.tempR) }}
-          >
+          <span className={styles.tempValue} style={{ color: data.tempColorR }}>
             {Math.round(data.tempR)}
             <span className={styles.tempUnit}>{tempUnit}</span>
           </span>

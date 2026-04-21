@@ -14,7 +14,6 @@ interface TrackMapSvgProps {
   points: TrackPoint[];
   cars: CarOnTrack[];
   sectors: Sector[] | null | undefined;
-  playerYaw?: number;
   sfLabel?: string;
 }
 
@@ -24,15 +23,12 @@ export const TrackMapSvg = ({
   points,
   cars,
   sectors,
-  playerYaw,
   sfLabel = 'S/F',
 }: TrackMapSvgProps) => {
   const parts = viewBox.split(' ').map(Number);
   const [vbX, vbY, vbW, vbH] = parts;
   const cx = vbX + vbW / 2;
   const cy = vbY + vbH / 2;
-  const rotationDeg =
-    playerYaw != null ? -playerYaw * (180 / Math.PI) : undefined;
 
   const pathRef = useRef<SVGPathElement>(null);
   const [pathLength, setPathLength] = useState(0);
@@ -50,11 +46,7 @@ export const TrackMapSvg = ({
   return (
     <svg viewBox={viewBox} className={styles.svgContainer}>
       <g
-        transform={
-          rotationDeg != null
-            ? `rotate(${rotationDeg}, ${cx}, ${cy})`
-            : undefined
-        }
+        transform={`translate(${cx}, ${cy}) scale(-1, 1) translate(${-cx}, ${-cy})`}
       >
         {/* Track border */}
         <path

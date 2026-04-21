@@ -5,11 +5,15 @@ export interface CornerData {
   tempL: number;
   tempM: number;
   tempR: number;
+  tempColorL: string;
+  tempColorM: string;
+  tempColorR: string;
   pressure: number;
   pressureUnit: string;
   rideHeight: number;
   shockDefl: number;
   brakeTemp: number;
+  brakeTempColor: string;
   isPunctured: boolean;
   isBrakeOverheated: boolean;
 }

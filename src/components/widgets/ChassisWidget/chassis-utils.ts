@@ -57,22 +57,26 @@ const buildCornerData = (
 ): CornerData => {
   const rawPressure = pressureKpa ?? 0;
   const rawBrakeTemp = brakeTempC ?? 20;
+  const rawTempL = tempCL ?? 20;
+  const rawTempM = tempCM ?? 20;
+  const rawTempR = tempCR ?? 20;
 
   return {
     rideHeight: rideHeightM != null ? convertLength(rideHeightM, system) : 0,
     shockDefl: shockDeflM != null ? convertLength(shockDeflM, system) : 0,
-    tempL:
-      tempCL != null ? convertTemp(tempCL, system) : convertTemp(20, system),
-    tempM:
-      tempCM != null ? convertTemp(tempCM, system) : convertTemp(20, system),
-    tempR:
-      tempCR != null ? convertTemp(tempCR, system) : convertTemp(20, system),
+    tempL: convertTemp(rawTempL, system),
+    tempM: convertTemp(rawTempM, system),
+    tempR: convertTemp(rawTempR, system),
+    tempColorL: getTempColor(rawTempL),
+    tempColorM: getTempColor(rawTempM),
+    tempColorR: getTempColor(rawTempR),
     pressure: convertPressure(rawPressure, system),
     pressureUnit: system === 'metric' ? 'kPa' : 'PSI',
     wearL: wearL ?? 1,
     wearM: wearM ?? 1,
     wearR: wearR ?? 1,
     brakeTemp: convertTemp(rawBrakeTemp, system),
+    brakeTempColor: getBrakeColor(rawBrakeTemp),
     isPunctured: rawPressure > 0 && rawPressure < PUNCTURE_THRESHOLD_KPA,
     isBrakeOverheated: rawBrakeTemp > BRAKE_OVERHEAT_THRESHOLD_C,
   };

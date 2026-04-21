@@ -81,9 +81,21 @@
   left: 50%;
   transform: translate(-50%, -50%);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   pointer-events: none;
+}
+
+.pressureUnit {
+  font-size: 0.4375rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.05em;
+  text-shadow:
+    0 0 4px #000,
+    0 0 8px #000;
+  line-height: 1;
 }
 
 .pressureValue {

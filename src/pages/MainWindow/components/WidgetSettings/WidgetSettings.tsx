@@ -29,9 +29,12 @@ import {
   type StandingsWidgetSettings,
   type RelativeWidgetSettings,
   type TrackMapWidgetSettings,
-  type TrackMapRotationMode,
   type LinearMapWidgetSettings,
   type LinearMapOrientation,
+  type WeatherWidgetSettings,
+  type FuelWidgetSettings,
+  type FlagsWidgetSettings,
+  type FlagsVariant,
 } from '../../../../store/widget-settings.store';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 import { emit } from '@tauri-apps/api/event';
@@ -203,6 +206,27 @@ export const WidgetSettings = observer(
             <>
               <Divider style={{ margin: '8px 0' }} />
               <TrackMapSettingsPanel />
+            </>
+          )}
+
+          {widgetId === 'weather' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <WeatherSettingsPanel />
+            </>
+          )}
+
+          {widgetId === 'fuel' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <FuelSettingsPanel />
+            </>
+          )}
+
+          {widgetId === 'flags' && (
+            <>
+              <Divider style={{ margin: '8px 0' }} />
+              <FlagsSettingsPanel />
             </>
           )}
         </Flex>
@@ -874,19 +898,6 @@ const TrackMapSettingsPanel = observer(() => {
         Track Map
       </Title>
 
-      <Flex vertical gap={4}>
-        <Text>Map Rotation</Text>
-
-        <Segmented
-          value={settings.rotationMode}
-          options={[
-            { label: 'Fixed (North up)', value: 'fixed' },
-            { label: 'Heading up', value: 'heading-up' },
-          ]}
-          onChange={(v) => update({ rotationMode: v as TrackMapRotationMode })}
-        />
-      </Flex>
-
       <Space>
         <Switch
           checked={settings.showLegend}
@@ -963,6 +974,187 @@ const TrackMapSettingsPanel = observer(() => {
           </Flex>
         )}
       </Flex>
+    </Flex>
+  );
+});
+
+const WeatherSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getWeatherSettings();
+
+  const update = (partial: Partial<WeatherWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('weather', {
+      weather: { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Weather
+      </Title>
+
+      <Space direction="vertical">
+        <Space>
+          <Switch
+            checked={settings.showCompass}
+            onChange={(v) => update({ showCompass: v })}
+            size="small"
+          />
+          <Text>Compass</Text>
+        </Space>
+
+        <Space>
+          <Switch
+            checked={settings.showAirTemp}
+            onChange={(v) => update({ showAirTemp: v })}
+            size="small"
+          />
+          <Text>Air Temperature</Text>
+        </Space>
+
+        <Space>
+          <Switch
+            checked={settings.showTrackTemp}
+            onChange={(v) => update({ showTrackTemp: v })}
+            size="small"
+          />
+          <Text>Track Temperature</Text>
+        </Space>
+
+        <Space>
+          <Switch
+            checked={settings.showWind}
+            onChange={(v) => update({ showWind: v })}
+            size="small"
+          />
+          <Text>Wind</Text>
+        </Space>
+
+        <Space>
+          <Switch
+            checked={settings.showHumidity}
+            onChange={(v) => update({ showHumidity: v })}
+            size="small"
+          />
+          <Text>Humidity</Text>
+        </Space>
+      </Space>
+    </Flex>
+  );
+});
+
+const FuelSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getFuelSettings();
+
+  const update = (partial: Partial<FuelWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('fuel', {
+      fuel: { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Fuel
+      </Title>
+
+      <Space>
+        <Switch
+          checked={settings.showChart}
+          onChange={(v) => update({ showChart: v })}
+          size="small"
+        />
+        <Text>Show Chart</Text>
+      </Space>
+
+      {settings.showChart && (
+        <Flex vertical gap={4}>
+          <Text>Chart Type</Text>
+
+          <Segmented
+            value={settings.chartType}
+            options={[
+              { label: 'Bar', value: 'bar' },
+              { label: 'Line', value: 'line' },
+            ]}
+            onChange={(v) => update({ chartType: v as 'bar' | 'line' })}
+          />
+        </Flex>
+      )}
+
+      <Flex vertical gap={4}>
+        <Text>Pit Warning (laps remaining)</Text>
+
+        <InputNumber
+          style={{ width: '100%' }}
+          value={settings.pitWarningLaps}
+          min={1}
+          max={20}
+          onChange={(v) => v !== null && update({ pitWarningLaps: v })}
+        />
+      </Flex>
+    </Flex>
+  );
+});
+
+const FlagsSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getFlagsSettings();
+
+  const update = (partial: Partial<FlagsWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('flags', {
+      flags: { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Flex vertical gap={12}>
+      <Title level={5} style={{ margin: 0 }}>
+        Flags
+      </Title>
+
+      <Flex vertical gap={4}>
+        <Text>Variant</Text>
+
+        <Segmented
+          value={settings.variant}
+          options={[
+            { label: 'Overlay', value: 'overlay' },
+            { label: 'Under Mirror', value: 'under-mirror' },
+            { label: 'Standalone', value: 'standalone' },
+          ]}
+          onChange={(v) => update({ variant: v as FlagsVariant })}
+        />
+      </Flex>
+
+      <Row gutter={16}>
+        <Col span={12}>
+          <Flex vertical gap={4}>
+            <Text>Cutout Width</Text>
+
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.cutoutWidth}
+              min={1}
+              max={20}
+              onChange={(v) => v !== null && update({ cutoutWidth: v })}
+            />
+          </Flex>
+        </Col>
+
+        <Col span={12}>
+          <Flex vertical gap={4}>
+            <Text>Cutout Height</Text>
+
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.cutoutHeight}
+              min={1}
+              max={10}
+              onChange={(v) => v !== null && update({ cutoutHeight: v })}
+            />
+          </Flex>
+        </Col>
+      </Row>
     </Flex>
   );
 });

@@ -30,7 +30,6 @@ export const TrackMapWidgetContainer = observer(() => {
   } = telemetryStore;
   const settings = widgetSettingsStore.getTrackMapSettings();
 
-  const playerCarIdx = driverInfo?.DriverCarIdx ?? -1;
   const trackId = weekendInfo?.TrackID?.toString() ?? '';
   const trackName = weekendInfo?.TrackDisplayName ?? '';
   const trackConfig = weekendInfo?.TrackConfigName ?? '';
@@ -228,12 +227,6 @@ export const TrackMapWidgetContainer = observer(() => {
     }
   }, [lapTiming, sessionFrame, sessionInfo]);
 
-  const playerYaw = useMemo(() => {
-    if (settings.rotationMode !== 'heading-up') return undefined;
-    if (playerCarIdx < 0 || !carDynamics) return undefined;
-    return carDynamics.yaw ?? undefined;
-  }, [settings.rotationMode, playerCarIdx, carDynamics]);
-
   const driverEntries = useMemo(
     () => computeDriverEntries(carIdx, driverInfo),
     [carIdx, driverInfo]
@@ -276,7 +269,6 @@ export const TrackMapWidgetContainer = observer(() => {
       trackName={trackName}
       isRecording={isRecording}
       recordingProgress={recordingProgress}
-      playerYaw={playerYaw}
       settings={settings}
       sectors={sessionInfo?.SplitTimeInfo?.Sectors}
       sectorTimes={sectorTimes}
