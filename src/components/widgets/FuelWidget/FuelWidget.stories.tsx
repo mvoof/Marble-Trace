@@ -4,8 +4,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { FuelWidget } from './FuelWidget';
 import { WidgetScaler } from '../../WidgetScaler';
 
-const DESIGN_WIDTH = 220;
-const DESIGN_HEIGHT = 300;
+const DESIGN_WIDTH = 240;
+const DESIGN_HEIGHT = 360;
 
 const wrap = (props: ComponentProps<typeof FuelWidget>) => (
   <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
