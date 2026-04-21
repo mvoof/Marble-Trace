@@ -70,14 +70,10 @@ const carIdxSideAndFront = makeCarIdx(CarLeftRight.CarLeft, [
 
 interface ProximityRadarStoryArgs {
   snapshot: TelemetrySnapshot;
-  containerWidth: number;
-  containerHeight: number;
 }
 
 const ProximityRadarWidgetStory = ({
   snapshot: snap,
-  containerWidth,
-  containerHeight,
 }: ProximityRadarStoryArgs) => {
   const carIdx = snap.carIdx;
   const playerCarIdx = snap.sessionInfo?.DriverInfo?.DriverCarIdx ?? null;
@@ -108,7 +104,7 @@ const ProximityRadarWidgetStory = ({
   );
 
   return (
-    <div style={{ width: containerWidth, height: containerHeight }}>
+    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
       <WidgetScaler
         designWidth={DESIGN_WIDTH}
         designHeight={DESIGN_HEIGHT}
@@ -133,24 +129,7 @@ const meta: Meta<ProximityRadarStoryArgs> = {
       values: [{ name: 'dark', value: '#1a1a2e' }],
     },
   },
-  argTypes: {
-    containerWidth: {
-      control: { type: 'range', min: 100, max: 600, step: 10 },
-      description: 'Container width (px)',
-      table: { category: 'Container' },
-    },
-    containerHeight: {
-      control: { type: 'range', min: 100, max: 600, step: 10 },
-      description: 'Container height (px)',
-      table: { category: 'Container' },
-    },
-    snapshot: {
-      table: { disable: true },
-    },
-  },
   args: {
-    containerWidth: DESIGN_WIDTH,
-    containerHeight: DESIGN_HEIGHT,
     snapshot: realSnapshot,
   },
 };

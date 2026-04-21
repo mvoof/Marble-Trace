@@ -114,7 +114,12 @@ export const SettingsPage = observer(() => {
                 </Button>
               )}
               {pendingKey && (
-                <Button type="primary" onClick={applyHotkey}>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    void applyHotkey();
+                  }}
+                >
                   Apply
                 </Button>
               )}
@@ -127,7 +132,9 @@ export const SettingsPage = observer(() => {
           <Space>
             <Switch
               checked={appSettingsStore.hideWidgetsWhenGameClosed}
-              onChange={(v) => appSettingsStore.setHideWidgetsWhenGameClosed(v)}
+              onChange={(v) => {
+                void appSettingsStore.setHideWidgetsWhenGameClosed(v);
+              }}
             />
 
             <Text>Hide widgets when iRacing is not running</Text>
@@ -150,7 +157,9 @@ export const SettingsPage = observer(() => {
               { label: 'Imperial (mph, °F, gal)', value: 'imperial' },
             ]}
             value={unitsStore.system}
-            onChange={(value) => unitsStore.setSystem(value as UnitSystem)}
+            onChange={(value) => {
+              void unitsStore.setSystem(value as UnitSystem);
+            }}
           />
         </Flex>
       </Card>

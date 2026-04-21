@@ -29,7 +29,6 @@ interface TrackMapWidgetProps {
   trackName: string;
   isRecording: boolean;
   recordingProgress: number;
-  playerYaw: number | undefined;
   settings: TrackMapWidgetSettings;
   sectors: Sector[] | null | undefined;
   sectorTimes: (number | null)[];
@@ -42,7 +41,6 @@ export const TrackMapWidget = ({
   trackName,
   isRecording,
   recordingProgress,
-  playerYaw,
   settings,
   sectors,
   sectorTimes,
@@ -75,7 +73,6 @@ export const TrackMapWidget = ({
           points={trackData.points}
           cars={cars}
           sectors={visibleSectors}
-          playerYaw={playerYaw}
         />
       </div>
 

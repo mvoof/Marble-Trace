@@ -39,7 +39,7 @@ class UnitsStore {
   async setSystem(system: UnitSystem) {
     this.system = system;
     await this.saveSettings();
-    emit('units-changed', system);
+    void emit('units-changed', system);
   }
 
   async initOverlayListener() {

@@ -1,0 +1,220 @@
+@use '../../../../styles/variables' as *;
+
+// ===== Corner wrapper =====
+
+.cornerWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.cornerRight {
+  flex-direction: row-reverse;
+}
+
+// ===== Tire block =====
+
+.tireCore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 6.5rem;
+}
+
+.wearRow {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 0.375rem;
+}
+
+.wearValue {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  color: $color-text-muted;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.wearUnit {
+  font-size: 0.5rem;
+  margin-left: 0.0625rem;
+  font-weight: 600;
+}
+
+.tireVisual {
+  position: relative;
+  display: flex;
+  gap: 0.1875rem;
+  width: 4.5rem;
+  height: 5.3125rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: $widget-border-radius;
+  overflow: hidden;
+  padding: 0.125rem;
+}
+
+.tireSection {
+  flex: 1;
+  background-color: #1a1a1a;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.tireFill {
+  width: 100%;
+  transition:
+    height 0.5s ease,
+    background-color 0.5s ease;
+}
+
+.pressureOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.pressureUnit {
+  font-size: 0.4375rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.05em;
+  text-shadow:
+    0 0 4px #000,
+    0 0 8px #000;
+  line-height: 1;
+}
+
+.pressureValue {
+  font-size: 1.0625rem;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+  text-shadow:
+    0 0 4px #000,
+    0 0 8px #000;
+  font-variant-numeric: tabular-nums;
+}
+
+.pressureDanger {
+  color: #ef4444;
+}
+
+.tempRow {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 0.375rem;
+}
+
+.tempValue {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.tempUnit {
+  font-size: 0.5rem;
+  margin-left: 0.0625rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+// ===== Inboard module =====
+
+.inboardModule {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// For right-side corners: brake bar is on the right of the text block
+.inboardModuleRight {
+  flex-direction: row-reverse;
+}
+
+.brakeBar {
+  width: 0.375rem;
+  height: 4.0625rem;
+  border-radius: 2px;
+  transition: background-color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.inboardTexts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  justify-content: center;
+  width: 4.6875rem;
+}
+
+.inboardRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.1875rem;
+  justify-content: flex-start;
+}
+
+.inboardLabel {
+  font-size: 0.5625rem;
+  color: #64748b;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.inboardValue {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.inboardUnit {
+  font-size: 0.5rem;
+  font-weight: 600;
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+// ===== Damage animation — on tire visual only =====
+
+@keyframes damagePulse {
+  0% {
+    filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0));
+    outline: 1px solid transparent;
+  }
+
+  50% {
+    filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.6));
+    outline: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  100% {
+    filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0));
+    outline: 1px solid transparent;
+  }
+}
+
+.damagePulse {
+  animation: damagePulse 1.2s infinite;
+  border-radius: $widget-border-radius;
+}

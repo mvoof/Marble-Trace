@@ -1,0 +1,239 @@
+@use '../../../styles/variables' as *;
+
+@keyframes pitPulse {
+  0%,
+  100% {
+    border-color: rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.05);
+  }
+  50% {
+    border-color: rgba(239, 68, 68, 0.7);
+    background: rgba(239, 68, 68, 0.12);
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 8px 6px;
+  flex-shrink: 0;
+}
+
+.headerLabel {
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}
+
+.statusBadge {
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  font-weight: 900;
+  color: #000;
+  padding: 1px 5px;
+  letter-spacing: 1px;
+}
+
+.statusSafe {
+  background: #22c55e;
+}
+
+.statusShort {
+  background: #ef4444;
+}
+
+.progressWrap {
+  position: relative;
+  height: 18px;
+  flex-shrink: 0;
+  margin: 0 8px 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.progressBar {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #3399ff, #60a5fa);
+}
+
+.progressLabels {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  font-family: $font-mono;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 3px #000;
+  font-variant-numeric: tabular-nums;
+}
+
+.progressLabelMuted {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  flex: 1;
+  padding: 4px 8px;
+  min-height: 72px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.rowLabel {
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}
+
+.rowValue {
+  font-family: $font-mono;
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: $color-text-primary;
+}
+
+.rowValueSafe {
+  color: #22c55e;
+}
+
+.rowValueShort {
+  color: #ef4444;
+}
+
+.rowValueWarn {
+  color: #fbbf24;
+}
+
+.rowValueMuted {
+  font-size: 12px;
+  color: $color-text-muted;
+}
+
+// Pit-stop warning block
+.pitWarning {
+  margin: 4px 8px 8px;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.05);
+  border-radius: 4px;
+  padding: 8px 10px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pitWarningUrgent {
+  animation: pitPulse 1.2s ease-in-out infinite;
+}
+
+.pitWarningHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.pitWarningHeaderLabel {
+  font-family: $font-mono;
+  font-size: 11px;
+  color: #fbbf24;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.pitWarningWindow {
+  font-family: $font-mono;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.pitWarningSeparator {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin-bottom: 8px;
+}
+
+.pitWarningBody {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.pitWarningBodyLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pitWarningBodyLabel {
+  font-family: $font-mono;
+  font-size: 11px;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}
+
+.pitWarningBodySub {
+  font-family: $font-mono;
+  font-size: 10px;
+  color: $color-text-muted;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.pitWarningAmount {
+  font-family: $font-mono;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fbbf24;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pitWarningAmountDanger {
+  color: #ef4444;
+}
+
+.pitWarningAmountUnit {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.chart {
+  padding: 4px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chartLabel {
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}
+
+.chartCanvas {
+  width: 100%;
+  height: 100px;
+  display: block;
+}

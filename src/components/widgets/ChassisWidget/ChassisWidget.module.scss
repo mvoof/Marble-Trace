@@ -1,0 +1,49 @@
+@use '../../../styles/variables' as *;
+
+.carGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 0rem;
+  align-items: center;
+  padding: $space-sm 0.5rem 0;
+}
+
+.axleRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-sm;
+  padding-top: $space-sm;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.axleLabel {
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.axleValue {
+  font-size: $font-size-sm;
+  font-weight: 700;
+  color: $color-text-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.axleUnit {
+  font-size: 0.5rem;
+  margin-left: 0.0625rem;
+  opacity: 0.8;
+}
+
+.axleDanger {
+  color: $color-danger;
+}
+
+.axleDivider {
+  width: 1px;
+  height: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.15);
+  margin: 0 $space-md;
+}

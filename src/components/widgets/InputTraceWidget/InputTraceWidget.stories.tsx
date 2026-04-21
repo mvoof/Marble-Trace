@@ -23,14 +23,10 @@ const DEFAULT_SETTINGS: InputTraceSettings = {
 
 interface InputTraceStoryArgs extends InputTraceSettings {
   snapshot: TelemetrySnapshot;
-  containerWidth: number;
-  containerHeight: number;
 }
 
 const InputTraceWidgetStory = ({
   snapshot: snap,
-  containerWidth,
-  containerHeight,
   ...settings
 }: InputTraceStoryArgs) => {
   const frame = snap.carInputs;
@@ -39,7 +35,7 @@ const InputTraceWidgetStory = ({
   const clutch = frame?.clutch != null ? 1 - frame.clutch : 0;
 
   return (
-    <div style={{ width: containerWidth, height: containerHeight }}>
+    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
       <WidgetScaler
         designWidth={DESIGN_WIDTH}
         designHeight={DESIGN_HEIGHT}
@@ -62,54 +58,7 @@ const meta: Meta<InputTraceStoryArgs> = {
   parameters: {
     layout: 'centered',
   },
-  argTypes: {
-    containerWidth: {
-      control: { type: 'range', min: 100, max: 1000, step: 10 },
-      description: 'Container width (px)',
-      table: { category: 'Container' },
-    },
-    containerHeight: {
-      control: { type: 'range', min: 50, max: 600, step: 10 },
-      description: 'Container height (px)',
-      table: { category: 'Container' },
-    },
-    barMode: {
-      control: 'radio',
-      options: ['horizontal', 'vertical', 'hidden'],
-      description: 'Progress bar orientation',
-      table: { category: 'Widget Settings' },
-    },
-    showThrottle: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    showBrake: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    showClutch: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    throttleColor: {
-      control: 'color',
-      table: { category: 'Widget Settings' },
-    },
-    brakeColor: {
-      control: 'color',
-      table: { category: 'Widget Settings' },
-    },
-    clutchColor: {
-      control: 'color',
-      table: { category: 'Widget Settings' },
-    },
-    snapshot: {
-      table: { disable: true },
-    },
-  },
   args: {
-    containerWidth: DESIGN_WIDTH,
-    containerHeight: DESIGN_HEIGHT,
     ...DEFAULT_SETTINGS,
     snapshot: realSnapshot,
   },
@@ -122,17 +71,23 @@ type Story = StoryObj<InputTraceStoryArgs>;
 export const Default: Story = {};
 
 export const Vertical: Story = {
-  args: {
-    barMode: 'vertical',
-    containerWidth: 400,
-    containerHeight: 110,
-  },
+  args: { barMode: 'vertical' },
 };
 
 export const NoBars: Story = {
-  args: {
-    barMode: 'hidden',
-  },
+  args: { barMode: 'hidden' },
+};
+
+export const ThrottleOnly: Story = {
+  args: { showBrake: false, showClutch: false },
+};
+
+export const BrakeOnly: Story = {
+  args: { showThrottle: false, showClutch: false },
+};
+
+export const ClutchOnly: Story = {
+  args: { showThrottle: false, showBrake: false },
 };
 
 export const NoData: Story = {

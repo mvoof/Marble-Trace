@@ -99,7 +99,7 @@ class AppSettingsStore {
     if (!hotkey) return;
     try {
       await this.unregisterKey(hotkey);
-      await register(hotkey, async (event) => {
+      await register(hotkey, (event) => {
         if (event.state === 'Pressed') {
           const widget = widgetSettingsStore.getWidget(widgetId);
           if (widget) {

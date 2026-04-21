@@ -1,0 +1,69 @@
+@use '../../../styles/variables' as *;
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $space-md $space-md $space-xs;
+}
+
+.sessionLabel {
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}
+
+.flagLabel {
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.flagGreen {
+  color: #22c55e;
+}
+
+.flagFinal {
+  color: #fbbf24;
+}
+
+.flagCheckered {
+  color: #ffffff;
+}
+
+.timeDisplay {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  padding: $space-xs $space-md;
+  font-family: $font-widget;
+  font-weight: 700;
+  font-size: 2.75rem;
+  line-height: 1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeMain {
+  color: #fff;
+}
+
+.timeSeconds {
+  color: #fbbf24;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $space-xs $space-md $space-md;
+}
+
+.footerItem {
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}

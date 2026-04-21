@@ -1,0 +1,76 @@
+@use '../../../styles/variables' as *;
+
+.header {
+  padding: $space-md $space-md $space-sm;
+}
+
+.headerLabel {
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 60px 1fr 64px;
+  align-items: baseline;
+  font-family: $font-mono;
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid transparent;
+  margin: 0 $space-sm 2px;
+
+  &.rowLast {
+    border-left-color: #ef4444;
+
+    .delta {
+      color: #ef4444;
+    }
+  }
+
+  &.rowBest {
+    border-left-color: #fbbf24;
+
+    .delta {
+      color: #fbbf24;
+    }
+  }
+
+  &.rowOptimal {
+    border-left-color: #22c55e;
+
+    .delta {
+      color: #22c55e;
+    }
+  }
+
+  &.rowP1 {
+    border-left-color: #e0e0e0;
+
+    .delta {
+      color: #e0e0e0;
+    }
+  }
+}
+
+.label {
+  font-size: 10px;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}
+
+.time {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.delta {
+  font-size: 11px;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: $color-text-muted;
+}

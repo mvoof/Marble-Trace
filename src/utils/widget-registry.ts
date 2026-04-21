@@ -8,6 +8,14 @@ import { StandingsWidgetContainer } from '../components/widgets/StandingsWidget/
 import { RelativeWidgetContainer } from '../components/widgets/RelativeWidget/RelativeWidgetContainer';
 import { TrackMapWidgetContainer } from '../components/widgets/TrackMapWidget/TrackMapWidgetContainer';
 import { LinearMapWidgetContainer } from '../components/widgets/LinearMapWidget/LinearMapWidgetContainer';
+import { FlagsWidgetContainer } from '../components/widgets/FlagsWidget/FlagsWidgetContainer';
+import { ChassisWidgetContainer } from '../components/widgets/ChassisWidget/ChassisWidgetContainer';
+import { LapDeltaWidgetContainer } from '../components/widgets/LapDeltaWidget/LapDeltaWidgetContainer';
+import { LapTimesWidgetContainer } from '../components/widgets/LapTimesWidget/LapTimesWidgetContainer';
+import { SessionWidgetContainer } from '../components/widgets/SessionWidget/SessionWidgetContainer';
+import { TimerWidgetContainer } from '../components/widgets/TimerWidget/TimerWidgetContainer';
+import { WeatherWidgetContainer } from '../components/widgets/WeatherWidget/WeatherWidgetContainer';
+import { FuelWidgetContainer } from '../components/widgets/FuelWidget/FuelWidgetContainer';
 import { widgetSettingsStore } from '../store/widget-settings.store';
 
 export interface WidgetVariant {
@@ -135,6 +143,94 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
         designWidth: 40,
         designHeight: 400,
         adaptive: true,
+      },
+    },
+  },
+
+  flags: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: FlagsWidgetContainer,
+        designWidth: 630,
+        designHeight: 189,
+      },
+    },
+  },
+
+  chassis: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: ChassisWidgetContainer,
+        designWidth: 460,
+        designHeight: 320,
+      },
+    },
+  },
+
+  'lap-delta': {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: LapDeltaWidgetContainer,
+        designWidth: 240,
+        designHeight: 140,
+      },
+    },
+  },
+
+  'lap-times': {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: LapTimesWidgetContainer,
+        designWidth: 260,
+        designHeight: 160,
+      },
+    },
+  },
+
+  session: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: SessionWidgetContainer,
+        designWidth: 300,
+        designHeight: 100,
+      },
+    },
+  },
+
+  timer: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: TimerWidgetContainer,
+        designWidth: 240,
+        designHeight: 120,
+      },
+    },
+  },
+
+  weather: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: WeatherWidgetContainer,
+        designWidth: 240,
+        designHeight: 280,
+      },
+    },
+  },
+
+  fuel: {
+    defaultVariant: 'default',
+    variants: {
+      default: {
+        component: FuelWidgetContainer,
+        designWidth: 240,
+        designHeight: 360,
       },
     },
   },

@@ -81,6 +81,28 @@ export interface LinearMapWidgetSettings {
   orientation: LinearMapOrientation;
 }
 
+export type FlagsVariant = 'overlay' | 'under-mirror' | 'standalone';
+
+export interface FlagsWidgetSettings {
+  variant: FlagsVariant;
+  cutoutWidth: number;
+  cutoutHeight: number;
+}
+
+export interface WeatherWidgetSettings {
+  showCompass: boolean;
+  showAirTemp: boolean;
+  showTrackTemp: boolean;
+  showWind: boolean;
+  showHumidity: boolean;
+}
+
+export interface FuelWidgetSettings {
+  showChart: boolean;
+  pitWarningLaps: number;
+  chartType: 'line' | 'bar';
+}
+
 export interface WidgetCustomSettings {
   speed?: SpeedWidgetSettings;
   'input-trace'?: InputTraceSettings;
@@ -90,6 +112,9 @@ export interface WidgetCustomSettings {
   relative?: RelativeWidgetSettings;
   'track-map'?: TrackMapWidgetSettings;
   'linear-map'?: LinearMapWidgetSettings;
+  flags?: FlagsWidgetSettings;
+  weather?: WeatherWidgetSettings;
+  fuel?: FuelWidgetSettings;
 }
 
 export interface WidgetConfig {
@@ -236,6 +261,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showIRatingBadge: true,
         showClassBadge: true,
         showPitIndicator: true,
+        abbreviateNames: true,
       },
     },
   },
@@ -278,6 +304,37 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     },
   },
   {
+    id: 'flags',
+    label: 'LED Flags',
+    enabled: false,
+    x: 760,
+    y: 0,
+    width: 630,
+    height: 189,
+    backgroundColor: 'transparent',
+    backgroundColorEdge: 'transparent',
+    hotkey: '',
+    customSettings: {
+      flags: {
+        variant: 'overlay',
+        cutoutWidth: 6,
+        cutoutHeight: 1,
+      },
+    },
+  },
+  {
+    id: 'chassis',
+    label: 'Chassis (Tires & Suspension)',
+    enabled: false,
+    x: 100,
+    y: 100,
+    width: 460,
+    height: 320,
+    backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
+    hotkey: '',
+  },
+  {
     id: 'example',
     label: 'Telemetry Debug',
     enabled: false,
@@ -288,6 +345,94 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: 'F8',
+  },
+  {
+    id: 'lap-delta',
+    label: 'Lap Delta',
+    enabled: false,
+    x: 400,
+    y: 200,
+    width: 240,
+    height: 140,
+    backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
+    hotkey: '',
+  },
+  {
+    id: 'lap-times',
+    label: 'Lap Times',
+    enabled: false,
+    x: 400,
+    y: 300,
+    width: 260,
+    height: 160,
+    backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
+    hotkey: '',
+  },
+  {
+    id: 'session',
+    label: 'Session Info',
+    enabled: false,
+    x: 50,
+    y: 200,
+    width: 300,
+    height: 100,
+    backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
+    hotkey: '',
+  },
+  {
+    id: 'timer',
+    label: 'Session Timer',
+    enabled: false,
+    x: 50,
+    y: 310,
+    width: 240,
+    height: 120,
+    backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
+    hotkey: '',
+  },
+  {
+    id: 'weather',
+    label: 'Weather',
+    enabled: false,
+    x: 760,
+    y: 200,
+    width: 240,
+    height: 280,
+    backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
+    hotkey: '',
+    customSettings: {
+      weather: {
+        showCompass: true,
+        showAirTemp: true,
+        showTrackTemp: true,
+        showWind: true,
+        showHumidity: true,
+      },
+    },
+  },
+  {
+    id: 'fuel',
+    label: 'Fuel Strategy',
+    enabled: false,
+    x: 760,
+    y: 500,
+    width: 240,
+    height: 220,
+    backgroundColor: '#1a1a1a',
+    backgroundColorEdge: '#0a0a0a',
+    hotkey: '',
+    customSettings: {
+      fuel: {
+        showChart: false,
+        pitWarningLaps: 3,
+        chartType: 'bar',
+      },
+    },
   },
 ];
 
@@ -346,7 +491,9 @@ class WidgetSettingsStore {
   private debouncedSave() {
     if (this.saveTimeout) clearTimeout(this.saveTimeout);
 
-    this.saveTimeout = setTimeout(() => this.saveSettings(), 500);
+    this.saveTimeout = setTimeout(() => {
+      void this.saveSettings();
+    }, 500);
   }
 
   private async saveSettings() {
@@ -373,10 +520,7 @@ class WidgetSettingsStore {
             if (field === 'customSettings') {
               widget.customSettings = value as WidgetCustomSettings;
             } else {
-              (widget[field] as number | string | boolean) = value as
-                | number
-                | string
-                | boolean;
+              widget[field] = value as number | string | boolean;
             }
           });
         }
@@ -402,8 +546,8 @@ class WidgetSettingsStore {
 
       this.debouncedSave();
 
-      emit('widget-settings-changed', { id, field: 'x', value: x });
-      emit('widget-settings-changed', { id, field: 'y', value: y });
+      void emit('widget-settings-changed', { id, field: 'x', value: x });
+      void emit('widget-settings-changed', { id, field: 'y', value: y });
     }
   }
 
@@ -416,8 +560,16 @@ class WidgetSettingsStore {
 
       this.debouncedSave();
 
-      emit('widget-settings-changed', { id, field: 'width', value: width });
-      emit('widget-settings-changed', { id, field: 'height', value: height });
+      void emit('widget-settings-changed', {
+        id,
+        field: 'width',
+        value: width,
+      });
+      void emit('widget-settings-changed', {
+        id,
+        field: 'height',
+        value: height,
+      });
     }
   }
 
@@ -519,6 +671,41 @@ class WidgetSettingsStore {
     );
   }
 
+  getFlagsSettings(): FlagsWidgetSettings {
+    const widget = this.getWidget('flags');
+    return (
+      widget?.customSettings?.flags ?? {
+        variant: 'overlay',
+        cutoutWidth: 6,
+        cutoutHeight: 1,
+      }
+    );
+  }
+
+  getWeatherSettings(): WeatherWidgetSettings {
+    const widget = this.getWidget('weather');
+    return (
+      widget?.customSettings?.weather ?? {
+        showCompass: true,
+        showAirTemp: true,
+        showTrackTemp: true,
+        showWind: true,
+        showHumidity: true,
+      }
+    );
+  }
+
+  getFuelSettings(): FuelWidgetSettings {
+    const widget = this.getWidget('fuel');
+    return (
+      widget?.customSettings?.fuel ?? {
+        showChart: false,
+        pitWarningLaps: 3,
+        chartType: 'bar',
+      }
+    );
+  }
+
   getRadarSettings(id: 'proximity-radar' | 'radar-bar'): RadarSettings {
     const widget = this.getWidget(id);
     const defaults: RadarSettings =
@@ -559,7 +746,7 @@ class WidgetSettingsStore {
 
       this.debouncedSave();
 
-      emit('widget-settings-changed', {
+      void emit('widget-settings-changed', {
         id,
         field: 'customSettings',
         value: widget.customSettings,
@@ -579,7 +766,7 @@ class WidgetSettingsStore {
 
       this.debouncedSave();
 
-      emit('widget-settings-changed', { id, field, value });
+      void emit('widget-settings-changed', { id, field, value });
     }
   }
 }

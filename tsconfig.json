@@ -24,7 +24,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
+  "include": ["src", "types.d.ts", "vitest.shims.d.ts"],
   "exclude": [
     "src/bindings.ts",
     "src/**/*.stories.tsx",

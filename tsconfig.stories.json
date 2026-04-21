@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/**/*.stories.tsx", "src/**/*.stories.ts"],
+  "exclude": ["node_modules", "dist", "build"]
+}

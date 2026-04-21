@@ -4,10 +4,10 @@ import { telemetryConnectionStore } from '../store/iracing';
 
 export const useTelemetry = () => {
   useEffect(() => {
-    telemetryConnectionStore.startStream();
+    void telemetryConnectionStore.startStream();
 
     return () => {
-      telemetryConnectionStore.stopStream();
+      void telemetryConnectionStore.stopStream();
     };
   }, []);
 };

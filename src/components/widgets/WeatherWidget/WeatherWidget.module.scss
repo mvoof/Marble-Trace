@@ -1,0 +1,76 @@
+@use '../../../styles/variables' as *;
+
+.header {
+  padding: $space-md $space-md $space-xs;
+}
+
+.headerLabel {
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}
+
+.compassBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $space-xs $space-md $space-sm;
+  gap: $space-xs;
+}
+
+.compassInfo {
+  display: flex;
+  align-items: baseline;
+  gap: $space-sm;
+}
+
+.windSpeed {
+  font-family: $font-widget;
+  font-size: $font-size-lg;
+  font-weight: 700;
+  color: $color-text-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.windCardinal {
+  font-family: $font-mono;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}
+
+.infoBlock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 6px 8px;
+  margin: 0 $space-md 4px;
+  font-family: $font-mono;
+}
+
+.infoLabel {
+  font-size: 9px;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}
+
+.infoValue {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.infoUnit {
+  font-size: 10px;
+  color: $color-text-muted;
+  margin-left: 1px;
+}
+
+.infoSubValue {
+  font-size: 11px;
+  color: $color-text-muted;
+}

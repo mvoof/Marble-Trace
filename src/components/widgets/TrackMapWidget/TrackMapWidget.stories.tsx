@@ -36,8 +36,6 @@ const DEFAULT_SETTINGS: TrackMapWidgetSettings = {
 
 interface TrackMapStoryArgs extends TrackMapWidgetSettings {
   snapshot: TelemetrySnapshot;
-  containerWidth: number;
-  containerHeight: number;
 }
 
 const computeCars = (snap: TelemetrySnapshot): CarOnTrack[] => {
@@ -79,8 +77,6 @@ const MOCK_SECTOR_TIMES: (number | null)[] = [31.423, 45.102, 29.851, null];
 
 const TrackMapWidgetStory = ({
   snapshot: snap,
-  containerWidth,
-  containerHeight,
   ...settings
 }: TrackMapStoryArgs) => {
   const cars = computeCars(snap);
@@ -91,7 +87,7 @@ const TrackMapWidgetStory = ({
       : undefined;
 
   return (
-    <div style={{ width: containerWidth, height: containerHeight }}>
+    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
       <WidgetScaler
         designWidth={DESIGN_WIDTH}
         designHeight={DESIGN_HEIGHT}
@@ -114,34 +110,6 @@ const TrackMapWidgetStory = ({
   );
 };
 
-const TrackMapRecordingStory = ({
-  snapshot: snap,
-  containerWidth,
-  containerHeight,
-  ...settings
-}: TrackMapStoryArgs) => (
-  <div style={{ width: containerWidth, height: containerHeight }}>
-    <WidgetScaler
-      designWidth={DESIGN_WIDTH}
-      designHeight={DESIGN_HEIGHT}
-      background="transparent"
-    >
-      <TrackMapWidget
-        cars={computeCars(snap)}
-        classColors={computeClassColors(snap)}
-        trackData={null}
-        trackName="Lime Rock Park"
-        isRecording={true}
-        recordingProgress={0.42}
-        playerYaw={undefined}
-        settings={settings}
-        sectors={undefined}
-        sectorTimes={[]}
-      />
-    </WidgetScaler>
-  </div>
-);
-
 const meta: Meta<TrackMapStoryArgs> = {
   title: 'Widgets/TrackMapWidget',
   component: TrackMapWidgetStory,
@@ -152,44 +120,7 @@ const meta: Meta<TrackMapStoryArgs> = {
       values: [{ name: 'dark', value: '#1a1a2e' }],
     },
   },
-  argTypes: {
-    containerWidth: {
-      control: { type: 'range', min: 200, max: 800, step: 10 },
-      description: 'Container width (px)',
-      table: { category: 'Container' },
-    },
-    containerHeight: {
-      control: { type: 'range', min: 200, max: 800, step: 10 },
-      description: 'Container height (px)',
-      table: { category: 'Container' },
-    },
-    showLegend: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    legendPosition: {
-      table: { disable: true },
-    },
-    showSectors: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    showCornerNumbers: {
-      control: 'boolean',
-      table: { category: 'Widget Settings' },
-    },
-    rotationMode: {
-      control: 'radio',
-      options: ['fixed', 'heading-up'],
-      table: { category: 'Widget Settings' },
-    },
-    snapshot: {
-      table: { disable: true },
-    },
-  },
   args: {
-    containerWidth: DESIGN_WIDTH,
-    containerHeight: DESIGN_HEIGHT,
     ...DEFAULT_SETTINGS,
     snapshot: realSnapshot,
   },
@@ -209,8 +140,37 @@ export const NoSectors: Story = {
   args: { showSectors: false },
 };
 
+export const NoCornerNumbers: Story = {
+  args: { showCornerNumbers: false },
+};
+
+export const HeadingUp: Story = {
+  args: { rotationMode: 'heading-up' },
+};
+
 export const Recording: Story = {
-  render: (args) => <TrackMapRecordingStory {...args} />,
+  render: ({ snapshot: snap, ...settings }) => (
+    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
+      <WidgetScaler
+        designWidth={DESIGN_WIDTH}
+        designHeight={DESIGN_HEIGHT}
+        background="transparent"
+      >
+        <TrackMapWidget
+          cars={computeCars(snap)}
+          classColors={computeClassColors(snap)}
+          trackData={null}
+          trackName="Lime Rock Park"
+          isRecording={true}
+          recordingProgress={0.42}
+          playerYaw={undefined}
+          settings={settings}
+          sectors={undefined}
+          sectorTimes={[]}
+        />
+      </WidgetScaler>
+    </div>
+  ),
 };
 
 export const NoData: Story = {

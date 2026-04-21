@@ -21,14 +21,10 @@ const DEFAULT_SETTINGS: RelativeWidgetSettings = {
 
 interface RelativeStoryArgs extends RelativeWidgetSettings {
   snapshot: TelemetrySnapshot;
-  containerWidth: number;
-  containerHeight: number;
 }
 
 const RelativeWidgetStory = ({
   snapshot: snap,
-  containerWidth,
-  containerHeight,
   ...settings
 }: RelativeStoryArgs) => {
   const playerCarIdx = snap.sessionInfo?.DriverInfo?.DriverCarIdx ?? -1;
@@ -38,7 +34,7 @@ const RelativeWidgetStory = ({
   );
 
   return (
-    <div style={{ width: containerWidth, height: containerHeight }}>
+    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
       <WidgetScaler
         designWidth={DESIGN_WIDTH}
         designHeight={DESIGN_HEIGHT}
@@ -57,39 +53,7 @@ const meta: Meta<RelativeStoryArgs> = {
   parameters: {
     layout: 'centered',
   },
-  argTypes: {
-    containerWidth: {
-      control: { type: 'range', min: 200, max: 800, step: 10 },
-      description: 'Container width (px)',
-      table: { category: 'Container' },
-    },
-    containerHeight: {
-      control: { type: 'range', min: 200, max: 1000, step: 10 },
-      description: 'Container height (px)',
-      table: { category: 'Container' },
-    },
-    showClassBadge: {
-      control: 'boolean',
-      description: 'Show class badge',
-      table: { category: 'Settings' },
-    },
-    showIRatingBadge: {
-      control: 'boolean',
-      description: 'Show license / iRating badge',
-      table: { category: 'Settings' },
-    },
-    showPitIndicator: {
-      control: 'boolean',
-      description: 'Show pit indicator',
-      table: { category: 'Settings' },
-    },
-    snapshot: {
-      table: { disable: true },
-    },
-  },
   args: {
-    containerWidth: DESIGN_WIDTH,
-    containerHeight: DESIGN_HEIGHT,
     snapshot: realSnapshot,
     ...DEFAULT_SETTINGS,
   },
@@ -100,6 +64,25 @@ export default meta;
 type Story = StoryObj<RelativeStoryArgs>;
 
 export const Default: Story = {};
+
+export const NoBadges: Story = {
+  args: {
+    showClassBadge: false,
+    showIRatingBadge: false,
+  },
+};
+
+export const NoPitIndicator: Story = {
+  args: { showPitIndicator: false },
+};
+
+export const Minimal: Story = {
+  args: {
+    showClassBadge: false,
+    showIRatingBadge: false,
+    showPitIndicator: false,
+  },
+};
 
 export const NoData: Story = {
   args: {
@@ -113,13 +96,5 @@ export const NoData: Story = {
       session: null,
       environment: null,
     } as unknown as TelemetrySnapshot,
-  },
-};
-
-export const Minimal: Story = {
-  args: {
-    showClassBadge: false,
-    showIRatingBadge: false,
-    showPitIndicator: false,
   },
 };
