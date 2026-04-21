@@ -54,7 +54,14 @@ export const LedMatrix = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = canvasWidth * dpr;
+    canvas.height = canvasHeight * dpr;
+    canvas.style.width = `${canvasWidth}px`;
+    canvas.style.height = `${canvasHeight}px`;
+    ctx.scale(dpr, dpr);
+
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     const meatball =
       flag === 'meatball'
@@ -63,6 +70,8 @@ export const LedMatrix = ({
 
     const shouldBlink = flag === 'yellow' || flag === 'red';
     const isOff = flag === 'none' || (shouldBlink && !blinkOn);
+
+    const buckets = new Map<string, { px: number; py: number }[]>();
 
     for (let by = 0; by < blocksY; by++) {
       for (let bx = 0; bx < blocksX; bx++) {
@@ -77,6 +86,21 @@ export const LedMatrix = ({
               continue;
             }
 
+            const color = isOff
+              ? FLAG_COLORS.off
+              : getDiodeColor(
+                  gx,
+                  gy,
+                  bx,
+                  by,
+                  flag,
+                  blocksX,
+                  blocksY,
+                  cutoutWidth,
+                  cutoutHeight,
+                  meatball
+                );
+
             const px =
               BOARD_PADDING +
               bx * (DIODE_CELL * 6 + BLOCK_GAP) +
@@ -88,51 +112,42 @@ export const LedMatrix = ({
               dy * DIODE_CELL +
               DIODE_MARGIN;
 
-            let color = FLAG_COLORS.off;
-
-            if (!isOff) {
-              color = getDiodeColor(
-                gx,
-                gy,
-                bx,
-                by,
-                flag,
-                blocksX,
-                blocksY,
-                cutoutWidth,
-                cutoutHeight,
-                meatball
-              );
+            let bucket = buckets.get(color);
+            if (!bucket) {
+              bucket = [];
+              buckets.set(color, bucket);
             }
-
-            const isActive = color !== FLAG_COLORS.off;
-
-            ctx.shadowBlur = 0;
-            ctx.shadowColor = 'transparent';
-            ctx.fillStyle = color;
-
-            if (isActive) {
-              ctx.shadowBlur = 8;
-              ctx.shadowColor = color;
-            }
-
-            ctx.beginPath();
-            ctx.roundRect(px, py, DIODE_SIZE, DIODE_SIZE, 1);
-            ctx.fill();
+            bucket.push({ px, py });
           }
         }
       }
     }
-  }, [blocksX, blocksY, cutoutWidth, cutoutHeight, flag, blinkOn]);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className={styles.canvas}
-      width={canvasWidth}
-      height={canvasHeight}
-    />
-  );
+    for (const [color, diodes] of buckets) {
+      const isActive = color !== FLAG_COLORS.off;
+
+      ctx.shadowBlur = isActive ? 8 : 0;
+      ctx.shadowColor = isActive ? color : 'transparent';
+      ctx.fillStyle = color;
+
+      ctx.beginPath();
+      for (const { px, py } of diodes) {
+        ctx.roundRect(px, py, DIODE_SIZE, DIODE_SIZE, 1);
+      }
+      ctx.fill();
+    }
+  }, [
+    blocksX,
+    blocksY,
+    cutoutWidth,
+    cutoutHeight,
+    flag,
+    blinkOn,
+    canvasWidth,
+    canvasHeight,
+  ]);
+
+  return <canvas ref={canvasRef} className={styles.canvas} />;
 };
 
 function getDiodeColor(
