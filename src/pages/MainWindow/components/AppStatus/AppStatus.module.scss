@@ -1,0 +1,73 @@
+@use '../../../../styles/variables' as *;
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.connected {
+  background-color: $color-positive;
+  color: rgba($color-positive, 0.4);
+}
+
+.connectedText {
+  color: $color-positive;
+}
+
+.waiting {
+  background-color: $color-warning;
+  color: rgba($color-warning, 0.4);
+  animation: pulse 2s infinite;
+}
+
+.waitingText {
+  color: $sys-text-secondary;
+}
+
+.error {
+  background-color: $color-danger;
+  color: rgba($color-danger, 0.4);
+}
+
+.errorText {
+  color: $color-danger;
+}
+
+.disconnected {
+  background-color: $sys-text-muted;
+  color: transparent;
+  box-shadow: none;
+}
+
+.disconnectedText {
+  color: $sys-text-muted;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}

@@ -8,6 +8,7 @@ import { WidgetList } from './components/WidgetList';
 import { WidgetSettings } from './components/WidgetSettings';
 import { SettingsPage } from './components/SettingsPage';
 import { TitleBar } from './components/TitleBar/TitleBar';
+import { AppStatus } from './components/AppStatus/AppStatus';
 import { RandomGlitchCanvas } from '../../components/shared/BackgroundAnimation/RandomGlitchCanvas';
 import styles from './MainWindow.module.scss';
 import Logo from '../../assets/logo.svg?react';
@@ -100,6 +101,7 @@ export const MainWindow = observer(() => {
               </div>
               <div className={styles.headerText}>
                 <span className={styles.brandName}>Marble Trace</span>
+                <AppStatus />
               </div>
             </div>
 
