@@ -118,6 +118,7 @@ export interface WidgetCustomSettings {
 export interface WidgetConfig {
   id: string;
   label: string;
+  description?: string;
   enabled: boolean;
   x: number;
   y: number;
@@ -133,6 +134,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'speed',
     label: 'Speed (Gear, Speed, RPM)',
+    description: 'Speedometer with gear and RPM indicator.',
     enabled: true,
     x: 400,
     y: 100,
@@ -155,6 +157,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'input-trace',
     label: 'Input Trace (Throttle, Brake, Clutch)',
+    description: 'Live throttle, brake, and clutch inputs.',
     enabled: false,
     x: 400,
     y: 300,
@@ -178,6 +181,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'proximity-radar',
     label: 'Proximity Radar',
+    description: 'Visual radar for nearby traffic.',
     enabled: false,
     x: 600,
     y: 300,
@@ -197,6 +201,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'radar-bar',
     label: 'Radar Bar',
+    description: 'Full-width side proximity indicators.',
     enabled: false,
     x: 200,
     y: 300,
@@ -218,6 +223,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'standings',
     label: 'Standings',
+    description: 'Live session standings and intervals.',
     enabled: false,
     x: 50,
     y: 50,
@@ -246,6 +252,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'relative',
     label: 'Relative',
+    description: 'Gaps to cars ahead and behind you.',
     enabled: false,
     x: 50,
     y: 300,
@@ -266,6 +273,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'track-map',
     label: 'Track Map',
+    description: 'Dynamic 2D map of the current circuit.',
     enabled: false,
     x: 800,
     y: 50,
@@ -287,6 +295,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'linear-map',
     label: 'Linear Map',
+    description: 'Progress bar of car track positions.',
     enabled: false,
     x: 50,
     y: 820,
@@ -304,6 +313,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'flags',
     label: 'LED Flags',
+    description: 'Track flags and digital warning lights.',
     enabled: false,
     x: 760,
     y: 0,
@@ -323,6 +333,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'chassis',
     label: 'Chassis (Tires & Suspension)',
+    description: 'Tire pressures and brake temperatures.',
     enabled: false,
     x: 100,
     y: 100,
@@ -335,6 +346,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'example',
     label: 'Telemetry Debug',
+    description: 'Raw telemetry data debugger.',
     enabled: false,
     x: 100,
     y: 100,
@@ -347,6 +359,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'lap-delta',
     label: 'Lap Delta',
+    description: 'Live delta against your best lap time.',
     enabled: false,
     x: 400,
     y: 200,
@@ -359,6 +372,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'lap-times',
     label: 'Lap Times',
+    description: 'Detailed history of your lap times.',
     enabled: false,
     x: 400,
     y: 300,
@@ -371,6 +385,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'session',
     label: 'Session Info',
+    description: 'Session status and time remaining.',
     enabled: false,
     x: 50,
     y: 200,
@@ -383,6 +398,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'timer',
     label: 'Session Timer',
+    description: 'Stint and total session timers.',
     enabled: false,
     x: 50,
     y: 310,
@@ -395,6 +411,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'weather',
     label: 'Weather',
+    description: 'Track conditions and wind information.',
     enabled: false,
     x: 760,
     y: 200,
@@ -416,6 +433,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'fuel',
     label: 'Fuel Strategy',
+    description: 'Fuel level and consumption calculator.',
     enabled: false,
     x: 760,
     y: 500,

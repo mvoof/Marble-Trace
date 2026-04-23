@@ -26,107 +26,143 @@ export const SettingsPage = observer(() => {
   };
 
   return (
-    <Flex vertical gap={16}>
+    <Flex vertical gap={24}>
       {contextHolder}
 
-      <Title level={4} style={{ margin: 0 }}>
-        Settings
-      </Title>
+      <div>
+        <Title level={3} style={{ margin: 0 }}>
+          App Settings
+        </Title>
+        <Text type="secondary">Global Application Configuration</Text>
+      </div>
 
-      <Card title="Widget Display">
-        <Flex vertical gap={16}>
-          <Flex vertical gap={8}>
-            <Space>
-              <Switch
-                checked={appSettingsStore.hideAllWidgets}
-                onChange={(v) => {
-                  void appSettingsStore.setHideAllWidgets(v);
+      <Flex vertical gap={24}>
+        <section>
+          <Title level={5} style={{ marginBottom: 12 }}>
+            Widget Display
+          </Title>
+          <Card size="small">
+            <Flex vertical gap={16}>
+              <Flex vertical gap={4}>
+                <Space>
+                  <Switch
+                    checked={appSettingsStore.hideAllWidgets}
+                    onChange={(v) => {
+                      void appSettingsStore.setHideAllWidgets(v);
+                    }}
+                  />
+
+                  <Text>Hide all widgets</Text>
+                </Space>
+
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Global toggle to quickly hide or show all enabled widgets.
+                </Text>
+              </Flex>
+
+              <HotkeyRecorder
+                label="Toggle Visibility Hotkey"
+                currentHotkey={appSettingsStore.hideAllWidgetsHotkey}
+                onApply={(key) => appSettingsStore.setHideAllWidgetsHotkey(key)}
+              />
+            </Flex>
+          </Card>
+        </section>
+
+        <section>
+          <Title level={5} style={{ marginBottom: 12 }}>
+            Widget Drag Mode
+          </Title>
+          <Card size="small">
+            <Flex vertical gap={16}>
+              <Space>
+                <Switch
+                  checked={appSettingsStore.dragMode}
+                  onChange={() => appSettingsStore.toggleDragMode()}
+                />
+                <Text type="secondary">
+                  {appSettingsStore.dragMode ? 'Enabled' : 'Disabled'}
+                </Text>
+              </Space>
+
+              <HotkeyRecorder
+                label="Drag Mode Hotkey"
+                currentHotkey={appSettingsStore.dragHotkey}
+                onApply={(key) => appSettingsStore.setDragHotkey(key)}
+              />
+            </Flex>
+          </Card>
+        </section>
+
+        <section>
+          <Title level={5} style={{ marginBottom: 12 }}>
+            Game Integration
+          </Title>
+          <Card size="small">
+            <Flex vertical gap={8}>
+              <Space>
+                <Switch
+                  checked={appSettingsStore.hideWidgetsWhenGameClosed}
+                  onChange={(v) => {
+                    void appSettingsStore.setHideWidgetsWhenGameClosed(v);
+                  }}
+                />
+
+                <Text>Hide widgets when iRacing is not running</Text>
+              </Space>
+
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                Widgets will automatically show when iRacing connects and hide
+                when it disconnects.
+              </Text>
+            </Flex>
+          </Card>
+        </section>
+
+        <section>
+          <Title level={5} style={{ marginBottom: 12 }}>
+            Units
+          </Title>
+          <Card size="small">
+            <Flex vertical gap={12}>
+              <Text type="secondary">Measurement System</Text>
+
+              <Segmented
+                block
+                options={[
+                  { label: 'Metric (km/h, °C, L)', value: 'metric' },
+                  { label: 'Imperial (mph, °F, gal)', value: 'imperial' },
+                ]}
+                value={unitsStore.system}
+                onChange={(value) => {
+                  void unitsStore.setSystem(value as UnitSystem);
                 }}
               />
+            </Flex>
+          </Card>
+        </section>
 
-              <Text>Hide all widgets</Text>
-            </Space>
+        {isDev && (
+          <section>
+            <Title level={5} style={{ marginBottom: 12 }}>
+              Developer Tools
+            </Title>
+            <Card size="small">
+              <Flex vertical gap={12}>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Capture current telemetry state as a JSON snapshot for
+                  Storybook fixtures. Place the downloaded file in{' '}
+                  <code>test-data/</code>.
+                </Text>
 
-            <Text type="secondary">
-              Global toggle to quickly hide or show all enabled widgets.
-            </Text>
-          </Flex>
-
-          <HotkeyRecorder
-            label="Toggle Visibility Hotkey"
-            currentHotkey={appSettingsStore.hideAllWidgetsHotkey}
-            onApply={(key) => appSettingsStore.setHideAllWidgetsHotkey(key)}
-          />
-        </Flex>
-      </Card>
-
-      <Card title="Widget Drag Mode">
-        <Flex vertical gap={16}>
-          <Space>
-            <Switch
-              checked={appSettingsStore.dragMode}
-              onChange={() => appSettingsStore.toggleDragMode()}
-            />
-            <Text type="secondary">
-              {appSettingsStore.dragMode ? 'Enabled' : 'Disabled'}
-            </Text>
-          </Space>
-
-          <HotkeyRecorder
-            label="Drag Mode Hotkey"
-            currentHotkey={appSettingsStore.dragHotkey}
-            onApply={(key) => appSettingsStore.setDragHotkey(key)}
-          />
-        </Flex>
-      </Card>
-      <Card title="Game Integration">
-        <Flex vertical gap={8}>
-          <Space>
-            <Switch
-              checked={appSettingsStore.hideWidgetsWhenGameClosed}
-              onChange={(v) => {
-                void appSettingsStore.setHideWidgetsWhenGameClosed(v);
-              }}
-            />
-
-            <Text>Hide widgets when iRacing is not running</Text>
-          </Space>
-
-          <Text type="secondary">
-            Widgets will automatically show when iRacing connects and hide when
-            it disconnects.
-          </Text>
-        </Flex>
-      </Card>
-
-      <Card title="Units">
-        <Flex vertical gap={8}>
-          <Text>Measurement System</Text>
-
-          <Segmented
-            options={[
-              { label: 'Metric (km/h, °C, L)', value: 'metric' },
-              { label: 'Imperial (mph, °F, gal)', value: 'imperial' },
-            ]}
-            value={unitsStore.system}
-            onChange={(value) => {
-              void unitsStore.setSystem(value as UnitSystem);
-            }}
-          />
-        </Flex>
-      </Card>
-      {isDev && (
-        <Card title="Dev Tools">
-          <Flex vertical gap={8}>
-            <Text type="secondary">
-              Capture current telemetry state as a JSON snapshot for Storybook
-              fixtures. Place the downloaded file in <code>test-data/</code>.
-            </Text>
-
-            <Button onClick={handleCaptureSnapshot}>Capture Snapshot</Button>
-          </Flex>
-        </Card>
-      )}
+                <Button onClick={handleCaptureSnapshot}>
+                  Capture Snapshot
+                </Button>
+              </Flex>
+            </Card>
+          </section>
+        )}
+      </Flex>
     </Flex>
   );
 });

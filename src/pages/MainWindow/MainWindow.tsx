@@ -1,36 +1,20 @@
 import { useEffect, useState } from 'react';
-import {
-  Layout,
-  Typography,
-  theme,
-  Menu,
-  Space,
-  Switch,
-  ConfigProvider,
-} from 'antd';
+import { Layout, Typography, theme, ConfigProvider, Divider } from 'antd';
 import { observer } from 'mobx-react-lite';
-import { LayoutGrid, Settings, Eye, EyeOff } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { useTelemetry } from '../../hooks/useTelemetry';
-import { appSettingsStore } from '../../store/app-settings.store';
 import { initMainSync } from '../../store/sync';
-import { ConnectionStatus } from './components/ConnectionStatus';
-import { WidgetsPage } from './components/WidgetsPage';
+import { WidgetList } from './components/WidgetList';
+import { WidgetSettings } from './components/WidgetSettings';
 import { SettingsPage } from './components/SettingsPage';
 import styles from './MainWindow.module.scss';
 import Logo from '../../assets/logo.svg?react';
 
-const { Content, Header, Sider } = Layout;
+const { Content, Sider } = Layout;
 const { Title, Text } = Typography;
 
-type PageKey = 'widgets' | 'settings';
-
-const MENU_ITEMS = [
-  { key: 'widgets', icon: <LayoutGrid size={16} />, label: 'Widgets' },
-  { key: 'settings', icon: <Settings size={16} />, label: 'Settings' },
-];
-
 export const MainWindow = observer(() => {
-  const [activePage, setActivePage] = useState<PageKey>('widgets');
+  const [selectedId, setSelectedId] = useState<string>('app-settings');
 
   useTelemetry();
 
@@ -47,52 +31,88 @@ export const MainWindow = observer(() => {
   }, []);
 
   return (
-    <ConfigProvider theme={{ algorithm: theme.darkAlgorithm }}>
+    <ConfigProvider
+      theme={{
+        algorithm: theme.darkAlgorithm,
+        token: {
+          colorBgBase: '#000000',
+          colorBgContainer: '#0a0a0a',
+          colorBgElevated: '#141414',
+          colorPrimary: '#ffffff', // Back to White for general accents
+          colorTextBase: '#ffffff',
+          borderRadius: 4,
+        },
+        components: {
+          Layout: {
+            siderBg: '#050505',
+            bodyBg: '#0a0a0a',
+            headerBg: '#050505',
+          },
+          Card: {
+            colorBgContainer: '#0a0a0a',
+            colorBorderSecondary: 'rgba(255, 255, 255, 0.1)',
+          },
+          Menu: {
+            itemBg: 'transparent',
+            itemSelectedBg: 'rgba(255, 255, 255, 0.1)',
+            itemSelectedColor: '#ffffff',
+          },
+          Divider: {
+            colorSplit: 'rgba(255, 255, 255, 0.1)',
+          },
+          Switch: {
+            colorPrimary: '#22c55e', // Keep Green ONLY for Switches
+            colorPrimaryHover: '#4ade80',
+          },
+        },
+      }}
+    >
       <Layout className={styles.layout}>
-        <Header className={styles.header}>
-          <div className={styles.headerTitleWrapper}>
+        <Sider
+          width={280}
+          className={styles.sider}
+          style={{ height: '100vh', overflowY: 'auto' }}
+        >
+          <div className={styles.sidebarHeader}>
             <Logo className={styles.logo} />
-
             <Title level={4} style={{ margin: 0 }}>
               Marble Trace
             </Title>
           </div>
 
-          <Space size={24}>
-            <Space>
-              {appSettingsStore.hideAllWidgets ? (
-                <EyeOff size={16} />
-              ) : (
-                <Eye size={16} />
-              )}
-              <Text>Hide All</Text>
-              <Switch
-                checked={appSettingsStore.hideAllWidgets}
-                onChange={(v) => {
-                  void appSettingsStore.setHideAllWidgets(v);
-                }}
-              />
-            </Space>
+          <div className={styles.sidebarContent}>
+            <WidgetList selectedId={selectedId} onSelect={setSelectedId} />
 
-            <ConnectionStatus />
-          </Space>
-        </Header>
+            <Divider style={{ margin: '12px 0' }} />
 
-        <Layout>
-          <Sider width={200} theme="dark" className={styles.sider}>
-            <Menu
-              mode="inline"
-              selectedKeys={[activePage]}
-              items={MENU_ITEMS}
-              onSelect={({ key }) => setActivePage(key as PageKey)}
-            />
-          </Sider>
+            <div
+              className={`${styles.settingsItem} ${
+                selectedId === 'app-settings' ? styles.active : ''
+              }`}
+              onClick={() => setSelectedId('app-settings')}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  setSelectedId('app-settings');
+                }
+              }}
+              role="button"
+              tabIndex={0}
+            >
+              <Settings size={18} />
+              <Text>App Settings</Text>
+            </div>
+          </div>
+        </Sider>
 
-          <Content className={styles.content}>
-            {activePage === 'widgets' && <WidgetsPage />}
-            {activePage === 'settings' && <SettingsPage />}
-          </Content>
-        </Layout>
+        <Content className={styles.content}>
+          <div key={selectedId} className={styles.scrollContainer}>
+            {selectedId === 'app-settings' ? (
+              <SettingsPage />
+            ) : (
+              <WidgetSettings widgetId={selectedId} />
+            )}
+          </div>
+        </Content>
       </Layout>
     </ConfigProvider>
   );

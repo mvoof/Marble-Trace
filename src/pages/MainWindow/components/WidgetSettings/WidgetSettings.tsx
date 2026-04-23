@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import {
   InputNumber,
   Typography,
-  Card,
   Row,
   Col,
   ColorPicker,
@@ -54,110 +53,129 @@ export const WidgetSettings = observer(
     }
 
     return (
-      <Card>
-        <Title level={5}>{widget.label}</Title>
-        <Flex vertical gap={16}>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Text>X</Text>
-              <InputNumber
-                style={{ width: '100%' }}
-                value={widget.x}
-                onChange={(v) =>
-                  v !== null &&
-                  widgetSettingsStore.updateField(widgetId, 'x', v)
-                }
-              />
-            </Col>
+      <Flex vertical gap={24}>
+        <div>
+          <Title level={3} style={{ margin: 0 }}>
+            {widget.label}
+          </Title>
+          <Text type="secondary">Widget Configuration</Text>
+        </div>
 
-            <Col span={12}>
-              <Text>Y</Text>
-
-              <InputNumber
-                style={{ width: '100%' }}
-                value={widget.y}
-                onChange={(v) =>
-                  v !== null &&
-                  widgetSettingsStore.updateField(widgetId, 'y', v)
-                }
-              />
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={12}>
-              <Text>Width</Text>
-
-              <InputNumber
-                style={{ width: '100%' }}
-                value={widget.width}
-                min={100}
-                onChange={(v) =>
-                  v !== null &&
-                  widgetSettingsStore.updateField(widgetId, 'width', v)
-                }
-              />
-            </Col>
-
-            <Col span={12}>
-              <Text>Height</Text>
-              <InputNumber
-                style={{ width: '100%' }}
-                value={widget.height}
-                min={50}
-                onChange={(v) =>
-                  v !== null &&
-                  widgetSettingsStore.updateField(widgetId, 'height', v)
-                }
-              />
-            </Col>
-          </Row>
-
-          {widgetId !== 'radar-bar' && (
-            <Row gutter={16}>
+        <Flex vertical gap={24}>
+          <section>
+            <Title level={5} style={{ marginBottom: 12 }}>
+              Position & Size
+            </Title>
+            <Row gutter={[16, 16]}>
               <Col span={12}>
-                <Flex vertical>
-                  <Text>Background Center</Text>
-
-                  <ColorPicker
-                    value={widget.backgroundColor ?? '#1a1a1a'}
-                    allowClear
-                    onChange={(color) =>
-                      widgetSettingsStore.updateField(
-                        widgetId,
-                        'backgroundColor',
-                        color.toHexString()
-                      )
-                    }
-                  />
-                </Flex>
+                <Text type="secondary">X Position</Text>
+                <InputNumber
+                  style={{ width: '100%' }}
+                  value={widget.x}
+                  onChange={(v) =>
+                    v !== null &&
+                    widgetSettingsStore.updateField(widgetId, 'x', v)
+                  }
+                />
               </Col>
 
               <Col span={12}>
-                <Flex vertical>
-                  <Text>Background Edge</Text>
+                <Text type="secondary">Y Position</Text>
 
-                  <ColorPicker
-                    value={widget.backgroundColorEdge ?? '#0a0a0a'}
-                    allowClear
-                    onChange={(color) =>
-                      widgetSettingsStore.updateField(
-                        widgetId,
-                        'backgroundColorEdge',
-                        color.toHexString()
-                      )
-                    }
-                  />
-                </Flex>
+                <InputNumber
+                  style={{ width: '100%' }}
+                  value={widget.y}
+                  onChange={(v) =>
+                    v !== null &&
+                    widgetSettingsStore.updateField(widgetId, 'y', v)
+                  }
+                />
+              </Col>
+
+              <Col span={12}>
+                <Text type="secondary">Width</Text>
+
+                <InputNumber
+                  style={{ width: '100%' }}
+                  value={widget.width}
+                  min={100}
+                  onChange={(v) =>
+                    v !== null &&
+                    widgetSettingsStore.updateField(widgetId, 'width', v)
+                  }
+                />
+              </Col>
+
+              <Col span={12}>
+                <Text type="secondary">Height</Text>
+                <InputNumber
+                  style={{ width: '100%' }}
+                  value={widget.height}
+                  min={50}
+                  onChange={(v) =>
+                    v !== null &&
+                    widgetSettingsStore.updateField(widgetId, 'height', v)
+                  }
+                />
               </Col>
             </Row>
+          </section>
+
+          {widgetId !== 'radar-bar' && (
+            <section>
+              <Title level={5} style={{ marginBottom: 12 }}>
+                Appearance
+              </Title>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Flex vertical gap={4}>
+                    <Text type="secondary">Background Center</Text>
+
+                    <ColorPicker
+                      value={widget.backgroundColor ?? '#1a1a1a'}
+                      allowClear
+                      onChange={(color) =>
+                        widgetSettingsStore.updateField(
+                          widgetId,
+                          'backgroundColor',
+                          color.toHexString()
+                        )
+                      }
+                    />
+                  </Flex>
+                </Col>
+
+                <Col span={12}>
+                  <Flex vertical gap={4}>
+                    <Text type="secondary">Background Edge</Text>
+
+                    <ColorPicker
+                      value={widget.backgroundColorEdge ?? '#0a0a0a'}
+                      allowClear
+                      onChange={(color) =>
+                        widgetSettingsStore.updateField(
+                          widgetId,
+                          'backgroundColorEdge',
+                          color.toHexString()
+                        )
+                      }
+                    />
+                  </Flex>
+                </Col>
+              </Row>
+            </section>
           )}
 
-          <HotkeyRecorderWrapper
-            key={widgetId}
-            widgetId={widgetId}
-            currentHotkey={widget.hotkey}
-          />
+          <section>
+            <Title level={5} style={{ marginBottom: 12 }}>
+              Controls
+            </Title>
+            <HotkeyRecorderWrapper
+              key={widgetId}
+              widgetId={widgetId}
+              currentHotkey={widget.hotkey}
+            />
+          </section>
 
           {widgetId === 'speed' && (
             <>
@@ -229,7 +247,7 @@ export const WidgetSettings = observer(
             </>
           )}
         </Flex>
-      </Card>
+      </Flex>
     );
   }
 );

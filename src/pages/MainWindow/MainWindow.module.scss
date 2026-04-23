@@ -1,33 +1,95 @@
 .layout {
-  min-height: 100vh;
+  height: 100vh;
+  background: #000;
+  overflow: hidden;
 }
 
 .sider {
-  border-right: 1px solid #303030;
-}
-
-.header {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
+  flex-direction: column;
+  background: #050505 !important;
 }
 
-.headerTitleWrapper {
+.sidebarHeader {
+  padding: 16px;
   display: flex;
   align-items: center;
   gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logo {
-  height: 60px;
-  color: #fafafa;
+  height: 32px;
+  color: #fff;
   width: auto;
-  user-select: none;
-  pointer-events: none;
+}
+
+.sidebarContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.settingsItem {
+  margin: 0 8px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.65);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+  }
+
+  &.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+}
+
+// Custom Scrollbar Styles
+:local {
+  .sider,
+  .scrollContainer {
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
 }
 
 .content {
-  padding: 16px;
-  overflow: auto;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  flex: 1;
+}
+
+.scrollContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px;
+  background: #0a0a0a;
+  min-height: 0;
 }

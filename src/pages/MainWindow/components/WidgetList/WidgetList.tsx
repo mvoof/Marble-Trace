@@ -4,15 +4,18 @@ import {
   widgetSettingsStore,
   WidgetConfig,
 } from '../../../../store/widget-settings.store';
+import styles from './WidgetList.module.scss';
 
 const { Text } = Typography;
 
 const WidgetListItem = observer(
   ({
     widget,
+    isActive,
     onSelect,
   }: {
     widget: WidgetConfig;
+    isActive: boolean;
     onSelect: (id: string) => void;
   }) => {
     const handleToggle = (checked: boolean) => {
@@ -21,15 +24,20 @@ const WidgetListItem = observer(
 
     return (
       <List.Item
-        style={{ cursor: 'pointer', padding: '8px 16px' }}
+        className={`${styles.listItem} ${isActive ? styles.active : ''}`}
         onClick={() => onSelect(widget.id)}
       >
         <List.Item.Meta
           title={<Text>{widget.label}</Text>}
-          description={`${widget.width}×${widget.height}`}
+          description={
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              {widget.description || 'Configure widget settings.'}
+            </Text>
+          }
         />
         <Switch
           checked={widget.enabled}
+          size="small"
           onChange={handleToggle}
           onClick={(_, e) => e.stopPropagation()}
         />
@@ -39,12 +47,24 @@ const WidgetListItem = observer(
 );
 
 export const WidgetList = observer(
-  ({ onSelect }: { onSelect: (id: string) => void }) => {
+  ({
+    selectedId,
+    onSelect,
+  }: {
+    selectedId: string | null;
+    onSelect: (id: string) => void;
+  }) => {
     return (
       <List
         dataSource={widgetSettingsStore.widgets.slice()}
+        split={false}
         renderItem={(widget) => (
-          <WidgetListItem key={widget.id} widget={widget} onSelect={onSelect} />
+          <WidgetListItem
+            key={widget.id}
+            widget={widget}
+            isActive={selectedId === widget.id}
+            onSelect={onSelect}
+          />
         )}
       />
     );
