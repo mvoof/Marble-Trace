@@ -38,10 +38,19 @@ class AppSettingsStore {
 
     if (this.initId !== currentId) return;
 
-    this.store = await load('app-settings.json');
-    const saved = await this.store.get<AppSettings>('settings');
+    await this.loadSettings();
 
     if (this.initId !== currentId) return;
+
+    await this.registerDragHotkey();
+    if (this.initId !== currentId) return;
+
+    await this.registerAllWidgetHotkeys();
+  }
+
+  async loadSettings() {
+    this.store = await load('app-settings.json');
+    const saved = await this.store.get<AppSettings>('settings');
 
     runInAction(() => {
       if (saved) {
@@ -51,11 +60,6 @@ class AppSettingsStore {
         this.hideAllWidgets = saved.hideAllWidgets ?? false;
       }
     });
-
-    await this.registerDragHotkey();
-    if (this.initId !== currentId) return;
-
-    await this.registerAllWidgetHotkeys();
   }
 
   toggleDragMode() {
@@ -80,6 +84,17 @@ class AppSettingsStore {
         });
       })
     );
+
+    this.overlayUnlisten.push(
+      await listen<boolean>(
+        'hide-widgets-when-game-closed-changed',
+        (event) => {
+          runInAction(() => {
+            this.hideWidgetsWhenGameClosed = event.payload;
+          });
+        }
+      )
+    );
   }
 
   disposeOverlayListener() {
@@ -89,6 +104,7 @@ class AppSettingsStore {
 
   async setHideWidgetsWhenGameClosed(value: boolean) {
     this.hideWidgetsWhenGameClosed = value;
+    emit('hide-widgets-when-game-closed-changed', value).catch(console.error);
     await this.saveSettings();
   }
 

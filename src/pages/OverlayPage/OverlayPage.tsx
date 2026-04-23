@@ -20,6 +20,7 @@ export const OverlayPage = () => {
     const init = async () => {
       await widgetSettingsStore.loadSettings();
       await unitsStore.loadSettings();
+      await appSettingsStore.loadSettings();
       await widgetSettingsStore.initOverlayListener();
       await unitsStore.initOverlayListener();
       await appSettingsStore.initOverlayListener();
