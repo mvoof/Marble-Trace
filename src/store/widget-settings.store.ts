@@ -1,6 +1,4 @@
-import { makeAutoObservable, runInAction } from 'mobx';
-import { load, Store } from '@tauri-apps/plugin-store';
-import { emit, listen, UnlistenFn } from '@tauri-apps/api/event';
+import { makeAutoObservable } from 'mobx';
 
 export type SpeedWidgetFocusMode = 'speed' | 'gear';
 export type RpmColorTheme = 'custom' | 'gradient' | 'classic';
@@ -436,101 +434,32 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   },
 ];
 
-interface WidgetFieldUpdate {
-  id: string;
-  field: keyof WidgetConfig;
-  value: number | string | boolean | WidgetCustomSettings;
-}
-
 class WidgetSettingsStore {
-  widgets: WidgetConfig[] = [];
-  private store: Store | null = null;
-  private saveTimeout: ReturnType<typeof setTimeout> | null = null;
-  private overlayUnlisten: UnlistenFn | null = null;
+  widgets: WidgetConfig[] = DEFAULT_WIDGETS;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  async loadSettings() {
-    this.store = await load('widget-settings.json');
-    const saved = await this.store.get<WidgetConfig[]>('widgets');
+  setWidgets(widgets: WidgetConfig[]) {
+    // Merge incoming widgets with defaults to ensure new fields/widgets are present
+    this.widgets = DEFAULT_WIDGETS.map((def) => {
+      const s = widgets.find((w) => w.id === def.id);
+      if (!s) return def;
 
-    runInAction(() => {
-      if (!saved) {
-        this.widgets = [...DEFAULT_WIDGETS];
-      } else {
-        // Migrate renamed widget IDs
-        const merged = saved.map((w) => {
-          if (w.id === 'dash') {
-            return { ...w, id: 'speed', label: 'Speed (Gear, Speed, RPM)' };
-          }
-
-          return w;
-        });
-
-        for (const defaultWidget of DEFAULT_WIDGETS) {
-          if (!merged.find((w) => w.id === defaultWidget.id)) {
-            merged.push(defaultWidget);
-          }
-        }
-
-        // Migrate: add backgroundColorEdge if missing
-        for (const w of merged) {
-          if (!w.backgroundColorEdge) {
-            const def = DEFAULT_WIDGETS.find((d) => d.id === w.id);
-            w.backgroundColorEdge = def?.backgroundColorEdge ?? '#0a0a0a';
-          }
-        }
-
-        this.widgets = merged;
-      }
+      return {
+        ...def,
+        ...s,
+        customSettings: {
+          ...def.customSettings,
+          ...s.customSettings,
+        },
+      };
     });
-  }
-
-  private debouncedSave() {
-    if (this.saveTimeout) clearTimeout(this.saveTimeout);
-
-    this.saveTimeout = setTimeout(() => {
-      void this.saveSettings();
-    }, 500);
-  }
-
-  private async saveSettings() {
-    if (!this.store) return;
-
-    await this.store.set('widgets', this.widgets);
-    await this.store.save();
   }
 
   getWidget(id: string): WidgetConfig | undefined {
     return this.widgets.find((w) => w.id === id);
-  }
-
-  /** Called by the overlay window to sync settings changes from the main window. */
-  async initOverlayListener() {
-    this.overlayUnlisten = await listen<WidgetFieldUpdate>(
-      'widget-settings-changed',
-      (event) => {
-        const { id, field, value } = event.payload;
-        const widget = this.widgets.find((w) => w.id === id);
-
-        if (widget) {
-          runInAction(() => {
-            if (field === 'customSettings') {
-              widget.customSettings = value as WidgetCustomSettings;
-            } else {
-              widget[field] = value as number | string | boolean;
-            }
-          });
-        }
-      }
-    );
-  }
-
-  disposeOverlayListener() {
-    this.overlayUnlisten?.();
-    this.overlayUnlisten = null;
   }
 
   setWidgetEnabled(id: string, enabled: boolean) {
@@ -539,37 +468,38 @@ class WidgetSettingsStore {
 
   updatePosition(id: string, x: number, y: number) {
     const widget = this.widgets.find((w) => w.id === id);
-
     if (widget && (widget.x !== x || widget.y !== y)) {
       widget.x = x;
       widget.y = y;
-
-      this.debouncedSave();
-
-      void emit('widget-settings-changed', { id, field: 'x', value: x });
-      void emit('widget-settings-changed', { id, field: 'y', value: y });
     }
   }
 
   updateSize(id: string, width: number, height: number) {
     const widget = this.widgets.find((w) => w.id === id);
-
     if (widget && (widget.width !== width || widget.height !== height)) {
       widget.width = width;
       widget.height = height;
+    }
+  }
 
-      this.debouncedSave();
+  updateField<K extends keyof WidgetConfig>(
+    id: string,
+    field: K,
+    value: WidgetConfig[K]
+  ) {
+    const widget = this.widgets.find((w) => w.id === id);
+    if (widget) {
+      widget[field] = value;
+    }
+  }
 
-      void emit('widget-settings-changed', {
-        id,
-        field: 'width',
-        value: width,
-      });
-      void emit('widget-settings-changed', {
-        id,
-        field: 'height',
-        value: height,
-      });
+  updateCustomSettings(id: string, settings: WidgetCustomSettings) {
+    const widget = this.widgets.find((w) => w.id === id);
+    if (widget) {
+      widget.customSettings = {
+        ...widget.customSettings,
+        ...settings,
+      };
     }
   }
 
@@ -602,64 +532,60 @@ class WidgetSettingsStore {
     );
   }
 
+  getRadarSettings(id: 'proximity-radar' | 'radar-bar'): RadarSettings {
+    const widget = this.getWidget(id);
+    return (
+      widget?.customSettings?.[id] ?? {
+        visibilityMode: 'proximity',
+        proximityThreshold: id === 'proximity-radar' ? 5 : 3,
+        hideDelay: 2,
+      }
+    );
+  }
+
   getStandingsSettings(): StandingsWidgetSettings {
     const widget = this.getWidget('standings');
-    // Tolerate the legacy shape (`groupMode` / `viewMode` / `maxRowsPerClass`)
-    // so users that already persisted older settings get migrated transparently.
-    const saved = (widget?.customSettings?.standings ?? {}) as Partial<
-      StandingsWidgetSettings & {
-        groupMode?: 'overall' | 'class';
-        viewMode?: string;
-        maxRowsPerClass?: number;
-        filterMode?: string;
+    return (
+      widget?.customSettings?.standings ?? {
+        groupByClass: true,
+        filterMode: 'all',
+        showPosChange: true,
+        showColumnHeaders: true,
+        showSessionHeader: true,
+        showWeather: true,
+        showSOF: true,
+        showTotalDrivers: true,
+        showBrand: true,
+        showTire: true,
+        showIrChange: false,
+        showPitStops: true,
       }
-    >;
-
-    const migratedGroupByClass =
-      saved.groupByClass ??
-      (saved.groupMode ? saved.groupMode === 'class' : true);
-
-    const migratedFilterMode: StandingsFilterMode = 'all';
-
-    return {
-      groupByClass: migratedGroupByClass,
-      filterMode: migratedFilterMode,
-      showPosChange: saved.showPosChange ?? true,
-      showColumnHeaders: saved.showColumnHeaders ?? true,
-      showSessionHeader: saved.showSessionHeader ?? true,
-      showWeather: saved.showWeather ?? true,
-      showSOF: saved.showSOF ?? true,
-      showTotalDrivers: saved.showTotalDrivers ?? true,
-      showBrand: saved.showBrand ?? true,
-      showTire: saved.showTire ?? true,
-      showIrChange: saved.showIrChange ?? false,
-      showPitStops: saved.showPitStops ?? true,
-    };
+    );
   }
 
   getRelativeSettings(): RelativeWidgetSettings {
     const widget = this.getWidget('relative');
-    const saved: Partial<RelativeWidgetSettings> =
-      widget?.customSettings?.relative ?? {};
-    return {
-      showIRatingBadge: saved.showIRatingBadge ?? true,
-      showClassBadge: saved.showClassBadge ?? true,
-      showPitIndicator: saved.showPitIndicator ?? true,
-      abbreviateNames: saved.abbreviateNames ?? true,
-    };
+    return (
+      widget?.customSettings?.relative ?? {
+        showIRatingBadge: true,
+        showClassBadge: true,
+        showPitIndicator: true,
+        abbreviateNames: true,
+      }
+    );
   }
 
   getTrackMapSettings(): TrackMapWidgetSettings {
     const widget = this.getWidget('track-map');
-    const saved: Partial<TrackMapWidgetSettings> =
-      widget?.customSettings?.['track-map'] ?? {};
-    return {
-      showLegend: saved.showLegend ?? true,
-      legendPosition: saved.legendPosition ?? 'right',
-      showSectors: saved.showSectors ?? true,
-      showCornerNumbers: saved.showCornerNumbers ?? true,
-      rotationMode: saved.rotationMode ?? 'fixed',
-    };
+    return (
+      widget?.customSettings?.['track-map'] ?? {
+        showLegend: true,
+        legendPosition: 'right',
+        showSectors: true,
+        showCornerNumbers: true,
+        rotationMode: 'fixed',
+      }
+    );
   }
 
   getLinearMapSettings(): LinearMapWidgetSettings {
@@ -667,17 +593,6 @@ class WidgetSettingsStore {
     return (
       widget?.customSettings?.['linear-map'] ?? {
         orientation: 'horizontal',
-      }
-    );
-  }
-
-  getFlagsSettings(): FlagsWidgetSettings {
-    const widget = this.getWidget('flags');
-    return (
-      widget?.customSettings?.flags ?? {
-        variant: 'overlay',
-        cutoutWidth: 6,
-        cutoutHeight: 1,
       }
     );
   }
@@ -706,68 +621,15 @@ class WidgetSettingsStore {
     );
   }
 
-  getRadarSettings(id: 'proximity-radar' | 'radar-bar'): RadarSettings {
-    const widget = this.getWidget(id);
-    const defaults: RadarSettings =
-      id === 'proximity-radar'
-        ? {
-            visibilityMode: 'proximity',
-            proximityThreshold: 5,
-            hideDelay: 2,
-          }
-        : {
-            visibilityMode: 'proximity',
-            proximityThreshold: 3,
-            hideDelay: 2,
-            barSpacing: 0,
-            barDisplayMode: 'both',
-          };
-    return widget?.customSettings?.[id] ?? defaults;
-  }
-
-  updateCustomSettings(id: string, settings: WidgetCustomSettings) {
-    const widget = this.widgets.find((w) => w.id === id);
-
-    if (widget) {
-      const oldBarMode = widget.customSettings?.['input-trace']?.barMode;
-      widget.customSettings = { ...widget.customSettings, ...settings };
-
-      // Handle Input Trace dimension changes based on bar mode
-      const newBarMode = settings['input-trace']?.barMode;
-      if (id === 'input-trace' && newBarMode && newBarMode !== oldBarMode) {
-        if (newBarMode === 'vertical') {
-          widget.width = 400;
-          widget.height = 110;
-        } else {
-          widget.width = 400;
-          widget.height = 220;
-        }
+  getFlagsSettings(): FlagsWidgetSettings {
+    const widget = this.getWidget('flags');
+    return (
+      widget?.customSettings?.flags ?? {
+        variant: 'overlay',
+        cutoutWidth: 6,
+        cutoutHeight: 1,
       }
-
-      this.debouncedSave();
-
-      void emit('widget-settings-changed', {
-        id,
-        field: 'customSettings',
-        value: widget.customSettings,
-      });
-    }
-  }
-
-  updateField<T extends keyof WidgetConfig>(
-    id: string,
-    field: T,
-    value: WidgetConfig[T]
-  ) {
-    const widget = this.widgets.find((w) => w.id === id);
-
-    if (widget && widget[field] !== value) {
-      widget[field] = value;
-
-      this.debouncedSave();
-
-      void emit('widget-settings-changed', { id, field, value });
-    }
+    );
   }
 }
 

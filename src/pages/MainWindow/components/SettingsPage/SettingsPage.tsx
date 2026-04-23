@@ -56,9 +56,9 @@ export const SettingsPage = observer(() => {
     }
   }, [recording, handleKeyDown]);
 
-  const applyHotkey = async () => {
+  const applyHotkey = () => {
     if (pendingKey) {
-      await appSettingsStore.setDragHotkey(pendingKey);
+      appSettingsStore.setDragHotkey(pendingKey);
       setPendingKey(null);
     }
   };

@@ -11,9 +11,8 @@ import {
 import { observer } from 'mobx-react-lite';
 import { LayoutGrid, Settings, Eye, EyeOff } from 'lucide-react';
 import { useTelemetry } from '../../hooks/useTelemetry';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { appSettingsStore } from '../../store/app-settings.store';
-import { unitsStore } from '../../store/units.store';
+import { initMainSync } from '../../store/sync';
 import { ConnectionStatus } from './components/ConnectionStatus';
 import { WidgetsPage } from './components/WidgetsPage';
 import { SettingsPage } from './components/SettingsPage';
@@ -36,15 +35,14 @@ export const MainWindow = observer(() => {
   useTelemetry();
 
   useEffect(() => {
+    let cleanup: (() => void) | undefined;
     const init = async () => {
-      await widgetSettingsStore.loadSettings();
-      await unitsStore.loadSettings();
-      await appSettingsStore.init();
+      cleanup = await initMainSync();
     };
     void init();
 
     return () => {
-      void appSettingsStore.dispose();
+      cleanup?.();
     };
   }, []);
 

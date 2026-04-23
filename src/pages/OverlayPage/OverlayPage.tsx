@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
-import { unitsStore } from '../../store/units.store';
-import { appSettingsStore } from '../../store/app-settings.store';
 import { useWidgetTelemetry } from '../../hooks/useWidgetTelemetry';
 import { OverlayCanvas } from '../../components/OverlayCanvas';
+import { initOverlaySync } from '../../store/sync';
 
 export const OverlayPage = () => {
   useWidgetTelemetry();
@@ -17,21 +15,15 @@ export const OverlayPage = () => {
     // OverlayCanvas will toggle this when drag mode changes.
     getCurrentWebviewWindow().setIgnoreCursorEvents(true).catch(console.error);
 
+    let cleanup: (() => void) | undefined;
     const init = async () => {
-      await widgetSettingsStore.loadSettings();
-      await unitsStore.loadSettings();
-      await appSettingsStore.loadSettings();
-      await widgetSettingsStore.initOverlayListener();
-      await unitsStore.initOverlayListener();
-      await appSettingsStore.initOverlayListener();
+      cleanup = await initOverlaySync();
     };
 
     void init();
 
     return () => {
-      widgetSettingsStore.disposeOverlayListener();
-      unitsStore.disposeOverlayListener();
-      appSettingsStore.disposeOverlayListener();
+      cleanup?.();
     };
   }, []);
 

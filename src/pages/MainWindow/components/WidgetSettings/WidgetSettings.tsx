@@ -36,7 +36,6 @@ import {
   type FlagsWidgetSettings,
   type FlagsVariant,
 } from '../../../../store/widget-settings.store';
-import { appSettingsStore } from '../../../../store/app-settings.store';
 import { emit } from '@tauri-apps/api/event';
 import { appDataDir } from '@tauri-apps/api/path';
 
@@ -267,19 +266,15 @@ const HotkeyRecorder = ({
     [recording]
   );
 
-  const applyHotkey = async () => {
+  const applyHotkey = () => {
     if (!pendingKey) return;
 
     widgetSettingsStore.updateField(widgetId, 'hotkey', pendingKey);
-    await appSettingsStore.registerWidgetHotkey(widgetId, pendingKey);
-
     setPendingKey(null);
   };
 
-  const clearHotkey = async () => {
+  const clearHotkey = () => {
     widgetSettingsStore.updateField(widgetId, 'hotkey', '');
-    await appSettingsStore.unregisterWidgetHotkey(widgetId);
-
     setPendingKey(null);
   };
 
