@@ -76,6 +76,25 @@ export const SettingsPage = observer(() => {
         Settings
       </Title>
 
+      <Card title="Widget Display">
+        <Flex vertical gap={8}>
+          <Space>
+            <Switch
+              checked={appSettingsStore.hideAllWidgets}
+              onChange={(v) => {
+                void appSettingsStore.setHideAllWidgets(v);
+              }}
+            />
+
+            <Text>Hide all widgets</Text>
+          </Space>
+
+          <Text type="secondary">
+            Global toggle to quickly hide or show all enabled widgets.
+          </Text>
+        </Flex>
+      </Card>
+
       <Card title="Widget Drag Mode">
         <Flex vertical gap={16}>
           <Space>

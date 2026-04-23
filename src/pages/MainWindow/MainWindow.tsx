@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Layout, Typography, theme, Menu } from 'antd';
-import { ConfigProvider } from 'antd';
-import { LayoutGrid, Settings } from 'lucide-react';
+import {
+  Layout,
+  Typography,
+  theme,
+  Menu,
+  Space,
+  Switch,
+  ConfigProvider,
+} from 'antd';
+import { observer } from 'mobx-react-lite';
+import { LayoutGrid, Settings, Eye, EyeOff } from 'lucide-react';
 import { useTelemetry } from '../../hooks/useTelemetry';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { appSettingsStore } from '../../store/app-settings.store';
@@ -12,8 +20,8 @@ import { SettingsPage } from './components/SettingsPage';
 import styles from './MainWindow.module.scss';
 import Logo from '../../assets/logo.svg?react';
 
-const { Content, Header } = Layout;
-const { Title } = Typography;
+const { Content, Header, Sider } = Layout;
+const { Title, Text } = Typography;
 
 type PageKey = 'widgets' | 'settings';
 
@@ -22,7 +30,7 @@ const MENU_ITEMS = [
   { key: 'settings', icon: <Settings size={16} />, label: 'Settings' },
 ];
 
-export const MainWindow = () => {
+export const MainWindow = observer(() => {
   const [activePage, setActivePage] = useState<PageKey>('widgets');
 
   useTelemetry();
@@ -52,18 +60,35 @@ export const MainWindow = () => {
             </Title>
           </div>
 
-          <ConnectionStatus />
+          <Space size={24}>
+            <Space>
+              {appSettingsStore.hideAllWidgets ? (
+                <EyeOff size={16} />
+              ) : (
+                <Eye size={16} />
+              )}
+              <Text>Hide All</Text>
+              <Switch
+                checked={appSettingsStore.hideAllWidgets}
+                onChange={(v) => {
+                  void appSettingsStore.setHideAllWidgets(v);
+                }}
+              />
+            </Space>
+
+            <ConnectionStatus />
+          </Space>
         </Header>
 
         <Layout>
-          <Layout.Sider width={200} theme="dark" className={styles.sider}>
+          <Sider width={200} theme="dark" className={styles.sider}>
             <Menu
               mode="inline"
               selectedKeys={[activePage]}
               items={MENU_ITEMS}
               onSelect={({ key }) => setActivePage(key as PageKey)}
             />
-          </Layout.Sider>
+          </Sider>
 
           <Content className={styles.content}>
             {activePage === 'widgets' && <WidgetsPage />}
@@ -73,4 +98,4 @@ export const MainWindow = () => {
       </Layout>
     </ConfigProvider>
   );
-};
+});

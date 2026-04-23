@@ -11,7 +11,7 @@ import { WidgetContainer } from '../WidgetContainer';
 import styles from './OverlayCanvas.module.scss';
 
 export const OverlayCanvas = observer(() => {
-  const { dragMode } = appSettingsStore;
+  const { dragMode, hideAllWidgets } = appSettingsStore;
   const [visibilityMap, setVisibilityMap] = useState<Record<string, boolean>>(
     {}
   );
@@ -28,6 +28,10 @@ export const OverlayCanvas = observer(() => {
       return { ...prev, [id]: visible };
     });
   };
+
+  if (hideAllWidgets) {
+    return null;
+  }
 
   const enabledWidgets = widgetSettingsStore.widgets.filter((w) => w.enabled);
 

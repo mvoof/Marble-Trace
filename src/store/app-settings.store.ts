@@ -13,17 +13,19 @@ const DEFAULT_DRAG_HOTKEY = 'F9';
 interface AppSettings {
   dragHotkey: string;
   hideWidgetsWhenGameClosed: boolean;
+  hideAllWidgets: boolean;
 }
 
 class AppSettingsStore {
   dragMode = false;
   dragHotkey: string = DEFAULT_DRAG_HOTKEY;
   hideWidgetsWhenGameClosed = false;
+  hideAllWidgets = false;
 
   private store: Store | null = null;
   private registeredWidgetHotkeys: Map<string, string> = new Map();
   private initId = 0;
-  private overlayUnlisten: UnlistenFn | null = null;
+  private overlayUnlisten: UnlistenFn[] = [];
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -46,6 +48,7 @@ class AppSettingsStore {
         this.dragHotkey = saved.dragHotkey || DEFAULT_DRAG_HOTKEY;
         this.hideWidgetsWhenGameClosed =
           saved.hideWidgetsWhenGameClosed ?? false;
+        this.hideAllWidgets = saved.hideAllWidgets ?? false;
       }
     });
 
@@ -60,25 +63,38 @@ class AppSettingsStore {
     emit('drag-mode-changed', this.dragMode).catch(console.error);
   }
 
-  /** Called by the overlay window to sync dragMode from the main window. */
+  /** Called by the overlay window to sync dragMode and hideAllWidgets from the main window. */
   async initOverlayListener() {
-    this.overlayUnlisten = await listen<boolean>(
-      'drag-mode-changed',
-      (event) => {
+    this.overlayUnlisten.push(
+      await listen<boolean>('drag-mode-changed', (event) => {
         runInAction(() => {
           this.dragMode = event.payload;
         });
-      }
+      })
+    );
+
+    this.overlayUnlisten.push(
+      await listen<boolean>('hide-all-widgets-changed', (event) => {
+        runInAction(() => {
+          this.hideAllWidgets = event.payload;
+        });
+      })
     );
   }
 
   disposeOverlayListener() {
-    this.overlayUnlisten?.();
-    this.overlayUnlisten = null;
+    this.overlayUnlisten.forEach((unlisten) => unlisten());
+    this.overlayUnlisten = [];
   }
 
   async setHideWidgetsWhenGameClosed(value: boolean) {
     this.hideWidgetsWhenGameClosed = value;
+    await this.saveSettings();
+  }
+
+  async setHideAllWidgets(value: boolean) {
+    this.hideAllWidgets = value;
+    emit('hide-all-widgets-changed', this.hideAllWidgets).catch(console.error);
     await this.saveSettings();
   }
 
@@ -155,6 +171,7 @@ class AppSettingsStore {
     await this.store.set('settings', {
       dragHotkey: this.dragHotkey,
       hideWidgetsWhenGameClosed: this.hideWidgetsWhenGameClosed,
+      hideAllWidgets: this.hideAllWidgets,
     });
     await this.store.save();
   }
