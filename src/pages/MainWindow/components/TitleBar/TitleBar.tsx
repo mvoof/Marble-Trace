@@ -45,7 +45,6 @@ export const TitleBar = () => {
       <div className={styles.dragRegion} data-tauri-drag-region />
       <div className={styles.titleBarLeft}>
         <Logo className={styles.smallLogo} />
-        <span className={styles.titleText}>Marble Trace System UI</span>
       </div>
       <div className={styles.titleBarRight}>
         <Button
