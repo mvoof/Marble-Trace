@@ -21,12 +21,22 @@ export const MainWindow = observer(() => {
 
   useEffect(() => {
     let cleanup: (() => void) | undefined;
+    let isMounted = true;
+
     const init = async () => {
-      cleanup = await initMainSync();
+      const result = await initMainSync();
+
+      if (!isMounted) {
+        result();
+      } else {
+        cleanup = result;
+      }
     };
+
     void init();
 
     return () => {
+      isMounted = false;
       cleanup?.();
     };
   }, []);

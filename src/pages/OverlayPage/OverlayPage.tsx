@@ -16,13 +16,22 @@ export const OverlayPage = () => {
     getCurrentWebviewWindow().setIgnoreCursorEvents(true).catch(console.error);
 
     let cleanup: (() => void) | undefined;
+    let isMounted = true;
+
     const init = async () => {
-      cleanup = await initOverlaySync();
+      const result = await initOverlaySync();
+
+      if (!isMounted) {
+        result();
+      } else {
+        cleanup = result;
+      }
     };
 
     void init();
 
     return () => {
+      isMounted = false;
       cleanup?.();
     };
   }, []);
