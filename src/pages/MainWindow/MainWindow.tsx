@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Layout, ConfigProvider, theme } from 'antd';
 import { observer } from 'mobx-react-lite';
-import { Settings, Minus, Square, X } from 'lucide-react';
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import { Settings } from 'lucide-react';
 import { useTelemetry } from '../../hooks/useTelemetry';
 import { initMainSync } from '../../store/sync';
 import { WidgetList } from './components/WidgetList';
 import { WidgetSettings } from './components/WidgetSettings';
 import { SettingsPage } from './components/SettingsPage';
+import { TitleBar } from './components/TitleBar/TitleBar';
 import { RandomGlitchCanvas } from '../../components/shared/BackgroundAnimation/RandomGlitchCanvas';
 import styles from './MainWindow.module.scss';
 import Logo from '../../assets/logo.svg?react';
@@ -30,18 +30,6 @@ export const MainWindow = observer(() => {
       cleanup?.();
     };
   }, []);
-
-  const handleMinimize = () => {
-    void getCurrentWindow().minimize();
-  };
-
-  const handleMaximize = () => {
-    void getCurrentWindow().toggleMaximize();
-  };
-
-  const handleClose = () => {
-    void getCurrentWindow().close();
-  };
 
   return (
     <ConfigProvider
@@ -92,38 +80,9 @@ export const MainWindow = observer(() => {
       }}
     >
       <Layout className={styles.layout}>
-        {/* Window Title Bar */}
-        <div className={styles.titleBar}>
-          <div className={styles.titleBarLeft}>
-            <Logo className={styles.smallLogo} />
-            <span className={styles.titleText}>Marble Trace System UI</span>
-          </div>
-          <div className={styles.titleBarRight}>
-            <button
-              className={styles.controlButton}
-              onClick={handleMinimize}
-              title="Minimize"
-            >
-              <Minus size={16} strokeWidth={2.5} />
-            </button>
-            <button
-              className={styles.controlButton}
-              onClick={handleMaximize}
-              title="Maximize"
-            >
-              <Square size={13} strokeWidth={2.5} />
-            </button>
-            <button
-              className={`${styles.controlButton} ${styles.close}`}
-              onClick={handleClose}
-              title="Close"
-            >
-              <X size={16} strokeWidth={2.5} />
-            </button>
-          </div>
-        </div>
+        <TitleBar />
 
-        <div className={styles.mainContainer}>
+        <Layout className={styles.mainContainer}>
           <Sider width={320} className={styles.sider}>
             <div className={styles.sidebarHeader}>
               <div className={styles.logoContainer}>
@@ -168,7 +127,7 @@ export const MainWindow = observer(() => {
               </div>
             </div>
           </Content>
-        </div>
+        </Layout>
       </Layout>
     </ConfigProvider>
   );
