@@ -1,67 +1,24 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   Card,
   Typography,
   Space,
-  Input,
   Button,
-  Tag,
   Switch,
   Flex,
   Segmented,
   message,
 } from 'antd';
-import type { InputRef } from 'antd';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 import { unitsStore, type UnitSystem } from '../../../../store/units.store';
 import { downloadSnapshot } from '../../../../storybook/capture-snapshot';
+import { HotkeyRecorder } from '../../../../components/shared/HotkeyRecorder';
 
 const { Title, Text } = Typography;
 const isDev = import.meta.env.DEV;
 
 export const SettingsPage = observer(() => {
   const [messageApi, contextHolder] = message.useMessage();
-  const [recording, setRecording] = useState(false);
-  const [pendingKey, setPendingKey] = useState<string | null>(null);
-  const inputRef = useRef<InputRef>(null);
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (!recording) return;
-      e.preventDefault();
-      e.stopPropagation();
-
-      const parts: string[] = [];
-      if (e.ctrlKey) parts.push('Ctrl');
-      if (e.shiftKey) parts.push('Shift');
-      if (e.altKey) parts.push('Alt');
-
-      const key = e.key;
-      if (!['Control', 'Shift', 'Alt', 'Meta'].includes(key)) {
-        const normalizedKey = key.length === 1 ? key.toUpperCase() : key;
-        parts.push(normalizedKey);
-        setPendingKey(parts.join('+'));
-        setRecording(false);
-      }
-    },
-    [recording]
-  );
-
-  useEffect(() => {
-    if (recording) {
-      inputRef.current?.focus();
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [recording, handleKeyDown]);
-
-  const applyHotkey = () => {
-    if (pendingKey) {
-      appSettingsStore.setDragHotkey(pendingKey);
-      setPendingKey(null);
-    }
-  };
 
   const handleCaptureSnapshot = () => {
     downloadSnapshot('iracing');
@@ -77,21 +34,29 @@ export const SettingsPage = observer(() => {
       </Title>
 
       <Card title="Widget Display">
-        <Flex vertical gap={8}>
-          <Space>
-            <Switch
-              checked={appSettingsStore.hideAllWidgets}
-              onChange={(v) => {
-                void appSettingsStore.setHideAllWidgets(v);
-              }}
-            />
+        <Flex vertical gap={16}>
+          <Flex vertical gap={8}>
+            <Space>
+              <Switch
+                checked={appSettingsStore.hideAllWidgets}
+                onChange={(v) => {
+                  void appSettingsStore.setHideAllWidgets(v);
+                }}
+              />
 
-            <Text>Hide all widgets</Text>
-          </Space>
+              <Text>Hide all widgets</Text>
+            </Space>
 
-          <Text type="secondary">
-            Global toggle to quickly hide or show all enabled widgets.
-          </Text>
+            <Text type="secondary">
+              Global toggle to quickly hide or show all enabled widgets.
+            </Text>
+          </Flex>
+
+          <HotkeyRecorder
+            label="Toggle Visibility Hotkey"
+            currentHotkey={appSettingsStore.hideAllWidgetsHotkey}
+            onApply={(key) => appSettingsStore.setHideAllWidgetsHotkey(key)}
+          />
         </Flex>
       </Card>
 
@@ -107,43 +72,11 @@ export const SettingsPage = observer(() => {
             </Text>
           </Space>
 
-          <Flex vertical gap={8}>
-            <Text>Hotkey</Text>
-            <Space>
-              <Tag color="blue">{appSettingsStore.dragHotkey}</Tag>
-              {pendingKey && (
-                <>
-                  <Text type="secondary">→</Text>
-                  <Tag color="green">{pendingKey}</Tag>
-                </>
-              )}
-            </Space>
-            <Space>
-              {recording ? (
-                <Input
-                  ref={inputRef}
-                  readOnly
-                  placeholder="Press a key combination..."
-                  style={{ width: 250 }}
-                  onBlur={() => setRecording(false)}
-                />
-              ) : (
-                <Button onClick={() => setRecording(true)}>
-                  Record Hotkey
-                </Button>
-              )}
-              {pendingKey && (
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    void applyHotkey();
-                  }}
-                >
-                  Apply
-                </Button>
-              )}
-            </Space>
-          </Flex>
+          <HotkeyRecorder
+            label="Drag Mode Hotkey"
+            currentHotkey={appSettingsStore.dragHotkey}
+            onApply={(key) => appSettingsStore.setDragHotkey(key)}
+          />
         </Flex>
       </Card>
       <Card title="Game Integration">

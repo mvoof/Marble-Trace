@@ -12,6 +12,7 @@ import {
 interface Settings {
   app: {
     dragHotkey: string;
+    hideAllWidgetsHotkey: string;
     hideWidgetsWhenGameClosed: boolean;
     hideAllWidgets: boolean;
   };
@@ -32,6 +33,11 @@ export const initMainSync = async () => {
     if (saved) {
       if (saved.app) {
         appSettingsStore.setDragHotkey(saved.app.dragHotkey);
+        if (saved.app.hideAllWidgetsHotkey) {
+          appSettingsStore.setHideAllWidgetsHotkey(
+            saved.app.hideAllWidgetsHotkey
+          );
+        }
         appSettingsStore.setHideWidgetsWhenGameClosed(
           saved.app.hideWidgetsWhenGameClosed
         );
@@ -50,6 +56,7 @@ export const initMainSync = async () => {
     await store.set('settings', {
       app: {
         dragHotkey: appSettingsStore.dragHotkey,
+        hideAllWidgetsHotkey: appSettingsStore.hideAllWidgetsHotkey,
         hideWidgetsWhenGameClosed: appSettingsStore.hideWidgetsWhenGameClosed,
         hideAllWidgets: appSettingsStore.hideAllWidgets,
       },
@@ -74,6 +81,19 @@ export const initMainSync = async () => {
       });
     } catch (e) {
       console.error('Failed to register drag hotkey:', e);
+    }
+
+    // Hide All Widgets Hotkey
+    try {
+      if (appSettingsStore.hideAllWidgetsHotkey) {
+        await register(appSettingsStore.hideAllWidgetsHotkey, (event) => {
+          if (event.state === 'Pressed') {
+            appSettingsStore.toggleHideAllWidgets();
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Failed to register hide all hotkey:', e);
     }
 
     // Widget Toggle Hotkeys
@@ -126,7 +146,10 @@ export const initMainSync = async () => {
       }
     ),
     reaction(
-      () => appSettingsStore.dragHotkey,
+      () => [
+        appSettingsStore.dragHotkey,
+        appSettingsStore.hideAllWidgetsHotkey,
+      ],
       () => {
         void setupHotkeys();
         void saveSettings();

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   InputNumber,
@@ -9,7 +9,6 @@ import {
   ColorPicker,
   Flex,
   Button,
-  Tag,
   Select,
   Segmented,
   Divider,
@@ -38,6 +37,7 @@ import {
 } from '../../../../store/widget-settings.store';
 import { emit } from '@tauri-apps/api/event';
 import { appDataDir } from '@tauri-apps/api/path';
+import { HotkeyRecorder } from '../../../../components/shared/HotkeyRecorder';
 
 const { Title, Text } = Typography;
 
@@ -153,7 +153,7 @@ export const WidgetSettings = observer(
             </Row>
           )}
 
-          <HotkeyRecorder
+          <HotkeyRecorderWrapper
             key={widgetId}
             widgetId={widgetId}
             currentHotkey={widget.hotkey}
@@ -234,100 +234,21 @@ export const WidgetSettings = observer(
   }
 );
 
-const HotkeyRecorder = ({
+const HotkeyRecorderWrapper = ({
   widgetId,
   currentHotkey,
 }: {
   widgetId: string;
   currentHotkey: string;
 }) => {
-  const [recording, setRecording] = useState(false);
-  const [pendingKey, setPendingKey] = useState<string | null>(null);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (!recording) return;
-      e.preventDefault();
-
-      const parts: string[] = [];
-
-      if (e.ctrlKey) parts.push('Ctrl');
-      if (e.shiftKey) parts.push('Shift');
-      if (e.altKey) parts.push('Alt');
-
-      const key = e.key;
-
-      if (!['Control', 'Shift', 'Alt', 'Meta'].includes(key)) {
-        parts.push(key.length === 1 ? key.toUpperCase() : key);
-        setPendingKey(parts.join('+'));
-        setRecording(false);
-      }
-    },
-    [recording]
-  );
-
-  const applyHotkey = () => {
-    if (!pendingKey) return;
-
-    widgetSettingsStore.updateField(widgetId, 'hotkey', pendingKey);
-    setPendingKey(null);
-  };
-
-  const clearHotkey = () => {
-    widgetSettingsStore.updateField(widgetId, 'hotkey', '');
-    setPendingKey(null);
-  };
-
   return (
-    <Flex vertical gap={8}>
-      <Text>
-        Toggle Hotkey:{' '}
-        {currentHotkey ? <Tag color="blue">{currentHotkey}</Tag> : 'None'}
-      </Text>
-
-      <Flex gap={8}>
-        <Button
-          size="small"
-          type={recording ? 'primary' : 'default'}
-          danger={recording}
-          onClick={() => {
-            setRecording(!recording);
-            setPendingKey(null);
-          }}
-          onKeyDown={handleKeyDown}
-        >
-          {recording ? 'Press a key...' : 'Record Hotkey'}
-        </Button>
-
-        {pendingKey && (
-          <>
-            <Tag color="green">{pendingKey}</Tag>
-
-            <Button
-              size="small"
-              type="primary"
-              onClick={() => {
-                void applyHotkey();
-              }}
-            >
-              Apply
-            </Button>
-          </>
-        )}
-
-        {currentHotkey && (
-          <Button
-            size="small"
-            danger
-            onClick={() => {
-              void clearHotkey();
-            }}
-          >
-            Clear
-          </Button>
-        )}
-      </Flex>
-    </Flex>
+    <HotkeyRecorder
+      label="Toggle Hotkey"
+      currentHotkey={currentHotkey}
+      onApply={(key: string) =>
+        widgetSettingsStore.updateField(widgetId, 'hotkey', key)
+      }
+    />
   );
 };
 
