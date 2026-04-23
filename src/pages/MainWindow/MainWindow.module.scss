@@ -141,7 +141,7 @@
     background: $sys-accent;
     border-color: $sys-accent;
     color: #0d0e12;
-    
+
     .settingsIcon {
       color: #0d0e12;
     }
@@ -178,8 +178,14 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animateFadeIn {
