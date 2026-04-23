@@ -20,8 +20,8 @@
         "resizable": true,
         "fullscreen": false,
         "visible": true,
-        "transparent": false,
-        "decorations": true,
+        "transparent": true,
+        "decorations": false,
         "alwaysOnTop": false
       },
       {

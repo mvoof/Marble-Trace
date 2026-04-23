@@ -1,8 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { Flex, Typography, Space, Tag, Button, Input } from 'antd';
+import { Space, Button, Input } from 'antd';
 import type { InputRef } from 'antd';
-
-const { Text } = Typography;
+import styles from './HotkeyRecorder.module.scss';
 
 interface HotkeyRecorderProps {
   currentHotkey: string;
@@ -15,7 +14,6 @@ export const HotkeyRecorder = ({
   currentHotkey,
   onApply,
   onClear,
-  label = 'Hotkey',
 }: HotkeyRecorderProps) => {
   const [recording, setRecording] = useState(false);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
@@ -31,7 +29,6 @@ export const HotkeyRecorder = ({
     (e: React.KeyboardEvent) => {
       if (!recording) return;
 
-      // Prevent default browser behavior for recorded keys
       e.preventDefault();
       e.stopPropagation();
 
@@ -70,34 +67,34 @@ export const HotkeyRecorder = ({
   };
 
   return (
-    <Flex vertical gap={8}>
-      <Text>{label}</Text>
-      <Space>
-        <Tag color="blue">{currentHotkey || 'None'}</Tag>
+    <div className={styles.container}>
+      <div className={styles.hotkeyDisplay}>
+        <div className={styles.keyBadge}>{currentHotkey || 'None'}</div>
         {pendingKey && (
           <>
-            <Text type="secondary">→</Text>
-            <Tag color="green">{pendingKey}</Tag>
+            <div className={styles.arrow}>→</div>
+            <div className={styles.pendingBadge}>{pendingKey}</div>
           </>
         )}
-      </Space>
+      </div>
       <Space>
         {recording ? (
           <Input
             ref={inputRef}
             readOnly
             placeholder="Press a key combination..."
-            style={{ width: 250 }}
+            className={styles.recordingInput}
             onBlur={() => setRecording(false)}
             onKeyDown={handleKeyDown}
           />
         ) : (
-          <Button onClick={() => setRecording(true)}>
-            {currentHotkey ? 'Change Hotkey' : 'Record Hotkey'}
+          <Button size="small" onClick={() => setRecording(true)}>
+            {currentHotkey ? 'Rebind' : 'Record'}
           </Button>
         )}
         {pendingKey && (
           <Button
+            size="small"
             type="primary"
             onClick={() => {
               void applyHotkey();
@@ -108,6 +105,7 @@ export const HotkeyRecorder = ({
         )}
         {currentHotkey && !recording && (
           <Button
+            size="small"
             danger
             onClick={() => {
               void clearHotkey();
@@ -117,6 +115,6 @@ export const HotkeyRecorder = ({
           </Button>
         )}
       </Space>
-    </Flex>
+    </div>
   );
 };

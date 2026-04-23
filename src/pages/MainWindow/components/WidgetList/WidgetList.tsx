@@ -1,12 +1,11 @@
+import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { List, Switch, Typography } from 'antd';
+import { Switch } from 'antd';
 import {
   widgetSettingsStore,
-  WidgetConfig,
+  type WidgetConfig,
 } from '../../../../store/widget-settings.store';
 import styles from './WidgetList.module.scss';
-
-const { Text } = Typography;
 
 const WidgetListItem = observer(
   ({
@@ -23,25 +22,30 @@ const WidgetListItem = observer(
     };
 
     return (
-      <List.Item
+      <button
+        type="button"
         className={`${styles.listItem} ${isActive ? styles.active : ''}`}
         onClick={() => onSelect(widget.id)}
       >
-        <List.Item.Meta
-          title={<Text>{widget.label}</Text>}
-          description={
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {widget.description || 'Configure widget settings.'}
-            </Text>
-          }
-        />
-        <Switch
-          checked={widget.enabled}
-          size="small"
-          onChange={handleToggle}
-          onClick={(_, e) => e.stopPropagation()}
-        />
-      </List.Item>
+        <div className={styles.content}>
+          <span className={styles.title}>{widget.label}</span>
+          <span className={styles.description}>
+            {widget.description || 'Configure widget settings.'}
+          </span>
+        </div>
+        <div
+          className={styles.switch}
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+          role="presentation"
+        >
+          <Switch
+            checked={widget.enabled}
+            size="small"
+            onChange={handleToggle}
+          />
+        </div>
+      </button>
     );
   }
 );
@@ -55,18 +59,16 @@ export const WidgetList = observer(
     onSelect: (id: string) => void;
   }) => {
     return (
-      <List
-        dataSource={widgetSettingsStore.widgets.slice()}
-        split={false}
-        renderItem={(widget) => (
+      <div className={styles.list}>
+        {widgetSettingsStore.widgets.map((widget) => (
           <WidgetListItem
             key={widget.id}
             widget={widget}
             isActive={selectedId === widget.id}
             onSelect={onSelect}
           />
-        )}
-      />
+        ))}
+      </div>
     );
   }
 );

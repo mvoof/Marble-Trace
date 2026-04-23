@@ -1,21 +1,25 @@
+import React from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  Card,
-  Typography,
-  Space,
-  Button,
-  Switch,
-  Flex,
-  Segmented,
-  message,
-} from 'antd';
+import { Button, Switch, Segmented, message } from 'antd';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 import { unitsStore, type UnitSystem } from '../../../../store/units.store';
 import { downloadSnapshot } from '../../../../storybook/capture-snapshot';
 import { HotkeyRecorder } from '../../../../components/shared/HotkeyRecorder';
+import styles from '../WidgetSettings/WidgetSettings.module.scss';
 
-const { Title, Text } = Typography;
 const isDev = import.meta.env.DEV;
+
+interface CardProps {
+  title?: string;
+  children: React.ReactNode;
+}
+
+const Card: React.FC<CardProps> = ({ title, children }) => (
+  <div className={styles.card}>
+    {title && <h3 className={styles.cardTitle}>{title}</h3>}
+    <div className={styles.cardContent}>{children}</div>
+  </div>
+);
 
 export const SettingsPage = observer(() => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -26,143 +30,113 @@ export const SettingsPage = observer(() => {
   };
 
   return (
-    <Flex vertical gap={24}>
+    <div className={styles.animateFadeIn}>
       {contextHolder}
 
-      <div>
-        <Title level={3} style={{ margin: 0 }}>
-          App Settings
-        </Title>
-        <Text type="secondary">Global Application Configuration</Text>
-      </div>
+      <header className={styles.header}>
+        <span className={styles.moduleLabel}>Configuration</span>
+        <h1 className={styles.title}>Global Application Settings</h1>
+      </header>
 
-      <Flex vertical gap={24}>
-        <section>
-          <Title level={5} style={{ marginBottom: 12 }}>
-            Widget Display
-          </Title>
-          <Card size="small">
-            <Flex vertical gap={16}>
-              <Flex vertical gap={4}>
-                <Space>
-                  <Switch
-                    checked={appSettingsStore.hideAllWidgets}
-                    onChange={(v) => {
-                      void appSettingsStore.setHideAllWidgets(v);
-                    }}
-                  />
+      <Card title="Widget Display Override">
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>Hide all active widgets</div>
+              <div className={styles.fieldDesc}>
+                Global toggle to quickly hide or show all enabled UI elements.
+              </div>
+            </div>
+            <Switch
+              checked={appSettingsStore.hideAllWidgets}
+              onChange={(v) => {
+                void appSettingsStore.setHideAllWidgets(v);
+              }}
+            />
+          </div>
+        </div>
 
-                  <Text>Hide all widgets</Text>
-                </Space>
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>Toggle Hotkey</span>
+          <HotkeyRecorder
+            currentHotkey={appSettingsStore.hideAllWidgetsHotkey}
+            onApply={(key) => appSettingsStore.setHideAllWidgetsHotkey(key)}
+          />
+        </div>
+      </Card>
 
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  Global toggle to quickly hide or show all enabled widgets.
-                </Text>
-              </Flex>
+      <Card title="Interaction Mode">
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>UI Drag Mode</div>
+              <div className={styles.fieldDesc}>
+                Unlock widgets to move them freely across the screen.
+              </div>
+            </div>
+            <Switch
+              checked={appSettingsStore.dragMode}
+              onChange={() => appSettingsStore.toggleDragMode()}
+            />
+          </div>
+        </div>
 
-              <HotkeyRecorder
-                label="Toggle Visibility Hotkey"
-                currentHotkey={appSettingsStore.hideAllWidgetsHotkey}
-                onApply={(key) => appSettingsStore.setHideAllWidgetsHotkey(key)}
-              />
-            </Flex>
-          </Card>
-        </section>
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>Drag Mode Hotkey</span>
+          <HotkeyRecorder
+            currentHotkey={appSettingsStore.dragHotkey}
+            onApply={(key) => appSettingsStore.setDragHotkey(key)}
+          />
+        </div>
+      </Card>
 
-        <section>
-          <Title level={5} style={{ marginBottom: 12 }}>
-            Widget Drag Mode
-          </Title>
-          <Card size="small">
-            <Flex vertical gap={16}>
-              <Space>
-                <Switch
-                  checked={appSettingsStore.dragMode}
-                  onChange={() => appSettingsStore.toggleDragMode()}
-                />
-                <Text type="secondary">
-                  {appSettingsStore.dragMode ? 'Enabled' : 'Disabled'}
-                </Text>
-              </Space>
+      <Card title="Game Integration">
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>Auto-Hide System</div>
+            <div className={styles.fieldDesc}>
+              Hide widgets when iRacing is not running.
+            </div>
+          </div>
+          <Switch
+            checked={appSettingsStore.hideWidgetsWhenGameClosed}
+            onChange={(v) => {
+              void appSettingsStore.setHideWidgetsWhenGameClosed(v);
+            }}
+          />
+        </div>
+      </Card>
 
-              <HotkeyRecorder
-                label="Drag Mode Hotkey"
-                currentHotkey={appSettingsStore.dragHotkey}
-                onApply={(key) => appSettingsStore.setDragHotkey(key)}
-              />
-            </Flex>
-          </Card>
-        </section>
+      <Card title="System Units">
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>Measurement System</span>
+          <Segmented
+            block
+            options={[
+              { label: 'Metric (km/h, °C, L)', value: 'metric' },
+              { label: 'Imperial (mph, °F, gal)', value: 'imperial' },
+            ]}
+            value={unitsStore.system}
+            onChange={(value) => {
+              void unitsStore.setSystem(value as UnitSystem);
+            }}
+          />
+        </div>
+      </Card>
 
-        <section>
-          <Title level={5} style={{ marginBottom: 12 }}>
-            Game Integration
-          </Title>
-          <Card size="small">
-            <Flex vertical gap={8}>
-              <Space>
-                <Switch
-                  checked={appSettingsStore.hideWidgetsWhenGameClosed}
-                  onChange={(v) => {
-                    void appSettingsStore.setHideWidgetsWhenGameClosed(v);
-                  }}
-                />
-
-                <Text>Hide widgets when iRacing is not running</Text>
-              </Space>
-
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                Widgets will automatically show when iRacing connects and hide
-                when it disconnects.
-              </Text>
-            </Flex>
-          </Card>
-        </section>
-
-        <section>
-          <Title level={5} style={{ marginBottom: 12 }}>
-            Units
-          </Title>
-          <Card size="small">
-            <Flex vertical gap={12}>
-              <Text type="secondary">Measurement System</Text>
-
-              <Segmented
-                block
-                options={[
-                  { label: 'Metric (km/h, °C, L)', value: 'metric' },
-                  { label: 'Imperial (mph, °F, gal)', value: 'imperial' },
-                ]}
-                value={unitsStore.system}
-                onChange={(value) => {
-                  void unitsStore.setSystem(value as UnitSystem);
-                }}
-              />
-            </Flex>
-          </Card>
-        </section>
-
-        {isDev && (
-          <section>
-            <Title level={5} style={{ marginBottom: 12 }}>
-              Developer Tools
-            </Title>
-            <Card size="small">
-              <Flex vertical gap={12}>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  Capture current telemetry state as a JSON snapshot for
-                  Storybook fixtures. Place the downloaded file in{' '}
-                  <code>test-data/</code>.
-                </Text>
-
-                <Button onClick={handleCaptureSnapshot}>
-                  Capture Snapshot
-                </Button>
-              </Flex>
-            </Card>
-          </section>
-        )}
-      </Flex>
-    </Flex>
+      {isDev && (
+        <Card title="Developer Tools">
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldTitle}>Telemetry Snapshot</div>
+            <div className={styles.fieldDesc} style={{ marginBottom: 16 }}>
+              Capture current telemetry state for Storybook fixtures.
+            </div>
+            <Button block size="small" onClick={handleCaptureSnapshot}>
+              Download Snapshot JSON
+            </Button>
+          </div>
+        </Card>
+      )}
+    </div>
   );
 });
