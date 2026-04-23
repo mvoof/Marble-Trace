@@ -34,9 +34,10 @@ export const HotkeyRecorder = ({
 
       const parts: string[] = [];
 
-      if (e.ctrlKey) parts.push('Ctrl');
+      if (e.ctrlKey) parts.push('Control');
       if (e.shiftKey) parts.push('Shift');
       if (e.altKey) parts.push('Alt');
+      if (e.metaKey) parts.push('Super');
 
       const key = e.key;
 
