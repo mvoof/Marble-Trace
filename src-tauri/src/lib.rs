@@ -39,6 +39,7 @@ pub fn run() {
         .unwrap();
 
     let mut builder = Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build());
 

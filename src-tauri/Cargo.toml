@@ -27,6 +27,7 @@ log = "0.4"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tauri-plugin-store = "2"
+tauri-plugin-window-state = "2"
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-mcp-bridge = "0.10"
 specta = { version = "2.0.0-rc.22", features = ["derive"] }
