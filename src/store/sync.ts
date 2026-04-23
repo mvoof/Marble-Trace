@@ -1,7 +1,7 @@
 import { runInAction, reaction } from 'mobx';
 import { load } from '@tauri-apps/plugin-store';
 import { emit, listen, UnlistenFn } from '@tauri-apps/api/event';
-import { register, unregisterAll } from '@tauri-apps/plugin-global-shortcut';
+import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
 import { appSettingsStore } from './app-settings.store';
 import { unitsStore, type UnitSystem } from './units.store';
 import {
@@ -69,45 +69,56 @@ export const initMainSync = async () => {
   };
 
   // Setup Hotkeys
+  const registeredShortcuts = new Set<string>();
+
   const setupHotkeys = async () => {
-    await unregisterAll();
+    // Unregister only previously registered shortcuts
+    for (const shortcut of registeredShortcuts) {
+      try {
+        await unregister(shortcut);
+      } catch {
+        // Ignore
+      }
+    }
+    registeredShortcuts.clear();
+
+    const registerSafe = async (
+      shortcut: string,
+      handler: (event: { state: 'Pressed' | 'Released' }) => void
+    ) => {
+      if (!shortcut || registeredShortcuts.has(shortcut)) return;
+      try {
+        await register(shortcut, handler);
+        registeredShortcuts.add(shortcut);
+      } catch (e) {
+        console.error(`Failed to register hotkey: ${shortcut}`, e);
+      }
+    };
 
     // Drag Mode Hotkey
-    try {
-      await register(appSettingsStore.dragHotkey, (event) => {
-        if (event.state === 'Pressed') {
-          appSettingsStore.toggleDragMode();
-        }
-      });
-    } catch (e) {
-      console.error('Failed to register drag hotkey:', e);
-    }
+    await registerSafe(appSettingsStore.dragHotkey, (event) => {
+      if (event.state === 'Pressed') {
+        appSettingsStore.toggleDragMode();
+      }
+    });
 
     // Hide All Widgets Hotkey
-    try {
-      if (appSettingsStore.hideAllWidgetsHotkey) {
-        await register(appSettingsStore.hideAllWidgetsHotkey, (event) => {
-          if (event.state === 'Pressed') {
-            appSettingsStore.toggleHideAllWidgets();
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Failed to register hide all hotkey:', e);
+    if (appSettingsStore.hideAllWidgetsHotkey) {
+      await registerSafe(appSettingsStore.hideAllWidgetsHotkey, (event) => {
+        if (event.state === 'Pressed') {
+          appSettingsStore.toggleHideAllWidgets();
+        }
+      });
     }
 
     // Widget Toggle Hotkeys
     for (const widget of widgetSettingsStore.widgets) {
       if (widget.hotkey) {
-        try {
-          await register(widget.hotkey, (event) => {
-            if (event.state === 'Pressed') {
-              widgetSettingsStore.setWidgetEnabled(widget.id, !widget.enabled);
-            }
-          });
-        } catch (e) {
-          console.error(`Failed to register hotkey for ${widget.id}:`, e);
-        }
+        await registerSafe(widget.hotkey, (event) => {
+          if (event.state === 'Pressed') {
+            widgetSettingsStore.setWidgetEnabled(widget.id, !widget.enabled);
+          }
+        });
       }
     }
   };
@@ -149,6 +160,7 @@ export const initMainSync = async () => {
       () => [
         appSettingsStore.dragHotkey,
         appSettingsStore.hideAllWidgetsHotkey,
+        ...widgetSettingsStore.widgets.map((w) => w.hotkey),
       ],
       () => {
         void setupHotkeys();
@@ -181,7 +193,9 @@ export const initMainSync = async () => {
 
   return () => {
     disposers.forEach((d) => d());
-    void unregisterAll();
+    for (const shortcut of registeredShortcuts) {
+      void unregister(shortcut);
+    }
   };
 };
 
