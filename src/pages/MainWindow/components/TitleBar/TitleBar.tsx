@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from 'antd';
 import { Minus, Square, Copy, X } from 'lucide-react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
@@ -25,20 +25,24 @@ export const TitleBar = () => {
     };
   }, []);
 
-  const handleMinimize = () => {
+  const handleMinimize = (e: React.MouseEvent) => {
+    e.stopPropagation();
     void getCurrentWindow().minimize();
   };
 
-  const handleMaximize = () => {
+  const handleMaximize = (e: React.MouseEvent) => {
+    e.stopPropagation();
     void getCurrentWindow().toggleMaximize();
   };
 
-  const handleClose = () => {
+  const handleClose = (e: React.MouseEvent) => {
+    e.stopPropagation();
     void getCurrentWindow().close();
   };
 
   return (
-    <div className={styles.titleBar} data-tauri-drag-region>
+    <div className={styles.titleBar}>
+      <div className={styles.dragRegion} data-tauri-drag-region />
       <div className={styles.titleBarLeft}>
         <Logo className={styles.smallLogo} />
         <span className={styles.titleText}>Marble Trace System UI</span>

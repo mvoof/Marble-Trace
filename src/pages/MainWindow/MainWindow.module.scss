@@ -27,12 +27,13 @@
   background: $sys-bg-main;
   overflow: hidden;
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 .mainContainer {
-  display: flex;
+  display: flex !important;
+  flex-direction: row !important;
   flex: 1;
   overflow: hidden;
   position: relative;
