@@ -165,12 +165,17 @@ export const initMainSync = async () => {
     reaction(
       () => JSON.stringify(widgetSettingsStore.widgets),
       () => {
-        // Simplified: broadcast all changes to overlay.
-        // In a more complex app, we'd emit granular events.
+        // Broadcast changes to overlay immediately for smooth UI sync
         void emit('widget-settings-updated', widgetSettingsStore.widgets);
+      },
+      { delay: 16 }
+    ),
+    reaction(
+      () => JSON.stringify(widgetSettingsStore.widgets),
+      () => {
         void saveSettings();
       },
-      { delay: 500 } // Debounce saves
+      { delay: 500 } // Debounce disk I/O
     ),
   ];
 
