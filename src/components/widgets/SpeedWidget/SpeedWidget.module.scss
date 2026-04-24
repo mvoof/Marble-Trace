@@ -1,11 +1,9 @@
 @use '../../../styles/variables' as *;
 
 .altPanel {
-  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0 0.25rem;
+  padding: 0 1rem;
   overflow: hidden;
 }
 
@@ -19,7 +17,7 @@
 }
 
 .value {
-  font-size: 2.625rem;
+  font-size: $font-size-2xl;
   font-weight: 600;
   line-height: 1;
   letter-spacing: -1px;
@@ -31,7 +29,7 @@
 
 .label {
   margin-top: 0.125rem;
-  font-size: $font-size-xs;
+  font-size: $font-size-sm;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
