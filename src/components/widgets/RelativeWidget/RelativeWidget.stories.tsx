@@ -37,7 +37,6 @@ const RelativeWidgetStory = ({
         designWidth={DESIGN_WIDTH}
         designHeight={DESIGN_HEIGHT}
         background="radial-gradient(circle, #0a0a0f 0%, #050508 100%)"
-        adaptive
       >
         <RelativeWidget entries={entries} settings={settings} />
       </WidgetScaler>
