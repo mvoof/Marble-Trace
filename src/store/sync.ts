@@ -174,6 +174,13 @@ export const initMainSync = async () => {
       await setupHotkeys();
 
       // Reactions
+      const overlayLayoutUnlisten = await listen<WidgetConfig[]>(
+        'widget-layout-changed',
+        (e) => {
+          runInAction(() => widgetSettingsStore.setWidgets(e.payload));
+        }
+      );
+
       const disposers = [
         reaction(
           () => ({
@@ -240,6 +247,7 @@ export const initMainSync = async () => {
       ];
 
       return () => {
+        overlayLayoutUnlisten();
         disposers.forEach((d) => d());
         for (const shortcut of Array.from(registeredShortcuts)) {
           void unregister(shortcut);

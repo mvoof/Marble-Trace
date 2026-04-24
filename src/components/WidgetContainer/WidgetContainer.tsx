@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
+import { emit } from '@tauri-apps/api/event';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { telemetryConnectionStore } from '../../store/iracing';
@@ -90,6 +91,7 @@ export const WidgetContainer = observer(
           isDraggingRef.current = false;
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
+          void emit('widget-layout-changed', widgetSettingsStore.widgets);
         };
 
         document.addEventListener('mousemove', onMouseMove);
@@ -132,6 +134,7 @@ export const WidgetContainer = observer(
           isResizingRef.current = false;
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
+          void emit('widget-layout-changed', widgetSettingsStore.widgets);
         };
 
         document.addEventListener('mousemove', onMouseMove);
