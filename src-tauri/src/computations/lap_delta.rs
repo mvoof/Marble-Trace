@@ -128,7 +128,12 @@ pub fn compute(
     }
 
     let sector_times = locked.sector_times.clone();
-    build_frame(&sector_times, best_lap_time, sector_count, current_sector_idx)
+    build_frame(
+        &sector_times,
+        best_lap_time,
+        sector_count,
+        current_sector_idx,
+    )
 }
 
 fn build_frame(

@@ -69,8 +69,14 @@ pub fn parse_track_length(s: &str) -> f32 {
 }
 
 fn spotter_flags(car_left_right: i32) -> (bool, bool) {
-    let left = matches!(car_left_right, CLR_CAR_LEFT | CLR_CAR_LEFT_RIGHT | CLR_CARS_2_LEFT);
-    let right = matches!(car_left_right, CLR_CAR_RIGHT | CLR_CAR_LEFT_RIGHT | CLR_CARS_2_RIGHT);
+    let left = matches!(
+        car_left_right,
+        CLR_CAR_LEFT | CLR_CAR_LEFT_RIGHT | CLR_CARS_2_LEFT
+    );
+    let right = matches!(
+        car_left_right,
+        CLR_CAR_RIGHT | CLR_CAR_LEFT_RIGHT | CLR_CARS_2_RIGHT
+    );
     (left, right)
 }
 
@@ -127,13 +133,22 @@ pub fn compute(frame: &AllFieldsFrame, session: &SessionInfo) -> ProximityFrame 
     let mut cars: Vec<(i32, f32)> = Vec::new();
 
     for (i, &pct) in lap_dist_pct.iter().enumerate() {
-        if i == player_idx { continue; }
-        if pct < 0.0 { continue; }
-        if on_pit_road.get(i).copied().unwrap_or(false) { continue; }
+        if i == player_idx {
+            continue;
+        }
+        if pct < 0.0 {
+            continue;
+        }
+        if on_pit_road.get(i).copied().unwrap_or(false) {
+            continue;
+        }
 
         let mut diff = pct - player_pct;
-        if diff > 0.5 { diff -= 1.0; }
-        else if diff < -0.5 { diff += 1.0; }
+        if diff > 0.5 {
+            diff -= 1.0;
+        } else if diff < -0.5 {
+            diff += 1.0;
+        }
 
         let lon_dist = diff * track_length_m;
         if lon_dist.abs() <= MAX_SEARCH_DIST_M {
@@ -141,7 +156,11 @@ pub fn compute(frame: &AllFieldsFrame, session: &SessionInfo) -> ProximityFrame 
         }
     }
 
-    cars.sort_by(|a, b| a.1.abs().partial_cmp(&b.1.abs()).unwrap_or(std::cmp::Ordering::Equal));
+    cars.sort_by(|a, b| {
+        a.1.abs()
+            .partial_cmp(&b.1.abs())
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
 
     let nearby_cars: Vec<NearbyCar> = cars
         .iter()
@@ -150,13 +169,21 @@ pub fn compute(frame: &AllFieldsFrame, session: &SessionInfo) -> ProximityFrame 
             let is_alongside = clearance < ALONGSIDE_THRESHOLD_M;
             let lateral_side = if is_alongside {
                 if has_left && has_right {
-                    if lon_dist >= 0.0 { LateralSide::Right } else { LateralSide::Left }
+                    if lon_dist >= 0.0 {
+                        LateralSide::Right
+                    } else {
+                        LateralSide::Left
+                    }
                 } else if has_left {
                     LateralSide::Left
                 } else if has_right {
                     LateralSide::Right
                 } else if car_left_right == CLR_OFF {
-                    if lon_dist >= 0.0 { LateralSide::Left } else { LateralSide::Right }
+                    if lon_dist >= 0.0 {
+                        LateralSide::Left
+                    } else {
+                        LateralSide::Right
+                    }
                 } else {
                     LateralSide::Center
                 }
@@ -164,16 +191,30 @@ pub fn compute(frame: &AllFieldsFrame, session: &SessionInfo) -> ProximityFrame 
                 LateralSide::Center
             };
 
-            NearbyCar { car_idx: idx, longitudinal_dist: lon_dist, lateral_side, clearance }
+            NearbyCar {
+                car_idx: idx,
+                longitudinal_dist: lon_dist,
+                lateral_side,
+                clearance,
+            }
         })
         .collect();
 
     let radar_distances = compute_radar_distances(&nearby_cars, spotter_left, spotter_right);
 
-    ProximityFrame { nearby_cars, radar_distances, spotter_left, spotter_right }
+    ProximityFrame {
+        nearby_cars,
+        radar_distances,
+        spotter_left,
+        spotter_right,
+    }
 }
 
-fn compute_radar_distances(cars: &[NearbyCar], spotter_left: bool, spotter_right: bool) -> RadarDistances {
+fn compute_radar_distances(
+    cars: &[NearbyCar],
+    spotter_left: bool,
+    spotter_right: bool,
+) -> RadarDistances {
     let mut left_dist: Option<f32> = None;
     let mut right_dist: Option<f32> = None;
     let mut left_idx: i32 = -1;
@@ -183,12 +224,18 @@ fn compute_radar_distances(cars: &[NearbyCar], spotter_left: bool, spotter_right
 
     if spotter_left || spotter_right {
         for car in cars {
-            if spotter_left && car.lateral_side == LateralSide::Left && car.clearance < left_clearance {
+            if spotter_left
+                && car.lateral_side == LateralSide::Left
+                && car.clearance < left_clearance
+            {
                 left_clearance = car.clearance;
                 left_dist = Some(car.longitudinal_dist);
                 left_idx = car.car_idx;
             }
-            if spotter_right && car.lateral_side == LateralSide::Right && car.clearance < right_clearance {
+            if spotter_right
+                && car.lateral_side == LateralSide::Right
+                && car.clearance < right_clearance
+            {
                 right_clearance = car.clearance;
                 right_dist = Some(car.longitudinal_dist);
                 right_idx = car.car_idx;
@@ -200,7 +247,9 @@ fn compute_radar_distances(cars: &[NearbyCar], spotter_left: bool, spotter_right
     let mut rear_dist: f32 = 999.0;
 
     for car in cars {
-        if car.car_idx == left_idx || car.car_idx == right_idx { continue; }
+        if car.car_idx == left_idx || car.car_idx == right_idx {
+            continue;
+        }
 
         if car.longitudinal_dist > BUMPER_THRESHOLD_M {
             let gap = (car.longitudinal_dist - CAR_LENGTH_M).max(0.0);
@@ -211,5 +260,10 @@ fn compute_radar_distances(cars: &[NearbyCar], spotter_left: bool, spotter_right
         }
     }
 
-    RadarDistances { front_dist, rear_dist, left_dist, right_dist }
+    RadarDistances {
+        front_dist,
+        rear_dist,
+        left_dist,
+        right_dist,
+    }
 }

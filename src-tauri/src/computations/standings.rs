@@ -20,10 +20,24 @@ static BADGE_EXCEPTIONS: &[(&str, &str)] = &[
 ];
 
 static BRANDS_TO_STRIP: &[&str] = &[
-    "Toyota ", "Cadillac ", "Porsche ", "Ferrari ", "BMW ",
-    "Mercedes-AMG ", "Dallara ", "Chevrolet ", "Ford ",
-    "Aston Martin ", "Audi ", "McLaren ", "Honda ", "Hyundai ",
-    "Nissan ", "Radical ", "Renault ", "Volkswagen ",
+    "Toyota ",
+    "Cadillac ",
+    "Porsche ",
+    "Ferrari ",
+    "BMW ",
+    "Mercedes-AMG ",
+    "Dallara ",
+    "Chevrolet ",
+    "Ford ",
+    "Aston Martin ",
+    "Audi ",
+    "McLaren ",
+    "Honda ",
+    "Hyundai ",
+    "Nissan ",
+    "Radical ",
+    "Renault ",
+    "Volkswagen ",
 ];
 
 static FLUFF_TO_STRIP: &[&str] = &[
@@ -31,10 +45,14 @@ static FLUFF_TO_STRIP: &[&str] = &[
 ];
 
 fn get_compact_badge_name(screen_name_short: &str) -> String {
-    if screen_name_short.is_empty() { return "—".to_string(); }
+    if screen_name_short.is_empty() {
+        return "—".to_string();
+    }
 
     for &(key, val) in BADGE_EXCEPTIONS {
-        if screen_name_short == key { return val.to_string(); }
+        if screen_name_short == key {
+            return val.to_string();
+        }
     }
 
     let mut badge = screen_name_short.to_string();
@@ -53,8 +71,13 @@ fn get_compact_badge_name(screen_name_short: &str) -> String {
     badge = badge.trim().to_string();
 
     if badge.len() > 8 {
-        let abbr: String = badge.chars().filter(|c| c.is_ascii_uppercase() || c.is_ascii_digit()).collect();
-        if abbr.len() > 1 && abbr.len() <= 5 { return abbr; }
+        let abbr: String = badge
+            .chars()
+            .filter(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
+            .collect();
+        if abbr.len() > 1 && abbr.len() <= 5 {
+            return abbr;
+        }
     }
 
     badge
@@ -65,7 +88,10 @@ fn parse_class_color(raw: &Option<String>) -> String {
         None => NO_CLASS_COLOR.to_string(),
         Some(s) if s.is_empty() => NO_CLASS_COLOR.to_string(),
         Some(s) => {
-            let stripped = s.strip_prefix("0x").or_else(|| s.strip_prefix("0X")).unwrap_or(s);
+            let stripped = s
+                .strip_prefix("0x")
+                .or_else(|| s.strip_prefix("0X"))
+                .unwrap_or(s);
             format!("#{stripped}")
         }
     }
@@ -118,13 +144,23 @@ pub fn compute(
 ) -> DriverEntriesFrame {
     let driver_info = match session.driver_info.as_ref() {
         Some(di) => di,
-        None => return DriverEntriesFrame { entries: vec![], player_car_idx: -1 },
+        None => {
+            return DriverEntriesFrame {
+                entries: vec![],
+                player_car_idx: -1,
+            }
+        }
     };
 
     let player_car_idx = driver_info.driver_car_idx.unwrap_or(-1);
     let drivers = match driver_info.drivers.as_ref() {
         Some(d) => d,
-        None => return DriverEntriesFrame { entries: vec![], player_car_idx },
+        None => {
+            return DriverEntriesFrame {
+                entries: vec![],
+                player_car_idx,
+            }
+        }
     };
 
     let driver_tires = driver_info.driver_tires.as_deref().unwrap_or(&[]);
@@ -132,10 +168,16 @@ pub fn compute(
     let mut entries: Vec<DriverEntry> = drivers
         .iter()
         .filter(|d| {
-            if d.car_is_pace_car == Some(1) || d.is_spectator == Some(1) { return false; }
+            if d.car_is_pace_car == Some(1) || d.is_spectator == Some(1) {
+                return false;
+            }
             let idx = d.car_idx as usize;
-            if idx >= frame.car_idx_position.len() { return false; }
-            if d.car_idx == player_car_idx { return true; }
+            if idx >= frame.car_idx_position.len() {
+                return false;
+            }
+            if d.car_idx == player_car_idx {
+                return true;
+            }
             let pos = frame.car_idx_position.get(idx).copied().unwrap_or(0);
             let lap_pct = frame.car_idx_lap_dist_pct.get(idx).copied().unwrap_or(-1.0);
             pos > 0 || lap_pct >= 0.0
@@ -154,17 +196,19 @@ pub fn compute(
                 String::new()
             };
 
-            let (start_overall, start_class) = start_positions
-                .get(&d.car_idx)
-                .copied()
-                .unwrap_or((0, 0));
+            let (start_overall, start_class) =
+                start_positions.get(&d.car_idx).copied().unwrap_or((0, 0));
 
             let car_screen_name_short = d.car_screen_name_short.clone().unwrap_or_default();
             let car_class_short_name = if car_screen_name_short.is_empty() {
                 NO_CLASS_LABEL.to_string()
             } else {
                 let badge = get_compact_badge_name(&car_screen_name_short);
-                if badge.is_empty() { NO_CLASS_LABEL.to_string() } else { badge }
+                if badge.is_empty() {
+                    NO_CLASS_LABEL.to_string()
+                } else {
+                    badge
+                }
             };
 
             DriverEntry {
@@ -183,8 +227,16 @@ pub fn compute(
                 start_pos_class: start_class,
                 lap: frame.car_idx_lap.get(idx).copied().unwrap_or(0),
                 lap_dist_pct: frame.car_idx_lap_dist_pct.get(idx).copied().unwrap_or(0.0),
-                last_lap_time: frame.car_idx_last_lap_time.get(idx).copied().unwrap_or(-1.0),
-                best_lap_time: frame.car_idx_best_lap_time.get(idx).copied().unwrap_or(-1.0),
+                last_lap_time: frame
+                    .car_idx_last_lap_time
+                    .get(idx)
+                    .copied()
+                    .unwrap_or(-1.0),
+                best_lap_time: frame
+                    .car_idx_best_lap_time
+                    .get(idx)
+                    .copied()
+                    .unwrap_or(-1.0),
                 f2_time: frame.car_idx_f2_time.get(idx).copied().unwrap_or(0.0),
                 track_surface: frame.car_idx_track_surface.get(idx).copied().unwrap_or(-1),
                 i_rating: d.i_rating.unwrap_or(0),
@@ -200,9 +252,13 @@ pub fn compute(
         .collect();
 
     entries.sort_by_key(|e| {
-        if e.position > 0 { e.position }
-        else if e.start_pos_overall > 0 { e.start_pos_overall }
-        else { 999 }
+        if e.position > 0 {
+            e.position
+        } else if e.start_pos_overall > 0 {
+            e.start_pos_overall
+        } else {
+            999
+        }
     });
 
     let player_lap_dist = entries
@@ -213,8 +269,12 @@ pub fn compute(
 
     for entry in &mut entries {
         let mut diff = entry.lap_dist_pct - player_lap_dist;
-        if diff < -0.5 { diff += 1.0; }
-        if diff > 0.5 { diff -= 1.0; }
+        if diff < -0.5 {
+            diff += 1.0;
+        }
+        if diff > 0.5 {
+            diff -= 1.0;
+        }
         entry.relative_lap_dist = diff;
     }
 
@@ -225,7 +285,10 @@ pub fn compute(
         }
     }
 
-    DriverEntriesFrame { entries, player_car_idx }
+    DriverEntriesFrame {
+        entries,
+        player_car_idx,
+    }
 }
 
 // Turbo87 iRating delta algorithm — port of iracing-irating.ts
@@ -243,7 +306,9 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
     // Group by class
     let mut buckets: HashMap<i32, Vec<(i32, i32, i32)>> = HashMap::new(); // classId -> [(carIdx, classPos, iRating)]
     for e in entries {
-        if e.i_rating <= 0 || e.class_position <= 0 { continue; }
+        if e.i_rating <= 0 || e.class_position <= 0 {
+            continue;
+        }
         buckets
             .entry(e.car_class_id)
             .or_default()
@@ -251,7 +316,9 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
     }
 
     for bucket in buckets.values() {
-        if bucket.len() < 2 { continue; }
+        if bucket.len() < 2 {
+            continue;
+        }
 
         let n = bucket.len();
         let ir_ratings: Vec<f64> = bucket.iter().map(|&(_, _, ir)| ir as f64).collect();
@@ -264,7 +331,8 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
             }
         }
 
-        let expected_scores: Vec<f64> = chances.iter()
+        let expected_scores: Vec<f64> = chances
+            .iter()
             .map(|row| row.iter().sum::<f64>() - 0.5)
             .collect();
 
@@ -272,19 +340,31 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
         let num_starters = n; // all are starters (no DNSes in current implementation)
         let num_non_starters = 0usize;
 
-        let fudge_factors: Vec<f64> = bucket.iter().enumerate().map(|(i, _)| {
-            let x = (num_registrations as f64) - (num_non_starters as f64) / 2.0;
-            let finish_rank = bucket[i].1 as f64; // class position
-            (x / 2.0 - finish_rank) / 100.0
-        }).collect();
+        let fudge_factors: Vec<f64> = bucket
+            .iter()
+            .enumerate()
+            .map(|(i, _)| {
+                let x = (num_registrations as f64) - (num_non_starters as f64) / 2.0;
+                let finish_rank = bucket[i].1 as f64; // class position
+                (x / 2.0 - finish_rank) / 100.0
+            })
+            .collect();
 
         let mut sum_changes_starters = 0.0f64;
-        let changes: Vec<f64> = bucket.iter().enumerate().map(|(i, &(_, class_pos, _))| {
-            let change = ((num_registrations as f64 - class_pos as f64 - expected_scores[i] - fudge_factors[i]) * 200.0)
-                / num_starters as f64;
-            sum_changes_starters += change;
-            change
-        }).collect();
+        let changes: Vec<f64> = bucket
+            .iter()
+            .enumerate()
+            .map(|(i, &(_, class_pos, _))| {
+                let change = ((num_registrations as f64
+                    - class_pos as f64
+                    - expected_scores[i]
+                    - fudge_factors[i])
+                    * 200.0)
+                    / num_starters as f64;
+                sum_changes_starters += change;
+                change
+            })
+            .collect();
 
         for (i, &(car_idx, _, _)) in bucket.iter().enumerate() {
             result.insert(car_idx, changes[i].round() as i32);
@@ -298,9 +378,7 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
 
 /// Parse start positions from pitwall's Session.results_positions (Vec<serde_yaml_ng::Value>).
 /// Returns a map of carIdx -> (overall_position, class_position) (1-indexed).
-pub fn parse_start_positions(
-    results: &[serde_yaml_ng::Value],
-) -> HashMap<i32, (i32, i32)> {
+pub fn parse_start_positions(results: &[serde_yaml_ng::Value]) -> HashMap<i32, (i32, i32)> {
     #[derive(Deserialize)]
     #[serde(rename_all = "PascalCase")]
     struct ResultPos {

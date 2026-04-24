@@ -10,8 +10,8 @@ use computations::{
 };
 use iracing::{
     get_last_session_info, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
-    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame,
-    EnvironmentFrame, LapTimingFrame, SessionFrame, TelemetryState,
+    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, EnvironmentFrame,
+    LapTimingFrame, SessionFrame, TelemetryState,
 };
 use pitwall::SessionInfo;
 use specta::TypeCollection;
