@@ -34,11 +34,8 @@ export interface RadarSettings {
   barDisplayMode?: RadarBarDisplayMode;
 }
 
-export type StandingsFilterMode = 'all';
-
 export interface StandingsWidgetSettings {
-  groupByClass: boolean;
-  filterMode: StandingsFilterMode;
+  enableClassCycling: boolean;
   showPosChange: boolean;
   showColumnHeaders: boolean;
   showSessionHeader: boolean;

@@ -547,15 +547,15 @@ const StandingsSettingsPanel = observer(() => {
       <Card title="Logic & Grouping">
         <div className={styles.fieldRow}>
           <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>Group by Class</div>
+            <div className={styles.fieldTitle}>Class Cycling</div>
             <div className={styles.fieldDesc}>
-              Separate standings into class blocks. Pinned players stay at
-              bottom if out of view.
+              Show one class at a time with prev/next navigation in the widget.
+              Off shows all drivers combined.
             </div>
           </div>
           <Switch
-            checked={settings.groupByClass}
-            onChange={(v) => update({ groupByClass: v })}
+            checked={settings.enableClassCycling}
+            onChange={(v) => update({ enableClassCycling: v })}
           />
         </div>
       </Card>

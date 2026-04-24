@@ -120,8 +120,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     hotkey: 'F3',
     customSettings: {
       standings: {
-        groupByClass: true,
-        filterMode: 'all',
+        enableClassCycling: false,
         showPosChange: true,
         showColumnHeaders: true,
         showSessionHeader: true,
@@ -458,8 +457,7 @@ class WidgetSettingsStore {
     const widget = this.getWidget('standings');
     return (
       widget?.customSettings?.standings ?? {
-        groupByClass: true,
-        filterMode: 'all',
+        enableClassCycling: false,
         showPosChange: true,
         showColumnHeaders: true,
         showSessionHeader: true,

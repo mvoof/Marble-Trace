@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 import { WidgetPanel } from '@/components/widgets/primitives';
 import { useVisibleRowCount } from '@/hooks/useVisibleRowCount';
@@ -7,6 +7,7 @@ import type { StandingsWidgetSettings } from '@/types/widget-settings';
 
 import { SessionHeader } from './SessionHeader/SessionHeader';
 import { ClassGroup } from './ClassGroup/ClassGroup';
+import { ClassSwitcher } from './ClassSwitcher/ClassSwitcher';
 import { computeClassSof } from './standings-utils';
 import type { DriverEntry } from '@/types/bindings';
 import type { DriverGroup, SeparatorEntry } from '@/types/standings';
@@ -36,100 +37,122 @@ export const StandingsWidget = ({
   const { ref: tableWrapRef, count: visibleRowCount } =
     useVisibleRowCount<HTMLDivElement>(2, 5, 'tbody tr[data-driver-row]');
 
-  const displayGroups = useMemo((): DriverGroup[] => {
+  const [activeClassIndex, setActiveClassIndex] = useState(0);
+
+  const allClassGroups = useMemo((): DriverGroup[] => {
     if (driverEntries.length === 0) return [];
 
-    let groups: DriverGroup[];
+    const classMap = new Map<number, DriverEntry[]>();
 
-    if (settings.groupByClass) {
-      const classMap = new Map<number, DriverEntry[]>();
-
-      for (const d of driverEntries) {
-        const existing = classMap.get(d.carClassId);
-        if (existing) {
-          existing.push(d);
-        } else {
-          classMap.set(d.carClassId, [d]);
-        }
+    for (const d of driverEntries) {
+      const existing = classMap.get(d.carClassId);
+      if (existing) {
+        existing.push(d);
+      } else {
+        classMap.set(d.carClassId, [d]);
       }
-
-      groups = Array.from(classMap.entries()).map(
-        ([classId, driversInClass]) => {
-          const first = driversInClass[0];
-          return {
-            classId,
-            className: first.carScreenNameShort,
-            classShortName: first.carScreenNameShort,
-            classColor: first.carClassColor,
-            totalDrivers: driversInClass.length,
-            classSof: computeClassSof(driversInClass),
-            drivers: driversInClass.sort(
-              (a, b) => a.classPosition - b.classPosition
-            ),
-          };
-        }
-      );
-    } else {
-      groups = [
-        {
-          classId: -1,
-          className: 'Overall',
-          classShortName: '',
-          classColor: '',
-          totalDrivers: driverEntries.length,
-          classSof: overallSof,
-          drivers: [...driverEntries],
-        },
-      ];
     }
 
-    // Each group header occupies ~1 driver-row of height.
-    // Subtract header rows from the budget so groups don't overflow.
-    const headerRows = settings.groupByClass ? groups.length : 0;
-    const totalBudget = Math.max(groups.length, visibleRowCount - headerRows);
+    return Array.from(classMap.entries()).map(([classId, driversInClass]) => {
+      const first = driversInClass[0];
+      return {
+        classId,
+        className: first.carScreenNameShort,
+        classShortName: first.carScreenNameShort,
+        classColor: first.carClassColor,
+        totalDrivers: driversInClass.length,
+        classSof: computeClassSof(driversInClass),
+        drivers: driversInClass.sort(
+          (a, b) => a.classPosition - b.classPosition
+        ),
+      };
+    });
+  }, [driverEntries]);
 
-    const totalDrivers = groups.reduce(
+  useEffect(() => {
+    setActiveClassIndex((prev) =>
+      allClassGroups.length === 0
+        ? 0
+        : Math.min(prev, allClassGroups.length - 1)
+    );
+  }, [allClassGroups.length]);
+
+  const displayGroups = useMemo((): DriverGroup[] => {
+    const sourceGroups = settings.enableClassCycling
+      ? allClassGroups.length > 0
+        ? [allClassGroups[activeClassIndex]]
+        : []
+      : [
+          {
+            classId: -1,
+            className: 'Overall',
+            classShortName: '',
+            classColor: '',
+            totalDrivers: driverEntries.length,
+            classSof: overallSof,
+            drivers: [...driverEntries],
+          },
+        ];
+
+    if (sourceGroups.length === 0) return [];
+
+    const totalBudget = Math.max(sourceGroups.length, visibleRowCount);
+
+    const totalDrivers = sourceGroups.reduce(
       (sum, g) =>
         sum +
         (g.drivers.filter((d) => !isSeparator(d)) as DriverEntry[]).length,
       0
     );
 
-    if (totalDrivers > totalBudget && groups.length > 0) {
-      groups = groups.map((group) => {
-        const driversOnly = group.drivers.filter(
-          (d) => !isSeparator(d)
-        ) as DriverEntry[];
+    if (totalDrivers <= totalBudget) return sourceGroups;
 
-        const share =
-          groups.length === 1
-            ? totalBudget
-            : Math.max(
-                1,
-                Math.floor((driversOnly.length / totalDrivers) * totalBudget)
-              );
+    return sourceGroups.map((group) => {
+      const driversOnly = group.drivers.filter(
+        (d) => !isSeparator(d)
+      ) as DriverEntry[];
 
-        if (driversOnly.length <= share) return group;
+      const share =
+        sourceGroups.length === 1
+          ? totalBudget
+          : Math.max(
+              1,
+              Math.floor((driversOnly.length / totalDrivers) * totalBudget)
+            );
 
-        const playerIdx = driversOnly.findIndex((d) => d.isPlayer);
+      if (driversOnly.length <= share) return group;
 
-        const visible: (DriverEntry | SeparatorEntry)[] = driversOnly.slice(
-          0,
-          share
-        );
+      const playerIdx = driversOnly.findIndex((d) => d.isPlayer);
 
-        if (playerIdx >= share) {
-          visible[share - 1] = driversOnly[playerIdx];
-        }
+      const visible: (DriverEntry | SeparatorEntry)[] = driversOnly.slice(
+        0,
+        share
+      );
 
-        return { ...group, drivers: visible };
-      });
-    }
+      if (playerIdx >= share) {
+        visible[share - 1] = driversOnly[playerIdx];
+      }
 
-    return groups;
-  }, [driverEntries, settings, overallSof, visibleRowCount]);
+      return { ...group, drivers: visible };
+    });
+  }, [
+    allClassGroups,
+    activeClassIndex,
+    settings.enableClassCycling,
+    driverEntries,
+    overallSof,
+    visibleRowCount,
+  ]);
 
-  const showGroupHeaders = settings.groupByClass;
+  const handlePrev = () =>
+    setActiveClassIndex((prev) =>
+      prev === 0 ? allClassGroups.length - 1 : prev - 1
+    );
+
+  const handleNext = () =>
+    setActiveClassIndex((prev) =>
+      prev === allClassGroups.length - 1 ? 0 : prev + 1
+    );
 
   return (
     <WidgetPanel className={styles.standings} gap={0}>
@@ -140,6 +163,15 @@ export const StandingsWidget = ({
           weekendInfo={weekendInfo}
           driverEntries={driverEntries}
           overallSof={overallSof}
+        />
+      )}
+
+      {settings.enableClassCycling && allClassGroups.length > 0 && (
+        <ClassSwitcher
+          groups={allClassGroups}
+          activeIndex={activeClassIndex}
+          onPrev={handlePrev}
+          onNext={handleNext}
         />
       )}
 
@@ -155,7 +187,9 @@ export const StandingsWidget = ({
 
             {settings.showBrand && <col className={styles.colBrand} />}
             {settings.showTire && <col className={styles.colTire} />}
-            {!showGroupHeaders && <col className={styles.colClass} />}
+            {!settings.enableClassCycling && (
+              <col className={styles.colClass} />
+            )}
 
             <col className={styles.colLic} />
 
@@ -190,7 +224,7 @@ export const StandingsWidget = ({
                   <th className={`${styles.th} ${styles.thCenter}`}>Tire</th>
                 )}
 
-                {!showGroupHeaders && (
+                {!settings.enableClassCycling && (
                   <th className={`${styles.th} ${styles.thCenter}`}>Class</th>
                 )}
 
@@ -228,7 +262,7 @@ export const StandingsWidget = ({
               <ClassGroup
                 key={group.classId}
                 group={group}
-                showGroupHeader={showGroupHeaders}
+                showGroupHeader={false}
                 settings={settings}
                 irDeltaMap={irDeltaMap}
                 playerPitStops={playerPitStops}
