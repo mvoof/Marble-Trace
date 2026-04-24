@@ -10,8 +10,7 @@ import { ClassGroup } from './ClassGroup/ClassGroup';
 import { ClassSwitcher } from './ClassSwitcher/ClassSwitcher';
 import { computeClassSof } from './standings-utils';
 import type { DriverEntry } from '@/types/bindings';
-import type { DriverGroup, SeparatorEntry } from '@/types/standings';
-import { isSeparator } from '@/components/widgets/widget-utils';
+import type { DriverGroup } from '@/types/standings';
 
 import styles from './StandingsWidget.module.scss';
 
@@ -24,6 +23,22 @@ interface StandingsWidgetProps {
   weekendInfo: WeekendInfo | null;
   overallSof: number;
 }
+
+const sliceWithPlayerPin = (
+  drivers: DriverEntry[],
+  budget: number
+): DriverEntry[] => {
+  if (drivers.length <= budget) return drivers;
+
+  const playerIdx = drivers.findIndex((d) => d.isPlayer);
+  const visible = drivers.slice(0, budget);
+
+  if (playerIdx >= budget) {
+    visible[budget - 1] = drivers[playerIdx];
+  }
+
+  return visible;
+};
 
 export const StandingsWidget = ({
   driverEntries,
@@ -77,64 +92,24 @@ export const StandingsWidget = ({
     );
   }, [allClassGroups.length]);
 
-  const displayGroups = useMemo((): DriverGroup[] => {
-    const sourceGroups = settings.enableClassCycling
-      ? allClassGroups.length > 0
-        ? [allClassGroups[activeClassIndex]]
-        : []
-      : [
-          {
-            classId: -1,
-            className: 'Overall',
-            classShortName: '',
-            classColor: '',
-            totalDrivers: driverEntries.length,
-            classSof: overallSof,
-            drivers: [...driverEntries],
-          },
-        ];
+  const displayGroup = useMemo((): DriverGroup => {
+    if (settings.enableClassCycling && allClassGroups.length > 0) {
+      const group = allClassGroups[activeClassIndex];
+      return {
+        ...group,
+        drivers: sliceWithPlayerPin(group.drivers, visibleRowCount),
+      };
+    }
 
-    if (sourceGroups.length === 0) return [];
-
-    const totalBudget = Math.max(sourceGroups.length, visibleRowCount);
-
-    const totalDrivers = sourceGroups.reduce(
-      (sum, g) =>
-        sum +
-        (g.drivers.filter((d) => !isSeparator(d)) as DriverEntry[]).length,
-      0
-    );
-
-    if (totalDrivers <= totalBudget) return sourceGroups;
-
-    return sourceGroups.map((group) => {
-      const driversOnly = group.drivers.filter(
-        (d) => !isSeparator(d)
-      ) as DriverEntry[];
-
-      const share =
-        sourceGroups.length === 1
-          ? totalBudget
-          : Math.max(
-              1,
-              Math.floor((driversOnly.length / totalDrivers) * totalBudget)
-            );
-
-      if (driversOnly.length <= share) return group;
-
-      const playerIdx = driversOnly.findIndex((d) => d.isPlayer);
-
-      const visible: (DriverEntry | SeparatorEntry)[] = driversOnly.slice(
-        0,
-        share
-      );
-
-      if (playerIdx >= share) {
-        visible[share - 1] = driversOnly[playerIdx];
-      }
-
-      return { ...group, drivers: visible };
-    });
+    return {
+      classId: -1,
+      className: 'Overall',
+      classShortName: '',
+      classColor: '',
+      totalDrivers: driverEntries.length,
+      classSof: overallSof,
+      drivers: sliceWithPlayerPin([...driverEntries], visibleRowCount),
+    };
   }, [
     allClassGroups,
     activeClassIndex,
@@ -258,15 +233,12 @@ export const StandingsWidget = ({
           )}
 
           <tbody>
-            {displayGroups.map((group) => (
-              <ClassGroup
-                key={group.classId}
-                group={group}
-                settings={settings}
-                irDeltaMap={irDeltaMap}
-                playerPitStops={playerPitStops}
-              />
-            ))}
+            <ClassGroup
+              group={displayGroup}
+              settings={settings}
+              irDeltaMap={irDeltaMap}
+              playerPitStops={playerPitStops}
+            />
           </tbody>
         </table>
       </div>
