@@ -117,7 +117,6 @@ export const Default: Story = {
     visibilityMode: 'always',
     proximityThreshold: 3,
     hideDelay: 2,
-    barSpacing: 0,
     barDisplayMode: 'both',
     carLeftRight: CarLeftRight.Off,
     offsets: [

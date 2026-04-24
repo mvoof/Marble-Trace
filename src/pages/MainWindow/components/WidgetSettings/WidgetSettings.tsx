@@ -463,18 +463,6 @@ const RadarSettingsPanel = observer(
                 update({ barDisplayMode: v as RadarBarDisplayMode })
               }
             />
-
-            <div style={{ marginTop: 24 }}>
-              <span className={styles.fieldLabel}>Center Gap Spacing (px)</span>
-              <InputNumber
-                style={{ width: '100%' }}
-                value={settings.barSpacing ?? 0}
-                min={0}
-                max={1000}
-                step={10}
-                onChange={(v) => v !== null && update({ barSpacing: v })}
-              />
-            </div>
           </div>
         )}
       </Card>

@@ -102,7 +102,6 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         visibilityMode: 'proximity',
         proximityThreshold: 3,
         hideDelay: 2,
-        barSpacing: 0,
         barDisplayMode: 'both',
       },
     },

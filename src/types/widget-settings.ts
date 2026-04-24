@@ -29,7 +29,6 @@ export interface RadarSettings {
   visibilityMode: RadarVisibilityMode;
   proximityThreshold: number;
   hideDelay: number;
-  barSpacing?: number;
   /** radar-bar: show both bars or only the side with a detected car */
   barDisplayMode?: RadarBarDisplayMode;
 }
