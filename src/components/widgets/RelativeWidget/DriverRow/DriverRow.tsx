@@ -89,7 +89,7 @@ export const DriverRow = observer(
           </span>
         </div>
 
-        <div className={styles.details}>
+        <div className={styles.badgesBlock}>
           {settings.showPitIndicator && isPit && <PitBadge />}
 
           {settings.showClassBadge && (
@@ -100,17 +100,16 @@ export const DriverRow = observer(
           )}
 
           {settings.showIRatingBadge && (
-            <>
-              <LicenseBadge
-                licString={driver.licString}
-                className={styles.licBadge}
-              />
-              <span className={styles.irInfo}>
-                {formatIRating(driver.iRating)}
-              </span>
-            </>
+            <LicenseBadge
+              licString={driver.licString}
+              className={styles.licBadge}
+            />
           )}
         </div>
+
+        {settings.showIRatingBadge && (
+          <span className={styles.irInfo}>{formatIRating(driver.iRating)}</span>
+        )}
 
         <div className={styles.f2Block}>
           {trendIcon}

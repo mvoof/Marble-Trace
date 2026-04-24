@@ -35,7 +35,7 @@
 .posBlock {
   display: flex;
   align-items: baseline;
-  gap: 0.25em;
+  gap: 0.5em;
   width: 3em;
   margin-left: 0.375em;
   flex-shrink: 0;
@@ -82,8 +82,8 @@
   color: #fbbf24;
 }
 
-// Badges block — separate column, fixed width, right of name
-.details {
+// Badges block — pit + class + license badges
+.badgesBlock {
   display: flex;
   align-items: center;
   gap: 0.3em;
@@ -92,9 +92,15 @@
   margin-left: 0.375em;
 }
 
+// iRating — separate block, right-aligned
 .irInfo {
   font-size: 0.75em;
   color: rgba(113, 113, 122, 1);
+  font-family: $font-mono;
+  text-align: right;
+  width: 2.5em;
+  flex-shrink: 0;
+  margin-left: 0.375em;
 }
 
 // License badge size override for this context
