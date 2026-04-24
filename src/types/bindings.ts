@@ -554,6 +554,7 @@ export type DriverEntry = {
   lastLapTime: number;
   bestLapTime: number;
   f2Time: number;
+  estTime: number;
   trackSurface: number;
   iRating: number;
   licString: string;

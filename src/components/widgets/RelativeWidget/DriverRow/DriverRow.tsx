@@ -27,7 +27,7 @@ export const DriverRow = observer(
       driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 
     const relativeGap =
-      driver.isPlayer || !player ? 0 : driver.f2Time - player.f2Time;
+      driver.isPlayer || !player ? 0 : driver.estTime - player.estTime;
 
     const f2TimeStr =
       relativeGap > 0

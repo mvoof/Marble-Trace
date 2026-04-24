@@ -119,6 +119,7 @@ pub struct DriverEntry {
     pub last_lap_time: f32,
     pub best_lap_time: f32,
     pub f2_time: f32,
+    pub est_time: f32,
     pub track_surface: i32,
     pub i_rating: i32,
     pub lic_string: String,
@@ -255,6 +256,7 @@ pub fn compute(
                     .copied()
                     .unwrap_or(-1.0),
                 f2_time: frame.car_idx_f2_time.get(idx).copied().unwrap_or(0.0),
+                est_time: frame.car_idx_est_time.get(idx).copied().unwrap_or(0.0),
                 track_surface: frame.car_idx_track_surface.get(idx).copied().unwrap_or(-1),
                 i_rating: d.i_rating.unwrap_or(0),
                 lic_string: d.lic_string.clone().unwrap_or_else(|| "R 0.00".to_string()),
