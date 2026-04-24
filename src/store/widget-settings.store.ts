@@ -1,4 +1,5 @@
 import { makeAutoObservable } from 'mobx';
+import { invoke } from '@tauri-apps/api/core';
 
 import type {
   FlagsWidgetSettings,
@@ -403,6 +404,12 @@ class WidgetSettingsStore {
         ...widget.customSettings,
         ...settings,
       };
+
+      if (id === 'fuel' && settings.fuel && 'pitWarningLaps' in settings.fuel) {
+        void invoke('set_pit_warning_laps', {
+          laps: settings.fuel.pitWarningLaps,
+        }).catch((e) => console.error('Failed to update pit warning laps:', e));
+      }
     }
   }
 
