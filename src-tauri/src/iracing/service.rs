@@ -150,7 +150,7 @@ pub async fn start_telemetry_stream(
 
             // Telemetry frame stream — main loop
             let mut stream = std::pin::pin!(telemetry_stream);
-            let mut count: u64 = 0;
+            let mut tick: u64 = 0;
 
             loop {
                 if !running.load(Ordering::SeqCst) {
@@ -160,9 +160,9 @@ pub async fn start_telemetry_stream(
 
                 match tokio::time::timeout(Duration::from_secs(3), stream.next()).await {
                     Ok(Some(frame)) => {
-                        count += 1;
+                        tick += 1;
 
-                        if count == 1 {
+                        if tick == 1 {
                             info!(
                                 speed = frame.speed,
                                 rpm = frame.rpm,
@@ -171,8 +171,9 @@ pub async fn start_telemetry_stream(
                             );
                         }
 
-                        // Decompose AllFieldsFrame into domain frames and emit each
-                        emit_domain_frames(&app_clone, &frame);
+                        // Decompose AllFieldsFrame into domain frames and emit each,
+                        // throttled to their intended update rates.
+                        emit_domain_frames(&app_clone, &frame, tick);
                     }
                     Ok(None) => {
                         // Stream ended
@@ -205,7 +206,7 @@ pub async fn start_telemetry_stream(
             // and the next `connect()` will falsely succeed.
             session_task.abort();
 
-            info!(count, "Stream ended, will retry connection...");
+            info!(tick, "Stream ended, will retry connection...");
 
             // Clear cached session info on disconnect
             if let Ok(mut lock) = last_session_info.lock() {
@@ -261,51 +262,48 @@ pub async fn stop_telemetry_stream(
     Ok(())
 }
 
-/// Decomposes an `AllFieldsFrame` into domain-specific frames
-/// and emits each as a separate Tauri event.
-fn emit_domain_frames(app: &AppHandle, frame: &AllFieldsFrame) {
-    let car_dynamics = CarDynamicsFrame::from(frame);
-    let car_idx = CarIdxFrame::from(frame);
-    let car_inputs = CarInputsFrame::from(frame);
-    let car_status = CarStatusFrame::from(frame);
-    let chassis = ChassisFrame::from(frame);
-    let lap_timing = LapTimingFrame::from(frame);
-    let session = SessionFrame::from(frame);
-    let environment = EnvironmentFrame::from(frame);
-
-    if let Err(e) =
-        app.emit("iracing://telemetry/car-dynamics", &car_dynamics)
-    {
+/// Decomposes an `AllFieldsFrame` into domain-specific frames and emits each
+/// as a separate Tauri event, throttled to their intended update rates:
+/// - 60Hz (every tick):  car-dynamics, car-inputs
+/// - 10Hz (every 6th):   car-idx, chassis, lap-timing
+/// - 4Hz  (every 15th):  car-status
+/// - 1Hz  (every 60th):  session, environment
+fn emit_domain_frames(app: &AppHandle, frame: &AllFieldsFrame, tick: u64) {
+    // 60 Hz
+    if let Err(e) = app.emit("iracing://telemetry/car-dynamics", &CarDynamicsFrame::from(frame)) {
         warn!("Failed to emit car dynamics: {}", e);
     }
-
-    if let Err(e) = app.emit("iracing://telemetry/car-idx", &car_idx) {
-        warn!("Failed to emit car idx: {}", e);
-    }
-
-    if let Err(e) = app.emit("iracing://telemetry/car-inputs", &car_inputs) {
+    if let Err(e) = app.emit("iracing://telemetry/car-inputs", &CarInputsFrame::from(frame)) {
         warn!("Failed to emit car inputs: {}", e);
     }
 
-    if let Err(e) = app.emit("iracing://telemetry/car-status", &car_status) {
-        warn!("Failed to emit car status: {}", e);
+    // 10 Hz — also fire on first frame so widgets populate immediately
+    if tick % 6 == 0 || tick == 1 {
+        if let Err(e) = app.emit("iracing://telemetry/car-idx", &CarIdxFrame::from(frame)) {
+            warn!("Failed to emit car idx: {}", e);
+        }
+        if let Err(e) = app.emit("iracing://telemetry/chassis", &ChassisFrame::from(frame)) {
+            warn!("Failed to emit chassis: {}", e);
+        }
+        if let Err(e) = app.emit("iracing://telemetry/lap-timing", &LapTimingFrame::from(frame)) {
+            warn!("Failed to emit lap timing: {}", e);
+        }
     }
 
-    if let Err(e) = app.emit("iracing://telemetry/lap-timing", &lap_timing) {
-        warn!("Failed to emit lap timing: {}", e);
+    // 4 Hz
+    if tick % 15 == 0 || tick == 1 {
+        if let Err(e) = app.emit("iracing://telemetry/car-status", &CarStatusFrame::from(frame)) {
+            warn!("Failed to emit car status: {}", e);
+        }
     }
 
-    if let Err(e) = app.emit("iracing://telemetry/session", &session) {
-        warn!("Failed to emit session: {}", e);
-    }
-
-    if let Err(e) =
-        app.emit("iracing://telemetry/environment", &environment)
-    {
-        warn!("Failed to emit environment: {}", e);
-    }
-
-    if let Err(e) = app.emit("iracing://telemetry/chassis", &chassis) {
-        warn!("Failed to emit chassis: {}", e);
+    // 1 Hz
+    if tick % 60 == 0 || tick == 1 {
+        if let Err(e) = app.emit("iracing://telemetry/session", &SessionFrame::from(frame)) {
+            warn!("Failed to emit session: {}", e);
+        }
+        if let Err(e) = app.emit("iracing://telemetry/environment", &EnvironmentFrame::from(frame)) {
+            warn!("Failed to emit environment: {}", e);
+        }
     }
 }
