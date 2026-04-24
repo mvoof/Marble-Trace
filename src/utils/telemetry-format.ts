@@ -40,12 +40,19 @@ export function fuelUnit(system: UnitSystem): string {
   return system === 'metric' ? 'L' : 'GAL';
 }
 
-export function formatDistance(meters: number, system: UnitSystem): string {
+export function formatDistance(
+  meters: number | null | undefined,
+  system: UnitSystem
+): string {
+  if (meters == null || isNaN(meters)) {
+    return '\u2014';
+  }
+
   if (system === 'imperial') {
     return (meters * METERS_TO_FEET).toFixed(1);
   }
 
-  return meters.toFixed(1);
+  return Number(meters).toFixed(1);
 }
 
 export function distanceUnit(system: UnitSystem): string {

@@ -93,8 +93,8 @@ pub fn compute(frame: &AllFieldsFrame, session: &SessionInfo) -> ProximityFrame 
         return ProximityFrame {
             nearby_cars: vec![],
             radar_distances: RadarDistances {
-                front_dist: f32::INFINITY,
-                rear_dist: f32::INFINITY,
+                front_dist: 999.0,
+                rear_dist: 999.0,
                 left_dist: None,
                 right_dist: None,
             },
@@ -113,8 +113,8 @@ pub fn compute(frame: &AllFieldsFrame, session: &SessionInfo) -> ProximityFrame 
             return ProximityFrame {
                 nearby_cars: vec![],
                 radar_distances: RadarDistances {
-                    front_dist: f32::INFINITY,
-                    rear_dist: f32::INFINITY,
+                    front_dist: 999.0,
+                    rear_dist: 999.0,
                     left_dist: None,
                     right_dist: None,
                 },
@@ -178,8 +178,8 @@ fn compute_radar_distances(cars: &[NearbyCar], spotter_left: bool, spotter_right
     let mut right_dist: Option<f32> = None;
     let mut left_idx: i32 = -1;
     let mut right_idx: i32 = -1;
-    let mut left_clearance = f32::INFINITY;
-    let mut right_clearance = f32::INFINITY;
+    let mut left_clearance: f32 = 999.0;
+    let mut right_clearance: f32 = 999.0;
 
     if spotter_left || spotter_right {
         for car in cars {
@@ -196,8 +196,8 @@ fn compute_radar_distances(cars: &[NearbyCar], spotter_left: bool, spotter_right
         }
     }
 
-    let mut front_dist = f32::INFINITY;
-    let mut rear_dist = f32::INFINITY;
+    let mut front_dist: f32 = 999.0;
+    let mut rear_dist: f32 = 999.0;
 
     for car in cars {
         if car.car_idx == left_idx || car.car_idx == right_idx { continue; }
