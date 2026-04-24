@@ -51,6 +51,7 @@ export interface StandingsWidgetSettings {
   showIrChange: boolean;
   /** Player-only pit stop counter (counted on the frontend) */
   showPitStops: boolean;
+  abbreviateNames: boolean;
 }
 
 export interface RelativeWidgetSettings {

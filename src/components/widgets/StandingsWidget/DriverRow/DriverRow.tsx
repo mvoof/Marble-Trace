@@ -1,4 +1,10 @@
 import { ChevronUp, ChevronDown, Minus } from 'lucide-react';
+
+const abbreviateName = (fullName: string): string => {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length < 2) return fullName.toUpperCase();
+  return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`.toUpperCase();
+};
 import { formatLapTime } from '../../../../utils/telemetry-format';
 import {
   formatBrand,
@@ -148,7 +154,9 @@ export const DriverRow = ({
           <span
             className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
           >
-            {driver.userName}
+            {settings.abbreviateNames
+              ? abbreviateName(driver.userName)
+              : driver.userName}
           </span>
 
           {isPit && <PitBadge />}

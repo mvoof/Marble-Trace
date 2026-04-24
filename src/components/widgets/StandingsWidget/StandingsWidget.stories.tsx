@@ -26,6 +26,7 @@ const DEFAULT_SETTINGS: StandingsWidgetSettings = {
   showTire: true,
   showIrChange: false,
   showPitStops: true,
+  abbreviateNames: false,
 };
 
 interface StandingsStoryArgs extends StandingsWidgetSettings {

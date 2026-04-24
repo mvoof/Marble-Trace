@@ -583,6 +583,11 @@ const StandingsSettingsPanel = observer(() => {
             value: settings.showPitStops,
             key: 'showPitStops',
           },
+          {
+            title: 'Abbreviate Driver Names',
+            value: settings.abbreviateNames,
+            key: 'abbreviateNames',
+          },
         ].map((item) => (
           <div key={item.key} className={styles.fieldGroup}>
             <div className={styles.fieldRow}>
