@@ -17,6 +17,7 @@ export const TREND_SAMPLE_INTERVAL_MS = 2000;
 // ─── Formatters ───────────────────────────────────────────────────────────
 
 export const formatIRating = (ir: number): string => {
+  if (ir <= 0) return '—';
   if (ir >= 1000) return `${(ir / 1000).toFixed(1)}k`;
   return ir.toString();
 };
