@@ -162,6 +162,9 @@ export const StandingsWidget = ({
             <col className={styles.colInc} />
 
             {settings.showPitStops && <col className={styles.colStops} />}
+            {settings.showLapsCompleted && (
+              <col className={styles.colLapsCompleted} />
+            )}
 
             <col className={styles.colGap} />
             <col className={styles.colLap} />
@@ -212,6 +215,10 @@ export const StandingsWidget = ({
                   >
                     Stops
                   </th>
+                )}
+
+                {settings.showLapsCompleted && (
+                  <th className={`${styles.th} ${styles.thCenter}`}>Laps</th>
                 )}
 
                 <th className={`${styles.th} ${styles.thRight}`}>Gap</th>

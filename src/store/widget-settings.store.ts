@@ -134,6 +134,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showTire: true,
         showIrChange: false,
         showPitStops: true,
+        showLapsCompleted: false,
         abbreviateNames: false,
       },
     },
@@ -517,6 +518,7 @@ class WidgetSettingsStore {
         showTire: true,
         showIrChange: false,
         showPitStops: true,
+        showLapsCompleted: false,
         abbreviateNames: false,
       }
     );

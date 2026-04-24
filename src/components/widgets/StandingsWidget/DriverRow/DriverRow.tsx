@@ -218,6 +218,12 @@ export const DriverRow = ({
         </td>
       )}
 
+      {settings.showLapsCompleted && (
+        <td className={`${styles.td} ${styles.tdCenter}`}>
+          <span className={styles.lapsCompleted}>{driver.lap}</span>
+        </td>
+      )}
+
       <td className={`${styles.td} ${styles.tdRight}`}>
         {isLeader ? (
           <span className={styles.gapLeader}>Leader</span>

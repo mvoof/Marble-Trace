@@ -209,6 +209,13 @@
   color: $color-text-primary;
 }
 
+.lapsCompleted {
+  font-family: $font-mono;
+  font-size: 0.75em;
+  text-align: center;
+  color: $color-text-primary;
+}
+
 // Gap column
 .gapLeader {
   color: $color-text-primary;

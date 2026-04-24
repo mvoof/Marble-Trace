@@ -597,6 +597,11 @@ const StandingsSettingsPanel = observer(() => {
             key: 'showPitStops',
           },
           {
+            title: 'Laps Completed',
+            value: settings.showLapsCompleted,
+            key: 'showLapsCompleted',
+          },
+          {
             title: 'Abbreviate Driver Names',
             value: settings.abbreviateNames,
             key: 'abbreviateNames',
