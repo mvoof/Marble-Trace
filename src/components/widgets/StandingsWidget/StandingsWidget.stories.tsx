@@ -8,8 +8,8 @@ import type { StandingsWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
 
-const DESIGN_WIDTH = 750;
-const DESIGN_HEIGHT = 400;
+const DESIGN_WIDTH = 640;
+const DESIGN_HEIGHT = 450;
 
 const realSnapshot = snapshot as TelemetrySnapshot;
 
@@ -50,7 +50,6 @@ const StandingsWidgetStory = ({
         designWidth={DESIGN_WIDTH}
         designHeight={DESIGN_HEIGHT}
         background="radial-gradient(circle, #0a0a0f 0%, #050508 100%)"
-        adaptive
       >
         <StandingsWidget
           driverEntries={driverEntries}

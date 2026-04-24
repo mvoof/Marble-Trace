@@ -2,7 +2,7 @@
 
 .sessionHeader {
   background: rgba(24, 24, 27, 0.8);
-  padding: 0.5em 0.75em;
+  padding: 0.5em var(--widget-pad-x);
   display: flex;
   align-items: center;
   justify-content: space-between;

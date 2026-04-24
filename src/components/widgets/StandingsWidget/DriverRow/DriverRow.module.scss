@@ -22,9 +22,17 @@
 }
 
 .td {
-  padding: 0.3em 0.65em;
+  padding: 0.25em 0.35em;
   vertical-align: middle;
   white-space: nowrap;
+
+  &:first-child {
+    padding-left: var(--widget-pad-x);
+  }
+
+  &:last-child {
+    padding-right: var(--widget-pad-x);
+  }
 }
 
 .tdCenter {

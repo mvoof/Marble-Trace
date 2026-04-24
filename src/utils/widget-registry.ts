@@ -84,9 +84,8 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
     variants: {
       default: {
         component: StandingsWidgetContainer,
-        designWidth: 750,
-        designHeight: 400,
-        adaptive: true,
+        designWidth: 640,
+        designHeight: 450,
       },
     },
   },
@@ -98,7 +97,6 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
         component: RelativeWidgetContainer,
         designWidth: 420,
         designHeight: 400,
-        adaptive: true,
       },
     },
   },
@@ -121,13 +119,11 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
         component: LinearMapWidgetContainer,
         designWidth: 400,
         designHeight: 40,
-        adaptive: true,
       },
       vertical: {
         component: LinearMapWidgetContainer,
         designWidth: 40,
         designHeight: 400,
-        adaptive: true,
       },
     },
   },

@@ -1,6 +1,8 @@
 @use '../../../styles/variables' as *;
 
 .standings {
+  --widget-pad-x: 0.75em;
+
   font-family: $font-mono;
   font-variant-numeric: tabular-nums;
   color: $color-text-primary;
@@ -9,8 +11,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-size: 1.2em;
-  border-radius: 6px;
+  font-size: 1em;
 }
 
 // Table wrapper — no scroll, rows beyond window are not rendered
@@ -101,10 +102,18 @@
 }
 
 .th {
-  padding: 0.35em 0.5em;
+  padding: 0.3em 0.35em;
   text-align: left;
   font-weight: 600;
   white-space: nowrap;
+
+  &:first-child {
+    padding-left: var(--widget-pad-x);
+  }
+
+  &:last-child {
+    padding-right: var(--widget-pad-x);
+  }
 }
 
 .thCenter {
