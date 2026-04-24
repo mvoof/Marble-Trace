@@ -273,7 +273,6 @@ pub async fn stop_telemetry_stream(
     state: State<'_, TelemetryState>,
 ) -> Result<(), String> {
     state.running.store(false, Ordering::SeqCst);
-    sleep(Duration::from_millis(50)).await;
     debug!("Telemetry stream stopped");
     Ok(())
 }
