@@ -6,25 +6,16 @@ import {
   TRACK_SURFACE_OFF_TRACK,
   NEAR_DQ_INCIDENT_THRESHOLD,
 } from '../../widget-utils';
-import { PitBadge, ClassBadge, LicenseBadge } from '../../primitives';
+import {
+  PitBadge,
+  ClassBadge,
+  LicenseBadge,
+  TireBadge,
+} from '../../primitives';
 import type { DriverEntry } from '../../../../types/bindings';
 import type { StandingsWidgetSettings } from '../../../../types/widget-settings';
 
 import styles from './DriverRow.module.scss';
-
-const TIRE_CLASS_MAP: Record<string, string> = {
-  S: styles.tireSoft,
-  M: styles.tireMed,
-  H: styles.tireHard,
-  W: styles.tireWet,
-};
-
-const TireBadge = ({ tire }: { tire: string }) => {
-  if (!tire) return <span className={styles.tireEmpty}>-</span>;
-  const code = tire.charAt(0).toUpperCase();
-  const cls = TIRE_CLASS_MAP[code] ?? styles.tireMed;
-  return <span className={`${styles.tireBadge} ${cls}`}>{code}</span>;
-};
 
 const PosChange = ({
   position,

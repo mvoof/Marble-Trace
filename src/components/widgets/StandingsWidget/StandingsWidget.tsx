@@ -148,16 +148,24 @@ export const StandingsWidget = ({
         <table className={styles.table}>
           <colgroup>
             <col className={styles.colPos} />
+
             {settings.showPosChange && <col className={styles.colPosChange} />}
+
             <col className={styles.colNum} />
             <col className={styles.colName} />
+
             {settings.showBrand && <col className={styles.colBrand} />}
             {settings.showTire && <col className={styles.colTire} />}
             {!showGroupHeaders && <col className={styles.colClass} />}
+
             <col className={styles.colLic} />
+
             {settings.showIrChange && <col className={styles.colIrChange} />}
+
             <col className={styles.colInc} />
+
             {settings.showPitStops && <col className={styles.colStops} />}
+
             <col className={styles.colGap} />
             <col className={styles.colLap} />
             <col className={styles.colLap} />

@@ -129,49 +129,6 @@
   letter-spacing: 0.04em;
 }
 
-// Tire badge
-.tireBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.4em;
-  height: 1.4em;
-  border-radius: 50%;
-  font-weight: 800;
-  font-size: 0.75em;
-  font-family: $font-mono;
-  border: 1px solid;
-}
-
-.tireEmpty {
-  color: rgba(113, 113, 122, 0.6);
-  font-size: 0.8125em;
-}
-
-.tireSoft {
-  color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.5);
-  background: rgba(239, 68, 68, 0.1);
-}
-
-.tireMed {
-  color: #eab308;
-  border-color: rgba(234, 179, 8, 0.5);
-  background: rgba(234, 179, 8, 0.1);
-}
-
-.tireHard {
-  color: #e5e7eb;
-  border-color: rgba(161, 161, 170, 0.5);
-  background: rgba(161, 161, 170, 0.1);
-}
-
-.tireWet {
-  color: #60a5fa;
-  border-color: rgba(96, 165, 250, 0.5);
-  background: rgba(96, 165, 250, 0.1);
-}
-
 .licBadge {
   font-size: 0.75em;
 }
