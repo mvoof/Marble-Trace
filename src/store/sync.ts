@@ -179,8 +179,9 @@ export const initMainSync = async () => {
                 handlers.forEach((h) => h(event));
               });
               registeredShortcuts.add(shortcut);
+              console.log(`[hotkey] registered: "${shortcut}"`);
             } catch (e) {
-              console.error(`Failed to register hotkey: ${shortcut}`, e);
+              console.error(`[hotkey] FAILED to register: "${shortcut}"`, e);
             }
           }
         } finally {
@@ -256,6 +257,12 @@ export const initMainSync = async () => {
           (system) => {
             void emit('units-changed', system);
             void saveSettings();
+          }
+        ),
+        reaction(
+          () => widgetSettingsStore.standingsActiveClassIndex,
+          (index) => {
+            void emit('standings-class-index-changed', index);
           }
         ),
         reaction(
@@ -342,6 +349,13 @@ export const initOverlaySync = async () => {
   unlistens.push(
     await listen<WidgetConfig[]>('widget-settings-updated', (e) => {
       runInAction(() => widgetSettingsStore.setWidgets(e.payload));
+    })
+  );
+  unlistens.push(
+    await listen<number>('standings-class-index-changed', (e) => {
+      runInAction(() => {
+        widgetSettingsStore.standingsActiveClassIndex = e.payload;
+      });
     })
   );
 
