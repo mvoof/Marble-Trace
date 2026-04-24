@@ -39,6 +39,6 @@ pub use frames::{
     EnvironmentFrame, LapTimingFrame, SessionFrame,
 };
 pub use service::{
-    get_last_session_info, start_telemetry_stream, stop_telemetry_stream,
+    get_last_session_info, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
     TelemetryState,
 };

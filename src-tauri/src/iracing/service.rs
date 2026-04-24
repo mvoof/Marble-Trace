@@ -61,6 +61,9 @@ pub struct TelemetryState {
 
     /// Stateful lap delta / sector timing computation.
     pub lap_delta_state: Arc<Mutex<LapDeltaState>>,
+
+    /// User-configured pit warning laps (stored as bits of f32).
+    pub pit_warning_laps: Arc<AtomicU32>,
 }
 
 #[tauri::command]
@@ -72,6 +75,15 @@ pub async fn get_last_session_info(
         .lock()
         .unwrap_or_else(|e| e.into_inner());
     Ok(lock.clone())
+}
+
+#[tauri::command]
+pub async fn set_pit_warning_laps(
+    state: State<'_, TelemetryState>,
+    laps: f32,
+) -> Result<(), String> {
+    state.pit_warning_laps.store(laps.to_bits(), Ordering::Relaxed);
+    Ok(())
 }
 
 #[tauri::command]
@@ -91,6 +103,7 @@ pub async fn start_telemetry_stream(
     let was_on_pit_road = state.was_on_pit_road.clone();
     let pit_tracked_session_num = state.pit_tracked_session_num.clone();
     let lap_delta_state = state.lap_delta_state.clone();
+    let pit_warning_laps = state.pit_warning_laps.clone();
     let app_clone = app.clone();
 
     tokio::spawn(async move {
@@ -193,6 +206,7 @@ pub async fn start_telemetry_stream(
                             &was_on_pit_road,
                             &pit_tracked_session_num,
                             &lap_delta_state,
+                            &pit_warning_laps,
                         );
                     }
                     Ok(None) => {
@@ -308,6 +322,7 @@ fn emit_domain_frames(
     was_on_pit_road: &AtomicBool,
     pit_tracked_session_num: &AtomicI32,
     lap_delta_state: &Mutex<LapDeltaState>,
+    pit_warning_laps_atomic: &AtomicU32,
 ) {
     // 60 Hz — raw frames
     if let Err(e) = app.emit("iracing://telemetry/car-dynamics", &CarDynamicsFrame::from(frame)) {
@@ -365,7 +380,8 @@ fn emit_domain_frames(
 
         // Computed: fuel & pit stops (4 Hz)
         if let Some(session) = session_info {
-            if let Some(fuel_frame) = fuel::compute(frame, session, frame.session_num, 2.0) {
+            let pit_warning_laps = f32::from_bits(pit_warning_laps_atomic.load(Ordering::Relaxed));
+            if let Some(fuel_frame) = fuel::compute(frame, session, frame.session_num, pit_warning_laps) {
                 if let Err(e) = app.emit("iracing://computed/fuel", &fuel_frame) {
                     warn!("Failed to emit fuel: {}", e);
                 }
