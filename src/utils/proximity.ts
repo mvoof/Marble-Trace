@@ -100,7 +100,7 @@ export const computeRadarDistances = (
         car.lateralSide === 'right' &&
         car.clearance < rightClearance
       ) {
-        leftClearance = car.clearance;
+        rightClearance = car.clearance;
         rightDist = car.longitudinalDist;
         rightIdx = car.carIdx;
       }
