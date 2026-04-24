@@ -262,7 +262,6 @@ export const StandingsWidget = ({
               <ClassGroup
                 key={group.classId}
                 group={group}
-                showGroupHeader={false}
                 settings={settings}
                 irDeltaMap={irDeltaMap}
                 playerPitStops={playerPitStops}

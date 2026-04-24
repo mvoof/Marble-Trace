@@ -27,6 +27,7 @@ export const ClassSwitcher = ({
       <button
         className={styles.navBtn}
         onClick={onPrev}
+        onMouseDown={(e) => e.stopPropagation()}
         disabled={total <= 1}
         aria-label="Previous class"
       >
@@ -57,6 +58,7 @@ export const ClassSwitcher = ({
       <button
         className={styles.navBtn}
         onClick={onNext}
+        onMouseDown={(e) => e.stopPropagation()}
         disabled={total <= 1}
         aria-label="Next class"
       >

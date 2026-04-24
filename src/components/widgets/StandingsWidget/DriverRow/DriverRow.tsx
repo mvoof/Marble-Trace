@@ -90,7 +90,6 @@ const formatIRating = (ir: number): string => {
 
 interface DriverRowProps {
   driver: DriverEntry;
-  showGroupHeaders: boolean;
   settings: StandingsWidgetSettings;
   irDelta: number | undefined;
   playerPitStops: number;
@@ -98,7 +97,6 @@ interface DriverRowProps {
 
 export const DriverRow = ({
   driver,
-  showGroupHeaders,
   settings,
   irDelta,
   playerPitStops,
@@ -107,10 +105,14 @@ export const DriverRow = ({
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
   const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
   const nearDQ = driver.incidents >= NEAR_DQ_INCIDENT_THRESHOLD;
-  const pos = showGroupHeaders ? driver.classPosition : driver.position;
-  const isLeader = showGroupHeaders
-    ? driver.classPosition === 1
-    : driver.position === 1;
+
+  const pos = settings.enableClassCycling
+    ? driver.classPosition
+    : driver.position;
+  const startPos = settings.enableClassCycling
+    ? driver.startPosClass
+    : driver.startPosOverall;
+  const isLeader = pos === 1;
 
   const rowClass = [
     styles.driverRow,
@@ -124,7 +126,7 @@ export const DriverRow = ({
     <tr className={rowClass} data-driver-row>
       <td className={styles.td}>
         <span
-          className={`${styles.posCell} ${driver.isPlayer ? styles.posCellPlayer : ''} ${showGroupHeaders ? styles.posCellSmall : ''}`}
+          className={`${styles.posCell} ${driver.isPlayer ? styles.posCellPlayer : ''}`}
         >
           {pos}
         </span>
@@ -132,12 +134,7 @@ export const DriverRow = ({
 
       {settings.showPosChange && (
         <td className={`${styles.td} ${styles.tdCenter}`}>
-          <PosChange
-            position={pos}
-            startPos={
-              showGroupHeaders ? driver.startPosClass : driver.startPosOverall
-            }
-          />
+          <PosChange position={pos} startPos={startPos} />
         </td>
       )}
 
@@ -177,7 +174,7 @@ export const DriverRow = ({
         </td>
       )}
 
-      {!showGroupHeaders && (
+      {!settings.enableClassCycling && (
         <td className={`${styles.td} ${styles.tdCenter}`}>
           <ClassBadge
             color={driver.carClassColor}
