@@ -41,7 +41,7 @@ use super::frames::{
     EnvironmentFrame, LapTimingFrame, SessionFrame,
 };
 use crate::computations::{
-    fuel, lap_delta, lap_delta::LapDeltaState, pit_stops::PitStopsFrame, proximity, standings,
+    fuel, lap_delta, lap_delta::LapDeltaState, pit_stops::PitStopsFrame, proximity, standings, standings::StandingsState,
 };
 
 /// Shared state for the iRacing telemetry connection.
@@ -63,6 +63,9 @@ pub struct TelemetryState {
 
     /// Stateful lap delta / sector timing computation.
     pub lap_delta_state: Arc<Mutex<LapDeltaState>>,
+
+    /// Stateful standings computation.
+    pub standings_state: Arc<Mutex<StandingsState>>,
 
     /// User-configured pit warning laps (stored as bits of f32).
     pub pit_warning_laps: Arc<AtomicU32>,
@@ -110,6 +113,7 @@ pub async fn start_telemetry_stream(
     let was_on_pit_road = state.was_on_pit_road.clone();
     let pit_tracked_session_num = state.pit_tracked_session_num.clone();
     let lap_delta_state = state.lap_delta_state.clone();
+    let standings_state = state.standings_state.clone();
     let pit_warning_laps = state.pit_warning_laps.clone();
     let track_length_m = state.track_length_m.clone();
     let app_clone = app.clone();
@@ -219,6 +223,7 @@ pub async fn start_telemetry_stream(
                             &was_on_pit_road,
                             &pit_tracked_session_num,
                             &lap_delta_state,
+                            &standings_state,
                             &pit_warning_laps,
                             &track_length_m,
                         );
@@ -343,6 +348,7 @@ fn emit_domain_frames(
     was_on_pit_road: &AtomicBool,
     pit_tracked_session_num: &AtomicI32,
     lap_delta_state: &Mutex<LapDeltaState>,
+    standings_state: &Mutex<StandingsState>,
     pit_warning_laps_atomic: &AtomicU32,
     track_length_m: &Mutex<Option<f32>>,
 ) {
@@ -398,7 +404,7 @@ fn emit_domain_frames(
                 .lock()
                 .unwrap_or_else(|e| e.into_inner())
                 .clone();
-            let standings_frame = standings::compute(frame, session, &start_pos_snapshot, true);
+            let standings_frame = standings::compute(frame, session, &start_pos_snapshot, true, standings_state);
             if let Err(e) = app.emit("iracing://computed/standings", &standings_frame) {
                 warn!("Failed to emit standings: {}", e);
             }

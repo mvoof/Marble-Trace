@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Mutex;
 
 use pitwall::SessionInfo;
 use serde::{Deserialize, Serialize};
@@ -129,6 +130,11 @@ pub struct DriverEntry {
     pub relative_lap_dist: f32,
 }
 
+#[derive(Default)]
+pub struct StandingsState {
+    pub cached_car_classes: HashMap<String, String>,
+}
+
 #[derive(Serialize, Deserialize, Type, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DriverEntriesFrame {
@@ -141,6 +147,7 @@ pub fn compute(
     session: &SessionInfo,
     start_positions: &HashMap<i32, (i32, i32)>,
     compute_ir_delta: bool,
+    state: &Mutex<StandingsState>,
 ) -> DriverEntriesFrame {
     let driver_info = match session.driver_info.as_ref() {
         Some(di) => di,
@@ -203,11 +210,21 @@ pub fn compute(
             let car_class_short_name = if car_screen_name_short.is_empty() {
                 NO_CLASS_LABEL.to_string()
             } else {
-                let badge = get_compact_badge_name(&car_screen_name_short);
-                if badge.is_empty() {
-                    NO_CLASS_LABEL.to_string()
+                let mut locked_state = state.lock().unwrap_or_else(|e: std::sync::PoisonError<std::sync::MutexGuard<'_, StandingsState>>| e.into_inner());
+                if let Some(cached) = locked_state.cached_car_classes.get(&car_screen_name_short) {
+                    let c: String = cached.clone();
+                    c
                 } else {
-                    badge
+                    let badge = get_compact_badge_name(&car_screen_name_short);
+                    let result = if badge.is_empty() {
+                        NO_CLASS_LABEL.to_string()
+                    } else {
+                        badge
+                    };
+                    locked_state
+                        .cached_car_classes
+                        .insert(car_screen_name_short.clone(), result.clone());
+                    result
                 }
             };
 

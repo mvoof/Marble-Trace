@@ -6,7 +6,7 @@ use computations::{
     lap_delta::{LapDeltaFrame, LapDeltaState},
     pit_stops::PitStopsFrame,
     proximity::{LateralSide, NearbyCar, ProximityFrame, RadarDistances},
-    standings::{DriverEntriesFrame, DriverEntry},
+    standings::{DriverEntriesFrame, DriverEntry, StandingsState},
 };
 use iracing::{
     get_last_session_info, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
@@ -87,6 +87,7 @@ pub fn run() {
             was_on_pit_road: Arc::new(AtomicBool::new(false)),
             pit_tracked_session_num: Arc::new(std::sync::atomic::AtomicI32::new(-1)),
             lap_delta_state: Arc::new(Mutex::new(LapDeltaState::default())),
+            standings_state: Arc::new(Mutex::new(StandingsState::default())),
             pit_warning_laps: Arc::new(std::sync::atomic::AtomicU32::new(3.0f32.to_bits())),
             track_length_m: Arc::new(Mutex::new(None)),
         })
