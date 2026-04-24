@@ -8,6 +8,7 @@ const abbreviateName = (fullName: string): string => {
 import { formatLapTime } from '../../../../utils/telemetry-format';
 import {
   formatBrand,
+  formatIRating,
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
   NEAR_DQ_INCIDENT_THRESHOLD,
@@ -81,11 +82,6 @@ const IrChangeCell = ({ delta }: { delta: number | undefined }) => {
       {Math.abs(delta)}
     </span>
   );
-};
-
-const formatIRating = (ir: number): string => {
-  if (ir >= 1000) return `${(ir / 1000).toFixed(1)}k`;
-  return ir.toString();
 };
 
 interface DriverRowProps {
