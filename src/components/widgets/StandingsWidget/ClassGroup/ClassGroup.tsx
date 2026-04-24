@@ -1,8 +1,7 @@
 import { Trophy, Users, MoreHorizontal } from 'lucide-react';
-import { isSeparator } from '../types';
-import type { DriverGroup } from '../types';
-import type { StandingsWidgetSettings } from '../../../../store/widget-settings.store';
-import { formatIRating } from '../../widget-utils';
+import { isSeparator, formatIRating } from '@/components/widgets/widget-utils';
+import type { DriverGroup } from '@/types/standings';
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { DriverRow } from '../DriverRow/DriverRow';
 
 import styles from './ClassGroup.module.scss';

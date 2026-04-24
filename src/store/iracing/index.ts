@@ -22,12 +22,7 @@ import { debug } from '../../utils/debug';
 
 import { telemetryStore } from './telemetry.store';
 import { computedStore } from './computed.store';
-
-export type TelemetryStatus =
-  | 'waiting'
-  | 'connected'
-  | 'disconnected'
-  | 'error';
+import type { TelemetryStatus } from '../../types/telemetry';
 
 class TelemetryConnection {
   isConnected = false;

@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { LinearMapWidget } from './LinearMapWidget';
 import { WidgetScaler } from '../../WidgetScaler';
 import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
-import type { LinearMapWidgetSettings } from '../../../store/widget-settings.store';
+import type { LinearMapWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
 

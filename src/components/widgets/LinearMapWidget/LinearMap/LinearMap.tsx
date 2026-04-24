@@ -1,7 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { TRACK_SURFACE_ON_TRACK } from '../../widget-utils';
-import type { DriverEntry } from '../../widget-utils';
+import type { DriverEntry } from '../../../../types/bindings';
 
 import styles from './LinearMap.module.scss';
 

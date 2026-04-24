@@ -1,4 +1,4 @@
-import type { UnitSystem } from '../../../store/units.store';
+import type { UnitSystem } from '../../../types/units';
 import {
   formatSpeed as _formatSpeed,
   speedUnit as _speedUnit,

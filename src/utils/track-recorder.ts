@@ -8,25 +8,7 @@
  * Output: SVG path string + viewBox for rendering.
  */
 
-export interface TrackPoint {
-  x: number;
-  y: number;
-  pct: number; // lapDistPct at this point
-}
-
-export interface RecordedTrack {
-  trackName: string;
-  trackConfig: string;
-  trackId: number;
-  svgPath: string;
-  viewBox: string;
-  points: TrackPoint[];
-  recordedAt: string;
-}
-
-export interface TracksFile {
-  tracks: Record<string, RecordedTrack>;
-}
+import type { TrackPoint } from '../types/track';
 
 const SAMPLE_INTERVAL_PCT = 0.002; // Sample every ~0.2% of the lap
 

@@ -9,8 +9,8 @@ const abbreviateName = (fullName: string): string => {
   return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`.toUpperCase();
 };
 import { PitBadge, ClassBadge, LicenseBadge } from '../../primitives';
-import type { RelativeWidgetSettings } from '../../../../store/widget-settings.store';
-import type { DriverEntry } from '../../widget-utils';
+import type { RelativeWidgetSettings } from '../../../../types/widget-settings';
+import type { DriverEntry } from '../../../../types/bindings';
 
 import styles from './DriverRow.module.scss';
 

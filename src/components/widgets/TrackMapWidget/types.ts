@@ -1,4 +1,4 @@
-import type { TrackPoint } from '../../../utils/track-recorder';
+import type { TrackPoint } from '../../../types/track';
 
 export interface CarOnTrack {
   carIdx: number;

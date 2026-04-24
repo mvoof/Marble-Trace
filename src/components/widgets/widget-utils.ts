@@ -1,6 +1,5 @@
-import type { DriverEntry } from '../../types/bindings';
-
-export type { DriverEntry } from '../../types/bindings';
+import type { DriverEntry } from '@/types/bindings';
+import type { SeparatorEntry } from '@/types/standings';
 
 // ─── Track surface constants ───────────────────────────────────────────────
 
@@ -31,22 +30,7 @@ export const formatBrand = (screenName: string): string => {
   return firstWord.slice(0, 3).toUpperCase();
 };
 
-// ─── Types ────────────────────────────────────────────────────────────────
-
-export interface SeparatorEntry {
-  isSeparator: true;
-  id: string;
-}
-
-export interface DriverGroup {
-  classId: number;
-  className: string;
-  classShortName: string;
-  classColor: string;
-  totalDrivers: number;
-  classSof: number;
-  drivers: (DriverEntry | SeparatorEntry)[];
-}
+// ─── Utilities ────────────────────────────────────────────────────────────
 
 export const isSeparator = (
   entry: DriverEntry | SeparatorEntry

@@ -4,7 +4,7 @@ import { RelativeWidget } from './RelativeWidget';
 import { WidgetScaler } from '../../WidgetScaler';
 import type { DriverEntry } from '../../../types/bindings';
 import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
-import type { RelativeWidgetSettings } from '../../../store/widget-settings.store';
+import type { RelativeWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
 

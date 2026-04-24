@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 
 import type { NearbyCar } from '../types/bindings';
-import type { RadarSettings } from '../store/widget-settings.store';
+import type { RadarSettings } from '../types/widget-settings';
 import { appSettingsStore } from '../store/app-settings.store';
 
 export const useRadarVisibility = (

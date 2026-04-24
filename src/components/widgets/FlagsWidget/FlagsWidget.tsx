@@ -1,5 +1,6 @@
 import { LedMatrix } from './LedMatrix/LedMatrix';
-import type { FlagType, FlagsWidgetSettings } from './types';
+import type { FlagsWidgetSettings } from '../../../types/widget-settings';
+import type { FlagType } from '../../../types/flags';
 
 import styles from './FlagsWidget.module.scss';
 

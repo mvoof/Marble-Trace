@@ -1,15 +1,16 @@
 import { useMemo } from 'react';
 
-import { WidgetPanel } from '../primitives';
-import { useVisibleRowCount } from '../../../hooks/useVisibleRowCount';
-import type { SessionInfo, WeekendInfo } from '../../../types/bindings';
-import type { StandingsWidgetSettings } from '../../../store/widget-settings.store';
+import { WidgetPanel } from '@/components/widgets/primitives';
+import { useVisibleRowCount } from '@/hooks/useVisibleRowCount';
+import type { SessionInfo, WeekendInfo } from '@/types/bindings';
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
 
 import { SessionHeader } from './SessionHeader/SessionHeader';
 import { ClassGroup } from './ClassGroup/ClassGroup';
 import { computeClassSof } from './standings-utils';
-import { isSeparator } from './types';
-import type { DriverEntry, DriverGroup, SeparatorEntry } from './types';
+import type { DriverEntry } from '@/types/bindings';
+import type { DriverGroup, SeparatorEntry } from '@/types/standings';
+import { isSeparator } from '@/components/widgets/widget-utils';
 
 import styles from './StandingsWidget.module.scss';
 

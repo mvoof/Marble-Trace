@@ -2,8 +2,8 @@ import { observer } from 'mobx-react-lite';
 import { Users } from 'lucide-react';
 import { formatIRating } from '../../widget-utils';
 import { unitsStore } from '../../../../store/units.store';
-import type { DriverEntry } from '../types';
-import type { widgetSettingsStore } from '../../../../store/widget-settings.store';
+import type { DriverEntry } from '../../../../types/bindings';
+import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import type { SessionInfoData, WeekendInfo } from '../../../../types/bindings';
 
 import styles from './SessionHeader.module.scss';

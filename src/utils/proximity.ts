@@ -9,28 +9,13 @@
  */
 import type { CarIdxFrame } from '../types/bindings';
 import { CarLeftRight } from '../types/car-left-right';
-
-export interface NearbyCarInfo {
-  carIdx: number;
-  /** Meters ahead (+) or behind (-) */
-  longitudinalDist: number;
-  /** Lateral side based on CarLeftRight enum */
-  lateralSide: 'left' | 'right' | 'center';
-  /** Absolute longitudinal distance in meters */
-  clearance: number;
-}
-
-export interface FrontRearDistances {
-  /** Distance to closest car ahead (meters), Infinity if none */
-  frontDist: number;
-  /** Distance to closest car behind (meters), Infinity if none */
-  rearDist: number;
-}
-
-export interface SpotterState {
-  left: boolean;
-  right: boolean;
-}
+import type {
+  NearbyCarInfo,
+  FrontRearDistances,
+  SpotterState,
+  SideCarDistances,
+  ComputedRadarDistances,
+} from '../types/proximity';
 
 /**
  * Extract closest front and rear car distances from nearby cars array.
@@ -51,16 +36,6 @@ export const computeFrontRearDistances = (
 
   return { frontDist, rearDist };
 };
-
-/**
- * Parse CarLeftRight enum value into left/right booleans.
- */
-export interface SideCarDistances {
-  /** Longitudinal offset of closest car on the left (+ ahead, - behind), null if none */
-  leftDist: number | null;
-  /** Longitudinal offset of closest car on the right (+ ahead, - behind), null if none */
-  rightDist: number | null;
-}
 
 /**
  * Find the longitudinal offset of the closest side car for each side.
@@ -87,15 +62,6 @@ export const computeSideCarDistances = (
   return { leftDist, rightDist };
 };
 
-export interface RadarDistances {
-  /** Distance to closest car ahead (meters), Infinity if none */
-  frontDist: number;
-  /** Distance to closest car behind (meters), Infinity if none */
-  rearDist: number;
-  /** Distances for cars currently on the side according to the spotter */
-  sideCars: SideCarDistances;
-}
-
 /**
  * Unified radar logic middleware.
  * Ensures a single opponent car appears in only one visual zone.
@@ -108,7 +74,7 @@ export interface RadarDistances {
 export const computeRadarDistances = (
   nearbyCars: NearbyCarInfo[],
   spotter: SpotterState
-): RadarDistances => {
+): ComputedRadarDistances => {
   let leftDist: number | null = null;
   let rightDist: number | null = null;
   let leftIdx = -1;
@@ -134,7 +100,7 @@ export const computeRadarDistances = (
         car.lateralSide === 'right' &&
         car.clearance < rightClearance
       ) {
-        rightClearance = car.clearance;
+        leftClearance = car.clearance;
         rightDist = car.longitudinalDist;
         rightIdx = car.carIdx;
       }

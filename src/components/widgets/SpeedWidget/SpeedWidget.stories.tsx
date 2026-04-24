@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { SpeedWidget } from './SpeedWidget';
 import { WidgetScaler } from '../../WidgetScaler';
-import type { SpeedWidgetSettings } from '../../../store/widget-settings.store';
+import type { SpeedWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
 

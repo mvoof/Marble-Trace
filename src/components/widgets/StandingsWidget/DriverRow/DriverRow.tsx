@@ -7,8 +7,8 @@ import {
   NEAR_DQ_INCIDENT_THRESHOLD,
 } from '../../widget-utils';
 import { PitBadge, ClassBadge, LicenseBadge } from '../../primitives';
-import type { DriverEntry } from '../../widget-utils';
-import type { StandingsWidgetSettings } from '../../../../store/widget-settings.store';
+import type { DriverEntry } from '../../../../types/bindings';
+import type { StandingsWidgetSettings } from '../../../../types/widget-settings';
 
 import styles from './DriverRow.module.scss';
 

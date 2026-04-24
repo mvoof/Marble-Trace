@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { FlagsWidget } from './FlagsWidget';
-import type { FlagType, FlagsWidgetSettings } from './types';
+import type { FlagsWidgetSettings } from '../../../types/widget-settings';
+import type { FlagType } from '../../../types/flags';
 
 const DEFAULT_SETTINGS: FlagsWidgetSettings = {
   variant: 'overlay',

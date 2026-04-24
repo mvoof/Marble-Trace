@@ -1,4 +1,3 @@
-import React from 'react';
 import { TelemetryDebugWidgetContainer } from '../components/widgets/TelemetryDebugWidget/TelemetryDebugWidgetContainer';
 import { SpeedWidgetContainer } from '../components/widgets/SpeedWidget/SpeedWidgetContainer';
 import { InputTraceWidgetContainer } from '../components/widgets/InputTraceWidget/InputTraceWidgetContainer';
@@ -17,21 +16,7 @@ import { TimerWidgetContainer } from '../components/widgets/TimerWidget/TimerWid
 import { WeatherWidgetContainer } from '../components/widgets/WeatherWidget/WeatherWidgetContainer';
 import { FuelWidgetContainer } from '../components/widgets/FuelWidget/FuelWidgetContainer';
 import { widgetSettingsStore } from '../store/widget-settings.store';
-
-export interface WidgetVariant {
-  component: React.ComponentType<{
-    onVisibilityChange?: (visible: boolean) => void;
-  }>;
-  designWidth: number;
-  designHeight: number;
-  /** Use adaptive font-size scaling instead of transform: scale() */
-  adaptive?: boolean;
-}
-
-export interface WidgetEntry {
-  variants: Record<string, WidgetVariant>;
-  defaultVariant: string;
-}
+import type { WidgetEntry, WidgetVariant } from '../types/registry';
 
 export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
   example: {

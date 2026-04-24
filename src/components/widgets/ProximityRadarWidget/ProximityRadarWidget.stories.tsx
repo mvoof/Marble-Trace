@@ -9,6 +9,7 @@ import {
   parseTrackLength,
   parseSpotterState,
 } from '../../../utils/proximity';
+import type { ComputedRadarDistances } from '../../../types/proximity';
 import { CarLeftRight } from '../../../types/car-left-right';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import type { CarIdxFrame } from '../../../types/bindings';
@@ -99,7 +100,7 @@ const ProximityRadarWidgetStory = ({
     [carLeftRight]
   );
   const radarDistances = useMemo(
-    () => computeRadarDistances(nearbyCars, spotter),
+    (): ComputedRadarDistances => computeRadarDistances(nearbyCars, spotter),
     [nearbyCars, spotter]
   );
 

@@ -1,5 +1,5 @@
 import { WidgetPanel } from '../primitives/WidgetPanel';
-import type { RadarSettings } from '../../../store/widget-settings.store';
+import type { RadarSettings } from '../../../types/widget-settings';
 import type { RadarDistances } from '../../../types/bindings';
 import { RadarBar } from './RadarBar/RadarBar';
 

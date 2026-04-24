@@ -3,11 +3,10 @@ import { load } from '@tauri-apps/plugin-store';
 import { emit, listen, UnlistenFn } from '@tauri-apps/api/event';
 import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
 import { appSettingsStore } from './app-settings.store';
-import { unitsStore, type UnitSystem } from './units.store';
-import {
-  widgetSettingsStore,
-  type WidgetConfig,
-} from './widget-settings.store';
+import { unitsStore } from './units.store';
+import { widgetSettingsStore } from './widget-settings.store';
+import type { UnitSystem } from '../types/units';
+import type { WidgetConfig } from '../types/widget-settings';
 
 interface Settings {
   app: {

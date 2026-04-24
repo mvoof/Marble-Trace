@@ -1,134 +1,19 @@
 import { makeAutoObservable } from 'mobx';
 
-export type SpeedWidgetFocusMode = 'speed' | 'gear';
-export type RpmColorTheme = 'custom' | 'gradient' | 'classic';
-
-export interface SpeedWidgetSettings {
-  focusMode: SpeedWidgetFocusMode;
-  rpmColorTheme: RpmColorTheme;
-  rpmColorLow: string;
-  rpmColorMid: string;
-  rpmColorHigh: string;
-  rpmColorLimit: string;
-}
-
-export type InputTraceBarMode = 'horizontal' | 'vertical' | 'hidden';
-
-export interface InputTraceSettings {
-  showThrottle: boolean;
-  showBrake: boolean;
-  showClutch: boolean;
-  throttleColor: string;
-  brakeColor: string;
-  clutchColor: string;
-  barMode: InputTraceBarMode;
-}
-
-export type RadarVisibilityMode = 'always' | 'proximity';
-export type RadarBarDisplayMode = 'both' | 'active-only';
-
-export interface RadarSettings {
-  visibilityMode: RadarVisibilityMode;
-  proximityThreshold: number;
-  hideDelay: number;
-  barSpacing?: number;
-  /** radar-bar: show both bars or only the side with a detected car */
-  barDisplayMode?: RadarBarDisplayMode;
-}
-
-export type StandingsFilterMode = 'all';
-
-export interface StandingsWidgetSettings {
-  groupByClass: boolean;
-  filterMode: StandingsFilterMode;
-  showPosChange: boolean;
-  showColumnHeaders: boolean;
-  showSessionHeader: boolean;
-  showWeather: boolean;
-  showSOF: boolean;
-  showTotalDrivers: boolean;
-  showBrand: boolean;
-  showTire: boolean;
-  /** Projected iR change column (Elo-based estimate, not real SDK data) */
-  showIrChange: boolean;
-  /** Player-only pit stop counter (counted on the frontend) */
-  showPitStops: boolean;
-}
-
-export interface RelativeWidgetSettings {
-  showIRatingBadge: boolean;
-  showClassBadge: boolean;
-  showPitIndicator: boolean;
-  abbreviateNames: boolean;
-}
-
-export type TrackMapLegendPosition = 'left' | 'right' | 'hidden';
-export type TrackMapRotationMode = 'fixed' | 'heading-up';
-
-export interface TrackMapWidgetSettings {
-  showLegend: boolean;
-  legendPosition: TrackMapLegendPosition;
-  showSectors: boolean;
-  showCornerNumbers: boolean;
-  rotationMode: TrackMapRotationMode;
-}
-
-export type LinearMapOrientation = 'horizontal' | 'vertical';
-
-export interface LinearMapWidgetSettings {
-  orientation: LinearMapOrientation;
-}
-
-export type FlagsVariant = 'overlay' | 'under-mirror' | 'standalone';
-
-export interface FlagsWidgetSettings {
-  variant: FlagsVariant;
-  cutoutWidth: number;
-  cutoutHeight: number;
-}
-
-export interface WeatherWidgetSettings {
-  showCompass: boolean;
-  showAirTemp: boolean;
-  showTrackTemp: boolean;
-  showWind: boolean;
-  showHumidity: boolean;
-}
-
-export interface FuelWidgetSettings {
-  showChart: boolean;
-  pitWarningLaps: number;
-  chartType: 'line' | 'bar';
-}
-
-export interface WidgetCustomSettings {
-  speed?: SpeedWidgetSettings;
-  'input-trace'?: InputTraceSettings;
-  'proximity-radar'?: RadarSettings;
-  'radar-bar'?: RadarSettings;
-  standings?: StandingsWidgetSettings;
-  relative?: RelativeWidgetSettings;
-  'track-map'?: TrackMapWidgetSettings;
-  'linear-map'?: LinearMapWidgetSettings;
-  flags?: FlagsWidgetSettings;
-  weather?: WeatherWidgetSettings;
-  fuel?: FuelWidgetSettings;
-}
-
-export interface WidgetConfig {
-  id: string;
-  label: string;
-  description?: string;
-  enabled: boolean;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  backgroundColor: string;
-  backgroundColorEdge: string;
-  hotkey: string;
-  customSettings?: WidgetCustomSettings;
-}
+import type {
+  FlagsWidgetSettings,
+  FuelWidgetSettings,
+  InputTraceSettings,
+  LinearMapWidgetSettings,
+  RadarSettings,
+  RelativeWidgetSettings,
+  SpeedWidgetSettings,
+  StandingsWidgetSettings,
+  TrackMapWidgetSettings,
+  WeatherWidgetSettings,
+  WidgetConfig,
+  WidgetCustomSettings,
+} from '../types/widget-settings';
 
 export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {

@@ -4,7 +4,7 @@ import { StandingsWidget } from './StandingsWidget';
 import { WidgetScaler } from '../../WidgetScaler';
 import { computeClassSof } from './standings-utils';
 import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
-import type { StandingsWidgetSettings } from '../../../store/widget-settings.store';
+import type { StandingsWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
 
