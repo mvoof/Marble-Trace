@@ -7,18 +7,26 @@
 /// - Handles session info updates (YAML) via a separate stream
 /// - Auto-reconnects on disconnect
 ///
-/// Tauri events emitted:
+/// Tauri events emitted (raw domain frames):
 /// - `iracing://telemetry/car-dynamics` — CarDynamicsFrame (60Hz)
 /// - `iracing://telemetry/car-inputs` — CarInputsFrame (60Hz)
-/// - `iracing://telemetry/car-status` — CarStatusFrame (60Hz)
-/// - `iracing://telemetry/lap-timing` — LapTimingFrame (60Hz)
-/// - `iracing://telemetry/session` — SessionFrame (60Hz)
-/// - `iracing://telemetry/environment` — EnvironmentFrame (60Hz)
-/// - `iracing://telemetry/chassis` — ChassisFrame (60Hz)
+/// - `iracing://telemetry/car-status` — CarStatusFrame (4Hz)
+/// - `iracing://telemetry/lap-timing` — LapTimingFrame (10Hz)
+/// - `iracing://telemetry/session` — SessionFrame (1Hz)
+/// - `iracing://telemetry/environment` — EnvironmentFrame (1Hz)
+/// - `iracing://telemetry/chassis` — ChassisFrame (10Hz)
 /// - `iracing://session-info` — pitwall SessionInfo (on YAML change)
 /// - `iracing://status` — connection status string
 /// - `iracing://disconnected` — disconnect signal
-use std::sync::atomic::{AtomicBool, Ordering};
+///
+/// Computed events:
+/// - `iracing://computed/proximity` — ProximityFrame (10Hz)
+/// - `iracing://computed/fuel` — FuelComputedFrame (4Hz)
+/// - `iracing://computed/standings` — DriverEntriesFrame (10Hz)
+/// - `iracing://computed/pit-stops` — PitStopsFrame (4Hz)
+/// - `iracing://computed/lap-delta` — LapDeltaFrame (10Hz)
+use std::collections::HashMap;
+use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -32,22 +40,29 @@ use super::frames::{
     AllFieldsFrame, CarDynamicsFrame, CarIdxFrame, CarInputsFrame,
     CarStatusFrame, ChassisFrame, EnvironmentFrame, LapTimingFrame, SessionFrame,
 };
+use crate::computations::{fuel, lap_delta, lap_delta::LapDeltaState, pit_stops::PitStopsFrame, proximity, standings};
 
 /// Shared state for the iRacing telemetry connection.
 pub struct TelemetryState {
-    /// Whether the telemetry stream is currently running
     pub running: Arc<AtomicBool>,
-
-    /// Last received session info (YAML), cached for on-demand access
     pub last_session_info: Arc<Mutex<Option<Arc<SessionInfo>>>>,
+
+    /// Start grid positions keyed by carIdx: (overall_pos, class_pos), 1-indexed.
+    pub start_positions: Arc<Mutex<HashMap<i32, (i32, i32)>>>,
+
+    /// Player pit stop counter for the current session.
+    pub pit_stop_count: Arc<AtomicU32>,
+
+    /// Whether the player was on pit road on the previous frame.
+    pub was_on_pit_road: Arc<AtomicBool>,
+
+    /// Session number tracked for pit stop reset.
+    pub pit_tracked_session_num: Arc<AtomicI32>,
+
+    /// Stateful lap delta / sector timing computation.
+    pub lap_delta_state: Arc<Mutex<LapDeltaState>>,
 }
 
-/// Returns the last cached session info (driver info, weekend info, etc.)
-///
-/// This is the YAML session data parsed by pitwall, containing driver car
-/// parameters (RPM limits, fuel capacity), weekend/track info, and driver list.
-///
-/// @see https://sajax.github.io/irsdkdocs/yaml/
 #[tauri::command]
 pub async fn get_last_session_info(
     state: State<'_, TelemetryState>,
@@ -59,14 +74,6 @@ pub async fn get_last_session_info(
     Ok(lock.clone())
 }
 
-/// Starts the telemetry stream — connects to iRacing and begins emitting events.
-///
-/// Spawns a background tokio task that:
-/// 1. Connects to iRacing via pitwall (auto-retries every 3s)
-/// 2. Subscribes to telemetry frames at native update rate
-/// 3. Subscribes to session YAML updates
-/// 4. Emits domain-specific events on each frame tick
-/// 5. Auto-reconnects on disconnect
 #[tauri::command]
 pub async fn start_telemetry_stream(
     app: AppHandle,
@@ -79,6 +86,11 @@ pub async fn start_telemetry_stream(
     running.store(true, Ordering::SeqCst);
 
     let last_session_info = state.last_session_info.clone();
+    let start_positions = state.start_positions.clone();
+    let pit_stop_count = state.pit_stop_count.clone();
+    let was_on_pit_road = state.was_on_pit_road.clone();
+    let pit_tracked_session_num = state.pit_tracked_session_num.clone();
+    let lap_delta_state = state.lap_delta_state.clone();
     let app_clone = app.clone();
 
     tokio::spawn(async move {
@@ -113,10 +125,10 @@ pub async fn start_telemetry_stream(
 
             debug!("Subscribed to telemetry and session streams");
 
-            // Session info stream task
             let app_session = app_clone.clone();
             let running_session = running.clone();
             let last_session_info_clone = last_session_info.clone();
+            let start_positions_clone = start_positions.clone();
 
             let session_task = tokio::spawn(async move {
                 let mut stream = std::pin::pin!(session_stream);
@@ -132,12 +144,13 @@ pub async fn start_telemetry_stream(
                         "Session info updated"
                     );
 
-                    // Cache for on-demand access
+                    // Update start positions from ResultsPositions if available
+                    update_start_positions(&session, &start_positions_clone);
+
                     if let Ok(mut lock) = last_session_info_clone.lock() {
                         *lock = Some(session.clone());
                     }
 
-                    // Emit full session info to frontend
                     if let Err(e) =
                         app_session.emit("iracing://session-info", &*session)
                     {
@@ -148,7 +161,6 @@ pub async fn start_telemetry_stream(
                 debug!("Session stream ended");
             });
 
-            // Telemetry frame stream — main loop
             let mut stream = std::pin::pin!(telemetry_stream);
             let mut tick: u64 = 0;
 
@@ -171,17 +183,36 @@ pub async fn start_telemetry_stream(
                             );
                         }
 
-                        // Decompose AllFieldsFrame into domain frames and emit each,
-                        // throttled to their intended update rates.
-                        emit_domain_frames(&app_clone, &frame, tick);
+                        let session_snapshot = {
+                            last_session_info
+                                .lock()
+                                .unwrap_or_else(|e| e.into_inner())
+                                .clone()
+                        };
+
+                        let start_pos_snapshot = {
+                            start_positions
+                                .lock()
+                                .unwrap_or_else(|e| e.into_inner())
+                                .clone()
+                        };
+
+                        emit_domain_frames(
+                            &app_clone,
+                            &frame,
+                            tick,
+                            session_snapshot.as_deref(),
+                            &start_pos_snapshot,
+                            &pit_stop_count,
+                            &was_on_pit_road,
+                            &pit_tracked_session_num,
+                            &lap_delta_state,
+                        );
                     }
                     Ok(None) => {
-                        // Stream ended
                         break;
                     }
                     Err(_) => {
-                        // Timeout (no frames for 3s)
-                        // Check if the process is actually gone
                         let is_running = std::process::Command::new("tasklist")
                             .arg("/FI")
                             .arg("IMAGENAME eq iRacingSim64.exe")
@@ -195,23 +226,24 @@ pub async fn start_telemetry_stream(
                         } else {
                             debug!("No telemetry for 3s, but process is running. Waiting...");
                             app_clone.emit("iracing://status", "waiting").ok();
-                            // Do not break, let the loop continue and wait for the next frame
                         }
                     }
                 }
             }
 
-            // Important: Abort the session task so it releases its connection handles.
-            // If handles are kept alive, the OS won't clean up the shared memory,
-            // and the next `connect()` will falsely succeed.
             session_task.abort();
 
             info!(tick, "Stream ended, will retry connection...");
 
-            // Clear cached session info on disconnect
             if let Ok(mut lock) = last_session_info.lock() {
                 *lock = None;
             }
+
+            // Reset pit stop state on disconnect
+            pit_stop_count.store(0, Ordering::Relaxed);
+            was_on_pit_road.store(false, Ordering::Relaxed);
+            pit_tracked_session_num.store(-1, Ordering::Relaxed);
+            if let Ok(mut s) = lap_delta_state.lock() { s.reset(); }
 
             app_clone.emit("iracing://status", "disconnected").ok();
             app_clone.emit("iracing://disconnected", &()).ok();
@@ -220,7 +252,6 @@ pub async fn start_telemetry_stream(
                 break;
             }
 
-            // Wait for iRacing process before attempting reconnect
             app_clone.emit("iracing://status", "waiting").ok();
 
             loop {
@@ -251,25 +282,49 @@ pub async fn start_telemetry_stream(
     Ok(())
 }
 
-/// Stops the telemetry stream.
 #[tauri::command]
 pub async fn stop_telemetry_stream(
     state: State<'_, TelemetryState>,
 ) -> Result<(), String> {
     state.running.store(false, Ordering::SeqCst);
+    sleep(Duration::from_millis(50)).await;
     debug!("Telemetry stream stopped");
-
     Ok(())
 }
 
-/// Decomposes an `AllFieldsFrame` into domain-specific frames and emits each
-/// as a separate Tauri event, throttled to their intended update rates:
-/// - 60Hz (every tick):  car-dynamics, car-inputs
-/// - 10Hz (every 6th):   car-idx, chassis, lap-timing
-/// - 4Hz  (every 15th):  car-status
-/// - 1Hz  (every 60th):  session, environment
-fn emit_domain_frames(app: &AppHandle, frame: &AllFieldsFrame, tick: u64) {
-    // 60 Hz
+/// Updates start_positions from session.ResultsPositions on each session change.
+fn update_start_positions(session: &SessionInfo, start_positions: &Mutex<HashMap<i32, (i32, i32)>>) {
+    let current_num = session.session_info.current_session_num as usize;
+    let results = session
+        .session_info
+        .sessions
+        .get(current_num)
+        .and_then(|s| s.results_positions.as_deref());
+
+    if let Some(results) = results {
+        if results.is_empty() { return; }
+        let new_positions = standings::parse_start_positions(results);
+        if !new_positions.is_empty() {
+            if let Ok(mut lock) = start_positions.lock() {
+                *lock = new_positions;
+            }
+        }
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn emit_domain_frames(
+    app: &AppHandle,
+    frame: &AllFieldsFrame,
+    tick: u64,
+    session_info: Option<&SessionInfo>,
+    start_positions: &HashMap<i32, (i32, i32)>,
+    pit_stop_count: &AtomicU32,
+    was_on_pit_road: &AtomicBool,
+    pit_tracked_session_num: &AtomicI32,
+    lap_delta_state: &Mutex<LapDeltaState>,
+) {
+    // 60 Hz — raw frames
     if let Err(e) = app.emit("iracing://telemetry/car-dynamics", &CarDynamicsFrame::from(frame)) {
         warn!("Failed to emit car dynamics: {}", e);
     }
@@ -278,7 +333,7 @@ fn emit_domain_frames(app: &AppHandle, frame: &AllFieldsFrame, tick: u64) {
     }
 
     // 10 Hz — also fire on first frame so widgets populate immediately
-    if tick % 6 == 0 || tick == 1 {
+    if tick.is_multiple_of(6) || tick == 1 {
         if let Err(e) = app.emit("iracing://telemetry/car-idx", &CarIdxFrame::from(frame)) {
             warn!("Failed to emit car idx: {}", e);
         }
@@ -288,17 +343,80 @@ fn emit_domain_frames(app: &AppHandle, frame: &AllFieldsFrame, tick: u64) {
         if let Err(e) = app.emit("iracing://telemetry/lap-timing", &LapTimingFrame::from(frame)) {
             warn!("Failed to emit lap timing: {}", e);
         }
+
+        // Computed: proximity & standings (10 Hz)
+        if let Some(session) = session_info {
+            let proximity = proximity::compute(frame, session);
+            if let Err(e) = app.emit("iracing://computed/proximity", &proximity) {
+                warn!("Failed to emit proximity: {}", e);
+            }
+
+            let standings_frame = standings::compute(frame, session, start_positions, true);
+            if let Err(e) = app.emit("iracing://computed/standings", &standings_frame) {
+                warn!("Failed to emit standings: {}", e);
+            }
+
+            let lap_delta_frame = lap_delta::compute(frame, session, lap_delta_state);
+            if let Err(e) = app.emit("iracing://computed/lap-delta", &lap_delta_frame) {
+                warn!("Failed to emit lap delta: {}", e);
+            }
+        }
     }
 
     // 4 Hz
-    if tick % 15 == 0 || tick == 1 {
+    if tick.is_multiple_of(15) || tick == 1 {
         if let Err(e) = app.emit("iracing://telemetry/car-status", &CarStatusFrame::from(frame)) {
             warn!("Failed to emit car status: {}", e);
+        }
+
+        // Computed: fuel & pit stops (4 Hz)
+        if let Some(session) = session_info {
+            if let Some(fuel_frame) = fuel::compute(frame, session, frame.session_num, 2.0) {
+                if let Err(e) = app.emit("iracing://computed/fuel", &fuel_frame) {
+                    warn!("Failed to emit fuel: {}", e);
+                }
+            }
+
+            // Pit stop tracking
+            let player_idx = session
+                .driver_info
+                .as_ref()
+                .and_then(|di| di.driver_car_idx)
+                .unwrap_or(-1);
+
+            if player_idx >= 0 {
+                let current_session_num = frame.session_num.unwrap_or(-1);
+                let tracked_session = pit_tracked_session_num.load(Ordering::Relaxed);
+
+                if current_session_num != tracked_session {
+                    pit_tracked_session_num.store(current_session_num, Ordering::Relaxed);
+                    pit_stop_count.store(0, Ordering::Relaxed);
+                    was_on_pit_road.store(false, Ordering::Relaxed);
+                }
+
+                let on_pit = frame
+                    .car_idx_on_pit_road
+                    .get(player_idx as usize)
+                    .copied()
+                    .unwrap_or(false);
+                let was = was_on_pit_road.load(Ordering::Relaxed);
+
+                if on_pit && !was {
+                    pit_stop_count.fetch_add(1, Ordering::Relaxed);
+                }
+                was_on_pit_road.store(on_pit, Ordering::Relaxed);
+
+                let stops = pit_stop_count.load(Ordering::Relaxed);
+                let pit_frame = PitStopsFrame { player_stops: stops };
+                if let Err(e) = app.emit("iracing://computed/pit-stops", &pit_frame) {
+                    warn!("Failed to emit pit stops: {}", e);
+                }
+            }
         }
     }
 
     // 1 Hz
-    if tick % 60 == 0 || tick == 1 {
+    if tick.is_multiple_of(60) || tick == 1 {
         if let Err(e) = app.emit("iracing://telemetry/session", &SessionFrame::from(frame)) {
             warn!("Failed to emit session: {}", e);
         }

@@ -1,17 +1,16 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing';
+import { computedStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { computeDriverEntries, sortByRelativeLapDist } from '../widget-utils';
 import { LinearMapWidget } from './LinearMapWidget';
 
 export const LinearMapWidgetContainer = observer(() => {
-  const playerCarIdx = telemetryStore.driverInfo?.DriverCarIdx ?? -1;
-  const entries = sortByRelativeLapDist(
-    computeDriverEntries(telemetryStore.carIdx, telemetryStore.driverInfo),
-    playerCarIdx
-  );
+  const standings = computedStore.standings;
   const settings = widgetSettingsStore.getLinearMapSettings();
+
+  const entries = [...(standings?.entries ?? [])].sort(
+    (a, b) => b.relativeLapDist - a.relativeLapDist
+  );
 
   return <LinearMapWidget entries={entries} settings={settings} />;
 });

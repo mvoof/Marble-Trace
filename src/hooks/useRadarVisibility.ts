@@ -1,15 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 
-import type { NearbyCarInfo } from '../utils/proximity';
+import type { NearbyCar } from '../types/bindings';
 import type { RadarSettings } from '../store/widget-settings.store';
 import { appSettingsStore } from '../store/app-settings.store';
 
-/**
- * Controls radar widget visibility based on proximity settings.
- * Returns `true` when the widget should be visible.
- */
 export const useRadarVisibility = (
-  nearbyCars: NearbyCarInfo[],
+  nearbyCars: NearbyCar[],
   settings: RadarSettings,
   hasSpotterContact: boolean = false
 ): boolean => {
@@ -47,7 +43,6 @@ export const useRadarVisibility = (
     }
   }, [hasNearby, visibilityMode, hideDelay, visible]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (hideTimerRef.current) {

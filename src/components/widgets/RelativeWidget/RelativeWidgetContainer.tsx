@@ -1,17 +1,15 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing';
+import { computedStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { computeDriverEntries, sortByRelativeLapDist } from '../widget-utils';
 import { RelativeWidget } from './RelativeWidget';
 
 export const RelativeWidgetContainer = observer(() => {
   const settings = widgetSettingsStore.getRelativeSettings();
-  const playerCarIdx = telemetryStore.driverInfo?.DriverCarIdx ?? -1;
+  const standings = computedStore.standings;
 
-  const entries = sortByRelativeLapDist(
-    computeDriverEntries(telemetryStore.carIdx, telemetryStore.driverInfo),
-    playerCarIdx
+  const entries = [...(standings?.entries ?? [])].sort(
+    (a, b) => b.relativeLapDist - a.relativeLapDist
   );
 
   return <RelativeWidget entries={entries} settings={settings} />;

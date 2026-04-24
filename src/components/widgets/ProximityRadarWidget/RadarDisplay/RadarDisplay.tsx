@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { unitsStore } from '../../../../store/units.store';
-import type { RadarDistances, SpotterState } from '../../../../utils/proximity';
+import type { RadarDistances } from '../../../../types/bindings';
 import {
   CAR_WIDTH,
   CAR_LENGTH,
@@ -13,7 +13,6 @@ import {
 
 import styles from './RadarDisplay.module.scss';
 
-/** Pixels per meter — controls SVG zoom level */
 const PX_PER_METER = 22;
 
 interface CarIconProps {
@@ -36,15 +35,20 @@ const CarIcon = ({ color = 'currentColor', opacity = 1 }: CarIconProps) => (
 
 interface RadarDisplayProps {
   radarDistances: RadarDistances;
-  spotter: SpotterState;
-  /** Max distance (meters) at which cars are rendered on the radar */
+  spotterLeft: boolean;
+  spotterRight: boolean;
   renderRange: number;
 }
 
 export const RadarDisplay = observer(
-  ({ radarDistances, spotter, renderRange }: RadarDisplayProps) => {
+  ({
+    radarDistances,
+    spotterLeft,
+    spotterRight,
+    renderRange,
+  }: RadarDisplayProps) => {
     const { formatDistance, distanceUnit } = unitsStore;
-    const { frontDist, rearDist, sideCars } = radarDistances;
+    const { frontDist, rearDist, leftDist, rightDist } = radarDistances;
 
     const showFront = frontDist < renderRange;
     const showRear = rearDist < renderRange;
@@ -86,38 +90,37 @@ export const RadarDisplay = observer(
               />
             </pattern>
 
-            {spotter.left && sideCars.leftDist !== null && (
+            {spotterLeft && leftDist !== null && (
               <linearGradient id="cone-left" x1="100%" y1="0%" x2="0%" y2="0%">
                 <stop
                   offset="0%"
-                  stopColor={getSideCarColor(sideCars.leftDist)}
+                  stopColor={getSideCarColor(leftDist)}
                   stopOpacity="0.4"
                 />
                 <stop
                   offset="100%"
-                  stopColor={getSideCarColor(sideCars.leftDist)}
+                  stopColor={getSideCarColor(leftDist)}
                   stopOpacity="0"
                 />
               </linearGradient>
             )}
 
-            {spotter.right && sideCars.rightDist !== null && (
+            {spotterRight && rightDist !== null && (
               <linearGradient id="cone-right" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop
                   offset="0%"
-                  stopColor={getSideCarColor(sideCars.rightDist)}
+                  stopColor={getSideCarColor(rightDist)}
                   stopOpacity="0.4"
                 />
                 <stop
                   offset="100%"
-                  stopColor={getSideCarColor(sideCars.rightDist)}
+                  stopColor={getSideCarColor(rightDist)}
                   stopOpacity="0"
                 />
               </linearGradient>
             )}
           </defs>
 
-          {/* Guide crosshair lines */}
           <g
             stroke="currentColor"
             strokeWidth="1"
@@ -128,7 +131,6 @@ export const RadarDisplay = observer(
             <line x1="0" y1={-240} x2="0" y2={240} />
           </g>
 
-          {/* Side-by-side blind spot hatched zone */}
           <rect
             x="-120"
             y={-(CAR_LENGTH * PX_PER_METER) / 2}
@@ -137,15 +139,13 @@ export const RadarDisplay = observer(
             fill="url(#hatch-pattern)"
           />
 
-          {/* Spotter glow cone — left */}
           <polygon
             points={`${-((CAR_WIDTH / 2) * PX_PER_METER)},${frontBumperY} -150,-180 -150,180 ${-((CAR_WIDTH / 2) * PX_PER_METER)},${rearBumperY}`}
             fill="url(#cone-left)"
             className={styles.carTransition}
           />
 
-          {/* Spotter glow cone — right */}
-          {spotter.right && sideCars.rightDist !== null && (
+          {spotterRight && rightDist !== null && (
             <polygon
               points={`${(CAR_WIDTH / 2) * PX_PER_METER},${frontBumperY} 150,-180 150,180 ${(CAR_WIDTH / 2) * PX_PER_METER},${rearBumperY}`}
               fill="url(#cone-right)"
@@ -153,7 +153,6 @@ export const RadarDisplay = observer(
             />
           )}
 
-          {/* Opponent AHEAD */}
           {showFront && (
             <g
               transform={`translate(0, ${-(frontDist * PX_PER_METER) - CAR_LENGTH * PX_PER_METER})`}
@@ -167,7 +166,6 @@ export const RadarDisplay = observer(
             </g>
           )}
 
-          {/* Opponent BEHIND */}
           {showRear && (
             <g
               transform={`translate(0, ${rearDist * PX_PER_METER + CAR_LENGTH * PX_PER_METER})`}
@@ -181,41 +179,32 @@ export const RadarDisplay = observer(
             </g>
           )}
 
-          {/* Opponent LEFT (spotter) */}
-          {spotter.left && sideCars.leftDist !== null && (
+          {spotterLeft && leftDist !== null && (
             <g
-              transform={`translate(${-(SIDE_CAR_LATERAL_OFFSET * PX_PER_METER)}, ${-(sideCars.leftDist * PX_PER_METER)})`}
+              transform={`translate(${-(SIDE_CAR_LATERAL_OFFSET * PX_PER_METER)}, ${-(leftDist * PX_PER_METER)})`}
               className={styles.carTransition}
             >
-              <CarIcon
-                opacity={0.8}
-                color={getSideCarColor(sideCars.leftDist)}
-              />
+              <CarIcon opacity={0.8} color={getSideCarColor(leftDist)} />
               <text y="0" className={styles.radarMeasurementText}>
-                {formatDistance(Math.abs(sideCars.leftDist))}
+                {formatDistance(Math.abs(leftDist))}
                 {distanceUnit}
               </text>
             </g>
           )}
 
-          {/* Opponent RIGHT (spotter) */}
-          {spotter.right && sideCars.rightDist !== null && (
+          {spotterRight && rightDist !== null && (
             <g
-              transform={`translate(${SIDE_CAR_LATERAL_OFFSET * PX_PER_METER}, ${-(sideCars.rightDist * PX_PER_METER)})`}
+              transform={`translate(${SIDE_CAR_LATERAL_OFFSET * PX_PER_METER}, ${-(rightDist * PX_PER_METER)})`}
               className={styles.carTransition}
             >
-              <CarIcon
-                opacity={0.8}
-                color={getSideCarColor(sideCars.rightDist)}
-              />
+              <CarIcon opacity={0.8} color={getSideCarColor(rightDist)} />
               <text y="0" className={styles.radarMeasurementText}>
-                {formatDistance(Math.abs(sideCars.rightDist))}
+                {formatDistance(Math.abs(rightDist))}
                 {distanceUnit}
               </text>
             </g>
           )}
 
-          {/* Player car (center) */}
           <CarIcon color="currentColor" />
         </svg>
       </div>

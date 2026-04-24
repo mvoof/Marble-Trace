@@ -33,3 +33,4 @@ tauri-plugin-mcp-bridge = "0.10"
 specta = { version = "2.0.0-rc.22", features = ["derive"] }
 specta-typescript = "0.0.9"
 specta-serde = "0.0.9"
+serde_yaml_ng = "0.10"

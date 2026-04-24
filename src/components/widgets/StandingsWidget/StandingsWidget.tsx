@@ -7,7 +7,7 @@ import type { StandingsWidgetSettings } from '../../../store/widget-settings.sto
 
 import { SessionHeader } from './SessionHeader/SessionHeader';
 import { ClassGroup } from './ClassGroup/ClassGroup';
-import { computeClassSof } from '../widget-utils';
+import { computeClassSof } from './standings-utils';
 import { isSeparator } from './types';
 import type { DriverEntry, DriverGroup, SeparatorEntry } from './types';
 

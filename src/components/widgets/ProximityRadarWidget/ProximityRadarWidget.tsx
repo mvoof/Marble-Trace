@@ -1,5 +1,5 @@
 import { WidgetPanel } from '../primitives/WidgetPanel';
-import type { RadarDistances, SpotterState } from '../../../utils/proximity';
+import type { RadarDistances } from '../../../types/bindings';
 import { RadarDisplay } from './RadarDisplay/RadarDisplay';
 
 import styles from './ProximityRadarWidget.module.scss';
@@ -8,17 +8,20 @@ const RADAR_RENDER_RANGE = 10;
 
 interface ProximityRadarWidgetProps {
   radarDistances: RadarDistances;
-  spotter: SpotterState;
+  spotterLeft: boolean;
+  spotterRight: boolean;
 }
 
 export const ProximityRadarWidget = ({
   radarDistances,
-  spotter,
+  spotterLeft,
+  spotterRight,
 }: ProximityRadarWidgetProps) => (
   <WidgetPanel className={styles.root} minWidth={100} gap={0}>
     <RadarDisplay
       radarDistances={radarDistances}
-      spotter={spotter}
+      spotterLeft={spotterLeft}
+      spotterRight={spotterRight}
       renderRange={RADAR_RENDER_RANGE}
     />
   </WidgetPanel>
