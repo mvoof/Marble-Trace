@@ -83,16 +83,13 @@ fn spotter_flags(car_left_right: i32) -> (bool, bool) {
 pub fn compute(
     frame: &AllFieldsFrame,
     session: &SessionInfo,
-    cached_track_length: Option<f32>,
+    track_length_m: f32,
 ) -> ProximityFrame {
     let player_idx = session
         .driver_info
         .as_ref()
         .and_then(|di| di.driver_car_idx)
         .unwrap_or(-1);
-
-    let track_length_m = cached_track_length
-        .unwrap_or_else(|| parse_track_length(&session.weekend_info.track_length));
 
     let car_left_right = frame.car_left_right.unwrap_or(CLR_CLEAR);
     let (spotter_left, spotter_right) = spotter_flags(car_left_right);
@@ -109,8 +106,8 @@ pub fn compute(
                 left_dist: None,
                 right_dist: None,
             },
-            spotter_left,
-            spotter_right,
+            spotter_left: has_left,
+            spotter_right: has_right,
         };
     }
 

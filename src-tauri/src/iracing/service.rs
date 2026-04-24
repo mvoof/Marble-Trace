@@ -388,7 +388,7 @@ fn emit_domain_frames(
 
         // Computed: proximity & standings (10 Hz)
         if let Some(session) = session_info {
-            let track_length = *track_length_m.lock().unwrap_or_else(|e| e.into_inner());
+            let track_length = track_length_m.lock().unwrap_or_else(|e| e.into_inner()).unwrap_or(0.0);
             let proximity = proximity::compute(frame, session, track_length);
             if let Err(e) = app.emit("iracing://computed/proximity", &proximity) {
                 warn!("Failed to emit proximity: {}", e);
