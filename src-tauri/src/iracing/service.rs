@@ -183,26 +183,12 @@ pub async fn start_telemetry_stream(
                             );
                         }
 
-                        let session_snapshot = {
-                            last_session_info
-                                .lock()
-                                .unwrap_or_else(|e| e.into_inner())
-                                .clone()
-                        };
-
-                        let start_pos_snapshot = {
-                            start_positions
-                                .lock()
-                                .unwrap_or_else(|e| e.into_inner())
-                                .clone()
-                        };
-
                         emit_domain_frames(
                             &app_clone,
                             &frame,
                             tick,
-                            session_snapshot.as_deref(),
-                            &start_pos_snapshot,
+                            &last_session_info,
+                            &start_positions,
                             &pit_stop_count,
                             &was_on_pit_road,
                             &pit_tracked_session_num,
@@ -317,8 +303,8 @@ fn emit_domain_frames(
     app: &AppHandle,
     frame: &AllFieldsFrame,
     tick: u64,
-    session_info: Option<&SessionInfo>,
-    start_positions: &HashMap<i32, (i32, i32)>,
+    last_session_info: &Mutex<Option<Arc<SessionInfo>>>,
+    start_positions: &Mutex<HashMap<i32, (i32, i32)>>,
     pit_stop_count: &AtomicU32,
     was_on_pit_road: &AtomicBool,
     pit_tracked_session_num: &AtomicI32,
@@ -331,6 +317,14 @@ fn emit_domain_frames(
     if let Err(e) = app.emit("iracing://telemetry/car-inputs", &CarInputsFrame::from(frame)) {
         warn!("Failed to emit car inputs: {}", e);
     }
+
+    let needs_computed = tick.is_multiple_of(6) || tick.is_multiple_of(15) || tick == 1;
+    let session_snapshot = if needs_computed {
+        last_session_info.lock().unwrap_or_else(|e| e.into_inner()).clone()
+    } else {
+        None
+    };
+    let session_info = session_snapshot.as_deref();
 
     // 10 Hz — also fire on first frame so widgets populate immediately
     if tick.is_multiple_of(6) || tick == 1 {
@@ -351,7 +345,8 @@ fn emit_domain_frames(
                 warn!("Failed to emit proximity: {}", e);
             }
 
-            let standings_frame = standings::compute(frame, session, start_positions, true);
+            let start_pos_snapshot = start_positions.lock().unwrap_or_else(|e| e.into_inner()).clone();
+            let standings_frame = standings::compute(frame, session, &start_pos_snapshot, true);
             if let Err(e) = app.emit("iracing://computed/standings", &standings_frame) {
                 warn!("Failed to emit standings: {}", e);
             }
