@@ -5,8 +5,8 @@ import { TRACK_SURFACE_IN_PIT_STALL, formatIRating } from '../../widget-utils';
 
 const abbreviateName = (fullName: string): string => {
   const parts = fullName.trim().split(/\s+/);
-  if (parts.length < 2) return fullName.toUpperCase();
-  return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`.toUpperCase();
+  if (parts.length < 2) return fullName;
+  return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
 };
 import { PitBadge, ClassBadge, LicenseBadge } from '../../primitives';
 import type { RelativeWidgetSettings } from '../../../../types/widget-settings';
@@ -85,7 +85,7 @@ export const DriverRow = observer(
           >
             {settings.abbreviateNames
               ? abbreviateName(driver.userName)
-              : driver.userName.toUpperCase()}
+              : driver.userName}
           </span>
         </div>
 
