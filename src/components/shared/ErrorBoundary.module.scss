@@ -1,0 +1,41 @@
+@use '../../styles/variables' as *;
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: $space-md;
+  background-color: rgba($color-danger, 0.8);
+  border: 2px solid $color-danger;
+  border-radius: $widget-border-radius;
+  color: $color-text-primary;
+  overflow: hidden;
+  backdrop-filter: blur(4px);
+  box-sizing: border-box;
+}
+
+.errorTitle {
+  font-family: $font-widget;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: $space-sm;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.errorStack {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-y: auto;
+  max-width: 100%;
+  max-height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: $space-sm;
+  border-radius: $widget-border-radius;
+}

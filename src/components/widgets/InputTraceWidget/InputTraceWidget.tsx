@@ -1,7 +1,7 @@
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import { CanvasTrace } from '../primitives/CanvasTrace';
 import type { CanvasTraceChannel } from '../primitives/CanvasTrace';
-import type { InputTraceSettings } from '../../../store/widget-settings.store';
+import type { InputTraceSettings } from '../../../types/widget-settings';
 import { InputBars } from './InputBars/InputBars';
 
 import styles from './InputTraceWidget.module.scss';

@@ -10,7 +10,7 @@ import {
   distanceUnit as _distanceUnit,
 } from '../utils/telemetry-format';
 
-export type UnitSystem = 'metric' | 'imperial';
+import type { UnitSystem } from '../types/units';
 
 class UnitsStore {
   system: UnitSystem = 'metric';

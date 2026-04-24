@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RelativeWidget } from './RelativeWidget';
 import { WidgetScaler } from '../../WidgetScaler';
-import { computeDriverEntries, sortByRelativeLapDist } from '../widget-utils';
-import type { DriverEntry } from '../widget-utils';
-import type { RelativeWidgetSettings } from '../../../store/widget-settings.store';
+import type { DriverEntry } from '../../../types/bindings';
+import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
+import type { RelativeWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
 
@@ -27,11 +27,9 @@ const RelativeWidgetStory = ({
   snapshot: snap,
   ...settings
 }: RelativeStoryArgs) => {
-  const playerCarIdx = snap.sessionInfo?.DriverInfo?.DriverCarIdx ?? -1;
-  const entries: DriverEntry[] = sortByRelativeLapDist(
-    computeDriverEntries(snap.carIdx, snap.sessionInfo?.DriverInfo ?? null),
-    playerCarIdx
-  );
+  const entries: DriverEntry[] = [
+    ...computeDriverEntries(snap.carIdx, snap.sessionInfo?.DriverInfo ?? null),
+  ].sort((a, b) => b.relativeLapDist - a.relativeLapDist);
 
   return (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>

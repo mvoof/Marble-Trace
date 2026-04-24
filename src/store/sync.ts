@@ -3,11 +3,10 @@ import { load } from '@tauri-apps/plugin-store';
 import { emit, listen, UnlistenFn } from '@tauri-apps/api/event';
 import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
 import { appSettingsStore } from './app-settings.store';
-import { unitsStore, type UnitSystem } from './units.store';
-import {
-  widgetSettingsStore,
-  type WidgetConfig,
-} from './widget-settings.store';
+import { unitsStore } from './units.store';
+import { widgetSettingsStore } from './widget-settings.store';
+import type { UnitSystem } from '../types/units';
+import type { WidgetConfig } from '../types/widget-settings';
 
 interface Settings {
   app: {
@@ -174,6 +173,13 @@ export const initMainSync = async () => {
       await setupHotkeys();
 
       // Reactions
+      const overlayLayoutUnlisten = await listen<WidgetConfig[]>(
+        'widget-layout-changed',
+        (e) => {
+          runInAction(() => widgetSettingsStore.setWidgets(e.payload));
+        }
+      );
+
       const disposers = [
         reaction(
           () => ({
@@ -240,6 +246,7 @@ export const initMainSync = async () => {
       ];
 
       return () => {
+        overlayLayoutUnlisten();
         disposers.forEach((d) => d());
         for (const shortcut of Array.from(registeredShortcuts)) {
           void unregister(shortcut);

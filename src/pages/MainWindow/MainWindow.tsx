@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Layout, ConfigProvider, theme } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { Settings } from 'lucide-react';
-import { useTelemetry } from '../../hooks/useTelemetry';
+import { telemetryConnectionStore } from '../../store/iracing';
 import { initMainSync } from '../../store/sync';
 import { WidgetList } from './components/WidgetList';
 import { WidgetSettings } from './components/WidgetSettings';
@@ -18,7 +18,12 @@ const { Content, Sider } = Layout;
 export const MainWindow = observer(() => {
   const [selectedId, setSelectedId] = useState<string>('app-settings');
 
-  useTelemetry();
+  useEffect(() => {
+    void telemetryConnectionStore.startStream();
+    return () => {
+      void telemetryConnectionStore.stopStream();
+    };
+  }, []);
 
   useEffect(() => {
     let cleanup: (() => void) | undefined;

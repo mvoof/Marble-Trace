@@ -2,8 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TrackMapWidget } from './TrackMapWidget';
 import { WidgetScaler } from '../../WidgetScaler';
-import { computeDriverEntries } from '../widget-utils';
-import type { TrackMapWidgetSettings } from '../../../store/widget-settings.store';
+import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
+import type { TrackMapWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import type { CarOnTrack } from './types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';

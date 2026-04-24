@@ -1,5 +1,5 @@
 import { WidgetPanel } from '../primitives/WidgetPanel';
-import type { SpeedWidgetSettings } from '../../../store/widget-settings.store';
+import type { SpeedWidgetSettings } from '../../../types/widget-settings';
 import { formatGear } from '../../../utils/telemetry-format';
 import { GearCircle } from './GearCircle/GearCircle';
 import { getShiftZoneColor } from './speed-utils';

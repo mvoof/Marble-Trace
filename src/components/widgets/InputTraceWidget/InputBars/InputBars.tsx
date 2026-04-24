@@ -1,5 +1,5 @@
 import { ProgressBar } from '../../primitives/ProgressBar';
-import type { widgetSettingsStore } from '../../../../store/widget-settings.store';
+import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 
 import styles from './InputBars.module.scss';
 

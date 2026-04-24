@@ -1884,6 +1884,7 @@ dependencies = [
  "pitwall",
  "serde",
  "serde_json",
+ "serde_yaml_ng",
  "specta",
  "specta-serde",
  "specta-typescript",

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { isVisible, isEdge, computeMeatballCenters } from '../flags-utils';
-import type { FlagType } from '../types';
+import type { FlagType } from '../../../../types/flags';
 
 import styles from './LedMatrix.module.scss';
 

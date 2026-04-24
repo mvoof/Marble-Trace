@@ -1,7 +1,7 @@
 import { WidgetPanel } from '../primitives';
-import type { LinearMapWidgetSettings } from '../../../store/widget-settings.store';
+import type { LinearMapWidgetSettings } from '../../../types/widget-settings';
 import { LinearMap } from './LinearMap/LinearMap';
-import type { DriverEntry } from '../widget-utils';
+import type { DriverEntry } from '../../../types/bindings';
 
 import styles from './LinearMapWidget.module.scss';
 

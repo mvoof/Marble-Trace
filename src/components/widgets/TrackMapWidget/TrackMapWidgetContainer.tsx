@@ -1,12 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { listen } from '@tauri-apps/api/event';
 
-import { telemetryStore } from '../../../store/iracing';
+import { computedStore, telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { computeDriverEntries } from '../widget-utils';
 import { TrackRecorder } from '../../../utils/track-recorder';
-import type { TrackPoint } from '../../../utils/track-recorder';
+import type { TrackPoint } from '../../../types/track';
 
 import { TrackMapWidget } from './TrackMapWidget';
 import type { CarOnTrack, StoredTracks } from './types';
@@ -19,15 +18,9 @@ interface TrackData {
 }
 
 export const TrackMapWidgetContainer = observer(() => {
-  const carIdx = telemetryStore.carIdx;
   const carDynamics = telemetryStore.carDynamics;
   const lapTiming = telemetryStore.lapTiming;
-  const {
-    driverInfo,
-    weekendInfo,
-    session: sessionFrame,
-    sessionInfo,
-  } = telemetryStore;
+  const { weekendInfo, session: sessionFrame, sessionInfo } = telemetryStore;
   const settings = widgetSettingsStore.getTrackMapSettings();
 
   const trackId = weekendInfo?.TrackID?.toString() ?? '';
@@ -227,39 +220,30 @@ export const TrackMapWidgetContainer = observer(() => {
     }
   }, [lapTiming, sessionFrame, sessionInfo]);
 
-  const driverEntries = useMemo(
-    () => computeDriverEntries(carIdx, driverInfo),
-    [carIdx, driverInfo]
-  );
+  const driverEntries = computedStore.standings?.entries ?? [];
 
-  const cars = useMemo(
-    (): CarOnTrack[] =>
-      driverEntries.map((e) => ({
-        carIdx: e.carIdx,
-        carNumber: e.carNumber,
-        carClassColor: e.carClassColor,
-        carClassId: e.carClassId,
-        lapDistPct: e.lapDistPct,
-        trackSurface: e.trackSurface,
-        isPlayer: e.isPlayer,
-        position: e.position,
-        classPosition: e.classPosition,
-      })),
-    [driverEntries]
-  );
+  const cars: CarOnTrack[] = driverEntries.map((e) => ({
+    carIdx: e.carIdx,
+    carNumber: e.carNumber,
+    carClassColor: e.carClassColor,
+    carClassId: e.carClassId,
+    lapDistPct: e.lapDistPct,
+    trackSurface: e.trackSurface,
+    isPlayer: e.isPlayer,
+    position: e.position,
+    classPosition: e.classPosition,
+  }));
 
-  const classColors = useMemo(() => {
-    const seen = new Map<number, { name: string; color: string }>();
-    for (const e of driverEntries) {
-      if (!seen.has(e.carClassId)) {
-        seen.set(e.carClassId, {
-          name: e.carClassShortName,
-          color: e.carClassColor,
-        });
-      }
+  const classColorsSeen = new Map<number, { name: string; color: string }>();
+  for (const e of driverEntries) {
+    if (!classColorsSeen.has(e.carClassId)) {
+      classColorsSeen.set(e.carClassId, {
+        name: e.carClassShortName,
+        color: e.carClassColor,
+      });
     }
-    return Array.from(seen.values());
-  }, [driverEntries]);
+  }
+  const classColors = Array.from(classColorsSeen.values());
 
   return (
     <TrackMapWidget

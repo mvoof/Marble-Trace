@@ -12,26 +12,26 @@ import {
   Switch,
   Space,
 } from 'antd';
-import {
-  widgetSettingsStore,
-  type SpeedWidgetSettings,
-  type SpeedWidgetFocusMode,
-  type RpmColorTheme,
-  type InputTraceSettings,
-  type InputTraceBarMode,
-  type RadarSettings,
-  type RadarVisibilityMode,
-  type RadarBarDisplayMode,
-  type StandingsWidgetSettings,
-  type RelativeWidgetSettings,
-  type TrackMapWidgetSettings,
-  type LinearMapWidgetSettings,
-  type LinearMapOrientation,
-  type WeatherWidgetSettings,
-  type FuelWidgetSettings,
-  type FlagsWidgetSettings,
-  type FlagsVariant,
-} from '../../../../store/widget-settings.store';
+import { widgetSettingsStore } from '../../../../store/widget-settings.store';
+import type {
+  SpeedWidgetSettings,
+  SpeedWidgetFocusMode,
+  RpmColorTheme,
+  InputTraceSettings,
+  InputTraceBarMode,
+  RadarSettings,
+  RadarVisibilityMode,
+  RadarBarDisplayMode,
+  StandingsWidgetSettings,
+  RelativeWidgetSettings,
+  TrackMapWidgetSettings,
+  LinearMapWidgetSettings,
+  LinearMapOrientation,
+  WeatherWidgetSettings,
+  FuelWidgetSettings,
+  FlagsWidgetSettings,
+  FlagsVariant,
+} from '../../../../types/widget-settings';
 import { emit } from '@tauri-apps/api/event';
 import { appDataDir } from '@tauri-apps/api/path';
 import { HotkeyRecorder } from '../../../../components/shared/HotkeyRecorder';

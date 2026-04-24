@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import type { TrackPoint } from '../../../../utils/track-recorder';
+import type { TrackPoint } from '../../../../types/track';
 import { getPointAtPct } from '../../../../utils/track-recorder';
 import type { Sector } from '../../../../types/bindings';
 import type { CarOnTrack } from '../types';

@@ -1,9 +1,17 @@
+mod computations;
 mod iracing;
 
+use computations::{
+    fuel::FuelComputedFrame,
+    lap_delta::{LapDeltaFrame, LapDeltaState},
+    pit_stops::PitStopsFrame,
+    proximity::{LateralSide, NearbyCar, ProximityFrame, RadarDistances},
+    standings::{DriverEntriesFrame, DriverEntry, StandingsState},
+};
 use iracing::{
-    get_last_session_info, start_telemetry_stream, stop_telemetry_stream,
-    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame,
-    EnvironmentFrame, LapTimingFrame, SessionFrame, TelemetryState,
+    get_last_session_info, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
+    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, EnvironmentFrame,
+    LapTimingFrame, SessionFrame, TelemetryState,
 };
 use pitwall::SessionInfo;
 use specta::TypeCollection;
@@ -32,7 +40,16 @@ pub fn run() {
         .register::<LapTimingFrame>()
         .register::<SessionFrame>()
         .register::<EnvironmentFrame>()
-        .register::<SessionInfo>();
+        .register::<SessionInfo>()
+        .register::<ProximityFrame>()
+        .register::<NearbyCar>()
+        .register::<RadarDistances>()
+        .register::<LateralSide>()
+        .register::<FuelComputedFrame>()
+        .register::<DriverEntriesFrame>()
+        .register::<DriverEntry>()
+        .register::<PitStopsFrame>()
+        .register::<LapDeltaFrame>();
 
     Typescript::default()
         .export_to("../src/types/bindings.ts", &types)
@@ -59,11 +76,20 @@ pub fn run() {
         .invoke_handler(generate_handler![
             start_telemetry_stream,
             stop_telemetry_stream,
-            get_last_session_info
+            get_last_session_info,
+            set_pit_warning_laps
         ])
         .manage(TelemetryState {
             running: Arc::new(AtomicBool::new(false)),
             last_session_info: Arc::new(Mutex::new(None)),
+            start_positions: Arc::new(Mutex::new(std::collections::HashMap::new())),
+            pit_stop_count: Arc::new(std::sync::atomic::AtomicU32::new(0)),
+            was_on_pit_road: Arc::new(AtomicBool::new(false)),
+            pit_tracked_session_num: Arc::new(std::sync::atomic::AtomicI32::new(-1)),
+            lap_delta_state: Arc::new(Mutex::new(LapDeltaState::default())),
+            standings_state: Arc::new(Mutex::new(StandingsState::default())),
+            pit_warning_laps: Arc::new(std::sync::atomic::AtomicU32::new(3.0f32.to_bits())),
+            track_length_m: Arc::new(Mutex::new(None)),
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {

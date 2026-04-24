@@ -1,11 +1,14 @@
 import { useEffect } from 'react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { useWidgetTelemetry } from '../../hooks/useWidgetTelemetry';
+import { telemetryConnectionStore } from '../../store/iracing';
 import { OverlayCanvas } from '../../components/OverlayCanvas';
 import { initOverlaySync } from '../../store/sync';
 
 export const OverlayPage = () => {
-  useWidgetTelemetry();
+  useEffect(() => {
+    void telemetryConnectionStore.startWidgetListener();
+    return () => telemetryConnectionStore.stopWidgetListener();
+  }, []);
 
   useEffect(() => {
     document.documentElement.style.background = 'transparent';

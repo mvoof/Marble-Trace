@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { StandingsWidget } from './StandingsWidget';
 import { WidgetScaler } from '../../WidgetScaler';
-import { computeDriverEntries, computeClassSof } from '../widget-utils';
-import { computeProjectedIrDelta } from '../../../utils/iracing-irating';
-import type { StandingsWidgetSettings } from '../../../store/widget-settings.store';
+import { computeClassSof } from './standings-utils';
+import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
+import type { StandingsWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
 
@@ -38,20 +38,10 @@ const StandingsWidgetStory = ({
 }: StandingsStoryArgs) => {
   const driverEntries = computeDriverEntries(
     snap.carIdx,
-    snap.sessionInfo?.DriverInfo ?? null,
-    new Map()
+    snap.sessionInfo?.DriverInfo ?? null
   );
   const overallSof = computeClassSof(driverEntries);
-  const irDeltaMap = settings.showIrChange
-    ? computeProjectedIrDelta(
-        driverEntries.map((d) => ({
-          carIdx: d.carIdx,
-          classId: d.carClassId,
-          classPosition: d.classPosition,
-          iRating: d.iRating,
-        }))
-      )
-    : new Map<number, number>();
+  const irDeltaMap = new Map<number, number>();
 
   return (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>

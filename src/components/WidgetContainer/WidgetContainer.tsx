@@ -1,9 +1,11 @@
 import React, { useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
+import { emit } from '@tauri-apps/api/event';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { telemetryConnectionStore } from '../../store/iracing';
 import { WidgetScaler } from '../WidgetScaler';
+import { ErrorBoundary } from '../shared/ErrorBoundary';
 import styles from './WidgetContainer.module.scss';
 
 interface WidgetContainerProps {
@@ -90,6 +92,7 @@ export const WidgetContainer = observer(
           isDraggingRef.current = false;
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
+          void emit('widget-layout-changed', widgetSettingsStore.widgets);
         };
 
         document.addEventListener('mousemove', onMouseMove);
@@ -132,6 +135,7 @@ export const WidgetContainer = observer(
           isResizingRef.current = false;
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
+          void emit('widget-layout-changed', widgetSettingsStore.widgets);
         };
 
         document.addEventListener('mousemove', onMouseMove);
@@ -156,14 +160,16 @@ export const WidgetContainer = observer(
           className={`${styles.dragWrapper} ${dragMode ? styles.dragging : ''}`}
           onMouseDown={handleDragMouseDown}
         >
-          <WidgetScaler
-            designWidth={designWidth}
-            designHeight={designHeight}
-            background={background}
-            adaptive={adaptive}
-          >
-            {children}
-          </WidgetScaler>
+          <ErrorBoundary>
+            <WidgetScaler
+              designWidth={designWidth}
+              designHeight={designHeight}
+              background={background}
+              adaptive={adaptive}
+            >
+              {children}
+            </WidgetScaler>
+          </ErrorBoundary>
 
           {dragMode && (
             <div className={styles.dragOverlay}>

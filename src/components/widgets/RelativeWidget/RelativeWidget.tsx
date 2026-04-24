@@ -2,11 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { WidgetPanel } from '../primitives';
 import { useVisibleRowCount } from '../../../hooks/useVisibleRowCount';
-import type { RelativeWidgetSettings } from '../../../store/widget-settings.store';
+import type { RelativeWidgetSettings } from '../../../types/widget-settings';
 
 import { DriverRow } from './DriverRow/DriverRow';
 import { TREND_SAMPLE_INTERVAL_MS } from '../widget-utils';
-import type { DriverEntry } from '../widget-utils';
+import type { DriverEntry } from '../../../types/bindings';
 
 import styles from './RelativeWidget.module.scss';
 

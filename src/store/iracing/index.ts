@@ -8,20 +8,21 @@ import type {
   CarInputsFrame,
   CarStatusFrame,
   ChassisFrame,
+  DriverEntriesFrame,
   EnvironmentFrame,
+  FuelComputedFrame,
+  LapDeltaFrame,
   LapTimingFrame,
+  PitStopsFrame,
+  ProximityFrame,
   SessionFrame,
   SessionInfo,
 } from '../../types/bindings';
 import { debug } from '../../utils/debug';
 
 import { telemetryStore } from './telemetry.store';
-
-export type TelemetryStatus =
-  | 'waiting'
-  | 'connected'
-  | 'disconnected'
-  | 'error';
+import { computedStore } from './computed.store';
+import type { TelemetryStatus } from '../../types/telemetry';
 
 class TelemetryConnection {
   isConnected = false;
@@ -128,9 +129,11 @@ class TelemetryConnection {
     } else if (status === 'waiting') {
       this.isConnected = false;
       telemetryStore.reset();
+      computedStore.reset();
     } else if (status === 'disconnected') {
       this.isConnected = false;
       telemetryStore.reset();
+      computedStore.reset();
     }
   }
 
@@ -144,6 +147,7 @@ class TelemetryConnection {
     this.isConnected = false;
     this.status = 'disconnected';
     telemetryStore.reset();
+    computedStore.reset();
   }
 
   private onFrameReceived() {
@@ -254,6 +258,44 @@ class TelemetryConnection {
         this.setDisconnected();
       })
     );
+
+    this.unlistens.push(
+      await listen<ProximityFrame>('iracing://computed/proximity', (event) => {
+        if (this.initId !== guardId) return;
+        computedStore.updateProximity(event.payload);
+      })
+    );
+
+    this.unlistens.push(
+      await listen<FuelComputedFrame>('iracing://computed/fuel', (event) => {
+        if (this.initId !== guardId) return;
+        computedStore.updateFuel(event.payload);
+      })
+    );
+
+    this.unlistens.push(
+      await listen<DriverEntriesFrame>(
+        'iracing://computed/standings',
+        (event) => {
+          if (this.initId !== guardId) return;
+          computedStore.updateStandings(event.payload);
+        }
+      )
+    );
+
+    this.unlistens.push(
+      await listen<PitStopsFrame>('iracing://computed/pit-stops', (event) => {
+        if (this.initId !== guardId) return;
+        computedStore.updatePitStops(event.payload);
+      })
+    );
+
+    this.unlistens.push(
+      await listen<LapDeltaFrame>('iracing://computed/lap-delta', (event) => {
+        if (this.initId !== guardId) return;
+        computedStore.updateLapDelta(event.payload);
+      })
+    );
   }
 
   private disposeListeners() {
@@ -267,3 +309,4 @@ class TelemetryConnection {
 export const telemetryConnectionStore = new TelemetryConnection();
 
 export { telemetryStore } from './telemetry.store';
+export { computedStore } from './computed.store';

@@ -530,6 +530,41 @@ export type Driver = {
   TeamIncidentCount: number | null;
 };
 
+export type DriverEntriesFrame = {
+  entries: DriverEntry[];
+  playerCarIdx: number;
+};
+
+export type DriverEntry = {
+  carIdx: number;
+  userName: string;
+  carNumber: string;
+  carClassId: number;
+  carClassShortName: string;
+  carClassColor: string;
+  carScreenName: string;
+  carScreenNameShort: string;
+  tireCompound: string;
+  position: number;
+  classPosition: number;
+  startPosOverall: number;
+  startPosClass: number;
+  lap: number;
+  lapDistPct: number;
+  lastLapTime: number;
+  bestLapTime: number;
+  f2Time: number;
+  trackSurface: number;
+  iRating: number;
+  licString: string;
+  licColor: string;
+  incidents: number;
+  isPlayer: boolean;
+  onPitRoad: boolean;
+  estimatedIrDelta: number | null;
+  relativeLapDist: number;
+};
+
 /**
  * Driver information data containing current driver info + drivers list
  */
@@ -748,6 +783,29 @@ export type Frequency = {
   IsDeletable: number | null;
 };
 
+export type FuelComputedFrame = {
+  avgPerLap: number;
+  lapsRemaining: number;
+  lapsToFinish: number | null;
+  /**
+   * Positive = surplus liters, negative = deficit
+   */
+  shortage: number | null;
+  fuelToAdd: number | null;
+  fuelToAddWithBuffer: number | null;
+  fuelSavePerLap: number | null;
+  pitWarning: boolean;
+  pitWindowStart: number | null;
+  pitWindowEnd: number | null;
+  isTimedRace: boolean;
+};
+
+export type LapDeltaFrame = {
+  sectorTimes: (number | null)[];
+  sectorDeltas: (number | null)[];
+  currentSectorIdx: number;
+};
+
 export type LapTimingFrame = {
   /**
    * Current lap number
@@ -791,6 +849,30 @@ export type LapTimingFrame = {
   player_car_class_position: number | null;
 };
 
+export type LateralSide = 'left' | 'right' | 'center';
+
+export type NearbyCar = {
+  carIdx: number;
+  /**
+   * Positive = ahead, negative = behind (meters)
+   */
+  longitudinalDist: number;
+  lateralSide: LateralSide;
+  /**
+   * Absolute longitudinal distance in meters
+   */
+  clearance: number;
+};
+
+export type PitStopsFrame = { playerStops: number };
+
+export type ProximityFrame = {
+  nearbyCars: NearbyCar[];
+  radarDistances: RadarDistances;
+  spotterLeft: boolean;
+  spotterRight: boolean;
+};
+
 /**
  * Individual qualifying result
  */
@@ -825,6 +907,13 @@ export type QualifyResultsInfo = {
    * List of qualifying results
    */
   Results: QualifyResult[] | null;
+};
+
+export type RadarDistances = {
+  frontDist: number;
+  rearDist: number;
+  leftDist: number | null;
+  rightDist: number | null;
 };
 
 /**

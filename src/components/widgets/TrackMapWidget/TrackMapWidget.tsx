@@ -1,6 +1,6 @@
 import { WidgetPanel } from '../primitives';
-import type { TrackPoint } from '../../../utils/track-recorder';
-import type { TrackMapWidgetSettings } from '../../../store/widget-settings.store';
+import type { TrackPoint } from '../../../types/track';
+import type { TrackMapWidgetSettings } from '../../../types/widget-settings';
 import type { Sector } from '../../../types/bindings';
 
 import { RecordingOverlay } from './RecordingOverlay/RecordingOverlay';
