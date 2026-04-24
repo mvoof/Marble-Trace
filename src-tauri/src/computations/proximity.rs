@@ -80,14 +80,19 @@ fn spotter_flags(car_left_right: i32) -> (bool, bool) {
     (left, right)
 }
 
-pub fn compute(frame: &AllFieldsFrame, session: &SessionInfo) -> ProximityFrame {
-    let player_car_idx = session
+pub fn compute(
+    frame: &AllFieldsFrame,
+    session: &SessionInfo,
+    cached_track_length: Option<f32>,
+) -> ProximityFrame {
+    let player_idx = session
         .driver_info
         .as_ref()
         .and_then(|di| di.driver_car_idx)
         .unwrap_or(-1);
 
-    let track_length_m = parse_track_length(&session.weekend_info.track_length);
+    let track_length_m = cached_track_length
+        .unwrap_or_else(|| parse_track_length(&session.weekend_info.track_length));
 
     let car_left_right = frame.car_left_right.unwrap_or(CLR_CLEAR);
     let (spotter_left, spotter_right) = spotter_flags(car_left_right);
@@ -95,7 +100,7 @@ pub fn compute(frame: &AllFieldsFrame, session: &SessionInfo) -> ProximityFrame 
     let has_left = spotter_left;
     let has_right = spotter_right;
 
-    if player_car_idx < 0 || track_length_m <= 0.0 {
+    if player_idx < 0 || track_length_m <= 0.0 {
         return ProximityFrame {
             nearby_cars: vec![],
             radar_distances: RadarDistances {
@@ -109,7 +114,7 @@ pub fn compute(frame: &AllFieldsFrame, session: &SessionInfo) -> ProximityFrame 
         };
     }
 
-    let player_idx = player_car_idx as usize;
+    let player_idx = player_idx as usize;
     let lap_dist_pct = &frame.car_idx_lap_dist_pct;
     let on_pit_road = &frame.car_idx_on_pit_road;
 

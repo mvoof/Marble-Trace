@@ -88,6 +88,7 @@ pub fn run() {
             pit_tracked_session_num: Arc::new(std::sync::atomic::AtomicI32::new(-1)),
             lap_delta_state: Arc::new(Mutex::new(LapDeltaState::default())),
             pit_warning_laps: Arc::new(std::sync::atomic::AtomicU32::new(3.0f32.to_bits())),
+            track_length_m: Arc::new(Mutex::new(None)),
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {

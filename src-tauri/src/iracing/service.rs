@@ -66,6 +66,9 @@ pub struct TelemetryState {
 
     /// User-configured pit warning laps (stored as bits of f32).
     pub pit_warning_laps: Arc<AtomicU32>,
+
+    /// Cached track length in meters.
+    pub track_length_m: Arc<Mutex<Option<f32>>>,
 }
 
 #[tauri::command]
@@ -98,9 +101,9 @@ pub async fn start_telemetry_stream(
     state.running.store(false, Ordering::SeqCst);
     sleep(Duration::from_millis(50)).await;
 
-    let running = state.running.clone();
-    running.store(true, Ordering::SeqCst);
+    state.running.store(true, Ordering::SeqCst);
 
+    let running = state.running.clone();
     let last_session_info = state.last_session_info.clone();
     let start_positions = state.start_positions.clone();
     let pit_stop_count = state.pit_stop_count.clone();
@@ -108,6 +111,7 @@ pub async fn start_telemetry_stream(
     let pit_tracked_session_num = state.pit_tracked_session_num.clone();
     let lap_delta_state = state.lap_delta_state.clone();
     let pit_warning_laps = state.pit_warning_laps.clone();
+    let track_length_m = state.track_length_m.clone();
     let app_clone = app.clone();
 
     tokio::spawn(async move {
@@ -146,6 +150,7 @@ pub async fn start_telemetry_stream(
             let last_session_info_clone = last_session_info.clone();
             let start_positions_clone = start_positions.clone();
 
+            let track_length_m_clone = track_length_m.clone();
             let session_task = tokio::spawn(async move {
                 let mut stream = std::pin::pin!(session_stream);
 
@@ -162,6 +167,13 @@ pub async fn start_telemetry_stream(
 
                     // Update start positions from ResultsPositions if available
                     update_start_positions(&session, &start_positions_clone);
+
+                    // Update cached track length
+                    if let Ok(mut lock) = track_length_m_clone.lock() {
+                        *lock = Some(proximity::parse_track_length(
+                            &session.weekend_info.track_length,
+                        ));
+                    }
 
                     if let Ok(mut lock) = last_session_info_clone.lock() {
                         *lock = Some(session.clone());
@@ -208,6 +220,7 @@ pub async fn start_telemetry_stream(
                             &pit_tracked_session_num,
                             &lap_delta_state,
                             &pit_warning_laps,
+                            &track_length_m,
                         );
                     }
                     Ok(None) => {
@@ -248,6 +261,9 @@ pub async fn start_telemetry_stream(
             pit_tracked_session_num.store(-1, Ordering::Relaxed);
             if let Ok(mut s) = lap_delta_state.lock() {
                 s.reset();
+            }
+            if let Ok(mut t) = track_length_m.lock() {
+                *t = None;
             }
 
             app_clone.emit("iracing://status", "disconnected").ok();
@@ -328,6 +344,7 @@ fn emit_domain_frames(
     pit_tracked_session_num: &AtomicI32,
     lap_delta_state: &Mutex<LapDeltaState>,
     pit_warning_laps_atomic: &AtomicU32,
+    track_length_m: &Mutex<Option<f32>>,
 ) {
     // 60 Hz — raw frames
     if let Err(e) = app.emit(
@@ -371,7 +388,8 @@ fn emit_domain_frames(
 
         // Computed: proximity & standings (10 Hz)
         if let Some(session) = session_info {
-            let proximity = proximity::compute(frame, session);
+            let track_length = *track_length_m.lock().unwrap_or_else(|e| e.into_inner());
+            let proximity = proximity::compute(frame, session, track_length);
             if let Err(e) = app.emit("iracing://computed/proximity", &proximity) {
                 warn!("Failed to emit proximity: {}", e);
             }
