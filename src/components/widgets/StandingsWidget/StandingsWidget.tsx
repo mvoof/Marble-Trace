@@ -119,8 +119,7 @@ export const StandingsWidget = ({
         );
 
         if (playerIdx >= share) {
-          visible.push({ isSeparator: true, id: `sep-${group.classId}` });
-          visible.push(driversOnly[playerIdx]);
+          visible[share - 1] = driversOnly[playerIdx];
         }
 
         return { ...group, drivers: visible };
