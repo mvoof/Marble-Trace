@@ -1,5 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { invoke } from '@tauri-apps/api/core';
+import { computedStore } from './iracing';
 
 import type {
   FlagsWidgetSettings,
@@ -121,6 +122,9 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     customSettings: {
       standings: {
         enableClassCycling: false,
+        classCyclingToggleHotkey: '',
+        classPrevHotkey: '',
+        classNextHotkey: '',
         showPosChange: true,
         showColumnHeaders: true,
         showSessionHeader: true,
@@ -341,8 +345,43 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
 class WidgetSettingsStore {
   widgets: WidgetConfig[] = DEFAULT_WIDGETS;
 
+  standingsActiveClassIndex = 0;
+
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  private getStandingsClassCount(): number {
+    const entries = computedStore.standings?.entries ?? [];
+    return new Set(entries.map((e) => e.carClassId)).size;
+  }
+
+  cycleStandingsPrev() {
+    const total = this.getStandingsClassCount();
+    if (total <= 1) return;
+    this.standingsActiveClassIndex =
+      this.standingsActiveClassIndex === 0
+        ? total - 1
+        : this.standingsActiveClassIndex - 1;
+  }
+
+  cycleStandingsNext() {
+    const total = this.getStandingsClassCount();
+    if (total <= 1) return;
+    this.standingsActiveClassIndex =
+      this.standingsActiveClassIndex === total - 1
+        ? 0
+        : this.standingsActiveClassIndex + 1;
+  }
+
+  toggleStandingsClassCycling() {
+    const settings = this.getStandingsSettings();
+    this.updateCustomSettings('standings', {
+      standings: {
+        ...settings,
+        enableClassCycling: !settings.enableClassCycling,
+      },
+    });
   }
 
   setWidgets(widgets: WidgetConfig[]) {
@@ -351,13 +390,21 @@ class WidgetSettingsStore {
       const s = widgets.find((w) => w.id === def.id);
       if (!s) return def;
 
+      const defCS = def.customSettings ?? {};
+      const sCS = s.customSettings ?? {};
+
+      const mergedCustomSettings: WidgetCustomSettings = { ...defCS };
+      for (const key of Object.keys(sCS) as Array<keyof WidgetCustomSettings>) {
+        mergedCustomSettings[key] = {
+          ...defCS[key],
+          ...sCS[key],
+        } as never;
+      }
+
       return {
         ...def,
         ...s,
-        customSettings: {
-          ...def.customSettings,
-          ...s.customSettings,
-        },
+        customSettings: mergedCustomSettings,
       };
     });
   }
@@ -458,6 +505,9 @@ class WidgetSettingsStore {
     return (
       widget?.customSettings?.standings ?? {
         enableClassCycling: false,
+        classCyclingToggleHotkey: '',
+        classPrevHotkey: '',
+        classNextHotkey: '',
         showPosChange: true,
         showColumnHeaders: true,
         showSessionHeader: true,

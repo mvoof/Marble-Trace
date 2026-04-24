@@ -7,6 +7,7 @@ import styles from './ClassSwitcher.module.scss';
 interface ClassSwitcherProps {
   groups: DriverGroup[];
   activeIndex: number;
+  dragMode: boolean;
   onPrev: () => void;
   onNext: () => void;
 }
@@ -14,6 +15,7 @@ interface ClassSwitcherProps {
 export const ClassSwitcher = ({
   groups,
   activeIndex,
+  dragMode,
   onPrev,
   onNext,
 }: ClassSwitcherProps) => {
@@ -24,15 +26,17 @@ export const ClassSwitcher = ({
 
   return (
     <div className={styles.switcher}>
-      <button
-        className={styles.navBtn}
-        onClick={onPrev}
-        onMouseDown={(e) => e.stopPropagation()}
-        disabled={total <= 1}
-        aria-label="Previous class"
-      >
-        <ChevronLeft size={14} />
-      </button>
+      {dragMode && (
+        <button
+          className={styles.navBtn}
+          onClick={onPrev}
+          onMouseDown={(e) => e.stopPropagation()}
+          disabled={total <= 1}
+          aria-label="Previous class"
+        >
+          <ChevronLeft size={14} />
+        </button>
+      )}
 
       <div className={styles.classInfo}>
         <span
@@ -55,15 +59,17 @@ export const ClassSwitcher = ({
         </span>
       </div>
 
-      <button
-        className={styles.navBtn}
-        onClick={onNext}
-        onMouseDown={(e) => e.stopPropagation()}
-        disabled={total <= 1}
-        aria-label="Next class"
-      >
-        <ChevronRight size={14} />
-      </button>
+      {dragMode && (
+        <button
+          className={styles.navBtn}
+          onClick={onNext}
+          onMouseDown={(e) => e.stopPropagation()}
+          disabled={total <= 1}
+          aria-label="Next class"
+        >
+          <ChevronRight size={14} />
+        </button>
+      )}
     </div>
   );
 };

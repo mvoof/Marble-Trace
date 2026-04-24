@@ -131,6 +131,29 @@ export const initMainSync = async () => {
             }
           }
 
+          const standingsSettings = widgetSettingsStore.getStandingsSettings();
+
+          if (standingsSettings.classCyclingToggleHotkey) {
+            addHandler(standingsSettings.classCyclingToggleHotkey, (event) => {
+              if (event.state === 'Pressed')
+                widgetSettingsStore.toggleStandingsClassCycling();
+            });
+          }
+
+          if (standingsSettings.classPrevHotkey) {
+            addHandler(standingsSettings.classPrevHotkey, (event) => {
+              if (event.state === 'Pressed')
+                widgetSettingsStore.cycleStandingsPrev();
+            });
+          }
+
+          if (standingsSettings.classNextHotkey) {
+            addHandler(standingsSettings.classNextHotkey, (event) => {
+              if (event.state === 'Pressed')
+                widgetSettingsStore.cycleStandingsNext();
+            });
+          }
+
           // 2. Unregister only what was previously registered in THIS session
           for (const shortcut of Array.from(registeredShortcuts)) {
             try {
@@ -212,11 +235,17 @@ export const initMainSync = async () => {
           }
         ),
         reaction(
-          () => [
-            appSettingsStore.dragHotkey,
-            appSettingsStore.hideAllWidgetsHotkey,
-            ...widgetSettingsStore.widgets.map((w) => w.hotkey),
-          ],
+          () => {
+            const s = widgetSettingsStore.getStandingsSettings();
+            return [
+              appSettingsStore.dragHotkey,
+              appSettingsStore.hideAllWidgetsHotkey,
+              ...widgetSettingsStore.widgets.map((w) => w.hotkey),
+              s.classCyclingToggleHotkey,
+              s.classPrevHotkey,
+              s.classNextHotkey,
+            ];
+          },
           () => {
             void setupHotkeys();
             void saveSettings();

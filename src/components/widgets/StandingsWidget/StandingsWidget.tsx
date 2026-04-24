@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 
 import { WidgetPanel } from '@/components/widgets/primitives';
 import { useVisibleRowCount } from '@/hooks/useVisibleRowCount';
@@ -22,6 +22,10 @@ interface StandingsWidgetProps {
   sessionInfo: SessionInfo | null;
   weekendInfo: WeekendInfo | null;
   overallSof: number;
+  activeClassIndex: number;
+  dragMode: boolean;
+  onPrevClass: () => void;
+  onNextClass: () => void;
 }
 
 const sliceWithPlayerPin = (
@@ -48,11 +52,13 @@ export const StandingsWidget = ({
   sessionInfo,
   weekendInfo,
   overallSof,
+  activeClassIndex,
+  dragMode,
+  onPrevClass,
+  onNextClass,
 }: StandingsWidgetProps) => {
   const { ref: tableWrapRef, count: visibleRowCount } =
     useVisibleRowCount<HTMLDivElement>(2, 5, 'tbody tr[data-driver-row]');
-
-  const [activeClassIndex, setActiveClassIndex] = useState(0);
 
   const allClassGroups = useMemo((): DriverGroup[] => {
     if (driverEntries.length === 0) return [];
@@ -84,14 +90,6 @@ export const StandingsWidget = ({
     });
   }, [driverEntries]);
 
-  useEffect(() => {
-    setActiveClassIndex((prev) =>
-      allClassGroups.length === 0
-        ? 0
-        : Math.min(prev, allClassGroups.length - 1)
-    );
-  }, [allClassGroups.length]);
-
   const displayGroup = useMemo((): DriverGroup => {
     if (settings.enableClassCycling && allClassGroups.length > 0) {
       const group = allClassGroups[activeClassIndex];
@@ -119,16 +117,6 @@ export const StandingsWidget = ({
     visibleRowCount,
   ]);
 
-  const handlePrev = () =>
-    setActiveClassIndex((prev) =>
-      prev === 0 ? allClassGroups.length - 1 : prev - 1
-    );
-
-  const handleNext = () =>
-    setActiveClassIndex((prev) =>
-      prev === allClassGroups.length - 1 ? 0 : prev + 1
-    );
-
   return (
     <WidgetPanel className={styles.standings} gap={0}>
       {settings.showSessionHeader && (
@@ -145,8 +133,9 @@ export const StandingsWidget = ({
         <ClassSwitcher
           groups={allClassGroups}
           activeIndex={activeClassIndex}
-          onPrev={handlePrev}
-          onNext={handleNext}
+          dragMode={dragMode}
+          onPrev={onPrevClass}
+          onNext={onNextClass}
         />
       )}
 

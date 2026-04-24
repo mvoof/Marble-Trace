@@ -549,13 +549,38 @@ const StandingsSettingsPanel = observer(() => {
           <div className={styles.fieldTexts}>
             <div className={styles.fieldTitle}>Class Cycling</div>
             <div className={styles.fieldDesc}>
-              Show one class at a time with prev/next navigation in the widget.
-              Off shows all drivers combined.
+              Show one class at a time. Off shows all drivers combined.
             </div>
           </div>
           <Switch
             checked={settings.enableClassCycling}
             onChange={(v) => update({ enableClassCycling: v })}
+          />
+        </div>
+      </Card>
+
+      <Card title="Hotkeys">
+        <div className={styles.fieldGroup}>
+          <HotkeyRecorder
+            label="Toggle Class Cycling"
+            currentHotkey={settings.classCyclingToggleHotkey}
+            onApply={(key) => update({ classCyclingToggleHotkey: key })}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <HotkeyRecorder
+            label="Previous Class"
+            currentHotkey={settings.classPrevHotkey}
+            onApply={(key) => update({ classPrevHotkey: key })}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <HotkeyRecorder
+            label="Next Class"
+            currentHotkey={settings.classNextHotkey}
+            onApply={(key) => update({ classNextHotkey: key })}
           />
         </div>
       </Card>

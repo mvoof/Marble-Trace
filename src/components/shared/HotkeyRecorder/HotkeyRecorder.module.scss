@@ -6,6 +6,14 @@
   gap: 12px;
 }
 
+.label {
+  font-size: 12px;
+  font-weight: 500;
+  color: $sys-text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .hotkeyDisplay {
   display: flex;
   align-items: center;

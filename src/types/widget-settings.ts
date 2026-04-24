@@ -36,6 +36,9 @@ export interface RadarSettings {
 
 export interface StandingsWidgetSettings {
   enableClassCycling: boolean;
+  classCyclingToggleHotkey: string;
+  classPrevHotkey: string;
+  classNextHotkey: string;
   showPosChange: boolean;
   showColumnHeaders: boolean;
   showSessionHeader: boolean;
