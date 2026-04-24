@@ -1,0 +1,40 @@
+@use '../../../styles/variables' as *;
+
+.container {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: $sys-bg-main;
+  pointer-events: none;
+}
+
+.canvas {
+  width: 100%;
+  height: 100%;
+  opacity: 0.6;
+}
+
+.vignetteVertical {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    $sys-bg-main,
+    transparent,
+    $sys-bg-main
+  );
+  opacity: 0.9;
+}
+
+.vignetteHorizontal {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    $sys-bg-main,
+    transparent,
+    $sys-bg-main
+  );
+  opacity: 0.9;
+}

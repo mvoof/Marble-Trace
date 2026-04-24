@@ -39,6 +39,7 @@ pub fn run() {
         .unwrap();
 
     let mut builder = Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build());
 
@@ -48,6 +49,13 @@ pub fn run() {
     }
 
     builder
+        .setup(|app| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_decorations(false);
+                let _ = window.set_shadow(true);
+            }
+            Ok(())
+        })
         .invoke_handler(generate_handler![
             start_telemetry_stream,
             stop_telemetry_stream,

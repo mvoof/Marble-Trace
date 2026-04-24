@@ -1,7 +1,4 @@
-import { makeAutoObservable, runInAction } from 'mobx';
-import { load, Store } from '@tauri-apps/plugin-store';
-import { emit, listen, UnlistenFn } from '@tauri-apps/api/event';
-
+import { makeAutoObservable } from 'mobx';
 import {
   formatSpeed as _formatSpeed,
   formatTemp as _formatTemp,
@@ -18,44 +15,12 @@ export type UnitSystem = 'metric' | 'imperial';
 class UnitsStore {
   system: UnitSystem = 'metric';
 
-  private store: Store | null = null;
-  private overlayUnlisten: UnlistenFn | null = null;
-
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  async loadSettings() {
-    this.store = await load('units-settings.json');
-    const saved = await this.store.get<UnitSystem>('system');
-
-    runInAction(() => {
-      if (saved) {
-        this.system = saved;
-      }
-    });
-  }
-
-  async setSystem(system: UnitSystem) {
+  setSystem(system: UnitSystem) {
     this.system = system;
-    await this.saveSettings();
-    void emit('units-changed', system);
-  }
-
-  async initOverlayListener() {
-    this.overlayUnlisten = await listen<UnitSystem>(
-      'units-changed',
-      (event) => {
-        runInAction(() => {
-          this.system = event.payload;
-        });
-      }
-    );
-  }
-
-  disposeOverlayListener() {
-    this.overlayUnlisten?.();
-    this.overlayUnlisten = null;
   }
 
   formatSpeed(mps: number) {
@@ -88,13 +53,6 @@ class UnitsStore {
 
   get distanceUnit() {
     return _distanceUnit(this.system);
-  }
-
-  private async saveSettings() {
-    if (!this.store) return;
-
-    await this.store.set('system', this.system);
-    await this.store.save();
   }
 }
 

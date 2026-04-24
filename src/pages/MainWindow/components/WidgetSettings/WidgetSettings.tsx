@@ -1,18 +1,14 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   InputNumber,
-  Typography,
-  Card,
   Row,
   Col,
   ColorPicker,
   Flex,
   Button,
-  Tag,
   Select,
   Segmented,
-  Divider,
   Switch,
   Space,
 } from 'antd';
@@ -36,31 +32,48 @@ import {
   type FlagsWidgetSettings,
   type FlagsVariant,
 } from '../../../../store/widget-settings.store';
-import { appSettingsStore } from '../../../../store/app-settings.store';
 import { emit } from '@tauri-apps/api/event';
 import { appDataDir } from '@tauri-apps/api/path';
+import { HotkeyRecorder } from '../../../../components/shared/HotkeyRecorder';
+import styles from './WidgetSettings.module.scss';
 
-const { Title, Text } = Typography;
+interface CardProps {
+  title?: string;
+  children: React.ReactNode;
+}
+
+const Card: React.FC<CardProps> = ({ title, children }) => (
+  <div className={styles.card}>
+    {title && <h3 className={styles.cardTitle}>{title}</h3>}
+    <div className={styles.cardContent}>{children}</div>
+  </div>
+);
 
 export const WidgetSettings = observer(
   ({ widgetId }: { widgetId: string | null }) => {
     if (!widgetId) {
-      return <Text type="secondary">Select a widget to configure</Text>;
+      return (
+        <div className={styles.fieldDesc}>Select a widget to configure</div>
+      );
     }
 
     const widget = widgetSettingsStore.getWidget(widgetId);
 
     if (!widget) {
-      return <Text type="secondary">Widget not found</Text>;
+      return <div className={styles.fieldDesc}>Widget not found</div>;
     }
 
     return (
-      <Card>
-        <Title level={5}>{widget.label}</Title>
-        <Flex vertical gap={16}>
-          <Row gutter={16}>
+      <div className={styles.animateFadeIn}>
+        <header className={styles.header}>
+          <span className={styles.moduleLabel}>Module Config</span>
+          <h1 className={styles.title}>{widget.label}</h1>
+        </header>
+
+        <Card title="Layout & Dimensions">
+          <Row gutter={[24, 24]}>
             <Col span={12}>
-              <Text>X</Text>
+              <span className={styles.fieldLabel}>Position X</span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={widget.x}
@@ -72,8 +85,7 @@ export const WidgetSettings = observer(
             </Col>
 
             <Col span={12}>
-              <Text>Y</Text>
-
+              <span className={styles.fieldLabel}>Position Y</span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={widget.y}
@@ -83,16 +95,13 @@ export const WidgetSettings = observer(
                 }
               />
             </Col>
-          </Row>
 
-          <Row gutter={16}>
             <Col span={12}>
-              <Text>Width</Text>
-
+              <span className={styles.fieldLabel}>Width (px)</span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={widget.width}
-                min={100}
+                min={10}
                 onChange={(v) =>
                   v !== null &&
                   widgetSettingsStore.updateField(widgetId, 'width', v)
@@ -101,11 +110,11 @@ export const WidgetSettings = observer(
             </Col>
 
             <Col span={12}>
-              <Text>Height</Text>
+              <span className={styles.fieldLabel}>Height (px)</span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={widget.height}
-                min={50}
+                min={10}
                 onChange={(v) =>
                   v !== null &&
                   widgetSettingsStore.updateField(widgetId, 'height', v)
@@ -113,13 +122,14 @@ export const WidgetSettings = observer(
               />
             </Col>
           </Row>
+        </Card>
 
-          {widgetId !== 'radar-bar' && (
-            <Row gutter={16}>
+        {widgetId !== 'radar-bar' && (
+          <Card title="Aesthetics">
+            <Row gutter={[24, 24]}>
               <Col span={12}>
-                <Flex vertical>
-                  <Text>Background Center</Text>
-
+                <span className={styles.fieldLabel}>Background Center</span>
+                <div className={styles.colorPickerContainer}>
                   <ColorPicker
                     value={widget.backgroundColor ?? '#1a1a1a'}
                     allowClear
@@ -131,13 +141,15 @@ export const WidgetSettings = observer(
                       )
                     }
                   />
-                </Flex>
+                  <div className={styles.fieldDesc}>
+                    {widget.backgroundColor ?? 'transparent'}
+                  </div>
+                </div>
               </Col>
 
               <Col span={12}>
-                <Flex vertical>
-                  <Text>Background Edge</Text>
-
+                <span className={styles.fieldLabel}>Background Edge</span>
+                <div className={styles.colorPickerContainer}>
                   <ColorPicker
                     value={widget.backgroundColorEdge ?? '#0a0a0a'}
                     allowClear
@@ -149,190 +161,55 @@ export const WidgetSettings = observer(
                       )
                     }
                   />
-                </Flex>
+                  <div className={styles.fieldDesc}>
+                    {widget.backgroundColorEdge ?? 'transparent'}
+                  </div>
+                </div>
               </Col>
             </Row>
-          )}
+          </Card>
+        )}
 
-          <HotkeyRecorder
+        <Card title="Controls">
+          <HotkeyRecorderWrapper
             key={widgetId}
             widgetId={widgetId}
             currentHotkey={widget.hotkey}
           />
+        </Card>
 
-          {widgetId === 'speed' && (
-            <>
-              <Divider style={{ margin: '8px 0' }} />
-              <SpeedSettings />
-            </>
-          )}
-
-          {widgetId === 'input-trace' && (
-            <>
-              <Divider style={{ margin: '8px 0' }} />
-              <InputTraceSettingsPanel />
-            </>
-          )}
-
-          {(widgetId === 'proximity-radar' || widgetId === 'radar-bar') && (
-            <>
-              <Divider style={{ margin: '8px 0' }} />
-              <RadarSettingsPanel widgetId={widgetId} />
-            </>
-          )}
-
-          {widgetId === 'standings' && (
-            <>
-              <Divider style={{ margin: '8px 0' }} />
-              <StandingsSettingsPanel />
-            </>
-          )}
-
-          {widgetId === 'relative' && (
-            <>
-              <Divider style={{ margin: '8px 0' }} />
-              <RelativeSettingsPanel />
-            </>
-          )}
-
-          {widgetId === 'linear-map' && (
-            <>
-              <Divider style={{ margin: '8px 0' }} />
-              <LinearMapSettingsPanel />
-            </>
-          )}
-
-          {widgetId === 'track-map' && (
-            <>
-              <Divider style={{ margin: '8px 0' }} />
-              <TrackMapSettingsPanel />
-            </>
-          )}
-
-          {widgetId === 'weather' && (
-            <>
-              <Divider style={{ margin: '8px 0' }} />
-              <WeatherSettingsPanel />
-            </>
-          )}
-
-          {widgetId === 'fuel' && (
-            <>
-              <Divider style={{ margin: '8px 0' }} />
-              <FuelSettingsPanel />
-            </>
-          )}
-
-          {widgetId === 'flags' && (
-            <>
-              <Divider style={{ margin: '8px 0' }} />
-              <FlagsSettingsPanel />
-            </>
-          )}
-        </Flex>
-      </Card>
+        {widgetId === 'speed' && <SpeedSettings />}
+        {widgetId === 'input-trace' && <InputTraceSettingsPanel />}
+        {(widgetId === 'proximity-radar' || widgetId === 'radar-bar') && (
+          <RadarSettingsPanel widgetId={widgetId} />
+        )}
+        {widgetId === 'standings' && <StandingsSettingsPanel />}
+        {widgetId === 'relative' && <RelativeSettingsPanel />}
+        {widgetId === 'linear-map' && <LinearMapSettingsPanel />}
+        {widgetId === 'track-map' && <TrackMapSettingsPanel />}
+        {widgetId === 'weather' && <WeatherSettingsPanel />}
+        {widgetId === 'fuel' && <FuelSettingsPanel />}
+        {widgetId === 'flags' && <FlagsSettingsPanel />}
+      </div>
     );
   }
 );
 
-const HotkeyRecorder = ({
+const HotkeyRecorderWrapper = ({
   widgetId,
   currentHotkey,
 }: {
   widgetId: string;
   currentHotkey: string;
 }) => {
-  const [recording, setRecording] = useState(false);
-  const [pendingKey, setPendingKey] = useState<string | null>(null);
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (!recording) return;
-      e.preventDefault();
-
-      const parts: string[] = [];
-
-      if (e.ctrlKey) parts.push('Ctrl');
-      if (e.shiftKey) parts.push('Shift');
-      if (e.altKey) parts.push('Alt');
-
-      const key = e.key;
-
-      if (!['Control', 'Shift', 'Alt', 'Meta'].includes(key)) {
-        parts.push(key.length === 1 ? key.toUpperCase() : key);
-        setPendingKey(parts.join('+'));
-        setRecording(false);
-      }
-    },
-    [recording]
-  );
-
-  const applyHotkey = async () => {
-    if (!pendingKey) return;
-
-    widgetSettingsStore.updateField(widgetId, 'hotkey', pendingKey);
-    await appSettingsStore.registerWidgetHotkey(widgetId, pendingKey);
-
-    setPendingKey(null);
-  };
-
-  const clearHotkey = async () => {
-    widgetSettingsStore.updateField(widgetId, 'hotkey', '');
-    await appSettingsStore.unregisterWidgetHotkey(widgetId);
-
-    setPendingKey(null);
-  };
-
   return (
-    <Flex vertical gap={8}>
-      <Text>
-        Toggle Hotkey:{' '}
-        {currentHotkey ? <Tag color="blue">{currentHotkey}</Tag> : 'None'}
-      </Text>
-
-      <Flex gap={8}>
-        <Button
-          size="small"
-          type={recording ? 'primary' : 'default'}
-          danger={recording}
-          onClick={() => {
-            setRecording(!recording);
-            setPendingKey(null);
-          }}
-          onKeyDown={handleKeyDown}
-        >
-          {recording ? 'Press a key...' : 'Record Hotkey'}
-        </Button>
-
-        {pendingKey && (
-          <>
-            <Tag color="green">{pendingKey}</Tag>
-
-            <Button
-              size="small"
-              type="primary"
-              onClick={() => {
-                void applyHotkey();
-              }}
-            >
-              Apply
-            </Button>
-          </>
-        )}
-
-        {currentHotkey && (
-          <Button
-            size="small"
-            danger
-            onClick={() => {
-              void clearHotkey();
-            }}
-          >
-            Clear
-          </Button>
-        )}
-      </Flex>
-    </Flex>
+    <HotkeyRecorder
+      label="Toggle Hotkey"
+      currentHotkey={currentHotkey}
+      onApply={(key: string) =>
+        widgetSettingsStore.updateField(widgetId, 'hotkey', key)
+      }
+    />
   );
 };
 
@@ -346,102 +223,90 @@ const SpeedSettings = observer(() => {
   };
 
   return (
-    <Flex vertical gap={12}>
-      <Title level={5} style={{ margin: 0 }}>
-        Speed Widget
-      </Title>
-
-      <Flex vertical gap={4}>
-        <Text>Focus Mode</Text>
-
+    <Card title="Module Parameters">
+      <div className={styles.fieldGroup}>
+        <span className={styles.fieldLabel}>Primary Focus</span>
         <Segmented
+          block
           value={settings.focusMode}
           options={[
-            { label: 'Speed', value: 'speed' },
-            { label: 'Gear', value: 'gear' },
+            { label: 'Vehicle Speed', value: 'speed' },
+            { label: 'Current Gear', value: 'gear' },
           ]}
           onChange={(v) => update({ focusMode: v as SpeedWidgetFocusMode })}
         />
-      </Flex>
+      </div>
 
-      <Flex vertical gap={4}>
-        <Text>RPM Color Theme</Text>
-
+      <div className={styles.fieldGroup}>
+        <span className={styles.fieldLabel}>RPM Scale Theme</span>
         <Select
+          style={{ width: '100%' }}
           value={settings.rpmColorTheme}
           onChange={(v) => update({ rpmColorTheme: v as RpmColorTheme })}
           options={[
-            { label: 'Custom', value: 'custom' },
-            { label: 'Gradient', value: 'gradient' },
-            { label: 'Classic', value: 'classic' },
+            { label: 'Custom Palette', value: 'custom' },
+            { label: 'Gradient Theme', value: 'gradient' },
+            { label: 'Classic Theme', value: 'classic' },
           ]}
         />
-      </Flex>
+      </div>
 
       {settings.rpmColorTheme === 'custom' && (
-        <Row gutter={[12, 8]}>
-          <Col span={6}>
-            <Flex vertical align="center" gap={4}>
-              <Text type="secondary">Low</Text>
-
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>Palette Colors</span>
+          <div className={styles.rpmColorGrid}>
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>Low</span>
               <ColorPicker
                 value={settings.rpmColorLow}
                 onChange={(c) => update({ rpmColorLow: c.toHexString() })}
-                size="small"
               />
-            </Flex>
-          </Col>
-
-          <Col span={6}>
-            <Flex vertical align="center" gap={4}>
-              <Text type="secondary">Mid</Text>
-
+            </div>
+            <div className={styles.rpmColorLine} />
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>Mid</span>
               <ColorPicker
                 value={settings.rpmColorMid}
                 onChange={(c) => update({ rpmColorMid: c.toHexString() })}
-                size="small"
               />
-            </Flex>
-          </Col>
-
-          <Col span={6}>
-            <Flex vertical align="center" gap={4}>
-              <Text type="secondary">High</Text>
-
+            </div>
+            <div className={styles.rpmColorLine} />
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>High</span>
               <ColorPicker
                 value={settings.rpmColorHigh}
                 onChange={(c) => update({ rpmColorHigh: c.toHexString() })}
-                size="small"
               />
-            </Flex>
-          </Col>
-
-          <Col span={6}>
-            <Flex vertical align="center" gap={4}>
-              <Text type="secondary">Limit</Text>
-
+            </div>
+            <div className={styles.rpmColorLine} />
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>Limit</span>
               <ColorPicker
                 value={settings.rpmColorLimit}
                 onChange={(c) => update({ rpmColorLimit: c.toHexString() })}
-                size="small"
               />
-            </Flex>
-          </Col>
-        </Row>
+            </div>
+          </div>
+        </div>
       )}
 
       {settings.rpmColorTheme !== 'custom' && (
-        <Flex vertical gap={4}>
-          <Text type="secondary">Limit Color</Text>
-
-          <ColorPicker
-            value={settings.rpmColorLimit}
-            onChange={(c) => update({ rpmColorLimit: c.toHexString() })}
-            size="small"
-          />
-        </Flex>
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>Limit Flash Color</div>
+              <div className={styles.fieldDesc}>
+                Color when engine reaches RPM limit.
+              </div>
+            </div>
+            <ColorPicker
+              value={settings.rpmColorLimit}
+              onChange={(c) => update({ rpmColorLimit: c.toHexString() })}
+            />
+          </div>
+        </div>
       )}
-    </Flex>
+    </Card>
   );
 });
 
@@ -455,69 +320,65 @@ const InputTraceSettingsPanel = observer(() => {
   };
 
   return (
-    <Flex vertical gap={12}>
-      <Title level={5} style={{ margin: 0 }}>
-        Input Trace
-      </Title>
-
-      <Flex vertical gap={8}>
-        <Text>Channels</Text>
-
-        <Space direction="vertical">
+    <Card title="Data Channels">
+      <div className={styles.fieldGroup}>
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>Throttle</div>
+          </div>
           <Space>
-            <Switch
-              checked={settings.showThrottle}
-              onChange={(v) => update({ showThrottle: v })}
-              size="small"
-            />
-
-            <Text>Throttle</Text>
-
             <ColorPicker
               value={settings.throttleColor}
               onChange={(c) => update({ throttleColor: c.toHexString() })}
-              size="small"
+            />
+            <Switch
+              checked={settings.showThrottle}
+              onChange={(v) => update({ showThrottle: v })}
             />
           </Space>
+        </div>
+      </div>
 
+      <div className={styles.fieldGroup}>
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>Brake</div>
+          </div>
           <Space>
-            <Switch
-              checked={settings.showBrake}
-              onChange={(v) => update({ showBrake: v })}
-              size="small"
-            />
-
-            <Text>Brake</Text>
-
             <ColorPicker
               value={settings.brakeColor}
               onChange={(c) => update({ brakeColor: c.toHexString() })}
-              size="small"
+            />
+            <Switch
+              checked={settings.showBrake}
+              onChange={(v) => update({ showBrake: v })}
             />
           </Space>
+        </div>
+      </div>
 
+      <div className={styles.fieldGroup}>
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>Clutch</div>
+          </div>
           <Space>
-            <Switch
-              checked={settings.showClutch}
-              onChange={(v) => update({ showClutch: v })}
-              size="small"
-            />
-
-            <Text>Clutch</Text>
-
             <ColorPicker
               value={settings.clutchColor}
               onChange={(c) => update({ clutchColor: c.toHexString() })}
-              size="small"
+            />
+            <Switch
+              checked={settings.showClutch}
+              onChange={(v) => update({ showClutch: v })}
             />
           </Space>
-        </Space>
-      </Flex>
+        </div>
+      </div>
 
-      <Flex vertical gap={4}>
-        <Text>Progress Bars</Text>
-
+      <div className={styles.fieldGroup}>
+        <span className={styles.fieldLabel}>Progress Bars Orientation</span>
         <Segmented
+          block
           value={settings.barMode}
           options={[
             { label: 'Horizontal', value: 'horizontal' },
@@ -526,8 +387,8 @@ const InputTraceSettingsPanel = observer(() => {
           ]}
           onChange={(v) => update({ barMode: v as InputTraceBarMode })}
         />
-      </Flex>
-    </Flex>
+      </div>
+    </Card>
   );
 });
 
@@ -542,31 +403,26 @@ const RadarSettingsPanel = observer(
     };
 
     return (
-      <Flex vertical gap={12}>
-        <Title level={5} style={{ margin: 0 }}>
-          Radar Settings
-        </Title>
-
-        <Flex vertical gap={4}>
-          <Text>Visibility</Text>
-
+      <Card title="Radar Behavior">
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>Visibility Logic</span>
           <Segmented
+            block
             value={settings.visibilityMode}
             options={[
-              { label: 'Always', value: 'always' },
-              { label: 'Proximity', value: 'proximity' },
+              { label: 'Always Visible', value: 'always' },
+              { label: 'On Proximity Only', value: 'proximity' },
             ]}
             onChange={(v) =>
               update({ visibilityMode: v as RadarVisibilityMode })
             }
           />
-        </Flex>
+        </div>
 
         {settings.visibilityMode === 'proximity' && (
-          <>
-            <Flex vertical gap={4}>
-              <Text>Show when car within (m)</Text>
-
+          <Row gutter={24} className={styles.fieldGroup}>
+            <Col span={12}>
+              <span className={styles.fieldLabel}>Activation Range (m)</span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={settings.proximityThreshold}
@@ -577,11 +433,10 @@ const RadarSettingsPanel = observer(
                   v !== null && update({ proximityThreshold: v })
                 }
               />
-            </Flex>
+            </Col>
 
-            <Flex vertical gap={4}>
-              <Text>Hide delay (seconds)</Text>
-
+            <Col span={12}>
+              <span className={styles.fieldLabel}>Fade Out Delay (s)</span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={settings.hideDelay}
@@ -590,30 +445,27 @@ const RadarSettingsPanel = observer(
                 step={0.5}
                 onChange={(v) => v !== null && update({ hideDelay: v })}
               />
-            </Flex>
-          </>
+            </Col>
+          </Row>
         )}
 
         {widgetId === 'radar-bar' && (
-          <>
-            <Flex vertical gap={4}>
-              <Text>Bar Display</Text>
+          <div className={styles.fieldGroup}>
+            <span className={styles.fieldLabel}>Bar Display Mode</span>
+            <Segmented
+              block
+              value={settings.barDisplayMode ?? 'both'}
+              options={[
+                { label: 'Show Both Sides', value: 'both' },
+                { label: 'Active Side Only', value: 'active-only' },
+              ]}
+              onChange={(v) =>
+                update({ barDisplayMode: v as RadarBarDisplayMode })
+              }
+            />
 
-              <Segmented
-                value={settings.barDisplayMode ?? 'both'}
-                options={[
-                  { label: 'Both Sides', value: 'both' },
-                  { label: 'Active Only', value: 'active-only' },
-                ]}
-                onChange={(v) =>
-                  update({ barDisplayMode: v as RadarBarDisplayMode })
-                }
-              />
-            </Flex>
-
-            <Flex vertical gap={4}>
-              <Text>Bar Spacing (px)</Text>
-
+            <div style={{ marginTop: 24 }}>
+              <span className={styles.fieldLabel}>Center Gap Spacing (px)</span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={settings.barSpacing ?? 0}
@@ -622,10 +474,10 @@ const RadarSettingsPanel = observer(
                 step={10}
                 onChange={(v) => v !== null && update({ barSpacing: v })}
               />
-            </Flex>
-          </>
+            </div>
+          </div>
         )}
-      </Flex>
+      </Card>
     );
   }
 );
@@ -640,49 +492,44 @@ const RelativeSettingsPanel = observer(() => {
   };
 
   return (
-    <Flex vertical gap={12}>
-      <Title level={5} style={{ margin: 0 }}>
-        Relative
-      </Title>
-
-      <Space direction="vertical">
-        <Space>
-          <Switch
-            checked={settings.showClassBadge}
-            onChange={(v) => update({ showClassBadge: v })}
-            size="small"
-          />
-          <Text>Class Badge</Text>
-        </Space>
-
-        <Space>
-          <Switch
-            checked={settings.showIRatingBadge}
-            onChange={(v) => update({ showIRatingBadge: v })}
-            size="small"
-          />
-          <Text>License / iRating</Text>
-        </Space>
-
-        <Space>
-          <Switch
-            checked={settings.showPitIndicator}
-            onChange={(v) => update({ showPitIndicator: v })}
-            size="small"
-          />
-          <Text>Pit Indicator</Text>
-        </Space>
-
-        <Space>
-          <Switch
-            checked={settings.abbreviateNames}
-            onChange={(v) => update({ abbreviateNames: v })}
-            size="small"
-          />
-          <Text>Abbreviate Names</Text>
-        </Space>
-      </Space>
-    </Flex>
+    <Card title="Data Columns">
+      {[
+        {
+          title: 'Class Badges',
+          desc: 'Show colored class indicators.',
+          value: settings.showClassBadge,
+          onChange: (v: boolean) => update({ showClassBadge: v }),
+        },
+        {
+          title: 'License / iRating',
+          desc: 'Show driver license and iRating info.',
+          value: settings.showIRatingBadge,
+          onChange: (v: boolean) => update({ showIRatingBadge: v }),
+        },
+        {
+          title: 'Pit Indicator',
+          desc: 'Show icon when driver is in pits.',
+          value: settings.showPitIndicator,
+          onChange: (v: boolean) => update({ showPitIndicator: v }),
+        },
+        {
+          title: 'Abbreviate Names',
+          desc: 'Use short names to save space.',
+          value: settings.abbreviateNames,
+          onChange: (v: boolean) => update({ abbreviateNames: v }),
+        },
+      ].map((item, i) => (
+        <div key={i} className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>{item.title}</div>
+              <div className={styles.fieldDesc}>{item.desc}</div>
+            </div>
+            <Switch checked={item.value} onChange={item.onChange} />
+          </div>
+        </div>
+      ))}
+    </Card>
   );
 });
 
@@ -696,139 +543,103 @@ const StandingsSettingsPanel = observer(() => {
   };
 
   return (
-    <Flex vertical gap={12}>
-      <Title level={5} style={{ margin: 0 }}>
-        Standings
-      </Title>
-
-      <Flex vertical gap={4}>
-        <Space>
+    <>
+      <Card title="Logic & Grouping">
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>Group by Class</div>
+            <div className={styles.fieldDesc}>
+              Separate standings into class blocks. Pinned players stay at
+              bottom if out of view.
+            </div>
+          </div>
           <Switch
             checked={settings.groupByClass}
             onChange={(v) => update({ groupByClass: v })}
-            size="small"
           />
-          <Text>Group by Class</Text>
-        </Space>
+        </div>
+      </Card>
 
-        <Text type="secondary" style={{ fontSize: 11 }}>
-          Separate standings into class blocks. If player is not in the visible
-          top rows, they are always pinned at the bottom.
-        </Text>
-      </Flex>
+      <Card title="Data Columns">
+        {[
+          {
+            title: 'Position Change (+/-)',
+            value: settings.showPosChange,
+            key: 'showPosChange',
+          },
+          {
+            title: 'Vehicle Brand Logo',
+            value: settings.showBrand,
+            key: 'showBrand',
+          },
+          { title: 'Tire Compound', value: settings.showTire, key: 'showTire' },
+          {
+            title: 'iRating Delta (projected)',
+            value: settings.showIrChange,
+            key: 'showIrChange',
+          },
+          {
+            title: 'Pit Stop Count',
+            value: settings.showPitStops,
+            key: 'showPitStops',
+          },
+        ].map((item) => (
+          <div key={item.key} className={styles.fieldGroup}>
+            <div className={styles.fieldRow}>
+              <div className={styles.fieldTexts}>
+                <div className={styles.fieldTitle}>{item.title}</div>
+              </div>
+              <Switch
+                checked={item.value}
+                onChange={(v) => update({ [item.key]: v })}
+              />
+            </div>
+          </div>
+        ))}
+      </Card>
 
-      <Divider style={{ margin: '4px 0' }} />
-
-      <Flex vertical gap={8}>
-        <Text>Columns</Text>
-
-        <Space direction="vertical">
-          <Space>
-            <Switch
-              checked={settings.showPosChange}
-              onChange={(v) => update({ showPosChange: v })}
-              size="small"
-            />
-            <Text>Position Change (+/-)</Text>
-          </Space>
-
-          <Space>
-            <Switch
-              checked={settings.showBrand}
-              onChange={(v) => update({ showBrand: v })}
-              size="small"
-            />
-            <Text>Brand</Text>
-          </Space>
-
-          <Space>
-            <Switch
-              checked={settings.showTire}
-              onChange={(v) => update({ showTire: v })}
-              size="small"
-            />
-            <Text>Tire</Text>
-          </Space>
-
-          <Space>
-            <Switch
-              checked={settings.showIrChange}
-              onChange={(v) => update({ showIrChange: v })}
-              size="small"
-            />
-            <Text>ΔiR (estimate)</Text>
-          </Space>
-
-          <Space>
-            <Switch
-              checked={settings.showPitStops}
-              onChange={(v) => update({ showPitStops: v })}
-              size="small"
-            />
-            <Text>Pit Stops (player only)</Text>
-          </Space>
-        </Space>
-
-        <Text type="secondary" style={{ fontSize: 11 }}>
-          Tire shows the session compound (iRacing does not expose per-driver
-          tire data). ΔiR is an Elo-based projection, not real iRacing data. Pit
-          Stops are counted on the frontend for the player only.
-        </Text>
-      </Flex>
-
-      <Divider style={{ margin: '4px 0' }} />
-
-      <Flex vertical gap={8}>
-        <Text>Header</Text>
-
-        <Space direction="vertical">
-          <Space>
-            <Switch
-              checked={settings.showColumnHeaders}
-              onChange={(v) => update({ showColumnHeaders: v })}
-              size="small"
-            />
-            <Text>Column Names</Text>
-          </Space>
-
-          <Space>
-            <Switch
-              checked={settings.showSessionHeader}
-              onChange={(v) => update({ showSessionHeader: v })}
-              size="small"
-            />
-            <Text>Session Info</Text>
-          </Space>
-
-          <Space>
-            <Switch
-              checked={settings.showWeather}
-              onChange={(v) => update({ showWeather: v })}
-              size="small"
-            />
-            <Text>Weather</Text>
-          </Space>
-
-          <Space>
-            <Switch
-              checked={settings.showSOF}
-              onChange={(v) => update({ showSOF: v })}
-              size="small"
-            />
-            <Text>SOF</Text>
-          </Space>
-
-          <Space>
-            <Switch
-              checked={settings.showTotalDrivers}
-              onChange={(v) => update({ showTotalDrivers: v })}
-              size="small"
-            />
-            <Text>Total Drivers</Text>
-          </Space>
-        </Space>
-      </Flex>
-    </Flex>
+      <Card title="Header Info">
+        {[
+          {
+            title: 'Column Headers',
+            value: settings.showColumnHeaders,
+            key: 'showColumnHeaders',
+          },
+          {
+            title: 'Session Progress Info',
+            value: settings.showSessionHeader,
+            key: 'showSessionHeader',
+          },
+          {
+            title: 'Live Weather Info',
+            value: settings.showWeather,
+            key: 'showWeather',
+          },
+          {
+            title: 'Strength of Field (SOF)',
+            value: settings.showSOF,
+            key: 'showSOF',
+          },
+          {
+            title: 'Total Drivers Count',
+            value: settings.showTotalDrivers,
+            key: 'showTotalDrivers',
+          },
+        ].map((item) => (
+          <div key={item.key} className={styles.fieldGroup}>
+            <div className={styles.fieldRow}>
+              <div className={styles.fieldTexts}>
+                <div className={styles.fieldTitle}>{item.title}</div>
+              </div>
+              <Switch
+                checked={item.value}
+                onChange={(v) => update({ [item.key]: v })}
+              />
+            </div>
+          </div>
+        ))}
+      </Card>
+    </>
   );
 });
 
@@ -842,15 +653,11 @@ const LinearMapSettingsPanel = observer(() => {
   };
 
   return (
-    <Flex vertical gap={12}>
-      <Title level={5} style={{ margin: 0 }}>
-        Linear Map
-      </Title>
-
-      <Flex vertical gap={4}>
-        <Text>Orientation</Text>
-
+    <Card title="Module Layout">
+      <div className={styles.fieldGroup}>
+        <span className={styles.fieldLabel}>Orientation</span>
         <Segmented
+          block
           value={settings.orientation}
           options={[
             { label: 'Horizontal', value: 'horizontal' },
@@ -858,8 +665,8 @@ const LinearMapSettingsPanel = observer(() => {
           ]}
           onChange={(v) => update({ orientation: v as LinearMapOrientation })}
         />
-      </Flex>
-    </Flex>
+      </div>
+    </Card>
   );
 });
 
@@ -893,88 +700,77 @@ const TrackMapSettingsPanel = observer(() => {
   };
 
   return (
-    <Flex vertical gap={12}>
-      <Title level={5} style={{ margin: 0 }}>
-        Track Map
-      </Title>
+    <>
+      <Card title="Visual Elements">
+        {[
+          {
+            title: 'Class Legend',
+            value: settings.showLegend,
+            key: 'showLegend',
+          },
+          {
+            title: 'Track Sectors',
+            value: settings.showSectors,
+            key: 'showSectors',
+          },
+          {
+            title: 'Corner Numbers',
+            value: settings.showCornerNumbers,
+            key: 'showCornerNumbers',
+          },
+        ].map((item) => (
+          <div key={item.key} className={styles.fieldGroup}>
+            <div className={styles.fieldRow}>
+              <div className={styles.fieldTexts}>
+                <div className={styles.fieldTitle}>{item.title}</div>
+              </div>
+              <Switch
+                checked={item.value}
+                onChange={(v) => update({ [item.key]: v })}
+              />
+            </div>
+          </div>
+        ))}
+      </Card>
 
-      <Space>
-        <Switch
-          checked={settings.showLegend}
-          onChange={(v) => update({ showLegend: v })}
-          size="small"
-        />
-        <Text>Class Legend</Text>
-      </Space>
-
-      <Space>
-        <Switch
-          checked={settings.showSectors}
-          onChange={(v) => update({ showSectors: v })}
-          size="small"
-        />
-        <Text>Sectors</Text>
-      </Space>
-
-      <Space>
-        <Switch
-          checked={settings.showCornerNumbers}
-          onChange={(v) => update({ showCornerNumbers: v })}
-          size="small"
-        />
-        <Text>Corner Numbers</Text>
-      </Space>
-
-      <Divider style={{ margin: '4px 0' }} />
-
-      <Flex vertical gap={8}>
-        <Text>Track Data</Text>
-
-        <Button
-          size="small"
-          danger
-          onClick={() => {
-            void handleRerecord();
-          }}
-        >
-          Re-record current track
-        </Button>
-
-        <Text type="secondary" style={{ fontSize: 11 }}>
-          Clears the saved map for the current track and starts a new recording
-          on your next lap.
-        </Text>
-
-        {!tracksPath ? (
+      <Card title="Track Database">
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldTitle}>Re-record Track</div>
+          <div className={styles.fieldDesc} style={{ marginBottom: 16 }}>
+            Clears current map data and starts fresh on next lap.
+          </div>
           <Button
+            block
             size="small"
-            onClick={() => {
-              void handleShowPath();
-            }}
+            danger
+            onClick={() => void handleRerecord()}
           >
-            Show tracks.json path
+            Reset Current Track Data
           </Button>
-        ) : (
-          <Flex vertical gap={4}>
-            <Text
-              type="secondary"
-              style={{ fontSize: 11, wordBreak: 'break-all' }}
-            >
-              {tracksPath}
-            </Text>
+        </div>
 
-            <Button
-              size="small"
-              onClick={() => {
-                void handleCopyPath();
-              }}
-            >
-              Copy path
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldTitle}>Storage Location</div>
+          {!tracksPath ? (
+            <Button block size="small" onClick={() => void handleShowPath()}>
+              Show tracks.json Path
             </Button>
-          </Flex>
-        )}
-      </Flex>
-    </Flex>
+          ) : (
+            <Flex vertical gap={8}>
+              <div
+                className={styles.fieldDesc}
+                style={{ wordBreak: 'break-all' }}
+              >
+                {tracksPath}
+              </div>
+              <Button block size="small" onClick={() => void handleCopyPath()}>
+                Copy Path
+              </Button>
+            </Flex>
+          )}
+        </div>
+      </Card>
+    </>
   );
 });
 
@@ -988,58 +784,47 @@ const WeatherSettingsPanel = observer(() => {
   };
 
   return (
-    <Flex vertical gap={12}>
-      <Title level={5} style={{ margin: 0 }}>
-        Weather
-      </Title>
-
-      <Space direction="vertical">
-        <Space>
-          <Switch
-            checked={settings.showCompass}
-            onChange={(v) => update({ showCompass: v })}
-            size="small"
-          />
-          <Text>Compass</Text>
-        </Space>
-
-        <Space>
-          <Switch
-            checked={settings.showAirTemp}
-            onChange={(v) => update({ showAirTemp: v })}
-            size="small"
-          />
-          <Text>Air Temperature</Text>
-        </Space>
-
-        <Space>
-          <Switch
-            checked={settings.showTrackTemp}
-            onChange={(v) => update({ showTrackTemp: v })}
-            size="small"
-          />
-          <Text>Track Temperature</Text>
-        </Space>
-
-        <Space>
-          <Switch
-            checked={settings.showWind}
-            onChange={(v) => update({ showWind: v })}
-            size="small"
-          />
-          <Text>Wind</Text>
-        </Space>
-
-        <Space>
-          <Switch
-            checked={settings.showHumidity}
-            onChange={(v) => update({ showHumidity: v })}
-            size="small"
-          />
-          <Text>Humidity</Text>
-        </Space>
-      </Space>
-    </Flex>
+    <Card title="Module Parameters">
+      {[
+        {
+          title: 'Wind Compass',
+          value: settings.showCompass,
+          key: 'showCompass',
+        },
+        {
+          title: 'Air Temperature',
+          value: settings.showAirTemp,
+          key: 'showAirTemp',
+        },
+        {
+          title: 'Track Temperature',
+          value: settings.showTrackTemp,
+          key: 'showTrackTemp',
+        },
+        {
+          title: 'Wind Speed & Dir',
+          value: settings.showWind,
+          key: 'showWind',
+        },
+        {
+          title: 'Relative Humidity',
+          value: settings.showHumidity,
+          key: 'showHumidity',
+        },
+      ].map((item) => (
+        <div key={item.key} className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>{item.title}</div>
+            </div>
+            <Switch
+              checked={item.value}
+              onChange={(v) => update({ [item.key]: v })}
+            />
+          </div>
+        </div>
+      ))}
+    </Card>
   );
 });
 
@@ -1053,38 +838,38 @@ const FuelSettingsPanel = observer(() => {
   };
 
   return (
-    <Flex vertical gap={12}>
-      <Title level={5} style={{ margin: 0 }}>
-        Fuel
-      </Title>
-
-      <Space>
-        <Switch
-          checked={settings.showChart}
-          onChange={(v) => update({ showChart: v })}
-          size="small"
-        />
-        <Text>Show Chart</Text>
-      </Space>
-
-      {settings.showChart && (
-        <Flex vertical gap={4}>
-          <Text>Chart Type</Text>
-
+    <Card title="Analytics & Warnings">
+      <div className={styles.fieldGroup}>
+        <div
+          className={styles.fieldRow}
+          style={{ marginBottom: settings.showChart ? 16 : 0 }}
+        >
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>History Chart</div>
+            <div className={styles.fieldDesc}>Visual consumption history.</div>
+          </div>
+          <Switch
+            checked={settings.showChart}
+            onChange={(v) => update({ showChart: v })}
+          />
+        </div>
+        {settings.showChart && (
           <Segmented
+            block
             value={settings.chartType}
             options={[
-              { label: 'Bar', value: 'bar' },
-              { label: 'Line', value: 'line' },
+              { label: 'Bar Chart', value: 'bar' },
+              { label: 'Line Chart', value: 'line' },
             ]}
             onChange={(v) => update({ chartType: v as 'bar' | 'line' })}
           />
-        </Flex>
-      )}
+        )}
+      </div>
 
-      <Flex vertical gap={4}>
-        <Text>Pit Warning (laps remaining)</Text>
-
+      <div className={styles.fieldGroup}>
+        <span className={styles.fieldLabel}>
+          Low Fuel Warning Threshold (Laps)
+        </span>
         <InputNumber
           style={{ width: '100%' }}
           value={settings.pitWarningLaps}
@@ -1092,8 +877,8 @@ const FuelSettingsPanel = observer(() => {
           max={20}
           onChange={(v) => v !== null && update({ pitWarningLaps: v })}
         />
-      </Flex>
-    </Flex>
+      </div>
+    </Card>
   );
 });
 
@@ -1107,54 +892,44 @@ const FlagsSettingsPanel = observer(() => {
   };
 
   return (
-    <Flex vertical gap={12}>
-      <Title level={5} style={{ margin: 0 }}>
-        Flags
-      </Title>
-
-      <Flex vertical gap={4}>
-        <Text>Variant</Text>
-
+    <Card title="Module Display">
+      <div className={styles.fieldGroup}>
+        <span className={styles.fieldLabel}>Visual Variant</span>
         <Segmented
+          block
           value={settings.variant}
           options={[
-            { label: 'Overlay', value: 'overlay' },
+            { label: 'Full Overlay', value: 'overlay' },
             { label: 'Under Mirror', value: 'under-mirror' },
             { label: 'Standalone', value: 'standalone' },
           ]}
           onChange={(v) => update({ variant: v as FlagsVariant })}
         />
-      </Flex>
+      </div>
 
-      <Row gutter={16}>
+      <Row gutter={24} className={styles.fieldGroup}>
         <Col span={12}>
-          <Flex vertical gap={4}>
-            <Text>Cutout Width</Text>
-
-            <InputNumber
-              style={{ width: '100%' }}
-              value={settings.cutoutWidth}
-              min={1}
-              max={20}
-              onChange={(v) => v !== null && update({ cutoutWidth: v })}
-            />
-          </Flex>
+          <span className={styles.fieldLabel}>Width Multiplier</span>
+          <InputNumber
+            style={{ width: '100%' }}
+            value={settings.cutoutWidth}
+            min={1}
+            max={20}
+            onChange={(v) => v !== null && update({ cutoutWidth: v })}
+          />
         </Col>
 
         <Col span={12}>
-          <Flex vertical gap={4}>
-            <Text>Cutout Height</Text>
-
-            <InputNumber
-              style={{ width: '100%' }}
-              value={settings.cutoutHeight}
-              min={1}
-              max={10}
-              onChange={(v) => v !== null && update({ cutoutHeight: v })}
-            />
-          </Flex>
+          <span className={styles.fieldLabel}>Height Multiplier</span>
+          <InputNumber
+            style={{ width: '100%' }}
+            value={settings.cutoutHeight}
+            min={1}
+            max={10}
+            onChange={(v) => v !== null && update({ cutoutHeight: v })}
+          />
         </Col>
       </Row>
-    </Flex>
+    </Card>
   );
 });

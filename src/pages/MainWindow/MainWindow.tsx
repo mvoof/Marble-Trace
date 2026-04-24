@@ -1,76 +1,146 @@
 import { useEffect, useState } from 'react';
-import { Layout, Typography, theme, Menu } from 'antd';
-import { ConfigProvider } from 'antd';
-import { LayoutGrid, Settings } from 'lucide-react';
+import { Layout, ConfigProvider, theme } from 'antd';
+import { observer } from 'mobx-react-lite';
+import { Settings } from 'lucide-react';
 import { useTelemetry } from '../../hooks/useTelemetry';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
-import { appSettingsStore } from '../../store/app-settings.store';
-import { unitsStore } from '../../store/units.store';
-import { ConnectionStatus } from './components/ConnectionStatus';
-import { WidgetsPage } from './components/WidgetsPage';
+import { initMainSync } from '../../store/sync';
+import { WidgetList } from './components/WidgetList';
+import { WidgetSettings } from './components/WidgetSettings';
 import { SettingsPage } from './components/SettingsPage';
+import { TitleBar } from './components/TitleBar/TitleBar';
+import { AppStatus } from './components/AppStatus/AppStatus';
+import { RandomGlitchCanvas } from '../../components/shared/BackgroundAnimation/RandomGlitchCanvas';
 import styles from './MainWindow.module.scss';
 import Logo from '../../assets/logo.svg?react';
 
-const { Content, Header } = Layout;
-const { Title } = Typography;
+const { Content, Sider } = Layout;
 
-type PageKey = 'widgets' | 'settings';
-
-const MENU_ITEMS = [
-  { key: 'widgets', icon: <LayoutGrid size={16} />, label: 'Widgets' },
-  { key: 'settings', icon: <Settings size={16} />, label: 'Settings' },
-];
-
-export const MainWindow = () => {
-  const [activePage, setActivePage] = useState<PageKey>('widgets');
+export const MainWindow = observer(() => {
+  const [selectedId, setSelectedId] = useState<string>('app-settings');
 
   useTelemetry();
 
   useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    let isMounted = true;
+
     const init = async () => {
-      await widgetSettingsStore.loadSettings();
-      await unitsStore.loadSettings();
-      await appSettingsStore.init();
+      const result = await initMainSync();
+
+      if (!isMounted) {
+        result();
+      } else {
+        cleanup = result;
+      }
     };
+
     void init();
 
     return () => {
-      void appSettingsStore.dispose();
+      isMounted = false;
+      cleanup?.();
     };
   }, []);
 
   return (
-    <ConfigProvider theme={{ algorithm: theme.darkAlgorithm }}>
+    <ConfigProvider
+      theme={{
+        algorithm: theme.darkAlgorithm,
+        token: {
+          colorBgBase: '#0d0e12',
+          colorBgContainer: '#15161a',
+          colorBgElevated: '#1d1f25',
+          colorPrimary: '#e0e0e0',
+          colorTextBase: '#e0e0e0',
+          colorTextDescription: '#8b8e98',
+          borderRadius: 4,
+          fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+        },
+        components: {
+          Layout: {
+            siderBg: '#111216',
+            bodyBg: '#0d0e12',
+          },
+          Switch: {
+            colorPrimary: '#e0e0e0',
+            colorPrimaryHover: '#ffffff',
+            colorTextQuaternary: '#15161a',
+            handleBg: '#5e626d',
+          },
+          Segmented: {
+            itemSelectedBg: '#2a2c32',
+            itemSelectedColor: '#ffffff',
+            itemColor: '#8b8e98',
+            itemHoverColor: '#e0e0e0',
+            trackBg: '#0d0e12',
+          },
+          Input: {
+            colorBgContainer: '#0d0e12',
+            colorBorder: '#2a2c32',
+            colorTextPlaceholder: '#5e626d',
+          },
+          InputNumber: {
+            colorBgContainer: '#0d0e12',
+            colorBorder: '#2a2c32',
+          },
+          Select: {
+            colorBgContainer: '#0d0e12',
+            colorBorder: '#2a2c32',
+          },
+        },
+      }}
+    >
       <Layout className={styles.layout}>
-        <Header className={styles.header}>
-          <div className={styles.headerTitleWrapper}>
-            <Logo className={styles.logo} />
+        <TitleBar />
 
-            <Title level={4} style={{ margin: 0 }}>
-              Marble Trace
-            </Title>
-          </div>
+        <Layout className={styles.mainContainer}>
+          <Sider width={320} className={styles.sider}>
+            <div className={styles.sidebarHeader}>
+              <div className={styles.logoContainer}>
+                <Logo className={styles.logo} />
+              </div>
+              <div className={styles.headerText}>
+                <span className={styles.brandName}>Marble Trace</span>
+                <AppStatus />
+              </div>
+            </div>
 
-          <ConnectionStatus />
-        </Header>
+            <div className={styles.sidebarContent}>
+              <div className={styles.sectionTitle}>Widget Modules</div>
+              <WidgetList selectedId={selectedId} onSelect={setSelectedId} />
+            </div>
 
-        <Layout>
-          <Layout.Sider width={200} theme="dark" className={styles.sider}>
-            <Menu
-              mode="inline"
-              selectedKeys={[activePage]}
-              items={MENU_ITEMS}
-              onSelect={({ key }) => setActivePage(key as PageKey)}
-            />
-          </Layout.Sider>
+            <div className={styles.sidebarFooter}>
+              <button
+                className={`${styles.settingsItem} ${
+                  selectedId === 'app-settings' ? styles.active : ''
+                }`}
+                onClick={() => setSelectedId('app-settings')}
+              >
+                <Settings
+                  size={16}
+                  className={styles.settingsIcon}
+                  strokeWidth={2}
+                />
+                <span className={styles.settingsLabel}>Global Settings</span>
+              </button>
+            </div>
+          </Sider>
 
           <Content className={styles.content}>
-            {activePage === 'widgets' && <WidgetsPage />}
-            {activePage === 'settings' && <SettingsPage />}
+            <RandomGlitchCanvas />
+            <div className={styles.scrollContainer} key={selectedId}>
+              <div className={`${styles.contentInner} ${styles.animateFadeIn}`}>
+                {selectedId === 'app-settings' ? (
+                  <SettingsPage />
+                ) : (
+                  <WidgetSettings widgetId={selectedId} />
+                )}
+              </div>
+            </div>
           </Content>
         </Layout>
       </Layout>
     </ConfigProvider>
   );
-};
+});

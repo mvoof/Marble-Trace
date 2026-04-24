@@ -1,18 +1,20 @@
+import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { List, Switch, Typography } from 'antd';
+import { Switch } from 'antd';
 import {
   widgetSettingsStore,
-  WidgetConfig,
+  type WidgetConfig,
 } from '../../../../store/widget-settings.store';
-
-const { Text } = Typography;
+import styles from './WidgetList.module.scss';
 
 const WidgetListItem = observer(
   ({
     widget,
+    isActive,
     onSelect,
   }: {
     widget: WidgetConfig;
+    isActive: boolean;
     onSelect: (id: string) => void;
   }) => {
     const handleToggle = (checked: boolean) => {
@@ -20,33 +22,53 @@ const WidgetListItem = observer(
     };
 
     return (
-      <List.Item
-        style={{ cursor: 'pointer', padding: '8px 16px' }}
+      <button
+        type="button"
+        className={`${styles.listItem} ${isActive ? styles.active : ''}`}
         onClick={() => onSelect(widget.id)}
       >
-        <List.Item.Meta
-          title={<Text>{widget.label}</Text>}
-          description={`${widget.width}×${widget.height}`}
-        />
-        <Switch
-          checked={widget.enabled}
-          onChange={handleToggle}
-          onClick={(_, e) => e.stopPropagation()}
-        />
-      </List.Item>
+        <div className={styles.content}>
+          <span className={styles.title}>{widget.label}</span>
+          <span className={styles.description}>
+            {widget.description || 'Configure widget settings.'}
+          </span>
+        </div>
+        <div
+          className={styles.switch}
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+          role="presentation"
+        >
+          <Switch
+            checked={widget.enabled}
+            size="small"
+            onChange={handleToggle}
+          />
+        </div>
+      </button>
     );
   }
 );
 
 export const WidgetList = observer(
-  ({ onSelect }: { onSelect: (id: string) => void }) => {
+  ({
+    selectedId,
+    onSelect,
+  }: {
+    selectedId: string | null;
+    onSelect: (id: string) => void;
+  }) => {
     return (
-      <List
-        dataSource={widgetSettingsStore.widgets.slice()}
-        renderItem={(widget) => (
-          <WidgetListItem key={widget.id} widget={widget} onSelect={onSelect} />
-        )}
-      />
+      <div className={styles.list}>
+        {widgetSettingsStore.widgets.map((widget) => (
+          <WidgetListItem
+            key={widget.id}
+            widget={widget}
+            isActive={selectedId === widget.id}
+            onSelect={onSelect}
+          />
+        ))}
+      </div>
     );
   }
 );
