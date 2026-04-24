@@ -12,6 +12,7 @@ pub struct LapDeltaState {
     pub sector_times: Vec<Option<f32>>,
     pub last_lap: i32,
     pub sector_count: usize,
+    pub cached_sector_pcts: Vec<f64>,
 }
 
 impl Default for LapDeltaState {
@@ -22,6 +23,7 @@ impl Default for LapDeltaState {
             sector_times: Vec::new(),
             last_lap: -1,
             sector_count: 0,
+            cached_sector_pcts: Vec::new(),
         }
     }
 }
@@ -65,8 +67,12 @@ pub fn compute(
     session: &SessionInfo,
     state: &Mutex<LapDeltaState>,
 ) -> LapDeltaFrame {
-    let sector_pcts = get_sector_pcts(session);
-    let sector_count = sector_pcts.len();
+    let mut locked = state.lock().unwrap_or_else(|e| e.into_inner());
+
+    if locked.cached_sector_pcts.is_empty() {
+        locked.cached_sector_pcts = get_sector_pcts(session);
+    }
+    let sector_count = locked.cached_sector_pcts.len();
 
     let best_lap_time = frame
         .lap_best_lap_time
@@ -76,15 +82,12 @@ pub fn compute(
     let lap_dist_pct = match frame.lap_dist_pct {
         Some(p) if p >= 0.0 => p as f64,
         _ => {
-            let locked = state.lock().unwrap_or_else(|e| e.into_inner());
             return build_frame(&locked.sector_times, best_lap_time, sector_count, -1);
         }
     };
 
     let session_time = frame.session_time.unwrap_or(0.0);
     let current_lap = frame.lap.unwrap_or(0);
-
-    let mut locked = state.lock().unwrap_or_else(|e| e.into_inner());
 
     if locked.sector_count != sector_count {
         locked.sector_times = vec![None; sector_count];
@@ -106,7 +109,7 @@ pub fn compute(
     }
 
     let mut current_sector_idx = 0i32;
-    for (i, &pct) in sector_pcts.iter().enumerate().rev() {
+    for (i, &pct) in locked.cached_sector_pcts.iter().enumerate().rev() {
         if pct <= lap_dist_pct {
             current_sector_idx = i as i32;
             break;
