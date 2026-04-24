@@ -6,8 +6,8 @@ export interface WidgetVariant {
   }>;
   designWidth: number;
   designHeight: number;
-  /** Use adaptive font-size scaling instead of transform: scale() */
-  adaptive?: boolean;
+  /** Scale widget via transform: scale() based on designWidth/designHeight. false = stretch to fill container with no scaling */
+  scale?: boolean;
 }
 
 export interface WidgetEntry {

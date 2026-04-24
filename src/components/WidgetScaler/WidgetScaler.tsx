@@ -6,7 +6,7 @@ interface WidgetScalerProps {
   designHeight: number;
   background?: string;
   children: ReactNode;
-  adaptive?: boolean;
+  scale?: boolean;
 }
 
 export const WidgetScaler = ({
@@ -14,44 +14,35 @@ export const WidgetScaler = ({
   designHeight,
   background,
   children,
-  adaptive = false,
+  scale = false,
 }: WidgetScalerProps) => {
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!scale) return;
+
     const outer = outerRef.current;
     const inner = innerRef.current;
     if (!outer || !inner) return;
 
     const update = () => {
       const { width, height } = outer.getBoundingClientRect();
-
-      if (adaptive) {
-        const scale = width / designWidth;
-        inner.style.fontSize = `${scale * 16}px`;
-      } else {
-        const scale = Math.min(width / designWidth, height / designHeight);
-        inner.style.transform = `translate(-50%, -50%) scale(${scale})`;
-      }
+      const factor = Math.min(width / designWidth, height / designHeight);
+      inner.style.transform = `translate(-50%, -50%) scale(${factor})`;
     };
 
     const ro = new ResizeObserver(update);
     ro.observe(outer);
     update();
 
-    return () => {
-      ro.disconnect();
-      if (adaptive) inner.style.fontSize = '';
-    };
-  }, [designWidth, designHeight, adaptive]);
+    return () => ro.disconnect();
+  }, [designWidth, designHeight, scale]);
 
-  if (adaptive) {
+  if (!scale) {
     return (
       <div ref={outerRef} className={styles.outer} style={{ background }}>
-        <div ref={innerRef} className={styles.innerAdaptive}>
-          {children}
-        </div>
+        <div className={styles.innerAdaptive}>{children}</div>
       </div>
     );
   }
