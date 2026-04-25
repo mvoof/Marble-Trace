@@ -1,0 +1,91 @@
+@use '../../../../styles/variables' as *;
+
+.carDot {
+  position: absolute;
+  width: rem(20);
+  height: rem(20);
+  border-radius: 50%;
+  background: #18181b;
+  border: 2px solid transparent;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+  transition:
+    left 0.08s linear,
+    top 0.08s linear;
+  z-index: 10;
+}
+
+.carDotPlayer {
+  width: rem(24);
+  height: rem(24);
+  border-width: 3px;
+  z-index: 20;
+}
+
+.carDotPlayer::before {
+  content: '';
+  position: absolute;
+  inset: rem(-5);
+  border-radius: 50%;
+  background: white;
+  opacity: 0.2;
+  animation: ping 1.5s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.2;
+  }
+
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.carNumber {
+  font-family: $font-widget;
+  font-size: rem(10);
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+  pointer-events: none;
+}
+
+.carNumberPlayer {
+  font-size: rem(11);
+}
+
+.label {
+  position: absolute;
+  bottom: calc(100% + rem(4));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: rem(2) rem(5);
+  border-radius: rem(4);
+  white-space: nowrap;
+  font-family: $font-widget;
+  font-size: rem(9);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.labelPlayer {
+  background: white;
+  color: black;
+}
+
+.labelClassLeader {
+  background: rgba(24, 24, 27, 0.9);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}

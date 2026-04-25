@@ -6,52 +6,6 @@
   overflow: visible;
 }
 
-.carNumber {
-  font-family: $font-widget;
-  font-size: rem(8);
-  font-weight: 900;
-  fill: white;
-  pointer-events: none;
-}
-
-.carNumberLarge {
-  font-size: rem(10);
-}
-
-.playerPing {
-  opacity: 0.2;
-  animation: ping 1.5s ease-out infinite;
-}
-
-@keyframes ping {
-  0% {
-    r: 14;
-    opacity: 0.2;
-  }
-
-  100% {
-    r: 22;
-    opacity: 0;
-  }
-}
-
-.youTag {
-  font-family: $font-widget;
-  font-size: rem(6);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.p1Tag {
-  font-family: $font-widget;
-  font-size: rem(6);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  fill: white;
-}
-
 .sectorArc {
   pointer-events: none;
 }

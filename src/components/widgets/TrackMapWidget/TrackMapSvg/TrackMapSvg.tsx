@@ -3,7 +3,7 @@ import type { TrackPoint } from '../../../../types/track';
 import { getPointAtPct } from '../../../../utils/track-recorder';
 import type { Sector } from '../../../../types/bindings';
 import type { CarOnTrack } from '../types';
-
+import { CarDot } from '../../primitives';
 import { SECTOR_ARC_COLORS } from '../track-map-utils';
 
 import styles from './TrackMapSvg.module.scss';
@@ -141,61 +141,51 @@ export const TrackMapSvg = ({
               </g>
             );
           })()}
-
-        {/* Cars */}
-        {points.length > 0 &&
-          cars.map((car) => {
-            const { x, y } = getPointAtPct(points, car.lapDistPct);
-            const isClassLeader = car.classPosition === 1 && !car.isPlayer;
-            const showLabel = car.isPlayer || isClassLeader;
-
-            return (
-              <g key={car.carIdx} transform={`translate(${x}, ${y})`}>
-                {car.isPlayer && (
-                  <circle r="14" fill="white" className={styles.playerPing} />
-                )}
-
-                <circle
-                  r={car.isPlayer ? 14 : 12}
-                  fill="#18181b"
-                  stroke={car.carClassColor}
-                  strokeWidth="3"
-                />
-
-                <text
-                  textAnchor="middle"
-                  dy="4"
-                  className={`${styles.carNumber} ${car.isPlayer ? styles.carNumberLarge : ''}`}
-                >
-                  {car.carNumber}
-                </text>
-
-                {showLabel && (
-                  <g transform="translate(0, -25)">
-                    <rect
-                      x="-25"
-                      y="-12"
-                      width="50"
-                      height="16"
-                      rx="4"
-                      fill={car.isPlayer ? 'white' : 'rgba(24,24,27,0.9)'}
-                      stroke={car.isPlayer ? 'none' : 'rgba(255,255,255,0.15)'}
-                      strokeWidth="1"
-                    />
-                    <text
-                      textAnchor="middle"
-                      dy="0"
-                      className={car.isPlayer ? styles.youTag : styles.p1Tag}
-                      fill={car.isPlayer ? 'black' : 'white'}
-                    >
-                      {car.isPlayer ? 'YOU' : 'P1'}
-                    </text>
-                  </g>
-                )}
-              </g>
-            );
-          })}
       </g>
+
+      {/* Cars as HTML overlay via foreignObject to keep SVG coordinate space */}
+      {points.length > 0 && (
+        <foreignObject
+          x={vbX}
+          y={vbY}
+          width={vbW}
+          height={vbH}
+          style={{ overflow: 'visible' }}
+        >
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              overflow: 'visible',
+            }}
+          >
+            {cars.map((car) => {
+              const { x, y } = getPointAtPct(points, car.lapDistPct);
+
+              // Mirror X to match the SVG horizontal flip transform applied to the track group
+              const leftPct = ((vbX + vbW - x) / vbW) * 100;
+              const topPct = ((y - vbY) / vbH) * 100;
+
+              const isClassLeader = car.classPosition === 1 && !car.isPlayer;
+              const showLabel = car.isPlayer || isClassLeader;
+
+              return (
+                <CarDot
+                  key={car.carIdx}
+                  carNumber={car.carNumber}
+                  carClassColor={car.carClassColor}
+                  isPlayer={car.isPlayer}
+                  left={`${leftPct}%`}
+                  top={`${topPct}%`}
+                  label={showLabel ? (car.isPlayer ? 'YOU' : 'P1') : undefined}
+                  labelIsPlayer={car.isPlayer}
+                />
+              );
+            })}
+          </div>
+        </foreignObject>
+      )}
     </svg>
   );
 };

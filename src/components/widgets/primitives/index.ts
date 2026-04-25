@@ -1,3 +1,4 @@
+export { CarDot } from './CarDot';
 export { WidgetPanel } from './WidgetPanel';
 export { ProgressBar } from './ProgressBar';
 export { CanvasTrace } from './CanvasTrace';
