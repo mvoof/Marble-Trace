@@ -374,11 +374,7 @@ fn emit_domain_frames(
     let session_info = session_snapshot.as_deref();
 
     // Compute stateful data at 60Hz for maximum precision (especially sector timing)
-    let lap_delta_frame = if let Some(session) = session_info {
-        Some(lap_delta::compute(frame, session, lap_delta_state))
-    } else {
-        None
-    };
+    let lap_delta_frame = session_info.map(|session| lap_delta::compute(frame, session, lap_delta_state));
 
     // 10 Hz — also fire on first frame so widgets populate immediately
     if tick.is_multiple_of(6) || tick == 1 {

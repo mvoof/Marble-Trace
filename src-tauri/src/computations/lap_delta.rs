@@ -66,7 +66,7 @@ fn get_sector_pcts(session: &SessionInfo) -> Vec<f64> {
 
     let mut pcts: Vec<(i32, f64)> = sectors
         .iter()
-        .filter_map(|s| Some((s.sector_num?, s.sector_start_pct? as f64)))
+        .filter_map(|s| Some((s.sector_num?, s.sector_start_pct?)))
         .collect();
 
     pcts.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
@@ -117,8 +117,7 @@ pub fn compute(
     let was_on_track = locked.was_on_track;
     locked.was_on_track = is_on_track;
 
-    let is_reset = (!is_on_track && was_on_track) || 
-                   (on_pit_road && !is_on_track) ||
+    let is_reset = ((on_pit_road || was_on_track) && !is_on_track) ||
                    (locked.last_frame_pct >= 0.0 && lap_dist_pct < locked.last_frame_pct - 0.1 && current_lap == locked.last_lap);
 
     if is_reset {
@@ -150,7 +149,7 @@ pub fn compute(
                 let idx = locked.last_sector_idx as usize;
                 if idx < sector_count {
                     locked.sector_times[idx] = Some(elapsed);
-                    if locked.best_sector_times[idx].map_or(true, |best| elapsed < best) {
+                    if locked.best_sector_times[idx].is_none_or(|best| elapsed < best) {
                         locked.best_sector_times[idx] = Some(elapsed);
                     }
                 }
@@ -202,7 +201,7 @@ pub fn compute(
                 let idx = locked.last_sector_idx as usize;
                 if idx < sector_count {
                     locked.sector_times[idx] = Some(elapsed);
-                    if locked.best_sector_times[idx].map_or(true, |best| elapsed < best) {
+                    if locked.best_sector_times[idx].is_none_or(|best| elapsed < best) {
                         locked.best_sector_times[idx] = Some(elapsed);
                     }
                 }
