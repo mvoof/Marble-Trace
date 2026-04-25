@@ -13,7 +13,7 @@ export const SessionWidget = ({
   contextLabel,
   contextValue,
 }: SessionWidgetProps) => (
-  <WidgetPanel direction="column" gap={4} minWidth={200}>
+  <WidgetPanel direction="column">
     <div className={styles.header}>
       <span className={styles.sessionType}>{sessionTypeLabel}</span>
     </div>
