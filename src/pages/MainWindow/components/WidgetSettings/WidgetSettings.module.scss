@@ -1,21 +1,21 @@
 @use '../../../../styles/variables' as *;
 
 .header {
-  margin-bottom: 40px;
+  margin-bottom: rem(40);
 }
 
 .moduleLabel {
-  font-size: 10px;
+  font-size: rem(10);
   color: $sys-text-secondary;
   text-transform: uppercase;
   letter-spacing: 0.15em;
   font-family: $font-mono;
-  margin-bottom: 8px;
+  margin-bottom: rem(8);
   display: block;
 }
 
 .title {
-  font-size: 24px;
+  font-size: rem(24);
   font-weight: 600;
   letter-spacing: -0.01em;
   color: #ffffff;
@@ -23,14 +23,14 @@
 }
 
 .card {
-  margin-bottom: 32px;
+  margin-bottom: rem(32);
 }
 
 .cardTitle {
   color: $sys-text-secondary;
   font-weight: 500;
-  margin-bottom: 12px;
-  font-size: 11px;
+  margin-bottom: rem(12);
+  font-size: rem(11);
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -40,22 +40,22 @@
   backdrop-filter: blur(20px);
   border: 1px solid $sys-border-main;
   border-radius: 6px;
-  padding: 20px;
+  padding: rem(20);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .fieldLabel {
   display: block;
-  font-size: 11px;
+  font-size: rem(11);
   color: $sys-text-muted;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 8px;
+  margin-bottom: rem(8);
 }
 
 .fieldGroup {
-  padding-bottom: 24px;
-  margin-bottom: 24px;
+  padding-bottom: rem(24);
+  margin-bottom: rem(24);
   border-bottom: 1px solid $sys-border-sub;
 
   &:last-child {
@@ -73,30 +73,30 @@
 
 .fieldTexts {
   flex: 1;
-  padding-right: 24px;
+  padding-right: rem(24);
 }
 
 .fieldTitle {
-  font-size: 14px;
+  font-size: rem(14);
   font-weight: 500;
   color: #ffffff;
-  margin-bottom: 4px;
+  margin-bottom: rem(4);
 }
 
 .fieldDesc {
-  font-size: 12px;
+  font-size: rem(12);
   color: $sys-text-secondary;
 }
 
 .colorPickerContainer {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: rem(12);
 }
 
 .colorPreview {
-  width: 32px;
-  height: 32px;
+  width: rem(32);
+  height: rem(32);
   border-radius: 4px;
   border: 1px solid $sys-border-main;
 }
@@ -105,7 +105,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: rem(16);
   background: $sys-bg-main;
   border: 1px solid $sys-border-sub;
   border-radius: 4px;
@@ -115,11 +115,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: rem(8);
 }
 
 .rpmColorLabel {
-  font-size: 10px;
+  font-size: rem(10);
   color: $sys-text-secondary;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -129,5 +129,5 @@
   flex: 1;
   height: 1px;
   background: $sys-border-sub;
-  margin: 16px 16px 0;
+  margin: rem(16) rem(16) 0;
 }

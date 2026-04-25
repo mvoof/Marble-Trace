@@ -6,8 +6,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem 0.75rem;
-  padding: 0.25rem 0.5rem;
+  gap: rem(4) rem(12);
+  padding: rem(4) rem(8);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   flex-shrink: 0;
 }
@@ -15,14 +15,14 @@
 .legendItem {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  font-size: 0.5625rem;
+  gap: rem(5);
+  font-size: rem(9);
   font-weight: 700;
 }
 
 .legendDot {
-  width: 0.5rem;
-  height: 0.5rem;
+  width: rem(8);
+  height: rem(8);
   border-radius: 50%;
   flex-shrink: 0;
 }

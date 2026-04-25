@@ -1,7 +1,7 @@
 @use '../../../../styles/variables' as *;
 
 .bar {
-  width: 28px;
+  width: rem(28);
   height: 100%;
   border: 1px solid #1e2430;
   background-color: rgba(17, 21, 28, 0.863);
@@ -12,7 +12,7 @@
 
 .pill {
   position: absolute;
-  left: 2px;
+  left: rem(2);
   width: calc(100% - 4px);
   transition: all 0.1s linear;
   display: flex;
@@ -25,7 +25,7 @@
   color: #ffffff;
   font-family: $font-widget;
   font-weight: 900;
-  font-size: 18px;
+  font-size: rem(18);
   letter-spacing: 1px;
   white-space: nowrap;
   text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);

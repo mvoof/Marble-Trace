@@ -29,8 +29,8 @@
 
 .progressBarWrap {
   width: 80%;
-  max-width: 15rem;
-  height: 0.5rem;
+  max-width: rem(240);
+  height: rem(8);
   background: rgba(39, 39, 42, 0.5);
   border-radius: 4px;
   overflow: hidden;

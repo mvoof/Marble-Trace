@@ -3,14 +3,14 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: rem(2);
 }
 
 .listItem {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px !important;
+  gap: rem(12);
+  padding: rem(12) !important;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
@@ -46,7 +46,7 @@
 
 .title {
   display: block;
-  font-size: 13px;
+  font-size: rem(13);
   font-weight: 500;
   color: $sys-text-secondary;
   white-space: nowrap;
@@ -57,14 +57,14 @@
 
 .description {
   display: block;
-  font-size: 11px;
+  font-size: rem(11);
   color: $sys-text-muted;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 2px;
+  margin-top: rem(2);
   font-family: $font-mono;
 }
 
 .switch {
-  padding-left: 8px;
+  padding-left: rem(8);
 }

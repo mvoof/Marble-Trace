@@ -3,20 +3,20 @@
 .container {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 4px;
+  gap: rem(8);
+  margin-top: rem(4);
 }
 
 .dot {
-  width: 6px;
-  height: 6px;
+  width: rem(6);
+  height: rem(6);
   border-radius: 50%;
   flex-shrink: 0;
   box-shadow: 0 0 8px currentColor;
 }
 
 .label {
-  font-size: 10px;
+  font-size: rem(10);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;

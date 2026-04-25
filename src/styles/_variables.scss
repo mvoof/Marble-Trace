@@ -39,30 +39,30 @@ $color-clutch: #3399ff;
 // Typography
 $font-mono: 'JetBrains Mono', monospace;
 $font-widget: 'Rajdhani', sans-serif;
-$font-size-widget: 0.8125rem;
+$font-size-widget: rem(13);
 $line-height-widget: 1.4;
 
 // Typography scale
-$font-size-xs: 0.625rem;
-$font-size-sm: 0.75rem;
-$font-size-md: 0.875rem;
-$font-size-lg: 1.25rem;
-$font-size-xl: 2rem;
-$font-size-2xl: 3rem;
-$font-size-display: 2.75rem;
+$font-size-xs: rem(10);
+$font-size-sm: rem(12);
+$font-size-md: rem(14);
+$font-size-lg: rem(20);
+$font-size-xl: rem(32);
+$font-size-2xl: rem(48);
+$font-size-display: rem(44);
 
 // Spacing
 $widget-border-radius: 4px;
 
 // Spacing scale
-$space-xs: 0.125rem;
-$space-sm: 0.25rem;
-$space-md: 0.5rem;
-$space-lg: 0.75rem;
-$space-xl: 1rem;
+$space-xs: rem(2);
+$space-sm: rem(4);
+$space-md: rem(8);
+$space-lg: rem(12);
+$space-xl: rem(16);
 
 // Bar sizes
-$bar-height-sm: 8px;
-$bar-height-md: 12px;
-$bar-height-lg: 18px;
+$bar-height-sm: rem(8);
+$bar-height-md: rem(12);
+$bar-height-lg: rem(18);
 $bar-border-radius: 4px;

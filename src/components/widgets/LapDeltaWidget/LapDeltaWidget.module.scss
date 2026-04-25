@@ -40,14 +40,14 @@
 .sectorGrid {
   display: grid;
   grid-template-columns: repeat(var(--sector-cols, 3), 1fr);
-  gap: 4px;
+  gap: rem(4);
   padding: 0 $space-md $space-md;
   font-family: $font-mono;
 }
 
 .sectorCell {
   background: rgba(0, 0, 0, 0.4);
-  padding: 4px 6px;
+  padding: rem(4) rem(6);
   border-left: 3px solid transparent;
 
   &.sectorAhead {
@@ -77,14 +77,14 @@
 
 .sectorLabel {
   display: block;
-  font-size: 9px;
+  font-size: rem(9);
   color: $color-text-muted;
   letter-spacing: 1px;
 }
 
 .sectorValue {
   display: block;
-  font-size: 13px;
+  font-size: rem(13);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
