@@ -54,7 +54,7 @@ export const TrackMapSvg = ({
         <path
           d={svgPath}
           fill="none"
-          stroke="#e2e8f0"
+          stroke="#969696"
           strokeWidth="18"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -66,7 +66,7 @@ export const TrackMapSvg = ({
           ref={pathRef}
           d={svgPath}
           fill="none"
-          stroke="#0f172a"
+          stroke="#0f0f15"
           strokeWidth="14"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -121,6 +121,11 @@ export const TrackMapSvg = ({
             const { x, y } = getPointAtPct(points, 0);
             const next = getPointAtPct(points, 0.01);
             const angle = Math.atan2(next.y - y, next.x - x) * (180 / Math.PI);
+            // If the rotation angle is > 90 or < -90, the text will be upside down.
+            // In these cases, we rotate the text element itself by 180 degrees and
+            // flip its Y offset to keep it on the correct side of the line.
+            const isUpsideDown = Math.abs(angle) > 90;
+
             return (
               <g transform={`translate(${x},${y}) rotate(${angle})`}>
                 <line
@@ -134,9 +139,10 @@ export const TrackMapSvg = ({
                 />
                 <text
                   x="0"
-                  y="-25"
+                  y={isUpsideDown ? 32 : -25}
                   textAnchor="middle"
                   className={styles.sfLabel}
+                  transform={isUpsideDown ? 'rotate(180)' : ''}
                 >
                   {sfLabel}
                 </text>
