@@ -269,8 +269,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 400,
     y: 300,
-    width: 260,
-    height: 160,
+    width: 220,
+    height: 104,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
@@ -279,6 +279,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showLastLap: true,
         showBestLap: true,
         showP1: true,
+        layout: 'vertical',
       },
     },
   },
@@ -502,6 +503,24 @@ class WidgetSettingsStore {
         }
       }
 
+      if (
+        id === 'lap-times' &&
+        settings['lap-times'] &&
+        'layout' in settings['lap-times']
+      ) {
+        const prevLayout = prevSettings?.['lap-times']?.layout ?? 'vertical';
+        const nextLayout = settings['lap-times'].layout;
+        if (prevLayout !== nextLayout) {
+          if (nextLayout === 'horizontal') {
+            widget.width = 790;
+            widget.height = 35;
+          } else {
+            widget.width = 220;
+            widget.height = 104;
+          }
+        }
+      }
+
       if (id === 'fuel' && settings.fuel && 'pitWarningLaps' in settings.fuel) {
         void invoke('set_pit_warning_laps', {
           laps: settings.fuel.pitWarningLaps,
@@ -651,6 +670,7 @@ class WidgetSettingsStore {
         showLastLap: true,
         showBestLap: true,
         showP1: true,
+        layout: 'vertical',
       }
     );
   }

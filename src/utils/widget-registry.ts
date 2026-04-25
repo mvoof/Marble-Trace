@@ -166,12 +166,17 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
   },
 
   'lap-times': {
-    defaultVariant: 'default',
+    defaultVariant: 'vertical',
     variants: {
-      default: {
+      vertical: {
         component: LapTimesWidgetContainer,
-        designWidth: 260,
-        designHeight: 160,
+        designWidth: 220,
+        designHeight: 104,
+      },
+      horizontal: {
+        component: LapTimesWidgetContainer,
+        designWidth: 790,
+        designHeight: 35,
       },
     },
   },
@@ -229,6 +234,11 @@ export const resolveWidgetVariant = (
 
   if (id === 'lap-delta') {
     const settings = widgetSettingsStore.getLapDeltaSettings();
+    variantKey = settings.layout === 'horizontal' ? 'horizontal' : 'vertical';
+  }
+
+  if (id === 'lap-times') {
+    const settings = widgetSettingsStore.getLapTimesSettings();
     variantKey = settings.layout === 'horizontal' ? 'horizontal' : 'vertical';
   }
 

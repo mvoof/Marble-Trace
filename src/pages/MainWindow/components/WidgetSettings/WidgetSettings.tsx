@@ -35,6 +35,7 @@ import type {
   LapTimesWidgetSettings,
   LapDeltaWidgetSettings,
   LapDeltaLayout,
+  LapTimesLayout,
 } from '../../../../types/widget-settings';
 import { emit } from '@tauri-apps/api/event';
 import { appDataDir } from '@tauri-apps/api/path';
@@ -1037,40 +1038,57 @@ const LapTimesSettingsPanel = observer(() => {
   };
 
   return (
-    <Card title="Visible Rows">
-      {[
-        {
-          title: 'Show Last Lap',
-          desc: 'Display the time of the last completed lap.',
-          value: settings.showLastLap,
-          key: 'showLastLap',
-        },
-        {
-          title: 'Show Best Lap',
-          desc: 'Display your best lap time in the session.',
-          value: settings.showBestLap,
-          key: 'showBestLap',
-        },
-        {
-          title: 'Show P1 Lap',
-          desc: 'Display the best lap time of your class leader.',
-          value: settings.showP1,
-          key: 'showP1',
-        },
-      ].map((item) => (
-        <div key={item.key} className={styles.fieldGroup}>
-          <div className={styles.fieldRow}>
-            <div className={styles.fieldTexts}>
-              <div className={styles.fieldTitle}>{item.title}</div>
-              <div className={styles.fieldDesc}>{item.desc}</div>
-            </div>
-            <Switch
-              checked={item.value}
-              onChange={(v) => update({ [item.key]: v })}
-            />
-          </div>
+    <>
+      <Card title="Module Layout">
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>Rows Layout</span>
+          <Segmented
+            block
+            value={settings.layout}
+            options={[
+              { label: 'Vertical', value: 'vertical' },
+              { label: 'Horizontal', value: 'horizontal' },
+            ]}
+            onChange={(v) => update({ layout: v as LapTimesLayout })}
+          />
         </div>
-      ))}
-    </Card>
+      </Card>
+
+      <Card title="Visible Rows">
+        {[
+          {
+            title: 'Show Last Lap',
+            desc: 'Display the time of the last completed lap.',
+            value: settings.showLastLap,
+            key: 'showLastLap',
+          },
+          {
+            title: 'Show Best Lap',
+            desc: 'Display your best lap time in the session.',
+            value: settings.showBestLap,
+            key: 'showBestLap',
+          },
+          {
+            title: 'Show P1 Lap',
+            desc: 'Display the best lap time of your class leader.',
+            value: settings.showP1,
+            key: 'showP1',
+          },
+        ].map((item) => (
+          <div key={item.key} className={styles.fieldGroup}>
+            <div className={styles.fieldRow}>
+              <div className={styles.fieldTexts}>
+                <div className={styles.fieldTitle}>{item.title}</div>
+                <div className={styles.fieldDesc}>{item.desc}</div>
+              </div>
+              <Switch
+                checked={item.value}
+                onChange={(v) => update({ [item.key]: v })}
+              />
+            </div>
+          </div>
+        ))}
+      </Card>
+    </>
   );
 });

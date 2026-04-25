@@ -95,10 +95,13 @@ export interface WeatherWidgetSettings {
   showHumidity: boolean;
 }
 
+export type LapTimesLayout = 'vertical' | 'horizontal';
+
 export interface LapTimesWidgetSettings {
   showLastLap: boolean;
   showBestLap: boolean;
   showP1: boolean;
+  layout: LapTimesLayout;
 }
 
 export interface FuelWidgetSettings {

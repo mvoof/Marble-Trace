@@ -1,0 +1,37 @@
+@use '../../../styles/variables' as *;
+
+.row {
+  display: grid;
+  grid-template-columns: rem(50) 1fr rem(52);
+  align-items: center;
+  gap: rem(4);
+  font-family: $font-mono;
+  padding: rem(4) rem(6);
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid transparent;
+}
+
+.label {
+  font-size: rem(10);
+  color: $color-text-muted;
+  letter-spacing: 1px;
+  font-family: $font-widget;
+  text-transform: uppercase;
+}
+
+.time {
+  font-size: rem(13);
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  padding-right: rem(6);
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.delta {
+  font-size: rem(13);
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

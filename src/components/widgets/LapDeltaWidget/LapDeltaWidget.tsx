@@ -1,4 +1,12 @@
+import { TimingRow } from '../../shared/TimingRow/TimingRow';
 import { WidgetPanel } from '../primitives/WidgetPanel';
+import {
+  getDeltaColor,
+  getSectorDeltaState,
+  formatSectorDelta,
+  formatSectorTime,
+  SECTOR_ACCENT_COLORS,
+} from './lap-delta-utils';
 import type { DeltaState, LapDeltaLayout } from './lap-delta-utils';
 
 import styles from './LapDeltaWidget.module.scss';
@@ -17,56 +25,6 @@ const DELTA_STATE_CLASS: Record<DeltaState, string> = {
   neutral: styles.deltaNeutral,
 };
 
-const SECTOR_ROW_CLASS = [
-  styles.sectorRow0,
-  styles.sectorRow1,
-  styles.sectorRow2,
-  styles.sectorRow3,
-  styles.sectorRow4,
-  styles.sectorRow5,
-];
-
-const sectorDeltaClass = (v: number | null): string => {
-  if (v === null) return styles.sectorNeutral;
-  if (v < -0.001) return styles.sectorAhead;
-  if (v > 0.001) return styles.sectorBehind;
-  return styles.sectorNeutral;
-};
-
-const formatSectorDelta = (v: number | null): string => {
-  if (v === null) return '--';
-  return (v >= 0 ? '+' : '') + v.toFixed(2);
-};
-
-const formatSectorTime = (v: number | null): string => {
-  if (v === null) return '--';
-  const m = Math.floor(v / 60);
-  const s = v % 60;
-  return m > 0
-    ? `${m}:${s.toFixed(3).padStart(6, '0')}`
-    : s.toFixed(3).padStart(6, '0');
-};
-
-const SectorRow = ({
-  index,
-  time,
-  delta,
-}: {
-  index: number;
-  time: number | null;
-  delta: number | null;
-}) => (
-  <div
-    className={`${styles.sectorRow} ${SECTOR_ROW_CLASS[index % SECTOR_ROW_CLASS.length]}`}
-  >
-    <span className={styles.sectorLabel}>{`S${index + 1}`}</span>
-    <span className={styles.sectorTime}>{formatSectorTime(time)}</span>
-    <span className={`${styles.sectorDelta} ${sectorDeltaClass(delta)}`}>
-      {formatSectorDelta(delta)}
-    </span>
-  </div>
-);
-
 export const LapDeltaWidget = ({
   deltaFormatted,
   deltaState,
@@ -78,6 +36,7 @@ export const LapDeltaWidget = ({
   const sectors = Array.from({ length: sectorCount }, (_, i) => ({
     time: sectorTimes[i] ?? null,
     delta: sectorDeltas[i] ?? null,
+    accent: SECTOR_ACCENT_COLORS[i % SECTOR_ACCENT_COLORS.length],
   }));
 
   return (
@@ -96,7 +55,14 @@ export const LapDeltaWidget = ({
         }
       >
         {sectors.map((s, i) => (
-          <SectorRow key={i} index={i} time={s.time} delta={s.delta} />
+          <TimingRow
+            key={i}
+            label={`S${i + 1}`}
+            time={formatSectorTime(s.time)}
+            delta={formatSectorDelta(s.delta)}
+            accentColor={s.accent}
+            deltaColor={getDeltaColor(getSectorDeltaState(s.delta))}
+          />
         ))}
       </div>
     </WidgetPanel>

@@ -1,3 +1,4 @@
+import { TimingRow } from '../../shared/TimingRow/TimingRow';
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import type { LapTimesWidgetSettings } from '../../../types/widget-settings';
 
@@ -13,11 +14,16 @@ interface LapTimesWidgetProps {
   settings: LapTimesWidgetSettings;
 }
 
+const COLOR_CURRENT = '#22c55e';
+const COLOR_LAST = '#ef4444';
+const COLOR_BEST = 'rgba(192, 132, 252, 0.85)';
+const COLOR_P1 = 'rgba(192, 132, 252, 0.85)';
+
 interface RowConfig {
   label: string;
   time: string;
   delta: string;
-  rowClass: string;
+  accentColor: string;
 }
 
 export const LapTimesWidget = ({
@@ -34,7 +40,7 @@ export const LapTimesWidget = ({
       label: 'CURRENT',
       time: currentLapTime,
       delta: '—',
-      rowClass: styles.rowCurrent,
+      accentColor: COLOR_CURRENT,
     },
   ];
 
@@ -43,7 +49,7 @@ export const LapTimesWidget = ({
       label: 'LAST',
       time: lastLapTime,
       delta: lastLapDelta,
-      rowClass: styles.rowLast,
+      accentColor: COLOR_LAST,
     });
   }
 
@@ -52,7 +58,7 @@ export const LapTimesWidget = ({
       label: 'BEST',
       time: bestLapTime,
       delta: '—',
-      rowClass: styles.rowBest,
+      accentColor: COLOR_BEST,
     });
   }
 
@@ -61,19 +67,29 @@ export const LapTimesWidget = ({
       label: 'P1',
       time: p1LapTime,
       delta: p1Delta,
-      rowClass: styles.rowP1,
+      accentColor: COLOR_P1,
     });
   }
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={200}>
-      {rows.map(({ label, time, delta, rowClass }) => (
-        <div key={label} className={`${styles.row} ${rowClass}`}>
-          <span className={styles.label}>{label}</span>
-          <span className={styles.time}>{time}</span>
-          <span className={styles.delta}>{delta}</span>
-        </div>
-      ))}
+      <div
+        className={
+          settings.layout === 'horizontal'
+            ? styles.rowListHorizontal
+            : styles.rowListVertical
+        }
+      >
+        {rows.map((row) => (
+          <TimingRow
+            key={row.label}
+            label={row.label}
+            time={row.time}
+            delta={row.delta}
+            accentColor={row.accentColor}
+          />
+        ))}
+      </div>
     </WidgetPanel>
   );
 };

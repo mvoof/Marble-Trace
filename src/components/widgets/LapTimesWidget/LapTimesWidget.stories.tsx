@@ -4,20 +4,27 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { LapTimesWidget } from './LapTimesWidget';
 import { WidgetScaler } from '../../WidgetScaler';
 
-const DESIGN_WIDTH = 260;
-const DESIGN_HEIGHT = 160;
+const VERTICAL_WIDTH = 260;
+const VERTICAL_HEIGHT = 160;
+const HORIZONTAL_WIDTH = 480;
+const HORIZONTAL_HEIGHT = 80;
 
-const wrap = (props: ComponentProps<typeof LapTimesWidget>) => (
-  <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-    <WidgetScaler
-      designWidth={DESIGN_WIDTH}
-      designHeight={DESIGN_HEIGHT}
-      background="radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)"
-    >
-      <LapTimesWidget {...props} />
-    </WidgetScaler>
-  </div>
-);
+const wrap = (props: ComponentProps<typeof LapTimesWidget>) => {
+  const isHorizontal = props.settings.layout === 'horizontal';
+  const w = isHorizontal ? HORIZONTAL_WIDTH : VERTICAL_WIDTH;
+  const h = isHorizontal ? HORIZONTAL_HEIGHT : VERTICAL_HEIGHT;
+  return (
+    <div style={{ width: w, height: h }}>
+      <WidgetScaler
+        designWidth={w}
+        designHeight={h}
+        background="radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)"
+      >
+        <LapTimesWidget {...props} />
+      </WidgetScaler>
+    </div>
+  );
+};
 
 const meta: Meta<typeof LapTimesWidget> = {
   title: 'Widgets/LapTimesWidget',
@@ -30,7 +37,7 @@ export default meta;
 
 type Story = StoryObj<typeof LapTimesWidget>;
 
-export const Default: Story = {
+export const VerticalDefault: Story = {
   args: {
     currentLapTime: '1:49.123',
     lastLapTime: '1:49.010',
@@ -42,22 +49,24 @@ export const Default: Story = {
       showLastLap: true,
       showBestLap: true,
       showP1: true,
+      layout: 'vertical',
     },
   },
 };
 
-export const IsP1: Story = {
+export const HorizontalDefault: Story = {
   args: {
-    currentLapTime: '0:34.567',
-    lastLapTime: '1:48.733',
-    lastLapDelta: '—',
+    currentLapTime: '1:49.123',
+    lastLapTime: '1:49.010',
+    lastLapDelta: '+0.277',
     bestLapTime: '1:48.733',
-    p1LapTime: '1:48.733',
-    p1Delta: '—',
+    p1LapTime: '1:48.401',
+    p1Delta: '-0.332',
     settings: {
       showLastLap: true,
       showBestLap: true,
       showP1: true,
+      layout: 'horizontal',
     },
   },
 };
@@ -74,6 +83,7 @@ export const FirstLap: Story = {
       showLastLap: true,
       showBestLap: true,
       showP1: true,
+      layout: 'vertical',
     },
   },
 };
@@ -90,22 +100,7 @@ export const NoData: Story = {
       showLastLap: true,
       showBestLap: true,
       showP1: true,
-    },
-  },
-};
-
-export const MinimalSettings: Story = {
-  args: {
-    currentLapTime: '1:49.123',
-    lastLapTime: '1:49.010',
-    lastLapDelta: '+0.277',
-    bestLapTime: '1:48.733',
-    p1LapTime: '1:48.401',
-    p1Delta: '-0.332',
-    settings: {
-      showLastLap: false,
-      showBestLap: false,
-      showP1: false,
+      layout: 'vertical',
     },
   },
 };
