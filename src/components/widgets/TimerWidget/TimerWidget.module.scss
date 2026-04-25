@@ -22,11 +22,11 @@
 }
 
 .flagGreen {
-  color: #22c55e;
+  color: $color-success;
 }
 
 .flagFinal {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
 .flagCheckered {
@@ -51,7 +51,7 @@
 }
 
 .timeSeconds {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
 .footer {

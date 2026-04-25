@@ -50,7 +50,7 @@
 }
 
 .driverPositionPlayer {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
 // Car number — secondary, muted
@@ -79,7 +79,7 @@
 }
 
 .driverNamePlayer {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
 // Badges block — pit + class + license badges
@@ -127,24 +127,24 @@
 }
 
 .f2Positive {
-  color: #ef4444;
+  color: $color-error;
 }
 
 .f2Negative {
-  color: #60a5fa;
+  color: $color-blue;
 }
 
 .f2Player {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
 // Trend arrows
 .trendUp {
-  color: #22c55e;
+  color: $color-success;
   flex-shrink: 0;
 }
 
 .trendDown {
-  color: #ef4444;
+  color: $color-error;
   flex-shrink: 0;
 }

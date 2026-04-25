@@ -22,34 +22,34 @@
   margin: 0 $space-sm 2px;
 
   &.rowLast {
-    border-left-color: #ef4444;
+    border-left-color: $color-error;
 
     .delta {
-      color: #ef4444;
+      color: $color-error;
     }
   }
 
   &.rowBest {
-    border-left-color: #fbbf24;
+    border-left-color: $color-caution;
 
     .delta {
-      color: #fbbf24;
+      color: $color-caution;
     }
   }
 
   &.rowOptimal {
-    border-left-color: #22c55e;
+    border-left-color: $color-success;
 
     .delta {
-      color: #22c55e;
+      color: $color-success;
     }
   }
 
   &.rowP1 {
-    border-left-color: #e0e0e0;
+    border-left-color: $color-text-primary;
 
     .delta {
-      color: #e0e0e0;
+      color: $color-text-primary;
     }
   }
 }

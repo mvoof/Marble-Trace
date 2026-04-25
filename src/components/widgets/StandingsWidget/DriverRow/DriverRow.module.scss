@@ -50,7 +50,7 @@
 }
 
 .posCellPlayer {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
 .posCellSmall {
@@ -59,7 +59,7 @@
 
 // Position change
 .posChangeUp {
-  color: #22c55e;
+  color: $color-success;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -69,7 +69,7 @@
 }
 
 .posChangeDown {
-  color: #ef4444;
+  color: $color-error;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -118,7 +118,7 @@
 }
 
 .driverNamePlayer {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
 // Class badge — block fill for table column
@@ -166,11 +166,11 @@
 }
 
 .irChangeUp {
-  color: #22c55e;
+  color: $color-success;
 }
 
 .irChangeDown {
-  color: #ef4444;
+  color: $color-error;
 }
 
 // Incidents
@@ -181,7 +181,7 @@
 }
 
 .incidentsNearDQ {
-  color: #ef4444;
+  color: $color-error;
   font-weight: 700;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

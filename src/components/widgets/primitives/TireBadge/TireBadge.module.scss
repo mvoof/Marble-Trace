@@ -18,9 +18,9 @@
 }
 
 .tireSoft {
-  color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.5);
-  background: rgba(239, 68, 68, 0.1);
+  color: $color-error;
+  border-color: rgba($color-error, 0.5);
+  background: rgba($color-error, 0.1);
 }
 
 .tireMed {
@@ -36,7 +36,7 @@
 }
 
 .tireWet {
-  color: #60a5fa;
-  border-color: rgba(96, 165, 250, 0.5);
-  background: rgba(96, 165, 250, 0.1);
+  color: $color-blue;
+  border-color: rgba($color-blue, 0.5);
+  background: rgba($color-blue, 0.1);
 }

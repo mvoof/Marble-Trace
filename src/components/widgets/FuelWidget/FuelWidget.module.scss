@@ -3,12 +3,12 @@
 @keyframes pitPulse {
   0%,
   100% {
-    border-color: rgba(239, 68, 68, 0.35);
-    background: rgba(239, 68, 68, 0.05);
+    border-color: rgba($color-error, 0.35);
+    background: rgba($color-error, 0.05);
   }
   50% {
-    border-color: rgba(239, 68, 68, 0.7);
-    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba($color-error, 0.7);
+    background: rgba($color-error, 0.12);
   }
 }
 
@@ -37,11 +37,11 @@
 }
 
 .statusSafe {
-  background: #22c55e;
+  background: $color-success;
 }
 
 .statusShort {
-  background: #ef4444;
+  background: $color-error;
 }
 
 .progressWrap {
@@ -56,7 +56,7 @@
 .progressBar {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #3399ff, #60a5fa);
+  background: linear-gradient(90deg, $color-info, $color-blue);
 }
 
 .progressLabels {
@@ -110,15 +110,15 @@
 }
 
 .rowValueSafe {
-  color: #22c55e;
+  color: $color-success;
 }
 
 .rowValueShort {
-  color: #ef4444;
+  color: $color-error;
 }
 
 .rowValueWarn {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
 .rowValueMuted {
@@ -153,7 +153,7 @@
 .pitWarningHeaderLabel {
   font-family: $font-mono;
   font-size: 11px;
-  color: #fbbf24;
+  color: $color-caution;
   letter-spacing: 1px;
   font-weight: 700;
 }
@@ -203,14 +203,14 @@
   font-family: $font-mono;
   font-size: 28px;
   font-weight: 700;
-  color: #fbbf24;
+  color: $color-caution;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .pitWarningAmountDanger {
-  color: #ef4444;
+  color: $color-error;
 }
 
 .pitWarningAmountUnit {

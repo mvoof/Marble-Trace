@@ -26,15 +26,15 @@
 }
 
 .deltaAhead {
-  color: #22c55e;
+  color: $color-success;
 }
 
 .deltaBehind {
-  color: #ef4444;
+  color: $color-error;
 }
 
 .deltaNeutral {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
 .sectorGrid {
@@ -51,26 +51,26 @@
   border-left: 3px solid transparent;
 
   &.sectorAhead {
-    border-left-color: #22c55e;
+    border-left-color: $color-success;
 
     .sectorValue {
-      color: #22c55e;
+      color: $color-success;
     }
   }
 
   &.sectorBehind {
-    border-left-color: #ef4444;
+    border-left-color: $color-error;
 
     .sectorValue {
-      color: #ef4444;
+      color: $color-error;
     }
   }
 
   &.sectorNeutral {
-    border-left-color: #fbbf24;
+    border-left-color: $color-caution;
 
     .sectorValue {
-      color: #fbbf24;
+      color: $color-caution;
     }
   }
 }

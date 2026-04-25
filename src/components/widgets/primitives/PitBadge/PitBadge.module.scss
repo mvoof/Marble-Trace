@@ -1,7 +1,7 @@
 .pitBadge {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba($color-error, 0.15);
+  color: $color-error;
+  border: 1px solid rgba($color-error, 0.4);
   padding: 0.125em 0.5em;
   border-radius: 4px;
   font-size: 0.625em;
