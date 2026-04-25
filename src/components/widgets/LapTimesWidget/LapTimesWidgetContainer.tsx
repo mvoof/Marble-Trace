@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing';
+import { telemetryStore, computedStore } from '../../../store/iracing';
 import { formatLapTime } from '../../../utils/telemetry-format';
 import { LapTimesWidget } from './LapTimesWidget';
 
@@ -18,13 +18,29 @@ const formatDeltaVsBest = (
 export const LapTimesWidgetContainer = observer(() => {
   const lap = telemetryStore.lapTiming;
   const carIdxData = telemetryStore.carIdx;
+  const standings = computedStore.standings?.entries ?? [];
 
   const lastLap = lap?.lap_last_lap_time ?? null;
   const bestLap = lap?.lap_best_lap_time ?? null;
 
+  const playerClassId = standings.find((e) => e.isPlayer)?.carClassId;
+  const classEntries =
+    playerClassId !== undefined
+      ? standings.filter((e) => e.carClassId === playerClassId)
+      : [];
+
   const allBestTimes = carIdxData?.car_idx_best_lap_time ?? [];
-  const validTimes = allBestTimes.filter((t) => t > 0);
-  const p1Time = validTimes.length > 0 ? Math.min(...validTimes) : null;
+
+  const classBestTimes = classEntries
+    .map((e) => allBestTimes[e.carIdx])
+    .filter((t): t is number => t !== undefined && t > 0);
+
+  const timesToUse =
+    classBestTimes.length > 0
+      ? classBestTimes
+      : allBestTimes.filter((t) => t > 0);
+
+  const p1Time = timesToUse.length > 0 ? Math.min(...timesToUse) : null;
 
   return (
     <LapTimesWidget
