@@ -38,10 +38,6 @@ export const LapTimesWidget = ({
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={200}>
-      <div className={styles.header}>
-        <span className={styles.headerLabel}>LAP TIMES</span>
-      </div>
-
       {rows.map(({ label, time, delta, rowClass }) => (
         <div key={label} className={`${styles.row} ${rowClass}`}>
           <span className={styles.label}>{label}</span>

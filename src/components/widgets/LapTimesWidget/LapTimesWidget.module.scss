@@ -1,16 +1,5 @@
 @use '../../../styles/variables' as *;
 
-.header {
-  padding: $space-md $space-md $space-sm;
-}
-
-.headerLabel {
-  font-family: $font-mono;
-  font-size: $font-size-xs;
-  color: $color-text-muted;
-  letter-spacing: 1px;
-}
-
 .row {
   display: grid;
   grid-template-columns: rem(60) 1fr rem(64);
