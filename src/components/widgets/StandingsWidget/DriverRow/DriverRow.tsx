@@ -170,7 +170,7 @@ export const DriverRow = ({
         </td>
       )}
 
-      {!settings.enableClassCycling && (
+      {!settings.enableClassCycling && settings.showClassBadge && (
         <td className={`${styles.td} ${styles.tdCenter}`}>
           <ClassBadge
             color={driver.carClassColor}
@@ -180,17 +180,19 @@ export const DriverRow = ({
         </td>
       )}
 
-      <td className={`${styles.td} ${styles.tdCenter}`}>
-        <span className={styles.licWrap}>
-          <LicenseBadge
-            licString={driver.licString}
-            className={styles.licBadge}
-          />
-          <span className={styles.irating}>
-            {formatIRating(driver.iRating)}
+      {settings.showIRatingBadge && (
+        <td className={`${styles.td} ${styles.tdCenter}`}>
+          <span className={styles.licWrap}>
+            <LicenseBadge
+              licString={driver.licString}
+              className={styles.licBadge}
+            />
+            <span className={styles.irating}>
+              {formatIRating(driver.iRating)}
+            </span>
           </span>
-        </span>
-      </td>
+        </td>
+      )}
 
       {settings.showIrChange && (
         <td className={`${styles.td} ${styles.tdCenter}`}>

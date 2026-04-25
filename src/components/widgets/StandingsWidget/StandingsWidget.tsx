@@ -151,11 +151,11 @@ export const StandingsWidget = ({
 
             {settings.showBrand && <col className={styles.colBrand} />}
             {settings.showTire && <col className={styles.colTire} />}
-            {!settings.enableClassCycling && (
+            {!settings.enableClassCycling && settings.showClassBadge && (
               <col className={styles.colClass} />
             )}
 
-            <col className={styles.colLic} />
+            {settings.showIRatingBadge && <col className={styles.colLic} />}
 
             {settings.showIrChange && <col className={styles.colIrChange} />}
 
@@ -191,11 +191,15 @@ export const StandingsWidget = ({
                   <th className={`${styles.th} ${styles.thCenter}`}>Tire</th>
                 )}
 
-                {!settings.enableClassCycling && (
+                {!settings.enableClassCycling && settings.showClassBadge && (
                   <th className={`${styles.th} ${styles.thCenter}`}>Class</th>
                 )}
 
-                <th className={`${styles.th} ${styles.thCenter}`}>Lic / iR</th>
+                {settings.showIRatingBadge && (
+                  <th className={`${styles.th} ${styles.thCenter}`}>
+                    Lic / iR
+                  </th>
+                )}
 
                 {settings.showIrChange && (
                   <th

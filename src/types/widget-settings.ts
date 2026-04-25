@@ -46,6 +46,8 @@ export interface StandingsWidgetSettings {
   showTotalDrivers: boolean;
   showBrand: boolean;
   showTire: boolean;
+  showIRatingBadge: boolean;
+  showClassBadge: boolean;
   /** Projected iR change column (Elo-based estimate, not real SDK data) */
   showIrChange: boolean;
   /** Player-only pit stop counter (counted on the frontend) */

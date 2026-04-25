@@ -588,6 +588,16 @@ const StandingsSettingsPanel = observer(() => {
           },
           { title: 'Tire Compound', value: settings.showTire, key: 'showTire' },
           {
+            title: 'Class Badge',
+            value: settings.showClassBadge,
+            key: 'showClassBadge',
+          },
+          {
+            title: 'License / iRating Badge',
+            value: settings.showIRatingBadge,
+            key: 'showIRatingBadge',
+          },
+          {
             title: 'iRating Delta (projected)',
             value: settings.showIrChange,
             key: 'showIrChange',
