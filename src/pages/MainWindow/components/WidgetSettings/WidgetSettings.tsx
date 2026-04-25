@@ -11,6 +11,7 @@ import {
   Segmented,
   Switch,
   Space,
+  App,
 } from 'antd';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import type {
@@ -696,6 +697,7 @@ const LinearMapSettingsPanel = observer(() => {
 const TrackMapSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getTrackMapSettings();
   const [tracksPath, setTracksPath] = useState<string | null>(null);
+  const { message } = App.useApp();
 
   const update = (partial: Partial<TrackMapWidgetSettings>) => {
     widgetSettingsStore.updateCustomSettings('track-map', {
@@ -769,16 +771,45 @@ const TrackMapSettingsPanel = observer(() => {
         <div className={styles.fieldGroup}>
           <div className={styles.fieldTitle}>Re-record Track</div>
           <div className={styles.fieldDesc} style={{ marginBottom: 16 }}>
-            Clears current map data and starts fresh on next lap.
+            Clears current map data and starts fresh on next lap crossing or
+            manual trigger.
           </div>
-          <Button
-            block
-            size="small"
-            danger
-            onClick={() => void handleRerecord()}
-          >
-            Reset Current Track Data
-          </Button>
+          <Flex gap={8}>
+            <Button
+              style={{ flex: 1 }}
+              size="small"
+              danger
+              onClick={() => void handleRerecord()}
+            >
+              Reset Current Track Data
+            </Button>
+            <Button
+              style={{ flex: 1 }}
+              size="small"
+              type={
+                widgetSettingsStore.isTrackMapForceStartPending
+                  ? 'primary'
+                  : 'default'
+              }
+              danger={widgetSettingsStore.isTrackMapForceStartPending}
+              onClick={() => {
+                const next = !widgetSettingsStore.isTrackMapForceStartPending;
+                widgetSettingsStore.setTrackMapForceStartPending(next);
+                if (next) {
+                  void emit('track-map:force-start');
+                  message.info(
+                    'Manual start active. Drive to begin recording.'
+                  );
+                } else {
+                  message.warning('Manual start canceled.');
+                }
+              }}
+            >
+              {widgetSettingsStore.isTrackMapForceStartPending
+                ? 'Cancel Force Start'
+                : 'Force Start Recording'}
+            </Button>
+          </Flex>
         </div>
 
         <div className={styles.fieldGroup}>

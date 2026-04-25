@@ -28,9 +28,8 @@ export const TrackMapSvg = ({
   sfLabel = 'S/F',
 }: TrackMapSvgProps) => {
   const parts = viewBox.split(' ').map(Number);
-  const [vbX, vbY, vbW, vbH] = parts;
-  const cx = vbX + vbW / 2;
-  const cy = vbY + vbH / 2;
+  const vbW = parts[2];
+  const vbH = parts[3];
 
   // Derive a radius that scales with the viewBox so dots look proportional
   const dotRadius = Math.min(vbW, vbH) * 0.035;
@@ -50,9 +49,7 @@ export const TrackMapSvg = ({
 
   return (
     <svg viewBox={viewBox} className={styles.svgContainer}>
-      <g
-        transform={`translate(${cx}, ${cy}) scale(-1, 1) translate(${-cx}, ${-cy})`}
-      >
+      <g>
         {/* Track border */}
         <path
           d={svgPath}

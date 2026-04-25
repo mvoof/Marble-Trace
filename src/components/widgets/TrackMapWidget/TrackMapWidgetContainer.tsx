@@ -29,6 +29,7 @@ export const TrackMapWidgetContainer = observer(() => {
 
   const hasSavedRef = useRef(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isWaitingForSF, setIsWaitingForSF] = useState(false);
   const [recordingProgress, setRecordingProgress] = useState(0);
   const [trackData, setTrackData] = useState<TrackData | null>(null);
   const recordingOverlayRef = useRef<RecordingOverlayHandle>(null);
@@ -111,6 +112,7 @@ export const TrackMapWidgetContainer = observer(() => {
       await store.save();
       setTrackData(null);
       setIsRecording(false);
+      setIsWaitingForSF(false);
       setRecordingProgress(0);
     } catch {
       // Silently fail
@@ -219,6 +221,7 @@ export const TrackMapWidgetContainer = observer(() => {
           trackId={trackId}
           onTrackReady={setTrackData}
           onIsRecordingChange={setIsRecording}
+          onWaitingForSFChange={setIsWaitingForSF}
           onProgressChange={setRecordingProgress}
           onSaveTrack={saveTrack}
           recordingOverlayRef={recordingOverlayRef}
@@ -231,7 +234,9 @@ export const TrackMapWidgetContainer = observer(() => {
         trackData={trackData}
         trackName={trackName}
         isRecording={isRecording}
+        isWaitingForSF={isWaitingForSF}
         recordingProgress={recordingProgress}
+        isForceStartPending={widgetSettingsStore.isTrackMapForceStartPending}
         recordingOverlayRef={recordingOverlayRef}
         settings={settings}
         sectors={sessionInfo?.SplitTimeInfo?.Sectors}

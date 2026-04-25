@@ -93,11 +93,13 @@ export class TrackRecorder {
     if (dt > DT_CAP_SECONDS) dt = DT_FALLBACK_SECONDS;
     if (dt <= 0) return;
 
-    // 60Hz dead reckoning: integrate position based on current velocity vector
-    const dx = -speed * Math.sin(yaw) * dt;
+    // 60Hz dead reckoning: integrate position based on current velocity vector.
+    // We use positive dx and positive dy to flip the orientation so that
+    // North (Start/Finish straight) points DOWN, placing the S/F line at the bottom.
+    const dx = speed * Math.sin(yaw) * dt;
     const dy = speed * Math.cos(yaw) * dt;
     this.x += dx;
-    this.y -= dy;
+    this.y += dy;
 
     // 10Hz progress tracking:
     // We only push a new track point when the lapDistPct actually changes.

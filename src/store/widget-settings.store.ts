@@ -348,8 +348,14 @@ class WidgetSettingsStore {
 
   standingsActiveClassIndex = 0;
 
+  isTrackMapForceStartPending = false;
+
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  setTrackMapForceStartPending(pending: boolean) {
+    this.isTrackMapForceStartPending = pending;
   }
 
   private getStandingsClassCount(): number {

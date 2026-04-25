@@ -266,6 +266,12 @@ export const initMainSync = async () => {
           }
         ),
         reaction(
+          () => widgetSettingsStore.isTrackMapForceStartPending,
+          (pending) => {
+            void emit('track-map:force-start-pending-changed', pending);
+          }
+        ),
+        reaction(
           () => JSON.stringify(widgetSettingsStore.widgets),
           () => {
             void emit('widget-settings-updated', widgetSettingsStore.widgets);
@@ -356,6 +362,13 @@ export const initOverlaySync = async () => {
       runInAction(() => {
         widgetSettingsStore.standingsActiveClassIndex = e.payload;
       });
+    })
+  );
+  unlistens.push(
+    await listen<boolean>('track-map:force-start-pending-changed', (e) => {
+      runInAction(() =>
+        widgetSettingsStore.setTrackMapForceStartPending(e.payload)
+      );
     })
   );
 

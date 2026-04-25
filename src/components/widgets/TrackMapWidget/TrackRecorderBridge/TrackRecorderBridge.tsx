@@ -1,8 +1,9 @@
 import type { RefObject } from 'react';
 import { useEffect, useRef } from 'react';
-import { autorun } from 'mobx';
+import { autorun, runInAction } from 'mobx';
 import { listen } from '@tauri-apps/api/event';
 import { telemetryStore } from '../../../../store/iracing';
+import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import { TrackRecorder } from '../../../../utils/track-recorder';
 import type { TrackPoint } from '../../../../types/track';
 import type { RecordingOverlayHandle } from '../RecordingOverlay/RecordingOverlay';
@@ -17,6 +18,7 @@ interface TrackRecorderBridgeProps {
   trackId: string;
   onTrackReady: (data: TrackData) => void;
   onIsRecordingChange: (recording: boolean) => void;
+  onWaitingForSFChange?: (waiting: boolean) => void;
   onProgressChange: (progress: number) => void;
   onSaveTrack: (
     svgPath: string,
@@ -36,6 +38,7 @@ export const TrackRecorderBridge = ({
   trackId,
   onTrackReady,
   onIsRecordingChange,
+  onWaitingForSFChange,
   onProgressChange,
   onSaveTrack,
   recordingOverlayRef,
@@ -43,10 +46,12 @@ export const TrackRecorderBridge = ({
   const recorderRef = useRef(new TrackRecorder());
   const hasSavedRef = useRef(false);
   const lastProgressRef = useRef(-1);
+  const lastLapDistRef = useRef(-1);
 
   const callbacksRef = useRef({
     onTrackReady,
     onIsRecordingChange,
+    onWaitingForSFChange,
     onProgressChange,
     onSaveTrack,
     recordingOverlayRef,
@@ -54,6 +59,7 @@ export const TrackRecorderBridge = ({
   callbacksRef.current = {
     onTrackReady,
     onIsRecordingChange,
+    onWaitingForSFChange,
     onProgressChange,
     onSaveTrack,
     recordingOverlayRef,
@@ -63,7 +69,10 @@ export const TrackRecorderBridge = ({
     recorderRef.current.reset();
     hasSavedRef.current = false;
     lastProgressRef.current = -1;
+    lastLapDistRef.current = -1;
+    runInAction(() => widgetSettingsStore.setTrackMapForceStartPending(false));
     callbacksRef.current.onIsRecordingChange(false);
+    callbacksRef.current.onWaitingForSFChange?.(false);
     callbacksRef.current.onProgressChange(0);
     const overlay = callbacksRef.current.recordingOverlayRef?.current;
     if (overlay) {
@@ -78,18 +87,23 @@ export const TrackRecorderBridge = ({
   }, [trackId]);
 
   useEffect(() => {
-    const unlisten = listen('track-map:clear', () => {
+    const unlistenClear = listen('track-map:clear', () => {
       reset();
     });
+    const unlistenForceStart = listen('track-map:force-start', () => {
+      runInAction(() => widgetSettingsStore.setTrackMapForceStartPending(true));
+    });
+
     return () => {
-      void unlisten.then((fn) => fn());
+      void unlistenClear.then((fn) => fn());
+      void unlistenForceStart.then((fn) => fn());
     };
   }, []);
 
   useEffect(() => {
     const dispose = autorun(() => {
       const { carDynamics, lapTiming } = telemetryStore;
-      // ... (rest of the file)
+      const { isTrackMapForceStartPending } = widgetSettingsStore;
 
       if (!carDynamics || !lapTiming) return;
 
@@ -102,14 +116,40 @@ export const TrackRecorderBridge = ({
       const recorder = recorderRef.current;
       const overlay = callbacksRef.current.recordingOverlayRef?.current;
 
-      // Start recording when speed > 5 m/s (~18 km/h)
-      // We only start if it's NOT recording AND NOT complete.
-      // Once complete, we stay complete until trackId changes or component unmounts.
-      if (!recorder.isRecording && !recorder.isComplete && speed > 5) {
-        hasSavedRef.current = false;
-        recorder.start();
-        queueMicrotask(() => callbacksRef.current.onIsRecordingChange(true));
-        overlay?.setRecording(true);
+      // Completion detection for S/F line crossing to start recording.
+      // Jumps from > 0.8 to < 0.2 indicate crossing the Start/Finish line.
+      let crossedSF = false;
+      if (lastLapDistRef.current > 0.8 && lapDistPct >= 0 && lapDistPct < 0.2) {
+        crossedSF = true;
+      }
+      lastLapDistRef.current = lapDistPct;
+
+      const isMoving = speed > 5;
+
+      // Notify if we are waiting for S/F crossing in auto mode
+      const isWaitingForSF =
+        isMoving &&
+        !recorder.isRecording &&
+        !recorder.isComplete &&
+        !isTrackMapForceStartPending;
+
+      overlay?.setRecording(recorder.isRecording, isWaitingForSF);
+      queueMicrotask(() =>
+        callbacksRef.current.onWaitingForSFChange?.(isWaitingForSF)
+      );
+
+      // Start recording when speed > 5 m/s (~18 km/h) AND (we crossed S/F OR manual force was requested).
+      // Once complete, we stay complete until trackId changes or reset is called.
+      if (!recorder.isRecording && !recorder.isComplete && isMoving) {
+        if (crossedSF || isTrackMapForceStartPending) {
+          runInAction(() =>
+            widgetSettingsStore.setTrackMapForceStartPending(false)
+          );
+          hasSavedRef.current = false;
+          recorder.start();
+          queueMicrotask(() => callbacksRef.current.onIsRecordingChange(true));
+          overlay?.setRecording(true);
+        }
       }
 
       if (recorder.isRecording) {

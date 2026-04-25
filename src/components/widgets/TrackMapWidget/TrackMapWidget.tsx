@@ -31,6 +31,8 @@ interface TrackMapWidgetProps {
   trackName: string;
   isRecording: boolean;
   recordingProgress: number;
+  isForceStartPending: boolean;
+  isWaitingForSF: boolean;
   recordingOverlayRef?: RefObject<RecordingOverlayHandle | null>;
   settings: TrackMapWidgetSettings;
   sectors: Sector[] | null | undefined;
@@ -44,6 +46,8 @@ export const TrackMapWidget = ({
   trackName,
   isRecording,
   recordingProgress,
+  isForceStartPending,
+  isWaitingForSF,
   recordingOverlayRef,
   settings,
   sectors,
@@ -56,6 +60,8 @@ export const TrackMapWidget = ({
           ref={recordingOverlayRef}
           trackName={trackName}
           isRecording={isRecording}
+          isForceStartPending={isForceStartPending}
+          isWaitingForSF={isWaitingForSF}
           progress={recordingProgress}
         />
       </WidgetPanel>
