@@ -4,7 +4,6 @@ import { getPointAtPct } from '../../../../utils/track-recorder';
 import type { Sector } from '../../../../types/bindings';
 import type { CarOnTrack } from '../types';
 import { CarDot } from '../../primitives';
-import { SECTOR_ARC_COLORS } from '../track-map-utils';
 
 import styles from './TrackMapSvg.module.scss';
 
@@ -78,8 +77,6 @@ export const TrackMapSvg = ({
             const startDist = (sector.SectorStartPct ?? 0) * pathLength;
             const sectorLen =
               (endPct - (sector.SectorStartPct ?? 0)) * pathLength;
-            const color = SECTOR_ARC_COLORS[i % SECTOR_ARC_COLORS.length];
-
             return (
               <path
                 key={`arc-${sector.SectorNum}`}
