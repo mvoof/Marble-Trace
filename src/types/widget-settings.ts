@@ -95,6 +95,12 @@ export interface WeatherWidgetSettings {
   showHumidity: boolean;
 }
 
+export interface LapTimesWidgetSettings {
+  showLastLap: boolean;
+  showBestLap: boolean;
+  showP1: boolean;
+}
+
 export interface FuelWidgetSettings {
   showChart: boolean;
   pitWarningLaps: number;
@@ -113,6 +119,7 @@ export interface WidgetCustomSettings {
   flags?: FlagsWidgetSettings;
   weather?: WeatherWidgetSettings;
   fuel?: FuelWidgetSettings;
+  'lap-times'?: LapTimesWidgetSettings;
 }
 
 export interface WidgetConfig {

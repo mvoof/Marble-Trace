@@ -1,13 +1,16 @@
 import { WidgetPanel } from '../primitives/WidgetPanel';
+import type { LapTimesWidgetSettings } from '../../../types/widget-settings';
 
 import styles from './LapTimesWidget.module.scss';
 
 interface LapTimesWidgetProps {
+  currentLapTime: string;
   lastLapTime: string;
   lastLapDelta: string;
   bestLapTime: string;
   p1LapTime: string;
   p1Delta: string;
+  settings: LapTimesWidgetSettings;
 }
 
 interface RowConfig {
@@ -18,23 +21,49 @@ interface RowConfig {
 }
 
 export const LapTimesWidget = ({
+  currentLapTime,
   lastLapTime,
   lastLapDelta,
   bestLapTime,
   p1LapTime,
   p1Delta,
+  settings,
 }: LapTimesWidgetProps) => {
   const rows: RowConfig[] = [
     {
+      label: 'CURRENT',
+      time: currentLapTime,
+      delta: '—',
+      rowClass: styles.rowCurrent,
+    },
+  ];
+
+  if (settings.showLastLap) {
+    rows.push({
       label: 'LAST',
       time: lastLapTime,
       delta: lastLapDelta,
       rowClass: styles.rowLast,
-    },
-    { label: 'BEST', time: bestLapTime, delta: '—', rowClass: styles.rowBest },
-    { label: 'OPTIMAL', time: '—', delta: '—', rowClass: styles.rowOptimal },
-    { label: 'P1', time: p1LapTime, delta: p1Delta, rowClass: styles.rowP1 },
-  ];
+    });
+  }
+
+  if (settings.showBestLap) {
+    rows.push({
+      label: 'BEST',
+      time: bestLapTime,
+      delta: '—',
+      rowClass: styles.rowBest,
+    });
+  }
+
+  if (settings.showP1) {
+    rows.push({
+      label: 'P1',
+      time: p1LapTime,
+      delta: p1Delta,
+      rowClass: styles.rowP1,
+    });
+  }
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={200}>

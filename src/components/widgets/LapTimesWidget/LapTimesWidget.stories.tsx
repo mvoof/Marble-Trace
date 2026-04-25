@@ -32,40 +32,80 @@ type Story = StoryObj<typeof LapTimesWidget>;
 
 export const Default: Story = {
   args: {
+    currentLapTime: '1:49.123',
     lastLapTime: '1:49.010',
     lastLapDelta: '+0.277',
     bestLapTime: '1:48.733',
     p1LapTime: '1:48.401',
     p1Delta: '-0.332',
+    settings: {
+      showLastLap: true,
+      showBestLap: true,
+      showP1: true,
+    },
   },
 };
 
 export const IsP1: Story = {
   args: {
+    currentLapTime: '0:34.567',
     lastLapTime: '1:48.733',
     lastLapDelta: '—',
     bestLapTime: '1:48.733',
     p1LapTime: '1:48.733',
     p1Delta: '—',
+    settings: {
+      showLastLap: true,
+      showBestLap: true,
+      showP1: true,
+    },
   },
 };
 
 export const FirstLap: Story = {
   args: {
+    currentLapTime: '1:12.345',
     lastLapTime: '—',
     lastLapDelta: '—',
     bestLapTime: '—',
     p1LapTime: '1:49.204',
     p1Delta: '—',
+    settings: {
+      showLastLap: true,
+      showBestLap: true,
+      showP1: true,
+    },
   },
 };
 
 export const NoData: Story = {
   args: {
+    currentLapTime: '0:00.000',
     lastLapTime: '—',
     lastLapDelta: '—',
     bestLapTime: '—',
     p1LapTime: '—',
     p1Delta: '—',
+    settings: {
+      showLastLap: true,
+      showBestLap: true,
+      showP1: true,
+    },
+  },
+};
+
+export const MinimalSettings: Story = {
+  args: {
+    currentLapTime: '1:49.123',
+    lastLapTime: '1:49.010',
+    lastLapDelta: '+0.277',
+    bestLapTime: '1:48.733',
+    p1LapTime: '1:48.401',
+    p1Delta: '-0.332',
+    settings: {
+      showLastLap: false,
+      showBestLap: false,
+      showP1: false,
+    },
   },
 };

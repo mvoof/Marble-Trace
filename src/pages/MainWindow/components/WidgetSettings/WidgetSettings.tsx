@@ -32,6 +32,7 @@ import type {
   FuelWidgetSettings,
   FlagsWidgetSettings,
   FlagsVariant,
+  LapTimesWidgetSettings,
 } from '../../../../types/widget-settings';
 import { emit } from '@tauri-apps/api/event';
 import { appDataDir } from '@tauri-apps/api/path';
@@ -191,6 +192,7 @@ export const WidgetSettings = observer(
         {widgetId === 'weather' && <WeatherSettingsPanel />}
         {widgetId === 'fuel' && <FuelSettingsPanel />}
         {widgetId === 'flags' && <FlagsSettingsPanel />}
+        {widgetId === 'lap-times' && <LapTimesSettingsPanel />}
       </div>
     );
   }
@@ -991,6 +993,54 @@ const FlagsSettingsPanel = observer(() => {
           />
         </Col>
       </Row>
+    </Card>
+  );
+});
+
+const LapTimesSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getLapTimesSettings();
+
+  const update = (partial: Partial<LapTimesWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('lap-times', {
+      'lap-times': { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Card title="Visible Rows">
+      {[
+        {
+          title: 'Show Last Lap',
+          desc: 'Display the time of the last completed lap.',
+          value: settings.showLastLap,
+          key: 'showLastLap',
+        },
+        {
+          title: 'Show Best Lap',
+          desc: 'Display your best lap time in the session.',
+          value: settings.showBestLap,
+          key: 'showBestLap',
+        },
+        {
+          title: 'Show P1 Lap',
+          desc: 'Display the best lap time of your class leader.',
+          value: settings.showP1,
+          key: 'showP1',
+        },
+      ].map((item) => (
+        <div key={item.key} className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>{item.title}</div>
+              <div className={styles.fieldDesc}>{item.desc}</div>
+            </div>
+            <Switch
+              checked={item.value}
+              onChange={(v) => update({ [item.key]: v })}
+            />
+          </div>
+        </div>
+      ))}
     </Card>
   );
 });

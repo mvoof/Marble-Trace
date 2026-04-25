@@ -10,6 +10,14 @@
   border-left: 3px solid transparent;
   margin: 0 $space-sm rem(2);
 
+  &.rowCurrent {
+    border-left-color: $color-success;
+
+    .delta {
+      color: $color-success;
+    }
+  }
+
   &.rowLast {
     border-left-color: $color-error;
 
@@ -19,26 +27,18 @@
   }
 
   &.rowBest {
-    border-left-color: $color-caution;
+    border-left-color: rgba(192, 132, 252, 0.85);
 
     .delta {
-      color: $color-caution;
-    }
-  }
-
-  &.rowOptimal {
-    border-left-color: $color-success;
-
-    .delta {
-      color: $color-success;
+      color: rgba(192, 132, 252, 0.85);
     }
   }
 
   &.rowP1 {
-    border-left-color: $color-text-primary;
+    border-left-color: rgba(192, 132, 252, 0.85);
 
     .delta {
-      color: $color-text-primary;
+      color: rgba(192, 132, 252, 0.85);
     }
   }
 }

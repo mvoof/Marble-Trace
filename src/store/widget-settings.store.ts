@@ -13,6 +13,7 @@ import type {
   StandingsWidgetSettings,
   TrackMapWidgetSettings,
   WeatherWidgetSettings,
+  LapTimesWidgetSettings,
   WidgetConfig,
   WidgetCustomSettings,
 } from '../types/widget-settings';
@@ -272,6 +273,13 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
+    customSettings: {
+      'lap-times': {
+        showLastLap: true,
+        showBestLap: true,
+        showP1: true,
+      },
+    },
   },
   {
     id: 'session',
@@ -613,6 +621,17 @@ class WidgetSettingsStore {
         variant: 'overlay',
         cutoutWidth: 6,
         cutoutHeight: 1,
+      }
+    );
+  }
+
+  getLapTimesSettings(): LapTimesWidgetSettings {
+    const widget = this.getWidget('lap-times');
+    return (
+      widget?.customSettings?.['lap-times'] ?? {
+        showLastLap: true,
+        showBestLap: true,
+        showP1: true,
       }
     );
   }

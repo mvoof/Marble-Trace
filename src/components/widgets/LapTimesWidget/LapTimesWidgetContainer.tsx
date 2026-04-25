@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore, computedStore } from '../../../store/iracing';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { formatLapTime } from '../../../utils/telemetry-format';
 import { LapTimesWidget } from './LapTimesWidget';
 
@@ -19,7 +20,9 @@ export const LapTimesWidgetContainer = observer(() => {
   const lap = telemetryStore.lapTiming;
   const carIdxData = telemetryStore.carIdx;
   const standings = computedStore.standings?.entries ?? [];
+  const settings = widgetSettingsStore.getLapTimesSettings();
 
+  const currentLap = lap?.lap_current_lap_time ?? null;
   const lastLap = lap?.lap_last_lap_time ?? null;
   const bestLap = lap?.lap_best_lap_time ?? null;
 
@@ -44,11 +47,13 @@ export const LapTimesWidgetContainer = observer(() => {
 
   return (
     <LapTimesWidget
+      currentLapTime={formatLapTime(currentLap)}
       lastLapTime={formatLapTime(lastLap)}
       lastLapDelta={formatDeltaVsBest(lastLap, bestLap)}
       bestLapTime={formatLapTime(bestLap)}
       p1LapTime={formatLapTime(p1Time)}
       p1Delta={formatDeltaVsBest(p1Time, bestLap)}
+      settings={settings}
     />
   );
 });
