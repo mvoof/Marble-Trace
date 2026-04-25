@@ -15,6 +15,8 @@ pub struct LapDeltaState {
     pub cached_sector_pcts: Vec<f64>,
     pub last_frame_pct: f64,
     pub last_frame_time: f64,
+    pub was_on_track: bool,
+    pub is_sector_start_valid: bool,
 }
 
 impl Default for LapDeltaState {
@@ -28,6 +30,8 @@ impl Default for LapDeltaState {
             cached_sector_pcts: Vec::new(),
             last_frame_pct: -1.0,
             last_frame_time: -1.0,
+            was_on_track: false,
+            is_sector_start_valid: false,
         }
     }
 }
@@ -85,6 +89,7 @@ pub fn compute(
         locked.last_lap = -1;
         locked.last_frame_pct = -1.0;
         locked.last_frame_time = -1.0;
+        locked.is_sector_start_valid = false;
     }
 
     let best_lap_time = frame
@@ -101,6 +106,32 @@ pub fn compute(
 
     let current_lap_time = frame.lap_current_lap_time as f64;
     let current_lap = frame.lap.unwrap_or(0);
+    let is_on_track = frame.is_on_track.unwrap_or(false);
+    let on_pit_road = frame.on_pit_road.unwrap_or(false);
+
+    // Detect reset/tow or being on pit road: invalidate current sector start
+    if on_pit_road || !is_on_track {
+        locked.is_sector_start_valid = false;
+        locked.last_sector_idx = -1; // Force re-emergence detection
+    }
+
+    // Detect reset/tow: car leaves track or suddenly appears in pits
+    let was_on_track = locked.was_on_track;
+    locked.was_on_track = is_on_track;
+
+    let is_reset = (!is_on_track && was_on_track) || 
+                   (on_pit_road && !is_on_track) ||
+                   (locked.last_frame_pct >= 0.0 && lap_dist_pct < locked.last_frame_pct - 0.1 && current_lap == locked.last_lap);
+
+    if is_reset {
+        // Clear current lap progress
+        locked.sector_times = vec![None; sector_count];
+        locked.sector_entry_time = -1.0;
+        locked.last_sector_idx = -1;
+        locked.is_sector_start_valid = false;
+        
+        return build_frame(&locked.sector_times, best_lap_time, sector_count, -1);
+    }
 
     if sector_count == 0 {
         return build_frame(&locked.sector_times, best_lap_time, sector_count, -1);
@@ -114,9 +145,10 @@ pub fn compute(
         }
     }
 
-    // Handle lap change: record last sector of previous lap
+    // Handle lap change
     if current_lap != locked.last_lap && locked.last_lap >= 0 {
-        if locked.last_sector_idx >= 0 && locked.sector_entry_time >= 0.0 {
+        // Record last sector ONLY if its start was valid
+        if locked.is_sector_start_valid && locked.last_sector_idx >= 0 && locked.sector_entry_time >= 0.0 {
             let last_lap_time = frame.lap_last_lap_time.unwrap_or(0.0) as f64;
             let elapsed = last_lap_time - locked.sector_entry_time;
             if elapsed > 0.0 && elapsed < 600.0 {
@@ -127,12 +159,13 @@ pub fn compute(
             }
         }
         
-        // Prepare for new lap
+        // Prepare for new lap (Crossing S/F always validates S1)
+        locked.is_sector_start_valid = true;
         locked.last_sector_idx = current_sector_idx;
         locked.sector_entry_time = 0.0; // New lap starts at 0
         locked.last_lap = current_lap;
         
-        // Clear the current sector time of the new lap
+        // Clear only the current sector of the new lap to start fresh
         if (current_sector_idx as usize) < sector_count {
             locked.sector_times[current_sector_idx as usize] = None;
         }
@@ -153,13 +186,14 @@ pub fn compute(
         locked.last_lap = current_lap;
         locked.last_sector_idx = current_sector_idx;
         locked.sector_entry_time = current_lap_time;
-        if (current_sector_idx as usize) < sector_count {
-            locked.sector_times[current_sector_idx as usize] = None;
-        }
         locked.last_frame_pct = lap_dist_pct;
         locked.last_frame_time = current_lap_time;
+        if !on_pit_road && is_on_track {
+            locked.is_sector_start_valid = true;
+        }
     }
 
+    // Handle sector change
     if current_sector_idx != locked.last_sector_idx {
         let sector_start_pct = locked.cached_sector_pcts.get(current_sector_idx as usize).copied().unwrap_or(0.0);
         
@@ -177,7 +211,8 @@ pub fn compute(
             interpolated_crossing_time = locked.last_frame_time + time_range * fraction;
         }
 
-        if locked.last_sector_idx >= 0 && locked.sector_entry_time >= 0.0 {
+        // Record previous sector ONLY if it had a valid start
+        if locked.is_sector_start_valid && locked.last_sector_idx >= 0 && locked.sector_entry_time >= 0.0 {
             let elapsed = interpolated_crossing_time - locked.sector_entry_time;
             if elapsed > 0.0 && elapsed < 600.0 {
                 let prev = locked.last_sector_idx as usize;
@@ -186,16 +221,33 @@ pub fn compute(
                 }
             }
         }
+
+        // If we just emerged (last_sector_idx was -1), we don't validate yet.
+        // If we crossed a real boundary (last_sector_idx >= 0), then the start of the NEW sector is valid.
+        let was_emerging = locked.last_sector_idx == -1;
+        
         locked.last_sector_idx = current_sector_idx;
         locked.sector_entry_time = interpolated_crossing_time;
+        
+        if !was_emerging {
+            locked.is_sector_start_valid = true;
+        }
+
+        // Clear the current sector time of the new lap as we just entered it (to avoid showing stale live time)
+        if (current_sector_idx as usize) < sector_count {
+            locked.sector_times[current_sector_idx as usize] = None;
+        }
     }
 
-    // Update live time for the current sector
-    if current_sector_idx >= 0 && (current_sector_idx as usize) < sector_count {
+    // Update live time for the current sector ONLY if its start is valid
+    if locked.is_sector_start_valid && current_sector_idx >= 0 && (current_sector_idx as usize) < sector_count {
         let live_elapsed = current_lap_time - locked.sector_entry_time;
         if live_elapsed >= 0.0 {
             locked.sector_times[current_sector_idx as usize] = Some(live_elapsed as f32);
         }
+    } else if current_sector_idx >= 0 && (current_sector_idx as usize) < sector_count {
+        // If start is NOT valid, ensure the time is None so UI doesn't show anything
+        locked.sector_times[current_sector_idx as usize] = None;
     }
 
     locked.last_frame_pct = lap_dist_pct;
