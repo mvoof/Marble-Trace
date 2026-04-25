@@ -73,6 +73,7 @@ export const TrackMapWidget = ({
           points={trackData.points}
           cars={cars}
           sectors={visibleSectors}
+          showPing={settings.showPing}
         />
       </div>
 

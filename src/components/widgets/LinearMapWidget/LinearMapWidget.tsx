@@ -23,6 +23,7 @@ export const LinearMapWidget = ({
         entries={entries}
         player={player}
         isHorizontal={isHorizontal}
+        showPing={settings.showPing}
       />
     </WidgetPanel>
   );

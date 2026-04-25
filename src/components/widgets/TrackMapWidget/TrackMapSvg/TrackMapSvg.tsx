@@ -14,6 +14,7 @@ interface TrackMapSvgProps {
   points: TrackPoint[];
   cars: CarOnTrack[];
   sectors: Sector[] | null | undefined;
+  showPing?: boolean;
   sfLabel?: string;
 }
 
@@ -23,12 +24,16 @@ export const TrackMapSvg = ({
   points,
   cars,
   sectors,
+  showPing = true,
   sfLabel = 'S/F',
 }: TrackMapSvgProps) => {
   const parts = viewBox.split(' ').map(Number);
   const [vbX, vbY, vbW, vbH] = parts;
   const cx = vbX + vbW / 2;
   const cy = vbY + vbH / 2;
+
+  // Derive a radius that scales with the viewBox so dots look proportional
+  const dotRadius = Math.min(vbW, vbH) * 0.022;
 
   const pathRef = useRef<SVGPathElement>(null);
   const [pathLength, setPathLength] = useState(0);
@@ -141,51 +146,29 @@ export const TrackMapSvg = ({
               </g>
             );
           })()}
-      </g>
 
-      {/* Cars as HTML overlay via foreignObject to keep SVG coordinate space */}
-      {points.length > 0 && (
-        <foreignObject
-          x={vbX}
-          y={vbY}
-          width={vbW}
-          height={vbH}
-          style={{ overflow: 'visible' }}
-        >
-          <div
-            style={{
-              position: 'relative',
-              width: '100%',
-              height: '100%',
-              overflow: 'visible',
-            }}
-          >
-            {cars.map((car) => {
-              const { x, y } = getPointAtPct(points, car.lapDistPct);
+        {/* Cars — same CarDot component as LinearMap, radius scaled to viewBox */}
+        {points.length > 0 &&
+          cars.map((car) => {
+            const { x, y } = getPointAtPct(points, car.lapDistPct);
+            const isClassLeader = car.classPosition === 1 && !car.isPlayer;
+            const showLabel = car.isPlayer || isClassLeader;
 
-              // Mirror X to match the SVG horizontal flip transform applied to the track group
-              const leftPct = ((vbX + vbW - x) / vbW) * 100;
-              const topPct = ((y - vbY) / vbH) * 100;
-
-              const isClassLeader = car.classPosition === 1 && !car.isPlayer;
-              const showLabel = car.isPlayer || isClassLeader;
-
-              return (
+            return (
+              <g key={car.carIdx} transform={`translate(${x}, ${y})`}>
                 <CarDot
-                  key={car.carIdx}
                   carNumber={car.carNumber}
                   carClassColor={car.carClassColor}
                   isPlayer={car.isPlayer}
-                  left={`${leftPct}%`}
-                  top={`${topPct}%`}
+                  radius={dotRadius}
+                  showPing={showPing}
                   label={showLabel ? (car.isPlayer ? 'YOU' : 'P1') : undefined}
                   labelIsPlayer={car.isPlayer}
                 />
-              );
-            })}
-          </div>
-        </foreignObject>
-      )}
+              </g>
+            );
+          })}
+      </g>
     </svg>
   );
 };

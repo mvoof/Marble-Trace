@@ -4,10 +4,10 @@ import { listen } from '@tauri-apps/api/event';
 
 import { computedStore, telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { TrackRecorder } from '../../../utils/track-recorder';
 import type { TrackPoint } from '../../../types/track';
 
 import { TrackMapWidget } from './TrackMapWidget';
+import { TrackRecorderBridge } from './TrackRecorderBridge/TrackRecorderBridge';
 import type { CarOnTrack, StoredTracks } from './types';
 import { TRACKS_STORE_KEY, TRACK_DATA_VERSION } from './types';
 
@@ -18,20 +18,18 @@ interface TrackData {
 }
 
 export const TrackMapWidgetContainer = observer(() => {
-  const carDynamics = telemetryStore.carDynamics;
-  const lapTiming = telemetryStore.lapTiming;
   const { weekendInfo, session: sessionFrame, sessionInfo } = telemetryStore;
+  const lapTiming = telemetryStore.lapTiming;
   const settings = widgetSettingsStore.getTrackMapSettings();
 
   const trackId = weekendInfo?.TrackID?.toString() ?? '';
   const trackName = weekendInfo?.TrackDisplayName ?? '';
   const trackConfig = weekendInfo?.TrackConfigName ?? '';
 
-  const recorderRef = useRef(new TrackRecorder());
   const hasSavedRef = useRef(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [recordingProgress, setRecordingProgress] = useState(0);
   const [trackData, setTrackData] = useState<TrackData | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
 
   const [sectorTimes, setSectorTimes] = useState<(number | null)[]>([]);
   const lastSectorIdxRef = useRef(-1);
@@ -112,8 +110,6 @@ export const TrackMapWidgetContainer = observer(() => {
       setTrackData(null);
       setIsRecording(false);
       setRecordingProgress(0);
-      recorderRef.current = new TrackRecorder();
-      hasSavedRef.current = false;
     } catch {
       // Silently fail
     }
@@ -127,38 +123,6 @@ export const TrackMapWidgetContainer = observer(() => {
       void unlisten.then((fn) => fn());
     };
   }, [clearCurrentTrack]);
-
-  useEffect(() => {
-    if (trackData || !carDynamics || !lapTiming || !sessionFrame) return;
-
-    const recorder = recorderRef.current;
-    const speed = carDynamics.speed ?? 0;
-    const yaw = carDynamics.yaw ?? 0;
-    const lapDistPct = lapTiming.lap_dist_pct ?? -1;
-    const sessionTime = sessionFrame.session_time ?? 0;
-
-    if (lapDistPct < 0) return;
-
-    if (!recorder.isRecording && !recorder.isComplete && speed > 5) {
-      hasSavedRef.current = false;
-      recorder.start();
-      setIsRecording(true);
-    }
-
-    if (recorder.isRecording) {
-      recorder.tick(speed, yaw, lapDistPct, sessionTime);
-      setRecordingProgress(recorder.progress);
-
-      if (recorder.isComplete && !hasSavedRef.current) {
-        hasSavedRef.current = true;
-        const { svgPath, viewBox } = recorder.buildSvgPath();
-        const points = recorder.getPoints();
-        setTrackData({ svgPath, viewBox, points });
-        setIsRecording(false);
-        void saveTrack(svgPath, viewBox, points);
-      }
-    }
-  }, [carDynamics, lapTiming, sessionFrame, trackData, saveTrack]);
 
   useEffect(() => {
     const sectors =
@@ -246,16 +210,29 @@ export const TrackMapWidgetContainer = observer(() => {
   const classColors = Array.from(classColorsSeen.values());
 
   return (
-    <TrackMapWidget
-      cars={cars}
-      classColors={classColors}
-      trackData={trackData}
-      trackName={trackName}
-      isRecording={isRecording}
-      recordingProgress={recordingProgress}
-      settings={settings}
-      sectors={sessionInfo?.SplitTimeInfo?.Sectors}
-      sectorTimes={sectorTimes}
-    />
+    <>
+      {/* Reads carDynamics (60Hz) in isolation — main container stays at ≤10Hz */}
+      {!trackData && (
+        <TrackRecorderBridge
+          trackId={trackId}
+          onTrackReady={setTrackData}
+          onIsRecordingChange={setIsRecording}
+          onProgressChange={setRecordingProgress}
+          onSaveTrack={saveTrack}
+        />
+      )}
+
+      <TrackMapWidget
+        cars={cars}
+        classColors={classColors}
+        trackData={trackData}
+        trackName={trackName}
+        isRecording={isRecording}
+        recordingProgress={recordingProgress}
+        settings={settings}
+        sectors={sessionInfo?.SplitTimeInfo?.Sectors}
+        sectorTimes={sectorTimes}
+      />
+    </>
   );
 });

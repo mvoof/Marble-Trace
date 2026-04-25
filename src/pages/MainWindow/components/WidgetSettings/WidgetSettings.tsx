@@ -689,6 +689,21 @@ const LinearMapSettingsPanel = observer(() => {
           onChange={(v) => update({ orientation: v as LinearMapOrientation })}
         />
       </div>
+
+      <div className={styles.fieldGroup}>
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>Player Ping Animation</div>
+            <div className={styles.fieldDesc}>
+              Pulsing ring around your car. Disable to reduce GPU load.
+            </div>
+          </div>
+          <Switch
+            checked={settings.showPing}
+            onChange={(v) => update({ showPing: v })}
+          />
+        </div>
+      </div>
     </Card>
   );
 });
@@ -741,11 +756,20 @@ const TrackMapSettingsPanel = observer(() => {
             value: settings.showCornerNumbers,
             key: 'showCornerNumbers',
           },
+          {
+            title: 'Player Ping Animation',
+            desc: 'Pulsing ring around your car. Disable to reduce GPU load.',
+            value: settings.showPing,
+            key: 'showPing',
+          },
         ].map((item) => (
           <div key={item.key} className={styles.fieldGroup}>
             <div className={styles.fieldRow}>
               <div className={styles.fieldTexts}>
                 <div className={styles.fieldTitle}>{item.title}</div>
+                {'desc' in item && item.desc && (
+                  <div className={styles.fieldDesc}>{item.desc}</div>
+                )}
               </div>
               <Switch
                 checked={item.value}

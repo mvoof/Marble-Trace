@@ -545,6 +545,7 @@ class WidgetSettingsStore {
         showSectors: true,
         showCornerNumbers: true,
         rotationMode: 'fixed',
+        showPing: true,
       }
     );
   }
@@ -554,6 +555,7 @@ class WidgetSettingsStore {
     return (
       widget?.customSettings?.['linear-map'] ?? {
         orientation: 'horizontal',
+        showPing: true,
       }
     );
   }

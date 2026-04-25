@@ -70,12 +70,14 @@ export interface TrackMapWidgetSettings {
   showSectors: boolean;
   showCornerNumbers: boolean;
   rotationMode: TrackMapRotationMode;
+  showPing: boolean;
 }
 
 export type LinearMapOrientation = 'horizontal' | 'vertical';
 
 export interface LinearMapWidgetSettings {
   orientation: LinearMapOrientation;
+  showPing: boolean;
 }
 
 export type FlagsVariant = 'overlay' | 'under-mirror' | 'standalone';
