@@ -1,6 +1,7 @@
 export const DELTA_CAP = 3.0;
 
 export type DeltaState = 'ahead' | 'behind' | 'neutral';
+export type LapDeltaLayout = 'vertical' | 'horizontal';
 
 export const formatDelta = (delta: number | null): string => {
   if (delta === null) return '\u2014';

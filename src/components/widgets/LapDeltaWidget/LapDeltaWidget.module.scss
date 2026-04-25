@@ -1,20 +1,6 @@
 @use 'sass:list';
 @use '../../../styles/variables' as *;
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $space-md $space-md $space-xs;
-}
-
-.headerLabel {
-  font-family: $font-mono;
-  font-size: $font-size-sm;
-  color: $color-text-muted;
-  letter-spacing: 1px;
-}
-
 .delta {
   text-align: center;
   font-family: $font-widget;
@@ -23,7 +9,11 @@
   line-height: 1;
   letter-spacing: -1px;
   font-variant-numeric: tabular-nums;
-  padding: $space-xs $space-md $space-sm;
+  padding: $space-sm $space-md $space-xs;
+}
+
+.deltaHorizontal {
+  padding-bottom: $space-sm;
 }
 
 .deltaAhead {
@@ -38,21 +28,35 @@
   color: $color-caution;
 }
 
-.sectorList {
+.sectorListVertical {
   display: flex;
   flex-direction: column;
   gap: rem(2);
   padding: 0 $space-sm $space-md;
 }
 
+.sectorListHorizontal {
+  display: flex;
+  flex-direction: row;
+  gap: rem(4);
+  padding: 0 $space-sm $space-sm;
+  flex: 1 1 0;
+}
+
 .sectorRow {
   display: grid;
-  grid-template-columns: rem(32) 1fr;
-  align-items: baseline;
+  grid-template-columns: rem(24) 1fr rem(44);
+  align-items: center;
+  gap: rem(4);
   font-family: $font-mono;
   padding: rem(4) rem(6);
   background: rgba(0, 0, 0, 0.3);
   border-left: 3px solid transparent;
+
+  .sectorListHorizontal & {
+    flex: 1 1 0;
+    grid-template-columns: rem(20) 1fr rem(38);
+  }
 
   @for $i from 0 through 5 {
     &.sectorRow#{$i} {
@@ -69,8 +73,18 @@
   text-transform: uppercase;
 }
 
-.sectorValue {
-  font-size: rem(15);
+.sectorTime {
+  font-size: rem(13);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: right;
+  padding-right: rem(6);
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.sectorDelta {
+  font-size: rem(13);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: right;

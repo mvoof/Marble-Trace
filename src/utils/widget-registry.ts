@@ -150,12 +150,17 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
   },
 
   'lap-delta': {
-    defaultVariant: 'default',
+    defaultVariant: 'vertical',
     variants: {
-      default: {
+      vertical: {
         component: LapDeltaWidgetContainer,
-        designWidth: 240,
-        designHeight: 220,
+        designWidth: 220,
+        designHeight: 180,
+      },
+      horizontal: {
+        component: LapDeltaWidgetContainer,
+        designWidth: 480,
+        designHeight: 140,
       },
     },
   },
@@ -220,6 +225,11 @@ export const resolveWidgetVariant = (
     const settings = widgetSettingsStore.getLinearMapSettings();
     variantKey =
       settings.orientation === 'vertical' ? 'vertical' : 'horizontal';
+  }
+
+  if (id === 'lap-delta') {
+    const settings = widgetSettingsStore.getLapDeltaSettings();
+    variantKey = settings.layout === 'horizontal' ? 'horizontal' : 'vertical';
   }
 
   return entry.variants[variantKey] ?? entry.variants[entry.defaultVariant];

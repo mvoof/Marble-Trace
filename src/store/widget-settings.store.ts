@@ -14,6 +14,7 @@ import type {
   TrackMapWidgetSettings,
   WeatherWidgetSettings,
   LapTimesWidgetSettings,
+  LapDeltaWidgetSettings,
   WidgetConfig,
   WidgetCustomSettings,
 } from '../types/widget-settings';
@@ -483,6 +484,24 @@ class WidgetSettingsStore {
         }
       }
 
+      if (
+        id === 'lap-delta' &&
+        settings['lap-delta'] &&
+        'layout' in settings['lap-delta']
+      ) {
+        const prevLayout = prevSettings?.['lap-delta']?.layout ?? 'vertical';
+        const nextLayout = settings['lap-delta'].layout;
+        if (prevLayout !== nextLayout) {
+          if (nextLayout === 'horizontal') {
+            widget.width = 475;
+            widget.height = 80;
+          } else {
+            widget.width = 220;
+            widget.height = 140;
+          }
+        }
+      }
+
       if (id === 'fuel' && settings.fuel && 'pitWarningLaps' in settings.fuel) {
         void invoke('set_pit_warning_laps', {
           laps: settings.fuel.pitWarningLaps,
@@ -632,6 +651,15 @@ class WidgetSettingsStore {
         showLastLap: true,
         showBestLap: true,
         showP1: true,
+      }
+    );
+  }
+
+  getLapDeltaSettings(): LapDeltaWidgetSettings {
+    const widget = this.getWidget('lap-delta');
+    return (
+      widget?.customSettings?.['lap-delta'] ?? {
+        layout: 'vertical',
       }
     );
   }

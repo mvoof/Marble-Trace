@@ -33,6 +33,8 @@ import type {
   FlagsWidgetSettings,
   FlagsVariant,
   LapTimesWidgetSettings,
+  LapDeltaWidgetSettings,
+  LapDeltaLayout,
 } from '../../../../types/widget-settings';
 import { emit } from '@tauri-apps/api/event';
 import { appDataDir } from '@tauri-apps/api/path';
@@ -193,6 +195,7 @@ export const WidgetSettings = observer(
         {widgetId === 'fuel' && <FuelSettingsPanel />}
         {widgetId === 'flags' && <FlagsSettingsPanel />}
         {widgetId === 'lap-times' && <LapTimesSettingsPanel />}
+        {widgetId === 'lap-delta' && <LapDeltaSettingsPanel />}
       </div>
     );
   }
@@ -993,6 +996,33 @@ const FlagsSettingsPanel = observer(() => {
           />
         </Col>
       </Row>
+    </Card>
+  );
+});
+
+const LapDeltaSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getLapDeltaSettings();
+
+  const update = (partial: Partial<LapDeltaWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('lap-delta', {
+      'lap-delta': { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Card title="Module Layout">
+      <div className={styles.fieldGroup}>
+        <span className={styles.fieldLabel}>Sectors Layout</span>
+        <Segmented
+          block
+          value={settings.layout}
+          options={[
+            { label: 'Vertical', value: 'vertical' },
+            { label: 'Horizontal', value: 'horizontal' },
+          ]}
+          onChange={(v) => update({ layout: v as LapDeltaLayout })}
+        />
+      </div>
     </Card>
   );
 });

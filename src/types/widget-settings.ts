@@ -107,6 +107,12 @@ export interface FuelWidgetSettings {
   chartType: 'line' | 'bar';
 }
 
+export type LapDeltaLayout = 'vertical' | 'horizontal';
+
+export interface LapDeltaWidgetSettings {
+  layout: LapDeltaLayout;
+}
+
 export interface WidgetCustomSettings {
   speed?: SpeedWidgetSettings;
   'input-trace'?: InputTraceSettings;
@@ -120,6 +126,7 @@ export interface WidgetCustomSettings {
   weather?: WeatherWidgetSettings;
   fuel?: FuelWidgetSettings;
   'lap-times'?: LapTimesWidgetSettings;
+  'lap-delta'?: LapDeltaWidgetSettings;
 }
 
 export interface WidgetConfig {
