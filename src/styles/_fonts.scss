@@ -1,0 +1,49 @@
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url('/fonts/Rajdhani-Regular.woff2') format('woff2'),
+    url('/fonts/Rajdhani-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src:
+    url('/fonts/Rajdhani-SemiBold.woff2') format('woff2'),
+    url('/fonts/Rajdhani-SemiBold.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'Rajdhani';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src:
+    url('/fonts/Rajdhani-Bold.woff2') format('woff2'),
+    url('/fonts/Rajdhani-Bold.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url('/fonts/JetBrainsMono-Regular.woff2') format('woff2'),
+    url('/fonts/JetBrainsMono-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src:
+    url('/fonts/JetBrainsMono-Medium.woff2') format('woff2'),
+    url('/fonts/JetBrainsMono-Medium.woff') format('woff');
+}
