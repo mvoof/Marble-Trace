@@ -134,14 +134,6 @@ export const DriverRow = ({
         </td>
       )}
 
-      <td className={styles.td}>
-        <span
-          className={`${styles.carNumber} ${driver.isPlayer ? styles.carNumberPlayer : ''}`}
-        >
-          {driver.carNumber}
-        </span>
-      </td>
-
       <td className={`${styles.td} ${styles.tdDriverName}`}>
         <div className={styles.driverNameCell}>
           <span
@@ -154,6 +146,14 @@ export const DriverRow = ({
 
           {isPit && <PitBadge />}
         </div>
+      </td>
+
+      <td className={styles.td}>
+        <span
+          className={`${styles.carNumber} ${driver.isPlayer ? styles.carNumberPlayer : ''}`}
+        >
+          {driver.carNumber}
+        </span>
       </td>
 
       {settings.showBrand && (

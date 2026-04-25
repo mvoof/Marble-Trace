@@ -180,8 +180,8 @@ export const StandingsWidget = ({
                   <th className={`${styles.th} ${styles.thCenter}`}>+/-</th>
                 )}
 
-                <th className={styles.th}>#</th>
                 <th className={styles.th}>Driver</th>
+                <th className={styles.th}>#</th>
 
                 {settings.showBrand && (
                   <th className={`${styles.th} ${styles.thCenter}`}>Brand</th>
