@@ -12,6 +12,17 @@ interface CarDotProps {
   labelIsPlayer?: boolean;
 }
 
+const PLAYER_RADIUS_SCALE = 1.3; // player dot is 30% larger than competitor dots
+const STROKE_TO_RADIUS = 0.25; // class-color border thickness
+const NUMBER_FONT_TO_RADIUS = 1.2; // car number font size inside the circle
+const NUMBER_DY_TO_FONT = 0.4; // vertical nudge to visually center text (SVG dy is from baseline)
+const LABEL_FONT_TO_RADIUS = 0.7; // "YOU" / "P1" tag font size
+const LABEL_DY_TO_FONT = 0.35; // vertical nudge for tag text (same baseline offset as above)
+const LABEL_WIDTH_TO_RADIUS = 4.5; // tag pill width
+const LABEL_HEIGHT_TO_RADIUS = 1.4; // tag pill height
+const LABEL_GAP_TO_RADIUS = 0.5; // gap between dot edge and tag pill
+const LABEL_CORNER_TO_RADIUS = 0.35; // tag pill corner radius
+
 const CarDotBase = ({
   carNumber,
   carClassColor,
@@ -21,12 +32,12 @@ const CarDotBase = ({
   label,
   labelIsPlayer,
 }: CarDotProps) => {
-  const r = isPlayer ? radius * 1.3 : radius;
-  const fontSize = radius * 0.9;
-  const labelFontSize = radius * 0.7;
-  const labelW = radius * 4.5;
-  const labelH = radius * 1.4;
-  const labelY = -(r + radius * 0.5 + labelH);
+  const r = isPlayer ? radius * PLAYER_RADIUS_SCALE : radius;
+  const fontSize = radius * NUMBER_FONT_TO_RADIUS;
+  const labelFontSize = radius * LABEL_FONT_TO_RADIUS;
+  const labelW = radius * LABEL_WIDTH_TO_RADIUS;
+  const labelH = radius * LABEL_HEIGHT_TO_RADIUS;
+  const labelY = -(r + radius * LABEL_GAP_TO_RADIUS + labelH);
 
   return (
     <g>
@@ -38,12 +49,12 @@ const CarDotBase = ({
         r={r}
         fill="#18181b"
         stroke={carClassColor}
-        strokeWidth={radius * 0.25}
+        strokeWidth={radius * STROKE_TO_RADIUS}
       />
 
       <text
         textAnchor="middle"
-        dy={fontSize * 0.4}
+        dy={fontSize * NUMBER_DY_TO_FONT}
         fontSize={fontSize}
         className={styles.carNumber}
       >
@@ -57,14 +68,14 @@ const CarDotBase = ({
             y={-labelH / 2}
             width={labelW}
             height={labelH}
-            rx={radius * 0.35}
+            rx={radius * LABEL_CORNER_TO_RADIUS}
             fill={labelIsPlayer ? 'white' : 'rgba(24,24,27,0.9)'}
             stroke={labelIsPlayer ? 'none' : 'rgba(255,255,255,0.15)'}
             strokeWidth="1"
           />
           <text
             textAnchor="middle"
-            dy={labelFontSize * 0.35}
+            dy={labelFontSize * LABEL_DY_TO_FONT}
             fontSize={labelFontSize}
             className={labelIsPlayer ? styles.youTag : styles.p1Tag}
           >
