@@ -555,7 +555,6 @@ class WidgetSettingsStore {
     return (
       widget?.customSettings?.['linear-map'] ?? {
         orientation: 'horizontal',
-        showPing: true,
       }
     );
   }

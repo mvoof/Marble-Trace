@@ -689,21 +689,6 @@ const LinearMapSettingsPanel = observer(() => {
           onChange={(v) => update({ orientation: v as LinearMapOrientation })}
         />
       </div>
-
-      <div className={styles.fieldGroup}>
-        <div className={styles.fieldRow}>
-          <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>Player Ping Animation</div>
-            <div className={styles.fieldDesc}>
-              Pulsing ring around your car. Disable to reduce GPU load.
-            </div>
-          </div>
-          <Switch
-            checked={settings.showPing}
-            onChange={(v) => update({ showPing: v })}
-          />
-        </div>
-      </div>
     </Card>
   );
 });

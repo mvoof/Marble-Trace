@@ -77,7 +77,6 @@ export type LinearMapOrientation = 'horizontal' | 'vertical';
 
 export interface LinearMapWidgetSettings {
   orientation: LinearMapOrientation;
-  showPing: boolean;
 }
 
 export type FlagsVariant = 'overlay' | 'under-mirror' | 'standalone';
