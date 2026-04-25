@@ -24,7 +24,7 @@
 /// - `iracing://computed/fuel` — FuelComputedFrame (4Hz)
 /// - `iracing://computed/standings` — DriverEntriesFrame (10Hz)
 /// - `iracing://computed/pit-stops` — PitStopsFrame (4Hz)
-/// - `iracing://computed/lap-delta` — LapDeltaFrame (10Hz)
+/// - `iracing://computed/lap-delta` — LapDeltaFrame (60Hz)
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
@@ -376,6 +376,13 @@ fn emit_domain_frames(
     // Compute stateful data at 60Hz for maximum precision (especially sector timing)
     let lap_delta_frame = session_info.map(|session| lap_delta::compute(frame, session, lap_delta_state));
 
+    // 60 Hz — emit lap delta for smooth live delta updates
+    if let Some(ref ldf) = lap_delta_frame {
+        if let Err(e) = app.emit("iracing://computed/lap-delta", ldf) {
+            warn!("Failed to emit lap delta: {}", e);
+        }
+    }
+
     // 10 Hz — also fire on first frame so widgets populate immediately
     if tick.is_multiple_of(6) || tick == 1 {
         if let Err(e) = app.emit("iracing://telemetry/car-idx", &CarIdxFrame::from(frame)) {
@@ -412,11 +419,6 @@ fn emit_domain_frames(
                 warn!("Failed to emit standings: {}", e);
             }
 
-            if let Some(ldf) = lap_delta_frame {
-                if let Err(e) = app.emit("iracing://computed/lap-delta", &ldf) {
-                    warn!("Failed to emit lap delta: {}", e);
-                }
-            }
         }
     }
 
