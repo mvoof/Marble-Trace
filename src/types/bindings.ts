@@ -564,6 +564,7 @@ export type DriverEntry = {
   onPitRoad: boolean;
   estimatedIrDelta: number | null;
   relativeLapDist: number;
+  classEstLapTime: number;
 };
 
 /**

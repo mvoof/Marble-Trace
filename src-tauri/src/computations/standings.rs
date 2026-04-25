@@ -129,6 +129,7 @@ pub struct DriverEntry {
     pub on_pit_road: bool,
     pub estimated_ir_delta: Option<i32>,
     pub relative_lap_dist: f32,
+    pub class_est_lap_time: f32,
 }
 
 #[derive(Default)]
@@ -266,6 +267,7 @@ pub fn compute(
                 on_pit_road: frame.car_idx_on_pit_road.get(idx).copied().unwrap_or(false),
                 estimated_ir_delta: None,
                 relative_lap_dist: 0.0,
+                class_est_lap_time: d.car_class_est_lap_time.unwrap_or(0.0) as f32,
             }
         })
         .collect();
