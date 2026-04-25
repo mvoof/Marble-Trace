@@ -57,6 +57,7 @@ export const DriverRow = observer(
 
     const rowClass = [
       styles.driverRow,
+      settings.showIRatingBadge ? styles.driverRowWithIRating : '',
       driver.isPlayer ? styles.driverRowPlayer : '',
       isPit ? styles.driverRowPit : '',
     ]
@@ -76,7 +77,6 @@ export const DriverRow = observer(
           >
             {driver.position}
           </span>
-          <span className={styles.driverCarNumber}>#{driver.carNumber}</span>
         </div>
 
         <div className={styles.infoBlock}>
@@ -88,6 +88,8 @@ export const DriverRow = observer(
               : driver.userName}
           </span>
         </div>
+
+        <span className={styles.driverCarNumber}>#{driver.carNumber}</span>
 
         <div className={styles.badgesBlock}>
           {settings.showPitIndicator && isPit && <PitBadge />}
