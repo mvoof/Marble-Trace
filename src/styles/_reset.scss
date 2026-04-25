@@ -6,7 +6,12 @@
   padding: 0;
 }
 
-html,
+html {
+  font-size: $base-font-size;
+  width: 100%;
+  height: 100%;
+}
+
 body,
 #root {
   width: 100%;
