@@ -33,7 +33,7 @@ export const TrackMapSvg = ({
   const cy = vbY + vbH / 2;
 
   // Derive a radius that scales with the viewBox so dots look proportional
-  const dotRadius = Math.min(vbW, vbH) * 0.022;
+  const dotRadius = Math.min(vbW, vbH) * 0.035;
 
   const pathRef = useRef<SVGPathElement>(null);
   const [pathLength, setPathLength] = useState(0);
@@ -58,7 +58,7 @@ export const TrackMapSvg = ({
           d={svgPath}
           fill="none"
           stroke="#e2e8f0"
-          strokeWidth="12"
+          strokeWidth="18"
           strokeLinejoin="round"
           strokeLinecap="round"
           opacity="0.6"
@@ -70,7 +70,7 @@ export const TrackMapSvg = ({
           d={svgPath}
           fill="none"
           stroke="#0f172a"
-          strokeWidth="10"
+          strokeWidth="14"
           strokeLinejoin="round"
           strokeLinecap="round"
         />
@@ -91,7 +91,7 @@ export const TrackMapSvg = ({
                 d={svgPath}
                 fill="none"
                 stroke={color}
-                strokeWidth="2.5"
+                strokeWidth="4"
                 strokeLinecap="butt"
                 strokeDasharray={`0 ${startDist} ${sectorLen} ${pathLength}`}
                 className={styles.sectorArc}
@@ -113,7 +113,7 @@ export const TrackMapSvg = ({
                 key={`arrow-${sector.SectorNum}`}
                 transform={`translate(${x},${y}) rotate(${angle})`}
               >
-                <polygon points="-5,-4 6,0 -5,4" fill={color} opacity="0.9" />
+                <polygon points="-6,-5 8,0 -6,5" fill={color} opacity="0.9" />
               </g>
             );
           })}
@@ -128,16 +128,16 @@ export const TrackMapSvg = ({
               <g transform={`translate(${x},${y}) rotate(${angle})`}>
                 <line
                   x1="0"
-                  y1="-14"
+                  y1="-20"
                   x2="0"
-                  y2="14"
+                  y2="20"
                   stroke="white"
-                  strokeWidth="3"
+                  strokeWidth="5"
                   opacity="0.85"
                 />
                 <text
                   x="0"
-                  y="-18"
+                  y="-25"
                   textAnchor="middle"
                   className={styles.sfLabel}
                 >

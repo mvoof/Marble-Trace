@@ -150,7 +150,7 @@ export class TrackRecorder {
 
     const width = maxX - minX || 1;
     const height = maxY - minY || 1;
-    const padding = Math.max(width, height) * 0.05;
+    const padding = Math.max(width, height) * 0.02;
 
     const vbX = minX - padding;
     const vbY = minY - padding;
