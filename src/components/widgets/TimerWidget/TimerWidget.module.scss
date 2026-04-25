@@ -40,7 +40,7 @@
   padding: $space-xs $space-md;
   font-family: $font-widget;
   font-weight: 700;
-  font-size: $font-size-display;
+  font-size: $font-size-xl;
   line-height: 1;
   letter-spacing: -1px;
   font-variant-numeric: tabular-nums;
@@ -63,7 +63,8 @@
 
 .footerItem {
   font-family: $font-mono;
-  font-size: $font-size-xs;
+  font-size: $font-size-sm;
+  font-weight: 600;
   color: $color-text-muted;
   letter-spacing: 1px;
 }
