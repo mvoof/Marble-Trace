@@ -120,12 +120,14 @@ export const WidgetContainer = observer(
           if (!isResizingRef.current) return;
           const dx = ev.clientX - resizeStartRef.current.mouseX;
           const dy = ev.clientY - resizeStartRef.current.mouseY;
+          const minW = Math.max(20, Math.round(designWidth * 0.2));
+          const minH = Math.max(20, Math.round(designHeight * 0.2));
           const newW = Math.max(
-            80,
+            minW,
             Math.round(resizeStartRef.current.widgetW + dx)
           );
           const newH = Math.max(
-            40,
+            minH,
             Math.round(resizeStartRef.current.widgetH + dy)
           );
           widgetSettingsStore.updateSize(widgetId, newW, newH);
