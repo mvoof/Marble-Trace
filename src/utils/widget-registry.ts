@@ -11,7 +11,6 @@ import { FlagsWidgetContainer } from '../components/widgets/FlagsWidget/FlagsWid
 import { ChassisWidgetContainer } from '../components/widgets/ChassisWidget/ChassisWidgetContainer';
 import { LapDeltaWidgetContainer } from '../components/widgets/LapDeltaWidget/LapDeltaWidgetContainer';
 import { LapTimesWidgetContainer } from '../components/widgets/LapTimesWidget/LapTimesWidgetContainer';
-import { SessionWidgetContainer } from '../components/widgets/SessionWidget/SessionWidgetContainer';
 import { TimerWidgetContainer } from '../components/widgets/TimerWidget/TimerWidgetContainer';
 import { WeatherWidgetContainer } from '../components/widgets/WeatherWidget/WeatherWidgetContainer';
 import { FuelWidgetContainer } from '../components/widgets/FuelWidget/FuelWidgetContainer';
@@ -168,17 +167,6 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
         component: LapTimesWidgetContainer,
         designWidth: 260,
         designHeight: 160,
-      },
-    },
-  },
-
-  session: {
-    defaultVariant: 'default',
-    variants: {
-      default: {
-        component: SessionWidgetContainer,
-        designWidth: 300,
-        designHeight: 100,
       },
     },
   },
