@@ -1,8 +1,10 @@
+import type { RefObject } from 'react';
 import { WidgetPanel } from '../primitives';
 import type { TrackPoint } from '../../../types/track';
 import type { TrackMapWidgetSettings } from '../../../types/widget-settings';
 import type { Sector } from '../../../types/bindings';
 
+import type { RecordingOverlayHandle } from './RecordingOverlay/RecordingOverlay';
 import { RecordingOverlay } from './RecordingOverlay/RecordingOverlay';
 import { ClassLegend } from './ClassLegend/ClassLegend';
 import { TrackMapSvg } from './TrackMapSvg/TrackMapSvg';
@@ -29,6 +31,7 @@ interface TrackMapWidgetProps {
   trackName: string;
   isRecording: boolean;
   recordingProgress: number;
+  recordingOverlayRef?: RefObject<RecordingOverlayHandle | null>;
   settings: TrackMapWidgetSettings;
   sectors: Sector[] | null | undefined;
   sectorTimes: (number | null)[];
@@ -41,6 +44,7 @@ export const TrackMapWidget = ({
   trackName,
   isRecording,
   recordingProgress,
+  recordingOverlayRef,
   settings,
   sectors,
   sectorTimes,
@@ -49,6 +53,7 @@ export const TrackMapWidget = ({
     return (
       <WidgetPanel className={styles.trackMap} gap={0}>
         <RecordingOverlay
+          ref={recordingOverlayRef}
           trackName={trackName}
           isRecording={isRecording}
           progress={recordingProgress}

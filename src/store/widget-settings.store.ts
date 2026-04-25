@@ -179,6 +179,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showSectors: true,
         showCornerNumbers: true,
         rotationMode: 'fixed',
+        showPing: true,
       },
     },
   },

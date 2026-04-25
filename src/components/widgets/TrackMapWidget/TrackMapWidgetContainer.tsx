@@ -8,6 +8,7 @@ import type { TrackPoint } from '../../../types/track';
 
 import { TrackMapWidget } from './TrackMapWidget';
 import { TrackRecorderBridge } from './TrackRecorderBridge/TrackRecorderBridge';
+import type { RecordingOverlayHandle } from './RecordingOverlay/RecordingOverlay';
 import type { CarOnTrack, StoredTracks } from './types';
 import { TRACKS_STORE_KEY, TRACK_DATA_VERSION } from './types';
 
@@ -30,6 +31,7 @@ export const TrackMapWidgetContainer = observer(() => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingProgress, setRecordingProgress] = useState(0);
   const [trackData, setTrackData] = useState<TrackData | null>(null);
+  const recordingOverlayRef = useRef<RecordingOverlayHandle>(null);
 
   const [sectorTimes, setSectorTimes] = useState<(number | null)[]>([]);
   const lastSectorIdxRef = useRef(-1);
@@ -219,6 +221,7 @@ export const TrackMapWidgetContainer = observer(() => {
           onIsRecordingChange={setIsRecording}
           onProgressChange={setRecordingProgress}
           onSaveTrack={saveTrack}
+          recordingOverlayRef={recordingOverlayRef}
         />
       )}
 
@@ -229,6 +232,7 @@ export const TrackMapWidgetContainer = observer(() => {
         trackName={trackName}
         isRecording={isRecording}
         recordingProgress={recordingProgress}
+        recordingOverlayRef={recordingOverlayRef}
         settings={settings}
         sectors={sessionInfo?.SplitTimeInfo?.Sectors}
         sectorTimes={sectorTimes}

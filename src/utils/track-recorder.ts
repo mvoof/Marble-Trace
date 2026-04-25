@@ -1,27 +1,18 @@
-/**
- * Track recorder — builds a 2D track path from telemetry via dead reckoning.
- *
- * Since iRacing does not expose GPS coordinates in telemetry, we reconstruct
- * the track shape by integrating velocity vectors + heading over one full lap.
- *
- * Input per tick: speed (m/s), yaw (heading in radians), lapDistPct (0..1)
- * Output: SVG path string + viewBox for rendering.
- */
-
 import type { TrackPoint } from '../types/track';
-
-const SAMPLE_INTERVAL_PCT = 0.002; // Sample every ~0.2% of the lap
 
 export class TrackRecorder {
   private points: TrackPoint[] = [];
-  private lastPct = -1;
   private x = 0;
   private y = 0;
   private recording = false;
   private complete = false;
-  private startPct = -1;
   private prevTime = 0;
-  private wrapCount = 0;
+
+  // Progress tracking
+  private startPct = -1;
+  private highestPct = -1;
+  private lastLapDistPct = -1;
+  private pointsCount = 0;
 
   get isRecording(): boolean {
     return this.recording;
@@ -33,80 +24,104 @@ export class TrackRecorder {
 
   get progress(): number {
     if (this.complete) return 1;
-    if (!this.recording || this.startPct < 0) return 0;
+    if (!this.recording || this.startPct < 0 || this.highestPct < 0) return 0;
 
-    let pct = this.lastPct - this.startPct;
+    let pct = this.highestPct - this.startPct;
     if (pct < 0) pct += 1;
-    return Math.min(pct, 1);
+    return Math.max(0, Math.min(pct, 0.99));
   }
 
   start(): void {
+    this.reset();
+    this.recording = true;
+    this.prevTime = performance.now() / 1000;
+  }
+
+  reset(): void {
     this.points = [];
-    this.lastPct = -1;
     this.x = 0;
     this.y = 0;
-    this.recording = true;
+    this.recording = false;
     this.complete = false;
     this.startPct = -1;
+    this.highestPct = -1;
+    this.lastLapDistPct = -1;
+    this.pointsCount = 0;
     this.prevTime = 0;
-    this.wrapCount = 0;
   }
 
   /**
    * Feed a telemetry tick. Call this at ~60Hz.
-   * @param speed Vehicle speed in m/s
-   * @param yaw Heading angle in radians (iRacing Yaw)
-   * @param lapDistPct Current lap distance percentage (0..1)
-   * @param sessionTime Current session time in seconds
+   * @param speed Vehicle speed in m/s (updates at 60Hz)
+   * @param yaw Heading angle in radians (updates at 60Hz)
+   * @param lapDistPct Current lap distance percentage (updates at 10Hz)
    */
-  tick(
-    speed: number,
-    yaw: number,
-    lapDistPct: number,
-    sessionTime: number
-  ): void {
+  tick(speed: number, yaw: number, lapDistPct: number): void {
     if (!this.recording || this.complete) return;
 
-    // Initialize start position
+    // Use high-precision wall clock for perfect 60Hz integration,
+    // independent of when the sessionTime telemetry object actually updates (1Hz).
+    const now = performance.now() / 1000;
+    let dt = now - this.prevTime;
+    this.prevTime = now;
+
+    // First valid tick: initialize start position
     if (this.startPct < 0) {
+      if (lapDistPct < 0) return;
       this.startPct = lapDistPct;
-      this.lastPct = lapDistPct;
-      this.prevTime = sessionTime;
+      this.highestPct = lapDistPct;
+      this.lastLapDistPct = lapDistPct;
       this.points.push({ x: 0, y: 0, pct: lapDistPct });
+      this.pointsCount = 1;
       return;
     }
 
-    // Calculate dt
-    const dt = sessionTime - this.prevTime;
-    this.prevTime = sessionTime;
-    if (dt <= 0 || dt > 1) return; // Skip invalid or large gaps
+    // Cap dt to prevent massive jumps during app lag or backgrounding
+    if (dt > 0.1) dt = 0.016;
+    if (dt <= 0) return;
 
-    // Dead reckoning: integrate position
-    // iRacing Yaw: 0 = north, positive = counter-clockwise (West is positive)
-    // Standard math angle (0=East, CCW): theta = PI/2 + yaw
-    // x = r * cos(theta) = r * cos(PI/2 + yaw) = -r * sin(yaw)
-    // y = r * sin(theta) = r * sin(PI/2 + yaw) = r * cos(yaw)
+    // 60Hz dead reckoning: integrate position based on current velocity vector
     const dx = -speed * Math.sin(yaw) * dt;
     const dy = speed * Math.cos(yaw) * dt;
-    this.x += dx; // West = negative x = left in SVG
-    this.y -= dy; // North = negative y = up in SVG
+    this.x += dx;
+    this.y -= dy;
 
-    // Sample at regular intervals
-    let pctDiff = lapDistPct - this.lastPct;
-    if (pctDiff < -0.5) {
-      pctDiff += 1; // Lap wrap
-      this.wrapCount++;
-    }
-    if (pctDiff > 0.5) pctDiff -= 1;
+    // 10Hz progress tracking:
+    // We only push a new track point when the lapDistPct actually changes.
+    let pctDiff = lapDistPct - this.lastLapDistPct;
+    if (pctDiff < -0.5) pctDiff += 1; // Cross S/F forward
+    if (pctDiff > 0.5) pctDiff -= 1; // Cross S/F backward
 
-    if (Math.abs(pctDiff) >= SAMPLE_INTERVAL_PCT) {
+    if (Math.abs(pctDiff) >= 0.001) {
       this.points.push({ x: this.x, y: this.y, pct: lapDistPct });
-      this.lastPct = lapDistPct;
+      this.lastLapDistPct = lapDistPct;
+      this.pointsCount++;
     }
 
-    // Check if lap is complete.
-    const totalPct = lapDistPct - this.startPct + this.wrapCount;
-    if (totalPct >= 0.995 && this.points.length > 50) {
+    // Track highest achieved progress from start point
+    let currentRelativeProgress = lapDistPct - this.startPct;
+    if (currentRelativeProgress < 0) currentRelativeProgress += 1;
+
+    let highestRelativeProgress = this.highestPct - this.startPct;
+    if (highestRelativeProgress < 0) highestRelativeProgress += 1;
+
+    // Only update highestPct if it's a forward movement (to ignore noise)
+    if (
+      currentRelativeProgress > highestRelativeProgress &&
+      currentRelativeProgress - highestRelativeProgress < 0.1
+    ) {
+      this.highestPct = lapDistPct;
+    }
+
+    // Completion Logic:
+    // If we have recorded most of the lap (>90%) and then jump back to the start (<10%),
+    // OR we hit the hard 99.9% threshold, we are done.
+    // We require at least 100 points (~10 seconds of data at 10Hz) to prevent accidental completion.
+    if (
+      highestRelativeProgress > 0.9 &&
+      currentRelativeProgress < 0.1 &&
+      this.pointsCount > 100
+    ) {
       this.complete = true;
       this.recording = false;
     }
@@ -121,7 +136,6 @@ export class TrackRecorder {
       return { svgPath: '', viewBox: '0 0 100 100' };
     }
 
-    // Normalize points to fit in a viewBox
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;
@@ -143,14 +157,10 @@ export class TrackRecorder {
     const vbW = width + padding * 2;
     const vbH = height + padding * 2;
 
-    // Build SVG path
     let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
-
     for (let i = 1; i < pts.length; i++) {
       d += ` L ${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)}`;
     }
-
-    // Close the path
     d += ' Z';
 
     return {
@@ -159,19 +169,9 @@ export class TrackRecorder {
     };
   }
 
-  /**
-   * Returns points sorted by lapDistPct.
-   * This ensures getPointAtPct (binary search) works and path starts at S/F.
-   */
   private getSortedPoints(): TrackPoint[] {
     if (this.points.length === 0) return [];
-
-    // Create a copy and sort by pct
-    const sorted = [...this.points].sort((a, b) => a.pct - b.pct);
-
-    // Ensure we have something close to pct=0 and pct=1 if we want a clean loop
-    // For now, just sorting is enough as dead reckoning coordinates are continuous
-    return sorted;
+    return [...this.points].sort((a, b) => a.pct - b.pct);
   }
 
   getPoints(): TrackPoint[] {
@@ -190,11 +190,9 @@ export const getPointAtPct = (
   if (points.length === 0) return { x: 0, y: 0 };
   if (points.length === 1) return { x: points[0].x, y: points[0].y };
 
-  // Wrap pct to [0, 1)
   let p = pct % 1;
   if (p < 0) p += 1;
 
-  // Binary search for the segment
   let lo = 0;
   let hi = points.length - 1;
 
