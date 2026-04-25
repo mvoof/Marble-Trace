@@ -738,29 +738,17 @@ const TrackMapSettingsPanel = observer(() => {
             value: settings.showSectors,
             key: 'showSectors',
           },
-          {
-            title: 'Corner Numbers',
-            value: settings.showCornerNumbers,
-            key: 'showCornerNumbers',
-          },
-          {
-            title: 'Player Ping Animation',
-            desc: 'Pulsing ring around your car. Disable to reduce GPU load.',
-            value: settings.showPing,
-            key: 'showPing',
-          },
         ].map((item) => (
           <div key={item.key} className={styles.fieldGroup}>
             <div className={styles.fieldRow}>
               <div className={styles.fieldTexts}>
                 <div className={styles.fieldTitle}>{item.title}</div>
-                {'desc' in item && item.desc && (
-                  <div className={styles.fieldDesc}>{item.desc}</div>
-                )}
               </div>
               <Switch
                 checked={item.value}
-                onChange={(v) => update({ [item.key]: v })}
+                onChange={(v) =>
+                  update({ [item.key as keyof TrackMapWidgetSettings]: v })
+                }
               />
             </div>
           </div>

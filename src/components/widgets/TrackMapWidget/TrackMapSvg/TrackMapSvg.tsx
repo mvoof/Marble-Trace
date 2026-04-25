@@ -14,7 +14,6 @@ interface TrackMapSvgProps {
   points: TrackPoint[];
   cars: CarOnTrack[];
   sectors: Sector[] | null | undefined;
-  showPing?: boolean;
   sfLabel?: string;
 }
 
@@ -24,7 +23,6 @@ export const TrackMapSvg = ({
   points,
   cars,
   sectors,
-  showPing = true,
   sfLabel = 'S/F',
 }: TrackMapSvgProps) => {
   const parts = viewBox.split(' ').map(Number);
@@ -164,7 +162,6 @@ export const TrackMapSvg = ({
                   carClassColor={car.carClassColor}
                   isPlayer={car.isPlayer}
                   radius={dotRadius}
-                  showPing={showPing}
                   label={showLabel ? (car.isPlayer ? 'YOU' : 'P1') : undefined}
                   labelIsPlayer={car.isPlayer}
                 />

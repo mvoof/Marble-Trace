@@ -177,9 +177,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showLegend: true,
         legendPosition: 'right',
         showSectors: true,
-        showCornerNumbers: true,
         rotationMode: 'fixed',
-        showPing: true,
       },
     },
   },
@@ -566,9 +564,7 @@ class WidgetSettingsStore {
         showLegend: true,
         legendPosition: 'right',
         showSectors: true,
-        showCornerNumbers: true,
         rotationMode: 'fixed',
-        showPing: true,
       }
     );
   }

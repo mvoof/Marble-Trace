@@ -30,7 +30,6 @@ const DEFAULT_SETTINGS: TrackMapWidgetSettings = {
   showLegend: true,
   legendPosition: 'right',
   showSectors: true,
-  showCornerNumbers: true,
   rotationMode: 'fixed',
 };
 
@@ -81,10 +80,6 @@ const TrackMapWidgetStory = ({
 }: TrackMapStoryArgs) => {
   const cars = computeCars(snap);
   const classColors = computeClassColors(snap);
-  const playerYaw =
-    settings.rotationMode === 'heading-up'
-      ? (snap.carDynamics?.yaw ?? undefined)
-      : undefined;
 
   return (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
@@ -99,8 +94,9 @@ const TrackMapWidgetStory = ({
           trackData={realTrack}
           trackName="Lime Rock Park"
           isRecording={false}
+          isForceStartPending={false}
+          isWaitingForSF={false}
           recordingProgress={0}
-          playerYaw={playerYaw}
           settings={settings}
           sectors={snap.sessionInfo?.SplitTimeInfo?.Sectors}
           sectorTimes={MOCK_SECTOR_TIMES}
@@ -140,10 +136,6 @@ export const NoSectors: Story = {
   args: { showSectors: false },
 };
 
-export const NoCornerNumbers: Story = {
-  args: { showCornerNumbers: false },
-};
-
 export const HeadingUp: Story = {
   args: { rotationMode: 'heading-up' },
 };
@@ -162,8 +154,9 @@ export const Recording: Story = {
           trackData={null}
           trackName="Lime Rock Park"
           isRecording={true}
+          isForceStartPending={false}
+          isWaitingForSF={false}
           recordingProgress={0.42}
-          playerYaw={undefined}
           settings={settings}
           sectors={undefined}
           sectorTimes={[]}

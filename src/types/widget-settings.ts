@@ -68,9 +68,7 @@ export interface TrackMapWidgetSettings {
   showLegend: boolean;
   legendPosition: TrackMapLegendPosition;
   showSectors: boolean;
-  showCornerNumbers: boolean;
   rotationMode: TrackMapRotationMode;
-  showPing: boolean;
 }
 
 export type LinearMapOrientation = 'horizontal' | 'vertical';
