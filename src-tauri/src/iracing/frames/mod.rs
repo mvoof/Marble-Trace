@@ -114,6 +114,10 @@ pub(crate) struct AllFieldsFrame {
     pub player_car_position: Option<i32>,
     #[field_name = "PlayerCarClassPosition"]
     pub player_car_class_position: Option<i32>,
+    #[field_name = "LapDeltaToSessionBest_Live"]
+    pub lap_delta_to_session_best_live: Option<f32>,
+    #[field_name = "LapDeltaToSessionOptimal_Live"]
+    pub lap_delta_to_session_optimal_live: Option<f32>,
 
     // === Session ===
     #[field_name = "SessionTime"]
@@ -310,6 +314,8 @@ impl From<&AllFieldsFrame> for LapTimingFrame {
             lap_best_lap_time: f.lap_best_lap_time,
             player_car_position: f.player_car_position,
             player_car_class_position: f.player_car_class_position,
+            lap_delta_to_session_best_live: f.lap_delta_to_session_best_live,
+            lap_delta_to_session_optimal_live: f.lap_delta_to_session_optimal_live,
         }
     }
 }

@@ -26,6 +26,12 @@
   height: 0.5em;
   border-radius: 50%;
   flex-shrink: 0;
+
+  @for $i from 0 through 5 {
+    &[data-index='#{$i}'] {
+      background-color: nth($sector-colors, $i + 1);
+    }
+  }
 }
 
 .label {

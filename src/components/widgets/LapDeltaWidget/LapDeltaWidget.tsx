@@ -53,7 +53,6 @@ export const LapDeltaWidget = ({
   return (
     <WidgetPanel direction="column" gap={0} minWidth={200}>
       <div className={styles.header}>
-        <span className={styles.headerLabel}>Δ OPTIMAL</span>
         <span className={styles.headerLabel}>
           {formatLapCount(currentLap, totalLaps)}
         </span>
@@ -70,11 +69,18 @@ export const LapDeltaWidget = ({
         {sectorDeltas.map((val, i) => {
           const cls = sectorStateClass(val);
           return (
-            <div key={i} className={`${styles.sectorCell} ${cls}`}>
-              <span className={styles.sectorLabel}>{`S${i + 1}`}</span>
-              <span className={styles.sectorValue}>
-                {formatSectorDelta(val)}
-              </span>
+            <div
+              key={i}
+              className={`${styles.sectorCell} ${cls}`}
+              data-index={i % 6}
+            >
+              <div className={styles.sectorIndicator} />
+              <div className={styles.sectorInfo}>
+                <span className={styles.sectorLabel}>{`S${i + 1}`}</span>
+                <span className={styles.sectorValue}>
+                  {formatSectorDelta(val)}
+                </span>
+              </div>
             </div>
           );
         })}

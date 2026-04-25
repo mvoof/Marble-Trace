@@ -5,7 +5,6 @@ import { formatDelta, getDeltaState } from './lap-delta-utils';
 import { LapDeltaWidget } from './LapDeltaWidget';
 
 export const LapDeltaWidgetContainer = observer(() => {
-  const lap = telemetryStore.lapTiming;
   const driverInfo = telemetryStore.driverInfo;
   const carIdx = telemetryStore.carIdx;
   const session = telemetryStore.session;
@@ -13,10 +12,7 @@ export const LapDeltaWidgetContainer = observer(() => {
   const sessions = sessionInfo?.SessionInfo?.Sessions ?? [];
   const sessionNum = session?.session_num ?? null;
 
-  const current = lap?.lap_current_lap_time ?? null;
-  const best = lap?.lap_best_lap_time ?? null;
-  const hasDelta = current !== null && best !== null && best > 0;
-  const delta = hasDelta ? current - best : null;
+  const delta = computedStore.lapDelta?.totalDelta ?? 0;
 
   const playerCarIdx = driverInfo?.DriverCarIdx ?? null;
   const currentLap =

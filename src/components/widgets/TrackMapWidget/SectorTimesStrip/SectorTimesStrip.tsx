@@ -1,5 +1,4 @@
 import { formatLapTime } from '../../../../utils/telemetry-format';
-import { SECTOR_ARC_COLORS } from '../track-map-utils';
 
 import styles from './SectorTimesStrip.module.scss';
 
@@ -21,7 +20,6 @@ export const SectorTimesStrip = ({
   <div className={styles.strip}>
     {sectors.map((sector, i) => {
       const time = sectorTimes[i] ?? null;
-      const color = SECTOR_ARC_COLORS[i % SECTOR_ARC_COLORS.length];
 
       const isLive = i === currentSectorIdx;
       const isPreviousLap = i > currentSectorIdx && time !== null;
@@ -36,7 +34,7 @@ export const SectorTimesStrip = ({
 
       return (
         <div key={sector.sectorNum} className={itemClasses}>
-          <span className={styles.dot} style={{ backgroundColor: color }} />
+          <span className={styles.dot} data-index={i % 6} />
           <span className={styles.label}>S{sector.sectorNum + 1}</span>
           <span className={styles.time}>{formatLapTime(time)}</span>
         </div>
