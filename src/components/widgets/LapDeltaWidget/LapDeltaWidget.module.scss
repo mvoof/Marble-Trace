@@ -38,68 +38,52 @@
   color: $color-caution;
 }
 
-.sectorGrid {
-  display: grid;
-  grid-template-columns: repeat(var(--sector-cols, 3), 1fr);
-  gap: rem(6);
-  padding: $space-sm $space-md $space-md;
-  font-family: $font-mono;
+.sectorList {
+  display: flex;
+  flex-direction: column;
+  gap: rem(2);
+  padding: 0 $space-sm $space-md;
 }
 
-.sectorCell {
-  display: flex;
-  background: rgba(0, 0, 0, 0.45);
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+.sectorRow {
+  display: grid;
+  grid-template-columns: rem(32) 1fr;
+  align-items: baseline;
+  font-family: $font-mono;
+  padding: rem(4) rem(6);
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid transparent;
 
   @for $i from 0 through 5 {
-    &[data-index='#{$i}'] .sectorIndicator {
-      background-color: list.nth($sector-colors, $i + 1);
+    &.sectorRow#{$i} {
+      border-left-color: list.nth($sector-colors, $i + 1);
     }
   }
-
-  &.sectorAhead .sectorValue {
-    color: $color-success;
-  }
-
-  &.sectorBehind .sectorValue {
-    color: $color-error;
-  }
-
-  &.sectorNeutral .sectorValue {
-    color: $color-caution;
-  }
-}
-
-.sectorIndicator {
-  width: rem(3);
-  flex-shrink: 0;
-  opacity: 0.8;
-}
-
-.sectorInfo {
-  padding: rem(3) rem(6);
-  flex: 1;
-  min-width: 0;
 }
 
 .sectorLabel {
-  display: block;
-  font-size: rem(12);
-  font-weight: 300;
+  font-size: rem(10);
+  color: $color-text-muted;
+  letter-spacing: 1px;
   font-family: $font-widget;
-  color: rgb(209, 209, 209);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: -2px;
 }
 
 .sectorValue {
-  display: block;
-  font-size: rem(14);
+  font-size: rem(15);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-align: right;
+}
+
+.sectorAhead {
+  color: $color-success;
+}
+
+.sectorBehind {
+  color: $color-error;
+}
+
+.sectorNeutral {
+  color: $color-caution;
 }

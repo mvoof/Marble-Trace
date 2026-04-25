@@ -155,7 +155,7 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
       default: {
         component: LapDeltaWidgetContainer,
         designWidth: 240,
-        designHeight: 140,
+        designHeight: 220,
       },
     },
   },

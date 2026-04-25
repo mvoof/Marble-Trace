@@ -1,5 +1,3 @@
-import type { CSSProperties } from 'react';
-
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import type { DeltaState } from './lap-delta-utils';
 
@@ -19,7 +17,16 @@ const DELTA_STATE_CLASS: Record<DeltaState, string> = {
   neutral: styles.deltaNeutral,
 };
 
-const sectorStateClass = (v: number | null): string => {
+const SECTOR_ROW_CLASS = [
+  styles.sectorRow0,
+  styles.sectorRow1,
+  styles.sectorRow2,
+  styles.sectorRow3,
+  styles.sectorRow4,
+  styles.sectorRow5,
+];
+
+const sectorValueClass = (v: number | null): string => {
   if (v === null) return styles.sectorNeutral;
   if (v < -0.001) return styles.sectorAhead;
   if (v > 0.001) return styles.sectorBehind;
@@ -46,45 +53,30 @@ export const LapDeltaWidget = ({
   currentLap,
   totalLaps,
   sectorDeltas,
-}: LapDeltaWidgetProps) => {
-  const sectorCount = sectorDeltas.length;
-  const cols = sectorCount === 0 ? 3 : Math.min(sectorCount, 3);
+}: LapDeltaWidgetProps) => (
+  <WidgetPanel direction="column" gap={0} minWidth={200}>
+    <div className={styles.header}>
+      <span className={styles.headerLabel}>
+        {formatLapCount(currentLap, totalLaps)}
+      </span>
+    </div>
 
-  return (
-    <WidgetPanel direction="column" gap={0} minWidth={200}>
-      <div className={styles.header}>
-        <span className={styles.headerLabel}>
-          {formatLapCount(currentLap, totalLaps)}
-        </span>
-      </div>
+    <div className={`${styles.delta} ${DELTA_STATE_CLASS[deltaState]}`}>
+      {deltaFormatted}
+    </div>
 
-      <div className={`${styles.delta} ${DELTA_STATE_CLASS[deltaState]}`}>
-        {deltaFormatted}
-      </div>
-
-      <div
-        className={styles.sectorGrid}
-        style={{ '--sector-cols': cols } as CSSProperties}
-      >
-        {sectorDeltas.map((val, i) => {
-          const cls = sectorStateClass(val);
-          return (
-            <div
-              key={i}
-              className={`${styles.sectorCell} ${cls}`}
-              data-index={i % 6}
-            >
-              <div className={styles.sectorIndicator} />
-              <div className={styles.sectorInfo}>
-                <span className={styles.sectorLabel}>{`S${i + 1}`}</span>
-                <span className={styles.sectorValue}>
-                  {formatSectorDelta(val)}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </WidgetPanel>
-  );
-};
+    <div className={styles.sectorList}>
+      {sectorDeltas.map((val, i) => (
+        <div
+          key={i}
+          className={`${styles.sectorRow} ${SECTOR_ROW_CLASS[i % 6]}`}
+        >
+          <span className={styles.sectorLabel}>{`S${i + 1}`}</span>
+          <span className={`${styles.sectorValue} ${sectorValueClass(val)}`}>
+            {formatSectorDelta(val)}
+          </span>
+        </div>
+      ))}
+    </div>
+  </WidgetPanel>
+);
