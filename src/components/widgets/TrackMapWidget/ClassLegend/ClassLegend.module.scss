@@ -16,8 +16,6 @@
   display: flex;
   align-items: center;
   gap: rem(5);
-  font-size: rem(9);
-  font-weight: 700;
 }
 
 .legendDot {
@@ -28,6 +26,8 @@
 }
 
 .legendLabel {
+  font-size: rem(14);
+  font-weight: 400;
   color: $color-text-muted;
   text-transform: uppercase;
   letter-spacing: 0.05em;
