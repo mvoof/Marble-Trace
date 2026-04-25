@@ -13,6 +13,8 @@ pub struct LapDeltaState {
     pub last_lap: i32,
     pub sector_count: usize,
     pub cached_sector_pcts: Vec<f64>,
+    pub last_frame_pct: f64,
+    pub last_frame_time: f64,
 }
 
 impl Default for LapDeltaState {
@@ -24,6 +26,8 @@ impl Default for LapDeltaState {
             last_lap: -1,
             sector_count: 0,
             cached_sector_pcts: Vec::new(),
+            last_frame_pct: -1.0,
+            last_frame_time: -1.0,
         }
     }
 }
@@ -55,10 +59,10 @@ fn get_sector_pcts(session: &SessionInfo) -> Vec<f64> {
 
     let mut pcts: Vec<(i32, f64)> = sectors
         .iter()
-        .filter_map(|s| Some((s.sector_num?, s.sector_start_pct?)))
+        .filter_map(|s| Some((s.sector_num?, s.sector_start_pct? as f64)))
         .collect();
 
-    pcts.sort_by_key(|&(num, _)| num);
+    pcts.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
     pcts.into_iter().map(|(_, pct)| pct).collect()
 }
 
@@ -69,10 +73,19 @@ pub fn compute(
 ) -> LapDeltaFrame {
     let mut locked = state.lock().unwrap_or_else(|e| e.into_inner());
 
-    if locked.cached_sector_pcts.is_empty() {
-        locked.cached_sector_pcts = get_sector_pcts(session);
+    let sector_pcts = get_sector_pcts(session);
+    let sector_count = sector_pcts.len();
+
+    if locked.cached_sector_pcts != sector_pcts {
+        locked.cached_sector_pcts = sector_pcts;
+        locked.sector_times = vec![None; sector_count];
+        locked.sector_count = sector_count;
+        locked.last_sector_idx = -1;
+        locked.sector_entry_time = -1.0;
+        locked.last_lap = -1;
+        locked.last_frame_pct = -1.0;
+        locked.last_frame_time = -1.0;
     }
-    let sector_count = locked.cached_sector_pcts.len();
 
     let best_lap_time = frame
         .lap_best_lap_time
@@ -86,23 +99,8 @@ pub fn compute(
         }
     };
 
-    let session_time = frame.session_time.unwrap_or(0.0);
+    let current_lap_time = frame.lap_current_lap_time as f64;
     let current_lap = frame.lap.unwrap_or(0);
-
-    if locked.sector_count != sector_count {
-        locked.sector_times = vec![None; sector_count];
-        locked.sector_count = sector_count;
-        locked.last_sector_idx = -1;
-        locked.sector_entry_time = -1.0;
-        locked.last_lap = -1;
-    }
-
-    if current_lap != locked.last_lap && locked.last_lap >= 0 {
-        locked.sector_times = vec![None; sector_count];
-        locked.last_sector_idx = -1;
-        locked.sector_entry_time = -1.0;
-    }
-    locked.last_lap = current_lap;
 
     if sector_count == 0 {
         return build_frame(&locked.sector_times, best_lap_time, sector_count, -1);
@@ -116,9 +114,71 @@ pub fn compute(
         }
     }
 
-    if current_sector_idx != locked.last_sector_idx {
+    // Handle lap change: record last sector of previous lap
+    if current_lap != locked.last_lap && locked.last_lap >= 0 {
         if locked.last_sector_idx >= 0 && locked.sector_entry_time >= 0.0 {
-            let elapsed = session_time - locked.sector_entry_time;
+            let last_lap_time = frame.lap_last_lap_time.unwrap_or(0.0) as f64;
+            let elapsed = last_lap_time - locked.sector_entry_time;
+            if elapsed > 0.0 && elapsed < 600.0 {
+                let prev = locked.last_sector_idx as usize;
+                if prev < sector_count {
+                    locked.sector_times[prev] = Some(elapsed as f32);
+                }
+            }
+        }
+        
+        // Prepare for new lap
+        locked.last_sector_idx = current_sector_idx;
+        locked.sector_entry_time = 0.0; // New lap starts at 0
+        locked.last_lap = current_lap;
+        
+        // Clear the current sector time of the new lap
+        if (current_sector_idx as usize) < sector_count {
+            locked.sector_times[current_sector_idx as usize] = None;
+        }
+
+        locked.last_frame_pct = lap_dist_pct;
+        locked.last_frame_time = current_lap_time;
+        
+        let sector_times = locked.sector_times.clone();
+        return build_frame(
+            &sector_times,
+            best_lap_time,
+            sector_count,
+            current_sector_idx,
+        );
+    }
+
+    if locked.last_lap == -1 {
+        locked.last_lap = current_lap;
+        locked.last_sector_idx = current_sector_idx;
+        locked.sector_entry_time = current_lap_time;
+        if (current_sector_idx as usize) < sector_count {
+            locked.sector_times[current_sector_idx as usize] = None;
+        }
+        locked.last_frame_pct = lap_dist_pct;
+        locked.last_frame_time = current_lap_time;
+    }
+
+    if current_sector_idx != locked.last_sector_idx {
+        let sector_start_pct = locked.cached_sector_pcts.get(current_sector_idx as usize).copied().unwrap_or(0.0);
+        
+        // Linear interpolation to find the exact crossing time
+        let mut interpolated_crossing_time = current_lap_time;
+        if locked.last_frame_pct >= 0.0 && 
+           lap_dist_pct > locked.last_frame_pct && 
+           sector_start_pct > locked.last_frame_pct && 
+           sector_start_pct <= lap_dist_pct 
+        {
+            let dist_range = lap_dist_pct - locked.last_frame_pct;
+            let time_range = current_lap_time - locked.last_frame_time;
+            let dist_to_sector = sector_start_pct - locked.last_frame_pct;
+            let fraction = dist_to_sector / dist_range;
+            interpolated_crossing_time = locked.last_frame_time + time_range * fraction;
+        }
+
+        if locked.last_sector_idx >= 0 && locked.sector_entry_time >= 0.0 {
+            let elapsed = interpolated_crossing_time - locked.sector_entry_time;
             if elapsed > 0.0 && elapsed < 600.0 {
                 let prev = locked.last_sector_idx as usize;
                 if prev < sector_count {
@@ -127,8 +187,16 @@ pub fn compute(
             }
         }
         locked.last_sector_idx = current_sector_idx;
-        locked.sector_entry_time = session_time;
+        locked.sector_entry_time = interpolated_crossing_time;
+
+        // Clear the current sector time as we just entered it
+        if (current_sector_idx as usize) < sector_count {
+            locked.sector_times[current_sector_idx as usize] = None;
+        }
     }
+
+    locked.last_frame_pct = lap_dist_pct;
+    locked.last_frame_time = current_lap_time;
 
     let sector_times = locked.sector_times.clone();
     build_frame(

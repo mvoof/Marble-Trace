@@ -366,16 +366,19 @@ fn emit_domain_frames(
         warn!("Failed to emit car inputs: {}", e);
     }
 
-    let needs_computed = tick.is_multiple_of(6) || tick.is_multiple_of(15) || tick == 1;
-    let session_snapshot = if needs_computed {
-        last_session_info
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .clone()
+    // Clone session_info Arc — cheap enough to do at 60Hz for accurate computations
+    let session_snapshot = last_session_info
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .clone();
+    let session_info = session_snapshot.as_deref();
+
+    // Compute stateful data at 60Hz for maximum precision (especially sector timing)
+    let lap_delta_frame = if let Some(session) = session_info {
+        Some(lap_delta::compute(frame, session, lap_delta_state))
     } else {
         None
     };
-    let session_info = session_snapshot.as_deref();
 
     // 10 Hz — also fire on first frame so widgets populate immediately
     if tick.is_multiple_of(6) || tick == 1 {
@@ -394,7 +397,10 @@ fn emit_domain_frames(
 
         // Computed: proximity & standings (10 Hz)
         if let Some(session) = session_info {
-            let track_length = track_length_m.lock().unwrap_or_else(|e| e.into_inner()).unwrap_or(0.0);
+            let track_length = track_length_m
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .unwrap_or(0.0);
             let proximity = proximity::compute(frame, session, track_length);
             if let Err(e) = app.emit("iracing://computed/proximity", &proximity) {
                 warn!("Failed to emit proximity: {}", e);
@@ -404,14 +410,16 @@ fn emit_domain_frames(
                 .lock()
                 .unwrap_or_else(|e| e.into_inner())
                 .clone();
-            let standings_frame = standings::compute(frame, session, &start_pos_snapshot, true, standings_state);
+            let standings_frame =
+                standings::compute(frame, session, &start_pos_snapshot, true, standings_state);
             if let Err(e) = app.emit("iracing://computed/standings", &standings_frame) {
                 warn!("Failed to emit standings: {}", e);
             }
 
-            let lap_delta_frame = lap_delta::compute(frame, session, lap_delta_state);
-            if let Err(e) = app.emit("iracing://computed/lap-delta", &lap_delta_frame) {
-                warn!("Failed to emit lap delta: {}", e);
+            if let Some(ldf) = lap_delta_frame {
+                if let Err(e) = app.emit("iracing://computed/lap-delta", &ldf) {
+                    warn!("Failed to emit lap delta: {}", e);
+                }
             }
         }
     }
