@@ -100,6 +100,7 @@ const TrackMapWidgetStory = ({
           settings={settings}
           sectors={snap.sessionInfo?.SplitTimeInfo?.Sectors}
           sectorTimes={MOCK_SECTOR_TIMES}
+          currentSectorIdx={1}
         />
       </WidgetScaler>
     </div>

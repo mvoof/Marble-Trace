@@ -43,4 +43,23 @@
   font-weight: 400;
   color: $color-text-primary;
   letter-spacing: 0.02em;
+  transition: color 0.2s ease;
+}
+
+.live {
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+
+  .time {
+    color: #fff;
+  }
+}
+
+.previousLap {
+  opacity: 0.45;
+  filter: grayscale(0.2);
+
+  .time {
+    color: rgba(255, 255, 255, 0.7);
+  }
 }

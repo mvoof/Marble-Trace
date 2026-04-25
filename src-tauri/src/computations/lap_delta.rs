@@ -188,10 +188,13 @@ pub fn compute(
         }
         locked.last_sector_idx = current_sector_idx;
         locked.sector_entry_time = interpolated_crossing_time;
+    }
 
-        // Clear the current sector time as we just entered it
-        if (current_sector_idx as usize) < sector_count {
-            locked.sector_times[current_sector_idx as usize] = None;
+    // Update live time for the current sector
+    if current_sector_idx >= 0 && (current_sector_idx as usize) < sector_count {
+        let live_elapsed = current_lap_time - locked.sector_entry_time;
+        if live_elapsed >= 0.0 {
+            locked.sector_times[current_sector_idx as usize] = Some(live_elapsed as f32);
         }
     }
 

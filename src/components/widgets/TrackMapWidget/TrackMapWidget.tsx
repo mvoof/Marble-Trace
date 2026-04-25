@@ -37,6 +37,7 @@ interface TrackMapWidgetProps {
   settings: TrackMapWidgetSettings;
   sectors: Sector[] | null | undefined;
   sectorTimes: (number | null)[];
+  currentSectorIdx?: number;
 }
 
 export const TrackMapWidget = ({
@@ -52,6 +53,7 @@ export const TrackMapWidget = ({
   settings,
   sectors,
   sectorTimes,
+  currentSectorIdx,
 }: TrackMapWidgetProps) => {
   if (!trackData) {
     return (
@@ -96,6 +98,7 @@ export const TrackMapWidget = ({
             <SectorTimesStrip
               sectors={sectorEntries}
               sectorTimes={sectorTimes}
+              currentSectorIdx={currentSectorIdx}
             />
           )}
         </div>

@@ -34,6 +34,7 @@ export const TrackMapWidgetContainer = observer(() => {
   const recordingOverlayRef = useRef<RecordingOverlayHandle>(null);
 
   const sectorTimes = computedStore.lapDelta?.sectorTimes ?? [];
+  const currentSectorIdx = computedStore.lapDelta?.currentSectorIdx ?? -1;
 
   useEffect(() => {
     if (!trackId) return;
@@ -177,6 +178,7 @@ export const TrackMapWidgetContainer = observer(() => {
         settings={settings}
         sectors={sessionInfo?.SplitTimeInfo?.Sectors}
         sectorTimes={sectorTimes}
+        currentSectorIdx={currentSectorIdx}
       />
     </>
   );
