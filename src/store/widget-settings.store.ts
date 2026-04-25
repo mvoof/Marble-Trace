@@ -447,10 +447,26 @@ class WidgetSettingsStore {
   updateCustomSettings(id: string, settings: WidgetCustomSettings) {
     const widget = this.widgets.find((w) => w.id === id);
     if (widget) {
+      const prevSettings = widget.customSettings;
+
       widget.customSettings = {
-        ...widget.customSettings,
+        ...prevSettings,
         ...settings,
       };
+
+      if (
+        id === 'linear-map' &&
+        settings['linear-map'] &&
+        'orientation' in settings['linear-map']
+      ) {
+        const prevOrientation = prevSettings?.['linear-map']?.orientation;
+        const nextOrientation = settings['linear-map'].orientation;
+        if (prevOrientation !== nextOrientation) {
+          const tmp = widget.width;
+          widget.width = widget.height;
+          widget.height = tmp;
+        }
+      }
 
       if (id === 'fuel' && settings.fuel && 'pitWarningLaps' in settings.fuel) {
         void invoke('set_pit_warning_laps', {
