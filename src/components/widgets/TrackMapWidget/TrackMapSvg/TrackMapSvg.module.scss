@@ -9,6 +9,21 @@
 
 .sectorArc {
   pointer-events: none;
+  opacity: 0.8;
+  @for $i from 0 through 5 {
+    &[data-index='#{$i}'] {
+      stroke: nth($sector-colors, $i + 1);
+    }
+  }
+}
+
+.sectorArrow {
+  opacity: 0.9;
+  @for $i from 0 through 5 {
+    &[data-index='#{$i}'] {
+      color: nth($sector-colors, $i + 1);
+    }
+  }
 }
 
 .sfLabel {

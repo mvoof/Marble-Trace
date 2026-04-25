@@ -85,11 +85,11 @@ export const TrackMapSvg = ({
                 key={`arc-${sector.SectorNum}`}
                 d={svgPath}
                 fill="none"
-                stroke={color}
                 strokeWidth="4"
                 strokeLinecap="butt"
                 strokeDasharray={`0 ${startDist} ${sectorLen} ${pathLength}`}
                 className={styles.sectorArc}
+                data-index={i % 6}
               />
             );
           })}
@@ -98,7 +98,6 @@ export const TrackMapSvg = ({
         {points.length > 0 &&
           validSectors?.map((sector, i) => {
             const pct = sector.SectorStartPct ?? 0;
-            const color = SECTOR_ARC_COLORS[i % SECTOR_ARC_COLORS.length];
             const { x, y } = getPointAtPct(points, pct);
             const next = getPointAtPct(points, Math.min(pct + 0.01, 0.999));
             const angle = Math.atan2(next.y - y, next.x - x) * (180 / Math.PI);
@@ -107,8 +106,10 @@ export const TrackMapSvg = ({
               <g
                 key={`arrow-${sector.SectorNum}`}
                 transform={`translate(${x},${y}) rotate(${angle})`}
+                className={styles.sectorArrow}
+                data-index={i % 6}
               >
-                <polygon points="-6,-5 8,0 -6,5" fill={color} opacity="0.9" />
+                <polygon points="-6,-5 8,0 -6,5" fill="currentColor" />
               </g>
             );
           })}
