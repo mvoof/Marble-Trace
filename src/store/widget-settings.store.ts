@@ -15,6 +15,7 @@ import type {
   WeatherWidgetSettings,
   LapTimesWidgetSettings,
   LapDeltaWidgetSettings,
+  TimerWidgetSettings,
   WidgetConfig,
   WidgetCustomSettings,
 } from '../types/widget-settings';
@@ -339,6 +340,13 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
+    customSettings: {
+      timer: {
+        showFlag: true,
+        showLaps: true,
+        showPosition: true,
+      },
+    },
   },
   {
     id: 'weather',
@@ -398,7 +406,9 @@ class WidgetSettingsStore {
   private autoSizedWidgets = new Set<string>();
 
   constructor() {
-    makeAutoObservable(this, { autoSizedWidgets: false } as never, { autoBind: true });
+    makeAutoObservable(this, { autoSizedWidgets: false } as never, {
+      autoBind: true,
+    });
   }
 
   setTrackMapForceStartPending(pending: boolean) {
@@ -732,6 +742,17 @@ class WidgetSettingsStore {
       widget?.customSettings?.['lap-delta'] ?? {
         layout: 'vertical',
         showSectorTimes: true,
+      }
+    );
+  }
+
+  getTimerSettings(): TimerWidgetSettings {
+    const widget = this.getWidget('timer');
+    return (
+      widget?.customSettings?.timer ?? {
+        showFlag: true,
+        showLaps: true,
+        showPosition: true,
       }
     );
   }

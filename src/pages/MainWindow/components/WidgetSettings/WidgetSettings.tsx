@@ -36,6 +36,7 @@ import type {
   LapDeltaWidgetSettings,
   LapDeltaLayout,
   LapTimesLayout,
+  TimerWidgetSettings,
 } from '../../../../types/widget-settings';
 import { emit } from '@tauri-apps/api/event';
 import { appDataDir } from '@tauri-apps/api/path';
@@ -197,6 +198,7 @@ export const WidgetSettings = observer(
         {widgetId === 'flags' && <FlagsSettingsPanel />}
         {widgetId === 'lap-times' && <LapTimesSettingsPanel />}
         {widgetId === 'lap-delta' && <LapDeltaSettingsPanel />}
+        {widgetId === 'timer' && <TimerSettingsPanel />}
       </div>
     );
   }
@@ -1098,5 +1100,53 @@ const LapTimesSettingsPanel = observer(() => {
         ))}
       </Card>
     </>
+  );
+});
+
+const TimerSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getTimerSettings();
+
+  const update = (partial: Partial<TimerWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('timer', {
+      timer: { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Card title="Visible Elements">
+      {[
+        {
+          title: 'Show Flag State',
+          desc: 'Display the current flag (green / final 5 min / checkered).',
+          value: settings.showFlag,
+          key: 'showFlag',
+        },
+        {
+          title: 'Show Lap Count',
+          desc: 'Display current lap and total laps.',
+          value: settings.showLaps,
+          key: 'showLaps',
+        },
+        {
+          title: 'Show Position',
+          desc: 'Display your current race position.',
+          value: settings.showPosition,
+          key: 'showPosition',
+        },
+      ].map((item) => (
+        <div key={item.key} className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>{item.title}</div>
+              <div className={styles.fieldDesc}>{item.desc}</div>
+            </div>
+            <Switch
+              checked={item.value}
+              onChange={(v) => update({ [item.key]: v })}
+            />
+          </div>
+        </div>
+      ))}
+    </Card>
   );
 });

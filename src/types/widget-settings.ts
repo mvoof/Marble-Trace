@@ -117,6 +117,12 @@ export interface LapDeltaWidgetSettings {
   showSectorTimes: boolean;
 }
 
+export interface TimerWidgetSettings {
+  showFlag: boolean;
+  showLaps: boolean;
+  showPosition: boolean;
+}
+
 export interface WidgetCustomSettings {
   speed?: SpeedWidgetSettings;
   'input-trace'?: InputTraceSettings;
@@ -131,6 +137,7 @@ export interface WidgetCustomSettings {
   fuel?: FuelWidgetSettings;
   'lap-times'?: LapTimesWidgetSettings;
   'lap-delta'?: LapDeltaWidgetSettings;
+  timer?: TimerWidgetSettings;
 }
 
 export interface WidgetConfig {

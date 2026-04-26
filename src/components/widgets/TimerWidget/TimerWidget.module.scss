@@ -50,6 +50,12 @@
   color: #fff;
 }
 
+.sessionEndedLabel {
+  color: $color-text-muted;
+  letter-spacing: 4px;
+  font-size: $font-size-xl;
+}
+
 .timeSeconds {
   color: $color-caution;
 }

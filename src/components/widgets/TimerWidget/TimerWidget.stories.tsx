@@ -32,8 +32,16 @@ export default meta;
 
 type Story = StoryObj<typeof TimerWidget>;
 
+const defaultFlags = {
+  sessionEnded: false,
+  showFlag: true,
+  showLaps: true,
+  showPosition: true,
+};
+
 export const Race: Story = {
   args: {
+    ...defaultFlags,
     sessionTypeLabel: 'RACE',
     flagState: 'green',
     timeMain: '00:45:',
@@ -47,6 +55,7 @@ export const Race: Story = {
 
 export const FinalMinutes: Story = {
   args: {
+    ...defaultFlags,
     sessionTypeLabel: 'RACE',
     flagState: 'final',
     timeMain: '00:04:',
@@ -60,6 +69,22 @@ export const FinalMinutes: Story = {
 
 export const Checkered: Story = {
   args: {
+    ...defaultFlags,
+    sessionTypeLabel: 'RACE',
+    flagState: 'checkered',
+    timeMain: '00:00:',
+    timeSeconds: '00',
+    currentLap: 38,
+    totalLaps: '38',
+    position: 1,
+    totalDrivers: 28,
+  },
+};
+
+export const SessionEnded: Story = {
+  args: {
+    ...defaultFlags,
+    sessionEnded: true,
     sessionTypeLabel: 'RACE',
     flagState: 'checkered',
     timeMain: '00:00:',
@@ -73,6 +98,7 @@ export const Checkered: Story = {
 
 export const Practice: Story = {
   args: {
+    ...defaultFlags,
     sessionTypeLabel: 'PRACTICE',
     flagState: 'green',
     timeMain: '00:18:',
@@ -84,8 +110,25 @@ export const Practice: Story = {
   },
 };
 
+export const NoFlagNoPosition: Story = {
+  args: {
+    ...defaultFlags,
+    showFlag: false,
+    showPosition: false,
+    sessionTypeLabel: 'RACE',
+    flagState: 'green',
+    timeMain: '00:30:',
+    timeSeconds: '00',
+    currentLap: 20,
+    totalLaps: '38',
+    position: 4,
+    totalDrivers: 28,
+  },
+};
+
 export const NoData: Story = {
   args: {
+    ...defaultFlags,
     sessionTypeLabel: 'SESSION',
     flagState: 'green',
     timeMain: '00:00:',

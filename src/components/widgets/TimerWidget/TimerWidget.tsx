@@ -25,6 +25,10 @@ interface TimerWidgetProps {
   totalLaps: string | null;
   position: number | null;
   totalDrivers: number | null;
+  sessionEnded: boolean;
+  showFlag: boolean;
+  showLaps: boolean;
+  showPosition: boolean;
 }
 
 const formatLapCount = (
@@ -51,27 +55,57 @@ export const TimerWidget = ({
   totalLaps,
   position,
   totalDrivers,
-}: TimerWidgetProps) => (
-  <WidgetPanel direction="column" gap={0} minWidth={180}>
-    <div className={styles.header}>
-      <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
-      <span className={`${styles.flagLabel} ${FLAG_CLASS[flagState]}`}>
-        ● {FLAG_LABEL[flagState]}
-      </span>
-    </div>
+  sessionEnded,
+  showFlag,
+  showLaps,
+  showPosition,
+}: TimerWidgetProps) => {
+  const showFooter = showLaps || showPosition;
 
-    <div className={styles.timeDisplay}>
-      <span className={styles.timeMain}>{timeMain}</span>
-      <span className={styles.timeSeconds}>{timeSeconds}</span>
-    </div>
+  if (sessionEnded) {
+    return (
+      <WidgetPanel direction="column" gap={0} minWidth={180}>
+        <div className={styles.header}>
+          <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
+        </div>
 
-    <div className={styles.footer}>
-      <span className={styles.footerItem}>
-        {formatLapCount(currentLap, totalLaps)}
-      </span>
-      <span className={styles.footerItem}>
-        {formatPosition(position, totalDrivers)}
-      </span>
-    </div>
-  </WidgetPanel>
-);
+        <div className={styles.timeDisplay}>
+          <span className={styles.sessionEndedLabel}>END</span>
+        </div>
+      </WidgetPanel>
+    );
+  }
+
+  return (
+    <WidgetPanel direction="column" gap={0} minWidth={180}>
+      <div className={styles.header}>
+        <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
+        {showFlag && (
+          <span className={`${styles.flagLabel} ${FLAG_CLASS[flagState]}`}>
+            ● {FLAG_LABEL[flagState]}
+          </span>
+        )}
+      </div>
+
+      <div className={styles.timeDisplay}>
+        <span className={styles.timeMain}>{timeMain}</span>
+        <span className={styles.timeSeconds}>{timeSeconds}</span>
+      </div>
+
+      {showFooter && (
+        <div className={styles.footer}>
+          {showLaps && (
+            <span className={styles.footerItem}>
+              {formatLapCount(currentLap, totalLaps)}
+            </span>
+          )}
+          {showPosition && (
+            <span className={styles.footerItem}>
+              {formatPosition(position, totalDrivers)}
+            </span>
+          )}
+        </div>
+      )}
+    </WidgetPanel>
+  );
+};

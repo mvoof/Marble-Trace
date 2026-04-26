@@ -1,10 +1,13 @@
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../store/iracing';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import type { FlagState } from './TimerWidget';
 import { TimerWidget } from './TimerWidget';
 
 const SESSION_FLAG_CHECKERED = 0x0001;
+const SESSION_STATE_CHECKERED = 6;
+const SESSION_STATE_COOL_DOWN = 7;
 
 const resolveFlagState = (
   flags: number | null,
@@ -15,6 +18,14 @@ const resolveFlagState = (
   if (remainSeconds !== null && remainSeconds >= 0 && remainSeconds < 300)
     return 'final';
   return 'green';
+};
+
+const isSessionEnded = (sessionState: number | null): boolean => {
+  if (sessionState === null) return false;
+  return (
+    sessionState === SESSION_STATE_CHECKERED ||
+    sessionState === SESSION_STATE_COOL_DOWN
+  );
 };
 
 const splitTime = (seconds: number): { main: string; secs: string } => {
@@ -32,6 +43,9 @@ export const TimerWidgetContainer = observer(() => {
   const carIdx = telemetryStore.carIdx;
   const lap = telemetryStore.lapTiming;
 
+  const { showFlag, showLaps, showPosition } =
+    widgetSettingsStore.getTimerSettings();
+
   const sessionNum = session?.session_num ?? null;
   const currentSession =
     sessionNum !== null ? (sessions[sessionNum] ?? null) : null;
@@ -46,6 +60,7 @@ export const TimerWidgetContainer = observer(() => {
   const { main: timeMain, secs: timeSeconds } = splitTime(rawSeconds);
 
   const flagState = resolveFlagState(session?.session_flags ?? null, remain);
+  const sessionEndedFlag = isSessionEnded(session?.session_state ?? null);
 
   const playerCarIdx = driverInfo?.DriverCarIdx ?? null;
   const currentLap =
@@ -66,6 +81,10 @@ export const TimerWidgetContainer = observer(() => {
       totalLaps={totalLaps}
       position={position}
       totalDrivers={totalDrivers}
+      sessionEnded={sessionEndedFlag}
+      showFlag={showFlag}
+      showLaps={showLaps}
+      showPosition={showPosition}
     />
   );
 });
