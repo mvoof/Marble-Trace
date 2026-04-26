@@ -718,6 +718,7 @@ class WidgetSettingsStore {
     return (
       widget?.customSettings?.['lap-delta'] ?? {
         layout: 'vertical',
+        showSectorTimes: true,
       }
     );
   }

@@ -36,9 +36,10 @@ export const Default: Story = {
   args: {
     deltaFormatted: '+1.234',
     deltaState: 'behind',
-    currentLap: 12,
-    totalLaps: '38',
     sectorDeltas: [null, null, null],
+    sectorTimes: [null, null, null],
+    layout: 'vertical',
+    showSectorTimes: true,
   },
 };
 
@@ -46,9 +47,10 @@ export const Ahead: Story = {
   args: {
     deltaFormatted: '-0.456',
     deltaState: 'ahead',
-    currentLap: 8,
-    totalLaps: '38',
     sectorDeltas: [null, null, null],
+    sectorTimes: [null, null, null],
+    layout: 'vertical',
+    showSectorTimes: true,
   },
 };
 
@@ -56,9 +58,32 @@ export const WithSectors: Story = {
   args: {
     deltaFormatted: '+0.312',
     deltaState: 'behind',
-    currentLap: 5,
-    totalLaps: '30',
     sectorDeltas: [0.1, -0.05, 0.26],
+    sectorTimes: [28.4, 31.2, 22.8],
+    layout: 'vertical',
+    showSectorTimes: true,
+  },
+};
+
+export const WithSectorsHorizontal: Story = {
+  args: {
+    deltaFormatted: '+0.312',
+    deltaState: 'behind',
+    sectorDeltas: [0.1, -0.05, 0.26],
+    sectorTimes: [28.4, 31.2, 22.8],
+    layout: 'horizontal',
+    showSectorTimes: true,
+  },
+};
+
+export const SectorTimesHidden: Story = {
+  args: {
+    deltaFormatted: '+0.312',
+    deltaState: 'behind',
+    sectorDeltas: [0.1, -0.05, 0.26],
+    sectorTimes: [28.4, 31.2, 22.8],
+    layout: 'vertical',
+    showSectorTimes: false,
   },
 };
 
@@ -66,19 +91,10 @@ export const TwoSectors: Story = {
   args: {
     deltaFormatted: '-0.180',
     deltaState: 'ahead',
-    currentLap: 7,
-    totalLaps: '20',
     sectorDeltas: [-0.12, -0.06],
-  },
-};
-
-export const FiveSectors: Story = {
-  args: {
-    deltaFormatted: '+0.540',
-    deltaState: 'behind',
-    currentLap: 3,
-    totalLaps: '15',
-    sectorDeltas: [0.05, -0.03, 0.18, 0.22, 0.1],
+    sectorTimes: [30.1, 28.7],
+    layout: 'vertical',
+    showSectorTimes: true,
   },
 };
 
@@ -86,19 +102,10 @@ export const NearZero: Story = {
   args: {
     deltaFormatted: '+0.023',
     deltaState: 'neutral',
-    currentLap: 1,
-    totalLaps: '38',
     sectorDeltas: [null, null, null],
-  },
-};
-
-export const Unlimited: Story = {
-  args: {
-    deltaFormatted: '-0.780',
-    deltaState: 'ahead',
-    currentLap: 3,
-    totalLaps: 'unlimited',
-    sectorDeltas: [null, null, null],
+    sectorTimes: [null, null, null],
+    layout: 'vertical',
+    showSectorTimes: true,
   },
 };
 
@@ -106,8 +113,9 @@ export const NoData: Story = {
   args: {
     deltaFormatted: '—',
     deltaState: 'neutral',
-    currentLap: null,
-    totalLaps: null,
     sectorDeltas: [],
+    sectorTimes: [],
+    layout: 'vertical',
+    showSectorTimes: true,
   },
 };

@@ -114,6 +114,7 @@ export type LapDeltaLayout = 'vertical' | 'horizontal';
 
 export interface LapDeltaWidgetSettings {
   layout: LapDeltaLayout;
+  showSectorTimes: boolean;
 }
 
 export interface WidgetCustomSettings {

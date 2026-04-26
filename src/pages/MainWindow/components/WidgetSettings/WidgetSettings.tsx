@@ -1024,6 +1024,14 @@ const LapDeltaSettingsPanel = observer(() => {
           onChange={(v) => update({ layout: v as LapDeltaLayout })}
         />
       </div>
+
+      <div className={styles.fieldGroup}>
+        <span className={styles.fieldLabel}>Show Sector Times</span>
+        <Switch
+          checked={settings.showSectorTimes}
+          onChange={(v) => update({ showSectorTimes: v })}
+        />
+      </div>
     </Card>
   );
 });

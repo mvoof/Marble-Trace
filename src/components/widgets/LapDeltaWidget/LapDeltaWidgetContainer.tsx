@@ -7,7 +7,7 @@ import { formatDelta, getDeltaState } from './lap-delta-utils';
 import { LapDeltaWidget } from './LapDeltaWidget';
 
 export const LapDeltaWidgetContainer = observer(() => {
-  const { layout } = widgetSettingsStore.getLapDeltaSettings();
+  const { layout, showSectorTimes } = widgetSettingsStore.getLapDeltaSettings();
 
   const delta = computedStore.lapDelta?.totalDelta ?? 0;
   const sectorDeltas = computedStore.lapDelta?.sectorDeltas ?? [];
@@ -23,6 +23,7 @@ export const LapDeltaWidgetContainer = observer(() => {
       sectorDeltas={sectorDeltas}
       sectorTimes={sectorTimes}
       layout={layout}
+      showSectorTimes={showSectorTimes}
     />
   );
 });

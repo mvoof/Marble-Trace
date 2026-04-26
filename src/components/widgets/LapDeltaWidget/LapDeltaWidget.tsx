@@ -18,6 +18,7 @@ interface LapDeltaWidgetProps {
   sectorDeltas: (number | null)[];
   sectorTimes: (number | null)[];
   layout: LapDeltaLayout;
+  showSectorTimes: boolean;
 }
 
 const DELTA_STATE_CLASS: Record<DeltaState, string> = {
@@ -27,7 +28,17 @@ const DELTA_STATE_CLASS: Record<DeltaState, string> = {
 };
 
 export const LapDeltaWidget = forwardRef<HTMLElement, LapDeltaWidgetProps>(
-  ({ deltaFormatted, deltaState, sectorDeltas, sectorTimes, layout }, ref) => {
+  (
+    {
+      deltaFormatted,
+      deltaState,
+      sectorDeltas,
+      sectorTimes,
+      layout,
+      showSectorTimes,
+    },
+    ref
+  ) => {
     const sectorCount = Math.max(sectorDeltas.length, sectorTimes.length);
     const sectors = Array.from({ length: sectorCount }, (_, i) => ({
       time: sectorTimes[i] ?? null,
@@ -49,24 +60,26 @@ export const LapDeltaWidget = forwardRef<HTMLElement, LapDeltaWidgetProps>(
           {deltaFormatted}
         </div>
 
-        <div
-          className={
-            layout === 'horizontal'
-              ? styles.sectorListHorizontal
-              : styles.sectorListVertical
-          }
-        >
-          {sectors.map((s, i) => (
-            <TimingRow
-              key={i}
-              label={`S${i + 1}`}
-              time={formatSectorTime(s.time)}
-              delta={formatSectorDelta(s.delta)}
-              accentColor={s.accent}
-              deltaColor={getDeltaColor(getSectorDeltaState(s.delta))}
-            />
-          ))}
-        </div>
+        {showSectorTimes && (
+          <div
+            className={
+              layout === 'horizontal'
+                ? styles.sectorListHorizontal
+                : styles.sectorListVertical
+            }
+          >
+            {sectors.map((s, i) => (
+              <TimingRow
+                key={i}
+                label={`S${i + 1}`}
+                time={formatSectorTime(s.time)}
+                delta={formatSectorDelta(s.delta)}
+                accentColor={s.accent}
+                deltaColor={getDeltaColor(getSectorDeltaState(s.delta))}
+              />
+            ))}
+          </div>
+        )}
       </WidgetPanel>
     );
   }
