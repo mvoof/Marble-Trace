@@ -19,6 +19,38 @@ import type {
   WidgetCustomSettings,
 } from '../types/widget-settings';
 
+const LINEAR_MAP_SIZES: Record<
+  string,
+  { designWidth: number; designHeight: number }
+> = {
+  horizontal: { designWidth: 400, designHeight: 40 },
+  vertical: { designWidth: 40, designHeight: 400 },
+};
+
+const LAP_DELTA_SIZES: Record<
+  string,
+  { designWidth: number; designHeight: number }
+> = {
+  vertical: { designWidth: 220, designHeight: 180 },
+  horizontal: { designWidth: 480, designHeight: 140 },
+};
+
+const LAP_TIMES_SIZES: Record<
+  string,
+  { designWidth: number; designHeight: number }
+> = {
+  vertical: { designWidth: 220, designHeight: 104 },
+  horizontal: { designWidth: 790, designHeight: 35 },
+};
+
+const INPUT_TRACE_SIZES: Record<
+  string,
+  { designWidth: number; designHeight: number }
+> = {
+  horizontal: { designWidth: 400, designHeight: 220 },
+  vertical: { designWidth: 400, designHeight: 110 },
+};
+
 export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'speed',
@@ -27,8 +59,10 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: true,
     x: 400,
     y: 100,
-    width: 290,
-    height: 80,
+    width: 360,
+    height: 110,
+    designWidth: 360,
+    designHeight: 110,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: 'F10',
@@ -52,6 +86,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 300,
     width: 400,
     height: 220,
+    designWidth: 400,
+    designHeight: 220,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: 'F11',
@@ -74,8 +110,10 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 600,
     y: 300,
-    width: 300,
+    width: 200,
     height: 300,
+    designWidth: 200,
+    designHeight: 300,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
     hotkey: 'F6',
@@ -96,6 +134,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 300,
     width: 800,
     height: 380,
+    designWidth: 800,
+    designHeight: 380,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
     hotkey: 'F7',
@@ -117,6 +157,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 50,
     width: 640,
     height: 450,
+    designWidth: 640,
+    designHeight: 450,
     backgroundColor: '#0a0a0f',
     backgroundColorEdge: '#050508',
     hotkey: 'F3',
@@ -151,7 +193,9 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     x: 50,
     y: 300,
     width: 420,
-    height: 500,
+    height: 400,
+    designWidth: 420,
+    designHeight: 400,
     backgroundColor: '#0a0a0f',
     backgroundColorEdge: '#050508',
     hotkey: 'F4',
@@ -173,6 +217,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 50,
     width: 400,
     height: 400,
+    designWidth: 400,
+    designHeight: 400,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
     hotkey: 'F5',
@@ -194,6 +240,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 820,
     width: 400,
     height: 40,
+    designWidth: 400,
+    designHeight: 40,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
@@ -212,6 +260,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 0,
     width: 630,
     height: 189,
+    designWidth: 630,
+    designHeight: 189,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
     hotkey: '',
@@ -232,6 +282,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 100,
     width: 460,
     height: 320,
+    designWidth: 460,
+    designHeight: 320,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
@@ -245,6 +297,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 100,
     width: 400,
     height: 700,
+    designWidth: 400,
+    designHeight: 700,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: 'F8',
@@ -256,8 +310,10 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 400,
     y: 200,
-    width: 240,
-    height: 140,
+    width: 220,
+    height: 180,
+    designWidth: 220,
+    designHeight: 180,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
@@ -271,6 +327,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 300,
     width: 220,
     height: 104,
+    designWidth: 220,
+    designHeight: 104,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
@@ -292,6 +350,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 200,
     width: 300,
     height: 100,
+    designWidth: 300,
+    designHeight: 100,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
@@ -305,6 +365,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 310,
     width: 240,
     height: 120,
+    designWidth: 240,
+    designHeight: 120,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
@@ -318,6 +380,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 200,
     width: 240,
     height: 280,
+    designWidth: 240,
+    designHeight: 280,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
@@ -339,7 +403,9 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     x: 760,
     y: 500,
     width: 240,
-    height: 220,
+    height: 360,
+    designWidth: 240,
+    designHeight: 360,
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
@@ -479,9 +545,13 @@ class WidgetSettingsStore {
         const prevOrientation = prevSettings?.['linear-map']?.orientation;
         const nextOrientation = settings['linear-map'].orientation;
         if (prevOrientation !== nextOrientation) {
-          const tmp = widget.width;
-          widget.width = widget.height;
-          widget.height = tmp;
+          const size = LINEAR_MAP_SIZES[nextOrientation];
+          if (size) {
+            widget.width = size.designWidth;
+            widget.height = size.designHeight;
+            widget.designWidth = size.designWidth;
+            widget.designHeight = size.designHeight;
+          }
         }
       }
 
@@ -493,12 +563,12 @@ class WidgetSettingsStore {
         const prevLayout = prevSettings?.['lap-delta']?.layout ?? 'vertical';
         const nextLayout = settings['lap-delta'].layout;
         if (prevLayout !== nextLayout) {
-          if (nextLayout === 'horizontal') {
-            widget.width = 475;
-            widget.height = 80;
-          } else {
-            widget.width = 220;
-            widget.height = 140;
+          const size = LAP_DELTA_SIZES[nextLayout];
+          if (size) {
+            widget.width = size.designWidth;
+            widget.height = size.designHeight;
+            widget.designWidth = size.designWidth;
+            widget.designHeight = size.designHeight;
           }
         }
       }
@@ -511,12 +581,31 @@ class WidgetSettingsStore {
         const prevLayout = prevSettings?.['lap-times']?.layout ?? 'vertical';
         const nextLayout = settings['lap-times'].layout;
         if (prevLayout !== nextLayout) {
-          if (nextLayout === 'horizontal') {
-            widget.width = 790;
-            widget.height = 35;
-          } else {
-            widget.width = 220;
-            widget.height = 104;
+          const size = LAP_TIMES_SIZES[nextLayout];
+          if (size) {
+            widget.width = size.designWidth;
+            widget.height = size.designHeight;
+            widget.designWidth = size.designWidth;
+            widget.designHeight = size.designHeight;
+          }
+        }
+      }
+
+      if (
+        id === 'input-trace' &&
+        settings['input-trace'] &&
+        'barMode' in settings['input-trace']
+      ) {
+        const prevBarMode =
+          prevSettings?.['input-trace']?.barMode ?? 'horizontal';
+        const nextBarMode = settings['input-trace'].barMode;
+        if (prevBarMode !== nextBarMode && nextBarMode !== 'hidden') {
+          const size = INPUT_TRACE_SIZES[nextBarMode];
+          if (size) {
+            widget.width = size.designWidth;
+            widget.height = size.designHeight;
+            widget.designWidth = size.designWidth;
+            widget.designHeight = size.designHeight;
           }
         }
       }

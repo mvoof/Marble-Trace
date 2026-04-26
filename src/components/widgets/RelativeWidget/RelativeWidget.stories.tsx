@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RelativeWidget } from './RelativeWidget';
-import { WidgetScaler } from '../../WidgetScaler';
+
 import type { DriverEntry } from '../../../types/bindings';
 import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
 import type { RelativeWidgetSettings } from '../../../types/widget-settings';
@@ -33,13 +33,16 @@ const RelativeWidgetStory = ({
 
   return (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-      <WidgetScaler
-        designWidth={DESIGN_WIDTH}
-        designHeight={DESIGN_HEIGHT}
-        background="radial-gradient(circle, #0a0a0f 0%, #050508 100%)"
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle, #0a0a0f 0%, #050508 100%)',
+          overflow: 'hidden',
+        }}
       >
         <RelativeWidget entries={entries} settings={settings} />
-      </WidgetScaler>
+      </div>
     </div>
   );
 };

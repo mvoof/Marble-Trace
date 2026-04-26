@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ProximityRadarWidget } from './ProximityRadarWidget';
-import { WidgetScaler } from '../../WidgetScaler';
+
 import {
   computeNearbyCars,
   computeRadarDistances,
@@ -106,16 +106,19 @@ const ProximityRadarWidgetStory = ({
 
   return (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-      <WidgetScaler
-        designWidth={DESIGN_WIDTH}
-        designHeight={DESIGN_HEIGHT}
-        background="transparent"
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'transparent',
+          overflow: 'hidden',
+        }}
       >
         <ProximityRadarWidget
           radarDistances={radarDistances}
           spotter={spotter}
         />
-      </WidgetScaler>
+      </div>
     </div>
   );
 };

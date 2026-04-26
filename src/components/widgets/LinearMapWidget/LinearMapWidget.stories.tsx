@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { LinearMapWidget } from './LinearMapWidget';
-import { WidgetScaler } from '../../WidgetScaler';
+
 import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
 import type { LinearMapWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
@@ -22,19 +22,18 @@ const makeStory = (
   const entries = [
     ...computeDriverEntries(snap.carIdx, snap.sessionInfo?.DriverInfo ?? null),
   ].sort((a, b) => b.relativeLapDist - a.relativeLapDist);
-  const isHorizontal = settings.orientation === 'horizontal';
-  const designWidth = isHorizontal ? 400 : 40;
-  const designHeight = isHorizontal ? 40 : 400;
-
   return (
     <div style={{ width: containerWidth, height: containerHeight }}>
-      <WidgetScaler
-        designWidth={designWidth}
-        designHeight={designHeight}
-        background="#1a1a1a"
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: '#1a1a1a',
+          overflow: 'hidden',
+        }}
       >
         <LinearMapWidget entries={entries} settings={settings} />
-      </WidgetScaler>
+      </div>
     </div>
   );
 };

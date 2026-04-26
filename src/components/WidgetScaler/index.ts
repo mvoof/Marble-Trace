@@ -1,1 +1,0 @@
-export { WidgetScaler } from './WidgetScaler';

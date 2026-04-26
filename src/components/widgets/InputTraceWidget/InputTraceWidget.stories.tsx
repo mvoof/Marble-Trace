@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { InputTraceWidget } from './InputTraceWidget';
-import { WidgetScaler } from '../../WidgetScaler';
+
 import type { InputTraceSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
@@ -36,10 +36,13 @@ const InputTraceWidgetStory = ({
 
   return (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-      <WidgetScaler
-        designWidth={DESIGN_WIDTH}
-        designHeight={DESIGN_HEIGHT}
-        background="radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)"
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
+          overflow: 'hidden',
+        }}
       >
         <InputTraceWidget
           throttle={throttle}
@@ -47,7 +50,7 @@ const InputTraceWidgetStory = ({
           clutch={clutch}
           settings={settings}
         />
-      </WidgetScaler>
+      </div>
     </div>
   );
 };

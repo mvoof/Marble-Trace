@@ -2,7 +2,6 @@ import type { ComponentProps } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { LapTimesWidget } from './LapTimesWidget';
-import { WidgetScaler } from '../../WidgetScaler';
 
 const VERTICAL_WIDTH = 260;
 const VERTICAL_HEIGHT = 160;
@@ -15,13 +14,16 @@ const wrap = (props: ComponentProps<typeof LapTimesWidget>) => {
   const h = isHorizontal ? HORIZONTAL_HEIGHT : VERTICAL_HEIGHT;
   return (
     <div style={{ width: w, height: h }}>
-      <WidgetScaler
-        designWidth={w}
-        designHeight={h}
-        background="radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)"
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
+          overflow: 'hidden',
+        }}
       >
         <LapTimesWidget {...props} />
-      </WidgetScaler>
+      </div>
     </div>
   );
 };

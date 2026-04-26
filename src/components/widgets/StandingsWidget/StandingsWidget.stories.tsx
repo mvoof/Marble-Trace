@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { StandingsWidget } from './StandingsWidget';
-import { WidgetScaler } from '../../WidgetScaler';
+
 import { computeClassSof } from './standings-utils';
 import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
 import type { StandingsWidgetSettings } from '../../../types/widget-settings';
@@ -46,10 +46,13 @@ const StandingsWidgetStory = ({
 
   return (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-      <WidgetScaler
-        designWidth={DESIGN_WIDTH}
-        designHeight={DESIGN_HEIGHT}
-        background="radial-gradient(circle, #0a0a0f 0%, #050508 100%)"
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle, #0a0a0f 0%, #050508 100%)',
+          overflow: 'hidden',
+        }}
       >
         <StandingsWidget
           driverEntries={driverEntries}
@@ -60,7 +63,7 @@ const StandingsWidgetStory = ({
           weekendInfo={snap.sessionInfo?.WeekendInfo ?? null}
           overallSof={overallSof}
         />
-      </WidgetScaler>
+      </div>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TrackMapWidget } from './TrackMapWidget';
-import { WidgetScaler } from '../../WidgetScaler';
+
 import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
 import type { TrackMapWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
@@ -83,10 +83,13 @@ const TrackMapWidgetStory = ({
 
   return (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-      <WidgetScaler
-        designWidth={DESIGN_WIDTH}
-        designHeight={DESIGN_HEIGHT}
-        background="transparent"
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'transparent',
+          overflow: 'hidden',
+        }}
       >
         <TrackMapWidget
           cars={cars}
@@ -102,7 +105,7 @@ const TrackMapWidgetStory = ({
           sectorTimes={MOCK_SECTOR_TIMES}
           currentSectorIdx={1}
         />
-      </WidgetScaler>
+      </div>
     </div>
   );
 };
@@ -144,10 +147,13 @@ export const HeadingUp: Story = {
 export const Recording: Story = {
   render: ({ snapshot: snap, ...settings }) => (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-      <WidgetScaler
-        designWidth={DESIGN_WIDTH}
-        designHeight={DESIGN_HEIGHT}
-        background="transparent"
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'transparent',
+          overflow: 'hidden',
+        }}
       >
         <TrackMapWidget
           cars={computeCars(snap)}
@@ -162,7 +168,7 @@ export const Recording: Story = {
           sectors={undefined}
           sectorTimes={[]}
         />
-      </WidgetScaler>
+      </div>
     </div>
   ),
 };

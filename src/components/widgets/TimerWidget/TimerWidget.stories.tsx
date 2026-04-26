@@ -2,20 +2,22 @@ import type { ComponentProps } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TimerWidget } from './TimerWidget';
-import { WidgetScaler } from '../../WidgetScaler';
 
 const DESIGN_WIDTH = 240;
 const DESIGN_HEIGHT = 120;
 
 const wrap = (props: ComponentProps<typeof TimerWidget>) => (
   <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-    <WidgetScaler
-      designWidth={DESIGN_WIDTH}
-      designHeight={DESIGN_HEIGHT}
-      background="radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)"
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
+        overflow: 'hidden',
+      }}
     >
       <TimerWidget {...props} />
-    </WidgetScaler>
+    </div>
   </div>
 );
 

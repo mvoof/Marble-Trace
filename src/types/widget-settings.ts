@@ -141,6 +141,8 @@ export interface WidgetConfig {
   y: number;
   width: number;
   height: number;
+  designWidth: number;
+  designHeight: number;
   backgroundColor: string;
   backgroundColorEdge: string;
   hotkey: string;

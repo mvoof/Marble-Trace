@@ -4,28 +4,17 @@ import { emit } from '@tauri-apps/api/event';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { telemetryConnectionStore } from '../../store/iracing';
-import { WidgetScaler } from '../WidgetScaler';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
 import styles from './WidgetContainer.module.scss';
 
 interface WidgetContainerProps {
   widgetId: string;
-  designWidth: number;
-  designHeight: number;
   children: ReactNode;
   visible?: boolean;
-  scale?: boolean;
 }
 
 export const WidgetContainer = observer(
-  ({
-    widgetId,
-    designWidth,
-    designHeight,
-    children,
-    visible = true,
-    scale = false,
-  }: WidgetContainerProps) => {
+  ({ widgetId, children, visible = true }: WidgetContainerProps) => {
     const { dragMode } = appSettingsStore;
     const widget = widgetSettingsStore.getWidget(widgetId);
 
@@ -55,8 +44,10 @@ export const WidgetContainer = observer(
     const backgroundColorEdge = widget?.backgroundColorEdge ?? '#0a0a0a';
     const x = widget?.x ?? 100;
     const y = widget?.y ?? 100;
-    const width = widget?.width ?? designWidth;
-    const height = widget?.height ?? designHeight;
+    const width = widget?.width ?? 200;
+    const height = widget?.height ?? 200;
+    const designWidth = widget?.designWidth ?? width;
+    const designHeight = widget?.designHeight ?? height;
 
     const background = shouldHide
       ? 'transparent'
@@ -163,14 +154,9 @@ export const WidgetContainer = observer(
           onMouseDown={handleDragMouseDown}
         >
           <ErrorBoundary>
-            <WidgetScaler
-              designWidth={designWidth}
-              designHeight={designHeight}
-              background={background}
-              scale={scale}
-            >
+            <div className={styles.widgetInner} style={{ background }}>
               {children}
-            </WidgetScaler>
+            </div>
           </ErrorBoundary>
 
           {dragMode && (

@@ -5,10 +5,7 @@ import { X } from 'lucide-react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
-import {
-  WIDGET_REGISTRY,
-  resolveWidgetVariant,
-} from '../../utils/widget-registry';
+import { WIDGET_REGISTRY } from '../../utils/widget-registry';
 import { WidgetContainer } from '../WidgetContainer';
 import styles from './OverlayCanvas.module.scss';
 
@@ -65,22 +62,13 @@ export const OverlayCanvas = observer(() => {
         const entry = WIDGET_REGISTRY[widget.id];
         if (!entry) return null;
 
-        const variant = resolveWidgetVariant(widget.id, entry);
-        const {
-          component: WidgetComponent,
-          designWidth,
-          designHeight,
-          scale,
-        } = variant;
+        const { component: WidgetComponent } = entry;
 
         return (
           <WidgetContainer
             key={widget.id}
             widgetId={widget.id}
-            designWidth={designWidth}
-            designHeight={designHeight}
             visible={visibilityMap[widget.id] ?? true}
-            scale={scale}
           >
             <WidgetComponent
               onVisibilityChange={(v) => handleVisibilityChange(widget.id, v)}
