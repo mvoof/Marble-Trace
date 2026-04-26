@@ -127,16 +127,20 @@ export const DriverRow = observer(
           </span>
         </div>
 
-        <div className={styles.badgesBlock}>
+        <div className={styles.colPit}>
           {settings.showPitIndicator && isPit && <PitBadge />}
+        </div>
 
+        <div className={styles.colClass}>
           {settings.showClassBadge && (
             <ClassBadge
               color={driver.carClassColor}
               label={driver.carClassShortName}
             />
           )}
+        </div>
 
+        <div className={styles.colLic}>
           {settings.showIRatingBadge && (
             <LicenseBadge
               licString={driver.licString}
