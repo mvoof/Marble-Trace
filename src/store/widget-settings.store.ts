@@ -395,8 +395,10 @@ class WidgetSettingsStore {
 
   isTrackMapForceStartPending = false;
 
+  private autoSizedWidgets = new Set<string>();
+
   constructor() {
-    makeAutoObservable(this, {}, { autoBind: true });
+    makeAutoObservable(this, { autoSizedWidgets: false } as never, { autoBind: true });
   }
 
   setTrackMapForceStartPending(pending: boolean) {
@@ -453,10 +455,20 @@ class WidgetSettingsStore {
         } as never;
       }
 
+      const autoSizedCurrent = this.autoSizedWidgets.has(def.id)
+        ? this.widgets.find((w) => w.id === def.id)
+        : null;
+
       return {
         ...def,
         ...s,
         customSettings: mergedCustomSettings,
+        ...(autoSizedCurrent && {
+          width: autoSizedCurrent.width,
+          height: autoSizedCurrent.height,
+          designWidth: autoSizedCurrent.designWidth,
+          designHeight: autoSizedCurrent.designHeight,
+        }),
       };
     });
   }
@@ -486,6 +498,7 @@ class WidgetSettingsStore {
   }
 
   updateAutoSize(id: string, width: number, height: number) {
+    this.autoSizedWidgets.add(id);
     const widget = this.widgets.find((w) => w.id === id);
     if (
       widget &&
