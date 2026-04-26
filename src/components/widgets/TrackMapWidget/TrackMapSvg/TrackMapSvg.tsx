@@ -51,8 +51,8 @@ export const TrackMapSvg = ({
         <path
           d={svgPath}
           fill="none"
-          stroke="#969696"
-          strokeWidth="18"
+          stroke="#252525"
+          strokeWidth="42"
           strokeLinejoin="round"
           strokeLinecap="round"
           opacity="0.6"
@@ -63,8 +63,8 @@ export const TrackMapSvg = ({
           ref={pathRef}
           d={svgPath}
           fill="none"
-          stroke="#0f0f15"
-          strokeWidth="14"
+          stroke="#272727"
+          strokeWidth="40"
           strokeLinejoin="round"
           strokeLinecap="round"
         />
@@ -77,12 +77,13 @@ export const TrackMapSvg = ({
             const startDist = (sector.SectorStartPct ?? 0) * pathLength;
             const sectorLen =
               (endPct - (sector.SectorStartPct ?? 0)) * pathLength;
+
             return (
               <path
                 key={`arc-${sector.SectorNum}`}
                 d={svgPath}
                 fill="none"
-                strokeWidth="4"
+                strokeWidth="22"
                 strokeLinecap="butt"
                 strokeDasharray={`0 ${startDist} ${sectorLen} ${pathLength}`}
                 className={styles.sectorArc}

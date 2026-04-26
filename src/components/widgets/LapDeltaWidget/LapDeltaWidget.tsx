@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { TimingRow } from '../../shared/TimingRow/TimingRow';
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import {
@@ -25,46 +26,50 @@ const DELTA_STATE_CLASS: Record<DeltaState, string> = {
   neutral: styles.deltaNeutral,
 };
 
-export const LapDeltaWidget = ({
-  deltaFormatted,
-  deltaState,
-  sectorDeltas,
-  sectorTimes,
-  layout,
-}: LapDeltaWidgetProps) => {
-  const sectorCount = Math.max(sectorDeltas.length, sectorTimes.length);
-  const sectors = Array.from({ length: sectorCount }, (_, i) => ({
-    time: sectorTimes[i] ?? null,
-    delta: sectorDeltas[i] ?? null,
-    accent: SECTOR_ACCENT_COLORS[i % SECTOR_ACCENT_COLORS.length],
-  }));
+export const LapDeltaWidget = forwardRef<HTMLElement, LapDeltaWidgetProps>(
+  ({ deltaFormatted, deltaState, sectorDeltas, sectorTimes, layout }, ref) => {
+    const sectorCount = Math.max(sectorDeltas.length, sectorTimes.length);
+    const sectors = Array.from({ length: sectorCount }, (_, i) => ({
+      time: sectorTimes[i] ?? null,
+      delta: sectorDeltas[i] ?? null,
+      accent: SECTOR_ACCENT_COLORS[i % SECTOR_ACCENT_COLORS.length],
+    }));
 
-  return (
-    <WidgetPanel direction="column" gap={0} minWidth={150}>
-      <div
-        className={`${styles.delta} ${DELTA_STATE_CLASS[deltaState]} ${layout === 'horizontal' ? styles.deltaHorizontal : ''}`}
+    return (
+      <WidgetPanel
+        ref={ref}
+        direction="column"
+        gap={0}
+        minWidth={150}
+        fitContent
       >
-        {deltaFormatted}
-      </div>
+        <div
+          className={`${styles.delta} ${DELTA_STATE_CLASS[deltaState]} ${layout === 'horizontal' ? styles.deltaHorizontal : ''}`}
+        >
+          {deltaFormatted}
+        </div>
 
-      <div
-        className={
-          layout === 'horizontal'
-            ? styles.sectorListHorizontal
-            : styles.sectorListVertical
-        }
-      >
-        {sectors.map((s, i) => (
-          <TimingRow
-            key={i}
-            label={`S${i + 1}`}
-            time={formatSectorTime(s.time)}
-            delta={formatSectorDelta(s.delta)}
-            accentColor={s.accent}
-            deltaColor={getDeltaColor(getSectorDeltaState(s.delta))}
-          />
-        ))}
-      </div>
-    </WidgetPanel>
-  );
-};
+        <div
+          className={
+            layout === 'horizontal'
+              ? styles.sectorListHorizontal
+              : styles.sectorListVertical
+          }
+        >
+          {sectors.map((s, i) => (
+            <TimingRow
+              key={i}
+              label={`S${i + 1}`}
+              time={formatSectorTime(s.time)}
+              delta={formatSectorDelta(s.delta)}
+              accentColor={s.accent}
+              deltaColor={getDeltaColor(getSectorDeltaState(s.delta))}
+            />
+          ))}
+        </div>
+      </WidgetPanel>
+    );
+  }
+);
+
+LapDeltaWidget.displayName = 'LapDeltaWidget';

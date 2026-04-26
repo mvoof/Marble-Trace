@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { TimingRow } from '../../shared/TimingRow/TimingRow';
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import type { LapTimesWidgetSettings } from '../../../types/widget-settings';
@@ -26,70 +27,83 @@ interface RowConfig {
   accentColor: string;
 }
 
-export const LapTimesWidget = ({
-  currentLapTime,
-  lastLapTime,
-  lastLapDelta,
-  bestLapTime,
-  p1LapTime,
-  p1Delta,
-  settings,
-}: LapTimesWidgetProps) => {
-  const rows: RowConfig[] = [
+export const LapTimesWidget = forwardRef<HTMLElement, LapTimesWidgetProps>(
+  (
     {
-      label: 'CURRENT',
-      time: currentLapTime,
-      delta: '—',
-      accentColor: COLOR_CURRENT,
+      currentLapTime,
+      lastLapTime,
+      lastLapDelta,
+      bestLapTime,
+      p1LapTime,
+      p1Delta,
+      settings,
     },
-  ];
+    ref
+  ) => {
+    const rows: RowConfig[] = [
+      {
+        label: 'CURRENT',
+        time: currentLapTime,
+        delta: '—',
+        accentColor: COLOR_CURRENT,
+      },
+    ];
 
-  if (settings.showLastLap) {
-    rows.push({
-      label: 'LAST',
-      time: lastLapTime,
-      delta: lastLapDelta,
-      accentColor: COLOR_LAST,
-    });
-  }
+    if (settings.showLastLap) {
+      rows.push({
+        label: 'LAST',
+        time: lastLapTime,
+        delta: lastLapDelta,
+        accentColor: COLOR_LAST,
+      });
+    }
 
-  if (settings.showBestLap) {
-    rows.push({
-      label: 'BEST',
-      time: bestLapTime,
-      delta: '—',
-      accentColor: COLOR_BEST,
-    });
-  }
+    if (settings.showBestLap) {
+      rows.push({
+        label: 'BEST',
+        time: bestLapTime,
+        delta: '—',
+        accentColor: COLOR_BEST,
+      });
+    }
 
-  if (settings.showP1) {
-    rows.push({
-      label: 'P1',
-      time: p1LapTime,
-      delta: p1Delta,
-      accentColor: COLOR_P1,
-    });
-  }
+    if (settings.showP1) {
+      rows.push({
+        label: 'P1',
+        time: p1LapTime,
+        delta: p1Delta,
+        accentColor: COLOR_P1,
+      });
+    }
 
-  return (
-    <WidgetPanel direction="column" gap={0} minWidth={200}>
-      <div
-        className={
-          settings.layout === 'horizontal'
-            ? styles.rowListHorizontal
-            : styles.rowListVertical
-        }
+    return (
+      <WidgetPanel
+        ref={ref}
+        direction="column"
+        gap={0}
+        minWidth={200}
+        fitContent
       >
-        {rows.map((row) => (
-          <TimingRow
-            key={row.label}
-            label={row.label}
-            time={row.time}
-            delta={row.delta}
-            accentColor={row.accentColor}
-          />
-        ))}
-      </div>
-    </WidgetPanel>
-  );
-};
+        <div
+          className={
+            settings.layout === 'horizontal'
+              ? styles.rowListHorizontal
+              : styles.rowListVertical
+          }
+        >
+          {rows.map((row) => (
+            <TimingRow
+              key={row.label}
+              label={row.label}
+              time={row.time}
+              delta={row.delta}
+              accentColor={row.accentColor}
+            />
+          ))}
+        </div>
+      </WidgetPanel>
+    );
+  }
+);
+
+LapTimesWidget.displayName = 'LapTimesWidget';

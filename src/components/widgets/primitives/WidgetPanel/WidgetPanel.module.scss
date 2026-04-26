@@ -7,3 +7,9 @@
   display: flex;
   overflow: hidden;
 }
+
+.fitContent {
+  width: max-content;
+  height: max-content;
+  overflow: visible;
+}

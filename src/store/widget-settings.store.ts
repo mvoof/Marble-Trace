@@ -27,22 +27,6 @@ const LINEAR_MAP_SIZES: Record<
   vertical: { designWidth: 40, designHeight: 400 },
 };
 
-const LAP_DELTA_SIZES: Record<
-  string,
-  { designWidth: number; designHeight: number }
-> = {
-  vertical: { designWidth: 220, designHeight: 180 },
-  horizontal: { designWidth: 480, designHeight: 140 },
-};
-
-const LAP_TIMES_SIZES: Record<
-  string,
-  { designWidth: number; designHeight: number }
-> = {
-  vertical: { designWidth: 220, designHeight: 104 },
-  horizontal: { designWidth: 790, designHeight: 35 },
-};
-
 const INPUT_TRACE_SIZES: Record<
   string,
   { designWidth: number; designHeight: number }
@@ -501,6 +485,22 @@ class WidgetSettingsStore {
     }
   }
 
+  updateAutoSize(id: string, width: number, height: number) {
+    const widget = this.widgets.find((w) => w.id === id);
+    if (
+      widget &&
+      (widget.width !== width ||
+        widget.height !== height ||
+        widget.designWidth !== width ||
+        widget.designHeight !== height)
+    ) {
+      widget.width = width;
+      widget.height = height;
+      widget.designWidth = width;
+      widget.designHeight = height;
+    }
+  }
+
   updateField<K extends keyof WidgetConfig>(
     id: string,
     field: K,
@@ -531,42 +531,6 @@ class WidgetSettingsStore {
         const nextOrientation = settings['linear-map'].orientation;
         if (prevOrientation !== nextOrientation) {
           const size = LINEAR_MAP_SIZES[nextOrientation];
-          if (size) {
-            widget.width = size.designWidth;
-            widget.height = size.designHeight;
-            widget.designWidth = size.designWidth;
-            widget.designHeight = size.designHeight;
-          }
-        }
-      }
-
-      if (
-        id === 'lap-delta' &&
-        settings['lap-delta'] &&
-        'layout' in settings['lap-delta']
-      ) {
-        const prevLayout = prevSettings?.['lap-delta']?.layout ?? 'vertical';
-        const nextLayout = settings['lap-delta'].layout;
-        if (prevLayout !== nextLayout) {
-          const size = LAP_DELTA_SIZES[nextLayout];
-          if (size) {
-            widget.width = size.designWidth;
-            widget.height = size.designHeight;
-            widget.designWidth = size.designWidth;
-            widget.designHeight = size.designHeight;
-          }
-        }
-      }
-
-      if (
-        id === 'lap-times' &&
-        settings['lap-times'] &&
-        'layout' in settings['lap-times']
-      ) {
-        const prevLayout = prevSettings?.['lap-times']?.layout ?? 'vertical';
-        const nextLayout = settings['lap-times'].layout;
-        if (prevLayout !== nextLayout) {
-          const size = LAP_TIMES_SIZES[nextLayout];
           if (size) {
             widget.width = size.designWidth;
             widget.height = size.designHeight;

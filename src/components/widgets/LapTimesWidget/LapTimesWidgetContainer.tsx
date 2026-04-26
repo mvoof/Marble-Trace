@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore, computedStore } from '../../../store/iracing';
@@ -21,6 +22,22 @@ export const LapTimesWidgetContainer = observer(() => {
   const carIdxData = telemetryStore.carIdx;
   const standings = computedStore.standings?.entries ?? [];
   const settings = widgetSettingsStore.getLapTimesSettings();
+
+  const widgetRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = widgetRef.current;
+    if (!el) return;
+
+    const ro = new ResizeObserver(() => {
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      if (w > 0 && h > 0) widgetSettingsStore.updateAutoSize('lap-times', w, h);
+    });
+
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const currentLap = lap?.lap_current_lap_time ?? null;
   const lastLap = lap?.lap_last_lap_time ?? null;
@@ -47,6 +64,7 @@ export const LapTimesWidgetContainer = observer(() => {
 
   return (
     <LapTimesWidget
+      ref={widgetRef}
       currentLapTime={formatLapTime(currentLap)}
       lastLapTime={formatLapTime(lastLap)}
       lastLapDelta={formatDeltaVsBest(lastLap, bestLap)}
