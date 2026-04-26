@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
 import type { FlagState } from './TimerWidget';
 import { TimerWidget } from './TimerWidget';
 
@@ -46,6 +47,8 @@ export const TimerWidgetContainer = observer(() => {
   const { showFlag, showLaps, showPosition } =
     widgetSettingsStore.getTimerSettings();
 
+  const widgetRef = useAutoSizeWidget('timer');
+
   const sessionNum = session?.session_num ?? null;
   const currentSession =
     sessionNum !== null ? (sessions[sessionNum] ?? null) : null;
@@ -73,6 +76,7 @@ export const TimerWidgetContainer = observer(() => {
 
   return (
     <TimerWidget
+      ref={widgetRef}
       sessionTypeLabel={sessionTypeLabel}
       flagState={flagState}
       timeMain={timeMain}

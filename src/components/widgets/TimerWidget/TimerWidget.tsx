@@ -1,3 +1,5 @@
+import { forwardRef } from 'react';
+
 import { WidgetPanel } from '../primitives/WidgetPanel';
 
 import styles from './TimerWidget.module.scss';
@@ -46,66 +48,85 @@ const formatPosition = (pos: number | null, total: number | null): string => {
   return `POS P${pos}${totStr}`;
 };
 
-export const TimerWidget = ({
-  sessionTypeLabel,
-  flagState,
-  timeMain,
-  timeSeconds,
-  currentLap,
-  totalLaps,
-  position,
-  totalDrivers,
-  sessionEnded,
-  showFlag,
-  showLaps,
-  showPosition,
-}: TimerWidgetProps) => {
-  const showFooter = showLaps || showPosition;
+export const TimerWidget = forwardRef<HTMLElement, TimerWidgetProps>(
+  (
+    {
+      sessionTypeLabel,
+      flagState,
+      timeMain,
+      timeSeconds,
+      currentLap,
+      totalLaps,
+      position,
+      totalDrivers,
+      sessionEnded,
+      showFlag,
+      showLaps,
+      showPosition,
+    },
+    ref
+  ) => {
+    const showFooter = showLaps || showPosition;
 
-  if (sessionEnded) {
+    if (sessionEnded) {
+      return (
+        <WidgetPanel
+          ref={ref}
+          fitContent
+          direction="column"
+          gap={0}
+          minWidth={180}
+        >
+          <div className={styles.header}>
+            <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
+          </div>
+
+          <div className={styles.timeDisplay}>
+            <span className={styles.sessionEndedLabel}>END</span>
+          </div>
+        </WidgetPanel>
+      );
+    }
+
     return (
-      <WidgetPanel direction="column" gap={0} minWidth={180}>
+      <WidgetPanel
+        ref={ref}
+        fitContent
+        direction="column"
+        gap={0}
+        minWidth={180}
+      >
         <div className={styles.header}>
           <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
+          {showFlag && (
+            <span className={`${styles.flagLabel} ${FLAG_CLASS[flagState]}`}>
+              ● {FLAG_LABEL[flagState]}
+            </span>
+          )}
         </div>
 
         <div className={styles.timeDisplay}>
-          <span className={styles.sessionEndedLabel}>END</span>
+          <span className={styles.timeMain}>{timeMain}</span>
+          <span className={styles.timeSeconds}>{timeSeconds}</span>
         </div>
+
+        {showFooter && (
+          <div className={styles.footer}>
+            {showLaps && (
+              <span className={styles.footerItem}>
+                {formatLapCount(currentLap, totalLaps)}
+              </span>
+            )}
+            {showPosition && (
+              <span className={styles.footerItem}>
+                {formatPosition(position, totalDrivers)}
+              </span>
+            )}
+          </div>
+        )}
       </WidgetPanel>
     );
   }
+);
 
-  return (
-    <WidgetPanel direction="column" gap={0} minWidth={180}>
-      <div className={styles.header}>
-        <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
-        {showFlag && (
-          <span className={`${styles.flagLabel} ${FLAG_CLASS[flagState]}`}>
-            ● {FLAG_LABEL[flagState]}
-          </span>
-        )}
-      </div>
-
-      <div className={styles.timeDisplay}>
-        <span className={styles.timeMain}>{timeMain}</span>
-        <span className={styles.timeSeconds}>{timeSeconds}</span>
-      </div>
-
-      {showFooter && (
-        <div className={styles.footer}>
-          {showLaps && (
-            <span className={styles.footerItem}>
-              {formatLapCount(currentLap, totalLaps)}
-            </span>
-          )}
-          {showPosition && (
-            <span className={styles.footerItem}>
-              {formatPosition(position, totalDrivers)}
-            </span>
-          )}
-        </div>
-      )}
-    </WidgetPanel>
-  );
-};
+TimerWidget.displayName = 'TimerWidget';
