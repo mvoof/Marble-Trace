@@ -128,11 +128,19 @@ export const DriverRow = ({
         </span>
       </td>
 
-      {settings.showPosChange && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
-          <PosChange position={pos} startPos={startPos} />
-        </td>
-      )}
+      <td
+        className={`${styles.td} ${styles.tdCarNumber}`}
+        style={{
+          borderLeft: `4px solid ${driver.carClassColor}`,
+          background: `linear-gradient(to right, ${driver.carClassColor}33, transparent)`,
+        }}
+      >
+        <span
+          className={`${styles.carNumber} ${driver.isPlayer ? styles.carNumberPlayer : ''}`}
+        >
+          {driver.carNumber}
+        </span>
+      </td>
 
       <td className={`${styles.td} ${styles.tdDriverName}`}>
         <div className={styles.driverNameCell}>
@@ -146,14 +154,6 @@ export const DriverRow = ({
 
           {isPit && <PitBadge />}
         </div>
-      </td>
-
-      <td className={styles.td}>
-        <span
-          className={`${styles.carNumber} ${driver.isPlayer ? styles.carNumberPlayer : ''}`}
-        >
-          {driver.carNumber}
-        </span>
       </td>
 
       {settings.showBrand && (
@@ -223,6 +223,12 @@ export const DriverRow = ({
       {settings.showLapsCompleted && (
         <td className={`${styles.td} ${styles.tdCenter}`}>
           <span className={styles.lapsCompleted}>{driver.lap}</span>
+        </td>
+      )}
+
+      {settings.showPosChange && (
+        <td className={`${styles.td} ${styles.tdCenter}`}>
+          <PosChange position={pos} startPos={startPos} />
         </td>
       )}
 

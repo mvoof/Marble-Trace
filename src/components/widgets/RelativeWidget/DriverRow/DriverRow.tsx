@@ -95,16 +95,25 @@ export const DriverRow = observer(
 
     return (
       <div className={rowClass} data-relative-row>
-        <div
-          className={styles.classStripe}
-          style={{ backgroundColor: driver.carClassColor }}
-        />
-
         <div className={styles.posBlock}>
           <span
             className={`${styles.driverPosition} ${driver.isPlayer ? styles.driverPositionPlayer : ''}`}
           >
             {driver.position}
+          </span>
+        </div>
+
+        <div
+          className={styles.carNumberCell}
+          style={{
+            borderLeft: `4px solid ${driver.carClassColor}`,
+            background: `linear-gradient(to right, ${driver.carClassColor}33, transparent)`,
+          }}
+        >
+          <span
+            className={`${styles.driverCarNumber} ${driver.isPlayer ? styles.driverCarNumberPlayer : ''}`}
+          >
+            #{driver.carNumber}
           </span>
         </div>
 
@@ -117,8 +126,6 @@ export const DriverRow = observer(
               : driver.userName}
           </span>
         </div>
-
-        <span className={styles.driverCarNumber}>#{driver.carNumber}</span>
 
         <div className={styles.badgesBlock}>
           {settings.showPitIndicator && isPit && <PitBadge />}

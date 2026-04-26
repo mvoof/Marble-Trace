@@ -3,1387 +3,1515 @@
 /**
  * Individual camera information
  */
-export type Camera = { 
-/**
- * Camera number
- */
-CameraNum: number | null; 
-/**
- * Camera name
- */
-CameraName: string | null }
+export type Camera = {
+  /**
+   * Camera number
+   */
+  CameraNum: number | null;
+  /**
+   * Camera name
+   */
+  CameraName: string | null;
+};
 
 /**
  * Camera group information
  */
-export type CameraGroup = { 
-/**
- * Group number
- */
-GroupNum: number | null; 
-/**
- * Group name
- */
-GroupName: string | null; 
-/**
- * Whether this is a scenic camera group
- */
-IsScenic: boolean | null; 
-/**
- * List of cameras in this group
- */
-Cameras: Camera[] | null }
+export type CameraGroup = {
+  /**
+   * Group number
+   */
+  GroupNum: number | null;
+  /**
+   * Group name
+   */
+  GroupName: string | null;
+  /**
+   * Whether this is a scenic camera group
+   */
+  IsScenic: boolean | null;
+  /**
+   * List of cameras in this group
+   */
+  Cameras: Camera[] | null;
+};
 
 /**
  * Camera information
  */
-export type CameraInfo = { 
-/**
- * Camera groups
- */
-Groups: CameraGroup[] | null }
+export type CameraInfo = {
+  /**
+   * Camera groups
+   */
+  Groups: CameraGroup[] | null;
+};
 
-export type CarDynamicsFrame = { 
-/**
- * Vehicle speed in meters/sec
- * @see https://sajax.github.io/irsdkdocs/telemetry/speed/
- */
-speed: number; 
-/**
- * Engine revolutions per minute
- * @see https://sajax.github.io/irsdkdocs/telemetry/rpm/
- */
-rpm: number; 
-/**
- * Current gear: -1=Reverse, 0=Neutral, 1..n=Forward
- * @see https://sajax.github.io/irsdkdocs/telemetry/gear/
- */
-gear: number; 
-/**
- * Steering wheel angle in radians
- * @see https://sajax.github.io/irsdkdocs/telemetry/steeringwheelangle/
- */
-steering_wheel_angle: number; 
-/**
- * Vehicle velocity along X axis (lateral) in m/s
- * @see https://sajax.github.io/irsdkdocs/telemetry/velocityx/
- */
-velocity_x: number | null; 
-/**
- * Vehicle velocity along Y axis (vertical) in m/s
- * @see https://sajax.github.io/irsdkdocs/telemetry/velocityy/
- */
-velocity_y: number | null; 
-/**
- * Vehicle velocity along Z axis (forward) in m/s
- * @see https://sajax.github.io/irsdkdocs/telemetry/velocityz/
- */
-velocity_z: number | null; 
-/**
- * Lateral acceleration in m/s²
- * @see https://sajax.github.io/irsdkdocs/telemetry/lataccel/
- */
-lat_accel: number | null; 
-/**
- * Longitudinal acceleration in m/s²
- * @see https://sajax.github.io/irsdkdocs/telemetry/longaccel/
- */
-long_accel: number | null; 
-/**
- * Yaw angle (heading) in radians
- * @see https://sajax.github.io/irsdkdocs/telemetry/yaw/
- */
-yaw: number | null; 
-/**
- * Yaw rate (rotation speed) in rad/s
- * @see https://sajax.github.io/irsdkdocs/telemetry/yawrate/
- */
-yaw_rate: number | null; 
-/**
- * Pitch angle in radians
- * @see https://sajax.github.io/irsdkdocs/telemetry/pitch/
- */
-pitch: number | null; 
-/**
- * Roll angle in radians
- * @see https://sajax.github.io/irsdkdocs/telemetry/roll/
- */
-roll: number | null; 
-/**
- * Shift indicator: 0.0 (idle) to 1.0 (shift now)
- * @see https://sajax.github.io/irsdkdocs/telemetry/shiftindicatorpct/
- */
-shift_indicator_pct: number | null; 
-/**
- * RPM at which grinding occurs during shift
- * @see https://sajax.github.io/irsdkdocs/telemetry/shiftgrindrpm/
- */
-shift_grind_rpm: number | null }
+export type CarDynamicsFrame = {
+  /**
+   * Vehicle speed in meters/sec
+   * @see https://sajax.github.io/irsdkdocs/telemetry/speed/
+   */
+  speed: number;
+  /**
+   * Engine revolutions per minute
+   * @see https://sajax.github.io/irsdkdocs/telemetry/rpm/
+   */
+  rpm: number;
+  /**
+   * Current gear: -1=Reverse, 0=Neutral, 1..n=Forward
+   * @see https://sajax.github.io/irsdkdocs/telemetry/gear/
+   */
+  gear: number;
+  /**
+   * Steering wheel angle in radians
+   * @see https://sajax.github.io/irsdkdocs/telemetry/steeringwheelangle/
+   */
+  steering_wheel_angle: number;
+  /**
+   * Vehicle velocity along X axis (lateral) in m/s
+   * @see https://sajax.github.io/irsdkdocs/telemetry/velocityx/
+   */
+  velocity_x: number | null;
+  /**
+   * Vehicle velocity along Y axis (vertical) in m/s
+   * @see https://sajax.github.io/irsdkdocs/telemetry/velocityy/
+   */
+  velocity_y: number | null;
+  /**
+   * Vehicle velocity along Z axis (forward) in m/s
+   * @see https://sajax.github.io/irsdkdocs/telemetry/velocityz/
+   */
+  velocity_z: number | null;
+  /**
+   * Lateral acceleration in m/s²
+   * @see https://sajax.github.io/irsdkdocs/telemetry/lataccel/
+   */
+  lat_accel: number | null;
+  /**
+   * Longitudinal acceleration in m/s²
+   * @see https://sajax.github.io/irsdkdocs/telemetry/longaccel/
+   */
+  long_accel: number | null;
+  /**
+   * Yaw angle (heading) in radians
+   * @see https://sajax.github.io/irsdkdocs/telemetry/yaw/
+   */
+  yaw: number | null;
+  /**
+   * Yaw rate (rotation speed) in rad/s
+   * @see https://sajax.github.io/irsdkdocs/telemetry/yawrate/
+   */
+  yaw_rate: number | null;
+  /**
+   * Pitch angle in radians
+   * @see https://sajax.github.io/irsdkdocs/telemetry/pitch/
+   */
+  pitch: number | null;
+  /**
+   * Roll angle in radians
+   * @see https://sajax.github.io/irsdkdocs/telemetry/roll/
+   */
+  roll: number | null;
+  /**
+   * Shift indicator: 0.0 (idle) to 1.0 (shift now)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/shiftindicatorpct/
+   */
+  shift_indicator_pct: number | null;
+  /**
+   * RPM at which grinding occurs during shift
+   * @see https://sajax.github.io/irsdkdocs/telemetry/shiftgrindrpm/
+   */
+  shift_grind_rpm: number | null;
+};
 
-export type CarIdxFrame = { 
-/**
- * Percentage distance around lap for each car (-1 = not on track)
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlapdistpct/
- */
-car_idx_lap_dist_pct: number[]; 
-/**
- * Whether each car is on pit road
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxonpitroad/
- */
-car_idx_on_pit_road: boolean[]; 
-/**
- * Overall race position for each car
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxposition/
- */
-car_idx_position: number[]; 
-/**
- * Class position for each car
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxclassposition/
- */
-car_idx_class_position: number[]; 
-/**
- * Current lap number for each car
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlap/
- */
-car_idx_lap: number[]; 
-/**
- * Last lap time in seconds for each car (-1 = no time)
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlastlaptime/
- */
-car_idx_last_lap_time: number[]; 
-/**
- * Best lap time in seconds for each car (-1 = no time)
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxbestlaptime/
- */
-car_idx_best_lap_time: number[]; 
-/**
- * Race time behind leader or fastest car in seconds
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxf2time/
- */
-car_idx_f2_time: number[]; 
-/**
- * Estimated time around track for each car in seconds
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxesttime/
- */
-car_idx_est_time: number[]; 
-/**
- * Track surface type for each car (irsdk_TrkLoc enum)
- * -1=NotInWorld, 0=OffTrack, 1=InPitStall, 2=AproachingPits, 3=OnTrack
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxtracksurface/
- */
-car_idx_track_surface: number[]; 
-/**
- * Tire compound index per car. Maps into DriverInfo.DriverTires[].
- * -1 = unknown.
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxtirecompound/
- */
-car_idx_tire_compound: number[]; 
-/**
- * Proximity indicator bit field for cars nearby
- * @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
- */
-car_left_right: number | null }
+export type CarIdxFrame = {
+  /**
+   * Percentage distance around lap for each car (-1 = not on track)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlapdistpct/
+   */
+  car_idx_lap_dist_pct: number[];
+  /**
+   * Whether each car is on pit road
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxonpitroad/
+   */
+  car_idx_on_pit_road: boolean[];
+  /**
+   * Overall race position for each car
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxposition/
+   */
+  car_idx_position: number[];
+  /**
+   * Class position for each car
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxclassposition/
+   */
+  car_idx_class_position: number[];
+  /**
+   * Current lap number for each car
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlap/
+   */
+  car_idx_lap: number[];
+  /**
+   * Last lap time in seconds for each car (-1 = no time)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlastlaptime/
+   */
+  car_idx_last_lap_time: number[];
+  /**
+   * Best lap time in seconds for each car (-1 = no time)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxbestlaptime/
+   */
+  car_idx_best_lap_time: number[];
+  /**
+   * Race time behind leader or fastest car in seconds
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxf2time/
+   */
+  car_idx_f2_time: number[];
+  /**
+   * Estimated time around track for each car in seconds
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxesttime/
+   */
+  car_idx_est_time: number[];
+  /**
+   * Track surface type for each car (irsdk_TrkLoc enum)
+   * -1=NotInWorld, 0=OffTrack, 1=InPitStall, 2=AproachingPits, 3=OnTrack
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxtracksurface/
+   */
+  car_idx_track_surface: number[];
+  /**
+   * Tire compound index per car. Maps into DriverInfo.DriverTires[].
+   * -1 = unknown.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxtirecompound/
+   */
+  car_idx_tire_compound: number[];
+  /**
+   * Proximity indicator bit field for cars nearby
+   * @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
+   */
+  car_left_right: number | null;
+};
 
-export type CarInputsFrame = { 
-/**
- * Throttle pedal position: 0.0 (released) to 1.0 (fully pressed)
- * @see https://sajax.github.io/irsdkdocs/telemetry/throttle/
- */
-throttle: number; 
-/**
- * Brake pedal position: 0.0 (released) to 1.0 (fully pressed)
- * @see https://sajax.github.io/irsdkdocs/telemetry/brake/
- */
-brake: number; 
-/**
- * Clutch pedal: 0.0 = disengaged (pedal pressed), 1.0 = engaged (pedal released).
- * Note: iRacing provides clutch engagement, not pedal input.
- * @see https://sajax.github.io/irsdkdocs/telemetry/clutch/
- */
-clutch: number | null }
+export type CarInputsFrame = {
+  /**
+   * Throttle pedal position: 0.0 (released) to 1.0 (fully pressed)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/throttle/
+   */
+  throttle: number;
+  /**
+   * Brake pedal position: 0.0 (released) to 1.0 (fully pressed)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/brake/
+   */
+  brake: number;
+  /**
+   * Clutch pedal: 0.0 = disengaged (pedal pressed), 1.0 = engaged (pedal released).
+   * Note: iRacing provides clutch engagement, not pedal input.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/clutch/
+   */
+  clutch: number | null;
+};
 
-export type CarStatusFrame = { 
-/**
- * Fuel level in liters
- * @see https://sajax.github.io/irsdkdocs/telemetry/fuellevel/
- */
-fuel_level: number; 
-/**
- * Fuel level as percentage: 0.0 to 1.0
- * @see https://sajax.github.io/irsdkdocs/telemetry/fuellevelpct/
- */
-fuel_level_pct: number | null; 
-/**
- * Fuel consumption rate in kg/h
- * @see https://sajax.github.io/irsdkdocs/telemetry/fueluseperhour/
- */
-fuel_use_per_hour: number | null; 
-/**
- * Engine oil temperature in °C
- * @see https://sajax.github.io/irsdkdocs/telemetry/oiltemp/
- */
-oil_temp: number; 
-/**
- * Engine oil pressure in kPa
- * @see https://sajax.github.io/irsdkdocs/telemetry/oilpress/
- */
-oil_press: number | null; 
-/**
- * Engine water temperature in °C
- * @see https://sajax.github.io/irsdkdocs/telemetry/watertemp/
- */
-water_temp: number; 
-/**
- * Electrical system voltage
- * @see https://sajax.github.io/irsdkdocs/telemetry/voltage/
- */
-voltage: number | null; 
-/**
- * Whether car is on pit road
- * @see https://sajax.github.io/irsdkdocs/telemetry/onpitroad/
- */
-on_pit_road: boolean | null; 
-/**
- * Whether car is on track (not in garage/pits)
- * @see https://sajax.github.io/irsdkdocs/telemetry/isontrack/
- */
-is_on_track: boolean | null; 
-/**
- * Proximity indicator bit field for cars nearby
- * @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
- */
-car_left_right: number | null }
+export type CarStatusFrame = {
+  /**
+   * Fuel level in liters
+   * @see https://sajax.github.io/irsdkdocs/telemetry/fuellevel/
+   */
+  fuel_level: number;
+  /**
+   * Fuel level as percentage: 0.0 to 1.0
+   * @see https://sajax.github.io/irsdkdocs/telemetry/fuellevelpct/
+   */
+  fuel_level_pct: number | null;
+  /**
+   * Fuel consumption rate in kg/h
+   * @see https://sajax.github.io/irsdkdocs/telemetry/fueluseperhour/
+   */
+  fuel_use_per_hour: number | null;
+  /**
+   * Engine oil temperature in °C
+   * @see https://sajax.github.io/irsdkdocs/telemetry/oiltemp/
+   */
+  oil_temp: number;
+  /**
+   * Engine oil pressure in kPa
+   * @see https://sajax.github.io/irsdkdocs/telemetry/oilpress/
+   */
+  oil_press: number | null;
+  /**
+   * Engine water temperature in °C
+   * @see https://sajax.github.io/irsdkdocs/telemetry/watertemp/
+   */
+  water_temp: number;
+  /**
+   * Electrical system voltage
+   * @see https://sajax.github.io/irsdkdocs/telemetry/voltage/
+   */
+  voltage: number | null;
+  /**
+   * Whether car is on pit road
+   * @see https://sajax.github.io/irsdkdocs/telemetry/onpitroad/
+   */
+  on_pit_road: boolean | null;
+  /**
+   * Whether car is on track (not in garage/pits)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/isontrack/
+   */
+  is_on_track: boolean | null;
+  /**
+   * Proximity indicator bit field for cars nearby
+   * @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
+   */
+  car_left_right: number | null;
+};
 
-export type ChassisFrame = { lf_ride_height: number | null; rf_ride_height: number | null; lr_ride_height: number | null; rr_ride_height: number | null; lf_shock_defl: number | null; rf_shock_defl: number | null; lr_shock_defl: number | null; rr_shock_defl: number | null; lf_temp_cl: number | null; lf_temp_cm: number | null; lf_temp_cr: number | null; rf_temp_cl: number | null; rf_temp_cm: number | null; rf_temp_cr: number | null; lr_temp_cl: number | null; lr_temp_cm: number | null; lr_temp_cr: number | null; rr_temp_cl: number | null; rr_temp_cm: number | null; rr_temp_cr: number | null; lf_pressure: number | null; rf_pressure: number | null; lr_pressure: number | null; rr_pressure: number | null; lf_wear_l: number | null; lf_wear_m: number | null; lf_wear_r: number | null; rf_wear_l: number | null; rf_wear_m: number | null; rf_wear_r: number | null; lr_wear_l: number | null; lr_wear_m: number | null; lr_wear_r: number | null; rr_wear_l: number | null; rr_wear_m: number | null; rr_wear_r: number | null; lf_brake_temp: number | null; rf_brake_temp: number | null; lr_brake_temp: number | null; rr_brake_temp: number | null }
+export type ChassisFrame = {
+  lf_ride_height: number | null;
+  rf_ride_height: number | null;
+  lr_ride_height: number | null;
+  rr_ride_height: number | null;
+  lf_shock_defl: number | null;
+  rf_shock_defl: number | null;
+  lr_shock_defl: number | null;
+  rr_shock_defl: number | null;
+  lf_temp_cl: number | null;
+  lf_temp_cm: number | null;
+  lf_temp_cr: number | null;
+  rf_temp_cl: number | null;
+  rf_temp_cm: number | null;
+  rf_temp_cr: number | null;
+  lr_temp_cl: number | null;
+  lr_temp_cm: number | null;
+  lr_temp_cr: number | null;
+  rr_temp_cl: number | null;
+  rr_temp_cm: number | null;
+  rr_temp_cr: number | null;
+  lf_pressure: number | null;
+  rf_pressure: number | null;
+  lr_pressure: number | null;
+  rr_pressure: number | null;
+  lf_wear_l: number | null;
+  lf_wear_m: number | null;
+  lf_wear_r: number | null;
+  rf_wear_l: number | null;
+  rf_wear_m: number | null;
+  rf_wear_r: number | null;
+  lr_wear_l: number | null;
+  lr_wear_m: number | null;
+  lr_wear_r: number | null;
+  rr_wear_l: number | null;
+  rr_wear_m: number | null;
+  rr_wear_r: number | null;
+  lf_brake_temp: number | null;
+  rf_brake_temp: number | null;
+  lr_brake_temp: number | null;
+  rr_brake_temp: number | null;
+};
 
 /**
  * Individual driver data (from Drivers list)
  */
-export type Driver = { 
-/**
- * Car index number
- */
-CarIdx: number; 
-/**
- * Driver name
- */
-UserName: string; 
-/**
- * Driver abbreviation
- */
-AbbrevName: string | null; 
-/**
- * Driver initials
- */
-Initials: string | null; 
-/**
- * User ID
- */
-UserID: number | null; 
-/**
- * Team ID
- */
-TeamID: number | null; 
-/**
- * Team name
- */
-TeamName: string | null; 
-/**
- * Car number (display)
- */
-CarNumber: string | null; 
-/**
- * Car number raw (numeric with class prefix)
- */
-CarNumberRaw: number | null; 
-/**
- * Car path (directory name)
- */
-CarPath: string | null; 
-/**
- * Car class ID
- */
-CarClassID: number | null; 
-/**
- * Car ID
- */
-CarID: number | null; 
-/**
- * Car screen name
- */
-CarScreenName: string | null; 
-/**
- * Car screen name short
- */
-CarScreenNameShort: string | null; 
-/**
- * Car configuration ID
- */
-CarCfg: number | null; 
-/**
- * Car configuration name
- */
-CarCfgName: string | null; 
-/**
- * Car custom paint extension
- */
-CarCfgCustomPaintExt: string | null; 
-/**
- * Car class short name
- */
-CarClassShortName: string | null; 
-/**
- * Car class relative speed
- */
-CarClassRelSpeed: number | null; 
-/**
- * Car class license level requirement
- */
-CarClassLicenseLevel: number | null; 
-/**
- * Car class maximum fuel percentage
- */
-CarClassMaxFuelPct: string | null; 
-/**
- * Car class weight penalty
- */
-CarClassWeightPenalty: string | null; 
-/**
- * Car class power adjustment (BOP)
- */
-CarClassPowerAdjust: string | null; 
-/**
- * Car class dry tire set limit
- */
-CarClassDryTireSetLimit: string | null; 
-/**
- * Car class color (hex)
- */
-CarClassColor: string | null; 
-/**
- * Car class estimated lap time
- */
-CarClassEstLapTime: number | null; 
-/**
- * Whether this is a pace car
- */
-CarIsPaceCar: number | null; 
-/**
- * Whether this is AI
- */
-CarIsAI: number | null; 
-/**
- * Whether this is an electric car
- */
-CarIsElectric: number | null; 
-/**
- * iRating
- */
-IRating: number | null; 
-/**
- * License level
- */
-LicLevel: number | null; 
-/**
- * License sub-level
- */
-LicSubLevel: number | null; 
-/**
- * License string (display)
- */
-LicString: string | null; 
-/**
- * License color (hex)
- */
-LicColor: string | null; 
-/**
- * Club ID
- */
-ClubID: number | null; 
-/**
- * Club name
- */
-ClubName: string | null; 
-/**
- * Division ID
- */
-DivisionID: number | null; 
-/**
- * Division name
- */
-DivisionName: string | null; 
-/**
- * Whether this is a spectator
- */
-IsSpectator: number | null; 
-/**
- * Car design string (livery colors)
- * 
- * **Note**: Known to contain malformed data in AI races. Parse failures
- * will result in None. Application should handle missing design strings gracefully.
- */
-CarDesignStr: string | null; 
-/**
- * Helmet design string
- * 
- * **Note**: Known to contain malformed data in AI races. Parse failures
- * will result in None. Application should handle missing design strings gracefully.
- */
-HelmetDesignStr: string | null; 
-/**
- * Suit design string
- * 
- * **Note**: Known to contain malformed data in AI races. Parse failures
- * will result in None. Application should handle missing design strings gracefully.
- */
-SuitDesignStr: string | null; 
-/**
- * Body type (avatar)
- */
-BodyType: number | null; 
-/**
- * Face type (avatar)
- */
-FaceType: number | null; 
-/**
- * Helmet type
- */
-HelmetType: number | null; 
-/**
- * Flair ID
- */
-FlairID: number | null; 
-/**
- * Flair name
- */
-FlairName: string | null; 
-/**
- * Car number design string
- * 
- * **Note**: Known to contain malformed data in AI races. Parse failures
- * will result in None. Application should handle missing design strings gracefully.
- */
-CarNumberDesignStr: string | null; 
-/**
- * Car sponsor 1
- */
-CarSponsor_1: number | null; 
-/**
- * Car sponsor 2
- */
-CarSponsor_2: number | null; 
-/**
- * Current driver incident count
- */
-CurDriverIncidentCount: number | null; 
-/**
- * Team incident count
- */
-TeamIncidentCount: number | null }
+export type Driver = {
+  /**
+   * Car index number
+   */
+  CarIdx: number;
+  /**
+   * Driver name
+   */
+  UserName: string;
+  /**
+   * Driver abbreviation
+   */
+  AbbrevName: string | null;
+  /**
+   * Driver initials
+   */
+  Initials: string | null;
+  /**
+   * User ID
+   */
+  UserID: number | null;
+  /**
+   * Team ID
+   */
+  TeamID: number | null;
+  /**
+   * Team name
+   */
+  TeamName: string | null;
+  /**
+   * Car number (display)
+   */
+  CarNumber: string | null;
+  /**
+   * Car number raw (numeric with class prefix)
+   */
+  CarNumberRaw: number | null;
+  /**
+   * Car path (directory name)
+   */
+  CarPath: string | null;
+  /**
+   * Car class ID
+   */
+  CarClassID: number | null;
+  /**
+   * Car ID
+   */
+  CarID: number | null;
+  /**
+   * Car screen name
+   */
+  CarScreenName: string | null;
+  /**
+   * Car screen name short
+   */
+  CarScreenNameShort: string | null;
+  /**
+   * Car configuration ID
+   */
+  CarCfg: number | null;
+  /**
+   * Car configuration name
+   */
+  CarCfgName: string | null;
+  /**
+   * Car custom paint extension
+   */
+  CarCfgCustomPaintExt: string | null;
+  /**
+   * Car class short name
+   */
+  CarClassShortName: string | null;
+  /**
+   * Car class relative speed
+   */
+  CarClassRelSpeed: number | null;
+  /**
+   * Car class license level requirement
+   */
+  CarClassLicenseLevel: number | null;
+  /**
+   * Car class maximum fuel percentage
+   */
+  CarClassMaxFuelPct: string | null;
+  /**
+   * Car class weight penalty
+   */
+  CarClassWeightPenalty: string | null;
+  /**
+   * Car class power adjustment (BOP)
+   */
+  CarClassPowerAdjust: string | null;
+  /**
+   * Car class dry tire set limit
+   */
+  CarClassDryTireSetLimit: string | null;
+  /**
+   * Car class color (hex)
+   */
+  CarClassColor: string | null;
+  /**
+   * Car class estimated lap time
+   */
+  CarClassEstLapTime: number | null;
+  /**
+   * Whether this is a pace car
+   */
+  CarIsPaceCar: number | null;
+  /**
+   * Whether this is AI
+   */
+  CarIsAI: number | null;
+  /**
+   * Whether this is an electric car
+   */
+  CarIsElectric: number | null;
+  /**
+   * iRating
+   */
+  IRating: number | null;
+  /**
+   * License level
+   */
+  LicLevel: number | null;
+  /**
+   * License sub-level
+   */
+  LicSubLevel: number | null;
+  /**
+   * License string (display)
+   */
+  LicString: string | null;
+  /**
+   * License color (hex)
+   */
+  LicColor: string | null;
+  /**
+   * Club ID
+   */
+  ClubID: number | null;
+  /**
+   * Club name
+   */
+  ClubName: string | null;
+  /**
+   * Division ID
+   */
+  DivisionID: number | null;
+  /**
+   * Division name
+   */
+  DivisionName: string | null;
+  /**
+   * Whether this is a spectator
+   */
+  IsSpectator: number | null;
+  /**
+   * Car design string (livery colors)
+   *
+   * **Note**: Known to contain malformed data in AI races. Parse failures
+   * will result in None. Application should handle missing design strings gracefully.
+   */
+  CarDesignStr: string | null;
+  /**
+   * Helmet design string
+   *
+   * **Note**: Known to contain malformed data in AI races. Parse failures
+   * will result in None. Application should handle missing design strings gracefully.
+   */
+  HelmetDesignStr: string | null;
+  /**
+   * Suit design string
+   *
+   * **Note**: Known to contain malformed data in AI races. Parse failures
+   * will result in None. Application should handle missing design strings gracefully.
+   */
+  SuitDesignStr: string | null;
+  /**
+   * Body type (avatar)
+   */
+  BodyType: number | null;
+  /**
+   * Face type (avatar)
+   */
+  FaceType: number | null;
+  /**
+   * Helmet type
+   */
+  HelmetType: number | null;
+  /**
+   * Flair ID
+   */
+  FlairID: number | null;
+  /**
+   * Flair name
+   */
+  FlairName: string | null;
+  /**
+   * Car number design string
+   *
+   * **Note**: Known to contain malformed data in AI races. Parse failures
+   * will result in None. Application should handle missing design strings gracefully.
+   */
+  CarNumberDesignStr: string | null;
+  /**
+   * Car sponsor 1
+   */
+  CarSponsor_1: number | null;
+  /**
+   * Car sponsor 2
+   */
+  CarSponsor_2: number | null;
+  /**
+   * Current driver incident count
+   */
+  CurDriverIncidentCount: number | null;
+  /**
+   * Team incident count
+   */
+  TeamIncidentCount: number | null;
+};
 
-export type DriverEntriesFrame = { entries: DriverEntry[]; playerCarIdx: number }
+export type DriverEntriesFrame = {
+  entries: DriverEntry[];
+  playerCarIdx: number;
+};
 
-export type DriverEntry = { carIdx: number; userName: string; carNumber: string; carClassId: number; carClassShortName: string; carClassColor: string; carScreenName: string; carScreenNameShort: string; tireCompound: string; position: number; classPosition: number; startPosOverall: number; startPosClass: number; lap: number; lapDistPct: number; lastLapTime: number; bestLapTime: number; f2Time: number; estTime: number; trackSurface: number; iRating: number; licString: string; licColor: string; incidents: number; isPlayer: boolean; onPitRoad: boolean; estimatedIrDelta: number | null; relativeLapDist: number; classEstLapTime: number }
+export type DriverEntry = {
+  carIdx: number;
+  userName: string;
+  carNumber: string;
+  carClassId: number;
+  carClassShortName: string;
+  carClassColor: string;
+  carScreenName: string;
+  carScreenNameShort: string;
+  tireCompound: string;
+  position: number;
+  classPosition: number;
+  startPosOverall: number;
+  startPosClass: number;
+  lap: number;
+  lapDistPct: number;
+  lastLapTime: number;
+  bestLapTime: number;
+  f2Time: number;
+  estTime: number;
+  trackSurface: number;
+  iRating: number;
+  licString: string;
+  licColor: string;
+  incidents: number;
+  isPlayer: boolean;
+  onPitRoad: boolean;
+  estimatedIrDelta: number | null;
+  relativeLapDist: number;
+  classEstLapTime: number;
+};
 
 /**
  * Driver information data containing current driver info + drivers list
  */
-export type DriverInfoData = { 
-/**
- * Current driver car index
- */
-DriverCarIdx: number | null; 
-/**
- * Current driver user ID
- */
-DriverUserID: number | null; 
-/**
- * Pace car index
- */
-PaceCarIdx: number | null; 
-/**
- * Whether driver is admin
- */
-DriverIsAdmin: number | null; 
-/**
- * Driver head position X
- */
-DriverHeadPosX: number | null; 
-/**
- * Driver head position Y
- */
-DriverHeadPosY: number | null; 
-/**
- * Driver head position Z
- */
-DriverHeadPosZ: number | null; 
-/**
- * Whether driver car is electric
- */
-DriverCarIsElectric: number | null; 
-/**
- * Driver car idle RPM
- */
-DriverCarIdleRPM: number | null; 
-/**
- * Driver car redline RPM
- */
-DriverCarRedLine: number | null; 
-/**
- * Driver car engine cylinder count
- */
-DriverCarEngCylinderCount: number | null; 
-/**
- * Driver car fuel density (kg per liter)
- */
-DriverCarFuelKgPerLtr: number | null; 
-/**
- * Driver car fuel tank capacity (liters)
- */
-DriverCarFuelMaxLtr: number | null; 
-/**
- * Driver car maximum fuel percentage
- */
-DriverCarMaxFuelPct: number | null; 
-/**
- * Driver car number of forward gears
- */
-DriverCarGearNumForward: number | null; 
-/**
- * Driver car neutral gear present
- */
-DriverCarGearNeutral: number | null; 
-/**
- * Driver car reverse gear present
- */
-DriverCarGearReverse: number | null; 
-/**
- * Driver gearbox type
- */
-DriverGearboxType: string | null; 
-/**
- * Driver gearbox control type
- */
-DriverGearboxControlType: string | null; 
-/**
- * Driver car shift aid
- */
-DriverCarShiftAid: string | null; 
-/**
- * Driver car shift light first RPM
- */
-DriverCarSLFirstRPM: number | null; 
-/**
- * Driver car shift light shift RPM
- */
-DriverCarSLShiftRPM: number | null; 
-/**
- * Driver car shift light last RPM
- */
-DriverCarSLLastRPM: number | null; 
-/**
- * Driver car shift light blink RPM
- */
-DriverCarSLBlinkRPM: number | null; 
-/**
- * Driver car version
- */
-DriverCarVersion: string | null; 
-/**
- * Driver pit entrance track percentage
- */
-DriverPitTrkPct: number | null; 
-/**
- * Driver car estimated lap time
- */
-DriverCarEstLapTime: number | null; 
-/**
- * Driver setup name
- */
-DriverSetupName: string | null; 
-/**
- * Driver setup modified flag
- */
-DriverSetupIsModified: number | null; 
-/**
- * Driver setup load type name
- */
-DriverSetupLoadTypeName: string | null; 
-/**
- * Driver setup passed tech inspection
- */
-DriverSetupPassedTech: number | null; 
-/**
- * Driver incident count
- */
-DriverIncidentCount: number | null; 
-/**
- * Driver brake curving factor
- */
-DriverBrakeCurvingFactor: number | null; 
-/**
- * Available tire compounds
- */
-DriverTires: DriverTire[] | null; 
-/**
- * List of all drivers in session
- */
-Drivers: Driver[] | null }
+export type DriverInfoData = {
+  /**
+   * Current driver car index
+   */
+  DriverCarIdx: number | null;
+  /**
+   * Current driver user ID
+   */
+  DriverUserID: number | null;
+  /**
+   * Pace car index
+   */
+  PaceCarIdx: number | null;
+  /**
+   * Whether driver is admin
+   */
+  DriverIsAdmin: number | null;
+  /**
+   * Driver head position X
+   */
+  DriverHeadPosX: number | null;
+  /**
+   * Driver head position Y
+   */
+  DriverHeadPosY: number | null;
+  /**
+   * Driver head position Z
+   */
+  DriverHeadPosZ: number | null;
+  /**
+   * Whether driver car is electric
+   */
+  DriverCarIsElectric: number | null;
+  /**
+   * Driver car idle RPM
+   */
+  DriverCarIdleRPM: number | null;
+  /**
+   * Driver car redline RPM
+   */
+  DriverCarRedLine: number | null;
+  /**
+   * Driver car engine cylinder count
+   */
+  DriverCarEngCylinderCount: number | null;
+  /**
+   * Driver car fuel density (kg per liter)
+   */
+  DriverCarFuelKgPerLtr: number | null;
+  /**
+   * Driver car fuel tank capacity (liters)
+   */
+  DriverCarFuelMaxLtr: number | null;
+  /**
+   * Driver car maximum fuel percentage
+   */
+  DriverCarMaxFuelPct: number | null;
+  /**
+   * Driver car number of forward gears
+   */
+  DriverCarGearNumForward: number | null;
+  /**
+   * Driver car neutral gear present
+   */
+  DriverCarGearNeutral: number | null;
+  /**
+   * Driver car reverse gear present
+   */
+  DriverCarGearReverse: number | null;
+  /**
+   * Driver gearbox type
+   */
+  DriverGearboxType: string | null;
+  /**
+   * Driver gearbox control type
+   */
+  DriverGearboxControlType: string | null;
+  /**
+   * Driver car shift aid
+   */
+  DriverCarShiftAid: string | null;
+  /**
+   * Driver car shift light first RPM
+   */
+  DriverCarSLFirstRPM: number | null;
+  /**
+   * Driver car shift light shift RPM
+   */
+  DriverCarSLShiftRPM: number | null;
+  /**
+   * Driver car shift light last RPM
+   */
+  DriverCarSLLastRPM: number | null;
+  /**
+   * Driver car shift light blink RPM
+   */
+  DriverCarSLBlinkRPM: number | null;
+  /**
+   * Driver car version
+   */
+  DriverCarVersion: string | null;
+  /**
+   * Driver pit entrance track percentage
+   */
+  DriverPitTrkPct: number | null;
+  /**
+   * Driver car estimated lap time
+   */
+  DriverCarEstLapTime: number | null;
+  /**
+   * Driver setup name
+   */
+  DriverSetupName: string | null;
+  /**
+   * Driver setup modified flag
+   */
+  DriverSetupIsModified: number | null;
+  /**
+   * Driver setup load type name
+   */
+  DriverSetupLoadTypeName: string | null;
+  /**
+   * Driver setup passed tech inspection
+   */
+  DriverSetupPassedTech: number | null;
+  /**
+   * Driver incident count
+   */
+  DriverIncidentCount: number | null;
+  /**
+   * Driver brake curving factor
+   */
+  DriverBrakeCurvingFactor: number | null;
+  /**
+   * Available tire compounds
+   */
+  DriverTires: DriverTire[] | null;
+  /**
+   * List of all drivers in session
+   */
+  Drivers: Driver[] | null;
+};
 
 /**
  * Driver tire compound information
  */
-export type DriverTire = { 
-/**
- * Tire index
- */
-TireIndex: number | null; 
-/**
- * Tire compound type
- */
-TireCompoundType: string | null }
+export type DriverTire = {
+  /**
+   * Tire index
+   */
+  TireIndex: number | null;
+  /**
+   * Tire compound type
+   */
+  TireCompoundType: string | null;
+};
 
-export type EnvironmentFrame = { 
-/**
- * Ambient air temperature in °C
- * @see https://sajax.github.io/irsdkdocs/telemetry/airtemp/
- */
-air_temp: number | null }
+export type EnvironmentFrame = {
+  /**
+   * Ambient air temperature in °C
+   * @see https://sajax.github.io/irsdkdocs/telemetry/airtemp/
+   */
+  air_temp: number | null;
+};
 
 /**
  * Radio frequency configuration
  */
-export type Frequency = { 
-/**
- * Frequency number
- */
-FrequencyNum: number | null; 
-/**
- * Frequency name
- */
-FrequencyName: string | null; 
-/**
- * Priority level
- */
-Priority: number | null; 
-/**
- * Car index (-1 for broadcast channels)
- */
-CarIdx: number | null; 
-/**
- * Entry index
- */
-EntryIdx: number | null; 
-/**
- * Club ID
- */
-ClubID: number | null; 
-/**
- * Can scan flag
- */
-CanScan: number | null; 
-/**
- * Can squawk flag
- */
-CanSquawk: number | null; 
-/**
- * Muted flag
- */
-Muted: number | null; 
-/**
- * Is mutable flag
- */
-IsMutable: number | null; 
-/**
- * Is deletable flag
- */
-IsDeletable: number | null }
+export type Frequency = {
+  /**
+   * Frequency number
+   */
+  FrequencyNum: number | null;
+  /**
+   * Frequency name
+   */
+  FrequencyName: string | null;
+  /**
+   * Priority level
+   */
+  Priority: number | null;
+  /**
+   * Car index (-1 for broadcast channels)
+   */
+  CarIdx: number | null;
+  /**
+   * Entry index
+   */
+  EntryIdx: number | null;
+  /**
+   * Club ID
+   */
+  ClubID: number | null;
+  /**
+   * Can scan flag
+   */
+  CanScan: number | null;
+  /**
+   * Can squawk flag
+   */
+  CanSquawk: number | null;
+  /**
+   * Muted flag
+   */
+  Muted: number | null;
+  /**
+   * Is mutable flag
+   */
+  IsMutable: number | null;
+  /**
+   * Is deletable flag
+   */
+  IsDeletable: number | null;
+};
 
-export type FuelComputedFrame = { avgPerLap: number; lapsRemaining: number; lapsToFinish: number | null; 
-/**
- * Positive = surplus liters, negative = deficit
- */
-shortage: number | null; fuelToAdd: number | null; fuelToAddWithBuffer: number | null; fuelSavePerLap: number | null; pitWarning: boolean; pitWindowStart: number | null; pitWindowEnd: number | null; isTimedRace: boolean }
+export type FuelComputedFrame = {
+  avgPerLap: number;
+  lapsRemaining: number;
+  lapsToFinish: number | null;
+  /**
+   * Positive = surplus liters, negative = deficit
+   */
+  shortage: number | null;
+  fuelToAdd: number | null;
+  fuelToAddWithBuffer: number | null;
+  fuelSavePerLap: number | null;
+  pitWarning: boolean;
+  pitWindowStart: number | null;
+  pitWindowEnd: number | null;
+  isTimedRace: boolean;
+};
 
-export type LapDeltaFrame = { sectorTimes: (number | null)[]; sectorDeltas: (number | null)[]; currentSectorIdx: number; totalDelta: number }
+export type LapDeltaFrame = {
+  sectorTimes: (number | null)[];
+  sectorDeltas: (number | null)[];
+  currentSectorIdx: number;
+  totalDelta: number;
+};
 
-export type LapTimingFrame = { 
-/**
- * Current lap number
- * @see https://sajax.github.io/irsdkdocs/telemetry/lap/
- */
-lap: number | null; 
-/**
- * Distance traveled on current lap in meters
- * @see https://sajax.github.io/irsdkdocs/telemetry/lapdist/
- */
-lap_dist: number | null; 
-/**
- * Percentage of current lap completed: 0.0 to 1.0
- * @see https://sajax.github.io/irsdkdocs/telemetry/lapdistpct/
- */
-lap_dist_pct: number | null; 
-/**
- * Current lap time in seconds
- * @see https://sajax.github.io/irsdkdocs/telemetry/lapcurrentlaptime/
- */
-lap_current_lap_time: number; 
-/**
- * Last completed lap time in seconds
- * @see https://sajax.github.io/irsdkdocs/telemetry/laplastlaptime/
- */
-lap_last_lap_time: number | null; 
-/**
- * Best lap time in seconds
- * @see https://sajax.github.io/irsdkdocs/telemetry/lapbestlaptime/
- */
-lap_best_lap_time: number | null; 
-/**
- * Player's overall position in the race
- * @see https://sajax.github.io/irsdkdocs/telemetry/playercarposition/
- */
-player_car_position: number | null; 
-/**
- * Player's position within their car class
- * @see https://sajax.github.io/irsdkdocs/telemetry/playercarclassposition/
- */
-player_car_class_position: number | null; 
-/**
- * Live delta to session best lap
- */
-lap_delta_to_session_best_live: number | null; 
-/**
- * Live delta to session optimal lap
- */
-lap_delta_to_session_optimal_live: number | null }
+export type LapTimingFrame = {
+  /**
+   * Current lap number
+   * @see https://sajax.github.io/irsdkdocs/telemetry/lap/
+   */
+  lap: number | null;
+  /**
+   * Distance traveled on current lap in meters
+   * @see https://sajax.github.io/irsdkdocs/telemetry/lapdist/
+   */
+  lap_dist: number | null;
+  /**
+   * Percentage of current lap completed: 0.0 to 1.0
+   * @see https://sajax.github.io/irsdkdocs/telemetry/lapdistpct/
+   */
+  lap_dist_pct: number | null;
+  /**
+   * Current lap time in seconds
+   * @see https://sajax.github.io/irsdkdocs/telemetry/lapcurrentlaptime/
+   */
+  lap_current_lap_time: number;
+  /**
+   * Last completed lap time in seconds
+   * @see https://sajax.github.io/irsdkdocs/telemetry/laplastlaptime/
+   */
+  lap_last_lap_time: number | null;
+  /**
+   * Best lap time in seconds
+   * @see https://sajax.github.io/irsdkdocs/telemetry/lapbestlaptime/
+   */
+  lap_best_lap_time: number | null;
+  /**
+   * Player's overall position in the race
+   * @see https://sajax.github.io/irsdkdocs/telemetry/playercarposition/
+   */
+  player_car_position: number | null;
+  /**
+   * Player's position within their car class
+   * @see https://sajax.github.io/irsdkdocs/telemetry/playercarclassposition/
+   */
+  player_car_class_position: number | null;
+  /**
+   * Live delta to session best lap
+   */
+  lap_delta_to_session_best_live: number | null;
+  /**
+   * Live delta to session optimal lap
+   */
+  lap_delta_to_session_optimal_live: number | null;
+};
 
-export type LateralSide = "left" | "right" | "center"
+export type LateralSide = 'left' | 'right' | 'center';
 
-export type NearbyCar = { carIdx: number; 
-/**
- * Positive = ahead, negative = behind (meters)
- */
-longitudinalDist: number; lateralSide: LateralSide; 
-/**
- * Absolute longitudinal distance in meters
- */
-clearance: number }
+export type NearbyCar = {
+  carIdx: number;
+  /**
+   * Positive = ahead, negative = behind (meters)
+   */
+  longitudinalDist: number;
+  lateralSide: LateralSide;
+  /**
+   * Absolute longitudinal distance in meters
+   */
+  clearance: number;
+};
 
-export type PitStopsFrame = { playerStops: number }
+export type PitStopsFrame = { playerStops: number };
 
-export type ProximityFrame = { nearbyCars: NearbyCar[]; radarDistances: RadarDistances; spotterLeft: boolean; spotterRight: boolean }
+export type ProximityFrame = {
+  nearbyCars: NearbyCar[];
+  radarDistances: RadarDistances;
+  spotterLeft: boolean;
+  spotterRight: boolean;
+};
 
 /**
  * Individual qualifying result
  */
-export type QualifyResult = { 
-/**
- * Overall position
- */
-Position: number | null; 
-/**
- * Class position
- */
-ClassPosition: number | null; 
-/**
- * Car index
- */
-CarIdx: number | null; 
-/**
- * Fastest lap number
- */
-FastestLap: number | null; 
-/**
- * Fastest lap time
- */
-FastestTime: number | null }
+export type QualifyResult = {
+  /**
+   * Overall position
+   */
+  Position: number | null;
+  /**
+   * Class position
+   */
+  ClassPosition: number | null;
+  /**
+   * Car index
+   */
+  CarIdx: number | null;
+  /**
+   * Fastest lap number
+   */
+  FastestLap: number | null;
+  /**
+   * Fastest lap time
+   */
+  FastestTime: number | null;
+};
 
 /**
  * Qualifying results information
  */
-export type QualifyResultsInfo = { 
-/**
- * List of qualifying results
- */
-Results: QualifyResult[] | null }
+export type QualifyResultsInfo = {
+  /**
+   * List of qualifying results
+   */
+  Results: QualifyResult[] | null;
+};
 
-export type RadarDistances = { frontDist: number; rearDist: number; leftDist: number | null; rightDist: number | null }
+export type RadarDistances = {
+  frontDist: number;
+  rearDist: number;
+  leftDist: number | null;
+  rightDist: number | null;
+};
 
 /**
  * Individual radio configuration
  */
-export type Radio = { 
-/**
- * Radio number
- */
-RadioNum: number | null; 
-/**
- * Hop count
- */
-HopCount: number | null; 
-/**
- * Number of frequencies
- */
-NumFrequencies: number | null; 
-/**
- * Currently tuned frequency number
- */
-TunedToFrequencyNum: number | null; 
-/**
- * Scanning enabled flag
- */
-ScanningIsOn: number | null; 
-/**
- * List of frequencies
- */
-Frequencies: Frequency[] | null }
+export type Radio = {
+  /**
+   * Radio number
+   */
+  RadioNum: number | null;
+  /**
+   * Hop count
+   */
+  HopCount: number | null;
+  /**
+   * Number of frequencies
+   */
+  NumFrequencies: number | null;
+  /**
+   * Currently tuned frequency number
+   */
+  TunedToFrequencyNum: number | null;
+  /**
+   * Scanning enabled flag
+   */
+  ScanningIsOn: number | null;
+  /**
+   * List of frequencies
+   */
+  Frequencies: Frequency[] | null;
+};
 
 /**
  * Radio information
  */
-export type RadioInfo = { 
-/**
- * Currently selected radio number
- */
-SelectedRadioNum: number | null; 
-/**
- * List of radios
- */
-Radios: Radio[] | null }
+export type RadioInfo = {
+  /**
+   * Currently selected radio number
+   */
+  SelectedRadioNum: number | null;
+  /**
+   * List of radios
+   */
+  Radios: Radio[] | null;
+};
 
 /**
  * Individual sector timing information
  */
-export type Sector = { 
-/**
- * Sector number
- */
-SectorNum: number | null; 
-/**
- * Sector start percentage along track
- */
-SectorStartPct: number | null }
+export type Sector = {
+  /**
+   * Sector number
+   */
+  SectorNum: number | null;
+  /**
+   * Sector start percentage along track
+   */
+  SectorStartPct: number | null;
+};
 
 /**
  * Individual session data
  */
-export type Session = { 
-/**
- * Session number
- */
-SessionNum: number; 
-/**
- * Session laps ("unlimited" or number)
- */
-SessionLaps: string; 
-/**
- * Session time ("unlimited" or time)
- */
-SessionTime: string; 
-/**
- * Number of laps to average for qualifying
- */
-SessionNumLapsToAvg: number | null; 
-/**
- * Session type
- */
-SessionType: string; 
-/**
- * Session name
- */
-SessionName: string | null; 
-/**
- * Session track rubber state
- */
-SessionTrackRubberState: string | null; 
-/**
- * Session sub type
- */
-SessionSubType: string | null; 
-/**
- * Whether session was skipped
- */
-SessionSkipped: number | null; 
-/**
- * Whether run groups were used
- */
-SessionRunGroupsUsed: number | null; 
-/**
- * Whether tire compound change is enforced
- */
-SessionEnforceTireCompoundChange: number | null; 
-/**
- * Results average lap time
- */
-ResultsAverageLapTime: number | null; 
-/**
- * Number of caution flags
- */
-ResultsNumCautionFlags: number | null; 
-/**
- * Number of caution laps
- */
-ResultsNumCautionLaps: number | null; 
-/**
- * Number of lead changes
- */
-ResultsNumLeadChanges: number | null; 
-/**
- * Laps complete
- */
-ResultsLapsComplete: number | null; 
-/**
- * Whether results are official
- */
-ResultsOfficial: number | null }
+export type Session = {
+  /**
+   * Session number
+   */
+  SessionNum: number;
+  /**
+   * Session laps ("unlimited" or number)
+   */
+  SessionLaps: string;
+  /**
+   * Session time ("unlimited" or time)
+   */
+  SessionTime: string;
+  /**
+   * Number of laps to average for qualifying
+   */
+  SessionNumLapsToAvg: number | null;
+  /**
+   * Session type
+   */
+  SessionType: string;
+  /**
+   * Session name
+   */
+  SessionName: string | null;
+  /**
+   * Session track rubber state
+   */
+  SessionTrackRubberState: string | null;
+  /**
+   * Session sub type
+   */
+  SessionSubType: string | null;
+  /**
+   * Whether session was skipped
+   */
+  SessionSkipped: number | null;
+  /**
+   * Whether run groups were used
+   */
+  SessionRunGroupsUsed: number | null;
+  /**
+   * Whether tire compound change is enforced
+   */
+  SessionEnforceTireCompoundChange: number | null;
+  /**
+   * Results average lap time
+   */
+  ResultsAverageLapTime: number | null;
+  /**
+   * Number of caution flags
+   */
+  ResultsNumCautionFlags: number | null;
+  /**
+   * Number of caution laps
+   */
+  ResultsNumCautionLaps: number | null;
+  /**
+   * Number of lead changes
+   */
+  ResultsNumLeadChanges: number | null;
+  /**
+   * Laps complete
+   */
+  ResultsLapsComplete: number | null;
+  /**
+   * Whether results are official
+   */
+  ResultsOfficial: number | null;
+};
 
-export type SessionFrame = { 
-/**
- * Seconds since the session started
- * @see https://sajax.github.io/irsdkdocs/telemetry/sessiontime/
- */
-session_time: number | null; 
-/**
- * Seconds remaining in the session
- * @see https://sajax.github.io/irsdkdocs/telemetry/sessiontimeremain/
- */
-session_time_remain: number | null; 
-/**
- * Session state enum value (invalid, warmup, racing, etc.)
- * @see https://sajax.github.io/irsdkdocs/telemetry/sessionstate/
- */
-session_state: number | null; 
-/**
- * Session flags bit field (green, yellow, red, etc.)
- * @see https://sajax.github.io/irsdkdocs/telemetry/sessionflags/
- */
-session_flags: number | null; 
-/**
- * Index of the current session (practice=0, qualifying=1, race=2, etc.)
- * @see https://sajax.github.io/irsdkdocs/telemetry/sessionnum/
- */
-session_num: number | null }
+export type SessionFrame = {
+  /**
+   * Seconds since the session started
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessiontime/
+   */
+  session_time: number | null;
+  /**
+   * Seconds remaining in the session
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessiontimeremain/
+   */
+  session_time_remain: number | null;
+  /**
+   * Session state enum value (invalid, warmup, racing, etc.)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessionstate/
+   */
+  session_state: number | null;
+  /**
+   * Session flags bit field (green, yellow, red, etc.)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessionflags/
+   */
+  session_flags: number | null;
+  /**
+   * Index of the current session (practice=0, qualifying=1, race=2, etc.)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessionnum/
+   */
+  session_num: number | null;
+};
 
 /**
  * Session information extracted and parsed from iRacing's YAML session data
  * This matches the actual structure that iRacing outputs
  */
-export type SessionInfo = { 
-/**
- * Weekend and track information
- */
-WeekendInfo: WeekendInfo; 
-/**
- * Session information and session list
- */
-SessionInfo: SessionInfoData; 
-/**
- * Radio information
- */
-RadioInfo?: RadioInfo | null; 
-/**
- * Driver information (single object with current driver + drivers list)
- */
-DriverInfo?: DriverInfoData | null; 
-/**
- * Split timing information
- */
-SplitTimeInfo?: SplitTimeInfo | null; 
-/**
- * Camera information
- */
-CameraInfo?: CameraInfo | null; 
-/**
- * Qualifying results information
- */
-QualifyResultsInfo?: QualifyResultsInfo | null }
+export type SessionInfo = {
+  /**
+   * Weekend and track information
+   */
+  WeekendInfo: WeekendInfo;
+  /**
+   * Session information and session list
+   */
+  SessionInfo: SessionInfoData;
+  /**
+   * Radio information
+   */
+  RadioInfo?: RadioInfo | null;
+  /**
+   * Driver information (single object with current driver + drivers list)
+   */
+  DriverInfo?: DriverInfoData | null;
+  /**
+   * Split timing information
+   */
+  SplitTimeInfo?: SplitTimeInfo | null;
+  /**
+   * Camera information
+   */
+  CameraInfo?: CameraInfo | null;
+  /**
+   * Qualifying results information
+   */
+  QualifyResultsInfo?: QualifyResultsInfo | null;
+};
 
 /**
  * Session information data from iRacing
  */
-export type SessionInfoData = { 
-/**
- * Current session number
- */
-CurrentSessionNum: number; 
-/**
- * List of sessions
- */
-Sessions: Session[] }
+export type SessionInfoData = {
+  /**
+   * Current session number
+   */
+  CurrentSessionNum: number;
+  /**
+   * List of sessions
+   */
+  Sessions: Session[];
+};
 
 /**
  * Split timing information
  */
-export type SplitTimeInfo = { 
-/**
- * Sector information
- */
-Sectors: Sector[] | null }
+export type SplitTimeInfo = {
+  /**
+   * Sector information
+   */
+  Sectors: Sector[] | null;
+};
 
 /**
  * Telemetry recording options
  */
-export type TelemetryOptions = { 
-/**
- * Telemetry disk file path
- */
-TelemetryDiskFile: string | null }
+export type TelemetryOptions = {
+  /**
+   * Telemetry disk file path
+   */
+  TelemetryDiskFile: string | null;
+};
 
 /**
  * Weekend and track information from iRacing
  */
-export type WeekendInfo = { 
-/**
- * Track name
- */
-TrackName: string; 
-/**
- * Track ID
- */
-TrackID: number | null; 
-/**
- * Track length
- */
-TrackLength: string; 
-/**
- * Official track length
- */
-TrackLengthOfficial: string | null; 
-/**
- * Track display name
- */
-TrackDisplayName: string; 
-/**
- * Track short name
- */
-TrackDisplayShortName: string | null; 
-/**
- * Track configuration name
- */
-TrackConfigName: string | null; 
-/**
- * Track city
- */
-TrackCity: string | null; 
-/**
- * Track state/province
- */
-TrackState: string | null; 
-/**
- * Track country
- */
-TrackCountry: string | null; 
-/**
- * Track altitude
- */
-TrackAltitude: string | null; 
-/**
- * Track latitude in meters
- */
-TrackLatitude: string | null; 
-/**
- * Track longitude in meters
- */
-TrackLongitude: string | null; 
-/**
- * Track north offset in radians
- */
-TrackNorthOffset: string | null; 
-/**
- * Track number of turns
- */
-TrackNumTurns: number | null; 
-/**
- * Track pit speed limit
- */
-TrackPitSpeedLimit: string | null; 
-/**
- * Track pace speed
- */
-TrackPaceSpeed: string | null; 
-/**
- * Track number of pit stalls
- */
-TrackNumPitStalls: number | null; 
-/**
- * Track type (road course, oval, etc.)
- */
-TrackType: string | null; 
-/**
- * Track direction (neutral, clockwise, counter-clockwise)
- */
-TrackDirection: string | null; 
-/**
- * Track weather type (Static, Dynamic)
- */
-TrackWeatherType: string | null; 
-/**
- * Track skies condition
- */
-TrackSkies: string | null; 
-/**
- * Track surface temperature
- */
-TrackSurfaceTemp: string | null; 
-/**
- * Track surface temperature (crew-facing)
- */
-TrackSurfaceTempCrew: string | null; 
-/**
- * Track air temperature
- */
-TrackAirTemp: string | null; 
-/**
- * Track air pressure
- */
-TrackAirPressure: string | null; 
-/**
- * Track air density
- */
-TrackAirDensity: string | null; 
-/**
- * Track wind velocity
- */
-TrackWindVel: string | null; 
-/**
- * Track wind direction
- */
-TrackWindDir: string | null; 
-/**
- * Track relative humidity
- */
-TrackRelativeHumidity: string | null; 
-/**
- * Track fog level percentage
- */
-TrackFogLevel: string | null; 
-/**
- * Track precipitation percentage
- */
-TrackPrecipitation: string | null; 
-/**
- * Track cleanup level
- */
-TrackCleanup: number | null; 
-/**
- * Track dynamic track enabled
- */
-TrackDynamicTrack: number | null; 
-/**
- * Track version
- */
-TrackVersion: string | null; 
-/**
- * Series ID
- */
-SeriesID: number | null; 
-/**
- * Season ID
- */
-SeasonID: number | null; 
-/**
- * Session ID
- */
-SessionID: number | null; 
-/**
- * Sub-session ID (for splits)
- */
-SubSessionID: number | null; 
-/**
- * League ID
- */
-LeagueID: number | null; 
-/**
- * Official session flag
- */
-Official: number | null; 
-/**
- * Race week number
- */
-RaceWeek: number | null; 
-/**
- * Event type
- */
-EventType: string | null; 
-/**
- * Category (Road, Oval, etc.)
- */
-Category: string | null; 
-/**
- * Simulation mode (full, fixed, open)
- */
-SimMode: string | null; 
-/**
- * Team racing enabled
- */
-TeamRacing: number | null; 
-/**
- * Minimum number of drivers
- */
-MinDrivers: number | null; 
-/**
- * Maximum number of drivers
- */
-MaxDrivers: number | null; 
-/**
- * Drive through/stop-go rule set
- */
-DCRuleSet: string | null; 
-/**
- * Qualifier must start race flag
- */
-QualifierMustStartRace: number | null; 
-/**
- * Number of car classes
- */
-NumCarClasses: number | null; 
-/**
- * Number of car types
- */
-NumCarTypes: number | null; 
-/**
- * Heat racing enabled
- */
-HeatRacing: number | null; 
-/**
- * Build type (Release, Beta, etc.)
- */
-BuildType: string | null; 
-/**
- * Build target (Members, AI, etc.)
- */
-BuildTarget: string | null; 
-/**
- * Build version
- */
-BuildVersion: string | null; 
-/**
- * Race farm identifier
- */
-RaceFarm: string | null; 
-/**
- * Telemetry options
- */
-TelemetryOptions: TelemetryOptions | null; 
-/**
- * Weekend options
- */
-WeekendOptions: WeekendOptions | null }
+export type WeekendInfo = {
+  /**
+   * Track name
+   */
+  TrackName: string;
+  /**
+   * Track ID
+   */
+  TrackID: number | null;
+  /**
+   * Track length
+   */
+  TrackLength: string;
+  /**
+   * Official track length
+   */
+  TrackLengthOfficial: string | null;
+  /**
+   * Track display name
+   */
+  TrackDisplayName: string;
+  /**
+   * Track short name
+   */
+  TrackDisplayShortName: string | null;
+  /**
+   * Track configuration name
+   */
+  TrackConfigName: string | null;
+  /**
+   * Track city
+   */
+  TrackCity: string | null;
+  /**
+   * Track state/province
+   */
+  TrackState: string | null;
+  /**
+   * Track country
+   */
+  TrackCountry: string | null;
+  /**
+   * Track altitude
+   */
+  TrackAltitude: string | null;
+  /**
+   * Track latitude in meters
+   */
+  TrackLatitude: string | null;
+  /**
+   * Track longitude in meters
+   */
+  TrackLongitude: string | null;
+  /**
+   * Track north offset in radians
+   */
+  TrackNorthOffset: string | null;
+  /**
+   * Track number of turns
+   */
+  TrackNumTurns: number | null;
+  /**
+   * Track pit speed limit
+   */
+  TrackPitSpeedLimit: string | null;
+  /**
+   * Track pace speed
+   */
+  TrackPaceSpeed: string | null;
+  /**
+   * Track number of pit stalls
+   */
+  TrackNumPitStalls: number | null;
+  /**
+   * Track type (road course, oval, etc.)
+   */
+  TrackType: string | null;
+  /**
+   * Track direction (neutral, clockwise, counter-clockwise)
+   */
+  TrackDirection: string | null;
+  /**
+   * Track weather type (Static, Dynamic)
+   */
+  TrackWeatherType: string | null;
+  /**
+   * Track skies condition
+   */
+  TrackSkies: string | null;
+  /**
+   * Track surface temperature
+   */
+  TrackSurfaceTemp: string | null;
+  /**
+   * Track surface temperature (crew-facing)
+   */
+  TrackSurfaceTempCrew: string | null;
+  /**
+   * Track air temperature
+   */
+  TrackAirTemp: string | null;
+  /**
+   * Track air pressure
+   */
+  TrackAirPressure: string | null;
+  /**
+   * Track air density
+   */
+  TrackAirDensity: string | null;
+  /**
+   * Track wind velocity
+   */
+  TrackWindVel: string | null;
+  /**
+   * Track wind direction
+   */
+  TrackWindDir: string | null;
+  /**
+   * Track relative humidity
+   */
+  TrackRelativeHumidity: string | null;
+  /**
+   * Track fog level percentage
+   */
+  TrackFogLevel: string | null;
+  /**
+   * Track precipitation percentage
+   */
+  TrackPrecipitation: string | null;
+  /**
+   * Track cleanup level
+   */
+  TrackCleanup: number | null;
+  /**
+   * Track dynamic track enabled
+   */
+  TrackDynamicTrack: number | null;
+  /**
+   * Track version
+   */
+  TrackVersion: string | null;
+  /**
+   * Series ID
+   */
+  SeriesID: number | null;
+  /**
+   * Season ID
+   */
+  SeasonID: number | null;
+  /**
+   * Session ID
+   */
+  SessionID: number | null;
+  /**
+   * Sub-session ID (for splits)
+   */
+  SubSessionID: number | null;
+  /**
+   * League ID
+   */
+  LeagueID: number | null;
+  /**
+   * Official session flag
+   */
+  Official: number | null;
+  /**
+   * Race week number
+   */
+  RaceWeek: number | null;
+  /**
+   * Event type
+   */
+  EventType: string | null;
+  /**
+   * Category (Road, Oval, etc.)
+   */
+  Category: string | null;
+  /**
+   * Simulation mode (full, fixed, open)
+   */
+  SimMode: string | null;
+  /**
+   * Team racing enabled
+   */
+  TeamRacing: number | null;
+  /**
+   * Minimum number of drivers
+   */
+  MinDrivers: number | null;
+  /**
+   * Maximum number of drivers
+   */
+  MaxDrivers: number | null;
+  /**
+   * Drive through/stop-go rule set
+   */
+  DCRuleSet: string | null;
+  /**
+   * Qualifier must start race flag
+   */
+  QualifierMustStartRace: number | null;
+  /**
+   * Number of car classes
+   */
+  NumCarClasses: number | null;
+  /**
+   * Number of car types
+   */
+  NumCarTypes: number | null;
+  /**
+   * Heat racing enabled
+   */
+  HeatRacing: number | null;
+  /**
+   * Build type (Release, Beta, etc.)
+   */
+  BuildType: string | null;
+  /**
+   * Build target (Members, AI, etc.)
+   */
+  BuildTarget: string | null;
+  /**
+   * Build version
+   */
+  BuildVersion: string | null;
+  /**
+   * Race farm identifier
+   */
+  RaceFarm: string | null;
+  /**
+   * Telemetry options
+   */
+  TelemetryOptions: TelemetryOptions | null;
+  /**
+   * Weekend options
+   */
+  WeekendOptions: WeekendOptions | null;
+};
 
 /**
  * Weekend session options and configuration
  */
-export type WeekendOptions = { 
-/**
- * Number of starters
- */
-NumStarters: number | null; 
-/**
- * Starting grid format
- */
-StartingGrid: string | null; 
-/**
- * Qualifying scoring method
- */
-QualifyScoring: string | null; 
-/**
- * Course cautions setting
- */
-CourseCautions: string | null; 
-/**
- * Standing start enabled
- */
-StandingStart: number | null; 
-/**
- * Short parade lap enabled
- */
-ShortParadeLap: number | null; 
-/**
- * Restart format
- */
-Restarts: string | null; 
-/**
- * Weather type
- */
-WeatherType: string | null; 
-/**
- * Sky condition
- */
-Skies: string | null; 
-/**
- * Wind direction
- */
-WindDirection: string | null; 
-/**
- * Wind speed
- */
-WindSpeed: string | null; 
-/**
- * Weather temperature
- */
-WeatherTemp: string | null; 
-/**
- * Relative humidity
- */
-RelativeHumidity: string | null; 
-/**
- * Fog level
- */
-FogLevel: string | null; 
-/**
- * Time of day
- */
-TimeOfDay: string | null; 
-/**
- * Session date
- */
-Date: string | null; 
-/**
- * Earth rotation speedup factor
- */
-EarthRotationSpeedupFactor: number | null; 
-/**
- * Unofficial session flag
- */
-Unofficial: number | null; 
-/**
- * Commercial mode
- */
-CommercialMode: string | null; 
-/**
- * Night mode setting
- */
-NightMode: string | null; 
-/**
- * Fixed setup required
- */
-IsFixedSetup: number | null; 
-/**
- * Strict laps checking
- */
-StrictLapsChecking: string | null; 
-/**
- * Open registration flag
- */
-HasOpenRegistration: number | null; 
-/**
- * Hardcore level
- */
-HardcoreLevel: number | null; 
-/**
- * Number of joker laps
- */
-NumJokerLaps: number | null; 
-/**
- * Incident limit
- */
-IncidentLimit: string | null; 
-/**
- * Fast repairs limit
- */
-FastRepairsLimit: string | null; 
-/**
- * Green-white-checkered limit
- */
-GreenWhiteCheckeredLimit: number | null }
-
+export type WeekendOptions = {
+  /**
+   * Number of starters
+   */
+  NumStarters: number | null;
+  /**
+   * Starting grid format
+   */
+  StartingGrid: string | null;
+  /**
+   * Qualifying scoring method
+   */
+  QualifyScoring: string | null;
+  /**
+   * Course cautions setting
+   */
+  CourseCautions: string | null;
+  /**
+   * Standing start enabled
+   */
+  StandingStart: number | null;
+  /**
+   * Short parade lap enabled
+   */
+  ShortParadeLap: number | null;
+  /**
+   * Restart format
+   */
+  Restarts: string | null;
+  /**
+   * Weather type
+   */
+  WeatherType: string | null;
+  /**
+   * Sky condition
+   */
+  Skies: string | null;
+  /**
+   * Wind direction
+   */
+  WindDirection: string | null;
+  /**
+   * Wind speed
+   */
+  WindSpeed: string | null;
+  /**
+   * Weather temperature
+   */
+  WeatherTemp: string | null;
+  /**
+   * Relative humidity
+   */
+  RelativeHumidity: string | null;
+  /**
+   * Fog level
+   */
+  FogLevel: string | null;
+  /**
+   * Time of day
+   */
+  TimeOfDay: string | null;
+  /**
+   * Session date
+   */
+  Date: string | null;
+  /**
+   * Earth rotation speedup factor
+   */
+  EarthRotationSpeedupFactor: number | null;
+  /**
+   * Unofficial session flag
+   */
+  Unofficial: number | null;
+  /**
+   * Commercial mode
+   */
+  CommercialMode: string | null;
+  /**
+   * Night mode setting
+   */
+  NightMode: string | null;
+  /**
+   * Fixed setup required
+   */
+  IsFixedSetup: number | null;
+  /**
+   * Strict laps checking
+   */
+  StrictLapsChecking: string | null;
+  /**
+   * Open registration flag
+   */
+  HasOpenRegistration: number | null;
+  /**
+   * Hardcore level
+   */
+  HardcoreLevel: number | null;
+  /**
+   * Number of joker laps
+   */
+  NumJokerLaps: number | null;
+  /**
+   * Incident limit
+   */
+  IncidentLimit: string | null;
+  /**
+   * Fast repairs limit
+   */
+  FastRepairsLimit: string | null;
+  /**
+   * Green-white-checkered limit
+   */
+  GreenWhiteCheckeredLimit: number | null;
+};

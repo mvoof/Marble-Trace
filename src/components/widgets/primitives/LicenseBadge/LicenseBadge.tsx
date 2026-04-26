@@ -21,7 +21,7 @@ export const LicenseBadge = ({ licString, className }: LicenseBadgeProps) => {
     <span
       className={`${styles.licenseBadge} ${classStyle}${className ? ` ${className}` : ''}`}
     >
-      {licString}
+      {licString.slice(1).trim()}
     </span>
   );
 };

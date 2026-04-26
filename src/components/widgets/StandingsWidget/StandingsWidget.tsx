@@ -143,9 +143,6 @@ export const StandingsWidget = ({
         <table className={styles.table}>
           <colgroup>
             <col className={styles.colPos} />
-
-            {settings.showPosChange && <col className={styles.colPosChange} />}
-
             <col className={styles.colNum} />
             <col className={styles.colName} />
 
@@ -166,6 +163,8 @@ export const StandingsWidget = ({
               <col className={styles.colLapsCompleted} />
             )}
 
+            {settings.showPosChange && <col className={styles.colPosChange} />}
+
             <col className={styles.colGap} />
             <col className={styles.colLap} />
             <col className={styles.colLap} />
@@ -175,13 +174,8 @@ export const StandingsWidget = ({
             <thead className={styles.thead}>
               <tr>
                 <th className={styles.th}>Pos</th>
-
-                {settings.showPosChange && (
-                  <th className={`${styles.th} ${styles.thCenter}`}>+/-</th>
-                )}
-
-                <th className={styles.th}>Driver</th>
                 <th className={styles.th}>#</th>
+                <th className={styles.th}>Driver</th>
 
                 {settings.showBrand && (
                   <th className={`${styles.th} ${styles.thCenter}`}>Brand</th>
@@ -223,6 +217,10 @@ export const StandingsWidget = ({
 
                 {settings.showLapsCompleted && (
                   <th className={`${styles.th} ${styles.thCenter}`}>Laps</th>
+                )}
+
+                {settings.showPosChange && (
+                  <th className={`${styles.th} ${styles.thCenter}`}>+/-</th>
                 )}
 
                 <th className={`${styles.th} ${styles.thRight}`}>Gap</th>

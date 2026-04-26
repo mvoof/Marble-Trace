@@ -86,10 +86,14 @@
 }
 
 // Car number
+.tdCarNumber {
+  padding-left: 0.5em;
+}
+
 .carNumber {
   font-family: $font-mono;
   font-size: 0.875em;
-  color: $color-text-muted;
+  color: $color-text-primary;
 }
 
 .carNumberPlayer {
