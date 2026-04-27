@@ -8,6 +8,11 @@ import { CarDot } from '../../primitives';
 
 import styles from './TrackMapSvg.module.scss';
 
+const TRACK_STROKE_PX = 10;
+const TRACK_BORDER_PX = 3;
+const SECTOR_STROKE_PX = 6;
+const TARGET_DOT_RADIUS_PX = 10;
+
 interface TrackMapSvgProps {
   svgPath: string;
   viewBox: string;
@@ -36,8 +41,24 @@ export const TrackMapSvg = ({
   const vbW = parts[2];
   const vbH = parts[3];
 
-  // Derive a radius that scales with the viewBox so dots look proportional
-  const dotRadius = Math.min(vbW, vbH) * 0.035;
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [pixelScale, setPixelScale] = useState(1);
+
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(() => {
+      const { width, height } = el.getBoundingClientRect();
+      if (width === 0 || height === 0) return;
+      const scaleX = vbW / width;
+      const scaleY = vbH / height;
+      setPixelScale(Math.max(scaleX, scaleY));
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [vbW, vbH]);
+
+  const dotRadius = TARGET_DOT_RADIUS_PX * pixelScale;
 
   const pathRef = useRef<SVGPathElement>(null);
   const [pathLength, setPathLength] = useState(0);
@@ -53,17 +74,18 @@ export const TrackMapSvg = ({
   );
 
   return (
-    <svg viewBox={viewBox} className={styles.svgContainer}>
+    <svg ref={svgRef} viewBox={viewBox} className={styles.svgContainer}>
       <g>
         {/* Track border */}
         <path
           d={svgPath}
           fill="none"
           stroke="#252525"
-          strokeWidth="42"
+          strokeWidth={TRACK_BORDER_PX}
           strokeLinejoin="round"
           strokeLinecap="round"
           opacity="0.6"
+          vectorEffect="non-scaling-stroke"
         />
 
         {/* Track surface */}
@@ -72,9 +94,10 @@ export const TrackMapSvg = ({
           d={svgPath}
           fill="none"
           stroke="#272727"
-          strokeWidth="40"
+          strokeWidth={TRACK_STROKE_PX}
           strokeLinejoin="round"
           strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
         />
 
         {/* Sector colored arcs */}
@@ -91,11 +114,12 @@ export const TrackMapSvg = ({
                 key={`arc-${sector.SectorNum}`}
                 d={svgPath}
                 fill="none"
-                strokeWidth="22"
+                strokeWidth={SECTOR_STROKE_PX}
                 strokeLinecap="butt"
                 strokeDasharray={`0 ${startDist} ${sectorLen} ${pathLength}`}
                 className={styles.sectorArc}
                 data-index={i % 6}
+                vectorEffect="non-scaling-stroke"
               />
             );
           })}
@@ -141,6 +165,7 @@ export const TrackMapSvg = ({
                   stroke="white"
                   strokeWidth="5"
                   opacity="0.85"
+                  vectorEffect="non-scaling-stroke"
                 />
                 <text
                   x="0"
@@ -155,7 +180,7 @@ export const TrackMapSvg = ({
             );
           })()}
 
-        {/* Cars — same CarDot component as LinearMap, radius scaled to viewBox */}
+        {/* Cars — radius scaled to fixed screen pixels via pixelScale */}
         {points.length > 0 &&
           cars.map((car) => {
             const { x, y } = getPointAtPct(points, car.lapDistPct);
