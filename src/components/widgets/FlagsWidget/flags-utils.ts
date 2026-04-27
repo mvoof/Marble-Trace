@@ -12,15 +12,19 @@ const SESSION_FLAGS = {
   caution: 0x00004000,
   cautionWaving: 0x00008000,
   black: 0x00010000,
-  meatball: 0x00040000,
+  disqualify: 0x00020000,
+  servicible: 0x00040000,
+  repair: 0x00100000,
 } as const;
+
+const MEATBALL_MASK = SESSION_FLAGS.servicible | SESSION_FLAGS.repair;
 
 export function parseSessionFlags(bits: number | null): FlagType {
   if (bits === null || bits === 0) return 'none';
 
   if (bits & SESSION_FLAGS.red) return 'red';
   if (bits & SESSION_FLAGS.black) return 'black';
-  if (bits & SESSION_FLAGS.meatball) return 'meatball';
+  if ((bits & MEATBALL_MASK) === MEATBALL_MASK) return 'meatball';
   if (bits & SESSION_FLAGS.checkered) return 'checkered';
   if (bits & SESSION_FLAGS.white) return 'white';
   if (
@@ -45,7 +49,7 @@ export function parseAllSessionFlags(bits: number | null): FlagType[] {
 
   if (bits & SESSION_FLAGS.red) flags.push('red');
   if (bits & SESSION_FLAGS.black) flags.push('black');
-  if (bits & SESSION_FLAGS.meatball) flags.push('meatball');
+  if ((bits & MEATBALL_MASK) === MEATBALL_MASK) flags.push('meatball');
   if (bits & SESSION_FLAGS.checkered) flags.push('checkered');
   if (bits & SESSION_FLAGS.white) flags.push('white');
   if (
