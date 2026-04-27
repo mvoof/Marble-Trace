@@ -24,8 +24,12 @@ pub use environment::EnvironmentFrame;
 pub use lap_timing::LapTimingFrame;
 pub use session::SessionFrame;
 
-use pitwall::PitwallFrame;
+use pitwall::{BitField, PitwallFrame};
 use serde::{Deserialize, Serialize};
+
+fn bitfield_to_i32(bits: BitField) -> i32 {
+    bits.0 as i32
+}
 
 /// Combined telemetry frame containing ALL iRacing telemetry variables.
 ///
@@ -126,7 +130,7 @@ pub(crate) struct AllFieldsFrame {
     pub session_time_remain: Option<f64>,
     #[field_name = "SessionState"]
     pub session_state: Option<i32>,
-    #[field_name = "SessionFlags"]
+    #[bitfield_map(name = "SessionFlags", decoder = "bitfield_to_i32")]
     pub session_flags: Option<i32>,
     #[field_name = "SessionNum"]
     pub session_num: Option<i32>,
