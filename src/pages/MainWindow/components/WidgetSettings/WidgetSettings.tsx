@@ -26,6 +26,7 @@ import type {
   StandingsWidgetSettings,
   RelativeWidgetSettings,
   TrackMapWidgetSettings,
+  TrackMapLeaderLabelMode,
   LinearMapWidgetSettings,
   LinearMapOrientation,
   WeatherWidgetSettings,
@@ -768,6 +769,58 @@ const TrackMapSettingsPanel = observer(() => {
             </div>
           </div>
         ))}
+      </Card>
+
+      <Card title="Player Marker">
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>Player Dot Color</div>
+              <div className={styles.fieldDesc}>
+                Ping ring and label pill color for your car.
+              </div>
+            </div>
+            <ColorPicker
+              value={settings.playerDotColor}
+              onChange={(c) => update({ playerDotColor: c.toHexString() })}
+            />
+          </div>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>
+                Show &quot;YOU&quot; Label
+              </div>
+              <div className={styles.fieldDesc}>
+                Display the label above your car dot.
+              </div>
+            </div>
+            <Switch
+              checked={settings.showPlayerLabel}
+              onChange={(v) => update({ showPlayerLabel: v })}
+            />
+          </div>
+        </div>
+      </Card>
+
+      <Card title="Leader Labels">
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>Show P1 Label</span>
+          <Segmented
+            block
+            value={settings.leaderLabelMode}
+            options={[
+              { label: 'All Classes', value: 'all' },
+              { label: 'Own Class', value: 'own-class' },
+              { label: 'Hidden', value: 'none' },
+            ]}
+            onChange={(v) =>
+              update({ leaderLabelMode: v as TrackMapLeaderLabelMode })
+            }
+          />
+        </div>
       </Card>
 
       <Card title="Track Database">

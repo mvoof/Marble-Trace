@@ -10,6 +10,7 @@ interface CarDotProps {
   showPing?: boolean;
   label?: string;
   labelIsPlayer?: boolean;
+  playerColor?: string;
 }
 
 const PLAYER_RADIUS_SCALE = 1.3; // player dot is 30% larger than competitor dots
@@ -31,6 +32,7 @@ const CarDotBase = ({
   showPing = true,
   label,
   labelIsPlayer,
+  playerColor = 'white',
 }: CarDotProps) => {
   const r = isPlayer ? radius * PLAYER_RADIUS_SCALE : radius;
   const fontSize = radius * NUMBER_FONT_TO_RADIUS;
@@ -42,12 +44,12 @@ const CarDotBase = ({
   return (
     <g>
       {isPlayer && showPing && (
-        <circle r={r} fill="white" className={styles.playerPing} />
+        <circle r={r} fill={playerColor} className={styles.playerPing} />
       )}
 
       <circle
         r={r}
-        fill="#18181b"
+        fill={isPlayer ? playerColor : '#18181b'}
         stroke={carClassColor}
         strokeWidth={radius * STROKE_TO_RADIUS}
       />

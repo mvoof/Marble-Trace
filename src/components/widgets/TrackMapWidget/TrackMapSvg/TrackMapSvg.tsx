@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import type { TrackPoint } from '../../../../types/track';
 import { getPointAtPct } from '../../../../utils/track-recorder';
 import type { Sector } from '../../../../types/bindings';
+import type { TrackMapLeaderLabelMode } from '../../../../types/widget-settings';
 import type { CarOnTrack } from '../types';
 import { CarDot } from '../../primitives';
 
@@ -14,6 +15,9 @@ interface TrackMapSvgProps {
   cars: CarOnTrack[];
   sectors: Sector[] | null | undefined;
   sfLabel?: string;
+  playerDotColor?: string;
+  showPlayerLabel?: boolean;
+  leaderLabelMode?: TrackMapLeaderLabelMode;
 }
 
 export const TrackMapSvg = ({
@@ -23,7 +27,11 @@ export const TrackMapSvg = ({
   cars,
   sectors,
   sfLabel = 'S/F',
+  playerDotColor = 'white',
+  showPlayerLabel = true,
+  leaderLabelMode = 'all',
 }: TrackMapSvgProps) => {
+  const playerClassId = cars.find((c) => c.isPlayer)?.carClassId ?? -1;
   const parts = viewBox.split(' ').map(Number);
   const vbW = parts[2];
   const vbH = parts[3];
@@ -151,8 +159,21 @@ export const TrackMapSvg = ({
         {points.length > 0 &&
           cars.map((car) => {
             const { x, y } = getPointAtPct(points, car.lapDistPct);
+
             const isClassLeader = car.classPosition === 1 && !car.isPlayer;
-            const showLabel = car.isPlayer || isClassLeader;
+            const showLeaderLabel =
+              isClassLeader &&
+              (leaderLabelMode === 'all' ||
+                (leaderLabelMode === 'own-class' &&
+                  car.carClassId === playerClassId));
+
+            const label = car.isPlayer
+              ? showPlayerLabel
+                ? 'YOU'
+                : undefined
+              : showLeaderLabel
+                ? 'P1'
+                : undefined;
 
             return (
               <g key={car.carIdx} transform={`translate(${x}, ${y})`}>
@@ -161,8 +182,9 @@ export const TrackMapSvg = ({
                   carClassColor={car.carClassColor}
                   isPlayer={car.isPlayer}
                   radius={dotRadius}
-                  label={showLabel ? (car.isPlayer ? 'YOU' : 'P1') : undefined}
+                  label={label}
                   labelIsPlayer={car.isPlayer}
+                  playerColor={playerDotColor}
                 />
               </g>
             );

@@ -65,12 +65,16 @@ export interface RelativeWidgetSettings {
 
 export type TrackMapLegendPosition = 'left' | 'right' | 'hidden';
 export type TrackMapRotationMode = 'fixed' | 'heading-up';
+export type TrackMapLeaderLabelMode = 'all' | 'own-class' | 'none';
 
 export interface TrackMapWidgetSettings {
   showLegend: boolean;
   legendPosition: TrackMapLegendPosition;
   showSectors: boolean;
   rotationMode: TrackMapRotationMode;
+  playerDotColor: string;
+  showPlayerLabel: boolean;
+  leaderLabelMode: TrackMapLeaderLabelMode;
 }
 
 export type LinearMapOrientation = 'horizontal' | 'vertical';

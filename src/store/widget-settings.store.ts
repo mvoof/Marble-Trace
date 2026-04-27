@@ -683,6 +683,9 @@ class WidgetSettingsStore {
         legendPosition: 'right',
         showSectors: true,
         rotationMode: 'fixed',
+        playerDotColor: '#ffffff',
+        showPlayerLabel: true,
+        leaderLabelMode: 'all',
       }
     );
   }

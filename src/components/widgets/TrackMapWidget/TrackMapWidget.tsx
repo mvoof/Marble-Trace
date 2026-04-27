@@ -86,6 +86,9 @@ export const TrackMapWidget = ({
           points={trackData.points}
           cars={cars}
           sectors={visibleSectors}
+          playerDotColor={settings.playerDotColor}
+          showPlayerLabel={settings.showPlayerLabel}
+          leaderLabelMode={settings.leaderLabelMode}
         />
       </div>
 
