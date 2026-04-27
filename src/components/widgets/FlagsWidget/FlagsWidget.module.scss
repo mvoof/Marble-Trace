@@ -1,8 +1,97 @@
-.wrapper {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+$diode-size: 10px;
+$diode-margin: 1px;
+$diode-cell: $diode-size + $diode-margin * 2;
+$diodes-per-block: 6;
+$block-size: $diode-cell * $diodes-per-block;
+$block-gap: 4px;
+$board-padding: 4px;
+
+.board {
+  background-color: #030304;
+  padding: $board-padding;
+  border-radius: 6px;
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px #222;
+  display: grid;
+  grid-template-columns: repeat(3, #{$block-size});
+  gap: $block-gap;
+  position: relative;
+}
+
+.glassOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 40%
+  );
+  pointer-events: none;
+  z-index: 10;
+  border-radius: 6px;
+}
+
+.block {
+  background-color: #08080a;
+  display: grid;
+  grid-template-columns: repeat(#{$diodes-per-block}, #{$diode-cell});
+  grid-template-rows: repeat(#{$diodes-per-block}, #{$diode-cell});
+}
+
+.diode {
+  width: $diode-size;
+  height: $diode-size;
+  margin: $diode-margin;
+  background-color: #16161a;
+  border-radius: 1px;
+}
+
+.diodeHidden {
+  width: $diode-size;
+  height: $diode-size;
+  margin: $diode-margin;
+  visibility: hidden;
+}
+
+.colorGreen {
+  background-color: #22ff00;
+  box-shadow:
+    0 0 4px #22ff00,
+    0 0 8px #22ff00;
+}
+
+.colorYellow {
+  background-color: #ffe600;
+  box-shadow:
+    0 0 4px #ffe600,
+    0 0 8px #ffe600;
+}
+
+.colorRed {
+  background-color: #ff0a33;
+  box-shadow:
+    0 0 4px #ff0a33,
+    0 0 8px #ff0a33;
+}
+
+.colorBlue {
+  background-color: #33aaff;
+  box-shadow:
+    0 0 4px #33aaff,
+    0 0 8px #33aaff;
+}
+
+.colorWhite {
+  background-color: #ffffff;
+  box-shadow:
+    0 0 4px #ffffff,
+    0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+.colorOrange {
+  background-color: #ff5500;
+  box-shadow:
+    0 0 4px #ff5500,
+    0 0 8px #ff5500;
 }

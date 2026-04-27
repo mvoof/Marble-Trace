@@ -30,8 +30,6 @@ import type {
   LinearMapOrientation,
   WeatherWidgetSettings,
   FuelWidgetSettings,
-  FlagsWidgetSettings,
-  FlagsVariant,
   LapTimesWidgetSettings,
   LapDeltaWidgetSettings,
   LapDeltaLayout,
@@ -195,7 +193,6 @@ export const WidgetSettings = observer(
         {widgetId === 'track-map' && <TrackMapSettingsPanel />}
         {widgetId === 'weather' && <WeatherSettingsPanel />}
         {widgetId === 'fuel' && <FuelSettingsPanel />}
-        {widgetId === 'flags' && <FlagsSettingsPanel />}
         {widgetId === 'lap-times' && <LapTimesSettingsPanel />}
         {widgetId === 'lap-delta' && <LapDeltaSettingsPanel />}
         {widgetId === 'timer' && <TimerSettingsPanel />}
@@ -951,58 +948,6 @@ const FuelSettingsPanel = observer(() => {
   );
 });
 
-const FlagsSettingsPanel = observer(() => {
-  const settings = widgetSettingsStore.getFlagsSettings();
-
-  const update = (partial: Partial<FlagsWidgetSettings>) => {
-    widgetSettingsStore.updateCustomSettings('flags', {
-      flags: { ...settings, ...partial },
-    });
-  };
-
-  return (
-    <Card title="Module Display">
-      <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>Visual Variant</span>
-        <Segmented
-          block
-          value={settings.variant}
-          options={[
-            { label: 'Full Overlay', value: 'overlay' },
-            { label: 'Under Mirror', value: 'under-mirror' },
-            { label: 'Standalone', value: 'standalone' },
-          ]}
-          onChange={(v) => update({ variant: v as FlagsVariant })}
-        />
-      </div>
-
-      <Row gutter={24} className={styles.fieldGroup}>
-        <Col span={12}>
-          <span className={styles.fieldLabel}>Width Multiplier</span>
-          <InputNumber
-            style={{ width: '100%' }}
-            value={settings.cutoutWidth}
-            min={1}
-            max={20}
-            onChange={(v) => v !== null && update({ cutoutWidth: v })}
-          />
-        </Col>
-
-        <Col span={12}>
-          <span className={styles.fieldLabel}>Height Multiplier</span>
-          <InputNumber
-            style={{ width: '100%' }}
-            value={settings.cutoutHeight}
-            min={1}
-            max={10}
-            onChange={(v) => v !== null && update({ cutoutHeight: v })}
-          />
-        </Col>
-      </Row>
-    </Card>
-  );
-});
-
 const LapDeltaSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getLapDeltaSettings();
 
@@ -1117,7 +1062,7 @@ const TimerSettingsPanel = observer(() => {
       {[
         {
           title: 'Show Flag State',
-          desc: 'Display the current flag (green / final 5 min / checkered).',
+          desc: 'Display session status: green running / final 5 min / checkered.',
           value: settings.showFlag,
           key: 'showFlag',
         },

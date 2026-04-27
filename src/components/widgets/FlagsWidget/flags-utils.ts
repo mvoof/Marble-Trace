@@ -38,6 +38,31 @@ export function parseSessionFlags(bits: number | null): FlagType {
   return 'none';
 }
 
+export function parseAllSessionFlags(bits: number | null): FlagType[] {
+  if (bits === null || bits === 0) return [];
+
+  const flags: FlagType[] = [];
+
+  if (bits & SESSION_FLAGS.red) flags.push('red');
+  if (bits & SESSION_FLAGS.black) flags.push('black');
+  if (bits & SESSION_FLAGS.meatball) flags.push('meatball');
+  if (bits & SESSION_FLAGS.checkered) flags.push('checkered');
+  if (bits & SESSION_FLAGS.white) flags.push('white');
+  if (
+    bits & SESSION_FLAGS.yellow ||
+    bits & SESSION_FLAGS.caution ||
+    bits & SESSION_FLAGS.cautionWaving ||
+    bits & SESSION_FLAGS.yellowWaving
+  ) {
+    flags.push('yellow');
+  }
+  if (bits & SESSION_FLAGS.debris) flags.push('debris');
+  if (bits & SESSION_FLAGS.blue) flags.push('blue');
+  if (bits & SESSION_FLAGS.green) flags.push('green');
+
+  return flags;
+}
+
 export function isVisible(
   x: number,
   y: number,

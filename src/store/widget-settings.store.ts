@@ -3,7 +3,6 @@ import { invoke } from '@tauri-apps/api/core';
 import { computedStore } from './iracing';
 
 import type {
-  FlagsWidgetSettings,
   FuelWidgetSettings,
   InputTraceSettings,
   LinearMapWidgetSettings,
@@ -239,24 +238,32 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'flags',
     label: 'LED Flags',
-    description: 'Track flags and digital warning lights.',
+    description: 'LED matrix display of track flags.',
     enabled: false,
     x: 760,
     y: 0,
-    width: 630,
-    height: 189,
-    designWidth: 630,
-    designHeight: 189,
+    width: 232,
+    height: 232,
+    designWidth: 232,
+    designHeight: 232,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
     hotkey: '',
-    customSettings: {
-      flags: {
-        variant: 'overlay',
-        cutoutWidth: 6,
-        cutoutHeight: 1,
-      },
-    },
+  },
+  {
+    id: 'flat-flags',
+    label: 'Flat Flags',
+    description: 'Banner-style list of active track flags.',
+    enabled: false,
+    x: 760,
+    y: 250,
+    width: 280,
+    height: 160,
+    designWidth: 280,
+    designHeight: 160,
+    backgroundColor: 'transparent',
+    backgroundColorEdge: 'transparent',
+    hotkey: '',
   },
   {
     id: 'chassis',
@@ -709,17 +716,6 @@ class WidgetSettingsStore {
         showChart: false,
         pitWarningLaps: 3,
         chartType: 'bar',
-      }
-    );
-  }
-
-  getFlagsSettings(): FlagsWidgetSettings {
-    const widget = this.getWidget('flags');
-    return (
-      widget?.customSettings?.flags ?? {
-        variant: 'overlay',
-        cutoutWidth: 6,
-        cutoutHeight: 1,
       }
     );
   }

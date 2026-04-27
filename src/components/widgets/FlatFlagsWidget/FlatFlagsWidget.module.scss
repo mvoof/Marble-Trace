@@ -1,0 +1,133 @@
+@use '../../../styles/variables' as *;
+
+.widget {
+  width: 100%;
+  background: repeating-linear-gradient(
+    -45deg,
+    #1a1a1a,
+    #1a1a1a 8px,
+    #1e1e1e 8px,
+    #1e1e1e 16px
+  );
+  border-radius: 4px;
+  border: 1px solid #2a2a2a;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 10px 14px 6px;
+  font-family: $font-mono;
+  font-size: 11px;
+  color: #777;
+  letter-spacing: 2px;
+  font-weight: 600;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background-color: #111;
+  padding-bottom: 2px;
+}
+
+.empty {
+  padding: 10px 14px;
+  font-family: $font-mono;
+  font-size: 12px;
+  color: #444;
+  letter-spacing: 1px;
+}
+
+.item {
+  padding: 11px 14px;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: $font-widget;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  letter-spacing: 1px;
+
+  &::before {
+    content: '■';
+    font-size: 11px;
+    margin-right: 11px;
+    color: rgba(0, 0, 0, 0.7);
+  }
+}
+
+.itemGreen {
+  background-color: #22ff00;
+  color: #000;
+}
+
+.itemYellow {
+  background-color: #ffe600;
+  color: #000;
+}
+
+.itemRed {
+  background-color: #ff0a33;
+  color: #fff;
+
+  &::before {
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.itemBlue {
+  background-color: #33aaff;
+  color: #000;
+}
+
+.itemWhite {
+  background-color: #ffffff;
+  color: #000;
+}
+
+.itemBlack {
+  background-color: #222;
+  color: #fff;
+
+  &::before {
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
+.itemMeatball {
+  background-color: #ff5500;
+  color: #000;
+}
+
+.itemCheckered {
+  background: repeating-conic-gradient(#111 0% 25%, #fff 0% 50%) 50% / 20px 20px;
+  color: #fff;
+  text-shadow:
+    0 2px 4px #000,
+    0 0 10px #000;
+
+  &::before {
+    color: #fff;
+    text-shadow: none;
+  }
+}
+
+.itemDebris {
+  background: repeating-linear-gradient(
+    45deg,
+    #ffe600 0,
+    #ffe600 20px,
+    #ff0a33 20px,
+    #ff0a33 40px
+  );
+  color: #fff;
+  text-shadow: 0 1px 3px #000;
+
+  &::before {
+    color: #fff;
+    text-shadow: none;
+  }
+}

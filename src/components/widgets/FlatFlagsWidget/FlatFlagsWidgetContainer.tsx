@@ -2,14 +2,12 @@ import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../store/iracing';
-import { parseSessionFlags } from './flags-utils';
-import { FlagsWidget } from './FlagsWidget';
+import { parseAllSessionFlags } from '../FlagsWidget/flags-utils';
+import { FlatFlagsWidget } from './FlatFlagsWidget';
 
-import styles from './FlagsWidgetContainer.module.scss';
-
-export const FlagsWidgetContainer = observer(() => {
+export const FlatFlagsWidgetContainer = observer(() => {
   const sessionFlags = telemetryStore.session?.session_flags ?? null;
-  const flag = parseSessionFlags(sessionFlags);
+  const flags = parseAllSessionFlags(sessionFlags);
 
   const [blinkOn, setBlinkOn] = useState(true);
 
@@ -18,9 +16,5 @@ export const FlagsWidgetContainer = observer(() => {
     return () => clearInterval(id);
   }, []);
 
-  return (
-    <div className={styles.container}>
-      <FlagsWidget flag={flag} blinkOn={blinkOn} />
-    </div>
-  );
+  return <FlatFlagsWidget flags={flags} blinkOn={blinkOn} />;
 });

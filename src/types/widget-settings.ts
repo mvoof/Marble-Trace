@@ -79,14 +79,6 @@ export interface LinearMapWidgetSettings {
   orientation: LinearMapOrientation;
 }
 
-export type FlagsVariant = 'overlay' | 'under-mirror' | 'standalone';
-
-export interface FlagsWidgetSettings {
-  variant: FlagsVariant;
-  cutoutWidth: number;
-  cutoutHeight: number;
-}
-
 export interface WeatherWidgetSettings {
   showCompass: boolean;
   showAirTemp: boolean;
@@ -132,7 +124,6 @@ export interface WidgetCustomSettings {
   relative?: RelativeWidgetSettings;
   'track-map'?: TrackMapWidgetSettings;
   'linear-map'?: LinearMapWidgetSettings;
-  flags?: FlagsWidgetSettings;
   weather?: WeatherWidgetSettings;
   fuel?: FuelWidgetSettings;
   'lap-times'?: LapTimesWidgetSettings;

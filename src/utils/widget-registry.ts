@@ -14,6 +14,7 @@ import { LapTimesWidgetContainer } from '../components/widgets/LapTimesWidget/La
 import { TimerWidgetContainer } from '../components/widgets/TimerWidget/TimerWidgetContainer';
 import { WeatherWidgetContainer } from '../components/widgets/WeatherWidget/WeatherWidgetContainer';
 import { FuelWidgetContainer } from '../components/widgets/FuelWidget/FuelWidgetContainer';
+import { FlatFlagsWidgetContainer } from '../components/widgets/FlatFlagsWidget/FlatFlagsWidgetContainer';
 import type React from 'react';
 
 export interface WidgetEntry {
@@ -39,4 +40,5 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
   timer: { component: TimerWidgetContainer },
   weather: { component: WeatherWidgetContainer },
   fuel: { component: FuelWidgetContainer },
+  'flat-flags': { component: FlatFlagsWidgetContainer },
 };
