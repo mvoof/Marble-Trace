@@ -134,6 +134,10 @@ pub(crate) struct AllFieldsFrame {
     pub session_flags: Option<i32>,
     #[field_name = "SessionNum"]
     pub session_num: Option<i32>,
+    #[field_name = "PlayerCarIdx"]
+    pub player_car_idx: Option<i32>,
+    #[field_name = "CarIdxSessionFlags"]
+    pub car_idx_session_flags: Vec<BitField>,
 
     // === Environment ===
     #[field_name = "AirTemp"]
@@ -326,12 +330,20 @@ impl From<&AllFieldsFrame> for LapTimingFrame {
 
 impl From<&AllFieldsFrame> for SessionFrame {
     fn from(f: &AllFieldsFrame) -> Self {
+        let player_car_flags = f.player_car_idx.and_then(|idx| {
+            f.car_idx_session_flags
+                .get(idx as usize)
+                .map(|bf| bf.0 as i32)
+        });
+
         Self {
             session_time: f.session_time,
             session_time_remain: f.session_time_remain,
             session_state: f.session_state,
             session_flags: f.session_flags,
             session_num: f.session_num,
+            player_car_idx: f.player_car_idx,
+            player_car_flags,
         }
     }
 }

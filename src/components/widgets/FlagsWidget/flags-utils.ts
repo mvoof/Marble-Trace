@@ -19,50 +19,64 @@ const SESSION_FLAGS = {
 
 const MEATBALL_MASK = SESSION_FLAGS.servicible | SESSION_FLAGS.repair;
 
-export function parseSessionFlags(bits: number | null): FlagType {
-  if (bits === null || bits === 0) return 'none';
+export function parseSessionFlags(
+  sessionBits: number | null,
+  playerCarBits: number | null
+): FlagType {
+  const s = sessionBits ?? 0;
+  const p = playerCarBits ?? 0;
 
-  if (bits & SESSION_FLAGS.red) return 'red';
-  if (bits & SESSION_FLAGS.black) return 'black';
-  if ((bits & MEATBALL_MASK) === MEATBALL_MASK) return 'meatball';
-  if (bits & SESSION_FLAGS.checkered) return 'checkered';
-  if (bits & SESSION_FLAGS.white) return 'white';
+  // Personal flags from CarIdxSessionFlags take highest priority
+  if (p & SESSION_FLAGS.black) return 'black';
+  if (p & SESSION_FLAGS.disqualify) return 'black';
+  if ((p & MEATBALL_MASK) === MEATBALL_MASK) return 'meatball';
+
+  // Global session flags
+  if (s & SESSION_FLAGS.red) return 'red';
+  if ((s & MEATBALL_MASK) === MEATBALL_MASK) return 'meatball';
+  if (s & SESSION_FLAGS.checkered) return 'checkered';
+  if (s & SESSION_FLAGS.white) return 'white';
   if (
-    bits & SESSION_FLAGS.yellow ||
-    bits & SESSION_FLAGS.caution ||
-    bits & SESSION_FLAGS.cautionWaving ||
-    bits & SESSION_FLAGS.yellowWaving
+    s & SESSION_FLAGS.yellow ||
+    s & SESSION_FLAGS.caution ||
+    s & SESSION_FLAGS.cautionWaving ||
+    s & SESSION_FLAGS.yellowWaving
   ) {
     return 'yellow';
   }
-  if (bits & SESSION_FLAGS.debris) return 'debris';
-  if (bits & SESSION_FLAGS.blue) return 'blue';
-  if (bits & SESSION_FLAGS.green) return 'green';
+  if (s & SESSION_FLAGS.blue) return 'blue';
+  if (s & SESSION_FLAGS.debris) return 'debris';
+  if (s & SESSION_FLAGS.green) return 'green';
 
   return 'none';
 }
 
-export function parseAllSessionFlags(bits: number | null): FlagType[] {
-  if (bits === null || bits === 0) return [];
-
+export function parseAllSessionFlags(
+  sessionBits: number | null,
+  playerCarBits: number | null
+): FlagType[] {
+  const s = sessionBits ?? 0;
+  const p = playerCarBits ?? 0;
   const flags: FlagType[] = [];
 
-  if (bits & SESSION_FLAGS.red) flags.push('red');
-  if (bits & SESSION_FLAGS.black) flags.push('black');
-  if ((bits & MEATBALL_MASK) === MEATBALL_MASK) flags.push('meatball');
-  if (bits & SESSION_FLAGS.checkered) flags.push('checkered');
-  if (bits & SESSION_FLAGS.white) flags.push('white');
+  if (p & SESSION_FLAGS.black || p & SESSION_FLAGS.disqualify)
+    flags.push('black');
+  if ((p & MEATBALL_MASK) === MEATBALL_MASK) flags.push('meatball');
+
+  if (s & SESSION_FLAGS.red) flags.push('red');
+  if (s & SESSION_FLAGS.checkered) flags.push('checkered');
+  if (s & SESSION_FLAGS.white) flags.push('white');
   if (
-    bits & SESSION_FLAGS.yellow ||
-    bits & SESSION_FLAGS.caution ||
-    bits & SESSION_FLAGS.cautionWaving ||
-    bits & SESSION_FLAGS.yellowWaving
+    s & SESSION_FLAGS.yellow ||
+    s & SESSION_FLAGS.caution ||
+    s & SESSION_FLAGS.cautionWaving ||
+    s & SESSION_FLAGS.yellowWaving
   ) {
     flags.push('yellow');
   }
-  if (bits & SESSION_FLAGS.debris) flags.push('debris');
-  if (bits & SESSION_FLAGS.blue) flags.push('blue');
-  if (bits & SESSION_FLAGS.green) flags.push('green');
+  if (s & SESSION_FLAGS.blue) flags.push('blue');
+  if (s & SESSION_FLAGS.debris) flags.push('debris');
+  if (s & SESSION_FLAGS.green) flags.push('green');
 
   return flags;
 }

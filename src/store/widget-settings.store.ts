@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { computedStore } from './iracing';
 
 import type {
+  FlagDisplaySettings,
   FuelWidgetSettings,
   InputTraceSettings,
   LinearMapWidgetSettings,
@@ -249,6 +250,9 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
     hotkey: '',
+    customSettings: {
+      flags: { alwaysShow: true, holdDuration: 3 },
+    },
   },
   {
     id: 'flat-flags',
@@ -264,6 +268,9 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
     hotkey: '',
+    customSettings: {
+      'flat-flags': { alwaysShow: true, holdDuration: 3 },
+    },
   },
   {
     id: 'chassis',
@@ -755,6 +762,13 @@ class WidgetSettingsStore {
         showLaps: true,
         showPosition: true,
       }
+    );
+  }
+
+  getFlagDisplaySettings(id: 'flags' | 'flat-flags'): FlagDisplaySettings {
+    const widget = this.getWidget(id);
+    return (
+      widget?.customSettings?.[id] ?? { alwaysShow: true, holdDuration: 3 }
     );
   }
 }

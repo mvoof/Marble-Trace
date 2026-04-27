@@ -120,7 +120,14 @@ export interface TimerWidgetSettings {
   showPosition: boolean;
 }
 
+export interface FlagDisplaySettings {
+  alwaysShow: boolean;
+  holdDuration: number;
+}
+
 export interface WidgetCustomSettings {
+  flags?: FlagDisplaySettings;
+  'flat-flags'?: FlagDisplaySettings;
   speed?: SpeedWidgetSettings;
   'input-trace'?: InputTraceSettings;
   'proximity-radar'?: RadarSettings;

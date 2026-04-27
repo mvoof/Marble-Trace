@@ -1085,6 +1085,17 @@ export type SessionFrame = {
    * @see https://sajax.github.io/irsdkdocs/telemetry/sessionnum/
    */
   session_num: number | null;
+  /**
+   * Index of the player's car in CarIdx arrays
+   * @see https://sajax.github.io/irsdkdocs/telemetry/playercaridx/
+   */
+  player_car_idx: number | null;
+  /**
+   * Per-car session flags for the player's car (black flag, DQ, meatball, etc.)
+   * Extracted from CarIdxSessionFlags[player_car_idx]
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxsessionflags/
+   */
+  player_car_flags: number | null;
 };
 
 /**

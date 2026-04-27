@@ -31,4 +31,13 @@ pub struct SessionFrame {
     /// Index of the current session (practice=0, qualifying=1, race=2, etc.)
     /// @see https://sajax.github.io/irsdkdocs/telemetry/sessionnum/
     pub session_num: Option<i32>,
+
+    /// Index of the player's car in CarIdx arrays
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/playercaridx/
+    pub player_car_idx: Option<i32>,
+
+    /// Per-car session flags for the player's car (black flag, DQ, meatball, etc.)
+    /// Extracted from CarIdxSessionFlags[player_car_idx]
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxsessionflags/
+    pub player_car_flags: Option<i32>,
 }

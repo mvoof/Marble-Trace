@@ -12,7 +12,8 @@ export const FlatFlagsWidgetContainer = observer(() => {
     widgetSettingsStore.getFlagDisplaySettings('flat-flags');
 
   const sessionFlags = telemetryStore.session?.session_flags ?? null;
-  const liveFlags = parseAllSessionFlags(sessionFlags);
+  const playerCarFlags = telemetryStore.session?.player_car_flags ?? null;
+  const liveFlags = parseAllSessionFlags(sessionFlags, playerCarFlags);
 
   const [displayFlags, setDisplayFlags] = useState<FlagType[]>(liveFlags);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

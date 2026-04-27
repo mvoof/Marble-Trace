@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   InputNumber,
@@ -9,12 +9,14 @@ import {
   Button,
   Select,
   Segmented,
+  Slider,
   Switch,
   Space,
   App,
 } from 'antd';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import type {
+  FlagDisplaySettings,
   SpeedWidgetSettings,
   SpeedWidgetFocusMode,
   RpmColorTheme,
@@ -44,10 +46,10 @@ import styles from './WidgetSettings.module.scss';
 
 interface CardProps {
   title?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-const Card: React.FC<CardProps> = ({ title, children }) => (
+const Card = ({ title, children }: CardProps) => (
   <div className={styles.card}>
     {title && <h3 className={styles.cardTitle}>{title}</h3>}
     <div className={styles.cardContent}>{children}</div>
@@ -197,6 +199,9 @@ export const WidgetSettings = observer(
         {widgetId === 'lap-times' && <LapTimesSettingsPanel />}
         {widgetId === 'lap-delta' && <LapDeltaSettingsPanel />}
         {widgetId === 'timer' && <TimerSettingsPanel />}
+        {(widgetId === 'flags' || widgetId === 'flat-flags') && (
+          <FlagDisplaySettingsPanel widgetId={widgetId} />
+        )}
       </div>
     );
   }
@@ -694,20 +699,20 @@ const LinearMapSettingsPanel = observer(() => {
 
   return (
     <>
-    <Card title="Module Layout">
-      <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>Orientation</span>
-        <Segmented
-          block
-          value={settings.orientation}
-          options={[
-            { label: 'Horizontal', value: 'horizontal' },
-            { label: 'Vertical', value: 'vertical' },
-          ]}
-          onChange={(v) => update({ orientation: v as LinearMapOrientation })}
-        />
-      </div>
-    </Card>
+      <Card title="Module Layout">
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>Orientation</span>
+          <Segmented
+            block
+            value={settings.orientation}
+            options={[
+              { label: 'Horizontal', value: 'horizontal' },
+              { label: 'Vertical', value: 'vertical' },
+            ]}
+            onChange={(v) => update({ orientation: v as LinearMapOrientation })}
+          />
+        </div>
+      </Card>
 
       <Card title="Player Marker">
         <div className={styles.fieldGroup}>
@@ -1116,6 +1121,55 @@ const LapTimesSettingsPanel = observer(() => {
     </>
   );
 });
+
+const FlagDisplaySettingsPanel = observer(
+  ({ widgetId }: { widgetId: 'flags' | 'flat-flags' }) => {
+    const settings = widgetSettingsStore.getFlagDisplaySettings(widgetId);
+
+    const update = (partial: Partial<FlagDisplaySettings>) => {
+      widgetSettingsStore.updateCustomSettings(widgetId, {
+        [widgetId]: { ...settings, ...partial },
+      });
+    };
+
+    return (
+      <Card title="Display Mode">
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>Always Show</div>
+              <div className={styles.fieldDesc}>
+                Show widget even when no flag is active.
+              </div>
+            </div>
+            <Switch
+              checked={settings.alwaysShow}
+              onChange={(v) => update({ alwaysShow: v })}
+            />
+          </div>
+        </div>
+
+        {!settings.alwaysShow && (
+          <div className={styles.fieldGroup}>
+            <span className={styles.fieldLabel}>
+              Hold Duration: {settings.holdDuration}s
+            </span>
+            <div className={styles.fieldDesc}>
+              How long to keep the flag visible after it clears.
+            </div>
+            <Slider
+              min={0}
+              max={30}
+              step={1}
+              value={settings.holdDuration}
+              onChange={(v) => update({ holdDuration: v })}
+            />
+          </div>
+        )}
+      </Card>
+    );
+  }
+);
 
 const TimerSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getTimerSettings();

@@ -1,10 +1,16 @@
 $diode-size: 10px;
 $diode-margin: 1px;
 $diode-cell: $diode-size + $diode-margin * 2;
-$diodes-per-block: 6;
-$block-size: $diode-cell * $diodes-per-block;
 $block-gap: 4px;
 $board-padding: 4px;
+
+.wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 .board {
   background-color: #030304;
@@ -14,7 +20,10 @@ $board-padding: 4px;
     0 15px 35px rgba(0, 0, 0, 0.8),
     inset 0 0 0 1px #222;
   display: grid;
-  grid-template-columns: repeat(3, #{$block-size});
+  grid-template-columns: repeat(
+    var(--blocks),
+    calc(var(--dpb) * #{$diode-cell})
+  );
   gap: $block-gap;
   position: relative;
 }
@@ -35,8 +44,8 @@ $board-padding: 4px;
 .block {
   background-color: #08080a;
   display: grid;
-  grid-template-columns: repeat(#{$diodes-per-block}, #{$diode-cell});
-  grid-template-rows: repeat(#{$diodes-per-block}, #{$diode-cell});
+  grid-template-columns: repeat(var(--dpb), #{$diode-cell});
+  grid-template-rows: repeat(var(--dpb), #{$diode-cell});
 }
 
 .diode {
@@ -52,6 +61,24 @@ $board-padding: 4px;
   height: $diode-size;
   margin: $diode-margin;
   visibility: hidden;
+}
+
+.singleLed {
+  width: 80%;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px #222;
+  background-color: #030304;
+  position: relative;
+}
+
+.singleLedInner {
+  position: absolute;
+  inset: 8px;
+  border-radius: 4px;
+  background-color: #16161a;
 }
 
 .colorGreen {
