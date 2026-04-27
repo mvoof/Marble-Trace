@@ -81,6 +81,7 @@ export type LinearMapOrientation = 'horizontal' | 'vertical';
 
 export interface LinearMapWidgetSettings {
   orientation: LinearMapOrientation;
+  playerDotColor: string;
 }
 
 export interface WeatherWidgetSettings {

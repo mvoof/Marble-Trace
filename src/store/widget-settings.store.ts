@@ -562,11 +562,12 @@ class WidgetSettingsStore {
         if (prevOrientation !== nextOrientation) {
           const size = LINEAR_MAP_SIZES[nextOrientation];
           if (size) {
-            widget.width = size.designWidth;
-            widget.height = size.designHeight;
             widget.designWidth = size.designWidth;
             widget.designHeight = size.designHeight;
           }
+          const prevW = widget.width;
+          widget.width = widget.height;
+          widget.height = prevW;
         }
       }
 
@@ -695,6 +696,7 @@ class WidgetSettingsStore {
     return (
       widget?.customSettings?.['linear-map'] ?? {
         orientation: 'horizontal',
+        playerDotColor: '#ffffff',
       }
     );
   }

@@ -10,10 +10,11 @@ interface LinearMapProps {
   entries: DriverEntry[];
   player: DriverEntry | null;
   isHorizontal: boolean;
+  playerDotColor?: string;
 }
 
 export const LinearMap = observer(
-  ({ entries, player, isHorizontal }: LinearMapProps) => {
+  ({ entries, player, isHorizontal, playerDotColor }: LinearMapProps) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState({ w: 0, h: 0 });
 
@@ -66,7 +67,7 @@ export const LinearMap = observer(
                   carNumber={d.carNumber}
                   carClassColor={d.carClassColor}
                   isPlayer={d.isPlayer}
-                  showPing={false}
+                  playerColor={playerDotColor}
                 />
               </g>
             ))}

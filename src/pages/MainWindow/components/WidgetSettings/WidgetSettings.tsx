@@ -693,6 +693,7 @@ const LinearMapSettingsPanel = observer(() => {
   };
 
   return (
+    <>
     <Card title="Module Layout">
       <div className={styles.fieldGroup}>
         <span className={styles.fieldLabel}>Orientation</span>
@@ -707,6 +708,21 @@ const LinearMapSettingsPanel = observer(() => {
         />
       </div>
     </Card>
+
+      <Card title="Player Marker">
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>Player Dot Color</div>
+            </div>
+            <ColorPicker
+              value={settings.playerDotColor}
+              onChange={(c) => update({ playerDotColor: c.toHexString() })}
+            />
+          </div>
+        </div>
+      </Card>
+    </>
   );
 });
 

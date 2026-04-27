@@ -1,22 +1,5 @@
 @use '../../../../styles/variables' as *;
 
-.playerPing {
-  opacity: 0.2;
-  animation: ping 1.5s ease-out infinite;
-}
-
-@keyframes ping {
-  0% {
-    r: 12;
-    opacity: 0.2;
-  }
-
-  100% {
-    r: 20;
-    opacity: 0;
-  }
-}
-
 .carNumber {
   font-family: $font-widget;
   font-weight: 700;

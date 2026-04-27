@@ -7,7 +7,6 @@ interface CarDotProps {
   isPlayer: boolean;
   /** Base radius in SVG user units. Parent sets this based on coordinate space. */
   radius?: number;
-  showPing?: boolean;
   label?: string;
   labelIsPlayer?: boolean;
   playerColor?: string;
@@ -29,7 +28,6 @@ const CarDotBase = ({
   carClassColor,
   isPlayer,
   radius = 10,
-  showPing = true,
   label,
   labelIsPlayer,
   playerColor = 'white',
@@ -43,10 +41,6 @@ const CarDotBase = ({
 
   return (
     <g>
-      {isPlayer && showPing && (
-        <circle r={r} fill={playerColor} className={styles.playerPing} />
-      )}
-
       <circle
         r={r}
         fill={isPlayer ? playerColor : '#18181b'}
