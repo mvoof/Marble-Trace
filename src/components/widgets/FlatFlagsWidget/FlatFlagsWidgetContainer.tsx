@@ -1,11 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { parseAllSessionFlags } from '../FlagsWidget/flags-utils';
+import { parseAllSessionFlags } from '../../../utils/flags-utils';
+import { useFlagBlink, useFlagHold } from '../../../hooks/flags-hooks';
 import type { FlagType } from '../../../types/flags';
 import { FlatFlagsWidget } from './FlatFlagsWidget';
+
+const EMPTY_FLAGS: FlagType[] = [];
+const IS_EMPTY_FLAGS = (v: FlagType[]) => v.length === 0;
 
 export const FlatFlagsWidgetContainer = observer(() => {
   const { alwaysShow, holdDuration } =
@@ -13,44 +17,20 @@ export const FlatFlagsWidgetContainer = observer(() => {
 
   const sessionFlags = telemetryStore.session?.session_flags ?? null;
   const playerCarFlags = telemetryStore.session?.player_car_flags ?? null;
-  const liveFlags = parseAllSessionFlags(sessionFlags, playerCarFlags);
+  const parsedFlags = parseAllSessionFlags(sessionFlags, playerCarFlags);
 
-  const [displayFlags, setDisplayFlags] = useState<FlagType[]>(liveFlags);
-  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const displayFlagsRef = useRef(displayFlags);
-  displayFlagsRef.current = displayFlags;
+  // Stabilize array reference so useFlagHold dependency doesn't fire on every render
+  const liveFlagsKey = parsedFlags.join(',');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const liveFlags = useMemo(() => parsedFlags, [liveFlagsKey]);
 
-  const liveFlagsKey = liveFlags.join(',');
-
-  useEffect(() => {
-    if (liveFlags.length > 0) {
-      if (holdTimerRef.current) {
-        clearTimeout(holdTimerRef.current);
-        holdTimerRef.current = null;
-      }
-      setDisplayFlags(liveFlags);
-    } else {
-      if (holdDuration > 0 && displayFlagsRef.current.length > 0) {
-        holdTimerRef.current = setTimeout(() => {
-          setDisplayFlags([]);
-        }, holdDuration * 1000);
-      } else if (holdDuration === 0) {
-        setDisplayFlags([]);
-      }
-    }
-    return () => {
-      if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
-    };
-    // liveFlagsKey is a stable string derived from liveFlags — used intentionally
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [liveFlagsKey, holdDuration]);
-
-  const [blinkOn, setBlinkOn] = useState(true);
-
-  useEffect(() => {
-    const id = setInterval(() => setBlinkOn((v) => !v), 400);
-    return () => clearInterval(id);
-  }, []);
+  const displayFlags = useFlagHold(
+    liveFlags,
+    IS_EMPTY_FLAGS,
+    EMPTY_FLAGS,
+    holdDuration
+  );
+  const blinkOn = useFlagBlink();
 
   if (!alwaysShow && displayFlags.length === 0) return null;
 

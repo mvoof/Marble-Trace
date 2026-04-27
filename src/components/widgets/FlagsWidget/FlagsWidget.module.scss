@@ -16,9 +16,6 @@ $board-padding: 4px;
   background-color: #030304;
   padding: $board-padding;
   border-radius: 6px;
-  box-shadow:
-    0 15px 35px rgba(0, 0, 0, 0.8),
-    inset 0 0 0 1px #222;
   display: grid;
   grid-template-columns: repeat(
     var(--blocks),
