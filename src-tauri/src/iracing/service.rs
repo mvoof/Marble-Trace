@@ -188,12 +188,9 @@ pub async fn start_telemetry_stream(
                         warn!("Failed to emit session info: {}", e);
                     }
 
-                    let unknown_keys: Vec<String> = session.weekend_info.unknown_fields.keys().cloned().collect();
-                    info!("WeekendInfo unknown fields keys: {:?}", unknown_keys);
-
                     let forecast = parse_weather_forecast(&session.weekend_info.unknown_fields);
                     if !forecast.is_empty() {
-                        info!("Weather forecast parsed successfully, {} entries", forecast.len());
+                        debug!("Weather forecast parsed successfully, {} entries", forecast.len());
                         if let Err(e) = app_session.emit("iracing://weather-forecast", &forecast) {
                             warn!("Failed to emit weather forecast: {}", e);
                         }

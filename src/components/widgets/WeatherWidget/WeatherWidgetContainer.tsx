@@ -57,19 +57,6 @@ export const WeatherWidgetContainer = observer(() => {
     forecast = extractForecast(weekendInfo);
   }
 
-  if (forecast.length > 0) {
-    console.log(
-      '[WeatherWidget] Forecast data found:',
-      forecast.length,
-      'entries'
-    );
-  } else if (weekendInfo) {
-    console.log(
-      '[WeatherWidget] Forecast empty. WeekendInfo keys:',
-      Object.keys(weekendInfo)
-    );
-  }
-
   return (
     <WeatherWidget
       ref={widgetRef}

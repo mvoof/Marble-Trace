@@ -94,11 +94,6 @@ export const extractForecast = (
     (weekendInfo as any).forecastentries;
   if (Array.isArray(fe)) return fe as WeatherForecastEntry[];
 
-  console.log(
-    '[WeatherWidget] No forecast found in WeekendInfo. Available keys:',
-    Object.keys(weekendInfo)
-  );
-
   return [];
 };
 /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any */
