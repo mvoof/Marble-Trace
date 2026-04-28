@@ -2,48 +2,29 @@
 
 .carGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: rem(16) 0;
+  grid-template-columns: max-content max-content;
+  gap: rem(16) rem(8);
+  justify-content: center;
   align-items: center;
   padding: $space-sm rem(8) 0;
 }
 
-.axleRow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $space-sm;
-  padding-top: $space-sm;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+.carGridWithInboard {
+  grid-template-columns: max-content auto max-content;
 }
 
-.axleLabel {
-  font-size: $font-size-xs;
-  color: $color-text-muted;
+.centerLabels {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: rem(6);
+}
+
+.centerLabel {
+  font-size: rem(9);
+  color: #64748b;
   font-weight: 700;
   letter-spacing: 0.05em;
-}
-
-.axleValue {
-  font-size: $font-size-sm;
-  font-weight: 700;
-  color: $color-text-primary;
-  font-variant-numeric: tabular-nums;
-}
-
-.axleUnit {
-  font-size: rem(8);
-  margin-left: rem(1);
-  opacity: 0.8;
-}
-
-.axleDanger {
-  color: $color-danger;
-}
-
-.axleDivider {
-  width: 1px;
-  height: rem(12);
-  background-color: rgba(255, 255, 255, 0.15);
-  margin: 0 $space-md;
+  line-height: $font-size-widget;
 }

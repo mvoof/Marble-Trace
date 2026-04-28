@@ -129,7 +129,12 @@ export interface FlagDisplaySettings {
   holdDuration: number;
 }
 
+export interface ChassisWidgetSettings {
+  showInboard: boolean;
+}
+
 export interface WidgetCustomSettings {
+  chassis?: ChassisWidgetSettings;
   flags?: FlagDisplaySettings;
   'flat-flags'?: FlagDisplaySettings;
   speed?: SpeedWidgetSettings;

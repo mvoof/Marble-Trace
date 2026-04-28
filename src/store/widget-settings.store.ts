@@ -15,6 +15,7 @@ import type {
   WeatherWidgetSettings,
   LapTimesWidgetSettings,
   LapDeltaWidgetSettings,
+  ChassisWidgetSettings,
   TimerWidgetSettings,
   WidgetConfig,
   WidgetCustomSettings,
@@ -752,6 +753,15 @@ class WidgetSettingsStore {
         showBestLap: true,
         showP1: true,
         layout: 'vertical',
+      }
+    );
+  }
+
+  getChassisSettings(): ChassisWidgetSettings {
+    const widget = this.getWidget('chassis');
+    return (
+      widget?.customSettings?.chassis ?? {
+        showInboard: true,
       }
     );
   }

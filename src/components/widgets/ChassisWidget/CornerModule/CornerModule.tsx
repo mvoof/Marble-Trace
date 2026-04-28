@@ -7,10 +7,10 @@ interface CornerModuleProps {
   isRight: boolean;
   tempUnit: string;
   lengthUnit: string;
+  showInboard: boolean;
 }
 
 interface InboardTextProps {
-  label: string;
   value: string;
   unit: string;
   color?: string;
@@ -18,7 +18,6 @@ interface InboardTextProps {
 }
 
 const InboardText = ({
-  label,
   value,
   unit,
   color = '#fff',
@@ -33,11 +32,9 @@ const InboardText = ({
         <span className={styles.inboardUnit} style={{ color }}>
           {unit}
         </span>
-        <span className={styles.inboardLabel}>{label}</span>
       </>
     ) : (
       <>
-        <span className={styles.inboardLabel}>{label}</span>
         <span className={styles.inboardValue} style={{ color }}>
           {value}
         </span>
@@ -55,6 +52,7 @@ export const CornerModule = ({
   isRight,
   tempUnit,
   lengthUnit,
+  showInboard,
 }: CornerModuleProps) => {
   const { isPunctured, isBrakeOverheated } = data;
   const hasDamage = isSuspensionBent || isBrakeOverheated;
@@ -142,35 +140,34 @@ export const CornerModule = ({
         </div>
       </div>
 
-      <div
-        className={`${styles.inboardModule} ${isRight ? styles.inboardModuleRight : ''} ${hasDamage ? styles.damagePulse : ''}`}
-      >
+      {showInboard && (
         <div
-          className={styles.brakeBar}
-          style={{ backgroundColor: brakeColor }}
-        />
-        <div className={styles.inboardTexts}>
-          <InboardText
-            label="RH"
-            value={rhFormatted}
-            unit={lengthUnit}
-            isRight={isRight}
+          className={`${styles.inboardModule} ${isRight ? styles.inboardModuleRight : ''} ${hasDamage ? styles.damagePulse : ''}`}
+        >
+          <div
+            className={styles.brakeBar}
+            style={{ backgroundColor: brakeColor }}
           />
-          <InboardText
-            label="BRK"
-            value={brkFormatted}
-            unit={tempUnit}
-            color={brakeColor}
-            isRight={isRight}
-          />
-          <InboardText
-            label="SHK"
-            value={shkFormatted}
-            unit={lengthUnit}
-            isRight={isRight}
-          />
+          <div className={styles.inboardTexts}>
+            <InboardText
+              value={rhFormatted}
+              unit={lengthUnit}
+              isRight={isRight}
+            />
+            <InboardText
+              value={brkFormatted}
+              unit={tempUnit}
+              color={brakeColor}
+              isRight={isRight}
+            />
+            <InboardText
+              value={shkFormatted}
+              unit={lengthUnit}
+              isRight={isRight}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
