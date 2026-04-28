@@ -213,6 +213,13 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         legendPosition: 'right',
         showSectors: true,
         rotationMode: 'fixed',
+        playerDotColor: '#ffffff',
+        showPlayerLabel: true,
+        leaderLabelMode: 'all',
+        trackStrokePx: 10,
+        trackBorderPx: 3,
+        sectorStrokePx: 6,
+        targetDotRadiusPx: 10,
       },
     },
   },
@@ -233,6 +240,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     customSettings: {
       'linear-map': {
         orientation: 'horizontal',
+        playerDotColor: '#ffffff',
       },
     },
   },
@@ -694,6 +702,10 @@ class WidgetSettingsStore {
         playerDotColor: '#ffffff',
         showPlayerLabel: true,
         leaderLabelMode: 'all',
+        trackStrokePx: 10,
+        trackBorderPx: 3,
+        sectorStrokePx: 6,
+        targetDotRadiusPx: 10,
       }
     );
   }

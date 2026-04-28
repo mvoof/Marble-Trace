@@ -89,6 +89,10 @@ export const TrackMapWidget = ({
           playerDotColor={settings.playerDotColor}
           showPlayerLabel={settings.showPlayerLabel}
           leaderLabelMode={settings.leaderLabelMode}
+          trackStrokePx={settings.trackStrokePx}
+          trackBorderPx={settings.trackBorderPx}
+          sectorStrokePx={settings.sectorStrokePx}
+          targetDotRadiusPx={settings.targetDotRadiusPx}
         />
       </div>
 

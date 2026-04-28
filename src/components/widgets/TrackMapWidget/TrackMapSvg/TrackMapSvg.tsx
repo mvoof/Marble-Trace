@@ -8,11 +8,6 @@ import { CarDot } from '../../primitives';
 
 import styles from './TrackMapSvg.module.scss';
 
-const TRACK_STROKE_PX = 10;
-const TRACK_BORDER_PX = 3;
-const SECTOR_STROKE_PX = 6;
-const TARGET_DOT_RADIUS_PX = 10;
-
 interface TrackMapSvgProps {
   svgPath: string;
   viewBox: string;
@@ -23,6 +18,10 @@ interface TrackMapSvgProps {
   playerDotColor?: string;
   showPlayerLabel?: boolean;
   leaderLabelMode?: TrackMapLeaderLabelMode;
+  trackStrokePx?: number;
+  trackBorderPx?: number;
+  sectorStrokePx?: number;
+  targetDotRadiusPx?: number;
 }
 
 export const TrackMapSvg = ({
@@ -35,6 +34,10 @@ export const TrackMapSvg = ({
   playerDotColor = 'white',
   showPlayerLabel = true,
   leaderLabelMode = 'all',
+  trackStrokePx = 10,
+  trackBorderPx = 3,
+  sectorStrokePx = 6,
+  targetDotRadiusPx = 10,
 }: TrackMapSvgProps) => {
   const playerClassId = cars.find((c) => c.isPlayer)?.carClassId ?? -1;
   const parts = viewBox.split(' ').map(Number);
@@ -58,7 +61,7 @@ export const TrackMapSvg = ({
     return () => obs.disconnect();
   }, [vbW, vbH]);
 
-  const dotRadius = TARGET_DOT_RADIUS_PX * pixelScale;
+  const dotRadius = targetDotRadiusPx * pixelScale;
 
   const pathRef = useRef<SVGPathElement>(null);
   const [pathLength, setPathLength] = useState(0);
@@ -81,7 +84,7 @@ export const TrackMapSvg = ({
           d={svgPath}
           fill="none"
           stroke="#252525"
-          strokeWidth={TRACK_BORDER_PX}
+          strokeWidth={trackBorderPx}
           strokeLinejoin="round"
           strokeLinecap="round"
           opacity="0.6"
@@ -94,7 +97,7 @@ export const TrackMapSvg = ({
           d={svgPath}
           fill="none"
           stroke="#272727"
-          strokeWidth={TRACK_STROKE_PX}
+          strokeWidth={trackStrokePx}
           strokeLinejoin="round"
           strokeLinecap="round"
           vectorEffect="non-scaling-stroke"
@@ -114,7 +117,7 @@ export const TrackMapSvg = ({
                 key={`arc-${sector.SectorNum}`}
                 d={svgPath}
                 fill="none"
-                strokeWidth={SECTOR_STROKE_PX}
+                strokeWidth={sectorStrokePx}
                 strokeLinecap="butt"
                 strokeDasharray={`0 ${startDist} ${sectorLen} ${pathLength}`}
                 className={styles.sectorArc}

@@ -75,6 +75,10 @@ export interface TrackMapWidgetSettings {
   playerDotColor: string;
   showPlayerLabel: boolean;
   leaderLabelMode: TrackMapLeaderLabelMode;
+  trackStrokePx: number;
+  trackBorderPx: number;
+  sectorStrokePx: number;
+  targetDotRadiusPx: number;
 }
 
 export type LinearMapOrientation = 'horizontal' | 'vertical';
