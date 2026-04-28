@@ -136,6 +136,7 @@ export const DriverRow = observer(
             <ClassBadge
               color={driver.carClassColor}
               label={driver.carClassShortName}
+              className={styles.badgeFull}
             />
           )}
         </div>
@@ -144,7 +145,7 @@ export const DriverRow = observer(
           {settings.showIRatingBadge && (
             <LicenseBadge
               licString={driver.licString}
-              className={styles.licBadge}
+              className={`${styles.licBadge} ${styles.badgeFull}`}
             />
           )}
         </div>

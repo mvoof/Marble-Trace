@@ -106,6 +106,15 @@
   text-align: right;
 }
 
+// Full width badge for class and license
+.badgeFull {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 // License badge size override for this context
 .licBadge {
   font-size: 0.6875em;
