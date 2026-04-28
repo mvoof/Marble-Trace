@@ -81,6 +81,8 @@ const meta: Meta<React.ComponentProps<typeof ChassisWidget>> = {
     ...DEFAULT_CORNERS,
     tempUnit: '°C',
     lengthUnit: 'mm',
+    onPitRoad: false,
+    showInboard: false,
   },
 };
 
@@ -89,6 +91,12 @@ export default meta;
 type Story = StoryObj<React.ComponentProps<typeof ChassisWidget>>;
 
 export const Default: Story = {};
+
+export const InPits: Story = {
+  args: {
+    onPitRoad: true,
+  },
+};
 
 export const Imperial: Story = {
   args: {

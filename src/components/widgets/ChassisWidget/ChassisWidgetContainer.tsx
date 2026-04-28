@@ -8,7 +8,7 @@ import { buildAllCorners } from './chassis-utils';
 import { ChassisWidget } from './ChassisWidget';
 
 export const ChassisWidgetContainer = observer(() => {
-  const { chassis } = telemetryStore;
+  const { chassis, carStatus } = telemetryStore;
 
   const { showInboard } = widgetSettingsStore.getChassisSettings();
   const widgetRef = useAutoSizeWidget('chassis');
@@ -18,6 +18,7 @@ export const ChassisWidgetContainer = observer(() => {
   const { system } = unitsStore;
   const isMetric = system === 'metric';
   const corners = buildAllCorners(chassis, system);
+  const onPitRoad = carStatus?.on_pit_road ?? false;
 
   return (
     <ChassisWidget
@@ -26,6 +27,7 @@ export const ChassisWidgetContainer = observer(() => {
       tempUnit={isMetric ? '°C' : '°F'}
       lengthUnit={isMetric ? 'mm' : 'in'}
       showInboard={showInboard}
+      onPitRoad={onPitRoad}
     />
   );
 });

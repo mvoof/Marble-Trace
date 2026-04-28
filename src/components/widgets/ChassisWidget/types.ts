@@ -26,4 +26,5 @@ export interface ChassisWidgetProps {
   tempUnit: string;
   lengthUnit: string;
   showInboard: boolean;
+  onPitRoad: boolean;
 }

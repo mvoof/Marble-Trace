@@ -28,3 +28,23 @@
   letter-spacing: 0.05em;
   line-height: $font-size-widget;
 }
+
+.staleNotice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: rem(6);
+  font-size: rem(10);
+  color: $color-caution;
+  font-style: italic;
+  text-align: center;
+  padding: rem(6) rem(8) $space-xs;
+  opacity: 0.9;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: rem(4);
+}
+
+.staleIcon {
+  color: #64748b;
+  flex-shrink: 0;
+}

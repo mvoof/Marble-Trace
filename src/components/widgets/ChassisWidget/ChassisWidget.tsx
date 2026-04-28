@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import { Info } from 'lucide-react';
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import { CornerModule } from './CornerModule/CornerModule';
 import type { ChassisWidgetProps } from './types';
@@ -8,7 +9,7 @@ import styles from './ChassisWidget.module.scss';
 const SUSPENSION_BENT_THRESHOLD_MM = 18;
 
 export const ChassisWidget = forwardRef<HTMLElement, ChassisWidgetProps>(
-  ({ lf, rf, lr, rr, tempUnit, lengthUnit, showInboard }, ref) => {
+  ({ lf, rf, lr, rr, tempUnit, lengthUnit, showInboard, onPitRoad }, ref) => {
     const frontAxleDiff = computeAxleDiff(lf.rideHeight, rf.rideHeight);
     const rearAxleDiff = computeAxleDiff(lr.rideHeight, rr.rideHeight);
 
@@ -27,7 +28,7 @@ export const ChassisWidget = forwardRef<HTMLElement, ChassisWidgetProps>(
     };
 
     return (
-      <WidgetPanel ref={ref} direction="column" gap={8} fitContent>
+      <WidgetPanel ref={ref} direction="column" gap={0} fitContent>
         <div
           className={`${styles.carGrid} ${showInboard ? styles.carGridWithInboard : ''}`}
         >
@@ -66,6 +67,13 @@ export const ChassisWidget = forwardRef<HTMLElement, ChassisWidgetProps>(
             showInboard={showInboard}
           />
         </div>
+
+        {!onPitRoad && (
+          <div className={styles.staleNotice}>
+            <Info size={12} className={styles.staleIcon} />
+            <span>Tire data updates only in pits</span>
+          </div>
+        )}
       </WidgetPanel>
     );
   }
