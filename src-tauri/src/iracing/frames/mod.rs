@@ -142,6 +142,26 @@ pub(crate) struct AllFieldsFrame {
     // === Environment ===
     #[field_name = "AirTemp"]
     pub air_temp: Option<f32>,
+    #[field_name = "TrackTemp"]
+    pub track_temp: Option<f32>,
+    #[field_name = "WindVel"]
+    pub wind_vel: Option<f32>,
+    #[field_name = "WindDir"]
+    pub wind_dir: Option<f32>,
+    #[field_name = "RelativeHumidity"]
+    pub relative_humidity: Option<f32>,
+    #[field_name = "Skies"]
+    pub skies: Option<i32>,
+    #[field_name = "Precipitation"]
+    pub precipitation: Option<f32>,
+    #[field_name = "TrackWetness"]
+    pub track_wetness: Option<i32>,
+    #[field_name = "WeatherDeclaredWet"]
+    pub weather_declared_wet: Option<bool>,
+    #[field_name = "WeatherType"]
+    pub weather_type: Option<i32>,
+    #[field_name = "WeatherVersion"]
+    pub weather_version: Option<i32>,
 
     // === Chassis — Ride Height (meters) ===
     #[field_name = "LFrideHeight"]
@@ -371,6 +391,16 @@ impl From<&AllFieldsFrame> for EnvironmentFrame {
     fn from(f: &AllFieldsFrame) -> Self {
         Self {
             air_temp: f.air_temp,
+            track_temp: f.track_temp,
+            wind_vel: f.wind_vel,
+            wind_dir: f.wind_dir,
+            relative_humidity: f.relative_humidity,
+            skies: f.skies,
+            precipitation: f.precipitation,
+            track_wetness: f.track_wetness,
+            weather_declared_wet: f.weather_declared_wet,
+            weather_type: f.weather_type,
+            weather_version: f.weather_version,
         }
     }
 }

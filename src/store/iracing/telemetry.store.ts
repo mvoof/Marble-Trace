@@ -12,6 +12,7 @@ import type {
   SessionInfo,
   DriverInfoData,
   WeekendInfo,
+  WeatherForecastEntry,
 } from '../../types/bindings';
 import type { SessionWithResults } from '../../types/session-results';
 
@@ -25,6 +26,7 @@ class TelemetryStore {
   lapTiming: LapTimingFrame | null = null;
   session: SessionFrame | null = null;
   sessionInfo: SessionInfo | null = null;
+  weatherForecast: WeatherForecastEntry[] = [];
 
   /**
    * Start positions for the current session, keyed by CarIdx.
@@ -103,6 +105,10 @@ class TelemetryStore {
     this.maybeSnapshotStartPositions(info);
   }
 
+  updateWeatherForecast(entries: WeatherForecastEntry[]) {
+    this.weatherForecast = entries;
+  }
+
   reset() {
     this.carDynamics = null;
     this.carIdx = null;
@@ -113,6 +119,7 @@ class TelemetryStore {
     this.lapTiming = null;
     this.session = null;
     this.sessionInfo = null;
+    this.weatherForecast = [];
     this.startPositions = new Map();
     this.trackedSessionNum = -1;
   }

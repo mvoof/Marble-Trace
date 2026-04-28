@@ -37,6 +37,7 @@ import type {
   LapDeltaWidgetSettings,
   LapDeltaLayout,
   LapTimesLayout,
+  ChassisWidgetSettings,
   TimerWidgetSettings,
 } from '../../../../types/widget-settings';
 import { emit } from '@tauri-apps/api/event';
@@ -198,6 +199,7 @@ export const WidgetSettings = observer(
         {widgetId === 'fuel' && <FuelSettingsPanel />}
         {widgetId === 'lap-times' && <LapTimesSettingsPanel />}
         {widgetId === 'lap-delta' && <LapDeltaSettingsPanel />}
+        {widgetId === 'chassis' && <ChassisSettingsPanel />}
         {widgetId === 'timer' && <TimerSettingsPanel />}
         {(widgetId === 'flags' || widgetId === 'flat-flags') && (
           <FlagDisplaySettingsPanel widgetId={widgetId} />
@@ -844,6 +846,54 @@ const TrackMapSettingsPanel = observer(() => {
         </div>
       </Card>
 
+      <Card title="Track Styling">
+        <Row gutter={[24, 24]}>
+          <Col span={12}>
+            <span className={styles.fieldLabel}>Track Stroke (px)</span>
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.trackStrokePx}
+              min={1}
+              max={30}
+              onChange={(v) => v !== null && update({ trackStrokePx: v })}
+            />
+          </Col>
+
+          <Col span={12}>
+            <span className={styles.fieldLabel}>Track Border (px)</span>
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.trackBorderPx}
+              min={0}
+              max={20}
+              onChange={(v) => v !== null && update({ trackBorderPx: v })}
+            />
+          </Col>
+
+          <Col span={12}>
+            <span className={styles.fieldLabel}>Sector Stroke (px)</span>
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.sectorStrokePx}
+              min={1}
+              max={20}
+              onChange={(v) => v !== null && update({ sectorStrokePx: v })}
+            />
+          </Col>
+
+          <Col span={12}>
+            <span className={styles.fieldLabel}>Target Dot Radius (px)</span>
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.targetDotRadiusPx}
+              min={1}
+              max={30}
+              onChange={(v) => v !== null && update({ targetDotRadiusPx: v })}
+            />
+          </Col>
+        </Row>
+      </Card>
+
       <Card title="Track Database">
         <div className={styles.fieldGroup}>
           <div className={styles.fieldTitle}>Re-record Track</div>
@@ -951,6 +1001,11 @@ const WeatherSettingsPanel = observer(() => {
           value: settings.showHumidity,
           key: 'showHumidity',
         },
+        {
+          title: 'Weather Forecast',
+          value: settings.showForecast,
+          key: 'showForecast',
+        },
       ].map((item) => (
         <div key={item.key} className={styles.fieldGroup}>
           <div className={styles.fieldRow}>
@@ -1016,6 +1071,28 @@ const FuelSettingsPanel = observer(() => {
           min={1}
           max={20}
           onChange={(v) => v !== null && update({ pitWarningLaps: v })}
+        />
+      </div>
+    </Card>
+  );
+});
+
+const ChassisSettingsPanel = observer(() => {
+  const settings = widgetSettingsStore.getChassisSettings();
+
+  const update = (partial: Partial<ChassisWidgetSettings>) => {
+    widgetSettingsStore.updateCustomSettings('chassis', {
+      chassis: { ...settings, ...partial },
+    });
+  };
+
+  return (
+    <Card title="Module Layout">
+      <div className={styles.fieldGroup}>
+        <span className={styles.fieldLabel}>Show Suspension & Brakes</span>
+        <Switch
+          checked={settings.showInboard}
+          onChange={(v) => update({ showInboard: v })}
         />
       </div>
     </Card>

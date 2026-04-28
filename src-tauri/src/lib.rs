@@ -11,7 +11,7 @@ use computations::{
 use iracing::{
     get_last_session_info, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
     CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, EnvironmentFrame,
-    LapTimingFrame, SessionFrame, TelemetryState,
+    LapTimingFrame, SessionFrame, TelemetryState, WeatherForecastEntry,
 };
 use pitwall::SessionInfo;
 use specta::TypeCollection;
@@ -49,7 +49,8 @@ pub fn run() {
         .register::<DriverEntriesFrame>()
         .register::<DriverEntry>()
         .register::<PitStopsFrame>()
-        .register::<LapDeltaFrame>();
+        .register::<LapDeltaFrame>()
+        .register::<WeatherForecastEntry>();
 
     Typescript::default()
         .export_to("../src/types/bindings.ts", &types)

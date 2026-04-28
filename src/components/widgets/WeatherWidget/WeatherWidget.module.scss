@@ -1,76 +1,106 @@
-@use '../../../styles/variables' as *;
-
-.header {
-  padding: $space-md $space-md $space-xs;
-}
-
-.headerLabel {
-  font-family: $font-mono;
-  font-size: $font-size-xs;
-  color: $color-text-muted;
-  letter-spacing: 1px;
-}
-
 .compassBlock {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  padding: $space-xs $space-md $space-sm;
-  gap: $space-xs;
+  padding: $space-sm 0 $space-xs;
 }
 
-.compassInfo {
+.statsGrid {
   display: flex;
-  align-items: baseline;
-  gap: $space-sm;
+  gap: 1px;
+  width: 100%;
 }
 
-.windSpeed {
-  font-family: $font-widget;
-  font-size: $font-size-lg;
-  font-weight: 700;
-  color: $color-text-primary;
-  font-variant-numeric: tabular-nums;
-}
-
-.windCardinal {
-  font-family: $font-mono;
-  font-size: $font-size-xs;
-  font-weight: 700;
-  color: $color-text-muted;
-  letter-spacing: 1px;
-}
-
-.infoBlock {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.statCell {
+  flex: 1 1 0;
+  min-width: 0;
   background: rgba(0, 0, 0, 0.4);
-  padding: rem(6) rem(8);
-  margin: 0 $space-md rem(4);
+  padding: rem(5) rem(6);
+  border-left: 2px solid transparent;
   font-family: $font-mono;
 }
 
-.infoLabel {
+.statLabel {
+  display: block;
   font-size: rem(9);
   color: $color-text-muted;
   letter-spacing: 1px;
 }
 
-.infoValue {
-  font-size: rem(15);
+.statValue {
+  display: block;
+  font-size: rem(13);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.statUnit {
+  font-size: rem(9);
+  color: $color-text-muted;
+  margin-left: 1px;
+}
+
+.statSub {
+  font-size: rem(9);
+  color: $color-text-muted;
+}
+
+// Forecast block — rows styled like TimingRow
+.forecastBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  margin-top: rem(4);
+}
+
+.forecastRow {
+  display: grid;
+  grid-template-columns: rem(34) 1fr rem(56);
+  align-items: center;
+  gap: rem(4);
+  font-family: $font-mono;
+  padding: rem(4) rem(6);
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid rgba(255, 255, 255, 0.1);
+}
+
+.forecastTime {
+  font-size: rem(10);
+  color: $color-text-muted;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.forecastSkies {
+  font-size: rem(11);
+  color: #fff;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.forecastRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.forecastTemp {
+  font-size: rem(13);
   font-weight: 700;
   color: #fff;
   font-variant-numeric: tabular-nums;
 }
 
-.infoUnit {
-  font-size: rem(10);
+.forecastWind {
+  font-size: rem(9);
   color: $color-text-muted;
-  margin-left: 1px;
-}
-
-.infoSubValue {
-  font-size: rem(11);
-  color: $color-text-muted;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }

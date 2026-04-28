@@ -733,6 +733,51 @@ export type EnvironmentFrame = {
    * @see https://sajax.github.io/irsdkdocs/telemetry/airtemp/
    */
   air_temp: number | null;
+  /**
+   * Track surface temperature in °C
+   * @see https://sajax.github.io/irsdkdocs/telemetry/tracktemp/
+   */
+  track_temp: number | null;
+  /**
+   * Wind velocity in m/s
+   * @see https://sajax.github.io/irsdkdocs/telemetry/windvel/
+   */
+  wind_vel: number | null;
+  /**
+   * Wind direction in radians
+   * @see https://sajax.github.io/irsdkdocs/telemetry/winddir/
+   */
+  wind_dir: number | null;
+  /**
+   * Relative humidity (0.0 to 1.0)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/relativehumidity/
+   */
+  relative_humidity: number | null;
+  /**
+   * Skies (0=clear, 1=partly cloudy, 2=mostly cloudy, 3=overcast)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/skies/
+   */
+  skies: number | null;
+  /**
+   * Current amount of precipitation at start/finish (0.0 to 1.0)
+   */
+  precipitation: number | null;
+  /**
+   * Estimate of overall track wetness (0=dry to 7=flooded)
+   */
+  track_wetness: number | null;
+  /**
+   * Whether rain tires are officially allowed
+   */
+  weather_declared_wet: boolean | null;
+  /**
+   * Weather dynamics (Constant vs Dynamic)
+   */
+  weather_type: number | null;
+  /**
+   * Weather system version
+   */
+  weather_version: number | null;
 };
 
 /**
@@ -1165,6 +1210,17 @@ export type TelemetryOptions = {
    * Telemetry disk file path
    */
   TelemetryDiskFile: string | null;
+};
+
+export type WeatherForecastEntry = {
+  Time: number;
+  Temp: number;
+  WindSpeed: number;
+  WindDir: number;
+  Skies: number;
+  Humidity: number;
+  Fog: number;
+  RainPct: number;
 };
 
 /**

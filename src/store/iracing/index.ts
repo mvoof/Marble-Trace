@@ -17,6 +17,7 @@ import type {
   ProximityFrame,
   SessionFrame,
   SessionInfo,
+  WeatherForecastEntry,
 } from '../../types/bindings';
 import { debug } from '../../utils/debug';
 
@@ -295,6 +296,16 @@ class TelemetryConnection {
         if (this.initId !== guardId) return;
         computedStore.updateLapDelta(event.payload);
       })
+    );
+
+    this.unlistens.push(
+      await listen<WeatherForecastEntry[]>(
+        'iracing://weather-forecast',
+        (event) => {
+          if (this.initId !== guardId) return;
+          telemetryStore.updateWeatherForecast(event.payload);
+        }
+      )
     );
   }
 

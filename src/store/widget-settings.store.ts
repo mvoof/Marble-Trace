@@ -392,6 +392,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showTrackTemp: true,
         showWind: true,
         showHumidity: true,
+        showForecast: true,
       },
     },
   },
@@ -723,15 +724,15 @@ class WidgetSettingsStore {
 
   getWeatherSettings(): WeatherWidgetSettings {
     const widget = this.getWidget('weather');
-    return (
-      widget?.customSettings?.weather ?? {
-        showCompass: true,
-        showAirTemp: true,
-        showTrackTemp: true,
-        showWind: true,
-        showHumidity: true,
-      }
-    );
+    const defaults: WeatherWidgetSettings = {
+      showCompass: true,
+      showAirTemp: true,
+      showTrackTemp: true,
+      showWind: true,
+      showHumidity: true,
+      showForecast: true,
+    };
+    return { ...defaults, ...widget?.customSettings?.weather };
   }
 
   getFuelSettings(): FuelWidgetSettings {

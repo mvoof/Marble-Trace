@@ -1,26 +1,45 @@
-@use '../../../../styles/variables' as *;
-
-.compass {
-  display: block;
+.compassWrapper {
+  position: relative;
   flex-shrink: 0;
 }
 
-.faceGroup {
-  transition: transform 0.3s ease;
+.compassSvg {
+  display: block;
+  position: absolute;
+  inset: 0;
 }
 
-.arrowGroup {
-  transition: transform 0.3s ease;
+.rotatingGroup {
+  transition: transform 0.05s linear;
 }
 
 .cardinalLabel {
   font-family: $font-widget;
-  font-size: rem(9);
+  font-size: 13px;
   font-weight: 700;
-  fill: rgba(255, 255, 255, 0.6);
-  letter-spacing: 0;
+  fill: rgba(255, 255, 255, 0.22);
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.6);
+  stroke-width: 3px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .cardinalNorth {
   fill: rgba(255, 255, 255, 0.95);
+}
+
+.bearingText {
+  font-family: $font-widget;
+  font-weight: 700;
+  fill: #fff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+
+.carIcon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
 }

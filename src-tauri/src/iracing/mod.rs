@@ -33,6 +33,7 @@
 /// @see https://sajax.github.io/irsdkdocs/yaml/
 pub mod frames;
 pub mod service;
+pub mod weather_forecast;
 
 pub use frames::{
     CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, EnvironmentFrame,
@@ -42,3 +43,4 @@ pub use service::{
     get_last_session_info, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
     TelemetryState,
 };
+pub use weather_forecast::WeatherForecastEntry;

@@ -40,6 +40,7 @@ use super::frames::{
     AllFieldsFrame, CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame,
     EnvironmentFrame, LapTimingFrame, SessionFrame,
 };
+use super::weather_forecast::parse_weather_forecast;
 use crate::computations::{
     fuel, lap_delta, lap_delta::LapDeltaState, pit_stops::PitStopsFrame, proximity, standings, standings::StandingsState,
 };
@@ -185,6 +186,19 @@ pub async fn start_telemetry_stream(
 
                     if let Err(e) = app_session.emit("iracing://session-info", &*session) {
                         warn!("Failed to emit session info: {}", e);
+                    }
+
+                    let unknown_keys: Vec<String> = session.weekend_info.unknown_fields.keys().cloned().collect();
+                    info!("WeekendInfo unknown fields keys: {:?}", unknown_keys);
+
+                    let forecast = parse_weather_forecast(&session.weekend_info.unknown_fields);
+                    if !forecast.is_empty() {
+                        info!("Weather forecast parsed successfully, {} entries", forecast.len());
+                        if let Err(e) = app_session.emit("iracing://weather-forecast", &forecast) {
+                            warn!("Failed to emit weather forecast: {}", e);
+                        }
+                    } else {
+                        debug!("Weather forecast empty after parsing from unknown_fields");
                     }
                 }
 

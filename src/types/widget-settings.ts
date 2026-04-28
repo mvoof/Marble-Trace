@@ -94,6 +94,7 @@ export interface WeatherWidgetSettings {
   showTrackTemp: boolean;
   showWind: boolean;
   showHumidity: boolean;
+  showForecast: boolean;
 }
 
 export type LapTimesLayout = 'vertical' | 'horizontal';
