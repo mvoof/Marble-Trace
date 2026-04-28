@@ -33,7 +33,7 @@
   display: flex;
   justify-content: center;
   align-items: baseline;
-  font-size: $font-size-sm;
+  font-size: $font-size-md;
   font-weight: 700;
   color: $color-text-muted;
   font-variant-numeric: tabular-nums;
@@ -41,7 +41,7 @@
 }
 
 .wearUnit {
-  font-size: rem(10);
+  font-size: rem(12);
   margin-left: rem(1);
   font-weight: 600;
 }
@@ -88,7 +88,7 @@
 }
 
 .pressureUnit {
-  font-size: rem(10);
+  font-size: rem(12);
   font-weight: 700;
   color: rgba(255, 255, 255, 0.6);
   letter-spacing: 0.05em;
@@ -125,14 +125,14 @@
   display: flex;
   justify-content: center;
   align-items: baseline;
-  font-size: $font-size-sm;
+  font-size: $font-size-md;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
 }
 
 .tempUnit {
-  font-size: rem(10);
+  font-size: rem(12);
   margin-left: rem(1);
   font-weight: 600;
   opacity: 0.8;
