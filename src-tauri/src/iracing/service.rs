@@ -163,8 +163,7 @@ pub async fn start_telemetry_stream(
                 }
             };
 
-            info!("Connected to iRacing successfully");
-            app_clone.emit("iracing://status", "connected").ok();
+            info!("Shared memory mapped, waiting for active session...");
 
             let session_stream = connection.session_updates();
 
@@ -240,8 +239,9 @@ pub async fn start_telemetry_stream(
                                 speed = frame.speed,
                                 rpm = frame.rpm,
                                 gear = frame.gear,
-                                "First telemetry frame received"
+                                "Connected to iRacing — first telemetry frame received"
                             );
+                            app_clone.emit("iracing://status", "connected").ok();
                         }
 
                         emit_domain_frames(
@@ -278,7 +278,6 @@ pub async fn start_telemetry_stream(
                             break;
                         } else {
                             debug!("No telemetry for 3s, but process is running. Waiting...");
-                            app_clone.emit("iracing://status", "waiting").ok();
                         }
                     }
                 }
@@ -309,28 +308,7 @@ pub async fn start_telemetry_stream(
             if !running.load(Ordering::SeqCst) {
                 break;
             }
-
-            app_clone.emit("iracing://status", "waiting").ok();
-
-            loop {
-                if !running.load(Ordering::SeqCst) {
-                    break;
-                }
-
-                let is_running = std::process::Command::new("tasklist")
-                    .arg("/FI")
-                    .arg("IMAGENAME eq iRacingSim64.exe")
-                    .output()
-                    .map(|o| String::from_utf8_lossy(&o.stdout).contains("iRacingSim64.exe"))
-                    .unwrap_or(false);
-
-                if is_running {
-                    debug!("iRacing process detected, attempting reconnect...");
-                    break;
-                }
-
-                sleep(Duration::from_secs(3)).await;
-            }
+            // Outer loop continues: retries Pitwall::connect() until iRacing is back
         }
     });
 
