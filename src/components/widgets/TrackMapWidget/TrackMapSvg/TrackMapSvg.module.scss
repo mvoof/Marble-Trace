@@ -18,15 +18,6 @@
   }
 }
 
-.sectorArrow {
-  opacity: 0.9;
-  @for $i from 0 through 5 {
-    &[data-index='#{$i}'] {
-      color: list.nth($sector-colors, $i + 1);
-    }
-  }
-}
-
 .sfLabel {
   font-family: $font-widget;
   font-size: rem(20);

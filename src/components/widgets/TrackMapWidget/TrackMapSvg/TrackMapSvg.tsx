@@ -72,9 +72,9 @@ export const TrackMapSvg = ({
     }
   }, [svgPath]);
 
-  const validSectors = sectors?.filter(
-    (s) => s.SectorStartPct != null && s.SectorNum != null
-  );
+  const validSectors = sectors
+    ?.filter((s) => s.SectorStartPct != null && s.SectorNum != null)
+    .sort((a, b) => (a.SectorStartPct ?? 0) - (b.SectorStartPct ?? 0));
 
   return (
     <svg ref={svgRef} viewBox={viewBox} className={styles.svgContainer}>
@@ -84,11 +84,10 @@ export const TrackMapSvg = ({
           d={svgPath}
           fill="none"
           stroke="#252525"
-          strokeWidth={trackBorderPx}
+          strokeWidth={trackBorderPx * pixelScale}
           strokeLinejoin="round"
           strokeLinecap="round"
           opacity="0.6"
-          vectorEffect="non-scaling-stroke"
         />
 
         {/* Track surface */}
@@ -97,10 +96,9 @@ export const TrackMapSvg = ({
           d={svgPath}
           fill="none"
           stroke="#272727"
-          strokeWidth={trackStrokePx}
+          strokeWidth={trackStrokePx * pixelScale}
           strokeLinejoin="round"
           strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
         />
 
         {/* Sector colored arcs */}
@@ -117,33 +115,12 @@ export const TrackMapSvg = ({
                 key={`arc-${sector.SectorNum}`}
                 d={svgPath}
                 fill="none"
-                strokeWidth={sectorStrokePx}
+                strokeWidth={sectorStrokePx * pixelScale}
                 strokeLinecap="butt"
                 strokeDasharray={`0 ${startDist} ${sectorLen} ${pathLength}`}
                 className={styles.sectorArc}
                 data-index={i % 6}
-                vectorEffect="non-scaling-stroke"
               />
-            );
-          })}
-
-        {/* Sector direction arrows */}
-        {points.length > 0 &&
-          validSectors?.map((sector, i) => {
-            const pct = sector.SectorStartPct ?? 0;
-            const { x, y } = getPointAtPct(points, pct);
-            const next = getPointAtPct(points, Math.min(pct + 0.01, 0.999));
-            const angle = Math.atan2(next.y - y, next.x - x) * (180 / Math.PI);
-
-            return (
-              <g
-                key={`arrow-${sector.SectorNum}`}
-                transform={`translate(${x},${y}) rotate(${angle})`}
-                className={styles.sectorArrow}
-                data-index={i % 6}
-              >
-                <polygon points="-6,-5 8,0 -6,5" fill="currentColor" />
-              </g>
             );
           })}
 

@@ -72,10 +72,12 @@ export const TrackMapWidget = ({
 
   const visibleSectors = settings.showSectors ? sectors : null;
   const sectorEntries =
-    visibleSectors
+    sectors
       ?.filter((s) => s.SectorNum != null && s.SectorStartPct != null)
       .sort((a, b) => (a.SectorStartPct ?? 0) - (b.SectorStartPct ?? 0))
       .map((s) => ({ sectorNum: s.SectorNum! })) ?? [];
+
+  const hasAnySectorData = sectorEntries.length > 0;
 
   return (
     <WidgetPanel className={styles.trackMap} gap={0}>
@@ -96,20 +98,21 @@ export const TrackMapWidget = ({
         />
       </div>
 
-      {(settings.showLegend ||
-        (settings.showSectors && sectorEntries.length > 0)) && (
-        <div className={styles.bottomBar}>
-          {settings.showLegend && <ClassLegend classes={classColors} />}
+      <div className={styles.bottomBar}>
+        <ClassLegend
+          classes={classColors}
+          className={!settings.showLegend ? styles.hidden : undefined}
+        />
 
-          {settings.showSectors && sectorEntries.length > 0 && (
-            <SectorTimesStrip
-              sectors={sectorEntries}
-              sectorTimes={sectorTimes}
-              currentSectorIdx={currentSectorIdx}
-            />
-          )}
-        </div>
-      )}
+        {hasAnySectorData && (
+          <SectorTimesStrip
+            sectors={sectorEntries}
+            sectorTimes={sectorTimes}
+            currentSectorIdx={currentSectorIdx}
+            className={!settings.showSectors ? styles.hidden : undefined}
+          />
+        )}
+      </div>
     </WidgetPanel>
   );
 };

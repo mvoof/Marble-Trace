@@ -10,14 +10,16 @@ interface SectorTimesStripProps {
   sectors: SectorEntry[];
   sectorTimes: (number | null)[];
   currentSectorIdx?: number;
+  className?: string;
 }
 
 export const SectorTimesStrip = ({
   sectors,
   sectorTimes,
   currentSectorIdx = -1,
+  className,
 }: SectorTimesStripProps) => (
-  <div className={styles.strip}>
+  <div className={[styles.strip, className].filter(Boolean).join(' ')}>
     {sectors.map((sector, i) => {
       const time = sectorTimes[i] ?? null;
 
