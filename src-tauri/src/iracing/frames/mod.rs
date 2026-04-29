@@ -134,6 +134,8 @@ pub(crate) struct AllFieldsFrame {
     pub session_flags: Option<i32>,
     #[field_name = "SessionNum"]
     pub session_num: Option<i32>,
+    #[field_name = "SessionTimeOfDay"]
+    pub session_time_of_day: Option<f32>,
     #[field_name = "PlayerCarIdx"]
     pub player_car_idx: Option<i32>,
     #[field_name = "CarIdxSessionFlags"]
@@ -362,6 +364,7 @@ impl From<&AllFieldsFrame> for SessionFrame {
             session_state: f.session_state,
             session_flags: f.session_flags,
             session_num: f.session_num,
+            session_time_of_day: f.session_time_of_day,
             player_car_idx: f.player_car_idx,
             player_car_flags,
         }

@@ -32,6 +32,10 @@ pub struct SessionFrame {
     /// @see https://sajax.github.io/irsdkdocs/telemetry/sessionnum/
     pub session_num: Option<i32>,
 
+    /// In-simulator time of day in seconds since midnight
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/sessiontimeofday/
+    pub session_time_of_day: Option<f32>,
+
     /// Index of the player's car in CarIdx arrays
     /// @see https://sajax.github.io/irsdkdocs/telemetry/playercaridx/
     pub player_car_idx: Option<i32>,

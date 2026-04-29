@@ -1278,6 +1278,30 @@ const TimerSettingsPanel = observer(() => {
           value: settings.showPosition,
           key: 'showPosition',
         },
+        {
+          title: 'Show PC Clock',
+          desc: 'Display current system time (HH:MM).',
+          value: settings.showWallClock,
+          key: 'showWallClock',
+        },
+        {
+          title: 'Show Sim Time',
+          desc: 'Display in-simulator time of day (HH:MM).',
+          value: settings.showSimTime,
+          key: 'showSimTime',
+        },
+        {
+          title: 'Show PC Date',
+          desc: 'Display current system date.',
+          value: settings.showPcDate,
+          key: 'showPcDate',
+        },
+        {
+          title: 'Show Sim Date',
+          desc: 'Display in-simulator date (may differ from real date).',
+          value: settings.showSimDate,
+          key: 'showSimDate',
+        },
       ].map((item) => (
         <div key={item.key} className={styles.fieldGroup}>
           <div className={styles.fieldRow}>

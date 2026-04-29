@@ -60,6 +60,31 @@
   color: $color-caution;
 }
 
+.clockRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 $space-md $space-xs;
+  gap: $space-md;
+}
+
+.clockItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: $font-mono;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  color: $color-text-primary;
+  letter-spacing: 1px;
+}
+
+.clockLabel {
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}
+
 .footer {
   display: flex;
   justify-content: space-between;

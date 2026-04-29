@@ -1132,6 +1132,11 @@ export type SessionFrame = {
    */
   session_num: number | null;
   /**
+   * In-simulator time of day in seconds since midnight
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessiontimeofday/
+   */
+  session_time_of_day: number | null;
+  /**
    * Index of the player's car in CarIdx arrays
    * @see https://sajax.github.io/irsdkdocs/telemetry/playercaridx/
    */

@@ -123,6 +123,10 @@ export interface TimerWidgetSettings {
   showFlag: boolean;
   showLaps: boolean;
   showPosition: boolean;
+  showWallClock: boolean;
+  showSimTime: boolean;
+  showPcDate: boolean;
+  showSimDate: boolean;
 }
 
 export interface FlagDisplaySettings {

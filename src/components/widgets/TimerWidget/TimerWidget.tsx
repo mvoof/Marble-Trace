@@ -31,6 +31,14 @@ interface TimerWidgetProps {
   showFlag: boolean;
   showLaps: boolean;
   showPosition: boolean;
+  showWallClock: boolean;
+  showSimTime: boolean;
+  showPcDate: boolean;
+  showSimDate: boolean;
+  wallClockTime: string;
+  simTime: string | null;
+  pcDate: string;
+  simDate: string | null;
 }
 
 const formatLapCount = (
@@ -63,10 +71,20 @@ export const TimerWidget = forwardRef<HTMLElement, TimerWidgetProps>(
       showFlag,
       showLaps,
       showPosition,
+      showWallClock,
+      showSimTime,
+      showPcDate,
+      showSimDate,
+      wallClockTime,
+      simTime,
+      pcDate,
+      simDate,
     },
     ref
   ) => {
     const showFooter = showLaps || showPosition;
+    const showClockRow = showWallClock || showSimTime;
+    const showDateRow = showPcDate || showSimDate;
 
     if (sessionEnded) {
       return (
@@ -84,6 +102,40 @@ export const TimerWidget = forwardRef<HTMLElement, TimerWidgetProps>(
           <div className={styles.timeDisplay}>
             <span className={styles.sessionEndedLabel}>END</span>
           </div>
+
+          {showClockRow && (
+            <div className={styles.clockRow}>
+              {showWallClock && (
+                <span className={styles.clockItem}>
+                  <span className={styles.clockLabel}>PC</span>
+                  {wallClockTime}
+                </span>
+              )}
+              {showSimTime && simTime !== null && (
+                <span className={styles.clockItem}>
+                  <span className={styles.clockLabel}>SIM</span>
+                  {simTime}
+                </span>
+              )}
+            </div>
+          )}
+
+          {showDateRow && (
+            <div className={styles.clockRow}>
+              {showPcDate && (
+                <span className={styles.clockItem}>
+                  <span className={styles.clockLabel}>DATE</span>
+                  {pcDate}
+                </span>
+              )}
+              {showSimDate && simDate !== null && (
+                <span className={styles.clockItem}>
+                  <span className={styles.clockLabel}>SIM</span>
+                  {simDate}
+                </span>
+              )}
+            </div>
+          )}
         </WidgetPanel>
       );
     }
@@ -109,6 +161,40 @@ export const TimerWidget = forwardRef<HTMLElement, TimerWidgetProps>(
           <span className={styles.timeMain}>{timeMain}</span>
           <span className={styles.timeSeconds}>{timeSeconds}</span>
         </div>
+
+        {showClockRow && (
+          <div className={styles.clockRow}>
+            {showWallClock && (
+              <span className={styles.clockItem}>
+                <span className={styles.clockLabel}>PC</span>
+                {wallClockTime}
+              </span>
+            )}
+            {showSimTime && simTime !== null && (
+              <span className={styles.clockItem}>
+                <span className={styles.clockLabel}>SIM</span>
+                {simTime}
+              </span>
+            )}
+          </div>
+        )}
+
+        {showDateRow && (
+          <div className={styles.clockRow}>
+            {showPcDate && (
+              <span className={styles.clockItem}>
+                <span className={styles.clockLabel}>DATE</span>
+                {pcDate}
+              </span>
+            )}
+            {showSimDate && simDate !== null && (
+              <span className={styles.clockItem}>
+                <span className={styles.clockLabel}>SIM</span>
+                {simDate}
+              </span>
+            )}
+          </div>
+        )}
 
         {showFooter && (
           <div className={styles.footer}>

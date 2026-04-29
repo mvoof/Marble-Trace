@@ -784,6 +784,10 @@ class WidgetSettingsStore {
         showFlag: true,
         showLaps: true,
         showPosition: true,
+        showWallClock: true,
+        showSimTime: true,
+        showPcDate: false,
+        showSimDate: true,
       }
     );
   }
