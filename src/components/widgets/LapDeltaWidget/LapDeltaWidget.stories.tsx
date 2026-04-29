@@ -1,41 +1,47 @@
-import type { ComponentProps } from 'react';
+import { useRef, type ComponentProps } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { LapDeltaWidget } from './LapDeltaWidget';
+import { LapDeltaWidget, type DeltaDisplayHandle } from './LapDeltaWidget';
 
 const DESIGN_WIDTH = 240;
 const DESIGN_HEIGHT = 160;
 
-const wrap = (props: ComponentProps<typeof LapDeltaWidget>) => (
-  <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-        overflow: 'hidden',
-      }}
-    >
-      <LapDeltaWidget {...props} />
+const wrap = (
+  props: Omit<ComponentProps<typeof LapDeltaWidget>, 'deltaDisplayRef'>
+) => {
+  const deltaDisplayRef = useRef<DeltaDisplayHandle | null>(null);
+  return (
+    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
+          overflow: 'hidden',
+        }}
+      >
+        <LapDeltaWidget {...props} deltaDisplayRef={deltaDisplayRef} />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
-const meta: Meta<typeof LapDeltaWidget> = {
+type StoryArgs = Omit<ComponentProps<typeof LapDeltaWidget>, 'deltaDisplayRef'>;
+
+const meta: Meta<StoryArgs> = {
   title: 'Widgets/LapDeltaWidget',
-  component: LapDeltaWidget,
   parameters: { layout: 'centered' },
   render: (args) => wrap(args),
 };
 
 export default meta;
 
-type Story = StoryObj<typeof LapDeltaWidget>;
+type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {
   args: {
-    deltaFormatted: '+1.234',
-    deltaState: 'behind',
+    initialDeltaFormatted: '+1.234',
+    initialDeltaState: 'behind',
     sectorDeltas: [null, null, null],
     sectorTimes: [null, null, null],
     layout: 'vertical',
@@ -45,8 +51,8 @@ export const Default: Story = {
 
 export const Ahead: Story = {
   args: {
-    deltaFormatted: '-0.456',
-    deltaState: 'ahead',
+    initialDeltaFormatted: '-0.456',
+    initialDeltaState: 'ahead',
     sectorDeltas: [null, null, null],
     sectorTimes: [null, null, null],
     layout: 'vertical',
@@ -56,8 +62,8 @@ export const Ahead: Story = {
 
 export const WithSectors: Story = {
   args: {
-    deltaFormatted: '+0.312',
-    deltaState: 'behind',
+    initialDeltaFormatted: '+0.312',
+    initialDeltaState: 'behind',
     sectorDeltas: [0.1, -0.05, 0.26],
     sectorTimes: [28.4, 31.2, 22.8],
     layout: 'vertical',
@@ -67,8 +73,8 @@ export const WithSectors: Story = {
 
 export const WithSectorsHorizontal: Story = {
   args: {
-    deltaFormatted: '+0.312',
-    deltaState: 'behind',
+    initialDeltaFormatted: '+0.312',
+    initialDeltaState: 'behind',
     sectorDeltas: [0.1, -0.05, 0.26],
     sectorTimes: [28.4, 31.2, 22.8],
     layout: 'horizontal',
@@ -78,8 +84,8 @@ export const WithSectorsHorizontal: Story = {
 
 export const SectorTimesHidden: Story = {
   args: {
-    deltaFormatted: '+0.312',
-    deltaState: 'behind',
+    initialDeltaFormatted: '+0.312',
+    initialDeltaState: 'behind',
     sectorDeltas: [0.1, -0.05, 0.26],
     sectorTimes: [28.4, 31.2, 22.8],
     layout: 'vertical',
@@ -89,8 +95,8 @@ export const SectorTimesHidden: Story = {
 
 export const TwoSectors: Story = {
   args: {
-    deltaFormatted: '-0.180',
-    deltaState: 'ahead',
+    initialDeltaFormatted: '-0.180',
+    initialDeltaState: 'ahead',
     sectorDeltas: [-0.12, -0.06],
     sectorTimes: [30.1, 28.7],
     layout: 'vertical',
@@ -100,8 +106,8 @@ export const TwoSectors: Story = {
 
 export const NearZero: Story = {
   args: {
-    deltaFormatted: '+0.023',
-    deltaState: 'neutral',
+    initialDeltaFormatted: '+0.023',
+    initialDeltaState: 'neutral',
     sectorDeltas: [null, null, null],
     sectorTimes: [null, null, null],
     layout: 'vertical',
@@ -111,8 +117,8 @@ export const NearZero: Story = {
 
 export const NoData: Story = {
   args: {
-    deltaFormatted: '—',
-    deltaState: 'neutral',
+    initialDeltaFormatted: '—',
+    initialDeltaState: 'neutral',
     sectorDeltas: [],
     sectorTimes: [],
     layout: 'vertical',

@@ -114,10 +114,12 @@ export interface FuelWidgetSettings {
 }
 
 export type LapDeltaLayout = 'vertical' | 'horizontal';
+export type LapDeltaReference = 'session_best' | 'personal_best';
 
 export interface LapDeltaWidgetSettings {
   layout: LapDeltaLayout;
   showSectorTimes: boolean;
+  reference: LapDeltaReference;
 }
 
 export interface TimerWidgetSettings {

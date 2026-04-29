@@ -18,10 +18,30 @@ const DELTA_STATE_COLOR: Record<DeltaState, string> = {
   neutral: '#fbbf24',
 };
 
+const SECONDS_PER_MINUTE = 60;
+const SECONDS_PER_HOUR = 3600;
+
 export const formatDelta = (delta: number | null): string => {
   if (delta === null) return '—';
-  const sign = delta >= 0 ? '+' : '';
-  return `${sign}${delta.toFixed(3)}`;
+
+  const sign = delta >= 0 ? '+' : '-';
+  const abs = Math.abs(delta);
+
+  if (abs < SECONDS_PER_MINUTE) {
+    return `${sign}${abs.toFixed(3)}`;
+  }
+
+  if (abs < SECONDS_PER_HOUR) {
+    const m = Math.floor(abs / SECONDS_PER_MINUTE);
+    const s = abs % SECONDS_PER_MINUTE;
+    return `${sign}${m}:${s.toFixed(3).padStart(6, '0')}`;
+  }
+
+  const h = Math.floor(abs / SECONDS_PER_HOUR);
+  const rem = abs % SECONDS_PER_HOUR;
+  const m = Math.floor(rem / SECONDS_PER_MINUTE);
+  const s = rem % SECONDS_PER_MINUTE;
+  return `${sign}${h}:${String(m).padStart(2, '0')}:${s.toFixed(3).padStart(6, '0')}`;
 };
 
 export const deltaBarPct = (delta: number | null): number => {

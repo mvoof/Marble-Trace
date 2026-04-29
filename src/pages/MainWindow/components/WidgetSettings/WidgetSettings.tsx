@@ -36,6 +36,7 @@ import type {
   LapTimesWidgetSettings,
   LapDeltaWidgetSettings,
   LapDeltaLayout,
+  LapDeltaReference,
   LapTimesLayout,
   ChassisWidgetSettings,
   TimerWidgetSettings,
@@ -1118,7 +1119,24 @@ const LapDeltaSettingsPanel = observer(() => {
   };
 
   return (
-    <Card title="Module Layout">
+    <Card title="Module Parameters">
+      <div className={styles.fieldGroup}>
+        <span className={styles.fieldLabel}>Reference Target</span>
+        <Segmented
+          block
+          value={settings.reference}
+          options={[
+            { label: 'Session Best', value: 'session_best' },
+            { label: 'Personal Best', value: 'personal_best' },
+          ]}
+          onChange={(v) => update({ reference: v as LapDeltaReference })}
+        />
+        <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
+          Session Best uses iRacing native live delta. Personal Best uses your
+          own fastest lap in this session as reference.
+        </div>
+      </div>
+
       <div className={styles.fieldGroup}>
         <span className={styles.fieldLabel}>Sectors Layout</span>
         <Segmented

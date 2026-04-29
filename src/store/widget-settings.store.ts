@@ -325,6 +325,13 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     backgroundColor: '#1a1a1a',
     backgroundColorEdge: '#0a0a0a',
     hotkey: '',
+    customSettings: {
+      'lap-delta': {
+        layout: 'vertical',
+        showSectorTimes: true,
+        reference: 'session_best',
+      },
+    },
   },
   {
     id: 'lap-times',
@@ -774,6 +781,7 @@ class WidgetSettingsStore {
       widget?.customSettings?.['lap-delta'] ?? {
         layout: 'vertical',
         showSectorTimes: true,
+        reference: 'session_best',
       }
     );
   }

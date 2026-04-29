@@ -1,4 +1,9 @@
-import { forwardRef } from 'react';
+import {
+  forwardRef,
+  useRef,
+  type MutableRefObject,
+  type RefObject,
+} from 'react';
 import { TimingRow } from '../../shared/TimingRow/TimingRow';
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import {
@@ -12,13 +17,18 @@ import type { DeltaState, LapDeltaLayout } from './lap-delta-utils';
 
 import styles from './LapDeltaWidget.module.scss';
 
+export interface DeltaDisplayHandle {
+  update: (text: string, state: DeltaState) => void;
+}
+
 interface LapDeltaWidgetProps {
-  deltaFormatted: string;
-  deltaState: DeltaState;
+  initialDeltaFormatted: string;
+  initialDeltaState: DeltaState;
   sectorDeltas: (number | null)[];
   sectorTimes: (number | null)[];
   layout: LapDeltaLayout;
   showSectorTimes: boolean;
+  deltaDisplayRef: RefObject<DeltaDisplayHandle | null>;
 }
 
 const DELTA_STATE_CLASS: Record<DeltaState, string> = {
@@ -30,15 +40,40 @@ const DELTA_STATE_CLASS: Record<DeltaState, string> = {
 export const LapDeltaWidget = forwardRef<HTMLElement, LapDeltaWidgetProps>(
   (
     {
-      deltaFormatted,
-      deltaState,
+      initialDeltaFormatted,
+      initialDeltaState,
       sectorDeltas,
       sectorTimes,
       layout,
       showSectorTimes,
+      deltaDisplayRef,
     },
     ref
   ) => {
+    const deltaDivRef = useRef<HTMLDivElement>(null);
+
+    const assignDeltaDisplayHandle = (el: HTMLDivElement | null) => {
+      (deltaDivRef as MutableRefObject<HTMLDivElement | null>).current = el;
+      if (deltaDisplayRef && 'current' in deltaDisplayRef) {
+        (
+          deltaDisplayRef as MutableRefObject<DeltaDisplayHandle | null>
+        ).current = el
+          ? {
+              update: (text, state) => {
+                el.textContent = text;
+                el.className = [
+                  styles.delta,
+                  DELTA_STATE_CLASS[state],
+                  layout === 'horizontal' ? styles.deltaHorizontal : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ');
+              },
+            }
+          : null;
+      }
+    };
+
     const sectorCount = Math.max(sectorDeltas.length, sectorTimes.length);
     const sectors = Array.from({ length: sectorCount }, (_, i) => ({
       time: sectorTimes[i] ?? null,
@@ -55,9 +90,10 @@ export const LapDeltaWidget = forwardRef<HTMLElement, LapDeltaWidgetProps>(
         fitContent
       >
         <div
-          className={`${styles.delta} ${DELTA_STATE_CLASS[deltaState]} ${layout === 'horizontal' ? styles.deltaHorizontal : ''}`}
+          ref={assignDeltaDisplayHandle}
+          className={`${styles.delta} ${DELTA_STATE_CLASS[initialDeltaState]} ${layout === 'horizontal' ? styles.deltaHorizontal : ''}`}
         >
-          {deltaFormatted}
+          {initialDeltaFormatted}
         </div>
 
         {showSectorTimes && (
