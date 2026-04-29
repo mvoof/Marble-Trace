@@ -60,6 +60,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         rpmColorMid: '#eab308',
         rpmColorHigh: '#ef4444',
         rpmColorLimit: '#ff4d00',
+        showPitPanel: true,
+        pitSpeedLimitOverride: null,
       },
     },
   },
@@ -637,6 +639,8 @@ class WidgetSettingsStore {
         rpmColorMid: '#eab308',
         rpmColorHigh: '#ef4444',
         rpmColorLimit: '#ff4d00',
+        showPitPanel: true,
+        pitSpeedLimitOverride: null,
       }
     );
   }

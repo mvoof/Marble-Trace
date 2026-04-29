@@ -3,6 +3,7 @@ import type { SpeedWidgetSettings } from '../../../types/widget-settings';
 import { formatGear } from '../../../utils/telemetry-format';
 import { GearCircle } from './GearCircle/GearCircle';
 import { getShiftZoneColor } from './speed-utils';
+import { PitPanel } from './PitPanel/PitPanel';
 
 import styles from './SpeedWidget.module.scss';
 
@@ -14,6 +15,9 @@ interface SpeedWidgetProps {
   shiftIndicatorPct: number;
   maxShiftRpm: number;
   settings: SpeedWidgetSettings;
+  isOnPitRoad: boolean;
+  isOverPitLimit: boolean;
+  pitLimitFormatted: string;
 }
 
 export const SpeedWidget = ({
@@ -24,6 +28,9 @@ export const SpeedWidget = ({
   shiftIndicatorPct,
   maxShiftRpm,
   settings,
+  isOnPitRoad,
+  isOverPitLimit,
+  pitLimitFormatted,
 }: SpeedWidgetProps) => {
   const gearDisplay = formatGear(gear);
   const isGearFocused = settings.focusMode === 'gear';
@@ -39,32 +46,44 @@ export const SpeedWidget = ({
   const zoneColor = getShiftZoneColor(displayPct, rpmColors);
   const isLimit = shiftIndicatorPct >= 0.99 || displayPct >= 1;
   const centerValue = isGearFocused ? gearDisplay : speed;
+  const showPitPanel = settings.showPitPanel && isOnPitRoad;
 
   return (
-    <WidgetPanel direction="row" className={styles.altPanel}>
-      <div className={styles.statBlock}>
-        <div className={styles.value}>{rpm}</div>
-        <span className={styles.label} style={{ color: rpmColors.limit }}>
-          RPM
-        </span>
-      </div>
+    <div className={styles.root}>
+      {showPitPanel && (
+        <PitPanel
+          isOverLimit={isOverPitLimit}
+          currentSpeed={speed}
+          limitSpeed={pitLimitFormatted}
+          speedUnit={speedUnit}
+        />
+      )}
 
-      <GearCircle
-        displayPct={displayPct}
-        zoneColor={zoneColor}
-        isLimit={isLimit}
-        centerValue={centerValue}
-        rpmLimitColor={rpmColors.limit}
-      />
-
-      <div className={styles.statBlock}>
-        <div className={styles.value}>
-          {isGearFocused ? speed : gearDisplay}
+      <WidgetPanel direction="row" className={styles.altPanel}>
+        <div className={styles.statBlock}>
+          <div className={styles.value}>{rpm}</div>
+          <span className={styles.label} style={{ color: rpmColors.limit }}>
+            RPM
+          </span>
         </div>
-        <span className={styles.label} style={{ color: rpmColors.limit }}>
-          {isGearFocused ? speedUnit : 'GEAR'}
-        </span>
-      </div>
-    </WidgetPanel>
+
+        <GearCircle
+          displayPct={displayPct}
+          zoneColor={zoneColor}
+          isLimit={isLimit}
+          centerValue={centerValue}
+          rpmLimitColor={rpmColors.limit}
+        />
+
+        <div className={styles.statBlock}>
+          <div className={styles.value}>
+            {isGearFocused ? speed : gearDisplay}
+          </div>
+          <span className={styles.label} style={{ color: rpmColors.limit }}>
+            {isGearFocused ? speedUnit : 'GEAR'}
+          </span>
+        </div>
+      </WidgetPanel>
+    </div>
   );
 };

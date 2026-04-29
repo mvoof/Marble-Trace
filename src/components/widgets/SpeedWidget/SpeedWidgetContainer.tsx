@@ -5,17 +5,32 @@ import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { unitsStore } from '../../../store/units.store';
 import { SpeedWidget } from './SpeedWidget';
+import { parsePitSpeedLimitMs } from './speed-utils';
+
+const KPH_TO_MS = 1 / 3.6;
 
 export const SpeedWidgetContainer = observer(() => {
   const frame = telemetryStore.carDynamics;
+  const carStatus = telemetryStore.carStatus;
   const driverInfo = telemetryStore.driverInfo;
+  const weekendInfo = telemetryStore.weekendInfo;
   const { formatSpeed, speedUnit } = unitsStore;
   const settings = widgetSettingsStore.getSpeedSettings();
 
   const speed = frame ? formatSpeed(frame.speed) : '0';
+  const speedMs = frame?.speed ?? 0;
   const rpm = frame ? Math.round(frame.rpm) : 0;
   const gear = frame?.gear ?? 0;
   const shiftIndicatorPct = frame?.shift_indicator_pct ?? 0;
+  const isOnPitRoad = carStatus?.on_pit_road ?? false;
+
+  const pitLimitMs =
+    settings.pitSpeedLimitOverride !== null
+      ? settings.pitSpeedLimitOverride * KPH_TO_MS
+      : parsePitSpeedLimitMs(weekendInfo?.TrackPitSpeedLimit ?? null);
+
+  const isOverPitLimit = isOnPitRoad && pitLimitMs > 0 && speedMs > pitLimitMs;
+  const pitLimitFormatted = pitLimitMs > 0 ? formatSpeed(pitLimitMs) : '—';
 
   const initialMax =
     driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
@@ -45,6 +60,9 @@ export const SpeedWidgetContainer = observer(() => {
       shiftIndicatorPct={shiftIndicatorPct}
       maxShiftRpm={maxShiftRpmRef.current || initialMax}
       settings={settings}
+      isOnPitRoad={isOnPitRoad}
+      isOverPitLimit={isOverPitLimit}
+      pitLimitFormatted={pitLimitFormatted}
     />
   );
 });

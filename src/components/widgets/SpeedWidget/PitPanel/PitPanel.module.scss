@@ -1,0 +1,94 @@
+@use '../../../../styles/variables' as *;
+
+$panel-h: rem(36);
+$blue-main: #1a5fcc;
+$blue-glow: rgba(30, 100, 220, 0.6);
+$red-main: #cc1a1a;
+$red-glow: rgba(220, 30, 30, 0.65);
+
+.panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: $panel-h;
+  flex-shrink: 0;
+  padding: 0 rem(10) 0 rem(14);
+  border-radius: rem(8) rem(8) 0 0;
+  font-family: $font-widget;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  animation: slideIn 0.15s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panelSafe {
+  background: $blue-main;
+  box-shadow:
+    0 0 12px $blue-glow,
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.panelWarn {
+  background: $red-main;
+  box-shadow:
+    0 0 16px $red-glow,
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+  animation:
+    slideIn 0.15s ease-out,
+    warnPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes warnPulse {
+  0%,
+  100% {
+    background: $red-main;
+    box-shadow:
+      0 0 16px $red-glow,
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+  }
+  50% {
+    background: lighten($red-main, 8%);
+    box-shadow:
+      0 0 28px $red-glow,
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+  }
+}
+
+.label {
+  font-size: rem(13);
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  height: rem(22);
+  padding: 0 rem(10);
+  border-radius: rem(4);
+  background: rgba(0, 0, 0, 0.3);
+  font-size: rem(11);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

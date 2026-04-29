@@ -8,6 +8,8 @@ export interface SpeedWidgetSettings {
   rpmColorMid: string;
   rpmColorHigh: string;
   rpmColorLimit: string;
+  showPitPanel: boolean;
+  pitSpeedLimitOverride: number | null;
 }
 
 export type InputTraceBarMode = 'horizontal' | 'vertical' | 'hidden';

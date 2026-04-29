@@ -321,6 +321,40 @@ const SpeedSettings = observer(() => {
           </div>
         </div>
       )}
+
+      <div className={styles.fieldGroup}>
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>Pit Lane Panel</div>
+            <div className={styles.fieldDesc}>
+              Show banner with pit speed info when on pit road.
+            </div>
+          </div>
+          <Switch
+            checked={settings.showPitPanel}
+            onChange={(v) => update({ showPitPanel: v })}
+          />
+        </div>
+      </div>
+
+      {settings.showPitPanel && (
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>Pit Speed Override (km/h)</span>
+          <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+            Leave 0 to auto-detect from session data.
+          </div>
+          <InputNumber
+            style={{ width: '100%' }}
+            value={settings.pitSpeedLimitOverride ?? 0}
+            min={0}
+            max={200}
+            step={5}
+            onChange={(v) =>
+              update({ pitSpeedLimitOverride: v && v > 0 ? v : null })
+            }
+          />
+        </div>
+      )}
     </Card>
   );
 });
