@@ -718,6 +718,7 @@ class WidgetSettingsStore {
       widget?.customSettings?.['linear-map'] ?? {
         orientation: 'horizontal',
         playerDotColor: '#ffffff',
+        targetDotRadiusPx: 9,
       }
     );
   }

@@ -24,6 +24,7 @@ export const LinearMapWidget = ({
         player={player}
         isHorizontal={isHorizontal}
         playerDotColor={settings.playerDotColor}
+        targetDotRadiusPx={settings.targetDotRadiusPx}
       />
     </WidgetPanel>
   );

@@ -727,6 +727,15 @@ const LinearMapSettingsPanel = observer(() => {
               onChange={(c) => update({ playerDotColor: c.toHexString() })}
             />
           </div>
+
+          <span className={styles.fieldLabel}>Dot Radius (px)</span>
+          <InputNumber
+            style={{ width: '100%' }}
+            value={settings.targetDotRadiusPx}
+            min={1}
+            max={30}
+            onChange={(v) => v !== null && update({ targetDotRadiusPx: v })}
+          />
         </div>
       </Card>
     </>
