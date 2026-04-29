@@ -91,6 +91,8 @@ pub fn run() {
             standings_state: Arc::new(Mutex::new(StandingsState::default())),
             pit_warning_laps: Arc::new(std::sync::atomic::AtomicU32::new(3.0f32.to_bits())),
             track_length_m: Arc::new(Mutex::new(None)),
+            cached_avg_per_lap: Arc::new(Mutex::new(None)),
+            last_lap_for_avg: Arc::new(std::sync::atomic::AtomicI32::new(-1)),
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {

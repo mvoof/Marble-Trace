@@ -4,6 +4,7 @@ import { emit } from '@tauri-apps/api/event';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { telemetryConnectionStore } from '../../store/iracing';
+import { WIDGET_REGISTRY } from '../../utils/widget-registry';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
 import styles from './WidgetContainer.module.scss';
 
@@ -48,6 +49,7 @@ export const WidgetContainer = observer(
     const height = widget?.height ?? 200;
     const designWidth = widget?.designWidth ?? width;
     const designHeight = widget?.designHeight ?? height;
+    const autoHeight = WIDGET_REGISTRY[widgetId]?.autoHeight ?? false;
 
     const background = shouldHide
       ? 'transparent'
@@ -144,7 +146,7 @@ export const WidgetContainer = observer(
           left: x,
           top: y,
           width,
-          height,
+          height: autoHeight ? 'auto' : height,
           visibility: shouldHide ? 'hidden' : 'visible',
         }}
       >

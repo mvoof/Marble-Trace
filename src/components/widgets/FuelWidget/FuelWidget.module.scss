@@ -218,6 +218,20 @@
   font-weight: 500;
 }
 
+.pitWarningSplitPit {
+  margin-top: rem(6);
+  padding: rem(4) rem(6);
+  background: rgba($color-error, 0.12);
+  border: 1px solid rgba($color-error, 0.4);
+  border-radius: 3px;
+  font-family: $font-mono;
+  font-size: rem(10);
+  font-weight: 700;
+  color: $color-error;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
 .chart {
   padding: rem(4) rem(8) rem(8);
   display: flex;
@@ -234,6 +248,6 @@
 
 .chartCanvas {
   width: 100%;
-  height: rem(100);
+  height: rem(200);
   display: block;
 }

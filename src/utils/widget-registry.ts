@@ -21,6 +21,7 @@ export interface WidgetEntry {
   component: React.ComponentType<{
     onVisibilityChange?: (visible: boolean) => void;
   }>;
+  autoHeight?: boolean;
 }
 
 export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
@@ -39,6 +40,6 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
   'lap-times': { component: LapTimesWidgetContainer },
   timer: { component: TimerWidgetContainer },
   weather: { component: WeatherWidgetContainer },
-  fuel: { component: FuelWidgetContainer },
+  fuel: { component: FuelWidgetContainer, autoHeight: true },
   'flat-flags': { component: FlatFlagsWidgetContainer },
 };

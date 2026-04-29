@@ -19,9 +19,21 @@ export const FuelWidgetContainer = observer(() => {
   const currentLap =
     playerCarIdx !== null ? (carIdx?.car_idx_lap[playerCarIdx] ?? null) : null;
 
+  const sessionNum = telemetryStore.session?.session_num ?? null;
+
   const [lapFuelHistory, setLapFuelHistory] = useState<number[]>([]);
   const lastLapRef = useRef<number | null>(null);
   const lapStartFuelRef = useRef<number | null>(null);
+  const lastSessionNumRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (sessionNum !== null && sessionNum !== lastSessionNumRef.current) {
+      lastSessionNumRef.current = sessionNum;
+      setLapFuelHistory([]);
+      lastLapRef.current = null;
+      lapStartFuelRef.current = null;
+    }
+  }, [sessionNum]);
 
   useEffect(() => {
     const fuelLevel = carStatus?.fuel_level ?? null;
@@ -48,19 +60,44 @@ export const FuelWidgetContainer = observer(() => {
     }
   }, [currentLap, carStatus?.fuel_level]);
 
+  const fuelLevel = carStatus?.fuel_level ?? null;
+
+  const historyAvg =
+    lapFuelHistory.length >= 1
+      ? lapFuelHistory.reduce((a, b) => a + b, 0) / lapFuelHistory.length
+      : null;
+
+  const lapsRemaining =
+    historyAvg !== null && historyAvg > 0 && fuelLevel !== null
+      ? fuelLevel / historyAvg
+      : null;
+
+  const pitWarning =
+    lapsRemaining !== null && lapsRemaining < settings.pitWarningLaps;
+
+  const fuelMax = driverInfo?.DriverCarFuelMaxLtr ?? null;
+  const fuelToAddWithBuffer = fuel?.fuelToAddWithBuffer ?? null;
+  const tankTooSmall =
+    fuelToAddWithBuffer !== null &&
+    fuelMax !== null &&
+    fuelLevel !== null &&
+    fuelToAddWithBuffer > fuelMax - fuelLevel;
+
   return (
     <FuelWidget
-      fuelLevel={carStatus?.fuel_level ?? null}
-      fuelMax={driverInfo?.DriverCarFuelMaxLtr ?? null}
+      fuelLevel={fuelLevel}
+      fuelMax={fuelMax}
       avgPerLap={fuel?.avgPerLap ?? null}
-      lapsRemaining={fuel?.lapsRemaining ?? null}
+      currentUsePerLap={fuel?.currentUsePerLap ?? null}
+      lapsRemaining={lapsRemaining}
       shortage={fuel?.shortage ?? null}
       lapsToFinish={fuel?.lapsToFinish ?? null}
-      fuelToAddWithBuffer={fuel?.fuelToAddWithBuffer ?? null}
+      fuelToAddWithBuffer={fuelToAddWithBuffer}
       fuelSavePerLap={fuel?.fuelSavePerLap ?? null}
-      pitWarning={fuel?.pitWarning ?? false}
+      pitWarning={pitWarning}
       pitWindowStart={fuel?.pitWindowStart ?? null}
       pitWindowEnd={fuel?.pitWindowEnd ?? null}
+      tankTooSmall={tankTooSmall}
       showChart={settings.showChart}
       chartType={settings.chartType}
       lapFuelHistory={lapFuelHistory}

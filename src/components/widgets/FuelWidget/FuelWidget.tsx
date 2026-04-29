@@ -1,11 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { WidgetPanel } from '../primitives/WidgetPanel';
-import {
-  formatFuelLiters,
-  formatLaps,
-  type FuelCalculations,
-} from './fuel-utils';
+import { formatFuelLiters, type FuelCalculations } from './fuel-utils';
 
 import styles from './FuelWidget.module.scss';
 
@@ -13,6 +9,7 @@ interface FuelWidgetProps {
   fuelLevel: number | null;
   fuelMax: number | null;
   avgPerLap: FuelCalculations['avgPerLap'];
+  currentUsePerLap: number | null;
   lapsRemaining: FuelCalculations['lapsRemaining'];
   lapsToFinish: FuelCalculations['lapsToFinish'];
   shortage: FuelCalculations['shortage'];
@@ -21,6 +18,7 @@ interface FuelWidgetProps {
   pitWarning: FuelCalculations['pitWarning'];
   pitWindowStart: FuelCalculations['pitWindowStart'];
   pitWindowEnd: FuelCalculations['pitWindowEnd'];
+  tankTooSmall: boolean;
   showChart: boolean;
   chartType: 'line' | 'bar';
   lapFuelHistory: number[];
@@ -32,9 +30,9 @@ const statusClass = (shortage: number | null): string => {
 };
 
 const statusText = (shortage: number | null): string => {
-  if (shortage === null) return 'SAFE';
-  if (shortage < 0) return 'SHORT';
-  return `SAFE +${shortage.toFixed(1)}L`;
+  if (shortage === null) return '—';
+  const sign = shortage >= 0 ? '+' : '';
+  return `FINISH ${sign}${shortage.toFixed(1)} L`;
 };
 
 const valueClass = (shortage: number | null): string => {
@@ -45,13 +43,17 @@ const valueClass = (shortage: number | null): string => {
 interface FuelChartProps {
   history: number[];
   chartType: 'line' | 'bar';
-  avgPerLap: number | null;
 }
 
 const MAX_VISIBLE = 30;
-const Y_LABEL_W = 32;
-const X_LABEL_H = 14;
+const Y_LABEL_W = 36;
+const X_LABEL_H = 18;
 const GRID_COUNT = 4;
+const BAR_WIDTH = 5;
+const BAR_GAP = 2;
+
+const AVG_LINE_COLOR = 'rgba(251,191,36,0.9)';
+const AVG_LABEL_COLOR = 'rgba(251,191,36,0.8)';
 
 const barColor = (v: number, avg: number | null): string => {
   if (avg === null) return '#3399ff';
@@ -65,7 +67,7 @@ const drawYLabels = (
   plotH: number,
   totalW: number
 ) => {
-  ctx.font = 'bold 9px monospace';
+  ctx.font = 'bold 11px monospace';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = 'rgba(255,255,255,0.55)';
@@ -102,9 +104,9 @@ const drawAvgLine = (
   avgY: number,
   plotW: number
 ) => {
-  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([4, 3]);
+  ctx.strokeStyle = AVG_LINE_COLOR;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([5, 4]);
   ctx.beginPath();
   ctx.moveTo(0, avgY);
   ctx.lineTo(plotW, avgY);
@@ -114,7 +116,7 @@ const drawAvgLine = (
   ctx.font = 'bold 8px monospace';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'bottom';
-  ctx.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx.fillStyle = AVG_LABEL_COLOR;
   ctx.fillText('AVG', 1, avgY - 1);
 };
 
@@ -125,12 +127,12 @@ const drawXLabels = (
   barW: number,
   plotH: number
 ) => {
-  ctx.font = '8px monospace';
+  ctx.font = '10px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
 
-  const step = n <= 10 ? 1 : n <= 20 ? 2 : 5;
+  const step = n <= 20 ? 1 : 5;
   for (let i = 0; i < n; i++) {
     if (i % step !== 0 && i !== n - 1) continue;
     const cx = i * barWPlusGap + barW / 2;
@@ -154,9 +156,8 @@ const drawBarChart = (
   const max = Math.max(...data) * 1.08;
   const range = max - min || 1;
 
-  const gap = n > 1 ? Math.max(1, Math.floor(plotW / n / 8)) : 0;
-  const barW = Math.max(2, (plotW - gap * (n - 1)) / n);
-  const stride = barW + gap;
+  const barW = BAR_WIDTH;
+  const stride = barW + BAR_GAP;
 
   const toBarH = (v: number) => ((v - min) / range) * plotH;
 
@@ -187,6 +188,7 @@ const drawLineChart = (
   avg: number | null
 ) => {
   const data = history.slice(-MAX_VISIBLE);
+  const n = data.length;
   const plotW = w - Y_LABEL_W;
   const plotH = h - X_LABEL_H;
 
@@ -226,20 +228,18 @@ const drawLineChart = (
     ctx.fill();
   });
 
-  // X labels for line chart
-  const n = data.length;
-  const step = n <= 10 ? 1 : n <= 20 ? 2 : 5;
-  ctx.font = '8px monospace';
+  const step = n <= 20 ? 1 : 5;
+  ctx.font = '10px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
   for (let i = 0; i < n; i++) {
     if (i % step !== 0 && i !== n - 1) continue;
     ctx.fillText(String(i + 1), toX(i), plotH + 3);
   }
 };
 
-const FuelChart = ({ history, chartType, avgPerLap }: FuelChartProps) => {
+const FuelChart = ({ history, chartType }: FuelChartProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -248,6 +248,8 @@ const FuelChart = ({ history, chartType, avgPerLap }: FuelChartProps) => {
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    const avg = history.reduce((a, b) => a + b, 0) / history.length;
 
     const dpr = window.devicePixelRatio || 1;
     const w = canvas.offsetWidth;
@@ -259,11 +261,11 @@ const FuelChart = ({ history, chartType, avgPerLap }: FuelChartProps) => {
     ctx.clearRect(0, 0, w, h);
 
     if (chartType === 'bar') {
-      drawBarChart(ctx, history, w, h, avgPerLap);
+      drawBarChart(ctx, history, w, h, avg);
     } else {
-      drawLineChart(ctx, history, w, h, avgPerLap);
+      drawLineChart(ctx, history, w, h, avg);
     }
-  }, [history, chartType, avgPerLap]);
+  }, [history, chartType]);
 
   return <canvas ref={canvasRef} className={styles.chartCanvas} />;
 };
@@ -272,6 +274,7 @@ export const FuelWidget = ({
   fuelLevel,
   fuelMax,
   avgPerLap,
+  currentUsePerLap,
   lapsRemaining,
   lapsToFinish,
   shortage,
@@ -280,6 +283,7 @@ export const FuelWidget = ({
   pitWarning,
   pitWindowStart,
   pitWindowEnd,
+  tankTooSmall,
   showChart,
   chartType,
   lapFuelHistory,
@@ -295,10 +299,11 @@ export const FuelWidget = ({
       ? `LAP ${pitWindowStart}–${pitWindowEnd}`
       : '—';
 
-  const lapsDisplay =
-    lapsRemaining !== null && lapsToFinish !== null
-      ? `${formatLaps(lapsRemaining)} / ${formatLaps(lapsToFinish)}`
-      : formatLaps(lapsRemaining);
+  const lapsRemainingText =
+    lapsRemaining !== null ? `${lapsRemaining.toFixed(1)} LAP` : '—';
+
+  void lapsToFinish;
+  void fuelSavePerLap;
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={200}>
@@ -328,46 +333,29 @@ export const FuelWidget = ({
 
       <div className={styles.rows}>
         <div className={styles.row}>
-          <span className={styles.rowLabel}>PER LAP</span>
+          <span className={styles.rowLabel}>AVG/LAP</span>
           <span className={styles.rowValue}>{formatFuelLiters(avgPerLap)}</span>
         </div>
 
         <div className={styles.row}>
-          <span className={styles.rowLabel}>LEFT / FINISH</span>
-          <span className={`${styles.rowValue} ${valueClass(shortage)}`}>
-            {lapsDisplay}
+          <span className={styles.rowLabel}>NOW/LAP</span>
+          <span className={`${styles.rowValue} ${styles.rowValueMuted}`}>
+            {formatFuelLiters(currentUsePerLap)}
           </span>
         </div>
 
-        {fuelSavePerLap !== null ? (
-          <div className={styles.row}>
-            <span className={styles.rowLabel}>SAVE/LAP</span>
-            <span className={`${styles.rowValue} ${styles.rowValueWarn}`}>
-              {fuelSavePerLap.toFixed(2)} L
-            </span>
-          </div>
-        ) : (
-          !isShort &&
-          fuelToAddWithBuffer !== null &&
-          fuelToAddWithBuffer > 0 && (
-            <div className={styles.row}>
-              <span className={styles.rowLabel}>FILL +1 LAP</span>
-              <span className={`${styles.rowValue} ${styles.rowValueMuted}`}>
-                {formatFuelLiters(fuelToAddWithBuffer)}
-              </span>
-            </div>
-          )
-        )}
+        <div className={styles.row}>
+          <span className={styles.rowLabel}>LAPS LEFT</span>
+          <span className={`${styles.rowValue} ${valueClass(shortage)}`}>
+            {lapsRemainingText}
+          </span>
+        </div>
       </div>
 
       {showChart && lapFuelHistory.length >= 2 && (
         <div className={styles.chart}>
           <span className={styles.chartLabel}>USE/LAP HISTORY</span>
-          <FuelChart
-            history={lapFuelHistory}
-            chartType={chartType}
-            avgPerLap={avgPerLap}
-          />
+          <FuelChart history={lapFuelHistory} chartType={chartType} />
         </div>
       )}
 
@@ -384,7 +372,9 @@ export const FuelWidget = ({
 
           <div className={styles.pitWarningBody}>
             <div className={styles.pitWarningBodyLeft}>
-              <span className={styles.pitWarningBodyLabel}>TO REFUEL</span>
+              <span className={styles.pitWarningBodyLabel}>
+                TO REFUEL FOR FINISH
+              </span>
               <span className={styles.pitWarningBodySub}>
                 incl. +1 lap buffer
               </span>
@@ -398,6 +388,12 @@ export const FuelWidget = ({
               <span className={styles.pitWarningAmountUnit}> L</span>
             </span>
           </div>
+
+          {tankTooSmall && (
+            <div className={styles.pitWarningSplitPit}>
+              TANK TOO SMALL — SPLIT PIT REQUIRED
+            </div>
+          )}
         </div>
       )}
     </WidgetPanel>
