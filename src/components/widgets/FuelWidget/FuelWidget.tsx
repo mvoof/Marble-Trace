@@ -11,7 +11,6 @@ interface FuelWidgetProps {
   avgPerLap: FuelCalculations['avgPerLap'];
   currentUsePerLap: number | null;
   lapsRemaining: FuelCalculations['lapsRemaining'];
-  lapsToFinish: FuelCalculations['lapsToFinish'];
   shortage: FuelCalculations['shortage'];
   fuelToAddWithBuffer: FuelCalculations['fuelToAddWithBuffer'];
   pitWarning: FuelCalculations['pitWarning'];
@@ -310,9 +309,6 @@ export const FuelWidget = ({
 
   const lapsRemainingText =
     lapsRemaining !== null ? `${lapsRemaining.toFixed(1)} LAP` : '—';
-
-  void lapsToFinish;
-  void fuelSavePerLap;
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={200}>
