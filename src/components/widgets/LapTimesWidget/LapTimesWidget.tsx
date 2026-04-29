@@ -53,7 +53,7 @@ export const LapTimesWidget = forwardRef<HTMLElement, LapTimesWidgetProps>(
       {
         label: 'CURRENT',
         time: currentLapTime,
-        delta: '—',
+        delta: '',
         accentColor: COLOR_CURRENT,
       },
     ];

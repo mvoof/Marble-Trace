@@ -9,6 +9,15 @@
   padding: rem(4) rem(6);
   background: rgba(0, 0, 0, 0.3);
   border-left: 3px solid transparent;
+
+  &.noDelta {
+    grid-template-columns: rem(50) 1fr;
+
+    .time {
+      border-right: none;
+      padding-right: 0;
+    }
+  }
 }
 
 .label {
