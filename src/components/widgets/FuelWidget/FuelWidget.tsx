@@ -129,6 +129,9 @@ const drawAvgLine = (
   ctx.fillText('AVG', 1, avgY - 1);
 };
 
+const LABEL_CHAR_W = 7;
+const LABEL_MIN_GAP = 2;
+
 const drawXLabels = (
   ctx: CanvasRenderingContext2D,
   n: number,
@@ -141,11 +144,16 @@ const drawXLabels = (
   ctx.textBaseline = 'top';
   ctx.fillStyle = 'rgba(255,255,255,0.55)';
 
-  const step = n <= 20 ? 1 : 5;
+  const maxLabelW = String(n).length * LABEL_CHAR_W + LABEL_MIN_GAP;
+  const step = Math.max(1, Math.ceil(maxLabelW / barWPlusGap));
+
+  let lastDrawnX = -Infinity;
   for (let i = 0; i < n; i++) {
-    if (i % step !== 0 && i !== n - 1) continue;
+    if (i % step !== 0) continue;
     const cx = i * barWPlusGap + barW / 2;
+    if (cx - lastDrawnX < maxLabelW) continue;
     ctx.fillText(String(i + 1), cx, plotH + 3);
+    lastDrawnX = cx;
   }
 };
 
@@ -237,14 +245,21 @@ const drawLineChart = (
     ctx.fill();
   });
 
-  const step = n <= 20 ? 1 : 5;
+  const lineStride = data.length > 1 ? plotW / (data.length - 1) : plotW;
+  const maxLabelW = String(n).length * LABEL_CHAR_W + LABEL_MIN_GAP;
+  const step = Math.max(1, Math.ceil(maxLabelW / lineStride));
+
   ctx.font = '10px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  let lastDrawnX = -Infinity;
   for (let i = 0; i < n; i++) {
-    if (i % step !== 0 && i !== n - 1) continue;
-    ctx.fillText(String(i + 1), toX(i), plotH + 3);
+    if (i % step !== 0) continue;
+    const cx = toX(i);
+    if (cx - lastDrawnX < maxLabelW) continue;
+    ctx.fillText(String(i + 1), cx, plotH + 3);
+    lastDrawnX = cx;
   }
 };
 
