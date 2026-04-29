@@ -61,8 +61,8 @@ const buildStatCells = (
       key: 'wind',
       label: 'WIND',
       value: windSpeedFormatted,
-      sub: windCardinal,
       color: windColor,
+      wide: true,
     },
     showHumidity && {
       key: 'hum',
@@ -77,6 +77,7 @@ const buildStatCells = (
     unit?: string;
     sub?: string;
     color: string;
+    wide?: boolean;
   }[];
 
 const formatForecastTime = (timeSec: number): string => {
@@ -167,7 +168,7 @@ export const WeatherWidget = forwardRef<HTMLElement, WeatherWidgetProps>(
             {stats.map((cell) => (
               <div
                 key={cell.key}
-                className={styles.statCell}
+                className={`${styles.statCell}${cell.wide ? ` ${styles.statCellWide}` : ''}`}
                 style={{ borderLeftColor: cell.color }}
               >
                 <span className={styles.statLabel}>{cell.label}</span>

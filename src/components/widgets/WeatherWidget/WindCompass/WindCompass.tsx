@@ -56,22 +56,7 @@ export const WindCompass = ({
         viewBox="-110 -110 220 220"
         className={styles.compassSvg}
       >
-        {/* 1. Wind arrow — inside the ring, pointing from outside towards car */}
-        <g transform={`rotate(${relativeBearing})`} pointerEvents="none">
-          <WindArrowIcon
-            x="-14"
-            y={-arrowBaseRadius}
-            width="28"
-            height={arrowHeight}
-            style={{
-              color: arrowColor,
-              transform: 'rotate(180deg)',
-              transformOrigin: `0px ${-arrowBaseRadius + arrowHeight / 2}px`,
-            }}
-          />
-        </g>
-
-        {/* 2. Rotating Ring + Ticks + Labels */}
+        {/* 1. Rotating Ring + Ticks + Labels */}
         <g
           transform={`rotate(${ringRotation})`}
           className={styles.rotatingGroup}
@@ -120,13 +105,12 @@ export const WindCompass = ({
             const rad = (angle * Math.PI) / 180;
             const x = Math.sin(rad) * LABEL_RADIUS;
             const y = -Math.cos(rad) * LABEL_RADIUS;
-            const isNorth = label === 'N';
             return (
               <g key={label} transform={`translate(${x}, ${y})`}>
                 <text
                   textAnchor="middle"
                   dominantBaseline="central"
-                  className={`${styles.cardinalLabel} ${isNorth ? styles.cardinalNorth : ''}`}
+                  className={styles.cardinalLabel}
                   transform={`rotate(${-ringRotation})`}
                 >
                   {label}
@@ -134,6 +118,21 @@ export const WindCompass = ({
               </g>
             );
           })}
+        </g>
+
+        {/* 2. Wind arrow — above ring, pointing from outside towards car */}
+        <g transform={`rotate(${relativeBearing})`} pointerEvents="none">
+          <WindArrowIcon
+            x="-14"
+            y={-arrowBaseRadius}
+            width="28"
+            height={arrowHeight}
+            style={{
+              color: arrowColor,
+              transform: 'rotate(180deg)',
+              transformOrigin: `0px ${-arrowBaseRadius + arrowHeight / 2}px`,
+            }}
+          />
         </g>
 
         {/* 3. Static Overlays */}
