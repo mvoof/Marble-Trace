@@ -412,8 +412,9 @@ pub fn parse_start_positions(results: &[serde_yaml_ng::Value]) -> HashMap<i32, (
     for val in results {
         if let Ok(rp) = serde_yaml_ng::from_value::<ResultPos>(val.clone()) {
             if let (Some(idx), Some(pos)) = (rp.car_idx, rp.position) {
-                let class_pos = rp.class_position.unwrap_or(pos);
-                map.insert(idx, (pos + 1, class_pos + 1));
+                // Position is 1-indexed in iRacing YAML; ClassPosition is 0-indexed.
+                let class_pos = rp.class_position.unwrap_or(pos - 1);
+                map.insert(idx, (pos, class_pos + 1));
             }
         }
     }
