@@ -29,8 +29,15 @@ export const SpeedWidgetContainer = observer(() => {
       ? settings.pitSpeedLimitOverride * KPH_TO_MS
       : parsePitSpeedLimitMs(weekendInfo?.TrackPitSpeedLimit ?? null);
 
-  const isOverPitLimit = isOnPitRoad && pitLimitMs > 0 && speedMs > pitLimitMs;
   const pitLimitFormatted = pitLimitMs > 0 ? formatSpeed(pitLimitMs) : '—';
+
+  const pitLimiterActive = isOnPitRoad && shiftIndicatorPct >= 1;
+
+  const pitState = (() => {
+    if (pitLimitMs > 0 && speedMs > pitLimitMs) return 'over-limit' as const;
+    if (pitLimiterActive) return 'limiter-active' as const;
+    return 'pit-lane' as const;
+  })();
 
   const initialMax =
     driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
@@ -61,7 +68,7 @@ export const SpeedWidgetContainer = observer(() => {
       maxShiftRpm={maxShiftRpmRef.current || initialMax}
       settings={settings}
       isOnPitRoad={isOnPitRoad}
-      isOverPitLimit={isOverPitLimit}
+      pitState={pitState}
       pitLimitFormatted={pitLimitFormatted}
     />
   );

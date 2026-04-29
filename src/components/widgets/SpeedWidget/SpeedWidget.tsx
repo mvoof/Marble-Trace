@@ -16,7 +16,7 @@ interface SpeedWidgetProps {
   maxShiftRpm: number;
   settings: SpeedWidgetSettings;
   isOnPitRoad: boolean;
-  isOverPitLimit: boolean;
+  pitState: 'pit-lane' | 'limiter-active' | 'over-limit';
   pitLimitFormatted: string;
 }
 
@@ -29,7 +29,7 @@ export const SpeedWidget = ({
   maxShiftRpm,
   settings,
   isOnPitRoad,
-  isOverPitLimit,
+  pitState,
   pitLimitFormatted,
 }: SpeedWidgetProps) => {
   const gearDisplay = formatGear(gear);
@@ -44,7 +44,8 @@ export const SpeedWidget = ({
 
   const displayPct = Math.min(Math.max(rpm / (maxShiftRpm || 1), 0), 1);
   const zoneColor = getShiftZoneColor(displayPct, rpmColors);
-  const isLimit = shiftIndicatorPct >= 0.99 || displayPct >= 1;
+  const isLimit =
+    !isOnPitRoad && (shiftIndicatorPct >= 0.99 || displayPct >= 1);
   const centerValue = isGearFocused ? gearDisplay : speed;
   const showPitPanel = settings.showPitPanel && isOnPitRoad;
 
@@ -52,8 +53,7 @@ export const SpeedWidget = ({
     <div className={styles.root}>
       {showPitPanel && (
         <PitPanel
-          isOverLimit={isOverPitLimit}
-          currentSpeed={speed}
+          pitState={pitState}
           limitSpeed={pitLimitFormatted}
           speedUnit={speedUnit}
         />
