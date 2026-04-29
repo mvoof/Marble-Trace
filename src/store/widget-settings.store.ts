@@ -242,6 +242,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
       'linear-map': {
         orientation: 'horizontal',
         playerDotColor: '#ffffff',
+        targetDotRadiusPx: 10,
       },
     },
   },
@@ -375,6 +376,10 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showFlag: true,
         showLaps: true,
         showPosition: true,
+        showWallClock: true,
+        showSimTime: true,
+        showPcDate: false,
+        showSimDate: false,
       },
     },
   },
