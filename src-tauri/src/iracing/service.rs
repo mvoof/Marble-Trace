@@ -32,6 +32,7 @@ use std::time::Duration;
 
 use futures::StreamExt;
 use pitwall::{Pitwall, SessionInfo, UpdateRate};
+use std::panic::AssertUnwindSafe;
 use tauri::{AppHandle, Emitter, State};
 use tokio::time::sleep;
 use tracing::{debug, info, warn};
@@ -140,16 +141,31 @@ pub async fn start_telemetry_stream(
 
                 match Pitwall::connect().await {
                     Ok(conn) => break conn,
-                    Err(_) => {
-                        sleep(Duration::from_secs(3)).await;
+                    Err(e) => {
+                        debug!("iRacing connect failed: {e}");
+                        sleep(Duration::from_secs(1)).await;
                     }
+                }
+            };
+
+            // Guard: catch subscribe() panic if schema is incomplete (e.g. iRacing still initializing).
+            // A panic inside tokio::spawn silently kills this task, so we catch it and retry instead.
+            let subscribe_result = std::panic::catch_unwind(AssertUnwindSafe(|| {
+                connection.subscribe::<AllFieldsFrame>(UpdateRate::Native)
+            }));
+
+            let telemetry_stream = match subscribe_result {
+                Ok(stream) => stream,
+                Err(_) => {
+                    warn!("subscribe() panicked — schema incomplete, retrying in 1s...");
+                    sleep(Duration::from_secs(1)).await;
+                    continue;
                 }
             };
 
             info!("Connected to iRacing successfully");
             app_clone.emit("iracing://status", "connected").ok();
 
-            let telemetry_stream = connection.subscribe::<AllFieldsFrame>(UpdateRate::Native);
             let session_stream = connection.session_updates();
 
             debug!("Subscribed to telemetry and session streams");
