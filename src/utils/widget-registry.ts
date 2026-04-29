@@ -41,5 +41,5 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
   timer: { component: TimerWidgetContainer },
   weather: { component: WeatherWidgetContainer },
   fuel: { component: FuelWidgetContainer, autoHeight: true },
-  'flat-flags': { component: FlatFlagsWidgetContainer },
+  'flat-flags': { component: FlatFlagsWidgetContainer, autoHeight: true },
 };

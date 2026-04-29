@@ -35,26 +35,25 @@ export interface FlatFlagsWidgetProps {
   blinkOn: boolean;
 }
 
-export const FlatFlagsWidget = ({ flags, blinkOn }: FlatFlagsWidgetProps) => {
-  const visibleFlags = flags.filter((f) => !BLINK_FLAGS.has(f) || blinkOn);
-
-  return (
-    <div className={styles.widget}>
-      <div className={styles.header}>FLAGS</div>
-      <div className={styles.list}>
-        {visibleFlags.length === 0 ? (
-          <div className={styles.empty}>NO ACTIVE FLAGS</div>
-        ) : (
-          visibleFlags.map((flag) => (
+export const FlatFlagsWidget = ({ flags, blinkOn }: FlatFlagsWidgetProps) => (
+  <div className={styles.widget}>
+    <div className={styles.header}>FLAGS</div>
+    <div className={styles.list}>
+      {flags.length === 0 ? (
+        <div className={styles.empty}>NO ACTIVE FLAGS</div>
+      ) : (
+        flags.map((flag) => {
+          const isBlinkOff = BLINK_FLAGS.has(flag) && !blinkOn;
+          return (
             <div
               key={flag}
-              className={`${styles.item} ${FLAG_ITEM_CLASS[flag]}`}
+              className={`${styles.item} ${FLAG_ITEM_CLASS[flag]}${isBlinkOff ? ` ${styles.itemBlinkOff}` : ''}`}
             >
               {FLAG_LABEL[flag]}
             </div>
-          ))
-        )}
-      </div>
+          );
+        })
+      )}
     </div>
-  );
-};
+  </div>
+);
