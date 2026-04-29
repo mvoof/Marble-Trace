@@ -8,23 +8,28 @@ import styles from './LapTimesWidget.module.scss';
 interface LapTimesWidgetProps {
   currentLapTime: string;
   lastLapTime: string;
-  lastLapDelta: string;
+  lastDelta: string;
+  lastDeltaColor?: string;
   bestLapTime: string;
+  bestDelta: string;
+  bestDeltaColor?: string;
   p1LapTime: string;
   p1Delta: string;
+  p1DeltaColor?: string;
   settings: LapTimesWidgetSettings;
 }
 
 const COLOR_CURRENT = '#22c55e';
 const COLOR_LAST = '#ef4444';
 const COLOR_BEST = 'rgba(192, 132, 252, 0.85)';
-const COLOR_P1 = 'rgba(192, 132, 252, 0.85)';
+const COLOR_P1 = 'rgba(238, 238, 238, 0.85)';
 
 interface RowConfig {
   label: string;
   time: string;
   delta: string;
   accentColor: string;
+  deltaColor?: string;
 }
 
 export const LapTimesWidget = forwardRef<HTMLElement, LapTimesWidgetProps>(
@@ -32,10 +37,14 @@ export const LapTimesWidget = forwardRef<HTMLElement, LapTimesWidgetProps>(
     {
       currentLapTime,
       lastLapTime,
-      lastLapDelta,
+      lastDelta,
+      lastDeltaColor,
       bestLapTime,
+      bestDelta,
+      bestDeltaColor,
       p1LapTime,
       p1Delta,
+      p1DeltaColor,
       settings,
     },
     ref
@@ -53,8 +62,9 @@ export const LapTimesWidget = forwardRef<HTMLElement, LapTimesWidgetProps>(
       rows.push({
         label: 'LAST',
         time: lastLapTime,
-        delta: lastLapDelta,
+        delta: lastDelta,
         accentColor: COLOR_LAST,
+        deltaColor: lastDeltaColor,
       });
     }
 
@@ -62,8 +72,9 @@ export const LapTimesWidget = forwardRef<HTMLElement, LapTimesWidgetProps>(
       rows.push({
         label: 'BEST',
         time: bestLapTime,
-        delta: '—',
+        delta: bestDelta,
         accentColor: COLOR_BEST,
+        deltaColor: bestDeltaColor,
       });
     }
 
@@ -73,6 +84,7 @@ export const LapTimesWidget = forwardRef<HTMLElement, LapTimesWidgetProps>(
         time: p1LapTime,
         delta: p1Delta,
         accentColor: COLOR_P1,
+        deltaColor: p1DeltaColor,
       });
     }
 
@@ -98,6 +110,7 @@ export const LapTimesWidget = forwardRef<HTMLElement, LapTimesWidgetProps>(
               time={row.time}
               delta={row.delta}
               accentColor={row.accentColor}
+              deltaColor={row.deltaColor}
             />
           ))}
         </div>

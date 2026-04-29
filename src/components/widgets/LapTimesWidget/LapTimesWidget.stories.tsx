@@ -43,10 +43,14 @@ export const VerticalDefault: Story = {
   args: {
     currentLapTime: '1:49.123',
     lastLapTime: '1:49.010',
-    lastLapDelta: '+0.277',
+    lastDelta: '+0.277',
+    lastDeltaColor: '#ef4444',
     bestLapTime: '1:48.733',
+    bestDelta: '+0.390',
+    bestDeltaColor: '#ef4444',
     p1LapTime: '1:48.401',
-    p1Delta: '-0.332',
+    p1Delta: '+0.722',
+    p1DeltaColor: '#ef4444',
     settings: {
       showLastLap: true,
       showBestLap: true,
@@ -60,10 +64,14 @@ export const HorizontalDefault: Story = {
   args: {
     currentLapTime: '1:49.123',
     lastLapTime: '1:49.010',
-    lastLapDelta: '+0.277',
+    lastDelta: '+0.277',
+    lastDeltaColor: '#ef4444',
     bestLapTime: '1:48.733',
+    bestDelta: '+0.390',
+    bestDeltaColor: '#ef4444',
     p1LapTime: '1:48.401',
-    p1Delta: '-0.332',
+    p1Delta: '+0.722',
+    p1DeltaColor: '#ef4444',
     settings: {
       showLastLap: true,
       showBestLap: true,
@@ -77,8 +85,9 @@ export const FirstLap: Story = {
   args: {
     currentLapTime: '1:12.345',
     lastLapTime: '—',
-    lastLapDelta: '—',
+    lastDelta: '—',
     bestLapTime: '—',
+    bestDelta: '—',
     p1LapTime: '1:49.204',
     p1Delta: '—',
     settings: {
@@ -94,8 +103,9 @@ export const NoData: Story = {
   args: {
     currentLapTime: '0:00.000',
     lastLapTime: '—',
-    lastLapDelta: '—',
+    lastDelta: '—',
     bestLapTime: '—',
+    bestDelta: '—',
     p1LapTime: '—',
     p1Delta: '—',
     settings: {

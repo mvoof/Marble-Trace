@@ -6,21 +6,24 @@ import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
 import { formatLapTime } from '../../../utils/telemetry-format';
 import { LapTimesWidget } from './LapTimesWidget';
 
-const formatDeltaVsBest = (
-  lapTime: number | null,
-  bestTime: number | null
-): string => {
-  if (lapTime === null || lapTime <= 0 || bestTime === null || bestTime <= 0)
-    return '—';
-  const delta = lapTime - bestTime;
+const formatDelta = (delta: number | null): string => {
+  if (delta === null) return '—';
   if (Math.abs(delta) < 0.001) return '—';
   return (delta >= 0 ? '+' : '') + delta.toFixed(3);
+};
+
+const getDeltaColor = (delta: number | null): string | undefined => {
+  if (delta === null) return undefined;
+  if (delta < -0.001) return '#22c55e'; // Green
+  if (delta > 0.001) return '#ef4444'; // Red
+  return '#fbbf24'; // Amber
 };
 
 export const LapTimesWidgetContainer = observer(() => {
   const lap = telemetryStore.lapTiming;
   const carIdxData = telemetryStore.carIdx;
   const standings = computedStore.standings?.entries ?? [];
+  const lapDelta = computedStore.lapDelta;
   const settings = widgetSettingsStore.getLapTimesSettings();
 
   const widgetRef = useAutoSizeWidget('lap-times');
@@ -48,15 +51,39 @@ export const LapTimesWidgetContainer = observer(() => {
 
   const p1Time = timesToUse.length > 0 ? Math.min(...timesToUse) : null;
 
+  // Live delta to player's best lap
+  const liveDelta = lapDelta?.personalBestTotal ?? null;
+
+  // Deltas vs current (projected) lap
+  // Δ = T_current - T_target
+  // T_current = T_best + liveDelta
+  // Δ_target = (T_best + liveDelta) - T_target = liveDelta + (T_best - T_target)
+
+  const bestDelta = liveDelta;
+
+  const lastDelta =
+    liveDelta !== null && bestLap !== null && lastLap !== null
+      ? liveDelta + (bestLap - lastLap)
+      : null;
+
+  const p1Delta =
+    liveDelta !== null && bestLap !== null && p1Time !== null
+      ? liveDelta + (bestLap - p1Time)
+      : null;
+
   return (
     <LapTimesWidget
       ref={widgetRef}
       currentLapTime={formatLapTime(currentLap)}
       lastLapTime={formatLapTime(lastLap)}
-      lastLapDelta={formatDeltaVsBest(lastLap, bestLap)}
+      lastDelta={formatDelta(lastDelta)}
+      lastDeltaColor={getDeltaColor(lastDelta)}
       bestLapTime={formatLapTime(bestLap)}
+      bestDelta={formatDelta(bestDelta)}
+      bestDeltaColor={getDeltaColor(bestDelta)}
       p1LapTime={formatLapTime(p1Time)}
-      p1Delta={formatDeltaVsBest(p1Time, bestLap)}
+      p1Delta={formatDelta(p1Delta)}
+      p1DeltaColor={getDeltaColor(p1Delta)}
       settings={settings}
     />
   );

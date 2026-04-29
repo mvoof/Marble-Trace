@@ -851,9 +851,19 @@ export type FuelComputedFrame = {
 
 export type LapDeltaFrame = {
   sectorTimes: (number | null)[];
-  sectorDeltas: (number | null)[];
   currentSectorIdx: number;
-  totalDelta: number;
+  /**
+   * Delta vs session best. Total uses iRacing's live delta when available.
+   * Sector deltas are snapshotted at boundaries so they always sum to total.
+   */
+  sessionBestTotal: number;
+  sessionBestSectors: (number | null)[];
+  /**
+   * Delta vs personal best (the driver's own best completed lap).
+   * Sector deltas are from the same reference lap so they always sum to total.
+   */
+  personalBestTotal: number;
+  personalBestSectors: (number | null)[];
 };
 
 export type LapTimingFrame = {
