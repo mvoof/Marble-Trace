@@ -4,6 +4,69 @@ use specta::Type;
 
 use crate::iracing::frames::AllFieldsFrame;
 
+const MAX_LAP_FUEL_HISTORY: usize = 20;
+const MIN_RECORDED_FUEL_USE: f32 = 0.1;
+const MAX_REALISTIC_LAP_FUEL: f32 = 20.0;
+
+pub struct FuelState {
+    pub lap_fuel_history: Vec<f32>,
+    pub last_lap: i32,
+    pub last_lap_start_fuel: Option<f32>,
+    pub tracked_session_num: i32,
+}
+
+impl Default for FuelState {
+    fn default() -> Self {
+        Self {
+            lap_fuel_history: Vec::new(),
+            last_lap: -1,
+            last_lap_start_fuel: None,
+            tracked_session_num: -1,
+        }
+    }
+}
+
+impl FuelState {
+    pub fn reset(&mut self) {
+        *self = Self::default();
+    }
+
+    pub fn update(&mut self, current_lap: i32, fuel_level: f32, session_num: i32) {
+        if session_num != self.tracked_session_num {
+            self.reset();
+            self.tracked_session_num = session_num;
+        }
+
+        if self.last_lap < 0 || current_lap < self.last_lap {
+            self.last_lap = current_lap;
+            self.last_lap_start_fuel = Some(fuel_level);
+            return;
+        }
+
+        if current_lap != self.last_lap {
+            if let Some(start_fuel) = self.last_lap_start_fuel {
+                let used = start_fuel - fuel_level;
+                if used > MIN_RECORDED_FUEL_USE && used < MAX_REALISTIC_LAP_FUEL {
+                    self.lap_fuel_history.push(used);
+                    if self.lap_fuel_history.len() > MAX_LAP_FUEL_HISTORY {
+                        self.lap_fuel_history.remove(0);
+                    }
+                }
+            }
+            self.last_lap = current_lap;
+            self.last_lap_start_fuel = Some(fuel_level);
+        }
+    }
+
+    pub fn avg(&self) -> Option<f32> {
+        if self.lap_fuel_history.is_empty() {
+            return None;
+        }
+        let sum: f32 = self.lap_fuel_history.iter().sum();
+        Some(sum / self.lap_fuel_history.len() as f32)
+    }
+}
+
 #[derive(Serialize, Deserialize, Type, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FuelComputedFrame {
@@ -20,6 +83,7 @@ pub struct FuelComputedFrame {
     pub pit_window_start: Option<i32>,
     pub pit_window_end: Option<i32>,
     pub is_timed_race: bool,
+    pub lap_fuel_history: Vec<f32>,
 }
 
 fn kg_per_ltr_from_session(session: &SessionInfo) -> f32 {
@@ -51,13 +115,15 @@ pub fn compute(
     session: &SessionInfo,
     session_num: Option<i32>,
     pit_warning_laps: f32,
-    stable_avg: Option<f32>,
+    fuel_state: &FuelState,
 ) -> Option<FuelComputedFrame> {
     let fuel_level = frame.fuel_level;
 
     let current_use_per_lap = instant_avg(frame, session).unwrap_or(0.0);
 
-    let avg_per_lap = stable_avg.or_else(|| instant_avg(frame, session))?;
+    let avg_per_lap = fuel_state
+        .avg()
+        .or_else(|| instant_avg(frame, session))?;
 
     if avg_per_lap <= 0.0 {
         return None;
@@ -120,5 +186,6 @@ pub fn compute(
         pit_window_start,
         pit_window_end,
         is_timed_race,
+        lap_fuel_history: fuel_state.lap_fuel_history.clone(),
     })
 }

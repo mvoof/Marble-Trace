@@ -846,6 +846,7 @@ export type FuelComputedFrame = {
   pitWindowStart: number | null;
   pitWindowEnd: number | null;
   isTimedRace: boolean;
+  lapFuelHistory: number[];
 };
 
 export type LapDeltaFrame = {

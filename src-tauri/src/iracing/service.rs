@@ -42,7 +42,7 @@ use super::frames::{
 };
 use super::weather_forecast::parse_weather_forecast;
 use crate::computations::{
-    fuel, lap_delta, lap_delta::LapDeltaState, pit_stops::PitStopsFrame, proximity, standings, standings::StandingsState,
+    fuel, fuel::FuelState, lap_delta, lap_delta::LapDeltaState, pit_stops::PitStopsFrame, proximity, standings, standings::StandingsState,
 };
 
 /// Shared state for the iRacing telemetry connection.
@@ -74,11 +74,8 @@ pub struct TelemetryState {
     /// Cached track length in meters.
     pub track_length_m: Arc<Mutex<Option<f32>>>,
 
-    /// Avg fuel per lap cached at lap boundary for stable readings.
-    pub cached_avg_per_lap: Arc<Mutex<Option<f32>>>,
-
-    /// Last lap number used to detect lap transitions for avg caching.
-    pub last_lap_for_avg: Arc<AtomicI32>,
+    /// Stateful fuel computation (lap history, avg, session tracking).
+    pub fuel_state: Arc<Mutex<FuelState>>,
 }
 
 #[tauri::command]
@@ -123,8 +120,7 @@ pub async fn start_telemetry_stream(
     let standings_state = state.standings_state.clone();
     let pit_warning_laps = state.pit_warning_laps.clone();
     let track_length_m = state.track_length_m.clone();
-    let cached_avg_per_lap = state.cached_avg_per_lap.clone();
-    let last_lap_for_avg = state.last_lap_for_avg.clone();
+    let fuel_state = state.fuel_state.clone();
     let app_clone = app.clone();
 
     tokio::spawn(async move {
@@ -245,8 +241,7 @@ pub async fn start_telemetry_stream(
                             &standings_state,
                             &pit_warning_laps,
                             &track_length_m,
-                            &cached_avg_per_lap,
-                            &last_lap_for_avg,
+                            &fuel_state,
                         );
                     }
                     Ok(None) => {
@@ -372,8 +367,7 @@ fn emit_domain_frames(
     standings_state: &Mutex<StandingsState>,
     pit_warning_laps_atomic: &AtomicU32,
     track_length_m: &Mutex<Option<f32>>,
-    cached_avg_per_lap: &Mutex<Option<f32>>,
-    last_lap_for_avg: &AtomicI32,
+    fuel_state: &Mutex<FuelState>,
 ) {
     // 60 Hz — raw frames
     if let Err(e) = app.emit(
@@ -458,20 +452,18 @@ fn emit_domain_frames(
         if let Some(session) = session_info {
             let pit_warning_laps = f32::from_bits(pit_warning_laps_atomic.load(Ordering::Relaxed));
 
-            // Update cached avg at lap boundary for stable readings
-            let current_lap = frame.lap.unwrap_or(-1);
-            let last_lap = last_lap_for_avg.load(Ordering::Relaxed);
-            if current_lap >= 0 && current_lap != last_lap {
-                if let Some(instant) = fuel::instant_avg(frame, session) {
-                    *cached_avg_per_lap.lock().unwrap_or_else(|e| e.into_inner()) = Some(instant);
-                }
-                last_lap_for_avg.store(current_lap, Ordering::Relaxed);
+            {
+                let mut state = fuel_state.lock().unwrap_or_else(|e| e.into_inner());
+                let current_lap = frame.lap.unwrap_or(-1);
+                let session_num = frame.session_num.unwrap_or(-1);
+                state.update(current_lap, frame.fuel_level, session_num);
             }
 
-            let stable_avg = *cached_avg_per_lap.lock().unwrap_or_else(|e| e.into_inner());
-            if let Some(fuel_frame) =
-                fuel::compute(frame, session, frame.session_num, pit_warning_laps, stable_avg)
-            {
+            let fuel_frame = {
+                let state = fuel_state.lock().unwrap_or_else(|e| e.into_inner());
+                fuel::compute(frame, session, frame.session_num, pit_warning_laps, &state)
+            };
+            if let Some(fuel_frame) = fuel_frame {
                 if let Err(e) = app.emit("iracing://computed/fuel", &fuel_frame) {
                     warn!("Failed to emit fuel: {}", e);
                 }
