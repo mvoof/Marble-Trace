@@ -18,8 +18,9 @@
   &.statCellWide {
     flex: 1.5 1 0;
   }
+  
   background: rgba(0, 0, 0, 0.4);
-  padding: rem(5) rem(6);
+  padding: rem(5) rem(12);
   border-left: 2px solid transparent;
   font-family: $font-mono;
 }
@@ -42,7 +43,7 @@
 }
 
 .statUnit {
-  font-size: rem(9);
+  font-size: rem(13);
   margin-left: 1px;
 }
 
