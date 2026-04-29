@@ -14,7 +14,6 @@ interface FuelWidgetProps {
   lapsToFinish: FuelCalculations['lapsToFinish'];
   shortage: FuelCalculations['shortage'];
   fuelToAddWithBuffer: FuelCalculations['fuelToAddWithBuffer'];
-  fuelSavePerLap: FuelCalculations['fuelSavePerLap'];
   pitWarning: FuelCalculations['pitWarning'];
   pitWindowStart: FuelCalculations['pitWindowStart'];
   pitWindowEnd: FuelCalculations['pitWindowEnd'];
@@ -22,6 +21,7 @@ interface FuelWidgetProps {
   showChart: boolean;
   chartType: 'line' | 'bar';
   lapFuelHistory: number[];
+  pitWarningLaps: number;
 }
 
 const statusClass = (shortage: number | null): string => {
@@ -35,9 +35,19 @@ const statusText = (shortage: number | null): string => {
   return `FINISH ${sign}${shortage.toFixed(1)} L`;
 };
 
-const valueClass = (shortage: number | null): string => {
-  if (shortage === null) return '';
-  return shortage >= 0 ? styles.rowValueSafe : styles.rowValueShort;
+const LAPS_LEFT_GREEN_BUFFER = 2;
+
+const lapsLeftClass = (
+  lapsRemaining: number | null,
+  pitWarningLaps: number
+): string => {
+  if (lapsRemaining === null) return '';
+
+  if (lapsRemaining > pitWarningLaps + LAPS_LEFT_GREEN_BUFFER)
+    return styles.rowValueSafe;
+  if (lapsRemaining <= pitWarningLaps) return styles.rowValueShort;
+
+  return styles.rowValueWarn;
 };
 
 interface FuelChartProps {
@@ -276,10 +286,8 @@ export const FuelWidget = ({
   avgPerLap,
   currentUsePerLap,
   lapsRemaining,
-  lapsToFinish,
   shortage,
   fuelToAddWithBuffer,
-  fuelSavePerLap,
   pitWarning,
   pitWindowStart,
   pitWindowEnd,
@@ -287,6 +295,7 @@ export const FuelWidget = ({
   showChart,
   chartType,
   lapFuelHistory,
+  pitWarningLaps,
 }: FuelWidgetProps) => {
   const pct =
     fuelLevel !== null && fuelMax !== null && fuelMax > 0
@@ -346,7 +355,9 @@ export const FuelWidget = ({
 
         <div className={styles.row}>
           <span className={styles.rowLabel}>LAPS LEFT</span>
-          <span className={`${styles.rowValue} ${valueClass(shortage)}`}>
+          <span
+            className={`${styles.rowValue} ${lapsLeftClass(lapsRemaining, pitWarningLaps)}`}
+          >
             {lapsRemainingText}
           </span>
         </div>

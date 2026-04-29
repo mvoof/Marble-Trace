@@ -44,6 +44,7 @@ export const FuelWidgetContainer = observer(() => {
       showChart={settings.showChart}
       chartType={settings.chartType}
       lapFuelHistory={fuel?.lapFuelHistory ?? []}
+      pitWarningLaps={settings.pitWarningLaps}
     />
   );
 });
