@@ -126,14 +126,16 @@ export const TrackMapWidgetContainer = observer(() => {
   }, [clearCurrentTrack]);
 
   const driverEntries = computedStore.standings?.entries ?? [];
+  const carPositions = telemetryStore.carPositions;
 
   const cars: CarOnTrack[] = driverEntries.map((e) => ({
     carIdx: e.carIdx,
     carNumber: e.carNumber,
     carClassColor: e.carClassColor,
     carClassId: e.carClassId,
-    lapDistPct: e.lapDistPct,
-    trackSurface: e.trackSurface,
+    lapDistPct: carPositions?.car_idx_lap_dist_pct[e.carIdx] ?? e.lapDistPct,
+    trackSurface:
+      carPositions?.car_idx_track_surface[e.carIdx] ?? e.trackSurface,
     isPlayer: e.isPlayer,
     position: e.position,
     classPosition: e.classPosition,

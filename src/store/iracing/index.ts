@@ -19,6 +19,7 @@ import type {
   SessionInfo,
   WeatherForecastEntry,
 } from '../../types/bindings';
+import type { CarPositionsFrame } from './telemetry.store';
 import { debug } from '../../utils/debug';
 
 import { telemetryStore } from './telemetry.store';
@@ -188,6 +189,16 @@ class TelemetryConnection {
         (event) => {
           if (this.initId !== guardId) return;
           telemetryStore.updateCarInputs(event.payload);
+        }
+      )
+    );
+
+    this.unlistens.push(
+      await listen<CarPositionsFrame>(
+        'iracing://telemetry/car-positions',
+        (event) => {
+          if (this.initId !== guardId) return;
+          telemetryStore.updateCarPositions(event.payload);
         }
       )
     );

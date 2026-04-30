@@ -9,6 +9,7 @@
 pub mod car_dynamics;
 pub mod car_idx;
 pub mod car_inputs;
+pub mod car_positions;
 pub mod car_status;
 pub mod chassis;
 pub mod environment;
@@ -18,6 +19,7 @@ pub mod session;
 pub use car_dynamics::CarDynamicsFrame;
 pub use car_idx::CarIdxFrame;
 pub use car_inputs::CarInputsFrame;
+pub use car_positions::CarPositionsFrame;
 pub use car_status::CarStatusFrame;
 pub use chassis::ChassisFrame;
 pub use environment::EnvironmentFrame;

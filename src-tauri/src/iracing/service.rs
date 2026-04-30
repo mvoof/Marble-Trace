@@ -38,8 +38,8 @@ use tokio::time::sleep;
 use tracing::{debug, info, warn};
 
 use super::frames::{
-    AllFieldsFrame, CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame,
-    EnvironmentFrame, LapTimingFrame, SessionFrame,
+    AllFieldsFrame, CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarPositionsFrame,
+    CarStatusFrame, ChassisFrame, EnvironmentFrame, LapTimingFrame, SessionFrame,
 };
 use super::weather_forecast::parse_weather_forecast;
 use crate::computations::{
@@ -392,6 +392,14 @@ fn emit_domain_frames(
         if let Err(e) = app.emit("iracing://computed/lap-delta", ldf) {
             warn!("Failed to emit lap delta: {}", e);
         }
+    }
+
+    // 60 Hz — lightweight car positions for smooth map/relative rendering
+    if let Err(e) = app.emit(
+        "iracing://telemetry/car-positions",
+        &CarPositionsFrame::from(frame),
+    ) {
+        warn!("Failed to emit car positions: {}", e);
     }
 
     // 10 Hz — also fire on first frame so widgets populate immediately
