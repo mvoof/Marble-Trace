@@ -217,6 +217,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showLegend: true,
         legendPosition: 'right',
         showSectors: true,
+        showSectorTimes: true,
+        showSectorsOnMap: true,
         rotationMode: 'fixed',
         playerDotColor: '#ffffff',
         showPlayerLabel: true,
@@ -715,21 +717,25 @@ class WidgetSettingsStore {
 
   getTrackMapSettings(): TrackMapWidgetSettings {
     const widget = this.getWidget('track-map');
-    return (
-      widget?.customSettings?.['track-map'] ?? {
-        showLegend: true,
-        legendPosition: 'right',
-        showSectors: true,
-        rotationMode: 'fixed',
-        playerDotColor: '#ffffff',
-        showPlayerLabel: true,
-        leaderLabelMode: 'all',
-        trackStrokePx: 10,
-        trackBorderPx: 3,
-        sectorStrokePx: 6,
-        targetDotRadiusPx: 10,
-      }
-    );
+    const settings = widget?.customSettings?.['track-map'];
+    const showSectors = settings?.showSectors ?? true;
+
+    return {
+      showLegend: true,
+      legendPosition: 'right',
+      showSectors,
+      showSectorTimes: showSectors,
+      showSectorsOnMap: showSectors,
+      rotationMode: 'fixed',
+      playerDotColor: '#ffffff',
+      showPlayerLabel: true,
+      leaderLabelMode: 'all',
+      trackStrokePx: 10,
+      trackBorderPx: 3,
+      sectorStrokePx: 6,
+      targetDotRadiusPx: 10,
+      ...settings,
+    };
   }
 
   getLinearMapSettings(): LinearMapWidgetSettings {

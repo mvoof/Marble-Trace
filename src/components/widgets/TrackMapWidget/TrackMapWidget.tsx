@@ -70,7 +70,7 @@ export const TrackMapWidget = ({
     );
   }
 
-  const visibleSectors = settings.showSectors ? sectors : null;
+  const visibleSectors = settings.showSectorsOnMap ? sectors : null;
   const sectorEntries =
     sectors
       ?.filter((s) => s.SectorNum != null && s.SectorStartPct != null)
@@ -109,7 +109,7 @@ export const TrackMapWidget = ({
             sectors={sectorEntries}
             sectorTimes={sectorTimes}
             currentSectorIdx={currentSectorIdx}
-            className={!settings.showSectors ? styles.hidden : undefined}
+            className={!settings.showSectorTimes ? styles.hidden : undefined}
           />
         )}
       </div>

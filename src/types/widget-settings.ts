@@ -75,6 +75,8 @@ export interface TrackMapWidgetSettings {
   showLegend: boolean;
   legendPosition: TrackMapLegendPosition;
   showSectors: boolean;
+  showSectorTimes: boolean;
+  showSectorsOnMap: boolean;
   rotationMode: TrackMapRotationMode;
   playerDotColor: string;
   showPlayerLabel: boolean;

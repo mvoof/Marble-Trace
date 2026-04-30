@@ -816,9 +816,14 @@ const TrackMapSettingsPanel = observer(() => {
             key: 'showLegend',
           },
           {
-            title: 'Track Sectors',
-            value: settings.showSectors,
-            key: 'showSectors',
+            title: 'Sector Times',
+            value: settings.showSectorTimes,
+            key: 'showSectorTimes',
+          },
+          {
+            title: 'Sectors on Map',
+            value: settings.showSectorsOnMap,
+            key: 'showSectorsOnMap',
           },
         ].map((item) => (
           <div key={item.key} className={styles.fieldGroup}>
