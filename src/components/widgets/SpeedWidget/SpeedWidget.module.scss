@@ -77,6 +77,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  width: rem(92);
+  flex-shrink: 0;
 }
 
 .primaryValue {
@@ -181,8 +183,12 @@
 }
 
 @keyframes tempWarnBlink {
-  from { opacity: 1; }
-  to   { opacity: 0.2; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.2;
+  }
 }
 
 // Full-width RPM bar — absolute at bottom, edge-to-edge, never affects layout height
