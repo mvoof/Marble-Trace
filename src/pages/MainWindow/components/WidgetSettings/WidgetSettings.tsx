@@ -7,7 +7,6 @@ import {
   ColorPicker,
   Flex,
   Button,
-  Select,
   Segmented,
   Slider,
   Switch,
@@ -19,7 +18,6 @@ import type {
   FlagDisplaySettings,
   SpeedWidgetSettings,
   SpeedWidgetFocusMode,
-  RpmColorTheme,
   InputTraceSettings,
   InputTraceBarMode,
   RadarSettings,
@@ -253,81 +251,82 @@ const SpeedSettings = observer(() => {
       </div>
 
       <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>RPM Scale Theme</span>
-        <Select
-          style={{ width: '100%' }}
-          value={settings.rpmColorTheme}
-          onChange={(v) => update({ rpmColorTheme: v as RpmColorTheme })}
-          options={[
-            { label: 'Custom Palette', value: 'custom' },
-            { label: 'Gradient Theme', value: 'gradient' },
-            { label: 'Classic Theme', value: 'classic' },
-          ]}
-        />
-      </div>
-
-      {settings.rpmColorTheme === 'custom' && (
-        <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>Palette Colors</span>
-          <div className={styles.rpmColorGrid}>
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>Low</span>
-              <ColorPicker
-                value={settings.rpmColorLow}
-                onChange={(c) => update({ rpmColorLow: c.toHexString() })}
-              />
-            </div>
-            <div className={styles.rpmColorLine} />
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>Mid</span>
-              <ColorPicker
-                value={settings.rpmColorMid}
-                onChange={(c) => update({ rpmColorMid: c.toHexString() })}
-              />
-            </div>
-            <div className={styles.rpmColorLine} />
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>High</span>
-              <ColorPicker
-                value={settings.rpmColorHigh}
-                onChange={(c) => update({ rpmColorHigh: c.toHexString() })}
-              />
-            </div>
-            <div className={styles.rpmColorLine} />
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>Limit</span>
-              <ColorPicker
-                value={settings.rpmColorLimit}
-                onChange={(c) => update({ rpmColorLimit: c.toHexString() })}
-              />
-            </div>
+        <span className={styles.fieldLabel}>RPM Bar Colors</span>
+        <div className={styles.rpmColorGrid}>
+          <div className={styles.rpmColorItem}>
+            <span className={styles.rpmColorLabel}>Low</span>
+            <ColorPicker
+              value={settings.rpmColorLow}
+              onChange={(c) => update({ rpmColorLow: c.toHexString() })}
+            />
           </div>
-        </div>
-      )}
-
-      {settings.rpmColorTheme !== 'custom' && (
-        <div className={styles.fieldGroup}>
-          <div className={styles.fieldRow}>
-            <div className={styles.fieldTexts}>
-              <div className={styles.fieldTitle}>Limit Flash Color</div>
-              <div className={styles.fieldDesc}>
-                Color when engine reaches RPM limit.
-              </div>
-            </div>
+          <div className={styles.rpmColorLine} />
+          <div className={styles.rpmColorItem}>
+            <span className={styles.rpmColorLabel}>Mid</span>
+            <ColorPicker
+              value={settings.rpmColorMid}
+              onChange={(c) => update({ rpmColorMid: c.toHexString() })}
+            />
+          </div>
+          <div className={styles.rpmColorLine} />
+          <div className={styles.rpmColorItem}>
+            <span className={styles.rpmColorLabel}>High</span>
+            <ColorPicker
+              value={settings.rpmColorHigh}
+              onChange={(c) => update({ rpmColorHigh: c.toHexString() })}
+            />
+          </div>
+          <div className={styles.rpmColorLine} />
+          <div className={styles.rpmColorItem}>
+            <span className={styles.rpmColorLabel}>Blink</span>
             <ColorPicker
               value={settings.rpmColorLimit}
               onChange={(c) => update({ rpmColorLimit: c.toHexString() })}
             />
           </div>
         </div>
-      )}
+        <div className={styles.fieldDesc} style={{ marginTop: 6 }}>
+          Blink color flashes the entire bar at shift point.
+        </div>
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>RPM Bar</div>
+            <div className={styles.fieldDesc}>
+              Show segmented RPM bar along the top edge of the widget.
+            </div>
+          </div>
+          <Switch
+            checked={settings.showRpmBar}
+            onChange={(v) => update({ showRpmBar: v })}
+          />
+        </div>
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>Temperatures</div>
+            <div className={styles.fieldDesc}>
+              Show oil and water temperature.
+            </div>
+          </div>
+          <Switch
+            checked={settings.showTemps}
+            onChange={(v) => update({ showTemps: v })}
+          />
+        </div>
+      </div>
 
       <div className={styles.fieldGroup}>
         <div className={styles.fieldRow}>
           <div className={styles.fieldTexts}>
             <div className={styles.fieldTitle}>Pit Lane Panel</div>
             <div className={styles.fieldDesc}>
-              Show banner with pit speed info when on pit road.
+              Show banner with pit speed info when on pit road or limiter
+              active.
             </div>
           </div>
           <Switch

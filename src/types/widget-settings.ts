@@ -9,6 +9,8 @@ export interface SpeedWidgetSettings {
   rpmColorHigh: string;
   rpmColorLimit: string;
   showPitPanel: boolean;
+  showRpmBar: boolean;
+  showTemps: boolean;
   pitSpeedLimitOverride: number | null;
 }
 

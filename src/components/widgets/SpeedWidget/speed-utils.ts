@@ -1,7 +1,9 @@
-export const CIRCLE_R = 130;
-export const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_R;
-
 const KPH_TO_MS = 1 / 3.6;
+
+export const ENGINE_TEMP_WARN_C = 130;
+export const isEngineTempWarning = (
+  celsius: number | null | undefined
+): boolean => celsius != null && celsius >= ENGINE_TEMP_WARN_C;
 const MPH_TO_MS = 0.44704;
 
 export const parsePitSpeedLimitMs = (raw: string | null): number => {

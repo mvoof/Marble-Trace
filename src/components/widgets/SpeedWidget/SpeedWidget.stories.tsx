@@ -6,8 +6,8 @@ import type { SpeedWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
 
-const DESIGN_WIDTH = 360;
-const DESIGN_HEIGHT = 110;
+const DESIGN_WIDTH = 312;
+const DESIGN_HEIGHT = 90;
 
 const realSnapshot = snapshot as TelemetrySnapshot;
 
@@ -18,6 +18,9 @@ const DEFAULT_SETTINGS: SpeedWidgetSettings = {
   rpmColorMid: '#eab308',
   rpmColorHigh: '#ef4444',
   rpmColorLimit: '#ff4d00',
+  showPitPanel: true,
+  showRpmBar: true,
+  pitSpeedLimitOverride: null,
 };
 
 interface SpeedWidgetStoryArgs extends SpeedWidgetSettings {
@@ -33,7 +36,6 @@ const SpeedWidgetStory = ({
   const speed = frame ? `${Math.round(frame.speed * 3.6)}` : '0';
   const rpm = frame ? Math.round(frame.rpm) : 0;
   const gear = frame?.gear ?? 0;
-  const shiftIndicatorPct = frame?.shift_indicator_pct ?? 0;
   const maxShiftRpm =
     driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
 
@@ -52,9 +54,12 @@ const SpeedWidgetStory = ({
           speedUnit="km/h"
           rpm={rpm}
           gear={gear}
-          shiftIndicatorPct={shiftIndicatorPct}
           maxShiftRpm={maxShiftRpm}
           settings={settings}
+          isOnPitRoad={false}
+          pitLimiterActive={false}
+          pitState="pit-lane"
+          pitLimitFormatted="60"
         />
       </div>
     </div>
@@ -99,7 +104,6 @@ export const Scaled2x: Story = {
     const speed = frame ? `${Math.round(frame.speed * 3.6)}` : '0';
     const rpm = frame ? Math.round(frame.rpm) : 0;
     const gear = frame?.gear ?? 0;
-    const shiftIndicatorPct = frame?.shift_indicator_pct ?? 0;
     const maxShiftRpm =
       driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
 
@@ -118,9 +122,12 @@ export const Scaled2x: Story = {
             speedUnit="km/h"
             rpm={rpm}
             gear={gear}
-            shiftIndicatorPct={shiftIndicatorPct}
             maxShiftRpm={maxShiftRpm}
             settings={settings}
+            isOnPitRoad={false}
+            pitLimiterActive={false}
+            pitState="pit-lane"
+            pitLimitFormatted="60"
           />
         </div>
       </div>

@@ -1,73 +1,58 @@
 @use '../../../../styles/variables' as *;
 
-$panel-h: rem(30);
-$blue-main: #1a5fcc;
-$red-main: #cc1a1a;
-$neutral-main: #2a2a2a;
+$panel-h: rem(22);
 
 .panel {
   position: absolute;
   bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 70%;
+  left: 0;
+  right: 0;
   height: $panel-h;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 rem(10) 0 rem(14);
-  border-radius: rem(6) rem(6) 0 0;
+  padding: 0 rem(10);
   font-family: $font-widget;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  z-index: 20;
-  overflow: hidden;
-  animation: slideIn 0.18s ease-out;
+  animation: fadeIn 0.15s ease-out;
 }
 
-@keyframes slideIn {
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(6px);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
   }
 }
 
-.panelNeutral {
-  background: repeating-linear-gradient(
-    -45deg,
-    $neutral-main,
-    $neutral-main 8px,
-    lighten($neutral-main, 5%) 8px,
-    lighten($neutral-main, 5%) 16px
-  );
+.stateNeutral {
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.panelSafe {
-  background: repeating-linear-gradient(
-    -45deg,
-    $blue-main,
-    $blue-main 8px,
-    darken($blue-main, 10%) 8px,
-    darken($blue-main, 10%) 16px
-  );
+// pit-lane: on pit road → blue
+.stateSafe {
+  background: #1a4fa8;
+  border-bottom: 1px solid #2d6cdb;
 }
 
-.panelWarn {
-  background: repeating-linear-gradient(
-    -45deg,
-    $red-main,
-    $red-main 8px,
-    darken($red-main, 10%) 8px,
-    darken($red-main, 10%) 16px
-  );
+// limiter-active: pit speed limiter on track → yellow
+.stateYellow {
+  background: #7e5c00;
+  border-bottom: 1px solid #c49000;
+}
+
+// over-limit: exceeding pit speed → red pulse
+.stateWarn {
+  background: #a81a1a;
+  border-bottom: 1px solid #db2d2d;
   animation:
-    slideIn 0.18s ease-out,
-    warnPulse 0.8s ease-in-out infinite;
+    fadeIn 0.15s ease-out,
+    warnPulse 0.7s ease-in-out infinite;
 }
 
 @keyframes warnPulse {
@@ -76,33 +61,53 @@ $neutral-main: #2a2a2a;
     opacity: 1;
   }
   50% {
-    opacity: 0.7;
+    opacity: 0.6;
   }
 }
 
 .label {
-  font-size: rem(12);
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 0.08em;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  position: relative;
-  z-index: 1;
-}
-
-.badge {
-  display: flex;
-  align-items: center;
-  height: rem(20);
-  padding: 0 rem(8);
-  border-radius: rem(3);
-  background: rgba(0, 0, 0, 0.35);
   font-size: rem(10);
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.95);
-  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.1em;
+}
+
+.right {
+  display: flex;
+  align-items: baseline;
+  gap: rem(4);
+}
+
+.limit {
+  font-size: rem(15);
+  font-weight: 700;
+  color: #fff;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  position: relative;
-  z-index: 1;
+  line-height: 1;
+}
+
+.unit {
+  font-size: rem(9);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.05em;
+}
+
+.delta {
+  font-size: rem(13);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-left: rem(2);
+}
+
+.deltaOver {
+  color: $color-error;
+}
+
+.deltaClose {
+  color: $color-caution;
+}
+
+.deltaOk {
+  color: $color-success;
 }
