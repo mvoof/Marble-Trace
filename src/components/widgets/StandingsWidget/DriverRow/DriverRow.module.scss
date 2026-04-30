@@ -136,13 +136,13 @@
 .brandLabel {
   font-family: $font-mono;
   font-size: 0.75em;
-  color: $color-text-muted;
+  color: $color-text-secondary;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .ratingBadge {
-  font-size: 0.6875em;
+  font-size: 0.75em;
 }
 
 // iR change
@@ -202,7 +202,7 @@
 
 .lapsCompleted {
   font-family: $font-mono;
-  font-size: 0.75em;
+  font-size: 0.8125em;
   text-align: center;
   color: $color-text-primary;
 }
@@ -223,7 +223,7 @@
   font-family: $font-mono;
   font-size: 0.8125em;
   font-weight: 900;
-  color: $color-text-muted;
+  color: $color-text-primary;
 }
 
 .bestLap {
