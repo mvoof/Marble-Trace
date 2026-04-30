@@ -141,32 +141,19 @@
   letter-spacing: 0.04em;
 }
 
-.licBadge {
-  font-size: 0.75em;
-}
-
-.licWrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25em;
-}
-
-.irating {
-  font-size: 0.875em;
-  font-family: $font-mono;
-  color: $color-text-muted;
-  width: 2.25em;
-  text-align: right;
+.ratingBadge {
+  font-size: 0.6875em;
 }
 
 // iR change
 .irChange {
-  font-size: 0.6875em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75em;
   font-family: $font-mono;
   font-weight: 700;
-  width: 1.5em;
-  text-align: left;
+  min-width: 2.75em;
 }
 
 .irChangeUp {

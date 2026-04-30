@@ -1,28 +1,22 @@
 import { ChevronUp, ChevronDown, Minus } from 'lucide-react';
+import { formatLapTime } from '../../../../utils/telemetry-format';
+import {
+  formatBrand,
+  TRACK_SURFACE_IN_PIT_STALL,
+  TRACK_SURFACE_OFF_TRACK,
+  NEAR_DQ_INCIDENT_THRESHOLD,
+} from '../../widget-utils';
+import { PitBadge, ClassBadge, RatingBadge, TireBadge } from '../../primitives';
+import type { DriverEntry } from '../../../../types/bindings';
+import type { StandingsWidgetSettings } from '../../../../types/widget-settings';
+
+import styles from './DriverRow.module.scss';
 
 const abbreviateName = (fullName: string): string => {
   const parts = fullName.trim().split(/\s+/);
   if (parts.length < 2) return fullName.toUpperCase();
   return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`.toUpperCase();
 };
-import { formatLapTime } from '../../../../utils/telemetry-format';
-import {
-  formatBrand,
-  formatIRating,
-  TRACK_SURFACE_IN_PIT_STALL,
-  TRACK_SURFACE_OFF_TRACK,
-  NEAR_DQ_INCIDENT_THRESHOLD,
-} from '../../widget-utils';
-import {
-  PitBadge,
-  ClassBadge,
-  LicenseBadge,
-  TireBadge,
-} from '../../primitives';
-import type { DriverEntry } from '../../../../types/bindings';
-import type { StandingsWidgetSettings } from '../../../../types/widget-settings';
-
-import styles from './DriverRow.module.scss';
 
 const PosChange = ({
   position,
@@ -78,7 +72,7 @@ const IrChangeCell = ({ delta }: { delta: number | undefined }) => {
 
   return (
     <span className={cls}>
-      {delta > 0 ? '▲' : '▼'}
+      {delta > 0 ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
       {Math.abs(delta)}
     </span>
   );
@@ -182,15 +176,11 @@ export const DriverRow = ({
 
       {settings.showIRatingBadge && (
         <td className={`${styles.td} ${styles.tdCenter}`}>
-          <span className={styles.licWrap}>
-            <LicenseBadge
-              licString={driver.licString}
-              className={styles.licBadge}
-            />
-            <span className={styles.irating}>
-              {formatIRating(driver.iRating)}
-            </span>
-          </span>
+          <RatingBadge
+            licString={driver.licString}
+            iRating={driver.iRating}
+            className={styles.ratingBadge}
+          />
         </td>
       )}
 

@@ -5,5 +5,5 @@ export { CanvasTrace } from './CanvasTrace';
 export type { CanvasTraceChannel } from './CanvasTrace';
 export { PitBadge } from './PitBadge';
 export { ClassBadge } from './ClassBadge';
-export { LicenseBadge } from './LicenseBadge';
+export { RatingBadge } from './RatingBadge';
 export { TireBadge } from './TireBadge';

@@ -1,18 +1,18 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { TRACK_SURFACE_IN_PIT_STALL, formatIRating } from '../../widget-utils';
+import { TRACK_SURFACE_IN_PIT_STALL } from '../../widget-utils';
+import { PitBadge, ClassBadge, RatingBadge } from '../../primitives';
+import type { RelativeWidgetSettings } from '../../../../types/widget-settings';
+import type { DriverEntry } from '../../../../types/bindings';
+
+import styles from './DriverRow.module.scss';
 
 const abbreviateName = (fullName: string): string => {
   const parts = fullName.trim().split(/\s+/);
   if (parts.length < 2) return fullName;
   return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
 };
-import { PitBadge, ClassBadge, LicenseBadge } from '../../primitives';
-import type { RelativeWidgetSettings } from '../../../../types/widget-settings';
-import type { DriverEntry } from '../../../../types/bindings';
-
-import styles from './DriverRow.module.scss';
 
 interface DriverRowProps {
   driver: DriverEntry;
@@ -86,7 +86,6 @@ export const DriverRow = observer(
 
     const rowClass = [
       styles.driverRow,
-      settings.showIRatingBadge ? styles.driverRowWithIRating : '',
       driver.isPlayer ? styles.driverRowPlayer : '',
       isPit ? styles.driverRowPit : '',
     ]
@@ -141,17 +140,14 @@ export const DriverRow = observer(
           )}
         </div>
 
-        <div className={styles.colLic}>
-          {settings.showIRatingBadge && (
-            <LicenseBadge
-              licString={driver.licString}
-              className={`${styles.licBadge} ${styles.badgeFull}`}
-            />
-          )}
-        </div>
-
         {settings.showIRatingBadge && (
-          <span className={styles.irInfo}>{formatIRating(driver.iRating)}</span>
+          <div className={styles.colLic}>
+            <RatingBadge
+              licString={driver.licString}
+              iRating={driver.iRating}
+              className={styles.badgeFull}
+            />
+          </div>
         )}
 
         <div className={styles.f2Block}>
