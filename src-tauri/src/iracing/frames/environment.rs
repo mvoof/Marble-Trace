@@ -7,6 +7,8 @@
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
+use crate::iracing::enums::Skies;
+
 #[derive(Serialize, Deserialize, Type, Debug, Clone)]
 pub struct EnvironmentFrame {
     /// Ambient air temperature in °C
@@ -31,7 +33,7 @@ pub struct EnvironmentFrame {
 
     /// Skies (0=clear, 1=partly cloudy, 2=mostly cloudy, 3=overcast)
     /// @see https://sajax.github.io/irsdkdocs/telemetry/skies/
-    pub skies: Option<i32>,
+    pub skies: Option<Skies>,
 
     /// Current amount of precipitation at start/finish (0.0 to 1.0)
     pub precipitation: Option<f32>,

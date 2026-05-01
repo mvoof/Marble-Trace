@@ -29,6 +29,8 @@ pub use session::SessionFrame;
 use pitwall::{BitField, PitwallFrame};
 use serde::{Deserialize, Serialize};
 
+use super::enums::{SessionState, Skies, TrackSurface};
+
 fn bitfield_to_u32(bits: BitField) -> u32 {
     bits.0
 }
@@ -366,7 +368,7 @@ impl From<&AllFieldsFrame> for SessionFrame {
         Self {
             session_time: f.session_time,
             session_time_remain: f.session_time_remain,
-            session_state: f.session_state,
+            session_state: f.session_state.map(SessionState::from),
             session_flags: f.session_flags,
             session_num: f.session_num,
             session_time_of_day: f.session_time_of_day,
@@ -388,7 +390,11 @@ impl From<&AllFieldsFrame> for CarIdxFrame {
             car_idx_best_lap_time: f.car_idx_best_lap_time.clone(),
             car_idx_f2_time: f.car_idx_f2_time.clone(),
             car_idx_est_time: f.car_idx_est_time.clone(),
-            car_idx_track_surface: f.car_idx_track_surface.clone(),
+            car_idx_track_surface: f
+                .car_idx_track_surface
+                .iter()
+                .map(|&v| TrackSurface::from(v))
+                .collect(),
             car_idx_tire_compound: f.car_idx_tire_compound.clone(),
             car_left_right: f.car_left_right,
         }
@@ -403,7 +409,7 @@ impl From<&AllFieldsFrame> for EnvironmentFrame {
             wind_vel: f.wind_vel,
             wind_dir: f.wind_dir,
             relative_humidity: f.relative_humidity,
-            skies: f.skies,
+            skies: f.skies.map(Skies::from),
             precipitation: f.precipitation,
             track_wetness: f.track_wetness,
             weather_declared_wet: f.weather_declared_wet,

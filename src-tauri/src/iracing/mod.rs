@@ -31,10 +31,12 @@
 ///
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 /// @see https://sajax.github.io/irsdkdocs/yaml/
+pub mod enums;
 pub mod frames;
 pub mod service;
 pub mod weather_forecast;
 
+pub use enums::{SessionState, Skies, TrackSurface};
 pub use frames::{
     CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, EnvironmentFrame,
     LapTimingFrame, SessionFrame,

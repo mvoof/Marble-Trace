@@ -10,6 +10,8 @@
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
+use crate::iracing::enums::SessionState;
+
 #[derive(Serialize, Deserialize, Type, Debug, Clone)]
 pub struct SessionFrame {
     /// Seconds since the session started
@@ -22,7 +24,7 @@ pub struct SessionFrame {
 
     /// Session state enum value (invalid, warmup, racing, etc.)
     /// @see https://sajax.github.io/irsdkdocs/telemetry/sessionstate/
-    pub session_state: Option<i32>,
+    pub session_state: Option<SessionState>,
 
     /// Session flags bit field (green, yellow, red, etc.)
     /// @see https://sajax.github.io/irsdkdocs/telemetry/sessionflags/

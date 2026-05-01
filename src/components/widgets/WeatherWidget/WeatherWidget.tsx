@@ -5,6 +5,7 @@ import type { UnitSystem } from '../../../types/units';
 import { formatSpeed, speedUnit } from '../../../utils/telemetry-format';
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import { WindCompass } from './WindCompass/WindCompass';
+import { Skies } from '../../../types/iracing-enums';
 
 import styles from './WeatherWidget.module.scss';
 
@@ -85,14 +86,14 @@ const formatForecastTime = (timeSec: number): string => {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 };
 
-const SKIES_LABELS: Record<number, string> = {
-  0: 'Clear',
-  1: 'Partly Cloudy',
-  2: 'Mostly Cloudy',
-  3: 'Overcast',
+const SKIES_LABELS: Record<Skies, string> = {
+  [Skies.Clear]: 'Clear',
+  [Skies.PartlyCloudy]: 'Partly Cloudy',
+  [Skies.MostlyCloudy]: 'Mostly Cloudy',
+  [Skies.Overcast]: 'Overcast',
 };
 
-const getSkiesLabel = (skies: number): string =>
+const getSkiesLabel = (skies: Skies): string =>
   SKIES_LABELS[skies] ?? 'Unknown';
 
 const convertTemp = (celsius: number, system: UnitSystem): number => {

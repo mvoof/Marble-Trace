@@ -5,6 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
+import { SessionState } from '../../../types/iracing-enums';
 import type { FlagState } from './TimerWidget';
 import { TimerWidget } from './TimerWidget';
 
@@ -82,8 +83,6 @@ const formatSimTime = (secondsSinceMidnight: number): string => {
 };
 
 const SESSION_FLAG_CHECKERED = 0x0001;
-const SESSION_STATE_CHECKERED = 6;
-const SESSION_STATE_COOL_DOWN = 7;
 
 const resolveFlagState = (
   flags: number | null,
@@ -96,11 +95,11 @@ const resolveFlagState = (
   return 'green';
 };
 
-const isSessionEnded = (sessionState: number | null): boolean => {
+const isSessionEnded = (sessionState: SessionState | null): boolean => {
   if (sessionState === null) return false;
   return (
-    sessionState === SESSION_STATE_CHECKERED ||
-    sessionState === SESSION_STATE_COOL_DOWN
+    sessionState === SessionState.Checkered ||
+    sessionState === SessionState.CoolDown
   );
 };
 

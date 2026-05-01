@@ -1,8 +1,10 @@
+import { TrackSurface } from '../../types/iracing-enums';
+
 // ─── Track surface constants ───────────────────────────────────────────────
 
-export const TRACK_SURFACE_OFF_TRACK = 0;
-export const TRACK_SURFACE_IN_PIT_STALL = 1;
-export const TRACK_SURFACE_ON_TRACK = 3;
+export const TRACK_SURFACE_OFF_TRACK = TrackSurface.OffTrack;
+export const TRACK_SURFACE_IN_PIT_STALL = TrackSurface.InPitStall;
+export const TRACK_SURFACE_ON_TRACK = TrackSurface.OnTrack;
 export const NEAR_DQ_INCIDENT_THRESHOLD = 15;
 
 // ─── Class label constants ─────────────────────────────────────────────────
