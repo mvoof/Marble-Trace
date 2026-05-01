@@ -13,6 +13,7 @@ pub struct LapDeltaState {
     pub last_lap: i32,
     pub sector_count: usize,
     pub cached_sector_pcts: Vec<f64>,
+    pub sectors_checksum: u64,
     pub last_frame_pct: f64,
     pub last_frame_time: f64,
     pub was_on_track: bool,
@@ -38,6 +39,7 @@ impl Default for LapDeltaState {
             last_lap: -1,
             sector_count: 0,
             cached_sector_pcts: Vec::new(),
+            sectors_checksum: 0,
             last_frame_pct: -1.0,
             last_frame_time: -1.0,
             was_on_track: false,
@@ -74,6 +76,24 @@ pub struct LapDeltaFrame {
     pub personal_best_sectors: Vec<Option<f32>>,
 }
 
+fn sectors_checksum(session: &SessionInfo) -> u64 {
+    let sectors = session
+        .split_time_info
+        .as_ref()
+        .and_then(|s| s.sectors.as_deref())
+        .unwrap_or(&[]);
+
+    const MULTIPLIER: u64 = 6_364_136_223_846_793_005;
+    let mut h: u64 = sectors.len() as u64;
+    for s in sectors {
+        if let (Some(num), Some(pct)) = (s.sector_num, s.sector_start_pct) {
+            h = h.wrapping_mul(MULTIPLIER).wrapping_add(num as u64);
+            h = h.wrapping_mul(MULTIPLIER).wrapping_add(pct.to_bits());
+        }
+    }
+    h
+}
+
 fn get_sector_pcts(session: &SessionInfo) -> Vec<f64> {
     let sectors = session
         .split_time_info
@@ -90,7 +110,7 @@ fn get_sector_pcts(session: &SessionInfo) -> Vec<f64> {
         .filter_map(|s| Some((s.sector_num?, s.sector_start_pct?)))
         .collect();
 
-    pcts.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
+    pcts.sort_by(|a, b| a.1.total_cmp(&b.1));
     pcts.into_iter().map(|(_, pct)| pct).collect()
 }
 
@@ -101,11 +121,16 @@ pub fn compute(
 ) -> LapDeltaFrame {
     let mut locked = state.lock().unwrap_or_else(|e| e.into_inner());
 
-    let sector_pcts = get_sector_pcts(session);
-    let sector_count = sector_pcts.len();
-
-    if locked.cached_sector_pcts != sector_pcts {
+    let checksum = sectors_checksum(session);
+    if locked.sectors_checksum != checksum {
+        locked.sectors_checksum = checksum;
+        let sector_pcts = get_sector_pcts(session);
         locked.cached_sector_pcts = sector_pcts;
+    }
+
+    let sector_count = locked.cached_sector_pcts.len();
+
+    if locked.sector_count != sector_count {
         locked.sector_times = vec![None; sector_count];
         locked.session_best_sector_deltas = vec![None; sector_count];
         locked.personal_best_lap_sectors = vec![None; sector_count];
