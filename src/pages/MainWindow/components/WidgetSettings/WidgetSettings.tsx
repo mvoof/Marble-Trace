@@ -131,14 +131,14 @@ export const WidgetSettings = observer(
           </Row>
         </Card>
 
-        {widgetId !== 'radar-bar' && (
+        {!['radar-bar', 'flags', 'flat-flags'].includes(widgetId) && (
           <Card title="Aesthetics">
             <Row gutter={[24, 24]}>
               <Col span={12}>
                 <span className={styles.fieldLabel}>Background Center</span>
                 <div className={styles.colorPickerContainer}>
                   <ColorPicker
-                    value={widget.backgroundColor ?? '#1a1a1a'}
+                    value={widget.backgroundColor ?? '#252525'}
                     allowClear
                     onChange={(color) =>
                       widgetSettingsStore.updateField(
@@ -158,7 +158,7 @@ export const WidgetSettings = observer(
                 <span className={styles.fieldLabel}>Background Edge</span>
                 <div className={styles.colorPickerContainer}>
                   <ColorPicker
-                    value={widget.backgroundColorEdge ?? '#0a0a0a'}
+                    value={widget.backgroundColorEdge ?? '#14141b'}
                     allowClear
                     onChange={(color) =>
                       widgetSettingsStore.updateField(

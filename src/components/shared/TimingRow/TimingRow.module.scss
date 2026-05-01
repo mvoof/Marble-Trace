@@ -7,8 +7,13 @@
   gap: rem(4);
   font-family: $font-mono;
   padding: rem(4) rem(6);
-  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(39, 39, 42, 0.5);
   border-left: 3px solid transparent;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(39, 39, 42, 0.3);
+  }
 
   &.noDelta {
     grid-template-columns: rem(50) 1fr;

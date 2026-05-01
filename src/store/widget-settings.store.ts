@@ -49,8 +49,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 90,
     designWidth: 312,
     designHeight: 90,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: 'F10',
     customSettings: {
       speed: {
@@ -78,8 +78,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 220,
     designWidth: 400,
     designHeight: 220,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: 'F11',
     customSettings: {
       'input-trace': {
@@ -149,8 +149,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 450,
     designWidth: 640,
     designHeight: 450,
-    backgroundColor: '#0a0a0f',
-    backgroundColorEdge: '#050508',
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: 'F3',
     customSettings: {
       standings: {
@@ -186,8 +186,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 400,
     designWidth: 420,
     designHeight: 400,
-    backgroundColor: '#0a0a0f',
-    backgroundColorEdge: '#050508',
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: 'F4',
     customSettings: {
       relative: {
@@ -242,8 +242,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 40,
     designWidth: 400,
     designHeight: 40,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
     customSettings: {
       'linear-map': {
@@ -300,8 +300,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 320,
     designWidth: 460,
     designHeight: 320,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
   },
   {
@@ -315,8 +315,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 700,
     designWidth: 400,
     designHeight: 700,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: 'F8',
   },
   {
@@ -330,8 +330,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 180,
     designWidth: 220,
     designHeight: 180,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
     customSettings: {
       'lap-delta': {
@@ -352,8 +352,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 104,
     designWidth: 220,
     designHeight: 104,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
     customSettings: {
       'lap-times': {
@@ -375,8 +375,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 120,
     designWidth: 240,
     designHeight: 120,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
     customSettings: {
       timer: {
@@ -401,8 +401,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 280,
     designWidth: 240,
     designHeight: 280,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
     customSettings: {
       weather: {
@@ -426,8 +426,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     height: 360,
     designWidth: 240,
     designHeight: 360,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
     customSettings: {
       fuel: {
