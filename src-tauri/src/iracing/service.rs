@@ -264,14 +264,7 @@ pub async fn start_telemetry_stream(
                         break;
                     }
                     Err(_) => {
-                        let is_running = std::process::Command::new("tasklist")
-                            .arg("/FI")
-                            .arg("IMAGENAME eq iRacingSim64.exe")
-                            .output()
-                            .map(|o| {
-                                String::from_utf8_lossy(&o.stdout).contains("iRacingSim64.exe")
-                            })
-                            .unwrap_or(false);
+                        let is_running = is_iracing_running();
 
                         if !is_running {
                             warn!("iRacingSim64.exe is not running. Disconnecting.");
@@ -523,4 +516,16 @@ fn emit_domain_frames(
             warn!("Failed to emit environment: {}", e);
         }
     }
+}
+
+fn is_iracing_running() -> bool {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+    std::process::Command::new("tasklist")
+        .arg("/FI")
+        .arg("IMAGENAME eq iRacingSim64.exe")
+        .creation_flags(CREATE_NO_WINDOW)
+        .output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).contains("iRacingSim64.exe"))
+        .unwrap_or(false)
 }
