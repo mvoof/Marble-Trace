@@ -406,27 +406,22 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
             })
             .collect();
 
-        let mut sum_changes_starters = 0.0f64;
         let changes: Vec<f64> = bucket
             .iter()
             .enumerate()
             .map(|(i, &(_, class_pos, _))| {
-                let change = ((num_registrations as f64
+                ((num_registrations as f64
                     - class_pos as f64
                     - expected_scores[i]
                     - fudge_factors[i])
                     * IR_CHANGE_SCALE_FACTOR)
-                    / num_starters as f64;
-                sum_changes_starters += change;
-                change
+                    / num_starters as f64
             })
             .collect();
 
         for (i, &(car_idx, _, _)) in bucket.iter().enumerate() {
             result.insert(car_idx, changes[i].round() as i32);
         }
-
-        let _ = sum_changes_starters; // suppress warning
     }
 
     result

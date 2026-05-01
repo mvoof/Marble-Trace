@@ -141,13 +141,12 @@ export const WidgetContainer = observer(
 
     return (
       <div
-        className={styles.container}
+        className={`${styles.container} ${shouldHide ? styles.hidden : ''}`}
         style={{
           left: x,
           top: y,
           width,
           height: autoHeight ? 'auto' : height,
-          visibility: shouldHide ? 'hidden' : 'visible',
         }}
       >
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}

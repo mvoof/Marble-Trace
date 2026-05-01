@@ -57,6 +57,8 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(90deg, $color-info, $color-blue);
+  width: calc(var(--progress, 0) * 100%);
+  transition: width 0.3s ease;
 }
 
 .progressLabels {
