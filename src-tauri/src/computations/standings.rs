@@ -7,6 +7,7 @@ use specta::Type;
 
 use crate::iracing::enums::TrackSurface;
 use crate::iracing::frames::AllFieldsFrame;
+use crate::utils::lock_or_recover;
 
 const NO_CLASS_COLOR: &str = "#888888";
 const NO_CLASS_LABEL: &str = "No Class";
@@ -241,7 +242,7 @@ pub fn compute(
             let car_class_short_name = if car_screen_name_short.is_empty() {
                 NO_CLASS_LABEL.to_string()
             } else {
-                let mut locked_state = state.lock().unwrap_or_else(|e: std::sync::PoisonError<std::sync::MutexGuard<'_, StandingsState>>| e.into_inner());
+                let mut locked_state = lock_or_recover(state);
                 if let Some(cached) = locked_state.cached_car_classes.get(&car_screen_name_short) {
                     let c: String = cached.clone();
                     c

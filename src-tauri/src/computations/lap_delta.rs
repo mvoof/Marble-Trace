@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 use crate::iracing::frames::AllFieldsFrame;
+use crate::utils::lock_or_recover;
 
 const MAX_REASONABLE_SECTOR_TIME: f32 = 600.0;
 
@@ -121,7 +122,7 @@ pub fn compute(
     session: &SessionInfo,
     state: &Mutex<LapDeltaState>,
 ) -> LapDeltaFrame {
-    let mut locked = state.lock().unwrap_or_else(|e| e.into_inner());
+    let mut locked = lock_or_recover(state);
 
     update_sector_cache(&mut locked, session);
 

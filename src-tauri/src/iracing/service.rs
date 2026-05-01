@@ -49,6 +49,7 @@ use crate::computations::{
     pit_stops, pit_stops::PitStopState,
     proximity, standings, standings::StandingsState,
 };
+use crate::utils::lock_or_recover;
 
 /// Shared state for the iRacing telemetry service.
 pub struct TelemetryServiceState {
@@ -92,11 +93,7 @@ struct EmitContext<'a> {
 pub async fn get_last_session_info(
     state: State<'_, TelemetryState>,
 ) -> Result<Option<JsonValue>, String> {
-    let lock = state
-        .service
-        .last_session_info
-        .lock()
-        .unwrap_or_else(|e| e.into_inner());
+    let lock = lock_or_recover(&state.service.last_session_info);
 
     match lock.as_deref() {
         None => Ok(None),
@@ -590,12 +587,7 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
     }
 
     // Clone session_info Arc — cheap enough to do at 60Hz for accurate computations
-    let session_snapshot = ctx
-        .service
-        .last_session_info
-        .lock()
-        .unwrap_or_else(|e| e.into_inner())
-        .clone();
+    let session_snapshot = lock_or_recover(&ctx.service.last_session_info).clone();
     let session_info = session_snapshot.as_deref();
 
     // Compute stateful data at 60Hz for maximum precision (especially sector timing)
@@ -634,23 +626,13 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
 
         // Computed: proximity & standings (10 Hz)
         if let Some(session) = session_info {
-            let track_length = ctx
-                .service
-                .track_length_m
-                .lock()
-                .unwrap_or_else(|e| e.into_inner())
-                .unwrap_or(0.0);
+            let track_length = lock_or_recover(&ctx.service.track_length_m).unwrap_or(0.0);
             let proximity = proximity::compute(frame, session, track_length);
             if let Err(e) = app.emit("iracing://computed/proximity", &proximity) {
                 warn!("Failed to emit proximity: {}", e);
             }
 
-            let start_pos_snapshot = ctx
-                .service
-                .start_positions
-                .lock()
-                .unwrap_or_else(|e| e.into_inner())
-                .clone();
+            let start_pos_snapshot = lock_or_recover(&ctx.service.start_positions).clone();
             let standings_frame = standings::compute(
                 frame,
                 session,
@@ -679,22 +661,14 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
                 f32::from_bits(ctx.computation.pit_warning_laps.load(Ordering::Relaxed));
 
             {
-                let mut state = ctx
-                    .computation
-                    .fuel
-                    .lock()
-                    .unwrap_or_else(|e| e.into_inner());
+                let mut state = lock_or_recover(&ctx.computation.fuel);
                 let current_lap = frame.lap.unwrap_or(-1);
                 let session_num = frame.session_num.unwrap_or(-1);
                 state.update(current_lap, frame.fuel_level, session_num);
             }
 
             let fuel_frame = {
-                let state = ctx
-                    .computation
-                    .fuel
-                    .lock()
-                    .unwrap_or_else(|e| e.into_inner());
+                let state = lock_or_recover(&ctx.computation.fuel);
                 fuel::compute(frame, session, frame.session_num, pit_warning_laps, &state)
             };
             if let Some(fuel_frame) = fuel_frame {

@@ -1,5 +1,6 @@
 mod computations;
 mod iracing;
+mod utils;
 
 use computations::{
     fuel::{FuelComputedFrame, FuelState},
