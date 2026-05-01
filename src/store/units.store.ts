@@ -23,6 +23,10 @@ class UnitsStore {
     this.system = system;
   }
 
+  get isMetric() {
+    return this.system === 'metric';
+  }
+
   formatSpeed(mps: number) {
     return _formatSpeed(mps, this.system);
   }
