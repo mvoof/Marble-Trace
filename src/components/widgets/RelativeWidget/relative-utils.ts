@@ -24,7 +24,9 @@ export const computeRelativeGap = (
   const aheadTimeScaled = aheadEstTime * scalingRatio;
   const referenceLapTime = behindClassLapTime;
 
-  let delta = isAhead ? behindEstTime - aheadTimeScaled : aheadTimeScaled - behindEstTime;
+  let delta = isAhead
+    ? behindEstTime - aheadTimeScaled
+    : aheadTimeScaled - behindEstTime;
 
   if (isAhead) {
     if (delta > referenceLapTime / 2) delta -= referenceLapTime;

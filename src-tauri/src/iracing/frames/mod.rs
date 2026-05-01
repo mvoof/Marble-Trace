@@ -29,8 +29,8 @@ pub use session::SessionFrame;
 use pitwall::{BitField, PitwallFrame};
 use serde::{Deserialize, Serialize};
 
-fn bitfield_to_i32(bits: BitField) -> i32 {
-    bits.0 as i32
+fn bitfield_to_u32(bits: BitField) -> u32 {
+    bits.0
 }
 
 /// Combined telemetry frame containing ALL iRacing telemetry variables.
@@ -102,8 +102,8 @@ pub(crate) struct AllFieldsFrame {
     pub is_on_track: Option<bool>,
     #[field_name = "CarLeftRight"]
     pub car_left_right: Option<i32>,
-    #[bitfield_map(name = "EngineWarnings", decoder = "bitfield_to_i32")]
-    pub engine_warnings: Option<i32>,
+    #[bitfield_map(name = "EngineWarnings", decoder = "bitfield_to_u32")]
+    pub engine_warnings: Option<u32>,
 
     // === Lap Timing ===
     #[field_name = "Lap"]
@@ -134,8 +134,8 @@ pub(crate) struct AllFieldsFrame {
     pub session_time_remain: Option<f64>,
     #[field_name = "SessionState"]
     pub session_state: Option<i32>,
-    #[bitfield_map(name = "SessionFlags", decoder = "bitfield_to_i32")]
-    pub session_flags: Option<i32>,
+    #[bitfield_map(name = "SessionFlags", decoder = "bitfield_to_u32")]
+    pub session_flags: Option<u32>,
     #[field_name = "SessionNum"]
     pub session_num: Option<i32>,
     #[field_name = "SessionTimeOfDay"]
@@ -360,7 +360,7 @@ impl From<&AllFieldsFrame> for SessionFrame {
         let player_car_flags = f.player_car_idx.and_then(|idx| {
             f.car_idx_session_flags
                 .get(idx as usize)
-                .map(|bf| bf.0 as i32)
+                .map(|bf| bf.0)
         });
 
         Self {

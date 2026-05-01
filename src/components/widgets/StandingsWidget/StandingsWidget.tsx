@@ -32,12 +32,13 @@ const sliceWithPlayerPin = (
   drivers: DriverEntry[],
   budget: number
 ): DriverEntry[] => {
+  if (budget <= 0) return [];
   if (drivers.length <= budget) return drivers;
 
   const playerIdx = drivers.findIndex((d) => d.isPlayer);
   const visible = drivers.slice(0, budget);
 
-  if (playerIdx >= budget) {
+  if (playerIdx >= budget && budget >= 2) {
     visible[budget - 1] = drivers[playerIdx];
   }
 
@@ -74,25 +75,31 @@ export const StandingsWidget = ({
       }
     }
 
-    return Array.from(classMap.entries()).map(([classId, driversInClass]) => {
-      const first = driversInClass[0];
-      return {
-        classId,
-        className: first.carScreenNameShort,
-        classShortName: first.carScreenNameShort,
-        classColor: first.carClassColor,
-        totalDrivers: driversInClass.length,
-        classSof: computeClassSof(driversInClass),
-        drivers: driversInClass.sort(
-          (a, b) => a.classPosition - b.classPosition
-        ),
-      };
-    });
+    return Array.from(classMap.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([classId, driversInClass]) => {
+        const first = driversInClass[0];
+        return {
+          classId,
+          className: first.carScreenNameShort,
+          classShortName: first.carScreenNameShort,
+          classColor: first.carClassColor,
+          totalDrivers: driversInClass.length,
+          classSof: computeClassSof(driversInClass),
+          drivers: driversInClass.sort(
+            (a, b) => a.classPosition - b.classPosition
+          ),
+        };
+      });
   }, [driverEntries]);
 
   const displayGroup = useMemo((): DriverGroup => {
     if (settings.enableClassCycling && allClassGroups.length > 0) {
-      const group = allClassGroups[activeClassIndex];
+      const clampedIndex = Math.max(
+        0,
+        Math.min(activeClassIndex, allClassGroups.length - 1)
+      );
+      const group = allClassGroups[clampedIndex];
       return {
         ...group,
         drivers: sliceWithPlayerPin(group.drivers, visibleRowCount),

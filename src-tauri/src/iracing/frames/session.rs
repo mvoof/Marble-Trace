@@ -26,7 +26,7 @@ pub struct SessionFrame {
 
     /// Session flags bit field (green, yellow, red, etc.)
     /// @see https://sajax.github.io/irsdkdocs/telemetry/sessionflags/
-    pub session_flags: Option<i32>,
+    pub session_flags: Option<u32>,
 
     /// Index of the current session (practice=0, qualifying=1, race=2, etc.)
     /// @see https://sajax.github.io/irsdkdocs/telemetry/sessionnum/
@@ -43,5 +43,5 @@ pub struct SessionFrame {
     /// Per-car session flags for the player's car (black flag, DQ, meatball, etc.)
     /// Extracted from CarIdxSessionFlags[player_car_idx]
     /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxsessionflags/
-    pub player_car_flags: Option<i32>,
+    pub player_car_flags: Option<u32>,
 }

@@ -47,6 +47,8 @@ export const TrackRecorderBridge = ({
   const hasSavedRef = useRef(false);
   const lastProgressRef = useRef(-1);
   const lastLapDistRef = useRef(-1);
+  const lastIsWaitingForSFRef = useRef<boolean | null>(null);
+  const lastIsRecordingRef = useRef<boolean | null>(null);
 
   const callbacksRef = useRef({
     onTrackReady,
@@ -70,6 +72,9 @@ export const TrackRecorderBridge = ({
     hasSavedRef.current = false;
     lastProgressRef.current = -1;
     lastLapDistRef.current = -1;
+    lastIsWaitingForSFRef.current = null;
+    lastIsRecordingRef.current = null;
+
     runInAction(() => widgetSettingsStore.setTrackMapForceStartPending(false));
     callbacksRef.current.onIsRecordingChange(false);
     callbacksRef.current.onWaitingForSFChange?.(false);
@@ -134,9 +139,13 @@ export const TrackRecorderBridge = ({
         !isTrackMapForceStartPending;
 
       overlay?.setRecording(recorder.isRecording, isWaitingForSF);
-      queueMicrotask(() =>
-        callbacksRef.current.onWaitingForSFChange?.(isWaitingForSF)
-      );
+
+      if (isWaitingForSF !== lastIsWaitingForSFRef.current) {
+        lastIsWaitingForSFRef.current = isWaitingForSF;
+        queueMicrotask(() =>
+          callbacksRef.current.onWaitingForSFChange?.(isWaitingForSF)
+        );
+      }
 
       // Start recording when speed > 5 m/s (~18 km/h) AND (we crossed S/F OR manual force was requested).
       // Once complete, we stay complete until trackId changes or reset is called.
@@ -147,7 +156,13 @@ export const TrackRecorderBridge = ({
           );
           hasSavedRef.current = false;
           recorder.start();
-          queueMicrotask(() => callbacksRef.current.onIsRecordingChange(true));
+
+          if (lastIsRecordingRef.current !== true) {
+            lastIsRecordingRef.current = true;
+            queueMicrotask(() =>
+              callbacksRef.current.onIsRecordingChange(true)
+            );
+          }
           overlay?.setRecording(true);
         }
       }
@@ -174,6 +189,7 @@ export const TrackRecorderBridge = ({
           const points = recorder.getPoints();
 
           // Call directly without queueMicrotask to ensure immediate React unmount
+          lastIsRecordingRef.current = false;
           callbacksRef.current.onIsRecordingChange(false);
           callbacksRef.current.onTrackReady({ svgPath, viewBox, points });
           void callbacksRef.current.onSaveTrack(svgPath, viewBox, points);

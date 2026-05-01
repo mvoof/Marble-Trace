@@ -46,10 +46,10 @@ export const HotkeyRecorder = ({
       if (!mainKey) return;
 
       const parts: string[] = [];
-      if (e.ctrlKey) parts.push('CONTROL');
-      if (e.shiftKey) parts.push('SHIFT');
-      if (e.altKey) parts.push('ALT');
-      if (e.metaKey) parts.push('SUPER');
+      if (e.ctrlKey) parts.push('Control');
+      if (e.shiftKey) parts.push('Shift');
+      if (e.altKey) parts.push('Alt');
+      if (e.metaKey) parts.push('Super');
       parts.push(mainKey);
 
       setPendingKey(parts.join('+'));

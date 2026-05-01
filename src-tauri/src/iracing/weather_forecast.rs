@@ -60,7 +60,7 @@ pub fn parse_weather_forecast(
                     match serde_yaml_ng::from_value::<WeatherForecastEntry>(entry.clone()) {
                         Ok(e) => Some(e),
                         Err(err) => {
-                            tracing::warn!("Failed to deserialize WeatherForecastEntry: {}", err);
+                            tracing::debug!("Failed to deserialize WeatherForecastEntry: {}", err);
                             None
                         }
                     }
