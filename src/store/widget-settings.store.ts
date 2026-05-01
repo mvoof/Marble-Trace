@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import { invoke } from '@tauri-apps/api/core';
 import { computedStore } from './iracing';
 
@@ -195,6 +195,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showClassBadge: true,
         showPitIndicator: true,
         abbreviateNames: true,
+        showTrendIcon: true,
       },
     },
   },
@@ -451,6 +452,18 @@ class WidgetSettingsStore {
     makeAutoObservable(this, { autoSizedWidgets: false } as never, {
       autoBind: true,
     });
+
+    // Auto-clamp active class index when number of classes changes
+    reaction(
+      () => this.getStandingsClassCount(),
+      (total) => {
+        if (total > 0 && this.standingsActiveClassIndex >= total) {
+          runInAction(() => {
+            this.standingsActiveClassIndex = Math.max(0, total - 1);
+          });
+        }
+      }
+    );
   }
 
   setTrackMapForceStartPending(pending: boolean) {
@@ -465,19 +478,15 @@ class WidgetSettingsStore {
   cycleStandingsPrev() {
     const total = this.getStandingsClassCount();
     if (total <= 1) return;
-    this.standingsActiveClassIndex =
-      this.standingsActiveClassIndex === 0
-        ? total - 1
-        : this.standingsActiveClassIndex - 1;
+    const clamped = Math.min(this.standingsActiveClassIndex, total - 1);
+    this.standingsActiveClassIndex = clamped === 0 ? total - 1 : clamped - 1;
   }
 
   cycleStandingsNext() {
     const total = this.getStandingsClassCount();
     if (total <= 1) return;
-    this.standingsActiveClassIndex =
-      this.standingsActiveClassIndex === total - 1
-        ? 0
-        : this.standingsActiveClassIndex + 1;
+    const clamped = Math.min(this.standingsActiveClassIndex, total - 1);
+    this.standingsActiveClassIndex = clamped === total - 1 ? 0 : clamped + 1;
   }
 
   toggleStandingsClassCycling() {
