@@ -81,17 +81,23 @@ pub fn run() {
             set_pit_warning_laps
         ])
         .manage(TelemetryState {
-            running: Arc::new(AtomicBool::new(false)),
-            last_session_info: Arc::new(Mutex::new(None)),
-            start_positions: Arc::new(Mutex::new(std::collections::HashMap::new())),
-            pit_stop_count: Arc::new(std::sync::atomic::AtomicU32::new(0)),
-            was_on_pit_road: Arc::new(AtomicBool::new(false)),
-            pit_tracked_session_num: Arc::new(std::sync::atomic::AtomicI32::new(-1)),
-            lap_delta_state: Arc::new(Mutex::new(LapDeltaState::default())),
-            standings_state: Arc::new(Mutex::new(StandingsState::default())),
-            pit_warning_laps: Arc::new(std::sync::atomic::AtomicU32::new(3.0f32.to_bits())),
-            track_length_m: Arc::new(Mutex::new(None)),
-            fuel_state: Arc::new(Mutex::new(FuelState::default())),
+            service: Arc::new(iracing::TelemetryServiceState {
+                running: AtomicBool::new(false),
+                last_session_info: Mutex::new(None),
+                start_positions: Mutex::new(std::collections::HashMap::new()),
+                track_length_m: Mutex::new(None),
+            }),
+            pit: Arc::new(iracing::PitStopState {
+                count: std::sync::atomic::AtomicU32::new(0),
+                was_on_pit_road: AtomicBool::new(false),
+                tracked_session_num: std::sync::atomic::AtomicI32::new(-1),
+            }),
+            computation: Arc::new(iracing::ComputationState {
+                lap_delta: Mutex::new(LapDeltaState::default()),
+                standings: Mutex::new(StandingsState::default()),
+                fuel: Mutex::new(FuelState::default()),
+                pit_warning_laps: std::sync::atomic::AtomicU32::new(3.0f32.to_bits()),
+            }),
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {

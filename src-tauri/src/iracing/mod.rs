@@ -41,6 +41,6 @@ pub use frames::{
 };
 pub use service::{
     get_last_session_info, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
-    TelemetryState,
+    ComputationState, PitStopState, TelemetryServiceState, TelemetryState,
 };
 pub use weather_forecast::WeatherForecastEntry;

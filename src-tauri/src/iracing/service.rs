@@ -46,37 +46,52 @@ use crate::computations::{
     fuel, fuel::FuelState, lap_delta, lap_delta::LapDeltaState, pit_stops::PitStopsFrame, proximity, standings, standings::StandingsState,
 };
 
-/// Shared state for the iRacing telemetry connection.
-pub struct TelemetryState {
-    pub running: Arc<AtomicBool>,
-    pub last_session_info: Arc<Mutex<Option<Arc<SessionInfo>>>>,
-
+/// Shared state for the iRacing telemetry service.
+pub struct TelemetryServiceState {
+    pub running: AtomicBool,
+    pub last_session_info: Mutex<Option<Arc<SessionInfo>>>,
     /// Start grid positions keyed by carIdx: (overall_pos, class_pos), 1-indexed.
-    pub start_positions: Arc<Mutex<HashMap<i32, (i32, i32)>>>,
-
-    /// Player pit stop counter for the current session.
-    pub pit_stop_count: Arc<AtomicU32>,
-
-    /// Whether the player was on pit road on the previous frame.
-    pub was_on_pit_road: Arc<AtomicBool>,
-
-    /// Session number tracked for pit stop reset.
-    pub pit_tracked_session_num: Arc<AtomicI32>,
-
-    /// Stateful lap delta / sector timing computation.
-    pub lap_delta_state: Arc<Mutex<LapDeltaState>>,
-
-    /// Stateful standings computation.
-    pub standings_state: Arc<Mutex<StandingsState>>,
-
-    /// User-configured pit warning laps (stored as bits of f32).
-    pub pit_warning_laps: Arc<AtomicU32>,
-
+    pub start_positions: Mutex<HashMap<i32, (i32, i32)>>,
     /// Cached track length in meters.
-    pub track_length_m: Arc<Mutex<Option<f32>>>,
+    pub track_length_m: Mutex<Option<f32>>,
+}
 
+/// Shared state for pit stop tracking.
+pub struct PitStopState {
+    /// Player pit stop counter for the current session.
+    pub count: AtomicU32,
+    /// Whether the player was on pit road on the previous frame.
+    pub was_on_pit_road: AtomicBool,
+    /// Session number tracked for pit stop reset.
+    pub tracked_session_num: AtomicI32,
+}
+
+/// Shared state for various computations (lap delta, fuel, standings).
+pub struct ComputationState {
+    /// Stateful lap delta / sector timing computation.
+    pub lap_delta: Mutex<LapDeltaState>,
+    /// Stateful standings computation.
+    pub standings: Mutex<StandingsState>,
     /// Stateful fuel computation (lap history, avg, session tracking).
-    pub fuel_state: Arc<Mutex<FuelState>>,
+    pub fuel: Mutex<FuelState>,
+    /// User-configured pit warning laps (stored as bits of f32).
+    pub pit_warning_laps: AtomicU32,
+}
+
+/// Compose domain-specific states.
+pub struct TelemetryState {
+    pub service: Arc<TelemetryServiceState>,
+    pub pit: Arc<PitStopState>,
+    pub computation: Arc<ComputationState>,
+}
+
+struct EmitContext<'a> {
+    app: &'a AppHandle,
+    frame: &'a AllFieldsFrame,
+    tick: u64,
+    service: &'a TelemetryServiceState,
+    pit: &'a PitStopState,
+    computation: &'a ComputationState,
 }
 
 #[tauri::command]
@@ -84,6 +99,7 @@ pub async fn get_last_session_info(
     state: State<'_, TelemetryState>,
 ) -> Result<Option<Arc<SessionInfo>>, String> {
     let lock = state
+        .service
         .last_session_info
         .lock()
         .unwrap_or_else(|e| e.into_inner());
@@ -96,6 +112,7 @@ pub async fn set_pit_warning_laps(
     laps: f32,
 ) -> Result<(), String> {
     state
+        .computation
         .pit_warning_laps
         .store(laps.to_bits(), Ordering::Relaxed);
     Ok(())
@@ -106,27 +123,19 @@ pub async fn start_telemetry_stream(
     app: AppHandle,
     state: State<'_, TelemetryState>,
 ) -> Result<(), String> {
-    state.running.store(false, Ordering::SeqCst);
+    state.service.running.store(false, Ordering::SeqCst);
     sleep(Duration::from_millis(50)).await;
 
-    state.running.store(true, Ordering::SeqCst);
+    state.service.running.store(true, Ordering::SeqCst);
 
-    let running = state.running.clone();
-    let last_session_info = state.last_session_info.clone();
-    let start_positions = state.start_positions.clone();
-    let pit_stop_count = state.pit_stop_count.clone();
-    let was_on_pit_road = state.was_on_pit_road.clone();
-    let pit_tracked_session_num = state.pit_tracked_session_num.clone();
-    let lap_delta_state = state.lap_delta_state.clone();
-    let standings_state = state.standings_state.clone();
-    let pit_warning_laps = state.pit_warning_laps.clone();
-    let track_length_m = state.track_length_m.clone();
-    let fuel_state = state.fuel_state.clone();
+    let service = state.service.clone();
+    let pit = state.pit.clone();
+    let computation = state.computation.clone();
     let app_clone = app.clone();
 
     tokio::spawn(async move {
         loop {
-            if !running.load(Ordering::SeqCst) {
+            if !service.running.load(Ordering::SeqCst) {
                 debug!("Stream stopped by user");
                 break;
             }
@@ -135,7 +144,7 @@ pub async fn start_telemetry_stream(
             info!("Waiting for iRacing...");
 
             let connection = loop {
-                if !running.load(Ordering::SeqCst) {
+                if !service.running.load(Ordering::SeqCst) {
                     return;
                 }
 
@@ -170,16 +179,13 @@ pub async fn start_telemetry_stream(
             debug!("Subscribed to telemetry and session streams");
 
             let app_session = app_clone.clone();
-            let running_session = running.clone();
-            let last_session_info_clone = last_session_info.clone();
-            let start_positions_clone = start_positions.clone();
+            let service_session = service.clone();
 
-            let track_length_m_clone = track_length_m.clone();
             let session_task = tokio::spawn(async move {
                 let mut stream = std::pin::pin!(session_stream);
 
                 while let Some(session) = stream.next().await {
-                    if !running_session.load(Ordering::SeqCst) {
+                    if !service_session.running.load(Ordering::SeqCst) {
                         break;
                     }
 
@@ -190,16 +196,16 @@ pub async fn start_telemetry_stream(
                     );
 
                     // Update start positions from ResultsPositions if available
-                    update_start_positions(&session, &start_positions_clone);
+                    update_start_positions(&session, &service_session.start_positions);
 
                     // Update cached track length
-                    if let Ok(mut lock) = track_length_m_clone.lock() {
+                    if let Ok(mut lock) = service_session.track_length_m.lock() {
                         *lock = Some(proximity::parse_track_length(
                             &session.weekend_info.track_length,
                         ));
                     }
 
-                    if let Ok(mut lock) = last_session_info_clone.lock() {
+                    if let Ok(mut lock) = service_session.last_session_info.lock() {
                         *lock = Some(session.clone());
                     }
 
@@ -225,7 +231,7 @@ pub async fn start_telemetry_stream(
             let mut tick: u64 = 0;
 
             loop {
-                if !running.load(Ordering::SeqCst) {
+                if !service.running.load(Ordering::SeqCst) {
                     debug!("Stream stopped by user");
                     return;
                 }
@@ -244,21 +250,16 @@ pub async fn start_telemetry_stream(
                             app_clone.emit("iracing://status", "connected").ok();
                         }
 
-                        emit_domain_frames(
-                            &app_clone,
-                            &frame,
+                        let ctx = EmitContext {
+                            app: &app_clone,
+                            frame: &frame,
                             tick,
-                            &last_session_info,
-                            &start_positions,
-                            &pit_stop_count,
-                            &was_on_pit_road,
-                            &pit_tracked_session_num,
-                            &lap_delta_state,
-                            &standings_state,
-                            &pit_warning_laps,
-                            &track_length_m,
-                            &fuel_state,
-                        );
+                            service: &service,
+                            pit: &pit,
+                            computation: &computation,
+                        };
+
+                        emit_domain_frames(ctx);
                     }
                     Ok(None) => {
                         break;
@@ -280,25 +281,25 @@ pub async fn start_telemetry_stream(
 
             info!(tick, "Stream ended, will retry connection...");
 
-            if let Ok(mut lock) = last_session_info.lock() {
+            if let Ok(mut lock) = service.last_session_info.lock() {
                 *lock = None;
             }
 
             // Reset pit stop state on disconnect
-            pit_stop_count.store(0, Ordering::Relaxed);
-            was_on_pit_road.store(false, Ordering::Relaxed);
-            pit_tracked_session_num.store(-1, Ordering::Relaxed);
-            if let Ok(mut s) = lap_delta_state.lock() {
+            pit.count.store(0, Ordering::Relaxed);
+            pit.was_on_pit_road.store(false, Ordering::Relaxed);
+            pit.tracked_session_num.store(-1, Ordering::Relaxed);
+            if let Ok(mut s) = computation.lap_delta.lock() {
                 s.reset();
             }
-            if let Ok(mut t) = track_length_m.lock() {
+            if let Ok(mut t) = service.track_length_m.lock() {
                 *t = None;
             }
 
             app_clone.emit("iracing://status", "disconnected").ok();
             app_clone.emit("iracing://disconnected", &()).ok();
 
-            if !running.load(Ordering::SeqCst) {
+            if !service.running.load(Ordering::SeqCst) {
                 break;
             }
             // Outer loop continues: retries Pitwall::connect() until iRacing is back
@@ -310,7 +311,7 @@ pub async fn start_telemetry_stream(
 
 #[tauri::command]
 pub async fn stop_telemetry_stream(state: State<'_, TelemetryState>) -> Result<(), String> {
-    state.running.store(false, Ordering::SeqCst);
+    state.service.running.store(false, Ordering::SeqCst);
     debug!("Telemetry stream stopped");
     Ok(())
 }
@@ -340,22 +341,11 @@ fn update_start_positions(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-fn emit_domain_frames(
-    app: &AppHandle,
-    frame: &AllFieldsFrame,
-    tick: u64,
-    last_session_info: &Mutex<Option<Arc<SessionInfo>>>,
-    start_positions: &Mutex<HashMap<i32, (i32, i32)>>,
-    pit_stop_count: &AtomicU32,
-    was_on_pit_road: &AtomicBool,
-    pit_tracked_session_num: &AtomicI32,
-    lap_delta_state: &Mutex<LapDeltaState>,
-    standings_state: &Mutex<StandingsState>,
-    pit_warning_laps_atomic: &AtomicU32,
-    track_length_m: &Mutex<Option<f32>>,
-    fuel_state: &Mutex<FuelState>,
-) {
+fn emit_domain_frames(ctx: EmitContext<'_>) {
+    let app = ctx.app;
+    let frame = ctx.frame;
+    let tick = ctx.tick;
+
     // 60 Hz — raw frames
     if let Err(e) = app.emit(
         "iracing://telemetry/car-dynamics",
@@ -371,14 +361,18 @@ fn emit_domain_frames(
     }
 
     // Clone session_info Arc — cheap enough to do at 60Hz for accurate computations
-    let session_snapshot = last_session_info
+    let session_snapshot = ctx
+        .service
+        .last_session_info
         .lock()
         .unwrap_or_else(|e| e.into_inner())
         .clone();
     let session_info = session_snapshot.as_deref();
 
     // Compute stateful data at 60Hz for maximum precision (especially sector timing)
-    let lap_delta_frame = session_info.map(|session| lap_delta::compute(frame, session, lap_delta_state));
+    let lap_delta_frame = session_info.map(|session| {
+        lap_delta::compute(frame, session, &ctx.computation.lap_delta)
+    });
 
     // 60 Hz — emit lap delta for smooth live delta updates
     if let Some(ref ldf) = lap_delta_frame {
@@ -412,7 +406,9 @@ fn emit_domain_frames(
 
         // Computed: proximity & standings (10 Hz)
         if let Some(session) = session_info {
-            let track_length = track_length_m
+            let track_length = ctx
+                .service
+                .track_length_m
                 .lock()
                 .unwrap_or_else(|e| e.into_inner())
                 .unwrap_or(0.0);
@@ -421,12 +417,14 @@ fn emit_domain_frames(
                 warn!("Failed to emit proximity: {}", e);
             }
 
-            let start_pos_snapshot = start_positions
+            let start_pos_snapshot = ctx
+                .service
+                .start_positions
                 .lock()
                 .unwrap_or_else(|e| e.into_inner())
                 .clone();
             let standings_frame =
-                standings::compute(frame, session, &start_pos_snapshot, true, standings_state);
+                standings::compute(frame, session, &start_pos_snapshot, true, &ctx.computation.standings);
             if let Err(e) = app.emit("iracing://computed/standings", &standings_frame) {
                 warn!("Failed to emit standings: {}", e);
             }
@@ -445,17 +443,17 @@ fn emit_domain_frames(
 
         // Computed: fuel & pit stops (4 Hz)
         if let Some(session) = session_info {
-            let pit_warning_laps = f32::from_bits(pit_warning_laps_atomic.load(Ordering::Relaxed));
+            let pit_warning_laps = f32::from_bits(ctx.computation.pit_warning_laps.load(Ordering::Relaxed));
 
             {
-                let mut state = fuel_state.lock().unwrap_or_else(|e| e.into_inner());
+                let mut state = ctx.computation.fuel.lock().unwrap_or_else(|e| e.into_inner());
                 let current_lap = frame.lap.unwrap_or(-1);
                 let session_num = frame.session_num.unwrap_or(-1);
                 state.update(current_lap, frame.fuel_level, session_num);
             }
 
             let fuel_frame = {
-                let state = fuel_state.lock().unwrap_or_else(|e| e.into_inner());
+                let state = ctx.computation.fuel.lock().unwrap_or_else(|e| e.into_inner());
                 fuel::compute(frame, session, frame.session_num, pit_warning_laps, &state)
             };
             if let Some(fuel_frame) = fuel_frame {
@@ -473,12 +471,12 @@ fn emit_domain_frames(
 
             if player_idx >= 0 {
                 let current_session_num = frame.session_num.unwrap_or(-1);
-                let tracked_session = pit_tracked_session_num.load(Ordering::Relaxed);
+                let tracked_session = ctx.pit.tracked_session_num.load(Ordering::Relaxed);
 
                 if current_session_num != tracked_session {
-                    pit_tracked_session_num.store(current_session_num, Ordering::Relaxed);
-                    pit_stop_count.store(0, Ordering::Relaxed);
-                    was_on_pit_road.store(false, Ordering::Relaxed);
+                    ctx.pit.tracked_session_num.store(current_session_num, Ordering::Relaxed);
+                    ctx.pit.count.store(0, Ordering::Relaxed);
+                    ctx.pit.was_on_pit_road.store(false, Ordering::Relaxed);
                 }
 
                 let on_pit = frame
@@ -486,14 +484,14 @@ fn emit_domain_frames(
                     .get(player_idx as usize)
                     .copied()
                     .unwrap_or(false);
-                let was = was_on_pit_road.load(Ordering::Relaxed);
+                let was = ctx.pit.was_on_pit_road.load(Ordering::Relaxed);
 
                 if on_pit && !was {
-                    pit_stop_count.fetch_add(1, Ordering::Relaxed);
+                    ctx.pit.count.fetch_add(1, Ordering::Relaxed);
                 }
-                was_on_pit_road.store(on_pit, Ordering::Relaxed);
+                ctx.pit.was_on_pit_road.store(on_pit, Ordering::Relaxed);
 
-                let stops = pit_stop_count.load(Ordering::Relaxed);
+                let stops = ctx.pit.count.load(Ordering::Relaxed);
                 let pit_frame = PitStopsFrame {
                     player_stops: stops,
                 };
