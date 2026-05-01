@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
 import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
+import { unitsStore } from '../../../../../store/units.store';
 import {
   SpeedWidgetFocusMode,
   SpeedWidgetSettings,
@@ -120,7 +121,9 @@ export const SpeedSettingsPanel = observer(() => {
 
       {settings.showPitPanel && (
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>Pit Speed Override (km/h)</span>
+          <span className={styles.fieldLabel}>
+            Pit Speed Override ({unitsStore.speedUnit})
+          </span>
           <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
             Leave 0 to auto-detect from session data.
           </div>
