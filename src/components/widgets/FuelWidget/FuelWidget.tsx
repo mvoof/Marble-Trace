@@ -2,6 +2,11 @@ import { useEffect, useRef } from 'react';
 
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import { formatFuelLiters, type FuelCalculations } from './fuel-utils';
+import {
+  FUEL_COLORS,
+  FUEL_CHART_CONFIG,
+  FUEL_THRESHOLDS,
+} from './fuel-constants';
 
 import styles from './FuelWidget.module.scss';
 
@@ -34,15 +39,13 @@ const statusText = (shortage: number | null): string => {
   return `FINISH ${sign}${shortage.toFixed(1)} L`;
 };
 
-const LAPS_LEFT_GREEN_BUFFER = 2;
-
 const lapsLeftClass = (
   lapsRemaining: number | null,
   pitWarningLaps: number
 ): string => {
   if (lapsRemaining === null) return '';
 
-  if (lapsRemaining > pitWarningLaps + LAPS_LEFT_GREEN_BUFFER)
+  if (lapsRemaining > pitWarningLaps + FUEL_THRESHOLDS.LAPS_LEFT_GREEN_BUFFER)
     return styles.rowValueSafe;
   if (lapsRemaining <= pitWarningLaps) return styles.rowValueShort;
 
@@ -54,19 +57,9 @@ interface FuelChartProps {
   chartType: 'line' | 'bar';
 }
 
-const MAX_VISIBLE = 30;
-const Y_LABEL_W = 36;
-const X_LABEL_H = 18;
-const GRID_COUNT = 4;
-const BAR_WIDTH = 5;
-const BAR_GAP = 2;
-
-const AVG_LINE_COLOR = 'rgba(251,191,36,0.9)';
-const AVG_LABEL_COLOR = 'rgba(251,191,36,0.8)';
-
 const barColor = (v: number, avg: number | null): string => {
-  if (avg === null) return '#3399ff';
-  return v > avg ? '#ef4444' : '#22c55e';
+  if (avg === null) return FUEL_COLORS.primary;
+  return v > avg ? FUEL_COLORS.danger : FUEL_COLORS.safe;
 };
 
 const drawYLabels = (
@@ -79,10 +72,10 @@ const drawYLabels = (
   ctx.font = 'bold 11px monospace';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillStyle = FUEL_COLORS.textMuted;
 
-  for (let g = 1; g < GRID_COUNT; g++) {
-    const ratio = g / GRID_COUNT;
+  for (let g = 1; g < FUEL_CHART_CONFIG.GRID_COUNT; g++) {
+    const ratio = g / FUEL_CHART_CONFIG.GRID_COUNT;
     const gy = plotH * (1 - ratio);
     const val = min + (max - min) * ratio;
     ctx.fillText(val.toFixed(1), totalW - 1, gy);
@@ -95,11 +88,11 @@ const drawGridLines = (
   left: number,
   right: number
 ) => {
-  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.strokeStyle = FUEL_COLORS.grid;
   ctx.lineWidth = 1;
   ctx.setLineDash([3, 4]);
-  for (let g = 1; g < GRID_COUNT; g++) {
-    const gy = plotH * (1 - g / GRID_COUNT);
+  for (let g = 1; g < FUEL_CHART_CONFIG.GRID_COUNT; g++) {
+    const gy = plotH * (1 - g / FUEL_CHART_CONFIG.GRID_COUNT);
     ctx.beginPath();
     ctx.moveTo(left, gy);
     ctx.lineTo(right, gy);
@@ -113,7 +106,7 @@ const drawAvgLine = (
   avgY: number,
   plotW: number
 ) => {
-  ctx.strokeStyle = AVG_LINE_COLOR;
+  ctx.strokeStyle = FUEL_COLORS.average;
   ctx.lineWidth = 1.5;
   ctx.setLineDash([5, 4]);
   ctx.beginPath();
@@ -125,12 +118,9 @@ const drawAvgLine = (
   ctx.font = 'bold 8px monospace';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'bottom';
-  ctx.fillStyle = AVG_LABEL_COLOR;
+  ctx.fillStyle = FUEL_COLORS.averageLabel;
   ctx.fillText('AVG', 1, avgY - 1);
 };
-
-const LABEL_CHAR_W = 7;
-const LABEL_MIN_GAP = 2;
 
 const drawXLabels = (
   ctx: CanvasRenderingContext2D,
@@ -142,9 +132,11 @@ const drawXLabels = (
   ctx.font = '10px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillStyle = FUEL_COLORS.textMuted;
 
-  const maxLabelW = String(n).length * LABEL_CHAR_W + LABEL_MIN_GAP;
+  const maxLabelW =
+    String(n).length * FUEL_CHART_CONFIG.LABEL_CHAR_W +
+    FUEL_CHART_CONFIG.LABEL_MIN_GAP;
   const step = Math.max(1, Math.ceil(maxLabelW / barWPlusGap));
 
   let lastDrawnX = -Infinity;
@@ -164,17 +156,17 @@ const drawBarChart = (
   h: number,
   avg: number | null
 ) => {
-  const data = history.slice(-MAX_VISIBLE);
+  const data = history.slice(-FUEL_CHART_CONFIG.MAX_VISIBLE);
   const n = data.length;
-  const plotW = w - Y_LABEL_W;
-  const plotH = h - X_LABEL_H;
+  const plotW = w - FUEL_CHART_CONFIG.Y_LABEL_W;
+  const plotH = h - FUEL_CHART_CONFIG.X_LABEL_H;
 
   const min = Math.min(...data) * 0.88;
   const max = Math.max(...data) * 1.08;
   const range = max - min || 1;
 
-  const barW = BAR_WIDTH;
-  const stride = barW + BAR_GAP;
+  const barW = FUEL_CHART_CONFIG.BAR_WIDTH;
+  const stride = barW + FUEL_CHART_CONFIG.BAR_GAP;
 
   const toBarH = (v: number) => ((v - min) / range) * plotH;
 
@@ -204,10 +196,10 @@ const drawLineChart = (
   h: number,
   avg: number | null
 ) => {
-  const data = history.slice(-MAX_VISIBLE);
+  const data = history.slice(-FUEL_CHART_CONFIG.MAX_VISIBLE);
   const n = data.length;
-  const plotW = w - Y_LABEL_W;
-  const plotH = h - X_LABEL_H;
+  const plotW = w - FUEL_CHART_CONFIG.Y_LABEL_W;
+  const plotH = h - FUEL_CHART_CONFIG.X_LABEL_H;
 
   const min = Math.min(...data) * 0.92;
   const max = Math.max(...data) * 1.08;
@@ -226,7 +218,7 @@ const drawLineChart = (
   drawYLabels(ctx, min, max, plotH, w);
 
   ctx.beginPath();
-  ctx.strokeStyle = '#3399ff';
+  ctx.strokeStyle = FUEL_COLORS.primary;
   ctx.lineWidth = 1.5;
   data.forEach((v, i) => {
     const x = toX(i);
@@ -246,13 +238,15 @@ const drawLineChart = (
   });
 
   const lineStride = data.length > 1 ? plotW / (data.length - 1) : plotW;
-  const maxLabelW = String(n).length * LABEL_CHAR_W + LABEL_MIN_GAP;
+  const maxLabelW =
+    String(n).length * FUEL_CHART_CONFIG.LABEL_CHAR_W +
+    FUEL_CHART_CONFIG.LABEL_MIN_GAP;
   const step = Math.max(1, Math.ceil(maxLabelW / lineStride));
 
   ctx.font = '10px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillStyle = FUEL_COLORS.textMuted;
   let lastDrawnX = -Infinity;
   for (let i = 0; i < n; i++) {
     if (i % step !== 0) continue;

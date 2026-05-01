@@ -17,6 +17,23 @@ export const CAR_CORNER_RADIUS = 0.2;
 /** Lateral offset for side car positioning (car width + gap) */
 export const SIDE_CAR_LATERAL_OFFSET = CAR_WIDTH + 0.6;
 
+// === Distance thresholds (meters) ===
+
+/** Bumper-to-bumper distance considered dangerous */
+export const DANGER_DISTANCE = 1.0;
+/** Bumper-to-bumper distance considered warning zone */
+export const WARNING_DISTANCE = 2.0;
+
+/** Longitudinal overlap considered dangerous for side cars */
+export const SIDE_DANGER_DISTANCE = 0.5;
+/** Longitudinal overlap considered warning for side cars */
+export const SIDE_WARNING_DISTANCE = 1.5;
+
+/** Proximity center distance considered dangerous for RadarBar */
+export const BAR_DANGER_DISTANCE = 1.0;
+/** Proximity center distance considered warning for RadarBar */
+export const BAR_WARNING_DISTANCE = 2.5;
+
 // === Danger zone colors (hex base) ===
 
 export const RADAR_COLORS = {
@@ -46,13 +63,11 @@ export const withAlpha = (hex: string, alpha: number): string => {
 
 /**
  * Color for front/rear cars based on bumper-to-bumper gap.
- * - danger: <= 1m
- * - warning: <= 2m
- * - safe: > 2m
  */
 export const getCarColor = (gapMeters: number): string => {
-  if (gapMeters <= 1.0) return withAlpha(RADAR_COLORS.danger, 0.7);
-  if (gapMeters <= 2.0) return withAlpha(RADAR_COLORS.warning, 0.7);
+  if (gapMeters <= DANGER_DISTANCE) return withAlpha(RADAR_COLORS.danger, 0.7);
+  if (gapMeters <= WARNING_DISTANCE)
+    return withAlpha(RADAR_COLORS.warning, 0.7);
 
   return withAlpha(RADAR_COLORS.safe, 0.7);
 };
@@ -60,28 +75,22 @@ export const getCarColor = (gapMeters: number): string => {
 /**
  * Color for side cars (spotter) based on longitudinal overlap.
  * Tighter thresholds since side contact is more dangerous.
- * - danger: <= 0.5m
- * - warning: <= 1.5m
- * - safe: > 1.5m
  */
 export const getSideCarColor = (longitudinalOffset: number): string => {
   const abs = Math.abs(longitudinalOffset);
 
-  if (abs <= 0.5) return withAlpha(RADAR_COLORS.danger, 0.7);
-  if (abs <= 1.5) return withAlpha(RADAR_COLORS.warning, 0.7);
+  if (abs <= SIDE_DANGER_DISTANCE) return withAlpha(RADAR_COLORS.danger, 0.7);
+  if (abs <= SIDE_WARNING_DISTANCE) return withAlpha(RADAR_COLORS.warning, 0.7);
 
   return withAlpha(RADAR_COLORS.safe, 0.7);
 };
 
 /**
  * Solid (no alpha) color for RadarBar pill based on center distance.
- * - danger: <= 1m
- * - warning: <= 2.5m
- * - safe: > 2.5m
  */
 export const getBarPillColor = (centerDistance: number): string => {
-  if (centerDistance <= 1.0) return RADAR_COLORS.danger;
-  if (centerDistance <= 2.5) return RADAR_COLORS.warning;
+  if (centerDistance <= BAR_DANGER_DISTANCE) return RADAR_COLORS.danger;
+  if (centerDistance <= BAR_WARNING_DISTANCE) return RADAR_COLORS.warning;
 
   return RADAR_COLORS.safe;
 };
