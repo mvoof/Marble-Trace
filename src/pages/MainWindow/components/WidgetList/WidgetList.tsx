@@ -57,7 +57,7 @@ export const WidgetList = observer(
   }) => {
     return (
       <div className={styles.list}>
-        {widgetSettingsStore.widgets.map((widget) => (
+        {widgetSettingsStore.allWidgets.map((widget) => (
           <WidgetListItem
             key={widget.id}
             widget={widget}

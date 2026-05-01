@@ -85,7 +85,7 @@ export const WidgetContainer = observer(
           isDraggingRef.current = false;
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
-          void emit('widget-layout-changed', widgetSettingsStore.widgets);
+          void emit('widget-layout-changed', widgetSettingsStore.allWidgets);
         };
 
         document.addEventListener('mousemove', onMouseMove);
@@ -130,7 +130,7 @@ export const WidgetContainer = observer(
           isResizingRef.current = false;
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
-          void emit('widget-layout-changed', widgetSettingsStore.widgets);
+          void emit('widget-layout-changed', widgetSettingsStore.allWidgets);
         };
 
         document.addEventListener('mousemove', onMouseMove);

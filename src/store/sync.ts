@@ -70,7 +70,7 @@ export const initMainSync = async () => {
           units: {
             system: unitsStore.system,
           },
-          widgets: widgetSettingsStore.widgets,
+          widgets: widgetSettingsStore.allWidgets,
         });
         await store.save();
       };
@@ -118,7 +118,7 @@ export const initMainSync = async () => {
             });
           }
 
-          for (const widget of widgetSettingsStore.widgets) {
+          for (const widget of widgetSettingsStore.allWidgets) {
             if (widget.hotkey) {
               addHandler(widget.hotkey, (event) => {
                 if (event.state === 'Pressed') {
@@ -241,7 +241,7 @@ export const initMainSync = async () => {
             return [
               appSettingsStore.dragHotkey,
               appSettingsStore.hideAllWidgetsHotkey,
-              ...widgetSettingsStore.widgets.map((w) => w.hotkey),
+              ...widgetSettingsStore.allWidgets.map((w) => w.hotkey),
               s.classCyclingToggleHotkey,
               s.classPrevHotkey,
               s.classNextHotkey,
@@ -272,14 +272,17 @@ export const initMainSync = async () => {
           }
         ),
         reaction(
-          () => JSON.stringify(widgetSettingsStore.widgets),
+          () => JSON.stringify(widgetSettingsStore.allWidgets),
           () => {
-            void emit('widget-settings-updated', widgetSettingsStore.widgets);
+            void emit(
+              'widget-settings-updated',
+              widgetSettingsStore.allWidgets
+            );
           },
           { delay: 16 }
         ),
         reaction(
-          () => JSON.stringify(widgetSettingsStore.widgets),
+          () => JSON.stringify(widgetSettingsStore.allWidgets),
           () => {
             void saveSettings();
           },

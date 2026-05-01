@@ -36,7 +36,9 @@ export const OverlayCanvas = observer(() => {
     return null;
   }
 
-  const enabledWidgets = widgetSettingsStore.widgets.filter((w) => w.enabled);
+  const enabledWidgets = widgetSettingsStore.allWidgets.filter(
+    (w) => w.enabled
+  );
 
   return (
     <div
