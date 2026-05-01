@@ -87,7 +87,7 @@ pub fn run() {
                 start_positions: Mutex::new(std::collections::HashMap::new()),
                 track_length_m: Mutex::new(None),
             }),
-            pit: Arc::new(iracing::PitStopState {
+            pit: Arc::new(crate::computations::pit_stops::PitStopState {
                 count: std::sync::atomic::AtomicU32::new(0),
                 was_on_pit_road: AtomicBool::new(false),
                 tracked_session_num: std::sync::atomic::AtomicI32::new(-1),

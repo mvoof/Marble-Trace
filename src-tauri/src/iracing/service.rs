@@ -26,7 +26,7 @@
 /// - `iracing://computed/pit-stops` — PitStopsFrame (4Hz)
 /// - `iracing://computed/lap-delta` — LapDeltaFrame (60Hz)
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -45,7 +45,8 @@ use super::frames::{
 };
 use super::weather_forecast::parse_weather_forecast;
 use crate::computations::{
-    fuel, fuel::FuelState, lap_delta, lap_delta::LapDeltaState, pit_stops::PitStopsFrame,
+    fuel, fuel::FuelState, lap_delta, lap_delta::LapDeltaState,
+    pit_stops, pit_stops::PitStopState,
     proximity, standings, standings::StandingsState,
 };
 
@@ -57,16 +58,6 @@ pub struct TelemetryServiceState {
     pub start_positions: Mutex<HashMap<i32, (i32, i32)>>,
     /// Cached track length in meters.
     pub track_length_m: Mutex<Option<f32>>,
-}
-
-/// Shared state for pit stop tracking.
-pub struct PitStopState {
-    /// Player pit stop counter for the current session.
-    pub count: AtomicU32,
-    /// Whether the player was on pit road on the previous frame.
-    pub was_on_pit_road: AtomicBool,
-    /// Session number tracked for pit stop reset.
-    pub tracked_session_num: AtomicI32,
 }
 
 /// Shared state for various computations (lap delta, fuel, standings).
@@ -579,19 +570,6 @@ fn update_start_positions(
     }
 }
 
-pub trait IsMultipleOf {
-    fn is_multiple_of(&self, other: u64) -> bool;
-}
-
-impl IsMultipleOf for u64 {
-    fn is_multiple_of(&self, other: u64) -> bool {
-        if other == 0 {
-            return false;
-        }
-        *self % other == 0
-    }
-}
-
 fn emit_domain_frames(ctx: EmitContext<'_>) {
     let app = ctx.app;
     let frame = ctx.frame;
@@ -726,40 +704,7 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
             }
 
             // Pit stop tracking
-            let player_idx = session
-                .driver_info
-                .as_ref()
-                .and_then(|di| di.driver_car_idx)
-                .unwrap_or(-1);
-
-            if player_idx >= 0 {
-                let current_session_num = frame.session_num.unwrap_or(-1);
-                let tracked_session = ctx.pit.tracked_session_num.load(Ordering::Relaxed);
-
-                if current_session_num != tracked_session {
-                    ctx.pit
-                        .tracked_session_num
-                        .store(current_session_num, Ordering::Relaxed);
-                    ctx.pit.count.store(0, Ordering::Relaxed);
-                    ctx.pit.was_on_pit_road.store(false, Ordering::Relaxed);
-                }
-
-                let on_pit = frame
-                    .car_idx_on_pit_road
-                    .get(player_idx as usize)
-                    .copied()
-                    .unwrap_or(false);
-                let was = ctx.pit.was_on_pit_road.load(Ordering::Relaxed);
-
-                if on_pit && !was {
-                    ctx.pit.count.fetch_add(1, Ordering::Relaxed);
-                }
-                ctx.pit.was_on_pit_road.store(on_pit, Ordering::Relaxed);
-
-                let stops = ctx.pit.count.load(Ordering::Relaxed);
-                let pit_frame = PitStopsFrame {
-                    player_stops: stops,
-                };
+            if let Some(pit_frame) = pit_stops::compute(frame, session, ctx.pit) {
                 if let Err(e) = app.emit("iracing://computed/pit-stops", &pit_frame) {
                     warn!("Failed to emit pit stops: {}", e);
                 }
