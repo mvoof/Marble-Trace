@@ -35,9 +35,9 @@ export const SpeedWidgetContainer = observer(() => {
 
   const pitLimitFormatted = pitLimitMs > 0 ? formatSpeed(pitLimitMs) : '—';
 
-  // Active when limiter caps speed: indicator maxed AND speed near/at pit limit
+  const PIT_LIMITER_BIT = 0x10;
   const pitLimiterActive =
-    pitLimitMs > 0 && shiftIndicatorPct >= 1 && speedMs <= pitLimitMs * 1.2;
+    ((carStatus?.engine_warnings ?? 0) & PIT_LIMITER_BIT) !== 0;
 
   const pitSpeedDelta =
     pitLimitMs > 0 && (isOnPitRoad || pitLimiterActive)
@@ -47,7 +47,6 @@ export const SpeedWidgetContainer = observer(() => {
   const pitState = (() => {
     if (pitLimitMs > 0 && speedMs > pitLimitMs) return 'over-limit' as const;
     if (pitLimiterActive) return 'limiter-active' as const;
-    if (isOnPitRoad) return 'pit-lane' as const;
     return 'pit-lane' as const;
   })();
 

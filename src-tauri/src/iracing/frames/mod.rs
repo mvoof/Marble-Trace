@@ -102,6 +102,8 @@ pub(crate) struct AllFieldsFrame {
     pub is_on_track: Option<bool>,
     #[field_name = "CarLeftRight"]
     pub car_left_right: Option<i32>,
+    #[bitfield_map(name = "EngineWarnings", decoder = "bitfield_to_i32")]
+    pub engine_warnings: Option<i32>,
 
     // === Lap Timing ===
     #[field_name = "Lap"]
@@ -331,6 +333,7 @@ impl From<&AllFieldsFrame> for CarStatusFrame {
             on_pit_road: f.on_pit_road,
             is_on_track: f.is_on_track,
             car_left_right: f.car_left_right,
+            engine_warnings: f.engine_warnings,
         }
     }
 }

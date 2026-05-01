@@ -259,6 +259,11 @@ export type CarStatusFrame = {
    * @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
    */
   car_left_right: number | null;
+  /**
+   * Engine warning bitmask; bit 0x10 = pit speed limiter active
+   * @see https://sajax.github.io/irsdkdocs/telemetry/enginewarnings/
+   */
+  engine_warnings: number | null;
 };
 
 export type ChassisFrame = {

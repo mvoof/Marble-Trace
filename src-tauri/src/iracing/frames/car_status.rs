@@ -48,4 +48,8 @@ pub struct CarStatusFrame {
     /// Proximity indicator bit field for cars nearby
     /// @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
     pub car_left_right: Option<i32>,
+
+    /// Engine warning bitmask; bit 0x10 = pit speed limiter active
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/enginewarnings/
+    pub engine_warnings: Option<i32>,
 }
