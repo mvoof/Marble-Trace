@@ -5,6 +5,7 @@ import { useVisibleRowCount } from '../../../hooks/useVisibleRowCount';
 import type { RelativeWidgetSettings } from '../../../types/widget-settings';
 
 import { DriverRow } from './DriverRow/DriverRow';
+import { computeRelativeGap } from './relative-utils';
 import { TREND_SAMPLE_INTERVAL_MS } from '../widget-utils';
 import type { DriverEntry } from '../../../types/bindings';
 
@@ -32,17 +33,15 @@ export const RelativeWidget = ({ entries, settings }: RelativeWidgetProps) => {
     const playerEntry = entries.find((e) => e.isPlayer);
 
     if (playerEntry) {
-      const prevPlayerF2 = prevSnapshot.get(playerEntry.carIdx);
-
       for (const entry of entries) {
         if (entry.isPlayer) continue;
 
-        const prevEntryF2 = prevSnapshot.get(entry.carIdx);
-        if (prevEntryF2 === undefined || prevPlayerF2 === undefined) continue;
+        const prevGap = prevSnapshot.get(entry.carIdx);
+        const currGap = computeRelativeGap(entry, playerEntry);
 
-        const currRelGap = entry.f2Time - playerEntry.f2Time;
-        const prevRelGap = prevEntryF2 - prevPlayerF2;
-        const gapDelta = currRelGap - prevRelGap;
+        if (prevGap === undefined) continue;
+
+        const gapDelta = currGap - prevGap;
 
         if (Math.abs(gapDelta) > 0.01) {
           newTrends.set(entry.carIdx, gapDelta);
@@ -54,7 +53,8 @@ export const RelativeWidget = ({ entries, settings }: RelativeWidgetProps) => {
 
     const newTimes = new Map<number, number>();
     for (const entry of entries) {
-      newTimes.set(entry.carIdx, entry.f2Time);
+      if (entry.isPlayer || !playerEntry) continue;
+      newTimes.set(entry.carIdx, computeRelativeGap(entry, playerEntry));
     }
     prevF2TimesRef.current = newTimes;
     lastSnapshotTimeRef.current = now;

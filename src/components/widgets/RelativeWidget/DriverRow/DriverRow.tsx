@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { TRACK_SURFACE_IN_PIT_STALL } from '../../widget-utils';
 import { PitBadge, ClassBadge, RatingBadge } from '../../primitives';
+import { computeRelativeGap } from '../relative-utils';
 import type { RelativeWidgetSettings } from '../../../../types/widget-settings';
 import type { DriverEntry } from '../../../../types/bindings';
 
@@ -26,37 +27,7 @@ export const DriverRow = observer(
     const isPit =
       driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 
-    const relativeGap = (() => {
-      if (driver.isPlayer || !player) return 0;
-
-      const isAhead = driver.relativeLapDist > 0;
-      const aheadClassLapTime = isAhead
-        ? driver.classEstLapTime || driver.bestLapTime
-        : player.classEstLapTime || player.bestLapTime;
-      const behindClassLapTime = isAhead
-        ? player.classEstLapTime || player.bestLapTime
-        : driver.classEstLapTime || driver.bestLapTime;
-
-      if (!aheadClassLapTime || !behindClassLapTime) {
-        return driver.estTime - player.estTime;
-      }
-
-      const scalingRatio = behindClassLapTime / aheadClassLapTime;
-      const aheadEstTime = isAhead ? driver.estTime : player.estTime;
-      const behindEstTime = isAhead ? player.estTime : driver.estTime;
-      const aheadTimeScaled = aheadEstTime * scalingRatio;
-      const referenceLapTime = behindClassLapTime;
-
-      let delta = aheadTimeScaled - behindEstTime;
-      if (isAhead) {
-        if (delta < -referenceLapTime / 2) delta += referenceLapTime;
-      } else {
-        delta = -delta;
-        if (delta > referenceLapTime / 2) delta -= referenceLapTime;
-      }
-
-      return delta;
-    })();
+    const relativeGap = player ? computeRelativeGap(driver, player) : 0;
 
     const f2TimeStr =
       relativeGap > 0
