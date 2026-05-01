@@ -6,6 +6,8 @@ use specta::Type;
 
 use crate::iracing::frames::AllFieldsFrame;
 
+const MAX_REASONABLE_SECTOR_TIME: f32 = 600.0;
+
 pub struct LapDeltaState {
     pub last_sector_idx: i32,
     pub sector_entry_time: f64,
@@ -295,7 +297,7 @@ fn handle_lap_change(
         && locked.sector_entry_time >= 0.0
     {
         let elapsed = (last_lap_time_f64 - locked.sector_entry_time) as f32;
-        if elapsed > 0.0 && elapsed < 600.0 {
+        if elapsed > 0.0 && elapsed < MAX_REASONABLE_SECTOR_TIME {
             let idx = locked.last_sector_idx as usize;
             if idx < sector_count {
                 locked.sector_times[idx] = Some(elapsed);
@@ -315,7 +317,7 @@ fn handle_lap_change(
 
     // Save personal best if this completed lap is faster and all sectors valid.
     let lap_last_lap_time = last_lap_time_f64 as f32;
-    if lap_last_lap_time > 0.0 && lap_last_lap_time < 600.0 {
+    if lap_last_lap_time > 0.0 && lap_last_lap_time < MAX_REASONABLE_SECTOR_TIME {
         let all_valid = locked.sector_times.iter().all(|t| t.is_some());
         if all_valid && locked.personal_best_lap_time.is_none_or(|pb| lap_last_lap_time < pb) {
             locked.personal_best_lap_time = Some(lap_last_lap_time);
@@ -394,7 +396,7 @@ fn handle_sector_change(
         && locked.sector_entry_time >= 0.0
     {
         let elapsed = (interpolated_time - locked.sector_entry_time) as f32;
-        if elapsed > 0.0 && elapsed < 600.0 {
+        if elapsed > 0.0 && elapsed < MAX_REASONABLE_SECTOR_TIME {
             let idx = locked.last_sector_idx as usize;
             if idx < sector_count {
                 locked.sector_times[idx] = Some(elapsed);

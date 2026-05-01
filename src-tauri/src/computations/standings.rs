@@ -9,6 +9,12 @@ use crate::iracing::frames::AllFieldsFrame;
 
 const NO_CLASS_COLOR: &str = "#888888";
 const NO_CLASS_LABEL: &str = "No Class";
+const MAX_BADGE_LENGTH: usize = 8;
+const MIN_ABBR_LENGTH: usize = 2;
+const MAX_ABBR_LENGTH: usize = 5;
+const FALLBACK_SORT_POSITION: i32 = 999;
+const IR_CHANGE_SCALE_FACTOR: f64 = 200.0;
+const IR_CHANGE_OFFSET: f64 = 100.0;
 
 static BADGE_EXCEPTIONS: &[(&str, &str)] = &[
     ("Formula Vee", "FVee"),
@@ -71,12 +77,12 @@ fn get_compact_badge_name(screen_name_short: &str) -> String {
 
     badge = badge.trim().to_string();
 
-    if badge.len() > 8 {
+    if badge.len() > MAX_BADGE_LENGTH {
         let abbr: String = badge
             .chars()
             .filter(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
             .collect();
-        if abbr.len() > 1 && abbr.len() <= 5 {
+        if abbr.len() >= MIN_ABBR_LENGTH && abbr.len() <= MAX_ABBR_LENGTH {
             return abbr;
         }
     }
@@ -300,7 +306,7 @@ pub fn compute(
         } else if e.start_pos_overall > 0 {
             e.start_pos_overall
         } else {
-            999
+            FALLBACK_SORT_POSITION
         }
     });
 
@@ -389,7 +395,7 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
             .map(|(i, _)| {
                 let x = (num_registrations as f64) - (num_non_starters as f64) / 2.0;
                 let finish_rank = bucket[i].1 as f64; // class position
-                (x / 2.0 - finish_rank) / 100.0
+                (x / 2.0 - finish_rank) / IR_CHANGE_OFFSET
             })
             .collect();
 
@@ -402,7 +408,7 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
                     - class_pos as f64
                     - expected_scores[i]
                     - fudge_factors[i])
-                    * 200.0)
+                    * IR_CHANGE_SCALE_FACTOR)
                     / num_starters as f64;
                 sum_changes_starters += change;
                 change

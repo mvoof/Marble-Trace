@@ -96,7 +96,9 @@ pub fn run() {
                 lap_delta: Mutex::new(LapDeltaState::default()),
                 standings: Mutex::new(StandingsState::default()),
                 fuel: Mutex::new(FuelState::default()),
-                pit_warning_laps: std::sync::atomic::AtomicU32::new(3.0f32.to_bits()),
+                pit_warning_laps: std::sync::atomic::AtomicU32::new(
+                    crate::computations::fuel::DEFAULT_PIT_WARNING_LAPS.to_bits(),
+                ),
             }),
         })
         .on_window_event(|window, event| {

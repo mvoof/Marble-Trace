@@ -8,6 +8,8 @@ const MAX_LAP_FUEL_HISTORY: usize = 20;
 const MIN_RECORDED_FUEL_USE: f32 = 0.1;
 const MAX_REALISTIC_LAP_FUEL: f32 = 20.0;
 
+pub const DEFAULT_PIT_WARNING_LAPS: f32 = 3.0;
+
 pub struct FuelState {
     pub lap_fuel_history: Vec<f32>,
     pub last_lap: i32,
