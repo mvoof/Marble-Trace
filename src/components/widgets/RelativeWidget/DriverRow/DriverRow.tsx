@@ -46,7 +46,11 @@ export const DriverRow = observer(
 
     let trendIcon: React.ReactNode = null;
 
-    if (!driver.isPlayer && Math.abs(trendDelta) > 0.00005) {
+    if (
+      settings.showTrendIcon &&
+      !driver.isPlayer &&
+      Math.abs(trendDelta) > 0.00005
+    ) {
       trendIcon =
         trendDelta < 0 ? (
           <ChevronUp size={16} className={styles.trendUp} />
@@ -111,18 +115,18 @@ export const DriverRow = observer(
           )}
         </div>
 
-        {settings.showIRatingBadge && (
-          <div className={styles.colLic}>
+        <div className={styles.colLic}>
+          {settings.showIRatingBadge && (
             <RatingBadge
               licString={driver.licString}
               iRating={driver.iRating}
               className={styles.badgeFull}
             />
-          </div>
-        )}
+          )}
+        </div>
 
         <div className={styles.f2Block}>
-          {trendIcon}
+          <span className={styles.trendSlot}>{trendIcon}</span>
           <span className={`${styles.f2Time} ${f2Class}`}>
             {driver.isPlayer ? '-' : f2TimeStr}
           </span>

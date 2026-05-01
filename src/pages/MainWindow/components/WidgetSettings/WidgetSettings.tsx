@@ -543,6 +543,12 @@ const RelativeSettingsPanel = observer(() => {
           onChange: (v: boolean) => update({ showIRatingBadge: v }),
         },
         {
+          title: 'Trend Icon',
+          desc: 'Show arrow indicating if gap is closing or opening.',
+          value: settings.showTrendIcon,
+          onChange: (v: boolean) => update({ showTrendIcon: v }),
+        },
+        {
           title: 'Pit Indicator',
           desc: 'Show icon when driver is in pits.',
           value: settings.showPitIndicator,

@@ -106,11 +106,17 @@
 
 // F2 Time (gap) block
 .f2Block {
+  display: grid;
+  grid-template-columns: 1em 1fr;
+  align-items: center;
+  padding-right: 0.125em;
+}
+
+.trendSlot {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: rem(2);
-  padding-right: 0.125em;
+  justify-content: center;
+  width: 1em;
 }
 
 .f2Time {

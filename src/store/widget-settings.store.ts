@@ -710,6 +710,7 @@ class WidgetSettingsStore {
         showIRatingBadge: true,
         showClassBadge: true,
         showPitIndicator: true,
+        showTrendIcon: true,
         abbreviateNames: true,
       }
     );
