@@ -45,7 +45,8 @@ use super::frames::{
 };
 use super::weather_forecast::parse_weather_forecast;
 use crate::computations::{
-    fuel, fuel::FuelState, lap_delta, lap_delta::LapDeltaState, pit_stops::PitStopsFrame, proximity, standings, standings::StandingsState,
+    fuel, fuel::FuelState, lap_delta, lap_delta::LapDeltaState, pit_stops::PitStopsFrame,
+    proximity, standings, standings::StandingsState,
 };
 
 /// Shared state for the iRacing telemetry service.
@@ -112,7 +113,9 @@ pub async fn get_last_session_info(
             // Use YAML as intermediate to safely handle NaNs
             match serde_yaml_ng::to_value(session) {
                 Ok(yaml_val) => Ok(Some(yaml_to_json(yaml_val))),
-                Err(e) => Err(format!("Failed to serialize session info to YAML value: {e}")),
+                Err(e) => Err(format!(
+                    "Failed to serialize session info to YAML value: {e}"
+                )),
             }
         }
     }
@@ -222,18 +225,8 @@ pub async fn start_telemetry_stream(
             app_clone.emit("iracing://status", "waiting").ok();
             info!("Waiting for iRacing connection...");
 
-            let connection = loop {
-                if !service.running.load(Ordering::SeqCst) {
-                    return;
-                }
-
-                match Pitwall::connect().await {
-                    Ok(conn) => break conn,
-                    Err(e) => {
-                        debug!("iRacing connect failed: {e}");
-                        sleep(Duration::from_secs(1)).await;
-                    }
-                }
+            let Some(connection) = wait_for_connection(&service).await else {
+                return;
             };
 
             info!("Connected to iRacing shared memory");
@@ -255,189 +248,238 @@ pub async fn start_telemetry_stream(
 
             info!("Shared memory mapped, waiting for active session...");
 
-            let app_session = app_clone.clone();
-            let service_session = service.clone();
-
-            debug!("Spawning session polling task...");
-            let session_task = tokio::spawn(async move {
-                debug!("Session polling task spawned and running");
-                let mut last_version = -1;
-                // Since Pitwall::connect() succeeded, we know shared memory is accessible.
-                // We create a direct WindowsConnection for robust session info polling
-                // because pitwall's internal session stream fails on problematic YAML.
-                let mut win_conn = pitwall::WindowsConnection::try_connect().ok();
-
-                if win_conn.is_some() {
-                    debug!("Session polling task: WindowsConnection established");
-                } else {
-                    warn!("Session polling task: Failed to establish WindowsConnection (will retry)");
-                }
-
-                loop {
-                    if !service_session.running.load(Ordering::SeqCst) {
-                        debug!("Session polling task: Stopping (service inactive)");
-                        break;
-                    }
-
-                    if let Some(conn) = &win_conn {
-                        let header = conn.header();
-                        let current_version = header.session_info_update;
-                        
-                        if current_version != last_version {
-                            debug!(
-                                "Session version change: {} -> {}. Header info: offset={}, len={}", 
-                                last_version, current_version, 
-                                header.session_info_offset, header.session_info_len
-                            );
-                            
-                            if let Some(raw_yaml) = conn.session_info() {
-                                debug!("Session polling task: Fetched raw YAML ({} bytes)", raw_yaml.len());
-                                let preprocessed = preprocess_yaml(&raw_yaml);
-                                debug!("Session polling task: YAML preprocessed ({} bytes)", preprocessed.len());
-                                match serde_yaml_ng::from_str::<SessionInfo>(&preprocessed) {
-                                    Ok(session) => {
-                                        info!(
-                                            track = %session.weekend_info.track_display_name,
-                                            version = current_version,
-                                            "Session info updated"
-                                        );
-
-                                        // Update start positions from ResultsPositions if available
-                                        update_start_positions(&session, &service_session.start_positions);
-
-                                        // Update cached track length
-                                        if let Ok(mut lock) = service_session.track_length_m.lock() {
-                                            *lock = Some(proximity::parse_track_length(
-                                                &session.weekend_info.track_length,
-                                            ));
-                                        }
-
-                                        if let Ok(mut lock) = service_session.last_session_info.lock() {
-                                            *lock = Some(Arc::new(session.clone()));
-                                        }
-
-                                        emit_session_info(&app_session, &session);
-
-                                        let forecast = parse_weather_forecast(&session.weekend_info.unknown_fields);  
-                                        if !forecast.is_empty() {
-                                            debug!("Weather forecast: {} entries emitted", forecast.len());
-                                            if let Err(e) = app_session.emit("iracing://weather-forecast", &forecast) {
-                                                warn!("Failed to emit weather forecast: {}", e);
-                                            }
-                                        }
-
-                                        last_version = current_version;
-                                    }
-                                    Err(e) => {
-                                        warn!(
-                                            "Session polling task: YAML parse error (version {}): {}. YAML snippet: {:.100}",
-                                            current_version, e, preprocessed
-                                        );
-                                        // Still update version to avoid spamming the same error
-                                        last_version = current_version;
-                                    }
-                                }
-                            } else {
-                                warn!(
-                                    "Session polling task: conn.session_info() returned None. Offset: {}, Len: {}", 
-                                    header.session_info_offset, header.session_info_len
-                                );
-                                // Update last_version anyway to avoid tight loop warning spam
-                                last_version = current_version;
-                            }
-                        }
-                    } else {
-                        win_conn = pitwall::WindowsConnection::try_connect().ok();
-                        if win_conn.is_some() {
-                            debug!("Session polling task: WindowsConnection re-established");
-                        }
-                    }
-
-                    sleep(Duration::from_millis(500)).await;
-                }
-                debug!("Session polling task exited");
-            });
+            let session_task = spawn_session_polling(app_clone.clone(), service.clone());
 
             let mut stream = std::pin::pin!(telemetry_stream);
-            let mut tick: u64 = 0;
-
-            loop {
-                if !service.running.load(Ordering::SeqCst) {
-                    debug!("Stream stopped by user");
-                    return;
-                }
-
-                match tokio::time::timeout(Duration::from_secs(3), stream.next()).await {
-                    Ok(Some(frame)) => {
-                        tick += 1;
-
-                        if tick == 1 {
-                            info!(
-                                speed = frame.speed,
-                                rpm = frame.rpm,
-                                gear = frame.gear,
-                                "Connected to iRacing — first telemetry frame received"
-                            );
-                            app_clone.emit("iracing://status", "connected").ok();
-                        }
-
-                        let ctx = EmitContext {
-                            app: &app_clone,
-                            frame: &frame,
-                            tick,
-                            service: &service,
-                            pit: &pit,
-                            computation: &computation,
-                        };
-
-                        emit_domain_frames(ctx);
-                    }
-                    Ok(None) => {
-                        break;
-                    }
-                    Err(_) => {
-                        let is_running = is_iracing_running();
-
-                        if !is_running {
-                            warn!("iRacingSim64.exe is not running. Disconnecting.");
-                            break;
-                        } else {
-                            debug!("No telemetry for 3s, but process is running. Waiting...");
-                        }
-                    }
-                }
-            }
+            run_telemetry_loop(&app_clone, stream.as_mut(), &service, &pit, &computation).await;
 
             session_task.abort();
-
-            info!(tick, "Stream ended, will retry connection...");
-
-            if let Ok(mut lock) = service.last_session_info.lock() {
-                *lock = None;
-            }
-
-            // Reset pit stop state on disconnect
-            pit.count.store(0, Ordering::Relaxed);
-            pit.was_on_pit_road.store(false, Ordering::Relaxed);
-            pit.tracked_session_num.store(-1, Ordering::Relaxed);
-            if let Ok(mut s) = computation.lap_delta.lock() {
-                s.reset();
-            }
-            if let Ok(mut t) = service.track_length_m.lock() {
-                *t = None;
-            }
-
-            app_clone.emit("iracing://status", "disconnected").ok();
-            app_clone.emit("iracing://disconnected", &()).ok();
+            info!("Stream ended, will retry connection...");
+            reset_telemetry_state(&app_clone, &service, &pit, &computation);
 
             if !service.running.load(Ordering::SeqCst) {
                 break;
             }
-            // Outer loop continues: retries Pitwall::connect() until iRacing is back
         }
     });
 
     Ok(())
+}
+
+async fn wait_for_connection(service: &TelemetryServiceState) -> Option<pitwall::LiveConnection> {
+    loop {
+        if !service.running.load(Ordering::SeqCst) {
+            return None;
+        }
+
+        match Pitwall::connect().await {
+            Ok(conn) => return Some(conn),
+            Err(e) => {
+                debug!("iRacing connect failed: {e}");
+                sleep(Duration::from_secs(1)).await;
+            }
+        }
+    }
+}
+
+fn spawn_session_polling(
+    app: AppHandle,
+    service: Arc<TelemetryServiceState>,
+) -> tokio::task::JoinHandle<()> {
+    debug!("Spawning session polling task...");
+    tokio::spawn(async move {
+        debug!("Session polling task spawned and running");
+        let mut last_version = -1;
+        // Since Pitwall::connect() succeeded, we know shared memory is accessible.
+        // We create a direct WindowsConnection for robust session info polling
+        // because pitwall's internal session stream fails on problematic YAML.
+        let mut win_conn = pitwall::WindowsConnection::try_connect().ok();
+
+        if win_conn.is_some() {
+            debug!("Session polling task: WindowsConnection established");
+        } else {
+            warn!("Session polling task: Failed to establish WindowsConnection (will retry)");
+        }
+
+        loop {
+            if !service.running.load(Ordering::SeqCst) {
+                debug!("Session polling task: Stopping (service inactive)");
+                break;
+            }
+
+            if let Some(conn) = &win_conn {
+                let header = conn.header();
+                let current_version = header.session_info_update;
+
+                if current_version != last_version {
+                    debug!(
+                        "Session version change: {} -> {}. Header info: offset={}, len={}",
+                        last_version,
+                        current_version,
+                        header.session_info_offset,
+                        header.session_info_len
+                    );
+
+                    if let Some(raw_yaml) = conn.session_info() {
+                        debug!(
+                            "Session polling task: Fetched raw YAML ({} bytes)",
+                            raw_yaml.len()
+                        );
+                        let preprocessed = preprocess_yaml(&raw_yaml);
+                        debug!(
+                            "Session polling task: YAML preprocessed ({} bytes)",
+                            preprocessed.len()
+                        );
+                        match serde_yaml_ng::from_str::<SessionInfo>(&preprocessed) {
+                            Ok(session) => {
+                                info!(
+                                    track = %session.weekend_info.track_display_name,
+                                    version = current_version,
+                                    "Session info updated"
+                                );
+
+                                // Update start positions from ResultsPositions if available
+                                update_start_positions(&session, &service.start_positions);
+
+                                // Update cached track length
+                                if let Ok(mut lock) = service.track_length_m.lock() {
+                                    *lock = Some(proximity::parse_track_length(
+                                        &session.weekend_info.track_length,
+                                    ));
+                                }
+
+                                if let Ok(mut lock) = service.last_session_info.lock() {
+                                    *lock = Some(Arc::new(session.clone()));
+                                }
+
+                                emit_session_info(&app, &session);
+
+                                let forecast =
+                                    parse_weather_forecast(&session.weekend_info.unknown_fields);
+                                if !forecast.is_empty() {
+                                    debug!("Weather forecast: {} entries emitted", forecast.len());
+                                    if let Err(e) =
+                                        app.emit("iracing://weather-forecast", &forecast)
+                                    {
+                                        warn!("Failed to emit weather forecast: {}", e);
+                                    }
+                                }
+
+                                last_version = current_version;
+                            }
+                            Err(e) => {
+                                warn!(
+                                    "Session polling task: YAML parse error (version {}): {}. YAML snippet: {:.100}",
+                                    current_version, e, preprocessed
+                                );
+                                // Still update version to avoid spamming the same error
+                                last_version = current_version;
+                            }
+                        }
+                    } else {
+                        warn!(
+                            "Session polling task: conn.session_info() returned None. Offset: {}, Len: {}",
+                            header.session_info_offset, header.session_info_len
+                        );
+                        // Update last_version anyway to avoid tight loop warning spam
+                        last_version = current_version;
+                    }
+                }
+            } else {
+                win_conn = pitwall::WindowsConnection::try_connect().ok();
+                if win_conn.is_some() {
+                    debug!("Session polling task: WindowsConnection re-established");
+                }
+            }
+
+            sleep(Duration::from_millis(500)).await;
+        }
+        debug!("Session polling task exited");
+    })
+}
+
+async fn run_telemetry_loop<S>(
+    app: &AppHandle,
+    mut stream: std::pin::Pin<&mut S>,
+    service: &Arc<TelemetryServiceState>,
+    pit: &Arc<PitStopState>,
+    computation: &Arc<ComputationState>,
+) where
+    S: futures::Stream<Item = AllFieldsFrame>,
+{
+    let mut tick: u64 = 0;
+
+    loop {
+        if !service.running.load(Ordering::SeqCst) {
+            debug!("Stream stopped by user");
+            return;
+        }
+
+        match tokio::time::timeout(Duration::from_secs(3), stream.next()).await {
+            Ok(Some(frame)) => {
+                tick += 1;
+
+                if tick == 1 {
+                    info!(
+                        speed = frame.speed,
+                        rpm = frame.rpm,
+                        gear = frame.gear,
+                        "Connected to iRacing — first telemetry frame received"
+                    );
+                    app.emit("iracing://status", "connected").ok();
+                }
+
+                let ctx = EmitContext {
+                    app,
+                    frame: &frame,
+                    tick,
+                    service,
+                    pit,
+                    computation,
+                };
+
+                emit_domain_frames(ctx);
+            }
+            Ok(None) => {
+                break;
+            }
+            Err(_) => {
+                let is_running = is_iracing_running();
+
+                if !is_running {
+                    warn!("iRacingSim64.exe is not running. Disconnecting.");
+                    break;
+                } else {
+                    debug!("No telemetry for 3s, but process is running. Waiting...");
+                }
+            }
+        }
+    }
+}
+
+fn reset_telemetry_state(
+    app: &AppHandle,
+    service: &Arc<TelemetryServiceState>,
+    pit: &Arc<PitStopState>,
+    computation: &Arc<ComputationState>,
+) {
+    if let Ok(mut lock) = service.last_session_info.lock() {
+        *lock = None;
+    }
+
+    // Reset pit stop state on disconnect
+    pit.count.store(0, Ordering::Relaxed);
+    pit.was_on_pit_road.store(false, Ordering::Relaxed);
+    pit.tracked_session_num.store(-1, Ordering::Relaxed);
+    if let Ok(mut s) = computation.lap_delta.lock() {
+        s.reset();
+    }
+    if let Ok(mut t) = service.track_length_m.lock() {
+        *t = None;
+    }
+
+    app.emit("iracing://status", "disconnected").ok();
+    app.emit("iracing://disconnected", &()).ok();
 }
 
 #[tauri::command]
@@ -500,7 +542,10 @@ fn emit_session_info(app: &AppHandle, session: &SessionInfo) {
 
             match app.emit("iracing://session-info", &sanitized_json) {
                 Ok(_) => info!("SessionInfo event emitted successfully ({:.2} KB)", size_kb),
-                Err(e) => warn!("CRITICAL: Failed to emit session info ({:.2} KB): {}", size_kb, e),
+                Err(e) => warn!(
+                    "CRITICAL: Failed to emit session info ({:.2} KB): {}",
+                    size_kb, e
+                ),
             }
         }
         Err(e) => {
@@ -576,9 +621,8 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
     let session_info = session_snapshot.as_deref();
 
     // Compute stateful data at 60Hz for maximum precision (especially sector timing)
-    let lap_delta_frame = session_info.map(|session| {
-        lap_delta::compute(frame, session, &ctx.computation.lap_delta)
-    });
+    let lap_delta_frame =
+        session_info.map(|session| lap_delta::compute(frame, session, &ctx.computation.lap_delta));
 
     // 60 Hz — emit lap delta for smooth live delta updates
     if let Some(ref ldf) = lap_delta_frame {
@@ -629,12 +673,16 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
                 .lock()
                 .unwrap_or_else(|e| e.into_inner())
                 .clone();
-            let standings_frame =
-                standings::compute(frame, session, &start_pos_snapshot, true, &ctx.computation.standings);
+            let standings_frame = standings::compute(
+                frame,
+                session,
+                &start_pos_snapshot,
+                true,
+                &ctx.computation.standings,
+            );
             if let Err(e) = app.emit("iracing://computed/standings", &standings_frame) {
                 warn!("Failed to emit standings: {}", e);
             }
-
         }
     }
 
@@ -649,17 +697,26 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
 
         // Computed: fuel & pit stops (4 Hz)
         if let Some(session) = session_info {
-            let pit_warning_laps = f32::from_bits(ctx.computation.pit_warning_laps.load(Ordering::Relaxed));
+            let pit_warning_laps =
+                f32::from_bits(ctx.computation.pit_warning_laps.load(Ordering::Relaxed));
 
             {
-                let mut state = ctx.computation.fuel.lock().unwrap_or_else(|e| e.into_inner());
+                let mut state = ctx
+                    .computation
+                    .fuel
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner());
                 let current_lap = frame.lap.unwrap_or(-1);
                 let session_num = frame.session_num.unwrap_or(-1);
                 state.update(current_lap, frame.fuel_level, session_num);
             }
 
             let fuel_frame = {
-                let state = ctx.computation.fuel.lock().unwrap_or_else(|e| e.into_inner());
+                let state = ctx
+                    .computation
+                    .fuel
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner());
                 fuel::compute(frame, session, frame.session_num, pit_warning_laps, &state)
             };
             if let Some(fuel_frame) = fuel_frame {
@@ -680,7 +737,9 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
                 let tracked_session = ctx.pit.tracked_session_num.load(Ordering::Relaxed);
 
                 if current_session_num != tracked_session {
-                    ctx.pit.tracked_session_num.store(current_session_num, Ordering::Relaxed);
+                    ctx.pit
+                        .tracked_session_num
+                        .store(current_session_num, Ordering::Relaxed);
                     ctx.pit.count.store(0, Ordering::Relaxed);
                     ctx.pit.was_on_pit_road.store(false, Ordering::Relaxed);
                 }
@@ -722,6 +781,11 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
     }
 }
 
+// when the connection to iRacing was lost, tasklist.exe was launched via std::process::Command without the CREATE_NO_WINDOW flag.
+// Windows displayed a console window for a split second, even though windows_subsystem = "windows" in main.rs—this attribute
+// hides the console only for the application process itself, not for child processes.
+// Fix: Moved the call to the is_iracing_running() function with the .creation_flags(0x08000000) (CREATE_NO_WINDOW) flag
+// via std::os::windows::process::CommandExt
 fn is_iracing_running() -> bool {
     use std::os::windows::process::CommandExt;
     const CREATE_NO_WINDOW: u32 = 0x0800_0000;
