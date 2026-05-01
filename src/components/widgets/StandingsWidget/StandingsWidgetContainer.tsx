@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { computedStore, telemetryStore } from '../../../store/iracing';
+import { appSettingsStore } from '../../../store/app-settings.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { computeClassSof } from './standings-utils';
 import { StandingsWidget } from './StandingsWidget';
@@ -31,6 +32,10 @@ export const StandingsWidgetContainer = observer(() => {
       sessionInfo={telemetryStore.sessionInfo}
       weekendInfo={telemetryStore.weekendInfo}
       overallSof={overallSof}
+      activeClassIndex={widgetSettingsStore.standingsActiveClassIndex}
+      dragMode={appSettingsStore.dragMode}
+      onPrevClass={widgetSettingsStore.cycleStandingsPrev}
+      onNextClass={widgetSettingsStore.cycleStandingsNext}
     />
   );
 });

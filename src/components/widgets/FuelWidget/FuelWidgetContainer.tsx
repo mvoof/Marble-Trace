@@ -1,11 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { computedStore, telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { FuelWidget } from './FuelWidget';
-
-const MAX_HISTORY = 20;
 
 export const FuelWidgetContainer = observer(() => {
   const fuel = computedStore.fuel;
@@ -14,56 +11,38 @@ export const FuelWidgetContainer = observer(() => {
 
   const settings = widgetSettingsStore.getFuelSettings();
 
-  const playerCarIdx = driverInfo?.DriverCarIdx ?? null;
-  const carIdx = telemetryStore.carIdx;
-  const currentLap =
-    playerCarIdx !== null ? (carIdx?.car_idx_lap[playerCarIdx] ?? null) : null;
+  const fuelLevel = carStatus?.fuel_level ?? null;
+  const fuelMax = driverInfo?.DriverCarFuelMaxLtr ?? null;
 
-  const [lapFuelHistory, setLapFuelHistory] = useState<number[]>([]);
-  const lastLapRef = useRef<number | null>(null);
-  const lapStartFuelRef = useRef<number | null>(null);
+  const lapsRemaining = fuel?.lapsRemaining ?? null;
+  const fuelToAddWithBuffer = fuel?.fuelToAddWithBuffer ?? null;
 
-  useEffect(() => {
-    const fuelLevel = carStatus?.fuel_level ?? null;
-    if (currentLap === null || fuelLevel === null) return;
+  const pitWarning =
+    lapsRemaining !== null && lapsRemaining <= settings.pitWarningLaps;
 
-    if (lastLapRef.current === null) {
-      lastLapRef.current = currentLap;
-      lapStartFuelRef.current = fuelLevel;
-      return;
-    }
-
-    if (currentLap !== lastLapRef.current) {
-      if (lapStartFuelRef.current !== null) {
-        const used = lapStartFuelRef.current - fuelLevel;
-        if (used > 0 && used < 20) {
-          setLapFuelHistory((prev) => {
-            const next = [...prev, used];
-            return next.length > MAX_HISTORY ? next.slice(-MAX_HISTORY) : next;
-          });
-        }
-      }
-      lastLapRef.current = currentLap;
-      lapStartFuelRef.current = fuelLevel;
-    }
-  }, [currentLap, carStatus?.fuel_level]);
+  const tankTooSmall =
+    fuelToAddWithBuffer !== null &&
+    fuelMax !== null &&
+    fuelLevel !== null &&
+    fuelToAddWithBuffer > fuelMax - fuelLevel;
 
   return (
     <FuelWidget
-      fuelLevel={carStatus?.fuel_level ?? null}
-      fuelMax={driverInfo?.DriverCarFuelMaxLtr ?? null}
+      fuelLevel={fuelLevel}
+      fuelMax={fuelMax}
       avgPerLap={fuel?.avgPerLap ?? null}
-      lapsRemaining={fuel?.lapsRemaining ?? null}
+      currentUsePerLap={fuel?.currentUsePerLap ?? null}
+      lapsRemaining={lapsRemaining}
       shortage={fuel?.shortage ?? null}
-      lapsToFinish={fuel?.lapsToFinish ?? null}
-      fuelToAddWithBuffer={fuel?.fuelToAddWithBuffer ?? null}
-      fuelSavePerLap={fuel?.fuelSavePerLap ?? null}
-      pitWarning={fuel?.pitWarning ?? false}
+      fuelToAddWithBuffer={fuelToAddWithBuffer}
+      pitWarning={pitWarning}
       pitWindowStart={fuel?.pitWindowStart ?? null}
       pitWindowEnd={fuel?.pitWindowEnd ?? null}
+      tankTooSmall={tankTooSmall}
       showChart={settings.showChart}
       chartType={settings.chartType}
-      lapFuelHistory={lapFuelHistory}
+      lapFuelHistory={fuel?.lapFuelHistory ?? []}
+      pitWarningLaps={settings.pitWarningLaps}
     />
   );
 });

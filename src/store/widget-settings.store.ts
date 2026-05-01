@@ -1,8 +1,9 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import { invoke } from '@tauri-apps/api/core';
+import { computedStore } from './iracing';
 
 import type {
-  FlagsWidgetSettings,
+  FlagDisplaySettings,
   FuelWidgetSettings,
   InputTraceSettings,
   LinearMapWidgetSettings,
@@ -12,9 +13,29 @@ import type {
   StandingsWidgetSettings,
   TrackMapWidgetSettings,
   WeatherWidgetSettings,
+  LapTimesWidgetSettings,
+  LapDeltaWidgetSettings,
+  ChassisWidgetSettings,
+  TimerWidgetSettings,
   WidgetConfig,
   WidgetCustomSettings,
 } from '../types/widget-settings';
+
+const LINEAR_MAP_SIZES: Record<
+  string,
+  { designWidth: number; designHeight: number }
+> = {
+  horizontal: { designWidth: 400, designHeight: 40 },
+  vertical: { designWidth: 40, designHeight: 400 },
+};
+
+const INPUT_TRACE_SIZES: Record<
+  string,
+  { designWidth: number; designHeight: number }
+> = {
+  horizontal: { designWidth: 400, designHeight: 220 },
+  vertical: { designWidth: 400, designHeight: 110 },
+};
 
 export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
@@ -24,10 +45,12 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: true,
     x: 400,
     y: 100,
-    width: 290,
-    height: 80,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    width: 312,
+    height: 90,
+    designWidth: 312,
+    designHeight: 90,
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: 'F10',
     customSettings: {
       speed: {
@@ -37,6 +60,10 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         rpmColorMid: '#eab308',
         rpmColorHigh: '#ef4444',
         rpmColorLimit: '#ff4d00',
+        showPitPanel: true,
+        showRpmBar: true,
+        showTemps: true,
+        pitSpeedLimitOverride: null,
       },
     },
   },
@@ -49,8 +76,10 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 300,
     width: 400,
     height: 220,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    designWidth: 400,
+    designHeight: 220,
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: 'F11',
     customSettings: {
       'input-trace': {
@@ -71,8 +100,10 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 600,
     y: 300,
-    width: 300,
+    width: 200,
     height: 300,
+    designWidth: 200,
+    designHeight: 300,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
     hotkey: 'F6',
@@ -93,6 +124,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 300,
     width: 800,
     height: 380,
+    designWidth: 800,
+    designHeight: 380,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
     hotkey: 'F7',
@@ -101,7 +134,6 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         visibilityMode: 'proximity',
         proximityThreshold: 3,
         hideDelay: 2,
-        barSpacing: 0,
         barDisplayMode: 'both',
       },
     },
@@ -113,15 +145,19 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 50,
     y: 50,
-    width: 700,
-    height: 500,
-    backgroundColor: '#0a0a0f',
-    backgroundColorEdge: '#050508',
+    width: 640,
+    height: 450,
+    designWidth: 640,
+    designHeight: 450,
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: 'F3',
     customSettings: {
       standings: {
-        groupByClass: true,
-        filterMode: 'all',
+        enableClassCycling: false,
+        classCyclingToggleHotkey: '',
+        classPrevHotkey: '',
+        classNextHotkey: '',
         showPosChange: true,
         showColumnHeaders: true,
         showSessionHeader: true,
@@ -130,8 +166,12 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showTotalDrivers: true,
         showBrand: true,
         showTire: true,
+        showIRatingBadge: true,
+        showClassBadge: true,
         showIrChange: false,
         showPitStops: true,
+        showLapsCompleted: false,
+        abbreviateNames: false,
       },
     },
   },
@@ -143,9 +183,11 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     x: 50,
     y: 300,
     width: 420,
-    height: 500,
-    backgroundColor: '#0a0a0f',
-    backgroundColorEdge: '#050508',
+    height: 400,
+    designWidth: 420,
+    designHeight: 400,
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: 'F4',
     customSettings: {
       relative: {
@@ -153,6 +195,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showClassBadge: true,
         showPitIndicator: true,
         abbreviateNames: true,
+        showTrendIcon: true,
       },
     },
   },
@@ -165,6 +208,8 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 50,
     width: 400,
     height: 400,
+    designWidth: 400,
+    designHeight: 400,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
     hotkey: 'F5',
@@ -173,8 +218,16 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showLegend: true,
         legendPosition: 'right',
         showSectors: true,
-        showCornerNumbers: true,
+        showSectorTimes: true,
+        showSectorsOnMap: true,
         rotationMode: 'fixed',
+        playerDotColor: '#ffffff',
+        showPlayerLabel: true,
+        leaderLabelMode: 'all',
+        trackStrokePx: 10,
+        trackBorderPx: 3,
+        sectorStrokePx: 6,
+        targetDotRadiusPx: 10,
       },
     },
   },
@@ -187,33 +240,53 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 820,
     width: 400,
     height: 40,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    designWidth: 400,
+    designHeight: 40,
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
     customSettings: {
       'linear-map': {
         orientation: 'horizontal',
+        playerDotColor: '#ffffff',
+        targetDotRadiusPx: 10,
       },
     },
   },
   {
     id: 'flags',
     label: 'LED Flags',
-    description: 'Track flags and digital warning lights.',
+    description: 'LED matrix display of track flags.',
     enabled: false,
     x: 760,
     y: 0,
-    width: 630,
-    height: 189,
+    width: 232,
+    height: 232,
+    designWidth: 232,
+    designHeight: 232,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
     hotkey: '',
     customSettings: {
-      flags: {
-        variant: 'overlay',
-        cutoutWidth: 6,
-        cutoutHeight: 1,
-      },
+      flags: { alwaysShow: true, holdDuration: 3 },
+    },
+  },
+  {
+    id: 'flat-flags',
+    label: 'Flat Flags',
+    description: 'Banner-style list of active track flags.',
+    enabled: false,
+    x: 760,
+    y: 250,
+    width: 280,
+    height: 160,
+    designWidth: 280,
+    designHeight: 160,
+    backgroundColor: 'transparent',
+    backgroundColorEdge: 'transparent',
+    hotkey: '',
+    customSettings: {
+      'flat-flags': { alwaysShow: true, holdDuration: 3 },
     },
   },
   {
@@ -225,8 +298,10 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 100,
     width: 460,
     height: 320,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    designWidth: 460,
+    designHeight: 320,
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
   },
   {
@@ -238,8 +313,10 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 100,
     width: 400,
     height: 700,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    designWidth: 400,
+    designHeight: 700,
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: 'F8',
   },
   {
@@ -249,11 +326,20 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 400,
     y: 200,
-    width: 240,
-    height: 140,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    width: 220,
+    height: 180,
+    designWidth: 220,
+    designHeight: 180,
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
+    customSettings: {
+      'lap-delta': {
+        layout: 'vertical',
+        showSectorTimes: true,
+        reference: 'session_best',
+      },
+    },
   },
   {
     id: 'lap-times',
@@ -262,24 +348,21 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 400,
     y: 300,
-    width: 260,
-    height: 160,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    width: 220,
+    height: 104,
+    designWidth: 220,
+    designHeight: 104,
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
-  },
-  {
-    id: 'session',
-    label: 'Session Info',
-    description: 'Session status and time remaining.',
-    enabled: false,
-    x: 50,
-    y: 200,
-    width: 300,
-    height: 100,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
-    hotkey: '',
+    customSettings: {
+      'lap-times': {
+        showLastLap: true,
+        showBestLap: true,
+        showP1: true,
+        layout: 'vertical',
+      },
+    },
   },
   {
     id: 'timer',
@@ -290,9 +373,22 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 310,
     width: 240,
     height: 120,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    designWidth: 240,
+    designHeight: 120,
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
+    customSettings: {
+      timer: {
+        showFlag: true,
+        showLaps: true,
+        showPosition: true,
+        showWallClock: true,
+        showSimTime: true,
+        showPcDate: false,
+        showSimDate: false,
+      },
+    },
   },
   {
     id: 'weather',
@@ -303,8 +399,10 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     y: 200,
     width: 240,
     height: 280,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    designWidth: 240,
+    designHeight: 280,
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
     customSettings: {
       weather: {
@@ -313,6 +411,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showTrackTemp: true,
         showWind: true,
         showHumidity: true,
+        showForecast: true,
       },
     },
   },
@@ -324,9 +423,11 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     x: 760,
     y: 500,
     width: 240,
-    height: 220,
-    backgroundColor: '#1a1a1a',
-    backgroundColorEdge: '#0a0a0a',
+    height: 360,
+    designWidth: 240,
+    designHeight: 360,
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
     hotkey: '',
     customSettings: {
       fuel: {
@@ -341,8 +442,61 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
 class WidgetSettingsStore {
   widgets: WidgetConfig[] = DEFAULT_WIDGETS;
 
+  standingsActiveClassIndex = 0;
+
+  isTrackMapForceStartPending = false;
+
+  private autoSizedWidgets = new Set<string>();
+
   constructor() {
-    makeAutoObservable(this, {}, { autoBind: true });
+    makeAutoObservable(this, { autoSizedWidgets: false } as never, {
+      autoBind: true,
+    });
+
+    // Auto-clamp active class index when number of classes changes
+    reaction(
+      () => this.getStandingsClassCount(),
+      (total) => {
+        if (total > 0 && this.standingsActiveClassIndex >= total) {
+          runInAction(() => {
+            this.standingsActiveClassIndex = Math.max(0, total - 1);
+          });
+        }
+      }
+    );
+  }
+
+  setTrackMapForceStartPending(pending: boolean) {
+    this.isTrackMapForceStartPending = pending;
+  }
+
+  private getStandingsClassCount(): number {
+    const entries = computedStore.standings?.entries ?? [];
+    return new Set(entries.map((e) => e.carClassId)).size;
+  }
+
+  cycleStandingsPrev() {
+    const total = this.getStandingsClassCount();
+    if (total <= 1) return;
+    const clamped = Math.min(this.standingsActiveClassIndex, total - 1);
+    this.standingsActiveClassIndex = clamped === 0 ? total - 1 : clamped - 1;
+  }
+
+  cycleStandingsNext() {
+    const total = this.getStandingsClassCount();
+    if (total <= 1) return;
+    const clamped = Math.min(this.standingsActiveClassIndex, total - 1);
+    this.standingsActiveClassIndex = clamped === total - 1 ? 0 : clamped + 1;
+  }
+
+  toggleStandingsClassCycling() {
+    const settings = this.getStandingsSettings();
+    this.updateCustomSettings('standings', {
+      standings: {
+        ...settings,
+        enableClassCycling: !settings.enableClassCycling,
+      },
+    });
   }
 
   setWidgets(widgets: WidgetConfig[]) {
@@ -351,13 +505,31 @@ class WidgetSettingsStore {
       const s = widgets.find((w) => w.id === def.id);
       if (!s) return def;
 
+      const defCS = def.customSettings ?? {};
+      const sCS = s.customSettings ?? {};
+
+      const mergedCustomSettings: WidgetCustomSettings = { ...defCS };
+      for (const key of Object.keys(sCS) as Array<keyof WidgetCustomSettings>) {
+        mergedCustomSettings[key] = {
+          ...defCS[key],
+          ...sCS[key],
+        } as never;
+      }
+
+      const autoSizedCurrent = this.autoSizedWidgets.has(def.id)
+        ? this.widgets.find((w) => w.id === def.id)
+        : null;
+
       return {
         ...def,
         ...s,
-        customSettings: {
-          ...def.customSettings,
-          ...s.customSettings,
-        },
+        customSettings: mergedCustomSettings,
+        ...(autoSizedCurrent && {
+          width: autoSizedCurrent.width,
+          height: autoSizedCurrent.height,
+          designWidth: autoSizedCurrent.designWidth,
+          designHeight: autoSizedCurrent.designHeight,
+        }),
       };
     });
   }
@@ -386,6 +558,23 @@ class WidgetSettingsStore {
     }
   }
 
+  updateAutoSize(id: string, width: number, height: number) {
+    this.autoSizedWidgets.add(id);
+    const widget = this.widgets.find((w) => w.id === id);
+    if (
+      widget &&
+      (widget.width !== width ||
+        widget.height !== height ||
+        widget.designWidth !== width ||
+        widget.designHeight !== height)
+    ) {
+      widget.width = width;
+      widget.height = height;
+      widget.designWidth = width;
+      widget.designHeight = height;
+    }
+  }
+
   updateField<K extends keyof WidgetConfig>(
     id: string,
     field: K,
@@ -400,10 +589,50 @@ class WidgetSettingsStore {
   updateCustomSettings(id: string, settings: WidgetCustomSettings) {
     const widget = this.widgets.find((w) => w.id === id);
     if (widget) {
+      const prevSettings = widget.customSettings;
+
       widget.customSettings = {
-        ...widget.customSettings,
+        ...prevSettings,
         ...settings,
       };
+
+      if (
+        id === 'linear-map' &&
+        settings['linear-map'] &&
+        'orientation' in settings['linear-map']
+      ) {
+        const prevOrientation = prevSettings?.['linear-map']?.orientation;
+        const nextOrientation = settings['linear-map'].orientation;
+        if (prevOrientation !== nextOrientation) {
+          const size = LINEAR_MAP_SIZES[nextOrientation];
+          if (size) {
+            widget.designWidth = size.designWidth;
+            widget.designHeight = size.designHeight;
+          }
+          const prevW = widget.width;
+          widget.width = widget.height;
+          widget.height = prevW;
+        }
+      }
+
+      if (
+        id === 'input-trace' &&
+        settings['input-trace'] &&
+        'barMode' in settings['input-trace']
+      ) {
+        const prevBarMode =
+          prevSettings?.['input-trace']?.barMode ?? 'horizontal';
+        const nextBarMode = settings['input-trace'].barMode;
+        if (prevBarMode !== nextBarMode && nextBarMode !== 'hidden') {
+          const size = INPUT_TRACE_SIZES[nextBarMode];
+          if (size) {
+            widget.width = size.designWidth;
+            widget.height = size.designHeight;
+            widget.designWidth = size.designWidth;
+            widget.designHeight = size.designHeight;
+          }
+        }
+      }
 
       if (id === 'fuel' && settings.fuel && 'pitWarningLaps' in settings.fuel) {
         void invoke('set_pit_warning_laps', {
@@ -423,6 +652,10 @@ class WidgetSettingsStore {
         rpmColorMid: '#eab308',
         rpmColorHigh: '#ef4444',
         rpmColorLimit: '#ff4d00',
+        showPitPanel: true,
+        showRpmBar: true,
+        showTemps: true,
+        pitSpeedLimitOverride: null,
       }
     );
   }
@@ -457,8 +690,10 @@ class WidgetSettingsStore {
     const widget = this.getWidget('standings');
     return (
       widget?.customSettings?.standings ?? {
-        groupByClass: true,
-        filterMode: 'all',
+        enableClassCycling: false,
+        classCyclingToggleHotkey: '',
+        classPrevHotkey: '',
+        classNextHotkey: '',
         showPosChange: true,
         showColumnHeaders: true,
         showSessionHeader: true,
@@ -467,8 +702,12 @@ class WidgetSettingsStore {
         showTotalDrivers: true,
         showBrand: true,
         showTire: true,
+        showIRatingBadge: true,
+        showClassBadge: true,
         showIrChange: false,
         showPitStops: true,
+        showLapsCompleted: false,
+        abbreviateNames: false,
       }
     );
   }
@@ -480,6 +719,7 @@ class WidgetSettingsStore {
         showIRatingBadge: true,
         showClassBadge: true,
         showPitIndicator: true,
+        showTrendIcon: true,
         abbreviateNames: true,
       }
     );
@@ -487,15 +727,25 @@ class WidgetSettingsStore {
 
   getTrackMapSettings(): TrackMapWidgetSettings {
     const widget = this.getWidget('track-map');
-    return (
-      widget?.customSettings?.['track-map'] ?? {
-        showLegend: true,
-        legendPosition: 'right',
-        showSectors: true,
-        showCornerNumbers: true,
-        rotationMode: 'fixed',
-      }
-    );
+    const settings = widget?.customSettings?.['track-map'];
+    const showSectors = settings?.showSectors ?? true;
+
+    return {
+      showLegend: true,
+      legendPosition: 'right',
+      showSectors,
+      showSectorTimes: showSectors,
+      showSectorsOnMap: showSectors,
+      rotationMode: 'fixed',
+      playerDotColor: '#ffffff',
+      showPlayerLabel: true,
+      leaderLabelMode: 'all',
+      trackStrokePx: 10,
+      trackBorderPx: 3,
+      sectorStrokePx: 6,
+      targetDotRadiusPx: 10,
+      ...settings,
+    };
   }
 
   getLinearMapSettings(): LinearMapWidgetSettings {
@@ -503,21 +753,23 @@ class WidgetSettingsStore {
     return (
       widget?.customSettings?.['linear-map'] ?? {
         orientation: 'horizontal',
+        playerDotColor: '#ffffff',
+        targetDotRadiusPx: 9,
       }
     );
   }
 
   getWeatherSettings(): WeatherWidgetSettings {
     const widget = this.getWidget('weather');
-    return (
-      widget?.customSettings?.weather ?? {
-        showCompass: true,
-        showAirTemp: true,
-        showTrackTemp: true,
-        showWind: true,
-        showHumidity: true,
-      }
-    );
+    const defaults: WeatherWidgetSettings = {
+      showCompass: true,
+      showAirTemp: true,
+      showTrackTemp: true,
+      showWind: true,
+      showHumidity: true,
+      showForecast: true,
+    };
+    return { ...defaults, ...widget?.customSettings?.weather };
   }
 
   getFuelSettings(): FuelWidgetSettings {
@@ -531,14 +783,57 @@ class WidgetSettingsStore {
     );
   }
 
-  getFlagsSettings(): FlagsWidgetSettings {
-    const widget = this.getWidget('flags');
+  getLapTimesSettings(): LapTimesWidgetSettings {
+    const widget = this.getWidget('lap-times');
     return (
-      widget?.customSettings?.flags ?? {
-        variant: 'overlay',
-        cutoutWidth: 6,
-        cutoutHeight: 1,
+      widget?.customSettings?.['lap-times'] ?? {
+        showLastLap: true,
+        showBestLap: true,
+        showP1: true,
+        layout: 'vertical',
       }
+    );
+  }
+
+  getChassisSettings(): ChassisWidgetSettings {
+    const widget = this.getWidget('chassis');
+    return (
+      widget?.customSettings?.chassis ?? {
+        showInboard: true,
+      }
+    );
+  }
+
+  getLapDeltaSettings(): LapDeltaWidgetSettings {
+    const widget = this.getWidget('lap-delta');
+    return (
+      widget?.customSettings?.['lap-delta'] ?? {
+        layout: 'vertical',
+        showSectorTimes: true,
+        reference: 'session_best',
+      }
+    );
+  }
+
+  getTimerSettings(): TimerWidgetSettings {
+    const widget = this.getWidget('timer');
+    return (
+      widget?.customSettings?.timer ?? {
+        showFlag: true,
+        showLaps: true,
+        showPosition: true,
+        showWallClock: true,
+        showSimTime: true,
+        showPcDate: false,
+        showSimDate: true,
+      }
+    );
+  }
+
+  getFlagDisplaySettings(id: 'flags' | 'flat-flags'): FlagDisplaySettings {
+    const widget = this.getWidget(id);
+    return (
+      widget?.customSettings?.[id] ?? { alwaysShow: true, holdDuration: 3 }
     );
   }
 }

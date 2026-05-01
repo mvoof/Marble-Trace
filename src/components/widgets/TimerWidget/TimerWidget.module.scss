@@ -22,11 +22,11 @@
 }
 
 .flagGreen {
-  color: #22c55e;
+  color: $color-success;
 }
 
 .flagFinal {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
 .flagCheckered {
@@ -40,7 +40,7 @@
   padding: $space-xs $space-md;
   font-family: $font-widget;
   font-weight: 700;
-  font-size: 2.75rem;
+  font-size: $font-size-xl;
   line-height: 1;
   letter-spacing: -1px;
   font-variant-numeric: tabular-nums;
@@ -50,8 +50,39 @@
   color: #fff;
 }
 
+.sessionEndedLabel {
+  color: $color-text-muted;
+  letter-spacing: 4px;
+  font-size: $font-size-xl;
+}
+
 .timeSeconds {
-  color: #fbbf24;
+  color: $color-caution;
+}
+
+.clockRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 $space-md $space-xs;
+  gap: $space-md;
+}
+
+.clockItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: $font-mono;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  color: $color-text-primary;
+  letter-spacing: 1px;
+}
+
+.clockLabel {
+  font-size: $font-size-xs;
+  color: $color-text-muted;
+  letter-spacing: 1px;
 }
 
 .footer {
@@ -63,7 +94,8 @@
 
 .footerItem {
   font-family: $font-mono;
-  font-size: $font-size-xs;
+  font-size: $font-size-sm;
+  font-weight: 600;
   color: $color-text-muted;
   letter-spacing: 1px;
 }

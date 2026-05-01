@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TelemetryDebugWidget } from './TelemetryDebugWidget';
-import { WidgetScaler } from '../../WidgetScaler';
+
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
 
@@ -18,10 +18,13 @@ const TelemetryDebugWidgetStory = ({
   snapshot: snap,
 }: TelemetryDebugStoryArgs) => (
   <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-    <WidgetScaler
-      designWidth={DESIGN_WIDTH}
-      designHeight={DESIGN_HEIGHT}
-      background="radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)"
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
+        overflow: 'hidden',
+      }}
     >
       <TelemetryDebugWidget
         status="connected"
@@ -34,7 +37,7 @@ const TelemetryDebugWidgetStory = ({
         weekendInfo={snap.sessionInfo?.WeekendInfo ?? null}
         environment={snap.environment}
       />
-    </WidgetScaler>
+    </div>
   </div>
 );
 

@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { StandingsWidget } from './StandingsWidget';
-import { WidgetScaler } from '../../WidgetScaler';
+
 import { computeClassSof } from './standings-utils';
 import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
 import type { StandingsWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import snapshot from '../../../../test-data/iracing-1776008424511.json';
 
-const DESIGN_WIDTH = 750;
-const DESIGN_HEIGHT = 400;
+const DESIGN_WIDTH = 640;
+const DESIGN_HEIGHT = 450;
 
 const realSnapshot = snapshot as TelemetrySnapshot;
 
@@ -26,6 +26,7 @@ const DEFAULT_SETTINGS: StandingsWidgetSettings = {
   showTire: true,
   showIrChange: false,
   showPitStops: true,
+  abbreviateNames: false,
 };
 
 interface StandingsStoryArgs extends StandingsWidgetSettings {
@@ -45,11 +46,13 @@ const StandingsWidgetStory = ({
 
   return (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-      <WidgetScaler
-        designWidth={DESIGN_WIDTH}
-        designHeight={DESIGN_HEIGHT}
-        background="radial-gradient(circle, #0a0a0f 0%, #050508 100%)"
-        adaptive
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'radial-gradient(circle, #0a0a0f 0%, #050508 100%)',
+          overflow: 'hidden',
+        }}
       >
         <StandingsWidget
           driverEntries={driverEntries}
@@ -60,7 +63,7 @@ const StandingsWidgetStory = ({
           weekendInfo={snap.sessionInfo?.WeekendInfo ?? null}
           overallSof={overallSof}
         />
-      </WidgetScaler>
+      </div>
     </div>
   );
 };

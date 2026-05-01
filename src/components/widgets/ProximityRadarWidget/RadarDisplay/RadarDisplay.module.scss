@@ -1,7 +1,7 @@
 .radarContainer {
   flex: 1;
   width: 100%;
-  max-width: 320px;
+  max-width: rem(320);
   aspect-ratio: 1 / 1.5;
   position: relative;
   display: flex;
@@ -27,11 +27,11 @@
 .radarMeasurementText {
   fill: currentColor;
   color: #ffffff;
-  font-size: 18px;
+  font-size: rem(18);
   font-weight: bold;
   text-anchor: middle;
   dominant-baseline: central;
-  font-family: 'Rajdhani', sans-serif;
+  font-family: $font-widget;
   pointer-events: none;
 }
 

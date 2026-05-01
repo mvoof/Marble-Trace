@@ -1,11 +1,47 @@
 export const DELTA_CAP = 3.0;
 
 export type DeltaState = 'ahead' | 'behind' | 'neutral';
+export type LapDeltaLayout = 'vertical' | 'horizontal';
+
+export const SECTOR_ACCENT_COLORS = [
+  '#eab308',
+  '#3b82f6',
+  '#a855f7',
+  '#10b981',
+  '#ef4444',
+  '#f97316',
+];
+
+const DELTA_STATE_COLOR: Record<DeltaState, string> = {
+  ahead: '#22c55e',
+  behind: '#ef4444',
+  neutral: '#fbbf24',
+};
+
+const SECONDS_PER_MINUTE = 60;
+const SECONDS_PER_HOUR = 3600;
 
 export const formatDelta = (delta: number | null): string => {
-  if (delta === null) return '\u2014';
-  const sign = delta >= 0 ? '+' : '';
-  return `${sign}${delta.toFixed(3)}`;
+  if (delta === null) return '—';
+
+  const sign = delta >= 0 ? '+' : '-';
+  const abs = Math.abs(delta);
+
+  if (abs < SECONDS_PER_MINUTE) {
+    return `${sign}${abs.toFixed(3)}`;
+  }
+
+  if (abs < SECONDS_PER_HOUR) {
+    const m = Math.floor(abs / SECONDS_PER_MINUTE);
+    const s = abs % SECONDS_PER_MINUTE;
+    return `${sign}${m}:${s.toFixed(3).padStart(6, '0')}`;
+  }
+
+  const h = Math.floor(abs / SECONDS_PER_HOUR);
+  const rem = abs % SECONDS_PER_HOUR;
+  const m = Math.floor(rem / SECONDS_PER_MINUTE);
+  const s = rem % SECONDS_PER_MINUTE;
+  return `${sign}${h}:${String(m).padStart(2, '0')}:${s.toFixed(3).padStart(6, '0')}`;
 };
 
 export const deltaBarPct = (delta: number | null): number => {
@@ -17,5 +53,29 @@ export const getDeltaState = (delta: number | null): DeltaState => {
   if (delta === null) return 'neutral';
   if (delta < -0.001) return 'ahead';
   if (delta > 0.001) return 'behind';
+  return 'neutral';
+};
+
+export const getDeltaColor = (state: DeltaState): string =>
+  DELTA_STATE_COLOR[state];
+
+export const formatSectorTime = (v: number | null): string => {
+  if (v === null) return '--';
+  const m = Math.floor(v / 60);
+  const s = v % 60;
+  return m > 0
+    ? `${m}:${s.toFixed(3).padStart(6, '0')}`
+    : s.toFixed(3).padStart(6, '0');
+};
+
+export const formatSectorDelta = (v: number | null): string => {
+  if (v === null) return '--';
+  return (v >= 0 ? '+' : '') + v.toFixed(2);
+};
+
+export const getSectorDeltaState = (v: number | null): DeltaState => {
+  if (v === null) return 'neutral';
+  if (v < -0.001) return 'ahead';
+  if (v > 0.001) return 'behind';
   return 'neutral';
 };

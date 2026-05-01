@@ -1,16 +1,34 @@
-import type { CSSProperties } from 'react';
-
+import {
+  forwardRef,
+  useRef,
+  type MutableRefObject,
+  type RefObject,
+} from 'react';
+import { TimingRow } from '../../shared/TimingRow/TimingRow';
 import { WidgetPanel } from '../primitives/WidgetPanel';
-import type { DeltaState } from './lap-delta-utils';
+import {
+  getDeltaColor,
+  getSectorDeltaState,
+  formatSectorDelta,
+  formatSectorTime,
+  SECTOR_ACCENT_COLORS,
+} from './lap-delta-utils';
+import type { DeltaState, LapDeltaLayout } from './lap-delta-utils';
 
 import styles from './LapDeltaWidget.module.scss';
 
+export interface DeltaDisplayHandle {
+  update: (text: string, state: DeltaState) => void;
+}
+
 interface LapDeltaWidgetProps {
-  deltaFormatted: string;
-  deltaState: DeltaState;
-  currentLap: number | null;
-  totalLaps: string | null;
+  initialDeltaFormatted: string;
+  initialDeltaState: DeltaState;
   sectorDeltas: (number | null)[];
+  sectorTimes: (number | null)[];
+  layout: LapDeltaLayout;
+  showSectorTimes: boolean;
+  deltaDisplayRef: RefObject<DeltaDisplayHandle | null>;
 }
 
 const DELTA_STATE_CLASS: Record<DeltaState, string> = {
@@ -19,66 +37,88 @@ const DELTA_STATE_CLASS: Record<DeltaState, string> = {
   neutral: styles.deltaNeutral,
 };
 
-const sectorStateClass = (v: number | null): string => {
-  if (v === null) return styles.sectorNeutral;
-  if (v < -0.001) return styles.sectorAhead;
-  if (v > 0.001) return styles.sectorBehind;
-  return styles.sectorNeutral;
-};
+export const LapDeltaWidget = forwardRef<HTMLElement, LapDeltaWidgetProps>(
+  (
+    {
+      initialDeltaFormatted,
+      initialDeltaState,
+      sectorDeltas,
+      sectorTimes,
+      layout,
+      showSectorTimes,
+      deltaDisplayRef,
+    },
+    ref
+  ) => {
+    const deltaDivRef = useRef<HTMLDivElement>(null);
 
-const formatSectorDelta = (v: number | null): string => {
-  if (v === null) return '--';
-  return (v >= 0 ? '+' : '') + v.toFixed(2);
-};
+    const assignDeltaDisplayHandle = (el: HTMLDivElement | null) => {
+      (deltaDivRef as MutableRefObject<HTMLDivElement | null>).current = el;
+      if (deltaDisplayRef && 'current' in deltaDisplayRef) {
+        (
+          deltaDisplayRef as MutableRefObject<DeltaDisplayHandle | null>
+        ).current = el
+          ? {
+              update: (text, state) => {
+                el.textContent = text;
+                el.className = [
+                  styles.delta,
+                  DELTA_STATE_CLASS[state],
+                  layout === 'horizontal' ? styles.deltaHorizontal : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ');
+              },
+            }
+          : null;
+      }
+    };
 
-const formatLapCount = (
-  current: number | null,
-  total: string | null
-): string => {
-  const cur = current !== null ? current : '—';
-  const tot = total && total.toLowerCase() !== 'unlimited' ? total : '∞';
-  return `LAP ${cur}/${tot}`;
-};
+    const sectorCount = Math.max(sectorDeltas.length, sectorTimes.length);
+    const sectors = Array.from({ length: sectorCount }, (_, i) => ({
+      time: sectorTimes[i] ?? null,
+      delta: sectorDeltas[i] ?? null,
+      accent: SECTOR_ACCENT_COLORS[i % SECTOR_ACCENT_COLORS.length],
+    }));
 
-export const LapDeltaWidget = ({
-  deltaFormatted,
-  deltaState,
-  currentLap,
-  totalLaps,
-  sectorDeltas,
-}: LapDeltaWidgetProps) => {
-  const sectorCount = sectorDeltas.length;
-  const cols = sectorCount === 0 ? 3 : Math.min(sectorCount, 3);
-
-  return (
-    <WidgetPanel direction="column" gap={0} minWidth={200}>
-      <div className={styles.header}>
-        <span className={styles.headerLabel}>Δ OPTIMAL</span>
-        <span className={styles.headerLabel}>
-          {formatLapCount(currentLap, totalLaps)}
-        </span>
-      </div>
-
-      <div className={`${styles.delta} ${DELTA_STATE_CLASS[deltaState]}`}>
-        {deltaFormatted}
-      </div>
-
-      <div
-        className={styles.sectorGrid}
-        style={{ '--sector-cols': cols } as CSSProperties}
+    return (
+      <WidgetPanel
+        ref={ref}
+        direction="column"
+        gap={0}
+        minWidth={150}
+        fitContent
       >
-        {sectorDeltas.map((val, i) => {
-          const cls = sectorStateClass(val);
-          return (
-            <div key={i} className={`${styles.sectorCell} ${cls}`}>
-              <span className={styles.sectorLabel}>{`S${i + 1}`}</span>
-              <span className={styles.sectorValue}>
-                {formatSectorDelta(val)}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </WidgetPanel>
-  );
-};
+        <div
+          ref={assignDeltaDisplayHandle}
+          className={`${styles.delta} ${DELTA_STATE_CLASS[initialDeltaState]} ${layout === 'horizontal' ? styles.deltaHorizontal : ''}`}
+        >
+          {initialDeltaFormatted}
+        </div>
+
+        {showSectorTimes && (
+          <div
+            className={
+              layout === 'horizontal'
+                ? styles.sectorListHorizontal
+                : styles.sectorListVertical
+            }
+          >
+            {sectors.map((s, i) => (
+              <TimingRow
+                key={i}
+                label={`S${i + 1}`}
+                time={formatSectorTime(s.time)}
+                delta={formatSectorDelta(s.delta)}
+                accentColor={s.accent}
+                deltaColor={getDeltaColor(getSectorDeltaState(s.delta))}
+              />
+            ))}
+          </div>
+        )}
+      </WidgetPanel>
+    );
+  }
+);
+
+LapDeltaWidget.displayName = 'LapDeltaWidget';

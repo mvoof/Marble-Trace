@@ -56,6 +56,8 @@ export const computeDriverEntries = (
       onPitRoad: carIdx.car_idx_on_pit_road[idx] ?? false,
       estimatedIrDelta: null,
       relativeLapDist: 0,
+      estTime: carIdx.car_idx_est_time?.[idx] ?? 0,
+      classEstLapTime: carIdx.car_idx_est_time?.[idx] ?? 0,
     });
   }
 

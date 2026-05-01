@@ -25,4 +25,6 @@ export interface ChassisWidgetProps {
   rr: CornerData;
   tempUnit: string;
   lengthUnit: string;
+  showInboard: boolean;
+  onPitRoad: boolean;
 }

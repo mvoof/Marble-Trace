@@ -32,6 +32,7 @@ export default defineConfig(() => ({
     preprocessorOptions: {
       scss: {
         additionalData: `
+          @use "@/styles/functions" as *;
           @use "@/styles/variables" as *;
           @use "@/styles/mixins" as *;
         `,
@@ -48,13 +49,12 @@ export default defineConfig(() => ({
     port: 1420,
     strictPort: true,
     host: host || false,
-    hmr: host
-      ? {
-          protocol: 'ws',
-          host,
-          port: 1421,
-        }
-      : undefined,
+    hmr: {
+      protocol: 'ws',
+      host,
+      port: 1421,
+      overlay: false,
+    },
     watch: {
       // 3. tell Vite to ignore watching `src-tauri`
       ignored: ['**/src-tauri/**'],

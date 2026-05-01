@@ -1,13 +1,17 @@
 @use '../../../../styles/variables' as *;
 
-// Driver row — single-line horizontal layout
+// Driver row — grid layout for strict column alignment
+// Columns: pos | car# | name(1fr) | pit | class | lic+iR | gap
 .driverRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1.5em 3.5em 1fr 1.75em 2.5em 4.5em 5em;
   align-items: center;
+  column-gap: 0.375em;
   padding: 0.25em 0.625em;
   position: relative;
   border-bottom: 1px solid rgba(39, 39, 42, 0.4);
   background: rgba(24, 24, 27, 0.2);
+  line-height: 1.15;
 }
 
 .driverRowPlayer {
@@ -21,23 +25,10 @@
   filter: grayscale(100%);
 }
 
-// Class stripe
-.classStripe {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-}
-
-// Position + car number block
+// Position block
 .posBlock {
   display: flex;
   align-items: baseline;
-  gap: 0.25em;
-  width: 3em;
-  margin-left: 0.375em;
-  flex-shrink: 0;
 }
 
 // Position — primary emphasis
@@ -49,20 +40,32 @@
 }
 
 .driverPositionPlayer {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
-// Car number — secondary, muted
+// Car number cell — second grid column after pos
+// Negative margins compensate for row padding so border+gradient reach full row height
+.carNumberCell {
+  align-self: stretch;
+  margin-top: -0.25em;
+  margin-bottom: -0.25em;
+  display: flex;
+  align-items: center;
+  padding: 0.25em 0.35em;
+}
+
 .driverCarNumber {
-  font-size: 0.75em;
+  font-size: 0.875em;
   font-family: $font-mono;
-  color: rgba(113, 113, 122, 0.8);
+  color: $color-text-primary;
 }
 
-// Info block — name only, takes all remaining space
+.driverCarNumberPlayer {
+  color: #fcd34d;
+}
+
+// Info block — name only, fills 1fr grid column
 .infoBlock {
-  flex: 1 1 0;
-  margin-left: 0.375em;
   overflow: hidden;
   min-width: 0;
 }
@@ -73,72 +76,75 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  text-transform: uppercase;
   color: $color-text-primary;
   display: block;
 }
 
 .driverNamePlayer {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
-// Badges block — separate column, fixed width, right of name
-.details {
+// Individual badge columns — each occupies a fixed grid column so appearance/disappearance
+// of one badge never shifts adjacent badges
+.colPit,
+.colClass,
+.colLic {
   display: flex;
   align-items: center;
-  gap: 0.3em;
-  font-family: $font-mono;
-  flex-shrink: 0;
-  margin-left: 0.375em;
+  justify-content: center;
 }
 
-.irInfo {
+// Full width badge for class and license
+.badgeFull {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
   font-size: 0.75em;
-  color: rgba(113, 113, 122, 1);
-}
-
-// License badge size override for this context
-.licBadge {
-  font-size: 0.6875em;
 }
 
 // F2 Time (gap) block
 .f2Block {
+  display: grid;
+  grid-template-columns: 1em 1fr;
+  align-items: center;
+  padding-right: 0.125em;
+}
+
+.trendSlot {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 2px;
-  width: 5em;
-  flex-shrink: 0;
-  padding-right: 0.125em;
+  justify-content: center;
+  width: 1em;
 }
 
 .f2Time {
   font-family: $font-mono;
-  font-weight: 700;
+  font-weight: 900;
   font-size: 1em;
   text-align: right;
 }
 
 .f2Positive {
-  color: #ef4444;
+  color: $color-error;
 }
 
 .f2Negative {
-  color: #60a5fa;
+  color: $color-blue;
 }
 
 .f2Player {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
 // Trend arrows
 .trendUp {
-  color: #22c55e;
+  color: $color-success;
   flex-shrink: 0;
 }
 
 .trendDown {
-  color: #ef4444;
+  color: $color-error;
   flex-shrink: 0;
 }

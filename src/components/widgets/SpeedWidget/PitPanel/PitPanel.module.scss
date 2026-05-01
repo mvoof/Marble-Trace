@@ -1,0 +1,113 @@
+@use '../../../../styles/variables' as *;
+
+$panel-h: rem(22);
+
+.panel {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  height: $panel-h;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 rem(10);
+  font-family: $font-widget;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.stateNeutral {
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+// pit-lane: on pit road → blue
+.stateSafe {
+  background: #1a4fa8;
+  border-bottom: 1px solid #2d6cdb;
+}
+
+// limiter-active: pit speed limiter on track → yellow
+.stateYellow {
+  background: #7e5c00;
+  border-bottom: 1px solid #c49000;
+}
+
+// over-limit: exceeding pit speed → red pulse
+.stateWarn {
+  background: #a81a1a;
+  border-bottom: 1px solid #db2d2d;
+  animation:
+    fadeIn 0.15s ease-out,
+    warnPulse 0.7s ease-in-out infinite;
+}
+
+@keyframes warnPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.label {
+  font-size: rem(10);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.1em;
+}
+
+.right {
+  display: flex;
+  align-items: baseline;
+  gap: rem(4);
+}
+
+.limit {
+  font-size: rem(15);
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.unit {
+  font-size: rem(9);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.05em;
+}
+
+.delta {
+  font-size: rem(13);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin-left: rem(2);
+}
+
+.deltaOver {
+  color: $color-error;
+}
+
+.deltaClose {
+  color: $color-caution;
+}
+
+.deltaOk {
+  color: $color-success;
+}

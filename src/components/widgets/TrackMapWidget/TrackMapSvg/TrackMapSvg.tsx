@@ -2,9 +2,9 @@ import { useRef, useState, useEffect } from 'react';
 import type { TrackPoint } from '../../../../types/track';
 import { getPointAtPct } from '../../../../utils/track-recorder';
 import type { Sector } from '../../../../types/bindings';
+import type { TrackMapLeaderLabelMode } from '../../../../types/widget-settings';
 import type { CarOnTrack } from '../types';
-
-import { SECTOR_ARC_COLORS } from '../track-map-utils';
+import { CarDot } from '../../primitives';
 
 import styles from './TrackMapSvg.module.scss';
 
@@ -15,6 +15,13 @@ interface TrackMapSvgProps {
   cars: CarOnTrack[];
   sectors: Sector[] | null | undefined;
   sfLabel?: string;
+  playerDotColor?: string;
+  showPlayerLabel?: boolean;
+  leaderLabelMode?: TrackMapLeaderLabelMode;
+  trackStrokePx?: number;
+  trackBorderPx?: number;
+  sectorStrokePx?: number;
+  targetDotRadiusPx?: number;
 }
 
 export const TrackMapSvg = ({
@@ -24,11 +31,37 @@ export const TrackMapSvg = ({
   cars,
   sectors,
   sfLabel = 'S/F',
+  playerDotColor = 'white',
+  showPlayerLabel = true,
+  leaderLabelMode = 'all',
+  trackStrokePx = 10,
+  trackBorderPx = 3,
+  sectorStrokePx = 6,
+  targetDotRadiusPx = 10,
 }: TrackMapSvgProps) => {
+  const playerClassId = cars.find((c) => c.isPlayer)?.carClassId ?? -1;
   const parts = viewBox.split(' ').map(Number);
-  const [vbX, vbY, vbW, vbH] = parts;
-  const cx = vbX + vbW / 2;
-  const cy = vbY + vbH / 2;
+  const vbW = parts[2];
+  const vbH = parts[3];
+
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [pixelScale, setPixelScale] = useState(1);
+
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return;
+    const obs = new ResizeObserver(() => {
+      const { width, height } = el.getBoundingClientRect();
+      if (width === 0 || height === 0) return;
+      const scaleX = vbW / width;
+      const scaleY = vbH / height;
+      setPixelScale(Math.max(scaleX, scaleY));
+    });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [vbW, vbH]);
+
+  const dotRadius = targetDotRadiusPx * pixelScale;
 
   const pathRef = useRef<SVGPathElement>(null);
   const [pathLength, setPathLength] = useState(0);
@@ -39,21 +72,19 @@ export const TrackMapSvg = ({
     }
   }, [svgPath]);
 
-  const validSectors = sectors?.filter(
-    (s) => s.SectorStartPct != null && s.SectorNum != null
-  );
+  const validSectors = sectors
+    ?.filter((s) => s.SectorStartPct != null && s.SectorNum != null)
+    .sort((a, b) => (a.SectorStartPct ?? 0) - (b.SectorStartPct ?? 0));
 
   return (
-    <svg viewBox={viewBox} className={styles.svgContainer}>
-      <g
-        transform={`translate(${cx}, ${cy}) scale(-1, 1) translate(${-cx}, ${-cy})`}
-      >
+    <svg ref={svgRef} viewBox={viewBox} className={styles.svgContainer}>
+      <g>
         {/* Track border */}
         <path
           d={svgPath}
           fill="none"
-          stroke="#e2e8f0"
-          strokeWidth="12"
+          stroke="#252525"
+          strokeWidth={trackBorderPx * pixelScale}
           strokeLinejoin="round"
           strokeLinecap="round"
           opacity="0.6"
@@ -64,8 +95,8 @@ export const TrackMapSvg = ({
           ref={pathRef}
           d={svgPath}
           fill="none"
-          stroke="#0f172a"
-          strokeWidth="10"
+          stroke="#272727"
+          strokeWidth={trackStrokePx * pixelScale}
           strokeLinejoin="round"
           strokeLinecap="round"
         />
@@ -78,38 +109,18 @@ export const TrackMapSvg = ({
             const startDist = (sector.SectorStartPct ?? 0) * pathLength;
             const sectorLen =
               (endPct - (sector.SectorStartPct ?? 0)) * pathLength;
-            const color = SECTOR_ARC_COLORS[i % SECTOR_ARC_COLORS.length];
 
             return (
               <path
                 key={`arc-${sector.SectorNum}`}
                 d={svgPath}
                 fill="none"
-                stroke={color}
-                strokeWidth="2.5"
+                strokeWidth={sectorStrokePx * pixelScale}
                 strokeLinecap="butt"
                 strokeDasharray={`0 ${startDist} ${sectorLen} ${pathLength}`}
                 className={styles.sectorArc}
+                data-index={i % 6}
               />
-            );
-          })}
-
-        {/* Sector direction arrows */}
-        {points.length > 0 &&
-          validSectors?.map((sector, i) => {
-            const pct = sector.SectorStartPct ?? 0;
-            const color = SECTOR_ARC_COLORS[i % SECTOR_ARC_COLORS.length];
-            const { x, y } = getPointAtPct(points, pct);
-            const next = getPointAtPct(points, Math.min(pct + 0.01, 0.999));
-            const angle = Math.atan2(next.y - y, next.x - x) * (180 / Math.PI);
-
-            return (
-              <g
-                key={`arrow-${sector.SectorNum}`}
-                transform={`translate(${x},${y}) rotate(${angle})`}
-              >
-                <polygon points="-5,-4 6,0 -5,4" fill={color} opacity="0.9" />
-              </g>
             );
           })}
 
@@ -119,22 +130,29 @@ export const TrackMapSvg = ({
             const { x, y } = getPointAtPct(points, 0);
             const next = getPointAtPct(points, 0.01);
             const angle = Math.atan2(next.y - y, next.x - x) * (180 / Math.PI);
+            // If the rotation angle is > 90 or < -90, the text will be upside down.
+            // In these cases, we rotate the text element itself by 180 degrees and
+            // flip its Y offset to keep it on the correct side of the line.
+            const isUpsideDown = Math.abs(angle) > 90;
+
             return (
               <g transform={`translate(${x},${y}) rotate(${angle})`}>
                 <line
                   x1="0"
-                  y1="-14"
+                  y1="-20"
                   x2="0"
-                  y2="14"
+                  y2="20"
                   stroke="white"
-                  strokeWidth="3"
+                  strokeWidth="5"
                   opacity="0.85"
+                  vectorEffect="non-scaling-stroke"
                 />
                 <text
                   x="0"
-                  y="-18"
+                  y={isUpsideDown ? 32 : -25}
                   textAnchor="middle"
                   className={styles.sfLabel}
+                  transform={isUpsideDown ? 'rotate(180)' : ''}
                 >
                   {sfLabel}
                 </text>
@@ -142,56 +160,37 @@ export const TrackMapSvg = ({
             );
           })()}
 
-        {/* Cars */}
+        {/* Cars — radius scaled to fixed screen pixels via pixelScale */}
         {points.length > 0 &&
           cars.map((car) => {
             const { x, y } = getPointAtPct(points, car.lapDistPct);
+
             const isClassLeader = car.classPosition === 1 && !car.isPlayer;
-            const showLabel = car.isPlayer || isClassLeader;
+            const showLeaderLabel =
+              isClassLeader &&
+              (leaderLabelMode === 'all' ||
+                (leaderLabelMode === 'own-class' &&
+                  car.carClassId === playerClassId));
+
+            const label = car.isPlayer
+              ? showPlayerLabel
+                ? 'YOU'
+                : undefined
+              : showLeaderLabel
+                ? 'P1'
+                : undefined;
 
             return (
               <g key={car.carIdx} transform={`translate(${x}, ${y})`}>
-                {car.isPlayer && (
-                  <circle r="14" fill="white" className={styles.playerPing} />
-                )}
-
-                <circle
-                  r={car.isPlayer ? 14 : 12}
-                  fill="#18181b"
-                  stroke={car.carClassColor}
-                  strokeWidth="3"
+                <CarDot
+                  carNumber={car.carNumber}
+                  carClassColor={car.carClassColor}
+                  isPlayer={car.isPlayer}
+                  radius={dotRadius}
+                  label={label}
+                  labelIsPlayer={car.isPlayer}
+                  playerColor={playerDotColor}
                 />
-
-                <text
-                  textAnchor="middle"
-                  dy="4"
-                  className={`${styles.carNumber} ${car.isPlayer ? styles.carNumberLarge : ''}`}
-                >
-                  {car.carNumber}
-                </text>
-
-                {showLabel && (
-                  <g transform="translate(0, -25)">
-                    <rect
-                      x="-25"
-                      y="-12"
-                      width="50"
-                      height="16"
-                      rx="4"
-                      fill={car.isPlayer ? 'white' : 'rgba(24,24,27,0.9)'}
-                      stroke={car.isPlayer ? 'none' : 'rgba(255,255,255,0.15)'}
-                      strokeWidth="1"
-                    />
-                    <text
-                      textAnchor="middle"
-                      dy="0"
-                      className={car.isPlayer ? styles.youTag : styles.p1Tag}
-                      fill={car.isPlayer ? 'black' : 'white'}
-                    >
-                      {car.isPlayer ? 'YOU' : 'P1'}
-                    </text>
-                  </g>
-                )}
               </g>
             );
           })}

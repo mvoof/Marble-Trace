@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RadarBarWidget } from './RadarBarWidget';
-import { WidgetScaler } from '../../WidgetScaler';
+
 import {
   computeNearbyCars,
   computeRadarDistances,
@@ -99,14 +99,14 @@ const RadarBarTemplate = (args: RadarBarStoryArgs) => {
 
   return (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-      <WidgetScaler designWidth={DESIGN_WIDTH} designHeight={DESIGN_HEIGHT}>
+      <div style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
         <RadarBarWidget
           radarDistances={radarDistances}
           spotterLeft={spotter.left}
           spotterRight={spotter.right}
           settings={settings}
         />
-      </WidgetScaler>
+      </div>
     </div>
   );
 };
@@ -117,7 +117,6 @@ export const Default: Story = {
     visibilityMode: 'always',
     proximityThreshold: 3,
     hideDelay: 2,
-    barSpacing: 0,
     barDisplayMode: 'both',
     carLeftRight: CarLeftRight.Off,
     offsets: [

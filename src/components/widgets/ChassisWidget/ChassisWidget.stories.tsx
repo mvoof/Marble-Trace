@@ -2,7 +2,7 @@ import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ChassisWidget } from './ChassisWidget';
-import { WidgetScaler } from '../../WidgetScaler';
+
 import type { CornerData } from './types';
 import { getTempColor, getBrakeColor } from './chassis-utils';
 
@@ -60,13 +60,16 @@ const DEFAULT_CORNERS = {
 
 const Wrapper = (props: React.ComponentProps<typeof ChassisWidget>) => (
   <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-    <WidgetScaler
-      designWidth={DESIGN_WIDTH}
-      designHeight={DESIGN_HEIGHT}
-      background="radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)"
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
+        overflow: 'hidden',
+      }}
     >
       <ChassisWidget {...props} />
-    </WidgetScaler>
+    </div>
   </div>
 );
 
@@ -78,6 +81,8 @@ const meta: Meta<React.ComponentProps<typeof ChassisWidget>> = {
     ...DEFAULT_CORNERS,
     tempUnit: '°C',
     lengthUnit: 'mm',
+    onPitRoad: false,
+    showInboard: false,
   },
 };
 
@@ -86,6 +91,12 @@ export default meta;
 type Story = StoryObj<React.ComponentProps<typeof ChassisWidget>>;
 
 export const Default: Story = {};
+
+export const InPits: Story = {
+  args: {
+    onPitRoad: true,
+  },
+};
 
 export const Imperial: Story = {
   args: {

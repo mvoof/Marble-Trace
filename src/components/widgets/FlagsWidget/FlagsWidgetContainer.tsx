@@ -1,54 +1,25 @@
-import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { parseSessionFlags } from './flags-utils';
-import { BLOCK_PX } from './LedMatrix/LedMatrix';
+import { parseSessionFlags } from '../../../utils/flags-utils';
+import { useFlagBlink, useFlagHold } from '../../../hooks/flags-hooks';
 import { FlagsWidget } from './FlagsWidget';
 
-import styles from './FlagsWidgetContainer.module.scss';
+const IS_NO_FLAG = (v: string) => v === 'none';
 
 export const FlagsWidgetContainer = observer(() => {
-  const settings = widgetSettingsStore.getFlagsSettings();
+  const { alwaysShow, holdDuration } =
+    widgetSettingsStore.getFlagDisplaySettings('flags');
+
   const sessionFlags = telemetryStore.session?.session_flags ?? null;
-  const flag = parseSessionFlags(sessionFlags);
+  const playerCarFlags = telemetryStore.session?.player_car_flags ?? null;
+  const liveFlag = parseSessionFlags(sessionFlags, playerCarFlags);
 
-  const [blinkOn, setBlinkOn] = useState(true);
+  const displayFlag = useFlagHold(liveFlag, IS_NO_FLAG, 'none', holdDuration);
+  const blinkOn = useFlagBlink();
 
-  useEffect(() => {
-    const id = setInterval(() => setBlinkOn((v) => !v), 400);
-    return () => clearInterval(id);
-  }, []);
+  if (!alwaysShow && displayFlag === 'none') return null;
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [blocks, setBlocks] = useState({ blocksX: 10, blocksY: 3 });
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const ro = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      setBlocks({
-        blocksX: Math.max(1, Math.floor(width / BLOCK_PX)),
-        blocksY: Math.max(1, Math.floor(height / BLOCK_PX)),
-      });
-    });
-
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  return (
-    <div ref={containerRef} className={styles.container}>
-      <FlagsWidget
-        flag={flag}
-        settings={settings}
-        blinkOn={blinkOn}
-        blocksX={blocks.blocksX}
-        blocksY={blocks.blocksY}
-      />
-    </div>
-  );
+  return <FlagsWidget flag={displayFlag} blinkOn={blinkOn} />;
 });

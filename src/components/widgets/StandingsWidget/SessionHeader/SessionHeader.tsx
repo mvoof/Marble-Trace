@@ -5,6 +5,7 @@ import { unitsStore } from '../../../../store/units.store';
 import type { DriverEntry } from '../../../../types/bindings';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import type { SessionInfoData, WeekendInfo } from '../../../../types/bindings';
+import { telemetryStore } from '../../../../store/iracing';
 
 import styles from './SessionHeader.module.scss';
 
@@ -16,12 +17,12 @@ interface SessionHeaderProps {
   overallSof: number;
 }
 
-const parseIRacingTemp = (
+const parseWeekendTemp = (
   tempStr: string | null | undefined
 ): number | null => {
-  if (!tempStr) return null;
-  const match = tempStr.match(/^(\d+(?:\.\d+)?)/);
-  return match ? parseFloat(match[1]) : null;
+  if (tempStr == null) return null;
+  const n = parseFloat(tempStr);
+  return isNaN(n) ? null : n;
 };
 
 export const SessionHeader = observer(
@@ -36,8 +37,11 @@ export const SessionHeader = observer(
     const currentSession = sessions?.[sessionInfo?.CurrentSessionNum ?? 0];
     const trackName = weekendInfo?.TrackDisplayName ?? '';
 
-    const airCelsius = parseIRacingTemp(weekendInfo?.TrackAirTemp);
-    const trkCelsius = parseIRacingTemp(weekendInfo?.TrackSurfaceTemp);
+    const env = telemetryStore.environment;
+    const airCelsius =
+      env?.air_temp ?? parseWeekendTemp(weekendInfo?.TrackAirTemp);
+    const trkCelsius =
+      env?.track_temp ?? parseWeekendTemp(weekendInfo?.TrackSurfaceTemp);
     const tempUnit = unitsStore.tempUnit;
     const airStr =
       airCelsius !== null

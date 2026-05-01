@@ -23,6 +23,8 @@ export const LinearMapWidget = ({
         entries={entries}
         player={player}
         isHorizontal={isHorizontal}
+        playerDotColor={settings.playerDotColor}
+        targetDotRadiusPx={settings.targetDotRadiusPx}
       />
     </WidgetPanel>
   );

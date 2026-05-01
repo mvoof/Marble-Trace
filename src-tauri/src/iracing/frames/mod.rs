@@ -9,6 +9,7 @@
 pub mod car_dynamics;
 pub mod car_idx;
 pub mod car_inputs;
+pub mod car_positions;
 pub mod car_status;
 pub mod chassis;
 pub mod environment;
@@ -18,14 +19,19 @@ pub mod session;
 pub use car_dynamics::CarDynamicsFrame;
 pub use car_idx::CarIdxFrame;
 pub use car_inputs::CarInputsFrame;
+pub use car_positions::CarPositionsFrame;
 pub use car_status::CarStatusFrame;
 pub use chassis::ChassisFrame;
 pub use environment::EnvironmentFrame;
 pub use lap_timing::LapTimingFrame;
 pub use session::SessionFrame;
 
-use pitwall::PitwallFrame;
+use pitwall::{BitField, PitwallFrame};
 use serde::{Deserialize, Serialize};
+
+fn bitfield_to_u32(bits: BitField) -> u32 {
+    bits.0
+}
 
 /// Combined telemetry frame containing ALL iRacing telemetry variables.
 ///
@@ -96,6 +102,8 @@ pub(crate) struct AllFieldsFrame {
     pub is_on_track: Option<bool>,
     #[field_name = "CarLeftRight"]
     pub car_left_right: Option<i32>,
+    #[bitfield_map(name = "EngineWarnings", decoder = "bitfield_to_u32")]
+    pub engine_warnings: Option<u32>,
 
     // === Lap Timing ===
     #[field_name = "Lap"]
@@ -114,6 +122,10 @@ pub(crate) struct AllFieldsFrame {
     pub player_car_position: Option<i32>,
     #[field_name = "PlayerCarClassPosition"]
     pub player_car_class_position: Option<i32>,
+    #[field_name = "LapDeltaToSessionBest_Live"]
+    pub lap_delta_to_session_best_live: Option<f32>,
+    #[field_name = "LapDeltaToSessionOptimal_Live"]
+    pub lap_delta_to_session_optimal_live: Option<f32>,
 
     // === Session ===
     #[field_name = "SessionTime"]
@@ -122,14 +134,40 @@ pub(crate) struct AllFieldsFrame {
     pub session_time_remain: Option<f64>,
     #[field_name = "SessionState"]
     pub session_state: Option<i32>,
-    #[field_name = "SessionFlags"]
-    pub session_flags: Option<i32>,
+    #[bitfield_map(name = "SessionFlags", decoder = "bitfield_to_u32")]
+    pub session_flags: Option<u32>,
     #[field_name = "SessionNum"]
     pub session_num: Option<i32>,
+    #[field_name = "SessionTimeOfDay"]
+    pub session_time_of_day: Option<f32>,
+    #[field_name = "PlayerCarIdx"]
+    pub player_car_idx: Option<i32>,
+    #[field_name = "CarIdxSessionFlags"]
+    pub car_idx_session_flags: Vec<BitField>,
 
     // === Environment ===
     #[field_name = "AirTemp"]
     pub air_temp: Option<f32>,
+    #[field_name = "TrackTemp"]
+    pub track_temp: Option<f32>,
+    #[field_name = "WindVel"]
+    pub wind_vel: Option<f32>,
+    #[field_name = "WindDir"]
+    pub wind_dir: Option<f32>,
+    #[field_name = "RelativeHumidity"]
+    pub relative_humidity: Option<f32>,
+    #[field_name = "Skies"]
+    pub skies: Option<i32>,
+    #[field_name = "Precipitation"]
+    pub precipitation: Option<f32>,
+    #[field_name = "TrackWetness"]
+    pub track_wetness: Option<i32>,
+    #[field_name = "WeatherDeclaredWet"]
+    pub weather_declared_wet: Option<bool>,
+    #[field_name = "WeatherType"]
+    pub weather_type: Option<i32>,
+    #[field_name = "WeatherVersion"]
+    pub weather_version: Option<i32>,
 
     // === Chassis — Ride Height (meters) ===
     #[field_name = "LFrideHeight"]
@@ -295,6 +333,7 @@ impl From<&AllFieldsFrame> for CarStatusFrame {
             on_pit_road: f.on_pit_road,
             is_on_track: f.is_on_track,
             car_left_right: f.car_left_right,
+            engine_warnings: f.engine_warnings,
         }
     }
 }
@@ -310,18 +349,29 @@ impl From<&AllFieldsFrame> for LapTimingFrame {
             lap_best_lap_time: f.lap_best_lap_time,
             player_car_position: f.player_car_position,
             player_car_class_position: f.player_car_class_position,
+            lap_delta_to_session_best_live: f.lap_delta_to_session_best_live,
+            lap_delta_to_session_optimal_live: f.lap_delta_to_session_optimal_live,
         }
     }
 }
 
 impl From<&AllFieldsFrame> for SessionFrame {
     fn from(f: &AllFieldsFrame) -> Self {
+        let player_car_flags = f.player_car_idx.and_then(|idx| {
+            f.car_idx_session_flags
+                .get(idx as usize)
+                .map(|bf| bf.0)
+        });
+
         Self {
             session_time: f.session_time,
             session_time_remain: f.session_time_remain,
             session_state: f.session_state,
             session_flags: f.session_flags,
             session_num: f.session_num,
+            session_time_of_day: f.session_time_of_day,
+            player_car_idx: f.player_car_idx,
+            player_car_flags,
         }
     }
 }
@@ -349,6 +399,16 @@ impl From<&AllFieldsFrame> for EnvironmentFrame {
     fn from(f: &AllFieldsFrame) -> Self {
         Self {
             air_temp: f.air_temp,
+            track_temp: f.track_temp,
+            wind_vel: f.wind_vel,
+            wind_dir: f.wind_dir,
+            relative_humidity: f.relative_humidity,
+            skies: f.skies,
+            precipitation: f.precipitation,
+            track_wetness: f.track_wetness,
+            weather_declared_wet: f.weather_declared_wet,
+            weather_type: f.weather_type,
+            weather_version: f.weather_version,
         }
     }
 }

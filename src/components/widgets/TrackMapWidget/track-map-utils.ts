@@ -1,7 +1,3 @@
-export const SECTOR_ARC_COLORS = [
-  '#eab308',
-  '#3b82f6',
-  '#a855f7',
-  '#10b981',
-  '#ef4444',
-];
+// Sector arc colors are now managed via SCSS variables for consistency across widgets.
+// They are passed into components via CSS variables or used in SCSS modules.
+export const SECTOR_COUNT_MAX = 6;

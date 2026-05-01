@@ -40,4 +40,10 @@ pub struct LapTimingFrame {
     /// Player's position within their car class
     /// @see https://sajax.github.io/irsdkdocs/telemetry/playercarclassposition/
     pub player_car_class_position: Option<i32>,
+
+    /// Live delta to session best lap
+    pub lap_delta_to_session_best_live: Option<f32>,
+
+    /// Live delta to session optimal lap
+    pub lap_delta_to_session_optimal_live: Option<f32>,
 }

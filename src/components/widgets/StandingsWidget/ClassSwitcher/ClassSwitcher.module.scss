@@ -1,0 +1,80 @@
+@use '../../../../styles/variables' as *;
+
+.switcher {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(18, 18, 22, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  min-height: 1.75em;
+  flex-shrink: 0;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75em;
+  min-width: 1.75em;
+  height: 100%;
+  min-height: 1.75em;
+  background: none;
+  border: none;
+  color: $color-text-muted;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    color: $color-text-primary;
+  }
+
+  &:disabled {
+    opacity: 0.2;
+    cursor: default;
+  }
+}
+
+.classInfo {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+  padding: 0 var(--widget-pad-x);
+  overflow: hidden;
+}
+
+.className {
+  font-family: $font-widget;
+  font-weight: 700;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  flex-shrink: 0;
+}
+
+.pagination {
+  font-family: $font-mono;
+  font-size: 0.7em;
+  color: $color-text-muted;
+  letter-spacing: 0.04em;
+}
+
+.stat {
+  font-family: $font-mono;
+  font-size: 0.7em;
+  color: rgba(161, 161, 170, 0.7);
+  white-space: nowrap;
+}

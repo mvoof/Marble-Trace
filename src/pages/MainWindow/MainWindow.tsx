@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Layout, ConfigProvider, theme } from 'antd';
+import { Layout, ConfigProvider, theme, App as AntdApp } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { Settings } from 'lucide-react';
 import { telemetryConnectionStore } from '../../store/iracing';
@@ -95,57 +95,61 @@ export const MainWindow = observer(() => {
         },
       }}
     >
-      <Layout className={styles.layout}>
-        <TitleBar />
+      <AntdApp style={{ height: '100%' }}>
+        <Layout className={styles.layout}>
+          <TitleBar />
 
-        <Layout className={styles.mainContainer}>
-          <Sider width={320} className={styles.sider}>
-            <div className={styles.sidebarHeader}>
-              <div className={styles.logoContainer}>
-                <Logo className={styles.logo} />
+          <Layout className={styles.mainContainer}>
+            <Sider width={320} className={styles.sider}>
+              <div className={styles.sidebarHeader}>
+                <div className={styles.logoContainer}>
+                  <Logo className={styles.logo} />
+                </div>
+                <div className={styles.headerText}>
+                  <span className={styles.brandName}>Marble Trace</span>
+                  <AppStatus />
+                </div>
               </div>
-              <div className={styles.headerText}>
-                <span className={styles.brandName}>Marble Trace</span>
-                <AppStatus />
+
+              <div className={styles.sidebarContent}>
+                <div className={styles.sectionTitle}>Widget Modules</div>
+                <WidgetList selectedId={selectedId} onSelect={setSelectedId} />
               </div>
-            </div>
 
-            <div className={styles.sidebarContent}>
-              <div className={styles.sectionTitle}>Widget Modules</div>
-              <WidgetList selectedId={selectedId} onSelect={setSelectedId} />
-            </div>
-
-            <div className={styles.sidebarFooter}>
-              <button
-                className={`${styles.settingsItem} ${
-                  selectedId === 'app-settings' ? styles.active : ''
-                }`}
-                onClick={() => setSelectedId('app-settings')}
-              >
-                <Settings
-                  size={16}
-                  className={styles.settingsIcon}
-                  strokeWidth={2}
-                />
-                <span className={styles.settingsLabel}>Global Settings</span>
-              </button>
-            </div>
-          </Sider>
-
-          <Content className={styles.content}>
-            <RandomGlitchCanvas />
-            <div className={styles.scrollContainer} key={selectedId}>
-              <div className={`${styles.contentInner} ${styles.animateFadeIn}`}>
-                {selectedId === 'app-settings' ? (
-                  <SettingsPage />
-                ) : (
-                  <WidgetSettings widgetId={selectedId} />
-                )}
+              <div className={styles.sidebarFooter}>
+                <button
+                  className={`${styles.settingsItem} ${
+                    selectedId === 'app-settings' ? styles.active : ''
+                  }`}
+                  onClick={() => setSelectedId('app-settings')}
+                >
+                  <Settings
+                    size={16}
+                    className={styles.settingsIcon}
+                    strokeWidth={2}
+                  />
+                  <span className={styles.settingsLabel}>Global Settings</span>
+                </button>
               </div>
-            </div>
-          </Content>
+            </Sider>
+
+            <Content className={styles.content}>
+              <RandomGlitchCanvas />
+              <div className={styles.scrollContainer} key={selectedId}>
+                <div
+                  className={`${styles.contentInner} ${styles.animateFadeIn}`}
+                >
+                  {selectedId === 'app-settings' ? (
+                    <SettingsPage />
+                  ) : (
+                    <WidgetSettings widgetId={selectedId} />
+                  )}
+                </div>
+              </div>
+            </Content>
+          </Layout>
         </Layout>
-      </Layout>
+      </AntdApp>
     </ConfigProvider>
   );
 });

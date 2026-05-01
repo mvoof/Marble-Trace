@@ -4,28 +4,18 @@ import { emit } from '@tauri-apps/api/event';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { telemetryConnectionStore } from '../../store/iracing';
-import { WidgetScaler } from '../WidgetScaler';
+import { WIDGET_REGISTRY } from '../../utils/widget-registry';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
 import styles from './WidgetContainer.module.scss';
 
 interface WidgetContainerProps {
   widgetId: string;
-  designWidth: number;
-  designHeight: number;
   children: ReactNode;
   visible?: boolean;
-  adaptive?: boolean;
 }
 
 export const WidgetContainer = observer(
-  ({
-    widgetId,
-    designWidth,
-    designHeight,
-    children,
-    visible = true,
-    adaptive = false,
-  }: WidgetContainerProps) => {
+  ({ widgetId, children, visible = true }: WidgetContainerProps) => {
     const { dragMode } = appSettingsStore;
     const widget = widgetSettingsStore.getWidget(widgetId);
 
@@ -55,8 +45,11 @@ export const WidgetContainer = observer(
     const backgroundColorEdge = widget?.backgroundColorEdge ?? '#0a0a0a';
     const x = widget?.x ?? 100;
     const y = widget?.y ?? 100;
-    const width = widget?.width ?? designWidth;
-    const height = widget?.height ?? designHeight;
+    const width = widget?.width ?? 200;
+    const height = widget?.height ?? 200;
+    const designWidth = widget?.designWidth ?? width;
+    const designHeight = widget?.designHeight ?? height;
+    const autoHeight = WIDGET_REGISTRY[widgetId]?.autoHeight ?? false;
 
     const background = shouldHide
       ? 'transparent'
@@ -120,12 +113,14 @@ export const WidgetContainer = observer(
           if (!isResizingRef.current) return;
           const dx = ev.clientX - resizeStartRef.current.mouseX;
           const dy = ev.clientY - resizeStartRef.current.mouseY;
+          const minW = Math.max(20, Math.round(designWidth * 0.2));
+          const minH = Math.max(20, Math.round(designHeight * 0.2));
           const newW = Math.max(
-            80,
+            minW,
             Math.round(resizeStartRef.current.widgetW + dx)
           );
           const newH = Math.max(
-            40,
+            minH,
             Math.round(resizeStartRef.current.widgetH + dy)
           );
           widgetSettingsStore.updateSize(widgetId, newW, newH);
@@ -151,7 +146,7 @@ export const WidgetContainer = observer(
           left: x,
           top: y,
           width,
-          height,
+          height: autoHeight ? 'auto' : height,
           visibility: shouldHide ? 'hidden' : 'visible',
         }}
       >
@@ -161,14 +156,9 @@ export const WidgetContainer = observer(
           onMouseDown={handleDragMouseDown}
         >
           <ErrorBoundary>
-            <WidgetScaler
-              designWidth={designWidth}
-              designHeight={designHeight}
-              background={background}
-              adaptive={adaptive}
-            >
+            <div className={styles.widgetInner} style={{ background }}>
               {children}
-            </WidgetScaler>
+            </div>
           </ErrorBoundary>
 
           {dragMode && (

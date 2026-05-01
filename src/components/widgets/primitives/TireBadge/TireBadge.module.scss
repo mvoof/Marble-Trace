@@ -1,0 +1,53 @@
+// Tire badge
+.tireBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.3em;
+  height: 1.3em;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.75em;
+  font-family: $font-mono;
+  border: 1px solid;
+  line-height: 1;
+  vertical-align: middle;
+  padding-top: 0.1em; // Compensate for font baseline offset to center the letter
+  box-sizing: border-box;
+}
+
+.tireEmpty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.3em;
+  height: 1.3em;
+  color: rgba(113, 113, 122, 0.6);
+  font-size: 0.8125em;
+  font-family: $font-mono;
+  vertical-align: middle;
+}
+
+.tireSoft {
+  color: $color-error;
+  border-color: rgba($color-error, 0.5);
+  background: rgba($color-error, 0.1);
+}
+
+.tireMed {
+  color: #eab308;
+  border-color: rgba(234, 179, 8, 0.5);
+  background: rgba(234, 179, 8, 0.1);
+}
+
+.tireHard {
+  color: #e5e7eb;
+  border-color: rgba(161, 161, 170, 0.5);
+  background: rgba(161, 161, 170, 0.1);
+}
+
+.tireWet {
+  color: $color-blue;
+  border-color: rgba($color-blue, 0.5);
+  background: rgba($color-blue, 0.1);
+}

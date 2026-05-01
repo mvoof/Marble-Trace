@@ -1,8 +1,10 @@
+import type { RefObject } from 'react';
 import { WidgetPanel } from '../primitives';
 import type { TrackPoint } from '../../../types/track';
 import type { TrackMapWidgetSettings } from '../../../types/widget-settings';
 import type { Sector } from '../../../types/bindings';
 
+import type { RecordingOverlayHandle } from './RecordingOverlay/RecordingOverlay';
 import { RecordingOverlay } from './RecordingOverlay/RecordingOverlay';
 import { ClassLegend } from './ClassLegend/ClassLegend';
 import { TrackMapSvg } from './TrackMapSvg/TrackMapSvg';
@@ -29,9 +31,13 @@ interface TrackMapWidgetProps {
   trackName: string;
   isRecording: boolean;
   recordingProgress: number;
+  isForceStartPending: boolean;
+  isWaitingForSF: boolean;
+  recordingOverlayRef?: RefObject<RecordingOverlayHandle | null>;
   settings: TrackMapWidgetSettings;
   sectors: Sector[] | null | undefined;
   sectorTimes: (number | null)[];
+  currentSectorIdx?: number;
 }
 
 export const TrackMapWidget = ({
@@ -41,28 +47,37 @@ export const TrackMapWidget = ({
   trackName,
   isRecording,
   recordingProgress,
+  isForceStartPending,
+  isWaitingForSF,
+  recordingOverlayRef,
   settings,
   sectors,
   sectorTimes,
+  currentSectorIdx,
 }: TrackMapWidgetProps) => {
   if (!trackData) {
     return (
       <WidgetPanel className={styles.trackMap} gap={0}>
         <RecordingOverlay
+          ref={recordingOverlayRef}
           trackName={trackName}
           isRecording={isRecording}
+          isForceStartPending={isForceStartPending}
+          isWaitingForSF={isWaitingForSF}
           progress={recordingProgress}
         />
       </WidgetPanel>
     );
   }
 
-  const visibleSectors = settings.showSectors ? sectors : null;
+  const visibleSectors = settings.showSectorsOnMap ? sectors : null;
   const sectorEntries =
-    visibleSectors
+    sectors
       ?.filter((s) => s.SectorNum != null && s.SectorStartPct != null)
       .sort((a, b) => (a.SectorStartPct ?? 0) - (b.SectorStartPct ?? 0))
       .map((s) => ({ sectorNum: s.SectorNum! })) ?? [];
+
+  const hasAnySectorData = sectorEntries.length > 0;
 
   return (
     <WidgetPanel className={styles.trackMap} gap={0}>
@@ -73,22 +88,31 @@ export const TrackMapWidget = ({
           points={trackData.points}
           cars={cars}
           sectors={visibleSectors}
+          playerDotColor={settings.playerDotColor}
+          showPlayerLabel={settings.showPlayerLabel}
+          leaderLabelMode={settings.leaderLabelMode}
+          trackStrokePx={settings.trackStrokePx}
+          trackBorderPx={settings.trackBorderPx}
+          sectorStrokePx={settings.sectorStrokePx}
+          targetDotRadiusPx={settings.targetDotRadiusPx}
         />
       </div>
 
-      {(settings.showLegend ||
-        (settings.showSectors && sectorEntries.length > 0)) && (
-        <div className={styles.bottomBar}>
-          {settings.showLegend && <ClassLegend classes={classColors} />}
+      <div className={styles.bottomBar}>
+        <ClassLegend
+          classes={classColors}
+          className={!settings.showLegend ? styles.hidden : undefined}
+        />
 
-          {settings.showSectors && sectorEntries.length > 0 && (
-            <SectorTimesStrip
-              sectors={sectorEntries}
-              sectorTimes={sectorTimes}
-            />
-          )}
-        </div>
-      )}
+        {hasAnySectorData && (
+          <SectorTimesStrip
+            sectors={sectorEntries}
+            sectorTimes={sectorTimes}
+            currentSectorIdx={currentSectorIdx}
+            className={!settings.showSectorTimes ? styles.hidden : undefined}
+          />
+        )}
+      </div>
     </WidgetPanel>
   );
 };

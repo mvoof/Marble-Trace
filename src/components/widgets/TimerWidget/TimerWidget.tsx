@@ -1,3 +1,5 @@
+import { forwardRef } from 'react';
+
 import { WidgetPanel } from '../primitives/WidgetPanel';
 
 import styles from './TimerWidget.module.scss';
@@ -25,6 +27,18 @@ interface TimerWidgetProps {
   totalLaps: string | null;
   position: number | null;
   totalDrivers: number | null;
+  sessionEnded: boolean;
+  showFlag: boolean;
+  showLaps: boolean;
+  showPosition: boolean;
+  showWallClock: boolean;
+  showSimTime: boolean;
+  showPcDate: boolean;
+  showSimDate: boolean;
+  wallClockTime: string;
+  simTime: string | null;
+  pcDate: string;
+  simDate: string | null;
 }
 
 const formatLapCount = (
@@ -42,36 +56,163 @@ const formatPosition = (pos: number | null, total: number | null): string => {
   return `POS P${pos}${totStr}`;
 };
 
-export const TimerWidget = ({
-  sessionTypeLabel,
-  flagState,
-  timeMain,
-  timeSeconds,
-  currentLap,
-  totalLaps,
-  position,
-  totalDrivers,
-}: TimerWidgetProps) => (
-  <WidgetPanel direction="column" gap={0} minWidth={180}>
-    <div className={styles.header}>
-      <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
-      <span className={`${styles.flagLabel} ${FLAG_CLASS[flagState]}`}>
-        ● {FLAG_LABEL[flagState]}
-      </span>
-    </div>
+export const TimerWidget = forwardRef<HTMLElement, TimerWidgetProps>(
+  (
+    {
+      sessionTypeLabel,
+      flagState,
+      timeMain,
+      timeSeconds,
+      currentLap,
+      totalLaps,
+      position,
+      totalDrivers,
+      sessionEnded,
+      showFlag,
+      showLaps,
+      showPosition,
+      showWallClock,
+      showSimTime,
+      showPcDate,
+      showSimDate,
+      wallClockTime,
+      simTime,
+      pcDate,
+      simDate,
+    },
+    ref
+  ) => {
+    const showFooter = showLaps || showPosition;
+    const showClockRow = showWallClock || showSimTime;
+    const showDateRow = showPcDate || showSimDate;
 
-    <div className={styles.timeDisplay}>
-      <span className={styles.timeMain}>{timeMain}</span>
-      <span className={styles.timeSeconds}>{timeSeconds}</span>
-    </div>
+    if (sessionEnded) {
+      return (
+        <WidgetPanel
+          ref={ref}
+          fitContent
+          direction="column"
+          gap={0}
+          minWidth={180}
+        >
+          <div className={styles.header}>
+            <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
+          </div>
 
-    <div className={styles.footer}>
-      <span className={styles.footerItem}>
-        {formatLapCount(currentLap, totalLaps)}
-      </span>
-      <span className={styles.footerItem}>
-        {formatPosition(position, totalDrivers)}
-      </span>
-    </div>
-  </WidgetPanel>
+          <div className={styles.timeDisplay}>
+            <span className={styles.sessionEndedLabel}>END</span>
+          </div>
+
+          {showClockRow && (
+            <div className={styles.clockRow}>
+              {showWallClock && (
+                <span className={styles.clockItem}>
+                  <span className={styles.clockLabel}>PC</span>
+                  {wallClockTime}
+                </span>
+              )}
+              {showSimTime && simTime !== null && (
+                <span className={styles.clockItem}>
+                  <span className={styles.clockLabel}>SIM</span>
+                  {simTime}
+                </span>
+              )}
+            </div>
+          )}
+
+          {showDateRow && (
+            <div className={styles.clockRow}>
+              {showPcDate && (
+                <span className={styles.clockItem}>
+                  <span className={styles.clockLabel}>DATE</span>
+                  {pcDate}
+                </span>
+              )}
+              {showSimDate && simDate !== null && (
+                <span className={styles.clockItem}>
+                  <span className={styles.clockLabel}>SIM</span>
+                  {simDate}
+                </span>
+              )}
+            </div>
+          )}
+        </WidgetPanel>
+      );
+    }
+
+    return (
+      <WidgetPanel
+        ref={ref}
+        fitContent
+        direction="column"
+        gap={0}
+        minWidth={180}
+      >
+        <div className={styles.header}>
+          <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
+          {showFlag && (
+            <span className={`${styles.flagLabel} ${FLAG_CLASS[flagState]}`}>
+              ● {FLAG_LABEL[flagState]}
+            </span>
+          )}
+        </div>
+
+        <div className={styles.timeDisplay}>
+          <span className={styles.timeMain}>{timeMain}</span>
+          <span className={styles.timeSeconds}>{timeSeconds}</span>
+        </div>
+
+        {showClockRow && (
+          <div className={styles.clockRow}>
+            {showWallClock && (
+              <span className={styles.clockItem}>
+                <span className={styles.clockLabel}>PC</span>
+                {wallClockTime}
+              </span>
+            )}
+            {showSimTime && simTime !== null && (
+              <span className={styles.clockItem}>
+                <span className={styles.clockLabel}>SIM</span>
+                {simTime}
+              </span>
+            )}
+          </div>
+        )}
+
+        {showDateRow && (
+          <div className={styles.clockRow}>
+            {showPcDate && (
+              <span className={styles.clockItem}>
+                <span className={styles.clockLabel}>DATE</span>
+                {pcDate}
+              </span>
+            )}
+            {showSimDate && simDate !== null && (
+              <span className={styles.clockItem}>
+                <span className={styles.clockLabel}>SIM</span>
+                {simDate}
+              </span>
+            )}
+          </div>
+        )}
+
+        {showFooter && (
+          <div className={styles.footer}>
+            {showLaps && (
+              <span className={styles.footerItem}>
+                {formatLapCount(currentLap, totalLaps)}
+              </span>
+            )}
+            {showPosition && (
+              <span className={styles.footerItem}>
+                {formatPosition(position, totalDrivers)}
+              </span>
+            )}
+          </div>
+        )}
+      </WidgetPanel>
+    );
+  }
 );
+
+TimerWidget.displayName = 'TimerWidget';

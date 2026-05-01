@@ -259,6 +259,11 @@ export type CarStatusFrame = {
    * @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
    */
   car_left_right: number | null;
+  /**
+   * Engine warning bitmask; bit 0x10 = pit speed limiter active
+   * @see https://sajax.github.io/irsdkdocs/telemetry/enginewarnings/
+   */
+  engine_warnings: number | null;
 };
 
 export type ChassisFrame = {
@@ -554,6 +559,7 @@ export type DriverEntry = {
   lastLapTime: number;
   bestLapTime: number;
   f2Time: number;
+  estTime: number;
   trackSurface: number;
   iRating: number;
   licString: string;
@@ -563,6 +569,7 @@ export type DriverEntry = {
   onPitRoad: boolean;
   estimatedIrDelta: number | null;
   relativeLapDist: number;
+  classEstLapTime: number;
 };
 
 /**
@@ -731,6 +738,51 @@ export type EnvironmentFrame = {
    * @see https://sajax.github.io/irsdkdocs/telemetry/airtemp/
    */
   air_temp: number | null;
+  /**
+   * Track surface temperature in °C
+   * @see https://sajax.github.io/irsdkdocs/telemetry/tracktemp/
+   */
+  track_temp: number | null;
+  /**
+   * Wind velocity in m/s
+   * @see https://sajax.github.io/irsdkdocs/telemetry/windvel/
+   */
+  wind_vel: number | null;
+  /**
+   * Wind direction in radians
+   * @see https://sajax.github.io/irsdkdocs/telemetry/winddir/
+   */
+  wind_dir: number | null;
+  /**
+   * Relative humidity (0.0 to 1.0)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/relativehumidity/
+   */
+  relative_humidity: number | null;
+  /**
+   * Skies (0=clear, 1=partly cloudy, 2=mostly cloudy, 3=overcast)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/skies/
+   */
+  skies: number | null;
+  /**
+   * Current amount of precipitation at start/finish (0.0 to 1.0)
+   */
+  precipitation: number | null;
+  /**
+   * Estimate of overall track wetness (0=dry to 7=flooded)
+   */
+  track_wetness: number | null;
+  /**
+   * Whether rain tires are officially allowed
+   */
+  weather_declared_wet: boolean | null;
+  /**
+   * Weather dynamics (Constant vs Dynamic)
+   */
+  weather_type: number | null;
+  /**
+   * Weather system version
+   */
+  weather_version: number | null;
 };
 
 /**
@@ -785,6 +837,7 @@ export type Frequency = {
 
 export type FuelComputedFrame = {
   avgPerLap: number;
+  currentUsePerLap: number;
   lapsRemaining: number;
   lapsToFinish: number | null;
   /**
@@ -798,12 +851,24 @@ export type FuelComputedFrame = {
   pitWindowStart: number | null;
   pitWindowEnd: number | null;
   isTimedRace: boolean;
+  lapFuelHistory: number[];
 };
 
 export type LapDeltaFrame = {
   sectorTimes: (number | null)[];
-  sectorDeltas: (number | null)[];
   currentSectorIdx: number;
+  /**
+   * Delta vs session best. Total uses iRacing's live delta when available.
+   * Sector deltas are snapshotted at boundaries so they always sum to total.
+   */
+  sessionBestTotal: number;
+  sessionBestSectors: (number | null)[];
+  /**
+   * Delta vs personal best (the driver's own best completed lap).
+   * Sector deltas are from the same reference lap so they always sum to total.
+   */
+  personalBestTotal: number;
+  personalBestSectors: (number | null)[];
 };
 
 export type LapTimingFrame = {
@@ -847,6 +912,14 @@ export type LapTimingFrame = {
    * @see https://sajax.github.io/irsdkdocs/telemetry/playercarclassposition/
    */
   player_car_class_position: number | null;
+  /**
+   * Live delta to session best lap
+   */
+  lap_delta_to_session_best_live: number | null;
+  /**
+   * Live delta to session optimal lap
+   */
+  lap_delta_to_session_optimal_live: number | null;
 };
 
 export type LateralSide = 'left' | 'right' | 'center';
@@ -1074,6 +1147,22 @@ export type SessionFrame = {
    * @see https://sajax.github.io/irsdkdocs/telemetry/sessionnum/
    */
   session_num: number | null;
+  /**
+   * In-simulator time of day in seconds since midnight
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessiontimeofday/
+   */
+  session_time_of_day: number | null;
+  /**
+   * Index of the player's car in CarIdx arrays
+   * @see https://sajax.github.io/irsdkdocs/telemetry/playercaridx/
+   */
+  player_car_idx: number | null;
+  /**
+   * Per-car session flags for the player's car (black flag, DQ, meatball, etc.)
+   * Extracted from CarIdxSessionFlags[player_car_idx]
+   * @see https://sajax.github.io/irsdkdocs/telemetry/caridxsessionflags/
+   */
+  player_car_flags: number | null;
 };
 
 /**
@@ -1143,6 +1232,17 @@ export type TelemetryOptions = {
    * Telemetry disk file path
    */
   TelemetryDiskFile: string | null;
+};
+
+export type WeatherForecastEntry = {
+  Time: number;
+  Temp: number;
+  WindSpeed: number;
+  WindDir: number;
+  Skies: number;
+  Humidity: number;
+  Fog: number;
+  RainPct: number;
 };
 
 /**

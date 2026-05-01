@@ -12,19 +12,27 @@ import type {
   SessionInfo,
   DriverInfoData,
   WeekendInfo,
+  WeatherForecastEntry,
 } from '../../types/bindings';
+
+export interface CarPositionsFrame {
+  car_idx_lap_dist_pct: number[];
+  car_idx_track_surface: number[];
+}
 import type { SessionWithResults } from '../../types/session-results';
 
 class TelemetryStore {
   carDynamics: CarDynamicsFrame | null = null;
   carIdx: CarIdxFrame | null = null;
   carInputs: CarInputsFrame | null = null;
+  carPositions: CarPositionsFrame | null = null;
   carStatus: CarStatusFrame | null = null;
   chassis: ChassisFrame | null = null;
   environment: EnvironmentFrame | null = null;
   lapTiming: LapTimingFrame | null = null;
   session: SessionFrame | null = null;
   sessionInfo: SessionInfo | null = null;
+  weatherForecast: WeatherForecastEntry[] = [];
 
   /**
    * Start positions for the current session, keyed by CarIdx.
@@ -78,6 +86,10 @@ class TelemetryStore {
     this.carInputs = frame;
   }
 
+  updateCarPositions(frame: CarPositionsFrame) {
+    this.carPositions = frame;
+  }
+
   updateCarStatus(frame: CarStatusFrame) {
     this.carStatus = frame;
   }
@@ -103,16 +115,22 @@ class TelemetryStore {
     this.maybeSnapshotStartPositions(info);
   }
 
+  updateWeatherForecast(entries: WeatherForecastEntry[]) {
+    this.weatherForecast = entries;
+  }
+
   reset() {
     this.carDynamics = null;
     this.carIdx = null;
     this.carInputs = null;
+    this.carPositions = null;
     this.carStatus = null;
     this.chassis = null;
     this.environment = null;
     this.lapTiming = null;
     this.session = null;
     this.sessionInfo = null;
+    this.weatherForecast = [];
     this.startPositions = new Map();
     this.trackedSessionNum = -1;
   }

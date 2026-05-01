@@ -1,0 +1,84 @@
+@use '../../../../styles/variables' as *;
+
+.badge {
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 3px;
+  overflow: hidden;
+  font-weight: 700;
+  font-size: 1em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.licPart {
+  display: flex;
+  align-items: center;
+  padding: 0.2em 0.25em;
+  color: white;
+}
+
+.divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.irPart {
+  display: flex;
+  align-items: center;
+  padding: 0.2em 0.25em;
+  font-family: $font-mono;
+}
+
+// License colors
+.licA {
+  background: #2563eb;
+}
+
+.licB {
+  background: #16a34a;
+}
+
+.licC {
+  background: #ca8a04;
+}
+
+.licD {
+  background: #ea580c;
+}
+
+.licR {
+  background: #dc2626;
+}
+
+// iRating tiers (right part background + text)
+.irRookie {
+  background: rgba(113, 113, 122, 0.35);
+  color: #a1a1aa;
+}
+
+.irAvg {
+  background: rgba(234, 88, 12, 0.25);
+  color: #fb923c;
+}
+
+.irAboveAvg {
+  background: rgba(202, 138, 4, 0.25);
+  color: #fbbf24;
+}
+
+.irFast {
+  background: rgba(37, 99, 235, 0.25);
+  color: #60a5fa;
+}
+
+.irPro {
+  background: rgba(22, 163, 74, 0.25);
+  color: #4ade80;
+}
+
+.irElite {
+  background: rgba(168, 85, 247, 0.25);
+  color: #c084fc;
+}

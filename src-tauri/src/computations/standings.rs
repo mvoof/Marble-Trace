@@ -119,6 +119,7 @@ pub struct DriverEntry {
     pub last_lap_time: f32,
     pub best_lap_time: f32,
     pub f2_time: f32,
+    pub est_time: f32,
     pub track_surface: i32,
     pub i_rating: i32,
     pub lic_string: String,
@@ -128,6 +129,7 @@ pub struct DriverEntry {
     pub on_pit_road: bool,
     pub estimated_ir_delta: Option<i32>,
     pub relative_lap_dist: f32,
+    pub class_est_lap_time: f32,
 }
 
 #[derive(Default)]
@@ -255,6 +257,7 @@ pub fn compute(
                     .copied()
                     .unwrap_or(-1.0),
                 f2_time: frame.car_idx_f2_time.get(idx).copied().unwrap_or(0.0),
+                est_time: frame.car_idx_est_time.get(idx).copied().unwrap_or(0.0),
                 track_surface: frame.car_idx_track_surface.get(idx).copied().unwrap_or(-1),
                 i_rating: d.i_rating.unwrap_or(0),
                 lic_string: d.lic_string.clone().unwrap_or_else(|| "R 0.00".to_string()),
@@ -264,6 +267,7 @@ pub fn compute(
                 on_pit_road: frame.car_idx_on_pit_road.get(idx).copied().unwrap_or(false),
                 estimated_ir_delta: None,
                 relative_lap_dist: 0.0,
+                class_est_lap_time: d.car_class_est_lap_time.unwrap_or(0.0) as f32,
             }
         })
         .collect();
@@ -408,8 +412,9 @@ pub fn parse_start_positions(results: &[serde_yaml_ng::Value]) -> HashMap<i32, (
     for val in results {
         if let Ok(rp) = serde_yaml_ng::from_value::<ResultPos>(val.clone()) {
             if let (Some(idx), Some(pos)) = (rp.car_idx, rp.position) {
-                let class_pos = rp.class_position.unwrap_or(pos);
-                map.insert(idx, (pos + 1, class_pos + 1));
+                // Position is 1-indexed in iRacing YAML; ClassPosition is 0-indexed.
+                let class_pos = rp.class_position.unwrap_or(pos - 1);
+                map.insert(idx, (pos, class_pos + 1));
             }
         }
     }

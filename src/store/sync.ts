@@ -131,6 +131,29 @@ export const initMainSync = async () => {
             }
           }
 
+          const standingsSettings = widgetSettingsStore.getStandingsSettings();
+
+          if (standingsSettings.classCyclingToggleHotkey) {
+            addHandler(standingsSettings.classCyclingToggleHotkey, (event) => {
+              if (event.state === 'Pressed')
+                widgetSettingsStore.toggleStandingsClassCycling();
+            });
+          }
+
+          if (standingsSettings.classPrevHotkey) {
+            addHandler(standingsSettings.classPrevHotkey, (event) => {
+              if (event.state === 'Pressed')
+                widgetSettingsStore.cycleStandingsPrev();
+            });
+          }
+
+          if (standingsSettings.classNextHotkey) {
+            addHandler(standingsSettings.classNextHotkey, (event) => {
+              if (event.state === 'Pressed')
+                widgetSettingsStore.cycleStandingsNext();
+            });
+          }
+
           // 2. Unregister only what was previously registered in THIS session
           for (const shortcut of Array.from(registeredShortcuts)) {
             try {
@@ -156,8 +179,9 @@ export const initMainSync = async () => {
                 handlers.forEach((h) => h(event));
               });
               registeredShortcuts.add(shortcut);
+              console.log(`[hotkey] registered: "${shortcut}"`);
             } catch (e) {
-              console.error(`Failed to register hotkey: ${shortcut}`, e);
+              console.error(`[hotkey] FAILED to register: "${shortcut}"`, e);
             }
           }
         } finally {
@@ -212,11 +236,17 @@ export const initMainSync = async () => {
           }
         ),
         reaction(
-          () => [
-            appSettingsStore.dragHotkey,
-            appSettingsStore.hideAllWidgetsHotkey,
-            ...widgetSettingsStore.widgets.map((w) => w.hotkey),
-          ],
+          () => {
+            const s = widgetSettingsStore.getStandingsSettings();
+            return [
+              appSettingsStore.dragHotkey,
+              appSettingsStore.hideAllWidgetsHotkey,
+              ...widgetSettingsStore.widgets.map((w) => w.hotkey),
+              s.classCyclingToggleHotkey,
+              s.classPrevHotkey,
+              s.classNextHotkey,
+            ];
+          },
           () => {
             void setupHotkeys();
             void saveSettings();
@@ -227,6 +257,18 @@ export const initMainSync = async () => {
           (system) => {
             void emit('units-changed', system);
             void saveSettings();
+          }
+        ),
+        reaction(
+          () => widgetSettingsStore.standingsActiveClassIndex,
+          (index) => {
+            void emit('standings-class-index-changed', index);
+          }
+        ),
+        reaction(
+          () => widgetSettingsStore.isTrackMapForceStartPending,
+          (pending) => {
+            void emit('track-map:force-start-pending-changed', pending);
           }
         ),
         reaction(
@@ -313,6 +355,20 @@ export const initOverlaySync = async () => {
   unlistens.push(
     await listen<WidgetConfig[]>('widget-settings-updated', (e) => {
       runInAction(() => widgetSettingsStore.setWidgets(e.payload));
+    })
+  );
+  unlistens.push(
+    await listen<number>('standings-class-index-changed', (e) => {
+      runInAction(() => {
+        widgetSettingsStore.standingsActiveClassIndex = e.payload;
+      });
+    })
+  );
+  unlistens.push(
+    await listen<boolean>('track-map:force-start-pending-changed', (e) => {
+      runInAction(() =>
+        widgetSettingsStore.setTrackMapForceStartPending(e.payload)
+      );
     })
   );
 

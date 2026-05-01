@@ -1,8 +1,11 @@
+@use 'functions' as *;
+
 // Colors
 $color-bg-dark: rgba(0, 0, 0, 0.75);
 $color-bg-widget: rgba(0, 0, 0, 0.8);
 $color-text-primary: #e0e0e0;
 $color-text-accent: #00ff00;
+$color-text-secondary: #adadad;
 $color-text-muted: #888;
 $color-border: rgba(255, 255, 255, 0.15);
 
@@ -18,47 +21,67 @@ $sys-text-muted: #5e626d;
 $sys-accent: #e0e0e0;
 $sys-danger: #ff5a5a;
 
-// Semantic colors
+// Semantic colors — HUD / system UI
 $color-positive: #00ff00;
 $color-warning: #ffcc00;
 $color-danger: #ff3333;
 $color-info: #3399ff;
 $color-neutral: #888888;
 
+// Widget status palette — used across widget components
+$color-success: #22c55e;
+$color-error: #ef4444;
+$color-caution: #fbbf24;
+$color-blue: #60a5fa;
+
 // Input-specific colors
 $color-throttle: #00ff00;
 $color-brake: #ff3333;
 $color-clutch: #3399ff;
 
+// Sector Colors
+$color-sector-1: #eab308; // Yellow
+$color-sector-2: #3b82f6; // Blue
+$color-sector-3: #a855f7; // Purple
+$color-sector-4: #10b981; // Green
+$color-sector-5: #ef4444; // Red
+$color-sector-6: #f97316; // Orange
+
+$sector-colors: (
+  $color-sector-1,
+  $color-sector-2,
+  $color-sector-3,
+  $color-sector-4,
+  $color-sector-5,
+  $color-sector-6
+);
+
 // Typography
-$font-mono:
-  ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
-  'Courier New', monospace;
+$font-mono: 'Consolas', monospace;
 $font-widget: 'Rajdhani', sans-serif;
-$font-size-widget: 0.8125rem;
+$font-size-widget: rem(13);
 $line-height-widget: 1.4;
 
 // Typography scale
-$font-size-xs: 0.625rem;
-$font-size-sm: 0.75rem;
-$font-size-md: 0.875rem;
-$font-size-lg: 1.25rem;
-$font-size-xl: 2rem;
-$font-size-2xl: 3rem;
-$font-size-3xl: 4rem;
+$font-size-xs: rem(10);
+$font-size-sm: rem(12);
+$font-size-md: rem(14);
+$font-size-lg: rem(20);
+$font-size-xl: rem(32);
+$font-size-2xl: rem(48);
 
 // Spacing
 $widget-border-radius: 4px;
 
 // Spacing scale
-$space-xs: 0.125rem;
-$space-sm: 0.25rem;
-$space-md: 0.5rem;
-$space-lg: 0.75rem;
-$space-xl: 1rem;
+$space-xs: rem(2);
+$space-sm: rem(4);
+$space-md: rem(8);
+$space-lg: rem(12);
+$space-xl: rem(16);
 
 // Bar sizes
-$bar-height-sm: 8px;
-$bar-height-md: 12px;
-$bar-height-lg: 18px;
+$bar-height-sm: rem(8);
+$bar-height-md: rem(12);
+$bar-height-lg: rem(18);
 $bar-border-radius: 4px;

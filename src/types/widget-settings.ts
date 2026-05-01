@@ -8,6 +8,10 @@ export interface SpeedWidgetSettings {
   rpmColorMid: string;
   rpmColorHigh: string;
   rpmColorLimit: string;
+  showPitPanel: boolean;
+  showRpmBar: boolean;
+  showTemps: boolean;
+  pitSpeedLimitOverride: number | null;
 }
 
 export type InputTraceBarMode = 'horizontal' | 'vertical' | 'hidden';
@@ -29,16 +33,15 @@ export interface RadarSettings {
   visibilityMode: RadarVisibilityMode;
   proximityThreshold: number;
   hideDelay: number;
-  barSpacing?: number;
   /** radar-bar: show both bars or only the side with a detected car */
   barDisplayMode?: RadarBarDisplayMode;
 }
 
-export type StandingsFilterMode = 'all';
-
 export interface StandingsWidgetSettings {
-  groupByClass: boolean;
-  filterMode: StandingsFilterMode;
+  enableClassCycling: boolean;
+  classCyclingToggleHotkey: string;
+  classPrevHotkey: string;
+  classNextHotkey: string;
   showPosChange: boolean;
   showColumnHeaders: boolean;
   showSessionHeader: boolean;
@@ -47,42 +50,50 @@ export interface StandingsWidgetSettings {
   showTotalDrivers: boolean;
   showBrand: boolean;
   showTire: boolean;
+  showIRatingBadge: boolean;
+  showClassBadge: boolean;
   /** Projected iR change column (Elo-based estimate, not real SDK data) */
   showIrChange: boolean;
   /** Player-only pit stop counter (counted on the frontend) */
   showPitStops: boolean;
+  showLapsCompleted: boolean;
+  abbreviateNames: boolean;
 }
 
 export interface RelativeWidgetSettings {
   showIRatingBadge: boolean;
   showClassBadge: boolean;
   showPitIndicator: boolean;
+  showTrendIcon: boolean;
   abbreviateNames: boolean;
 }
 
 export type TrackMapLegendPosition = 'left' | 'right' | 'hidden';
 export type TrackMapRotationMode = 'fixed' | 'heading-up';
+export type TrackMapLeaderLabelMode = 'all' | 'own-class' | 'none';
 
 export interface TrackMapWidgetSettings {
   showLegend: boolean;
   legendPosition: TrackMapLegendPosition;
   showSectors: boolean;
-  showCornerNumbers: boolean;
+  showSectorTimes: boolean;
+  showSectorsOnMap: boolean;
   rotationMode: TrackMapRotationMode;
+  playerDotColor: string;
+  showPlayerLabel: boolean;
+  leaderLabelMode: TrackMapLeaderLabelMode;
+  trackStrokePx: number;
+  trackBorderPx: number;
+  sectorStrokePx: number;
+  targetDotRadiusPx: number;
 }
 
 export type LinearMapOrientation = 'horizontal' | 'vertical';
 
 export interface LinearMapWidgetSettings {
   orientation: LinearMapOrientation;
-}
-
-export type FlagsVariant = 'overlay' | 'under-mirror' | 'standalone';
-
-export interface FlagsWidgetSettings {
-  variant: FlagsVariant;
-  cutoutWidth: number;
-  cutoutHeight: number;
+  playerDotColor: string;
+  targetDotRadiusPx: number;
 }
 
 export interface WeatherWidgetSettings {
@@ -91,6 +102,16 @@ export interface WeatherWidgetSettings {
   showTrackTemp: boolean;
   showWind: boolean;
   showHumidity: boolean;
+  showForecast: boolean;
+}
+
+export type LapTimesLayout = 'vertical' | 'horizontal';
+
+export interface LapTimesWidgetSettings {
+  showLastLap: boolean;
+  showBestLap: boolean;
+  showP1: boolean;
+  layout: LapTimesLayout;
 }
 
 export interface FuelWidgetSettings {
@@ -99,7 +120,38 @@ export interface FuelWidgetSettings {
   chartType: 'line' | 'bar';
 }
 
+export type LapDeltaLayout = 'vertical' | 'horizontal';
+export type LapDeltaReference = 'session_best' | 'personal_best';
+
+export interface LapDeltaWidgetSettings {
+  layout: LapDeltaLayout;
+  showSectorTimes: boolean;
+  reference: LapDeltaReference;
+}
+
+export interface TimerWidgetSettings {
+  showFlag: boolean;
+  showLaps: boolean;
+  showPosition: boolean;
+  showWallClock: boolean;
+  showSimTime: boolean;
+  showPcDate: boolean;
+  showSimDate: boolean;
+}
+
+export interface FlagDisplaySettings {
+  alwaysShow: boolean;
+  holdDuration: number;
+}
+
+export interface ChassisWidgetSettings {
+  showInboard: boolean;
+}
+
 export interface WidgetCustomSettings {
+  chassis?: ChassisWidgetSettings;
+  flags?: FlagDisplaySettings;
+  'flat-flags'?: FlagDisplaySettings;
   speed?: SpeedWidgetSettings;
   'input-trace'?: InputTraceSettings;
   'proximity-radar'?: RadarSettings;
@@ -108,9 +160,11 @@ export interface WidgetCustomSettings {
   relative?: RelativeWidgetSettings;
   'track-map'?: TrackMapWidgetSettings;
   'linear-map'?: LinearMapWidgetSettings;
-  flags?: FlagsWidgetSettings;
   weather?: WeatherWidgetSettings;
   fuel?: FuelWidgetSettings;
+  'lap-times'?: LapTimesWidgetSettings;
+  'lap-delta'?: LapDeltaWidgetSettings;
+  timer?: TimerWidgetSettings;
 }
 
 export interface WidgetConfig {
@@ -122,6 +176,8 @@ export interface WidgetConfig {
   y: number;
   width: number;
   height: number;
+  designWidth: number;
+  designHeight: number;
   backgroundColor: string;
   backgroundColorEdge: string;
   hotkey: string;

@@ -1,90 +1,42 @@
 @use '../../../styles/variables' as *;
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $space-md $space-md $space-xs;
-}
-
-.headerLabel {
-  font-family: $font-mono;
-  font-size: $font-size-xs;
-  color: $color-text-muted;
-  letter-spacing: 1px;
-}
-
 .delta {
   text-align: center;
   font-family: $font-widget;
   font-weight: 700;
-  font-size: 2.75rem;
+  font-size: $font-size-xl;
   line-height: 1;
   letter-spacing: -1px;
   font-variant-numeric: tabular-nums;
-  padding: $space-xs $space-md $space-sm;
+  padding: $space-sm $space-md $space-xs;
+}
+
+.deltaHorizontal {
+  padding-bottom: $space-sm;
 }
 
 .deltaAhead {
-  color: #22c55e;
+  color: $color-success;
 }
 
 .deltaBehind {
-  color: #ef4444;
+  color: $color-error;
 }
 
 .deltaNeutral {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
-.sectorGrid {
-  display: grid;
-  grid-template-columns: repeat(var(--sector-cols, 3), 1fr);
-  gap: 4px;
-  padding: 0 $space-md $space-md;
-  font-family: $font-mono;
+.sectorListVertical {
+  display: flex;
+  flex-direction: column;
+  gap: rem(2);
+  padding: 0 $space-sm $space-md;
 }
 
-.sectorCell {
-  background: rgba(0, 0, 0, 0.4);
-  padding: 4px 6px;
-  border-left: 3px solid transparent;
-
-  &.sectorAhead {
-    border-left-color: #22c55e;
-
-    .sectorValue {
-      color: #22c55e;
-    }
-  }
-
-  &.sectorBehind {
-    border-left-color: #ef4444;
-
-    .sectorValue {
-      color: #ef4444;
-    }
-  }
-
-  &.sectorNeutral {
-    border-left-color: #fbbf24;
-
-    .sectorValue {
-      color: #fbbf24;
-    }
-  }
-}
-
-.sectorLabel {
-  display: block;
-  font-size: 9px;
-  color: $color-text-muted;
-  letter-spacing: 1px;
-}
-
-.sectorValue {
-  display: block;
-  font-size: 13px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+.sectorListHorizontal {
+  display: flex;
+  flex-direction: row;
+  gap: rem(4);
+  flex: 1 1 0;
 }

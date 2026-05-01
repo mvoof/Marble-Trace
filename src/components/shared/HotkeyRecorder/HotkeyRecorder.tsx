@@ -10,10 +10,18 @@ interface HotkeyRecorderProps {
   label?: string;
 }
 
+const normalizeTauriKey = (e: React.KeyboardEvent): string => {
+  if (e.code === 'Enter') return 'RETURN';
+  if (e.code.startsWith('Key')) return e.key.toUpperCase();
+  if (e.code.startsWith('Digit')) return e.key;
+  return e.code.toUpperCase();
+};
+
 export const HotkeyRecorder = ({
   currentHotkey,
   onApply,
   onClear,
+  label,
 }: HotkeyRecorderProps) => {
   const [recording, setRecording] = useState(false);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
@@ -32,21 +40,20 @@ export const HotkeyRecorder = ({
       e.preventDefault();
       e.stopPropagation();
 
-      const parts: string[] = [];
+      if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) return;
 
+      const mainKey = normalizeTauriKey(e);
+      if (!mainKey) return;
+
+      const parts: string[] = [];
       if (e.ctrlKey) parts.push('Control');
       if (e.shiftKey) parts.push('Shift');
       if (e.altKey) parts.push('Alt');
       if (e.metaKey) parts.push('Super');
+      parts.push(mainKey);
 
-      const key = e.key;
-
-      if (!['Control', 'Shift', 'Alt', 'Meta'].includes(key)) {
-        const normalizedKey = key.length === 1 ? key.toUpperCase() : key;
-        parts.push(normalizedKey);
-        setPendingKey(parts.join('+'));
-        setRecording(false);
-      }
+      setPendingKey(parts.join('+'));
+      setRecording(false);
     },
     [recording]
   );
@@ -69,6 +76,7 @@ export const HotkeyRecorder = ({
 
   return (
     <div className={styles.container}>
+      {label && <span className={styles.label}>{label}</span>}
       <div className={styles.hotkeyDisplay}>
         <div className={styles.keyBadge}>{currentHotkey || 'None'}</div>
         {pendingKey && (
@@ -94,24 +102,12 @@ export const HotkeyRecorder = ({
           </Button>
         )}
         {pendingKey && (
-          <Button
-            size="small"
-            type="primary"
-            onClick={() => {
-              void applyHotkey();
-            }}
-          >
+          <Button size="small" type="primary" onClick={applyHotkey}>
             Apply
           </Button>
         )}
         {currentHotkey && !recording && (
-          <Button
-            size="small"
-            danger
-            onClick={() => {
-              void clearHotkey();
-            }}
-          >
+          <Button size="small" danger onClick={clearHotkey}>
             Clear
           </Button>
         )}

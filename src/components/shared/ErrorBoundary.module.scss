@@ -19,7 +19,7 @@
 
 .errorTitle {
   font-family: $font-widget;
-  font-size: 1.2rem;
+  font-size: rem(19);
   font-weight: 700;
   margin-bottom: $space-sm;
   text-transform: uppercase;
@@ -28,7 +28,7 @@
 
 .errorStack {
   font-family: $font-mono;
-  font-size: 0.75rem;
+  font-size: rem(12);
   line-height: 1.4;
   white-space: pre-wrap;
   word-wrap: break-word;

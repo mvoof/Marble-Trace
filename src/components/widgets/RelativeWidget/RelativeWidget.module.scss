@@ -3,13 +3,13 @@
 .relative {
   font-family: $font-mono;
   font-variant-numeric: tabular-nums;
+  font-size: 0.9375em;
   color: $color-text-primary;
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 6px;
   // Override WidgetPanel background so empty space below rows stays transparent
   background: transparent !important;
 }

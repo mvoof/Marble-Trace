@@ -1,0 +1,26 @@
+@use '../../../../styles/variables' as *;
+
+.carNumber {
+  font-family: $font-widget;
+  font-weight: 700;
+  fill: white;
+  pointer-events: none;
+}
+
+.youTag {
+  font-family: $font-widget;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  fill: black;
+  pointer-events: none;
+}
+
+.p1Tag {
+  font-family: $font-widget;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  fill: white;
+  pointer-events: none;
+}

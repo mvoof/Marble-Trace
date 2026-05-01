@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TrackMapWidget } from './TrackMapWidget';
-import { WidgetScaler } from '../../WidgetScaler';
+
 import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
 import type { TrackMapWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
@@ -30,8 +30,14 @@ const DEFAULT_SETTINGS: TrackMapWidgetSettings = {
   showLegend: true,
   legendPosition: 'right',
   showSectors: true,
-  showCornerNumbers: true,
   rotationMode: 'fixed',
+  playerDotColor: '#ffffff',
+  showPlayerLabel: true,
+  leaderLabelMode: 'all',
+  trackStrokePx: 10,
+  trackBorderPx: 3,
+  sectorStrokePx: 6,
+  targetDotRadiusPx: 10,
 };
 
 interface TrackMapStoryArgs extends TrackMapWidgetSettings {
@@ -81,17 +87,16 @@ const TrackMapWidgetStory = ({
 }: TrackMapStoryArgs) => {
   const cars = computeCars(snap);
   const classColors = computeClassColors(snap);
-  const playerYaw =
-    settings.rotationMode === 'heading-up'
-      ? (snap.carDynamics?.yaw ?? undefined)
-      : undefined;
 
   return (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-      <WidgetScaler
-        designWidth={DESIGN_WIDTH}
-        designHeight={DESIGN_HEIGHT}
-        background="transparent"
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'transparent',
+          overflow: 'hidden',
+        }}
       >
         <TrackMapWidget
           cars={cars}
@@ -99,13 +104,15 @@ const TrackMapWidgetStory = ({
           trackData={realTrack}
           trackName="Lime Rock Park"
           isRecording={false}
+          isForceStartPending={false}
+          isWaitingForSF={false}
           recordingProgress={0}
-          playerYaw={playerYaw}
           settings={settings}
           sectors={snap.sessionInfo?.SplitTimeInfo?.Sectors}
           sectorTimes={MOCK_SECTOR_TIMES}
+          currentSectorIdx={1}
         />
-      </WidgetScaler>
+      </div>
     </div>
   );
 };
@@ -140,10 +147,6 @@ export const NoSectors: Story = {
   args: { showSectors: false },
 };
 
-export const NoCornerNumbers: Story = {
-  args: { showCornerNumbers: false },
-};
-
 export const HeadingUp: Story = {
   args: { rotationMode: 'heading-up' },
 };
@@ -151,10 +154,13 @@ export const HeadingUp: Story = {
 export const Recording: Story = {
   render: ({ snapshot: snap, ...settings }) => (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-      <WidgetScaler
-        designWidth={DESIGN_WIDTH}
-        designHeight={DESIGN_HEIGHT}
-        background="transparent"
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: 'transparent',
+          overflow: 'hidden',
+        }}
       >
         <TrackMapWidget
           cars={computeCars(snap)}
@@ -162,13 +168,14 @@ export const Recording: Story = {
           trackData={null}
           trackName="Lime Rock Park"
           isRecording={true}
+          isForceStartPending={false}
+          isWaitingForSF={false}
           recordingProgress={0.42}
-          playerYaw={undefined}
           settings={settings}
           sectors={undefined}
           sectorTimes={[]}
         />
-      </WidgetScaler>
+      </div>
     </div>
   ),
 };

@@ -22,9 +22,17 @@
 }
 
 .td {
-  padding: 0.3em 0.65em;
+  padding: 0.25em 0.35em;
   vertical-align: middle;
   white-space: nowrap;
+
+  &:first-child {
+    padding-left: var(--widget-pad-x);
+  }
+
+  &:last-child {
+    padding-right: var(--widget-pad-x);
+  }
 }
 
 .tdCenter {
@@ -42,7 +50,7 @@
 }
 
 .posCellPlayer {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
 .posCellSmall {
@@ -51,7 +59,7 @@
 
 // Position change
 .posChangeUp {
-  color: #22c55e;
+  color: $color-success;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,7 +69,7 @@
 }
 
 .posChangeDown {
-  color: #ef4444;
+  color: $color-error;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,10 +86,14 @@
 }
 
 // Car number
+.tdCarNumber {
+  padding-left: 0.5em;
+}
+
 .carNumber {
   font-family: $font-mono;
   font-size: 0.875em;
-  color: $color-text-muted;
+  color: $color-text-primary;
 }
 
 .carNumberPlayer {
@@ -97,7 +109,7 @@
   display: flex;
   align-items: center;
   gap: 0.5em;
-  font-weight: 600;
+  font-weight: 700;
   overflow: hidden;
 }
 
@@ -110,7 +122,7 @@
 }
 
 .driverNamePlayer {
-  color: #fbbf24;
+  color: $color-caution;
 }
 
 // Class badge — block fill for table column
@@ -124,88 +136,32 @@
 .brandLabel {
   font-family: $font-mono;
   font-size: 0.75em;
-  color: $color-text-muted;
+  color: $color-text-secondary;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-// Tire badge
-.tireBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.4em;
-  height: 1.4em;
-  border-radius: 50%;
-  font-weight: 800;
+.ratingBadge {
   font-size: 0.75em;
-  font-family: $font-mono;
-  border: 1px solid;
-}
-
-.tireEmpty {
-  color: rgba(113, 113, 122, 0.6);
-  font-size: 0.8125em;
-}
-
-.tireSoft {
-  color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.5);
-  background: rgba(239, 68, 68, 0.1);
-}
-
-.tireMed {
-  color: #eab308;
-  border-color: rgba(234, 179, 8, 0.5);
-  background: rgba(234, 179, 8, 0.1);
-}
-
-.tireHard {
-  color: #e5e7eb;
-  border-color: rgba(161, 161, 170, 0.5);
-  background: rgba(161, 161, 170, 0.1);
-}
-
-.tireWet {
-  color: #60a5fa;
-  border-color: rgba(96, 165, 250, 0.5);
-  background: rgba(96, 165, 250, 0.1);
-}
-
-.licBadge {
-  font-size: 0.75em;
-}
-
-.licWrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25em;
-}
-
-.irating {
-  font-size: 0.875em;
-  font-family: $font-mono;
-  color: $color-text-muted;
-  width: 2.25em;
-  text-align: right;
 }
 
 // iR change
 .irChange {
-  font-size: 0.6875em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75em;
   font-family: $font-mono;
   font-weight: 700;
-  width: 1.5em;
-  text-align: left;
+  min-width: 2.75em;
 }
 
 .irChangeUp {
-  color: #22c55e;
+  color: $color-success;
 }
 
 .irChangeDown {
-  color: #ef4444;
+  color: $color-error;
 }
 
 // Incidents
@@ -216,7 +172,7 @@
 }
 
 .incidentsNearDQ {
-  color: #ef4444;
+  color: $color-error;
   font-weight: 700;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -244,6 +200,13 @@
   color: $color-text-primary;
 }
 
+.lapsCompleted {
+  font-family: $font-mono;
+  font-size: 0.8125em;
+  text-align: center;
+  color: $color-text-primary;
+}
+
 // Gap column
 .gapLeader {
   color: $color-text-primary;
@@ -259,11 +222,13 @@
 .lastLap {
   font-family: $font-mono;
   font-size: 0.8125em;
-  color: $color-text-muted;
+  font-weight: 900;
+  color: $color-text-primary;
 }
 
 .bestLap {
   font-family: $font-mono;
   font-size: 0.8125em;
+  font-weight: 900;
   color: rgba(192, 132, 252, 0.85);
 }

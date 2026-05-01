@@ -1,18 +1,19 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { TRACK_SURFACE_IN_PIT_STALL, formatIRating } from '../../widget-utils';
-
-const abbreviateName = (fullName: string): string => {
-  const parts = fullName.trim().split(/\s+/);
-  if (parts.length < 2) return fullName.toUpperCase();
-  return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`.toUpperCase();
-};
-import { PitBadge, ClassBadge, LicenseBadge } from '../../primitives';
+import { TRACK_SURFACE_IN_PIT_STALL } from '../../widget-utils';
+import { PitBadge, ClassBadge, RatingBadge } from '../../primitives';
+import { computeRelativeGap } from '../relative-utils';
 import type { RelativeWidgetSettings } from '../../../../types/widget-settings';
 import type { DriverEntry } from '../../../../types/bindings';
 
 import styles from './DriverRow.module.scss';
+
+const abbreviateName = (fullName: string): string => {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length < 2) return fullName;
+  return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
+};
 
 interface DriverRowProps {
   driver: DriverEntry;
@@ -26,8 +27,7 @@ export const DriverRow = observer(
     const isPit =
       driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 
-    const relativeGap =
-      driver.isPlayer || !player ? 0 : driver.f2Time - player.f2Time;
+    const relativeGap = player ? computeRelativeGap(driver, player) : 0;
 
     const f2TimeStr =
       relativeGap > 0
@@ -46,7 +46,11 @@ export const DriverRow = observer(
 
     let trendIcon: React.ReactNode = null;
 
-    if (!driver.isPlayer && Math.abs(trendDelta) > 0.00005) {
+    if (
+      settings.showTrendIcon &&
+      !driver.isPlayer &&
+      Math.abs(trendDelta) > 0.00005
+    ) {
       trendIcon =
         trendDelta < 0 ? (
           <ChevronUp size={16} className={styles.trendUp} />
@@ -65,18 +69,26 @@ export const DriverRow = observer(
 
     return (
       <div className={rowClass} data-relative-row>
-        <div
-          className={styles.classStripe}
-          style={{ backgroundColor: driver.carClassColor }}
-        />
-
         <div className={styles.posBlock}>
           <span
             className={`${styles.driverPosition} ${driver.isPlayer ? styles.driverPositionPlayer : ''}`}
           >
             {driver.position}
           </span>
-          <span className={styles.driverCarNumber}>#{driver.carNumber}</span>
+        </div>
+
+        <div
+          className={styles.carNumberCell}
+          style={{
+            borderLeft: `4px solid ${driver.carClassColor}`,
+            background: `linear-gradient(to right, ${driver.carClassColor}33, transparent)`,
+          }}
+        >
+          <span
+            className={`${styles.driverCarNumber} ${driver.isPlayer ? styles.driverCarNumberPlayer : ''}`}
+          >
+            #{driver.carNumber}
+          </span>
         </div>
 
         <div className={styles.infoBlock}>
@@ -85,35 +97,36 @@ export const DriverRow = observer(
           >
             {settings.abbreviateNames
               ? abbreviateName(driver.userName)
-              : driver.userName.toUpperCase()}
+              : driver.userName}
           </span>
         </div>
 
-        <div className={styles.details}>
+        <div className={styles.colPit}>
           {settings.showPitIndicator && isPit && <PitBadge />}
+        </div>
 
+        <div className={styles.colClass}>
           {settings.showClassBadge && (
             <ClassBadge
               color={driver.carClassColor}
               label={driver.carClassShortName}
+              className={styles.badgeFull}
             />
           )}
+        </div>
 
+        <div className={styles.colLic}>
           {settings.showIRatingBadge && (
-            <>
-              <LicenseBadge
-                licString={driver.licString}
-                className={styles.licBadge}
-              />
-              <span className={styles.irInfo}>
-                {formatIRating(driver.iRating)}
-              </span>
-            </>
+            <RatingBadge
+              licString={driver.licString}
+              iRating={driver.iRating}
+              className={styles.badgeFull}
+            />
           )}
         </div>
 
         <div className={styles.f2Block}>
-          {trendIcon}
+          <span className={styles.trendSlot}>{trendIcon}</span>
           <span className={`${styles.f2Time} ${f2Class}`}>
             {driver.isPlayer ? '-' : f2TimeStr}
           </span>

@@ -17,7 +17,9 @@ import type {
   ProximityFrame,
   SessionFrame,
   SessionInfo,
+  WeatherForecastEntry,
 } from '../../types/bindings';
+import type { CarPositionsFrame } from './telemetry.store';
 import { debug } from '../../utils/debug';
 
 import { telemetryStore } from './telemetry.store';
@@ -192,6 +194,16 @@ class TelemetryConnection {
     );
 
     this.unlistens.push(
+      await listen<CarPositionsFrame>(
+        'iracing://telemetry/car-positions',
+        (event) => {
+          if (this.initId !== guardId) return;
+          telemetryStore.updateCarPositions(event.payload);
+        }
+      )
+    );
+
+    this.unlistens.push(
       await listen<CarStatusFrame>(
         'iracing://telemetry/car-status',
         (event) => {
@@ -295,6 +307,16 @@ class TelemetryConnection {
         if (this.initId !== guardId) return;
         computedStore.updateLapDelta(event.payload);
       })
+    );
+
+    this.unlistens.push(
+      await listen<WeatherForecastEntry[]>(
+        'iracing://weather-forecast',
+        (event) => {
+          if (this.initId !== guardId) return;
+          telemetryStore.updateWeatherForecast(event.payload);
+        }
+      )
     );
   }
 

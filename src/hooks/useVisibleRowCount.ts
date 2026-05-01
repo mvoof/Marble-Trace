@@ -58,7 +58,14 @@ export const useVisibleRowCount = <T extends HTMLElement>(
       rafId = requestAnimationFrame(measure);
     };
 
-    measure();
+    scheduleMeasure();
+
+    // Fallback: if the first rAF fires before layout is complete (height = 0),
+    // retry at 100ms and 400ms after mount so the count is always correct on
+    // cold start without needing a manual resize.
+    const t1 = setTimeout(scheduleMeasure, 100);
+    const t2 = setTimeout(scheduleMeasure, 400);
+
     const ro = new ResizeObserver(scheduleMeasure);
     ro.observe(el);
     // Root font-size also changes when WidgetWrapper rescales — observe that.
@@ -71,6 +78,8 @@ export const useVisibleRowCount = <T extends HTMLElement>(
     mo.observe(el, { childList: true, subtree: false });
     return () => {
       cancelAnimationFrame(rafId);
+      clearTimeout(t1);
+      clearTimeout(t2);
       ro.disconnect();
       rootRo.disconnect();
       mo.disconnect();

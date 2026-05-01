@@ -6,24 +6,16 @@ import {
   TRACK_SURFACE_OFF_TRACK,
   NEAR_DQ_INCIDENT_THRESHOLD,
 } from '../../widget-utils';
-import { PitBadge, ClassBadge, LicenseBadge } from '../../primitives';
+import { PitBadge, ClassBadge, RatingBadge, TireBadge } from '../../primitives';
 import type { DriverEntry } from '../../../../types/bindings';
 import type { StandingsWidgetSettings } from '../../../../types/widget-settings';
 
 import styles from './DriverRow.module.scss';
 
-const TIRE_CLASS_MAP: Record<string, string> = {
-  S: styles.tireSoft,
-  M: styles.tireMed,
-  H: styles.tireHard,
-  W: styles.tireWet,
-};
-
-const TireBadge = ({ tire }: { tire: string }) => {
-  if (!tire) return <span className={styles.tireEmpty}>-</span>;
-  const code = tire.charAt(0).toUpperCase();
-  const cls = TIRE_CLASS_MAP[code] ?? styles.tireMed;
-  return <span className={`${styles.tireBadge} ${cls}`}>{code}</span>;
+const abbreviateName = (fullName: string): string => {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length < 2) return fullName.toUpperCase();
+  return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`.toUpperCase();
 };
 
 const PosChange = ({
@@ -80,20 +72,14 @@ const IrChangeCell = ({ delta }: { delta: number | undefined }) => {
 
   return (
     <span className={cls}>
-      {delta > 0 ? '▲' : '▼'}
+      {delta > 0 ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
       {Math.abs(delta)}
     </span>
   );
 };
 
-const formatIRating = (ir: number): string => {
-  if (ir >= 1000) return `${(ir / 1000).toFixed(1)}k`;
-  return ir.toString();
-};
-
 interface DriverRowProps {
   driver: DriverEntry;
-  showGroupHeaders: boolean;
   settings: StandingsWidgetSettings;
   irDelta: number | undefined;
   playerPitStops: number;
@@ -101,7 +87,6 @@ interface DriverRowProps {
 
 export const DriverRow = ({
   driver,
-  showGroupHeaders,
   settings,
   irDelta,
   playerPitStops,
@@ -110,10 +95,14 @@ export const DriverRow = ({
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
   const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
   const nearDQ = driver.incidents >= NEAR_DQ_INCIDENT_THRESHOLD;
-  const pos = showGroupHeaders ? driver.classPosition : driver.position;
-  const isLeader = showGroupHeaders
-    ? driver.classPosition === 1
-    : driver.position === 1;
+
+  const pos = settings.enableClassCycling
+    ? driver.classPosition
+    : driver.position;
+  const startPos = settings.enableClassCycling
+    ? driver.startPosClass
+    : driver.startPosOverall;
+  const isLeader = pos === 1;
 
   const rowClass = [
     styles.driverRow,
@@ -127,24 +116,19 @@ export const DriverRow = ({
     <tr className={rowClass} data-driver-row>
       <td className={styles.td}>
         <span
-          className={`${styles.posCell} ${driver.isPlayer ? styles.posCellPlayer : ''} ${showGroupHeaders ? styles.posCellSmall : ''}`}
+          className={`${styles.posCell} ${driver.isPlayer ? styles.posCellPlayer : ''}`}
         >
           {pos}
         </span>
       </td>
 
-      {settings.showPosChange && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
-          <PosChange
-            position={pos}
-            startPos={
-              showGroupHeaders ? driver.startPosClass : driver.startPosOverall
-            }
-          />
-        </td>
-      )}
-
-      <td className={styles.td}>
+      <td
+        className={`${styles.td} ${styles.tdCarNumber}`}
+        style={{
+          borderLeft: `4px solid ${driver.carClassColor}`,
+          background: `linear-gradient(to right, ${driver.carClassColor}33, transparent)`,
+        }}
+      >
         <span
           className={`${styles.carNumber} ${driver.isPlayer ? styles.carNumberPlayer : ''}`}
         >
@@ -157,7 +141,9 @@ export const DriverRow = ({
           <span
             className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
           >
-            {driver.userName}
+            {settings.abbreviateNames
+              ? abbreviateName(driver.userName)
+              : driver.userName}
           </span>
 
           {isPit && <PitBadge />}
@@ -178,7 +164,7 @@ export const DriverRow = ({
         </td>
       )}
 
-      {!showGroupHeaders && (
+      {!settings.enableClassCycling && settings.showClassBadge && (
         <td className={`${styles.td} ${styles.tdCenter}`}>
           <ClassBadge
             color={driver.carClassColor}
@@ -188,17 +174,15 @@ export const DriverRow = ({
         </td>
       )}
 
-      <td className={`${styles.td} ${styles.tdCenter}`}>
-        <span className={styles.licWrap}>
-          <LicenseBadge
+      {settings.showIRatingBadge && (
+        <td className={`${styles.td} ${styles.tdCenter}`}>
+          <RatingBadge
             licString={driver.licString}
-            className={styles.licBadge}
+            iRating={driver.iRating}
+            className={styles.ratingBadge}
           />
-          <span className={styles.irating}>
-            {formatIRating(driver.iRating)}
-          </span>
-        </span>
-      </td>
+        </td>
+      )}
 
       {settings.showIrChange && (
         <td className={`${styles.td} ${styles.tdCenter}`}>
@@ -223,6 +207,18 @@ export const DriverRow = ({
           ) : (
             <span className={styles.pitStops}>—</span>
           )}
+        </td>
+      )}
+
+      {settings.showLapsCompleted && (
+        <td className={`${styles.td} ${styles.tdCenter}`}>
+          <span className={styles.lapsCompleted}>{driver.lap}</span>
+        </td>
+      )}
+
+      {settings.showPosChange && (
+        <td className={`${styles.td} ${styles.tdCenter}`}>
+          <PosChange position={pos} startPos={startPos} />
         </td>
       )}
 

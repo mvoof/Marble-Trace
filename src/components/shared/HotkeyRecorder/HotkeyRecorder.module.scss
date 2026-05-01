@@ -3,42 +3,50 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: rem(12);
+}
+
+.label {
+  font-size: rem(12);
+  font-weight: 500;
+  color: $sys-text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .hotkeyDisplay {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: rem(12);
 }
 
 .keyBadge {
   background: $sys-bg-main;
   border: 1px solid $sys-border-main;
   color: $sys-text-primary;
-  padding: 6px 16px;
+  padding: rem(6) rem(16);
   border-radius: 4px;
-  font-size: 13px;
+  font-size: rem(13);
   font-family: $font-mono;
-  min-width: 60px;
+  min-width: rem(60);
   text-align: center;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .arrow {
   color: $sys-text-muted;
-  font-size: 14px;
+  font-size: rem(14);
 }
 
 .pendingBadge {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
-  padding: 6px 16px;
+  padding: rem(6) rem(16);
   border-radius: 4px;
-  font-size: 13px;
+  font-size: rem(13);
   font-family: $font-mono;
-  min-width: 60px;
+  min-width: rem(60);
   text-align: center;
   animation: pulse 1.5s infinite;
 }
@@ -60,7 +68,7 @@
   border: 1px solid $sys-accent !important;
   color: $sys-accent !important;
   font-family: $font-mono;
-  width: 200px;
+  width: rem(200);
 
   &::placeholder {
     color: rgba(224, 224, 224, 0.4);

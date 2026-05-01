@@ -24,7 +24,7 @@
 /// - `iracing://computed/fuel` — FuelComputedFrame (4Hz)
 /// - `iracing://computed/standings` — DriverEntriesFrame (10Hz)
 /// - `iracing://computed/pit-stops` — PitStopsFrame (4Hz)
-/// - `iracing://computed/lap-delta` — LapDeltaFrame (10Hz)
+/// - `iracing://computed/lap-delta` — LapDeltaFrame (60Hz)
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
@@ -32,16 +32,18 @@ use std::time::Duration;
 
 use futures::StreamExt;
 use pitwall::{Pitwall, SessionInfo, UpdateRate};
+use std::panic::AssertUnwindSafe;
 use tauri::{AppHandle, Emitter, State};
 use tokio::time::sleep;
 use tracing::{debug, info, warn};
 
 use super::frames::{
-    AllFieldsFrame, CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame,
-    EnvironmentFrame, LapTimingFrame, SessionFrame,
+    AllFieldsFrame, CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarPositionsFrame,
+    CarStatusFrame, ChassisFrame, EnvironmentFrame, LapTimingFrame, SessionFrame,
 };
+use super::weather_forecast::parse_weather_forecast;
 use crate::computations::{
-    fuel, lap_delta, lap_delta::LapDeltaState, pit_stops::PitStopsFrame, proximity, standings, standings::StandingsState,
+    fuel, fuel::FuelState, lap_delta, lap_delta::LapDeltaState, pit_stops::PitStopsFrame, proximity, standings, standings::StandingsState,
 };
 
 /// Shared state for the iRacing telemetry connection.
@@ -72,6 +74,9 @@ pub struct TelemetryState {
 
     /// Cached track length in meters.
     pub track_length_m: Arc<Mutex<Option<f32>>>,
+
+    /// Stateful fuel computation (lap history, avg, session tracking).
+    pub fuel_state: Arc<Mutex<FuelState>>,
 }
 
 #[tauri::command]
@@ -116,6 +121,7 @@ pub async fn start_telemetry_stream(
     let standings_state = state.standings_state.clone();
     let pit_warning_laps = state.pit_warning_laps.clone();
     let track_length_m = state.track_length_m.clone();
+    let fuel_state = state.fuel_state.clone();
     let app_clone = app.clone();
 
     tokio::spawn(async move {
@@ -135,16 +141,30 @@ pub async fn start_telemetry_stream(
 
                 match Pitwall::connect().await {
                     Ok(conn) => break conn,
-                    Err(_) => {
-                        sleep(Duration::from_secs(3)).await;
+                    Err(e) => {
+                        debug!("iRacing connect failed: {e}");
+                        sleep(Duration::from_secs(1)).await;
                     }
                 }
             };
 
-            info!("Connected to iRacing successfully");
-            app_clone.emit("iracing://status", "connected").ok();
+            // Guard: catch subscribe() panic if schema is incomplete (e.g. iRacing still initializing).
+            // A panic inside tokio::spawn silently kills this task, so we catch it and retry instead.
+            let subscribe_result = std::panic::catch_unwind(AssertUnwindSafe(|| {
+                connection.subscribe::<AllFieldsFrame>(UpdateRate::Native)
+            }));
 
-            let telemetry_stream = connection.subscribe::<AllFieldsFrame>(UpdateRate::Native);
+            let telemetry_stream = match subscribe_result {
+                Ok(stream) => stream,
+                Err(_) => {
+                    warn!("subscribe() panicked — schema incomplete, retrying in 1s...");
+                    sleep(Duration::from_secs(1)).await;
+                    continue;
+                }
+            };
+
+            info!("Shared memory mapped, waiting for active session...");
+
             let session_stream = connection.session_updates();
 
             debug!("Subscribed to telemetry and session streams");
@@ -186,6 +206,16 @@ pub async fn start_telemetry_stream(
                     if let Err(e) = app_session.emit("iracing://session-info", &*session) {
                         warn!("Failed to emit session info: {}", e);
                     }
+
+                    let forecast = parse_weather_forecast(&session.weekend_info.unknown_fields);
+                    if !forecast.is_empty() {
+                        debug!("Weather forecast parsed successfully, {} entries", forecast.len());
+                        if let Err(e) = app_session.emit("iracing://weather-forecast", &forecast) {
+                            warn!("Failed to emit weather forecast: {}", e);
+                        }
+                    } else {
+                        debug!("Weather forecast empty after parsing from unknown_fields");
+                    }
                 }
 
                 debug!("Session stream ended");
@@ -209,8 +239,9 @@ pub async fn start_telemetry_stream(
                                 speed = frame.speed,
                                 rpm = frame.rpm,
                                 gear = frame.gear,
-                                "First telemetry frame received"
+                                "Connected to iRacing — first telemetry frame received"
                             );
+                            app_clone.emit("iracing://status", "connected").ok();
                         }
 
                         emit_domain_frames(
@@ -226,6 +257,7 @@ pub async fn start_telemetry_stream(
                             &standings_state,
                             &pit_warning_laps,
                             &track_length_m,
+                            &fuel_state,
                         );
                     }
                     Ok(None) => {
@@ -246,7 +278,6 @@ pub async fn start_telemetry_stream(
                             break;
                         } else {
                             debug!("No telemetry for 3s, but process is running. Waiting...");
-                            app_clone.emit("iracing://status", "waiting").ok();
                         }
                     }
                 }
@@ -277,28 +308,7 @@ pub async fn start_telemetry_stream(
             if !running.load(Ordering::SeqCst) {
                 break;
             }
-
-            app_clone.emit("iracing://status", "waiting").ok();
-
-            loop {
-                if !running.load(Ordering::SeqCst) {
-                    break;
-                }
-
-                let is_running = std::process::Command::new("tasklist")
-                    .arg("/FI")
-                    .arg("IMAGENAME eq iRacingSim64.exe")
-                    .output()
-                    .map(|o| String::from_utf8_lossy(&o.stdout).contains("iRacingSim64.exe"))
-                    .unwrap_or(false);
-
-                if is_running {
-                    debug!("iRacing process detected, attempting reconnect...");
-                    break;
-                }
-
-                sleep(Duration::from_secs(3)).await;
-            }
+            // Outer loop continues: retries Pitwall::connect() until iRacing is back
         }
     });
 
@@ -351,6 +361,7 @@ fn emit_domain_frames(
     standings_state: &Mutex<StandingsState>,
     pit_warning_laps_atomic: &AtomicU32,
     track_length_m: &Mutex<Option<f32>>,
+    fuel_state: &Mutex<FuelState>,
 ) {
     // 60 Hz — raw frames
     if let Err(e) = app.emit(
@@ -366,16 +377,30 @@ fn emit_domain_frames(
         warn!("Failed to emit car inputs: {}", e);
     }
 
-    let needs_computed = tick.is_multiple_of(6) || tick.is_multiple_of(15) || tick == 1;
-    let session_snapshot = if needs_computed {
-        last_session_info
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .clone()
-    } else {
-        None
-    };
+    // Clone session_info Arc — cheap enough to do at 60Hz for accurate computations
+    let session_snapshot = last_session_info
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .clone();
     let session_info = session_snapshot.as_deref();
+
+    // Compute stateful data at 60Hz for maximum precision (especially sector timing)
+    let lap_delta_frame = session_info.map(|session| lap_delta::compute(frame, session, lap_delta_state));
+
+    // 60 Hz — emit lap delta for smooth live delta updates
+    if let Some(ref ldf) = lap_delta_frame {
+        if let Err(e) = app.emit("iracing://computed/lap-delta", ldf) {
+            warn!("Failed to emit lap delta: {}", e);
+        }
+    }
+
+    // 60 Hz — lightweight car positions for smooth map/relative rendering
+    if let Err(e) = app.emit(
+        "iracing://telemetry/car-positions",
+        &CarPositionsFrame::from(frame),
+    ) {
+        warn!("Failed to emit car positions: {}", e);
+    }
 
     // 10 Hz — also fire on first frame so widgets populate immediately
     if tick.is_multiple_of(6) || tick == 1 {
@@ -394,7 +419,10 @@ fn emit_domain_frames(
 
         // Computed: proximity & standings (10 Hz)
         if let Some(session) = session_info {
-            let track_length = track_length_m.lock().unwrap_or_else(|e| e.into_inner()).unwrap_or(0.0);
+            let track_length = track_length_m
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .unwrap_or(0.0);
             let proximity = proximity::compute(frame, session, track_length);
             if let Err(e) = app.emit("iracing://computed/proximity", &proximity) {
                 warn!("Failed to emit proximity: {}", e);
@@ -404,15 +432,12 @@ fn emit_domain_frames(
                 .lock()
                 .unwrap_or_else(|e| e.into_inner())
                 .clone();
-            let standings_frame = standings::compute(frame, session, &start_pos_snapshot, true, standings_state);
+            let standings_frame =
+                standings::compute(frame, session, &start_pos_snapshot, true, standings_state);
             if let Err(e) = app.emit("iracing://computed/standings", &standings_frame) {
                 warn!("Failed to emit standings: {}", e);
             }
 
-            let lap_delta_frame = lap_delta::compute(frame, session, lap_delta_state);
-            if let Err(e) = app.emit("iracing://computed/lap-delta", &lap_delta_frame) {
-                warn!("Failed to emit lap delta: {}", e);
-            }
         }
     }
 
@@ -428,9 +453,19 @@ fn emit_domain_frames(
         // Computed: fuel & pit stops (4 Hz)
         if let Some(session) = session_info {
             let pit_warning_laps = f32::from_bits(pit_warning_laps_atomic.load(Ordering::Relaxed));
-            if let Some(fuel_frame) =
-                fuel::compute(frame, session, frame.session_num, pit_warning_laps)
+
             {
+                let mut state = fuel_state.lock().unwrap_or_else(|e| e.into_inner());
+                let current_lap = frame.lap.unwrap_or(-1);
+                let session_num = frame.session_num.unwrap_or(-1);
+                state.update(current_lap, frame.fuel_level, session_num);
+            }
+
+            let fuel_frame = {
+                let state = fuel_state.lock().unwrap_or_else(|e| e.into_inner());
+                fuel::compute(frame, session, frame.session_num, pit_warning_laps, &state)
+            };
+            if let Some(fuel_frame) = fuel_frame {
                 if let Err(e) = app.emit("iracing://computed/fuel", &fuel_frame) {
                     warn!("Failed to emit fuel: {}", e);
                 }

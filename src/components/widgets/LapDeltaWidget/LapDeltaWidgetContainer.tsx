@@ -1,38 +1,53 @@
+import { useEffect, useRef } from 'react';
+import { autorun } from 'mobx';
 import { observer } from 'mobx-react-lite';
 
-import { computedStore, telemetryStore } from '../../../store/iracing';
+import { computedStore } from '../../../store/iracing';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
 import { formatDelta, getDeltaState } from './lap-delta-utils';
-import { LapDeltaWidget } from './LapDeltaWidget';
+import { LapDeltaWidget, type DeltaDisplayHandle } from './LapDeltaWidget';
 
 export const LapDeltaWidgetContainer = observer(() => {
-  const lap = telemetryStore.lapTiming;
-  const driverInfo = telemetryStore.driverInfo;
-  const carIdx = telemetryStore.carIdx;
-  const session = telemetryStore.session;
-  const sessionInfo = telemetryStore.sessionInfo;
-  const sessions = sessionInfo?.SessionInfo?.Sessions ?? [];
-  const sessionNum = session?.session_num ?? null;
+  const { layout, showSectorTimes, reference } =
+    widgetSettingsStore.getLapDeltaSettings();
 
-  const current = lap?.lap_current_lap_time ?? null;
-  const best = lap?.lap_best_lap_time ?? null;
-  const hasDelta = current !== null && best !== null && best > 0;
-  const delta = hasDelta ? current - best : null;
+  const isSession = reference === 'session_best';
+  const delta = isSession
+    ? (computedStore.lapDelta?.sessionBestTotal ?? 0)
+    : (computedStore.lapDelta?.personalBestTotal ?? 0);
+  const sectorDeltas = isSession
+    ? (computedStore.lapDelta?.sessionBestSectors ?? [])
+    : (computedStore.lapDelta?.personalBestSectors ?? []);
+  const sectorTimes = computedStore.lapDelta?.sectorTimes ?? [];
 
-  const playerCarIdx = driverInfo?.DriverCarIdx ?? null;
-  const currentLap =
-    playerCarIdx !== null ? (carIdx?.car_idx_lap[playerCarIdx] ?? null) : null;
-  const totalLaps =
-    sessionNum !== null ? (sessions[sessionNum]?.SessionLaps ?? null) : null;
+  const widgetRef = useAutoSizeWidget('lap-delta');
+  const deltaDisplayRef = useRef<DeltaDisplayHandle | null>(null);
 
-  const sectorDeltas = computedStore.lapDelta?.sectorDeltas ?? [];
+  useEffect(() => {
+    return autorun(() => {
+      const isSessionLive =
+        widgetSettingsStore.getLapDeltaSettings().reference === 'session_best';
+      const rawDelta = isSessionLive
+        ? (computedStore.lapDelta?.sessionBestTotal ?? 0)
+        : (computedStore.lapDelta?.personalBestTotal ?? 0);
+      deltaDisplayRef.current?.update(
+        formatDelta(rawDelta),
+        getDeltaState(rawDelta)
+      );
+    });
+  }, []);
 
   return (
     <LapDeltaWidget
-      deltaFormatted={formatDelta(delta)}
-      deltaState={getDeltaState(delta)}
-      currentLap={currentLap}
-      totalLaps={totalLaps}
+      ref={widgetRef}
+      initialDeltaFormatted={formatDelta(delta)}
+      initialDeltaState={getDeltaState(delta)}
       sectorDeltas={sectorDeltas}
+      sectorTimes={sectorTimes}
+      layout={layout}
+      showSectorTimes={showSectorTimes}
+      deltaDisplayRef={deltaDisplayRef}
     />
   );
 });
