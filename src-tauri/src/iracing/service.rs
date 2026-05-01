@@ -33,6 +33,7 @@ use std::time::Duration;
 use futures::StreamExt;
 use pitwall::{Pitwall, SessionInfo, UpdateRate};
 use serde_json::Value as JsonValue;
+use serde_yaml_ng;
 use std::panic::AssertUnwindSafe;
 use tauri::{AppHandle, Emitter, State};
 use tokio::time::sleep;
@@ -107,11 +108,79 @@ pub async fn get_last_session_info(
 
     match lock.as_deref() {
         None => Ok(None),
-        Some(session) => match serde_json::to_value(session) {
-            Ok(raw) => Ok(Some(sanitize_json(raw))),
-            Err(e) => Err(format!("Failed to serialize session info: {e}")),
-        },
+        Some(session) => {
+            // Use YAML as intermediate to safely handle NaNs
+            match serde_yaml_ng::to_value(session) {
+                Ok(yaml_val) => Ok(Some(yaml_to_json(yaml_val))),
+                Err(e) => Err(format!("Failed to serialize session info to YAML value: {e}")),
+            }
+        }
     }
+}
+
+/// Preprocess iRacing YAML to fix compatibility issues with unescaped characters.
+/// Based on iRacing forum discussion: <https://forums.iracing.com/discussion/comment/374646#Comment_374646>
+fn preprocess_yaml(yaml: &str) -> String {
+    const PROBLEMATIC_KEYS: &[&str] = &[
+        "AbbrevName:",
+        "TeamName:",
+        "UserName:",
+        "Initials:",
+        "DriverSetupName:",
+        "CarDesignStr:",
+        "HelmetDesignStr:",
+        "SuitDesignStr:",
+        "CarNumberDesignStr:",
+        "LicString:",
+        "LicColor:",
+        "ClubName:",
+        "CountryCode:",
+        "CarClassShortName:",
+    ];
+
+    // First pass: Remove all control characters (except \n, \r, \t)
+    let mut cleaned = String::with_capacity(yaml.len());
+    for ch in yaml.chars() {
+        if ch.is_control() && ch != '\n' && ch != '\r' && ch != '\t' {
+            // Skip control characters except basic whitespace
+            continue;
+        }
+        cleaned.push(ch);
+    }
+
+    let lines: Vec<&str> = cleaned.lines().collect();
+    let mut result_lines = Vec::with_capacity(lines.len());
+
+    for line in lines {
+        let mut processed_line = line.to_string();
+
+        // Check if this line contains any problematic keys
+        for &key in PROBLEMATIC_KEYS {
+            if let Some(colon_pos) = line.find(key) {
+                let after_colon = colon_pos + key.len();
+                if let Some(value_start) = line[after_colon..].find(|c: char| !c.is_whitespace()) {
+                    let actual_value_start = after_colon + value_start;
+                    let value = line[actual_value_start..].trim();
+
+                    if !value.is_empty() && !value.starts_with('\'') && !value.starts_with('"') {
+                        // Need to quote this value
+                        let escaped_value = value.replace('\'', "''");
+                        processed_line = format!(
+                            "{}{} '{}'",
+                            &line[..after_colon],
+                            &line[after_colon..actual_value_start],
+                            escaped_value
+                        );
+                    }
+                }
+                break; // Only process first match per line
+            }
+        }
+
+        result_lines.push(processed_line);
+    }
+
+    result_lines.join("\n")
 }
 
 #[tauri::command]
@@ -131,6 +200,7 @@ pub async fn start_telemetry_stream(
     app: AppHandle,
     state: State<'_, TelemetryState>,
 ) -> Result<(), String> {
+    info!("start_telemetry_stream command received");
     state.service.running.store(false, Ordering::SeqCst);
     sleep(Duration::from_millis(50)).await;
 
@@ -142,14 +212,15 @@ pub async fn start_telemetry_stream(
     let app_clone = app.clone();
 
     tokio::spawn(async move {
+        info!("Main telemetry loop task started");
         loop {
             if !service.running.load(Ordering::SeqCst) {
-                debug!("Stream stopped by user");
+                info!("Main telemetry loop stopping (service not running)");
                 break;
             }
 
             app_clone.emit("iracing://status", "waiting").ok();
-            info!("Waiting for iRacing...");
+            info!("Waiting for iRacing connection...");
 
             let connection = loop {
                 if !service.running.load(Ordering::SeqCst) {
@@ -164,6 +235,8 @@ pub async fn start_telemetry_stream(
                     }
                 }
             };
+
+            info!("Connected to iRacing shared memory");
 
             // Guard: catch subscribe() panic if schema is incomplete (e.g. iRacing still initializing).
             // A panic inside tokio::spawn silently kills this task, so we catch it and retry instead.
@@ -182,55 +255,107 @@ pub async fn start_telemetry_stream(
 
             info!("Shared memory mapped, waiting for active session...");
 
-            let session_stream = connection.session_updates();
-
-            debug!("Subscribed to telemetry and session streams");
-
             let app_session = app_clone.clone();
             let service_session = service.clone();
 
+            debug!("Spawning session polling task...");
             let session_task = tokio::spawn(async move {
-                let mut stream = std::pin::pin!(session_stream);
+                debug!("Session polling task spawned and running");
+                let mut last_version = -1;
+                // Since Pitwall::connect() succeeded, we know shared memory is accessible.
+                // We create a direct WindowsConnection for robust session info polling
+                // because pitwall's internal session stream fails on problematic YAML.
+                let mut win_conn = pitwall::WindowsConnection::try_connect().ok();
 
-                while let Some(session) = stream.next().await {
+                if win_conn.is_some() {
+                    debug!("Session polling task: WindowsConnection established");
+                } else {
+                    warn!("Session polling task: Failed to establish WindowsConnection (will retry)");
+                }
+
+                loop {
                     if !service_session.running.load(Ordering::SeqCst) {
+                        debug!("Session polling task: Stopping (service inactive)");
                         break;
                     }
 
-                    info!(
-                        has_driver_info = session.driver_info.is_some(),
-                        track = %session.weekend_info.track_display_name,
-                        "Session info updated"
-                    );
+                    if let Some(conn) = &win_conn {
+                        let header = conn.header();
+                        let current_version = header.session_info_update;
+                        
+                        if current_version != last_version {
+                            debug!(
+                                "Session version change: {} -> {}. Header info: offset={}, len={}", 
+                                last_version, current_version, 
+                                header.session_info_offset, header.session_info_len
+                            );
+                            
+                            if let Some(raw_yaml) = conn.session_info() {
+                                debug!("Session polling task: Fetched raw YAML ({} bytes)", raw_yaml.len());
+                                let preprocessed = preprocess_yaml(&raw_yaml);
+                                debug!("Session polling task: YAML preprocessed ({} bytes)", preprocessed.len());
+                                match serde_yaml_ng::from_str::<SessionInfo>(&preprocessed) {
+                                    Ok(session) => {
+                                        info!(
+                                            track = %session.weekend_info.track_display_name,
+                                            version = current_version,
+                                            "Session info updated"
+                                        );
 
-                    // Update start positions from ResultsPositions if available
-                    update_start_positions(&session, &service_session.start_positions);
+                                        // Update start positions from ResultsPositions if available
+                                        update_start_positions(&session, &service_session.start_positions);
 
-                    // Update cached track length
-                    if let Ok(mut lock) = service_session.track_length_m.lock() {
-                        *lock = Some(proximity::parse_track_length(
-                            &session.weekend_info.track_length,
-                        ));
-                    }
+                                        // Update cached track length
+                                        if let Ok(mut lock) = service_session.track_length_m.lock() {
+                                            *lock = Some(proximity::parse_track_length(
+                                                &session.weekend_info.track_length,
+                                            ));
+                                        }
 
-                    if let Ok(mut lock) = service_session.last_session_info.lock() {
-                        *lock = Some(session.clone());
-                    }
+                                        if let Ok(mut lock) = service_session.last_session_info.lock() {
+                                            *lock = Some(Arc::new(session.clone()));
+                                        }
 
-                    emit_session_info(&app_session, &session);
+                                        emit_session_info(&app_session, &session);
 
-                    let forecast = parse_weather_forecast(&session.weekend_info.unknown_fields);
-                    if !forecast.is_empty() {
-                        debug!("Weather forecast parsed successfully, {} entries", forecast.len());
-                        if let Err(e) = app_session.emit("iracing://weather-forecast", &forecast) {
-                            warn!("Failed to emit weather forecast: {}", e);
+                                        let forecast = parse_weather_forecast(&session.weekend_info.unknown_fields);  
+                                        if !forecast.is_empty() {
+                                            debug!("Weather forecast: {} entries emitted", forecast.len());
+                                            if let Err(e) = app_session.emit("iracing://weather-forecast", &forecast) {
+                                                warn!("Failed to emit weather forecast: {}", e);
+                                            }
+                                        }
+
+                                        last_version = current_version;
+                                    }
+                                    Err(e) => {
+                                        warn!(
+                                            "Session polling task: YAML parse error (version {}): {}. YAML snippet: {:.100}",
+                                            current_version, e, preprocessed
+                                        );
+                                        // Still update version to avoid spamming the same error
+                                        last_version = current_version;
+                                    }
+                                }
+                            } else {
+                                warn!(
+                                    "Session polling task: conn.session_info() returned None. Offset: {}, Len: {}", 
+                                    header.session_info_offset, header.session_info_len
+                                );
+                                // Update last_version anyway to avoid tight loop warning spam
+                                last_version = current_version;
+                            }
                         }
                     } else {
-                        debug!("Weather forecast empty after parsing from unknown_fields");
+                        win_conn = pitwall::WindowsConnection::try_connect().ok();
+                        if win_conn.is_some() {
+                            debug!("Session polling task: WindowsConnection re-established");
+                        }
                     }
-                }
 
-                debug!("Session stream ended");
+                    sleep(Duration::from_millis(500)).await;
+                }
+                debug!("Session polling task exited");
             });
 
             let mut stream = std::pin::pin!(telemetry_stream);
@@ -322,38 +447,64 @@ pub async fn stop_telemetry_stream(state: State<'_, TelemetryState>) -> Result<(
     Ok(())
 }
 
-/// Sanitizes a JSON value by replacing NaN and Infinity with null.
-/// iRacing YAML can contain NaN float values (e.g. lap times before any lap is completed)
-/// which are valid YAML but fail JSON serialization.
-fn sanitize_json(value: JsonValue) -> JsonValue {
-    match value {
-        JsonValue::Number(n) => {
+/// Recursively converts a serde_yaml_ng::Value to a serde_json::Value,
+/// explicitly handling NaN and Infinity by converting them to Null.
+fn yaml_to_json(val: serde_yaml_ng::Value) -> JsonValue {
+    match val {
+        serde_yaml_ng::Value::Null => JsonValue::Null,
+        serde_yaml_ng::Value::Bool(b) => JsonValue::Bool(b),
+        serde_yaml_ng::Value::Number(n) => {
             if let Some(f) = n.as_f64() {
-                if f.is_nan() || f.is_infinite() {
-                    return JsonValue::Null;
+                if f.is_finite() {
+                    serde_json::Number::from_f64(f)
+                        .map(JsonValue::Number)
+                        .unwrap_or(JsonValue::Null)
+                } else {
+                    JsonValue::Null
+                }
+            } else if let Some(i) = n.as_i64() {
+                JsonValue::Number(i.into())
+            } else if let Some(u) = n.as_u64() {
+                JsonValue::Number(u.into())
+            } else {
+                JsonValue::Null
+            }
+        }
+        serde_yaml_ng::Value::String(s) => JsonValue::String(s),
+        serde_yaml_ng::Value::Sequence(seq) => {
+            JsonValue::Array(seq.into_iter().map(yaml_to_json).collect())
+        }
+        serde_yaml_ng::Value::Mapping(map) => {
+            let mut obj = serde_json::Map::new();
+            for (k, v) in map {
+                if let Some(key) = k.as_str() {
+                    obj.insert(key.to_string(), yaml_to_json(v));
                 }
             }
-            JsonValue::Number(n)
+            JsonValue::Object(obj)
         }
-        JsonValue::Array(arr) => JsonValue::Array(arr.into_iter().map(sanitize_json).collect()),
-        JsonValue::Object(obj) => {
-            JsonValue::Object(obj.into_iter().map(|(k, v)| (k, sanitize_json(v))).collect())
-        }
-        other => other,
+        serde_yaml_ng::Value::Tagged(t) => yaml_to_json(t.value),
     }
 }
 
 /// Emits a SessionInfo event, sanitizing any NaN/Infinity values that iRacing YAML may contain.
+/// Uses a custom YAML-to-JSON converter to safely handle non-finite floats.
 fn emit_session_info(app: &AppHandle, session: &SessionInfo) {
-    match serde_json::to_value(session) {
-        Ok(raw) => {
-            let sanitized = sanitize_json(raw);
-            if let Err(e) = app.emit("iracing://session-info", sanitized) {
-                warn!("Failed to emit session info: {}", e);
+    match serde_yaml_ng::to_value(session) {
+        Ok(yaml_val) => {
+            let sanitized_json = yaml_to_json(yaml_val);
+            let json_str = serde_json::to_string(&sanitized_json).unwrap_or_default();
+            let size_kb = json_str.len() as f64 / 1024.0;
+
+            info!("Attempting to emit SessionInfo: {:.2} KB", size_kb);
+
+            match app.emit("iracing://session-info", &sanitized_json) {
+                Ok(_) => info!("SessionInfo event emitted successfully ({:.2} KB)", size_kb),
+                Err(e) => warn!("CRITICAL: Failed to emit session info ({:.2} KB): {}", size_kb, e),
             }
         }
         Err(e) => {
-            warn!("Failed to serialize session info: {}", e);
+            warn!("Failed to serialize session info to YAML value: {}", e);
         }
     }
 }
@@ -380,6 +531,19 @@ fn update_start_positions(
                 *lock = new_positions;
             }
         }
+    }
+}
+
+pub trait IsMultipleOf {
+    fn is_multiple_of(&self, other: u64) -> bool;
+}
+
+impl IsMultipleOf for u64 {
+    fn is_multiple_of(&self, other: u64) -> bool {
+        if other == 0 {
+            return false;
+        }
+        *self % other == 0
     }
 }
 

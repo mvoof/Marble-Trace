@@ -174,7 +174,29 @@ pub fn compute(
 
     let driver_tires = driver_info.driver_tires.as_deref().unwrap_or(&[]);
 
-    let mut entries: Vec<DriverEntry> = drivers
+    // In team races, multiple Driver entries share the same car_idx (one per co-driver).
+    // Deduplicate by car_idx before building entries: prefer the player's own entry,
+    // otherwise keep the first occurrence.
+    let mut seen_car_indices: std::collections::HashSet<i32> = std::collections::HashSet::new();
+    let deduped_drivers: Vec<_> = {
+        let mut result = Vec::new();
+        // Pass 1: collect player entry (takes priority in dedup)
+        for d in drivers.iter() {
+            if d.car_idx == player_car_idx {
+                seen_car_indices.insert(d.car_idx);
+                result.push(d);
+            }
+        }
+        // Pass 2: collect first occurrence of each other car_idx
+        for d in drivers.iter() {
+            if seen_car_indices.insert(d.car_idx) {
+                result.push(d);
+            }
+        }
+        result
+    };
+
+    let mut entries: Vec<DriverEntry> = deduped_drivers
         .iter()
         .filter(|d| {
             if d.car_is_pace_car == Some(1) || d.is_spectator == Some(1) {
