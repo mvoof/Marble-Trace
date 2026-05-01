@@ -32,6 +32,7 @@ use std::time::Duration;
 
 use futures::StreamExt;
 use pitwall::{Pitwall, SessionInfo, UpdateRate};
+use serde_json::Value as JsonValue;
 use std::panic::AssertUnwindSafe;
 use tauri::{AppHandle, Emitter, State};
 use tokio::time::sleep;
@@ -97,13 +98,20 @@ struct EmitContext<'a> {
 #[tauri::command]
 pub async fn get_last_session_info(
     state: State<'_, TelemetryState>,
-) -> Result<Option<Arc<SessionInfo>>, String> {
+) -> Result<Option<JsonValue>, String> {
     let lock = state
         .service
         .last_session_info
         .lock()
         .unwrap_or_else(|e| e.into_inner());
-    Ok(lock.clone())
+
+    match lock.as_deref() {
+        None => Ok(None),
+        Some(session) => match serde_json::to_value(session) {
+            Ok(raw) => Ok(Some(sanitize_json(raw))),
+            Err(e) => Err(format!("Failed to serialize session info: {e}")),
+        },
+    }
 }
 
 #[tauri::command]
@@ -209,9 +217,7 @@ pub async fn start_telemetry_stream(
                         *lock = Some(session.clone());
                     }
 
-                    if let Err(e) = app_session.emit("iracing://session-info", &*session) {
-                        warn!("Failed to emit session info: {}", e);
-                    }
+                    emit_session_info(&app_session, &session);
 
                     let forecast = parse_weather_forecast(&session.weekend_info.unknown_fields);
                     if !forecast.is_empty() {
@@ -314,6 +320,42 @@ pub async fn stop_telemetry_stream(state: State<'_, TelemetryState>) -> Result<(
     state.service.running.store(false, Ordering::SeqCst);
     debug!("Telemetry stream stopped");
     Ok(())
+}
+
+/// Sanitizes a JSON value by replacing NaN and Infinity with null.
+/// iRacing YAML can contain NaN float values (e.g. lap times before any lap is completed)
+/// which are valid YAML but fail JSON serialization.
+fn sanitize_json(value: JsonValue) -> JsonValue {
+    match value {
+        JsonValue::Number(n) => {
+            if let Some(f) = n.as_f64() {
+                if f.is_nan() || f.is_infinite() {
+                    return JsonValue::Null;
+                }
+            }
+            JsonValue::Number(n)
+        }
+        JsonValue::Array(arr) => JsonValue::Array(arr.into_iter().map(sanitize_json).collect()),
+        JsonValue::Object(obj) => {
+            JsonValue::Object(obj.into_iter().map(|(k, v)| (k, sanitize_json(v))).collect())
+        }
+        other => other,
+    }
+}
+
+/// Emits a SessionInfo event, sanitizing any NaN/Infinity values that iRacing YAML may contain.
+fn emit_session_info(app: &AppHandle, session: &SessionInfo) {
+    match serde_json::to_value(session) {
+        Ok(raw) => {
+            let sanitized = sanitize_json(raw);
+            if let Err(e) = app.emit("iracing://session-info", sanitized) {
+                warn!("Failed to emit session info: {}", e);
+            }
+        }
+        Err(e) => {
+            warn!("Failed to serialize session info: {}", e);
+        }
+    }
 }
 
 /// Updates start_positions from session.ResultsPositions on each session change.
