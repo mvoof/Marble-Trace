@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
+import { DriverEntry } from '../../../types/bindings';
 import { computedStore, telemetryStore } from '../../../store/iracing';
 import { appSettingsStore } from '../../../store/app-settings.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
@@ -45,8 +46,7 @@ export const StandingsWidgetContainer = observer(() => {
   );
 });
 
-const useAllClassGroupsCount = (driverEntries: any[]) => {
+const useAllClassGroupsCount = (driverEntries: DriverEntry[]) => {
   const count = new Set(driverEntries.map((e) => e.carClassId)).size;
   return count;
 };
-

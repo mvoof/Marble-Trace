@@ -1,6 +1,9 @@
 import { forwardRef } from 'react';
 
-import type { WeatherForecastEntry, Skies as BindingSkies } from '../../../types/bindings';
+import type {
+  WeatherForecastEntry,
+  Skies as BindingSkies,
+} from '../../../types/bindings';
 import type { UnitSystem } from '../../../types/units';
 import { formatSpeed, speedUnit } from '../../../utils/telemetry-format';
 import { WidgetPanel } from '../primitives/WidgetPanel';

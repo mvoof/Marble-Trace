@@ -97,10 +97,7 @@ const resolveFlagState = (
 
 const isSessionEnded = (sessionState: BindingSessionState | null): boolean => {
   if (sessionState === null) return false;
-  return (
-    sessionState === 'Checkered' ||
-    sessionState === 'CoolDown'
-  );
+  return sessionState === 'Checkered' || sessionState === 'CoolDown';
 };
 
 const splitTime = (seconds: number): { main: string; secs: string } => {
