@@ -7,6 +7,8 @@
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
+use super::AllFieldsFrame;
+
 #[derive(Serialize, Deserialize, Type, Debug, Clone)]
 pub struct LapTimingFrame {
     /// Current lap number
@@ -46,4 +48,21 @@ pub struct LapTimingFrame {
 
     /// Live delta to session optimal lap
     pub lap_delta_to_session_optimal_live: Option<f32>,
+}
+
+impl From<&AllFieldsFrame> for LapTimingFrame {
+    fn from(f: &AllFieldsFrame) -> Self {
+        Self {
+            lap: f.lap,
+            lap_dist: f.lap_dist,
+            lap_dist_pct: f.lap_dist_pct,
+            lap_current_lap_time: f.lap_current_lap_time,
+            lap_last_lap_time: f.lap_last_lap_time,
+            lap_best_lap_time: f.lap_best_lap_time,
+            player_car_position: f.player_car_position,
+            player_car_class_position: f.player_car_class_position,
+            lap_delta_to_session_best_live: f.lap_delta_to_session_best_live,
+            lap_delta_to_session_optimal_live: f.lap_delta_to_session_optimal_live,
+        }
+    }
 }

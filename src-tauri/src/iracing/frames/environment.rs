@@ -9,6 +9,8 @@ use specta::Type;
 
 use crate::iracing::enums::Skies;
 
+use super::AllFieldsFrame;
+
 #[derive(Serialize, Deserialize, Type, Debug, Clone)]
 pub struct EnvironmentFrame {
     /// Ambient air temperature in °C
@@ -49,4 +51,22 @@ pub struct EnvironmentFrame {
 
     /// Weather system version
     pub weather_version: Option<i32>,
+}
+
+impl From<&AllFieldsFrame> for EnvironmentFrame {
+    fn from(f: &AllFieldsFrame) -> Self {
+        Self {
+            air_temp: f.air_temp,
+            track_temp: f.track_temp,
+            wind_vel: f.wind_vel,
+            wind_dir: f.wind_dir,
+            relative_humidity: f.relative_humidity,
+            skies: f.skies.map(Skies::from),
+            precipitation: f.precipitation,
+            track_wetness: f.track_wetness,
+            weather_declared_wet: f.weather_declared_wet,
+            weather_type: f.weather_type,
+            weather_version: f.weather_version,
+        }
+    }
 }

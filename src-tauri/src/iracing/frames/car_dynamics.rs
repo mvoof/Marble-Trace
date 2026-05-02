@@ -7,6 +7,8 @@
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
+use super::AllFieldsFrame;
+
 #[derive(Serialize, Deserialize, Type, Debug, Clone)]
 pub struct CarDynamicsFrame {
     /// Vehicle speed in meters/sec
@@ -68,4 +70,25 @@ pub struct CarDynamicsFrame {
     /// RPM at which grinding occurs during shift
     /// @see https://sajax.github.io/irsdkdocs/telemetry/shiftgrindrpm/
     pub shift_grind_rpm: Option<f32>,
+}
+impl From<&AllFieldsFrame> for CarDynamicsFrame {
+    fn from(f: &AllFieldsFrame) -> Self {
+        Self {
+            speed: f.speed,
+            rpm: f.rpm,
+            gear: f.gear,
+            steering_wheel_angle: f.steering_wheel_angle,
+            velocity_x: f.velocity_x,
+            velocity_y: f.velocity_y,
+            velocity_z: f.velocity_z,
+            lat_accel: f.lat_accel,
+            long_accel: f.long_accel,
+            yaw: f.yaw,
+            yaw_rate: f.yaw_rate,
+            pitch: f.pitch,
+            roll: f.roll,
+            shift_indicator_pct: f.shift_indicator_pct,
+            shift_grind_rpm: f.shift_grind_rpm,
+        }
+    }
 }

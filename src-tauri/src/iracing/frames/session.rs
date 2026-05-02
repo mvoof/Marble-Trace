@@ -12,6 +12,8 @@ use specta::Type;
 
 use crate::iracing::enums::SessionState;
 
+use super::AllFieldsFrame;
+
 #[derive(Serialize, Deserialize, Type, Debug, Clone)]
 pub struct SessionFrame {
     /// Seconds since the session started
@@ -46,4 +48,25 @@ pub struct SessionFrame {
     /// Extracted from CarIdxSessionFlags[player_car_idx]
     /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxsessionflags/
     pub player_car_flags: Option<u32>,
+}
+
+impl From<&AllFieldsFrame> for SessionFrame {
+    fn from(f: &AllFieldsFrame) -> Self {
+        let player_car_flags = f.player_car_idx.and_then(|idx| {
+            f.car_idx_session_flags
+                .get(idx as usize)
+                .map(|bf| bf.0)
+        });
+
+        Self {
+            session_time: f.session_time,
+            session_time_remain: f.session_time_remain,
+            session_state: f.session_state.map(SessionState::from),
+            session_flags: f.session_flags,
+            session_num: f.session_num,
+            session_time_of_day: f.session_time_of_day,
+            player_car_idx: f.player_car_idx,
+            player_car_flags,
+        }
+    }
 }

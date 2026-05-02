@@ -12,6 +12,8 @@ use specta::Type;
 
 use crate::iracing::enums::TrackSurface;
 
+use super::AllFieldsFrame;
+
 #[derive(Serialize, Deserialize, Type, Debug, Clone)]
 pub struct CarIdxFrame {
     /// Percentage distance around lap for each car (-1 = not on track)
@@ -62,4 +64,27 @@ pub struct CarIdxFrame {
     /// Proximity indicator bit field for cars nearby
     /// @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
     pub car_left_right: Option<i32>,
+}
+
+impl From<&AllFieldsFrame> for CarIdxFrame {
+    fn from(f: &AllFieldsFrame) -> Self {
+        Self {
+            car_idx_lap_dist_pct: f.car_idx_lap_dist_pct.clone(),
+            car_idx_on_pit_road: f.car_idx_on_pit_road.clone(),
+            car_idx_position: f.car_idx_position.clone(),
+            car_idx_class_position: f.car_idx_class_position.clone(),
+            car_idx_lap: f.car_idx_lap.clone(),
+            car_idx_last_lap_time: f.car_idx_last_lap_time.clone(),
+            car_idx_best_lap_time: f.car_idx_best_lap_time.clone(),
+            car_idx_f2_time: f.car_idx_f2_time.clone(),
+            car_idx_est_time: f.car_idx_est_time.clone(),
+            car_idx_track_surface: f
+                .car_idx_track_surface
+                .iter()
+                .map(|&v| TrackSurface::from(v))
+                .collect(),
+            car_idx_tire_compound: f.car_idx_tire_compound.clone(),
+            car_left_right: f.car_left_right,
+        }
+    }
 }

@@ -534,3 +534,104 @@ fn build_frame(
         personal_best_sectors,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::iracing::frames::AllFieldsFrame;
+    use std::sync::Mutex;
+
+    fn create_mock_frame(lap_dist_pct: f32, lap_time: f32) -> AllFieldsFrame {
+        AllFieldsFrame {
+            lap_dist_pct: Some(lap_dist_pct),
+            lap_current_lap_time: lap_time as f32,
+            lap: Some(1),
+            is_on_track: Some(true),
+            ..Default::default()
+        }
+    }
+
+    fn create_mock_session() -> SessionInfo {
+        use pitwall::schema::session::{Sector, SplitTimeInfo};
+        SessionInfo {
+            split_time_info: Some(SplitTimeInfo {
+                sectors: Some(vec![
+                    Sector {
+                        sector_num: Some(0),
+                        sector_start_pct: Some(0.0),
+                        ..Default::default()
+                    },
+                    Sector {
+                        sector_num: Some(1),
+                        sector_start_pct: Some(0.5),
+                        ..Default::default()
+                    },
+                ]),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_interpolation_at_sector_crossing() {
+        let session = create_mock_session();
+        let checksum = sectors_checksum(&session);
+        let pcts = get_sector_pcts(&session);
+
+        let state = Mutex::new(LapDeltaState {
+            cached_sector_pcts: pcts,
+            sector_count: 2,
+            sector_times: vec![None, None],
+            last_lap: 1,
+            last_frame_pct: 0.4,
+            last_frame_time: 40.0,
+            last_sector_idx: 0,
+            sector_entry_time: 0.0,
+            is_sector_start_valid: true,
+            sectors_checksum: checksum,
+            ..Default::default()
+        });
+
+        let frame = create_mock_frame(0.6, 60.0);
+
+        let _result = compute(&frame, &session, &state);
+
+        let locked = state.lock().unwrap();
+        let elapsed = locked.sector_times[0].unwrap();
+        assert!((elapsed - 50.0).abs() < 0.001);
+        assert!((locked.sector_entry_time - 50.0).abs() < 0.001);
+        assert_eq!(locked.last_sector_idx, 1);
+    }
+
+    #[test]
+    fn test_lap_change_resets_sector_times() {
+        let session = create_mock_session();
+        let checksum = sectors_checksum(&session);
+        let pcts = get_sector_pcts(&session);
+
+        let state = Mutex::new(LapDeltaState {
+            cached_sector_pcts: pcts,
+            sector_count: 2,
+            last_lap: 1,
+            last_sector_idx: 1,
+            sector_entry_time: 80.0,
+            is_sector_start_valid: true,
+            sector_times: vec![Some(50.0), Some(20.0)],
+            sectors_checksum: checksum,
+            ..Default::default()
+        });
+
+        let mut frame = create_mock_frame(0.1, 5.0);
+        frame.lap = Some(2);
+        frame.lap_last_lap_time = Some(100.0);
+
+        let _result = compute(&frame, &session, &state);
+
+        let locked = state.lock().unwrap();
+        assert_eq!(locked.last_lap, 2);
+        assert_eq!(locked.last_sector_idx, 0);
+        // Sector 1 of previous lap should be closed: 100.0 - 80.0 = 20.0
+        assert_eq!(locked.sector_times[1], Some(20.0));
+    }
+}

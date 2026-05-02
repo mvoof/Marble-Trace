@@ -20,7 +20,8 @@
     "format:check": "prettier --check \"./**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "cargo:format": "cd src-tauri && cargo fmt"
+    "cargo:format": "cd src-tauri && cargo fmt",
+    "test": "vitest run"
   },
   "dependencies": {
     "@tauri-apps/api": "~2.10",
