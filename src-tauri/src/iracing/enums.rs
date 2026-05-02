@@ -1,20 +1,15 @@
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use specta::Type;
 
-#[derive(Serialize_repr, Deserialize_repr, Type, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Serialize_repr, Deserialize_repr, Type, Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[repr(i32)]
 pub enum TrackSurface {
+    #[default]
     NotInWorld = -1,
     OffTrack = 0,
     InPitStall = 1,
     AproachingPits = 2,
     OnTrack = 3,
-}
-
-impl Default for TrackSurface {
-    fn default() -> Self {
-        Self::NotInWorld
-    }
 }
 
 impl From<i32> for TrackSurface {
@@ -29,9 +24,10 @@ impl From<i32> for TrackSurface {
     }
 }
 
-#[derive(Serialize_repr, Deserialize_repr, Type, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Serialize_repr, Deserialize_repr, Type, Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[repr(i32)]
 pub enum SessionState {
+    #[default]
     Invalid = 0,
     GetInCar = 1,
     Warmup = 2,
@@ -39,12 +35,6 @@ pub enum SessionState {
     Racing = 4,
     Checkered = 5,
     CoolDown = 6,
-}
-
-impl Default for SessionState {
-    fn default() -> Self {
-        Self::Invalid
-    }
 }
 
 impl From<i32> for SessionState {
@@ -61,19 +51,14 @@ impl From<i32> for SessionState {
     }
 }
 
-#[derive(Serialize_repr, Deserialize_repr, Type, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Serialize_repr, Deserialize_repr, Type, Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[repr(i32)]
 pub enum Skies {
+    #[default]
     Clear = 0,
     PartlyCloudy = 1,
     MostlyCloudy = 2,
     Overcast = 3,
-}
-
-impl Default for Skies {
-    fn default() -> Self {
-        Self::Clear
-    }
 }
 
 impl From<i32> for Skies {
