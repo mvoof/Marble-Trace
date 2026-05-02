@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Marble Trace",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "identifier": "com.voof.marble-trace",
   "build": {
     "frontendDist": "../dist",
@@ -46,7 +46,10 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "msi"],
+    "targets": [
+      "nsis",
+      "msi"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
