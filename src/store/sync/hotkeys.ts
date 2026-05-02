@@ -1,6 +1,7 @@
 import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
 import { appSettingsStore } from '../app-settings.store';
 import { widgetSettingsStore } from '../widget-settings.store';
+import { computedStore } from '../iracing';
 
 const registeredShortcuts = new Set<string>();
 let isSettingUp = false;
@@ -61,12 +62,22 @@ export const setupHotkeys = async (onSave?: () => Promise<void>) => {
     }
     if (s.classPrevHotkey) {
       addHandler(s.classPrevHotkey, (event) => {
-        if (event.state === 'Pressed') widgetSettingsStore.cycleStandingsPrev();
+        if (event.state === 'Pressed') {
+          const totalClasses = new Set(
+            computedStore.standings?.entries.map((e) => e.carClassId) ?? []
+          ).size;
+          widgetSettingsStore.cycleStandingsPrev(totalClasses);
+        }
       });
     }
     if (s.classNextHotkey) {
       addHandler(s.classNextHotkey, (event) => {
-        if (event.state === 'Pressed') widgetSettingsStore.cycleStandingsNext();
+        if (event.state === 'Pressed') {
+          const totalClasses = new Set(
+            computedStore.standings?.entries.map((e) => e.carClassId) ?? []
+          ).size;
+          widgetSettingsStore.cycleStandingsNext(totalClasses);
+        }
       });
     }
 
