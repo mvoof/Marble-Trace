@@ -172,10 +172,9 @@ export type CarIdxFrame = {
   car_idx_est_time: number[];
   /**
    * Track surface type for each car (irsdk_TrkLoc enum)
-   * -1=NotInWorld, 0=OffTrack, 1=InPitStall, 2=AproachingPits, 3=OnTrack
    * @see https://sajax.github.io/irsdkdocs/telemetry/caridxtracksurface/
    */
-  car_idx_track_surface: number[];
+  car_idx_track_surface: TrackSurface[];
   /**
    * Tire compound index per car. Maps into DriverInfo.DriverTires[].
    * -1 = unknown.
@@ -560,7 +559,7 @@ export type DriverEntry = {
   bestLapTime: number;
   f2Time: number;
   estTime: number;
-  trackSurface: number;
+  trackSurface: TrackSurface;
   iRating: number;
   licString: string;
   licColor: string;
@@ -762,7 +761,7 @@ export type EnvironmentFrame = {
    * Skies (0=clear, 1=partly cloudy, 2=mostly cloudy, 3=overcast)
    * @see https://sajax.github.io/irsdkdocs/telemetry/skies/
    */
-  skies: number | null;
+  skies: Skies | null;
   /**
    * Current amount of precipitation at start/finish (0.0 to 1.0)
    */
@@ -1136,7 +1135,7 @@ export type SessionFrame = {
    * Session state enum value (invalid, warmup, racing, etc.)
    * @see https://sajax.github.io/irsdkdocs/telemetry/sessionstate/
    */
-  session_state: number | null;
+  session_state: SessionState | null;
   /**
    * Session flags bit field (green, yellow, red, etc.)
    * @see https://sajax.github.io/irsdkdocs/telemetry/sessionflags/
@@ -1214,6 +1213,17 @@ export type SessionInfoData = {
   Sessions: Session[];
 };
 
+export type SessionState =
+  | 'Invalid'
+  | 'GetInCar'
+  | 'Warmup'
+  | 'ParadeLaps'
+  | 'Racing'
+  | 'Checkered'
+  | 'CoolDown';
+
+export type Skies = 'Clear' | 'PartlyCloudy' | 'MostlyCloudy' | 'Overcast';
+
 /**
  * Split timing information
  */
@@ -1234,12 +1244,19 @@ export type TelemetryOptions = {
   TelemetryDiskFile: string | null;
 };
 
+export type TrackSurface =
+  | 'NotInWorld'
+  | 'OffTrack'
+  | 'InPitStall'
+  | 'AproachingPits'
+  | 'OnTrack';
+
 export type WeatherForecastEntry = {
   Time: number;
   Temp: number;
   WindSpeed: number;
   WindDir: number;
-  Skies: number;
+  Skies: Skies;
   Humidity: number;
   Fog: number;
   RainPct: number;

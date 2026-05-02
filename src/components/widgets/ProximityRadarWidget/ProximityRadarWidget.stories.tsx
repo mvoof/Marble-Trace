@@ -8,8 +8,8 @@ import {
   computeRadarDistances,
   parseTrackLength,
   parseSpotterState,
-} from '../../../utils/proximity';
-import type { ComputedRadarDistances } from '../../../types/proximity';
+} from '../../../storybook/proximity-utils';
+import type { ComputedRadarDistances } from '../../../storybook/proximity-types';
 import { CarLeftRight } from '../../../types/car-left-right';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
 import type { CarIdxFrame } from '../../../types/bindings';

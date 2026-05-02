@@ -7,9 +7,9 @@ import {
   computeNearbyCars,
   computeRadarDistances,
   parseSpotterState,
-} from '../../../utils/proximity';
+} from '../../../storybook/proximity-utils';
 import type { RadarSettings } from '../../../types/widget-settings';
-import type { ComputedRadarDistances } from '../../../types/proximity';
+import type { ComputedRadarDistances } from '../../../storybook/proximity-types';
 import { CarLeftRight } from '../../../types/car-left-right';
 import type { CarIdxFrame } from '../../../types/bindings';
 

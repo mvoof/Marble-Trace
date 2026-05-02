@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use super::AllFieldsFrame;
 
 /// Lightweight per-car position frame emitted at 30Hz for smooth map rendering.
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CarPositionsFrame {
     /// Lap distance percentage for each car (-1 = not on track)
     pub car_idx_lap_dist_pct: Vec<f32>,

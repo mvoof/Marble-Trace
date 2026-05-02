@@ -5,9 +5,11 @@
 ///
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+use super::AllFieldsFrame;
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CarStatusFrame {
     /// Fuel level in liters
     /// @see https://sajax.github.io/irsdkdocs/telemetry/fuellevel/
@@ -52,4 +54,22 @@ pub struct CarStatusFrame {
     /// Engine warning bitmask; bit 0x10 = pit speed limiter active
     /// @see https://sajax.github.io/irsdkdocs/telemetry/enginewarnings/
     pub engine_warnings: Option<u32>,
+}
+
+impl From<&AllFieldsFrame> for CarStatusFrame {
+    fn from(f: &AllFieldsFrame) -> Self {
+        Self {
+            fuel_level: f.fuel_level,
+            fuel_level_pct: f.fuel_level_pct,
+            fuel_use_per_hour: f.fuel_use_per_hour,
+            oil_temp: f.oil_temp,
+            oil_press: f.oil_press,
+            water_temp: f.water_temp,
+            voltage: f.voltage,
+            on_pit_road: f.on_pit_road,
+            is_on_track: f.is_on_track,
+            car_left_right: f.car_left_right,
+            engine_warnings: f.engine_warnings,
+        }
+    }
 }

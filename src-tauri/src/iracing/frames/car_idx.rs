@@ -8,9 +8,13 @@
 /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxlapdistpct/
 /// @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+use crate::iracing::enums::TrackSurface;
+
+use super::AllFieldsFrame;
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CarIdxFrame {
     /// Percentage distance around lap for each car (-1 = not on track)
     /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxlapdistpct/
@@ -49,9 +53,8 @@ pub struct CarIdxFrame {
     pub car_idx_est_time: Vec<f32>,
 
     /// Track surface type for each car (irsdk_TrkLoc enum)
-    /// -1=NotInWorld, 0=OffTrack, 1=InPitStall, 2=AproachingPits, 3=OnTrack
     /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxtracksurface/
-    pub car_idx_track_surface: Vec<i32>,
+    pub car_idx_track_surface: Vec<TrackSurface>,
 
     /// Tire compound index per car. Maps into DriverInfo.DriverTires[].
     /// -1 = unknown.
@@ -61,4 +64,27 @@ pub struct CarIdxFrame {
     /// Proximity indicator bit field for cars nearby
     /// @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
     pub car_left_right: Option<i32>,
+}
+
+impl From<&AllFieldsFrame> for CarIdxFrame {
+    fn from(f: &AllFieldsFrame) -> Self {
+        Self {
+            car_idx_lap_dist_pct: f.car_idx_lap_dist_pct.clone(),
+            car_idx_on_pit_road: f.car_idx_on_pit_road.clone(),
+            car_idx_position: f.car_idx_position.clone(),
+            car_idx_class_position: f.car_idx_class_position.clone(),
+            car_idx_lap: f.car_idx_lap.clone(),
+            car_idx_last_lap_time: f.car_idx_last_lap_time.clone(),
+            car_idx_best_lap_time: f.car_idx_best_lap_time.clone(),
+            car_idx_f2_time: f.car_idx_f2_time.clone(),
+            car_idx_est_time: f.car_idx_est_time.clone(),
+            car_idx_track_surface: f
+                .car_idx_track_surface
+                .iter()
+                .map(|&v| TrackSurface::from(v))
+                .collect(),
+            car_idx_tire_compound: f.car_idx_tire_compound.clone(),
+            car_left_right: f.car_left_right,
+        }
+    }
 }

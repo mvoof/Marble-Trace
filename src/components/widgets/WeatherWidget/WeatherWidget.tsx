@@ -1,6 +1,9 @@
 import { forwardRef } from 'react';
 
-import type { WeatherForecastEntry } from '../../../types/bindings';
+import type {
+  WeatherForecastEntry,
+  Skies as BindingSkies,
+} from '../../../types/bindings';
 import type { UnitSystem } from '../../../types/units';
 import { formatSpeed, speedUnit } from '../../../utils/telemetry-format';
 import { WidgetPanel } from '../primitives/WidgetPanel';
@@ -85,14 +88,14 @@ const formatForecastTime = (timeSec: number): string => {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 };
 
-const SKIES_LABELS: Record<number, string> = {
-  0: 'Clear',
-  1: 'Partly Cloudy',
-  2: 'Mostly Cloudy',
-  3: 'Overcast',
+const SKIES_LABELS: Record<BindingSkies, string> = {
+  Clear: 'Clear',
+  PartlyCloudy: 'Partly Cloudy',
+  MostlyCloudy: 'Mostly Cloudy',
+  Overcast: 'Overcast',
 };
 
-const getSkiesLabel = (skies: number): string =>
+const getSkiesLabel = (skies: BindingSkies): string =>
   SKIES_LABELS[skies] ?? 'Unknown';
 
 const convertTemp = (celsius: number, system: UnitSystem): number => {

@@ -19,10 +19,16 @@ const WidgetListItem = observer(
     };
 
     return (
-      <button
-        type="button"
+      <div
         className={`${styles.listItem} ${isActive ? styles.active : ''}`}
         onClick={() => onSelect(widget.id)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            onSelect(widget.id);
+          }
+        }}
       >
         <div className={styles.content}>
           <span className={styles.title}>{widget.label}</span>
@@ -42,7 +48,7 @@ const WidgetListItem = observer(
             onChange={handleToggle}
           />
         </div>
-      </button>
+      </div>
     );
   }
 );
@@ -57,7 +63,7 @@ export const WidgetList = observer(
   }) => {
     return (
       <div className={styles.list}>
-        {widgetSettingsStore.widgets.map((widget) => (
+        {widgetSettingsStore.allWidgets.map((widget) => (
           <WidgetListItem
             key={widget.id}
             widget={widget}

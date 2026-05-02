@@ -1884,6 +1884,7 @@ dependencies = [
  "pitwall",
  "serde",
  "serde_json",
+ "serde_repr",
  "serde_yaml_ng",
  "specta",
  "specta-serde",
@@ -2711,8 +2712,6 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 [[package]]
 name = "pitwall"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d3dbc0fcda2305fc750a348f8d3a642d098edcf01e24eb986c37769a76dfac8"
 dependencies = [
  "anyhow",
  "async-trait",

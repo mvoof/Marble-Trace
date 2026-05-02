@@ -1,12 +1,13 @@
 use pitwall::SessionInfo;
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use crate::iracing::frames::AllFieldsFrame;
 
 const MAX_LAP_FUEL_HISTORY: usize = 20;
 const MIN_RECORDED_FUEL_USE: f32 = 0.1;
 const MAX_REALISTIC_LAP_FUEL: f32 = 20.0;
+
+pub const DEFAULT_PIT_WARNING_LAPS: f32 = 3.0;
 
 pub struct FuelState {
     pub lap_fuel_history: Vec<f32>,
@@ -67,7 +68,8 @@ impl FuelState {
     }
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub struct FuelComputedFrame {
     pub avg_per_lap: f32,
@@ -107,7 +109,11 @@ pub fn instant_avg(frame: &AllFieldsFrame, session: &SessionInfo) -> Option<f32>
     let use_per_hour_ltr = fuel_use_per_hour / kg_per_ltr;
     let avg = (use_per_hour_ltr / 3600.0) * lap_time_sec;
 
-    if avg > 0.0 { Some(avg) } else { None }
+    if avg > 0.0 {
+        Some(avg)
+    } else {
+        None
+    }
 }
 
 pub fn compute(
@@ -121,9 +127,7 @@ pub fn compute(
 
     let current_use_per_lap = instant_avg(frame, session).unwrap_or(0.0);
 
-    let avg_per_lap = fuel_state
-        .avg()
-        .or_else(|| instant_avg(frame, session))?;
+    let avg_per_lap = fuel_state.avg().or_else(|| instant_avg(frame, session))?;
 
     if avg_per_lap <= 0.0 {
         return None;

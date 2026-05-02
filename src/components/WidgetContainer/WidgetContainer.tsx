@@ -85,7 +85,7 @@ export const WidgetContainer = observer(
           isDraggingRef.current = false;
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
-          void emit('widget-layout-changed', widgetSettingsStore.widgets);
+          void emit('widget-layout-changed', widgetSettingsStore.allWidgets);
         };
 
         document.addEventListener('mousemove', onMouseMove);
@@ -130,7 +130,7 @@ export const WidgetContainer = observer(
           isResizingRef.current = false;
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
-          void emit('widget-layout-changed', widgetSettingsStore.widgets);
+          void emit('widget-layout-changed', widgetSettingsStore.allWidgets);
         };
 
         document.addEventListener('mousemove', onMouseMove);
@@ -141,13 +141,12 @@ export const WidgetContainer = observer(
 
     return (
       <div
-        className={styles.container}
+        className={`${styles.container} ${shouldHide ? styles.hidden : ''}`}
         style={{
           left: x,
           top: y,
           width,
           height: autoHeight ? 'auto' : height,
-          visibility: shouldHide ? 'hidden' : 'visible',
         }}
       >
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}

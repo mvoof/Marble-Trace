@@ -1,7 +1,7 @@
 import type { UnitSystem } from '../types/units';
 
-const MPS_TO_KMH = 3.6;
-const MPS_TO_MPH = 2.23694;
+export const MPS_TO_KMH = 3.6;
+export const MPS_TO_MPH = 2.23694;
 const LITERS_TO_GAL = 0.264172;
 const METERS_TO_FEET = 3.28084;
 

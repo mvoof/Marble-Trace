@@ -2,9 +2,12 @@ use std::sync::Mutex;
 
 use pitwall::SessionInfo;
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use crate::iracing::frames::AllFieldsFrame;
+use crate::utils::lock_or_recover;
+
+const MAX_REASONABLE_SECTOR_TIME: f32 = 120.0;
+const MAX_REASONABLE_LAP_TIME: f32 = 600.0;
 
 pub struct LapDeltaState {
     pub last_sector_idx: i32,
@@ -59,7 +62,8 @@ impl LapDeltaState {
     }
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct LapDeltaFrame {
     pub sector_times: Vec<Option<f32>>,
@@ -119,32 +123,11 @@ pub fn compute(
     session: &SessionInfo,
     state: &Mutex<LapDeltaState>,
 ) -> LapDeltaFrame {
-    let mut locked = state.lock().unwrap_or_else(|e| e.into_inner());
+    let mut locked = lock_or_recover(state);
 
-    let checksum = sectors_checksum(session);
-    if locked.sectors_checksum != checksum {
-        locked.sectors_checksum = checksum;
-        let sector_pcts = get_sector_pcts(session);
-        locked.cached_sector_pcts = sector_pcts;
-    }
+    update_sector_cache(&mut locked, session);
 
     let sector_count = locked.cached_sector_pcts.len();
-
-    if locked.sector_count != sector_count {
-        locked.sector_times = vec![None; sector_count];
-        locked.session_best_sector_deltas = vec![None; sector_count];
-        locked.personal_best_lap_sectors = vec![None; sector_count];
-        locked.sector_count = sector_count;
-        locked.last_sector_idx = -1;
-        locked.sector_entry_time = -1.0;
-        locked.sector_game_delta_at_entry = None;
-        locked.last_game_delta = None;
-        locked.last_lap = -1;
-        locked.last_frame_pct = -1.0;
-        locked.last_frame_time = -1.0;
-        locked.is_sector_start_valid = false;
-        locked.personal_best_lap_time = None;
-    }
 
     let lap_dist_pct = match frame.lap_dist_pct {
         Some(p) if p >= 0.0 => p as f64,
@@ -173,13 +156,7 @@ pub fn compute(
             && current_lap == locked.last_lap);
 
     if is_reset {
-        locked.sector_times = vec![None; sector_count];
-        locked.session_best_sector_deltas = vec![None; sector_count];
-        locked.sector_game_delta_at_entry = None;
-        locked.sector_entry_time = -1.0;
-        locked.last_sector_idx = -1;
-        locked.is_sector_start_valid = false;
-        locked.last_game_delta = game_live_delta;
+        handle_reset(&mut locked, sector_count, game_live_delta);
         return build_frame(&locked, -1, 0.0, None);
     }
 
@@ -188,6 +165,103 @@ pub fn compute(
         return build_frame(&locked, -1, 0.0, None);
     }
 
+    let current_sector_idx = find_current_sector(&locked, lap_dist_pct);
+    let current_sector_fraction =
+        compute_sector_fraction(&locked, current_sector_idx, lap_dist_pct);
+
+    // Handle lap change: close last sector of previous lap, save personal best.
+    if current_lap != locked.last_lap && locked.last_lap >= 0 {
+        handle_lap_change(
+            &mut locked,
+            frame.lap_last_lap_time.unwrap_or(0.0) as f64,
+            current_lap,
+            current_sector_idx,
+            game_live_delta,
+            lap_dist_pct,
+            current_lap_time,
+        );
+        return build_frame(
+            &locked,
+            current_sector_idx,
+            current_sector_fraction,
+            game_live_delta,
+        );
+    }
+
+    if locked.last_lap == -1 {
+        init_state_on_first_lap(
+            &mut locked,
+            current_lap,
+            current_sector_idx,
+            current_lap_time,
+            game_live_delta,
+            lap_dist_pct,
+            on_pit_road,
+            is_on_track,
+        );
+    }
+
+    // Handle sector change within the same lap.
+    if current_sector_idx != locked.last_sector_idx {
+        handle_sector_change(
+            &mut locked,
+            current_sector_idx,
+            lap_dist_pct,
+            current_lap_time,
+            game_live_delta,
+        );
+    }
+
+    update_live_sector(&mut locked, current_sector_idx, current_lap_time);
+
+    locked.last_frame_pct = lap_dist_pct;
+    locked.last_frame_time = current_lap_time;
+    locked.last_game_delta = game_live_delta;
+
+    build_frame(
+        &locked,
+        current_sector_idx,
+        current_sector_fraction,
+        game_live_delta,
+    )
+}
+
+fn update_sector_cache(locked: &mut LapDeltaState, session: &SessionInfo) {
+    let checksum = sectors_checksum(session);
+    if locked.sectors_checksum != checksum {
+        locked.sectors_checksum = checksum;
+        locked.cached_sector_pcts = get_sector_pcts(session);
+    }
+
+    let sector_count = locked.cached_sector_pcts.len();
+    if locked.sector_count != sector_count {
+        locked.sector_times = vec![None; sector_count];
+        locked.session_best_sector_deltas = vec![None; sector_count];
+        locked.personal_best_lap_sectors = vec![None; sector_count];
+        locked.sector_count = sector_count;
+        locked.last_sector_idx = -1;
+        locked.sector_entry_time = -1.0;
+        locked.sector_game_delta_at_entry = None;
+        locked.last_game_delta = None;
+        locked.last_lap = -1;
+        locked.last_frame_pct = -1.0;
+        locked.last_frame_time = -1.0;
+        locked.is_sector_start_valid = false;
+        locked.personal_best_lap_time = None;
+    }
+}
+
+fn handle_reset(locked: &mut LapDeltaState, sector_count: usize, game_live_delta: Option<f32>) {
+    locked.sector_times = vec![None; sector_count];
+    locked.session_best_sector_deltas = vec![None; sector_count];
+    locked.sector_game_delta_at_entry = None;
+    locked.sector_entry_time = -1.0;
+    locked.last_sector_idx = -1;
+    locked.is_sector_start_valid = false;
+    locked.last_game_delta = game_live_delta;
+}
+
+fn find_current_sector(locked: &LapDeltaState, lap_dist_pct: f64) -> i32 {
     let mut current_sector_idx = 0i32;
     for (i, &pct) in locked.cached_sector_pcts.iter().enumerate().rev() {
         if pct <= lap_dist_pct {
@@ -195,147 +269,181 @@ pub fn compute(
             break;
         }
     }
+    current_sector_idx
+}
 
-    let current_sector_fraction = {
-        let idx = current_sector_idx as usize;
-        let start = locked.cached_sector_pcts.get(idx).copied().unwrap_or(0.0);
-        let end = locked.cached_sector_pcts.get(idx + 1).copied().unwrap_or(1.0);
-        let len = end - start;
-        if len > 0.0 {
-            ((lap_dist_pct - start) / len).clamp(0.0, 1.0) as f32
-        } else {
-            0.0
-        }
-    };
+fn compute_sector_fraction(
+    locked: &LapDeltaState,
+    current_sector_idx: i32,
+    lap_dist_pct: f64,
+) -> f32 {
+    let idx = current_sector_idx as usize;
+    let start = locked.cached_sector_pcts.get(idx).copied().unwrap_or(0.0);
+    let end = locked
+        .cached_sector_pcts
+        .get(idx + 1)
+        .copied()
+        .unwrap_or(1.0);
+    let len = end - start;
+    if len > 0.0 {
+        ((lap_dist_pct - start) / len).clamp(0.0, 1.0) as f32
+    } else {
+        0.0
+    }
+}
 
-    // Handle lap change: close last sector of previous lap, save personal best.
-    if current_lap != locked.last_lap && locked.last_lap >= 0 {
-        if locked.is_sector_start_valid
-            && locked.last_sector_idx >= 0
-            && locked.sector_entry_time >= 0.0
-        {
-            let last_lap_time = frame.lap_last_lap_time.unwrap_or(0.0) as f64;
-            let elapsed = (last_lap_time - locked.sector_entry_time) as f32;
-            if elapsed > 0.0 && elapsed < 600.0 {
-                let idx = locked.last_sector_idx as usize;
-                if idx < sector_count {
-                    locked.sector_times[idx] = Some(elapsed);
-                }
-            }
-        }
+fn handle_lap_change(
+    locked: &mut LapDeltaState,
+    last_lap_time_f64: f64,
+    current_lap: i32,
+    current_sector_idx: i32,
+    game_live_delta: Option<f32>,
+    lap_dist_pct: f64,
+    current_lap_time: f64,
+) {
+    let sector_count = locked.sector_count;
 
-        // Snapshot last sector's session-best delta using last frame's game_delta
-        // (current frame's delta may already belong to the new lap).
-        if let (Some(gd_prev), Some(entry)) =
-            (locked.last_game_delta, locked.sector_game_delta_at_entry)
-        {
+    if locked.is_sector_start_valid
+        && locked.last_sector_idx >= 0
+        && locked.sector_entry_time >= 0.0
+    {
+        let elapsed = (last_lap_time_f64 - locked.sector_entry_time) as f32;
+        if elapsed > 0.0 && elapsed < MAX_REASONABLE_SECTOR_TIME {
             let idx = locked.last_sector_idx as usize;
             if idx < sector_count {
-                locked.session_best_sector_deltas[idx] = Some(gd_prev - entry);
+                locked.sector_times[idx] = Some(elapsed);
             }
         }
+    }
 
-        // Save personal best if this completed lap is faster and all sectors valid.
-        if let Some(lap_time) = frame.lap_last_lap_time {
-            let all_valid = locked.sector_times.iter().all(|t| t.is_some());
-            if lap_time > 0.0
-                && lap_time < 600.0
-                && all_valid
-                && locked.personal_best_lap_time.is_none_or(|pb| lap_time < pb)
-            {
-                locked.personal_best_lap_time = Some(lap_time);
-                locked.personal_best_lap_sectors = locked.sector_times.clone();
-            }
+    // Snapshot last sector's session-best delta using last frame's game_delta
+    // (current frame's delta may already belong to the new lap).
+    if let (Some(gd_prev), Some(entry)) =
+        (locked.last_game_delta, locked.sector_game_delta_at_entry)
+    {
+        let idx = locked.last_sector_idx as usize;
+        if idx < sector_count {
+            locked.session_best_sector_deltas[idx] = Some(gd_prev - entry);
         }
+    }
 
-        // Reset lap-scoped session-best snapshots for new lap.
-        locked.session_best_sector_deltas = vec![None; sector_count];
-        locked.sector_game_delta_at_entry = game_live_delta;
+    // Save personal best if this completed lap is faster and all sectors valid.
+    let lap_last_lap_time = last_lap_time_f64 as f32;
+    if lap_last_lap_time > 0.0 && lap_last_lap_time < MAX_REASONABLE_LAP_TIME {
+        let all_valid = locked.sector_times.iter().all(|t| t.is_some());
+        if all_valid
+            && locked
+                .personal_best_lap_time
+                .is_none_or(|pb| lap_last_lap_time < pb)
+        {
+            locked.personal_best_lap_time = Some(lap_last_lap_time);
+            locked.personal_best_lap_sectors = locked.sector_times.clone();
+        }
+    }
+
+    // Reset lap-scoped session-best snapshots for new lap.
+    locked.session_best_sector_deltas = vec![None; sector_count];
+    locked.sector_game_delta_at_entry = game_live_delta;
+    locked.is_sector_start_valid = true;
+    locked.last_sector_idx = current_sector_idx;
+    locked.sector_entry_time = 0.0;
+    locked.last_lap = current_lap;
+
+    if (current_sector_idx as usize) < sector_count {
+        locked.sector_times[current_sector_idx as usize] = None;
+    }
+
+    locked.last_frame_pct = lap_dist_pct;
+    locked.last_frame_time = current_lap_time;
+    locked.last_game_delta = game_live_delta;
+}
+
+#[allow(clippy::too_many_arguments)]
+fn init_state_on_first_lap(
+    locked: &mut LapDeltaState,
+    current_lap: i32,
+    current_sector_idx: i32,
+    current_lap_time: f64,
+    game_live_delta: Option<f32>,
+    lap_dist_pct: f64,
+    on_pit_road: bool,
+    is_on_track: bool,
+) {
+    locked.last_lap = current_lap;
+    locked.last_sector_idx = current_sector_idx;
+    locked.sector_entry_time = current_lap_time;
+    locked.sector_game_delta_at_entry = game_live_delta;
+    locked.last_frame_pct = lap_dist_pct;
+    locked.last_frame_time = current_lap_time;
+    if !on_pit_road && is_on_track {
         locked.is_sector_start_valid = true;
-        locked.last_sector_idx = current_sector_idx;
-        locked.sector_entry_time = 0.0;
-        locked.last_lap = current_lap;
+    }
+}
 
-        if (current_sector_idx as usize) < sector_count {
-            locked.sector_times[current_sector_idx as usize] = None;
-        }
+fn handle_sector_change(
+    locked: &mut LapDeltaState,
+    current_sector_idx: i32,
+    lap_dist_pct: f64,
+    current_lap_time: f64,
+    game_live_delta: Option<f32>,
+) {
+    let sector_count = locked.sector_count;
+    let sector_start_pct = locked
+        .cached_sector_pcts
+        .get(current_sector_idx as usize)
+        .copied()
+        .unwrap_or(0.0);
 
-        locked.last_frame_pct = lap_dist_pct;
-        locked.last_frame_time = current_lap_time;
-        locked.last_game_delta = game_live_delta;
-
-        return build_frame(&locked, current_sector_idx, current_sector_fraction, game_live_delta);
+    let mut interpolated_time = current_lap_time;
+    if locked.last_frame_pct >= 0.0
+        && lap_dist_pct > locked.last_frame_pct
+        && sector_start_pct > locked.last_frame_pct
+        && sector_start_pct <= lap_dist_pct
+    {
+        let dist_range = lap_dist_pct - locked.last_frame_pct;
+        let time_range = current_lap_time - locked.last_frame_time;
+        let dist_to_sector = sector_start_pct - locked.last_frame_pct;
+        let fraction = dist_to_sector / dist_range;
+        interpolated_time = locked.last_frame_time + time_range * fraction;
     }
 
-    if locked.last_lap == -1 {
-        locked.last_lap = current_lap;
-        locked.last_sector_idx = current_sector_idx;
-        locked.sector_entry_time = current_lap_time;
-        locked.sector_game_delta_at_entry = game_live_delta;
-        locked.last_frame_pct = lap_dist_pct;
-        locked.last_frame_time = current_lap_time;
-        if !on_pit_road && is_on_track {
-            locked.is_sector_start_valid = true;
-        }
-    }
-
-    // Handle sector change within the same lap.
-    if current_sector_idx != locked.last_sector_idx {
-        let sector_start_pct = locked
-            .cached_sector_pcts
-            .get(current_sector_idx as usize)
-            .copied()
-            .unwrap_or(0.0);
-
-        let mut interpolated_time = current_lap_time;
-        if locked.last_frame_pct >= 0.0
-            && lap_dist_pct > locked.last_frame_pct
-            && sector_start_pct > locked.last_frame_pct
-            && sector_start_pct <= lap_dist_pct
-        {
-            let dist_range = lap_dist_pct - locked.last_frame_pct;
-            let time_range = current_lap_time - locked.last_frame_time;
-            let dist_to_sector = sector_start_pct - locked.last_frame_pct;
-            let fraction = dist_to_sector / dist_range;
-            interpolated_time = locked.last_frame_time + time_range * fraction;
-        }
-
-        if locked.is_sector_start_valid
-            && locked.last_sector_idx >= 0
-            && locked.sector_entry_time >= 0.0
-        {
-            let elapsed = (interpolated_time - locked.sector_entry_time) as f32;
-            if elapsed > 0.0 && elapsed < 600.0 {
-                let idx = locked.last_sector_idx as usize;
-                if idx < sector_count {
-                    locked.sector_times[idx] = Some(elapsed);
-                }
-            }
-        }
-
-        // Snapshot session-best sector delta at the boundary crossing.
-        if let (Some(gd), Some(entry)) = (game_live_delta, locked.sector_game_delta_at_entry) {
+    if locked.is_sector_start_valid
+        && locked.last_sector_idx >= 0
+        && locked.sector_entry_time >= 0.0
+    {
+        let elapsed = (interpolated_time - locked.sector_entry_time) as f32;
+        if elapsed > 0.0 && elapsed < MAX_REASONABLE_SECTOR_TIME {
             let idx = locked.last_sector_idx as usize;
             if idx < sector_count {
-                locked.session_best_sector_deltas[idx] = Some(gd - entry);
+                locked.sector_times[idx] = Some(elapsed);
             }
-        }
-
-        let was_emerging = locked.last_sector_idx == -1;
-        locked.last_sector_idx = current_sector_idx;
-        locked.sector_entry_time = interpolated_time;
-        locked.sector_game_delta_at_entry = game_live_delta;
-
-        if !was_emerging {
-            locked.is_sector_start_valid = true;
-        }
-
-        if (current_sector_idx as usize) < sector_count {
-            locked.sector_times[current_sector_idx as usize] = None;
         }
     }
 
-    // Update live elapsed time for the current sector.
+    // Snapshot session-best sector delta at the boundary crossing.
+    if let (Some(gd), Some(entry)) = (game_live_delta, locked.sector_game_delta_at_entry) {
+        let idx = locked.last_sector_idx as usize;
+        if idx < sector_count {
+            locked.session_best_sector_deltas[idx] = Some(gd - entry);
+        }
+    }
+
+    let was_emerging = locked.last_sector_idx == -1;
+    locked.last_sector_idx = current_sector_idx;
+    locked.sector_entry_time = interpolated_time;
+    locked.sector_game_delta_at_entry = game_live_delta;
+
+    if !was_emerging {
+        locked.is_sector_start_valid = true;
+    }
+
+    if (current_sector_idx as usize) < sector_count {
+        locked.sector_times[current_sector_idx as usize] = None;
+    }
+}
+
+fn update_live_sector(locked: &mut LapDeltaState, current_sector_idx: i32, current_lap_time: f64) {
+    let sector_count = locked.sector_count;
     if locked.is_sector_start_valid
         && current_sector_idx >= 0
         && (current_sector_idx as usize) < sector_count
@@ -347,12 +455,6 @@ pub fn compute(
     } else if current_sector_idx >= 0 && (current_sector_idx as usize) < sector_count {
         locked.sector_times[current_sector_idx as usize] = None;
     }
-
-    locked.last_frame_pct = lap_dist_pct;
-    locked.last_frame_time = current_lap_time;
-    locked.last_game_delta = game_live_delta;
-
-    build_frame(&locked, current_sector_idx, current_sector_fraction, game_live_delta)
 }
 
 fn build_frame(
@@ -419,8 +521,9 @@ fn build_frame(
                 Some(session_best_total - sb_sum_completed);
         } else {
             // No game delta → mirror personal best for active sector.
-            session_best_sectors[current_sector_idx as usize] =
-                personal_best_sectors.get(current_sector_idx as usize).and_then(|x| *x);
+            session_best_sectors[current_sector_idx as usize] = personal_best_sectors
+                .get(current_sector_idx as usize)
+                .and_then(|x| *x);
         }
     }
 
@@ -445,5 +548,106 @@ fn build_frame(
         session_best_sectors,
         personal_best_total,
         personal_best_sectors,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::iracing::frames::AllFieldsFrame;
+    use std::sync::Mutex;
+
+    fn create_mock_frame(lap_dist_pct: f32, lap_time: f32) -> AllFieldsFrame {
+        AllFieldsFrame {
+            lap_dist_pct: Some(lap_dist_pct),
+            lap_current_lap_time: lap_time as f32,
+            lap: Some(1),
+            is_on_track: Some(true),
+            ..Default::default()
+        }
+    }
+
+    fn create_mock_session() -> SessionInfo {
+        use pitwall::schema::session::{Sector, SplitTimeInfo};
+        SessionInfo {
+            split_time_info: Some(SplitTimeInfo {
+                sectors: Some(vec![
+                    Sector {
+                        sector_num: Some(0),
+                        sector_start_pct: Some(0.0),
+                        ..Default::default()
+                    },
+                    Sector {
+                        sector_num: Some(1),
+                        sector_start_pct: Some(0.5),
+                        ..Default::default()
+                    },
+                ]),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_interpolation_at_sector_crossing() {
+        let session = create_mock_session();
+        let checksum = sectors_checksum(&session);
+        let pcts = get_sector_pcts(&session);
+
+        let state = Mutex::new(LapDeltaState {
+            cached_sector_pcts: pcts,
+            sector_count: 2,
+            sector_times: vec![None, None],
+            last_lap: 1,
+            last_frame_pct: 0.4,
+            last_frame_time: 40.0,
+            last_sector_idx: 0,
+            sector_entry_time: 0.0,
+            is_sector_start_valid: true,
+            sectors_checksum: checksum,
+            ..Default::default()
+        });
+
+        let frame = create_mock_frame(0.6, 60.0);
+
+        let _result = compute(&frame, &session, &state);
+
+        let locked = state.lock().unwrap();
+        let elapsed = locked.sector_times[0].unwrap();
+        assert!((elapsed - 50.0).abs() < 0.001);
+        assert!((locked.sector_entry_time - 50.0).abs() < 0.001);
+        assert_eq!(locked.last_sector_idx, 1);
+    }
+
+    #[test]
+    fn test_lap_change_resets_sector_times() {
+        let session = create_mock_session();
+        let checksum = sectors_checksum(&session);
+        let pcts = get_sector_pcts(&session);
+
+        let state = Mutex::new(LapDeltaState {
+            cached_sector_pcts: pcts,
+            sector_count: 2,
+            last_lap: 1,
+            last_sector_idx: 1,
+            sector_entry_time: 80.0,
+            is_sector_start_valid: true,
+            sector_times: vec![Some(50.0), Some(20.0)],
+            sectors_checksum: checksum,
+            ..Default::default()
+        });
+
+        let mut frame = create_mock_frame(0.1, 5.0);
+        frame.lap = Some(2);
+        frame.lap_last_lap_time = Some(100.0);
+
+        let _result = compute(&frame, &session, &state);
+
+        let locked = state.lock().unwrap();
+        assert_eq!(locked.last_lap, 2);
+        assert_eq!(locked.last_sector_idx, 0);
+        // Sector 1 of previous lap should be closed: 100.0 - 80.0 = 20.0
+        assert_eq!(locked.sector_times[1], Some(20.0));
     }
 }

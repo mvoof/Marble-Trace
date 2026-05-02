@@ -8,6 +8,8 @@ import {
   tempUnit as _tempUnit,
   fuelUnit as _fuelUnit,
   distanceUnit as _distanceUnit,
+  MPS_TO_KMH,
+  MPS_TO_MPH,
 } from '../utils/telemetry-format';
 
 import type { UnitSystem } from '../types/units';
@@ -25,6 +27,10 @@ class UnitsStore {
 
   get isMetric() {
     return this.system === 'metric';
+  }
+
+  get speedFactor() {
+    return this.system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
   }
 
   formatSpeed(mps: number) {

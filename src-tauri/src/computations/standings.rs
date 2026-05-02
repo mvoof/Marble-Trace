@@ -3,12 +3,19 @@ use std::sync::Mutex;
 
 use pitwall::SessionInfo;
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
+use crate::iracing::enums::TrackSurface;
 use crate::iracing::frames::AllFieldsFrame;
+use crate::utils::lock_or_recover;
 
 const NO_CLASS_COLOR: &str = "#888888";
 const NO_CLASS_LABEL: &str = "No Class";
+const MAX_BADGE_LENGTH: usize = 8;
+const MIN_ABBR_LENGTH: usize = 2;
+const MAX_ABBR_LENGTH: usize = 5;
+const FALLBACK_SORT_POSITION: i32 = 999;
+const IR_CHANGE_SCALE_FACTOR: f64 = 200.0;
+const IR_CHANGE_OFFSET: f64 = 100.0;
 
 static BADGE_EXCEPTIONS: &[(&str, &str)] = &[
     ("Formula Vee", "FVee"),
@@ -71,12 +78,12 @@ fn get_compact_badge_name(screen_name_short: &str) -> String {
 
     badge = badge.trim().to_string();
 
-    if badge.len() > 8 {
+    if badge.len() > MAX_BADGE_LENGTH {
         let abbr: String = badge
             .chars()
             .filter(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
             .collect();
-        if abbr.len() > 1 && abbr.len() <= 5 {
+        if abbr.len() >= MIN_ABBR_LENGTH && abbr.len() <= MAX_ABBR_LENGTH {
             return abbr;
         }
     }
@@ -98,7 +105,8 @@ fn parse_class_color(raw: &Option<String>) -> String {
     }
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DriverEntry {
     pub car_idx: i32,
@@ -120,7 +128,7 @@ pub struct DriverEntry {
     pub best_lap_time: f32,
     pub f2_time: f32,
     pub est_time: f32,
-    pub track_surface: i32,
+    pub track_surface: TrackSurface,
     pub i_rating: i32,
     pub lic_string: String,
     pub lic_color: String,
@@ -137,7 +145,8 @@ pub struct StandingsState {
     pub cached_car_classes: HashMap<String, String>,
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DriverEntriesFrame {
     pub entries: Vec<DriverEntry>,
@@ -174,7 +183,29 @@ pub fn compute(
 
     let driver_tires = driver_info.driver_tires.as_deref().unwrap_or(&[]);
 
-    let mut entries: Vec<DriverEntry> = drivers
+    // In team races, multiple Driver entries share the same car_idx (one per co-driver).
+    // Deduplicate by car_idx before building entries: prefer the player's own entry,
+    // otherwise keep the first occurrence.
+    let mut seen_car_indices: std::collections::HashSet<i32> = std::collections::HashSet::new();
+    let deduped_drivers: Vec<_> = {
+        let mut result = Vec::new();
+        // Pass 1: collect player entry (takes priority in dedup)
+        for d in drivers.iter() {
+            if d.car_idx == player_car_idx {
+                seen_car_indices.insert(d.car_idx);
+                result.push(d);
+            }
+        }
+        // Pass 2: collect first occurrence of each other car_idx
+        for d in drivers.iter() {
+            if seen_car_indices.insert(d.car_idx) {
+                result.push(d);
+            }
+        }
+        result
+    };
+
+    let mut entries: Vec<DriverEntry> = deduped_drivers
         .iter()
         .filter(|d| {
             if d.car_is_pace_car == Some(1) || d.is_spectator == Some(1) {
@@ -212,7 +243,7 @@ pub fn compute(
             let car_class_short_name = if car_screen_name_short.is_empty() {
                 NO_CLASS_LABEL.to_string()
             } else {
-                let mut locked_state = state.lock().unwrap_or_else(|e: std::sync::PoisonError<std::sync::MutexGuard<'_, StandingsState>>| e.into_inner());
+                let mut locked_state = lock_or_recover(state);
                 if let Some(cached) = locked_state.cached_car_classes.get(&car_screen_name_short) {
                     let c: String = cached.clone();
                     c
@@ -258,7 +289,9 @@ pub fn compute(
                     .unwrap_or(-1.0),
                 f2_time: frame.car_idx_f2_time.get(idx).copied().unwrap_or(0.0),
                 est_time: frame.car_idx_est_time.get(idx).copied().unwrap_or(0.0),
-                track_surface: frame.car_idx_track_surface.get(idx).copied().unwrap_or(-1),
+                track_surface: TrackSurface::from(
+                    frame.car_idx_track_surface.get(idx).copied().unwrap_or(-1),
+                ),
                 i_rating: d.i_rating.unwrap_or(0),
                 lic_string: d.lic_string.clone().unwrap_or_else(|| "R 0.00".to_string()),
                 lic_color: d.lic_color.clone().unwrap_or_else(|| "000000".to_string()),
@@ -278,7 +311,7 @@ pub fn compute(
         } else if e.start_pos_overall > 0 {
             e.start_pos_overall
         } else {
-            999
+            FALLBACK_SORT_POSITION
         }
     });
 
@@ -367,31 +400,26 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
             .map(|(i, _)| {
                 let x = (num_registrations as f64) - (num_non_starters as f64) / 2.0;
                 let finish_rank = bucket[i].1 as f64; // class position
-                (x / 2.0 - finish_rank) / 100.0
+                (x / 2.0 - finish_rank) / IR_CHANGE_OFFSET
             })
             .collect();
 
-        let mut sum_changes_starters = 0.0f64;
         let changes: Vec<f64> = bucket
             .iter()
             .enumerate()
             .map(|(i, &(_, class_pos, _))| {
-                let change = ((num_registrations as f64
+                ((num_registrations as f64
                     - class_pos as f64
                     - expected_scores[i]
                     - fudge_factors[i])
-                    * 200.0)
-                    / num_starters as f64;
-                sum_changes_starters += change;
-                change
+                    * IR_CHANGE_SCALE_FACTOR)
+                    / num_starters as f64
             })
             .collect();
 
         for (i, &(car_idx, _, _)) in bucket.iter().enumerate() {
             result.insert(car_idx, changes[i].round() as i32);
         }
-
-        let _ = sum_changes_starters; // suppress warning
     }
 
     result

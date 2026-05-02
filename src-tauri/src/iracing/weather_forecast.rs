@@ -1,8 +1,10 @@
 use serde::{Deserialize, Serialize};
-use specta::Type;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Type, Default)]
+use super::enums::Skies;
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "PascalCase")]
 #[serde(default)]
 pub struct WeatherForecastEntry {
@@ -12,7 +14,7 @@ pub struct WeatherForecastEntry {
     pub wind_speed: f32,
     #[serde(alias = "WindDir")]
     pub wind_dir: f32,
-    pub skies: u8,
+    pub skies: Skies,
     pub humidity: f32,
     pub fog: f32,
     #[serde(alias = "Precipitation", alias = "RainProbability")]

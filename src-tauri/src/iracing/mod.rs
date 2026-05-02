@@ -31,16 +31,21 @@
 ///
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 /// @see https://sajax.github.io/irsdkdocs/yaml/
+pub mod enums;
 pub mod frames;
 pub mod service;
 pub mod weather_forecast;
 
+#[allow(unused_imports)]
+pub use enums::*;
+#[allow(unused_imports)]
 pub use frames::{
     CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, EnvironmentFrame,
     LapTimingFrame, SessionFrame,
 };
 pub use service::{
     get_last_session_info, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
-    TelemetryState,
+    ComputationState, TelemetryServiceState, TelemetryState,
 };
+#[allow(unused_imports)]
 pub use weather_forecast::WeatherForecastEntry;

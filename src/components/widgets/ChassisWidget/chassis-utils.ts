@@ -85,57 +85,28 @@ const buildCornerData = (
 export const buildAllCorners = (
   frame: ChassisFrame,
   system: UnitSystem
-): { lf: CornerData; rf: CornerData; lr: CornerData; rr: CornerData } => ({
-  lf: buildCornerData(
-    frame.lf_ride_height,
-    frame.lf_shock_defl,
-    frame.lf_temp_cl,
-    frame.lf_temp_cm,
-    frame.lf_temp_cr,
-    frame.lf_pressure,
-    frame.lf_wear_l,
-    frame.lf_wear_m,
-    frame.lf_wear_r,
-    frame.lf_brake_temp,
-    system
-  ),
-  rf: buildCornerData(
-    frame.rf_ride_height,
-    frame.rf_shock_defl,
-    frame.rf_temp_cl,
-    frame.rf_temp_cm,
-    frame.rf_temp_cr,
-    frame.rf_pressure,
-    frame.rf_wear_l,
-    frame.rf_wear_m,
-    frame.rf_wear_r,
-    frame.rf_brake_temp,
-    system
-  ),
-  lr: buildCornerData(
-    frame.lr_ride_height,
-    frame.lr_shock_defl,
-    frame.lr_temp_cl,
-    frame.lr_temp_cm,
-    frame.lr_temp_cr,
-    frame.lr_pressure,
-    frame.lr_wear_l,
-    frame.lr_wear_m,
-    frame.lr_wear_r,
-    frame.lr_brake_temp,
-    system
-  ),
-  rr: buildCornerData(
-    frame.rr_ride_height,
-    frame.rr_shock_defl,
-    frame.rr_temp_cl,
-    frame.rr_temp_cm,
-    frame.rr_temp_cr,
-    frame.rr_pressure,
-    frame.rr_wear_l,
-    frame.rr_wear_m,
-    frame.rr_wear_r,
-    frame.rr_brake_temp,
-    system
-  ),
-});
+): { lf: CornerData; rf: CornerData; lr: CornerData; rr: CornerData } => {
+  const corners = ['lf', 'rf', 'lr', 'rr'] as const;
+  const result = {} as Record<
+    (typeof corners)[number],
+    ReturnType<typeof buildCornerData>
+  >;
+
+  for (const c of corners) {
+    result[c] = buildCornerData(
+      frame[`${c}_ride_height`],
+      frame[`${c}_shock_defl`],
+      frame[`${c}_temp_cl`],
+      frame[`${c}_temp_cm`],
+      frame[`${c}_temp_cr`],
+      frame[`${c}_pressure`],
+      frame[`${c}_wear_l`],
+      frame[`${c}_wear_m`],
+      frame[`${c}_wear_r`],
+      frame[`${c}_brake_temp`],
+      system
+    );
+  }
+
+  return result;
+};

@@ -7,14 +7,13 @@ import { unitsStore } from '../../../store/units.store';
 import { SpeedWidget } from './SpeedWidget';
 import { parsePitSpeedLimitMs, isEngineTempWarning } from './speed-utils';
 
-const KPH_TO_MS = 1 / 3.6;
-
 export const SpeedWidgetContainer = observer(() => {
   const frame = telemetryStore.carDynamics;
   const carStatus = telemetryStore.carStatus;
   const driverInfo = telemetryStore.driverInfo;
   const weekendInfo = telemetryStore.weekendInfo;
-  const { formatSpeed, speedUnit, formatTemp, tempUnit } = unitsStore;
+  const { formatSpeed, speedUnit, formatTemp, tempUnit, speedFactor } =
+    unitsStore;
   const settings = widgetSettingsStore.getSpeedSettings();
 
   const speed = frame ? formatSpeed(frame.speed) : '0';
@@ -30,7 +29,7 @@ export const SpeedWidgetContainer = observer(() => {
 
   const pitLimitMs =
     settings.pitSpeedLimitOverride !== null
-      ? settings.pitSpeedLimitOverride * KPH_TO_MS
+      ? settings.pitSpeedLimitOverride / speedFactor
       : parsePitSpeedLimitMs(weekendInfo?.TrackPitSpeedLimit ?? null);
 
   const pitLimitFormatted = pitLimitMs > 0 ? formatSpeed(pitLimitMs) : '—';
@@ -41,7 +40,7 @@ export const SpeedWidgetContainer = observer(() => {
 
   const pitSpeedDelta =
     pitLimitMs > 0 && (isOnPitRoad || pitLimiterActive)
-      ? Math.round((speedMs - pitLimitMs) * (unitsStore.isMetric ? 3.6 : 2.237))
+      ? Math.round((speedMs - pitLimitMs) * speedFactor)
       : null;
 
   const pitState = (() => {

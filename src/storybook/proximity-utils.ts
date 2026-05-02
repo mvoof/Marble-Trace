@@ -2,10 +2,7 @@
  * Proximity computation utility — reusable logic for computing
  * nearby car positions relative to the player car.
  *
- * Used by ProximityRadarWidget and RadarBarWidget.
- *
- * @see https://sajax.github.io/irsdkdocs/telemetry/caridxlapdistpct/
- * @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
+ * Used by ProximityRadarWidget and RadarBarWidget storybook mocks.
  */
 import type { CarIdxFrame } from '../types/bindings';
 import { CarLeftRight } from '../types/car-left-right';
@@ -15,7 +12,7 @@ import type {
   SpotterState,
   SideCarDistances,
   ComputedRadarDistances,
-} from '../types/proximity';
+} from './proximity-types';
 
 /**
  * Extract closest front and rear car distances from nearby cars array.

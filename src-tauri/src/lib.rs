@@ -1,20 +1,30 @@
 mod computations;
 mod iracing;
+mod utils;
 
+#[cfg(feature = "dev")]
 use computations::{
-    fuel::{FuelComputedFrame, FuelState},
-    lap_delta::{LapDeltaFrame, LapDeltaState},
+    fuel::FuelComputedFrame,
+    lap_delta::LapDeltaFrame,
     pit_stops::PitStopsFrame,
     proximity::{LateralSide, NearbyCar, ProximityFrame, RadarDistances},
-    standings::{DriverEntriesFrame, DriverEntry, StandingsState},
+    standings::{DriverEntriesFrame, DriverEntry},
 };
+use computations::{fuel::FuelState, lap_delta::LapDeltaState, standings::StandingsState};
 use iracing::{
     get_last_session_info, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
-    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, EnvironmentFrame,
-    LapTimingFrame, SessionFrame, TelemetryState, WeatherForecastEntry,
+    TelemetryState,
 };
+#[cfg(feature = "dev")]
+use iracing::{
+    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, EnvironmentFrame,
+    LapTimingFrame, SessionFrame, WeatherForecastEntry,
+};
+#[cfg(feature = "dev")]
 use pitwall::SessionInfo;
+#[cfg(feature = "dev")]
 use specta::TypeCollection;
+#[cfg(feature = "dev")]
 use specta_typescript::Typescript;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
@@ -30,41 +40,42 @@ pub fn run() {
         )
         .init();
 
-    let mut types = TypeCollection::default();
-    types
-        .register::<CarDynamicsFrame>()
-        .register::<CarIdxFrame>()
-        .register::<CarInputsFrame>()
-        .register::<CarStatusFrame>()
-        .register::<ChassisFrame>()
-        .register::<LapTimingFrame>()
-        .register::<SessionFrame>()
-        .register::<EnvironmentFrame>()
-        .register::<SessionInfo>()
-        .register::<ProximityFrame>()
-        .register::<NearbyCar>()
-        .register::<RadarDistances>()
-        .register::<LateralSide>()
-        .register::<FuelComputedFrame>()
-        .register::<DriverEntriesFrame>()
-        .register::<DriverEntry>()
-        .register::<PitStopsFrame>()
-        .register::<LapDeltaFrame>()
-        .register::<WeatherForecastEntry>();
+    #[cfg(feature = "dev")]
+    {
+        let mut types = TypeCollection::default();
+        types
+            .register::<CarDynamicsFrame>()
+            .register::<CarIdxFrame>()
+            .register::<CarInputsFrame>()
+            .register::<CarStatusFrame>()
+            .register::<ChassisFrame>()
+            .register::<LapTimingFrame>()
+            .register::<SessionFrame>()
+            .register::<EnvironmentFrame>()
+            .register::<SessionInfo>()
+            .register::<ProximityFrame>()
+            .register::<NearbyCar>()
+            .register::<RadarDistances>()
+            .register::<LateralSide>()
+            .register::<FuelComputedFrame>()
+            .register::<DriverEntriesFrame>()
+            .register::<DriverEntry>()
+            .register::<PitStopsFrame>()
+            .register::<LapDeltaFrame>()
+            .register::<WeatherForecastEntry>();
 
-    Typescript::default()
-        .export_to("../src/types/bindings.ts", &types)
-        .unwrap();
+        Typescript::default()
+            .export_to("../src/types/bindings.ts", &types)
+            .unwrap();
+    }
 
-    let mut builder = Builder::default()
+    let builder = Builder::default()
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build());
 
-    #[cfg(debug_assertions)]
-    {
-        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
-    }
+    #[cfg(feature = "dev")]
+    let builder = builder.plugin(tauri_plugin_mcp_bridge::init());
 
     builder
         .setup(|app| {
@@ -81,17 +92,25 @@ pub fn run() {
             set_pit_warning_laps
         ])
         .manage(TelemetryState {
-            running: Arc::new(AtomicBool::new(false)),
-            last_session_info: Arc::new(Mutex::new(None)),
-            start_positions: Arc::new(Mutex::new(std::collections::HashMap::new())),
-            pit_stop_count: Arc::new(std::sync::atomic::AtomicU32::new(0)),
-            was_on_pit_road: Arc::new(AtomicBool::new(false)),
-            pit_tracked_session_num: Arc::new(std::sync::atomic::AtomicI32::new(-1)),
-            lap_delta_state: Arc::new(Mutex::new(LapDeltaState::default())),
-            standings_state: Arc::new(Mutex::new(StandingsState::default())),
-            pit_warning_laps: Arc::new(std::sync::atomic::AtomicU32::new(3.0f32.to_bits())),
-            track_length_m: Arc::new(Mutex::new(None)),
-            fuel_state: Arc::new(Mutex::new(FuelState::default())),
+            service: Arc::new(iracing::TelemetryServiceState {
+                running: AtomicBool::new(false),
+                last_session_info: Mutex::new(None),
+                start_positions: Mutex::new(std::collections::HashMap::new()),
+                track_length_m: Mutex::new(None),
+            }),
+            pit: Arc::new(crate::computations::pit_stops::PitStopState {
+                count: std::sync::atomic::AtomicU32::new(0),
+                was_on_pit_road: AtomicBool::new(false),
+                tracked_session_num: std::sync::atomic::AtomicI32::new(-1),
+            }),
+            computation: Arc::new(iracing::ComputationState {
+                lap_delta: Mutex::new(LapDeltaState::default()),
+                standings: Mutex::new(StandingsState::default()),
+                fuel: Mutex::new(FuelState::default()),
+                pit_warning_laps: std::sync::atomic::AtomicU32::new(
+                    crate::computations::fuel::DEFAULT_PIT_WARNING_LAPS.to_bits(),
+                ),
+            }),
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {

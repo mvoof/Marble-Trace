@@ -4,9 +4,11 @@
 ///
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+use super::AllFieldsFrame;
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CarInputsFrame {
     /// Throttle pedal position: 0.0 (released) to 1.0 (fully pressed)
     /// @see https://sajax.github.io/irsdkdocs/telemetry/throttle/
@@ -20,4 +22,14 @@ pub struct CarInputsFrame {
     /// Note: iRacing provides clutch engagement, not pedal input.
     /// @see https://sajax.github.io/irsdkdocs/telemetry/clutch/
     pub clutch: Option<f32>,
+}
+
+impl From<&AllFieldsFrame> for CarInputsFrame {
+    fn from(f: &AllFieldsFrame) -> Self {
+        Self {
+            throttle: f.throttle,
+            brake: f.brake,
+            clutch: f.clutch,
+        }
+    }
 }

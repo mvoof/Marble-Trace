@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
+import { DriverEntry } from '../../../types/bindings';
 import { computedStore, telemetryStore } from '../../../store/iracing';
 import { appSettingsStore } from '../../../store/app-settings.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
@@ -14,6 +15,7 @@ export const StandingsWidgetContainer = observer(() => {
   const driverEntries = standings?.entries ?? [];
 
   const overallSof = computeClassSof(driverEntries);
+  const allClassGroupsCount = useAllClassGroupsCount(driverEntries);
 
   const irDeltaMap = settings.showIrChange
     ? new Map(
@@ -34,8 +36,17 @@ export const StandingsWidgetContainer = observer(() => {
       overallSof={overallSof}
       activeClassIndex={widgetSettingsStore.standingsActiveClassIndex}
       dragMode={appSettingsStore.dragMode}
-      onPrevClass={widgetSettingsStore.cycleStandingsPrev}
-      onNextClass={widgetSettingsStore.cycleStandingsNext}
+      onPrevClass={() =>
+        widgetSettingsStore.cycleStandingsPrev(allClassGroupsCount)
+      }
+      onNextClass={() =>
+        widgetSettingsStore.cycleStandingsNext(allClassGroupsCount)
+      }
     />
   );
 });
+
+const useAllClassGroupsCount = (driverEntries: DriverEntry[]) => {
+  const count = new Set(driverEntries.map((e) => e.carClassId)).size;
+  return count;
+};

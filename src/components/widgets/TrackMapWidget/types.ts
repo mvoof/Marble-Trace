@@ -1,3 +1,4 @@
+import type { TrackSurface } from '../../../types/bindings';
 import type { TrackPoint } from '../../../types/track';
 
 export interface CarOnTrack {
@@ -6,7 +7,7 @@ export interface CarOnTrack {
   carClassColor: string;
   carClassId: number;
   lapDistPct: number;
-  trackSurface: number;
+  trackSurface: TrackSurface | number;
   isPlayer: boolean;
   position: number;
   classPosition: number;

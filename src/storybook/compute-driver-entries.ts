@@ -1,3 +1,4 @@
+import { TrackSurface } from '../types/iracing-enums';
 import type {
   CarIdxFrame,
   DriverInfoData,
@@ -47,7 +48,8 @@ export const computeDriverEntries = (
       lastLapTime: carIdx.car_idx_last_lap_time[idx] ?? -1,
       bestLapTime: carIdx.car_idx_best_lap_time[idx] ?? -1,
       f2Time: carIdx.car_idx_f2_time[idx] ?? 0,
-      trackSurface: carIdx.car_idx_track_surface[idx] ?? -1,
+      trackSurface:
+        carIdx.car_idx_track_surface[idx] ?? TrackSurface.NotInWorld,
       iRating: driver.IRating ?? 0,
       licString: driver.LicString ?? '',
       licColor: parseClassColor(driver.LicColor),
