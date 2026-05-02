@@ -1,15 +1,15 @@
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde::{Deserialize, Serialize};
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize_repr, Deserialize_repr, Debug, Clone, Copy, PartialEq, Eq, Default)]
-#[repr(i32)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[serde(rename_all = "PascalCase")]
 pub enum TrackSurface {
     #[default]
-    NotInWorld = -1,
-    OffTrack = 0,
-    InPitStall = 1,
-    AproachingPits = 2,
-    OnTrack = 3,
+    NotInWorld,
+    OffTrack,
+    InPitStall,
+    AproachingPits,
+    OnTrack,
 }
 
 impl From<i32> for TrackSurface {
@@ -25,17 +25,17 @@ impl From<i32> for TrackSurface {
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize_repr, Deserialize_repr, Debug, Clone, Copy, PartialEq, Eq, Default)]
-#[repr(i32)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[serde(rename_all = "PascalCase")]
 pub enum SessionState {
     #[default]
-    Invalid = 0,
-    GetInCar = 1,
-    Warmup = 2,
-    ParadeLaps = 3,
-    Racing = 4,
-    Checkered = 5,
-    CoolDown = 6,
+    Invalid,
+    GetInCar,
+    Warmup,
+    ParadeLaps,
+    Racing,
+    Checkered,
+    CoolDown,
 }
 
 impl From<i32> for SessionState {
@@ -53,14 +53,14 @@ impl From<i32> for SessionState {
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize_repr, Deserialize_repr, Debug, Clone, Copy, PartialEq, Eq, Default)]
-#[repr(i32)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[serde(rename_all = "PascalCase")]
 pub enum Skies {
     #[default]
-    Clear = 0,
-    PartlyCloudy = 1,
-    MostlyCloudy = 2,
-    Overcast = 3,
+    Clear,
+    PartlyCloudy,
+    MostlyCloudy,
+    Overcast,
 }
 
 impl From<i32> for Skies {
