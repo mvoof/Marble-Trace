@@ -43,11 +43,19 @@ fs.writeFileSync(paths.tauriConf, JSON.stringify(tauriConf, null, 2) + '\n');
 // 3. Update Cargo.toml
 console.log(`Updating Cargo.toml to ${newVersion}...`);
 let cargoToml = fs.readFileSync(paths.cargoToml, 'utf-8');
-// Use regex to find version under [package]
-cargoToml = cargoToml.replace(
-  /(\[package\][\s\S]*?^version\s*=\s*")[^"]*(")/m,
+// Robust regex to find version strictly under [package] section
+const updatedCargoToml = cargoToml.replace(
+  /(\[package\](?:(?!^\[)[\s\S])*?^\s*version\s*=\s*")[^"]*(")/m,
   `$1${newVersion}$2`
 );
+
+if (updatedCargoToml === cargoToml) {
+  console.error(
+    'Failed to update version in Cargo.toml. Ensure the [package] section has a version field.'
+  );
+  process.exit(1);
+}
+cargoToml = updatedCargoToml;
 fs.writeFileSync(paths.cargoToml, cargoToml);
 
 // 4. Update Cargo.lock
