@@ -2,7 +2,7 @@
   "name": "marble-trace",
   "description": "iRacing Telemetry Overlay",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.5.0",
   "type": "module",
   "repository": {
     "url": "https://github.com/mvoof/Marble-Trace"
@@ -13,6 +13,7 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev --features dev",
+    "version-bump": "node scripts/bump-version.mjs",
     "tauri:build:release": "tauri build",
     "tauri:build:dev": "tauri build --config src-tauri/tauri.dev.conf.json --no-sign --features dev",
     "lint": "eslint .",
