@@ -289,11 +289,7 @@ pub fn compute(
                 f2_time: frame.car_idx_f2_time.get(idx).copied().unwrap_or(0.0),
                 est_time: frame.car_idx_est_time.get(idx).copied().unwrap_or(0.0),
                 track_surface: TrackSurface::from(
-                    frame
-                        .car_idx_track_surface
-                        .get(idx)
-                        .copied()
-                        .unwrap_or(-1),
+                    frame.car_idx_track_surface.get(idx).copied().unwrap_or(-1),
                 ),
                 i_rating: d.i_rating.unwrap_or(0),
                 lic_string: d.lic_string.clone().unwrap_or_else(|| "R 0.00".to_string()),

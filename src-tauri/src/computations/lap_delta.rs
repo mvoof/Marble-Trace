@@ -165,7 +165,8 @@ pub fn compute(
     }
 
     let current_sector_idx = find_current_sector(&locked, lap_dist_pct);
-    let current_sector_fraction = compute_sector_fraction(&locked, current_sector_idx, lap_dist_pct);
+    let current_sector_fraction =
+        compute_sector_fraction(&locked, current_sector_idx, lap_dist_pct);
 
     // Handle lap change: close last sector of previous lap, save personal best.
     if current_lap != locked.last_lap && locked.last_lap >= 0 {
@@ -270,10 +271,18 @@ fn find_current_sector(locked: &LapDeltaState, lap_dist_pct: f64) -> i32 {
     current_sector_idx
 }
 
-fn compute_sector_fraction(locked: &LapDeltaState, current_sector_idx: i32, lap_dist_pct: f64) -> f32 {
+fn compute_sector_fraction(
+    locked: &LapDeltaState,
+    current_sector_idx: i32,
+    lap_dist_pct: f64,
+) -> f32 {
     let idx = current_sector_idx as usize;
     let start = locked.cached_sector_pcts.get(idx).copied().unwrap_or(0.0);
-    let end = locked.cached_sector_pcts.get(idx + 1).copied().unwrap_or(1.0);
+    let end = locked
+        .cached_sector_pcts
+        .get(idx + 1)
+        .copied()
+        .unwrap_or(1.0);
     let len = end - start;
     if len > 0.0 {
         ((lap_dist_pct - start) / len).clamp(0.0, 1.0) as f32
@@ -308,7 +317,8 @@ fn handle_lap_change(
 
     // Snapshot last sector's session-best delta using last frame's game_delta
     // (current frame's delta may already belong to the new lap).
-    if let (Some(gd_prev), Some(entry)) = (locked.last_game_delta, locked.sector_game_delta_at_entry)
+    if let (Some(gd_prev), Some(entry)) =
+        (locked.last_game_delta, locked.sector_game_delta_at_entry)
     {
         let idx = locked.last_sector_idx as usize;
         if idx < sector_count {
@@ -320,7 +330,11 @@ fn handle_lap_change(
     let lap_last_lap_time = last_lap_time_f64 as f32;
     if lap_last_lap_time > 0.0 && lap_last_lap_time < MAX_REASONABLE_SECTOR_TIME {
         let all_valid = locked.sector_times.iter().all(|t| t.is_some());
-        if all_valid && locked.personal_best_lap_time.is_none_or(|pb| lap_last_lap_time < pb) {
+        if all_valid
+            && locked
+                .personal_best_lap_time
+                .is_none_or(|pb| lap_last_lap_time < pb)
+        {
             locked.personal_best_lap_time = Some(lap_last_lap_time);
             locked.personal_best_lap_sectors = locked.sector_times.clone();
         }
@@ -506,8 +520,9 @@ fn build_frame(
                 Some(session_best_total - sb_sum_completed);
         } else {
             // No game delta → mirror personal best for active sector.
-            session_best_sectors[current_sector_idx as usize] =
-                personal_best_sectors.get(current_sector_idx as usize).and_then(|x| *x);
+            session_best_sectors[current_sector_idx as usize] = personal_best_sectors
+                .get(current_sector_idx as usize)
+                .and_then(|x| *x);
         }
     }
 

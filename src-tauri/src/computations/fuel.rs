@@ -109,7 +109,11 @@ pub fn instant_avg(frame: &AllFieldsFrame, session: &SessionInfo) -> Option<f32>
     let use_per_hour_ltr = fuel_use_per_hour / kg_per_ltr;
     let avg = (use_per_hour_ltr / 3600.0) * lap_time_sec;
 
-    if avg > 0.0 { Some(avg) } else { None }
+    if avg > 0.0 {
+        Some(avg)
+    } else {
+        None
+    }
 }
 
 pub fn compute(
@@ -123,9 +127,7 @@ pub fn compute(
 
     let current_use_per_lap = instant_avg(frame, session).unwrap_or(0.0);
 
-    let avg_per_lap = fuel_state
-        .avg()
-        .or_else(|| instant_avg(frame, session))?;
+    let avg_per_lap = fuel_state.avg().or_else(|| instant_avg(frame, session))?;
 
     if avg_per_lap <= 0.0 {
         return None;

@@ -45,8 +45,7 @@ use super::frames::{
 };
 use super::weather_forecast::parse_weather_forecast;
 use crate::computations::{
-    fuel, fuel::FuelState, lap_delta, lap_delta::LapDeltaState,
-    pit_stops, pit_stops::PitStopState,
+    fuel, fuel::FuelState, lap_delta, lap_delta::LapDeltaState, pit_stops, pit_stops::PitStopState,
     proximity, standings, standings::StandingsState,
 };
 use crate::utils::lock_or_recover;

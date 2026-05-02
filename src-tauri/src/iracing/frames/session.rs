@@ -52,11 +52,9 @@ pub struct SessionFrame {
 
 impl From<&AllFieldsFrame> for SessionFrame {
     fn from(f: &AllFieldsFrame) -> Self {
-        let player_car_flags = f.player_car_idx.and_then(|idx| {
-            f.car_idx_session_flags
-                .get(idx as usize)
-                .map(|bf| bf.0)
-        });
+        let player_car_flags = f
+            .player_car_idx
+            .and_then(|idx| f.car_idx_session_flags.get(idx as usize).map(|bf| bf.0));
 
         Self {
             session_time: f.session_time,
