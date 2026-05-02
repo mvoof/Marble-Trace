@@ -108,71 +108,6 @@ pub async fn get_last_session_info(
     }
 }
 
-/// Preprocess iRacing YAML to fix compatibility issues with unescaped characters.
-/// Based on iRacing forum discussion: <https://forums.iracing.com/discussion/comment/374646#Comment_374646>
-fn preprocess_yaml(yaml: &str) -> String {
-    const PROBLEMATIC_KEYS: &[&str] = &[
-        "AbbrevName:",
-        "TeamName:",
-        "UserName:",
-        "Initials:",
-        "DriverSetupName:",
-        "CarDesignStr:",
-        "HelmetDesignStr:",
-        "SuitDesignStr:",
-        "CarNumberDesignStr:",
-        "LicString:",
-        "LicColor:",
-        "ClubName:",
-        "CountryCode:",
-        "CarClassShortName:",
-    ];
-
-    // First pass: Remove all control characters (except \n, \r, \t)
-    let mut cleaned = String::with_capacity(yaml.len());
-    for ch in yaml.chars() {
-        if ch.is_control() && ch != '\n' && ch != '\r' && ch != '\t' {
-            // Skip control characters except basic whitespace
-            continue;
-        }
-        cleaned.push(ch);
-    }
-
-    let lines: Vec<&str> = cleaned.lines().collect();
-    let mut result_lines = Vec::with_capacity(lines.len());
-
-    for line in lines {
-        let mut processed_line = line.to_string();
-
-        // Check if this line contains any problematic keys
-        for &key in PROBLEMATIC_KEYS {
-            if let Some(colon_pos) = line.find(key) {
-                let after_colon = colon_pos + key.len();
-                if let Some(value_start) = line[after_colon..].find(|c: char| !c.is_whitespace()) {
-                    let actual_value_start = after_colon + value_start;
-                    let value = line[actual_value_start..].trim();
-
-                    if !value.is_empty() && !value.starts_with('\'') && !value.starts_with('"') {
-                        // Need to quote this value
-                        let escaped_value = value.replace('\'', "''");
-                        processed_line = format!(
-                            "{}{} '{}'",
-                            &line[..after_colon],
-                            &line[after_colon..actual_value_start],
-                            escaped_value
-                        );
-                    }
-                }
-                break; // Only process first match per line
-            }
-        }
-
-        result_lines.push(processed_line);
-    }
-
-    result_lines.join("\n")
-}
-
 #[tauri::command]
 pub async fn set_pit_warning_laps(
     state: State<'_, TelemetryState>,
@@ -312,54 +247,65 @@ fn spawn_session_polling(
                             "Session polling task: Fetched raw YAML ({} bytes)",
                             raw_yaml.len()
                         );
-                        let preprocessed = preprocess_yaml(&raw_yaml);
-                        debug!(
-                            "Session polling task: YAML preprocessed ({} bytes)",
-                            preprocessed.len()
-                        );
-                        match serde_yaml_ng::from_str::<SessionInfo>(&preprocessed) {
-                            Ok(session) => {
-                                info!(
-                                    track = %session.weekend_info.track_display_name,
-                                    version = current_version,
-                                    "Session info updated"
+                        match pitwall::preprocess_iracing_yaml(&raw_yaml) {
+                            Ok(preprocessed) => {
+                                debug!(
+                                    "Session polling task: YAML preprocessed ({} bytes)",
+                                    preprocessed.len()
                                 );
+                                match serde_yaml_ng::from_str::<SessionInfo>(&preprocessed) {
+                                    Ok(session) => {
+                                        info!(
+                                            track = %session.weekend_info.track_display_name,
+                                            version = current_version,
+                                            "Session info updated"
+                                        );
 
-                                // Update start positions from ResultsPositions if available
-                                update_start_positions(&session, &service.start_positions);
+                                        // Update start positions from ResultsPositions if available
+                                        update_start_positions(&session, &service.start_positions);
 
-                                // Update cached track length
-                                if let Ok(mut lock) = service.track_length_m.lock() {
-                                    *lock = Some(proximity::parse_track_length(
-                                        &session.weekend_info.track_length,
-                                    ));
-                                }
+                                        // Update cached track length
+                                        if let Ok(mut lock) = service.track_length_m.lock() {
+                                            *lock = Some(proximity::parse_track_length(
+                                                &session.weekend_info.track_length,
+                                            ));
+                                        }
 
-                                if let Ok(mut lock) = service.last_session_info.lock() {
-                                    *lock = Some(Arc::new(session.clone()));
-                                }
+                                        if let Ok(mut lock) = service.last_session_info.lock() {
+                                            *lock = Some(Arc::new(session.clone()));
+                                        }
 
-                                emit_session_info(&app, &session);
+                                        emit_session_info(&app, &session);
 
-                                let forecast =
-                                    parse_weather_forecast(&session.weekend_info.unknown_fields);
-                                if !forecast.is_empty() {
-                                    debug!("Weather forecast: {} entries emitted", forecast.len());
-                                    if let Err(e) =
-                                        app.emit("iracing://weather-forecast", &forecast)
-                                    {
-                                        warn!("Failed to emit weather forecast: {}", e);
+                                        let forecast = parse_weather_forecast(
+                                            &session.weekend_info.unknown_fields,
+                                        );
+                                        if !forecast.is_empty() {
+                                            debug!(
+                                                "Weather forecast: {} entries emitted",
+                                                forecast.len()
+                                            );
+                                            if let Err(e) =
+                                                app.emit("iracing://weather-forecast", &forecast)
+                                            {
+                                                warn!("Failed to emit weather forecast: {}", e);
+                                            }
+                                        }
+
+                                        last_version = current_version;
+                                    }
+                                    Err(e) => {
+                                        warn!(
+                                            "Session polling task: YAML parse error (version {}): {}. YAML snippet: {:.100}",
+                                            current_version, e, preprocessed
+                                        );
+                                        // Still update version to avoid spamming the same error
+                                        last_version = current_version;
                                     }
                                 }
-
-                                last_version = current_version;
                             }
                             Err(e) => {
-                                warn!(
-                                    "Session polling task: YAML parse error (version {}): {}. YAML snippet: {:.100}",
-                                    current_version, e, preprocessed
-                                );
-                                // Still update version to avoid spamming the same error
+                                warn!("Failed to preprocess session info YAML: {}", e);
                                 last_version = current_version;
                             }
                         }

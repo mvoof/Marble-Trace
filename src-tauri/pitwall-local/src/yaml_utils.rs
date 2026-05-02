@@ -14,34 +14,76 @@ use crate::{Result, TelemetryError};
 /// This function cleans up iRacing's non-standard YAML format to make it
 /// parseable by standard YAML libraries. It handles:
 /// - Control character removal (except \n, \r, \t)
-/// - String escaping for special characters
-/// - Consistent quoting
+/// - String escaping for special characters in problematic keys
+/// - Consistent quoting for known unquoted string fields
 ///
-/// Returns the cleaned YAML string ready for parsing.
+/// Based on iRacing forum discussion: <https://forums.iracing.com/discussion/comment/374646#Comment_374646>
 pub fn preprocess_iracing_yaml(yaml: &str) -> Result<String> {
-    let mut result = String::with_capacity(yaml.len());
-    let mut in_quotes = false;
-    let mut prev_char = ' ';
+    const PROBLEMATIC_KEYS: &[&str] = &[
+        "AbbrevName:",
+        "TeamName:",
+        "UserName:",
+        "Initials:",
+        "DriverSetupName:",
+        "CarDesignStr:",
+        "HelmetDesignStr:",
+        "SuitDesignStr:",
+        "CarNumberDesignStr:",
+        "LicString:",
+        "LicColor:",
+        "ClubName:",
+        "CountryCode:",
+        "CarClassShortName:",
+    ];
 
+    // Handle edge case where input is just whitespace/newlines
+    if yaml.trim().is_empty() {
+        return Ok(yaml.to_string());
+    }
+
+    // First pass: Remove all control characters (except \n, \r, \t)
+    let mut cleaned = String::with_capacity(yaml.len());
     for ch in yaml.chars() {
-        match ch {
-            // Track quote state
-            '"' if prev_char != '\\' => {
-                in_quotes = !in_quotes;
-                result.push(ch);
-            }
-            // Remove control characters except newline, carriage return, tab
-            '\x00'..='\x08' | '\x0B'..='\x0C' | '\x0E'..='\x1F' => {
-                // Skip control characters
-                continue;
-            }
-            // Keep normal characters
-            _ => {
-                result.push(ch);
+        if ch.is_control() && ch != '\n' && ch != '\r' && ch != '\t' {
+            // Skip control characters except basic whitespace
+            continue;
+        }
+        cleaned.push(ch);
+    }
+
+    let lines: Vec<&str> = cleaned.lines().collect();
+    let mut result_lines = Vec::with_capacity(lines.len());
+
+    for line in lines {
+        let mut processed_line = line.to_string();
+
+        // Check if this line contains any problematic keys
+        for &key in PROBLEMATIC_KEYS {
+            if let Some(colon_pos) = line.find(key) {
+                let after_colon = colon_pos + key.len();
+                if let Some(value_start) = line[after_colon..].find(|c: char| !c.is_whitespace()) {
+                    let actual_value_start = after_colon + value_start;
+                    let value = line[actual_value_start..].trim();
+
+                    if !value.is_empty() && !value.starts_with('\'') && !value.starts_with('"') {
+                        // Need to quote this value
+                        let escaped_value = value.replace('\'', "''");
+                        processed_line = format!(
+                            "{}{} '{}'",
+                            &line[..after_colon],
+                            &line[after_colon..actual_value_start],
+                            escaped_value
+                        );
+                    }
+                }
+                break; // Only process first match per line
             }
         }
-        prev_char = ch;
+
+        result_lines.push(processed_line);
     }
+
+    let result = result_lines.join("\n");
 
     if result.trim().is_empty() {
         return Err(TelemetryError::Parse {
@@ -121,6 +163,14 @@ mod tests {
         assert!(result.contains('\n'));
         assert!(result.contains('\r'));
         assert!(result.contains('\t'));
+    }
+
+    #[test]
+    fn test_preprocess_quotes_problematic_values() {
+        let input = "UserName: O'Connor, Mike\nTeamName: Fast & Furious";
+        let result = preprocess_iracing_yaml(input).unwrap();
+        assert!(result.contains("UserName: 'O''Connor, Mike'"));
+        assert!(result.contains("TeamName: 'Fast & Furious'"));
     }
 
     #[test]

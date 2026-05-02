@@ -129,77 +129,10 @@ impl SessionInfoParser {
         Ok(yaml_str)
     }
 
-    /// Preprocess iRacing YAML to fix compatibility issues with unescaped characters
-    /// Based on iRacing forum discussion: <https://forums.iracing.com/discussion/comment/374646#Comment_374646>
-    pub fn preprocess_iracing_yaml(&self, yaml: &str) -> Result<String> {
-        const PROBLEMATIC_KEYS: &[&str] = &[
-            "AbbrevName:",
-            "TeamName:",
-            "UserName:",
-            "Initials:",
-            "DriverSetupName:",
-            "CarDesignStr:", // Car livery color codes - can start with comma
-        ];
-
-        // First pass: Remove all control characters (except \n, \r, \t)
-        let mut cleaned = String::with_capacity(yaml.len());
-        for ch in yaml.chars() {
-            if ch.is_control() && ch != '\n' && ch != '\r' && ch != '\t' {
-                // Skip control characters except basic whitespace
-                continue;
-            }
-            cleaned.push(ch);
-        }
-
-        let lines: Vec<&str> = cleaned.lines().collect();
-        let mut result_lines = Vec::with_capacity(lines.len());
-
-        for line in lines {
-            let mut processed_line = line.to_string();
-
-            // Check if this line contains any problematic keys
-            for &key in PROBLEMATIC_KEYS {
-                if let Some(colon_pos) = line.find(key) {
-                    let after_colon = colon_pos + key.len();
-                    if let Some(value_start) =
-                        line[after_colon..].find(|c: char| !c.is_whitespace())
-                    {
-                        let actual_value_start = after_colon + value_start;
-                        let value = line[actual_value_start..].trim();
-
-                        if !value.is_empty() && !value.starts_with('\'') && !value.starts_with('"')
-                        {
-                            // Need to quote this value
-                            let escaped_value = value.replace('\'', "''");
-                            processed_line = format!(
-                                "{}{} '{}'",
-                                &line[..after_colon],
-                                &line[after_colon..actual_value_start],
-                                escaped_value
-                            );
-                        }
-                    }
-                    break; // Only process first match per line
-                }
-            }
-
-            result_lines.push(processed_line);
-        }
-
-        let result = result_lines.join("\n");
-
-        // Handle edge case where input is just whitespace/newlines
-        if yaml.trim().is_empty() {
-            return Ok(yaml.to_string());
-        }
-
-        Ok(result)
-    }
-
     /// Parse YAML to SessionInfo struct (with automatic preprocessing)
     pub fn parse(&self, yaml: &str) -> Result<SessionInfo> {
         // Preprocess the YAML to handle iRacing's quirks (control characters, unquoted values)
-        let preprocessed = self.preprocess_iracing_yaml(yaml)?;
+        let preprocessed = crate::yaml_utils::preprocess_iracing_yaml(yaml)?;
 
         match serde_yaml_ng::from_str::<SessionInfo>(&preprocessed) {
             Ok(session_info) => {

@@ -46,7 +46,7 @@ mod error;
 #[cfg(any(test, feature = "benchmark"))]
 pub mod test_utils;
 pub mod types;
-mod yaml_utils;
+pub mod yaml_utils;
 
 // Stream-based telemetry architecture
 pub mod connection;
@@ -78,6 +78,9 @@ pub use schema::{SessionInfo, SessionInfoParser};
 // Windows memory exports
 #[cfg(windows)]
 pub use windows::{Connection as WindowsConnection, WaitResult};
+
+// YAML utilities exports
+pub use yaml_utils::preprocess_iracing_yaml;
 
 // Main API exports
 pub use types::UpdateRate;
