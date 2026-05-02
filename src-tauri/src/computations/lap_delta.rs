@@ -6,7 +6,8 @@ use serde::{Deserialize, Serialize};
 use crate::iracing::frames::AllFieldsFrame;
 use crate::utils::lock_or_recover;
 
-const MAX_REASONABLE_SECTOR_TIME: f32 = 600.0;
+const MAX_REASONABLE_SECTOR_TIME: f32 = 120.0;
+const MAX_REASONABLE_LAP_TIME: f32 = 600.0;
 
 pub struct LapDeltaState {
     pub last_sector_idx: i32,
@@ -328,7 +329,7 @@ fn handle_lap_change(
 
     // Save personal best if this completed lap is faster and all sectors valid.
     let lap_last_lap_time = last_lap_time_f64 as f32;
-    if lap_last_lap_time > 0.0 && lap_last_lap_time < MAX_REASONABLE_SECTOR_TIME {
+    if lap_last_lap_time > 0.0 && lap_last_lap_time < MAX_REASONABLE_LAP_TIME {
         let all_valid = locked.sector_times.iter().all(|t| t.is_some());
         if all_valid
             && locked
