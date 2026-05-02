@@ -5,13 +5,13 @@
 ///
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use crate::iracing::enums::Skies;
 
 use super::AllFieldsFrame;
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct EnvironmentFrame {
     /// Ambient air temperature in °C
     /// @see https://sajax.github.io/irsdkdocs/telemetry/airtemp/

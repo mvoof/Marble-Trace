@@ -1,6 +1,5 @@
 use pitwall::SessionInfo;
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use crate::iracing::frames::AllFieldsFrame;
 
@@ -69,7 +68,8 @@ impl FuelState {
     }
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub struct FuelComputedFrame {
     pub avg_per_lap: f32,

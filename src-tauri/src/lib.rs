@@ -2,20 +2,29 @@ mod computations;
 mod iracing;
 mod utils;
 
+#[cfg(feature = "dev")]
 use computations::{
-    fuel::{FuelComputedFrame, FuelState},
-    lap_delta::{LapDeltaFrame, LapDeltaState},
+    fuel::FuelComputedFrame,
+    lap_delta::LapDeltaFrame,
     pit_stops::PitStopsFrame,
     proximity::{LateralSide, NearbyCar, ProximityFrame, RadarDistances},
-    standings::{DriverEntriesFrame, DriverEntry, StandingsState},
+    standings::{DriverEntriesFrame, DriverEntry},
 };
+use computations::{fuel::FuelState, lap_delta::LapDeltaState, standings::StandingsState};
 use iracing::{
     get_last_session_info, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
-    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, EnvironmentFrame,
-    LapTimingFrame, SessionFrame, TelemetryState, WeatherForecastEntry,
+    TelemetryState,
 };
+#[cfg(feature = "dev")]
+use iracing::{
+    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, EnvironmentFrame,
+    LapTimingFrame, SessionFrame, WeatherForecastEntry,
+};
+#[cfg(feature = "dev")]
 use pitwall::SessionInfo;
+#[cfg(feature = "dev")]
 use specta::TypeCollection;
+#[cfg(feature = "dev")]
 use specta_typescript::Typescript;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
@@ -31,41 +40,42 @@ pub fn run() {
         )
         .init();
 
-    let mut types = TypeCollection::default();
-    types
-        .register::<CarDynamicsFrame>()
-        .register::<CarIdxFrame>()
-        .register::<CarInputsFrame>()
-        .register::<CarStatusFrame>()
-        .register::<ChassisFrame>()
-        .register::<LapTimingFrame>()
-        .register::<SessionFrame>()
-        .register::<EnvironmentFrame>()
-        .register::<SessionInfo>()
-        .register::<ProximityFrame>()
-        .register::<NearbyCar>()
-        .register::<RadarDistances>()
-        .register::<LateralSide>()
-        .register::<FuelComputedFrame>()
-        .register::<DriverEntriesFrame>()
-        .register::<DriverEntry>()
-        .register::<PitStopsFrame>()
-        .register::<LapDeltaFrame>()
-        .register::<WeatherForecastEntry>();
+    #[cfg(feature = "dev")]
+    {
+        let mut types = TypeCollection::default();
+        types
+            .register::<CarDynamicsFrame>()
+            .register::<CarIdxFrame>()
+            .register::<CarInputsFrame>()
+            .register::<CarStatusFrame>()
+            .register::<ChassisFrame>()
+            .register::<LapTimingFrame>()
+            .register::<SessionFrame>()
+            .register::<EnvironmentFrame>()
+            .register::<SessionInfo>()
+            .register::<ProximityFrame>()
+            .register::<NearbyCar>()
+            .register::<RadarDistances>()
+            .register::<LateralSide>()
+            .register::<FuelComputedFrame>()
+            .register::<DriverEntriesFrame>()
+            .register::<DriverEntry>()
+            .register::<PitStopsFrame>()
+            .register::<LapDeltaFrame>()
+            .register::<WeatherForecastEntry>();
 
-    Typescript::default()
-        .export_to("../src/types/bindings.ts", &types)
-        .unwrap();
+        Typescript::default()
+            .export_to("../src/types/bindings.ts", &types)
+            .unwrap();
+    }
 
-    let mut builder = Builder::default()
+    let builder = Builder::default()
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build());
 
-    #[cfg(debug_assertions)]
-    {
-        builder = builder.plugin(tauri_plugin_mcp_bridge::init());
-    }
+    #[cfg(feature = "dev")]
+    let builder = builder.plugin(tauri_plugin_mcp_bridge::init());
 
     builder
         .setup(|app| {

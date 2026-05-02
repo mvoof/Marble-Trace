@@ -3,7 +3,6 @@ use std::sync::Mutex;
 
 use pitwall::SessionInfo;
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use crate::iracing::enums::TrackSurface;
 use crate::iracing::frames::AllFieldsFrame;
@@ -106,7 +105,8 @@ fn parse_class_color(raw: &Option<String>) -> String {
     }
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DriverEntry {
     pub car_idx: i32,
@@ -145,7 +145,8 @@ pub struct StandingsState {
     pub cached_car_classes: HashMap<String, String>,
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct DriverEntriesFrame {
     pub entries: Vec<DriverEntry>,

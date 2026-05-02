@@ -1,6 +1,5 @@
 use pitwall::SessionInfo;
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use crate::iracing::frames::AllFieldsFrame;
 
@@ -18,7 +17,8 @@ const ALONGSIDE_THRESHOLD_M: f32 = 5.0;
 const BUMPER_THRESHOLD_M: f32 = 2.2;
 const CAR_LENGTH_M: f32 = 4.4;
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum LateralSide {
     Left,
@@ -26,7 +26,8 @@ pub enum LateralSide {
     Center,
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct NearbyCar {
     pub car_idx: i32,
@@ -37,7 +38,8 @@ pub struct NearbyCar {
     pub clearance: f32,
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct RadarDistances {
     pub front_dist: f32,
@@ -46,7 +48,8 @@ pub struct RadarDistances {
     pub right_dist: Option<f32>,
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ProximityFrame {
     pub nearby_cars: Vec<NearbyCar>,

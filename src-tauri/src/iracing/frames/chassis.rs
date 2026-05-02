@@ -8,11 +8,11 @@
 ///
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use super::AllFieldsFrame;
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ChassisFrame {
     // === Ride Height (meters) ===
     pub lf_ride_height: Option<f32>,

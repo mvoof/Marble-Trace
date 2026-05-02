@@ -5,11 +5,11 @@
 ///
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use super::AllFieldsFrame;
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
 pub struct LapTimingFrame {
     /// Current lap number
     /// @see https://sajax.github.io/irsdkdocs/telemetry/lap/

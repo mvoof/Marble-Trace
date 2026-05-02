@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
-use specta::Type;
 use std::collections::HashMap;
 
 use super::enums::Skies;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Type, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "PascalCase")]
 #[serde(default)]
 pub struct WeatherForecastEntry {

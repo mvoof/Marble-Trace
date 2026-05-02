@@ -2,7 +2,6 @@ use std::sync::Mutex;
 
 use pitwall::SessionInfo;
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use crate::iracing::frames::AllFieldsFrame;
 use crate::utils::lock_or_recover;
@@ -62,7 +61,8 @@ impl LapDeltaState {
     }
 }
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct LapDeltaFrame {
     pub sector_times: Vec<Option<f32>>,

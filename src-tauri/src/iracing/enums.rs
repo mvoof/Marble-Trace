@@ -1,7 +1,7 @@
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use specta::Type;
 
-#[derive(Serialize_repr, Deserialize_repr, Type, Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize_repr, Deserialize_repr, Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[repr(i32)]
 pub enum TrackSurface {
     #[default]
@@ -24,7 +24,8 @@ impl From<i32> for TrackSurface {
     }
 }
 
-#[derive(Serialize_repr, Deserialize_repr, Type, Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize_repr, Deserialize_repr, Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[repr(i32)]
 pub enum SessionState {
     #[default]
@@ -51,7 +52,8 @@ impl From<i32> for SessionState {
     }
 }
 
-#[derive(Serialize_repr, Deserialize_repr, Type, Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize_repr, Deserialize_repr, Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[repr(i32)]
 pub enum Skies {
     #[default]

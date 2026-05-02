@@ -8,13 +8,13 @@
 ///
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use crate::iracing::enums::SessionState;
 
 use super::AllFieldsFrame;
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
 pub struct SessionFrame {
     /// Seconds since the session started
     /// @see https://sajax.github.io/irsdkdocs/telemetry/sessiontime/

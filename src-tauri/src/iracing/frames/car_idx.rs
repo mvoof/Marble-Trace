@@ -8,13 +8,13 @@
 /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxlapdistpct/
 /// @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
 use serde::{Deserialize, Serialize};
-use specta::Type;
 
 use crate::iracing::enums::TrackSurface;
 
 use super::AllFieldsFrame;
 
-#[derive(Serialize, Deserialize, Type, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CarIdxFrame {
     /// Percentage distance around lap for each car (-1 = not on track)
     /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxlapdistpct/
