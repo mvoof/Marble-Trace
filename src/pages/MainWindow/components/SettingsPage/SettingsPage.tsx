@@ -1,12 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Switch, Segmented, message } from 'antd';
+import { Button, Switch, Segmented, message, Select } from 'antd';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 import { unitsStore } from '../../../../store/units.store';
 import type { UnitSystem } from '../../../../types/units';
 import { downloadSnapshot } from '../../../../storybook/capture-snapshot';
 import { HotkeyRecorder } from '../../../../components/shared/HotkeyRecorder';
-import { RefreshCw, ArrowUpCircle, AlertCircle } from 'lucide-react';
+import { RefreshCw, ArrowUpCircle, AlertCircle, Clock } from 'lucide-react';
 import styles from '../WidgetSettings/WidgetSettings.module.scss';
 
 const isDev = import.meta.env.DEV;
@@ -143,6 +143,30 @@ export const SettingsPage = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>Check Interval</div>
+              <div className={styles.fieldDesc}>
+                How often to check for updates while the app is running.
+              </div>
+            </div>
+            <Select
+              style={{ width: 140 }}
+              value={appSettingsStore.updateCheckInterval}
+              onChange={(v) => appSettingsStore.setUpdateCheckInterval(v)}
+              options={[
+                { label: 'Every hour', value: 1 },
+                { label: 'Every 3 hours', value: 3 },
+                { label: 'Every 6 hours', value: 6 },
+                { label: 'Every 12 hours', value: 12 },
+                { label: 'Daily', value: 24 },
+              ]}
+              disabled={!appSettingsStore.autoUpdate}
+            />
+          </div>
+        </div>
+
+        <div className={styles.fieldGroup}>
           <div className={styles.fieldRow} style={{ alignItems: 'center' }}>
             <div className={styles.fieldTexts}>
               <div className={styles.fieldTitle}>
@@ -151,7 +175,22 @@ export const SettingsPage = observer(() => {
                   v{appSettingsStore.currentVersion}
                 </span>
               </div>
-              <div className={styles.fieldDesc}>
+              {appSettingsStore.lastUpdateCheck && (
+                <div
+                  className={styles.fieldDesc}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    marginTop: 2,
+                  }}
+                >
+                  <Clock size={12} />
+                  Last checked:{' '}
+                  {new Date(appSettingsStore.lastUpdateCheck).toLocaleString()}
+                </div>
+              )}
+              <div className={styles.fieldDesc} style={{ marginTop: 4 }}>
                 {appSettingsStore.updateStatus === 'idle' &&
                   'Your application is up to date.'}
                 {appSettingsStore.updateStatus === 'checking' &&

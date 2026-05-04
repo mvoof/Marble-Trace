@@ -13,6 +13,9 @@ export interface Settings {
     hideAllWidgetsHotkey: string;
     hideWidgetsWhenGameClosed: boolean;
     hideAllWidgets: boolean;
+    autoUpdate?: boolean;
+    updateCheckInterval?: number;
+    lastUpdateCheck?: string;
   };
   units: {
     system: UnitSystem;
@@ -33,6 +36,16 @@ export const hydrateStores = (saved: Settings) => {
         saved.app.hideWidgetsWhenGameClosed
       );
       appSettingsStore.setHideAllWidgets(saved.app.hideAllWidgets);
+
+      if (saved.app.autoUpdate !== undefined) {
+        appSettingsStore.setAutoUpdate(saved.app.autoUpdate);
+      }
+      if (saved.app.updateCheckInterval !== undefined) {
+        appSettingsStore.setUpdateCheckInterval(saved.app.updateCheckInterval);
+      }
+      if (saved.app.lastUpdateCheck) {
+        appSettingsStore.setLastUpdateCheck(saved.app.lastUpdateCheck);
+      }
     }
     if (saved.units) {
       unitsStore.setSystem(saved.units.system);
@@ -55,6 +68,9 @@ export const saveSettings = async (store: Store) => {
       hideAllWidgetsHotkey: appSettingsStore.hideAllWidgetsHotkey,
       hideWidgetsWhenGameClosed: appSettingsStore.hideWidgetsWhenGameClosed,
       hideAllWidgets: appSettingsStore.hideAllWidgets,
+      autoUpdate: appSettingsStore.autoUpdate,
+      updateCheckInterval: appSettingsStore.updateCheckInterval,
+      lastUpdateCheck: appSettingsStore.lastUpdateCheck,
     },
     units: {
       system: unitsStore.system,

@@ -71,6 +71,24 @@ export const initMainSync = async () => {
           }
         ),
         reaction(
+          () => appSettingsStore.autoUpdate,
+          () => {
+            void onSave();
+          }
+        ),
+        reaction(
+          () => appSettingsStore.updateCheckInterval,
+          () => {
+            void onSave();
+          }
+        ),
+        reaction(
+          () => appSettingsStore.lastUpdateCheck,
+          () => {
+            void onSave();
+          }
+        ),
+        reaction(
           () => {
             const s = widgetSettingsStore.getStandingsSettings();
             return [

@@ -23,10 +23,13 @@ class AppSettingsStore {
 
   // Update system
   autoUpdate = true;
+  updateCheckInterval = 3; // hours
   updateStatus: UpdateStatus = 'idle';
   availableVersion: string | null = null;
   currentVersion = '';
+  lastUpdateCheck: string | null = null;
   updateError: string | null = null;
+  private updateTimer: number | null = null;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -41,6 +44,24 @@ class AppSettingsStore {
 
     if (this.autoUpdate) {
       void this.checkForUpdates(true);
+      this.startUpdateTimer();
+    }
+  }
+
+  private startUpdateTimer() {
+    this.stopUpdateTimer();
+    if (!this.autoUpdate) return;
+
+    const ms = this.updateCheckInterval * 60 * 60 * 1000;
+    this.updateTimer = window.setInterval(() => {
+      void this.checkForUpdates(true);
+    }, ms);
+  }
+
+  private stopUpdateTimer() {
+    if (this.updateTimer !== null) {
+      window.clearInterval(this.updateTimer);
+      this.updateTimer = null;
     }
   }
 
@@ -56,6 +77,7 @@ class AppSettingsStore {
     try {
       const update = await check();
       runInAction(() => {
+        this.lastUpdateCheck = new Date().toISOString();
         if (update) {
           this.updateStatus = 'available';
           this.availableVersion = update.version;
@@ -103,6 +125,22 @@ class AppSettingsStore {
 
   setAutoUpdate(value: boolean) {
     this.autoUpdate = value;
+    if (value) {
+      this.startUpdateTimer();
+    } else {
+      this.stopUpdateTimer();
+    }
+  }
+
+  setUpdateCheckInterval(value: number) {
+    this.updateCheckInterval = value;
+    if (this.autoUpdate) {
+      this.startUpdateTimer();
+    }
+  }
+
+  setLastUpdateCheck(value: string) {
+    this.lastUpdateCheck = value;
   }
 
   toggleDragMode() {
