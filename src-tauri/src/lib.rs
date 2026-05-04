@@ -72,7 +72,9 @@ pub fn run() {
     let builder = Builder::default()
         .plugin(tauri_plugin_window_state::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
-        .plugin(tauri_plugin_global_shortcut::Builder::new().build());
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init());
 
     #[cfg(feature = "dev")]
     let builder = builder.plugin(tauri_plugin_mcp_bridge::init());

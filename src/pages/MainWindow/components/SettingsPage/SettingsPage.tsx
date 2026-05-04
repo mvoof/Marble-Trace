@@ -6,6 +6,7 @@ import { unitsStore } from '../../../../store/units.store';
 import type { UnitSystem } from '../../../../types/units';
 import { downloadSnapshot } from '../../../../storybook/capture-snapshot';
 import { HotkeyRecorder } from '../../../../components/shared/HotkeyRecorder';
+import { RefreshCw, ArrowUpCircle, AlertCircle } from 'lucide-react';
 import styles from '../WidgetSettings/WidgetSettings.module.scss';
 
 const isDev = import.meta.env.DEV;
@@ -122,6 +123,96 @@ export const SettingsPage = observer(() => {
               void unitsStore.setSystem(value as UnitSystem);
             }}
           />
+        </div>
+      </Card>
+
+      <Card title="Application Updates">
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>Auto-Check for Updates</div>
+              <div className={styles.fieldDesc}>
+                Automatically check for new versions on application startup.
+              </div>
+            </div>
+            <Switch
+              checked={appSettingsStore.autoUpdate}
+              onChange={(v) => appSettingsStore.setAutoUpdate(v)}
+            />
+          </div>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow} style={{ alignItems: 'center' }}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>
+                Current Version:{' '}
+                <span style={{ color: '#8b8e98' }}>
+                  v{appSettingsStore.currentVersion}
+                </span>
+              </div>
+              <div className={styles.fieldDesc}>
+                {appSettingsStore.updateStatus === 'idle' &&
+                  'Your application is up to date.'}
+                {appSettingsStore.updateStatus === 'checking' &&
+                  'Checking for updates...'}
+                {appSettingsStore.updateStatus === 'available' && (
+                  <span style={{ color: '#52c41a' }}>
+                    New version v{appSettingsStore.availableVersion} is
+                    available!
+                  </span>
+                )}
+                {appSettingsStore.updateStatus === 'downloading' &&
+                  'Downloading update...'}
+                {appSettingsStore.updateStatus === 'ready' &&
+                  'Update downloaded. Restarting...'}
+                {appSettingsStore.updateStatus === 'error' && (
+                  <span style={{ color: '#ff4d4f' }}>
+                    <AlertCircle
+                      size={12}
+                      style={{ marginRight: 4, verticalAlign: 'middle' }}
+                    />
+                    Update check failed.
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {['available', 'downloading', 'ready'].includes(
+              appSettingsStore.updateStatus
+            ) ? (
+              <Button
+                type="primary"
+                icon={<ArrowUpCircle size={16} />}
+                onClick={() => void appSettingsStore.installUpdate()}
+                loading={appSettingsStore.updateStatus === 'downloading'}
+                disabled={appSettingsStore.updateStatus === 'ready'}
+              >
+                {appSettingsStore.updateStatus === 'ready'
+                  ? 'Restarting...'
+                  : 'Install & Restart'}
+              </Button>
+            ) : (
+              <Button
+                icon={
+                  <RefreshCw
+                    size={16}
+                    className={
+                      appSettingsStore.updateStatus === 'checking'
+                        ? 'anticon-spin'
+                        : ''
+                    }
+                  />
+                }
+                onClick={() => void appSettingsStore.checkForUpdates()}
+                disabled={appSettingsStore.updateStatus === 'checking'}
+              >
+                {appSettingsStore.updateStatus === 'checking'
+                  ? 'Checking...'
+                  : 'Check for Updates'}
+              </Button>
+            )}
+          </div>
         </div>
       </Card>
 

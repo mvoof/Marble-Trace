@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from 'antd';
+import { observer } from 'mobx-react-lite';
 import { Minus, Square, Copy, X } from 'lucide-react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import styles from './TitleBar.module.scss';
 import Logo from '../../../../assets/logo.svg?react';
 
-export const TitleBar = () => {
+export const TitleBar = observer(() => {
   const [isMaximized, setIsMaximized] = useState(false);
 
   useEffect(() => {
@@ -74,4 +75,4 @@ export const TitleBar = () => {
       </div>
     </div>
   );
-};
+});

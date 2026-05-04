@@ -30,6 +30,8 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 tauri-plugin-store = "2"
 tauri-plugin-window-state = "2"
 tauri-plugin-global-shortcut = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
 tauri-plugin-mcp-bridge = "0.10"
 specta = { version = "2.0.0-rc.22", features = ["derive"], optional = true }
 specta-typescript = { version = "0.0.9", optional = true }
