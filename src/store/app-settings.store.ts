@@ -33,7 +33,9 @@ class AppSettingsStore {
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
-    void this.init();
+    void this.init().catch((err) =>
+      console.error('Failed to initialize AppSettingsStore:', err)
+    );
   }
 
   async init() {
