@@ -105,6 +105,7 @@ class AppSettingsStore {
 
     runInAction(() => {
       this.updateStatus = 'downloading';
+      this.updateError = null;
     });
 
     try {
@@ -115,6 +116,11 @@ class AppSettingsStore {
           this.updateStatus = 'ready';
         });
         await relaunch();
+      } else {
+        runInAction(() => {
+          this.updateStatus = 'idle';
+          this.availableVersion = null;
+        });
       }
     } catch (err) {
       console.error('Failed to install update:', err);
