@@ -59,6 +59,9 @@ export const DriverRow = observer(
         );
     }
 
+    const isLappedBehind =
+      !driver.isPlayer && player !== null && driver.lap < player.lap;
+
     const rowClass = [
       styles.driverRow,
       driver.isPlayer ? styles.driverRowPlayer : '',
@@ -93,7 +96,7 @@ export const DriverRow = observer(
 
         <div className={styles.infoBlock}>
           <span
-            className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
+            className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''} ${isLappedBehind ? styles.driverNameLappedBehind : ''}`}
           >
             {settings.abbreviateNames
               ? abbreviateName(driver.userName)
