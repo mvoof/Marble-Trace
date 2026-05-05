@@ -29,14 +29,12 @@ export const DriverRow = observer(
 
     const relativeGap = player ? computeRelativeGap(driver, player) : 0;
 
-    const playerTotalDist = player ? player.lap + player.lapDistPct : 0;
-    const driverTotalDist = driver.lap + driver.lapDistPct;
-    const distDiff = player ? driverTotalDist - playerTotalDist : 0;
+    const lapDiff = player
+      ? driver.lap + driver.lapDistPct - (player.lap + player.lapDistPct)
+      : 0;
 
-    const isLappedBehind =
-      !driver.isPlayer && player !== null && distDiff < -0.5;
-
-    const isLappingUs = !driver.isPlayer && player !== null && distDiff > 0.5;
+    const isLappedBehind = !driver.isPlayer && lapDiff < -0.5;
+    const isLappingUs = !driver.isPlayer && lapDiff > 0.5;
 
     const f2TimeStr =
       relativeGap > 0
