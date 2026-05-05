@@ -96,7 +96,13 @@ export const DriverRow = observer(
 
         <div className={styles.infoBlock}>
           <span
-            className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''} ${isLappedBehind ? styles.driverNameLappedBehind : ''}`}
+            className={[
+              styles.driverName,
+              driver.isPlayer ? styles.driverNamePlayer : '',
+              isLappedBehind ? styles.driverNameLappedBehind : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
           >
             {settings.abbreviateNames
               ? abbreviateName(driver.userName)
