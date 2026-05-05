@@ -59,7 +59,7 @@ jobs:
   rust-checks:
     name: Rust Quality Checks
     needs: check-changes
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     if: ${{ needs.check-changes.outputs.app == 'true' }}
     steps:
       - uses: actions/checkout@v5
@@ -68,7 +68,7 @@ jobs:
         uses: ./.github/actions/setup-dependencies
         with:
           node-version: '20'
-          platform: ubuntu-latest
+          platform: windows-latest
           cache-rust: 'true'
 
       - name: Cargo Check
