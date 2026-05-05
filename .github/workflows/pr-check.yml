@@ -3,9 +3,11 @@ name: PR Check
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, labeled]
     paths-ignore:
       - 'docs/**'
       - '**.md'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -37,7 +39,7 @@ jobs:
               - '.github/**'
 
   lint:
-    name: Lint
+    name: Lint (JS)
     needs: check-changes
     runs-on: ubuntu-latest
     if: ${{ needs.check-changes.outputs.app == 'true' }}
@@ -49,15 +51,47 @@ jobs:
         with:
           node-version: '20'
           platform: ubuntu-latest
+          cache-rust: 'false'
 
       - name: Run ESLint
         run: npm run lint
 
+  rust-checks:
+    name: Rust Quality Checks
+    needs: check-changes
+    runs-on: ubuntu-latest
+    if: ${{ needs.check-changes.outputs.app == 'true' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          node-version: '20'
+          platform: ubuntu-latest
+          cache-rust: 'true'
+
+      - name: Cargo Check
+        working-directory: src-tauri
+        run: cargo check
+        shell: bash
+
+      - name: Cargo Clippy
+        working-directory: src-tauri
+        run: cargo clippy -- -D warnings
+        shell: bash
+
+      - name: Cargo Fmt
+        working-directory: src-tauri
+        run: cargo fmt --check
+        shell: bash
+
   build-app:
     name: Build App
-    environment: pr-review
-    needs: [check-changes, lint]
-    if: ${{ needs.check-changes.outputs.app == 'true' }}
+    needs: [lint, rust-checks]
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'run-build') ||
+      github.event_name == 'workflow_dispatch'
     strategy:
       fail-fast: false
       matrix:
@@ -71,6 +105,7 @@ jobs:
         with:
           node-version: '20'
           platform: ${{ matrix.platform }}
+          cache-rust: 'true'
 
       - name: Build Tauri App
         run: npm run tauri:build:dev
@@ -85,7 +120,7 @@ jobs:
 
   status-check:
     name: PR Status
-    needs: [check-changes, lint, build-app]
+    needs: [check-changes, lint, rust-checks, build-app]
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
@@ -93,6 +128,7 @@ jobs:
         run: |
           echo "App changes: ${{ needs.check-changes.outputs.app }}"
           echo "Lint result: ${{ needs.lint.result }}"
+          echo "Rust checks result: ${{ needs.rust-checks.result }}"
           echo "Build result: ${{ needs.build-app.result }}"
 
           if [ "${{ needs.check-changes.outputs.app }}" != "true" ]; then
@@ -102,6 +138,11 @@ jobs:
 
           if [ "${{ needs.lint.result }}" != "success" ] && [ "${{ needs.lint.result }}" != "skipped" ]; then
             echo "Lint failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.rust-checks.result }}" != "success" ] && [ "${{ needs.rust-checks.result }}" != "skipped" ]; then
+            echo "Rust checks failed"
             exit 1
           fi
 

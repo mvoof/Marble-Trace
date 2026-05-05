@@ -8,6 +8,10 @@ inputs:
   platform:
     description: 'Runner platform (e.g., ubuntu-latest, windows-latest, macos-latest)'
     required: true
+  cache-rust:
+    description: 'Whether to cache Rust dependencies (disable for lint-only jobs)'
+    required: false
+    default: 'true'
 runs:
   using: composite
   steps:
@@ -27,19 +31,17 @@ runs:
       run: npm ci
       shell: bash
 
-    - name: Cache Rust dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cargo
-          ./src-tauri/target
-        key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
-        restore-keys: ${{ runner.os }}-rust-
-
     - name: Install Rust stable
       uses: dtolnay/rust-toolchain@stable
       with:
         targets: ${{ inputs.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+        components: rustfmt, clippy
+
+    - name: Cache Rust dependencies
+      if: ${{ inputs.cache-rust == 'true' }}
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: src-tauri -> target
 
     - name: Install Dependencies (Ubuntu only)
       if: inputs.platform == 'ubuntu-latest'
