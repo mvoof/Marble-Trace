@@ -1,6 +1,7 @@
 @use '../../../styles/variables' as *;
 
 .delta {
+  min-width: 8ch;
   text-align: center;
   font-family: $font-widget;
   font-weight: 700;

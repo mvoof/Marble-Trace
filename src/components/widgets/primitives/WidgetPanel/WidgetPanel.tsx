@@ -11,6 +11,7 @@ interface WidgetPanelProps {
   gap?: number;
   style?: CSSProperties;
   fitContent?: boolean;
+  fitHeight?: boolean;
 }
 
 export const WidgetPanel = forwardRef<HTMLElement, WidgetPanelProps>(
@@ -23,12 +24,13 @@ export const WidgetPanel = forwardRef<HTMLElement, WidgetPanelProps>(
       gap = 12,
       style,
       fitContent = false,
+      fitHeight = false,
     },
     ref
   ) => (
     <section
       ref={ref}
-      className={`${styles.panel} ${fitContent ? styles.fitContent : ''} ${className ?? ''}`}
+      className={`${styles.panel} ${fitContent ? styles.fitContent : ''} ${fitHeight ? styles.fitHeight : ''} ${className ?? ''}`}
       style={{
         minWidth,
         flexDirection: direction,

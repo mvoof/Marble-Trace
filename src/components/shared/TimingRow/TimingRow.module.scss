@@ -2,7 +2,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: rem(50) rem(80) rem(65);
+  grid-template-columns: rem(50) 9ch 7ch;
   align-items: center;
   gap: rem(4);
   font-family: $font-mono;
