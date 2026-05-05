@@ -6,6 +6,7 @@ interface TimingRowProps {
   delta: string;
   accentColor: string;
   deltaColor?: string;
+  fill?: boolean;
 }
 
 export const TimingRow = ({
@@ -14,20 +15,19 @@ export const TimingRow = ({
   delta,
   accentColor,
   deltaColor,
+  fill = false,
 }: TimingRowProps) => (
   <div
-    className={`${styles.row} ${!delta ? styles.noDelta : ''}`}
+    className={`${styles.row} ${fill ? styles.fill : ''}`}
     style={{ borderLeftColor: accentColor }}
   >
     <span className={styles.label}>{label}</span>
     <span className={styles.time}>{time}</span>
-    {delta && (
-      <span
-        className={styles.delta}
-        style={{ color: deltaColor ?? accentColor }}
-      >
-        {delta}
-      </span>
-    )}
+    <span
+      className={`${styles.delta} ${!delta ? styles.hiddenDelta : ''}`}
+      style={{ color: deltaColor ?? accentColor }}
+    >
+      {delta || ' '}
+    </span>
   </div>
 );

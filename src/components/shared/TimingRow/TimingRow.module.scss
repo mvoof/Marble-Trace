@@ -2,7 +2,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: rem(50) 1fr rem(52);
+  grid-template-columns: rem(50) 9ch 7ch;
   align-items: center;
   gap: rem(4);
   font-family: $font-mono;
@@ -15,12 +15,15 @@
     background-color: rgba(39, 39, 42, 0.3);
   }
 
-  &.noDelta {
-    grid-template-columns: rem(50) 1fr;
+  &.fill {
+    flex: 1 1 0;
+    min-width: rem(220);
+    border-bottom: none;
+    border-right: 1px solid rgba(39, 39, 42, 0.5);
+    grid-template-columns: rem(50) minmax(rem(80), 2fr) minmax(rem(65), 1fr);
 
-    .time {
+    &:last-child {
       border-right: none;
-      padding-right: 0;
     }
   }
 }
@@ -31,6 +34,8 @@
   letter-spacing: 1px;
   font-family: $font-widget;
   text-transform: uppercase;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .time {
@@ -41,6 +46,13 @@
   text-align: right;
   padding-right: rem(6);
   border-right: 1px solid rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hiddenDelta {
+  visibility: hidden;
 }
 
 .delta {
@@ -48,4 +60,7 @@
   font-weight: 700;
   text-align: right;
   font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

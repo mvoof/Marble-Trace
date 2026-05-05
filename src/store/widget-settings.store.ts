@@ -2,6 +2,8 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { invoke } from '@tauri-apps/api/core';
 import {
   DEFAULT_WIDGETS,
+  LAP_DELTA_DEFAULT_WIDTHS,
+  LAP_TIMES_DEFAULT_WIDTHS,
   LINEAR_MAP_SIZES,
   INPUT_TRACE_SIZES,
 } from './widget-defaults';
@@ -228,6 +230,38 @@ class WidgetSettingsStore {
           widget.designWidth = size.designWidth;
           widget.designHeight = size.designHeight;
         }
+      }
+    }
+
+    if (
+      (id === 'lap-times' && newSettings['lap-times']?.layout) ||
+      (id === 'lap-delta' && newSettings['lap-delta']?.layout)
+    ) {
+      const widgetId = id;
+      const defaultWidths =
+        widgetId === 'lap-times'
+          ? LAP_TIMES_DEFAULT_WIDTHS
+          : LAP_DELTA_DEFAULT_WIDTHS;
+
+      const prevLayout = prevSettings?.[widgetId]?.layout ?? 'vertical';
+      const nextLayout = newSettings[widgetId]!.layout;
+
+      if (prevLayout !== nextLayout) {
+        const prevWidths = prevSettings?.[widgetId]?.layoutWidths ?? {};
+        const savedWidths = { ...prevWidths, [prevLayout]: widget.width };
+        const nextWidth = savedWidths[nextLayout] ?? defaultWidths[nextLayout];
+
+        widget.customSettings = {
+          ...widget.customSettings,
+          [widgetId]: {
+            ...(widget.customSettings?.[widgetId] ?? {}),
+            ...newSettings[widgetId],
+            layoutWidths: savedWidths,
+          },
+        };
+
+        widget.width = nextWidth ?? widget.width;
+        widget.designWidth = widget.width;
       }
     }
   }

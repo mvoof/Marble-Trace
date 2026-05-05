@@ -1,9 +1,4 @@
-import {
-  forwardRef,
-  useRef,
-  type MutableRefObject,
-  type RefObject,
-} from 'react';
+import { useRef, type MutableRefObject, type RefObject } from 'react';
 import { TimingRow } from '../../shared/TimingRow/TimingRow';
 import { WidgetPanel } from '../primitives/WidgetPanel';
 import {
@@ -37,88 +32,83 @@ const DELTA_STATE_CLASS: Record<DeltaState, string> = {
   neutral: styles.deltaNeutral,
 };
 
-export const LapDeltaWidget = forwardRef<HTMLElement, LapDeltaWidgetProps>(
-  (
-    {
-      initialDeltaFormatted,
-      initialDeltaState,
-      sectorDeltas,
-      sectorTimes,
-      layout,
-      showSectorTimes,
-      deltaDisplayRef,
-    },
-    ref
-  ) => {
-    const deltaDivRef = useRef<HTMLDivElement>(null);
+export const LapDeltaWidget = ({
+  initialDeltaFormatted,
+  initialDeltaState,
+  sectorDeltas,
+  sectorTimes,
+  layout,
+  showSectorTimes,
+  deltaDisplayRef,
+}: LapDeltaWidgetProps) => {
+  const deltaDivRef = useRef<HTMLDivElement>(null);
+  const isHorizontal = layout === 'horizontal';
 
-    const assignDeltaDisplayHandle = (el: HTMLDivElement | null) => {
-      (deltaDivRef as MutableRefObject<HTMLDivElement | null>).current = el;
-      if (deltaDisplayRef && 'current' in deltaDisplayRef) {
-        (
-          deltaDisplayRef as MutableRefObject<DeltaDisplayHandle | null>
-        ).current = el
+  const assignDeltaDisplayHandle = (el: HTMLDivElement | null) => {
+    (deltaDivRef as MutableRefObject<HTMLDivElement | null>).current = el;
+    if (deltaDisplayRef && 'current' in deltaDisplayRef) {
+      (deltaDisplayRef as MutableRefObject<DeltaDisplayHandle | null>).current =
+        el
           ? {
               update: (text, state) => {
                 el.textContent = text;
                 el.className = [
                   styles.delta,
                   DELTA_STATE_CLASS[state],
-                  layout === 'horizontal' ? styles.deltaHorizontal : '',
+                  isHorizontal ? styles.deltaHorizontal : '',
                 ]
                   .filter(Boolean)
                   .join(' ');
               },
             }
           : null;
-      }
-    };
+    }
+  };
 
-    const sectorCount = Math.max(sectorDeltas.length, sectorTimes.length);
-    const sectors = Array.from({ length: sectorCount }, (_, i) => ({
-      time: sectorTimes[i] ?? null,
-      delta: sectorDeltas[i] ?? null,
-      accent: SECTOR_ACCENT_COLORS[i % SECTOR_ACCENT_COLORS.length],
-    }));
+  const sectorCount = Math.max(sectorDeltas.length, sectorTimes.length);
+  const sectors = Array.from({ length: sectorCount }, (_, i) => ({
+    time: sectorTimes[i] ?? null,
+    delta: sectorDeltas[i] ?? null,
+    accent: SECTOR_ACCENT_COLORS[i % SECTOR_ACCENT_COLORS.length],
+  }));
 
-    return (
-      <WidgetPanel
-        ref={ref}
-        direction="column"
-        gap={0}
-        minWidth={150}
-        fitContent
+  return (
+    <WidgetPanel
+      direction="column"
+      gap={0}
+      minWidth={150}
+      fitContent={!isHorizontal}
+    >
+      <div
+        ref={assignDeltaDisplayHandle}
+        className={`${styles.delta} ${DELTA_STATE_CLASS[initialDeltaState]} ${isHorizontal ? styles.deltaHorizontal : ''}`}
       >
-        <div
-          ref={assignDeltaDisplayHandle}
-          className={`${styles.delta} ${DELTA_STATE_CLASS[initialDeltaState]} ${layout === 'horizontal' ? styles.deltaHorizontal : ''}`}
-        >
-          {initialDeltaFormatted}
-        </div>
+        {initialDeltaFormatted}
+      </div>
 
-        {showSectorTimes && (
-          <div
-            className={
-              layout === 'horizontal'
-                ? styles.sectorListHorizontal
-                : styles.sectorListVertical
-            }
-          >
-            {sectors.map((s, i) => (
-              <TimingRow
-                key={i}
-                label={`S${i + 1}`}
-                time={formatSectorTime(s.time)}
-                delta={formatSectorDelta(s.delta)}
-                accentColor={s.accent}
-                deltaColor={getDeltaColor(getSectorDeltaState(s.delta))}
-              />
-            ))}
-          </div>
-        )}
-      </WidgetPanel>
-    );
-  }
-);
+      {showSectorTimes && (
+        <div
+          className={
+            isHorizontal
+              ? styles.sectorListHorizontal
+              : styles.sectorListVertical
+          }
+        >
+          {sectors.map((s, i) => (
+            <TimingRow
+              key={i}
+              label={`S${i + 1}`}
+              time={formatSectorTime(s.time)}
+              delta={formatSectorDelta(s.delta)}
+              accentColor={s.accent}
+              deltaColor={getDeltaColor(getSectorDeltaState(s.delta))}
+              fill={isHorizontal}
+            />
+          ))}
+        </div>
+      )}
+    </WidgetPanel>
+  );
+};
 
 LapDeltaWidget.displayName = 'LapDeltaWidget';

@@ -12,6 +12,14 @@ inputs:
     description: 'Whether to cache Rust dependencies (disable for lint-only jobs)'
     required: false
     default: 'true'
+  install-rust:
+    description: 'Whether to install Rust toolchain'
+    required: false
+    default: 'true'
+  install-system-deps:
+    description: 'Whether to install platform system dependencies (GUI libs)'
+    required: false
+    default: 'true'
 runs:
   using: composite
   steps:
@@ -32,19 +40,20 @@ runs:
       shell: bash
 
     - name: Install Rust stable
+      if: ${{ inputs.install-rust == 'true' }}
       uses: dtolnay/rust-toolchain@stable
       with:
         targets: ${{ inputs.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
         components: rustfmt, clippy
 
     - name: Cache Rust dependencies
-      if: ${{ inputs.cache-rust == 'true' }}
+      if: ${{ inputs.cache-rust == 'true' && inputs.install-rust == 'true' }}
       uses: swatinem/rust-cache@v2
       with:
         workspaces: src-tauri -> target
 
     - name: Install Dependencies (Ubuntu only)
-      if: inputs.platform == 'ubuntu-latest'
+      if: inputs.platform == 'ubuntu-latest' && inputs.install-system-deps == 'true'
       run: |
         sudo apt update
         sudo apt install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf rpm

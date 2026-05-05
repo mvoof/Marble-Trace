@@ -2,7 +2,6 @@ import { observer } from 'mobx-react-lite';
 
 import { telemetryStore, computedStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
 import { formatLapTime } from '../../../utils/telemetry-format';
 import { LapTimesWidget } from './LapTimesWidget';
 
@@ -14,9 +13,9 @@ const formatDelta = (delta: number | null): string => {
 
 const getDeltaColor = (delta: number | null): string | undefined => {
   if (delta === null) return undefined;
-  if (delta < -0.001) return '#22c55e'; // Green
-  if (delta > 0.001) return '#ef4444'; // Red
-  return '#fbbf24'; // Amber
+  if (delta < -0.001) return '#22c55e';
+  if (delta > 0.001) return '#ef4444';
+  return '#fbbf24';
 };
 
 export const LapTimesWidgetContainer = observer(() => {
@@ -25,8 +24,6 @@ export const LapTimesWidgetContainer = observer(() => {
   const standings = computedStore.standings?.entries ?? [];
   const lapDelta = computedStore.lapDelta;
   const settings = widgetSettingsStore.getLapTimesSettings();
-
-  const widgetRef = useAutoSizeWidget('lap-times');
 
   const currentLap = lap?.lap_current_lap_time ?? null;
   const lastLap = lap?.lap_last_lap_time ?? null;
@@ -51,13 +48,7 @@ export const LapTimesWidgetContainer = observer(() => {
 
   const p1Time = timesToUse.length > 0 ? Math.min(...timesToUse) : null;
 
-  // Live delta to player's best lap
   const liveDelta = lapDelta?.personalBestTotal ?? null;
-
-  // Deltas vs current (projected) lap
-  // Δ = T_current - T_target
-  // T_current = T_best + liveDelta
-  // Δ_target = (T_best + liveDelta) - T_target = liveDelta + (T_best - T_target)
 
   const bestDelta = liveDelta;
 
@@ -73,7 +64,6 @@ export const LapTimesWidgetContainer = observer(() => {
 
   return (
     <LapTimesWidget
-      ref={widgetRef}
       currentLapTime={formatLapTime(currentLap)}
       lastLapTime={formatLapTime(lastLap)}
       lastDelta={formatDelta(lastDelta)}

@@ -39,7 +39,7 @@ jobs:
               - '.github/**'
 
   lint:
-    name: Lint (JS)
+    name: Lint (Frontend)
     needs: check-changes
     runs-on: ubuntu-latest
     if: ${{ needs.check-changes.outputs.app == 'true' }}
@@ -52,6 +52,8 @@ jobs:
           node-version: '20'
           platform: ubuntu-latest
           cache-rust: 'false'
+          install-rust: 'false'
+          install-system-deps: 'false'
 
       - name: Run ESLint
         run: npm run lint

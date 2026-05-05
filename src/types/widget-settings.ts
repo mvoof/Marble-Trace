@@ -112,6 +112,7 @@ export interface LapTimesWidgetSettings {
   showBestLap: boolean;
   showP1: boolean;
   layout: LapTimesLayout;
+  layoutWidths?: Partial<Record<LapTimesLayout, number>>;
 }
 
 export interface FuelWidgetSettings {
@@ -127,6 +128,7 @@ export interface LapDeltaWidgetSettings {
   layout: LapDeltaLayout;
   showSectorTimes: boolean;
   reference: LapDeltaReference;
+  layoutWidths?: Partial<Record<LapDeltaLayout, number>>;
 }
 
 export interface TimerWidgetSettings {
