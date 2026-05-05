@@ -9,6 +9,11 @@ on:
       - '**.md'
   workflow_dispatch:
 
+# Cancel in-progress runs when a new push is made to the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pull-requests: read
@@ -18,8 +23,10 @@ jobs:
     name: Check Changes
     runs-on: ubuntu-latest
     outputs:
-      app: ${{ steps.filter.outputs.app }}
+      js: ${{ steps.filter.outputs.js }}
+      rust: ${{ steps.filter.outputs.rust }}
       ci: ${{ steps.filter.outputs.ci }}
+      app: ${{ steps.filter.outputs.js == 'true' || steps.filter.outputs.rust == 'true' }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -41,8 +48,8 @@ jobs:
             ci:
               - '.github/**'
 
-  lint:
-    name: Lint (Frontend)
+  frontend-checks:
+    name: Frontend Quality Checks
     needs: check-changes
     runs-on: ubuntu-latest
     if: ${{ needs.check-changes.outputs.js == 'true' || needs.check-changes.outputs.ci == 'true' }}
@@ -60,6 +67,15 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
+
+      - name: Check Formatting
+        run: npm run format:check
+
+      - name: Type Check
+        run: npx tsc --noEmit
+
+      - name: Run Tests
+        run: npm run test
 
   rust-checks:
     name: Rust Quality Checks
@@ -91,13 +107,18 @@ jobs:
         run: cargo fmt --check
         shell: bash
 
+      - name: Cargo Test
+        working-directory: src-tauri
+        run: cargo test
+        shell: bash
+
   build-app:
     name: Build App
-    needs: [check-changes, lint, rust-checks]
+    needs: [check-changes, frontend-checks, rust-checks]
     if: |
       always() &&
-      (needs.check-changes.outputs.js == 'true' || needs.check-changes.outputs.rust == 'true' || needs.check-changes.outputs.ci == 'true') &&
-      (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
+      (needs.check-changes.outputs.app == 'true' || needs.check-changes.outputs.ci == 'true') &&
+      (needs.frontend-checks.result == 'success' || needs.frontend-checks.result == 'skipped') &&
       (needs.rust-checks.result == 'success' || needs.rust-checks.result == 'skipped')
     environment: pr-review
     strategy:
@@ -128,24 +149,24 @@ jobs:
 
   status-check:
     name: PR Status
-    needs: [check-changes, lint, rust-checks, build-app]
+    needs: [check-changes, frontend-checks, rust-checks, build-app]
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
       - name: Check Status
         run: |
           echo "App changes: ${{ needs.check-changes.outputs.app }}"
-          echo "Lint result: ${{ needs.lint.result }}"
+          echo "Frontend checks result: ${{ needs.frontend-checks.result }}"
           echo "Rust checks result: ${{ needs.rust-checks.result }}"
           echo "Build result: ${{ needs.build-app.result }}"
 
-          if [ "${{ needs.check-changes.outputs.app }}" != "true" ]; then
+          if [ "${{ needs.check-changes.outputs.app }}" != "true" ] && [ "${{ needs.check-changes.outputs.ci }}" != "true" ]; then
             echo "No code changes, passing"
             exit 0
           fi
 
-          if [ "${{ needs.lint.result }}" != "success" ] && [ "${{ needs.lint.result }}" != "skipped" ]; then
-            echo "Lint failed"
+          if [ "${{ needs.frontend-checks.result }}" != "success" ] && [ "${{ needs.frontend-checks.result }}" != "skipped" ]; then
+            echo "Frontend checks failed"
             exit 1
           fi
 
