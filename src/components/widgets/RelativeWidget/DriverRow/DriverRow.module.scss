@@ -25,14 +25,6 @@
   filter: grayscale(100%);
 }
 
-.driverNameLappedBehind {
-  color: $color-blue;
-}
-
-.driverNameLappingUs {
-  color: $color-error;
-}
-
 // Position block
 .posBlock {
   display: flex;
@@ -90,6 +82,14 @@
 
 .driverNamePlayer {
   color: $color-caution;
+}
+
+.driverNameLappedBehind {
+  color: $color-blue;
+}
+
+.driverNameLappingUs {
+  color: $color-error;
 }
 
 // Individual badge columns — each occupies a fixed grid column so appearance/disappearance

@@ -34,6 +34,7 @@ export const DriverRow = observer(
       : 0;
 
     const isLappedBehind = !driver.isPlayer && lapDiff < -0.5;
+
     const isLappingUs = !driver.isPlayer && lapDiff > 0.5;
 
     const f2TimeStr =
