@@ -34,13 +34,21 @@ const pkg = JSON.parse(fs.readFileSync(paths.packageJson, 'utf-8'));
 pkg.version = newVersion;
 fs.writeFileSync(paths.packageJson, JSON.stringify(pkg, null, 2) + '\n');
 
-// 2. Update tauri.conf.json
+// 2. Update package-lock.json
+console.log('Updating package-lock.json...');
+try {
+  execSync('npm install --package-lock-only', { stdio: 'inherit' });
+} catch {
+  console.warn('Failed to update package-lock.json automatically.');
+}
+
+// 3. Update tauri.conf.json
 console.log(`Updating tauri.conf.json to ${newVersion}...`);
 const tauriConf = JSON.parse(fs.readFileSync(paths.tauriConf, 'utf-8'));
 tauriConf.version = newVersion;
 fs.writeFileSync(paths.tauriConf, JSON.stringify(tauriConf, null, 2) + '\n');
 
-// 3. Update Cargo.toml
+// 4. Update Cargo.toml
 console.log(`Updating Cargo.toml to ${newVersion}...`);
 let cargoToml = fs.readFileSync(paths.cargoToml, 'utf-8');
 // Robust regex to find version strictly under [package] section
@@ -58,7 +66,7 @@ if (updatedCargoToml === cargoToml) {
 cargoToml = updatedCargoToml;
 fs.writeFileSync(paths.cargoToml, cargoToml);
 
-// 4. Update Cargo.lock
+// 5. Update Cargo.lock
 console.log('Updating Cargo.lock...');
 try {
   execSync('cargo update -p marble-trace', {
