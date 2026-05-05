@@ -4,12 +4,72 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag to release (e.g. v0.6.1). If empty, uses the current ref.'
+        required: false
+        type: string
 
 permissions:
   contents: write
 
 jobs:
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Verify Tag matches package.json
+        shell: bash
+        run: |
+          # Determine the tag name
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.tag_name }}" ]; then
+            TAG_NAME="${{ inputs.tag_name }}"
+          else
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+          fi
+
+          # Remove 'v' prefix
+          TAG_VERSION="${TAG_NAME#v}"
+
+          # Get version from package.json
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+
+          echo "Tag version: $TAG_VERSION"
+          echo "Package version: $PACKAGE_VERSION"
+
+          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Error: Tag version ($TAG_VERSION) does not match package.json version ($PACKAGE_VERSION)"
+            exit 1
+          fi
+
+  quality-checks:
+    name: Quality Checks
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          node-version: '20'
+          platform: ubuntu-latest
+          cache-rust: 'false'
+          install-rust: 'false'
+          install-system-deps: 'false'
+
+      - name: Run Lint
+        run: npm run lint
+
+      - name: Run Tests
+        run: npm run test
+
   build:
+    name: Build & Release
+    needs: quality-checks
     strategy:
       fail-fast: false
       matrix:
@@ -33,6 +93,16 @@ jobs:
         id: notes
         uses: ./.github/actions/generate-release-notes
 
+      - name: Detect Pre-release
+        id: check-pre
+        shell: bash
+        run: |
+          if [[ "${{ github.ref_name }}" =~ (alpha|beta|rc|preview) ]]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build Tauri Application
         id: tauri
         uses: tauri-apps/tauri-action@v0
@@ -41,8 +111,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'Marble Trace v${{ github.ref_name }}'
+          tagName: ${{ github.event.inputs.tag_name || github.ref_name }}
+          releaseName: ${{ github.event.inputs.tag_name || github.ref_name }}
           releaseBody: ${{ steps.notes.outputs.release_body }}
           releaseDraft: true
-          prerelease: false
+          prerelease: ${{ steps.check-pre.outputs.is_prerelease == 'true' }}
