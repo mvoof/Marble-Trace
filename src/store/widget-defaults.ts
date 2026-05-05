@@ -1,12 +1,12 @@
 import type { WidgetConfig } from '../types/widget-settings';
 
 export const LAP_TIMES_DEFAULT_WIDTHS: Record<string, number> = {
-  vertical: 220,
+  vertical: 230,
   horizontal: 905,
 };
 
 export const LAP_DELTA_DEFAULT_WIDTHS: Record<string, number> = {
-  vertical: 220,
+  vertical: 230,
   horizontal: 900,
 };
 
@@ -315,9 +315,9 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 400,
     y: 200,
-    width: 220,
+    width: 230,
     height: 180,
-    designWidth: 220,
+    designWidth: 230,
     designHeight: 180,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
@@ -337,9 +337,9 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     enabled: false,
     x: 400,
     y: 300,
-    width: 220,
+    width: 230,
     height: 104,
-    designWidth: 220,
+    designWidth: 230,
     designHeight: 104,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
