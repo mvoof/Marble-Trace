@@ -3,7 +3,7 @@ name: PR Check
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened]
     paths-ignore:
       - 'docs/**'
       - '**.md'
@@ -59,7 +59,7 @@ jobs:
   rust-checks:
     name: Rust Quality Checks
     needs: check-changes
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     if: ${{ needs.check-changes.outputs.app == 'true' }}
     steps:
       - uses: actions/checkout@v5
@@ -68,7 +68,7 @@ jobs:
         uses: ./.github/actions/setup-dependencies
         with:
           node-version: '20'
-          platform: ubuntu-latest
+          platform: windows-latest
           cache-rust: 'true'
 
       - name: Cargo Check
@@ -89,9 +89,7 @@ jobs:
   build-app:
     name: Build App
     needs: [lint, rust-checks]
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'run-build') ||
-      github.event_name == 'workflow_dispatch'
+    environment: pr-review
     strategy:
       fail-fast: false
       matrix:
