@@ -560,7 +560,7 @@ mod tests {
     fn create_mock_frame(lap_dist_pct: f32, lap_time: f32) -> AllFieldsFrame {
         AllFieldsFrame {
             lap_dist_pct: Some(lap_dist_pct),
-            lap_current_lap_time: lap_time as f32,
+            lap_current_lap_time: lap_time,
             lap: Some(1),
             is_on_track: Some(true),
             ..Default::default()
