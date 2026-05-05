@@ -4,7 +4,6 @@ import { observer } from 'mobx-react-lite';
 
 import { computedStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
 import { formatDelta, getDeltaState } from './lap-delta-utils';
 import { LapDeltaWidget, type DeltaDisplayHandle } from './LapDeltaWidget';
 
@@ -21,7 +20,6 @@ export const LapDeltaWidgetContainer = observer(() => {
     : (computedStore.lapDelta?.personalBestSectors ?? []);
   const sectorTimes = computedStore.lapDelta?.sectorTimes ?? [];
 
-  const widgetRef = useAutoSizeWidget('lap-delta');
   const deltaDisplayRef = useRef<DeltaDisplayHandle | null>(null);
 
   useEffect(() => {
@@ -40,7 +38,6 @@ export const LapDeltaWidgetContainer = observer(() => {
 
   return (
     <LapDeltaWidget
-      ref={widgetRef}
       initialDeltaFormatted={formatDelta(delta)}
       initialDeltaState={getDeltaState(delta)}
       sectorDeltas={sectorDeltas}

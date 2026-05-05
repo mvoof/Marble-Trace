@@ -12,5 +12,6 @@
   flex-direction: row;
   gap: rem(4);
   padding: $space-sm;
-  flex: 1 1 0;
+  width: 100%;
+  height: 100%;
 }

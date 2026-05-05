@@ -1,5 +1,15 @@
 import type { WidgetConfig } from '../types/widget-settings';
 
+export const LAP_TIMES_DEFAULT_WIDTHS: Record<string, number> = {
+  vertical: 220,
+  horizontal: 905,
+};
+
+export const LAP_DELTA_DEFAULT_WIDTHS: Record<string, number> = {
+  vertical: 220,
+  horizontal: 900,
+};
+
 export const LINEAR_MAP_SIZES: Record<
   string,
   { designWidth: number; designHeight: number }

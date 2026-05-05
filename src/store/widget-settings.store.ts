@@ -2,6 +2,8 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { invoke } from '@tauri-apps/api/core';
 import {
   DEFAULT_WIDGETS,
+  LAP_DELTA_DEFAULT_WIDTHS,
+  LAP_TIMES_DEFAULT_WIDTHS,
   LINEAR_MAP_SIZES,
   INPUT_TRACE_SIZES,
 } from './widget-defaults';
@@ -228,6 +230,52 @@ class WidgetSettingsStore {
           widget.designWidth = size.designWidth;
           widget.designHeight = size.designHeight;
         }
+      }
+    }
+
+    if (id === 'lap-times' && newSettings['lap-times']?.layout) {
+      const prevLayout = prevSettings?.['lap-times']?.layout ?? 'vertical';
+      const nextLayout = newSettings['lap-times'].layout;
+      if (prevLayout !== nextLayout) {
+        const prevWidths = prevSettings?.['lap-times']?.layoutWidths ?? {};
+        const savedWidths = { ...prevWidths, [prevLayout]: widget.width };
+        const nextWidth =
+          savedWidths[nextLayout] ?? LAP_TIMES_DEFAULT_WIDTHS[nextLayout];
+
+        widget.customSettings = {
+          ...widget.customSettings,
+          'lap-times': {
+            ...(widget.customSettings?.['lap-times'] ?? {}),
+            ...newSettings['lap-times'],
+            layoutWidths: savedWidths,
+          },
+        };
+
+        widget.width = nextWidth ?? widget.width;
+        widget.designWidth = widget.width;
+      }
+    }
+
+    if (id === 'lap-delta' && newSettings['lap-delta']?.layout) {
+      const prevLayout = prevSettings?.['lap-delta']?.layout ?? 'vertical';
+      const nextLayout = newSettings['lap-delta'].layout;
+      if (prevLayout !== nextLayout) {
+        const prevWidths = prevSettings?.['lap-delta']?.layoutWidths ?? {};
+        const savedWidths = { ...prevWidths, [prevLayout]: widget.width };
+        const nextWidth =
+          savedWidths[nextLayout] ?? LAP_DELTA_DEFAULT_WIDTHS[nextLayout];
+
+        widget.customSettings = {
+          ...widget.customSettings,
+          'lap-delta': {
+            ...(widget.customSettings?.['lap-delta'] ?? {}),
+            ...newSettings['lap-delta'],
+            layoutWidths: savedWidths,
+          },
+        };
+
+        widget.width = nextWidth ?? widget.width;
+        widget.designWidth = widget.width;
       }
     }
   }
