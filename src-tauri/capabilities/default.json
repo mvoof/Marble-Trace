@@ -30,6 +30,8 @@
     "core:window:allow-unminimize",
     "core:window:allow-is-maximized",
     "core:window:allow-is-minimized",
+    "updater:default",
+    "process:allow-restart",
     "mcp-bridge:default"
   ]
 }

@@ -3,6 +3,7 @@ import { Layout, ConfigProvider, theme, App as AntdApp } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { Settings } from 'lucide-react';
 import { telemetryConnectionStore } from '../../store/iracing';
+import { appSettingsStore } from '../../store/app-settings.store';
 import { initMainSync } from '../../store/sync';
 import { WidgetList } from './components/WidgetList';
 import { WidgetSettings } from './components/WidgetSettings';
@@ -106,7 +107,14 @@ export const MainWindow = observer(() => {
                   <Logo className={styles.logo} />
                 </div>
                 <div className={styles.headerText}>
-                  <span className={styles.brandName}>Marble Trace</span>
+                  <div className={styles.brandContainer}>
+                    <span className={styles.brandName}>Marble Trace</span>
+                    {appSettingsStore.currentVersion && (
+                      <span className={styles.version}>
+                        &nbsp;v{appSettingsStore.currentVersion}
+                      </span>
+                    )}
+                  </div>
                   <AppStatus />
                 </div>
               </div>
