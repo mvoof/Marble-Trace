@@ -30,7 +30,14 @@ export const WidgetPanel = forwardRef<HTMLElement, WidgetPanelProps>(
   ) => (
     <section
       ref={ref}
-      className={`${styles.panel} ${fitContent ? styles.fitContent : ''} ${fitHeight ? styles.fitHeight : ''} ${className ?? ''}`}
+      className={[
+        styles.panel,
+        fitContent && styles.fitContent,
+        fitHeight && styles.fitHeight,
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
       style={{
         minWidth,
         flexDirection: direction,
