@@ -3,7 +3,7 @@ name: PR Check
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened]
     paths-ignore:
       - 'docs/**'
       - '**.md'
@@ -89,9 +89,7 @@ jobs:
   build-app:
     name: Build App
     needs: [lint, rust-checks]
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'run-build') ||
-      github.event_name == 'workflow_dispatch'
+    environment: pr-review
     strategy:
       fail-fast: false
       matrix:
