@@ -29,6 +29,15 @@ export const DriverRow = observer(
 
     const relativeGap = player ? computeRelativeGap(driver, player) : 0;
 
+    const playerTotalDist = player ? player.lap + player.lapDistPct : 0;
+    const driverTotalDist = driver.lap + driver.lapDistPct;
+    const distDiff = player ? driverTotalDist - playerTotalDist : 0;
+
+    const isLappedBehind =
+      !driver.isPlayer && player !== null && distDiff < -0.5;
+
+    const isLappingUs = !driver.isPlayer && player !== null && distDiff > 0.5;
+
     const f2TimeStr =
       relativeGap > 0
         ? `+${relativeGap.toFixed(1)}`
@@ -58,9 +67,6 @@ export const DriverRow = observer(
           <ChevronDown size={16} className={styles.trendDown} />
         );
     }
-
-    const isLappedBehind =
-      !driver.isPlayer && player !== null && driver.lap < player.lap;
 
     const rowClass = [
       styles.driverRow,
@@ -100,6 +106,7 @@ export const DriverRow = observer(
               styles.driverName,
               driver.isPlayer ? styles.driverNamePlayer : '',
               isLappedBehind ? styles.driverNameLappedBehind : '',
+              isLappingUs ? styles.driverNameLappingUs : '',
             ]
               .filter(Boolean)
               .join(' ')}
