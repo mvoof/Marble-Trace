@@ -30,11 +30,14 @@ jobs:
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            app:
+            js:
               - 'src/**'
-              - 'src-tauri/**'
               - 'package.json'
               - 'package-lock.json'
+              - 'tsconfig.json'
+              - 'eslint.config.js'
+            rust:
+              - 'src-tauri/**'
             ci:
               - '.github/**'
 
@@ -42,7 +45,7 @@ jobs:
     name: Lint (Frontend)
     needs: check-changes
     runs-on: ubuntu-latest
-    if: ${{ needs.check-changes.outputs.app == 'true' }}
+    if: ${{ needs.check-changes.outputs.js == 'true' || needs.check-changes.outputs.ci == 'true' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -62,7 +65,7 @@ jobs:
     name: Rust Quality Checks
     needs: check-changes
     runs-on: windows-latest
-    if: ${{ needs.check-changes.outputs.app == 'true' }}
+    if: ${{ needs.check-changes.outputs.rust == 'true' || needs.check-changes.outputs.ci == 'true' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -90,7 +93,12 @@ jobs:
 
   build-app:
     name: Build App
-    needs: [lint, rust-checks]
+    needs: [check-changes, lint, rust-checks]
+    if: |
+      always() &&
+      (needs.check-changes.outputs.js == 'true' || needs.check-changes.outputs.rust == 'true' || needs.check-changes.outputs.ci == 'true') &&
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
+      (needs.rust-checks.result == 'success' || needs.rust-checks.result == 'skipped')
     environment: pr-review
     strategy:
       fail-fast: false
