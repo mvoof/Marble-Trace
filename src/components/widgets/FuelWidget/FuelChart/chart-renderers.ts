@@ -115,13 +115,6 @@ export const drawBarChart = (
 
   drawGridLines(ctx, plotH, 0, plotW);
 
-  if (avg !== null) {
-    const avgY = plotH - toBarH(avg);
-    drawAvgLine(ctx, avgY, plotW);
-  }
-
-  drawYLabels(ctx, min, max, plotH, w);
-
   data.forEach((v, i) => {
     const x = i * stride;
     const bh = toBarH(v);
@@ -129,6 +122,12 @@ export const drawBarChart = (
     ctx.fillRect(x, plotH - bh, barW, bh);
   });
 
+  if (avg !== null) {
+    const avgY = plotH - toBarH(avg);
+    drawAvgLine(ctx, avgY, plotW);
+  }
+
+  drawYLabels(ctx, min, max, plotH, w);
   drawXLabels(ctx, n, stride, barW, plotH);
 };
 
@@ -154,12 +153,6 @@ export const drawLineChart = (
 
   drawGridLines(ctx, plotH, 0, plotW);
 
-  if (avg !== null) {
-    drawAvgLine(ctx, toY(avg), plotW);
-  }
-
-  drawYLabels(ctx, min, max, plotH, w);
-
   ctx.beginPath();
   ctx.strokeStyle = FUEL_COLORS.primary;
   ctx.lineWidth = 1.5;
@@ -179,6 +172,12 @@ export const drawLineChart = (
     ctx.fillStyle = barColor(v, avg);
     ctx.fill();
   });
+
+  if (avg !== null) {
+    drawAvgLine(ctx, toY(avg), plotW);
+  }
+
+  drawYLabels(ctx, min, max, plotH, w);
 
   const lineStride = data.length > 1 ? plotW / (data.length - 1) : plotW;
   const maxLabelW =
