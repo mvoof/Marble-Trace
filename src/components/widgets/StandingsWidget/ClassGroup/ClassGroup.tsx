@@ -13,6 +13,7 @@ interface ClassGroupProps {
   irDeltaMap: Map<number, number>;
   effectiveStartPosMap: Map<number, StartPosition>;
   playerPitStops: number;
+  gridTemplate: string;
 }
 
 export const ClassGroup = ({
@@ -21,6 +22,7 @@ export const ClassGroup = ({
   irDeltaMap,
   effectiveStartPosMap,
   playerPitStops,
+  gridTemplate,
 }: ClassGroupProps) => (
   <>
     {group.drivers.map((driver) => (
@@ -31,6 +33,7 @@ export const ClassGroup = ({
         irDelta={irDeltaMap.get(driver.carIdx)}
         effectiveStartPos={effectiveStartPosMap.get(driver.carIdx)}
         playerPitStops={playerPitStops}
+        gridTemplate={gridTemplate}
       />
     ))}
   </>

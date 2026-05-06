@@ -88,6 +88,7 @@ interface DriverRowProps {
   irDelta: number | undefined;
   effectiveStartPos: StartPosition | undefined;
   playerPitStops: number;
+  gridTemplate: string;
 }
 
 export const DriverRow = ({
@@ -96,6 +97,7 @@ export const DriverRow = ({
   irDelta,
   effectiveStartPos,
   playerPitStops,
+  gridTemplate,
 }: DriverRowProps) => {
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
@@ -118,19 +120,23 @@ export const DriverRow = ({
     .join(' ');
 
   return (
-    <tr className={rowClass} data-driver-row>
-      <td className={styles.td}>
+    <div
+      className={rowClass}
+      style={{ gridTemplateColumns: gridTemplate }}
+      data-driver-row
+    >
+      <div className={styles.cell}>
         <span
           className={`${styles.posCell} ${driver.isPlayer ? styles.posCellPlayer : ''}`}
         >
           {pos}
         </span>
-      </td>
+      </div>
 
-      <td
-        className={`${styles.td} ${styles.tdCarNumber}`}
+      <div
+        className={`${styles.cell} ${styles.carNumberCell}`}
         style={{
-          borderLeft: `4px solid ${driver.carClassColor}`,
+          borderLeft: `3px solid ${driver.carClassColor}`,
           background: `linear-gradient(to right, ${driver.carClassColor}33, transparent)`,
         }}
       >
@@ -139,64 +145,62 @@ export const DriverRow = ({
         >
           {driver.carNumber}
         </span>
-      </td>
+      </div>
 
-      <td className={`${styles.td} ${styles.tdDriverName}`}>
-        <div className={styles.driverNameCell}>
-          <span
-            className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
-          >
-            {settings.abbreviateNames
-              ? abbreviateName(driver.userName)
-              : driver.userName}
-          </span>
+      <div className={`${styles.cell} ${styles.nameCell}`}>
+        <span
+          className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
+        >
+          {settings.abbreviateNames
+            ? abbreviateName(driver.userName)
+            : driver.userName}
+        </span>
 
-          {isPit && <PitBadge />}
-        </div>
-      </td>
+        {isPit && <PitBadge />}
+      </div>
 
       {settings.showBrand && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <span className={styles.brandLabel} title={driver.carScreenName}>
             {formatBrand(driver.carScreenName)}
           </span>
-        </td>
+        </div>
       )}
 
       {settings.showTire && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <TireBadge tire={driver.tireCompound} />
-        </td>
+        </div>
       )}
 
       {!settings.enableClassCycling && settings.showClassBadge && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <ClassBadge
             color={driver.carClassColor}
             label={driver.carClassShortName}
             className={styles.classBadgeFull}
           />
-        </td>
+        </div>
       )}
 
       {settings.showIRatingBadge && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <RatingBadge
             licString={driver.licString}
             iRating={driver.iRating}
             className={styles.ratingBadge}
           />
-        </td>
+        </div>
       )}
 
       {settings.showIrChange && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <IrChangeCell delta={irDelta} />
-        </td>
+        </div>
       )}
 
       {settings.showPitStops && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           {driver.isPlayer ? (
             <span
               className={`${styles.pitStops} ${playerPitStops > 0 ? styles.pitStopsActive : ''}`}
@@ -206,22 +210,22 @@ export const DriverRow = ({
           ) : (
             <span className={styles.pitStops}>—</span>
           )}
-        </td>
+        </div>
       )}
 
       {settings.showLapsCompleted && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <span className={styles.lapsCompleted}>{driver.lap}</span>
-        </td>
+        </div>
       )}
 
       {settings.showPosChange && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <PosChange position={pos} startPos={startPos} />
-        </td>
+        </div>
       )}
 
-      <td className={`${styles.td} ${styles.tdRight}`}>
+      <div className={`${styles.cell} ${styles.cellRight}`}>
         {isLeader ? (
           <span className={styles.gapLeader}>Leader</span>
         ) : driver.f2Time > 0 ? (
@@ -229,21 +233,21 @@ export const DriverRow = ({
         ) : (
           <span className={styles.gapLeader}>-</span>
         )}
-      </td>
+      </div>
 
-      <td className={`${styles.td} ${styles.tdRight}`}>
+      <div className={`${styles.cell} ${styles.cellRight}`}>
         <span className={styles.lastLap}>
           {isPit
             ? '-'
             : formatLapTime(driver.lastLapTime > 0 ? driver.lastLapTime : null)}
         </span>
-      </td>
+      </div>
 
-      <td className={`${styles.td} ${styles.tdRight}`}>
+      <div className={`${styles.cell} ${styles.cellRight}`}>
         <span className={styles.bestLap}>
           {formatLapTime(driver.bestLapTime > 0 ? driver.bestLapTime : null)}
         </span>
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 };
