@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="docs/assets/logo.svg" width="220px" alt="Marble Trace logo" style="color:white">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-light.svg">
+    <img src="docs/assets/logo-dark.svg" alt="Logo" width="400">
+  </picture>
 </p>
 
 <h1 align="center">Marble Trace</h1>
@@ -10,6 +13,7 @@
 
 <p align="center">
   <a href="https://github.com/mvoof/Marble-Trace/releases"><img src="https://img.shields.io/github/v/release/mvoof/Marble-Trace?style=flat-square" alt="Latest release"></a>
+  <a href="https://github.com/mvoof/Marble-Trace/releases"><img src="https://img.shields.io/github/downloads/mvoof/Marble-Trace/total?style=flat-square" alt="Downloads"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/mvoof/Marble-Trace?style=flat-square" alt="MIT License"></a>
   <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen?style=flat-square" alt="Contributions welcome"></a>
   <img src="https://img.shields.io/badge/platform-Windows-blue?style=flat-square" alt="Windows only">
