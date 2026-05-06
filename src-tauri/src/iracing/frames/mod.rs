@@ -132,6 +132,8 @@ pub(crate) struct AllFieldsFrame {
     pub session_time: Option<f64>,
     #[field_name = "SessionTimeRemain"]
     pub session_time_remain: Option<f64>,
+    #[field_name = "SessionLapsRemainEx"]
+    pub session_laps_remain_ex: Option<i32>,
     #[field_name = "SessionState"]
     pub session_state: Option<i32>,
     #[bitfield_map(name = "SessionFlags", decoder = "bitfield_to_u32")]

@@ -40,6 +40,10 @@ pub struct SessionFrame {
     /// @see https://sajax.github.io/irsdkdocs/telemetry/sessiontimeofday/
     pub session_time_of_day: Option<f32>,
 
+    /// Laps remaining in the session (leader-based, preferred over SessionLapsRemain)
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/sessionlapsremainex/
+    pub session_laps_remain_ex: Option<i32>,
+
     /// Index of the player's car in CarIdx arrays
     /// @see https://sajax.github.io/irsdkdocs/telemetry/playercaridx/
     pub player_car_idx: Option<i32>,
@@ -59,6 +63,7 @@ impl From<&AllFieldsFrame> for SessionFrame {
         Self {
             session_time: f.session_time,
             session_time_remain: f.session_time_remain,
+            session_laps_remain_ex: f.session_laps_remain_ex,
             session_state: f.session_state.map(SessionState::from),
             session_flags: f.session_flags,
             session_num: f.session_num,

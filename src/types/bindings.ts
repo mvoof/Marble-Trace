@@ -1151,6 +1151,11 @@ export type SessionFrame = {
    */
   session_time_of_day: number | null;
   /**
+   * Laps remaining in the session (leader-based, preferred over SessionLapsRemain)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/sessionlapsremainex/
+   */
+  session_laps_remain_ex: number | null;
+  /**
    * Index of the player's car in CarIdx arrays
    * @see https://sajax.github.io/irsdkdocs/telemetry/playercaridx/
    */
