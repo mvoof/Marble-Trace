@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { observer } from 'mobx-react-lite';
 
 import { DriverEntry } from '../../../types/bindings';
@@ -7,29 +9,41 @@ import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { computeClassSof } from './standings-utils';
 import { StandingsWidget } from './StandingsWidget';
 
+const EMPTY_ENTRIES: DriverEntry[] = [];
+
 export const StandingsWidgetContainer = observer(() => {
   const settings = widgetSettingsStore.getStandingsSettings();
   const standings = computedStore.standings;
   const pitStops = computedStore.pitStops;
 
-  const driverEntries = standings?.entries ?? [];
+  const driverEntries = standings?.entries ?? EMPTY_ENTRIES;
 
   const overallSof = computeClassSof(driverEntries);
   const allClassGroupsCount = useAllClassGroupsCount(driverEntries);
 
-  const irDeltaMap = settings.showIrChange
-    ? new Map(
-        driverEntries
-          .filter((e) => e.estimatedIrDelta !== null)
-          .map((e) => [e.carIdx, e.estimatedIrDelta as number])
-      )
-    : new Map<number, number>();
+  const irDeltaMap = useMemo(
+    () =>
+      settings.showIrChange
+        ? new Map(
+            driverEntries
+              .filter((e) => e.estimatedIrDelta !== null)
+              .map((e) => [e.carIdx, e.estimatedIrDelta as number])
+          )
+        : new Map<number, number>(),
 
-  const effectiveStartPosMap = new Map(
-    driverEntries.map((e) => [
-      e.carIdx,
-      computedStore.getEffectiveStartPos(e.carIdx),
-    ])
+    [driverEntries, settings.showIrChange]
+  );
+
+  const effectiveStartPosMap = useMemo(
+    () =>
+      new Map(
+        driverEntries.map((e) => [
+          e.carIdx,
+          computedStore.getEffectiveStartPos(e.carIdx),
+        ])
+      ),
+
+    [driverEntries]
   );
 
   const playerIncidents = driverEntries.find((e) => e.isPlayer)?.incidents ?? 0;
@@ -58,6 +72,8 @@ export const StandingsWidgetContainer = observer(() => {
 });
 
 const useAllClassGroupsCount = (driverEntries: DriverEntry[]) => {
-  const count = new Set(driverEntries.map((e) => e.carClassId)).size;
-  return count;
+  return useMemo(
+    () => new Set(driverEntries.map((e) => e.carClassId)).size,
+    [driverEntries]
+  );
 };
