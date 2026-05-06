@@ -68,7 +68,11 @@ export const StandingsWidget = ({
   onNextClass,
 }: StandingsWidgetProps) => {
   const { ref: listRef, count: visibleRowCount } =
-    useVisibleRowCount<HTMLDivElement>(2, 5, '[data-driver-row]');
+    useVisibleRowCount<HTMLDivElement>(
+      settings.showColumnHeaders ? 1 : 0,
+      5,
+      '[data-driver-row]'
+    );
 
   const gridTemplate = useMemo(() => buildGridTemplate(settings), [settings]);
 
