@@ -43,7 +43,7 @@ export const FUEL_CHART_CONFIG = {
   /** Scale factor applied to min value to add bottom padding in line chart */
   MIN_SCALE_LINE: 0.92,
   /** Scale factor applied to max value to add top padding in chart */
-  MAX_SCALE: 1.02,
+  MAX_SCALE: 1.05,
 } as const;
 
 export const FUEL_THRESHOLDS = {
