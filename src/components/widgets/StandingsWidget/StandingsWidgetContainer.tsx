@@ -25,12 +25,27 @@ export const StandingsWidgetContainer = observer(() => {
       )
     : new Map<number, number>();
 
+  const effectiveStartPosMap = new Map(
+    driverEntries.map((e) => [
+      e.carIdx,
+      computedStore.getEffectiveStartPos(
+        e.carIdx,
+        e.startPosOverall,
+        e.startPosClass
+      ),
+    ])
+  );
+
+  const playerIncidents = driverEntries.find((e) => e.isPlayer)?.incidents ?? 0;
+
   return (
     <StandingsWidget
       driverEntries={driverEntries}
       settings={settings}
       irDeltaMap={irDeltaMap}
+      effectiveStartPosMap={effectiveStartPosMap}
       playerPitStops={pitStops?.playerStops ?? 0}
+      playerIncidents={playerIncidents}
       sessionInfo={telemetryStore.sessionInfo}
       weekendInfo={telemetryStore.weekendInfo}
       overallSof={overallSof}

@@ -14,11 +14,18 @@ import type { DriverGroup } from '@/types/standings';
 
 import styles from './StandingsWidget.module.scss';
 
+interface StartPosition {
+  overall: number;
+  class: number;
+}
+
 interface StandingsWidgetProps {
   driverEntries: DriverEntry[];
   settings: StandingsWidgetSettings;
   irDeltaMap: Map<number, number>;
+  effectiveStartPosMap: Map<number, StartPosition>;
   playerPitStops: number;
+  playerIncidents: number;
   sessionInfo: SessionInfo | null;
   weekendInfo: WeekendInfo | null;
   overallSof: number;
@@ -49,7 +56,9 @@ export const StandingsWidget = ({
   driverEntries,
   settings,
   irDeltaMap,
+  effectiveStartPosMap,
   playerPitStops,
+  playerIncidents,
   sessionInfo,
   weekendInfo,
   overallSof,
@@ -133,6 +142,7 @@ export const StandingsWidget = ({
           weekendInfo={weekendInfo}
           driverEntries={driverEntries}
           overallSof={overallSof}
+          playerIncidents={playerIncidents}
         />
       )}
 
@@ -162,8 +172,6 @@ export const StandingsWidget = ({
             {settings.showIRatingBadge && <col className={styles.colLic} />}
 
             {settings.showIrChange && <col className={styles.colIrChange} />}
-
-            <col className={styles.colInc} />
 
             {settings.showPitStops && <col className={styles.colStops} />}
             {settings.showLapsCompleted && (
@@ -211,8 +219,6 @@ export const StandingsWidget = ({
                   </th>
                 )}
 
-                <th className={`${styles.th} ${styles.thCenter}`}>Inc</th>
-
                 {settings.showPitStops && (
                   <th
                     className={`${styles.th} ${styles.thCenter}`}
@@ -242,6 +248,7 @@ export const StandingsWidget = ({
               group={displayGroup}
               settings={settings}
               irDeltaMap={irDeltaMap}
+              effectiveStartPosMap={effectiveStartPosMap}
               playerPitStops={playerPitStops}
             />
           </tbody>

@@ -139,6 +139,11 @@ export const StandingsSettingsPanel = observer(() => {
             key: 'showSOF',
           },
           {
+            title: 'Incidents Badge (player only)',
+            value: settings.showIncidentsBadge,
+            key: 'showIncidentsBadge',
+          },
+          {
             title: 'Total Drivers Count',
             value: settings.showTotalDrivers,
             key: 'showTotalDrivers',

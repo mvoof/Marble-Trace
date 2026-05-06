@@ -23,72 +23,65 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: auto;
+  table-layout: fixed;
   font-family: $font-mono;
   text-align: left;
   font-size: 0.9375em;
   white-space: nowrap;
 }
 
-// Column widths — min-width hints; name column stretches to fill remaining space
+// Column widths — fixed em units so only the name column flexes when widget is resized
 .colPos {
-  width: 3.5%;
-  min-width: 2em;
+  width: 2em;
 }
 
 .colPosChange {
-  width: 3.5%;
-  min-width: 2em;
+  width: 2.5em;
 }
 
 .colNum {
-  width: 3.5%;
-  min-width: 2em;
+  width: 2.75em;
 }
 
+// Name column: no explicit width — gets all remaining space in table-layout: fixed
 .colName {
-  width: 100%;
   min-width: 4em;
 }
 
 .colBrand {
-  width: 7%;
+  width: 4.5em;
 }
 
 .colTire {
-  width: 3.5%;
+  width: 2em;
 }
 
 .colClass {
-  width: 5%;
+  width: 3em;
 }
 
 .colLic {
-  width: 11%;
+  width: 6.5em;
 }
 
 .colIrChange {
-  width: 4%;
-}
-
-.colInc {
-  width: 3.5%;
+  width: 2.75em;
 }
 
 .colStops {
-  width: 4%;
+  width: 2.5em;
 }
 
 .colLapsCompleted {
-  width: 4%;
+  width: 2.75em;
 }
 
 .colGap {
-  width: 6%;
+  width: 5em;
 }
 
 .colLap {
-  width: 7%;
+  width: 5.5em;
 }
 
 // Table header
@@ -106,7 +99,7 @@
 }
 
 .th {
-  padding: 0.3em 0.35em;
+  padding: 0.3em 0.15em;
   text-align: left;
   font-weight: 600;
   white-space: nowrap;

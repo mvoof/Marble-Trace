@@ -4,7 +4,6 @@ import {
   formatBrand,
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
-  NEAR_DQ_INCIDENT_THRESHOLD,
 } from '../../widget-utils';
 import { PitBadge, ClassBadge, RatingBadge, TireBadge } from '../../primitives';
 import type { DriverEntry } from '../../../../types/bindings';
@@ -14,8 +13,8 @@ import styles from './DriverRow.module.scss';
 
 const abbreviateName = (fullName: string): string => {
   const parts = fullName.trim().split(/\s+/);
-  if (parts.length < 2) return fullName.toUpperCase();
-  return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`.toUpperCase();
+  if (parts.length < 2) return fullName;
+  return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
 };
 
 const PosChange = ({
@@ -78,10 +77,16 @@ const IrChangeCell = ({ delta }: { delta: number | undefined }) => {
   );
 };
 
+interface StartPosition {
+  overall: number;
+  class: number;
+}
+
 interface DriverRowProps {
   driver: DriverEntry;
   settings: StandingsWidgetSettings;
   irDelta: number | undefined;
+  effectiveStartPos: StartPosition | undefined;
   playerPitStops: number;
 }
 
@@ -89,19 +94,19 @@ export const DriverRow = ({
   driver,
   settings,
   irDelta,
+  effectiveStartPos,
   playerPitStops,
 }: DriverRowProps) => {
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
   const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
-  const nearDQ = driver.incidents >= NEAR_DQ_INCIDENT_THRESHOLD;
 
   const pos = settings.enableClassCycling
     ? driver.classPosition
     : driver.position;
   const startPos = settings.enableClassCycling
-    ? driver.startPosClass
-    : driver.startPosOverall;
+    ? (effectiveStartPos?.class ?? 0)
+    : (effectiveStartPos?.overall ?? 0);
   const isLeader = pos === 1;
 
   const rowClass = [
@@ -189,12 +194,6 @@ export const DriverRow = ({
           <IrChangeCell delta={irDelta} />
         </td>
       )}
-
-      <td className={`${styles.td} ${styles.tdCenter}`}>
-        <span className={nearDQ ? styles.incidentsNearDQ : styles.incidents}>
-          {driver.incidents}x
-        </span>
-      </td>
 
       {settings.showPitStops && (
         <td className={`${styles.td} ${styles.tdCenter}`}>
