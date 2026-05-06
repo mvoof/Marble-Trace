@@ -104,8 +104,8 @@ export const drawBarChart = (
   const plotW = w - FUEL_CHART_CONFIG.Y_LABEL_W;
   const plotH = h - FUEL_CHART_CONFIG.X_LABEL_H;
 
-  const min = Math.min(...data) * 0.88;
-  const max = Math.max(...data) * 1.08;
+  const min = Math.min(...data) * FUEL_CHART_CONFIG.MIN_SCALE;
+  const max = Math.max(...data) * FUEL_CHART_CONFIG.MAX_SCALE;
   const range = max - min || 1;
 
   const barW = FUEL_CHART_CONFIG.BAR_WIDTH;
@@ -115,13 +115,6 @@ export const drawBarChart = (
 
   drawGridLines(ctx, plotH, 0, plotW);
 
-  if (avg !== null) {
-    const avgY = plotH - toBarH(avg);
-    drawAvgLine(ctx, avgY, plotW);
-  }
-
-  drawYLabels(ctx, min, max, plotH, w);
-
   data.forEach((v, i) => {
     const x = i * stride;
     const bh = toBarH(v);
@@ -129,6 +122,12 @@ export const drawBarChart = (
     ctx.fillRect(x, plotH - bh, barW, bh);
   });
 
+  if (avg !== null) {
+    const avgY = plotH - toBarH(avg);
+    drawAvgLine(ctx, avgY, plotW);
+  }
+
+  drawYLabels(ctx, min, max, plotH, w);
   drawXLabels(ctx, n, stride, barW, plotH);
 };
 
@@ -144,8 +143,8 @@ export const drawLineChart = (
   const plotW = w - FUEL_CHART_CONFIG.Y_LABEL_W;
   const plotH = h - FUEL_CHART_CONFIG.X_LABEL_H;
 
-  const min = Math.min(...data) * 0.92;
-  const max = Math.max(...data) * 1.08;
+  const min = Math.min(...data) * FUEL_CHART_CONFIG.MIN_SCALE_LINE;
+  const max = Math.max(...data) * FUEL_CHART_CONFIG.MAX_SCALE;
   const range = max - min || 1;
 
   const toY = (v: number) => plotH - ((v - min) / range) * plotH;
@@ -153,12 +152,6 @@ export const drawLineChart = (
     data.length > 1 ? (i / (data.length - 1)) * plotW : plotW / 2;
 
   drawGridLines(ctx, plotH, 0, plotW);
-
-  if (avg !== null) {
-    drawAvgLine(ctx, toY(avg), plotW);
-  }
-
-  drawYLabels(ctx, min, max, plotH, w);
 
   ctx.beginPath();
   ctx.strokeStyle = FUEL_COLORS.primary;
@@ -179,6 +172,12 @@ export const drawLineChart = (
     ctx.fillStyle = barColor(v, avg);
     ctx.fill();
   });
+
+  if (avg !== null) {
+    drawAvgLine(ctx, toY(avg), plotW);
+  }
+
+  drawYLabels(ctx, min, max, plotH, w);
 
   const lineStride = data.length > 1 ? plotW / (data.length - 1) : plotW;
   const maxLabelW =

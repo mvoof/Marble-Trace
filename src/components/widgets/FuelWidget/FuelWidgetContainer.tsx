@@ -31,7 +31,6 @@ export const FuelWidgetContainer = observer(() => {
       fuelLevel={fuelLevel}
       fuelMax={fuelMax}
       avgPerLap={fuel?.avgPerLap ?? null}
-      currentUsePerLap={fuel?.currentUsePerLap ?? null}
       lapsRemaining={lapsRemaining}
       shortage={fuel?.shortage ?? null}
       fuelToAddWithBuffer={fuelToAddWithBuffer}

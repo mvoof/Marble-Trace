@@ -836,7 +836,6 @@ export type Frequency = {
 
 export type FuelComputedFrame = {
   avgPerLap: number;
-  currentUsePerLap: number;
   lapsRemaining: number;
   lapsToFinish: number | null;
   /**
