@@ -38,12 +38,10 @@ export const SessionHeader = observer(
     const currentSession = sessions?.[sessionInfo?.CurrentSessionNum ?? 0];
     const trackName = weekendInfo?.TrackDisplayName ?? '';
 
-    const carIdx = telemetryStore.carIdx;
-
     const sessionLapsDisplay = resolveSessionLaps(
       currentSession?.SessionLaps,
       currentSession?.SessionTime,
-      carIdx?.car_idx_best_lap_time ?? []
+      telemetryStore.leaderBestLapTime
     );
 
     const env = telemetryStore.environment;

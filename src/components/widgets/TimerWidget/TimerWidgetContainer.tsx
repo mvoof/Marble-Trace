@@ -167,7 +167,7 @@ export const TimerWidgetContainer = observer(() => {
       ? resolveSessionLaps(
           currentSession?.SessionLaps,
           currentSession?.SessionTime,
-          carIdx?.car_idx_best_lap_time ?? []
+          telemetryStore.leaderBestLapTime
         )
       : null;
 

@@ -120,7 +120,7 @@ export const estimateTotalLaps = (
 export const resolveSessionLaps = (
   sessionLaps: string | null | undefined,
   sessionTime: string | null | undefined,
-  carIdxBestLapTimes: number[]
+  leaderBestLapTime: number | null
 ): string | null => {
   if (!sessionLaps) return null;
   if (sessionLaps.toLowerCase() !== 'unlimited') return sessionLaps;
@@ -128,12 +128,7 @@ export const resolveSessionLaps = (
   const sessionTimeSecs = parseSessionSeconds(sessionTime);
   if (!sessionTimeSecs) return sessionLaps;
 
-  const leaderBest = carIdxBestLapTimes.reduce<number | null>((best, t) => {
-    if (t > 0 && (best === null || t < best)) return t;
-    return best;
-  }, null);
+  if (leaderBestLapTime === null) return sessionLaps;
 
-  if (leaderBest === null) return sessionLaps;
-
-  return String(estimateTotalLaps(sessionTimeSecs, leaderBest));
+  return String(estimateTotalLaps(sessionTimeSecs, leaderBestLapTime));
 };
