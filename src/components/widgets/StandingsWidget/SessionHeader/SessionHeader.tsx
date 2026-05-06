@@ -41,7 +41,11 @@ export const SessionHeader = observer(
     const currentSession = sessions?.[sessionInfo?.CurrentSessionNum ?? 0];
     const trackName = weekendInfo?.TrackDisplayName ?? '';
 
-    const currentLap = telemetryStore.lapTiming?.lap ?? null;
+    // Leader's lap reflects overall session progress; player lap is misleading when lapped.
+    const leaderLap =
+      driverEntries.length > 0
+        ? Math.max(...driverEntries.map((e) => e.lap))
+        : null;
 
     const env = telemetryStore.environment;
     const airCelsius =
@@ -69,7 +73,7 @@ export const SessionHeader = observer(
         </div>
 
         <div className={styles.sessionRight}>
-          {currentLap !== null && <span>LAP {currentLap}</span>}
+          {leaderLap !== null && <span>LAP {leaderLap}</span>}
 
           {settings.showTotalDrivers && (
             <span className={styles.sessionDriverCount}>
