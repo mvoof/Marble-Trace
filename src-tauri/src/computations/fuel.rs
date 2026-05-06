@@ -73,7 +73,6 @@ impl FuelState {
 #[serde(rename_all = "camelCase")]
 pub struct FuelComputedFrame {
     pub avg_per_lap: f32,
-    pub current_use_per_lap: f32,
     pub laps_remaining: f32,
     pub laps_to_finish: Option<f32>,
     /// Positive = surplus liters, negative = deficit
@@ -124,8 +123,6 @@ pub fn compute(
     fuel_state: &FuelState,
 ) -> Option<FuelComputedFrame> {
     let fuel_level = frame.fuel_level;
-
-    let current_use_per_lap = instant_avg(frame, session).unwrap_or(0.0);
 
     let avg_per_lap = fuel_state.avg().or_else(|| instant_avg(frame, session))?;
 
@@ -179,7 +176,6 @@ pub fn compute(
 
     Some(FuelComputedFrame {
         avg_per_lap,
-        current_use_per_lap,
         laps_remaining,
         laps_to_finish,
         shortage,

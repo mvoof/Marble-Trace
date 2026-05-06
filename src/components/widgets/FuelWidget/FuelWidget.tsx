@@ -10,7 +10,6 @@ interface FuelWidgetProps {
   fuelLevel: number | null;
   fuelMax: number | null;
   avgPerLap: FuelCalculations['avgPerLap'];
-  currentUsePerLap: number | null;
   lapsRemaining: FuelCalculations['lapsRemaining'];
   shortage: FuelCalculations['shortage'];
   fuelToAddWithBuffer: FuelCalculations['fuelToAddWithBuffer'];
@@ -52,7 +51,6 @@ export const FuelWidget = ({
   fuelLevel,
   fuelMax,
   avgPerLap,
-  currentUsePerLap,
   lapsRemaining,
   shortage,
   fuelToAddWithBuffer,
@@ -109,13 +107,6 @@ export const FuelWidget = ({
         <div className={styles.row}>
           <span className={styles.rowLabel}>AVG/LAP</span>
           <span className={styles.rowValue}>{formatFuelLiters(avgPerLap)}</span>
-        </div>
-
-        <div className={styles.row}>
-          <span className={styles.rowLabel}>NOW/LAP</span>
-          <span className={`${styles.rowValue} ${styles.rowValueMuted}`}>
-            {formatFuelLiters(currentUsePerLap)}
-          </span>
         </div>
 
         <div className={styles.row}>
