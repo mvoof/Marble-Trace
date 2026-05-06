@@ -163,8 +163,13 @@ export const TimerWidgetContainer = observer(() => {
     playerCarIdx !== null ? (carIdx?.car_idx_lap[playerCarIdx] ?? null) : null;
 
   const sessionLapsRemainEx = session?.session_laps_remain_ex ?? null;
-  const totalLaps =
-    sessionLapsRemainEx !== null && sessionLapsRemainEx >= 0
+  const fixedSessionLaps = currentSession?.SessionLaps;
+  const isFixedLapRace =
+    fixedSessionLaps != null && fixedSessionLaps.toLowerCase() !== 'unlimited';
+
+  const totalLaps = isFixedLapRace
+    ? (fixedSessionLaps ?? null)
+    : sessionLapsRemainEx !== null && sessionLapsRemainEx >= 0
       ? String(sessionLapsRemainEx)
       : null;
 
