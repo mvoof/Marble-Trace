@@ -25,7 +25,6 @@ export const buildGridTemplate = (
 
   // Numeric/delta columns use ch
   if (settings.showIrChange) cols.push('3.5ch');
-  if (settings.showPitStops) cols.push('3ch');
   if (settings.showLapsCompleted) cols.push('2ch');
   if (settings.showPosChange) cols.push('3ch');
 

@@ -87,7 +87,6 @@ interface DriverRowProps {
   settings: StandingsWidgetSettings;
   irDelta: number | undefined;
   effectiveStartPos: StartPosition | undefined;
-  playerPitStops: number;
   gridTemplate: string;
 }
 
@@ -96,7 +95,6 @@ export const DriverRow = ({
   settings,
   irDelta,
   effectiveStartPos,
-  playerPitStops,
   gridTemplate,
 }: DriverRowProps) => {
   const isPit =
@@ -196,20 +194,6 @@ export const DriverRow = ({
       {settings.showIrChange && (
         <div className={`${styles.cell} ${styles.cellCenter}`}>
           <IrChangeCell delta={irDelta} />
-        </div>
-      )}
-
-      {settings.showPitStops && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          {driver.isPlayer ? (
-            <span
-              className={`${styles.pitStops} ${playerPitStops > 0 ? styles.pitStopsActive : ''}`}
-            >
-              {playerPitStops}
-            </span>
-          ) : (
-            <span className={styles.pitStops}>—</span>
-          )}
         </div>
       )}
 

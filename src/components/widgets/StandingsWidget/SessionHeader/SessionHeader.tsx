@@ -17,6 +17,7 @@ interface SessionHeaderProps {
   driverEntries: DriverEntry[];
   overallSof: number;
   playerIncidents: number;
+  playerPitStops: number;
 }
 
 const parseWeekendTemp = (
@@ -35,6 +36,7 @@ export const SessionHeader = observer(
     driverEntries,
     overallSof,
     playerIncidents,
+    playerPitStops,
   }: SessionHeaderProps) => {
     const sessions = sessionInfo?.Sessions;
     const currentSession = sessions?.[sessionInfo?.CurrentSessionNum ?? 0];
@@ -98,6 +100,13 @@ export const SessionHeader = observer(
           {settings.showSOF && (
             <span className={styles.sofValue}>
               SOF: {formatIRating(overallSof)}
+            </span>
+          )}
+
+          {settings.showPitStops && (
+            <span className={styles.pitStopsBadge}>
+              PIT:{' '}
+              <span className={styles.pitStopsValue}>{playerPitStops}</span>
             </span>
           )}
 

@@ -87,11 +87,6 @@ export const StandingsSettingsPanel = observer(() => {
             key: 'showIrChange',
           },
           {
-            title: 'Pit Stop Count',
-            value: settings.showPitStops,
-            key: 'showPitStops',
-          },
-          {
             title: 'Laps Completed',
             value: settings.showLapsCompleted,
             key: 'showLapsCompleted',
@@ -137,6 +132,11 @@ export const StandingsSettingsPanel = observer(() => {
             title: 'Strength of Field (SOF)',
             value: settings.showSOF,
             key: 'showSOF',
+          },
+          {
+            title: 'Pit Stop Counter (player only)',
+            value: settings.showPitStops,
+            key: 'showPitStops',
           },
           {
             title: 'Incidents Badge (player only)',

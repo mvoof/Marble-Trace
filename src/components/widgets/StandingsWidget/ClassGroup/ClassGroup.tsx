@@ -12,7 +12,6 @@ interface ClassGroupProps {
   settings: StandingsWidgetSettings;
   irDeltaMap: Map<number, number>;
   effectiveStartPosMap: Map<number, StartPosition>;
-  playerPitStops: number;
   gridTemplate: string;
 }
 
@@ -21,7 +20,6 @@ export const ClassGroup = ({
   settings,
   irDeltaMap,
   effectiveStartPosMap,
-  playerPitStops,
   gridTemplate,
 }: ClassGroupProps) => (
   <>
@@ -32,7 +30,6 @@ export const ClassGroup = ({
         settings={settings}
         irDelta={irDeltaMap.get(driver.carIdx)}
         effectiveStartPos={effectiveStartPosMap.get(driver.carIdx)}
-        playerPitStops={playerPitStops}
         gridTemplate={gridTemplate}
       />
     ))}

@@ -145,6 +145,7 @@ export const StandingsWidget = ({
           driverEntries={driverEntries}
           overallSof={overallSof}
           playerIncidents={playerIncidents}
+          playerPitStops={playerPitStops}
         />
       )}
 
@@ -195,15 +196,6 @@ export const StandingsWidget = ({
               </span>
             )}
 
-            {settings.showPitStops && (
-              <span
-                className={`${styles.th} ${styles.thCenter}`}
-                title="Pit stops (player only — iRacing does not expose this per-driver)"
-              >
-                Stops
-              </span>
-            )}
-
             {settings.showLapsCompleted && (
               <span className={`${styles.th} ${styles.thCenter}`}>Laps</span>
             )}
@@ -223,7 +215,6 @@ export const StandingsWidget = ({
           settings={settings}
           irDeltaMap={irDeltaMap}
           effectiveStartPosMap={effectiveStartPosMap}
-          playerPitStops={playerPitStops}
           gridTemplate={gridTemplate}
         />
       </div>

@@ -65,7 +65,6 @@ const StandingsWidgetStory = ({
           settings={settings}
           irDeltaMap={irDeltaMap}
           effectiveStartPosMap={effectiveStartPosMap}
-          playerPitStops={0}
           playerIncidents={
             driverEntries.find((e) => e.isPlayer)?.incidents ?? 0
           }
