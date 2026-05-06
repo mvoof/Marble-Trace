@@ -20,10 +20,10 @@ export const drawAvgLine = (
   ctx.setLineDash([]);
 
   ctx.font = 'bold 8px monospace';
-  ctx.textAlign = 'left';
+  ctx.textAlign = 'right';
   ctx.textBaseline = 'bottom';
   ctx.fillStyle = FUEL_COLORS.averageLabel;
-  ctx.fillText('AVG', 1, avgY - 1);
+  ctx.fillText('AVG', plotW, avgY - 1);
 };
 
 export const drawTopLine = (ctx: CanvasRenderingContext2D, plotW: number) => {
