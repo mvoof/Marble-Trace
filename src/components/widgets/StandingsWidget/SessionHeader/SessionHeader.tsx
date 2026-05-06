@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { Users } from 'lucide-react';
-import { formatIRating } from '../../widget-utils';
+import { formatIRating, NEAR_DQ_INCIDENT_THRESHOLD } from '../../widget-utils';
 import { unitsStore } from '../../../../store/units.store';
 import type { DriverEntry } from '../../../../types/bindings';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
@@ -16,6 +16,8 @@ interface SessionHeaderProps {
   weekendInfo: WeekendInfo | null | undefined;
   driverEntries: DriverEntry[];
   overallSof: number;
+  playerIncidents: number;
+  playerPitStops: number;
 }
 
 const parseWeekendTemp = (
@@ -33,6 +35,8 @@ export const SessionHeader = observer(
     weekendInfo,
     driverEntries,
     overallSof,
+    playerIncidents,
+    playerPitStops,
   }: SessionHeaderProps) => {
     const sessions = sessionInfo?.Sessions;
     const currentSession = sessions?.[sessionInfo?.CurrentSessionNum ?? 0];
@@ -96,6 +100,28 @@ export const SessionHeader = observer(
           {settings.showSOF && (
             <span className={styles.sofValue}>
               SOF: {formatIRating(overallSof)}
+            </span>
+          )}
+
+          {settings.showPitStops && (
+            <span className={styles.pitStopsBadge}>
+              PIT:{' '}
+              <span className={styles.pitStopsValue}>{playerPitStops}</span>
+            </span>
+          )}
+
+          {settings.showIncidentsBadge && (
+            <span className={styles.incidentsBadge}>
+              INC:{' '}
+              <span
+                className={
+                  playerIncidents >= NEAR_DQ_INCIDENT_THRESHOLD
+                    ? styles.incidentsValueNearDQ
+                    : styles.incidentsValue
+                }
+              >
+                {playerIncidents}x
+              </span>
             </span>
           )}
         </div>

@@ -43,6 +43,12 @@ const StandingsWidgetStory = ({
   );
   const overallSof = computeClassSof(driverEntries);
   const irDeltaMap = new Map<number, number>();
+  const effectiveStartPosMap = new Map(
+    driverEntries.map((e) => [
+      e.carIdx,
+      { overall: e.startPosOverall, class: e.startPosClass },
+    ])
+  );
 
   return (
     <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
@@ -58,7 +64,10 @@ const StandingsWidgetStory = ({
           driverEntries={driverEntries}
           settings={settings}
           irDeltaMap={irDeltaMap}
-          playerPitStops={0}
+          effectiveStartPosMap={effectiveStartPosMap}
+          playerIncidents={
+            driverEntries.find((e) => e.isPlayer)?.incidents ?? 0
+          }
           sessionInfo={snap.sessionInfo}
           weekendInfo={snap.sessionInfo?.WeekendInfo ?? null}
           overallSof={overallSof}

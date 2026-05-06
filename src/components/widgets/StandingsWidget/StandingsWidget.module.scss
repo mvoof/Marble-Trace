@@ -1,7 +1,7 @@
 @use '../../../styles/variables' as *;
 
 .standings {
-  --widget-pad-x: 0.75em;
+  --widget-pad-x: 0.625em;
 
   font-family: $font-mono;
   font-variant-numeric: tabular-nums;
@@ -14,91 +14,21 @@
   font-size: 1em;
 }
 
-// Table wrapper — no scroll, rows beyond window are not rendered
-.tableWrap {
+// List wrapper — no scroll, rows beyond window are not rendered
+.listWrap {
   flex: 1 1 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: auto;
-  font-family: $font-mono;
-  text-align: left;
-  font-size: 0.9375em;
-  white-space: nowrap;
-}
-
-// Column widths — min-width hints; name column stretches to fill remaining space
-.colPos {
-  width: 3.5%;
-  min-width: 2em;
-}
-
-.colPosChange {
-  width: 3.5%;
-  min-width: 2em;
-}
-
-.colNum {
-  width: 3.5%;
-  min-width: 2em;
-}
-
-.colName {
-  width: 100%;
-  min-width: 4em;
-}
-
-.colBrand {
-  width: 7%;
-}
-
-.colTire {
-  width: 3.5%;
-}
-
-.colClass {
-  width: 5%;
-}
-
-.colLic {
-  width: 11%;
-}
-
-.colIrChange {
-  width: 4%;
-}
-
-.colInc {
-  width: 3.5%;
-}
-
-.colStops {
-  width: 4%;
-}
-
-.colLapsCompleted {
-  width: 4%;
-}
-
-.colGap {
-  width: 6%;
-}
-
-.colLap {
-  width: 7%;
-}
-
-// Table header
-.thead {
+// Column header row — same grid as DriverRow
+.headerRow {
+  display: grid;
+  align-items: center;
+  column-gap: 0.35em;
+  padding: 0.3em 0.625em;
   background: rgb(24, 24, 27);
-  font-family: $font-mono;
-  text-transform: uppercase;
-  font-size: 0.6875em;
-  letter-spacing: 0.06em;
-  color: rgba(161, 161, 170, 1);
   border-bottom: 1px solid rgba(39, 39, 42, 0.5);
   position: sticky;
   top: 0;
@@ -106,24 +36,22 @@
 }
 
 .th {
-  padding: 0.3em 0.35em;
-  text-align: left;
+  font-family: $font-mono;
+  text-transform: uppercase;
+  font-size: 0.6875em;
+  letter-spacing: 0.06em;
+  color: rgba(161, 161, 170, 1);
   font-weight: 600;
   white-space: nowrap;
-
-  &:first-child {
-    padding-left: var(--widget-pad-x);
-  }
-
-  &:last-child {
-    padding-right: var(--widget-pad-x);
-  }
+  overflow: hidden;
 }
 
 .thCenter {
   text-align: center;
+  justify-self: center;
 }
 
 .thRight {
   text-align: right;
+  justify-self: end;
 }

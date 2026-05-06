@@ -160,6 +160,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showIrChange: false,
         showPitStops: true,
         showLapsCompleted: false,
+        showIncidentsBadge: true,
         abbreviateNames: false,
       },
     },

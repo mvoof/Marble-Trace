@@ -4,7 +4,6 @@ import {
   formatBrand,
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
-  NEAR_DQ_INCIDENT_THRESHOLD,
 } from '../../widget-utils';
 import { PitBadge, ClassBadge, RatingBadge, TireBadge } from '../../primitives';
 import type { DriverEntry } from '../../../../types/bindings';
@@ -14,8 +13,8 @@ import styles from './DriverRow.module.scss';
 
 const abbreviateName = (fullName: string): string => {
   const parts = fullName.trim().split(/\s+/);
-  if (parts.length < 2) return fullName.toUpperCase();
-  return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`.toUpperCase();
+  if (parts.length < 2) return fullName;
+  return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
 };
 
 const PosChange = ({
@@ -78,30 +77,36 @@ const IrChangeCell = ({ delta }: { delta: number | undefined }) => {
   );
 };
 
+interface StartPosition {
+  overall: number;
+  class: number;
+}
+
 interface DriverRowProps {
   driver: DriverEntry;
   settings: StandingsWidgetSettings;
   irDelta: number | undefined;
-  playerPitStops: number;
+  effectiveStartPos: StartPosition | undefined;
+  gridTemplate: string;
 }
 
 export const DriverRow = ({
   driver,
   settings,
   irDelta,
-  playerPitStops,
+  effectiveStartPos,
+  gridTemplate,
 }: DriverRowProps) => {
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
   const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
-  const nearDQ = driver.incidents >= NEAR_DQ_INCIDENT_THRESHOLD;
 
   const pos = settings.enableClassCycling
     ? driver.classPosition
     : driver.position;
   const startPos = settings.enableClassCycling
-    ? driver.startPosClass
-    : driver.startPosOverall;
+    ? (effectiveStartPos?.class ?? 0)
+    : (effectiveStartPos?.overall ?? 0);
   const isLeader = pos === 1;
 
   const rowClass = [
@@ -113,19 +118,23 @@ export const DriverRow = ({
     .join(' ');
 
   return (
-    <tr className={rowClass} data-driver-row>
-      <td className={styles.td}>
+    <div
+      className={rowClass}
+      style={{ gridTemplateColumns: gridTemplate }}
+      data-driver-row
+    >
+      <div className={styles.cell}>
         <span
           className={`${styles.posCell} ${driver.isPlayer ? styles.posCellPlayer : ''}`}
         >
           {pos}
         </span>
-      </td>
+      </div>
 
-      <td
-        className={`${styles.td} ${styles.tdCarNumber}`}
+      <div
+        className={`${styles.cell} ${styles.carNumberCell}`}
         style={{
-          borderLeft: `4px solid ${driver.carClassColor}`,
+          borderLeft: `3px solid ${driver.carClassColor}`,
           background: `linear-gradient(to right, ${driver.carClassColor}33, transparent)`,
         }}
       >
@@ -134,95 +143,73 @@ export const DriverRow = ({
         >
           {driver.carNumber}
         </span>
-      </td>
+      </div>
 
-      <td className={`${styles.td} ${styles.tdDriverName}`}>
-        <div className={styles.driverNameCell}>
-          <span
-            className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
-          >
-            {settings.abbreviateNames
-              ? abbreviateName(driver.userName)
-              : driver.userName}
-          </span>
+      <div className={`${styles.cell} ${styles.nameCell}`}>
+        <span
+          className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
+        >
+          {settings.abbreviateNames
+            ? abbreviateName(driver.userName)
+            : driver.userName}
+        </span>
 
-          {isPit && <PitBadge />}
-        </div>
-      </td>
+        {isPit && <PitBadge />}
+      </div>
 
       {settings.showBrand && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <span className={styles.brandLabel} title={driver.carScreenName}>
             {formatBrand(driver.carScreenName)}
           </span>
-        </td>
+        </div>
       )}
 
       {settings.showTire && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <TireBadge tire={driver.tireCompound} />
-        </td>
+        </div>
       )}
 
       {!settings.enableClassCycling && settings.showClassBadge && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <ClassBadge
             color={driver.carClassColor}
             label={driver.carClassShortName}
             className={styles.classBadgeFull}
           />
-        </td>
+        </div>
       )}
 
       {settings.showIRatingBadge && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <RatingBadge
             licString={driver.licString}
             iRating={driver.iRating}
             className={styles.ratingBadge}
           />
-        </td>
+        </div>
       )}
 
       {settings.showIrChange && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <IrChangeCell delta={irDelta} />
-        </td>
-      )}
-
-      <td className={`${styles.td} ${styles.tdCenter}`}>
-        <span className={nearDQ ? styles.incidentsNearDQ : styles.incidents}>
-          {driver.incidents}x
-        </span>
-      </td>
-
-      {settings.showPitStops && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
-          {driver.isPlayer ? (
-            <span
-              className={`${styles.pitStops} ${playerPitStops > 0 ? styles.pitStopsActive : ''}`}
-            >
-              {playerPitStops}
-            </span>
-          ) : (
-            <span className={styles.pitStops}>—</span>
-          )}
-        </td>
+        </div>
       )}
 
       {settings.showLapsCompleted && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <span className={styles.lapsCompleted}>{driver.lap}</span>
-        </td>
+        </div>
       )}
 
       {settings.showPosChange && (
-        <td className={`${styles.td} ${styles.tdCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
           <PosChange position={pos} startPos={startPos} />
-        </td>
+        </div>
       )}
 
-      <td className={`${styles.td} ${styles.tdRight}`}>
+      <div className={`${styles.cell} ${styles.cellRight}`}>
         {isLeader ? (
           <span className={styles.gapLeader}>Leader</span>
         ) : driver.f2Time > 0 ? (
@@ -230,21 +217,21 @@ export const DriverRow = ({
         ) : (
           <span className={styles.gapLeader}>-</span>
         )}
-      </td>
+      </div>
 
-      <td className={`${styles.td} ${styles.tdRight}`}>
+      <div className={`${styles.cell} ${styles.cellRight}`}>
         <span className={styles.lastLap}>
           {isPit
             ? '-'
             : formatLapTime(driver.lastLapTime > 0 ? driver.lastLapTime : null)}
         </span>
-      </td>
+      </div>
 
-      <td className={`${styles.td} ${styles.tdRight}`}>
+      <div className={`${styles.cell} ${styles.cellRight}`}>
         <span className={styles.bestLap}>
           {formatLapTime(driver.bestLapTime > 0 ? driver.bestLapTime : null)}
         </span>
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 };

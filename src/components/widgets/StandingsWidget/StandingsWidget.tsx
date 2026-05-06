@@ -8,17 +8,24 @@ import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { SessionHeader } from './SessionHeader/SessionHeader';
 import { ClassGroup } from './ClassGroup/ClassGroup';
 import { ClassSwitcher } from './ClassSwitcher/ClassSwitcher';
-import { computeClassSof } from './standings-utils';
+import { computeClassSof, buildGridTemplate } from './standings-utils';
 import type { DriverEntry } from '@/types/bindings';
 import type { DriverGroup } from '@/types/standings';
 
 import styles from './StandingsWidget.module.scss';
 
+interface StartPosition {
+  overall: number;
+  class: number;
+}
+
 interface StandingsWidgetProps {
   driverEntries: DriverEntry[];
   settings: StandingsWidgetSettings;
   irDeltaMap: Map<number, number>;
+  effectiveStartPosMap: Map<number, StartPosition>;
   playerPitStops: number;
+  playerIncidents: number;
   sessionInfo: SessionInfo | null;
   weekendInfo: WeekendInfo | null;
   overallSof: number;
@@ -49,7 +56,9 @@ export const StandingsWidget = ({
   driverEntries,
   settings,
   irDeltaMap,
+  effectiveStartPosMap,
   playerPitStops,
+  playerIncidents,
   sessionInfo,
   weekendInfo,
   overallSof,
@@ -58,8 +67,14 @@ export const StandingsWidget = ({
   onPrevClass,
   onNextClass,
 }: StandingsWidgetProps) => {
-  const { ref: tableWrapRef, count: visibleRowCount } =
-    useVisibleRowCount<HTMLDivElement>(2, 5, 'tbody tr[data-driver-row]');
+  const { ref: listRef, count: visibleRowCount } =
+    useVisibleRowCount<HTMLDivElement>(
+      settings.showColumnHeaders ? 1 : 0,
+      5,
+      '[data-driver-row]'
+    );
+
+  const gridTemplate = useMemo(() => buildGridTemplate(settings), [settings]);
 
   const allClassGroups = useMemo((): DriverGroup[] => {
     if (driverEntries.length === 0) return [];
@@ -133,6 +148,8 @@ export const StandingsWidget = ({
           weekendInfo={weekendInfo}
           driverEntries={driverEntries}
           overallSof={overallSof}
+          playerIncidents={playerIncidents}
+          playerPitStops={playerPitStops}
         />
       )}
 
@@ -146,106 +163,64 @@ export const StandingsWidget = ({
         />
       )}
 
-      <div ref={tableWrapRef} className={styles.tableWrap}>
-        <table className={styles.table}>
-          <colgroup>
-            <col className={styles.colPos} />
-            <col className={styles.colNum} />
-            <col className={styles.colName} />
+      <div ref={listRef} className={styles.listWrap}>
+        {settings.showColumnHeaders && (
+          <div
+            className={styles.headerRow}
+            style={{ gridTemplateColumns: gridTemplate }}
+          >
+            <span className={styles.th}>Pos</span>
+            <span className={styles.th}>#</span>
+            <span className={styles.th}>Driver</span>
 
-            {settings.showBrand && <col className={styles.colBrand} />}
-            {settings.showTire && <col className={styles.colTire} />}
+            {settings.showBrand && (
+              <span className={`${styles.th} ${styles.thCenter}`}>Brand</span>
+            )}
+
+            {settings.showTire && (
+              <span className={`${styles.th} ${styles.thCenter}`}>Tire</span>
+            )}
+
             {!settings.enableClassCycling && settings.showClassBadge && (
-              <col className={styles.colClass} />
+              <span className={`${styles.th} ${styles.thCenter}`}>Class</span>
             )}
 
-            {settings.showIRatingBadge && <col className={styles.colLic} />}
+            {settings.showIRatingBadge && (
+              <span className={`${styles.th} ${styles.thCenter}`}>
+                Lic / iR
+              </span>
+            )}
 
-            {settings.showIrChange && <col className={styles.colIrChange} />}
+            {settings.showIrChange && (
+              <span
+                className={`${styles.th} ${styles.thCenter}`}
+                title="Projected iR change (Elo estimate, not real iRacing data)"
+              >
+                ΔiR*
+              </span>
+            )}
 
-            <col className={styles.colInc} />
-
-            {settings.showPitStops && <col className={styles.colStops} />}
             {settings.showLapsCompleted && (
-              <col className={styles.colLapsCompleted} />
+              <span className={`${styles.th} ${styles.thCenter}`}>Laps</span>
             )}
 
-            {settings.showPosChange && <col className={styles.colPosChange} />}
+            {settings.showPosChange && (
+              <span className={`${styles.th} ${styles.thCenter}`}>+/-</span>
+            )}
 
-            <col className={styles.colGap} />
-            <col className={styles.colLap} />
-            <col className={styles.colLap} />
-          </colgroup>
+            <span className={`${styles.th} ${styles.thRight}`}>Gap</span>
+            <span className={`${styles.th} ${styles.thRight}`}>Last</span>
+            <span className={`${styles.th} ${styles.thRight}`}>Best</span>
+          </div>
+        )}
 
-          {settings.showColumnHeaders && (
-            <thead className={styles.thead}>
-              <tr>
-                <th className={styles.th}>Pos</th>
-                <th className={styles.th}>#</th>
-                <th className={styles.th}>Driver</th>
-
-                {settings.showBrand && (
-                  <th className={`${styles.th} ${styles.thCenter}`}>Brand</th>
-                )}
-
-                {settings.showTire && (
-                  <th className={`${styles.th} ${styles.thCenter}`}>Tire</th>
-                )}
-
-                {!settings.enableClassCycling && settings.showClassBadge && (
-                  <th className={`${styles.th} ${styles.thCenter}`}>Class</th>
-                )}
-
-                {settings.showIRatingBadge && (
-                  <th className={`${styles.th} ${styles.thCenter}`}>
-                    Lic / iR
-                  </th>
-                )}
-
-                {settings.showIrChange && (
-                  <th
-                    className={`${styles.th} ${styles.thCenter}`}
-                    title="Projected iR change (Elo estimate, not real iRacing data)"
-                  >
-                    ΔiR*
-                  </th>
-                )}
-
-                <th className={`${styles.th} ${styles.thCenter}`}>Inc</th>
-
-                {settings.showPitStops && (
-                  <th
-                    className={`${styles.th} ${styles.thCenter}`}
-                    title="Pit stops (player only — iRacing does not expose this per-driver)"
-                  >
-                    Stops
-                  </th>
-                )}
-
-                {settings.showLapsCompleted && (
-                  <th className={`${styles.th} ${styles.thCenter}`}>Laps</th>
-                )}
-
-                {settings.showPosChange && (
-                  <th className={`${styles.th} ${styles.thCenter}`}>+/-</th>
-                )}
-
-                <th className={`${styles.th} ${styles.thRight}`}>Gap</th>
-                <th className={`${styles.th} ${styles.thRight}`}>Last</th>
-                <th className={`${styles.th} ${styles.thRight}`}>Best</th>
-              </tr>
-            </thead>
-          )}
-
-          <tbody>
-            <ClassGroup
-              group={displayGroup}
-              settings={settings}
-              irDeltaMap={irDeltaMap}
-              playerPitStops={playerPitStops}
-            />
-          </tbody>
-        </table>
+        <ClassGroup
+          group={displayGroup}
+          settings={settings}
+          irDeltaMap={irDeltaMap}
+          effectiveStartPosMap={effectiveStartPosMap}
+          gridTemplate={gridTemplate}
+        />
       </div>
     </WidgetPanel>
   );

@@ -57,6 +57,7 @@ export interface StandingsWidgetSettings {
   /** Player-only pit stop counter (counted on the frontend) */
   showPitStops: boolean;
   showLapsCompleted: boolean;
+  showIncidentsBadge: boolean;
   abbreviateNames: boolean;
 }
 

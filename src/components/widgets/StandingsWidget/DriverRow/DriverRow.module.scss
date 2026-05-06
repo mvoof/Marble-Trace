@@ -1,10 +1,12 @@
 @use '../../../../styles/variables' as *;
 
-// Driver row
 .driverRow {
+  display: grid;
+  align-items: center;
+  column-gap: 0.35em;
+  padding: 0.25em 0.625em;
   border-bottom: 1px solid rgba(39, 39, 42, 0.5);
   position: relative;
-  transition: background-color 0.2s;
   line-height: 1.15;
 
   &:hover:not(.driverRowPlayer) {
@@ -21,26 +23,34 @@
   opacity: 0.5;
 }
 
-.td {
-  padding: 0.25em 0.35em;
-  vertical-align: middle;
+// Base cell
+.cell {
+  display: flex;
+  align-items: center;
+  min-width: 0;
   white-space: nowrap;
-
-  &:first-child {
-    padding-left: var(--widget-pad-x);
-  }
-
-  &:last-child {
-    padding-right: var(--widget-pad-x);
-  }
 }
 
-.tdCenter {
-  text-align: center;
+.cellCenter {
+  justify-content: center;
 }
 
-.tdRight {
-  text-align: right;
+.cellRight {
+  justify-content: flex-end;
+}
+
+// Car number cell — stretch full row height for border + gradient
+.carNumberCell {
+  align-self: stretch;
+  margin-top: -0.25em;
+  margin-bottom: -0.25em;
+  padding: 0.25em 0.35em;
+}
+
+// Name cell — overflow truncation
+.nameCell {
+  overflow: hidden;
+  gap: 0.4em;
 }
 
 // Position
@@ -51,10 +61,6 @@
 
 .posCellPlayer {
   color: $color-caution;
-}
-
-.posCellSmall {
-  font-size: 0.875em;
 }
 
 // Position change
@@ -86,10 +92,6 @@
 }
 
 // Car number
-.tdCarNumber {
-  padding-left: 0.5em;
-}
-
 .carNumber {
   font-family: $font-mono;
   font-size: 0.875em;
@@ -101,35 +103,27 @@
 }
 
 // Driver name
-.tdDriverName {
-  overflow: hidden;
-}
-
-.driverNameCell {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  font-weight: 700;
-  overflow: hidden;
-}
-
 .driverName {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 700;
   font-size: 0.9375em;
   color: $color-text-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
 }
 
 .driverNamePlayer {
   color: $color-caution;
 }
 
-// Class badge — block fill for table column
+// Class badge
 .classBadgeFull {
-  display: block;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
+  font-size: 0.75em;
 }
 
 // Brand label
@@ -153,7 +147,6 @@
   font-size: 0.75em;
   font-family: $font-mono;
   font-weight: 700;
-  min-width: 2.75em;
 }
 
 .irChangeUp {
@@ -164,35 +157,10 @@
   color: $color-error;
 }
 
-// Incidents
-.incidents {
-  font-size: 0.8125em;
-  text-align: center;
-  color: $color-text-muted;
-}
-
-.incidentsNearDQ {
-  color: $color-error;
-  font-weight: 700;
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
-  }
-}
-
 // Pit stops
 .pitStops {
   font-family: $font-mono;
   font-size: 0.75em;
-  text-align: center;
   color: rgba(113, 113, 122, 1);
 }
 
@@ -203,11 +171,10 @@
 .lapsCompleted {
   font-family: $font-mono;
   font-size: 0.8125em;
-  text-align: center;
   color: $color-text-primary;
 }
 
-// Gap column
+// Gap
 .gapLeader {
   color: $color-text-primary;
   font-size: 0.875em;

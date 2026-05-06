@@ -2,18 +2,25 @@ import type { DriverGroup } from '@/types/standings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { DriverRow } from '../DriverRow/DriverRow';
 
+interface StartPosition {
+  overall: number;
+  class: number;
+}
+
 interface ClassGroupProps {
   group: DriverGroup;
   settings: StandingsWidgetSettings;
   irDeltaMap: Map<number, number>;
-  playerPitStops: number;
+  effectiveStartPosMap: Map<number, StartPosition>;
+  gridTemplate: string;
 }
 
 export const ClassGroup = ({
   group,
   settings,
   irDeltaMap,
-  playerPitStops,
+  effectiveStartPosMap,
+  gridTemplate,
 }: ClassGroupProps) => (
   <>
     {group.drivers.map((driver) => (
@@ -22,7 +29,8 @@ export const ClassGroup = ({
         driver={driver}
         settings={settings}
         irDelta={irDeltaMap.get(driver.carIdx)}
-        playerPitStops={playerPitStops}
+        effectiveStartPos={effectiveStartPosMap.get(driver.carIdx)}
+        gridTemplate={gridTemplate}
       />
     ))}
   </>
