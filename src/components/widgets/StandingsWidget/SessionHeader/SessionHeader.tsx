@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { Users } from 'lucide-react';
-import { formatIRating } from '../../widget-utils';
+import { formatIRating, NEAR_DQ_INCIDENT_THRESHOLD } from '../../widget-utils';
 import { unitsStore } from '../../../../store/units.store';
 import type { DriverEntry } from '../../../../types/bindings';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
@@ -104,7 +104,15 @@ export const SessionHeader = observer(
           {settings.showIncidentsBadge && (
             <span className={styles.incidentsBadge}>
               INC:{' '}
-              <span className={styles.incidentsValue}>{playerIncidents}x</span>
+              <span
+                className={
+                  playerIncidents >= NEAR_DQ_INCIDENT_THRESHOLD
+                    ? styles.incidentsValueNearDQ
+                    : styles.incidentsValue
+                }
+              >
+                {playerIncidents}x
+              </span>
             </span>
           )}
         </div>

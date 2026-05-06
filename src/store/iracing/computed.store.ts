@@ -46,13 +46,7 @@ class ComputedStore {
     this.standings = frame;
   }
 
-  getEffectiveStartPos(
-    carIdx: number,
-    backendOverall: number,
-    backendClass: number
-  ): StartPosition {
-    if (backendOverall > 0)
-      return { overall: backendOverall, class: backendClass };
+  getEffectiveStartPos(carIdx: number): StartPosition {
     return this.startPositionSnapshot.get(carIdx) ?? { overall: 0, class: 0 };
   }
 

@@ -11,23 +11,27 @@ export const buildGridTemplate = (
   settings: StandingsWidgetSettings
 ): string => {
   const cols: string[] = [
-    '2.5ch', // pos
-    '4ch', // car number
-    '1fr', // name
+    '2ch', // pos    numeric, tabular
+    '3.5ch', // carNum numeric, tabular
+    '1fr', // name   — fills remaining space
   ];
 
-  if (settings.showBrand) cols.push('4ch');
-  if (settings.showTire) cols.push('2.5ch');
-  if (!settings.enableClassCycling && settings.showClassBadge) cols.push('4ch');
-  if (settings.showIRatingBadge) cols.push('8ch');
-  if (settings.showIrChange) cols.push('4ch');
-  if (settings.showPitStops) cols.push('3.5ch');
-  if (settings.showLapsCompleted) cols.push('3.5ch');
-  if (settings.showPosChange) cols.push('3.5ch');
+  // Badge columns use em (like RelativeWidget) so they scale with widget font-size
+  if (settings.showBrand) cols.push('3em');
+  if (settings.showTire) cols.push('1.75em');
+  if (!settings.enableClassCycling && settings.showClassBadge)
+    cols.push('2.5em');
+  if (settings.showIRatingBadge) cols.push('4.5em');
 
-  cols.push('7ch'); // gap
-  cols.push('8.5ch'); // last lap
-  cols.push('8.5ch'); // best lap
+  // Numeric/delta columns use ch
+  if (settings.showIrChange) cols.push('3.5ch');
+  if (settings.showPitStops) cols.push('3ch');
+  if (settings.showLapsCompleted) cols.push('2ch');
+  if (settings.showPosChange) cols.push('3ch');
+
+  cols.push('6ch'); // gap    "+000.0"
+  cols.push('8ch'); // last   "0:00.000"
+  cols.push('8ch'); // best
 
   return cols.join(' ');
 };

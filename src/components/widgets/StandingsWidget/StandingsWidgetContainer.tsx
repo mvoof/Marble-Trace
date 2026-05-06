@@ -28,11 +28,7 @@ export const StandingsWidgetContainer = observer(() => {
   const effectiveStartPosMap = new Map(
     driverEntries.map((e) => [
       e.carIdx,
-      computedStore.getEffectiveStartPos(
-        e.carIdx,
-        e.startPosOverall,
-        e.startPosClass
-      ),
+      computedStore.getEffectiveStartPos(e.carIdx),
     ])
   );
 
