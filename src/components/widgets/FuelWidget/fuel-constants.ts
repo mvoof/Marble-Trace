@@ -24,12 +24,8 @@ export const FUEL_COLORS = {
 export const FUEL_CHART_CONFIG = {
   /** Maximum number of lap history entries to show in the chart */
   MAX_VISIBLE: 30,
-  /** Width of the Y-axis label area in pixels */
-  Y_LABEL_W: 36,
   /** Height of the X-axis label area in pixels */
   X_LABEL_H: 18,
-  /** Number of grid lines to draw */
-  GRID_COUNT: 4,
   /** Width of bars in the bar chart in pixels */
   BAR_WIDTH: 5,
   /** Gap between bars in pixels */
