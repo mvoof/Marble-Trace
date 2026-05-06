@@ -1,5 +1,31 @@
 import { FUEL_COLORS, FUEL_CHART_CONFIG } from '../fuel-constants';
 
+const computeNiceStep = (range: number, tickCount: number): number => {
+  const rawStep = range / tickCount;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const normalized = rawStep / magnitude;
+  if (normalized <= 1) return magnitude;
+  if (normalized <= 2) return 2 * magnitude;
+  if (normalized <= 5) return 5 * magnitude;
+  return 10 * magnitude;
+};
+
+const computeNiceTicks = (
+  min: number,
+  max: number,
+  tickCount: number
+): number[] => {
+  const range = max - min;
+  const step = computeNiceStep(Math.max(range, 1e-9), tickCount);
+  const niceMin = Math.floor(min / step) * step;
+  const niceMax = Math.ceil(max / step) * step;
+  const ticks: number[] = [];
+  for (let v = niceMin; v <= niceMax + step * 0.001; v += step) {
+    ticks.push(parseFloat(v.toPrecision(10)));
+  }
+  return ticks;
+};
+
 export const barColor = (v: number, avg: number | null): string => {
   if (avg === null) return FUEL_COLORS.primary;
   return v > avg ? FUEL_COLORS.danger : FUEL_COLORS.safe;
@@ -17,11 +43,14 @@ export const drawYLabels = (
   ctx.textBaseline = 'middle';
   ctx.fillStyle = FUEL_COLORS.textMuted;
 
-  for (let g = 1; g < FUEL_CHART_CONFIG.GRID_COUNT; g++) {
-    const ratio = g / FUEL_CHART_CONFIG.GRID_COUNT;
-    const gy = plotH * (1 - ratio);
-    const val = min + (max - min) * ratio;
-    ctx.fillText(val.toFixed(1), totalW - 1, gy);
+  const ticks = computeNiceTicks(min, max, FUEL_CHART_CONFIG.GRID_COUNT);
+  const range = max - min || 1;
+  const precision = range < 0.5 ? 2 : 1;
+
+  for (const tick of ticks) {
+    if (tick < min || tick > max) continue;
+    const gy = plotH * (1 - (tick - min) / range);
+    ctx.fillText(tick.toFixed(precision), totalW - 1, gy);
   }
 };
 
@@ -29,18 +58,26 @@ export const drawGridLines = (
   ctx: CanvasRenderingContext2D,
   plotH: number,
   left: number,
-  right: number
+  right: number,
+  min: number,
+  max: number
 ) => {
+  const ticks = computeNiceTicks(min, max, FUEL_CHART_CONFIG.GRID_COUNT);
+  const range = max - min || 1;
+
   ctx.strokeStyle = FUEL_COLORS.grid;
   ctx.lineWidth = 1;
   ctx.setLineDash([3, 4]);
-  for (let g = 1; g < FUEL_CHART_CONFIG.GRID_COUNT; g++) {
-    const gy = plotH * (1 - g / FUEL_CHART_CONFIG.GRID_COUNT);
+
+  for (const tick of ticks) {
+    if (tick <= min || tick >= max) continue;
+    const gy = plotH * (1 - (tick - min) / range);
     ctx.beginPath();
     ctx.moveTo(left, gy);
     ctx.lineTo(right, gy);
     ctx.stroke();
   }
+
   ctx.setLineDash([]);
 };
 
@@ -113,7 +150,7 @@ export const drawBarChart = (
 
   const toBarH = (v: number) => ((v - min) / range) * plotH;
 
-  drawGridLines(ctx, plotH, 0, plotW);
+  drawGridLines(ctx, plotH, 0, plotW, min, max);
 
   data.forEach((v, i) => {
     const x = i * stride;
@@ -151,7 +188,7 @@ export const drawLineChart = (
   const toX = (i: number) =>
     data.length > 1 ? (i / (data.length - 1)) * plotW : plotW / 2;
 
-  drawGridLines(ctx, plotH, 0, plotW);
+  drawGridLines(ctx, plotH, 0, plotW, min, max);
 
   ctx.beginPath();
   ctx.strokeStyle = FUEL_COLORS.primary;
