@@ -6,6 +6,7 @@ import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
 import { SessionState as BindingSessionState } from '../../../types/bindings';
+import { resolveSessionLaps } from '../../../utils/telemetry-format';
 import type { FlagState } from './TimerWidget';
 import { TimerWidget } from './TimerWidget';
 
@@ -160,8 +161,15 @@ export const TimerWidgetContainer = observer(() => {
   const playerCarIdx = driverInfo?.DriverCarIdx ?? null;
   const currentLap =
     playerCarIdx !== null ? (carIdx?.car_idx_lap[playerCarIdx] ?? null) : null;
+
   const totalLaps =
-    sessionNum !== null ? (currentSession?.SessionLaps ?? null) : null;
+    sessionNum !== null
+      ? resolveSessionLaps(
+          currentSession?.SessionLaps,
+          currentSession?.SessionTime,
+          carIdx?.car_idx_best_lap_time ?? []
+        )
+      : null;
 
   const position = lap?.player_car_position ?? null;
   const totalDrivers = driverInfo?.Drivers?.length ?? null;

@@ -100,3 +100,40 @@ export function formatPercent(fraction: number | null): string {
 export function clampNormalized(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
+
+export const parseSessionSeconds = (
+  sessionTime: string | null | undefined
+): number | null => {
+  if (!sessionTime || sessionTime.toLowerCase() === 'unlimited') return null;
+  const n = parseFloat(sessionTime);
+  return isFinite(n) && n > 0 ? n : null;
+};
+
+export const estimateTotalLaps = (
+  sessionTimeSecs: number,
+  leaderBestLapTimeSecs: number
+): number => {
+  const fittingLaps = Math.floor(sessionTimeSecs / leaderBestLapTimeSecs);
+  return fittingLaps + 1;
+};
+
+export const resolveSessionLaps = (
+  sessionLaps: string | null | undefined,
+  sessionTime: string | null | undefined,
+  carIdxBestLapTimes: number[]
+): string | null => {
+  if (!sessionLaps) return null;
+  if (sessionLaps.toLowerCase() !== 'unlimited') return sessionLaps;
+
+  const sessionTimeSecs = parseSessionSeconds(sessionTime);
+  if (!sessionTimeSecs) return sessionLaps;
+
+  const leaderBest = carIdxBestLapTimes.reduce<number | null>((best, t) => {
+    if (t > 0 && (best === null || t < best)) return t;
+    return best;
+  }, null);
+
+  if (leaderBest === null) return sessionLaps;
+
+  return String(estimateTotalLaps(sessionTimeSecs, leaderBest));
+};
