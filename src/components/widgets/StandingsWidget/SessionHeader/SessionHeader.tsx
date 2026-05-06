@@ -6,7 +6,6 @@ import type { DriverEntry } from '../../../../types/bindings';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import type { SessionInfoData, WeekendInfo } from '../../../../types/bindings';
 import { telemetryStore } from '../../../../store/iracing';
-import { resolveSessionLaps } from '../../../../utils/telemetry-format';
 
 import styles from './SessionHeader.module.scss';
 
@@ -42,11 +41,7 @@ export const SessionHeader = observer(
     const currentSession = sessions?.[sessionInfo?.CurrentSessionNum ?? 0];
     const trackName = weekendInfo?.TrackDisplayName ?? '';
 
-    const sessionLapsDisplay = resolveSessionLaps(
-      currentSession?.SessionLaps,
-      currentSession?.SessionTime,
-      telemetryStore.leaderBestLapTime
-    );
+    const currentLap = telemetryStore.lapTiming?.lap ?? null;
 
     const env = telemetryStore.environment;
     const airCelsius =
@@ -71,11 +66,11 @@ export const SessionHeader = observer(
           {currentSession && (
             <span>{currentSession.SessionType?.toUpperCase()}</span>
           )}
-
-          {sessionLapsDisplay && <span>Laps: {sessionLapsDisplay}</span>}
         </div>
 
         <div className={styles.sessionRight}>
+          {currentLap !== null && <span>LAP {currentLap}</span>}
+
           {settings.showTotalDrivers && (
             <span className={styles.sessionDriverCount}>
               <Users size={10} />
