@@ -1,84 +1,8 @@
 import { FUEL_COLORS, FUEL_CHART_CONFIG } from '../fuel-constants';
 
-const computeNiceStep = (range: number, tickCount: number): number => {
-  const rawStep = range / tickCount;
-  const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
-  const normalized = rawStep / magnitude;
-  if (normalized <= 1) return magnitude;
-  if (normalized <= 2) return 2 * magnitude;
-  if (normalized <= 5) return 5 * magnitude;
-  return 10 * magnitude;
-};
-
-const computeNiceTicks = (
-  min: number,
-  max: number,
-  tickCount: number
-): number[] => {
-  const range = max - min;
-  const step = computeNiceStep(Math.max(range, 1e-9), tickCount);
-  const niceMin = Math.floor(min / step) * step;
-  const niceMax = Math.ceil(max / step) * step;
-  const ticks: number[] = [];
-  for (let v = niceMin; v <= niceMax + step * 0.001; v += step) {
-    ticks.push(parseFloat(v.toPrecision(10)));
-  }
-  return ticks;
-};
-
 export const barColor = (v: number, avg: number | null): string => {
   if (avg === null) return FUEL_COLORS.primary;
   return v > avg ? FUEL_COLORS.danger : FUEL_COLORS.safe;
-};
-
-export const drawYLabels = (
-  ctx: CanvasRenderingContext2D,
-  min: number,
-  max: number,
-  plotH: number,
-  totalW: number
-) => {
-  ctx.font = 'bold 11px monospace';
-  ctx.textAlign = 'right';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = FUEL_COLORS.textMuted;
-
-  const ticks = computeNiceTicks(min, max, FUEL_CHART_CONFIG.GRID_COUNT);
-  const range = max - min || 1;
-  const precision = range < 0.5 ? 2 : 1;
-
-  for (const tick of ticks) {
-    if (tick < min || tick > max) continue;
-    const gy = plotH * (1 - (tick - min) / range);
-    ctx.fillText(tick.toFixed(precision), totalW - 1, gy);
-  }
-};
-
-export const drawGridLines = (
-  ctx: CanvasRenderingContext2D,
-  plotH: number,
-  left: number,
-  right: number,
-  min: number,
-  max: number
-) => {
-  const ticks = computeNiceTicks(min, max, FUEL_CHART_CONFIG.GRID_COUNT);
-  const range = max - min || 1;
-
-  ctx.strokeStyle = FUEL_COLORS.grid;
-  ctx.lineWidth = 1;
-  ctx.setLineDash([3, 4]);
-
-  for (const tick of ticks) {
-    if (tick <= min || tick >= max) continue;
-    const gy = plotH * (1 - (tick - min) / range);
-    ctx.beginPath();
-    ctx.moveTo(left, gy);
-    ctx.lineTo(right, gy);
-    ctx.stroke();
-  }
-
-  ctx.setLineDash([]);
 };
 
 export const drawAvgLine = (
@@ -100,6 +24,15 @@ export const drawAvgLine = (
   ctx.textBaseline = 'bottom';
   ctx.fillStyle = FUEL_COLORS.averageLabel;
   ctx.fillText('AVG', 1, avgY - 1);
+};
+
+export const drawTopLine = (ctx: CanvasRenderingContext2D, plotW: number) => {
+  ctx.strokeStyle = FUEL_COLORS.grid;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(plotW, 0);
+  ctx.stroke();
 };
 
 export const drawXLabels = (
@@ -138,7 +71,7 @@ export const drawBarChart = (
 ) => {
   const data = history.slice(-FUEL_CHART_CONFIG.MAX_VISIBLE);
   const n = data.length;
-  const plotW = w - FUEL_CHART_CONFIG.Y_LABEL_W;
+  const plotW = w;
   const plotH = h - FUEL_CHART_CONFIG.X_LABEL_H;
 
   const min = Math.min(...data) * FUEL_CHART_CONFIG.MIN_SCALE;
@@ -150,8 +83,6 @@ export const drawBarChart = (
 
   const toBarH = (v: number) => ((v - min) / range) * plotH;
 
-  drawGridLines(ctx, plotH, 0, plotW, min, max);
-
   data.forEach((v, i) => {
     const x = i * stride;
     const bh = toBarH(v);
@@ -159,12 +90,13 @@ export const drawBarChart = (
     ctx.fillRect(x, plotH - bh, barW, bh);
   });
 
+  drawTopLine(ctx, plotW);
+
   if (avg !== null) {
     const avgY = plotH - toBarH(avg);
     drawAvgLine(ctx, avgY, plotW);
   }
 
-  drawYLabels(ctx, min, max, plotH, w);
   drawXLabels(ctx, n, stride, barW, plotH);
 };
 
@@ -177,7 +109,7 @@ export const drawLineChart = (
 ) => {
   const data = history.slice(-FUEL_CHART_CONFIG.MAX_VISIBLE);
   const n = data.length;
-  const plotW = w - FUEL_CHART_CONFIG.Y_LABEL_W;
+  const plotW = w;
   const plotH = h - FUEL_CHART_CONFIG.X_LABEL_H;
 
   const min = Math.min(...data) * FUEL_CHART_CONFIG.MIN_SCALE_LINE;
@@ -187,8 +119,6 @@ export const drawLineChart = (
   const toY = (v: number) => plotH - ((v - min) / range) * plotH;
   const toX = (i: number) =>
     data.length > 1 ? (i / (data.length - 1)) * plotW : plotW / 2;
-
-  drawGridLines(ctx, plotH, 0, plotW, min, max);
 
   ctx.beginPath();
   ctx.strokeStyle = FUEL_COLORS.primary;
@@ -210,11 +140,11 @@ export const drawLineChart = (
     ctx.fill();
   });
 
+  drawTopLine(ctx, plotW);
+
   if (avg !== null) {
     drawAvgLine(ctx, toY(avg), plotW);
   }
-
-  drawYLabels(ctx, min, max, plotH, w);
 
   const lineStride = data.length > 1 ? plotW / (data.length - 1) : plotW;
   const maxLabelW =
