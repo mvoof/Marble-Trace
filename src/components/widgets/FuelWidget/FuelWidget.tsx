@@ -130,7 +130,6 @@ export const FuelWidget = ({
 
       {showChart && lapFuelHistory.length >= 2 && (
         <div className={styles.chart}>
-          <span className={styles.chartLabel}>USE/LAP HISTORY</span>
           <FuelChart history={lapFuelHistory} chartType={chartType} />
         </div>
       )}

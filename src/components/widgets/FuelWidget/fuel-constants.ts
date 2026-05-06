@@ -38,6 +38,12 @@ export const FUEL_CHART_CONFIG = {
   LABEL_CHAR_W: 7,
   /** Minimum gap between X-axis labels in pixels */
   LABEL_MIN_GAP: 2,
+  /** Scale factor applied to min value to add bottom padding in chart */
+  MIN_SCALE: 0.88,
+  /** Scale factor applied to min value to add bottom padding in line chart */
+  MIN_SCALE_LINE: 0.92,
+  /** Scale factor applied to max value to add top padding in chart */
+  MAX_SCALE: 1.02,
 } as const;
 
 export const FUEL_THRESHOLDS = {

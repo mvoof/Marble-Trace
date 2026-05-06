@@ -104,8 +104,8 @@ export const drawBarChart = (
   const plotW = w - FUEL_CHART_CONFIG.Y_LABEL_W;
   const plotH = h - FUEL_CHART_CONFIG.X_LABEL_H;
 
-  const min = Math.min(...data) * 0.88;
-  const max = Math.max(...data) * 1.08;
+  const min = Math.min(...data) * FUEL_CHART_CONFIG.MIN_SCALE;
+  const max = Math.max(...data) * FUEL_CHART_CONFIG.MAX_SCALE;
   const range = max - min || 1;
 
   const barW = FUEL_CHART_CONFIG.BAR_WIDTH;
@@ -144,8 +144,8 @@ export const drawLineChart = (
   const plotW = w - FUEL_CHART_CONFIG.Y_LABEL_W;
   const plotH = h - FUEL_CHART_CONFIG.X_LABEL_H;
 
-  const min = Math.min(...data) * 0.92;
-  const max = Math.max(...data) * 1.08;
+  const min = Math.min(...data) * FUEL_CHART_CONFIG.MIN_SCALE_LINE;
+  const max = Math.max(...data) * FUEL_CHART_CONFIG.MAX_SCALE;
   const range = max - min || 1;
 
   const toY = (v: number) => plotH - ((v - min) / range) * plotH;
