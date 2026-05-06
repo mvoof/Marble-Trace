@@ -1,8 +1,7 @@
 <p align="center">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="logo-dark.svg">
-  <img src="logo-light.svg" alt="Logo" width="400">
-</picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.svg"\n  <img src="docs/assets/logo-light.svg" alt="Logo" width="400">  
+  </picture>
 </p>
 
 <h1 align="center">Marble Trace</h1>
