@@ -30,7 +30,7 @@ const mergeCustomSettings = (
 
   const merged: WidgetCustomSettings = { ...defaults };
   for (const key of Object.keys(saved) as (keyof WidgetCustomSettings)[]) {
-    if (key in defaults) {
+    if (key in defaults && typeof saved[key] === 'object' && saved[key] !== null) {
       (merged as Record<string, unknown>)[key] = {
         ...(defaults[key] as object),
         ...(saved[key] as object),
