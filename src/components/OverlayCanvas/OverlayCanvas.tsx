@@ -10,7 +10,8 @@ import { WidgetContainer } from '../WidgetContainer';
 import styles from './OverlayCanvas.module.scss';
 
 export const OverlayCanvas = observer(() => {
-  const { dragMode, hideAllWidgets } = appSettingsStore;
+  const { dragMode } = appSettingsStore;
+  const { hideAllWidgets } = appSettingsStore.settings;
   const [visibilityMap, setVisibilityMap] = useState<Record<string, boolean>>(
     {}
   );
