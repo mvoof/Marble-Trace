@@ -17,6 +17,7 @@ export const SidebarLinks = () => {
         className={styles.link}
         onClick={() => handleOpen(GITHUB_URL)}
         title="GitHub"
+        aria-label="GitHub"
       >
         <Github size={16} />
       </button>
@@ -24,6 +25,7 @@ export const SidebarLinks = () => {
         className={styles.link}
         onClick={() => handleOpen(DISCORD_URL)}
         title="Discord"
+        aria-label="Discord"
       >
         <DiscordIcon size={16} />
       </button>
