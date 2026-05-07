@@ -36,7 +36,7 @@ export const WidgetContainer = observer(
 
     const isConnected = telemetryConnectionStore.status === 'connected';
     const shouldHide =
-      (appSettingsStore.hideWidgetsWhenGameClosed &&
+      (appSettingsStore.settings.hideWidgetsWhenGameClosed &&
         !isConnected &&
         !dragMode) ||
       (!visible && !dragMode);

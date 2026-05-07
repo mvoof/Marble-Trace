@@ -1,5 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import { runInAction } from 'mobx';
 import { Button, Switch, Segmented, message, Select } from 'antd';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 import { unitsStore } from '../../../../store/units.store';
@@ -50,9 +51,11 @@ export const SettingsPage = observer(() => {
               </div>
             </div>
             <Switch
-              checked={appSettingsStore.hideAllWidgets}
+              checked={appSettingsStore.settings.hideAllWidgets}
               onChange={(v) => {
-                void appSettingsStore.setHideAllWidgets(v);
+                runInAction(() => {
+                  appSettingsStore.settings.hideAllWidgets = v;
+                });
               }}
             />
           </div>
@@ -61,8 +64,12 @@ export const SettingsPage = observer(() => {
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>Toggle Hotkey</span>
           <HotkeyRecorder
-            currentHotkey={appSettingsStore.hideAllWidgetsHotkey}
-            onApply={(key) => appSettingsStore.setHideAllWidgetsHotkey(key)}
+            currentHotkey={appSettingsStore.settings.hideAllWidgetsHotkey}
+            onApply={(key) =>
+              runInAction(() => {
+                appSettingsStore.settings.hideAllWidgetsHotkey = key;
+              })
+            }
           />
         </div>
       </Card>
@@ -86,8 +93,12 @@ export const SettingsPage = observer(() => {
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>Drag Mode Hotkey</span>
           <HotkeyRecorder
-            currentHotkey={appSettingsStore.dragHotkey}
-            onApply={(key) => appSettingsStore.setDragHotkey(key)}
+            currentHotkey={appSettingsStore.settings.dragHotkey}
+            onApply={(key) =>
+              runInAction(() => {
+                appSettingsStore.settings.dragHotkey = key;
+              })
+            }
           />
         </div>
       </Card>
@@ -101,9 +112,11 @@ export const SettingsPage = observer(() => {
             </div>
           </div>
           <Switch
-            checked={appSettingsStore.hideWidgetsWhenGameClosed}
+            checked={appSettingsStore.settings.hideWidgetsWhenGameClosed}
             onChange={(v) => {
-              void appSettingsStore.setHideWidgetsWhenGameClosed(v);
+              runInAction(() => {
+                appSettingsStore.settings.hideWidgetsWhenGameClosed = v;
+              });
             }}
           />
         </div>
@@ -136,7 +149,7 @@ export const SettingsPage = observer(() => {
               </div>
             </div>
             <Switch
-              checked={appSettingsStore.autoUpdate}
+              checked={appSettingsStore.settings.autoUpdate}
               onChange={(v) => appSettingsStore.setAutoUpdate(v)}
             />
           </div>
@@ -152,7 +165,7 @@ export const SettingsPage = observer(() => {
             </div>
             <Select
               style={{ width: 140 }}
-              value={appSettingsStore.updateCheckInterval}
+              value={appSettingsStore.settings.updateCheckInterval}
               onChange={(v) => appSettingsStore.setUpdateCheckInterval(v)}
               options={[
                 { label: 'Every hour', value: 1 },
@@ -161,7 +174,7 @@ export const SettingsPage = observer(() => {
                 { label: 'Every 12 hours', value: 12 },
                 { label: 'Daily', value: 24 },
               ]}
-              disabled={!appSettingsStore.autoUpdate}
+              disabled={!appSettingsStore.settings.autoUpdate}
             />
           </div>
         </div>
@@ -175,7 +188,7 @@ export const SettingsPage = observer(() => {
                   v{appSettingsStore.currentVersion}
                 </span>
               </div>
-              {appSettingsStore.lastUpdateCheck && (
+              {appSettingsStore.settings.lastUpdateCheck && (
                 <div
                   className={styles.fieldDesc}
                   style={{
@@ -187,7 +200,9 @@ export const SettingsPage = observer(() => {
                 >
                   <Clock size={12} />
                   Last checked:{' '}
-                  {new Date(appSettingsStore.lastUpdateCheck).toLocaleString()}
+                  {new Date(
+                    appSettingsStore.settings.lastUpdateCheck
+                  ).toLocaleString()}
                 </div>
               )}
               <div className={styles.fieldDesc} style={{ marginTop: 4 }}>

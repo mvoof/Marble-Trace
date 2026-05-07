@@ -1,11 +1,5 @@
 import { runInAction } from 'mobx';
-import {
-  appSettingsStore,
-  DEFAULT_DRAG_HOTKEY,
-  DEFAULT_HIDE_ALL_HOTKEY,
-  DEFAULT_AUTO_UPDATE,
-  DEFAULT_UPDATE_CHECK_INTERVAL,
-} from '../app-settings.store';
+import { appSettingsStore } from '../app-settings.store';
 import { unitsStore } from '../units.store';
 import { widgetSettingsStore } from '../widget-settings.store';
 import { DEFAULT_WIDGETS } from '../widget-defaults';
@@ -14,19 +8,12 @@ import type {
   WidgetConfig,
   WidgetCustomSettings,
 } from '../../types/widget-settings';
+import type { AppSettings } from '../app-settings.store';
 
 export const SETTINGS_FILE = 'settings.json';
 
 export interface Settings {
-  app: {
-    dragHotkey: string;
-    hideAllWidgetsHotkey: string;
-    hideWidgetsWhenGameClosed: boolean;
-    hideAllWidgets: boolean;
-    autoUpdate?: boolean;
-    updateCheckInterval?: number;
-    lastUpdateCheck?: string;
-  };
+  app: AppSettings;
   units: {
     system: UnitSystem;
   };
@@ -74,23 +61,7 @@ const mergeWidgets = (savedWidgets: WidgetConfig[]): WidgetConfig[] => {
 
 export const hydrateStores = (saved: Partial<Settings>) => {
   runInAction(() => {
-    const app: Partial<Settings['app']> = saved.app ?? {};
-
-    appSettingsStore.setDragHotkey(app.dragHotkey ?? DEFAULT_DRAG_HOTKEY);
-    appSettingsStore.setHideAllWidgetsHotkey(
-      app.hideAllWidgetsHotkey ?? DEFAULT_HIDE_ALL_HOTKEY
-    );
-    appSettingsStore.setHideWidgetsWhenGameClosed(
-      app.hideWidgetsWhenGameClosed ?? false
-    );
-    appSettingsStore.setHideAllWidgets(app.hideAllWidgets ?? false);
-    appSettingsStore.setAutoUpdate(app.autoUpdate ?? DEFAULT_AUTO_UPDATE);
-    appSettingsStore.setUpdateCheckInterval(
-      app.updateCheckInterval ?? DEFAULT_UPDATE_CHECK_INTERVAL
-    );
-    if (app.lastUpdateCheck) {
-      appSettingsStore.setLastUpdateCheck(app.lastUpdateCheck);
-    }
+    appSettingsStore.applySettings(saved.app ?? {});
 
     if (saved.units) {
       unitsStore.setSystem(saved.units.system);
@@ -109,15 +80,7 @@ interface Store {
 
 export const saveSettings = async (store: Store) => {
   await store.set('settings', {
-    app: {
-      dragHotkey: appSettingsStore.dragHotkey,
-      hideAllWidgetsHotkey: appSettingsStore.hideAllWidgetsHotkey,
-      hideWidgetsWhenGameClosed: appSettingsStore.hideWidgetsWhenGameClosed,
-      hideAllWidgets: appSettingsStore.hideAllWidgets,
-      autoUpdate: appSettingsStore.autoUpdate,
-      updateCheckInterval: appSettingsStore.updateCheckInterval,
-      lastUpdateCheck: appSettingsStore.lastUpdateCheck,
-    },
+    app: { ...appSettingsStore.settings },
     units: {
       system: unitsStore.system,
     },
