@@ -1,5 +1,5 @@
-import { Github } from 'lucide-react';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import GithubIcon from './GithubIcon';
 import DiscordIcon from './DiscordIcon';
 import styles from './SidebarLinks.module.scss';
 
@@ -19,7 +19,7 @@ export const SidebarLinks = () => {
         title="GitHub"
         aria-label="GitHub"
       >
-        <Github size={16} />
+        <GithubIcon size={16} />
       </button>
       <button
         className={styles.link}
