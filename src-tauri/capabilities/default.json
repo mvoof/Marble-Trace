@@ -32,6 +32,8 @@
     "core:window:allow-is-minimized",
     "updater:default",
     "process:allow-restart",
-    "mcp-bridge:default"
+    "mcp-bridge:default",
+    "opener:default",
+    "opener:allow-open-url"
   ]
 }
