@@ -8,7 +8,7 @@ const DISCORD_URL = 'https://discord.gg/GVaRsHbjxV';
 
 export const SidebarLinks = () => {
   const handleOpen = (url: string) => {
-    void openUrl(url);
+    openUrl(url).catch((err) => console.error('Failed to open URL:', err));
   };
 
   return (
