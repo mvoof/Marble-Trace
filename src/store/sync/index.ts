@@ -57,33 +57,33 @@ export const initMainSync = async () => {
           }
         ),
         reaction(
-          () => appSettingsStore.hideAllWidgets,
+          () => appSettingsStore.settings.hideAllWidgets,
           (v) => {
             void emitHideAllWidgets(v);
             void onSave();
           }
         ),
         reaction(
-          () => appSettingsStore.hideWidgetsWhenGameClosed,
+          () => appSettingsStore.settings.hideWidgetsWhenGameClosed,
           (v) => {
             void emitHideWidgetsWhenGameClosed(v);
             void onSave();
           }
         ),
         reaction(
-          () => appSettingsStore.autoUpdate,
+          () => appSettingsStore.settings.autoUpdate,
           () => {
             void onSave();
           }
         ),
         reaction(
-          () => appSettingsStore.updateCheckInterval,
+          () => appSettingsStore.settings.updateCheckInterval,
           () => {
             void onSave();
           }
         ),
         reaction(
-          () => appSettingsStore.lastUpdateCheck,
+          () => appSettingsStore.settings.lastUpdateCheck,
           () => {
             void onSave();
           }
@@ -92,8 +92,8 @@ export const initMainSync = async () => {
           () => {
             const s = widgetSettingsStore.getStandingsSettings();
             return [
-              appSettingsStore.dragHotkey,
-              appSettingsStore.hideAllWidgetsHotkey,
+              appSettingsStore.settings.dragHotkey,
+              appSettingsStore.settings.hideAllWidgetsHotkey,
               ...widgetSettingsStore.allWidgets.map((w) => w.hotkey),
               s.classCyclingToggleHotkey,
               s.classPrevHotkey,

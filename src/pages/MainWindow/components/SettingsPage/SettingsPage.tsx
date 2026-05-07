@@ -50,10 +50,8 @@ export const SettingsPage = observer(() => {
               </div>
             </div>
             <Switch
-              checked={appSettingsStore.hideAllWidgets}
-              onChange={(v) => {
-                void appSettingsStore.setHideAllWidgets(v);
-              }}
+              checked={appSettingsStore.settings.hideAllWidgets}
+              onChange={(v) => appSettingsStore.setHideAllWidgets(v)}
             />
           </div>
         </div>
@@ -61,7 +59,7 @@ export const SettingsPage = observer(() => {
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>Toggle Hotkey</span>
           <HotkeyRecorder
-            currentHotkey={appSettingsStore.hideAllWidgetsHotkey}
+            currentHotkey={appSettingsStore.settings.hideAllWidgetsHotkey}
             onApply={(key) => appSettingsStore.setHideAllWidgetsHotkey(key)}
           />
         </div>
@@ -86,7 +84,7 @@ export const SettingsPage = observer(() => {
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>Drag Mode Hotkey</span>
           <HotkeyRecorder
-            currentHotkey={appSettingsStore.dragHotkey}
+            currentHotkey={appSettingsStore.settings.dragHotkey}
             onApply={(key) => appSettingsStore.setDragHotkey(key)}
           />
         </div>
@@ -101,10 +99,8 @@ export const SettingsPage = observer(() => {
             </div>
           </div>
           <Switch
-            checked={appSettingsStore.hideWidgetsWhenGameClosed}
-            onChange={(v) => {
-              void appSettingsStore.setHideWidgetsWhenGameClosed(v);
-            }}
+            checked={appSettingsStore.settings.hideWidgetsWhenGameClosed}
+            onChange={(v) => appSettingsStore.setHideWidgetsWhenGameClosed(v)}
           />
         </div>
       </Card>
@@ -136,7 +132,7 @@ export const SettingsPage = observer(() => {
               </div>
             </div>
             <Switch
-              checked={appSettingsStore.autoUpdate}
+              checked={appSettingsStore.settings.autoUpdate}
               onChange={(v) => appSettingsStore.setAutoUpdate(v)}
             />
           </div>
@@ -152,7 +148,7 @@ export const SettingsPage = observer(() => {
             </div>
             <Select
               style={{ width: 140 }}
-              value={appSettingsStore.updateCheckInterval}
+              value={appSettingsStore.settings.updateCheckInterval}
               onChange={(v) => appSettingsStore.setUpdateCheckInterval(v)}
               options={[
                 { label: 'Every hour', value: 1 },
@@ -161,7 +157,7 @@ export const SettingsPage = observer(() => {
                 { label: 'Every 12 hours', value: 12 },
                 { label: 'Daily', value: 24 },
               ]}
-              disabled={!appSettingsStore.autoUpdate}
+              disabled={!appSettingsStore.settings.autoUpdate}
             />
           </div>
         </div>
@@ -175,7 +171,7 @@ export const SettingsPage = observer(() => {
                   v{appSettingsStore.currentVersion}
                 </span>
               </div>
-              {appSettingsStore.lastUpdateCheck && (
+              {appSettingsStore.settings.lastUpdateCheck && (
                 <div
                   className={styles.fieldDesc}
                   style={{
@@ -187,7 +183,9 @@ export const SettingsPage = observer(() => {
                 >
                   <Clock size={12} />
                   Last checked:{' '}
-                  {new Date(appSettingsStore.lastUpdateCheck).toLocaleString()}
+                  {new Date(
+                    appSettingsStore.settings.lastUpdateCheck
+                  ).toLocaleString()}
                 </div>
               )}
               <div className={styles.fieldDesc} style={{ marginTop: 4 }}>

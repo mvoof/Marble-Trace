@@ -3,8 +3,17 @@ import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
 
-const DEFAULT_DRAG_HOTKEY = 'F9';
-const DEFAULT_HIDE_ALL_HOTKEY = 'F10';
+export const DEFAULT_APP_SETTINGS = {
+  dragHotkey: 'F9',
+  hideAllWidgetsHotkey: 'F10',
+  hideWidgetsWhenGameClosed: false,
+  hideAllWidgets: false,
+  autoUpdate: true,
+  updateCheckInterval: 3,
+  lastUpdateCheck: null as string | null,
+};
+
+export type AppSettings = typeof DEFAULT_APP_SETTINGS;
 
 export type UpdateStatus =
   | 'idle'
@@ -15,19 +24,12 @@ export type UpdateStatus =
   | 'error';
 
 class AppSettingsStore {
-  dragMode = false;
-  dragHotkey: string = DEFAULT_DRAG_HOTKEY;
-  hideWidgetsWhenGameClosed = false;
-  hideAllWidgets = false;
-  hideAllWidgetsHotkey: string = DEFAULT_HIDE_ALL_HOTKEY;
+  settings: AppSettings = { ...DEFAULT_APP_SETTINGS };
 
-  // Update system
-  autoUpdate = true;
-  updateCheckInterval = 3; // hours
+  dragMode = false;
   updateStatus: UpdateStatus = 'idle';
   availableVersion: string | null = null;
   currentVersion = '';
-  lastUpdateCheck: string | null = null;
   updateError: string | null = null;
   private updateTimer: number | null = null;
 
@@ -44,7 +46,7 @@ class AppSettingsStore {
       this.currentVersion = version;
     });
 
-    if (this.autoUpdate) {
+    if (this.settings.autoUpdate) {
       void this.checkForUpdates(true);
       this.startUpdateTimer();
     }
@@ -52,9 +54,9 @@ class AppSettingsStore {
 
   private startUpdateTimer() {
     this.stopUpdateTimer();
-    if (!this.autoUpdate) return;
+    if (!this.settings.autoUpdate) return;
 
-    const ms = this.updateCheckInterval * 60 * 60 * 1000;
+    const ms = this.settings.updateCheckInterval * 60 * 60 * 1000;
     this.updateTimer = window.setInterval(() => {
       void this.checkForUpdates(true);
     }, ms);
@@ -64,6 +66,26 @@ class AppSettingsStore {
     if (this.updateTimer !== null) {
       window.clearInterval(this.updateTimer);
       this.updateTimer = null;
+    }
+  }
+
+  applySettings(saved: Partial<AppSettings>) {
+    Object.assign(this.settings, { ...DEFAULT_APP_SETTINGS, ...saved });
+  }
+
+  setAutoUpdate(value: boolean) {
+    this.settings.autoUpdate = value;
+    if (value) {
+      this.startUpdateTimer();
+    } else {
+      this.stopUpdateTimer();
+    }
+  }
+
+  setUpdateCheckInterval(value: number) {
+    this.settings.updateCheckInterval = value;
+    if (this.settings.autoUpdate) {
+      this.startUpdateTimer();
     }
   }
 
@@ -79,7 +101,7 @@ class AppSettingsStore {
     try {
       const update = await check();
       runInAction(() => {
-        this.lastUpdateCheck = new Date().toISOString();
+        this.settings.lastUpdateCheck = new Date().toISOString();
         if (update) {
           this.updateStatus = 'available';
           this.availableVersion = update.version;
@@ -87,7 +109,7 @@ class AppSettingsStore {
           this.updateStatus = 'idle';
           this.availableVersion = null;
           if (!silent) {
-            // Logic for manual check success can go here if needed
+            // manual check success
           }
         }
       });
@@ -131,52 +153,32 @@ class AppSettingsStore {
     }
   }
 
-  setAutoUpdate(value: boolean) {
-    this.autoUpdate = value;
-    if (value) {
-      this.startUpdateTimer();
-    } else {
-      this.stopUpdateTimer();
-    }
-  }
-
-  setUpdateCheckInterval(value: number) {
-    this.updateCheckInterval = value;
-    if (this.autoUpdate) {
-      this.startUpdateTimer();
-    }
-  }
-
-  setLastUpdateCheck(value: string) {
-    this.lastUpdateCheck = value;
-  }
-
   toggleDragMode() {
     this.dragMode = !this.dragMode;
   }
 
   toggleHideAllWidgets() {
-    this.hideAllWidgets = !this.hideAllWidgets;
+    this.settings.hideAllWidgets = !this.settings.hideAllWidgets;
   }
 
   setDragMode(value: boolean) {
     this.dragMode = value;
   }
 
-  setHideWidgetsWhenGameClosed(value: boolean) {
-    this.hideWidgetsWhenGameClosed = value;
-  }
-
   setHideAllWidgets(value: boolean) {
-    this.hideAllWidgets = value;
+    this.settings.hideAllWidgets = value;
   }
 
-  setDragHotkey(hotkey: string) {
-    this.dragHotkey = hotkey;
+  setHideAllWidgetsHotkey(key: string) {
+    this.settings.hideAllWidgetsHotkey = key;
   }
 
-  setHideAllWidgetsHotkey(hotkey: string) {
-    this.hideAllWidgetsHotkey = hotkey;
+  setDragHotkey(key: string) {
+    this.settings.dragHotkey = key;
+  }
+
+  setHideWidgetsWhenGameClosed(value: boolean) {
+    this.settings.hideWidgetsWhenGameClosed = value;
   }
 }
 

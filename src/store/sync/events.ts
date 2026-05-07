@@ -16,14 +16,16 @@ export const setupOverlayListeners = async (): Promise<UnlistenFn[]> => {
   );
   unlistens.push(
     await listen<boolean>('hide-all-widgets-changed', (e) => {
-      runInAction(() => appSettingsStore.setHideAllWidgets(e.payload));
+      runInAction(() => {
+        appSettingsStore.settings.hideAllWidgets = e.payload;
+      });
     })
   );
   unlistens.push(
     await listen<boolean>('hide-widgets-when-game-closed-changed', (e) => {
-      runInAction(() =>
-        appSettingsStore.setHideWidgetsWhenGameClosed(e.payload)
-      );
+      runInAction(() => {
+        appSettingsStore.settings.hideWidgetsWhenGameClosed = e.payload;
+      });
     })
   );
   unlistens.push(
