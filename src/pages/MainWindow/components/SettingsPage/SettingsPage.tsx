@@ -1,6 +1,5 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { runInAction } from 'mobx';
 import { Button, Switch, Segmented, message, Select } from 'antd';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 import { unitsStore } from '../../../../store/units.store';
@@ -52,11 +51,7 @@ export const SettingsPage = observer(() => {
             </div>
             <Switch
               checked={appSettingsStore.settings.hideAllWidgets}
-              onChange={(v) => {
-                runInAction(() => {
-                  appSettingsStore.settings.hideAllWidgets = v;
-                });
-              }}
+              onChange={(v) => appSettingsStore.setHideAllWidgets(v)}
             />
           </div>
         </div>
@@ -65,11 +60,7 @@ export const SettingsPage = observer(() => {
           <span className={styles.fieldLabel}>Toggle Hotkey</span>
           <HotkeyRecorder
             currentHotkey={appSettingsStore.settings.hideAllWidgetsHotkey}
-            onApply={(key) =>
-              runInAction(() => {
-                appSettingsStore.settings.hideAllWidgetsHotkey = key;
-              })
-            }
+            onApply={(key) => appSettingsStore.setHideAllWidgetsHotkey(key)}
           />
         </div>
       </Card>
@@ -94,11 +85,7 @@ export const SettingsPage = observer(() => {
           <span className={styles.fieldLabel}>Drag Mode Hotkey</span>
           <HotkeyRecorder
             currentHotkey={appSettingsStore.settings.dragHotkey}
-            onApply={(key) =>
-              runInAction(() => {
-                appSettingsStore.settings.dragHotkey = key;
-              })
-            }
+            onApply={(key) => appSettingsStore.setDragHotkey(key)}
           />
         </div>
       </Card>
@@ -113,11 +100,7 @@ export const SettingsPage = observer(() => {
           </div>
           <Switch
             checked={appSettingsStore.settings.hideWidgetsWhenGameClosed}
-            onChange={(v) => {
-              runInAction(() => {
-                appSettingsStore.settings.hideWidgetsWhenGameClosed = v;
-              });
-            }}
+            onChange={(v) => appSettingsStore.setHideWidgetsWhenGameClosed(v)}
           />
         </div>
       </Card>

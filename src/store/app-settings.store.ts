@@ -164,6 +164,22 @@ class AppSettingsStore {
   setDragMode(value: boolean) {
     this.dragMode = value;
   }
+
+  setHideAllWidgets(value: boolean) {
+    this.settings.hideAllWidgets = value;
+  }
+
+  setHideAllWidgetsHotkey(key: string) {
+    this.settings.hideAllWidgetsHotkey = key;
+  }
+
+  setDragHotkey(key: string) {
+    this.settings.dragHotkey = key;
+  }
+
+  setHideWidgetsWhenGameClosed(value: boolean) {
+    this.settings.hideWidgetsWhenGameClosed = value;
+  }
 }
 
 export const appSettingsStore = new AppSettingsStore();
