@@ -12,6 +12,7 @@
 </p>
 
 <p align="center">
+  <a href="https://discord.gg/GVaRsHbjxV"><img src="https://img.shields.io/discord/1342905186041073684?style=flat-square&logo=discord&label=Discord" alt="Discord"></a>
   <a href="https://github.com/mvoof/Marble-Trace/releases"><img src="https://img.shields.io/github/v/release/mvoof/Marble-Trace?style=flat-square" alt="Latest release"></a>
   <a href="https://github.com/mvoof/Marble-Trace/releases"><img src="https://img.shields.io/github/downloads/mvoof/Marble-Trace/total?style=flat-square" alt="Downloads"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/mvoof/Marble-Trace?style=flat-square" alt="MIT License"></a>
