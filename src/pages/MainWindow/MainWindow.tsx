@@ -10,6 +10,7 @@ import { WidgetSettings } from './components/WidgetSettings';
 import { SettingsPage } from './components/SettingsPage';
 import { TitleBar } from './components/TitleBar/TitleBar';
 import { AppStatus } from './components/AppStatus/AppStatus';
+import { SidebarLinks } from './components/SidebarLinks/SidebarLinks';
 import { RandomGlitchCanvas } from '../../components/shared/BackgroundAnimation/RandomGlitchCanvas';
 import styles from './MainWindow.module.scss';
 import Logo from '../../assets/logo.svg?react';
@@ -138,6 +139,7 @@ export const MainWindow = observer(() => {
                   />
                   <span className={styles.settingsLabel}>Global Settings</span>
                 </button>
+                <SidebarLinks />
               </div>
             </Sider>
 
