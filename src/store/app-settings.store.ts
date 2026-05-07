@@ -3,8 +3,10 @@ import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
 
-const DEFAULT_DRAG_HOTKEY = 'F9';
-const DEFAULT_HIDE_ALL_HOTKEY = 'F10';
+export const DEFAULT_DRAG_HOTKEY = 'F9';
+export const DEFAULT_HIDE_ALL_HOTKEY = 'F10';
+export const DEFAULT_AUTO_UPDATE = true;
+export const DEFAULT_UPDATE_CHECK_INTERVAL = 3;
 
 export type UpdateStatus =
   | 'idle'
