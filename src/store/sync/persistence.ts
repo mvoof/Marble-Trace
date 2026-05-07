@@ -42,21 +42,28 @@ const mergeCustomSettings = (
 };
 
 const mergeWidgets = (savedWidgets: WidgetConfig[]): WidgetConfig[] => {
-  const savedById = new Map(savedWidgets.map((w) => [w.id, w]));
+  const defaultById = new Map(DEFAULT_WIDGETS.map((w) => [w.id, w]));
 
-  return DEFAULT_WIDGETS.map((defaultWidget) => {
-    const saved = savedById.get(defaultWidget.id);
-    if (!saved) return defaultWidget;
+  const merged: WidgetConfig[] = [];
 
-    return {
+  for (const saved of savedWidgets) {
+    const defaultWidget = defaultById.get(saved.id);
+    if (!defaultWidget) continue;
+
+    merged.push({
       ...defaultWidget,
       ...saved,
       customSettings: mergeCustomSettings(
         defaultWidget.customSettings,
         saved.customSettings
       ),
-    };
-  });
+    });
+  }
+
+  const savedIds = new Set(savedWidgets.map((w) => w.id));
+  const newWidgets = DEFAULT_WIDGETS.filter((w) => !savedIds.has(w.id));
+
+  return [...merged, ...newWidgets];
 };
 
 export const hydrateStores = (saved: Partial<Settings>) => {
