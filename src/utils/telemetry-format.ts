@@ -100,3 +100,20 @@ export function formatPercent(fraction: number | null): string {
 export function clampNormalized(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
+
+export const resolveSessionLaps = (
+  sessionLaps: string | null | undefined,
+  remainSecs: number | null,
+  currentLap: number | null,
+  leaderBestLapTime: number | null
+): string | null => {
+  if (!sessionLaps) return null;
+  if (sessionLaps.toLowerCase() !== 'unlimited') return sessionLaps;
+
+  if (remainSecs === null || remainSecs <= 0) return null;
+  if (leaderBestLapTime === null) return null;
+  if (currentLap === null) return null;
+
+  const remainingLaps = Math.ceil(remainSecs / leaderBestLapTime);
+  return String(currentLap + remainingLaps);
+};
