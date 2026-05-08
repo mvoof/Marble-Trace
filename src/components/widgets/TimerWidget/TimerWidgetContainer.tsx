@@ -6,6 +6,7 @@ import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
 import { SessionState as BindingSessionState } from '../../../types/bindings';
+import { resolveSessionLaps } from '../../../utils/telemetry-format';
 
 import type { FlagState } from './TimerWidget';
 import { TimerWidget } from './TimerWidget';
@@ -162,15 +163,16 @@ export const TimerWidgetContainer = observer(() => {
   const currentLap =
     playerCarIdx !== null ? (carIdx?.car_idx_lap[playerCarIdx] ?? null) : null;
 
-  const sessionLapsRemainEx = session?.session_laps_remain_ex ?? null;
-  const fixedSessionLaps = currentSession?.SessionLaps;
-  const isFixedLapRace =
-    fixedSessionLaps != null && fixedSessionLaps.toLowerCase() !== 'unlimited';
-
-  const totalLaps = isFixedLapRace
-    ? (fixedSessionLaps ?? null)
-    : sessionLapsRemainEx !== null && sessionLapsRemainEx >= 0
-      ? String(sessionLapsRemainEx)
+  // Fixed lap race: SessionLaps is a number string (e.g. "50") — used as-is.
+  // Timed/practice (SessionLaps = "unlimited"): estimate total as currentLap + ceil(remain / leaderBestLap).
+  const totalLaps =
+    sessionNum !== null
+      ? resolveSessionLaps(
+          currentSession?.SessionLaps,
+          remain,
+          currentLap,
+          telemetryStore.leaderBestLapTime
+        )
       : null;
 
   const position = lap?.player_car_position ?? null;
