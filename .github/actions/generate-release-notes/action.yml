@@ -27,7 +27,7 @@ runs:
         echo "Extracting CHANGELOG.md section for version: $VERSION"
 
         # Extract the block between ## [VERSION] and the next ## [
-        NOTES=$(awk "/^## \[$VERSION\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md)
+        NOTES=$(awk -v ver="$VERSION" '$0 ~ "^## \\[" ver "\\]" {found=1; next} found && /^## \[/ {exit} found {print}' CHANGELOG.md)
 
         if [ -z "$NOTES" ]; then
           echo "WARNING: No section found in CHANGELOG.md for version $VERSION"
