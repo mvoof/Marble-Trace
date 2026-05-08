@@ -21,6 +21,22 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Verify CHANGELOG.md has entry for this version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.tag_name }}" ]; then
+            TAG_NAME="${{ inputs.tag_name }}"
+          else
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+          fi
+
+          VERSION="${TAG_NAME#v}"
+          if ! grep -q "^## \[$VERSION\]" CHANGELOG.md; then
+            echo "Error: No entry for version $VERSION found in CHANGELOG.md"
+            exit 1
+          fi
+          echo "CHANGELOG.md entry found for $VERSION"
+
       - name: Verify Tag matches package.json
         shell: bash
         run: |
