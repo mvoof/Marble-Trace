@@ -88,17 +88,9 @@ export function formatSessionTime(seconds: number | null): string {
   return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-export function formatRpm(rpm: number): string {
-  return Math.round(rpm).toString();
-}
-
 export function formatPercent(fraction: number | null): string {
   if (fraction === null) return '\u2014';
   return `${Math.round(fraction * 100)}%`;
-}
-
-export function clampNormalized(value: number): number {
-  return Math.max(0, Math.min(1, value));
 }
 
 export const resolveSessionLaps = (

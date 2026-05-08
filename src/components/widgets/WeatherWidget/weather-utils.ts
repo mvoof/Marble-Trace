@@ -8,8 +8,6 @@ import {
   speedUnit as _speedUnit,
 } from '../../../utils/telemetry-format';
 
-export type SkiesIconType = 'sun' | 'cloud-sun' | 'cloud' | 'cloud-rain';
-
 export const parseWeekendFloat = (
   value: string | null | undefined
 ): number | null => {
@@ -27,28 +25,6 @@ export const bearingToCardinal = (deg: number): string => {
   const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
   const idx = Math.round(deg / 45) % 8;
   return dirs[idx];
-};
-
-export const getSkiesIconType = (skies: string | null): SkiesIconType => {
-  if (!skies) return 'sun';
-  const s = skies.toLowerCase();
-  if (s.includes('rain') || s.includes('fog') || s.includes('thunder'))
-    return 'cloud-rain';
-  if (s.includes('overcast') || s.includes('cloudy')) return 'cloud';
-  if (s.includes('partly')) return 'cloud-sun';
-  return 'sun';
-};
-
-export const parseFogLevel = (fog: string | null | undefined): string => {
-  const n = parseWeekendFloat(fog);
-  return n !== null ? `${Math.round(n)}%` : '—';
-};
-
-export const parsePrecipitation = (
-  precip: string | null | undefined
-): string => {
-  const n = parseWeekendFloat(precip);
-  return n !== null ? `${Math.round(n)}%` : '—';
 };
 
 export const formatWindSpeed = (

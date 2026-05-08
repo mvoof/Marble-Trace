@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { StandingsWidget } from './StandingsWidget';
-import { driverEntries as RAW_ENTRIES, snapshot } from '../../../storybook/test-data';
+import {
+  driverEntries as RAW_ENTRIES,
+  snapshot,
+} from '../../../storybook/test-data';
 import type { SessionInfoData, WeekendInfo } from '../../../types/bindings';
 
 const BASE_LAP_TIME = 92.3;

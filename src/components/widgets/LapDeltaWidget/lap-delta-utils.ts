@@ -44,11 +44,6 @@ export const formatDelta = (delta: number | null): string => {
   return `${sign}${h}:${String(m).padStart(2, '0')}:${s.toFixed(3).padStart(6, '0')}`;
 };
 
-export const deltaBarPct = (delta: number | null): number => {
-  if (delta === null) return 0;
-  return Math.min(Math.abs(delta) / DELTA_CAP, 1.0);
-};
-
 export const getDeltaState = (delta: number | null): DeltaState => {
   if (delta === null) return 'neutral';
   if (delta < -0.001) return 'ahead';

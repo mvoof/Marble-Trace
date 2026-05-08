@@ -9,11 +9,6 @@ export const TRACK_SURFACE_IN_PIT_STALL: TrackSurfaceType =
 export const TRACK_SURFACE_ON_TRACK: TrackSurfaceType = TrackSurface.OnTrack;
 export const NEAR_DQ_INCIDENT_THRESHOLD = 15;
 
-// ─── Class label constants ─────────────────────────────────────────────────
-
-export const NO_CLASS_LABEL = 'No Class';
-export const NO_CLASS_COLOR = '#888888';
-
 // ─── Trend sampling ───────────────────────────────────────────────────────
 
 export const TREND_SAMPLE_INTERVAL_MS = 2000;
