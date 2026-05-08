@@ -1,100 +1,73 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RelativeWidget } from './RelativeWidget';
-
-import type { DriverEntry } from '../../../types/bindings';
 import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
-import type { RelativeWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
-import snapshot from '../../../../test-data/iracing-1776008424511.json';
+import snapshotRaw from '../../../../test-data/iracing-1776008424511.json';
 
-const DESIGN_WIDTH = 420;
-const DESIGN_HEIGHT = 400;
+const snapshot = snapshotRaw as unknown as TelemetrySnapshot;
+const DRIVER_ENTRIES = computeDriverEntries(
+  snapshot.carIdx,
+  snapshot.sessionInfo?.DriverInfo ?? null
+);
 
-const realSnapshot = snapshot as TelemetrySnapshot;
-
-const DEFAULT_SETTINGS: RelativeWidgetSettings = {
-  showIRatingBadge: true,
-  showClassBadge: true,
+const DEFAULT_SETTINGS = {
+  showIRatingBadge: false,
+  showClassBadge: false,
   showPitIndicator: true,
+  showTrendIcon: true,
+  abbreviateNames: false,
 };
 
-interface RelativeStoryArgs extends RelativeWidgetSettings {
-  snapshot: TelemetrySnapshot;
-}
-
-const RelativeWidgetStory = ({
-  snapshot: snap,
-  ...settings
-}: RelativeStoryArgs) => {
-  const entries: DriverEntry[] = [
-    ...computeDriverEntries(snap.carIdx, snap.sessionInfo?.DriverInfo ?? null),
-  ].sort((a, b) => b.relativeLapDist - a.relativeLapDist);
-
-  return (
-    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
+const meta: Meta<typeof RelativeWidget> = {
+  title: 'Widgets/RelativeWidget',
+  component: RelativeWidget,
+  parameters: { layout: 'centered' },
+  decorators: [
+    (Story) => (
       <div
         style={{
-          width: '100%',
-          height: '100%',
-          background: 'radial-gradient(circle, #0a0a0f 0%, #050508 100%)',
+          width: 420,
+          height: 400,
+          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
           overflow: 'hidden',
         }}
       >
-        <RelativeWidget entries={entries} settings={settings} />
+        <Story />
       </div>
-    </div>
-  );
-};
-
-const meta: Meta<RelativeStoryArgs> = {
-  title: 'Widgets/RelativeWidget',
-  component: RelativeWidgetStory,
-  parameters: {
-    layout: 'centered',
-  },
+    ),
+  ],
   args: {
-    snapshot: realSnapshot,
-    ...DEFAULT_SETTINGS,
+    entries: DRIVER_ENTRIES,
+    settings: DEFAULT_SETTINGS,
   },
 };
 
 export default meta;
-
-type Story = StoryObj<RelativeStoryArgs>;
+type Story = StoryObj<typeof RelativeWidget>;
 
 export const Default: Story = {};
 
-export const NoBadges: Story = {
+export const MinimalView: Story = {
   args: {
-    showClassBadge: false,
-    showIRatingBadge: false,
+    settings: {
+      ...DEFAULT_SETTINGS,
+      showIRatingBadge: false,
+      showClassBadge: false,
+      showPitIndicator: false,
+      showTrendIcon: false,
+    },
   },
 };
 
-export const NoPitIndicator: Story = {
-  args: { showPitIndicator: false },
-};
-
-export const Minimal: Story = {
+export const AbbreviatedNames: Story = {
   args: {
-    showClassBadge: false,
-    showIRatingBadge: false,
-    showPitIndicator: false,
+    settings: { ...DEFAULT_SETTINGS, abbreviateNames: true },
   },
 };
 
-export const NoData: Story = {
+export const WithPitIndicator: Story = {
   args: {
-    snapshot: {
-      carIdx: null,
-      sessionInfo: null,
-      carDynamics: null,
-      carInputs: null,
-      carStatus: null,
-      lapTiming: null,
-      session: null,
-      environment: null,
-    } as unknown as TelemetrySnapshot,
+    settings: { ...DEFAULT_SETTINGS, showPitIndicator: true },
   },
 };

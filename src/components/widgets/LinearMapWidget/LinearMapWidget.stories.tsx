@@ -1,89 +1,77 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { LinearMapWidget } from './LinearMapWidget';
-
 import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
-import type { LinearMapWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
-import snapshot from '../../../../test-data/iracing-1776008424511.json';
+import snapshotRaw from '../../../../test-data/iracing-1776008424511.json';
 
-const realSnapshot = snapshot as TelemetrySnapshot;
+const snapshot = snapshotRaw as unknown as TelemetrySnapshot;
+const DRIVER_ENTRIES = computeDriverEntries(
+  snapshot.carIdx,
+  snapshot.sessionInfo?.DriverInfo ?? null
+);
 
-interface LinearMapStoryArgs extends LinearMapWidgetSettings {
-  snapshot: TelemetrySnapshot;
-}
+const DEFAULT_SETTINGS = {
+  orientation: 'horizontal' as const,
+  playerDotColor: '#22c55e',
+  targetDotRadiusPx: 6,
+};
 
-const makeStory = (
-  snap: TelemetrySnapshot,
-  settings: LinearMapWidgetSettings,
-  containerWidth: number,
-  containerHeight: number
-) => {
-  const entries = [
-    ...computeDriverEntries(snap.carIdx, snap.sessionInfo?.DriverInfo ?? null),
-  ].sort((a, b) => b.relativeLapDist - a.relativeLapDist);
-  return (
-    <div style={{ width: containerWidth, height: containerHeight }}>
+const meta: Meta<typeof LinearMapWidget> = {
+  title: 'Widgets/LinearMapWidget',
+  component: LinearMapWidget,
+  parameters: { layout: 'centered' },
+  decorators: [
+    (Story) => (
       <div
         style={{
-          width: '100%',
-          height: '100%',
-          background: '#1a1a1a',
+          width: 400,
+          height: 40,
+          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
           overflow: 'hidden',
         }}
       >
-        <LinearMapWidget entries={entries} settings={settings} />
+        <Story />
       </div>
-    </div>
-  );
-};
-
-const LinearMapWidgetStory = ({
-  snapshot: snap,
-  ...settings
-}: LinearMapStoryArgs) => makeStory(snap, settings, 400, 40);
-
-const meta: Meta<LinearMapStoryArgs> = {
-  title: 'Widgets/LinearMapWidget',
-  component: LinearMapWidgetStory,
-  parameters: {
-    layout: 'centered',
-  },
+    ),
+  ],
   args: {
-    orientation: 'horizontal',
-    snapshot: realSnapshot,
+    entries: DRIVER_ENTRIES,
+    settings: DEFAULT_SETTINGS,
   },
 };
 
 export default meta;
-
-type Story = StoryObj<LinearMapStoryArgs>;
+type Story = StoryObj<typeof LinearMapWidget>;
 
 export const Horizontal: Story = {};
 
 export const Vertical: Story = {
-  args: { orientation: 'vertical' },
-  render: ({ snapshot: snap, ...settings }) =>
-    makeStory(snap, settings, 40, 400),
-};
-
-export const HorizontalWide: Story = {
-  render: ({ snapshot: snap, ...settings }) =>
-    makeStory(snap, settings, 700, 50),
-};
-
-export const NoData: Story = {
+  decorators: [
+    (Story) => (
+      <div
+        style={{
+          width: 40,
+          height: 300,
+          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
+          overflow: 'hidden',
+        }}
+      >
+        <Story />
+      </div>
+    ),
+  ],
   args: {
-    snapshot: {
-      capturedAt: new Date().toISOString(),
-      carIdx: null,
-      sessionInfo: null,
-      carDynamics: null,
-      carInputs: null,
-      carStatus: null,
-      lapTiming: null,
-      session: null,
-      environment: null,
-    } as unknown as TelemetrySnapshot,
+    settings: { ...DEFAULT_SETTINGS, orientation: 'vertical' },
+  },
+};
+
+export const CustomDotColor: Story = {
+  args: {
+    settings: {
+      ...DEFAULT_SETTINGS,
+      playerDotColor: '#f59e0b',
+      targetDotRadiusPx: 8,
+    },
   },
 };

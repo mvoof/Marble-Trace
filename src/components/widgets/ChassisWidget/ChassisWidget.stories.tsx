@@ -1,225 +1,128 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ChassisWidget } from './ChassisWidget';
-
 import type { CornerData } from './types';
-import { getTempColor, getBrakeColor } from './chassis-utils';
 
-const DESIGN_WIDTH = 460;
-const DESIGN_HEIGHT = 320;
-
-// Realistic kPa values: 155 kPa ≈ 22.5 PSI (normal racing tire pressure)
-const normalCorner = (
-  rh: number,
-  shk: number,
-  brk: number,
-  pressure = 155
-): CornerData => ({
-  wearL: 0.82,
-  wearM: 0.65,
-  wearR: 0.4,
-  tempL: 74,
-  tempM: 89,
-  tempR: 89,
-  tempColorL: getTempColor(74),
-  tempColorM: getTempColor(89),
-  tempColorR: getTempColor(89),
-  pressure,
-  pressureUnit: 'kPa',
-  rideHeight: rh,
-  shockDefl: shk,
-  brakeTemp: brk,
-  brakeTempColor: getBrakeColor(brk),
+const makeCorner = (overrides: Partial<CornerData> = {}): CornerData => ({
+  wearL: 0.85,
+  wearM: 0.8,
+  wearR: 0.78,
+  tempL: 82,
+  tempM: 88,
+  tempR: 84,
+  tempColorL: '#22c55e',
+  tempColorM: '#22c55e',
+  tempColorR: '#22c55e',
+  pressure: 1.8,
+  pressureUnit: 'bar',
+  rideHeight: 42,
+  shockDefl: 12,
+  brakeTemp: 320,
+  brakeTempColor: '#22c55e',
   isPunctured: false,
   isBrakeOverheated: false,
+  ...overrides,
 });
 
-const DEFAULT_CORNERS = {
-  lf: normalCorner(45.2, 12.1, 380),
-  rf: {
-    ...normalCorner(45.5, 11.8, 375, 157),
-    wearL: 0.2,
-    wearM: 0.5,
-    wearR: 0.76,
-    tempL: 89,
-    tempM: 89,
-    tempR: 74,
-  },
-  lr: normalCorner(52.1, 15.0, 210, 166),
-  rr: {
-    ...normalCorner(52.4, 14.9, 215, 164),
-    wearL: 0.4,
-    wearM: 0.65,
-    wearR: 0.78,
-    tempL: 89,
-    tempM: 89,
-    tempR: 74,
-  },
+const DEFAULT_ARGS = {
+  lf: makeCorner(),
+  rf: makeCorner(),
+  lr: makeCorner({ wearL: 0.7, wearM: 0.72, wearR: 0.68 }),
+  rr: makeCorner({ wearL: 0.7, wearM: 0.72, wearR: 0.68 }),
+  tempUnit: '°C',
+  lengthUnit: 'mm',
+  showInboard: false,
+  onPitRoad: false,
 };
 
-const Wrapper = (props: React.ComponentProps<typeof ChassisWidget>) => (
-  <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-        overflow: 'hidden',
-      }}
-    >
-      <ChassisWidget {...props} />
-    </div>
-  </div>
-);
-
-const meta: Meta<React.ComponentProps<typeof ChassisWidget>> = {
+const meta: Meta<typeof ChassisWidget> = {
   title: 'Widgets/ChassisWidget',
-  component: Wrapper,
+  component: ChassisWidget,
   parameters: { layout: 'centered' },
-  args: {
-    ...DEFAULT_CORNERS,
-    tempUnit: '°C',
-    lengthUnit: 'mm',
-    onPitRoad: false,
-    showInboard: false,
-  },
+  decorators: [
+    (Story) => (
+      <div
+        style={{
+          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
+          overflow: 'hidden',
+          display: 'inline-block',
+        }}
+      >
+        <Story />
+      </div>
+    ),
+  ],
+  args: DEFAULT_ARGS,
 };
 
 export default meta;
-
-type Story = StoryObj<React.ComponentProps<typeof ChassisWidget>>;
+type Story = StoryObj<typeof ChassisWidget>;
 
 export const Default: Story = {};
 
-export const InPits: Story = {
+export const OnPitRoad: Story = {
+  args: { onPitRoad: true },
+};
+
+export const WithInboard: Story = {
+  args: { showInboard: true, onPitRoad: true },
+};
+
+export const Punctured: Story = {
   args: {
+    lf: makeCorner({ isPunctured: true, pressure: 0.4 }),
     onPitRoad: true,
   },
 };
 
-export const Imperial: Story = {
+export const BrakeOverheat: Story = {
+  args: {
+    lf: makeCorner({
+      isBrakeOverheated: true,
+      brakeTemp: 850,
+      brakeTempColor: '#ef4444',
+    }),
+    rf: makeCorner({
+      isBrakeOverheated: true,
+      brakeTemp: 820,
+      brakeTempColor: '#ef4444',
+    }),
+    onPitRoad: true,
+  },
+};
+
+export const ImperialUnits: Story = {
   args: {
     tempUnit: '°F',
     lengthUnit: 'in',
-    lf: {
-      ...DEFAULT_CORNERS.lf,
-      tempL: 165.2,
-      tempM: 192.2,
-      tempR: 192.2,
-      tempColorL: getTempColor(74),
-      tempColorM: getTempColor(89),
-      tempColorR: getTempColor(89),
-      brakeTemp: 716,
-      brakeTempColor: getBrakeColor(380),
-      rideHeight: 1.78,
-      shockDefl: 0.476,
-      pressure: 22.5,
-      pressureUnit: 'PSI',
-    },
-    rf: {
-      ...DEFAULT_CORNERS.rf,
-      tempL: 192.2,
-      tempM: 192.2,
-      tempR: 165.2,
-      tempColorL: getTempColor(89),
-      tempColorM: getTempColor(89),
-      tempColorR: getTempColor(74),
-      brakeTemp: 707,
-      brakeTempColor: getBrakeColor(375),
-      rideHeight: 1.79,
-      shockDefl: 0.465,
-      pressure: 22.8,
-      pressureUnit: 'PSI',
-    },
-    lr: {
-      ...DEFAULT_CORNERS.lr,
-      tempL: 165.2,
-      tempM: 192.2,
-      tempR: 192.2,
-      tempColorL: getTempColor(74),
-      tempColorM: getTempColor(89),
-      tempColorR: getTempColor(89),
-      brakeTemp: 410,
-      brakeTempColor: getBrakeColor(210),
-      rideHeight: 2.05,
-      shockDefl: 0.591,
-      pressure: 24.1,
-      pressureUnit: 'PSI',
-    },
-    rr: {
-      ...DEFAULT_CORNERS.rr,
-      tempL: 192.2,
-      tempM: 192.2,
-      tempR: 165.2,
-      tempColorL: getTempColor(89),
-      tempColorM: getTempColor(89),
-      tempColorR: getTempColor(74),
-      brakeTemp: 419,
-      brakeTempColor: getBrakeColor(215),
-      rideHeight: 2.06,
-      shockDefl: 0.587,
-      pressure: 23.9,
-      pressureUnit: 'PSI',
-    },
-  },
-};
-
-export const DamageState: Story = {
-  args: {
-    lf: {
-      ...DEFAULT_CORNERS.lf,
-      pressure: 5.2,
-      pressureUnit: 'kPa',
-      rideHeight: 20.0,
-      brakeTemp: 920,
-      brakeTempColor: getBrakeColor(920),
-      isPunctured: true,
-      isBrakeOverheated: true,
-    },
-    rf: DEFAULT_CORNERS.rf,
-    lr: DEFAULT_CORNERS.lr,
-    rr: DEFAULT_CORNERS.rr,
-  },
-};
-
-export const HotTires: Story = {
-  args: {
-    lf: {
-      ...DEFAULT_CORNERS.lf,
-      tempL: 130,
-      tempM: 138,
-      tempR: 135,
-      tempColorL: getTempColor(130),
-      tempColorM: getTempColor(138),
-      tempColorR: getTempColor(135),
-    },
-    rf: {
-      ...DEFAULT_CORNERS.rf,
-      tempL: 132,
-      tempM: 140,
-      tempR: 128,
-      tempColorL: getTempColor(132),
-      tempColorM: getTempColor(140),
-      tempColorR: getTempColor(128),
-    },
-    lr: {
-      ...DEFAULT_CORNERS.lr,
-      tempL: 128,
-      tempM: 135,
-      tempR: 130,
-      tempColorL: getTempColor(128),
-      tempColorM: getTempColor(135),
-      tempColorR: getTempColor(130),
-    },
-    rr: {
-      ...DEFAULT_CORNERS.rr,
-      tempL: 126,
-      tempM: 133,
-      tempR: 129,
-      tempColorL: getTempColor(126),
-      tempColorM: getTempColor(133),
-      tempColorR: getTempColor(129),
-    },
+    lf: makeCorner({
+      tempL: 180,
+      tempM: 190,
+      tempR: 188,
+      pressure: 26.0,
+      pressureUnit: 'psi',
+    }),
+    rf: makeCorner({
+      tempL: 180,
+      tempM: 190,
+      tempR: 188,
+      pressure: 26.0,
+      pressureUnit: 'psi',
+    }),
+    lr: makeCorner({
+      tempL: 175,
+      tempM: 185,
+      tempR: 182,
+      pressure: 25.5,
+      pressureUnit: 'psi',
+    }),
+    rr: makeCorner({
+      tempL: 175,
+      tempM: 185,
+      tempR: 182,
+      pressure: 25.5,
+      pressureUnit: 'psi',
+    }),
+    onPitRoad: true,
   },
 };

@@ -2,109 +2,91 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { InputTraceWidget } from './InputTraceWidget';
 
-import type { InputTraceSettings } from '../../../types/widget-settings';
-import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
-import snapshot from '../../../../test-data/iracing-1776008424511.json';
+const DESIGN_WIDTH = 500;
+const DESIGN_HEIGHT = 120;
 
-const DESIGN_WIDTH = 400;
-const DESIGN_HEIGHT = 220;
-
-const realSnapshot = snapshot as TelemetrySnapshot;
-
-const DEFAULT_SETTINGS: InputTraceSettings = {
-  barMode: 'horizontal',
+const DEFAULT_SETTINGS = {
   showThrottle: true,
   showBrake: true,
   showClutch: true,
-  throttleColor: '#00ff00',
-  brakeColor: '#ff3333',
-  clutchColor: '#3399ff',
+  throttleColor: '#22c55e',
+  brakeColor: '#ef4444',
+  clutchColor: '#60a5fa',
+  barMode: 'horizontal' as const,
 };
 
-interface InputTraceStoryArgs extends InputTraceSettings {
-  snapshot: TelemetrySnapshot;
-}
-
-const InputTraceWidgetStory = ({
-  snapshot: snap,
-  ...settings
-}: InputTraceStoryArgs) => {
-  const frame = snap.carInputs;
-  const throttle = frame?.throttle ?? 0;
-  const brake = frame?.brake ?? 0;
-  const clutch = frame?.clutch != null ? 1 - frame.clutch : 0;
-
-  return (
-    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
+const meta: Meta<typeof InputTraceWidget> = {
+  title: 'Widgets/InputTraceWidget',
+  component: InputTraceWidget,
+  parameters: { layout: 'centered' },
+  decorators: [
+    (Story) => (
       <div
         style={{
-          width: '100%',
-          height: '100%',
+          width: DESIGN_WIDTH,
+          height: DESIGN_HEIGHT,
           background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
           overflow: 'hidden',
         }}
       >
-        <InputTraceWidget
-          throttle={throttle}
-          brake={brake}
-          clutch={clutch}
-          settings={settings}
-        />
+        <Story />
       </div>
-    </div>
-  );
-};
-
-const meta: Meta<InputTraceStoryArgs> = {
-  title: 'Widgets/InputTraceWidget',
-  component: InputTraceWidgetStory,
-  parameters: {
-    layout: 'centered',
-  },
+    ),
+  ],
   args: {
-    ...DEFAULT_SETTINGS,
-    snapshot: realSnapshot,
+    throttle: 0.6,
+    brake: 0,
+    clutch: 0,
+    settings: DEFAULT_SETTINGS,
   },
 };
 
 export default meta;
-
-type Story = StoryObj<InputTraceStoryArgs>;
+type Story = StoryObj<typeof InputTraceWidget>;
 
 export const Default: Story = {};
 
-export const Vertical: Story = {
-  args: { barMode: 'vertical' },
-};
-
-export const NoBars: Story = {
-  args: { barMode: 'hidden' },
-};
-
-export const ThrottleOnly: Story = {
-  args: { showBrake: false, showClutch: false },
-};
-
-export const BrakeOnly: Story = {
-  args: { showThrottle: false, showClutch: false },
-};
-
-export const ClutchOnly: Story = {
-  args: { showThrottle: false, showBrake: false },
-};
-
-export const NoData: Story = {
+export const VerticalBars: Story = {
   args: {
-    snapshot: {
-      capturedAt: new Date().toISOString(),
-      carDynamics: null,
-      carIdx: null,
-      carInputs: null,
-      carStatus: null,
-      environment: null,
-      lapTiming: null,
-      session: null,
-      sessionInfo: null,
-    },
+    settings: { ...DEFAULT_SETTINGS, barMode: 'vertical' },
+  },
+};
+
+export const HiddenBars: Story = {
+  args: {
+    settings: { ...DEFAULT_SETTINGS, barMode: 'hidden' },
+  },
+};
+
+export const FullThrottle: Story = {
+  args: {
+    throttle: 1.0,
+    brake: 0,
+    clutch: 0,
+  },
+};
+
+export const HeavyBraking: Story = {
+  args: {
+    throttle: 0,
+    brake: 0.95,
+    clutch: 0,
+  },
+};
+
+export const TrailBraking: Story = {
+  args: {
+    throttle: 0.3,
+    brake: 0.5,
+    clutch: 0,
+  },
+};
+
+export const OnlyThrottleBrake: Story = {
+  args: {
+    settings: { ...DEFAULT_SETTINGS, showClutch: false },
+    throttle: 0.7,
+    brake: 0,
+    clutch: 0,
   },
 };

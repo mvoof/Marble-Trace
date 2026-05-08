@@ -1,134 +1,123 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { StandingsWidget } from './StandingsWidget';
-
-import { computeClassSof } from './standings-utils';
 import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
-import type { StandingsWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
-import snapshot from '../../../../test-data/iracing-1776008424511.json';
+import snapshotRaw from '../../../../test-data/iracing-1776008424511.json';
 
-const DESIGN_WIDTH = 640;
-const DESIGN_HEIGHT = 450;
+const snapshot = snapshotRaw as unknown as TelemetrySnapshot;
+const DRIVER_ENTRIES = computeDriverEntries(
+  snapshot.carIdx,
+  snapshot.sessionInfo?.DriverInfo ?? null
+);
 
-const realSnapshot = snapshot as TelemetrySnapshot;
-
-const DEFAULT_SETTINGS: StandingsWidgetSettings = {
-  filterMode: 'all',
-  groupByClass: true,
+const DEFAULT_SETTINGS = {
+  enableClassCycling: false,
+  classCyclingToggleHotkey: '',
+  classPrevHotkey: '',
+  classNextHotkey: '',
   showPosChange: true,
   showColumnHeaders: true,
   showSessionHeader: true,
-  showWeather: true,
+  showWeather: false,
   showSOF: true,
   showTotalDrivers: true,
-  showBrand: true,
-  showTire: true,
+  showBrand: false,
+  showTire: false,
+  showIRatingBadge: false,
+  showClassBadge: false,
   showIrChange: false,
-  showPitStops: true,
+  showPitStops: false,
+  showLapsCompleted: false,
+  showIncidentsBadge: false,
   abbreviateNames: false,
 };
 
-interface StandingsStoryArgs extends StandingsWidgetSettings {
-  snapshot: TelemetrySnapshot;
-}
-
-const StandingsWidgetStory = ({
-  snapshot: snap,
-  ...settings
-}: StandingsStoryArgs) => {
-  const driverEntries = computeDriverEntries(
-    snap.carIdx,
-    snap.sessionInfo?.DriverInfo ?? null
-  );
-  const overallSof = computeClassSof(driverEntries);
-  const irDeltaMap = new Map<number, number>();
-  const effectiveStartPosMap = new Map(
-    driverEntries.map((e) => [
-      e.carIdx,
-      { overall: e.startPosOverall, class: e.startPosClass },
-    ])
-  );
-
-  return (
-    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
+const meta: Meta<typeof StandingsWidget> = {
+  title: 'Widgets/StandingsWidget',
+  component: StandingsWidget,
+  parameters: { layout: 'centered' },
+  decorators: [
+    (Story) => (
       <div
         style={{
-          width: '100%',
-          height: '100%',
-          background: 'radial-gradient(circle, #0a0a0f 0%, #050508 100%)',
+          width: 640,
+          height: 450,
+          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
           overflow: 'hidden',
         }}
       >
-        <StandingsWidget
-          driverEntries={driverEntries}
-          settings={settings}
-          irDeltaMap={irDeltaMap}
-          effectiveStartPosMap={effectiveStartPosMap}
-          playerIncidents={
-            driverEntries.find((e) => e.isPlayer)?.incidents ?? 0
-          }
-          sessionInfo={snap.sessionInfo}
-          weekendInfo={snap.sessionInfo?.WeekendInfo ?? null}
-          overallSof={overallSof}
-        />
+        <Story />
       </div>
-    </div>
-  );
-};
-
-const meta: Meta<StandingsStoryArgs> = {
-  title: 'Widgets/StandingsWidget',
-  component: StandingsWidgetStory,
-  parameters: {
-    layout: 'centered',
-  },
+    ),
+  ],
   args: {
-    ...DEFAULT_SETTINGS,
-    snapshot: realSnapshot,
+    driverEntries: DRIVER_ENTRIES,
+    settings: DEFAULT_SETTINGS,
+    irDeltaMap: new Map(),
+    effectiveStartPosMap: new Map(),
+    playerPitStops: 1,
+    playerIncidents: 2,
+    sessionInfo: null,
+    weekendInfo: null,
+    overallSof: 2800,
+    activeClassIndex: 0,
+    dragMode: false,
+    onPrevClass: () => {},
+    onNextClass: () => {},
   },
 };
 
 export default meta;
-
-type Story = StoryObj<StandingsStoryArgs>;
+type Story = StoryObj<typeof StandingsWidget>;
 
 export const Default: Story = {};
 
-export const NoGrouping: Story = {
-  args: { groupByClass: false },
-};
-
-export const FullFeatures: Story = {
-  args: { showIrChange: true },
-};
-
-export const Minimal: Story = {
+export const ClassCycling: Story = {
   args: {
-    showSessionHeader: false,
-    showWeather: false,
-    showSOF: false,
-    showTotalDrivers: false,
-    showBrand: false,
-    showTire: false,
-    showPitStops: false,
-    showIrChange: false,
-    showPosChange: false,
+    settings: { ...DEFAULT_SETTINGS, enableClassCycling: true },
+    activeClassIndex: 0,
   },
 };
 
-export const NoData: Story = {
+export const MinimalColumns: Story = {
   args: {
-    snapshot: {
-      capturedAt: new Date().toISOString(),
-      carDynamics: null,
-      carIdx: null,
-      carInputs: null,
-      carStatus: null,
-      environment: null,
-      lapTiming: null,
-      session: null,
-      sessionInfo: null,
+    settings: {
+      ...DEFAULT_SETTINGS,
+      showPosChange: false,
+      showColumnHeaders: false,
+      showSessionHeader: false,
+    },
+  },
+};
+
+export const WithAllColumns: Story = {
+  args: {
+    settings: {
+      ...DEFAULT_SETTINGS,
+      showBrand: true,
+      showTire: true,
+      showIRatingBadge: true,
+      showClassBadge: true,
+      showIrChange: true,
+      showLapsCompleted: true,
+      showPosChange: true,
+    },
+  },
+};
+
+export const AbbreviatedNames: Story = {
+  args: {
+    settings: { ...DEFAULT_SETTINGS, abbreviateNames: true },
+  },
+};
+
+export const NoHeaders: Story = {
+  args: {
+    settings: {
+      ...DEFAULT_SETTINGS,
+      showColumnHeaders: false,
+      showSessionHeader: false,
     },
   },
 };

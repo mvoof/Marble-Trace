@@ -1,148 +1,93 @@
-import type { ComponentProps } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { FuelWidget } from './FuelWidget';
 
-const DESIGN_WIDTH = 240;
-const DESIGN_HEIGHT = 360;
-
-const wrap = (props: ComponentProps<typeof FuelWidget>) => (
-  <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-        overflow: 'hidden',
-      }}
-    >
-      <FuelWidget {...props} />
-    </div>
-  </div>
-);
+const LAP_FUEL_HISTORY = [3.2, 3.1, 3.3, 3.0, 3.2, 3.1, 3.4, 3.0];
 
 const meta: Meta<typeof FuelWidget> = {
   title: 'Widgets/FuelWidget',
   component: FuelWidget,
   parameters: { layout: 'centered' },
-  render: (args) => wrap(args),
+  decorators: [
+    (Story) => (
+      <div
+        style={{
+          width: 280,
+          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
+          overflow: 'hidden',
+        }}
+      >
+        <Story />
+      </div>
+    ),
+  ],
+  args: {
+    fuelLevel: 28.5,
+    fuelMax: 55.0,
+    avgPerLap: 3.15,
+    lapsRemaining: 9.0,
+    shortage: 2.3,
+    fuelToAddWithBuffer: null,
+    pitWarning: false,
+    pitWindowStart: null,
+    pitWindowEnd: null,
+    tankTooSmall: false,
+    showChart: false,
+    chartType: 'line',
+    lapFuelHistory: LAP_FUEL_HISTORY,
+    pitWarningLaps: 3,
+  },
 };
 
 export default meta;
-
 type Story = StoryObj<typeof FuelWidget>;
 
-export const Default: Story = {
-  args: {
-    fuelLevel: 57.6,
-    fuelMax: 70,
-    avgPerLap: 2.35,
-    lapsRemaining: 18.3,
-    lapsToFinish: 15,
-    shortage: 7.8,
-    fuelToAddWithBuffer: 0,
-    fuelSavePerLap: null,
-    pitWarning: false,
-    pitWindowStart: null,
-    pitWindowEnd: null,
-    showChart: false,
-    chartType: 'bar',
-    lapFuelHistory: [],
-  },
-};
+export const Comfortable: Story = {};
 
-export const ShortFuel: Story = {
+export const LowFuel: Story = {
   args: {
-    fuelLevel: 23.9,
-    fuelMax: 70,
-    avgPerLap: 2.35,
-    lapsRemaining: 10.2,
-    lapsToFinish: 15,
-    shortage: -11.28,
-    fuelToAddWithBuffer: 13.63,
-    fuelSavePerLap: 0.75,
+    fuelLevel: 8.4,
+    lapsRemaining: 2.7,
+    shortage: -1.2,
     pitWarning: true,
-    pitWindowStart: 29,
-    pitWindowEnd: 31,
-    showChart: false,
-    chartType: 'bar',
-    lapFuelHistory: [],
+    pitWindowStart: 14,
+    pitWindowEnd: 16,
+    fuelToAddWithBuffer: 12.5,
   },
 };
 
-export const PitWarning: Story = {
+export const TankTooSmall: Story = {
   args: {
-    fuelLevel: 30.4,
-    fuelMax: 70,
-    avgPerLap: 2.1,
-    lapsRemaining: 14.5,
-    lapsToFinish: 13,
-    shortage: 3.15,
-    fuelToAddWithBuffer: 2.1,
-    fuelSavePerLap: null,
+    fuelLevel: 5.2,
+    lapsRemaining: 1.6,
+    shortage: -5.8,
     pitWarning: true,
-    pitWindowStart: 34,
-    pitWindowEnd: 36,
-    showChart: false,
-    chartType: 'bar',
-    lapFuelHistory: [],
-  },
-};
-
-export const WithBarChart: Story = {
-  args: {
-    fuelLevel: 35.0,
-    fuelMax: 70,
-    avgPerLap: 2.18,
-    lapsRemaining: 16.1,
-    lapsToFinish: 14,
-    shortage: 4.48,
-    fuelToAddWithBuffer: 0,
-    fuelSavePerLap: null,
-    pitWarning: false,
-    pitWindowStart: null,
-    pitWindowEnd: null,
-    showChart: true,
-    chartType: 'bar',
-    lapFuelHistory: [2.3, 2.1, 2.25, 2.15, 2.2, 2.18, 2.22, 2.14],
+    tankTooSmall: true,
+    pitWindowStart: 12,
+    pitWindowEnd: 13,
+    fuelToAddWithBuffer: 58.0,
   },
 };
 
 export const WithLineChart: Story = {
   args: {
-    fuelLevel: 35.0,
-    fuelMax: 70,
-    avgPerLap: 2.18,
-    lapsRemaining: 16.1,
-    lapsToFinish: 14,
-    shortage: 4.48,
-    fuelToAddWithBuffer: 0,
-    fuelSavePerLap: null,
-    pitWarning: false,
-    pitWindowStart: null,
-    pitWindowEnd: null,
     showChart: true,
     chartType: 'line',
-    lapFuelHistory: [2.3, 2.1, 2.25, 2.15, 2.2, 2.18, 2.22, 2.14],
+    lapFuelHistory: LAP_FUEL_HISTORY,
   },
 };
 
-export const ShortFuelWithChart: Story = {
+export const WithBarChart: Story = {
   args: {
-    fuelLevel: 18.5,
-    fuelMax: 70,
-    avgPerLap: 2.35,
-    lapsRemaining: 7.9,
-    lapsToFinish: 15,
-    shortage: -16.75,
-    fuelToAddWithBuffer: 19.1,
-    fuelSavePerLap: 1.12,
-    pitWarning: true,
-    pitWindowStart: 27,
-    pitWindowEnd: 29,
     showChart: true,
     chartType: 'bar',
-    lapFuelHistory: [2.3, 2.1, 2.25, 2.15, 2.2, 2.38, 2.42, 2.35],
+    lapFuelHistory: LAP_FUEL_HISTORY,
+  },
+};
+
+export const NoChart: Story = {
+  args: {
+    showChart: false,
   },
 };
 
@@ -152,15 +97,7 @@ export const NoData: Story = {
     fuelMax: null,
     avgPerLap: null,
     lapsRemaining: null,
-    lapsToFinish: null,
     shortage: null,
-    fuelToAddWithBuffer: null,
-    fuelSavePerLap: null,
-    pitWarning: false,
-    pitWindowStart: null,
-    pitWindowEnd: null,
-    showChart: false,
-    chartType: 'bar',
     lapFuelHistory: [],
   },
 };

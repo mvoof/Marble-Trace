@@ -1,184 +1,159 @@
+import type { ComponentType } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { SpeedWidget } from './SpeedWidget';
 
-import type { SpeedWidgetSettings } from '../../../types/widget-settings';
-import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
-import snapshot from '../../../../test-data/iracing-1776008424511.json';
-
 const DESIGN_WIDTH = 312;
 const DESIGN_HEIGHT = 90;
+const PIT_PANEL_H = 30;
 
-const realSnapshot = snapshot as TelemetrySnapshot;
-
-const DEFAULT_SETTINGS: SpeedWidgetSettings = {
-  focusMode: 'speed',
-  rpmColorTheme: 'custom',
+const DEFAULT_SETTINGS = {
+  focusMode: 'speed' as const,
+  rpmColorTheme: 'custom' as const,
   rpmColorLow: '#22c55e',
   rpmColorMid: '#eab308',
   rpmColorHigh: '#ef4444',
   rpmColorLimit: '#ff4d00',
   showPitPanel: true,
   showRpmBar: true,
+  showTemps: false,
   pitSpeedLimitOverride: null,
 };
 
-interface SpeedWidgetStoryArgs extends SpeedWidgetSettings {
-  snapshot: TelemetrySnapshot;
-}
+const BG = 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)';
 
-const SpeedWidgetStory = ({
-  snapshot: snap,
-  ...settings
-}: SpeedWidgetStoryArgs) => {
-  const frame = snap.carDynamics;
-  const driverInfo = snap.sessionInfo?.DriverInfo;
-  const speed = frame ? `${Math.round(frame.speed * 3.6)}` : '0';
-  const rpm = frame ? Math.round(frame.rpm) : 0;
-  const gear = frame?.gear ?? 0;
-  const maxShiftRpm =
-    driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
-
-  return (
-    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
+const meta: Meta<typeof SpeedWidget> = {
+  title: 'Widgets/SpeedWidget',
+  component: SpeedWidget,
+  parameters: { layout: 'centered' },
+  decorators: [
+    (Story) => (
       <div
         style={{
-          width: '100%',
-          height: '100%',
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
+          width: DESIGN_WIDTH,
+          height: DESIGN_HEIGHT,
+          background: BG,
+          overflow: 'visible',
         }}
       >
-        <SpeedWidget
-          speed={speed}
-          speedUnit="km/h"
-          rpm={rpm}
-          gear={gear}
-          maxShiftRpm={maxShiftRpm}
-          settings={settings}
-          isOnPitRoad={false}
-          pitLimiterActive={false}
-          pitState="pit-lane"
-          pitLimitFormatted="60"
-        />
+        <Story />
       </div>
-    </div>
-  );
-};
-
-const meta: Meta<SpeedWidgetStoryArgs> = {
-  title: 'Widgets/SpeedWidget',
-  component: SpeedWidgetStory,
-  parameters: {
-    layout: 'centered',
-  },
+    ),
+  ],
   args: {
-    ...DEFAULT_SETTINGS,
-    snapshot: realSnapshot,
+    speed: '120',
+    speedUnit: 'km/h',
+    rpm: 5400,
+    gear: 3,
+    maxShiftRpm: 8000,
+    settings: DEFAULT_SETTINGS,
+    isOnPitRoad: false,
+    pitLimiterActive: false,
+    pitState: 'pit-lane',
+    pitLimitFormatted: '60',
+    pitSpeedDelta: null,
+    oilTemp: '92',
+    waterTemp: '88',
+    tempUnit: '°C',
+    oilTempWarn: false,
+    waterTempWarn: false,
   },
 };
 
 export default meta;
-
-type Story = StoryObj<SpeedWidgetStoryArgs>;
+type Story = StoryObj<typeof SpeedWidget>;
 
 export const Default: Story = {};
 
 export const GearFocus: Story = {
-  args: { focusMode: 'gear' },
-};
-
-export const GradientTheme: Story = {
-  args: { rpmColorTheme: 'gradient' },
-};
-
-export const ClassicTheme: Story = {
-  args: { rpmColorTheme: 'classic' },
-};
-
-export const Scaled2x: Story = {
-  args: { focusMode: 'gear' },
-  render: ({ snapshot: snap, ...settings }) => {
-    const frame = snap.carDynamics;
-    const driverInfo = snap.sessionInfo?.DriverInfo;
-    const speed = frame ? `${Math.round(frame.speed * 3.6)}` : '0';
-    const rpm = frame ? Math.round(frame.rpm) : 0;
-    const gear = frame?.gear ?? 0;
-    const maxShiftRpm =
-      driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
-
-    return (
-      <div style={{ width: DESIGN_WIDTH * 2, height: DESIGN_HEIGHT * 2 }}>
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-            overflow: 'hidden',
-          }}
-        >
-          <SpeedWidget
-            speed={speed}
-            speedUnit="km/h"
-            rpm={rpm}
-            gear={gear}
-            maxShiftRpm={maxShiftRpm}
-            settings={settings}
-            isOnPitRoad={false}
-            pitLimiterActive={false}
-            pitState="pit-lane"
-            pitLimitFormatted="60"
-          />
-        </div>
-      </div>
-    );
+  args: {
+    settings: { ...DEFAULT_SETTINGS, focusMode: 'gear' },
   },
 };
 
-export const Redline: Story = {
+export const HighRpm: Story = {
   args: {
-    focusMode: 'gear',
-    snapshot: {
-      ...realSnapshot,
-      carDynamics: {
-        ...realSnapshot.carDynamics!,
-        rpm: 7400,
-        shift_indicator_pct: 1.0,
-        gear: 3,
-        speed: 62.0,
-      },
-    },
+    speed: '223',
+    rpm: 7800,
+    gear: 5,
   },
 };
 
-export const SpeedFocusHighSpeed: Story = {
+// Pit stories — PitPanel is position:absolute; bottom:100% (above .root).
+// Story decorators wrap INSIDE the meta decorator, so we use negative marginTop
+// to cancel the paddingTop offset: net result is .root sits flush at y=0 inside
+// the 90px meta container, and PitPanel overflows upward (meta overflow:visible).
+const pitDecorator = (Story: ComponentType) => (
+  <div style={{ marginTop: -PIT_PANEL_H, paddingTop: PIT_PANEL_H }}>
+    <Story />
+  </div>
+);
+
+export const OnPitRoad: Story = {
+  decorators: [pitDecorator],
   args: {
-    focusMode: 'speed',
-    snapshot: {
-      ...realSnapshot,
-      carDynamics: {
-        ...realSnapshot.carDynamics!,
-        speed: 83.3,
-        rpm: 6500,
-        gear: 5,
-        shift_indicator_pct: 0.72,
-      },
-    },
+    isOnPitRoad: true,
+    pitState: 'pit-lane',
+    pitLimitFormatted: '60',
+    pitSpeedDelta: null,
+    speed: '45',
+    rpm: 2800,
+    gear: 2,
   },
 };
 
-export const NoData: Story = {
+export const PitLimiterActive: Story = {
+  decorators: [pitDecorator],
   args: {
-    snapshot: {
-      capturedAt: new Date().toISOString(),
-      carDynamics: null,
-      carIdx: null,
-      carInputs: null,
-      carStatus: null,
-      environment: null,
-      lapTiming: null,
-      session: null,
-      sessionInfo: null,
-    },
+    isOnPitRoad: true,
+    pitLimiterActive: true,
+    pitState: 'limiter-active',
+    pitLimitFormatted: '60',
+    pitSpeedDelta: 0,
+    speed: '60',
+    rpm: 3100,
+    gear: 3,
+  },
+};
+
+export const OverPitLimit: Story = {
+  decorators: [pitDecorator],
+  args: {
+    isOnPitRoad: true,
+    pitLimiterActive: true,
+    pitState: 'over-limit',
+    pitLimitFormatted: '60',
+    pitSpeedDelta: 5,
+    speed: '65',
+    rpm: 3400,
+    gear: 3,
+  },
+};
+
+export const WithTemps: Story = {
+  args: {
+    settings: { ...DEFAULT_SETTINGS, showTemps: true },
+    oilTemp: '92',
+    waterTemp: '88',
+    tempUnit: '°C',
+    oilTempWarn: false,
+    waterTempWarn: false,
+  },
+};
+
+export const TempWarning: Story = {
+  args: {
+    settings: { ...DEFAULT_SETTINGS, showTemps: true },
+    oilTemp: '115',
+    waterTemp: '108',
+    tempUnit: '°C',
+    oilTempWarn: true,
+    waterTempWarn: true,
+  },
+};
+
+export const NoRpmBar: Story = {
+  args: {
+    settings: { ...DEFAULT_SETTINGS, showRpmBar: false },
   },
 };

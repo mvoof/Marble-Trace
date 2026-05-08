@@ -1,197 +1,153 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TrackMapWidget } from './TrackMapWidget';
-
 import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
-import type { TrackMapWidgetSettings } from '../../../types/widget-settings';
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
-import type { CarOnTrack } from './types';
-import snapshot from '../../../../test-data/iracing-1776008424511.json';
-import tracksData from '../../../../test-data/tracks.json';
+import snapshotRaw from '../../../../test-data/iracing-1776008424511.json';
+import tracksRaw from '../../../../test-data/tracks.json';
 
-const DESIGN_WIDTH = 400;
-const DESIGN_HEIGHT = 400;
+const snapshot = snapshotRaw as unknown as TelemetrySnapshot;
+const DRIVER_ENTRIES = computeDriverEntries(
+  snapshot.carIdx,
+  snapshot.sessionInfo?.DriverInfo ?? null
+);
 
-const realSnapshot = snapshot as TelemetrySnapshot;
-
-const storedTracks = tracksData as {
-  'recorded-tracks': Record<
+const tracksData = tracksRaw as Record<
+  string,
+  Record<
     string,
     {
       svgPath: string;
       viewBox: string;
       points: { x: number; y: number; pct: number }[];
+      trackName: string;
     }
-  >;
-};
-const realTrack = Object.values(storedTracks['recorded-tracks'])[0] ?? null;
+  >
+>;
+const STORED_TRACK = tracksData['recorded-tracks']['508'];
 
-const DEFAULT_SETTINGS: TrackMapWidgetSettings = {
+const TRACK_DATA = {
+  svgPath: STORED_TRACK.svgPath,
+  viewBox: STORED_TRACK.viewBox,
+  points: STORED_TRACK.points,
+};
+
+const CARS_ON_TRACK = DRIVER_ENTRIES.slice(0, 10).map((d) => ({
+  carIdx: d.carIdx,
+  carNumber: d.carNumber,
+  carClassColor: d.carClassColor,
+  carClassId: d.carClassId,
+  lapDistPct: d.lapDistPct,
+  trackSurface: d.trackSurface,
+  isPlayer: d.isPlayer,
+  position: d.position,
+  classPosition: d.classPosition,
+}));
+
+const CLASS_COLORS = [{ name: 'GTE', color: '#f59e0b' }];
+
+const SECTORS = [
+  { SectorNum: 0, SectorStartPct: 0.0 },
+  { SectorNum: 1, SectorStartPct: 0.33 },
+  { SectorNum: 2, SectorStartPct: 0.67 },
+];
+
+const DEFAULT_SETTINGS = {
   showLegend: true,
-  legendPosition: 'right',
+  legendPosition: 'right' as const,
   showSectors: true,
-  rotationMode: 'fixed',
-  playerDotColor: '#ffffff',
+  showSectorTimes: true,
+  showSectorsOnMap: false,
+  rotationMode: 'fixed' as const,
+  playerDotColor: '#22c55e',
   showPlayerLabel: true,
-  leaderLabelMode: 'all',
+  leaderLabelMode: 'none' as const,
   trackStrokePx: 10,
-  trackBorderPx: 3,
-  sectorStrokePx: 6,
-  targetDotRadiusPx: 10,
+  trackBorderPx: 2,
+  sectorStrokePx: 3,
+  targetDotRadiusPx: 6,
 };
 
-interface TrackMapStoryArgs extends TrackMapWidgetSettings {
-  snapshot: TelemetrySnapshot;
-}
+const DESIGN_SIZE = 400;
 
-const computeCars = (snap: TelemetrySnapshot): CarOnTrack[] => {
-  const entries = computeDriverEntries(
-    snap.carIdx,
-    snap.sessionInfo?.DriverInfo ?? null
-  );
-  return entries.map((e) => ({
-    carIdx: e.carIdx,
-    carNumber: e.carNumber,
-    carClassColor: e.carClassColor,
-    carClassId: e.carClassId,
-    lapDistPct: e.lapDistPct,
-    trackSurface: e.trackSurface,
-    isPlayer: e.isPlayer,
-    position: e.position,
-    classPosition: e.classPosition,
-  }));
-};
-
-const computeClassColors = (snap: TelemetrySnapshot) => {
-  const entries = computeDriverEntries(
-    snap.carIdx,
-    snap.sessionInfo?.DriverInfo ?? null
-  );
-  const seen = new Map<number, { name: string; color: string }>();
-  for (const e of entries) {
-    if (!seen.has(e.carClassId)) {
-      seen.set(e.carClassId, {
-        name: e.carClassShortName,
-        color: e.carClassColor,
-      });
-    }
-  }
-  return Array.from(seen.values());
-};
-
-const MOCK_SECTOR_TIMES: (number | null)[] = [31.423, 45.102, 29.851, null];
-
-const TrackMapWidgetStory = ({
-  snapshot: snap,
-  ...settings
-}: TrackMapStoryArgs) => {
-  const cars = computeCars(snap);
-  const classColors = computeClassColors(snap);
-
-  return (
-    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
+const meta: Meta<typeof TrackMapWidget> = {
+  title: 'Widgets/TrackMapWidget',
+  component: TrackMapWidget,
+  parameters: { layout: 'centered' },
+  decorators: [
+    (Story) => (
       <div
         style={{
-          width: '100%',
-          height: '100%',
-          background: 'transparent',
+          width: DESIGN_SIZE,
+          height: DESIGN_SIZE,
+          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
           overflow: 'hidden',
         }}
       >
-        <TrackMapWidget
-          cars={cars}
-          classColors={classColors}
-          trackData={realTrack}
-          trackName="Lime Rock Park"
-          isRecording={false}
-          isForceStartPending={false}
-          isWaitingForSF={false}
-          recordingProgress={0}
-          settings={settings}
-          sectors={snap.sessionInfo?.SplitTimeInfo?.Sectors}
-          sectorTimes={MOCK_SECTOR_TIMES}
-          currentSectorIdx={1}
-        />
+        <Story />
       </div>
-    </div>
-  );
-};
-
-const meta: Meta<TrackMapStoryArgs> = {
-  title: 'Widgets/TrackMapWidget',
-  component: TrackMapWidgetStory,
-  parameters: {
-    layout: 'centered',
-    backgrounds: {
-      default: 'dark',
-      values: [{ name: 'dark', value: '#1a1a2e' }],
-    },
-  },
+    ),
+  ],
   args: {
-    ...DEFAULT_SETTINGS,
-    snapshot: realSnapshot,
+    cars: CARS_ON_TRACK,
+    classColors: CLASS_COLORS,
+    trackData: TRACK_DATA,
+    trackName: 'Lime Rock Park',
+    isRecording: false,
+    recordingProgress: 0,
+    isForceStartPending: false,
+    isWaitingForSF: false,
+    settings: DEFAULT_SETTINGS,
+    sectors: null,
+    sectorTimes: [],
+    currentSectorIdx: 0,
   },
 };
 
 export default meta;
-
-type Story = StoryObj<TrackMapStoryArgs>;
+type Story = StoryObj<typeof TrackMapWidget>;
 
 export const Default: Story = {};
 
-export const NoLegend: Story = {
-  args: { showLegend: false },
-};
-
-export const NoSectors: Story = {
-  args: { showSectors: false },
-};
-
-export const HeadingUp: Story = {
-  args: { rotationMode: 'heading-up' },
+export const NoTrackData: Story = {
+  args: {
+    trackData: null,
+  },
 };
 
 export const Recording: Story = {
-  render: ({ snapshot: snap, ...settings }) => (
-    <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          background: 'transparent',
-          overflow: 'hidden',
-        }}
-      >
-        <TrackMapWidget
-          cars={computeCars(snap)}
-          classColors={computeClassColors(snap)}
-          trackData={null}
-          trackName="Lime Rock Park"
-          isRecording={true}
-          isForceStartPending={false}
-          isWaitingForSF={false}
-          recordingProgress={0.42}
-          settings={settings}
-          sectors={undefined}
-          sectorTimes={[]}
-        />
-      </div>
-    </div>
-  ),
+  args: {
+    trackData: null,
+    isRecording: true,
+    recordingProgress: 0.45,
+  },
 };
 
-export const NoData: Story = {
+export const WithSectors: Story = {
   args: {
-    snapshot: {
-      capturedAt: new Date().toISOString(),
-      carDynamics: null,
-      carIdx: null,
-      carInputs: null,
-      carStatus: null,
-      environment: null,
-      lapTiming: null,
-      session: null,
-      sessionInfo: null,
+    sectors: SECTORS,
+    sectorTimes: [63.4, 41.2, null],
+    currentSectorIdx: 1,
+    settings: {
+      ...DEFAULT_SETTINGS,
+      showSectorsOnMap: true,
+      showSectorTimes: true,
+    },
+  },
+};
+
+export const NoLegend: Story = {
+  args: {
+    settings: { ...DEFAULT_SETTINGS, showLegend: false },
+  },
+};
+
+export const AllLabels: Story = {
+  args: {
+    settings: {
+      ...DEFAULT_SETTINGS,
+      showPlayerLabel: true,
+      leaderLabelMode: 'all',
     },
   },
 };

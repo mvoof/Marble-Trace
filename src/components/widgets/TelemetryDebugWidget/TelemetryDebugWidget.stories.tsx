@@ -1,75 +1,72 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TelemetryDebugWidget } from './TelemetryDebugWidget';
-
 import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
-import snapshot from '../../../../test-data/iracing-1776008424511.json';
+import snapshotRaw from '../../../../test-data/iracing-1776008424511.json';
 
-const DESIGN_WIDTH = 400;
-const DESIGN_HEIGHT = 700;
+const snapshot = snapshotRaw as unknown as TelemetrySnapshot;
 
-const realSnapshot = snapshot as TelemetrySnapshot;
+const CONNECTED_ARGS = {
+  status: 'connected',
+  carDynamics: snapshot.carDynamics,
+  carInputs: snapshot.carInputs,
+  carStatus: snapshot.carStatus,
+  lapTiming: snapshot.lapTiming,
+  session: snapshot.session,
+  driverInfo: snapshot.sessionInfo?.DriverInfo ?? null,
+  weekendInfo: snapshot.sessionInfo?.WeekendInfo ?? null,
+  environment: snapshot.environment,
+};
 
-interface TelemetryDebugStoryArgs {
-  snapshot: TelemetrySnapshot;
-}
-
-const TelemetryDebugWidgetStory = ({
-  snapshot: snap,
-}: TelemetryDebugStoryArgs) => (
-  <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-        overflow: 'hidden',
-      }}
-    >
-      <TelemetryDebugWidget
-        status="connected"
-        carDynamics={snap.carDynamics}
-        carInputs={snap.carInputs}
-        carStatus={snap.carStatus}
-        lapTiming={snap.lapTiming}
-        session={snap.session}
-        driverInfo={snap.sessionInfo?.DriverInfo ?? null}
-        weekendInfo={snap.sessionInfo?.WeekendInfo ?? null}
-        environment={snap.environment}
-      />
-    </div>
-  </div>
-);
-
-const meta: Meta<TelemetryDebugStoryArgs> = {
+const meta: Meta<typeof TelemetryDebugWidget> = {
   title: 'Widgets/TelemetryDebugWidget',
-  component: TelemetryDebugWidgetStory,
-  parameters: {
-    layout: 'centered',
-  },
-  args: {
-    snapshot: realSnapshot,
-  },
+  component: TelemetryDebugWidget,
+  parameters: { layout: 'centered' },
+  decorators: [
+    (Story) => (
+      <div
+        style={{
+          width: 420,
+          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
+          overflow: 'hidden',
+        }}
+      >
+        <Story />
+      </div>
+    ),
+  ],
+  args: CONNECTED_ARGS,
 };
 
 export default meta;
+type Story = StoryObj<typeof TelemetryDebugWidget>;
 
-type Story = StoryObj<TelemetryDebugStoryArgs>;
+export const Connected: Story = {};
 
-export const Default: Story = {};
-
-export const NoData: Story = {
+export const Disconnected: Story = {
   args: {
-    snapshot: {
-      capturedAt: new Date().toISOString(),
-      carDynamics: null,
-      carIdx: null,
-      carInputs: null,
-      carStatus: null,
-      environment: null,
-      lapTiming: null,
-      session: null,
-      sessionInfo: null,
-    },
+    status: 'disconnected',
+    carDynamics: null,
+    carInputs: null,
+    carStatus: null,
+    lapTiming: null,
+    session: null,
+    driverInfo: null,
+    weekendInfo: null,
+    environment: null,
+  },
+};
+
+export const Error: Story = {
+  args: {
+    status: 'error',
+    carDynamics: null,
+    carInputs: null,
+    carStatus: null,
+    lapTiming: null,
+    session: null,
+    driverInfo: null,
+    weekendInfo: null,
+    environment: null,
   },
 };
