@@ -110,7 +110,7 @@ export const resolveSessionLaps = (
   if (!sessionLaps) return null;
   if (sessionLaps.toLowerCase() !== 'unlimited') return sessionLaps;
 
-  if (remainSecs === null || remainSecs <= 0) return null;
+  if (remainSecs === null || remainSecs < 0) return null;
   if (leaderBestLapTime === null) return null;
   if (currentLap === null) return null;
 
