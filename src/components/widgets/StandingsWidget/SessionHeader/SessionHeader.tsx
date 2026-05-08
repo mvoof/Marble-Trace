@@ -73,7 +73,11 @@ export const SessionHeader = observer(
         </div>
 
         <div className={styles.sessionRight}>
-          {leaderLap !== null && <span>LAP {leaderLap}</span>}
+          {leaderLap !== null && (
+            <span>
+              LAP <span className={styles.lapValue}>{leaderLap}</span>
+            </span>
+          )}
 
           {settings.showTotalDrivers && (
             <span className={styles.sessionDriverCount}>
