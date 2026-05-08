@@ -1,4 +1,3 @@
-import type { ComponentType } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { SpeedWidget } from './SpeedWidget';
@@ -79,18 +78,7 @@ export const HighRpm: Story = {
   },
 };
 
-// Pit stories — PitPanel is position:absolute; bottom:100% (above .root).
-// Story decorators wrap INSIDE the meta decorator, so we use negative marginTop
-// to cancel the paddingTop offset: net result is .root sits flush at y=0 inside
-// the 90px meta container, and PitPanel overflows upward (meta overflow:visible).
-const pitDecorator = (Story: ComponentType) => (
-  <div style={{ marginTop: -PIT_PANEL_H, paddingTop: PIT_PANEL_H }}>
-    <Story />
-  </div>
-);
-
 export const OnPitRoad: Story = {
-  decorators: [pitDecorator],
   args: {
     isOnPitRoad: true,
     pitState: 'pit-lane',
@@ -103,7 +91,6 @@ export const OnPitRoad: Story = {
 };
 
 export const PitLimiterActive: Story = {
-  decorators: [pitDecorator],
   args: {
     isOnPitRoad: true,
     pitLimiterActive: true,
@@ -117,7 +104,6 @@ export const PitLimiterActive: Story = {
 };
 
 export const OverPitLimit: Story = {
-  decorators: [pitDecorator],
   args: {
     isOnPitRoad: true,
     pitLimiterActive: true,

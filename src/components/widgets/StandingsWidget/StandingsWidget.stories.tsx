@@ -1,15 +1,20 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { StandingsWidget } from './StandingsWidget';
-import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
-import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
-import snapshotRaw from '../../../../test-data/iracing-1776008424511.json';
+import { driverEntries as RAW_ENTRIES, snapshot } from '../../../storybook/test-data';
+import type { SessionInfoData, WeekendInfo } from '../../../types/bindings';
 
-const snapshot = snapshotRaw as unknown as TelemetrySnapshot;
-const DRIVER_ENTRIES = computeDriverEntries(
-  snapshot.carIdx,
-  snapshot.sessionInfo?.DriverInfo ?? null
-);
+const BASE_LAP_TIME = 92.3;
+const LAP_TIME_SPREAD_PER_POS = 0.35;
+const GAP_PER_POS = 1.8;
+
+const DRIVER_ENTRIES = RAW_ENTRIES.map((e, i) => ({
+  ...e,
+  lap: 5,
+  lastLapTime: BASE_LAP_TIME + i * LAP_TIME_SPREAD_PER_POS + (i % 3) * 0.12,
+  bestLapTime: BASE_LAP_TIME + i * LAP_TIME_SPREAD_PER_POS * 0.8,
+  f2Time: i === 0 ? 0 : i * GAP_PER_POS + (i % 4) * 0.3,
+}));
 
 const DEFAULT_SETTINGS = {
   enableClassCycling: false,
@@ -19,7 +24,7 @@ const DEFAULT_SETTINGS = {
   showPosChange: true,
   showColumnHeaders: true,
   showSessionHeader: true,
-  showWeather: false,
+  showWeather: true,
   showSOF: true,
   showTotalDrivers: true,
   showBrand: false,
@@ -27,9 +32,9 @@ const DEFAULT_SETTINGS = {
   showIRatingBadge: false,
   showClassBadge: false,
   showIrChange: false,
-  showPitStops: false,
+  showPitStops: true,
   showLapsCompleted: false,
-  showIncidentsBadge: false,
+  showIncidentsBadge: true,
   abbreviateNames: false,
 };
 
@@ -41,7 +46,7 @@ const meta: Meta<typeof StandingsWidget> = {
     (Story) => (
       <div
         style={{
-          width: 640,
+          width: 800,
           height: 450,
           background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
           overflow: 'hidden',
@@ -58,8 +63,8 @@ const meta: Meta<typeof StandingsWidget> = {
     effectiveStartPosMap: new Map(),
     playerPitStops: 1,
     playerIncidents: 2,
-    sessionInfo: null,
-    weekendInfo: null,
+    sessionInfo: snapshot.sessionInfo as unknown as SessionInfoData,
+    weekendInfo: snapshot.sessionInfo?.WeekendInfo as unknown as WeekendInfo,
     overallSof: 2800,
     activeClassIndex: 0,
     dragMode: false,
