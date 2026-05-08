@@ -1,5 +1,9 @@
 name: 'Generate Release Notes'
 description: 'Extracts release notes for the current version from CHANGELOG.md'
+inputs:
+  tag_name:
+    description: 'Tag name to extract notes for (e.g. v0.8.0). If empty, uses GITHUB_REF.'
+    required: false
 outputs:
   release_body:
     description: "The generated release notes"

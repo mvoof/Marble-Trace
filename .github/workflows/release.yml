@@ -108,6 +108,8 @@ jobs:
       - name: Generate Release Notes
         id: notes
         uses: ./.github/actions/generate-release-notes
+        with:
+          tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
 
       - name: Detect Pre-release
         id: check-pre
