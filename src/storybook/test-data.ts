@@ -10,21 +10,10 @@ const storedTracks = tracksJson as {
 };
 export const trackData508 = Object.values(storedTracks['recorded-tracks'])[0];
 
-// CarClassShortName is null in this snapshot — map by CarClassID from the session data
-export const CLASS_SHORT_NAMES: Record<number, string> = {
-  45: 'CTS-V',
-  3002: 'F-VEE',
-  4012: 'GR86',
-  4073: 'MX-5',
-};
-
 export const driverEntries = computeDriverEntries(
   snapshot.carIdx,
   snapshot.sessionInfo?.DriverInfo ?? null
-).map((e) => ({
-  ...e,
-  carClassShortName: CLASS_SHORT_NAMES[e.carClassId] ?? e.carClassShortName,
-}));
+);
 
 export const carDynamics = snapshot.carDynamics!;
 export const carInputs = snapshot.carInputs!;
