@@ -14,9 +14,11 @@ runs:
     - name: Generate Notes
       id: generate
       shell: bash
+      env:
+        INPUT_TAG: ${{ inputs.tag_name }}
       run: |
-        if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.tag_name }}" ]; then
-          CURRENT_TAG="${{ inputs.tag_name }}"
+        if [ -n "$INPUT_TAG" ]; then
+          CURRENT_TAG="$INPUT_TAG"
         else
           CURRENT_TAG="${GITHUB_REF#refs/tags/}"
         fi
