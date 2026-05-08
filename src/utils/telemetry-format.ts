@@ -101,7 +101,6 @@ export function clampNormalized(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
-
 export const resolveSessionLaps = (
   sessionLaps: string | null | undefined,
   remainSecs: number | null,

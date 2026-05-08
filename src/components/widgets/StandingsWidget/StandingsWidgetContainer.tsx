@@ -34,16 +34,36 @@ export const StandingsWidgetContainer = observer(() => {
     [driverEntries, settings.showIrChange]
   );
 
+  // Race: use grid positions from QualifyResultsInfo. Practice/time-trial: falls back to first-frame snapshot in computedStore
+  const qualifyResults =
+    telemetryStore.sessionInfo?.QualifyResultsInfo?.Results ?? null;
+
+  const qualifyStartPosMap = useMemo(() => {
+    if (!qualifyResults || qualifyResults.length === 0) return null;
+
+    const map = new Map<number, { overall: number; class: number }>();
+    for (const r of qualifyResults) {
+      if (r.CarIdx != null && r.Position != null) {
+        map.set(r.CarIdx, {
+          overall: r.Position + 1,
+          class: (r.ClassPosition ?? r.Position) + 1,
+        });
+      }
+    }
+    return map.size > 0 ? map : null;
+  }, [qualifyResults]);
+
   const effectiveStartPosMap = useMemo(
     () =>
       new Map(
         driverEntries.map((e) => [
           e.carIdx,
-          computedStore.getEffectiveStartPos(e.carIdx),
+          qualifyStartPosMap?.get(e.carIdx) ??
+            computedStore.getEffectiveStartPos(e.carIdx),
         ])
       ),
 
-    [driverEntries]
+    [driverEntries, qualifyStartPosMap]
   );
 
   const playerIncidents = driverEntries.find((e) => e.isPlayer)?.incidents ?? 0;
