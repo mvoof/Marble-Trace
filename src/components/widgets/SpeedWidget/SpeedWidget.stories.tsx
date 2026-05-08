@@ -4,7 +4,6 @@ import { SpeedWidget } from './SpeedWidget';
 
 const DESIGN_WIDTH = 312;
 const DESIGN_HEIGHT = 90;
-const PIT_PANEL_H = 30;
 
 const DEFAULT_SETTINGS = {
   focusMode: 'speed' as const,
