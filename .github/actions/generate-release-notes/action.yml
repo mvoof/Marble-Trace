@@ -1,5 +1,9 @@
 name: 'Generate Release Notes'
 description: 'Extracts release notes for the current version from CHANGELOG.md'
+inputs:
+  tag_name:
+    description: 'Tag name to extract notes for (e.g. v0.8.0). If empty, uses GITHUB_REF.'
+    required: false
 outputs:
   release_body:
     description: "The generated release notes"
@@ -10,9 +14,11 @@ runs:
     - name: Generate Notes
       id: generate
       shell: bash
+      env:
+        INPUT_TAG: ${{ inputs.tag_name }}
       run: |
-        if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.tag_name }}" ]; then
-          CURRENT_TAG="${{ inputs.tag_name }}"
+        if [ -n "$INPUT_TAG" ]; then
+          CURRENT_TAG="$INPUT_TAG"
         else
           CURRENT_TAG="${GITHUB_REF#refs/tags/}"
         fi
@@ -21,7 +27,7 @@ runs:
         echo "Extracting CHANGELOG.md section for version: $VERSION"
 
         # Extract the block between ## [VERSION] and the next ## [
-        NOTES=$(awk "/^## \[$VERSION\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md)
+        NOTES=$(awk -v ver="## [$VERSION]" 'index($0, ver) == 1 {found=1; next} found && /^## \[/ {exit} found {print}' CHANGELOG.md)
 
         if [ -z "$NOTES" ]; then
           echo "WARNING: No section found in CHANGELOG.md for version $VERSION"

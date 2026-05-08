@@ -23,9 +23,12 @@ jobs:
 
       - name: Verify CHANGELOG.md has entry for this version
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ inputs.tag_name }}
         run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.tag_name }}" ]; then
-            TAG_NAME="${{ inputs.tag_name }}"
+          if [ "$EVENT_NAME" == "workflow_dispatch" ] && [ -n "$INPUT_TAG" ]; then
+            TAG_NAME="$INPUT_TAG"
           else
             TAG_NAME="${GITHUB_REF#refs/tags/}"
           fi
@@ -39,10 +42,12 @@ jobs:
 
       - name: Verify Tag matches package.json
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ inputs.tag_name }}
         run: |
-          # Determine the tag name
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ inputs.tag_name }}" ]; then
-            TAG_NAME="${{ inputs.tag_name }}"
+          if [ "$EVENT_NAME" == "workflow_dispatch" ] && [ -n "$INPUT_TAG" ]; then
+            TAG_NAME="$INPUT_TAG"
           else
             TAG_NAME="${GITHUB_REF#refs/tags/}"
           fi
@@ -108,12 +113,16 @@ jobs:
       - name: Generate Release Notes
         id: notes
         uses: ./.github/actions/generate-release-notes
+        with:
+          tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
 
       - name: Detect Pre-release
         id: check-pre
         shell: bash
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [[ "${{ github.ref_name }}" =~ (alpha|beta|rc|preview) ]]; then
+          if [[ "$REF_NAME" =~ (alpha|beta|rc|preview) ]]; then
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
           else
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
