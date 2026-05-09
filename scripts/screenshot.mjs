@@ -21,7 +21,7 @@ const outputPath =
 // Ensure directory exists
 try {
   mkdirSync(path.dirname(outputPath), { recursive: true });
-} catch (err) {
+} catch {
   // Ignore if directory already exists
 }
 
@@ -38,19 +38,24 @@ ws.on('open', () => {
   );
 
   ws.on('message', (data) => {
-    const msg = JSON.parse(data.toString());
-    if (msg.id !== id) return;
-    ws.close();
+    try {
+      const msg = JSON.parse(data.toString());
+      if (msg.id !== id) return;
+      ws.close();
 
-    if (!msg.success) {
-      console.error('Error:', msg.error);
+      if (!msg.success) {
+        console.error('Error:', msg.error);
+        process.exit(1);
+      }
+
+      // data is a base64 data URL: "data:image/png;base64,..."
+      const base64 = msg.data.replace(/^data:image\/\w+;base64,/, '');
+      writeFileSync(outputPath, Buffer.from(base64, 'base64'));
+      console.log('Saved:', outputPath);
+    } catch (err) {
+      console.error('Failed to parse message:', err.message);
       process.exit(1);
     }
-
-    // data is a base64 data URL: "data:image/png;base64,..."
-    const base64 = msg.data.replace(/^data:image\/\w+;base64,/, '');
-    writeFileSync(outputPath, Buffer.from(base64, 'base64'));
-    console.log('Saved:', outputPath);
   });
 });
 
