@@ -90,10 +90,10 @@ export const NoData: Story = {
   args: {
     currentLapTime: '--:--.---',
     lastLapTime: '--:--.---',
-    lastDelta: '',
+    lastDelta: '+-.---',
     bestLapTime: '--:--.---',
-    bestDelta: '',
+    bestDelta: '+-.---',
     p1LapTime: '--:--.---',
-    p1Delta: '',
+    p1Delta: '+-.---',
   },
 };
