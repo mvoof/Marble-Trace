@@ -24,7 +24,7 @@ const tracksData = tracksRaw as Record<
     }
   >
 >;
-const STORED_TRACK = tracksData['recorded-tracks']['508'];
+const STORED_TRACK = Object.values(tracksData['recorded-tracks'])[0];
 
 const TRACK_DATA = {
   svgPath: STORED_TRACK.svgPath,
