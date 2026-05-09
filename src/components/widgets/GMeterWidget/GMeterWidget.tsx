@@ -186,7 +186,6 @@ export const GMeterWidget = ({
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
         ctx.lineWidth = 2;
-        ctx.shadowBlur = 4;
         for (let i = 1; i < s.gHistory.length; i++) {
           const p1 = s.gHistory[i - 1];
           const p2 = s.gHistory[i];
@@ -195,11 +194,9 @@ export const GMeterWidget = ({
           ctx.lineTo(cx + p2.lat * pxPerG, cy + p2.lon * pxPerG);
           ctx.globalAlpha = i / s.gHistory.length;
           ctx.strokeStyle = p2.color;
-          ctx.shadowColor = p2.color;
           ctx.stroke();
         }
         ctx.globalAlpha = 1.0;
-        ctx.shadowBlur = 0;
       }
     } else {
       ctx.globalAlpha = 0.15;
@@ -250,7 +247,9 @@ export const GMeterWidget = ({
   };
 
   useEffect(() => {
-    return autorun(() => {
+    let rafId = 0;
+
+    const dispose = autorun(() => {
       const dynamics = telemetryStore.carDynamics;
       const latAccel = dynamics?.lat_accel ?? null;
       const lonAccel = dynamics?.long_accel ?? null;
@@ -318,8 +317,16 @@ export const GMeterWidget = ({
       if (peakLonRef.current)
         peakLonRef.current.textContent = s.peakLonG.toFixed(2);
 
-      if (canvasRef.current) drawFrame(canvasRef.current);
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        if (canvasRef.current) drawFrame(canvasRef.current);
+      });
     });
+
+    return () => {
+      dispose();
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   useEffect(() => {
