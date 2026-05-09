@@ -39,4 +39,4 @@ AGENTS.md
 storybook-static
 
 # Telemetry snapshots (captured from live iRacing sessions)
-test-data/*.json
+# test-data/*.json — tracked in git for CI typecheck / Storybook
