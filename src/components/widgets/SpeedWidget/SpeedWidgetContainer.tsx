@@ -94,7 +94,6 @@ export const SpeedWidgetContainer = observer(() => {
         formatSpeed(speed),
         rpm,
         frame.gear,
-        shiftPct,
         pitState,
         pitSpeedDelta
       );

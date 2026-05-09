@@ -27,12 +27,14 @@ export const InputTraceWidget = forwardRef<
 >(({ initialThrottle, initialBrake, initialClutch, settings }, ref) => {
   const barsRef = useRef<InputBarsHandle>(null);
   const canvasTraceRef = useRef<CanvasTraceHandle>(null);
+  const valuesRef = useRef<number[]>([]);
 
   useImperativeHandle(ref, () => ({
     update: (t, b, c) => {
       barsRef.current?.update(t, b, c);
 
-      const values: number[] = [];
+      const values = valuesRef.current;
+      values.length = 0;
       if (settings.showThrottle) values.push(t);
       if (settings.showBrake) values.push(b);
       if (settings.showClutch) values.push(c);

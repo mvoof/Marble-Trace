@@ -18,7 +18,6 @@ export interface SpeedDisplayHandle {
     speed: string,
     rpm: number,
     gear: number,
-    shiftIndicatorPct: number,
     pitState: PitState,
     pitSpeedDelta: number | null
   ) => void;
@@ -101,14 +100,7 @@ export const SpeedWidget = forwardRef<SpeedDisplayHandle, SpeedWidgetProps>(
     useImperativeHandle(
       ref,
       () => ({
-        update: (
-          speed,
-          rpm,
-          gear,
-          shiftIndicatorPct,
-          pitState,
-          pitSpeedDelta
-        ) => {
+        update: (speed, rpm, gear, pitState, pitSpeedDelta) => {
           const primary = isGearFocused ? formatGear(gear) : speed;
           const secondary = isGearFocused ? speed : formatGear(gear);
 
