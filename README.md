@@ -188,6 +188,16 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ---
 
+### G-Meter
+
+> Friction circle visualising lateral and longitudinal G-forces in real time. Three display modes — **Trail** (fading line history), **Fading** (decaying envelope), **Peak** (static max-G envelope) — with three colour modes: **Mono**, **Simple** (red brake / green accel / cyan turn), and **Advanced** (smooth gradient blending). Adjustable scale from 2 G to 5 G.
+
+<p>
+  <img src="docs/assets/screenshots/g-meter-default.png" alt="G-Meter — fading advanced 4G">
+</p>
+
+---
+
 ## Prerequisites
 
 | Tool                                                                | Version                     |

@@ -11,6 +11,7 @@ import {
 import type {
   FlagDisplaySettings,
   FuelWidgetSettings,
+  GMeterWidgetSettings,
   InputTraceSettings,
   LinearMapWidgetSettings,
   RadarSettings,
@@ -342,6 +343,10 @@ class WidgetSettingsStore {
 
   getFlagDisplaySettings(id: 'led-flags' | 'flat-flags'): FlagDisplaySettings {
     return this.getSettings(id, id);
+  }
+
+  getGMeterSettings(): GMeterWidgetSettings {
+    return this.getSettings('g-meter', 'g-meter');
   }
 }
 

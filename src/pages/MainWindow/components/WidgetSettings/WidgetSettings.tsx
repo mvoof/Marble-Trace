@@ -17,6 +17,7 @@ import { LapDeltaSettingsPanel } from './panels/LapDeltaSettingsPanel';
 import { ChassisSettingsPanel } from './panels/ChassisSettingsPanel';
 import { TimerSettingsPanel } from './panels/TimerSettingsPanel';
 import { FlagDisplaySettingsPanel } from './panels/FlagDisplaySettingsPanel';
+import { GMeterSettingsPanel } from './panels/GMeterSettingsPanel';
 
 export const WidgetSettings = observer(
   ({ widgetId }: { widgetId: string | null }) => {
@@ -165,6 +166,7 @@ export const WidgetSettings = observer(
         {(widgetId === 'led-flags' || widgetId === 'flat-flags') && (
           <FlagDisplaySettingsPanel widgetId={widgetId} />
         )}
+        {widgetId === 'g-meter' && <GMeterSettingsPanel />}
       </div>
     );
   }

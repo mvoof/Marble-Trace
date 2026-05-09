@@ -428,4 +428,26 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
       },
     },
   },
+  {
+    id: 'g-meter',
+    label: 'G-Meter',
+    description: 'Lateral and longitudinal G-force friction circle.',
+    enabled: false,
+    x: 100,
+    y: 100,
+    width: 240,
+    height: 280,
+    designWidth: 240,
+    designHeight: 280,
+    backgroundColor: '#252525',
+    backgroundColorEdge: '#14141b',
+    hotkey: '',
+    customSettings: {
+      'g-meter': {
+        displayMode: 'fading',
+        scale: 4,
+        colorMode: 'advanced',
+      },
+    },
+  },
 ];
