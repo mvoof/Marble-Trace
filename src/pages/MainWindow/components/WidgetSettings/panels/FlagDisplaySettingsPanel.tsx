@@ -6,7 +6,7 @@ import styles from '../WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
 
 export const FlagDisplaySettingsPanel = observer(
-  ({ widgetId }: { widgetId: 'flags' | 'flat-flags' }) => {
+  ({ widgetId }: { widgetId: 'led-flags' | 'flat-flags' }) => {
     const settings = widgetSettingsStore.getFlagDisplaySettings(widgetId);
 
     const update = (partial: Partial<FlagDisplaySettings>) => {

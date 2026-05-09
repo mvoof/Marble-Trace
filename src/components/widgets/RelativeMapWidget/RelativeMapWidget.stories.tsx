@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { LinearMapWidget } from './LinearMapWidget';
+import { RelativeMapWidget } from './RelativeMapWidget';
 import { driverEntries as DRIVER_ENTRIES } from '../../../storybook/test-data';
 
 const DEFAULT_SETTINGS = {
@@ -9,9 +9,9 @@ const DEFAULT_SETTINGS = {
   targetDotRadiusPx: 6,
 };
 
-const meta: Meta<typeof LinearMapWidget> = {
-  title: 'Widgets/LinearMapWidget',
-  component: LinearMapWidget,
+const meta: Meta<typeof RelativeMapWidget> = {
+  title: 'Widgets/RelativeMapWidget',
+  component: RelativeMapWidget,
   parameters: { layout: 'centered' },
   decorators: [
     (Story) => (
@@ -34,7 +34,7 @@ const meta: Meta<typeof LinearMapWidget> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof LinearMapWidget>;
+type Story = StoryObj<typeof RelativeMapWidget>;
 
 export const Horizontal: Story = {};
 

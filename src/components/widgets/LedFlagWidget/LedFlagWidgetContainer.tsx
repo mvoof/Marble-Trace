@@ -4,13 +4,13 @@ import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { parseSessionFlags } from '../../../utils/flags-utils';
 import { useFlagBlink, useFlagHold } from '../../../hooks/flags-hooks';
-import { FlagsWidget } from './FlagsWidget';
+import { LedFlagWidget } from './LedFlagWidget';
 
 const IS_NO_FLAG = (v: string) => v === 'none';
 
-export const FlagsWidgetContainer = observer(() => {
+export const LedFlagWidgetContainer = observer(() => {
   const { alwaysShow, holdDuration } =
-    widgetSettingsStore.getFlagDisplaySettings('flags');
+    widgetSettingsStore.getFlagDisplaySettings('led-flags');
 
   const sessionFlags = telemetryStore.session?.session_flags ?? null;
   const playerCarFlags = telemetryStore.session?.player_car_flags ?? null;
@@ -21,5 +21,5 @@ export const FlagsWidgetContainer = observer(() => {
 
   if (!alwaysShow && displayFlag === 'none') return null;
 
-  return <FlagsWidget flag={displayFlag} blinkOn={blinkOn} />;
+  return <LedFlagWidget flag={displayFlag} blinkOn={blinkOn} />;
 });

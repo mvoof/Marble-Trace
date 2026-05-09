@@ -203,9 +203,9 @@ class WidgetSettingsStore {
     const widget = this.getWidget(id);
     if (!widget) return;
 
-    if (id === 'linear-map' && newSettings['linear-map']?.orientation) {
-      const prevOrientation = prevSettings?.['linear-map']?.orientation;
-      const nextOrientation = newSettings['linear-map'].orientation;
+    if (id === 'relative-map' && newSettings['relative-map']?.orientation) {
+      const prevOrientation = prevSettings?.['relative-map']?.orientation;
+      const nextOrientation = newSettings['relative-map'].orientation;
       if (prevOrientation !== nextOrientation) {
         const size = LINEAR_MAP_SIZES[nextOrientation];
         if (size) {
@@ -309,7 +309,7 @@ class WidgetSettingsStore {
   }
 
   getLinearMapSettings(): LinearMapWidgetSettings {
-    return this.getSettings('linear-map', 'linear-map');
+    return this.getSettings('relative-map', 'relative-map');
   }
 
   getWeatherSettings(): WeatherWidgetSettings {
@@ -336,7 +336,7 @@ class WidgetSettingsStore {
     return this.getSettings('timer', 'timer');
   }
 
-  getFlagDisplaySettings(id: 'flags' | 'flat-flags'): FlagDisplaySettings {
+  getFlagDisplaySettings(id: 'led-flags' | 'flat-flags'): FlagDisplaySettings {
     return this.getSettings(id, id);
   }
 }

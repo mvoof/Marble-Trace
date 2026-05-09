@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { FlagType } from '../../../types/flags';
 
-import styles from './FlagsWidget.module.scss';
+import styles from './LedFlagWidget.module.scss';
 
 const BLOCKS = 3;
 const DIODE_CELL_PX = 12;
@@ -144,12 +144,12 @@ const getSingleLedColorClass = (flag: FlagType): string => {
   }
 };
 
-export interface FlagsWidgetProps {
+export interface LedFlagWidgetProps {
   flag: FlagType;
   blinkOn: boolean;
 }
 
-export const FlagsWidget = ({ flag, blinkOn }: FlagsWidgetProps) => {
+export const LedFlagWidget = ({ flag, blinkOn }: LedFlagWidgetProps) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [diodesPerBlock, setDiodesPerBlock] = useState(6);
   const [isSingleLed, setIsSingleLed] = useState(false);

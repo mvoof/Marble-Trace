@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import { computedStore, telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { LinearMapWidget } from './LinearMapWidget';
+import { RelativeMapWidget } from './RelativeMapWidget';
 
 const computeRelativeLapDist = (
   lapDistPct: number,
@@ -14,7 +14,7 @@ const computeRelativeLapDist = (
   return diff;
 };
 
-export const LinearMapWidgetContainer = observer(() => {
+export const RelativeMapWidgetContainer = observer(() => {
   const standings = computedStore.standings;
   const carPositions = telemetryStore.carPositions;
   const settings = widgetSettingsStore.getLinearMapSettings();
@@ -38,5 +38,5 @@ export const LinearMapWidgetContainer = observer(() => {
     })
     .sort((a, b) => b.relativeLapDist - a.relativeLapDist);
 
-  return <LinearMapWidget entries={entries} settings={settings} />;
+  return <RelativeMapWidget entries={entries} settings={settings} />;
 });

@@ -6,8 +6,8 @@ import { RadarBarWidgetContainer } from '../components/widgets/RadarBarWidget/Ra
 import { StandingsWidgetContainer } from '../components/widgets/StandingsWidget/StandingsWidgetContainer';
 import { RelativeWidgetContainer } from '../components/widgets/RelativeWidget/RelativeWidgetContainer';
 import { TrackMapWidgetContainer } from '../components/widgets/TrackMapWidget/TrackMapWidgetContainer';
-import { LinearMapWidgetContainer } from '../components/widgets/LinearMapWidget/LinearMapWidgetContainer';
-import { FlagsWidgetContainer } from '../components/widgets/FlagsWidget/FlagsWidgetContainer';
+import { RelativeMapWidgetContainer } from '../components/widgets/RelativeMapWidget/RelativeMapWidgetContainer';
+import { LedFlagWidgetContainer } from '../components/widgets/LedFlagWidget/LedFlagWidgetContainer';
 import { ChassisWidgetContainer } from '../components/widgets/ChassisWidget/ChassisWidgetContainer';
 import { LapDeltaWidgetContainer } from '../components/widgets/LapDeltaWidget/LapDeltaWidgetContainer';
 import { LapTimesWidgetContainer } from '../components/widgets/LapTimesWidget/LapTimesWidgetContainer';
@@ -33,8 +33,8 @@ export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
   standings: { component: StandingsWidgetContainer },
   relative: { component: RelativeWidgetContainer },
   'track-map': { component: TrackMapWidgetContainer },
-  'linear-map': { component: LinearMapWidgetContainer },
-  flags: { component: FlagsWidgetContainer },
+  'relative-map': { component: RelativeMapWidgetContainer },
+  'led-flags': { component: LedFlagWidgetContainer },
   chassis: { component: ChassisWidgetContainer },
   'lap-delta': { component: LapDeltaWidgetContainer, autoHeight: true },
   'lap-times': { component: LapTimesWidgetContainer, autoHeight: true },

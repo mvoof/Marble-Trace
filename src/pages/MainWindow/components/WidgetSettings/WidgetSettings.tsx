@@ -93,7 +93,7 @@ export const WidgetSettings = observer(
           </Row>
         </Card>
 
-        {!['radar-bar', 'flags', 'flat-flags'].includes(widgetId) && (
+        {!['radar-bar', 'led-flags', 'flat-flags'].includes(widgetId) && (
           <Card title="Aesthetics">
             <Row gutter={[24, 24]}>
               <Col span={12}>
@@ -154,7 +154,7 @@ export const WidgetSettings = observer(
         )}
         {widgetId === 'standings' && <StandingsSettingsPanel />}
         {widgetId === 'relative' && <RelativeSettingsPanel />}
-        {widgetId === 'linear-map' && <LinearMapSettingsPanel />}
+        {widgetId === 'relative-map' && <LinearMapSettingsPanel />}
         {widgetId === 'track-map' && <TrackMapSettingsPanel />}
         {widgetId === 'weather' && <WeatherSettingsPanel />}
         {widgetId === 'fuel' && <FuelSettingsPanel />}
@@ -162,7 +162,7 @@ export const WidgetSettings = observer(
         {widgetId === 'lap-delta' && <LapDeltaSettingsPanel />}
         {widgetId === 'chassis' && <ChassisSettingsPanel />}
         {widgetId === 'timer' && <TimerSettingsPanel />}
-        {(widgetId === 'flags' || widgetId === 'flat-flags') && (
+        {(widgetId === 'led-flags' || widgetId === 'flat-flags') && (
           <FlagDisplaySettingsPanel widgetId={widgetId} />
         )}
       </div>

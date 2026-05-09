@@ -45,18 +45,42 @@ const mergeCustomSettings = (
   return merged;
 };
 
+// Permanent registry: maps obsolete widget IDs to their current replacements.
+// Add an entry here whenever a widget ID is renamed — never remove old entries,
+// because users may still have the old ID persisted in their settings.json.
+const ID_MIGRATIONS: Record<string, string> = {
+  flags: 'led-flags',
+  'linear-map': 'relative-map',
+};
+
+const migrateWidget = (widget: WidgetConfig): WidgetConfig => {
+  const newId = ID_MIGRATIONS[widget.id];
+  if (!newId) return widget;
+
+  const oldValue =
+    widget.customSettings?.[widget.id as keyof WidgetCustomSettings];
+  const customSettings = widget.customSettings
+    ? { [newId]: oldValue, ...widget.customSettings }
+    : widget.customSettings;
+
+  return { ...widget, id: newId, customSettings };
+};
+
 const mergeWidgets = (savedWidgets: WidgetConfig[]): WidgetConfig[] => {
+  const migrated = savedWidgets.map(migrateWidget);
   const defaultById = new Map(DEFAULT_WIDGETS.map((w) => [w.id, w]));
 
   const merged: WidgetConfig[] = [];
 
-  for (const saved of savedWidgets) {
+  for (const saved of migrated) {
     const defaultWidget = defaultById.get(saved.id);
     if (!defaultWidget) continue;
 
     merged.push({
       ...defaultWidget,
       ...saved,
+      label: defaultWidget.label,
+      description: defaultWidget.description,
       customSettings: mergeCustomSettings(
         defaultWidget.customSettings,
         saved.customSettings
@@ -64,7 +88,7 @@ const mergeWidgets = (savedWidgets: WidgetConfig[]): WidgetConfig[] => {
     });
   }
 
-  const savedIds = new Set(savedWidgets.map((w) => w.id));
+  const savedIds = new Set(migrated.map((w) => w.id));
   const newWidgets = DEFAULT_WIDGETS.filter((w) => !savedIds.has(w.id));
 
   return [...merged, ...newWidgets];
