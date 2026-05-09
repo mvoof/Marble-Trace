@@ -12,6 +12,6 @@ export interface FuelCalculations {
 }
 
 export const formatFuelLiters = (v: number | null): string => {
-  if (v === null) return '—';
+  if (v === null) return '--.-- L';
   return v.toFixed(2) + ' L';
 };

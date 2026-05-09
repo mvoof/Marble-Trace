@@ -22,7 +22,7 @@ const SECONDS_PER_MINUTE = 60;
 const SECONDS_PER_HOUR = 3600;
 
 export const formatDelta = (delta: number | null): string => {
-  if (delta === null) return '—';
+  if (delta === null) return '+-.---';
 
   const sign = delta >= 0 ? '+' : '-';
   const abs = Math.abs(delta);
