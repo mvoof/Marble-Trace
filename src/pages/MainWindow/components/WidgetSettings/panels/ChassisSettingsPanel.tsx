@@ -3,7 +3,7 @@ import { Switch } from 'antd';
 import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
 import { ChassisWidgetSettings } from '../../../../../types/widget-settings';
 import styles from '../WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card, SettingRow } from './shared';
 
 export const ChassisSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getChassisSettings();
@@ -17,18 +17,15 @@ export const ChassisSettingsPanel = observer(() => {
   return (
     <Card title="Module Layout">
       <div className={styles.fieldGroup}>
-        <div className={styles.fieldRow}>
-          <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>Suspension & Brakes</div>
-            <div className={styles.fieldDesc}>
-              Show tire pressures, temperatures, and brake bias panels.
-            </div>
-          </div>
+        <SettingRow
+          title="Suspension & Brakes"
+          desc="Show tire pressures, temperatures, and brake bias panels."
+        >
           <Switch
             checked={settings.showInboard}
             onChange={(v) => update({ showInboard: v })}
           />
-        </div>
+        </SettingRow>
       </div>
     </Card>
   );

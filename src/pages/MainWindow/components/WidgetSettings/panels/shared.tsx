@@ -8,6 +8,22 @@ interface CardProps {
   children: ReactNode;
 }
 
+interface SettingRowProps {
+  title: string;
+  desc?: string;
+  children: ReactNode;
+}
+
+export const SettingRow = ({ title, desc, children }: SettingRowProps) => (
+  <div className={styles.fieldRow}>
+    <div className={styles.fieldTexts}>
+      <div className={styles.fieldTitle}>{title}</div>
+      {desc && <div className={styles.fieldDesc}>{desc}</div>}
+    </div>
+    {children}
+  </div>
+);
+
 export const Card = ({ title, children }: CardProps) => (
   <div className={styles.card}>
     {title && <h3 className={styles.cardTitle}>{title}</h3>}

@@ -3,7 +3,7 @@ import { Switch } from 'antd';
 import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
 import { TimerWidgetSettings } from '../../../../../types/widget-settings';
 import styles from '../WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card, SettingRow } from './shared';
 
 export const TimerSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getTimerSettings();
@@ -61,16 +61,12 @@ export const TimerSettingsPanel = observer(() => {
         },
       ].map((item) => (
         <div key={item.key} className={styles.fieldGroup}>
-          <div className={styles.fieldRow}>
-            <div className={styles.fieldTexts}>
-              <div className={styles.fieldTitle}>{item.title}</div>
-              <div className={styles.fieldDesc}>{item.desc}</div>
-            </div>
+          <SettingRow title={item.title} desc={item.desc}>
             <Switch
               checked={item.value}
               onChange={(v) => update({ [item.key]: v })}
             />
-          </div>
+          </SettingRow>
         </div>
       ))}
     </Card>

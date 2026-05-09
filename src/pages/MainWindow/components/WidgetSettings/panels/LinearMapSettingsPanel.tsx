@@ -6,7 +6,7 @@ import {
   LinearMapWidgetSettings,
 } from '../../../../../types/widget-settings';
 import styles from '../WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card, SettingRow } from './shared';
 
 export const LinearMapSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getLinearMapSettings();
@@ -36,15 +36,12 @@ export const LinearMapSettingsPanel = observer(() => {
 
       <Card title="Player Marker">
         <div className={styles.fieldGroup}>
-          <div className={styles.fieldRow}>
-            <div className={styles.fieldTexts}>
-              <div className={styles.fieldTitle}>Player Dot Color</div>
-            </div>
+          <SettingRow title="Player Dot Color">
             <ColorPicker
               value={settings.playerDotColor}
               onChange={(c) => update({ playerDotColor: c.toHexString() })}
             />
-          </div>
+          </SettingRow>
 
           <span className={styles.fieldLabel}>Dot Radius (px)</span>
           <InputNumber
