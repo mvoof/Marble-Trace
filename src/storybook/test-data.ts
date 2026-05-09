@@ -2,14 +2,14 @@ import tracksJson from '../../test-data/tracks.json';
 import type { TelemetrySnapshot } from './snapshot.types';
 import { computeDriverEntries } from './compute-driver-entries';
 
-const trackSnapshotModules = import.meta.glob('../../test-data/track-*.json', {
+const snapshotModules = import.meta.glob('../../test-data/iracing-*.json', {
   eager: true,
   import: 'default',
 });
 
-const firstSnapshot = Object.values(trackSnapshotModules)[0];
+const firstSnapshot = Object.values(snapshotModules)[0];
 if (!firstSnapshot) {
-  throw new Error('No track-*.json snapshot found in test-data/');
+  throw new Error('No iracing-*.json snapshot found in test-data/');
 }
 
 export const snapshot = firstSnapshot as unknown as TelemetrySnapshot;
