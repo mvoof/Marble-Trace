@@ -12,6 +12,7 @@ import { TitleBar } from './components/TitleBar/TitleBar';
 import { AppStatus } from './components/AppStatus/AppStatus';
 import { SidebarLinks } from './components/SidebarLinks/SidebarLinks';
 import { RandomGlitchCanvas } from '../../components/shared/BackgroundAnimation/RandomGlitchCanvas';
+import { UpdateBanner } from './components/UpdateBanner/UpdateBanner';
 import styles from './MainWindow.module.scss';
 import Logo from '../../assets/logo.svg?react';
 
@@ -100,6 +101,7 @@ export const MainWindow = observer(() => {
       <AntdApp style={{ height: '100%' }}>
         <Layout className={styles.layout}>
           <TitleBar />
+          <UpdateBanner />
 
           <Layout className={styles.mainContainer}>
             <Sider width={320} className={styles.sider}>
