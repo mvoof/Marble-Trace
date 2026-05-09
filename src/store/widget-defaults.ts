@@ -2,7 +2,7 @@ import type { WidgetConfig } from '../types/widget-settings';
 
 export const LAP_TIMES_DEFAULT_WIDTHS: Record<string, number> = {
   vertical: 230,
-  horizontal: 905,
+  horizontal: 1130,
 };
 
 export const LAP_DELTA_DEFAULT_WIDTHS: Record<string, number> = {
