@@ -10,18 +10,46 @@ export const InputTraceWidgetContainer = observer(() => {
   const settings = widgetSettingsStore.getInputTraceSettings();
   const inputTraceRef = useRef<InputTraceHandle>(null);
 
+  const smoothedThrottle = useRef(0);
+  const smoothedBrake = useRef(0);
+  const smoothedClutch = useRef(0);
+
   useEffect(() => {
     return autorun(() => {
       const frame = telemetryStore.carInputs;
       if (!frame) return;
 
-      const throttle = frame.throttle ?? 0;
-      const brake = frame.brake ?? 0;
-      const clutch = frame.clutch != null ? 1 - frame.clutch : 0;
+      const rawT = frame.throttle ?? 0;
+      const rawB = frame.brake ?? 0;
+      const rawC = frame.clutch != null ? 1 - frame.clutch : 0;
 
-      inputTraceRef.current?.update(throttle, brake, clutch);
+      const s = settings.smoothing;
+
+      if (s <= 0) {
+        smoothedThrottle.current = rawT;
+        smoothedBrake.current = rawB;
+        smoothedClutch.current = rawC;
+      } else {
+        // Simple Exponential Moving Average
+        // NewValue = (PrevValue * S + RawValue) / (S + 1)
+        smoothedThrottle.current =
+          (smoothedThrottle.current * s + rawT) / (s + 1);
+        smoothedBrake.current = (smoothedBrake.current * s + rawB) / (s + 1);
+        smoothedClutch.current = (smoothedClutch.current * s + rawC) / (s + 1);
+      }
+
+      inputTraceRef.current?.update(
+        smoothedThrottle.current,
+        smoothedBrake.current,
+        smoothedClutch.current
+      );
     });
-  }, [settings.showThrottle, settings.showBrake, settings.showClutch]);
+  }, [
+    settings.showThrottle,
+    settings.showBrake,
+    settings.showClutch,
+    settings.smoothing,
+  ]);
 
   const initialFrame = untracked(() => telemetryStore.carInputs);
   const initialThrottle = initialFrame?.throttle ?? 0;

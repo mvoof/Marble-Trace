@@ -62,24 +62,29 @@ export const CanvasTrace = forwardRef<CanvasTraceHandle, CanvasTraceProps>(
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      const { width } = canvas;
-      const h = canvas.height;
+      const dpr = window.devicePixelRatio || 1;
+      const logicalW = canvas.width / dpr;
+      const logicalH = canvas.height / dpr;
+
       const buffer = bufferRef.current;
       const numChannels = channelsRef.current.length;
       const currentCount = countRef.current;
 
-      ctx.clearRect(0, 0, width, h);
+      ctx.clearRect(0, 0, logicalW, logicalH);
 
       // Draw grid lines
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
       ctx.lineWidth = 1;
       for (let i = 1; i <= 3; i++) {
-        const y = h * (i / 4);
+        const y = logicalH * (i / 4);
         ctx.beginPath();
         ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
+        ctx.lineTo(logicalW, y);
         ctx.stroke();
       }
+
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
 
       for (let ch = 0; ch < numChannels; ch++) {
         const color = channelsRef.current[ch]?.color ?? '#ffffff';
@@ -90,14 +95,12 @@ export const CanvasTrace = forwardRef<CanvasTraceHandle, CanvasTraceProps>(
         let started = false;
 
         for (let i = 0; i < currentCount; i++) {
-          // In a circular buffer, the oldest sample is at:
-          // (head - count + i + bufferSize) % bufferSize
           const sampleIdx =
             (headRef.current - currentCount + i + bufferSize) % bufferSize;
           const val = buffer[sampleIdx * numChannels + ch];
 
-          const x = (i / (bufferSize - 1)) * width;
-          const y = h - val * h;
+          const x = (i / (bufferSize - 1)) * logicalW;
+          const y = logicalH - val * logicalH;
 
           if (!started) {
             ctx.moveTo(x, y);
@@ -152,12 +155,14 @@ export const CanvasTrace = forwardRef<CanvasTraceHandle, CanvasTraceProps>(
 
           if (width <= 0 || resolvedHeight <= 0) return;
 
-          canvas.width = width * window.devicePixelRatio;
-          canvas.height = resolvedHeight * window.devicePixelRatio;
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = width * dpr;
+          canvas.height = resolvedHeight * dpr;
 
           const ctx = canvas.getContext('2d');
           if (ctx) {
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            // Use setTransform to avoid cumulative scaling
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
           }
 
           canvas.style.width = `${width}px`;
@@ -173,26 +178,6 @@ export const CanvasTrace = forwardRef<CanvasTraceHandle, CanvasTraceProps>(
         resizeObserver.disconnect();
       };
     }, [height, fillContainer, scheduleDraw]);
-
-    // Legacy prop-driven data push (for non-imperative consumers)
-    useEffect(() => {
-      if (channels.length === 0 || !bufferRef.current) return;
-
-      const numChannels = channels.length;
-      const offset = headRef.current * numChannels;
-
-      for (let i = 0; i < numChannels; i++) {
-        bufferRef.current[offset + i] = channels[i].value;
-      }
-
-      headRef.current = (headRef.current + 1) % bufferSize;
-      if (countRef.current < bufferSize) {
-        countRef.current++;
-      }
-
-      scheduleDraw();
-    }, [channels, bufferSize, scheduleDraw]);
-
     return (
       <div className={styles.container}>
         <canvas ref={canvasRef} className={styles.canvas} />

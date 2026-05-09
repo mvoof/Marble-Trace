@@ -66,7 +66,8 @@ export const InputTraceWidget = forwardRef<
             <CanvasTrace
               ref={canvasTraceRef}
               channels={channels}
-              lineWidth={3.5}
+              lineWidth={settings.lineWidth}
+              bufferSize={settings.historySeconds * 60}
             />
           </div>
 
@@ -98,7 +99,8 @@ export const InputTraceWidget = forwardRef<
             <CanvasTrace
               ref={canvasTraceRef}
               channels={channels}
-              lineWidth={3.5}
+              lineWidth={settings.lineWidth}
+              bufferSize={settings.historySeconds * 60}
             />
           </div>
         </>
