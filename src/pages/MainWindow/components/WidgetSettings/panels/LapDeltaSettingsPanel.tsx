@@ -51,11 +51,18 @@ export const LapDeltaSettingsPanel = observer(() => {
       </div>
 
       <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>Show Sector Times</span>
-        <Switch
-          checked={settings.showSectorTimes}
-          onChange={(v) => update({ showSectorTimes: v })}
-        />
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>Show Sector Times</div>
+            <div className={styles.fieldDesc}>
+              Display per-sector time below the delta bar.
+            </div>
+          </div>
+          <Switch
+            checked={settings.showSectorTimes}
+            onChange={(v) => update({ showSectorTimes: v })}
+          />
+        </div>
       </div>
     </Card>
   );
