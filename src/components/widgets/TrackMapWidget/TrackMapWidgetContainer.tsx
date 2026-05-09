@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { listen } from '@tauri-apps/api/event';
 
@@ -125,32 +125,40 @@ export const TrackMapWidgetContainer = observer(() => {
     };
   }, [clearCurrentTrack]);
 
-  const driverEntries = computedStore.standings?.entries ?? [];
+  const standings = computedStore.standings;
+  const driverEntries = useMemo(() => standings?.entries ?? [], [standings]);
   const carPositions = telemetryStore.carPositions;
 
-  const cars: CarOnTrack[] = driverEntries.map((e) => ({
-    carIdx: e.carIdx,
-    carNumber: e.carNumber,
-    carClassColor: e.carClassColor,
-    carClassId: e.carClassId,
-    lapDistPct: carPositions?.car_idx_lap_dist_pct[e.carIdx] ?? e.lapDistPct,
-    trackSurface:
-      carPositions?.car_idx_track_surface[e.carIdx] ?? e.trackSurface,
-    isPlayer: e.isPlayer,
-    position: e.position,
-    classPosition: e.classPosition,
-  }));
+  const cars: CarOnTrack[] = useMemo(
+    () =>
+      driverEntries.map((e) => ({
+        carIdx: e.carIdx,
+        carNumber: e.carNumber,
+        carClassColor: e.carClassColor,
+        carClassId: e.carClassId,
+        lapDistPct:
+          carPositions?.car_idx_lap_dist_pct[e.carIdx] ?? e.lapDistPct,
+        trackSurface:
+          carPositions?.car_idx_track_surface[e.carIdx] ?? e.trackSurface,
+        isPlayer: e.isPlayer,
+        position: e.position,
+        classPosition: e.classPosition,
+      })),
+    [driverEntries, carPositions]
+  );
 
-  const classColorsSeen = new Map<number, { name: string; color: string }>();
-  for (const e of driverEntries) {
-    if (!classColorsSeen.has(e.carClassId)) {
-      classColorsSeen.set(e.carClassId, {
-        name: e.carClassShortName,
-        color: e.carClassColor,
-      });
+  const classColors = useMemo(() => {
+    const classColorsSeen = new Map<number, { name: string; color: string }>();
+    for (const e of driverEntries) {
+      if (!classColorsSeen.has(e.carClassId)) {
+        classColorsSeen.set(e.carClassId, {
+          name: e.carClassShortName,
+          color: e.carClassColor,
+        });
+      }
     }
-  }
-  const classColors = Array.from(classColorsSeen.values());
+    return Array.from(classColorsSeen.values());
+  }, [driverEntries]);
 
   return (
     <>

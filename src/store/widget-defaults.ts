@@ -432,7 +432,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     id: 'g-meter',
     label: 'G-Meter',
     description: 'Lateral and longitudinal G-force friction circle.',
-    enabled: false,
+    enabled: true,
     x: 100,
     y: 100,
     width: 240,

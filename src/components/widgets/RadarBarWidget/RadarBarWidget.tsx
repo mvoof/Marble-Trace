@@ -10,6 +10,8 @@ interface RadarBarWidgetProps {
   spotterLeft: boolean;
   spotterRight: boolean;
   settings: RadarSettings;
+  formatDistance: (meters: number) => string;
+  distanceUnit: string;
 }
 
 export const RadarBarWidget = ({
@@ -17,6 +19,8 @@ export const RadarBarWidget = ({
   spotterLeft,
   spotterRight,
   settings,
+  formatDistance,
+  distanceUnit,
 }: RadarBarWidgetProps) => {
   const { leftDist, rightDist } = radarDistances;
   const activeOnly = settings.barDisplayMode === 'active-only';
@@ -27,13 +31,25 @@ export const RadarBarWidget = ({
     <WidgetPanel className={styles.root} minWidth={60} gap={0} direction="row">
       {showLeft && (
         <div className={styles.leftSlot}>
-          <RadarBar active={spotterLeft} dist={leftDist ?? 0} side="left" />
+          <RadarBar
+            active={spotterLeft}
+            dist={leftDist ?? 0}
+            side="left"
+            formatDistance={formatDistance}
+            distanceUnit={distanceUnit}
+          />
         </div>
       )}
 
       {showRight && (
         <div className={styles.rightSlot}>
-          <RadarBar active={spotterRight} dist={rightDist ?? 0} side="right" />
+          <RadarBar
+            active={spotterRight}
+            dist={rightDist ?? 0}
+            side="right"
+            formatDistance={formatDistance}
+            distanceUnit={distanceUnit}
+          />
         </div>
       )}
     </WidgetPanel>

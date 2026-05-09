@@ -16,9 +16,15 @@ export const StandingsWidgetContainer = observer(() => {
   const standings = computedStore.standings;
   const pitStops = computedStore.pitStops;
 
-  const driverEntries = standings?.entries ?? EMPTY_ENTRIES;
+  const driverEntries = useMemo(
+    () => standings?.entries ?? EMPTY_ENTRIES,
+    [standings]
+  );
 
-  const overallSof = computeClassSof(driverEntries);
+  const overallSof = useMemo(
+    () => computeClassSof(driverEntries),
+    [driverEntries]
+  );
   const allClassGroupsCount = useAllClassGroupsCount(driverEntries);
 
   const irDeltaMap = useMemo(
@@ -66,7 +72,10 @@ export const StandingsWidgetContainer = observer(() => {
     [driverEntries, qualifyStartPosMap]
   );
 
-  const playerIncidents = driverEntries.find((e) => e.isPlayer)?.incidents ?? 0;
+  const playerIncidents = useMemo(
+    () => driverEntries.find((e) => e.isPlayer)?.incidents ?? 0,
+    [driverEntries]
+  );
 
   return (
     <StandingsWidget

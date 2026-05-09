@@ -1,6 +1,3 @@
-import { observer } from 'mobx-react-lite';
-
-import { unitsStore } from '../../../../store/units.store';
 import { CAR_LENGTH, getBarPillColor } from '../../../../utils/radar-constants';
 
 import styles from './RadarBar.module.scss';
@@ -15,11 +12,17 @@ interface RadarBarProps {
   dist: number;
   /** Which side this bar represents */
   side: 'left' | 'right';
+  formatDistance: (meters: number) => string;
+  distanceUnit: string;
 }
 
-export const RadarBar = observer(({ active, dist, side }: RadarBarProps) => {
-  const { formatDistance, distanceUnit } = unitsStore;
-
+export const RadarBar = ({
+  active,
+  dist,
+  side,
+  formatDistance,
+  distanceUnit,
+}: RadarBarProps) => {
   if (!active) {
     return <div className={styles.bar} />;
   }
@@ -64,4 +67,4 @@ export const RadarBar = observer(({ active, dist, side }: RadarBarProps) => {
       </div>
     </div>
   );
-});
+};

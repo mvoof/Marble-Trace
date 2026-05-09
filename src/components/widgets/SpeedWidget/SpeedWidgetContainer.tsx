@@ -1,14 +1,14 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import { autorun, untracked } from 'mobx';
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../store/iracing';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { unitsStore } from '../../../store/units.store';
-import { SpeedWidget } from './SpeedWidget';
+import { SpeedWidget, type SpeedDisplayHandle } from './SpeedWidget';
 import { parsePitSpeedLimitMs, isEngineTempWarning } from './speed-utils';
 
 export const SpeedWidgetContainer = observer(() => {
-  const frame = telemetryStore.carDynamics;
   const carStatus = telemetryStore.carStatus;
   const driverInfo = telemetryStore.driverInfo;
   const weekendInfo = telemetryStore.weekendInfo;
@@ -16,11 +16,6 @@ export const SpeedWidgetContainer = observer(() => {
     unitsStore;
   const settings = widgetSettingsStore.getSpeedSettings();
 
-  const speed = frame ? formatSpeed(frame.speed) : '0';
-  const speedMs = frame?.speed ?? 0;
-  const rpm = frame ? Math.round(frame.rpm) : 0;
-  const gear = frame?.gear ?? 0;
-  const shiftIndicatorPct = frame?.shift_indicator_pct ?? 0;
   const isOnPitRoad = carStatus?.on_pit_road ?? false;
   const oilTemp = formatTemp(carStatus?.oil_temp ?? null);
   const waterTemp = formatTemp(carStatus?.water_temp ?? null);
@@ -32,29 +27,17 @@ export const SpeedWidgetContainer = observer(() => {
       ? settings.pitSpeedLimitOverride / speedFactor
       : parsePitSpeedLimitMs(weekendInfo?.TrackPitSpeedLimit ?? null);
 
-  const pitLimitFormatted = pitLimitMs > 0 ? formatSpeed(pitLimitMs) : '—';
-
   const PIT_LIMITER_BIT = 0x10;
   const pitLimiterActive =
     ((carStatus?.engine_warnings ?? 0) & PIT_LIMITER_BIT) !== 0;
 
-  const pitSpeedDelta =
-    pitLimitMs > 0 && (isOnPitRoad || pitLimiterActive)
-      ? Math.round((speedMs - pitLimitMs) * speedFactor)
-      : null;
-
-  const pitState = (() => {
-    if (pitLimitMs > 0 && speedMs > pitLimitMs) return 'over-limit' as const;
-    if (pitLimiterActive) return 'limiter-active' as const;
-    return 'pit-lane' as const;
-  })();
+  const pitLimitFormatted = pitLimitMs > 0 ? formatSpeed(pitLimitMs) : '—';
 
   const initialMax =
     driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
   const maxShiftRpmRef = useRef(initialMax);
   const hasRefinedRef = useRef(false);
   const lastDriverInfoRef = useRef(driverInfo);
-
   const lastIsOnPitRoadRef = useRef(isOnPitRoad);
 
   if (lastDriverInfoRef.current !== driverInfo) {
@@ -69,19 +52,57 @@ export const SpeedWidgetContainer = observer(() => {
   }
   lastIsOnPitRoadRef.current = isOnPitRoad;
 
-  if (shiftIndicatorPct >= 1 && rpm > 0 && !pitLimiterActive && !isOnPitRoad) {
-    if (!hasRefinedRef.current || rpm > maxShiftRpmRef.current) {
-      maxShiftRpmRef.current = rpm;
-      hasRefinedRef.current = true;
-    }
-  }
+  const displayRef = useRef<SpeedDisplayHandle>(null);
+
+  const speedMs = useRef(0);
+
+  useEffect(() => {
+    return autorun(() => {
+      const frame = telemetryStore.carDynamics;
+      if (!frame) return;
+
+      speedMs.current = frame.speed;
+
+      const shiftPct = frame.shift_indicator_pct ?? 0;
+      const rpm = Math.round(frame.rpm);
+
+      if (shiftPct >= 1 && rpm > 0 && !pitLimiterActive && !isOnPitRoad) {
+        if (!hasRefinedRef.current || rpm > maxShiftRpmRef.current) {
+          maxShiftRpmRef.current = rpm;
+          hasRefinedRef.current = true;
+        }
+      }
+
+      displayRef.current?.update(
+        formatSpeed(frame.speed),
+        rpm,
+        frame.gear,
+        shiftPct
+      );
+    });
+  }, [formatSpeed, pitLimiterActive, isOnPitRoad]);
+
+  const pitSpeedDelta =
+    pitLimitMs > 0 && (isOnPitRoad || pitLimiterActive)
+      ? Math.round((speedMs.current - pitLimitMs) * speedFactor)
+      : null;
+
+  const pitState = (() => {
+    if (pitLimitMs > 0 && speedMs.current > pitLimitMs)
+      return 'over-limit' as const;
+    if (pitLimiterActive) return 'limiter-active' as const;
+    return 'pit-lane' as const;
+  })();
+
+  const initialFrame = untracked(() => telemetryStore.carDynamics);
 
   return (
     <SpeedWidget
-      speed={speed}
+      ref={displayRef}
+      initialSpeed={initialFrame ? formatSpeed(initialFrame.speed) : '0'}
+      initialRpm={initialFrame ? Math.round(initialFrame.rpm) : 0}
+      initialGear={initialFrame?.gear ?? 0}
       speedUnit={speedUnit}
-      rpm={rpm}
-      gear={gear}
       maxShiftRpm={maxShiftRpmRef.current || initialMax}
       settings={settings}
       isOnPitRoad={isOnPitRoad}

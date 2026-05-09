@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { computedStore, telemetryStore } from '../../../store/iracing';
@@ -19,24 +20,28 @@ export const RelativeWidgetContainer = observer(() => {
   const standings = computedStore.standings;
   const carPositions = telemetryStore.carPositions;
 
-  const playerIdx = standings?.entries.find((e) => e.isPlayer)?.carIdx ?? -1;
-  const playerLapDist =
-    carPositions && playerIdx >= 0
-      ? (carPositions.car_idx_lap_dist_pct[playerIdx] ?? 0)
-      : 0;
+  const entries = useMemo(() => {
+    if (!standings) return [];
 
-  const entries = [...(standings?.entries ?? [])]
-    .map((e) => {
-      if (!carPositions) return e;
-      const lapDistPct =
-        carPositions.car_idx_lap_dist_pct[e.carIdx] ?? e.lapDistPct;
-      return {
-        ...e,
-        lapDistPct,
-        relativeLapDist: computeRelativeLapDist(lapDistPct, playerLapDist),
-      };
-    })
-    .sort((a, b) => b.relativeLapDist - a.relativeLapDist);
+    const playerIdx = standings.entries.find((e) => e.isPlayer)?.carIdx ?? -1;
+    const playerLapDist =
+      carPositions && playerIdx >= 0
+        ? (carPositions.car_idx_lap_dist_pct[playerIdx] ?? 0)
+        : 0;
+
+    return [...standings.entries]
+      .map((e) => {
+        if (!carPositions) return e;
+        const lapDistPct =
+          carPositions.car_idx_lap_dist_pct[e.carIdx] ?? e.lapDistPct;
+        return {
+          ...e,
+          lapDistPct,
+          relativeLapDist: computeRelativeLapDist(lapDistPct, playerLapDist),
+        };
+      })
+      .sort((a, b) => b.relativeLapDist - a.relativeLapDist);
+  }, [standings, carPositions]);
 
   return <RelativeWidget entries={entries} settings={settings} />;
 });
