@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { computedStore, telemetryStore } from '../../../store/iracing';
@@ -20,28 +19,29 @@ export const RelativeWidgetContainer = observer(() => {
   const standings = computedStore.standings;
   const carPositions = telemetryStore.carPositions;
 
-  const entries = useMemo(() => {
-    if (!standings) return [];
+  if (!standings) return <RelativeWidget entries={[]} settings={settings} />;
 
-    const playerIdx = standings.entries.find((e) => e.isPlayer)?.carIdx ?? -1;
-    const playerLapDist =
-      carPositions && playerIdx >= 0
-        ? (carPositions.car_idx_lap_dist_pct[playerIdx] ?? 0)
-        : 0;
+  // NOTE: useMemo is avoided here because carPositions is a high-frequency observable (60Hz).
+  // Since this is an observer component, it re-renders every frame when carPositions updates,
+  // making memoization redundant and adding unnecessary dependency-checking overhead.
+  const playerIdx = standings.entries.find((e) => e.isPlayer)?.carIdx ?? -1;
+  const playerLapDist =
+    carPositions && playerIdx >= 0
+      ? (carPositions.car_idx_lap_dist_pct[playerIdx] ?? 0)
+      : 0;
 
-    return [...standings.entries]
-      .map((e) => {
-        if (!carPositions) return e;
-        const lapDistPct =
-          carPositions.car_idx_lap_dist_pct[e.carIdx] ?? e.lapDistPct;
-        return {
-          ...e,
-          lapDistPct,
-          relativeLapDist: computeRelativeLapDist(lapDistPct, playerLapDist),
-        };
-      })
-      .sort((a, b) => b.relativeLapDist - a.relativeLapDist);
-  }, [standings, carPositions]);
+  const entries = [...standings.entries]
+    .map((e) => {
+      if (!carPositions) return e;
+      const lapDistPct =
+        carPositions.car_idx_lap_dist_pct[e.carIdx] ?? e.lapDistPct;
+      return {
+        ...e,
+        lapDistPct,
+        relativeLapDist: computeRelativeLapDist(lapDistPct, playerLapDist),
+      };
+    })
+    .sort((a, b) => b.relativeLapDist - a.relativeLapDist);
 
   return <RelativeWidget entries={entries} settings={settings} />;
 });

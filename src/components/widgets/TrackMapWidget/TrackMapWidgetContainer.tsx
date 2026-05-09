@@ -129,23 +129,21 @@ export const TrackMapWidgetContainer = observer(() => {
   const driverEntries = useMemo(() => standings?.entries ?? [], [standings]);
   const carPositions = telemetryStore.carPositions;
 
-  const cars: CarOnTrack[] = useMemo(
-    () =>
-      driverEntries.map((e) => ({
-        carIdx: e.carIdx,
-        carNumber: e.carNumber,
-        carClassColor: e.carClassColor,
-        carClassId: e.carClassId,
-        lapDistPct:
-          carPositions?.car_idx_lap_dist_pct[e.carIdx] ?? e.lapDistPct,
-        trackSurface:
-          carPositions?.car_idx_track_surface[e.carIdx] ?? e.trackSurface,
-        isPlayer: e.isPlayer,
-        position: e.position,
-        classPosition: e.classPosition,
-      })),
-    [driverEntries, carPositions]
-  );
+  // NOTE: useMemo is avoided here because carPositions is a high-frequency observable (60Hz).
+  // Since this is an observer component, it re-renders every frame when carPositions updates,
+  // making memoization redundant and adding unnecessary dependency-checking overhead.
+  const cars: CarOnTrack[] = driverEntries.map((e) => ({
+    carIdx: e.carIdx,
+    carNumber: e.carNumber,
+    carClassColor: e.carClassColor,
+    carClassId: e.carClassId,
+    lapDistPct: carPositions?.car_idx_lap_dist_pct[e.carIdx] ?? e.lapDistPct,
+    trackSurface:
+      carPositions?.car_idx_track_surface[e.carIdx] ?? e.trackSurface,
+    isPlayer: e.isPlayer,
+    position: e.position,
+    classPosition: e.classPosition,
+  }));
 
   const classColors = useMemo(() => {
     const classColorsSeen = new Map<number, { name: string; color: string }>();
