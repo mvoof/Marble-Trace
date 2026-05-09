@@ -51,7 +51,7 @@ export const LapTimesWidgetContainer = observer(() => {
   const liveDelta = lapDelta?.personalBestTotal ?? null;
 
   const predictedLap =
-    bestLap !== null && liveDelta !== null ? bestLap + liveDelta : null;
+    bestLap !== null && bestLap > 0 && liveDelta !== null ? bestLap + liveDelta : null;
 
   const bestDelta = liveDelta;
 
