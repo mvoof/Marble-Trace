@@ -55,7 +55,7 @@ const computeColor = (
 
   const angle = Math.atan2(Math.abs(lonG), Math.abs(latG));
   let wLon = angle / (Math.PI / 2);
-  wLon = Math.pow(wLon, 0.5);
+  wLon = Math.sqrt(wLon);
   const wTurn = 1.0 - wLon;
 
   if (lonG < 0) {
