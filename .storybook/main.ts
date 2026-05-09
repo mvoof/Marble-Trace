@@ -9,6 +9,7 @@ const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(ts|tsx)'],
   addons: ['@storybook/addon-docs'],
   framework: '@storybook/react-vite',
+  staticDirs: ['../public'],
   viteFinal: (config) => {
     config.resolve = config.resolve ?? {};
     config.resolve.alias = {
