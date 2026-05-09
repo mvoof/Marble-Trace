@@ -161,7 +161,7 @@ export const GMeterWidget = ({
       const label = String(g);
       const tw = ctx.measureText(label).width;
       ctx.textBaseline = 'bottom';
-      ctx.fillText(label, cx - tw / 2, cy - r + labelSize - pad);
+      ctx.fillText(label, cx - tw / 2, cy - r - pad);
       ctx.textBaseline = 'top';
       ctx.fillText(label, cx - tw / 2, cy + r + pad);
       ctx.textBaseline = 'middle';
