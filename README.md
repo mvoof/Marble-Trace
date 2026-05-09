@@ -247,6 +247,20 @@ Widget windows  ←──────── Main window (widget list + settings)
 - **Widget drag mode:** toggle with `F9` (configurable) — green border appears, drag to reposition, position is persisted
 - **Unit system:** metric / imperial, toggle in Settings, synced across all windows
 
+---
+
+## Screenshots
+
+You can capture the current state of the overlay or main window using the included scripts. Make sure the app is running in **dev mode** (`npm run tauri:dev`).
+
+- **Via npm:** `npm run screenshot` (captures overlay by default)
+- **Via Batch:** `scripts\screenshot.bat [overlay|main]`
+- **Output:** Saved to `docs/assets/screenshots/overlay/` (git-ignored).
+
+To update permanent documentation assets, move files from `overlay/` to `widgets/`.
+
+---
+
 ### Why pitwall?
 
 Marble Trace uses a custom fork of the [`pitwall` crate](https://crates.io/crates/pitwall) rather than the upstream version. The iRacing SDK exposes session information (track layout, car list, driver names) as a 512 KB YAML document encoded in **Windows-1252 / Latin-1**, not UTF-8. In online races it is very common for driver names to contain accented or special characters — "José Müller", "Kimi Räikkönen", and similar. The upstream crate's internal YAML extraction decodes this buffer with a strict UTF-8 parser (`std::str::from_utf8`). When it hits a byte such as `0xE4` (the `ä` character) outside a valid UTF-8 sequence, the parser returns an error; because the error is swallowed with `.ok()`, the entire session document is silently discarded. The result: every driver with a non-ASCII character in their name causes the whole session to return `null` — no standings, no car list, no track data.
