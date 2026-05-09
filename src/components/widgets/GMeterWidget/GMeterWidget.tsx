@@ -117,8 +117,8 @@ export const GMeterWidget = ({
     s.gHistory = [];
     s.peakLatG = 0;
     s.peakLonG = 0;
-    if (peakLatRef.current) peakLatRef.current.textContent = '0.0';
-    if (peakLonRef.current) peakLonRef.current.textContent = '0.0';
+    if (peakLatRef.current) peakLatRef.current.textContent = '0.00';
+    if (peakLonRef.current) peakLonRef.current.textContent = '0.00';
   }, [scale]);
 
   const drawFrame = (canvas: HTMLCanvasElement) => {
