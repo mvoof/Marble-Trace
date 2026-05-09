@@ -78,6 +78,7 @@
     "tauri-plugin-mcp-server": "^0.1.0",
     "typescript": "~5.9.2",
     "vite": "^7.1.7",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.4",
+    "ws": "^8.20.0"
   }
 }
