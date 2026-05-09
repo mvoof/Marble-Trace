@@ -7,7 +7,7 @@ import {
   LapDeltaWidgetSettings,
 } from '../../../../../types/widget-settings';
 import styles from '../WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card, SettingRow } from './shared';
 
 export const LapDeltaSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getLapDeltaSettings();
@@ -51,18 +51,15 @@ export const LapDeltaSettingsPanel = observer(() => {
       </div>
 
       <div className={styles.fieldGroup}>
-        <div className={styles.fieldRow}>
-          <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>Show Sector Times</div>
-            <div className={styles.fieldDesc}>
-              Display per-sector time below the delta bar.
-            </div>
-          </div>
+        <SettingRow
+          title="Sector Times"
+          desc="Show per-sector time below the delta bar."
+        >
           <Switch
             checked={settings.showSectorTimes}
             onChange={(v) => update({ showSectorTimes: v })}
           />
-        </div>
+        </SettingRow>
       </div>
     </Card>
   );

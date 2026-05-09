@@ -6,7 +6,7 @@ import {
   InputTraceSettings,
 } from '../../../../../types/widget-settings';
 import styles from '../WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card, SettingRow } from './shared';
 
 export const InputTraceSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getInputTraceSettings();
@@ -20,13 +20,7 @@ export const InputTraceSettingsPanel = observer(() => {
   return (
     <Card title="Data Channels">
       <div className={styles.fieldGroup}>
-        <div className={styles.fieldRow}>
-          <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>Throttle</div>
-            <div className={styles.fieldDesc}>
-              Show throttle trace on the graph.
-            </div>
-          </div>
+        <SettingRow title="Throttle" desc="Show throttle trace on the graph.">
           <Space>
             <ColorPicker
               value={settings.throttleColor}
@@ -37,17 +31,11 @@ export const InputTraceSettingsPanel = observer(() => {
               onChange={(v) => update({ showThrottle: v })}
             />
           </Space>
-        </div>
+        </SettingRow>
       </div>
 
       <div className={styles.fieldGroup}>
-        <div className={styles.fieldRow}>
-          <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>Brake</div>
-            <div className={styles.fieldDesc}>
-              Show brake trace on the graph.
-            </div>
-          </div>
+        <SettingRow title="Brake" desc="Show brake trace on the graph.">
           <Space>
             <ColorPicker
               value={settings.brakeColor}
@@ -58,17 +46,11 @@ export const InputTraceSettingsPanel = observer(() => {
               onChange={(v) => update({ showBrake: v })}
             />
           </Space>
-        </div>
+        </SettingRow>
       </div>
 
       <div className={styles.fieldGroup}>
-        <div className={styles.fieldRow}>
-          <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>Clutch</div>
-            <div className={styles.fieldDesc}>
-              Show clutch trace on the graph.
-            </div>
-          </div>
+        <SettingRow title="Clutch" desc="Show clutch trace on the graph.">
           <Space>
             <ColorPicker
               value={settings.clutchColor}
@@ -79,7 +61,7 @@ export const InputTraceSettingsPanel = observer(() => {
               onChange={(v) => update({ showClutch: v })}
             />
           </Space>
-        </div>
+        </SettingRow>
       </div>
 
       <div className={styles.fieldGroup}>

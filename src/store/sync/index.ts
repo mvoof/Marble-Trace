@@ -175,6 +175,7 @@ export const initOverlaySync = async () => {
 
   const unlistens = await setupOverlayListeners();
 
+  // Needed so the overlay's "Exit Edit Mode" button syncs dragMode back to the main window.
   const disposers = [
     reaction(
       () => appSettingsStore.dragMode,

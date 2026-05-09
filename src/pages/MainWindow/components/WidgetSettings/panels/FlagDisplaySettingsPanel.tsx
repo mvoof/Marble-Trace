@@ -3,7 +3,7 @@ import { Slider, Switch } from 'antd';
 import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
 import { FlagDisplaySettings } from '../../../../../types/widget-settings';
 import styles from '../WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card, SettingRow } from './shared';
 
 export const FlagDisplaySettingsPanel = observer(
   ({ widgetId }: { widgetId: 'flags' | 'flat-flags' }) => {
@@ -18,18 +18,15 @@ export const FlagDisplaySettingsPanel = observer(
     return (
       <Card title="Display Mode">
         <div className={styles.fieldGroup}>
-          <div className={styles.fieldRow}>
-            <div className={styles.fieldTexts}>
-              <div className={styles.fieldTitle}>Always Show</div>
-              <div className={styles.fieldDesc}>
-                Show widget even when no flag is active.
-              </div>
-            </div>
+          <SettingRow
+            title="Always Show"
+            desc="Show widget even when no flag is active."
+          >
             <Switch
               checked={settings.alwaysShow}
               onChange={(v) => update({ alwaysShow: v })}
             />
-          </div>
+          </SettingRow>
         </div>
 
         {!settings.alwaysShow && (

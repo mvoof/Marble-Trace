@@ -7,7 +7,7 @@ import {
   SpeedWidgetSettings,
 } from '../../../../../types/widget-settings';
 import styles from '../WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card, SettingRow } from './shared';
 
 export const SpeedSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getSpeedSettings();
@@ -74,49 +74,36 @@ export const SpeedSettingsPanel = observer(() => {
       </div>
 
       <div className={styles.fieldGroup}>
-        <div className={styles.fieldRow}>
-          <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>RPM Bar</div>
-            <div className={styles.fieldDesc}>
-              Show segmented RPM bar along the top edge of the widget.
-            </div>
-          </div>
+        <SettingRow
+          title="RPM Bar"
+          desc="Show segmented RPM bar along the top edge of the widget."
+        >
           <Switch
             checked={settings.showRpmBar}
             onChange={(v) => update({ showRpmBar: v })}
           />
-        </div>
+        </SettingRow>
       </div>
 
       <div className={styles.fieldGroup}>
-        <div className={styles.fieldRow}>
-          <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>Temperatures</div>
-            <div className={styles.fieldDesc}>
-              Show oil and water temperature.
-            </div>
-          </div>
+        <SettingRow title="Temperatures" desc="Show oil and water temperature.">
           <Switch
             checked={settings.showTemps}
             onChange={(v) => update({ showTemps: v })}
           />
-        </div>
+        </SettingRow>
       </div>
 
       <div className={styles.fieldGroup}>
-        <div className={styles.fieldRow}>
-          <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>Pit Lane Panel</div>
-            <div className={styles.fieldDesc}>
-              Show banner with pit speed info when on pit road or limiter
-              active.
-            </div>
-          </div>
+        <SettingRow
+          title="Pit Lane Panel"
+          desc="Show banner with pit speed info when on pit road or limiter active."
+        >
           <Switch
             checked={settings.showPitPanel}
             onChange={(v) => update({ showPitPanel: v })}
           />
-        </div>
+        </SettingRow>
       </div>
 
       {settings.showPitPanel && (

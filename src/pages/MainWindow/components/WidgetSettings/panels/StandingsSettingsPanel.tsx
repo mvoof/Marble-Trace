@@ -4,7 +4,7 @@ import { widgetSettingsStore } from '../../../../../store/widget-settings.store'
 import { StandingsWidgetSettings } from '../../../../../types/widget-settings';
 import { HotkeyRecorder } from '../../../../../components/shared/HotkeyRecorder';
 import styles from '../WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card, SettingRow } from './shared';
 
 export const StandingsSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getStandingsSettings();
@@ -18,18 +18,15 @@ export const StandingsSettingsPanel = observer(() => {
   return (
     <>
       <Card title="Logic & Grouping">
-        <div className={styles.fieldRow}>
-          <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>Class Cycling</div>
-            <div className={styles.fieldDesc}>
-              Show one class at a time. Off shows all drivers combined.
-            </div>
-          </div>
+        <SettingRow
+          title="Class Cycling"
+          desc="Show one class at a time. Off shows all drivers combined."
+        >
           <Switch
             checked={settings.enableClassCycling}
             onChange={(v) => update({ enableClassCycling: v })}
           />
-        </div>
+        </SettingRow>
       </Card>
 
       <Card title="Hotkeys">
@@ -110,16 +107,12 @@ export const StandingsSettingsPanel = observer(() => {
           },
         ].map((item) => (
           <div key={item.key} className={styles.fieldGroup}>
-            <div className={styles.fieldRow}>
-              <div className={styles.fieldTexts}>
-                <div className={styles.fieldTitle}>{item.title}</div>
-                <div className={styles.fieldDesc}>{item.desc}</div>
-              </div>
+            <SettingRow title={item.title} desc={item.desc}>
               <Switch
                 checked={item.value}
                 onChange={(v) => update({ [item.key]: v })}
               />
-            </div>
+            </SettingRow>
           </div>
         ))}
       </Card>
@@ -170,16 +163,12 @@ export const StandingsSettingsPanel = observer(() => {
           },
         ].map((item) => (
           <div key={item.key} className={styles.fieldGroup}>
-            <div className={styles.fieldRow}>
-              <div className={styles.fieldTexts}>
-                <div className={styles.fieldTitle}>{item.title}</div>
-                <div className={styles.fieldDesc}>{item.desc}</div>
-              </div>
+            <SettingRow title={item.title} desc={item.desc}>
               <Switch
                 checked={item.value}
                 onChange={(v) => update({ [item.key]: v })}
               />
-            </div>
+            </SettingRow>
           </div>
         ))}
       </Card>

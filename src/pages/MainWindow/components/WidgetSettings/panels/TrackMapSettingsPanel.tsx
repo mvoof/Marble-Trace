@@ -19,7 +19,7 @@ import {
   TrackMapWidgetSettings,
 } from '../../../../../types/widget-settings';
 import styles from '../WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card, SettingRow } from './shared';
 
 export const TrackMapSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getTrackMapSettings();
@@ -72,52 +72,41 @@ export const TrackMapSettingsPanel = observer(() => {
           },
         ].map((item) => (
           <div key={item.key} className={styles.fieldGroup}>
-            <div className={styles.fieldRow}>
-              <div className={styles.fieldTexts}>
-                <div className={styles.fieldTitle}>{item.title}</div>
-              </div>
+            <SettingRow title={item.title}>
               <Switch
                 checked={item.value}
                 onChange={(v) =>
                   update({ [item.key as keyof TrackMapWidgetSettings]: v })
                 }
               />
-            </div>
+            </SettingRow>
           </div>
         ))}
       </Card>
 
       <Card title="Player Marker">
         <div className={styles.fieldGroup}>
-          <div className={styles.fieldRow}>
-            <div className={styles.fieldTexts}>
-              <div className={styles.fieldTitle}>Player Dot Color</div>
-              <div className={styles.fieldDesc}>
-                Ping ring and label pill color for your car.
-              </div>
-            </div>
+          <SettingRow
+            title="Player Dot Color"
+            desc="Ping ring and label pill color for your car."
+          >
             <ColorPicker
               value={settings.playerDotColor}
               onChange={(c) => update({ playerDotColor: c.toHexString() })}
             />
-          </div>
+          </SettingRow>
         </div>
 
         <div className={styles.fieldGroup}>
-          <div className={styles.fieldRow}>
-            <div className={styles.fieldTexts}>
-              <div className={styles.fieldTitle}>
-                Show &quot;YOU&quot; Label
-              </div>
-              <div className={styles.fieldDesc}>
-                Display the label above your car dot.
-              </div>
-            </div>
+          <SettingRow
+            title='Show "YOU" Label'
+            desc="Display the label above your car dot."
+          >
             <Switch
               checked={settings.showPlayerLabel}
               onChange={(v) => update({ showPlayerLabel: v })}
             />
-          </div>
+          </SettingRow>
         </div>
       </Card>
 

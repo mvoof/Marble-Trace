@@ -3,7 +3,7 @@ import { InputNumber, Segmented, Switch } from 'antd';
 import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
 import { FuelWidgetSettings } from '../../../../../types/widget-settings';
 import styles from '../WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card, SettingRow } from './shared';
 
 export const FuelSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getFuelSettings();
@@ -17,19 +17,16 @@ export const FuelSettingsPanel = observer(() => {
   return (
     <Card title="Analytics & Warnings">
       <div className={styles.fieldGroup}>
-        <div
-          className={styles.fieldRow}
+        <SettingRow
+          title="History Chart"
+          desc="Visual consumption history."
           style={{ marginBottom: settings.showChart ? 16 : 0 }}
         >
-          <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>History Chart</div>
-            <div className={styles.fieldDesc}>Visual consumption history.</div>
-          </div>
           <Switch
             checked={settings.showChart}
             onChange={(v) => update({ showChart: v })}
           />
-        </div>
+        </SettingRow>
         {settings.showChart && (
           <Segmented
             block
