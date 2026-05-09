@@ -152,6 +152,15 @@ export interface ChassisWidgetSettings {
   showInboard: boolean;
 }
 
+export type GMeterDisplayMode = 'trail' | 'fading' | 'peak';
+export type GMeterColorMode = 'mono' | 'simple' | 'advanced';
+
+export interface GMeterWidgetSettings {
+  displayMode: GMeterDisplayMode;
+  scale: 2 | 3 | 4 | 5;
+  colorMode: GMeterColorMode;
+}
+
 export interface WidgetCustomSettings {
   chassis?: ChassisWidgetSettings;
   'led-flags'?: FlagDisplaySettings;
@@ -169,6 +178,7 @@ export interface WidgetCustomSettings {
   'lap-times'?: LapTimesWidgetSettings;
   'lap-delta'?: LapDeltaWidgetSettings;
   timer?: TimerWidgetSettings;
+  'g-meter'?: GMeterWidgetSettings;
 }
 
 export interface WidgetConfig {
