@@ -13,6 +13,7 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev --features dev",
+    "screenshot": "node scripts/screenshot.mjs",
     "version-bump": "node scripts/bump-version.mjs",
     "tauri:build:release": "tauri build",
     "tauri:build:dev": "tauri build --config src-tauri/tauri.dev.conf.json --no-sign --features dev",
@@ -77,6 +78,7 @@
     "tauri-plugin-mcp-server": "^0.1.0",
     "typescript": "~5.9.2",
     "vite": "^7.1.7",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.4",
+    "ws": "^8.20.0"
   }
 }

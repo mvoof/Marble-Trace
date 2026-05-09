@@ -29,8 +29,8 @@ Before creating an issue please ensure that the problem is not [already reported
 
    Before committing, ensure your code is clean and functional:
    - Run linting and formatting: `npm run lint` and `npm run format`
-   - Build the application to check for compilation errors: `npm run tauri:build:release`
-   - Run the application to verify your changes: `npm run tauri dev`
+   - Build the application to check for compilation errors: `npm run tauri:build:dev`
+   - Run the application to verify your changes: `npm run tauri:dev`
 
    Once verified, commit your changes:
 

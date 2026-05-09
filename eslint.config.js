@@ -81,6 +81,14 @@ export default defineConfig([
         ...globals.es2020,
       },
     },
+  },
+  {
+    files: ['scripts/**/*.{js,mjs}', 'eslint.config.js', 'vite.config.ts'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
   }, // 5. Prettier
   {
     plugins: { prettier },
