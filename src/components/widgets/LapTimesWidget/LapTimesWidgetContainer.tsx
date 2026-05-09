@@ -50,6 +50,9 @@ export const LapTimesWidgetContainer = observer(() => {
 
   const liveDelta = lapDelta?.personalBestTotal ?? null;
 
+  const predictedLap =
+    bestLap !== null && liveDelta !== null ? bestLap + liveDelta : null;
+
   const bestDelta = liveDelta;
 
   const lastDelta =
@@ -65,6 +68,7 @@ export const LapTimesWidgetContainer = observer(() => {
   return (
     <LapTimesWidget
       currentLapTime={formatLapTime(currentLap)}
+      predictedLapTime={formatLapTime(predictedLap)}
       lastLapTime={formatLapTime(lastLap)}
       lastDelta={formatDelta(lastDelta)}
       lastDeltaColor={getDeltaColor(lastDelta)}

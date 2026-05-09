@@ -321,7 +321,11 @@ class WidgetSettingsStore {
   }
 
   getLapTimesSettings(): LapTimesWidgetSettings {
-    return this.getSettings('lap-times', 'lap-times');
+    const s = this.getSettings<LapTimesWidgetSettings>(
+      'lap-times',
+      'lap-times'
+    );
+    return { ...s, showPredicted: s.showPredicted ?? true };
   }
 
   getChassisSettings(): ChassisWidgetSettings {

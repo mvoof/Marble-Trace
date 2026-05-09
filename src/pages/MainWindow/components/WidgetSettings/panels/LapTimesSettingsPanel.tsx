@@ -37,6 +37,12 @@ export const LapTimesSettingsPanel = observer(() => {
       <Card title="Visible Rows">
         {[
           {
+            title: 'Show Predicted Lap',
+            desc: 'Estimated finish time for the current lap based on live delta.',
+            value: settings.showPredicted,
+            key: 'showPredicted',
+          },
+          {
             title: 'Show Last Lap',
             desc: 'Display the time of the last completed lap.',
             value: settings.showLastLap,

@@ -112,6 +112,7 @@ export interface LapTimesWidgetSettings {
   showLastLap: boolean;
   showBestLap: boolean;
   showP1: boolean;
+  showPredicted: boolean;
   layout: LapTimesLayout;
   layoutWidths?: Partial<Record<LapTimesLayout, number>>;
 }

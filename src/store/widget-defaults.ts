@@ -350,6 +350,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showLastLap: true,
         showBestLap: true,
         showP1: true,
+        showPredicted: true,
         layout: 'vertical',
       },
     },
