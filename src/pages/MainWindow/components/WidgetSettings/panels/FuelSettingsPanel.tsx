@@ -17,14 +17,16 @@ export const FuelSettingsPanel = observer(() => {
   return (
     <Card title="Analytics & Warnings">
       <div className={styles.fieldGroup}>
-        <div style={{ marginBottom: settings.showChart ? 16 : 0 }}>
-          <SettingRow title="History Chart" desc="Visual consumption history.">
-            <Switch
-              checked={settings.showChart}
-              onChange={(v) => update({ showChart: v })}
-            />
-          </SettingRow>
-        </div>
+        <SettingRow
+          title="History Chart"
+          desc="Visual consumption history."
+          style={{ marginBottom: settings.showChart ? 16 : 0 }}
+        >
+          <Switch
+            checked={settings.showChart}
+            onChange={(v) => update({ showChart: v })}
+          />
+        </SettingRow>
         {settings.showChart && (
           <Segmented
             block

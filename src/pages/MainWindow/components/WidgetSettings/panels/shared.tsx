@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
 import { HotkeyRecorder } from '../../../../../components/shared/HotkeyRecorder';
 import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
 import styles from '../WidgetSettings.module.scss';
@@ -11,11 +11,17 @@ interface CardProps {
 interface SettingRowProps {
   title: string;
   desc?: string;
+  style?: CSSProperties;
   children: ReactNode;
 }
 
-export const SettingRow = ({ title, desc, children }: SettingRowProps) => (
-  <div className={styles.fieldRow}>
+export const SettingRow = ({
+  title,
+  desc,
+  style,
+  children,
+}: SettingRowProps) => (
+  <div className={styles.fieldRow} style={style}>
     <div className={styles.fieldTexts}>
       <div className={styles.fieldTitle}>{title}</div>
       {desc && <div className={styles.fieldDesc}>{desc}</div>}
