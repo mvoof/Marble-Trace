@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { listen } from '@tauri-apps/api/event';
 
@@ -125,9 +125,13 @@ export const TrackMapWidgetContainer = observer(() => {
     };
   }, [clearCurrentTrack]);
 
-  const driverEntries = computedStore.standings?.entries ?? [];
+  const standings = computedStore.standings;
+  const driverEntries = useMemo(() => standings?.entries ?? [], [standings]);
   const carPositions = telemetryStore.carPositions;
 
+  // NOTE: useMemo is avoided here because carPositions is a high-frequency observable (60Hz).
+  // Since this is an observer component, it re-renders every frame when carPositions updates,
+  // making memoization redundant and adding unnecessary dependency-checking overhead.
   const cars: CarOnTrack[] = driverEntries.map((e) => ({
     carIdx: e.carIdx,
     carNumber: e.carNumber,
@@ -141,16 +145,18 @@ export const TrackMapWidgetContainer = observer(() => {
     classPosition: e.classPosition,
   }));
 
-  const classColorsSeen = new Map<number, { name: string; color: string }>();
-  for (const e of driverEntries) {
-    if (!classColorsSeen.has(e.carClassId)) {
-      classColorsSeen.set(e.carClassId, {
-        name: e.carClassShortName,
-        color: e.carClassColor,
-      });
+  const classColors = useMemo(() => {
+    const classColorsSeen = new Map<number, { name: string; color: string }>();
+    for (const e of driverEntries) {
+      if (!classColorsSeen.has(e.carClassId)) {
+        classColorsSeen.set(e.carClassId, {
+          name: e.carClassShortName,
+          color: e.carClassColor,
+        });
+      }
     }
-  }
-  const classColors = Array.from(classColorsSeen.values());
+    return Array.from(classColorsSeen.values());
+  }, [driverEntries]);
 
   return (
     <>

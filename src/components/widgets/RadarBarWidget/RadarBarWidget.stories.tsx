@@ -40,6 +40,8 @@ const meta: Meta<typeof RadarBarWidget> = {
     spotterLeft: false,
     spotterRight: false,
     settings: DEFAULT_SETTINGS,
+    formatDistance: (m: number) => m.toFixed(1),
+    distanceUnit: 'm',
   },
 };
 

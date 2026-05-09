@@ -19,13 +19,18 @@ export const RelativeWidgetContainer = observer(() => {
   const standings = computedStore.standings;
   const carPositions = telemetryStore.carPositions;
 
-  const playerIdx = standings?.entries.find((e) => e.isPlayer)?.carIdx ?? -1;
+  if (!standings) return <RelativeWidget entries={[]} settings={settings} />;
+
+  // NOTE: useMemo is avoided here because carPositions is a high-frequency observable (60Hz).
+  // Since this is an observer component, it re-renders every frame when carPositions updates,
+  // making memoization redundant and adding unnecessary dependency-checking overhead.
+  const playerIdx = standings.entries.find((e) => e.isPlayer)?.carIdx ?? -1;
   const playerLapDist =
     carPositions && playerIdx >= 0
       ? (carPositions.car_idx_lap_dist_pct[playerIdx] ?? 0)
       : 0;
 
-  const entries = [...(standings?.entries ?? [])]
+  const entries = [...standings.entries]
     .map((e) => {
       if (!carPositions) return e;
       const lapDistPct =

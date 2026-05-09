@@ -10,12 +10,16 @@ interface ProximityRadarWidgetProps {
   radarDistances: RadarDistances;
   spotterLeft: boolean;
   spotterRight: boolean;
+  formatDistance: (meters: number) => string;
+  distanceUnit: string;
 }
 
 export const ProximityRadarWidget = ({
   radarDistances,
   spotterLeft,
   spotterRight,
+  formatDistance,
+  distanceUnit,
 }: ProximityRadarWidgetProps) => (
   <WidgetPanel className={styles.root} minWidth={100} gap={0}>
     <RadarDisplay
@@ -23,6 +27,8 @@ export const ProximityRadarWidget = ({
       spotterLeft={spotterLeft}
       spotterRight={spotterRight}
       renderRange={RADAR_RENDER_RANGE}
+      formatDistance={formatDistance}
+      distanceUnit={distanceUnit}
     />
   </WidgetPanel>
 );

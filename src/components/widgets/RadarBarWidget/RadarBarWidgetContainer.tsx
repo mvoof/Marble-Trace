@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { computedStore } from '../../../store/iracing';
+import { unitsStore } from '../../../store/units.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { useRadarVisibility } from '../../../hooks/useRadarVisibility';
 import { RadarBarWidget } from './RadarBarWidget';
@@ -15,6 +16,7 @@ interface RadarBarWidgetContainerProps {
 export const RadarBarWidgetContainer = observer(
   ({ onVisibilityChange }: RadarBarWidgetContainerProps) => {
     const proximity = computedStore.proximity;
+    const { formatDistance, distanceUnit } = unitsStore;
     const radarSettings = widgetSettingsStore.getRadarSettings('radar-bar');
 
     const nearbyCars =
@@ -45,6 +47,8 @@ export const RadarBarWidgetContainer = observer(
         spotterLeft={spotterLeft}
         spotterRight={spotterRight}
         settings={radarSettings}
+        formatDistance={formatDistance}
+        distanceUnit={distanceUnit}
       />
     );
   }

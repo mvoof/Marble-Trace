@@ -24,6 +24,9 @@ export interface InputTraceSettings {
   brakeColor: string;
   clutchColor: string;
   barMode: InputTraceBarMode;
+  historySeconds: number;
+  lineWidth: number;
+  smoothing: number;
 }
 
 export type RadarVisibilityMode = 'always' | 'proximity';

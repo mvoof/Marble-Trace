@@ -15,7 +15,7 @@ const meta: Meta<typeof ProximityRadarWidget> = {
         style={{
           width: DESIGN_WIDTH,
           height: DESIGN_HEIGHT,
-          background: 'transparent',
+          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
           overflow: 'hidden',
         }}
       >
@@ -32,6 +32,8 @@ const meta: Meta<typeof ProximityRadarWidget> = {
     },
     spotterLeft: false,
     spotterRight: false,
+    formatDistance: (m: number) => m.toFixed(1),
+    distanceUnit: 'm',
   },
 };
 

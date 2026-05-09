@@ -213,6 +213,11 @@
   transition: background 0.04s ease;
 }
 
+.rpmSegLit {
+  background: var(--rpm-seg-color);
+  box-shadow: 0 0 3px var(--rpm-seg-color);
+}
+
 .rpmBarBlink .rpmSeg {
   animation: blinkBar 0.12s ease-in-out infinite alternate;
 }

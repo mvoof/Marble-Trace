@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { ColorPicker, Segmented, Space, Switch } from 'antd';
+import { ColorPicker, Segmented, Slider, Space, Switch } from 'antd';
 import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
 import {
   InputTraceBarMode,
@@ -18,65 +18,121 @@ export const InputTraceSettingsPanel = observer(() => {
   };
 
   return (
-    <Card title="Data Channels">
-      <div className={styles.fieldGroup}>
-        <SettingRow title="Throttle" desc="Show throttle trace on the graph.">
-          <Space>
-            <ColorPicker
-              value={settings.throttleColor}
-              onChange={(c) => update({ throttleColor: c.toHexString() })}
-            />
-            <Switch
-              checked={settings.showThrottle}
-              onChange={(v) => update({ showThrottle: v })}
-            />
-          </Space>
-        </SettingRow>
-      </div>
+    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+      <Card title="Data Channels">
+        <div className={styles.fieldGroup}>
+          <SettingRow title="Throttle" desc="Show throttle trace on the graph.">
+            <Space>
+              <ColorPicker
+                value={settings.throttleColor}
+                onChange={(c) => update({ throttleColor: c.toHexString() })}
+              />
+              <Switch
+                checked={settings.showThrottle}
+                onChange={(v) => update({ showThrottle: v })}
+              />
+            </Space>
+          </SettingRow>
+        </div>
 
-      <div className={styles.fieldGroup}>
-        <SettingRow title="Brake" desc="Show brake trace on the graph.">
-          <Space>
-            <ColorPicker
-              value={settings.brakeColor}
-              onChange={(c) => update({ brakeColor: c.toHexString() })}
-            />
-            <Switch
-              checked={settings.showBrake}
-              onChange={(v) => update({ showBrake: v })}
-            />
-          </Space>
-        </SettingRow>
-      </div>
+        <div className={styles.fieldGroup}>
+          <SettingRow title="Brake" desc="Show brake trace on the graph.">
+            <Space>
+              <ColorPicker
+                value={settings.brakeColor}
+                onChange={(c) => update({ brakeColor: c.toHexString() })}
+              />
+              <Switch
+                checked={settings.showBrake}
+                onChange={(v) => update({ showBrake: v })}
+              />
+            </Space>
+          </SettingRow>
+        </div>
 
-      <div className={styles.fieldGroup}>
-        <SettingRow title="Clutch" desc="Show clutch trace on the graph.">
-          <Space>
-            <ColorPicker
-              value={settings.clutchColor}
-              onChange={(c) => update({ clutchColor: c.toHexString() })}
-            />
-            <Switch
-              checked={settings.showClutch}
-              onChange={(v) => update({ showClutch: v })}
-            />
-          </Space>
-        </SettingRow>
-      </div>
+        <div className={styles.fieldGroup}>
+          <SettingRow title="Clutch" desc="Show clutch trace on the graph.">
+            <Space>
+              <ColorPicker
+                value={settings.clutchColor}
+                onChange={(c) => update({ clutchColor: c.toHexString() })}
+              />
+              <Switch
+                checked={settings.showClutch}
+                onChange={(v) => update({ showClutch: v })}
+              />
+            </Space>
+          </SettingRow>
+        </div>
+      </Card>
 
-      <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>Progress Bars Orientation</span>
-        <Segmented
-          block
-          value={settings.barMode}
-          options={[
-            { label: 'Horizontal', value: 'horizontal' },
-            { label: 'Vertical', value: 'vertical' },
-            { label: 'Hidden', value: 'hidden' },
-          ]}
-          onChange={(v) => update({ barMode: v as InputTraceBarMode })}
-        />
-      </div>
-    </Card>
+      <Card title="Graph Settings">
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="History Length"
+            desc={`Visible history: ${settings.historySeconds}s`}
+          >
+            <Slider
+              min={1}
+              max={60}
+              step={1}
+              value={settings.historySeconds}
+              onChange={(v) => update({ historySeconds: v })}
+              style={{ width: 120 }}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="Smoothing"
+            desc={
+              settings.smoothing === 0
+                ? 'Raw data (60Hz)'
+                : `Factor: ${settings.smoothing}`
+            }
+          >
+            <Slider
+              min={0}
+              max={20}
+              step={1}
+              value={settings.smoothing}
+              onChange={(v) => update({ smoothing: v })}
+              style={{ width: 120 }}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="Line Width"
+            desc={`Thickness: ${settings.lineWidth}px`}
+          >
+            <Slider
+              min={1}
+              max={10}
+              step={0.5}
+              value={settings.lineWidth}
+              onChange={(v) => update({ lineWidth: v })}
+              style={{ width: 120 }}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>Progress Bars Orientation</span>
+          <Segmented
+            block
+            value={settings.barMode}
+            options={[
+              { label: 'Horizontal', value: 'horizontal' },
+              { label: 'Vertical', value: 'vertical' },
+              { label: 'Hidden', value: 'hidden' },
+            ]}
+            onChange={(v) => update({ barMode: v as InputTraceBarMode })}
+          />
+        </div>
+      </Card>
+    </Space>
   );
 });

@@ -121,13 +121,33 @@ export const LedMatrix = ({
       }
     }
 
+    const GLOW_EXPAND = 3;
+    const GLOW_ALPHA = 0.35;
+
+    // Pass 1: glow — enlarged semi-transparent diodes behind
     for (const [color, diodes] of buckets) {
-      const isActive = color !== FLAG_COLORS.off;
+      if (color === FLAG_COLORS.off) continue;
 
-      ctx.shadowBlur = isActive ? 8 : 0;
-      ctx.shadowColor = isActive ? color : 'transparent';
+      ctx.globalAlpha = GLOW_ALPHA;
       ctx.fillStyle = color;
+      ctx.beginPath();
+      for (const { px, py } of diodes) {
+        ctx.roundRect(
+          px - GLOW_EXPAND,
+          py - GLOW_EXPAND,
+          DIODE_SIZE + GLOW_EXPAND * 2,
+          DIODE_SIZE + GLOW_EXPAND * 2,
+          2
+        );
+      }
+      ctx.fill();
+    }
 
+    ctx.globalAlpha = 1;
+
+    // Pass 2: crisp diodes
+    for (const [color, diodes] of buckets) {
+      ctx.fillStyle = color;
       ctx.beginPath();
       for (const { px, py } of diodes) {
         ctx.roundRect(px, py, DIODE_SIZE, DIODE_SIZE, 1);
