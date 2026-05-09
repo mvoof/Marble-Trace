@@ -6,6 +6,18 @@ import { widgetSettingsStore } from '../widget-settings.store';
 import type { UnitSystem } from '../../types/units';
 import type { WidgetConfig } from '../../types/widget-settings';
 
+export const setupMainListeners = async (): Promise<UnlistenFn[]> => {
+  const unlistens: UnlistenFn[] = [];
+
+  unlistens.push(
+    await listen<boolean>('drag-mode-changed', (e) => {
+      runInAction(() => appSettingsStore.setDragMode(e.payload));
+    })
+  );
+
+  return unlistens;
+};
+
 export const setupOverlayListeners = async (): Promise<UnlistenFn[]> => {
   const unlistens: UnlistenFn[] = [];
 
