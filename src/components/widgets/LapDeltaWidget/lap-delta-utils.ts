@@ -22,7 +22,7 @@ const SECONDS_PER_MINUTE = 60;
 const SECONDS_PER_HOUR = 3600;
 
 export const formatDelta = (delta: number | null): string => {
-  if (delta === null) return '—';
+  if (delta === null) return '+-.---';
 
   const sign = delta >= 0 ? '+' : '-';
   const abs = Math.abs(delta);
@@ -42,11 +42,6 @@ export const formatDelta = (delta: number | null): string => {
   const m = Math.floor(rem / SECONDS_PER_MINUTE);
   const s = rem % SECONDS_PER_MINUTE;
   return `${sign}${h}:${String(m).padStart(2, '0')}:${s.toFixed(3).padStart(6, '0')}`;
-};
-
-export const deltaBarPct = (delta: number | null): number => {
-  if (delta === null) return 0;
-  return Math.min(Math.abs(delta) / DELTA_CAP, 1.0);
 };
 
 export const getDeltaState = (delta: number | null): DeltaState => {

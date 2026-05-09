@@ -29,7 +29,7 @@ const statusClass = (shortage: number | null): string => {
 };
 
 const statusText = (shortage: number | null): string => {
-  if (shortage === null) return '—';
+  if (shortage === null) return 'FINISH --.-- L';
   const sign = shortage >= 0 ? '+' : '';
   return `FINISH ${sign}${shortage.toFixed(1)} L`;
 };
@@ -72,10 +72,10 @@ export const FuelWidget = ({
   const windowText =
     pitWindowStart !== null && pitWindowEnd !== null
       ? `LAP ${pitWindowStart}–${pitWindowEnd}`
-      : '—';
+      : 'LAP --–--';
 
   const lapsRemainingText =
-    lapsRemaining !== null ? `${lapsRemaining.toFixed(1)} LAP` : '—';
+    lapsRemaining !== null ? `${lapsRemaining.toFixed(1)} LAP` : '--.-- LAP';
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={200}>
@@ -95,7 +95,7 @@ export const FuelWidget = ({
         )}
         <div className={styles.progressLabels}>
           <span>
-            {fuelLevel !== null ? `${fuelLevel.toFixed(1)} L` : '— L'}
+            {fuelLevel !== null ? `${fuelLevel.toFixed(1)} L` : '--.-- L'}
           </span>
           <span className={styles.progressLabelMuted}>
             {fuelMax !== null ? `${fuelMax.toFixed(0)} L` : ''}
@@ -150,7 +150,7 @@ export const FuelWidget = ({
             >
               {fuelToAddWithBuffer !== null
                 ? fuelToAddWithBuffer.toFixed(1)
-                : '—'}
+                : '--.-'}
               <span className={styles.pitWarningAmountUnit}> L</span>
             </span>
           </div>

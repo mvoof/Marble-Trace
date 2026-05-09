@@ -11,8 +11,6 @@ const DIODE_CELL = DIODE_SIZE + DIODE_MARGIN * 2;
 const BLOCK_GAP = 3;
 const BOARD_PADDING = 3;
 
-export const BLOCK_PX = DIODE_CELL * 6 + BLOCK_GAP;
-
 const FLAG_COLORS: Record<string, string> = {
   green: '#22ff00',
   yellow: '#ffe600',

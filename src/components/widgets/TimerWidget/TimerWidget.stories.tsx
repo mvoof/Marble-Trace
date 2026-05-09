@@ -1,141 +1,116 @@
-import type { ComponentProps } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TimerWidget } from './TimerWidget';
-
-const DESIGN_WIDTH = 240;
-const DESIGN_HEIGHT = 120;
-
-const wrap = (props: ComponentProps<typeof TimerWidget>) => (
-  <div style={{ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }}>
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-        overflow: 'hidden',
-      }}
-    >
-      <TimerWidget {...props} />
-    </div>
-  </div>
-);
 
 const meta: Meta<typeof TimerWidget> = {
   title: 'Widgets/TimerWidget',
   component: TimerWidget,
   parameters: { layout: 'centered' },
-  render: (args) => wrap(args),
-};
-
-export default meta;
-
-type Story = StoryObj<typeof TimerWidget>;
-
-const defaultFlags = {
-  sessionEnded: false,
-  showFlag: true,
-  showLaps: true,
-  showPosition: true,
-};
-
-export const Race: Story = {
+  decorators: [
+    (Story) => (
+      <div
+        style={{
+          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
+          overflow: 'hidden',
+          display: 'inline-block',
+          minWidth: 180,
+        }}
+      >
+        <Story />
+      </div>
+    ),
+  ],
   args: {
-    ...defaultFlags,
     sessionTypeLabel: 'RACE',
     flagState: 'green',
-    timeMain: '00:45:',
-    timeSeconds: '12',
+    timeMain: '42',
+    timeSeconds: ':18',
     currentLap: 12,
-    totalLaps: '38',
-    position: 4,
-    totalDrivers: 28,
+    totalLaps: '30',
+    position: 5,
+    totalDrivers: 24,
+    sessionEnded: false,
+    showFlag: true,
+    showLaps: true,
+    showPosition: true,
+    showWallClock: false,
+    showSimTime: false,
+    showPcDate: false,
+    showSimDate: false,
+    wallClockTime: '14:23',
+    simTime: null,
+    pcDate: '2026-05-09',
+    simDate: null,
   },
 };
 
+export default meta;
+type Story = StoryObj<typeof TimerWidget>;
+
+export const Practice: Story = {
+  args: {
+    sessionTypeLabel: 'PRACTICE',
+    flagState: 'green',
+    timeMain: '18',
+    timeSeconds: ':42',
+    currentLap: null,
+    totalLaps: null,
+    position: null,
+    totalDrivers: null,
+    showLaps: false,
+    showPosition: false,
+  },
+};
+
+export const RaceGreen: Story = {};
+
 export const FinalMinutes: Story = {
   args: {
-    ...defaultFlags,
-    sessionTypeLabel: 'RACE',
     flagState: 'final',
-    timeMain: '00:04:',
-    timeSeconds: '22',
-    currentLap: 35,
-    totalLaps: '38',
-    position: 2,
-    totalDrivers: 28,
+    timeMain: '4',
+    timeSeconds: ':55',
   },
 };
 
 export const Checkered: Story = {
   args: {
-    ...defaultFlags,
-    sessionTypeLabel: 'RACE',
     flagState: 'checkered',
-    timeMain: '00:00:',
-    timeSeconds: '00',
-    currentLap: 38,
-    totalLaps: '38',
-    position: 1,
-    totalDrivers: 28,
+    timeMain: '0',
+    timeSeconds: ':00',
+    currentLap: 30,
   },
 };
 
 export const SessionEnded: Story = {
   args: {
-    ...defaultFlags,
     sessionEnded: true,
-    sessionTypeLabel: 'RACE',
-    flagState: 'checkered',
-    timeMain: '00:00:',
-    timeSeconds: '00',
-    currentLap: 38,
-    totalLaps: '38',
-    position: 1,
-    totalDrivers: 28,
   },
 };
 
-export const Practice: Story = {
+export const WithClocks: Story = {
   args: {
-    ...defaultFlags,
-    sessionTypeLabel: 'PRACTICE',
-    flagState: 'green',
-    timeMain: '00:18:',
-    timeSeconds: '45',
-    currentLap: 3,
-    totalLaps: 'unlimited',
-    position: null,
-    totalDrivers: null,
+    showWallClock: true,
+    showSimTime: true,
+    wallClockTime: '14:23',
+    simTime: '16:00',
   },
 };
 
-export const NoFlagNoPosition: Story = {
+export const MinimalView: Story = {
   args: {
-    ...defaultFlags,
     showFlag: false,
+    showLaps: false,
     showPosition: false,
-    sessionTypeLabel: 'RACE',
-    flagState: 'green',
-    timeMain: '00:30:',
-    timeSeconds: '00',
-    currentLap: 20,
-    totalLaps: '38',
-    position: 4,
-    totalDrivers: 28,
   },
 };
 
-export const NoData: Story = {
+export const WithLapsAndPosition: Story = {
   args: {
-    ...defaultFlags,
-    sessionTypeLabel: 'SESSION',
-    flagState: 'green',
-    timeMain: '00:00:',
-    timeSeconds: '00',
-    currentLap: null,
-    totalLaps: null,
-    position: null,
-    totalDrivers: null,
+    showLaps: true,
+    showPosition: true,
+    currentLap: 12,
+    totalLaps: '30',
+    position: 3,
+    totalDrivers: 24,
   },
 };

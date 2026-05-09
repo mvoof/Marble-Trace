@@ -15,7 +15,7 @@ export function speedUnit(system: UnitSystem): string {
 }
 
 export function formatTemp(celsius: number | null, system: UnitSystem): string {
-  if (celsius === null) return '\u2014';
+  if (celsius === null) return '--.-';
 
   if (system === 'imperial') {
     return (celsius * 1.8 + 32).toFixed(1);
@@ -45,7 +45,7 @@ export function formatDistance(
   system: UnitSystem
 ): string {
   if (meters == null || isNaN(meters)) {
-    return '\u2014';
+    return '--.-';
   }
 
   if (system === 'imperial') {
@@ -66,7 +66,7 @@ export function formatGear(gear: number): string {
 }
 
 export function formatLapTime(seconds: number | null): string {
-  if (seconds === null || seconds <= 0) return '\u2014';
+  if (seconds === null || seconds <= 0) return '--:--.---';
 
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -79,7 +79,7 @@ export function formatLapTime(seconds: number | null): string {
 }
 
 export function formatSessionTime(seconds: number | null): string {
-  if (seconds === null || seconds <= 0) return '\u2014';
+  if (seconds === null || seconds <= 0) return '-:--:--';
 
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -88,17 +88,9 @@ export function formatSessionTime(seconds: number | null): string {
   return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-export function formatRpm(rpm: number): string {
-  return Math.round(rpm).toString();
-}
-
 export function formatPercent(fraction: number | null): string {
-  if (fraction === null) return '\u2014';
+  if (fraction === null) return '--%';
   return `${Math.round(fraction * 100)}%`;
-}
-
-export function clampNormalized(value: number): number {
-  return Math.max(0, Math.min(1, value));
 }
 
 export const resolveSessionLaps = (

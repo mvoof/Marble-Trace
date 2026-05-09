@@ -1,23 +1,27 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { FlagsWidget } from './FlagsWidget';
-import type { FlagType } from '../../../types/flags';
 
-interface FlagsWidgetStoryArgs {
-  flag: FlagType;
-  blinkOn: boolean;
-}
+const DESIGN_SIZE = 160;
 
-const FlagsWidgetStory = ({ flag, blinkOn }: FlagsWidgetStoryArgs) => (
-  <div style={{ background: '#050507', padding: 32, display: 'inline-block' }}>
-    <FlagsWidget flag={flag} blinkOn={blinkOn} />
-  </div>
-);
-
-const meta: Meta<FlagsWidgetStoryArgs> = {
+const meta: Meta<typeof FlagsWidget> = {
   title: 'Widgets/FlagsWidget',
-  component: FlagsWidgetStory,
+  component: FlagsWidget,
   parameters: { layout: 'centered' },
+  decorators: [
+    (Story) => (
+      <div
+        style={{
+          width: DESIGN_SIZE,
+          height: DESIGN_SIZE,
+          background: '#111',
+          overflow: 'hidden',
+        }}
+      >
+        <Story />
+      </div>
+    ),
+  ],
   args: {
     flag: 'none',
     blinkOn: true,
@@ -25,17 +29,46 @@ const meta: Meta<FlagsWidgetStoryArgs> = {
 };
 
 export default meta;
+type Story = StoryObj<typeof FlagsWidget>;
 
-type Story = StoryObj<FlagsWidgetStoryArgs>;
+export const NoFlag: Story = {};
 
-export const None: Story = { args: { flag: 'none' } };
-export const Green: Story = { args: { flag: 'green' } };
-export const Yellow: Story = { args: { flag: 'yellow' } };
-export const YellowBlink: Story = { args: { flag: 'yellow', blinkOn: false } };
-export const Red: Story = { args: { flag: 'red' } };
-export const Blue: Story = { args: { flag: 'blue' } };
-export const White: Story = { args: { flag: 'white' } };
-export const Checkered: Story = { args: { flag: 'checkered' } };
-export const Black: Story = { args: { flag: 'black' } };
-export const Meatball: Story = { args: { flag: 'meatball' } };
-export const Debris: Story = { args: { flag: 'debris' } };
+export const GreenFlag: Story = {
+  args: { flag: 'green', blinkOn: true },
+};
+
+export const YellowFlag: Story = {
+  args: { flag: 'yellow', blinkOn: true },
+};
+
+export const RedFlag: Story = {
+  args: { flag: 'red', blinkOn: true },
+};
+
+export const BlueFlag: Story = {
+  args: { flag: 'blue', blinkOn: true },
+};
+
+export const WhiteFlag: Story = {
+  args: { flag: 'white', blinkOn: true },
+};
+
+export const CheckeredFlag: Story = {
+  args: { flag: 'checkered', blinkOn: true },
+};
+
+export const BlackFlag: Story = {
+  args: { flag: 'black', blinkOn: true },
+};
+
+export const MeatballFlag: Story = {
+  args: { flag: 'meatball', blinkOn: true },
+};
+
+export const DebrisFlag: Story = {
+  args: { flag: 'debris', blinkOn: true },
+};
+
+export const YellowBlinkOff: Story = {
+  args: { flag: 'yellow', blinkOn: false },
+};
