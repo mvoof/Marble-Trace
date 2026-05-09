@@ -87,6 +87,12 @@ export const SpeedWidget = forwardRef<SpeedDisplayHandle, SpeedWidgetProps>(
       ]
     );
 
+    // Cache for RPM bar optimization
+    const prevLitCountRef = useRef(-1);
+    const prevIsLimitRef = useRef<boolean | null>(null);
+    const lastColorsRef = useRef<typeof rpmColors | null>(null);
+    const lastRpmBarRef = useRef<HTMLDivElement | null>(null);
+
     const showPitPanel =
       settings.showPitPanel && (isOnPitRoad || pitLimiterActive);
 
@@ -117,21 +123,33 @@ export const SpeedWidget = forwardRef<SpeedDisplayHandle, SpeedWidgetProps>(
             );
             const litCount = Math.floor(displayPct * LED_COUNT);
             const isLimit = displayPct >= 1;
-            const children = rpmBarRef.current.children;
 
-            rpmBarRef.current.classList.toggle(styles.rpmBarBlink, isLimit);
+            if (
+              litCount !== prevLitCountRef.current ||
+              isLimit !== prevIsLimitRef.current ||
+              rpmColors !== lastColorsRef.current ||
+              rpmBarRef.current !== lastRpmBarRef.current
+            ) {
+              const children = rpmBarRef.current.children;
+              rpmBarRef.current.classList.toggle(styles.rpmBarBlink, isLimit);
 
-            for (let i = 0; i < children.length; i++) {
-              const el = children[i] as HTMLElement;
-              if (i < litCount) {
-                const color = isLimit
-                  ? rpmColors.limit
-                  : getShiftZoneColor((i + 1) / LED_COUNT, rpmColors);
-                el.style.setProperty('--rpm-seg-color', color);
-                el.classList.add(styles.rpmSegLit);
-              } else {
-                el.classList.remove(styles.rpmSegLit);
+              for (let i = 0; i < children.length; i++) {
+                const el = children[i] as HTMLElement;
+                if (i < litCount) {
+                  const color = isLimit
+                    ? rpmColors.limit
+                    : getShiftZoneColor((i + 1) / LED_COUNT, rpmColors);
+                  el.style.setProperty('--rpm-seg-color', color);
+                  el.classList.add(styles.rpmSegLit);
+                } else {
+                  el.classList.remove(styles.rpmSegLit);
+                }
               }
+
+              prevLitCountRef.current = litCount;
+              prevIsLimitRef.current = isLimit;
+              lastColorsRef.current = rpmColors;
+              lastRpmBarRef.current = rpmBarRef.current;
             }
           }
 
