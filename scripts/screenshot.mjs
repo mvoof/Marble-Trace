@@ -3,12 +3,9 @@
 //   windowId  - "overlay" or "main" (default: overlay)
 //   outputPath - where to save PNG (default: docs/assets/screenshots/overlay/screenshot-<timestamp>.png)
 
-import { createRequire } from 'module';
 import { writeFileSync, mkdirSync } from 'fs';
 import path from 'path';
-
-const require = createRequire(import.meta.url);
-const WebSocket = require('ws');
+import WebSocket from 'ws';
 
 const windowId = process.argv[2] || 'overlay';
 const defaultDir = path.join(
