@@ -1,25 +1,55 @@
 import { Alert, Button } from 'antd';
 import { observer } from 'mobx-react-lite';
-import { appSettingsStore } from '../../../../store/app-settings.store';
+import {
+  appSettingsStore,
+  UpdateStatus,
+} from '../../../../store/app-settings.store';
 import styles from './UpdateBanner.module.scss';
 
+const BANNER_STATUSES: UpdateStatus[] = ['available', 'downloading', 'ready'];
+
+const TITLES: Partial<Record<UpdateStatus, string>> = {
+  available: `Version v${appSettingsStore.availableVersion} is available`,
+  downloading: 'Downloading update...',
+  ready: 'Update downloaded. Restarting...',
+};
+
+const ALERT_TYPES: Partial<
+  Record<UpdateStatus, 'info' | 'success' | 'warning' | 'error'>
+> = {
+  available: 'info',
+  downloading: 'info',
+  ready: 'success',
+};
+
 export const UpdateBanner = observer(() => {
-  if (appSettingsStore.updateStatus !== 'available') return null;
+  const { updateStatus } = appSettingsStore;
+
+  if (!BANNER_STATUSES.includes(updateStatus)) return null;
+
+  const title =
+    updateStatus === 'available'
+      ? `Version v${appSettingsStore.availableVersion} is available`
+      : TITLES[updateStatus];
 
   return (
     <Alert
-      title={`Version v${appSettingsStore.availableVersion} is available`}
-      type="info"
+      title={title}
+      type={ALERT_TYPES[updateStatus] ?? 'info'}
       showIcon
-      closable
+      closable={
+        updateStatus === 'available' ? { onClose: () => {} } : undefined
+      }
       action={
-        <Button
-          size="small"
-          type="text"
-          onClick={() => void appSettingsStore.installUpdate()}
-        >
-          Update & Restart
-        </Button>
+        updateStatus === 'available' ? (
+          <Button
+            size="small"
+            type="text"
+            onClick={() => void appSettingsStore.installUpdate()}
+          >
+            Update & Restart
+          </Button>
+        ) : undefined
       }
       className={styles.alert}
     />
