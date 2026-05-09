@@ -1,10 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TelemetryDebugWidget } from './TelemetryDebugWidget';
-import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
-import snapshotRaw from '../../../../test-data/iracing-1776008424511.json';
-
-const snapshot = snapshotRaw as unknown as TelemetrySnapshot;
+import { snapshot } from '../../../storybook/test-data';
 
 const CONNECTED_ARGS = {
   status: 'connected',

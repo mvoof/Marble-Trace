@@ -1,14 +1,30 @@
-import snapshotJson from '../../test-data/iracing-1776008424511.json';
 import tracksJson from '../../test-data/tracks.json';
 import type { TelemetrySnapshot } from './snapshot.types';
 import { computeDriverEntries } from './compute-driver-entries';
 
-export const snapshot = snapshotJson as unknown as TelemetrySnapshot;
+const trackSnapshotModules = import.meta.glob('../../test-data/track-*.json', {
+  eager: true,
+  import: 'default',
+});
+
+const firstSnapshot = Object.values(trackSnapshotModules)[0];
+if (!firstSnapshot) {
+  throw new Error('No track-*.json snapshot found in test-data/');
+}
+
+export const snapshot = firstSnapshot as unknown as TelemetrySnapshot;
+
+interface StoredTrack {
+  svgPath: string;
+  viewBox: string;
+  points: { x: number; y: number; pct: number }[];
+  trackName: string;
+}
 
 const storedTracks = tracksJson as {
-  'recorded-tracks': Record<string, unknown>;
+  'recorded-tracks': Record<string, StoredTrack>;
 };
-export const trackData508 = Object.values(storedTracks['recorded-tracks'])[0];
+export const trackData = Object.values(storedTracks['recorded-tracks'])[0];
 
 export const driverEntries = computeDriverEntries(
   snapshot.carIdx,

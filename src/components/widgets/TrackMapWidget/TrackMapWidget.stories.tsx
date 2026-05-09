@@ -1,30 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TrackMapWidget } from './TrackMapWidget';
-import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
-import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
-import snapshotRaw from '../../../../test-data/iracing-1776008424511.json';
-import tracksRaw from '../../../../test-data/tracks.json';
-
-const snapshot = snapshotRaw as unknown as TelemetrySnapshot;
-const DRIVER_ENTRIES = computeDriverEntries(
-  snapshot.carIdx,
-  snapshot.sessionInfo?.DriverInfo ?? null
-);
-
-const tracksData = tracksRaw as Record<
-  string,
-  Record<
-    string,
-    {
-      svgPath: string;
-      viewBox: string;
-      points: { x: number; y: number; pct: number }[];
-      trackName: string;
-    }
-  >
->;
-const STORED_TRACK = Object.values(tracksData['recorded-tracks'])[0];
+import {
+  driverEntries as DRIVER_ENTRIES,
+  trackData as STORED_TRACK,
+} from '../../../storybook/test-data';
 
 const TRACK_DATA = {
   svgPath: STORED_TRACK.svgPath,

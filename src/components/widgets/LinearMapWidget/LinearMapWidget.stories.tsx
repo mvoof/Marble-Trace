@@ -1,15 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { LinearMapWidget } from './LinearMapWidget';
-import { computeDriverEntries } from '../../../storybook/compute-driver-entries';
-import type { TelemetrySnapshot } from '../../../storybook/snapshot.types';
-import snapshotRaw from '../../../../test-data/iracing-1776008424511.json';
-
-const snapshot = snapshotRaw as unknown as TelemetrySnapshot;
-const DRIVER_ENTRIES = computeDriverEntries(
-  snapshot.carIdx,
-  snapshot.sessionInfo?.DriverInfo ?? null
-);
+import { driverEntries as DRIVER_ENTRIES } from '../../../storybook/test-data';
 
 const DEFAULT_SETTINGS = {
   orientation: 'horizontal' as const,
