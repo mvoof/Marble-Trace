@@ -138,7 +138,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ### Lap Times
 
-> Current, last, and best lap with per-sector deltas. Vertical list or compact horizontal strip.
+> Current lap, predicted finish time, last, and best lap with deltas. Vertical list or compact horizontal strip.
 
 <p>
   <img src="docs/assets/screenshots/lap-times-widget.png" alt="Lap Times — vertical with deltas">

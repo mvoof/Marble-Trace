@@ -6,6 +6,7 @@ import styles from './LapTimesWidget.module.scss';
 
 interface LapTimesWidgetProps {
   currentLapTime: string;
+  predictedLapTime: string;
   lastLapTime: string;
   lastDelta: string;
   lastDeltaColor?: string;
@@ -19,6 +20,7 @@ interface LapTimesWidgetProps {
 }
 
 const COLOR_CURRENT = '#22c55e';
+const COLOR_PREDICTED = '#fbbf24';
 const COLOR_LAST = '#ef4444';
 const COLOR_BEST = 'rgba(192, 132, 252, 0.85)';
 const COLOR_P1 = 'rgba(238, 238, 238, 0.85)';
@@ -33,6 +35,7 @@ interface RowConfig {
 
 export const LapTimesWidget = ({
   currentLapTime,
+  predictedLapTime,
   lastLapTime,
   lastDelta,
   lastDeltaColor,
@@ -54,6 +57,15 @@ export const LapTimesWidget = ({
       accentColor: COLOR_CURRENT,
     },
   ];
+
+  if (settings.showPredicted) {
+    rows.push({
+      label: 'PRED',
+      time: predictedLapTime,
+      delta: '',
+      accentColor: COLOR_PREDICTED,
+    });
+  }
 
   if (settings.showLastLap) {
     rows.push({

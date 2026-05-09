@@ -6,6 +6,7 @@ const DEFAULT_SETTINGS = {
   showLastLap: true,
   showBestLap: true,
   showP1: true,
+  showPredicted: true,
   layout: 'vertical' as const,
 };
 
@@ -29,6 +30,7 @@ const meta: Meta<typeof LapTimesWidget> = {
   ],
   args: {
     currentLapTime: '1:23.456',
+    predictedLapTime: '1:22.326',
     lastLapTime: '1:24.102',
     lastDelta: '+0.646',
     lastDeltaColor: '#ef4444',
@@ -54,7 +56,7 @@ export const Horizontal: Story = {
         style={{
           background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
           overflow: 'hidden',
-          width: 700,
+          width: 1150,
         }}
       >
         <Story />
@@ -89,6 +91,7 @@ export const WithDeltas: Story = {
 export const NoData: Story = {
   args: {
     currentLapTime: '--:--.---',
+    predictedLapTime: '--:--.---',
     lastLapTime: '--:--.---',
     lastDelta: '+-.---',
     bestLapTime: '--:--.---',
