@@ -62,37 +62,49 @@ export const StandingsSettingsPanel = observer(() => {
         {[
           {
             title: 'Position Change (+/-)',
+            desc: 'Arrow showing positions gained or lost since session start.',
             value: settings.showPosChange,
             key: 'showPosChange',
           },
           {
             title: 'Vehicle Brand Logo',
+            desc: 'Manufacturer badge next to driver name.',
             value: settings.showBrand,
             key: 'showBrand',
           },
-          { title: 'Tire Compound', value: settings.showTire, key: 'showTire' },
+          {
+            title: 'Tire Compound',
+            desc: 'Visual indicator of current tire type.',
+            value: settings.showTire,
+            key: 'showTire',
+          },
           {
             title: 'Class Badge',
+            desc: "Colored badge for the driver's car class.",
             value: settings.showClassBadge,
             key: 'showClassBadge',
           },
           {
             title: 'License / iRating Badge',
+            desc: 'Driver safety rating and iRating indicator.',
             value: settings.showIRatingBadge,
             key: 'showIRatingBadge',
           },
           {
             title: 'iRating Delta (projected)',
+            desc: 'Projected iRating gain or loss based on current position.',
             value: settings.showIrChange,
             key: 'showIrChange',
           },
           {
             title: 'Laps Completed',
+            desc: 'Number of laps completed by each driver.',
             value: settings.showLapsCompleted,
             key: 'showLapsCompleted',
           },
           {
             title: 'Abbreviate Driver Names',
+            desc: 'Shorten names to save column space.',
             value: settings.abbreviateNames,
             key: 'abbreviateNames',
           },
@@ -101,6 +113,7 @@ export const StandingsSettingsPanel = observer(() => {
             <div className={styles.fieldRow}>
               <div className={styles.fieldTexts}>
                 <div className={styles.fieldTitle}>{item.title}</div>
+                <div className={styles.fieldDesc}>{item.desc}</div>
               </div>
               <Switch
                 checked={item.value}
@@ -115,36 +128,43 @@ export const StandingsSettingsPanel = observer(() => {
         {[
           {
             title: 'Column Headers',
+            desc: 'Show labels above each data column.',
             value: settings.showColumnHeaders,
             key: 'showColumnHeaders',
           },
           {
             title: 'Session Progress Info',
+            desc: 'Laps or time remaining bar at the top.',
             value: settings.showSessionHeader,
             key: 'showSessionHeader',
           },
           {
             title: 'Live Weather Info',
+            desc: 'Wind and temperature row in the header.',
             value: settings.showWeather,
             key: 'showWeather',
           },
           {
             title: 'Strength of Field (SOF)',
+            desc: 'Average iRating of all registered drivers.',
             value: settings.showSOF,
             key: 'showSOF',
           },
           {
             title: 'Pit Stop Counter (player only)',
+            desc: 'Number of pit stops made by the player car.',
             value: settings.showPitStops,
             key: 'showPitStops',
           },
           {
             title: 'Incidents Badge (player only)',
+            desc: 'Incident count accumulated by the player car.',
             value: settings.showIncidentsBadge,
             key: 'showIncidentsBadge',
           },
           {
             title: 'Total Drivers Count',
+            desc: 'Total number of drivers in the session.',
             value: settings.showTotalDrivers,
             key: 'showTotalDrivers',
           },
@@ -153,6 +173,7 @@ export const StandingsSettingsPanel = observer(() => {
             <div className={styles.fieldRow}>
               <div className={styles.fieldTexts}>
                 <div className={styles.fieldTitle}>{item.title}</div>
+                <div className={styles.fieldDesc}>{item.desc}</div>
               </div>
               <Switch
                 checked={item.value}

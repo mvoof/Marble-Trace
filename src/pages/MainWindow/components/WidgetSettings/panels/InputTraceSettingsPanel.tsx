@@ -23,6 +23,9 @@ export const InputTraceSettingsPanel = observer(() => {
         <div className={styles.fieldRow}>
           <div className={styles.fieldTexts}>
             <div className={styles.fieldTitle}>Throttle</div>
+            <div className={styles.fieldDesc}>
+              Show throttle trace on the graph.
+            </div>
           </div>
           <Space>
             <ColorPicker
@@ -41,6 +44,9 @@ export const InputTraceSettingsPanel = observer(() => {
         <div className={styles.fieldRow}>
           <div className={styles.fieldTexts}>
             <div className={styles.fieldTitle}>Brake</div>
+            <div className={styles.fieldDesc}>
+              Show brake trace on the graph.
+            </div>
           </div>
           <Space>
             <ColorPicker
@@ -59,6 +65,9 @@ export const InputTraceSettingsPanel = observer(() => {
         <div className={styles.fieldRow}>
           <div className={styles.fieldTexts}>
             <div className={styles.fieldTitle}>Clutch</div>
+            <div className={styles.fieldDesc}>
+              Show clutch trace on the graph.
+            </div>
           </div>
           <Space>
             <ColorPicker

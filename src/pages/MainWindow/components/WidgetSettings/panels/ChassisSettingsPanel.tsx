@@ -17,11 +17,18 @@ export const ChassisSettingsPanel = observer(() => {
   return (
     <Card title="Module Layout">
       <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>Show Suspension & Brakes</span>
-        <Switch
-          checked={settings.showInboard}
-          onChange={(v) => update({ showInboard: v })}
-        />
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>Suspension & Brakes</div>
+            <div className={styles.fieldDesc}>
+              Show tire pressures, temperatures, and brake bias panels.
+            </div>
+          </div>
+          <Switch
+            checked={settings.showInboard}
+            onChange={(v) => update({ showInboard: v })}
+          />
+        </div>
       </div>
     </Card>
   );
