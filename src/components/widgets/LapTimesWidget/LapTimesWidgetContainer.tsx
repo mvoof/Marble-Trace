@@ -6,8 +6,8 @@ import { formatLapTime } from '../../../utils/telemetry-format';
 import { LapTimesWidget } from './LapTimesWidget';
 
 const formatDelta = (delta: number | null): string => {
-  if (delta === null) return '—';
-  if (Math.abs(delta) < 0.001) return '—';
+  if (delta === null) return '+-.---';
+  if (Math.abs(delta) < 0.001) return '+-.---';
   return (delta >= 0 ? '+' : '') + delta.toFixed(3);
 };
 
