@@ -68,7 +68,7 @@ const DEFAULT_SETTINGS = {
   targetDotRadiusPx: 6,
 };
 
-const DESIGN_SIZE = 400;
+const DESIGN_SIZE = 600;
 
 const meta: Meta<typeof TrackMapWidget> = {
   title: 'Widgets/TrackMapWidget',
