@@ -29,7 +29,7 @@ export const INPUT_TRACE_SIZES: Record<
 export const DEFAULT_WIDGETS: WidgetConfig[] = [
   {
     id: 'speed',
-    label: 'Speed (Gear, Speed, RPM)',
+    label: 'Speed',
     description: 'Speedometer with gear and RPM indicator.',
     enabled: true,
     x: 400,
@@ -58,7 +58,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   },
   {
     id: 'input-trace',
-    label: 'Input Trace (Throttle, Brake, Clutch)',
+    label: 'Input Trace',
     description: 'Live throttle, brake, and clutch inputs.',
     enabled: false,
     x: 400,
@@ -223,7 +223,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   },
   {
     id: 'linear-map',
-    label: 'Linear Map',
+    label: 'Relative Map',
     description: 'Progress bar of car track positions.',
     enabled: false,
     x: 50,
@@ -281,7 +281,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   },
   {
     id: 'chassis',
-    label: 'Chassis (Tires & Suspension)',
+    label: 'Chassis',
     description: 'Tire pressures and brake temperatures.',
     enabled: false,
     x: 100,
@@ -356,7 +356,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   },
   {
     id: 'timer',
-    label: 'Session Timer',
+    label: 'Timer',
     description: 'Stint and total session timers.',
     enabled: false,
     x: 50,
@@ -407,7 +407,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
   },
   {
     id: 'fuel',
-    label: 'Fuel Strategy',
+    label: 'Fuel',
     description: 'Fuel level and consumption calculator.',
     enabled: false,
     x: 760,

@@ -1,1 +1,0 @@
-export { LinearMapWidget } from './LinearMapWidget';

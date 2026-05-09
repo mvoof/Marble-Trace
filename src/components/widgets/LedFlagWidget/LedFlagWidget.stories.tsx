@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { FlagsWidget } from './FlagsWidget';
+import { LedFlagWidget } from './LedFlagWidget';
 
 const DESIGN_SIZE = 160;
 
-const meta: Meta<typeof FlagsWidget> = {
-  title: 'Widgets/FlagsWidget',
-  component: FlagsWidget,
+const meta: Meta<typeof LedFlagWidget> = {
+  title: 'Widgets/LedFlagWidget',
+  component: LedFlagWidget,
   parameters: { layout: 'centered' },
   decorators: [
     (Story) => (
@@ -29,7 +29,7 @@ const meta: Meta<typeof FlagsWidget> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof FlagsWidget>;
+type Story = StoryObj<typeof LedFlagWidget>;
 
 export const NoFlag: Story = {};
 
