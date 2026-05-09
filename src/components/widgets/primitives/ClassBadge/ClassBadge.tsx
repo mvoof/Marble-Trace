@@ -6,11 +6,15 @@ interface ClassBadgeProps {
   className?: string;
 }
 
-export const ClassBadge = ({ color, label, className }: ClassBadgeProps) => (
-  <span
-    className={`${styles.classBadge}${className ? ` ${className}` : ''}`}
-    style={{ backgroundColor: color }}
-  >
-    {label}
-  </span>
-);
+export const ClassBadge = ({ color, label, className }: ClassBadgeProps) => {
+  if (!label) return null;
+
+  return (
+    <span
+      className={`${styles.classBadge}${className ? ` ${className}` : ''}`}
+      style={{ backgroundColor: color }}
+    >
+      {label}
+    </span>
+  );
+};

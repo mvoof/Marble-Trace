@@ -11,12 +11,15 @@ const BASE_LAP_TIME = 92.3;
 const LAP_TIME_SPREAD_PER_POS = 0.35;
 const GAP_PER_POS = 1.8;
 
+const CLASS_LABELS = ['GTE', 'GT3', 'LMP2'];
+
 const DRIVER_ENTRIES = RAW_ENTRIES.map((e, i) => ({
   ...e,
   lap: 5,
   lastLapTime: BASE_LAP_TIME + i * LAP_TIME_SPREAD_PER_POS + (i % 3) * 0.12,
   bestLapTime: BASE_LAP_TIME + i * LAP_TIME_SPREAD_PER_POS * 0.8,
   f2Time: i === 0 ? 0 : i * GAP_PER_POS + (i % 4) * 0.3,
+  carClassShortName: CLASS_LABELS[i % CLASS_LABELS.length],
 }));
 
 const DEFAULT_SETTINGS = {

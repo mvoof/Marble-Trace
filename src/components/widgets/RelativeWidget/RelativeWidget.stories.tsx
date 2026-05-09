@@ -1,7 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RelativeWidget } from './RelativeWidget';
-import { driverEntries as DRIVER_ENTRIES } from '../../../storybook/test-data';
+import { driverEntries } from '../../../storybook/test-data';
+
+const CLASS_LABELS = ['GTE', 'GT3', 'LMP2'];
+
+const DRIVER_ENTRIES = driverEntries.map((e, i) => ({
+  ...e,
+  carClassShortName: CLASS_LABELS[i % CLASS_LABELS.length],
+}));
 
 const DEFAULT_SETTINGS = {
   showIRatingBadge: false,
