@@ -39,17 +39,17 @@ const meta: Meta<typeof SpeedWidget> = {
     ),
   ],
   args: {
-    speed: '120',
+    initialSpeed: '120',
     speedUnit: 'km/h',
-    rpm: 5400,
-    gear: 3,
+    initialRpm: 5400,
+    initialGear: 3,
     maxShiftRpm: 8000,
     settings: DEFAULT_SETTINGS,
     isOnPitRoad: false,
     pitLimiterActive: false,
-    pitState: 'pit-lane',
+    initialPitState: 'pit-lane',
     pitLimitFormatted: '60',
-    pitSpeedDelta: null,
+    initialPitSpeedDelta: null,
     oilTemp: '92',
     waterTemp: '88',
     tempUnit: '°C',
@@ -71,21 +71,21 @@ export const GearFocus: Story = {
 
 export const HighRpm: Story = {
   args: {
-    speed: '223',
-    rpm: 7800,
-    gear: 5,
+    initialSpeed: '223',
+    initialRpm: 7800,
+    initialGear: 5,
   },
 };
 
 export const OnPitRoad: Story = {
   args: {
     isOnPitRoad: true,
-    pitState: 'pit-lane',
+    initialPitState: 'pit-lane',
     pitLimitFormatted: '60',
-    pitSpeedDelta: null,
-    speed: '45',
-    rpm: 2800,
-    gear: 2,
+    initialPitSpeedDelta: null,
+    initialSpeed: '45',
+    initialRpm: 2800,
+    initialGear: 2,
   },
 };
 
@@ -93,12 +93,12 @@ export const PitLimiterActive: Story = {
   args: {
     isOnPitRoad: true,
     pitLimiterActive: true,
-    pitState: 'limiter-active',
+    initialPitState: 'limiter-active',
     pitLimitFormatted: '60',
-    pitSpeedDelta: 0,
-    speed: '60',
-    rpm: 3100,
-    gear: 3,
+    initialPitSpeedDelta: 0,
+    initialSpeed: '60',
+    initialRpm: 3100,
+    initialGear: 3,
   },
 };
 
@@ -106,12 +106,12 @@ export const OverPitLimit: Story = {
   args: {
     isOnPitRoad: true,
     pitLimiterActive: true,
-    pitState: 'over-limit',
+    initialPitState: 'over-limit',
     pitLimitFormatted: '60',
-    pitSpeedDelta: 5,
-    speed: '65',
-    rpm: 3400,
-    gear: 3,
+    initialPitSpeedDelta: 5,
+    initialSpeed: '65',
+    initialRpm: 3400,
+    initialGear: 3,
   },
 };
 
