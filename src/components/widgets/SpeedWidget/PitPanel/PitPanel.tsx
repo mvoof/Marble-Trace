@@ -1,12 +1,17 @@
+import { forwardRef, useImperativeHandle, useRef } from 'react';
 import styles from './PitPanel.module.scss';
 
-type PitState = 'pit-lane' | 'limiter-active' | 'over-limit';
+export type PitState = 'pit-lane' | 'limiter-active' | 'over-limit';
 
 interface PitPanelProps {
-  pitState: PitState;
+  initialState: PitState;
   limitSpeed: string;
   speedUnit: string;
-  speedDelta: number | null;
+  initialDelta: number | null;
+}
+
+export interface PitPanelHandle {
+  update: (state: PitState, delta: number | null) => void;
 }
 
 const PIT_STATE_LABEL: Record<PitState, string> = {
@@ -33,24 +38,56 @@ const formatDelta = (delta: number): string => {
   return `${delta}`;
 };
 
-export const PitPanel = ({
-  pitState,
-  limitSpeed,
-  speedUnit,
-  speedDelta,
-}: PitPanelProps) => (
-  <div className={`${styles.panel} ${PIT_STATE_CLASS[pitState]}`}>
-    <span className={styles.label}>{PIT_STATE_LABEL[pitState]}</span>
+export const PitPanel = forwardRef<PitPanelHandle, PitPanelProps>(
+  ({ initialState, limitSpeed, speedUnit, initialDelta }, ref) => {
+    const panelRef = useRef<HTMLDivElement>(null);
+    const labelRef = useRef<HTMLSpanElement>(null);
+    const deltaRef = useRef<HTMLSpanElement>(null);
 
-    <div className={styles.right}>
-      <span className={styles.limit}>{limitSpeed}</span>
-      <span className={styles.unit}>{speedUnit}</span>
+    useImperativeHandle(ref, () => ({
+      update: (state, delta) => {
+        if (panelRef.current) {
+          panelRef.current.className = `${styles.panel} ${PIT_STATE_CLASS[state]}`;
+        }
+        if (labelRef.current) {
+          labelRef.current.textContent = PIT_STATE_LABEL[state];
+        }
+        if (deltaRef.current) {
+          if (delta !== null) {
+            deltaRef.current.textContent = formatDelta(delta);
+            deltaRef.current.className = `${styles.delta} ${getDeltaClass(delta)}`;
+            deltaRef.current.style.display = '';
+          } else {
+            deltaRef.current.style.display = 'none';
+          }
+        }
+      },
+    }));
 
-      {speedDelta !== null && (
-        <span className={`${styles.delta} ${getDeltaClass(speedDelta)}`}>
-          {formatDelta(speedDelta)}
+    return (
+      <div
+        ref={panelRef}
+        className={`${styles.panel} ${PIT_STATE_CLASS[initialState]}`}
+      >
+        <span ref={labelRef} className={styles.label}>
+          {PIT_STATE_LABEL[initialState]}
         </span>
-      )}
-    </div>
-  </div>
+
+        <div className={styles.right}>
+          <span className={styles.limit}>{limitSpeed}</span>
+          <span className={styles.unit}>{speedUnit}</span>
+
+          <span
+            ref={deltaRef}
+            className={`${styles.delta} ${initialDelta !== null ? getDeltaClass(initialDelta) : ''}`}
+            style={{ display: initialDelta !== null ? '' : 'none' }}
+          >
+            {initialDelta !== null ? formatDelta(initialDelta) : ''}
+          </span>
+        </div>
+      </div>
+    );
+  }
 );
+
+PitPanel.displayName = 'PitPanel';

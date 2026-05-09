@@ -3,7 +3,11 @@ import { Droplet, Thermometer } from 'lucide-react';
 import type { SpeedWidgetSettings } from '../../../types/widget-settings';
 import { formatGear } from '../../../utils/telemetry-format';
 import { getShiftZoneColor } from './speed-utils';
-import { PitPanel } from './PitPanel/PitPanel';
+import {
+  PitPanel,
+  type PitPanelHandle,
+  type PitState,
+} from './PitPanel/PitPanel';
 
 import styles from './SpeedWidget.module.scss';
 
@@ -14,7 +18,9 @@ export interface SpeedDisplayHandle {
     speed: string,
     rpm: number,
     gear: number,
-    shiftIndicatorPct: number
+    shiftIndicatorPct: number,
+    pitState: PitState,
+    pitSpeedDelta: number | null
   ) => void;
 }
 
@@ -27,9 +33,9 @@ interface SpeedWidgetProps {
   settings: SpeedWidgetSettings;
   isOnPitRoad: boolean;
   pitLimiterActive: boolean;
-  pitState: 'pit-lane' | 'limiter-active' | 'over-limit';
+  initialPitState: PitState;
   pitLimitFormatted: string;
-  pitSpeedDelta: number | null;
+  initialPitSpeedDelta: number | null;
   oilTemp: string;
   waterTemp: string;
   tempUnit: string;
@@ -48,9 +54,9 @@ export const SpeedWidget = forwardRef<SpeedDisplayHandle, SpeedWidgetProps>(
       settings,
       isOnPitRoad,
       pitLimiterActive,
-      pitState,
+      initialPitState,
       pitLimitFormatted,
-      pitSpeedDelta,
+      initialPitSpeedDelta,
       oilTemp,
       waterTemp,
       tempUnit,
@@ -65,6 +71,7 @@ export const SpeedWidget = forwardRef<SpeedDisplayHandle, SpeedWidgetProps>(
     const secondaryRef = useRef<HTMLSpanElement>(null);
     const rpmValueRef = useRef<HTMLSpanElement>(null);
     const rpmBarRef = useRef<HTMLDivElement>(null);
+    const pitPanelRef = useRef<PitPanelHandle>(null);
 
     const rpmColors = useMemo(
       () => ({
@@ -94,7 +101,14 @@ export const SpeedWidget = forwardRef<SpeedDisplayHandle, SpeedWidgetProps>(
     useImperativeHandle(
       ref,
       () => ({
-        update: (speed, rpm, gear, shiftIndicatorPct) => {
+        update: (
+          speed,
+          rpm,
+          gear,
+          shiftIndicatorPct,
+          pitState,
+          pitSpeedDelta
+        ) => {
           const primary = isGearFocused ? formatGear(gear) : speed;
           const secondary = isGearFocused ? speed : formatGear(gear);
 
@@ -129,25 +143,10 @@ export const SpeedWidget = forwardRef<SpeedDisplayHandle, SpeedWidgetProps>(
             }
           }
 
-          if (
-            rpmBarRef.current &&
-            shiftIndicatorPct >= 1 &&
-            rpm > 0 &&
-            !pitLimiterActive &&
-            !isOnPitRoad
-          ) {
-            // maxShiftRpm refinement happens in container
-          }
+          pitPanelRef.current?.update(pitState, pitSpeedDelta);
         },
       }),
-      [
-        isGearFocused,
-        settings.showRpmBar,
-        pitLimiterActive,
-        isOnPitRoad,
-        maxShiftRpm,
-        rpmColors,
-      ]
+      [isGearFocused, settings.showRpmBar, maxShiftRpm, rpmColors]
     );
 
     const primaryLabel = isGearFocused ? 'GEAR' : speedUnit;
@@ -157,10 +156,11 @@ export const SpeedWidget = forwardRef<SpeedDisplayHandle, SpeedWidgetProps>(
       <div className={styles.root}>
         {showPitPanel && (
           <PitPanel
-            pitState={pitState}
+            ref={pitPanelRef}
+            initialState={initialPitState}
             limitSpeed={pitLimitFormatted}
             speedUnit={speedUnit}
-            speedDelta={pitSpeedDelta}
+            initialDelta={initialPitSpeedDelta}
           />
         )}
 
