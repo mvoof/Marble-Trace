@@ -40,3 +40,7 @@ storybook-static
 
 # Telemetry snapshots (captured from live iRacing sessions)
 # test-data/*.json — tracked in git for CI typecheck / Storybook
+
+# Temporary screenshots
+docs/assets/screenshots/overlay/*
+!docs/assets/screenshots/overlay/.gitkeep
