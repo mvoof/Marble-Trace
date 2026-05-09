@@ -26,6 +26,27 @@ Most iRacing overlays are either bloated desktop apps or locked behind subscript
 
 ---
 
+## Featured Widgets
+
+- [Speed & RPM](#speed--rpm) — HUD with gear, RPM ring & tire temps
+- [Standings](#standings) — Race table with deltas & multi-class
+- [Input Trace](#input-trace) — Real-time pedal history or bars
+- [Relative](#relative) — F3-style timing with closing trends
+- [Lap Delta](#lap-delta) — Live comparison vs best/optimal lap
+- [Fuel](#fuel) — Consumption graph & pit-stop math
+- [Lap Times](#lap-times) — Current, last, best & predicted times
+- [Timer](#timer) — Session clock & laps-to-go
+- [Track Map](#track-map) — SVG map with live positions & sectors
+- [Linear Map](#linear-map) — 1-D relative track position
+- [Proximity Radar](#proximity-radar) — 360° awareness & bumper gaps
+- [Radar Bar](#radar-bar) — Edge indicators for side-by-side
+- [Flags (LED/Flat)](#flags-led--flat) — Matrix and pill-style indicators
+- [G-Meter](#g-meter) — Lateral & longitudinal friction circle
+- [Chassis](#chassis) — Brake temps & suspension data
+- [Weather](#weather) — Live conditions & dynamic forecast
+
+---
+
 ## Widgets
 
 Every widget is independently positioned, resized, and styled — drag it anywhere on screen, scale it to taste, adjust opacity so it never blocks your view. Each one ships with its own set of options: toggle individual data fields, switch layouts, pick colours, set visibility rules. You only see what you actually need, exactly where you want it.
@@ -35,8 +56,8 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 > Your central driving HUD. A circular RPM ring fills up as you rev — it flashes red when you hit the shift point so you never miss a gear. Shows current gear, speed, and an active pit-limiter indicator. Optionally displays tire and brake temperatures per corner so you know exactly when your rubber is up to temperature or overheating.
 
 <p>
-  <img src="docs/assets/screenshots/widgets/speed-widget.png" alt="Speed widget — high RPM" >
-  <img src="docs/assets/screenshots/widgets/speed-widget-limiter.png" alt="Speed widget — with temps" >
+  <img src="docs/assets/screenshots/widgets/speed-widget.png" alt="Speed widget — high RPM">
+  <img src="docs/assets/screenshots/widgets/speed-widget-limiter.png" alt="Speed widget — with temps">
 </p>
 
 ---
@@ -47,7 +68,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 <p>
   <img src="docs/assets/screenshots/widgets/input-trace-widget.png" alt="Input Trace — horizontal" width="400">
-  <img src="docs/assets/screenshots/widgets/input-trace-vertical.png" alt="Input Trace — vertical bars" >
+  <img src="docs/assets/screenshots/widgets/input-trace-vertical.png" alt="Input Trace — vertical bars">
 </p>
 
 ---
@@ -57,7 +78,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 > Full race standings table with multi-class support, SOF, qualify deltas, brand & tire info, and a configurable row budget. All columns visible at once or stripped to essentials.
 
 <p>
-  <img src="docs/assets/screenshots/widgets/standings-widget.png" alt="Standings — all columns" >
+  <img src="docs/assets/screenshots/widgets/standings-widget.png" alt="Standings — all columns">
 </p>
 
 ---
@@ -67,7 +88,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 > Relative timing sorted by F2Time — player always centred. Closing/gap trend arrows, lap status (lapping/lapped), class stripes.
 
 <p>
-  <img src="docs/assets/screenshots/widgets/relative-widget.png" alt="Relative widget" >
+  <img src="docs/assets/screenshots/widgets/relative-widget.png" alt="Relative widget">
 </p>
 
 ---
@@ -97,7 +118,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 > Two slim vertical bars at the screen edges — a quick-glance indicator for side-by-side situations.
 
 <p>
-  <img src="docs/assets/screenshots/widgets/radar-bar-widget.png" alt="Radar Bar widget" ">
+  <img src="docs/assets/screenshots/widgets/radar-bar-widget.png" alt="Radar Bar widget">
 </p>
 
 ---
@@ -107,8 +128,8 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 > Per-corner brake & tire temperatures with optional inboard suspension data and overheat warnings.
 
 <p>
-  <img src="docs/assets/screenshots/widgets/chassis-widget.png" alt="Chassis — with inboard" >
-  <img src="docs/assets/screenshots/widgets/chassis-overheat.png" alt="Chassis — brake overheat" >
+  <img src="docs/assets/screenshots/widgets/chassis-widget.png" alt="Chassis — with inboard">
+  <img src="docs/assets/screenshots/widgets/chassis-overheat.png" alt="Chassis — brake overheat">
 </p>
 
 ---
@@ -118,9 +139,9 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 > Lap-by-lap consumption graph, laps remaining, add-fuel suggestion, and tank fill level. Line or bar chart mode.
 
 <p>
-  <img src="docs/assets/screenshots/widgets/fuel-widget.png" alt="Fuel — line chart" >
-  <img src="docs/assets/screenshots/widgets/fuel-widget-bar.png" alt="Fuel — bar chart" >
-  <img src="docs/assets/screenshots/widgets/fuel-widget-low.png" alt="Fuel — low" >
+  <img src="docs/assets/screenshots/widgets/fuel-widget.png" alt="Fuel — line chart">
+  <img src="docs/assets/screenshots/widgets/fuel-widget-bar.png" alt="Fuel — bar chart">
+  <img src="docs/assets/screenshots/widgets/fuel-widget-low.png" alt="Fuel — low">
 </p>
 
 ---
@@ -130,8 +151,8 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 > Delta bar vs best / optimal lap with per-sector splits. Vertical or horizontal layout.
 
 <p>
-  <img src="docs/assets/screenshots/widgets/lap-delta-widget.png" alt="Lap Delta — vertical with sectors" >
-  <img src="docs/assets/screenshots/widgets/lap-delta-horizontal.png" alt="Lap Delta — horizontal" >
+  <img src="docs/assets/screenshots/widgets/lap-delta-widget.png" alt="Lap Delta — vertical with sectors">
+  <img src="docs/assets/screenshots/widgets/lap-delta-horizontal.png" alt="Lap Delta — horizontal">
 </p>
 
 ---
@@ -162,7 +183,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 > Wind direction compass, temperature, humidity, and forecast strip for dynamic weather sessions.
 
 <p>
-  <img src="docs/assets/screenshots/widgets/weather-widget.png" alt="Weather — with forecast" ">
+  <img src="docs/assets/screenshots/widgets/weather-widget.png" alt="Weather — with forecast">
 </p>
 
 ---
@@ -172,7 +193,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 > LED matrix and flat pill-style flag indicators with green, yellow, red, blue, white, checkered, and meatball flag support.
 
 <p>
-  <img src="docs/assets/screenshots/widgets/flags-widget.png" alt="Flags LED — green flag" >
+  <img src="docs/assets/screenshots/widgets/flags-widget.png" alt="Flags LED — green flag">
   <img src="docs/assets/screenshots/widgets/flat-flags-widget.png" alt="Flat Flags — multiple flags">
 </p>
 
