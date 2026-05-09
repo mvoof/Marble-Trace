@@ -57,6 +57,8 @@ const mergeWidgets = (savedWidgets: WidgetConfig[]): WidgetConfig[] => {
     merged.push({
       ...defaultWidget,
       ...saved,
+      label: defaultWidget.label,
+      description: defaultWidget.description,
       customSettings: mergeCustomSettings(
         defaultWidget.customSettings,
         saved.customSettings
