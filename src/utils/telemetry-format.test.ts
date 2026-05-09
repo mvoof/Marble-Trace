@@ -26,8 +26,8 @@ describe('telemetry-format', () => {
     });
 
     it('handles null/zero correctly', () => {
-      expect(formatLapTime(null)).toBe('\u2014');
-      expect(formatLapTime(0)).toBe('\u2014');
+      expect(formatLapTime(null)).toBe('--:--.---');
+      expect(formatLapTime(0)).toBe('--:--.---');
     });
   });
 
@@ -51,7 +51,7 @@ describe('telemetry-format', () => {
     it('formats fraction to percent string', () => {
       expect(formatPercent(0.5)).toBe('50%');
       expect(formatPercent(0.999)).toBe('100%');
-      expect(formatPercent(null)).toBe('\u2014');
+      expect(formatPercent(null)).toBe('--%');
     });
   });
 });
