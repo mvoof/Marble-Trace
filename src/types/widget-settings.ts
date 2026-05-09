@@ -153,7 +153,7 @@ export interface ChassisWidgetSettings {
 
 export interface WidgetCustomSettings {
   chassis?: ChassisWidgetSettings;
-  flags?: FlagDisplaySettings;
+  'led-flags'?: FlagDisplaySettings;
   'flat-flags'?: FlagDisplaySettings;
   speed?: SpeedWidgetSettings;
   'input-trace'?: InputTraceSettings;
@@ -162,7 +162,7 @@ export interface WidgetCustomSettings {
   standings?: StandingsWidgetSettings;
   relative?: RelativeWidgetSettings;
   'track-map'?: TrackMapWidgetSettings;
-  'linear-map'?: LinearMapWidgetSettings;
+  'relative-map'?: LinearMapWidgetSettings;
   weather?: WeatherWidgetSettings;
   fuel?: FuelWidgetSettings;
   'lap-times'?: LapTimesWidgetSettings;

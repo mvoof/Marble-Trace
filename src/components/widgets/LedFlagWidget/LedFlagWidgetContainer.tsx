@@ -10,7 +10,7 @@ const IS_NO_FLAG = (v: string) => v === 'none';
 
 export const LedFlagWidgetContainer = observer(() => {
   const { alwaysShow, holdDuration } =
-    widgetSettingsStore.getFlagDisplaySettings('flags');
+    widgetSettingsStore.getFlagDisplaySettings('led-flags');
 
   const sessionFlags = telemetryStore.session?.session_flags ?? null;
   const playerCarFlags = telemetryStore.session?.player_car_flags ?? null;

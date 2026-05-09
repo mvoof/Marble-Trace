@@ -222,7 +222,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     },
   },
   {
-    id: 'linear-map',
+    id: 'relative-map',
     label: 'Relative Map',
     description: 'Progress bar of car track positions.',
     enabled: false,
@@ -236,7 +236,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     backgroundColorEdge: '#14141b',
     hotkey: '',
     customSettings: {
-      'linear-map': {
+      'relative-map': {
         orientation: 'horizontal',
         playerDotColor: '#ffffff',
         targetDotRadiusPx: 10,
@@ -244,7 +244,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     },
   },
   {
-    id: 'flags',
+    id: 'led-flags',
     label: 'LED Flags',
     description: 'LED matrix display of track flags.',
     enabled: false,
@@ -258,7 +258,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     backgroundColorEdge: 'transparent',
     hotkey: '',
     customSettings: {
-      flags: { alwaysShow: true, holdDuration: 3 },
+      'led-flags': { alwaysShow: true, holdDuration: 3 },
     },
   },
   {
