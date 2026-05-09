@@ -12,6 +12,7 @@ import {
 } from './persistence';
 import { setupHotkeys, cleanupHotkeys } from './hotkeys';
 import {
+  setupMainListeners,
   setupOverlayListeners,
   emitDragMode,
   emitHideAllWidgets,
@@ -48,6 +49,8 @@ export const initMainSync = async () => {
           runInAction(() => widgetSettingsStore.setWidgets(e.payload));
         }
       );
+
+      const mainUnlistens = await setupMainListeners();
 
       const disposers = [
         reaction(
@@ -144,6 +147,7 @@ export const initMainSync = async () => {
 
       return () => {
         void overlayLayoutUnlisten();
+        mainUnlistens.forEach((u) => u());
         disposers.forEach((d) => d());
         cleanupHotkeys();
         mainSyncInitPromise = null;
@@ -171,5 +175,17 @@ export const initOverlaySync = async () => {
 
   const unlistens = await setupOverlayListeners();
 
-  return () => unlistens.forEach((u) => u());
+  const disposers = [
+    reaction(
+      () => appSettingsStore.dragMode,
+      (v) => {
+        void emitDragMode(v);
+      }
+    ),
+  ];
+
+  return () => {
+    unlistens.forEach((u) => u());
+    disposers.forEach((d) => d());
+  };
 };
