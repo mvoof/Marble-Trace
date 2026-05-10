@@ -107,44 +107,9 @@ jobs:
         run: cargo test --locked
         shell: bash
 
-  build-app:
-    name: Build App
-    needs: [check-changes, frontend-checks, rust-checks]
-    if: |
-      always() &&
-      (needs.check-changes.outputs.app == 'true' || needs.check-changes.outputs.ci == 'true') &&
-      (needs.frontend-checks.result == 'success' || needs.frontend-checks.result == 'skipped') &&
-      (needs.rust-checks.result == 'success' || needs.rust-checks.result == 'skipped')
-    environment: pr-review
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [windows-latest]
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Setup Dependencies
-        uses: ./.github/actions/setup-dependencies
-        with:
-          node-version: '20'
-          platform: ${{ matrix.platform }}
-          cache-rust: 'true'
-
-      - name: Build Tauri App
-        run: npm run tauri:build:dev
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ runner.os }}-build
-          path: src-tauri/target/release/bundle/
-          compression-level: 6
-          if-no-files-found: warn
-
   status-check:
     name: PR Status
-    needs: [check-changes, frontend-checks, rust-checks, build-app]
+    needs: [check-changes, frontend-checks, rust-checks]
     runs-on: ubuntu-latest
     if: ${{ always() }}
     steps:
@@ -153,7 +118,6 @@ jobs:
           echo "App changes: ${{ needs.check-changes.outputs.app }}"
           echo "Frontend checks result: ${{ needs.frontend-checks.result }}"
           echo "Rust checks result: ${{ needs.rust-checks.result }}"
-          echo "Build result: ${{ needs.build-app.result }}"
 
           if [ "${{ needs.check-changes.outputs.app }}" != "true" ] && [ "${{ needs.check-changes.outputs.ci }}" != "true" ]; then
             echo "No code changes, passing"
@@ -167,11 +131,6 @@ jobs:
 
           if [ "${{ needs.rust-checks.result }}" != "success" ] && [ "${{ needs.rust-checks.result }}" != "skipped" ]; then
             echo "Rust checks failed"
-            exit 1
-          fi
-
-          if [ "${{ needs.build-app.result }}" != "success" ] && [ "${{ needs.build-app.result }}" != "skipped" ]; then
-            echo "Build failed"
             exit 1
           fi
 

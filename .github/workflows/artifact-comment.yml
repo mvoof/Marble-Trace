@@ -6,6 +6,7 @@ on:
       - 'completed'
     workflows:
       - 'PR Check'
+      - 'Build App'
 
 jobs:
   comment-on-pr:
