@@ -8,6 +8,20 @@ import styles from './ChassisWidget.module.scss';
 
 const SUSPENSION_BENT_THRESHOLD_MM = 18;
 
+const CenterLabels = ({ showInboard }: { showInboard: boolean }) => {
+  if (!showInboard) {
+    return null;
+  }
+
+  return (
+    <div className={styles.centerLabels}>
+      <span className={styles.centerLabel}>RH</span>
+      <span className={styles.centerLabel}>BRK</span>
+      <span className={styles.centerLabel}>SHK</span>
+    </div>
+  );
+};
+
 export const ChassisWidget = ({
   lf,
   rf,
@@ -25,18 +39,6 @@ export const ChassisWidget = ({
   const frontBent = Math.abs(frontAxleDiff) > SUSPENSION_BENT_THRESHOLD_MM;
   const rearBent = Math.abs(rearAxleDiff) > SUSPENSION_BENT_THRESHOLD_MM;
 
-  const renderCenterLabels = () => {
-    if (!showInboard) return null;
-
-    return (
-      <div className={styles.centerLabels}>
-        <span className={styles.centerLabel}>RH</span>
-        <span className={styles.centerLabel}>BRK</span>
-        <span className={styles.centerLabel}>SHK</span>
-      </div>
-    );
-  };
-
   return (
     <WidgetPanel ref={ref} direction="column" gap={0} fitContent>
       <div
@@ -51,7 +53,7 @@ export const ChassisWidget = ({
           showInboard={showInboard}
         />
 
-        {renderCenterLabels()}
+        <CenterLabels showInboard={showInboard} />
 
         <CornerModule
           data={rf}
@@ -71,7 +73,7 @@ export const ChassisWidget = ({
           showInboard={showInboard}
         />
 
-        {renderCenterLabels()}
+        <CenterLabels showInboard={showInboard} />
 
         <CornerModule
           data={rr}
