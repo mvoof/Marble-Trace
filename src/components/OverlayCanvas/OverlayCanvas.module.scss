@@ -3,7 +3,6 @@
   inset: 0;
   z-index: 9999;
   overflow: hidden;
-  transition: background-color 0.2s ease;
 
   &.dragActive {
     background-color: rgba(0, 102, 255, 0.1);

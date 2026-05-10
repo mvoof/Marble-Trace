@@ -527,30 +527,69 @@ fn update_start_positions(
     }
 }
 
+#[derive(Debug, serde::Serialize, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+pub struct TelemetryBundle {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub car_dynamics: Option<CarDynamicsFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub car_inputs: Option<CarInputsFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub car_positions: Option<CarPositionsFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lap_delta: Option<lap_delta::LapDeltaFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub car_idx: Option<CarIdxFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chassis: Option<ChassisFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lap_timing: Option<LapTimingFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub proximity: Option<proximity::ProximityFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub standings: Option<standings::DriverEntriesFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub car_status: Option<CarStatusFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fuel: Option<fuel::FuelComputedFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pit_stops: Option<pit_stops::PitStopsFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub session: Option<SessionFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub environment: Option<EnvironmentFrame>,
+}
+
 fn emit_domain_frames(ctx: EmitContext<'_>) {
     let app = ctx.app;
     let frame = ctx.frame;
     let tick = ctx.tick;
 
     let active_mask = ctx.service.active_events.load(Ordering::Relaxed);
+    let mut bundle = TelemetryBundle {
+        car_dynamics: None,
+        car_inputs: None,
+        car_positions: None,
+        lap_delta: None,
+        car_idx: None,
+        chassis: None,
+        lap_timing: None,
+        proximity: None,
+        standings: None,
+        car_status: None,
+        fuel: None,
+        pit_stops: None,
+        session: None,
+        environment: None,
+    };
 
     // 60 Hz — raw frames
     if (active_mask & EVENT_CAR_DYNAMICS) != 0 {
-        if let Err(e) = app.emit(
-            "iracing://telemetry/car-dynamics",
-            &CarDynamicsFrame::from(frame),
-        ) {
-            warn!("Failed to emit car dynamics: {}", e);
-        }
+        bundle.car_dynamics = Some(CarDynamicsFrame::from(frame));
     }
 
     if (active_mask & EVENT_CAR_INPUTS) != 0 {
-        if let Err(e) = app.emit(
-            "iracing://telemetry/car-inputs",
-            &CarInputsFrame::from(frame),
-        ) {
-            warn!("Failed to emit car inputs: {}", e);
-        }
+        bundle.car_inputs = Some(CarInputsFrame::from(frame));
     }
 
     // Clone session_info Arc — cheap enough to do at 60Hz for accurate computations
@@ -558,74 +597,41 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
     let session_info = session_snapshot.as_deref();
 
     // Compute stateful data at 60Hz for maximum precision (especially sector timing)
-    let lap_delta_frame = if (active_mask & EVENT_LAP_DELTA) != 0 {
-        session_info.map(|session| lap_delta::compute(frame, session, &ctx.computation.lap_delta))
-    } else {
-        None
-    };
-
-    // 60 Hz — emit lap delta for smooth live delta updates
-    if let Some(ref ldf) = lap_delta_frame {
-        if let Err(e) = app.emit("iracing://computed/lap-delta", ldf) {
-            warn!("Failed to emit lap delta: {}", e);
-        }
+    if (active_mask & EVENT_LAP_DELTA) != 0 {
+        bundle.lap_delta = session_info
+            .map(|session| lap_delta::compute(frame, session, &ctx.computation.lap_delta));
     }
 
     // 60 Hz — lightweight car positions for smooth map/relative rendering
     if (active_mask & EVENT_CAR_POSITIONS) != 0 {
-        if let Err(e) = app.emit(
-            "iracing://telemetry/car-positions",
-            &CarPositionsFrame::from(frame),
-        ) {
-            warn!("Failed to emit car positions: {}", e);
-        }
+        bundle.car_positions = Some(CarPositionsFrame::from(frame));
     }
 
     // 10 Hz — also fire on first frame so widgets populate immediately
     if tick.is_multiple_of(6) || tick == 1 {
-        if let Err(e) = app.emit("iracing://telemetry/car-idx", &CarIdxFrame::from(frame)) {
-            warn!("Failed to emit car idx: {}", e);
-        }
-        if let Err(e) = app.emit("iracing://telemetry/chassis", &ChassisFrame::from(frame)) {
-            warn!("Failed to emit chassis: {}", e);
-        }
-        if let Err(e) = app.emit(
-            "iracing://telemetry/lap-timing",
-            &LapTimingFrame::from(frame),
-        ) {
-            warn!("Failed to emit lap timing: {}", e);
-        }
+        bundle.car_idx = Some(CarIdxFrame::from(frame));
+        bundle.chassis = Some(ChassisFrame::from(frame));
+        bundle.lap_timing = Some(LapTimingFrame::from(frame));
 
         // Computed: proximity & standings (10 Hz)
         if let Some(session) = session_info {
             let track_length = lock_or_recover(&ctx.service.track_length_m).unwrap_or(0.0);
-            let proximity = proximity::compute(frame, session, track_length);
-            if let Err(e) = app.emit("iracing://computed/proximity", &proximity) {
-                warn!("Failed to emit proximity: {}", e);
-            }
+            bundle.proximity = Some(proximity::compute(frame, session, track_length));
 
             let start_pos_snapshot = lock_or_recover(&ctx.service.start_positions).clone();
-            let standings_frame = standings::compute(
+            bundle.standings = Some(standings::compute(
                 frame,
                 session,
                 &start_pos_snapshot,
                 true,
                 &ctx.computation.standings,
-            );
-            if let Err(e) = app.emit("iracing://computed/standings", &standings_frame) {
-                warn!("Failed to emit standings: {}", e);
-            }
+            ));
         }
     }
 
     // 4 Hz
     if tick.is_multiple_of(15) || tick == 1 {
-        if let Err(e) = app.emit(
-            "iracing://telemetry/car-status",
-            &CarStatusFrame::from(frame),
-        ) {
-            warn!("Failed to emit car status: {}", e);
-        }
+        bundle.car_status = Some(CarStatusFrame::from(frame));
 
         // Computed: fuel & pit stops (4 Hz)
         if let Some(session) = session_info {
@@ -639,36 +645,24 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
                 state.update(current_lap, frame.fuel_level, session_num);
             }
 
-            let fuel_frame = {
+            bundle.fuel = {
                 let state = lock_or_recover(&ctx.computation.fuel);
                 fuel::compute(frame, session, frame.session_num, pit_warning_laps, &state)
             };
-            if let Some(fuel_frame) = fuel_frame {
-                if let Err(e) = app.emit("iracing://computed/fuel", &fuel_frame) {
-                    warn!("Failed to emit fuel: {}", e);
-                }
-            }
 
             // Pit stop tracking
-            if let Some(pit_frame) = pit_stops::compute(frame, session, ctx.pit) {
-                if let Err(e) = app.emit("iracing://computed/pit-stops", &pit_frame) {
-                    warn!("Failed to emit pit stops: {}", e);
-                }
-            }
+            bundle.pit_stops = pit_stops::compute(frame, session, ctx.pit);
         }
     }
 
     // 1 Hz
     if tick.is_multiple_of(60) || tick == 1 {
-        if let Err(e) = app.emit("iracing://telemetry/session", &SessionFrame::from(frame)) {
-            warn!("Failed to emit session: {}", e);
-        }
-        if let Err(e) = app.emit(
-            "iracing://telemetry/environment",
-            &EnvironmentFrame::from(frame),
-        ) {
-            warn!("Failed to emit environment: {}", e);
-        }
+        bundle.session = Some(SessionFrame::from(frame));
+        bundle.environment = Some(EnvironmentFrame::from(frame));
+    }
+
+    if let Err(e) = app.emit("iracing://telemetry/bundle", &bundle) {
+        warn!("Failed to emit telemetry bundle: {}", e);
     }
 }
 

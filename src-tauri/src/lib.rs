@@ -62,6 +62,7 @@ pub fn run() {
             .register::<DriverEntry>()
             .register::<PitStopsFrame>()
             .register::<LapDeltaFrame>()
+            .register::<iracing::service::TelemetryBundle>()
             .register::<WeatherForecastEntry>();
 
         Typescript::default()
