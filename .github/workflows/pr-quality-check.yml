@@ -1,4 +1,4 @@
-name: PR Check
+name: PR Quality Check
 
 on:
   pull_request:
@@ -108,7 +108,7 @@ jobs:
         shell: bash
 
   status-check:
-    name: PR Status
+    name: PR Quality Status
     needs: [check-changes, frontend-checks, rust-checks]
     runs-on: ubuntu-latest
     if: ${{ always() }}
