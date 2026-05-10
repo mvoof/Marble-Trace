@@ -28,7 +28,7 @@ export enum TrackSurface {
  * Lives inside Sessions[n].ResultsPositions and updates live during the session.
  * Not exported by specta (pitwall marks it skip), so typed manually here.
  */
-export type ResultsPosition = {
+type ResultsPosition = {
   CarIdx: number;
   Position: number;
   ClassPosition: number;

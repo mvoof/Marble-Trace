@@ -13,7 +13,7 @@ export interface CarOnTrack {
   classPosition: number;
 }
 
-export interface StoredTrackData {
+interface StoredTrackData {
   trackName: string;
   trackConfig: string;
   svgPath: string;
