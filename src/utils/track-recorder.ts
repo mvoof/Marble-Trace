@@ -41,11 +41,13 @@ export class TrackRecorder {
 
     let pct = this.highestPct - this.startPct;
     if (pct < 0) pct += 1;
+
     return Math.max(0, Math.min(pct, MAX_PROGRESS_PCT));
   }
 
   start(): void {
     this.reset();
+
     this.recording = true;
     this.prevTime = performance.now() / MS_PER_SECOND;
   }
@@ -75,17 +77,21 @@ export class TrackRecorder {
     // Use high-precision wall clock for perfect 60Hz integration,
     // independent of when the sessionTime telemetry object actually updates (1Hz).
     const now = performance.now() / MS_PER_SECOND;
+
     let dt = now - this.prevTime;
     this.prevTime = now;
 
     // First valid tick: initialize start position
     if (this.startPct < 0) {
       if (lapDistPct < 0) return;
+
       this.startPct = lapDistPct;
       this.highestPct = lapDistPct;
       this.lastLapDistPct = lapDistPct;
+
       this.points.push({ x: 0, y: 0, pct: lapDistPct });
       this.pointsCount = 1;
+
       return;
     }
 
@@ -98,18 +104,21 @@ export class TrackRecorder {
     // North (Start/Finish straight) points DOWN, placing the S/F line at the bottom.
     const dx = speed * Math.sin(yaw) * dt;
     const dy = speed * Math.cos(yaw) * dt;
+
     this.x += dx;
     this.y += dy;
 
     // 10Hz progress tracking:
     // We only push a new track point when the lapDistPct actually changes.
     let pctDiff = lapDistPct - this.lastLapDistPct;
+
     if (pctDiff < -LAP_WRAP_THRESHOLD) pctDiff += 1; // Cross S/F forward
     if (pctDiff > LAP_WRAP_THRESHOLD) pctDiff -= 1; // Cross S/F backward
 
     if (Math.abs(pctDiff) >= SAMPLING_THRESHOLD_PCT) {
       this.points.push({ x: this.x, y: this.y, pct: lapDistPct });
       this.lastLapDistPct = lapDistPct;
+
       this.pointsCount++;
     }
 
@@ -147,6 +156,7 @@ export class TrackRecorder {
    */
   buildSvgPath(): { svgPath: string; viewBox: string } {
     const pts = this.getSortedPoints();
+
     if (pts.length < 3) {
       return { svgPath: '', viewBox: '0 0 100 100' };
     }
@@ -173,9 +183,11 @@ export class TrackRecorder {
     const vbH = height + padding * 2;
 
     let d = `M ${pts[0].x.toFixed(SVG_PRECISION)} ${pts[0].y.toFixed(SVG_PRECISION)}`;
+
     for (let i = 1; i < pts.length; i++) {
       d += ` L ${pts[i].x.toFixed(SVG_PRECISION)} ${pts[i].y.toFixed(SVG_PRECISION)}`;
     }
+
     d += ' Z';
 
     return {
@@ -186,7 +198,8 @@ export class TrackRecorder {
 
   private getSortedPoints(): TrackPoint[] {
     if (this.points.length === 0) return [];
-    return [...this.points].sort((a, b) => a.pct - b.pct);
+
+    return this.points.toSorted((a, b) => a.pct - b.pct);
   }
 
   getPoints(): TrackPoint[] {
@@ -215,18 +228,27 @@ export const getPointAtPct = (
 
   while (lo < hi - 1) {
     const mid = Math.floor((lo + hi) / 2);
-    if (points[mid].pct <= p) lo = mid;
-    else hi = mid;
+
+    if (points[mid].pct <= p) {
+      lo = mid;
+    } else {
+      hi = mid;
+    }
   }
 
   const a = points[lo];
   const b = points[hi];
+
   const segLen = b.pct - a.pct + (b.pct < a.pct ? FULL_LAP_PCT : 0);
 
   if (segLen <= 0) return { x: a.x, y: a.y };
 
   let t = (p - a.pct) / segLen;
-  if (t < 0) t += FULL_LAP_PCT / segLen;
+
+  if (t < 0) {
+    t += FULL_LAP_PCT / segLen;
+  }
+
   const tClamped = Math.max(0, Math.min(FULL_LAP_PCT, t));
 
   return {
