@@ -1,4 +1,8 @@
-export { telemetryConnectionStore, telemetryStore } from './iracing';
+export {
+  telemetryConnectionStore,
+  telemetryStore,
+  computedStore,
+} from './iracing';
 
 export { unitsStore } from './units.store';
 export { widgetSettingsStore } from './widget-settings.store';

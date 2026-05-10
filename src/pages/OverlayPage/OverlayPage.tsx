@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { telemetryConnectionStore } from '../../store/iracing';
+import { telemetryConnectionStore } from '../../store';
 import { OverlayCanvas } from '../../components/OverlayCanvas';
 import { initOverlaySync } from '../../store/sync';
 

@@ -1,8 +1,10 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { unitsStore } from '../../../store/units.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import {
+  telemetryStore,
+  unitsStore,
+  widgetSettingsStore,
+} from '../../../store';
 import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
 import { buildAllCorners } from './chassis-utils';
 import { ChassisWidget } from './ChassisWidget';
