@@ -389,17 +389,14 @@ async fn run_telemetry_loop<S>(
                 emit_domain_frames(ctx);
             }
             Ok(None) => {
+                info!("Telemetry stream ended (iRacing closed)");
                 break;
             }
             Err(_) => {
-                let is_running = is_iracing_running();
-
-                if !is_running {
-                    warn!("iRacingSim64.exe is not running. Disconnecting.");
-                    break;
-                } else {
-                    debug!("No telemetry for 3s, but process is running. Waiting...");
-                }
+                // If we hit a timeout, it just means iRacing isn't sending telemetry frames
+                // (e.g. user is in the garage or replay is paused).
+                // We DON'T disconnect here to avoid status jitter. We just keep waiting.
+                debug!("No telemetry for 3s, waiting...");
             }
         }
     }
@@ -664,21 +661,4 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
     if let Err(e) = app.emit("iracing://telemetry/bundle", &bundle) {
         warn!("Failed to emit telemetry bundle: {}", e);
     }
-}
-
-// when the connection to iRacing was lost, tasklist.exe was launched via std::process::Command without the CREATE_NO_WINDOW flag.
-// Windows displayed a console window for a split second, even though windows_subsystem = "windows" in main.rs—this attribute
-// hides the console only for the application process itself, not for child processes.
-// Fix: Moved the call to the is_iracing_running() function with the .creation_flags(0x08000000) (CREATE_NO_WINDOW) flag
-// via std::os::windows::process::CommandExt
-fn is_iracing_running() -> bool {
-    use std::os::windows::process::CommandExt;
-    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-    std::process::Command::new("tasklist")
-        .arg("/FI")
-        .arg("IMAGENAME eq iRacingSim64.exe")
-        .creation_flags(CREATE_NO_WINDOW)
-        .output()
-        .map(|o| String::from_utf8_lossy(&o.stdout).contains("iRacingSim64.exe"))
-        .unwrap_or(false)
 }
