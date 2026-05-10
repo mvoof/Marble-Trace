@@ -1,4 +1,4 @@
-import { useRef, type RefObject } from 'react';
+import { useCallback, useRef, type RefObject } from 'react';
 import { TimingRow } from '../../shared/TimingRow/TimingRow';
 import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import {
@@ -44,26 +44,29 @@ export const LapDeltaWidget = ({
   const deltaDivRef = useRef<HTMLDivElement>(null);
   const isHorizontal = layout === 'horizontal';
 
-  const assignDeltaDisplayHandle = (el: HTMLDivElement | null) => {
-    deltaDivRef.current = el;
+  const assignDeltaDisplayHandle = useCallback(
+    (el: HTMLDivElement | null) => {
+      deltaDivRef.current = el;
 
-    if (deltaDisplayRef && 'current' in deltaDisplayRef) {
-      deltaDisplayRef.current = el
-        ? {
-            update: (text, state) => {
-              el.textContent = text;
-              el.className = [
-                styles.delta,
-                DELTA_STATE_CLASS[state],
-                isHorizontal ? styles.deltaHorizontal : '',
-              ]
-                .filter(Boolean)
-                .join(' ');
-            },
-          }
-        : null;
-    }
-  };
+      if (deltaDisplayRef && 'current' in deltaDisplayRef) {
+        deltaDisplayRef.current = el
+          ? {
+              update: (text, state) => {
+                el.textContent = text;
+                el.className = [
+                  styles.delta,
+                  DELTA_STATE_CLASS[state],
+                  isHorizontal ? styles.deltaHorizontal : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ');
+              },
+            }
+          : null;
+      }
+    },
+    [deltaDisplayRef, isHorizontal]
+  );
 
   const sectorCount = Math.max(sectorDeltas.length, sectorTimes.length);
   const sectors = Array.from({ length: sectorCount }, (_, i) => ({
