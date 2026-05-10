@@ -174,7 +174,7 @@ export const FuelWidget = ({
 
           {tankTooSmall && (
             <div className={styles.pitWarningSplitPit}>
-              TANK TOO SMALL — SPLIT PIT REQUIRED
+              TANK TOO SMALL - SPLIT PIT REQUIRED
             </div>
           )}
         </div>

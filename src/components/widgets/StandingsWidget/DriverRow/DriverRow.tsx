@@ -66,7 +66,7 @@ const PosChange = ({
 
 const IrChangeCell = ({ delta }: { delta: number | undefined }) => {
   if (delta == null || delta === 0) {
-    return <span className={styles.irChange}>—</span>;
+    return <span className={styles.irChange}>-</span>;
   }
 
   const cls =
