@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { Space, Button, Input } from 'antd';
 import type { InputRef } from 'antd';
 import styles from './HotkeyRecorder.module.scss';
@@ -14,6 +15,7 @@ const normalizeTauriKey = (e: React.KeyboardEvent): string => {
   if (e.code === 'Enter') return 'RETURN';
   if (e.code.startsWith('Key')) return e.key.toUpperCase();
   if (e.code.startsWith('Digit')) return e.key;
+
   return e.code.toUpperCase();
 };
 
@@ -27,11 +29,13 @@ export const HotkeyRecorder = ({
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const inputRef = useRef<InputRef>(null);
 
-  useEffect(() => {
-    if (recording) {
-      inputRef.current?.focus();
-    }
-  }, [recording]);
+  const startRecording = () => {
+    flushSync(() => {
+      setRecording(true);
+    });
+
+    inputRef.current?.focus();
+  };
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -43,6 +47,7 @@ export const HotkeyRecorder = ({
       if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) return;
 
       const mainKey = normalizeTauriKey(e);
+
       if (!mainKey) return;
 
       const parts: string[] = [];
@@ -50,6 +55,7 @@ export const HotkeyRecorder = ({
       if (e.shiftKey) parts.push('Shift');
       if (e.altKey) parts.push('Alt');
       if (e.metaKey) parts.push('Super');
+
       parts.push(mainKey);
 
       setPendingKey(parts.join('+'));
@@ -71,14 +77,17 @@ export const HotkeyRecorder = ({
     } else {
       onApply('');
     }
+
     setPendingKey(null);
   };
 
   return (
     <div className={styles.container}>
       {label && <span className={styles.label}>{label}</span>}
+
       <div className={styles.hotkeyDisplay}>
         <div className={styles.keyBadge}>{currentHotkey || 'None'}</div>
+
         {pendingKey && (
           <>
             <div className={styles.arrow}>→</div>
@@ -86,6 +95,7 @@ export const HotkeyRecorder = ({
           </>
         )}
       </div>
+
       <Space>
         {recording ? (
           <Input
@@ -97,15 +107,17 @@ export const HotkeyRecorder = ({
             onKeyDown={handleKeyDown}
           />
         ) : (
-          <Button size="small" onClick={() => setRecording(true)}>
+          <Button size="small" onClick={startRecording}>
             {currentHotkey ? 'Rebind' : 'Record'}
           </Button>
         )}
+
         {pendingKey && (
           <Button size="small" type="primary" onClick={applyHotkey}>
             Apply
           </Button>
         )}
+
         {currentHotkey && !recording && (
           <Button size="small" danger onClick={clearHotkey}>
             Clear
