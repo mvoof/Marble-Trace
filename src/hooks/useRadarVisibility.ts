@@ -1,14 +1,30 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useReducer } from 'react';
 import type { NearbyCar } from '../types/bindings';
 import type { RadarSettings } from '../types/widget-settings';
 import { appSettingsStore } from '../store/app-settings.store';
+
+type VisibilityAction = 'SHOW' | 'HIDE';
+
+const visibilityReducer = (
+  state: boolean,
+  action: VisibilityAction
+): boolean => {
+  switch (action) {
+    case 'SHOW':
+      return true;
+    case 'HIDE':
+      return false;
+    default:
+      return state;
+  }
+};
 
 export const useRadarVisibility = (
   nearbyCars: NearbyCar[],
   settings: RadarSettings,
   hasSpotterContact: boolean = false
 ): boolean => {
-  const [visible, setVisible] = useState(false);
+  const [visible, dispatch] = useReducer(visibilityReducer, false);
 
   const { visibilityMode, proximityThreshold, hideDelay } = settings;
   const { dragMode } = appSettingsStore;
@@ -22,21 +38,21 @@ export const useRadarVisibility = (
 
   useEffect(() => {
     if (visibilityMode === 'always') {
-      setVisible(true);
+      dispatch('SHOW');
 
       return;
     }
 
     if (hasNearby) {
-      setVisible(true);
-    } else if (visible) {
+      dispatch('SHOW');
+    } else {
       const timeoutId = setTimeout(() => {
-        setVisible(false);
+        dispatch('HIDE');
       }, hideDelay * 1000);
 
       return () => clearTimeout(timeoutId);
     }
-  }, [hasNearby, visibilityMode, hideDelay, visible]);
+  }, [hasNearby, visibilityMode, hideDelay]);
 
   return visibilityMode === 'always' || dragMode ? true : visible;
 };

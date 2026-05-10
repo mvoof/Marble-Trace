@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { listen } from '@tauri-apps/api/event';
 
@@ -19,6 +19,50 @@ interface TrackData {
   points: TrackPoint[];
 }
 
+type RecordingState = {
+  isRecording: boolean;
+  isWaitingForSF: boolean;
+  recordingProgress: number;
+  trackData: TrackData | null;
+};
+
+type RecordingAction =
+  | { type: 'SET_TRACK_DATA'; data: TrackData | null }
+  | { type: 'START_WAITING' }
+  | { type: 'START_RECORDING' }
+  | { type: 'SET_PROGRESS'; progress: number }
+  | { type: 'CLEAR' };
+
+const recordingReducer = (
+  state: RecordingState,
+  action: RecordingAction
+): RecordingState => {
+  switch (action.type) {
+    case 'SET_TRACK_DATA':
+      return {
+        ...state,
+        trackData: action.data,
+        isRecording: false,
+        isWaitingForSF: false,
+      };
+    case 'START_WAITING':
+      return { ...state, isWaitingForSF: true, recordingProgress: 0 };
+    case 'START_RECORDING':
+      return { ...state, isRecording: true, isWaitingForSF: false };
+    case 'SET_PROGRESS':
+      return { ...state, recordingProgress: action.progress };
+    case 'CLEAR':
+      return {
+        isRecording: false,
+        isWaitingForSF: false,
+        recordingProgress: 0,
+        trackData: null,
+      };
+    default:
+      return state;
+  }
+};
+
 export const TrackMapWidgetContainer = observer(() => {
   const { weekendInfo, sessionInfo } = telemetryStore;
   const settings = widgetSettingsStore.getTrackMapSettings();
@@ -28,14 +72,43 @@ export const TrackMapWidgetContainer = observer(() => {
   const trackConfig = weekendInfo?.TrackConfigName ?? '';
 
   const hasSavedRef = useRef(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [isWaitingForSF, setIsWaitingForSF] = useState(false);
-  const [recordingProgress, setRecordingProgress] = useState(0);
-  const [trackData, setTrackData] = useState<TrackData | null>(null);
+
+  const [recState, dispatch] = useReducer(recordingReducer, {
+    isRecording: false,
+    isWaitingForSF: false,
+    recordingProgress: 0,
+    trackData: null,
+  });
+
+  const { isRecording, isWaitingForSF, recordingProgress, trackData } =
+    recState;
+
   const recordingOverlayRef = useRef<RecordingOverlayHandle>(null);
 
   const sectorTimes = computedStore.lapDelta?.sectorTimes ?? [];
   const currentSectorIdx = computedStore.lapDelta?.currentSectorIdx ?? -1;
+
+  const setTrackData = useCallback((data: TrackData | null) => {
+    dispatch({ type: 'SET_TRACK_DATA', data });
+  }, []);
+
+  const setIsRecording = useCallback((isRecording: boolean) => {
+    if (isRecording) {
+      dispatch({ type: 'START_RECORDING' });
+    } else {
+      dispatch({ type: 'SET_TRACK_DATA', data: null }); // or just CLEAR if we want to reset everything
+    }
+  }, []);
+
+  const setIsWaitingForSF = useCallback((isWaiting: boolean) => {
+    if (isWaiting) {
+      dispatch({ type: 'START_WAITING' });
+    }
+  }, []);
+
+  const setRecordingProgress = useCallback((progress: number) => {
+    dispatch({ type: 'SET_PROGRESS', progress });
+  }, []);
 
   useEffect(() => {
     if (!trackId) return;
@@ -55,16 +128,19 @@ export const TrackMapWidgetContainer = observer(() => {
           saved.points?.length > 0 &&
           (saved.version ?? 0) >= TRACK_DATA_VERSION
         ) {
-          setTrackData({
-            svgPath: saved.svgPath,
-            viewBox: saved.viewBox,
-            points: saved.points,
+          dispatch({
+            type: 'SET_TRACK_DATA',
+            data: {
+              svgPath: saved.svgPath,
+              viewBox: saved.viewBox,
+              points: saved.points,
+            },
           });
         } else {
-          setTrackData(null);
+          dispatch({ type: 'SET_TRACK_DATA', data: null });
         }
       } catch {
-        setTrackData(null);
+        dispatch({ type: 'SET_TRACK_DATA', data: null });
       }
     };
 
@@ -111,10 +187,7 @@ export const TrackMapWidgetContainer = observer(() => {
       await store.set(TRACKS_STORE_KEY, tracks);
       await store.save();
 
-      setTrackData(null);
-      setIsRecording(false);
-      setIsWaitingForSF(false);
-      setRecordingProgress(0);
+      dispatch({ type: 'CLEAR' });
     } catch {
       // Silently fail
     }

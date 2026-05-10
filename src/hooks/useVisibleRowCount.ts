@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useReducer, useRef, type RefObject } from 'react';
 
 /**
  * Measures a container's height and returns how many rows of `rowHeight`
@@ -15,7 +15,10 @@ export const useVisibleRowCount = <T extends HTMLElement>(
   rowSelector?: string
 ): { ref: RefObject<T | null>; count: number } => {
   const ref = useRef<T | null>(null);
-  const [count, setCount] = useState(minRows);
+  const [count, dispatch] = useReducer(
+    (state: number, action: number) => (state === action ? state : action),
+    minRows
+  );
 
   useEffect(() => {
     const el = ref.current;
@@ -49,7 +52,7 @@ export const useVisibleRowCount = <T extends HTMLElement>(
       }
       if (rowPx <= 0) return;
       const next = Math.max(minRows, Math.floor(el.clientHeight / rowPx));
-      setCount((prev) => (prev === next ? prev : next));
+      dispatch(next);
     };
 
     let rafId = 0;

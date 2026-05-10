@@ -126,18 +126,18 @@ const splitTime = (seconds: number): { main: string; secs: string } => {
 };
 
 export const TimerWidgetContainer = observer(() => {
-  const [wallClockTime, setWallClockTime] = useState(() =>
-    formatWallClock(new Date())
-  );
-
-  const [pcDate, setPcDate] = useState(() => formatPcDate(new Date()));
+  const [dateTime, setDateTime] = useState(() => ({
+    wallClock: formatWallClock(new Date()),
+    pcDate: formatPcDate(new Date()),
+  }));
 
   useEffect(() => {
     const id = setInterval(() => {
       const now = new Date();
-      setWallClockTime(formatWallClock(now));
-
-      setPcDate(formatPcDate(now));
+      setDateTime({
+        wallClock: formatWallClock(now),
+        pcDate: formatPcDate(now),
+      });
     }, 1000);
 
     return () => clearInterval(id);
@@ -223,9 +223,9 @@ export const TimerWidgetContainer = observer(() => {
       showSimTime={showSimTime}
       showPcDate={showPcDate}
       showSimDate={showSimDate}
-      wallClockTime={wallClockTime}
+      wallClockTime={dateTime.wallClock}
       simTime={simTime}
-      pcDate={pcDate}
+      pcDate={dateTime.pcDate}
       simDate={simDate}
     />
   );
