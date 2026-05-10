@@ -167,6 +167,7 @@ export const WeatherWidget = ({
               style={{ borderLeftColor: cell.color }}
             >
               <span className={styles.statLabel}>{cell.label}</span>
+
               <span className={styles.statValue}>
                 {cell.value}
                 {cell.unit && (
@@ -208,10 +209,7 @@ export const WeatherWidget = ({
               </div>
             ))
           ) : (
-            <div
-              className={styles.forecastRow}
-              style={{ opacity: 0.5, fontSize: '0.7rem' }}
-            >
+            <div className={styles.forecastRow}>
               {weatherType === 'Static' || weatherType === 'Realistic'
                 ? `Forecast unavailable (${weatherType} Weather)`
                 : 'No forecast data available'}

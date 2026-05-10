@@ -55,7 +55,6 @@ export const OverlayCanvas = observer(() => {
             icon={<X size={16} />}
             onClick={handleExitDragMode}
             size="large"
-            style={{ fontWeight: 600, textTransform: 'uppercase' }}
           >
             Exit Edit Mode
           </Button>
