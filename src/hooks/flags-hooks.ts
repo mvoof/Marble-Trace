@@ -5,6 +5,7 @@ export const useFlagBlink = (): boolean => {
 
   useEffect(() => {
     const id = setInterval(() => setBlinkOn((v) => !v), 400);
+
     return () => clearInterval(id);
   }, []);
 
@@ -15,6 +16,7 @@ type FlagHoldAction<T> = { type: 'SET'; value: T };
 
 const flagHoldReducer = <T>(state: T, action: FlagHoldAction<T>): T => {
   if (action.type === 'SET') return action.value;
+
   return state;
 };
 
@@ -28,16 +30,20 @@ export const useFlagHold = <T>(
     flagHoldReducer as (state: T, action: FlagHoldAction<T>) => T,
     liveValue
   );
+
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const displayValueRef = useRef(displayValue);
+
   displayValueRef.current = displayValue;
 
   useEffect(() => {
     if (!isEmpty(liveValue)) {
       if (holdTimerRef.current) {
         clearTimeout(holdTimerRef.current);
+
         holdTimerRef.current = null;
       }
+
       dispatch({ type: 'SET', value: liveValue });
     } else {
       if (holdDuration > 0 && !isEmpty(displayValueRef.current)) {
@@ -48,10 +54,11 @@ export const useFlagHold = <T>(
         dispatch({ type: 'SET', value: emptyValue });
       }
     }
+
     return () => {
       if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
     };
-  }, [liveValue, holdDuration, isEmpty, emptyValue]);
+  }, [liveValue, holdDuration]);
 
   return displayValue;
 };
