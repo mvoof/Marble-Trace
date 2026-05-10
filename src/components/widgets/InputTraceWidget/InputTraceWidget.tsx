@@ -1,10 +1,10 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react';
-import { WidgetPanel } from '../primitives/WidgetPanel';
-import { CanvasTrace } from '../primitives/CanvasTrace';
-import type {
-  CanvasTraceChannel,
-  CanvasTraceHandle,
-} from '../primitives/CanvasTrace';
+import {
+  WidgetPanel,
+  CanvasTrace,
+  type CanvasTraceChannel,
+  type CanvasTraceHandle,
+} from '../primitives';
 import type { InputTraceSettings } from '../../../types/widget-settings';
 import { InputBars, type InputBarsHandle } from './InputBars/InputBars';
 

@@ -1,6 +1,6 @@
 import { useRef, type MutableRefObject, type RefObject } from 'react';
-import { TimingRow } from '../../shared/TimingRow/TimingRow';
-import { WidgetPanel } from '../primitives/WidgetPanel';
+import { TimingRow } from '../../shared/TimingRow';
+import { WidgetPanel } from '../primitives';
 import {
   getDeltaColor,
   getSectorDeltaState,

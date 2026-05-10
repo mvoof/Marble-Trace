@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 
-import { WidgetPanel } from '../primitives/WidgetPanel';
+import { WidgetPanel } from '../primitives';
 
 import styles from './TimerWidget.module.scss';
 

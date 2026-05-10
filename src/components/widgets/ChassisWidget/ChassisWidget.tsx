@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { Info } from 'lucide-react';
-import { WidgetPanel } from '../primitives/WidgetPanel';
+import { WidgetPanel } from '../primitives';
 import { CornerModule } from './CornerModule/CornerModule';
 import type { ChassisWidgetProps } from './types';
 import { computeAxleDiff } from './chassis-utils';

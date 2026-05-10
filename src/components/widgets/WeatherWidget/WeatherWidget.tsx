@@ -6,7 +6,7 @@ import type {
 } from '../../../types/bindings';
 import type { UnitSystem } from '../../../types/units';
 import { formatSpeed, speedUnit } from '../../../utils/telemetry-format';
-import { WidgetPanel } from '../primitives/WidgetPanel';
+import { WidgetPanel } from '../primitives';
 import { WindCompass } from './WindCompass/WindCompass';
 
 import styles from './WeatherWidget.module.scss';

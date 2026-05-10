@@ -11,7 +11,7 @@ import { SettingsPage } from './components/SettingsPage';
 import { TitleBar } from './components/TitleBar/TitleBar';
 import { AppStatus } from './components/AppStatus/AppStatus';
 import { SidebarLinks } from './components/SidebarLinks/SidebarLinks';
-import { RandomGlitchCanvas } from '../../components/shared/BackgroundAnimation/RandomGlitchCanvas';
+import { RandomGlitchCanvas } from '../../components/shared/BackgroundAnimation';
 import { UpdateBanner } from './components/UpdateBanner/UpdateBanner';
 import styles from './MainWindow.module.scss';
 import Logo from '../../assets/logo.svg?react';
