@@ -19,6 +19,7 @@ interface CardProps {
 const Card: React.FC<CardProps> = ({ title, children }) => (
   <div className={styles.card}>
     {title && <h3 className={styles.cardTitle}>{title}</h3>}
+
     <div className={styles.cardContent}>{children}</div>
   </div>
 );
@@ -28,6 +29,7 @@ export const SettingsPage = observer(() => {
 
   const handleCaptureSnapshot = () => {
     downloadSnapshot('iracing');
+
     messageApi.success('Snapshot saved — place the JSON in test-data/');
   };
 
@@ -37,6 +39,7 @@ export const SettingsPage = observer(() => {
 
       <header className={styles.header}>
         <span className={styles.moduleLabel}>Configuration</span>
+
         <h1 className={styles.title}>Global Application Settings</h1>
       </header>
 
@@ -45,10 +48,12 @@ export const SettingsPage = observer(() => {
           <div className={styles.fieldRow}>
             <div className={styles.fieldTexts}>
               <div className={styles.fieldTitle}>Hide all active widgets</div>
+
               <div className={styles.fieldDesc}>
                 Global toggle to quickly hide or show all enabled UI elements.
               </div>
             </div>
+
             <Switch
               checked={appSettingsStore.settings.hideAllWidgets}
               onChange={(v) => appSettingsStore.setHideAllWidgets(v)}
@@ -58,6 +63,7 @@ export const SettingsPage = observer(() => {
 
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>Toggle Hotkey</span>
+
           <HotkeyRecorder
             currentHotkey={appSettingsStore.settings.hideAllWidgetsHotkey}
             onApply={(key) => appSettingsStore.setHideAllWidgetsHotkey(key)}
@@ -70,10 +76,12 @@ export const SettingsPage = observer(() => {
           <div className={styles.fieldRow}>
             <div className={styles.fieldTexts}>
               <div className={styles.fieldTitle}>UI Drag Mode</div>
+
               <div className={styles.fieldDesc}>
                 Unlock widgets to move them freely across the screen.
               </div>
             </div>
+
             <Switch
               checked={appSettingsStore.dragMode}
               onChange={() => appSettingsStore.toggleDragMode()}
@@ -83,6 +91,7 @@ export const SettingsPage = observer(() => {
 
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>Drag Mode Hotkey</span>
+
           <HotkeyRecorder
             currentHotkey={appSettingsStore.settings.dragHotkey}
             onApply={(key) => appSettingsStore.setDragHotkey(key)}
@@ -94,10 +103,12 @@ export const SettingsPage = observer(() => {
         <div className={styles.fieldRow}>
           <div className={styles.fieldTexts}>
             <div className={styles.fieldTitle}>Auto-Hide System</div>
+
             <div className={styles.fieldDesc}>
               Hide widgets when iRacing is not running.
             </div>
           </div>
+
           <Switch
             checked={appSettingsStore.settings.hideWidgetsWhenGameClosed}
             onChange={(v) => appSettingsStore.setHideWidgetsWhenGameClosed(v)}
@@ -108,6 +119,7 @@ export const SettingsPage = observer(() => {
       <Card title="System Units">
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>Measurement System</span>
+
           <Segmented
             block
             options={[
@@ -127,10 +139,12 @@ export const SettingsPage = observer(() => {
           <div className={styles.fieldRow}>
             <div className={styles.fieldTexts}>
               <div className={styles.fieldTitle}>Auto-Check for Updates</div>
+
               <div className={styles.fieldDesc}>
                 Automatically check for new versions on application startup.
               </div>
             </div>
+
             <Switch
               checked={appSettingsStore.settings.autoUpdate}
               onChange={(v) => appSettingsStore.setAutoUpdate(v)}
@@ -142,10 +156,12 @@ export const SettingsPage = observer(() => {
           <div className={styles.fieldRow}>
             <div className={styles.fieldTexts}>
               <div className={styles.fieldTitle}>Check Interval</div>
+
               <div className={styles.fieldDesc}>
                 How often to check for updates while the app is running.
               </div>
             </div>
+
             <Select
               style={{ width: 140 }}
               value={appSettingsStore.settings.updateCheckInterval}
@@ -171,6 +187,7 @@ export const SettingsPage = observer(() => {
                   v{appSettingsStore.currentVersion}
                 </span>
               </div>
+
               {appSettingsStore.settings.lastUpdateCheck && (
                 <div
                   className={styles.fieldDesc}
@@ -180,6 +197,7 @@ export const SettingsPage = observer(() => {
                     gap: 4,
                     marginTop: 2,
                   }}
+                  suppressHydrationWarning
                 >
                   <Clock size={12} />
                   Last checked:{' '}
@@ -188,11 +206,14 @@ export const SettingsPage = observer(() => {
                   ).toLocaleString()}
                 </div>
               )}
+
               <div className={styles.fieldDesc} style={{ marginTop: 4 }}>
                 {appSettingsStore.updateStatus === 'idle' &&
                   'Your application is up to date.'}
+
                 {appSettingsStore.updateStatus === 'checking' &&
                   'Checking for updates...'}
+
                 {appSettingsStore.updateStatus === 'available' && (
                   <span style={{ color: '#52c41a' }}>
                     New version v{appSettingsStore.availableVersion} is
@@ -201,8 +222,10 @@ export const SettingsPage = observer(() => {
                 )}
                 {appSettingsStore.updateStatus === 'downloading' &&
                   'Downloading update...'}
+
                 {appSettingsStore.updateStatus === 'ready' &&
                   'Update downloaded. Restarting...'}
+
                 {appSettingsStore.updateStatus === 'error' && (
                   <span style={{ color: '#ff4d4f' }}>
                     <AlertCircle
@@ -257,9 +280,11 @@ export const SettingsPage = observer(() => {
         <Card title="Developer Tools">
           <div className={styles.fieldGroup}>
             <div className={styles.fieldTitle}>Telemetry Snapshot</div>
+
             <div className={styles.fieldDesc} style={{ marginBottom: 16 }}>
               Capture current telemetry state for Storybook fixtures.
             </div>
+
             <Button block size="small" onClick={handleCaptureSnapshot}>
               Download Snapshot JSON
             </Button>
