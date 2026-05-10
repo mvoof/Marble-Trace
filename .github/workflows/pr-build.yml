@@ -1,0 +1,69 @@
+name: Build App
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check-changes:
+    name: Check Changes
+    runs-on: ubuntu-latest
+    outputs:
+      js: ${{ steps.filter.outputs.js }}
+      rust: ${{ steps.filter.outputs.rust }}
+      ci: ${{ steps.filter.outputs.ci }}
+      app: ${{ steps.filter.outputs.js == 'true' || steps.filter.outputs.rust == 'true' }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Check for file changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            js:
+              - 'src/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'tsconfig.json'
+              - 'eslint.config.js'
+            rust:
+              - 'src-tauri/**'
+            ci:
+              - '.github/**'
+
+  build-app:
+    name: Build App
+    needs: check-changes
+    if: needs.check-changes.outputs.app == 'true' || needs.check-changes.outputs.ci == 'true'
+    environment: pr-review
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Dependencies
+        uses: ./.github/actions/setup-dependencies
+        with:
+          node-version: '20'
+          platform: ${{ matrix.platform }}
+          cache-rust: 'true'
+
+      - name: Build Tauri App
+        run: npm run tauri:build:dev
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-build
+          path: src-tauri/target/release/bundle/
+          compression-level: 6
+          if-no-files-found: warn
