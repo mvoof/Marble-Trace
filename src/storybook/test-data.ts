@@ -30,13 +30,3 @@ export const driverEntries = computeDriverEntries(
   snapshot.carIdx,
   snapshot.sessionInfo?.DriverInfo ?? null
 );
-
-export const carDynamics = snapshot.carDynamics!;
-export const carInputs = snapshot.carInputs!;
-export const carStatus = snapshot.carStatus!;
-export const lapTiming = snapshot.lapTiming!;
-export const session = snapshot.session!;
-export const sessionInfo = snapshot.sessionInfo!;
-export const environment = snapshot.environment!;
-export const driverInfo = sessionInfo.DriverInfo;
-export const weekendInfo = sessionInfo?.WeekendInfo;

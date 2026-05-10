@@ -20,23 +20,23 @@ export const SIDE_CAR_LATERAL_OFFSET = CAR_WIDTH + 0.6;
 // === Distance thresholds (meters) ===
 
 /** Bumper-to-bumper distance considered dangerous */
-export const DANGER_DISTANCE = 1.0;
+const DANGER_DISTANCE = 1.0;
 /** Bumper-to-bumper distance considered warning zone */
-export const WARNING_DISTANCE = 2.0;
+const WARNING_DISTANCE = 2.0;
 
 /** Longitudinal overlap considered dangerous for side cars */
-export const SIDE_DANGER_DISTANCE = 0.5;
+const SIDE_DANGER_DISTANCE = 0.5;
 /** Longitudinal overlap considered warning for side cars */
-export const SIDE_WARNING_DISTANCE = 1.5;
+const SIDE_WARNING_DISTANCE = 1.5;
 
 /** Proximity center distance considered dangerous for RadarBar */
-export const BAR_DANGER_DISTANCE = 1.0;
+const BAR_DANGER_DISTANCE = 1.0;
 /** Proximity center distance considered warning for RadarBar */
-export const BAR_WARNING_DISTANCE = 2.5;
+const BAR_WARNING_DISTANCE = 2.5;
 
 // === Danger zone colors (hex base) ===
 
-export const RADAR_COLORS = {
+const RADAR_COLORS = {
   /** Collision imminent */
   danger: '#ff2a55',
   /** Close proximity */
@@ -51,7 +51,7 @@ export const RADAR_COLORS = {
  * Apply alpha transparency to a radar color.
  * Converts hex to rgba string.
  */
-export const withAlpha = (hex: string, alpha: number): string => {
+const withAlpha = (hex: string, alpha: number): string => {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
@@ -65,9 +65,13 @@ export const withAlpha = (hex: string, alpha: number): string => {
  * Color for front/rear cars based on bumper-to-bumper gap.
  */
 export const getCarColor = (gapMeters: number): string => {
-  if (gapMeters <= DANGER_DISTANCE) return withAlpha(RADAR_COLORS.danger, 0.7);
-  if (gapMeters <= WARNING_DISTANCE)
+  if (gapMeters <= DANGER_DISTANCE) {
+    return withAlpha(RADAR_COLORS.danger, 0.7);
+  }
+
+  if (gapMeters <= WARNING_DISTANCE) {
     return withAlpha(RADAR_COLORS.warning, 0.7);
+  }
 
   return withAlpha(RADAR_COLORS.safe, 0.7);
 };

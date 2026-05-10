@@ -1,11 +1,12 @@
 import { FUEL_COLORS, FUEL_CHART_CONFIG } from '../fuel-constants';
 
-export const barColor = (v: number, avg: number | null): string => {
+const barColor = (v: number, avg: number | null): string => {
   if (avg === null) return FUEL_COLORS.primary;
+
   return v > avg ? FUEL_COLORS.danger : FUEL_COLORS.safe;
 };
 
-export const drawAvgLine = (
+const drawAvgLine = (
   ctx: CanvasRenderingContext2D,
   avgY: number,
   plotW: number
@@ -26,7 +27,7 @@ export const drawAvgLine = (
   ctx.fillText('AVG', plotW, avgY - 1);
 };
 
-export const drawTopLine = (ctx: CanvasRenderingContext2D, plotW: number) => {
+const drawTopLine = (ctx: CanvasRenderingContext2D, plotW: number) => {
   ctx.strokeStyle = FUEL_COLORS.grid;
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -35,7 +36,7 @@ export const drawTopLine = (ctx: CanvasRenderingContext2D, plotW: number) => {
   ctx.stroke();
 };
 
-export const drawXLabels = (
+const drawXLabels = (
   ctx: CanvasRenderingContext2D,
   n: number,
   barWPlusGap: number,
@@ -50,13 +51,18 @@ export const drawXLabels = (
   const maxLabelW =
     String(n).length * FUEL_CHART_CONFIG.LABEL_CHAR_W +
     FUEL_CHART_CONFIG.LABEL_MIN_GAP;
+
   const step = Math.max(1, Math.ceil(maxLabelW / barWPlusGap));
 
   let lastDrawnX = -Infinity;
+
   for (let i = 0; i < n; i++) {
     if (i % step !== 0) continue;
+
     const cx = i * barWPlusGap + barW / 2;
+
     if (cx - lastDrawnX < maxLabelW) continue;
+
     ctx.fillText(String(i + 1), cx, plotH + 3);
     lastDrawnX = cx;
   }
@@ -86,6 +92,7 @@ export const drawBarChart = (
   data.forEach((v, i) => {
     const x = i * stride;
     const bh = toBarH(v);
+
     ctx.fillStyle = barColor(v, avg);
     ctx.fillRect(x, plotH - bh, barW, bh);
   });
@@ -94,6 +101,7 @@ export const drawBarChart = (
 
   if (avg !== null) {
     const avgY = plotH - toBarH(avg);
+
     drawAvgLine(ctx, avgY, plotW);
   }
 
@@ -126,17 +134,24 @@ export const drawLineChart = (
   data.forEach((v, i) => {
     const x = toX(i);
     const y = toY(v);
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
   });
+
   ctx.stroke();
 
   data.forEach((v, i) => {
     const x = toX(i);
     const y = toY(v);
+
     ctx.beginPath();
     ctx.arc(x, y, 2.5, 0, Math.PI * 2);
     ctx.fillStyle = barColor(v, avg);
+
     ctx.fill();
   });
 
@@ -147,20 +162,28 @@ export const drawLineChart = (
   }
 
   const lineStride = data.length > 1 ? plotW / (data.length - 1) : plotW;
+
   const maxLabelW =
     String(n).length * FUEL_CHART_CONFIG.LABEL_CHAR_W +
     FUEL_CHART_CONFIG.LABEL_MIN_GAP;
+
   const step = Math.max(1, Math.ceil(maxLabelW / lineStride));
 
   ctx.font = '10px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
+
   ctx.fillStyle = FUEL_COLORS.textMuted;
+
   let lastDrawnX = -Infinity;
+
   for (let i = 0; i < n; i++) {
     if (i % step !== 0) continue;
+
     const cx = toX(i);
+
     if (cx - lastDrawnX < maxLabelW) continue;
+
     ctx.fillText(String(i + 1), cx, plotH + 3);
     lastDrawnX = cx;
   }

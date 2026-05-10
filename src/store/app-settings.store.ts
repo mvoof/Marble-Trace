@@ -3,7 +3,7 @@ import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
 
-export const DEFAULT_APP_SETTINGS = {
+const DEFAULT_APP_SETTINGS = {
   dragHotkey: 'F9',
   hideAllWidgetsHotkey: 'F10',
   hideWidgetsWhenGameClosed: false,
@@ -35,6 +35,7 @@ class AppSettingsStore {
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
+
     void this.init().catch((err) =>
       console.error('Failed to initialize AppSettingsStore:', err)
     );
@@ -42,21 +43,25 @@ class AppSettingsStore {
 
   async init() {
     const version = await getVersion();
+
     runInAction(() => {
       this.currentVersion = version;
     });
 
     if (this.settings.autoUpdate) {
       void this.checkForUpdates(true);
+
       this.startUpdateTimer();
     }
   }
 
   private startUpdateTimer() {
     this.stopUpdateTimer();
+
     if (!this.settings.autoUpdate) return;
 
     const ms = this.settings.updateCheckInterval * 60 * 60 * 1000;
+
     this.updateTimer = window.setInterval(() => {
       void this.checkForUpdates(true);
     }, ms);
@@ -65,6 +70,7 @@ class AppSettingsStore {
   private stopUpdateTimer() {
     if (this.updateTimer !== null) {
       window.clearInterval(this.updateTimer);
+
       this.updateTimer = null;
     }
   }
@@ -75,6 +81,7 @@ class AppSettingsStore {
 
   setAutoUpdate(value: boolean) {
     this.settings.autoUpdate = value;
+
     if (value) {
       this.startUpdateTimer();
     } else {
@@ -84,6 +91,7 @@ class AppSettingsStore {
 
   setUpdateCheckInterval(value: number) {
     this.settings.updateCheckInterval = value;
+
     if (this.settings.autoUpdate) {
       this.startUpdateTimer();
     }
@@ -100,14 +108,17 @@ class AppSettingsStore {
 
     try {
       const update = await check();
+
       runInAction(() => {
         this.settings.lastUpdateCheck = new Date().toISOString();
+
         if (update) {
           this.updateStatus = 'available';
           this.availableVersion = update.version;
         } else {
           this.updateStatus = 'idle';
           this.availableVersion = null;
+
           if (!silent) {
             // manual check success
           }
@@ -115,6 +126,7 @@ class AppSettingsStore {
       });
     } catch (err) {
       console.error('Failed to check for updates:', err);
+
       runInAction(() => {
         this.updateStatus = 'error';
         this.updateError = String(err);
@@ -132,11 +144,14 @@ class AppSettingsStore {
 
     try {
       const update = await check();
+
       if (update) {
         await update.downloadAndInstall();
+
         runInAction(() => {
           this.updateStatus = 'ready';
         });
+
         await relaunch();
       } else {
         runInAction(() => {
@@ -146,6 +161,7 @@ class AppSettingsStore {
       }
     } catch (err) {
       console.error('Failed to install update:', err);
+
       runInAction(() => {
         this.updateStatus = 'error';
         this.updateError = String(err);
