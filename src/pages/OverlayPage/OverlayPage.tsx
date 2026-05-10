@@ -12,8 +12,9 @@ export const OverlayPage = () => {
   }, []);
 
   useEffect(() => {
-    document.documentElement.style.background = 'transparent';
-    document.body.style.background = 'transparent';
+    [document.documentElement, document.body].forEach(
+      (el) => (el.style.cssText += 'background: transparent;')
+    );
 
     // Immediately pass clicks through to the game by default.
     // OverlayCanvas will toggle this when drag mode changes.
