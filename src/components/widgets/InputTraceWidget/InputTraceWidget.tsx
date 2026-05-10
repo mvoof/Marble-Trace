@@ -1,10 +1,11 @@
-import { forwardRef, useImperativeHandle, useRef } from 'react';
-import { WidgetPanel } from '../primitives/WidgetPanel';
-import { CanvasTrace } from '../primitives/CanvasTrace';
-import type {
-  CanvasTraceChannel,
-  CanvasTraceHandle,
-} from '../primitives/CanvasTrace';
+import { useImperativeHandle, useRef } from 'react';
+import type { Ref } from 'react';
+import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
+import {
+  CanvasTrace,
+  type CanvasTraceChannel,
+  type CanvasTraceHandle,
+} from '../primitives/CanvasTrace/CanvasTrace';
 import type { InputTraceSettings } from '../../../types/widget-settings';
 import { InputBars, type InputBarsHandle } from './InputBars/InputBars';
 
@@ -19,12 +20,16 @@ interface InputTraceWidgetProps {
   initialBrake: number;
   initialClutch: number;
   settings: InputTraceSettings;
+  ref?: Ref<InputTraceHandle>;
 }
 
-export const InputTraceWidget = forwardRef<
-  InputTraceHandle,
-  InputTraceWidgetProps
->(({ initialThrottle, initialBrake, initialClutch, settings }, ref) => {
+export const InputTraceWidget = ({
+  initialThrottle,
+  initialBrake,
+  initialClutch,
+  settings,
+  ref,
+}: InputTraceWidgetProps) => {
   const barsRef = useRef<InputBarsHandle>(null);
   const canvasTraceRef = useRef<CanvasTraceHandle>(null);
   const valuesRef = useRef<number[]>([]);
@@ -35,21 +40,36 @@ export const InputTraceWidget = forwardRef<
 
       const values = valuesRef.current;
       values.length = 0;
-      if (settings.showThrottle) values.push(t);
-      if (settings.showBrake) values.push(b);
-      if (settings.showClutch) values.push(c);
+
+      if (settings.showThrottle) {
+        values.push(t);
+      }
+
+      if (settings.showBrake) {
+        values.push(b);
+      }
+
+      if (settings.showClutch) {
+        values.push(c);
+      }
 
       canvasTraceRef.current?.pushSample(values);
     },
   }));
 
   const channels: CanvasTraceChannel[] = [];
-  if (settings.showThrottle)
+
+  if (settings.showThrottle) {
     channels.push({ value: initialThrottle, color: settings.throttleColor });
-  if (settings.showBrake)
+  }
+
+  if (settings.showBrake) {
     channels.push({ value: initialBrake, color: settings.brakeColor });
-  if (settings.showClutch)
+  }
+
+  if (settings.showClutch) {
     channels.push({ value: initialClutch, color: settings.clutchColor });
+  }
 
   const showBars = settings.barMode !== 'hidden';
   const isVertical = settings.barMode === 'vertical';
@@ -107,6 +127,4 @@ export const InputTraceWidget = forwardRef<
       )}
     </WidgetPanel>
   );
-});
-
-InputTraceWidget.displayName = 'InputTraceWidget';
+};

@@ -5,7 +5,7 @@ import { unitsStore } from '../../../../store/units.store';
 import type { DriverEntry } from '../../../../types/bindings';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import type { SessionInfoData, WeekendInfo } from '../../../../types/bindings';
-import { telemetryStore } from '../../../../store/iracing';
+import { telemetryStore } from '../../../../store/iracing/telemetry.store';
 
 import styles from './SessionHeader.module.scss';
 
@@ -23,7 +23,9 @@ const parseWeekendTemp = (
   tempStr: string | null | undefined
 ): number | null => {
   if (tempStr == null) return null;
+
   const n = parseFloat(tempStr);
+
   return isNaN(n) ? null : n;
 };
 
@@ -48,15 +50,18 @@ export const SessionHeader = observer(
         : null;
 
     const env = telemetryStore.environment;
+
     const airCelsius =
       env?.air_temp ?? parseWeekendTemp(weekendInfo?.TrackAirTemp);
     const trkCelsius =
       env?.track_temp ?? parseWeekendTemp(weekendInfo?.TrackSurfaceTemp);
+
     const tempUnit = unitsStore.tempUnit;
     const airStr =
       airCelsius !== null
         ? `${unitsStore.formatTemp(airCelsius)}${tempUnit}`
         : null;
+
     const trkStr =
       trkCelsius !== null
         ? `${unitsStore.formatTemp(trkCelsius)}${tempUnit}`

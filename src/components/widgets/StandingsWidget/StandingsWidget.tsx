@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { WidgetPanel } from '@/components/widgets/primitives';
+import { WidgetPanel } from '@/components/widgets/primitives/WidgetPanel/WidgetPanel';
 import { useVisibleRowCount } from '@/hooks/useVisibleRowCount';
 import type { SessionInfo, WeekendInfo } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
@@ -10,7 +10,7 @@ import { ClassGroup } from './ClassGroup/ClassGroup';
 import { ClassSwitcher } from './ClassSwitcher/ClassSwitcher';
 import { computeClassSof, buildGridTemplate } from './standings-utils';
 import type { DriverEntry } from '@/types/bindings';
-import type { DriverGroup } from '@/types/standings';
+import type { DriverGroup } from '@/types';
 
 import styles from './StandingsWidget.module.scss';
 
@@ -40,6 +40,7 @@ const sliceWithPlayerPin = (
   budget: number
 ): DriverEntry[] => {
   if (budget <= 0) return [];
+
   if (drivers.length <= budget) return drivers;
 
   const playerIdx = drivers.findIndex((d) => d.isPlayer);
@@ -83,6 +84,7 @@ export const StandingsWidget = ({
 
     for (const d of driverEntries) {
       const existing = classMap.get(d.carClassId);
+
       if (existing) {
         existing.push(d);
       } else {
@@ -114,7 +116,9 @@ export const StandingsWidget = ({
         0,
         Math.min(activeClassIndex, allClassGroups.length - 1)
       );
+
       const group = allClassGroups[clampedIndex];
+
       return {
         ...group,
         drivers: sliceWithPlayerPin(group.drivers, visibleRowCount),

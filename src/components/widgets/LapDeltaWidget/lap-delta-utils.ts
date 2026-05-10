@@ -1,5 +1,3 @@
-export const DELTA_CAP = 3.0;
-
 export type DeltaState = 'ahead' | 'behind' | 'neutral';
 export type LapDeltaLayout = 'vertical' | 'horizontal';
 
@@ -34,6 +32,7 @@ export const formatDelta = (delta: number | null): string => {
   if (abs < SECONDS_PER_HOUR) {
     const m = Math.floor(abs / SECONDS_PER_MINUTE);
     const s = abs % SECONDS_PER_MINUTE;
+
     return `${sign}${m}:${s.toFixed(3).padStart(6, '0')}`;
   }
 
@@ -41,6 +40,7 @@ export const formatDelta = (delta: number | null): string => {
   const rem = abs % SECONDS_PER_HOUR;
   const m = Math.floor(rem / SECONDS_PER_MINUTE);
   const s = rem % SECONDS_PER_MINUTE;
+
   return `${sign}${h}:${String(m).padStart(2, '0')}:${s.toFixed(3).padStart(6, '0')}`;
 };
 
@@ -48,6 +48,7 @@ export const getDeltaState = (delta: number | null): DeltaState => {
   if (delta === null) return 'neutral';
   if (delta < -0.001) return 'ahead';
   if (delta > 0.001) return 'behind';
+
   return 'neutral';
 };
 
@@ -56,8 +57,10 @@ export const getDeltaColor = (state: DeltaState): string =>
 
 export const formatSectorTime = (v: number | null): string => {
   if (v === null) return '--';
+
   const m = Math.floor(v / 60);
   const s = v % 60;
+
   return m > 0
     ? `${m}:${s.toFixed(3).padStart(6, '0')}`
     : s.toFixed(3).padStart(6, '0');
@@ -65,6 +68,7 @@ export const formatSectorTime = (v: number | null): string => {
 
 export const formatSectorDelta = (v: number | null): string => {
   if (v === null) return '--';
+
   return (v >= 0 ? '+' : '') + v.toFixed(2);
 };
 
@@ -72,5 +76,6 @@ export const getSectorDeltaState = (v: number | null): DeltaState => {
   if (v === null) return 'neutral';
   if (v < -0.001) return 'ahead';
   if (v > 0.001) return 'behind';
+
   return 'neutral';
 };

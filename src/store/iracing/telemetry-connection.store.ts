@@ -24,7 +24,7 @@ import { debug } from '../../utils/debug';
 
 import { telemetryStore } from './telemetry.store';
 import { computedStore } from './computed.store';
-import type { TelemetryStatus } from '../../types/telemetry';
+import type { TelemetryStatus } from '../../types';
 
 class TelemetryConnection {
   isConnected = false;
@@ -130,10 +130,12 @@ class TelemetryConnection {
       this.error = null;
     } else if (status === 'waiting') {
       this.isConnected = false;
+
       telemetryStore.reset();
       computedStore.reset();
     } else if (status === 'disconnected') {
       this.isConnected = false;
+
       telemetryStore.reset();
       computedStore.reset();
     }
@@ -179,6 +181,7 @@ class TelemetryConnection {
     this.unlistens.push(
       await listen<CarIdxFrame>('iracing://telemetry/car-idx', (event) => {
         if (this.initId !== guardId) return;
+
         telemetryStore.updateCarIdx(event.payload);
       })
     );
@@ -188,6 +191,7 @@ class TelemetryConnection {
         'iracing://telemetry/car-inputs',
         (event) => {
           if (this.initId !== guardId) return;
+
           telemetryStore.updateCarInputs(event.payload);
         }
       )
@@ -198,6 +202,7 @@ class TelemetryConnection {
         'iracing://telemetry/car-positions',
         (event) => {
           if (this.initId !== guardId) return;
+
           telemetryStore.updateCarPositions(event.payload);
         }
       )
@@ -208,6 +213,7 @@ class TelemetryConnection {
         'iracing://telemetry/car-status',
         (event) => {
           if (this.initId !== guardId) return;
+
           telemetryStore.updateCarStatus(event.payload);
         }
       )
@@ -226,6 +232,7 @@ class TelemetryConnection {
     this.unlistens.push(
       await listen<SessionFrame>('iracing://telemetry/session', (event) => {
         if (this.initId !== guardId) return;
+
         telemetryStore.updateSession(event.payload);
       })
     );
@@ -235,6 +242,7 @@ class TelemetryConnection {
         'iracing://telemetry/environment',
         (event) => {
           if (this.initId !== guardId) return;
+
           telemetryStore.updateEnvironment(event.payload);
         }
       )
@@ -243,6 +251,7 @@ class TelemetryConnection {
     this.unlistens.push(
       await listen<ChassisFrame>('iracing://telemetry/chassis', (event) => {
         if (this.initId !== guardId) return;
+
         telemetryStore.updateChassis(event.payload);
       })
     );
@@ -250,6 +259,7 @@ class TelemetryConnection {
     this.unlistens.push(
       await listen<SessionInfo>('iracing://session-info', (event) => {
         if (this.initId !== guardId) return;
+
         debug.telemetry('session info received: %o', event.payload);
         telemetryStore.updateSessionInfo(event.payload);
       })
@@ -258,6 +268,7 @@ class TelemetryConnection {
     this.unlistens.push(
       await listen<string>('iracing://status', (event) => {
         if (this.initId !== guardId) return;
+
         debug.telemetry('status: %s', event.payload);
         this.setStatus(event.payload as TelemetryStatus);
       })
@@ -266,7 +277,9 @@ class TelemetryConnection {
     this.unlistens.push(
       await listen('iracing://disconnected', () => {
         if (this.initId !== guardId) return;
+
         debug.telemetry('stream disconnected');
+
         this.setDisconnected();
       })
     );
@@ -274,6 +287,7 @@ class TelemetryConnection {
     this.unlistens.push(
       await listen<ProximityFrame>('iracing://computed/proximity', (event) => {
         if (this.initId !== guardId) return;
+
         computedStore.updateProximity(event.payload);
       })
     );
@@ -281,6 +295,7 @@ class TelemetryConnection {
     this.unlistens.push(
       await listen<FuelComputedFrame>('iracing://computed/fuel', (event) => {
         if (this.initId !== guardId) return;
+
         computedStore.updateFuel(event.payload);
       })
     );
@@ -290,6 +305,7 @@ class TelemetryConnection {
         'iracing://computed/standings',
         (event) => {
           if (this.initId !== guardId) return;
+
           computedStore.updateStandings(event.payload);
         }
       )
@@ -298,6 +314,7 @@ class TelemetryConnection {
     this.unlistens.push(
       await listen<PitStopsFrame>('iracing://computed/pit-stops', (event) => {
         if (this.initId !== guardId) return;
+
         computedStore.updatePitStops(event.payload);
       })
     );
@@ -305,6 +322,7 @@ class TelemetryConnection {
     this.unlistens.push(
       await listen<LapDeltaFrame>('iracing://computed/lap-delta', (event) => {
         if (this.initId !== guardId) return;
+
         computedStore.updateLapDelta(event.payload);
       })
     );
@@ -314,6 +332,7 @@ class TelemetryConnection {
         'iracing://weather-forecast',
         (event) => {
           if (this.initId !== guardId) return;
+
           telemetryStore.updateWeatherForecast(event.payload);
         }
       )
@@ -324,11 +343,9 @@ class TelemetryConnection {
     for (const unsub of this.unlistens) {
       unsub();
     }
+
     this.unlistens = [];
   }
 }
 
 export const telemetryConnectionStore = new TelemetryConnection();
-
-export { telemetryStore } from './telemetry.store';
-export { computedStore } from './computed.store';

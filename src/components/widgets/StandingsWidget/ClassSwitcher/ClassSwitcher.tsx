@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatIRating } from '@/components/widgets/widget-utils';
-import type { DriverGroup } from '@/types/standings';
+import type { DriverGroup } from '@/types';
 
 import styles from './ClassSwitcher.module.scss';
 

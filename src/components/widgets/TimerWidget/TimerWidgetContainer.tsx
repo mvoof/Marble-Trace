@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing';
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
 import { SessionState as BindingSessionState } from '../../../types/bindings';
@@ -17,6 +17,7 @@ const SECONDS_IN_MINUTE = 60;
 const formatWallClock = (date: Date): string => {
   const h = String(date.getHours()).padStart(2, '0');
   const m = String(date.getMinutes()).padStart(2, '0');
+
   return `${h}:${m}`;
 };
 
@@ -52,19 +53,25 @@ const MONTH_NAME_TO_IDX: Record<string, number> = {
 
 const formatSimDate = (raw: string): string => {
   const parsed = new Date(raw);
+
   if (!isNaN(parsed.getTime())) {
     const d = String(parsed.getDate()).padStart(2, '0');
+
     return `${d} ${MONTH_ABBR[parsed.getMonth()]} ${parsed.getFullYear()}`;
   }
+
   const parts = raw.trim().split(/\s+/);
+
   if (parts.length >= 3) {
     const year = parts[0];
     const monthIdx = MONTH_NAME_TO_IDX[parts[1].toLowerCase()];
     const day = parts[2].padStart(2, '0');
+
     if (monthIdx !== undefined) {
       return `${day} ${MONTH_ABBR[monthIdx]} ${year}`;
     }
   }
+
   return raw;
 };
 
@@ -77,10 +84,13 @@ const formatPcDate = (date: Date): string => {
 
 const formatSimTime = (secondsSinceMidnight: number): string => {
   const total = Math.round(secondsSinceMidnight);
+
   const h = String(Math.floor(total / SECONDS_IN_HOUR)).padStart(2, '0');
+
   const m = String(
     Math.floor((total % SECONDS_IN_HOUR) / SECONDS_IN_MINUTE)
   ).padStart(2, '0');
+
   return `${h}:${m}`;
 };
 
@@ -92,36 +102,44 @@ const resolveFlagState = (
 ): FlagState => {
   if (flags !== null && (flags & SESSION_FLAG_CHECKERED) !== 0)
     return 'checkered';
+
   if (remainSeconds !== null && remainSeconds >= 0 && remainSeconds < 300)
     return 'final';
+
   return 'green';
 };
 
 const isSessionEnded = (sessionState: BindingSessionState | null): boolean => {
   if (sessionState === null) return false;
+
   return sessionState === 'Checkered' || sessionState === 'CoolDown';
 };
 
 const splitTime = (seconds: number): { main: string; secs: string } => {
   const total = Math.max(0, Math.floor(seconds));
+
   const h = String(Math.floor(total / 3600)).padStart(2, '0');
   const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
   const s = String(total % 60).padStart(2, '0');
+
   return { main: `${h}:${m}:`, secs: s };
 };
 
 export const TimerWidgetContainer = observer(() => {
-  const [wallClockTime, setWallClockTime] = useState(() =>
-    formatWallClock(new Date())
-  );
-  const [pcDate, setPcDate] = useState(() => formatPcDate(new Date()));
+  const [dateTime, setDateTime] = useState(() => ({
+    wallClock: formatWallClock(new Date()),
+    pcDate: formatPcDate(new Date()),
+  }));
 
   useEffect(() => {
     const id = setInterval(() => {
       const now = new Date();
-      setWallClockTime(formatWallClock(now));
-      setPcDate(formatPcDate(now));
+      setDateTime({
+        wallClock: formatWallClock(now),
+        pcDate: formatPcDate(now),
+      });
     }, 1000);
+
     return () => clearInterval(id);
   }, []);
 
@@ -183,6 +201,7 @@ export const TimerWidgetContainer = observer(() => {
 
   const rawSimDate =
     telemetryStore.sessionInfo?.WeekendInfo?.WeekendOptions?.Date ?? null;
+
   const simDate = rawSimDate !== null ? formatSimDate(rawSimDate) : null;
 
   return (
@@ -204,9 +223,9 @@ export const TimerWidgetContainer = observer(() => {
       showSimTime={showSimTime}
       showPcDate={showPcDate}
       showSimDate={showSimDate}
-      wallClockTime={wallClockTime}
+      wallClockTime={dateTime.wallClock}
       simTime={simTime}
-      pcDate={pcDate}
+      pcDate={dateTime.pcDate}
       simDate={simDate}
     />
   );

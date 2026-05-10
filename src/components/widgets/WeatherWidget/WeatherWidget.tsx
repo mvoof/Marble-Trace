@@ -1,12 +1,12 @@
-import { forwardRef } from 'react';
+import type { Ref } from 'react';
 
 import type {
   WeatherForecastEntry,
   Skies as BindingSkies,
 } from '../../../types/bindings';
-import type { UnitSystem } from '../../../types/units';
+import type { UnitSystem } from '../../../types';
 import { formatSpeed, speedUnit } from '../../../utils/telemetry-format';
-import { WidgetPanel } from '../primitives/WidgetPanel';
+import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import { WindCompass } from './WindCompass/WindCompass';
 
 import styles from './WeatherWidget.module.scss';
@@ -30,6 +30,7 @@ interface WeatherWidgetProps {
   showWind: boolean;
   showHumidity: boolean;
   showForecast: boolean;
+  ref?: Ref<HTMLElement>;
 }
 
 const buildStatCells = (
@@ -85,6 +86,7 @@ const buildStatCells = (
 const formatForecastTime = (timeSec: number): string => {
   const h = Math.floor(timeSec / 3600);
   const m = Math.floor((timeSec % 3600) / 60);
+
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 };
 
@@ -102,128 +104,119 @@ const convertTemp = (celsius: number, system: UnitSystem): number => {
   if (system === 'imperial') {
     return (celsius * 9) / 5 + 32;
   }
+
   return celsius;
 };
 
-export const WeatherWidget = forwardRef<HTMLElement, WeatherWidgetProps>(
-  (
-    {
-      windBearing,
-      carYawDeg,
-      windSpeedFormatted,
-      windCardinal,
-      windColor,
-      airTempFormatted,
-      trackTempFormatted,
-      tempUnit,
-      unitSystem,
-      humidity,
-      forecast,
-      weatherType,
-      showCompass,
-      showAirTemp,
-      showTrackTemp,
-      showWind,
-      showHumidity,
-      showForecast,
-    },
-    ref
-  ) => {
-    const stats = buildStatCells(
-      airTempFormatted,
-      trackTempFormatted,
-      tempUnit,
-      windSpeedFormatted,
-      windColor,
-      humidity,
-      showAirTemp,
-      showTrackTemp,
-      showWind,
-      showHumidity
-    );
+export const WeatherWidget = ({
+  windBearing,
+  carYawDeg,
+  windSpeedFormatted,
+  windCardinal,
+  windColor,
+  airTempFormatted,
+  trackTempFormatted,
+  tempUnit,
+  unitSystem,
+  humidity,
+  forecast,
+  weatherType,
+  showCompass,
+  showAirTemp,
+  showTrackTemp,
+  showWind,
+  showHumidity,
+  showForecast,
+  ref,
+}: WeatherWidgetProps) => {
+  const stats = buildStatCells(
+    airTempFormatted,
+    trackTempFormatted,
+    tempUnit,
+    windSpeedFormatted,
+    windColor,
+    humidity,
+    showAirTemp,
+    showTrackTemp,
+    showWind,
+    showHumidity
+  );
 
-    const hasStats = stats.length > 0;
+  const hasStats = stats.length > 0;
 
-    return (
-      <WidgetPanel
-        ref={ref}
-        direction="column"
-        gap={0}
-        minWidth={200}
-        fitContent
-      >
-        {showCompass && (
-          <div className={styles.compassBlock}>
-            <WindCompass
-              windBearing={windBearing}
-              carYawDeg={carYawDeg}
-              windCardinal={windCardinal}
-              arrowColor={windColor}
-              size={200}
-            />
-          </div>
-        )}
+  return (
+    <WidgetPanel ref={ref} direction="column" gap={0} minWidth={200} fitContent>
+      {showCompass && (
+        <div className={styles.compassBlock}>
+          <WindCompass
+            windBearing={windBearing}
+            carYawDeg={carYawDeg}
+            windCardinal={windCardinal}
+            arrowColor={windColor}
+            size={200}
+          />
+        </div>
+      )}
 
-        {hasStats && (
-          <div className={styles.statsGrid}>
-            {stats.map((cell) => (
-              <div
-                key={cell.key}
-                className={`${styles.statCell}${cell.wide ? ` ${styles.statCellWide}` : ''}`}
-                style={{ borderLeftColor: cell.color }}
-              >
-                <span className={styles.statLabel}>{cell.label}</span>
-                <span className={styles.statValue}>
-                  {cell.value}
-                  {cell.unit && (
-                    <span className={styles.statUnit}>{cell.unit}</span>
-                  )}
-                  {cell.sub && (
-                    <span className={styles.statSub}> {cell.sub}</span>
-                  )}
+      {hasStats && (
+        <div className={styles.statsGrid}>
+          {stats.map((cell) => (
+            <div
+              key={cell.key}
+              className={`${styles.statCell}${cell.wide ? ` ${styles.statCellWide}` : ''}`}
+              style={{ borderLeftColor: cell.color }}
+            >
+              <span className={styles.statLabel}>{cell.label}</span>
+
+              <span className={styles.statValue}>
+                {cell.value}
+                {cell.unit && (
+                  <span className={styles.statUnit}>{cell.unit}</span>
+                )}
+
+                {cell.sub && (
+                  <span className={styles.statSub}> {cell.sub}</span>
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showForecast && (
+        <div className={styles.forecastBlock}>
+          {forecast.length > 0 ? (
+            forecast.map((entry) => (
+              <div key={entry.Time} className={styles.forecastRow}>
+                <span className={styles.forecastTime}>
+                  {formatForecastTime(entry.Time)}
                 </span>
-              </div>
-            ))}
-          </div>
-        )}
 
-        {showForecast && (
-          <div className={styles.forecastBlock}>
-            {forecast.length > 0 ? (
-              forecast.map((entry, idx) => (
-                <div key={idx} className={styles.forecastRow}>
-                  <span className={styles.forecastTime}>
-                    {formatForecastTime(entry.Time)}
+                <span className={styles.forecastSkies}>
+                  {getSkiesLabel(entry.Skies)}
+                </span>
+
+                <div className={styles.forecastRight}>
+                  <span className={styles.forecastTemp}>
+                    {Math.round(convertTemp(entry.Temp, unitSystem))}°
                   </span>
-                  <span className={styles.forecastSkies}>
-                    {getSkiesLabel(entry.Skies)}
+
+                  <span className={styles.forecastWind}>
+                    {formatSpeed(entry.WindSpeed, unitSystem)}{' '}
+                    {speedUnit(unitSystem)}
                   </span>
-                  <div className={styles.forecastRight}>
-                    <span className={styles.forecastTemp}>
-                      {Math.round(convertTemp(entry.Temp, unitSystem))}°
-                    </span>
-                    <span className={styles.forecastWind}>
-                      {formatSpeed(entry.WindSpeed, unitSystem)}{' '}
-                      {speedUnit(unitSystem)}
-                    </span>
-                  </div>
                 </div>
-              ))
-            ) : (
-              <div
-                className={styles.forecastRow}
-                style={{ opacity: 0.5, fontSize: '0.7rem' }}
-              >
-                {weatherType === 'Static' || weatherType === 'Realistic'
-                  ? `Forecast unavailable (${weatherType} Weather)`
-                  : 'No forecast data available'}
               </div>
-            )}
-          </div>
-        )}
-      </WidgetPanel>
-    );
-  }
-);
-
-WeatherWidget.displayName = 'WeatherWidget';
+            ))
+          ) : (
+            <div className={styles.forecastRow}>
+              {weatherType === 'Static' || weatherType === 'Realistic'
+                ? `Forecast unavailable (${weatherType} Weather)`
+                : 'No forecast data available'}
+            </div>
+          )}
+        </div>
+      )}
+    </WidgetPanel>
+  );
+};

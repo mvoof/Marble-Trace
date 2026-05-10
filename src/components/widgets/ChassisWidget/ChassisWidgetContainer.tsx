@@ -16,7 +16,9 @@ export const ChassisWidgetContainer = observer(() => {
   if (!chassis) return null;
 
   const { system } = unitsStore;
+
   const isMetric = system === 'metric';
+
   const corners = buildAllCorners(chassis, system);
   const onPitRoad = carStatus?.on_pit_road ?? false;
 

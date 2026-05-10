@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore, telemetryStore } from '../../../store/iracing';
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
+import { computedStore } from '../../../store/iracing/computed.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { FuelWidget } from './FuelWidget';
 

@@ -1,5 +1,5 @@
 import { TimingRow } from '../../shared/TimingRow/TimingRow';
-import { WidgetPanel } from '../primitives/WidgetPanel';
+import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import type { LapTimesWidgetSettings } from '../../../types/widget-settings';
 
 import styles from './LapTimesWidget.module.scss';

@@ -1,4 +1,4 @@
-import type { FlagType } from '../../../types/flags';
+import type { FlagType } from '../../../types';
 
 import styles from './FlatFlagsWidget.module.scss';
 

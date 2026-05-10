@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { Layout, ConfigProvider, theme, App as AntdApp } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { Settings } from 'lucide-react';
-import { telemetryConnectionStore } from '../../store/iracing';
+import { telemetryConnectionStore } from '../../store/iracing/telemetry-connection.store';
 import { appSettingsStore } from '../../store/app-settings.store';
-import { initMainSync } from '../../store/sync';
-import { WidgetList } from './components/WidgetList';
-import { WidgetSettings } from './components/WidgetSettings';
-import { SettingsPage } from './components/SettingsPage';
+import { initMainSync } from '../../store/sync/sync-init';
+import { WidgetList } from './components/WidgetList/WidgetList';
+import { WidgetSettings } from './components/WidgetSettings/WidgetSettings';
+import { SettingsPage } from './components/SettingsPage/SettingsPage';
 import { TitleBar } from './components/TitleBar/TitleBar';
 import { AppStatus } from './components/AppStatus/AppStatus';
 import { SidebarLinks } from './components/SidebarLinks/SidebarLinks';
@@ -23,6 +23,7 @@ export const MainWindow = observer(() => {
 
   useEffect(() => {
     void telemetryConnectionStore.startStream();
+
     return () => {
       void telemetryConnectionStore.stopStream();
     };
@@ -109,21 +110,25 @@ export const MainWindow = observer(() => {
                 <div className={styles.logoContainer}>
                   <Logo className={styles.logo} />
                 </div>
+
                 <div className={styles.headerText}>
                   <div className={styles.brandContainer}>
                     <span className={styles.brandName}>Marble Trace</span>
+
                     {appSettingsStore.currentVersion && (
                       <span className={styles.version}>
                         &nbsp;v{appSettingsStore.currentVersion}
                       </span>
                     )}
                   </div>
+
                   <AppStatus />
                 </div>
               </div>
 
               <div className={styles.sidebarContent}>
                 <div className={styles.sectionTitle}>Widget Modules</div>
+
                 <WidgetList selectedId={selectedId} onSelect={setSelectedId} />
               </div>
 
@@ -141,12 +146,14 @@ export const MainWindow = observer(() => {
                   />
                   <span className={styles.settingsLabel}>Global Settings</span>
                 </button>
+
                 <SidebarLinks />
               </div>
             </Sider>
 
             <Content className={styles.content}>
               <RandomGlitchCanvas />
+
               <div className={styles.scrollContainer} key={selectedId}>
                 <div
                   className={`${styles.contentInner} ${styles.animateFadeIn}`}

@@ -1,4 +1,4 @@
-import type { FlagType } from '../types/flags';
+import type { FlagType } from '../types';
 
 const SESSION_FLAGS = {
   checkered: 0x00000001,

@@ -1,5 +1,4 @@
-import { forwardRef } from 'react';
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, ReactNode, Ref } from 'react';
 
 import styles from './WidgetPanel.module.scss';
 
@@ -12,42 +11,37 @@ interface WidgetPanelProps {
   style?: CSSProperties;
   fitContent?: boolean;
   fitHeight?: boolean;
+  ref?: Ref<HTMLElement>;
 }
 
-export const WidgetPanel = forwardRef<HTMLElement, WidgetPanelProps>(
-  (
-    {
-      children,
+export const WidgetPanel = ({
+  children,
+  className,
+  minWidth = 200,
+  direction = 'column',
+  gap = 12,
+  style,
+  fitContent = false,
+  fitHeight = false,
+  ref,
+}: WidgetPanelProps) => (
+  <section
+    ref={ref}
+    className={[
+      styles.panel,
+      fitContent && styles.fitContent,
+      fitHeight && styles.fitHeight,
       className,
-      minWidth = 200,
-      direction = 'column',
-      gap = 12,
-      style,
-      fitContent = false,
-      fitHeight = false,
-    },
-    ref
-  ) => (
-    <section
-      ref={ref}
-      className={[
-        styles.panel,
-        fitContent && styles.fitContent,
-        fitHeight && styles.fitHeight,
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      style={{
-        minWidth,
-        flexDirection: direction,
-        gap,
-        ...style,
-      }}
-    >
-      {children}
-    </section>
-  )
+    ]
+      .filter(Boolean)
+      .join(' ')}
+    style={{
+      minWidth,
+      flexDirection: direction,
+      gap,
+      ...style,
+    }}
+  >
+    {children}
+  </section>
 );
-
-WidgetPanel.displayName = 'WidgetPanel';

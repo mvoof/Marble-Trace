@@ -43,7 +43,6 @@ const config: StorybookConfig = {
         additionalData: `
           @use "@/styles/functions" as *;
           @use "@/styles/variables" as *;
-          @use "@/styles/mixins" as *;
         `,
       },
     };

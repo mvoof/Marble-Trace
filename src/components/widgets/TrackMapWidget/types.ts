@@ -1,5 +1,5 @@
 import type { TrackSurface } from '../../../types/bindings';
-import type { TrackPoint } from '../../../types/track';
+import type { TrackPoint } from '../../../types';
 
 export interface CarOnTrack {
   carIdx: number;
@@ -13,7 +13,7 @@ export interface CarOnTrack {
   classPosition: number;
 }
 
-export interface StoredTrackData {
+interface StoredTrackData {
   trackName: string;
   trackConfig: string;
   svgPath: string;

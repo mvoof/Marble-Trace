@@ -1,6 +1,6 @@
-import { useRef, type MutableRefObject, type RefObject } from 'react';
+import { useCallback, useRef, type RefObject } from 'react';
 import { TimingRow } from '../../shared/TimingRow/TimingRow';
-import { WidgetPanel } from '../primitives/WidgetPanel';
+import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import {
   getDeltaColor,
   getSectorDeltaState,
@@ -44,11 +44,12 @@ export const LapDeltaWidget = ({
   const deltaDivRef = useRef<HTMLDivElement>(null);
   const isHorizontal = layout === 'horizontal';
 
-  const assignDeltaDisplayHandle = (el: HTMLDivElement | null) => {
-    (deltaDivRef as MutableRefObject<HTMLDivElement | null>).current = el;
-    if (deltaDisplayRef && 'current' in deltaDisplayRef) {
-      (deltaDisplayRef as MutableRefObject<DeltaDisplayHandle | null>).current =
-        el
+  const assignDeltaDisplayHandle = useCallback(
+    (el: HTMLDivElement | null) => {
+      deltaDivRef.current = el;
+
+      if (deltaDisplayRef && 'current' in deltaDisplayRef) {
+        deltaDisplayRef.current = el
           ? {
               update: (text, state) => {
                 el.textContent = text;
@@ -62,8 +63,10 @@ export const LapDeltaWidget = ({
               },
             }
           : null;
-    }
-  };
+      }
+    },
+    [deltaDisplayRef, isHorizontal]
+  );
 
   const sectorCount = Math.max(sectorDeltas.length, sectorTimes.length);
   const sectors = Array.from({ length: sectorCount }, (_, i) => ({
@@ -96,7 +99,7 @@ export const LapDeltaWidget = ({
         >
           {sectors.map((s, i) => (
             <TimingRow
-              key={i}
+              key={`sector-${i}`}
               label={`S${i + 1}`}
               time={formatSectorTime(s.time)}
               delta={formatSectorDelta(s.delta)}

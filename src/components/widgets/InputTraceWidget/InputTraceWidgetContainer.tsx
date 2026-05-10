@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { autorun, untracked } from 'mobx';
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing';
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { InputTraceWidget, type InputTraceHandle } from './InputTraceWidget';
 
@@ -17,6 +17,7 @@ export const InputTraceWidgetContainer = observer(() => {
   useEffect(() => {
     return autorun(() => {
       const frame = telemetryStore.carInputs;
+
       if (!frame) return;
 
       const rawT = frame.throttle ?? 0;
@@ -34,6 +35,7 @@ export const InputTraceWidgetContainer = observer(() => {
         // NewValue = (PrevValue * S + RawValue) / (S + 1)
         smoothedThrottle.current =
           (smoothedThrottle.current * s + rawT) / (s + 1);
+
         smoothedBrake.current = (smoothedBrake.current * s + rawB) / (s + 1);
         smoothedClutch.current = (smoothedClutch.current * s + rawC) / (s + 1);
       }

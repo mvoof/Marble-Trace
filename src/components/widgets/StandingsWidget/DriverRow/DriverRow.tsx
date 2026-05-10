@@ -5,7 +5,10 @@ import {
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
 } from '../../widget-utils';
-import { PitBadge, ClassBadge, RatingBadge, TireBadge } from '../../primitives';
+import { PitBadge } from '../../primitives/PitBadge/PitBadge';
+import { ClassBadge } from '../../primitives/ClassBadge/ClassBadge';
+import { RatingBadge } from '../../primitives/RatingBadge/RatingBadge';
+import { TireBadge } from '../../primitives/TireBadge/TireBadge';
 import type { DriverEntry } from '../../../../types/bindings';
 import type { StandingsWidgetSettings } from '../../../../types/widget-settings';
 
@@ -13,7 +16,9 @@ import styles from './DriverRow.module.scss';
 
 const abbreviateName = (fullName: string): string => {
   const parts = fullName.trim().split(/\s+/);
+
   if (parts.length < 2) return fullName;
+
   return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
 };
 
@@ -61,7 +66,7 @@ const PosChange = ({
 
 const IrChangeCell = ({ delta }: { delta: number | undefined }) => {
   if (delta == null || delta === 0) {
-    return <span className={styles.irChange}>—</span>;
+    return <span className={styles.irChange}>-</span>;
   }
 
   const cls =
@@ -99,14 +104,17 @@ export const DriverRow = ({
 }: DriverRowProps) => {
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
+
   const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
   const pos = settings.enableClassCycling
     ? driver.classPosition
     : driver.position;
+
   const startPos = settings.enableClassCycling
     ? (effectiveStartPos?.class ?? 0)
     : (effectiveStartPos?.overall ?? 0);
+
   const isLeader = pos === 1;
 
   const rowClass = [

@@ -1,1 +1,0 @@
-export { TireBadge } from './TireBadge';

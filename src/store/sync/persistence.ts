@@ -3,7 +3,7 @@ import { appSettingsStore } from '../app-settings.store';
 import { unitsStore } from '../units.store';
 import { widgetSettingsStore } from '../widget-settings.store';
 import { DEFAULT_WIDGETS } from '../widget-defaults';
-import type { UnitSystem } from '../../types/units';
+import type { UnitSystem } from '../../types';
 import type {
   WidgetConfig,
   WidgetCustomSettings,

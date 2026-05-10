@@ -1,6 +1,6 @@
 import type { CornerData } from './types';
 import type { ChassisFrame } from '../../../types/bindings';
-import type { UnitSystem } from '../../../types/units';
+import type { UnitSystem } from '../../../types';
 
 const METERS_TO_MM = 1000;
 const METERS_TO_INCHES = 39.3701;
@@ -25,18 +25,20 @@ const convertPressure = (kpa: number, system: UnitSystem): number =>
   system === 'metric' ? kpa : kpa * KPA_TO_PSI;
 
 // Tire temperature thresholds (°C)
-export const getTempColor = (tempC: number): string => {
+const getTempColor = (tempC: number): string => {
   if (tempC < 75) return COLOR_INFO;
   if (tempC <= 105) return COLOR_OK;
   if (tempC <= 125) return COLOR_WARNING;
+
   return COLOR_DANGER;
 };
 
 // Brake disc temperature thresholds (°C)
-export const getBrakeColor = (tempC: number): string => {
+const getBrakeColor = (tempC: number): string => {
   if (tempC < 200) return '#475569';
   if (tempC < 400) return COLOR_OK;
   if (tempC < 600) return COLOR_WARNING;
+
   return COLOR_DANGER;
 };
 
@@ -87,6 +89,7 @@ export const buildAllCorners = (
   system: UnitSystem
 ): { lf: CornerData; rf: CornerData; lr: CornerData; rr: CornerData } => {
   const corners = ['lf', 'rf', 'lr', 'rr'] as const;
+
   const result = {} as Record<
     (typeof corners)[number],
     ReturnType<typeof buildCornerData>

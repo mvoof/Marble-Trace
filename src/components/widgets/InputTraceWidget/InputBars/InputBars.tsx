@@ -1,8 +1,9 @@
-import { forwardRef, useImperativeHandle, useRef } from 'react';
+import { useImperativeHandle, useRef } from 'react';
+import type { Ref } from 'react';
 import {
   ProgressBar,
   type ProgressBarHandle,
-} from '../../primitives/ProgressBar';
+} from '../../primitives/ProgressBar/ProgressBar';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 
 import styles from './InputBars.module.scss';
@@ -17,69 +18,39 @@ interface InputBarsProps {
   clutch: number;
   settings: ReturnType<typeof widgetSettingsStore.getInputTraceSettings>;
   isVertical: boolean;
+  ref?: Ref<InputBarsHandle>;
 }
 
-export const InputBars = forwardRef<InputBarsHandle, InputBarsProps>(
-  ({ throttle, brake, clutch, settings, isVertical }, ref) => {
-    const throttleRef = useRef<ProgressBarHandle>(null);
-    const brakeRef = useRef<ProgressBarHandle>(null);
-    const clutchRef = useRef<ProgressBarHandle>(null);
+export const InputBars = ({
+  throttle,
+  brake,
+  clutch,
+  settings,
+  isVertical,
+  ref,
+}: InputBarsProps) => {
+  const throttleRef = useRef<ProgressBarHandle>(null);
+  const brakeRef = useRef<ProgressBarHandle>(null);
+  const clutchRef = useRef<ProgressBarHandle>(null);
 
-    useImperativeHandle(ref, () => ({
-      update: (t, b, c) => {
-        throttleRef.current?.update(t);
-        brakeRef.current?.update(b);
-        clutchRef.current?.update(c);
-      },
-    }));
+  useImperativeHandle(ref, () => ({
+    update: (t, b, c) => {
+      throttleRef.current?.update(t);
+      brakeRef.current?.update(b);
+      clutchRef.current?.update(c);
+    },
+  }));
 
-    if (isVertical) {
-      return (
-        <div className={styles.barsVertical}>
-          {settings.showClutch && (
-            <ProgressBar
-              ref={clutchRef}
-              value={clutch}
-              color={settings.clutchColor}
-              height="lg"
-              vertical
-              rounded={false}
-            />
-          )}
-
-          {settings.showBrake && (
-            <ProgressBar
-              ref={brakeRef}
-              value={brake}
-              color={settings.brakeColor}
-              height="lg"
-              vertical
-              rounded={false}
-            />
-          )}
-
-          {settings.showThrottle && (
-            <ProgressBar
-              ref={throttleRef}
-              value={throttle}
-              color={settings.throttleColor}
-              height="lg"
-              vertical
-              rounded={false}
-            />
-          )}
-        </div>
-      );
-    }
-
+  if (isVertical) {
     return (
-      <div className={styles.barsHorizontal}>
-        {settings.showThrottle && (
+      <div className={styles.barsVertical}>
+        {settings.showClutch && (
           <ProgressBar
-            ref={throttleRef}
-            value={throttle}
-            color={settings.throttleColor}
+            ref={clutchRef}
+            value={clutch}
+            color={settings.clutchColor}
             height="lg"
+            vertical
             rounded={false}
           />
         )}
@@ -90,22 +61,56 @@ export const InputBars = forwardRef<InputBarsHandle, InputBarsProps>(
             value={brake}
             color={settings.brakeColor}
             height="lg"
+            vertical
             rounded={false}
           />
         )}
 
-        {settings.showClutch && (
+        {settings.showThrottle && (
           <ProgressBar
-            ref={clutchRef}
-            value={clutch}
-            color={settings.clutchColor}
+            ref={throttleRef}
+            value={throttle}
+            color={settings.throttleColor}
             height="lg"
+            vertical
             rounded={false}
           />
         )}
       </div>
     );
   }
-);
 
-InputBars.displayName = 'InputBars';
+  return (
+    <div className={styles.barsHorizontal}>
+      {settings.showThrottle && (
+        <ProgressBar
+          ref={throttleRef}
+          value={throttle}
+          color={settings.throttleColor}
+          height="lg"
+          rounded={false}
+        />
+      )}
+
+      {settings.showBrake && (
+        <ProgressBar
+          ref={brakeRef}
+          value={brake}
+          color={settings.brakeColor}
+          height="lg"
+          rounded={false}
+        />
+      )}
+
+      {settings.showClutch && (
+        <ProgressBar
+          ref={clutchRef}
+          value={clutch}
+          color={settings.clutchColor}
+          height="lg"
+          rounded={false}
+        />
+      )}
+    </div>
+  );
+};

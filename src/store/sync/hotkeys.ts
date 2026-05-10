@@ -1,7 +1,7 @@
 import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
 import { appSettingsStore } from '../app-settings.store';
 import { widgetSettingsStore } from '../widget-settings.store';
-import { computedStore } from '../iracing';
+import { computedStore } from '../iracing/computed.store';
 
 const registeredShortcuts = new Set<string>();
 let isSettingUp = false;
@@ -10,8 +10,10 @@ let pendingSetup = false;
 export const setupHotkeys = async (onSave?: () => Promise<void>) => {
   if (isSettingUp) {
     pendingSetup = true;
+
     return;
   }
+
   isSettingUp = true;
 
   try {
@@ -25,9 +27,11 @@ export const setupHotkeys = async (onSave?: () => Promise<void>) => {
       handler: (event: { state: 'Pressed' | 'Released' }) => void
     ) => {
       if (!shortcut) return;
+
       if (!handlersMap.has(shortcut)) {
         handlersMap.set(shortcut, []);
       }
+
       handlersMap.get(shortcut)!.push(handler);
     };
 
@@ -66,10 +70,12 @@ export const setupHotkeys = async (onSave?: () => Promise<void>) => {
           const totalClasses = new Set(
             computedStore.standings?.entries.map((e) => e.carClassId) ?? []
           ).size;
+
           widgetSettingsStore.cycleStandingsPrev(totalClasses);
         }
       });
     }
+
     if (s.classNextHotkey) {
       addHandler(s.classNextHotkey, (event) => {
         if (event.state === 'Pressed') {
@@ -81,32 +87,40 @@ export const setupHotkeys = async (onSave?: () => Promise<void>) => {
       });
     }
 
-    for (const shortcut of Array.from(registeredShortcuts)) {
-      try {
-        await unregister(shortcut);
-      } catch {
-        /* ignore */
-      }
-    }
-    registeredShortcuts.clear();
-
-    for (const [shortcut, handlers] of handlersMap.entries()) {
-      try {
+    await Promise.all(
+      Array.from(registeredShortcuts).map(async (shortcut) => {
         try {
           await unregister(shortcut);
         } catch {
           /* ignore */
         }
-        await register(shortcut, (event) => {
-          handlers.forEach((h) => h(event));
-        });
-        registeredShortcuts.add(shortcut);
-      } catch (e) {
-        console.error(`[hotkey] FAILED to register: "${shortcut}"`, e);
-      }
-    }
+      })
+    );
+
+    registeredShortcuts.clear();
+
+    await Promise.all(
+      Array.from(handlersMap.entries()).map(async ([shortcut, handlers]) => {
+        try {
+          try {
+            await unregister(shortcut);
+          } catch {
+            /* ignore */
+          }
+
+          await register(shortcut, (event) => {
+            handlers.forEach((h) => h(event));
+          });
+
+          registeredShortcuts.add(shortcut);
+        } catch (e) {
+          console.error(`[hotkey] FAILED to register: "${shortcut}"`, e);
+        }
+      })
+    );
   } finally {
     isSettingUp = false;
+
     if (pendingSetup) {
       pendingSetup = false;
       void setupHotkeys(onSave);
@@ -118,5 +132,6 @@ export const cleanupHotkeys = () => {
   for (const shortcut of Array.from(registeredShortcuts)) {
     void unregister(shortcut);
   }
+
   registeredShortcuts.clear();
 };

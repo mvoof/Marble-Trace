@@ -1,4 +1,4 @@
-import { TrackSurface } from '../types/iracing-enums';
+import { TrackSurface } from '../types';
 import type {
   CarIdxFrame,
   DriverInfoData,

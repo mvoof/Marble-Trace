@@ -3,7 +3,8 @@ import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { DriverEntry } from '../../../types/bindings';
-import { computedStore, telemetryStore } from '../../../store/iracing';
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
+import { computedStore } from '../../../store/iracing/computed.store';
 import { appSettingsStore } from '../../../store/app-settings.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { computeClassSof } from './standings-utils';
@@ -25,15 +26,20 @@ export const StandingsWidgetContainer = observer(() => {
     () => computeClassSof(driverEntries),
     [driverEntries]
   );
+
   const allClassGroupsCount = useAllClassGroupsCount(driverEntries);
 
   const irDeltaMap = useMemo(
     () =>
       settings.showIrChange
         ? new Map(
-            driverEntries
-              .filter((e) => e.estimatedIrDelta !== null)
-              .map((e) => [e.carIdx, e.estimatedIrDelta as number])
+            driverEntries.reduce<[number, number][]>((acc, e) => {
+              if (e.estimatedIrDelta !== null) {
+                acc.push([e.carIdx, e.estimatedIrDelta]);
+              }
+
+              return acc;
+            }, [])
           )
         : new Map<number, number>(),
 
@@ -56,6 +62,7 @@ export const StandingsWidgetContainer = observer(() => {
         });
       }
     }
+
     return map.size > 0 ? map : null;
   }, [qualifyResults]);
 

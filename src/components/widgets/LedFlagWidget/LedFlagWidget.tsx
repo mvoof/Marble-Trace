@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { FlagType } from '../../../types/flags';
+import type { FlagType } from '../../../types';
 
 import styles from './LedFlagWidget.module.scss';
 
@@ -151,8 +151,10 @@ export interface LedFlagWidgetProps {
 
 export const LedFlagWidget = ({ flag, blinkOn }: LedFlagWidgetProps) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const [diodesPerBlock, setDiodesPerBlock] = useState(6);
-  const [isSingleLed, setIsSingleLed] = useState(false);
+  const [layout, setLayout] = useState({
+    diodesPerBlock: 6,
+    isSingleLed: false,
+  });
 
   useEffect(() => {
     const el = wrapperRef.current;
@@ -161,10 +163,16 @@ export const LedFlagWidget = ({ flag, blinkOn }: LedFlagWidgetProps) => {
     const obs = new ResizeObserver(([entry]) => {
       const w = Math.min(entry.contentRect.width, entry.contentRect.height);
       if (w < MIN_SINGLE_LED_PX) {
-        setIsSingleLed(true);
+        setLayout((prev) =>
+          prev.isSingleLed ? prev : { ...prev, isSingleLed: true }
+        );
       } else {
-        setIsSingleLed(false);
-        setDiodesPerBlock(computeDiodesPerBlock(w));
+        const nextDiodes = computeDiodesPerBlock(w);
+        setLayout((prev) =>
+          !prev.isSingleLed && prev.diodesPerBlock === nextDiodes
+            ? prev
+            : { isSingleLed: false, diodesPerBlock: nextDiodes }
+        );
       }
     });
 
@@ -175,7 +183,7 @@ export const LedFlagWidget = ({ flag, blinkOn }: LedFlagWidgetProps) => {
   const isOff =
     flag === 'none' || ((flag === 'yellow' || flag === 'red') && !blinkOn);
 
-  if (isSingleLed) {
+  if (layout.isSingleLed) {
     const colorClass = isOff ? '' : getSingleLedColorClass(flag);
     return (
       <div ref={wrapperRef} className={styles.wrapper}>
@@ -188,8 +196,8 @@ export const LedFlagWidget = ({ flag, blinkOn }: LedFlagWidgetProps) => {
     );
   }
 
-  const gridData = buildGridData(diodesPerBlock);
-  const matrixSize = BLOCKS * diodesPerBlock;
+  const gridData = buildGridData(layout.diodesPerBlock);
+  const matrixSize = BLOCKS * layout.diodesPerBlock;
 
   return (
     <div ref={wrapperRef} className={styles.wrapper}>
@@ -198,7 +206,7 @@ export const LedFlagWidget = ({ flag, blinkOn }: LedFlagWidgetProps) => {
         style={
           // CSS custom properties for dynamic grid sizing
           {
-            '--dpb': diodesPerBlock,
+            '--dpb': layout.diodesPerBlock,
             '--blocks': BLOCKS,
           } as object
         }
@@ -223,6 +231,7 @@ export const LedFlagWidget = ({ flag, blinkOn }: LedFlagWidgetProps) => {
             })}
           </div>
         ))}
+
         <div className={styles.glassOverlay} aria-hidden="true" />
       </div>
     </div>

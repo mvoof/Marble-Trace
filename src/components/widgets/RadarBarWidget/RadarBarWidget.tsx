@@ -1,4 +1,4 @@
-import { WidgetPanel } from '../primitives/WidgetPanel';
+import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import type { RadarSettings } from '../../../types/widget-settings';
 import type { RadarDistances } from '../../../types/bindings';
 import { RadarBar } from './RadarBar/RadarBar';
@@ -24,6 +24,7 @@ export const RadarBarWidget = ({
 }: RadarBarWidgetProps) => {
   const { leftDist, rightDist } = radarDistances;
   const activeOnly = settings.barDisplayMode === 'active-only';
+
   const showLeft = activeOnly ? spotterLeft : true;
   const showRight = activeOnly ? spotterRight : true;
 

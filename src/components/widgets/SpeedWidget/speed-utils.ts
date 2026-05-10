@@ -1,17 +1,21 @@
 const KPH_TO_MS = 1 / 3.6;
+const ENGINE_TEMP_WARN_C = 130;
+const MPH_TO_MS = 0.44704;
 
-export const ENGINE_TEMP_WARN_C = 130;
 export const isEngineTempWarning = (
   celsius: number | null | undefined
 ): boolean => celsius != null && celsius >= ENGINE_TEMP_WARN_C;
-const MPH_TO_MS = 0.44704;
 
 export const parsePitSpeedLimitMs = (raw: string | null): number => {
   if (!raw) return 0;
+
   const match = raw.match(/^([\d.]+)\s*(kph|mph)/i);
+
   if (!match) return 0;
+
   const value = parseFloat(match[1]);
   const unit = match[2].toLowerCase();
+
   return unit === 'mph' ? value * MPH_TO_MS : value * KPH_TO_MS;
 };
 
@@ -22,5 +26,6 @@ export const getShiftZoneColor = (
   if (pct >= 1) return colors.limit;
   if (pct >= 0.7) return colors.high;
   if (pct >= 0.35) return colors.mid;
+
   return colors.low;
 };

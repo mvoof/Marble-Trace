@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing';
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { parseSessionFlags } from '../../../utils/flags-utils';
 import { useFlagBlink, useFlagHold } from '../../../hooks/flags-hooks';

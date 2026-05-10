@@ -2,10 +2,10 @@ import type { RefObject } from 'react';
 import { useEffect, useRef } from 'react';
 import { autorun, runInAction } from 'mobx';
 import { listen } from '@tauri-apps/api/event';
-import { telemetryStore } from '../../../../store/iracing';
+import { telemetryStore } from '../../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import { TrackRecorder } from '../../../../utils/track-recorder';
-import type { TrackPoint } from '../../../../types/track';
+import type { TrackPoint } from '../../../../types';
 import type { RecordingOverlayHandle } from '../RecordingOverlay/RecordingOverlay';
 
 interface TrackData {
@@ -58,6 +58,7 @@ export const TrackRecorderBridge = ({
     onSaveTrack,
     recordingOverlayRef,
   });
+
   callbacksRef.current = {
     onTrackReady,
     onIsRecordingChange,
@@ -76,10 +77,13 @@ export const TrackRecorderBridge = ({
     lastIsRecordingRef.current = null;
 
     runInAction(() => widgetSettingsStore.setTrackMapForceStartPending(false));
+
     callbacksRef.current.onIsRecordingChange(false);
     callbacksRef.current.onWaitingForSFChange?.(false);
     callbacksRef.current.onProgressChange(0);
+
     const overlay = callbacksRef.current.recordingOverlayRef?.current;
+
     if (overlay) {
       overlay.setRecording(false);
       overlay.setProgress(0);
@@ -88,6 +92,7 @@ export const TrackRecorderBridge = ({
 
   useEffect(() => {
     if (!trackId) return;
+
     reset();
   }, [trackId]);
 
@@ -95,6 +100,7 @@ export const TrackRecorderBridge = ({
     const unlistenClear = listen('track-map:clear', () => {
       reset();
     });
+
     const unlistenForceStart = listen('track-map:force-start', () => {
       runInAction(() => widgetSettingsStore.setTrackMapForceStartPending(true));
     });
@@ -124,9 +130,11 @@ export const TrackRecorderBridge = ({
       // Completion detection for S/F line crossing to start recording.
       // Jumps from > 0.8 to < 0.2 indicate crossing the Start/Finish line.
       let crossedSF = false;
+
       if (lastLapDistRef.current > 0.8 && lapDistPct >= 0 && lapDistPct < 0.2) {
         crossedSF = true;
       }
+
       lastLapDistRef.current = lapDistPct;
 
       const isMoving = speed > 5;
@@ -142,6 +150,7 @@ export const TrackRecorderBridge = ({
 
       if (isWaitingForSF !== lastIsWaitingForSFRef.current) {
         lastIsWaitingForSFRef.current = isWaitingForSF;
+
         queueMicrotask(() =>
           callbacksRef.current.onWaitingForSFChange?.(isWaitingForSF)
         );
@@ -154,15 +163,18 @@ export const TrackRecorderBridge = ({
           runInAction(() =>
             widgetSettingsStore.setTrackMapForceStartPending(false)
           );
+
           hasSavedRef.current = false;
           recorder.start();
 
           if (lastIsRecordingRef.current !== true) {
             lastIsRecordingRef.current = true;
+
             queueMicrotask(() =>
               callbacksRef.current.onIsRecordingChange(true)
             );
           }
+
           overlay?.setRecording(true);
         }
       }
@@ -180,11 +192,13 @@ export const TrackRecorderBridge = ({
         // Throttled React state update (every 1%)
         if (Math.abs(progress - lastProgressRef.current) >= 0.01) {
           lastProgressRef.current = progress;
+
           queueMicrotask(() => callbacksRef.current.onProgressChange(progress));
         }
 
         if (recorder.isComplete && !hasSavedRef.current) {
           hasSavedRef.current = true;
+
           const { svgPath, viewBox } = recorder.buildSvgPath();
           const points = recorder.getPoints();
 
@@ -192,6 +206,7 @@ export const TrackRecorderBridge = ({
           lastIsRecordingRef.current = false;
           callbacksRef.current.onIsRecordingChange(false);
           callbacksRef.current.onTrackReady({ svgPath, viewBox, points });
+
           void callbacksRef.current.onSaveTrack(svgPath, viewBox, points);
 
           if (overlay) {

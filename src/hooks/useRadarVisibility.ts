@@ -1,16 +1,30 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
-
+import { useEffect, useMemo, useReducer } from 'react';
 import type { NearbyCar } from '../types/bindings';
 import type { RadarSettings } from '../types/widget-settings';
 import { appSettingsStore } from '../store/app-settings.store';
+
+type VisibilityAction = 'SHOW' | 'HIDE';
+
+const visibilityReducer = (
+  state: boolean,
+  action: VisibilityAction
+): boolean => {
+  switch (action) {
+    case 'SHOW':
+      return true;
+    case 'HIDE':
+      return false;
+    default:
+      return state;
+  }
+};
 
 export const useRadarVisibility = (
   nearbyCars: NearbyCar[],
   settings: RadarSettings,
   hasSpotterContact: boolean = false
 ): boolean => {
-  const [visible, setVisible] = useState(false);
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [visible, dispatch] = useReducer(visibilityReducer, false);
 
   const { visibilityMode, proximityThreshold, hideDelay } = settings;
   const { dragMode } = appSettingsStore;
@@ -24,32 +38,21 @@ export const useRadarVisibility = (
 
   useEffect(() => {
     if (visibilityMode === 'always') {
-      setVisible(true);
+      dispatch('SHOW');
+
       return;
     }
 
     if (hasNearby) {
-      if (hideTimerRef.current) {
-        clearTimeout(hideTimerRef.current);
-        hideTimerRef.current = null;
-      }
-
-      setVisible(true);
-    } else if (visible && !hideTimerRef.current) {
-      hideTimerRef.current = setTimeout(() => {
-        setVisible(false);
-        hideTimerRef.current = null;
+      dispatch('SHOW');
+    } else {
+      const timeoutId = setTimeout(() => {
+        dispatch('HIDE');
       }, hideDelay * 1000);
-    }
-  }, [hasNearby, visibilityMode, hideDelay, visible]);
 
-  useEffect(() => {
-    return () => {
-      if (hideTimerRef.current) {
-        clearTimeout(hideTimerRef.current);
-      }
-    };
-  }, []);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [hasNearby, visibilityMode, hideDelay]);
 
   return visibilityMode === 'always' || dragMode ? true : visible;
 };

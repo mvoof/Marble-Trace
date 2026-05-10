@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { WidgetPanel } from '../primitives';
+import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import { useVisibleRowCount } from '../../../hooks/useVisibleRowCount';
 import type { RelativeWidgetSettings } from '../../../types/widget-settings';
 
@@ -19,6 +19,7 @@ interface RelativeWidgetProps {
 export const RelativeWidget = ({ entries, settings }: RelativeWidgetProps) => {
   const prevF2TimesRef = useRef<Map<number, number>>(new Map());
   const lastSnapshotTimeRef = useRef<number>(0);
+
   const { ref: driverListRef, count: visibleRowCount } =
     useVisibleRowCount<HTMLDivElement>(2.75, 3, '[data-relative-row]');
 
@@ -26,6 +27,7 @@ export const RelativeWidget = ({ entries, settings }: RelativeWidgetProps) => {
 
   useEffect(() => {
     const now = Date.now();
+
     if (now - lastSnapshotTimeRef.current < TREND_SAMPLE_INTERVAL_MS) return;
 
     const prevSnapshot = prevF2TimesRef.current;
@@ -52,10 +54,13 @@ export const RelativeWidget = ({ entries, settings }: RelativeWidgetProps) => {
     setTrendMap(newTrends);
 
     const newTimes = new Map<number, number>();
+
     for (const entry of entries) {
       if (entry.isPlayer || !playerEntry) continue;
+
       newTimes.set(entry.carIdx, computeRelativeGap(entry, playerEntry));
     }
+
     prevF2TimesRef.current = newTimes;
     lastSnapshotTimeRef.current = now;
   }, [entries]);
@@ -73,6 +78,7 @@ export const RelativeWidget = ({ entries, settings }: RelativeWidgetProps) => {
 
     let above = Math.min(half, aboveAvail);
     let below = Math.min(total - 1 - above, belowAvail);
+
     above = Math.min(total - 1 - below, aboveAvail);
 
     return entries.slice(playerIdx - above, playerIdx + below + 1);

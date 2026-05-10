@@ -1,5 +1,5 @@
 import React from 'react';
-import { WidgetPanel } from '../primitives/WidgetPanel';
+import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import { formatFuelLiters, type FuelCalculations } from './fuel-utils';
 import { FUEL_THRESHOLDS } from './fuel-constants';
 import { FuelChart } from './FuelChart/FuelChart';
@@ -24,13 +24,20 @@ interface FuelWidgetProps {
 }
 
 const statusClass = (shortage: number | null): string => {
-  if (shortage === null || shortage >= 0) return styles.statusSafe;
+  if (shortage === null || shortage >= 0) {
+    return styles.statusSafe;
+  }
+
   return styles.statusShort;
 };
 
 const statusText = (shortage: number | null): string => {
-  if (shortage === null) return 'FINISH --.-- L';
+  if (shortage === null) {
+    return 'FINISH --.-- L';
+  }
+
   const sign = shortage >= 0 ? '+' : '';
+
   return `FINISH ${sign}${shortage.toFixed(1)} L`;
 };
 
@@ -40,9 +47,13 @@ const lapsLeftClass = (
 ): string => {
   if (lapsRemaining === null) return '';
 
-  if (lapsRemaining > pitWarningLaps + FUEL_THRESHOLDS.LAPS_LEFT_GREEN_BUFFER)
+  if (lapsRemaining > pitWarningLaps + FUEL_THRESHOLDS.LAPS_LEFT_GREEN_BUFFER) {
     return styles.rowValueSafe;
-  if (lapsRemaining <= pitWarningLaps) return styles.rowValueShort;
+  }
+
+  if (lapsRemaining <= pitWarningLaps) {
+    return styles.rowValueShort;
+  }
 
   return styles.rowValueWarn;
 };
@@ -69,6 +80,7 @@ export const FuelWidget = ({
       : null;
 
   const isShort = shortage !== null && shortage < 0;
+
   const windowText =
     pitWindowStart !== null && pitWindowEnd !== null
       ? `LAP ${pitWindowStart}–${pitWindowEnd}`
@@ -81,6 +93,7 @@ export const FuelWidget = ({
     <WidgetPanel direction="column" gap={0} minWidth={200}>
       <div className={styles.header}>
         <span className={styles.headerLabel}>FUEL</span>
+
         <span className={`${styles.statusBadge} ${statusClass(shortage)}`}>
           {statusText(shortage)}
         </span>
@@ -93,10 +106,12 @@ export const FuelWidget = ({
             style={{ '--progress': pct } as React.CSSProperties}
           />
         )}
+
         <div className={styles.progressLabels}>
           <span>
             {fuelLevel !== null ? `${fuelLevel.toFixed(1)} L` : '--.-- L'}
           </span>
+
           <span className={styles.progressLabelMuted}>
             {fuelMax !== null ? `${fuelMax.toFixed(0)} L` : ''}
           </span>
@@ -141,10 +156,12 @@ export const FuelWidget = ({
               <span className={styles.pitWarningBodyLabel}>
                 TO REFUEL FOR FINISH
               </span>
+
               <span className={styles.pitWarningBodySub}>
                 incl. +1 lap buffer
               </span>
             </div>
+
             <span
               className={`${styles.pitWarningAmount} ${isShort ? styles.pitWarningAmountDanger : ''}`}
             >
@@ -157,7 +174,7 @@ export const FuelWidget = ({
 
           {tankTooSmall && (
             <div className={styles.pitWarningSplitPit}>
-              TANK TOO SMALL — SPLIT PIT REQUIRED
+              TANK TOO SMALL - SPLIT PIT REQUIRED
             </div>
           )}
         </div>

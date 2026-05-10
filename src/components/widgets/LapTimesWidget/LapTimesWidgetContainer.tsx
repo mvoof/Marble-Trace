@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore, computedStore } from '../../../store/iracing';
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
+import { computedStore } from '../../../store/iracing/computed.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { formatLapTime } from '../../../utils/telemetry-format';
 import { LapTimesWidget } from './LapTimesWidget';
@@ -37,9 +38,15 @@ export const LapTimesWidgetContainer = observer(() => {
 
   const allBestTimes = carIdxData?.car_idx_best_lap_time ?? [];
 
-  const classBestTimes = classEntries
-    .map((e) => allBestTimes[e.carIdx])
-    .filter((t): t is number => t !== undefined && t > 0);
+  const classBestTimes = classEntries.reduce<number[]>((acc, e) => {
+    const bestTime = allBestTimes[e.carIdx];
+
+    if (bestTime !== undefined && bestTime > 0) {
+      acc.push(bestTime);
+    }
+
+    return acc;
+  }, []);
 
   const timesToUse =
     classBestTimes.length > 0

@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { telemetryConnectionStore } from '../../../../store/iracing';
+import { telemetryConnectionStore } from '../../../../store/iracing/telemetry-connection.store';
 import styles from './AppStatus.module.scss';
 
 export const AppStatus = observer(() => {

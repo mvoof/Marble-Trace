@@ -1,18 +1,20 @@
 import { useEffect } from 'react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { telemetryConnectionStore } from '../../store/iracing';
-import { OverlayCanvas } from '../../components/OverlayCanvas';
-import { initOverlaySync } from '../../store/sync';
+import { telemetryConnectionStore } from '../../store/iracing/telemetry-connection.store';
+import { OverlayCanvas } from '../../components/OverlayCanvas/OverlayCanvas';
+import { initOverlaySync } from '../../store/sync/sync-init';
 
 export const OverlayPage = () => {
   useEffect(() => {
     void telemetryConnectionStore.startWidgetListener();
+
     return () => telemetryConnectionStore.stopWidgetListener();
   }, []);
 
   useEffect(() => {
-    document.documentElement.style.background = 'transparent';
-    document.body.style.background = 'transparent';
+    [document.documentElement, document.body].forEach(
+      (el) => (el.style.background = 'transparent')
+    );
 
     // Immediately pass clicks through to the game by default.
     // OverlayCanvas will toggle this when drag mode changes.
