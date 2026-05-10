@@ -33,9 +33,13 @@ export const StandingsWidgetContainer = observer(() => {
     () =>
       settings.showIrChange
         ? new Map(
-            driverEntries
-              .filter((e) => e.estimatedIrDelta !== null)
-              .map((e) => [e.carIdx, e.estimatedIrDelta as number])
+            driverEntries.reduce<[number, number][]>((acc, e) => {
+              if (e.estimatedIrDelta !== null) {
+                acc.push([e.carIdx, e.estimatedIrDelta]);
+              }
+
+              return acc;
+            }, [])
           )
         : new Map<number, number>(),
 
