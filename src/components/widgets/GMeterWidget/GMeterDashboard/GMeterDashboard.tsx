@@ -1,4 +1,5 @@
-import { forwardRef, useImperativeHandle, useRef } from 'react';
+import { useImperativeHandle, useRef } from 'react';
+import type { Ref } from 'react';
 import styles from './GMeterDashboard.module.scss';
 
 export interface GMeterDashboardHandle {
@@ -12,7 +13,11 @@ export interface GMeterDashboardHandle {
   reset: () => void;
 }
 
-export const GMeterDashboard = forwardRef<GMeterDashboardHandle>((_, ref) => {
+export const GMeterDashboard = ({
+  ref,
+}: {
+  ref?: Ref<GMeterDashboardHandle>;
+}) => {
   const latRef = useRef<HTMLSpanElement>(null);
   const lonRef = useRef<HTMLSpanElement>(null);
 
@@ -82,6 +87,4 @@ export const GMeterDashboard = forwardRef<GMeterDashboardHandle>((_, ref) => {
       </div>
     </div>
   );
-});
-
-GMeterDashboard.displayName = 'GMeterDashboard';
+};
