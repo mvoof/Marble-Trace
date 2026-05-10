@@ -48,6 +48,7 @@ use crate::computations::{
     fuel, fuel::FuelState, lap_delta, lap_delta::LapDeltaState, pit_stops, pit_stops::PitStopState,
     proximity, standings, standings::StandingsState,
 };
+use crate::iracing::WeatherForecastEntry;
 use crate::utils::lock_or_recover;
 
 /// Shared state for the iRacing telemetry service.
@@ -292,14 +293,17 @@ fn spawn_session_polling(
 
                                         emit_session_info(&app, &session);
 
-                                        let forecast = parse_weather_forecast(
-                                            &session.weekend_info.unknown_fields,
-                                        );
+                                        let forecast: Vec<WeatherForecastEntry> =
+                                            parse_weather_forecast(
+                                                &session.weekend_info.unknown_fields,
+                                            );
+
                                         if !forecast.is_empty() {
                                             debug!(
                                                 "Weather forecast: {} entries emitted",
                                                 forecast.len()
                                             );
+
                                             if let Err(e) =
                                                 app.emit("iracing://weather-forecast", &forecast)
                                             {
@@ -356,6 +360,7 @@ async fn run_telemetry_loop<S>(
     S: futures::Stream<Item = AllFieldsFrame>,
 {
     let mut tick: u64 = 0;
+    let mut is_waiting = false;
 
     loop {
         if !service.running.load(Ordering::SeqCst) {
@@ -366,6 +371,12 @@ async fn run_telemetry_loop<S>(
         match tokio::time::timeout(Duration::from_secs(3), stream.next()).await {
             Ok(Some(frame)) => {
                 tick += 1;
+
+                if is_waiting {
+                    is_waiting = false;
+                    info!("Telemetry resumed after timeout");
+                    app.emit("iracing://status", "connected").ok();
+                }
 
                 if tick == 1 {
                     info!(
@@ -393,10 +404,11 @@ async fn run_telemetry_loop<S>(
                 break;
             }
             Err(_) => {
-                // If we hit a timeout, it just means iRacing isn't sending telemetry frames
-                // (e.g. user is in the garage or replay is paused).
-                // We DON'T disconnect here to avoid status jitter. We just keep waiting.
-                debug!("No telemetry for 3s, waiting...");
+                if !is_waiting {
+                    is_waiting = true;
+                    debug!("No telemetry for 5s, waiting...");
+                    app.emit("iracing://status", "waiting").ok();
+                }
             }
         }
     }
