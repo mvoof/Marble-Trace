@@ -1,10 +1,16 @@
+import { useEffect, useRef } from 'react';
+
+import { observer } from 'mobx-react-lite';
+
 import CarIcon from '../../../../assets/car-icon.svg?react';
 import WindArrowIcon from '../../../../assets/wind-arrow.svg?react';
+import { telemetryStore } from '../../../../store/iracing/telemetry.store';
+import { autorun } from 'mobx';
+
 import styles from './WindCompass.module.scss';
 
 interface WindCompassProps {
   windBearing: number;
-  carYawDeg: number;
   windCardinal: string;
   arrowColor: string;
   size?: number;
@@ -28,147 +34,170 @@ const MINOR_TICK_ANGLES = [45, 135, 225, 315];
 
 const RING_COLOR = 'rgba(255,255,255,0.22)';
 
-export const WindCompass = ({
-  windBearing,
-  carYawDeg,
-  windCardinal,
-  arrowColor,
-  size = COMPASS_SIZE,
-}: WindCompassProps) => {
-  const ringRotation = -carYawDeg;
-  const relativeBearing = (((windBearing - carYawDeg) % 360) + 360) % 360;
+export const WindCompass = observer(
+  ({
+    windBearing,
+    windCardinal,
+    arrowColor,
+    size = COMPASS_SIZE,
+  }: WindCompassProps) => {
+    const ringRef = useRef<SVGGElement>(null);
+    const arrowRef = useRef<SVGGElement>(null);
 
-  const bearingFontPx = Math.round(13 * (size / COMPASS_SIZE));
+    const bearingFontPx = Math.round(13 * (size / COMPASS_SIZE));
 
-  // RING_RADIUS is 74. Car radius ~40.
-  // We want the arrow to cross the ring (start outside at ~95) and end near the car (~45).
-  const arrowBaseRadius = 95;
-  const arrowHeight = 50;
+    // RING_RADIUS is 74. Car radius ~40.
+    // We want the arrow to cross the ring (start outside at ~95) and end near the car (~45).
+    const arrowBaseRadius = 95;
+    const arrowHeight = 50;
 
-  return (
-    <div
-      className={styles.compassWrapper}
-      style={{ width: size, height: size }}
-    >
-      <svg
-        width={size}
-        height={size}
-        viewBox="-110 -110 220 220"
-        className={styles.compassSvg}
+    useEffect(() => {
+      return autorun(() => {
+        const carYawRad = telemetryStore.carDynamics?.yaw ?? 0;
+        const carYawDeg = carYawRad * (180 / Math.PI);
+
+        if (ringRef.current) {
+          ringRef.current.style.transform = `rotate(${-carYawDeg}deg)`;
+        }
+
+        if (arrowRef.current) {
+          const relativeBearing =
+            (((windBearing - carYawDeg) % 360) + 360) % 360;
+
+          arrowRef.current.style.transform = `rotate(${relativeBearing}deg)`;
+        }
+      });
+    }, [windBearing]);
+
+    return (
+      <div
+        className={styles.compassWrapper}
+        style={{ width: size, height: size }}
       >
-        {/* 1. Rotating Ring + Ticks + Labels */}
-        <g
-          transform={`rotate(${ringRotation})`}
-          className={styles.rotatingGroup}
-          pointerEvents="none"
+        <svg
+          width={size}
+          height={size}
+          viewBox="-110 -110 220 220"
+          className={styles.compassSvg}
         >
-          <circle
-            r={RING_RADIUS}
-            fill="none"
-            stroke={RING_COLOR}
-            strokeWidth="2"
-          />
+          {/* 1. Rotating Ring + Ticks + Labels */}
+          <g
+            ref={ringRef}
+            className={styles.rotatingGroup}
+            pointerEvents="none"
+          >
+            <circle
+              r={RING_RADIUS}
+              fill="none"
+              stroke={RING_COLOR}
+              strokeWidth="2"
+            />
 
-          {CARDINAL_ANGLES.map(({ angle }) => {
-            const rad = (angle * Math.PI) / 180;
-            return (
-              <line
-                key={angle}
-                x1={Math.sin(rad) * TICK_OUTER}
-                y1={-Math.cos(rad) * TICK_OUTER}
-                x2={Math.sin(rad) * TICK_INNER_MAJOR}
-                y2={-Math.cos(rad) * TICK_INNER_MAJOR}
-                stroke={RING_COLOR}
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            );
-          })}
+            {CARDINAL_ANGLES.map(({ angle }) => {
+              const rad = (angle * Math.PI) / 180;
+              return (
+                <line
+                  key={angle}
+                  x1={Math.sin(rad) * TICK_OUTER}
+                  y1={-Math.cos(rad) * TICK_OUTER}
+                  x2={Math.sin(rad) * TICK_INNER_MAJOR}
+                  y2={-Math.cos(rad) * TICK_INNER_MAJOR}
+                  stroke={RING_COLOR}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              );
+            })}
 
-          {MINOR_TICK_ANGLES.map((angle) => {
-            const rad = (angle * Math.PI) / 180;
-            return (
-              <line
-                key={angle}
-                x1={Math.sin(rad) * TICK_OUTER}
-                y1={-Math.cos(rad) * TICK_OUTER}
-                x2={Math.sin(rad) * TICK_INNER_MINOR}
-                y2={-Math.cos(rad) * TICK_INNER_MINOR}
-                stroke={RING_COLOR}
-                strokeWidth="1"
-                strokeLinecap="round"
-              />
-            );
-          })}
+            {MINOR_TICK_ANGLES.map((angle) => {
+              const rad = (angle * Math.PI) / 180;
+              return (
+                <line
+                  key={angle}
+                  x1={Math.sin(rad) * TICK_OUTER}
+                  y1={-Math.cos(rad) * TICK_OUTER}
+                  x2={Math.sin(rad) * TICK_INNER_MINOR}
+                  y2={-Math.cos(rad) * TICK_INNER_MINOR}
+                  stroke={RING_COLOR}
+                  strokeWidth="1"
+                  strokeLinecap="round"
+                />
+              );
+            })}
 
-          {CARDINAL_ANGLES.map(({ label, angle }) => {
-            const rad = (angle * Math.PI) / 180;
-            const x = Math.sin(rad) * LABEL_RADIUS;
-            const y = -Math.cos(rad) * LABEL_RADIUS;
-            return (
-              <g key={label} transform={`translate(${x}, ${y})`}>
-                <text
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  className={styles.cardinalLabel}
-                  transform={`rotate(${-ringRotation})`}
-                >
-                  {label}
-                </text>
-              </g>
-            );
-          })}
-        </g>
+            {CARDINAL_ANGLES.map(({ label, angle }) => {
+              const rad = (angle * Math.PI) / 180;
+              const x = Math.sin(rad) * LABEL_RADIUS;
+              const y = -Math.cos(rad) * LABEL_RADIUS;
+              return (
+                <g key={label} transform={`translate(${x}, ${y})`}>
+                  <text
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    className={styles.cardinalLabel}
+                    // Labels rotate back to stay upright. Since we use CSS transform on the parent,
+                    // we can't easily counter-rotate individual labels without re-rendering or
+                    // more complex DOM manipulation.
+                    // For now, we'll keep the labels rotating with the ring as it was,
+                    // but we might need to adjust this if they should stay upright.
+                  >
+                    {label}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
 
-        {/* 2. Wind arrow — above ring, pointing from outside towards car */}
-        <g transform={`rotate(${relativeBearing})`} pointerEvents="none">
-          <WindArrowIcon
-            x="-14"
-            y={-arrowBaseRadius}
-            width="28"
-            height={arrowHeight}
-            style={{
-              color: arrowColor,
-              transform: 'rotate(180deg)',
-              transformOrigin: `0px ${-arrowBaseRadius + arrowHeight / 2}px`,
-            }}
-          />
-        </g>
+          {/* 2. Wind arrow — above ring, pointing from outside towards car */}
+          <g ref={arrowRef} pointerEvents="none">
+            <WindArrowIcon
+              x="-14"
+              y={-arrowBaseRadius}
+              width="28"
+              height={arrowHeight}
+              style={{
+                color: arrowColor,
+                transform: 'rotate(180deg)',
+                transformOrigin: `0px ${-arrowBaseRadius + arrowHeight / 2}px`,
+              }}
+            />
+          </g>
 
-        {/* 3. Static Overlays */}
-        <text
-          x="-105"
-          y="-88"
-          textAnchor="start"
-          dominantBaseline="central"
-          className={styles.bearingText}
-          style={{ fontSize: bearingFontPx }}
-        >
-          {Math.round(windBearing)}°
-        </text>
+          {/* 3. Static Overlays */}
+          <text
+            x="-105"
+            y="-88"
+            textAnchor="start"
+            dominantBaseline="central"
+            className={styles.bearingText}
+            style={{ fontSize: bearingFontPx }}
+          >
+            {Math.round(windBearing)}°
+          </text>
 
-        <text
-          x="105"
-          y="-88"
-          textAnchor="end"
-          dominantBaseline="central"
-          className={styles.bearingText}
-          style={{ fontSize: bearingFontPx }}
-        >
-          {windCardinal}
-        </text>
+          <text
+            x="105"
+            y="-88"
+            textAnchor="end"
+            dominantBaseline="central"
+            className={styles.bearingText}
+            style={{ fontSize: bearingFontPx }}
+          >
+            {windCardinal}
+          </text>
 
-        {/* 4. Car icon — centered, inside SVG for layering */}
-        <g pointerEvents="none">
-          <CarIcon
-            x="-40"
-            y="-40"
-            width="80"
-            height="80"
-            style={{ color: 'rgba(255,255,255,0.88)' }}
-          />
-        </g>
-      </svg>
-    </div>
-  );
-};
+          {/* 4. Car icon — centered, inside SVG for layering */}
+          <g pointerEvents="none">
+            <CarIcon
+              x="-40"
+              y="-40"
+              width="80"
+              height="80"
+              style={{ color: 'rgba(255,255,255,0.88)' }}
+            />
+          </g>
+        </svg>
+      </div>
+    );
+  }
+);

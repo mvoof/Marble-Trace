@@ -24,7 +24,6 @@ const getWindColor = (mps: number | null): string => {
 export const WeatherWidgetContainer = observer(() => {
   const weekendInfo = telemetryStore.weekendInfo;
   const env = telemetryStore.environment;
-  const carDynamics = telemetryStore.carDynamics;
   const { system, formatTemp, tempUnit } = unitsStore;
   const settings = widgetSettingsStore.getWeatherSettings();
 
@@ -44,9 +43,6 @@ export const WeatherWidgetContainer = observer(() => {
   const windSpeedFormatted = formatWindSpeed(windVelMps, system);
   const windColor = getWindColor(windVelMps);
 
-  const carYawRad = carDynamics?.yaw ?? 0;
-  const carYawDeg = carYawRad * (180 / Math.PI);
-
   const rawHumidity =
     env?.relative_humidity !== undefined && env?.relative_humidity !== null
       ? env.relative_humidity * 100
@@ -64,7 +60,6 @@ export const WeatherWidgetContainer = observer(() => {
     <WeatherWidget
       ref={widgetRef}
       windBearing={windBearing}
-      carYawDeg={carYawDeg}
       windSpeedFormatted={windSpeedFormatted}
       windCardinal={windCardinal}
       windColor={windColor}

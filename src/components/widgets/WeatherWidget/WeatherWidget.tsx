@@ -13,7 +13,6 @@ import styles from './WeatherWidget.module.scss';
 
 interface WeatherWidgetProps {
   windBearing: number;
-  carYawDeg: number;
   windSpeedFormatted: string;
   windCardinal: string;
   windColor: string;
@@ -110,7 +109,6 @@ const convertTemp = (celsius: number, system: UnitSystem): number => {
 
 export const WeatherWidget = ({
   windBearing,
-  carYawDeg,
   windSpeedFormatted,
   windCardinal,
   windColor,
@@ -150,7 +148,6 @@ export const WeatherWidget = ({
         <div className={styles.compassBlock}>
           <WindCompass
             windBearing={windBearing}
-            carYawDeg={carYawDeg}
             windCardinal={windCardinal}
             arrowColor={windColor}
             size={200}

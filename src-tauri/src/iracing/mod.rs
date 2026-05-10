@@ -44,8 +44,8 @@ pub use frames::{
     LapTimingFrame, SessionFrame,
 };
 pub use service::{
-    get_last_session_info, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
-    ComputationState, TelemetryServiceState, TelemetryState,
+    get_last_session_info, set_active_events, set_pit_warning_laps, start_telemetry_stream,
+    stop_telemetry_stream, ComputationState, TelemetryServiceState, TelemetryState,
 };
 #[allow(unused_imports)]
 pub use weather_forecast::WeatherForecastEntry;

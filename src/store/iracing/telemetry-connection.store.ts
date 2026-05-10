@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 
@@ -24,7 +24,14 @@ import { debug } from '../../utils/debug';
 
 import { telemetryStore } from './telemetry.store';
 import { computedStore } from './computed.store';
+import { widgetSettingsStore } from '../widget-settings.store';
+import { appSettingsStore } from '../app-settings.store';
 import type { TelemetryStatus } from '../../types';
+
+const EVENT_CAR_DYNAMICS = 1 << 0;
+const EVENT_CAR_INPUTS = 1 << 1;
+const EVENT_LAP_DELTA = 1 << 2;
+const EVENT_CAR_POSITIONS = 1 << 3;
 
 class TelemetryConnection {
   isConnected = false;
@@ -37,6 +44,63 @@ class TelemetryConnection {
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
+
+    // Only master (main window) manages active events in Rust
+    if (
+      typeof window !== 'undefined' &&
+      !window.location.hash.includes('overlay')
+    ) {
+      reaction(
+        () => ({
+          widgets: widgetSettingsStore.allWidgets.map((w) => ({
+            id: w.id,
+            enabled: w.enabled,
+          })),
+          hideAll: appSettingsStore.settings.hideAllWidgets,
+        }),
+        () => this.updateActiveEvents(),
+        { fireImmediately: true }
+      );
+    }
+  }
+
+  private updateActiveEvents() {
+    const widgets = widgetSettingsStore.allWidgets;
+    const hideAll = appSettingsStore.settings.hideAllWidgets;
+
+    let mask = 0;
+
+    if (!hideAll) {
+      const isEnabled = (id: string) =>
+        widgets.find((w) => w.id === id)?.enabled ?? false;
+
+      if (
+        isEnabled('speed') ||
+        isEnabled('g-meter') ||
+        isEnabled('weather') ||
+        isEnabled('track-map')
+      ) {
+        mask |= EVENT_CAR_DYNAMICS;
+      }
+
+      if (isEnabled('input-trace')) {
+        mask |= EVENT_CAR_INPUTS;
+      }
+
+      if (isEnabled('lap-delta')) {
+        mask |= EVENT_LAP_DELTA;
+      }
+
+      if (
+        isEnabled('track-map') ||
+        isEnabled('relative-map') ||
+        isEnabled('relative')
+      ) {
+        mask |= EVENT_CAR_POSITIONS;
+      }
+    }
+
+    void invoke('set_active_events', { mask });
   }
 
   /** Main window: starts the telemetry stream + subscribes to all events */

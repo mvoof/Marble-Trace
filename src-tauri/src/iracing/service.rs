@@ -58,7 +58,15 @@ pub struct TelemetryServiceState {
     pub start_positions: Mutex<HashMap<i32, (i32, i32)>>,
     /// Cached track length in meters.
     pub track_length_m: Mutex<Option<f32>>,
+    /// Bitmask of active high-frequency events to emit.
+    pub active_events: AtomicU32,
 }
+
+/// Bitmask flags for high-frequency events.
+pub const EVENT_CAR_DYNAMICS: u32 = 1 << 0;
+pub const EVENT_CAR_INPUTS: u32 = 1 << 1;
+pub const EVENT_LAP_DELTA: u32 = 1 << 2;
+pub const EVENT_CAR_POSITIONS: u32 = 1 << 3;
 
 /// Shared state for various computations (lap delta, fuel, standings).
 pub struct ComputationState {
@@ -117,6 +125,13 @@ pub async fn set_pit_warning_laps(
         .computation
         .pit_warning_laps
         .store(laps.to_bits(), Ordering::Relaxed);
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn set_active_events(state: State<'_, TelemetryState>, mask: u32) -> Result<(), String> {
+    state.service.active_events.store(mask, Ordering::Relaxed);
+    debug!("Active events mask updated to: {:#b}", mask);
     Ok(())
 }
 
@@ -517,18 +532,25 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
     let frame = ctx.frame;
     let tick = ctx.tick;
 
+    let active_mask = ctx.service.active_events.load(Ordering::Relaxed);
+
     // 60 Hz — raw frames
-    if let Err(e) = app.emit(
-        "iracing://telemetry/car-dynamics",
-        &CarDynamicsFrame::from(frame),
-    ) {
-        warn!("Failed to emit car dynamics: {}", e);
+    if (active_mask & EVENT_CAR_DYNAMICS) != 0 {
+        if let Err(e) = app.emit(
+            "iracing://telemetry/car-dynamics",
+            &CarDynamicsFrame::from(frame),
+        ) {
+            warn!("Failed to emit car dynamics: {}", e);
+        }
     }
-    if let Err(e) = app.emit(
-        "iracing://telemetry/car-inputs",
-        &CarInputsFrame::from(frame),
-    ) {
-        warn!("Failed to emit car inputs: {}", e);
+
+    if (active_mask & EVENT_CAR_INPUTS) != 0 {
+        if let Err(e) = app.emit(
+            "iracing://telemetry/car-inputs",
+            &CarInputsFrame::from(frame),
+        ) {
+            warn!("Failed to emit car inputs: {}", e);
+        }
     }
 
     // Clone session_info Arc — cheap enough to do at 60Hz for accurate computations
@@ -536,8 +558,11 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
     let session_info = session_snapshot.as_deref();
 
     // Compute stateful data at 60Hz for maximum precision (especially sector timing)
-    let lap_delta_frame =
-        session_info.map(|session| lap_delta::compute(frame, session, &ctx.computation.lap_delta));
+    let lap_delta_frame = if (active_mask & EVENT_LAP_DELTA) != 0 {
+        session_info.map(|session| lap_delta::compute(frame, session, &ctx.computation.lap_delta))
+    } else {
+        None
+    };
 
     // 60 Hz — emit lap delta for smooth live delta updates
     if let Some(ref ldf) = lap_delta_frame {
@@ -547,11 +572,13 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
     }
 
     // 60 Hz — lightweight car positions for smooth map/relative rendering
-    if let Err(e) = app.emit(
-        "iracing://telemetry/car-positions",
-        &CarPositionsFrame::from(frame),
-    ) {
-        warn!("Failed to emit car positions: {}", e);
+    if (active_mask & EVENT_CAR_POSITIONS) != 0 {
+        if let Err(e) = app.emit(
+            "iracing://telemetry/car-positions",
+            &CarPositionsFrame::from(frame),
+        ) {
+            warn!("Failed to emit car positions: {}", e);
+        }
     }
 
     // 10 Hz — also fire on first frame so widgets populate immediately
