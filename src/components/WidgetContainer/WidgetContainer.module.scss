@@ -5,7 +5,7 @@
   transform: translateZ(0);
   will-change: transform;
   // Tell the browser that the content is contained and won't affect outside layout
-  contain: layout paint;
+  contain: layout style;
 }
 
 .hidden {
