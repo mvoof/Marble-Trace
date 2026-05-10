@@ -47,8 +47,8 @@ export const RelativeSettingsPanel = observer(() => {
           value: settings.abbreviateNames,
           onChange: (v: boolean) => update({ abbreviateNames: v }),
         },
-      ].map((item, i) => (
-        <div key={i} className={styles.fieldGroup}>
+      ].map((item) => (
+        <div key={item.title} className={styles.fieldGroup}>
           <SettingRow title={item.title} desc={item.desc}>
             <Switch checked={item.value} onChange={item.onChange} />
           </SettingRow>

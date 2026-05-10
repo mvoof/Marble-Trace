@@ -225,7 +225,7 @@ export const SpeedWidget = ({
       {settings.showRpmBar && (
         <div ref={rpmBarRef} className={styles.rpmBar}>
           {Array.from({ length: LED_COUNT }, (_, i) => (
-            <div key={i} className={styles.rpmSeg} />
+            <div key={`led-${i}`} className={styles.rpmSeg} />
           ))}
         </div>
       )}

@@ -185,8 +185,8 @@ export const WeatherWidget = ({
       {showForecast && (
         <div className={styles.forecastBlock}>
           {forecast.length > 0 ? (
-            forecast.map((entry, idx) => (
-              <div key={idx} className={styles.forecastRow}>
+            forecast.map((entry) => (
+              <div key={entry.Time} className={styles.forecastRow}>
                 <span className={styles.forecastTime}>
                   {formatForecastTime(entry.Time)}
                 </span>

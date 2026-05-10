@@ -96,7 +96,7 @@ export const LapDeltaWidget = ({
         >
           {sectors.map((s, i) => (
             <TimingRow
-              key={i}
+              key={`sector-${i}`}
               label={`S${i + 1}`}
               time={formatSectorTime(s.time)}
               delta={formatSectorDelta(s.delta)}
