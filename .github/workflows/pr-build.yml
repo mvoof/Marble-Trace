@@ -1,4 +1,4 @@
-name: Build App
+name: Build App on PR
 
 on:
   workflow_dispatch:
@@ -38,7 +38,7 @@ jobs:
               - '.github/**'
 
   build-app:
-    name: Build App
+    name: Build Preview
     needs: check-changes
     if: needs.check-changes.outputs.app == 'true' || needs.check-changes.outputs.ci == 'true'
     environment: pr-review

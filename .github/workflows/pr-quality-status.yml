@@ -1,15 +1,16 @@
-name: Comment Artifact on PR
+name: PR Quality Status
 
 on:
   workflow_run:
     types:
       - 'completed'
     workflows:
-      - 'PR Check'
-      - 'Build App'
+      - 'PR Quality Check'
+      - 'Build App on PR'
 
 jobs:
-  comment-on-pr:
+  post-quality-status:
+    name: Post Quality Status
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
