@@ -5,7 +5,7 @@ import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { parseAllSessionFlags } from '../../../utils/flags-utils';
 import { useFlagBlink, useFlagHold } from '../../../hooks/flags-hooks';
-import type { FlagType } from '../../../types/flags';
+import type { FlagType } from '../../../types';
 import { FlatFlagsWidget } from './FlatFlagsWidget';
 
 const EMPTY_FLAGS: FlagType[] = [];

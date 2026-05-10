@@ -3,7 +3,7 @@ import { emit, listen, UnlistenFn } from '@tauri-apps/api/event';
 import { appSettingsStore } from '../app-settings.store';
 import { unitsStore } from '../units.store';
 import { widgetSettingsStore } from '../widget-settings.store';
-import type { UnitSystem } from '../../types/units';
+import type { UnitSystem } from '../../types';
 import type { WidgetConfig } from '../../types/widget-settings';
 
 export const setupMainListeners = async (): Promise<UnlistenFn[]> => {

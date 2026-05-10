@@ -1,4 +1,4 @@
-import type { DriverGroup } from '@/types/standings';
+import type { DriverGroup } from '@/types';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { DriverRow } from '../DriverRow/DriverRow';
 

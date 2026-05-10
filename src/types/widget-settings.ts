@@ -1,5 +1,5 @@
 export type SpeedWidgetFocusMode = 'speed' | 'gear';
-export type RpmColorTheme = 'custom' | 'gradient' | 'classic';
+type RpmColorTheme = 'custom' | 'gradient' | 'classic';
 
 export interface SpeedWidgetSettings {
   focusMode: SpeedWidgetFocusMode;
@@ -72,8 +72,8 @@ export interface RelativeWidgetSettings {
   abbreviateNames: boolean;
 }
 
-export type TrackMapLegendPosition = 'left' | 'right' | 'hidden';
-export type TrackMapRotationMode = 'fixed' | 'heading-up';
+type TrackMapLegendPosition = 'left' | 'right' | 'hidden';
+type TrackMapRotationMode = 'fixed' | 'heading-up';
 export type TrackMapLeaderLabelMode = 'all' | 'own-class' | 'none';
 
 export interface TrackMapWidgetSettings {

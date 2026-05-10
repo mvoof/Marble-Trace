@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { FlagType } from '../../../types/flags';
+import type { FlagType } from '../../../types';
 
 import styles from './LedFlagWidget.module.scss';
 

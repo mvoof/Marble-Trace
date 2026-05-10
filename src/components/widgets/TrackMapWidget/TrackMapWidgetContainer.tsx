@@ -5,7 +5,7 @@ import { listen } from '@tauri-apps/api/event';
 import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { computedStore } from '../../../store/iracing/computed.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import type { TrackPoint } from '../../../types/track';
+import type { TrackPoint } from '../../../types';
 
 import { TrackMapWidget } from './TrackMapWidget';
 import { TrackRecorderBridge } from './TrackRecorderBridge/TrackRecorderBridge';

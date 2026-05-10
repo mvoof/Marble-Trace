@@ -5,7 +5,7 @@ import { listen } from '@tauri-apps/api/event';
 import { telemetryStore } from '../../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import { TrackRecorder } from '../../../../utils/track-recorder';
-import type { TrackPoint } from '../../../../types/track';
+import type { TrackPoint } from '../../../../types';
 import type { RecordingOverlayHandle } from '../RecordingOverlay/RecordingOverlay';
 
 interface TrackData {

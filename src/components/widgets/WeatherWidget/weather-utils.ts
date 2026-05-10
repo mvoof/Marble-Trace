@@ -2,7 +2,7 @@ import type {
   WeatherForecastEntry,
   WeekendInfo,
 } from '../../../types/bindings';
-import type { UnitSystem } from '../../../types/units';
+import type { UnitSystem } from '../../../types';
 import {
   formatSpeed as _formatSpeed,
   speedUnit as _speedUnit,

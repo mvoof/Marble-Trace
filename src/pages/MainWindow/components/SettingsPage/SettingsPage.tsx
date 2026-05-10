@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Button, Switch, Segmented, message, Select } from 'antd';
 import { appSettingsStore } from '../../../../store/app-settings.store';
 import { unitsStore } from '../../../../store/units.store';
-import type { UnitSystem } from '../../../../types/units';
+import type { UnitSystem } from '../../../../types';
 import { downloadSnapshot } from '../../../../storybook/capture-snapshot';
 import { HotkeyRecorder } from '../../../../components/shared/HotkeyRecorder/HotkeyRecorder';
 import { RefreshCw, ArrowUpCircle, AlertCircle, Clock } from 'lucide-react';

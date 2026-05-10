@@ -24,7 +24,7 @@ import { debug } from '../../utils/debug';
 
 import { telemetryStore } from './telemetry.store';
 import { computedStore } from './computed.store';
-import type { TelemetryStatus } from '../../types/telemetry';
+import type { TelemetryStatus } from '../../types';
 
 class TelemetryConnection {
   isConnected = false;

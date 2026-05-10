@@ -12,7 +12,7 @@ import {
   MPS_TO_MPH,
 } from '../utils/telemetry-format';
 
-import type { UnitSystem } from '../types/units';
+import type { UnitSystem } from '../types';
 
 class UnitsStore {
   system: UnitSystem = 'metric';

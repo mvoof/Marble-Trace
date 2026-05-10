@@ -1,5 +1,5 @@
 import type { TrackSurface } from '../../../types/bindings';
-import type { TrackPoint } from '../../../types/track';
+import type { TrackPoint } from '../../../types';
 
 export interface CarOnTrack {
   carIdx: number;

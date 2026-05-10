@@ -1,4 +1,4 @@
-import type { UnitSystem } from '../types/units';
+import type { UnitSystem } from '../types';
 
 export const MPS_TO_KMH = 3.6;
 export const MPS_TO_MPH = 2.23694;

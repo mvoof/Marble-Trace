@@ -10,7 +10,7 @@ import { ClassGroup } from './ClassGroup/ClassGroup';
 import { ClassSwitcher } from './ClassSwitcher/ClassSwitcher';
 import { computeClassSof, buildGridTemplate } from './standings-utils';
 import type { DriverEntry } from '@/types/bindings';
-import type { DriverGroup } from '@/types/standings';
+import type { DriverGroup } from '@/types';
 
 import styles from './StandingsWidget.module.scss';
 

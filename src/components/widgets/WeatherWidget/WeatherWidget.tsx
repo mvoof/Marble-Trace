@@ -4,7 +4,7 @@ import type {
   WeatherForecastEntry,
   Skies as BindingSkies,
 } from '../../../types/bindings';
-import type { UnitSystem } from '../../../types/units';
+import type { UnitSystem } from '../../../types';
 import { formatSpeed, speedUnit } from '../../../utils/telemetry-format';
 import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import { WindCompass } from './WindCompass/WindCompass';

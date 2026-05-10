@@ -1,6 +1,6 @@
 import type { CornerData } from './types';
 import type { ChassisFrame } from '../../../types/bindings';
-import type { UnitSystem } from '../../../types/units';
+import type { UnitSystem } from '../../../types';
 
 const METERS_TO_MM = 1000;
 const METERS_TO_INCHES = 39.3701;
