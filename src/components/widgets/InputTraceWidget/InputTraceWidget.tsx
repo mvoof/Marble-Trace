@@ -1,4 +1,5 @@
-import { forwardRef, useImperativeHandle, useRef } from 'react';
+import { useImperativeHandle, useRef } from 'react';
+import type { Ref } from 'react';
 import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import {
   CanvasTrace,
@@ -19,12 +20,16 @@ interface InputTraceWidgetProps {
   initialBrake: number;
   initialClutch: number;
   settings: InputTraceSettings;
+  ref?: Ref<InputTraceHandle>;
 }
 
-export const InputTraceWidget = forwardRef<
-  InputTraceHandle,
-  InputTraceWidgetProps
->(({ initialThrottle, initialBrake, initialClutch, settings }, ref) => {
+export const InputTraceWidget = ({
+  initialThrottle,
+  initialBrake,
+  initialClutch,
+  settings,
+  ref,
+}: InputTraceWidgetProps) => {
   const barsRef = useRef<InputBarsHandle>(null);
   const canvasTraceRef = useRef<CanvasTraceHandle>(null);
   const valuesRef = useRef<number[]>([]);
@@ -122,6 +127,4 @@ export const InputTraceWidget = forwardRef<
       )}
     </WidgetPanel>
   );
-});
-
-InputTraceWidget.displayName = 'InputTraceWidget';
+};
