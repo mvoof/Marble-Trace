@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter, Routes, Route } from 'react-router-dom';
-import { MainWindow } from './pages/MainWindow';
-import { OverlayPage } from './pages/OverlayPage';
+import { MainWindow } from './pages/MainWindow/MainWindow';
+import { OverlayPage } from './pages/OverlayPage/OverlayPage';
 import './i18n';
 import './styles/index.scss';
 

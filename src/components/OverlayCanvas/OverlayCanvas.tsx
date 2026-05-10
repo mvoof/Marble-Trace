@@ -3,9 +3,10 @@ import { observer } from 'mobx-react-lite';
 import { Button } from 'antd';
 import { X } from 'lucide-react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { appSettingsStore, widgetSettingsStore } from '../../store';
+import { appSettingsStore } from '../../store/app-settings.store';
+import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { WIDGET_REGISTRY } from '../../utils/widget-registry';
-import { WidgetContainer } from '../WidgetContainer';
+import { WidgetContainer } from '../WidgetContainer/WidgetContainer';
 import styles from './OverlayCanvas.module.scss';
 
 export const OverlayCanvas = observer(() => {
@@ -24,6 +25,7 @@ export const OverlayCanvas = observer(() => {
   const handleVisibilityChange = (id: string, visible: boolean) => {
     setVisibilityMap((prev) => {
       if (prev[id] === visible) return prev;
+
       return { ...prev, [id]: visible };
     });
   };
@@ -62,6 +64,7 @@ export const OverlayCanvas = observer(() => {
 
       {enabledWidgets.map((widget) => {
         const entry = WIDGET_REGISTRY[widget.id];
+
         if (!entry) return null;
 
         const { component: WidgetComponent } = entry;

@@ -4,7 +4,7 @@ import { getPointAtPct } from '../../../../utils/track-recorder';
 import type { Sector } from '../../../../types/bindings';
 import type { TrackMapLeaderLabelMode } from '../../../../types/widget-settings';
 import type { CarOnTrack } from '../types';
-import { CarDot } from '../../primitives';
+import { CarDot } from '../../primitives/CarDot/CarDot';
 
 import styles from './TrackMapSvg.module.scss';
 
@@ -49,15 +49,22 @@ export const TrackMapSvg = ({
 
   useEffect(() => {
     const el = svgRef.current;
+
     if (!el) return;
+
     const obs = new ResizeObserver(() => {
       const { width, height } = el.getBoundingClientRect();
+
       if (width === 0 || height === 0) return;
+
       const scaleX = vbW / width;
       const scaleY = vbH / height;
+
       setPixelScale(Math.max(scaleX, scaleY));
     });
+
     obs.observe(el);
+
     return () => obs.disconnect();
   }, [vbW, vbH]);
 
@@ -106,6 +113,7 @@ export const TrackMapSvg = ({
           validSectors?.map((sector, i) => {
             const nextSector = validSectors[i + 1];
             const endPct = nextSector?.SectorStartPct ?? 1.0;
+
             const startDist = (sector.SectorStartPct ?? 0) * pathLength;
             const sectorLen =
               (endPct - (sector.SectorStartPct ?? 0)) * pathLength;

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing';
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { parseAllSessionFlags } from '../../../utils/flags-utils';
 import { useFlagBlink, useFlagHold } from '../../../hooks/flags-hooks';
@@ -19,10 +19,9 @@ export const FlatFlagsWidgetContainer = observer(() => {
   const playerCarFlags = telemetryStore.session?.player_car_flags ?? null;
   const parsedFlags = parseAllSessionFlags(sessionFlags, playerCarFlags);
 
-  // Stabilize array reference so useFlagHold dependency doesn't fire on every render
-  const liveFlagsKey = parsedFlags.join(',');
+  // TODO: fix this
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const liveFlags = useMemo(() => parsedFlags, [liveFlagsKey]);
+  const liveFlags = useMemo(() => parsedFlags, [parsedFlags.join(',')]);
 
   const displayFlags = useFlagHold(
     liveFlags,
@@ -30,9 +29,12 @@ export const FlatFlagsWidgetContainer = observer(() => {
     EMPTY_FLAGS,
     holdDuration
   );
+
   const blinkOn = useFlagBlink();
 
-  if (!alwaysShow && displayFlags.length === 0) return null;
+  if (!alwaysShow && displayFlags.length === 0) {
+    return null;
+  }
 
   return <FlatFlagsWidget flags={displayFlags} blinkOn={blinkOn} />;
 });

@@ -6,7 +6,7 @@ import type {
 } from '../../../types/bindings';
 import type { UnitSystem } from '../../../types/units';
 import { formatSpeed, speedUnit } from '../../../utils/telemetry-format';
-import { WidgetPanel } from '../primitives';
+import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import { WindCompass } from './WindCompass/WindCompass';
 
 import styles from './WeatherWidget.module.scss';
@@ -85,6 +85,7 @@ const buildStatCells = (
 const formatForecastTime = (timeSec: number): string => {
   const h = Math.floor(timeSec / 3600);
   const m = Math.floor((timeSec % 3600) / 60);
+
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 };
 
@@ -102,6 +103,7 @@ const convertTemp = (celsius: number, system: UnitSystem): number => {
   if (system === 'imperial') {
     return (celsius * 9) / 5 + 32;
   }
+
   return celsius;
 };
 
@@ -178,6 +180,7 @@ export const WeatherWidget = forwardRef<HTMLElement, WeatherWidgetProps>(
                   {cell.unit && (
                     <span className={styles.statUnit}>{cell.unit}</span>
                   )}
+
                   {cell.sub && (
                     <span className={styles.statSub}> {cell.sub}</span>
                   )}
@@ -195,13 +198,16 @@ export const WeatherWidget = forwardRef<HTMLElement, WeatherWidgetProps>(
                   <span className={styles.forecastTime}>
                     {formatForecastTime(entry.Time)}
                   </span>
+
                   <span className={styles.forecastSkies}>
                     {getSkiesLabel(entry.Skies)}
                   </span>
+
                   <div className={styles.forecastRight}>
                     <span className={styles.forecastTemp}>
                       {Math.round(convertTemp(entry.Temp, unitSystem))}°
                     </span>
+
                     <span className={styles.forecastWind}>
                       {formatSpeed(entry.WindSpeed, unitSystem)}{' '}
                       {speedUnit(unitSystem)}

@@ -4,8 +4,8 @@ import type {
   GMeterColorMode,
   GMeterDisplayMode,
 } from '../../../types/widget-settings';
-import { telemetryStore } from '../../../store/iracing';
-import { WidgetPanel } from '../primitives';
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
+import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import styles from './GMeterWidget.module.scss';
 
 const G_CONSTANT = 9.81;

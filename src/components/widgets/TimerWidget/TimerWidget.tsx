@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 
-import { WidgetPanel } from '../primitives';
+import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 
 import styles from './TimerWidget.module.scss';
 
@@ -47,12 +47,15 @@ const formatLapCount = (
 ): string => {
   const cur = current !== null ? current : '—';
   const tot = total && total.toLowerCase() !== 'unlimited' ? total : '∞';
+
   return `LAP ${cur}/${tot}`;
 };
 
 const formatPosition = (pos: number | null, total: number | null): string => {
   if (pos === null) return 'POS —';
+
   const totStr = total !== null ? `/${total}` : '';
+
   return `POS P${pos}${totStr}`;
 };
 
@@ -111,6 +114,7 @@ export const TimerWidget = forwardRef<HTMLElement, TimerWidgetProps>(
                   {wallClockTime}
                 </span>
               )}
+
               {showSimTime && simTime !== null && (
                 <span className={styles.clockItem}>
                   <span className={styles.clockLabel}>SIM</span>
@@ -128,6 +132,7 @@ export const TimerWidget = forwardRef<HTMLElement, TimerWidgetProps>(
                   {pcDate}
                 </span>
               )}
+
               {showSimDate && simDate !== null && (
                 <span className={styles.clockItem}>
                   <span className={styles.clockLabel}>SIM</span>
@@ -170,6 +175,7 @@ export const TimerWidget = forwardRef<HTMLElement, TimerWidgetProps>(
                 {wallClockTime}
               </span>
             )}
+
             {showSimTime && simTime !== null && (
               <span className={styles.clockItem}>
                 <span className={styles.clockLabel}>SIM</span>
@@ -187,6 +193,7 @@ export const TimerWidget = forwardRef<HTMLElement, TimerWidgetProps>(
                 {pcDate}
               </span>
             )}
+
             {showSimDate && simDate !== null && (
               <span className={styles.clockItem}>
                 <span className={styles.clockLabel}>SIM</span>
@@ -203,6 +210,7 @@ export const TimerWidget = forwardRef<HTMLElement, TimerWidgetProps>(
                 {formatLapCount(currentLap, totalLaps)}
               </span>
             )}
+
             {showPosition && (
               <span className={styles.footerItem}>
                 {formatPosition(position, totalDrivers)}

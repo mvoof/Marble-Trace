@@ -223,6 +223,7 @@ export const LedFlagWidget = ({ flag, blinkOn }: LedFlagWidgetProps) => {
             })}
           </div>
         ))}
+
         <div className={styles.glassOverlay} aria-hidden="true" />
       </div>
     </div>

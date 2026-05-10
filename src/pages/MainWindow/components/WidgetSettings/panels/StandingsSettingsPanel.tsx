@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { Switch } from 'antd';
 import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
 import { StandingsWidgetSettings } from '../../../../../types/widget-settings';
-import { HotkeyRecorder } from '../../../../../components/shared/HotkeyRecorder';
+import { HotkeyRecorder } from '../../../../../components/shared/HotkeyRecorder/HotkeyRecorder';
 import styles from '../WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
 

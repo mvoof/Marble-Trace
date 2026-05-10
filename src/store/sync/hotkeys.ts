@@ -1,7 +1,7 @@
 import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
 import { appSettingsStore } from '../app-settings.store';
 import { widgetSettingsStore } from '../widget-settings.store';
-import { computedStore } from '../iracing';
+import { computedStore } from '../iracing/computed.store';
 
 const registeredShortcuts = new Set<string>();
 let isSettingUp = false;

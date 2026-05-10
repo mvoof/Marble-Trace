@@ -1,11 +1,9 @@
 import React, { useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { emit } from '@tauri-apps/api/event';
-import {
-  appSettingsStore,
-  widgetSettingsStore,
-  telemetryConnectionStore,
-} from '../../store';
+import { appSettingsStore } from '../../store/app-settings.store';
+import { widgetSettingsStore } from '../../store/widget-settings.store';
+import { telemetryConnectionStore } from '../../store/iracing/telemetry-connection.store';
 import { WIDGET_REGISTRY } from '../../utils/widget-registry';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
 import styles from './WidgetContainer.module.scss';
@@ -23,12 +21,14 @@ export const WidgetContainer = observer(
 
     const isDraggingRef = useRef(false);
     const isResizingRef = useRef(false);
+
     const dragStartRef = useRef({
       mouseX: 0,
       mouseY: 0,
       widgetX: 0,
       widgetY: 0,
     });
+
     const resizeStartRef = useRef({
       mouseX: 0,
       mouseY: 0,
@@ -45,12 +45,16 @@ export const WidgetContainer = observer(
 
     const backgroundColor = widget?.backgroundColor ?? '#1a1a1a';
     const backgroundColorEdge = widget?.backgroundColorEdge ?? '#0a0a0a';
+
     const x = widget?.x ?? 100;
     const y = widget?.y ?? 100;
+
     const width = widget?.width ?? 200;
     const height = widget?.height ?? 200;
+
     const designWidth = widget?.designWidth ?? width;
     const designHeight = widget?.designHeight ?? height;
+
     const autoHeight = WIDGET_REGISTRY[widgetId]?.autoHeight ?? false;
 
     const background = shouldHide
@@ -60,11 +64,14 @@ export const WidgetContainer = observer(
     const handleDragMouseDown = useCallback(
       (e: React.MouseEvent) => {
         if (!dragMode || e.button !== 0) return;
+
         e.preventDefault();
         e.stopPropagation();
 
         const w = widgetSettingsStore.getWidget(widgetId);
+
         isDraggingRef.current = true;
+
         dragStartRef.current = {
           mouseX: e.clientX,
           mouseY: e.clientY,
@@ -74,8 +81,10 @@ export const WidgetContainer = observer(
 
         const onMouseMove = (ev: MouseEvent) => {
           if (!isDraggingRef.current) return;
+
           const dx = ev.clientX - dragStartRef.current.mouseX;
           const dy = ev.clientY - dragStartRef.current.mouseY;
+
           widgetSettingsStore.updatePosition(
             widgetId,
             Math.round(dragStartRef.current.widgetX + dx),
@@ -99,11 +108,14 @@ export const WidgetContainer = observer(
     const handleResizeMouseDown = useCallback(
       (e: React.MouseEvent) => {
         if (!dragMode || e.button !== 0) return;
+
         e.preventDefault();
         e.stopPropagation();
 
         const w = widgetSettingsStore.getWidget(widgetId);
+
         isResizingRef.current = true;
+
         resizeStartRef.current = {
           mouseX: e.clientX,
           mouseY: e.clientY,
@@ -113,25 +125,32 @@ export const WidgetContainer = observer(
 
         const onMouseMove = (ev: MouseEvent) => {
           if (!isResizingRef.current) return;
+
           const dx = ev.clientX - resizeStartRef.current.mouseX;
           const dy = ev.clientY - resizeStartRef.current.mouseY;
+
           const minW = Math.max(20, Math.round(designWidth * 0.2));
           const minH = Math.max(20, Math.round(designHeight * 0.2));
+
           const newW = Math.max(
             minW,
             Math.round(resizeStartRef.current.widgetW + dx)
           );
+
           const newH = Math.max(
             minH,
             Math.round(resizeStartRef.current.widgetH + dy)
           );
+
           widgetSettingsStore.updateSize(widgetId, newW, newH);
         };
 
         const onMouseUp = () => {
           isResizingRef.current = false;
+
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
+
           void emit('widget-layout-changed', widgetSettingsStore.allWidgets);
         };
 

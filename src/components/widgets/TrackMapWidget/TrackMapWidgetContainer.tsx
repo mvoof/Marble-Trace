@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { listen } from '@tauri-apps/api/event';
 
-import { computedStore, telemetryStore } from '../../../store/iracing';
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
+import { computedStore } from '../../../store/iracing/computed.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import type { TrackPoint } from '../../../types/track';
 
@@ -104,9 +105,12 @@ export const TrackMapWidgetContainer = observer(() => {
       const { load } = await import('@tauri-apps/plugin-store');
       const store = await load('tracks.json');
       const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
+
       delete tracks[trackId];
+
       await store.set(TRACKS_STORE_KEY, tracks);
       await store.save();
+
       setTrackData(null);
       setIsRecording(false);
       setIsWaitingForSF(false);
@@ -120,6 +124,7 @@ export const TrackMapWidgetContainer = observer(() => {
     const unlisten = listen('track-map:clear', () => {
       void clearCurrentTrack();
     });
+
     return () => {
       void unlisten.then((fn) => fn());
     };
@@ -147,6 +152,7 @@ export const TrackMapWidgetContainer = observer(() => {
 
   const classColors = useMemo(() => {
     const classColorsSeen = new Map<number, { name: string; color: string }>();
+
     for (const e of driverEntries) {
       if (!classColorsSeen.has(e.carClassId)) {
         classColorsSeen.set(e.carClassId, {
@@ -155,6 +161,7 @@ export const TrackMapWidgetContainer = observer(() => {
         });
       }
     }
+
     return Array.from(classColorsSeen.values());
   }, [driverEntries]);
 

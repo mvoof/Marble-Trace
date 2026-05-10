@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
-import { telemetryStore } from '../../../store/iracing';
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { unitsStore } from '../../../store/units.store';
 import {
@@ -17,6 +17,7 @@ const getWindColor = (mps: number | null): string => {
   if (mps === null) return '#3399ff';
   if (mps > 8) return '#ef4444';
   if (mps > 4) return '#ffcc00';
+
   return '#3399ff';
 };
 
@@ -50,9 +51,11 @@ export const WeatherWidgetContainer = observer(() => {
     env?.relative_humidity !== undefined && env?.relative_humidity !== null
       ? env.relative_humidity * 100
       : parseWeekendFloat(weekendInfo?.TrackRelativeHumidity);
+
   const humidity = rawHumidity !== null ? `${Math.round(rawHumidity)}%` : '—';
 
   let forecast = telemetryStore.weatherForecast || [];
+
   if (forecast.length === 0 && weekendInfo) {
     forecast = extractForecast(weekendInfo);
   }

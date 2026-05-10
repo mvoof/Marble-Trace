@@ -23,4 +23,5 @@ void i18n.use(initReactI18next).init({
   defaultNS: 'translation',
 });
 
+// TODO: Will be used when localizing the application
 export default i18n;

@@ -2,7 +2,9 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { TRACK_SURFACE_IN_PIT_STALL } from '../../widget-utils';
-import { PitBadge, ClassBadge, RatingBadge } from '../../primitives';
+import { PitBadge } from '../../primitives/PitBadge/PitBadge';
+import { ClassBadge } from '../../primitives/ClassBadge/ClassBadge';
+import { RatingBadge } from '../../primitives/RatingBadge/RatingBadge';
 import { computeRelativeGap } from '../relative-utils';
 import type { RelativeWidgetSettings } from '../../../../types/widget-settings';
 import type { DriverEntry } from '../../../../types/bindings';
@@ -11,7 +13,9 @@ import styles from './DriverRow.module.scss';
 
 const abbreviateName = (fullName: string): string => {
   const parts = fullName.trim().split(/\s+/);
+
   if (parts.length < 2) return fullName;
+
   return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
 };
 

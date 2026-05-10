@@ -33,7 +33,6 @@ export default defineConfig(() => ({
         additionalData: `
           @use "@/styles/functions" as *;
           @use "@/styles/variables" as *;
-          @use "@/styles/mixins" as *;
         `,
       },
     },

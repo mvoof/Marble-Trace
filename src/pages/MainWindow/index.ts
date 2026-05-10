@@ -1,1 +1,0 @@
-export { MainWindow } from './MainWindow';

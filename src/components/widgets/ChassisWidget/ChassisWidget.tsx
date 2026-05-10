@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { Info } from 'lucide-react';
-import { WidgetPanel } from '../primitives';
+import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import { CornerModule } from './CornerModule/CornerModule';
 import type { ChassisWidgetProps } from './types';
 import { computeAxleDiff } from './chassis-utils';
@@ -18,6 +18,7 @@ export const ChassisWidget = forwardRef<HTMLElement, ChassisWidgetProps>(
 
     const renderCenterLabels = () => {
       if (!showInboard) return null;
+
       return (
         <div className={styles.centerLabels}>
           <span className={styles.centerLabel}>RH</span>
@@ -40,7 +41,9 @@ export const ChassisWidget = forwardRef<HTMLElement, ChassisWidgetProps>(
             lengthUnit={lengthUnit}
             showInboard={showInboard}
           />
+
           {renderCenterLabels()}
+
           <CornerModule
             data={rf}
             isSuspensionBent={frontBent}
@@ -49,6 +52,7 @@ export const ChassisWidget = forwardRef<HTMLElement, ChassisWidgetProps>(
             lengthUnit={lengthUnit}
             showInboard={showInboard}
           />
+
           <CornerModule
             data={lr}
             isSuspensionBent={rearBent}
@@ -57,7 +61,9 @@ export const ChassisWidget = forwardRef<HTMLElement, ChassisWidgetProps>(
             lengthUnit={lengthUnit}
             showInboard={showInboard}
           />
+
           {renderCenterLabels()}
+
           <CornerModule
             data={rr}
             isSuspensionBent={rearBent}

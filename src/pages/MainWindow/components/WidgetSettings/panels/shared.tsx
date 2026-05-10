@@ -1,5 +1,5 @@
 import { type CSSProperties, type ReactNode } from 'react';
-import { HotkeyRecorder } from '../../../../../components/shared/HotkeyRecorder';
+import { HotkeyRecorder } from '../../../../../components/shared/HotkeyRecorder/HotkeyRecorder';
 import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
 import styles from '../WidgetSettings.module.scss';
 

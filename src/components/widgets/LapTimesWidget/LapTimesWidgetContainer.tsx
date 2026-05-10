@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore, computedStore } from '../../../store/iracing';
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
+import { computedStore } from '../../../store/iracing/computed.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { formatLapTime } from '../../../utils/telemetry-format';
 import { LapTimesWidget } from './LapTimesWidget';

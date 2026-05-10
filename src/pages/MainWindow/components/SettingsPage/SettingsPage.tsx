@@ -5,7 +5,7 @@ import { appSettingsStore } from '../../../../store/app-settings.store';
 import { unitsStore } from '../../../../store/units.store';
 import type { UnitSystem } from '../../../../types/units';
 import { downloadSnapshot } from '../../../../storybook/capture-snapshot';
-import { HotkeyRecorder } from '../../../../components/shared/HotkeyRecorder';
+import { HotkeyRecorder } from '../../../../components/shared/HotkeyRecorder/HotkeyRecorder';
 import { RefreshCw, ArrowUpCircle, AlertCircle, Clock } from 'lucide-react';
 import styles from '../WidgetSettings/WidgetSettings.module.scss';
 

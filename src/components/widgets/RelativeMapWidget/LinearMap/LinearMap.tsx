@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { TRACK_SURFACE_ON_TRACK } from '../../widget-utils';
-import { CarDot } from '../../primitives';
+import { CarDot } from '../../primitives/CarDot/CarDot';
 import type { DriverEntry } from '../../../../types/bindings';
 
 import styles from './LinearMap.module.scss';
@@ -27,12 +27,17 @@ export const LinearMap = observer(
 
     useEffect(() => {
       const el = containerRef.current;
+
       if (!el) return;
+
       const observer = new ResizeObserver(([entry]) => {
         const { width, height } = entry.contentRect;
+
         setSize({ w: width, h: height });
       });
+
       observer.observe(el);
+
       return () => observer.disconnect();
     }, []);
 
@@ -47,7 +52,9 @@ export const LinearMap = observer(
               return [];
 
             let diff = d.lapDistPct - player.lapDistPct;
+
             if (diff < -0.5) diff += 1;
+
             if (diff > 0.5) diff -= 1;
 
             const cx = isHorizontal ? (diff + 0.5) * size.w : size.w / 2;

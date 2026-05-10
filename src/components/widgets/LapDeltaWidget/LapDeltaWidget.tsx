@@ -1,6 +1,6 @@
-import { useRef, type MutableRefObject, type RefObject } from 'react';
-import { TimingRow } from '../../shared/TimingRow';
-import { WidgetPanel } from '../primitives';
+import { useRef, type RefObject } from 'react';
+import { TimingRow } from '../../shared/TimingRow/TimingRow';
+import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import {
   getDeltaColor,
   getSectorDeltaState,
@@ -45,23 +45,23 @@ export const LapDeltaWidget = ({
   const isHorizontal = layout === 'horizontal';
 
   const assignDeltaDisplayHandle = (el: HTMLDivElement | null) => {
-    (deltaDivRef as MutableRefObject<HTMLDivElement | null>).current = el;
+    deltaDivRef.current = el;
+
     if (deltaDisplayRef && 'current' in deltaDisplayRef) {
-      (deltaDisplayRef as MutableRefObject<DeltaDisplayHandle | null>).current =
-        el
-          ? {
-              update: (text, state) => {
-                el.textContent = text;
-                el.className = [
-                  styles.delta,
-                  DELTA_STATE_CLASS[state],
-                  isHorizontal ? styles.deltaHorizontal : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ');
-              },
-            }
-          : null;
+      deltaDisplayRef.current = el
+        ? {
+            update: (text, state) => {
+              el.textContent = text;
+              el.className = [
+                styles.delta,
+                DELTA_STATE_CLASS[state],
+                isHorizontal ? styles.deltaHorizontal : '',
+              ]
+                .filter(Boolean)
+                .join(' ');
+            },
+          }
+        : null;
     }
   };
 
