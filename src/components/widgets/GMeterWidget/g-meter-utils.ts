@@ -8,9 +8,9 @@ export const ENVELOPE_SPREAD = 10;
 export const RADIUS_RATIO = 0.86;
 
 export const COLOR_TURN = '#3399ff';
-export const COLOR_BRAKE = '#ef4444';
-export const COLOR_ACCEL = '#22c55e';
-export const COLOR_IDLE = '#adadad';
+const COLOR_BRAKE = '#ef4444';
+const COLOR_ACCEL = '#22c55e';
+const COLOR_IDLE = '#adadad';
 
 export const computeColor = (
   colorMode: GMeterColorMode,
