@@ -13,7 +13,7 @@ export const OverlayPage = () => {
 
   useEffect(() => {
     [document.documentElement, document.body].forEach(
-      (el) => (el.style.cssText += 'background: transparent;')
+      (el) => (el.style.background = 'transparent')
     );
 
     // Immediately pass clicks through to the game by default.
