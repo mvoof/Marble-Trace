@@ -41,16 +41,13 @@ export const initMainSync = async () => {
 
       const onSave = () => saveSettings(store);
 
-      await setupHotkeys(onSave);
-
-      const overlayLayoutUnlisten = await listen<WidgetConfig[]>(
-        'widget-layout-changed',
-        (e) => {
+      const [overlayLayoutUnlisten, mainUnlistens] = await Promise.all([
+        listen<WidgetConfig[]>('widget-layout-changed', (e) => {
           runInAction(() => widgetSettingsStore.setWidgets(e.payload));
-        }
-      );
-
-      const mainUnlistens = await setupMainListeners();
+        }),
+        setupMainListeners(),
+        setupHotkeys(onSave),
+      ]);
 
       const disposers = [
         reaction(
