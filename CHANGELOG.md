@@ -7,29 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.10.0] — 2026-05-11
 
-### App Updates
+### Added
+
+- **Smart Visibility:** Implemented a 3s telemetry timeout that hides widgets when data stops, while keeping the background connection to iRacing active.
+
+### Changed
 
 - **Performance Engine:** Implemented GPU layer promotion and event bundling to significantly reduce CPU overhead and eliminate micro-stutters.
 - **Optimized Telemetry:** The Rust backend now skips empty telemetry bundles, reducing unnecessary IPC traffic.
-- **Smart Visibility:** Implemented a 3s telemetry timeout that hides widgets when data stops, while keeping the background connection to iRacing active.
-- **Startup Polish:** Eliminated the brief transparent window flash or flicker during application startup.
 - **Core Refactoring:** Comprehensive update of the internal architecture for better stability and faster state synchronization.
-
-### Widget Updates
-
 - **Fuel Widget (Major Overhaul):**
   - **Visual Redesign:** Complete refresh for better readability and style consistency across all components.
   - **Pit Strategy Estimation:** Now calculates total fuel needed, required number of stops, and recommended "Equal Split" amounts for better strategy planning.
   - **Dynamic Color Logic:** The "LAPS LEFT" card background now dynamically reacts to your custom low-fuel warning threshold.
   - **Smarter Fuel Chart:** Added dynamic bar widths and adaptive X-axis labels; fixed data slicing and history freezing issues between sessions.
   - **Strategic Clarity:** "EST. FINISH" now uses neutral coloring for deficits to reduce strategic noise, turning green only when a finish is confirmed.
-- **Weather Widget:**
-  - Fixed cardinal direction labels (N, S, E, W) to remain upright and readable even when the compass rotates.
-
-### Improvements & Fixes
-
-- **UI Constraints:** Fixed an issue where the pit panel could extend beyond its borders or overlap other elements.
 - **Standardized Styling:** Unified border styles, padding, and font sizes across all widget information cards.
+
+### Fixed
+
+- **Startup Polish:** Eliminated the brief transparent window flash or flicker during application startup.
+- **Weather Widget:** Fixed cardinal direction labels (N, S, E, W) to remain upright and readable even when the compass rotates.
+- **UI Constraints:** Fixed an issue where the pit panel could extend beyond its borders or overlap other elements.
 - **Stability:** Fixed potential crashes when resizing widgets to extremely small dimensions.
 
 ## [0.9.0] — 2026-05-09
