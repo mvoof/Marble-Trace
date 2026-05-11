@@ -132,3 +132,21 @@ export const NoData: Story = {
     lapFuelHistory: [],
   },
 };
+
+export const FullPreview: Story = {
+  args: {
+    fuelLevel: 5.2,
+    fuelMax: 55.0,
+    avgPerLap: 3.15,
+    lapsRemaining: 1.6,
+    shortage: -15.8,
+    pitWarning: true,
+    tankTooSmall: true,
+    pitWindowStart: 12,
+    pitWindowEnd: 13,
+    fuelToAddWithBuffer: 58.0,
+    showChart: true,
+    chartType: 'bar',
+    lapFuelHistory: LAP_FUEL_HISTORY,
+  },
+};

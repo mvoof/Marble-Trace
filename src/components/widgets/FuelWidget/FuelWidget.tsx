@@ -25,38 +25,27 @@ interface FuelWidgetProps {
 }
 
 const statusClass = (shortage: number | null): string => {
-  if (shortage === null || shortage >= 0) {
-    return styles.statusSafe;
-  }
-
-  return styles.statusShort;
+  if (shortage === null) return '';
+  return shortage >= 0 ? styles.finishSafe : styles.finishDanger;
 };
 
-const statusText = (shortage: number | null): string => {
-  if (shortage === null) {
-    return 'FINISH --.-- L';
-  }
-
-  const sign = shortage >= 0 ? '+' : '';
-
-  return `FINISH ${sign}${shortage.toFixed(1)} L`;
+const shortageClass = (shortage: number | null): string => {
+  if (shortage === null) return '';
+  return shortage >= 0 ? styles.valueSafe : styles.valueDanger;
 };
 
-const lapsLeftClass = (
+const lapsRemainingClass = (
   lapsRemaining: number | null,
   pitWarningLaps: number
 ): string => {
   if (lapsRemaining === null) return '';
-
   if (lapsRemaining > pitWarningLaps + FUEL_THRESHOLDS.LAPS_LEFT_GREEN_BUFFER) {
-    return styles.rowValueSafe;
+    return styles.valueSafe;
   }
-
   if (lapsRemaining <= pitWarningLaps) {
-    return styles.rowValueShort;
+    return styles.valueDanger;
   }
-
-  return styles.rowValueWarn;
+  return styles.valueWarning;
 };
 
 export const FuelWidget = ({
@@ -88,56 +77,56 @@ export const FuelWidget = ({
       ? `LAP ${pitWindowStart}–${pitWindowEnd}`
       : 'LAP --–--';
 
-  const lapsRemainingText =
-    lapsRemaining !== null ? `${lapsRemaining.toFixed(1)} LAP` : '--.-- LAP';
-
   return (
-    <WidgetPanel direction="column" gap={0} minWidth={200}>
+    <WidgetPanel direction="column" gap={0} minWidth={220}>
       <div className={styles.header}>
         <span className={styles.headerLabel}>FUEL</span>
-
-        <span className={`${styles.statusBadge} ${statusClass(shortage)}`}>
-          {statusText(shortage)}
+        <span className={styles.headerAmount}>
+          {fuelLevel !== null ? fuelLevel.toFixed(1) : '--.-'}
+          <span className={styles.headerUnit}> L</span>
         </span>
       </div>
 
-      <div className={styles.progressWrap}>
-        {pct !== null && (
-          <div
-            className={styles.progressBar}
-            style={{ '--progress': pct } as React.CSSProperties}
-          />
-        )}
-
-        <div className={styles.progressLabels}>
-          <span>
-            {fuelLevel !== null ? `${fuelLevel.toFixed(1)} L` : '--.-- L'}
-          </span>
-
-          <span className={styles.progressLabelMuted}>
-            {fuelMax !== null ? `${fuelMax.toFixed(0)} L` : ''}
+      <div className={styles.progressSection}>
+        <div className={styles.progressWrap}>
+          {pct !== null && (
+            <div
+              className={styles.progressBar}
+              style={{ '--progress': pct } as React.CSSProperties}
+            />
+          )}
+          <span className={styles.progressLabelMax}>
+            {fuelMax !== null ? `${fuelMax.toFixed(0)}L MAX` : ''}
           </span>
         </div>
       </div>
 
-      <div className={styles.rows}>
-        <div className={styles.row}>
-          <span className={styles.rowLabel}>AVG/LAP</span>
-          <span className={styles.rowValue}>{formatFuelLiters(avgPerLap)}</span>
-        </div>
-
-        <div className={styles.row}>
-          <span className={styles.rowLabel}>LAPS LEFT</span>
-          <span
-            className={`${styles.rowValue} ${lapsLeftClass(lapsRemaining, pitWarningLaps)}`}
-          >
-            {lapsRemainingText}
+      <div className={styles.dataGrid}>
+        <div className={styles.gridCell}>
+          <span className={styles.cellLabel}>AVG / LAP</span>
+          <span className={styles.cellValue}>
+            {formatFuelLiters(avgPerLap)}
           </span>
         </div>
+        <div className={styles.gridCell}>
+          <span className={styles.cellLabel}>EST. FINISH</span>
+          <span className={`${styles.cellValue} ${shortageClass(shortage)}`}>
+            {shortage !== null
+              ? `${shortage >= 0 ? '+' : ''}${shortage.toFixed(1)}L`
+              : '--.-L'}
+          </span>
+        </div>
+      </div>
+
+      <div className={`${styles.finishCard} ${statusClass(shortage)}`}>
+        <span className={styles.finishLabel}>LAPS LEFT</span>
+        <span className={styles.finishValue}>
+          {lapsRemaining !== null ? lapsRemaining.toFixed(1) : '--.-'}
+        </span>
       </div>
 
       {showChart && lapFuelHistory.length >= 2 && (
-        <div className={styles.chart}>
+        <div className={styles.chartSection}>
           <FuelChart
             history={lapFuelHistory}
             chartType={chartType}
@@ -162,7 +151,6 @@ export const FuelWidget = ({
               <span className={styles.pitWarningBodyLabel}>
                 TO REFUEL FOR FINISH
               </span>
-
               <span className={styles.pitWarningBodySub}>
                 incl. +1 lap buffer
               </span>

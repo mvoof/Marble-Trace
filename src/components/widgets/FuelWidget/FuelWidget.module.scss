@@ -13,42 +13,43 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: rem(8) rem(8) rem(6);
-  flex-shrink: 0;
+  padding: rem(8) rem(10) rem(4);
+  align-items: baseline;
 }
 
 .headerLabel {
-  font-family: $font-mono;
-  font-size: $font-size-xs;
+  font-family: $font-widget;
+  font-size: rem(10);
+  font-weight: 600;
   color: $color-text-muted;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
 }
 
-.statusBadge {
+.headerAmount {
   font-family: $font-mono;
-  font-size: $font-size-xs;
-  font-weight: 900;
-  color: #000;
-  padding: rem(1) rem(5);
-  letter-spacing: 1px;
+  font-size: rem(18);
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
 }
 
-.statusSafe {
-  background: $color-success;
+.headerUnit {
+  font-size: rem(12);
+  color: $color-text-muted;
+  margin-left: rem(2);
 }
 
-.statusShort {
-  background: $color-error;
+.progressSection {
+  padding: 0 rem(10) rem(8);
 }
 
 .progressWrap {
   position: relative;
-  height: rem(18);
-  flex-shrink: 0;
-  margin: 0 rem(8) rem(6);
+  height: rem(14);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
 }
 
 .progressBar {
@@ -59,84 +60,141 @@
   transition: width 0.3s ease;
 }
 
-.progressLabels {
+.progressLabelMax {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 rem(8);
+  right: rem(6);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
   font-family: $font-mono;
-  font-size: rem(11);
-  font-weight: 700;
+  font-size: rem(9);
   color: #fff;
-  text-shadow: 0 0 3px #000;
-  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
-.progressLabelMuted {
-  color: rgba(255, 255, 255, 0.7);
+.dataGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 1px;
 }
 
-.rows {
+.gridCell {
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
-  flex: 1;
-  padding: rem(4) rem(8);
-  min-height: rem(72);
+  padding: rem(8) rem(10);
+  background: $color-bg-widget;
+  border-left: 3px solid rgba(255, 255, 255, 0.1);
+
+  &:last-child {
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+  }
 }
 
-.row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: rem(8);
-}
-
-.rowLabel {
-  font-family: $font-mono;
-  font-size: $font-size-xs;
+.cellLabel {
+  font-family: $font-widget;
+  font-size: rem(9);
+  font-weight: 600;
   color: $color-text-muted;
   letter-spacing: 1px;
+  margin-bottom: rem(2);
+  text-transform: uppercase;
 }
 
-.rowValue {
+.cellValue {
   font-family: $font-mono;
-  font-size: rem(14);
+  font-size: rem(16);
   font-weight: 700;
+  color: #fff;
   font-variant-numeric: tabular-nums;
-  color: $color-text-primary;
 }
 
-.rowValueSafe {
+.valueSafe {
   color: $color-success;
 }
 
-.rowValueShort {
+.valueDanger {
   color: $color-error;
 }
 
-.rowValueWarn {
+.valueWarning {
   color: $color-caution;
 }
 
-.rowValueMuted {
-  font-size: rem(12);
+.finishCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: rem(8) rem(10);
+  margin: rem(1) 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.finishSafe {
+  background: rgba($color-success, 0.08);
+  border-top-color: rgba($color-success, 0.3);
+  border-bottom-color: rgba($color-success, 0.3);
+
+  .finishValue {
+    color: $color-success;
+  }
+}
+
+.finishDanger {
+  background: rgba($color-error, 0.15);
+  border-top-color: rgba($color-error, 0.4);
+  border-bottom-color: rgba($color-error, 0.4);
+
+  .finishValue {
+    color: $color-error;
+  }
+}
+
+.finishLabel {
+  font-family: $font-widget;
+  font-size: rem(10);
+  font-weight: 700;
   color: $color-text-muted;
+  letter-spacing: 1.5px;
+  margin-bottom: rem(4);
+}
+
+.finishValue {
+  font-family: $font-mono;
+  font-size: rem(24);
+  font-weight: 800;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.chartSection {
+  padding: rem(8) rem(10);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.chartCanvas {
+  display: block;
+  width: 100%;
+  height: rem(180);
 }
 
 // Pit-stop warning block
 .pitWarning {
-  margin: rem(4) rem(8) rem(8);
+  margin: rem(8) rem(10) rem(10);
   border: 1px solid rgba(251, 191, 36, 0.35);
   background: rgba(251, 191, 36, 0.05);
   border-radius: 4px;
   padding: rem(8) rem(10);
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .pitWarningUrgent {
@@ -163,7 +221,6 @@
   font-size: rem(12);
   font-weight: 600;
   color: #fff;
-  font-variant-numeric: tabular-nums;
 }
 
 .pitWarningSeparator {
@@ -193,10 +250,9 @@
 
 .pitWarningBodySub {
   font-family: $font-mono;
-  font-size: rem(10);
+  font-size: rem(9);
   color: $color-text-muted;
   opacity: 0.7;
-  white-space: nowrap;
 }
 
 .pitWarningAmount {
@@ -205,8 +261,6 @@
   font-weight: 700;
   color: $color-caution;
   line-height: 1;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 
 .pitWarningAmountDanger {
@@ -219,8 +273,8 @@
 }
 
 .pitWarningSplitPit {
-  margin-top: rem(6);
-  padding: rem(4) rem(6);
+  margin-top: rem(8);
+  padding: rem(4);
   background: rgba($color-error, 0.12);
   border: 1px solid rgba($color-error, 0.4);
   border-radius: 3px;
@@ -228,19 +282,5 @@
   font-size: rem(10);
   font-weight: 700;
   color: $color-error;
-  letter-spacing: 0.5px;
   text-align: center;
-}
-
-.chart {
-  padding: 0 rem(8) rem(8);
-  display: flex;
-  flex-direction: column;
-  gap: rem(4);
-}
-
-.chartCanvas {
-  width: 100%;
-  height: rem(200);
-  display: block;
 }
