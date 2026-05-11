@@ -22,18 +22,12 @@ export const FUEL_COLORS = {
 } as const;
 
 export const FUEL_CHART_CONFIG = {
-  /** Maximum number of lap history entries to show in the chart */
-  MAX_VISIBLE: 30,
   /** Height of the X-axis label area in pixels */
   X_LABEL_H: 18,
-  /** Width of bars in the bar chart in pixels */
-  BAR_WIDTH: 5,
+  /** Horizontal padding for the chart area to prevent label clipping */
+  PADDING_H: 10,
   /** Gap between bars in pixels */
   BAR_GAP: 2,
-  /** Approximate width of a single character in the font in pixels */
-  LABEL_CHAR_W: 7,
-  /** Minimum gap between X-axis labels in pixels */
-  LABEL_MIN_GAP: 2,
   /** Scale factor applied to min value to add bottom padding in chart */
   MIN_SCALE: 0.88,
   /** Scale factor applied to min value to add bottom padding in line chart */

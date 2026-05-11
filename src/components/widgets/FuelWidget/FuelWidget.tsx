@@ -19,6 +19,7 @@ interface FuelWidgetProps {
   tankTooSmall: boolean;
   showChart: boolean;
   chartType: 'line' | 'bar';
+  barWidth: number;
   lapFuelHistory: number[];
   pitWarningLaps: number;
 }
@@ -71,6 +72,7 @@ export const FuelWidget = ({
   tankTooSmall,
   showChart,
   chartType,
+  barWidth,
   lapFuelHistory,
   pitWarningLaps,
 }: FuelWidgetProps) => {
@@ -136,7 +138,11 @@ export const FuelWidget = ({
 
       {showChart && lapFuelHistory.length >= 2 && (
         <div className={styles.chart}>
-          <FuelChart history={lapFuelHistory} chartType={chartType} />
+          <FuelChart
+            history={lapFuelHistory}
+            chartType={chartType}
+            barWidth={barWidth}
+          />
         </div>
       )}
 

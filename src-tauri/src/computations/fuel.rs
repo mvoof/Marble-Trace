@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::iracing::frames::AllFieldsFrame;
 
-const MAX_LAP_FUEL_HISTORY: usize = 20;
+const MAX_LAP_FUEL_HISTORY: usize = 100;
 const MIN_RECORDED_FUEL_USE: f32 = 0.1;
 const MAX_REALISTIC_LAP_FUEL: f32 = 20.0;
 

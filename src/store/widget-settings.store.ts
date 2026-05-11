@@ -181,6 +181,14 @@ class WidgetSettingsStore {
     if (widget) {
       const prevSettings = widget.customSettings;
 
+      // Clamp fuel barWidth if present
+      if (settings.fuel?.barWidth !== undefined) {
+        settings.fuel.barWidth = Math.max(
+          5,
+          Math.min(20, settings.fuel.barWidth)
+        );
+      }
+
       widget.customSettings = {
         ...prevSettings,
         ...settings,

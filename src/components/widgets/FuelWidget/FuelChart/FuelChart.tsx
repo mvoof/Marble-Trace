@@ -6,9 +6,10 @@ import styles from '../FuelWidget.module.scss';
 interface FuelChartProps {
   history: number[];
   chartType: 'line' | 'bar';
+  barWidth: number;
 }
 
-export const FuelChart = ({ history, chartType }: FuelChartProps) => {
+export const FuelChart = ({ history, chartType, barWidth }: FuelChartProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -30,11 +31,11 @@ export const FuelChart = ({ history, chartType }: FuelChartProps) => {
     ctx.clearRect(0, 0, w, h);
 
     if (chartType === 'bar') {
-      drawBarChart(ctx, history, w, h, avg);
+      drawBarChart(ctx, history, w, h, avg, barWidth);
     } else {
-      drawLineChart(ctx, history, w, h, avg);
+      drawLineChart(ctx, history, w, h, avg, barWidth);
     }
-  }, [history, chartType]);
+  }, [history, chartType, barWidth]);
 
   return <canvas ref={canvasRef} className={styles.chartCanvas} />;
 };

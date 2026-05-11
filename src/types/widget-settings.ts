@@ -124,6 +124,7 @@ export interface FuelWidgetSettings {
   showChart: boolean;
   pitWarningLaps: number;
   chartType: 'line' | 'bar';
+  barWidth: number;
 }
 
 export type LapDeltaLayout = 'vertical' | 'horizontal';

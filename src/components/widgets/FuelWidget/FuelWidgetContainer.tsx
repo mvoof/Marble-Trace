@@ -41,6 +41,7 @@ export const FuelWidgetContainer = observer(() => {
       tankTooSmall={tankTooSmall}
       showChart={settings.showChart}
       chartType={settings.chartType}
+      barWidth={settings.barWidth}
       lapFuelHistory={fuel?.lapFuelHistory ?? []}
       pitWarningLaps={settings.pitWarningLaps}
     />
