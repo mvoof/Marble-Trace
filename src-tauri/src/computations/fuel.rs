@@ -39,6 +39,9 @@ impl FuelState {
         }
 
         if self.last_lap < 0 || current_lap < self.last_lap {
+            if current_lap < self.last_lap && self.last_lap >= 0 {
+                self.lap_fuel_history.clear();
+            }
             self.last_lap = current_lap;
             self.last_lap_start_fuel = Some(fuel_level);
             return;
@@ -72,8 +75,8 @@ impl FuelState {
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub struct FuelComputedFrame {
-    pub avg_per_lap: f32,
-    pub laps_remaining: f32,
+    pub avg_per_lap: Option<f32>,
+    pub laps_remaining: Option<f32>,
     pub laps_to_finish: Option<f32>,
     /// Positive = surplus liters, negative = deficit
     pub shortage: Option<f32>,
@@ -124,13 +127,15 @@ pub fn compute(
 ) -> Option<FuelComputedFrame> {
     let fuel_level = frame.fuel_level;
 
-    let avg_per_lap = fuel_state.avg().or_else(|| instant_avg(frame, session))?;
+    let avg_per_lap = fuel_state.avg().or_else(|| instant_avg(frame, session));
 
-    if avg_per_lap <= 0.0 {
-        return None;
-    }
-
-    let laps_remaining = fuel_level / avg_per_lap;
+    let laps_remaining = avg_per_lap.and_then(|avg| {
+        if avg > 0.0 {
+            Some(fuel_level / avg)
+        } else {
+            None
+        }
+    });
 
     let current_session_num = session_num.unwrap_or(session.session_info.current_session_num);
     let sessions = &session.session_info.sessions;
@@ -154,20 +159,32 @@ pub fn compute(
         Some(remain as f32 / lap_time_sec)
     };
 
-    let fuel_needed = laps_to_finish.map(|ltf| ltf * avg_per_lap);
+    let fuel_needed = match (laps_to_finish, avg_per_lap) {
+        (Some(ltf), Some(avg)) if avg > 0.0 => Some(ltf * avg),
+        _ => None,
+    };
+
     let shortage = fuel_needed.map(|needed| fuel_level - needed);
     let fuel_to_add = fuel_needed.map(|needed| (needed - fuel_level).max(0.0));
-    let fuel_to_add_with_buffer =
-        laps_to_finish.map(|ltf| ((ltf + 1.0) * avg_per_lap - fuel_level).max(0.0));
+    let fuel_to_add_with_buffer = match (laps_to_finish, avg_per_lap) {
+        (Some(ltf), Some(avg)) if avg > 0.0 => Some(((ltf + 1.0) * avg - fuel_level).max(0.0)),
+        _ => None,
+    };
 
     let current_lap_i = frame.lap.unwrap_or(0);
-    let pit_window_start =
-        Some((current_lap_i as f32 + laps_remaining - pit_warning_laps).floor() as i32);
-    let pit_window_end = Some((current_lap_i as f32 + laps_remaining - 1.0).floor() as i32);
 
-    let pit_warning = shortage
-        .map(|s| s < 0.0 || s < pit_warning_laps * avg_per_lap)
-        .unwrap_or(false);
+    let (pit_window_start, pit_window_end) = match (laps_remaining, avg_per_lap) {
+        (Some(rem), Some(avg)) if avg > 0.0 => (
+            Some((current_lap_i as f32 + rem - pit_warning_laps).floor() as i32),
+            Some((current_lap_i as f32 + rem - 1.0).floor() as i32),
+        ),
+        _ => (None, None),
+    };
+
+    let pit_warning = match (shortage, avg_per_lap) {
+        (Some(s), Some(avg)) if avg > 0.0 => s < 0.0 || s < pit_warning_laps * avg,
+        _ => false,
+    };
 
     let fuel_save_per_lap = match (shortage, laps_to_finish) {
         (Some(s), Some(ltf)) if s < 0.0 && ltf > 0.0 => Some(s.abs() / ltf),
