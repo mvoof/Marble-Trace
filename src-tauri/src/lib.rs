@@ -12,8 +12,8 @@ use computations::{
 };
 use computations::{fuel::FuelState, lap_delta::LapDeltaState, standings::StandingsState};
 use iracing::{
-    get_last_session_info, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
-    TelemetryState,
+    get_last_session_info, set_active_events, set_pit_warning_laps, start_telemetry_stream,
+    stop_telemetry_stream, TelemetryState,
 };
 #[cfg(feature = "dev")]
 use iracing::{
@@ -62,6 +62,7 @@ pub fn run() {
             .register::<DriverEntry>()
             .register::<PitStopsFrame>()
             .register::<LapDeltaFrame>()
+            .register::<iracing::service::TelemetryBundle>()
             .register::<WeatherForecastEntry>();
 
         Typescript::default()
@@ -70,7 +71,16 @@ pub fn run() {
     }
 
     let builder = Builder::default()
-        .plugin(tauri_plugin_window_state::Builder::new().build())
+        .plugin(
+            tauri_plugin_window_state::Builder::new()
+                .with_denylist(&["overlay"])
+                .with_state_flags(
+                    tauri_plugin_window_state::StateFlags::SIZE
+                        | tauri_plugin_window_state::StateFlags::POSITION
+                        | tauri_plugin_window_state::StateFlags::MAXIMIZED,
+                )
+                .build(),
+        )
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -81,18 +91,12 @@ pub fn run() {
     let builder = builder.plugin(tauri_plugin_mcp_bridge::init());
 
     builder
-        .setup(|app| {
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.set_decorations(false);
-                let _ = window.set_shadow(true);
-            }
-            Ok(())
-        })
         .invoke_handler(generate_handler![
             start_telemetry_stream,
             stop_telemetry_stream,
             get_last_session_info,
-            set_pit_warning_laps
+            set_pit_warning_laps,
+            set_active_events
         ])
         .manage(TelemetryState {
             service: Arc::new(iracing::TelemetryServiceState {
@@ -100,6 +104,7 @@ pub fn run() {
                 last_session_info: Mutex::new(None),
                 start_positions: Mutex::new(std::collections::HashMap::new()),
                 track_length_m: Mutex::new(None),
+                active_events: std::sync::atomic::AtomicU32::new(0xFFFFFFFF),
             }),
             pit: Arc::new(crate::computations::pit_stops::PitStopState {
                 count: std::sync::atomic::AtomicU32::new(0),

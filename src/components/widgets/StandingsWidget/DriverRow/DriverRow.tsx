@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown, Minus } from 'lucide-react';
 import { formatLapTime } from '../../../../utils/telemetry-format';
 import {
@@ -9,7 +10,7 @@ import { PitBadge } from '../../primitives/PitBadge/PitBadge';
 import { ClassBadge } from '../../primitives/ClassBadge/ClassBadge';
 import { RatingBadge } from '../../primitives/RatingBadge/RatingBadge';
 import { TireBadge } from '../../primitives/TireBadge/TireBadge';
-import type { DriverEntry } from '../../../../types/bindings';
+import { computedStore } from '../../../../store/iracing/computed.store';
 import type { StandingsWidgetSettings } from '../../../../types/widget-settings';
 
 import styles from './DriverRow.module.scss';
@@ -82,164 +83,162 @@ const IrChangeCell = ({ delta }: { delta: number | undefined }) => {
   );
 };
 
-interface StartPosition {
-  overall: number;
-  class: number;
-}
-
 interface DriverRowProps {
-  driver: DriverEntry;
+  carIdx: number;
   settings: StandingsWidgetSettings;
-  irDelta: number | undefined;
-  effectiveStartPos: StartPosition | undefined;
   gridTemplate: string;
 }
 
-export const DriverRow = ({
-  driver,
-  settings,
-  irDelta,
-  effectiveStartPos,
-  gridTemplate,
-}: DriverRowProps) => {
-  const isPit =
-    driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
+export const DriverRow = observer(
+  ({ carIdx, settings, gridTemplate }: DriverRowProps) => {
+    const driver = computedStore.driverMap.get(carIdx);
 
-  const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
+    if (!driver) return null;
 
-  const pos = settings.enableClassCycling
-    ? driver.classPosition
-    : driver.position;
+    const irDelta = driver.estimatedIrDelta ?? undefined;
+    const effectiveStartPos = computedStore.getEffectiveStartPos(carIdx);
 
-  const startPos = settings.enableClassCycling
-    ? (effectiveStartPos?.class ?? 0)
-    : (effectiveStartPos?.overall ?? 0);
+    const isPit =
+      driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 
-  const isLeader = pos === 1;
+    const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
-  const rowClass = [
-    styles.driverRow,
-    driver.isPlayer ? styles.driverRowPlayer : '',
-    isOffTrack ? styles.driverRowOffTrack : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+    const pos = settings.enableClassCycling
+      ? driver.classPosition
+      : driver.position;
 
-  return (
-    <div
-      className={rowClass}
-      style={{ gridTemplateColumns: gridTemplate }}
-      data-driver-row
-    >
-      <div className={styles.cell}>
-        <span
-          className={`${styles.posCell} ${driver.isPlayer ? styles.posCellPlayer : ''}`}
-        >
-          {pos}
-        </span>
-      </div>
+    const startPos = settings.enableClassCycling
+      ? effectiveStartPos.class
+      : effectiveStartPos.overall;
 
+    const isLeader = pos === 1;
+
+    const rowClass = [
+      styles.driverRow,
+      driver.isPlayer ? styles.driverRowPlayer : '',
+      isOffTrack ? styles.driverRowOffTrack : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    return (
       <div
-        className={`${styles.cell} ${styles.carNumberCell}`}
-        style={{
-          borderLeft: `3px solid ${driver.carClassColor}`,
-          background: `linear-gradient(to right, ${driver.carClassColor}33, transparent)`,
-        }}
+        className={rowClass}
+        style={{ gridTemplateColumns: gridTemplate }}
+        data-driver-row
       >
-        <span
-          className={`${styles.carNumber} ${driver.isPlayer ? styles.carNumberPlayer : ''}`}
-        >
-          {driver.carNumber}
-        </span>
-      </div>
-
-      <div className={`${styles.cell} ${styles.nameCell}`}>
-        <span
-          className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
-        >
-          {settings.abbreviateNames
-            ? abbreviateName(driver.userName)
-            : driver.userName}
-        </span>
-
-        {isPit && <PitBadge />}
-      </div>
-
-      {settings.showBrand && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <span className={styles.brandLabel} title={driver.carScreenName}>
-            {formatBrand(driver.carScreenName)}
+        <div className={styles.cell}>
+          <span
+            className={`${styles.posCell} ${driver.isPlayer ? styles.posCellPlayer : ''}`}
+          >
+            {pos}
           </span>
         </div>
-      )}
 
-      {settings.showTire && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <TireBadge tire={driver.tireCompound} />
+        <div
+          className={`${styles.cell} ${styles.carNumberCell}`}
+          style={{
+            borderLeft: `3px solid ${driver.carClassColor}`,
+            background: `linear-gradient(to right, ${driver.carClassColor}33, transparent)`,
+          }}
+        >
+          <span
+            className={`${styles.carNumber} ${driver.isPlayer ? styles.carNumberPlayer : ''}`}
+          >
+            {driver.carNumber}
+          </span>
         </div>
-      )}
 
-      {!settings.enableClassCycling && settings.showClassBadge && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <ClassBadge
-            color={driver.carClassColor}
-            label={driver.carClassShortName}
-            className={styles.classBadgeFull}
-          />
+        <div className={`${styles.cell} ${styles.nameCell}`}>
+          <span
+            className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
+          >
+            {settings.abbreviateNames
+              ? abbreviateName(driver.userName)
+              : driver.userName}
+          </span>
+
+          {isPit && <PitBadge />}
         </div>
-      )}
 
-      {settings.showIRatingBadge && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <RatingBadge
-            licString={driver.licString}
-            iRating={driver.iRating}
-            className={styles.ratingBadge}
-          />
-        </div>
-      )}
-
-      {settings.showIrChange && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <IrChangeCell delta={irDelta} />
-        </div>
-      )}
-
-      {settings.showLapsCompleted && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <span className={styles.lapsCompleted}>{driver.lap}</span>
-        </div>
-      )}
-
-      {settings.showPosChange && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <PosChange position={pos} startPos={startPos} />
-        </div>
-      )}
-
-      <div className={`${styles.cell} ${styles.cellRight}`}>
-        {isLeader ? (
-          <span className={styles.gapLeader}>Leader</span>
-        ) : driver.f2Time > 0 ? (
-          <span className={styles.gapValue}>+{driver.f2Time.toFixed(1)}</span>
-        ) : (
-          <span className={styles.gapLeader}>-</span>
+        {settings.showBrand && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <span className={styles.brandLabel} title={driver.carScreenName}>
+              {formatBrand(driver.carScreenName)}
+            </span>
+          </div>
         )}
-      </div>
 
-      <div className={`${styles.cell} ${styles.cellRight}`}>
-        <span className={styles.lastLap}>
-          {isPit
-            ? '-'
-            : formatLapTime(driver.lastLapTime > 0 ? driver.lastLapTime : null)}
-        </span>
-      </div>
+        {settings.showTire && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <TireBadge tire={driver.tireCompound} />
+          </div>
+        )}
 
-      <div className={`${styles.cell} ${styles.cellRight}`}>
-        <span className={styles.bestLap}>
-          {formatLapTime(driver.bestLapTime > 0 ? driver.bestLapTime : null)}
-        </span>
+        {!settings.enableClassCycling && settings.showClassBadge && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <ClassBadge
+              color={driver.carClassColor}
+              label={driver.carClassShortName}
+              className={styles.classBadgeFull}
+            />
+          </div>
+        )}
+
+        {settings.showIRatingBadge && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <RatingBadge
+              licString={driver.licString}
+              iRating={driver.iRating}
+              className={styles.ratingBadge}
+            />
+          </div>
+        )}
+
+        {settings.showIrChange && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <IrChangeCell delta={irDelta} />
+          </div>
+        )}
+
+        {settings.showLapsCompleted && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <span className={styles.lapsCompleted}>{driver.lap}</span>
+          </div>
+        )}
+
+        {settings.showPosChange && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <PosChange position={pos} startPos={startPos} />
+          </div>
+        )}
+
+        <div className={`${styles.cell} ${styles.cellRight}`}>
+          {isLeader ? (
+            <span className={styles.gapLeader}>Leader</span>
+          ) : driver.f2Time > 0 ? (
+            <span className={styles.gapValue}>+{driver.f2Time.toFixed(1)}</span>
+          ) : (
+            <span className={styles.gapLeader}>-</span>
+          )}
+        </div>
+
+        <div className={`${styles.cell} ${styles.cellRight}`}>
+          <span className={styles.lastLap}>
+            {isPit
+              ? '-'
+              : formatLapTime(
+                  driver.lastLapTime > 0 ? driver.lastLapTime : null
+                )}
+          </span>
+        </div>
+
+        <div className={`${styles.cell} ${styles.cellRight}`}>
+          <span className={styles.bestLap}>
+            {formatLapTime(driver.bestLapTime > 0 ? driver.bestLapTime : null)}
+          </span>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+);

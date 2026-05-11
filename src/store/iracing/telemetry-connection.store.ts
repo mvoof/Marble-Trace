@@ -1,30 +1,24 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 
 import type {
-  CarDynamicsFrame,
-  CarIdxFrame,
-  CarInputsFrame,
-  CarStatusFrame,
-  ChassisFrame,
-  DriverEntriesFrame,
-  EnvironmentFrame,
-  FuelComputedFrame,
-  LapDeltaFrame,
-  LapTimingFrame,
-  PitStopsFrame,
-  ProximityFrame,
-  SessionFrame,
   SessionInfo,
   WeatherForecastEntry,
+  TelemetryBundle,
 } from '../../types/bindings';
-import type { CarPositionsFrame } from './telemetry.store';
 import { debug } from '../../utils/debug';
 
 import { telemetryStore } from './telemetry.store';
 import { computedStore } from './computed.store';
+import { widgetSettingsStore } from '../widget-settings.store';
+import { appSettingsStore } from '../app-settings.store';
 import type { TelemetryStatus } from '../../types';
+
+const EVENT_CAR_DYNAMICS = 1 << 0;
+const EVENT_CAR_INPUTS = 1 << 1;
+const EVENT_LAP_DELTA = 1 << 2;
+const EVENT_CAR_POSITIONS = 1 << 3;
 
 class TelemetryConnection {
   isConnected = false;
@@ -37,6 +31,63 @@ class TelemetryConnection {
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
+
+    // Only master (main window) manages active events in Rust
+    if (
+      typeof window !== 'undefined' &&
+      !window.location.hash.includes('overlay')
+    ) {
+      reaction(
+        () => ({
+          widgets: widgetSettingsStore.allWidgets.map((w) => ({
+            id: w.id,
+            enabled: w.enabled,
+          })),
+          hideAll: appSettingsStore.settings.hideAllWidgets,
+        }),
+        () => this.updateActiveEvents(),
+        { fireImmediately: true }
+      );
+    }
+  }
+
+  private updateActiveEvents() {
+    const widgets = widgetSettingsStore.allWidgets;
+    const hideAll = appSettingsStore.settings.hideAllWidgets;
+
+    let mask = 0;
+
+    if (!hideAll) {
+      const isEnabled = (id: string) =>
+        widgets.find((w) => w.id === id)?.enabled ?? false;
+
+      if (
+        isEnabled('speed') ||
+        isEnabled('g-meter') ||
+        isEnabled('weather') ||
+        isEnabled('track-map')
+      ) {
+        mask |= EVENT_CAR_DYNAMICS;
+      }
+
+      if (isEnabled('input-trace')) {
+        mask |= EVENT_CAR_INPUTS;
+      }
+
+      if (isEnabled('lap-delta')) {
+        mask |= EVENT_LAP_DELTA;
+      }
+
+      if (
+        isEnabled('track-map') ||
+        isEnabled('relative-map') ||
+        isEnabled('relative')
+      ) {
+        mask |= EVENT_CAR_POSITIONS;
+      }
+    }
+
+    void invoke('set_active_events', { mask });
   }
 
   /** Main window: starts the telemetry stream + subscribes to all events */
@@ -163,96 +214,32 @@ class TelemetryConnection {
 
   private async subscribeAllEvents(guardId: number) {
     this.unlistens.push(
-      await listen<CarDynamicsFrame>(
-        'iracing://telemetry/car-dynamics',
-        (event) => {
-          if (this.initId !== guardId) return;
+      await listen<TelemetryBundle>('iracing://telemetry/bundle', (event) => {
+        if (this.initId !== guardId) return;
 
-          if (this.frameCount % 60 === 0) {
-            debug.telemetry('frame #%d', this.frameCount);
+        const b = event.payload;
+
+        runInAction(() => {
+          if (b.car_dynamics) {
+            this.onFrameReceived();
+            telemetryStore.updateCarDynamics(b.car_dynamics);
           }
+          if (b.car_idx) telemetryStore.updateCarIdx(b.car_idx);
+          if (b.car_inputs) telemetryStore.updateCarInputs(b.car_inputs);
+          if (b.car_positions)
+            telemetryStore.updateCarPositions(b.car_positions);
+          if (b.car_status) telemetryStore.updateCarStatus(b.car_status);
+          if (b.lap_timing) telemetryStore.updateLapTiming(b.lap_timing);
+          if (b.session) telemetryStore.updateSession(b.session);
+          if (b.environment) telemetryStore.updateEnvironment(b.environment);
+          if (b.chassis) telemetryStore.updateChassis(b.chassis);
 
-          this.onFrameReceived();
-          telemetryStore.updateCarDynamics(event.payload);
-        }
-      )
-    );
-
-    this.unlistens.push(
-      await listen<CarIdxFrame>('iracing://telemetry/car-idx', (event) => {
-        if (this.initId !== guardId) return;
-
-        telemetryStore.updateCarIdx(event.payload);
-      })
-    );
-
-    this.unlistens.push(
-      await listen<CarInputsFrame>(
-        'iracing://telemetry/car-inputs',
-        (event) => {
-          if (this.initId !== guardId) return;
-
-          telemetryStore.updateCarInputs(event.payload);
-        }
-      )
-    );
-
-    this.unlistens.push(
-      await listen<CarPositionsFrame>(
-        'iracing://telemetry/car-positions',
-        (event) => {
-          if (this.initId !== guardId) return;
-
-          telemetryStore.updateCarPositions(event.payload);
-        }
-      )
-    );
-
-    this.unlistens.push(
-      await listen<CarStatusFrame>(
-        'iracing://telemetry/car-status',
-        (event) => {
-          if (this.initId !== guardId) return;
-
-          telemetryStore.updateCarStatus(event.payload);
-        }
-      )
-    );
-
-    this.unlistens.push(
-      await listen<LapTimingFrame>(
-        'iracing://telemetry/lap-timing',
-        (event) => {
-          if (this.initId !== guardId) return;
-          telemetryStore.updateLapTiming(event.payload);
-        }
-      )
-    );
-
-    this.unlistens.push(
-      await listen<SessionFrame>('iracing://telemetry/session', (event) => {
-        if (this.initId !== guardId) return;
-
-        telemetryStore.updateSession(event.payload);
-      })
-    );
-
-    this.unlistens.push(
-      await listen<EnvironmentFrame>(
-        'iracing://telemetry/environment',
-        (event) => {
-          if (this.initId !== guardId) return;
-
-          telemetryStore.updateEnvironment(event.payload);
-        }
-      )
-    );
-
-    this.unlistens.push(
-      await listen<ChassisFrame>('iracing://telemetry/chassis', (event) => {
-        if (this.initId !== guardId) return;
-
-        telemetryStore.updateChassis(event.payload);
+          if (b.proximity) computedStore.updateProximity(b.proximity);
+          if (b.fuel) computedStore.updateFuel(b.fuel);
+          if (b.standings) computedStore.updateStandings(b.standings);
+          if (b.pit_stops) computedStore.updatePitStops(b.pit_stops);
+          if (b.lap_delta) computedStore.updateLapDelta(b.lap_delta);
+        });
       })
     );
 
@@ -281,49 +268,6 @@ class TelemetryConnection {
         debug.telemetry('stream disconnected');
 
         this.setDisconnected();
-      })
-    );
-
-    this.unlistens.push(
-      await listen<ProximityFrame>('iracing://computed/proximity', (event) => {
-        if (this.initId !== guardId) return;
-
-        computedStore.updateProximity(event.payload);
-      })
-    );
-
-    this.unlistens.push(
-      await listen<FuelComputedFrame>('iracing://computed/fuel', (event) => {
-        if (this.initId !== guardId) return;
-
-        computedStore.updateFuel(event.payload);
-      })
-    );
-
-    this.unlistens.push(
-      await listen<DriverEntriesFrame>(
-        'iracing://computed/standings',
-        (event) => {
-          if (this.initId !== guardId) return;
-
-          computedStore.updateStandings(event.payload);
-        }
-      )
-    );
-
-    this.unlistens.push(
-      await listen<PitStopsFrame>('iracing://computed/pit-stops', (event) => {
-        if (this.initId !== guardId) return;
-
-        computedStore.updatePitStops(event.payload);
-      })
-    );
-
-    this.unlistens.push(
-      await listen<LapDeltaFrame>('iracing://computed/lap-delta', (event) => {
-        if (this.initId !== guardId) return;
-
-        computedStore.updateLapDelta(event.payload);
       })
     );
 

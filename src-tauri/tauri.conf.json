@@ -22,7 +22,8 @@
         "visible": true,
         "transparent": true,
         "decorations": false,
-        "alwaysOnTop": false
+        "alwaysOnTop": false,
+        "shadow": false
       },
       {
         "label": "overlay",
@@ -37,6 +38,7 @@
         "skipTaskbar": true,
         "visible": true,
         "resizable": false,
+        "shadow": false,
         "url": "index.html#/overlay"
       }
     ],

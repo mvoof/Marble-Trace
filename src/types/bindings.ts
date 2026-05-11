@@ -207,6 +207,20 @@ export type CarInputsFrame = {
   clutch: number | null;
 };
 
+/**
+ * Lightweight per-car position frame emitted at 30Hz for smooth map rendering.
+ */
+export type CarPositionsFrame = {
+  /**
+   * Lap distance percentage for each car (-1 = not on track)
+   */
+  car_idx_lap_dist_pct: number[];
+  /**
+   * Track surface type for each car (-1=NotInWorld, 0=OffTrack, 1=InPitStall, 2=AproachingPits, 3=OnTrack)
+   */
+  car_idx_track_surface: number[];
+};
+
 export type CarStatusFrame = {
   /**
    * Fuel level in liters
@@ -1236,6 +1250,23 @@ export type SplitTimeInfo = {
    * Sector information
    */
   Sectors: Sector[] | null;
+};
+
+export type TelemetryBundle = {
+  car_dynamics?: CarDynamicsFrame | null;
+  car_inputs?: CarInputsFrame | null;
+  car_positions?: CarPositionsFrame | null;
+  lap_delta?: LapDeltaFrame | null;
+  car_idx?: CarIdxFrame | null;
+  chassis?: ChassisFrame | null;
+  lap_timing?: LapTimingFrame | null;
+  proximity?: ProximityFrame | null;
+  standings?: DriverEntriesFrame | null;
+  car_status?: CarStatusFrame | null;
+  fuel?: FuelComputedFrame | null;
+  pit_stops?: PitStopsFrame | null;
+  session?: SessionFrame | null;
+  environment?: EnvironmentFrame | null;
 };
 
 /**

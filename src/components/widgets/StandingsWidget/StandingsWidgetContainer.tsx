@@ -29,56 +29,6 @@ export const StandingsWidgetContainer = observer(() => {
 
   const allClassGroupsCount = useAllClassGroupsCount(driverEntries);
 
-  const irDeltaMap = useMemo(
-    () =>
-      settings.showIrChange
-        ? new Map(
-            driverEntries.reduce<[number, number][]>((acc, e) => {
-              if (e.estimatedIrDelta !== null) {
-                acc.push([e.carIdx, e.estimatedIrDelta]);
-              }
-
-              return acc;
-            }, [])
-          )
-        : new Map<number, number>(),
-
-    [driverEntries, settings.showIrChange]
-  );
-
-  // Race: use grid positions from QualifyResultsInfo. Practice/time-trial: falls back to first-frame snapshot in computedStore
-  const qualifyResults =
-    telemetryStore.sessionInfo?.QualifyResultsInfo?.Results ?? null;
-
-  const qualifyStartPosMap = useMemo(() => {
-    if (!qualifyResults || qualifyResults.length === 0) return null;
-
-    const map = new Map<number, { overall: number; class: number }>();
-    for (const r of qualifyResults) {
-      if (r.CarIdx != null && r.Position != null) {
-        map.set(r.CarIdx, {
-          overall: r.Position + 1,
-          class: (r.ClassPosition ?? r.Position) + 1,
-        });
-      }
-    }
-
-    return map.size > 0 ? map : null;
-  }, [qualifyResults]);
-
-  const effectiveStartPosMap = useMemo(
-    () =>
-      new Map(
-        driverEntries.map((e) => [
-          e.carIdx,
-          qualifyStartPosMap?.get(e.carIdx) ??
-            computedStore.getEffectiveStartPos(e.carIdx),
-        ])
-      ),
-
-    [driverEntries, qualifyStartPosMap]
-  );
-
   const playerIncidents = useMemo(
     () => driverEntries.find((e) => e.isPlayer)?.incidents ?? 0,
     [driverEntries]
@@ -88,8 +38,6 @@ export const StandingsWidgetContainer = observer(() => {
     <StandingsWidget
       driverEntries={driverEntries}
       settings={settings}
-      irDeltaMap={irDeltaMap}
-      effectiveStartPosMap={effectiveStartPosMap}
       playerPitStops={pitStops?.playerStops ?? 0}
       playerIncidents={playerIncidents}
       sessionInfo={telemetryStore.sessionInfo}
