@@ -86,9 +86,14 @@ export const drawBarChart = (
   const stride = barWidth + FUEL_CHART_CONFIG.BAR_GAP;
   const paddingH = FUEL_CHART_CONFIG.PADDING_H;
   const plotW = w - paddingH * 2;
-  const maxVisible = Math.floor(plotW / stride);
+  const maxVisible = stride > 0 ? Math.floor(plotW / stride) : 0;
 
-  const data = history.slice(-maxVisible);
+  const data = maxVisible > 0 ? history.slice(-maxVisible) : [];
+
+  if (data.length === 0) {
+    return;
+  }
+
   const startLap = Math.max(1, history.length - data.length + 1);
 
   const n = data.length;
@@ -130,9 +135,14 @@ export const drawLineChart = (
   const stride = barWidth + FUEL_CHART_CONFIG.BAR_GAP;
   const paddingH = FUEL_CHART_CONFIG.PADDING_H;
   const plotW = w - paddingH * 2;
-  const maxVisible = Math.floor(plotW / stride);
+  const maxVisible = stride > 0 ? Math.floor(plotW / stride) : 0;
 
-  const data = history.slice(-maxVisible);
+  const data = maxVisible > 0 ? history.slice(-maxVisible) : [];
+
+  if (data.length === 0) {
+    return;
+  }
+
   const startLap = Math.max(1, history.length - data.length + 1);
 
   const n = data.length;
