@@ -428,6 +428,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         showChart: false,
         pitWarningLaps: 3,
         chartType: 'bar',
+        barWidth: 5,
       },
     },
   },

@@ -12,7 +12,7 @@ const drawAvgLine = (
   plotW: number
 ) => {
   ctx.strokeStyle = FUEL_COLORS.average;
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 2;
   ctx.setLineDash([5, 4]);
   ctx.beginPath();
   ctx.moveTo(0, avgY);
@@ -20,7 +20,7 @@ const drawAvgLine = (
   ctx.stroke();
   ctx.setLineDash([]);
 
-  ctx.font = 'bold 8px monospace';
+  ctx.font = 'bold 11px monospace';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'bottom';
   ctx.fillStyle = FUEL_COLORS.averageLabel;
@@ -41,16 +41,23 @@ const drawXLabels = (
   n: number,
   barWPlusGap: number,
   barW: number,
-  plotH: number
+  plotH: number,
+  startLap: number,
+  offsetX: number
 ) => {
-  ctx.font = '10px monospace';
+  ctx.font = '11px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   ctx.fillStyle = FUEL_COLORS.textMuted;
 
-  const maxLabelW =
-    String(n).length * FUEL_CHART_CONFIG.LABEL_CHAR_W +
-    FUEL_CHART_CONFIG.LABEL_MIN_GAP;
+  // Dynamic label width estimation:
+  // On wide bars we can be tighter (charW 6, gap 1)
+  // On narrow bars we need more breathing room (charW 8, gap 4)
+  const isWide = barW > 12;
+  const charW = isWide ? 6 : 8;
+  const minGap = isWide ? 1 : 4;
+
+  const maxLabelW = String(startLap + n).length * charW + minGap;
 
   const step = Math.max(1, Math.ceil(maxLabelW / barWPlusGap));
 
@@ -59,13 +66,44 @@ const drawXLabels = (
   for (let i = 0; i < n; i++) {
     if (i % step !== 0) continue;
 
-    const cx = i * barWPlusGap + barW / 2;
+    const cx = offsetX + i * barWPlusGap + barW / 2;
 
     if (cx - lastDrawnX < maxLabelW) continue;
 
-    ctx.fillText(String(i + 1), cx, plotH + 3);
+    ctx.fillText(String(startLap + i), cx, plotH + 3);
     lastDrawnX = cx;
   }
+};
+
+const prepareChartData = (
+  history: number[],
+  w: number,
+  h: number,
+  barWidth: number
+) => {
+  const stride = barWidth + FUEL_CHART_CONFIG.BAR_GAP;
+  const paddingH = FUEL_CHART_CONFIG.PADDING_H;
+  const plotW = w - paddingH * 2;
+  const maxVisible = stride > 0 ? Math.floor(plotW / stride) : 0;
+
+  const data = maxVisible > 0 ? history.slice(-maxVisible) : [];
+
+  if (data.length === 0) {
+    return null;
+  }
+
+  const startLap = Math.max(1, history.length - data.length + 1);
+  const plotH = h - FUEL_CHART_CONFIG.X_LABEL_H;
+
+  return {
+    data,
+    stride,
+    paddingH,
+    plotW,
+    plotH,
+    startLap,
+    n: data.length,
+  };
 };
 
 export const drawBarChart = (
@@ -73,39 +111,40 @@ export const drawBarChart = (
   history: number[],
   w: number,
   h: number,
-  avg: number | null
+  avg: number | null,
+  barWidth: number
 ) => {
-  const data = history.slice(-FUEL_CHART_CONFIG.MAX_VISIBLE);
-  const n = data.length;
-  const plotW = w;
-  const plotH = h - FUEL_CHART_CONFIG.X_LABEL_H;
+  const prepared = prepareChartData(history, w, h, barWidth);
+
+  if (!prepared) {
+    return;
+  }
+
+  const { data, stride, paddingH, plotH, startLap, n } = prepared;
 
   const min = Math.min(...data) * FUEL_CHART_CONFIG.MIN_SCALE;
   const max = Math.max(...data) * FUEL_CHART_CONFIG.MAX_SCALE;
   const range = max - min || 1;
 
-  const barW = FUEL_CHART_CONFIG.BAR_WIDTH;
-  const stride = barW + FUEL_CHART_CONFIG.BAR_GAP;
-
   const toBarH = (v: number) => ((v - min) / range) * plotH;
 
   data.forEach((v, i) => {
-    const x = i * stride;
+    const x = paddingH + i * stride;
     const bh = toBarH(v);
 
     ctx.fillStyle = barColor(v, avg);
-    ctx.fillRect(x, plotH - bh, barW, bh);
+    ctx.fillRect(x, plotH - bh, barWidth, bh);
   });
 
-  drawTopLine(ctx, plotW);
+  drawTopLine(ctx, w);
 
   if (avg !== null) {
     const avgY = plotH - toBarH(avg);
 
-    drawAvgLine(ctx, avgY, plotW);
+    drawAvgLine(ctx, avgY, w);
   }
 
-  drawXLabels(ctx, n, stride, barW, plotH);
+  drawXLabels(ctx, n, stride, barWidth, plotH, startLap, paddingH);
 };
 
 export const drawLineChart = (
@@ -113,20 +152,23 @@ export const drawLineChart = (
   history: number[],
   w: number,
   h: number,
-  avg: number | null
+  avg: number | null,
+  barWidth: number
 ) => {
-  const data = history.slice(-FUEL_CHART_CONFIG.MAX_VISIBLE);
-  const n = data.length;
-  const plotW = w;
-  const plotH = h - FUEL_CHART_CONFIG.X_LABEL_H;
+  const prepared = prepareChartData(history, w, h, barWidth);
+
+  if (!prepared) {
+    return;
+  }
+
+  const { data, stride, paddingH, plotH, startLap, n } = prepared;
 
   const min = Math.min(...data) * FUEL_CHART_CONFIG.MIN_SCALE_LINE;
   const max = Math.max(...data) * FUEL_CHART_CONFIG.MAX_SCALE;
   const range = max - min || 1;
 
   const toY = (v: number) => plotH - ((v - min) / range) * plotH;
-  const toX = (i: number) =>
-    data.length > 1 ? (i / (data.length - 1)) * plotW : plotW / 2;
+  const toX = (i: number) => paddingH + i * stride + barWidth / 2;
 
   ctx.beginPath();
   ctx.strokeStyle = FUEL_COLORS.primary;
@@ -155,36 +197,11 @@ export const drawLineChart = (
     ctx.fill();
   });
 
-  drawTopLine(ctx, plotW);
+  drawTopLine(ctx, w);
 
   if (avg !== null) {
-    drawAvgLine(ctx, toY(avg), plotW);
+    drawAvgLine(ctx, toY(avg), w);
   }
 
-  const lineStride = data.length > 1 ? plotW / (data.length - 1) : plotW;
-
-  const maxLabelW =
-    String(n).length * FUEL_CHART_CONFIG.LABEL_CHAR_W +
-    FUEL_CHART_CONFIG.LABEL_MIN_GAP;
-
-  const step = Math.max(1, Math.ceil(maxLabelW / lineStride));
-
-  ctx.font = '10px monospace';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
-
-  ctx.fillStyle = FUEL_COLORS.textMuted;
-
-  let lastDrawnX = -Infinity;
-
-  for (let i = 0; i < n; i++) {
-    if (i % step !== 0) continue;
-
-    const cx = toX(i);
-
-    if (cx - lastDrawnX < maxLabelW) continue;
-
-    ctx.fillText(String(i + 1), cx, plotH + 3);
-    lastDrawnX = cx;
-  }
+  drawXLabels(ctx, n, stride, barWidth, plotH, startLap, paddingH);
 };

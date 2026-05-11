@@ -849,8 +849,8 @@ export type Frequency = {
 };
 
 export type FuelComputedFrame = {
-  avgPerLap: number;
-  lapsRemaining: number;
+  avgPerLap: number | null;
+  lapsRemaining: number | null;
   lapsToFinish: number | null;
   /**
    * Positive = surplus liters, negative = deficit

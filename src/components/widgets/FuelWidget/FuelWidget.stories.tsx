@@ -2,7 +2,19 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { FuelWidget } from './FuelWidget';
 
-const LAP_FUEL_HISTORY = [3.2, 3.1, 3.3, 3.0, 3.2, 3.1, 3.4, 3.0];
+const LAP_FUEL_HISTORY = [
+  3.2, 3.1, 3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3,
+  3, 4, 3.2, 3.5, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 3.2,
+  3.1, 3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4,
+  3.2, 3.5, 5, 3, 3, 30, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 3.2, 3.1,
+  6, 3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4,
+  3.2, 3.5, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 5, 3, 4,
+  3.2, 3.5, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 3.2, 3.1,
+  3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2,
+  3.5, 5, 3, 3, 30, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 3.2, 3.1, 6,
+  3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2,
+  3.5, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 5,
+];
 
 const meta: Meta<typeof FuelWidget> = {
   title: 'Widgets/FuelWidget',
@@ -31,11 +43,21 @@ const meta: Meta<typeof FuelWidget> = {
     pitWarning: false,
     pitWindowStart: null,
     pitWindowEnd: null,
-    tankTooSmall: false,
     showChart: false,
     chartType: 'line',
+    barWidth: 5,
     lapFuelHistory: LAP_FUEL_HISTORY,
     pitWarningLaps: 3,
+  },
+  argTypes: {
+    barWidth: {
+      control: { type: 'range', min: 5, max: 20, step: 1 },
+      description: 'Width of each bar in pixels',
+    },
+    chartType: {
+      control: 'inline-radio',
+      options: ['line', 'bar'],
+    },
   },
 };
 
@@ -43,6 +65,14 @@ export default meta;
 type Story = StoryObj<typeof FuelWidget>;
 
 export const Comfortable: Story = {};
+
+export const CustomBarWidth: Story = {
+  args: {
+    showChart: true,
+    chartType: 'bar',
+    barWidth: 12,
+  },
+};
 
 export const LowFuel: Story = {
   args: {
@@ -62,7 +92,6 @@ export const TankTooSmall: Story = {
     lapsRemaining: 1.6,
     shortage: -5.8,
     pitWarning: true,
-    tankTooSmall: true,
     pitWindowStart: 12,
     pitWindowEnd: 13,
     fuelToAddWithBuffer: 58.0,
@@ -99,5 +128,22 @@ export const NoData: Story = {
     lapsRemaining: null,
     shortage: null,
     lapFuelHistory: [],
+  },
+};
+
+export const FullPreview: Story = {
+  args: {
+    fuelLevel: 5.2,
+    fuelMax: 55.0,
+    avgPerLap: 3.15,
+    lapsRemaining: 1.6,
+    shortage: -15.8,
+    pitWarning: true,
+    pitWindowStart: 12,
+    pitWindowEnd: 13,
+    fuelToAddWithBuffer: 58.0,
+    showChart: true,
+    chartType: 'bar',
+    lapFuelHistory: LAP_FUEL_HISTORY,
   },
 };

@@ -21,12 +21,6 @@ export const FuelWidgetContainer = observer(() => {
   const pitWarning =
     lapsRemaining !== null && lapsRemaining <= settings.pitWarningLaps;
 
-  const tankTooSmall =
-    fuelToAddWithBuffer !== null &&
-    fuelMax !== null &&
-    fuelLevel !== null &&
-    fuelToAddWithBuffer > fuelMax - fuelLevel;
-
   return (
     <FuelWidget
       fuelLevel={fuelLevel}
@@ -38,9 +32,9 @@ export const FuelWidgetContainer = observer(() => {
       pitWarning={pitWarning}
       pitWindowStart={fuel?.pitWindowStart ?? null}
       pitWindowEnd={fuel?.pitWindowEnd ?? null}
-      tankTooSmall={tankTooSmall}
       showChart={settings.showChart}
-      chartType={settings.chartType}
+      chartType={settings.showChart ? settings.chartType : 'bar'}
+      barWidth={settings.barWidth}
       lapFuelHistory={fuel?.lapFuelHistory ?? []}
       pitWarningLaps={settings.pitWarningLaps}
     />

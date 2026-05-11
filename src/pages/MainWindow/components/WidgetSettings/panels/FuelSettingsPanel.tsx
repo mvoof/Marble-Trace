@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { InputNumber, Segmented, Switch } from 'antd';
+import { InputNumber, Segmented, Slider, Switch } from 'antd';
 import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
 import { FuelWidgetSettings } from '../../../../../types/widget-settings';
 import styles from '../WidgetSettings.module.scss';
@@ -28,15 +28,29 @@ export const FuelSettingsPanel = observer(() => {
           />
         </SettingRow>
         {settings.showChart && (
-          <Segmented
-            block
-            value={settings.chartType}
-            options={[
-              { label: 'Bar Chart', value: 'bar' },
-              { label: 'Line Chart', value: 'line' },
-            ]}
-            onChange={(v) => update({ chartType: v as 'bar' | 'line' })}
-          />
+          <>
+            <Segmented
+              block
+              value={settings.chartType}
+              options={[
+                { label: 'Bar Chart', value: 'bar' },
+                { label: 'Line Chart', value: 'line' },
+              ]}
+              onChange={(v) => update({ chartType: v as 'bar' | 'line' })}
+              style={{ marginBottom: 16 }}
+            />
+
+            <div className={styles.fieldGroup}>
+              <span className={styles.fieldLabel}>Chart Step Width (px)</span>
+              <Slider
+                min={5}
+                max={20}
+                value={settings.barWidth}
+                onChange={(v) => update({ barWidth: v })}
+                tooltip={{ formatter: (v) => `${v}px` }}
+              />
+            </div>
+          </>
         )}
       </div>
 
