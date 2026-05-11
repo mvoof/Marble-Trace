@@ -120,7 +120,9 @@ export const FuelWidget = ({
 
       <div className={`${styles.finishCard} ${statusClass(shortage)}`}>
         <span className={styles.finishLabel}>LAPS LEFT</span>
-        <span className={styles.finishValue}>
+        <span
+          className={`${styles.finishValue} ${lapsRemainingClass(lapsRemaining, pitWarningLaps)}`}
+        >
           {lapsRemaining !== null ? lapsRemaining.toFixed(1) : '--.-'}
         </span>
       </div>
