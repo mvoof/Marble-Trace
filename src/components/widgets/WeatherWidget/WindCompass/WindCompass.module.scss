@@ -23,6 +23,11 @@
   stroke-width: 3px;
   stroke-linecap: round;
   stroke-linejoin: round;
+
+  transform: rotate(var(--car-yaw, 0deg));
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.05s linear;
 }
 
 .bearingText {

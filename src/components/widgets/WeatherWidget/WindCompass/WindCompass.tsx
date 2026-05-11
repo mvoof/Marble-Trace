@@ -58,6 +58,7 @@ export const WindCompass = observer(
 
         if (ringRef.current) {
           ringRef.current.style.transform = `rotate(${-carYawDeg}deg)`;
+          ringRef.current.style.setProperty('--car-yaw', `${carYawDeg}deg`);
         }
 
         if (arrowRef.current) {
@@ -135,11 +136,6 @@ export const WindCompass = observer(
                     textAnchor="middle"
                     dominantBaseline="central"
                     className={styles.cardinalLabel}
-                    // Labels rotate back to stay upright. Since we use CSS transform on the parent,
-                    // we can't easily counter-rotate individual labels without re-rendering or
-                    // more complex DOM manipulation.
-                    // For now, we'll keep the labels rotating with the ring as it was,
-                    // but we might need to adjust this if they should stay upright.
                   >
                     {label}
                   </text>
