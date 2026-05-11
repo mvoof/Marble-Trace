@@ -406,7 +406,7 @@ async fn run_telemetry_loop<S>(
             Err(_) => {
                 if !is_waiting {
                     is_waiting = true;
-                    debug!("No telemetry for 5s, waiting...");
+                    debug!("No telemetry for 3s, waiting...");
                     app.emit("iracing://status", "waiting").ok();
                 }
             }
@@ -670,7 +670,15 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
         bundle.environment = Some(EnvironmentFrame::from(frame));
     }
 
-    if let Err(e) = app.emit("iracing://telemetry/bundle", &bundle) {
-        warn!("Failed to emit telemetry bundle: {}", e);
+    let should_emit = active_mask != 0
+        || tick == 1
+        || tick.is_multiple_of(6)
+        || tick.is_multiple_of(15)
+        || tick.is_multiple_of(60);
+
+    if should_emit {
+        if let Err(e) = app.emit("iracing://telemetry/bundle", &bundle) {
+            warn!("Failed to emit telemetry bundle: {}", e);
+        }
     }
 }
