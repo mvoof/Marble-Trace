@@ -1,0 +1,14 @@
+js:
+  - 'src/**'
+  - 'scripts/**'
+  - '.storybook/**'
+  - 'package.json'
+  - 'package-lock.json'
+  - 'tsconfig*.json'
+  - 'eslint.config.js'
+  - 'vite.config.ts'
+  - 'index.html'
+rust:
+  - 'src-tauri/**'
+ci:
+  - '.github/**'

@@ -69,24 +69,9 @@ jobs:
   quality-checks:
     name: Quality Checks
     needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Setup Dependencies
-        uses: ./.github/actions/setup-dependencies
-        with:
-          node-version: '20'
-          platform: ubuntu-latest
-          cache-rust: 'false'
-          install-rust: 'false'
-          install-system-deps: 'false'
-
-      - name: Run Lint
-        run: npm run lint
-
-      - name: Run Tests
-        run: npm run test
+    uses: ./.github/workflows/reusable-quality.yml
+    with:
+      force_all: false
 
   build:
     name: Build & Release

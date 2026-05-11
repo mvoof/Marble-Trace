@@ -1,6 +1,12 @@
 name: Build App on PR
 
 on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
   workflow_dispatch:
 
 permissions:
@@ -12,10 +18,7 @@ jobs:
     name: Check Changes
     runs-on: ubuntu-latest
     outputs:
-      js: ${{ steps.filter.outputs.js }}
-      rust: ${{ steps.filter.outputs.rust }}
-      ci: ${{ steps.filter.outputs.ci }}
-      app: ${{ steps.filter.outputs.js == 'true' || steps.filter.outputs.rust == 'true' }}
+      app: ${{ steps.filter.outputs.js == 'true' || steps.filter.outputs.rust == 'true' || steps.filter.outputs.ci == 'true' }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -25,23 +28,12 @@ jobs:
         id: filter
         uses: dorny/paths-filter@v3
         with:
-          filters: |
-            js:
-              - 'src/**'
-              - 'package.json'
-              - 'package-lock.json'
-              - 'tsconfig.json'
-              - 'eslint.config.js'
-            rust:
-              - 'src-tauri/**'
-            ci:
-              - '.github/**'
+          filters: .github/filters.yml
 
   build-app:
     name: Build Preview
     needs: check-changes
-    if: needs.check-changes.outputs.app == 'true' || needs.check-changes.outputs.ci == 'true'
-    environment: pr-review
+    if: needs.check-changes.outputs.app == 'true'
     strategy:
       fail-fast: false
       matrix:
