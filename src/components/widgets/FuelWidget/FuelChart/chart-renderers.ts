@@ -75,12 +75,10 @@ const drawXLabels = (
   }
 };
 
-export const drawBarChart = (
-  ctx: CanvasRenderingContext2D,
+const prepareChartData = (
   history: number[],
   w: number,
   h: number,
-  avg: number | null,
   barWidth: number
 ) => {
   const stride = barWidth + FUEL_CHART_CONFIG.BAR_GAP;
@@ -91,13 +89,38 @@ export const drawBarChart = (
   const data = maxVisible > 0 ? history.slice(-maxVisible) : [];
 
   if (data.length === 0) {
-    return;
+    return null;
   }
 
   const startLap = Math.max(1, history.length - data.length + 1);
-
-  const n = data.length;
   const plotH = h - FUEL_CHART_CONFIG.X_LABEL_H;
+
+  return {
+    data,
+    stride,
+    paddingH,
+    plotW,
+    plotH,
+    startLap,
+    n: data.length,
+  };
+};
+
+export const drawBarChart = (
+  ctx: CanvasRenderingContext2D,
+  history: number[],
+  w: number,
+  h: number,
+  avg: number | null,
+  barWidth: number
+) => {
+  const prepared = prepareChartData(history, w, h, barWidth);
+
+  if (!prepared) {
+    return;
+  }
+
+  const { data, stride, paddingH, plotH, startLap, n } = prepared;
 
   const min = Math.min(...data) * FUEL_CHART_CONFIG.MIN_SCALE;
   const max = Math.max(...data) * FUEL_CHART_CONFIG.MAX_SCALE;
@@ -132,21 +155,13 @@ export const drawLineChart = (
   avg: number | null,
   barWidth: number
 ) => {
-  const stride = barWidth + FUEL_CHART_CONFIG.BAR_GAP;
-  const paddingH = FUEL_CHART_CONFIG.PADDING_H;
-  const plotW = w - paddingH * 2;
-  const maxVisible = stride > 0 ? Math.floor(plotW / stride) : 0;
+  const prepared = prepareChartData(history, w, h, barWidth);
 
-  const data = maxVisible > 0 ? history.slice(-maxVisible) : [];
-
-  if (data.length === 0) {
+  if (!prepared) {
     return;
   }
 
-  const startLap = Math.max(1, history.length - data.length + 1);
-
-  const n = data.length;
-  const plotH = h - FUEL_CHART_CONFIG.X_LABEL_H;
+  const { data, stride, paddingH, plotH, startLap, n } = prepared;
 
   const min = Math.min(...data) * FUEL_CHART_CONFIG.MIN_SCALE_LINE;
   const max = Math.max(...data) * FUEL_CHART_CONFIG.MAX_SCALE;
