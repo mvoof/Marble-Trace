@@ -1,0 +1,10 @@
+js:
+  - 'src/**'
+  - 'package.json'
+  - 'package-lock.json'
+  - 'tsconfig.json'
+  - 'eslint.config.js'
+rust:
+  - 'src-tauri/**'
+ci:
+  - '.github/**'
