@@ -24,9 +24,21 @@ interface FuelWidgetProps {
   pitWarningLaps: number;
 }
 
-const statusClass = (shortage: number | null): string => {
-  if (shortage === null) return '';
-  return shortage >= 0 ? styles.finishSafe : styles.finishDanger;
+const statusClass = (
+  shortage: number | null,
+  lapsRemaining: number | null,
+  pitWarningLaps: number
+): string => {
+  if (shortage === null || lapsRemaining === null) {
+    return '';
+  }
+
+  // If we don't have enough fuel to finish or we are below the warning threshold
+  if (shortage < 0 || lapsRemaining <= pitWarningLaps) {
+    return styles.finishDanger;
+  }
+
+  return styles.finishSafe;
 };
 
 const shortageClass = (shortage: number | null): string => {
@@ -74,8 +86,8 @@ export const FuelWidget = ({
 
   const windowText =
     pitWindowStart !== null && pitWindowEnd !== null
-      ? `LAP ${pitWindowStart}–${pitWindowEnd}`
-      : 'LAP --–--';
+      ? `LAP ${pitWindowStart}-${pitWindowEnd}`
+      : 'LAP -----';
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={220}>
@@ -118,7 +130,9 @@ export const FuelWidget = ({
         </div>
       </div>
 
-      <div className={`${styles.finishCard} ${statusClass(shortage)}`}>
+      <div
+        className={`${styles.finishCard} ${statusClass(shortage, lapsRemaining, pitWarningLaps)}`}
+      >
         <span className={styles.finishLabel}>LAPS LEFT</span>
         <span
           className={`${styles.finishValue} ${lapsRemainingClass(lapsRemaining, pitWarningLaps)}`}
