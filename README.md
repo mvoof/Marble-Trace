@@ -137,11 +137,14 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 ### Fuel
 
 > Lap-by-lap consumption graph, laps remaining, add-fuel suggestion, and tank fill level. Line or bar chart mode.
+> 
+> - **LAPS LEFT:** Current driving range in laps based on fuel in the tank.
+> - **EST. FINISH:** Projected fuel balance (surplus or deficit in liters) at the end of the race.
+> - **PIT WARNING:** Appears when you need to refuel, showing exactly how many liters to add (including a +1 lap buffer) to reach the finish.
 
 <p>
-  <img src="docs/assets/screenshots/widgets/fuel-widget.png" alt="Fuel — line chart">
-  <img src="docs/assets/screenshots/widgets/fuel-widget-bar.png" alt="Fuel — bar chart">
-  <img src="docs/assets/screenshots/widgets/fuel-widget-low.png" alt="Fuel — low">
+  <img src="docs/assets/screenshots/widgets/fuel-widget.png" alt="Fuel full preview">
+  <img src="docs/assets/screenshots/widgets/fuel-widget-small.png" alt="Fuel — small view">
 </p>
 
 ---
