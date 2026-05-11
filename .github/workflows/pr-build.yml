@@ -34,6 +34,7 @@ jobs:
     name: Build Preview
     needs: check-changes
     if: needs.check-changes.outputs.app == 'true'
+    environment: pr-review
     strategy:
       fail-fast: false
       matrix:
