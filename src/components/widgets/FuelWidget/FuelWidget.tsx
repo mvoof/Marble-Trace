@@ -16,7 +16,6 @@ interface FuelWidgetProps {
   pitWarning: FuelCalculations['pitWarning'];
   pitWindowStart: FuelCalculations['pitWindowStart'];
   pitWindowEnd: FuelCalculations['pitWindowEnd'];
-  tankTooSmall: boolean;
   showChart: boolean;
   chartType: 'line' | 'bar';
   barWidth: number;
@@ -33,17 +32,28 @@ const statusClass = (
     return '';
   }
 
-  // If we don't have enough fuel to finish or we are below the warning threshold
-  if (shortage < 0 || lapsRemaining <= pitWarningLaps) {
+  // If we are below the warning threshold, it's critical
+  if (lapsRemaining <= pitWarningLaps) {
     return styles.finishDanger;
   }
 
-  return styles.finishSafe;
+  // If we already have enough fuel to finish the race, show safe color
+  if (shortage >= 0) {
+    return styles.finishSafe;
+  }
+
+  // Otherwise, it's a normal state (neutral) even if we still need to pit later
+  return '';
 };
 
 const shortageClass = (shortage: number | null): string => {
-  if (shortage === null) return '';
-  return shortage >= 0 ? styles.valueSafe : styles.valueDanger;
+  if (shortage === null) {
+    return '';
+  }
+
+  // Only show positive surplus as safe (green).
+  // Deficit is now neutral (white) to avoid constant red noise in long races.
+  return shortage >= 0 ? styles.valueSafe : '';
 };
 
 const lapsRemainingClass = (
@@ -70,7 +80,6 @@ export const FuelWidget = ({
   pitWarning,
   pitWindowStart,
   pitWindowEnd,
-  tankTooSmall,
   showChart,
   chartType,
   barWidth,
@@ -163,30 +172,65 @@ export const FuelWidget = ({
           <div className={styles.pitWarningSeparator} />
 
           <div className={styles.pitWarningBody}>
-            <div className={styles.pitWarningBodyLeft}>
-              <span className={styles.pitWarningBodyLabel}>
-                TO REFUEL FOR FINISH
-              </span>
-              <span className={styles.pitWarningBodySub}>
-                incl. +1 lap buffer
-              </span>
-            </div>
+            {/* Main Info Row: Swapped positions */}
+            <div className={styles.pitWarningMainRow}>
+              {/* Strategy Slot (Now Left) */}
+              <div className={styles.pitWarningStrategySlot}>
+                {fuelMax !== null &&
+                  fuelToAddWithBuffer !== null &&
+                  fuelToAddWithBuffer > fuelMax && (
+                    <div className={styles.pitWarningStrategy}>
+                      <div className={styles.strategyRow}>
+                        <span className={styles.strategyLabel}>STOPS</span>
+                        <span className={styles.strategyValue}>
+                          {Math.ceil(fuelToAddWithBuffer / fuelMax)}
+                        </span>
+                      </div>
 
-            <span
-              className={`${styles.pitWarningAmount} ${isShort ? styles.pitWarningAmountDanger : ''}`}
-            >
-              {fuelToAddWithBuffer !== null
-                ? fuelToAddWithBuffer.toFixed(1)
-                : '--.-'}
-              <span className={styles.pitWarningAmountUnit}> L</span>
-            </span>
+                      <div className={styles.strategyDivider} />
+
+                      <div className={styles.strategyRow}>
+                        <span className={styles.strategyLabel}>REC. FILL</span>
+                        <span className={styles.strategyValue}>
+                          {(
+                            fuelToAddWithBuffer /
+                            Math.ceil(fuelToAddWithBuffer / fuelMax)
+                          ).toFixed(1)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+              </div>
+
+              {/* Main Amount Slot (Now Right) */}
+              <div className={styles.pitWarningRight}>
+                <span className={styles.pitWarningBodyLabel}>
+                  {fuelMax !== null &&
+                  fuelToAddWithBuffer !== null &&
+                  fuelToAddWithBuffer > fuelMax
+                    ? 'TOTAL TO ADD'
+                    : 'TO REFUEL'}
+                </span>
+                <div className={styles.pitWarningAmountWrap}>
+                  <span
+                    className={`${styles.pitWarningAmount} ${isShort ? styles.pitWarningAmountDanger : ''}`}
+                  >
+                    {fuelToAddWithBuffer !== null
+                      ? fuelToAddWithBuffer.toFixed(1)
+                      : '--.-'}
+                    <span className={styles.pitWarningAmountUnit}> L</span>
+                  </span>
+                </div>
+
+                {/* Buffer Notice directly under amount */}
+                <div className={styles.pitWarningBuffer}>
+                  <span className={styles.pitWarningBodySub}>
+                    incl. +1 lap buffer
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-
-          {tankTooSmall && (
-            <div className={styles.pitWarningSplitPit}>
-              TANK TOO SMALL - SPLIT PIT REQUIRED
-            </div>
-          )}
         </div>
       )}
     </WidgetPanel>
