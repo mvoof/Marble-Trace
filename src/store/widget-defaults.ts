@@ -296,6 +296,11 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
     hotkey: '',
+    customSettings: {
+      chassis: {
+        showInboard: false,
+      },
+    },
   },
   {
     id: 'example',
