@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Исправлено
 
-- ***Chassis Widget:** Fixed an issue where widget settings might not be saved or reset, causing the widget to not work.
+- **Chassis Widget:** Fixed an issue where widget settings might not be saved or reset, causing the widget to not work.
 
 ## [0.10.0] — 2026-05-11
 
