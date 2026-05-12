@@ -9,7 +9,7 @@
 
 use crate::{Result, TelemetryError};
 
-fn decode_cp1252(bytes: &[u8]) -> String {
+pub(crate) fn decode_cp1252(bytes: &[u8]) -> String {
     let (decoded, _, _) = encoding_rs::WINDOWS_1252.decode(bytes);
     decoded.into_owned()
 }

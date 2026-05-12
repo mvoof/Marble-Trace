@@ -325,8 +325,7 @@ impl Connection {
             let null_pos = info_slice.iter().position(|&b| b == 0).unwrap_or(info_slice.len());
             let yaml_bytes = &info_slice[..null_pos];
 
-            let (decoded, _, _) = encoding_rs::WINDOWS_1252.decode(yaml_bytes);
-            Some(decoded.into_owned())
+            Some(crate::yaml_utils::decode_cp1252(yaml_bytes))
         }
     }
 

@@ -147,8 +147,7 @@ impl IRSDKVarHeader {
         // Find null terminator or use full length
         let end = bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len());
 
-        let (decoded, _, _) = encoding_rs::WINDOWS_1252.decode(&bytes[..end]);
-        decoded.into_owned()
+        crate::yaml_utils::decode_cp1252(&bytes[..end])
     }
 
     /// Map iRacing variable type to our VariableType enum
