@@ -13,8 +13,6 @@ export const ChassisWidgetContainer = observer(() => {
   const { showInboard } = widgetSettingsStore.getChassisSettings();
   const widgetRef = useAutoSizeWidget('chassis');
 
-  if (!chassis) return null;
-
   const { system } = unitsStore;
 
   const isMetric = system === 'metric';

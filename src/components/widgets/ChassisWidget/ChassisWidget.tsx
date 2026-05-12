@@ -36,8 +36,13 @@ export const ChassisWidget = ({
   const frontAxleDiff = computeAxleDiff(lf.rideHeight, rf.rideHeight);
   const rearAxleDiff = computeAxleDiff(lr.rideHeight, rr.rideHeight);
 
-  const frontBent = Math.abs(frontAxleDiff) > SUSPENSION_BENT_THRESHOLD_MM;
-  const rearBent = Math.abs(rearAxleDiff) > SUSPENSION_BENT_THRESHOLD_MM;
+  const frontBent =
+    frontAxleDiff !== null &&
+    Math.abs(frontAxleDiff) > SUSPENSION_BENT_THRESHOLD_MM;
+
+  const rearBent =
+    rearAxleDiff !== null &&
+    Math.abs(rearAxleDiff) > SUSPENSION_BENT_THRESHOLD_MM;
 
   return (
     <WidgetPanel ref={ref} direction="column" gap={0} fitContent>
