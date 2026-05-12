@@ -24,6 +24,26 @@ const makeCorner = (overrides: Partial<CornerData> = {}): CornerData => ({
   ...overrides,
 });
 
+const makeDisconnectedCorner = (): CornerData => ({
+  wearL: null,
+  wearM: null,
+  wearR: null,
+  tempL: null,
+  tempM: null,
+  tempR: null,
+  tempColorL: '#475569',
+  tempColorM: '#475569',
+  tempColorR: '#475569',
+  pressure: null,
+  pressureUnit: 'kPa',
+  rideHeight: null,
+  shockDefl: null,
+  brakeTemp: null,
+  brakeTempColor: '#475569',
+  isPunctured: false,
+  isBrakeOverheated: false,
+});
+
 const DEFAULT_ARGS = {
   lf: makeCorner(),
   rf: makeCorner(),
@@ -59,6 +79,16 @@ export default meta;
 type Story = StoryObj<typeof ChassisWidget>;
 
 export const Default: Story = {};
+
+export const Disconnected: Story = {
+  args: {
+    lf: makeDisconnectedCorner(),
+    rf: makeDisconnectedCorner(),
+    lr: makeDisconnectedCorner(),
+    rr: makeDisconnectedCorner(),
+    onPitRoad: true,
+  },
+};
 
 export const OnPitRoad: Story = {
   args: { onPitRoad: true },

@@ -25,7 +25,8 @@ const convertPressure = (kpa: number, system: UnitSystem): number =>
   system === 'metric' ? kpa : kpa * KPA_TO_PSI;
 
 // Tire temperature thresholds (°C)
-const getTempColor = (tempC: number): string => {
+const getTempColor = (tempC: number | null | undefined): string => {
+  if (tempC == null) return '#475569';
   if (tempC < 75) return COLOR_INFO;
   if (tempC <= 105) return COLOR_OK;
   if (tempC <= 125) return COLOR_WARNING;
@@ -34,15 +35,22 @@ const getTempColor = (tempC: number): string => {
 };
 
 // Brake disc temperature thresholds (°C)
-const getBrakeColor = (tempC: number): string => {
-  if (tempC < 200) return '#475569';
+const getBrakeColor = (tempC: number | null | undefined): string => {
+  if (tempC == null || tempC < 200) return '#475569';
   if (tempC < 400) return COLOR_OK;
   if (tempC < 600) return COLOR_WARNING;
 
   return COLOR_DANGER;
 };
 
-export const computeAxleDiff = (a: number, b: number): number => a - b;
+export const computeAxleDiff = (
+  a: number | null | undefined,
+  b: number | null | undefined
+): number | null => {
+  if (a == null || b == null) return null;
+
+  return a - b;
+};
 
 const buildCornerData = (
   rideHeightM: number | null | undefined,
@@ -57,35 +65,33 @@ const buildCornerData = (
   brakeTempC: number | null | undefined,
   system: UnitSystem
 ): CornerData => {
-  const rawPressure = pressureKpa ?? 0;
-  const rawBrakeTemp = brakeTempC ?? 20;
-  const rawTempL = tempCL ?? 20;
-  const rawTempM = tempCM ?? 20;
-  const rawTempR = tempCR ?? 20;
-
   return {
-    rideHeight: rideHeightM != null ? convertLength(rideHeightM, system) : 0,
-    shockDefl: shockDeflM != null ? convertLength(shockDeflM, system) : 0,
-    tempL: convertTemp(rawTempL, system),
-    tempM: convertTemp(rawTempM, system),
-    tempR: convertTemp(rawTempR, system),
-    tempColorL: getTempColor(rawTempL),
-    tempColorM: getTempColor(rawTempM),
-    tempColorR: getTempColor(rawTempR),
-    pressure: convertPressure(rawPressure, system),
+    rideHeight: rideHeightM != null ? convertLength(rideHeightM, system) : null,
+    shockDefl: shockDeflM != null ? convertLength(shockDeflM, system) : null,
+    tempL: tempCL != null ? convertTemp(tempCL, system) : null,
+    tempM: tempCM != null ? convertTemp(tempCM, system) : null,
+    tempR: tempCR != null ? convertTemp(tempCR, system) : null,
+    tempColorL: getTempColor(tempCL),
+    tempColorM: getTempColor(tempCM),
+    tempColorR: getTempColor(tempCR),
+    pressure: pressureKpa != null ? convertPressure(pressureKpa, system) : null,
     pressureUnit: system === 'metric' ? 'kPa' : 'PSI',
-    wearL: wearL ?? 1,
-    wearM: wearM ?? 1,
-    wearR: wearR ?? 1,
-    brakeTemp: convertTemp(rawBrakeTemp, system),
-    brakeTempColor: getBrakeColor(rawBrakeTemp),
-    isPunctured: rawPressure > 0 && rawPressure < PUNCTURE_THRESHOLD_KPA,
-    isBrakeOverheated: rawBrakeTemp > BRAKE_OVERHEAT_THRESHOLD_C,
+    wearL: wearL ?? null,
+    wearM: wearM ?? null,
+    wearR: wearR ?? null,
+    brakeTemp: brakeTempC != null ? convertTemp(brakeTempC, system) : null,
+    brakeTempColor: getBrakeColor(brakeTempC),
+    isPunctured:
+      pressureKpa != null &&
+      pressureKpa > 0 &&
+      pressureKpa < PUNCTURE_THRESHOLD_KPA,
+    isBrakeOverheated:
+      brakeTempC != null && brakeTempC > BRAKE_OVERHEAT_THRESHOLD_C,
   };
 };
 
 export const buildAllCorners = (
-  frame: ChassisFrame,
+  frame: ChassisFrame | null | undefined,
   system: UnitSystem
 ): { lf: CornerData; rf: CornerData; lr: CornerData; rr: CornerData } => {
   const corners = ['lf', 'rf', 'lr', 'rr'] as const;
@@ -97,16 +103,16 @@ export const buildAllCorners = (
 
   for (const c of corners) {
     result[c] = buildCornerData(
-      frame[`${c}_ride_height`],
-      frame[`${c}_shock_defl`],
-      frame[`${c}_temp_cl`],
-      frame[`${c}_temp_cm`],
-      frame[`${c}_temp_cr`],
-      frame[`${c}_pressure`],
-      frame[`${c}_wear_l`],
-      frame[`${c}_wear_m`],
-      frame[`${c}_wear_r`],
-      frame[`${c}_brake_temp`],
+      frame?.[`${c}_ride_height`],
+      frame?.[`${c}_shock_defl`],
+      frame?.[`${c}_temp_cl`],
+      frame?.[`${c}_temp_cm`],
+      frame?.[`${c}_temp_cr`],
+      frame?.[`${c}_pressure`],
+      frame?.[`${c}_wear_l`],
+      frame?.[`${c}_wear_m`],
+      frame?.[`${c}_wear_r`],
+      frame?.[`${c}_brake_temp`],
       system
     );
   }

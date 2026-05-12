@@ -59,10 +59,25 @@ export const CornerModule = ({
 
   const brakeColor = data.brakeTempColor;
 
-  const rhFormatted = data.rideHeight.toFixed(lengthUnit === 'mm' ? 1 : 2);
-  const shkFormatted = data.shockDefl.toFixed(lengthUnit === 'mm' ? 1 : 2);
-  const brkFormatted = Math.round(data.brakeTemp).toString();
-  const pressureFormatted = data.pressure.toFixed(1);
+  const rhFormatted =
+    data.rideHeight != null
+      ? data.rideHeight.toFixed(lengthUnit === 'mm' ? 1 : 2)
+      : '---';
+
+  const shkFormatted =
+    data.shockDefl != null
+      ? data.shockDefl.toFixed(lengthUnit === 'mm' ? 1 : 2)
+      : '---';
+
+  const brkFormatted =
+    data.brakeTemp != null ? Math.round(data.brakeTemp).toString() : '---';
+
+  const pressureFormatted =
+    data.pressure != null ? data.pressure.toFixed(1) : '---';
+
+  const wearL = data.wearL != null ? Math.round(data.wearL * 100) : null;
+  const wearM = data.wearM != null ? Math.round(data.wearM * 100) : null;
+  const wearR = data.wearR != null ? Math.round(data.wearR * 100) : null;
 
   return (
     <div
@@ -71,15 +86,15 @@ export const CornerModule = ({
       <div className={styles.tireCore}>
         <div className={styles.wearRow}>
           <span className={styles.wearValue}>
-            {Math.round(data.wearL * 100)}
+            {wearL ?? '--'}
             <span className={styles.wearUnit}>%</span>
           </span>
           <span className={styles.wearValue}>
-            {Math.round(data.wearM * 100)}
+            {wearM ?? '--'}
             <span className={styles.wearUnit}>%</span>
           </span>
           <span className={styles.wearValue}>
-            {Math.round(data.wearR * 100)}
+            {wearR ?? '--'}
             <span className={styles.wearUnit}>%</span>
           </span>
         </div>
@@ -91,7 +106,7 @@ export const CornerModule = ({
             <div
               className={styles.tireFill}
               style={{
-                height: `${Math.max(5, data.wearL * 100)}%`,
+                height: `${Math.max(5, (data.wearL ?? 0) * 100)}%`,
                 backgroundColor: data.tempColorL,
               }}
             />
@@ -100,7 +115,7 @@ export const CornerModule = ({
             <div
               className={styles.tireFill}
               style={{
-                height: `${Math.max(5, data.wearM * 100)}%`,
+                height: `${Math.max(5, (data.wearM ?? 0) * 100)}%`,
                 backgroundColor: data.tempColorM,
               }}
             />
@@ -109,7 +124,7 @@ export const CornerModule = ({
             <div
               className={styles.tireFill}
               style={{
-                height: `${Math.max(5, data.wearR * 100)}%`,
+                height: `${Math.max(5, (data.wearR ?? 0) * 100)}%`,
                 backgroundColor: data.tempColorR,
               }}
             />
@@ -126,15 +141,15 @@ export const CornerModule = ({
 
         <div className={styles.tempRow}>
           <span className={styles.tempValue} style={{ color: data.tempColorL }}>
-            {Math.round(data.tempL)}
+            {data.tempL != null ? Math.round(data.tempL) : '--'}
             <span className={styles.tempUnit}>{tempUnit}</span>
           </span>
           <span className={styles.tempValue} style={{ color: data.tempColorM }}>
-            {Math.round(data.tempM)}
+            {data.tempM != null ? Math.round(data.tempM) : '--'}
             <span className={styles.tempUnit}>{tempUnit}</span>
           </span>
           <span className={styles.tempValue} style={{ color: data.tempColorR }}>
-            {Math.round(data.tempR)}
+            {data.tempR != null ? Math.round(data.tempR) : '--'}
             <span className={styles.tempUnit}>{tempUnit}</span>
           </span>
         </div>
