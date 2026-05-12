@@ -325,7 +325,7 @@ impl Connection {
             let null_pos = info_slice.iter().position(|&b| b == 0).unwrap_or(info_slice.len());
             let yaml_bytes = &info_slice[..null_pos];
 
-            Some(String::from_utf8_lossy(yaml_bytes).into_owned())
+            Some(crate::yaml_utils::decode_cp1252(yaml_bytes))
         }
     }
 

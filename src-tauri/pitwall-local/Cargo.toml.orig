@@ -33,6 +33,7 @@ async-trait.workspace = true
 tokio-stream = { version = "0.1", features = ["sync"] }
 futures = "0.3"
 pin-project-lite = "0.2"
+encoding_rs = "0.8"
 
 # Optional TypeScript generation support
 specta = { version = "2.0.0-rc.22", features = ["derive"], optional = true }

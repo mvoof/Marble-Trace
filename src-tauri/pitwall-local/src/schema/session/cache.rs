@@ -115,8 +115,7 @@ impl SessionInfoParser {
         // Find null terminator or use full length
         let null_pos = yaml_bytes.iter().position(|&b| b == 0).unwrap_or(yaml_bytes.len());
 
-        // Convert to UTF-8 string
-        let yaml_str = String::from_utf8_lossy(&yaml_bytes[..null_pos]).to_string();
+        let yaml_str = crate::yaml_utils::decode_cp1252(&yaml_bytes[..null_pos]);
 
         if yaml_str.trim().is_empty() {
             return Err(TelemetryError::Parse {
