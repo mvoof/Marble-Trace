@@ -1,6 +1,6 @@
 [package]
 name = "marble-trace"
-version = "0.10.0"
+version = "0.10.1"
 description = "Marble Trace - iRacing Telemetry Overlay"
 authors = ["mvoof"]
 license = "MIT"
