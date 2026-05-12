@@ -9,6 +9,11 @@
 
 use crate::{Result, TelemetryError};
 
+fn decode_cp1252(bytes: &[u8]) -> String {
+    let (decoded, _, _) = encoding_rs::WINDOWS_1252.decode(bytes);
+    decoded.into_owned()
+}
+
 /// Preprocess iRacing YAML to fix known issues
 ///
 /// This function cleans up iRacing's non-standard YAML format to make it
@@ -134,8 +139,7 @@ pub fn extract_yaml_from_memory(data: &[u8], offset: i32, length: i32) -> Result
     // Find null terminator or use entire length
     let yaml_len = yaml_data.iter().position(|&b| b == 0).unwrap_or(length);
 
-    // Convert to string using lossy conversion to handle non-UTF8 characters in online sessions
-    let yaml_str = String::from_utf8_lossy(&yaml_data[..yaml_len]).into_owned();
+    let yaml_str = decode_cp1252(&yaml_data[..yaml_len]);
 
     Ok(yaml_str)
 }
@@ -192,5 +196,30 @@ mod tests {
         let data = b"test";
         let result = extract_yaml_from_memory(data, 0, 100);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_extract_yaml_cp1252_driver_name() {
+        // CP1252: é=0xE9, ü=0xFC, ñ=0xF1 — common in European driver names
+        let mut data = b"UserName: ".to_vec();
+        data.extend_from_slice(&[0xE9, 0xFC, 0xF1]); // éüñ in CP1252
+        data.push(0x00);
+        let result = extract_yaml_from_memory(&data, 0, data.len() as i32).unwrap();
+        assert!(result.contains('é'), "é not decoded: {:?}", result);
+        assert!(result.contains('ü'), "ü not decoded: {:?}", result);
+        assert!(result.contains('ñ'), "ñ not decoded: {:?}", result);
+    }
+
+    #[test]
+    fn test_extract_yaml_cp1252_interlagos() {
+        // Autódromo José Carlos Pace — ó=0xF3, é=0xE9 in CP1252
+        let mut data = b"TrackName: Aut".to_vec();
+        data.push(0xF3); // ó
+        data.extend_from_slice(b"dromo Jos");
+        data.push(0xE9); // é
+        data.extend_from_slice(b" Carlos Pace\0");
+        let result = extract_yaml_from_memory(&data, 0, data.len() as i32).unwrap();
+        assert!(result.contains("Autódromo"), "ó not decoded: {:?}", result);
+        assert!(result.contains("José"), "é not decoded: {:?}", result);
     }
 }

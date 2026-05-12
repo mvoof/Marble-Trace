@@ -389,7 +389,8 @@ fn parse_f64_le(data: &[u8], offset: usize) -> Result<f64> {
 /// Extract null-terminated string from byte slice
 fn extract_null_terminated_string(bytes: &[u8]) -> String {
     let null_pos = bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len());
-    String::from_utf8_lossy(&bytes[..null_pos]).to_string()
+    let (decoded, _, _) = encoding_rs::WINDOWS_1252.decode(&bytes[..null_pos]);
+    decoded.into_owned()
 }
 
 #[cfg(test)]

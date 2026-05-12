@@ -147,8 +147,8 @@ impl IRSDKVarHeader {
         // Find null terminator or use full length
         let end = bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len());
 
-        // Convert to UTF-8, replacing invalid sequences
-        String::from_utf8_lossy(&bytes[..end]).to_string()
+        let (decoded, _, _) = encoding_rs::WINDOWS_1252.decode(&bytes[..end]);
+        decoded.into_owned()
     }
 
     /// Map iRacing variable type to our VariableType enum
