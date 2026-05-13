@@ -41,26 +41,8 @@ export const SpeedWidgetContainer = observer(() => {
 
   const pitLimitFormatted = pitLimitMs > 0 ? formatSpeed(pitLimitMs) : '—';
 
-  const initialMax =
+  const maxShiftRpm =
     driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
-
-  const maxShiftRpmRef = useRef(initialMax);
-  const hasRefinedRef = useRef(false);
-  const lastDriverInfoRef = useRef(driverInfo);
-  const lastIsOnPitRoadRef = useRef(isOnPitRoad);
-
-  if (lastDriverInfoRef.current !== driverInfo) {
-    maxShiftRpmRef.current = initialMax;
-    hasRefinedRef.current = false;
-    lastDriverInfoRef.current = driverInfo;
-  }
-
-  if (lastIsOnPitRoadRef.current && !isOnPitRoad) {
-    maxShiftRpmRef.current = initialMax;
-    hasRefinedRef.current = false;
-  }
-
-  lastIsOnPitRoadRef.current = isOnPitRoad;
 
   const displayRef = useRef<SpeedDisplayHandle>(null);
 
@@ -74,19 +56,11 @@ export const SpeedWidgetContainer = observer(() => {
       const speed = frame.speed;
 
       const rpm = Math.round(frame.rpm);
-      const shiftPct = frame.shift_indicator_pct ?? 0;
 
       const isLimiter =
         ((status?.engine_warnings ?? 0) & PIT_LIMITER_BIT) !== 0;
 
       const onPitRoad = status?.on_pit_road ?? false;
-
-      if (shiftPct >= 1 && rpm > 0 && !isLimiter && !onPitRoad) {
-        if (!hasRefinedRef.current || rpm > maxShiftRpmRef.current) {
-          maxShiftRpmRef.current = rpm;
-          hasRefinedRef.current = true;
-        }
-      }
 
       const pitSpeedDelta =
         pitLimitMs > 0 && (onPitRoad || isLimiter)
@@ -134,7 +108,7 @@ export const SpeedWidgetContainer = observer(() => {
       initialRpm={initialFrame ? Math.round(initialFrame.rpm) : 0}
       initialGear={initialFrame?.gear ?? 0}
       speedUnit={speedUnit}
-      maxShiftRpm={maxShiftRpmRef.current || initialMax}
+      maxShiftRpm={maxShiftRpm}
       settings={settings}
       isOnPitRoad={isOnPitRoad}
       pitLimiterActive={pitLimiterActive}
