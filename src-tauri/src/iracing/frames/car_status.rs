@@ -25,7 +25,7 @@ pub struct CarStatusFrame {
 
     /// Engine oil temperature in °C
     /// @see https://sajax.github.io/irsdkdocs/telemetry/oiltemp/
-    pub oil_temp: f32,
+    pub oil_temp: Option<f32>,
 
     /// Engine oil pressure in kPa
     /// @see https://sajax.github.io/irsdkdocs/telemetry/oilpress/
@@ -33,7 +33,7 @@ pub struct CarStatusFrame {
 
     /// Engine water temperature in °C
     /// @see https://sajax.github.io/irsdkdocs/telemetry/watertemp/
-    pub water_temp: f32,
+    pub water_temp: Option<f32>,
 
     /// Electrical system voltage
     /// @see https://sajax.github.io/irsdkdocs/telemetry/voltage/

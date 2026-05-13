@@ -89,11 +89,11 @@ pub(crate) struct AllFieldsFrame {
     #[field_name = "FuelUsePerHour"]
     pub fuel_use_per_hour: Option<f32>,
     #[field_name = "OilTemp"]
-    pub oil_temp: f32,
+    pub oil_temp: Option<f32>,
     #[field_name = "OilPress"]
     pub oil_press: Option<f32>,
     #[field_name = "WaterTemp"]
-    pub water_temp: f32,
+    pub water_temp: Option<f32>,
     #[field_name = "Voltage"]
     pub voltage: Option<f32>,
     #[field_name = "OnPitRoad"]

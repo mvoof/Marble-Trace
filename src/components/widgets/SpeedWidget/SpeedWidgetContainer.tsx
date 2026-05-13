@@ -25,7 +25,6 @@ export const SpeedWidgetContainer = observer(() => {
 
   const oilTemp = formatTemp(carStatus?.oil_temp ?? null);
   const waterTemp = formatTemp(carStatus?.water_temp ?? null);
-
   const oilTempWarn = isEngineTempWarning(carStatus?.oil_temp);
   const waterTempWarn = isEngineTempWarning(carStatus?.water_temp);
 
