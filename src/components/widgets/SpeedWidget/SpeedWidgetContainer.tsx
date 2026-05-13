@@ -42,10 +42,12 @@ export const SpeedWidgetContainer = observer(() => {
   const pitLimitFormatted = pitLimitMs > 0 ? formatSpeed(pitLimitMs) : '—';
 
   const redLine = driverInfo?.DriverCarRedLine || 10000;
-  // fallback to 90%/97% of redline when iRacing returns 0 for some cars
-  const shiftRpm = driverInfo?.DriverCarSLShiftRPM || redLine * 0.9;
-  const blinkRpm = driverInfo?.DriverCarSLBlinkRPM || redLine * 0.97;
-  console.log({ shiftRpm, blinkRpm });
+  // bar fills to redLine. shift zone (purple) starts at SLShiftRPM, blink at SLBlinkRPM.
+  // some cars report SLBlinkRPM above RedLine (e.g. 7700 vs 7525) — unreachable,
+  // engine cuts first. in that case fall back to shiftRpm so blink still fires.
+  const shiftRpm = driverInfo?.DriverCarSLShiftRPM || redLine * 0.9; // recommended shift point → purple zone
+  const rawBlinkRpm = driverInfo?.DriverCarSLBlinkRPM || redLine; // "shift now" → blink
+  const blinkRpm = rawBlinkRpm <= redLine ? rawBlinkRpm : shiftRpm;
 
   const displayRef = useRef<SpeedDisplayHandle>(null);
 
