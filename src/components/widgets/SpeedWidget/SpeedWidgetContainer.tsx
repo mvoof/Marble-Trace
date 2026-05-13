@@ -41,8 +41,11 @@ export const SpeedWidgetContainer = observer(() => {
 
   const pitLimitFormatted = pitLimitMs > 0 ? formatSpeed(pitLimitMs) : '—';
 
-  const maxShiftRpm =
-    driverInfo?.DriverCarSLShiftRPM || driverInfo?.DriverCarRedLine || 10000;
+  const redLine = driverInfo?.DriverCarRedLine || 10000;
+  // fallback to 90%/97% of redline when iRacing returns 0 for some cars
+  const shiftRpm = driverInfo?.DriverCarSLShiftRPM || redLine * 0.9;
+  const blinkRpm = driverInfo?.DriverCarSLBlinkRPM || redLine * 0.97;
+  console.log({ shiftRpm, blinkRpm });
 
   const displayRef = useRef<SpeedDisplayHandle>(null);
 
@@ -108,7 +111,8 @@ export const SpeedWidgetContainer = observer(() => {
       initialRpm={initialFrame ? Math.round(initialFrame.rpm) : 0}
       initialGear={initialFrame?.gear ?? 0}
       speedUnit={speedUnit}
-      maxShiftRpm={maxShiftRpm}
+      shiftRpm={shiftRpm}
+      blinkRpm={blinkRpm}
       settings={settings}
       isOnPitRoad={isOnPitRoad}
       pitLimiterActive={pitLimiterActive}

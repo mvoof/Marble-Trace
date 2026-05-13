@@ -61,6 +61,14 @@ export const SpeedSettingsPanel = observer(() => {
           </div>
           <div className={styles.rpmColorLine} />
           <div className={styles.rpmColorItem}>
+            <span className={styles.rpmColorLabel}>Shift</span>
+            <ColorPicker
+              value={settings.rpmColorShift}
+              onChange={(c) => update({ rpmColorShift: c.toHexString() })}
+            />
+          </div>
+          <div className={styles.rpmColorLine} />
+          <div className={styles.rpmColorItem}>
             <span className={styles.rpmColorLabel}>Blink</span>
             <ColorPicker
               value={settings.rpmColorLimit}

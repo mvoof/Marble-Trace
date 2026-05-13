@@ -3,16 +3,14 @@ import type { Ref } from 'react';
 import { Droplet, Thermometer } from 'lucide-react';
 import type { SpeedWidgetSettings } from '../../../types/widget-settings';
 import { formatGear } from '../../../utils/telemetry-format';
-import { getShiftZoneColor } from './speed-utils';
 import {
   PitPanel,
   type PitPanelHandle,
   type PitState,
 } from './PitPanel/PitPanel';
+import { RpmBar, type RpmBarHandle } from './RpmBar/RpmBar';
 
 import styles from './SpeedWidget.module.scss';
-
-const LED_COUNT = 20;
 
 export interface SpeedDisplayHandle {
   update: (
@@ -29,7 +27,8 @@ interface SpeedWidgetProps {
   initialRpm: number;
   initialGear: number;
   speedUnit: string;
-  maxShiftRpm: number;
+  shiftRpm: number;
+  blinkRpm: number;
   settings: SpeedWidgetSettings;
   isOnPitRoad: boolean;
   pitLimiterActive: boolean;
@@ -49,7 +48,8 @@ export const SpeedWidget = ({
   initialRpm,
   initialGear,
   speedUnit,
-  maxShiftRpm,
+  shiftRpm,
+  blinkRpm,
   settings,
   isOnPitRoad,
   pitLimiterActive,
@@ -68,7 +68,7 @@ export const SpeedWidget = ({
   const primaryRef = useRef<HTMLSpanElement>(null);
   const secondaryRef = useRef<HTMLSpanElement>(null);
   const rpmValueRef = useRef<HTMLSpanElement>(null);
-  const rpmBarRef = useRef<HTMLDivElement>(null);
+  const rpmBarRef = useRef<RpmBarHandle>(null);
   const pitPanelRef = useRef<PitPanelHandle>(null);
 
   const rpmColors = useMemo(
@@ -76,21 +76,17 @@ export const SpeedWidget = ({
       low: settings.rpmColorLow,
       mid: settings.rpmColorMid,
       high: settings.rpmColorHigh,
+      shift: settings.rpmColorShift,
       limit: settings.rpmColorLimit,
     }),
     [
       settings.rpmColorLow,
       settings.rpmColorMid,
       settings.rpmColorHigh,
+      settings.rpmColorShift,
       settings.rpmColorLimit,
     ]
   );
-
-  // Cache for RPM bar optimization
-  const prevLitCountRef = useRef(-1);
-  const prevIsLimitRef = useRef<boolean | null>(null);
-  const lastColorsRef = useRef<typeof rpmColors | null>(null);
-  const lastRpmBarRef = useRef<HTMLDivElement | null>(null);
 
   const showPitPanel =
     settings.showPitPanel && (isOnPitRoad || pitLimiterActive);
@@ -111,44 +107,12 @@ export const SpeedWidget = ({
         if (secondaryRef.current) secondaryRef.current.textContent = secondary;
         if (rpmValueRef.current) rpmValueRef.current.textContent = String(rpm);
 
-        if (rpmBarRef.current && settings.showRpmBar) {
-          const displayPct = Math.min(Math.max(rpm / (maxShiftRpm || 1), 0), 1);
-          const litCount = Math.floor(displayPct * LED_COUNT);
-          const isLimit = displayPct >= 1;
-
-          if (
-            litCount !== prevLitCountRef.current ||
-            isLimit !== prevIsLimitRef.current ||
-            rpmColors !== lastColorsRef.current ||
-            rpmBarRef.current !== lastRpmBarRef.current
-          ) {
-            const children = rpmBarRef.current.children;
-            rpmBarRef.current.classList.toggle(styles.rpmBarBlink, isLimit);
-
-            for (let i = 0; i < children.length; i++) {
-              const el = children[i] as HTMLElement;
-              if (i < litCount) {
-                const color = isLimit
-                  ? rpmColors.limit
-                  : getShiftZoneColor((i + 1) / LED_COUNT, rpmColors);
-                el.style.setProperty('--rpm-seg-color', color);
-                el.classList.add(styles.rpmSegLit);
-              } else {
-                el.classList.remove(styles.rpmSegLit);
-              }
-            }
-
-            prevLitCountRef.current = litCount;
-            prevIsLimitRef.current = isLimit;
-            lastColorsRef.current = rpmColors;
-            lastRpmBarRef.current = rpmBarRef.current;
-          }
-        }
+        if (settings.showRpmBar) rpmBarRef.current?.update(rpm);
 
         pitPanelRef.current?.update(pitState, pitSpeedDelta);
       },
     }),
-    [isGearFocused, settings.showRpmBar, maxShiftRpm, rpmColors]
+    [isGearFocused, settings.showRpmBar]
   );
 
   const primaryLabel = isGearFocused ? 'GEAR' : speedUnit;
@@ -172,6 +136,7 @@ export const SpeedWidget = ({
             <span ref={secondaryRef} className={styles.secondaryValue}>
               {initialSecondary}
             </span>
+
             <span className={styles.secondaryLabel}>{secondaryLabel}</span>
           </div>
         </div>
@@ -182,6 +147,7 @@ export const SpeedWidget = ({
               <span ref={primaryRef} className={styles.primaryValue}>
                 {initialPrimary}
               </span>
+
               <span className={styles.primaryLabel}>{primaryLabel}</span>
             </div>
 
@@ -191,22 +157,27 @@ export const SpeedWidget = ({
                   <Droplet
                     className={`${styles.tempIcon} ${oilTempWarn ? styles.tempIconWarn : ''}`}
                   />
+
                   <span
                     className={`${styles.tempValue} ${oilTempWarn ? styles.tempValueWarn : ''}`}
                   >
                     {oilTemp}
                   </span>
+
                   <span className={styles.tempUnit}>{tempUnit}</span>
                 </div>
+
                 <div className={styles.tempRow}>
                   <Thermometer
                     className={`${styles.tempIcon} ${waterTempWarn ? styles.tempIconWarn : ''}`}
                   />
+
                   <span
                     className={`${styles.tempValue} ${waterTempWarn ? styles.tempValueWarn : ''}`}
                   >
                     {waterTemp}
                   </span>
+
                   <span className={styles.tempUnit}>{tempUnit}</span>
                 </div>
               </div>
@@ -216,6 +187,7 @@ export const SpeedWidget = ({
               <span ref={rpmValueRef} className={styles.rpmValue}>
                 {initialRpm}
               </span>
+
               <span className={styles.rpmLabel}>RPM</span>
             </div>
           </div>
@@ -223,11 +195,12 @@ export const SpeedWidget = ({
       </div>
 
       {settings.showRpmBar && (
-        <div ref={rpmBarRef} className={styles.rpmBar}>
-          {Array.from({ length: LED_COUNT }, (_, i) => (
-            <div key={`led-${i}`} className={styles.rpmSeg} />
-          ))}
-        </div>
+        <RpmBar
+          ref={rpmBarRef}
+          shiftRpm={shiftRpm}
+          blinkRpm={blinkRpm}
+          colors={rpmColors}
+        />
       )}
     </div>
   );

@@ -48,6 +48,7 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
         rpmColorLow: '#22c55e',
         rpmColorMid: '#eab308',
         rpmColorHigh: '#ef4444',
+        rpmColorShift: '#a855f7',
         rpmColorLimit: '#ff4d00',
         showPitPanel: true,
         showRpmBar: true,

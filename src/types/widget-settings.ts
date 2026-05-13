@@ -7,6 +7,7 @@ export interface SpeedWidgetSettings {
   rpmColorLow: string;
   rpmColorMid: string;
   rpmColorHigh: string;
+  rpmColorShift: string;
   rpmColorLimit: string;
   showPitPanel: boolean;
   showRpmBar: boolean;
