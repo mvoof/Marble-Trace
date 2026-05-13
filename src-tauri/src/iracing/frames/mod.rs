@@ -29,6 +29,26 @@ pub use session::SessionFrame;
 use pitwall::{BitField, PitwallFrame};
 use serde::{Deserialize, Serialize};
 
+/// Converts a pitwall `BitField` wrapper into a plain `u32` for JSON serialization.
+///
+/// iRacing stores bitmask variables (e.g. `EngineWarnings`, `SessionFlags`) as a
+/// custom `BitField(u32)` type rather than a plain integer. The `PitwallFrame` derive
+/// macro cannot map these directly to `u32`, so `#[bitfield_map]` requires an explicit
+/// decoder function.
+///
+/// The inner value `bits.0` is the raw bitmask. Individual flags are then extracted
+/// on the frontend via bitwise AND:
+///
+/// ```
+/// // EngineWarnings bitmask example:
+/// //   engine_warnings = 0x13  →  0001 0011
+/// //   PIT_LIMITER_BIT = 0x10  →  0001 0000
+/// //   result          = 0x10  →  non-zero → limiter is active
+/// //
+/// //   engine_warnings = 0x03  →  0000 0011
+/// //   PIT_LIMITER_BIT = 0x10  →  0001 0000
+/// //   result          = 0x00  →  zero → limiter is NOT active
+/// ```
 fn bitfield_to_u32(bits: BitField) -> u32 {
     bits.0
 }

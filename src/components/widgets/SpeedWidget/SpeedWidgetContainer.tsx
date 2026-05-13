@@ -28,6 +28,7 @@ export const SpeedWidgetContainer = observer(() => {
   const oilTempWarn = isEngineTempWarning(carStatus?.oil_temp);
   const waterTempWarn = isEngineTempWarning(carStatus?.water_temp);
 
+  // irsdk_pitSpeedLimiter bit in EngineWarnings bitmask — isolates the limiter flag via bitwise AND
   const PIT_LIMITER_BIT = 0x10;
 
   const pitLimiterActive =
