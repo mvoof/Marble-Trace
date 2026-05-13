@@ -37,7 +37,7 @@ export const SpeedWidgetContainer = observer(() => {
   const pitLimitMs =
     settings.pitSpeedLimitOverride !== null
       ? settings.pitSpeedLimitOverride / speedFactor
-      : parsePitSpeedLimitMs(weekendInfo?.TrackPitSpeedLimit ?? null);
+      : parsePitSpeedLimitMs(weekendInfo?.TrackPitSpeedLimit);
 
   const pitLimitFormatted = pitLimitMs > 0 ? formatSpeed(pitLimitMs) : '—';
 
