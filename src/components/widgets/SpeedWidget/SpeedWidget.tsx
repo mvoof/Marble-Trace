@@ -3,7 +3,11 @@ import { observer } from 'mobx-react-lite';
 import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { unitsStore } from '../../../store/units.store';
-import { formatSpeed, MPS_TO_KMH, MPS_TO_MPH } from '../../../utils/telemetry-format';
+import {
+  formatSpeed,
+  MPS_TO_KMH,
+  MPS_TO_MPH,
+} from '../../../utils/telemetry-format';
 import { SpeedDisplay } from './SpeedDisplay/SpeedDisplay';
 import { EnginePanel } from './EnginePanel/EnginePanel';
 import { RpmPanel } from './RpmPanel/RpmPanel';
@@ -14,7 +18,7 @@ import { parsePitSpeedLimitMs } from './speed-utils';
 import styles from './SpeedWidget.module.scss';
 
 export const SpeedWidget = observer(() => {
-  const { formatTemp, tempUnit, system } = unitsStore;
+  const { system } = unitsStore;
 
   const {
     pitSpeedLimitOverride,
@@ -38,7 +42,8 @@ export const SpeedWidget = observer(() => {
       ? pitSpeedLimitOverride / speedFactor
       : parsePitSpeedLimitMs(weekendInfo?.TrackPitSpeedLimit);
 
-  const pitLimitFormatted = pitLimitMs > 0 ? formatSpeed(pitLimitMs, system) : '—';
+  const pitLimitFormatted =
+    pitLimitMs > 0 ? formatSpeed(pitLimitMs, system) : '—';
 
   const redLine = driverInfo?.DriverCarRedLine || 10000;
   const shiftRpm = driverInfo?.DriverCarSLShiftRPM || redLine * 0.9;
@@ -76,9 +81,7 @@ export const SpeedWidget = observer(() => {
           <div className={styles.rightInner}>
             <SpeedDisplay variant="primary" displayMode={displayMode} />
 
-            {showTemps && (
-              <EnginePanel formatTemp={formatTemp} tempUnit={tempUnit} />
-            )}
+            {showTemps && <EnginePanel />}
 
             <RpmPanel />
           </div>

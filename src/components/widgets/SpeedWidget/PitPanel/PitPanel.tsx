@@ -1,11 +1,18 @@
 import { observer } from 'mobx-react-lite';
+
 import { telemetryStore } from '../../../../store/iracing/telemetry.store';
 import { unitsStore } from '../../../../store/units.store';
-import { speedUnit, MPS_TO_KMH, MPS_TO_MPH } from '../../../../utils/telemetry-format';
+import {
+  speedUnit,
+  MPS_TO_KMH,
+  MPS_TO_MPH,
+} from '../../../../utils/telemetry-format';
+
 import styles from './PitPanel.module.scss';
 
 export type PitState = 'pit-lane' | 'limiter-active' | 'over-limit';
 
+// irsdk_pitSpeedLimiter bit in EngineWarnings bitmask — isolates the limiter flag via bitwise AND
 const PIT_LIMITER_BIT = 0x10;
 
 interface PitPanelProps {
@@ -41,12 +48,10 @@ const formatDelta = (delta: number): string => {
 };
 
 export const PitPanel = observer(
-  ({
-    showPitPanel,
-    pitLimitMs,
-    pitLimitFormatted,
-  }: PitPanelProps) => {
+  ({ showPitPanel, pitLimitMs, pitLimitFormatted }: PitPanelProps) => {
     const carStatus = telemetryStore.carStatus;
+    const system = unitsStore.system;
+    const speed = telemetryStore.carDynamics?.speed ?? 0;
 
     const isLimiter =
       ((carStatus?.engine_warnings ?? 0) & PIT_LIMITER_BIT) !== 0;
@@ -57,8 +62,6 @@ export const PitPanel = observer(
       return null;
     }
 
-    const speed = telemetryStore.carDynamics?.speed ?? 0;
-
     const pitState: PitState = (() => {
       if (pitLimitMs > 0 && speed > pitLimitMs) return 'over-limit';
       if (isLimiter) return 'limiter-active';
@@ -66,8 +69,7 @@ export const PitPanel = observer(
       return 'pit-lane';
     })();
 
-    const sys = unitsStore.system;
-    const factor = sys === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
+    const factor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
     const pitSpeedDelta =
       pitLimitMs > 0 ? Math.round((speed - pitLimitMs) * factor) : null;
 

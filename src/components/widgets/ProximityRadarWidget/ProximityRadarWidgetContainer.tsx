@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { computedStore } from '../../../store/iracing/computed.store';
 import { unitsStore } from '../../../store/units.store';
+import { formatDistance, distanceUnit } from '../../../utils/telemetry-format';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { useRadarVisibility } from '../../../hooks/useRadarVisibility';
 import { ProximityRadarWidget } from './ProximityRadarWidget';
@@ -16,7 +17,7 @@ interface ProximityRadarWidgetContainerProps {
 export const ProximityRadarWidgetContainer = observer(
   ({ onVisibilityChange }: ProximityRadarWidgetContainerProps) => {
     const proximity = computedStore.proximity;
-    const { formatDistance, distanceUnit } = unitsStore;
+    const { system } = unitsStore;
 
     const radarSettings =
       widgetSettingsStore.getRadarSettings('proximity-radar');
@@ -49,8 +50,8 @@ export const ProximityRadarWidgetContainer = observer(
         radarDistances={proximity.radarDistances}
         spotterLeft={spotterLeft}
         spotterRight={spotterRight}
-        formatDistance={formatDistance}
-        distanceUnit={distanceUnit}
+        formatDistance={(m) => formatDistance(m, system)}
+        distanceUnit={distanceUnit(system)}
       />
     );
   }

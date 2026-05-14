@@ -4,6 +4,7 @@ import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
 import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { unitsStore } from '../../../store/units.store';
+import { formatTemp, tempUnit } from '../../../utils/telemetry-format';
 import {
   bearingToCardinal,
   extractForecast,
@@ -24,7 +25,7 @@ const getWindColor = (mps: number | null): string => {
 export const WeatherWidgetContainer = observer(() => {
   const weekendInfo = telemetryStore.weekendInfo;
   const env = telemetryStore.environment;
-  const { system, formatTemp, tempUnit } = unitsStore;
+  const { system } = unitsStore;
   const settings = widgetSettingsStore.getWeatherSettings();
 
   const widgetRef = useAutoSizeWidget('weather');
@@ -63,9 +64,9 @@ export const WeatherWidgetContainer = observer(() => {
       windSpeedFormatted={windSpeedFormatted}
       windCardinal={windCardinal}
       windColor={windColor}
-      airTempFormatted={formatTemp(airTempC)}
-      trackTempFormatted={formatTemp(trackTempC)}
-      tempUnit={tempUnit}
+      airTempFormatted={formatTemp(airTempC, system)}
+      trackTempFormatted={formatTemp(trackTempC, system)}
+      tempUnit={tempUnit(system)}
       unitSystem={system}
       humidity={humidity}
       forecast={forecast}
