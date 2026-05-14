@@ -56,15 +56,23 @@ pub struct CarStatusFrame {
     pub engine_warnings: Option<u32>,
 }
 
+const TEMP_MAX_C: f32 = 400.0;
+
+// iRacing emits uninitialized memory (garbage floats or zeroes) for temp fields
+// during car swap. Real engine temps are always > 0°C, so anything <= 0 is invalid SDK state.
+fn sanitize_temp(v: Option<f32>) -> Option<f32> {
+    v.filter(|t| t.is_finite() && *t > 0.0 && *t <= TEMP_MAX_C)
+}
+
 impl From<&AllFieldsFrame> for CarStatusFrame {
     fn from(f: &AllFieldsFrame) -> Self {
         Self {
             fuel_level: f.fuel_level,
             fuel_level_pct: f.fuel_level_pct,
             fuel_use_per_hour: f.fuel_use_per_hour,
-            oil_temp: f.oil_temp,
+            oil_temp: sanitize_temp(f.oil_temp),
             oil_press: f.oil_press,
-            water_temp: f.water_temp,
+            water_temp: sanitize_temp(f.water_temp),
             voltage: f.voltage,
             on_pit_road: f.on_pit_road,
             is_on_track: f.is_on_track,
