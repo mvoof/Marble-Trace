@@ -1,11 +1,12 @@
-import { useImperativeHandle, useRef } from 'react';
-import type { Ref } from 'react';
+import React from 'react';
+import { observer } from 'mobx-react-lite';
+import { telemetryStore } from '../../../../store/iracing/telemetry.store';
 import { getShiftZoneColor } from '../speed-utils';
 import styles from './RpmBar.module.scss';
 
 const LED_COUNT = 20;
 
-interface RpmColors {
+export interface RpmColors {
   low: string;
   mid: string;
   high: string;
@@ -17,68 +18,40 @@ interface RpmBarProps {
   shiftRpm: number;
   blinkRpm: number;
   colors: RpmColors;
-  ref?: Ref<RpmBarHandle>;
 }
 
-export interface RpmBarHandle {
-  update: (rpm: number) => void;
-}
+export const RpmBar = observer(
+  ({ shiftRpm, blinkRpm, colors }: RpmBarProps) => {
+    const rpm = telemetryStore.carDynamics?.rpm ?? 0;
+    const isShift = rpm >= shiftRpm;
+    const isBlink = rpm >= blinkRpm;
+    const displayPct = Math.min(Math.max(rpm / (blinkRpm || 1), 0), 1);
+    const litCount = Math.floor(displayPct * LED_COUNT);
 
-export const RpmBar = ({ shiftRpm, blinkRpm, colors, ref }: RpmBarProps) => {
-  const barRef = useRef<HTMLDivElement>(null);
+    return (
+      <div className={`${styles.rpmBar} ${isBlink ? styles.rpmBarBlink : ''}`}>
+        {Array.from({ length: LED_COUNT }, (_, i) => {
+          const isLit = i < litCount;
 
-  const prevLitCountRef = useRef(-1);
-  const prevPhaseRef = useRef<'normal' | 'shift' | 'blink' | null>(null);
+          if (!isLit) {
+            return <div key={i} className={styles.rpmSeg} />;
+          }
 
-  useImperativeHandle(ref, () => ({
-    update: (rpm) => {
-      if (!barRef.current) return;
-
-      const isShift = rpm >= shiftRpm;
-      const isBlink = rpm >= blinkRpm;
-      const phase = isBlink ? 'blink' : isShift ? 'shift' : 'normal';
-
-      const displayPct = Math.min(Math.max(rpm / (blinkRpm || 1), 0), 1);
-      const litCount = Math.floor(displayPct * LED_COUNT);
-
-      if (
-        litCount === prevLitCountRef.current &&
-        phase === prevPhaseRef.current
-      ) {
-        return;
-      }
-
-      barRef.current.classList.toggle(styles.rpmBarBlink, isBlink);
-
-      const children = barRef.current.children;
-
-      for (let i = 0; i < children.length; i++) {
-        const el = children[i] as HTMLElement;
-
-        if (i < litCount) {
           const color = isBlink
             ? colors.limit
             : isShift
               ? colors.shift
               : getShiftZoneColor((i + 1) / LED_COUNT, colors);
 
-          el.style.setProperty('--rpm-seg-color', color);
-          el.classList.add(styles.rpmSegLit);
-        } else {
-          el.classList.remove(styles.rpmSegLit);
-        }
-      }
-
-      prevLitCountRef.current = litCount;
-      prevPhaseRef.current = phase;
-    },
-  }));
-
-  return (
-    <div ref={barRef} className={styles.rpmBar}>
-      {Array.from({ length: LED_COUNT }, (_, i) => (
-        <div key={`led-${i}`} className={styles.rpmSeg} />
-      ))}
-    </div>
-  );
-};
+          return (
+            <div
+              key={i}
+              className={`${styles.rpmSeg} ${styles.rpmSegLit}`}
+              style={{ '--rpm-seg-color': color } as React.CSSProperties}
+            />
+          );
+        })}
+      </div>
+    );
+  }
+);

@@ -1,0 +1,54 @@
+.tempsGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: rem(3);
+}
+
+.tempRow {
+  display: flex;
+  align-items: center;
+  gap: rem(3);
+}
+
+.tempIcon {
+  width: rem(9);
+  height: rem(9);
+  color: $color-text-muted;
+  flex-shrink: 0;
+}
+
+.tempValue {
+  font-family: $font-mono;
+  font-size: rem(11);
+  font-weight: 500;
+  color: $color-text-secondary;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.tempUnit {
+  font-family: $font-widget;
+  font-size: rem(8);
+  font-weight: 600;
+  color: $color-text-muted;
+}
+
+.tempValueWarn {
+  color: $color-error;
+}
+
+.tempIconWarn {
+  color: $color-error;
+  animation: tempWarnBlink 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes tempWarnBlink {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.2;
+  }
+}

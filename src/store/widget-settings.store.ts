@@ -275,10 +275,14 @@ class WidgetSettingsStore {
     }
   }
 
-  private getSettings<T>(id: string, key: keyof WidgetCustomSettings): T {
-    const widget = this.getWidget(id);
-    const def = DEFAULT_WIDGETS.find((w) => w.id === id);
-    const defaultSettings = def?.customSettings?.[key] as T;
+  private getSettings<T>(widgetId: string, key: keyof WidgetCustomSettings): T {
+    const widget = this.getWidget(widgetId);
+
+    const defaultConfig = DEFAULT_WIDGETS.find(
+      (widget) => widget.id === widgetId
+    );
+    const defaultSettings = defaultConfig?.customSettings?.[key] as T;
+
     return (widget?.customSettings?.[key] as T) ?? defaultSettings;
   }
 

@@ -1,5 +1,5 @@
 import { TelemetryDebugWidgetContainer } from '../components/widgets/TelemetryDebugWidget/TelemetryDebugWidgetContainer';
-import { SpeedWidgetContainer } from '../components/widgets/SpeedWidget/SpeedWidgetContainer';
+import { SpeedWidget } from '../components/widgets/SpeedWidget/SpeedWidget';
 import { InputTraceWidgetContainer } from '../components/widgets/InputTraceWidget/InputTraceWidgetContainer';
 import { ProximityRadarWidgetContainer } from '../components/widgets/ProximityRadarWidget/ProximityRadarWidgetContainer';
 import { RadarBarWidgetContainer } from '../components/widgets/RadarBarWidget/RadarBarWidgetContainer';
@@ -27,7 +27,7 @@ export interface WidgetEntry {
 
 export const WIDGET_REGISTRY: Record<string, WidgetEntry> = {
   example: { component: TelemetryDebugWidgetContainer },
-  speed: { component: SpeedWidgetContainer },
+  speed: { component: SpeedWidget },
   'input-trace': { component: InputTraceWidgetContainer },
   'proximity-radar': { component: ProximityRadarWidgetContainer },
   'radar-bar': { component: RadarBarWidgetContainer },

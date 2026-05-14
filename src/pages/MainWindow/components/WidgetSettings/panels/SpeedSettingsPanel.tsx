@@ -3,11 +3,12 @@ import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
 import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
 import { unitsStore } from '../../../../../store/units.store';
 import {
-  SpeedWidgetFocusMode,
+  SpeedWidgetDisplayMode,
   SpeedWidgetSettings,
 } from '../../../../../types/widget-settings';
-import styles from '../WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
+
+import styles from '../WidgetSettings.module.scss';
 
 export const SpeedSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getSpeedSettings();
@@ -22,60 +23,75 @@ export const SpeedSettingsPanel = observer(() => {
     <Card title="Module Parameters">
       <div className={styles.fieldGroup}>
         <span className={styles.fieldLabel}>Primary Focus</span>
+
         <Segmented
           block
-          value={settings.focusMode}
+          value={settings.displayMode}
           options={[
             { label: 'Vehicle Speed', value: 'speed' },
             { label: 'Current Gear', value: 'gear' },
           ]}
-          onChange={(v) => update({ focusMode: v as SpeedWidgetFocusMode })}
+          onChange={(v) => update({ displayMode: v as SpeedWidgetDisplayMode })}
         />
       </div>
 
       <div className={styles.fieldGroup}>
         <span className={styles.fieldLabel}>RPM Bar Colors</span>
+
         <div className={styles.rpmColorGrid}>
           <div className={styles.rpmColorItem}>
             <span className={styles.rpmColorLabel}>Low</span>
+
             <ColorPicker
               value={settings.rpmColorLow}
               onChange={(c) => update({ rpmColorLow: c.toHexString() })}
             />
           </div>
           <div className={styles.rpmColorLine} />
+
           <div className={styles.rpmColorItem}>
             <span className={styles.rpmColorLabel}>Mid</span>
+
             <ColorPicker
               value={settings.rpmColorMid}
               onChange={(c) => update({ rpmColorMid: c.toHexString() })}
             />
           </div>
+
           <div className={styles.rpmColorLine} />
+
           <div className={styles.rpmColorItem}>
             <span className={styles.rpmColorLabel}>High</span>
+
             <ColorPicker
               value={settings.rpmColorHigh}
               onChange={(c) => update({ rpmColorHigh: c.toHexString() })}
             />
           </div>
+
           <div className={styles.rpmColorLine} />
+
           <div className={styles.rpmColorItem}>
             <span className={styles.rpmColorLabel}>Shift</span>
+
             <ColorPicker
               value={settings.rpmColorShift}
               onChange={(c) => update({ rpmColorShift: c.toHexString() })}
             />
           </div>
+
           <div className={styles.rpmColorLine} />
+
           <div className={styles.rpmColorItem}>
             <span className={styles.rpmColorLabel}>Blink</span>
+
             <ColorPicker
               value={settings.rpmColorLimit}
               onChange={(c) => update({ rpmColorLimit: c.toHexString() })}
             />
           </div>
         </div>
+
         <div className={styles.fieldDesc} style={{ marginTop: 6 }}>
           Blink color flashes the entire bar at shift point.
         </div>
@@ -119,9 +135,11 @@ export const SpeedSettingsPanel = observer(() => {
           <span className={styles.fieldLabel}>
             Pit Speed Override ({unitsStore.speedUnit})
           </span>
+
           <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
             Leave 0 to auto-detect from session data.
           </div>
+
           <InputNumber
             style={{ width: '100%' }}
             value={settings.pitSpeedLimitOverride ?? 0}

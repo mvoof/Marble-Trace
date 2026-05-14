@@ -1,0 +1,26 @@
+.rpmGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: rem(52);
+  flex-shrink: 0;
+}
+
+.rpmValue {
+  font-family: $font-widget;
+  font-size: rem(22);
+  font-weight: 600;
+  line-height: 1;
+  color: $color-text-secondary;
+  font-variant-numeric: tabular-nums;
+}
+
+.rpmLabel {
+  margin-top: rem(3);
+  font-family: $font-widget;
+  font-size: rem(9);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: $color-text-muted;
+}
