@@ -1,17 +1,120 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
+import type { SessionInfo } from '../../../types/bindings';
 import { telemetryStore } from '../../../store/iracing/telemetry.store';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { unitsStore } from '../../../store/units.store';
 import { SpeedWidget } from './SpeedWidget';
 
 const DESIGN_WIDTH = 312;
 const DESIGN_HEIGHT = 90;
-const BG = 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)';
+const BG = 'radial-gradient(circle, #252525 0%, #14141b 100%)';
 
-const meta: Meta<typeof SpeedWidget> = {
+const RED_LINE = 8500;
+const SHIFT_RPM = 8000;
+const BLINK_RPM = 8200;
+
+const BASE_SESSION_INFO = {
+  DriverInfo: {
+    DriverCarRedLine: RED_LINE,
+    DriverCarSLShiftRPM: SHIFT_RPM,
+    DriverCarSLBlinkRPM: BLINK_RPM,
+  },
+  WeekendInfo: {
+    TrackPitSpeedLimit: '55 kph',
+  },
+} as SessionInfo;
+
+interface StoryArgs {
+  speedKmh: number;
+  rpm: number;
+  gear: number;
+  onPitRoad: boolean;
+  engineWarnings: number;
+  oilTemp: number | null;
+  waterTemp: number | null;
+  units: 'metric' | 'imperial';
+  displayMode: 'speed' | 'gear';
+  showRpmBar: boolean;
+  showTemps: boolean;
+  showPitPanel: boolean;
+}
+
+const applyArgs = (args: StoryArgs) => {
+  runInAction(() => {
+    telemetryStore.updateSessionInfo(BASE_SESSION_INFO);
+
+    telemetryStore.updateCarDynamics({
+      speed: args.speedKmh / 3.6,
+      rpm: args.rpm,
+      gear: args.gear,
+    } as Parameters<typeof telemetryStore.updateCarDynamics>[0]);
+
+    telemetryStore.updateCarStatus({
+      on_pit_road: args.onPitRoad,
+      engine_warnings: args.engineWarnings,
+      oil_temp: args.oilTemp,
+      water_temp: args.waterTemp,
+    } as Parameters<typeof telemetryStore.updateCarStatus>[0]);
+
+    unitsStore.setSystem(args.units);
+
+    widgetSettingsStore.updateCustomSettings('speed', {
+      speed: {
+        ...widgetSettingsStore.getSpeedSettings(),
+        displayMode: args.displayMode,
+        showRpmBar: args.showRpmBar,
+        showTemps: args.showTemps,
+        showPitPanel: args.showPitPanel,
+      },
+    });
+  });
+};
+
+const StoryRenderer = (args: StoryArgs) => {
+  useEffect(() => {
+    applyArgs(args);
+  });
+
+  return <SpeedWidget />;
+};
+
+const RpmAnimatedRenderer = () => {
+  const rpmRef = useRef(800);
+  const dirRef = useRef(1);
+
+  useEffect(() => {
+    runInAction(() => telemetryStore.updateSessionInfo(BASE_SESSION_INFO));
+
+    const id = setInterval(() => {
+      rpmRef.current += dirRef.current * 120;
+
+      if (rpmRef.current >= RED_LINE) {
+        dirRef.current = -1;
+      } else if (rpmRef.current <= 800) {
+        dirRef.current = 1;
+      }
+
+      runInAction(() => {
+        telemetryStore.updateCarDynamics({
+          speed: rpmRef.current / 140,
+          rpm: rpmRef.current,
+          gear: Math.max(1, Math.ceil(rpmRef.current / 1500)),
+        } as Parameters<typeof telemetryStore.updateCarDynamics>[0]);
+      });
+    }, 50);
+
+    return () => clearInterval(id);
+  }, []);
+
+  return <SpeedWidget />;
+};
+
+const meta: Meta<StoryArgs> = {
   title: 'Widgets/SpeedWidget',
-  component: SpeedWidget,
+  render: StoryRenderer,
   parameters: { layout: 'centered' },
   decorators: [
     (Story) => (
@@ -27,118 +130,74 @@ const meta: Meta<typeof SpeedWidget> = {
       </div>
     ),
   ],
+  argTypes: {
+    speedKmh: { control: { type: 'number', step: 1 }, name: 'speed (km/h)' },
+    rpm: { control: { type: 'number', step: 100 } },
+    gear: { control: { type: 'number', min: -1, max: 8, step: 1 } },
+    onPitRoad: { control: 'boolean' },
+    engineWarnings: { control: { type: 'number' } },
+    oilTemp: { control: { type: 'number' } },
+    waterTemp: { control: { type: 'number' } },
+    units: { control: 'radio', options: ['metric', 'imperial'] },
+    displayMode: { control: 'radio', options: ['speed', 'gear'] },
+    showRpmBar: { control: 'boolean' },
+    showTemps: { control: 'boolean' },
+    showPitPanel: { control: 'boolean' },
+  },
 };
 
 export default meta;
-type Story = StoryObj<typeof SpeedWidget>;
+type Story = StoryObj<StoryArgs>;
 
-const withDynamics = (speed: number, rpm: number, gear: number) => ({
-  decorators: [
-    (Story: React.ComponentType) => {
-      runInAction(() => {
-        telemetryStore.updateCarDynamics({ speed, rpm, gear } as Parameters<
-          typeof telemetryStore.updateCarDynamics
-        >[0]);
-      });
-
-      return <Story />;
-    },
-  ],
-});
-
-const withPitRoad = (
-  speed: number,
-  rpm: number,
-  gear: number,
-  engineWarnings = 0
-) => ({
-  decorators: [
-    (Story: React.ComponentType) => {
-      runInAction(() => {
-        telemetryStore.updateCarDynamics({ speed, rpm, gear } as Parameters<
-          typeof telemetryStore.updateCarDynamics
-        >[0]);
-        telemetryStore.updateCarStatus({
-          on_pit_road: true,
-          engine_warnings: engineWarnings,
-          oil_temp: null,
-          water_temp: null,
-        } as Parameters<typeof telemetryStore.updateCarStatus>[0]);
-      });
-
-      return <Story />;
-    },
-  ],
-});
+const baseArgs: StoryArgs = {
+  speedKmh: 120,
+  rpm: 5400,
+  gear: 3,
+  onPitRoad: false,
+  engineWarnings: 0,
+  oilTemp: null,
+  waterTemp: null,
+  units: 'metric',
+  displayMode: 'speed',
+  showRpmBar: true,
+  showTemps: false,
+  showPitPanel: true,
+};
 
 export const Default: Story = {
-  ...withDynamics(33.3, 5400, 3),
+  args: baseArgs,
 };
 
-export const GearFocus: Story = {
-  ...withDynamics(61.9, 7800, 5),
-};
-
-export const HighRpm: Story = {
-  ...withDynamics(61.9, 7800, 5),
-};
-
-export const OnPitRoad: Story = {
-  ...withPitRoad(12.5, 2800, 2),
+export const GearMode: Story = {
+  args: { ...baseArgs, speedKmh: 223, rpm: 7800, gear: 5, displayMode: 'gear' },
 };
 
 export const PitLimiterActive: Story = {
-  ...withPitRoad(16.67, 3100, 3, 0x10),
+  args: {
+    ...baseArgs,
+    speedKmh: 60,
+    rpm: 3100,
+    gear: 3,
+    onPitRoad: true,
+    engineWarnings: 0x10,
+  },
 };
 
 export const OverPitLimit: Story = {
-  ...withPitRoad(18.5, 3400, 3, 0x10),
-};
-
-export const WithTemps: Story = {
-  decorators: [
-    (Story: React.ComponentType) => {
-      runInAction(() => {
-        telemetryStore.updateCarDynamics({
-          speed: 33.3,
-          rpm: 5400,
-          gear: 3,
-        } as Parameters<typeof telemetryStore.updateCarDynamics>[0]);
-        telemetryStore.updateCarStatus({
-          on_pit_road: false,
-          engine_warnings: 0,
-          oil_temp: 92,
-          water_temp: 88,
-        } as Parameters<typeof telemetryStore.updateCarStatus>[0]);
-      });
-
-      return <Story />;
-    },
-  ],
+  args: {
+    ...baseArgs,
+    speedKmh: 67,
+    rpm: 3400,
+    gear: 3,
+    onPitRoad: true,
+    engineWarnings: 0x10,
+  },
 };
 
 export const TempWarning: Story = {
-  decorators: [
-    (Story: React.ComponentType) => {
-      runInAction(() => {
-        telemetryStore.updateCarDynamics({
-          speed: 33.3,
-          rpm: 5400,
-          gear: 3,
-        } as Parameters<typeof telemetryStore.updateCarDynamics>[0]);
-        telemetryStore.updateCarStatus({
-          on_pit_road: false,
-          engine_warnings: 0,
-          oil_temp: 135,
-          water_temp: 132,
-        } as Parameters<typeof telemetryStore.updateCarStatus>[0]);
-      });
-
-      return <Story />;
-    },
-  ],
+  args: { ...baseArgs, oilTemp: 135, waterTemp: 132, showTemps: true },
 };
 
-export const NoRpmBar: Story = {
-  ...withDynamics(33.3, 5400, 3),
+export const RpmAnimated: StoryObj = {
+  render: RpmAnimatedRenderer,
 };
