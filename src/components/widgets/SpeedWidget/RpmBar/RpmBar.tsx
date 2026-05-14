@@ -36,7 +36,7 @@ export const RpmBar = observer(
           const isLit = i < litCount;
 
           if (!isLit) {
-            return <div key={i} className={styles.rpmSeg} />;
+            return <div key={`led-${i}`} className={styles.rpmSeg} />;
           }
 
           const color = isBlink
@@ -47,7 +47,7 @@ export const RpmBar = observer(
 
           return (
             <div
-              key={i}
+              key={`led-${i}`}
               className={`${styles.rpmSeg} ${styles.rpmSegLit}`}
               style={{ '--rpm-seg-color': color } as React.CSSProperties}
             />

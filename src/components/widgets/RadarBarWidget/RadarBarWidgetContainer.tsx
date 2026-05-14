@@ -16,7 +16,7 @@ interface RadarBarWidgetContainerProps {
 export const RadarBarWidgetContainer = observer(
   ({ onVisibilityChange }: RadarBarWidgetContainerProps) => {
     const proximity = computedStore.proximity;
-    const { formatDistance, distanceUnit } = unitsStore;
+    const { system } = unitsStore;
 
     const radarSettings = widgetSettingsStore.getRadarSettings('radar-bar');
 

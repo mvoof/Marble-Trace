@@ -1,5 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { telemetryStore } from '../../../../store/iracing/telemetry.store';
+import { unitsStore } from '../../../../store/units.store';
+import { speedUnit, MPS_TO_KMH, MPS_TO_MPH } from '../../../../utils/telemetry-format';
 import styles from './PitPanel.module.scss';
 
 export type PitState = 'pit-lane' | 'limiter-active' | 'over-limit';
@@ -10,8 +12,6 @@ interface PitPanelProps {
   showPitPanel: boolean;
   pitLimitMs: number;
   pitLimitFormatted: string;
-  speedFactor: number;
-  speedUnit: string;
 }
 
 const PIT_STATE_LABEL: Record<PitState, string> = {
@@ -45,8 +45,6 @@ export const PitPanel = observer(
     showPitPanel,
     pitLimitMs,
     pitLimitFormatted,
-    speedFactor,
-    speedUnit,
   }: PitPanelProps) => {
     const carStatus = telemetryStore.carStatus;
 
@@ -68,8 +66,10 @@ export const PitPanel = observer(
       return 'pit-lane';
     })();
 
+    const sys = unitsStore.system;
+    const factor = sys === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
     const pitSpeedDelta =
-      pitLimitMs > 0 ? Math.round((speed - pitLimitMs) * speedFactor) : null;
+      pitLimitMs > 0 ? Math.round((speed - pitLimitMs) * factor) : null;
 
     return (
       <div className={`${styles.panel} ${PIT_STATE_CLASS[pitState]}`}>
@@ -77,7 +77,7 @@ export const PitPanel = observer(
 
         <div className={styles.right}>
           <span className={styles.limit}>{pitLimitFormatted}</span>
-          <span className={styles.unit}>{speedUnit}</span>
+          <span className={styles.unit}>{speedUnit(unitsStore.system)}</span>
 
           {pitSpeedDelta !== null && (
             <span className={`${styles.delta} ${getDeltaClass(pitSpeedDelta)}`}>

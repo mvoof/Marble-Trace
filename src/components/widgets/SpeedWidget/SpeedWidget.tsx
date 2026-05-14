@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { unitsStore } from '../../../store/units.store';
+import { formatSpeed, MPS_TO_KMH, MPS_TO_MPH } from '../../../utils/telemetry-format';
 import { SpeedDisplay } from './SpeedDisplay/SpeedDisplay';
 import { EnginePanel } from './EnginePanel/EnginePanel';
 import { RpmPanel } from './RpmPanel/RpmPanel';
@@ -13,8 +14,7 @@ import { parsePitSpeedLimitMs } from './speed-utils';
 import styles from './SpeedWidget.module.scss';
 
 export const SpeedWidget = observer(() => {
-  const { formatSpeed, speedUnit, formatTemp, tempUnit, speedFactor } =
-    unitsStore;
+  const { formatTemp, tempUnit, system } = unitsStore;
 
   const {
     pitSpeedLimitOverride,
@@ -31,12 +31,14 @@ export const SpeedWidget = observer(() => {
 
   const { driverInfo, weekendInfo } = telemetryStore;
 
+  const speedFactor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
+
   const pitLimitMs =
     pitSpeedLimitOverride !== null
       ? pitSpeedLimitOverride / speedFactor
       : parsePitSpeedLimitMs(weekendInfo?.TrackPitSpeedLimit);
 
-  const pitLimitFormatted = pitLimitMs > 0 ? formatSpeed(pitLimitMs) : '—';
+  const pitLimitFormatted = pitLimitMs > 0 ? formatSpeed(pitLimitMs, system) : '—';
 
   const redLine = driverInfo?.DriverCarRedLine || 10000;
   const shiftRpm = driverInfo?.DriverCarSLShiftRPM || redLine * 0.9;
@@ -61,30 +63,18 @@ export const SpeedWidget = observer(() => {
         showPitPanel={showPitPanel}
         pitLimitMs={pitLimitMs}
         pitLimitFormatted={pitLimitFormatted}
-        speedFactor={speedFactor}
-        speedUnit={speedUnit}
       />
 
       <div className={styles.mainDisplay}>
         <div className={styles.leftBlock}>
           <div className={styles.leftInner}>
-            <SpeedDisplay
-              variant="secondary"
-              displayMode={displayMode}
-              speedUnit={speedUnit}
-              formatSpeed={formatSpeed}
-            />
+            <SpeedDisplay variant="secondary" displayMode={displayMode} />
           </div>
         </div>
 
         <div className={styles.rightBlock}>
           <div className={styles.rightInner}>
-            <SpeedDisplay
-              variant="primary"
-              displayMode={displayMode}
-              speedUnit={speedUnit}
-              formatSpeed={formatSpeed}
-            />
+            <SpeedDisplay variant="primary" displayMode={displayMode} />
 
             {showTemps && (
               <EnginePanel formatTemp={formatTemp} tempUnit={tempUnit} />
