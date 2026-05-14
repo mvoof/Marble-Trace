@@ -35,6 +35,14 @@ const config: StorybookConfig = {
         __dirname,
         '../src/storybook/__mocks__/tauri-shortcut.ts'
       ),
+      '@tauri-apps/plugin-updater': path.resolve(
+        __dirname,
+        '../src/storybook/__mocks__/tauri-updater.ts'
+      ),
+      '@tauri-apps/api/app': path.resolve(
+        __dirname,
+        '../src/storybook/__mocks__/tauri-app.ts'
+      ),
     };
 
     config.css = config.css ?? {};
