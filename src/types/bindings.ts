@@ -241,7 +241,7 @@ export type CarStatusFrame = {
    * Engine oil temperature in °C
    * @see https://sajax.github.io/irsdkdocs/telemetry/oiltemp/
    */
-  oil_temp: number;
+  oil_temp: number | null;
   /**
    * Engine oil pressure in kPa
    * @see https://sajax.github.io/irsdkdocs/telemetry/oilpress/
@@ -251,7 +251,7 @@ export type CarStatusFrame = {
    * Engine water temperature in °C
    * @see https://sajax.github.io/irsdkdocs/telemetry/watertemp/
    */
-  water_temp: number;
+  water_temp: number | null;
   /**
    * Electrical system voltage
    * @see https://sajax.github.io/irsdkdocs/telemetry/voltage/

@@ -43,11 +43,12 @@ export const DEFAULT_WIDGETS: WidgetConfig[] = [
     hotkey: 'F10',
     customSettings: {
       speed: {
-        focusMode: 'speed',
+        displayMode: 'speed',
         rpmColorTheme: 'custom',
         rpmColorLow: '#22c55e',
         rpmColorMid: '#eab308',
         rpmColorHigh: '#ef4444',
+        rpmColorShift: '#a855f7',
         rpmColorLimit: '#ff4d00',
         showPitPanel: true,
         showRpmBar: true,

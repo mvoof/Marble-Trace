@@ -1,28 +1,120 @@
+import React, { useEffect, useRef } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { runInAction } from 'mobx';
 
+import type { SessionInfo } from '../../../types/bindings';
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { unitsStore } from '../../../store/units.store';
 import { SpeedWidget } from './SpeedWidget';
 
 const DESIGN_WIDTH = 312;
 const DESIGN_HEIGHT = 90;
+const BG = 'radial-gradient(circle, #252525 0%, #14141b 100%)';
 
-const DEFAULT_SETTINGS = {
-  focusMode: 'speed' as const,
-  rpmColorTheme: 'custom' as const,
-  rpmColorLow: '#22c55e',
-  rpmColorMid: '#eab308',
-  rpmColorHigh: '#ef4444',
-  rpmColorLimit: '#ff4d00',
-  showPitPanel: true,
-  showRpmBar: true,
-  showTemps: false,
-  pitSpeedLimitOverride: null,
+const RED_LINE = 8500;
+const SHIFT_RPM = 8000;
+const BLINK_RPM = 8200;
+
+const BASE_SESSION_INFO = {
+  DriverInfo: {
+    DriverCarRedLine: RED_LINE,
+    DriverCarSLShiftRPM: SHIFT_RPM,
+    DriverCarSLBlinkRPM: BLINK_RPM,
+  },
+  WeekendInfo: {
+    TrackPitSpeedLimit: '55 kph',
+  },
+} as SessionInfo;
+
+interface StoryArgs {
+  speedKmh: number;
+  rpm: number;
+  gear: number;
+  onPitRoad: boolean;
+  engineWarnings: number;
+  oilTemp: number | null;
+  waterTemp: number | null;
+  units: 'metric' | 'imperial';
+  displayMode: 'speed' | 'gear';
+  showRpmBar: boolean;
+  showTemps: boolean;
+  showPitPanel: boolean;
+}
+
+const applyArgs = (args: StoryArgs) => {
+  runInAction(() => {
+    telemetryStore.updateSessionInfo(BASE_SESSION_INFO);
+
+    telemetryStore.updateCarDynamics({
+      speed: args.speedKmh / 3.6,
+      rpm: args.rpm,
+      gear: args.gear,
+    } as Parameters<typeof telemetryStore.updateCarDynamics>[0]);
+
+    telemetryStore.updateCarStatus({
+      on_pit_road: args.onPitRoad,
+      engine_warnings: args.engineWarnings,
+      oil_temp: args.oilTemp,
+      water_temp: args.waterTemp,
+    } as Parameters<typeof telemetryStore.updateCarStatus>[0]);
+
+    unitsStore.setSystem(args.units);
+
+    widgetSettingsStore.updateCustomSettings('speed', {
+      speed: {
+        ...widgetSettingsStore.getSpeedSettings(),
+        displayMode: args.displayMode,
+        showRpmBar: args.showRpmBar,
+        showTemps: args.showTemps,
+        showPitPanel: args.showPitPanel,
+      },
+    });
+  });
 };
 
-const BG = 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)';
+const StoryRenderer = (args: StoryArgs) => {
+  useEffect(() => {
+    applyArgs(args);
+  });
 
-const meta: Meta<typeof SpeedWidget> = {
+  return <SpeedWidget />;
+};
+
+const RpmAnimatedRenderer = () => {
+  const rpmRef = useRef(800);
+  const dirRef = useRef(1);
+
+  useEffect(() => {
+    runInAction(() => telemetryStore.updateSessionInfo(BASE_SESSION_INFO));
+
+    const id = setInterval(() => {
+      rpmRef.current += dirRef.current * 120;
+
+      if (rpmRef.current >= RED_LINE) {
+        dirRef.current = -1;
+      } else if (rpmRef.current <= 800) {
+        dirRef.current = 1;
+      }
+
+      runInAction(() => {
+        telemetryStore.updateCarDynamics({
+          speed: rpmRef.current / 140,
+          rpm: rpmRef.current,
+          gear: Math.max(1, Math.ceil(rpmRef.current / 1500)),
+        } as Parameters<typeof telemetryStore.updateCarDynamics>[0]);
+      });
+    }, 50);
+
+    return () => clearInterval(id);
+  }, []);
+
+  return <SpeedWidget />;
+};
+
+const meta: Meta<StoryArgs> = {
   title: 'Widgets/SpeedWidget',
-  component: SpeedWidget,
+  render: StoryRenderer,
   parameters: { layout: 'centered' },
   decorators: [
     (Story) => (
@@ -38,107 +130,74 @@ const meta: Meta<typeof SpeedWidget> = {
       </div>
     ),
   ],
-  args: {
-    initialSpeed: '120',
-    speedUnit: 'km/h',
-    initialRpm: 5400,
-    initialGear: 3,
-    maxShiftRpm: 8000,
-    settings: DEFAULT_SETTINGS,
-    isOnPitRoad: false,
-    pitLimiterActive: false,
-    initialPitState: 'pit-lane',
-    pitLimitFormatted: '60',
-    initialPitSpeedDelta: null,
-    oilTemp: '92',
-    waterTemp: '88',
-    tempUnit: '°C',
-    oilTempWarn: false,
-    waterTempWarn: false,
+  argTypes: {
+    speedKmh: { control: { type: 'number', step: 1 }, name: 'speed (km/h)' },
+    rpm: { control: { type: 'number', step: 100 } },
+    gear: { control: { type: 'number', min: -1, max: 8, step: 1 } },
+    onPitRoad: { control: 'boolean' },
+    engineWarnings: { control: { type: 'number' } },
+    oilTemp: { control: { type: 'number' } },
+    waterTemp: { control: { type: 'number' } },
+    units: { control: 'radio', options: ['metric', 'imperial'] },
+    displayMode: { control: 'radio', options: ['speed', 'gear'] },
+    showRpmBar: { control: 'boolean' },
+    showTemps: { control: 'boolean' },
+    showPitPanel: { control: 'boolean' },
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof SpeedWidget>;
+type Story = StoryObj<StoryArgs>;
 
-export const Default: Story = {};
-
-export const GearFocus: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, focusMode: 'gear' },
-  },
+const baseArgs: StoryArgs = {
+  speedKmh: 120,
+  rpm: 5400,
+  gear: 3,
+  onPitRoad: false,
+  engineWarnings: 0,
+  oilTemp: null,
+  waterTemp: null,
+  units: 'metric',
+  displayMode: 'speed',
+  showRpmBar: true,
+  showTemps: false,
+  showPitPanel: true,
 };
 
-export const HighRpm: Story = {
-  args: {
-    initialSpeed: '223',
-    initialRpm: 7800,
-    initialGear: 5,
-  },
+export const Default: Story = {
+  args: baseArgs,
 };
 
-export const OnPitRoad: Story = {
-  args: {
-    isOnPitRoad: true,
-    initialPitState: 'pit-lane',
-    pitLimitFormatted: '60',
-    initialPitSpeedDelta: null,
-    initialSpeed: '45',
-    initialRpm: 2800,
-    initialGear: 2,
-  },
+export const GearMode: Story = {
+  args: { ...baseArgs, speedKmh: 223, rpm: 7800, gear: 5, displayMode: 'gear' },
 };
 
 export const PitLimiterActive: Story = {
   args: {
-    isOnPitRoad: true,
-    pitLimiterActive: true,
-    initialPitState: 'limiter-active',
-    pitLimitFormatted: '60',
-    initialPitSpeedDelta: 0,
-    initialSpeed: '60',
-    initialRpm: 3100,
-    initialGear: 3,
+    ...baseArgs,
+    speedKmh: 60,
+    rpm: 3100,
+    gear: 3,
+    onPitRoad: true,
+    engineWarnings: 0x10,
   },
 };
 
 export const OverPitLimit: Story = {
   args: {
-    isOnPitRoad: true,
-    pitLimiterActive: true,
-    initialPitState: 'over-limit',
-    pitLimitFormatted: '60',
-    initialPitSpeedDelta: 5,
-    initialSpeed: '65',
-    initialRpm: 3400,
-    initialGear: 3,
-  },
-};
-
-export const WithTemps: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, showTemps: true },
-    oilTemp: '92',
-    waterTemp: '88',
-    tempUnit: '°C',
-    oilTempWarn: false,
-    waterTempWarn: false,
+    ...baseArgs,
+    speedKmh: 67,
+    rpm: 3400,
+    gear: 3,
+    onPitRoad: true,
+    engineWarnings: 0x10,
   },
 };
 
 export const TempWarning: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, showTemps: true },
-    oilTemp: '115',
-    waterTemp: '108',
-    tempUnit: '°C',
-    oilTempWarn: true,
-    waterTempWarn: true,
-  },
+  args: { ...baseArgs, oilTemp: 135, waterTemp: 132, showTemps: true },
 };
 
-export const NoRpmBar: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, showRpmBar: false },
-  },
+export const RpmAnimated: StoryObj = {
+  render: RpmAnimatedRenderer,
 };

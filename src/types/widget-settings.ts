@@ -1,12 +1,13 @@
-export type SpeedWidgetFocusMode = 'speed' | 'gear';
+export type SpeedWidgetDisplayMode = 'speed' | 'gear';
 type RpmColorTheme = 'custom' | 'gradient' | 'classic';
 
 export interface SpeedWidgetSettings {
-  focusMode: SpeedWidgetFocusMode;
+  displayMode: SpeedWidgetDisplayMode;
   rpmColorTheme: RpmColorTheme;
   rpmColorLow: string;
   rpmColorMid: string;
   rpmColorHigh: string;
+  rpmColorShift: string;
   rpmColorLimit: string;
   showPitPanel: boolean;
   showRpmBar: boolean;

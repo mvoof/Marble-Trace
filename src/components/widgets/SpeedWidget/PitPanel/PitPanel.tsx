@@ -1,19 +1,24 @@
-import { useImperativeHandle, useRef } from 'react';
-import type { Ref } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import { telemetryStore } from '../../../../store/iracing/telemetry.store';
+import { unitsStore } from '../../../../store/units.store';
+import {
+  speedUnit,
+  MPS_TO_KMH,
+  MPS_TO_MPH,
+} from '../../../../utils/telemetry-format';
+
 import styles from './PitPanel.module.scss';
 
 export type PitState = 'pit-lane' | 'limiter-active' | 'over-limit';
 
-interface PitPanelProps {
-  initialState: PitState;
-  limitSpeed: string;
-  speedUnit: string;
-  initialDelta: number | null;
-  ref?: Ref<PitPanelHandle>;
-}
+// irsdk_pitSpeedLimiter bit in EngineWarnings bitmask — isolates the limiter flag via bitwise AND
+const PIT_LIMITER_BIT = 0x10;
 
-export interface PitPanelHandle {
-  update: (state: PitState, delta: number | null) => void;
+interface PitPanelProps {
+  showPitPanel: boolean;
+  pitLimitMs: number;
+  pitLimitFormatted: string;
 }
 
 const PIT_STATE_LABEL: Record<PitState, string> = {
@@ -31,67 +36,58 @@ const PIT_STATE_CLASS: Record<PitState, string> = {
 const getDeltaClass = (delta: number): string => {
   if (delta > 0) return styles.deltaOver;
   if (delta >= -5) return styles.deltaClose;
+
   return styles.deltaOk;
 };
 
 const formatDelta = (delta: number): string => {
   if (delta > 0) return `+${delta}`;
   if (delta === 0) return '±0';
+
   return `${delta}`;
 };
 
-export const PitPanel = ({
-  initialState,
-  limitSpeed,
-  speedUnit,
-  initialDelta,
-  ref,
-}: PitPanelProps) => {
-  const panelRef = useRef<HTMLDivElement>(null);
-  const labelRef = useRef<HTMLSpanElement>(null);
-  const deltaRef = useRef<HTMLSpanElement>(null);
+export const PitPanel = observer(
+  ({ showPitPanel, pitLimitMs, pitLimitFormatted }: PitPanelProps) => {
+    const carStatus = telemetryStore.carStatus;
+    const system = unitsStore.system;
+    const speed = telemetryStore.carDynamics?.speed ?? 0;
 
-  useImperativeHandle(ref, () => ({
-    update: (state, delta) => {
-      if (panelRef.current) {
-        panelRef.current.className = `${styles.panel} ${PIT_STATE_CLASS[state]}`;
-      }
-      if (labelRef.current) {
-        labelRef.current.textContent = PIT_STATE_LABEL[state];
-      }
-      if (deltaRef.current) {
-        if (delta !== null) {
-          deltaRef.current.textContent = formatDelta(delta);
-          deltaRef.current.className = `${styles.delta} ${getDeltaClass(delta)}`;
-          deltaRef.current.style.display = '';
-        } else {
-          deltaRef.current.style.display = 'none';
-        }
-      }
-    },
-  }));
+    const isLimiter =
+      ((carStatus?.engine_warnings ?? 0) & PIT_LIMITER_BIT) !== 0;
 
-  return (
-    <div
-      ref={panelRef}
-      className={`${styles.panel} ${PIT_STATE_CLASS[initialState]}`}
-    >
-      <span ref={labelRef} className={styles.label}>
-        {PIT_STATE_LABEL[initialState]}
-      </span>
+    const onPitRoad = carStatus?.on_pit_road ?? false;
 
-      <div className={styles.right}>
-        <span className={styles.limit}>{limitSpeed}</span>
-        <span className={styles.unit}>{speedUnit}</span>
+    if (!showPitPanel || (!onPitRoad && !isLimiter)) {
+      return null;
+    }
 
-        <span
-          ref={deltaRef}
-          className={`${styles.delta} ${initialDelta !== null ? getDeltaClass(initialDelta) : ''}`}
-          style={{ display: initialDelta !== null ? '' : 'none' }}
-        >
-          {initialDelta !== null ? formatDelta(initialDelta) : ''}
-        </span>
+    const pitState: PitState = (() => {
+      if (pitLimitMs > 0 && speed > pitLimitMs) return 'over-limit';
+      if (isLimiter) return 'limiter-active';
+
+      return 'pit-lane';
+    })();
+
+    const factor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
+    const pitSpeedDelta =
+      pitLimitMs > 0 ? Math.round((speed - pitLimitMs) * factor) : null;
+
+    return (
+      <div className={`${styles.panel} ${PIT_STATE_CLASS[pitState]}`}>
+        <span className={styles.label}>{PIT_STATE_LABEL[pitState]}</span>
+
+        <div className={styles.right}>
+          <span className={styles.limit}>{pitLimitFormatted}</span>
+          <span className={styles.unit}>{speedUnit(unitsStore.system)}</span>
+
+          {pitSpeedDelta !== null && (
+            <span className={`${styles.delta} ${getDeltaClass(pitSpeedDelta)}`}>
+              {formatDelta(pitSpeedDelta)}
+            </span>
+          )}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+);

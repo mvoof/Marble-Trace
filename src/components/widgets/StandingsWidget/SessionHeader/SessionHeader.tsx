@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { Users } from 'lucide-react';
 import { formatIRating, NEAR_DQ_INCIDENT_THRESHOLD } from '../../widget-utils';
 import { unitsStore } from '../../../../store/units.store';
+import { formatTemp, tempUnit } from '../../../../utils/telemetry-format';
 import type { DriverEntry } from '../../../../types/bindings';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import type { SessionInfoData, WeekendInfo } from '../../../../types/bindings';
@@ -56,16 +57,13 @@ export const SessionHeader = observer(
     const trkCelsius =
       env?.track_temp ?? parseWeekendTemp(weekendInfo?.TrackSurfaceTemp);
 
-    const tempUnit = unitsStore.tempUnit;
+    const sys = unitsStore.system;
+    const tUnit = tempUnit(sys);
     const airStr =
-      airCelsius !== null
-        ? `${unitsStore.formatTemp(airCelsius)}${tempUnit}`
-        : null;
+      airCelsius !== null ? `${formatTemp(airCelsius, sys)}${tUnit}` : null;
 
     const trkStr =
-      trkCelsius !== null
-        ? `${unitsStore.formatTemp(trkCelsius)}${tempUnit}`
-        : null;
+      trkCelsius !== null ? `${formatTemp(trkCelsius, sys)}${tUnit}` : null;
 
     return (
       <div className={styles.sessionHeader}>

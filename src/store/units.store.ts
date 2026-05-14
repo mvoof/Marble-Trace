@@ -1,17 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import {
-  formatSpeed as _formatSpeed,
-  formatTemp as _formatTemp,
-  formatFuel as _formatFuel,
-  formatDistance as _formatDistance,
-  speedUnit as _speedUnit,
-  tempUnit as _tempUnit,
-  fuelUnit as _fuelUnit,
-  distanceUnit as _distanceUnit,
-  MPS_TO_KMH,
-  MPS_TO_MPH,
-} from '../utils/telemetry-format';
-
+import { MPS_TO_KMH, MPS_TO_MPH } from '../utils/telemetry-format';
 import type { UnitSystem } from '../types';
 
 class UnitsStore {
@@ -31,38 +19,6 @@ class UnitsStore {
 
   get speedFactor() {
     return this.system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
-  }
-
-  formatSpeed(mps: number) {
-    return _formatSpeed(mps, this.system);
-  }
-
-  formatTemp(celsius: number | null) {
-    return _formatTemp(celsius, this.system);
-  }
-
-  formatFuel(liters: number) {
-    return _formatFuel(liters, this.system);
-  }
-
-  formatDistance(meters: number) {
-    return _formatDistance(meters, this.system);
-  }
-
-  get speedUnit() {
-    return _speedUnit(this.system);
-  }
-
-  get tempUnit() {
-    return _tempUnit(this.system);
-  }
-
-  get fuelUnit() {
-    return _fuelUnit(this.system);
-  }
-
-  get distanceUnit() {
-    return _distanceUnit(this.system);
   }
 }
 
