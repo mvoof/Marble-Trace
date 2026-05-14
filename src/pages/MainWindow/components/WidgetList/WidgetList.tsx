@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { Switch } from 'antd';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
-import type { WidgetConfig } from '../../../../types/widget-settings';
+import type { WidgetDefaultConfig } from '../../../../types/widget-settings';
 import styles from './WidgetList.module.scss';
 
 const WidgetListItem = observer(
@@ -10,7 +10,7 @@ const WidgetListItem = observer(
     isActive,
     onSelect,
   }: {
-    widget: WidgetConfig;
+    widget: WidgetDefaultConfig;
     isActive: boolean;
     onSelect: (id: string) => void;
   }) => {

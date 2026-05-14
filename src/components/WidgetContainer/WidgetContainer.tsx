@@ -4,7 +4,7 @@ import { emit } from '@tauri-apps/api/event';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { telemetryConnectionStore } from '../../store/iracing/telemetry-connection.store';
-import { WIDGET_REGISTRY } from '../../utils/widget-registry';
+import { WIDGET_BY_ID } from '../../store/widget-defaults';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
 import styles from './WidgetContainer.module.scss';
 
@@ -55,7 +55,7 @@ export const WidgetContainer = observer(
     const designWidth = widget?.designWidth ?? width;
     const designHeight = widget?.designHeight ?? height;
 
-    const autoHeight = WIDGET_REGISTRY[widgetId]?.autoHeight ?? false;
+    const autoHeight = WIDGET_BY_ID.get(widgetId)?.autoHeight ?? false;
 
     const background = shouldHide
       ? 'transparent'
@@ -68,15 +68,15 @@ export const WidgetContainer = observer(
         e.preventDefault();
         e.stopPropagation();
 
-        const w = widgetSettingsStore.getWidget(widgetId);
+        const currentWidget = widgetSettingsStore.getWidget(widgetId);
 
         isDraggingRef.current = true;
 
         dragStartRef.current = {
           mouseX: e.clientX,
           mouseY: e.clientY,
-          widgetX: w?.x ?? 0,
-          widgetY: w?.y ?? 0,
+          widgetX: currentWidget?.x ?? 0,
+          widgetY: currentWidget?.y ?? 0,
         };
 
         const onMouseMove = (ev: MouseEvent) => {
@@ -112,15 +112,15 @@ export const WidgetContainer = observer(
         e.preventDefault();
         e.stopPropagation();
 
-        const w = widgetSettingsStore.getWidget(widgetId);
+        const currentWidget = widgetSettingsStore.getWidget(widgetId);
 
         isResizingRef.current = true;
 
         resizeStartRef.current = {
           mouseX: e.clientX,
           mouseY: e.clientY,
-          widgetW: w?.width ?? designWidth,
-          widgetH: w?.height ?? designHeight,
+          widgetW: currentWidget?.width ?? designWidth,
+          widgetH: currentWidget?.height ?? designHeight,
         };
 
         const onMouseMove = (ev: MouseEvent) => {

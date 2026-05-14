@@ -76,7 +76,13 @@ class AppSettingsStore {
   }
 
   applySettings(saved: Partial<AppSettings>) {
-    Object.assign(this.settings, { ...DEFAULT_APP_SETTINGS, ...saved });
+    const filtered = Object.fromEntries(
+      (Object.keys(DEFAULT_APP_SETTINGS) as (keyof AppSettings)[]).map(
+        (key) => [key, key in saved ? saved[key] : DEFAULT_APP_SETTINGS[key]]
+      )
+    );
+
+    Object.assign(this.settings, filtered);
   }
 
   setAutoUpdate(value: boolean) {

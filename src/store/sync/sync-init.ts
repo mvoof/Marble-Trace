@@ -22,7 +22,7 @@ import {
   emitTrackMapForceStartPending,
   emitWidgetSettingsUpdated,
 } from './events';
-import type { WidgetConfig } from '../../types/widget-settings';
+import type { WidgetDefaultConfig } from '../../types/widget-settings';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
 let mainSyncRefCount = 0;
@@ -33,16 +33,23 @@ export const initMainSync = async () => {
   if (!mainSyncInitPromise) {
     mainSyncInitPromise = (async () => {
       const store = await load(SETTINGS_FILE);
-      const saved = await store.get<Settings>('settings');
+      const loadedSettings = await store.get<Settings>('settings');
+      console.log({ loadedSettings });
 
-      if (saved) {
-        hydrateStores(saved);
+      if (loadedSettings) {
+        try {
+          hydrateStores(loadedSettings);
+          await saveSettings(store);
+        } catch {
+          await store.delete('settings');
+          await store.save();
+        }
       }
 
       const onSave = () => saveSettings(store);
 
       const [overlayLayoutUnlisten, mainUnlistens] = await Promise.all([
-        listen<WidgetConfig[]>('widget-layout-changed', (e) => {
+        listen<WidgetDefaultConfig[]>('widget-layout-changed', (e) => {
           runInAction(() => widgetSettingsStore.setWidgets(e.payload));
         }),
         setupMainListeners(),
@@ -144,9 +151,12 @@ export const initMainSync = async () => {
 
       return () => {
         void overlayLayoutUnlisten();
+
         mainUnlistens.forEach((u) => u());
         disposers.forEach((d) => d());
+
         cleanupHotkeys();
+
         mainSyncInitPromise = null;
       };
     })();
@@ -156,6 +166,7 @@ export const initMainSync = async () => {
 
   return () => {
     mainSyncRefCount--;
+
     if (mainSyncRefCount === 0) {
       realCleanup();
     }
@@ -164,10 +175,10 @@ export const initMainSync = async () => {
 
 export const initOverlaySync = async () => {
   const store = await load(SETTINGS_FILE);
-  const saved = await store.get<Settings>('settings');
+  const loadedSettings = await store.get<Settings>('settings');
 
-  if (saved) {
-    hydrateStores(saved);
+  if (loadedSettings) {
+    hydrateStores(loadedSettings);
   }
 
   const unlistens = await setupOverlayListeners();
