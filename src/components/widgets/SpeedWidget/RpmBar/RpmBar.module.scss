@@ -1,20 +1,24 @@
 .rpmBar {
   position: absolute;
-  bottom: 0;
+  top: 100%;
   left: 0;
   right: 0;
-  height: rem(14);
+  height: rem(24);
   display: flex;
   flex-direction: row;
-  align-items: stretch;
+  align-items: center;
   gap: rem(2);
-  padding: 0;
+  padding: rem(2);
+  background: rgb(20, 20, 20);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(4px);
 }
 
 .rpmSeg {
   flex: 1 1 0;
+  height: 100%;
   border-radius: 1px;
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(90, 90, 90, 0.137);
   transition: background 0.04s ease;
 }
 
