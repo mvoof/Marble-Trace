@@ -3,10 +3,10 @@ import { observer } from 'mobx-react-lite';
 import { Button } from 'antd';
 import { X } from 'lucide-react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { appSettingsStore } from '../../store/app-settings.store';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
-import { WIDGET_REGISTRY } from '../../utils/widget-registry';
-import { WidgetContainer } from '../WidgetContainer/WidgetContainer';
+import { appSettingsStore } from '../../../store/app-settings.store';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { WIDGET_BY_ID } from '../../../store/widget-defaults';
+import { WidgetContainer } from '../../../components/WidgetContainer/WidgetContainer';
 import styles from './OverlayCanvas.module.scss';
 
 export const OverlayCanvas = observer(() => {
@@ -19,7 +19,7 @@ export const OverlayCanvas = observer(() => {
   useEffect(() => {
     getCurrentWebviewWindow()
       .setIgnoreCursorEvents(!dragMode)
-      .catch(console.error);
+      .catch((err: unknown) => console.error(err));
   }, [dragMode]);
 
   const handleVisibilityChange = (id: string, visible: boolean) => {
@@ -39,7 +39,7 @@ export const OverlayCanvas = observer(() => {
   }
 
   const enabledWidgets = widgetSettingsStore.allWidgets.filter(
-    (w) => w.enabled
+    (widget) => widget.enabled
   );
 
   return (
@@ -62,11 +62,11 @@ export const OverlayCanvas = observer(() => {
       )}
 
       {enabledWidgets.map((widget) => {
-        const entry = WIDGET_REGISTRY[widget.id];
+        const widgetDefinition = WIDGET_BY_ID.get(widget.id);
 
-        if (!entry) return null;
+        if (!widgetDefinition) return null;
 
-        const { component: WidgetComponent } = entry;
+        const WidgetComponent = widgetDefinition.component;
 
         return (
           <WidgetContainer
@@ -75,7 +75,9 @@ export const OverlayCanvas = observer(() => {
             visible={visibilityMap[widget.id] ?? true}
           >
             <WidgetComponent
-              onVisibilityChange={(v) => handleVisibilityChange(widget.id, v)}
+              onVisibilityChange={(visible) =>
+                handleVisibilityChange(widget.id, visible)
+              }
             />
           </WidgetContainer>
         );
