@@ -14,8 +14,10 @@ interface SpeedDisplayProps {
 export const SpeedDisplay = observer(
   ({ variant, displayMode, speedUnit, formatSpeed }: SpeedDisplayProps) => {
     const frame = telemetryStore.carDynamics;
+
     const speed = frame?.speed ?? 0;
     const gear = frame?.gear ?? 0;
+
     const isGearFocused = displayMode === 'gear';
 
     if (variant === 'primary') {

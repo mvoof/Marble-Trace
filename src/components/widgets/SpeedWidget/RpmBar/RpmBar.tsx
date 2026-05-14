@@ -23,8 +23,10 @@ interface RpmBarProps {
 export const RpmBar = observer(
   ({ shiftRpm, blinkRpm, colors }: RpmBarProps) => {
     const rpm = telemetryStore.carDynamics?.rpm ?? 0;
+
     const isShift = rpm >= shiftRpm;
     const isBlink = rpm >= blinkRpm;
+
     const displayPct = Math.min(Math.max(rpm / (blinkRpm || 1), 0), 1);
     const litCount = Math.floor(displayPct * LED_COUNT);
 

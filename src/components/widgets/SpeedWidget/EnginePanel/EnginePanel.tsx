@@ -12,8 +12,10 @@ interface EnginePanelProps {
 export const EnginePanel = observer(
   ({ formatTemp, tempUnit }: EnginePanelProps) => {
     const carStatus = telemetryStore.carStatus;
+
     const oilTemp = formatTemp(carStatus?.oil_temp ?? null);
     const waterTemp = formatTemp(carStatus?.water_temp ?? null);
+
     const oilTempWarn = isEngineTempWarning(carStatus?.oil_temp);
     const waterTempWarn = isEngineTempWarning(carStatus?.water_temp);
 

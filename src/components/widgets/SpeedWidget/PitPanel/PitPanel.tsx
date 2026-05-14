@@ -49,8 +49,10 @@ export const PitPanel = observer(
     speedUnit,
   }: PitPanelProps) => {
     const carStatus = telemetryStore.carStatus;
+
     const isLimiter =
       ((carStatus?.engine_warnings ?? 0) & PIT_LIMITER_BIT) !== 0;
+
     const onPitRoad = carStatus?.on_pit_road ?? false;
 
     if (!showPitPanel || (!onPitRoad && !isLimiter)) {
