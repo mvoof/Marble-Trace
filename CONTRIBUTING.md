@@ -90,3 +90,17 @@ Commit messages should follow the [Conventional Commits](https://conventionalcom
 - `revert`: change that reverts previous commits
 
 If you have any questions or need help, feel free to open an issue or ask in the discussions section. We appreciate your contributions!
+
+## Settings schema
+
+User settings are persisted in `settings.json` via `tauri-plugin-store`. The schema is defined in `src/store/sync/persistence.ts`.
+
+On every app start the loaded settings are validated against the current defaults and immediately re-saved — so unknown or removed fields are automatically purged from disk.
+
+**Adding a field** — add it with a default value in `widget-defaults.ts` (for widget settings) or `DEFAULT_APP_SETTINGS` (for app settings). It will be picked up on next load.
+
+**Renaming or removing a field** — no migration needed. The old field is dropped from disk on first launch. Users will lose only the value of the changed field and will need to set it again.
+
+**Renaming a widget `id`** — the saved widget with the old `id` is dropped and replaced with a new one at its default position. The user will need to reposition it.
+
+If `loadSettings` throws (e.g. a type mismatch in the store file), the saved settings are automatically deleted and the app starts fresh with defaults.

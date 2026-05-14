@@ -1,4 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
+import { filterToDefaults } from '../utils/filter-to-defaults';
 import { invoke } from '@tauri-apps/api/core';
 import {
   DEFAULT_WIDGETS,
@@ -9,6 +10,7 @@ import {
 } from './widget-defaults';
 
 import type {
+  WidgetDefaultConfig,
   FlagDisplaySettings,
   FuelWidgetSettings,
   GMeterWidgetSettings,
@@ -24,13 +26,15 @@ import type {
   LapDeltaWidgetSettings,
   ChassisWidgetSettings,
   TimerWidgetSettings,
-  WidgetConfig,
   WidgetCustomSettings,
 } from '../types/widget-settings';
 
 class WidgetSettingsStore {
-  widgets = new Map<string, WidgetConfig>(
-    DEFAULT_WIDGETS.map((w) => [w.id, { ...w }])
+  widgets = new Map<string, WidgetDefaultConfig>(
+    DEFAULT_WIDGETS.map((widgetConfig) => [
+      widgetConfig.id,
+      { ...widgetConfig },
+    ])
   );
 
   standingsActiveClassIndex = 0;
@@ -45,7 +49,7 @@ class WidgetSettingsStore {
     });
   }
 
-  get allWidgets(): WidgetConfig[] {
+  get allWidgets(): WidgetDefaultConfig[] {
     return Array.from(this.widgets.values());
   }
 
@@ -83,35 +87,40 @@ class WidgetSettingsStore {
     });
   }
 
-  setWidgets(widgets: WidgetConfig[]) {
+  setWidgets(widgets: WidgetDefaultConfig[]) {
     runInAction(() => {
-      DEFAULT_WIDGETS.forEach((def) => {
-        const s = widgets.find((w) => w.id === def.id);
+      DEFAULT_WIDGETS.forEach((defaultWidget) => {
+        const s = widgets.find((widget) => widget.id === defaultWidget.id);
+
         if (!s) {
-          this.widgets.set(def.id, { ...def });
+          this.widgets.set(defaultWidget.id, { ...defaultWidget });
           return;
         }
 
-        const defCS = def.customSettings ?? {};
+        const defCS = defaultWidget.customSettings ?? {};
         const sCS = s.customSettings ?? {};
 
         const mergedCustomSettings: WidgetCustomSettings = { ...defCS };
-        for (const key of Object.keys(sCS) as Array<
+
+        for (const key of Object.keys(defCS) as Array<
           keyof WidgetCustomSettings
         >) {
-          mergedCustomSettings[key] = {
-            ...defCS[key],
-            ...sCS[key],
-          } as never;
+          const defaultSection = defCS[key];
+
+          if (!defaultSection) continue;
+
+          mergedCustomSettings[key] = filterToDefaults(
+            defaultSection,
+            sCS[key] ?? {}
+          ) as never;
         }
 
-        const autoSizedCurrent = this.autoSizedWidgets.has(def.id)
-          ? this.widgets.get(def.id)
+        const autoSizedCurrent = this.autoSizedWidgets.has(defaultWidget.id)
+          ? this.widgets.get(defaultWidget.id)
           : null;
 
-        this.widgets.set(def.id, {
-          ...def,
-          ...s,
+        this.widgets.set(defaultWidget.id, {
+          ...filterToDefaults(defaultWidget, s),
           customSettings: mergedCustomSettings,
           ...(autoSizedCurrent && {
             width: autoSizedCurrent.width,
@@ -124,7 +133,7 @@ class WidgetSettingsStore {
     });
   }
 
-  getWidget(id: string): WidgetConfig | undefined {
+  getWidget(id: string): WidgetDefaultConfig | undefined {
     return this.widgets.get(id);
   }
 
@@ -165,10 +174,10 @@ class WidgetSettingsStore {
     }
   }
 
-  updateField<K extends keyof WidgetConfig>(
+  updateField<K extends keyof WidgetDefaultConfig>(
     id: string,
     field: K,
-    value: WidgetConfig[K]
+    value: WidgetDefaultConfig[K]
   ) {
     const widget = this.getWidget(id);
     if (widget) {

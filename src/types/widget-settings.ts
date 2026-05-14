@@ -1,3 +1,5 @@
+import type React from 'react';
+
 export type SpeedWidgetDisplayMode = 'speed' | 'gear';
 type RpmColorTheme = 'custom' | 'gradient' | 'classic';
 
@@ -187,6 +189,10 @@ export interface WidgetCustomSettings {
 }
 
 export interface WidgetConfig {
+  component: React.ComponentType<{
+    onVisibilityChange?: (visible: boolean) => void;
+  }>;
+  autoHeight?: boolean;
   id: string;
   label: string;
   description?: string;
@@ -202,3 +208,8 @@ export interface WidgetConfig {
   hotkey: string;
   customSettings?: WidgetCustomSettings;
 }
+
+export type WidgetDefaultConfig = Omit<
+  WidgetConfig,
+  'component' | 'autoHeight'
+>;

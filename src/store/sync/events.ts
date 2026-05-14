@@ -4,7 +4,7 @@ import { appSettingsStore } from '../app-settings.store';
 import { unitsStore } from '../units.store';
 import { widgetSettingsStore } from '../widget-settings.store';
 import type { UnitSystem } from '../../types';
-import type { WidgetConfig } from '../../types/widget-settings';
+import type { WidgetDefaultConfig } from '../../types/widget-settings';
 
 export const setupMainListeners = async (): Promise<UnlistenFn[]> => {
   const unlistens: UnlistenFn[] = [];
@@ -46,7 +46,7 @@ export const setupOverlayListeners = async (): Promise<UnlistenFn[]> => {
     })
   );
   unlistens.push(
-    await listen<WidgetConfig[]>('widget-settings-updated', (e) => {
+    await listen<WidgetDefaultConfig[]>('widget-settings-updated', (e) => {
       runInAction(() => widgetSettingsStore.setWidgets(e.payload));
     })
   );
@@ -79,5 +79,5 @@ export const emitStandingsClassIndex = (index: number) =>
   emit('standings-class-index-changed', index);
 export const emitTrackMapForceStartPending = (pending: boolean) =>
   emit('track-map:force-start-pending-changed', pending);
-export const emitWidgetSettingsUpdated = (widgets: WidgetConfig[]) =>
+export const emitWidgetSettingsUpdated = (widgets: WidgetDefaultConfig[]) =>
   emit('widget-settings-updated', widgets);
