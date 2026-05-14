@@ -26,9 +26,12 @@
 }
 
 .dragging {
-  cursor: grab;
   outline: 2px dashed $color-text-accent;
   outline-offset: -2px;
+}
+
+.draggingCursor {
+  cursor: grab;
 
   &:active {
     cursor: grabbing;
