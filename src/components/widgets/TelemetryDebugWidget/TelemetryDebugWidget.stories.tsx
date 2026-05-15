@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TelemetryDebugWidget } from './TelemetryDebugWidget';
 import { snapshot } from '../../../storybook/test-data';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const CONNECTED_ARGS = {
   status: 'connected',
@@ -19,19 +20,7 @@ const meta: Meta<typeof TelemetryDebugWidget> = {
   title: 'Widgets/TelemetryDebugWidget',
   component: TelemetryDebugWidget,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: 420,
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ width: 420 })],
   args: CONNECTED_ARGS,
 };
 

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ChassisWidget } from './ChassisWidget';
 import type { CornerData } from './types';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const makeCorner = (overrides: Partial<CornerData> = {}): CornerData => ({
   wearL: 0.85,
@@ -59,19 +60,7 @@ const meta: Meta<typeof ChassisWidget> = {
   title: 'Widgets/ChassisWidget',
   component: ChassisWidget,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-          display: 'inline-block',
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ display: 'inline-block' })],
   args: DEFAULT_ARGS,
 };
 

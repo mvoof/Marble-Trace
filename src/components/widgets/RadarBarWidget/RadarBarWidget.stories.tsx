@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RadarBarWidget } from './RadarBarWidget';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const DESIGN_WIDTH = 800;
 const DESIGN_HEIGHT = 380;
@@ -16,20 +17,7 @@ const meta: Meta<typeof RadarBarWidget> = {
   title: 'Widgets/RadarBarWidget',
   component: RadarBarWidget,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: DESIGN_WIDTH,
-          height: DESIGN_HEIGHT,
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ width: DESIGN_WIDTH, height: DESIGN_HEIGHT })],
   args: {
     radarDistances: {
       frontDist: 999,

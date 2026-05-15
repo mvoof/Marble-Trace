@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
@@ -7,6 +7,7 @@ import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { unitsStore } from '../../../store/units.store';
 import { SpeedWidget } from './SpeedWidget';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const DESIGN_WIDTH = 500;
 const DESIGN_HEIGHT = 120;
@@ -115,20 +116,11 @@ const meta: Meta<StoryArgs> = {
   render: StoryRenderer,
   parameters: { layout: 'centered' },
   decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: DESIGN_WIDTH,
-          height: DESIGN_HEIGHT,
-          background: BG,
-          borderRadius: 6,
-          border: '2px solid rgba(255, 255, 255, 0.1)',
-          overflow: 'hidden',
-        }}
-      >
-        <Story />
-      </div>
-    ),
+    widgetDecorator({
+      width: DESIGN_WIDTH,
+      height: DESIGN_HEIGHT,
+      background: BG,
+    }),
   ],
   argTypes: {
     speedKmh: { control: { type: 'number', step: 1 }, name: 'speed (km/h)' },
