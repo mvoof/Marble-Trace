@@ -277,6 +277,16 @@ export type CarStatusFrame = {
    * @see https://sajax.github.io/irsdkdocs/telemetry/enginewarnings/
    */
   engine_warnings: number | null;
+  /**
+   * Per-gear RPM threshold at which shift lights turn fully on (one value per gear, index = gear number)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/playercarslshiftrpm/
+   */
+  player_car_sl_shift_rpm: number[];
+  /**
+   * Per-gear RPM threshold at which shift lights blink (one value per gear, index = gear number)
+   * @see https://sajax.github.io/irsdkdocs/telemetry/playercarslblinkrpm/
+   */
+  player_car_sl_blink_rpm: number[];
 };
 
 export type ChassisFrame = {

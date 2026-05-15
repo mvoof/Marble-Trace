@@ -1,12 +1,12 @@
 .rpmValue {
   font-family: $font-mono;
-  font-size: rem(24);
+  font-size: ws(24);
   font-weight: 700;
   line-height: 1;
   color: var(--rpm-color, rgba(255, 255, 255, 0.55));
-  text-shadow: 0 0 rem(8) var(--rpm-color);
+  text-shadow: 0 0 ws(8) var(--rpm-color);
   font-variant-numeric: tabular-nums;
   text-align: right;
-  min-width: rem(68);
-  padding-right: rem(12);
+  min-width: ws(68);
+  padding-right: ws(12);
 }

@@ -60,14 +60,24 @@
   letter-spacing: 0.5px;
 }
 
+// ── Resize handles ───────────────────────────────────────────
+
+$handle-corner: rem(14);
+$handle-edge: rem(6);
+
 .resizeHandle {
   position: absolute;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+// Corner handles — square hit area with visual indicator
+.resizeHandleSE {
   bottom: 0;
   right: 0;
-  width: rem(14);
-  height: rem(14);
+  width: $handle-corner;
+  height: $handle-corner;
   cursor: se-resize;
-  pointer-events: auto;
 
   &::after {
     content: '';
@@ -80,4 +90,97 @@
     border-bottom: 2px solid $color-text-accent;
     border-radius: 1px;
   }
+}
+
+.resizeHandleSW {
+  bottom: 0;
+  left: 0;
+  width: $handle-corner;
+  height: $handle-corner;
+  cursor: sw-resize;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: rem(3);
+    left: rem(3);
+    width: rem(8);
+    height: rem(8);
+    border-left: 2px solid $color-text-accent;
+    border-bottom: 2px solid $color-text-accent;
+    border-radius: 1px;
+  }
+}
+
+.resizeHandleNE {
+  top: 0;
+  right: 0;
+  width: $handle-corner;
+  height: $handle-corner;
+  cursor: ne-resize;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: rem(3);
+    right: rem(3);
+    width: rem(8);
+    height: rem(8);
+    border-right: 2px solid $color-text-accent;
+    border-top: 2px solid $color-text-accent;
+    border-radius: 1px;
+  }
+}
+
+.resizeHandleNW {
+  top: 0;
+  left: 0;
+  width: $handle-corner;
+  height: $handle-corner;
+  cursor: nw-resize;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: rem(3);
+    left: rem(3);
+    width: rem(8);
+    height: rem(8);
+    border-left: 2px solid $color-text-accent;
+    border-top: 2px solid $color-text-accent;
+    border-radius: 1px;
+  }
+}
+
+// Edge handles — thin strip along each side, inset from corners
+.resizeHandleN {
+  top: 0;
+  left: $handle-corner;
+  right: $handle-corner;
+  height: $handle-edge;
+  cursor: n-resize;
+}
+
+.resizeHandleS {
+  bottom: 0;
+  left: $handle-corner;
+  right: $handle-corner;
+  height: $handle-edge;
+  cursor: s-resize;
+}
+
+.resizeHandleE {
+  top: $handle-corner;
+  bottom: $handle-corner;
+  right: 0;
+  width: $handle-edge;
+  cursor: e-resize;
+}
+
+.resizeHandleW {
+  top: $handle-corner;
+  bottom: $handle-corner;
+  left: 0;
+  width: $handle-edge;
+  cursor: w-resize;
 }

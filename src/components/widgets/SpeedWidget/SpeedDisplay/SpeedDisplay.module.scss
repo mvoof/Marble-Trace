@@ -2,25 +2,25 @@
   display: flex;
   flex-direction: row;
   align-items: baseline;
-  gap: rem(4);
-  padding-left: rem(24);
+  gap: ws(4);
+  padding-left: ws(24);
 }
 
 .value {
   font-family: $font-widget;
-  font-size: rem(72);
+  font-size: ws(72);
   font-weight: 700;
   line-height: 0.92;
   color: #fff;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 rem(10) rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 ws(10) rgba(255, 255, 255, 0.3);
   letter-spacing: -0.056em;
-  min-width: rem(120);
+  min-width: ws(120);
 }
 
 .label {
   font-family: $font-mono;
-  font-size: rem(16);
+  font-size: ws(16);
   font-weight: 700;
   letter-spacing: 0.125em;
   color: rgba(255, 255, 255, 0.4);

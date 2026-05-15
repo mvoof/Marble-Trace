@@ -2,28 +2,28 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: rem(8);
+  gap: ws(8);
 }
 
 .tempBadge {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: rem(4);
-  padding: rem(2) rem(6);
-  min-width: rem(32);
-  border-radius: rem(4);
+  gap: ws(4);
+  padding: ws(2) ws(6);
+  min-width: ws(32);
+  border-radius: ws(4);
   background: rgba(255, 255, 255, 0.05);
   font-family: $font-mono;
-  font-size: rem(14);
+  font-size: ws(14);
   font-weight: 700;
   color: rgba(255, 255, 255, 0.4);
   font-variant-numeric: tabular-nums;
 }
 
 .tempIcon {
-  width: rem(14);
-  height: rem(14);
+  width: ws(14);
+  height: ws(14);
   flex-shrink: 0;
 }
 
@@ -41,7 +41,7 @@
   0%,
   100% {
     opacity: 1;
-    filter: drop-shadow(0 0 rem(4) rgba(239, 68, 68, 0.5));
+    filter: drop-shadow(0 0 ws(4) rgba(239, 68, 68, 0.5));
   }
 
   50% {
