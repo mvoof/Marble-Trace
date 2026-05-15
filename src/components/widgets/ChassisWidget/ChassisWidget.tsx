@@ -1,4 +1,3 @@
-import type { Ref } from 'react';
 import { Info } from 'lucide-react';
 import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import { CornerModule } from './CornerModule/CornerModule';
@@ -31,8 +30,7 @@ export const ChassisWidget = ({
   lengthUnit,
   showInboard,
   onPitRoad,
-  ref,
-}: ChassisWidgetProps & { ref?: Ref<HTMLElement> }) => {
+}: ChassisWidgetProps) => {
   const frontAxleDiff = computeAxleDiff(lf.rideHeight, rf.rideHeight);
   const rearAxleDiff = computeAxleDiff(lr.rideHeight, rr.rideHeight);
 
@@ -45,7 +43,7 @@ export const ChassisWidget = ({
     Math.abs(rearAxleDiff) > SUSPENSION_BENT_THRESHOLD_MM;
 
   return (
-    <WidgetPanel ref={ref} direction="column" gap={0} fitContent>
+    <WidgetPanel direction="column" gap={0} fitContent>
       <div
         className={`${styles.carGrid} ${showInboard ? styles.carGridWithInboard : ''}`}
       >

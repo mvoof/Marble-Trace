@@ -1,5 +1,6 @@
 .widget {
   width: 100%;
+  height: 100%;
   background: repeating-linear-gradient(
     -45deg,
     #1a1a1a,
@@ -14,9 +15,9 @@
 }
 
 .header {
-  padding: 10px 14px 6px;
+  padding: ws(10) ws(14) ws(6);
   font-family: $font-mono;
-  font-size: 11px;
+  font-size: ws(11);
   color: #777;
   letter-spacing: 2px;
   font-weight: 600;
@@ -31,16 +32,16 @@
 }
 
 .empty {
-  padding: 10px 14px;
+  padding: ws(10) ws(14);
   font-family: $font-mono;
-  font-size: 12px;
+  font-size: ws(12);
   color: #444;
   letter-spacing: 1px;
 }
 
 .item {
-  padding: 11px 14px;
-  font-size: 15px;
+  padding: ws(11) ws(14);
+  font-size: ws(15);
   font-weight: 800;
   font-family: $font-widget;
   text-transform: uppercase;
@@ -50,8 +51,8 @@
 
   &::before {
     content: '■';
-    font-size: 11px;
-    margin-right: 11px;
+    font-size: ws(11);
+    margin-right: ws(11);
     color: rgba(0, 0, 0, 0.7);
   }
 }

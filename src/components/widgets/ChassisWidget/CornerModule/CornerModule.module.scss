@@ -62,7 +62,7 @@
   background-color: #1a1a1a;
   display: flex;
   align-items: flex-end;
-  border-radius: 2px;
+  border-radius: ws(2);
   overflow: hidden;
 }
 
@@ -152,7 +152,7 @@
 .brakeBar {
   width: ws(6);
   height: ws(65);
-  border-radius: 2px;
+  border-radius: ws(2);
   transition: background-color 0.3s ease;
   flex-shrink: 0;
 }

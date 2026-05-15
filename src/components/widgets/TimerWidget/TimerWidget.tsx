@@ -1,5 +1,3 @@
-import type { Ref } from 'react';
-
 import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 
 import styles from './TimerWidget.module.scss';
@@ -39,7 +37,6 @@ interface TimerWidgetProps {
   simTime: string | null;
   pcDate: string;
   simDate: string | null;
-  ref?: Ref<HTMLElement>;
 }
 
 const formatLapCount = (
@@ -81,7 +78,6 @@ export const TimerWidget = ({
   simTime,
   pcDate,
   simDate,
-  ref,
 }: TimerWidgetProps) => {
   const showFooter = showLaps || showPosition;
   const showClockRow = showWallClock || showSimTime;
@@ -89,13 +85,7 @@ export const TimerWidget = ({
 
   if (sessionEnded) {
     return (
-      <WidgetPanel
-        ref={ref}
-        fitContent
-        direction="column"
-        gap={0}
-        minWidth={180}
-      >
+      <WidgetPanel fitContent direction="column" gap={0} minWidth={180}>
         <div className={styles.header}>
           <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
         </div>
@@ -144,7 +134,7 @@ export const TimerWidget = ({
   }
 
   return (
-    <WidgetPanel ref={ref} fitContent direction="column" gap={0} minWidth={180}>
+    <WidgetPanel fitContent direction="column" gap={0} minWidth={180}>
       <div className={styles.header}>
         <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
         {showFlag && (

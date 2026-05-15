@@ -65,7 +65,7 @@ export const WidgetContainer = observer(
 
     const autoHeight = WIDGET_BY_ID.get(widgetId)?.autoHeight ?? false;
 
-    const widgetScale = autoHeight ? 1 : width / designWidth;
+    const widgetScale = width / designWidth;
 
     const background = shouldHide
       ? 'transparent'

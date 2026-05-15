@@ -4,7 +4,6 @@ import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
 import { SessionState as BindingSessionState } from '../../../types/bindings';
 import { resolveSessionLaps } from '../../../utils/telemetry-format';
 
@@ -159,8 +158,6 @@ export const TimerWidgetContainer = observer(() => {
     showSimDate,
   } = widgetSettingsStore.getTimerSettings();
 
-  const widgetRef = useAutoSizeWidget('timer');
-
   const sessionNum = session?.session_num ?? null;
   const currentSession =
     sessionNum !== null ? (sessions[sessionNum] ?? null) : null;
@@ -206,7 +203,6 @@ export const TimerWidgetContainer = observer(() => {
 
   return (
     <TimerWidget
-      ref={widgetRef}
       sessionTypeLabel={sessionTypeLabel}
       flagState={flagState}
       timeMain={timeMain}

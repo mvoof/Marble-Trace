@@ -76,12 +76,7 @@ export const LapDeltaWidget = ({
   }));
 
   return (
-    <WidgetPanel
-      direction="column"
-      gap={0}
-      minWidth={150}
-      fitContent={!isHorizontal}
-    >
+    <WidgetPanel direction="column" gap={0} minWidth={150}>
       <div
         ref={assignDeltaDisplayHandle}
         className={`${styles.delta} ${DELTA_STATE_CLASS[initialDeltaState]} ${isHorizontal ? styles.deltaHorizontal : ''}`}

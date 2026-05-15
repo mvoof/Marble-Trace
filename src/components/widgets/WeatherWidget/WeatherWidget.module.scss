@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: $space-sm 0 $space-xs;
+  padding: ws(4) 0 ws(2);
 }
 
 .statsGrid {
@@ -44,7 +44,7 @@
 
 .statUnit {
   font-size: ws(13);
-  margin-left: 1px;
+  margin-left: ws(1);
 }
 
 .statSub {
