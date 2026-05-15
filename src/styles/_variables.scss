@@ -1,5 +1,7 @@
 @use 'functions' as *;
 
+// TODO: CSS variable names should not indicate color
+
 // Colors
 $color-bg-dark: rgba(0, 0, 0, 0.75);
 $color-bg-widget: rgba(0, 0, 0, 0.8);
@@ -33,6 +35,10 @@ $color-success: #22c55e;
 $color-error: #ef4444;
 $color-caution: #fbbf24;
 $color-blue: #60a5fa;
+
+$color-pit-entry:#f59e0b;
+$color-pit-warning:#b91c1c;
+$color-pit-active: #2563eb;
 
 // Input-specific colors
 $color-throttle: #00ff00;
