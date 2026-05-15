@@ -8,8 +8,8 @@ import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { unitsStore } from '../../../store/units.store';
 import { SpeedWidget } from './SpeedWidget';
 
-const DESIGN_WIDTH = 312;
-const DESIGN_HEIGHT = 90;
+const DESIGN_WIDTH = 500;
+const DESIGN_HEIGHT = 120;
 const BG = 'radial-gradient(circle, #252525 0%, #14141b 100%)';
 
 const RED_LINE = 8500;
@@ -36,10 +36,9 @@ interface StoryArgs {
   oilTemp: number | null;
   waterTemp: number | null;
   units: 'metric' | 'imperial';
-  displayMode: 'speed' | 'gear';
   showRpmBar: boolean;
   showTemps: boolean;
-  showPitPanel: boolean;
+  showRpmColor: boolean;
 }
 
 const applyArgs = (args: StoryArgs) => {
@@ -64,10 +63,9 @@ const applyArgs = (args: StoryArgs) => {
     widgetSettingsStore.updateCustomSettings('speed', {
       speed: {
         ...widgetSettingsStore.getSpeedSettings(),
-        displayMode: args.displayMode,
         showRpmBar: args.showRpmBar,
         showTemps: args.showTemps,
-        showPitPanel: args.showPitPanel,
+        showRpmColor: args.showRpmColor,
       },
     });
   });
@@ -88,7 +86,7 @@ const RpmAnimatedRenderer = () => {
   useEffect(() => {
     runInAction(() => telemetryStore.updateSessionInfo(BASE_SESSION_INFO));
 
-    const id = setInterval(() => {
+    const intervalId = setInterval(() => {
       rpmRef.current += dirRef.current * 120;
 
       if (rpmRef.current >= RED_LINE) {
@@ -106,7 +104,7 @@ const RpmAnimatedRenderer = () => {
       });
     }, 50);
 
-    return () => clearInterval(id);
+    return () => clearInterval(intervalId);
   }, []);
 
   return <SpeedWidget />;
@@ -123,7 +121,9 @@ const meta: Meta<StoryArgs> = {
           width: DESIGN_WIDTH,
           height: DESIGN_HEIGHT,
           background: BG,
-          overflow: 'visible',
+          borderRadius: 6,
+          border: '2px solid rgba(255, 255, 255, 0.1)',
+          overflow: 'hidden',
         }}
       >
         <Story />
@@ -139,10 +139,9 @@ const meta: Meta<StoryArgs> = {
     oilTemp: { control: { type: 'number' } },
     waterTemp: { control: { type: 'number' } },
     units: { control: 'radio', options: ['metric', 'imperial'] },
-    displayMode: { control: 'radio', options: ['speed', 'gear'] },
     showRpmBar: { control: 'boolean' },
     showTemps: { control: 'boolean' },
-    showPitPanel: { control: 'boolean' },
+    showRpmColor: { control: 'boolean' },
   },
 };
 
@@ -158,18 +157,17 @@ const baseArgs: StoryArgs = {
   oilTemp: null,
   waterTemp: null,
   units: 'metric',
-  displayMode: 'speed',
   showRpmBar: true,
   showTemps: false,
-  showPitPanel: true,
+  showRpmColor: true,
 };
 
 export const Default: Story = {
   args: baseArgs,
 };
 
-export const GearMode: Story = {
-  args: { ...baseArgs, speedKmh: 223, rpm: 7800, gear: 5, displayMode: 'gear' },
+export const HighSpeed: Story = {
+  args: { ...baseArgs, speedKmh: 267, rpm: 7800, gear: 6 },
 };
 
 export const PitLimiterActive: Story = {
@@ -196,6 +194,10 @@ export const OverPitLimit: Story = {
 
 export const TempWarning: Story = {
   args: { ...baseArgs, oilTemp: 135, waterTemp: 132, showTemps: true },
+};
+
+export const Imperial: Story = {
+  args: { ...baseArgs, speedKmh: 200, rpm: 7200, gear: 5, units: 'imperial' },
 };
 
 export const RpmAnimated: StoryObj = {
