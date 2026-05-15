@@ -14,8 +14,9 @@ export const RadarSettingsPanel = observer(
     const settings = widgetSettingsStore.getRadarSettings(widgetId);
 
     const update = (partial: Partial<RadarSettings>) => {
-      widgetSettingsStore.updateCustomSettings(widgetId, {
-        [widgetId]: { ...settings, ...partial },
+      widgetSettingsStore.updateWidgetSpecificSettings(widgetId, {
+        ...settings,
+        ...partial,
       });
     };
 

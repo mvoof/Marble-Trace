@@ -13,8 +13,9 @@ export const LapDeltaSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getLapDeltaSettings();
 
   const update = (partial: Partial<LapDeltaWidgetSettings>) => {
-    widgetSettingsStore.updateCustomSettings('lap-delta', {
-      'lap-delta': { ...settings, ...partial },
+    widgetSettingsStore.updateWidgetSpecificSettings('lap-delta', {
+      ...settings,
+      ...partial,
     });
   };
 

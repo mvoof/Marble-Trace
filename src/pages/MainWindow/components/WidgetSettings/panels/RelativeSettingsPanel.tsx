@@ -9,8 +9,9 @@ export const RelativeSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getRelativeSettings();
 
   const update = (partial: Partial<RelativeWidgetSettings>) => {
-    widgetSettingsStore.updateCustomSettings('relative', {
-      relative: { ...settings, ...partial },
+    widgetSettingsStore.updateWidgetSpecificSettings('relative', {
+      ...settings,
+      ...partial,
     });
   };
 

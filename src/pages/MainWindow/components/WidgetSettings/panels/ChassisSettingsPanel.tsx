@@ -9,8 +9,9 @@ export const ChassisSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getChassisSettings();
 
   const update = (partial: Partial<ChassisWidgetSettings>) => {
-    widgetSettingsStore.updateCustomSettings('chassis', {
-      chassis: { ...settings, ...partial },
+    widgetSettingsStore.updateWidgetSpecificSettings('chassis', {
+      ...settings,
+      ...partial,
     });
   };
 

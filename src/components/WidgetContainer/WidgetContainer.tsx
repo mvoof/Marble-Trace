@@ -55,8 +55,8 @@ export const WidgetContainer = observer(
     const x = widget?.x ?? 100;
     const y = widget?.y ?? 100;
 
-    const width = widget?.width ?? 200;
-    const height = widget?.height ?? 200;
+    const width = widget?.currentWidth ?? 200;
+    const height = widget?.currentHeight ?? 200;
 
     const designWidth = widget?.designWidth ?? width;
     const designHeight = widget?.designHeight ?? height;
@@ -127,8 +127,8 @@ export const WidgetContainer = observer(
         resizeStartRef.current = {
           mouseX: e.clientX,
           mouseY: e.clientY,
-          widgetW: currentWidget?.width ?? designWidth,
-          widgetH: currentWidget?.height ?? designHeight,
+          widgetW: currentWidget?.currentWidth ?? designWidth,
+          widgetH: currentWidget?.currentHeight ?? designHeight,
           widgetX: currentWidget?.x ?? 0,
           widgetY: currentWidget?.y ?? 0,
         };

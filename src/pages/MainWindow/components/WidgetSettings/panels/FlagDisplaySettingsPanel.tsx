@@ -10,8 +10,9 @@ export const FlagDisplaySettingsPanel = observer(
     const settings = widgetSettingsStore.getFlagDisplaySettings(widgetId);
 
     const update = (partial: Partial<FlagDisplaySettings>) => {
-      widgetSettingsStore.updateCustomSettings(widgetId, {
-        [widgetId]: { ...settings, ...partial },
+      widgetSettingsStore.updateWidgetSpecificSettings(widgetId, {
+        ...settings,
+        ...partial,
       });
     };
 

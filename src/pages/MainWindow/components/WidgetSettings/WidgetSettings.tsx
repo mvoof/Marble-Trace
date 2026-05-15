@@ -70,11 +70,11 @@ export const WidgetSettings = observer(
               <span className={styles.fieldLabel}>Width (px)</span>
               <InputNumber
                 style={{ width: '100%' }}
-                value={widget.width}
+                value={widget.currentWidth}
                 min={10}
                 onChange={(v) =>
                   v !== null &&
-                  widgetSettingsStore.updateField(widgetId, 'width', v)
+                  widgetSettingsStore.updateField(widgetId, 'currentWidth', v)
                 }
               />
             </Col>
@@ -83,11 +83,11 @@ export const WidgetSettings = observer(
               <span className={styles.fieldLabel}>Height (px)</span>
               <InputNumber
                 style={{ width: '100%' }}
-                value={widget.height}
+                value={widget.currentHeight}
                 min={10}
                 onChange={(v) =>
                   v !== null &&
-                  widgetSettingsStore.updateField(widgetId, 'height', v)
+                  widgetSettingsStore.updateField(widgetId, 'currentHeight', v)
                 }
               />
             </Col>

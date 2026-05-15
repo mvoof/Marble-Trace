@@ -9,8 +9,9 @@ export const FuelSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getFuelSettings();
 
   const update = (partial: Partial<FuelWidgetSettings>) => {
-    widgetSettingsStore.updateCustomSettings('fuel', {
-      fuel: { ...settings, ...partial },
+    widgetSettingsStore.updateWidgetSpecificSettings('fuel', {
+      ...settings,
+      ...partial,
     });
   };
 

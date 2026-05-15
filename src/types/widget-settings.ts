@@ -170,25 +170,22 @@ export interface GMeterWidgetSettings {
   colorMode: GMeterColorMode;
 }
 
-export interface WidgetCustomSettings {
-  chassis?: ChassisWidgetSettings;
-  'led-flags'?: FlagDisplaySettings;
-  'flat-flags'?: FlagDisplaySettings;
-  speed?: SpeedWidgetSettings;
-  'input-trace'?: InputTraceSettings;
-  'proximity-radar'?: RadarSettings;
-  'radar-bar'?: RadarSettings;
-  standings?: StandingsWidgetSettings;
-  relative?: RelativeWidgetSettings;
-  'track-map'?: TrackMapWidgetSettings;
-  'relative-map'?: LinearMapWidgetSettings;
-  weather?: WeatherWidgetSettings;
-  fuel?: FuelWidgetSettings;
-  'lap-times'?: LapTimesWidgetSettings;
-  'lap-delta'?: LapDeltaWidgetSettings;
-  timer?: TimerWidgetSettings;
-  'g-meter'?: GMeterWidgetSettings;
-}
+export type WidgetSpecificSettings =
+  | ChassisWidgetSettings
+  | FlagDisplaySettings
+  | SpeedWidgetSettings
+  | InputTraceSettings
+  | RadarSettings
+  | StandingsWidgetSettings
+  | RelativeWidgetSettings
+  | TrackMapWidgetSettings
+  | LinearMapWidgetSettings
+  | WeatherWidgetSettings
+  | FuelWidgetSettings
+  | LapTimesWidgetSettings
+  | LapDeltaWidgetSettings
+  | TimerWidgetSettings
+  | GMeterWidgetSettings;
 
 export interface WidgetConfig {
   component: React.ComponentType<{
@@ -201,15 +198,15 @@ export interface WidgetConfig {
   enabled: boolean;
   x: number;
   y: number;
-  width: number;
-  height: number;
+  currentWidth: number;
+  currentHeight: number;
   designWidth: number;
   designHeight: number;
   backgroundColor: string;
   backgroundColorEdge: string;
   borderColor: string;
   hotkey: string;
-  customSettings?: WidgetCustomSettings;
+  widgetSpecificSettings?: WidgetSpecificSettings;
 }
 
 export type WidgetDefaultConfig = Omit<

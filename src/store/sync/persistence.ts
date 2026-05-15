@@ -6,7 +6,7 @@ import { DEFAULT_WIDGETS } from '../widget-defaults';
 import type { UnitSystem } from '../../types';
 import type {
   WidgetDefaultConfig,
-  WidgetCustomSettings,
+  WidgetSpecificSettings,
 } from '../../types/widget-settings';
 import type { AppSettings } from '../app-settings.store';
 import { filterToDefaults } from '../../utils/filter-to-defaults';
@@ -21,24 +21,19 @@ export interface Settings {
   widgets: WidgetDefaultConfig[];
 }
 
-const overlayCustomSettings = (
-  defaults: WidgetCustomSettings | undefined,
-  saved: WidgetCustomSettings | undefined
-): WidgetCustomSettings | undefined => {
-  if (!defaults) return undefined;
-  if (!saved) return defaults;
-
-  const result: WidgetCustomSettings = { ...defaults };
-
-  for (const key of Object.keys(defaults) as (keyof WidgetCustomSettings)[]) {
-    const defaultSection = defaults[key];
-
-    if (!defaultSection) continue;
-
-    result[key] = filterToDefaults(defaultSection, saved[key] ?? {}) as never;
+const overlayWidgetSpecificSettings = (
+  defaults: WidgetSpecificSettings | undefined,
+  saved: WidgetSpecificSettings | undefined
+): WidgetSpecificSettings | undefined => {
+  if (!defaults) {
+    return undefined;
   }
 
-  return result;
+  if (!saved) {
+    return defaults;
+  }
+
+  return filterToDefaults(defaults, saved) as WidgetSpecificSettings;
 };
 
 const restoreWidgets = (
@@ -61,9 +56,9 @@ const restoreWidgets = (
       ...filteredSaved,
       label: widgetDefaults.label,
       description: widgetDefaults.description,
-      customSettings: overlayCustomSettings(
-        widgetDefaults.customSettings,
-        saved.customSettings
+      widgetSpecificSettings: overlayWidgetSpecificSettings(
+        widgetDefaults.widgetSpecificSettings,
+        saved.widgetSpecificSettings
       ),
     });
   }
