@@ -29,14 +29,14 @@
 .sectorListVertical {
   display: flex;
   flex-direction: column;
-  gap: rem(2);
+  gap: ws(2);
   padding: 0 $space-sm $space-md;
 }
 
 .sectorListHorizontal {
   display: flex;
   flex-direction: row;
-  gap: rem(4);
+  gap: ws(4);
   flex: 1 1 0;
   min-width: 0;
   height: 100%;

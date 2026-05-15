@@ -5,13 +5,13 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  gap: rem(20);
-  padding: $space-xl;
+  gap: ws(20);
+  padding: ws(16);
 }
 
 .recordingTitle {
   font-family: $font-widget;
-  font-size: $font-size-xl;
+  font-size: ws(32);
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -20,14 +20,14 @@
 
 .recordingMessage {
   font-family: $font-widget;
-  font-size: $font-size-lg;
+  font-size: ws(20);
   color: $color-text-muted;
   text-align: center;
 }
 
 .progressBarWrap {
   width: 80%;
-  height: rem(14);
+  height: ws(14);
   background: rgba(39, 39, 42, 0.5);
   border-radius: 4px;
   overflow: hidden;
@@ -43,7 +43,7 @@
 
 .progressLabel {
   font-family: $font-mono;
-  font-size: $font-size-md;
+  font-size: ws(14);
   color: $color-text-muted;
   font-variant-numeric: tabular-nums;
 }

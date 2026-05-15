@@ -1,5 +1,5 @@
 .standings {
-  --widget-pad-x: 0.625em;
+  --widget-pad-x: ws(10);
 
   font-family: $font-mono;
   font-variant-numeric: tabular-nums;
@@ -9,7 +9,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-size: 1em;
 }
 
 // List wrapper — no scroll, rows beyond window are not rendered
@@ -24,8 +23,8 @@
 .headerRow {
   display: grid;
   align-items: center;
-  column-gap: 0.35em;
-  padding: 0.3em 0.625em;
+  column-gap: ws(6);
+  padding: ws(5) ws(10);
   background: rgb(24, 24, 27);
   border-bottom: 1px solid rgba(39, 39, 42, 0.5);
   position: sticky;
@@ -36,7 +35,7 @@
 .th {
   font-family: $font-mono;
   text-transform: uppercase;
-  font-size: 0.6875em;
+  font-size: ws(11);
   letter-spacing: 0.06em;
   color: rgba(161, 161, 170, 1);
   font-weight: 600;

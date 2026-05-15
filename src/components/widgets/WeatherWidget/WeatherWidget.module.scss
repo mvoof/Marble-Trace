@@ -20,21 +20,21 @@
   }
 
   background: rgba(0, 0, 0, 0.4);
-  padding: rem(5) rem(12);
+  padding: ws(5) ws(12);
   border-left: 2px solid transparent;
   font-family: $font-mono;
 }
 
 .statLabel {
   display: block;
-  font-size: rem(9);
+  font-size: ws(9);
   color: $color-text-muted;
   letter-spacing: 1px;
 }
 
 .statValue {
   display: block;
-  font-size: rem(13);
+  font-size: ws(13);
   font-weight: 700;
   color: #fff;
   line-height: 1.2;
@@ -43,12 +43,12 @@
 }
 
 .statUnit {
-  font-size: rem(13);
+  font-size: ws(13);
   margin-left: 1px;
 }
 
 .statSub {
-  font-size: rem(9);
+  font-size: ws(9);
 }
 
 // Forecast block — rows styled like TimingRow
@@ -57,31 +57,31 @@
   flex-direction: column;
   gap: 1px;
   width: 100%;
-  margin-top: rem(4);
+  margin-top: ws(4);
 }
 
 .forecastRow {
   display: grid;
-  grid-template-columns: rem(34) 1fr rem(56);
+  grid-template-columns: ws(34) 1fr ws(56);
   align-items: center;
-  gap: rem(4);
+  gap: ws(4);
   font-family: $font-mono;
-  padding: rem(4) rem(6);
+  padding: ws(4) ws(6);
   background: rgba(0, 0, 0, 0.3);
   border-left: 3px solid rgba(255, 255, 255, 0.1);
   opacity: 0.5;
-  font-size: rem(12);
+  font-size: ws(12);
 }
 
 .forecastTime {
-  font-size: rem(10);
+  font-size: ws(10);
   color: $color-text-muted;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .forecastSkies {
-  font-size: rem(11);
+  font-size: ws(11);
   color: #fff;
   font-weight: 600;
   overflow: hidden;
@@ -97,14 +97,14 @@
 }
 
 .forecastTemp {
-  font-size: rem(13);
+  font-size: ws(13);
   font-weight: 700;
   color: #fff;
   font-variant-numeric: tabular-nums;
 }
 
 .forecastWind {
-  font-size: rem(9);
+  font-size: ws(9);
   color: $color-text-muted;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;

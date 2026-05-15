@@ -1,14 +1,14 @@
 .rowListVertical {
   display: flex;
   flex-direction: column;
-  gap: rem(2);
+  gap: ws(2);
   padding: $space-sm $space-sm $space-md;
 }
 
 .rowListHorizontal {
   display: flex;
   flex-direction: row;
-  gap: rem(4);
+  gap: ws(4);
   padding: $space-sm;
   width: 100%;
   height: 100%;

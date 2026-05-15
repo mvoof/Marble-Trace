@@ -13,13 +13,13 @@
 .header {
   display: flex;
   justify-content: space-between;
-  padding: rem(8) rem(10) rem(4);
+  padding: ws(8) ws(10) ws(4);
   align-items: baseline;
 }
 
 .headerLabel {
   font-family: $font-widget;
-  font-size: rem(10);
+  font-size: ws(10);
   font-weight: 600;
   color: $color-text-muted;
   letter-spacing: 1.5px;
@@ -27,25 +27,25 @@
 
 .headerAmount {
   font-family: $font-mono;
-  font-size: rem(18);
+  font-size: ws(18);
   font-weight: 700;
   color: #fff;
   font-variant-numeric: tabular-nums;
 }
 
 .headerUnit {
-  font-size: rem(12);
+  font-size: ws(12);
   color: $color-text-muted;
-  margin-left: rem(2);
+  margin-left: ws(2);
 }
 
 .progressSection {
-  padding: 0 rem(10) rem(8);
+  padding: 0 ws(10) ws(8);
 }
 
 .progressWrap {
   position: relative;
-  height: rem(14);
+  height: ws(14);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 2px;
@@ -62,12 +62,12 @@
 
 .progressLabelMax {
   position: absolute;
-  right: rem(6);
+  right: ws(6);
   top: 50%;
   transform: translateY(-50%);
   z-index: 1;
   font-family: $font-mono;
-  font-size: rem(9);
+  font-size: ws(9);
   color: #fff;
   letter-spacing: 0.5px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
@@ -85,23 +85,23 @@
 .gridCell {
   display: flex;
   flex-direction: column;
-  padding: rem(8) rem(10);
+  padding: ws(8) ws(10);
   background: $color-bg-widget;
 }
 
 .cellLabel {
   font-family: $font-widget;
-  font-size: rem(9);
+  font-size: ws(9);
   font-weight: 600;
   color: $color-text-muted;
   letter-spacing: 1px;
-  margin-bottom: rem(2);
+  margin-bottom: ws(2);
   text-transform: uppercase;
 }
 
 .cellValue {
   font-family: $font-mono;
-  font-size: rem(16);
+  font-size: ws(16);
   font-weight: 700;
   color: #fff;
   font-variant-numeric: tabular-nums;
@@ -123,8 +123,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: rem(8) rem(10);
-  margin: rem(1) 0;
+  padding: ws(8) ws(10);
+  margin: ws(1) 0;
   width: 100%;
   background: rgba(255, 255, 255, 0.03);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -154,16 +154,16 @@
 
 .finishLabel {
   font-family: $font-widget;
-  font-size: rem(10);
+  font-size: ws(10);
   font-weight: 700;
   color: $color-text-muted;
   letter-spacing: 1.5px;
-  margin-bottom: rem(4);
+  margin-bottom: ws(4);
 }
 
 .finishValue {
   font-family: $font-mono;
-  font-size: rem(24);
+  font-size: ws(24);
   font-weight: 800;
   color: #fff;
   font-variant-numeric: tabular-nums;
@@ -171,20 +171,20 @@
 }
 
 .chartSection {
-  padding: rem(8) rem(10);
+  padding: ws(8) ws(10);
   background: rgba(0, 0, 0, 0.2);
 }
 
 .chartCanvas {
   display: block;
   width: 100%;
-  height: rem(180);
+  height: ws(180);
 }
 
 // Pit-stop warning block
 .pitWarning {
-  margin: rem(8) 0 rem(10);
-  padding: rem(8) rem(10);
+  margin: ws(8) 0 ws(10);
+  padding: ws(8) ws(10);
   background: rgba($color-error, 0.08);
   border-top: 1px solid rgba($color-error, 0.3);
   border-bottom: 1px solid rgba($color-error, 0.3);
@@ -215,12 +215,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: rem(6);
+  margin-bottom: ws(6);
 }
 
 .pitWarningHeaderLabel {
   font-family: $font-mono;
-  font-size: rem(11);
+  font-size: ws(11);
   color: $color-caution;
   letter-spacing: 1px;
   font-weight: 700;
@@ -228,7 +228,7 @@
 
 .pitWarningWindow {
   font-family: $font-mono;
-  font-size: rem(12);
+  font-size: ws(12);
   font-weight: 600;
   color: #fff;
 }
@@ -236,7 +236,7 @@
 .pitWarningSeparator {
   height: 1px;
   background: rgba(255, 255, 255, 0.05);
-  margin-bottom: rem(8);
+  margin-bottom: ws(8);
 }
 
 .pitWarningBody {
@@ -248,7 +248,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: rem(2);
+  margin-bottom: ws(2);
 }
 
 .pitWarningRight {
@@ -259,11 +259,11 @@
 
 .pitWarningBodyLabel {
   font-family: $font-mono;
-  font-size: rem(10);
+  font-size: ws(10);
   color: $color-text-muted;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  margin-bottom: rem(2);
+  margin-bottom: ws(2);
 }
 
 .pitWarningAmountWrap {
@@ -273,7 +273,7 @@
 
 .pitWarningAmount {
   font-family: $font-mono;
-  font-size: rem(32);
+  font-size: ws(32);
   font-weight: 700;
   color: $color-error;
   line-height: 0.9;
@@ -285,18 +285,18 @@
 }
 
 .pitWarningAmountUnit {
-  font-size: rem(16);
+  font-size: ws(16);
   font-weight: 500;
-  margin-left: rem(4);
+  margin-left: ws(4);
 }
 
 .pitWarningBuffer {
-  margin-top: rem(4);
+  margin-top: ws(4);
 }
 
 .pitWarningBodySub {
   font-family: $font-mono;
-  font-size: rem(10);
+  font-size: ws(10);
   color: $color-text-muted;
   opacity: 0.7;
 }
@@ -304,15 +304,15 @@
 .pitWarningStrategySlot {
   display: flex;
   justify-content: flex-start;
-  min-width: rem(80);
+  min-width: ws(80);
 }
 
 .pitWarningStrategy {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: rem(2);
-  padding-right: rem(12);
+  gap: ws(2);
+  padding-right: ws(12);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -325,16 +325,16 @@
 
 .strategyLabel {
   font-family: $font-widget;
-  font-size: rem(8);
+  font-size: ws(8);
   font-weight: 600;
   color: $color-text-muted;
   letter-spacing: 0.5px;
-  margin-bottom: rem(1);
+  margin-bottom: ws(1);
 }
 
 .strategyValue {
   font-family: $font-mono;
-  font-size: rem(18);
+  font-size: ws(18);
   font-weight: 700;
   color: #fff;
 }
@@ -343,17 +343,17 @@
   width: 100%;
   height: 1px;
   background: rgba(255, 255, 255, 0.12);
-  margin: rem(2) 0;
+  margin: ws(2) 0;
 }
 
 .pitWarningSplitPit {
-  margin-top: rem(8);
-  padding: rem(4);
+  margin-top: ws(8);
+  padding: ws(4);
   background: rgba($color-error, 0.12);
   border: 1px solid rgba($color-error, 0.4);
   border-radius: 3px;
   font-family: $font-mono;
-  font-size: rem(10);
+  font-size: ws(10);
   font-weight: 700;
   color: $color-error;
   text-align: center;

@@ -1,32 +1,32 @@
 .widget {
-  padding: $space-md;
+  padding: ws(8);
   color: #ccc;
   font-family: monospace;
-  font-size: rem(13);
+  font-size: ws(13);
   line-height: 1.4;
   overflow-y: auto;
   pointer-events: auto;
   display: flex;
   flex-direction: column;
-  gap: $space-sm;
+  gap: ws(4);
 }
 
 .waiting {
   color: $color-warning;
-  margin-bottom: $space-sm;
+  margin-bottom: ws(4);
 }
 
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: $space-xs $space-md;
+  gap: ws(2) ws(8);
 }
 
 .sectionTitle {
   color: $color-info;
   font-weight: bold;
-  margin-bottom: $space-xs;
-  margin-top: $space-sm;
+  margin-bottom: ws(2);
+  margin-top: ws(4);
   grid-column: 1 / -1;
   text-transform: uppercase;
 }
