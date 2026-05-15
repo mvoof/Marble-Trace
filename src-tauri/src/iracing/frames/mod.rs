@@ -102,6 +102,10 @@ pub(crate) struct AllFieldsFrame {
     pub clutch: Option<f32>,
 
     // === Car Status ===
+    #[field_name = "PlayerCarSLShiftRPM"]
+    pub player_car_sl_shift_rpm: Vec<f32>,
+    #[field_name = "PlayerCarSLBlinkRPM"]
+    pub player_car_sl_blink_rpm: Vec<f32>,
     #[field_name = "FuelLevel"]
     pub fuel_level: f32,
     #[field_name = "FuelLevelPct"]

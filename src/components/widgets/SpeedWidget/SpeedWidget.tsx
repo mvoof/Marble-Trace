@@ -35,7 +35,7 @@ export const SpeedWidget = observer(() => {
     ledShape,
   } = widgetSettingsStore.getSpeedSettings();
 
-  const { driverInfo, weekendInfo } = telemetryStore;
+  const { weekendInfo } = telemetryStore;
 
   const speedFactor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
 
@@ -46,12 +46,6 @@ export const SpeedWidget = observer(() => {
 
   const pitLimitFormatted =
     pitLimitMs > 0 ? formatSpeed(pitLimitMs, system) : '—';
-
-  const redLine = driverInfo?.DriverCarRedLine || 10000;
-  const shiftRpm = driverInfo?.DriverCarSLShiftRPM || redLine * 0.9;
-
-  const rawBlinkRpm = driverInfo?.DriverCarSLBlinkRPM || redLine;
-  const blinkRpm = rawBlinkRpm <= redLine ? rawBlinkRpm : shiftRpm;
 
   const rpmColors = useMemo(
     () => ({
@@ -77,22 +71,10 @@ export const SpeedWidget = observer(() => {
         <div className={styles.speedRow}>
           <SpeedDisplay />
 
-          <RpmPanel
-            shiftRpm={shiftRpm}
-            blinkRpm={blinkRpm}
-            colors={rpmColors}
-            showRpmColor={showRpmColor}
-          />
+          <RpmPanel colors={rpmColors} showRpmColor={showRpmColor} />
         </div>
 
-        {showRpmBar && (
-          <RpmBar
-            shiftRpm={shiftRpm}
-            blinkRpm={blinkRpm}
-            colors={rpmColors}
-            ledShape={ledShape}
-          />
-        )}
+        {showRpmBar && <RpmBar colors={rpmColors} ledShape={ledShape} />}
       </div>
 
       {showTemps && (

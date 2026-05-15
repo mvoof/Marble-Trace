@@ -54,6 +54,14 @@ pub struct CarStatusFrame {
     /// Engine warning bitmask; bit 0x10 = pit speed limiter active
     /// @see https://sajax.github.io/irsdkdocs/telemetry/enginewarnings/
     pub engine_warnings: Option<u32>,
+
+    /// Per-gear RPM threshold at which shift lights turn fully on (one value per gear, index = gear number)
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/playercarslshiftrpm/
+    pub player_car_sl_shift_rpm: Vec<f32>,
+
+    /// Per-gear RPM threshold at which shift lights blink (one value per gear, index = gear number)
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/playercarslblinkrpm/
+    pub player_car_sl_blink_rpm: Vec<f32>,
 }
 
 const TEMP_MAX_C: f32 = 400.0;
@@ -78,6 +86,8 @@ impl From<&AllFieldsFrame> for CarStatusFrame {
             is_on_track: f.is_on_track,
             car_left_right: f.car_left_right,
             engine_warnings: f.engine_warnings,
+            player_car_sl_shift_rpm: f.player_car_sl_shift_rpm.clone(),
+            player_car_sl_blink_rpm: f.player_car_sl_blink_rpm.clone(),
         }
     }
 }
