@@ -107,7 +107,15 @@ export const PitPanel = observer(
         </span>
 
         <span
-          className={`${styles.pitSub} ${pitState === 'normal' ? styles.pitSubNormal : ''} ${pitState === 'pit-lane' ? styles.pitSubLimOff : ''} ${pitState === 'over-limit' ? styles.pitSubOver : ''}`}
+          className={`${styles.pitSub} ${
+            pitState === 'normal'
+              ? styles.pitSubNormal
+              : pitState === 'pit-lane'
+                ? styles.pitSubLimOff
+                : pitState === 'over-limit'
+                  ? styles.pitSubOver
+                  : ''
+          }`}
         >
           {pitSubLabel}
         </span>

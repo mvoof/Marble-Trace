@@ -44,7 +44,10 @@ export const RpmBar = observer(
               <div
                 key={`led-${index}`}
                 className={styles.rpmSeg}
-                style={{ borderRadius: isCircle ? '50%' : '15%' }}
+                style={{
+                  borderRadius: isCircle ? '50%' : '15%',
+                  transform: isCircle ? 'scale(0.85)' : 'none',
+                }}
               />
             );
           }
