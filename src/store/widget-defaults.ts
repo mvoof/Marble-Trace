@@ -163,7 +163,7 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Standings',
     description: 'Live session standings and intervals.',
     component: StandingsWidgetContainer,
-    designWidth: 900,
+    designWidth: 700,
     designHeight: 450,
     userSettings: {
       enabled: false,
