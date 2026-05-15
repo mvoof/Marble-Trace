@@ -1,41 +1,37 @@
 .rpmBar {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  height: rem(24);
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: rem(2);
-  padding: rem(2);
-  background: rgb(20, 20, 20);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(4px);
+  width: 100%;
 }
 
 .rpmSeg {
   flex: 1 1 0;
-  height: 100%;
-  border-radius: 1px;
-  background: rgba(90, 90, 90, 0.137);
+  aspect-ratio: 1 / 1;
+  border-radius: 15%;
+  background: rgba(255, 255, 255, 0.06);
   transition: background 0.04s ease;
 }
 
 .rpmSegLit {
   background: var(--rpm-seg-color);
-  box-shadow: 0 0 3px var(--rpm-seg-color);
+  box-shadow:
+    0 0 rem(6) var(--rpm-seg-color),
+    0 0 rem(2) var(--rpm-seg-color);
 }
 
 .rpmBarBlink .rpmSeg {
-  animation: blinkBar 0.12s ease-in-out infinite alternate;
+  animation: blinkBar 0.12s steps(2, start) infinite;
 }
 
 @keyframes blinkBar {
-  from {
+  0%,
+  100% {
     opacity: 1;
   }
-  to {
+
+  50% {
     opacity: 0.1;
   }
 }

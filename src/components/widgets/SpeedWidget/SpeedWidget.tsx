@@ -27,10 +27,12 @@ export const SpeedWidget = observer(() => {
     rpmColorHigh,
     rpmColorShift,
     rpmColorLimit,
-    showPitPanel,
-    displayMode,
     showTemps,
     showRpmBar,
+    showRpmColor,
+    gearColor,
+    gearPanelBg,
+    ledShape,
   } = widgetSettingsStore.getSpeedSettings();
 
   const { driverInfo, weekendInfo } = telemetryStore;
@@ -65,31 +67,38 @@ export const SpeedWidget = observer(() => {
   return (
     <div className={styles.root}>
       <PitPanel
-        showPitPanel={showPitPanel}
         pitLimitMs={pitLimitMs}
         pitLimitFormatted={pitLimitFormatted}
+        gearColor={gearColor}
+        gearPanelBg={gearPanelBg}
       />
 
-      <div className={styles.mainDisplay}>
-        <div className={styles.leftBlock}>
-          <div className={styles.leftInner}>
-            <SpeedDisplay variant="secondary" displayMode={displayMode} />
-          </div>
+      <div className={styles.rightPanel}>
+        <div className={styles.speedRow}>
+          <SpeedDisplay />
+
+          <RpmPanel
+            shiftRpm={shiftRpm}
+            blinkRpm={blinkRpm}
+            colors={rpmColors}
+            showRpmColor={showRpmColor}
+          />
         </div>
 
-        <div className={styles.rightBlock}>
-          <div className={styles.rightInner}>
-            <SpeedDisplay variant="primary" displayMode={displayMode} />
-
-            {showTemps && <EnginePanel />}
-
-            <RpmPanel />
-          </div>
-        </div>
+        {showRpmBar && (
+          <RpmBar
+            shiftRpm={shiftRpm}
+            blinkRpm={blinkRpm}
+            colors={rpmColors}
+            ledShape={ledShape}
+          />
+        )}
       </div>
 
-      {showRpmBar && (
-        <RpmBar shiftRpm={shiftRpm} blinkRpm={blinkRpm} colors={rpmColors} />
+      {showTemps && (
+        <div className={styles.tempsOverlay}>
+          <EnginePanel />
+        </div>
       )}
     </div>
   );

@@ -1,20 +1,22 @@
 import type React from 'react';
 
-export type SpeedWidgetDisplayMode = 'speed' | 'gear';
 type RpmColorTheme = 'custom' | 'gradient' | 'classic';
+export type LedShape = 'square' | 'circle';
 
 export interface SpeedWidgetSettings {
-  displayMode: SpeedWidgetDisplayMode;
   rpmColorTheme: RpmColorTheme;
   rpmColorLow: string;
   rpmColorMid: string;
   rpmColorHigh: string;
   rpmColorShift: string;
   rpmColorLimit: string;
-  showPitPanel: boolean;
   showRpmBar: boolean;
   showTemps: boolean;
+  showRpmColor: boolean;
   pitSpeedLimitOverride: number | null;
+  gearColor: string;
+  gearPanelBg: string;
+  ledShape: LedShape;
 }
 
 export type InputTraceBarMode = 'horizontal' | 'vertical' | 'hidden';
