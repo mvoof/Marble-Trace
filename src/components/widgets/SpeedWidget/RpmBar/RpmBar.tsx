@@ -5,7 +5,7 @@ import { getShiftZoneColor } from '../speed-utils';
 import type { LedShape } from '../../../../types/widget-settings';
 import styles from './RpmBar.module.scss';
 
-const LED_COUNT = 24;
+const LED_COUNT = 22;
 
 export interface RpmColors {
   low: string;
@@ -46,7 +46,6 @@ export const RpmBar = observer(
                 className={styles.rpmSeg}
                 style={{
                   borderRadius: isCircle ? '50%' : '15%',
-                  transform: isCircle ? 'scale(0.85)' : 'none',
                 }}
               />
             );
@@ -66,7 +65,6 @@ export const RpmBar = observer(
                 {
                   '--rpm-seg-color': color,
                   borderRadius: isCircle ? '50%' : '15%',
-                  transform: isCircle ? 'scale(0.85)' : 'none',
                 } as React.CSSProperties
               }
             />

@@ -47,10 +47,6 @@
   animation: limOffBlink 1s ease-in-out infinite;
 }
 
-.statePitLane .pitSubLimOff {
-  color: $color-pit-warning;
-}
-
 .pitSubOver {
   color: #fff;
   animation: overLimitSubBlink 0.5s steps(2, start) infinite;
@@ -71,6 +67,11 @@
 
 .statePitLane .pitSub {
   color: rgba(0, 0, 0, 0.55);
+}
+
+.statePitLane .pitSubLimOff {
+  color: $color-pit-warning;
+  animation: limOffBlink 1s ease-in-out infinite;
 }
 
 // limiter active → bright blue

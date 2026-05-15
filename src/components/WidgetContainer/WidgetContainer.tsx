@@ -8,6 +8,8 @@ import { WIDGET_BY_ID } from '../../store/widget-defaults';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
 import styles from './WidgetContainer.module.scss';
 
+type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
+
 interface WidgetContainerProps {
   widgetId: string;
   children: ReactNode;
@@ -34,6 +36,8 @@ export const WidgetContainer = observer(
       mouseY: 0,
       widgetW: 0,
       widgetH: 0,
+      widgetX: 0,
+      widgetY: 0,
     });
 
     const isConnected = telemetryConnectionStore.status === 'connected';
@@ -57,6 +61,8 @@ export const WidgetContainer = observer(
     const designHeight = widget?.designHeight ?? height;
 
     const autoHeight = WIDGET_BY_ID.get(widgetId)?.autoHeight ?? false;
+
+    const widgetScale = autoHeight ? 1 : width / designWidth;
 
     const background = shouldHide
       ? 'transparent'
@@ -107,7 +113,7 @@ export const WidgetContainer = observer(
     );
 
     const handleResizeMouseDown = useCallback(
-      (e: React.MouseEvent) => {
+      (e: React.MouseEvent, direction: ResizeDirection) => {
         if (!dragMode || e.button !== 0) return;
 
         e.preventDefault();
@@ -122,6 +128,8 @@ export const WidgetContainer = observer(
           mouseY: e.clientY,
           widgetW: currentWidget?.width ?? designWidth,
           widgetH: currentWidget?.height ?? designHeight,
+          widgetX: currentWidget?.x ?? 0,
+          widgetY: currentWidget?.y ?? 0,
         };
 
         const onMouseMove = (ev: MouseEvent) => {
@@ -133,17 +141,39 @@ export const WidgetContainer = observer(
           const minW = Math.max(20, Math.round(designWidth * 0.2));
           const minH = Math.max(20, Math.round(designHeight * 0.2));
 
-          const newW = Math.max(
-            minW,
-            Math.round(resizeStartRef.current.widgetW + dx)
-          );
+          const startW = resizeStartRef.current.widgetW;
+          const startH = resizeStartRef.current.widgetH;
+          const startX = resizeStartRef.current.widgetX;
+          const startY = resizeStartRef.current.widgetY;
 
-          const newH = Math.max(
-            minH,
-            Math.round(resizeStartRef.current.widgetH + dy)
-          );
+          let newW = startW;
+          let newH = startH;
+          let newX = startX;
+          let newY = startY;
+
+          if (direction.includes('e')) {
+            newW = Math.max(minW, Math.round(startW + dx));
+          }
+
+          if (direction.includes('w')) {
+            newW = Math.max(minW, Math.round(startW - dx));
+            newX = Math.round(startX + startW - newW);
+          }
+
+          if (direction.includes('s')) {
+            newH = Math.max(minH, Math.round(startH + dy));
+          }
+
+          if (direction.includes('n')) {
+            newH = Math.max(minH, Math.round(startH - dy));
+            newY = Math.round(startY + startH - newH);
+          }
 
           widgetSettingsStore.updateSize(widgetId, newW, newH);
+
+          if (newX !== startX || newY !== startY) {
+            widgetSettingsStore.updatePosition(widgetId, newX, newY);
+          }
         };
 
         const onMouseUp = () => {
@@ -160,6 +190,10 @@ export const WidgetContainer = observer(
       },
       [dragMode, widgetId, designWidth, designHeight]
     );
+
+    const resizeDirections: ResizeDirection[] = autoHeight
+      ? ['e', 'w']
+      : ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
 
     return (
       <div
@@ -179,7 +213,9 @@ export const WidgetContainer = observer(
           <ErrorBoundary>
             <div
               className={`${styles.widgetInner} ${dragMode ? styles.dragging : ''}`}
-              style={{ background }}
+              style={
+                { background, ['--wfs']: widgetScale } as React.CSSProperties
+              }
             >
               {children}
             </div>
@@ -191,13 +227,15 @@ export const WidgetContainer = observer(
             </div>
           )}
 
-          {dragMode && (
-            // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-            <div
-              className={styles.resizeHandle}
-              onMouseDown={handleResizeMouseDown}
-            />
-          )}
+          {dragMode &&
+            resizeDirections.map((direction) => (
+              // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+              <div
+                key={direction}
+                className={`${styles.resizeHandle} ${styles[`resizeHandle${direction.toUpperCase()}`]}`}
+                onMouseDown={(e) => handleResizeMouseDown(e, direction)}
+              />
+            ))}
         </div>
       </div>
     );

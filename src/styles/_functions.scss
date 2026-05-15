@@ -3,3 +3,10 @@ $base-font-size: 16px;
 @function rem($px) {
   @return calc($px / ($base-font-size / 1px)) * 1rem;
 }
+
+// Widget-scale aware size: scales with --wfs custom property set by WidgetContainer.
+// Use instead of rem() for all sizing inside fixed-size widgets.
+// Borders (px) are exempt — they should not scale.
+@function ws($px) {
+  @return calc(#{$px}px * var(--wfs, 1));
+}
