@@ -4,10 +4,7 @@ import { unitsStore } from '../units.store';
 import { widgetSettingsStore } from '../widget-settings.store';
 import { DEFAULT_WIDGETS } from '../widget-defaults';
 import type { UnitSystem } from '../../types';
-import type {
-  WidgetDefaultConfig,
-  WidgetSpecificSettings,
-} from '../../types/widget-settings';
+import type { WidgetDefaultConfig } from '../../types/widget-settings';
 import type { AppSettings } from '../app-settings.store';
 import { filterToDefaults } from '../../utils/filter-to-defaults';
 
@@ -20,21 +17,6 @@ export interface Settings {
   };
   widgets: WidgetDefaultConfig[];
 }
-
-const overlayWidgetSpecificSettings = (
-  defaults: WidgetSpecificSettings | undefined,
-  saved: WidgetSpecificSettings | undefined
-): WidgetSpecificSettings | undefined => {
-  if (!defaults) {
-    return undefined;
-  }
-
-  if (!saved) {
-    return defaults;
-  }
-
-  return filterToDefaults(defaults, saved) as WidgetSpecificSettings;
-};
 
 const restoreWidgets = (
   savedWidgets: WidgetDefaultConfig[]
@@ -50,16 +32,18 @@ const restoreWidgets = (
 
     if (!widgetDefaults) continue;
 
-    const filteredSaved = filterToDefaults(widgetDefaults, saved);
+    const mergedUserSettings = filterToDefaults(
+      widgetDefaults.userSettings,
+      saved.userSettings ?? {}
+    );
 
     result.push({
-      ...filteredSaved,
+      id: widgetDefaults.id,
       label: widgetDefaults.label,
       description: widgetDefaults.description,
-      widgetSpecificSettings: overlayWidgetSpecificSettings(
-        widgetDefaults.widgetSpecificSettings,
-        saved.widgetSpecificSettings
-      ),
+      designWidth: widgetDefaults.designWidth,
+      designHeight: widgetDefaults.designHeight,
+      userSettings: mergedUserSettings,
     });
   }
 

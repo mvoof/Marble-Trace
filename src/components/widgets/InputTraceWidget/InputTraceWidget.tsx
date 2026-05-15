@@ -6,7 +6,10 @@ import {
   type CanvasTraceChannel,
   type CanvasTraceHandle,
 } from '../primitives/CanvasTrace/CanvasTrace';
-import type { InputTraceSettings } from '../../../types/widget-settings';
+import type {
+  BaseUserSettings,
+  InputTraceSettings,
+} from '../../../types/widget-settings';
 import { InputBars, type InputBarsHandle } from './InputBars/InputBars';
 
 import styles from './InputTraceWidget.module.scss';
@@ -19,7 +22,7 @@ interface InputTraceWidgetProps {
   initialThrottle: number;
   initialBrake: number;
   initialClutch: number;
-  settings: InputTraceSettings;
+  settings: BaseUserSettings & InputTraceSettings;
   ref?: Ref<InputTraceHandle>;
 }
 

@@ -33,6 +33,8 @@ export const WidgetSettings = observer(
       return <div className={styles.fieldDesc}>Widget not found</div>;
     }
 
+    const userSettings = widget.userSettings;
+
     return (
       <div className={styles.animateFadeIn}>
         <header className={styles.header}>
@@ -46,10 +48,10 @@ export const WidgetSettings = observer(
               <span className={styles.fieldLabel}>Position X</span>
               <InputNumber
                 style={{ width: '100%' }}
-                value={widget.x}
+                value={userSettings.x}
                 onChange={(v) =>
                   v !== null &&
-                  widgetSettingsStore.updateField(widgetId, 'x', v)
+                  widgetSettingsStore.updateUserSettings(widgetId, { x: v })
                 }
               />
             </Col>
@@ -58,10 +60,10 @@ export const WidgetSettings = observer(
               <span className={styles.fieldLabel}>Position Y</span>
               <InputNumber
                 style={{ width: '100%' }}
-                value={widget.y}
+                value={userSettings.y}
                 onChange={(v) =>
                   v !== null &&
-                  widgetSettingsStore.updateField(widgetId, 'y', v)
+                  widgetSettingsStore.updateUserSettings(widgetId, { y: v })
                 }
               />
             </Col>
@@ -70,11 +72,13 @@ export const WidgetSettings = observer(
               <span className={styles.fieldLabel}>Width (px)</span>
               <InputNumber
                 style={{ width: '100%' }}
-                value={widget.currentWidth}
+                value={userSettings.currentWidth}
                 min={10}
                 onChange={(v) =>
                   v !== null &&
-                  widgetSettingsStore.updateField(widgetId, 'currentWidth', v)
+                  widgetSettingsStore.updateUserSettings(widgetId, {
+                    currentWidth: v,
+                  })
                 }
               />
             </Col>
@@ -83,11 +87,13 @@ export const WidgetSettings = observer(
               <span className={styles.fieldLabel}>Height (px)</span>
               <InputNumber
                 style={{ width: '100%' }}
-                value={widget.currentHeight}
+                value={userSettings.currentHeight}
                 min={10}
                 onChange={(v) =>
                   v !== null &&
-                  widgetSettingsStore.updateField(widgetId, 'currentHeight', v)
+                  widgetSettingsStore.updateUserSettings(widgetId, {
+                    currentHeight: v,
+                  })
                 }
               />
             </Col>
@@ -101,18 +107,16 @@ export const WidgetSettings = observer(
                 <span className={styles.fieldLabel}>Background Center</span>
                 <div className={styles.colorPickerContainer}>
                   <ColorPicker
-                    value={widget.backgroundColor ?? '#252525'}
+                    value={userSettings.backgroundColor ?? '#252525'}
                     allowClear
                     onChange={(color) =>
-                      widgetSettingsStore.updateField(
-                        widgetId,
-                        'backgroundColor',
-                        color.toHexString()
-                      )
+                      widgetSettingsStore.updateUserSettings(widgetId, {
+                        backgroundColor: color.toHexString(),
+                      })
                     }
                   />
                   <div className={styles.fieldDesc}>
-                    {widget.backgroundColor ?? 'transparent'}
+                    {userSettings.backgroundColor ?? 'transparent'}
                   </div>
                 </div>
               </Col>
@@ -121,18 +125,16 @@ export const WidgetSettings = observer(
                 <span className={styles.fieldLabel}>Background Edge</span>
                 <div className={styles.colorPickerContainer}>
                   <ColorPicker
-                    value={widget.backgroundColorEdge ?? '#14141b'}
+                    value={userSettings.backgroundColorEdge ?? '#14141b'}
                     allowClear
                     onChange={(color) =>
-                      widgetSettingsStore.updateField(
-                        widgetId,
-                        'backgroundColorEdge',
-                        color.toHexString()
-                      )
+                      widgetSettingsStore.updateUserSettings(widgetId, {
+                        backgroundColorEdge: color.toHexString(),
+                      })
                     }
                   />
                   <div className={styles.fieldDesc}>
-                    {widget.backgroundColorEdge ?? 'transparent'}
+                    {userSettings.backgroundColorEdge ?? 'transparent'}
                   </div>
                 </div>
               </Col>
@@ -141,18 +143,18 @@ export const WidgetSettings = observer(
                 <span className={styles.fieldLabel}>Border</span>
                 <div className={styles.colorPickerContainer}>
                   <ColorPicker
-                    value={widget.borderColor ?? 'rgba(255, 255, 255, 0.1)'}
+                    value={
+                      userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)'
+                    }
                     allowClear
                     onChange={(color) =>
-                      widgetSettingsStore.updateField(
-                        widgetId,
-                        'borderColor',
-                        color.toRgbString()
-                      )
+                      widgetSettingsStore.updateUserSettings(widgetId, {
+                        borderColor: color.toRgbString(),
+                      })
                     }
                   />
                   <div className={styles.fieldDesc}>
-                    {widget.borderColor ?? 'transparent'}
+                    {userSettings.borderColor ?? 'transparent'}
                   </div>
                 </div>
               </Col>
@@ -164,7 +166,7 @@ export const WidgetSettings = observer(
           <HotkeyRecorderWrapper
             key={widgetId}
             widgetId={widgetId}
-            currentHotkey={widget.hotkey}
+            currentHotkey={userSettings.hotkey}
           />
         </Card>
 

@@ -48,15 +48,17 @@ export const WidgetContainer = observer(
         !dragMode) ||
       (!visible && !dragMode);
 
-    const backgroundColor = widget?.backgroundColor ?? '#1a1a1a';
-    const backgroundColorEdge = widget?.backgroundColorEdge ?? '#0a0a0a';
-    const borderColor = widget?.borderColor ?? 'rgba(255, 255, 255, 0.1)';
+    const backgroundColor = widget?.userSettings.backgroundColor ?? '#1a1a1a';
+    const backgroundColorEdge =
+      widget?.userSettings.backgroundColorEdge ?? '#0a0a0a';
+    const borderColor =
+      widget?.userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
 
-    const x = widget?.x ?? 100;
-    const y = widget?.y ?? 100;
+    const x = widget?.userSettings.x ?? 100;
+    const y = widget?.userSettings.y ?? 100;
 
-    const width = widget?.currentWidth ?? 200;
-    const height = widget?.currentHeight ?? 200;
+    const width = widget?.userSettings.currentWidth ?? 200;
+    const height = widget?.userSettings.currentHeight ?? 200;
 
     const designWidth = widget?.designWidth ?? width;
     const designHeight = widget?.designHeight ?? height;
@@ -83,8 +85,8 @@ export const WidgetContainer = observer(
         dragStartRef.current = {
           mouseX: e.clientX,
           mouseY: e.clientY,
-          widgetX: currentWidget?.x ?? 0,
-          widgetY: currentWidget?.y ?? 0,
+          widgetX: currentWidget?.userSettings.x ?? 0,
+          widgetY: currentWidget?.userSettings.y ?? 0,
         };
 
         const onMouseMove = (ev: MouseEvent) => {
@@ -127,10 +129,10 @@ export const WidgetContainer = observer(
         resizeStartRef.current = {
           mouseX: e.clientX,
           mouseY: e.clientY,
-          widgetW: currentWidget?.currentWidth ?? designWidth,
-          widgetH: currentWidget?.currentHeight ?? designHeight,
-          widgetX: currentWidget?.x ?? 0,
-          widgetY: currentWidget?.y ?? 0,
+          widgetW: currentWidget?.userSettings.currentWidth ?? designWidth,
+          widgetH: currentWidget?.userSettings.currentHeight ?? designHeight,
+          widgetX: currentWidget?.userSettings.x ?? 0,
+          widgetY: currentWidget?.userSettings.y ?? 0,
         };
 
         const onMouseMove = (ev: MouseEvent) => {

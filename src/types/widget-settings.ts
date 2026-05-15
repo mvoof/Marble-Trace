@@ -171,6 +171,7 @@ export interface GMeterWidgetSettings {
 }
 
 export type WidgetSpecificSettings =
+  | Record<never, never> // id: exmple widget
   | ChassisWidgetSettings
   | FlagDisplaySettings
   | SpeedWidgetSettings
@@ -187,29 +188,37 @@ export type WidgetSpecificSettings =
   | TimerWidgetSettings
   | GMeterWidgetSettings;
 
-export interface WidgetConfig {
-  component: React.ComponentType<{
-    onVisibilityChange?: (visible: boolean) => void;
-  }>;
-  autoHeight?: boolean;
+export interface WidgetMeta {
   id: string;
   label: string;
   description?: string;
+  designWidth: number;
+  designHeight: number;
+}
+
+export interface BaseUserSettings {
   enabled: boolean;
   x: number;
   y: number;
   currentWidth: number;
   currentHeight: number;
-  designWidth: number;
-  designHeight: number;
+  opacity: number;
   backgroundColor: string;
   backgroundColorEdge: string;
   borderColor: string;
   hotkey: string;
-  widgetSpecificSettings?: WidgetSpecificSettings;
 }
 
-export type WidgetDefaultConfig = Omit<
-  WidgetConfig,
-  'component' | 'autoHeight'
->;
+export type WidgetUserSettings = BaseUserSettings & WidgetSpecificSettings;
+
+export interface WidgetConfig extends WidgetMeta {
+  component: React.ComponentType<{
+    onVisibilityChange?: (visible: boolean) => void;
+  }>;
+  autoHeight?: boolean;
+  userSettings: WidgetUserSettings;
+}
+
+export type WidgetDefaultConfig = WidgetMeta & {
+  userSettings: WidgetUserSettings;
+};

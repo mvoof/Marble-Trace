@@ -12,7 +12,7 @@ export const InputTraceSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getInputTraceSettings();
 
   const update = (partial: Partial<InputTraceSettings>) => {
-    widgetSettingsStore.updateWidgetSpecificSettings('input-trace', {
+    widgetSettingsStore.updateUserSettings('input-trace', {
       ...settings,
       ...partial,
     });

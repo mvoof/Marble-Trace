@@ -49,7 +49,7 @@ export const HotkeyRecorderWrapper = ({
       label="Toggle Hotkey"
       currentHotkey={currentHotkey}
       onApply={(key: string) =>
-        widgetSettingsStore.updateField(widgetId, 'hotkey', key)
+        widgetSettingsStore.updateUserSettings(widgetId, { hotkey: key })
       }
     />
   );

@@ -13,7 +13,7 @@ export const GMeterSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getGMeterSettings();
 
   const update = (partial: Partial<GMeterWidgetSettings>) => {
-    widgetSettingsStore.updateWidgetSpecificSettings('g-meter', {
+    widgetSettingsStore.updateUserSettings('g-meter', {
       ...settings,
       ...partial,
     });

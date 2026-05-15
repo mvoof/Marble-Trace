@@ -9,7 +9,7 @@ export const WeatherSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getWeatherSettings();
 
   const update = (partial: Partial<WeatherWidgetSettings>) => {
-    widgetSettingsStore.updateWidgetSpecificSettings('weather', {
+    widgetSettingsStore.updateUserSettings('weather', {
       ...settings,
       ...partial,
     });

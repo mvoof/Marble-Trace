@@ -41,7 +41,7 @@ class TelemetryConnection {
         () => ({
           widgets: widgetSettingsStore.allWidgets.map((w) => ({
             id: w.id,
-            enabled: w.enabled,
+            enabled: w.userSettings.enabled,
           })),
           hideAll: appSettingsStore.settings.hideAllWidgets,
         }),
@@ -59,7 +59,7 @@ class TelemetryConnection {
 
     if (!hideAll) {
       const isEnabled = (id: string) =>
-        widgets.find((w) => w.id === id)?.enabled ?? false;
+        widgets.find((w) => w.id === id)?.userSettings.enabled ?? false;
 
       if (
         isEnabled('speed') ||

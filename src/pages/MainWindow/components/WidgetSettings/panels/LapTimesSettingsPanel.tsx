@@ -12,7 +12,7 @@ export const LapTimesSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getLapTimesSettings();
 
   const update = (partial: Partial<LapTimesWidgetSettings>) => {
-    widgetSettingsStore.updateWidgetSpecificSettings('lap-times', {
+    widgetSettingsStore.updateUserSettings('lap-times', {
       ...settings,
       ...partial,
     });

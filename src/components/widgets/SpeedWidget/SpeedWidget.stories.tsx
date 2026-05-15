@@ -61,7 +61,7 @@ const applyArgs = (args: StoryArgs) => {
 
     unitsStore.setSystem(args.units);
 
-    widgetSettingsStore.updateWidgetSpecificSettings('speed', {
+    widgetSettingsStore.updateUserSettings('speed', {
       ...widgetSettingsStore.getSpeedSettings(),
       showRpmBar: args.showRpmBar,
       showTemps: args.showTemps,

@@ -43,7 +43,7 @@ const WidgetListItem = observer(
           role="presentation"
         >
           <Switch
-            checked={widget.enabled}
+            checked={widget.userSettings.enabled}
             size="small"
             onChange={handleToggle}
           />

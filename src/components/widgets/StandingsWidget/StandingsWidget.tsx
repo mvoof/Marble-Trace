@@ -4,7 +4,10 @@ import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@/components/widgets/primitives/WidgetPanel/WidgetPanel';
 import { useVisibleRowCount } from '@/hooks/useVisibleRowCount';
 import type { SessionInfo, WeekendInfo } from '@/types/bindings';
-import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import type {
+  BaseUserSettings,
+  StandingsWidgetSettings,
+} from '@/types/widget-settings';
 
 import { SessionHeader } from './SessionHeader/SessionHeader';
 import { ClassGroup } from './ClassGroup/ClassGroup';
@@ -18,7 +21,7 @@ import styles from './StandingsWidget.module.scss';
 
 interface StandingsWidgetProps {
   driverEntries: DriverEntry[];
-  settings: StandingsWidgetSettings;
+  settings: BaseUserSettings & StandingsWidgetSettings;
   playerPitStops: number;
   playerIncidents: number;
   sessionInfo: SessionInfo | null;

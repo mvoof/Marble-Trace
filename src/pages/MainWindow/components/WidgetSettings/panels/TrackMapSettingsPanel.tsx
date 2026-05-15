@@ -27,7 +27,7 @@ export const TrackMapSettingsPanel = observer(() => {
   const { message } = App.useApp();
 
   const update = (partial: Partial<TrackMapWidgetSettings>) => {
-    widgetSettingsStore.updateWidgetSpecificSettings('track-map', {
+    widgetSettingsStore.updateUserSettings('track-map', {
       ...settings,
       ...partial,
     });
