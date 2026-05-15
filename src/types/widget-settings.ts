@@ -207,6 +207,7 @@ export interface WidgetConfig {
   designHeight: number;
   backgroundColor: string;
   backgroundColorEdge: string;
+  borderColor: string;
   hotkey: string;
   customSettings?: WidgetCustomSettings;
 }

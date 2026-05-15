@@ -62,6 +62,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 120,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     hotkey: 'F10',
     customSettings: {
       speed: {
@@ -95,6 +96,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 220,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     hotkey: 'F11',
     customSettings: {
       'input-trace': {
@@ -125,6 +127,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 300,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
+    borderColor: 'transparent',
     hotkey: 'F6',
     customSettings: {
       'proximity-radar': {
@@ -148,6 +151,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 380,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
+    borderColor: 'transparent',
     hotkey: 'F7',
     customSettings: {
       'radar-bar': {
@@ -172,6 +176,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 450,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     hotkey: 'F3',
     customSettings: {
       standings: {
@@ -211,6 +216,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 400,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     hotkey: 'F4',
     customSettings: {
       relative: {
@@ -236,6 +242,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 400,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
+    borderColor: 'transparent',
     hotkey: 'F5',
     customSettings: {
       'track-map': {
@@ -269,6 +276,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 40,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     hotkey: '',
     customSettings: {
       'relative-map': {
@@ -292,6 +300,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 232,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
+    borderColor: 'transparent',
     hotkey: '',
     customSettings: {
       'led-flags': { alwaysShow: true, holdDuration: 3 },
@@ -312,6 +321,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 160,
     backgroundColor: 'transparent',
     backgroundColorEdge: 'transparent',
+    borderColor: 'transparent',
     hotkey: '',
     customSettings: {
       'flat-flags': { alwaysShow: true, holdDuration: 3 },
@@ -331,6 +341,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 320,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     hotkey: '',
     customSettings: {
       chassis: {
@@ -352,6 +363,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 700,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     hotkey: 'F8',
   },
   {
@@ -369,6 +381,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 180,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     hotkey: '',
     customSettings: {
       'lap-delta': {
@@ -393,6 +406,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 104,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     hotkey: '',
     customSettings: {
       'lap-times': {
@@ -418,6 +432,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 120,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     hotkey: '',
     customSettings: {
       timer: {
@@ -445,6 +460,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 280,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     hotkey: '',
     customSettings: {
       weather: {
@@ -472,6 +488,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 360,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     hotkey: '',
     customSettings: {
       fuel: {
@@ -496,6 +513,7 @@ export const WIDGETS: WidgetConfig[] = [
     designHeight: 280,
     backgroundColor: '#252525',
     backgroundColorEdge: '#14141b',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     hotkey: '',
     customSettings: {
       'g-meter': {

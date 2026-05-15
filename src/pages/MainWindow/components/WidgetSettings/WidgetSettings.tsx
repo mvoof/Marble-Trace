@@ -136,6 +136,26 @@ export const WidgetSettings = observer(
                   </div>
                 </div>
               </Col>
+
+              <Col span={12}>
+                <span className={styles.fieldLabel}>Border</span>
+                <div className={styles.colorPickerContainer}>
+                  <ColorPicker
+                    value={widget.borderColor ?? 'rgba(255, 255, 255, 0.1)'}
+                    allowClear
+                    onChange={(color) =>
+                      widgetSettingsStore.updateField(
+                        widgetId,
+                        'borderColor',
+                        color.toRgbString()
+                      )
+                    }
+                  />
+                  <div className={styles.fieldDesc}>
+                    {widget.borderColor ?? 'transparent'}
+                  </div>
+                </div>
+              </Col>
             </Row>
           </Card>
         )}

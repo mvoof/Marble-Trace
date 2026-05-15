@@ -50,6 +50,7 @@ export const WidgetContainer = observer(
 
     const backgroundColor = widget?.backgroundColor ?? '#1a1a1a';
     const backgroundColorEdge = widget?.backgroundColorEdge ?? '#0a0a0a';
+    const borderColor = widget?.borderColor ?? 'rgba(255, 255, 255, 0.1)';
 
     const x = widget?.x ?? 100;
     const y = widget?.y ?? 100;
@@ -214,7 +215,11 @@ export const WidgetContainer = observer(
             <div
               className={`${styles.widgetInner} ${dragMode ? styles.dragging : ''}`}
               style={
-                { background, ['--wfs']: widgetScale } as React.CSSProperties
+                {
+                  background,
+                  borderColor: shouldHide ? 'transparent' : borderColor,
+                  ['--wfs']: widgetScale,
+                } as React.CSSProperties
               }
             >
               {children}
