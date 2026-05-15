@@ -2,50 +2,31 @@
   position: relative;
   width: 100%;
   height: 100%;
-}
-
-.mainDisplay {
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  padding: 0 rem(14);
-  gap: 0;
+  overflow: hidden;
 }
 
-.leftBlock {
-  width: rem(58);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.leftInner {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
-  height: 60%;
-  padding-right: rem(4);
-}
-
-.rightBlock {
+.rightPanel {
   flex: 1 1 0;
   min-width: 0;
   display: flex;
-  align-items: center;
-  padding-left: rem(14);
+  flex-direction: column;
+  justify-content: space-between;
+  padding: rem(10) rem(16) rem(10);
 }
 
-.rightInner {
-  width: 100%;
+.speedRow {
   display: flex;
   flex-direction: row;
-  align-items: flex-end;
+  align-items: baseline;
   justify-content: space-between;
+}
+
+.tempsOverlay {
+  position: absolute;
+  top: rem(12);
+  right: rem(12);
+  pointer-events: none;
 }

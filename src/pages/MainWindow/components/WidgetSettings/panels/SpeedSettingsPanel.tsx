@@ -4,8 +4,8 @@ import { widgetSettingsStore } from '../../../../../store/widget-settings.store'
 import { unitsStore } from '../../../../../store/units.store';
 import { speedUnit } from '../../../../../utils/telemetry-format';
 import {
-  SpeedWidgetDisplayMode,
   SpeedWidgetSettings,
+  LedShape,
 } from '../../../../../types/widget-settings';
 import { Card, SettingRow } from './shared';
 
@@ -21,117 +21,148 @@ export const SpeedSettingsPanel = observer(() => {
   };
 
   return (
-    <Card title="Module Parameters">
-      <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>Primary Focus</span>
-
-        <Segmented
-          block
-          value={settings.displayMode}
-          options={[
-            { label: 'Vehicle Speed', value: 'speed' },
-            { label: 'Current Gear', value: 'gear' },
-          ]}
-          onChange={(v) => update({ displayMode: v as SpeedWidgetDisplayMode })}
-        />
-      </div>
-
-      <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>RPM Bar Colors</span>
-
-        <div className={styles.rpmColorGrid}>
-          <div className={styles.rpmColorItem}>
-            <span className={styles.rpmColorLabel}>Low</span>
-
+    <>
+      <Card title="Gear Panel">
+        <div className={styles.fieldGroup}>
+          <SettingRow title="Gear Color" desc="Color of the gear digit.">
             <ColorPicker
-              value={settings.rpmColorLow}
-              onChange={(c) => update({ rpmColorLow: c.toHexString() })}
+              value={settings.gearColor}
+              onChange={(color) => update({ gearColor: color.toHexString() })}
             />
-          </div>
-          <div className={styles.rpmColorLine} />
+          </SettingRow>
+        </div>
 
-          <div className={styles.rpmColorItem}>
-            <span className={styles.rpmColorLabel}>Mid</span>
-
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="Panel Background"
+            desc="Background color of the gear panel (not applied during pit state)."
+          >
             <ColorPicker
-              value={settings.rpmColorMid}
-              onChange={(c) => update({ rpmColorMid: c.toHexString() })}
+              value={settings.gearPanelBg}
+              onChange={(color) => update({ gearPanelBg: color.toRgbString() })}
             />
-          </div>
+          </SettingRow>
+        </div>
+      </Card>
 
-          <div className={styles.rpmColorLine} />
+      <Card title="RPM Bar">
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>Colors</span>
 
-          <div className={styles.rpmColorItem}>
-            <span className={styles.rpmColorLabel}>High</span>
+          <div className={styles.rpmColorGrid}>
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>Low</span>
 
-            <ColorPicker
-              value={settings.rpmColorHigh}
-              onChange={(c) => update({ rpmColorHigh: c.toHexString() })}
-            />
-          </div>
+              <ColorPicker
+                value={settings.rpmColorLow}
+                onChange={(color) =>
+                  update({ rpmColorLow: color.toHexString() })
+                }
+              />
+            </div>
+            <div className={styles.rpmColorLine} />
 
-          <div className={styles.rpmColorLine} />
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>Mid</span>
 
-          <div className={styles.rpmColorItem}>
-            <span className={styles.rpmColorLabel}>Shift</span>
+              <ColorPicker
+                value={settings.rpmColorMid}
+                onChange={(color) =>
+                  update({ rpmColorMid: color.toHexString() })
+                }
+              />
+            </div>
 
-            <ColorPicker
-              value={settings.rpmColorShift}
-              onChange={(c) => update({ rpmColorShift: c.toHexString() })}
-            />
-          </div>
+            <div className={styles.rpmColorLine} />
 
-          <div className={styles.rpmColorLine} />
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>High</span>
 
-          <div className={styles.rpmColorItem}>
-            <span className={styles.rpmColorLabel}>Blink</span>
+              <ColorPicker
+                value={settings.rpmColorHigh}
+                onChange={(color) =>
+                  update({ rpmColorHigh: color.toHexString() })
+                }
+              />
+            </div>
 
-            <ColorPicker
-              value={settings.rpmColorLimit}
-              onChange={(c) => update({ rpmColorLimit: c.toHexString() })}
-            />
+            <div className={styles.rpmColorLine} />
+
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>Shift</span>
+
+              <ColorPicker
+                value={settings.rpmColorShift}
+                onChange={(color) =>
+                  update({ rpmColorShift: color.toHexString() })
+                }
+              />
+            </div>
+
+            <div className={styles.rpmColorLine} />
+
+            <div className={styles.rpmColorItem}>
+              <span className={styles.rpmColorLabel}>Blink</span>
+
+              <ColorPicker
+                value={settings.rpmColorLimit}
+                onChange={(color) =>
+                  update({ rpmColorLimit: color.toHexString() })
+                }
+              />
+            </div>
           </div>
         </div>
 
-        <div className={styles.fieldDesc} style={{ marginTop: 6 }}>
-          Blink color flashes the entire bar at shift point.
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>LED Shape</span>
+
+          <Segmented
+            block
+            value={settings.ledShape}
+            options={[
+              { label: 'Square', value: 'square' },
+              { label: 'Circle', value: 'circle' },
+            ]}
+            onChange={(value) => update({ ledShape: value as LedShape })}
+          />
         </div>
-      </div>
 
-      <div className={styles.fieldGroup}>
-        <SettingRow
-          title="RPM Bar"
-          desc="Show segmented RPM bar along the top edge of the widget."
-        >
-          <Switch
-            checked={settings.showRpmBar}
-            onChange={(v) => update({ showRpmBar: v })}
-          />
-        </SettingRow>
-      </div>
+        <div className={styles.fieldGroup}>
+          <SettingRow title="RPM Bar" desc="Show segmented RPM bar.">
+            <Switch
+              checked={settings.showRpmBar}
+              onChange={(value) => update({ showRpmBar: value })}
+            />
+          </SettingRow>
+        </div>
 
-      <div className={styles.fieldGroup}>
-        <SettingRow title="Temperatures" desc="Show oil and water temperature.">
-          <Switch
-            checked={settings.showTemps}
-            onChange={(v) => update({ showTemps: v })}
-          />
-        </SettingRow>
-      </div>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="Color RPM Text"
+            desc="Apply zone color to the RPM number display."
+          >
+            <Switch
+              checked={settings.showRpmColor}
+              onChange={(value) => update({ showRpmColor: value })}
+            />
+          </SettingRow>
+        </div>
+      </Card>
 
-      <div className={styles.fieldGroup}>
-        <SettingRow
-          title="Pit Lane Panel"
-          desc="Show banner with pit speed info when on pit road or limiter active."
-        >
-          <Switch
-            checked={settings.showPitPanel}
-            onChange={(v) => update({ showPitPanel: v })}
-          />
-        </SettingRow>
-      </div>
+      <Card title="Display">
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="Temperatures"
+            desc="Show oil and water temperature badges."
+          >
+            <Switch
+              checked={settings.showTemps}
+              onChange={(value) => update({ showTemps: value })}
+            />
+          </SettingRow>
+        </div>
 
-      {settings.showPitPanel && (
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
             Pit Speed Override ({speedUnit(unitsStore.system)})
@@ -147,12 +178,14 @@ export const SpeedSettingsPanel = observer(() => {
             min={0}
             max={200}
             step={5}
-            onChange={(v) =>
-              update({ pitSpeedLimitOverride: v && v > 0 ? v : null })
+            onChange={(value) =>
+              update({
+                pitSpeedLimitOverride: value && value > 0 ? value : null,
+              })
             }
           />
         </div>
-      )}
-    </Card>
+      </Card>
+    </>
   );
 });
