@@ -1,54 +1,51 @@
 .tempsGroup {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: rem(3);
+  flex-direction: row;
+  align-items: center;
+  gap: rem(8);
 }
 
-.tempRow {
+.tempBadge {
   display: flex;
   align-items: center;
-  gap: rem(3);
+  justify-content: center;
+  gap: rem(4);
+  padding: rem(2) rem(6);
+  min-width: rem(32);
+  border-radius: rem(4);
+  background: rgba(255, 255, 255, 0.05);
+  font-family: $font-mono;
+  font-size: rem(14);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  font-variant-numeric: tabular-nums;
 }
 
 .tempIcon {
-  width: rem(9);
-  height: rem(9);
-  color: $color-text-muted;
+  width: rem(14);
+  height: rem(14);
   flex-shrink: 0;
 }
 
-.tempValue {
-  font-family: $font-mono;
-  font-size: rem(11);
-  font-weight: 500;
-  color: $color-text-secondary;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.tempUnit {
-  font-family: $font-widget;
-  font-size: rem(8);
-  font-weight: 600;
-  color: $color-text-muted;
-}
-
-.tempValueWarn {
-  color: $color-error;
+.tempBadgeWarn {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  animation: tempWarnBlink 0.4s steps(2, start) infinite;
 }
 
 .tempIconWarn {
-  color: $color-error;
-  animation: tempWarnBlink 0.6s ease-in-out infinite alternate;
+  color: #ef4444;
 }
 
 @keyframes tempWarnBlink {
-  from {
+  0%,
+  100% {
     opacity: 1;
+    filter: drop-shadow(0 0 rem(4) rgba(239, 68, 68, 0.5));
   }
 
-  to {
-    opacity: 0.2;
+  50% {
+    opacity: 0.5;
+    filter: none;
   }
 }

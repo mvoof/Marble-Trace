@@ -23,12 +23,18 @@
   width: 100%;
   height: 100%;
   position: relative;
+  border-radius: rem(6);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
 }
 
 .dragging {
-  cursor: grab;
   outline: 2px dashed $color-text-accent;
   outline-offset: -2px;
+}
+
+.draggingCursor {
+  cursor: grab;
 
   &:active {
     cursor: grabbing;

@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { Droplet, Thermometer } from 'lucide-react';
+import { Droplets, Thermometer } from 'lucide-react';
 
 import { telemetryStore } from '../../../../store/iracing/telemetry.store';
 import { unitsStore } from '../../../../store/units.store';
@@ -15,40 +15,32 @@ export const EnginePanel = observer(() => {
   const oilTemp = formatTemp(carStatus?.oil_temp ?? null, system);
   const waterTemp = formatTemp(carStatus?.water_temp ?? null, system);
 
-  const oilTempWarn = isEngineTempWarning(carStatus?.oil_temp);
-  const waterTempWarn = isEngineTempWarning(carStatus?.water_temp);
+  const oilWarn = isEngineTempWarning(carStatus?.oil_temp);
+  const waterWarn = isEngineTempWarning(carStatus?.water_temp);
 
   const unit = tempUnit(system);
 
   return (
     <div className={styles.tempsGroup}>
-      <div className={styles.tempRow}>
-        <Droplet
-          className={`${styles.tempIcon} ${oilTempWarn ? styles.tempIconWarn : ''}`}
+      <span
+        className={`${styles.tempBadge} ${oilWarn ? styles.tempBadgeWarn : ''}`}
+      >
+        <Droplets
+          className={`${styles.tempIcon} ${oilWarn ? styles.tempIconWarn : ''}`}
         />
+        {oilTemp}
+        {unit}
+      </span>
 
-        <span
-          className={`${styles.tempValue} ${oilTempWarn ? styles.tempValueWarn : ''}`}
-        >
-          {oilTemp}
-        </span>
-
-        <span className={styles.tempUnit}>{unit}</span>
-      </div>
-
-      <div className={styles.tempRow}>
+      <span
+        className={`${styles.tempBadge} ${waterWarn ? styles.tempBadgeWarn : ''}`}
+      >
         <Thermometer
-          className={`${styles.tempIcon} ${waterTempWarn ? styles.tempIconWarn : ''}`}
+          className={`${styles.tempIcon} ${waterWarn ? styles.tempIconWarn : ''}`}
         />
-
-        <span
-          className={`${styles.tempValue} ${waterTempWarn ? styles.tempValueWarn : ''}`}
-        >
-          {waterTemp}
-        </span>
-
-        <span className={styles.tempUnit}>{unit}</span>
-      </div>
+        {waterTemp}
+        {unit}
+      </span>
     </div>
   );
 });

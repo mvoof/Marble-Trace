@@ -5,6 +5,7 @@ import {
   driverEntries as RAW_ENTRIES,
   snapshot,
 } from '../../../storybook/test-data';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 import type { SessionInfoData, WeekendInfo } from '../../../types/bindings';
 
 const BASE_LAP_TIME = 92.3;
@@ -48,20 +49,7 @@ const meta: Meta<typeof StandingsWidget> = {
   title: 'Widgets/StandingsWidget',
   component: StandingsWidget,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: 800,
-          height: 450,
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ width: 800, height: 450 })],
   args: {
     driverEntries: DRIVER_ENTRIES,
     settings: DEFAULT_SETTINGS,

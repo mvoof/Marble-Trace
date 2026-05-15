@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { LedFlagWidget } from './LedFlagWidget';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const DESIGN_SIZE = 160;
 
@@ -9,18 +10,11 @@ const meta: Meta<typeof LedFlagWidget> = {
   component: LedFlagWidget,
   parameters: { layout: 'centered' },
   decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: DESIGN_SIZE,
-          height: DESIGN_SIZE,
-          background: '#111',
-          overflow: 'hidden',
-        }}
-      >
-        <Story />
-      </div>
-    ),
+    widgetDecorator({
+      width: DESIGN_SIZE,
+      height: DESIGN_SIZE,
+      background: '#111',
+    }),
   ],
   args: {
     flag: 'none',

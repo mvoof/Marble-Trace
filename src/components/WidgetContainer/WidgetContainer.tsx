@@ -37,6 +37,7 @@ export const WidgetContainer = observer(
     });
 
     const isConnected = telemetryConnectionStore.status === 'connected';
+
     const shouldHide =
       (appSettingsStore.settings.hideWidgetsWhenGameClosed &&
         !isConnected &&
@@ -172,11 +173,14 @@ export const WidgetContainer = observer(
       >
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
-          className={`${styles.dragWrapper} ${dragMode ? styles.dragging : ''}`}
+          className={`${styles.dragWrapper} ${dragMode ? styles.draggingCursor : ''}`}
           onMouseDown={handleDragMouseDown}
         >
           <ErrorBoundary>
-            <div className={styles.widgetInner} style={{ background }}>
+            <div
+              className={`${styles.widgetInner} ${dragMode ? styles.dragging : ''}`}
+              style={{ background }}
+            >
               {children}
             </div>
           </ErrorBoundary>

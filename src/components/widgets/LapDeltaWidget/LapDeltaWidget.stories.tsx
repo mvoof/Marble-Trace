@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { LapDeltaWidget } from './LapDeltaWidget';
 import type { DeltaDisplayHandle } from './LapDeltaWidget';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const WithRef = (
   props: Omit<React.ComponentProps<typeof LapDeltaWidget>, 'deltaDisplayRef'>
@@ -15,20 +16,7 @@ const meta: Meta<typeof WithRef> = {
   title: 'Widgets/LapDeltaWidget',
   component: WithRef,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-          display: 'inline-block',
-          minWidth: 150,
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ display: 'inline-block', minWidth: 150 })],
   args: {
     initialDeltaFormatted: '-0.342',
     initialDeltaState: 'ahead',

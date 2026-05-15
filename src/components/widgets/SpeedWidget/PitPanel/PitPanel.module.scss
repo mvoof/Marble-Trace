@@ -1,111 +1,128 @@
-$panel-h: rem(22);
-
 .panel {
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  right: 0;
-  height: $panel-h;
-  z-index: 10;
+  width: ws(90);
+  flex-shrink: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 rem(10);
+  justify-content: center;
+  gap: 0;
+  border-right: 2px solid rgba(255, 255, 255, 0.1);
+  padding: ws(8) ws(12);
+  transition: background 0.2s ease;
+}
+
+// ── Gear digit ───────────────────────────────────────────────
+
+.gearDigit {
   font-family: $font-widget;
+  font-size: ws(64);
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  animation: fadeIn 0.15s ease-out;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+// ── Sub-label (GEAR / PIT / LIM / SLOW!) ────────────────────
+
+.pitSub {
+  font-family: $font-mono;
+  font-size: ws(13);
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.85);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  margin-top: ws(6);
+  white-space: nowrap;
 }
 
-.stateNeutral {
-  background: rgba(255, 255, 255, 0.08);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.pitSubNormal {
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.1em;
 }
 
-// pit-lane: on pit road → blue
-.stateSafe {
-  background: #1a4fa8;
-  border-bottom: 1px solid #2d6cdb;
+.pitSubLimOff {
+  color: $color-pit-warning;
+  animation: limOffBlink 1s ease-in-out infinite;
 }
 
-// limiter-active: pit speed limiter on track → yellow
-.stateYellow {
-  background: #7e5c00;
-  border-bottom: 1px solid #c49000;
+.statePitLane .pitSubLimOff {
+  color: $color-pit-warning;
 }
 
-// over-limit: exceeding pit speed → red pulse
-.stateWarn {
-  background: #a81a1a;
-  border-bottom: 1px solid #db2d2d;
-  animation:
-    fadeIn 0.15s ease-out,
-    warnPulse 0.7s ease-in-out infinite;
+.pitSubOver {
+  color: #fff;
+  animation: overLimitSubBlink 0.5s steps(2, start) infinite;
 }
 
-@keyframes warnPulse {
+// ── Pit state backgrounds ────────────────────────────────────
+
+// pit-lane (on pit road, no limiter) → bright amber
+.statePitLane {
+  background: $color-pit-entry;
+  border-right-color: rgba($color-pit-entry, 0.6);
+}
+
+// bright amber bg → black gear text for contrast
+.statePitLane .gearDigit {
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.statePitLane .pitSub {
+  color: rgba(0, 0, 0, 0.55);
+}
+
+// limiter active → bright blue
+.stateLimiter {
+  background: rgba($color-pit-active, 0.95);
+  border-right-color: rgba($color-pit-active, 0.5);
+}
+
+.stateLimiter .gearDigit {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+// over speed limit → bright red pulse
+.stateOverLimit {
+  background: $color-pit-warning;
+  border-right-color: rgba($color-pit-warning, 0.5);
+  animation: overLimitPulse 0.7s ease-in-out infinite;
+}
+
+.stateOverLimit .gearDigit {
+  color: #fff;
+}
+
+@keyframes limOffBlink {
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
-    opacity: 0.6;
+    opacity: 0.3;
   }
 }
 
-.label {
-  font-size: rem(10);
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
-  letter-spacing: 0.1em;
+@keyframes overLimitPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.65;
+  }
 }
 
-.right {
-  display: flex;
-  align-items: baseline;
-  gap: rem(4);
-}
+@keyframes overLimitSubBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
 
-.limit {
-  font-size: rem(15);
-  font-weight: 700;
-  color: #fff;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.unit {
-  font-size: rem(9);
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.55);
-  letter-spacing: 0.05em;
-}
-
-.delta {
-  font-size: rem(13);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  margin-left: rem(2);
-}
-
-.deltaOver {
-  color: $color-error;
-}
-
-.deltaClose {
-  color: $color-caution;
-}
-
-.deltaOk {
-  color: $color-success;
+  50% {
+    opacity: 0.3;
+  }
 }

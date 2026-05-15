@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { InputTraceWidget } from './InputTraceWidget';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const DESIGN_WIDTH = 500;
 const DESIGN_HEIGHT = 120;
@@ -19,20 +20,7 @@ const meta: Meta<typeof InputTraceWidget> = {
   title: 'Widgets/InputTraceWidget',
   component: InputTraceWidget,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: DESIGN_WIDTH,
-          height: DESIGN_HEIGHT,
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ width: DESIGN_WIDTH, height: DESIGN_HEIGHT })],
   args: {
     throttle: 0.6,
     brake: 0,

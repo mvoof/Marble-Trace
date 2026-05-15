@@ -1,25 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TimerWidget } from './TimerWidget';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const meta: Meta<typeof TimerWidget> = {
   title: 'Widgets/TimerWidget',
   component: TimerWidget,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-          display: 'inline-block',
-          minWidth: 180,
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ display: 'inline-block', minWidth: 180 })],
   args: {
     sessionTypeLabel: 'RACE',
     flagState: 'green',

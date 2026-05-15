@@ -1,24 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { FlatFlagsWidget } from './FlatFlagsWidget';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const meta: Meta<typeof FlatFlagsWidget> = {
   title: 'Widgets/FlatFlagsWidget',
   component: FlatFlagsWidget,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: 300,
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ width: 300 })],
   args: {
     flags: [],
     blinkOn: true,
