@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RelativeMapWidget } from './RelativeMapWidget';
 import { driverEntries as DRIVER_ENTRIES } from '../../../storybook/test-data';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const DEFAULT_SETTINGS = {
   orientation: 'horizontal' as const,
@@ -13,20 +14,7 @@ const meta: Meta<typeof RelativeMapWidget> = {
   title: 'Widgets/RelativeMapWidget',
   component: RelativeMapWidget,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: 400,
-          height: 40,
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ width: 400, height: 40 })],
   args: {
     entries: DRIVER_ENTRIES,
     settings: DEFAULT_SETTINGS,
@@ -39,20 +27,7 @@ type Story = StoryObj<typeof RelativeMapWidget>;
 export const Horizontal: Story = {};
 
 export const Vertical: Story = {
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: 40,
-          height: 300,
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ width: 40, height: 300 })],
   args: {
     settings: { ...DEFAULT_SETTINGS, orientation: 'vertical' },
   },

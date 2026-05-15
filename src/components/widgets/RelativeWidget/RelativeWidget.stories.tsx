@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RelativeWidget } from './RelativeWidget';
 import { driverEntries } from '../../../storybook/test-data';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const CLASS_LABELS = ['GTE', 'GT3', 'LMP2'];
 
@@ -22,20 +23,7 @@ const meta: Meta<typeof RelativeWidget> = {
   title: 'Widgets/RelativeWidget',
   component: RelativeWidget,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: 420,
-          height: 400,
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ width: 420, height: 400 })],
   args: {
     entries: DRIVER_ENTRIES,
     settings: DEFAULT_SETTINGS,

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { LapTimesWidget } from './LapTimesWidget';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const DEFAULT_SETTINGS = {
   showLastLap: true,
@@ -14,20 +15,7 @@ const meta: Meta<typeof LapTimesWidget> = {
   title: 'Widgets/LapTimesWidget',
   component: LapTimesWidget,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-          display: 'inline-block',
-          minWidth: 200,
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ display: 'inline-block', minWidth: 200 })],
   args: {
     currentLapTime: '1:23.456',
     predictedLapTime: '1:22.326',
@@ -50,19 +38,7 @@ type Story = StoryObj<typeof LapTimesWidget>;
 export const DefaultVertical: Story = {};
 
 export const Horizontal: Story = {
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-          width: 1150,
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ width: 1150 })],
   args: {
     settings: { ...DEFAULT_SETTINGS, layout: 'horizontal' },
   },

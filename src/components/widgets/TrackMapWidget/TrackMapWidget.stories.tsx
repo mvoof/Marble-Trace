@@ -5,6 +5,7 @@ import {
   driverEntries as DRIVER_ENTRIES,
   trackData as STORED_TRACK,
 } from '../../../storybook/test-data';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const TRACK_DATA = {
   svgPath: STORED_TRACK.svgPath,
@@ -54,20 +55,7 @@ const meta: Meta<typeof TrackMapWidget> = {
   title: 'Widgets/TrackMapWidget',
   component: TrackMapWidget,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: DESIGN_SIZE,
-          height: DESIGN_SIZE,
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ width: DESIGN_SIZE, height: DESIGN_SIZE })],
   args: {
     cars: CARS_ON_TRACK,
     classColors: CLASS_COLORS,

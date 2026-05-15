@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { WeatherWidget } from './WeatherWidget';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const FORECAST = [
   {
@@ -30,20 +31,7 @@ const meta: Meta<typeof WeatherWidget> = {
   title: 'Widgets/WeatherWidget',
   component: WeatherWidget,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-          display: 'inline-block',
-          minWidth: 200,
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ display: 'inline-block', minWidth: 200 })],
   args: {
     windBearing: 270,
     carYawDeg: 90,

@@ -1,23 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { GMeterWidget } from './GMeterWidget';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const meta: Meta<typeof GMeterWidget> = {
   title: 'Widgets/GMeter',
   component: GMeterWidget,
   parameters: { layout: 'centered' },
   decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: 240,
-          height: 280,
-          background: 'radial-gradient(circle, #252525 0%, #14141b 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <Story />
-      </div>
-    ),
+    widgetDecorator({
+      width: 240,
+      height: 280,
+      background: 'radial-gradient(circle, #252525 0%, #14141b 100%)',
+    }),
   ],
 };
 

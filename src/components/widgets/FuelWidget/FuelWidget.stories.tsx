@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { FuelWidget } from './FuelWidget';
+import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const LAP_FUEL_HISTORY = [
   3.2, 3.1, 3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3,
@@ -20,19 +21,7 @@ const meta: Meta<typeof FuelWidget> = {
   title: 'Widgets/FuelWidget',
   component: FuelWidget,
   parameters: { layout: 'centered' },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: 280,
-          background: 'radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%)',
-          overflow: 'hidden',
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [widgetDecorator({ width: 280 })],
   args: {
     fuelLevel: 28.5,
     fuelMax: 55.0,
