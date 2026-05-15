@@ -1,21 +1,24 @@
 .sessionHeader {
   background: rgba(24, 24, 27, 0.8);
-  padding: ws(8) var(--widget-pad-x);
+  padding: ws(10) ws(10);
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid rgba(39, 39, 42, 1);
   font-family: $font-mono;
   text-transform: uppercase;
-  font-size: ws(12);
+  font-size: ws(11);
   color: $color-text-muted;
 }
 
 .sessionLeft {
   display: flex;
-  gap: ws(9);
+  gap: ws(6);
   align-items: center;
   font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 // Track name is the primary accent in white
@@ -31,8 +34,10 @@
 
 .sessionRight {
   display: flex;
-  gap: ws(9);
+  gap: ws(6);
   align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .sessionDriverCount {

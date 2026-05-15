@@ -161,61 +161,57 @@ export const DriverRow = observer(
           {isPit && <PitBadge />}
         </div>
 
-        {settings.showBrand && (
-          <div className={`${styles.cell} ${styles.cellCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
+          {settings.showBrand && (
             <span className={styles.brandLabel} title={driver.carScreenName}>
               {formatBrand(driver.carScreenName)}
             </span>
-          </div>
-        )}
+          )}
+        </div>
 
-        {settings.showTire && (
-          <div className={`${styles.cell} ${styles.cellCenter}`}>
-            <TireBadge tire={driver.tireCompound} />
-          </div>
-        )}
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
+          {settings.showTire && <TireBadge tire={driver.tireCompound} />}
+        </div>
 
-        {!settings.enableClassCycling && settings.showClassBadge && (
-          <div className={`${styles.cell} ${styles.cellCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
+          {!settings.enableClassCycling && settings.showClassBadge && (
             <ClassBadge
               color={driver.carClassColor}
               label={driver.carClassShortName}
               className={styles.classBadgeFull}
             />
-          </div>
-        )}
+          )}
+        </div>
 
-        {settings.showIRatingBadge && (
-          <div className={`${styles.cell} ${styles.cellCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
+          {settings.showIRatingBadge && (
             <RatingBadge
               licString={driver.licString}
               iRating={driver.iRating}
               className={styles.ratingBadge}
             />
-          </div>
-        )}
+          )}
+        </div>
 
-        {settings.showIrChange && (
-          <div className={`${styles.cell} ${styles.cellCenter}`}>
-            <IrChangeCell delta={irDelta} />
-          </div>
-        )}
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
+          {settings.showIrChange && <IrChangeCell delta={irDelta} />}
+        </div>
 
-        {settings.showLapsCompleted && (
-          <div className={`${styles.cell} ${styles.cellCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
+          {settings.showLapsCompleted && (
             <span className={styles.lapsCompleted}>{driver.lap}</span>
-          </div>
-        )}
+          )}
+        </div>
 
-        {settings.showPosChange && (
-          <div className={`${styles.cell} ${styles.cellCenter}`}>
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
+          {settings.showPosChange && (
             <PosChange position={pos} startPos={startPos} />
-          </div>
-        )}
+          )}
+        </div>
 
         <div className={`${styles.cell} ${styles.cellRight}`}>
           {isLeader ? (
-            <span className={styles.gapLeader}>Leader</span>
+            <span className={styles.gapLeader}>–</span>
           ) : driver.f2Time > 0 ? (
             <span className={styles.gapValue}>+{driver.f2Time.toFixed(1)}</span>
           ) : (

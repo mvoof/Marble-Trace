@@ -139,42 +139,32 @@ export const StandingsWidget = observer(
               <span className={styles.th}>Pos</span>
               <span className={styles.th}>#</span>
               <span className={styles.th}>Driver</span>
-
-              {settings.showBrand && (
-                <span className={`${styles.th} ${styles.thCenter}`}>Brand</span>
-              )}
-
-              {settings.showTire && (
-                <span className={`${styles.th} ${styles.thCenter}`}>Tire</span>
-              )}
-
-              {!settings.enableClassCycling && settings.showClassBadge && (
-                <span className={`${styles.th} ${styles.thCenter}`}>Class</span>
-              )}
-
-              {settings.showIRatingBadge && (
-                <span className={`${styles.th} ${styles.thCenter}`}>
-                  Lic / iR
-                </span>
-              )}
-
-              {settings.showIrChange && (
-                <span
-                  className={`${styles.th} ${styles.thCenter}`}
-                  title="Projected iR change (Elo estimate, not real iRacing data)"
-                >
-                  ΔiR*
-                </span>
-              )}
-
-              {settings.showLapsCompleted && (
-                <span className={`${styles.th} ${styles.thCenter}`}>Laps</span>
-              )}
-
-              {settings.showPosChange && (
-                <span className={`${styles.th} ${styles.thCenter}`}>+/-</span>
-              )}
-
+              <span className={`${styles.th} ${styles.thCenter}`}>
+                {settings.showBrand ? 'Br' : ''}
+              </span>
+              <span className={`${styles.th} ${styles.thCenter}`}>
+                {settings.showTire ? 'T' : ''}
+              </span>
+              <span className={`${styles.th} ${styles.thCenter}`}>
+                {!settings.enableClassCycling && settings.showClassBadge
+                  ? 'Class'
+                  : ''}
+              </span>
+              <span className={`${styles.th} ${styles.thCenter}`}>
+                {settings.showIRatingBadge ? 'Lic/iR' : ''}
+              </span>
+              <span
+                className={`${styles.th} ${styles.thCenter}`}
+                title="Projected iR change (Elo estimate, not real iRacing data)"
+              >
+                {settings.showIrChange ? 'ΔiR' : ''}
+              </span>
+              <span className={`${styles.th} ${styles.thCenter}`}>
+                {settings.showLapsCompleted ? 'Laps' : ''}
+              </span>
+              <span className={`${styles.th} ${styles.thCenter}`}>
+                {settings.showPosChange ? '+/-' : ''}
+              </span>
               <span className={`${styles.th} ${styles.thRight}`}>Gap</span>
               <span className={`${styles.th} ${styles.thRight}`}>Last</span>
               <span className={`${styles.th} ${styles.thRight}`}>Best</span>

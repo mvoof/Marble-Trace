@@ -2,7 +2,7 @@
 // Columns: pos | car# | name(1fr) | pit | class | lic+iR | gap
 .driverRow {
   display: grid;
-  grid-template-columns: ws(23) ws(53) 1fr ws(26) ws(38) ws(68) ws(75);
+  grid-template-columns: ws(20) ws(40) 1fr ws(22) ws(34) ws(60) ws(70);
   align-items: center;
   column-gap: ws(6);
   padding: ws(4) ws(9);
@@ -10,6 +10,7 @@
   border-bottom: 1px solid rgba(39, 39, 42, 0.4);
   background: rgba(24, 24, 27, 0.2);
   line-height: 1.15;
+  font-size: ws(13);
 }
 
 .driverRowPlayer {
@@ -107,7 +108,6 @@
   align-items: center;
   width: 100%;
   box-sizing: border-box;
-  font-size: ws(11);
 }
 
 // F2 Time (gap) block

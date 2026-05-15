@@ -1,10 +1,10 @@
 .badge {
   display: inline-flex;
   align-items: stretch;
-  border-radius: 3px;
+  border-radius: 0.25em;
   overflow: hidden;
   font-weight: 700;
-  font-size: 1em;
+  font-size: 0.85em;
   line-height: 1;
   white-space: nowrap;
 }
@@ -25,8 +25,10 @@
 .irPart {
   display: flex;
   align-items: center;
-  padding: 0.2em 0.25em;
+  padding: 0.2em 0.3em;
   font-family: $font-mono;
+  min-width: 1.8em;
+  justify-content: center;
 }
 
 // License colors
