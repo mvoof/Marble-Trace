@@ -41,8 +41,8 @@ const restoreWidgets = (
       id: widgetDefaults.id,
       label: widgetDefaults.label,
       description: widgetDefaults.description,
-      designWidth: widgetDefaults.designWidth,
-      designHeight: widgetDefaults.designHeight,
+      designWidth: saved.designWidth ?? widgetDefaults.designWidth,
+      designHeight: saved.designHeight ?? widgetDefaults.designHeight,
       userSettings: mergedUserSettings,
     });
   }

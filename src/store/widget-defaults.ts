@@ -324,20 +324,21 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Chassis',
     description: 'Tire pressures and brake temperatures.',
     component: ChassisWidgetContainer,
-    designWidth: 460,
-    designHeight: 320,
+    designWidth: 300,
+    designHeight: 290,
     userSettings: {
       enabled: false,
       x: 100,
       y: 100,
-      currentWidth: 460,
-      currentHeight: 320,
+      currentWidth: 280,
+      currentHeight: 290,
       opacity: 1,
       backgroundColor: '#252525',
       backgroundColorEdge: '#14141b',
       borderColor: 'rgba(255, 255, 255, 0.1)',
       hotkey: '',
       showInboard: false,
+      modeWidths: {},
     },
   },
   {
@@ -517,7 +518,7 @@ export const WIDGET_BY_ID = new Map(
 export const DEFAULT_WIDGETS: WidgetDefaultConfig[] = WIDGETS.map(
   (currentWidget) => {
     const allowedEntries = Object.entries(currentWidget).filter(([key]) => {
-      return key !== 'component' && key !== 'autoHeight';
+      return key !== 'component';
     });
 
     return Object.fromEntries(allowedEntries) as WidgetDefaultConfig;

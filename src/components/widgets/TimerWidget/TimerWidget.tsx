@@ -85,7 +85,7 @@ export const TimerWidget = ({
 
   if (sessionEnded) {
     return (
-      <WidgetPanel fitContent direction="column" gap={0} minWidth={180}>
+      <WidgetPanel direction="column" gap={0} minWidth={180}>
         <div className={styles.header}>
           <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
         </div>
@@ -134,7 +134,7 @@ export const TimerWidget = ({
   }
 
   return (
-    <WidgetPanel fitContent direction="column" gap={0} minWidth={180}>
+    <WidgetPanel direction="column" gap={0} minWidth={180}>
       <div className={styles.header}>
         <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
         {showFlag && (

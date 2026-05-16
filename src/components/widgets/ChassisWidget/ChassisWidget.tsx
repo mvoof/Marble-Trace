@@ -43,7 +43,7 @@ export const ChassisWidget = ({
     Math.abs(rearAxleDiff) > SUSPENSION_BENT_THRESHOLD_MM;
 
   return (
-    <WidgetPanel direction="column" gap={0} fitContent>
+    <WidgetPanel direction="column" gap={0}>
       <div
         className={`${styles.carGrid} ${showInboard ? styles.carGridWithInboard : ''}`}
       >

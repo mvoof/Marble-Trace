@@ -4,7 +4,6 @@ import { emit } from '@tauri-apps/api/event';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { telemetryConnectionStore } from '../../store/iracing/telemetry-connection.store';
-import { WIDGET_BY_ID } from '../../store/widget-defaults';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
 import styles from './WidgetContainer.module.scss';
 
@@ -62,8 +61,6 @@ export const WidgetContainer = observer(
 
     const designWidth = widget?.designWidth ?? width;
     const designHeight = widget?.designHeight ?? height;
-
-    const autoHeight = WIDGET_BY_ID.get(widgetId)?.autoHeight ?? false;
 
     const widgetScale = width / designWidth;
 
@@ -194,9 +191,16 @@ export const WidgetContainer = observer(
       [dragMode, widgetId, designWidth, designHeight]
     );
 
-    const resizeDirections: ResizeDirection[] = autoHeight
-      ? ['e', 'w']
-      : ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
+    const resizeDirections: ResizeDirection[] = [
+      'n',
+      's',
+      'e',
+      'w',
+      'ne',
+      'nw',
+      'se',
+      'sw',
+    ];
 
     return (
       <div
@@ -205,7 +209,7 @@ export const WidgetContainer = observer(
           left: x,
           top: y,
           width,
-          height: autoHeight ? 'auto' : height,
+          height,
         }}
       >
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}

@@ -43,12 +43,14 @@ class WidgetSettingsStore {
 
   isTrackMapForceStartPending = false;
 
-  private autoSizedWidgets = new Set<string>();
-
   constructor() {
-    makeAutoObservable(this, { autoSizedWidgets: false } as never, {
-      autoBind: true,
-    });
+    makeAutoObservable(
+      this,
+      {},
+      {
+        autoBind: true,
+      }
+    );
   }
 
   get allWidgets(): WidgetDefaultConfig[] {
@@ -99,26 +101,14 @@ class WidgetSettingsStore {
           return;
         }
 
-        const autoSizedCurrent = this.autoSizedWidgets.has(defaultWidget.id)
-          ? this.widgets.get(defaultWidget.id)
-          : null;
-
         const mergedUserSettings = filterToDefaults(
           defaultWidget.userSettings,
           savedWidget.userSettings ?? {}
         );
 
-        const resolvedUserSettings: WidgetUserSettings = autoSizedCurrent
-          ? {
-              ...mergedUserSettings,
-              currentWidth: autoSizedCurrent.userSettings.currentWidth,
-              currentHeight: autoSizedCurrent.userSettings.currentHeight,
-            }
-          : mergedUserSettings;
-
         this.widgets.set(defaultWidget.id, {
           ...filterToDefaults(defaultWidget, savedWidget),
-          userSettings: resolvedUserSettings,
+          userSettings: mergedUserSettings,
         });
       });
     });
@@ -145,20 +135,6 @@ class WidgetSettingsStore {
   }
 
   updateSize(id: string, width: number, height: number) {
-    const widget = this.getWidget(id);
-
-    if (
-      widget &&
-      (widget.userSettings.currentWidth !== width ||
-        widget.userSettings.currentHeight !== height)
-    ) {
-      widget.userSettings.currentWidth = width;
-      widget.userSettings.currentHeight = height;
-    }
-  }
-
-  updateAutoSize(id: string, width: number, height: number) {
-    this.autoSizedWidgets.add(id);
     const widget = this.getWidget(id);
 
     if (
@@ -295,6 +271,47 @@ class WidgetSettingsStore {
         widget.designWidth = widget.userSettings.currentWidth;
       }
     }
+
+    if (id === 'chassis' && 'showInboard' in newSettings) {
+      const prevShowInboard =
+        'showInboard' in prevSettings ? prevSettings.showInboard : false;
+      const nextShowInboard = newSettings.showInboard;
+
+      if (prevShowInboard !== nextShowInboard) {
+        const suspensionDesignWidth = 300;
+        const inboardDesignWidth = 430;
+        const suspensionDefaultWidth = 280;
+        const inboardDefaultWidth = 400;
+
+        const prevMode = prevShowInboard ? 'inboard' : 'suspension';
+        const nextMode = nextShowInboard ? 'inboard' : 'suspension';
+
+        const prevModeWidths =
+          'modeWidths' in prevSettings ? (prevSettings.modeWidths ?? {}) : {};
+
+        const savedModeWidths = {
+          ...prevModeWidths,
+          [prevMode]: widget.userSettings.currentWidth,
+        };
+
+        const defaultNextWidth = nextShowInboard
+          ? inboardDefaultWidth
+          : suspensionDefaultWidth;
+
+        const nextWidth = savedModeWidths[nextMode] ?? defaultNextWidth;
+
+        widget.userSettings = {
+          ...widget.userSettings,
+          ...newSettings,
+          modeWidths: savedModeWidths,
+        } as WidgetUserSettings;
+
+        widget.designWidth = nextShowInboard
+          ? inboardDesignWidth
+          : suspensionDesignWidth;
+        widget.userSettings.currentWidth = nextWidth;
+      }
+    }
   }
 
   private getSettings<SpecificSettings extends WidgetSpecificSettings>(
@@ -344,7 +361,6 @@ class WidgetSettingsStore {
     return {
       ...settings,
       showSectors,
-      showSectorTimes: settings.showSectorTimes ?? showSectors,
       showSectorsOnMap: settings.showSectorsOnMap ?? showSectors,
     };
   }

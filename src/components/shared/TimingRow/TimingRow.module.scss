@@ -1,6 +1,6 @@
 .row {
   display: grid;
-  grid-template-columns: ws(50) 9ch 7ch;
+  grid-template-columns: ws(50) 1fr ws(65);
   align-items: center;
   gap: ws(4);
   font-family: $font-mono;

@@ -155,6 +155,7 @@ export interface FlagDisplaySettings {
 
 export interface ChassisWidgetSettings {
   showInboard: boolean;
+  modeWidths?: { suspension?: number; inboard?: number };
 }
 
 export type GMeterDisplayMode = 'trail' | 'fading' | 'peak';
@@ -211,7 +212,6 @@ export interface WidgetConfig extends WidgetMeta {
   component: React.ComponentType<{
     onVisibilityChange?: (visible: boolean) => void;
   }>;
-  autoHeight?: boolean;
   userSettings: WidgetUserSettings;
 }
 

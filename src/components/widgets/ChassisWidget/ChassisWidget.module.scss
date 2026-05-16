@@ -8,7 +8,7 @@
 }
 
 .carGridWithInboard {
-  grid-template-columns: max-content auto max-content;
+  grid-template-columns: max-content 1fr max-content;
 }
 
 .centerLabels {
@@ -32,7 +32,7 @@
   align-items: center;
   justify-content: center;
   gap: ws(6);
-  font-size: ws(10);
+  font-size: ws(12);
   color: $color-caution;
   font-style: italic;
   text-align: center;
