@@ -9,24 +9,29 @@ export const computeClassSof = (drivers: DriverEntry[]): number => {
 
 const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 
-export const buildGridTemplate = (
-  settings: StandingsWidgetSettings
-): string => {
-  const cols: string[] = [
-    ws(20), // pos       "00"
-    ws(40), // carNum    "#000"
-    `minmax(${ws(30)}, 1fr)`, // name      — never collapses
-    settings.showBrand ? ws(24) : '0px',
-    settings.showTire ? ws(14) : '0px',
-    !settings.enableClassCycling && settings.showClassBadge ? ws(34) : '0px', // class
-    settings.showIRatingBadge ? ws(60) : '0px', // rating
-    settings.showIrChange ? ws(22) : '0px', // change rating
-    settings.showLapsCompleted ? ws(18) : '0px', // laps completed
-    settings.showPosChange ? ws(20) : '0px', //change position
-    ws(50), // gap       "+000.0"
-    ws(70), // last      "0:00.000"
-    ws(70), // best
-  ];
+type ColDef = { width: string; show: boolean };
 
-  return cols.join(' ');
-};
+const buildColDefs = (settings: StandingsWidgetSettings): ColDef[] => [
+  { width: ws(20), show: true }, // pos      "00"
+  { width: ws(40), show: true }, // carNum   "#000"
+  { width: `minmax(${ws(30)}, 1fr)`, show: true }, // name     — never collapses
+  { width: ws(24), show: settings.showBrand }, // brand
+  { width: ws(14), show: settings.showTire }, // tire
+  {
+    width: ws(34),
+    show: !settings.enableClassCycling && settings.showClassBadge,
+  }, // class
+  { width: ws(60), show: settings.showIRatingBadge }, // lic/iRating
+  { width: ws(22), show: settings.showIrChange }, // ΔiR
+  { width: ws(18), show: settings.showLapsCompleted }, // laps
+  { width: ws(20), show: settings.showPosChange }, // +/- pos
+  { width: ws(50), show: true }, // gap      "+000.0"
+  { width: ws(70), show: true }, // last     "0:00.000"
+  { width: ws(70), show: true }, // best     "0:00.000"
+];
+
+export const buildGridTemplate = (settings: StandingsWidgetSettings): string =>
+  buildColDefs(settings)
+    .filter((col) => col.show)
+    .map((col) => col.width)
+    .join(' ');
