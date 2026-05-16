@@ -9,7 +9,7 @@ import { ChassisWidget } from './ChassisWidget';
 export const ChassisWidgetContainer = observer(() => {
   const { chassis, carStatus } = telemetryStore;
 
-  const { showInboard } = widgetSettingsStore.getChassisSettings();
+  const { showSuspensionAndBrakes } = widgetSettingsStore.getChassisSettings();
 
   const { system } = unitsStore;
 
@@ -23,7 +23,7 @@ export const ChassisWidgetContainer = observer(() => {
       {...corners}
       tempUnit={isMetric ? '°C' : '°F'}
       lengthUnit={isMetric ? 'mm' : 'in'}
-      showInboard={showInboard}
+      showSuspensionAndBrakes={showSuspensionAndBrakes}
       onPitRoad={onPitRoad}
     />
   );

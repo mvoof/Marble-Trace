@@ -337,7 +337,7 @@ export const WIDGETS: WidgetConfig[] = [
       backgroundColorEdge: '#14141b',
       borderColor: 'rgba(255, 255, 255, 0.1)',
       hotkey: '',
-      showInboard: false,
+      showSuspensionAndBrakes: false,
       modeWidths: {},
     },
   },

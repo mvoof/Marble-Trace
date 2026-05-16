@@ -154,8 +154,8 @@ export interface FlagDisplaySettings {
 }
 
 export interface ChassisWidgetSettings {
-  showInboard: boolean;
-  modeWidths?: { suspension?: number; inboard?: number };
+  showSuspensionAndBrakes: boolean;
+  modeWidths?: { chassis?: number; suspensionAndBrakes?: number };
 }
 
 export type GMeterDisplayMode = 'trail' | 'fading' | 'peak';

@@ -7,38 +7,38 @@ interface CornerModuleProps {
   isRight: boolean;
   tempUnit: string;
   lengthUnit: string;
-  showInboard: boolean;
+  showSuspensionAndBrakes: boolean;
 }
 
-interface InboardTextProps {
+interface SuspensionTextProps {
   value: string;
   unit: string;
   color?: string;
   isRight: boolean;
 }
 
-const InboardText = ({
+const SuspensionText = ({
   value,
   unit,
   color = '#fff',
   isRight,
-}: InboardTextProps) => (
-  <div className={styles.inboardRow}>
+}: SuspensionTextProps) => (
+  <div className={styles.suspensionAndBrakesRow}>
     {isRight ? (
       <>
-        <span className={styles.inboardValue} style={{ color }}>
+        <span className={styles.suspensionAndBrakesValue} style={{ color }}>
           {value}
         </span>
-        <span className={styles.inboardUnit} style={{ color }}>
+        <span className={styles.suspensionAndBrakesUnit} style={{ color }}>
           {unit}
         </span>
       </>
     ) : (
       <>
-        <span className={styles.inboardValue} style={{ color }}>
+        <span className={styles.suspensionAndBrakesValue} style={{ color }}>
           {value}
         </span>
-        <span className={styles.inboardUnit} style={{ color }}>
+        <span className={styles.suspensionAndBrakesUnit} style={{ color }}>
           {unit}
         </span>
       </>
@@ -52,7 +52,7 @@ export const CornerModule = ({
   isRight,
   tempUnit,
   lengthUnit,
-  showInboard,
+  showSuspensionAndBrakes,
 }: CornerModuleProps) => {
   const { isPunctured, isBrakeOverheated } = data;
   const hasDamage = isSuspensionBent || isBrakeOverheated;
@@ -155,27 +155,27 @@ export const CornerModule = ({
         </div>
       </div>
 
-      {showInboard && (
+      {showSuspensionAndBrakes && (
         <div
-          className={`${styles.inboardModule} ${isRight ? styles.inboardModuleRight : ''} ${hasDamage ? styles.damagePulse : ''}`}
+          className={`${styles.suspensionAndBrakesPanel} ${isRight ? styles.suspensionAndBrakesPanelRight : ''} ${hasDamage ? styles.damagePulse : ''}`}
         >
           <div
             className={styles.brakeBar}
             style={{ backgroundColor: brakeColor }}
           />
-          <div className={styles.inboardTexts}>
-            <InboardText
+          <div className={styles.suspensionAndBrakesTexts}>
+            <SuspensionText
               value={rhFormatted}
               unit={lengthUnit}
               isRight={isRight}
             />
-            <InboardText
+            <SuspensionText
               value={brkFormatted}
               unit={tempUnit}
               color={brakeColor}
               isRight={isRight}
             />
-            <InboardText
+            <SuspensionText
               value={shkFormatted}
               unit={lengthUnit}
               isRight={isRight}

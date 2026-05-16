@@ -23,8 +23,8 @@ export const ChassisSettingsPanel = observer(() => {
           desc="Show tire pressures, temperatures, and brake bias panels."
         >
           <Switch
-            checked={settings.showInboard}
-            onChange={(v) => update({ showInboard: v })}
+            checked={settings.showSuspensionAndBrakes}
+            onChange={(v) => update({ showSuspensionAndBrakes: v })}
           />
         </SettingRow>
       </div>

@@ -272,19 +272,25 @@ class WidgetSettingsStore {
       }
     }
 
-    if (id === 'chassis' && 'showInboard' in newSettings) {
-      const prevShowInboard =
-        'showInboard' in prevSettings ? prevSettings.showInboard : false;
-      const nextShowInboard = newSettings.showInboard;
+    if (id === 'chassis' && 'showSuspensionAndBrakes' in newSettings) {
+      const prevShowSuspensionAndBrakes =
+        'showSuspensionAndBrakes' in prevSettings
+          ? prevSettings.showSuspensionAndBrakes
+          : false;
+      const nextShowSuspensionAndBrakes = newSettings.showSuspensionAndBrakes;
 
-      if (prevShowInboard !== nextShowInboard) {
-        const suspensionDesignWidth = 300;
-        const inboardDesignWidth = 430;
-        const suspensionDefaultWidth = 280;
-        const inboardDefaultWidth = 400;
+      if (prevShowSuspensionAndBrakes !== nextShowSuspensionAndBrakes) {
+        const chassisDesignWidth = 300;
+        const suspensionAndBrakesDesignWidth = 430;
+        const chassisDefaultWidth = 280;
+        const suspensionAndBrakesDefaultWidth = 400;
 
-        const prevMode = prevShowInboard ? 'inboard' : 'suspension';
-        const nextMode = nextShowInboard ? 'inboard' : 'suspension';
+        const prevMode = prevShowSuspensionAndBrakes
+          ? 'suspensionAndBrakes'
+          : 'chassis';
+        const nextMode = nextShowSuspensionAndBrakes
+          ? 'suspensionAndBrakes'
+          : 'chassis';
 
         const prevModeWidths =
           'modeWidths' in prevSettings ? (prevSettings.modeWidths ?? {}) : {};
@@ -294,9 +300,9 @@ class WidgetSettingsStore {
           [prevMode]: widget.userSettings.currentWidth,
         };
 
-        const defaultNextWidth = nextShowInboard
-          ? inboardDefaultWidth
-          : suspensionDefaultWidth;
+        const defaultNextWidth = nextShowSuspensionAndBrakes
+          ? suspensionAndBrakesDefaultWidth
+          : chassisDefaultWidth;
 
         const nextWidth = savedModeWidths[nextMode] ?? defaultNextWidth;
 
@@ -306,9 +312,9 @@ class WidgetSettingsStore {
           modeWidths: savedModeWidths,
         } as WidgetUserSettings;
 
-        widget.designWidth = nextShowInboard
-          ? inboardDesignWidth
-          : suspensionDesignWidth;
+        widget.designWidth = nextShowSuspensionAndBrakes
+          ? suspensionAndBrakesDesignWidth
+          : chassisDesignWidth;
         widget.userSettings.currentWidth = nextWidth;
       }
     }
