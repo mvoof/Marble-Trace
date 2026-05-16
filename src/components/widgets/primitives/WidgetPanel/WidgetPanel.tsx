@@ -11,6 +11,7 @@ interface WidgetPanelProps {
   style?: CSSProperties;
   fitContent?: boolean;
   fitHeight?: boolean;
+  edgeInset?: boolean;
   ref?: Ref<HTMLElement>;
 }
 
@@ -23,6 +24,7 @@ export const WidgetPanel = ({
   style,
   fitContent = false,
   fitHeight = false,
+  edgeInset = false,
   ref,
 }: WidgetPanelProps) => (
   <section
@@ -31,6 +33,7 @@ export const WidgetPanel = ({
       styles.panel,
       fitContent && styles.fitContent,
       fitHeight && styles.fitHeight,
+      edgeInset && styles.edgeInset,
       className,
     ]
       .filter(Boolean)

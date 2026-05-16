@@ -24,7 +24,7 @@ const buildColDefs = (settings: StandingsWidgetSettings): ColDef[] => [
   { width: ws(60), show: settings.showIRatingBadge }, // lic/iRating
   { width: ws(22), show: settings.showIrChange }, // ΔiR
   { width: ws(18), show: settings.showLapsCompleted }, // laps
-  { width: ws(20), show: settings.showPosChange }, // +/- pos
+  { width: ws(22), show: settings.showPosChange }, // +/- pos
   { width: ws(50), show: true }, // gap      "+000.0"
   { width: ws(70), show: true }, // last     "0:00.000"
   { width: ws(70), show: true }, // best     "0:00.000"
