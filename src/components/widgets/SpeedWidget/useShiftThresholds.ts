@@ -7,13 +7,20 @@ export const useShiftThresholds = () => {
   const slBlinkArray = telemetryStore.carStatus?.player_car_sl_blink_rpm ?? [];
 
   const redLine = driverInfo?.DriverCarRedLine || 10000;
+
   const yamlShiftRpm = driverInfo?.DriverCarSLShiftRPM || redLine * 0.9;
   const rawYamlBlinkRpm = driverInfo?.DriverCarSLBlinkRPM || redLine;
   const yamlBlinkRpm =
     rawYamlBlinkRpm <= redLine ? rawYamlBlinkRpm : yamlShiftRpm;
 
   const shiftRpm = slShiftArray[0] ?? yamlShiftRpm;
-  const blinkRpm = slBlinkArray[0] ?? yamlBlinkRpm;
+  const rawBlinkRpm = slBlinkArray[0] ?? yamlBlinkRpm;
+
+  let blinkRpm = rawBlinkRpm;
+
+  if (redLine < rawBlinkRpm) {
+    blinkRpm = redLine < shiftRpm ? redLine : shiftRpm;
+  }
 
   return { shiftRpm, blinkRpm };
 };
