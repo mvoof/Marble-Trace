@@ -215,11 +215,11 @@ export const DriverRow = observer(
 
         <div className={`${styles.cell} ${styles.cellRight}`}>
           {isLeader ? (
-            <span className={styles.gapLeader}>–</span>
+            <span className={styles.gapLeader}>-</span>
           ) : driver.f2Time > 0 ? (
             <span className={styles.gapValue}>+{driver.f2Time.toFixed(1)}</span>
           ) : (
-            <span className={styles.gapLeader}>-</span>
+            <span className={styles.gapLeader}>+--.-</span>
           )}
         </div>
 
