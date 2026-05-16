@@ -143,10 +143,10 @@ export const StandingsWidget = observer(
               <span className={styles.th}>#</span>
               <span className={styles.th}>Driver</span>
               {settings.showBrand && (
-                <span className={`${styles.th} ${styles.thCenter}`}>Br</span>
+                <span className={`${styles.th} ${styles.thCenter}`}>Brand</span>
               )}
               {settings.showTire && (
-                <span className={`${styles.th} ${styles.thCenter}`}>T</span>
+                <span className={`${styles.th} ${styles.thCenter}`}>Tire</span>
               )}
               {!settings.enableClassCycling && settings.showClassBadge && (
                 <span className={`${styles.th} ${styles.thCenter}`}>Class</span>
