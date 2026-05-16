@@ -1,13 +1,8 @@
 import { telemetryStore } from '../../../store/iracing/telemetry.store';
 
-const GEAR_REVERSE = -1;
-
 export const useShiftThresholds = () => {
   const { driverInfo } = telemetryStore;
-  const gear = telemetryStore.carDynamics?.gear ?? 1;
 
-  // Per-gear telemetry arrays (more accurate than session YAML single values).
-  // Falls back to YAML DriverCarSL* when array is unavailable or empty.
   const slShiftArray = telemetryStore.carStatus?.player_car_sl_shift_rpm ?? [];
   const slBlinkArray = telemetryStore.carStatus?.player_car_sl_blink_rpm ?? [];
 
@@ -17,9 +12,8 @@ export const useShiftThresholds = () => {
   const yamlBlinkRpm =
     rawYamlBlinkRpm <= redLine ? rawYamlBlinkRpm : yamlShiftRpm;
 
-  const gearIndex = gear === GEAR_REVERSE ? 0 : gear;
-  const shiftRpm = slShiftArray[gearIndex] ?? yamlShiftRpm;
-  const blinkRpm = slBlinkArray[gearIndex] ?? yamlBlinkRpm;
+  const shiftRpm = slShiftArray[0] ?? yamlShiftRpm;
+  const blinkRpm = slBlinkArray[0] ?? yamlBlinkRpm;
 
   return { shiftRpm, blinkRpm };
 };
