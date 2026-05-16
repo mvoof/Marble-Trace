@@ -77,15 +77,11 @@ export interface RelativeWidgetSettings {
   abbreviateNames: boolean;
 }
 
-type TrackMapLegendPosition = 'left' | 'right' | 'hidden';
 type TrackMapRotationMode = 'fixed' | 'heading-up';
 export type TrackMapLeaderLabelMode = 'all' | 'own-class' | 'none';
 
 export interface TrackMapWidgetSettings {
-  showLegend: boolean;
-  legendPosition: TrackMapLegendPosition;
   showSectors: boolean;
-  showSectorTimes: boolean;
   showSectorsOnMap: boolean;
   rotationMode: TrackMapRotationMode;
   playerDotColor: string;

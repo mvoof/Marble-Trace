@@ -33,6 +33,7 @@ export const RecordingOverlay = ({
       if (fillRef.current) {
         fillRef.current.style.width = `${p * 100}%`;
       }
+
       if (labelRef.current) {
         labelRef.current.textContent = `${Math.round(p * 100)}%`;
       }
@@ -54,6 +55,7 @@ export const RecordingOverlay = ({
     if (isRecording) return 'Recording track...';
     if (isForceStartPending) return 'Manual start active. Drive to record...';
     if (isWaitingForSF) return 'Waiting for Start/Finish line...';
+
     return 'Drive 1 full lap to record track';
   };
 

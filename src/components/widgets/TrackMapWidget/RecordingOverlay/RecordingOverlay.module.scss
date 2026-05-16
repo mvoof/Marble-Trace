@@ -11,16 +11,20 @@
 
 .recordingTitle {
   font-family: $font-widget;
-  font-size: ws(32);
+  font-size: ws(16);
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: $color-text-primary;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .recordingMessage {
   font-family: $font-widget;
-  font-size: ws(20);
+  font-size: ws(14);
   color: $color-text-muted;
   text-align: center;
 }

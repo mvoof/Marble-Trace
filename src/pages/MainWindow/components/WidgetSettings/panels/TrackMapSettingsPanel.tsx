@@ -55,34 +55,14 @@ export const TrackMapSettingsPanel = observer(() => {
   return (
     <>
       <Card title="Visual Elements">
-        {[
-          {
-            title: 'Class Legend',
-            value: settings.showLegend,
-            key: 'showLegend',
-          },
-          {
-            title: 'Sector Times',
-            value: settings.showSectorTimes,
-            key: 'showSectorTimes',
-          },
-          {
-            title: 'Sectors on Map',
-            value: settings.showSectorsOnMap,
-            key: 'showSectorsOnMap',
-          },
-        ].map((item) => (
-          <div key={item.key} className={styles.fieldGroup}>
-            <SettingRow title={item.title}>
-              <Switch
-                checked={item.value}
-                onChange={(v) =>
-                  update({ [item.key as keyof TrackMapWidgetSettings]: v })
-                }
-              />
-            </SettingRow>
-          </div>
-        ))}
+        <div className={styles.fieldGroup}>
+          <SettingRow title="Sectors on Map">
+            <Switch
+              checked={settings.showSectorsOnMap}
+              onChange={(v) => update({ showSectorsOnMap: v })}
+            />
+          </SettingRow>
+        </div>
       </Card>
 
       <Card title="Player Marker">
