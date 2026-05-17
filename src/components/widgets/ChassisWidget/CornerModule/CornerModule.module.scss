@@ -3,7 +3,7 @@
 .cornerWrapper {
   display: flex;
   align-items: center;
-  gap: rem(2);
+  gap: ws(2);
 }
 
 .cornerRight {
@@ -16,14 +16,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: rem(104);
+  width: ws(104);
 }
 
 .wearRow {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  margin-bottom: rem(6);
+  margin-bottom: ws(6);
 }
 
 .wearValue {
@@ -31,7 +31,7 @@
   display: flex;
   justify-content: center;
   align-items: baseline;
-  font-size: $font-size-md;
+  font-size: ws(14);
   font-weight: 700;
   color: $color-text-muted;
   font-variant-numeric: tabular-nums;
@@ -39,22 +39,22 @@
 }
 
 .wearUnit {
-  font-size: rem(12);
-  margin-left: rem(1);
+  font-size: ws(12);
+  margin-left: ws(1);
   font-weight: 600;
 }
 
 .tireVisual {
   position: relative;
   display: flex;
-  gap: rem(3);
-  width: rem(72);
-  height: rem(85);
+  gap: ws(3);
+  width: ws(72);
+  height: ws(85);
   background-color: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: $widget-border-radius;
   overflow: hidden;
-  padding: rem(2);
+  padding: ws(2);
 }
 
 .tireSection {
@@ -62,7 +62,7 @@
   background-color: #1a1a1a;
   display: flex;
   align-items: flex-end;
-  border-radius: 2px;
+  border-radius: ws(2);
   overflow: hidden;
 }
 
@@ -86,7 +86,7 @@
 }
 
 .pressureUnit {
-  font-size: rem(12);
+  font-size: ws(12);
   font-weight: 700;
   color: rgba(255, 255, 255, 0.6);
   letter-spacing: 0.05em;
@@ -97,7 +97,7 @@
 }
 
 .pressureValue {
-  font-size: rem(17);
+  font-size: ws(17);
   font-weight: 900;
   color: #ffffff;
   line-height: 1;
@@ -115,7 +115,7 @@
   display: flex;
   justify-content: space-between;
   width: 100%;
-  margin-top: rem(6);
+  margin-top: ws(6);
 }
 
 .tempValue {
@@ -123,71 +123,71 @@
   display: flex;
   justify-content: center;
   align-items: baseline;
-  font-size: $font-size-md;
+  font-size: ws(14);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
 }
 
 .tempUnit {
-  font-size: rem(12);
-  margin-left: rem(1);
+  font-size: ws(12);
+  margin-left: ws(1);
   font-weight: 600;
   opacity: 0.8;
 }
 
-// ===== Inboard module =====
+// ===== Suspension panel =====
 
-.inboardModule {
+.suspensionAndBrakesPanel {
   display: flex;
   align-items: center;
-  gap: rem(4);
+  gap: ws(4);
 }
 
 // For right-side corners: brake bar is on the right of the text block
-.inboardModuleRight {
+.suspensionAndBrakesPanelRight {
   flex-direction: row-reverse;
 }
 
 .brakeBar {
-  width: rem(6);
-  height: rem(65);
-  border-radius: 2px;
+  width: ws(6);
+  height: ws(65);
+  border-radius: ws(2);
   transition: background-color 0.3s ease;
   flex-shrink: 0;
 }
 
-.inboardTexts {
+.suspensionAndBrakesTexts {
   display: flex;
   flex-direction: column;
-  gap: rem(6);
+  gap: ws(6);
   justify-content: center;
-  width: rem(50);
+  width: ws(50);
 }
 
-.inboardRow {
+.suspensionAndBrakesRow {
   display: flex;
   align-items: baseline;
-  gap: rem(3);
+  gap: ws(3);
   justify-content: flex-start;
 }
 
-.inboardLabel {
-  font-size: rem(9);
+.suspensionAndBrakesLabel {
+  font-size: ws(9);
   color: #64748b;
   font-weight: 700;
   letter-spacing: 0.05em;
   flex-shrink: 0;
 }
 
-.inboardValue {
-  font-size: $font-size-widget;
+.suspensionAndBrakesValue {
+  font-size: ws(13);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
-.inboardUnit {
-  font-size: rem(10);
+.suspensionAndBrakesUnit {
+  font-size: ws(10);
   font-weight: 600;
   opacity: 0.8;
   flex-shrink: 0;

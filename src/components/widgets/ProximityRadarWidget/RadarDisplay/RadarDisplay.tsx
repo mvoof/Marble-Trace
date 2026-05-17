@@ -156,7 +156,7 @@ export const RadarDisplay = ({
             className={styles.carTransition}
           >
             <CarIcon opacity={frontOpacity} color={frontColor} />
-            <text y="-18" className={styles.radarMeasurementText}>
+            <text y="-18" fontSize={18} className={styles.radarMeasurementText}>
               {formatDistance(frontDist)}
               {distanceUnit}
             </text>
@@ -169,7 +169,7 @@ export const RadarDisplay = ({
             className={styles.carTransition}
           >
             <CarIcon opacity={rearOpacity} color={rearColor} />
-            <text y="18" className={styles.radarMeasurementText}>
+            <text y="18" fontSize={18} className={styles.radarMeasurementText}>
               {formatDistance(rearDist)}
               {distanceUnit}
             </text>
@@ -182,7 +182,7 @@ export const RadarDisplay = ({
             className={styles.carTransition}
           >
             <CarIcon opacity={0.8} color={getSideCarColor(leftDist)} />
-            <text y="0" className={styles.radarMeasurementText}>
+            <text y="0" fontSize={18} className={styles.radarMeasurementText}>
               {formatDistance(Math.abs(leftDist))}
               {distanceUnit}
             </text>
@@ -195,7 +195,7 @@ export const RadarDisplay = ({
             className={styles.carTransition}
           >
             <CarIcon opacity={0.8} color={getSideCarColor(rightDist)} />
-            <text y="0" className={styles.radarMeasurementText}>
+            <text y="0" fontSize={18} className={styles.radarMeasurementText}>
               {formatDistance(Math.abs(rightDist))}
               {distanceUnit}
             </text>

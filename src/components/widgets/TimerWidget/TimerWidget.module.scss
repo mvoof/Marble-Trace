@@ -2,19 +2,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: $space-md $space-md $space-xs;
+  padding: ws(8) ws(8) ws(2);
 }
 
 .sessionLabel {
   font-family: $font-mono;
-  font-size: $font-size-xs;
+  font-size: ws(10);
   color: $color-text-muted;
   letter-spacing: 1px;
 }
 
 .flagLabel {
   font-family: $font-mono;
-  font-size: $font-size-xs;
+  font-size: ws(10);
   font-weight: 800;
   letter-spacing: 1px;
 }
@@ -35,10 +35,10 @@
   display: flex;
   align-items: baseline;
   justify-content: center;
-  padding: $space-xs $space-md;
+  padding: ws(2) ws(8);
   font-family: $font-widget;
   font-weight: 700;
-  font-size: $font-size-xl;
+  font-size: ws(32);
   line-height: 1;
   letter-spacing: -1px;
   font-variant-numeric: tabular-nums;
@@ -51,7 +51,7 @@
 .sessionEndedLabel {
   color: $color-text-muted;
   letter-spacing: 4px;
-  font-size: $font-size-xl;
+  font-size: ws(32);
 }
 
 .timeSeconds {
@@ -62,8 +62,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 $space-md $space-xs;
-  gap: $space-md;
+  padding: 0 ws(8) ws(2);
+  gap: ws(8);
 }
 
 .clockItem {
@@ -71,14 +71,14 @@
   align-items: center;
   gap: 0.4em;
   font-family: $font-mono;
-  font-size: $font-size-sm;
+  font-size: ws(12);
   font-weight: 500;
   color: $color-text-primary;
   letter-spacing: 1px;
 }
 
 .clockLabel {
-  font-size: $font-size-xs;
+  font-size: ws(10);
   color: $color-text-muted;
   letter-spacing: 1px;
 }
@@ -87,12 +87,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: $space-xs $space-md $space-md;
+  padding: ws(2) ws(8) ws(8);
 }
 
 .footerItem {
   font-family: $font-mono;
-  font-size: $font-size-sm;
+  font-size: ws(12);
   font-weight: 600;
   color: $color-text-muted;
   letter-spacing: 1px;

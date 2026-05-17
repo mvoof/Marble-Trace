@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import { useAutoSizeWidget } from '../../../hooks/useAutoSizeWidget';
 import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { unitsStore } from '../../../store/units.store';
@@ -27,8 +26,6 @@ export const WeatherWidgetContainer = observer(() => {
   const env = telemetryStore.environment;
   const { system } = unitsStore;
   const settings = widgetSettingsStore.getWeatherSettings();
-
-  const widgetRef = useAutoSizeWidget('weather');
 
   const windVelMps =
     env?.wind_vel ?? parseWeekendFloat(weekendInfo?.TrackWindVel);
@@ -59,7 +56,6 @@ export const WeatherWidgetContainer = observer(() => {
 
   return (
     <WeatherWidget
-      ref={widgetRef}
       windBearing={windBearing}
       windSpeedFormatted={windSpeedFormatted}
       windCardinal={windCardinal}

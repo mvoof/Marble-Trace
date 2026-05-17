@@ -9,8 +9,9 @@ export const TimerSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getTimerSettings();
 
   const update = (partial: Partial<TimerWidgetSettings>) => {
-    widgetSettingsStore.updateCustomSettings('timer', {
-      timer: { ...settings, ...partial },
+    widgetSettingsStore.updateUserSettings('timer', {
+      ...settings,
+      ...partial,
     });
   };
 

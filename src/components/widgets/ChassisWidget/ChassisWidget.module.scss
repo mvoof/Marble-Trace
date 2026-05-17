@@ -1,14 +1,14 @@
 .carGrid {
   display: grid;
   grid-template-columns: max-content max-content;
-  gap: rem(16) rem(8);
+  gap: ws(16) ws(8);
   justify-content: center;
   align-items: center;
-  padding: $space-sm rem(8) 0;
+  padding: ws(4) ws(8) 0;
 }
 
-.carGridWithInboard {
-  grid-template-columns: max-content auto max-content;
+.carGridSuspensionAndBrakes {
+  grid-template-columns: max-content 1fr max-content;
 }
 
 .centerLabels {
@@ -16,11 +16,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: rem(6);
+  gap: ws(6);
 }
 
 .centerLabel {
-  font-size: rem(9);
+  font-size: ws(9);
   color: #64748b;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -31,15 +31,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: rem(6);
-  font-size: rem(10);
+  gap: ws(6);
+  font-size: ws(12);
   color: $color-caution;
   font-style: italic;
   text-align: center;
-  padding: rem(6) rem(8) $space-xs;
+  padding: ws(6) ws(8) ws(2);
   opacity: 0.9;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  margin-top: rem(4);
+  margin-top: ws(4);
 }
 
 .staleIcon {

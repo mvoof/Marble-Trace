@@ -98,12 +98,7 @@ export const LapTimesWidget = ({
   }
 
   return (
-    <WidgetPanel
-      direction="column"
-      gap={0}
-      minWidth={200}
-      fitContent={!isHorizontal}
-    >
+    <WidgetPanel direction="column" gap={0} minWidth={200}>
       <div
         className={
           isHorizontal ? styles.rowListHorizontal : styles.rowListVertical

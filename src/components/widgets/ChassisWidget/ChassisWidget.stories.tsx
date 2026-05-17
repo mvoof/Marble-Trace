@@ -52,7 +52,7 @@ const DEFAULT_ARGS = {
   rr: makeCorner({ wearL: 0.7, wearM: 0.72, wearR: 0.68 }),
   tempUnit: '°C',
   lengthUnit: 'mm',
-  showInboard: false,
+  showSuspensionAndBrakes: false,
   onPitRoad: false,
 };
 
@@ -83,8 +83,8 @@ export const OnPitRoad: Story = {
   args: { onPitRoad: true },
 };
 
-export const WithInboard: Story = {
-  args: { showInboard: true, onPitRoad: true },
+export const WithSuspensionAndBrakes: Story = {
+  args: { showSuspensionAndBrakes: true, onPitRoad: true },
 };
 
 export const Punctured: Story = {

@@ -10,8 +10,9 @@ export const StandingsSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getStandingsSettings();
 
   const update = (partial: Partial<StandingsWidgetSettings>) => {
-    widgetSettingsStore.updateCustomSettings('standings', {
-      standings: { ...settings, ...partial },
+    widgetSettingsStore.updateUserSettings('standings', {
+      ...settings,
+      ...partial,
     });
   };
 

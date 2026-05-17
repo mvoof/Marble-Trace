@@ -158,7 +158,6 @@ export const CanvasTrace = ({
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         }
 
-        canvas.style.width = `${width}px`;
         canvas.style.height = `${resolvedHeight}px`;
       }
       scheduleDraw();

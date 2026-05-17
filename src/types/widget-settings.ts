@@ -77,15 +77,11 @@ export interface RelativeWidgetSettings {
   abbreviateNames: boolean;
 }
 
-type TrackMapLegendPosition = 'left' | 'right' | 'hidden';
 type TrackMapRotationMode = 'fixed' | 'heading-up';
 export type TrackMapLeaderLabelMode = 'all' | 'own-class' | 'none';
 
 export interface TrackMapWidgetSettings {
-  showLegend: boolean;
-  legendPosition: TrackMapLegendPosition;
   showSectors: boolean;
-  showSectorTimes: boolean;
   showSectorsOnMap: boolean;
   rotationMode: TrackMapRotationMode;
   playerDotColor: string;
@@ -158,7 +154,8 @@ export interface FlagDisplaySettings {
 }
 
 export interface ChassisWidgetSettings {
-  showInboard: boolean;
+  showSuspensionAndBrakes: boolean;
+  modeWidths?: { chassis?: number; suspensionAndBrakes?: number };
 }
 
 export type GMeterDisplayMode = 'trail' | 'fading' | 'peak';
@@ -170,48 +167,55 @@ export interface GMeterWidgetSettings {
   colorMode: GMeterColorMode;
 }
 
-export interface WidgetCustomSettings {
-  chassis?: ChassisWidgetSettings;
-  'led-flags'?: FlagDisplaySettings;
-  'flat-flags'?: FlagDisplaySettings;
-  speed?: SpeedWidgetSettings;
-  'input-trace'?: InputTraceSettings;
-  'proximity-radar'?: RadarSettings;
-  'radar-bar'?: RadarSettings;
-  standings?: StandingsWidgetSettings;
-  relative?: RelativeWidgetSettings;
-  'track-map'?: TrackMapWidgetSettings;
-  'relative-map'?: LinearMapWidgetSettings;
-  weather?: WeatherWidgetSettings;
-  fuel?: FuelWidgetSettings;
-  'lap-times'?: LapTimesWidgetSettings;
-  'lap-delta'?: LapDeltaWidgetSettings;
-  timer?: TimerWidgetSettings;
-  'g-meter'?: GMeterWidgetSettings;
-}
+export type WidgetSpecificSettings =
+  | Record<never, never> // id: exmple widget
+  | ChassisWidgetSettings
+  | FlagDisplaySettings
+  | SpeedWidgetSettings
+  | InputTraceSettings
+  | RadarSettings
+  | StandingsWidgetSettings
+  | RelativeWidgetSettings
+  | TrackMapWidgetSettings
+  | LinearMapWidgetSettings
+  | WeatherWidgetSettings
+  | FuelWidgetSettings
+  | LapTimesWidgetSettings
+  | LapDeltaWidgetSettings
+  | TimerWidgetSettings
+  | GMeterWidgetSettings;
 
-export interface WidgetConfig {
-  component: React.ComponentType<{
-    onVisibilityChange?: (visible: boolean) => void;
-  }>;
-  autoHeight?: boolean;
+export interface WidgetMeta {
   id: string;
   label: string;
   description?: string;
+  designWidth: number;
+  designHeight: number;
+  autoHeight?: boolean;
+}
+
+export interface BaseUserSettings {
   enabled: boolean;
   x: number;
   y: number;
-  width: number;
-  height: number;
-  designWidth: number;
-  designHeight: number;
+  currentWidth: number;
+  currentHeight: number;
+  opacity: number;
   backgroundColor: string;
   backgroundColorEdge: string;
+  borderColor: string;
   hotkey: string;
-  customSettings?: WidgetCustomSettings;
 }
 
-export type WidgetDefaultConfig = Omit<
-  WidgetConfig,
-  'component' | 'autoHeight'
->;
+export type WidgetUserSettings = BaseUserSettings & WidgetSpecificSettings;
+
+export interface WidgetConfig extends WidgetMeta {
+  component: React.ComponentType<{
+    onVisibilityChange?: (visible: boolean) => void;
+  }>;
+  userSettings: WidgetUserSettings;
+}
+
+export type WidgetDefaultConfig = WidgetMeta & {
+  userSettings: WidgetUserSettings;
+};

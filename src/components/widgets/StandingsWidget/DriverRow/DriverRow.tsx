@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { ChevronUp, ChevronDown, Minus } from 'lucide-react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import { formatLapTime } from '../../../../utils/telemetry-format';
 import {
   formatBrand,
@@ -31,11 +31,7 @@ const PosChange = ({
   startPos: number;
 }) => {
   if (startPos === 0) {
-    return (
-      <span className={styles.posChangeNeutral}>
-        <Minus size={10} />
-      </span>
-    );
+    return <span className={styles.posChangeNeutral}>-</span>;
   }
 
   const diff = startPos - position;
@@ -58,11 +54,7 @@ const PosChange = ({
     );
   }
 
-  return (
-    <span className={styles.posChangeNeutral}>
-      <Minus size={10} />
-    </span>
-  );
+  return <span className={styles.posChangeNeutral}>-</span>;
 };
 
 const IrChangeCell = ({ delta }: { delta: number | undefined }) => {
@@ -215,11 +207,11 @@ export const DriverRow = observer(
 
         <div className={`${styles.cell} ${styles.cellRight}`}>
           {isLeader ? (
-            <span className={styles.gapLeader}>Leader</span>
+            <span className={styles.gapLeader}>-</span>
           ) : driver.f2Time > 0 ? (
             <span className={styles.gapValue}>+{driver.f2Time.toFixed(1)}</span>
           ) : (
-            <span className={styles.gapLeader}>-</span>
+            <span className={styles.gapLeader}>+--.-</span>
           )}
         </div>
 

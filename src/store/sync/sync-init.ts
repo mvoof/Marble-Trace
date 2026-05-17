@@ -101,7 +101,9 @@ export const initMainSync = async () => {
             return [
               appSettingsStore.settings.dragHotkey,
               appSettingsStore.settings.hideAllWidgetsHotkey,
-              ...widgetSettingsStore.allWidgets.map((w) => w.hotkey),
+              ...widgetSettingsStore.allWidgets.map(
+                (w) => w.userSettings.hotkey
+              ),
               s.classCyclingToggleHotkey,
               s.classPrevHotkey,
               s.classNextHotkey,

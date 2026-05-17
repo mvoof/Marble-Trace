@@ -11,6 +11,7 @@ import {
 
 import type {
   WidgetDefaultConfig,
+  BaseUserSettings,
   FlagDisplaySettings,
   FuelWidgetSettings,
   GMeterWidgetSettings,
@@ -26,7 +27,8 @@ import type {
   LapDeltaWidgetSettings,
   ChassisWidgetSettings,
   TimerWidgetSettings,
-  WidgetCustomSettings,
+  WidgetSpecificSettings,
+  WidgetUserSettings,
 } from '../types/widget-settings';
 
 class WidgetSettingsStore {
@@ -41,12 +43,14 @@ class WidgetSettingsStore {
 
   isTrackMapForceStartPending = false;
 
-  private autoSizedWidgets = new Set<string>();
-
   constructor() {
-    makeAutoObservable(this, { autoSizedWidgets: false } as never, {
-      autoBind: true,
-    });
+    makeAutoObservable(
+      this,
+      {},
+      {
+        autoBind: true,
+      }
+    );
   }
 
   get allWidgets(): WidgetDefaultConfig[] {
@@ -79,55 +83,32 @@ class WidgetSettingsStore {
 
   toggleStandingsClassCycling() {
     const settings = this.getStandingsSettings();
-    this.updateCustomSettings('standings', {
-      standings: {
-        ...settings,
-        enableClassCycling: !settings.enableClassCycling,
-      },
+    this.updateUserSettings('standings', {
+      ...settings,
+      enableClassCycling: !settings.enableClassCycling,
     });
   }
 
   setWidgets(widgets: WidgetDefaultConfig[]) {
     runInAction(() => {
       DEFAULT_WIDGETS.forEach((defaultWidget) => {
-        const s = widgets.find((widget) => widget.id === defaultWidget.id);
+        const savedWidget = widgets.find(
+          (widget) => widget.id === defaultWidget.id
+        );
 
-        if (!s) {
+        if (!savedWidget) {
           this.widgets.set(defaultWidget.id, { ...defaultWidget });
           return;
         }
 
-        const defCS = defaultWidget.customSettings ?? {};
-        const sCS = s.customSettings ?? {};
-
-        const mergedCustomSettings: WidgetCustomSettings = { ...defCS };
-
-        for (const key of Object.keys(defCS) as Array<
-          keyof WidgetCustomSettings
-        >) {
-          const defaultSection = defCS[key];
-
-          if (!defaultSection) continue;
-
-          mergedCustomSettings[key] = filterToDefaults(
-            defaultSection,
-            sCS[key] ?? {}
-          ) as never;
-        }
-
-        const autoSizedCurrent = this.autoSizedWidgets.has(defaultWidget.id)
-          ? this.widgets.get(defaultWidget.id)
-          : null;
+        const mergedUserSettings = filterToDefaults(
+          defaultWidget.userSettings,
+          savedWidget.userSettings ?? {}
+        );
 
         this.widgets.set(defaultWidget.id, {
-          ...filterToDefaults(defaultWidget, s),
-          customSettings: mergedCustomSettings,
-          ...(autoSizedCurrent && {
-            width: autoSizedCurrent.width,
-            height: autoSizedCurrent.height,
-            designWidth: autoSizedCurrent.designWidth,
-            designHeight: autoSizedCurrent.designHeight,
-          }),
+          ...filterToDefaults(defaultWidget, savedWidget),
+          userSettings: mergedUserSettings,
         });
       });
     });
@@ -138,113 +119,116 @@ class WidgetSettingsStore {
   }
 
   setWidgetEnabled(id: string, enabled: boolean) {
-    this.updateField(id, 'enabled', enabled);
+    this.updateUserSettings(id, { enabled });
   }
 
   updatePosition(id: string, x: number, y: number) {
     const widget = this.getWidget(id);
-    if (widget && (widget.x !== x || widget.y !== y)) {
-      widget.x = x;
-      widget.y = y;
+
+    if (
+      widget &&
+      (widget.userSettings.x !== x || widget.userSettings.y !== y)
+    ) {
+      widget.userSettings.x = x;
+      widget.userSettings.y = y;
     }
   }
 
   updateSize(id: string, width: number, height: number) {
     const widget = this.getWidget(id);
-    if (widget && (widget.width !== width || widget.height !== height)) {
-      widget.width = width;
-      widget.height = height;
-    }
-  }
 
-  updateAutoSize(id: string, width: number, height: number) {
-    this.autoSizedWidgets.add(id);
-    const widget = this.getWidget(id);
     if (
       widget &&
-      (widget.width !== width ||
-        widget.height !== height ||
-        widget.designWidth !== width ||
-        widget.designHeight !== height)
+      (widget.userSettings.currentWidth !== width ||
+        widget.userSettings.currentHeight !== height)
     ) {
-      widget.width = width;
-      widget.height = height;
-      widget.designWidth = width;
-      widget.designHeight = height;
+      widget.userSettings.currentWidth = width;
+      widget.userSettings.currentHeight = height;
     }
   }
 
-  updateField<K extends keyof WidgetDefaultConfig>(
-    id: string,
-    field: K,
-    value: WidgetDefaultConfig[K]
-  ) {
+  updateUserSettings(id: string, partial: Partial<WidgetUserSettings>) {
     const widget = this.getWidget(id);
-    if (widget) {
-      widget[field] = value;
-    }
-  }
 
-  updateCustomSettings(id: string, settings: WidgetCustomSettings) {
-    const widget = this.getWidget(id);
-    if (widget) {
-      const prevSettings = widget.customSettings;
+    if (!widget) return;
 
-      // Clamp fuel barWidth if present
-      if (settings.fuel?.barWidth !== undefined) {
-        settings.fuel.barWidth = Math.max(
-          5,
-          Math.min(20, settings.fuel.barWidth)
-        );
-      }
+    let resolvedPartial = partial;
 
-      widget.customSettings = {
-        ...prevSettings,
-        ...settings,
+    if (
+      id === 'fuel' &&
+      'barWidth' in partial &&
+      partial.barWidth !== undefined
+    ) {
+      resolvedPartial = {
+        ...partial,
+        barWidth: Math.max(5, Math.min(20, partial.barWidth)),
       };
+    }
 
-      this.handleWidgetSpecificResize(id, prevSettings, settings);
+    const prevSettings = { ...widget.userSettings };
 
-      if (id === 'fuel' && settings.fuel && 'pitWarningLaps' in settings.fuel) {
-        void invoke('set_pit_warning_laps', {
-          laps: settings.fuel.pitWarningLaps,
-        }).catch((e) => console.error('Failed to update pit warning laps:', e));
-      }
+    widget.userSettings = {
+      ...prevSettings,
+      ...resolvedPartial,
+    } as WidgetUserSettings;
+
+    this.handleLayoutResize(id, prevSettings, widget.userSettings);
+
+    if (id === 'fuel' && 'pitWarningLaps' in resolvedPartial) {
+      void invoke('set_pit_warning_laps', {
+        laps: (resolvedPartial as FuelWidgetSettings).pitWarningLaps,
+      }).catch((error) =>
+        console.error('Failed to update pit warning laps:', error)
+      );
     }
   }
 
-  private handleWidgetSpecificResize(
+  private handleLayoutResize(
     id: string,
-    prevSettings: WidgetCustomSettings | undefined,
-    newSettings: WidgetCustomSettings
+    prevSettings: WidgetUserSettings,
+    newSettings: WidgetUserSettings
   ) {
     const widget = this.getWidget(id);
     if (!widget) return;
 
-    if (id === 'relative-map' && newSettings['relative-map']?.orientation) {
-      const prevOrientation = prevSettings?.['relative-map']?.orientation;
-      const nextOrientation = newSettings['relative-map'].orientation;
+    if (
+      id === 'relative-map' &&
+      'orientation' in newSettings &&
+      newSettings.orientation
+    ) {
+      const prevOrientation =
+        'orientation' in prevSettings ? prevSettings.orientation : undefined;
+      const nextOrientation = newSettings.orientation;
+
       if (prevOrientation !== nextOrientation) {
         const size = LINEAR_MAP_SIZES[nextOrientation];
+
         if (size) {
           widget.designWidth = size.designWidth;
           widget.designHeight = size.designHeight;
         }
-        const prevW = widget.width;
-        widget.width = widget.height;
-        widget.height = prevW;
+
+        const prevWidth = widget.userSettings.currentWidth;
+        widget.userSettings.currentWidth = widget.userSettings.currentHeight;
+        widget.userSettings.currentHeight = prevWidth;
       }
     }
 
-    if (id === 'input-trace' && newSettings['input-trace']?.barMode) {
+    if (
+      id === 'input-trace' &&
+      'barMode' in newSettings &&
+      newSettings.barMode
+    ) {
       const prevBarMode =
-        prevSettings?.['input-trace']?.barMode ?? 'horizontal';
-      const nextBarMode = newSettings['input-trace'].barMode;
+        'barMode' in prevSettings ? prevSettings.barMode : 'horizontal';
+      const nextBarMode = newSettings.barMode;
+
       if (prevBarMode !== nextBarMode && nextBarMode !== 'hidden') {
         const size = INPUT_TRACE_SIZES[nextBarMode];
+
         if (size) {
-          widget.width = size.designWidth;
-          widget.height = size.designHeight;
+          widget.userSettings.currentWidth = size.designWidth;
+          widget.userSettings.currentHeight = size.designHeight;
           widget.designWidth = size.designWidth;
           widget.designHeight = size.designHeight;
         }
@@ -252,122 +236,179 @@ class WidgetSettingsStore {
     }
 
     if (
-      (id === 'lap-times' && newSettings['lap-times']?.layout) ||
-      (id === 'lap-delta' && newSettings['lap-delta']?.layout)
+      (id === 'lap-times' || id === 'lap-delta') &&
+      'layout' in newSettings &&
+      newSettings.layout
     ) {
-      const widgetId = id;
       const defaultWidths =
-        widgetId === 'lap-times'
+        id === 'lap-times'
           ? LAP_TIMES_DEFAULT_WIDTHS
           : LAP_DELTA_DEFAULT_WIDTHS;
 
-      const prevLayout = prevSettings?.[widgetId]?.layout ?? 'vertical';
-      const nextLayout = newSettings[widgetId]!.layout;
+      const prevLayout =
+        'layout' in prevSettings ? prevSettings.layout : 'vertical';
+      const nextLayout = newSettings.layout;
 
       if (prevLayout !== nextLayout) {
-        const prevWidths = prevSettings?.[widgetId]?.layoutWidths ?? {};
-        const savedWidths = { ...prevWidths, [prevLayout]: widget.width };
+        const prevLayoutWidths =
+          'layoutWidths' in prevSettings
+            ? (prevSettings.layoutWidths ?? {})
+            : {};
+        const savedWidths = {
+          ...prevLayoutWidths,
+          [prevLayout]: widget.userSettings.currentWidth,
+        };
         const nextWidth = savedWidths[nextLayout] ?? defaultWidths[nextLayout];
 
-        widget.customSettings = {
-          ...widget.customSettings,
-          [widgetId]: {
-            ...(widget.customSettings?.[widgetId] ?? {}),
-            ...newSettings[widgetId],
-            layoutWidths: savedWidths,
-          },
+        widget.userSettings = {
+          ...widget.userSettings,
+          ...newSettings,
+          layoutWidths: savedWidths,
+        } as WidgetUserSettings;
+
+        widget.userSettings.currentWidth =
+          nextWidth ?? widget.userSettings.currentWidth;
+        widget.designWidth = widget.userSettings.currentWidth;
+      }
+    }
+
+    if (id === 'chassis' && 'showSuspensionAndBrakes' in newSettings) {
+      const prevShowSuspensionAndBrakes =
+        'showSuspensionAndBrakes' in prevSettings
+          ? prevSettings.showSuspensionAndBrakes
+          : false;
+      const nextShowSuspensionAndBrakes = newSettings.showSuspensionAndBrakes;
+
+      if (prevShowSuspensionAndBrakes !== nextShowSuspensionAndBrakes) {
+        const chassisDesignWidth = 300;
+        const suspensionAndBrakesDesignWidth = 430;
+        const chassisDefaultWidth = 280;
+        const suspensionAndBrakesDefaultWidth = 400;
+
+        const prevMode = prevShowSuspensionAndBrakes
+          ? 'suspensionAndBrakes'
+          : 'chassis';
+        const nextMode = nextShowSuspensionAndBrakes
+          ? 'suspensionAndBrakes'
+          : 'chassis';
+
+        const prevModeWidths =
+          'modeWidths' in prevSettings ? (prevSettings.modeWidths ?? {}) : {};
+
+        const savedModeWidths = {
+          ...prevModeWidths,
+          [prevMode]: widget.userSettings.currentWidth,
         };
 
-        widget.width = nextWidth ?? widget.width;
-        widget.designWidth = widget.width;
+        const defaultNextWidth = nextShowSuspensionAndBrakes
+          ? suspensionAndBrakesDefaultWidth
+          : chassisDefaultWidth;
+
+        const nextWidth = savedModeWidths[nextMode] ?? defaultNextWidth;
+
+        widget.userSettings = {
+          ...widget.userSettings,
+          ...newSettings,
+          modeWidths: savedModeWidths,
+        } as WidgetUserSettings;
+
+        widget.designWidth = nextShowSuspensionAndBrakes
+          ? suspensionAndBrakesDesignWidth
+          : chassisDesignWidth;
+        widget.userSettings.currentWidth = nextWidth;
       }
     }
   }
 
-  private getSettings<T>(widgetId: string, key: keyof WidgetCustomSettings): T {
+  private getSettings<SpecificSettings extends WidgetSpecificSettings>(
+    widgetId: string
+  ): BaseUserSettings & SpecificSettings {
     const widget = this.getWidget(widgetId);
 
     const defaultConfig = DEFAULT_WIDGETS.find(
-      (widget) => widget.id === widgetId
+      (defaultWidget) => defaultWidget.id === widgetId
     );
-    const defaultSettings = defaultConfig?.customSettings?.[key] as T;
+    const defaultSettings = defaultConfig?.userSettings as
+      | (BaseUserSettings & SpecificSettings)
+      | undefined;
 
-    return (widget?.customSettings?.[key] as T) ?? defaultSettings;
-  }
-
-  getSpeedSettings(): SpeedWidgetSettings {
-    return this.getSettings('speed', 'speed');
-  }
-
-  getInputTraceSettings(): InputTraceSettings {
-    return this.getSettings('input-trace', 'input-trace');
-  }
-
-  getRadarSettings(id: 'proximity-radar' | 'radar-bar'): RadarSettings {
-    return this.getSettings(id, id);
-  }
-
-  getStandingsSettings(): StandingsWidgetSettings {
-    return this.getSettings('standings', 'standings');
-  }
-
-  getRelativeSettings(): RelativeWidgetSettings {
-    return this.getSettings('relative', 'relative');
-  }
-
-  getTrackMapSettings(): TrackMapWidgetSettings {
-    const settings = this.getSettings<TrackMapWidgetSettings>(
-      'track-map',
-      'track-map'
+    return (
+      (widget?.userSettings as unknown as BaseUserSettings &
+        SpecificSettings) ?? defaultSettings
     );
-    // Handle special default logic from original code
+  }
+
+  getSpeedSettings(): BaseUserSettings & SpeedWidgetSettings {
+    return this.getSettings<SpeedWidgetSettings>('speed');
+  }
+
+  getInputTraceSettings(): BaseUserSettings & InputTraceSettings {
+    return this.getSettings<InputTraceSettings>('input-trace');
+  }
+
+  getRadarSettings(
+    id: 'proximity-radar' | 'radar-bar'
+  ): BaseUserSettings & RadarSettings {
+    return this.getSettings<RadarSettings>(id);
+  }
+
+  getStandingsSettings(): BaseUserSettings & StandingsWidgetSettings {
+    return this.getSettings<StandingsWidgetSettings>('standings');
+  }
+
+  getRelativeSettings(): BaseUserSettings & RelativeWidgetSettings {
+    return this.getSettings<RelativeWidgetSettings>('relative');
+  }
+
+  getTrackMapSettings(): BaseUserSettings & TrackMapWidgetSettings {
+    const settings = this.getSettings<TrackMapWidgetSettings>('track-map');
     const showSectors = settings.showSectors ?? true;
+
     return {
       ...settings,
       showSectors,
-      showSectorTimes: settings.showSectorTimes ?? showSectors,
       showSectorsOnMap: settings.showSectorsOnMap ?? showSectors,
     };
   }
 
-  getLinearMapSettings(): LinearMapWidgetSettings {
-    return this.getSettings('relative-map', 'relative-map');
+  getLinearMapSettings(): BaseUserSettings & LinearMapWidgetSettings {
+    return this.getSettings<LinearMapWidgetSettings>('relative-map');
   }
 
-  getWeatherSettings(): WeatherWidgetSettings {
-    return this.getSettings('weather', 'weather');
+  getWeatherSettings(): BaseUserSettings & WeatherWidgetSettings {
+    return this.getSettings<WeatherWidgetSettings>('weather');
   }
 
-  getFuelSettings(): FuelWidgetSettings {
-    return this.getSettings('fuel', 'fuel');
+  getFuelSettings(): BaseUserSettings & FuelWidgetSettings {
+    return this.getSettings<FuelWidgetSettings>('fuel');
   }
 
-  getLapTimesSettings(): LapTimesWidgetSettings {
-    const s = this.getSettings<LapTimesWidgetSettings>(
-      'lap-times',
-      'lap-times'
-    );
-    return { ...s, showPredicted: s.showPredicted ?? true };
+  getLapTimesSettings(): BaseUserSettings & LapTimesWidgetSettings {
+    const settings = this.getSettings<LapTimesWidgetSettings>('lap-times');
+
+    return { ...settings, showPredicted: settings.showPredicted ?? true };
   }
 
-  getChassisSettings(): ChassisWidgetSettings {
-    return this.getSettings('chassis', 'chassis');
+  getChassisSettings(): BaseUserSettings & ChassisWidgetSettings {
+    return this.getSettings<ChassisWidgetSettings>('chassis');
   }
 
-  getLapDeltaSettings(): LapDeltaWidgetSettings {
-    return this.getSettings('lap-delta', 'lap-delta');
+  getLapDeltaSettings(): BaseUserSettings & LapDeltaWidgetSettings {
+    return this.getSettings<LapDeltaWidgetSettings>('lap-delta');
   }
 
-  getTimerSettings(): TimerWidgetSettings {
-    return this.getSettings('timer', 'timer');
+  getTimerSettings(): BaseUserSettings & TimerWidgetSettings {
+    return this.getSettings<TimerWidgetSettings>('timer');
   }
 
-  getFlagDisplaySettings(id: 'led-flags' | 'flat-flags'): FlagDisplaySettings {
-    return this.getSettings(id, id);
+  getFlagDisplaySettings(
+    id: 'led-flags' | 'flat-flags'
+  ): BaseUserSettings & FlagDisplaySettings {
+    return this.getSettings<FlagDisplaySettings>(id);
   }
 
-  getGMeterSettings(): GMeterWidgetSettings {
-    return this.getSettings('g-meter', 'g-meter');
+  getGMeterSettings(): BaseUserSettings & GMeterWidgetSettings {
+    return this.getSettings<GMeterWidgetSettings>('g-meter');
   }
 }
 

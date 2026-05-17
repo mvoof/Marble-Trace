@@ -29,7 +29,13 @@ export const RadarBarWidget = ({
   const showRight = activeOnly ? spotterRight : true;
 
   return (
-    <WidgetPanel className={styles.root} minWidth={60} gap={0} direction="row">
+    <WidgetPanel
+      className={styles.root}
+      minWidth={60}
+      gap={0}
+      direction="row"
+      edgeInset
+    >
       {showLeft && (
         <div className={styles.leftSlot}>
           <RadarBar

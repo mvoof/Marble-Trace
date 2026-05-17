@@ -1,10 +1,10 @@
 .row {
   display: grid;
-  grid-template-columns: rem(50) 9ch 7ch;
+  grid-template-columns: ws(50) 1fr ws(65);
   align-items: center;
-  gap: rem(4);
+  gap: ws(4);
   font-family: $font-mono;
-  padding: rem(4) rem(6);
+  padding: ws(4) ws(6);
   border-bottom: 1px solid rgba(39, 39, 42, 0.5);
   border-left: 3px solid transparent;
   transition: background-color 0.2s;
@@ -15,10 +15,10 @@
 
   &.fill {
     flex: 1 1 0;
-    min-width: rem(220);
+    min-width: ws(220);
     border-bottom: none;
     border-right: 1px solid rgba(39, 39, 42, 0.5);
-    grid-template-columns: rem(50) minmax(rem(80), 2fr) minmax(rem(65), 1fr);
+    grid-template-columns: ws(50) minmax(ws(80), 2fr) minmax(ws(65), 1fr);
 
     &:last-child {
       border-right: none;
@@ -27,7 +27,7 @@
 }
 
 .label {
-  font-size: rem(10);
+  font-size: ws(10);
   color: $color-text-muted;
   letter-spacing: 1px;
   font-family: $font-widget;
@@ -37,12 +37,12 @@
 }
 
 .time {
-  font-size: rem(13);
+  font-size: ws(13);
   font-weight: 700;
   color: #fff;
   font-variant-numeric: tabular-nums;
   text-align: right;
-  padding-right: rem(6);
+  padding-right: ws(6);
   border-right: 1px solid rgba(255, 255, 255, 0.15);
   overflow: hidden;
   white-space: nowrap;
@@ -54,7 +54,7 @@
 }
 
 .delta {
-  font-size: rem(13);
+  font-size: ws(13);
   font-weight: 700;
   text-align: right;
   font-variant-numeric: tabular-nums;

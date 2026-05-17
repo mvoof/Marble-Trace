@@ -7,30 +7,31 @@ export const computeClassSof = (drivers: DriverEntry[]): number => {
   return Math.round(total / drivers.length);
 };
 
-export const buildGridTemplate = (
-  settings: StandingsWidgetSettings
-): string => {
-  const cols: string[] = [
-    '2ch', // pos    numeric, tabular
-    '3.5ch', // carNum numeric, tabular
-    '1fr', // name   — fills remaining space
-  ];
+const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 
-  // Badge columns use em (like RelativeWidget) so they scale with widget font-size
-  if (settings.showBrand) cols.push('3em');
-  if (settings.showTire) cols.push('1.75em');
-  if (!settings.enableClassCycling && settings.showClassBadge)
-    cols.push('2.5em');
-  if (settings.showIRatingBadge) cols.push('4.5em');
+type ColDef = { width: string; show: boolean };
 
-  // Numeric/delta columns use ch
-  if (settings.showIrChange) cols.push('3.5ch');
-  if (settings.showLapsCompleted) cols.push('2ch');
-  if (settings.showPosChange) cols.push('3ch');
+const buildColDefs = (settings: StandingsWidgetSettings): ColDef[] => [
+  { width: ws(20), show: true }, // pos      "00"
+  { width: ws(40), show: true }, // carNum   "#000"
+  { width: `minmax(${ws(30)}, 1fr)`, show: true }, // name     — never collapses
+  { width: ws(30), show: settings.showBrand }, // brand
+  { width: ws(16), show: settings.showTire }, // tire
+  {
+    width: ws(34),
+    show: !settings.enableClassCycling && settings.showClassBadge,
+  }, // class
+  { width: ws(60), show: settings.showIRatingBadge }, // lic/iRating
+  { width: ws(22), show: settings.showIrChange }, // ΔiR
+  { width: ws(18), show: settings.showLapsCompleted }, // laps
+  { width: ws(22), show: settings.showPosChange }, // +/- pos
+  { width: ws(50), show: true }, // gap      "+000.0"
+  { width: ws(70), show: true }, // last     "0:00.000"
+  { width: ws(70), show: true }, // best     "0:00.000"
+];
 
-  cols.push('6ch'); // gap    "+000.0"
-  cols.push('8ch'); // last   "0:00.000"
-  cols.push('8ch'); // best
-
-  return cols.join(' ');
-};
+export const buildGridTemplate = (settings: StandingsWidgetSettings): string =>
+  buildColDefs(settings)
+    .filter((col) => col.show)
+    .map((col) => col.width)
+    .join(' ');

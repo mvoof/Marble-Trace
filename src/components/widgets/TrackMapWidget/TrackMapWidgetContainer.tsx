@@ -85,9 +85,6 @@ export const TrackMapWidgetContainer = observer(() => {
 
   const recordingOverlayRef = useRef<RecordingOverlayHandle>(null);
 
-  const sectorTimes = computedStore.lapDelta?.sectorTimes ?? [];
-  const currentSectorIdx = computedStore.lapDelta?.currentSectorIdx ?? -1;
-
   const setTrackData = useCallback((data: TrackData | null) => {
     dispatch({ type: 'SET_TRACK_DATA', data });
   }, []);
@@ -223,21 +220,6 @@ export const TrackMapWidgetContainer = observer(() => {
     classPosition: e.classPosition,
   }));
 
-  const classColors = useMemo(() => {
-    const classColorsSeen = new Map<number, { name: string; color: string }>();
-
-    for (const e of driverEntries) {
-      if (!classColorsSeen.has(e.carClassId)) {
-        classColorsSeen.set(e.carClassId, {
-          name: e.carClassShortName,
-          color: e.carClassColor,
-        });
-      }
-    }
-
-    return Array.from(classColorsSeen.values());
-  }, [driverEntries]);
-
   return (
     <>
       {/* Reads carDynamics (60Hz) in isolation — main container stays at ≤10Hz */}
@@ -255,7 +237,6 @@ export const TrackMapWidgetContainer = observer(() => {
 
       <TrackMapWidget
         cars={cars}
-        classColors={classColors}
         trackData={trackData}
         trackName={trackName}
         isRecording={isRecording}
@@ -265,8 +246,6 @@ export const TrackMapWidgetContainer = observer(() => {
         recordingOverlayRef={recordingOverlayRef}
         settings={settings}
         sectors={sessionInfo?.SplitTimeInfo?.Sectors}
-        sectorTimes={sectorTimes}
-        currentSectorIdx={currentSectorIdx}
       />
     </>
   );

@@ -13,10 +13,8 @@ interface WindCompassProps {
   windBearing: number;
   windCardinal: string;
   arrowColor: string;
-  size?: number;
 }
 
-const COMPASS_SIZE = 200;
 const RING_RADIUS = 74;
 const TICK_OUTER = 80;
 const TICK_INNER_MAJOR = 70;
@@ -35,16 +33,9 @@ const MINOR_TICK_ANGLES = [45, 135, 225, 315];
 const RING_COLOR = 'rgba(255,255,255,0.22)';
 
 export const WindCompass = observer(
-  ({
-    windBearing,
-    windCardinal,
-    arrowColor,
-    size = COMPASS_SIZE,
-  }: WindCompassProps) => {
+  ({ windBearing, windCardinal, arrowColor }: WindCompassProps) => {
     const ringRef = useRef<SVGGElement>(null);
     const arrowRef = useRef<SVGGElement>(null);
-
-    const bearingFontPx = Math.round(13 * (size / COMPASS_SIZE));
 
     // RING_RADIUS is 74. Car radius ~40.
     // We want the arrow to cross the ring (start outside at ~95) and end near the car (~45).
@@ -71,13 +62,10 @@ export const WindCompass = observer(
     }, [windBearing]);
 
     return (
-      <div
-        className={styles.compassWrapper}
-        style={{ width: size, height: size }}
-      >
+      <div className={styles.compassWrapper}>
         <svg
-          width={size}
-          height={size}
+          width="100%"
+          height="100%"
           viewBox="-110 -110 220 220"
           className={styles.compassSvg}
         >
@@ -166,7 +154,6 @@ export const WindCompass = observer(
             textAnchor="start"
             dominantBaseline="central"
             className={styles.bearingText}
-            style={{ fontSize: bearingFontPx }}
           >
             {Math.round(windBearing)}°
           </text>
@@ -177,7 +164,6 @@ export const WindCompass = observer(
             textAnchor="end"
             dominantBaseline="central"
             className={styles.bearingText}
-            style={{ fontSize: bearingFontPx }}
           >
             {windCardinal}
           </text>

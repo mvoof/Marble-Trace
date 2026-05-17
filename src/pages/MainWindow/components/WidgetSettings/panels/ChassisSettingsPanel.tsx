@@ -9,8 +9,9 @@ export const ChassisSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getChassisSettings();
 
   const update = (partial: Partial<ChassisWidgetSettings>) => {
-    widgetSettingsStore.updateCustomSettings('chassis', {
-      chassis: { ...settings, ...partial },
+    widgetSettingsStore.updateUserSettings('chassis', {
+      ...settings,
+      ...partial,
     });
   };
 
@@ -22,8 +23,8 @@ export const ChassisSettingsPanel = observer(() => {
           desc="Show tire pressures, temperatures, and brake bias panels."
         >
           <Switch
-            checked={settings.showInboard}
-            onChange={(v) => update({ showInboard: v })}
+            checked={settings.showSuspensionAndBrakes}
+            onChange={(v) => update({ showSuspensionAndBrakes: v })}
           />
         </SettingRow>
       </div>

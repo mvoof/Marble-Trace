@@ -4,7 +4,6 @@ import { emit } from '@tauri-apps/api/event';
 import { appSettingsStore } from '../../store/app-settings.store';
 import { widgetSettingsStore } from '../../store/widget-settings.store';
 import { telemetryConnectionStore } from '../../store/iracing/telemetry-connection.store';
-import { WIDGET_BY_ID } from '../../store/widget-defaults';
 import { ErrorBoundary } from '../shared/ErrorBoundary';
 import styles from './WidgetContainer.module.scss';
 
@@ -48,21 +47,23 @@ export const WidgetContainer = observer(
         !dragMode) ||
       (!visible && !dragMode);
 
-    const backgroundColor = widget?.backgroundColor ?? '#1a1a1a';
-    const backgroundColorEdge = widget?.backgroundColorEdge ?? '#0a0a0a';
+    const backgroundColor = widget?.userSettings.backgroundColor ?? '#1a1a1a';
+    const backgroundColorEdge =
+      widget?.userSettings.backgroundColorEdge ?? '#0a0a0a';
+    const borderColor =
+      widget?.userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
 
-    const x = widget?.x ?? 100;
-    const y = widget?.y ?? 100;
+    const x = widget?.userSettings.x ?? 100;
+    const y = widget?.userSettings.y ?? 100;
 
-    const width = widget?.width ?? 200;
-    const height = widget?.height ?? 200;
+    const width = widget?.userSettings.currentWidth ?? 200;
+    const height = widget?.userSettings.currentHeight ?? 200;
 
     const designWidth = widget?.designWidth ?? width;
     const designHeight = widget?.designHeight ?? height;
+    const autoHeight = widget?.autoHeight ?? false;
 
-    const autoHeight = WIDGET_BY_ID.get(widgetId)?.autoHeight ?? false;
-
-    const widgetScale = autoHeight ? 1 : width / designWidth;
+    const widgetScale = width / designWidth;
 
     const background = shouldHide
       ? 'transparent'
@@ -82,8 +83,8 @@ export const WidgetContainer = observer(
         dragStartRef.current = {
           mouseX: e.clientX,
           mouseY: e.clientY,
-          widgetX: currentWidget?.x ?? 0,
-          widgetY: currentWidget?.y ?? 0,
+          widgetX: currentWidget?.userSettings.x ?? 0,
+          widgetY: currentWidget?.userSettings.y ?? 0,
         };
 
         const onMouseMove = (ev: MouseEvent) => {
@@ -126,10 +127,10 @@ export const WidgetContainer = observer(
         resizeStartRef.current = {
           mouseX: e.clientX,
           mouseY: e.clientY,
-          widgetW: currentWidget?.width ?? designWidth,
-          widgetH: currentWidget?.height ?? designHeight,
-          widgetX: currentWidget?.x ?? 0,
-          widgetY: currentWidget?.y ?? 0,
+          widgetW: currentWidget?.userSettings.currentWidth ?? designWidth,
+          widgetH: currentWidget?.userSettings.currentHeight ?? designHeight,
+          widgetX: currentWidget?.userSettings.x ?? 0,
+          widgetY: currentWidget?.userSettings.y ?? 0,
         };
 
         const onMouseMove = (ev: MouseEvent) => {
@@ -208,13 +209,19 @@ export const WidgetContainer = observer(
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
           className={`${styles.dragWrapper} ${dragMode ? styles.draggingCursor : ''}`}
+          style={autoHeight ? { height: 'auto' } : undefined}
           onMouseDown={handleDragMouseDown}
         >
           <ErrorBoundary>
             <div
               className={`${styles.widgetInner} ${dragMode ? styles.dragging : ''}`}
               style={
-                { background, ['--wfs']: widgetScale } as React.CSSProperties
+                {
+                  ...(autoHeight ? { height: 'auto' } : undefined),
+                  background,
+                  borderColor: shouldHide ? 'transparent' : borderColor,
+                  ['--wfs']: widgetScale,
+                } as React.CSSProperties
               }
             >
               {children}

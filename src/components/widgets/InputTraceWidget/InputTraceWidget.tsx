@@ -6,7 +6,10 @@ import {
   type CanvasTraceChannel,
   type CanvasTraceHandle,
 } from '../primitives/CanvasTrace/CanvasTrace';
-import type { InputTraceSettings } from '../../../types/widget-settings';
+import type {
+  BaseUserSettings,
+  InputTraceSettings,
+} from '../../../types/widget-settings';
 import { InputBars, type InputBarsHandle } from './InputBars/InputBars';
 
 import styles from './InputTraceWidget.module.scss';
@@ -19,7 +22,7 @@ interface InputTraceWidgetProps {
   initialThrottle: number;
   initialBrake: number;
   initialClutch: number;
-  settings: InputTraceSettings;
+  settings: BaseUserSettings & InputTraceSettings;
   ref?: Ref<InputTraceHandle>;
 }
 
@@ -75,11 +78,7 @@ export const InputTraceWidget = ({
   const isVertical = settings.barMode === 'vertical';
 
   return (
-    <WidgetPanel
-      minWidth={400}
-      direction={isVertical ? 'row' : 'column'}
-      gap={8}
-    >
+    <WidgetPanel direction={isVertical ? 'row' : 'column'} gap={8} edgeInset>
       {isVertical ? (
         <>
           <div className={styles.chartArea}>

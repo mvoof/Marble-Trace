@@ -12,8 +12,9 @@ export const LinearMapSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getLinearMapSettings();
 
   const update = (partial: Partial<LinearMapWidgetSettings>) => {
-    widgetSettingsStore.updateCustomSettings('relative-map', {
-      'relative-map': { ...settings, ...partial },
+    widgetSettingsStore.updateUserSettings('relative-map', {
+      ...settings,
+      ...partial,
     });
   };
 

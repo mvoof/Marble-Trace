@@ -1,5 +1,3 @@
-import type { Ref } from 'react';
-
 import type {
   WeatherForecastEntry,
   Skies as BindingSkies,
@@ -29,7 +27,6 @@ interface WeatherWidgetProps {
   showWind: boolean;
   showHumidity: boolean;
   showForecast: boolean;
-  ref?: Ref<HTMLElement>;
 }
 
 const buildStatCells = (
@@ -125,7 +122,6 @@ export const WeatherWidget = ({
   showWind,
   showHumidity,
   showForecast,
-  ref,
 }: WeatherWidgetProps) => {
   const stats = buildStatCells(
     airTempFormatted,
@@ -143,14 +139,13 @@ export const WeatherWidget = ({
   const hasStats = stats.length > 0;
 
   return (
-    <WidgetPanel ref={ref} direction="column" gap={0} minWidth={200} fitContent>
+    <WidgetPanel direction="column" gap={0} minWidth={200}>
       {showCompass && (
         <div className={styles.compassBlock}>
           <WindCompass
             windBearing={windBearing}
             windCardinal={windCardinal}
             arrowColor={windColor}
-            size={200}
           />
         </div>
       )}

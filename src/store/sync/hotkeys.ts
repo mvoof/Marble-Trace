@@ -48,10 +48,13 @@ export const setupHotkeys = async (onSave?: () => Promise<void>) => {
     }
 
     for (const widget of widgetSettingsStore.allWidgets) {
-      if (widget.hotkey) {
-        addHandler(widget.hotkey, (event) => {
+      if (widget.userSettings.hotkey) {
+        addHandler(widget.userSettings.hotkey, (event) => {
           if (event.state === 'Pressed') {
-            widgetSettingsStore.setWidgetEnabled(widget.id, !widget.enabled);
+            widgetSettingsStore.setWidgetEnabled(
+              widget.id,
+              !widget.userSettings.enabled
+            );
           }
         });
       }

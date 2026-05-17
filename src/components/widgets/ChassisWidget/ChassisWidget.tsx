@@ -1,4 +1,3 @@
-import type { Ref } from 'react';
 import { Info } from 'lucide-react';
 import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
 import { CornerModule } from './CornerModule/CornerModule';
@@ -8,8 +7,12 @@ import styles from './ChassisWidget.module.scss';
 
 const SUSPENSION_BENT_THRESHOLD_MM = 18;
 
-const CenterLabels = ({ showInboard }: { showInboard: boolean }) => {
-  if (!showInboard) {
+const CenterLabels = ({
+  showSuspensionAndBrakes,
+}: {
+  showSuspensionAndBrakes: boolean;
+}) => {
+  if (!showSuspensionAndBrakes) {
     return null;
   }
 
@@ -29,10 +32,9 @@ export const ChassisWidget = ({
   rr,
   tempUnit,
   lengthUnit,
-  showInboard,
+  showSuspensionAndBrakes,
   onPitRoad,
-  ref,
-}: ChassisWidgetProps & { ref?: Ref<HTMLElement> }) => {
+}: ChassisWidgetProps) => {
   const frontAxleDiff = computeAxleDiff(lf.rideHeight, rf.rideHeight);
   const rearAxleDiff = computeAxleDiff(lr.rideHeight, rr.rideHeight);
 
@@ -45,9 +47,9 @@ export const ChassisWidget = ({
     Math.abs(rearAxleDiff) > SUSPENSION_BENT_THRESHOLD_MM;
 
   return (
-    <WidgetPanel ref={ref} direction="column" gap={0} fitContent>
+    <WidgetPanel direction="column" gap={0}>
       <div
-        className={`${styles.carGrid} ${showInboard ? styles.carGridWithInboard : ''}`}
+        className={`${styles.carGrid} ${showSuspensionAndBrakes ? styles.carGridSuspensionAndBrakes : ''}`}
       >
         <CornerModule
           data={lf}
@@ -55,10 +57,10 @@ export const ChassisWidget = ({
           isRight={false}
           tempUnit={tempUnit}
           lengthUnit={lengthUnit}
-          showInboard={showInboard}
+          showSuspensionAndBrakes={showSuspensionAndBrakes}
         />
 
-        <CenterLabels showInboard={showInboard} />
+        <CenterLabels showSuspensionAndBrakes={showSuspensionAndBrakes} />
 
         <CornerModule
           data={rf}
@@ -66,7 +68,7 @@ export const ChassisWidget = ({
           isRight={true}
           tempUnit={tempUnit}
           lengthUnit={lengthUnit}
-          showInboard={showInboard}
+          showSuspensionAndBrakes={showSuspensionAndBrakes}
         />
 
         <CornerModule
@@ -75,10 +77,10 @@ export const ChassisWidget = ({
           isRight={false}
           tempUnit={tempUnit}
           lengthUnit={lengthUnit}
-          showInboard={showInboard}
+          showSuspensionAndBrakes={showSuspensionAndBrakes}
         />
 
-        <CenterLabels showInboard={showInboard} />
+        <CenterLabels showSuspensionAndBrakes={showSuspensionAndBrakes} />
 
         <CornerModule
           data={rr}
@@ -86,7 +88,7 @@ export const ChassisWidget = ({
           isRight={true}
           tempUnit={tempUnit}
           lengthUnit={lengthUnit}
-          showInboard={showInboard}
+          showSuspensionAndBrakes={showSuspensionAndBrakes}
         />
       </div>
 

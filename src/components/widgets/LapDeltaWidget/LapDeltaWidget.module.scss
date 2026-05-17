@@ -3,15 +3,15 @@
   text-align: center;
   font-family: $font-widget;
   font-weight: 700;
-  font-size: $font-size-xl;
+  font-size: ws(32);
   line-height: 1;
   letter-spacing: -1px;
   font-variant-numeric: tabular-nums;
-  padding: $space-sm $space-md $space-xs;
+  padding: ws(4) ws(8) ws(2);
 }
 
 .deltaHorizontal {
-  padding-bottom: $space-sm;
+  padding-bottom: ws(4);
 }
 
 .deltaAhead {
@@ -29,14 +29,14 @@
 .sectorListVertical {
   display: flex;
   flex-direction: column;
-  gap: rem(2);
-  padding: 0 $space-sm $space-md;
+  gap: ws(2);
+  padding: 0 ws(4) ws(8);
 }
 
 .sectorListHorizontal {
   display: flex;
   flex-direction: row;
-  gap: rem(4);
+  gap: ws(4);
   flex: 1 1 0;
   min-width: 0;
   height: 100%;

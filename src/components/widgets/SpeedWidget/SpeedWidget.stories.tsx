@@ -61,13 +61,11 @@ const applyArgs = (args: StoryArgs) => {
 
     unitsStore.setSystem(args.units);
 
-    widgetSettingsStore.updateCustomSettings('speed', {
-      speed: {
-        ...widgetSettingsStore.getSpeedSettings(),
-        showRpmBar: args.showRpmBar,
-        showTemps: args.showTemps,
-        showRpmColor: args.showRpmColor,
-      },
+    widgetSettingsStore.updateUserSettings('speed', {
+      ...widgetSettingsStore.getSpeedSettings(),
+      showRpmBar: args.showRpmBar,
+      showTemps: args.showTemps,
+      showRpmColor: args.showRpmColor,
     });
   });
 };
