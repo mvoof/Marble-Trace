@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] — 2026-05-17
+
+### Added
+
+- **Border Color:** You can now set a custom border color for each widget.
+
+### Changed
+
+- **Speed Widget — Full Redesign:** Completely rebuilt with a new RPM bar, shift and blink thresholds, and updated visuals for gear, speed, pit limiter, and engine info. Now uses more accurate telemetry data from the car for RPM thresholds and shift points.
+- **Track Map:** Removed the class legend and sector times strip to reduce clutter.
+- **Standings:** Column names are now written out in full; gap shows a placeholder when no data is available.
+- **Widgets scale properly now:** All widgets resize more cleanly — fonts, spacing, and elements stay proportional no matter what size you drag the widget to.
+- **Widget Settings:** Internal structure was reorganized — a settings reset may be needed in rare cases after updating.
+
+### Fixed
+
+- Various layout and scaling issues across multiple widgets.
+
 ## [0.10.1] — 2026-05-12
 
 ### Fixed
