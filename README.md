@@ -13,10 +13,19 @@
 
 <div align="center">
   
-[![Discord](https://img.shields.io/discord/1342905186041073684?style=flat-square&logo=discord&label=Discord)](https://discord.gg/GVaRsHbjxV) [![Latest release](https://img.shields.io/github/v/release/mvoof/Marble-Trace?style=flat-square)](https://github.com/mvoof/Marble-Trace/releases)[![MIT License](https://img.shields.io/github/license/mvoof/Marble-Trace?style=flat-square)](LICENSE) [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md) ![Windows only](https://img.shields.io/badge/platform-Windows-blue?style=flat-square) ![Tauri v2](https://img.shields.io/badge/built%20with-Tauri%20v2-purple?style=flat-square)
+[![Latest release](https://img.shields.io/github/v/release/mvoof/Marble-Trace?style=flat-square)](https://github.com/mvoof/Marble-Trace/releases) [![MIT License](https://img.shields.io/github/license/mvoof/Marble-Trace?style=flat-square)](LICENSE) [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md) ![Windows only](https://img.shields.io/badge/platform-Windows-blue?style=flat-square) ![Tauri v2](https://img.shields.io/badge/built%20with-Tauri%20v2-purple?style=flat-square)
 
 </div>
 
+<p align="center">
+  Marble Trace is actively developed — new widgets, fixes, and features land regularly.<br>
+  Got a bug, an idea, or just want to share your setup? Join the community on Discord.
+</p>
+<p align="center">
+  <a href="https://discord.gg/GVaRsHbjxV">
+    <img src="https://discordapp.com/api/guilds/1342905186041073684/widget.png?style=shield" alt="Discord">
+  </a>
+</p>
 
 ---
 
