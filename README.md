@@ -11,7 +11,12 @@
   <strong>Open-source iRacing telemetry overlay — beautiful, lightweight, always on top.</strong>
 </p>
 
-[![Discord](https://img.shields.io/discord/1342905186041073684?style=flat-square&logo=discord&label=Discord)](https://discord.gg/GVaRsHbjxV) [![Latest release](https://img.shields.io/github/v/release/mvoof/Marble-Trace?style=flat-square)](https://github.com/mvoof/Marble-Trace/releases) [![Downloads](https://img.shields.io/github/downloads/mvoof/Marble-Trace/latest/total?style=flat-square)](https://github.com/mvoof/Marble-Trace/releases) [![Total downloads](https://img.shields.io/github/downloads/mvoof/Marble-Trace/total?style=flat-square)](https://github.com/mvoof/Marble-Trace/releases) [![MIT License](https://img.shields.io/github/license/mvoof/Marble-Trace?style=flat-square)](LICENSE) [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md) ![Windows only](https://img.shields.io/badge/platform-Windows-blue?style=flat-square) ![Tauri v2](https://img.shields.io/badge/built%20with-Tauri%20v2-purple?style=flat-square)
+<div align="center">
+  
+[![Discord](https://img.shields.io/discord/1342905186041073684?style=flat-square&logo=discord&label=Discord)](https://discord.gg/GVaRsHbjxV) [![Latest release](https://img.shields.io/github/v/release/mvoof/Marble-Trace?style=flat-square)](https://github.com/mvoof/Marble-Trace/releases)[![MIT License](https://img.shields.io/github/license/mvoof/Marble-Trace?style=flat-square)](LICENSE) [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md) ![Windows only](https://img.shields.io/badge/platform-Windows-blue?style=flat-square) ![Tauri v2](https://img.shields.io/badge/built%20with-Tauri%20v2-purple?style=flat-square)
+
+</div>
+
 
 ---
 
