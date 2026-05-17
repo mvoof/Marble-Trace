@@ -78,11 +78,7 @@ export const InputTraceWidget = ({
   const isVertical = settings.barMode === 'vertical';
 
   return (
-    <WidgetPanel
-      direction={isVertical ? 'row' : 'column'}
-      gap={8}
-      edgeInset
-    >
+    <WidgetPanel direction={isVertical ? 'row' : 'column'} gap={8} edgeInset>
       {isVertical ? (
         <>
           <div className={styles.chartArea}>
