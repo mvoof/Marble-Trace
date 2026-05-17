@@ -79,7 +79,6 @@ export const InputTraceWidget = ({
 
   return (
     <WidgetPanel
-      minWidth={400}
       direction={isVertical ? 'row' : 'column'}
       gap={8}
       edgeInset
