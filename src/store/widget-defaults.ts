@@ -302,6 +302,7 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Flat Flags',
     description: 'Banner-style list of active track flags.',
     component: FlatFlagsWidgetContainer,
+    autoHeight: true,
     designWidth: 280,
     designHeight: 160,
     userSettings: {
@@ -467,6 +468,7 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Fuel',
     description: 'Fuel level and consumption calculator.',
     component: FuelWidgetContainer,
+    autoHeight: true,
     designWidth: 240,
     designHeight: 360,
     userSettings: {

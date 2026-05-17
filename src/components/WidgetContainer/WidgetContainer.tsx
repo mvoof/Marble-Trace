@@ -61,6 +61,7 @@ export const WidgetContainer = observer(
 
     const designWidth = widget?.designWidth ?? width;
     const designHeight = widget?.designHeight ?? height;
+    const autoHeight = widget?.autoHeight ?? false;
 
     const widgetScale = width / designWidth;
 
@@ -191,16 +192,9 @@ export const WidgetContainer = observer(
       [dragMode, widgetId, designWidth, designHeight]
     );
 
-    const resizeDirections: ResizeDirection[] = [
-      'n',
-      's',
-      'e',
-      'w',
-      'ne',
-      'nw',
-      'se',
-      'sw',
-    ];
+    const resizeDirections: ResizeDirection[] = autoHeight
+      ? ['e', 'w']
+      : ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
 
     return (
       <div
@@ -209,12 +203,13 @@ export const WidgetContainer = observer(
           left: x,
           top: y,
           width,
-          height,
+          height: autoHeight ? 'auto' : height,
         }}
       >
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
           className={`${styles.dragWrapper} ${dragMode ? styles.draggingCursor : ''}`}
+          style={autoHeight ? { height: 'auto' } : undefined}
           onMouseDown={handleDragMouseDown}
         >
           <ErrorBoundary>
@@ -222,6 +217,7 @@ export const WidgetContainer = observer(
               className={`${styles.widgetInner} ${dragMode ? styles.dragging : ''}`}
               style={
                 {
+                  ...(autoHeight ? { height: 'auto' } : undefined),
                   background,
                   borderColor: shouldHide ? 'transparent' : borderColor,
                   ['--wfs']: widgetScale,
