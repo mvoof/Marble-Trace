@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { drawBarChart, drawLineChart } from './chart-renderers';
 
-import styles from '../FuelWidget.module.scss';
+import styles from './FuelChart.module.scss';
 
 interface FuelChartProps {
   history: number[];
