@@ -2263,6 +2263,7 @@ dependencies = [
  "specta",
  "specta-serde",
  "specta-typescript",
+ "sys-locale",
  "tauri",
  "tauri-build",
  "tauri-plugin-aptabase",

@@ -35,6 +35,7 @@ tauri-plugin-process = "2"
 tauri-plugin-mcp-bridge = "0.10"
 tauri-plugin-opener = "2"
 tauri-plugin-aptabase = "1.0.0"
+sys-locale = "0.3"
 dotenvy_macro = "0.15"
 specta = { version = "2.0.0-rc.22", features = ["derive"], optional = true }
 specta-typescript = { version = "0.0.9", optional = true }

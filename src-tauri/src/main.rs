@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #![warn(clippy::all, clippy::pedantic)]
 
-fn main() {
+#[tokio::main]
+async fn main() {
     marble_trace_lib::run();
 }

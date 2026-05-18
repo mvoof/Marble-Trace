@@ -274,6 +274,18 @@ Our fork replaces the strict decoder with a lossy Windows-1252 → UTF-8 convers
 
 ---
 
+## Analytics & Privacy
+
+Marble Trace uses [Aptabase](https://github.com/aptabase/aptabase) — an open-source, privacy-first analytics platform. No personal data is collected. The following anonymous events are tracked:
+
+| Event         | When                                                                                       |
+| ------------- | ------------------------------------------------------------------------------------------ |
+| `app_started` | On every launch — includes primary monitor resolution, scale factor, system locale and DPI |
+
+Aptabase automatically captures: OS, app version, country (from IP), and locale. No user IDs, no file paths, no telemetry data from iRacing.
+
+---
+
 ## Contributing
 
 Contributions, bug reports, and feature requests are very welcome!

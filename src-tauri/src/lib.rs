@@ -30,6 +30,7 @@ use specta_typescript::Typescript;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
 use tauri::{generate_context, generate_handler, Builder, Manager, WindowEvent};
+use tauri_plugin_aptabase::EventTracker;
 use tracing_subscriber::EnvFilter;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -93,6 +94,23 @@ pub fn run() {
     let builder = builder.plugin(tauri_plugin_mcp_bridge::init());
 
     builder
+        .setup(|app| {
+            let monitor = app.primary_monitor().ok().flatten();
+            let locale = sys_locale::get_locale().unwrap_or_else(|| "unknown".to_string());
+            let props = monitor.map(|monitor| {
+                let size = monitor.size();
+                let scale = monitor.scale_factor();
+                serde_json::json!({
+                    "screen_width": size.width,
+                    "screen_height": size.height,
+                    "scale_factor": scale,
+                    "dpi": (96.0 * scale) as u32,
+                    "locale": locale,
+                })
+            });
+            let _ = app.track_event("app_started", props);
+            Ok(())
+        })
         .invoke_handler(generate_handler![
             start_telemetry_stream,
             stop_telemetry_stream,
