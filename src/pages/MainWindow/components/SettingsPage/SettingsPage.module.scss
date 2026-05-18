@@ -1,0 +1,108 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animateFadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.header {
+  margin-bottom: rem(40);
+}
+
+.moduleLabel {
+  font-size: rem(10);
+  color: $sys-text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-family: $font-mono;
+  margin-bottom: rem(8);
+  display: block;
+}
+
+.title {
+  font-size: rem(24);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  margin: 0 !important;
+}
+
+.card {
+  margin-bottom: rem(32);
+}
+
+.cardTitle {
+  color: $sys-text-secondary;
+  font-weight: 500;
+  margin-bottom: rem(12);
+  font-size: rem(11);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.cardContent {
+  background: $sys-bg-card;
+  backdrop-filter: blur(20px);
+  border: 1px solid $sys-border-main;
+  border-radius: 6px;
+  padding: rem(20);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.fieldLabel {
+  display: block;
+  font-size: rem(11);
+  color: $sys-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: rem(8);
+}
+
+.fieldGroup {
+  padding-bottom: rem(24);
+  margin-bottom: rem(24);
+  border-bottom: 1px solid $sys-border-sub;
+
+  &:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.updateActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fieldTexts {
+  flex: 1;
+  padding-right: rem(24);
+}
+
+.fieldTitle {
+  font-size: rem(14);
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: rem(4);
+}
+
+.fieldDesc {
+  font-size: rem(12);
+  color: $sys-text-secondary;
+}

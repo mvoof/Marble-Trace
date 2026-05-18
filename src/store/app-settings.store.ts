@@ -29,6 +29,7 @@ class AppSettingsStore {
   dragMode = false;
   updateStatus: UpdateStatus = 'idle';
   availableVersion: string | null = null;
+  releaseNotes: string | null = null;
   currentVersion = '';
   updateError: string | null = null;
   private updateTimer: number | null = null;
@@ -121,9 +122,11 @@ class AppSettingsStore {
         if (update) {
           this.updateStatus = 'available';
           this.availableVersion = update.version;
+          this.releaseNotes = update.body ?? null;
         } else {
           this.updateStatus = 'idle';
           this.availableVersion = null;
+          this.releaseNotes = null;
 
           if (!silent) {
             // manual check success

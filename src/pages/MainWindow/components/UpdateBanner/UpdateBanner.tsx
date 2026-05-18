@@ -4,6 +4,7 @@ import {
   appSettingsStore,
   UpdateStatus,
 } from '../../../../store/app-settings.store';
+import { ReleaseNotesButton } from '../../../../components/shared/ReleaseNotesButton/ReleaseNotesButton';
 import styles from './UpdateBanner.module.scss';
 
 const BANNER_STATUSES: UpdateStatus[] = ['available', 'downloading', 'ready'];
@@ -42,13 +43,16 @@ export const UpdateBanner = observer(() => {
       }
       action={
         updateStatus === 'available' ? (
-          <Button
-            size="small"
-            type="text"
-            onClick={() => void appSettingsStore.installUpdate()}
-          >
-            Update & Restart
-          </Button>
+          <>
+            <ReleaseNotesButton />
+            <Button
+              size="small"
+              type="text"
+              onClick={() => void appSettingsStore.installUpdate()}
+            >
+              Update & Restart
+            </Button>
+          </>
         ) : undefined
       }
       className={styles.alert}
