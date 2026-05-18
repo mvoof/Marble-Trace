@@ -97,18 +97,14 @@ pub fn run() {
         .setup(|app| {
             let monitor = app.primary_monitor().ok().flatten();
             let locale = sys_locale::get_locale().unwrap_or_else(|| "unknown".to_string());
-            let props = monitor.map(|monitor| {
-                let size = monitor.size();
-                let scale = monitor.scale_factor();
-                serde_json::json!({
-                    "screen_width": size.width,
-                    "screen_height": size.height,
-                    "scale_factor": scale,
-                    "dpi": (96.0 * scale) as u32,
-                    "locale": locale,
-                })
+            let props = serde_json::json!({
+                "screen_width": monitor.as_ref().map(|monitor| monitor.size().width),
+                "screen_height": monitor.as_ref().map(|monitor| monitor.size().height),
+                "scale_factor": monitor.as_ref().map(|monitor| monitor.scale_factor()),
+                "dpi": monitor.as_ref().map(|monitor| (96.0 * monitor.scale_factor()) as u32),
+                "locale": locale,
             });
-            let _ = app.track_event("app_started", props);
+            let _ = app.track_event("app_started", Some(props));
             Ok(())
         })
         .invoke_handler(generate_handler![
