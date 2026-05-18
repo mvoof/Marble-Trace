@@ -1,20 +1,16 @@
-﻿import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
-import type { LinearMapWidgetSettings } from '../../../types/widget-settings';
+import { observer } from 'mobx-react-lite';
+
+import { computedStore } from '../../../store/iracing/computed.store';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import { LinearMap } from './LinearMap/LinearMap';
-import type { DriverEntry } from '../../../types/bindings';
 
 import styles from './RelativeMapWidget.module.scss';
 
-interface RelativeMapWidgetProps {
-  entries: DriverEntry[];
-  settings: LinearMapWidgetSettings;
-}
-
-export const RelativeMapWidget = ({
-  entries,
-  settings,
-}: RelativeMapWidgetProps) => {
-  const player = entries.find((e) => e.isPlayer) ?? null;
+export const RelativeMapWidget = observer(() => {
+  const settings = widgetSettingsStore.getLinearMapSettings();
+  const entries = computedStore.relativeEntries;
+  const player = entries.find((entry) => entry.isPlayer) ?? null;
   const isHorizontal = settings.orientation === 'horizontal';
 
   return (
@@ -28,4 +24,4 @@ export const RelativeMapWidget = ({
       />
     </WidgetPanel>
   );
-};
+});

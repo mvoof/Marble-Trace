@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { ProximityRadarWidget } from './ProximityRadarWidget';
+import { RadarDisplay } from './RadarDisplay/RadarDisplay';
 import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const DESIGN_WIDTH = 200;
 const DESIGN_HEIGHT = 300;
 
-const meta: Meta<typeof ProximityRadarWidget> = {
+const meta: Meta<typeof RadarDisplay> = {
   title: 'Widgets/ProximityRadarWidget',
-  component: ProximityRadarWidget,
+  component: RadarDisplay,
   parameters: { layout: 'centered' },
   decorators: [widgetDecorator({ width: DESIGN_WIDTH, height: DESIGN_HEIGHT })],
   args: {
@@ -26,7 +26,7 @@ const meta: Meta<typeof ProximityRadarWidget> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof ProximityRadarWidget>;
+type Story = StoryObj<typeof RadarDisplay>;
 
 export const NoCars: Story = {};
 

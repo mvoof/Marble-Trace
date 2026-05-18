@@ -1,9 +1,9 @@
-﻿import { useEffect, useImperativeHandle, useRef } from 'react';
-import type { Ref } from 'react';
-import type {
-  GMeterColorMode,
-  GMeterDisplayMode,
-} from '../../../types/widget-settings';
+import { useEffect, useRef } from 'react';
+import { autorun } from 'mobx';
+import { observer } from 'mobx-react-lite';
+
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import {
   GMeterDashboard,
@@ -13,30 +13,20 @@ import {
   COLOR_TURN,
   ENVELOPE_SPREAD,
   FADING_DECAY,
+  G_CONSTANT,
   RADIUS_RATIO,
   SMOOTHING,
   TRACE_LENGTH,
   computeColor,
 } from './g-meter-utils';
 import type { EnvelopePoint, TrailPoint } from './types';
+
 import styles from './GMeterWidget.module.scss';
 
-export interface GMeterHandle {
-  update: (rawLat: number, rawLon: number) => void;
-}
+export const GMeterWidget = observer(() => {
+  const { displayMode, scale, colorMode } =
+    widgetSettingsStore.getGMeterSettings();
 
-interface GMeterWidgetProps {
-  displayMode: GMeterDisplayMode;
-  scale: 2 | 3 | 4 | 5;
-  colorMode: GMeterColorMode;
-}
-
-export const GMeterWidget = ({
-  displayMode,
-  scale,
-  colorMode,
-  ref,
-}: GMeterWidgetProps & { ref?: Ref<GMeterHandle> }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dashboardRef = useRef<GMeterDashboardHandle>(null);
 
@@ -55,6 +45,7 @@ export const GMeterWidget = ({
   const displayModeRef = useRef(displayMode);
   const scaleRef = useRef(scale);
   const colorModeRef = useRef(colorMode);
+  const rafIdRef = useRef(0);
 
   useEffect(() => {
     displayModeRef.current = displayMode;
@@ -67,108 +58,107 @@ export const GMeterWidget = ({
   useEffect(() => {
     scaleRef.current = scale;
 
-    const s = stateRef.current;
-
-    s.gEnvelope = Array.from(
+    const state = stateRef.current;
+    state.gEnvelope = Array.from(
       { length: 360 },
       (): EnvelopePoint => ({ r: 0, color: COLOR_TURN })
     );
-
-    s.gHistory = [];
-    s.peakLatG = 0;
-    s.peakLonG = 0;
+    state.gHistory = [];
+    state.peakLatG = 0;
+    state.peakLonG = 0;
     dashboardRef.current?.reset();
   }, [scale]);
 
   const drawFrame = (canvas: HTMLCanvasElement) => {
     const ctx = canvas.getContext('2d');
 
-    if (!ctx) return;
+    if (!ctx) {
+      return;
+    }
 
     const dpr = window.devicePixelRatio || 1;
-    const w = canvas.offsetWidth;
-    const h = canvas.offsetHeight;
+    const width = canvas.offsetWidth;
+    const height = canvas.offsetHeight;
 
-    if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-
+    if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
       ctx.scale(dpr, dpr);
     }
 
-    const cx = w / 2;
-    const cy = h / 2;
-
-    const radius = Math.min(w, h) * RADIUS_RATIO * 0.5;
+    const cx = width / 2;
+    const cy = height / 2;
+    const radius = Math.min(width, height) * RADIUS_RATIO * 0.5;
     const maxG = scaleRef.current;
     const pxPerG = radius / maxG;
 
-    const s = stateRef.current;
+    const state = stateRef.current;
 
-    ctx.clearRect(0, 0, w, h);
+    ctx.clearRect(0, 0, width, height);
 
     ctx.lineWidth = 1;
-    for (let g = 1; g <= maxG; g++) {
+    for (let gValue = 1; gValue <= maxG; gValue++) {
       ctx.beginPath();
-      ctx.arc(cx, cy, g * pxPerG, 0, Math.PI * 2);
-      ctx.strokeStyle = g === maxG ? 'rgba(58,59,64,1)' : 'rgba(42,43,48,0.8)';
+      ctx.arc(cx, cy, gValue * pxPerG, 0, Math.PI * 2);
+      ctx.strokeStyle =
+        gValue === maxG ? 'rgba(58,59,64,1)' : 'rgba(42,43,48,0.8)';
       ctx.stroke();
     }
 
     const labelSize = Math.max(9, Math.min(14, radius * 0.08));
-
     ctx.font = `600 ${labelSize}px 'Rajdhani', sans-serif`;
     ctx.fillStyle = 'rgba(120,120,130,0.7)';
-
     const pad = 3;
 
-    for (let g = 1; g <= maxG; g++) {
-      const r = g * pxPerG;
-      const label = String(g);
-
-      const tw = ctx.measureText(label).width;
+    for (let gValue = 1; gValue <= maxG; gValue++) {
+      const ringRadius = gValue * pxPerG;
+      const label = String(gValue);
+      const textWidth = ctx.measureText(label).width;
 
       ctx.textBaseline = 'bottom';
-      ctx.fillText(label, cx - tw / 2, cy - r - pad);
+      ctx.fillText(label, cx - textWidth / 2, cy - ringRadius - pad);
 
       ctx.textBaseline = 'top';
-      ctx.fillText(label, cx - tw / 2, cy + r + pad);
+      ctx.fillText(label, cx - textWidth / 2, cy + ringRadius + pad);
 
       ctx.textBaseline = 'middle';
-      ctx.fillText(label, cx - r - tw - pad, cy);
-      ctx.fillText(label, cx + r + pad, cy);
+      ctx.fillText(label, cx - ringRadius - textWidth - pad, cy);
+      ctx.fillText(label, cx + ringRadius + pad, cy);
     }
 
     ctx.beginPath();
-
     ctx.moveTo(cx, cy - radius);
     ctx.lineTo(cx, cy + radius);
     ctx.moveTo(cx - radius, cy);
     ctx.lineTo(cx + radius, cy);
-
     ctx.strokeStyle = 'rgba(58,59,64,0.8)';
     ctx.lineWidth = 1;
-
     ctx.stroke();
 
-    const envelope = s.gEnvelope;
+    const envelope = state.gEnvelope;
     const mode = displayModeRef.current;
 
     if (mode === 'trail') {
-      if (s.gHistory.length >= 2) {
+      if (state.gHistory.length >= 2) {
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
         ctx.lineWidth = 2;
 
-        for (let i = 1; i < s.gHistory.length; i++) {
-          const p1 = s.gHistory[i - 1];
-          const p2 = s.gHistory[i];
+        for (let index = 1; index < state.gHistory.length; index++) {
+          const previousPoint = state.gHistory[index - 1];
+          const currentPoint = state.gHistory[index];
 
           ctx.beginPath();
-          ctx.moveTo(cx + p1.lat * pxPerG, cy + p1.lon * pxPerG);
-          ctx.lineTo(cx + p2.lat * pxPerG, cy + p2.lon * pxPerG);
-          ctx.globalAlpha = i / s.gHistory.length;
-          ctx.strokeStyle = p2.color;
+          ctx.moveTo(
+            cx + previousPoint.lat * pxPerG,
+            cy + previousPoint.lon * pxPerG
+          );
+          ctx.lineTo(
+            cx + currentPoint.lat * pxPerG,
+            cy + currentPoint.lon * pxPerG
+          );
+          ctx.globalAlpha = index / state.gHistory.length;
+          ctx.strokeStyle = currentPoint.color;
           ctx.stroke();
         }
 
@@ -177,161 +167,161 @@ export const GMeterWidget = ({
     } else {
       ctx.globalAlpha = 0.15;
 
-      for (let i = 0; i < 360; i++) {
-        const ni = (i + 1) % 360;
-        const r1 = envelope[i].r * pxPerG;
-        const r2 = envelope[ni].r * pxPerG;
+      for (let index = 0; index < 360; index++) {
+        const nextIndex = (index + 1) % 360;
+        const r1 = envelope[index].r * pxPerG;
+        const r2 = envelope[nextIndex].r * pxPerG;
 
         if (r1 > 0 || r2 > 0) {
-          const rad1 = i * (Math.PI / 180);
-          const rad2 = ni * (Math.PI / 180);
+          const rad1 = index * (Math.PI / 180);
+          const rad2 = nextIndex * (Math.PI / 180);
 
           ctx.beginPath();
-
           ctx.moveTo(cx, cy);
-
           ctx.lineTo(cx + r1 * Math.cos(rad1), cy + r1 * Math.sin(rad1));
           ctx.lineTo(cx + r2 * Math.cos(rad2), cy + r2 * Math.sin(rad2));
-
           ctx.closePath();
-
-          ctx.fillStyle = envelope[i].color;
+          ctx.fillStyle = envelope[index].color;
           ctx.fill();
         }
       }
+
       ctx.globalAlpha = 1.0;
       ctx.lineWidth = 1.5;
       ctx.lineCap = 'round';
 
-      for (let i = 0; i < 360; i++) {
-        const ni = (i + 1) % 360;
-        const r1 = envelope[i].r * pxPerG;
-        const r2 = envelope[ni].r * pxPerG;
+      for (let index = 0; index < 360; index++) {
+        const nextIndex = (index + 1) % 360;
+        const r1 = envelope[index].r * pxPerG;
+        const r2 = envelope[nextIndex].r * pxPerG;
 
         if (r1 > 0 || r2 > 0) {
-          const rad1 = i * (Math.PI / 180);
-          const rad2 = ni * (Math.PI / 180);
+          const rad1 = index * (Math.PI / 180);
+          const rad2 = nextIndex * (Math.PI / 180);
 
           ctx.beginPath();
-
           ctx.moveTo(cx + r1 * Math.cos(rad1), cy + r1 * Math.sin(rad1));
           ctx.lineTo(cx + r2 * Math.cos(rad2), cy + r2 * Math.sin(rad2));
-
-          ctx.strokeStyle = envelope[i].color;
+          ctx.strokeStyle = envelope[index].color;
           ctx.stroke();
         }
       }
     }
 
-    const dotX = cx + s.smoothedLatG * pxPerG;
-    const dotY = cy + s.smoothedLonG * pxPerG;
+    const dotX = cx + state.smoothedLatG * pxPerG;
+    const dotY = cy + state.smoothedLonG * pxPerG;
 
     ctx.beginPath();
     ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
-
     ctx.fillStyle =
-      s.gHistory.length > 0
-        ? (s.gHistory[s.gHistory.length - 1]?.color ?? COLOR_TURN)
+      state.gHistory.length > 0
+        ? (state.gHistory[state.gHistory.length - 1]?.color ?? COLOR_TURN)
         : COLOR_TURN;
     ctx.fill();
   };
 
-  const rafIdRef = useRef(0);
+  useEffect(() => {
+    const canvas = canvasRef.current;
 
-  useImperativeHandle(ref, () => ({
-    update: (rawLat, rawLon) => {
-      const s = stateRef.current;
+    if (!canvas) {
+      return;
+    }
 
-      s.smoothedLatG += (rawLat - s.smoothedLatG) * SMOOTHING;
-      s.smoothedLonG += (rawLon - s.smoothedLonG) * SMOOTHING;
+    const resizeObserver = new ResizeObserver(() => drawFrame(canvas));
+    resizeObserver.observe(canvas);
+    drawFrame(canvas);
 
-      let dist = Math.sqrt(s.smoothedLatG ** 2 + s.smoothedLonG ** 2);
+    return () => {
+      resizeObserver.disconnect();
+      cancelAnimationFrame(rafIdRef.current);
+    };
+  }, []);
 
+  useEffect(() => {
+    return autorun(() => {
+      const dynamics = telemetryStore.carDynamics;
+      const latAccel = dynamics?.lat_accel ?? null;
+      const lonAccel = dynamics?.long_accel ?? null;
+      const rawLat = latAccel != null ? latAccel / G_CONSTANT : 0;
+      const rawLon = lonAccel != null ? lonAccel / G_CONSTANT : 0;
+
+      const state = stateRef.current;
+      state.smoothedLatG += (rawLat - state.smoothedLatG) * SMOOTHING;
+      state.smoothedLonG += (rawLon - state.smoothedLonG) * SMOOTHING;
+
+      let dist = Math.sqrt(state.smoothedLatG ** 2 + state.smoothedLonG ** 2);
       const maxG = scaleRef.current;
 
       if (dist > maxG) {
         const ratio = maxG / dist;
-
-        s.smoothedLatG *= ratio;
-        s.smoothedLonG *= ratio;
-
+        state.smoothedLatG *= ratio;
+        state.smoothedLonG *= ratio;
         dist = maxG;
       }
 
       const color = computeColor(
         colorModeRef.current,
-        s.smoothedLatG,
-        s.smoothedLonG,
+        state.smoothedLatG,
+        state.smoothedLonG,
         dist
       );
 
-      if (Math.abs(s.smoothedLatG) > s.peakLatG) {
-        s.peakLatG = Math.abs(s.smoothedLatG);
+      if (Math.abs(state.smoothedLatG) > state.peakLatG) {
+        state.peakLatG = Math.abs(state.smoothedLatG);
       }
 
-      if (Math.abs(s.smoothedLonG) > s.peakLonG) {
-        s.peakLonG = Math.abs(s.smoothedLonG);
+      if (Math.abs(state.smoothedLonG) > state.peakLonG) {
+        state.peakLonG = Math.abs(state.smoothedLonG);
       }
 
-      const angle = Math.atan2(s.smoothedLonG, s.smoothedLatG);
+      const angle = Math.atan2(state.smoothedLonG, state.smoothedLatG);
       let degree = Math.round(angle * (180 / Math.PI));
 
       if (degree < 0) {
         degree += 360;
       }
 
-      for (let d = -ENVELOPE_SPREAD; d <= ENVELOPE_SPREAD; d++) {
-        const idx = (degree + d + 360) % 360;
-        const smoothedR = dist * Math.cos((d * Math.PI) / 180);
+      for (let delta = -ENVELOPE_SPREAD; delta <= ENVELOPE_SPREAD; delta++) {
+        const idx = (degree + delta + 360) % 360;
+        const smoothedR = dist * Math.cos((delta * Math.PI) / 180);
 
-        if (smoothedR > s.gEnvelope[idx].r) {
-          s.gEnvelope[idx].r = smoothedR;
-          s.gEnvelope[idx].color = color;
+        if (smoothedR > state.gEnvelope[idx].r) {
+          state.gEnvelope[idx].r = smoothedR;
+          state.gEnvelope[idx].color = color;
         }
       }
 
       if (displayModeRef.current === 'fading') {
-        for (let i = 0; i < 360; i++) {
-          s.gEnvelope[i].r *= FADING_DECAY;
+        for (let index = 0; index < 360; index++) {
+          state.gEnvelope[index].r *= FADING_DECAY;
         }
       }
 
-      s.gHistory.push({ lat: s.smoothedLatG, lon: s.smoothedLonG, color });
-      if (s.gHistory.length > TRACE_LENGTH) {
-        s.gHistory.shift();
+      state.gHistory.push({
+        lat: state.smoothedLatG,
+        lon: state.smoothedLonG,
+        color,
+      });
+
+      if (state.gHistory.length > TRACE_LENGTH) {
+        state.gHistory.shift();
       }
 
       dashboardRef.current?.update(
-        s.smoothedLatG,
-        s.smoothedLonG,
-        s.peakLatG,
-        s.peakLonG,
+        state.smoothedLatG,
+        state.smoothedLonG,
+        state.peakLatG,
+        state.peakLonG,
         color
       );
 
       cancelAnimationFrame(rafIdRef.current);
-
       rafIdRef.current = requestAnimationFrame(() => {
-        if (canvasRef.current) drawFrame(canvasRef.current);
+        if (canvasRef.current) {
+          drawFrame(canvasRef.current);
+        }
       });
-    },
-  }));
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-
-    if (!canvas) return;
-
-    const observer = new ResizeObserver(() => drawFrame(canvas));
-    observer.observe(canvas);
-
-    drawFrame(canvas);
-
-    return () => {
-      observer.disconnect();
-
-      cancelAnimationFrame(rafIdRef.current);
-    };
+    });
   }, []);
 
   return (
@@ -345,4 +335,4 @@ export const GMeterWidget = ({
       </div>
     </WidgetPanel>
   );
-};
+});

@@ -1,44 +1,35 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { RelativeMapWidget } from './RelativeMapWidget';
+import { LinearMap } from './LinearMap/LinearMap';
 import { driverEntries as DRIVER_ENTRIES } from '../../../storybook/test-data';
 import { widgetDecorator } from '../../../stories/widgetDecorator';
 
-const DEFAULT_SETTINGS = {
-  orientation: 'horizontal' as const,
-  playerDotColor: '#22c55e',
-  targetDotRadiusPx: 6,
-};
+const PLAYER_ENTRY = DRIVER_ENTRIES.find((entry) => entry.isPlayer) ?? null;
 
-const meta: Meta<typeof RelativeMapWidget> = {
+const meta: Meta<typeof LinearMap> = {
   title: 'Widgets/RelativeMapWidget',
-  component: RelativeMapWidget,
+  component: LinearMap,
   parameters: { layout: 'centered' },
   decorators: [widgetDecorator({ width: 400, height: 40 })],
   args: {
     entries: DRIVER_ENTRIES,
-    settings: DEFAULT_SETTINGS,
+    player: PLAYER_ENTRY,
+    isHorizontal: true,
+    playerDotColor: '#22c55e',
+    targetDotRadiusPx: 6,
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof RelativeMapWidget>;
+type Story = StoryObj<typeof LinearMap>;
 
 export const Horizontal: Story = {};
 
 export const Vertical: Story = {
   decorators: [widgetDecorator({ width: 40, height: 300 })],
-  args: {
-    settings: { ...DEFAULT_SETTINGS, orientation: 'vertical' },
-  },
+  args: { isHorizontal: false },
 };
 
 export const CustomDotColor: Story = {
-  args: {
-    settings: {
-      ...DEFAULT_SETTINGS,
-      playerDotColor: '#f59e0b',
-      targetDotRadiusPx: 8,
-    },
-  },
+  args: { playerDotColor: '#f59e0b', targetDotRadiusPx: 8 },
 };

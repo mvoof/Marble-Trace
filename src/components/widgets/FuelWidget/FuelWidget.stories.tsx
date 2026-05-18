@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { FuelWidget } from './FuelWidget';
+import { FuelDisplay } from './FuelDisplay/FuelDisplay';
 import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const LAP_FUEL_HISTORY = [
@@ -17,9 +17,9 @@ const LAP_FUEL_HISTORY = [
   3.5, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 5,
 ];
 
-const meta: Meta<typeof FuelWidget> = {
+const meta: Meta<typeof FuelDisplay> = {
   title: 'Widgets/FuelWidget',
-  component: FuelWidget,
+  component: FuelDisplay,
   parameters: { layout: 'centered' },
   decorators: [widgetDecorator({ width: 280 })],
   args: {
@@ -51,7 +51,7 @@ const meta: Meta<typeof FuelWidget> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof FuelWidget>;
+type Story = StoryObj<typeof FuelDisplay>;
 
 export const Comfortable: Story = {};
 

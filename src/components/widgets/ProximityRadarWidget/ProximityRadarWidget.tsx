@@ -1,34 +1,66 @@
-﻿import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
-import type { RadarDistances } from '../../../types/bindings';
+import { useEffect, useRef } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import { computedStore } from '../../../store/iracing/computed.store';
+import { unitsStore } from '../../../store/units.store';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { distanceUnit, formatDistance } from '../../../utils/telemetry-format';
+import { useRadarVisibility } from '../../../hooks/useRadarVisibility';
+import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import { RadarDisplay } from './RadarDisplay/RadarDisplay';
 
 import styles from './ProximityRadarWidget.module.scss';
 
 const RADAR_RENDER_RANGE = 10;
+const CAR_SEARCH_RADIUS = 30;
 
 interface ProximityRadarWidgetProps {
-  radarDistances: RadarDistances;
-  spotterLeft: boolean;
-  spotterRight: boolean;
-  formatDistance: (meters: number) => string;
-  distanceUnit: string;
+  onVisibilityChange?: (visible: boolean) => void;
 }
 
-export const ProximityRadarWidget = ({
-  radarDistances,
-  spotterLeft,
-  spotterRight,
-  formatDistance,
-  distanceUnit,
-}: ProximityRadarWidgetProps) => (
-  <WidgetPanel className={styles.root} minWidth={100} gap={0}>
-    <RadarDisplay
-      radarDistances={radarDistances}
-      spotterLeft={spotterLeft}
-      spotterRight={spotterRight}
-      renderRange={RADAR_RENDER_RANGE}
-      formatDistance={formatDistance}
-      distanceUnit={distanceUnit}
-    />
-  </WidgetPanel>
+export const ProximityRadarWidget = observer(
+  ({ onVisibilityChange }: ProximityRadarWidgetProps) => {
+    const proximity = computedStore.proximity;
+    const { system } = unitsStore;
+    const radarSettings =
+      widgetSettingsStore.getRadarSettings('proximity-radar');
+
+    const nearbyCars =
+      proximity?.nearbyCars.filter(
+        (car) => car.clearance <= CAR_SEARCH_RADIUS
+      ) ?? [];
+
+    const spotterLeft = proximity?.spotterLeft ?? false;
+    const spotterRight = proximity?.spotterRight ?? false;
+
+    const visible = useRadarVisibility(
+      nearbyCars,
+      radarSettings,
+      spotterLeft || spotterRight
+    );
+
+    const onVisibilityChangeRef = useRef(onVisibilityChange);
+    onVisibilityChangeRef.current = onVisibilityChange;
+
+    useEffect(() => {
+      onVisibilityChangeRef.current?.(visible);
+    }, [visible]);
+
+    if (!visible || !proximity) {
+      return null;
+    }
+
+    return (
+      <WidgetPanel className={styles.root} minWidth={100} gap={0}>
+        <RadarDisplay
+          radarDistances={proximity.radarDistances}
+          spotterLeft={spotterLeft}
+          spotterRight={spotterRight}
+          renderRange={RADAR_RENDER_RANGE}
+          formatDistance={(meters) => formatDistance(meters, system)}
+          distanceUnit={distanceUnit(system)}
+        />
+      </WidgetPanel>
+    );
+  }
 );

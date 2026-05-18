@@ -1,21 +1,21 @@
 import { TelemetryDebugWidgetContainer } from '../components/widgets/TelemetryDebugWidget/TelemetryDebugWidgetContainer';
 import { SpeedWidget } from '../components/widgets/SpeedWidget/SpeedWidget';
-import { InputTraceWidgetContainer } from '../components/widgets/InputTraceWidget/InputTraceWidgetContainer';
-import { ProximityRadarWidgetContainer } from '../components/widgets/ProximityRadarWidget/ProximityRadarWidgetContainer';
-import { RadarBarWidgetContainer } from '../components/widgets/RadarBarWidget/RadarBarWidgetContainer';
+import { InputTraceWidget } from '../components/widgets/InputTraceWidget/InputTraceWidget';
+import { ProximityRadarWidget } from '../components/widgets/ProximityRadarWidget/ProximityRadarWidget';
+import { RadarBarWidget } from '../components/widgets/RadarBarWidget/RadarBarWidget';
 import { StandingsWidgetContainer } from '../components/widgets/StandingsWidget/StandingsWidgetContainer';
 import { RelativeWidgetContainer } from '../components/widgets/RelativeWidget/RelativeWidgetContainer';
 import { TrackMapWidgetContainer } from '../components/widgets/TrackMapWidget/TrackMapWidgetContainer';
-import { RelativeMapWidgetContainer } from '../components/widgets/RelativeMapWidget/RelativeMapWidgetContainer';
+import { RelativeMapWidget } from '../components/widgets/RelativeMapWidget/RelativeMapWidget';
 import { LedFlagWidget } from '../components/widgets/LedFlagWidget/LedFlagWidget';
-import { ChassisWidgetContainer } from '../components/widgets/ChassisWidget/ChassisWidgetContainer';
+import { ChassisWidget } from '../components/widgets/ChassisWidget/ChassisWidget';
 import { LapDeltaWidget } from '../components/widgets/LapDeltaWidget/LapDeltaWidget';
 import { LapTimesWidgetContainer } from '../components/widgets/LapTimesWidget/LapTimesWidgetContainer';
 import { TimerWidget } from '../components/widgets/TimerWidget/TimerWidget';
 import { WeatherWidget } from '../components/widgets/WeatherWidget/WeatherWidget';
-import { FuelWidgetContainer } from '../components/widgets/FuelWidget/FuelWidgetContainer';
+import { FuelWidget } from '../components/widgets/FuelWidget/FuelWidget';
 import { FlatFlagsWidget } from '../components/widgets/FlatFlagsWidget/FlatFlagsWidget';
-import { GMeterWidgetContainer } from '../components/widgets/GMeterWidget/GMeterWidgetContainer';
+import { GMeterWidget } from '../components/widgets/GMeterWidget/GMeterWidget';
 import type {
   WidgetConfig,
   WidgetDefaultConfig,
@@ -85,7 +85,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'input-trace',
     label: 'Input Trace',
     description: 'Live throttle, brake, and clutch inputs.',
-    component: InputTraceWidgetContainer,
+    component: InputTraceWidget,
     designWidth: 400,
     designHeight: 220,
     userSettings: {
@@ -115,7 +115,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'proximity-radar',
     label: 'Proximity Radar',
     description: 'Visual radar for nearby traffic.',
-    component: ProximityRadarWidgetContainer,
+    component: ProximityRadarWidget,
     designWidth: 200,
     designHeight: 300,
     userSettings: {
@@ -138,7 +138,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'radar-bar',
     label: 'Radar Bar',
     description: 'Full-width side proximity indicators.',
-    component: RadarBarWidgetContainer,
+    component: RadarBarWidget,
     designWidth: 800,
     designHeight: 380,
     userSettings: {
@@ -256,7 +256,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'relative-map',
     label: 'Relative Map',
     description: 'Progress bar of car track positions.',
-    component: RelativeMapWidgetContainer,
+    component: RelativeMapWidget,
     designWidth: 400,
     designHeight: 40,
     userSettings: {
@@ -324,7 +324,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'chassis',
     label: 'Chassis',
     description: 'Tire pressures and brake temperatures.',
-    component: ChassisWidgetContainer,
+    component: ChassisWidget,
     designWidth: 300,
     designHeight: 290,
     userSettings: {
@@ -467,7 +467,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'fuel',
     label: 'Fuel',
     description: 'Fuel level and consumption calculator.',
-    component: FuelWidgetContainer,
+    component: FuelWidget,
     autoHeight: true,
     designWidth: 240,
     designHeight: 360,
@@ -492,7 +492,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'g-meter',
     label: 'G-Meter',
     description: 'Lateral and longitudinal G-force friction circle.',
-    component: GMeterWidgetContainer,
+    component: GMeterWidget,
     designWidth: 240,
     designHeight: 280,
     userSettings: {
