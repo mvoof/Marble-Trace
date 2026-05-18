@@ -11,7 +11,6 @@ use computations::{
     standings::{DriverEntriesFrame, DriverEntry},
 };
 use computations::{fuel::FuelState, lap_delta::LapDeltaState, standings::StandingsState};
-use dotenvy_macro::dotenv;
 use iracing::{
     get_last_session_info, set_active_events, set_pit_warning_laps, start_telemetry_stream,
     stop_telemetry_stream, TelemetryState,
@@ -88,7 +87,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_aptabase::Builder::new(dotenv!("APTABASE_KEY")).build());
+        .plugin(tauri_plugin_aptabase::Builder::new(option_env!("APTABASE_KEY").unwrap_or("")).build());
 
     #[cfg(feature = "dev")]
     let builder = builder.plugin(tauri_plugin_mcp_bridge::init());
