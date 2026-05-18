@@ -7,14 +7,14 @@ import { StandingsWidgetContainer } from '../components/widgets/StandingsWidget/
 import { RelativeWidgetContainer } from '../components/widgets/RelativeWidget/RelativeWidgetContainer';
 import { TrackMapWidgetContainer } from '../components/widgets/TrackMapWidget/TrackMapWidgetContainer';
 import { RelativeMapWidgetContainer } from '../components/widgets/RelativeMapWidget/RelativeMapWidgetContainer';
-import { LedFlagWidgetContainer } from '../components/widgets/LedFlagWidget/LedFlagWidgetContainer';
+import { LedFlagWidget } from '../components/widgets/LedFlagWidget/LedFlagWidget';
 import { ChassisWidgetContainer } from '../components/widgets/ChassisWidget/ChassisWidgetContainer';
-import { LapDeltaWidgetContainer } from '../components/widgets/LapDeltaWidget/LapDeltaWidgetContainer';
+import { LapDeltaWidget } from '../components/widgets/LapDeltaWidget/LapDeltaWidget';
 import { LapTimesWidgetContainer } from '../components/widgets/LapTimesWidget/LapTimesWidgetContainer';
-import { TimerWidgetContainer } from '../components/widgets/TimerWidget/TimerWidgetContainer';
-import { WeatherWidgetContainer } from '../components/widgets/WeatherWidget/WeatherWidgetContainer';
+import { TimerWidget } from '../components/widgets/TimerWidget/TimerWidget';
+import { WeatherWidget } from '../components/widgets/WeatherWidget/WeatherWidget';
 import { FuelWidgetContainer } from '../components/widgets/FuelWidget/FuelWidgetContainer';
-import { FlatFlagsWidgetContainer } from '../components/widgets/FlatFlagsWidget/FlatFlagsWidgetContainer';
+import { FlatFlagsWidget } from '../components/widgets/FlatFlagsWidget/FlatFlagsWidget';
 import { GMeterWidgetContainer } from '../components/widgets/GMeterWidget/GMeterWidgetContainer';
 import type {
   WidgetConfig,
@@ -279,7 +279,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'led-flags',
     label: 'LED Flags',
     description: 'LED matrix display of track flags.',
-    component: LedFlagWidgetContainer,
+    component: LedFlagWidget,
     designWidth: 232,
     designHeight: 232,
     userSettings: {
@@ -301,7 +301,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'flat-flags',
     label: 'Flat Flags',
     description: 'Banner-style list of active track flags.',
-    component: FlatFlagsWidgetContainer,
+    component: FlatFlagsWidget,
     autoHeight: true,
     designWidth: 280,
     designHeight: 160,
@@ -366,7 +366,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'lap-delta',
     label: 'Lap Delta',
     description: 'Live delta against your best lap time.',
-    component: LapDeltaWidgetContainer,
+    component: LapDeltaWidget,
     designWidth: 230,
     designHeight: 180,
     userSettings: {
@@ -414,7 +414,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'timer',
     label: 'Timer',
     description: 'Stint and total session timers.',
-    component: TimerWidgetContainer,
+    component: TimerWidget,
     designWidth: 240,
     designHeight: 120,
     userSettings: {
@@ -441,7 +441,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'weather',
     label: 'Weather',
     description: 'Track conditions and wind information.',
-    component: WeatherWidgetContainer,
+    component: WeatherWidget,
     designWidth: 240,
     designHeight: 280,
     userSettings: {

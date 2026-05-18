@@ -1,53 +1,77 @@
-import React, { useRef } from 'react';
+import { useEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { runInAction } from 'mobx';
 
+import { computedStore } from '../../../store/iracing/computed.store';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import type { LapDeltaFrame } from '../../../types/bindings';
 import { LapDeltaWidget } from './LapDeltaWidget';
-import type { DeltaDisplayHandle } from './LapDeltaWidget';
 import { widgetDecorator } from '../../../stories/widgetDecorator';
 
-const WithRef = (
-  props: Omit<React.ComponentProps<typeof LapDeltaWidget>, 'deltaDisplayRef'>
-) => {
-  const deltaDisplayRef = useRef<DeltaDisplayHandle | null>(null);
-  return <LapDeltaWidget {...props} deltaDisplayRef={deltaDisplayRef} />;
+interface StoryArgs {
+  delta: number;
+  layout: 'vertical' | 'horizontal';
+  showSectorTimes: boolean;
+  sectorTimes: (number | null)[];
+  sectorDeltas: (number | null)[];
+}
+
+const applyArgs = (args: StoryArgs) => {
+  runInAction(() => {
+    widgetSettingsStore.updateUserSettings('lap-delta', {
+      layout: args.layout,
+      showSectorTimes: args.showSectorTimes,
+      reference: 'session_best',
+    });
+
+    computedStore.updateLapDelta({
+      sectorTimes: args.sectorTimes,
+      currentSectorIdx: 0,
+      sessionBestTotal: args.delta,
+      sessionBestSectors: args.sectorDeltas,
+      personalBestTotal: args.delta,
+      personalBestSectors: args.sectorDeltas,
+    } as LapDeltaFrame);
+  });
 };
 
-const meta: Meta<typeof WithRef> = {
+const StoryHost = (args: StoryArgs) => {
+  useEffect(() => {
+    applyArgs(args);
+  }, [args]);
+  return <LapDeltaWidget />;
+};
+
+const meta: Meta<typeof StoryHost> = {
   title: 'Widgets/LapDeltaWidget',
-  component: WithRef,
+  component: StoryHost,
   parameters: { layout: 'centered' },
   decorators: [widgetDecorator({ display: 'inline-block', minWidth: 150 })],
   args: {
-    initialDeltaFormatted: '-0.342',
-    initialDeltaState: 'ahead',
-    sectorDeltas: [],
-    sectorTimes: [],
+    delta: -0.342,
     layout: 'vertical',
     showSectorTimes: false,
+    sectorTimes: [],
+    sectorDeltas: [],
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof WithRef>;
+type Story = StoryObj<typeof StoryHost>;
 
 export const AheadVertical: Story = {};
 
 export const BehindVertical: Story = {
-  args: {
-    initialDeltaFormatted: '+0.812',
-    initialDeltaState: 'behind',
-  },
+  args: { delta: 0.812 },
 };
 
 export const Neutral: Story = {
-  args: {
-    initialDeltaFormatted: '+0.000',
-    initialDeltaState: 'neutral',
-  },
+  args: { delta: 0 },
 };
 
 export const Horizontal: Story = {
   args: {
+    delta: -0.342,
     layout: 'horizontal',
     showSectorTimes: true,
     sectorTimes: [22.1, 31.4, null],
@@ -55,18 +79,9 @@ export const Horizontal: Story = {
   },
 };
 
-export const NoSectorTimes: Story = {
-  args: {
-    showSectorTimes: false,
-    sectorTimes: [],
-    sectorDeltas: [],
-  },
-};
-
 export const WithSectorData: Story = {
   args: {
-    initialDeltaFormatted: '-0.215',
-    initialDeltaState: 'ahead',
+    delta: -0.215,
     showSectorTimes: true,
     sectorTimes: [22.1, 31.4, 18.7],
     sectorDeltas: [-0.12, 0.08, -0.24],

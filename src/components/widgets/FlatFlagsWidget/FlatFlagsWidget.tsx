@@ -1,3 +1,10 @@
+import { useMemo } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { parseAllSessionFlags } from '../../../utils/flags-utils';
+import { useFlagBlink, useFlagHold } from '../../../hooks/flags-hooks';
 import type { FlagType } from '../../../types';
 
 import styles from './FlatFlagsWidget.module.scss';
@@ -30,30 +37,53 @@ const FLAG_ITEM_CLASS: Record<FlagType, string> = {
 
 const BLINK_FLAGS = new Set<FlagType>(['yellow', 'red']);
 
-export interface FlatFlagsWidgetProps {
-  flags: FlagType[];
-  blinkOn: boolean;
-}
+const EMPTY_FLAGS: FlagType[] = [];
+const IS_EMPTY_FLAGS = (flagsList: FlagType[]) => flagsList.length === 0;
 
-export const FlatFlagsWidget = ({ flags, blinkOn }: FlatFlagsWidgetProps) => (
-  <div className={styles.widget}>
-    <div className={styles.header}>FLAGS</div>
-    <div className={styles.list}>
-      {flags.length === 0 ? (
-        <div className={styles.empty}>NO ACTIVE FLAGS</div>
-      ) : (
-        flags.map((flag) => {
-          const isBlinkOff = BLINK_FLAGS.has(flag) && !blinkOn;
-          return (
-            <div
-              key={flag}
-              className={`${styles.item} ${FLAG_ITEM_CLASS[flag]}${isBlinkOff ? ` ${styles.itemBlinkOff}` : ''}`}
-            >
-              {FLAG_LABEL[flag]}
-            </div>
-          );
-        })
-      )}
+export const FlatFlagsWidget = observer(() => {
+  const { alwaysShow, holdDuration } =
+    widgetSettingsStore.getFlagDisplaySettings('flat-flags');
+
+  const sessionFlags = telemetryStore.session?.session_flags ?? null;
+  const playerCarFlags = telemetryStore.session?.player_car_flags ?? null;
+  const parsedFlags = parseAllSessionFlags(sessionFlags, playerCarFlags);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const liveFlags = useMemo(() => parsedFlags, [parsedFlags.join(',')]);
+
+  const displayFlags = useFlagHold(
+    liveFlags,
+    IS_EMPTY_FLAGS,
+    EMPTY_FLAGS,
+    holdDuration
+  );
+
+  const blinkOn = useFlagBlink();
+
+  if (!alwaysShow && displayFlags.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className={styles.widget}>
+      <div className={styles.header}>FLAGS</div>
+      <div className={styles.list}>
+        {displayFlags.length === 0 ? (
+          <div className={styles.empty}>NO ACTIVE FLAGS</div>
+        ) : (
+          displayFlags.map((flag) => {
+            const isBlinkOff = BLINK_FLAGS.has(flag) && !blinkOn;
+            return (
+              <div
+                key={flag}
+                className={`${styles.item} ${FLAG_ITEM_CLASS[flag]}${isBlinkOff ? ` ${styles.itemBlinkOff}` : ''}`}
+              >
+                {FLAG_LABEL[flag]}
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+});

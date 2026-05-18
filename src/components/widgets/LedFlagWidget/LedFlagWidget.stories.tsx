@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { LedFlagWidget } from './LedFlagWidget';
+import { LedMatrix } from './LedMatrix/LedMatrix';
 import { widgetDecorator } from '../../../stories/widgetDecorator';
 
 const DESIGN_SIZE = 160;
 
-const meta: Meta<typeof LedFlagWidget> = {
+const meta: Meta<typeof LedMatrix> = {
   title: 'Widgets/LedFlagWidget',
-  component: LedFlagWidget,
+  component: LedMatrix,
   parameters: { layout: 'centered' },
   decorators: [
     widgetDecorator({
@@ -23,7 +23,7 @@ const meta: Meta<typeof LedFlagWidget> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof LedFlagWidget>;
+type Story = StoryObj<typeof LedMatrix>;
 
 export const NoFlag: Story = {};
 

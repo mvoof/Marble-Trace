@@ -1,89 +1,36 @@
-﻿import type {
+import { observer } from 'mobx-react-lite';
+
+import type {
   WeatherForecastEntry,
   Skies as BindingSkies,
 } from '../../../types/bindings';
 import type { UnitSystem } from '../../../types';
-import { formatSpeed, speedUnit } from '../../../utils/telemetry-format';
+import { telemetryStore } from '../../../store/iracing/telemetry.store';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { unitsStore } from '../../../store/units.store';
+import {
+  formatSpeed,
+  formatTemp,
+  speedUnit,
+  tempUnit,
+} from '../../../utils/telemetry-format';
 import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import { WindCompass } from './WindCompass/WindCompass';
+import {
+  bearingToCardinal,
+  extractForecast,
+  formatWindSpeed,
+  parseWeekendFloat,
+  radsToBearing,
+} from './weather-utils';
 
 import styles from './WeatherWidget.module.scss';
 
-interface WeatherWidgetProps {
-  windBearing: number;
-  windSpeedFormatted: string;
-  windCardinal: string;
-  windColor: string;
-  airTempFormatted: string;
-  trackTempFormatted: string;
-  tempUnit: string;
-  unitSystem: UnitSystem;
-  humidity: string;
-  forecast: WeatherForecastEntry[];
-  weatherType: string | null;
-  showCompass: boolean;
-  showAirTemp: boolean;
-  showTrackTemp: boolean;
-  showWind: boolean;
-  showHumidity: boolean;
-  showForecast: boolean;
-}
-
-const buildStatCells = (
-  airTempFormatted: string,
-  trackTempFormatted: string,
-  tempUnit: string,
-  windSpeedFormatted: string,
-  windColor: string,
-  humidity: string,
-  showAirTemp: boolean,
-  showTrackTemp: boolean,
-  showWind: boolean,
-  showHumidity: boolean
-) =>
-  [
-    showAirTemp && {
-      key: 'air',
-      label: 'AIR',
-      value: airTempFormatted,
-      unit: tempUnit,
-      color: '#fff',
-    },
-    showTrackTemp && {
-      key: 'trk',
-      label: 'TRK',
-      value: trackTempFormatted,
-      unit: tempUnit,
-      color: '#fbbf24',
-    },
-    showWind && {
-      key: 'wind',
-      label: 'WIND',
-      value: windSpeedFormatted,
-      color: windColor,
-      wide: true,
-    },
-    showHumidity && {
-      key: 'hum',
-      label: 'HUM.',
-      value: humidity,
-      color: '#fff',
-    },
-  ].filter(Boolean) as {
-    key: string;
-    label: string;
-    value: string;
-    unit?: string;
-    sub?: string;
-    color: string;
-    wide?: boolean;
-  }[];
-
 const formatForecastTime = (timeSec: number): string => {
-  const h = Math.floor(timeSec / 3600);
-  const m = Math.floor((timeSec % 3600) / 60);
+  const hours = Math.floor(timeSec / 3600);
+  const minutes = Math.floor((timeSec % 3600) / 60);
 
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 };
 
 const SKIES_LABELS: Record<BindingSkies, string> = {
@@ -104,29 +51,128 @@ const convertTemp = (celsius: number, system: UnitSystem): number => {
   return celsius;
 };
 
-export const WeatherWidget = ({
-  windBearing,
-  windSpeedFormatted,
-  windCardinal,
-  windColor,
-  airTempFormatted,
-  trackTempFormatted,
-  tempUnit,
-  unitSystem,
-  humidity,
-  forecast,
-  weatherType,
-  showCompass,
-  showAirTemp,
-  showTrackTemp,
-  showWind,
-  showHumidity,
-  showForecast,
-}: WeatherWidgetProps) => {
+const getWindColor = (mps: number | null): string => {
+  if (mps === null) return '#3399ff';
+  if (mps > 8) return '#ef4444';
+  if (mps > 4) return '#ffcc00';
+
+  return '#3399ff';
+};
+
+interface StatCell {
+  key: string;
+  label: string;
+  value: string;
+  unit?: string;
+  color: string;
+  wide?: boolean;
+}
+
+const buildStatCells = (
+  airTempFormatted: string,
+  trackTempFormatted: string,
+  tempUnitLabel: string,
+  windSpeedFormatted: string,
+  windColor: string,
+  humidity: string,
+  showAirTemp: boolean,
+  showTrackTemp: boolean,
+  showWind: boolean,
+  showHumidity: boolean
+): StatCell[] => {
+  const cells: StatCell[] = [];
+
+  if (showAirTemp) {
+    cells.push({
+      key: 'air',
+      label: 'AIR',
+      value: airTempFormatted,
+      unit: tempUnitLabel,
+      color: '#fff',
+    });
+  }
+
+  if (showTrackTemp) {
+    cells.push({
+      key: 'trk',
+      label: 'TRK',
+      value: trackTempFormatted,
+      unit: tempUnitLabel,
+      color: '#fbbf24',
+    });
+  }
+
+  if (showWind) {
+    cells.push({
+      key: 'wind',
+      label: 'WIND',
+      value: windSpeedFormatted,
+      color: windColor,
+      wide: true,
+    });
+  }
+
+  if (showHumidity) {
+    cells.push({
+      key: 'hum',
+      label: 'HUM.',
+      value: humidity,
+      color: '#fff',
+    });
+  }
+
+  return cells;
+};
+
+export const WeatherWidget = observer(() => {
+  const weekendInfo = telemetryStore.weekendInfo;
+  const env = telemetryStore.environment;
+  const { system } = unitsStore;
+  const {
+    showCompass,
+    showAirTemp,
+    showTrackTemp,
+    showWind,
+    showHumidity,
+    showForecast,
+  } = widgetSettingsStore.getWeatherSettings();
+
+  const windVelMps =
+    env?.wind_vel ?? parseWeekendFloat(weekendInfo?.TrackWindVel);
+  const windDirRad =
+    env?.wind_dir ?? parseWeekendFloat(weekendInfo?.TrackWindDir);
+  const trackTempC =
+    env?.track_temp ?? parseWeekendFloat(weekendInfo?.TrackSurfaceTemp);
+  const staticAirTempC = parseWeekendFloat(weekendInfo?.TrackAirTemp);
+  const airTempC = env?.air_temp ?? staticAirTempC;
+
+  const windBearing = windDirRad !== null ? radsToBearing(windDirRad) : 0;
+  const windCardinal = bearingToCardinal(windBearing);
+  const windSpeedFormatted = formatWindSpeed(windVelMps, system);
+  const windColor = getWindColor(windVelMps);
+
+  const rawHumidity =
+    env?.relative_humidity !== undefined && env?.relative_humidity !== null
+      ? env.relative_humidity * 100
+      : parseWeekendFloat(weekendInfo?.TrackRelativeHumidity);
+  const humidity = rawHumidity !== null ? `${Math.round(rawHumidity)}%` : '—';
+
+  const airTempFormatted = formatTemp(airTempC, system);
+  const trackTempFormatted = formatTemp(trackTempC, system);
+  const tempUnitLabel = tempUnit(system);
+
+  let forecast: WeatherForecastEntry[] = telemetryStore.weatherForecast || [];
+
+  if (forecast.length === 0 && weekendInfo) {
+    forecast = extractForecast(weekendInfo);
+  }
+
+  const weatherType = weekendInfo?.TrackWeatherType ?? null;
+
   const stats = buildStatCells(
     airTempFormatted,
     trackTempFormatted,
-    tempUnit,
+    tempUnitLabel,
     windSpeedFormatted,
     windColor,
     humidity,
@@ -165,10 +211,6 @@ export const WeatherWidget = ({
                 {cell.unit && (
                   <span className={styles.statUnit}>{cell.unit}</span>
                 )}
-
-                {cell.sub && (
-                  <span className={styles.statSub}> {cell.sub}</span>
-                )}
               </span>
             </div>
           ))}
@@ -190,12 +232,11 @@ export const WeatherWidget = ({
 
                 <div className={styles.forecastRight}>
                   <span className={styles.forecastTemp}>
-                    {Math.round(convertTemp(entry.Temp, unitSystem))}°
+                    {Math.round(convertTemp(entry.Temp, system))}°
                   </span>
 
                   <span className={styles.forecastWind}>
-                    {formatSpeed(entry.WindSpeed, unitSystem)}{' '}
-                    {speedUnit(unitSystem)}
+                    {formatSpeed(entry.WindSpeed, system)} {speedUnit(system)}
                   </span>
                 </div>
               </div>
@@ -211,4 +252,4 @@ export const WeatherWidget = ({
       )}
     </WidgetPanel>
   );
-};
+});
