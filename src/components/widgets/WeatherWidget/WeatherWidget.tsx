@@ -1,10 +1,10 @@
-import type {
+﻿import type {
   WeatherForecastEntry,
   Skies as BindingSkies,
 } from '../../../types/bindings';
 import type { UnitSystem } from '../../../types';
 import { formatSpeed, speedUnit } from '../../../utils/telemetry-format';
-import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import { WindCompass } from './WindCompass/WindCompass';
 
 import styles from './WeatherWidget.module.scss';

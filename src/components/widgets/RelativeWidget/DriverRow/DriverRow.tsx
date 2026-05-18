@@ -1,10 +1,10 @@
-import React from 'react';
+﻿import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { TRACK_SURFACE_IN_PIT_STALL } from '../../widget-utils';
-import { PitBadge } from '../../primitives/PitBadge/PitBadge';
-import { ClassBadge } from '../../primitives/ClassBadge/ClassBadge';
-import { RatingBadge } from '../../primitives/RatingBadge/RatingBadge';
+import { PitBadge } from '../../../shared/primitives/PitBadge/PitBadge';
+import { ClassBadge } from '../../../shared/primitives/ClassBadge/ClassBadge';
+import { RatingBadge } from '../../../shared/primitives/RatingBadge/RatingBadge';
 import { computeRelativeGap } from '../relative-utils';
 import type { RelativeWidgetSettings } from '../../../../types/widget-settings';
 import type { DriverEntry } from '../../../../types/bindings';

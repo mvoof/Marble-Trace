@@ -1,4 +1,4 @@
-import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
+﻿import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import type { RadarDistances } from '../../../types/bindings';
 import { RadarDisplay } from './RadarDisplay/RadarDisplay';
 

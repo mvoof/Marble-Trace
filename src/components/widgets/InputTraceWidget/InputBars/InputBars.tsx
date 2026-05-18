@@ -1,9 +1,9 @@
-import { useImperativeHandle, useRef } from 'react';
+﻿import { useImperativeHandle, useRef } from 'react';
 import type { Ref } from 'react';
 import {
   ProgressBar,
   type ProgressBarHandle,
-} from '../../primitives/ProgressBar/ProgressBar';
+} from '../../../shared/primitives/ProgressBar/ProgressBar';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 
 import styles from './InputBars.module.scss';

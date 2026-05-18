@@ -1,11 +1,11 @@
-import { useImperativeHandle, useRef } from 'react';
+﻿import { useImperativeHandle, useRef } from 'react';
 import type { Ref } from 'react';
-import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import {
   CanvasTrace,
   type CanvasTraceChannel,
   type CanvasTraceHandle,
-} from '../primitives/CanvasTrace/CanvasTrace';
+} from '../../shared/primitives/CanvasTrace/CanvasTrace';
 import type {
   BaseUserSettings,
   InputTraceSettings,

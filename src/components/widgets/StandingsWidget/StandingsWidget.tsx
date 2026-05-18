@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+﻿import { useMemo } from 'react';
 
 import { observer } from 'mobx-react-lite';
-import { WidgetPanel } from '@/components/widgets/primitives/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
 import { useVisibleRowCount } from '@/hooks/useVisibleRowCount';
 import type { SessionInfo, WeekendInfo } from '@/types/bindings';
 import type {

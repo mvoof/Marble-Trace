@@ -1,6 +1,6 @@
-import { useCallback, useRef, type RefObject } from 'react';
+﻿import { useCallback, useRef, type RefObject } from 'react';
 import { TimingRow } from '../../shared/TimingRow/TimingRow';
-import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import {
   getDeltaColor,
   getSectorDeltaState,

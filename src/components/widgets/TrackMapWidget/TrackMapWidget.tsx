@@ -1,5 +1,5 @@
-import type { RefObject } from 'react';
-import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
+﻿import type { RefObject } from 'react';
+import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import type { TrackPoint } from '../../../types';
 import type { TrackMapWidgetSettings } from '../../../types/widget-settings';
 import type { Sector } from '../../../types/bindings';

@@ -1,10 +1,10 @@
-import { useEffect, useImperativeHandle, useRef } from 'react';
+﻿import { useEffect, useImperativeHandle, useRef } from 'react';
 import type { Ref } from 'react';
 import type {
   GMeterColorMode,
   GMeterDisplayMode,
 } from '../../../types/widget-settings';
-import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import {
   GMeterDashboard,
   type GMeterDashboardHandle,

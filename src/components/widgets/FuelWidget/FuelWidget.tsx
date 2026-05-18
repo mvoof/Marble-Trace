@@ -1,5 +1,5 @@
-import React from 'react';
-import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
+﻿import React from 'react';
+import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import { formatFuelLiters, type FuelCalculations } from './fuel-utils';
 import { FUEL_THRESHOLDS } from './fuel-constants';
 import { FuelChart } from './FuelChart/FuelChart';

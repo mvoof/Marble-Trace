@@ -1,4 +1,4 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { formatLapTime } from '../../../../utils/telemetry-format';
 import {
@@ -6,10 +6,10 @@ import {
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
 } from '../../widget-utils';
-import { PitBadge } from '../../primitives/PitBadge/PitBadge';
-import { ClassBadge } from '../../primitives/ClassBadge/ClassBadge';
-import { RatingBadge } from '../../primitives/RatingBadge/RatingBadge';
-import { TireBadge } from '../../primitives/TireBadge/TireBadge';
+import { PitBadge } from '../../../shared/primitives/PitBadge/PitBadge';
+import { ClassBadge } from '../../../shared/primitives/ClassBadge/ClassBadge';
+import { RatingBadge } from '../../../shared/primitives/RatingBadge/RatingBadge';
+import { TireBadge } from '../../../shared/primitives/TireBadge/TireBadge';
 import { computedStore } from '../../../../store/iracing/computed.store';
 import type { StandingsWidgetSettings } from '../../../../types/widget-settings';
 

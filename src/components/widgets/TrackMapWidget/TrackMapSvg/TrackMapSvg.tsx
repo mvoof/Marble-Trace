@@ -1,10 +1,10 @@
-import { useRef, useState, useEffect } from 'react';
+﻿import { useRef, useState, useEffect } from 'react';
 import type { TrackPoint } from '../../../../types';
 import { getPointAtPct } from '../../../../utils/track-recorder';
 import type { Sector } from '../../../../types/bindings';
 import type { TrackMapLeaderLabelMode } from '../../../../types/widget-settings';
 import type { CarOnTrack } from '../types';
-import { CarDot } from '../../primitives/CarDot/CarDot';
+import { CarDot } from '../../../shared/primitives/CarDot/CarDot';
 
 import styles from './TrackMapSvg.module.scss';
 

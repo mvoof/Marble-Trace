@@ -1,4 +1,4 @@
-import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
+﻿import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import type { LinearMapWidgetSettings } from '../../../types/widget-settings';
 import { LinearMap } from './LinearMap/LinearMap';
 import type { DriverEntry } from '../../../types/bindings';

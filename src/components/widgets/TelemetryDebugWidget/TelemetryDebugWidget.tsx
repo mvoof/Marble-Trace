@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+﻿import React, { useEffect, useRef } from 'react';
 import { toJS } from 'mobx';
 
-import { WidgetPanel } from '../primitives/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import type {
   CarDynamicsFrame,
   CarInputsFrame,
