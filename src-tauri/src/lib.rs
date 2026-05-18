@@ -71,6 +71,8 @@ pub fn run() {
             .unwrap();
     }
 
+    let aptabase_key = option_env!("APTABASE_KEY").unwrap_or("");
+
     let builder = Builder::default()
         .plugin(
             tauri_plugin_window_state::Builder::new()
@@ -87,7 +89,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_aptabase::Builder::new(option_env!("APTABASE_KEY").unwrap_or("")).build());
+        .plugin(tauri_plugin_aptabase::Builder::new(aptabase_key).build());
 
     #[cfg(feature = "dev")]
     let builder = builder.plugin(tauri_plugin_mcp_bridge::init());
