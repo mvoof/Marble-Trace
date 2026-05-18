@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Release Notes Modal:** When a new version is available, a modal now shows the full release notes so you know exactly what's changed before updating.
-- **Analytics:** Added privacy-first anonymous analytics via Aptabase — only a single `app_started` event is tracked to help understand how many people use the app. No personal data or telemetry is collected.
+- **Analytics:** Added privacy-first anonymous analytics via Aptabase — only a single `app_started` event is tracked to help understand how many people use the app. No personal data is collected.
 
 ## [0.11.0] — 2026-05-17
 
