@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] — 2026-05-18
+
+### Added
+
+- **Release Notes Modal:** When a new version is available, a modal now shows the full release notes so you know exactly what's changed before updating.
+- **Analytics:** Added privacy-first anonymous analytics via Aptabase — only a single `app_started` event is tracked to help understand how many people use the app. No personal data is collected.
+
 ## [0.11.0] — 2026-05-17
 
 ### Added
