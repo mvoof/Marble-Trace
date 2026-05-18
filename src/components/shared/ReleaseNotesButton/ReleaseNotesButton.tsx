@@ -17,7 +17,7 @@ export const ReleaseNotesButton = observer(() => {
       </Button>
 
       <Modal
-        title={`What's new in v${availableVersion}`}
+        title={`What's new${availableVersion ? ` in v${availableVersion}` : ''}`}
         open={isOpen}
         onCancel={() => setIsOpen(false)}
         footer={null}
