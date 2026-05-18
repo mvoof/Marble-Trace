@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { StandingsWidget } from './StandingsWidget';
+import { StandingsList } from './StandingsList/StandingsList';
 import {
   driverEntries as RAW_ENTRIES,
   snapshot,
@@ -45,9 +45,9 @@ const DEFAULT_SETTINGS = {
   abbreviateNames: false,
 };
 
-const meta: Meta<typeof StandingsWidget> = {
+const meta: Meta<typeof StandingsList> = {
   title: 'Widgets/StandingsWidget',
-  component: StandingsWidget,
+  component: StandingsList,
   parameters: { layout: 'centered' },
   decorators: [widgetDecorator({ width: 800, height: 450 })],
   args: {
@@ -68,7 +68,7 @@ const meta: Meta<typeof StandingsWidget> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof StandingsWidget>;
+type Story = StoryObj<typeof StandingsList>;
 
 export const Default: Story = {};
 

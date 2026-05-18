@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { RelativeWidget } from './RelativeWidget';
+import { RelativeList } from './RelativeList/RelativeList';
 import { driverEntries } from '../../../storybook/test-data';
 import { widgetDecorator } from '../../../stories/widgetDecorator';
 
@@ -19,9 +19,9 @@ const DEFAULT_SETTINGS = {
   abbreviateNames: false,
 };
 
-const meta: Meta<typeof RelativeWidget> = {
+const meta: Meta<typeof RelativeList> = {
   title: 'Widgets/RelativeWidget',
-  component: RelativeWidget,
+  component: RelativeList,
   parameters: { layout: 'centered' },
   decorators: [widgetDecorator({ width: 420, height: 400 })],
   args: {
@@ -31,7 +31,7 @@ const meta: Meta<typeof RelativeWidget> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof RelativeWidget>;
+type Story = StoryObj<typeof RelativeList>;
 
 export const Default: Story = {};
 

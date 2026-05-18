@@ -3,14 +3,14 @@ import { SpeedWidget } from '../components/widgets/SpeedWidget/SpeedWidget';
 import { InputTraceWidget } from '../components/widgets/InputTraceWidget/InputTraceWidget';
 import { ProximityRadarWidget } from '../components/widgets/ProximityRadarWidget/ProximityRadarWidget';
 import { RadarBarWidget } from '../components/widgets/RadarBarWidget/RadarBarWidget';
-import { StandingsWidgetContainer } from '../components/widgets/StandingsWidget/StandingsWidgetContainer';
-import { RelativeWidgetContainer } from '../components/widgets/RelativeWidget/RelativeWidgetContainer';
-import { TrackMapWidgetContainer } from '../components/widgets/TrackMapWidget/TrackMapWidgetContainer';
+import { StandingsWidget } from '../components/widgets/StandingsWidget/StandingsWidget';
+import { RelativeWidget } from '../components/widgets/RelativeWidget/RelativeWidget';
+import { TrackMapWidget } from '../components/widgets/TrackMapWidget/TrackMapWidget';
 import { RelativeMapWidget } from '../components/widgets/RelativeMapWidget/RelativeMapWidget';
 import { LedFlagWidget } from '../components/widgets/LedFlagWidget/LedFlagWidget';
 import { ChassisWidget } from '../components/widgets/ChassisWidget/ChassisWidget';
 import { LapDeltaWidget } from '../components/widgets/LapDeltaWidget/LapDeltaWidget';
-import { LapTimesWidgetContainer } from '../components/widgets/LapTimesWidget/LapTimesWidgetContainer';
+import { LapTimesWidget } from '../components/widgets/LapTimesWidget/LapTimesWidget';
 import { TimerWidget } from '../components/widgets/TimerWidget/TimerWidget';
 import { WeatherWidget } from '../components/widgets/WeatherWidget/WeatherWidget';
 import { FuelWidget } from '../components/widgets/FuelWidget/FuelWidget';
@@ -162,7 +162,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'standings',
     label: 'Standings',
     description: 'Live session standings and intervals.',
-    component: StandingsWidgetContainer,
+    component: StandingsWidget,
     designWidth: 700,
     designHeight: 450,
     userSettings: {
@@ -201,7 +201,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'relative',
     label: 'Relative',
     description: 'Gaps to cars ahead and behind you.',
-    component: RelativeWidgetContainer,
+    component: RelativeWidget,
     designWidth: 420,
     designHeight: 400,
     userSettings: {
@@ -226,7 +226,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'track-map',
     label: 'Track Map',
     description: 'Dynamic 2D map of the current circuit.',
-    component: TrackMapWidgetContainer,
+    component: TrackMapWidget,
     designWidth: 400,
     designHeight: 400,
     userSettings: {
@@ -389,7 +389,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'lap-times',
     label: 'Lap Times',
     description: 'Detailed history of your lap times.',
-    component: LapTimesWidgetContainer,
+    component: LapTimesWidget,
     designWidth: 230,
     designHeight: 104,
     userSettings: {

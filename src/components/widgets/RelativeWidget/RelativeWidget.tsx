@@ -1,104 +1,12 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
-import { useVisibleRowCount } from '../../../hooks/useVisibleRowCount';
-import type { RelativeWidgetSettings } from '../../../types/widget-settings';
+import { computedStore } from '../../../store/iracing/computed.store';
+import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { RelativeList } from './RelativeList/RelativeList';
 
-import { DriverRow } from './DriverRow/DriverRow';
-import { computeRelativeGap } from './relative-utils';
-import { TREND_SAMPLE_INTERVAL_MS } from '../widget-utils';
-import type { DriverEntry } from '../../../types/bindings';
+export const RelativeWidget = observer(() => {
+  const settings = widgetSettingsStore.getRelativeSettings();
+  const entries = computedStore.relativeEntries;
 
-import styles from './RelativeWidget.module.scss';
-
-interface RelativeWidgetProps {
-  entries: DriverEntry[];
-  settings: RelativeWidgetSettings;
-}
-
-export const RelativeWidget = ({ entries, settings }: RelativeWidgetProps) => {
-  const prevF2TimesRef = useRef<Map<number, number>>(new Map());
-  const lastSnapshotTimeRef = useRef<number>(0);
-
-  const { ref: driverListRef, count: visibleRowCount } =
-    useVisibleRowCount<HTMLDivElement>(2.75, 3, '[data-relative-row]');
-
-  const [trendMap, setTrendMap] = useState<Map<number, number>>(new Map());
-
-  useEffect(() => {
-    const now = Date.now();
-
-    if (now - lastSnapshotTimeRef.current < TREND_SAMPLE_INTERVAL_MS) return;
-
-    const prevSnapshot = prevF2TimesRef.current;
-    const newTrends = new Map<number, number>();
-    const playerEntry = entries.find((e) => e.isPlayer);
-
-    if (playerEntry) {
-      for (const entry of entries) {
-        if (entry.isPlayer) continue;
-
-        const prevGap = prevSnapshot.get(entry.carIdx);
-        const currGap = computeRelativeGap(entry, playerEntry);
-
-        if (prevGap === undefined) continue;
-
-        const gapDelta = currGap - prevGap;
-
-        if (Math.abs(gapDelta) > 0.01) {
-          newTrends.set(entry.carIdx, gapDelta);
-        }
-      }
-    }
-
-    setTrendMap(newTrends);
-
-    const newTimes = new Map<number, number>();
-
-    for (const entry of entries) {
-      if (entry.isPlayer || !playerEntry) continue;
-
-      newTimes.set(entry.carIdx, computeRelativeGap(entry, playerEntry));
-    }
-
-    prevF2TimesRef.current = newTimes;
-    lastSnapshotTimeRef.current = now;
-  }, [entries]);
-
-  const displayEntries = useMemo((): DriverEntry[] => {
-    const playerIdx = entries.findIndex((e) => e.isPlayer);
-
-    if (playerIdx === -1) return entries.slice(0, visibleRowCount);
-
-    const total = Math.min(visibleRowCount, entries.length);
-    const half = Math.floor(total / 2);
-
-    const aboveAvail = playerIdx;
-    const belowAvail = entries.length - playerIdx - 1;
-
-    let above = Math.min(half, aboveAvail);
-    let below = Math.min(total - 1 - above, belowAvail);
-
-    above = Math.min(total - 1 - below, aboveAvail);
-
-    return entries.slice(playerIdx - above, playerIdx + below + 1);
-  }, [entries, visibleRowCount]);
-
-  const player = entries.find((e) => e.isPlayer);
-
-  return (
-    <WidgetPanel className={styles.relative} gap={0}>
-      <div ref={driverListRef} className={styles.driverList}>
-        {displayEntries.map((entry) => (
-          <DriverRow
-            key={entry.carIdx}
-            driver={entry}
-            player={player ?? null}
-            trendDelta={trendMap.get(entry.carIdx) ?? 0}
-            settings={settings}
-          />
-        ))}
-      </div>
-    </WidgetPanel>
-  );
-};
+  return <RelativeList entries={entries} settings={settings} />;
+});

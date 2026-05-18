@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { TrackMapWidget } from './TrackMapWidget';
+import { TrackMapView } from './TrackMapView/TrackMapView';
 import {
   driverEntries as DRIVER_ENTRIES,
   trackData as STORED_TRACK,
@@ -51,9 +51,9 @@ const DEFAULT_SETTINGS = {
 
 const DESIGN_SIZE = 600;
 
-const meta: Meta<typeof TrackMapWidget> = {
+const meta: Meta<typeof TrackMapView> = {
   title: 'Widgets/TrackMapWidget',
-  component: TrackMapWidget,
+  component: TrackMapView,
   parameters: { layout: 'centered' },
   decorators: [widgetDecorator({ width: DESIGN_SIZE, height: DESIGN_SIZE })],
   args: {
@@ -73,7 +73,7 @@ const meta: Meta<typeof TrackMapWidget> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof TrackMapWidget>;
+type Story = StoryObj<typeof TrackMapView>;
 
 export const Default: Story = {};
 
