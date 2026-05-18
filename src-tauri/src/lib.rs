@@ -29,6 +29,7 @@ use specta_typescript::Typescript;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
 use tauri::{generate_context, generate_handler, Builder, Manager, WindowEvent};
+use tauri_plugin_aptabase::EventTracker;
 use tracing_subscriber::EnvFilter;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -70,6 +71,8 @@ pub fn run() {
             .unwrap();
     }
 
+    let aptabase_key = option_env!("APTABASE_KEY").unwrap_or("");
+
     let builder = Builder::default()
         .plugin(
             tauri_plugin_window_state::Builder::new()
@@ -85,12 +88,26 @@ pub fn run() {
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
-        .plugin(tauri_plugin_opener::init());
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_aptabase::Builder::new(aptabase_key).build());
 
     #[cfg(feature = "dev")]
     let builder = builder.plugin(tauri_plugin_mcp_bridge::init());
 
     builder
+        .setup(|app| {
+            let monitor = app.primary_monitor().ok().flatten();
+            let locale = sys_locale::get_locale().unwrap_or_else(|| "unknown".to_string());
+            let props = serde_json::json!({
+                "screen_width": monitor.as_ref().map(|monitor| monitor.size().width),
+                "screen_height": monitor.as_ref().map(|monitor| monitor.size().height),
+                "scale_factor": monitor.as_ref().map(|monitor| monitor.scale_factor()),
+                "dpi": monitor.as_ref().map(|monitor| (96.0 * monitor.scale_factor()) as u32),
+                "locale": locale,
+            });
+            let _ = app.track_event("app_started", Some(props));
+            Ok(())
+        })
         .invoke_handler(generate_handler![
             start_telemetry_stream,
             stop_telemetry_stream,

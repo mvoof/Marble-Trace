@@ -7,7 +7,8 @@ import type { UnitSystem } from '../../../../types';
 import { downloadSnapshot } from '../../../../storybook/capture-snapshot';
 import { HotkeyRecorder } from '../../../../components/shared/HotkeyRecorder/HotkeyRecorder';
 import { RefreshCw, ArrowUpCircle, AlertCircle, Clock } from 'lucide-react';
-import styles from '../WidgetSettings/WidgetSettings.module.scss';
+import { ReleaseNotesButton } from '../../../../components/shared/ReleaseNotesButton/ReleaseNotesButton';
+import styles from './SettingsPage.module.scss';
 
 const isDev = import.meta.env.DEV;
 
@@ -241,17 +242,21 @@ export const SettingsPage = observer(() => {
             {['available', 'downloading', 'ready'].includes(
               appSettingsStore.updateStatus
             ) ? (
-              <Button
-                type="primary"
-                icon={<ArrowUpCircle size={16} />}
-                onClick={() => void appSettingsStore.installUpdate()}
-                loading={appSettingsStore.updateStatus === 'downloading'}
-                disabled={appSettingsStore.updateStatus === 'ready'}
-              >
-                {appSettingsStore.updateStatus === 'ready'
-                  ? 'Restarting...'
-                  : 'Install & Restart'}
-              </Button>
+              <div className={styles.updateActions}>
+                <ReleaseNotesButton />
+
+                <Button
+                  type="primary"
+                  icon={<ArrowUpCircle size={16} />}
+                  onClick={() => void appSettingsStore.installUpdate()}
+                  loading={appSettingsStore.updateStatus === 'downloading'}
+                  disabled={appSettingsStore.updateStatus === 'ready'}
+                >
+                  {appSettingsStore.updateStatus === 'ready'
+                    ? 'Restarting...'
+                    : 'Install & Restart'}
+                </Button>
+              </div>
             ) : (
               <Button
                 icon={
@@ -282,7 +287,7 @@ export const SettingsPage = observer(() => {
             <div className={styles.fieldTitle}>Telemetry Snapshot</div>
 
             <div className={styles.fieldDesc} style={{ marginBottom: 16 }}>
-              Capture current telemetry state for Storybook fixtures.
+              Capture current telemetry state.
             </div>
 
             <Button block size="small" onClick={handleCaptureSnapshot}>
