@@ -4,64 +4,6 @@
   border-top: 1px solid rgba(58, 59, 64, 0.8);
   background: rgba(0, 0, 0, 0.25);
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: ws(4);
   font-family: $font-widget;
   font-variant-numeric: tabular-nums;
-}
-
-.currentValues {
-  display: flex;
-  align-items: center;
-  gap: ws(10);
-  font-size: ws(18);
-  font-weight: 600;
-  color: $color-text-primary;
-}
-
-.valueGroup {
-  display: flex;
-  align-items: baseline;
-  gap: ws(3);
-}
-
-.axisLabel {
-  color: $color-text-secondary;
-  font-size: ws(14);
-  font-weight: 400;
-  letter-spacing: 0.5px;
-}
-
-.val {
-  display: inline-block;
-  width: 4ch;
-  text-align: right;
-  font-weight: 700;
-}
-
-.divider {
-  color: rgba(58, 59, 64, 1);
-  font-size: ws(14);
-}
-
-.peakValues {
-  display: flex;
-  align-items: center;
-  gap: ws(6);
-  font-size: ws(11);
-  color: $color-text-secondary;
-  font-weight: 400;
-}
-
-.peakLabel {
-  letter-spacing: 0.5px;
-  font-size: ws(12);
-}
-
-.peakVal {
-  display: inline-block;
-  width: 3.5ch;
-  text-align: right;
 }
