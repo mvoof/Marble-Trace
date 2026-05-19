@@ -26,15 +26,15 @@
   position: relative;
 }
 
-.height-sm {
+.trackHeight-sm {
   height: $bar-height-sm;
 }
 
-.height-md {
+.trackHeight-md {
   height: $bar-height-md;
 }
 
-.height-lg {
+.trackHeight-lg {
   height: $bar-height-lg;
 }
 
@@ -50,8 +50,6 @@
 
 .animated {
 }
-
-// Vertical bar styles
 
 .verticalContainer {
   display: flex;
@@ -72,15 +70,15 @@
   overflow: hidden;
 }
 
-.width-sm {
+.trackWidth-sm {
   width: $bar-height-sm;
 }
 
-.width-md {
+.trackWidth-md {
   width: $bar-height-md;
 }
 
-.width-lg {
+.trackWidth-lg {
   width: $bar-height-lg;
 }
 
