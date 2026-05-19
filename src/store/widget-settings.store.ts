@@ -220,7 +220,7 @@ class WidgetSettingsStore {
       newSettings.barMode
     ) {
       const prevBarMode =
-        'barMode' in prevSettings ? prevSettings.barMode : 'horizontal';
+        'barMode' in prevSettings ? prevSettings.barMode : 'vertical';
       const nextBarMode = newSettings.barMode;
 
       if (prevBarMode !== nextBarMode && nextBarMode !== 'hidden') {

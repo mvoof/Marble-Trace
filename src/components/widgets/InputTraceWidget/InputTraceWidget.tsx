@@ -11,27 +11,14 @@ export const InputTraceWidget = observer(() => {
   const settings = widgetSettingsStore.getInputTraceSettings();
 
   const showBars = settings.barMode !== 'hidden';
-  const isVertical = settings.barMode === 'vertical';
 
   return (
-    <WidgetPanel direction={isVertical ? 'row' : 'column'} gap={8} edgeInset>
-      {isVertical ? (
-        <>
-          <div className={styles.chartArea}>
-            <CanvasTrace />
-          </div>
+    <WidgetPanel direction="row" gap={8} edgeInset>
+      <div className={styles.chartArea}>
+        <CanvasTrace />
+      </div>
 
-          {showBars && <InputBars isVertical />}
-        </>
-      ) : (
-        <>
-          {showBars && <InputBars isVertical={false} />}
-
-          <div className={styles.chartArea}>
-            <CanvasTrace />
-          </div>
-        </>
-      )}
+      {showBars && <InputBars />}
     </WidgetPanel>
   );
 });

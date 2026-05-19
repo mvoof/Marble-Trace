@@ -19,7 +19,7 @@ export interface SpeedWidgetSettings {
   ledShape: LedShape;
 }
 
-export type InputTraceBarMode = 'horizontal' | 'vertical' | 'hidden';
+export type InputTraceBarMode = 'vertical' | 'hidden';
 
 export interface InputTraceSettings {
   showThrottle: boolean;

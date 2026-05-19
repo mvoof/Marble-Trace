@@ -56,7 +56,7 @@ const meta: Meta<typeof StoryHost> = {
     throttle: 0.6,
     brake: 0,
     clutch: 0,
-    barMode: 'horizontal',
+    barMode: 'vertical',
     showThrottle: true,
     showBrake: true,
     showClutch: true,
@@ -67,10 +67,6 @@ export default meta;
 type Story = StoryObj<typeof StoryHost>;
 
 export const Default: Story = {};
-
-export const VerticalBars: Story = {
-  args: { barMode: 'vertical' },
-};
 
 export const HiddenBars: Story = {
   args: { barMode: 'hidden' },

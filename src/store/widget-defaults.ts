@@ -43,7 +43,6 @@ export const INPUT_TRACE_SIZES: Record<
   string,
   { designWidth: number; designHeight: number }
 > = {
-  horizontal: { designWidth: 400, designHeight: 220 },
   vertical: { designWidth: 400, designHeight: 110 },
 };
 
@@ -105,7 +104,7 @@ export const WIDGETS: WidgetConfig[] = [
       throttleColor: '#00ff00',
       brakeColor: '#ff3333',
       clutchColor: '#3399ff',
-      barMode: 'horizontal',
+      barMode: 'vertical',
       historySeconds: 5,
       lineWidth: 3.5,
       smoothing: 0,

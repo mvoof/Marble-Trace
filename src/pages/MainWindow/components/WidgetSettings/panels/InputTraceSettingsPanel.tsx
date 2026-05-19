@@ -121,13 +121,12 @@ export const InputTraceSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>Progress Bars Orientation</span>
+          <span className={styles.fieldLabel}>Progress Bars</span>
           <Segmented
             block
             value={settings.barMode}
             options={[
-              { label: 'Horizontal', value: 'horizontal' },
-              { label: 'Vertical', value: 'vertical' },
+              { label: 'Visible', value: 'vertical' },
               { label: 'Hidden', value: 'hidden' },
             ]}
             onChange={(v) => update({ barMode: v as InputTraceBarMode })}

@@ -1,61 +1,7 @@
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: $space-sm;
-}
-
-.labelRow {
-  display: flex;
-  justify-content: space-between;
-  font-size: $font-size-sm;
-}
-
-.label {
-  color: $color-text-muted;
-}
-
-.valueText {
-  color: $color-text-primary;
-}
-
-.track {
-  display: block;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: $bar-border-radius;
-  overflow: hidden;
-  position: relative;
-}
-
-.trackHeight-sm {
-  height: $bar-height-sm;
-}
-
-.trackHeight-md {
-  height: $bar-height-md;
-}
-
-.trackHeight-lg {
-  height: $bar-height-lg;
-}
-
-.fill {
-  display: block;
-  height: 100%;
-  background-color: $color-text-accent;
-  border-radius: $bar-border-radius;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.animated {
-}
-
 .verticalContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: $space-sm;
   height: 100%;
 }
 
@@ -87,15 +33,6 @@
   width: 100%;
   background: $color-text-accent;
   border-radius: $bar-border-radius;
-}
-
-.verticalAnimated {
-}
-
-.verticalLabel {
-  font-size: $font-size-xs;
-  color: $color-text-muted;
-  flex-shrink: 0;
 }
 
 .noRadius {

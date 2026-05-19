@@ -12,7 +12,6 @@ type BarWidth = 'sm' | 'md' | 'lg';
 interface BarProps {
   channel: BarChannel;
   width?: BarWidth;
-  vertical?: boolean;
   rounded?: boolean;
 }
 
@@ -35,7 +34,7 @@ function getChannelColor(channel: BarChannel): string {
 }
 
 export const Bar = observer(
-  ({ channel, width = 'md', vertical = false, rounded = true }: BarProps) => {
+  ({ channel, width = 'md', rounded = true }: BarProps) => {
     const settings = widgetSettingsStore.getInputTraceSettings();
     const smoothedRef = useRef(0);
 
@@ -52,33 +51,18 @@ export const Bar = observer(
     const clamped = Math.max(0, Math.min(1, smoothedRef.current));
     const color = getChannelColor(channel);
 
-    if (vertical) {
-      return (
-        <div className={styles.verticalContainer}>
-          <div
-            className={`${styles.verticalTrack} ${styles[`trackWidth-${width}`]}${
-              !rounded ? ` ${styles.noRadius}` : ''
-            }`}
-          >
-            <div
-              className={`${styles.verticalFill}${!rounded ? ` ${styles.noRadius}` : ''}`}
-              style={{ height: `${clamped * 100}%`, background: color }}
-            />
-          </div>
-        </div>
-      );
-    }
-
     return (
-      <div
-        className={`${styles.track} ${styles[`trackHeight-${width}`]}${
-          !rounded ? ` ${styles.noRadius}` : ''
-        }`}
-      >
+      <div className={styles.verticalContainer}>
         <div
-          className={`${styles.fill}${!rounded ? ` ${styles.noRadius}` : ''}`}
-          style={{ width: `${clamped * 100}%`, background: color }}
-        />
+          className={`${styles.verticalTrack} ${styles[`trackWidth-${width}`]}${
+            !rounded ? ` ${styles.noRadius}` : ''
+          }`}
+        >
+          <div
+            className={`${styles.verticalFill}${!rounded ? ` ${styles.noRadius}` : ''}`}
+            style={{ height: `${clamped * 100}%`, background: color }}
+          />
+        </div>
       </div>
     );
   }
