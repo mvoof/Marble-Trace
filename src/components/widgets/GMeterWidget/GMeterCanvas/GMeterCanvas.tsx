@@ -1,13 +1,8 @@
-import { useEffect, useRef } from 'react';
-import { autorun } from 'mobx';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../../store/widget-settings.store';
-import {
-  GMeterDashboard,
-  type GMeterDashboardHandle,
-} from '../GMeterDashboard/GMeterDashboard';
 import {
   COLOR_TURN,
   ENVELOPE_SPREAD,
@@ -25,9 +20,10 @@ import styles from './GMeterCanvas.module.scss';
 export const GMeterCanvas = observer(() => {
   const { displayMode, scale, colorMode } =
     widgetSettingsStore.getGMeterSettings();
+  const dynamics = telemetryStore.carDynamics;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const dashboardRef = useRef<GMeterDashboardHandle>(null);
+  const rafIdRef = useRef(0);
 
   const stateRef = useRef({
     smoothedLatG: 0,
@@ -44,15 +40,13 @@ export const GMeterCanvas = observer(() => {
   const displayModeRef = useRef(displayMode);
   const scaleRef = useRef(scale);
   const colorModeRef = useRef(colorMode);
-  const rafIdRef = useRef(0);
+  const latAccelRef = useRef(dynamics?.lat_accel ?? 0);
+  const lonAccelRef = useRef(dynamics?.long_accel ?? 0);
 
-  useEffect(() => {
-    displayModeRef.current = displayMode;
-  }, [displayMode]);
-
-  useEffect(() => {
-    colorModeRef.current = colorMode;
-  }, [colorMode]);
+  displayModeRef.current = displayMode;
+  colorModeRef.current = colorMode;
+  latAccelRef.current = dynamics?.lat_accel ?? 0;
+  lonAccelRef.current = dynamics?.long_accel ?? 0;
 
   useEffect(() => {
     scaleRef.current = scale;
@@ -63,9 +57,10 @@ export const GMeterCanvas = observer(() => {
       (): EnvelopePoint => ({ r: 0, color: COLOR_TURN })
     );
     state.gHistory = [];
+    state.smoothedLatG = 0;
+    state.smoothedLonG = 0;
     state.peakLatG = 0;
     state.peakLonG = 0;
-    dashboardRef.current?.reset();
   }, [scale]);
 
   const drawFrame = (canvas: HTMLCanvasElement) => {
@@ -90,7 +85,6 @@ export const GMeterCanvas = observer(() => {
     const radius = Math.min(width, height) * RADIUS_RATIO * 0.5;
     const maxG = scaleRef.current;
     const pxPerG = radius / maxG;
-
     const state = stateRef.current;
 
     ctx.clearRect(0, 0, width, height);
@@ -237,100 +231,83 @@ export const GMeterCanvas = observer(() => {
     };
   }, []);
 
-  useEffect(() => {
-    return autorun(() => {
-      const dynamics = telemetryStore.carDynamics;
-      const latAccel = dynamics?.lat_accel ?? null;
-      const lonAccel = dynamics?.long_accel ?? null;
-      const rawLat = latAccel != null ? latAccel / G_CONSTANT : 0;
-      const rawLon = lonAccel != null ? lonAccel / G_CONSTANT : 0;
+  useLayoutEffect(() => {
+    const rawLat = latAccelRef.current / G_CONSTANT;
+    const rawLon = lonAccelRef.current / G_CONSTANT;
 
-      const state = stateRef.current;
-      state.smoothedLatG += (rawLat - state.smoothedLatG) * SMOOTHING;
-      state.smoothedLonG += (rawLon - state.smoothedLonG) * SMOOTHING;
+    const state = stateRef.current;
+    state.smoothedLatG += (rawLat - state.smoothedLatG) * SMOOTHING;
+    state.smoothedLonG += (rawLon - state.smoothedLonG) * SMOOTHING;
 
-      let dist = Math.sqrt(state.smoothedLatG ** 2 + state.smoothedLonG ** 2);
-      const maxG = scaleRef.current;
+    let dist = Math.sqrt(state.smoothedLatG ** 2 + state.smoothedLonG ** 2);
+    const maxG = scaleRef.current;
 
-      if (dist > maxG) {
-        const ratio = maxG / dist;
-        state.smoothedLatG *= ratio;
-        state.smoothedLonG *= ratio;
-        dist = maxG;
+    if (dist > maxG) {
+      const ratio = maxG / dist;
+      state.smoothedLatG *= ratio;
+      state.smoothedLonG *= ratio;
+      dist = maxG;
+    }
+
+    const color = computeColor(
+      colorModeRef.current,
+      state.smoothedLatG,
+      state.smoothedLonG,
+      dist
+    );
+
+    if (Math.abs(state.smoothedLatG) > state.peakLatG) {
+      state.peakLatG = Math.abs(state.smoothedLatG);
+    }
+
+    if (Math.abs(state.smoothedLonG) > state.peakLonG) {
+      state.peakLonG = Math.abs(state.smoothedLonG);
+    }
+
+    const angle = Math.atan2(state.smoothedLonG, state.smoothedLatG);
+    let degree = Math.round(angle * (180 / Math.PI));
+
+    if (degree < 0) {
+      degree += 360;
+    }
+
+    for (let delta = -ENVELOPE_SPREAD; delta <= ENVELOPE_SPREAD; delta++) {
+      const idx = (degree + delta + 360) % 360;
+      const smoothedR = dist * Math.cos((delta * Math.PI) / 180);
+
+      if (smoothedR > state.gEnvelope[idx].r) {
+        state.gEnvelope[idx].r = smoothedR;
+        state.gEnvelope[idx].color = color;
       }
+    }
 
-      const color = computeColor(
-        colorModeRef.current,
-        state.smoothedLatG,
-        state.smoothedLonG,
-        dist
-      );
-
-      if (Math.abs(state.smoothedLatG) > state.peakLatG) {
-        state.peakLatG = Math.abs(state.smoothedLatG);
+    if (displayModeRef.current === 'fading') {
+      for (let index = 0; index < 360; index++) {
+        state.gEnvelope[index].r *= FADING_DECAY;
       }
+    }
 
-      if (Math.abs(state.smoothedLonG) > state.peakLonG) {
-        state.peakLonG = Math.abs(state.smoothedLonG);
-      }
-
-      const angle = Math.atan2(state.smoothedLonG, state.smoothedLatG);
-      let degree = Math.round(angle * (180 / Math.PI));
-
-      if (degree < 0) {
-        degree += 360;
-      }
-
-      for (let delta = -ENVELOPE_SPREAD; delta <= ENVELOPE_SPREAD; delta++) {
-        const idx = (degree + delta + 360) % 360;
-        const smoothedR = dist * Math.cos((delta * Math.PI) / 180);
-
-        if (smoothedR > state.gEnvelope[idx].r) {
-          state.gEnvelope[idx].r = smoothedR;
-          state.gEnvelope[idx].color = color;
-        }
-      }
-
-      if (displayModeRef.current === 'fading') {
-        for (let index = 0; index < 360; index++) {
-          state.gEnvelope[index].r *= FADING_DECAY;
-        }
-      }
-
-      state.gHistory.push({
-        lat: state.smoothedLatG,
-        lon: state.smoothedLonG,
-        color,
-      });
-
-      if (state.gHistory.length > TRACE_LENGTH) {
-        state.gHistory.shift();
-      }
-
-      dashboardRef.current?.update(
-        state.smoothedLatG,
-        state.smoothedLonG,
-        state.peakLatG,
-        state.peakLonG,
-        color
-      );
-
-      cancelAnimationFrame(rafIdRef.current);
-      rafIdRef.current = requestAnimationFrame(() => {
-        if (canvasRef.current) {
-          drawFrame(canvasRef.current);
-        }
-      });
+    state.gHistory.push({
+      lat: state.smoothedLatG,
+      lon: state.smoothedLonG,
+      color,
     });
-  }, []);
+
+    if (state.gHistory.length > TRACE_LENGTH) {
+      state.gHistory.shift();
+    }
+
+    cancelAnimationFrame(rafIdRef.current);
+    rafIdRef.current = requestAnimationFrame(() => {
+      if (canvasRef.current) {
+        drawFrame(canvasRef.current);
+      }
+    });
+  });
 
   return (
-    <>
-      <div className={styles.canvasWrap}>
-        <canvas ref={canvasRef} className={styles.canvas} />
-      </div>
-
-      <GMeterDashboard ref={dashboardRef} />
-    </>
+    <div className={styles.canvasWrap}>
+      <canvas ref={canvasRef} className={styles.canvas} />
+    </div>
   );
 });
