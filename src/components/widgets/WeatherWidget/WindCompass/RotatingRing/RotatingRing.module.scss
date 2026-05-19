@@ -1,0 +1,18 @@
+.rotatingGroup {
+  transition: transform 0.05s linear;
+}
+
+.cardinalLabel {
+  font-family: $font-widget;
+  font-size: ws(13);
+  font-weight: 700;
+  fill: rgba(255, 255, 255, 0.22);
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.6);
+  stroke-width: 3px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.05s linear;
+}
