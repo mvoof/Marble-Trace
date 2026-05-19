@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 
 import { GMeterRings } from './GMeterRings/GMeterRings';
 import { GMeterTrace } from './GMeterTrace/GMeterTrace';
 
 import styles from './GMeterCanvas.module.scss';
 
-export const GMeterCanvas = () => {
+export const GMeterCanvas = observer(() => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
