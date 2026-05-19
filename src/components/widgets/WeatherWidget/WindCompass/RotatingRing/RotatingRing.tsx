@@ -4,11 +4,11 @@ import { telemetryStore } from '../../../../../store/iracing/telemetry.store';
 
 import styles from './RotatingRing.module.scss';
 
-const RING_RADIUS = 74;
-const TICK_OUTER = 80;
-const TICK_INNER_MAJOR = 70;
-const TICK_INNER_MINOR = 76;
-const LABEL_RADIUS = 58;
+const RING_RADIUS = 82;
+const TICK_OUTER = 88;
+const TICK_INNER_MAJOR = 77;
+const TICK_INNER_MINOR = 84;
+const LABEL_RADIUS = 64;
 
 const CARDINAL_ANGLES = [
   { label: 'N', angle: 0 },

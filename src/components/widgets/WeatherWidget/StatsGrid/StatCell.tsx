@@ -2,8 +2,13 @@ import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '../../../../store/iracing/telemetry.store';
 import { unitsStore } from '../../../../store/units.store';
-import { formatTemp, tempUnit } from '../../../../utils/telemetry-format';
-import { formatWindSpeed, parseWeekendFloat } from '../weather-utils';
+import {
+  formatTemp,
+  formatSpeed as _formatSpeed,
+  speedUnit as _speedUnit,
+  tempUnit,
+} from '../../../../utils/telemetry-format';
+import { parseWeekendFloat } from '../weather-utils';
 
 import styles from './StatCell.module.scss';
 
@@ -30,7 +35,6 @@ export const StatCell = observer(({ type }: StatCellProps) => {
   let value = '';
   let unit: string | undefined;
   let color = '#fff';
-  let wide = false;
 
   if (type === 'airTemp') {
     const airTempC =
@@ -53,9 +57,9 @@ export const StatCell = observer(({ type }: StatCellProps) => {
       env?.wind_vel ?? parseWeekendFloat(weekendInfo?.TrackWindVel);
 
     label = 'WIND';
-    value = formatWindSpeed(windVelMps, system);
+    value = windVelMps !== null ? _formatSpeed(windVelMps, system) : '--.-';
+    unit = _speedUnit(system);
     color = getWindColor(windVelMps);
-    wide = true;
   } else if (type === 'humidity') {
     const rawHumidity =
       env?.relative_humidity !== undefined && env?.relative_humidity !== null
@@ -63,15 +67,12 @@ export const StatCell = observer(({ type }: StatCellProps) => {
         : parseWeekendFloat(weekendInfo?.TrackRelativeHumidity);
 
     label = 'HUM.';
-    value = rawHumidity !== null ? `${Math.round(rawHumidity)}%` : '—';
+    value = rawHumidity !== null ? `${Math.round(rawHumidity)}%` : '--%';
     color = '#fff';
   }
 
   return (
-    <div
-      className={`${styles.statCell}${wide ? ` ${styles.statCellWide}` : ''}`}
-      style={{ borderLeftColor: color }}
-    >
+    <div className={styles.statCell} style={{ borderLeftColor: color }}>
       <span className={styles.statLabel}>{label}</span>
 
       <span className={styles.statValue}>

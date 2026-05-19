@@ -7,6 +7,7 @@ const METERS_TO_FEET = 3.28084;
 
 export function formatSpeed(mps: number, system: UnitSystem): string {
   const factor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
+
   return Math.round(mps * factor).toString();
 }
 

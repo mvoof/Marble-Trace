@@ -16,8 +16,8 @@ export const WindArrow = observer(
     const carYawDeg = carYawRad * (180 / Math.PI);
     const relativeBearing = (((windBearing - carYawDeg) % 360) + 360) % 360;
 
-    const arrowBaseRadius = 95;
-    const arrowHeight = 50;
+    const arrowBaseRadius = 105;
+    const arrowHeight = 55;
 
     return (
       <g
