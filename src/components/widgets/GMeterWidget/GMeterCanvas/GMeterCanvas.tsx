@@ -20,6 +20,7 @@ import styles from './GMeterCanvas.module.scss';
 export const GMeterCanvas = observer(() => {
   const { displayMode, scale, colorMode } =
     widgetSettingsStore.getGMeterSettings();
+
   const dynamics = telemetryStore.carDynamics;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -41,11 +42,13 @@ export const GMeterCanvas = observer(() => {
   const displayModeRef = useRef(displayMode);
   const scaleRef = useRef(scale);
   const colorModeRef = useRef(colorMode);
+
   const latAccelRef = useRef(dynamics?.lat_accel ?? 0);
   const lonAccelRef = useRef(dynamics?.long_accel ?? 0);
 
   displayModeRef.current = displayMode;
   colorModeRef.current = colorMode;
+
   latAccelRef.current = dynamics?.lat_accel ?? 0;
   lonAccelRef.current = dynamics?.long_accel ?? 0;
 
@@ -57,6 +60,7 @@ export const GMeterCanvas = observer(() => {
       { length: 360 },
       (): EnvelopePoint => ({ r: 0, color: COLOR_TURN })
     );
+
     state.gHistory = [];
     state.smoothedLatG = 0;
     state.smoothedLonG = 0;
@@ -83,12 +87,15 @@ export const GMeterCanvas = observer(() => {
     ) {
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
+
       ctx.scale(dpr, dpr);
     }
 
     const cx = width / 2;
     const cy = height / 2;
+
     const radius = Math.min(width, height) * RADIUS_RATIO * 0.5;
+
     const maxG = scaleRef.current;
     const pxPerG = radius / maxG;
     const state = stateRef.current;
@@ -99,40 +106,51 @@ export const GMeterCanvas = observer(() => {
 
     for (let gValue = 1; gValue <= maxG; gValue++) {
       ctx.beginPath();
+
       ctx.arc(cx, cy, gValue * pxPerG, 0, Math.PI * 2);
       ctx.strokeStyle =
         gValue === maxG ? 'rgba(58,59,64,1)' : 'rgba(42,43,48,0.8)';
+
       ctx.stroke();
     }
 
-    const labelSize = Math.max(9, Math.min(14, radius * 0.08));
+    const labelSize = Math.round(14 * (width / 240));
+
     ctx.font = `600 ${labelSize}px 'Rajdhani', sans-serif`;
     ctx.fillStyle = 'rgba(120,120,130,0.7)';
+
     const pad = 3;
 
     for (let gValue = 1; gValue <= maxG; gValue++) {
       const ringRadius = gValue * pxPerG;
       const label = String(gValue);
+
       const textWidth = ctx.measureText(label).width;
 
       ctx.textBaseline = 'bottom';
+
       ctx.fillText(label, cx - textWidth / 2, cy - ringRadius - pad);
 
       ctx.textBaseline = 'top';
+
       ctx.fillText(label, cx - textWidth / 2, cy + ringRadius + pad);
 
       ctx.textBaseline = 'middle';
+
       ctx.fillText(label, cx - ringRadius - textWidth - pad, cy);
       ctx.fillText(label, cx + ringRadius + pad, cy);
     }
 
     ctx.beginPath();
+
     ctx.moveTo(cx, cy - radius);
     ctx.lineTo(cx, cy + radius);
     ctx.moveTo(cx - radius, cy);
     ctx.lineTo(cx + radius, cy);
+
     ctx.strokeStyle = 'rgba(58,59,64,0.8)';
     ctx.lineWidth = 1;
+
     ctx.stroke();
 
     const envelope = state.gEnvelope;
@@ -149,16 +167,20 @@ export const GMeterCanvas = observer(() => {
           const currentPoint = state.gHistory[index];
 
           ctx.beginPath();
+
           ctx.moveTo(
             cx + previousPoint.lat * pxPerG,
             cy + previousPoint.lon * pxPerG
           );
+
           ctx.lineTo(
             cx + currentPoint.lat * pxPerG,
             cy + currentPoint.lon * pxPerG
           );
+
           ctx.globalAlpha = index / state.gHistory.length;
           ctx.strokeStyle = currentPoint.color;
+
           ctx.stroke();
         }
 
@@ -177,11 +199,14 @@ export const GMeterCanvas = observer(() => {
           const rad2 = nextIndex * (Math.PI / 180);
 
           ctx.beginPath();
+
           ctx.moveTo(cx, cy);
           ctx.lineTo(cx + r1 * Math.cos(rad1), cy + r1 * Math.sin(rad1));
           ctx.lineTo(cx + r2 * Math.cos(rad2), cy + r2 * Math.sin(rad2));
           ctx.closePath();
+
           ctx.fillStyle = envelope[index].color;
+
           ctx.fill();
         }
       }
@@ -202,7 +227,9 @@ export const GMeterCanvas = observer(() => {
           ctx.beginPath();
           ctx.moveTo(cx + r1 * Math.cos(rad1), cy + r1 * Math.sin(rad1));
           ctx.lineTo(cx + r2 * Math.cos(rad2), cy + r2 * Math.sin(rad2));
+
           ctx.strokeStyle = envelope[index].color;
+
           ctx.stroke();
         }
       }
@@ -212,6 +239,7 @@ export const GMeterCanvas = observer(() => {
     const dotY = cy + state.smoothedLonG * pxPerG;
 
     ctx.beginPath();
+
     ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
     ctx.fillStyle =
       state.gHistory.length > 0
@@ -236,16 +264,19 @@ export const GMeterCanvas = observer(() => {
       }
 
       const { width, height } = entry.contentRect;
+
       drawFrame(canvas, width, height);
     });
 
     resizeObserver.observe(wrap);
 
     const initialRect = wrap.getBoundingClientRect();
+
     drawFrame(canvas, initialRect.width, initialRect.height);
 
     return () => {
       resizeObserver.disconnect();
+
       cancelAnimationFrame(rafIdRef.current);
     };
   }, []);
@@ -255,14 +286,17 @@ export const GMeterCanvas = observer(() => {
     const rawLon = lonAccelRef.current / G_CONSTANT;
 
     const state = stateRef.current;
+
     state.smoothedLatG += (rawLat - state.smoothedLatG) * SMOOTHING;
     state.smoothedLonG += (rawLon - state.smoothedLonG) * SMOOTHING;
 
     let dist = Math.sqrt(state.smoothedLatG ** 2 + state.smoothedLonG ** 2);
+
     const maxG = scaleRef.current;
 
     if (dist > maxG) {
       const ratio = maxG / dist;
+
       state.smoothedLatG *= ratio;
       state.smoothedLonG *= ratio;
       dist = maxG;
@@ -317,12 +351,14 @@ export const GMeterCanvas = observer(() => {
     }
 
     cancelAnimationFrame(rafIdRef.current);
+
     rafIdRef.current = requestAnimationFrame(() => {
       const canvas = canvasRef.current;
       const wrap = wrapRef.current;
 
       if (canvas && wrap) {
         const rect = wrap.getBoundingClientRect();
+
         drawFrame(canvas, rect.width, rect.height);
       }
     });
