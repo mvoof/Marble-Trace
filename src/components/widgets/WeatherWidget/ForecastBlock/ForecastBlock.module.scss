@@ -1,0 +1,57 @@
+.forecastBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  margin-top: ws(4);
+}
+
+.forecastRow {
+  display: grid;
+  grid-template-columns: ws(34) 1fr ws(56);
+  align-items: center;
+  gap: ws(4);
+  font-family: $font-mono;
+  padding: ws(4) ws(6);
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid rgba(255, 255, 255, 0.1);
+  opacity: 0.5;
+  font-size: ws(12);
+}
+
+.forecastTime {
+  font-size: ws(10);
+  color: $color-text-muted;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.forecastSkies {
+  font-size: ws(11);
+  color: #fff;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.forecastRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.forecastTemp {
+  font-size: ws(13);
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.forecastWind {
+  font-size: ws(9);
+  color: $color-text-muted;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

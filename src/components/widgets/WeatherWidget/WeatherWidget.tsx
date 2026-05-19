@@ -1,55 +1,20 @@
 import { observer } from 'mobx-react-lite';
 
-import type {
-  WeatherForecastEntry,
-  Skies as BindingSkies,
-} from '../../../types/bindings';
-import type { UnitSystem } from '../../../types';
 import { telemetryStore } from '../../../store/iracing/telemetry.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
 import { unitsStore } from '../../../store/units.store';
-import {
-  formatSpeed,
-  formatTemp,
-  speedUnit,
-  tempUnit,
-} from '../../../utils/telemetry-format';
+import { formatTemp, tempUnit } from '../../../utils/telemetry-format';
 import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import { WindCompass } from './WindCompass/WindCompass';
+import { ForecastBlock } from './ForecastBlock/ForecastBlock';
 import {
   bearingToCardinal,
-  extractForecast,
   formatWindSpeed,
   parseWeekendFloat,
   radsToBearing,
 } from './weather-utils';
 
 import styles from './WeatherWidget.module.scss';
-
-const formatForecastTime = (timeSec: number): string => {
-  const hours = Math.floor(timeSec / 3600);
-  const minutes = Math.floor((timeSec % 3600) / 60);
-
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-};
-
-const SKIES_LABELS: Record<BindingSkies, string> = {
-  Clear: 'Clear',
-  PartlyCloudy: 'Partly Cloudy',
-  MostlyCloudy: 'Mostly Cloudy',
-  Overcast: 'Overcast',
-};
-
-const getSkiesLabel = (skies: BindingSkies): string =>
-  SKIES_LABELS[skies] ?? 'Unknown';
-
-const convertTemp = (celsius: number, system: UnitSystem): number => {
-  if (system === 'imperial') {
-    return (celsius * 9) / 5 + 32;
-  }
-
-  return celsius;
-};
 
 const getWindColor = (mps: number | null): string => {
   if (mps === null) return '#3399ff';
@@ -161,14 +126,6 @@ export const WeatherWidget = observer(() => {
   const trackTempFormatted = formatTemp(trackTempC, system);
   const tempUnitLabel = tempUnit(system);
 
-  let forecast: WeatherForecastEntry[] = telemetryStore.weatherForecast || [];
-
-  if (forecast.length === 0 && weekendInfo) {
-    forecast = extractForecast(weekendInfo);
-  }
-
-  const weatherType = weekendInfo?.TrackWeatherType ?? null;
-
   const stats = buildStatCells(
     airTempFormatted,
     trackTempFormatted,
@@ -217,39 +174,7 @@ export const WeatherWidget = observer(() => {
         </div>
       )}
 
-      {showForecast && (
-        <div className={styles.forecastBlock}>
-          {forecast.length > 0 ? (
-            forecast.map((entry) => (
-              <div key={entry.Time} className={styles.forecastRow}>
-                <span className={styles.forecastTime}>
-                  {formatForecastTime(entry.Time)}
-                </span>
-
-                <span className={styles.forecastSkies}>
-                  {getSkiesLabel(entry.Skies)}
-                </span>
-
-                <div className={styles.forecastRight}>
-                  <span className={styles.forecastTemp}>
-                    {Math.round(convertTemp(entry.Temp, system))}°
-                  </span>
-
-                  <span className={styles.forecastWind}>
-                    {formatSpeed(entry.WindSpeed, system)} {speedUnit(system)}
-                  </span>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className={styles.forecastRow}>
-              {weatherType === 'Static' || weatherType === 'Realistic'
-                ? `Forecast unavailable (${weatherType} Weather)`
-                : 'No forecast data available'}
-            </div>
-          )}
-        </div>
-      )}
+      {showForecast && <ForecastBlock />}
     </WidgetPanel>
   );
 });

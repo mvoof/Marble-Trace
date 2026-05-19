@@ -14,6 +14,14 @@ export function speedUnit(system: UnitSystem): string {
   return system === 'metric' ? 'KM/H' : 'MPH';
 }
 
+export function convertTemp(celsius: number, system: UnitSystem): number {
+  if (system === 'imperial') {
+    return celsius * 1.8 + 32;
+  }
+
+  return celsius;
+}
+
 export function formatTemp(celsius: number | null, system: UnitSystem): string {
   if (celsius === null) return '--.-';
 
