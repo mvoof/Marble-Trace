@@ -23,6 +23,7 @@ export const GMeterCanvas = observer(() => {
   const dynamics = telemetryStore.carDynamics;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const rafIdRef = useRef(0);
 
   const stateRef = useRef({
@@ -63,7 +64,11 @@ export const GMeterCanvas = observer(() => {
     state.peakLonG = 0;
   }, [scale]);
 
-  const drawFrame = (canvas: HTMLCanvasElement) => {
+  const drawFrame = (
+    canvas: HTMLCanvasElement,
+    width: number,
+    height: number
+  ) => {
     const ctx = canvas.getContext('2d');
 
     if (!ctx) {
@@ -71,12 +76,13 @@ export const GMeterCanvas = observer(() => {
     }
 
     const dpr = window.devicePixelRatio || 1;
-    const width = canvas.offsetWidth;
-    const height = canvas.offsetHeight;
 
-    if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
+    if (
+      canvas.width !== Math.round(width * dpr) ||
+      canvas.height !== Math.round(height * dpr)
+    ) {
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
       ctx.scale(dpr, dpr);
     }
 
@@ -216,14 +222,27 @@ export const GMeterCanvas = observer(() => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    const wrap = wrapRef.current;
 
-    if (!canvas) {
+    if (!canvas || !wrap) {
       return;
     }
 
-    const resizeObserver = new ResizeObserver(() => drawFrame(canvas));
-    resizeObserver.observe(canvas);
-    drawFrame(canvas);
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+
+      if (!entry) {
+        return;
+      }
+
+      const { width, height } = entry.contentRect;
+      drawFrame(canvas, width, height);
+    });
+
+    resizeObserver.observe(wrap);
+
+    const initialRect = wrap.getBoundingClientRect();
+    drawFrame(canvas, initialRect.width, initialRect.height);
 
     return () => {
       resizeObserver.disconnect();
@@ -299,14 +318,18 @@ export const GMeterCanvas = observer(() => {
 
     cancelAnimationFrame(rafIdRef.current);
     rafIdRef.current = requestAnimationFrame(() => {
-      if (canvasRef.current) {
-        drawFrame(canvasRef.current);
+      const canvas = canvasRef.current;
+      const wrap = wrapRef.current;
+
+      if (canvas && wrap) {
+        const rect = wrap.getBoundingClientRect();
+        drawFrame(canvas, rect.width, rect.height);
       }
     });
   });
 
   return (
-    <div className={styles.canvasWrap}>
+    <div ref={wrapRef} className={styles.canvasWrap}>
       <canvas ref={canvasRef} className={styles.canvas} />
     </div>
   );

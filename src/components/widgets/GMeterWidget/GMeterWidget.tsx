@@ -8,7 +8,7 @@ import styles from './GMeterWidget.module.scss';
 
 export const GMeterWidget = observer(() => {
   return (
-    <WidgetPanel minWidth={200} gap={0}>
+    <WidgetPanel minWidth={80} gap={0}>
       <div className={styles.root}>
         <GMeterCanvas />
 

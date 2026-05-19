@@ -46,7 +46,7 @@ export const WeatherWidget = observer(() => {
   const hasStats = showAirTemp || showTrackTemp || showWind || showHumidity;
 
   return (
-    <WidgetPanel direction="column" gap={0} minWidth={200}>
+    <WidgetPanel direction="column" gap={0} minWidth={80}>
       {showCompass && (
         <div className={styles.compassBlock}>
           <WindCompass
