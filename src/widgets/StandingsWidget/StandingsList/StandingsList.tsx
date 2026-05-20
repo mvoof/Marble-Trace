@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
@@ -20,10 +19,7 @@ import styles from './StandingsList.module.scss';
 export const StandingsList = observer(() => {
   const settings = widgetSettingsStore.getStandingsSettings();
   const allClassGroups = computedStore.allClassGroups;
-  const driverEntries = useMemo(
-    () => computedStore.standings?.entries ?? [],
-    []
-  );
+  const driverEntries = computedStore.standings?.entries ?? [];
   const activeClassIndex = widgetSettingsStore.standingsActiveClassIndex;
   const overallSof = computeClassSof(driverEntries);
 
@@ -34,9 +30,9 @@ export const StandingsList = observer(() => {
       '[data-driver-row]'
     );
 
-  const gridTemplate = useMemo(() => buildGridTemplate(settings), [settings]);
+  const gridTemplate = buildGridTemplate(settings);
 
-  const displayGroup = useMemo((): DriverGroup => {
+  const displayGroup = (): DriverGroup => {
     if (settings.enableClassCycling && allClassGroups.length > 0) {
       const clampedIndex = Math.max(
         0,
@@ -60,14 +56,7 @@ export const StandingsList = observer(() => {
       classSof: overallSof,
       drivers: sliceWithPlayerPin([...driverEntries], visibleRowCount),
     };
-  }, [
-    allClassGroups,
-    activeClassIndex,
-    settings.enableClassCycling,
-    driverEntries,
-    overallSof,
-    visibleRowCount,
-  ]);
+  };
 
   return (
     <WidgetPanel className={styles.standings} gap={0}>
@@ -118,7 +107,7 @@ export const StandingsList = observer(() => {
           </div>
         )}
 
-        <ClassGroup group={displayGroup} />
+        <ClassGroup group={displayGroup()} />
       </div>
     </WidgetPanel>
   );
