@@ -45,13 +45,18 @@ export const LedMatrix = observer(() => {
     if (!el) return;
 
     const obs = new ResizeObserver(([entry]) => {
-      const w = Math.min(entry.contentRect.width, entry.contentRect.height);
-      if (w < MIN_SINGLE_LED_PX) {
+      const smallestSide = Math.min(
+        entry.contentRect.width,
+        entry.contentRect.height
+      );
+
+      if (smallestSide < MIN_SINGLE_LED_PX) {
         setLayout((prev) =>
           prev.isSingleLed ? prev : { ...prev, isSingleLed: true }
         );
       } else {
-        const nextDiodes = computeDiodesPerBlock(w);
+        const nextDiodes = computeDiodesPerBlock(smallestSide);
+
         setLayout((prev) =>
           !prev.isSingleLed && prev.diodesPerBlock === nextDiodes
             ? prev
@@ -61,25 +66,26 @@ export const LedMatrix = observer(() => {
     });
 
     obs.observe(el);
+
     return () => obs.disconnect();
   }, []);
 
-  if (!alwaysShow && flag === 'none') {
-    return null;
-  }
-
+  const shouldHide = !alwaysShow && flag === 'none';
   const isOff =
     flag === 'none' || ((flag === 'yellow' || flag === 'red') && !blinkOn);
 
   if (layout.isSingleLed) {
     const colorClass = isOff ? '' : getSingleLedColorClass(flag);
+
     return (
       <div ref={wrapperRef} className={styles.wrapper}>
-        <div className={styles.singleLed}>
-          <div
-            className={`${styles.singleLedInner}${colorClass ? ` ${colorClass}` : ''}`}
-          />
-        </div>
+        {!shouldHide && (
+          <div className={styles.singleLed}>
+            <div
+              className={`${styles.singleLedInner}${colorClass ? ` ${colorClass}` : ''}`}
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -89,38 +95,40 @@ export const LedMatrix = observer(() => {
 
   return (
     <div ref={wrapperRef} className={styles.wrapper}>
-      <div
-        className={styles.board}
-        style={
-          {
-            '--dpb': layout.diodesPerBlock,
-            '--blocks': BLOCKS,
-          } as object
-        }
-      >
-        {gridData.map(({ diodes, key }) => (
-          <div key={key} className={styles.block}>
-            {diodes.map(({ gx, gy, bx, by, isCorner, key: dk }) => {
-              if (isCorner) {
-                return <div key={dk} className={styles.diodeHidden} />;
-              }
+      {!shouldHide && (
+        <div
+          className={styles.board}
+          style={
+            {
+              '--dpb': layout.diodesPerBlock,
+              '--blocks': BLOCKS,
+            } as object
+          }
+        >
+          {gridData.map(({ diodes, key }) => (
+            <div key={key} className={styles.block}>
+              {diodes.map(({ gx, gy, bx, by, isCorner, key: dk }) => {
+                if (isCorner) {
+                  return <div key={dk} className={styles.diodeHidden} />;
+                }
 
-              const colorClass = isOff
-                ? ''
-                : getColorClass(gx, gy, bx, by, flag, matrixSize);
+                const colorClass = isOff
+                  ? ''
+                  : getColorClass(gx, gy, bx, by, flag, matrixSize);
 
-              return (
-                <div
-                  key={dk}
-                  className={`${styles.diode}${colorClass ? ` ${colorClass}` : ''}`}
-                />
-              );
-            })}
-          </div>
-        ))}
+                return (
+                  <div
+                    key={dk}
+                    className={`${styles.diode}${colorClass ? ` ${colorClass}` : ''}`}
+                  />
+                );
+              })}
+            </div>
+          ))}
 
-        <div className={styles.glassOverlay} aria-hidden="true" />
-      </div>
+          <div className={styles.glassOverlay} aria-hidden="true" />
+        </div>
+      )}
     </div>
   );
 });

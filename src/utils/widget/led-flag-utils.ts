@@ -21,12 +21,12 @@ export interface BlockData {
   key: string;
 }
 
-export const computeDiodesPerBlock = (containerWidth: number): number => {
+export const computeDiodesPerBlock = (containerSize: number): number => {
   const available =
-    containerWidth - BOARD_PADDING_PX * 2 - BLOCK_GAP_PX * (BLOCKS - 1);
+    containerSize - BOARD_PADDING_PX * 2 - BLOCK_GAP_PX * (BLOCKS - 1);
   return Math.max(
     1,
-    Math.min(6, Math.floor(available / (BLOCKS * DIODE_CELL_PX)))
+    Math.min(12, Math.floor(available / (BLOCKS * DIODE_CELL_PX)))
   );
 };
 
