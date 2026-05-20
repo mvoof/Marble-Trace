@@ -1,4 +1,5 @@
 import type { RefObject } from 'react';
+import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '../../../shared/primitives/WidgetPanel/WidgetPanel';
 import type { TrackPoint } from '../../../../types';
@@ -30,51 +31,53 @@ export interface TrackMapViewProps {
   sectors: Sector[] | null | undefined;
 }
 
-export const TrackMapView = ({
-  cars,
-  trackData,
-  trackName,
-  isRecording,
-  recordingProgress,
-  isForceStartPending,
-  isWaitingForSF,
-  recordingOverlayRef,
-  settings,
-  sectors,
-}: TrackMapViewProps) => {
-  if (!trackData) {
+export const TrackMapView = observer(
+  ({
+    cars,
+    trackData,
+    trackName,
+    isRecording,
+    recordingProgress,
+    isForceStartPending,
+    isWaitingForSF,
+    recordingOverlayRef,
+    settings,
+    sectors,
+  }: TrackMapViewProps) => {
+    if (!trackData) {
+      return (
+        <WidgetPanel className={styles.trackMap} gap={0}>
+          <RecordingOverlay
+            ref={recordingOverlayRef}
+            trackName={trackName}
+            isRecording={isRecording}
+            isForceStartPending={isForceStartPending}
+            isWaitingForSF={isWaitingForSF}
+            progress={recordingProgress}
+          />
+        </WidgetPanel>
+      );
+    }
+
+    const visibleSectors = settings.showSectorsOnMap ? sectors : null;
+
     return (
       <WidgetPanel className={styles.trackMap} gap={0}>
-        <RecordingOverlay
-          ref={recordingOverlayRef}
-          trackName={trackName}
-          isRecording={isRecording}
-          isForceStartPending={isForceStartPending}
-          isWaitingForSF={isWaitingForSF}
-          progress={recordingProgress}
+        <TrackMapSvg
+          svgPath={trackData.svgPath}
+          viewBox={trackData.viewBox}
+          points={trackData.points}
+          cars={cars}
+          sectors={visibleSectors}
+          playerDotColor={settings.playerDotColor}
+          showPlayerLabel={settings.showPlayerLabel}
+          leaderLabelMode={settings.leaderLabelMode}
+          trackStrokePx={settings.trackStrokePx}
+          trackBorderPx={settings.trackBorderPx}
+          sectorStrokePx={settings.sectorStrokePx}
+          targetDotRadiusPx={settings.targetDotRadiusPx}
         />
       </WidgetPanel>
     );
   }
-
-  const visibleSectors = settings.showSectorsOnMap ? sectors : null;
-
-  return (
-    <WidgetPanel className={styles.trackMap} gap={0}>
-      <TrackMapSvg
-        svgPath={trackData.svgPath}
-        viewBox={trackData.viewBox}
-        points={trackData.points}
-        cars={cars}
-        sectors={visibleSectors}
-        playerDotColor={settings.playerDotColor}
-        showPlayerLabel={settings.showPlayerLabel}
-        leaderLabelMode={settings.leaderLabelMode}
-        trackStrokePx={settings.trackStrokePx}
-        trackBorderPx={settings.trackBorderPx}
-        sectorStrokePx={settings.sectorStrokePx}
-        targetDotRadiusPx={settings.targetDotRadiusPx}
-      />
-    </WidgetPanel>
-  );
-};
+);

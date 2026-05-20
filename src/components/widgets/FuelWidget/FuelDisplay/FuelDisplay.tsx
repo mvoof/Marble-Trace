@@ -1,28 +1,15 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 
+import { telemetryStore } from '../../../../store/iracing/telemetry.store';
+import { computedStore } from '../../../../store/iracing/computed.store';
+import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import { WidgetPanel } from '../../../shared/primitives/WidgetPanel/WidgetPanel';
-import { formatFuelLiters, type FuelCalculations } from '../fuel-utils';
+import { formatFuelLiters } from '../fuel-utils';
 import { FUEL_THRESHOLDS } from '../fuel-constants';
 import { FuelChart } from '../FuelChart/FuelChart';
 
 import styles from './FuelDisplay.module.scss';
-
-export interface FuelDisplayProps {
-  fuelLevel: number | null;
-  fuelMax: number | null;
-  avgPerLap: FuelCalculations['avgPerLap'];
-  lapsRemaining: FuelCalculations['lapsRemaining'];
-  shortage: FuelCalculations['shortage'];
-  fuelToAddWithBuffer: FuelCalculations['fuelToAddWithBuffer'];
-  pitWarning: FuelCalculations['pitWarning'];
-  pitWindowStart: FuelCalculations['pitWindowStart'];
-  pitWindowEnd: FuelCalculations['pitWindowEnd'];
-  showChart: boolean;
-  chartType: 'line' | 'bar';
-  barWidth: number;
-  lapFuelHistory: number[];
-  pitWarningLaps: number;
-}
 
 const statusClass = (
   shortage: number | null,
@@ -56,42 +43,47 @@ const lapsRemainingClass = (
   lapsRemaining: number | null,
   pitWarningLaps: number
 ): string => {
-  if (lapsRemaining === null) return '';
+  if (lapsRemaining === null) {
+    return '';
+  }
+
   if (lapsRemaining > pitWarningLaps + FUEL_THRESHOLDS.LAPS_LEFT_GREEN_BUFFER) {
     return styles.valueSafe;
   }
+
   if (lapsRemaining <= pitWarningLaps) {
     return styles.valueDanger;
   }
+
   return styles.valueWarning;
 };
 
-export const FuelDisplay = ({
-  fuelLevel,
-  fuelMax,
-  avgPerLap,
-  lapsRemaining,
-  shortage,
-  fuelToAddWithBuffer,
-  pitWarning,
-  pitWindowStart,
-  pitWindowEnd,
-  showChart,
-  chartType,
-  barWidth,
-  lapFuelHistory,
-  pitWarningLaps,
-}: FuelDisplayProps) => {
+export const FuelDisplay = observer(() => {
+  const fuel = computedStore.fuel;
+  const carStatus = telemetryStore.carStatus;
+  const driverInfo = telemetryStore.driverInfo;
+  const settings = widgetSettingsStore.getFuelSettings();
+
+  const fuelLevel = carStatus?.fuel_level ?? null;
+  const fuelMax = driverInfo?.DriverCarFuelMaxLtr ?? null;
+  const lapsRemaining = fuel?.lapsRemaining ?? null;
+  const fuelToAddWithBuffer = fuel?.fuelToAddWithBuffer ?? null;
+  const shortage = fuel?.shortage ?? null;
+  const pitWarning =
+    lapsRemaining !== null && lapsRemaining <= settings.pitWarningLaps;
+  const isShort = shortage !== null && shortage < 0;
+
   const pct =
     fuelLevel !== null && fuelMax !== null && fuelMax > 0
       ? Math.min(fuelLevel / fuelMax, 1)
       : null;
 
-  const isShort = shortage !== null && shortage < 0;
-
   const windowText =
-    pitWindowStart !== null && pitWindowEnd !== null
-      ? `LAP ${pitWindowStart}-${pitWindowEnd}`
+    fuel?.pitWindowStart !== null &&
+    fuel?.pitWindowStart !== undefined &&
+    fuel?.pitWindowEnd !== null &&
+    fuel?.pitWindowEnd !== undefined
+      ? `LAP ${fuel.pitWindowStart}-${fuel.pitWindowEnd}`
       : 'LAP -----';
 
   return (
@@ -122,7 +114,7 @@ export const FuelDisplay = ({
         <div className={styles.gridCell}>
           <span className={styles.cellLabel}>AVG / LAP</span>
           <span className={styles.cellValue}>
-            {formatFuelLiters(avgPerLap)}
+            {formatFuelLiters(fuel?.avgPerLap ?? null)}
           </span>
         </div>
         <div className={styles.gridCell}>
@@ -136,25 +128,17 @@ export const FuelDisplay = ({
       </div>
 
       <div
-        className={`${styles.finishCard} ${statusClass(shortage, lapsRemaining, pitWarningLaps)}`}
+        className={`${styles.finishCard} ${statusClass(shortage, lapsRemaining, settings.pitWarningLaps)}`}
       >
         <span className={styles.finishLabel}>LAPS LEFT</span>
         <span
-          className={`${styles.finishValue} ${lapsRemainingClass(lapsRemaining, pitWarningLaps)}`}
+          className={`${styles.finishValue} ${lapsRemainingClass(lapsRemaining, settings.pitWarningLaps)}`}
         >
           {lapsRemaining !== null ? lapsRemaining.toFixed(1) : '--.-'}
         </span>
       </div>
 
-      {showChart && lapFuelHistory.length >= 2 && (
-        <div className={styles.chartSection}>
-          <FuelChart
-            history={lapFuelHistory}
-            chartType={chartType}
-            barWidth={barWidth}
-          />
-        </div>
-      )}
+      <FuelChart />
 
       {pitWarning && (
         <div
@@ -227,4 +211,4 @@ export const FuelDisplay = ({
       )}
     </WidgetPanel>
   );
-};
+});

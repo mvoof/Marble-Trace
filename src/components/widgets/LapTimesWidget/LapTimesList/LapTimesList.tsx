@@ -1,23 +1,14 @@
+import { observer } from 'mobx-react-lite';
+
+import { telemetryStore } from '../../../../store/iracing/telemetry.store';
+import { computedStore } from '../../../../store/iracing/computed.store';
+import { widgetSettingsStore } from '../../../../store/widget-settings.store';
+import { formatLapTime } from '../../../../utils/telemetry-format';
 import { TimingRow } from '../../../shared/TimingRow/TimingRow';
 import { WidgetPanel } from '../../../shared/primitives/WidgetPanel/WidgetPanel';
-import type { LapTimesWidgetSettings } from '../../../../types/widget-settings';
+import { formatDelta, getDeltaColor } from '../lap-times-utils';
 
 import styles from './LapTimesList.module.scss';
-
-export interface LapTimesListProps {
-  currentLapTime: string;
-  predictedLapTime: string;
-  lastLapTime: string;
-  lastDelta: string;
-  lastDeltaColor?: string;
-  bestLapTime: string;
-  bestDelta: string;
-  bestDeltaColor?: string;
-  p1LapTime: string;
-  p1Delta: string;
-  p1DeltaColor?: string;
-  settings: LapTimesWidgetSettings;
-}
 
 const COLOR_CURRENT = '#22c55e';
 const COLOR_PREDICTED = '#fbbf24';
@@ -33,26 +24,64 @@ interface RowConfig {
   deltaColor?: string;
 }
 
-export const LapTimesList = ({
-  currentLapTime,
-  predictedLapTime,
-  lastLapTime,
-  lastDelta,
-  lastDeltaColor,
-  bestLapTime,
-  bestDelta,
-  bestDeltaColor,
-  p1LapTime,
-  p1Delta,
-  p1DeltaColor,
-  settings,
-}: LapTimesListProps) => {
+export const LapTimesList = observer(() => {
+  const lap = telemetryStore.lapTiming;
+  const carIdxData = telemetryStore.carIdx;
+  const standings = computedStore.standings?.entries ?? [];
+  const lapDelta = computedStore.lapDelta;
+  const settings = widgetSettingsStore.getLapTimesSettings();
+
+  const currentLap = lap?.lap_current_lap_time ?? null;
+  const lastLap = lap?.lap_last_lap_time ?? null;
+  const bestLap = lap?.lap_best_lap_time ?? null;
+
+  const playerClassId = standings.find((entry) => entry.isPlayer)?.carClassId;
+  const classEntries =
+    playerClassId !== undefined
+      ? standings.filter((entry) => entry.carClassId === playerClassId)
+      : [];
+
+  const allBestTimes = carIdxData?.car_idx_best_lap_time ?? [];
+
+  const classBestTimes = classEntries.reduce<number[]>((acc, entry) => {
+    const bestTime = allBestTimes[entry.carIdx];
+
+    if (bestTime !== undefined && bestTime > 0) {
+      acc.push(bestTime);
+    }
+
+    return acc;
+  }, []);
+
+  const timesToUse =
+    classBestTimes.length > 0
+      ? classBestTimes
+      : allBestTimes.filter((time) => time > 0);
+
+  const p1Time = timesToUse.length > 0 ? Math.min(...timesToUse) : null;
+  const liveDelta = lapDelta?.personalBestTotal ?? null;
+
+  const predictedLap =
+    bestLap !== null && bestLap > 0 && liveDelta !== null
+      ? bestLap + liveDelta
+      : null;
+
+  const lastDelta =
+    liveDelta !== null && bestLap !== null && lastLap !== null
+      ? liveDelta + (bestLap - lastLap)
+      : null;
+
+  const p1Delta =
+    liveDelta !== null && bestLap !== null && p1Time !== null
+      ? liveDelta + (bestLap - p1Time)
+      : null;
+
   const isHorizontal = settings.layout === 'horizontal';
 
   const rows: RowConfig[] = [
     {
       label: 'CURRENT',
-      time: currentLapTime,
+      time: formatLapTime(currentLap),
       delta: '',
       accentColor: COLOR_CURRENT,
     },
@@ -61,7 +90,7 @@ export const LapTimesList = ({
   if (settings.showPredicted) {
     rows.push({
       label: 'PRED',
-      time: predictedLapTime,
+      time: formatLapTime(predictedLap),
       delta: '',
       accentColor: COLOR_PREDICTED,
     });
@@ -70,30 +99,30 @@ export const LapTimesList = ({
   if (settings.showLastLap) {
     rows.push({
       label: 'LAST',
-      time: lastLapTime,
-      delta: lastDelta,
+      time: formatLapTime(lastLap),
+      delta: formatDelta(lastDelta),
       accentColor: COLOR_LAST,
-      deltaColor: lastDeltaColor,
+      deltaColor: getDeltaColor(lastDelta),
     });
   }
 
   if (settings.showBestLap) {
     rows.push({
       label: 'BEST',
-      time: bestLapTime,
-      delta: bestDelta,
+      time: formatLapTime(bestLap),
+      delta: formatDelta(liveDelta),
       accentColor: COLOR_BEST,
-      deltaColor: bestDeltaColor,
+      deltaColor: getDeltaColor(liveDelta),
     });
   }
 
   if (settings.showP1) {
     rows.push({
       label: 'P1',
-      time: p1LapTime,
-      delta: p1Delta,
+      time: formatLapTime(p1Time),
+      delta: formatDelta(p1Delta),
       accentColor: COLOR_P1,
-      deltaColor: p1DeltaColor,
+      deltaColor: getDeltaColor(p1Delta),
     });
   }
 
@@ -118,4 +147,4 @@ export const LapTimesList = ({
       </div>
     </WidgetPanel>
   );
-};
+});

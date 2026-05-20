@@ -1,35 +1,39 @@
+import { observer } from 'mobx-react-lite';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+import { computedStore } from '../../../../store/iracing/computed.store';
+import { widgetSettingsStore } from '../../../../store/widget-settings.store';
+import { appSettingsStore } from '../../../../store/app-settings.store';
 import { formatIRating } from '@/components/widgets/widget-utils';
-import type { DriverGroup } from '@/types';
 
 import styles from './ClassSwitcher.module.scss';
 
-interface ClassSwitcherProps {
-  groups: DriverGroup[];
-  activeIndex: number;
-  dragMode: boolean;
-  onPrev: () => void;
-  onNext: () => void;
-}
+export const ClassSwitcher = observer(() => {
+  const allClassGroups = computedStore.allClassGroups;
+  const activeIndex = widgetSettingsStore.standingsActiveClassIndex;
+  const dragMode = appSettingsStore.dragMode;
 
-export const ClassSwitcher = ({
-  groups,
-  activeIndex,
-  dragMode,
-  onPrev,
-  onNext,
-}: ClassSwitcherProps) => {
-  const group = groups[activeIndex];
-  const total = groups.length;
+  const group = allClassGroups[activeIndex];
+  const total = allClassGroups.length;
 
-  if (!group) return null;
+  if (!group) {
+    return null;
+  }
+
+  const handlePrev = () => {
+    widgetSettingsStore.cycleStandingsPrev(total);
+  };
+
+  const handleNext = () => {
+    widgetSettingsStore.cycleStandingsNext(total);
+  };
 
   return (
     <div className={styles.switcher}>
       {dragMode && (
         <button
           className={styles.navBtn}
-          onClick={onPrev}
+          onClick={handlePrev}
           onMouseDown={(e) => e.stopPropagation()}
           disabled={total <= 1}
           aria-label="Previous class"
@@ -62,7 +66,7 @@ export const ClassSwitcher = ({
       {dragMode && (
         <button
           className={styles.navBtn}
-          onClick={onNext}
+          onClick={handleNext}
           onMouseDown={(e) => e.stopPropagation()}
           disabled={total <= 1}
           aria-label="Next class"
@@ -72,4 +76,4 @@ export const ClassSwitcher = ({
       )}
     </div>
   );
-};
+});

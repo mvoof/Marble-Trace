@@ -1,20 +1,26 @@
+import { observer } from 'mobx-react-lite';
+
 import CarIcon from '../../../../assets/car-icon.svg?react';
+import { telemetryStore } from '../../../../store/iracing/telemetry.store';
+import {
+  bearingToCardinal,
+  parseWeekendFloat,
+  radsToBearing,
+} from '../weather-utils';
 import { RotatingRing } from './RotatingRing/RotatingRing';
 import { WindArrow } from './WindArrow/WindArrow';
 
 import styles from './WindCompass.module.scss';
 
-interface WindCompassProps {
-  windBearing: number;
-  windCardinal: string;
-  arrowColor: string;
-}
+export const WindCompass = observer(() => {
+  const weekendInfo = telemetryStore.weekendInfo;
+  const env = telemetryStore.environment;
 
-export const WindCompass = ({
-  windBearing,
-  windCardinal,
-  arrowColor,
-}: WindCompassProps) => {
+  const windDirRad =
+    env?.wind_dir ?? parseWeekendFloat(weekendInfo?.TrackWindDir);
+  const windBearing = windDirRad !== null ? radsToBearing(windDirRad) : 0;
+  const windCardinal = bearingToCardinal(windBearing);
+
   return (
     <div className={styles.compassWrapper}>
       <svg
@@ -25,7 +31,7 @@ export const WindCompass = ({
       >
         <RotatingRing />
 
-        <WindArrow windBearing={windBearing} arrowColor={arrowColor} />
+        <WindArrow />
 
         <text
           x="-105"
@@ -59,4 +65,4 @@ export const WindCompass = ({
       </svg>
     </div>
   );
-};
+});

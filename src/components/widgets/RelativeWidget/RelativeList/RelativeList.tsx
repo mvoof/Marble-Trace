@@ -1,21 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 
+import { computedStore } from '../../../../store/iracing/computed.store';
+import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import { WidgetPanel } from '../../../shared/primitives/WidgetPanel/WidgetPanel';
 import { useVisibleRowCount } from '../../../../hooks/useVisibleRowCount';
-import type { RelativeWidgetSettings } from '../../../../types/widget-settings';
-import type { DriverEntry } from '../../../../types/bindings';
 import { DriverRow } from '../DriverRow/DriverRow';
 import { computeRelativeGap } from '../relative-utils';
 import { TREND_SAMPLE_INTERVAL_MS } from '../../widget-utils';
 
 import styles from './RelativeList.module.scss';
 
-export interface RelativeListProps {
-  entries: DriverEntry[];
-  settings: RelativeWidgetSettings;
-}
+export const RelativeList = observer(() => {
+  const entries = computedStore.relativeEntries;
+  const settings = widgetSettingsStore.getRelativeSettings();
 
-export const RelativeList = ({ entries, settings }: RelativeListProps) => {
   const prevGapTimesRef = useRef<Map<number, number>>(new Map());
   const lastSnapshotTimeRef = useRef<number>(0);
 
@@ -37,12 +36,16 @@ export const RelativeList = ({ entries, settings }: RelativeListProps) => {
 
     if (playerEntry) {
       for (const entry of entries) {
-        if (entry.isPlayer) continue;
+        if (entry.isPlayer) {
+          continue;
+        }
 
         const prevGap = prevSnapshot.get(entry.carIdx);
         const currGap = computeRelativeGap(entry, playerEntry);
 
-        if (prevGap === undefined) continue;
+        if (prevGap === undefined) {
+          continue;
+        }
 
         const gapDelta = currGap - prevGap;
 
@@ -57,7 +60,9 @@ export const RelativeList = ({ entries, settings }: RelativeListProps) => {
     const newTimes = new Map<number, number>();
 
     for (const entry of entries) {
-      if (entry.isPlayer || !playerEntry) continue;
+      if (entry.isPlayer || !playerEntry) {
+        continue;
+      }
 
       newTimes.set(entry.carIdx, computeRelativeGap(entry, playerEntry));
     }
@@ -66,7 +71,7 @@ export const RelativeList = ({ entries, settings }: RelativeListProps) => {
     lastSnapshotTimeRef.current = now;
   }, [entries]);
 
-  const displayEntries = useMemo((): DriverEntry[] => {
+  const displayEntries = useMemo(() => {
     const playerIdx = entries.findIndex((entry) => entry.isPlayer);
 
     if (playerIdx === -1) {
@@ -101,4 +106,4 @@ export const RelativeList = ({ entries, settings }: RelativeListProps) => {
       </div>
     </WidgetPanel>
   );
-};
+});

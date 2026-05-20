@@ -1,41 +1,53 @@
 import { useEffect, useRef } from 'react';
+import { observer } from 'mobx-react-lite';
+
+import { computedStore } from '../../../../store/iracing/computed.store';
+import { widgetSettingsStore } from '../../../../store/widget-settings.store';
 import { drawBarChart, drawLineChart } from './chart-renderers';
 
 import styles from './FuelChart.module.scss';
 
-interface FuelChartProps {
-  history: number[];
-  chartType: 'line' | 'bar';
-  barWidth: number;
-}
-
-export const FuelChart = ({ history, chartType, barWidth }: FuelChartProps) => {
+export const FuelChart = observer(() => {
+  const settings = widgetSettingsStore.getFuelSettings();
+  const history = computedStore.fuel?.lapFuelHistory ?? [];
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || history.length < 2) return;
+
+    if (!canvas || history.length < 2) {
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
 
-    const avg = history.reduce((a, b) => a + b, 0) / history.length;
-
-    const dpr = window.devicePixelRatio || 1;
-    const w = canvas.offsetWidth;
-    const h = canvas.offsetHeight;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    ctx.scale(dpr, dpr);
-
-    ctx.clearRect(0, 0, w, h);
-
-    if (chartType === 'bar') {
-      drawBarChart(ctx, history, w, h, avg, barWidth);
-    } else {
-      drawLineChart(ctx, history, w, h, avg, barWidth);
+    if (!ctx) {
+      return;
     }
-  }, [history, chartType, barWidth]);
 
-  return <canvas ref={canvasRef} className={styles.chartCanvas} />;
-};
+    const avg = history.reduce((acc, val) => acc + val, 0) / history.length;
+    const dpr = window.devicePixelRatio || 1;
+    const width = canvas.offsetWidth;
+    const height = canvas.offsetHeight;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, width, height);
+
+    if (settings.chartType === 'bar') {
+      drawBarChart(ctx, history, width, height, avg, settings.barWidth);
+    } else {
+      drawLineChart(ctx, history, width, height, avg, settings.barWidth);
+    }
+  }, [history, settings.chartType, settings.barWidth]);
+
+  if (!settings.showChart || history.length < 2) {
+    return null;
+  }
+
+  return (
+    <div className={styles.chartSection}>
+      <canvas ref={canvasRef} className={styles.chartCanvas} />
+    </div>
+  );
+});

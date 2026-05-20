@@ -2,16 +2,13 @@ import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { computedStore } from '../../../store/iracing/computed.store';
-import { unitsStore } from '../../../store/units.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { distanceUnit, formatDistance } from '../../../utils/telemetry-format';
 import { useRadarVisibility } from '../../../hooks/useRadarVisibility';
 import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import { RadarDisplay } from './RadarDisplay/RadarDisplay';
 
 import styles from './ProximityRadarWidget.module.scss';
 
-const RADAR_RENDER_RANGE = 10;
 const CAR_SEARCH_RADIUS = 30;
 
 interface ProximityRadarWidgetProps {
@@ -21,7 +18,6 @@ interface ProximityRadarWidgetProps {
 export const ProximityRadarWidget = observer(
   ({ onVisibilityChange }: ProximityRadarWidgetProps) => {
     const proximity = computedStore.proximity;
-    const { system } = unitsStore;
     const radarSettings =
       widgetSettingsStore.getRadarSettings('proximity-radar');
 
@@ -52,14 +48,7 @@ export const ProximityRadarWidget = observer(
 
     return (
       <WidgetPanel className={styles.root} minWidth={100} gap={0}>
-        <RadarDisplay
-          radarDistances={proximity.radarDistances}
-          spotterLeft={spotterLeft}
-          spotterRight={spotterRight}
-          renderRange={RADAR_RENDER_RANGE}
-          formatDistance={(meters) => formatDistance(meters, system)}
-          distanceUnit={distanceUnit(system)}
-        />
+        <RadarDisplay />
       </WidgetPanel>
     );
   }

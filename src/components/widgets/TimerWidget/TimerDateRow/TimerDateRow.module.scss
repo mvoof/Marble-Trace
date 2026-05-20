@@ -1,0 +1,24 @@
+.clockRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 ws(8) ws(2);
+  gap: ws(8);
+}
+
+.clockItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: $font-mono;
+  font-size: ws(12);
+  font-weight: 500;
+  color: $color-text-primary;
+  letter-spacing: 1px;
+}
+
+.clockLabel {
+  font-size: ws(10);
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}

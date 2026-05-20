@@ -2,9 +2,7 @@ import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { computedStore } from '../../../store/iracing/computed.store';
-import { unitsStore } from '../../../store/units.store';
 import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { distanceUnit, formatDistance } from '../../../utils/telemetry-format';
 import { useRadarVisibility } from '../../../hooks/useRadarVisibility';
 import { WidgetPanel } from '../../shared/primitives/WidgetPanel/WidgetPanel';
 import { RadarBar } from './RadarBar/RadarBar';
@@ -20,7 +18,6 @@ interface RadarBarWidgetProps {
 export const RadarBarWidget = observer(
   ({ onVisibilityChange }: RadarBarWidgetProps) => {
     const proximity = computedStore.proximity;
-    const { system } = unitsStore;
     const radarSettings = widgetSettingsStore.getRadarSettings('radar-bar');
 
     const nearbyCars =
@@ -48,12 +45,9 @@ export const RadarBarWidget = observer(
       return null;
     }
 
-    const { leftDist, rightDist } = proximity.radarDistances;
     const activeOnly = radarSettings.barDisplayMode === 'active-only';
     const showLeft = activeOnly ? spotterLeft : true;
     const showRight = activeOnly ? spotterRight : true;
-    const formatDistanceFn = (meters: number) => formatDistance(meters, system);
-    const distanceUnitLabel = distanceUnit(system);
 
     return (
       <WidgetPanel
@@ -65,25 +59,13 @@ export const RadarBarWidget = observer(
       >
         {showLeft && (
           <div className={styles.leftSlot}>
-            <RadarBar
-              active={spotterLeft}
-              dist={leftDist ?? 0}
-              side="left"
-              formatDistance={formatDistanceFn}
-              distanceUnit={distanceUnitLabel}
-            />
+            <RadarBar side="left" />
           </div>
         )}
 
         {showRight && (
           <div className={styles.rightSlot}>
-            <RadarBar
-              active={spotterRight}
-              dist={rightDist ?? 0}
-              side="right"
-              formatDistance={formatDistanceFn}
-              distanceUnit={distanceUnitLabel}
-            />
+            <RadarBar side="right" />
           </div>
         )}
       </WidgetPanel>

@@ -1,0 +1,32 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: ws(8) ws(8) ws(2);
+}
+
+.sessionLabel {
+  font-family: $font-mono;
+  font-size: ws(10);
+  color: $color-text-muted;
+  letter-spacing: 1px;
+}
+
+.flagLabel {
+  font-family: $font-mono;
+  font-size: ws(10);
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.flagGreen {
+  color: $color-success;
+}
+
+.flagFinal {
+  color: $color-caution;
+}
+
+.flagCheckered {
+  color: #ffffff;
+}

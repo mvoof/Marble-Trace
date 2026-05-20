@@ -1,8 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 
+import { telemetryStore } from '../../../../store/iracing/telemetry.store';
+import { widgetSettingsStore } from '../../../../store/widget-settings.store';
+import { parseSessionFlags } from '../../../../utils/flags-utils';
+import { useFlagBlink, useFlagHold } from '../../../../hooks/flags-hooks';
 import type { FlagType } from '../../../../types';
 
 import styles from './LedMatrix.module.scss';
+
+const IS_NO_FLAG = (value: string) => value === 'none';
 
 const BLOCKS = 3;
 const DIODE_CELL_PX = 12;
@@ -142,12 +149,22 @@ const getSingleLedColorClass = (flag: FlagType): string => {
   }
 };
 
-export interface LedMatrixProps {
-  flag: FlagType;
-  blinkOn: boolean;
-}
+export const LedMatrix = observer(() => {
+  const { alwaysShow, holdDuration } =
+    widgetSettingsStore.getFlagDisplaySettings('led-flags');
 
-export const LedMatrix = ({ flag, blinkOn }: LedMatrixProps) => {
+  const sessionFlags = telemetryStore.session?.session_flags ?? null;
+  const playerCarFlags = telemetryStore.session?.player_car_flags ?? null;
+  const liveFlag = parseSessionFlags(sessionFlags, playerCarFlags);
+
+  const flag = useFlagHold(
+    liveFlag,
+    IS_NO_FLAG as (value: FlagType) => boolean,
+    'none' as FlagType,
+    holdDuration
+  );
+  const blinkOn = useFlagBlink();
+
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [layout, setLayout] = useState({
     diodesPerBlock: 6,
@@ -177,6 +194,10 @@ export const LedMatrix = ({ flag, blinkOn }: LedMatrixProps) => {
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
+
+  if (!alwaysShow && flag === 'none') {
+    return null;
+  }
 
   const isOff =
     flag === 'none' || ((flag === 'yellow' || flag === 'red') && !blinkOn);
@@ -233,4 +254,4 @@ export const LedMatrix = ({ flag, blinkOn }: LedMatrixProps) => {
       </div>
     </div>
   );
-};
+});

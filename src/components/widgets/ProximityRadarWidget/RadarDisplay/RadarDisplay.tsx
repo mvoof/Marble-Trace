@@ -1,4 +1,11 @@
-import type { RadarDistances } from '../../../../types/bindings';
+import { observer } from 'mobx-react-lite';
+
+import { computedStore } from '../../../../store/iracing/computed.store';
+import { unitsStore } from '../../../../store/units.store';
+import {
+  distanceUnit,
+  formatDistance,
+} from '../../../../utils/telemetry-format';
 import {
   CAR_WIDTH,
   CAR_LENGTH,
@@ -10,6 +17,7 @@ import {
 
 import styles from './RadarDisplay.module.scss';
 
+const RADAR_RENDER_RANGE = 10;
 const PX_PER_METER = 22;
 
 interface CarIconProps {
@@ -17,49 +25,45 @@ interface CarIconProps {
   opacity?: number;
 }
 
-const CarIcon = ({ color = 'currentColor', opacity = 1 }: CarIconProps) => (
-  <rect
-    x={-(CAR_WIDTH * PX_PER_METER) / 2}
-    y={-(CAR_LENGTH * PX_PER_METER) / 2}
-    width={CAR_WIDTH * PX_PER_METER}
-    height={CAR_LENGTH * PX_PER_METER}
-    rx={CAR_CORNER_RADIUS * PX_PER_METER}
-    fill={color}
-    opacity={opacity}
-    className={styles.carIcon}
-  />
+const CarIcon = observer(
+  ({ color = 'currentColor', opacity = 1 }: CarIconProps) => (
+    <rect
+      x={-(CAR_WIDTH * PX_PER_METER) / 2}
+      y={-(CAR_LENGTH * PX_PER_METER) / 2}
+      width={CAR_WIDTH * PX_PER_METER}
+      height={CAR_LENGTH * PX_PER_METER}
+      rx={CAR_CORNER_RADIUS * PX_PER_METER}
+      fill={color}
+      opacity={opacity}
+      className={styles.carIcon}
+    />
+  )
 );
 
-interface RadarDisplayProps {
-  radarDistances: RadarDistances;
-  spotterLeft: boolean;
-  spotterRight: boolean;
-  renderRange: number;
-  formatDistance: (meters: number) => string;
-  distanceUnit: string;
-}
+export const RadarDisplay = observer(() => {
+  const proximity = computedStore.proximity;
+  const { system } = unitsStore;
 
-export const RadarDisplay = ({
-  radarDistances,
-  spotterLeft,
-  spotterRight,
-  renderRange,
-  formatDistance,
-  distanceUnit,
-}: RadarDisplayProps) => {
+  if (!proximity) {
+    return null;
+  }
+
+  const { radarDistances, spotterLeft, spotterRight } = proximity;
   const { frontDist, rearDist, leftDist, rightDist } = radarDistances;
+  const formatDistanceFn = (meters: number) => formatDistance(meters, system);
+  const distanceUnitLabel = distanceUnit(system);
 
-  const showFront = frontDist < renderRange;
-  const showRear = rearDist < renderRange;
+  const showFront = frontDist < RADAR_RENDER_RANGE;
+  const showRear = rearDist < RADAR_RENDER_RANGE;
 
   const frontColor = showFront ? getCarColor(frontDist) : getCarColor(Infinity);
   const rearColor = showRear ? getCarColor(rearDist) : getCarColor(Infinity);
 
   const frontOpacity = showFront
-    ? Math.max(0.01, 0.9 - frontDist / renderRange)
+    ? Math.max(0.01, 0.9 - frontDist / RADAR_RENDER_RANGE)
     : 0;
   const rearOpacity = showRear
-    ? Math.max(0.01, 0.9 - rearDist / renderRange)
+    ? Math.max(0.01, 0.9 - rearDist / RADAR_RENDER_RANGE)
     : 0;
 
   const frontBumperY = -(CAR_LENGTH / 2) * PX_PER_METER;
@@ -157,8 +161,8 @@ export const RadarDisplay = ({
           >
             <CarIcon opacity={frontOpacity} color={frontColor} />
             <text y="-18" fontSize={18} className={styles.radarMeasurementText}>
-              {formatDistance(frontDist)}
-              {distanceUnit}
+              {formatDistanceFn(frontDist)}
+              {distanceUnitLabel}
             </text>
           </g>
         )}
@@ -170,8 +174,8 @@ export const RadarDisplay = ({
           >
             <CarIcon opacity={rearOpacity} color={rearColor} />
             <text y="18" fontSize={18} className={styles.radarMeasurementText}>
-              {formatDistance(rearDist)}
-              {distanceUnit}
+              {formatDistanceFn(rearDist)}
+              {distanceUnitLabel}
             </text>
           </g>
         )}
@@ -183,8 +187,8 @@ export const RadarDisplay = ({
           >
             <CarIcon opacity={0.8} color={getSideCarColor(leftDist)} />
             <text y="0" fontSize={18} className={styles.radarMeasurementText}>
-              {formatDistance(Math.abs(leftDist))}
-              {distanceUnit}
+              {formatDistanceFn(Math.abs(leftDist))}
+              {distanceUnitLabel}
             </text>
           </g>
         )}
@@ -196,8 +200,8 @@ export const RadarDisplay = ({
           >
             <CarIcon opacity={0.8} color={getSideCarColor(rightDist)} />
             <text y="0" fontSize={18} className={styles.radarMeasurementText}>
-              {formatDistance(Math.abs(rightDist))}
-              {distanceUnit}
+              {formatDistanceFn(Math.abs(rightDist))}
+              {distanceUnitLabel}
             </text>
           </g>
         )}
@@ -206,4 +210,4 @@ export const RadarDisplay = ({
       </svg>
     </div>
   );
-};
+});
