@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { ChassisLayout } from './ChassisLayout/ChassisLayout';
+import { ChassisWidget } from './ChassisWidget';
 import type { CornerData } from './types';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
 
@@ -56,16 +56,16 @@ const DEFAULT_ARGS = {
   onPitRoad: false,
 };
 
-const meta: Meta<typeof ChassisLayout> = {
+const meta: Meta<typeof ChassisWidget> = {
   title: 'Widgets/ChassisWidget',
-  component: ChassisLayout,
+  component: ChassisWidget,
   parameters: { layout: 'centered' },
   decorators: [widgetDecorator({ display: 'inline-block' })],
   args: DEFAULT_ARGS,
 };
 
 export default meta;
-type Story = StoryObj<typeof ChassisLayout>;
+type Story = StoryObj<typeof ChassisWidget>;
 
 export const Default: Story = {};
 

@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { LapTimesList } from './LapTimesList/LapTimesList';
+import { LapTimesWidget } from './LapTimesWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 const DEFAULT_SETTINGS = {
@@ -11,9 +11,9 @@ const DEFAULT_SETTINGS = {
   layout: 'vertical' as const,
 };
 
-const meta: Meta<typeof LapTimesList> = {
+const meta: Meta<typeof LapTimesWidget> = {
   title: 'Widgets/LapTimesWidget',
-  component: LapTimesList,
+  component: LapTimesWidget,
   parameters: { layout: 'centered' },
   decorators: [widgetDecorator({ display: 'inline-block', minWidth: 200 })],
   args: {
@@ -33,7 +33,7 @@ const meta: Meta<typeof LapTimesList> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof LapTimesList>;
+type Story = StoryObj<typeof LapTimesWidget>;
 
 export const DefaultVertical: Story = {};
 

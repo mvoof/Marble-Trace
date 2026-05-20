@@ -1,0 +1,15 @@
+.centerLabels {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: ws(6);
+}
+
+.centerLabel {
+  font-size: ws(9);
+  color: #64748b;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: $font-size-widget;
+}

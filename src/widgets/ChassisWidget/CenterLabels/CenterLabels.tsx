@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import styles from './ChassisLayout.module.scss';
+import styles from './CenterLabels.module.scss';
 
 interface CenterLabelsProps {
   showSuspensionAndBrakes: boolean;

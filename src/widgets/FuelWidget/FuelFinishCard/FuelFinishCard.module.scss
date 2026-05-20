@@ -1,0 +1,62 @@
+.finishCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: ws(8) ws(10);
+  margin: ws(1) 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.finishSafe {
+  background: rgba($color-success, 0.08);
+  border-top-color: rgba($color-success, 0.3);
+  border-bottom-color: rgba($color-success, 0.3);
+
+  .finishValue {
+    color: $color-success;
+  }
+}
+
+.finishDanger {
+  background: rgba($color-error, 0.15);
+  border-top-color: rgba($color-error, 0.4);
+  border-bottom-color: rgba($color-error, 0.4);
+
+  .finishValue {
+    color: $color-error;
+  }
+}
+
+.finishLabel {
+  font-family: $font-widget;
+  font-size: ws(10);
+  font-weight: 700;
+  color: $color-text-muted;
+  letter-spacing: 1.5px;
+  margin-bottom: ws(4);
+}
+
+.finishValue {
+  font-family: $font-mono;
+  font-size: ws(24);
+  font-weight: 800;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.valueSafe {
+  color: $color-success;
+}
+
+.valueDanger {
+  color: $color-error;
+}
+
+.valueWarning {
+  color: $color-caution;
+}

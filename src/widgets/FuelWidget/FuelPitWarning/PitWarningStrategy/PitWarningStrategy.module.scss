@@ -1,0 +1,44 @@
+.pitWarningStrategySlot {
+  display: flex;
+  justify-content: flex-start;
+  min-width: ws(80);
+}
+
+.pitWarningStrategy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: ws(2);
+  padding-right: ws(12);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.strategyRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1;
+}
+
+.strategyLabel {
+  font-family: $font-widget;
+  font-size: ws(8);
+  font-weight: 600;
+  color: $color-text-muted;
+  letter-spacing: 0.5px;
+  margin-bottom: ws(1);
+}
+
+.strategyValue {
+  font-family: $font-mono;
+  font-size: ws(18);
+  font-weight: 700;
+  color: #fff;
+}
+
+.strategyDivider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: ws(2) 0;
+}

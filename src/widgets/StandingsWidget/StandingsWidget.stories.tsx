@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { StandingsList } from './StandingsList/StandingsList';
+import { StandingsWidget } from './StandingsWidget';
 import { driverEntries as RAW_ENTRIES, snapshot } from '@/storybook/test-data';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
 import type { SessionInfoData, WeekendInfo } from '@/types/bindings';
@@ -42,9 +42,9 @@ const DEFAULT_SETTINGS = {
   abbreviateNames: false,
 };
 
-const meta: Meta<typeof StandingsList> = {
+const meta: Meta<typeof StandingsWidget> = {
   title: 'Widgets/StandingsWidget',
-  component: StandingsList,
+  component: StandingsWidget,
   parameters: { layout: 'centered' },
   decorators: [widgetDecorator({ width: 800, height: 450 })],
   args: {
@@ -65,7 +65,7 @@ const meta: Meta<typeof StandingsList> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof StandingsList>;
+type Story = StoryObj<typeof StandingsWidget>;
 
 export const Default: Story = {};
 

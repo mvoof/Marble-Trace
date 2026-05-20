@@ -1,0 +1,27 @@
+.pitWarningHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: ws(6);
+}
+
+.pitWarningHeaderLabel {
+  font-family: $font-mono;
+  font-size: ws(11);
+  color: $color-caution;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.pitWarningWindow {
+  font-family: $font-mono;
+  font-size: ws(12);
+  font-weight: 600;
+  color: #fff;
+}
+
+.pitWarningSeparator {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin-bottom: ws(8);
+}

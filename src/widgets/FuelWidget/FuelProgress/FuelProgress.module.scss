@@ -1,0 +1,33 @@
+.progressSection {
+  padding: 0 ws(10) ws(8);
+}
+
+.progressWrap {
+  position: relative;
+  height: ws(14);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressBar {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, $color-info, $color-blue);
+  width: calc(var(--progress, 0) * 100%);
+  transition: width 0.3s ease;
+}
+
+.progressLabelMax {
+  position: absolute;
+  right: ws(6);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  font-family: $font-mono;
+  font-size: ws(9);
+  color: #fff;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
