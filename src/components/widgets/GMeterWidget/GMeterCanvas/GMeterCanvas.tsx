@@ -45,4 +45,4 @@ export const GMeterCanvas = observer(() => {
       <GMeterTrace width={dimensions.width} height={dimensions.height} />
     </div>
   );
-};
+});
