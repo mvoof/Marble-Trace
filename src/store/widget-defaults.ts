@@ -1,21 +1,21 @@
-import { TelemetryDebugWidgetContainer } from '../components/widgets/TelemetryDebugWidget/TelemetryDebugWidgetContainer';
-import { SpeedWidget } from '../components/widgets/SpeedWidget/SpeedWidget';
-import { InputTraceWidget } from '../components/widgets/InputTraceWidget/InputTraceWidget';
-import { ProximityRadarWidget } from '../components/widgets/ProximityRadarWidget/ProximityRadarWidget';
-import { RadarBarWidget } from '../components/widgets/RadarBarWidget/RadarBarWidget';
-import { StandingsWidget } from '../components/widgets/StandingsWidget/StandingsWidget';
-import { RelativeWidget } from '../components/widgets/RelativeWidget/RelativeWidget';
-import { TrackMapWidget } from '../components/widgets/TrackMapWidget/TrackMapWidget';
-import { RelativeMapWidget } from '../components/widgets/RelativeMapWidget/RelativeMapWidget';
-import { LedFlagWidget } from '../components/widgets/LedFlagWidget/LedFlagWidget';
-import { ChassisWidget } from '../components/widgets/ChassisWidget/ChassisWidget';
-import { LapDeltaWidget } from '../components/widgets/LapDeltaWidget/LapDeltaWidget';
-import { LapTimesWidget } from '../components/widgets/LapTimesWidget/LapTimesWidget';
-import { TimerWidget } from '../components/widgets/TimerWidget/TimerWidget';
-import { WeatherWidget } from '../components/widgets/WeatherWidget/WeatherWidget';
-import { FuelWidget } from '../components/widgets/FuelWidget/FuelWidget';
-import { FlatFlagsWidget } from '../components/widgets/FlatFlagsWidget/FlatFlagsWidget';
-import { GMeterWidget } from '../components/widgets/GMeterWidget/GMeterWidget';
+import { TelemetryDebugWidgetContainer } from '../widgets/TelemetryDebugWidget/TelemetryDebugWidgetContainer';
+import { SpeedWidget } from '../widgets/SpeedWidget/SpeedWidget';
+import { InputTraceWidget } from '../widgets/InputTraceWidget/InputTraceWidget';
+import { ProximityRadarWidget } from '../widgets/ProximityRadarWidget/ProximityRadarWidget';
+import { RadarBarWidget } from '../widgets/RadarBarWidget/RadarBarWidget';
+import { StandingsWidget } from '../widgets/StandingsWidget/StandingsWidget';
+import { RelativeWidget } from '../widgets/RelativeWidget/RelativeWidget';
+import { TrackMapWidget } from '../widgets/TrackMapWidget/TrackMapWidget';
+import { RelativeMapWidget } from '../widgets/RelativeMapWidget/RelativeMapWidget';
+import { LedFlagWidget } from '../widgets/LedFlagWidget/LedFlagWidget';
+import { ChassisWidget } from '../widgets/ChassisWidget/ChassisWidget';
+import { LapDeltaWidget } from '../widgets/LapDeltaWidget/LapDeltaWidget';
+import { LapTimesWidget } from '../widgets/LapTimesWidget/LapTimesWidget';
+import { TimerWidget } from '../widgets/TimerWidget/TimerWidget';
+import { WeatherWidget } from '../widgets/WeatherWidget/WeatherWidget';
+import { FuelWidget } from '../widgets/FuelWidget/FuelWidget';
+import { FlatFlagsWidget } from '../widgets/FlatFlagsWidget/FlatFlagsWidget';
+import { GMeterWidget } from '../widgets/GMeterWidget/GMeterWidget';
 import type {
   WidgetConfig,
   WidgetDefaultConfig,
