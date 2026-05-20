@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '@store/iracing/telemetry.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
+import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
 import { parseAllSessionFlags } from '@utils/formatters/flags-utils';
 import { useFlagBlink, useFlagHold } from '@hooks/flags-hooks';
 import { EMPTY_FLAGS, IS_EMPTY_FLAGS } from '@utils/widget/flat-flags-utils';
@@ -35,10 +36,10 @@ export const FlatFlagsWidget = observer(() => {
   }
 
   return (
-    <div className={styles.widget}>
+    <WidgetPanel direction="column" gap={0} className={styles.widgetBackground}>
       <div className={styles.header}>FLAGS</div>
 
       <FlagList displayFlags={displayFlags} blinkOn={blinkOn} />
-    </div>
+    </WidgetPanel>
   );
 });
