@@ -2,11 +2,11 @@ import type { RefObject } from 'react';
 import { useEffect, useRef } from 'react';
 import { autorun, runInAction } from 'mobx';
 import { listen } from '@tauri-apps/api/event';
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { TrackRecorder } from '../../../utils/telemetry/track-recorder';
-import type { TrackPoint } from '../../../types';
-import type { RecordingOverlayHandle } from '../RecordingOverlay/RecordingOverlay';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { TrackRecorder } from '@utils/telemetry/track-recorder';
+import type { TrackPoint } from '@/types';
+import type { RecordingOverlayHandle } from '@widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
 
 interface TrackData {
   svgPath: string;

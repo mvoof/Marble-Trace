@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { formatLapTime } from '../../../utils/formatters/telemetry-format';
+import { formatLapTime } from '@utils/formatters/telemetry-format';
 
 import styles from './SectorTimesStrip.module.scss';
 

@@ -1,4 +1,4 @@
-import type { TrackPoint } from '../../types';
+import type { TrackPoint } from '@/types';
 
 const MS_PER_SECOND = 1000;
 const MAX_PROGRESS_PCT = 0.99;

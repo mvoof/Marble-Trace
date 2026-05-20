@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RadarDisplay } from './RadarDisplay/RadarDisplay';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 const DESIGN_WIDTH = 200;
 const DESIGN_HEIGHT = 300;

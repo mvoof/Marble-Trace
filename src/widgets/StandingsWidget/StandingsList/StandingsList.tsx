@@ -10,10 +10,10 @@ import {
   computeClassSof,
   buildGridTemplate,
   sliceWithPlayerPin,
-} from '../../../utils/widget/standings-utils';
-import { SessionHeader } from '../SessionHeader/SessionHeader';
-import { ClassGroup } from '../ClassGroup/ClassGroup';
-import { ClassSwitcher } from '../ClassSwitcher/ClassSwitcher';
+} from '@utils/widget/standings-utils';
+import { SessionHeader } from '@widgets/StandingsWidget/SessionHeader/SessionHeader';
+import { ClassGroup } from '@widgets/StandingsWidget/ClassGroup/ClassGroup';
+import { ClassSwitcher } from '@widgets/StandingsWidget/ClassSwitcher/ClassSwitcher';
 
 import styles from './StandingsList.module.scss';
 

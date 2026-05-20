@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { LapTimesList } from './LapTimesList/LapTimesList';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 const DEFAULT_SETTINGS = {
   showLastLap: true,

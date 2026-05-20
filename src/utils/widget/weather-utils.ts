@@ -1,9 +1,9 @@
-import type { WeatherForecastEntry, WeekendInfo } from '../../types/bindings';
-import type { UnitSystem } from '../../types';
+import type { WeatherForecastEntry, WeekendInfo } from '@/types/bindings';
+import type { UnitSystem } from '@/types';
 import {
   formatSpeed as _formatSpeed,
   speedUnit as _speedUnit,
-} from '../../utils/formatters/telemetry-format';
+} from '@utils/formatters/telemetry-format';
 
 export const parseWeekendFloat = (
   value: string | null | undefined

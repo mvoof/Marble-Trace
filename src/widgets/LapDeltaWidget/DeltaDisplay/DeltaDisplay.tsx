@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '../../../store/iracing/computed.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   formatDelta,
   getDeltaState,
   type DeltaState,
-} from '../../../utils/widget/lap-delta-utils';
+} from '@utils/widget/lap-delta-utils';
 
 import styles from './DeltaDisplay.module.scss';
 

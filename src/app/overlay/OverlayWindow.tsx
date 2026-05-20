@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { telemetryConnectionStore } from '../../store/iracing/telemetry-connection.store';
+import { telemetryConnectionStore } from '@store/iracing/telemetry-connection.store';
 import { OverlayCanvas } from './OverlayCanvas/OverlayCanvas';
-import { initOverlaySync } from '../../store/sync/sync-init';
+import { initOverlaySync } from '@store/sync/sync-init';
 
 export const OverlayWindow = () => {
   useEffect(() => {

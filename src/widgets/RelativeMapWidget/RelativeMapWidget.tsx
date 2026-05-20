@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '../../store/iracing/computed.store';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
-import { WidgetPanel } from '../../components/shared/primitives/WidgetPanel/WidgetPanel';
+import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
 import { LinearMap } from './LinearMap/LinearMap';
 
 import styles from './RelativeMapWidget.module.scss';

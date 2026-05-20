@@ -1,8 +1,8 @@
 import { useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 
 import styles from './CanvasTrace.module.scss';
 

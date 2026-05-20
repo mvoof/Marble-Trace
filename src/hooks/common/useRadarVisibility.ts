@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useReducer } from 'react';
-import type { NearbyCar } from '../../types/bindings';
-import type { RadarSettings } from '../../types/widget-settings';
-import { appSettingsStore } from '../../store/app-settings.store';
+import type { NearbyCar } from '@/types/bindings';
+import type { RadarSettings } from '@/types/widget-settings';
+import { appSettingsStore } from '@store/app-settings.store';
 
 type VisibilityAction = 'SHOW' | 'HIDE';
 

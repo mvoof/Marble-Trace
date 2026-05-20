@@ -1,10 +1,7 @@
 import { Alert, Button } from 'antd';
 import { observer } from 'mobx-react-lite';
-import {
-  appSettingsStore,
-  UpdateStatus,
-} from '../../../../store/app-settings.store';
-import { ReleaseNotesButton } from '../../../../app/main/components/ReleaseNotesButton/ReleaseNotesButton';
+import { appSettingsStore, UpdateStatus } from '@store/app-settings.store';
+import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/ReleaseNotesButton';
 import styles from './UpdateBanner.module.scss';
 
 const BANNER_STATUSES: UpdateStatus[] = ['available', 'downloading', 'ready'];

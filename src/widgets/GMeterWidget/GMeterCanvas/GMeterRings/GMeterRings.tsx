@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { widgetSettingsStore } from '../../../../store/widget-settings.store';
-import { RADIUS_RATIO } from '../../../../utils/widget/g-meter-utils';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { RADIUS_RATIO } from '@utils/widget/g-meter-utils';
 
 import styles from './GMeterRings.module.scss';
 

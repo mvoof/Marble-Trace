@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import { Switch } from 'antd';
-import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
-import { StandingsWidgetSettings } from '../../../../../types/widget-settings';
-import { HotkeyRecorder } from '../../../../../app/main/components/HotkeyRecorder/HotkeyRecorder';
-import styles from '../WidgetSettings.module.scss';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { StandingsWidgetSettings } from '@/types/widget-settings';
+import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
+import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
 
 export const StandingsSettingsPanel = observer(() => {

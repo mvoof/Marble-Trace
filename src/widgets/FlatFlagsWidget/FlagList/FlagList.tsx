@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import type { FlagType } from '../../../types';
-import { FlagItem } from '../FlagItem/FlagItem';
+import type { FlagType } from '@/types';
+import { FlagItem } from '@widgets/FlatFlagsWidget/FlagItem/FlagItem';
 
 import styles from './FlagList.module.scss';
 

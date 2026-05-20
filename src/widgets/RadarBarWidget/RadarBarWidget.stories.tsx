@@ -2,12 +2,12 @@ import { useEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import { computedStore } from '../../store/iracing/computed.store';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
-import type { ProximityFrame, RadarDistances } from '../../types/bindings';
-import type { RadarSettings } from '../../types/widget-settings';
+import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import type { ProximityFrame, RadarDistances } from '@/types/bindings';
+import type { RadarSettings } from '@/types/widget-settings';
 import { RadarBarWidget } from './RadarBarWidget';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 const DESIGN_WIDTH = 800;
 const DESIGN_HEIGHT = 380;

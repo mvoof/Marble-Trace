@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import type { CornerData } from '../types';
+import type { CornerData } from '@widgets/ChassisWidget/types';
 import { SuspensionText } from './SuspensionText';
 import styles from './CornerModule.module.scss';
 

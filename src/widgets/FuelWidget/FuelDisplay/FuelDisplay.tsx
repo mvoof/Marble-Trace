@@ -1,12 +1,12 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { computedStore } from '../../../store/iracing/computed.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { WidgetPanel } from '../../../components/shared/primitives/WidgetPanel/WidgetPanel';
-import { formatFuelLiters } from '../../../utils/widget/fuel-utils';
-import { FuelChart } from '../FuelChart/FuelChart';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
+import { formatFuelLiters } from '@utils/widget/fuel-utils';
+import { FuelChart } from '@widgets/FuelWidget/FuelChart/FuelChart';
 import {
   statusClass,
   shortageClass,

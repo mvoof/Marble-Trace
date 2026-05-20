@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { computedStore } from '../../../store/iracing/computed.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { appSettingsStore } from '../../../store/app-settings.store';
+import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { appSettingsStore } from '@store/app-settings.store';
 import { formatIRating } from '@/utils/widget/widget-utils';
 
 import styles from './ClassSwitcher.module.scss';

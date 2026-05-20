@@ -13,12 +13,12 @@ import {
 } from 'antd';
 import { emit } from '@tauri-apps/api/event';
 import { appDataDir } from '@tauri-apps/api/path';
-import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   TrackMapLeaderLabelMode,
   TrackMapWidgetSettings,
-} from '../../../../../types/widget-settings';
-import styles from '../WidgetSettings.module.scss';
+} from '@/types/widget-settings';
+import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
 
 export const TrackMapSettingsPanel = observer(() => {

@@ -4,8 +4,8 @@ import { TrackMapView } from './TrackMapView/TrackMapView';
 import {
   driverEntries as DRIVER_ENTRIES,
   trackData as STORED_TRACK,
-} from '../../storybook/test-data';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+} from '@/storybook/test-data';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 const TRACK_DATA = {
   svgPath: STORED_TRACK.svgPath,

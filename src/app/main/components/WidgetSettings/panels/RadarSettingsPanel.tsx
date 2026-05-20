@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import { Col, InputNumber, Row, Segmented } from 'antd';
-import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   RadarBarDisplayMode,
   RadarSettings,
   RadarVisibilityMode,
-} from '../../../../../types/widget-settings';
-import styles from '../WidgetSettings.module.scss';
+} from '@/types/widget-settings';
+import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './shared';
 
 export const RadarSettingsPanel = observer(

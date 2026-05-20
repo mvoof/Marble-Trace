@@ -1,5 +1,5 @@
-import { TrackSurface as TrackSurfaceType } from '../../types/bindings';
-import { TrackSurface } from '../../types';
+import { TrackSurface as TrackSurfaceType } from '@/types/bindings';
+import { TrackSurface } from '@/types';
 
 // ─── Track surface constants ───────────────────────────────────────────────
 

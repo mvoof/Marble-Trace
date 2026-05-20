@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import { telemetryStore } from '../../store/iracing/telemetry.store';
-import type { SessionFrame } from '../../types/bindings';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import type { SessionFrame } from '@/types/bindings';
 import { FlatFlagsWidget } from './FlatFlagsWidget';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 const FLAG_BITS = {
   checkered: 0x00000001,

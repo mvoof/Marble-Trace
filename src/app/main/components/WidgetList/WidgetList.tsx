@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { Switch } from 'antd';
-import { widgetSettingsStore } from '../../../../store/widget-settings.store';
-import type { WidgetDefaultConfig } from '../../../../types/widget-settings';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import styles from './WidgetList.module.scss';
 
 const WidgetListItem = observer(

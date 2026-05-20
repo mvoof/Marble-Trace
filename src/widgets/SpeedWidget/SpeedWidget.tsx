@@ -1,19 +1,19 @@
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { telemetryStore } from '../../store/iracing/telemetry.store';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
-import { unitsStore } from '../../store/units.store';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { unitsStore } from '@store/units.store';
 import {
   formatSpeed,
   MPS_TO_KMH,
   MPS_TO_MPH,
-} from '../../utils/formatters/telemetry-format';
+} from '@utils/formatters/telemetry-format';
 import { SpeedDisplay } from './SpeedDisplay/SpeedDisplay';
 import { EnginePanel } from './EnginePanel/EnginePanel';
 import { RpmPanel } from './RpmPanel/RpmPanel';
 import { RpmBar } from './RpmBar/RpmBar';
 import { PitPanel } from './PitPanel/PitPanel';
-import { parsePitSpeedLimitMs } from '../../utils/widget/speed-utils';
+import { parsePitSpeedLimitMs } from '@utils/widget/speed-utils';
 
 import styles from './SpeedWidget.module.scss';
 

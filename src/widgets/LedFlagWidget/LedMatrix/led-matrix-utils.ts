@@ -1,5 +1,5 @@
-import type { FlagType } from '../../../types';
-import { BLOCKS } from '../../../utils/widget/led-flag-utils';
+import type { FlagType } from '@/types';
+import { BLOCKS } from '@utils/widget/led-flag-utils';
 
 import styles from './LedMatrix.module.scss';
 

@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../../store/iracing/telemetry.store';
-import { widgetSettingsStore } from '../../../../store/widget-settings.store';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   COLOR_TURN,
   ENVELOPE_SPREAD,
@@ -12,8 +12,8 @@ import {
   SMOOTHING,
   TRACE_LENGTH,
   computeColor,
-} from '../../../../utils/widget/g-meter-utils';
-import type { EnvelopePoint, TrailPoint } from '../../types';
+} from '@utils/widget/g-meter-utils';
+import type { EnvelopePoint, TrailPoint } from '@widgets/GMeterWidget/types';
 
 import styles from './GMeterTrace.module.scss';
 

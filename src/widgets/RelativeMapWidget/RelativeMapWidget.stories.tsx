@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { LinearMap } from './LinearMap/LinearMap';
-import { driverEntries as DRIVER_ENTRIES } from '../../storybook/test-data';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+import { driverEntries as DRIVER_ENTRIES } from '@/storybook/test-data';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 const PLAYER_ENTRY = DRIVER_ENTRIES.find((entry) => entry.isPlayer) ?? null;
 

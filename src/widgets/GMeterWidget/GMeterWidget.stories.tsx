@@ -2,13 +2,13 @@ import { useEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import { widgetSettingsStore } from '../../store/widget-settings.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import type {
   GMeterColorMode,
   GMeterDisplayMode,
-} from '../../types/widget-settings';
+} from '@/types/widget-settings';
 import { GMeterWidget } from './GMeterWidget';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 interface StoryArgs {
   displayMode: GMeterDisplayMode;

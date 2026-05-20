@@ -7,7 +7,7 @@ import type {
   LapTimingFrame,
   SessionFrame,
   SessionInfo,
-} from '../types/bindings';
+} from '@/types/bindings';
 
 export interface TelemetrySnapshot {
   capturedAt: string;

@@ -1,8 +1,8 @@
 import { useLayoutEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '../../../store/iracing/computed.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import { drawBarChart, drawLineChart } from './chart-renderers';
 
 import styles from './FuelChart.module.scss';

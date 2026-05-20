@@ -4,13 +4,13 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import {
   abbreviateName,
   TRACK_SURFACE_IN_PIT_STALL,
-} from '../../../utils/widget/widget-utils';
-import { PitBadge } from '../../../components/shared/primitives/PitBadge/PitBadge';
-import { ClassBadge } from '../../../components/shared/primitives/ClassBadge/ClassBadge';
-import { RatingBadge } from '../../../components/shared/primitives/RatingBadge/RatingBadge';
-import { computeRelativeGap } from '../../../utils/widget/relative-utils';
-import type { RelativeWidgetSettings } from '../../../types/widget-settings';
-import type { DriverEntry } from '../../../types/bindings';
+} from '@utils/widget/widget-utils';
+import { PitBadge } from '@/components/shared/primitives/PitBadge/PitBadge';
+import { ClassBadge } from '@/components/shared/primitives/ClassBadge/ClassBadge';
+import { RatingBadge } from '@/components/shared/primitives/RatingBadge/RatingBadge';
+import { computeRelativeGap } from '@utils/widget/relative-utils';
+import type { RelativeWidgetSettings } from '@/types/widget-settings';
+import type { DriverEntry } from '@/types/bindings';
 
 import styles from './DriverRow.module.scss';
 

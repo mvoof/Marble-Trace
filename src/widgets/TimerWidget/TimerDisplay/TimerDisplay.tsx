@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { isSessionEnded, splitTime } from '../../../utils/widget/timer-utils';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { isSessionEnded, splitTime } from '@utils/widget/timer-utils';
 
 import styles from './TimerDisplay.module.scss';
 

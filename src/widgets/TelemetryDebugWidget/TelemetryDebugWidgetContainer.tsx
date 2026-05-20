@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryConnectionStore } from '../../store/iracing/telemetry-connection.store';
-import { telemetryStore } from '../../store/iracing/telemetry.store';
+import { telemetryConnectionStore } from '@store/iracing/telemetry-connection.store';
+import { telemetryStore } from '@store/iracing/telemetry.store';
 import { TelemetryDebugWidget } from './TelemetryDebugWidget';
 
 export const TelemetryDebugWidgetContainer = observer(() => (

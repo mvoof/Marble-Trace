@@ -1,22 +1,19 @@
 import { observer } from 'mobx-react-lite';
 import { Users } from 'lucide-react';
 
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { computedStore } from '../../../store/iracing/computed.store';
-import { unitsStore } from '../../../store/units.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { computedStore } from '@store/iracing/computed.store';
+import { unitsStore } from '@store/units.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   formatIRating,
   NEAR_DQ_INCIDENT_THRESHOLD,
-} from '../../../utils/widget/widget-utils';
-import {
-  formatTemp,
-  tempUnit,
-} from '../../../utils/formatters/telemetry-format';
+} from '@utils/widget/widget-utils';
+import { formatTemp, tempUnit } from '@utils/formatters/telemetry-format';
 import {
   computeClassSof,
   parseWeekendTemp,
-} from '../../../utils/widget/standings-utils';
+} from '@utils/widget/standings-utils';
 
 import styles from './SessionHeader.module.scss';
 

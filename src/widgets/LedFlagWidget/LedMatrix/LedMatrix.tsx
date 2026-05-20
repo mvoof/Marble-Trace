@@ -1,18 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { parseSessionFlags } from '../../../utils/formatters/flags-utils';
-import { useFlagBlink, useFlagHold } from '../../../hooks/flags-hooks';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { parseSessionFlags } from '@utils/formatters/flags-utils';
+import { useFlagBlink, useFlagHold } from '@hooks/flags-hooks';
 import {
   BLOCKS,
   MIN_SINGLE_LED_PX,
   computeDiodesPerBlock,
   buildGridData,
-} from '../../../utils/widget/led-flag-utils';
+} from '@utils/widget/led-flag-utils';
 import { getColorClass, getSingleLedColorClass } from './led-matrix-utils';
-import type { FlagType } from '../../../types';
+import type { FlagType } from '@/types';
 
 import styles from './LedMatrix.module.scss';
 

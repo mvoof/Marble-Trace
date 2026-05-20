@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { RelativeList } from './RelativeList/RelativeList';
-import { driverEntries } from '../../storybook/test-data';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+import { driverEntries } from '@/storybook/test-data';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 const CLASS_LABELS = ['GTE', 'GT3', 'LMP2'];
 

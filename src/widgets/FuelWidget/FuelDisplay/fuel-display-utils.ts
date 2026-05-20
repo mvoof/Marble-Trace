@@ -1,4 +1,4 @@
-import { FUEL_THRESHOLDS } from '../../../utils/constants/fuel-constants';
+import { FUEL_THRESHOLDS } from '@utils/constants/fuel-constants';
 
 import styles from './FuelDisplay.module.scss';
 

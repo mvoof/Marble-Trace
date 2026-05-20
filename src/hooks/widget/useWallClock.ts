@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { formatPcDate, formatWallClock } from '../../utils/widget/timer-utils';
+import { formatPcDate, formatWallClock } from '@utils/widget/timer-utils';
 
 const WALL_CLOCK_INTERVAL_MS = 1000;
 

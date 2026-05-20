@@ -1,5 +1,5 @@
-import type { DriverEntry } from '../../types/bindings';
-import type { StandingsWidgetSettings } from '../../types/widget-settings';
+import type { DriverEntry } from '@/types/bindings';
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
 
 export const sliceWithPlayerPin = (
   drivers: DriverEntry[],

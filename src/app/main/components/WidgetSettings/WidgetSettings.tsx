@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { InputNumber, Row, Col, ColorPicker } from 'antd';
-import { widgetSettingsStore } from '../../../../store/widget-settings.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import styles from './WidgetSettings.module.scss';
 import { Card, HotkeyRecorderWrapper } from './panels/shared';
 import { SpeedSettingsPanel } from './panels/SpeedSettingsPanel';

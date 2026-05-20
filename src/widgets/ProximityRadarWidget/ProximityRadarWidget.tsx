@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '../../store/iracing/computed.store';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
-import { useRadarVisibility } from '../../hooks/common/useRadarVisibility';
-import { WidgetPanel } from '../../components/shared/primitives/WidgetPanel/WidgetPanel';
+import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { useRadarVisibility } from '@hooks/common/useRadarVisibility';
+import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
 import { RadarDisplay } from './RadarDisplay/RadarDisplay';
 
 import styles from './ProximityRadarWidget.module.scss';

@@ -1,12 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { StandingsList } from './StandingsList/StandingsList';
-import {
-  driverEntries as RAW_ENTRIES,
-  snapshot,
-} from '../../storybook/test-data';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
-import type { SessionInfoData, WeekendInfo } from '../../types/bindings';
+import { driverEntries as RAW_ENTRIES, snapshot } from '@/storybook/test-data';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
+import type { SessionInfoData, WeekendInfo } from '@/types/bindings';
 
 const BASE_LAP_TIME = 92.3;
 const LAP_TIME_SPREAD_PER_POS = 0.35;

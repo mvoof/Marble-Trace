@@ -1,13 +1,13 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { unitsStore } from '../../../store/units.store';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { unitsStore } from '@store/units.store';
 import {
   formatGear,
   speedUnit,
   MPS_TO_KMH,
   MPS_TO_MPH,
-} from '../../../utils/formatters/telemetry-format';
+} from '@utils/formatters/telemetry-format';
 
 import styles from './PitPanel.module.scss';
 

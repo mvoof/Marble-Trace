@@ -1,14 +1,14 @@
 import { observer } from 'mobx-react-lite';
 
-import type { Skies as BindingSkies } from '../../../types/bindings';
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { unitsStore } from '../../../store/units.store';
+import type { Skies as BindingSkies } from '@/types/bindings';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { unitsStore } from '@store/units.store';
 import {
   convertTemp,
   formatSpeed,
   speedUnit,
-} from '../../../utils/formatters/telemetry-format';
-import { extractForecast } from '../../../utils/widget/weather-utils';
+} from '@utils/formatters/telemetry-format';
+import { extractForecast } from '@utils/widget/weather-utils';
 
 import styles from './ForecastBlock.module.scss';
 

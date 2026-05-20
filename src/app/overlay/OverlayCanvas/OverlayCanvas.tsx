@@ -3,10 +3,10 @@ import { observer } from 'mobx-react-lite';
 import { Button } from 'antd';
 import { X } from 'lucide-react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { appSettingsStore } from '../../../store/app-settings.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { WIDGET_BY_ID } from '../../../store/widget-defaults';
-import { WidgetContainer } from '../../../app/overlay/components/WidgetContainer/WidgetContainer';
+import { appSettingsStore } from '@store/app-settings.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { WIDGET_BY_ID } from '@store/widget-defaults';
+import { WidgetContainer } from '@app/overlay/components/WidgetContainer/WidgetContainer';
 import styles from './OverlayCanvas.module.scss';
 
 export const OverlayCanvas = observer(() => {

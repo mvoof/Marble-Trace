@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useRef } from 'react';
 import { toJS } from 'mobx';
 
-import { WidgetPanel } from '../../components/shared/primitives/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
 import type {
   CarDynamicsFrame,
   CarInputsFrame,
@@ -11,7 +11,7 @@ import type {
   DriverInfoData,
   WeekendInfo,
   EnvironmentFrame,
-} from '../../types/bindings';
+} from '@/types/bindings';
 
 import styles from './TelemetryDebugWidget.module.scss';
 

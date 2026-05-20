@@ -2,12 +2,12 @@ import { useEffect, useRef } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import type { SessionInfo } from '../../types/bindings';
-import { telemetryStore } from '../../store/iracing/telemetry.store';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
-import { unitsStore } from '../../store/units.store';
+import type { SessionInfo } from '@/types/bindings';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { unitsStore } from '@store/units.store';
 import { SpeedWidget } from './SpeedWidget';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 const DESIGN_WIDTH = 500;
 const DESIGN_HEIGHT = 120;

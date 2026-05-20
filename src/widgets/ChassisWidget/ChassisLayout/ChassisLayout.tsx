@@ -1,15 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import { Info } from 'lucide-react';
 
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { unitsStore } from '../../../store/units.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { WidgetPanel } from '../../../components/shared/primitives/WidgetPanel/WidgetPanel';
-import { CornerModule } from '../CornerModule/CornerModule';
-import {
-  buildAllCorners,
-  computeAxleDiff,
-} from '../../../utils/widget/chassis-utils';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { unitsStore } from '@store/units.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
+import { CornerModule } from '@widgets/ChassisWidget/CornerModule/CornerModule';
+import { buildAllCorners, computeAxleDiff } from '@utils/widget/chassis-utils';
 import { CenterLabels } from './CenterLabels';
 
 import styles from './ChassisLayout.module.scss';

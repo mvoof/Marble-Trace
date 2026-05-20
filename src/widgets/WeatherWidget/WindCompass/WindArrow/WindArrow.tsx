@@ -1,11 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
-import WindArrowIcon from '../../../../assets/wind-arrow.svg?react';
-import { telemetryStore } from '../../../../store/iracing/telemetry.store';
-import {
-  parseWeekendFloat,
-  radsToBearing,
-} from '../../../../utils/widget/weather-utils';
+import WindArrowIcon from '@assets/wind-arrow.svg?react';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { parseWeekendFloat, radsToBearing } from '@utils/widget/weather-utils';
 
 const getWindColor = (mps: number | null): string => {
   if (mps === null) {

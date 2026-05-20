@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '../../../store/iracing/computed.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { WidgetPanel } from '../../../components/shared/primitives/WidgetPanel/WidgetPanel';
-import { useVisibleRowCount } from '../../../hooks/common/useVisibleRowCount';
-import { DriverRow } from '../DriverRow/DriverRow';
-import { computeRelativeGap } from '../../../utils/widget/relative-utils';
-import { TREND_SAMPLE_INTERVAL_MS } from '../../../utils/widget/widget-utils';
+import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
+import { useVisibleRowCount } from '@hooks/common/useVisibleRowCount';
+import { DriverRow } from '@widgets/RelativeWidget/DriverRow/DriverRow';
+import { computeRelativeGap } from '@utils/widget/relative-utils';
+import { TREND_SAMPLE_INTERVAL_MS } from '@utils/widget/widget-utils';
 
 import styles from './RelativeList.module.scss';
 

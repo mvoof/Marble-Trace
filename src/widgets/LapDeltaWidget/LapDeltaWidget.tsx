@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { widgetSettingsStore } from '../../store/widget-settings.store';
-import { WidgetPanel } from '../../components/shared/primitives/WidgetPanel/WidgetPanel';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
 import { DeltaDisplay } from './DeltaDisplay/DeltaDisplay';
 import { SectorList } from './SectorList/SectorList';
 

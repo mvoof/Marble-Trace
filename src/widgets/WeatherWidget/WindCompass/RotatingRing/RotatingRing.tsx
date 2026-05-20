@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../../store/iracing/telemetry.store';
+import { telemetryStore } from '@store/iracing/telemetry.store';
 
 import styles from './RotatingRing.module.scss';
 

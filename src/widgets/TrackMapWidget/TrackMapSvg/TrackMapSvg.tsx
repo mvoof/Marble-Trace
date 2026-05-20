@@ -1,12 +1,12 @@
 ﻿import { useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import type { TrackPoint } from '../../../types';
-import { getPointAtPct } from '../../../utils/telemetry/track-recorder';
-import type { Sector } from '../../../types/bindings';
-import type { TrackMapLeaderLabelMode } from '../../../types/widget-settings';
-import type { CarOnTrack } from '../types';
-import { CarDot } from '../../../components/shared/primitives/CarDot/CarDot';
+import type { TrackPoint } from '@/types';
+import { getPointAtPct } from '@utils/telemetry/track-recorder';
+import type { Sector } from '@/types/bindings';
+import type { TrackMapLeaderLabelMode } from '@/types/widget-settings';
+import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
+import { CarDot } from '@/components/shared/primitives/CarDot/CarDot';
 
 import styles from './TrackMapSvg.module.scss';
 

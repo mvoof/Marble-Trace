@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import { Segmented, Switch } from 'antd';
-import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   LapDeltaLayout,
   LapDeltaReference,
   LapDeltaWidgetSettings,
-} from '../../../../../types/widget-settings';
-import styles from '../WidgetSettings.module.scss';
+} from '@/types/widget-settings';
+import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
 
 export const LapDeltaSettingsPanel = observer(() => {

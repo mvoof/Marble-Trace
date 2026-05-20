@@ -1,13 +1,10 @@
 import { observer } from 'mobx-react-lite';
 import { Droplets, Thermometer } from 'lucide-react';
 
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { unitsStore } from '../../../store/units.store';
-import {
-  formatTemp,
-  tempUnit,
-} from '../../../utils/formatters/telemetry-format';
-import { isEngineTempWarning } from '../../../utils/widget/speed-utils';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { unitsStore } from '@store/units.store';
+import { formatTemp, tempUnit } from '@utils/formatters/telemetry-format';
+import { isEngineTempWarning } from '@utils/widget/speed-utils';
 
 import styles from './EnginePanel.module.scss';
 

@@ -2,10 +2,10 @@ import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { listen } from '@tauri-apps/api/event';
 
-import { telemetryStore } from '../../store/iracing/telemetry.store';
-import { computedStore } from '../../store/iracing/computed.store';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
-import type { TrackPoint } from '../../types';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import type { TrackPoint } from '@/types';
 
 import { TrackRecorderBridge } from './TrackRecorderBridge/TrackRecorderBridge';
 import type { RecordingOverlayHandle } from './RecordingOverlay/RecordingOverlay';

@@ -1,13 +1,13 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Switch, Segmented, message, Select } from 'antd';
-import { appSettingsStore } from '../../../../store/app-settings.store';
-import { unitsStore } from '../../../../store/units.store';
-import type { UnitSystem } from '../../../../types';
-import { downloadSnapshot } from '../../../../storybook/capture-snapshot';
-import { HotkeyRecorder } from '../../../../app/main/components/HotkeyRecorder/HotkeyRecorder';
+import { appSettingsStore } from '@store/app-settings.store';
+import { unitsStore } from '@store/units.store';
+import type { UnitSystem } from '@/types';
+import { downloadSnapshot } from '@/storybook/capture-snapshot';
+import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
 import { RefreshCw, ArrowUpCircle, AlertCircle, Clock } from 'lucide-react';
-import { ReleaseNotesButton } from '../../../../app/main/components/ReleaseNotesButton/ReleaseNotesButton';
+import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/ReleaseNotesButton';
 import styles from './SettingsPage.module.scss';
 
 const isDev = import.meta.env.DEV;

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import type { DriverGroup } from '@/types';
-import { DriverRow } from '../DriverRow/DriverRow';
+import { DriverRow } from '@widgets/StandingsWidget/DriverRow/DriverRow';
 
 interface ClassGroupProps {
   group: DriverGroup;

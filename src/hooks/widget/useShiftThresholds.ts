@@ -1,4 +1,4 @@
-import { telemetryStore } from '../../store/iracing/telemetry.store';
+import { telemetryStore } from '@store/iracing/telemetry.store';
 
 export const useShiftThresholds = () => {
   const { driverInfo } = telemetryStore;

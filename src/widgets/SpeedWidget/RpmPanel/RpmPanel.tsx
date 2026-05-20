@@ -1,9 +1,9 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { useShiftThresholds } from '../../../hooks/widget/useShiftThresholds';
-import { getShiftZoneColor } from '../../../utils/widget/speed-utils';
-import type { RpmColors } from '../RpmBar/RpmBar';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { useShiftThresholds } from '@hooks/widget/useShiftThresholds';
+import { getShiftZoneColor } from '@utils/widget/speed-utils';
+import type { RpmColors } from '@widgets/SpeedWidget/RpmBar/RpmBar';
 import styles from './RpmPanel.module.scss';
 
 const RPM_COLOR_OFF = 'rgba(255,255,255,0.55)';

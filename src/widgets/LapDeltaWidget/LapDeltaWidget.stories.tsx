@@ -2,11 +2,11 @@ import { useEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import { computedStore } from '../../store/iracing/computed.store';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
-import type { LapDeltaFrame } from '../../types/bindings';
+import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import type { LapDeltaFrame } from '@/types/bindings';
 import { LapDeltaWidget } from './LapDeltaWidget';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 interface StoryArgs {
   delta: number;

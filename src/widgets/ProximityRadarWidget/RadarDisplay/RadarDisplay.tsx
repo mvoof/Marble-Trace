@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '../../../store/iracing/computed.store';
-import { unitsStore } from '../../../store/units.store';
+import { computedStore } from '@store/iracing/computed.store';
+import { unitsStore } from '@store/units.store';
 import {
   distanceUnit,
   formatDistance,
-} from '../../../utils/formatters/telemetry-format';
+} from '@utils/formatters/telemetry-format';
 import {
   CAR_WIDTH,
   CAR_LENGTH,
@@ -13,7 +13,7 @@ import {
   SIDE_CAR_LATERAL_OFFSET,
   getCarColor,
   getSideCarColor,
-} from '../../../utils/constants/radar-constants';
+} from '@utils/constants/radar-constants';
 
 import styles from './RadarDisplay.module.scss';
 

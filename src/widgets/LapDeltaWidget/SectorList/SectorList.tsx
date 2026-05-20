@@ -1,15 +1,15 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '../../../store/iracing/computed.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { TimingRow } from '../../../components/shared/TimingRow/TimingRow';
+import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { TimingRow } from '@/components/shared/TimingRow/TimingRow';
 import {
   formatSectorDelta,
   formatSectorTime,
   getDeltaColor,
   getSectorDeltaState,
   SECTOR_ACCENT_COLORS,
-} from '../../../utils/widget/lap-delta-utils';
+} from '@utils/widget/lap-delta-utils';
 
 import styles from './SectorList.module.scss';
 

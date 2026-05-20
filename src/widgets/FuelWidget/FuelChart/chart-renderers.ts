@@ -1,7 +1,7 @@
 import {
   FUEL_COLORS,
   FUEL_CHART_CONFIG,
-} from '../../../utils/constants/fuel-constants';
+} from '@utils/constants/fuel-constants';
 
 const barColor = (v: number, avg: number | null): string => {
   if (avg === null) return FUEL_COLORS.primary;

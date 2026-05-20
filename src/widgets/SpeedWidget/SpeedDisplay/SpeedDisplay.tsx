@@ -1,10 +1,7 @@
 import { observer } from 'mobx-react-lite';
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { unitsStore } from '../../../store/units.store';
-import {
-  formatSpeed,
-  speedUnit,
-} from '../../../utils/formatters/telemetry-format';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { unitsStore } from '@store/units.store';
+import { formatSpeed, speedUnit } from '@utils/formatters/telemetry-format';
 import styles from './SpeedDisplay.module.scss';
 
 export const SpeedDisplay = observer(() => {

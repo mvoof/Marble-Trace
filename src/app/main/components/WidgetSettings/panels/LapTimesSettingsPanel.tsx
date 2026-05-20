@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react-lite';
 import { Segmented, Switch } from 'antd';
-import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   LapTimesLayout,
   LapTimesWidgetSettings,
-} from '../../../../../types/widget-settings';
-import styles from '../WidgetSettings.module.scss';
+} from '@/types/widget-settings';
+import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
 
 export const LapTimesSettingsPanel = observer(() => {

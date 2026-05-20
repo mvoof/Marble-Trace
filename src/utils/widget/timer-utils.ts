@@ -1,4 +1,4 @@
-import type { SessionState } from '../../types/bindings';
+import type { SessionState } from '@/types/bindings';
 
 export type FlagState = 'green' | 'final' | 'checkered';
 

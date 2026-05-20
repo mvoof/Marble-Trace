@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
-import { MPS_TO_KMH, MPS_TO_MPH } from '../utils/formatters/telemetry-format';
-import type { UnitSystem } from '../types';
+import { MPS_TO_KMH, MPS_TO_MPH } from '@utils/formatters/telemetry-format';
+import type { UnitSystem } from '@/types';
 
 class UnitsStore {
   system: UnitSystem = 'metric';

@@ -13,13 +13,13 @@ import type {
   DriverInfoData,
   WeekendInfo,
   WeatherForecastEntry,
-} from '../../types/bindings';
+} from '@/types/bindings';
 
 export interface CarPositionsFrame {
   car_idx_lap_dist_pct: number[];
   car_idx_track_surface: number[];
 }
-import type { SessionWithResults } from '../../types';
+import type { SessionWithResults } from '@/types';
 
 class TelemetryStore {
   carDynamics: CarDynamicsFrame | null = null;

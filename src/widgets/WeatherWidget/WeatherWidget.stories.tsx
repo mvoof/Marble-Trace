@@ -2,17 +2,17 @@ import { useEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import { telemetryStore } from '../../store/iracing/telemetry.store';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
-import { unitsStore } from '../../store/units.store';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { unitsStore } from '@store/units.store';
 import type {
   EnvironmentFrame,
   SessionInfo,
   WeatherForecastEntry,
-} from '../../types/bindings';
-import type { UnitSystem } from '../../types';
+} from '@/types/bindings';
+import type { UnitSystem } from '@/types';
 import { WeatherWidget } from './WeatherWidget';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 const FORECAST: WeatherForecastEntry[] = [
   {

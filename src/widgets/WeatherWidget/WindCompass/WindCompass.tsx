@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react-lite';
 
-import CarIcon from '../../../../assets/car-icon.svg?react';
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
+import CarIcon from '@assets/car-icon.svg?react';
+import { telemetryStore } from '@store/iracing/telemetry.store';
 import {
   bearingToCardinal,
   parseWeekendFloat,
   radsToBearing,
-} from '../../../utils/widget/weather-utils';
+} from '@utils/widget/weather-utils';
 import { RotatingRing } from './RotatingRing/RotatingRing';
 import { WindArrow } from './WindArrow/WindArrow';
 

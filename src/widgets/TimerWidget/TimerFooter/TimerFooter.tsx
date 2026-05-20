@@ -1,13 +1,13 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { resolveSessionLaps } from '../../../utils/formatters/telemetry-format';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { resolveSessionLaps } from '@utils/formatters/telemetry-format';
 import {
   formatLapCount,
   formatPosition,
   isSessionEnded,
-} from '../../../utils/widget/timer-utils';
+} from '@utils/widget/timer-utils';
 
 import styles from './TimerFooter.module.scss';
 

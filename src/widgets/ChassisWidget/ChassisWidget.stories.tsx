@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { ChassisLayout } from './ChassisLayout/ChassisLayout';
 import type { CornerData } from './types';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 const makeCorner = (overrides: Partial<CornerData> = {}): CornerData => ({
   wearL: 0.85,

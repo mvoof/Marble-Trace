@@ -1,25 +1,25 @@
-import { TelemetryDebugWidgetContainer } from '../widgets/TelemetryDebugWidget/TelemetryDebugWidgetContainer';
-import { SpeedWidget } from '../widgets/SpeedWidget/SpeedWidget';
-import { InputTraceWidget } from '../widgets/InputTraceWidget/InputTraceWidget';
-import { ProximityRadarWidget } from '../widgets/ProximityRadarWidget/ProximityRadarWidget';
-import { RadarBarWidget } from '../widgets/RadarBarWidget/RadarBarWidget';
-import { StandingsWidget } from '../widgets/StandingsWidget/StandingsWidget';
-import { RelativeWidget } from '../widgets/RelativeWidget/RelativeWidget';
-import { TrackMapWidget } from '../widgets/TrackMapWidget/TrackMapWidget';
-import { RelativeMapWidget } from '../widgets/RelativeMapWidget/RelativeMapWidget';
-import { LedFlagWidget } from '../widgets/LedFlagWidget/LedFlagWidget';
-import { ChassisWidget } from '../widgets/ChassisWidget/ChassisWidget';
-import { LapDeltaWidget } from '../widgets/LapDeltaWidget/LapDeltaWidget';
-import { LapTimesWidget } from '../widgets/LapTimesWidget/LapTimesWidget';
-import { TimerWidget } from '../widgets/TimerWidget/TimerWidget';
-import { WeatherWidget } from '../widgets/WeatherWidget/WeatherWidget';
-import { FuelWidget } from '../widgets/FuelWidget/FuelWidget';
-import { FlatFlagsWidget } from '../widgets/FlatFlagsWidget/FlatFlagsWidget';
-import { GMeterWidget } from '../widgets/GMeterWidget/GMeterWidget';
+import { TelemetryDebugWidgetContainer } from '@widgets/TelemetryDebugWidget/TelemetryDebugWidgetContainer';
+import { SpeedWidget } from '@widgets/SpeedWidget/SpeedWidget';
+import { InputTraceWidget } from '@widgets/InputTraceWidget/InputTraceWidget';
+import { ProximityRadarWidget } from '@widgets/ProximityRadarWidget/ProximityRadarWidget';
+import { RadarBarWidget } from '@widgets/RadarBarWidget/RadarBarWidget';
+import { StandingsWidget } from '@widgets/StandingsWidget/StandingsWidget';
+import { RelativeWidget } from '@widgets/RelativeWidget/RelativeWidget';
+import { TrackMapWidget } from '@widgets/TrackMapWidget/TrackMapWidget';
+import { RelativeMapWidget } from '@widgets/RelativeMapWidget/RelativeMapWidget';
+import { LedFlagWidget } from '@widgets/LedFlagWidget/LedFlagWidget';
+import { ChassisWidget } from '@widgets/ChassisWidget/ChassisWidget';
+import { LapDeltaWidget } from '@widgets/LapDeltaWidget/LapDeltaWidget';
+import { LapTimesWidget } from '@widgets/LapTimesWidget/LapTimesWidget';
+import { TimerWidget } from '@widgets/TimerWidget/TimerWidget';
+import { WeatherWidget } from '@widgets/WeatherWidget/WeatherWidget';
+import { FuelWidget } from '@widgets/FuelWidget/FuelWidget';
+import { FlatFlagsWidget } from '@widgets/FlatFlagsWidget/FlatFlagsWidget';
+import { GMeterWidget } from '@widgets/GMeterWidget/GMeterWidget';
 import type {
   WidgetConfig,
   WidgetDefaultConfig,
-} from '../types/widget-settings';
+} from '@/types/widget-settings';
 
 export const LAP_TIMES_DEFAULT_WIDTHS: Record<string, number> = {
   vertical: 230,

@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { filterToDefaults } from '../utils/filter-to-defaults';
+import { filterToDefaults } from '@utils/filter-to-defaults';
 import { invoke } from '@tauri-apps/api/core';
 import {
   DEFAULT_WIDGETS,
@@ -29,7 +29,7 @@ import type {
   TimerWidgetSettings,
   WidgetSpecificSettings,
   WidgetUserSettings,
-} from '../types/widget-settings';
+} from '@/types/widget-settings';
 
 class WidgetSettingsStore {
   widgets = new Map<string, WidgetDefaultConfig>(

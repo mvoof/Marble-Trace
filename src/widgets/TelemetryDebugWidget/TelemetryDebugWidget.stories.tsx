@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TelemetryDebugWidget } from './TelemetryDebugWidget';
-import { snapshot } from '../../storybook/test-data';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+import { snapshot } from '@/storybook/test-data';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 const CONNECTED_ARGS = {
   status: 'connected',

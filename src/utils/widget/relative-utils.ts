@@ -1,4 +1,4 @@
-import type { DriverEntry } from '../../types/bindings';
+import type { DriverEntry } from '@/types/bindings';
 
 export const computeRelativeGap = (
   driver: DriverEntry,

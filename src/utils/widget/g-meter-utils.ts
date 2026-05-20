@@ -1,4 +1,4 @@
-import type { GMeterColorMode } from '../../types/widget-settings';
+import type { GMeterColorMode } from '@/types/widget-settings';
 
 export const G_CONSTANT = 9.81;
 export const SMOOTHING = 0.12;

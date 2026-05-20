@@ -1,14 +1,14 @@
 import type { RefObject } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '../../../components/shared/primitives/WidgetPanel/WidgetPanel';
-import type { TrackPoint } from '../../../types';
-import type { TrackMapWidgetSettings } from '../../../types/widget-settings';
-import type { Sector } from '../../../types/bindings';
-import type { RecordingOverlayHandle } from '../RecordingOverlay/RecordingOverlay';
-import { RecordingOverlay } from '../RecordingOverlay/RecordingOverlay';
-import { TrackMapSvg } from '../TrackMapSvg/TrackMapSvg';
-import type { CarOnTrack } from '../types';
+import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
+import type { TrackPoint } from '@/types';
+import type { TrackMapWidgetSettings } from '@/types/widget-settings';
+import type { Sector } from '@/types/bindings';
+import type { RecordingOverlayHandle } from '@widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
+import { RecordingOverlay } from '@widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
+import { TrackMapSvg } from '@widgets/TrackMapWidget/TrackMapSvg/TrackMapSvg';
+import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
 
 import styles from './TrackMapView.module.scss';
 

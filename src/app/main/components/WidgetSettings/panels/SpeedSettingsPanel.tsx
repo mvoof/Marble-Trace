@@ -1,15 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
-import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
-import { unitsStore } from '../../../../../store/units.store';
-import { speedUnit } from '../../../../../utils/formatters/telemetry-format';
-import {
-  SpeedWidgetSettings,
-  LedShape,
-} from '../../../../../types/widget-settings';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { unitsStore } from '@store/units.store';
+import { speedUnit } from '@utils/formatters/telemetry-format';
+import { SpeedWidgetSettings, LedShape } from '@/types/widget-settings';
 import { Card, SettingRow } from './shared';
 
-import styles from '../WidgetSettings.module.scss';
+import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 
 export const SpeedSettingsPanel = observer(() => {
   const settings = widgetSettingsStore.getSpeedSettings();

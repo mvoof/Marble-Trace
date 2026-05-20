@@ -7,8 +7,8 @@ import type {
   LapDeltaFrame,
   PitStopsFrame,
   ProximityFrame,
-} from '../../types/bindings';
-import type { DriverGroup } from '../../types';
+} from '@/types/bindings';
+import type { DriverGroup } from '@/types';
 import { telemetryStore } from './telemetry.store';
 
 interface StartPosition {

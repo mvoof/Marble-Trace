@@ -1,15 +1,12 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { computedStore } from '../../../store/iracing/computed.store';
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
-import { formatLapTime } from '../../../utils/formatters/telemetry-format';
-import { TimingRow } from '../../../components/shared/TimingRow/TimingRow';
-import { WidgetPanel } from '../../../components/shared/primitives/WidgetPanel/WidgetPanel';
-import {
-  formatDelta,
-  getDeltaColor,
-} from '../../../utils/widget/lap-times-utils';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { formatLapTime } from '@utils/formatters/telemetry-format';
+import { TimingRow } from '@/components/shared/TimingRow/TimingRow';
+import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
+import { formatDelta, getDeltaColor } from '@utils/widget/lap-times-utils';
 
 import styles from './LapTimesList.module.scss';
 

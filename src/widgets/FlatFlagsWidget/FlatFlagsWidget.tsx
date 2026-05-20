@@ -1,14 +1,11 @@
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../store/iracing/telemetry.store';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
-import { parseAllSessionFlags } from '../../utils/formatters/flags-utils';
-import { useFlagBlink, useFlagHold } from '../../hooks/flags-hooks';
-import {
-  EMPTY_FLAGS,
-  IS_EMPTY_FLAGS,
-} from '../../utils/widget/flat-flags-utils';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { parseAllSessionFlags } from '@utils/formatters/flags-utils';
+import { useFlagBlink, useFlagHold } from '@hooks/flags-hooks';
+import { EMPTY_FLAGS, IS_EMPTY_FLAGS } from '@utils/widget/flat-flags-utils';
 import { FlagList } from './FlagList/FlagList';
 
 import styles from './FlatFlagsWidget.module.scss';

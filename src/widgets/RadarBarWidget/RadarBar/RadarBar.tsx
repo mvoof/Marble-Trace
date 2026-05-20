@@ -1,15 +1,12 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '../../../store/iracing/computed.store';
-import { unitsStore } from '../../../store/units.store';
+import { computedStore } from '@store/iracing/computed.store';
+import { unitsStore } from '@store/units.store';
 import {
   distanceUnit,
   formatDistance,
-} from '../../../utils/formatters/telemetry-format';
-import {
-  CAR_LENGTH,
-  getBarPillColor,
-} from '../../../utils/constants/radar-constants';
+} from '@utils/formatters/telemetry-format';
+import { CAR_LENGTH, getBarPillColor } from '@utils/constants/radar-constants';
 
 import styles from './RadarBar.module.scss';
 

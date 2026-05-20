@@ -2,19 +2,19 @@ import { useEffect, useState } from 'react';
 import { Layout, ConfigProvider, theme, App as AntdApp } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { Settings } from 'lucide-react';
-import { telemetryConnectionStore } from '../../store/iracing/telemetry-connection.store';
-import { appSettingsStore } from '../../store/app-settings.store';
-import { initMainSync } from '../../store/sync/sync-init';
+import { telemetryConnectionStore } from '@store/iracing/telemetry-connection.store';
+import { appSettingsStore } from '@store/app-settings.store';
+import { initMainSync } from '@store/sync/sync-init';
 import { WidgetList } from './components/WidgetList/WidgetList';
 import { WidgetSettings } from './components/WidgetSettings/WidgetSettings';
 import { SettingsPage } from './components/SettingsPage/SettingsPage';
 import { TitleBar } from './components/TitleBar/TitleBar';
 import { AppStatus } from './components/AppStatus/AppStatus';
 import { SidebarLinks } from './components/SidebarLinks/SidebarLinks';
-import { RandomGlitchCanvas } from '../../app/main/components/BackgroundAnimation/RandomGlitchCanvas';
+import { RandomGlitchCanvas } from './components/BackgroundAnimation/RandomGlitchCanvas';
 import { UpdateBanner } from './components/UpdateBanner/UpdateBanner';
 import styles from './MainWindow.module.scss';
-import Logo from '../../assets/logo.svg?react';
+import Logo from '@assets/logo.svg?react';
 
 const { Content, Sider } = Layout;
 

@@ -1,14 +1,14 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '../../../store/iracing/telemetry.store';
-import { unitsStore } from '../../../store/units.store';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { unitsStore } from '@store/units.store';
 import {
   formatTemp,
   formatSpeed as _formatSpeed,
   speedUnit as _speedUnit,
   tempUnit,
-} from '../../../utils/formatters/telemetry-format';
-import { parseWeekendFloat } from '../../../utils/widget/weather-utils';
+} from '@utils/formatters/telemetry-format';
+import { parseWeekendFloat } from '@utils/widget/weather-utils';
 
 import styles from './StatCell.module.scss';
 

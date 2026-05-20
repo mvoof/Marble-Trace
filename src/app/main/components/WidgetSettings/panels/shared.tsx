@@ -1,7 +1,7 @@
 import { type CSSProperties, type ReactNode } from 'react';
-import { HotkeyRecorder } from '../../../../../app/main/components/HotkeyRecorder/HotkeyRecorder';
-import { widgetSettingsStore } from '../../../../../store/widget-settings.store';
-import styles from '../WidgetSettings.module.scss';
+import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 
 interface CardProps {
   title?: string;

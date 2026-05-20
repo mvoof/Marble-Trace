@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { widgetSettingsStore } from '../../../store/widget-settings.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import { Bar } from './Bar/Bar';
 
 import styles from './InputBars.module.scss';

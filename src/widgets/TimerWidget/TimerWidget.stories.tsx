@@ -2,17 +2,17 @@ import { useEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import { telemetryStore } from '../../store/iracing/telemetry.store';
-import { widgetSettingsStore } from '../../store/widget-settings.store';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import type {
   CarIdxFrame,
   LapTimingFrame,
   SessionFrame,
   SessionInfo,
   SessionState as BindingSessionState,
-} from '../../types/bindings';
+} from '@/types/bindings';
 import { TimerWidget } from './TimerWidget';
-import { widgetDecorator } from '../../storybook/widgetDecorator';
+import { widgetDecorator } from '@/storybook/widgetDecorator';
 
 const SESSION_FLAG_CHECKERED = 0x0001;
 

@@ -6,14 +6,14 @@ import type {
   SessionInfo,
   WeatherForecastEntry,
   TelemetryBundle,
-} from '../../types/bindings';
-import { debug } from '../../utils/debug';
+} from '@/types/bindings';
+import { debug } from '@utils/debug';
 
 import { telemetryStore } from './telemetry.store';
 import { computedStore } from './computed.store';
-import { widgetSettingsStore } from '../widget-settings.store';
-import { appSettingsStore } from '../app-settings.store';
-import type { TelemetryStatus } from '../../types';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { appSettingsStore } from '@store/app-settings.store';
+import type { TelemetryStatus } from '@/types';
 
 const EVENT_CAR_DYNAMICS = 1 << 0;
 const EVENT_CAR_INPUTS = 1 << 1;
