@@ -78,12 +78,14 @@ class FlagsStore {
               );
             }
           } else if (holdDuration === 0) {
-            if (hold.timer) {
-              clearTimeout(hold.timer);
-              hold.timer = null;
-            }
+            action(() => {
+              if (hold.timer) {
+                clearTimeout(hold.timer);
+                hold.timer = null;
+              }
 
-            action(() => setValue(emptyValue))();
+              setValue(emptyValue);
+            })();
           }
         }
       }
