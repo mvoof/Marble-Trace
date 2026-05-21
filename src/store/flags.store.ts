@@ -27,7 +27,7 @@ class FlagsStore {
     // widgetSettingsStore is not yet assigned when this constructor runs due to
     // module initialization order. Deferring to a microtask ensures all store
     // singletons are initialized before reactions access them.
-    Promise.resolve().then(() => {
+    void Promise.resolve().then(() => {
       this.initFlatHold();
       this.initLedHold();
     });
