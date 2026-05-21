@@ -5,6 +5,22 @@ import {
   speedUnit as _speedUnit,
 } from '@utils/formatters/telemetry-format';
 
+export const getWindColor = (mps: number | null): string => {
+  if (mps === null) {
+    return '#3399ff';
+  }
+
+  if (mps > 8) {
+    return '#ef4444';
+  }
+
+  if (mps > 4) {
+    return '#ffcc00';
+  }
+
+  return '#3399ff';
+};
+
 export const parseWeekendFloat = (
   value: string | null | undefined
 ): number | null => {

@@ -5,9 +5,11 @@ import { computedStore } from '@store/iracing/computed.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import { TimingRow } from '@/components/shared/TimingRow/TimingRow';
-import { formatDelta, getDeltaColor } from '@utils/widget/lap-times-utils';
-
-const COLOR_LAST = '#ef4444';
+import {
+  formatDelta,
+  getDeltaColor,
+  LAP_TIME_COLORS,
+} from '@utils/widget/lap-times-utils';
 
 export const LastLapRow = observer(() => {
   const settings = widgetSettingsStore.getLapTimesSettings();
@@ -32,7 +34,7 @@ export const LastLapRow = observer(() => {
       label="LAST"
       time={formatLapTime(lastLap)}
       delta={formatDelta(lastDelta)}
-      accentColor={COLOR_LAST}
+      accentColor={LAP_TIME_COLORS.last}
       deltaColor={getDeltaColor(lastDelta)}
       fill={isHorizontal}
     />

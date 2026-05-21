@@ -1,6 +1,6 @@
 import { telemetryStore } from '@store/iracing/telemetry.store';
 
-export const useShiftThresholds = () => {
+export const computeShiftThresholds = () => {
   const { driverInfo } = telemetryStore;
 
   const slShiftArray = telemetryStore.carStatus?.player_car_sl_shift_rpm ?? [];

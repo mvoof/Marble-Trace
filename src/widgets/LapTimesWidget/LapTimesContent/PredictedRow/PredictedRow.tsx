@@ -5,8 +5,7 @@ import { computedStore } from '@store/iracing/computed.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import { TimingRow } from '@/components/shared/TimingRow/TimingRow';
-
-const COLOR_PREDICTED = '#fbbf24';
+import { LAP_TIME_COLORS } from '@utils/widget/lap-times-utils';
 
 export const PredictedRow = observer(() => {
   const settings = widgetSettingsStore.getLapTimesSettings();
@@ -30,7 +29,7 @@ export const PredictedRow = observer(() => {
       label="PRED"
       time={formatLapTime(predictedLap)}
       delta=""
-      accentColor={COLOR_PREDICTED}
+      accentColor={LAP_TIME_COLORS.predicted}
       fill={isHorizontal}
     />
   );

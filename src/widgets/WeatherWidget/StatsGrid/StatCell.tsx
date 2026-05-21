@@ -9,21 +9,13 @@ import {
   speedUnit as _speedUnit,
   tempUnit,
 } from '@utils/formatters/telemetry-format';
-import { parseWeekendFloat } from '@utils/widget/weather-utils';
+import { getWindColor, parseWeekendFloat } from '@utils/widget/weather-utils';
 
 import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
 import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
 import styles from './StatCell.module.scss';
 
 export type StatCellType = 'airTemp' | 'trackTemp' | 'wind' | 'humidity';
-
-const getWindColor = (mps: number | null): string => {
-  if (mps === null) return '#3399ff';
-  if (mps > 8) return '#ef4444';
-  if (mps > 4) return '#ffcc00';
-
-  return '#3399ff';
-};
 
 const STAT_CELL_SETTING_KEY: Record<
   StatCellType,

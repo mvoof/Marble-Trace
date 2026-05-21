@@ -2,7 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { telemetryStore } from '@store/iracing/telemetry.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
-import { useShiftThresholds } from '@hooks/widget/useShiftThresholds';
+import { computeShiftThresholds } from '@utils/widget/shift-thresholds';
 import { getShiftZoneColor } from '@utils/widget/speed-utils';
 import styles from './RpmPanel.module.scss';
 
@@ -25,7 +25,7 @@ export const RpmPanel = observer(() => {
     limit: rpmColorLimit,
   };
   const rpm = Math.round(telemetryStore.carDynamics?.rpm ?? 0);
-  const { shiftRpm, blinkRpm } = useShiftThresholds();
+  const { shiftRpm, blinkRpm } = computeShiftThresholds();
 
   const isBlink = rpm >= blinkRpm;
   const isShift = rpm >= shiftRpm;

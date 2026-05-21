@@ -2,23 +2,11 @@ import { observer } from 'mobx-react-lite';
 
 import WindArrowIcon from '@assets/wind-arrow.svg?react';
 import { telemetryStore } from '@store/iracing/telemetry.store';
-import { parseWeekendFloat, radsToBearing } from '@utils/widget/weather-utils';
-
-const getWindColor = (mps: number | null): string => {
-  if (mps === null) {
-    return '#3399ff';
-  }
-
-  if (mps > 8) {
-    return '#ef4444';
-  }
-
-  if (mps > 4) {
-    return '#ffcc00';
-  }
-
-  return '#3399ff';
-};
+import {
+  getWindColor,
+  parseWeekendFloat,
+  radsToBearing,
+} from '@utils/widget/weather-utils';
 
 // Re-renders at 60 Hz — driven by carDynamics.yaw updating at physics rate
 export const WindArrow = observer(() => {

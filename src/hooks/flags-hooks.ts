@@ -1,10 +1,12 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
 
+const FLAG_BLINK_INTERVAL_MS = 400;
+
 export const useFlagBlink = (): boolean => {
   const [blinkOn, setBlinkOn] = useState(true);
 
   useEffect(() => {
-    const id = setInterval(() => setBlinkOn((v) => !v), 400);
+    const id = setInterval(() => setBlinkOn((v) => !v), FLAG_BLINK_INTERVAL_MS);
 
     return () => clearInterval(id);
   }, []);

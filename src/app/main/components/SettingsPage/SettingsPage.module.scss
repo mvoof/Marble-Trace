@@ -106,3 +106,39 @@
   font-size: rem(12);
   color: $sys-text-secondary;
 }
+
+.fieldDescBeforeAction {
+  margin-bottom: rem(16);
+}
+
+.fieldDescMeta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.fieldDescOffset {
+  margin-top: 4px;
+}
+
+.versionLabel {
+  color: $sys-text-secondary;
+}
+
+.statusSuccess {
+  color: #52c41a;
+}
+
+.statusError {
+  color: #ff4d4f;
+}
+
+.errorIcon {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.selectWidth {
+  width: 140px;
+}

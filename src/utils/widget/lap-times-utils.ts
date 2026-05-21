@@ -1,3 +1,11 @@
+export const LAP_TIME_COLORS = {
+  best: 'rgba(192, 132, 252, 0.85)',
+  current: '#22c55e',
+  last: '#ef4444',
+  p1: 'rgba(238, 238, 238, 0.85)',
+  predicted: '#fbbf24',
+} as const;
+
 export const formatDelta = (delta: number | null): string => {
   if (delta === null) {
     return '+-.---';

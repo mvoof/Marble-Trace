@@ -4,8 +4,7 @@ import { telemetryStore } from '@store/iracing/telemetry.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import { TimingRow } from '@/components/shared/TimingRow/TimingRow';
-
-const COLOR_CURRENT = '#22c55e';
+import { LAP_TIME_COLORS } from '@utils/widget/lap-times-utils';
 
 export const CurrentLapRow = observer(() => {
   const currentLap = telemetryStore.lapTiming?.lap_current_lap_time ?? null;
@@ -17,7 +16,7 @@ export const CurrentLapRow = observer(() => {
       label="CURRENT"
       time={formatLapTime(currentLap)}
       delta=""
-      accentColor={COLOR_CURRENT}
+      accentColor={LAP_TIME_COLORS.current}
       fill={isHorizontal}
     />
   );

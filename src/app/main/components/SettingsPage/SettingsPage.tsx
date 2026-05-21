@@ -164,7 +164,7 @@ export const SettingsPage = observer(() => {
             </div>
 
             <Select
-              style={{ width: 140 }}
+              className={styles.selectWidth}
               value={appSettingsStore.settings.updateCheckInterval}
               onChange={(v) => appSettingsStore.setUpdateCheckInterval(v)}
               options={[
@@ -180,24 +180,18 @@ export const SettingsPage = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <div className={styles.fieldRow} style={{ alignItems: 'center' }}>
+          <div className={styles.fieldRow}>
             <div className={styles.fieldTexts}>
               <div className={styles.fieldTitle}>
                 Current Version:{' '}
-                <span style={{ color: '#8b8e98' }}>
+                <span className={styles.versionLabel}>
                   v{appSettingsStore.currentVersion}
                 </span>
               </div>
 
               {appSettingsStore.settings.lastUpdateCheck && (
                 <div
-                  className={styles.fieldDesc}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    marginTop: 2,
-                  }}
+                  className={`${styles.fieldDesc} ${styles.fieldDescMeta}`}
                   suppressHydrationWarning
                 >
                   <Clock size={12} />
@@ -208,7 +202,7 @@ export const SettingsPage = observer(() => {
                 </div>
               )}
 
-              <div className={styles.fieldDesc} style={{ marginTop: 4 }}>
+              <div className={`${styles.fieldDesc} ${styles.fieldDescOffset}`}>
                 {appSettingsStore.updateStatus === 'idle' &&
                   'Your application is up to date.'}
 
@@ -216,7 +210,7 @@ export const SettingsPage = observer(() => {
                   'Checking for updates...'}
 
                 {appSettingsStore.updateStatus === 'available' && (
-                  <span style={{ color: '#52c41a' }}>
+                  <span className={styles.statusSuccess}>
                     New version v{appSettingsStore.availableVersion} is
                     available!
                   </span>
@@ -228,11 +222,8 @@ export const SettingsPage = observer(() => {
                   'Update downloaded. Restarting...'}
 
                 {appSettingsStore.updateStatus === 'error' && (
-                  <span style={{ color: '#ff4d4f' }}>
-                    <AlertCircle
-                      size={12}
-                      style={{ marginRight: 4, verticalAlign: 'middle' }}
-                    />
+                  <span className={styles.statusError}>
+                    <AlertCircle size={12} className={styles.errorIcon} />
                     Update check failed.
                   </span>
                 )}
@@ -286,7 +277,9 @@ export const SettingsPage = observer(() => {
           <div className={styles.fieldGroup}>
             <div className={styles.fieldTitle}>Telemetry Snapshot</div>
 
-            <div className={styles.fieldDesc} style={{ marginBottom: 16 }}>
+            <div
+              className={`${styles.fieldDesc} ${styles.fieldDescBeforeAction}`}
+            >
               Capture current telemetry state.
             </div>
 
