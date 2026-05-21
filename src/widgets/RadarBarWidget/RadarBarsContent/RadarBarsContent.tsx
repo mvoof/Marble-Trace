@@ -6,7 +6,7 @@ import { useRadarVisibility } from '@hooks/common/useRadarVisibility';
 import { useWidgetAutoHide } from '@hooks/common/useWidgetAutoHide';
 import { RadarBar } from '../RadarBar/RadarBar';
 
-import styles from '../RadarBarWidget.module.scss';
+import styles from './RadarBarsContent.module.scss';
 
 const CAR_SEARCH_RADIUS = 10.0;
 
@@ -15,12 +15,17 @@ export const RadarBarsContent = observer(() => {
   const radarSettings = widgetSettingsStore.getRadarSettings('radar-bar');
 
   const nearbyCars =
-    proximity?.nearbyCars.filter((car) => car.clearance <= CAR_SEARCH_RADIUS) ?? [];
+    proximity?.nearbyCars.filter((car) => car.clearance <= CAR_SEARCH_RADIUS) ??
+    [];
 
   const spotterLeft = proximity?.spotterLeft ?? false;
   const spotterRight = proximity?.spotterRight ?? false;
 
-  const visible = useRadarVisibility(nearbyCars, radarSettings, spotterLeft || spotterRight);
+  const visible = useRadarVisibility(
+    nearbyCars,
+    radarSettings,
+    spotterLeft || spotterRight
+  );
 
   useWidgetAutoHide(visible);
 
