@@ -8,30 +8,24 @@ import styles from './RadarBarsContent.module.scss';
 const BAR_SEARCH_RADIUS = 10;
 
 export const RadarBarsContent = observer(() => {
-  const { proximity, radarSettings, spotterLeft, spotterRight, visible } =
-    useProximityRadarData('radar-bar', BAR_SEARCH_RADIUS);
+  const { proximity, visible } = useProximityRadarData(
+    'radar-bar',
+    BAR_SEARCH_RADIUS
+  );
 
   if (!visible || !proximity) {
     return null;
   }
 
-  const activeOnly = radarSettings.barDisplayMode === 'active-only';
-  const showLeft = activeOnly ? spotterLeft : true;
-  const showRight = activeOnly ? spotterRight : true;
-
   return (
     <>
-      {showLeft && (
-        <div className={styles.leftSlot}>
-          <RadarBar side="left" />
-        </div>
-      )}
+      <div className={styles.leftSlot}>
+        <RadarBar side="left" />
+      </div>
 
-      {showRight && (
-        <div className={styles.rightSlot}>
-          <RadarBar side="right" />
-        </div>
-      )}
+      <div className={styles.rightSlot}>
+        <RadarBar side="right" />
+      </div>
     </>
   );
 });

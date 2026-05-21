@@ -1,13 +1,16 @@
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
+import { computedStore } from '@store/iracing/computed.store';
 
 import styles from './DriverRow.module.scss';
 
 interface IrChangeCellProps {
-  delta: number | undefined;
+  carIdx: number;
 }
 
-export const IrChangeCell = observer(({ delta }: IrChangeCellProps) => {
+export const IrChangeCell = observer(({ carIdx }: IrChangeCellProps) => {
+  const delta =
+    computedStore.driverMap.get(carIdx)?.estimatedIrDelta ?? undefined;
   if (delta == null || delta === 0) {
     return <span className={styles.irChange}>-</span>;
   }

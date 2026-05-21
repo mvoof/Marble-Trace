@@ -8,6 +8,11 @@ import styles from './StandingsHeader.module.scss';
 
 export const StandingsHeader = observer(() => {
   const settings = widgetSettingsStore.getStandingsSettings();
+
+  if (!settings.showColumnHeaders) {
+    return null;
+  }
+
   const gridTemplate = buildGridTemplate(settings);
 
   return (

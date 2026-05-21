@@ -1,17 +1,13 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
-import { formatSimTime } from '@utils/widget/timer-utils';
-import { useWallClock } from '@hooks/widget/useWallClock';
 
+import { SimTimeItem } from './SimTimeItem/SimTimeItem';
+import { WallClockItem } from './WallClockItem/WallClockItem';
 import styles from './TimerClockRow.module.scss';
 
 export const TimerClockRow = observer(() => {
   const { showWallClock, showSimTime } = widgetSettingsStore.getTimerSettings();
-  const wallClock = useWallClock();
-  const rawSimTime = telemetryStore.session?.session_time_of_day ?? null;
-  const simTime = rawSimTime !== null ? formatSimTime(rawSimTime) : null;
 
   if (!showWallClock && !showSimTime) {
     return null;
@@ -19,19 +15,9 @@ export const TimerClockRow = observer(() => {
 
   return (
     <div className={styles.clockRow}>
-      {showWallClock && (
-        <span className={styles.clockItem}>
-          <span className={styles.clockLabel}>PC</span>
-          {wallClock.time}
-        </span>
-      )}
+      <WallClockItem />
 
-      {showSimTime && simTime !== null && (
-        <span className={styles.clockItem}>
-          <span className={styles.clockLabel}>SIM</span>
-          {simTime}
-        </span>
-      )}
+      <SimTimeItem />
     </div>
   );
 });

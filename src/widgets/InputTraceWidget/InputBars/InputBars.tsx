@@ -14,15 +14,9 @@ export const InputBars = observer(() => {
 
   return (
     <div className={styles.barsVertical}>
-      {settings.showClutch && (
-        <Bar channel="clutch" width="lg" rounded={false} />
-      )}
-
-      {settings.showBrake && <Bar channel="brake" width="lg" rounded={false} />}
-
-      {settings.showThrottle && (
-        <Bar channel="throttle" width="lg" rounded={false} />
-      )}
+      <Bar channel="clutch" width="lg" rounded={false} />
+      <Bar channel="brake" width="lg" rounded={false} />
+      <Bar channel="throttle" width="lg" rounded={false} />
     </div>
   );
 });

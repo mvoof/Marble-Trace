@@ -19,6 +19,11 @@ import styles from './SessionHeader.module.scss';
 
 export const SessionHeader = observer(() => {
   const settings = widgetSettingsStore.getStandingsSettings();
+
+  if (!settings.showSessionHeader) {
+    return null;
+  }
+
   const sessionInfo = telemetryStore.sessionInfo?.SessionInfo;
   const weekendInfo = telemetryStore.weekendInfo;
   const driverEntries = computedStore.standings?.entries ?? [];

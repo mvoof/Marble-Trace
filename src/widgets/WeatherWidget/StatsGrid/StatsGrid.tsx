@@ -9,12 +9,18 @@ export const StatsGrid = observer(() => {
   const { showAirTemp, showTrackTemp, showWind, showHumidity } =
     widgetSettingsStore.getWeatherSettings();
 
+  const hasStats = showAirTemp || showTrackTemp || showWind || showHumidity;
+
+  if (!hasStats) {
+    return null;
+  }
+
   return (
     <div className={styles.statsGrid}>
-      {showAirTemp && <StatCell type="airTemp" />}
-      {showTrackTemp && <StatCell type="trackTemp" />}
-      {showWind && <StatCell type="wind" />}
-      {showHumidity && <StatCell type="humidity" />}
+      <StatCell type="airTemp" />
+      <StatCell type="trackTemp" />
+      <StatCell type="wind" />
+      <StatCell type="humidity" />
     </div>
   );
 });

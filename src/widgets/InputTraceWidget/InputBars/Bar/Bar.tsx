@@ -33,10 +33,23 @@ function getChannelColor(channel: BarChannel): string {
   return settings.clutchColor;
 }
 
+const CHANNEL_VISIBILITY_KEY: Record<
+  BarChannel,
+  'showClutch' | 'showBrake' | 'showThrottle'
+> = {
+  clutch: 'showClutch',
+  brake: 'showBrake',
+  throttle: 'showThrottle',
+};
+
 export const Bar = observer(
   ({ channel, width = 'md', rounded = true }: BarProps) => {
     const settings = widgetSettingsStore.getInputTraceSettings();
     const smoothedRef = useRef(0);
+
+    if (!settings[CHANNEL_VISIBILITY_KEY[channel]]) {
+      return null;
+    }
 
     const rawValue = getRawValue(channel);
     const smoothing = settings.smoothing;

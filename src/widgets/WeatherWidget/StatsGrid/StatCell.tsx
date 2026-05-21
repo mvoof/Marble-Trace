@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '@store/iracing/telemetry.store';
 import { unitsStore } from '@store/units.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   formatTemp,
   formatSpeed as _formatSpeed,
@@ -24,11 +25,28 @@ const getWindColor = (mps: number | null): string => {
   return '#3399ff';
 };
 
+const STAT_CELL_SETTING_KEY: Record<
+  StatCellType,
+  'showAirTemp' | 'showTrackTemp' | 'showWind' | 'showHumidity'
+> = {
+  airTemp: 'showAirTemp',
+  trackTemp: 'showTrackTemp',
+  wind: 'showWind',
+  humidity: 'showHumidity',
+};
+
 interface StatCellProps {
   type: StatCellType;
 }
 
 export const StatCell = observer(({ type }: StatCellProps) => {
+  const settingKey = STAT_CELL_SETTING_KEY[type];
+  const settings = widgetSettingsStore.getWeatherSettings();
+
+  if (!settings[settingKey]) {
+    return null;
+  }
+
   const weekendInfo = telemetryStore.weekendInfo;
   const env = telemetryStore.environment;
   const { system } = unitsStore;

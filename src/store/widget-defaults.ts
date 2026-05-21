@@ -1,4 +1,4 @@
-import { TelemetryDebugWidgetContainer } from '@widgets/TelemetryDebugWidget/TelemetryDebugWidgetContainer';
+import { TelemetryDebugWidget } from '@widgets/TelemetryDebugWidget/TelemetryDebugWidget';
 import { SpeedWidget } from '@widgets/SpeedWidget/SpeedWidget';
 import { InputTraceWidget } from '@widgets/InputTraceWidget/InputTraceWidget';
 import { ProximityRadarWidget } from '@widgets/ProximityRadarWidget/ProximityRadarWidget';
@@ -345,7 +345,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'example',
     label: 'Telemetry Debug',
     description: 'Raw telemetry data debugger.',
-    component: TelemetryDebugWidgetContainer,
+    component: TelemetryDebugWidget,
     designWidth: 400,
     designHeight: 700,
     userSettings: {

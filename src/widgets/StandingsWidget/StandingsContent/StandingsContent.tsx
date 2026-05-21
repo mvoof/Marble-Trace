@@ -57,14 +57,12 @@ export const StandingsContent = observer(() => {
 
   return (
     <>
-      {settings.showSessionHeader && <SessionHeader />}
+      <SessionHeader />
 
-      {settings.enableClassCycling && allClassGroups.length > 0 && (
-        <ClassSwitcher />
-      )}
+      <ClassSwitcher />
 
       <div ref={listRef} className={styles.listWrap}>
-        {settings.showColumnHeaders && <StandingsHeader />}
+        <StandingsHeader />
 
         <ClassGroup group={displayGroup()} />
       </div>

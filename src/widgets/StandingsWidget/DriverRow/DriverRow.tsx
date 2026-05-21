@@ -31,9 +31,6 @@ export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
     return null;
   }
 
-  const irDelta = driver.estimatedIrDelta ?? undefined;
-  const effectiveStartPos = computedStore.getEffectiveStartPos(carIdx);
-
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 
@@ -42,10 +39,6 @@ export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
   const pos = settings.enableClassCycling
     ? driver.classPosition
     : driver.position;
-
-  const startPos = settings.enableClassCycling
-    ? effectiveStartPos.class
-    : effectiveStartPos.overall;
 
   const isLeader = pos === 1;
 
@@ -133,7 +126,7 @@ export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
 
       {settings.showIrChange && (
         <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <IrChangeCell delta={irDelta} />
+          <IrChangeCell carIdx={carIdx} />
         </div>
       )}
 
@@ -145,7 +138,7 @@ export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
 
       {settings.showPosChange && (
         <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <PosChange position={pos} startPos={startPos} />
+          <PosChange carIdx={carIdx} />
         </div>
       )}
 

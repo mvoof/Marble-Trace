@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import { unitsStore } from '@store/units.store';
 import {
   distanceUnit,
@@ -19,14 +20,18 @@ interface RadarBarProps {
 export const RadarBar = observer(({ side }: RadarBarProps) => {
   const proximity = computedStore.proximity;
   const { system } = unitsStore;
+  const radarSettings = widgetSettingsStore.getRadarSettings();
 
-  const active =
+  const spotterActive =
     side === 'left'
       ? (proximity?.spotterLeft ?? false)
       : (proximity?.spotterRight ?? false);
 
-  if (!active || !proximity) {
-    return <div className={styles.bar} />;
+  const activeOnly = radarSettings.barDisplayMode === 'active-only';
+  const visible = activeOnly ? spotterActive : true;
+
+  if (!visible || !proximity) {
+    return null;
   }
 
   const rawDist =

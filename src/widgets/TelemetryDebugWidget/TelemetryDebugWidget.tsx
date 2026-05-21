@@ -1,54 +1,39 @@
-﻿import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
 
 import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
-import type {
-  CarDynamicsFrame,
-  CarInputsFrame,
-  CarStatusFrame,
-  LapTimingFrame,
-  SessionFrame,
-  DriverInfoData,
-  WeekendInfo,
-  EnvironmentFrame,
-} from '@/types/bindings';
+import { telemetryConnectionStore } from '@store/iracing/telemetry-connection.store';
+import { telemetryStore } from '@store/iracing/telemetry.store';
 
 import styles from './TelemetryDebugWidget.module.scss';
 
 const fmt = (v: number | null | undefined, decimals = 1): string =>
   v != null ? v.toFixed(decimals) : '—';
 
-const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <>
-    <span className={styles.label}>{label}</span>
-    <span className={styles.value}>{value}</span>
-  </>
+const Row = observer(
+  ({ label, value }: { label: string; value: React.ReactNode }) => (
+    <>
+      <span className={styles.label}>{label}</span>
+      <span className={styles.value}>{value}</span>
+    </>
+  )
 );
 
-interface TelemetryDebugWidgetProps {
-  status: string;
-  carDynamics: CarDynamicsFrame | null;
-  carInputs: CarInputsFrame | null;
-  carStatus: CarStatusFrame | null;
-  lapTiming: LapTimingFrame | null;
-  session: SessionFrame | null;
-  driverInfo: DriverInfoData | null;
-  weekendInfo: WeekendInfo | null;
-  environment: EnvironmentFrame | null;
-}
-
-export const TelemetryDebugWidget = ({
-  status,
-  carDynamics,
-  carInputs,
-  carStatus,
-  lapTiming,
-  session,
-  driverInfo,
-  weekendInfo,
-  environment,
-}: TelemetryDebugWidgetProps) => {
+export const TelemetryDebugWidget = observer(() => {
   const hasLoggedRef = useRef(false);
+
+  const {
+    carDynamics,
+    carInputs,
+    carStatus,
+    lapTiming,
+    session,
+    driverInfo,
+    weekendInfo,
+    environment,
+  } = telemetryStore;
+  const status = telemetryConnectionStore.status;
 
   useEffect(() => {
     if (driverInfo && !hasLoggedRef.current) {
@@ -118,4 +103,4 @@ export const TelemetryDebugWidget = ({
       </div>
     </WidgetPanel>
   );
-};
+});

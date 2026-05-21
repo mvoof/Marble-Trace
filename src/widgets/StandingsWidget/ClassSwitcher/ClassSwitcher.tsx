@@ -9,6 +9,7 @@ import { formatIRating } from '@/utils/widget/widget-utils';
 import styles from './ClassSwitcher.module.scss';
 
 export const ClassSwitcher = observer(() => {
+  const settings = widgetSettingsStore.getStandingsSettings();
   const allClassGroups = computedStore.allClassGroups;
   const activeIndex = widgetSettingsStore.standingsActiveClassIndex;
   const dragMode = appSettingsStore.dragMode;
@@ -16,7 +17,7 @@ export const ClassSwitcher = observer(() => {
   const group = allClassGroups[activeIndex];
   const total = allClassGroups.length;
 
-  if (!group) {
+  if (!settings.enableClassCycling || allClassGroups.length === 0 || !group) {
     return null;
   }
 

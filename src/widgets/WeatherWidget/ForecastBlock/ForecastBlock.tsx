@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import type { Skies as BindingSkies } from '@/types/bindings';
 import { telemetryStore } from '@store/iracing/telemetry.store';
 import { unitsStore } from '@store/units.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   convertTemp,
   formatSpeed,
@@ -30,6 +31,12 @@ const formatForecastTime = (timeSec: number): string => {
 };
 
 export const ForecastBlock = observer(() => {
+  const { showForecast } = widgetSettingsStore.getWeatherSettings();
+
+  if (!showForecast) {
+    return null;
+  }
+
   const weekendInfo = telemetryStore.weekendInfo;
   const { system } = unitsStore;
 
