@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '@store/iracing/telemetry.store';
-import { UnitValueText } from '@/components/shared/primitives/UnitValueText/UnitValueText';
-import { UnitLabelText } from '@/components/shared/primitives/UnitLabelText/UnitLabelText';
+import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
+import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
 
 import styles from './FuelHeader.module.scss';
 

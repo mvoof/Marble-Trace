@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
 
-import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import { telemetryConnectionStore } from '@store/iracing/telemetry-connection.store';
 import { telemetryStore } from '@store/iracing/telemetry.store';
 

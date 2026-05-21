@@ -11,8 +11,8 @@ import {
 } from '@utils/formatters/telemetry-format';
 import { parseWeekendFloat } from '@utils/widget/weather-utils';
 
-import { UnitValueText } from '@/components/shared/primitives/UnitValueText/UnitValueText';
-import { UnitLabelText } from '@/components/shared/primitives/UnitLabelText/UnitLabelText';
+import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
+import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
 import styles from './StatCell.module.scss';
 
 export type StatCellType = 'airTemp' | 'trackTemp' | 'wind' | 'humidity';

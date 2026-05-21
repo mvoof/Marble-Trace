@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import { LinearMap } from './LinearMap/LinearMap';
 
 import styles from './RelativeMapWidget.module.scss';

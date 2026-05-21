@@ -6,7 +6,7 @@ import { getPointAtPct } from '@utils/telemetry/track-recorder';
 import type { Sector } from '@/types/bindings';
 import type { TrackMapLeaderLabelMode } from '@/types/widget-settings';
 import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
-import { CarDot } from '@/components/shared/primitives/CarDot/CarDot';
+import { CarDot } from '@/components/shared/CarDot/CarDot';
 
 import styles from './TrackMapSvg.module.scss';
 

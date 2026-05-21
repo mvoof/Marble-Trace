@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { UnitLabelText } from '@/components/shared/primitives/UnitLabelText/UnitLabelText';
+import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
 import styles from './FuelDataCell.module.scss';
 
 interface FuelDataCellProps {

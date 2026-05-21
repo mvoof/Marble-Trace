@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { flagsStore } from '@store/flags.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
 import { useWidgetAutoHide } from '@hooks/common/useWidgetAutoHide';
-import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import { useFlagBlink } from '@hooks/flags-hooks';
 import { FlagList } from './FlagList/FlagList';
 

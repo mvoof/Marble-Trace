@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { UnitValueText } from '@/components/shared/primitives/UnitValueText/UnitValueText';
+import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
 import styles from './SuspensionText.module.scss';
 
 interface SuspensionTextProps {

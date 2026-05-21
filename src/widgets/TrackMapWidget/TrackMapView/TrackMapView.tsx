@@ -1,7 +1,7 @@
 import type { RefObject } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import type { TrackPoint } from '@/types';
 import { telemetryStore } from '@store/iracing/telemetry.store';
 import { computedStore } from '@store/iracing/computed.store';

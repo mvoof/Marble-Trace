@@ -4,7 +4,7 @@ import { computedStore } from '@store/iracing/computed.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
 import { FUEL_THRESHOLDS } from '@utils/constants/fuel-constants';
 
-import { UnitLabelText } from '@/components/shared/primitives/UnitLabelText/UnitLabelText';
+import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
 import styles from './FuelFinishCard.module.scss';
 
 export const FuelFinishCard = observer(() => {

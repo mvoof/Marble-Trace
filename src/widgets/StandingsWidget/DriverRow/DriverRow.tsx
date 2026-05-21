@@ -6,10 +6,10 @@ import {
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
 } from '@utils/widget/widget-utils';
-import { PitBadge } from '@/components/shared/primitives/PitBadge/PitBadge';
-import { ClassBadge } from '@/components/shared/primitives/ClassBadge/ClassBadge';
-import { RatingBadge } from '@/components/shared/primitives/RatingBadge/RatingBadge';
-import { TireBadge } from '@/components/shared/primitives/TireBadge/TireBadge';
+import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
+import { ClassBadge } from '@/components/shared/ClassBadge/ClassBadge';
+import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
+import { TireBadge } from '@/components/shared/TireBadge/TireBadge';
 import { computedStore } from '@store/iracing/computed.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
 import { buildGridTemplate } from '@utils/widget/standings-utils';

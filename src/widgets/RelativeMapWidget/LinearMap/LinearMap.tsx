@@ -1,7 +1,7 @@
 ﻿import { useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { TRACK_SURFACE_ON_TRACK } from '@utils/widget/widget-utils';
-import { CarDot } from '@/components/shared/primitives/CarDot/CarDot';
+import { CarDot } from '@/components/shared/CarDot/CarDot';
 import { computedStore } from '@store/iracing/computed.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
 
