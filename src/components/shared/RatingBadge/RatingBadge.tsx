@@ -47,9 +47,11 @@ export const RatingBadge = ({
   return (
     <span className={`${styles.badge}${className ? ` ${className}` : ''}`}>
       <span className={`${styles.licPart} ${licClass}`}>
-        {licString.slice(1).trim()}
+        {letter}&nbsp;{licString.slice(1).trim()}
       </span>
+
       <span className={styles.divider} />
+
       <span className={`${styles.irPart} ${irClass}`}>{formatIr(iRating)}</span>
     </span>
   );
