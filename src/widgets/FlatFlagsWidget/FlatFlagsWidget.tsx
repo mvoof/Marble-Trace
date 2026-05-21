@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import { flagsStore } from '@store/flags.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
+import { useWidgetAutoHide } from '@hooks/common/useWidgetAutoHide';
 import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
 import { useFlagBlink } from '@hooks/flags-hooks';
 import { FlagList } from './FlagList/FlagList';
@@ -13,8 +14,11 @@ export const FlatFlagsWidget = observer(() => {
     widgetSettingsStore.getFlagDisplaySettings('flat-flags');
 
   const blinkOn = useFlagBlink();
+  const hasContent = alwaysShow || flagsStore.displayFlags.length > 0;
 
-  if (!alwaysShow && flagsStore.displayFlags.length === 0) {
+  useWidgetAutoHide(hasContent);
+
+  if (!hasContent) {
     return null;
   }
 
