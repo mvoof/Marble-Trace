@@ -8,10 +8,14 @@ import { useWallClock } from '@hooks/widget/useWallClock';
 import styles from './TimerClockRow.module.scss';
 
 export const TimerClockRow = observer(() => {
-  const wallClock = useWallClock();
   const { showWallClock, showSimTime } = widgetSettingsStore.getTimerSettings();
+  const wallClock = useWallClock();
   const rawSimTime = telemetryStore.session?.session_time_of_day ?? null;
   const simTime = rawSimTime !== null ? formatSimTime(rawSimTime) : null;
+
+  if (!showWallClock && !showSimTime) {
+    return null;
+  }
 
   return (
     <div className={styles.clockRow}>

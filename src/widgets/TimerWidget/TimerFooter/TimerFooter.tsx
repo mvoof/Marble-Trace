@@ -19,6 +19,10 @@ export const TimerFooter = observer(() => {
   const lap = telemetryStore.lapTiming;
   const { showLaps, showPosition } = widgetSettingsStore.getTimerSettings();
 
+  if (!showLaps && !showPosition) {
+    return null;
+  }
+
   if (isSessionEnded(session?.session_state ?? null)) {
     return null;
   }

@@ -8,11 +8,15 @@ import { useWallClock } from '@hooks/widget/useWallClock';
 import styles from './TimerDateRow.module.scss';
 
 export const TimerDateRow = observer(() => {
-  const wallClock = useWallClock();
   const { showPcDate, showSimDate } = widgetSettingsStore.getTimerSettings();
+  const wallClock = useWallClock();
   const rawSimDate =
     telemetryStore.sessionInfo?.WeekendInfo?.WeekendOptions?.Date ?? null;
   const simDate = rawSimDate !== null ? formatSimDate(rawSimDate) : null;
+
+  if (!showPcDate && !showSimDate) {
+    return null;
+  }
 
   return (
     <div className={styles.clockRow}>
