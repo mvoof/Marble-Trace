@@ -42,7 +42,7 @@ export const LedMatrix = observer(
 
               const colorClass = isOff
                 ? ''
-                : getColorClass(gx, gy, bx, by, flag, matrixSize);
+                : getColorClass(gx, gy, bx, by, flag, matrixSize, styles);
 
               return (
                 <div

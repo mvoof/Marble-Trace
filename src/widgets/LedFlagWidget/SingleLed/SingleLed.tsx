@@ -23,7 +23,7 @@ export const SingleLed = observer(({ blinkOn }: SingleLedProps) => {
   const isOff =
     flag === 'none' || ((flag === 'yellow' || flag === 'red') && !blinkOn);
 
-  const colorClass = isOff ? '' : getSingleLedColorClass(flag);
+  const colorClass = isOff ? '' : getSingleLedColorClass(flag, styles);
 
   return (
     <div className={styles.singleLed}>
