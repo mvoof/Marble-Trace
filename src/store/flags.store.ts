@@ -68,13 +68,21 @@ class FlagsStore {
           action(() => setValue(value))();
         } else {
           if (holdDuration > 0 && !isEmpty(getCurrentValue())) {
-            if (hold.timer) clearTimeout(hold.timer);
-
-            hold.timer = setTimeout(
-              action(() => setValue(emptyValue)),
-              holdDuration * 1000
-            );
+            if (!hold.timer) {
+              hold.timer = setTimeout(
+                action(() => {
+                  setValue(emptyValue);
+                  hold.timer = null;
+                }),
+                holdDuration * 1000
+              );
+            }
           } else if (holdDuration === 0) {
+            if (hold.timer) {
+              clearTimeout(hold.timer);
+              hold.timer = null;
+            }
+
             action(() => setValue(emptyValue))();
           }
         }
