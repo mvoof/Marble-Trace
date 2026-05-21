@@ -1,0 +1,15 @@
+.rowListVertical {
+  display: flex;
+  flex-direction: column;
+  gap: ws(2);
+  padding: ws(4) ws(4) ws(8);
+}
+
+.rowListHorizontal {
+  display: flex;
+  flex-direction: row;
+  gap: ws(4);
+  padding: ws(4);
+  width: 100%;
+  height: 100%;
+}

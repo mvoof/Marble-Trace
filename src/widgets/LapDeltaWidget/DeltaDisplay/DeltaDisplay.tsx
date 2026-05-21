@@ -16,12 +16,9 @@ const DELTA_STATE_CLASS: Record<DeltaState, string> = {
   neutral: styles.deltaNeutral,
 };
 
-interface DeltaDisplayProps {
-  isHorizontal: boolean;
-}
-
-export const DeltaDisplay = observer(({ isHorizontal }: DeltaDisplayProps) => {
-  const { reference } = widgetSettingsStore.getLapDeltaSettings();
+export const DeltaDisplay = observer(() => {
+  const { reference, layout } = widgetSettingsStore.getLapDeltaSettings();
+  const isHorizontal = layout === 'horizontal';
   const isSession = reference === 'session_best';
 
   const delta = isSession

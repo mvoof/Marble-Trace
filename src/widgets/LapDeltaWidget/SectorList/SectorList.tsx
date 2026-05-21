@@ -13,12 +13,15 @@ import {
 
 import styles from './SectorList.module.scss';
 
-interface SectorListProps {
-  isHorizontal: boolean;
-}
+export const SectorList = observer(() => {
+  const { reference, layout, showSectorTimes } =
+    widgetSettingsStore.getLapDeltaSettings();
+  const isHorizontal = layout === 'horizontal';
 
-export const SectorList = observer(({ isHorizontal }: SectorListProps) => {
-  const { reference } = widgetSettingsStore.getLapDeltaSettings();
+  if (!showSectorTimes) {
+    return null;
+  }
+
   const isSession = reference === 'session_best';
 
   const sectorDeltas = isSession

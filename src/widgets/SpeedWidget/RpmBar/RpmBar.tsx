@@ -1,9 +1,9 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { telemetryStore } from '@store/iracing/telemetry.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import { useShiftThresholds } from '@hooks/widget/useShiftThresholds';
 import { getShiftZoneColor } from '@utils/widget/speed-utils';
-import type { LedShape } from '@/types/widget-settings';
 import styles from './RpmBar.module.scss';
 
 const LED_COUNT = 22;
@@ -16,12 +16,27 @@ export interface RpmColors {
   limit: string;
 }
 
-interface RpmBarProps {
-  colors: RpmColors;
-  ledShape: LedShape;
-}
+export const RpmBar = observer(() => {
+  const {
+    rpmColorLow,
+    rpmColorMid,
+    rpmColorHigh,
+    rpmColorShift,
+    rpmColorLimit,
+    ledShape,
+    showRpmBar,
+  } = widgetSettingsStore.getSpeedSettings();
 
-export const RpmBar = observer(({ colors, ledShape }: RpmBarProps) => {
+  if (!showRpmBar) {
+    return null;
+  }
+  const colors: RpmColors = {
+    low: rpmColorLow,
+    mid: rpmColorMid,
+    high: rpmColorHigh,
+    shift: rpmColorShift,
+    limit: rpmColorLimit,
+  };
   const rpm = telemetryStore.carDynamics?.rpm ?? 0;
   const { shiftRpm, blinkRpm } = useShiftThresholds();
 

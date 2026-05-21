@@ -8,6 +8,10 @@ import styles from './InputBars.module.scss';
 export const InputBars = observer(() => {
   const settings = widgetSettingsStore.getInputTraceSettings();
 
+  if (settings.barMode === 'hidden') {
+    return null;
+  }
+
   return (
     <div className={styles.barsVertical}>
       {settings.showClutch && (

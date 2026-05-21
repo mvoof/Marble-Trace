@@ -10,14 +10,3 @@
   // Override WidgetPanel background so empty space below rows stays transparent
   background: transparent !important;
 }
-
-// Driver list — no scroll, rows beyond window are not rendered
-.driverList {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 0;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-  justify-content: flex-start;
-}
