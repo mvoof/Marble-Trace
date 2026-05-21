@@ -1,7 +1,10 @@
 import { observer } from 'mobx-react-lite';
 
 import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import { unitsStore } from '@store/units.store';
+import { useRadarVisibility } from '@hooks/common/useRadarVisibility';
+import { useWidgetAutoHide } from '@hooks/common/useWidgetAutoHide';
 import {
   distanceUnit,
   formatDistance,
@@ -19,6 +22,7 @@ import styles from './RadarDisplay.module.scss';
 
 const RADAR_RENDER_RANGE = 10;
 const PX_PER_METER = 22;
+const CAR_SEARCH_RADIUS = 30;
 
 interface CarIconProps {
   color?: string;
@@ -42,13 +46,24 @@ const CarIcon = observer(
 
 export const RadarDisplay = observer(() => {
   const proximity = computedStore.proximity;
+  const radarSettings = widgetSettingsStore.getRadarSettings('proximity-radar');
   const { system } = unitsStore;
 
-  if (!proximity) {
+  const nearbyCars =
+    proximity?.nearbyCars.filter((car) => car.clearance <= CAR_SEARCH_RADIUS) ?? [];
+
+  const spotterLeft = proximity?.spotterLeft ?? false;
+  const spotterRight = proximity?.spotterRight ?? false;
+
+  const visible = useRadarVisibility(nearbyCars, radarSettings, spotterLeft || spotterRight);
+
+  useWidgetAutoHide(visible);
+
+  if (!visible || !proximity) {
     return null;
   }
 
-  const { radarDistances, spotterLeft, spotterRight } = proximity;
+  const { radarDistances } = proximity;
   const { frontDist, rearDist, leftDist, rightDist } = radarDistances;
   const formatDistanceFn = (meters: number) => formatDistance(meters, system);
   const distanceUnitLabel = distanceUnit(system);
