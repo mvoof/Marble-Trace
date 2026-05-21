@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button } from 'antd';
 import { X } from 'lucide-react';
@@ -12,23 +12,11 @@ import styles from './OverlayCanvas.module.scss';
 export const OverlayCanvas = observer(() => {
   const { dragMode } = appSettingsStore;
   const { hideAllWidgets } = appSettingsStore.settings;
-  const [visibilityMap, setVisibilityMap] = useState<Record<string, boolean>>(
-    {}
-  );
-
   useEffect(() => {
     getCurrentWebviewWindow()
       .setIgnoreCursorEvents(!dragMode)
       .catch((err: unknown) => console.error(err));
   }, [dragMode]);
-
-  const handleVisibilityChange = (id: string, visible: boolean) => {
-    setVisibilityMap((prev) => {
-      if (prev[id] === visible) return prev;
-
-      return { ...prev, [id]: visible };
-    });
-  };
 
   const handleExitDragMode = () => {
     appSettingsStore.setDragMode(false);
@@ -72,13 +60,8 @@ export const OverlayCanvas = observer(() => {
           <WidgetContainer
             key={widget.id}
             widgetId={widget.id}
-            visible={visibilityMap[widget.id] ?? true}
           >
-            <WidgetComponent
-              onVisibilityChange={(visible) =>
-                handleVisibilityChange(widget.id, visible)
-              }
-            />
+            <WidgetComponent />
           </WidgetContainer>
         );
       })}
