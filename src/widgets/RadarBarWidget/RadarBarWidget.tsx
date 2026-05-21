@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
-import { RadarBarsContent } from './RadarBarsContent/RadarBarsContent';
+import { RadarBar } from './RadarBar/RadarBar';
 
 import styles from './RadarBarWidget.module.scss';
 
@@ -13,6 +13,12 @@ export const RadarBarWidget = observer(() => (
     direction="row"
     edgeInset
   >
-    <RadarBarsContent />
+    <div className={styles.leftSlot}>
+      <RadarBar side="left" />
+    </div>
+
+    <div className={styles.rightSlot}>
+      <RadarBar side="right" />
+    </div>
   </WidgetPanel>
 ));

@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
+import { useProximityRadarData } from '@hooks/common/useProximityRadarData';
 import { unitsStore } from '@store/units.store';
 import {
   distanceUnit,
@@ -12,25 +11,22 @@ import { CAR_LENGTH, getBarPillColor } from '@utils/constants/radar-constants';
 import styles from './RadarBar.module.scss';
 
 const MIN_PILL_PERCENT = 8;
+const BAR_SEARCH_RADIUS = 10;
 
 interface RadarBarProps {
   side: 'left' | 'right';
 }
 
 export const RadarBar = observer(({ side }: RadarBarProps) => {
-  const proximity = computedStore.proximity;
+  const { proximity, visible, spotterLeft, spotterRight, radarSettings } =
+    useProximityRadarData('radar-bar', BAR_SEARCH_RADIUS);
   const { system } = unitsStore;
-  const radarSettings = widgetSettingsStore.getRadarSettings();
 
-  const spotterActive =
-    side === 'left'
-      ? (proximity?.spotterLeft ?? false)
-      : (proximity?.spotterRight ?? false);
-
+  const spotterActive = side === 'left' ? spotterLeft : spotterRight;
   const activeOnly = radarSettings.barDisplayMode === 'active-only';
-  const visible = activeOnly ? spotterActive : true;
+  const sideVisible = activeOnly ? spotterActive : true;
 
-  if (!visible || !proximity) {
+  if (!visible || !sideVisible || !proximity) {
     return null;
   }
 
