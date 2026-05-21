@@ -1,7 +1,7 @@
 import type { FlagType } from '@/types';
 import { BLOCKS } from '@utils/widget/led-flag-utils';
 
-import styles from './LedMatrix.module.scss';
+import styles from './LedFlagWidget.module.scss';
 
 export const getColorClass = (
   gx: number,
