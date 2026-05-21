@@ -6,17 +6,18 @@ import { widgetSettingsStore } from '@store/widget-settings.store';
 import { telemetryConnectionStore } from '@store/iracing/telemetry-connection.store';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import styles from './WidgetContainer.module.scss';
+import { WidgetIdContext } from './WidgetIdContext';
+import { widgetAutoHideStore } from '@store/widget-auto-hide.store';
 
 type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 interface WidgetContainerProps {
   widgetId: string;
   children: ReactNode;
-  visible?: boolean;
 }
 
 export const WidgetContainer = observer(
-  ({ widgetId, children, visible = true }: WidgetContainerProps) => {
+  ({ widgetId, children }: WidgetContainerProps) => {
     const { dragMode } = appSettingsStore;
     const widget = widgetSettingsStore.getWidget(widgetId);
 
@@ -45,7 +46,7 @@ export const WidgetContainer = observer(
       (appSettingsStore.settings.hideWidgetsWhenGameClosed &&
         !isConnected &&
         !dragMode) ||
-      (!visible && !dragMode);
+      (!widgetAutoHideStore.isVisible(widgetId) && !dragMode);
 
     const backgroundColor = widget?.userSettings.backgroundColor ?? '#1a1a1a';
     const backgroundColorEdge =
@@ -224,7 +225,9 @@ export const WidgetContainer = observer(
                 } as React.CSSProperties
               }
             >
-              {children}
+              <WidgetIdContext.Provider value={widgetId}>
+                {children}
+              </WidgetIdContext.Provider>
             </div>
           </ErrorBoundary>
 
