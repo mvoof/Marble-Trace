@@ -38,7 +38,6 @@ class ComputedStore {
   standings: DriverEntriesFrame | null = null;
   pitStops: PitStopsFrame | null = null;
   lapDelta: LapDeltaFrame | null = null;
-
   private readonly startPositionSnapshot = new Map<number, StartPosition>();
 
   constructor() {
