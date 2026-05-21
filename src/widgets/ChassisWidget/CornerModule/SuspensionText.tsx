@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import styles from './CornerModule.module.scss';
+import styles from './SuspensionText.module.scss';
 
 interface SuspensionTextProps {
   value: string;
@@ -14,6 +14,7 @@ export const SuspensionText = observer(
       <span className={styles.suspensionAndBrakesValue} style={{ color }}>
         {value}
       </span>
+
       <span className={styles.suspensionAndBrakesUnit} style={{ color }}>
         {unit}
       </span>

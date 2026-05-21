@@ -91,6 +91,7 @@ export const ChassisWidget = observer(() => {
       {!onPitRoad && (
         <div className={styles.staleNotice}>
           <Info size={12} className={styles.staleIcon} />
+
           <span>Tire data updates only in pits</span>
         </div>
       )}

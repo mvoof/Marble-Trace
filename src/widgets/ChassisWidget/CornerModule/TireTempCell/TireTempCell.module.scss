@@ -1,0 +1,17 @@
+.tempValue {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  font-size: ws(14);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.tempUnit {
+  font-size: ws(12);
+  margin-left: ws(1);
+  font-weight: 600;
+  opacity: 0.8;
+}

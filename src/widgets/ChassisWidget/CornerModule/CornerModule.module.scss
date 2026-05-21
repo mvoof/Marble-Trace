@@ -26,24 +26,6 @@
   margin-bottom: ws(6);
 }
 
-.wearValue {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: baseline;
-  font-size: ws(14);
-  font-weight: 700;
-  color: $color-text-muted;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
-}
-
-.wearUnit {
-  font-size: ws(12);
-  margin-left: ws(1);
-  font-weight: 600;
-}
-
 .tireVisual {
   position: relative;
   display: flex;
@@ -73,67 +55,11 @@
     background-color 0.5s ease;
 }
 
-.pressureOverlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-}
-
-.pressureUnit {
-  font-size: ws(12);
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.6);
-  letter-spacing: 0.05em;
-  text-shadow:
-    0 0 4px #000,
-    0 0 8px #000;
-  line-height: 1;
-}
-
-.pressureValue {
-  font-size: ws(17);
-  font-weight: 900;
-  color: #ffffff;
-  line-height: 1;
-  text-shadow:
-    0 0 4px #000,
-    0 0 8px #000;
-  font-variant-numeric: tabular-nums;
-}
-
-.pressureDanger {
-  color: $color-error;
-}
-
 .tempRow {
   display: flex;
   justify-content: space-between;
   width: 100%;
   margin-top: ws(6);
-}
-
-.tempValue {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: baseline;
-  font-size: ws(14);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
-}
-
-.tempUnit {
-  font-size: ws(12);
-  margin-left: ws(1);
-  font-weight: 600;
-  opacity: 0.8;
 }
 
 // ===== Suspension panel =====
@@ -163,34 +89,6 @@
   gap: ws(6);
   justify-content: center;
   width: ws(50);
-}
-
-.suspensionAndBrakesRow {
-  display: flex;
-  align-items: baseline;
-  gap: ws(3);
-  justify-content: flex-start;
-}
-
-.suspensionAndBrakesLabel {
-  font-size: ws(9);
-  color: #64748b;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  flex-shrink: 0;
-}
-
-.suspensionAndBrakesValue {
-  font-size: ws(13);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.suspensionAndBrakesUnit {
-  font-size: ws(10);
-  font-weight: 600;
-  opacity: 0.8;
-  flex-shrink: 0;
 }
 
 // ===== Damage animation — on tire visual only =====
