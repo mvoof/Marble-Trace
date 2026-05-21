@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { flagsStore } from '@store/flags.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
 import { BLOCKS, buildGridData } from '@utils/widget/led-flag-utils';
-import { getColorClass } from '../led-matrix-utils';
+import { getColorClass, type ColorStyles } from '../led-matrix-utils';
 
 import styles from './LedMatrix.module.scss';
 
@@ -42,7 +42,15 @@ export const LedMatrix = observer(
 
               const colorClass = isOff
                 ? ''
-                : getColorClass(gx, gy, bx, by, flag, matrixSize);
+                : getColorClass(
+                    gx,
+                    gy,
+                    bx,
+                    by,
+                    flag,
+                    matrixSize,
+                    styles as unknown as ColorStyles
+                  );
 
               return (
                 <div

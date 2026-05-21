@@ -1,7 +1,14 @@
 import type { FlagType } from '@/types';
 import { BLOCKS } from '@utils/widget/led-flag-utils';
 
-import styles from './LedFlagWidget.module.scss';
+export interface ColorStyles {
+  colorGreen: string;
+  colorYellow: string;
+  colorRed: string;
+  colorWhite: string;
+  colorBlue: string;
+  colorOrange: string;
+}
 
 export const getColorClass = (
   gx: number,
@@ -9,7 +16,8 @@ export const getColorClass = (
   bx: number,
   by: number,
   flag: FlagType,
-  matrixSize: number
+  matrixSize: number,
+  styles: ColorStyles
 ): string => {
   const last = matrixSize - 1;
   const isEdge = gx === 0 || gx === last || gy === 0 || gy === last;
@@ -59,7 +67,10 @@ export const getColorClass = (
   }
 };
 
-export const getSingleLedColorClass = (flag: FlagType): string => {
+export const getSingleLedColorClass = (
+  flag: FlagType,
+  styles: ColorStyles
+): string => {
   switch (flag) {
     case 'green':
       return styles.colorGreen;

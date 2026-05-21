@@ -51,3 +51,47 @@ $board-padding: 4px;
   margin: $diode-margin;
   visibility: hidden;
 }
+
+// Color classes are intentionally duplicated in SingleLed.module.scss —
+// CSS Modules scope prevents sharing, and local definition avoids background override.
+.colorGreen {
+  background-color: $led-green;
+  box-shadow:
+    0 0 4px $led-green,
+    0 0 8px $led-green;
+}
+
+.colorYellow {
+  background-color: $led-yellow;
+  box-shadow:
+    0 0 4px $led-yellow,
+    0 0 8px $led-yellow;
+}
+
+.colorRed {
+  background-color: $led-red;
+  box-shadow:
+    0 0 4px $led-red,
+    0 0 8px $led-red;
+}
+
+.colorBlue {
+  background-color: $led-blue;
+  box-shadow:
+    0 0 4px $led-blue,
+    0 0 8px $led-blue;
+}
+
+.colorWhite {
+  background-color: $led-white;
+  box-shadow:
+    0 0 4px $led-white,
+    0 0 8px rgba($led-white, 0.6);
+}
+
+.colorOrange {
+  background-color: $led-orange;
+  box-shadow:
+    0 0 4px $led-orange,
+    0 0 8px $led-orange;
+}
