@@ -5,37 +5,3 @@
   display: flex;
   flex-direction: column;
 }
-
-// Column header row — same grid as DriverRow
-.headerRow {
-  display: grid;
-  align-items: center;
-  column-gap: ws(6);
-  padding: ws(5) ws(10);
-  background: rgb(24, 24, 27);
-  border-bottom: 1px solid rgba(39, 39, 42, 0.5);
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-
-.th {
-  font-family: $font-mono;
-  text-transform: uppercase;
-  font-size: ws(9);
-  letter-spacing: 0.06em;
-  color: rgba(161, 161, 170, 1);
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.thCenter {
-  text-align: center;
-  justify-self: center;
-}
-
-.thRight {
-  text-align: right;
-  justify-self: end;
-}
