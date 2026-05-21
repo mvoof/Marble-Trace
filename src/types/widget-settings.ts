@@ -210,9 +210,7 @@ export interface BaseUserSettings {
 export type WidgetUserSettings = BaseUserSettings & WidgetSpecificSettings;
 
 export interface WidgetConfig extends WidgetMeta {
-  component: React.ComponentType<{
-    onVisibilityChange?: (visible: boolean) => void;
-  }>;
+  component: React.ComponentType;
   userSettings: WidgetUserSettings;
 }
 
