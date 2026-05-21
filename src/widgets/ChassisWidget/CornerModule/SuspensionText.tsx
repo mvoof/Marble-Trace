@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
+import { UnitValueText } from '@/components/shared/primitives/UnitValueText/UnitValueText';
 import styles from './SuspensionText.module.scss';
 
 interface SuspensionTextProps {
@@ -10,14 +11,12 @@ interface SuspensionTextProps {
 
 export const SuspensionText = observer(
   ({ value, unit, color = '#fff' }: SuspensionTextProps) => (
-    <div className={styles.suspensionAndBrakesRow}>
-      <span className={styles.suspensionAndBrakesValue} style={{ color }}>
-        {value}
-      </span>
-
-      <span className={styles.suspensionAndBrakesUnit} style={{ color }}>
-        {unit}
-      </span>
-    </div>
+    <UnitValueText
+      value={value}
+      unit={unit}
+      color={color}
+      className={styles.root}
+      unitClassName={styles.unit}
+    />
   )
 );

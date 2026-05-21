@@ -6,13 +6,8 @@
 }
 
 .cellLabel {
-  font-family: $font-widget;
   font-size: ws(9);
-  font-weight: 600;
-  color: $color-text-muted;
-  letter-spacing: 1px;
   margin-bottom: ws(2);
-  text-transform: uppercase;
 }
 
 .cellValue {

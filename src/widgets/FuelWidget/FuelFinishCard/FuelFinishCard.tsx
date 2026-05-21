@@ -4,6 +4,7 @@ import { computedStore } from '@store/iracing/computed.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
 import { FUEL_THRESHOLDS } from '@utils/constants/fuel-constants';
 
+import { UnitLabelText } from '@/components/shared/primitives/UnitLabelText/UnitLabelText';
 import styles from './FuelFinishCard.module.scss';
 
 export const FuelFinishCard = observer(() => {
@@ -46,7 +47,8 @@ export const FuelFinishCard = observer(() => {
 
   return (
     <div className={`${styles.finishCard} ${finishCardClass()}`}>
-      <span className={styles.finishLabel}>LAPS LEFT</span>
+      <UnitLabelText className={styles.finishLabel}>LAPS LEFT</UnitLabelText>
+
       <span className={`${styles.finishValue} ${lapsValueClass()}`}>
         {lapsRemaining !== null ? lapsRemaining.toFixed(1) : '--.-'}
       </span>

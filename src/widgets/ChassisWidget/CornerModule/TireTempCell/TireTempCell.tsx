@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
+import { UnitValueText } from '@/components/shared/primitives/UnitValueText/UnitValueText';
 import styles from './TireTempCell.module.scss';
 
 interface TireTempCellProps {
@@ -10,10 +11,11 @@ interface TireTempCellProps {
 
 export const TireTempCell = observer(
   ({ value, color, unit }: TireTempCellProps) => (
-    <span className={styles.tempValue} style={{ color }}>
-      {value != null ? Math.round(value) : '--'}
-
-      <span className={styles.tempUnit}>{unit}</span>
-    </span>
+    <UnitValueText
+      value={value != null ? Math.round(value) : '--'}
+      unit={unit}
+      color={color}
+      className={styles.tempValue}
+    />
   )
 );

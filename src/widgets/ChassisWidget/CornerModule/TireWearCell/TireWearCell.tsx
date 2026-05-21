@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
+import { UnitValueText } from '@/components/shared/primitives/UnitValueText/UnitValueText';
 import styles from './TireWearCell.module.scss';
 
 interface TireWearCellProps {
@@ -7,9 +8,5 @@ interface TireWearCellProps {
 }
 
 export const TireWearCell = observer(({ wear }: TireWearCellProps) => (
-  <span className={styles.wearValue}>
-    {wear ?? '--'}
-
-    <span className={styles.wearUnit}>%</span>
-  </span>
+  <UnitValueText value={wear ?? '--'} unit="%" className={styles.wearValue} />
 ));

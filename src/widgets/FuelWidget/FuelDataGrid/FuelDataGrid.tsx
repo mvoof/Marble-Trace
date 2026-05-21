@@ -24,6 +24,7 @@ export const FuelDataGrid = observer(() => {
         label="AVG / LAP"
         value={formatFuelLiters(fuel?.avgPerLap ?? null)}
       />
+
       <FuelDataCell
         label="EST. FINISH"
         value={shortageText}

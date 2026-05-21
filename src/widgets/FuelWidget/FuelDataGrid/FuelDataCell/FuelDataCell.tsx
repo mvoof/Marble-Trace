@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
+import { UnitLabelText } from '@/components/shared/primitives/UnitLabelText/UnitLabelText';
 import styles from './FuelDataCell.module.scss';
 
 interface FuelDataCellProps {
@@ -12,7 +13,7 @@ export const FuelDataCell = observer(
   ({ label, value, valueClassName }: FuelDataCellProps) => {
     return (
       <div className={styles.gridCell}>
-        <span className={styles.cellLabel}>{label}</span>
+        <UnitLabelText className={styles.cellLabel}>{label}</UnitLabelText>
         <span className={`${styles.cellValue} ${valueClassName ?? ''}`}>
           {value}
         </span>

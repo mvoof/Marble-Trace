@@ -10,6 +10,8 @@ import {
 } from '@utils/formatters/telemetry-format';
 import { parseWeekendFloat } from '@utils/widget/weather-utils';
 
+import { UnitValueText } from '@/components/shared/primitives/UnitValueText/UnitValueText';
+import { UnitLabelText } from '@/components/shared/primitives/UnitLabelText/UnitLabelText';
 import styles from './StatCell.module.scss';
 
 export type StatCellType = 'airTemp' | 'trackTemp' | 'wind' | 'humidity';
@@ -73,12 +75,11 @@ export const StatCell = observer(({ type }: StatCellProps) => {
 
   return (
     <div className={styles.statCell} style={{ borderLeftColor: color }}>
-      <span className={styles.statLabel}>{label}</span>
+      <UnitLabelText mono uppercase={false} className={styles.statLabel}>
+        {label}
+      </UnitLabelText>
 
-      <span className={styles.statValue}>
-        {value}
-        {unit && <span className={styles.statUnit}>{unit}</span>}
-      </span>
+      <UnitValueText value={value} unit={unit} className={styles.statValue} />
     </div>
   );
 });

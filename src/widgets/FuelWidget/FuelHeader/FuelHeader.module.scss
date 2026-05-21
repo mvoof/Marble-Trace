@@ -6,10 +6,6 @@
 }
 
 .headerLabel {
-  font-family: $font-widget;
-  font-size: ws(10);
-  font-weight: 600;
-  color: $color-text-muted;
   letter-spacing: 1.5px;
 }
 
@@ -18,7 +14,6 @@
   font-size: ws(18);
   font-weight: 700;
   color: #fff;
-  font-variant-numeric: tabular-nums;
 }
 
 .headerUnit {

@@ -1,6 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '@store/iracing/telemetry.store';
+import { UnitValueText } from '@/components/shared/primitives/UnitValueText/UnitValueText';
+import { UnitLabelText } from '@/components/shared/primitives/UnitLabelText/UnitLabelText';
 
 import styles from './FuelHeader.module.scss';
 
@@ -9,11 +11,14 @@ export const FuelHeader = observer(() => {
 
   return (
     <div className={styles.header}>
-      <span className={styles.headerLabel}>FUEL</span>
-      <span className={styles.headerAmount}>
-        {fuelLevel !== null ? fuelLevel.toFixed(1) : '--.-'}
-        <span className={styles.headerUnit}> L</span>
-      </span>
+      <UnitLabelText className={styles.headerLabel}>FUEL</UnitLabelText>
+
+      <UnitValueText
+        value={fuelLevel !== null ? fuelLevel.toFixed(1) : '--.-'}
+        unit="L"
+        className={styles.headerAmount}
+        unitClassName={styles.headerUnit}
+      />
     </div>
   );
 });

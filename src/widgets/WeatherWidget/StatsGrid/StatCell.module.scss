@@ -11,8 +11,6 @@
 .statLabel {
   display: block;
   font-size: ws(11);
-  color: $color-text-muted;
-  letter-spacing: 1px;
 }
 
 .statValue {
@@ -21,11 +19,5 @@
   font-weight: 700;
   color: #fff;
   line-height: 1.2;
-  font-variant-numeric: tabular-nums;
   white-space: nowrap;
-}
-
-.statUnit {
-  font-size: ws(13);
-  margin-left: ws(3);
 }
