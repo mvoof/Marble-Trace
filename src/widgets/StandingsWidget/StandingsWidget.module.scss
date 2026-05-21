@@ -1,0 +1,12 @@
+.standings {
+  --widget-pad-x: ws(10);
+
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+  color: $color-text-primary;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

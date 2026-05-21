@@ -1,0 +1,25 @@
+.compassBlock {
+  width: 100%;
+  padding: ws(4) 0 ws(2);
+}
+
+.compassWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.compassSvg {
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+.bearingText {
+  font-family: $font-widget;
+  font-size: ws(22);
+  font-weight: 700;
+  fill: #fff;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}

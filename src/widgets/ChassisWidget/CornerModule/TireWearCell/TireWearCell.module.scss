@@ -1,0 +1,10 @@
+.wearValue {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  font-size: ws(14);
+  font-weight: 700;
+  color: $color-text-muted;
+  letter-spacing: -0.03em;
+}

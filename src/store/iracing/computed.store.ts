@@ -7,8 +7,8 @@ import type {
   LapDeltaFrame,
   PitStopsFrame,
   ProximityFrame,
-} from '../../types/bindings';
-import type { DriverGroup } from '../../types';
+} from '@/types/bindings';
+import type { DriverGroup } from '@/types';
 import { telemetryStore } from './telemetry.store';
 
 interface StartPosition {
@@ -38,7 +38,6 @@ class ComputedStore {
   standings: DriverEntriesFrame | null = null;
   pitStops: PitStopsFrame | null = null;
   lapDelta: LapDeltaFrame | null = null;
-
   private readonly startPositionSnapshot = new Map<number, StartPosition>();
 
   constructor() {

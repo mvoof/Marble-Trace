@@ -1,0 +1,19 @@
+.gridCell {
+  display: flex;
+  flex-direction: column;
+  padding: ws(8) ws(10);
+  background: $color-bg-widget;
+}
+
+.cellLabel {
+  font-size: ws(9);
+  margin-bottom: ws(2);
+}
+
+.cellValue {
+  font-family: $font-mono;
+  font-size: ws(16);
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}

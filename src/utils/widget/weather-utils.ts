@@ -1,0 +1,88 @@
+import type { WeatherForecastEntry, WeekendInfo } from '@/types/bindings';
+import type { UnitSystem } from '@/types';
+import {
+  formatSpeed as _formatSpeed,
+  speedUnit as _speedUnit,
+} from '@utils/formatters/telemetry-format';
+
+export const getWindColor = (mps: number | null): string => {
+  if (mps === null) {
+    return '#3399ff';
+  }
+
+  if (mps > 8) {
+    return '#ef4444';
+  }
+
+  if (mps > 4) {
+    return '#ffcc00';
+  }
+
+  return '#3399ff';
+};
+
+export const parseWeekendFloat = (
+  value: string | null | undefined
+): number | null => {
+  if (value == null) return null;
+  const n = parseFloat(value);
+  return isNaN(n) ? null : n;
+};
+
+export const radsToBearing = (radians: number): number => {
+  const deg = radians * (180 / Math.PI);
+  return ((deg % 360) + 360) % 360;
+};
+
+export const bearingToCardinal = (deg: number): string => {
+  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  const idx = Math.round(deg / 45) % 8;
+  return dirs[idx];
+};
+
+export const formatWindSpeed = (
+  mps: number | null,
+  system: UnitSystem
+): string => {
+  if (mps === null) return '\u2014';
+  return `${_formatSpeed(mps, system)} ${_speedUnit(system)}`;
+};
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any */
+export const extractForecast = (
+  weekendInfo: WeekendInfo
+): WeatherForecastEntry[] => {
+  if (!weekendInfo) return [];
+
+  // unknown_fields might be present if the Rust backend includes it
+  const fields = (weekendInfo as any).unknown_fields || weekendInfo;
+
+  // Try standard WeatherForecastList -> WeatherForecast
+  const list = fields.WeatherForecastList || fields.weatherforecastlist;
+  if (list) {
+    const entries = list.WeatherForecast || list.weatherforecast || list;
+    if (Array.isArray(entries)) return entries as WeatherForecastEntry[];
+  }
+
+  // Try direct WeatherForecast
+  const direct = fields.WeatherForecast || fields.weatherforecast;
+  if (direct) {
+    if (Array.isArray(direct)) return direct as WeatherForecastEntry[];
+
+    const entries =
+      direct.ForecastEntries ||
+      direct.forecastentries ||
+      direct.WeatherForecast ||
+      direct.weatherforecast;
+    if (Array.isArray(entries)) return entries as WeatherForecastEntry[];
+  }
+
+  // Try direct ForecastEntries
+  const fe =
+    (weekendInfo as any).ForecastEntries ||
+    (weekendInfo as any).forecastentries;
+  if (Array.isArray(fe)) return fe as WeatherForecastEntry[];
+
+  return [];
+};
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any */

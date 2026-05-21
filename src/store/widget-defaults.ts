@@ -1,25 +1,25 @@
-import { TelemetryDebugWidgetContainer } from '../components/widgets/TelemetryDebugWidget/TelemetryDebugWidgetContainer';
-import { SpeedWidget } from '../components/widgets/SpeedWidget/SpeedWidget';
-import { InputTraceWidgetContainer } from '../components/widgets/InputTraceWidget/InputTraceWidgetContainer';
-import { ProximityRadarWidgetContainer } from '../components/widgets/ProximityRadarWidget/ProximityRadarWidgetContainer';
-import { RadarBarWidgetContainer } from '../components/widgets/RadarBarWidget/RadarBarWidgetContainer';
-import { StandingsWidgetContainer } from '../components/widgets/StandingsWidget/StandingsWidgetContainer';
-import { RelativeWidgetContainer } from '../components/widgets/RelativeWidget/RelativeWidgetContainer';
-import { TrackMapWidgetContainer } from '../components/widgets/TrackMapWidget/TrackMapWidgetContainer';
-import { RelativeMapWidgetContainer } from '../components/widgets/RelativeMapWidget/RelativeMapWidgetContainer';
-import { LedFlagWidgetContainer } from '../components/widgets/LedFlagWidget/LedFlagWidgetContainer';
-import { ChassisWidgetContainer } from '../components/widgets/ChassisWidget/ChassisWidgetContainer';
-import { LapDeltaWidgetContainer } from '../components/widgets/LapDeltaWidget/LapDeltaWidgetContainer';
-import { LapTimesWidgetContainer } from '../components/widgets/LapTimesWidget/LapTimesWidgetContainer';
-import { TimerWidgetContainer } from '../components/widgets/TimerWidget/TimerWidgetContainer';
-import { WeatherWidgetContainer } from '../components/widgets/WeatherWidget/WeatherWidgetContainer';
-import { FuelWidgetContainer } from '../components/widgets/FuelWidget/FuelWidgetContainer';
-import { FlatFlagsWidgetContainer } from '../components/widgets/FlatFlagsWidget/FlatFlagsWidgetContainer';
-import { GMeterWidgetContainer } from '../components/widgets/GMeterWidget/GMeterWidgetContainer';
+import { TelemetryDebugWidget } from '@widgets/TelemetryDebugWidget/TelemetryDebugWidget';
+import { SpeedWidget } from '@widgets/SpeedWidget/SpeedWidget';
+import { InputTraceWidget } from '@widgets/InputTraceWidget/InputTraceWidget';
+import { ProximityRadarWidget } from '@widgets/ProximityRadarWidget/ProximityRadarWidget';
+import { RadarBarWidget } from '@widgets/RadarBarWidget/RadarBarWidget';
+import { StandingsWidget } from '@widgets/StandingsWidget/StandingsWidget';
+import { RelativeWidget } from '@widgets/RelativeWidget/RelativeWidget';
+import { TrackMapWidget } from '@widgets/TrackMapWidget/TrackMapWidget';
+import { RelativeMapWidget } from '@widgets/RelativeMapWidget/RelativeMapWidget';
+import { LedFlagWidget } from '@widgets/LedFlagWidget/LedFlagWidget';
+import { ChassisWidget } from '@widgets/ChassisWidget/ChassisWidget';
+import { LapDeltaWidget } from '@widgets/LapDeltaWidget/LapDeltaWidget';
+import { LapTimesWidget } from '@widgets/LapTimesWidget/LapTimesWidget';
+import { TimerWidget } from '@widgets/TimerWidget/TimerWidget';
+import { WeatherWidget } from '@widgets/WeatherWidget/WeatherWidget';
+import { FuelWidget } from '@widgets/FuelWidget/FuelWidget';
+import { FlatFlagsWidget } from '@widgets/FlatFlagsWidget/FlatFlagsWidget';
+import { GMeterWidget } from '@widgets/GMeterWidget/GMeterWidget';
 import type {
   WidgetConfig,
   WidgetDefaultConfig,
-} from '../types/widget-settings';
+} from '@/types/widget-settings';
 
 export const LAP_TIMES_DEFAULT_WIDTHS: Record<string, number> = {
   vertical: 230,
@@ -43,7 +43,6 @@ export const INPUT_TRACE_SIZES: Record<
   string,
   { designWidth: number; designHeight: number }
 > = {
-  horizontal: { designWidth: 400, designHeight: 220 },
   vertical: { designWidth: 400, designHeight: 110 },
 };
 
@@ -85,7 +84,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'input-trace',
     label: 'Input Trace',
     description: 'Live throttle, brake, and clutch inputs.',
-    component: InputTraceWidgetContainer,
+    component: InputTraceWidget,
     designWidth: 400,
     designHeight: 220,
     userSettings: {
@@ -105,7 +104,7 @@ export const WIDGETS: WidgetConfig[] = [
       throttleColor: '#00ff00',
       brakeColor: '#ff3333',
       clutchColor: '#3399ff',
-      barMode: 'horizontal',
+      barMode: 'vertical',
       historySeconds: 5,
       lineWidth: 3.5,
       smoothing: 0,
@@ -115,7 +114,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'proximity-radar',
     label: 'Proximity Radar',
     description: 'Visual radar for nearby traffic.',
-    component: ProximityRadarWidgetContainer,
+    component: ProximityRadarWidget,
     designWidth: 200,
     designHeight: 300,
     userSettings: {
@@ -138,7 +137,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'radar-bar',
     label: 'Radar Bar',
     description: 'Full-width side proximity indicators.',
-    component: RadarBarWidgetContainer,
+    component: RadarBarWidget,
     designWidth: 800,
     designHeight: 380,
     userSettings: {
@@ -162,7 +161,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'standings',
     label: 'Standings',
     description: 'Live session standings and intervals.',
-    component: StandingsWidgetContainer,
+    component: StandingsWidget,
     designWidth: 700,
     designHeight: 450,
     userSettings: {
@@ -201,7 +200,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'relative',
     label: 'Relative',
     description: 'Gaps to cars ahead and behind you.',
-    component: RelativeWidgetContainer,
+    component: RelativeWidget,
     designWidth: 420,
     designHeight: 400,
     userSettings: {
@@ -226,7 +225,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'track-map',
     label: 'Track Map',
     description: 'Dynamic 2D map of the current circuit.',
-    component: TrackMapWidgetContainer,
+    component: TrackMapWidget,
     designWidth: 400,
     designHeight: 400,
     userSettings: {
@@ -256,7 +255,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'relative-map',
     label: 'Relative Map',
     description: 'Progress bar of car track positions.',
-    component: RelativeMapWidgetContainer,
+    component: RelativeMapWidget,
     designWidth: 400,
     designHeight: 40,
     userSettings: {
@@ -279,7 +278,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'led-flags',
     label: 'LED Flags',
     description: 'LED matrix display of track flags.',
-    component: LedFlagWidgetContainer,
+    component: LedFlagWidget,
     designWidth: 232,
     designHeight: 232,
     userSettings: {
@@ -301,7 +300,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'flat-flags',
     label: 'Flat Flags',
     description: 'Banner-style list of active track flags.',
-    component: FlatFlagsWidgetContainer,
+    component: FlatFlagsWidget,
     autoHeight: true,
     designWidth: 280,
     designHeight: 160,
@@ -324,7 +323,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'chassis',
     label: 'Chassis',
     description: 'Tire pressures and brake temperatures.',
-    component: ChassisWidgetContainer,
+    component: ChassisWidget,
     designWidth: 300,
     designHeight: 290,
     userSettings: {
@@ -346,7 +345,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'example',
     label: 'Telemetry Debug',
     description: 'Raw telemetry data debugger.',
-    component: TelemetryDebugWidgetContainer,
+    component: TelemetryDebugWidget,
     designWidth: 400,
     designHeight: 700,
     userSettings: {
@@ -366,7 +365,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'lap-delta',
     label: 'Lap Delta',
     description: 'Live delta against your best lap time.',
-    component: LapDeltaWidgetContainer,
+    component: LapDeltaWidget,
     designWidth: 230,
     designHeight: 180,
     userSettings: {
@@ -389,7 +388,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'lap-times',
     label: 'Lap Times',
     description: 'Detailed history of your lap times.',
-    component: LapTimesWidgetContainer,
+    component: LapTimesWidget,
     designWidth: 230,
     designHeight: 104,
     userSettings: {
@@ -414,7 +413,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'timer',
     label: 'Timer',
     description: 'Stint and total session timers.',
-    component: TimerWidgetContainer,
+    component: TimerWidget,
     designWidth: 240,
     designHeight: 120,
     userSettings: {
@@ -441,15 +440,15 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'weather',
     label: 'Weather',
     description: 'Track conditions and wind information.',
-    component: WeatherWidgetContainer,
-    designWidth: 240,
-    designHeight: 280,
+    component: WeatherWidget,
+    designWidth: 200,
+    designHeight: 240,
     userSettings: {
       enabled: false,
       x: 760,
       y: 200,
-      currentWidth: 240,
-      currentHeight: 280,
+      currentWidth: 200,
+      currentHeight: 240,
       opacity: 1,
       backgroundColor: '#252525',
       backgroundColorEdge: '#14141b',
@@ -467,7 +466,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'fuel',
     label: 'Fuel',
     description: 'Fuel level and consumption calculator.',
-    component: FuelWidgetContainer,
+    component: FuelWidget,
     autoHeight: true,
     designWidth: 240,
     designHeight: 360,
@@ -492,7 +491,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'g-meter',
     label: 'G-Meter',
     description: 'Lateral and longitudinal G-force friction circle.',
-    component: GMeterWidgetContainer,
+    component: GMeterWidget,
     designWidth: 240,
     designHeight: 280,
     userSettings: {

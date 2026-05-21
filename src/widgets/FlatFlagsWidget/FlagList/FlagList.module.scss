@@ -1,0 +1,15 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background-color: #111;
+  padding-bottom: 2px;
+}
+
+.empty {
+  padding: ws(10) ws(14);
+  font-family: $font-mono;
+  font-size: ws(12);
+  color: #444;
+  letter-spacing: 1px;
+}

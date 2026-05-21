@@ -1,0 +1,116 @@
+// ===== Corner wrapper =====
+
+.cornerWrapper {
+  display: flex;
+  align-items: center;
+  gap: ws(2);
+}
+
+.cornerRight {
+  flex-direction: row-reverse;
+}
+
+// ===== Tire block =====
+
+.tireCore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: ws(104);
+}
+
+.wearRow {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: ws(6);
+}
+
+.tireVisual {
+  position: relative;
+  display: flex;
+  gap: ws(3);
+  width: ws(72);
+  height: ws(85);
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: $widget-border-radius;
+  overflow: hidden;
+  padding: ws(2);
+}
+
+.tireSection {
+  flex: 1;
+  background-color: #1a1a1a;
+  display: flex;
+  align-items: flex-end;
+  border-radius: ws(2);
+  overflow: hidden;
+}
+
+.tireFill {
+  width: 100%;
+  transition:
+    height 0.5s ease,
+    background-color 0.5s ease;
+}
+
+.tempRow {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: ws(6);
+}
+
+// ===== Suspension panel =====
+
+.suspensionAndBrakesPanel {
+  display: flex;
+  align-items: center;
+  gap: ws(4);
+}
+
+// For right-side corners: brake bar is on the right of the text block
+.suspensionAndBrakesPanelRight {
+  flex-direction: row-reverse;
+}
+
+.brakeBar {
+  width: ws(6);
+  height: ws(65);
+  border-radius: ws(2);
+  transition: background-color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.suspensionAndBrakesTexts {
+  display: flex;
+  flex-direction: column;
+  gap: ws(6);
+  justify-content: center;
+  width: ws(50);
+}
+
+// ===== Damage animation — on tire visual only =====
+
+@keyframes damagePulse {
+  0% {
+    filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0));
+    outline: 1px solid transparent;
+  }
+
+  50% {
+    filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.6));
+    outline: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  100% {
+    filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0));
+    outline: 1px solid transparent;
+  }
+}
+
+.damagePulse {
+  animation: damagePulse 1.2s infinite;
+  border-radius: $widget-border-radius;
+}

@@ -1,0 +1,23 @@
+.statCell {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.4);
+  padding: ws(5) ws(12);
+  border-left: 2px solid transparent;
+  font-family: $font-mono;
+}
+
+.statLabel {
+  display: block;
+  font-size: ws(11);
+}
+
+.statValue {
+  display: block;
+  font-size: ws(16);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  white-space: nowrap;
+}

@@ -1,12 +1,12 @@
 import { runInAction } from 'mobx';
-import { appSettingsStore } from '../app-settings.store';
-import { unitsStore } from '../units.store';
-import { widgetSettingsStore } from '../widget-settings.store';
-import { DEFAULT_WIDGETS } from '../widget-defaults';
-import type { UnitSystem } from '../../types';
-import type { WidgetDefaultConfig } from '../../types/widget-settings';
-import type { AppSettings } from '../app-settings.store';
-import { filterToDefaults } from '../../utils/filter-to-defaults';
+import { appSettingsStore } from '@store/app-settings.store';
+import { unitsStore } from '@store/units.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+import { DEFAULT_WIDGETS } from '@store/widget-defaults';
+import type { UnitSystem } from '@/types';
+import type { WidgetDefaultConfig } from '@/types/widget-settings';
+import type { AppSettings } from '@store/app-settings.store';
+import { filterToDefaults } from '@utils/filter-to-defaults';
 
 export const SETTINGS_FILE = 'settings.json';
 

@@ -1,0 +1,9 @@
+.dashboard {
+  flex: 0 0 auto;
+  height: ws(56);
+  border-top: 1px solid rgba(58, 59, 64, 0.8);
+  background: rgba(0, 0, 0, 0.25);
+  display: flex;
+  font-family: $font-widget;
+  font-variant-numeric: tabular-nums;
+}

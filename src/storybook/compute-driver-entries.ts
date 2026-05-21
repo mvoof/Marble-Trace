@@ -1,9 +1,9 @@
-import { TrackSurface } from '../types';
+import { TrackSurface } from '@/types';
 import type {
   CarIdxFrame,
   DriverInfoData,
   DriverEntry,
-} from '../types/bindings';
+} from '@/types/bindings';
 
 const parseClassColor = (raw: string | null | undefined): string => {
   if (!raw) return '#888888';

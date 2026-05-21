@@ -1,0 +1,18 @@
+.flagLabel {
+  font-family: $font-mono;
+  font-size: ws(10);
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.flagGreen {
+  color: $color-success;
+}
+
+.flagFinal {
+  color: $color-caution;
+}
+
+.flagCheckered {
+  color: #ffffff;
+}

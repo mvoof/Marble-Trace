@@ -1,0 +1,56 @@
+.axisColumn {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: ws(4);
+  padding: 0 ws(8);
+}
+
+.axisColumnDivider {
+  border-right: 1px solid rgba(58, 59, 64, 0.8);
+}
+
+.axisHeader {
+  display: flex;
+  align-items: baseline;
+  gap: ws(4);
+}
+
+.axisLabel {
+  color: $color-text-secondary;
+  font-size: ws(14);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+.val {
+  display: inline-block;
+  width: 4ch;
+  text-align: right;
+  font-size: ws(18);
+  font-weight: 700;
+  color: $color-text-primary;
+}
+
+.peakRow {
+  display: flex;
+  align-items: center;
+  gap: ws(4);
+  color: $color-text-secondary;
+}
+
+.peakLabel {
+  font-size: ws(12);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+.peakVal {
+  display: inline-block;
+  width: 3.5ch;
+  text-align: right;
+  font-size: ws(14);
+  font-weight: 400;
+}

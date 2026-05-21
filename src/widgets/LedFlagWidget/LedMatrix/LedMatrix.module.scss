@@ -1,0 +1,53 @@
+$diode-size: 10px;
+$diode-margin: 1px;
+$diode-cell: $diode-size + $diode-margin * 2;
+$block-gap: 4px;
+$board-padding: 4px;
+
+.board {
+  background-color: #030304;
+  padding: $board-padding;
+  border-radius: 6px;
+  display: grid;
+  grid-template-columns: repeat(
+    var(--blocks),
+    calc(var(--dpb) * #{$diode-cell})
+  );
+  gap: $block-gap;
+  position: relative;
+}
+
+.glassOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 40%
+  );
+  pointer-events: none;
+  z-index: 10;
+  border-radius: 6px;
+}
+
+.block {
+  background-color: #08080a;
+  display: grid;
+  grid-template-columns: repeat(var(--dpb), #{$diode-cell});
+  grid-template-rows: repeat(var(--dpb), #{$diode-cell});
+}
+
+.diode {
+  width: $diode-size;
+  height: $diode-size;
+  margin: $diode-margin;
+  background-color: #16161a;
+  border-radius: 1px;
+}
+
+.diodeHidden {
+  width: $diode-size;
+  height: $diode-size;
+  margin: $diode-margin;
+  visibility: hidden;
+}

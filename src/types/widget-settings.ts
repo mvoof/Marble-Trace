@@ -19,7 +19,7 @@ export interface SpeedWidgetSettings {
   ledShape: LedShape;
 }
 
-export type InputTraceBarMode = 'horizontal' | 'vertical' | 'hidden';
+export type InputTraceBarMode = 'vertical' | 'hidden';
 
 export interface InputTraceSettings {
   showThrottle: boolean;
@@ -210,9 +210,7 @@ export interface BaseUserSettings {
 export type WidgetUserSettings = BaseUserSettings & WidgetSpecificSettings;
 
 export interface WidgetConfig extends WidgetMeta {
-  component: React.ComponentType<{
-    onVisibilityChange?: (visible: boolean) => void;
-  }>;
+  component: React.ComponentType;
   userSettings: WidgetUserSettings;
 }
 

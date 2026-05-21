@@ -1,9 +1,9 @@
 import { reaction, runInAction } from 'mobx';
 import { load } from '@tauri-apps/plugin-store';
 import { listen } from '@tauri-apps/api/event';
-import { appSettingsStore } from '../app-settings.store';
-import { unitsStore } from '../units.store';
-import { widgetSettingsStore } from '../widget-settings.store';
+import { appSettingsStore } from '@store/app-settings.store';
+import { unitsStore } from '@store/units.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   hydrateStores,
   saveSettings,
@@ -22,7 +22,7 @@ import {
   emitTrackMapForceStartPending,
   emitWidgetSettingsUpdated,
 } from './events';
-import type { WidgetDefaultConfig } from '../../types/widget-settings';
+import type { WidgetDefaultConfig } from '@/types/widget-settings';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
 let mainSyncRefCount = 0;

@@ -1,0 +1,26 @@
+.timeDisplay {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  padding: ws(2) ws(8);
+  font-family: $font-widget;
+  font-weight: 700;
+  font-size: ws(32);
+  line-height: 1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeMain {
+  color: #fff;
+}
+
+.sessionEndedLabel {
+  color: $color-text-muted;
+  letter-spacing: 4px;
+  font-size: ws(32);
+}
+
+.timeSeconds {
+  color: $color-caution;
+}

@@ -1,0 +1,27 @@
+.delta {
+  min-width: 8ch;
+  text-align: center;
+  font-family: $font-widget;
+  font-weight: 700;
+  font-size: ws(32);
+  line-height: 1;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  padding: ws(4) ws(8) ws(2);
+}
+
+.deltaHorizontal {
+  padding-bottom: ws(4);
+}
+
+.deltaAhead {
+  color: $color-success;
+}
+
+.deltaBehind {
+  color: $color-error;
+}
+
+.deltaNeutral {
+  color: $color-caution;
+}

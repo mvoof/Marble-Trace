@@ -1,0 +1,22 @@
+// FlatFlagsWidget has no user-configurable background (backgroundColor is always
+// transparent in widget defaults), so the stripe pattern is hardcoded here.
+.widgetBackground {
+  background: repeating-linear-gradient(
+    -45deg,
+    #1a1a1a,
+    #1a1a1a 8px,
+    #1e1e1e 8px,
+    #1e1e1e 16px
+  );
+  border: 1px solid #2a2a2a;
+  overflow: hidden;
+}
+
+.header {
+  padding: ws(10) ws(14) ws(6);
+  font-family: $font-mono;
+  font-size: ws(11);
+  color: #777;
+  letter-spacing: 2px;
+  font-weight: 600;
+}

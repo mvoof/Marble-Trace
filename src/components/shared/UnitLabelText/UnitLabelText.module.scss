@@ -1,0 +1,17 @@
+.label {
+  font-family: $font-widget;
+  font-size: ws(10);
+  font-weight: 600;
+  color: $color-text-muted;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.mono {
+  font-family: $font-mono;
+}
+
+.noUppercase {
+  text-transform: none;
+}

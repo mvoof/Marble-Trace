@@ -1,0 +1,23 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding: ws(8) ws(10) ws(4);
+  align-items: baseline;
+}
+
+.headerLabel {
+  letter-spacing: 1.5px;
+}
+
+.headerAmount {
+  font-family: $font-mono;
+  font-size: ws(18);
+  font-weight: 700;
+  color: #fff;
+}
+
+.headerUnit {
+  font-size: ws(12);
+  color: $color-text-muted;
+  margin-left: ws(2);
+}
