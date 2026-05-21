@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { useVisibleRowCount } from '@hooks/common/useVisibleRowCount';
 import { DriverRow } from '@widgets/RelativeWidget/DriverRow/DriverRow';
 import { computeRelativeGap } from '@utils/widget/relative-utils';
@@ -12,7 +11,6 @@ import styles from './RelativeContent.module.scss';
 
 export const RelativeContent = observer(() => {
   const entries = computedStore.relativeEntries;
-  const settings = widgetSettingsStore.getRelativeSettings();
 
   const prevGapTimesRef = useRef<Map<number, number>>(new Map());
   const lastSnapshotTimeRef = useRef<number>(0);
@@ -88,17 +86,13 @@ export const RelativeContent = observer(() => {
     return entries.slice(playerIdx - above, playerIdx + below + 1);
   }, [entries, visibleRowCount]);
 
-  const player = entries.find((entry) => entry.isPlayer);
-
   return (
     <div ref={driverListRef} className={styles.driverList}>
       {displayEntries.map((entry) => (
         <DriverRow
           key={entry.carIdx}
           driver={entry}
-          player={player ?? null}
           trendDelta={trendMap.get(entry.carIdx) ?? 0}
-          settings={settings}
         />
       ))}
     </div>

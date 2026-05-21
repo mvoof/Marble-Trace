@@ -16,33 +16,17 @@ export const ChassisWidget = observer(() => {
       <div
         className={`${styles.carGrid} ${showSuspensionAndBrakes ? styles.carGridSuspensionAndBrakes : ''}`}
       >
-        <CornerModule
-          position="lf"
-          isRight={false}
-          showSuspensionAndBrakes={showSuspensionAndBrakes}
-        />
+        <CornerModule position="lf" isRight={false} />
 
-        <CenterLabels showSuspensionAndBrakes={showSuspensionAndBrakes} />
+        <CenterLabels />
 
-        <CornerModule
-          position="rf"
-          isRight={true}
-          showSuspensionAndBrakes={showSuspensionAndBrakes}
-        />
+        <CornerModule position="rf" isRight={true} />
 
-        <CornerModule
-          position="lr"
-          isRight={false}
-          showSuspensionAndBrakes={showSuspensionAndBrakes}
-        />
+        <CornerModule position="lr" isRight={false} />
 
-        <CenterLabels showSuspensionAndBrakes={showSuspensionAndBrakes} />
+        <CenterLabels />
 
-        <CornerModule
-          position="rr"
-          isRight={true}
-          showSuspensionAndBrakes={showSuspensionAndBrakes}
-        />
+        <CornerModule position="rr" isRight={true} />
       </div>
 
       <StaleNotice />

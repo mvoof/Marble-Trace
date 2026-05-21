@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import { telemetryStore } from '@store/iracing/telemetry.store';
 import { unitsStore } from '@store/units.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import type { CornerPosition } from '@widgets/ChassisWidget/types';
 import { buildCornerData, computeAxleDiff } from '@utils/widget/chassis-utils';
 import { SuspensionText } from './SuspensionText';
@@ -22,11 +23,12 @@ const AXLE_PAIRS: Record<CornerPosition, [CornerPosition, CornerPosition]> = {
 interface CornerModuleProps {
   position: CornerPosition;
   isRight: boolean;
-  showSuspensionAndBrakes: boolean;
 }
 
 export const CornerModule = observer(
-  ({ position, isRight, showSuspensionAndBrakes }: CornerModuleProps) => {
+  ({ position, isRight }: CornerModuleProps) => {
+    const { showSuspensionAndBrakes } =
+      widgetSettingsStore.getChassisSettings();
     const { chassis } = telemetryStore;
     const { system } = unitsStore;
 

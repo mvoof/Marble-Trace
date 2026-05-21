@@ -2,6 +2,9 @@ import { useRef, useImperativeHandle } from 'react';
 import type { Ref } from 'react';
 import { observer } from 'mobx-react-lite';
 
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
+
 import styles from './RecordingOverlay.module.scss';
 
 export interface RecordingOverlayHandle {
@@ -10,23 +13,16 @@ export interface RecordingOverlayHandle {
 }
 
 interface RecordingOverlayProps {
-  trackName: string;
   isRecording: boolean;
-  isForceStartPending: boolean;
   isWaitingForSF: boolean;
   progress: number;
   ref?: Ref<RecordingOverlayHandle>;
 }
 
 export const RecordingOverlay = observer(
-  ({
-    trackName,
-    isRecording,
-    isForceStartPending,
-    isWaitingForSF,
-    progress,
-    ref,
-  }: RecordingOverlayProps) => {
+  ({ isRecording, isWaitingForSF, progress, ref }: RecordingOverlayProps) => {
+    const trackName = telemetryStore.weekendInfo?.TrackDisplayName ?? '';
+    const isForceStartPending = widgetSettingsStore.isTrackMapForceStartPending;
     const fillRef = useRef<HTMLDivElement>(null);
     const labelRef = useRef<HTMLDivElement>(null);
     const messageRef = useRef<HTMLDivElement>(null);

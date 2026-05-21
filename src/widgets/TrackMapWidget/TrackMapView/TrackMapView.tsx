@@ -3,8 +3,9 @@ import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
 import type { TrackPoint } from '@/types';
-import type { TrackMapWidgetSettings } from '@/types/widget-settings';
-import type { Sector } from '@/types/bindings';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { computedStore } from '@store/iracing/computed.store';
+import { widgetSettingsStore } from '@store/widget-settings.store';
 import type { RecordingOverlayHandle } from '@widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
 import { RecordingOverlay } from '@widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
 import { TrackMapSvg } from '@widgets/TrackMapWidget/TrackMapSvg/TrackMapSvg';
@@ -19,39 +20,47 @@ export interface TrackData {
 }
 
 export interface TrackMapViewProps {
-  cars: CarOnTrack[];
   trackData: TrackData | null;
-  trackName: string;
   isRecording: boolean;
   recordingProgress: number;
-  isForceStartPending: boolean;
   isWaitingForSF: boolean;
   recordingOverlayRef?: RefObject<RecordingOverlayHandle | null>;
-  settings: TrackMapWidgetSettings;
-  sectors: Sector[] | null | undefined;
 }
 
 export const TrackMapView = observer(
   ({
-    cars,
     trackData,
-    trackName,
     isRecording,
     recordingProgress,
-    isForceStartPending,
     isWaitingForSF,
     recordingOverlayRef,
-    settings,
-    sectors,
   }: TrackMapViewProps) => {
+    const settings = widgetSettingsStore.getTrackMapSettings();
+    const sectors = telemetryStore.sessionInfo?.SplitTimeInfo?.Sectors;
+
+    const driverEntries = computedStore.standings?.entries ?? [];
+    const carPositions = telemetryStore.carPositions;
+
+    const cars: CarOnTrack[] = driverEntries.map((entry) => ({
+      carIdx: entry.carIdx,
+      carNumber: entry.carNumber,
+      carClassColor: entry.carClassColor,
+      carClassId: entry.carClassId,
+      lapDistPct:
+        carPositions?.car_idx_lap_dist_pct[entry.carIdx] ?? entry.lapDistPct,
+      trackSurface:
+        carPositions?.car_idx_track_surface[entry.carIdx] ?? entry.trackSurface,
+      isPlayer: entry.isPlayer,
+      position: entry.position,
+      classPosition: entry.classPosition,
+    }));
+
     if (!trackData) {
       return (
         <WidgetPanel className={styles.trackMap} gap={0}>
           <RecordingOverlay
             ref={recordingOverlayRef}
-            trackName={trackName}
             isRecording={isRecording}
-            isForceStartPending={isForceStartPending}
             isWaitingForSF={isWaitingForSF}
             progress={recordingProgress}
           />

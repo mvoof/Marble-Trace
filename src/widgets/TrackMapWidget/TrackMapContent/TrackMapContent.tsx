@@ -3,14 +3,12 @@ import { observer } from 'mobx-react-lite';
 import { listen } from '@tauri-apps/api/event';
 
 import { telemetryStore } from '@store/iracing/telemetry.store';
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import type { TrackPoint } from '@/types';
 
 import { TrackRecorderBridge } from '../TrackRecorderBridge/TrackRecorderBridge';
 import type { RecordingOverlayHandle } from '../RecordingOverlay/RecordingOverlay';
 import { TrackMapView, type TrackData } from '../TrackMapView/TrackMapView';
-import type { CarOnTrack, StoredTracks } from '../types';
+import type { StoredTracks } from '../types';
 import { TRACKS_STORE_KEY, TRACK_DATA_VERSION } from '../types';
 
 type RecordingState = {
@@ -58,8 +56,7 @@ const recordingReducer = (
 };
 
 export const TrackMapContent = observer(() => {
-  const { weekendInfo, sessionInfo } = telemetryStore;
-  const settings = widgetSettingsStore.getTrackMapSettings();
+  const { weekendInfo } = telemetryStore;
 
   const trackId = weekendInfo?.TrackID?.toString() ?? '';
   const trackName = weekendInfo?.TrackDisplayName ?? '';
@@ -194,23 +191,6 @@ export const TrackMapContent = observer(() => {
     };
   }, [clearCurrentTrack]);
 
-  const driverEntries = computedStore.standings?.entries ?? [];
-  const carPositions = telemetryStore.carPositions;
-
-  const cars: CarOnTrack[] = driverEntries.map((entry) => ({
-    carIdx: entry.carIdx,
-    carNumber: entry.carNumber,
-    carClassColor: entry.carClassColor,
-    carClassId: entry.carClassId,
-    lapDistPct:
-      carPositions?.car_idx_lap_dist_pct[entry.carIdx] ?? entry.lapDistPct,
-    trackSurface:
-      carPositions?.car_idx_track_surface[entry.carIdx] ?? entry.trackSurface,
-    isPlayer: entry.isPlayer,
-    position: entry.position,
-    classPosition: entry.classPosition,
-  }));
-
   return (
     <>
       {!trackData && (
@@ -226,16 +206,11 @@ export const TrackMapContent = observer(() => {
       )}
 
       <TrackMapView
-        cars={cars}
         trackData={trackData}
-        trackName={trackName}
         isRecording={isRecording}
         isWaitingForSF={isWaitingForSF}
         recordingProgress={recordingProgress}
-        isForceStartPending={widgetSettingsStore.isTrackMapForceStartPending}
         recordingOverlayRef={recordingOverlayRef}
-        settings={settings}
-        sectors={sessionInfo?.SplitTimeInfo?.Sectors}
       />
     </>
   );
