@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import { flagsStore } from '@store/flags.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
-import { getSingleLedColorClass } from '../led-matrix-utils';
+import { getSingleLedColorClass, type ColorStyles } from '../led-matrix-utils';
 
 import styles from './SingleLed.module.scss';
 
@@ -23,7 +23,9 @@ export const SingleLed = observer(({ blinkOn }: SingleLedProps) => {
   const isOff =
     flag === 'none' || ((flag === 'yellow' || flag === 'red') && !blinkOn);
 
-  const colorClass = isOff ? '' : getSingleLedColorClass(flag, styles);
+  const colorClass = isOff
+    ? ''
+    : getSingleLedColorClass(flag, styles as unknown as ColorStyles);
 
   return (
     <div className={styles.singleLed}>
