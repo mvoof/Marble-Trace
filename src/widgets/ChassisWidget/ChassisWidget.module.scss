@@ -10,23 +10,3 @@
 .carGridSuspensionAndBrakes {
   grid-template-columns: max-content 1fr max-content;
 }
-
-.staleNotice {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: ws(6);
-  font-size: ws(12);
-  color: $color-caution;
-  font-style: italic;
-  text-align: center;
-  padding: ws(6) ws(8) ws(2);
-  opacity: 0.9;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  margin-top: ws(4);
-}
-
-.staleIcon {
-  color: #64748b;
-  flex-shrink: 0;
-}

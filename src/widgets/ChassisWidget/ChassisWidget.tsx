@@ -1,19 +1,15 @@
 import { observer } from 'mobx-react-lite';
-import { Info } from 'lucide-react';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
 import { widgetSettingsStore } from '@store/widget-settings.store';
 import { WidgetPanel } from '@/components/shared/primitives/WidgetPanel/WidgetPanel';
 import { CornerModule } from '@widgets/ChassisWidget/CornerModule/CornerModule';
 import { CenterLabels } from './CenterLabels/CenterLabels';
+import { StaleNotice } from './StaleNotice/StaleNotice';
 
 import styles from './ChassisWidget.module.scss';
 
 export const ChassisWidget = observer(() => {
-  const { carStatus } = telemetryStore;
   const { showSuspensionAndBrakes } = widgetSettingsStore.getChassisSettings();
-
-  const onPitRoad = carStatus?.on_pit_road ?? false;
 
   return (
     <WidgetPanel direction="column" gap={0}>
@@ -49,13 +45,7 @@ export const ChassisWidget = observer(() => {
         />
       </div>
 
-      {!onPitRoad && (
-        <div className={styles.staleNotice}>
-          <Info size={12} className={styles.staleIcon} />
-
-          <span>Tire data updates only in pits</span>
-        </div>
-      )}
+      <StaleNotice />
     </WidgetPanel>
   );
 });
