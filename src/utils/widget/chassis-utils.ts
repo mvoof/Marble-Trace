@@ -1,4 +1,4 @@
-import type { CornerData } from '@widgets/ChassisWidget/types';
+import type { CornerData, CornerPosition } from '@widgets/ChassisWidget/types';
 import type { ChassisFrame } from '@/types/bindings';
 import type { UnitSystem } from '@/types';
 
@@ -52,19 +52,22 @@ export const computeAxleDiff = (
   return a - b;
 };
 
-const buildCornerData = (
-  rideHeightM: number | null | undefined,
-  shockDeflM: number | null | undefined,
-  tempCL: number | null | undefined,
-  tempCM: number | null | undefined,
-  tempCR: number | null | undefined,
-  pressureKpa: number | null | undefined,
-  wearL: number | null | undefined,
-  wearM: number | null | undefined,
-  wearR: number | null | undefined,
-  brakeTempC: number | null | undefined,
+export const buildCornerData = (
+  position: CornerPosition,
+  frame: ChassisFrame | null | undefined,
   system: UnitSystem
 ): CornerData => {
+  const rideHeightM = frame?.[`${position}_ride_height`];
+  const shockDeflM = frame?.[`${position}_shock_defl`];
+  const tempCL = frame?.[`${position}_temp_cl`];
+  const tempCM = frame?.[`${position}_temp_cm`];
+  const tempCR = frame?.[`${position}_temp_cr`];
+  const pressureKpa = frame?.[`${position}_pressure`];
+  const wearL = frame?.[`${position}_wear_l`];
+  const wearM = frame?.[`${position}_wear_m`];
+  const wearR = frame?.[`${position}_wear_r`];
+  const brakeTempC = frame?.[`${position}_brake_temp`];
+
   return {
     rideHeight: rideHeightM != null ? convertLength(rideHeightM, system) : null,
     shockDefl: shockDeflM != null ? convertLength(shockDeflM, system) : null,
@@ -88,34 +91,4 @@ const buildCornerData = (
     isBrakeOverheated:
       brakeTempC != null && brakeTempC > BRAKE_OVERHEAT_THRESHOLD_C,
   };
-};
-
-export const buildAllCorners = (
-  frame: ChassisFrame | null | undefined,
-  system: UnitSystem
-): { lf: CornerData; rf: CornerData; lr: CornerData; rr: CornerData } => {
-  const corners = ['lf', 'rf', 'lr', 'rr'] as const;
-
-  const result = {} as Record<
-    (typeof corners)[number],
-    ReturnType<typeof buildCornerData>
-  >;
-
-  for (const c of corners) {
-    result[c] = buildCornerData(
-      frame?.[`${c}_ride_height`],
-      frame?.[`${c}_shock_defl`],
-      frame?.[`${c}_temp_cl`],
-      frame?.[`${c}_temp_cm`],
-      frame?.[`${c}_temp_cr`],
-      frame?.[`${c}_pressure`],
-      frame?.[`${c}_wear_l`],
-      frame?.[`${c}_wear_m`],
-      frame?.[`${c}_wear_r`],
-      frame?.[`${c}_brake_temp`],
-      system
-    );
-  }
-
-  return result;
 };

@@ -1,3 +1,5 @@
+export type CornerPosition = 'lf' | 'rf' | 'lr' | 'rr';
+
 export interface CornerData {
   wearL: number | null;
   wearM: number | null;
@@ -16,15 +18,4 @@ export interface CornerData {
   brakeTempColor: string;
   isPunctured: boolean;
   isBrakeOverheated: boolean;
-}
-
-export interface ChassisWidgetProps {
-  lf: CornerData;
-  rf: CornerData;
-  lr: CornerData;
-  rr: CornerData;
-  tempUnit: string;
-  lengthUnit: string;
-  showSuspensionAndBrakes: boolean;
-  onPitRoad: boolean;
 }

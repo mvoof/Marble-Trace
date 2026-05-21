@@ -1,30 +1,49 @@
 import { observer } from 'mobx-react-lite';
 
-import type { CornerData } from '@widgets/ChassisWidget/types';
+import { telemetryStore } from '@store/iracing/telemetry.store';
+import { unitsStore } from '@store/units.store';
+import type { CornerPosition } from '@widgets/ChassisWidget/types';
+import { buildCornerData, computeAxleDiff } from '@utils/widget/chassis-utils';
 import { SuspensionText } from './SuspensionText';
 import { TireWearCell } from './TireWearCell/TireWearCell';
 import { TireTempCell } from './TireTempCell/TireTempCell';
 import { TirePressureOverlay } from './TirePressureOverlay/TirePressureOverlay';
 import styles from './CornerModule.module.scss';
 
+const SUSPENSION_BENT_THRESHOLD_M = 0.018;
+
+const AXLE_PAIRS: Record<CornerPosition, [CornerPosition, CornerPosition]> = {
+  lf: ['lf', 'rf'],
+  rf: ['lf', 'rf'],
+  lr: ['lr', 'rr'],
+  rr: ['lr', 'rr'],
+};
+
 interface CornerModuleProps {
-  data: CornerData;
-  isSuspensionBent: boolean;
+  position: CornerPosition;
   isRight: boolean;
-  tempUnit: string;
-  lengthUnit: string;
   showSuspensionAndBrakes: boolean;
 }
 
 export const CornerModule = observer(
-  ({
-    data,
-    isSuspensionBent,
-    isRight,
-    tempUnit,
-    lengthUnit,
-    showSuspensionAndBrakes,
-  }: CornerModuleProps) => {
+  ({ position, isRight, showSuspensionAndBrakes }: CornerModuleProps) => {
+    const { chassis } = telemetryStore;
+    const { system } = unitsStore;
+
+    const [axleA, axleB] = AXLE_PAIRS[position];
+    const axleDiff = computeAxleDiff(
+      chassis?.[`${axleA}_ride_height`],
+      chassis?.[`${axleB}_ride_height`]
+    );
+    const isSuspensionBent =
+      axleDiff !== null && Math.abs(axleDiff) > SUSPENSION_BENT_THRESHOLD_M;
+
+    const isMetric = system === 'metric';
+    const tempUnit = isMetric ? '°C' : '°F';
+    const lengthUnit = isMetric ? 'mm' : 'in';
+
+    const data = buildCornerData(position, chassis, system);
+
     const { isPunctured, isBrakeOverheated } = data;
     const hasDamage = isSuspensionBent || isBrakeOverheated;
 
