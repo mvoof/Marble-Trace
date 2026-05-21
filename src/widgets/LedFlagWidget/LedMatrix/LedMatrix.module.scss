@@ -52,44 +52,46 @@ $board-padding: 4px;
   visibility: hidden;
 }
 
+// Color classes are intentionally duplicated in SingleLed.module.scss —
+// CSS Modules scope prevents sharing, and local definition avoids background override.
 .colorGreen {
-  background-color: #22ff00;
+  background-color: $led-green;
   box-shadow:
-    0 0 4px #22ff00,
-    0 0 8px #22ff00;
+    0 0 4px $led-green,
+    0 0 8px $led-green;
 }
 
 .colorYellow {
-  background-color: #ffe600;
+  background-color: $led-yellow;
   box-shadow:
-    0 0 4px #ffe600,
-    0 0 8px #ffe600;
+    0 0 4px $led-yellow,
+    0 0 8px $led-yellow;
 }
 
 .colorRed {
-  background-color: #ff0a33;
+  background-color: $led-red;
   box-shadow:
-    0 0 4px #ff0a33,
-    0 0 8px #ff0a33;
+    0 0 4px $led-red,
+    0 0 8px $led-red;
 }
 
 .colorBlue {
-  background-color: #33aaff;
+  background-color: $led-blue;
   box-shadow:
-    0 0 4px #33aaff,
-    0 0 8px #33aaff;
+    0 0 4px $led-blue,
+    0 0 8px $led-blue;
 }
 
 .colorWhite {
-  background-color: #ffffff;
+  background-color: $led-white;
   box-shadow:
-    0 0 4px #ffffff,
-    0 0 8px rgba(255, 255, 255, 0.6);
+    0 0 4px $led-white,
+    0 0 8px rgba($led-white, 0.6);
 }
 
 .colorOrange {
-  background-color: #ff5500;
+  background-color: $led-orange;
   box-shadow:
-    0 0 4px #ff5500,
-    0 0 8px #ff5500;
+    0 0 4px $led-orange,
+    0 0 8px $led-orange;
 }
