@@ -16,9 +16,8 @@ export const RadarBarWidget = observer(() => {
   const radarSettings = widgetSettingsStore.getRadarSettings('radar-bar');
 
   const nearbyCars =
-    proximity?.nearbyCars.filter(
-      (car) => car.clearance <= CAR_SEARCH_RADIUS
-    ) ?? [];
+    proximity?.nearbyCars.filter((car) => car.clearance <= CAR_SEARCH_RADIUS) ??
+    [];
 
   const spotterLeft = proximity?.spotterLeft ?? false;
   const spotterRight = proximity?.spotterRight ?? false;

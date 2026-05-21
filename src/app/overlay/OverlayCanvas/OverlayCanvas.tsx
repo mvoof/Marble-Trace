@@ -57,10 +57,7 @@ export const OverlayCanvas = observer(() => {
         const WidgetComponent = widgetDefinition.component;
 
         return (
-          <WidgetContainer
-            key={widget.id}
-            widgetId={widget.id}
-          >
+          <WidgetContainer key={widget.id} widgetId={widget.id}>
             <WidgetComponent />
           </WidgetContainer>
         );
