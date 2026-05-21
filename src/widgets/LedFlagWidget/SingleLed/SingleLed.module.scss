@@ -1,0 +1,17 @@
+.singleLed {
+  width: 80%;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px #222;
+  background-color: #030304;
+  position: relative;
+}
+
+.singleLedInner {
+  position: absolute;
+  inset: 8px;
+  border-radius: 4px;
+  background-color: #16161a;
+}
