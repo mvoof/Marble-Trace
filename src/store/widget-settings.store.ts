@@ -37,7 +37,9 @@ export class WidgetSettingsStore {
 
   isTrackMapForceStartPending = false;
 
-  widgetMutationId = 0;
+  // Incremented on every settings mutation. Reactions use this as a cheap
+  // change trigger instead of subscribing to every field across all widgets.
+  changeToken = 0;
 
   constructor() {
     makeAutoObservable(
@@ -98,7 +100,7 @@ export class WidgetSettingsStore {
   }
 
   private bumpMutation() {
-    this.widgetMutationId++;
+    this.changeToken++;
   }
 
   setWidgets(widgets: WidgetDefaultConfig[]) {

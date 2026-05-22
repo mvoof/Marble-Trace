@@ -134,14 +134,14 @@ export const initMainSync = async (root: RootStore) => {
           }
         ),
         reaction(
-          () => root.widgetSettings.widgetMutationId,
+          () => root.widgetSettings.changeToken,
           () => {
             void emitWidgetSettingsUpdated(root.widgetSettings.allWidgets);
           },
           { delay: 16 }
         ),
         reaction(
-          () => root.widgetSettings.widgetMutationId,
+          () => root.widgetSettings.changeToken,
           () => {
             void onSave();
           },
@@ -193,7 +193,7 @@ export const initOverlaySync = async (root: RootStore) => {
       }
     ),
     reaction(
-      () => root.widgetSettings.widgetMutationId,
+      () => root.widgetSettings.changeToken,
       () => {
         void emit('widget-layout-changed', root.widgetSettings.allWidgets);
       },
