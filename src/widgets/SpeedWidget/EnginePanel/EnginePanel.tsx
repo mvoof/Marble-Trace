@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { Droplets, Thermometer } from 'lucide-react';
 
+import type { SpeedWidgetSettings } from '@/types/widget-settings';
 import { formatTemp, tempUnit } from '@utils/formatters/telemetry-format';
 import { isEngineTempWarning } from '@utils/widget/speed-utils';
 
@@ -16,7 +17,8 @@ export const EnginePanel = observer(() => {
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { showTemps } = widgetSettings.getSpeedSettings();
+  const { showTemps } =
+    widgetSettings.getSettings<SpeedWidgetSettings>('speed');
 
   if (!showTemps) {
     return null;

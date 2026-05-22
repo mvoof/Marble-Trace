@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { formatPosition } from '@utils/widget/timer-utils';
 
 import styles from './PositionItem.module.scss';
+import type { TimerWidgetSettings } from '@/types/widget-settings';
 import {
   useTelemetryStore,
   useWidgetSettingsStore,
@@ -12,7 +13,8 @@ export const PositionItem = observer(() => {
   const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { showPosition } = widgetSettings.getTimerSettings();
+  const { showPosition } =
+    widgetSettings.getSettings<TimerWidgetSettings>('timer');
 
   if (!showPosition) {
     return null;

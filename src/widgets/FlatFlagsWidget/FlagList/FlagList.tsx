@@ -10,14 +10,14 @@ interface FlagListProps {
 }
 
 export const FlagList = observer(({ blinkOn }: FlagListProps) => {
-  const flags = useFlagsStore();
+  const { displayFlags } = useFlagsStore();
 
   return (
     <div className={styles.list}>
-      {flags.displayFlags.length === 0 ? (
+      {displayFlags.length === 0 ? (
         <div className={styles.empty}>NO ACTIVE FLAGS</div>
       ) : (
-        flags.displayFlags.map((flag) => (
+        displayFlags.map((flag) => (
           <FlagItem key={flag} flag={flag} blinkOn={blinkOn} />
         ))
       )}

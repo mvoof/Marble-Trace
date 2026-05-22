@@ -1,6 +1,7 @@
 import { action, makeAutoObservable, reaction } from 'mobx';
 
 import type { FlagType } from '@/types';
+import type { FlagDisplaySettings } from '@/types/widget-settings';
 import {
   parseAllSessionFlags,
   parseSessionFlags,
@@ -95,7 +96,7 @@ export class FlagsStore {
       (flags) => flags.length === 0,
       NO_FLAGS,
       () =>
-        this.root.widgetSettings.getFlagDisplaySettings('flat-flags')
+        this.root.widgetSettings.getSettings<FlagDisplaySettings>('flat-flags')
           .holdDuration,
       (value) => {
         this.displayFlags = value;
@@ -111,7 +112,7 @@ export class FlagsStore {
       (flag) => flag === NO_FLAG,
       NO_FLAG,
       () =>
-        this.root.widgetSettings.getFlagDisplaySettings('led-flags')
+        this.root.widgetSettings.getSettings<FlagDisplaySettings>('led-flags')
           .holdDuration,
       (value) => {
         this.ledDisplayFlag = value;

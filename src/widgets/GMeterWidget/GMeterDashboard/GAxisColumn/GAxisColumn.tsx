@@ -7,6 +7,7 @@ import {
   computeColor,
 } from '@utils/widget/g-meter-utils';
 
+import type { GMeterWidgetSettings } from '@/types/widget-settings';
 import styles from './GAxisColumn.module.scss';
 import {
   useTelemetryStore,
@@ -22,7 +23,8 @@ export const GAxisColumn = observer(
   ({ axis, hasDivider }: GAxisColumnProps) => {
     const telemetry = useTelemetryStore();
     const widgetSettings = useWidgetSettingsStore();
-    const { scale, colorMode } = widgetSettings.getGMeterSettings();
+    const { scale, colorMode } =
+      widgetSettings.getSettings<GMeterWidgetSettings>('g-meter');
     const dynamics = telemetry.carDynamics;
 
     const stateRef = useRef({

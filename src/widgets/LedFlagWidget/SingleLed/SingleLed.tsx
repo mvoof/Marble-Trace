@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { getSingleLedColorClass, type ColorStyles } from '../led-matrix-utils';
 
 import styles from './SingleLed.module.scss';
+import type { FlagDisplaySettings } from '@/types/widget-settings';
 import {
   useFlagsStore,
   useWidgetSettingsStore,
@@ -16,7 +17,8 @@ export const SingleLed = observer(({ blinkOn }: SingleLedProps) => {
   const flags = useFlagsStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { alwaysShow } = widgetSettings.getFlagDisplaySettings('led-flags');
+  const { alwaysShow } =
+    widgetSettings.getSettings<FlagDisplaySettings>('led-flags');
 
   const flag = flags.ledDisplayFlag;
 

@@ -11,7 +11,8 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const LinearMapSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getLinearMapSettings();
+  const settings =
+    widgetSettings.getSettings<LinearMapWidgetSettings>('relative-map');
 
   const update = (partial: Partial<LinearMapWidgetSettings>) => {
     widgetSettings.updateUserSettings('relative-map', {

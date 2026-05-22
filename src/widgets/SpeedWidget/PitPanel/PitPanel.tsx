@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
+import type { SpeedWidgetSettings } from '@/types/widget-settings';
 import {
   formatGear,
   formatSpeed,
@@ -33,7 +34,7 @@ export const PitPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
   const { pitSpeedLimitOverride, gearColor, gearPanelBg } =
-    widgetSettings.getSpeedSettings();
+    widgetSettings.getSettings<SpeedWidgetSettings>('speed');
   const carStatus = telemetry.carStatus;
   const carDynamics = telemetry.carDynamics;
   const system = units.system;

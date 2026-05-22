@@ -24,7 +24,8 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const TrackMapSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getTrackMapSettings();
+  const settings =
+    widgetSettings.getSettings<TrackMapWidgetSettings>('track-map');
   const [tracksPath, setTracksPath] = useState<string | null>(null);
   const { message } = App.useApp();
 

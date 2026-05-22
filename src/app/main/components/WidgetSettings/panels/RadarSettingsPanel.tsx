@@ -12,7 +12,7 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const RadarSettingsPanel = observer(
   ({ widgetId }: { widgetId: 'proximity-radar' | 'radar-bar' }) => {
     const widgetSettings = useWidgetSettingsStore();
-    const settings = widgetSettings.getRadarSettings(widgetId);
+    const settings = widgetSettings.getSettings<RadarSettings>(widgetId);
 
     const update = (partial: Partial<RadarSettings>) => {
       widgetSettings.updateUserSettings(widgetId, {

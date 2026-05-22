@@ -4,6 +4,7 @@ import { TRACK_SURFACE_ON_TRACK } from '@utils/widget/widget-utils';
 import { CarDot } from '@/components/shared/CarDot/CarDot';
 
 import styles from './LinearMap.module.scss';
+import type { LinearMapWidgetSettings } from '@/types/widget-settings';
 import {
   useComputedStore,
   useWidgetSettingsStore,
@@ -13,7 +14,8 @@ export const LinearMap = observer(() => {
   const computed = useComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getLinearMapSettings();
+  const settings =
+    widgetSettings.getSettings<LinearMapWidgetSettings>('relative-map');
   const entries = computed.relativeEntries;
   const player = entries.find((entry) => entry.isPlayer) ?? null;
   const isHorizontal = settings.orientation === 'horizontal';

@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { FUEL_THRESHOLDS } from '@utils/constants/fuel-constants';
 
 import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
+import type { FuelWidgetSettings } from '@/types/widget-settings';
 import styles from './FuelFinishCard.module.scss';
 import {
   useComputedStore,
@@ -14,7 +15,7 @@ export const FuelFinishCard = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
   const fuel = computed.fuel;
-  const settings = widgetSettings.getFuelSettings();
+  const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
 
   const lapsRemaining = fuel?.lapsRemaining ?? null;
   const shortage = fuel?.shortage ?? null;

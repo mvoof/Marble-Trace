@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { formatSimTime } from '@utils/widget/timer-utils';
 
 import styles from './SimTimeItem.module.scss';
+import type { TimerWidgetSettings } from '@/types/widget-settings';
 import {
   useTelemetryStore,
   useWidgetSettingsStore,
@@ -12,7 +13,8 @@ export const SimTimeItem = observer(() => {
   const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { showSimTime } = widgetSettings.getTimerSettings();
+  const { showSimTime } =
+    widgetSettings.getSettings<TimerWidgetSettings>('timer');
   const rawSimTime = telemetry.session?.session_time_of_day ?? null;
   const simTime = rawSimTime !== null ? formatSimTime(rawSimTime) : null;
 

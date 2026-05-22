@@ -4,6 +4,7 @@ import { BLOCKS, buildGridData } from '@utils/widget/led-flag-utils';
 import { getColorClass, type ColorStyles } from '../led-matrix-utils';
 
 import styles from './LedMatrix.module.scss';
+import type { FlagDisplaySettings } from '@/types/widget-settings';
 import {
   useFlagsStore,
   useWidgetSettingsStore,
@@ -18,7 +19,8 @@ export const LedMatrix = observer(
   ({ diodesPerBlock, blinkOn }: LedMatrixProps) => {
     const flags = useFlagsStore();
     const widgetSettings = useWidgetSettingsStore();
-    const { alwaysShow } = widgetSettings.getFlagDisplaySettings('led-flags');
+    const { alwaysShow } =
+      widgetSettings.getSettings<FlagDisplaySettings>('led-flags');
     const flag = flags.ledDisplayFlag;
 
     if (!alwaysShow && flag === 'none') {

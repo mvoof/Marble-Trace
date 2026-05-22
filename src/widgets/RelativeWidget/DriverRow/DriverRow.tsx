@@ -10,6 +10,7 @@ import { ClassBadge } from '@/components/shared/ClassBadge/ClassBadge';
 import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
 import { computeRelativeGap } from '@utils/widget/relative-utils';
 import type { DriverEntry } from '@/types/bindings';
+import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './DriverRow.module.scss';
 import {
@@ -26,7 +27,8 @@ export const DriverRow = observer(({ driver, trendDelta }: DriverRowProps) => {
   const computed = useComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getRelativeSettings();
+  const settings =
+    widgetSettings.getSettings<RelativeWidgetSettings>('relative');
   const player =
     computed.relativeEntries.find((entry) => entry.isPlayer) ?? null;
   const isPit =

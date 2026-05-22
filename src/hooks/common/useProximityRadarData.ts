@@ -1,3 +1,4 @@
+import type { RadarSettings } from '@/types/widget-settings';
 import { useRadarVisibility } from './useRadarVisibility';
 import { useWidgetAutoHide } from './useWidgetAutoHide';
 import {
@@ -13,7 +14,7 @@ export const useProximityRadarData = (
   const widgetSettings = useWidgetSettingsStore();
 
   const proximity = computed.proximity;
-  const radarSettings = widgetSettings.getRadarSettings(widgetId);
+  const radarSettings = widgetSettings.getSettings<RadarSettings>(widgetId);
 
   const nearbyCars =
     proximity?.nearbyCars.filter((car) => car.clearance <= searchRadius) ?? [];

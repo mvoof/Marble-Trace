@@ -8,7 +8,7 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const WeatherSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getWeatherSettings();
+  const settings = widgetSettings.getSettings<WeatherWidgetSettings>('weather');
 
   const update = (partial: Partial<WeatherWidgetSettings>) => {
     widgetSettings.updateUserSettings('weather', {

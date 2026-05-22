@@ -1,5 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import type { SpeedWidgetSettings } from '@/types/widget-settings';
 import { computeShiftThresholds } from '@utils/widget/shift-thresholds';
 import { getShiftZoneColor } from '@utils/widget/speed-utils';
 import styles from './RpmBar.module.scss';
@@ -30,7 +31,7 @@ export const RpmBar = observer(() => {
     rpmColorLimit,
     ledShape,
     showRpmBar,
-  } = widgetSettings.getSpeedSettings();
+  } = widgetSettings.getSettings<SpeedWidgetSettings>('speed');
 
   if (!showRpmBar) {
     return null;

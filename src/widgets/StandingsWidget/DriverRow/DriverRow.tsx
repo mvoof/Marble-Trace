@@ -14,6 +14,7 @@ import { buildGridTemplate } from '@utils/widget/standings-utils';
 import { PosChange } from './PosChange';
 import { IrChangeCell } from './IrChangeCell';
 
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
 import {
   useComputedStore,
@@ -29,7 +30,8 @@ export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
   const widgetSettings = useWidgetSettingsStore();
 
   const driver = computed.driverMap.get(carIdx);
-  const settings = widgetSettings.getStandingsSettings();
+  const settings =
+    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
   const gridTemplate = buildGridTemplate(settings);
 
   if (!driver) {

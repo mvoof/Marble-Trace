@@ -6,6 +6,7 @@ import {
   type DeltaState,
 } from '@utils/widget/lap-delta-utils';
 
+import type { LapDeltaWidgetSettings } from '@/types/widget-settings';
 import styles from './DeltaDisplay.module.scss';
 import {
   useComputedStore,
@@ -22,7 +23,8 @@ export const DeltaDisplay = observer(() => {
   const computed = useComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { reference, layout } = widgetSettings.getLapDeltaSettings();
+  const { reference, layout } =
+    widgetSettings.getSettings<LapDeltaWidgetSettings>('lap-delta');
   const isHorizontal = layout === 'horizontal';
   const isSession = reference === 'session_best';
 

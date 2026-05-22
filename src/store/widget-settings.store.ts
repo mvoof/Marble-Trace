@@ -6,21 +6,8 @@ import { DEFAULT_WIDGETS, WIDGET_BY_ID } from './widget-defaults';
 import type {
   WidgetDefaultConfig,
   BaseUserSettings,
-  FlagDisplaySettings,
   FuelWidgetSettings,
-  GMeterWidgetSettings,
-  InputTraceSettings,
-  LinearMapWidgetSettings,
-  RadarSettings,
-  RelativeWidgetSettings,
-  SpeedWidgetSettings,
   StandingsWidgetSettings,
-  TrackMapWidgetSettings,
-  WeatherWidgetSettings,
-  LapTimesWidgetSettings,
-  LapDeltaWidgetSettings,
-  ChassisWidgetSettings,
-  TimerWidgetSettings,
   WidgetSpecificSettings,
   WidgetUserSettings,
 } from '@/types/widget-settings';
@@ -92,7 +79,7 @@ export class WidgetSettingsStore {
   }
 
   toggleStandingsClassCycling() {
-    const settings = this.getStandingsSettings();
+    const settings = this.getSettings<StandingsWidgetSettings>('standings');
     this.updateUserSettings('standings', {
       ...settings,
       enableClassCycling: !settings.enableClassCycling,
@@ -296,7 +283,7 @@ export class WidgetSettingsStore {
     }
   }
 
-  private getSettings<SpecificSettings extends WidgetSpecificSettings>(
+  getSettings<SpecificSettings extends WidgetSpecificSettings>(
     widgetId: string
   ): BaseUserSettings & SpecificSettings {
     const widget = this.getWidget(widgetId);
@@ -312,78 +299,5 @@ export class WidgetSettingsStore {
       (widget?.userSettings as unknown as BaseUserSettings &
         SpecificSettings) ?? defaultSettings
     );
-  }
-
-  getSpeedSettings(): BaseUserSettings & SpeedWidgetSettings {
-    return this.getSettings<SpeedWidgetSettings>('speed');
-  }
-
-  getInputTraceSettings(): BaseUserSettings & InputTraceSettings {
-    return this.getSettings<InputTraceSettings>('input-trace');
-  }
-
-  getRadarSettings(
-    id: 'proximity-radar' | 'radar-bar'
-  ): BaseUserSettings & RadarSettings {
-    return this.getSettings<RadarSettings>(id);
-  }
-
-  getStandingsSettings(): BaseUserSettings & StandingsWidgetSettings {
-    return this.getSettings<StandingsWidgetSettings>('standings');
-  }
-
-  getRelativeSettings(): BaseUserSettings & RelativeWidgetSettings {
-    return this.getSettings<RelativeWidgetSettings>('relative');
-  }
-
-  getTrackMapSettings(): BaseUserSettings & TrackMapWidgetSettings {
-    const settings = this.getSettings<TrackMapWidgetSettings>('track-map');
-    const showSectors = settings.showSectors ?? true;
-
-    return {
-      ...settings,
-      showSectors,
-      showSectorsOnMap: settings.showSectorsOnMap ?? showSectors,
-    };
-  }
-
-  getLinearMapSettings(): BaseUserSettings & LinearMapWidgetSettings {
-    return this.getSettings<LinearMapWidgetSettings>('relative-map');
-  }
-
-  getWeatherSettings(): BaseUserSettings & WeatherWidgetSettings {
-    return this.getSettings<WeatherWidgetSettings>('weather');
-  }
-
-  getFuelSettings(): BaseUserSettings & FuelWidgetSettings {
-    return this.getSettings<FuelWidgetSettings>('fuel');
-  }
-
-  getLapTimesSettings(): BaseUserSettings & LapTimesWidgetSettings {
-    const settings = this.getSettings<LapTimesWidgetSettings>('lap-times');
-
-    return { ...settings, showPredicted: settings.showPredicted ?? true };
-  }
-
-  getChassisSettings(): BaseUserSettings & ChassisWidgetSettings {
-    return this.getSettings<ChassisWidgetSettings>('chassis');
-  }
-
-  getLapDeltaSettings(): BaseUserSettings & LapDeltaWidgetSettings {
-    return this.getSettings<LapDeltaWidgetSettings>('lap-delta');
-  }
-
-  getTimerSettings(): BaseUserSettings & TimerWidgetSettings {
-    return this.getSettings<TimerWidgetSettings>('timer');
-  }
-
-  getFlagDisplaySettings(
-    id: 'led-flags' | 'flat-flags'
-  ): BaseUserSettings & FlagDisplaySettings {
-    return this.getSettings<FlagDisplaySettings>(id);
-  }
-
-  getGMeterSettings(): BaseUserSettings & GMeterWidgetSettings {
-    return this.getSettings<GMeterWidgetSettings>('g-meter');
   }
 }

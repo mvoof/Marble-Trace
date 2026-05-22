@@ -8,7 +8,7 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const FuelSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getFuelSettings();
+  const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
 
   const update = (partial: Partial<FuelWidgetSettings>) => {
     widgetSettings.updateUserSettings('fuel', {

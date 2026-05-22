@@ -7,6 +7,7 @@ import {
 } from '@utils/widget/timer-utils';
 
 import styles from './TimerFlagBadge.module.scss';
+import type { TimerWidgetSettings } from '@/types/widget-settings';
 import {
   useTelemetryStore,
   useWidgetSettingsStore,
@@ -22,7 +23,7 @@ export const TimerFlagBadge = observer(() => {
   const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { showFlag } = widgetSettings.getTimerSettings();
+  const { showFlag } = widgetSettings.getSettings<TimerWidgetSettings>('timer');
 
   if (!showFlag) {
     return null;

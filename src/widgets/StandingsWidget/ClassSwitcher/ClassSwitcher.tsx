@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { formatIRating } from '@/utils/widget/widget-utils';
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
 
 import styles from './ClassSwitcher.module.scss';
 import {
@@ -15,7 +16,8 @@ export const ClassSwitcher = observer(() => {
   const computed = useComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getStandingsSettings();
+  const settings =
+    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
   const allClassGroups = computed.allClassGroups;
   const activeIndex = widgetSettings.standingsActiveClassIndex;
   const dragMode = appSettings.dragMode;

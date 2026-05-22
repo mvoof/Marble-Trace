@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
+import type { InputTraceSettings } from '@/types/widget-settings';
 
 import styles from './Bar.module.scss';
 import {
@@ -34,7 +35,8 @@ const getChannelColor = (
   widgetSettings: WidgetSettingsStore,
   channel: BarChannel
 ): string => {
-  const settings = widgetSettings.getInputTraceSettings();
+  const settings =
+    widgetSettings.getSettings<InputTraceSettings>('input-trace');
 
   if (channel === 'throttle') return settings.throttleColor;
   if (channel === 'brake') return settings.brakeColor;
@@ -55,7 +57,8 @@ export const Bar = observer(
   ({ channel, width = 'md', rounded = true }: BarProps) => {
     const telemetry = useTelemetryStore();
     const widgetSettings = useWidgetSettingsStore();
-    const settings = widgetSettings.getInputTraceSettings();
+    const settings =
+      widgetSettings.getSettings<InputTraceSettings>('input-trace');
     const smoothedRef = useRef(0);
 
     if (!settings[CHANNEL_VISIBILITY_KEY[channel]]) {

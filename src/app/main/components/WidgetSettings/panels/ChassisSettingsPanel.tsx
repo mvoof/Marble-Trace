@@ -8,7 +8,7 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const ChassisSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getChassisSettings();
+  const settings = widgetSettings.getSettings<ChassisWidgetSettings>('chassis');
 
   const update = (partial: Partial<ChassisWidgetSettings>) => {
     widgetSettings.updateUserSettings('chassis', {

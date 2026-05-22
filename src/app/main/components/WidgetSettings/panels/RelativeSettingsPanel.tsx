@@ -8,7 +8,8 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const RelativeSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getRelativeSettings();
+  const settings =
+    widgetSettings.getSettings<RelativeWidgetSettings>('relative');
 
   const update = (partial: Partial<RelativeWidgetSettings>) => {
     widgetSettings.updateUserSettings('relative', {

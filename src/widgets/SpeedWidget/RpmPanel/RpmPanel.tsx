@@ -1,5 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import type { SpeedWidgetSettings } from '@/types/widget-settings';
 import { computeShiftThresholds } from '@utils/widget/shift-thresholds';
 import { getShiftZoneColor } from '@utils/widget/speed-utils';
 import styles from './RpmPanel.module.scss';
@@ -21,7 +22,7 @@ export const RpmPanel = observer(() => {
     rpmColorShift,
     rpmColorLimit,
     showRpmColor,
-  } = widgetSettings.getSpeedSettings();
+  } = widgetSettings.getSettings<SpeedWidgetSettings>('speed');
   const colors = {
     low: rpmColorLow,
     mid: rpmColorMid,

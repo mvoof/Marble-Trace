@@ -9,6 +9,7 @@ import { TrackMapSvg } from '@widgets/TrackMapWidget/TrackMapSvg/TrackMapSvg';
 import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
 
 import styles from './TrackMapView.module.scss';
+import type { TrackMapWidgetSettings } from '@/types/widget-settings';
 import {
   useComputedStore,
   useTelemetryStore,
@@ -40,7 +41,11 @@ export const TrackMapView = observer(
     const telemetry = useTelemetryStore();
     const computed = useComputedStore();
     const widgetSettings = useWidgetSettingsStore();
-    const settings = widgetSettings.getTrackMapSettings();
+    const rawSettings =
+      widgetSettings.getSettings<TrackMapWidgetSettings>('track-map');
+    const showSectors = rawSettings.showSectors ?? true;
+    const showSectorsOnMap = rawSettings.showSectorsOnMap ?? showSectors;
+    const settings = { ...rawSettings, showSectors, showSectorsOnMap };
     const sectors = telemetry.sessionInfo?.SplitTimeInfo?.Sectors;
 
     const driverEntries = computed.standings?.entries ?? [];

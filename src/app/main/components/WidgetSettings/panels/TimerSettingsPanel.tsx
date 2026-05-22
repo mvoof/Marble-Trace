@@ -8,7 +8,7 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const TimerSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getTimerSettings();
+  const settings = widgetSettings.getSettings<TimerWidgetSettings>('timer');
 
   const update = (partial: Partial<TimerWidgetSettings>) => {
     widgetSettings.updateUserSettings('timer', {

@@ -8,7 +8,8 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const InputTraceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getInputTraceSettings();
+  const settings =
+    widgetSettings.getSettings<InputTraceSettings>('input-trace');
 
   const update = (partial: Partial<InputTraceSettings>) => {
     widgetSettings.updateUserSettings('input-trace', {

@@ -4,6 +4,7 @@ import { resolveSessionLaps } from '@utils/formatters/telemetry-format';
 import { formatLapCount } from '@utils/widget/timer-utils';
 
 import styles from './LapsItem.module.scss';
+import type { TimerWidgetSettings } from '@/types/widget-settings';
 import {
   useTelemetryStore,
   useWidgetSettingsStore,
@@ -13,7 +14,7 @@ export const LapsItem = observer(() => {
   const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { showLaps } = widgetSettings.getTimerSettings();
+  const { showLaps } = widgetSettings.getSettings<TimerWidgetSettings>('timer');
 
   if (!showLaps) {
     return null;

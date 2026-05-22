@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
 import type { SessionInfo } from '@/types/bindings';
+import type { SpeedWidgetSettings } from '@/types/widget-settings';
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
 import type { UnitsStore } from '@store/units.store';
@@ -76,7 +77,7 @@ const applyArgs = (
     stores.units.setSystem(args.units);
 
     stores.widgetSettings.updateUserSettings('speed', {
-      ...stores.widgetSettings.getSpeedSettings(),
+      ...stores.widgetSettings.getSettings<SpeedWidgetSettings>('speed'),
       showRpmBar: args.showRpmBar,
       showTemps: args.showTemps,
       showRpmColor: args.showRpmColor,

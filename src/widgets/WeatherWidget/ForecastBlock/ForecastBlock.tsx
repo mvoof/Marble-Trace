@@ -9,6 +9,7 @@ import {
 import { extractForecast } from '@utils/widget/weather-utils';
 
 import styles from './ForecastBlock.module.scss';
+import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import {
   useTelemetryStore,
   useUnitsStore,
@@ -37,7 +38,8 @@ export const ForecastBlock = observer(() => {
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { showForecast } = widgetSettings.getWeatherSettings();
+  const { showForecast } =
+    widgetSettings.getSettings<WeatherWidgetSettings>('weather');
 
   if (!showForecast) {
     return null;

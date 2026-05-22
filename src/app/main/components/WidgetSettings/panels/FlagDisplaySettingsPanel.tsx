@@ -8,7 +8,7 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const FlagDisplaySettingsPanel = observer(
   ({ widgetId }: { widgetId: 'led-flags' | 'flat-flags' }) => {
     const widgetSettings = useWidgetSettingsStore();
-    const settings = widgetSettings.getFlagDisplaySettings(widgetId);
+    const settings = widgetSettings.getSettings<FlagDisplaySettings>(widgetId);
 
     const update = (partial: Partial<FlagDisplaySettings>) => {
       widgetSettings.updateUserSettings(widgetId, {

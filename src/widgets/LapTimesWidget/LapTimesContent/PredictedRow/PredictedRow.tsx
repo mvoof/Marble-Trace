@@ -8,15 +8,18 @@ import {
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+import type { LapTimesWidgetSettings } from '@/types/widget-settings';
 
 export const PredictedRow = observer(() => {
   const computed = useComputedStore();
   const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getLapTimesSettings();
+  const settings =
+    widgetSettings.getSettings<LapTimesWidgetSettings>('lap-times');
+  const showPredicted = settings.showPredicted ?? true;
 
-  if (!settings.showPredicted) {
+  if (!showPredicted) {
     return null;
   }
 

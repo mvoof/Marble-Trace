@@ -14,7 +14,7 @@ export const SpeedSettingsPanel = observer(() => {
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getSpeedSettings();
+  const settings = widgetSettings.getSettings<SpeedWidgetSettings>('speed');
 
   const update = (partial: Partial<SpeedWidgetSettings>) => {
     widgetSettings.updateUserSettings('speed', {

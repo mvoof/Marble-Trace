@@ -12,7 +12,7 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const GMeterSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getGMeterSettings();
+  const settings = widgetSettings.getSettings<GMeterWidgetSettings>('g-meter');
 
   const update = (partial: Partial<GMeterWidgetSettings>) => {
     widgetSettings.updateUserSettings('g-meter', {

@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
 import {
   useComputedStore,
@@ -16,7 +17,8 @@ export const PosChange = observer(({ carIdx }: PosChangeProps) => {
   const widgetSettings = useWidgetSettingsStore();
 
   const driver = computed.driverMap.get(carIdx);
-  const settings = widgetSettings.getStandingsSettings();
+  const settings =
+    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
   const effectiveStartPos = computed.getEffectiveStartPos(carIdx);
 
   if (!driver) {

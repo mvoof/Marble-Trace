@@ -9,7 +9,8 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const StandingsSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getStandingsSettings();
+  const settings =
+    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
 
   const update = (partial: Partial<StandingsWidgetSettings>) => {
     widgetSettings.updateUserSettings('standings', {

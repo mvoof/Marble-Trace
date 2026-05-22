@@ -11,7 +11,8 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const LapTimesSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getLapTimesSettings();
+  const settings =
+    widgetSettings.getSettings<LapTimesWidgetSettings>('lap-times');
 
   const update = (partial: Partial<LapTimesWidgetSettings>) => {
     widgetSettings.updateUserSettings('lap-times', {

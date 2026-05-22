@@ -9,6 +9,7 @@ import {
   SECTOR_ACCENT_COLORS,
 } from '@utils/widget/lap-delta-utils';
 
+import type { LapDeltaWidgetSettings } from '@/types/widget-settings';
 import styles from './SectorList.module.scss';
 import {
   useComputedStore,
@@ -20,7 +21,7 @@ export const SectorList = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference, layout, showSectorTimes } =
-    widgetSettings.getLapDeltaSettings();
+    widgetSettings.getSettings<LapDeltaWidgetSettings>('lap-delta');
   const isHorizontal = layout === 'horizontal';
 
   if (!showSectorTimes) {

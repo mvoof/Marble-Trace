@@ -5,6 +5,7 @@ import { isSessionEnded } from '@utils/widget/timer-utils';
 import { LapsItem } from './LapsItem/LapsItem';
 import { PositionItem } from './PositionItem/PositionItem';
 import styles from './TimerFooter.module.scss';
+import type { TimerWidgetSettings } from '@/types/widget-settings';
 import {
   useTelemetryStore,
   useWidgetSettingsStore,
@@ -15,7 +16,8 @@ export const TimerFooter = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
   const session = telemetry.session;
-  const { showLaps, showPosition } = widgetSettings.getTimerSettings();
+  const { showLaps, showPosition } =
+    widgetSettings.getSettings<TimerWidgetSettings>('timer');
 
   if (!showLaps && !showPosition) {
     return null;

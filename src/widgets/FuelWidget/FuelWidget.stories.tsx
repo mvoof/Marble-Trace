@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
 import type { FuelComputedFrame } from '@/types/bindings';
+import type { FuelWidgetSettings } from '@/types/widget-settings';
 import type { ComputedStore } from '@store/iracing/computed.store';
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
@@ -74,7 +75,7 @@ const applyArgs = (
     } as FuelComputedFrame);
 
     stores.widgetSettings.updateUserSettings('fuel', {
-      ...stores.widgetSettings.getFuelSettings(),
+      ...stores.widgetSettings.getSettings<FuelWidgetSettings>('fuel'),
       showChart: args.showChart,
       chartType: args.chartType,
       barWidth: args.barWidth,

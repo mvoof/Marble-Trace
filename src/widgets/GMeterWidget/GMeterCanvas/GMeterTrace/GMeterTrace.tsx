@@ -13,6 +13,7 @@ import {
 } from '@utils/widget/g-meter-utils';
 import type { EnvelopePoint, TrailPoint } from '@widgets/GMeterWidget/types';
 
+import type { GMeterWidgetSettings } from '@/types/widget-settings';
 import styles from './GMeterTrace.module.scss';
 import {
   useTelemetryStore,
@@ -28,7 +29,8 @@ export const GMeterTrace = observer(({ width, height }: GMeterTraceProps) => {
   const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { displayMode, scale, colorMode } = widgetSettings.getGMeterSettings();
+  const { displayMode, scale, colorMode } =
+    widgetSettings.getSettings<GMeterWidgetSettings>('g-meter');
 
   const dynamics = telemetry.carDynamics;
 

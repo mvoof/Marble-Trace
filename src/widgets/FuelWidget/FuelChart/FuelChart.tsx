@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { drawBarChart, drawLineChart } from './chart-renderers';
 
+import type { FuelWidgetSettings } from '@/types/widget-settings';
 import styles from './FuelChart.module.scss';
 import {
   useComputedStore,
@@ -13,14 +14,15 @@ export const FuelChart = observer(() => {
   const computed = useComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getFuelSettings();
+  const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
   const history = computed.fuel?.lapFuelHistory ?? [];
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
     const currentHistory = computed.fuel?.lapFuelHistory ?? [];
-    const currentSettings = widgetSettings.getFuelSettings();
+    const currentSettings =
+      widgetSettings.getSettings<FuelWidgetSettings>('fuel');
 
     if (!canvas || currentHistory.length < 2) {
       return;

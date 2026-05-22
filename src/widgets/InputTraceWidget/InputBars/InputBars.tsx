@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import type { InputTraceSettings } from '@/types/widget-settings';
 
 import { Bar } from './Bar/Bar';
 
@@ -8,7 +9,8 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const InputBars = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getInputTraceSettings();
+  const settings =
+    widgetSettings.getSettings<InputTraceSettings>('input-trace');
 
   if (settings.barMode === 'hidden') {
     return null;

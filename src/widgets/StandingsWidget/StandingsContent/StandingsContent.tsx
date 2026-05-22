@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import type { DriverGroup } from '@/types';
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import {
   useComputedStore,
   useWidgetSettingsStore,
@@ -20,7 +21,8 @@ import styles from './StandingsContent.module.scss';
 export const StandingsContent = observer(() => {
   const computed = useComputedStore();
   const widgetSettings = useWidgetSettingsStore();
-  const settings = widgetSettings.getStandingsSettings();
+  const settings =
+    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
   const allClassGroups = computed.allClassGroups;
   const driverEntries = computed.standings?.entries ?? [];
   const activeClassIndex = widgetSettings.standingsActiveClassIndex;

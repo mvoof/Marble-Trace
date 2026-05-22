@@ -11,6 +11,7 @@ import {
   parseWeekendTemp,
 } from '@utils/widget/standings-utils';
 
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './SessionHeader.module.scss';
 import {
   useComputedStore,
@@ -25,7 +26,8 @@ export const SessionHeader = observer(() => {
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getStandingsSettings();
+  const settings =
+    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
 
   if (!settings.showSessionHeader) {
     return null;

@@ -19,7 +19,10 @@ import {
   emitTrackMapForceStartPending,
   emitWidgetSettingsUpdated,
 } from './events';
-import type { WidgetDefaultConfig } from '@/types/widget-settings';
+import type {
+  WidgetDefaultConfig,
+  StandingsWidgetSettings,
+} from '@/types/widget-settings';
 import type { RootStore } from '../root-store';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
@@ -97,7 +100,9 @@ export const initMainSync = async (root: RootStore) => {
         reaction(
           () => {
             const standingsSettings =
-              root.widgetSettings.getStandingsSettings();
+              root.widgetSettings.getSettings<StandingsWidgetSettings>(
+                'standings'
+              );
             return [
               root.appSettings.settings.dragHotkey,
               root.appSettings.settings.hideAllWidgetsHotkey,

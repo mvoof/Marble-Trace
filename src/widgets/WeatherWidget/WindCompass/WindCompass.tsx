@@ -10,6 +10,7 @@ import { RotatingRing } from './RotatingRing/RotatingRing';
 import { WindArrow } from './WindArrow/WindArrow';
 
 import styles from './WindCompass.module.scss';
+import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import {
   useTelemetryStore,
   useWidgetSettingsStore,
@@ -19,7 +20,8 @@ export const WindCompass = observer(() => {
   const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { showCompass } = widgetSettings.getWeatherSettings();
+  const { showCompass } =
+    widgetSettings.getSettings<WeatherWidgetSettings>('weather');
 
   if (!showCompass) {
     return null;

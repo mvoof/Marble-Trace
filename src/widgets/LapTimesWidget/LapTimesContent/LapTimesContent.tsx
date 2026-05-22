@@ -8,12 +8,14 @@ import { P1Row } from './P1Row/P1Row';
 
 import styles from './LapTimesContent.module.scss';
 import { useWidgetSettingsStore } from '@store/root-store-context';
+import type { LapTimesWidgetSettings } from '@/types/widget-settings';
 
 export const LapTimesContent = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
   const isHorizontal =
-    widgetSettings.getLapTimesSettings().layout === 'horizontal';
+    widgetSettings.getSettings<LapTimesWidgetSettings>('lap-times').layout ===
+    'horizontal';
 
   return (
     <div

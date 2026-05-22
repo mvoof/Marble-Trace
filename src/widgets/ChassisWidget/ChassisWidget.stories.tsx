@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
 import type { ChassisFrame } from '@/types/bindings';
+import type { ChassisWidgetSettings } from '@/types/widget-settings';
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
 import {
@@ -119,7 +120,7 @@ const applyArgs = (
     } as Parameters<typeof stores.telemetry.updateCarStatus>[0]);
 
     stores.widgetSettings.updateUserSettings('chassis', {
-      ...stores.widgetSettings.getChassisSettings(),
+      ...stores.widgetSettings.getSettings<ChassisWidgetSettings>('chassis'),
       showSuspensionAndBrakes: args.showSuspensionAndBrakes,
     });
   });

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 
+import type { InputTraceSettings } from '@/types/widget-settings';
 import styles from './CanvasTrace.module.scss';
 import {
   useTelemetryStore,
@@ -17,7 +18,8 @@ export const CanvasTrace = observer(() => {
   const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getInputTraceSettings();
+  const settings =
+    widgetSettings.getSettings<InputTraceSettings>('input-trace');
   const frame = telemetry.carInputs;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);

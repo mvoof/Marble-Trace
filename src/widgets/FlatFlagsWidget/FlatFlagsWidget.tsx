@@ -6,6 +6,7 @@ import { useFlagBlink } from '@hooks/flags-hooks';
 import { FlagList } from './FlagList/FlagList';
 
 import styles from './FlatFlagsWidget.module.scss';
+import type { FlagDisplaySettings } from '@/types/widget-settings';
 import {
   useFlagsStore,
   useWidgetSettingsStore,
@@ -15,7 +16,8 @@ export const FlatFlagsWidget = observer(() => {
   const flags = useFlagsStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { alwaysShow } = widgetSettings.getFlagDisplaySettings('flat-flags');
+  const { alwaysShow } =
+    widgetSettings.getSettings<FlagDisplaySettings>('flat-flags');
 
   const blinkOn = useFlagBlink();
   const hasContent = alwaysShow || flags.displayFlags.length > 0;

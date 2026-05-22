@@ -12,13 +12,15 @@ import {
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+import type { LapTimesWidgetSettings } from '@/types/widget-settings';
 
 export const LastLapRow = observer(() => {
   const computed = useComputedStore();
   const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getLapTimesSettings();
+  const settings =
+    widgetSettings.getSettings<LapTimesWidgetSettings>('lap-times');
 
   if (!settings.showLastLap) {
     return null;

@@ -6,12 +6,14 @@ import { CenterLabels } from './CenterLabels/CenterLabels';
 import { StaleNotice } from './StaleNotice/StaleNotice';
 
 import styles from './ChassisWidget.module.scss';
+import type { ChassisWidgetSettings } from '@/types/widget-settings';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const ChassisWidget = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const { showSuspensionAndBrakes } = widgetSettings.getChassisSettings();
+  const { showSuspensionAndBrakes } =
+    widgetSettings.getSettings<ChassisWidgetSettings>('chassis');
 
   return (
     <WidgetPanel direction="column" gap={0}>

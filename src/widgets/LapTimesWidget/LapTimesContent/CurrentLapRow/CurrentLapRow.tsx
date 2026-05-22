@@ -7,6 +7,7 @@ import {
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+import type { LapTimesWidgetSettings } from '@/types/widget-settings';
 
 export const CurrentLapRow = observer(() => {
   const telemetry = useTelemetryStore();
@@ -14,7 +15,8 @@ export const CurrentLapRow = observer(() => {
 
   const currentLap = telemetry.lapTiming?.lap_current_lap_time ?? null;
   const isHorizontal =
-    widgetSettings.getLapTimesSettings().layout === 'horizontal';
+    widgetSettings.getSettings<LapTimesWidgetSettings>('lap-times').layout ===
+    'horizontal';
 
   return (
     <TimingRow

@@ -12,7 +12,8 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const LapDeltaSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings = widgetSettings.getLapDeltaSettings();
+  const settings =
+    widgetSettings.getSettings<LapDeltaWidgetSettings>('lap-delta');
 
   const update = (partial: Partial<LapDeltaWidgetSettings>) => {
     widgetSettings.updateUserSettings('lap-delta', {

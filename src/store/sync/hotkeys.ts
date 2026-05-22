@@ -1,5 +1,6 @@
 import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
 import type { RootStore } from '../root-store';
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
 
 const registeredShortcuts = new Set<string>();
 let isSettingUp = false;
@@ -61,7 +62,8 @@ export const setupHotkeys = async (
       }
     }
 
-    const settings = root.widgetSettings.getStandingsSettings();
+    const settings =
+      root.widgetSettings.getSettings<StandingsWidgetSettings>('standings');
 
     if (settings.classCyclingToggleHotkey) {
       addHandler(settings.classCyclingToggleHotkey, (event) => {

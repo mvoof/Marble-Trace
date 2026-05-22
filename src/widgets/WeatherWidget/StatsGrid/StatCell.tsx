@@ -11,6 +11,7 @@ import { getWindColor, parseWeekendFloat } from '@utils/widget/weather-utils';
 import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
 import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
 import styles from './StatCell.module.scss';
+import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import {
   useTelemetryStore,
   useUnitsStore,
@@ -39,7 +40,7 @@ export const StatCell = observer(({ type }: StatCellProps) => {
   const widgetSettings = useWidgetSettingsStore();
 
   const settingKey = STAT_CELL_SETTING_KEY[type];
-  const settings = widgetSettings.getWeatherSettings();
+  const settings = widgetSettings.getSettings<WeatherWidgetSettings>('weather');
 
   if (!settings[settingKey]) {
     return null;

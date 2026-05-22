@@ -7,6 +7,7 @@ import { TireWearCell } from './TireWearCell/TireWearCell';
 import { TireTempCell } from './TireTempCell/TireTempCell';
 import { TirePressureOverlay } from './TirePressureOverlay/TirePressureOverlay';
 import styles from './CornerModule.module.scss';
+import type { ChassisWidgetSettings } from '@/types/widget-settings';
 import {
   useTelemetryStore,
   useUnitsStore,
@@ -29,18 +30,21 @@ interface CornerModuleProps {
 
 export const CornerModule = observer(
   ({ position, isRight }: CornerModuleProps) => {
-    const telemetry = useTelemetryStore();
-    const units = useUnitsStore();
+    const { chassis } = useTelemetryStore();
+    const { system } = useUnitsStore();
+
     const widgetSettings = useWidgetSettingsStore();
-    const { showSuspensionAndBrakes } = widgetSettings.getChassisSettings();
-    const { chassis } = telemetry;
-    const { system } = units;
+
+    const { showSuspensionAndBrakes } =
+      widgetSettings.getSettings<ChassisWidgetSettings>('chassis');
 
     const [axleA, axleB] = AXLE_PAIRS[position];
+
     const axleDiff = computeAxleDiff(
       chassis?.[`${axleA}_ride_height`],
       chassis?.[`${axleB}_ride_height`]
     );
+
     const isSuspensionBent =
       axleDiff !== null && Math.abs(axleDiff) > SUSPENSION_BENT_THRESHOLD_M;
 
