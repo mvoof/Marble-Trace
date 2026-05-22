@@ -209,9 +209,31 @@ export interface BaseUserSettings {
 
 export type WidgetUserSettings = BaseUserSettings & WidgetSpecificSettings;
 
+export interface LayoutChangeResult {
+  designWidth?: number;
+  designHeight?: number;
+  currentWidth?: number;
+  currentHeight?: number;
+  userSettingsPatch?: Partial<WidgetUserSettings>;
+}
+
+export interface LayoutChangeContext {
+  designWidth: number;
+  designHeight: number;
+  currentWidth: number;
+  currentHeight: number;
+}
+
+export type ResolveLayoutChange = (
+  prev: WidgetUserSettings,
+  next: WidgetUserSettings,
+  current: LayoutChangeContext
+) => LayoutChangeResult | null;
+
 export interface WidgetConfig extends WidgetMeta {
   component: React.ComponentType;
   userSettings: WidgetUserSettings;
+  resolveLayoutChange?: ResolveLayoutChange;
 }
 
 export type WidgetDefaultConfig = WidgetMeta & {
