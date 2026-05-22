@@ -1,12 +1,14 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
 import { isSessionEnded, splitTime } from '@utils/widget/timer-utils';
 
 import styles from './TimerDisplay.module.scss';
+import { useTelemetryStore } from '@store/root-store-context';
 
 export const TimerDisplay = observer(() => {
-  const session = telemetryStore.session;
+  const telemetry = useTelemetryStore();
+
+  const session = telemetry.session;
   const sessionState = session?.session_state ?? null;
 
   if (isSessionEnded(sessionState)) {

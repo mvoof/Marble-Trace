@@ -1,13 +1,14 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '@store/iracing/computed.store';
-import { telemetryStore } from '@store/iracing/telemetry.store';
-
 import styles from './PitWarningAmount.module.scss';
+import { useComputedStore, useTelemetryStore } from '@store/root-store-context';
 
 export const PitWarningAmount = observer(() => {
-  const fuel = computedStore.fuel;
-  const fuelMax = telemetryStore.driverInfo?.DriverCarFuelMaxLtr ?? null;
+  const computed = useComputedStore();
+  const telemetry = useTelemetryStore();
+
+  const fuel = computed.fuel;
+  const fuelMax = telemetry.driverInfo?.DriverCarFuelMaxLtr ?? null;
 
   const fuelToAddWithBuffer = fuel?.fuelToAddWithBuffer ?? null;
   const shortage = fuel?.shortage ?? null;

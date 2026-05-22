@@ -1,15 +1,17 @@
 import { observer } from 'mobx-react-lite';
 
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import { CornerModule } from '@widgets/ChassisWidget/CornerModule/CornerModule';
 import { CenterLabels } from './CenterLabels/CenterLabels';
 import { StaleNotice } from './StaleNotice/StaleNotice';
 
 import styles from './ChassisWidget.module.scss';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const ChassisWidget = observer(() => {
-  const { showSuspensionAndBrakes } = widgetSettingsStore.getChassisSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { showSuspensionAndBrakes } = widgetSettings.getChassisSettings();
 
   return (
     <WidgetPanel direction="column" gap={0}>

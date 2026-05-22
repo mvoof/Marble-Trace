@@ -1,11 +1,13 @@
 import { observer } from 'mobx-react-lite';
 import { Info } from 'lucide-react';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
 import styles from './StaleNotice.module.scss';
+import { useTelemetryStore } from '@store/root-store-context';
 
 export const StaleNotice = observer(() => {
-  const onPitRoad = telemetryStore.carStatus?.on_pit_road ?? false;
+  const telemetry = useTelemetryStore();
+
+  const onPitRoad = telemetry.carStatus?.on_pit_road ?? false;
 
   if (onPitRoad) {
     return null;

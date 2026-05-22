@@ -1,7 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   FLAG_LABEL,
   resolveFlagState,
@@ -9,6 +7,10 @@ import {
 } from '@utils/widget/timer-utils';
 
 import styles from './TimerFlagBadge.module.scss';
+import {
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 const FLAG_CLASS: Record<FlagState, string> = {
   green: styles.flagGreen,
@@ -17,13 +19,16 @@ const FLAG_CLASS: Record<FlagState, string> = {
 };
 
 export const TimerFlagBadge = observer(() => {
-  const { showFlag } = widgetSettingsStore.getTimerSettings();
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { showFlag } = widgetSettings.getTimerSettings();
 
   if (!showFlag) {
     return null;
   }
 
-  const session = telemetryStore.session;
+  const session = telemetry.session;
   const remain = session?.session_time_remain ?? null;
   const flagState = resolveFlagState(session?.session_flags ?? null, remain);
 

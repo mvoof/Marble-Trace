@@ -1,8 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { unitsStore } from '@store/units.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import type { CornerPosition } from '@widgets/ChassisWidget/types';
 import { buildCornerData, computeAxleDiff } from '@utils/widget/chassis-utils';
 import { SuspensionText } from './SuspensionText';
@@ -10,6 +7,11 @@ import { TireWearCell } from './TireWearCell/TireWearCell';
 import { TireTempCell } from './TireTempCell/TireTempCell';
 import { TirePressureOverlay } from './TirePressureOverlay/TirePressureOverlay';
 import styles from './CornerModule.module.scss';
+import {
+  useTelemetryStore,
+  useUnitsStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 const SUSPENSION_BENT_THRESHOLD_M = 0.018;
 
@@ -27,10 +29,12 @@ interface CornerModuleProps {
 
 export const CornerModule = observer(
   ({ position, isRight }: CornerModuleProps) => {
-    const { showSuspensionAndBrakes } =
-      widgetSettingsStore.getChassisSettings();
-    const { chassis } = telemetryStore;
-    const { system } = unitsStore;
+    const telemetry = useTelemetryStore();
+    const units = useUnitsStore();
+    const widgetSettings = useWidgetSettingsStore();
+    const { showSuspensionAndBrakes } = widgetSettings.getChassisSettings();
+    const { chassis } = telemetry;
+    const { system } = units;
 
     const [axleA, axleB] = AXLE_PAIRS[position];
     const axleDiff = computeAxleDiff(

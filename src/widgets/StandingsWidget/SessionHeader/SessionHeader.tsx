@@ -1,10 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { Users } from 'lucide-react';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { computedStore } from '@store/iracing/computed.store';
-import { unitsStore } from '@store/units.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   formatIRating,
   NEAR_DQ_INCIDENT_THRESHOLD,
@@ -16,21 +12,32 @@ import {
 } from '@utils/widget/standings-utils';
 
 import styles from './SessionHeader.module.scss';
+import {
+  useComputedStore,
+  useTelemetryStore,
+  useUnitsStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const SessionHeader = observer(() => {
-  const settings = widgetSettingsStore.getStandingsSettings();
+  const computed = useComputedStore();
+  const telemetry = useTelemetryStore();
+  const units = useUnitsStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getStandingsSettings();
 
   if (!settings.showSessionHeader) {
     return null;
   }
 
-  const sessionInfo = telemetryStore.sessionInfo?.SessionInfo;
-  const weekendInfo = telemetryStore.weekendInfo;
-  const driverEntries = computedStore.standings?.entries ?? [];
+  const sessionInfo = telemetry.sessionInfo?.SessionInfo;
+  const weekendInfo = telemetry.weekendInfo;
+  const driverEntries = computed.standings?.entries ?? [];
   const overallSof = computeClassSof(driverEntries);
   const playerIncidents =
     driverEntries.find((entry) => entry.isPlayer)?.incidents ?? 0;
-  const playerPitStops = computedStore.pitStops?.playerStops ?? 0;
+  const playerPitStops = computed.pitStops?.playerStops ?? 0;
 
   const sessions = sessionInfo?.Sessions;
   const currentSession = sessions?.[sessionInfo?.CurrentSessionNum ?? 0];
@@ -41,13 +48,13 @@ export const SessionHeader = observer(() => {
       ? Math.max(...driverEntries.map((entry) => entry.lap))
       : null;
 
-  const env = telemetryStore.environment;
+  const env = telemetry.environment;
   const airCelsius =
     env?.air_temp ?? parseWeekendTemp(weekendInfo?.TrackAirTemp);
   const trkCelsius =
     env?.track_temp ?? parseWeekendTemp(weekendInfo?.TrackSurfaceTemp);
 
-  const sys = unitsStore.system;
+  const sys = units.system;
   const tUnit = tempUnit(sys);
   const airStr =
     airCelsius !== null ? `${formatTemp(airCelsius, sys)}${tUnit}` : null;

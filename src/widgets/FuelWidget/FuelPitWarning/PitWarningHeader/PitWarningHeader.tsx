@@ -1,11 +1,12 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '@store/iracing/computed.store';
-
 import styles from './PitWarningHeader.module.scss';
+import { useComputedStore } from '@store/root-store-context';
 
 export const PitWarningHeader = observer(() => {
-  const fuel = computedStore.fuel;
+  const computed = useComputedStore();
+
+  const fuel = computed.fuel;
 
   const windowText =
     fuel?.pitWindowStart !== null &&

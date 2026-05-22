@@ -1,12 +1,14 @@
 import { observer } from 'mobx-react-lite';
 
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { useWallClock } from '@hooks/widget/useWallClock';
 
 import styles from './PcDateItem.module.scss';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const PcDateItem = observer(() => {
-  const { showPcDate } = widgetSettingsStore.getTimerSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { showPcDate } = widgetSettings.getTimerSettings();
   const wallClock = useWallClock();
 
   if (!showPcDate) {

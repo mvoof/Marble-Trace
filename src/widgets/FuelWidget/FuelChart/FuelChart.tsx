@@ -1,21 +1,26 @@
 import { useLayoutEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { drawBarChart, drawLineChart } from './chart-renderers';
 
 import styles from './FuelChart.module.scss';
+import {
+  useComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const FuelChart = observer(() => {
-  const settings = widgetSettingsStore.getFuelSettings();
-  const history = computedStore.fuel?.lapFuelHistory ?? [];
+  const computed = useComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getFuelSettings();
+  const history = computed.fuel?.lapFuelHistory ?? [];
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
-    const currentHistory = computedStore.fuel?.lapFuelHistory ?? [];
-    const currentSettings = widgetSettingsStore.getFuelSettings();
+    const currentHistory = computed.fuel?.lapFuelHistory ?? [];
+    const currentSettings = widgetSettings.getFuelSettings();
 
     if (!canvas || currentHistory.length < 2) {
       return;

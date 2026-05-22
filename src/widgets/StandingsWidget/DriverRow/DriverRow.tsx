@@ -10,21 +10,26 @@ import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
 import { ClassBadge } from '@/components/shared/ClassBadge/ClassBadge';
 import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
 import { TireBadge } from '@/components/shared/TireBadge/TireBadge';
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { buildGridTemplate } from '@utils/widget/standings-utils';
 import { PosChange } from './PosChange';
 import { IrChangeCell } from './IrChangeCell';
 
 import styles from './DriverRow.module.scss';
+import {
+  useComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 interface DriverRowProps {
   carIdx: number;
 }
 
 export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
-  const driver = computedStore.driverMap.get(carIdx);
-  const settings = widgetSettingsStore.getStandingsSettings();
+  const computed = useComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const driver = computed.driverMap.get(carIdx);
+  const settings = widgetSettings.getStandingsSettings();
   const gridTemplate = buildGridTemplate(settings);
 
   if (!driver) {

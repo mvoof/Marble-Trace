@@ -1,13 +1,14 @@
 import { observer } from 'mobx-react-lite';
 
-import { widgetSettingsStore } from '@/store/widget-settings.store';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 import { buildGridTemplate } from '@utils/widget/standings-utils';
 import { StandingsHeaderCell } from './StandingsHeaderCell';
 
 import styles from './StandingsHeader.module.scss';
 
 export const StandingsHeader = observer(() => {
-  const settings = widgetSettingsStore.getStandingsSettings();
+  const widgetSettings = useWidgetSettingsStore();
+  const settings = widgetSettings.getStandingsSettings();
 
   if (!settings.showColumnHeaders) {
     return null;

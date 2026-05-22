@@ -1,8 +1,10 @@
 import { observer } from 'mobx-react-lite';
 
 import type { DriverGroup } from '@/types';
-import { computedStore } from '@/store/iracing/computed.store';
-import { widgetSettingsStore } from '@/store/widget-settings.store';
+import {
+  useComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 import {
   computeClassSof,
   sliceWithPlayerPin,
@@ -16,10 +18,12 @@ import { StandingsHeader } from '@widgets/StandingsWidget/StandingsHeader/Standi
 import styles from './StandingsContent.module.scss';
 
 export const StandingsContent = observer(() => {
-  const settings = widgetSettingsStore.getStandingsSettings();
-  const allClassGroups = computedStore.allClassGroups;
-  const driverEntries = computedStore.standings?.entries ?? [];
-  const activeClassIndex = widgetSettingsStore.standingsActiveClassIndex;
+  const computed = useComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+  const settings = widgetSettings.getStandingsSettings();
+  const allClassGroups = computed.allClassGroups;
+  const driverEntries = computed.standings?.entries ?? [];
+  const activeClassIndex = widgetSettings.standingsActiveClassIndex;
   const overallSof = computeClassSof(driverEntries);
 
   const { ref: listRef, count: visibleRowCount } =

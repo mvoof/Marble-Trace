@@ -2,7 +2,6 @@ import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { listen } from '@tauri-apps/api/event';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
 import type { TrackPoint } from '@/types';
 
 import { TrackRecorderBridge } from '../TrackRecorderBridge/TrackRecorderBridge';
@@ -10,6 +9,7 @@ import type { RecordingOverlayHandle } from '../RecordingOverlay/RecordingOverla
 import { TrackMapView, type TrackData } from '../TrackMapView/TrackMapView';
 import type { StoredTracks } from '../types';
 import { TRACKS_STORE_KEY, TRACK_DATA_VERSION } from '../types';
+import { useTelemetryStore } from '@store/root-store-context';
 
 type RecordingState = {
   isRecording: boolean;
@@ -56,7 +56,9 @@ const recordingReducer = (
 };
 
 export const TrackMapContent = observer(() => {
-  const { weekendInfo } = telemetryStore;
+  const telemetry = useTelemetryStore();
+
+  const { weekendInfo } = telemetry;
 
   const trackId = weekendInfo?.TrackID?.toString() ?? '';
   const trackName = weekendInfo?.TrackDisplayName ?? '';

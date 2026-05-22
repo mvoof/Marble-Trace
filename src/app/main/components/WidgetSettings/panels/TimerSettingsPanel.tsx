@@ -1,15 +1,17 @@
 import { observer } from 'mobx-react-lite';
 import { Switch } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { TimerWidgetSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const TimerSettingsPanel = observer(() => {
-  const settings = widgetSettingsStore.getTimerSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getTimerSettings();
 
   const update = (partial: Partial<TimerWidgetSettings>) => {
-    widgetSettingsStore.updateUserSettings('timer', {
+    widgetSettings.updateUserSettings('timer', {
       ...settings,
       ...partial,
     });

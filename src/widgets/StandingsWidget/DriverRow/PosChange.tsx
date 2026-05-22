@@ -1,18 +1,23 @@
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 
 import styles from './DriverRow.module.scss';
+import {
+  useComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 interface PosChangeProps {
   carIdx: number;
 }
 
 export const PosChange = observer(({ carIdx }: PosChangeProps) => {
-  const driver = computedStore.driverMap.get(carIdx);
-  const settings = widgetSettingsStore.getStandingsSettings();
-  const effectiveStartPos = computedStore.getEffectiveStartPos(carIdx);
+  const computed = useComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const driver = computed.driverMap.get(carIdx);
+  const settings = widgetSettings.getStandingsSettings();
+  const effectiveStartPos = computed.getEffectiveStartPos(carIdx);
 
   if (!driver) {
     return null;

@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   G_CONSTANT,
   SMOOTHING,
@@ -10,6 +8,10 @@ import {
 } from '@utils/widget/g-meter-utils';
 
 import styles from './GAxisColumn.module.scss';
+import {
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 interface GAxisColumnProps {
   axis: 'lat' | 'lon';
@@ -18,8 +20,10 @@ interface GAxisColumnProps {
 
 export const GAxisColumn = observer(
   ({ axis, hasDivider }: GAxisColumnProps) => {
-    const { scale, colorMode } = widgetSettingsStore.getGMeterSettings();
-    const dynamics = telemetryStore.carDynamics;
+    const telemetry = useTelemetryStore();
+    const widgetSettings = useWidgetSettingsStore();
+    const { scale, colorMode } = widgetSettings.getGMeterSettings();
+    const dynamics = telemetry.carDynamics;
 
     const stateRef = useRef({
       smoothedLatG: 0,

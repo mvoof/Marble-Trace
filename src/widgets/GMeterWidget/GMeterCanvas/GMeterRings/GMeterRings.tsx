@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { RADIUS_RATIO } from '@utils/widget/g-meter-utils';
 
 import styles from './GMeterRings.module.scss';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 interface GMeterRingsProps {
   width: number;
@@ -12,7 +12,9 @@ interface GMeterRingsProps {
 }
 
 export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
-  const { scale } = widgetSettingsStore.getGMeterSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { scale } = widgetSettings.getGMeterSettings();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {

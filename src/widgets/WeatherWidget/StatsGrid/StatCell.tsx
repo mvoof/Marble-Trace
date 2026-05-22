@@ -1,8 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { unitsStore } from '@store/units.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   formatTemp,
   formatSpeed as _formatSpeed,
@@ -14,6 +11,11 @@ import { getWindColor, parseWeekendFloat } from '@utils/widget/weather-utils';
 import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
 import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
 import styles from './StatCell.module.scss';
+import {
+  useTelemetryStore,
+  useUnitsStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export type StatCellType = 'airTemp' | 'trackTemp' | 'wind' | 'humidity';
 
@@ -32,16 +34,20 @@ interface StatCellProps {
 }
 
 export const StatCell = observer(({ type }: StatCellProps) => {
+  const telemetry = useTelemetryStore();
+  const units = useUnitsStore();
+  const widgetSettings = useWidgetSettingsStore();
+
   const settingKey = STAT_CELL_SETTING_KEY[type];
-  const settings = widgetSettingsStore.getWeatherSettings();
+  const settings = widgetSettings.getWeatherSettings();
 
   if (!settings[settingKey]) {
     return null;
   }
 
-  const weekendInfo = telemetryStore.weekendInfo;
-  const env = telemetryStore.environment;
-  const { system } = unitsStore;
+  const weekendInfo = telemetry.weekendInfo;
+  const env = telemetry.environment;
+  const { system } = units;
 
   let label = '';
   let value = '';

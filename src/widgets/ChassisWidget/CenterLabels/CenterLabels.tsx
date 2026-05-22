@@ -1,10 +1,12 @@
 import { observer } from 'mobx-react-lite';
 
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import styles from './CenterLabels.module.scss';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const CenterLabels = observer(() => {
-  const { showSuspensionAndBrakes } = widgetSettingsStore.getChassisSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { showSuspensionAndBrakes } = widgetSettings.getChassisSettings();
 
   if (!showSuspensionAndBrakes) {
     return null;

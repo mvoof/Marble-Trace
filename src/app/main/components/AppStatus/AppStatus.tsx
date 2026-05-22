@@ -1,9 +1,11 @@
 import { observer } from 'mobx-react-lite';
-import { telemetryConnectionStore } from '@store/iracing/telemetry-connection.store';
 import styles from './AppStatus.module.scss';
+import { useTelemetryConnectionStore } from '@store/root-store-context';
 
 export const AppStatus = observer(() => {
-  const { status, error } = telemetryConnectionStore;
+  const telemetryConnection = useTelemetryConnectionStore();
+
+  const { status, error } = telemetryConnection;
 
   const getStatusConfig = () => {
     switch (status) {

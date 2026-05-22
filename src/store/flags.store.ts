@@ -5,8 +5,7 @@ import {
   parseAllSessionFlags,
   parseSessionFlags,
 } from '@utils/formatters/flags-utils';
-import { widgetSettingsStore } from '@store/widget-settings.store';
-import { telemetryStore } from './iracing/telemetry.store';
+import type { RootStore } from './root-store';
 
 const NO_FLAG: FlagType = 'none';
 const NO_FLAGS: FlagType[] = [];
@@ -15,35 +14,33 @@ interface HoldState {
   timer: ReturnType<typeof setTimeout> | null;
 }
 
-class FlagsStore {
+export class FlagsStore {
   displayFlags: FlagType[] = [];
   ledDisplayFlag: FlagType = NO_FLAG;
 
   private readonly flatHold: HoldState = { timer: null };
   private readonly ledHold: HoldState = { timer: null };
 
-  constructor() {
+  constructor(private readonly root: RootStore) {
     makeAutoObservable(this);
-    // widgetSettingsStore is not yet assigned when this constructor runs due to
-    // module initialization order. Deferring to a microtask ensures all store
-    // singletons are initialized before reactions access them.
-    void Promise.resolve().then(() => {
-      this.initFlatHold();
-      this.initLedHold();
-    });
+  }
+
+  init() {
+    this.initFlatHold();
+    this.initLedHold();
   }
 
   get parsedFlags(): FlagType[] {
     return parseAllSessionFlags(
-      telemetryStore.session?.session_flags ?? null,
-      telemetryStore.session?.player_car_flags ?? null
+      this.root.telemetry.session?.session_flags ?? null,
+      this.root.telemetry.session?.player_car_flags ?? null
     );
   }
 
   get parsedFlag(): FlagType {
     return parseSessionFlags(
-      telemetryStore.session?.session_flags ?? null,
-      telemetryStore.session?.player_car_flags ?? null
+      this.root.telemetry.session?.session_flags ?? null,
+      this.root.telemetry.session?.player_car_flags ?? null
     );
   }
 
@@ -98,7 +95,8 @@ class FlagsStore {
       (flags) => flags.length === 0,
       NO_FLAGS,
       () =>
-        widgetSettingsStore.getFlagDisplaySettings('flat-flags').holdDuration,
+        this.root.widgetSettings.getFlagDisplaySettings('flat-flags')
+          .holdDuration,
       (value) => {
         this.displayFlags = value;
       },
@@ -113,7 +111,8 @@ class FlagsStore {
       (flag) => flag === NO_FLAG,
       NO_FLAG,
       () =>
-        widgetSettingsStore.getFlagDisplaySettings('led-flags').holdDuration,
+        this.root.widgetSettings.getFlagDisplaySettings('led-flags')
+          .holdDuration,
       (value) => {
         this.ledDisplayFlag = value;
       },
@@ -137,5 +136,3 @@ class FlagsStore {
     }
   }
 }
-
-export const flagsStore = new FlagsStore();

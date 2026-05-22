@@ -1,9 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
 import type { Skies as BindingSkies } from '@/types/bindings';
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { unitsStore } from '@store/units.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   convertTemp,
   formatSpeed,
@@ -12,6 +9,11 @@ import {
 import { extractForecast } from '@utils/widget/weather-utils';
 
 import styles from './ForecastBlock.module.scss';
+import {
+  useTelemetryStore,
+  useUnitsStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 const SKIES_LABELS: Record<BindingSkies, string> = {
   Clear: 'Clear',
@@ -31,16 +33,20 @@ const formatForecastTime = (timeSec: number): string => {
 };
 
 export const ForecastBlock = observer(() => {
-  const { showForecast } = widgetSettingsStore.getWeatherSettings();
+  const telemetry = useTelemetryStore();
+  const units = useUnitsStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { showForecast } = widgetSettings.getWeatherSettings();
 
   if (!showForecast) {
     return null;
   }
 
-  const weekendInfo = telemetryStore.weekendInfo;
-  const { system } = unitsStore;
+  const weekendInfo = telemetry.weekendInfo;
+  const { system } = units;
 
-  let forecast = telemetryStore.weatherForecast || [];
+  let forecast = telemetry.weatherForecast || [];
 
   if (forecast.length === 0 && weekendInfo) {
     forecast = extractForecast(weekendInfo);

@@ -1,15 +1,17 @@
 import { observer } from 'mobx-react-lite';
 import { Switch } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { RelativeWidgetSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const RelativeSettingsPanel = observer(() => {
-  const settings = widgetSettingsStore.getRelativeSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getRelativeSettings();
 
   const update = (partial: Partial<RelativeWidgetSettings>) => {
-    widgetSettingsStore.updateUserSettings('relative', {
+    widgetSettings.updateUserSettings('relative', {
       ...settings,
       ...partial,
     });

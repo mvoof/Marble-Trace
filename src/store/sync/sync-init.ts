@@ -1,9 +1,6 @@
 import { reaction, runInAction } from 'mobx';
 import { load } from '@tauri-apps/plugin-store';
 import { listen } from '@tauri-apps/api/event';
-import { appSettingsStore } from '@store/app-settings.store';
-import { unitsStore } from '@store/units.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   hydrateStores,
   saveSettings,
@@ -23,11 +20,12 @@ import {
   emitWidgetSettingsUpdated,
 } from './events';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
+import type { RootStore } from '../root-store';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
 let mainSyncRefCount = 0;
 
-export const initMainSync = async () => {
+export const initMainSync = async (root: RootStore) => {
   mainSyncRefCount++;
 
   if (!mainSyncInitPromise) {
@@ -38,110 +36,111 @@ export const initMainSync = async () => {
 
       if (loadedSettings) {
         try {
-          hydrateStores(loadedSettings);
-          await saveSettings(store);
+          hydrateStores(root, loadedSettings);
+          await saveSettings(store, root);
         } catch {
           await store.delete('settings');
           await store.save();
         }
       }
 
-      const onSave = () => saveSettings(store);
+      const onSave = () => saveSettings(store, root);
 
       const [overlayLayoutUnlisten, mainUnlistens] = await Promise.all([
         listen<WidgetDefaultConfig[]>('widget-layout-changed', (e) => {
-          runInAction(() => widgetSettingsStore.setWidgets(e.payload));
+          runInAction(() => root.widgetSettings.setWidgets(e.payload));
         }),
-        setupMainListeners(),
-        setupHotkeys(onSave),
+        setupMainListeners(root),
+        setupHotkeys(root, onSave),
       ]);
 
       const disposers = [
         reaction(
-          () => appSettingsStore.dragMode,
+          () => root.appSettings.dragMode,
           (v) => {
             void emitDragMode(v);
           }
         ),
         reaction(
-          () => appSettingsStore.settings.hideAllWidgets,
+          () => root.appSettings.settings.hideAllWidgets,
           (v) => {
             void emitHideAllWidgets(v);
             void onSave();
           }
         ),
         reaction(
-          () => appSettingsStore.settings.hideWidgetsWhenGameClosed,
+          () => root.appSettings.settings.hideWidgetsWhenGameClosed,
           (v) => {
             void emitHideWidgetsWhenGameClosed(v);
             void onSave();
           }
         ),
         reaction(
-          () => appSettingsStore.settings.autoUpdate,
+          () => root.appSettings.settings.autoUpdate,
           () => {
             void onSave();
           }
         ),
         reaction(
-          () => appSettingsStore.settings.updateCheckInterval,
+          () => root.appSettings.settings.updateCheckInterval,
           () => {
             void onSave();
           }
         ),
         reaction(
-          () => appSettingsStore.settings.lastUpdateCheck,
+          () => root.appSettings.settings.lastUpdateCheck,
           () => {
             void onSave();
           }
         ),
         reaction(
           () => {
-            const s = widgetSettingsStore.getStandingsSettings();
+            const standingsSettings =
+              root.widgetSettings.getStandingsSettings();
             return [
-              appSettingsStore.settings.dragHotkey,
-              appSettingsStore.settings.hideAllWidgetsHotkey,
-              ...widgetSettingsStore.allWidgets.map(
+              root.appSettings.settings.dragHotkey,
+              root.appSettings.settings.hideAllWidgetsHotkey,
+              ...root.widgetSettings.allWidgets.map(
                 (w) => w.userSettings.hotkey
               ),
-              s.classCyclingToggleHotkey,
-              s.classPrevHotkey,
-              s.classNextHotkey,
+              standingsSettings.classCyclingToggleHotkey,
+              standingsSettings.classPrevHotkey,
+              standingsSettings.classNextHotkey,
             ];
           },
           () => {
-            void setupHotkeys(onSave);
+            void setupHotkeys(root, onSave);
             void onSave();
           }
         ),
         reaction(
-          () => unitsStore.system,
+          () => root.units.system,
           (v) => {
             void emitUnitsChanged(v);
             void onSave();
           }
         ),
         reaction(
-          () => widgetSettingsStore.standingsActiveClassIndex,
+          () => root.widgetSettings.standingsActiveClassIndex,
           (v) => {
             void emitStandingsClassIndex(v);
           }
         ),
         reaction(
-          () => widgetSettingsStore.isTrackMapForceStartPending,
+          () => root.widgetSettings.isTrackMapForceStartPending,
           (v) => {
             void emitTrackMapForceStartPending(v);
           }
         ),
         reaction(
-          () => JSON.stringify(widgetSettingsStore.allWidgets),
+          () => JSON.stringify(root.widgetSettings.allWidgets),
           () => {
-            void emitWidgetSettingsUpdated(widgetSettingsStore.allWidgets);
+            void emitWidgetSettingsUpdated(root.widgetSettings.allWidgets);
           },
           { delay: 16 }
         ),
         reaction(
-          () => JSON.stringify(widgetSettingsStore.allWidgets),
+          () => JSON.stringify(root.widgetSettings.allWidgets),
           () => {
             void onSave();
           },
@@ -175,20 +174,19 @@ export const initMainSync = async () => {
   };
 };
 
-export const initOverlaySync = async () => {
+export const initOverlaySync = async (root: RootStore) => {
   const store = await load(SETTINGS_FILE);
   const loadedSettings = await store.get<Settings>('settings');
 
   if (loadedSettings) {
-    hydrateStores(loadedSettings);
+    hydrateStores(root, loadedSettings);
   }
 
-  const unlistens = await setupOverlayListeners();
+  const unlistens = await setupOverlayListeners(root);
 
-  // Needed so the overlay's "Exit Edit Mode" button syncs dragMode back to the main window.
   const disposers = [
     reaction(
-      () => appSettingsStore.dragMode,
+      () => root.appSettings.dragMode,
       (v) => {
         void emitDragMode(v);
       }

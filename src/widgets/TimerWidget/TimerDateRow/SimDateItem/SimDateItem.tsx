@@ -1,15 +1,20 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { formatSimDate } from '@utils/widget/timer-utils';
 
 import styles from './SimDateItem.module.scss';
+import {
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const SimDateItem = observer(() => {
-  const { showSimDate } = widgetSettingsStore.getTimerSettings();
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { showSimDate } = widgetSettings.getTimerSettings();
   const rawSimDate =
-    telemetryStore.sessionInfo?.WeekendInfo?.WeekendOptions?.Date ?? null;
+    telemetry.sessionInfo?.WeekendInfo?.WeekendOptions?.Date ?? null;
   const simDate = rawSimDate !== null ? formatSimDate(rawSimDate) : null;
 
   if (!showSimDate || simDate === null) {

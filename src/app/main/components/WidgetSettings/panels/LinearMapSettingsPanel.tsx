@@ -1,18 +1,20 @@
 import { observer } from 'mobx-react-lite';
 import { ColorPicker, InputNumber, Segmented } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   LinearMapOrientation,
   LinearMapWidgetSettings,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const LinearMapSettingsPanel = observer(() => {
-  const settings = widgetSettingsStore.getLinearMapSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getLinearMapSettings();
 
   const update = (partial: Partial<LinearMapWidgetSettings>) => {
-    widgetSettingsStore.updateUserSettings('relative-map', {
+    widgetSettings.updateUserSettings('relative-map', {
       ...settings,
       ...partial,
     });

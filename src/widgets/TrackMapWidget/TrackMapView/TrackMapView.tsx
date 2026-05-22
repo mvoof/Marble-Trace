@@ -3,15 +3,17 @@ import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import type { TrackPoint } from '@/types';
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import type { RecordingOverlayHandle } from '@widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
 import { RecordingOverlay } from '@widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
 import { TrackMapSvg } from '@widgets/TrackMapWidget/TrackMapSvg/TrackMapSvg';
 import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
 
 import styles from './TrackMapView.module.scss';
+import {
+  useComputedStore,
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export interface TrackData {
   svgPath: string;
@@ -35,11 +37,14 @@ export const TrackMapView = observer(
     isWaitingForSF,
     recordingOverlayRef,
   }: TrackMapViewProps) => {
-    const settings = widgetSettingsStore.getTrackMapSettings();
-    const sectors = telemetryStore.sessionInfo?.SplitTimeInfo?.Sectors;
+    const telemetry = useTelemetryStore();
+    const computed = useComputedStore();
+    const widgetSettings = useWidgetSettingsStore();
+    const settings = widgetSettings.getTrackMapSettings();
+    const sectors = telemetry.sessionInfo?.SplitTimeInfo?.Sectors;
 
-    const driverEntries = computedStore.standings?.entries ?? [];
-    const carPositions = telemetryStore.carPositions;
+    const driverEntries = computed.standings?.entries ?? [];
+    const carPositions = telemetry.carPositions;
 
     const cars: CarOnTrack[] = driverEntries.map((entry) => ({
       carIdx: entry.carIdx,

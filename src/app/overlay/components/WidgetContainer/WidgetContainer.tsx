@@ -1,13 +1,15 @@
 import React, { useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { emit } from '@tauri-apps/api/event';
-import { appSettingsStore } from '@store/app-settings.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
-import { telemetryConnectionStore } from '@store/iracing/telemetry-connection.store';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import styles from './WidgetContainer.module.scss';
 import { WidgetIdContext } from './WidgetIdContext';
-import { widgetAutoHideStore } from '@store/widget-auto-hide.store';
+import {
+  useAppSettingsStore,
+  useTelemetryConnectionStore,
+  useWidgetAutoHideStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
@@ -18,8 +20,12 @@ interface WidgetContainerProps {
 
 export const WidgetContainer = observer(
   ({ widgetId, children }: WidgetContainerProps) => {
-    const { dragMode } = appSettingsStore;
-    const widget = widgetSettingsStore.getWidget(widgetId);
+    const appSettings = useAppSettingsStore();
+    const widgetSettings = useWidgetSettingsStore();
+    const telemetryConnection = useTelemetryConnectionStore();
+    const widgetAutoHide = useWidgetAutoHideStore();
+    const { dragMode } = appSettings;
+    const widget = widgetSettings.getWidget(widgetId);
 
     const isDraggingRef = useRef(false);
     const isResizingRef = useRef(false);
@@ -40,13 +46,13 @@ export const WidgetContainer = observer(
       widgetY: 0,
     });
 
-    const isConnected = telemetryConnectionStore.status === 'connected';
+    const isConnected = telemetryConnection.status === 'connected';
 
     const shouldHide =
-      (appSettingsStore.settings.hideWidgetsWhenGameClosed &&
+      (appSettings.settings.hideWidgetsWhenGameClosed &&
         !isConnected &&
         !dragMode) ||
-      (!widgetAutoHideStore.isVisible(widgetId) && !dragMode);
+      (!widgetAutoHide.isVisible(widgetId) && !dragMode);
 
     const backgroundColor = widget?.userSettings.backgroundColor ?? '#1a1a1a';
     const backgroundColorEdge =
@@ -77,7 +83,7 @@ export const WidgetContainer = observer(
         e.preventDefault();
         e.stopPropagation();
 
-        const currentWidget = widgetSettingsStore.getWidget(widgetId);
+        const currentWidget = widgetSettings.getWidget(widgetId);
 
         isDraggingRef.current = true;
 
@@ -94,7 +100,7 @@ export const WidgetContainer = observer(
           const dx = ev.clientX - dragStartRef.current.mouseX;
           const dy = ev.clientY - dragStartRef.current.mouseY;
 
-          widgetSettingsStore.updatePosition(
+          widgetSettings.updatePosition(
             widgetId,
             Math.round(dragStartRef.current.widgetX + dx),
             Math.round(dragStartRef.current.widgetY + dy)
@@ -105,7 +111,7 @@ export const WidgetContainer = observer(
           isDraggingRef.current = false;
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
-          void emit('widget-layout-changed', widgetSettingsStore.allWidgets);
+          void emit('widget-layout-changed', widgetSettings.allWidgets);
         };
 
         document.addEventListener('mousemove', onMouseMove);
@@ -121,7 +127,7 @@ export const WidgetContainer = observer(
         e.preventDefault();
         e.stopPropagation();
 
-        const currentWidget = widgetSettingsStore.getWidget(widgetId);
+        const currentWidget = widgetSettings.getWidget(widgetId);
 
         isResizingRef.current = true;
 
@@ -171,10 +177,10 @@ export const WidgetContainer = observer(
             newY = Math.round(startY + startH - newH);
           }
 
-          widgetSettingsStore.updateSize(widgetId, newW, newH);
+          widgetSettings.updateSize(widgetId, newW, newH);
 
           if (newX !== startX || newY !== startY) {
-            widgetSettingsStore.updatePosition(widgetId, newX, newY);
+            widgetSettings.updatePosition(widgetId, newX, newY);
           }
         };
 
@@ -184,7 +190,7 @@ export const WidgetContainer = observer(
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
 
-          void emit('widget-layout-changed', widgetSettingsStore.allWidgets);
+          void emit('widget-layout-changed', widgetSettings.allWidgets);
         };
 
         document.addEventListener('mousemove', onMouseMove);

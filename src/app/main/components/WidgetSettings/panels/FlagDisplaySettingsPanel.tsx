@@ -1,16 +1,17 @@
 import { observer } from 'mobx-react-lite';
 import { Slider, Switch } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { FlagDisplaySettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const FlagDisplaySettingsPanel = observer(
   ({ widgetId }: { widgetId: 'led-flags' | 'flat-flags' }) => {
-    const settings = widgetSettingsStore.getFlagDisplaySettings(widgetId);
+    const widgetSettings = useWidgetSettingsStore();
+    const settings = widgetSettings.getFlagDisplaySettings(widgetId);
 
     const update = (partial: Partial<FlagDisplaySettings>) => {
-      widgetSettingsStore.updateUserSettings(widgetId, {
+      widgetSettings.updateUserSettings(widgetId, {
         ...settings,
         ...partial,
       });

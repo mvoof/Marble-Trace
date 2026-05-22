@@ -1,13 +1,14 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-
 import styles from './FuelProgress.module.scss';
+import { useTelemetryStore } from '@store/root-store-context';
 
 export const FuelProgress = observer(() => {
-  const fuelLevel = telemetryStore.carStatus?.fuel_level ?? null;
-  const fuelMax = telemetryStore.driverInfo?.DriverCarFuelMaxLtr ?? null;
+  const telemetry = useTelemetryStore();
+
+  const fuelLevel = telemetry.carStatus?.fuel_level ?? null;
+  const fuelMax = telemetry.driverInfo?.DriverCarFuelMaxLtr ?? null;
 
   const pct =
     fuelLevel !== null && fuelMax !== null && fuelMax > 0

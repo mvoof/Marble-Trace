@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 
-class WidgetAutoHideStore {
+export class WidgetAutoHideStore {
   private visibilityMap = new Map<string, boolean>();
 
   constructor() {
@@ -15,5 +15,3 @@ class WidgetAutoHideStore {
     return this.visibilityMap.get(id) ?? true;
   };
 }
-
-export const widgetAutoHideStore = new WidgetAutoHideStore();

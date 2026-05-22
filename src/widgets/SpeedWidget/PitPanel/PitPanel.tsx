@@ -1,8 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { unitsStore } from '@store/units.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   formatGear,
   formatSpeed,
@@ -13,6 +10,11 @@ import {
 import { parsePitSpeedLimitMs } from '@utils/widget/speed-utils';
 
 import styles from './PitPanel.module.scss';
+import {
+  useTelemetryStore,
+  useUnitsStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export type PitState = 'normal' | 'pit-lane' | 'limiter-active' | 'over-limit';
 
@@ -26,16 +28,20 @@ const PIT_STATE_CLASS: Record<PitState, string> = {
 };
 
 export const PitPanel = observer(() => {
+  const telemetry = useTelemetryStore();
+  const units = useUnitsStore();
+  const widgetSettings = useWidgetSettingsStore();
+
   const { pitSpeedLimitOverride, gearColor, gearPanelBg } =
-    widgetSettingsStore.getSpeedSettings();
-  const carStatus = telemetryStore.carStatus;
-  const carDynamics = telemetryStore.carDynamics;
-  const system = unitsStore.system;
+    widgetSettings.getSpeedSettings();
+  const carStatus = telemetry.carStatus;
+  const carDynamics = telemetry.carDynamics;
+  const system = units.system;
   const speedFactor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
   const pitLimitMs =
     pitSpeedLimitOverride !== null
       ? pitSpeedLimitOverride / speedFactor
-      : parsePitSpeedLimitMs(telemetryStore.weekendInfo?.TrackPitSpeedLimit);
+      : parsePitSpeedLimitMs(telemetry.weekendInfo?.TrackPitSpeedLimit);
   const pitLimitFormatted =
     pitLimitMs > 0 ? formatSpeed(pitLimitMs, system) : '—';
 

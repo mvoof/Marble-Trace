@@ -1,10 +1,11 @@
 import { useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
-
 import styles from './CanvasTrace.module.scss';
+import {
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 interface SmoothedValues {
   throttle: number;
@@ -13,8 +14,11 @@ interface SmoothedValues {
 }
 
 export const CanvasTrace = observer(() => {
-  const settings = widgetSettingsStore.getInputTraceSettings();
-  const frame = telemetryStore.carInputs;
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getInputTraceSettings();
+  const frame = telemetry.carInputs;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 

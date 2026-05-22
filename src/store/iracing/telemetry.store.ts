@@ -20,8 +20,7 @@ export interface CarPositionsFrame {
   car_idx_track_surface: number[];
 }
 import type { SessionWithResults } from '@/types';
-
-class TelemetryStore {
+export class TelemetryStore {
   carDynamics: CarDynamicsFrame | null = null;
   carIdx: CarIdxFrame | null = null;
   carInputs: CarInputsFrame | null = null;
@@ -157,13 +156,11 @@ class TelemetryStore {
 
     if (!results || results.length === 0) return;
 
-    // Reset snapshot when session changes
     if (currentSessionNum !== this.trackedSessionNum) {
       this.startPositions = new Map();
       this.trackedSessionNum = currentSessionNum;
     }
 
-    // Only snapshot once — don't overwrite after positions start changing
     if (this.startPositions.size > 0) return;
 
     const snapshot = new Map<number, { overall: number; class: number }>();
@@ -181,5 +178,3 @@ class TelemetryStore {
     }
   }
 }
-
-export const telemetryStore = new TelemetryStore();

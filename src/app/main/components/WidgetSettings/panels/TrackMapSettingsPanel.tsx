@@ -13,21 +13,23 @@ import {
 } from 'antd';
 import { emit } from '@tauri-apps/api/event';
 import { appDataDir } from '@tauri-apps/api/path';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   TrackMapLeaderLabelMode,
   TrackMapWidgetSettings,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const TrackMapSettingsPanel = observer(() => {
-  const settings = widgetSettingsStore.getTrackMapSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getTrackMapSettings();
   const [tracksPath, setTracksPath] = useState<string | null>(null);
   const { message } = App.useApp();
 
   const update = (partial: Partial<TrackMapWidgetSettings>) => {
-    widgetSettingsStore.updateUserSettings('track-map', {
+    widgetSettings.updateUserSettings('track-map', {
       ...settings,
       ...partial,
     });
@@ -177,14 +179,14 @@ export const TrackMapSettingsPanel = observer(() => {
               style={{ flex: 1 }}
               size="small"
               type={
-                widgetSettingsStore.isTrackMapForceStartPending
+                widgetSettings.isTrackMapForceStartPending
                   ? 'primary'
                   : 'default'
               }
-              danger={widgetSettingsStore.isTrackMapForceStartPending}
+              danger={widgetSettings.isTrackMapForceStartPending}
               onClick={() => {
-                const next = !widgetSettingsStore.isTrackMapForceStartPending;
-                widgetSettingsStore.setTrackMapForceStartPending(next);
+                const next = !widgetSettings.isTrackMapForceStartPending;
+                widgetSettings.setTrackMapForceStartPending(next);
                 if (next) {
                   void emit('track-map:force-start');
                   message.info(
@@ -195,7 +197,7 @@ export const TrackMapSettingsPanel = observer(() => {
                 }
               }}
             >
-              {widgetSettingsStore.isTrackMapForceStartPending
+              {widgetSettings.isTrackMapForceStartPending
                 ? 'Cancel Force Start'
                 : 'Force Start Recording'}
             </Button>

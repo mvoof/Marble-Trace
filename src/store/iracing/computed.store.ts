@@ -9,7 +9,7 @@ import type {
   ProximityFrame,
 } from '@/types/bindings';
 import type { DriverGroup } from '@/types';
-import { telemetryStore } from './telemetry.store';
+import type { RootStore } from '../root-store';
 
 interface StartPosition {
   overall: number;
@@ -32,7 +32,7 @@ const computeRelativeLapDist = (
   return diff;
 };
 
-class ComputedStore {
+export class ComputedStore {
   proximity: ProximityFrame | null = null;
   fuel: FuelComputedFrame | null = null;
   standings: DriverEntriesFrame | null = null;
@@ -40,7 +40,7 @@ class ComputedStore {
   lapDelta: LapDeltaFrame | null = null;
   private readonly startPositionSnapshot = new Map<number, StartPosition>();
 
-  constructor() {
+  constructor(private readonly root: RootStore) {
     makeAutoObservable(this);
   }
 
@@ -85,7 +85,7 @@ class ComputedStore {
 
   get relativeEntries() {
     const standings = this.standings;
-    const carPositions = telemetryStore.carPositions;
+    const carPositions = this.root.telemetry.carPositions;
 
     const playerIdx = standings?.entries.find((e) => e.isPlayer)?.carIdx ?? -1;
     const playerLapDist =
@@ -128,7 +128,8 @@ class ComputedStore {
   }
 
   get qualifyStartPosMap() {
-    const results = telemetryStore.sessionInfo?.QualifyResultsInfo?.Results;
+    const results =
+      this.root.telemetry.sessionInfo?.QualifyResultsInfo?.Results;
     if (!results || results.length === 0) return null;
 
     const map = new Map<number, { overall: number; class: number }>();
@@ -168,5 +169,3 @@ class ComputedStore {
     this.startPositionSnapshot.clear();
   }
 }
-
-export const computedStore = new ComputedStore();

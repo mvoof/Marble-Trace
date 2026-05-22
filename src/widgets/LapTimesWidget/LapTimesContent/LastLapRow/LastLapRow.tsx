@@ -1,8 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import { TimingRow } from '@/components/shared/TimingRow/TimingRow';
 import {
@@ -10,17 +7,26 @@ import {
   getDeltaColor,
   LAP_TIME_COLORS,
 } from '@utils/widget/lap-times-utils';
+import {
+  useComputedStore,
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const LastLapRow = observer(() => {
-  const settings = widgetSettingsStore.getLapTimesSettings();
+  const computed = useComputedStore();
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getLapTimesSettings();
 
   if (!settings.showLastLap) {
     return null;
   }
 
-  const lastLap = telemetryStore.lapTiming?.lap_last_lap_time ?? null;
-  const bestLap = telemetryStore.lapTiming?.lap_best_lap_time ?? null;
-  const liveDelta = computedStore.lapDelta?.personalBestTotal ?? null;
+  const lastLap = telemetry.lapTiming?.lap_last_lap_time ?? null;
+  const bestLap = telemetry.lapTiming?.lap_best_lap_time ?? null;
+  const liveDelta = computed.lapDelta?.personalBestTotal ?? null;
 
   const lastDelta =
     liveDelta !== null && bestLap !== null && lastLap !== null

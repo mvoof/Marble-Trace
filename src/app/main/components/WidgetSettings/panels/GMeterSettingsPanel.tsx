@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react-lite';
 import { Segmented } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import type {
   GMeterColorMode,
   GMeterDisplayMode,
@@ -8,12 +7,15 @@ import type {
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './shared';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const GMeterSettingsPanel = observer(() => {
-  const settings = widgetSettingsStore.getGMeterSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getGMeterSettings();
 
   const update = (partial: Partial<GMeterWidgetSettings>) => {
-    widgetSettingsStore.updateUserSettings('g-meter', {
+    widgetSettings.updateUserSettings('g-meter', {
       ...settings,
       ...partial,
     });

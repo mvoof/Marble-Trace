@@ -1,8 +1,6 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   COLOR_TURN,
   ENVELOPE_SPREAD,
@@ -16,6 +14,10 @@ import {
 import type { EnvelopePoint, TrailPoint } from '@widgets/GMeterWidget/types';
 
 import styles from './GMeterTrace.module.scss';
+import {
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 interface GMeterTraceProps {
   width: number;
@@ -23,10 +25,12 @@ interface GMeterTraceProps {
 }
 
 export const GMeterTrace = observer(({ width, height }: GMeterTraceProps) => {
-  const { displayMode, scale, colorMode } =
-    widgetSettingsStore.getGMeterSettings();
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
 
-  const dynamics = telemetryStore.carDynamics;
+  const { displayMode, scale, colorMode } = widgetSettings.getGMeterSettings();
+
+  const dynamics = telemetry.carDynamics;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafIdRef = useRef(0);

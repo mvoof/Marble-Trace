@@ -1,16 +1,21 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { PitWarningHeader } from './PitWarningHeader/PitWarningHeader';
 import { PitWarningStrategy } from './PitWarningStrategy/PitWarningStrategy';
 import { PitWarningAmount } from './PitWarningAmount/PitWarningAmount';
 
 import styles from './FuelPitWarning.module.scss';
+import {
+  useComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const FuelPitWarning = observer(() => {
-  const fuel = computedStore.fuel;
-  const settings = widgetSettingsStore.getFuelSettings();
+  const computed = useComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const fuel = computed.fuel;
+  const settings = widgetSettings.getFuelSettings();
 
   const lapsRemaining = fuel?.lapsRemaining ?? null;
   const shortage = fuel?.shortage ?? null;

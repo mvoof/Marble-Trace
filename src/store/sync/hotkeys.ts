@@ -1,13 +1,14 @@
 import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
-import { appSettingsStore } from '@store/app-settings.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
-import { computedStore } from '@store/iracing/computed.store';
+import type { RootStore } from '../root-store';
 
 const registeredShortcuts = new Set<string>();
 let isSettingUp = false;
 let pendingSetup = false;
 
-export const setupHotkeys = async (onSave?: () => Promise<void>) => {
+export const setupHotkeys = async (
+  root: RootStore,
+  onSave?: () => Promise<void>
+) => {
   if (isSettingUp) {
     pendingSetup = true;
 
@@ -35,23 +36,23 @@ export const setupHotkeys = async (onSave?: () => Promise<void>) => {
       handlersMap.get(shortcut)!.push(handler);
     };
 
-    if (appSettingsStore.settings.dragHotkey) {
-      addHandler(appSettingsStore.settings.dragHotkey, (event) => {
-        if (event.state === 'Pressed') appSettingsStore.toggleDragMode();
+    if (root.appSettings.settings.dragHotkey) {
+      addHandler(root.appSettings.settings.dragHotkey, (event) => {
+        if (event.state === 'Pressed') root.appSettings.toggleDragMode();
       });
     }
 
-    if (appSettingsStore.settings.hideAllWidgetsHotkey) {
-      addHandler(appSettingsStore.settings.hideAllWidgetsHotkey, (event) => {
-        if (event.state === 'Pressed') appSettingsStore.toggleHideAllWidgets();
+    if (root.appSettings.settings.hideAllWidgetsHotkey) {
+      addHandler(root.appSettings.settings.hideAllWidgetsHotkey, (event) => {
+        if (event.state === 'Pressed') root.appSettings.toggleHideAllWidgets();
       });
     }
 
-    for (const widget of widgetSettingsStore.allWidgets) {
+    for (const widget of root.widgetSettings.allWidgets) {
       if (widget.userSettings.hotkey) {
         addHandler(widget.userSettings.hotkey, (event) => {
           if (event.state === 'Pressed') {
-            widgetSettingsStore.setWidgetEnabled(
+            root.widgetSettings.setWidgetEnabled(
               widget.id,
               !widget.userSettings.enabled
             );
@@ -60,32 +61,34 @@ export const setupHotkeys = async (onSave?: () => Promise<void>) => {
       }
     }
 
-    const s = widgetSettingsStore.getStandingsSettings();
-    if (s.classCyclingToggleHotkey) {
-      addHandler(s.classCyclingToggleHotkey, (event) => {
+    const settings = root.widgetSettings.getStandingsSettings();
+
+    if (settings.classCyclingToggleHotkey) {
+      addHandler(settings.classCyclingToggleHotkey, (event) => {
         if (event.state === 'Pressed')
-          widgetSettingsStore.toggleStandingsClassCycling();
+          root.widgetSettings.toggleStandingsClassCycling();
       });
     }
-    if (s.classPrevHotkey) {
-      addHandler(s.classPrevHotkey, (event) => {
+
+    if (settings.classPrevHotkey) {
+      addHandler(settings.classPrevHotkey, (event) => {
         if (event.state === 'Pressed') {
           const totalClasses = new Set(
-            computedStore.standings?.entries.map((e) => e.carClassId) ?? []
+            root.computed.standings?.entries.map((e) => e.carClassId) ?? []
           ).size;
 
-          widgetSettingsStore.cycleStandingsPrev(totalClasses);
+          root.widgetSettings.cycleStandingsPrev(totalClasses);
         }
       });
     }
 
-    if (s.classNextHotkey) {
-      addHandler(s.classNextHotkey, (event) => {
+    if (settings.classNextHotkey) {
+      addHandler(settings.classNextHotkey, (event) => {
         if (event.state === 'Pressed') {
           const totalClasses = new Set(
-            computedStore.standings?.entries.map((e) => e.carClassId) ?? []
+            root.computed.standings?.entries.map((e) => e.carClassId) ?? []
           ).size;
-          widgetSettingsStore.cycleStandingsNext(totalClasses);
+          root.widgetSettings.cycleStandingsNext(totalClasses);
         }
       });
     }
@@ -112,7 +115,7 @@ export const setupHotkeys = async (onSave?: () => Promise<void>) => {
           }
 
           await register(shortcut, (event) => {
-            handlers.forEach((h) => h(event));
+            handlers.forEach((handler) => handler(event));
           });
 
           registeredShortcuts.add(shortcut);
@@ -126,7 +129,7 @@ export const setupHotkeys = async (onSave?: () => Promise<void>) => {
 
     if (pendingSetup) {
       pendingSetup = false;
-      void setupHotkeys(onSave);
+      void setupHotkeys(root, onSave);
     }
   }
 };

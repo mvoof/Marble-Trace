@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react-lite';
 import { InputNumber, Row, Col, ColorPicker } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import styles from './WidgetSettings.module.scss';
 import { Card, HotkeyRecorderWrapper } from './panels/shared';
 import { SpeedSettingsPanel } from './panels/SpeedSettingsPanel';
@@ -18,16 +17,19 @@ import { ChassisSettingsPanel } from './panels/ChassisSettingsPanel';
 import { TimerSettingsPanel } from './panels/TimerSettingsPanel';
 import { FlagDisplaySettingsPanel } from './panels/FlagDisplaySettingsPanel';
 import { GMeterSettingsPanel } from './panels/GMeterSettingsPanel';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const WidgetSettings = observer(
   ({ widgetId }: { widgetId: string | null }) => {
+    const widgetSettings = useWidgetSettingsStore();
+
     if (!widgetId) {
       return (
         <div className={styles.fieldDesc}>Select a widget to configure</div>
       );
     }
 
-    const widget = widgetSettingsStore.getWidget(widgetId);
+    const widget = widgetSettings.getWidget(widgetId);
 
     if (!widget) {
       return <div className={styles.fieldDesc}>Widget not found</div>;
@@ -51,7 +53,7 @@ export const WidgetSettings = observer(
                 value={userSettings.x}
                 onChange={(v) =>
                   v !== null &&
-                  widgetSettingsStore.updateUserSettings(widgetId, { x: v })
+                  widgetSettings.updateUserSettings(widgetId, { x: v })
                 }
               />
             </Col>
@@ -63,7 +65,7 @@ export const WidgetSettings = observer(
                 value={userSettings.y}
                 onChange={(v) =>
                   v !== null &&
-                  widgetSettingsStore.updateUserSettings(widgetId, { y: v })
+                  widgetSettings.updateUserSettings(widgetId, { y: v })
                 }
               />
             </Col>
@@ -76,7 +78,7 @@ export const WidgetSettings = observer(
                 min={10}
                 onChange={(v) =>
                   v !== null &&
-                  widgetSettingsStore.updateUserSettings(widgetId, {
+                  widgetSettings.updateUserSettings(widgetId, {
                     currentWidth: v,
                   })
                 }
@@ -91,7 +93,7 @@ export const WidgetSettings = observer(
                 min={10}
                 onChange={(v) =>
                   v !== null &&
-                  widgetSettingsStore.updateUserSettings(widgetId, {
+                  widgetSettings.updateUserSettings(widgetId, {
                     currentHeight: v,
                   })
                 }
@@ -110,7 +112,7 @@ export const WidgetSettings = observer(
                     value={userSettings.backgroundColor ?? '#252525'}
                     allowClear
                     onChange={(color) =>
-                      widgetSettingsStore.updateUserSettings(widgetId, {
+                      widgetSettings.updateUserSettings(widgetId, {
                         backgroundColor: color.toHexString(),
                       })
                     }
@@ -128,7 +130,7 @@ export const WidgetSettings = observer(
                     value={userSettings.backgroundColorEdge ?? '#14141b'}
                     allowClear
                     onChange={(color) =>
-                      widgetSettingsStore.updateUserSettings(widgetId, {
+                      widgetSettings.updateUserSettings(widgetId, {
                         backgroundColorEdge: color.toHexString(),
                       })
                     }
@@ -148,7 +150,7 @@ export const WidgetSettings = observer(
                     }
                     allowClear
                     onChange={(color) =>
-                      widgetSettingsStore.updateUserSettings(widgetId, {
+                      widgetSettings.updateUserSettings(widgetId, {
                         borderColor: color.toRgbString(),
                       })
                     }

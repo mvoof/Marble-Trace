@@ -1,18 +1,20 @@
 import { observer } from 'mobx-react-lite';
 
 import WindArrowIcon from '@assets/wind-arrow.svg?react';
-import { telemetryStore } from '@store/iracing/telemetry.store';
 import {
   getWindColor,
   parseWeekendFloat,
   radsToBearing,
 } from '@utils/widget/weather-utils';
+import { useTelemetryStore } from '@store/root-store-context';
 
 // Re-renders at 60 Hz — driven by carDynamics.yaw updating at physics rate
 export const WindArrow = observer(() => {
-  const weekendInfo = telemetryStore.weekendInfo;
-  const env = telemetryStore.environment;
-  const carYawRad = telemetryStore.carDynamics?.yaw ?? 0;
+  const telemetry = useTelemetryStore();
+
+  const weekendInfo = telemetry.weekendInfo;
+  const env = telemetry.environment;
+  const carYawRad = telemetry.carDynamics?.yaw ?? 0;
   const carYawDeg = carYawRad * (180 / Math.PI);
 
   const windVelMps =

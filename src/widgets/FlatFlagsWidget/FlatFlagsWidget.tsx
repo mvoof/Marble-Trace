@@ -1,20 +1,24 @@
 import { observer } from 'mobx-react-lite';
 
-import { flagsStore } from '@store/flags.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { useWidgetAutoHide } from '@hooks/common/useWidgetAutoHide';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import { useFlagBlink } from '@hooks/flags-hooks';
 import { FlagList } from './FlagList/FlagList';
 
 import styles from './FlatFlagsWidget.module.scss';
+import {
+  useFlagsStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const FlatFlagsWidget = observer(() => {
-  const { alwaysShow } =
-    widgetSettingsStore.getFlagDisplaySettings('flat-flags');
+  const flags = useFlagsStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { alwaysShow } = widgetSettings.getFlagDisplaySettings('flat-flags');
 
   const blinkOn = useFlagBlink();
-  const hasContent = alwaysShow || flagsStore.displayFlags.length > 0;
+  const hasContent = alwaysShow || flags.displayFlags.length > 0;
 
   useWidgetAutoHide(hasContent);
 

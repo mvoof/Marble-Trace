@@ -1,15 +1,21 @@
 import { useEffect } from 'react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { telemetryConnectionStore } from '@store/iracing/telemetry-connection.store';
 import { OverlayCanvas } from './OverlayCanvas/OverlayCanvas';
 import { initOverlaySync } from '@store/sync/sync-init';
+import {
+  useRootStore,
+  useTelemetryConnectionStore,
+} from '@store/root-store-context';
 
 export const OverlayWindow = () => {
-  useEffect(() => {
-    void telemetryConnectionStore.startWidgetListener();
+  const telemetryConnection = useTelemetryConnectionStore();
+  const root = useRootStore();
 
-    return () => telemetryConnectionStore.stopWidgetListener();
-  }, []);
+  useEffect(() => {
+    void telemetryConnection.startWidgetListener();
+
+    return () => telemetryConnection.stopWidgetListener();
+  }, [telemetryConnection]);
 
   useEffect(() => {
     [document.documentElement, document.body].forEach(
@@ -24,7 +30,7 @@ export const OverlayWindow = () => {
     let isMounted = true;
 
     const init = async () => {
-      const result = await initOverlaySync();
+      const result = await initOverlaySync(root);
 
       if (!isMounted) {
         result();
@@ -39,7 +45,7 @@ export const OverlayWindow = () => {
       isMounted = false;
       cleanup?.();
     };
-  }, []);
+  }, [root]);
 
   return <OverlayCanvas />;
 };

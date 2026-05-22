@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Button, Modal } from 'antd';
 import { observer } from 'mobx-react-lite';
-import { appSettingsStore } from '@/store/app-settings.store';
+import { useAppSettingsStore } from '@store/root-store-context';
 import styles from './ReleaseNotesButton.module.scss';
 
 export const ReleaseNotesButton = observer(() => {
+  const appSettings = useAppSettingsStore();
   const [isOpen, setIsOpen] = useState(false);
-  const { releaseNotes, availableVersion } = appSettingsStore;
+  const { releaseNotes, availableVersion } = appSettings;
 
   if (!releaseNotes) return null;
 

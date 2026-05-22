@@ -1,13 +1,15 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '@store/iracing/computed.store';
 import { formatFuelLiters } from '@utils/widget/fuel-utils';
 import { FuelDataCell } from './FuelDataCell/FuelDataCell';
 
 import styles from './FuelDataGrid.module.scss';
+import { useComputedStore } from '@store/root-store-context';
 
 export const FuelDataGrid = observer(() => {
-  const fuel = computedStore.fuel;
+  const computed = useComputedStore();
+
+  const fuel = computed.fuel;
   const shortage = fuel?.shortage ?? null;
 
   const shortageText =

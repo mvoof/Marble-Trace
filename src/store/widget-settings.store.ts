@@ -31,7 +31,7 @@ import type {
   WidgetUserSettings,
 } from '@/types/widget-settings';
 
-class WidgetSettingsStore {
+export class WidgetSettingsStore {
   widgets = new Map<string, WidgetDefaultConfig>(
     DEFAULT_WIDGETS.map((widgetConfig) => [
       widgetConfig.id,
@@ -411,5 +411,3 @@ class WidgetSettingsStore {
     return this.getSettings<GMeterWidgetSettings>('g-meter');
   }
 }
-
-export const widgetSettingsStore = new WidgetSettingsStore();

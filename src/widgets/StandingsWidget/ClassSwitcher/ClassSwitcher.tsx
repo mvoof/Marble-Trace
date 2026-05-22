@@ -1,18 +1,24 @@
 import { observer } from 'mobx-react-lite';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
-import { appSettingsStore } from '@store/app-settings.store';
 import { formatIRating } from '@/utils/widget/widget-utils';
 
 import styles from './ClassSwitcher.module.scss';
+import {
+  useAppSettingsStore,
+  useComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const ClassSwitcher = observer(() => {
-  const settings = widgetSettingsStore.getStandingsSettings();
-  const allClassGroups = computedStore.allClassGroups;
-  const activeIndex = widgetSettingsStore.standingsActiveClassIndex;
-  const dragMode = appSettingsStore.dragMode;
+  const appSettings = useAppSettingsStore();
+  const computed = useComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getStandingsSettings();
+  const allClassGroups = computed.allClassGroups;
+  const activeIndex = widgetSettings.standingsActiveClassIndex;
+  const dragMode = appSettings.dragMode;
 
   const group = allClassGroups[activeIndex];
   const total = allClassGroups.length;
@@ -22,11 +28,11 @@ export const ClassSwitcher = observer(() => {
   }
 
   const handlePrev = () => {
-    widgetSettingsStore.cycleStandingsPrev(total);
+    widgetSettings.cycleStandingsPrev(total);
   };
 
   const handleNext = () => {
-    widgetSettingsStore.cycleStandingsNext(total);
+    widgetSettings.cycleStandingsNext(total);
   };
 
   return (

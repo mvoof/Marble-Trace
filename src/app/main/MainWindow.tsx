@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { Layout, ConfigProvider, theme, App as AntdApp } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { Settings } from 'lucide-react';
-import { telemetryConnectionStore } from '@store/iracing/telemetry-connection.store';
-import { appSettingsStore } from '@store/app-settings.store';
 import { initMainSync } from '@store/sync/sync-init';
 import { WidgetList } from './components/WidgetList/WidgetList';
 import { WidgetSettings } from './components/WidgetSettings/WidgetSettings';
@@ -15,26 +13,35 @@ import { RandomGlitchCanvas } from './components/BackgroundAnimation/RandomGlitc
 import { UpdateBanner } from './components/UpdateBanner/UpdateBanner';
 import styles from './MainWindow.module.scss';
 import Logo from '@assets/logo.svg?react';
+import {
+  useAppSettingsStore,
+  useRootStore,
+  useTelemetryConnectionStore,
+} from '@store/root-store-context';
 
 const { Content, Sider } = Layout;
 
 export const MainWindow = observer(() => {
+  const appSettings = useAppSettingsStore();
+  const telemetryConnection = useTelemetryConnectionStore();
+  const root = useRootStore();
+
   const [selectedId, setSelectedId] = useState<string>('app-settings');
 
   useEffect(() => {
-    void telemetryConnectionStore.startStream();
+    void telemetryConnection.startStream();
 
     return () => {
-      void telemetryConnectionStore.stopStream();
+      void telemetryConnection.stopStream();
     };
-  }, []);
+  }, [telemetryConnection]);
 
   useEffect(() => {
     let cleanup: (() => void) | undefined;
     let isMounted = true;
 
     const init = async () => {
-      const result = await initMainSync();
+      const result = await initMainSync(root);
 
       if (!isMounted) {
         result();
@@ -49,7 +56,7 @@ export const MainWindow = observer(() => {
       isMounted = false;
       cleanup?.();
     };
-  }, []);
+  }, [root]);
 
   return (
     <ConfigProvider
@@ -115,9 +122,9 @@ export const MainWindow = observer(() => {
                   <div className={styles.brandContainer}>
                     <span className={styles.brandName}>Marble Trace</span>
 
-                    {appSettingsStore.currentVersion && (
+                    {appSettings.currentVersion && (
                       <span className={styles.version}>
-                        &nbsp;v{appSettingsStore.currentVersion}
+                        &nbsp;v{appSettings.currentVersion}
                       </span>
                     )}
                   </div>

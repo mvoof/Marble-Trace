@@ -1,15 +1,20 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { FUEL_THRESHOLDS } from '@utils/constants/fuel-constants';
 
 import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
 import styles from './FuelFinishCard.module.scss';
+import {
+  useComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const FuelFinishCard = observer(() => {
-  const fuel = computedStore.fuel;
-  const settings = widgetSettingsStore.getFuelSettings();
+  const computed = useComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const fuel = computed.fuel;
+  const settings = widgetSettings.getFuelSettings();
 
   const lapsRemaining = fuel?.lapsRemaining ?? null;
   const shortage = fuel?.shortage ?? null;

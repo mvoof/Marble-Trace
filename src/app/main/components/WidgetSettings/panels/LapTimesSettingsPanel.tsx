@@ -1,18 +1,20 @@
 import { observer } from 'mobx-react-lite';
 import { Segmented, Switch } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   LapTimesLayout,
   LapTimesWidgetSettings,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const LapTimesSettingsPanel = observer(() => {
-  const settings = widgetSettingsStore.getLapTimesSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getLapTimesSettings();
 
   const update = (partial: Partial<LapTimesWidgetSettings>) => {
-    widgetSettingsStore.updateUserSettings('lap-times', {
+    widgetSettings.updateUserSettings('lap-times', {
       ...settings,
       ...partial,
     });

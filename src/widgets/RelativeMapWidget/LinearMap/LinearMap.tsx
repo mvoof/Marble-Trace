@@ -2,14 +2,19 @@
 import { observer } from 'mobx-react-lite';
 import { TRACK_SURFACE_ON_TRACK } from '@utils/widget/widget-utils';
 import { CarDot } from '@/components/shared/CarDot/CarDot';
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 
 import styles from './LinearMap.module.scss';
+import {
+  useComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const LinearMap = observer(() => {
-  const settings = widgetSettingsStore.getLinearMapSettings();
-  const entries = computedStore.relativeEntries;
+  const computed = useComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getLinearMapSettings();
+  const entries = computed.relativeEntries;
   const player = entries.find((entry) => entry.isPlayer) ?? null;
   const isHorizontal = settings.orientation === 'horizontal';
   const playerDotColor = settings.playerDotColor;

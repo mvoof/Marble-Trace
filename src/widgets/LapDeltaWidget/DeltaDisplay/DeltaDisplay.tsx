@@ -1,7 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   formatDelta,
   getDeltaState,
@@ -9,6 +7,10 @@ import {
 } from '@utils/widget/lap-delta-utils';
 
 import styles from './DeltaDisplay.module.scss';
+import {
+  useComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 const DELTA_STATE_CLASS: Record<DeltaState, string> = {
   ahead: styles.deltaAhead,
@@ -17,13 +19,16 @@ const DELTA_STATE_CLASS: Record<DeltaState, string> = {
 };
 
 export const DeltaDisplay = observer(() => {
-  const { reference, layout } = widgetSettingsStore.getLapDeltaSettings();
+  const computed = useComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { reference, layout } = widgetSettings.getLapDeltaSettings();
   const isHorizontal = layout === 'horizontal';
   const isSession = reference === 'session_best';
 
   const delta = isSession
-    ? (computedStore.lapDelta?.sessionBestTotal ?? 0)
-    : (computedStore.lapDelta?.personalBestTotal ?? 0);
+    ? (computed.lapDelta?.sessionBestTotal ?? 0)
+    : (computed.lapDelta?.personalBestTotal ?? 0);
 
   const state = getDeltaState(delta);
 
