@@ -31,10 +31,6 @@ export const OverlayCanvas = observer(() => {
     return null;
   }
 
-  const enabledWidgets = widgetSettings.allWidgets.filter(
-    (widget) => widget.userSettings.enabled
-  );
-
   return (
     <div
       className={`${styles.canvas} ${dragMode ? styles.dragActive : ''}`}
@@ -54,15 +50,15 @@ export const OverlayCanvas = observer(() => {
         </div>
       )}
 
-      {enabledWidgets.map((widget) => {
-        const widgetDefinition = WIDGET_BY_ID.get(widget.id);
+      {widgetSettings.enabledWidgetIds.map((id) => {
+        const widgetDefinition = WIDGET_BY_ID.get(id);
 
         if (!widgetDefinition) return null;
 
         const WidgetComponent = widgetDefinition.component;
 
         return (
-          <WidgetContainer key={widget.id} widgetId={widget.id}>
+          <WidgetContainer key={id} widgetId={id}>
             <WidgetComponent />
           </WidgetContainer>
         );
