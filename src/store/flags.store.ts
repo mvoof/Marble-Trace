@@ -31,8 +31,34 @@ export class FlagsStore {
   }
 
   init() {
-    this.initFlatHold();
-    this.initLedHold();
+    this.createHoldReaction(
+      () => this.parsedFlags,
+      (flags) => flags.length === 0,
+      NO_FLAGS,
+      () =>
+        this.root.widgetSettings.getSettings<FlagDisplaySettings>('flat-flags')
+          .holdDuration,
+      (value) => {
+        this.displayFlags = value;
+      },
+      () => this.displayFlags,
+      this.flatHold
+    );
+
+    this.createHoldReaction(
+      () => this.parsedFlag,
+      (flag) => flag === NO_FLAG,
+      NO_FLAG,
+      () =>
+        this.root.widgetSettings.getSettings<FlagDisplaySettings>('led-flags')
+          .holdDuration,
+      (value) => {
+        this.ledDisplayFlag = value;
+      },
+      () => this.ledDisplayFlag,
+      this.ledHold
+    );
+
     this.initBlink();
   }
 
@@ -65,6 +91,7 @@ export class FlagsStore {
         if (!isEmpty(value)) {
           if (hold.timer) {
             clearTimeout(hold.timer);
+
             hold.timer = null;
           }
 
@@ -75,6 +102,7 @@ export class FlagsStore {
               hold.timer = setTimeout(
                 action(() => {
                   setValue(emptyValue);
+
                   hold.timer = null;
                 }),
                 holdDuration * 1000
@@ -84,6 +112,7 @@ export class FlagsStore {
             action(() => {
               if (hold.timer) {
                 clearTimeout(hold.timer);
+
                 hold.timer = null;
               }
 
@@ -92,22 +121,6 @@ export class FlagsStore {
           }
         }
       }
-    );
-  }
-
-  private initFlatHold() {
-    this.createHoldReaction(
-      () => this.parsedFlags,
-      (flags) => flags.length === 0,
-      NO_FLAGS,
-      () =>
-        this.root.widgetSettings.getSettings<FlagDisplaySettings>('flat-flags')
-          .holdDuration,
-      (value) => {
-        this.displayFlags = value;
-      },
-      () => this.displayFlags,
-      this.flatHold
     );
   }
 
@@ -129,6 +142,7 @@ export class FlagsStore {
         } else {
           if (this.blinkInterval) {
             clearInterval(this.blinkInterval);
+
             this.blinkInterval = null;
           }
 
@@ -140,38 +154,25 @@ export class FlagsStore {
     );
   }
 
-  private initLedHold() {
-    this.createHoldReaction(
-      () => this.parsedFlag,
-      (flag) => flag === NO_FLAG,
-      NO_FLAG,
-      () =>
-        this.root.widgetSettings.getSettings<FlagDisplaySettings>('led-flags')
-          .holdDuration,
-      (value) => {
-        this.ledDisplayFlag = value;
-      },
-      () => this.ledDisplayFlag,
-      this.ledHold
-    );
-  }
-
   reset() {
     this.displayFlags = [];
     this.ledDisplayFlag = NO_FLAG;
 
     if (this.flatHold.timer) {
       clearTimeout(this.flatHold.timer);
+
       this.flatHold.timer = null;
     }
 
     if (this.ledHold.timer) {
       clearTimeout(this.ledHold.timer);
+
       this.ledHold.timer = null;
     }
 
     if (this.blinkInterval) {
       clearInterval(this.blinkInterval);
+
       this.blinkInterval = null;
     }
 
