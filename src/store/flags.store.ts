@@ -10,6 +10,8 @@ import type { RootStore } from './root-store';
 
 const NO_FLAG: FlagType = 'none';
 const NO_FLAGS: FlagType[] = [];
+const FLAG_BLINK_INTERVAL_MS = 400;
+const BLINK_FLAG_TYPES = new Set<FlagType>(['yellow', 'red']);
 
 interface HoldState {
   timer: ReturnType<typeof setTimeout> | null;
@@ -18,9 +20,11 @@ interface HoldState {
 export class FlagsStore {
   displayFlags: FlagType[] = [];
   ledDisplayFlag: FlagType = NO_FLAG;
+  blinkOn = true;
 
   private readonly flatHold: HoldState = { timer: null };
   private readonly ledHold: HoldState = { timer: null };
+  private blinkInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(private readonly root: RootStore) {
     makeAutoObservable(this);
@@ -29,6 +33,7 @@ export class FlagsStore {
   init() {
     this.initFlatHold();
     this.initLedHold();
+    this.initBlink();
   }
 
   get parsedFlags(): FlagType[] {
@@ -106,6 +111,35 @@ export class FlagsStore {
     );
   }
 
+  private initBlink() {
+    reaction(
+      () =>
+        BLINK_FLAG_TYPES.has(this.ledDisplayFlag) ||
+        this.displayFlags.some((flag) => BLINK_FLAG_TYPES.has(flag)),
+      (shouldBlink) => {
+        if (shouldBlink) {
+          if (!this.blinkInterval) {
+            this.blinkInterval = setInterval(
+              action(() => {
+                this.blinkOn = !this.blinkOn;
+              }),
+              FLAG_BLINK_INTERVAL_MS
+            );
+          }
+        } else {
+          if (this.blinkInterval) {
+            clearInterval(this.blinkInterval);
+            this.blinkInterval = null;
+          }
+
+          action(() => {
+            this.blinkOn = true;
+          })();
+        }
+      }
+    );
+  }
+
   private initLedHold() {
     this.createHoldReaction(
       () => this.parsedFlag,
@@ -135,5 +169,12 @@ export class FlagsStore {
       clearTimeout(this.ledHold.timer);
       this.ledHold.timer = null;
     }
+
+    if (this.blinkInterval) {
+      clearInterval(this.blinkInterval);
+      this.blinkInterval = null;
+    }
+
+    this.blinkOn = true;
   }
 }

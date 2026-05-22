@@ -5,11 +5,7 @@ import { FlagItem } from '@widgets/FlatFlagsWidget/FlagItem/FlagItem';
 import styles from './FlagList.module.scss';
 import { useFlagsStore } from '@store/root-store-context';
 
-interface FlagListProps {
-  blinkOn: boolean;
-}
-
-export const FlagList = observer(({ blinkOn }: FlagListProps) => {
+export const FlagList = observer(() => {
   const { displayFlags } = useFlagsStore();
 
   return (
@@ -17,9 +13,7 @@ export const FlagList = observer(({ blinkOn }: FlagListProps) => {
       {displayFlags.length === 0 ? (
         <div className={styles.empty}>NO ACTIVE FLAGS</div>
       ) : (
-        displayFlags.map((flag) => (
-          <FlagItem key={flag} flag={flag} blinkOn={blinkOn} />
-        ))
+        displayFlags.map((flag) => <FlagItem key={flag} flag={flag} />)
       )}
     </div>
   );

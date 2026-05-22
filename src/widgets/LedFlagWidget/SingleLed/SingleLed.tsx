@@ -9,18 +9,14 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
-interface SingleLedProps {
-  blinkOn: boolean;
-}
-
-export const SingleLed = observer(({ blinkOn }: SingleLedProps) => {
+export const SingleLed = observer(() => {
   const flags = useFlagsStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { alwaysShow } =
     widgetSettings.getSettings<FlagDisplaySettings>('led-flags');
 
-  const flag = flags.ledDisplayFlag;
+  const { ledDisplayFlag: flag, blinkOn } = flags;
 
   if (!alwaysShow && flag === 'none') {
     return null;

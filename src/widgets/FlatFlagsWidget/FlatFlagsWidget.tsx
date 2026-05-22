@@ -2,7 +2,6 @@ import { observer } from 'mobx-react-lite';
 
 import { useWidgetAutoHide } from '@hooks/common/useWidgetAutoHide';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
-import { useFlagBlink } from '@hooks/flags-hooks';
 import { FlagList } from './FlagList/FlagList';
 
 import styles from './FlatFlagsWidget.module.scss';
@@ -19,7 +18,6 @@ export const FlatFlagsWidget = observer(() => {
   const { alwaysShow } =
     widgetSettings.getSettings<FlagDisplaySettings>('flat-flags');
 
-  const blinkOn = useFlagBlink();
   const hasContent = alwaysShow || flags.displayFlags.length > 0;
 
   useWidgetAutoHide(hasContent);
@@ -32,7 +30,7 @@ export const FlatFlagsWidget = observer(() => {
     <WidgetPanel direction="column" gap={0} className={styles.widgetBackground}>
       <div className={styles.header}>FLAGS</div>
 
-      <FlagList blinkOn={blinkOn} />
+      <FlagList />
     </WidgetPanel>
   );
 });
