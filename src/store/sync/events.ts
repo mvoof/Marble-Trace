@@ -49,7 +49,7 @@ export const setupOverlayListeners = async (
   );
   unlistens.push(
     await listen<WidgetDefaultConfig[]>('widget-settings-updated', (e) => {
-      runInAction(() => root.widgetSettings.setWidgets(e.payload));
+      root.widgetSettings.applySettingsSync(e.payload);
     })
   );
   unlistens.push(

@@ -1,6 +1,6 @@
-import { reaction, runInAction } from 'mobx';
+import { reaction } from 'mobx';
+import { emit, listen } from '@tauri-apps/api/event';
 import { load } from '@tauri-apps/plugin-store';
-import { listen } from '@tauri-apps/api/event';
 import {
   hydrateStores,
   saveSettings,
@@ -48,7 +48,8 @@ export const initMainSync = async (root: RootStore) => {
 
       const [overlayLayoutUnlisten, mainUnlistens] = await Promise.all([
         listen<WidgetDefaultConfig[]>('widget-layout-changed', (e) => {
-          runInAction(() => root.widgetSettings.setWidgets(e.payload));
+          root.widgetSettings.applyLayoutSync(e.payload);
+          void onSave();
         }),
         setupMainListeners(root),
         setupHotkeys(root, onSave),
@@ -133,14 +134,14 @@ export const initMainSync = async (root: RootStore) => {
           }
         ),
         reaction(
-          () => JSON.stringify(root.widgetSettings.allWidgets),
+          () => root.widgetSettings.widgetMutationId,
           () => {
             void emitWidgetSettingsUpdated(root.widgetSettings.allWidgets);
           },
           { delay: 16 }
         ),
         reaction(
-          () => JSON.stringify(root.widgetSettings.allWidgets),
+          () => root.widgetSettings.widgetMutationId,
           () => {
             void onSave();
           },
@@ -190,6 +191,13 @@ export const initOverlaySync = async (root: RootStore) => {
       (v) => {
         void emitDragMode(v);
       }
+    ),
+    reaction(
+      () => root.widgetSettings.widgetMutationId,
+      () => {
+        void emit('widget-layout-changed', root.widgetSettings.allWidgets);
+      },
+      { delay: 500 }
     ),
   ];
 

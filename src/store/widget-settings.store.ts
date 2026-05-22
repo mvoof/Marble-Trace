@@ -1,13 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { filterToDefaults } from '@utils/filter-to-defaults';
 import { invoke } from '@tauri-apps/api/core';
-import {
-  DEFAULT_WIDGETS,
-  LAP_DELTA_DEFAULT_WIDTHS,
-  LAP_TIMES_DEFAULT_WIDTHS,
-  LINEAR_MAP_SIZES,
-  INPUT_TRACE_SIZES,
-} from './widget-defaults';
+import { DEFAULT_WIDGETS, WIDGET_BY_ID } from './widget-defaults';
 
 import type {
   WidgetDefaultConfig,
@@ -43,6 +37,8 @@ export class WidgetSettingsStore {
 
   isTrackMapForceStartPending = false;
 
+  widgetMutationId = 0;
+
   constructor() {
     makeAutoObservable(
       this,
@@ -55,6 +51,18 @@ export class WidgetSettingsStore {
 
   get allWidgets(): WidgetDefaultConfig[] {
     return Array.from(this.widgets.values());
+  }
+
+  get enabledWidgetIds(): string[] {
+    const ids: string[] = [];
+
+    for (const widget of this.widgets.values()) {
+      if (widget.userSettings.enabled) {
+        ids.push(widget.id);
+      }
+    }
+
+    return ids;
   }
 
   setTrackMapForceStartPending(pending: boolean) {
@@ -89,6 +97,10 @@ export class WidgetSettingsStore {
     });
   }
 
+  private bumpMutation() {
+    this.widgetMutationId++;
+  }
+
   setWidgets(widgets: WidgetDefaultConfig[]) {
     runInAction(() => {
       DEFAULT_WIDGETS.forEach((defaultWidget) => {
@@ -96,21 +108,75 @@ export class WidgetSettingsStore {
           (widget) => widget.id === defaultWidget.id
         );
 
-        if (!savedWidget) {
-          this.widgets.set(defaultWidget.id, { ...defaultWidget });
-          return;
+        const mergedUserSettings = savedWidget
+          ? filterToDefaults(
+              defaultWidget.userSettings,
+              savedWidget.userSettings ?? {}
+            )
+          : { ...defaultWidget.userSettings };
+
+        const existing = this.widgets.get(defaultWidget.id);
+
+        if (existing) {
+          Object.assign(existing.userSettings, mergedUserSettings);
+
+          if (savedWidget) {
+            const merged = filterToDefaults(
+              defaultWidget,
+              savedWidget
+            ) as WidgetDefaultConfig;
+            existing.designWidth = merged.designWidth;
+            existing.designHeight = merged.designHeight;
+          }
+        } else {
+          this.widgets.set(
+            defaultWidget.id,
+            savedWidget
+              ? {
+                  ...(filterToDefaults(
+                    defaultWidget,
+                    savedWidget
+                  ) as WidgetDefaultConfig),
+                  userSettings: mergedUserSettings,
+                }
+              : { ...defaultWidget, userSettings: mergedUserSettings }
+          );
         }
-
-        const mergedUserSettings = filterToDefaults(
-          defaultWidget.userSettings,
-          savedWidget.userSettings ?? {}
-        );
-
-        this.widgets.set(defaultWidget.id, {
-          ...filterToDefaults(defaultWidget, savedWidget),
-          userSettings: mergedUserSettings,
-        });
       });
+
+      this.bumpMutation();
+    });
+  }
+
+  applySettingsSync(widgets: WidgetDefaultConfig[]) {
+    runInAction(() => {
+      for (const incoming of widgets) {
+        const existing = this.widgets.get(incoming.id);
+
+        if (!existing) continue;
+
+        Object.assign(existing.userSettings, incoming.userSettings);
+        existing.designWidth = incoming.designWidth;
+        existing.designHeight = incoming.designHeight;
+      }
+    });
+  }
+
+  applyLayoutSync(widgets: WidgetDefaultConfig[]) {
+    runInAction(() => {
+      for (const incoming of widgets) {
+        const existing = this.widgets.get(incoming.id);
+
+        if (!existing) continue;
+
+        const { x, y, currentWidth, currentHeight } = incoming.userSettings;
+        Object.assign(existing.userSettings, {
+          x,
+          y,
+          currentWidth,
+          currentHeight,
+        });
+      }
     });
   }
 
@@ -131,6 +197,7 @@ export class WidgetSettingsStore {
     ) {
       widget.userSettings.x = x;
       widget.userSettings.y = y;
+      this.bumpMutation();
     }
   }
 
@@ -144,6 +211,7 @@ export class WidgetSettingsStore {
     ) {
       widget.userSettings.currentWidth = width;
       widget.userSettings.currentHeight = height;
+      this.bumpMutation();
     }
   }
 
@@ -167,12 +235,11 @@ export class WidgetSettingsStore {
 
     const prevSettings = { ...widget.userSettings };
 
-    widget.userSettings = {
-      ...prevSettings,
-      ...resolvedPartial,
-    } as WidgetUserSettings;
+    Object.assign(widget.userSettings, resolvedPartial);
 
     this.handleLayoutResize(id, prevSettings, widget.userSettings);
+
+    this.bumpMutation();
 
     if (id === 'fuel' && 'pitWarningLaps' in resolvedPartial) {
       void invoke('set_pit_warning_laps', {
@@ -189,134 +256,41 @@ export class WidgetSettingsStore {
     newSettings: WidgetUserSettings
   ) {
     const widget = this.getWidget(id);
+
     if (!widget) return;
 
-    if (
-      id === 'relative-map' &&
-      'orientation' in newSettings &&
-      newSettings.orientation
-    ) {
-      const prevOrientation =
-        'orientation' in prevSettings ? prevSettings.orientation : undefined;
-      const nextOrientation = newSettings.orientation;
+    const config = WIDGET_BY_ID.get(id);
+    const resolver = config?.resolveLayoutChange;
 
-      if (prevOrientation !== nextOrientation) {
-        const size = LINEAR_MAP_SIZES[nextOrientation];
+    if (!resolver) return;
 
-        if (size) {
-          widget.designWidth = size.designWidth;
-          widget.designHeight = size.designHeight;
-        }
+    const result = resolver(prevSettings, newSettings, {
+      designWidth: widget.designWidth,
+      designHeight: widget.designHeight,
+      currentWidth: widget.userSettings.currentWidth,
+      currentHeight: widget.userSettings.currentHeight,
+    });
 
-        const prevWidth = widget.userSettings.currentWidth;
-        widget.userSettings.currentWidth = widget.userSettings.currentHeight;
-        widget.userSettings.currentHeight = prevWidth;
-      }
+    if (!result) return;
+
+    if (result.designWidth !== undefined) {
+      widget.designWidth = result.designWidth;
     }
 
-    if (
-      id === 'input-trace' &&
-      'barMode' in newSettings &&
-      newSettings.barMode
-    ) {
-      const prevBarMode =
-        'barMode' in prevSettings ? prevSettings.barMode : 'vertical';
-      const nextBarMode = newSettings.barMode;
-
-      if (prevBarMode !== nextBarMode && nextBarMode !== 'hidden') {
-        const size = INPUT_TRACE_SIZES[nextBarMode];
-
-        if (size) {
-          widget.userSettings.currentWidth = size.designWidth;
-          widget.userSettings.currentHeight = size.designHeight;
-          widget.designWidth = size.designWidth;
-          widget.designHeight = size.designHeight;
-        }
-      }
+    if (result.designHeight !== undefined) {
+      widget.designHeight = result.designHeight;
     }
 
-    if (
-      (id === 'lap-times' || id === 'lap-delta') &&
-      'layout' in newSettings &&
-      newSettings.layout
-    ) {
-      const defaultWidths =
-        id === 'lap-times'
-          ? LAP_TIMES_DEFAULT_WIDTHS
-          : LAP_DELTA_DEFAULT_WIDTHS;
-
-      const prevLayout =
-        'layout' in prevSettings ? prevSettings.layout : 'vertical';
-      const nextLayout = newSettings.layout;
-
-      if (prevLayout !== nextLayout) {
-        const prevLayoutWidths =
-          'layoutWidths' in prevSettings
-            ? (prevSettings.layoutWidths ?? {})
-            : {};
-        const savedWidths = {
-          ...prevLayoutWidths,
-          [prevLayout]: widget.userSettings.currentWidth,
-        };
-        const nextWidth = savedWidths[nextLayout] ?? defaultWidths[nextLayout];
-
-        widget.userSettings = {
-          ...widget.userSettings,
-          ...newSettings,
-          layoutWidths: savedWidths,
-        } as WidgetUserSettings;
-
-        widget.userSettings.currentWidth =
-          nextWidth ?? widget.userSettings.currentWidth;
-        widget.designWidth = widget.userSettings.currentWidth;
-      }
+    if (result.currentWidth !== undefined) {
+      widget.userSettings.currentWidth = result.currentWidth;
     }
 
-    if (id === 'chassis' && 'showSuspensionAndBrakes' in newSettings) {
-      const prevShowSuspensionAndBrakes =
-        'showSuspensionAndBrakes' in prevSettings
-          ? prevSettings.showSuspensionAndBrakes
-          : false;
-      const nextShowSuspensionAndBrakes = newSettings.showSuspensionAndBrakes;
+    if (result.currentHeight !== undefined) {
+      widget.userSettings.currentHeight = result.currentHeight;
+    }
 
-      if (prevShowSuspensionAndBrakes !== nextShowSuspensionAndBrakes) {
-        const chassisDesignWidth = 300;
-        const suspensionAndBrakesDesignWidth = 430;
-        const chassisDefaultWidth = 280;
-        const suspensionAndBrakesDefaultWidth = 400;
-
-        const prevMode = prevShowSuspensionAndBrakes
-          ? 'suspensionAndBrakes'
-          : 'chassis';
-        const nextMode = nextShowSuspensionAndBrakes
-          ? 'suspensionAndBrakes'
-          : 'chassis';
-
-        const prevModeWidths =
-          'modeWidths' in prevSettings ? (prevSettings.modeWidths ?? {}) : {};
-
-        const savedModeWidths = {
-          ...prevModeWidths,
-          [prevMode]: widget.userSettings.currentWidth,
-        };
-
-        const defaultNextWidth = nextShowSuspensionAndBrakes
-          ? suspensionAndBrakesDefaultWidth
-          : chassisDefaultWidth;
-
-        const nextWidth = savedModeWidths[nextMode] ?? defaultNextWidth;
-
-        widget.userSettings = {
-          ...widget.userSettings,
-          ...newSettings,
-          modeWidths: savedModeWidths,
-        } as WidgetUserSettings;
-
-        widget.designWidth = nextShowSuspensionAndBrakes
-          ? suspensionAndBrakesDesignWidth
-          : chassisDesignWidth;
-        widget.userSettings.currentWidth = nextWidth;
-      }
+    if (result.userSettingsPatch) {
+      Object.assign(widget.userSettings, result.userSettingsPatch);
     }
   }
 

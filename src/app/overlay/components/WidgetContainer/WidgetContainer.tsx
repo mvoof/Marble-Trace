@@ -1,6 +1,5 @@
 import React, { useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
-import { emit } from '@tauri-apps/api/event';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import styles from './WidgetContainer.module.scss';
 import { WidgetIdContext } from './WidgetIdContext';
@@ -111,13 +110,12 @@ export const WidgetContainer = observer(
           isDraggingRef.current = false;
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
-          void emit('widget-layout-changed', widgetSettings.allWidgets);
         };
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       },
-      [dragMode, widgetId]
+      [dragMode, widgetId, widgetSettings]
     );
 
     const handleResizeMouseDown = useCallback(
@@ -189,14 +187,12 @@ export const WidgetContainer = observer(
 
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
-
-          void emit('widget-layout-changed', widgetSettings.allWidgets);
         };
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       },
-      [dragMode, widgetId, designWidth, designHeight]
+      [dragMode, widgetSettings, widgetId, designWidth, designHeight]
     );
 
     const resizeDirections: ResizeDirection[] = autoHeight
