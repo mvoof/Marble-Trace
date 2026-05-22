@@ -1,18 +1,25 @@
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
-import { unitsStore } from '@store/units.store';
 import type {
   EnvironmentFrame,
   SessionInfo,
   WeatherForecastEntry,
 } from '@/types/bindings';
 import type { UnitSystem } from '@/types';
+import type { TelemetryStore } from '@store/iracing/telemetry.store';
+import type { WidgetSettingsStore } from '@store/widget-settings.store';
+import type { UnitsStore } from '@store/units.store';
+import {
+  useTelemetryStore,
+  useWidgetSettingsStore,
+  useUnitsStore,
+} from '@store/root-store-context';
 import { WeatherWidget } from './WeatherWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
+import { withStore } from '../../../.storybook/decorators';
+import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
 
 const FORECAST: WeatherForecastEntry[] = [
   {
@@ -55,11 +62,18 @@ interface StoryArgs {
   showForecast: boolean;
 }
 
-const applyArgs = (args: StoryArgs) => {
+const applyArgs = (
+  stores: {
+    telemetry: TelemetryStore;
+    widgetSettings: WidgetSettingsStore;
+    units: UnitsStore;
+  },
+  args: StoryArgs
+) => {
   runInAction(() => {
-    unitsStore.setSystem(args.system);
+    stores.units.setSystem(args.system);
 
-    telemetryStore.updateEnvironment({
+    stores.telemetry.updateEnvironment({
       air_temp: args.airTempC,
       track_temp: args.trackTempC,
       wind_vel: args.windVelMps,
@@ -67,15 +81,15 @@ const applyArgs = (args: StoryArgs) => {
       relative_humidity: args.humidity / 100,
     } as EnvironmentFrame);
 
-    telemetryStore.updateSessionInfo({
+    stores.telemetry.updateSessionInfo({
       WeekendInfo: {
         TrackWeatherType: args.weatherType,
       },
     } as SessionInfo);
 
-    telemetryStore.updateWeatherForecast(args.forecast);
+    stores.telemetry.updateWeatherForecast(args.forecast);
 
-    widgetSettingsStore.updateUserSettings('weather', {
+    stores.widgetSettings.updateUserSettings('weather', {
       showCompass: args.showCompass,
       showAirTemp: args.showAirTemp,
       showTrackTemp: args.showTrackTemp,
@@ -87,9 +101,14 @@ const applyArgs = (args: StoryArgs) => {
 };
 
 const StoryHost = (args: StoryArgs) => {
-  useEffect(() => {
-    applyArgs(args);
-  }, [args]);
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
+  const units = useUnitsStore();
+
+  useLayoutEffect(() => {
+    applyArgs({ telemetry, widgetSettings, units }, args);
+  }, [args, telemetry, widgetSettings, units]);
+
   return <WeatherWidget />;
 };
 
@@ -97,7 +116,10 @@ const meta: Meta<typeof StoryHost> = {
   title: 'Widgets/WeatherWidget',
   component: StoryHost,
   parameters: { layout: 'centered' },
-  decorators: [widgetDecorator({ display: 'inline-block', minWidth: 200 })],
+  decorators: [
+    withStore(seedFromSnapshot),
+    widgetDecorator({ display: 'inline-block', minWidth: 200 }),
+  ],
   args: {
     system: 'metric',
     airTempC: 22,
@@ -142,5 +164,24 @@ export const MinimalView: Story = {
     showCompass: false,
     showHumidity: false,
     showForecast: false,
+  },
+};
+
+export const HotDay: Story = {
+  args: { airTempC: 38, trackTempC: 58, windVelMps: 1.0, humidity: 30 },
+};
+
+export const StrongWind: Story = {
+  args: { windVelMps: 12.5, windDirRad: Math.PI * 0.75 },
+};
+
+export const NightRace: Story = {
+  args: {
+    airTempC: 16,
+    trackTempC: 18,
+    windVelMps: 2.0,
+    humidity: 72,
+    showForecast: true,
+    forecast: FORECAST,
   },
 };

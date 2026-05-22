@@ -1,9 +1,7 @@
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import type {
   CarIdxFrame,
   LapTimingFrame,
@@ -11,8 +9,16 @@ import type {
   SessionInfo,
   SessionState as BindingSessionState,
 } from '@/types/bindings';
+import type { TelemetryStore } from '@store/iracing/telemetry.store';
+import type { WidgetSettingsStore } from '@store/widget-settings.store';
+import {
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 import { TimerWidget } from './TimerWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
+import { withStore } from '../../../.storybook/decorators';
+import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
 
 const SESSION_FLAG_CHECKERED = 0x0001;
 
@@ -44,9 +50,12 @@ const buildCarIdxLap = (lap: number): number[] => {
   return arr;
 };
 
-const applyArgs = (args: StoryArgs) => {
+const applyArgs = (
+  stores: { telemetry: TelemetryStore; widgetSettings: WidgetSettingsStore },
+  args: StoryArgs
+) => {
   runInAction(() => {
-    telemetryStore.updateSessionInfo({
+    stores.telemetry.updateSessionInfo({
       DriverInfo: {
         DriverCarIdx: PLAYER_CAR_IDX,
         Drivers: new Array(args.totalDrivers).fill(null).map((_, idx) => ({
@@ -67,7 +76,7 @@ const applyArgs = (args: StoryArgs) => {
       },
     } as unknown as SessionInfo);
 
-    telemetryStore.updateSession({
+    stores.telemetry.updateSession({
       session_num: 0,
       session_time_remain: args.remainSec,
       session_time: args.elapsedSec,
@@ -76,15 +85,15 @@ const applyArgs = (args: StoryArgs) => {
       session_state: args.sessionState,
     } as SessionFrame);
 
-    telemetryStore.updateCarIdx({
+    stores.telemetry.updateCarIdx({
       car_idx_lap: buildCarIdxLap(args.currentLap),
     } as unknown as CarIdxFrame);
 
-    telemetryStore.updateLapTiming({
+    stores.telemetry.updateLapTiming({
       player_car_position: args.position,
     } as LapTimingFrame);
 
-    widgetSettingsStore.updateUserSettings('timer', {
+    stores.widgetSettings.updateUserSettings('timer', {
       showFlag: args.showFlag,
       showLaps: args.showLaps,
       showPosition: args.showPosition,
@@ -97,9 +106,13 @@ const applyArgs = (args: StoryArgs) => {
 };
 
 const StoryHost = (args: StoryArgs) => {
-  useEffect(() => {
-    applyArgs(args);
-  }, [args]);
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  useLayoutEffect(() => {
+    applyArgs({ telemetry, widgetSettings }, args);
+  }, [args, telemetry, widgetSettings]);
+
   return <TimerWidget />;
 };
 
@@ -107,7 +120,10 @@ const meta: Meta<typeof StoryHost> = {
   title: 'Widgets/TimerWidget',
   component: StoryHost,
   parameters: { layout: 'centered' },
-  decorators: [widgetDecorator({ display: 'inline-block', minWidth: 180 })],
+  decorators: [
+    withStore(seedFromSnapshot),
+    widgetDecorator({ display: 'inline-block', minWidth: 180 }),
+  ],
   args: {
     sessionType: 'RACE',
     sessionLaps: '30',
@@ -166,4 +182,33 @@ export const WithClocks: Story = {
 
 export const MinimalView: Story = {
   args: { showFlag: false, showLaps: false, showPosition: false },
+};
+
+export const Qualifying: Story = {
+  args: {
+    sessionType: 'QUALIFY',
+    sessionLaps: 'unlimited',
+    remainSec: 12 * 60,
+    showLaps: false,
+    showPosition: true,
+    position: 3,
+  },
+};
+
+export const WithDates: Story = {
+  args: {
+    showWallClock: true,
+    showSimTime: true,
+    showPcDate: true,
+    showSimDate: true,
+    simTimeOfDay: 14 * 3600 + 23 * 60,
+  },
+};
+
+export const TimedRace: Story = {
+  args: {
+    sessionLaps: 'unlimited',
+    remainSec: 30 * 60,
+    currentLap: 8,
+  },
 };

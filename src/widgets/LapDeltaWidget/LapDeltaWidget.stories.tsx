@@ -1,12 +1,17 @@
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import type { LapDeltaFrame } from '@/types/bindings';
+import type { ComputedStore } from '@store/iracing/computed.store';
+import type { WidgetSettingsStore } from '@store/widget-settings.store';
+import {
+  useComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 import { LapDeltaWidget } from './LapDeltaWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
+import { withStore } from '../../../.storybook/decorators';
 
 interface StoryArgs {
   delta: number;
@@ -16,15 +21,18 @@ interface StoryArgs {
   sectorDeltas: (number | null)[];
 }
 
-const applyArgs = (args: StoryArgs) => {
+const applyArgs = (
+  stores: { computed: ComputedStore; widgetSettings: WidgetSettingsStore },
+  args: StoryArgs
+) => {
   runInAction(() => {
-    widgetSettingsStore.updateUserSettings('lap-delta', {
+    stores.widgetSettings.updateUserSettings('lap-delta', {
       layout: args.layout,
       showSectorTimes: args.showSectorTimes,
       reference: 'session_best',
     });
 
-    computedStore.updateLapDelta({
+    stores.computed.updateLapDelta({
       sectorTimes: args.sectorTimes,
       currentSectorIdx: 0,
       sessionBestTotal: args.delta,
@@ -36,9 +44,13 @@ const applyArgs = (args: StoryArgs) => {
 };
 
 const StoryHost = (args: StoryArgs) => {
-  useEffect(() => {
-    applyArgs(args);
-  }, [args]);
+  const computed = useComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  useLayoutEffect(() => {
+    applyArgs({ computed, widgetSettings }, args);
+  }, [args, computed, widgetSettings]);
+
   return <LapDeltaWidget />;
 };
 
@@ -46,7 +58,10 @@ const meta: Meta<typeof StoryHost> = {
   title: 'Widgets/LapDeltaWidget',
   component: StoryHost,
   parameters: { layout: 'centered' },
-  decorators: [widgetDecorator({ display: 'inline-block', minWidth: 150 })],
+  decorators: [
+    withStore(),
+    widgetDecorator({ display: 'inline-block', minWidth: 150 }),
+  ],
   args: {
     delta: -0.342,
     layout: 'vertical',
@@ -85,5 +100,22 @@ export const WithSectorData: Story = {
     showSectorTimes: true,
     sectorTimes: [22.1, 31.4, 18.7],
     sectorDeltas: [-0.12, 0.08, -0.24],
+  },
+};
+
+export const SectorInProgress: Story = {
+  args: {
+    delta: 0.042,
+    showSectorTimes: true,
+    sectorTimes: [22.4, null, null],
+    sectorDeltas: [0.18, null, null],
+  },
+};
+
+export const NoData: Story = {
+  args: {
+    delta: 0,
+    sectorTimes: [],
+    sectorDeltas: [],
   },
 };

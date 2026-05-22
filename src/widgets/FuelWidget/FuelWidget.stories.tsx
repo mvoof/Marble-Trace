@@ -1,7 +1,19 @@
-﻿import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useLayoutEffect } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { runInAction } from 'mobx';
 
+import type { FuelComputedFrame } from '@/types/bindings';
+import type { ComputedStore } from '@store/iracing/computed.store';
+import type { TelemetryStore } from '@store/iracing/telemetry.store';
+import type { WidgetSettingsStore } from '@store/widget-settings.store';
+import {
+  useComputedStore,
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 import { FuelWidget } from './FuelWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
+import { withStore } from '../../../.storybook/decorators';
 
 const LAP_FUEL_HISTORY = [
   3.2, 3.1, 3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3,
@@ -10,18 +22,84 @@ const LAP_FUEL_HISTORY = [
   3.2, 3.5, 5, 3, 3, 30, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 3.2, 3.1,
   6, 3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4,
   3.2, 3.5, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 5, 3, 4,
-  3.2, 3.5, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 3.2, 3.1,
-  3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2,
-  3.5, 5, 3, 3, 30, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 3.2, 3.1, 6,
-  3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2,
-  3.5, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 5,
 ];
 
-const meta: Meta<typeof FuelWidget> = {
+interface StoryArgs {
+  fuelLevel: number | null;
+  fuelMax: number | null;
+  avgPerLap: number | null;
+  lapsRemaining: number | null;
+  shortage: number | null;
+  fuelToAddWithBuffer: number | null;
+  pitWarning: boolean;
+  pitWindowStart: number | null;
+  pitWindowEnd: number | null;
+  showChart: boolean;
+  chartType: 'line' | 'bar';
+  barWidth: number;
+  lapFuelHistory: number[];
+  pitWarningLaps: number;
+}
+
+const applyArgs = (
+  stores: {
+    computed: ComputedStore;
+    telemetry: TelemetryStore;
+    widgetSettings: WidgetSettingsStore;
+  },
+  args: StoryArgs
+) => {
+  runInAction(() => {
+    stores.telemetry.updateCarStatus({
+      fuel_level: args.fuelLevel,
+    } as Parameters<typeof stores.telemetry.updateCarStatus>[0]);
+
+    stores.telemetry.updateSessionInfo({
+      DriverInfo: { DriverCarFuelMaxLtr: args.fuelMax },
+    } as Parameters<typeof stores.telemetry.updateSessionInfo>[0]);
+
+    stores.computed.updateFuel({
+      avgPerLap: args.avgPerLap,
+      lapsRemaining: args.lapsRemaining,
+      lapsToFinish: args.lapsRemaining,
+      shortage: args.shortage,
+      fuelToAdd: args.fuelToAddWithBuffer,
+      fuelToAddWithBuffer: args.fuelToAddWithBuffer,
+      fuelSavePerLap: null,
+      pitWarning: args.pitWarning,
+      pitWindowStart: args.pitWindowStart,
+      pitWindowEnd: args.pitWindowEnd,
+      isTimedRace: false,
+      lapFuelHistory: args.lapFuelHistory,
+    } as FuelComputedFrame);
+
+    stores.widgetSettings.updateUserSettings('fuel', {
+      ...stores.widgetSettings.getFuelSettings(),
+      showChart: args.showChart,
+      chartType: args.chartType,
+      barWidth: args.barWidth,
+      pitWarningLaps: args.pitWarningLaps,
+    });
+  });
+};
+
+const StoryHost = (args: StoryArgs) => {
+  const computed = useComputedStore();
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  useLayoutEffect(() => {
+    applyArgs({ computed, telemetry, widgetSettings }, args);
+  }, [args, computed, telemetry, widgetSettings]);
+
+  return <FuelWidget />;
+};
+
+const meta: Meta<typeof StoryHost> = {
   title: 'Widgets/FuelWidget',
-  component: FuelWidget,
+  component: StoryHost,
   parameters: { layout: 'centered' },
-  decorators: [widgetDecorator({ width: 280 })],
+  decorators: [withStore(), widgetDecorator({ width: 280 })],
   args: {
     fuelLevel: 28.5,
     fuelMax: 55.0,
@@ -41,7 +119,6 @@ const meta: Meta<typeof FuelWidget> = {
   argTypes: {
     barWidth: {
       control: { type: 'range', min: 5, max: 20, step: 1 },
-      description: 'Width of each bar in pixels',
     },
     chartType: {
       control: 'inline-radio',
@@ -51,7 +128,7 @@ const meta: Meta<typeof FuelWidget> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof FuelWidget>;
+type Story = StoryObj<typeof StoryHost>;
 
 export const Comfortable: Story = {};
 
@@ -104,9 +181,7 @@ export const WithBarChart: Story = {
 };
 
 export const NoChart: Story = {
-  args: {
-    showChart: false,
-  },
+  args: { showChart: false },
 };
 
 export const NoData: Story = {

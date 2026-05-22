@@ -1,9 +1,22 @@
-﻿import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useLayoutEffect } from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { runInAction } from 'mobx';
 
-import { StandingsWidget } from './StandingsWidget';
+import type { DriverEntriesFrame } from '@/types/bindings';
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import type { ComputedStore } from '@store/iracing/computed.store';
+import type { TelemetryStore } from '@store/iracing/telemetry.store';
+import type { WidgetSettingsStore } from '@store/widget-settings.store';
+import {
+  useComputedStore,
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 import { driverEntries as RAW_ENTRIES, snapshot } from '@/storybook/test-data';
+import { StandingsWidget } from './StandingsWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
-import type { SessionInfoData, WeekendInfo } from '@/types/bindings';
+import { withStore } from '../../../.storybook/decorators';
+import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
 
 const BASE_LAP_TIME = 92.3;
 const LAP_TIME_SPREAD_PER_POS = 0.35;
@@ -11,16 +24,19 @@ const GAP_PER_POS = 1.8;
 
 const CLASS_LABELS = ['GTE', 'GT3', 'LMP2'];
 
-const DRIVER_ENTRIES = RAW_ENTRIES.map((e, i) => ({
-  ...e,
+const DRIVER_ENTRIES = RAW_ENTRIES.map((entry, idx) => ({
+  ...entry,
   lap: 5,
-  lastLapTime: BASE_LAP_TIME + i * LAP_TIME_SPREAD_PER_POS + (i % 3) * 0.12,
-  bestLapTime: BASE_LAP_TIME + i * LAP_TIME_SPREAD_PER_POS * 0.8,
-  f2Time: i === 0 ? 0 : i * GAP_PER_POS + (i % 4) * 0.3,
-  carClassShortName: CLASS_LABELS[i % CLASS_LABELS.length],
+  lastLapTime: BASE_LAP_TIME + idx * LAP_TIME_SPREAD_PER_POS + (idx % 3) * 0.12,
+  bestLapTime: BASE_LAP_TIME + idx * LAP_TIME_SPREAD_PER_POS * 0.8,
+  f2Time: idx === 0 ? 0 : idx * GAP_PER_POS + (idx % 4) * 0.3,
+  carClassShortName: CLASS_LABELS[idx % CLASS_LABELS.length],
 }));
 
-const DEFAULT_SETTINGS = {
+const PLAYER_CAR_IDX =
+  DRIVER_ENTRIES.find((entry) => entry.isPlayer)?.carIdx ?? 0;
+
+const DEFAULT_SETTINGS: StandingsWidgetSettings = {
   enableClassCycling: false,
   classCyclingToggleHotkey: '',
   classPrevHotkey: '',
@@ -42,30 +58,62 @@ const DEFAULT_SETTINGS = {
   abbreviateNames: false,
 };
 
-const meta: Meta<typeof StandingsWidget> = {
+interface StoryArgs {
+  settings: StandingsWidgetSettings;
+  activeClassIndex: number;
+}
+
+const applyArgs = (
+  stores: {
+    computed: ComputedStore;
+    telemetry: TelemetryStore;
+    widgetSettings: WidgetSettingsStore;
+  },
+  args: StoryArgs
+) => {
+  runInAction(() => {
+    stores.computed.updateStandings({
+      entries: DRIVER_ENTRIES,
+      playerCarIdx: PLAYER_CAR_IDX,
+    } as DriverEntriesFrame);
+
+    if (snapshot.sessionInfo) {
+      stores.telemetry.updateSessionInfo(snapshot.sessionInfo);
+    }
+
+    stores.widgetSettings.updateUserSettings('standings', args.settings);
+    stores.widgetSettings.standingsActiveClassIndex = args.activeClassIndex;
+  });
+};
+
+const StoryHost = (args: StoryArgs) => {
+  const computed = useComputedStore();
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  useLayoutEffect(() => {
+    applyArgs({ computed, telemetry, widgetSettings }, args);
+  }, [args, computed, telemetry, widgetSettings]);
+
+  return <StandingsWidget />;
+};
+
+const meta: Meta<typeof StoryHost> = {
   title: 'Widgets/StandingsWidget',
-  component: StandingsWidget,
+  component: StoryHost,
   parameters: { layout: 'centered' },
-  decorators: [widgetDecorator({ width: 800, height: 450 })],
+  decorators: [
+    withStore(seedFromSnapshot),
+    widgetDecorator({ width: 800, height: 450 }),
+  ],
   args: {
-    driverEntries: DRIVER_ENTRIES,
     settings: DEFAULT_SETTINGS,
-    irDeltaMap: new Map(),
-    effectiveStartPosMap: new Map(),
-    playerPitStops: 1,
-    playerIncidents: 2,
-    sessionInfo: snapshot.sessionInfo as unknown as SessionInfoData,
-    weekendInfo: snapshot.sessionInfo?.WeekendInfo as unknown as WeekendInfo,
-    overallSof: 2800,
     activeClassIndex: 0,
-    dragMode: false,
-    onPrevClass: () => {},
-    onNextClass: () => {},
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof StandingsWidget>;
+type Story = StoryObj<typeof StoryHost>;
 
 export const Default: Story = {};
 
@@ -115,5 +163,19 @@ export const NoHeaders: Story = {
       showColumnHeaders: false,
       showSessionHeader: false,
     },
+  },
+};
+
+export const SecondClass: Story = {
+  args: {
+    settings: { ...DEFAULT_SETTINGS, enableClassCycling: true },
+    activeClassIndex: 1,
+  },
+};
+
+export const ThirdClass: Story = {
+  args: {
+    settings: { ...DEFAULT_SETTINGS, enableClassCycling: true },
+    activeClassIndex: 2,
   },
 };

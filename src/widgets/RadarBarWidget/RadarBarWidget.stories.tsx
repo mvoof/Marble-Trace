@@ -1,13 +1,18 @@
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import type { ProximityFrame, RadarDistances } from '@/types/bindings';
 import type { RadarSettings } from '@/types/widget-settings';
+import type { ComputedStore } from '@store/iracing/computed.store';
+import type { WidgetSettingsStore } from '@store/widget-settings.store';
+import {
+  useComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 import { RadarBarWidget } from './RadarBarWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
+import { withStore } from '../../../.storybook/decorators';
 
 const DESIGN_WIDTH = 800;
 const DESIGN_HEIGHT = 380;
@@ -19,16 +24,19 @@ interface StoryArgs {
   barDisplayMode: RadarSettings['barDisplayMode'];
 }
 
-const applyArgs = (args: StoryArgs) => {
+const applyArgs = (
+  stores: { computed: ComputedStore; widgetSettings: WidgetSettingsStore },
+  args: StoryArgs
+) => {
   runInAction(() => {
-    widgetSettingsStore.updateUserSettings('radar-bar', {
+    stores.widgetSettings.updateUserSettings('radar-bar', {
       visibilityMode: 'always',
       proximityThreshold: 3,
       hideDelay: 2,
       barDisplayMode: args.barDisplayMode,
     });
 
-    computedStore.updateProximity({
+    stores.computed.updateProximity({
       radarDistances: args.radarDistances,
       spotterLeft: args.spotterLeft,
       spotterRight: args.spotterRight,
@@ -38,9 +46,12 @@ const applyArgs = (args: StoryArgs) => {
 };
 
 const StoryHost = (args: StoryArgs) => {
-  useEffect(() => {
-    applyArgs(args);
-  }, [args]);
+  const computed = useComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  useLayoutEffect(() => {
+    applyArgs({ computed, widgetSettings }, args);
+  }, [args, computed, widgetSettings]);
 
   return <RadarBarWidget />;
 };
@@ -49,7 +60,10 @@ const meta: Meta<typeof StoryHost> = {
   title: 'Widgets/RadarBarWidget',
   component: StoryHost,
   parameters: { layout: 'centered' },
-  decorators: [widgetDecorator({ width: DESIGN_WIDTH, height: DESIGN_HEIGHT })],
+  decorators: [
+    withStore(),
+    widgetDecorator({ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }),
+  ],
   args: {
     radarDistances: {
       frontDist: 999,
@@ -102,5 +116,30 @@ export const ActiveOnly: Story = {
     },
     spotterLeft: true,
     barDisplayMode: 'active-only',
+  },
+};
+
+export const BothSides: Story = {
+  args: {
+    radarDistances: {
+      frontDist: 999,
+      rearDist: 999,
+      leftDist: 1.5,
+      rightDist: 0.8,
+    },
+    spotterLeft: true,
+    spotterRight: true,
+  },
+};
+
+export const VeryClose: Story = {
+  args: {
+    radarDistances: {
+      frontDist: 999,
+      rearDist: 999,
+      leftDist: 0.3,
+      rightDist: null,
+    },
+    spotterLeft: true,
   },
 };

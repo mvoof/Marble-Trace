@@ -1,58 +1,44 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TelemetryDebugWidget } from './TelemetryDebugWidget';
-import { snapshot } from '@/storybook/test-data';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
-
-const CONNECTED_ARGS = {
-  status: 'connected',
-  carDynamics: snapshot.carDynamics,
-  carInputs: snapshot.carInputs,
-  carStatus: snapshot.carStatus,
-  lapTiming: snapshot.lapTiming,
-  session: snapshot.session,
-  driverInfo: snapshot.sessionInfo?.DriverInfo ?? null,
-  weekendInfo: snapshot.sessionInfo?.WeekendInfo ?? null,
-  environment: snapshot.environment,
-};
+import { withStore } from '../../../.storybook/decorators';
+import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
 
 const meta: Meta<typeof TelemetryDebugWidget> = {
   title: 'Widgets/TelemetryDebugWidget',
   component: TelemetryDebugWidget,
   parameters: { layout: 'centered' },
-  decorators: [widgetDecorator({ width: 420 })],
-  args: CONNECTED_ARGS,
+  decorators: [withStore(seedFromSnapshot), widgetDecorator({ width: 420 })],
 };
 
 export default meta;
 type Story = StoryObj<typeof TelemetryDebugWidget>;
 
-export const Connected: Story = {};
+export const Connected: Story = {
+  decorators: [
+    withStore((store) => {
+      seedFromSnapshot(store);
+      store.telemetryConnection.status = 'connected';
+    }),
+    widgetDecorator({ width: 420 }),
+  ],
+};
 
 export const Disconnected: Story = {
-  args: {
-    status: 'disconnected',
-    carDynamics: null,
-    carInputs: null,
-    carStatus: null,
-    lapTiming: null,
-    session: null,
-    driverInfo: null,
-    weekendInfo: null,
-    environment: null,
-  },
+  decorators: [
+    withStore((store) => {
+      store.telemetryConnection.status = 'disconnected';
+    }),
+    widgetDecorator({ width: 420 }),
+  ],
 };
 
 export const Error: Story = {
-  args: {
-    status: 'error',
-    carDynamics: null,
-    carInputs: null,
-    carStatus: null,
-    lapTiming: null,
-    session: null,
-    driverInfo: null,
-    weekendInfo: null,
-    environment: null,
-  },
+  decorators: [
+    withStore((store) => {
+      store.telemetryConnection.status = 'error';
+    }),
+    widgetDecorator({ width: 420 }),
+  ],
 };
