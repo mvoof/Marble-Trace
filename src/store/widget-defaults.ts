@@ -22,6 +22,8 @@ import type {
   ResolveLayoutChange,
 } from '@/types/widget-settings';
 
+// Swaps width<->height when orientation changes (horizontal<->vertical rotation).
+// designWidth/Height are taken from LINEAR_MAP_SIZES to match the new orientation's reference size.
 const resolveRelativeMapLayout: ResolveLayoutChange = (prev, next, current) => {
   if (!('orientation' in next) || !next.orientation) return null;
 
@@ -41,6 +43,8 @@ const resolveRelativeMapLayout: ResolveLayoutChange = (prev, next, current) => {
   };
 };
 
+// Resets widget to the fixed reference size for the new barMode.
+// hidde->vertical only: switching to hidden doesn't resize (the bar just disappears visually).
 const resolveInputTraceLayout: ResolveLayoutChange = (prev, next) => {
   if (!('barMode' in next) || !next.barMode) return null;
 
@@ -60,6 +64,9 @@ const resolveInputTraceLayout: ResolveLayoutChange = (prev, next) => {
   };
 };
 
+// Factory for widgets with a `layout` field (e.g. vertical/horizontal).
+// Saves the current width under the outgoing layout key in `layoutWidths` so
+// the user's custom size is restored when switching back.
 const makeLayoutSwapResolver = (
   defaultWidths: Record<string, number>
 ): ResolveLayoutChange => {
@@ -95,6 +102,9 @@ const CHASSIS_WITH_SUSPENSION_DESIGN_WIDTH = 430;
 const CHASSIS_DEFAULT_WIDTH = 280;
 const CHASSIS_WITH_SUSPENSION_DEFAULT_WIDTH = 400;
 
+// Same width-memory pattern as makeLayoutSwapResolver but triggered by a boolean
+// (showSuspensionAndBrakes) instead of a layout string. Saves width per mode in
+// `modeWidths` so the user's resize is preserved on toggle.
 const resolveChassisLayout: ResolveLayoutChange = (prev, next, current) => {
   if (!('showSuspensionAndBrakes' in next)) return null;
 
