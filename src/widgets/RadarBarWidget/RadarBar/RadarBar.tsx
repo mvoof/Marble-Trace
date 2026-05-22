@@ -22,7 +22,7 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
 
   const { proximity, visible, spotterLeft, spotterRight, radarSettings } =
     useProximityRadarData('radar-bar', BAR_SEARCH_RADIUS);
-  const { system } = units;
+  const { unitSystem: system } = units;
 
   const spotterActive = side === 'left' ? spotterLeft : spotterRight;
   const activeOnly = radarSettings.barDisplayMode === 'active-only';

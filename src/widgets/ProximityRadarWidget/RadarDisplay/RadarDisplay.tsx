@@ -46,7 +46,7 @@ export const RadarDisplay = observer(() => {
 
   const { proximity, spotterLeft, spotterRight, visible } =
     useProximityRadarData('proximity-radar', RADAR_SEARCH_RADIUS);
-  const { system } = units;
+  const { unitSystem: system } = units;
 
   if (!visible || !proximity) {
     return null;

@@ -12,12 +12,12 @@ import {
 import type { LapDeltaWidgetSettings } from '@/types/widget-settings';
 import styles from './SectorList.module.scss';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const SectorList = observer(() => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference, layout, showSectorTimes } =

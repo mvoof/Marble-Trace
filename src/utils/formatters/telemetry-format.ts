@@ -5,14 +5,14 @@ export const MPS_TO_MPH = 2.23694;
 const LITERS_TO_GAL = 0.264172;
 const METERS_TO_FEET = 3.28084;
 
-export function formatSpeed(mps: number, system: UnitSystem): string {
-  const factor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
+export function formatSpeed(mps: number, unitSystem: UnitSystem): string {
+  const factor = unitSystem === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
 
   return Math.round(mps * factor).toString();
 }
 
-export function speedUnit(system: UnitSystem): string {
-  return system === 'metric' ? 'KM/H' : 'MPH';
+export function speedUnit(unitSystem: UnitSystem): string {
+  return unitSystem === 'metric' ? 'KM/H' : 'MPH';
 }
 
 export function convertTemp(celsius: number, system: UnitSystem): number {
@@ -23,49 +23,52 @@ export function convertTemp(celsius: number, system: UnitSystem): number {
   return celsius;
 }
 
-export function formatTemp(celsius: number | null, system: UnitSystem): string {
+export function formatTemp(
+  celsius: number | null,
+  unitSystem: UnitSystem
+): string {
   if (celsius === null) return '--.-';
 
-  if (system === 'imperial') {
+  if (unitSystem === 'imperial') {
     return (celsius * 1.8 + 32).toFixed(1);
   }
 
   return celsius.toFixed(1);
 }
 
-export function tempUnit(system: UnitSystem): string {
-  return system === 'metric' ? '\u00B0C' : '\u00B0F';
+export function tempUnit(unitSystem: UnitSystem): string {
+  return unitSystem === 'metric' ? '\u00B0C' : '\u00B0F';
 }
 
-export function formatFuel(liters: number, system: UnitSystem): string {
-  if (system === 'imperial') {
+export function formatFuel(liters: number, unitSystem: UnitSystem): string {
+  if (unitSystem === 'imperial') {
     return (liters * LITERS_TO_GAL).toFixed(2);
   }
 
   return liters.toFixed(2);
 }
 
-export function fuelUnit(system: UnitSystem): string {
-  return system === 'metric' ? 'L' : 'GAL';
+export function fuelUnit(unitSystem: UnitSystem): string {
+  return unitSystem === 'metric' ? 'L' : 'GAL';
 }
 
 export function formatDistance(
   meters: number | null | undefined,
-  system: UnitSystem
+  unitSystem: UnitSystem
 ): string {
   if (meters == null || isNaN(meters)) {
     return '--.-';
   }
 
-  if (system === 'imperial') {
+  if (unitSystem === 'imperial') {
     return (meters * METERS_TO_FEET).toFixed(1);
   }
 
   return Number(meters).toFixed(1);
 }
 
-export function distanceUnit(system: UnitSystem): string {
-  return system === 'metric' ? 'м' : 'ft';
+export function distanceUnit(unitSystem: UnitSystem): string {
+  return unitSystem === 'metric' ? 'м' : 'ft';
 }
 
 export function formatGear(gear: number): string {

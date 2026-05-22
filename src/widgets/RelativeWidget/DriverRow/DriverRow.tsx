@@ -14,7 +14,7 @@ import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './DriverRow.module.scss';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -24,7 +24,7 @@ interface DriverRowProps {
 }
 
 export const DriverRow = observer(({ driver, trendDelta }: DriverRowProps) => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const settings =

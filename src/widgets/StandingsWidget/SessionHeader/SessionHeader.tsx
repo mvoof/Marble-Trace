@@ -14,14 +14,14 @@ import {
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './SessionHeader.module.scss';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useTelemetryStore,
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const SessionHeader = observer(() => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const telemetry = useTelemetryStore();
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
@@ -56,7 +56,7 @@ export const SessionHeader = observer(() => {
   const trkCelsius =
     env?.track_temp ?? parseWeekendTemp(weekendInfo?.TrackSurfaceTemp);
 
-  const sys = units.system;
+  const sys = units.unitSystem;
   const tUnit = tempUnit(sys);
   const airStr =
     airCelsius !== null ? `${formatTemp(airCelsius, sys)}${tUnit}` : null;

@@ -1,14 +1,23 @@
 import { observer } from 'mobx-react-lite';
 
+import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
+import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
+import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
+
 import styles from './PitWarningAmount.module.scss';
-import { useComputedStore, useTelemetryStore } from '@store/root-store-context';
+import {
+  useBackendComputedStore,
+  useTelemetryStore,
+  useUnitsStore,
+} from '@store/root-store-context';
+import { NO_FUEL_DATA_PLACEHOLDER } from '@/utils/constants/data-placeholders';
 
 export const PitWarningAmount = observer(() => {
-  const computed = useComputedStore();
-  const telemetry = useTelemetryStore();
+  const { fuel } = useBackendComputedStore();
+  const { driverInfo } = useTelemetryStore();
+  const { unitSystem } = useUnitsStore();
 
-  const fuel = computed.fuel;
-  const fuelMax = telemetry.driverInfo?.DriverCarFuelMaxLtr ?? null;
+  const fuelMax = driverInfo?.DriverCarFuelMaxLtr ?? null;
 
   const fuelToAddWithBuffer = fuel?.fuelToAddWithBuffer ?? null;
   const shortage = fuel?.shortage ?? null;
@@ -23,17 +32,21 @@ export const PitWarningAmount = observer(() => {
 
   return (
     <div className={styles.pitWarningRight}>
-      <span className={styles.pitWarningBodyLabel}>{refuelLabel}</span>
+      <UnitLabelText className={styles.pitWarningBodyLabel}>
+        {refuelLabel}
+      </UnitLabelText>
 
       <div className={styles.pitWarningAmountWrap}>
-        <span
+        <UnitValueText
           className={`${styles.pitWarningAmount} ${isShort ? styles.pitWarningAmountDanger : ''}`}
-        >
-          {fuelToAddWithBuffer !== null
-            ? fuelToAddWithBuffer.toFixed(1)
-            : '--.-'}
-          <span className={styles.pitWarningAmountUnit}> L</span>
-        </span>
+          unitClassName={styles.pitWarningAmountUnit}
+          value={
+            fuelToAddWithBuffer !== null
+              ? formatFuel(fuelToAddWithBuffer, unitSystem)
+              : NO_FUEL_DATA_PLACEHOLDER
+          }
+          unit={fuelUnit(unitSystem)}
+        />
       </div>
 
       <div className={styles.pitWarningBuffer}>

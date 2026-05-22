@@ -2,14 +2,14 @@ import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
 import styles from './DriverRow.module.scss';
-import { useComputedStore } from '@store/root-store-context';
+import { useBackendComputedStore } from '@store/root-store-context';
 
 interface IrChangeCellProps {
   carIdx: number;
 }
 
 export const IrChangeCell = observer(({ carIdx }: IrChangeCellProps) => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
 
   const delta = computed.driverMap.get(carIdx)?.estimatedIrDelta ?? undefined;
   if (delta == null || delta === 0) {

@@ -7,19 +7,19 @@ import { PitWarningAmount } from './PitWarningAmount/PitWarningAmount';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import styles from './FuelPitWarning.module.scss';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const FuelPitWarning = observer(() => {
-  const computed = useComputedStore();
+  const { fuel } = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const fuel = computed.fuel;
   const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
 
   const lapsRemaining = fuel?.lapsRemaining ?? null;
   const shortage = fuel?.shortage ?? null;
+
   const isVisible =
     lapsRemaining !== null && lapsRemaining <= settings.pitWarningLaps;
 
@@ -38,6 +38,7 @@ export const FuelPitWarning = observer(() => {
       <div className={styles.pitWarningBody}>
         <div className={styles.pitWarningMainRow}>
           <PitWarningStrategy />
+
           <PitWarningAmount />
         </div>
       </div>

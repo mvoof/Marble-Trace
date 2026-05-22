@@ -31,7 +31,7 @@ interface CornerModuleProps {
 export const CornerModule = observer(
   ({ position, isRight }: CornerModuleProps) => {
     const { chassis } = useTelemetryStore();
-    const { system } = useUnitsStore();
+    const { unitSystem } = useUnitsStore();
 
     const widgetSettings = useWidgetSettingsStore();
 
@@ -48,11 +48,11 @@ export const CornerModule = observer(
     const isSuspensionBent =
       axleDiff !== null && Math.abs(axleDiff) > SUSPENSION_BENT_THRESHOLD_M;
 
-    const isMetric = system === 'metric';
+    const isMetric = unitSystem === 'metric';
     const tempUnit = isMetric ? '°C' : '°F';
     const lengthUnit = isMetric ? 'mm' : 'in';
 
-    const data = buildCornerData(position, chassis, system);
+    const data = buildCornerData(position, chassis, unitSystem);
 
     const { isPunctured, isBrakeOverheated } = data;
     const hasDamage = isSuspensionBent || isBrakeOverheated;

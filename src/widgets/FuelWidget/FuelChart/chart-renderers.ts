@@ -16,10 +16,12 @@ const drawAvgLine = (
 ) => {
   ctx.strokeStyle = FUEL_COLORS.average;
   ctx.lineWidth = 2;
+
   ctx.setLineDash([5, 4]);
   ctx.beginPath();
   ctx.moveTo(0, avgY);
   ctx.lineTo(plotW, avgY);
+
   ctx.stroke();
   ctx.setLineDash([]);
 
@@ -27,15 +29,18 @@ const drawAvgLine = (
   ctx.textAlign = 'right';
   ctx.textBaseline = 'bottom';
   ctx.fillStyle = FUEL_COLORS.averageLabel;
+
   ctx.fillText('AVG', plotW, avgY - 1);
 };
 
 const drawTopLine = (ctx: CanvasRenderingContext2D, plotW: number) => {
   ctx.strokeStyle = FUEL_COLORS.grid;
   ctx.lineWidth = 1;
+
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.lineTo(plotW, 0);
+
   ctx.stroke();
 };
 
@@ -86,6 +91,7 @@ const prepareChartData = (
 ) => {
   const stride = barWidth + FUEL_CHART_CONFIG.BAR_GAP;
   const paddingH = FUEL_CHART_CONFIG.PADDING_H;
+
   const plotW = w - paddingH * 2;
   const maxVisible = stride > 0 ? Math.floor(plotW / stride) : 0;
 
@@ -127,6 +133,7 @@ export const drawBarChart = (
 
   const min = Math.min(...data) * FUEL_CHART_CONFIG.MIN_SCALE;
   const max = Math.max(...data) * FUEL_CHART_CONFIG.MAX_SCALE;
+
   const range = max - min || 1;
 
   const toBarH = (v: number) => ((v - min) / range) * plotH;
@@ -136,6 +143,7 @@ export const drawBarChart = (
     const bh = toBarH(v);
 
     ctx.fillStyle = barColor(v, avg);
+
     ctx.fillRect(x, plotH - bh, barWidth, bh);
   });
 
@@ -168,6 +176,7 @@ export const drawLineChart = (
 
   const min = Math.min(...data) * FUEL_CHART_CONFIG.MIN_SCALE_LINE;
   const max = Math.max(...data) * FUEL_CHART_CONFIG.MAX_SCALE;
+
   const range = max - min || 1;
 
   const toY = (v: number) => plotH - ((v - min) / range) * plotH;
@@ -176,6 +185,7 @@ export const drawLineChart = (
   ctx.beginPath();
   ctx.strokeStyle = FUEL_COLORS.primary;
   ctx.lineWidth = 1.5;
+
   data.forEach((v, i) => {
     const x = toX(i);
     const y = toY(v);

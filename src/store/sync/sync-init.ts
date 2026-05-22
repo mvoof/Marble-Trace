@@ -120,7 +120,7 @@ export const initMainSync = async (root: RootStore) => {
           }
         ),
         reaction(
-          () => root.units.system,
+          () => root.units.unitSystem,
           (v) => {
             void emitUnitsChanged(v);
             void onSave();

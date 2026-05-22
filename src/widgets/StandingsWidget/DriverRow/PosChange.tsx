@@ -4,7 +4,7 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -13,7 +13,7 @@ interface PosChangeProps {
 }
 
 export const PosChange = observer(({ carIdx }: PosChangeProps) => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const driver = computed.driverMap.get(carIdx);

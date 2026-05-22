@@ -1,5 +1,5 @@
 import { TelemetryStore } from './iracing/telemetry.store';
-import { ComputedStore } from './iracing/computed.store';
+import { BackendComputedStore } from './iracing/computed.store';
 import { TelemetryConnectionStore } from './iracing/telemetry-connection.store';
 import { FlagsStore } from './flags.store';
 import { WidgetSettingsStore } from './widget-settings.store';
@@ -9,7 +9,7 @@ import { WidgetAutoHideStore } from './widget-auto-hide.store';
 
 export class RootStore {
   telemetry: TelemetryStore;
-  computed: ComputedStore;
+  backendComputed: BackendComputedStore;
   telemetryConnection: TelemetryConnectionStore;
   flags: FlagsStore;
   widgetSettings: WidgetSettingsStore;
@@ -19,7 +19,7 @@ export class RootStore {
 
   constructor(options?: { skipInit?: boolean }) {
     this.telemetry = new TelemetryStore();
-    this.computed = new ComputedStore(this);
+    this.backendComputed = new BackendComputedStore(this);
     this.widgetSettings = new WidgetSettingsStore();
     this.appSettings = new AppSettingsStore();
     this.units = new UnitsStore();

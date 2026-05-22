@@ -48,7 +48,7 @@ export const StatCell = observer(({ type }: StatCellProps) => {
 
   const weekendInfo = telemetry.weekendInfo;
   const env = telemetry.environment;
-  const { system } = units;
+  const { unitSystem } = units;
 
   let label = '';
   let value = '';
@@ -60,24 +60,24 @@ export const StatCell = observer(({ type }: StatCellProps) => {
       env?.air_temp ?? parseWeekendFloat(weekendInfo?.TrackAirTemp);
 
     label = 'AIR';
-    value = formatTemp(airTempC, system);
-    unit = tempUnit(system);
+    value = formatTemp(airTempC, unitSystem);
+    unit = tempUnit(unitSystem);
     color = '#fff';
   } else if (type === 'trackTemp') {
     const trackTempC =
       env?.track_temp ?? parseWeekendFloat(weekendInfo?.TrackSurfaceTemp);
 
     label = 'TRK';
-    value = formatTemp(trackTempC, system);
-    unit = tempUnit(system);
+    value = formatTemp(trackTempC, unitSystem);
+    unit = tempUnit(unitSystem);
     color = '#fbbf24';
   } else if (type === 'wind') {
     const windVelMps =
       env?.wind_vel ?? parseWeekendFloat(weekendInfo?.TrackWindVel);
 
     label = 'WIND';
-    value = windVelMps !== null ? _formatSpeed(windVelMps, system) : '--.-';
-    unit = _speedUnit(system);
+    value = windVelMps !== null ? _formatSpeed(windVelMps, unitSystem) : '--.-';
+    unit = _speedUnit(unitSystem);
     color = getWindColor(windVelMps);
   } else if (type === 'humidity') {
     const rawHumidity =

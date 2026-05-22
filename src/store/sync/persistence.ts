@@ -81,7 +81,7 @@ export const saveSettings = async (store: Store, root: RootStore) => {
   await store.set('settings', {
     app: { ...root.appSettings.settings },
     units: {
-      system: root.units.system,
+      system: root.units.unitSystem,
     },
     widgets: root.widgetSettings.allWidgets,
   });

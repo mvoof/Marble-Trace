@@ -6,12 +6,12 @@ import { CarDot } from '@/components/shared/CarDot/CarDot';
 import styles from './LinearMap.module.scss';
 import type { LinearMapWidgetSettings } from '@/types/widget-settings';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const LinearMap = observer(() => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const settings =

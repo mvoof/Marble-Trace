@@ -32,12 +32,13 @@ const computeRelativeLapDist = (
   return diff;
 };
 
-export class ComputedStore {
+export class BackendComputedStore {
   proximity: ProximityFrame | null = null;
   fuel: FuelComputedFrame | null = null;
   standings: DriverEntriesFrame | null = null;
   pitStops: PitStopsFrame | null = null;
   lapDelta: LapDeltaFrame | null = null;
+
   private readonly startPositionSnapshot = new Map<number, StartPosition>();
 
   constructor(private readonly root: RootStore) {
@@ -46,11 +47,13 @@ export class ComputedStore {
 
   get driverMap(): Map<number, DriverEntry> {
     if (!this.standings) return new Map();
+
     return new Map(this.standings.entries.map((e) => [e.carIdx, e]));
   }
 
   get allClassGroups(): DriverGroup[] {
     const entries = this.standings?.entries ?? [];
+
     if (entries.length === 0) return [];
 
     const classMap = new Map<number, DriverEntry[]>();
@@ -69,6 +72,7 @@ export class ComputedStore {
       .sort(([a], [b]) => a - b)
       .map(([classId, driversInClass]) => {
         const first = driversInClass[0];
+
         return {
           classId,
           className: first.carScreenNameShort,
@@ -124,12 +128,14 @@ export class ComputedStore {
         });
       }
     }
+
     this.standings = frame;
   }
 
   get qualifyStartPosMap() {
     const results =
       this.root.telemetry.sessionInfo?.QualifyResultsInfo?.Results;
+
     if (!results || results.length === 0) return null;
 
     const map = new Map<number, { overall: number; class: number }>();

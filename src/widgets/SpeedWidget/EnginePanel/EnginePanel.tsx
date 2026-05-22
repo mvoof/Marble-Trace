@@ -25,7 +25,7 @@ export const EnginePanel = observer(() => {
   }
 
   const carStatus = telemetry.carStatus;
-  const system = units.system;
+  const system = units.unitSystem;
 
   const oilTemp = formatTemp(carStatus?.oil_temp ?? null, system);
   const waterTemp = formatTemp(carStatus?.water_temp ?? null, system);

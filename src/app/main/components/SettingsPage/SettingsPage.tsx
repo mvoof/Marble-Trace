@@ -131,7 +131,7 @@ export const SettingsPage = observer(() => {
               { label: 'Metric (km/h, °C, L)', value: 'metric' },
               { label: 'Imperial (mph, °F, gal)', value: 'imperial' },
             ]}
-            value={units.system}
+            value={units.unitSystem}
             onChange={(value) => {
               void units.setSystem(value as UnitSystem);
             }}

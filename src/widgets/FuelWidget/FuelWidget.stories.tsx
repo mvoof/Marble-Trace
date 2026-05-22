@@ -8,7 +8,7 @@ import type { ComputedStore } from '@store/iracing/computed.store';
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -85,7 +85,7 @@ const applyArgs = (
 };
 
 const StoryHost = (args: StoryArgs) => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 

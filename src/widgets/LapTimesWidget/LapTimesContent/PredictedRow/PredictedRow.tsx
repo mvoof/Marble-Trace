@@ -4,14 +4,14 @@ import { formatLapTime } from '@utils/formatters/telemetry-format';
 import { TimingRow } from '@/components/shared/TimingRow/TimingRow';
 import { LAP_TIME_COLORS } from '@utils/widget/lap-times-utils';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import type { LapTimesWidgetSettings } from '@/types/widget-settings';
 
 export const PredictedRow = observer(() => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 

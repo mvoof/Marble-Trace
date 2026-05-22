@@ -14,7 +14,7 @@ export const useRootStore = (): RootStore => {
 };
 
 export const useTelemetryStore = () => useRootStore().telemetry;
-export const useComputedStore = () => useRootStore().computed;
+export const useBackendComputedStore = () => useRootStore().backendComputed;
 export const useTelemetryConnectionStore = () =>
   useRootStore().telemetryConnection;
 export const useFlagsStore = () => useRootStore().flags;

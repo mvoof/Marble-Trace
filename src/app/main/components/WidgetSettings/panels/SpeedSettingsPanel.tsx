@@ -168,7 +168,7 @@ export const SpeedSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
-            Pit Speed Override ({speedUnit(units.system)})
+            Pit Speed Override ({speedUnit(units.unitSystem)})
           </span>
 
           <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>

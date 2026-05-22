@@ -76,7 +76,8 @@ export const setupHotkeys = async (
       addHandler(settings.classPrevHotkey, (event) => {
         if (event.state === 'Pressed') {
           const totalClasses = new Set(
-            root.computed.standings?.entries.map((e) => e.carClassId) ?? []
+            root.backendComputed.standings?.entries.map((e) => e.carClassId) ??
+              []
           ).size;
 
           root.widgetSettings.cycleStandingsPrev(totalClasses);
@@ -88,7 +89,8 @@ export const setupHotkeys = async (
       addHandler(settings.classNextHotkey, (event) => {
         if (event.state === 'Pressed') {
           const totalClasses = new Set(
-            root.computed.standings?.entries.map((e) => e.carClassId) ?? []
+            root.backendComputed.standings?.entries.map((e) => e.carClassId) ??
+              []
           ).size;
           root.widgetSettings.cycleStandingsNext(totalClasses);
         }

@@ -7,10 +7,10 @@ import { computeRelativeGap } from '@utils/widget/relative-utils';
 import { TREND_SAMPLE_INTERVAL_MS } from '@utils/widget/widget-utils';
 
 import styles from './RelativeContent.module.scss';
-import { useComputedStore } from '@store/root-store-context';
+import { useBackendComputedStore } from '@store/root-store-context';
 
 export const RelativeContent = observer(() => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
 
   const entries = computed.relativeEntries;
 

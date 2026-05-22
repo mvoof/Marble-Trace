@@ -9,7 +9,7 @@ import {
 import type { LapDeltaWidgetSettings } from '@/types/widget-settings';
 import styles from './DeltaDisplay.module.scss';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -20,7 +20,7 @@ const DELTA_STATE_CLASS: Record<DeltaState, string> = {
 };
 
 export const DeltaDisplay = observer(() => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference, layout } =

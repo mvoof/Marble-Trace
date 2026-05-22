@@ -8,7 +8,7 @@ export const SpeedDisplay = observer(() => {
   const units = useUnitsStore();
 
   const speed = telemetry.carDynamics?.speed ?? 0;
-  const sys = units.system;
+  const sys = units.unitSystem;
 
   return (
     <div className={styles.group}>

@@ -37,7 +37,7 @@ export const PitPanel = observer(() => {
     widgetSettings.getSettings<SpeedWidgetSettings>('speed');
   const carStatus = telemetry.carStatus;
   const carDynamics = telemetry.carDynamics;
-  const system = units.system;
+  const system = units.unitSystem;
   const speedFactor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
   const pitLimitMs =
     pitSpeedLimitOverride !== null

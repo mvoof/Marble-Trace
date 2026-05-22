@@ -11,7 +11,7 @@ import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
 import styles from './TrackMapView.module.scss';
 import type { TrackMapWidgetSettings } from '@/types/widget-settings';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -39,7 +39,7 @@ export const TrackMapView = observer(
     recordingOverlayRef,
   }: TrackMapViewProps) => {
     const telemetry = useTelemetryStore();
-    const computed = useComputedStore();
+    const computed = useBackendComputedStore();
     const widgetSettings = useWidgetSettingsStore();
     const rawSettings =
       widgetSettings.getSettings<TrackMapWidgetSettings>('track-map');

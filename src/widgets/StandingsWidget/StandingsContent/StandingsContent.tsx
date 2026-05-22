@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import type { DriverGroup } from '@/types';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import {
@@ -19,7 +19,7 @@ import { StandingsHeader } from '@widgets/StandingsWidget/StandingsHeader/Standi
 import styles from './StandingsContent.module.scss';
 
 export const StandingsContent = observer(() => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
   const settings =
     widgetSettings.getSettings<StandingsWidgetSettings>('standings');

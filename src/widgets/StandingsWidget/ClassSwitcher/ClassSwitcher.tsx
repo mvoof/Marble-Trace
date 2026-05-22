@@ -7,13 +7,13 @@ import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './ClassSwitcher.module.scss';
 import {
   useAppSettingsStore,
-  useComputedStore,
+  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const ClassSwitcher = observer(() => {
   const appSettings = useAppSettingsStore();
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const settings =

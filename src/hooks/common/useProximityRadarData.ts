@@ -2,7 +2,7 @@ import type { RadarSettings } from '@/types/widget-settings';
 import { useRadarVisibility } from './useRadarVisibility';
 import { useWidgetAutoHide } from './useWidgetAutoHide';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -10,7 +10,7 @@ export const useProximityRadarData = (
   widgetId: 'proximity-radar' | 'radar-bar',
   searchRadius: number
 ) => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const proximity = computed.proximity;

@@ -176,12 +176,12 @@ export class TelemetryConnectionStore {
       this.isConnected = false;
 
       this.root.telemetry.reset();
-      this.root.computed.reset();
+      this.root.backendComputed.reset();
     } else if (status === 'disconnected') {
       this.isConnected = false;
 
       this.root.telemetry.reset();
-      this.root.computed.reset();
+      this.root.backendComputed.reset();
     }
   }
 
@@ -195,7 +195,7 @@ export class TelemetryConnectionStore {
     this.isConnected = false;
     this.status = 'disconnected';
     this.root.telemetry.reset();
-    this.root.computed.reset();
+    this.root.backendComputed.reset();
   }
 
   private onFrameReceived() {
@@ -228,11 +228,15 @@ export class TelemetryConnectionStore {
             this.root.telemetry.updateEnvironment(b.environment);
           if (b.chassis) this.root.telemetry.updateChassis(b.chassis);
 
-          if (b.proximity) this.root.computed.updateProximity(b.proximity);
-          if (b.fuel) this.root.computed.updateFuel(b.fuel);
-          if (b.standings) this.root.computed.updateStandings(b.standings);
-          if (b.pit_stops) this.root.computed.updatePitStops(b.pit_stops);
-          if (b.lap_delta) this.root.computed.updateLapDelta(b.lap_delta);
+          if (b.proximity)
+            this.root.backendComputed.updateProximity(b.proximity);
+          if (b.fuel) this.root.backendComputed.updateFuel(b.fuel);
+          if (b.standings)
+            this.root.backendComputed.updateStandings(b.standings);
+          if (b.pit_stops)
+            this.root.backendComputed.updatePitStops(b.pit_stops);
+          if (b.lap_delta)
+            this.root.backendComputed.updateLapDelta(b.lap_delta);
         });
       })
     );

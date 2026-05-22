@@ -1,12 +1,10 @@
 import { observer } from 'mobx-react-lite';
 
 import styles from './PitWarningHeader.module.scss';
-import { useComputedStore } from '@store/root-store-context';
+import { useBackendComputedStore } from '@store/root-store-context';
 
 export const PitWarningHeader = observer(() => {
-  const computed = useComputedStore();
-
-  const fuel = computed.fuel;
+  const { fuel } = useBackendComputedStore();
 
   const windowText =
     fuel?.pitWindowStart !== null &&

@@ -3,18 +3,19 @@ import { observer } from 'mobx-react-lite';
 import { FUEL_THRESHOLDS } from '@utils/constants/fuel-constants';
 
 import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
+import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import styles from './FuelFinishCard.module.scss';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+import { NO_LAPS_REMAINING_DATA_PLACEHOLDER } from '@/utils/constants/data-placeholders';
 
 export const FuelFinishCard = observer(() => {
-  const computed = useComputedStore();
+  const { fuel } = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const fuel = computed.fuel;
   const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
 
   const lapsRemaining = fuel?.lapsRemaining ?? null;
@@ -55,9 +56,14 @@ export const FuelFinishCard = observer(() => {
     <div className={`${styles.finishCard} ${finishCardClass()}`}>
       <UnitLabelText className={styles.finishLabel}>LAPS LEFT</UnitLabelText>
 
-      <span className={`${styles.finishValue} ${lapsValueClass()}`}>
-        {lapsRemaining !== null ? lapsRemaining.toFixed(1) : '--.-'}
-      </span>
+      <UnitValueText
+        className={`${styles.finishValue} ${lapsValueClass()}`}
+        value={
+          lapsRemaining !== null
+            ? lapsRemaining.toFixed(1)
+            : NO_LAPS_REMAINING_DATA_PLACEHOLDER
+        }
+      />
     </div>
   );
 });

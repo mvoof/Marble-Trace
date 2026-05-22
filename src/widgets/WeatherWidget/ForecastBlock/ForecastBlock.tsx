@@ -46,7 +46,7 @@ export const ForecastBlock = observer(() => {
   }
 
   const weekendInfo = telemetry.weekendInfo;
-  const { system } = units;
+  const { unitSystem } = units;
 
   let forecast = telemetry.weatherForecast || [];
 
@@ -71,11 +71,12 @@ export const ForecastBlock = observer(() => {
 
             <div className={styles.forecastRight}>
               <span className={styles.forecastTemp}>
-                {Math.round(convertTemp(entry.Temp, system))}°
+                {Math.round(convertTemp(entry.Temp, unitSystem))}°
               </span>
 
               <span className={styles.forecastWind}>
-                {formatSpeed(entry.WindSpeed, system)} {speedUnit(system)}
+                {formatSpeed(entry.WindSpeed, unitSystem)}{' '}
+                {speedUnit(unitSystem)}
               </span>
             </div>
           </div>
