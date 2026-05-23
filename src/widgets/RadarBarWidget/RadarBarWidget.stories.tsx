@@ -4,10 +4,10 @@ import { runInAction } from 'mobx';
 
 import type { ProximityFrame, RadarDistances } from '@/types/bindings';
 import type { RadarSettings } from '@/types/widget-settings';
-import type { ComputedStore } from '@store/iracing/computed.store';
+import type { BackendComputedStore } from '@store/iracing/computed.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { RadarBarWidget } from './RadarBarWidget';
@@ -25,7 +25,10 @@ interface StoryArgs {
 }
 
 const applyArgs = (
-  stores: { computed: ComputedStore; widgetSettings: WidgetSettingsStore },
+  stores: {
+    computed: BackendComputedStore;
+    widgetSettings: WidgetSettingsStore;
+  },
   args: StoryArgs
 ) => {
   runInAction(() => {
@@ -46,7 +49,7 @@ const applyArgs = (
 };
 
 const StoryHost = (args: StoryArgs) => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
   useLayoutEffect(() => {

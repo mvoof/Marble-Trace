@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
 import type { ProximityFrame } from '@/types/bindings';
-import type { ComputedStore } from '@store/iracing/computed.store';
-import { useComputedStore } from '@store/root-store-context';
+import type { BackendComputedStore } from '@store/iracing/computed.store';
+import { useBackendComputedStore } from '@store/root-store-context';
 import { ProximityRadarWidget } from './ProximityRadarWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
 import { withStore } from '../../../.storybook/decorators';
@@ -28,14 +28,14 @@ interface StoryArgs {
   proximity: ProximityFrame;
 }
 
-const applyArgs = (computed: ComputedStore, args: StoryArgs) => {
+const applyArgs = (computed: BackendComputedStore, args: StoryArgs) => {
   runInAction(() => {
     computed.updateProximity(args.proximity);
   });
 };
 
 const StoryHost = (args: StoryArgs) => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
 
   useLayoutEffect(() => {
     applyArgs(computed, args);

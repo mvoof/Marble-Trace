@@ -4,11 +4,11 @@ import { runInAction } from 'mobx';
 
 import type { DriverEntriesFrame } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import type { ComputedStore } from '@store/iracing/computed.store';
+import type { BackendComputedStore } from '@store/iracing/computed.store';
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
 import {
-  useComputedStore,
+  useBackendComputedStore,
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -65,7 +65,7 @@ interface StoryArgs {
 
 const applyArgs = (
   stores: {
-    computed: ComputedStore;
+    computed: BackendComputedStore;
     telemetry: TelemetryStore;
     widgetSettings: WidgetSettingsStore;
   },
@@ -87,7 +87,7 @@ const applyArgs = (
 };
 
 const StoryHost = (args: StoryArgs) => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 

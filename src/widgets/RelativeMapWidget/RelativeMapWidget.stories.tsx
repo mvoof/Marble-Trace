@@ -3,12 +3,15 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
 import type { DriverEntriesFrame } from '@/types/bindings';
-import type { ComputedStore } from '@store/iracing/computed.store';
+import type { BackendComputedStore } from '@store/iracing/computed.store';
 import type {
   TelemetryStore,
   CarPositionsFrame,
 } from '@store/iracing/telemetry.store';
-import { useComputedStore, useTelemetryStore } from '@store/root-store-context';
+import {
+  useBackendComputedStore,
+  useTelemetryStore,
+} from '@store/root-store-context';
 import { driverEntries } from '@/storybook/test-data';
 import { RelativeMapWidget } from './RelativeMapWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
@@ -22,8 +25,10 @@ const PLAYER_CAR_IDX =
 
 const buildCarPositions = (): CarPositionsFrame => {
   const maxCarIdx = Math.max(...DRIVER_ENTRIES.map((e) => e.carIdx));
-  const car_idx_lap_dist_pct = new Array(maxCarIdx + 1).fill(0);
-  const car_idx_track_surface = new Array(maxCarIdx + 1).fill(
+  const car_idx_lap_dist_pct: number[] = new Array<number>(maxCarIdx + 1).fill(
+    0
+  );
+  const car_idx_track_surface: number[] = new Array<number>(maxCarIdx + 1).fill(
     TRACK_SURFACE_ON_TRACK
   );
 
@@ -35,7 +40,7 @@ const buildCarPositions = (): CarPositionsFrame => {
 };
 
 const applyArgs = (stores: {
-  computed: ComputedStore;
+  computed: BackendComputedStore;
   telemetry: TelemetryStore;
 }) => {
   runInAction(() => {
@@ -48,7 +53,7 @@ const applyArgs = (stores: {
 };
 
 const StoryHost = () => {
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const telemetry = useTelemetryStore();
 
   useLayoutEffect(() => {

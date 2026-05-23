@@ -4,7 +4,7 @@ import { runInAction } from 'mobx';
 
 import type { FuelComputedFrame } from '@/types/bindings';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
-import type { ComputedStore } from '@store/iracing/computed.store';
+import type { BackendComputedStore } from '@store/iracing/computed.store';
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
 import {
@@ -44,7 +44,7 @@ interface StoryArgs {
 
 const applyArgs = (
   stores: {
-    computed: ComputedStore;
+    computed: BackendComputedStore;
     telemetry: TelemetryStore;
     widgetSettings: WidgetSettingsStore;
   },
