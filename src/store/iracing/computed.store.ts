@@ -87,6 +87,38 @@ export class BackendComputedStore {
       });
   }
 
+  get p1LapTime(): number | null {
+    const standingsEntries = this.standings?.entries ?? [];
+    const allBestTimes =
+      this.root.telemetry.carIdx?.car_idx_best_lap_time ?? [];
+
+    const playerClassId = standingsEntries.find(
+      (entry) => entry.isPlayer
+    )?.carClassId;
+
+    const classEntries =
+      playerClassId !== undefined
+        ? standingsEntries.filter((entry) => entry.carClassId === playerClassId)
+        : [];
+
+    const classBestTimes = classEntries.reduce<number[]>((acc, entry) => {
+      const bestTime = allBestTimes[entry.carIdx];
+
+      if (bestTime !== undefined && bestTime > 0) {
+        acc.push(bestTime);
+      }
+
+      return acc;
+    }, []);
+
+    const timesToUse =
+      classBestTimes.length > 0
+        ? classBestTimes
+        : allBestTimes.filter((time) => time > 0);
+
+    return timesToUse.length > 0 ? Math.min(...timesToUse) : null;
+  }
+
   get relativeEntries() {
     const standings = this.standings;
     const carPositions = this.root.telemetry.carPositions;
