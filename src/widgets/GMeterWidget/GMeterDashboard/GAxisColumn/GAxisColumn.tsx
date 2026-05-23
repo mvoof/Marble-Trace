@@ -13,6 +13,8 @@ import {
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
+import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
 
 interface GAxisColumnProps {
   axis: 'lat' | 'lon';
@@ -21,11 +23,12 @@ interface GAxisColumnProps {
 
 export const GAxisColumn = observer(
   ({ axis, hasDivider }: GAxisColumnProps) => {
-    const telemetry = useTelemetryStore();
+    const { carDynamics } = useTelemetryStore();
+
     const widgetSettings = useWidgetSettingsStore();
+
     const { scale, colorMode } =
       widgetSettings.getSettings<GMeterWidgetSettings>('g-meter');
-    const dynamics = telemetry.carDynamics;
 
     const stateRef = useRef({
       smoothedLatG: 0,
@@ -41,8 +44,8 @@ export const GAxisColumn = observer(
       state.peakG = 0;
     }, [scale]);
 
-    const rawLat = (dynamics?.lat_accel ?? 0) / G_CONSTANT;
-    const rawLon = (dynamics?.long_accel ?? 0) / G_CONSTANT;
+    const rawLat = (carDynamics?.lat_accel ?? 0) / G_CONSTANT;
+    const rawLon = (carDynamics?.long_accel ?? 0) / G_CONSTANT;
 
     const state = stateRef.current;
     state.smoothedLatG += (rawLat - state.smoothedLatG) * SMOOTHING;
@@ -71,17 +74,19 @@ export const GAxisColumn = observer(
         className={`${styles.axisColumn} ${hasDivider ? styles.axisColumnDivider : ''}`}
       >
         <div className={styles.axisHeader}>
-          <span className={styles.axisLabel}>{label}</span>
+          <UnitLabelText className={styles.axisLabel}>{label}</UnitLabelText>
 
-          <span className={styles.val} style={{ color }}>
-            {displayValue}
-          </span>
+          <UnitValueText
+            className={styles.val}
+            color={color}
+            value={displayValue}
+          />
         </div>
 
         <div className={styles.peakRow}>
-          <span className={styles.peakLabel}>PEAK</span>
+          <UnitLabelText className={styles.peakLabel}>PEAK</UnitLabelText>
 
-          <span className={styles.peakVal}>{displayPeak}</span>
+          <UnitValueText className={styles.peakVal} value={displayPeak} />
         </div>
       </div>
     );

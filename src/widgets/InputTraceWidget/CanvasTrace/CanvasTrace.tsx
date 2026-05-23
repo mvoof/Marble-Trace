@@ -1,5 +1,5 @@
-import { useEffect, useRef, useCallback, useLayoutEffect } from 'react';
-import { observer } from 'mobx-react-lite';
+import { useEffect, useRef, useCallback } from 'react';
+import { autorun } from 'mobx';
 
 import type { InputTraceSettings } from '@/types/widget-settings';
 import styles from './CanvasTrace.module.scss';
@@ -14,109 +14,80 @@ interface SmoothedValues {
   clutch: number;
 }
 
-export const CanvasTrace = observer(() => {
+// Not wrapped in observer() intentionally: autorun() inside useEffect subscribes
+// to MobX observables directly, so React re-renders are not needed for data updates.
+// observer() would cause 60 Hz React re-renders on every carInputs change.
+export const CanvasTrace = () => {
   const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const settings =
-    widgetSettings.getSettings<InputTraceSettings>('input-trace');
-  const frame = telemetry.carInputs;
-
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
   const rafRef = useRef<number>(0);
-  const headRef = useRef(0);
-  const countRef = useRef(0);
 
-  const smoothedRef = useRef<SmoothedValues>({
-    throttle: 0,
-    brake: 0,
-    clutch: 0,
+  const bufferStateRef = useRef({
+    buffer: new Float32Array(0),
+    head: 0,
+    count: 0,
+    smoothed: { throttle: 0, brake: 0, clutch: 0 } as SmoothedValues,
   });
 
-  const bufferSize = settings.historySeconds * 60;
-  const numChannels =
-    (settings.showThrottle ? 1 : 0) +
-    (settings.showBrake ? 1 : 0) +
-    (settings.showClutch ? 1 : 0);
-
-  const bufferRef = useRef<Float32Array | null>(null);
-
-  if (
-    !bufferRef.current ||
-    bufferRef.current.length !== bufferSize * numChannels
-  ) {
-    bufferRef.current = new Float32Array(bufferSize * numChannels);
-    headRef.current = 0;
-    countRef.current = 0;
-  }
-
-  const channelColorsRef = useRef<string[]>([]);
-  channelColorsRef.current = [];
-  if (settings.showThrottle)
-    channelColorsRef.current.push(settings.throttleColor);
-
-  if (settings.showBrake) channelColorsRef.current.push(settings.brakeColor);
-
-  if (settings.showClutch) channelColorsRef.current.push(settings.clutchColor);
-
-  const lineWidthRef = useRef(settings.lineWidth);
-
-  lineWidthRef.current = settings.lineWidth;
-
-  const draw = useCallback(() => {
+  const draw = useCallback((settings: InputTraceSettings) => {
     const canvas = canvasRef.current;
+    const { buffer, head, count } = bufferStateRef.current;
 
-    if (!canvas || !bufferRef.current) return;
+    if (!canvas || buffer.length === 0) return;
 
     const ctx = canvas.getContext('2d');
 
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
-
     const logicalW = canvas.width / dpr;
     const logicalH = canvas.height / dpr;
 
-    const buffer = bufferRef.current;
-    const channels = channelColorsRef.current;
+    const channels: string[] = [];
 
-    const currentCount = countRef.current;
-    const currentBufferSize = bufferSize;
+    if (settings.showThrottle) channels.push(settings.throttleColor);
+
+    if (settings.showBrake) channels.push(settings.brakeColor);
+
+    if (settings.showClutch) channels.push(settings.clutchColor);
 
     ctx.clearRect(0, 0, logicalW, logicalH);
 
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
     ctx.lineWidth = 1;
+    ctx.beginPath();
 
     for (let gridIndex = 1; gridIndex <= 3; gridIndex++) {
       const yPos = logicalH * (gridIndex / 4);
 
-      ctx.beginPath();
       ctx.moveTo(0, yPos);
       ctx.lineTo(logicalW, yPos);
-      ctx.stroke();
     }
+
+    ctx.stroke();
 
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
 
+    const bufferSize = settings.historySeconds * 60;
+
     for (let channelIndex = 0; channelIndex < channels.length; channelIndex++) {
       ctx.strokeStyle = channels[channelIndex] ?? '#ffffff';
-      ctx.lineWidth = lineWidthRef.current;
+      ctx.lineWidth = settings.lineWidth;
       ctx.beginPath();
 
       let started = false;
 
-      for (let sampleIndex = 0; sampleIndex < currentCount; sampleIndex++) {
+      for (let sampleIndex = 0; sampleIndex < count; sampleIndex++) {
         const circularIndex =
-          (headRef.current - currentCount + sampleIndex + currentBufferSize) %
-          currentBufferSize;
+          (head - count + sampleIndex + bufferSize) % bufferSize;
 
         const sampleValue =
           buffer[circularIndex * channels.length + channelIndex];
 
-        const xPos = (sampleIndex / (currentBufferSize - 1)) * logicalW;
+        const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
         const yPos = logicalH - sampleValue * logicalH;
 
         if (!started) {
@@ -130,61 +101,82 @@ export const CanvasTrace = observer(() => {
 
       ctx.stroke();
     }
-  }, [bufferSize]);
+  }, []);
 
-  const scheduleDraw = useCallback(() => {
-    cancelAnimationFrame(rafRef.current);
+  useEffect(() => {
+    const disposer = autorun(() => {
+      const inputs = telemetry.carInputs;
+      const settings =
+        widgetSettings.getSettings<InputTraceSettings>('input-trace');
 
-    rafRef.current = requestAnimationFrame(() => draw());
-  }, [draw]);
+      const rawThrottle = inputs?.throttle ?? 0;
+      const rawBrake = inputs?.brake ?? 0;
+      const rawClutch = inputs?.clutch != null ? 1 - inputs.clutch : 0;
 
-  useLayoutEffect(() => {
-    const rawThrottle = frame?.throttle ?? 0;
-    const rawBrake = frame?.brake ?? 0;
-    const rawClutch = frame?.clutch != null ? 1 - frame.clutch : 0;
+      const bufferSize = settings.historySeconds * 60;
+      const numChannels =
+        (settings.showThrottle ? 1 : 0) +
+        (settings.showBrake ? 1 : 0) +
+        (settings.showClutch ? 1 : 0);
 
-    const smoothing = settings.smoothing;
-    const previous = smoothedRef.current;
+      const requiredBufferLength = bufferSize * numChannels;
+      const state = bufferStateRef.current;
 
-    if (smoothing <= 0) {
-      smoothedRef.current = {
-        throttle: rawThrottle,
-        brake: rawBrake,
-        clutch: rawClutch,
-      };
-    } else {
-      smoothedRef.current = {
-        throttle:
-          (previous.throttle * smoothing + rawThrottle) / (smoothing + 1),
-        brake: (previous.brake * smoothing + rawBrake) / (smoothing + 1),
-        clutch: (previous.clutch * smoothing + rawClutch) / (smoothing + 1),
-      };
-    }
+      if (state.buffer.length !== requiredBufferLength) {
+        state.buffer = new Float32Array(requiredBufferLength);
+        state.head = 0;
+        state.count = 0;
+      }
 
-    const { throttle, brake, clutch } = smoothedRef.current;
-    const values: number[] = [];
+      const smoothing = settings.smoothing;
+      const previous = state.smoothed;
 
-    if (settings.showThrottle) values.push(throttle);
-    if (settings.showBrake) values.push(brake);
-    if (settings.showClutch) values.push(clutch);
+      if (smoothing <= 0) {
+        state.smoothed = {
+          throttle: rawThrottle,
+          brake: rawBrake,
+          clutch: rawClutch,
+        };
+      } else {
+        state.smoothed = {
+          throttle:
+            (previous.throttle * smoothing + rawThrottle) / (smoothing + 1),
+          brake: (previous.brake * smoothing + rawBrake) / (smoothing + 1),
+          clutch: (previous.clutch * smoothing + rawClutch) / (smoothing + 1),
+        };
+      }
 
-    if (!bufferRef.current) return;
+      const { throttle, brake, clutch } = state.smoothed;
+      const values: number[] = [];
 
-    const channels = channelColorsRef.current;
-    const offset = headRef.current * channels.length;
+      if (settings.showThrottle) values.push(throttle);
 
-    for (let channelIndex = 0; channelIndex < channels.length; channelIndex++) {
-      bufferRef.current[offset + channelIndex] = values[channelIndex] ?? 0;
-    }
+      if (settings.showBrake) values.push(brake);
 
-    headRef.current = (headRef.current + 1) % bufferSize;
+      if (settings.showClutch) values.push(clutch);
 
-    if (countRef.current < bufferSize) {
-      countRef.current++;
-    }
+      const offset = state.head * values.length;
 
-    scheduleDraw();
-  });
+      for (let channelIndex = 0; channelIndex < values.length; channelIndex++) {
+        state.buffer[offset + channelIndex] = values[channelIndex] ?? 0;
+      }
+
+      state.head = (state.head + 1) % bufferSize;
+
+      if (state.count < bufferSize) {
+        state.count++;
+      }
+
+      cancelAnimationFrame(rafRef.current);
+
+      rafRef.current = requestAnimationFrame(() => draw(settings));
+    });
+
+    return () => {
+      disposer();
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [telemetry, widgetSettings, draw]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -211,21 +203,22 @@ export const CanvasTrace = observer(() => {
         }
       }
 
-      scheduleDraw();
+      const currentSettings =
+        widgetSettings.getSettings<InputTraceSettings>('input-trace');
+
+      cancelAnimationFrame(rafRef.current);
+
+      rafRef.current = requestAnimationFrame(() => draw(currentSettings));
     });
 
     resizeObserver.observe(canvas.parentElement ?? canvas);
 
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-
-      resizeObserver.disconnect();
-    };
-  }, [scheduleDraw]);
+    return () => resizeObserver.disconnect();
+  }, [widgetSettings, draw]);
 
   return (
     <div className={styles.container}>
       <canvas ref={canvasRef} className={styles.canvas} />
     </div>
   );
-});
+};
