@@ -110,10 +110,7 @@ export class WidgetSettingsStore {
           Object.assign(existing.userSettings, mergedUserSettings);
 
           if (savedWidget) {
-            const merged = filterToDefaults(
-              defaultWidget,
-              savedWidget
-            ) as WidgetDefaultConfig;
+            const merged = filterToDefaults(defaultWidget, savedWidget);
             existing.designWidth = merged.designWidth;
             existing.designHeight = merged.designHeight;
           }
@@ -122,10 +119,7 @@ export class WidgetSettingsStore {
             defaultWidget.id,
             savedWidget
               ? {
-                  ...(filterToDefaults(
-                    defaultWidget,
-                    savedWidget
-                  ) as WidgetDefaultConfig),
+                  ...filterToDefaults(defaultWidget, savedWidget),
                   userSettings: mergedUserSettings,
                 }
               : { ...defaultWidget, userSettings: mergedUserSettings }

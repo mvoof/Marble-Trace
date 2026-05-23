@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { autorun, runInAction } from 'mobx';
 import { listen } from '@tauri-apps/api/event';
 import { TrackRecorder } from '@utils/telemetry/track-recorder';
@@ -72,7 +72,7 @@ export const TrackRecorderBridge = ({
     recordingOverlayRef,
   };
 
-  const reset = () => {
+  const reset = useCallback(() => {
     recorderRef.current.reset();
     hasSavedRef.current = false;
     lastProgressRef.current = -1;
@@ -92,13 +92,13 @@ export const TrackRecorderBridge = ({
       overlay.setRecording(false);
       overlay.setProgress(0);
     }
-  };
+  }, [widgetSettings]);
 
   useEffect(() => {
     if (!trackId) return;
 
     reset();
-  }, [trackId]);
+  }, [trackId, reset]);
 
   useEffect(() => {
     const unlistenClear = listen('track-map:clear', () => {
@@ -113,7 +113,7 @@ export const TrackRecorderBridge = ({
       void unlistenClear.then((fn) => fn());
       void unlistenForceStart.then((fn) => fn());
     };
-  }, []);
+  }, [reset, widgetSettings]);
 
   useEffect(() => {
     const dispose = autorun(() => {
@@ -220,7 +220,7 @@ export const TrackRecorderBridge = ({
     });
 
     return dispose;
-  }, []);
+  }, [telemetry, widgetSettings]);
 
   return null;
 };
