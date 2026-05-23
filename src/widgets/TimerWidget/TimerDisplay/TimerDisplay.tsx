@@ -2,13 +2,12 @@ import { observer } from 'mobx-react-lite';
 
 import { isSessionEnded, splitTime } from '@utils/widget/timer-utils';
 
-import styles from './TimerDisplay.module.scss';
 import { useTelemetryStore } from '@store/root-store-context';
+import styles from './TimerDisplay.module.scss';
 
 export const TimerDisplay = observer(() => {
-  const telemetry = useTelemetryStore();
+  const { session } = useTelemetryStore();
 
-  const session = telemetry.session;
   const sessionState = session?.session_state ?? null;
 
   if (isSessionEnded(sessionState)) {
@@ -21,13 +20,16 @@ export const TimerDisplay = observer(() => {
 
   const remain = session?.session_time_remain ?? null;
   const elapsed = session?.session_time ?? null;
+
   const isCountdown = remain !== null && remain >= 0;
   const rawSeconds = isCountdown ? (remain ?? 0) : (elapsed ?? 0);
+
   const { main: timeMain, secs: timeSeconds } = splitTime(rawSeconds);
 
   return (
     <div className={styles.timeDisplay}>
       <span className={styles.timeMain}>{timeMain}</span>
+
       <span className={styles.timeSeconds}>{timeSeconds}</span>
     </div>
   );

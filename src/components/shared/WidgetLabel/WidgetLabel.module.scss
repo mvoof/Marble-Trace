@@ -2,7 +2,7 @@
   font-family: $font-widget;
   font-size: ws(10);
   font-weight: 600;
-  color: $color-text-muted;
+  color: color-mix(in srgb, contrast-color(var(--widget-bg)) 55%, transparent);
   letter-spacing: 1px;
   text-transform: uppercase;
   line-height: 1.2;

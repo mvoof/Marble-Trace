@@ -1,16 +1,11 @@
 .clockItem {
   display: flex;
+  white-space: nowrap;
   align-items: center;
   gap: 0.4em;
   font-family: $font-mono;
   font-size: ws(12);
   font-weight: 500;
-  color: $color-text-primary;
-  letter-spacing: 1px;
-}
-
-.clockLabel {
-  font-size: ws(10);
-  color: $color-text-muted;
+  color: contrast-color(var(--widget-bg));
   letter-spacing: 1px;
 }

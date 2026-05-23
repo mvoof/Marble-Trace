@@ -1,8 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
-import { TimerClockRow } from './TimerClockRow/TimerClockRow';
-import { TimerDateRow } from './TimerDateRow/TimerDateRow';
+import { TimerRow } from './TimerRow/TimerRow';
 import { TimerDisplay } from './TimerDisplay/TimerDisplay';
 import { TimerFooter } from './TimerFooter/TimerFooter';
 import { TimerHeader } from './TimerHeader/TimerHeader';
@@ -14,9 +13,7 @@ export const TimerWidget = observer(() => {
 
       <TimerDisplay />
 
-      <TimerClockRow />
-
-      <TimerDateRow />
+      <TimerRow />
 
       <TimerFooter />
     </WidgetPanel>

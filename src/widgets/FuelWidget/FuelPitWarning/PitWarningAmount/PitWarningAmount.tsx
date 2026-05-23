@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
 import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
-import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
-import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
+import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
+import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 
 import styles from './PitWarningAmount.module.scss';
 import {
@@ -32,12 +32,12 @@ export const PitWarningAmount = observer(() => {
 
   return (
     <div className={styles.pitWarningRight}>
-      <UnitLabelText className={styles.pitWarningBodyLabel}>
+      <WidgetLabel className={styles.pitWarningBodyLabel}>
         {refuelLabel}
-      </UnitLabelText>
+      </WidgetLabel>
 
       <div className={styles.pitWarningAmountWrap}>
-        <UnitValueText
+        <WidgetValue
           className={`${styles.pitWarningAmount} ${isShort ? styles.pitWarningAmountDanger : ''}`}
           unitClassName={styles.pitWarningAmountUnit}
           value={

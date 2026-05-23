@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { TimingRow } from '@/components/shared/TimingRow/TimingRow';
+import { LapTimingRow } from '@/components/shared/LapTimingRow/LapTimingRow';
 import {
   formatSectorDelta,
   formatSectorTime,
@@ -51,7 +51,7 @@ export const SectorList = observer(() => {
           SECTOR_ACCENT_COLORS[index % SECTOR_ACCENT_COLORS.length];
 
         return (
-          <TimingRow
+          <LapTimingRow
             key={`sector-${index}`}
             label={`S${index + 1}`}
             time={formatSectorTime(time)}

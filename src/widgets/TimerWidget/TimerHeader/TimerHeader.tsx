@@ -1,24 +1,28 @@
 import { observer } from 'mobx-react-lite';
 
 import { TimerFlagBadge } from './TimerFlagBadge/TimerFlagBadge';
-import styles from './TimerHeader.module.scss';
 import { useTelemetryStore } from '@store/root-store-context';
+import styles from './TimerHeader.module.scss';
+import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 
 export const TimerHeader = observer(() => {
-  const telemetry = useTelemetryStore();
+  const { session, sessionInfo } = useTelemetryStore();
 
-  const session = telemetry.session;
-  const sessions = telemetry.sessionInfo?.SessionInfo?.Sessions ?? [];
+  const sessions = sessionInfo?.SessionInfo?.Sessions ?? [];
 
   const sessionNum = session?.session_num ?? null;
+
   const currentSession =
     sessionNum !== null ? (sessions[sessionNum] ?? null) : null;
+
   const sessionTypeLabel =
-    currentSession?.SessionType?.toUpperCase() ?? 'SESSION';
+    currentSession?.SessionType?.toUpperCase() ?? 'NO SESSION';
 
   return (
     <div className={styles.header}>
-      <span className={styles.sessionLabel}>{sessionTypeLabel}</span>
+      <WidgetLabel className={styles.sessionLabel}>
+        {sessionTypeLabel}
+      </WidgetLabel>
 
       <TimerFlagBadge />
     </div>

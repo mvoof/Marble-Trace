@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
-import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
+import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
+import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
 
 import styles from './FuelHeader.module.scss';
@@ -16,9 +16,9 @@ export const FuelHeader = observer(() => {
 
   return (
     <div className={styles.header}>
-      <UnitLabelText className={styles.headerLabel}>FUEL</UnitLabelText>
+      <WidgetLabel className={styles.headerLabel}>FUEL</WidgetLabel>
 
-      <UnitValueText
+      <WidgetValue
         value={
           fuelLevel !== null
             ? formatFuel(fuelLevel, unitSystem)

@@ -13,8 +13,8 @@ import {
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
-import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
+import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
+import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 
 interface GAxisColumnProps {
   axis: 'lat' | 'lon';
@@ -74,9 +74,9 @@ export const GAxisColumn = observer(
         className={`${styles.axisColumn} ${hasDivider ? styles.axisColumnDivider : ''}`}
       >
         <div className={styles.axisHeader}>
-          <UnitLabelText className={styles.axisLabel}>{label}</UnitLabelText>
+          <WidgetLabel className={styles.axisLabel}>{label}</WidgetLabel>
 
-          <UnitValueText
+          <WidgetValue
             className={styles.val}
             color={color}
             value={displayValue}
@@ -84,9 +84,9 @@ export const GAxisColumn = observer(
         </div>
 
         <div className={styles.peakRow}>
-          <UnitLabelText className={styles.peakLabel}>PEAK</UnitLabelText>
+          <WidgetLabel className={styles.peakLabel}>PEAK</WidgetLabel>
 
-          <UnitValueText className={styles.peakVal} value={displayPeak} />
+          <WidgetValue className={styles.peakVal} value={displayPeak} />
         </div>
       </div>
     );

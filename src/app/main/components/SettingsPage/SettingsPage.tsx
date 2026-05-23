@@ -60,7 +60,7 @@ export const SettingsPage = observer(() => {
             </div>
 
             <Switch
-              checked={appSettings.settings.hideAllWidgets}
+              checked={appSettings.appSettings.hideAllWidgets}
               onChange={(v) => appSettings.setHideAllWidgets(v)}
             />
           </div>
@@ -70,7 +70,7 @@ export const SettingsPage = observer(() => {
           <span className={styles.fieldLabel}>Toggle Hotkey</span>
 
           <HotkeyRecorder
-            currentHotkey={appSettings.settings.hideAllWidgetsHotkey}
+            currentHotkey={appSettings.appSettings.hideAllWidgetsHotkey}
             onApply={(key) => appSettings.setHideAllWidgetsHotkey(key)}
           />
         </div>
@@ -98,7 +98,7 @@ export const SettingsPage = observer(() => {
           <span className={styles.fieldLabel}>Drag Mode Hotkey</span>
 
           <HotkeyRecorder
-            currentHotkey={appSettings.settings.dragHotkey}
+            currentHotkey={appSettings.appSettings.dragHotkey}
             onApply={(key) => appSettings.setDragHotkey(key)}
           />
         </div>
@@ -115,7 +115,7 @@ export const SettingsPage = observer(() => {
           </div>
 
           <Switch
-            checked={appSettings.settings.hideWidgetsWhenGameClosed}
+            checked={appSettings.appSettings.hideWidgetsWhenGameClosed}
             onChange={(v) => appSettings.setHideWidgetsWhenGameClosed(v)}
           />
         </div>
@@ -151,7 +151,7 @@ export const SettingsPage = observer(() => {
             </div>
 
             <Switch
-              checked={appSettings.settings.autoUpdate}
+              checked={appSettings.appSettings.autoUpdate}
               onChange={(v) => appSettings.setAutoUpdate(v)}
             />
           </div>
@@ -169,7 +169,7 @@ export const SettingsPage = observer(() => {
 
             <Select
               className={styles.selectWidth}
-              value={appSettings.settings.updateCheckInterval}
+              value={appSettings.appSettings.updateCheckInterval}
               onChange={(v) => appSettings.setUpdateCheckInterval(v)}
               options={[
                 { label: 'Every hour', value: 1 },
@@ -178,7 +178,7 @@ export const SettingsPage = observer(() => {
                 { label: 'Every 12 hours', value: 12 },
                 { label: 'Daily', value: 24 },
               ]}
-              disabled={!appSettings.settings.autoUpdate}
+              disabled={!appSettings.appSettings.autoUpdate}
             />
           </div>
         </div>
@@ -193,7 +193,7 @@ export const SettingsPage = observer(() => {
                 </span>
               </div>
 
-              {appSettings.settings.lastUpdateCheck && (
+              {appSettings.appSettings.lastUpdateCheck && (
                 <div
                   className={`${styles.fieldDesc} ${styles.fieldDescMeta}`}
                   suppressHydrationWarning
@@ -201,7 +201,7 @@ export const SettingsPage = observer(() => {
                   <Clock size={12} />
                   Last checked:{' '}
                   {new Date(
-                    appSettings.settings.lastUpdateCheck
+                    appSettings.appSettings.lastUpdateCheck
                   ).toLocaleString()}
                 </div>
               )}

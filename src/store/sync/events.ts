@@ -31,14 +31,14 @@ export const setupOverlayListeners = async (
   unlistens.push(
     await listen<boolean>('hide-all-widgets-changed', (e) => {
       runInAction(() => {
-        root.appSettings.settings.hideAllWidgets = e.payload;
+        root.appSettings.appSettings.hideAllWidgets = e.payload;
       });
     })
   );
   unlistens.push(
     await listen<boolean>('hide-widgets-when-game-closed-changed', (e) => {
       runInAction(() => {
-        root.appSettings.settings.hideWidgetsWhenGameClosed = e.payload;
+        root.appSettings.appSettings.hideWidgetsWhenGameClosed = e.payload;
       });
     })
   );

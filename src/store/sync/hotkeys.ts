@@ -37,14 +37,14 @@ export const setupHotkeys = async (
       handlersMap.get(shortcut)!.push(handler);
     };
 
-    if (root.appSettings.settings.dragHotkey) {
-      addHandler(root.appSettings.settings.dragHotkey, (event) => {
+    if (root.appSettings.appSettings.dragHotkey) {
+      addHandler(root.appSettings.appSettings.dragHotkey, (event) => {
         if (event.state === 'Pressed') root.appSettings.toggleDragMode();
       });
     }
 
-    if (root.appSettings.settings.hideAllWidgetsHotkey) {
-      addHandler(root.appSettings.settings.hideAllWidgetsHotkey, (event) => {
+    if (root.appSettings.appSettings.hideAllWidgetsHotkey) {
+      addHandler(root.appSettings.appSettings.hideAllWidgetsHotkey, (event) => {
         if (event.state === 'Pressed') root.appSettings.toggleHideAllWidgets();
       });
     }

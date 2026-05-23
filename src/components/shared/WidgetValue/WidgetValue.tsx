@@ -1,9 +1,9 @@
 import { type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import styles from './UnitValueText.module.scss';
+import styles from './WidgetValue.module.scss';
 
-interface UnitValueTextProps {
+interface WidgetValueProps {
   value: ReactNode;
   unit?: string;
   color?: string;
@@ -11,8 +11,8 @@ interface UnitValueTextProps {
   unitClassName?: string;
 }
 
-export const UnitValueText = observer(
-  ({ value, unit, color, className, unitClassName }: UnitValueTextProps) => (
+export const WidgetValue = observer(
+  ({ value, unit, color, className, unitClassName }: WidgetValueProps) => (
     <span
       className={`${styles.root} ${className ?? ''}`}
       style={color ? { color } : undefined}

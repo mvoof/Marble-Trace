@@ -79,7 +79,7 @@ interface Store {
 
 export const saveSettings = async (store: Store, root: RootStore) => {
   await store.set('settings', {
-    app: { ...root.appSettings.settings },
+    app: { ...root.appSettings.appSettings },
     units: {
       system: root.units.unitSystem,
     },

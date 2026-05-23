@@ -40,7 +40,7 @@ export class TelemetryConnectionStore {
             id: w.id,
             enabled: w.userSettings.enabled,
           })),
-          hideAll: this.root.appSettings.settings.hideAllWidgets,
+          hideAll: this.root.appSettings.appSettings.hideAllWidgets,
         }),
         () => this.updateActiveEvents(),
         { fireImmediately: true }
@@ -50,7 +50,7 @@ export class TelemetryConnectionStore {
 
   private updateActiveEvents() {
     const widgets = this.root.widgetSettings.allWidgets;
-    const hideAll = this.root.appSettings.settings.hideAllWidgets;
+    const hideAll = this.root.appSettings.appSettings.hideAllWidgets;
 
     let mask = 0;
 

@@ -12,11 +12,11 @@
 }
 
 .timeMain {
-  color: #fff;
+  color: contrast-color(var(--widget-bg));
 }
 
 .sessionEndedLabel {
-  color: $color-text-muted;
+  color: color-mix(in srgb, contrast-color(var(--widget-bg)) 55%, transparent);
   letter-spacing: 4px;
   font-size: ws(32);
 }

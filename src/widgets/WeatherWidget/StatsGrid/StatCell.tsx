@@ -8,8 +8,8 @@ import {
 } from '@utils/formatters/telemetry-format';
 import { getWindColor, parseWeekendFloat } from '@utils/widget/weather-utils';
 
-import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
-import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
+import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
+import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 import styles from './StatCell.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import {
@@ -92,11 +92,11 @@ export const StatCell = observer(({ type }: StatCellProps) => {
 
   return (
     <div className={styles.statCell} style={{ borderLeftColor: color }}>
-      <UnitLabelText mono uppercase={false} className={styles.statLabel}>
+      <WidgetLabel mono uppercase={false} className={styles.statLabel}>
         {label}
-      </UnitLabelText>
+      </WidgetLabel>
 
-      <UnitValueText value={value} unit={unit} className={styles.statValue} />
+      <WidgetValue value={value} unit={unit} className={styles.statValue} />
     </div>
   );
 });
