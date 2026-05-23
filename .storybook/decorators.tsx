@@ -7,11 +7,13 @@ import { RootStoreContext } from '../src/store/root-store-context';
 export const withStore =
   (seedFn?: (store: RootStore) => void): Decorator =>
   (Story) => {
-    const store = new RootStore({ skipInit: true });
+    const store = React.useMemo(() => new RootStore({ skipInit: true }), []);
 
-    if (seedFn) {
-      runInAction(() => seedFn(store));
-    }
+    React.useLayoutEffect(() => {
+      if (seedFn) {
+        runInAction(() => seedFn(store));
+      }
+    }, [store]);
 
     return (
       <RootStoreContext.Provider value={store}>
