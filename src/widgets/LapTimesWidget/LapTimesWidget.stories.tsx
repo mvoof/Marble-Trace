@@ -2,20 +2,26 @@ import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import type { LapTimingFrame } from '@/types/bindings';
-import type { LapDeltaFrame } from '@/types/bindings';
+import type {
+  CarIdxFrame,
+  DriverEntriesFrame,
+  LapDeltaFrame,
+  LapTimingFrame,
+} from '@/types/bindings';
 import type { LapTimesWidgetSettings } from '@/types/widget-settings';
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
-import type { ComputedStore } from '@store/iracing/computed.store';
+import type { BackendComputedStore } from '@store/iracing/computed.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
 import {
   useTelemetryStore,
-  useComputedStore,
+  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { LapTimesWidget } from './LapTimesWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
 import { withStore } from '../../../.storybook/decorators';
+
+const CLASS_ID = 1;
 
 const DEFAULT_SETTINGS: LapTimesWidgetSettings = {
   showLastLap: true,
@@ -25,18 +31,56 @@ const DEFAULT_SETTINGS: LapTimesWidgetSettings = {
   layout: 'vertical',
 };
 
+const DEFAULT_STANDINGS: DriverEntriesFrame = {
+  playerCarIdx: 0,
+  entries: [
+    {
+      carIdx: 0,
+      isPlayer: true,
+      carClassId: CLASS_ID,
+      position: 2,
+      classPosition: 2,
+      userName: 'Player',
+      carNumber: '1',
+      iRating: 2000,
+      lapDistPct: 0,
+      carScreenNameShort: 'GTP',
+      carClassColor: 0xffffff,
+    },
+    {
+      carIdx: 1,
+      isPlayer: false,
+      carClassId: CLASS_ID,
+      position: 1,
+      classPosition: 1,
+      userName: 'Leader',
+      carNumber: '2',
+      iRating: 2500,
+      lapDistPct: 0,
+      carScreenNameShort: 'GTP',
+      carClassColor: 0xffffff,
+    },
+  ],
+};
+
+const DEFAULT_CAR_IDX: CarIdxFrame = {
+  car_idx_lap_dist_pct: [0.4, 0.5],
+  car_idx_best_lap_time: [82.891, 81.5],
+};
+
 interface StoryArgs {
   currentLapSec: number;
   lastLapSec: number | null;
   bestLapSec: number | null;
   personalBestDelta: number | null;
+  p1BestLapSec: number;
   settings: LapTimesWidgetSettings;
 }
 
 const applyArgs = (
   stores: {
     telemetry: TelemetryStore;
-    computed: ComputedStore;
+    computed: BackendComputedStore;
     widgetSettings: WidgetSettingsStore;
   },
   args: StoryArgs
@@ -47,6 +91,13 @@ const applyArgs = (
       lap_last_lap_time: args.lastLapSec,
       lap_best_lap_time: args.bestLapSec,
     } as LapTimingFrame);
+
+    stores.telemetry.updateCarIdx({
+      ...DEFAULT_CAR_IDX,
+      car_idx_best_lap_time: [args.bestLapSec ?? 0, args.p1BestLapSec],
+    } as CarIdxFrame);
+
+    stores.computed.updateStandings(DEFAULT_STANDINGS);
 
     stores.computed.updateLapDelta({
       personalBestTotal: args.personalBestDelta,
@@ -63,7 +114,7 @@ const applyArgs = (
 
 const StoryHost = (args: StoryArgs) => {
   const telemetry = useTelemetryStore();
-  const computed = useComputedStore();
+  const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
   useLayoutEffect(() => {
@@ -86,6 +137,7 @@ const meta: Meta<typeof StoryHost> = {
     lastLapSec: 84.102,
     bestLapSec: 82.891,
     personalBestDelta: -0.565,
+    p1BestLapSec: 81.5,
     settings: DEFAULT_SETTINGS,
   },
 };
@@ -138,4 +190,8 @@ export const NoPredicted: Story = {
   args: {
     settings: { ...DEFAULT_SETTINGS, showPredicted: false },
   },
+};
+
+export const P1IsPlayer: Story = {
+  args: { p1BestLapSec: 83.5 },
 };

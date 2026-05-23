@@ -20,17 +20,17 @@ const DELTA_STATE_CLASS: Record<DeltaState, string> = {
 };
 
 export const DeltaDisplay = observer(() => {
-  const computed = useBackendComputedStore();
+  const { lapDelta } = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference, layout } =
     widgetSettings.getSettings<LapDeltaWidgetSettings>('lap-delta');
   const isHorizontal = layout === 'horizontal';
-  const isSession = reference === 'session_best';
+  const isSessionBest = reference === 'session_best';
 
-  const delta = isSession
-    ? (computed.lapDelta?.sessionBestTotal ?? 0)
-    : (computed.lapDelta?.personalBestTotal ?? 0);
+  const delta = isSessionBest
+    ? (lapDelta?.sessionBestTotal ?? 0)
+    : (lapDelta?.personalBestTotal ?? 0);
 
   const state = getDeltaState(delta);
 

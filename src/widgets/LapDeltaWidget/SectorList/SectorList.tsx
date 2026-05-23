@@ -17,11 +17,12 @@ import {
 } from '@store/root-store-context';
 
 export const SectorList = observer(() => {
-  const computed = useBackendComputedStore();
+  const { lapDelta } = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference, layout, showSectorTimes } =
     widgetSettings.getSettings<LapDeltaWidgetSettings>('lap-delta');
+
   const isHorizontal = layout === 'horizontal';
 
   if (!showSectorTimes) {
@@ -31,10 +32,10 @@ export const SectorList = observer(() => {
   const isSession = reference === 'session_best';
 
   const sectorDeltas = isSession
-    ? (computed.lapDelta?.sessionBestSectors ?? [])
-    : (computed.lapDelta?.personalBestSectors ?? []);
+    ? (lapDelta?.sessionBestSectors ?? [])
+    : (lapDelta?.personalBestSectors ?? []);
 
-  const sectorTimes = computed.lapDelta?.sectorTimes ?? [];
+  const sectorTimes = lapDelta?.sectorTimes ?? [];
   const sectorCount = Math.max(sectorDeltas.length, sectorTimes.length);
 
   const containerClass = isHorizontal
