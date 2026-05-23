@@ -1,3 +1,8 @@
+import { observer } from 'mobx-react-lite';
+
+import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
+import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
+
 import styles from './TimingRow.module.scss';
 
 interface TimingRowProps {
@@ -9,25 +14,28 @@ interface TimingRowProps {
   fill?: boolean;
 }
 
-export const TimingRow = ({
-  label,
-  time,
-  delta,
-  accentColor,
-  deltaColor,
-  fill = false,
-}: TimingRowProps) => (
-  <div
-    className={`${styles.row} ${fill ? styles.fill : ''}`}
-    style={{ borderLeftColor: accentColor }}
-  >
-    <span className={styles.label}>{label}</span>
-    <span className={styles.time}>{time}</span>
-    <span
-      className={`${styles.delta} ${!delta ? styles.hiddenDelta : ''}`}
-      style={{ color: deltaColor ?? accentColor }}
+export const TimingRow = observer(
+  ({
+    label,
+    time,
+    delta,
+    accentColor,
+    deltaColor,
+    fill = false,
+  }: TimingRowProps) => (
+    <div
+      className={`${styles.row} ${fill ? styles.fill : ''}`}
+      style={{ borderLeftColor: accentColor }}
     >
-      {delta || ' '}
-    </span>
-  </div>
+      <UnitLabelText className={styles.label}>{label}</UnitLabelText>
+
+      <UnitValueText value={time} className={styles.time} />
+
+      <UnitValueText
+        value={delta || ' '}
+        color={deltaColor ?? accentColor}
+        className={`${styles.delta} ${!delta ? styles.hiddenDelta : ''}`}
+      />
+    </div>
+  )
 );

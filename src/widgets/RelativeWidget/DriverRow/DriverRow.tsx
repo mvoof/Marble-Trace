@@ -9,11 +9,14 @@ import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
 import { ClassBadge } from '@/components/shared/ClassBadge/ClassBadge';
 import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
 import { computeRelativeGap } from '@utils/widget/relative-utils';
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import type { DriverEntry } from '@/types/bindings';
+import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './DriverRow.module.scss';
+import {
+  useBackendComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 interface DriverRowProps {
   driver: DriverEntry;
@@ -21,9 +24,13 @@ interface DriverRowProps {
 }
 
 export const DriverRow = observer(({ driver, trendDelta }: DriverRowProps) => {
-  const settings = widgetSettingsStore.getRelativeSettings();
+  const computed = useBackendComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings =
+    widgetSettings.getSettings<RelativeWidgetSettings>('relative');
   const player =
-    computedStore.relativeEntries.find((entry) => entry.isPlayer) ?? null;
+    computed.relativeEntries.find((entry) => entry.isPlayer) ?? null;
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 

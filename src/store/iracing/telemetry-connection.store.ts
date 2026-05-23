@@ -8,19 +8,15 @@ import type {
   TelemetryBundle,
 } from '@/types/bindings';
 import { debug } from '@utils/debug';
-
-import { telemetryStore } from './telemetry.store';
-import { computedStore } from './computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
-import { appSettingsStore } from '@store/app-settings.store';
 import type { TelemetryStatus } from '@/types';
+import type { RootStore } from '../root-store';
 
 const EVENT_CAR_DYNAMICS = 1 << 0;
 const EVENT_CAR_INPUTS = 1 << 1;
 const EVENT_LAP_DELTA = 1 << 2;
 const EVENT_CAR_POSITIONS = 1 << 3;
 
-class TelemetryConnection {
+export class TelemetryConnectionStore {
   isConnected = false;
   status: TelemetryStatus = 'waiting';
   error: string | null = null;
@@ -29,21 +25,22 @@ class TelemetryConnection {
   private initId = 0;
   private unlistens: UnlistenFn[] = [];
 
-  constructor() {
+  constructor(private readonly root: RootStore) {
     makeAutoObservable(this, {}, { autoBind: true });
+  }
 
-    // Only master (main window) manages active events in Rust
+  init() {
     if (
       typeof window !== 'undefined' &&
       !window.location.hash.includes('overlay')
     ) {
       reaction(
         () => ({
-          widgets: widgetSettingsStore.allWidgets.map((w) => ({
+          widgets: this.root.widgetSettings.allWidgets.map((w) => ({
             id: w.id,
             enabled: w.userSettings.enabled,
           })),
-          hideAll: appSettingsStore.settings.hideAllWidgets,
+          hideAll: this.root.appSettings.settings.hideAllWidgets,
         }),
         () => this.updateActiveEvents(),
         { fireImmediately: true }
@@ -52,8 +49,8 @@ class TelemetryConnection {
   }
 
   private updateActiveEvents() {
-    const widgets = widgetSettingsStore.allWidgets;
-    const hideAll = appSettingsStore.settings.hideAllWidgets;
+    const widgets = this.root.widgetSettings.allWidgets;
+    const hideAll = this.root.appSettings.settings.hideAllWidgets;
 
     let mask = 0;
 
@@ -90,7 +87,6 @@ class TelemetryConnection {
     void invoke('set_active_events', { mask });
   }
 
-  /** Main window: starts the telemetry stream + subscribes to all events */
   async startStream() {
     const currentId = ++this.initId;
 
@@ -119,7 +115,7 @@ class TelemetryConnection {
       );
 
       if (initialInfo && this.initId === currentId) {
-        telemetryStore.updateSessionInfo(initialInfo);
+        this.root.telemetry.updateSessionInfo(initialInfo);
       }
 
       await invoke('start_telemetry_stream');
@@ -135,7 +131,6 @@ class TelemetryConnection {
     }
   }
 
-  /** Main window: stops the telemetry stream */
   async stopStream() {
     this.initId++;
     this.disposeListeners();
@@ -149,7 +144,6 @@ class TelemetryConnection {
     this.setDisconnected();
   }
 
-  /** Widget windows: listen-only, no stream start/stop */
   async startWidgetListener() {
     this.disposeListeners();
 
@@ -161,14 +155,13 @@ class TelemetryConnection {
       );
 
       if (initialInfo) {
-        telemetryStore.updateSessionInfo(initialInfo);
+        this.root.telemetry.updateSessionInfo(initialInfo);
       }
     } catch (err) {
       debug.telemetry('Failed to fetch initial session info: %o', err);
     }
   }
 
-  /** Widget windows: stop listening */
   stopWidgetListener() {
     this.disposeListeners();
   }
@@ -182,13 +175,13 @@ class TelemetryConnection {
     } else if (status === 'waiting') {
       this.isConnected = false;
 
-      telemetryStore.reset();
-      computedStore.reset();
+      this.root.telemetry.reset();
+      this.root.backendComputed.reset();
     } else if (status === 'disconnected') {
       this.isConnected = false;
 
-      telemetryStore.reset();
-      computedStore.reset();
+      this.root.telemetry.reset();
+      this.root.backendComputed.reset();
     }
   }
 
@@ -201,8 +194,8 @@ class TelemetryConnection {
   private setDisconnected() {
     this.isConnected = false;
     this.status = 'disconnected';
-    telemetryStore.reset();
-    computedStore.reset();
+    this.root.telemetry.reset();
+    this.root.backendComputed.reset();
   }
 
   private onFrameReceived() {
@@ -222,23 +215,28 @@ class TelemetryConnection {
         runInAction(() => {
           if (b.car_dynamics) {
             this.onFrameReceived();
-            telemetryStore.updateCarDynamics(b.car_dynamics);
+            this.root.telemetry.updateCarDynamics(b.car_dynamics);
           }
-          if (b.car_idx) telemetryStore.updateCarIdx(b.car_idx);
-          if (b.car_inputs) telemetryStore.updateCarInputs(b.car_inputs);
+          if (b.car_idx) this.root.telemetry.updateCarIdx(b.car_idx);
+          if (b.car_inputs) this.root.telemetry.updateCarInputs(b.car_inputs);
           if (b.car_positions)
-            telemetryStore.updateCarPositions(b.car_positions);
-          if (b.car_status) telemetryStore.updateCarStatus(b.car_status);
-          if (b.lap_timing) telemetryStore.updateLapTiming(b.lap_timing);
-          if (b.session) telemetryStore.updateSession(b.session);
-          if (b.environment) telemetryStore.updateEnvironment(b.environment);
-          if (b.chassis) telemetryStore.updateChassis(b.chassis);
+            this.root.telemetry.updateCarPositions(b.car_positions);
+          if (b.car_status) this.root.telemetry.updateCarStatus(b.car_status);
+          if (b.lap_timing) this.root.telemetry.updateLapTiming(b.lap_timing);
+          if (b.session) this.root.telemetry.updateSession(b.session);
+          if (b.environment)
+            this.root.telemetry.updateEnvironment(b.environment);
+          if (b.chassis) this.root.telemetry.updateChassis(b.chassis);
 
-          if (b.proximity) computedStore.updateProximity(b.proximity);
-          if (b.fuel) computedStore.updateFuel(b.fuel);
-          if (b.standings) computedStore.updateStandings(b.standings);
-          if (b.pit_stops) computedStore.updatePitStops(b.pit_stops);
-          if (b.lap_delta) computedStore.updateLapDelta(b.lap_delta);
+          if (b.proximity)
+            this.root.backendComputed.updateProximity(b.proximity);
+          if (b.fuel) this.root.backendComputed.updateFuel(b.fuel);
+          if (b.standings)
+            this.root.backendComputed.updateStandings(b.standings);
+          if (b.pit_stops)
+            this.root.backendComputed.updatePitStops(b.pit_stops);
+          if (b.lap_delta)
+            this.root.backendComputed.updateLapDelta(b.lap_delta);
         });
       })
     );
@@ -248,7 +246,7 @@ class TelemetryConnection {
         if (this.initId !== guardId) return;
 
         debug.telemetry('session info received: %o', event.payload);
-        telemetryStore.updateSessionInfo(event.payload);
+        this.root.telemetry.updateSessionInfo(event.payload);
       })
     );
 
@@ -277,7 +275,7 @@ class TelemetryConnection {
         (event) => {
           if (this.initId !== guardId) return;
 
-          telemetryStore.updateWeatherForecast(event.payload);
+          this.root.telemetry.updateWeatherForecast(event.payload);
         }
       )
     );
@@ -291,5 +289,3 @@ class TelemetryConnection {
     this.unlistens = [];
   }
 }
-
-export const telemetryConnectionStore = new TelemetryConnection();

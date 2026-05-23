@@ -1,7 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { TimingRow } from '@/components/shared/TimingRow/TimingRow';
 import {
   formatSectorDelta,
@@ -11,11 +9,20 @@ import {
   SECTOR_ACCENT_COLORS,
 } from '@utils/widget/lap-delta-utils';
 
+import type { LapDeltaWidgetSettings } from '@/types/widget-settings';
 import styles from './SectorList.module.scss';
+import {
+  useBackendComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const SectorList = observer(() => {
+  const { lapDelta } = useBackendComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
   const { reference, layout, showSectorTimes } =
-    widgetSettingsStore.getLapDeltaSettings();
+    widgetSettings.getSettings<LapDeltaWidgetSettings>('lap-delta');
+
   const isHorizontal = layout === 'horizontal';
 
   if (!showSectorTimes) {
@@ -25,10 +32,10 @@ export const SectorList = observer(() => {
   const isSession = reference === 'session_best';
 
   const sectorDeltas = isSession
-    ? (computedStore.lapDelta?.sessionBestSectors ?? [])
-    : (computedStore.lapDelta?.personalBestSectors ?? []);
+    ? (lapDelta?.sessionBestSectors ?? [])
+    : (lapDelta?.personalBestSectors ?? []);
 
-  const sectorTimes = computedStore.lapDelta?.sectorTimes ?? [];
+  const sectorTimes = lapDelta?.sectorTimes ?? [];
   const sectorCount = Math.max(sectorDeltas.length, sectorTimes.length);
 
   const containerClass = isHorizontal

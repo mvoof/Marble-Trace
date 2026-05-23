@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react-lite';
 import { Col, InputNumber, Row, Segmented } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   RadarBarDisplayMode,
   RadarSettings,
@@ -8,13 +7,15 @@ import {
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './shared';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const RadarSettingsPanel = observer(
   ({ widgetId }: { widgetId: 'proximity-radar' | 'radar-bar' }) => {
-    const settings = widgetSettingsStore.getRadarSettings(widgetId);
+    const widgetSettings = useWidgetSettingsStore();
+    const settings = widgetSettings.getSettings<RadarSettings>(widgetId);
 
     const update = (partial: Partial<RadarSettings>) => {
-      widgetSettingsStore.updateUserSettings(widgetId, {
+      widgetSettings.updateUserSettings(widgetId, {
         ...settings,
         ...partial,
       });

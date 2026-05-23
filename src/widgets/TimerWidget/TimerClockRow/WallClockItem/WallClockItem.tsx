@@ -1,12 +1,16 @@
 import { observer } from 'mobx-react-lite';
 
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { useWallClock } from '@hooks/widget/useWallClock';
 
 import styles from './WallClockItem.module.scss';
+import type { TimerWidgetSettings } from '@/types/widget-settings';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const WallClockItem = observer(() => {
-  const { showWallClock } = widgetSettingsStore.getTimerSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { showWallClock } =
+    widgetSettings.getSettings<TimerWidgetSettings>('timer');
   const wallClock = useWallClock();
 
   if (!showWallClock) {

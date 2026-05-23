@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import { unitsStore } from '@store/units.store';
 import { useProximityRadarData } from '@hooks/common/useProximityRadarData';
 import {
   distanceUnit,
@@ -16,6 +15,7 @@ import {
 } from '@utils/constants/radar-constants';
 
 import styles from './RadarDisplay.module.scss';
+import { useUnitsStore } from '@store/root-store-context';
 
 const RADAR_RENDER_RANGE = 10;
 const PX_PER_METER = 22;
@@ -42,9 +42,11 @@ const CarIcon = observer(
 );
 
 export const RadarDisplay = observer(() => {
+  const units = useUnitsStore();
+
   const { proximity, spotterLeft, spotterRight, visible } =
     useProximityRadarData('proximity-radar', RADAR_SEARCH_RADIUS);
-  const { system } = unitsStore;
+  const { unitSystem: system } = units;
 
   if (!visible || !proximity) {
     return null;

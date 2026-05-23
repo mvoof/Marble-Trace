@@ -1,13 +1,22 @@
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '@store/iracing/computed.store';
-import { telemetryStore } from '@store/iracing/telemetry.store';
+import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
+import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
+import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
 
 import styles from './PitWarningStrategy.module.scss';
+import {
+  useBackendComputedStore,
+  useTelemetryStore,
+  useUnitsStore,
+} from '@store/root-store-context';
 
 export const PitWarningStrategy = observer(() => {
-  const fuel = computedStore.fuel;
-  const fuelMax = telemetryStore.driverInfo?.DriverCarFuelMaxLtr ?? null;
+  const { fuel } = useBackendComputedStore();
+  const { driverInfo } = useTelemetryStore();
+  const { unitSystem } = useUnitsStore();
+
+  const fuelMax = driverInfo?.DriverCarFuelMaxLtr ?? null;
   const fuelToAddWithBuffer = fuel?.fuelToAddWithBuffer ?? null;
 
   const isMultiStop =
@@ -20,21 +29,31 @@ export const PitWarningStrategy = observer(() => {
       {isMultiStop && fuelMax !== null && fuelToAddWithBuffer !== null && (
         <div className={styles.pitWarningStrategy}>
           <div className={styles.strategyRow}>
-            <span className={styles.strategyLabel}>STOPS</span>
-            <span className={styles.strategyValue}>
-              {Math.ceil(fuelToAddWithBuffer / fuelMax)}
-            </span>
+            <UnitLabelText className={styles.strategyLabel}>
+              STOPS
+            </UnitLabelText>
+
+            <UnitValueText
+              className={styles.strategyValue}
+              value={Math.ceil(fuelToAddWithBuffer / fuelMax)}
+            />
           </div>
 
           <div className={styles.strategyDivider} />
 
           <div className={styles.strategyRow}>
-            <span className={styles.strategyLabel}>REC. FILL</span>
-            <span className={styles.strategyValue}>
-              {(
-                fuelToAddWithBuffer / Math.ceil(fuelToAddWithBuffer / fuelMax)
-              ).toFixed(1)}
-            </span>
+            <UnitLabelText className={styles.strategyLabel}>
+              REC. FILL
+            </UnitLabelText>
+
+            <UnitValueText
+              className={styles.strategyValue}
+              value={formatFuel(
+                fuelToAddWithBuffer / Math.ceil(fuelToAddWithBuffer / fuelMax),
+                unitSystem
+              )}
+              unit={fuelUnit(unitSystem)}
+            />
           </div>
         </div>
       )}

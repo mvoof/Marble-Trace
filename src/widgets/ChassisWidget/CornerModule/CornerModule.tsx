@@ -1,8 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { unitsStore } from '@store/units.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import type { CornerPosition } from '@widgets/ChassisWidget/types';
 import { buildCornerData, computeAxleDiff } from '@utils/widget/chassis-utils';
 import { SuspensionText } from './SuspensionText';
@@ -10,6 +7,12 @@ import { TireWearCell } from './TireWearCell/TireWearCell';
 import { TireTempCell } from './TireTempCell/TireTempCell';
 import { TirePressureOverlay } from './TirePressureOverlay/TirePressureOverlay';
 import styles from './CornerModule.module.scss';
+import type { ChassisWidgetSettings } from '@/types/widget-settings';
+import {
+  useTelemetryStore,
+  useUnitsStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 const SUSPENSION_BENT_THRESHOLD_M = 0.018;
 
@@ -27,24 +30,29 @@ interface CornerModuleProps {
 
 export const CornerModule = observer(
   ({ position, isRight }: CornerModuleProps) => {
+    const { chassis } = useTelemetryStore();
+    const { unitSystem } = useUnitsStore();
+
+    const widgetSettings = useWidgetSettingsStore();
+
     const { showSuspensionAndBrakes } =
-      widgetSettingsStore.getChassisSettings();
-    const { chassis } = telemetryStore;
-    const { system } = unitsStore;
+      widgetSettings.getSettings<ChassisWidgetSettings>('chassis');
 
     const [axleA, axleB] = AXLE_PAIRS[position];
+
     const axleDiff = computeAxleDiff(
       chassis?.[`${axleA}_ride_height`],
       chassis?.[`${axleB}_ride_height`]
     );
+
     const isSuspensionBent =
       axleDiff !== null && Math.abs(axleDiff) > SUSPENSION_BENT_THRESHOLD_M;
 
-    const isMetric = system === 'metric';
+    const isMetric = unitSystem === 'metric';
     const tempUnit = isMetric ? '°C' : '°F';
     const lengthUnit = isMetric ? 'mm' : 'in';
 
-    const data = buildCornerData(position, chassis, system);
+    const data = buildCornerData(position, chassis, unitSystem);
 
     const { isPunctured, isBrakeOverheated } = data;
     const hasDamage = isSuspensionBent || isBrakeOverheated;

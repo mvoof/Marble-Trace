@@ -1,23 +1,29 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { resolveSessionLaps } from '@utils/formatters/telemetry-format';
 import { formatLapCount } from '@utils/widget/timer-utils';
 
 import styles from './LapsItem.module.scss';
+import type { TimerWidgetSettings } from '@/types/widget-settings';
+import {
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const LapsItem = observer(() => {
-  const { showLaps } = widgetSettingsStore.getTimerSettings();
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { showLaps } = widgetSettings.getSettings<TimerWidgetSettings>('timer');
 
   if (!showLaps) {
     return null;
   }
 
-  const session = telemetryStore.session;
-  const sessions = telemetryStore.sessionInfo?.SessionInfo?.Sessions ?? [];
-  const driverInfo = telemetryStore.driverInfo;
-  const carIdx = telemetryStore.carIdx;
+  const session = telemetry.session;
+  const sessions = telemetry.sessionInfo?.SessionInfo?.Sessions ?? [];
+  const driverInfo = telemetry.driverInfo;
+  const carIdx = telemetry.carIdx;
 
   const sessionNum = session?.session_num ?? null;
   const currentSession =
@@ -34,7 +40,7 @@ export const LapsItem = observer(() => {
           currentSession?.SessionLaps,
           remain,
           currentLap,
-          telemetryStore.leaderBestLapTime
+          telemetry.leaderBestLapTime
         )
       : null;
 

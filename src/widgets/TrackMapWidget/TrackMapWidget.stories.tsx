@@ -6,6 +6,7 @@ import {
   trackData as STORED_TRACK,
 } from '@/storybook/test-data';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
+import { withStore } from '../../../.storybook/decorators';
 
 const TRACK_DATA = {
   svgPath: STORED_TRACK.svgPath,
@@ -55,7 +56,10 @@ const meta: Meta<typeof TrackMapView> = {
   title: 'Widgets/TrackMapWidget',
   component: TrackMapView,
   parameters: { layout: 'centered' },
-  decorators: [widgetDecorator({ width: DESIGN_SIZE, height: DESIGN_SIZE })],
+  decorators: [
+    withStore(),
+    widgetDecorator({ width: DESIGN_SIZE, height: DESIGN_SIZE }),
+  ],
   args: {
     cars: CARS_ON_TRACK,
     classColors: CLASS_COLORS,
@@ -117,5 +121,24 @@ export const AllLabels: Story = {
       showPlayerLabel: true,
       leaderLabelMode: 'all',
     },
+  },
+};
+
+export const RotationMode: Story = {
+  args: {
+    settings: { ...DEFAULT_SETTINGS, rotationMode: 'player' },
+  },
+};
+
+export const WaitingForSF: Story = {
+  args: {
+    trackData: null,
+    isWaitingForSF: true,
+  },
+};
+
+export const LegendLeft: Story = {
+  args: {
+    settings: { ...DEFAULT_SETTINGS, legendPosition: 'left' },
   },
 };

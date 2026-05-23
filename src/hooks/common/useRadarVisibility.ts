@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useReducer } from 'react';
 import type { NearbyCar } from '@/types/bindings';
 import type { RadarSettings } from '@/types/widget-settings';
-import { appSettingsStore } from '@store/app-settings.store';
+import { useAppSettingsStore } from '@store/root-store-context';
 
 type VisibilityAction = 'SHOW' | 'HIDE';
 
@@ -24,10 +24,12 @@ export const useRadarVisibility = (
   settings: RadarSettings,
   hasSpotterContact: boolean = false
 ): boolean => {
+  const appSettings = useAppSettingsStore();
+
   const [visible, dispatch] = useReducer(visibilityReducer, false);
 
   const { visibilityMode, proximityThreshold, hideDelay } = settings;
-  const { dragMode } = appSettingsStore;
+  const { dragMode } = appSettings;
 
   const hasNearby = useMemo(
     () =>

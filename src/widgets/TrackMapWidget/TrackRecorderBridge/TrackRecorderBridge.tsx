@@ -1,12 +1,14 @@
 import type { RefObject } from 'react';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { autorun, runInAction } from 'mobx';
 import { listen } from '@tauri-apps/api/event';
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { TrackRecorder } from '@utils/telemetry/track-recorder';
 import type { TrackPoint } from '@/types';
 import type { RecordingOverlayHandle } from '@widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
+import {
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 interface TrackData {
   svgPath: string;
@@ -43,6 +45,8 @@ export const TrackRecorderBridge = ({
   onSaveTrack,
   recordingOverlayRef,
 }: TrackRecorderBridgeProps) => {
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
   const recorderRef = useRef(new TrackRecorder());
   const hasSavedRef = useRef(false);
   const lastProgressRef = useRef(-1);
@@ -68,7 +72,7 @@ export const TrackRecorderBridge = ({
     recordingOverlayRef,
   };
 
-  const reset = () => {
+  const reset = useCallback(() => {
     recorderRef.current.reset();
     hasSavedRef.current = false;
     lastProgressRef.current = -1;
@@ -76,7 +80,7 @@ export const TrackRecorderBridge = ({
     lastIsWaitingForSFRef.current = null;
     lastIsRecordingRef.current = null;
 
-    runInAction(() => widgetSettingsStore.setTrackMapForceStartPending(false));
+    runInAction(() => widgetSettings.setTrackMapForceStartPending(false));
 
     callbacksRef.current.onIsRecordingChange(false);
     callbacksRef.current.onWaitingForSFChange?.(false);
@@ -88,13 +92,13 @@ export const TrackRecorderBridge = ({
       overlay.setRecording(false);
       overlay.setProgress(0);
     }
-  };
+  }, [widgetSettings]);
 
   useEffect(() => {
     if (!trackId) return;
 
     reset();
-  }, [trackId]);
+  }, [trackId, reset]);
 
   useEffect(() => {
     const unlistenClear = listen('track-map:clear', () => {
@@ -102,19 +106,19 @@ export const TrackRecorderBridge = ({
     });
 
     const unlistenForceStart = listen('track-map:force-start', () => {
-      runInAction(() => widgetSettingsStore.setTrackMapForceStartPending(true));
+      runInAction(() => widgetSettings.setTrackMapForceStartPending(true));
     });
 
     return () => {
       void unlistenClear.then((fn) => fn());
       void unlistenForceStart.then((fn) => fn());
     };
-  }, []);
+  }, [reset, widgetSettings]);
 
   useEffect(() => {
     const dispose = autorun(() => {
-      const { carDynamics, lapTiming } = telemetryStore;
-      const { isTrackMapForceStartPending } = widgetSettingsStore;
+      const { carDynamics, lapTiming } = telemetry;
+      const { isTrackMapForceStartPending } = widgetSettings;
 
       if (!carDynamics || !lapTiming) return;
 
@@ -160,9 +164,7 @@ export const TrackRecorderBridge = ({
       // Once complete, we stay complete until trackId changes or reset is called.
       if (!recorder.isRecording && !recorder.isComplete && isMoving) {
         if (crossedSF || isTrackMapForceStartPending) {
-          runInAction(() =>
-            widgetSettingsStore.setTrackMapForceStartPending(false)
-          );
+          runInAction(() => widgetSettings.setTrackMapForceStartPending(false));
 
           hasSavedRef.current = false;
           recorder.start();
@@ -218,7 +220,7 @@ export const TrackRecorderBridge = ({
     });
 
     return dispose;
-  }, []);
+  }, [telemetry, widgetSettings]);
 
   return null;
 };

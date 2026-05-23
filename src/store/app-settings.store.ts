@@ -23,7 +23,7 @@ export type UpdateStatus =
   | 'ready'
   | 'error';
 
-class AppSettingsStore {
+export class AppSettingsStore {
   settings: AppSettings = { ...DEFAULT_APP_SETTINGS };
 
   dragMode = false;
@@ -36,13 +36,15 @@ class AppSettingsStore {
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
+  }
 
-    void this.init().catch((err) =>
+  init() {
+    void this._initAsync().catch((err) =>
       console.error('Failed to initialize AppSettingsStore:', err)
     );
   }
 
-  async init() {
+  private async _initAsync() {
     const version = await getVersion();
 
     runInAction(() => {
@@ -206,5 +208,3 @@ class AppSettingsStore {
     this.settings.hideWidgetsWhenGameClosed = value;
   }
 }
-
-export const appSettingsStore = new AppSettingsStore();

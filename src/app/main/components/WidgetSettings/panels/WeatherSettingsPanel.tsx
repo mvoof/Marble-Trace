@@ -1,15 +1,17 @@
 import { observer } from 'mobx-react-lite';
 import { Switch } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { WeatherWidgetSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const WeatherSettingsPanel = observer(() => {
-  const settings = widgetSettingsStore.getWeatherSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getSettings<WeatherWidgetSettings>('weather');
 
   const update = (partial: Partial<WeatherWidgetSettings>) => {
-    widgetSettingsStore.updateUserSettings('weather', {
+    widgetSettings.updateUserSettings('weather', {
       ...settings,
       ...partial,
     });

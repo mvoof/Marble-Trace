@@ -1,23 +1,31 @@
 import { observer } from 'mobx-react-lite';
 import { Droplets, Thermometer } from 'lucide-react';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { unitsStore } from '@store/units.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
+import type { SpeedWidgetSettings } from '@/types/widget-settings';
 import { formatTemp, tempUnit } from '@utils/formatters/telemetry-format';
 import { isEngineTempWarning } from '@utils/widget/speed-utils';
 
 import styles from './EnginePanel.module.scss';
+import {
+  useTelemetryStore,
+  useUnitsStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const EnginePanel = observer(() => {
-  const { showTemps } = widgetSettingsStore.getSpeedSettings();
+  const telemetry = useTelemetryStore();
+  const units = useUnitsStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { showTemps } =
+    widgetSettings.getSettings<SpeedWidgetSettings>('speed');
 
   if (!showTemps) {
     return null;
   }
 
-  const carStatus = telemetryStore.carStatus;
-  const system = unitsStore.system;
+  const carStatus = telemetry.carStatus;
+  const system = units.unitSystem;
 
   const oilTemp = formatTemp(carStatus?.oil_temp ?? null, system);
   const waterTemp = formatTemp(carStatus?.water_temp ?? null, system);

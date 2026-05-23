@@ -1,12 +1,10 @@
 import { runInAction } from 'mobx';
-import { appSettingsStore } from '@store/app-settings.store';
-import { unitsStore } from '@store/units.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { DEFAULT_WIDGETS } from '@store/widget-defaults';
 import type { UnitSystem } from '@/types';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import type { AppSettings } from '@store/app-settings.store';
 import { filterToDefaults } from '@utils/filter-to-defaults';
+import type { RootStore } from '../root-store';
 
 export const SETTINGS_FILE = 'settings.json';
 
@@ -55,15 +53,18 @@ const restoreWidgets = (
   return [...result, ...unseenWidgets];
 };
 
-export const hydrateStores = (loadedSettings: Partial<Settings>) => {
+export const hydrateStores = (
+  root: RootStore,
+  loadedSettings: Partial<Settings>
+) => {
   runInAction(() => {
-    appSettingsStore.applySettings(loadedSettings.app ?? {});
+    root.appSettings.applySettings(loadedSettings.app ?? {});
 
     if (loadedSettings.units) {
-      unitsStore.setSystem(loadedSettings.units.system);
+      root.units.setSystem(loadedSettings.units.system);
     }
 
-    widgetSettingsStore.setWidgets(
+    root.widgetSettings.setWidgets(
       loadedSettings.widgets
         ? restoreWidgets(loadedSettings.widgets)
         : DEFAULT_WIDGETS
@@ -76,13 +77,13 @@ interface Store {
   save(): Promise<void>;
 }
 
-export const saveSettings = async (store: Store) => {
+export const saveSettings = async (store: Store, root: RootStore) => {
   await store.set('settings', {
-    app: { ...appSettingsStore.settings },
+    app: { ...root.appSettings.settings },
     units: {
-      system: unitsStore.system,
+      system: root.units.unitSystem,
     },
-    widgets: widgetSettingsStore.allWidgets,
+    widgets: root.widgetSettings.allWidgets,
   });
 
   await store.save();

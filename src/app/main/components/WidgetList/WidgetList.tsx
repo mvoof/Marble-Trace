@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 import { Switch } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import styles from './WidgetList.module.scss';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 const WidgetListItem = observer(
   ({
@@ -14,8 +14,10 @@ const WidgetListItem = observer(
     isActive: boolean;
     onSelect: (id: string) => void;
   }) => {
+    const widgetSettings = useWidgetSettingsStore();
+
     const handleToggle = (checked: boolean) => {
-      widgetSettingsStore.setWidgetEnabled(widget.id, checked);
+      widgetSettings.setWidgetEnabled(widget.id, checked);
     };
 
     return (
@@ -61,9 +63,11 @@ export const WidgetList = observer(
     selectedId: string | null;
     onSelect: (id: string) => void;
   }) => {
+    const widgetSettings = useWidgetSettingsStore();
+
     return (
       <div className={styles.list}>
-        {widgetSettingsStore.allWidgets.map((widget) => (
+        {widgetSettings.allWidgets.map((widget) => (
           <WidgetListItem
             key={widget.id}
             widget={widget}

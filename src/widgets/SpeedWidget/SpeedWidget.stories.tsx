@@ -1,13 +1,21 @@
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useEffect, useRef } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
 import type { SessionInfo } from '@/types/bindings';
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
-import { unitsStore } from '@store/units.store';
+import type { SpeedWidgetSettings } from '@/types/widget-settings';
+import type { TelemetryStore } from '@store/iracing/telemetry.store';
+import type { WidgetSettingsStore } from '@store/widget-settings.store';
+import type { UnitsStore } from '@store/units.store';
+import {
+  useTelemetryStore,
+  useWidgetSettingsStore,
+  useUnitsStore,
+} from '@store/root-store-context';
 import { SpeedWidget } from './SpeedWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
+import { withStore } from '../../../.storybook/decorators';
+import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
 
 const DESIGN_WIDTH = 500;
 const DESIGN_HEIGHT = 120;
@@ -42,27 +50,34 @@ interface StoryArgs {
   showRpmColor: boolean;
 }
 
-const applyArgs = (args: StoryArgs) => {
+const applyArgs = (
+  stores: {
+    telemetry: TelemetryStore;
+    widgetSettings: WidgetSettingsStore;
+    units: UnitsStore;
+  },
+  args: StoryArgs
+) => {
   runInAction(() => {
-    telemetryStore.updateSessionInfo(BASE_SESSION_INFO);
+    stores.telemetry.updateSessionInfo(BASE_SESSION_INFO);
 
-    telemetryStore.updateCarDynamics({
+    stores.telemetry.updateCarDynamics({
       speed: args.speedKmh / 3.6,
       rpm: args.rpm,
       gear: args.gear,
-    } as Parameters<typeof telemetryStore.updateCarDynamics>[0]);
+    } as Parameters<typeof stores.telemetry.updateCarDynamics>[0]);
 
-    telemetryStore.updateCarStatus({
+    stores.telemetry.updateCarStatus({
       on_pit_road: args.onPitRoad,
       engine_warnings: args.engineWarnings,
       oil_temp: args.oilTemp,
       water_temp: args.waterTemp,
-    } as Parameters<typeof telemetryStore.updateCarStatus>[0]);
+    } as Parameters<typeof stores.telemetry.updateCarStatus>[0]);
 
-    unitsStore.setSystem(args.units);
+    stores.units.setSystem(args.units);
 
-    widgetSettingsStore.updateUserSettings('speed', {
-      ...widgetSettingsStore.getSpeedSettings(),
+    stores.widgetSettings.updateUserSettings('speed', {
+      ...stores.widgetSettings.getSettings<SpeedWidgetSettings>('speed'),
       showRpmBar: args.showRpmBar,
       showTemps: args.showTemps,
       showRpmColor: args.showRpmColor,
@@ -71,19 +86,24 @@ const applyArgs = (args: StoryArgs) => {
 };
 
 const StoryRenderer = (args: StoryArgs) => {
-  useEffect(() => {
-    applyArgs(args);
-  });
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
+  const units = useUnitsStore();
+
+  useLayoutEffect(() => {
+    applyArgs({ telemetry, widgetSettings, units }, args);
+  }, [args, telemetry, widgetSettings, units]);
 
   return <SpeedWidget />;
 };
 
 const RpmAnimatedRenderer = () => {
+  const telemetry = useTelemetryStore();
   const rpmRef = useRef(800);
   const dirRef = useRef(1);
 
   useEffect(() => {
-    runInAction(() => telemetryStore.updateSessionInfo(BASE_SESSION_INFO));
+    runInAction(() => telemetry.updateSessionInfo(BASE_SESSION_INFO));
 
     const intervalId = setInterval(() => {
       rpmRef.current += dirRef.current * 120;
@@ -95,16 +115,16 @@ const RpmAnimatedRenderer = () => {
       }
 
       runInAction(() => {
-        telemetryStore.updateCarDynamics({
+        telemetry.updateCarDynamics({
           speed: rpmRef.current / 140,
           rpm: rpmRef.current,
           gear: Math.max(1, Math.ceil(rpmRef.current / 1500)),
-        } as Parameters<typeof telemetryStore.updateCarDynamics>[0]);
+        } as Parameters<typeof telemetry.updateCarDynamics>[0]);
       });
     }, 50);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [telemetry]);
 
   return <SpeedWidget />;
 };
@@ -114,6 +134,7 @@ const meta: Meta<StoryArgs> = {
   render: StoryRenderer,
   parameters: { layout: 'centered' },
   decorators: [
+    withStore(seedFromSnapshot),
     widgetDecorator({
       width: DESIGN_WIDTH,
       height: DESIGN_HEIGHT,
@@ -188,6 +209,22 @@ export const TempWarning: Story = {
 
 export const Imperial: Story = {
   args: { ...baseArgs, speedKmh: 200, rpm: 7200, gear: 5, units: 'imperial' },
+};
+
+export const Reverse: Story = {
+  args: { ...baseArgs, speedKmh: 8, rpm: 1800, gear: -1 },
+};
+
+export const Neutral: Story = {
+  args: { ...baseArgs, speedKmh: 0, rpm: 900, gear: 0 },
+};
+
+export const NoRpmBar: Story = {
+  args: { ...baseArgs, showRpmBar: false },
+};
+
+export const WithTemps: Story = {
+  args: { ...baseArgs, oilTemp: 95, waterTemp: 88, showTemps: true },
 };
 
 export const RpmAnimated: StoryObj = {

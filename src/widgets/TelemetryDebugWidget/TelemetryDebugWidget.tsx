@@ -3,10 +3,12 @@ import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
 
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
-import { telemetryConnectionStore } from '@store/iracing/telemetry-connection.store';
-import { telemetryStore } from '@store/iracing/telemetry.store';
 
 import styles from './TelemetryDebugWidget.module.scss';
+import {
+  useTelemetryConnectionStore,
+  useTelemetryStore,
+} from '@store/root-store-context';
 
 const fmt = (v: number | null | undefined, decimals = 1): string =>
   v != null ? v.toFixed(decimals) : '—';
@@ -21,6 +23,9 @@ const Row = observer(
 );
 
 export const TelemetryDebugWidget = observer(() => {
+  const telemetryConnection = useTelemetryConnectionStore();
+  const telemetry = useTelemetryStore();
+
   const hasLoggedRef = useRef(false);
 
   const {
@@ -32,8 +37,8 @@ export const TelemetryDebugWidget = observer(() => {
     driverInfo,
     weekendInfo,
     environment,
-  } = telemetryStore;
-  const status = telemetryConnectionStore.status;
+  } = telemetry;
+  const status = telemetryConnection.status;
 
   useEffect(() => {
     if (driverInfo && !hasLoggedRef.current) {

@@ -1,7 +1,7 @@
 import { type CSSProperties, type ReactNode } from 'react';
 import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 interface CardProps {
   title?: string;
@@ -44,12 +44,14 @@ export const HotkeyRecorderWrapper = ({
   widgetId: string;
   currentHotkey: string;
 }) => {
+  const widgetSettings = useWidgetSettingsStore();
+
   return (
     <HotkeyRecorder
       label="Toggle Hotkey"
       currentHotkey={currentHotkey}
       onApply={(key: string) =>
-        widgetSettingsStore.updateUserSettings(widgetId, { hotkey: key })
+        widgetSettings.updateUserSettings(widgetId, { hotkey: key })
       }
     />
   );

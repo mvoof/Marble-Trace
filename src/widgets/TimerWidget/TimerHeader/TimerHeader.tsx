@@ -1,13 +1,14 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-
 import { TimerFlagBadge } from './TimerFlagBadge/TimerFlagBadge';
 import styles from './TimerHeader.module.scss';
+import { useTelemetryStore } from '@store/root-store-context';
 
 export const TimerHeader = observer(() => {
-  const session = telemetryStore.session;
-  const sessions = telemetryStore.sessionInfo?.SessionInfo?.Sessions ?? [];
+  const telemetry = useTelemetryStore();
+
+  const session = telemetry.session;
+  const sessions = telemetry.sessionInfo?.SessionInfo?.Sessions ?? [];
 
   const sessionNum = session?.session_num ?? null;
   const currentSession =

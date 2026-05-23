@@ -1,14 +1,20 @@
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
+import type { RadarSettings } from '@/types/widget-settings';
 import { useRadarVisibility } from './useRadarVisibility';
 import { useWidgetAutoHide } from './useWidgetAutoHide';
+import {
+  useBackendComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const useProximityRadarData = (
   widgetId: 'proximity-radar' | 'radar-bar',
   searchRadius: number
 ) => {
-  const proximity = computedStore.proximity;
-  const radarSettings = widgetSettingsStore.getRadarSettings(widgetId);
+  const computed = useBackendComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const proximity = computed.proximity;
+  const radarSettings = widgetSettings.getSettings<RadarSettings>(widgetId);
 
   const nearbyCars =
     proximity?.nearbyCars.filter((car) => car.clearance <= searchRadius) ?? [];

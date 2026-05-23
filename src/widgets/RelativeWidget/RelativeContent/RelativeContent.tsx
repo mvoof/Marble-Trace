@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '@store/iracing/computed.store';
 import { useVisibleRowCount } from '@hooks/common/useVisibleRowCount';
 import { DriverRow } from '@widgets/RelativeWidget/DriverRow/DriverRow';
 import { computeRelativeGap } from '@utils/widget/relative-utils';
 import { TREND_SAMPLE_INTERVAL_MS } from '@utils/widget/widget-utils';
 
 import styles from './RelativeContent.module.scss';
+import { useBackendComputedStore } from '@store/root-store-context';
 
 export const RelativeContent = observer(() => {
-  const entries = computedStore.relativeEntries;
+  const computed = useBackendComputedStore();
+
+  const entries = computed.relativeEntries;
 
   const prevGapTimesRef = useRef<Map<number, number>>(new Map());
   const lastSnapshotTimeRef = useRef<number>(0);

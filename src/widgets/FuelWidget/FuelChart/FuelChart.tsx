@@ -1,21 +1,30 @@
 import { useLayoutEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { computedStore } from '@store/iracing/computed.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { drawBarChart, drawLineChart } from './chart-renderers';
 
+import type { FuelWidgetSettings } from '@/types/widget-settings';
 import styles from './FuelChart.module.scss';
+import {
+  useBackendComputedStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const FuelChart = observer(() => {
-  const settings = widgetSettingsStore.getFuelSettings();
-  const history = computedStore.fuel?.lapFuelHistory ?? [];
+  const { fuel } = useBackendComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
+  const fuelHistory = fuel?.lapFuelHistory ?? [];
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
-    const currentHistory = computedStore.fuel?.lapFuelHistory ?? [];
-    const currentSettings = widgetSettingsStore.getFuelSettings();
+    const currentHistory = fuel?.lapFuelHistory ?? [];
+
+    const currentSettings =
+      widgetSettings.getSettings<FuelWidgetSettings>('fuel');
 
     if (!canvas || currentHistory.length < 2) {
       return;
@@ -30,11 +39,15 @@ export const FuelChart = observer(() => {
     const avg =
       currentHistory.reduce((acc: number, val: number) => acc + val, 0) /
       currentHistory.length;
+
     const dpr = window.devicePixelRatio || 1;
+
     const width = canvas.offsetWidth;
     const height = canvas.offsetHeight;
+
     canvas.width = width * dpr;
     canvas.height = height * dpr;
+
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, width, height);
 
@@ -59,7 +72,7 @@ export const FuelChart = observer(() => {
     }
   });
 
-  if (!settings.showChart || history.length < 2) {
+  if (!settings.showChart || fuelHistory.length < 2) {
     return null;
   }
 

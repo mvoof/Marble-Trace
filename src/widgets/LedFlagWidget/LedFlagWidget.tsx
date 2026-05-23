@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { useFlagBlink } from '@hooks/flags-hooks';
 import {
   MIN_SINGLE_LED_PX,
   computeDiodesPerBlock,
@@ -12,8 +11,6 @@ import { LedMatrix } from './LedMatrix/LedMatrix';
 import styles from './LedFlagWidget.module.scss';
 
 export const LedFlagWidget = observer(() => {
-  const blinkOn = useFlagBlink();
-
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const [layout, setLayout] = useState({
@@ -57,9 +54,9 @@ export const LedFlagWidget = observer(() => {
   return (
     <div ref={wrapperRef} className={styles.wrapper}>
       {layout.isSingleLed ? (
-        <SingleLed blinkOn={blinkOn} />
+        <SingleLed />
       ) : (
-        <LedMatrix diodesPerBlock={layout.diodesPerBlock} blinkOn={blinkOn} />
+        <LedMatrix diodesPerBlock={layout.diodesPerBlock} />
       )}
     </div>
   );

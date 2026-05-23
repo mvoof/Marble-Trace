@@ -1,49 +1,78 @@
 import { action, makeAutoObservable, reaction } from 'mobx';
 
 import type { FlagType } from '@/types';
+import type { FlagDisplaySettings } from '@/types/widget-settings';
 import {
   parseAllSessionFlags,
   parseSessionFlags,
 } from '@utils/formatters/flags-utils';
-import { widgetSettingsStore } from '@store/widget-settings.store';
-import { telemetryStore } from './iracing/telemetry.store';
+import type { RootStore } from './root-store';
 
 const NO_FLAG: FlagType = 'none';
 const NO_FLAGS: FlagType[] = [];
+const FLAG_BLINK_INTERVAL_MS = 400;
+const BLINK_FLAG_TYPES = new Set<FlagType>(['yellow', 'red']);
 
 interface HoldState {
   timer: ReturnType<typeof setTimeout> | null;
 }
 
-class FlagsStore {
+export class FlagsStore {
   displayFlags: FlagType[] = [];
   ledDisplayFlag: FlagType = NO_FLAG;
+  blinkOn = true;
 
   private readonly flatHold: HoldState = { timer: null };
   private readonly ledHold: HoldState = { timer: null };
+  private blinkInterval: ReturnType<typeof setInterval> | null = null;
 
-  constructor() {
+  constructor(private readonly root: RootStore) {
     makeAutoObservable(this);
-    // widgetSettingsStore is not yet assigned when this constructor runs due to
-    // module initialization order. Deferring to a microtask ensures all store
-    // singletons are initialized before reactions access them.
-    void Promise.resolve().then(() => {
-      this.initFlatHold();
-      this.initLedHold();
-    });
+  }
+
+  init() {
+    this.createHoldReaction(
+      () => this.parsedFlags,
+      (flags) => flags.length === 0,
+      NO_FLAGS,
+      () =>
+        this.root.widgetSettings.getSettings<FlagDisplaySettings>('flat-flags')
+          .holdDuration,
+      (value) => {
+        this.displayFlags = value;
+      },
+      () => this.displayFlags,
+      this.flatHold
+    );
+
+    this.createHoldReaction(
+      () => this.parsedFlag,
+      (flag) => flag === NO_FLAG,
+      NO_FLAG,
+      () =>
+        this.root.widgetSettings.getSettings<FlagDisplaySettings>('led-flags')
+          .holdDuration,
+      (value) => {
+        this.ledDisplayFlag = value;
+      },
+      () => this.ledDisplayFlag,
+      this.ledHold
+    );
+
+    this.initBlink();
   }
 
   get parsedFlags(): FlagType[] {
     return parseAllSessionFlags(
-      telemetryStore.session?.session_flags ?? null,
-      telemetryStore.session?.player_car_flags ?? null
+      this.root.telemetry.session?.session_flags ?? null,
+      this.root.telemetry.session?.player_car_flags ?? null
     );
   }
 
   get parsedFlag(): FlagType {
     return parseSessionFlags(
-      telemetryStore.session?.session_flags ?? null,
-      telemetryStore.session?.player_car_flags ?? null
+      this.root.telemetry.session?.session_flags ?? null,
+      this.root.telemetry.session?.player_car_flags ?? null
     );
   }
 
@@ -62,6 +91,7 @@ class FlagsStore {
         if (!isEmpty(value)) {
           if (hold.timer) {
             clearTimeout(hold.timer);
+
             hold.timer = null;
           }
 
@@ -72,6 +102,7 @@ class FlagsStore {
               hold.timer = setTimeout(
                 action(() => {
                   setValue(emptyValue);
+
                   hold.timer = null;
                 }),
                 holdDuration * 1000
@@ -81,6 +112,7 @@ class FlagsStore {
             action(() => {
               if (hold.timer) {
                 clearTimeout(hold.timer);
+
                 hold.timer = null;
               }
 
@@ -92,33 +124,33 @@ class FlagsStore {
     );
   }
 
-  private initFlatHold() {
-    this.createHoldReaction(
-      () => this.parsedFlags,
-      (flags) => flags.length === 0,
-      NO_FLAGS,
+  private initBlink() {
+    reaction(
       () =>
-        widgetSettingsStore.getFlagDisplaySettings('flat-flags').holdDuration,
-      (value) => {
-        this.displayFlags = value;
-      },
-      () => this.displayFlags,
-      this.flatHold
-    );
-  }
+        BLINK_FLAG_TYPES.has(this.ledDisplayFlag) ||
+        this.displayFlags.some((flag) => BLINK_FLAG_TYPES.has(flag)),
+      (shouldBlink) => {
+        if (shouldBlink) {
+          if (!this.blinkInterval) {
+            this.blinkInterval = setInterval(
+              action(() => {
+                this.blinkOn = !this.blinkOn;
+              }),
+              FLAG_BLINK_INTERVAL_MS
+            );
+          }
+        } else {
+          if (this.blinkInterval) {
+            clearInterval(this.blinkInterval);
 
-  private initLedHold() {
-    this.createHoldReaction(
-      () => this.parsedFlag,
-      (flag) => flag === NO_FLAG,
-      NO_FLAG,
-      () =>
-        widgetSettingsStore.getFlagDisplaySettings('led-flags').holdDuration,
-      (value) => {
-        this.ledDisplayFlag = value;
-      },
-      () => this.ledDisplayFlag,
-      this.ledHold
+            this.blinkInterval = null;
+          }
+
+          action(() => {
+            this.blinkOn = true;
+          })();
+        }
+      }
     );
   }
 
@@ -128,14 +160,22 @@ class FlagsStore {
 
     if (this.flatHold.timer) {
       clearTimeout(this.flatHold.timer);
+
       this.flatHold.timer = null;
     }
 
     if (this.ledHold.timer) {
       clearTimeout(this.ledHold.timer);
+
       this.ledHold.timer = null;
     }
+
+    if (this.blinkInterval) {
+      clearInterval(this.blinkInterval);
+
+      this.blinkInterval = null;
+    }
+
+    this.blinkOn = true;
   }
 }
-
-export const flagsStore = new FlagsStore();

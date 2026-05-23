@@ -1,13 +1,16 @@
 import { observer } from 'mobx-react-lite';
 
-import { widgetSettingsStore } from '@store/widget-settings.store';
-
 import { SimTimeItem } from './SimTimeItem/SimTimeItem';
 import { WallClockItem } from './WallClockItem/WallClockItem';
 import styles from './TimerClockRow.module.scss';
+import type { TimerWidgetSettings } from '@/types/widget-settings';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const TimerClockRow = observer(() => {
-  const { showWallClock, showSimTime } = widgetSettingsStore.getTimerSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { showWallClock, showSimTime } =
+    widgetSettings.getSettings<TimerWidgetSettings>('timer');
 
   if (!showWallClock && !showSimTime) {
     return null;

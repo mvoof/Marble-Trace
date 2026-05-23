@@ -1,15 +1,17 @@
 import { observer } from 'mobx-react-lite';
 import { Switch } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { ChassisWidgetSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const ChassisSettingsPanel = observer(() => {
-  const settings = widgetSettingsStore.getChassisSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getSettings<ChassisWidgetSettings>('chassis');
 
   const update = (partial: Partial<ChassisWidgetSettings>) => {
-    widgetSettingsStore.updateUserSettings('chassis', {
+    widgetSettings.updateUserSettings('chassis', {
       ...settings,
       ...partial,
     });

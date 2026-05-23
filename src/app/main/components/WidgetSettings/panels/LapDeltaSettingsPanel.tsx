@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react-lite';
 import { Segmented, Switch } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   LapDeltaLayout,
   LapDeltaReference,
@@ -8,12 +7,16 @@ import {
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const LapDeltaSettingsPanel = observer(() => {
-  const settings = widgetSettingsStore.getLapDeltaSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings =
+    widgetSettings.getSettings<LapDeltaWidgetSettings>('lap-delta');
 
   const update = (partial: Partial<LapDeltaWidgetSettings>) => {
-    widgetSettingsStore.updateUserSettings('lap-delta', {
+    widgetSettings.updateUserSettings('lap-delta', {
       ...settings,
       ...partial,
     });

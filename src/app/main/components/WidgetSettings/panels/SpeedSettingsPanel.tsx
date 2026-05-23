@@ -1,18 +1,23 @@
 import { observer } from 'mobx-react-lite';
 import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
-import { unitsStore } from '@store/units.store';
 import { speedUnit } from '@utils/formatters/telemetry-format';
 import { SpeedWidgetSettings, LedShape } from '@/types/widget-settings';
 import { Card, SettingRow } from './shared';
 
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
+import {
+  useUnitsStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const SpeedSettingsPanel = observer(() => {
-  const settings = widgetSettingsStore.getSpeedSettings();
+  const units = useUnitsStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getSettings<SpeedWidgetSettings>('speed');
 
   const update = (partial: Partial<SpeedWidgetSettings>) => {
-    widgetSettingsStore.updateUserSettings('speed', {
+    widgetSettings.updateUserSettings('speed', {
       ...settings,
       ...partial,
     });
@@ -163,7 +168,7 @@ export const SpeedSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
-            Pit Speed Override ({speedUnit(unitsStore.system)})
+            Pit Speed Override ({speedUnit(units.unitSystem)})
           </span>
 
           <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>

@@ -19,7 +19,125 @@ import { GMeterWidget } from '@widgets/GMeterWidget/GMeterWidget';
 import type {
   WidgetConfig,
   WidgetDefaultConfig,
+  ResolveLayoutChange,
 } from '@/types/widget-settings';
+
+// Swaps width<->height when orientation changes (horizontal<->vertical rotation).
+// designWidth/Height are taken from LINEAR_MAP_SIZES to match the new orientation's reference size.
+const resolveRelativeMapLayout: ResolveLayoutChange = (prev, next, current) => {
+  if (!('orientation' in next) || !next.orientation) return null;
+
+  const prevOrientation = 'orientation' in prev ? prev.orientation : undefined;
+
+  if (prevOrientation === next.orientation) return null;
+
+  const size = LINEAR_MAP_SIZES[next.orientation];
+
+  if (!size) return null;
+
+  return {
+    designWidth: size.designWidth,
+    designHeight: size.designHeight,
+    currentWidth: current.currentHeight,
+    currentHeight: current.currentWidth,
+  };
+};
+
+// Resets widget to the fixed reference size for the new barMode.
+// hidde->vertical only: switching to hidden doesn't resize (the bar just disappears visually).
+const resolveInputTraceLayout: ResolveLayoutChange = (prev, next) => {
+  if (!('barMode' in next) || !next.barMode) return null;
+
+  const prevBarMode = 'barMode' in prev ? prev.barMode : 'vertical';
+
+  if (prevBarMode === next.barMode || next.barMode === 'hidden') return null;
+
+  const size = INPUT_TRACE_SIZES[next.barMode];
+
+  if (!size) return null;
+
+  return {
+    designWidth: size.designWidth,
+    designHeight: size.designHeight,
+    currentWidth: size.designWidth,
+    currentHeight: size.designHeight,
+  };
+};
+
+// Factory for widgets with a `layout` field (e.g. vertical/horizontal).
+// Saves the current width under the outgoing layout key in `layoutWidths` so
+// the user's custom size is restored when switching back.
+const makeLayoutSwapResolver = (
+  defaultWidths: Record<string, number>
+): ResolveLayoutChange => {
+  return (prev, next, current) => {
+    if (!('layout' in next) || !next.layout) return null;
+
+    const prevLayout = 'layout' in prev ? prev.layout : 'vertical';
+    const nextLayout = next.layout;
+
+    if (prevLayout === nextLayout) return null;
+
+    const prevLayoutWidths =
+      'layoutWidths' in prev ? (prev.layoutWidths ?? {}) : {};
+    const savedWidths = {
+      ...prevLayoutWidths,
+      [prevLayout]: current.currentWidth,
+    };
+    const nextWidth =
+      savedWidths[nextLayout] ??
+      defaultWidths[nextLayout] ??
+      current.currentWidth;
+
+    return {
+      currentWidth: nextWidth,
+      designWidth: nextWidth,
+      userSettingsPatch: { layoutWidths: savedWidths },
+    };
+  };
+};
+
+const CHASSIS_DESIGN_WIDTH = 300;
+const CHASSIS_WITH_SUSPENSION_DESIGN_WIDTH = 430;
+const CHASSIS_DEFAULT_WIDTH = 280;
+const CHASSIS_WITH_SUSPENSION_DEFAULT_WIDTH = 400;
+
+// Same width-memory pattern as makeLayoutSwapResolver but triggered by a boolean
+// (showSuspensionAndBrakes) instead of a layout string. Saves width per mode in
+// `modeWidths` so the user's resize is preserved on toggle.
+const resolveChassisLayout: ResolveLayoutChange = (prev, next, current) => {
+  if (!('showSuspensionAndBrakes' in next)) return null;
+
+  const prevShow =
+    'showSuspensionAndBrakes' in prev ? prev.showSuspensionAndBrakes : false;
+  const nextShow = next.showSuspensionAndBrakes;
+
+  if (prevShow === nextShow) return null;
+
+  const prevMode = prevShow ? 'suspensionAndBrakes' : 'chassis';
+  const nextMode = nextShow ? 'suspensionAndBrakes' : 'chassis';
+
+  const prevModeWidths = 'modeWidths' in prev ? (prev.modeWidths ?? {}) : {};
+
+  const savedModeWidths = {
+    ...prevModeWidths,
+    [prevMode]: current.currentWidth,
+  };
+
+  const defaultNextWidth = nextShow
+    ? CHASSIS_WITH_SUSPENSION_DEFAULT_WIDTH
+    : CHASSIS_DEFAULT_WIDTH;
+
+  const nextWidth = savedModeWidths[nextMode] ?? defaultNextWidth;
+
+  return {
+    designWidth: nextShow
+      ? CHASSIS_WITH_SUSPENSION_DESIGN_WIDTH
+      : CHASSIS_DESIGN_WIDTH,
+    currentWidth: nextWidth,
+    userSettingsPatch: { modeWidths: savedModeWidths },
+  };
+};
 
 export const LAP_TIMES_DEFAULT_WIDTHS: Record<string, number> = {
   vertical: 230,
@@ -84,6 +202,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'input-trace',
     label: 'Input Trace',
     description: 'Live throttle, brake, and clutch inputs.',
+    resolveLayoutChange: resolveInputTraceLayout,
     component: InputTraceWidget,
     designWidth: 400,
     designHeight: 220,
@@ -255,6 +374,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'relative-map',
     label: 'Relative Map',
     description: 'Progress bar of car track positions.',
+    resolveLayoutChange: resolveRelativeMapLayout,
     component: RelativeMapWidget,
     designWidth: 400,
     designHeight: 40,
@@ -323,6 +443,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'chassis',
     label: 'Chassis',
     description: 'Tire pressures and brake temperatures.',
+    resolveLayoutChange: resolveChassisLayout,
     component: ChassisWidget,
     designWidth: 300,
     designHeight: 290,
@@ -365,6 +486,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'lap-delta',
     label: 'Lap Delta',
     description: 'Live delta against your best lap time.',
+    resolveLayoutChange: makeLayoutSwapResolver(LAP_DELTA_DEFAULT_WIDTHS),
     component: LapDeltaWidget,
     designWidth: 230,
     designHeight: 180,
@@ -388,6 +510,7 @@ export const WIDGETS: WidgetConfig[] = [
     id: 'lap-times',
     label: 'Lap Times',
     description: 'Detailed history of your lap times.',
+    resolveLayoutChange: makeLayoutSwapResolver(LAP_TIMES_DEFAULT_WIDTHS),
     component: LapTimesWidget,
     designWidth: 230,
     designHeight: 104,
@@ -516,10 +639,15 @@ export const WIDGET_BY_ID = new Map(
   WIDGETS.map((widgetConfig) => [widgetConfig.id, widgetConfig])
 );
 
+const NON_SERIALIZABLE_WIDGET_KEYS = new Set([
+  'component',
+  'resolveLayoutChange',
+]);
+
 export const DEFAULT_WIDGETS: WidgetDefaultConfig[] = WIDGETS.map(
   (currentWidget) => {
     const allowedEntries = Object.entries(currentWidget).filter(([key]) => {
-      return key !== 'component';
+      return !NON_SERIALIZABLE_WIDGET_KEYS.has(key);
     });
 
     return Object.fromEntries(allowedEntries) as WidgetDefaultConfig;

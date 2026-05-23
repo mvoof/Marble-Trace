@@ -1,15 +1,17 @@
 import { observer } from 'mobx-react-lite';
 import { InputNumber, Segmented, Slider, Switch } from 'antd';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { FuelWidgetSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const FuelSettingsPanel = observer(() => {
-  const settings = widgetSettingsStore.getFuelSettings();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
 
   const update = (partial: Partial<FuelWidgetSettings>) => {
-    widgetSettingsStore.updateUserSettings('fuel', {
+    widgetSettings.updateUserSettings('fuel', {
       ...settings,
       ...partial,
     });

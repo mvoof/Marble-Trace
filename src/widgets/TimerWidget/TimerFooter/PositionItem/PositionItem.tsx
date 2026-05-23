@@ -1,20 +1,27 @@
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import { formatPosition } from '@utils/widget/timer-utils';
 
 import styles from './PositionItem.module.scss';
+import type { TimerWidgetSettings } from '@/types/widget-settings';
+import {
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const PositionItem = observer(() => {
-  const { showPosition } = widgetSettingsStore.getTimerSettings();
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { showPosition } =
+    widgetSettings.getSettings<TimerWidgetSettings>('timer');
 
   if (!showPosition) {
     return null;
   }
 
-  const lap = telemetryStore.lapTiming;
-  const driverInfo = telemetryStore.driverInfo;
+  const lap = telemetry.lapTiming;
+  const driverInfo = telemetry.driverInfo;
 
   const position = lap?.player_car_position ?? null;
   const totalDrivers = driverInfo?.Drivers?.length ?? null;

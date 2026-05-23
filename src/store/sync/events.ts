@@ -1,66 +1,68 @@
 import { runInAction } from 'mobx';
 import { emit, listen, UnlistenFn } from '@tauri-apps/api/event';
-import { appSettingsStore } from '@store/app-settings.store';
-import { unitsStore } from '@store/units.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import type { UnitSystem } from '@/types';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
+import type { RootStore } from '../root-store';
 
-export const setupMainListeners = async (): Promise<UnlistenFn[]> => {
+export const setupMainListeners = async (
+  root: RootStore
+): Promise<UnlistenFn[]> => {
   const unlistens: UnlistenFn[] = [];
 
   unlistens.push(
     await listen<boolean>('drag-mode-changed', (e) => {
-      runInAction(() => appSettingsStore.setDragMode(e.payload));
+      runInAction(() => root.appSettings.setDragMode(e.payload));
     })
   );
 
   return unlistens;
 };
 
-export const setupOverlayListeners = async (): Promise<UnlistenFn[]> => {
+export const setupOverlayListeners = async (
+  root: RootStore
+): Promise<UnlistenFn[]> => {
   const unlistens: UnlistenFn[] = [];
 
   unlistens.push(
     await listen<boolean>('drag-mode-changed', (e) => {
-      runInAction(() => appSettingsStore.setDragMode(e.payload));
+      runInAction(() => root.appSettings.setDragMode(e.payload));
     })
   );
   unlistens.push(
     await listen<boolean>('hide-all-widgets-changed', (e) => {
       runInAction(() => {
-        appSettingsStore.settings.hideAllWidgets = e.payload;
+        root.appSettings.settings.hideAllWidgets = e.payload;
       });
     })
   );
   unlistens.push(
     await listen<boolean>('hide-widgets-when-game-closed-changed', (e) => {
       runInAction(() => {
-        appSettingsStore.settings.hideWidgetsWhenGameClosed = e.payload;
+        root.appSettings.settings.hideWidgetsWhenGameClosed = e.payload;
       });
     })
   );
   unlistens.push(
     await listen<UnitSystem>('units-changed', (e) => {
-      runInAction(() => unitsStore.setSystem(e.payload));
+      runInAction(() => root.units.setSystem(e.payload));
     })
   );
   unlistens.push(
     await listen<WidgetDefaultConfig[]>('widget-settings-updated', (e) => {
-      runInAction(() => widgetSettingsStore.setWidgets(e.payload));
+      root.widgetSettings.applySettingsSync(e.payload);
     })
   );
   unlistens.push(
     await listen<number>('standings-class-index-changed', (e) => {
       runInAction(() => {
-        widgetSettingsStore.standingsActiveClassIndex = e.payload;
+        root.widgetSettings.standingsActiveClassIndex = e.payload;
       });
     })
   );
   unlistens.push(
     await listen<boolean>('track-map:force-start-pending-changed', (e) => {
       runInAction(() =>
-        widgetSettingsStore.setTrackMapForceStartPending(e.payload)
+        root.widgetSettings.setTrackMapForceStartPending(e.payload)
       );
     })
   );

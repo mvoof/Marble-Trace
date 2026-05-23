@@ -1,8 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
 import CarIcon from '@assets/car-icon.svg?react';
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
 import {
   bearingToCardinal,
   parseWeekendFloat,
@@ -12,16 +10,25 @@ import { RotatingRing } from './RotatingRing/RotatingRing';
 import { WindArrow } from './WindArrow/WindArrow';
 
 import styles from './WindCompass.module.scss';
+import type { WeatherWidgetSettings } from '@/types/widget-settings';
+import {
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 export const WindCompass = observer(() => {
-  const { showCompass } = widgetSettingsStore.getWeatherSettings();
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { showCompass } =
+    widgetSettings.getSettings<WeatherWidgetSettings>('weather');
 
   if (!showCompass) {
     return null;
   }
 
-  const weekendInfo = telemetryStore.weekendInfo;
-  const env = telemetryStore.environment;
+  const weekendInfo = telemetry.weekendInfo;
+  const env = telemetry.environment;
 
   const windDirRad =
     env?.wind_dir ?? parseWeekendFloat(weekendInfo?.TrackWindDir);

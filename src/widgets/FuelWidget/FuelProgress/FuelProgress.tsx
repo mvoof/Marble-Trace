@@ -1,13 +1,17 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
+import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
 
 import styles from './FuelProgress.module.scss';
+import { useTelemetryStore, useUnitsStore } from '@store/root-store-context';
 
 export const FuelProgress = observer(() => {
-  const fuelLevel = telemetryStore.carStatus?.fuel_level ?? null;
-  const fuelMax = telemetryStore.driverInfo?.DriverCarFuelMaxLtr ?? null;
+  const { carStatus, driverInfo } = useTelemetryStore();
+  const { unitSystem } = useUnitsStore();
+
+  const fuelLevel = carStatus?.fuel_level ?? null;
+  const fuelMax = driverInfo?.DriverCarFuelMaxLtr ?? null;
 
   const pct =
     fuelLevel !== null && fuelMax !== null && fuelMax > 0
@@ -23,8 +27,11 @@ export const FuelProgress = observer(() => {
             style={{ '--progress': pct } as React.CSSProperties}
           />
         )}
+
         <span className={styles.progressLabelMax}>
-          {fuelMax !== null ? `${fuelMax.toFixed(0)}L MAX` : ''}
+          {fuelMax !== null
+            ? `${formatFuel(fuelMax, unitSystem)} ${fuelUnit(unitSystem)} MAX`
+            : ''}
         </span>
       </div>
     </div>

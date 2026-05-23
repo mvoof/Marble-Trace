@@ -1,94 +1,41 @@
-import { useEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { runInAction } from 'mobx';
 
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import type { SessionFrame } from '@/types/bindings';
+import type { FlagType } from '@/types';
 import { FlatFlagsWidget } from './FlatFlagsWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
+import { withStore } from '../../../.storybook/decorators';
 
-const FLAG_BITS = {
-  checkered: 0x00000001,
-  white: 0x00000002,
-  green: 0x00000004,
-  yellow: 0x00000008,
-  red: 0x00000010,
-  blue: 0x00000020,
-  debris: 0x00000040,
-  black: 0x00010000,
-  servicible: 0x00040000,
-  repair: 0x00100000,
-} as const;
-
-type FlagKey = keyof typeof FLAG_BITS;
-
-interface StoryArgs {
-  flags: FlagKey[];
-}
-
-const applyArgs = ({ flags }: StoryArgs) => {
-  let sessionBits = 0;
-  let playerBits = 0;
-
-  for (const flag of flags) {
-    if (flag === 'black') {
-      playerBits |= FLAG_BITS.black;
-    } else {
-      sessionBits |= FLAG_BITS[flag];
-    }
-  }
-
-  if (flags.includes('servicible' as FlagKey)) {
-    sessionBits |= FLAG_BITS.servicible | FLAG_BITS.repair;
-  }
-
-  runInAction(() => {
-    telemetryStore.updateSession({
-      session_flags: sessionBits,
-      player_car_flags: playerBits,
-    } as SessionFrame);
-  });
-};
-
-const StoryHost = (args: StoryArgs) => {
-  useEffect(() => {
-    applyArgs(args);
-  }, [args]);
-  return <FlatFlagsWidget />;
-};
-
-const meta: Meta<typeof StoryHost> = {
+const meta: Meta<typeof FlatFlagsWidget> = {
   title: 'Widgets/FlatFlagsWidget',
-  component: StoryHost,
+  component: FlatFlagsWidget,
   parameters: { layout: 'centered' },
-  decorators: [widgetDecorator({ width: 300 })],
-  args: { flags: [] },
+  decorators: [withStore(), widgetDecorator({ width: 300 })],
 };
 
 export default meta;
-type Story = StoryObj<typeof StoryHost>;
+type Story = StoryObj<typeof FlatFlagsWidget>;
+
+const flagStory = (...flags: FlagType[]): Story => ({
+  decorators: [
+    withStore((store) => {
+      store.flags.displayFlags = flags;
+    }),
+    widgetDecorator({ width: 300 }),
+  ],
+});
 
 export const NoFlags: Story = {};
 
-export const SingleGreen: Story = {
-  args: { flags: ['green'] },
-};
-
-export const MultipleFlags: Story = {
-  args: { flags: ['yellow', 'debris'] },
-};
-
-export const AllFlags: Story = {
-  args: {
-    flags: [
-      'green',
-      'yellow',
-      'red',
-      'blue',
-      'white',
-      'checkered',
-      'black',
-      'debris',
-    ],
-  },
-};
+export const SingleGreen: Story = flagStory('green');
+export const Yellow: Story = flagStory('yellow');
+export const MultipleFlags: Story = flagStory('yellow', 'debris');
+export const AllFlags: Story = flagStory(
+  'green',
+  'yellow',
+  'red',
+  'blue',
+  'white',
+  'checkered',
+  'black',
+  'debris'
+);

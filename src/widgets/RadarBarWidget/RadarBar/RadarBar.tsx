@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
 import { useProximityRadarData } from '@hooks/common/useProximityRadarData';
-import { unitsStore } from '@store/units.store';
 import {
   distanceUnit,
   formatDistance,
@@ -9,6 +8,7 @@ import {
 import { CAR_LENGTH, getBarPillColor } from '@utils/constants/radar-constants';
 
 import styles from './RadarBar.module.scss';
+import { useUnitsStore } from '@store/root-store-context';
 
 const MIN_PILL_PERCENT = 8;
 const BAR_SEARCH_RADIUS = 10;
@@ -18,9 +18,11 @@ interface RadarBarProps {
 }
 
 export const RadarBar = observer(({ side }: RadarBarProps) => {
+  const units = useUnitsStore();
+
   const { proximity, visible, spotterLeft, spotterRight, radarSettings } =
     useProximityRadarData('radar-bar', BAR_SEARCH_RADIUS);
-  const { system } = unitsStore;
+  const { unitSystem: system } = units;
 
   const spotterActive = side === 'left' ? spotterLeft : spotterRight;
   const activeOnly = radarSettings.barDisplayMode === 'active-only';

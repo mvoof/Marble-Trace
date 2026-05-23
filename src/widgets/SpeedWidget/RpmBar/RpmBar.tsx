@@ -1,10 +1,13 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { telemetryStore } from '@store/iracing/telemetry.store';
-import { widgetSettingsStore } from '@store/widget-settings.store';
+import type { SpeedWidgetSettings } from '@/types/widget-settings';
 import { computeShiftThresholds } from '@utils/widget/shift-thresholds';
 import { getShiftZoneColor } from '@utils/widget/speed-utils';
 import styles from './RpmBar.module.scss';
+import {
+  useTelemetryStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 const LED_COUNT = 22;
 
@@ -17,6 +20,9 @@ export interface RpmColors {
 }
 
 export const RpmBar = observer(() => {
+  const telemetry = useTelemetryStore();
+  const widgetSettings = useWidgetSettingsStore();
+
   const {
     rpmColorLow,
     rpmColorMid,
@@ -25,7 +31,7 @@ export const RpmBar = observer(() => {
     rpmColorLimit,
     ledShape,
     showRpmBar,
-  } = widgetSettingsStore.getSpeedSettings();
+  } = widgetSettings.getSettings<SpeedWidgetSettings>('speed');
 
   if (!showRpmBar) {
     return null;
@@ -37,8 +43,8 @@ export const RpmBar = observer(() => {
     shift: rpmColorShift,
     limit: rpmColorLimit,
   };
-  const rpm = telemetryStore.carDynamics?.rpm ?? 0;
-  const { shiftRpm, blinkRpm } = computeShiftThresholds();
+  const rpm = telemetry.carDynamics?.rpm ?? 0;
+  const { shiftRpm, blinkRpm } = computeShiftThresholds(telemetry);
 
   const isShift = rpm >= shiftRpm;
   const isBlink = rpm >= blinkRpm;

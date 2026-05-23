@@ -1,14 +1,14 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Switch, Segmented, message, Select } from 'antd';
-import { appSettingsStore } from '@store/app-settings.store';
-import { unitsStore } from '@store/units.store';
 import type { UnitSystem } from '@/types';
 import { downloadSnapshot } from '@/storybook/capture-snapshot';
+import { useTelemetryStore } from '@store/root-store-context';
 import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
 import { RefreshCw, ArrowUpCircle, AlertCircle, Clock } from 'lucide-react';
 import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/ReleaseNotesButton';
 import styles from './SettingsPage.module.scss';
+import { useAppSettingsStore, useUnitsStore } from '@store/root-store-context';
 
 const isDev = import.meta.env.DEV;
 
@@ -26,10 +26,14 @@ const Card: React.FC<CardProps> = ({ title, children }) => (
 );
 
 export const SettingsPage = observer(() => {
+  const appSettings = useAppSettingsStore();
+  const units = useUnitsStore();
+  const telemetry = useTelemetryStore();
+
   const [messageApi, contextHolder] = message.useMessage();
 
   const handleCaptureSnapshot = () => {
-    downloadSnapshot('iracing');
+    downloadSnapshot(telemetry, 'iracing');
 
     messageApi.success('Snapshot saved — place the JSON in test-data/');
   };
@@ -56,8 +60,8 @@ export const SettingsPage = observer(() => {
             </div>
 
             <Switch
-              checked={appSettingsStore.settings.hideAllWidgets}
-              onChange={(v) => appSettingsStore.setHideAllWidgets(v)}
+              checked={appSettings.settings.hideAllWidgets}
+              onChange={(v) => appSettings.setHideAllWidgets(v)}
             />
           </div>
         </div>
@@ -66,8 +70,8 @@ export const SettingsPage = observer(() => {
           <span className={styles.fieldLabel}>Toggle Hotkey</span>
 
           <HotkeyRecorder
-            currentHotkey={appSettingsStore.settings.hideAllWidgetsHotkey}
-            onApply={(key) => appSettingsStore.setHideAllWidgetsHotkey(key)}
+            currentHotkey={appSettings.settings.hideAllWidgetsHotkey}
+            onApply={(key) => appSettings.setHideAllWidgetsHotkey(key)}
           />
         </div>
       </Card>
@@ -84,8 +88,8 @@ export const SettingsPage = observer(() => {
             </div>
 
             <Switch
-              checked={appSettingsStore.dragMode}
-              onChange={() => appSettingsStore.toggleDragMode()}
+              checked={appSettings.dragMode}
+              onChange={() => appSettings.toggleDragMode()}
             />
           </div>
         </div>
@@ -94,8 +98,8 @@ export const SettingsPage = observer(() => {
           <span className={styles.fieldLabel}>Drag Mode Hotkey</span>
 
           <HotkeyRecorder
-            currentHotkey={appSettingsStore.settings.dragHotkey}
-            onApply={(key) => appSettingsStore.setDragHotkey(key)}
+            currentHotkey={appSettings.settings.dragHotkey}
+            onApply={(key) => appSettings.setDragHotkey(key)}
           />
         </div>
       </Card>
@@ -111,8 +115,8 @@ export const SettingsPage = observer(() => {
           </div>
 
           <Switch
-            checked={appSettingsStore.settings.hideWidgetsWhenGameClosed}
-            onChange={(v) => appSettingsStore.setHideWidgetsWhenGameClosed(v)}
+            checked={appSettings.settings.hideWidgetsWhenGameClosed}
+            onChange={(v) => appSettings.setHideWidgetsWhenGameClosed(v)}
           />
         </div>
       </Card>
@@ -127,9 +131,9 @@ export const SettingsPage = observer(() => {
               { label: 'Metric (km/h, °C, L)', value: 'metric' },
               { label: 'Imperial (mph, °F, gal)', value: 'imperial' },
             ]}
-            value={unitsStore.system}
+            value={units.unitSystem}
             onChange={(value) => {
-              void unitsStore.setSystem(value as UnitSystem);
+              void units.setSystem(value as UnitSystem);
             }}
           />
         </div>
@@ -147,8 +151,8 @@ export const SettingsPage = observer(() => {
             </div>
 
             <Switch
-              checked={appSettingsStore.settings.autoUpdate}
-              onChange={(v) => appSettingsStore.setAutoUpdate(v)}
+              checked={appSettings.settings.autoUpdate}
+              onChange={(v) => appSettings.setAutoUpdate(v)}
             />
           </div>
         </div>
@@ -165,8 +169,8 @@ export const SettingsPage = observer(() => {
 
             <Select
               className={styles.selectWidth}
-              value={appSettingsStore.settings.updateCheckInterval}
-              onChange={(v) => appSettingsStore.setUpdateCheckInterval(v)}
+              value={appSettings.settings.updateCheckInterval}
+              onChange={(v) => appSettings.setUpdateCheckInterval(v)}
               options={[
                 { label: 'Every hour', value: 1 },
                 { label: 'Every 3 hours', value: 3 },
@@ -174,7 +178,7 @@ export const SettingsPage = observer(() => {
                 { label: 'Every 12 hours', value: 12 },
                 { label: 'Daily', value: 24 },
               ]}
-              disabled={!appSettingsStore.settings.autoUpdate}
+              disabled={!appSettings.settings.autoUpdate}
             />
           </div>
         </div>
@@ -185,11 +189,11 @@ export const SettingsPage = observer(() => {
               <div className={styles.fieldTitle}>
                 Current Version:{' '}
                 <span className={styles.versionLabel}>
-                  v{appSettingsStore.currentVersion}
+                  v{appSettings.currentVersion}
                 </span>
               </div>
 
-              {appSettingsStore.settings.lastUpdateCheck && (
+              {appSettings.settings.lastUpdateCheck && (
                 <div
                   className={`${styles.fieldDesc} ${styles.fieldDescMeta}`}
                   suppressHydrationWarning
@@ -197,31 +201,30 @@ export const SettingsPage = observer(() => {
                   <Clock size={12} />
                   Last checked:{' '}
                   {new Date(
-                    appSettingsStore.settings.lastUpdateCheck
+                    appSettings.settings.lastUpdateCheck
                   ).toLocaleString()}
                 </div>
               )}
 
               <div className={`${styles.fieldDesc} ${styles.fieldDescOffset}`}>
-                {appSettingsStore.updateStatus === 'idle' &&
+                {appSettings.updateStatus === 'idle' &&
                   'Your application is up to date.'}
 
-                {appSettingsStore.updateStatus === 'checking' &&
+                {appSettings.updateStatus === 'checking' &&
                   'Checking for updates...'}
 
-                {appSettingsStore.updateStatus === 'available' && (
+                {appSettings.updateStatus === 'available' && (
                   <span className={styles.statusSuccess}>
-                    New version v{appSettingsStore.availableVersion} is
-                    available!
+                    New version v{appSettings.availableVersion} is available!
                   </span>
                 )}
-                {appSettingsStore.updateStatus === 'downloading' &&
+                {appSettings.updateStatus === 'downloading' &&
                   'Downloading update...'}
 
-                {appSettingsStore.updateStatus === 'ready' &&
+                {appSettings.updateStatus === 'ready' &&
                   'Update downloaded. Restarting...'}
 
-                {appSettingsStore.updateStatus === 'error' && (
+                {appSettings.updateStatus === 'error' && (
                   <span className={styles.statusError}>
                     <AlertCircle size={12} className={styles.errorIcon} />
                     Update check failed.
@@ -231,7 +234,7 @@ export const SettingsPage = observer(() => {
             </div>
 
             {['available', 'downloading', 'ready'].includes(
-              appSettingsStore.updateStatus
+              appSettings.updateStatus
             ) ? (
               <div className={styles.updateActions}>
                 <ReleaseNotesButton />
@@ -239,11 +242,11 @@ export const SettingsPage = observer(() => {
                 <Button
                   type="primary"
                   icon={<ArrowUpCircle size={16} />}
-                  onClick={() => void appSettingsStore.installUpdate()}
-                  loading={appSettingsStore.updateStatus === 'downloading'}
-                  disabled={appSettingsStore.updateStatus === 'ready'}
+                  onClick={() => void appSettings.installUpdate()}
+                  loading={appSettings.updateStatus === 'downloading'}
+                  disabled={appSettings.updateStatus === 'ready'}
                 >
-                  {appSettingsStore.updateStatus === 'ready'
+                  {appSettings.updateStatus === 'ready'
                     ? 'Restarting...'
                     : 'Install & Restart'}
                 </Button>
@@ -254,16 +257,16 @@ export const SettingsPage = observer(() => {
                   <RefreshCw
                     size={16}
                     className={
-                      appSettingsStore.updateStatus === 'checking'
+                      appSettings.updateStatus === 'checking'
                         ? 'anticon-spin'
                         : ''
                     }
                   />
                 }
-                onClick={() => void appSettingsStore.checkForUpdates()}
-                disabled={appSettingsStore.updateStatus === 'checking'}
+                onClick={() => void appSettings.checkForUpdates()}
+                disabled={appSettings.updateStatus === 'checking'}
               >
-                {appSettingsStore.updateStatus === 'checking'
+                {appSettings.updateStatus === 'checking'
                   ? 'Checking...'
                   : 'Check for Updates'}
               </Button>

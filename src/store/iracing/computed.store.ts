@@ -9,7 +9,7 @@ import type {
   ProximityFrame,
 } from '@/types/bindings';
 import type { DriverGroup } from '@/types';
-import { telemetryStore } from './telemetry.store';
+import type { RootStore } from '../root-store';
 
 interface StartPosition {
   overall: number;
@@ -32,25 +32,28 @@ const computeRelativeLapDist = (
   return diff;
 };
 
-class ComputedStore {
+export class BackendComputedStore {
   proximity: ProximityFrame | null = null;
   fuel: FuelComputedFrame | null = null;
   standings: DriverEntriesFrame | null = null;
   pitStops: PitStopsFrame | null = null;
   lapDelta: LapDeltaFrame | null = null;
+
   private readonly startPositionSnapshot = new Map<number, StartPosition>();
 
-  constructor() {
+  constructor(private readonly root: RootStore) {
     makeAutoObservable(this);
   }
 
   get driverMap(): Map<number, DriverEntry> {
     if (!this.standings) return new Map();
+
     return new Map(this.standings.entries.map((e) => [e.carIdx, e]));
   }
 
   get allClassGroups(): DriverGroup[] {
     const entries = this.standings?.entries ?? [];
+
     if (entries.length === 0) return [];
 
     const classMap = new Map<number, DriverEntry[]>();
@@ -69,6 +72,7 @@ class ComputedStore {
       .sort(([a], [b]) => a - b)
       .map(([classId, driversInClass]) => {
         const first = driversInClass[0];
+
         return {
           classId,
           className: first.carScreenNameShort,
@@ -83,9 +87,41 @@ class ComputedStore {
       });
   }
 
+  get p1LapTime(): number | null {
+    const standingsEntries = this.standings?.entries ?? [];
+    const allBestTimes =
+      this.root.telemetry.carIdx?.car_idx_best_lap_time ?? [];
+
+    const playerClassId = standingsEntries.find(
+      (entry) => entry.isPlayer
+    )?.carClassId;
+
+    const classEntries =
+      playerClassId !== undefined
+        ? standingsEntries.filter((entry) => entry.carClassId === playerClassId)
+        : [];
+
+    const classBestTimes = classEntries.reduce<number[]>((acc, entry) => {
+      const bestTime = allBestTimes[entry.carIdx];
+
+      if (bestTime !== undefined && bestTime > 0) {
+        acc.push(bestTime);
+      }
+
+      return acc;
+    }, []);
+
+    const timesToUse =
+      classBestTimes.length > 0
+        ? classBestTimes
+        : allBestTimes.filter((time) => time > 0);
+
+    return timesToUse.length > 0 ? Math.min(...timesToUse) : null;
+  }
+
   get relativeEntries() {
     const standings = this.standings;
-    const carPositions = telemetryStore.carPositions;
+    const carPositions = this.root.telemetry.carPositions;
 
     const playerIdx = standings?.entries.find((e) => e.isPlayer)?.carIdx ?? -1;
     const playerLapDist =
@@ -124,11 +160,14 @@ class ComputedStore {
         });
       }
     }
+
     this.standings = frame;
   }
 
   get qualifyStartPosMap() {
-    const results = telemetryStore.sessionInfo?.QualifyResultsInfo?.Results;
+    const results =
+      this.root.telemetry.sessionInfo?.QualifyResultsInfo?.Results;
+
     if (!results || results.length === 0) return null;
 
     const map = new Map<number, { overall: number; class: number }>();
@@ -168,5 +207,3 @@ class ComputedStore {
     this.startPositionSnapshot.clear();
   }
 }
-
-export const computedStore = new ComputedStore();
