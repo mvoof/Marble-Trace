@@ -1,84 +1,28 @@
 @use 'functions' as *;
 
-// TODO: CSS variable names should not indicate color
-
-// Colors
-$color-bg-dark: rgba(0, 0, 0, 0.75);
-$color-bg-widget: rgba(0, 0, 0, 0.8);
-$color-text-primary: #e0e0e0;
-$color-text-accent: #00ff00;
-$color-text-secondary: #adadad;
-$color-text-muted: #888;
-$color-border: rgba(255, 255, 255, 0.15);
-
-// System UI Colors (Main Window)
-$sys-bg-main: #0d0e12;
-$sys-bg-sidebar: #111216;
-$sys-bg-card: rgba(21, 22, 26, 0.8);
-$sys-border-main: #2a2c32;
-$sys-border-sub: #1d1f25;
-$sys-text-primary: #e0e0e0;
-$sys-text-secondary: #8b8e98;
-$sys-text-muted: #5e626d;
-$sys-accent: #e0e0e0;
-$sys-danger: #ff5a5a;
-
-// Semantic colors — HUD / system UI
-$color-positive: #00ff00;
-$color-warning: #ffcc00;
-$color-danger: #ff3333;
-$color-info: #3399ff;
-$color-neutral: #888888;
-
-// Widget status palette — used across widget components
-$color-success: #22c55e;
-$color-error: #ef4444;
-$color-caution: #fbbf24;
-$color-blue: #60a5fa;
-
-$color-pit-entry: #f59e0b;
-$color-pit-warning: #b91c1c;
-$color-pit-active: #2563eb;
-
-// LED flag colors
-$led-green: #22ff00;
-$led-yellow: #ffe600;
-$led-red: #ff0a33;
-$led-blue: #33aaff;
-$led-white: #ffffff;
-$led-orange: #ff5500;
-
-// Input-specific colors
-$color-throttle: #00ff00;
-$color-brake: #ff3333;
-$color-clutch: #3399ff;
-
 // Typography
-$font-mono: 'Consolas', monospace;
-$font-widget: 'Rajdhani', sans-serif;
-$font-size-widget: rem(13);
-$line-height-widget: 1.4;
+$font-mono:           'Consolas', monospace;
+$font-widget:         'Rajdhani', sans-serif;
+$font-size-widget:    rem(13);
+$line-height-widget:  1.4;
 
-// Typography scale
-$font-size-xs: rem(10);
-$font-size-sm: rem(12);
-$font-size-md: rem(14);
-$font-size-lg: rem(20);
-$font-size-xl: rem(32);
+$font-size-xs:  rem(10);
+$font-size-sm:  rem(12);
+$font-size-md:  rem(14);
+$font-size-lg:  rem(20);
+$font-size-xl:  rem(32);
 $font-size-2xl: rem(48);
 
 // Spacing
 $widget-border-radius: 4px;
+$bar-border-radius:    4px;
 
-// Spacing scale
 $space-xs: rem(2);
 $space-sm: rem(4);
 $space-md: rem(8);
 $space-lg: rem(12);
 $space-xl: rem(16);
 
-// Bar sizes
 $bar-height-sm: rem(8);
 $bar-height-md: rem(12);
 $bar-height-lg: rem(18);
-$bar-border-radius: 4px;

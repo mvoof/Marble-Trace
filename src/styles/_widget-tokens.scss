@@ -1,0 +1,58 @@
+// Text — adaptive to user-set widget background via WidgetContainer --widget-bg
+$widget-text-primary:   contrast-color(var(--widget-bg));
+$widget-text-secondary: color-mix(in srgb, contrast-color(var(--widget-bg)) 55%, transparent);
+$widget-text-muted:     color-mix(in srgb, contrast-color(var(--widget-bg)) 35%, transparent);
+$widget-text-accent:    #00ff00;
+
+// Surfaces
+$widget-surface-base:    rgba(0, 0, 0, 0.75);
+$widget-surface-overlay: rgba(0, 0, 0, 0.8);
+
+// Borders
+$widget-border-default: rgba(255, 255, 255, 0.15);
+$widget-border-subtle:  rgba(255, 255, 255, 0.08);
+
+// Row surfaces — Standings, Relative, LapTiming
+$widget-row-border:      rgba(39, 39, 42, 0.50);
+$widget-row-hover:       rgba(39, 39, 42, 0.30);
+$widget-row-bg-subtle:   rgba(24, 24, 27, 0.20);
+$widget-row-player-bg:   rgba(245, 158, 11, 0.20);
+$widget-row-player-glow: rgba(245, 158, 11, 0.30);
+
+// Status
+$widget-status-positive: #22c55e;
+$widget-status-warning:  #fbbf24;
+$widget-status-danger:   #ef4444;
+$widget-status-info:     #60a5fa;
+$widget-status-caution:  #ffcc00;
+
+// Inputs
+$widget-throttle: #00ff00;
+$widget-brake:    #ff3333;
+$widget-clutch:   #3399ff;
+
+// Pit
+$widget-pit-entry:   #f59e0b;
+$widget-pit-warning: #b91c1c;
+$widget-pit-active:  #2563eb;
+
+// LED flags
+$led-green:  #22ff00;
+$led-yellow: #ffe600;
+$led-red:    #ff0a33;
+$led-blue:   #33aaff;
+$led-white:  #ffffff;
+$led-orange: #ff5500;
+
+// LED widget surfaces (off-state — not related to widget background)
+$led-surface-off:    #030304;
+$led-surface-panel:  #16161a;
+$led-surface-matrix: #08080a;
+
+// Tire badge states
+$widget-tire-worn-color:  #eab308;
+$widget-tire-worn-border: rgba(234, 179, 8, 0.50);
+$widget-tire-worn-bg:     rgba(234, 179, 8, 0.10);
+$widget-tire-new-color:   #e5e7eb;
+$widget-tire-new-border:  rgba(161, 161, 170, 0.50);
+$widget-tire-new-bg:      rgba(161, 161, 170, 0.10);
