@@ -5,6 +5,14 @@
   background: rgba(0, 0, 0, 0.4);
   padding: ws(5) ws(12);
   border-left: 2px solid transparent;
+
+  &.accentNeutral {
+    border-left-color: $widget-text-primary;
+  }
+
+  &.accentWarning {
+    border-left-color: $widget-status-warning;
+  }
   font-family: $font-mono;
 }
 

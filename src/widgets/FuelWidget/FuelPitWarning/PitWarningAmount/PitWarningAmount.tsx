@@ -10,7 +10,7 @@ import {
   useTelemetryStore,
   useUnitsStore,
 } from '@store/root-store-context';
-import { NO_FUEL_DATA_PLACEHOLDER } from '@/utils/constants/data-placeholders';
+import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/constants/data-placeholders';
 
 export const PitWarningAmount = observer(() => {
   const { fuel } = useBackendComputedStore();

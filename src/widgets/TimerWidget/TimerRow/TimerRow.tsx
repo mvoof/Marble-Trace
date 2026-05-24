@@ -13,7 +13,7 @@ import styles from './TimerRow.module.scss';
 import {
   NO_DATE_DATA_PLACEHOLDER,
   NO_TIME_DATA_PLACEHOLDER,
-} from '@/utils/constants/data-placeholders';
+} from '@utils/constants/data-placeholders';
 
 export const TimerRow = observer(() => {
   const { session, sessionInfo } = useTelemetryStore();

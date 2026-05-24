@@ -22,6 +22,7 @@ export default defineConfig(() => ({
   base: './',
 
   resolve: {
+    // TODO: add named aliases for @types, @components, @storybook in vite.config.ts (and tsconfig paths) to replace @/ prefix
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@assets': path.resolve(__dirname, './src/assets'),

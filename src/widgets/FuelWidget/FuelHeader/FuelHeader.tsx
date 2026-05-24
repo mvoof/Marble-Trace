@@ -6,7 +6,7 @@ import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
 
 import styles from './FuelHeader.module.scss';
 import { useTelemetryStore, useUnitsStore } from '@store/root-store-context';
-import { NO_FUEL_DATA_PLACEHOLDER } from '@/utils/constants/data-placeholders';
+import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/constants/data-placeholders';
 
 export const FuelHeader = observer(() => {
   const { carStatus } = useTelemetryStore();

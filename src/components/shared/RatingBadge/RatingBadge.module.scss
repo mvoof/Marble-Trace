@@ -33,52 +33,52 @@
 
 // License colors
 .licA {
-  background: #2563eb;
+  background: $rating-lic-a;
 }
 
 .licB {
-  background: #16a34a;
+  background: $rating-lic-b;
 }
 
 .licC {
-  background: #ca8a04;
+  background: $rating-lic-c;
 }
 
 .licD {
-  background: #ea580c;
+  background: $rating-lic-d;
 }
 
 .licR {
-  background: #dc2626;
+  background: $rating-lic-r;
 }
 
 // iRating tiers (right part background + text)
 .irRookie {
-  background: rgba(113, 113, 122, 0.35);
-  color: #a1a1aa;
+  background: $rating-ir-rookie-bg;
+  color: $rating-ir-rookie-color;
 }
 
 .irAvg {
-  background: rgba(234, 88, 12, 0.25);
-  color: #fb923c;
+  background: $rating-ir-avg-bg;
+  color: $rating-ir-avg-color;
 }
 
 .irAboveAvg {
-  background: rgba(202, 138, 4, 0.25);
-  color: #fbbf24;
+  background: $rating-ir-above-avg-bg;
+  color: $rating-ir-above-avg-color;
 }
 
 .irFast {
-  background: rgba(37, 99, 235, 0.25);
-  color: #60a5fa;
+  background: $rating-ir-fast-bg;
+  color: $rating-ir-fast-color;
 }
 
 .irPro {
-  background: rgba(22, 163, 74, 0.25);
-  color: #4ade80;
+  background: $rating-ir-pro-bg;
+  color: $rating-ir-pro-color;
 }
 
 .irElite {
-  background: rgba(168, 85, 247, 0.25);
-  color: #c084fc;
+  background: $rating-ir-elite-bg;
+  color: $rating-ir-elite-color;
 }

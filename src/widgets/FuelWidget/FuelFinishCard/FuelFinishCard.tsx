@@ -10,7 +10,7 @@ import {
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { NO_LAPS_REMAINING_DATA_PLACEHOLDER } from '@/utils/constants/data-placeholders';
+import { NO_LAPS_REMAINING_DATA_PLACEHOLDER } from '@utils/constants/data-placeholders';
 
 export const FuelFinishCard = observer(() => {
   const { fuel } = useBackendComputedStore();
