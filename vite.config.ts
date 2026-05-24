@@ -39,6 +39,9 @@ export default defineConfig(() => ({
         additionalData: `
           @use "@/styles/functions" as *;
           @use "@/styles/variables" as *;
+          @use "@/styles/widget-tokens" as *;
+          @use "@/styles/sys-tokens" as *;
+          @use "@/styles/opacity" as *;
         `,
       },
     },
