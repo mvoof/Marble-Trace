@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { formatLapTime } from '@utils/formatters/telemetry-format';
+import { getSectorColor } from '@utils/widget/sector-utils';
 
 import styles from './SectorTimesStrip.module.scss';
 
@@ -39,7 +40,10 @@ export const SectorTimesStrip = observer(
 
         return (
           <div key={sector.sectorNum} className={itemClasses}>
-            <span className={styles.dot} data-index={i % 6} />
+            <span
+              className={styles.dot}
+              style={{ backgroundColor: getSectorColor(i) }}
+            />
             <span className={styles.label}>S{sector.sectorNum + 1}</span>
             <span className={styles.time}>{formatLapTime(time)}</span>
           </div>

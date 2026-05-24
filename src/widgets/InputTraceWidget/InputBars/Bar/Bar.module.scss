@@ -11,7 +11,7 @@
   justify-content: flex-end;
   flex: 1 1 0;
   min-height: 0;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, $opacity-subtle);
   border-radius: $bar-border-radius;
   overflow: hidden;
 }
@@ -31,7 +31,7 @@
 .verticalFill {
   display: block;
   width: 100%;
-  background: $color-text-accent;
+  background: $widget-text-accent;
   border-radius: $bar-border-radius;
 }
 

@@ -15,7 +15,7 @@ import styles from './MainWindow.module.scss';
 import Logo from '@assets/logo.svg?react';
 import {
   useAppSettingsStore,
-  useRootStore,
+  useStore,
   useTelemetryConnectionStore,
 } from '@store/root-store-context';
 
@@ -24,7 +24,7 @@ const { Content, Sider } = Layout;
 export const MainWindow = observer(() => {
   const appSettings = useAppSettingsStore();
   const telemetryConnection = useTelemetryConnectionStore();
-  const root = useRootStore();
+  const root = useStore();
 
   const [selectedId, setSelectedId] = useState<string>('app-settings');
 

@@ -17,17 +17,17 @@
 }
 
 .itemGreen {
-  background-color: #22ff00;
+  background-color: $led-green;
   color: #000;
 }
 
 .itemYellow {
-  background-color: #ffe600;
+  background-color: $led-yellow;
   color: #000;
 }
 
 .itemRed {
-  background-color: #ff0a33;
+  background-color: $led-red;
   color: #fff;
 
   &::before {
@@ -36,12 +36,12 @@
 }
 
 .itemBlue {
-  background-color: #33aaff;
+  background-color: $led-blue;
   color: #000;
 }
 
 .itemWhite {
-  background-color: #ffffff;
+  background-color: $led-white;
   color: #000;
 }
 
@@ -55,7 +55,7 @@
 }
 
 .itemMeatball {
-  background-color: #ff5500;
+  background-color: $led-orange;
   color: #000;
 }
 
@@ -86,10 +86,10 @@
 .itemDebris {
   background: repeating-linear-gradient(
     45deg,
-    #ffe600 0,
-    #ffe600 20px,
-    #ff0a33 20px,
-    #ff0a33 40px
+    $led-yellow 0,
+    $led-yellow 20px,
+    $led-red 20px,
+    $led-red 40px
   );
   color: #fff;
   text-shadow: 0 1px 3px #000;

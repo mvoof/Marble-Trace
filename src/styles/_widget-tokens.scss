@@ -1,0 +1,94 @@
+// Text — contrast-color() is a native CSS runtime function; Sass passes it through as-is.
+// --widget-bg is set inline by WidgetContainer.tsx.
+$widget-text-primary: contrast-color(var(--widget-bg));
+$widget-text-secondary: color-mix(
+  in srgb,
+  contrast-color(var(--widget-bg)) 55%,
+  transparent
+);
+$widget-text-muted: color-mix(
+  in srgb,
+  contrast-color(var(--widget-bg)) 35%,
+  transparent
+);
+$widget-text-accent: #00ff00;
+$widget-text-sof: rgba(167, 161, 250, 0.95);
+$widget-text-best-lap: rgba(192, 132, 252, 0.85);
+
+// Surfaces
+$widget-surface-base: rgba(0, 0, 0, 0.75);
+$widget-surface-overlay: rgba(0, 0, 0, 0.8);
+
+// Borders
+$widget-border-default: rgba(255, 255, 255, 0.15);
+$widget-border-subtle: rgba(255, 255, 255, 0.08);
+
+// Row surfaces — Standings, Relative, LapTiming
+$widget-row-border: rgba(39, 39, 42, 0.5);
+$widget-row-hover: rgba(39, 39, 42, 0.3);
+$widget-row-bg-subtle: rgba(24, 24, 27, 0.2);
+$widget-row-player-bg: rgba(245, 158, 11, 0.2);
+$widget-row-player-glow: rgba(245, 158, 11, 0.3);
+
+// Status
+$widget-status-positive: #22c55e;
+$widget-status-warning: #fbbf24;
+$widget-status-danger: #ef4444;
+$widget-status-info: #60a5fa;
+$widget-status-caution: #ffcc00;
+$widget-status-position-gain: #fcd34d;
+
+// Inputs
+$widget-throttle: #00ff00;
+$widget-brake: #ff3333;
+$widget-clutch: #3399ff;
+
+// Pit
+$widget-pit-entry: #f59e0b;
+$widget-pit-warning: #b91c1c;
+$widget-pit-active: #2563eb;
+
+// LED flags
+$led-green: #22ff00;
+$led-yellow: #ffe600;
+$led-red: #ff0a33;
+$led-blue: #33aaff;
+$led-white: #ffffff;
+$led-orange: #ff5500;
+
+// LED widget surfaces (off-state — not related to widget background)
+$led-surface-off: #030304;
+$led-surface-panel: #16161a;
+$led-surface-matrix: #08080a;
+
+// Rating Badge — iRacing license tiers
+$rating-lic-a: #2563eb;
+$rating-lic-b: #16a34a;
+$rating-lic-c: #ca8a04;
+$rating-lic-d: #ea580c;
+$rating-lic-r: #dc2626;
+
+// Rating Badge — iRating tiers
+$rating-ir-rookie-bg: rgba(113, 113, 122, 0.35);
+$rating-ir-rookie-color: #a1a1aa;
+$rating-ir-avg-bg: rgba(234, 88, 12, 0.25);
+$rating-ir-avg-color: #fb923c;
+$rating-ir-above-avg-bg: rgba(202, 138, 4, 0.25);
+$rating-ir-above-avg-color: #fbbf24;
+$rating-ir-fast-bg: rgba(37, 99, 235, 0.25);
+$rating-ir-fast-color: #60a5fa;
+$rating-ir-pro-bg: rgba(22, 163, 74, 0.25);
+$rating-ir-pro-color: #4ade80;
+$rating-ir-elite-bg: rgba(168, 85, 247, 0.25);
+$rating-ir-elite-color: #c084fc;
+
+// Tire badge states
+$widget-tire-worn-color: #eab308;
+$widget-tire-worn-border: rgba(234, 179, 8, 0.5);
+$widget-tire-worn-bg: rgba(234, 179, 8, 0.1);
+$widget-tire-new-color: #e5e7eb;
+$widget-tire-new-border: rgba(161, 161, 170, 0.5);
+$widget-tire-new-bg: rgba(161, 161, 170, 0.1);
+$widget-tire-wet-color: #60a5fa;
+$widget-tire-wet-border: rgba(96, 165, 250, 0.5);
+$widget-tire-wet-bg: rgba(96, 165, 250, 0.1);

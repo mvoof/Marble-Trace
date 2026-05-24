@@ -21,9 +21,10 @@ import {
 } from '@store/root-store-context';
 
 export const SessionHeader = observer(() => {
-  const computed = useBackendComputedStore();
-  const telemetry = useTelemetryStore();
-  const units = useUnitsStore();
+  const { standings, pitStops } = useBackendComputedStore();
+  const { sessionInfo, weekendInfo, environment } = useTelemetryStore();
+  const { unitSystem } = useUnitsStore();
+
   const widgetSettings = useWidgetSettingsStore();
 
   const settings =
@@ -33,16 +34,19 @@ export const SessionHeader = observer(() => {
     return null;
   }
 
-  const sessionInfo = telemetry.sessionInfo?.SessionInfo;
-  const weekendInfo = telemetry.weekendInfo;
-  const driverEntries = computed.standings?.entries ?? [];
+  const sessionInfoData = sessionInfo?.SessionInfo;
+
+  const driverEntries = standings?.entries ?? [];
   const overallSof = computeClassSof(driverEntries);
+
   const playerIncidents =
     driverEntries.find((entry) => entry.isPlayer)?.incidents ?? 0;
-  const playerPitStops = computed.pitStops?.playerStops ?? 0;
 
-  const sessions = sessionInfo?.Sessions;
-  const currentSession = sessions?.[sessionInfo?.CurrentSessionNum ?? 0];
+  const playerPitStops = pitStops?.playerStops ?? 0;
+
+  const sessions = sessionInfoData?.Sessions;
+
+  const currentSession = sessions?.[sessionInfoData?.CurrentSessionNum ?? 0];
   const trackName = weekendInfo?.TrackDisplayName ?? '';
 
   const leaderLap =
@@ -50,18 +54,23 @@ export const SessionHeader = observer(() => {
       ? Math.max(...driverEntries.map((entry) => entry.lap))
       : null;
 
-  const env = telemetry.environment;
   const airCelsius =
-    env?.air_temp ?? parseWeekendTemp(weekendInfo?.TrackAirTemp);
-  const trkCelsius =
-    env?.track_temp ?? parseWeekendTemp(weekendInfo?.TrackSurfaceTemp);
+    environment?.air_temp ?? parseWeekendTemp(weekendInfo?.TrackAirTemp);
 
-  const sys = units.unitSystem;
-  const tUnit = tempUnit(sys);
+  const trkCelsius =
+    environment?.track_temp ?? parseWeekendTemp(weekendInfo?.TrackSurfaceTemp);
+
+  const tUnit = tempUnit(unitSystem);
+
   const airStr =
-    airCelsius !== null ? `${formatTemp(airCelsius, sys)}${tUnit}` : null;
+    airCelsius !== null
+      ? `${formatTemp(airCelsius, unitSystem)}${tUnit}`
+      : null;
+
   const trkStr =
-    trkCelsius !== null ? `${formatTemp(trkCelsius, sys)}${tUnit}` : null;
+    trkCelsius !== null
+      ? `${formatTemp(trkCelsius, unitSystem)}${tUnit}`
+      : null;
 
   return (
     <div className={styles.sessionHeader}>
@@ -83,6 +92,7 @@ export const SessionHeader = observer(() => {
         {settings.showTotalDrivers && (
           <span className={styles.sessionDriverCount}>
             <Users size={10} />
+
             <span className={styles.sessionDriverCountValue}>
               {driverEntries.length}
             </span>

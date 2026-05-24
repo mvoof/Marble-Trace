@@ -15,13 +15,13 @@
 }
 
 .deltaAhead {
-  color: $color-success;
+  color: $widget-status-positive;
 }
 
 .deltaBehind {
-  color: $color-error;
+  color: $widget-status-danger;
 }
 
 .deltaNeutral {
-  color: $color-caution;
+  color: $widget-status-warning;
 }

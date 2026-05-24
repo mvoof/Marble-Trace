@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { TimingRow } from '@/components/shared/TimingRow/TimingRow';
+import { LapTimingRow } from '@/components/shared/LapTimingRow/LapTimingRow';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import {
   formatDelta,
@@ -111,7 +111,7 @@ export const LapTimesContent = observer(() => {
       }
     >
       {rows.map((row) => (
-        <TimingRow
+        <LapTimingRow
           key={row.label}
           label={row.label}
           time={row.time}

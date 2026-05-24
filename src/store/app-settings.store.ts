@@ -24,7 +24,7 @@ export type UpdateStatus =
   | 'error';
 
 export class AppSettingsStore {
-  settings: AppSettings = { ...DEFAULT_APP_SETTINGS };
+  appSettings: AppSettings = { ...DEFAULT_APP_SETTINGS };
 
   dragMode = false;
   updateStatus: UpdateStatus = 'idle';
@@ -51,7 +51,7 @@ export class AppSettingsStore {
       this.currentVersion = version;
     });
 
-    if (this.settings.autoUpdate) {
+    if (this.appSettings.autoUpdate) {
       void this.checkForUpdates(true);
 
       this.startUpdateTimer();
@@ -61,9 +61,9 @@ export class AppSettingsStore {
   private startUpdateTimer() {
     this.stopUpdateTimer();
 
-    if (!this.settings.autoUpdate) return;
+    if (!this.appSettings.autoUpdate) return;
 
-    const ms = this.settings.updateCheckInterval * 60 * 60 * 1000;
+    const ms = this.appSettings.updateCheckInterval * 60 * 60 * 1000;
 
     this.updateTimer = window.setInterval(() => {
       void this.checkForUpdates(true);
@@ -85,11 +85,11 @@ export class AppSettingsStore {
       )
     );
 
-    Object.assign(this.settings, filtered);
+    Object.assign(this.appSettings, filtered);
   }
 
   setAutoUpdate(value: boolean) {
-    this.settings.autoUpdate = value;
+    this.appSettings.autoUpdate = value;
 
     if (value) {
       this.startUpdateTimer();
@@ -99,9 +99,9 @@ export class AppSettingsStore {
   }
 
   setUpdateCheckInterval(value: number) {
-    this.settings.updateCheckInterval = value;
+    this.appSettings.updateCheckInterval = value;
 
-    if (this.settings.autoUpdate) {
+    if (this.appSettings.autoUpdate) {
       this.startUpdateTimer();
     }
   }
@@ -119,7 +119,7 @@ export class AppSettingsStore {
       const update = await check();
 
       runInAction(() => {
-        this.settings.lastUpdateCheck = new Date().toISOString();
+        this.appSettings.lastUpdateCheck = new Date().toISOString();
 
         if (update) {
           this.updateStatus = 'available';
@@ -185,7 +185,7 @@ export class AppSettingsStore {
   }
 
   toggleHideAllWidgets() {
-    this.settings.hideAllWidgets = !this.settings.hideAllWidgets;
+    this.appSettings.hideAllWidgets = !this.appSettings.hideAllWidgets;
   }
 
   setDragMode(value: boolean) {
@@ -193,18 +193,18 @@ export class AppSettingsStore {
   }
 
   setHideAllWidgets(value: boolean) {
-    this.settings.hideAllWidgets = value;
+    this.appSettings.hideAllWidgets = value;
   }
 
   setHideAllWidgetsHotkey(key: string) {
-    this.settings.hideAllWidgetsHotkey = key;
+    this.appSettings.hideAllWidgetsHotkey = key;
   }
 
   setDragHotkey(key: string) {
-    this.settings.dragHotkey = key;
+    this.appSettings.dragHotkey = key;
   }
 
   setHideWidgetsWhenGameClosed(value: boolean) {
-    this.settings.hideWidgetsWhenGameClosed = value;
+    this.appSettings.hideWidgetsWhenGameClosed = value;
   }
 }

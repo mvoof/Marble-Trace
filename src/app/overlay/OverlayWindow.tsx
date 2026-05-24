@@ -3,13 +3,13 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { OverlayCanvas } from './OverlayCanvas/OverlayCanvas';
 import { initOverlaySync } from '@store/sync/sync-init';
 import {
-  useRootStore,
+  useStore,
   useTelemetryConnectionStore,
 } from '@store/root-store-context';
 
 export const OverlayWindow = () => {
   const telemetryConnection = useTelemetryConnectionStore();
-  const root = useRootStore();
+  const root = useStore();
 
   useEffect(() => {
     void telemetryConnection.startWidgetListener();

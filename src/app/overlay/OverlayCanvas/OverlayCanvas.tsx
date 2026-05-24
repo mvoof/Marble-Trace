@@ -16,7 +16,8 @@ export const OverlayCanvas = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
   const { dragMode } = appSettings;
-  const { hideAllWidgets } = appSettings.settings;
+  const { hideAllWidgets } = appSettings.appSettings;
+
   useEffect(() => {
     getCurrentWebviewWindow()
       .setIgnoreCursorEvents(!dragMode)

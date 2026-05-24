@@ -2,8 +2,8 @@
   display: flex;
   align-items: center;
   gap: 0;
-  background: rgba(18, 18, 22, 0.9);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(18, 18, 22, $opacity-solid);
+  border-bottom: 1px solid rgba(255, 255, 255, $opacity-faint);
   min-height: ws(28);
   flex-shrink: 0;
 }
@@ -18,14 +18,14 @@
   min-height: ws(28);
   background: none;
   border: none;
-  color: $color-text-muted;
+  color: $widget-text-muted;
   cursor: pointer;
   padding: 0;
   transition: color 0.15s;
   flex-shrink: 0;
 
   &:hover:not(:disabled) {
-    color: $color-text-primary;
+    color: $widget-text-primary;
   }
 
   &:disabled {
@@ -66,13 +66,13 @@
 .pagination {
   font-family: $font-mono;
   font-size: ws(11);
-  color: $color-text-muted;
+  color: $widget-text-muted;
   letter-spacing: 0.04em;
 }
 
 .stat {
   font-family: $font-mono;
   font-size: ws(11);
-  color: rgba(161, 161, 170, 0.7);
+  color: $widget-text-muted;
   white-space: nowrap;
 }

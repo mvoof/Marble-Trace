@@ -13,11 +13,11 @@
   font-family: $font-mono;
   font-size: ws(18);
   font-weight: 700;
-  color: #fff;
+  color: $widget-text-primary;
 }
 
 .headerUnit {
   font-size: ws(12);
-  color: $color-text-muted;
-  margin-left: ws(2);
+  color: $widget-text-primary;
+  margin-left: ws(5);
 }

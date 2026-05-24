@@ -9,7 +9,7 @@
 }
 
 .axisColumnDivider {
-  border-right: 1px solid rgba(58, 59, 64, 0.8);
+  border-right: 1px solid $widget-row-border;
 }
 
 .axisHeader {
@@ -19,9 +19,9 @@
 }
 
 .axisLabel {
-  color: $color-text-secondary;
+  color: $widget-text-primary;
   font-size: ws(14);
-  font-weight: 400;
+  font-weight: 300;
   letter-spacing: 0.5px;
 }
 
@@ -30,15 +30,15 @@
   width: 4ch;
   text-align: right;
   font-size: ws(18);
-  font-weight: 700;
-  color: $color-text-primary;
+  font-weight: 900;
+  color: $widget-text-primary;
 }
 
 .peakRow {
   display: flex;
   align-items: center;
   gap: ws(4);
-  color: $color-text-secondary;
+  color: $widget-text-secondary;
 }
 
 .peakLabel {

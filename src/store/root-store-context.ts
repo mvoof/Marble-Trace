@@ -3,22 +3,21 @@ import type { RootStore } from './root-store';
 
 export const RootStoreContext = createContext<RootStore | null>(null);
 
-export const useRootStore = (): RootStore => {
-  const store = useContext(RootStoreContext);
+export const useStore = (): RootStore => {
+  const context = useContext(RootStoreContext);
 
-  if (!store) {
+  if (!context) {
     throw new Error('Missing RootStoreProvider');
   }
 
-  return store;
+  return context;
 };
 
-export const useTelemetryStore = () => useRootStore().telemetry;
-export const useBackendComputedStore = () => useRootStore().backendComputed;
-export const useTelemetryConnectionStore = () =>
-  useRootStore().telemetryConnection;
-export const useFlagsStore = () => useRootStore().flags;
-export const useWidgetSettingsStore = () => useRootStore().widgetSettings;
-export const useAppSettingsStore = () => useRootStore().appSettings;
-export const useUnitsStore = () => useRootStore().units;
-export const useWidgetAutoHideStore = () => useRootStore().widgetAutoHide;
+export const useTelemetryStore = () => useStore().telemetry;
+export const useBackendComputedStore = () => useStore().backendComputed;
+export const useTelemetryConnectionStore = () => useStore().telemetryConnection;
+export const useFlagsStore = () => useStore().flags;
+export const useWidgetSettingsStore = () => useStore().widgetSettings;
+export const useAppSettingsStore = () => useStore().appSettings;
+export const useUnitsStore = () => useStore().units;
+export const useWidgetAutoHideStore = () => useStore().widgetAutoHide;

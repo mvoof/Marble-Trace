@@ -66,33 +66,33 @@ export const initMainSync = async (root: RootStore) => {
           }
         ),
         reaction(
-          () => root.appSettings.settings.hideAllWidgets,
+          () => root.appSettings.appSettings.hideAllWidgets,
           (v) => {
             void emitHideAllWidgets(v);
             void onSave();
           }
         ),
         reaction(
-          () => root.appSettings.settings.hideWidgetsWhenGameClosed,
+          () => root.appSettings.appSettings.hideWidgetsWhenGameClosed,
           (v) => {
             void emitHideWidgetsWhenGameClosed(v);
             void onSave();
           }
         ),
         reaction(
-          () => root.appSettings.settings.autoUpdate,
+          () => root.appSettings.appSettings.autoUpdate,
           () => {
             void onSave();
           }
         ),
         reaction(
-          () => root.appSettings.settings.updateCheckInterval,
+          () => root.appSettings.appSettings.updateCheckInterval,
           () => {
             void onSave();
           }
         ),
         reaction(
-          () => root.appSettings.settings.lastUpdateCheck,
+          () => root.appSettings.appSettings.lastUpdateCheck,
           () => {
             void onSave();
           }
@@ -104,8 +104,8 @@ export const initMainSync = async (root: RootStore) => {
                 'standings'
               );
             return [
-              root.appSettings.settings.dragHotkey,
-              root.appSettings.settings.hideAllWidgetsHotkey,
+              root.appSettings.appSettings.dragHotkey,
+              root.appSettings.appSettings.hideAllWidgetsHotkey,
               ...root.widgetSettings.allWidgets.map(
                 (w) => w.userSettings.hotkey
               ),

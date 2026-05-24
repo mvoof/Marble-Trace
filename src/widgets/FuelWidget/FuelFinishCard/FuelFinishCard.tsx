@@ -2,15 +2,15 @@ import { observer } from 'mobx-react-lite';
 
 import { FUEL_THRESHOLDS } from '@utils/constants/fuel-constants';
 
-import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
-import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
+import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
+import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import styles from './FuelFinishCard.module.scss';
 import {
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { NO_LAPS_REMAINING_DATA_PLACEHOLDER } from '@/utils/constants/data-placeholders';
+import { NO_LAPS_REMAINING_DATA_PLACEHOLDER } from '@utils/constants/data-placeholders';
 
 export const FuelFinishCard = observer(() => {
   const { fuel } = useBackendComputedStore();
@@ -54,9 +54,9 @@ export const FuelFinishCard = observer(() => {
 
   return (
     <div className={`${styles.finishCard} ${finishCardClass()}`}>
-      <UnitLabelText className={styles.finishLabel}>LAPS LEFT</UnitLabelText>
+      <WidgetLabel className={styles.finishLabel}>LAPS LEFT</WidgetLabel>
 
-      <UnitValueText
+      <WidgetValue
         className={`${styles.finishValue} ${lapsValueClass()}`}
         value={
           lapsRemaining !== null

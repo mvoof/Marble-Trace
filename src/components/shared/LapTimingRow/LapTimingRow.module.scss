@@ -5,19 +5,19 @@
   gap: ws(4);
   font-family: $font-mono;
   padding: ws(4) ws(6);
-  border-bottom: 1px solid rgba(39, 39, 42, 0.5);
+  border-bottom: 1px solid $widget-row-border;
   border-left: 3px solid transparent;
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: rgba(39, 39, 42, 0.3);
+    background-color: $widget-row-hover;
   }
 
   &.fill {
     flex: 1 1 0;
     min-width: ws(220);
     border-bottom: none;
-    border-right: 1px solid rgba(39, 39, 42, 0.5);
+    border-right: 1px solid $widget-row-border;
     grid-template-columns: ws(50) minmax(ws(80), 2fr) minmax(ws(65), 1fr);
 
     &:last-child {
@@ -28,7 +28,8 @@
 
 .label {
   font-size: ws(10);
-  color: $color-text-muted;
+  font-weight: 300;
+  color: $widget-text-primary;
   letter-spacing: 1px;
   font-family: $font-widget;
   text-transform: uppercase;
@@ -39,11 +40,11 @@
 .time {
   font-size: ws(13);
   font-weight: 700;
-  color: #fff;
+  color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
   text-align: right;
   padding-right: ws(6);
-  border-right: 1px solid rgba(255, 255, 255, 0.15);
+  border-right: 1px solid $widget-border-default;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

@@ -19,11 +19,12 @@ interface WidgetContainerProps {
 
 export const WidgetContainer = observer(
   ({ widgetId, children }: WidgetContainerProps) => {
-    const appSettings = useAppSettingsStore();
+    const { dragMode, appSettings } = useAppSettingsStore();
     const widgetSettings = useWidgetSettingsStore();
+
     const telemetryConnection = useTelemetryConnectionStore();
     const widgetAutoHide = useWidgetAutoHideStore();
-    const { dragMode } = appSettings;
+
     const widget = widgetSettings.getWidget(widgetId);
 
     const isDraggingRef = useRef(false);
@@ -48,14 +49,13 @@ export const WidgetContainer = observer(
     const isConnected = telemetryConnection.status === 'connected';
 
     const shouldHide =
-      (appSettings.settings.hideWidgetsWhenGameClosed &&
-        !isConnected &&
-        !dragMode) ||
+      (appSettings.hideWidgetsWhenGameClosed && !isConnected && !dragMode) ||
       (!widgetAutoHide.isVisible(widgetId) && !dragMode);
 
     const backgroundColor = widget?.userSettings.backgroundColor ?? '#1a1a1a';
     const backgroundColorEdge =
       widget?.userSettings.backgroundColorEdge ?? '#0a0a0a';
+
     const borderColor =
       widget?.userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
 
@@ -224,6 +224,7 @@ export const WidgetContainer = observer(
                   background,
                   borderColor: shouldHide ? 'transparent' : borderColor,
                   ['--wfs']: widgetScale,
+                  ['--widget-bg']: backgroundColor,
                 } as React.CSSProperties
               }
             >

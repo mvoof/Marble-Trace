@@ -7,7 +7,7 @@
 .pitWarningBodyLabel {
   font-family: $font-mono;
   font-size: ws(10);
-  color: $color-text-muted;
+  color: $widget-text-muted;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   margin-bottom: ws(2);
@@ -22,13 +22,13 @@
   font-family: $font-mono;
   font-size: ws(32);
   font-weight: 700;
-  color: $color-error;
+  color: $widget-status-danger;
   line-height: 0.9;
   white-space: nowrap;
 }
 
 .pitWarningAmountDanger {
-  color: $color-error;
+  color: $widget-status-danger;
 }
 
 .pitWarningAmountUnit {
@@ -44,6 +44,6 @@
 .pitWarningBodySub {
   font-family: $font-mono;
   font-size: ws(10);
-  color: $color-text-muted;
+  color: $widget-text-muted;
   opacity: 0.7;
 }

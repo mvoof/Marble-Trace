@@ -5,6 +5,14 @@
   background: rgba(0, 0, 0, 0.4);
   padding: ws(5) ws(12);
   border-left: 2px solid transparent;
+
+  &.accentNeutral {
+    border-left-color: $widget-text-primary;
+  }
+
+  &.accentWarning {
+    border-left-color: $widget-status-warning;
+  }
   font-family: $font-mono;
 }
 
@@ -17,7 +25,7 @@
   display: block;
   font-size: ws(16);
   font-weight: 700;
-  color: #fff;
+  color: $widget-text-primary;
   line-height: 1.2;
   white-space: nowrap;
 }

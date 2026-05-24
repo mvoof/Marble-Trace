@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
+import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 import styles from './SuspensionText.module.scss';
 
 interface SuspensionTextProps {
@@ -11,7 +11,7 @@ interface SuspensionTextProps {
 
 export const SuspensionText = observer(
   ({ value, unit, color = '#fff' }: SuspensionTextProps) => (
-    <UnitValueText
+    <WidgetValue
       value={value}
       unit={unit}
       color={color}

@@ -13,11 +13,11 @@
   padding: ws(2) ws(6);
   min-width: ws(32);
   border-radius: ws(4);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, $opacity-faint);
   font-family: $font-mono;
   font-size: ws(14);
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.4);
+  color: $widget-text-secondary;
   font-variant-numeric: tabular-nums;
 }
 
@@ -28,20 +28,20 @@
 }
 
 .tempBadgeWarn {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background: rgba($widget-status-danger, 0.2);
+  color: $widget-status-danger;
   animation: tempWarnBlink 0.4s steps(2, start) infinite;
 }
 
 .tempIconWarn {
-  color: #ef4444;
+  color: $widget-status-danger;
 }
 
 @keyframes tempWarnBlink {
   0%,
   100% {
     opacity: 1;
-    filter: drop-shadow(0 0 ws(4) rgba(239, 68, 68, 0.5));
+    filter: drop-shadow(0 0 ws(4) rgba($widget-status-danger, $opacity-strong));
   }
 
   50% {

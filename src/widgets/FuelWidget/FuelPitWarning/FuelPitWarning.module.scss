@@ -1,23 +1,23 @@
 @keyframes pitPulse {
   0%,
   100% {
-    background: rgba($color-error, 0.1);
-    border-top-color: rgba($color-error, 0.3);
-    border-bottom-color: rgba($color-error, 0.3);
+    background: rgba($widget-status-danger, $opacity-subtle);
+    border-top-color: rgba($widget-status-danger, $opacity-medium);
+    border-bottom-color: rgba($widget-status-danger, $opacity-medium);
   }
   50% {
-    background: rgba($color-error, 0.2);
-    border-top-color: rgba($color-error, 0.5);
-    border-bottom-color: rgba($color-error, 0.5);
+    background: rgba($widget-status-danger, 0.2);
+    border-top-color: rgba($widget-status-danger, 0.5);
+    border-bottom-color: rgba($widget-status-danger, 0.5);
   }
 }
 
 .pitWarning {
   margin: ws(8) 0 ws(10);
   padding: ws(8) ws(10);
-  background: rgba($color-error, 0.08);
-  border-top: 1px solid rgba($color-error, 0.3);
-  border-bottom: 1px solid rgba($color-error, 0.3);
+  background: rgba($widget-status-danger, $opacity-subtle);
+  border-top: 1px solid rgba($widget-status-danger, $opacity-medium);
+  border-bottom: 1px solid rgba($widget-status-danger, $opacity-medium);
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;

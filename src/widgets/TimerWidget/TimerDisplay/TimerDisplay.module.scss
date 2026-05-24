@@ -12,15 +12,15 @@
 }
 
 .timeMain {
-  color: #fff;
+  color: $widget-text-primary;
 }
 
 .sessionEndedLabel {
-  color: $color-text-muted;
+  color: $widget-text-secondary;
   letter-spacing: 4px;
   font-size: ws(32);
 }
 
 .timeSeconds {
-  color: $color-caution;
+  color: $widget-status-warning;
 }

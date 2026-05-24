@@ -1,13 +1,13 @@
 import { observer } from 'mobx-react-lite';
 
-import { TimingRow } from '@/components/shared/TimingRow/TimingRow';
+import { LapTimingRow } from '@/components/shared/LapTimingRow/LapTimingRow';
 import {
   formatSectorDelta,
   formatSectorTime,
   getDeltaColor,
   getSectorDeltaState,
-  SECTOR_ACCENT_COLORS,
 } from '@utils/widget/lap-delta-utils';
+import { getSectorColor } from '@utils/widget/sector-utils';
 
 import type { LapDeltaWidgetSettings } from '@/types/widget-settings';
 import styles from './SectorList.module.scss';
@@ -47,11 +47,10 @@ export const SectorList = observer(() => {
       {Array.from({ length: sectorCount }, (_, index) => {
         const time = sectorTimes[index] ?? null;
         const delta = sectorDeltas[index] ?? null;
-        const accent =
-          SECTOR_ACCENT_COLORS[index % SECTOR_ACCENT_COLORS.length];
+        const accent = getSectorColor(index);
 
         return (
-          <TimingRow
+          <LapTimingRow
             key={`sector-${index}`}
             label={`S${index + 1}`}
             time={formatSectorTime(time)}

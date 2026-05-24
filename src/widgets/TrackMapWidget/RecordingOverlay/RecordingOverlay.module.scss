@@ -15,7 +15,7 @@
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: $color-text-primary;
+  color: $widget-text-primary;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -25,22 +25,26 @@
 .recordingMessage {
   font-family: $font-widget;
   font-size: ws(14);
-  color: $color-text-muted;
+  color: $widget-text-muted;
   text-align: center;
 }
 
 .progressBarWrap {
   width: 80%;
   height: ws(14);
-  background: rgba(39, 39, 42, 0.5);
+  background: $widget-row-border;
   border-radius: 4px;
   overflow: hidden;
-  border: 1px solid $color-border;
+  border: 1px solid $widget-border-default;
 }
 
 .progressBarFill {
   height: 100%;
-  background: linear-gradient(90deg, $color-positive, $color-blue);
+  background: linear-gradient(
+    90deg,
+    $widget-status-positive,
+    $widget-status-info
+  );
   border-radius: 4px;
   transition: width 0.1s linear;
 }
@@ -48,6 +52,6 @@
 .progressLabel {
   font-family: $font-mono;
   font-size: ws(14);
-  color: $color-text-muted;
+  color: $widget-text-muted;
   font-variant-numeric: tabular-nums;
 }

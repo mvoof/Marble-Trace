@@ -21,17 +21,17 @@
 }
 
 .connected {
-  background-color: $color-positive;
-  color: rgba($color-positive, 0.4);
+  background-color: $widget-text-accent;
+  color: rgba($widget-text-accent, 0.4);
 }
 
 .connectedText {
-  color: $color-positive;
+  color: $widget-text-accent;
 }
 
 .waiting {
-  background-color: $color-warning;
-  color: rgba($color-warning, 0.4);
+  background-color: $widget-status-caution;
+  color: rgba($widget-status-caution, 0.4);
   animation: pulse 2s infinite;
 }
 
@@ -40,12 +40,12 @@
 }
 
 .error {
-  background-color: $color-danger;
-  color: rgba($color-danger, 0.4);
+  background-color: $widget-status-danger;
+  color: rgba($widget-status-danger, 0.4);
 }
 
 .errorText {
-  color: $color-danger;
+  color: $widget-status-danger;
 }
 
 .disconnected {

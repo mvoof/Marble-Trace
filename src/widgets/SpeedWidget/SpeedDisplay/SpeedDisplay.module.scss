@@ -11,9 +11,9 @@
   font-size: ws(72);
   font-weight: 700;
   line-height: 0.92;
-  color: #fff;
+  color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 ws(10) rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 ws(10) rgba(255, 255, 255, $opacity-medium);
   letter-spacing: -0.056em;
   min-width: ws(120);
 }
@@ -23,5 +23,5 @@
   font-size: ws(16);
   font-weight: 700;
   letter-spacing: 0.125em;
-  color: rgba(255, 255, 255, 0.4);
+  color: $widget-text-secondary;
 }

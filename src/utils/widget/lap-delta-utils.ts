@@ -1,15 +1,6 @@
 export type DeltaState = 'ahead' | 'behind' | 'neutral';
 export type LapDeltaLayout = 'vertical' | 'horizontal';
 
-export const SECTOR_ACCENT_COLORS = [
-  '#eab308',
-  '#3b82f6',
-  '#a855f7',
-  '#10b981',
-  '#ef4444',
-  '#f97316',
-];
-
 const DELTA_STATE_COLOR: Record<DeltaState, string> = {
   ahead: '#22c55e',
   behind: '#ef4444',

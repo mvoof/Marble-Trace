@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
 import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
-import { UnitLabelText } from '@/components/shared/UnitLabelText/UnitLabelText';
-import { UnitValueText } from '@/components/shared/UnitValueText/UnitValueText';
+import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
+import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 
 import styles from './PitWarningStrategy.module.scss';
 import {
@@ -29,11 +29,9 @@ export const PitWarningStrategy = observer(() => {
       {isMultiStop && fuelMax !== null && fuelToAddWithBuffer !== null && (
         <div className={styles.pitWarningStrategy}>
           <div className={styles.strategyRow}>
-            <UnitLabelText className={styles.strategyLabel}>
-              STOPS
-            </UnitLabelText>
+            <WidgetLabel className={styles.strategyLabel}>STOPS</WidgetLabel>
 
-            <UnitValueText
+            <WidgetValue
               className={styles.strategyValue}
               value={Math.ceil(fuelToAddWithBuffer / fuelMax)}
             />
@@ -42,11 +40,11 @@ export const PitWarningStrategy = observer(() => {
           <div className={styles.strategyDivider} />
 
           <div className={styles.strategyRow}>
-            <UnitLabelText className={styles.strategyLabel}>
+            <WidgetLabel className={styles.strategyLabel}>
               REC. FILL
-            </UnitLabelText>
+            </WidgetLabel>
 
-            <UnitValueText
+            <WidgetValue
               className={styles.strategyValue}
               value={formatFuel(
                 fuelToAddWithBuffer / Math.ceil(fuelToAddWithBuffer / fuelMax),

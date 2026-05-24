@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { formatIRating } from '@/utils/widget/widget-utils';
+import { formatIRating } from '@utils/widget/widget-utils';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 
 import styles from './ClassSwitcher.module.scss';
