@@ -19,12 +19,14 @@ import { StandingsHeader } from '@widgets/StandingsWidget/StandingsHeader/Standi
 import styles from './StandingsContent.module.scss';
 
 export const StandingsContent = observer(() => {
-  const computed = useBackendComputedStore();
+  const { allClassGroups, standings } = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
+
   const settings =
     widgetSettings.getSettings<StandingsWidgetSettings>('standings');
-  const allClassGroups = computed.allClassGroups;
-  const driverEntries = computed.standings?.entries ?? [];
+
+  const driverEntries = standings?.entries ?? [];
+
   const activeClassIndex = widgetSettings.standingsActiveClassIndex;
   const overallSof = computeClassSof(driverEntries);
 

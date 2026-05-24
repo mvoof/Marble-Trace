@@ -8,28 +8,27 @@
   font-family: $font-mono;
   text-transform: uppercase;
   font-size: ws(12);
-  color: $widget-text-muted;
+  font-weight: 400;
+  color: $widget-text-secondary;
 }
 
 .sessionLeft {
   display: flex;
   gap: ws(6);
   align-items: center;
-  font-weight: 600;
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
 }
 
-// Track name is the primary accent in white
 .trackName {
   color: $widget-text-primary;
-  font-weight: 700;
+  font-weight: 900;
 }
 
 .lapValue {
   color: $widget-text-primary;
-  font-weight: 700;
+  font-weight: 900;
 }
 
 .sessionRight {
@@ -48,39 +47,32 @@
 
 .sessionDriverCountValue {
   color: $widget-text-primary;
-  font-weight: 700;
+  font-weight: 900;
 }
 
 .tempValue {
   color: $widget-text-primary;
+  font-weight: 900;
 }
 
 .sofValue {
-  color: rgba(167, 139, 250, 0.9);
-  font-weight: 700;
-}
-
-.pitStopsBadge {
-  color: $widget-text-muted;
+  color: rgba(167, 161, 250, 0.95);
+  font-weight: 900;
 }
 
 .pitStopsValue {
   color: $widget-text-primary;
-  font-weight: 700;
-}
-
-.incidentsBadge {
-  color: $widget-text-muted;
+  font-weight: 900;
 }
 
 .incidentsValue {
   color: $widget-text-primary;
-  font-weight: 700;
+  font-weight: 900;
 }
 
 .incidentsValueNearDQ {
   color: $widget-status-danger;
-  font-weight: 700;
+  font-weight: 900;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
