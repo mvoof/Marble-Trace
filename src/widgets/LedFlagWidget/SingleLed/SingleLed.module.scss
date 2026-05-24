@@ -5,7 +5,7 @@
   box-shadow:
     0 15px 35px rgba(0, 0, 0, 0.8),
     inset 0 0 0 1px #222;
-  background-color: #030304;
+  background-color: $led-surface-off;
   position: relative;
 }
 
@@ -13,7 +13,7 @@
   position: absolute;
   inset: 8px;
   border-radius: 4px;
-  background-color: #16161a;
+  background-color: $led-surface-panel;
 }
 
 // Color classes are intentionally duplicated in LedMatrix.module.scss —

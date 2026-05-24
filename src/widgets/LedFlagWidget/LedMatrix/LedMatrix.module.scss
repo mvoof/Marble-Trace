@@ -5,7 +5,7 @@ $block-gap: 4px;
 $board-padding: 4px;
 
 .board {
-  background-color: #030304;
+  background-color: $led-surface-off;
   padding: $board-padding;
   border-radius: 6px;
   display: grid;
@@ -31,7 +31,7 @@ $board-padding: 4px;
 }
 
 .block {
-  background-color: #08080a;
+  background-color: $led-surface-matrix;
   display: grid;
   grid-template-columns: repeat(var(--dpb), #{$diode-cell});
   grid-template-rows: repeat(var(--dpb), #{$diode-cell});
@@ -41,7 +41,7 @@ $board-padding: 4px;
   width: $diode-size;
   height: $diode-size;
   margin: $diode-margin;
-  background-color: #16161a;
+  background-color: $led-surface-panel;
   border-radius: 1px;
 }
 
