@@ -43,7 +43,7 @@
 }
 
 .pitSubLimOff {
-  color: $color-pit-warning;
+  color: $widget-pit-warning;
   animation: limOffBlink 1s ease-in-out infinite;
 }
 
@@ -70,14 +70,14 @@
 }
 
 .statePitLane .pitSubLimOff {
-  color: $color-pit-warning;
+  color: $widget-pit-warning;
   animation: limOffBlink 1s ease-in-out infinite;
 }
 
 // limiter active → bright blue
 .stateLimiter {
-  background: rgba($color-pit-active, 0.95);
-  border-right-color: rgba($color-pit-active, 0.5);
+  background: rgba($widget-pit-active, 0.95);
+  border-right-color: rgba($widget-pit-active, 0.5);
 }
 
 .stateLimiter .gearDigit {
@@ -86,8 +86,8 @@
 
 // over speed limit → bright red pulse
 .stateOverLimit {
-  background: $color-pit-warning;
-  border-right-color: rgba($color-pit-warning, 0.5);
+  background: $widget-pit-warning;
+  border-right-color: rgba($widget-pit-warning, 0.5);
   animation: overLimitPulse 0.7s ease-in-out infinite;
 }
 
