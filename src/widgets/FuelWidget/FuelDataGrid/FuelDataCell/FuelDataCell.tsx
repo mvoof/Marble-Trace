@@ -14,6 +14,7 @@ export const FuelDataCell = observer(
     return (
       <div className={styles.gridCell}>
         <WidgetLabel className={styles.cellLabel}>{label}</WidgetLabel>
+
         <span className={`${styles.cellValue} ${valueClassName ?? ''}`}>
           {value}
         </span>

@@ -8,6 +8,6 @@
 .sessionLabel {
   font-family: $font-mono;
   font-size: ws(10);
-  color: color-mix(in srgb, contrast-color(var(--widget-bg)) 55%, transparent);
+  color: $widget-text-secondary;
   letter-spacing: 1px;
 }

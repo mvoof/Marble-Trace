@@ -8,7 +8,7 @@
 .footerItem {
   font-family: $font-mono;
   font-size: ws(12);
-  font-weight: 600;
-  color: color-mix(in srgb, contrast-color(var(--widget-bg)) 55%, transparent);
+  font-weight: 900;
+  color: $widget-text-primary;
   letter-spacing: 1px;
 }
