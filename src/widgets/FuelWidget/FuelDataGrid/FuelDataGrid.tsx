@@ -19,8 +19,8 @@ export const FuelDataGrid = observer(() => {
 
   const shortageText =
     shortage !== null
-      ? `${shortage >= 0 ? '+' : ''}${formatFuel(shortage, unitSystem)} ${unit}`
-      : `${NO_FUEL_DATA_PLACEHOLDER} ${unit}`;
+      ? `${shortage >= 0 ? '+' : ''}${formatFuel(shortage, unitSystem)}`
+      : NO_FUEL_DATA_PLACEHOLDER;
 
   const shortageClass =
     shortage !== null && shortage >= 0 ? styles.valueSafe : '';
@@ -28,16 +28,17 @@ export const FuelDataGrid = observer(() => {
   const avgPerLap = fuel?.avgPerLap ?? null;
   const avgText =
     avgPerLap !== null
-      ? `${formatFuel(avgPerLap, unitSystem)} ${unit}`
-      : `${NO_FUEL_DATA_PLACEHOLDER} ${unit}`;
+      ? formatFuel(avgPerLap, unitSystem)
+      : NO_FUEL_DATA_PLACEHOLDER;
 
   return (
     <div className={styles.dataGrid}>
-      <FuelDataCell label="AVG / LAP" value={avgText} />
+      <FuelDataCell label="AVG / LAP" value={avgText} unit={unit} />
 
       <FuelDataCell
         label="EST. FINISH"
         value={shortageText}
+        unit={unit}
         valueClassName={shortageClass}
       />
     </div>

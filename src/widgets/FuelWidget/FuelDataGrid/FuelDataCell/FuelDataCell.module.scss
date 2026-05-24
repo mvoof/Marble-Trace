@@ -13,7 +13,9 @@
 .cellValue {
   font-family: $font-mono;
   font-size: ws(16);
-  font-weight: 700;
-  color: $widget-text-primary;
-  font-variant-numeric: tabular-nums;
+}
+
+.cellUnit {
+  font-size: ws(11);
+  margin-left: ws(4);
 }
