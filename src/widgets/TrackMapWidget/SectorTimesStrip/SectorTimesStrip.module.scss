@@ -3,7 +3,7 @@
   justify-content: center;
   gap: 0.4em;
   padding: 0.3em 0.5em;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, $opacity-faint);
   pointer-events: none;
 }
 
@@ -12,8 +12,8 @@
   align-items: center;
   gap: 0.3em;
   padding: 0.2em 0.5em;
-  background: rgba(0, 0, 0, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, $opacity-heavy);
+  border: 1px solid rgba(255, 255, 255, $opacity-subtle);
   border-radius: 0.35em;
   backdrop-filter: blur(4px);
 }
@@ -39,14 +39,14 @@
   font-family: $font-mono;
   font-size: 0.8em;
   font-weight: 400;
-  color: $color-text-primary;
+  color: $widget-text-primary;
   letter-spacing: 0.02em;
   transition: color 0.2s ease;
 }
 
 .live {
   border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 8px rgba(255, 255, 255, $opacity-muted);
 
   .time {
     color: #fff;
