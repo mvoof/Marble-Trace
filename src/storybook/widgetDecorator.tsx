@@ -27,17 +27,19 @@ export const widgetDecorator = (
 
   const WidgetDecoratorWrapper = (Story: Parameters<Decorator>[0]) => (
     <div
-      style={{
-        width,
-        height,
-        background,
-        borderRadius: WIDGET_BORDER_RADIUS,
-        border: WIDGET_BORDER,
-        overflow: 'hidden',
-        display,
-        minWidth,
-        ['--widget-bg']: bgColor,
-      } as React.CSSProperties}
+      style={
+        {
+          width,
+          height,
+          background,
+          borderRadius: WIDGET_BORDER_RADIUS,
+          border: WIDGET_BORDER,
+          overflow: 'hidden',
+          display,
+          minWidth,
+          ['--widget-bg']: bgColor,
+        } as React.CSSProperties
+      }
     >
       <Story />
     </div>
