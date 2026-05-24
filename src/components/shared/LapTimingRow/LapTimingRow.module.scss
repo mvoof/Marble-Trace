@@ -28,7 +28,8 @@
 
 .label {
   font-size: ws(10);
-  color: $widget-text-muted;
+  font-weight: 300;
+  color: $widget-text-primary;
   letter-spacing: 1px;
   font-family: $font-widget;
   text-transform: uppercase;
