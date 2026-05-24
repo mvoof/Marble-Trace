@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   gap: 0;
-  border-right: 2px solid rgba(255, 255, 255, 0.1);
+  border-right: 2px solid rgba(255, 255, 255, $opacity-subtle);
   padding: ws(8) ws(12);
   transition: background 0.2s ease;
 }
@@ -20,7 +20,7 @@
   line-height: 1;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, $opacity-solid);
 }
 
 // ── Sub-label (GEAR / PIT / LIM / SLOW!) ────────────────────
@@ -38,7 +38,7 @@
 }
 
 .pitSubNormal {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, $opacity-strong);
   letter-spacing: 0.1em;
 }
 
@@ -56,8 +56,8 @@
 
 // pit-lane (on pit road, no limiter) → bright amber
 .statePitLane {
-  background: $color-pit-entry;
-  border-right-color: rgba($color-pit-entry, 0.6);
+  background: $widget-pit-entry;
+  border-right-color: rgba($widget-pit-entry, 0.6);
 }
 
 // bright amber bg → black gear text for contrast
