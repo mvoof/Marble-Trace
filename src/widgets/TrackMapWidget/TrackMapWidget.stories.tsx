@@ -29,7 +29,8 @@ const meta: Meta<typeof TrackMapView> = {
   parameters: { layout: 'centered' },
   decorators: [
     withStore((store) => {
-      if (snapshot.sessionInfo) store.telemetry.updateSessionInfo(snapshot.sessionInfo);
+      if (snapshot.sessionInfo)
+        store.telemetry.updateSessionInfo(snapshot.sessionInfo);
       store.backendComputed.updateStandings({
         entries: DRIVER_ENTRIES.slice(0, 10),
         playerCarIdx: DRIVER_ENTRIES.find((d) => d.isPlayer)?.carIdx ?? 0,
