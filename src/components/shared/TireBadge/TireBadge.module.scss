@@ -22,32 +22,32 @@
   justify-content: center;
   width: 1.3em;
   height: 1.3em;
-  color: rgba(113, 113, 122, 0.6);
+  color: rgba(113, 113, 122, $opacity-strong);
   font-size: 0.8125em;
   font-family: $font-mono;
   vertical-align: middle;
 }
 
 .tireSoft {
-  color: $color-error;
-  border-color: rgba($color-error, 0.5);
-  background: rgba($color-error, 0.1);
+  color: $widget-status-danger;
+  border-color: rgba($widget-status-danger, 0.5);
+  background: rgba($widget-status-danger, 0.1);
 }
 
 .tireMed {
-  color: #eab308;
-  border-color: rgba(234, 179, 8, 0.5);
-  background: rgba(234, 179, 8, 0.1);
+  color: $widget-tire-worn-color;
+  border-color: $widget-tire-worn-border;
+  background: $widget-tire-worn-bg;
 }
 
 .tireHard {
-  color: #e5e7eb;
-  border-color: rgba(161, 161, 170, 0.5);
-  background: rgba(161, 161, 170, 0.1);
+  color: $widget-tire-new-color;
+  border-color: $widget-tire-new-border;
+  background: $widget-tire-new-bg;
 }
 
 .tireWet {
-  color: $color-blue;
-  border-color: rgba($color-blue, 0.5);
-  background: rgba($color-blue, 0.1);
+  color: $widget-tire-wet-color;
+  border-color: $widget-tire-wet-border;
+  background: $widget-tire-wet-bg;
 }

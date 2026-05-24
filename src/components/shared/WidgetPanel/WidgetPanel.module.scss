@@ -1,6 +1,6 @@
 .panel {
   font-family: $font-widget;
-  color: $color-text-primary;
+  color: contrast-color(var(--widget-bg));
   box-sizing: border-box;
   width: 100%;
   height: 100%;
