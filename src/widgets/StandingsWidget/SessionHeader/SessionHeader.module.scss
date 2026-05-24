@@ -1,14 +1,14 @@
 .sessionHeader {
-  background: rgba(24, 24, 27, 0.8);
+  background: rgba(24, 24, 27, $opacity-heavy);
   padding: ws(10) ws(10);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(39, 39, 42, 1);
+  border-bottom: 1px solid $widget-row-border;
   font-family: $font-mono;
   text-transform: uppercase;
   font-size: ws(12);
-  color: $color-text-muted;
+  color: $widget-text-muted;
 }
 
 .sessionLeft {
@@ -23,12 +23,12 @@
 
 // Track name is the primary accent in white
 .trackName {
-  color: $color-text-primary;
+  color: $widget-text-primary;
   font-weight: 700;
 }
 
 .lapValue {
-  color: $color-text-primary;
+  color: $widget-text-primary;
   font-weight: 700;
 }
 
@@ -47,12 +47,12 @@
 }
 
 .sessionDriverCountValue {
-  color: $color-text-primary;
+  color: $widget-text-primary;
   font-weight: 700;
 }
 
 .tempValue {
-  color: $color-text-primary;
+  color: $widget-text-primary;
 }
 
 .sofValue {
@@ -61,25 +61,25 @@
 }
 
 .pitStopsBadge {
-  color: $color-text-muted;
+  color: $widget-text-muted;
 }
 
 .pitStopsValue {
-  color: $color-text-primary;
+  color: $widget-text-primary;
   font-weight: 700;
 }
 
 .incidentsBadge {
-  color: $color-text-muted;
+  color: $widget-text-muted;
 }
 
 .incidentsValue {
-  color: $color-text-primary;
+  color: $widget-text-primary;
   font-weight: 700;
 }
 
 .incidentsValueNearDQ {
-  color: $color-error;
+  color: $widget-status-danger;
   font-weight: 700;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
