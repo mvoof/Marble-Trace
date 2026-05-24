@@ -6,8 +6,8 @@ import {
   formatSectorTime,
   getDeltaColor,
   getSectorDeltaState,
-  SECTOR_ACCENT_COLORS,
 } from '@utils/widget/lap-delta-utils';
+import { getSectorColor } from '@utils/widget/sector-utils';
 
 import type { LapDeltaWidgetSettings } from '@/types/widget-settings';
 import styles from './SectorList.module.scss';
@@ -47,8 +47,7 @@ export const SectorList = observer(() => {
       {Array.from({ length: sectorCount }, (_, index) => {
         const time = sectorTimes[index] ?? null;
         const delta = sectorDeltas[index] ?? null;
-        const accent =
-          SECTOR_ACCENT_COLORS[index % SECTOR_ACCENT_COLORS.length];
+        const accent = getSectorColor(index);
 
         return (
           <LapTimingRow

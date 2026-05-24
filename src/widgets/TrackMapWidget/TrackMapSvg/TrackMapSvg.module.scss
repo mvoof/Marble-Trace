@@ -1,5 +1,3 @@
-@use 'sass:list';
-
 .svgContainer {
   width: 100%;
   height: 100%;
@@ -10,11 +8,6 @@
 .sectorArc {
   pointer-events: none;
   opacity: 0.8;
-  @for $i from 0 through 5 {
-    &[data-index='#{$i}'] {
-      stroke: list.nth($sector-colors, $i + 1);
-    }
-  }
 }
 
 .sfLabel {

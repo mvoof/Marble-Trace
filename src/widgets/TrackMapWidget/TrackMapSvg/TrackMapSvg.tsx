@@ -8,6 +8,8 @@ import type { TrackMapLeaderLabelMode } from '@/types/widget-settings';
 import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
 import { CarDot } from '@/components/shared/CarDot/CarDot';
 
+import { getSectorColor } from '@utils/widget/sector-utils';
+
 import styles from './TrackMapSvg.module.scss';
 
 interface TrackMapSvgProps {
@@ -130,7 +132,7 @@ export const TrackMapSvg = observer(
                   strokeLinecap="butt"
                   strokeDasharray={`0 ${startDist} ${sectorLen} ${pathLength}`}
                   className={styles.sectorArc}
-                  data-index={i % 6}
+                  style={{ stroke: getSectorColor(i) }}
                 />
               );
             })}

@@ -96,16 +96,17 @@ export const Recording: Story = {
 };
 
 export const WithSectors: Story = {
-  args: {
-    sectors: SECTORS,
-    sectorTimes: [63.4, 41.2, null],
-    currentSectorIdx: 1,
-    settings: {
-      ...DEFAULT_SETTINGS,
-      showSectorsOnMap: true,
-      showSectorTimes: true,
-    },
-  },
+  decorators: [
+    withStore((store) => {
+      store.telemetry.sessionInfo = {
+        SplitTimeInfo: { Sectors: SECTORS },
+      } as never;
+      store.widgetSettings.updateUserSettings('track-map', {
+        showSectorsOnMap: true,
+        showSectorTimes: true,
+      });
+    }),
+  ],
 };
 
 export const NoLegend: Story = {
