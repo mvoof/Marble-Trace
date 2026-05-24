@@ -7,15 +7,15 @@
   column-gap: ws(6);
   padding: ws(4) ws(9);
   position: relative;
-  border-bottom: 1px solid rgba(39, 39, 42, 0.4);
-  background: rgba(24, 24, 27, 0.2);
+  border-bottom: 1px solid $widget-row-border;
+  background: $widget-row-bg-subtle;
   line-height: 1.15;
   font-size: ws(13);
 }
 
 .driverRowPlayer {
-  background-color: rgba(245, 158, 11, 0.2);
-  box-shadow: inset 0 0 15px rgba(245, 158, 11, 0.3);
+  background-color: $widget-row-player-bg;
+  box-shadow: inset 0 0 15px $widget-row-player-glow;
   z-index: 10;
 }
 
@@ -34,12 +34,12 @@
 .driverPosition {
   font-weight: 700;
   font-size: ws(15);
-  color: $color-text-primary;
+  color: $widget-text-primary;
   font-family: $font-mono;
 }
 
 .driverPositionPlayer {
-  color: $color-caution;
+  color: $widget-status-caution;
 }
 
 // Car number cell — second grid column after pos
@@ -56,7 +56,7 @@
 .driverCarNumber {
   font-size: ws(13);
   font-family: $font-mono;
-  color: $color-text-primary;
+  color: $widget-text-primary;
 }
 
 .driverCarNumberPlayer {
@@ -75,20 +75,20 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: $color-text-primary;
+  color: $widget-text-primary;
   display: block;
 }
 
 .driverNamePlayer {
-  color: $color-caution;
+  color: $widget-status-caution;
 }
 
 .driverNameLappedBehind {
-  color: $color-blue;
+  color: $widget-status-info;
 }
 
 .driverNameLappingUs {
-  color: $color-error;
+  color: $widget-status-danger;
 }
 
 // Individual badge columns — each occupies a fixed grid column so appearance/disappearance
@@ -133,24 +133,24 @@
 }
 
 .f2Positive {
-  color: $color-error;
+  color: $widget-status-danger;
 }
 
 .f2Negative {
-  color: $color-blue;
+  color: $widget-status-info;
 }
 
 .f2Player {
-  color: $color-caution;
+  color: $widget-status-caution;
 }
 
 // Trend arrows
 .trendUp {
-  color: $color-success;
+  color: $widget-status-positive;
   flex-shrink: 0;
 }
 
 .trendDown {
-  color: $color-error;
+  color: $widget-status-danger;
   flex-shrink: 0;
 }
