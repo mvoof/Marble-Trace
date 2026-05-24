@@ -70,7 +70,7 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     label = 'TRK';
     value = formatTemp(trackTempC, unitSystem);
     unit = tempUnit(unitSystem);
-    color = '#fbbf24';
+    color = '#fbbf24'; // $widget-status-warning
   } else if (type === 'wind') {
     const windVelMps =
       env?.wind_vel ?? parseWeekendFloat(weekendInfo?.TrackWindVel);

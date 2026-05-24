@@ -1,6 +1,6 @@
 .widget {
   padding: ws(8);
-  color: #ccc;
+  color: $widget-text-secondary;
   font-family: monospace;
   font-size: ws(13);
   line-height: 1.4;
@@ -12,7 +12,7 @@
 }
 
 .waiting {
-  color: $color-warning;
+  color: $widget-status-caution;
   margin-bottom: ws(4);
 }
 
@@ -23,7 +23,7 @@
 }
 
 .sectionTitle {
-  color: $color-info;
+  color: $widget-status-info;
   font-weight: bold;
   margin-bottom: ws(2);
   margin-top: ws(4);
@@ -32,10 +32,10 @@
 }
 
 .label {
-  color: #888;
+  color: $widget-text-muted;
 }
 
 .value {
-  color: #fff;
+  color: $widget-text-primary;
   text-align: right;
 }
