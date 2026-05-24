@@ -4,6 +4,7 @@ import { TrackMapView } from './TrackMapView/TrackMapView';
 import {
   driverEntries as DRIVER_ENTRIES,
   trackData as STORED_TRACK,
+  snapshot,
 } from '@/storybook/test-data';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
 import { withStore } from '../../../.storybook/decorators';
@@ -14,41 +15,11 @@ const TRACK_DATA = {
   points: STORED_TRACK.points,
 };
 
-const CARS_ON_TRACK = DRIVER_ENTRIES.slice(0, 10).map((d) => ({
-  carIdx: d.carIdx,
-  carNumber: d.carNumber,
-  carClassColor: d.carClassColor,
-  carClassId: d.carClassId,
-  lapDistPct: d.lapDistPct,
-  trackSurface: d.trackSurface,
-  isPlayer: d.isPlayer,
-  position: d.position,
-  classPosition: d.classPosition,
-}));
-
-const CLASS_COLORS = [{ name: 'GTE', color: '#f59e0b' }];
-
 const SECTORS = [
   { SectorNum: 0, SectorStartPct: 0.0 },
   { SectorNum: 1, SectorStartPct: 0.33 },
   { SectorNum: 2, SectorStartPct: 0.67 },
 ];
-
-const DEFAULT_SETTINGS = {
-  showLegend: true,
-  legendPosition: 'right' as const,
-  showSectors: true,
-  showSectorTimes: true,
-  showSectorsOnMap: false,
-  rotationMode: 'fixed' as const,
-  playerDotColor: '#22c55e',
-  showPlayerLabel: true,
-  leaderLabelMode: 'none' as const,
-  trackStrokePx: 10,
-  trackBorderPx: 2,
-  sectorStrokePx: 3,
-  targetDotRadiusPx: 6,
-};
 
 const DESIGN_SIZE = 600;
 
@@ -57,22 +28,20 @@ const meta: Meta<typeof TrackMapView> = {
   component: TrackMapView,
   parameters: { layout: 'centered' },
   decorators: [
-    withStore(),
+    withStore((store) => {
+      if (snapshot.sessionInfo) store.telemetry.updateSessionInfo(snapshot.sessionInfo);
+      store.backendComputed.updateStandings({
+        entries: DRIVER_ENTRIES.slice(0, 10),
+        playerCarIdx: DRIVER_ENTRIES.find((d) => d.isPlayer)?.carIdx ?? 0,
+      });
+    }),
     widgetDecorator({ width: DESIGN_SIZE, height: DESIGN_SIZE }),
   ],
   args: {
-    cars: CARS_ON_TRACK,
-    classColors: CLASS_COLORS,
     trackData: TRACK_DATA,
-    trackName: 'Lime Rock Park',
     isRecording: false,
     recordingProgress: 0,
-    isForceStartPending: false,
     isWaitingForSF: false,
-    settings: DEFAULT_SETTINGS,
-    sectors: null,
-    sectorTimes: [],
-    currentSectorIdx: 0,
   },
 };
 
@@ -80,12 +49,6 @@ export default meta;
 type Story = StoryObj<typeof TrackMapView>;
 
 export const Default: Story = {};
-
-export const NoTrackData: Story = {
-  args: {
-    trackData: null,
-  },
-};
 
 export const Recording: Story = {
   args: {
@@ -98,9 +61,17 @@ export const Recording: Story = {
 export const WithSectors: Story = {
   decorators: [
     withStore((store) => {
-      store.telemetry.sessionInfo = {
-        SplitTimeInfo: { Sectors: SECTORS },
-      } as never;
+      if (snapshot.sessionInfo) {
+        store.telemetry.updateSessionInfo({
+          ...snapshot.sessionInfo,
+          SplitTimeInfo: { Sectors: SECTORS },
+        });
+      }
+
+      store.backendComputed.updateStandings({
+        entries: DRIVER_ENTRIES.slice(0, 10),
+        playerCarIdx: DRIVER_ENTRIES.find((d) => d.isPlayer)?.carIdx ?? 0,
+      });
       store.widgetSettings.updateUserSettings('track-map', {
         showSectorsOnMap: true,
         showSectorTimes: true,
@@ -109,37 +80,9 @@ export const WithSectors: Story = {
   ],
 };
 
-export const NoLegend: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, showLegend: false },
-  },
-};
-
-export const AllLabels: Story = {
-  args: {
-    settings: {
-      ...DEFAULT_SETTINGS,
-      showPlayerLabel: true,
-      leaderLabelMode: 'all',
-    },
-  },
-};
-
-export const RotationMode: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, rotationMode: 'player' },
-  },
-};
-
 export const WaitingForSF: Story = {
   args: {
     trackData: null,
     isWaitingForSF: true,
-  },
-};
-
-export const LegendLeft: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, legendPosition: 'left' },
   },
 };
