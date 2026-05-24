@@ -5,29 +5,29 @@
   padding: ws(8) ws(10);
   margin: ws(1) 0;
   width: 100%;
-  background: rgba(255, 255, 255, 0.03);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, $opacity-faint);
+  border-top: 1px solid rgba(255, 255, 255, $opacity-subtle);
+  border-bottom: 1px solid rgba(255, 255, 255, $opacity-subtle);
   transition: all 0.3s ease;
 }
 
 .finishSafe {
-  background: rgba($color-success, 0.08);
-  border-top-color: rgba($color-success, 0.3);
-  border-bottom-color: rgba($color-success, 0.3);
+  background: rgba($widget-status-positive, $opacity-subtle);
+  border-top-color: rgba($widget-status-positive, $opacity-medium);
+  border-bottom-color: rgba($widget-status-positive, $opacity-medium);
 
   .finishValue {
-    color: $color-success;
+    color: $widget-status-positive;
   }
 }
 
 .finishDanger {
-  background: rgba($color-error, 0.15);
-  border-top-color: rgba($color-error, 0.4);
-  border-bottom-color: rgba($color-error, 0.4);
+  background: rgba($widget-status-danger, $opacity-muted);
+  border-top-color: rgba($widget-status-danger, 0.4);
+  border-bottom-color: rgba($widget-status-danger, 0.4);
 
   .finishValue {
-    color: $color-error;
+    color: $widget-status-danger;
   }
 }
 
@@ -40,19 +40,19 @@
   font-family: $font-mono;
   font-size: ws(24);
   font-weight: 800;
-  color: #fff;
+  color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 
 .valueSafe {
-  color: $color-success;
+  color: $widget-status-positive;
 }
 
 .valueDanger {
-  color: $color-error;
+  color: $widget-status-danger;
 }
 
 .valueWarning {
-  color: $color-caution;
+  color: $widget-status-warning;
 }

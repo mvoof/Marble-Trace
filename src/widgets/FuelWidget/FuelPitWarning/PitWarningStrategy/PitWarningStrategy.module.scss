@@ -10,7 +10,7 @@
   align-items: flex-start;
   gap: ws(2);
   padding-right: ws(12);
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, $opacity-subtle);
 }
 
 .strategyRow {
@@ -24,7 +24,7 @@
   font-family: $font-widget;
   font-size: ws(8);
   font-weight: 600;
-  color: $color-text-muted;
+  color: $widget-text-muted;
   letter-spacing: 0.5px;
   margin-bottom: ws(1);
 }
@@ -33,7 +33,7 @@
   font-family: $font-mono;
   font-size: ws(18);
   font-weight: 700;
-  color: #fff;
+  color: $widget-text-primary;
 }
 
 .strategyDivider {
