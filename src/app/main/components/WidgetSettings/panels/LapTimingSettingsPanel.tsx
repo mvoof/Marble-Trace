@@ -2,19 +2,22 @@ import { observer } from 'mobx-react-lite';
 import { Segmented, Switch } from 'antd';
 import type {
   LapDeltaReference,
-  LapTimesWidgetSettings,
+  LapTimingWidgetSettings,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
-export const LapTimesSettingsPanel = observer(() => {
+export const LapTimingSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
   const settings =
-    widgetSettings.getSettings<LapTimesWidgetSettings>('lap-times');
+    widgetSettings.getSettings<LapTimingWidgetSettings>('lap-timing');
 
-  const update = (partial: Partial<LapTimesWidgetSettings>) => {
-    widgetSettings.updateUserSettings('lap-times', { ...settings, ...partial });
+  const update = (partial: Partial<LapTimingWidgetSettings>) => {
+    widgetSettings.updateUserSettings('lap-timing', {
+      ...settings,
+      ...partial,
+    });
   };
 
   return (
@@ -33,7 +36,7 @@ export const LapTimesSettingsPanel = observer(() => {
             }
           />
           <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
-            Affects the PRED calculation.
+            Used for sector delta chips and the progress prediction.
           </div>
         </div>
       </Card>
@@ -42,7 +45,7 @@ export const LapTimesSettingsPanel = observer(() => {
         <div className={styles.fieldGroup}>
           <SettingRow
             title="Show Predicted Lap"
-            desc="Estimated finish time based on live delta."
+            desc="Estimated finish time displayed in the header."
           >
             <Switch
               checked={settings.showPredicted}

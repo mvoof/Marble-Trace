@@ -1,0 +1,77 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: ws(6);
+  padding: ws(14) ws(16);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.flashBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  animation: shrink 3s linear forwards;
+}
+
+@keyframes shrink {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+}
+
+.label {
+  font-family: $font-mono;
+  font-size: ws(9);
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: $widget-text-secondary;
+  display: flex;
+  align-items: center;
+  gap: ws(8);
+}
+
+.best {
+  color: $widget-text-best-lap;
+}
+
+.times {
+  display: flex;
+  align-items: baseline;
+  gap: ws(14);
+  white-space: nowrap;
+}
+
+.lapTime {
+  font-family: $font-mono;
+  font-size: ws(32);
+  font-weight: 700;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.lapDelta {
+  font-family: $font-mono;
+  font-size: ws(22);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.ahead {
+  color: $widget-status-positive;
+}
+.behind {
+  color: $widget-status-danger;
+}
+.neutral {
+  color: $widget-status-warning;
+}

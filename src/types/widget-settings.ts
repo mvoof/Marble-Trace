@@ -110,15 +110,9 @@ export interface WeatherWidgetSettings {
   showForecast: boolean;
 }
 
-export type LapTimesLayout = 'vertical' | 'horizontal';
-
 export interface LapTimesWidgetSettings {
-  showLastLap: boolean;
-  showBestLap: boolean;
-  showP1: boolean;
+  reference: LapDeltaReference;
   showPredicted: boolean;
-  layout: LapTimesLayout;
-  layoutWidths?: Partial<Record<LapTimesLayout, number>>;
 }
 
 export interface FuelWidgetSettings {
@@ -128,14 +122,22 @@ export interface FuelWidgetSettings {
   barWidth: number;
 }
 
-export type LapDeltaLayout = 'vertical' | 'horizontal';
 export type LapDeltaReference = 'session_best' | 'personal_best';
+export type LapTimePosition = 'none' | 'top' | 'bottom' | 'left' | 'right';
 
 export interface LapDeltaWidgetSettings {
-  layout: LapDeltaLayout;
-  showSectorTimes: boolean;
   reference: LapDeltaReference;
-  layoutWidths?: Partial<Record<LapDeltaLayout, number>>;
+  lapTimePosition: LapTimePosition;
+  flashDuration: number;
+}
+
+export interface LapTimingWidgetSettings {
+  reference: LapDeltaReference;
+  showPredicted: boolean;
+}
+
+export interface LapHistoryWidgetSettings {
+  reference: LapDeltaReference;
 }
 
 export interface TimerWidgetSettings {
@@ -168,7 +170,7 @@ export interface GMeterWidgetSettings {
 }
 
 export type WidgetSpecificSettings =
-  | Record<never, never> // id: exmple widget
+  | Record<never, never> // id: example widget
   | ChassisWidgetSettings
   | FlagDisplaySettings
   | SpeedWidgetSettings
@@ -182,6 +184,8 @@ export type WidgetSpecificSettings =
   | FuelWidgetSettings
   | LapTimesWidgetSettings
   | LapDeltaWidgetSettings
+  | LapTimingWidgetSettings
+  | LapHistoryWidgetSettings
   | TimerWidgetSettings
   | GMeterWidgetSettings;
 

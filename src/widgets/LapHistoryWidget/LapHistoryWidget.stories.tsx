@@ -2,7 +2,7 @@ import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import type { LapDeltaFrame, LapTimingFrame } from '@/types/bindings';
+import type { LapTimingFrame, LapDeltaFrame } from '@/types/bindings';
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
 import type { BackendComputedStore } from '@store/iracing/computed.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
@@ -11,16 +11,16 @@ import {
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { LapTimesWidget } from './LapTimesWidget';
+import { LapHistoryWidget } from './LapHistoryWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
 import { withStore } from '../../../.storybook/decorators';
 
 interface StoryArgs {
-  currentLapSec: number;
-  lastLapSec: number | null;
-  bestLapSec: number | null;
-  personalBestDelta: number | null;
-  showPredicted: boolean;
+  liveDelta: number;
+  currentLapTime: number;
+  bestLapTime: number;
+  lapNum: number;
+  reference: 'personal_best' | 'session_best';
 }
 
 const applyArgs = (
@@ -33,23 +33,29 @@ const applyArgs = (
 ) => {
   runInAction(() => {
     stores.telemetry.updateLapTiming({
-      lap_current_lap_time: args.currentLapSec,
-      lap_last_lap_time: args.lastLapSec,
-      lap_best_lap_time: args.bestLapSec,
+      lap: args.lapNum,
+      lap_dist: null,
+      lap_dist_pct: 0.42,
+      lap_current_lap_time: args.currentLapTime,
+      lap_last_lap_time: 89.512,
+      lap_best_lap_time: args.bestLapTime,
+      player_car_position: 3,
+      player_car_class_position: 3,
+      lap_delta_to_session_best_live: args.liveDelta,
+      lap_delta_to_session_optimal_live: args.liveDelta,
     } as LapTimingFrame);
 
     stores.computed.updateLapDelta({
-      personalBestTotal: args.personalBestDelta ?? 0,
-      sessionBestTotal: args.personalBestDelta ?? 0,
       sectorTimes: [],
       currentSectorIdx: 0,
-      personalBestSectors: [],
+      sessionBestTotal: args.liveDelta,
       sessionBestSectors: [],
+      personalBestTotal: args.liveDelta,
+      personalBestSectors: [],
     } as LapDeltaFrame);
 
-    stores.widgetSettings.updateUserSettings('lap-times', {
-      reference: 'personal_best',
-      showPredicted: args.showPredicted,
+    stores.widgetSettings.updateUserSettings('lap-history', {
+      reference: args.reference,
     });
   });
 };
@@ -63,44 +69,35 @@ const StoryHost = (args: StoryArgs) => {
     applyArgs({ telemetry, computed, widgetSettings }, args);
   }, [args, telemetry, computed, widgetSettings]);
 
-  return <LapTimesWidget />;
+  return <LapHistoryWidget />;
 };
 
 const meta: Meta<typeof StoryHost> = {
-  title: 'Widgets/LapTimesWidget',
+  title: 'Widgets/LapHistoryWidget',
   component: StoryHost,
   parameters: { layout: 'centered' },
   decorators: [
     withStore(),
-    widgetDecorator({ display: 'inline-block', minWidth: 360 }),
+    widgetDecorator({ display: 'inline-flex', minWidth: 220 }),
   ],
   args: {
-    currentLapSec: 83.456,
-    lastLapSec: 84.102,
-    bestLapSec: 82.891,
-    personalBestDelta: -0.565,
-    showPredicted: true,
+    liveDelta: -0.312,
+    currentLapTime: 42.18,
+    bestLapTime: 88.107,
+    lapNum: 9,
+    reference: 'personal_best',
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof StoryHost>;
 
-export const Ahead: Story = {};
+export const Default: Story = {};
 
 export const Behind: Story = {
-  args: { personalBestDelta: 0.646 },
+  args: { liveDelta: 0.845 },
 };
 
-export const NoPredicted: Story = {
-  args: { showPredicted: false },
-};
-
-export const NoData: Story = {
-  args: {
-    currentLapSec: 0,
-    lastLapSec: null,
-    bestLapSec: null,
-    personalBestDelta: null,
-  },
+export const NoHistory: Story = {
+  args: { lapNum: 1, currentLapTime: 12.3, bestLapTime: 0 },
 };

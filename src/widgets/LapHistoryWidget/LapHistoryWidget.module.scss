@@ -1,0 +1,46 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: ws(3) ws(6);
+  border-bottom: 1px solid $widget-border-subtle;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: baseline;
+  gap: ws(6);
+}
+
+.headerTitle {
+  font-family: $font-widget;
+  font-size: ws(10);
+  font-weight: 300;
+  letter-spacing: 1px;
+  color: $widget-text-primary;
+  text-transform: uppercase;
+}
+
+.headerBest {
+  display: flex;
+  align-items: baseline;
+  gap: ws(6);
+}
+
+.headerBestLabel {
+  font-family: $font-widget;
+  font-size: ws(10);
+  font-weight: 300;
+  letter-spacing: 1px;
+  color: $widget-text-primary;
+  text-transform: uppercase;
+}
+
+.headerBestTime {
+  font-family: $font-mono;
+  font-size: ws(12);
+  font-weight: 700;
+  color: $widget-text-best-lap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}

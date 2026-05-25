@@ -5,20 +5,23 @@ import { runInAction } from 'mobx';
 import type { LapDeltaFrame } from '@/types/bindings';
 import type { BackendComputedStore } from '@store/iracing/computed.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
+import type { LapTimePosition } from '@/types/widget-settings';
 import {
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+import { DeltaLive } from './DeltaLive/DeltaLive';
+import { LapFlash } from './LapFlash/LapFlash';
 import { LapDeltaWidget } from './LapDeltaWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
 import { withStore } from '../../../.storybook/decorators';
+import stylesModule from './LapDeltaWidget.module.scss';
+
+const styles = stylesModule as Record<string, string>;
 
 interface StoryArgs {
   delta: number;
-  layout: 'vertical' | 'horizontal';
-  showSectorTimes: boolean;
-  sectorTimes: (number | null)[];
-  sectorDeltas: (number | null)[];
+  lapTimePosition: LapTimePosition;
 }
 
 const applyArgs = (
@@ -30,18 +33,17 @@ const applyArgs = (
 ) => {
   runInAction(() => {
     stores.widgetSettings.updateUserSettings('lap-delta', {
-      layout: args.layout,
-      showSectorTimes: args.showSectorTimes,
-      reference: 'session_best',
+      reference: 'personal_best',
+      lapTimePosition: args.lapTimePosition,
     });
 
     stores.computed.updateLapDelta({
-      sectorTimes: args.sectorTimes,
+      sectorTimes: [],
       currentSectorIdx: 0,
       sessionBestTotal: args.delta,
-      sessionBestSectors: args.sectorDeltas,
+      sessionBestSectors: [],
       personalBestTotal: args.delta,
-      personalBestSectors: args.sectorDeltas,
+      personalBestSectors: [],
     } as LapDeltaFrame);
   });
 };
@@ -57,29 +59,80 @@ const StoryHost = (args: StoryArgs) => {
   return <LapDeltaWidget />;
 };
 
+const POSITION_CLASS: Record<LapTimePosition, string> = {
+  none: '',
+  top: styles.flashTop,
+  bottom: styles.flashBottom,
+  left: styles.flashLeft,
+  right: styles.flashRight,
+};
+
+// Shows delta + flash card together in the chosen position
+const FlashPreview = ({
+  delta,
+  position,
+  isBest = false,
+}: {
+  delta: number;
+  position: LapTimePosition;
+  isBest?: boolean;
+}) => {
+  const computed = useBackendComputedStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  useLayoutEffect(() => {
+    runInAction(() => {
+      widgetSettings.updateUserSettings('lap-delta', {
+        reference: 'personal_best',
+        lapTimePosition: position,
+      });
+      computed.updateLapDelta({
+        sectorTimes: [],
+        currentSectorIdx: 0,
+        sessionBestTotal: delta,
+        sessionBestSectors: [],
+        personalBestTotal: delta,
+        personalBestSectors: [],
+      } as LapDeltaFrame);
+    });
+  }, [delta, position, computed, widgetSettings]);
+
+  return (
+    <div className={styles.root}>
+      <div className={`${styles.flash} ${POSITION_CLASS[position]}`}>
+        <LapFlash lapNum={12} lapTime={89.342} delta={delta} isBest={isBest} />
+      </div>
+      <DeltaLive />
+    </div>
+  );
+};
+
 const meta: Meta<typeof StoryHost> = {
   title: 'Widgets/LapDeltaWidget',
   component: StoryHost,
   parameters: { layout: 'centered' },
   decorators: [
     withStore(),
-    widgetDecorator({ display: 'inline-block', minWidth: 150 }),
+    widgetDecorator({ display: 'inline-block', minWidth: 200 }),
   ],
   args: {
     delta: -0.342,
-    layout: 'vertical',
-    showSectorTimes: false,
-    sectorTimes: [],
-    sectorDeltas: [],
+    lapTimePosition: 'none',
+  },
+  argTypes: {
+    lapTimePosition: {
+      control: 'select',
+      options: ['none', 'top', 'bottom', 'left', 'right'],
+    },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof StoryHost>;
 
-export const AheadVertical: Story = {};
+export const Ahead: Story = {};
 
-export const BehindVertical: Story = {
+export const Behind: Story = {
   args: { delta: 0.812 },
 };
 
@@ -87,38 +140,27 @@ export const Neutral: Story = {
   args: { delta: 0 },
 };
 
-export const Horizontal: Story = {
-  args: {
-    delta: -0.342,
-    layout: 'horizontal',
-    showSectorTimes: true,
-    sectorTimes: [22.1, 31.4, null],
-    sectorDeltas: [-0.12, 0.08, null],
-  },
+export const FlashBottom: StoryObj = {
+  name: 'Flash: Bottom',
+  render: () => <FlashPreview delta={-0.521} position="bottom" />,
 };
 
-export const WithSectorData: Story = {
-  args: {
-    delta: -0.215,
-    showSectorTimes: true,
-    sectorTimes: [22.1, 31.4, 18.7],
-    sectorDeltas: [-0.12, 0.08, -0.24],
-  },
+export const FlashTop: StoryObj = {
+  name: 'Flash: Top',
+  render: () => <FlashPreview delta={-0.521} position="top" />,
 };
 
-export const SectorInProgress: Story = {
-  args: {
-    delta: 0.042,
-    showSectorTimes: true,
-    sectorTimes: [22.4, null, null],
-    sectorDeltas: [0.18, null, null],
-  },
+export const FlashLeft: StoryObj = {
+  name: 'Flash: Left',
+  render: () => <FlashPreview delta={0.812} position="left" />,
 };
 
-export const NoData: Story = {
-  args: {
-    delta: 0,
-    sectorTimes: [],
-    sectorDeltas: [],
-  },
+export const FlashRight: StoryObj = {
+  name: 'Flash: Right',
+  render: () => <FlashPreview delta={-0.521} position="right" />,
+};
+
+export const FlashNewBest: StoryObj = {
+  name: 'Flash: New Best (Bottom)',
+  render: () => <FlashPreview delta={-1.235} position="bottom" isBest />,
 };

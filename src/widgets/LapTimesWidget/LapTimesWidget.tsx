@@ -1,10 +1,14 @@
 import { observer } from 'mobx-react-lite';
-
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
-import { LapTimesContent } from './LapTimesContent/LapTimesContent';
+import { RefsColumn } from './RefsColumn/RefsColumn';
+import styles from './LapTimesWidget.module.scss';
 
-export const LapTimesWidget = observer(() => (
-  <WidgetPanel direction="column" gap={0} minWidth={200}>
-    <LapTimesContent />
-  </WidgetPanel>
-));
+export const LapTimesWidget = observer(() => {
+  return (
+    <WidgetPanel minWidth={0} gap={0}>
+      <div className={styles.layout}>
+        <RefsColumn />
+      </div>
+    </WidgetPanel>
+  );
+});

@@ -1,0 +1,68 @@
+.row {
+  display: grid;
+  grid-template-columns: ws(36) auto 1fr;
+  gap: ws(4);
+  align-items: baseline;
+  padding: ws(2) ws(6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  background: transparent;
+}
+
+.rowLive {
+  background: rgba(34, 197, 94, 0.06);
+}
+.rowBest {
+  background: rgba(192, 132, 252, 0.05);
+}
+
+.lapNum {
+  font-family: $font-mono;
+  font-size: ws(10);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: $widget-text-secondary;
+  display: flex;
+  align-items: baseline;
+  gap: ws(2);
+}
+
+.lapNumLive {
+  color: $widget-status-positive;
+}
+.lapNumBest {
+  color: $widget-text-best-lap;
+}
+
+.liveIcon {
+  margin-right: ws(2);
+}
+
+.lapTime {
+  font-family: $font-mono;
+  font-size: ws(14);
+  font-weight: 700;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.lapTimeBest {
+  color: $widget-text-best-lap;
+}
+
+.deltaCell {
+  display: flex;
+  align-items: baseline;
+  gap: ws(4);
+  justify-content: flex-end;
+}
+
+.delta {
+  font-family: $font-mono;
+  font-size: ws(12);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 0;
+  color: $widget-text-secondary;
+}
