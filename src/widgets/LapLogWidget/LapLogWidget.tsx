@@ -41,6 +41,7 @@ export const LapLogWidget = observer(() => {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
   const prevSessionNumRef = useRef<number | null>(null);
+  const prevLapNumRef = useRef<number | null>(null);
   const prevLastLapTimeRef = useRef<number | null>(null);
   const lapTimingRef = useRef(lapTiming);
 
@@ -62,10 +63,22 @@ export const LapLogWidget = observer(() => {
     ) {
       setHistory([]);
       prevLastLapTimeRef.current = null;
+      prevLapNumRef.current = null;
     }
 
     prevSessionNumRef.current = sessionNum;
   }, [sessionNum]);
+
+  useEffect(() => {
+    if (lapNum === null) return;
+
+    if (prevLapNumRef.current !== null && lapNum < prevLapNumRef.current) {
+      setHistory([]);
+      prevLastLapTimeRef.current = null;
+    }
+
+    prevLapNumRef.current = lapNum;
+  }, [lapNum]);
 
   useEffect(() => {
     if (lastLapTime === null || lastLapTime <= 0) return;
