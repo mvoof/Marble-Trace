@@ -38,35 +38,23 @@ export const LapLogWidget = observer(() => {
 
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const prevLapNumRef = useRef<number | null>(null);
-  const prevLastLapTimeRef = useRef<number | null>(null);
-  const pendingLapNumRef = useRef<number | null>(null);
 
   const lapNum = lapTiming?.lap ?? null;
   const lastLapTime = lapTiming?.lap_last_lap_time ?? null;
 
   useEffect(() => {
-    if (lapNum === null || lastLapTime === null) return;
+    if (lapNum === null || lastLapTime === null || lastLapTime <= 0) return;
 
-    // Step 1: lap counter advanced — remember which lap just completed
     if (prevLapNumRef.current !== null && lapNum > prevLapNumRef.current) {
-      pendingLapNumRef.current = lapNum;
+      const entry: HistoryEntry = {
+        lapNum: prevLapNumRef.current,
+        lapTime: lastLapTime,
+      };
+
+      setHistory((prev) => [entry, ...prev].slice(0, HISTORY_STORE_SIZE));
     }
 
     prevLapNumRef.current = lapNum;
-
-    // Step 2: lastLapTime updated — now we have the correct completed-lap time
-    if (lastLapTime > 0 && lastLapTime !== prevLastLapTimeRef.current) {
-      prevLastLapTimeRef.current = lastLapTime;
-
-      if (pendingLapNumRef.current !== null) {
-        const entry: HistoryEntry = {
-          lapNum: pendingLapNumRef.current - 1,
-          lapTime: lastLapTime,
-        };
-        setHistory((prev) => [entry, ...prev].slice(0, HISTORY_STORE_SIZE));
-        pendingLapNumRef.current = null;
-      }
-    }
   }, [lapNum, lastLapTime]);
 
   const currentLapTime = lapTiming?.lap_current_lap_time ?? 0;
