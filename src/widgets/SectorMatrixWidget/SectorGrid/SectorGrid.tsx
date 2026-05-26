@@ -70,10 +70,23 @@ export const SectorGrid = observer(({ sectorCount }: Props) => {
 
         const deltaState = getDeltaState(delta);
 
+        const borderColor = isFuture
+          ? undefined
+          : isCurrent
+            ? 'var(--sector-ahead)'
+            : deltaState === 'ahead'
+              ? 'var(--sector-ahead)'
+              : deltaState === 'behind'
+                ? 'var(--sector-behind)'
+                : deltaState === 'neutral'
+                  ? 'var(--sector-neutral)'
+                  : undefined;
+
         return (
           <div
             key={idx}
             className={`${styles.chip} ${isCurrent ? styles.chipCurrent : ''} ${isFuture ? styles.chipFuture : ''}`}
+            style={borderColor ? { borderLeftColor: borderColor } : undefined}
           >
             <div className={styles.chipTop}>
               <span
