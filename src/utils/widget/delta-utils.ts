@@ -70,6 +70,7 @@ export const formatSectorDelta = (v: number | null): string => {
   return (v >= 0 ? '+' : '') + v.toFixed(2);
 };
 
+// Returns 0 when _OK is false (no reference lap exists yet) or the field is null.
 export const getGameDelta = (
   lapTiming: LapTimingFrame | null | undefined,
   reference: LapDeltaReference
@@ -77,26 +78,35 @@ export const getGameDelta = (
   if (!lapTiming) return 0;
 
   switch (reference) {
+    // Driver's own best lap this session.
     case 'personal_best':
       return lapTiming.lap_delta_to_best_lap_ok &&
         lapTiming.lap_delta_to_best_lap != null
         ? lapTiming.lap_delta_to_best_lap
         : 0;
+
+    // Driver's theoretical best — fastest sector from each of their own laps combined.
     case 'personal_optimal':
       return lapTiming.lap_delta_to_optimal_lap_ok &&
         lapTiming.lap_delta_to_optimal_lap != null
         ? lapTiming.lap_delta_to_optimal_lap
         : 0;
+
+    // Fastest lap set by anyone in the current session.
     case 'session_best':
       return lapTiming.lap_delta_to_session_best_lap_ok &&
         lapTiming.lap_delta_to_session_best_lap != null
         ? lapTiming.lap_delta_to_session_best_lap
         : 0;
+
+    // Theoretical best — fastest sector from any driver in the session combined.
     case 'session_optimal':
       return lapTiming.lap_delta_to_session_optimal_lap_ok &&
         lapTiming.lap_delta_to_session_optimal_lap != null
         ? lapTiming.lap_delta_to_session_optimal_lap
         : 0;
+
+    // Last fully completed lap by anyone in the session. Field name has a typo in the iRacing SDK ("Lastl" not "Last").
     case 'session_last':
       return lapTiming.lap_delta_to_session_lastl_lap_ok &&
         lapTiming.lap_delta_to_session_lastl_lap != null

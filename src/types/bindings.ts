@@ -876,21 +876,17 @@ export type FuelComputedFrame = {
   lapFuelHistory: number[];
 };
 
+/**
+ * Sector timing data for the sector matrix widget.
+ * Total delta is provided directly by iRacing via LapTimingFrame delta fields.
+ */
 export type LapDeltaFrame = {
   sectorTimes: (number | null)[];
   currentSectorIdx: number;
   /**
-   * Delta vs session best. Total uses iRacing's live delta when available.
-   * Sector deltas are snapshotted at boundaries so they always sum to total.
+   * Per-sector delta vs driver's personal best lap (sector matrix display only)
    */
-  sessionBestTotal: number;
-  sessionBestSectors: (number | null)[];
-  /**
-   * Delta vs personal best (the driver's own best completed lap).
-   * Sector deltas are from the same reference lap so they always sum to total.
-   */
-  personalBestTotal: number;
-  personalBestSectors: (number | null)[];
+  sectorDeltas: (number | null)[];
 };
 
 export type LapTimingFrame = {
