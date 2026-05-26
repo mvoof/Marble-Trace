@@ -123,11 +123,9 @@ export type LapDeltaReference =
   | 'session_best'
   | 'session_optimal'
   | 'session_last';
-export type LapTimePosition = 'none' | 'top' | 'bottom' | 'left' | 'right';
-
 export interface DeltaWidgetSettings {
   reference: LapDeltaReference;
-  lapTimePosition: LapTimePosition;
+  showLapFlash: boolean;
   flashDuration: number;
 }
 

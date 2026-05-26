@@ -1,37 +1,10 @@
-.root {
-  position: relative;
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
 }
 
-.flash {
-  position: absolute;
-  z-index: 10;
-  pointer-events: none;
-
-  // Inherit --wfs from the widget container so ws() scales correctly inside LapFlash
-  --wfs: var(--wfs, 1);
-}
-
-.flashTop {
-  bottom: 100%;
-  left: 0;
-  right: 0;
-}
-
-.flashBottom {
-  top: 100%;
-  left: 0;
-  right: 0;
-}
-
-.flashLeft {
-  right: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.flashRight {
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
+.deltaWrapper {
+  width: 100%;
 }

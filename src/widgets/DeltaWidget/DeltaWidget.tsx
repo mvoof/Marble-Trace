@@ -1,54 +1,51 @@
 import { observer } from 'mobx-react-lite';
-import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
-import { useLapStore, useWidgetSettingsStore } from '@store/root-store-context';
-import type {
-  DeltaWidgetSettings,
-  LapTimePosition,
-} from '@/types/widget-settings';
+import {
+  useAppSettingsStore,
+  useLapStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
+import type { DeltaWidgetSettings } from '@/types/widget-settings';
 import { DeltaLive } from './DeltaLive/DeltaLive';
 import { LapFlash } from './LapFlash/LapFlash';
 import styles from './DeltaWidget.module.scss';
 
-const FLASH_POSITION_CLASS: Record<LapTimePosition, string> = {
-  none: '',
-  top: styles.flashTop,
-  bottom: styles.flashBottom,
-  left: styles.flashLeft,
-  right: styles.flashRight,
-};
+const PREVIEW_LAP_TIME = 83.456;
+const PREVIEW_DELTA = -0.234;
 
 export const DeltaWidget = observer(() => {
   const lapStore = useLapStore();
   const widgetSettings = useWidgetSettingsStore();
+  const { dragMode } = useAppSettingsStore();
 
-  const { lapTimePosition, flashDuration, reference } =
+  const { showLapFlash, flashDuration, reference } =
     widgetSettings.getSettings<DeltaWidgetSettings>('delta');
 
   const lap = lapStore.lastCompletedLap;
 
-  const showFlash = lapTimePosition !== 'none' && lap !== null;
+  const showFlash = showLapFlash && (lap !== null || dragMode);
+
+  const flashKey = dragMode ? 'preview' : String(lap?.lapNum ?? 0);
+  const flashLapTime = lap?.lapTime ?? PREVIEW_LAP_TIME;
+  const flashDelta = lap?.deltas[reference] ?? PREVIEW_DELTA;
+  const flashIsBest = lap?.isBest ?? false;
 
   return (
-    <div className={styles.root}>
-      {showFlash && lap !== null && (
-        <div
-          className={`${styles.flash} ${FLASH_POSITION_CLASS[lapTimePosition]}`}
-        >
-          <LapFlash
-            key={lap.lapNum}
-            lapNum={lap.lapNum}
-            lapTime={lap.lapTime}
-            delta={lap.deltas[reference] ?? 0}
-            isBest={lap.isBest}
-            duration={flashDuration}
-            deltaAbove={lapTimePosition === 'top'}
-          />
-        </div>
-      )}
-
-      <WidgetPanel minWidth={0} gap={0}>
+    <div className={styles.container}>
+      <div className={styles.deltaWrapper}>
         <DeltaLive />
-      </WidgetPanel>
+      </div>
+
+      {showFlash && (
+        <LapFlash
+          key={flashKey}
+          lapNum={lap?.lapNum ?? 0}
+          lapTime={flashLapTime}
+          delta={flashDelta}
+          isBest={flashIsBest}
+          duration={flashDuration}
+          preview={dragMode}
+        />
+      )}
     </div>
   );
 });

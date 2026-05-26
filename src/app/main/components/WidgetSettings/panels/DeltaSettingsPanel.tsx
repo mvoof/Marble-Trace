@@ -1,9 +1,8 @@
 import { observer } from 'mobx-react-lite';
-import { Segmented, Slider } from 'antd';
+import { Segmented, Slider, Switch } from 'antd';
 import type {
   LapDeltaReference,
   DeltaWidgetSettings,
-  LapTimePosition,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, DELTA_REFERENCE_DESC } from './shared';
@@ -43,27 +42,16 @@ export const DeltaSettingsPanel = observer(() => {
 
       <Card title="Lap Completed Card">
         <div className={styles.fieldGroup}>
-          <Segmented
-            block
-            value={settings.lapTimePosition}
-            options={[
-              { label: 'Off', value: 'none' },
-              { label: 'Top', value: 'top' },
-              { label: 'Bottom', value: 'bottom' },
-              { label: 'Left', value: 'left' },
-              { label: 'Right', value: 'right' },
-            ]}
-            onChange={(value) =>
-              update({ lapTimePosition: value as LapTimePosition })
-            }
-          />
-          <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
-            Show lap time card after completing a lap. Position is relative to
-            the delta widget.
+          <div className={styles.fieldRow}>
+            <span className={styles.fieldLabel}>Show after lap</span>
+            <Switch
+              checked={settings.showLapFlash}
+              onChange={(value) => update({ showLapFlash: value })}
+            />
           </div>
         </div>
 
-        {settings.lapTimePosition !== 'none' && (
+        {settings.showLapFlash && (
           <div className={styles.fieldGroup}>
             <div className={styles.fieldLabel}>
               Display duration: {settings.flashDuration}s
