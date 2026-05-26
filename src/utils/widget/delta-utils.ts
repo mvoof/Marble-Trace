@@ -116,6 +116,26 @@ export const getGameDelta = (
   }
 };
 
+export const isGameDeltaOk = (
+  lapTiming: LapTimingFrame | null | undefined,
+  reference: LapDeltaReference
+): boolean => {
+  if (!lapTiming) return false;
+
+  switch (reference) {
+    case 'personal_best':
+      return !!lapTiming.lap_delta_to_best_lap_ok;
+    case 'personal_optimal':
+      return !!lapTiming.lap_delta_to_optimal_lap_ok;
+    case 'session_best':
+      return !!lapTiming.lap_delta_to_session_best_lap_ok;
+    case 'session_optimal':
+      return !!lapTiming.lap_delta_to_session_optimal_lap_ok;
+    case 'session_last':
+      return !!lapTiming.lap_delta_to_session_lastl_lap_ok;
+  }
+};
+
 export const getSectorDeltaState = (v: number | null): DeltaState => {
   if (v === null) return 'neutral';
   if (v < -0.001) return 'ahead';

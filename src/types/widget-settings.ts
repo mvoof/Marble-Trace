@@ -127,6 +127,7 @@ export interface DeltaWidgetSettings {
   reference: LapDeltaReference;
   showLapFlash: boolean;
   flashDuration: number;
+  hideWhenNoReference: boolean;
 }
 
 export interface SectorMatrixWidgetSettings {

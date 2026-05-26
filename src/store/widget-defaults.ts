@@ -461,6 +461,7 @@ export const WIDGETS: WidgetConfig[] = [
       reference: 'personal_best',
       showLapFlash: false,
       flashDuration: 5,
+      hideWhenNoReference: false,
     },
   },
   {

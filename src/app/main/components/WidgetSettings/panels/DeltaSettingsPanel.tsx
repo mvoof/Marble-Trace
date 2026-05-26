@@ -40,6 +40,20 @@ export const DeltaSettingsPanel = observer(() => {
         </div>
       </Card>
 
+      <Card title="Visibility">
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <span className={styles.fieldLabel}>
+              Hide when no reference lap
+            </span>
+            <Switch
+              checked={settings.hideWhenNoReference}
+              onChange={(value) => update({ hideWhenNoReference: value })}
+            />
+          </div>
+        </div>
+      </Card>
+
       <Card title="Lap Completed Card">
         <div className={styles.fieldGroup}>
           <div className={styles.fieldRow}>
