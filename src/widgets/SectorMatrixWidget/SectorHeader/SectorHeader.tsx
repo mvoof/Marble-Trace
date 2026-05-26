@@ -7,6 +7,7 @@ import {
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import { getGameDelta } from '@utils/widget/delta-utils';
 import { getSectorColor } from '@utils/widget/sector-utils';
+import { ReferenceBadge } from '@/components/shared/ReferenceBadge/ReferenceBadge';
 import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
 import styles from './SectorHeader.module.scss';
 
@@ -55,6 +56,8 @@ export const SectorHeader = observer(({ sectorCount }: Props) => {
             <span className={styles.predTime}>
               {formatLapTime(predictedTime)}
             </span>
+
+            <ReferenceBadge reference={reference} />
           </div>
         )}
       </div>
