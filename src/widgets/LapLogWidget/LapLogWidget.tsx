@@ -43,9 +43,14 @@ export const LapLogWidget = observer(() => {
   const lastLapTime = lapTiming?.lap_last_lap_time ?? null;
 
   useEffect(() => {
-    if (lapNum === null || lastLapTime === null || lastLapTime <= 0) return;
+    if (lapNum === null) return;
 
-    if (prevLapNumRef.current !== null && lapNum > prevLapNumRef.current) {
+    if (
+      lastLapTime !== null &&
+      lastLapTime > 0 &&
+      prevLapNumRef.current !== null &&
+      lapNum > prevLapNumRef.current
+    ) {
       const entry: HistoryEntry = {
         lapNum: prevLapNumRef.current,
         lapTime: lastLapTime,
