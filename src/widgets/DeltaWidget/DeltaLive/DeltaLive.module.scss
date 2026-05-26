@@ -13,16 +13,14 @@
 
 .delta {
   font-family: $font-mono;
-  font-size: ws(64);
+  font-size: calc(var(--delta-fs, 64) * 1px * var(--wfs, 1));
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   text-align: center;
-  white-space: pre;
+  white-space: nowrap;
   padding: ws(16) ws(12);
   width: 100%;
-  min-width: 0;
-  overflow: hidden;
 }
 
 .ahead {
