@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import {
-  useDeltaStore,
+  useLapStore,
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -17,7 +17,7 @@ const DELTA_CLASS = {
 };
 
 export const SectorFooter = observer(() => {
-  const lapStore = useDeltaStore();
+  const lapStore = useLapStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference } =

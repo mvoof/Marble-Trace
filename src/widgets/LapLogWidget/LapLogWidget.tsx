@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import {
-  useDeltaStore,
+  useLapStore,
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -38,7 +38,7 @@ interface HistoryEntry {
 }
 
 export const LapLogWidget = observer(() => {
-  const lapStore = useDeltaStore();
+  const lapStore = useLapStore();
   const { lapTiming } = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 

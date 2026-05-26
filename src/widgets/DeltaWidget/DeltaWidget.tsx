@@ -1,9 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
-import {
-  useDeltaStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useLapStore, useWidgetSettingsStore } from '@store/root-store-context';
 import type {
   DeltaWidgetSettings,
   LapTimePosition,
@@ -21,7 +18,7 @@ const FLASH_POSITION_CLASS: Record<LapTimePosition, string> = {
 };
 
 export const DeltaWidget = observer(() => {
-  const lapStore = useDeltaStore();
+  const lapStore = useLapStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { lapTimePosition, flashDuration, reference } =
