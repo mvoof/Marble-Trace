@@ -28,22 +28,55 @@ const HISTORY_SHOW_SIZE = 8;
 interface HistoryEntry {
   lapNum: number;
   lapTime: number;
+  delta: number | null;
 }
 
 export const LapLogWidget = observer(() => {
-  const { lapTiming } = useTelemetryStore();
+  const { lapTiming, session } = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
+
   const { reference } =
     widgetSettings.getSettings<LapLogWidgetSettings>('lap-log');
 
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+
   const prevLapNumRef = useRef<number | null>(null);
+  const prevSessionNumRef = useRef<number | null>(null);
+  const lapTimingRef = useRef(lapTiming);
+
+  lapTimingRef.current = lapTiming;
+
+  const referenceRef = useRef(reference);
+  referenceRef.current = reference;
 
   const lapNum = lapTiming?.lap ?? null;
   const lastLapTime = lapTiming?.lap_last_lap_time ?? null;
+  const sessionNum = session?.session_num ?? null;
+
+  useEffect(() => {
+    if (sessionNum === null) return;
+
+    if (
+      prevSessionNumRef.current !== null &&
+      sessionNum !== prevSessionNumRef.current
+    ) {
+      setHistory([]);
+      prevLapNumRef.current = null;
+    }
+
+    prevSessionNumRef.current = sessionNum;
+  }, [sessionNum]);
 
   useEffect(() => {
     if (lapNum === null) return;
+
+    if (prevLapNumRef.current !== null && lapNum < prevLapNumRef.current) {
+      setHistory([]);
+
+      prevLapNumRef.current = lapNum;
+
+      return;
+    }
 
     if (
       lastLapTime !== null &&
@@ -51,9 +84,12 @@ export const LapLogWidget = observer(() => {
       prevLapNumRef.current !== null &&
       lapNum > prevLapNumRef.current
     ) {
+      const rawDelta = getGameDelta(lapTimingRef.current, referenceRef.current);
+
       const entry: HistoryEntry = {
         lapNum: prevLapNumRef.current,
         lapTime: lastLapTime,
+        delta: rawDelta !== 0 ? rawDelta : null,
       };
 
       setHistory((prev) => [entry, ...prev].slice(0, HISTORY_STORE_SIZE));
@@ -101,22 +137,17 @@ export const LapLogWidget = observer(() => {
       {visibleHistory.map((entry, idx) => {
         const isThisBest = idx === bestIdx;
 
-        const delta =
-          bestLapTime !== null && bestLapTime > 0
-            ? entry.lapTime - bestLapTime
-            : null;
-
         return (
           <LapRow
             key={entry.lapNum}
             lapLabel={`L${entry.lapNum}`}
             time={formatLapTime(entry.lapTime)}
-            deltaLabel={isThisBest ? '★ BEST' : formatDelta(delta)}
+            deltaLabel={isThisBest ? '★ BEST' : formatDelta(entry.delta)}
             deltaColor={
               isThisBest
                 ? 'rgba(192, 132, 252, 0.85)' // TODO: use style class and variables
-                : delta !== null
-                  ? DELTA_COLORS[getDeltaState(delta)]
+                : entry.delta !== null
+                  ? DELTA_COLORS[getDeltaState(entry.delta)]
                   : undefined
             }
             isBest={isThisBest}
