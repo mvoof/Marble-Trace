@@ -125,18 +125,18 @@ export interface FuelWidgetSettings {
 export type LapDeltaReference = 'session_best' | 'personal_best';
 export type LapTimePosition = 'none' | 'top' | 'bottom' | 'left' | 'right';
 
-export interface LapDeltaWidgetSettings {
+export interface DeltaWidgetSettings {
   reference: LapDeltaReference;
   lapTimePosition: LapTimePosition;
   flashDuration: number;
 }
 
-export interface LapTimingWidgetSettings {
+export interface SectorMatrixWidgetSettings {
   reference: LapDeltaReference;
   showPredicted: boolean;
 }
 
-export interface LapHistoryWidgetSettings {
+export interface LapLogWidgetSettings {
   reference: LapDeltaReference;
 }
 
@@ -183,9 +183,9 @@ export type WidgetSpecificSettings =
   | WeatherWidgetSettings
   | FuelWidgetSettings
   | LapTimesWidgetSettings
-  | LapDeltaWidgetSettings
-  | LapTimingWidgetSettings
-  | LapHistoryWidgetSettings
+  | DeltaWidgetSettings
+  | SectorMatrixWidgetSettings
+  | LapLogWidgetSettings
   | TimerWidgetSettings
   | GMeterWidgetSettings;
 

@@ -3,8 +3,8 @@ import {
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { formatDelta, getDeltaState } from '@utils/widget/lap-delta-utils';
-import type { LapDeltaWidgetSettings } from '@/types/widget-settings';
+import { formatDelta, getDeltaState } from '@utils/widget/delta-utils';
+import type { DeltaWidgetSettings } from '@/types/widget-settings';
 import { ReferenceBadge } from '@/components/shared/ReferenceBadge/ReferenceBadge';
 import styles from './DeltaLive.module.scss';
 
@@ -18,7 +18,7 @@ export const DeltaLive = observer(() => {
   const { lapDelta } = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
   const { reference } =
-    widgetSettings.getSettings<LapDeltaWidgetSettings>('lap-delta');
+    widgetSettings.getSettings<DeltaWidgetSettings>('delta');
 
   const delta =
     reference === 'session_best'

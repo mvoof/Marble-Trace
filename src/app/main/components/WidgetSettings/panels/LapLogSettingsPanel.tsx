@@ -2,19 +2,18 @@ import { observer } from 'mobx-react-lite';
 import { Segmented } from 'antd';
 import type {
   LapDeltaReference,
-  LapHistoryWidgetSettings,
+  LapLogWidgetSettings,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './shared';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
-export const LapHistorySettingsPanel = observer(() => {
+export const LapLogSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
-  const settings =
-    widgetSettings.getSettings<LapHistoryWidgetSettings>('lap-history');
+  const settings = widgetSettings.getSettings<LapLogWidgetSettings>('lap-log');
 
-  const update = (partial: Partial<LapHistoryWidgetSettings>) => {
-    widgetSettings.updateUserSettings('lap-history', {
+  const update = (partial: Partial<LapLogWidgetSettings>) => {
+    widgetSettings.updateUserSettings('lap-log', {
       ...settings,
       ...partial,
     });

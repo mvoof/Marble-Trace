@@ -5,7 +5,7 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
-import { formatDelta, getDeltaState } from '@utils/widget/lap-delta-utils';
+import { formatDelta, getDeltaState } from '@utils/widget/delta-utils';
 import type { LapTimesWidgetSettings } from '@/types/widget-settings';
 import styles from './RefsColumn.module.scss';
 

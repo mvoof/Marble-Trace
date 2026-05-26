@@ -8,8 +8,8 @@ import {
   formatSectorTime,
   formatSectorDelta,
   getDeltaState,
-} from '@utils/widget/lap-delta-utils';
-import type { LapTimingWidgetSettings } from '@/types/widget-settings';
+} from '@utils/widget/delta-utils';
+import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
 import styles from './SectorGrid.module.scss';
 
 interface Props {
@@ -32,7 +32,7 @@ export const SectorGrid = observer(({ sectorCount }: Props) => {
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference } =
-    widgetSettings.getSettings<LapTimingWidgetSettings>('lap-timing');
+    widgetSettings.getSettings<SectorMatrixWidgetSettings>('sector-matrix');
 
   const currentSectorIdx = lapDelta?.currentSectorIdx ?? 0;
   const sectorTimes = lapDelta?.sectorTimes ?? [];

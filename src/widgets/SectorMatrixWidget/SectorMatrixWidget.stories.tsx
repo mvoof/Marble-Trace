@@ -15,7 +15,7 @@ import {
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { LapTimingWidget } from './LapTimingWidget';
+import { SectorMatrixWidget } from './SectorMatrixWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
 import { withStore } from '../../../.storybook/decorators';
 
@@ -72,7 +72,7 @@ const applyArgs = (
       personalBestSectors: args.sectorDeltas,
     } as LapDeltaFrame);
 
-    stores.widgetSettings.updateUserSettings('lap-timing', {
+    stores.widgetSettings.updateUserSettings('sector-matrix', {
       reference: 'personal_best',
       showPredicted: true,
     });
@@ -88,11 +88,11 @@ const StoryHost = (args: StoryArgs) => {
     applyArgs({ telemetry, computed, widgetSettings }, args);
   }, [args, telemetry, computed, widgetSettings]);
 
-  return <LapTimingWidget />;
+  return <SectorMatrixWidget />;
 };
 
 const meta: Meta<typeof StoryHost> = {
-  title: 'Widgets/LapTimingWidget',
+  title: 'Widgets/SectorMatrixWidget',
   component: StoryHost,
   parameters: { layout: 'centered' },
   decorators: [

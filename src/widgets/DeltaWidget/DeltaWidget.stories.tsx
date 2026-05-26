@@ -12,10 +12,10 @@ import {
 } from '@store/root-store-context';
 import { DeltaLive } from './DeltaLive/DeltaLive';
 import { LapFlash } from './LapFlash/LapFlash';
-import { LapDeltaWidget } from './LapDeltaWidget';
+import { DeltaWidget } from './DeltaWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
 import { withStore } from '../../../.storybook/decorators';
-import stylesModule from './LapDeltaWidget.module.scss';
+import stylesModule from './DeltaWidget.module.scss';
 
 const styles = stylesModule as Record<string, string>;
 
@@ -32,7 +32,7 @@ const applyArgs = (
   args: StoryArgs
 ) => {
   runInAction(() => {
-    stores.widgetSettings.updateUserSettings('lap-delta', {
+    stores.widgetSettings.updateUserSettings('delta', {
       reference: 'personal_best',
       lapTimePosition: args.lapTimePosition,
     });
@@ -56,7 +56,7 @@ const StoryHost = (args: StoryArgs) => {
     applyArgs({ computed, widgetSettings }, args);
   }, [args, computed, widgetSettings]);
 
-  return <LapDeltaWidget />;
+  return <DeltaWidget />;
 };
 
 const POSITION_CLASS: Record<LapTimePosition, string> = {
@@ -82,7 +82,7 @@ const FlashPreview = ({
 
   useLayoutEffect(() => {
     runInAction(() => {
-      widgetSettings.updateUserSettings('lap-delta', {
+      widgetSettings.updateUserSettings('delta', {
         reference: 'personal_best',
         lapTimePosition: position,
       });
@@ -108,7 +108,7 @@ const FlashPreview = ({
 };
 
 const meta: Meta<typeof StoryHost> = {
-  title: 'Widgets/LapDeltaWidget',
+  title: 'Widgets/DeltaWidget',
   component: StoryHost,
   parameters: { layout: 'centered' },
   decorators: [

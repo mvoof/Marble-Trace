@@ -6,7 +6,7 @@ import {
 } from '@store/root-store-context';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import { getSectorColor } from '@utils/widget/sector-utils';
-import type { LapTimingWidgetSettings } from '@/types/widget-settings';
+import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
 import styles from './SectorHeader.module.scss';
 
 interface Props {
@@ -20,7 +20,7 @@ export const SectorHeader = observer(({ sectorCount }: Props) => {
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference, showPredicted } =
-    widgetSettings.getSettings<LapTimingWidgetSettings>('lap-timing');
+    widgetSettings.getSettings<SectorMatrixWidgetSettings>('sector-matrix');
 
   const lapNum = lapTiming?.lap ?? null;
 

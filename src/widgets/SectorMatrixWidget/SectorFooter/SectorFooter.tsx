@@ -4,8 +4,8 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
-import { formatDelta, getDeltaState } from '@utils/widget/lap-delta-utils';
-import type { LapTimingWidgetSettings } from '@/types/widget-settings';
+import { formatDelta, getDeltaState } from '@utils/widget/delta-utils';
+import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
 import { ReferenceBadge } from '@/components/shared/ReferenceBadge/ReferenceBadge';
 import styles from './SectorFooter.module.scss';
 
@@ -20,7 +20,7 @@ export const SectorFooter = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference } =
-    widgetSettings.getSettings<LapTimingWidgetSettings>('lap-timing');
+    widgetSettings.getSettings<SectorMatrixWidgetSettings>('sector-matrix');
 
   const lastLap = lapTiming?.lap_last_lap_time ?? null;
   const bestLap = lapTiming?.lap_best_lap_time ?? null;

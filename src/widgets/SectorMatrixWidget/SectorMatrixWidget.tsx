@@ -5,7 +5,7 @@ import { SectorHeader } from './SectorHeader/SectorHeader';
 import { SectorGrid } from './SectorGrid/SectorGrid';
 import { SectorFooter } from './SectorFooter/SectorFooter';
 
-export const LapTimingWidget = observer(() => {
+export const SectorMatrixWidget = observer(() => {
   const { sessionInfo } = useTelemetryStore();
 
   const sectorCount = sessionInfo?.SplitTimeInfo?.Sectors?.length ?? 3;

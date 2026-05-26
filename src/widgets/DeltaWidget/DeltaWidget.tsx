@@ -7,12 +7,12 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import type {
-  LapDeltaWidgetSettings,
+  DeltaWidgetSettings,
   LapTimePosition,
 } from '@/types/widget-settings';
 import { DeltaLive } from './DeltaLive/DeltaLive';
 import { LapFlash } from './LapFlash/LapFlash';
-import styles from './LapDeltaWidget.module.scss';
+import styles from './DeltaWidget.module.scss';
 
 interface CompletedLap {
   lapNum: number;
@@ -30,14 +30,14 @@ const FLASH_POSITION_CLASS: Record<LapTimePosition, string> = {
   right: styles.flashRight,
 };
 
-export const LapDeltaWidget = observer(() => {
+export const DeltaWidget = observer(() => {
   const { lapTiming } = useTelemetryStore();
   const { lapDelta } = useBackendComputedStore();
 
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference, lapTimePosition, flashDuration } =
-    widgetSettings.getSettings<LapDeltaWidgetSettings>('lap-delta');
+    widgetSettings.getSettings<DeltaWidgetSettings>('delta');
 
   const completedLapRef = useRef<CompletedLap | null>(null);
 

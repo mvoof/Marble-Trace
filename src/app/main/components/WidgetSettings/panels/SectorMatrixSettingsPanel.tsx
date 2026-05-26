@@ -2,19 +2,19 @@ import { observer } from 'mobx-react-lite';
 import { Segmented, Switch } from 'antd';
 import type {
   LapDeltaReference,
-  LapTimingWidgetSettings,
+  SectorMatrixWidgetSettings,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
-export const LapTimingSettingsPanel = observer(() => {
+export const SectorMatrixSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
   const settings =
-    widgetSettings.getSettings<LapTimingWidgetSettings>('lap-timing');
+    widgetSettings.getSettings<SectorMatrixWidgetSettings>('sector-matrix');
 
-  const update = (partial: Partial<LapTimingWidgetSettings>) => {
-    widgetSettings.updateUserSettings('lap-timing', {
+  const update = (partial: Partial<SectorMatrixWidgetSettings>) => {
+    widgetSettings.updateUserSettings('sector-matrix', {
       ...settings,
       ...partial,
     });

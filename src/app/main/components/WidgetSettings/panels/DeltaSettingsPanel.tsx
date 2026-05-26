@@ -2,20 +2,19 @@ import { observer } from 'mobx-react-lite';
 import { Segmented, Slider } from 'antd';
 import type {
   LapDeltaReference,
-  LapDeltaWidgetSettings,
+  DeltaWidgetSettings,
   LapTimePosition,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './shared';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
-export const LapDeltaSettingsPanel = observer(() => {
+export const DeltaSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
-  const settings =
-    widgetSettings.getSettings<LapDeltaWidgetSettings>('lap-delta');
+  const settings = widgetSettings.getSettings<DeltaWidgetSettings>('delta');
 
-  const update = (partial: Partial<LapDeltaWidgetSettings>) => {
-    widgetSettings.updateUserSettings('lap-delta', { ...settings, ...partial });
+  const update = (partial: Partial<DeltaWidgetSettings>) => {
+    widgetSettings.updateUserSettings('delta', { ...settings, ...partial });
   };
 
   return (

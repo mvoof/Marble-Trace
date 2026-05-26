@@ -3,7 +3,7 @@ import {
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { formatDelta, getDeltaState } from '@utils/widget/lap-delta-utils';
+import { formatDelta, getDeltaState } from '@utils/widget/delta-utils';
 import type { LapTimesWidgetSettings } from '@/types/widget-settings';
 import { ReferenceBadge } from '@/components/shared/ReferenceBadge/ReferenceBadge';
 import styles from './DeltaColumn.module.scss';

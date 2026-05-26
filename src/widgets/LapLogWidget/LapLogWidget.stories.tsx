@@ -11,7 +11,7 @@ import {
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { LapHistoryWidget } from './LapHistoryWidget';
+import { LapLogWidget } from './LapLogWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
 import { withStore } from '../../../.storybook/decorators';
 
@@ -54,7 +54,7 @@ const applyArgs = (
       personalBestSectors: [],
     } as LapDeltaFrame);
 
-    stores.widgetSettings.updateUserSettings('lap-history', {
+    stores.widgetSettings.updateUserSettings('lap-log', {
       reference: args.reference,
     });
   });
@@ -69,11 +69,11 @@ const StoryHost = (args: StoryArgs) => {
     applyArgs({ telemetry, computed, widgetSettings }, args);
   }, [args, telemetry, computed, widgetSettings]);
 
-  return <LapHistoryWidget />;
+  return <LapLogWidget />;
 };
 
 const meta: Meta<typeof StoryHost> = {
-  title: 'Widgets/LapHistoryWidget',
+  title: 'Widgets/LapLogWidget',
   component: StoryHost,
   parameters: { layout: 'centered' },
   decorators: [

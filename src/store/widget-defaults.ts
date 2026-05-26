@@ -9,15 +9,15 @@ import { TrackMapWidget } from '@widgets/TrackMapWidget/TrackMapWidget';
 import { RelativeMapWidget } from '@widgets/RelativeMapWidget/RelativeMapWidget';
 import { LedFlagWidget } from '@widgets/LedFlagWidget/LedFlagWidget';
 import { ChassisWidget } from '@widgets/ChassisWidget/ChassisWidget';
-import { LapDeltaWidget } from '@widgets/LapDeltaWidget/LapDeltaWidget';
+import { DeltaWidget } from '@widgets/DeltaWidget/DeltaWidget';
 import { LapTimesWidget } from '@widgets/LapTimesWidget/LapTimesWidget';
 import { TimerWidget } from '@widgets/TimerWidget/TimerWidget';
 import { WeatherWidget } from '@widgets/WeatherWidget/WeatherWidget';
 import { FuelWidget } from '@widgets/FuelWidget/FuelWidget';
 import { FlatFlagsWidget } from '@widgets/FlatFlagsWidget/FlatFlagsWidget';
 import { GMeterWidget } from '@widgets/GMeterWidget/GMeterWidget';
-import { LapTimingWidget } from '@widgets/LapTimingWidget/LapTimingWidget';
-import { LapHistoryWidget } from '@widgets/LapHistoryWidget/LapHistoryWidget';
+import { SectorMatrixWidget } from '@widgets/SectorMatrixWidget/SectorMatrixWidget';
+import { LapLogWidget } from '@widgets/LapLogWidget/LapLogWidget';
 import type {
   WidgetConfig,
   WidgetDefaultConfig,
@@ -442,10 +442,10 @@ export const WIDGETS: WidgetConfig[] = [
     },
   },
   {
-    id: 'lap-delta',
-    label: 'Lap Delta HUD',
+    id: 'delta',
+    label: 'Delta HUD',
     description: 'Live delta HUD — one glance, am I faster or slower?',
-    component: LapDeltaWidget,
+    component: DeltaWidget,
     autoHeight: true,
     designWidth: 280,
     designHeight: 96,
@@ -590,11 +590,11 @@ export const WIDGETS: WidgetConfig[] = [
     },
   },
   {
-    id: 'lap-timing',
-    label: 'Lap Timing',
+    id: 'sector-matrix',
+    label: 'Sector Matrix',
     description:
       'Sector-by-sector timing with progress bar, live delta per sector, LAST and BEST.',
-    component: LapTimingWidget,
+    component: SectorMatrixWidget,
     autoHeight: true,
     designWidth: 320,
     designHeight: 180,
@@ -614,11 +614,11 @@ export const WIDGETS: WidgetConfig[] = [
     },
   },
   {
-    id: 'lap-history',
-    label: 'Lap History',
+    id: 'lap-log',
+    label: 'Lap Log',
     description:
       'Last 8 laps with time and delta vs personal best. Best lap highlighted.',
-    component: LapHistoryWidget,
+    component: LapLogWidget,
     autoHeight: true,
     designWidth: 220,
     designHeight: 260,

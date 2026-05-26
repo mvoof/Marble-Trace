@@ -7,10 +7,10 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
-import { formatDelta, getDeltaState } from '@utils/widget/lap-delta-utils';
-import type { LapHistoryWidgetSettings } from '@/types/widget-settings';
+import { formatDelta, getDeltaState } from '@utils/widget/delta-utils';
+import type { LapLogWidgetSettings } from '@/types/widget-settings';
 import { LapRow } from './LapRow/LapRow';
-import styles from './LapHistoryWidget.module.scss';
+import styles from './LapLogWidget.module.scss';
 
 // TODO: use style class and variables
 const DELTA_COLORS = {
@@ -27,12 +27,12 @@ interface HistoryEntry {
   lapTime: number;
 }
 
-export const LapHistoryWidget = observer(() => {
+export const LapLogWidget = observer(() => {
   const { lapTiming } = useTelemetryStore();
   const { lapDelta } = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
   const { reference } =
-    widgetSettings.getSettings<LapHistoryWidgetSettings>('lap-history');
+    widgetSettings.getSettings<LapLogWidgetSettings>('lap-log');
 
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const prevLapRef = useRef<number | null>(null);
