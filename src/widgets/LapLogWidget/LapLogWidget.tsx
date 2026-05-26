@@ -98,12 +98,13 @@ export const LapLogWidget = observer(() => {
       isBest: lastLapTime === currentBest,
     };
 
-    setHistory((prev) =>
-      [entry, ...prev.map((e) => ({ ...e, isBest: false }))].slice(
-        0,
-        HISTORY_STORE_SIZE
-      )
-    );
+    setHistory((prev) => {
+      const prevEntries = entry.isBest
+        ? prev.map((e) => ({ ...e, isBest: false }))
+        : prev;
+
+      return [entry, ...prevEntries].slice(0, HISTORY_STORE_SIZE);
+    });
   }, [lastLapTime, lapNum]);
 
   const currentLapTime = lapTiming?.lap_current_lap_time ?? 0;
