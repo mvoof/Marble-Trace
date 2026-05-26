@@ -50,6 +50,11 @@
   color: $widget-text-best-lap;
 }
 
+.lapTimeInvalid {
+  color: $widget-status-danger;
+  font-size: ws(10);
+}
+
 .deltaCell {
   display: flex;
   align-items: baseline;

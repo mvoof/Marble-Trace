@@ -136,10 +136,6 @@ export interface SectorMatrixWidgetSettings {
   showSectors: boolean;
 }
 
-export interface LapLogWidgetSettings {
-  reference: LapDeltaReference;
-}
-
 export interface TimerWidgetSettings {
   showFlag: boolean;
   showLaps: boolean;
@@ -184,7 +180,6 @@ export type WidgetSpecificSettings =
   | FuelWidgetSettings
   | DeltaWidgetSettings
   | SectorMatrixWidgetSettings
-  | LapLogWidgetSettings
   | TimerWidgetSettings
   | GMeterWidgetSettings;
 

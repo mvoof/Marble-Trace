@@ -1,35 +1,20 @@
 import { makeAutoObservable, reaction, runInAction } from 'mobx';
-import { getGameDelta } from '@utils/widget/delta-utils';
 import type { LapTimingFrame } from '@/types/bindings';
-import type { LapDeltaReference } from '@/types/widget-settings';
 import type { TelemetryStore } from './telemetry.store';
-
-export type LapDeltas = Record<LapDeltaReference, number | null>;
 
 export interface CompletedLap {
   lapNum: number;
-  deltas: LapDeltas;
+  delta: number | null;
 }
 
 export interface LapHistoryEntry {
   lapNum: number;
-  lapTime: number;
-  deltas: LapDeltas;
+  lapTime: number | null;
+  delta: number | null;
   isBest: boolean;
 }
 
 const HISTORY_SIZE = 12;
-
-const toNullableDelta = (raw: number): number | null =>
-  raw !== 0 ? raw : null;
-
-const captureDeltas = (frame: LapTimingFrame | null): LapDeltas => ({
-  personal_best: toNullableDelta(getGameDelta(frame, 'personal_best')),
-  personal_optimal: toNullableDelta(getGameDelta(frame, 'personal_optimal')),
-  session_best: toNullableDelta(getGameDelta(frame, 'session_best')),
-  session_optimal: toNullableDelta(getGameDelta(frame, 'session_optimal')),
-  session_last: toNullableDelta(getGameDelta(frame, 'session_last')),
-});
 
 export class LapStore {
   lastCompletedLap: CompletedLap | null = null;
@@ -44,6 +29,8 @@ export class LapStore {
 
   private initReactions() {
     let prevFrame: LapTimingFrame | null = null;
+    let pendingLapNum: number | null = null;
+    let pendingPrevLapTime: number | null = null;
 
     reaction(
       () => this.telemetry.lapTiming,
@@ -57,6 +44,8 @@ export class LapStore {
         const prevLapNum = prev.lap ?? 0;
 
         if (lapNum < prevLapNum) {
+          pendingLapNum = null;
+          pendingPrevLapTime = null;
           runInAction(() => this.reset());
           return;
         }
@@ -66,21 +55,67 @@ export class LapStore {
 
           if (completedLapNum === 0) return;
 
-          const deltas = captureDeltas(prev);
-          const lapTime = frame.lap_last_lap_time ?? 0;
+          if (pendingLapNum !== null) {
+            runInAction(() => {
+              this.history = [
+                {
+                  lapNum: pendingLapNum!,
+                  lapTime: null,
+                  delta: null,
+                  isBest: false,
+                },
+                ...this.history,
+              ].slice(0, HISTORY_SIZE);
+            });
+          }
+
+          pendingLapNum = completedLapNum;
+          pendingPrevLapTime = prev.lap_last_lap_time ?? -1;
+        }
+
+        if (pendingLapNum !== null) {
+          const rawLapTime = frame.lap_last_lap_time ?? -1;
+
+          if (pendingPrevLapTime > 0 && rawLapTime === pendingPrevLapTime)
+            return;
+
+          if (rawLapTime <= 0) {
+            const invalidLapNum = pendingLapNum;
+            pendingLapNum = null;
+            pendingPrevLapTime = null;
+            runInAction(() => {
+              this.history = [
+                {
+                  lapNum: invalidLapNum,
+                  lapTime: null,
+                  delta: null,
+                  isBest: false,
+                },
+                ...this.history,
+              ].slice(0, HISTORY_SIZE);
+            });
+            return;
+          }
+
+          const lapTime = rawLapTime;
+          const completedLapNum = pendingLapNum;
+          pendingLapNum = null;
+          pendingPrevLapTime = null;
+
           const bestLapTime = frame.lap_best_lap_time ?? 0;
-          const isBest =
-            lapTime > 0 && bestLapTime > 0 && lapTime === bestLapTime;
+          const isBest = bestLapTime > 0 && lapTime === bestLapTime;
+          const delta =
+            bestLapTime > 0 && !isBest ? lapTime - bestLapTime : null;
 
           runInAction(() => {
-            this.lastCompletedLap = { lapNum: completedLapNum, deltas };
+            this.lastCompletedLap = { lapNum: completedLapNum, delta };
 
             const prevEntries = isBest
               ? this.history.map((entry) => ({ ...entry, isBest: false }))
               : this.history;
 
             this.history = [
-              { lapNum: completedLapNum, lapTime, deltas, isBest },
+              { lapNum: completedLapNum, lapTime, delta, isBest },
               ...prevEntries,
             ].slice(0, HISTORY_SIZE);
           });
