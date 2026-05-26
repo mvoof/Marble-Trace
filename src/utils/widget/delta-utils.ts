@@ -4,6 +4,7 @@ import type { LapDeltaReference } from '@/types/widget-settings';
 export type DeltaState = 'ahead' | 'behind' | 'neutral';
 export type LapDeltaLayout = 'vertical' | 'horizontal';
 
+//TODO: use scss vsriables instead hardcode color
 const DELTA_STATE_COLOR: Record<DeltaState, string> = {
   ahead: '#22c55e',
   behind: '#ef4444',
@@ -20,11 +21,11 @@ export const formatDelta = (delta: number | null): string => {
   const abs = Math.abs(delta);
 
   if (abs < SECONDS_PER_MINUTE) {
-    const intPart = Math.floor(abs);
-    const fracPart = (abs - intPart).toFixed(3).slice(1);
-    const paddedInt = intPart < 10 ? ` ${intPart}` : `${intPart}`;
+    const formattedAbs = abs.toFixed(3);
+    const [intStr, fracStr] = formattedAbs.split('.');
+    const paddedInt = intStr.length < 2 ? ` ${intStr}` : intStr;
 
-    return `${sign}${paddedInt}${fracPart}`;
+    return `${sign}${paddedInt}.${fracStr}`;
   }
 
   if (abs < SECONDS_PER_HOUR) {
