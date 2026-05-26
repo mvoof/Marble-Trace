@@ -76,10 +76,13 @@ export class LapStore {
         if (pendingLapNum !== null) {
           const rawLapTime = frame.lap_last_lap_time ?? -1;
 
-          if (pendingPrevLapTime > 0 && rawLapTime === pendingPrevLapTime)
+          if (
+            rawLapTime === 0 ||
+            (pendingPrevLapTime > 0 && rawLapTime === pendingPrevLapTime)
+          )
             return;
 
-          if (rawLapTime <= 0) {
+          if (rawLapTime < 0) {
             const invalidLapNum = pendingLapNum;
             pendingLapNum = null;
             pendingPrevLapTime = null;

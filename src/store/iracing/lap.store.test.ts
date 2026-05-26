@@ -151,6 +151,20 @@ describe('LapStore', () => {
     expect(store.history[0].delta).toBeCloseTo(2.5, 5);
   });
 
+  it('lap_last_lap_time=0 is treated as not-yet-set, not invalid', () => {
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, 0, null));
+    push(telemetry, frame(2, 90.0, 90.0));
+
+    expect(store.history).toHaveLength(1);
+    expect(store.history[0]).toMatchObject({
+      lapNum: 1,
+      lapTime: 90.0,
+      isBest: true,
+    });
+  });
+
   it('lap 0 is never recorded', () => {
     push(telemetry, frame(0, null, null));
     push(telemetry, frame(1, null, null));
