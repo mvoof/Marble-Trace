@@ -25,16 +25,19 @@ export const DeltaSettingsPanel = observer(() => {
             block
             value={settings.reference}
             options={[
-              { label: 'Personal Best', value: 'personal_best' },
-              { label: 'Session Best', value: 'session_best' },
+              { label: 'PB', value: 'personal_best' },
+              { label: 'PO', value: 'personal_optimal' },
+              { label: 'SB', value: 'session_best' },
+              { label: 'SO', value: 'session_optimal' },
+              { label: 'SL', value: 'session_last' },
             ]}
             onChange={(value) =>
               update({ reference: value as LapDeltaReference })
             }
           />
           <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
-            Personal Best uses your fastest completed lap. Session Best uses
-            iRacing native live delta.
+            PB/PO — personal best/optimal lap. SB/SO — session best/optimal. SL
+            — session last lap.
           </div>
         </div>
       </Card>

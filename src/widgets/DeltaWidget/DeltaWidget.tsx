@@ -1,8 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import {
-  useBackendComputedStore,
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -14,14 +13,6 @@ import { DeltaLive } from './DeltaLive/DeltaLive';
 import { LapFlash } from './LapFlash/LapFlash';
 import styles from './DeltaWidget.module.scss';
 
-interface CompletedLap {
-  lapNum: number;
-  lapTime: number;
-  delta: number;
-  isBest: boolean;
-  completedAt: number;
-}
-
 const FLASH_POSITION_CLASS: Record<LapTimePosition, string> = {
   none: '',
   top: styles.flashTop,
@@ -32,66 +23,55 @@ const FLASH_POSITION_CLASS: Record<LapTimePosition, string> = {
 
 export const DeltaWidget = observer(() => {
   const { lapTiming } = useTelemetryStore();
-  const { lapDelta } = useBackendComputedStore();
-
   const widgetSettings = useWidgetSettingsStore();
 
-  const { reference, lapTimePosition, flashDuration } =
+  const { lapTimePosition, flashDuration } =
     widgetSettings.getSettings<DeltaWidgetSettings>('delta');
 
-  const completedLapRef = useRef<CompletedLap | null>(null);
-
-  const prevLapRef = useRef<number | null>(null);
-  const prevBestRef = useRef<number | null>(null);
-
   const lapNum = lapTiming?.lap ?? null;
-
   const lastLapTime = lapTiming?.lap_last_lap_time ?? null;
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
 
+  const [flashKey, setFlashKey] = useState(0);
+  const prevLastLapTimeRef = useRef<number | null>(null);
+
   useEffect(() => {
-    if (lapNum === null || lastLapTime === null) return;
+    if (lastLapTime === null || lastLapTime <= 0) return;
 
-    if (prevLapRef.current !== null && lapNum > prevLapRef.current) {
-      const prevBest = prevBestRef.current;
-      const isNewBest = prevBest !== null && lastLapTime < prevBest;
-
-      const delta =
-        reference === 'session_best'
-          ? (lapDelta?.sessionBestTotal ?? 0)
-          : lastLapTime - (prevBest ?? lastLapTime);
-
-      completedLapRef.current = {
-        lapNum: lapNum - 1,
-        lapTime: lastLapTime,
-        delta,
-        isBest: isNewBest,
-        completedAt: performance.now(),
-      };
+    if (prevLastLapTimeRef.current === null) {
+      prevLastLapTimeRef.current = lastLapTime;
+      return;
     }
 
-    prevLapRef.current = lapNum;
-    prevBestRef.current = bestLapTime;
-  }, [lapNum, lastLapTime, bestLapTime, lapDelta, reference]);
+    if (lastLapTime !== prevLastLapTimeRef.current) {
+      prevLastLapTimeRef.current = lastLapTime;
+      setFlashKey((k) => k + 1);
+    }
+  }, [lastLapTime]);
 
-  const completed = completedLapRef.current;
+  // Flash always shows personal best comparison (last lap vs driver's best)
+  const delta = (lastLapTime ?? 0) - (bestLapTime ?? lastLapTime ?? 0);
+
+  const isNewBest = lastLapTime !== null && lastLapTime === bestLapTime;
 
   const showFlash =
     lapTimePosition !== 'none' &&
-    completed !== null &&
-    performance.now() - completed.completedAt < flashDuration * 1000;
+    flashKey > 0 &&
+    lastLapTime !== null &&
+    lastLapTime > 0;
 
   return (
     <div className={styles.root}>
-      {showFlash && completed && (
+      {showFlash && lastLapTime !== null && (
         <div
           className={`${styles.flash} ${FLASH_POSITION_CLASS[lapTimePosition]}`}
         >
           <LapFlash
-            lapNum={completed.lapNum}
-            lapTime={completed.lapTime}
-            delta={completed.delta}
-            isBest={completed.isBest}
+            key={flashKey}
+            lapNum={(lapNum ?? 1) - 1}
+            lapTime={lastLapTime}
+            delta={delta}
+            isBest={isNewBest}
             duration={flashDuration}
           />
         </div>

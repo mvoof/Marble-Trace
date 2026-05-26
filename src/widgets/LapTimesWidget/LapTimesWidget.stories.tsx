@@ -39,12 +39,9 @@ const applyArgs = (
     } as LapTimingFrame);
 
     stores.computed.updateLapDelta({
-      personalBestTotal: args.personalBestDelta ?? 0,
-      sessionBestTotal: args.personalBestDelta ?? 0,
       sectorTimes: [],
       currentSectorIdx: 0,
-      personalBestSectors: [],
-      sessionBestSectors: [],
+      sectorDeltas: [],
     } as LapDeltaFrame);
 
     stores.widgetSettings.updateUserSettings('lap-times', {

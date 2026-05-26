@@ -48,6 +48,24 @@ pub struct LapTimingFrame {
 
     /// Live delta to session optimal lap
     pub lap_delta_to_session_optimal_live: Option<f32>,
+
+    /// Live delta to driver's personal best lap
+    pub lap_delta_to_driver_best_live: Option<f32>,
+    pub lap_delta_to_best_lap: Option<f32>,
+    pub lap_delta_to_best_lap_dd: Option<bool>,
+    pub lap_delta_to_best_lap_ok: Option<bool>,
+    pub lap_delta_to_optimal_lap: Option<f32>,
+    pub lap_delta_to_optimal_lap_dd: Option<bool>,
+    pub lap_delta_to_optimal_lap_ok: Option<bool>,
+    pub lap_delta_to_session_best_lap: Option<f32>,
+    pub lap_delta_to_session_best_lap_dd: Option<bool>,
+    pub lap_delta_to_session_best_lap_ok: Option<bool>,
+    pub lap_delta_to_session_lastl_lap: Option<f32>,
+    pub lap_delta_to_session_lastl_lap_dd: Option<bool>,
+    pub lap_delta_to_session_lastl_lap_ok: Option<bool>,
+    pub lap_delta_to_session_optimal_lap: Option<f32>,
+    pub lap_delta_to_session_optimal_lap_dd: Option<bool>,
+    pub lap_delta_to_session_optimal_lap_ok: Option<bool>,
 }
 
 impl From<&AllFieldsFrame> for LapTimingFrame {
@@ -63,6 +81,22 @@ impl From<&AllFieldsFrame> for LapTimingFrame {
             player_car_class_position: f.player_car_class_position,
             lap_delta_to_session_best_live: f.lap_delta_to_session_best_live,
             lap_delta_to_session_optimal_live: f.lap_delta_to_session_optimal_live,
+            lap_delta_to_driver_best_live: f.lap_delta_to_driver_best_live,
+            lap_delta_to_best_lap: f.lap_delta_to_best_lap,
+            lap_delta_to_best_lap_dd: f.lap_delta_to_best_lap_dd,
+            lap_delta_to_best_lap_ok: f.lap_delta_to_best_lap_ok,
+            lap_delta_to_optimal_lap: f.lap_delta_to_optimal_lap,
+            lap_delta_to_optimal_lap_dd: f.lap_delta_to_optimal_lap_dd,
+            lap_delta_to_optimal_lap_ok: f.lap_delta_to_optimal_lap_ok,
+            lap_delta_to_session_best_lap: f.lap_delta_to_session_best_lap,
+            lap_delta_to_session_best_lap_dd: f.lap_delta_to_session_best_lap_dd,
+            lap_delta_to_session_best_lap_ok: f.lap_delta_to_session_best_lap_ok,
+            lap_delta_to_session_lastl_lap: f.lap_delta_to_session_lastl_lap,
+            lap_delta_to_session_lastl_lap_dd: f.lap_delta_to_session_lastl_lap_dd,
+            lap_delta_to_session_lastl_lap_ok: f.lap_delta_to_session_lastl_lap_ok,
+            lap_delta_to_session_optimal_lap: f.lap_delta_to_session_optimal_lap,
+            lap_delta_to_session_optimal_lap_dd: f.lap_delta_to_session_optimal_lap_dd,
+            lap_delta_to_session_optimal_lap_ok: f.lap_delta_to_session_optimal_lap_ok,
         }
     }
 }

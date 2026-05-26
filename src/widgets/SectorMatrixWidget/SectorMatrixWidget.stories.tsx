@@ -66,10 +66,7 @@ const applyArgs = (
     stores.computed.updateLapDelta({
       sectorTimes: args.sectorTimes,
       currentSectorIdx: args.currentSectorIdx,
-      sessionBestTotal: args.delta,
-      sessionBestSectors: args.sectorDeltas,
-      personalBestTotal: args.delta,
-      personalBestSectors: args.sectorDeltas,
+      sectorDeltas: args.sectorDeltas,
     } as LapDeltaFrame);
 
     stores.widgetSettings.updateUserSettings('sector-matrix', {

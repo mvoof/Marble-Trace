@@ -48,10 +48,7 @@ const applyArgs = (
     stores.computed.updateLapDelta({
       sectorTimes: [],
       currentSectorIdx: 0,
-      sessionBestTotal: args.liveDelta,
-      sessionBestSectors: [],
-      personalBestTotal: args.liveDelta,
-      personalBestSectors: [],
+      sectorDeltas: [],
     } as LapDeltaFrame);
 
     stores.widgetSettings.updateUserSettings('lap-log', {

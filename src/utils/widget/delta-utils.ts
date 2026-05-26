@@ -1,3 +1,6 @@
+import type { LapTimingFrame } from '@/types/bindings';
+import type { LapDeltaReference } from '@/types/widget-settings';
+
 export type DeltaState = 'ahead' | 'behind' | 'neutral';
 export type LapDeltaLayout = 'vertical' | 'horizontal';
 
@@ -65,6 +68,41 @@ export const formatSectorDelta = (v: number | null): string => {
   if (v === null) return '--';
 
   return (v >= 0 ? '+' : '') + v.toFixed(2);
+};
+
+export const getGameDelta = (
+  lapTiming: LapTimingFrame | null | undefined,
+  reference: LapDeltaReference
+): number => {
+  if (!lapTiming) return 0;
+
+  switch (reference) {
+    case 'personal_best':
+      return lapTiming.lap_delta_to_best_lap_ok &&
+        lapTiming.lap_delta_to_best_lap != null
+        ? lapTiming.lap_delta_to_best_lap
+        : 0;
+    case 'personal_optimal':
+      return lapTiming.lap_delta_to_optimal_lap_ok &&
+        lapTiming.lap_delta_to_optimal_lap != null
+        ? lapTiming.lap_delta_to_optimal_lap
+        : 0;
+    case 'session_best':
+      return lapTiming.lap_delta_to_session_best_lap_ok &&
+        lapTiming.lap_delta_to_session_best_lap != null
+        ? lapTiming.lap_delta_to_session_best_lap
+        : 0;
+    case 'session_optimal':
+      return lapTiming.lap_delta_to_session_optimal_lap_ok &&
+        lapTiming.lap_delta_to_session_optimal_lap != null
+        ? lapTiming.lap_delta_to_session_optimal_lap
+        : 0;
+    case 'session_last':
+      return lapTiming.lap_delta_to_session_lastl_lap_ok &&
+        lapTiming.lap_delta_to_session_lastl_lap != null
+        ? lapTiming.lap_delta_to_session_lastl_lap
+        : 0;
+  }
 };
 
 export const getSectorDeltaState = (v: number | null): DeltaState => {

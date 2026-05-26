@@ -88,6 +88,10 @@ export const TelemetryDebugWidget = observer(() => {
         <span className={styles.sectionTitle}>Timing</span>
         <Row label="Lap" value={lapTiming?.lap ?? '—'} />
         <Row
+          label="Cur Time"
+          value={`${fmt(lapTiming?.lap_current_lap_time, 3)} s`}
+        />
+        <Row
           label="Last Time"
           value={`${fmt(lapTiming?.lap_last_lap_time)} s`}
         />
@@ -96,6 +100,38 @@ export const TelemetryDebugWidget = observer(() => {
           value={`${fmt(lapTiming?.lap_best_lap_time)} s`}
         />
         <Row label="Pos" value={`P${lapTiming?.player_car_position ?? '—'}`} />
+        <Row
+          label="SB_Live Δ"
+          value={`${fmt(lapTiming?.lap_delta_to_session_best_live, 3)} ok=${lapTiming?.lap_delta_to_session_best_live != null ? '✓' : '—'}`}
+        />
+        <Row
+          label="Opt_Live Δ"
+          value={`${fmt(lapTiming?.lap_delta_to_session_optimal_live, 3)}`}
+        />
+        <Row
+          label="DriverBest_Live Δ"
+          value={`${fmt(lapTiming?.lap_delta_to_driver_best_live, 3)}`}
+        />
+        <Row
+          label="BestLap Δ"
+          value={`${fmt(lapTiming?.lap_delta_to_best_lap, 3)} dd=${lapTiming?.lap_delta_to_best_lap_dd ?? '—'} ok=${lapTiming?.lap_delta_to_best_lap_ok ?? '—'}`}
+        />
+        <Row
+          label="OptLap Δ"
+          value={`${fmt(lapTiming?.lap_delta_to_optimal_lap, 3)} dd=${lapTiming?.lap_delta_to_optimal_lap_dd ?? '—'} ok=${lapTiming?.lap_delta_to_optimal_lap_ok ?? '—'}`}
+        />
+        <Row
+          label="SessBestLap Δ"
+          value={`${fmt(lapTiming?.lap_delta_to_session_best_lap, 3)} dd=${lapTiming?.lap_delta_to_session_best_lap_dd ?? '—'} ok=${lapTiming?.lap_delta_to_session_best_lap_ok ?? '—'}`}
+        />
+        <Row
+          label="SessLastlLap Δ"
+          value={`${fmt(lapTiming?.lap_delta_to_session_lastl_lap, 3)} dd=${lapTiming?.lap_delta_to_session_lastl_lap_dd ?? '—'} ok=${lapTiming?.lap_delta_to_session_lastl_lap_ok ?? '—'}`}
+        />
+        <Row
+          label="SessOptLap Δ"
+          value={`${fmt(lapTiming?.lap_delta_to_session_optimal_lap, 3)} dd=${lapTiming?.lap_delta_to_session_optimal_lap_dd ?? '—'} ok=${lapTiming?.lap_delta_to_session_optimal_lap_ok ?? '—'}`}
+        />
 
         <span className={styles.sectionTitle}>Session</span>
         <Row label="Remain" value={`${fmt(session?.session_time_remain)} s`} />

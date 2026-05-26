@@ -40,10 +40,7 @@ const applyArgs = (
     stores.computed.updateLapDelta({
       sectorTimes: [],
       currentSectorIdx: 0,
-      sessionBestTotal: args.delta,
-      sessionBestSectors: [],
-      personalBestTotal: args.delta,
-      personalBestSectors: [],
+      sectorDeltas: [],
     } as LapDeltaFrame);
   });
 };
@@ -89,10 +86,7 @@ const FlashPreview = ({
       computed.updateLapDelta({
         sectorTimes: [],
         currentSectorIdx: 0,
-        sessionBestTotal: delta,
-        sessionBestSectors: [],
-        personalBestTotal: delta,
-        personalBestSectors: [],
+        sectorDeltas: [],
       } as LapDeltaFrame);
     });
   }, [delta, position, computed, widgetSettings]);

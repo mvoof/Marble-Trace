@@ -22,7 +22,10 @@ export const LapFlash = observer(
     const state = getDeltaState(delta);
 
     return (
-      <div className={styles.root}>
+      <div
+        className={styles.root}
+        style={{ animationDuration: `${duration}s` }}
+      >
         <div
           className={`${styles.flashBar} ${DELTA_CLASS[state]}`}
           style={{ animationDuration: `${duration}s` }}

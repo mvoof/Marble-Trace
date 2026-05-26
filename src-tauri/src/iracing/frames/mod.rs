@@ -150,6 +150,38 @@ pub(crate) struct AllFieldsFrame {
     pub lap_delta_to_session_best_live: Option<f32>,
     #[field_name = "LapDeltaToSessionOptimal_Live"]
     pub lap_delta_to_session_optimal_live: Option<f32>,
+    #[field_name = "LapDeltaToDriverBest_Live"]
+    pub lap_delta_to_driver_best_live: Option<f32>,
+    #[field_name = "LapDeltaToBestLap"]
+    pub lap_delta_to_best_lap: Option<f32>,
+    #[field_name = "LapDeltaToBestLap_DD"]
+    pub lap_delta_to_best_lap_dd: Option<bool>,
+    #[field_name = "LapDeltaToBestLap_OK"]
+    pub lap_delta_to_best_lap_ok: Option<bool>,
+    #[field_name = "LapDeltaToOptimalLap"]
+    pub lap_delta_to_optimal_lap: Option<f32>,
+    #[field_name = "LapDeltaToOptimalLap_DD"]
+    pub lap_delta_to_optimal_lap_dd: Option<bool>,
+    #[field_name = "LapDeltaToOptimalLap_OK"]
+    pub lap_delta_to_optimal_lap_ok: Option<bool>,
+    #[field_name = "LapDeltaToSessionBestLap"]
+    pub lap_delta_to_session_best_lap: Option<f32>,
+    #[field_name = "LapDeltaToSessionBestLap_DD"]
+    pub lap_delta_to_session_best_lap_dd: Option<bool>,
+    #[field_name = "LapDeltaToSessionBestLap_OK"]
+    pub lap_delta_to_session_best_lap_ok: Option<bool>,
+    #[field_name = "LapDeltaToSessionLastlLap"]
+    pub lap_delta_to_session_lastl_lap: Option<f32>,
+    #[field_name = "LapDeltaToSessionLastlLap_DD"]
+    pub lap_delta_to_session_lastl_lap_dd: Option<bool>,
+    #[field_name = "LapDeltaToSessionLastlLap_OK"]
+    pub lap_delta_to_session_lastl_lap_ok: Option<bool>,
+    #[field_name = "LapDeltaToSessionOptimalLap"]
+    pub lap_delta_to_session_optimal_lap: Option<f32>,
+    #[field_name = "LapDeltaToSessionOptimalLap_DD"]
+    pub lap_delta_to_session_optimal_lap_dd: Option<bool>,
+    #[field_name = "LapDeltaToSessionOptimalLap_OK"]
+    pub lap_delta_to_session_optimal_lap_ok: Option<bool>,
 
     // === Session ===
     #[field_name = "SessionTime"]

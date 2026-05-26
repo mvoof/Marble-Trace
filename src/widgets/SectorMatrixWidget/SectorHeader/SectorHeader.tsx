@@ -5,6 +5,7 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
+import { getGameDelta } from '@utils/widget/delta-utils';
 import { getSectorColor } from '@utils/widget/sector-utils';
 import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
 import styles from './SectorHeader.module.scss';
@@ -29,15 +30,10 @@ export const SectorHeader = observer(({ sectorCount }: Props) => {
 
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
 
-  const liveDelta =
-    reference === 'session_best'
-      ? (lapDelta?.sessionBestTotal ?? null)
-      : (lapDelta?.personalBestTotal ?? null);
+  const liveDelta = getGameDelta(lapTiming, reference);
 
   const predictedTime =
-    bestLapTime !== null && bestLapTime > 0 && liveDelta !== null
-      ? bestLapTime + liveDelta
-      : null;
+    bestLapTime !== null && bestLapTime > 0 ? bestLapTime + liveDelta : null;
 
   const currentSectorIdx = lapDelta?.currentSectorIdx ?? 0;
 

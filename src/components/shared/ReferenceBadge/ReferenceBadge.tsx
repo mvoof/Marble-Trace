@@ -6,8 +6,16 @@ interface Props {
   className?: string;
 }
 
+const REFERENCE_LABEL: Record<LapDeltaReference, string> = {
+  personal_best: 'PB',
+  personal_optimal: 'PO',
+  session_best: 'SB',
+  session_optimal: 'SO',
+  session_last: 'SL',
+};
+
 export const ReferenceBadge = ({ reference, className }: Props) => (
   <span className={`${styles.badge} ${className ?? ''}`}>
-    {reference === 'session_best' ? 'SB' : 'PB'}
+    {REFERENCE_LABEL[reference]}
   </span>
 );

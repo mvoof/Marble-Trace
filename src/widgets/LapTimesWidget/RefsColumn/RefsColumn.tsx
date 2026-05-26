@@ -1,11 +1,14 @@
 import { observer } from 'mobx-react-lite';
 import {
   useTelemetryStore,
-  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
-import { formatDelta, getDeltaState } from '@utils/widget/delta-utils';
+import {
+  formatDelta,
+  getDeltaState,
+  getGameDelta,
+} from '@utils/widget/delta-utils';
 import type { LapTimesWidgetSettings } from '@/types/widget-settings';
 import styles from './RefsColumn.module.scss';
 
@@ -17,8 +20,6 @@ const DELTA_CLASS = {
 
 export const RefsColumn = observer(() => {
   const { lapTiming } = useTelemetryStore();
-  const { lapDelta } = useBackendComputedStore();
-
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference, showPredicted } =
@@ -28,10 +29,7 @@ export const RefsColumn = observer(() => {
   const lastLap = lapTiming?.lap_last_lap_time ?? null;
   const bestLap = lapTiming?.lap_best_lap_time ?? null;
 
-  const liveDelta =
-    reference === 'session_best'
-      ? (lapDelta?.sessionBestTotal ?? null)
-      : (lapDelta?.personalBestTotal ?? null);
+  const liveDelta = getGameDelta(lapTiming, reference);
 
   const lastDelta =
     lastLap !== null && bestLap !== null && bestLap > 0
@@ -39,9 +37,7 @@ export const RefsColumn = observer(() => {
       : null;
 
   const predictedTime =
-    bestLap !== null && bestLap > 0 && liveDelta !== null
-      ? bestLap + liveDelta
-      : null;
+    bestLap !== null && bestLap > 0 ? bestLap + liveDelta : null;
 
   return (
     <div className={styles.rows}>

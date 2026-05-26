@@ -3,11 +3,14 @@ import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import {
   useTelemetryStore,
-  useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
-import { formatDelta, getDeltaState } from '@utils/widget/delta-utils';
+import {
+  formatDelta,
+  getDeltaState,
+  getGameDelta,
+} from '@utils/widget/delta-utils';
 import type { LapLogWidgetSettings } from '@/types/widget-settings';
 import { LapRow } from './LapRow/LapRow';
 import styles from './LapLogWidget.module.scss';
@@ -29,35 +32,47 @@ interface HistoryEntry {
 
 export const LapLogWidget = observer(() => {
   const { lapTiming } = useTelemetryStore();
-  const { lapDelta } = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
   const { reference } =
     widgetSettings.getSettings<LapLogWidgetSettings>('lap-log');
 
   const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const prevLapRef = useRef<number | null>(null);
+  const prevLapNumRef = useRef<number | null>(null);
+  const prevLastLapTimeRef = useRef<number | null>(null);
+  const pendingLapNumRef = useRef<number | null>(null);
 
   const lapNum = lapTiming?.lap ?? null;
   const lastLapTime = lapTiming?.lap_last_lap_time ?? null;
 
   useEffect(() => {
-    if (lapNum === null || lastLapTime === null || lastLapTime <= 0) return;
+    if (lapNum === null || lastLapTime === null) return;
 
-    if (prevLapRef.current !== null && lapNum > prevLapRef.current) {
-      const entry: HistoryEntry = { lapNum: lapNum - 1, lapTime: lastLapTime };
-      setHistory((prev) => [entry, ...prev].slice(0, HISTORY_STORE_SIZE));
+    // Step 1: lap counter advanced — remember which lap just completed
+    if (prevLapNumRef.current !== null && lapNum > prevLapNumRef.current) {
+      pendingLapNumRef.current = lapNum;
     }
 
-    prevLapRef.current = lapNum;
+    prevLapNumRef.current = lapNum;
+
+    // Step 2: lastLapTime updated — now we have the correct completed-lap time
+    if (lastLapTime > 0 && lastLapTime !== prevLastLapTimeRef.current) {
+      prevLastLapTimeRef.current = lastLapTime;
+
+      if (pendingLapNumRef.current !== null) {
+        const entry: HistoryEntry = {
+          lapNum: pendingLapNumRef.current - 1,
+          lapTime: lastLapTime,
+        };
+        setHistory((prev) => [entry, ...prev].slice(0, HISTORY_STORE_SIZE));
+        pendingLapNumRef.current = null;
+      }
+    }
   }, [lapNum, lastLapTime]);
 
   const currentLapTime = lapTiming?.lap_current_lap_time ?? 0;
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
 
-  const liveDelta =
-    reference === 'session_best'
-      ? (lapDelta?.sessionBestTotal ?? 0)
-      : (lapDelta?.personalBestTotal ?? 0);
+  const liveDelta = getGameDelta(lapTiming, reference);
 
   const visibleHistory = history.slice(0, HISTORY_SHOW_SIZE);
 
@@ -112,7 +127,6 @@ export const LapLogWidget = observer(() => {
                   : undefined
             }
             isBest={isThisBest}
-            reference="personal_best"
           />
         );
       })}

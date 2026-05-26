@@ -1,9 +1,13 @@
 import { observer } from 'mobx-react-lite';
 import {
-  useBackendComputedStore,
+  useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { formatDelta, getDeltaState } from '@utils/widget/delta-utils';
+import {
+  formatDelta,
+  getDeltaState,
+  getGameDelta,
+} from '@utils/widget/delta-utils';
 import type { LapTimesWidgetSettings } from '@/types/widget-settings';
 import { ReferenceBadge } from '@/components/shared/ReferenceBadge/ReferenceBadge';
 import styles from './DeltaColumn.module.scss';
@@ -15,16 +19,13 @@ const DELTA_CLASS = {
 };
 
 export const DeltaColumn = observer(() => {
-  const { lapDelta } = useBackendComputedStore();
+  const { lapTiming } = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference } =
     widgetSettings.getSettings<LapTimesWidgetSettings>('lap-times');
 
-  const delta =
-    reference === 'session_best'
-      ? (lapDelta?.sessionBestTotal ?? 0)
-      : (lapDelta?.personalBestTotal ?? 0);
+  const delta = getGameDelta(lapTiming, reference);
 
   return (
     <div className={styles.root}>

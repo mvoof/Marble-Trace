@@ -4,8 +4,19 @@
   gap: ws(6);
   padding: ws(14) ws(16);
   position: relative;
-  overflow: hidden;
   white-space: nowrap;
+  width: max-content;
+  animation: lapFlashFade linear forwards;
+}
+
+@keyframes lapFlashFade {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .flashBar {
@@ -14,7 +25,8 @@
   left: 0;
   right: 0;
   height: 2px;
-  animation: shrink 3s linear forwards;
+  transform-origin: left;
+  animation: shrink linear forwards;
 }
 
 @keyframes shrink {
@@ -23,7 +35,6 @@
   }
   to {
     transform: scaleX(0);
-    transform-origin: left;
   }
 }
 

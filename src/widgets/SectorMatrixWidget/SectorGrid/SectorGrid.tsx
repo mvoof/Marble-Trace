@@ -2,14 +2,12 @@ import { observer } from 'mobx-react-lite';
 import {
   useTelemetryStore,
   useBackendComputedStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 import {
   formatSectorTime,
   formatSectorDelta,
   getDeltaState,
 } from '@utils/widget/delta-utils';
-import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
 import styles from './SectorGrid.module.scss';
 
 interface Props {
@@ -29,18 +27,10 @@ export const SectorGrid = observer(({ sectorCount }: Props) => {
   const { lapTiming } = useTelemetryStore();
   const { lapDelta } = useBackendComputedStore();
 
-  const widgetSettings = useWidgetSettingsStore();
-
-  const { reference } =
-    widgetSettings.getSettings<SectorMatrixWidgetSettings>('sector-matrix');
-
   const currentSectorIdx = lapDelta?.currentSectorIdx ?? 0;
   const sectorTimes = lapDelta?.sectorTimes ?? [];
 
-  const sectorDeltas =
-    reference === 'session_best'
-      ? (lapDelta?.sessionBestSectors ?? [])
-      : (lapDelta?.personalBestSectors ?? []);
+  const sectorDeltas = lapDelta?.sectorDeltas ?? [];
 
   const currentLapTime = lapTiming?.lap_current_lap_time ?? 0;
 
