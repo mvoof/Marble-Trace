@@ -5,7 +5,7 @@ import type {
   SectorMatrixWidgetSettings,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { Card, SettingRow } from './shared';
+import { Card, DELTA_REFERENCE_DESC, SettingRow } from './shared';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const SectorMatrixSettingsPanel = observer(() => {
@@ -39,8 +39,8 @@ export const SectorMatrixSettingsPanel = observer(() => {
             }
           />
           <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
-            Affects the live delta and PRED in the header. Sector chips always
-            show delta vs personal best.
+            {DELTA_REFERENCE_DESC[settings.reference]} Sector chips always show
+            delta vs personal best.
           </div>
         </div>
       </Card>

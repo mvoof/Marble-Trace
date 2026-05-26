@@ -5,7 +5,7 @@ import type {
   LapLogWidgetSettings,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card, DELTA_REFERENCE_DESC } from './shared';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const LapLogSettingsPanel = observer(() => {
@@ -37,8 +37,7 @@ export const LapLogSettingsPanel = observer(() => {
           }
         />
         <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
-          Reference for the live row delta. PB/PO — personal best/optimal. SB/SO
-          — session best/optimal. SL — session last lap. Historical rows always
+          {DELTA_REFERENCE_DESC[settings.reference]} Historical rows always
           compare vs personal best.
         </div>
       </div>

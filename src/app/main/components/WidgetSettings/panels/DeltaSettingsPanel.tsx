@@ -6,7 +6,7 @@ import type {
   LapTimePosition,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card, DELTA_REFERENCE_DESC } from './shared';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const DeltaSettingsPanel = observer(() => {
@@ -36,8 +36,7 @@ export const DeltaSettingsPanel = observer(() => {
             }
           />
           <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
-            PB/PO — personal best/optimal lap. SB/SO — session best/optimal. SL
-            — session last lap.
+            {DELTA_REFERENCE_DESC[settings.reference]}
           </div>
         </div>
       </Card>

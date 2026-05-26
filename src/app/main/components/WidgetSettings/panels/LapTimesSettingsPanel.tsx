@@ -5,7 +5,7 @@ import type {
   LapTimesWidgetSettings,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { Card, SettingRow } from './shared';
+import { Card, DELTA_REFERENCE_DESC, SettingRow } from './shared';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const LapTimesSettingsPanel = observer(() => {
@@ -36,8 +36,7 @@ export const LapTimesSettingsPanel = observer(() => {
             }
           />
           <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
-            PB/PO — personal best/optimal. SB/SO — session best/optimal. SL —
-            session last lap. Affects PRED calculation.
+            {DELTA_REFERENCE_DESC[settings.reference]}
           </div>
         </div>
       </Card>
