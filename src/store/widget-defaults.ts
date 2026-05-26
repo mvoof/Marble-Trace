@@ -604,7 +604,7 @@ export const WIDGETS: WidgetConfig[] = [
       enabled: false,
       x: 700,
       y: 300,
-      currentWidth: 280,
+      currentWidth: 220,
       currentHeight: 260,
       opacity: 1,
       backgroundColor: '#252525',
