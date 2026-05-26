@@ -48,6 +48,16 @@ export const SectorMatrixSettingsPanel = observer(() => {
       <Card title="Options">
         <div className={styles.fieldGroup}>
           <SettingRow
+            title="Show Sector Times"
+            desc="Display per-sector timing grid. Disable for a compact view with just the progress bar and lap times."
+          >
+            <Switch
+              checked={settings.showSectors}
+              onChange={(value) => update({ showSectors: value })}
+            />
+          </SettingRow>
+
+          <SettingRow
             title="Show Predicted Lap"
             desc="Estimated finish time displayed in the header."
           >

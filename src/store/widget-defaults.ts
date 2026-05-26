@@ -587,6 +587,7 @@ export const WIDGETS: WidgetConfig[] = [
       hotkey: '',
       reference: 'personal_best',
       showPredicted: true,
+      showSectors: true,
     },
   },
   {
