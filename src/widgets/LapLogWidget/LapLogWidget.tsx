@@ -40,8 +40,8 @@ export const LapLogWidget = observer(() => {
 
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
-  const prevLapNumRef = useRef<number | null>(null);
   const prevSessionNumRef = useRef<number | null>(null);
+  const prevLastLapTimeRef = useRef<number | null>(null);
   const lapTimingRef = useRef(lapTiming);
 
   lapTimingRef.current = lapTiming;
@@ -61,42 +61,28 @@ export const LapLogWidget = observer(() => {
       sessionNum !== prevSessionNumRef.current
     ) {
       setHistory([]);
-      prevLapNumRef.current = null;
+      prevLastLapTimeRef.current = null;
     }
 
     prevSessionNumRef.current = sessionNum;
   }, [sessionNum]);
 
   useEffect(() => {
-    if (lapNum === null) return;
+    if (lastLapTime === null || lastLapTime <= 0) return;
+    if (prevLastLapTimeRef.current === lastLapTime) return;
 
-    if (prevLapNumRef.current !== null && lapNum < prevLapNumRef.current) {
-      setHistory([]);
+    prevLastLapTimeRef.current = lastLapTime;
 
-      prevLapNumRef.current = lapNum;
+    const completedLapNum = (lapNum ?? 1) - 1;
+    const rawDelta = getGameDelta(lapTimingRef.current, referenceRef.current);
+    const entry: HistoryEntry = {
+      lapNum: completedLapNum,
+      lapTime: lastLapTime,
+      delta: rawDelta !== 0 ? rawDelta : null,
+    };
 
-      return;
-    }
-
-    if (
-      lastLapTime !== null &&
-      lastLapTime > 0 &&
-      prevLapNumRef.current !== null &&
-      lapNum > prevLapNumRef.current
-    ) {
-      const rawDelta = getGameDelta(lapTimingRef.current, referenceRef.current);
-
-      const entry: HistoryEntry = {
-        lapNum: prevLapNumRef.current,
-        lapTime: lastLapTime,
-        delta: rawDelta !== 0 ? rawDelta : null,
-      };
-
-      setHistory((prev) => [entry, ...prev].slice(0, HISTORY_STORE_SIZE));
-    }
-
-    prevLapNumRef.current = lapNum;
-  }, [lapNum, lastLapTime]);
+    setHistory((prev) => [entry, ...prev].slice(0, HISTORY_STORE_SIZE));
+  }, [lastLapTime, lapNum]);
 
   const currentLapTime = lapTiming?.lap_current_lap_time ?? 0;
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
