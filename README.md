@@ -47,7 +47,6 @@ Most iRacing overlays are either bloated desktop apps or locked behind subscript
 - [Input Trace](#input-trace) — Real-time pedal history or bars
 - [Relative](#relative) — F3-style timing with closing trends
 - [Delta HUD](#delta-hud) — Live delta vs any reference lap with lap flash card
-- [Lap Times](#lap-times) — Current, last, best & predicted times with reference delta
 - [Sector Matrix](#sector-matrix) — Per-sector times, delta chips & predicted finish
 - [Lap Log](#lap-log) — Rolling lap history table with delta column
 - [Fuel](#fuel) — Consumption graph & pit-stop math
@@ -152,15 +151,6 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ![Lap Delta — vertical with sectors](docs/assets/screenshots/widgets/lap-delta-widget.png)
 ![Lap Delta — horizontal](docs/assets/screenshots/widgets/lap-delta-horizontal.png)
-
----
-
-### Lap Times
-
-> Current lap, last lap, best lap, and predicted finish time — all in one place. The predicted time is calculated as best lap + live delta so it updates every tick. Reference is configurable (PB / PO / SB / SO / SL). Vertical list or compact horizontal strip.
-
-![Lap Times — vertical with deltas](docs/assets/screenshots/widgets/lap-times-widget.png)
-![Lap Times — horizontal](docs/assets/screenshots/widgets/lap-times-horizontal.png)
 
 ---
 

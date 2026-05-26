@@ -10,7 +10,6 @@ import { RelativeMapWidget } from '@widgets/RelativeMapWidget/RelativeMapWidget'
 import { LedFlagWidget } from '@widgets/LedFlagWidget/LedFlagWidget';
 import { ChassisWidget } from '@widgets/ChassisWidget/ChassisWidget';
 import { DeltaWidget } from '@widgets/DeltaWidget/DeltaWidget';
-import { LapTimesWidget } from '@widgets/LapTimesWidget/LapTimesWidget';
 import { TimerWidget } from '@widgets/TimerWidget/TimerWidget';
 import { WeatherWidget } from '@widgets/WeatherWidget/WeatherWidget';
 import { FuelWidget } from '@widgets/FuelWidget/FuelWidget';
@@ -463,29 +462,6 @@ export const WIDGETS: WidgetConfig[] = [
       reference: 'personal_best',
       lapTimePosition: 'none',
       flashDuration: 5,
-    },
-  },
-  {
-    id: 'lap-times',
-    label: 'Lap Times',
-    description:
-      'Combined view: big live delta with LAST / BEST / PRED references.',
-    component: LapTimesWidget,
-    designWidth: 240,
-    designHeight: 100,
-    userSettings: {
-      enabled: false,
-      x: 400,
-      y: 300,
-      currentWidth: 240,
-      currentHeight: 100,
-      opacity: 1,
-      backgroundColor: '#252525',
-      backgroundColorEdge: '#14141b',
-      borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
-      reference: 'personal_best',
-      showPredicted: true,
     },
   },
   {

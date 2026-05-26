@@ -110,11 +110,6 @@ export interface WeatherWidgetSettings {
   showForecast: boolean;
 }
 
-export interface LapTimesWidgetSettings {
-  reference: LapDeltaReference;
-  showPredicted: boolean;
-}
-
 export interface FuelWidgetSettings {
   showChart: boolean;
   pitWarningLaps: number;
@@ -187,7 +182,6 @@ export type WidgetSpecificSettings =
   | LinearMapWidgetSettings
   | WeatherWidgetSettings
   | FuelWidgetSettings
-  | LapTimesWidgetSettings
   | DeltaWidgetSettings
   | SectorMatrixWidgetSettings
   | LapLogWidgetSettings
