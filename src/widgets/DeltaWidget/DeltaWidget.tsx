@@ -21,13 +21,14 @@ export const DeltaWidget = observer(() => {
     widgetSettings.getSettings<DeltaWidgetSettings>('delta');
 
   const lap = lapStore.lastCompletedLap;
+  const lastEntry = lapStore.history[0] ?? null;
 
   const showFlash = showLapFlash && (lap !== null || dragMode);
 
   const flashKey = dragMode ? 'preview' : String(lap?.lapNum ?? 0);
-  const flashLapTime = lap?.lapTime ?? PREVIEW_LAP_TIME;
-  const flashDelta = lap?.deltas[reference] ?? PREVIEW_DELTA;
-  const flashIsBest = lapStore.isLastLapBest;
+  const flashLapTime = lastEntry?.lapTime ?? PREVIEW_LAP_TIME;
+  const flashDelta = lastEntry?.deltas[reference] ?? PREVIEW_DELTA;
+  const flashIsBest = lastEntry?.isBest ?? false;
 
   return (
     <div className={styles.container}>

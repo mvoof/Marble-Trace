@@ -24,8 +24,9 @@ export const SectorFooter = observer(() => {
     widgetSettings.getSettings<SectorMatrixWidgetSettings>('sector-matrix');
 
   const { lapTiming } = useTelemetryStore();
-  const lap = lapStore.lastCompletedLap;
-  const delta = lap?.deltas[reference] ?? null;
+  const lastEntry = lapStore.history[0] ?? null;
+  const delta = lastEntry?.deltas[reference] ?? null;
+  const lastLapTime = lastEntry?.lapTime ?? null;
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
 
   return (
@@ -33,9 +34,7 @@ export const SectorFooter = observer(() => {
       <div className={styles.entry}>
         <span className={styles.tag}>LAST</span>
 
-        <span className={styles.time}>
-          {formatLapTime(lap?.lapTime ?? null)}
-        </span>
+        <span className={styles.time}>{formatLapTime(lastLapTime)}</span>
 
         {delta !== null && (
           <>

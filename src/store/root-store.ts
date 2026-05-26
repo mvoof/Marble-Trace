@@ -22,7 +22,7 @@ export class RootStore {
   constructor(options?: { skipInit?: boolean }) {
     this.telemetry = new TelemetryStore();
     this.backendComputed = new BackendComputedStore(this);
-    this.lap = new LapStore(this);
+    this.lap = new LapStore(this.telemetry);
     this.widgetSettings = new WidgetSettingsStore();
     this.appSettings = new AppSettingsStore();
     this.units = new UnitsStore();

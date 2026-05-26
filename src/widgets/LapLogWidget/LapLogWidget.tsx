@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import {
@@ -12,10 +11,7 @@ import {
   getDeltaState,
   getGameDelta,
 } from '@utils/widget/delta-utils';
-import type {
-  LapDeltaReference,
-  LapLogWidgetSettings,
-} from '@/types/widget-settings';
+import type { LapLogWidgetSettings } from '@/types/widget-settings';
 import { LapRow } from './LapRow/LapRow';
 import styles from './LapLogWidget.module.scss';
 
@@ -26,16 +22,7 @@ const DELTA_COLORS = {
   neutral: '#fbbf24',
 };
 
-const HISTORY_STORE_SIZE = 12;
 const HISTORY_SHOW_SIZE = 8;
-
-interface HistoryEntry {
-  lapNum: number;
-  lapTime: number;
-  delta: number | null;
-  reference: LapDeltaReference;
-  isBest: boolean;
-}
 
 export const LapLogWidget = observer(() => {
   const lapStore = useLapStore();
@@ -45,45 +32,12 @@ export const LapLogWidget = observer(() => {
   const { reference } =
     widgetSettings.getSettings<LapLogWidgetSettings>('lap-log');
 
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const prevCompletedLapNumRef = useRef<number | null>(null);
-
-  const lap = lapStore.lastCompletedLap;
-
-  useEffect(() => {
-    if (lap === null) {
-      setHistory([]);
-      prevCompletedLapNumRef.current = null;
-      return;
-    }
-
-    if (prevCompletedLapNumRef.current === lap.lapNum) return;
-
-    prevCompletedLapNumRef.current = lap.lapNum;
-
-    const entry: HistoryEntry = {
-      lapNum: lap.lapNum,
-      lapTime: lap.lapTime,
-      delta: lap.deltas[reference],
-      reference,
-      isBest: lapStore.isLastLapBest,
-    };
-
-    setHistory((prev) => {
-      const prevEntries = entry.isBest
-        ? prev.map((e) => ({ ...e, isBest: false }))
-        : prev;
-
-      return [entry, ...prevEntries].slice(0, HISTORY_STORE_SIZE);
-    });
-  }, [lap, lapStore.isLastLapBest, reference]);
-
   const lapNum = lapTiming?.lap ?? null;
   const currentLapTime = lapTiming?.lap_current_lap_time ?? 0;
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
   const liveDelta = getGameDelta(lapTiming, reference);
 
-  const visibleHistory = history.slice(0, HISTORY_SHOW_SIZE);
+  const visibleHistory = lapStore.history.slice(0, HISTORY_SHOW_SIZE);
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={0}>
@@ -108,23 +62,27 @@ export const LapLogWidget = observer(() => {
         reference={reference}
       />
 
-      {visibleHistory.map((entry) => (
-        <LapRow
-          key={entry.lapNum}
-          lapLabel={`L${entry.lapNum}`}
-          time={formatLapTime(entry.lapTime)}
-          deltaLabel={entry.isBest ? '★ BEST' : formatDelta(entry.delta)}
-          deltaColor={
-            entry.isBest
-              ? 'rgba(192, 132, 252, 0.85)' // TODO: use style class and variables
-              : entry.delta !== null
-                ? DELTA_COLORS[getDeltaState(entry.delta)]
-                : undefined
-          }
-          isBest={entry.isBest}
-          reference={entry.reference}
-        />
-      ))}
+      {visibleHistory.map((entry) => {
+        const delta = entry.deltas[reference];
+
+        return (
+          <LapRow
+            key={entry.lapNum}
+            lapLabel={`L${entry.lapNum}`}
+            time={formatLapTime(entry.lapTime)}
+            deltaLabel={entry.isBest ? '★ BEST' : formatDelta(delta)}
+            deltaColor={
+              entry.isBest
+                ? 'rgba(192, 132, 252, 0.85)' // TODO: use style class and variables
+                : delta !== null
+                  ? DELTA_COLORS[getDeltaState(delta)]
+                  : undefined
+            }
+            isBest={entry.isBest}
+            reference={reference}
+          />
+        );
+      })}
     </WidgetPanel>
   );
 });
