@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import {
+  useDeltaStore,
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -37,70 +38,35 @@ interface HistoryEntry {
 }
 
 export const LapLogWidget = observer(() => {
-  const { lapTiming, session } = useTelemetryStore();
+  const lapStore = useDeltaStore();
+  const { lapTiming } = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference } =
     widgetSettings.getSettings<LapLogWidgetSettings>('lap-log');
 
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const prevCompletedLapNumRef = useRef<number | null>(null);
 
-  const prevSessionNumRef = useRef<number | null>(null);
-  const prevLapNumRef = useRef<number | null>(null);
-  const prevLastLapTimeRef = useRef<number | null>(null);
-  const lapTimingRef = useRef(lapTiming);
-
-  lapTimingRef.current = lapTiming;
-
-  const referenceRef = useRef(reference);
-  referenceRef.current = reference;
-
-  const lapNum = lapTiming?.lap ?? null;
-  const lastLapTime = lapTiming?.lap_last_lap_time ?? null;
-  const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
-  const sessionNum = session?.session_num ?? null;
+  const lap = lapStore.lastCompletedLap;
 
   useEffect(() => {
-    if (sessionNum === null) return;
-
-    if (
-      prevSessionNumRef.current !== null &&
-      sessionNum !== prevSessionNumRef.current
-    ) {
+    if (lap === null) {
       setHistory([]);
-      prevLastLapTimeRef.current = null;
-      prevLapNumRef.current = null;
+      prevCompletedLapNumRef.current = null;
+      return;
     }
 
-    prevSessionNumRef.current = sessionNum;
-  }, [sessionNum]);
+    if (prevCompletedLapNumRef.current === lap.lapNum) return;
 
-  useEffect(() => {
-    if (lapNum === null) return;
+    prevCompletedLapNumRef.current = lap.lapNum;
 
-    if (prevLapNumRef.current !== null && lapNum < prevLapNumRef.current) {
-      setHistory([]);
-      prevLastLapTimeRef.current = null;
-    }
-
-    prevLapNumRef.current = lapNum;
-  }, [lapNum]);
-
-  useEffect(() => {
-    if (lastLapTime === null || lastLapTime <= 0) return;
-    if (prevLastLapTimeRef.current === lastLapTime) return;
-
-    prevLastLapTimeRef.current = lastLapTime;
-
-    const completedLapNum = (lapNum ?? 1) - 1;
-    const currentBest = lapTimingRef.current?.lap_best_lap_time ?? null;
-    const rawDelta = getGameDelta(lapTimingRef.current, referenceRef.current);
     const entry: HistoryEntry = {
-      lapNum: completedLapNum,
-      lapTime: lastLapTime,
-      delta: rawDelta !== 0 ? rawDelta : null,
-      reference: referenceRef.current,
-      isBest: lastLapTime === currentBest,
+      lapNum: lap.lapNum,
+      lapTime: lap.lapTime,
+      delta: lap.deltas[reference],
+      reference,
+      isBest: lap.isBest,
     };
 
     setHistory((prev) => {
@@ -110,10 +76,11 @@ export const LapLogWidget = observer(() => {
 
       return [entry, ...prevEntries].slice(0, HISTORY_STORE_SIZE);
     });
-  }, [lastLapTime, lapNum]);
+  }, [lap, reference]);
 
+  const lapNum = lapTiming?.lap ?? null;
   const currentLapTime = lapTiming?.lap_current_lap_time ?? 0;
-
+  const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
   const liveDelta = getGameDelta(lapTiming, reference);
 
   const visibleHistory = history.slice(0, HISTORY_SHOW_SIZE);

@@ -1,6 +1,7 @@
 import { TelemetryStore } from './iracing/telemetry.store';
 import { BackendComputedStore } from './iracing/computed.store';
 import { TelemetryConnectionStore } from './iracing/telemetry-connection.store';
+import { DeltaStore } from './iracing/delta.store';
 import { FlagsStore } from './flags.store';
 import { WidgetSettingsStore } from './widget-settings.store';
 import { AppSettingsStore } from './app-settings.store';
@@ -11,6 +12,7 @@ export class RootStore {
   telemetry: TelemetryStore;
   backendComputed: BackendComputedStore;
   telemetryConnection: TelemetryConnectionStore;
+  lap: DeltaStore;
   flags: FlagsStore;
   widgetSettings: WidgetSettingsStore;
   appSettings: AppSettingsStore;
@@ -20,6 +22,7 @@ export class RootStore {
   constructor(options?: { skipInit?: boolean }) {
     this.telemetry = new TelemetryStore();
     this.backendComputed = new BackendComputedStore(this);
+    this.lap = new DeltaStore(this);
     this.widgetSettings = new WidgetSettingsStore();
     this.appSettings = new AppSettingsStore();
     this.units = new UnitsStore();

@@ -1,11 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import {
-  useTelemetryStore,
+  useDeltaStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { getGameDelta } from '@utils/widget/delta-utils';
 import type {
   DeltaWidgetSettings,
   LapTimePosition,
@@ -23,56 +21,28 @@ const FLASH_POSITION_CLASS: Record<LapTimePosition, string> = {
 };
 
 export const DeltaWidget = observer(() => {
-  const { lapTiming } = useTelemetryStore();
+  const lapStore = useDeltaStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { lapTimePosition, flashDuration, reference } =
     widgetSettings.getSettings<DeltaWidgetSettings>('delta');
 
-  const lapNum = lapTiming?.lap ?? null;
-  const lastLapTime = lapTiming?.lap_last_lap_time ?? null;
-  const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
+  const lap = lapStore.lastCompletedLap;
 
-  const lapTimingRef = useRef(lapTiming);
-  lapTimingRef.current = lapTiming;
-
-  const referenceRef = useRef(reference);
-  referenceRef.current = reference;
-
-  const [flashKey, setFlashKey] = useState(0);
-  const [flashDelta, setFlashDelta] = useState(0);
-  const prevLastLapTimeRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (lastLapTime === null || lastLapTime <= 0) return;
-    if (prevLastLapTimeRef.current === lastLapTime) return;
-
-    prevLastLapTimeRef.current = lastLapTime;
-
-    setFlashDelta(getGameDelta(lapTimingRef.current, referenceRef.current));
-    setFlashKey((k) => k + 1);
-  }, [lastLapTime]);
-
-  const isNewBest = lastLapTime !== null && lastLapTime === bestLapTime;
-
-  const showFlash =
-    lapTimePosition !== 'none' &&
-    flashKey > 0 &&
-    lastLapTime !== null &&
-    lastLapTime > 0;
+  const showFlash = lapTimePosition !== 'none' && lap !== null;
 
   return (
     <div className={styles.root}>
-      {showFlash && lastLapTime !== null && (
+      {showFlash && lap !== null && (
         <div
           className={`${styles.flash} ${FLASH_POSITION_CLASS[lapTimePosition]}`}
         >
           <LapFlash
-            key={flashKey}
-            lapNum={(lapNum ?? 1) - 1}
-            lapTime={lastLapTime}
-            delta={flashDelta}
-            isBest={isNewBest}
+            key={lap.lapNum}
+            lapNum={lap.lapNum}
+            lapTime={lap.lapTime}
+            delta={lap.deltas[reference] ?? 0}
+            isBest={lap.isBest}
             duration={flashDuration}
             deltaAbove={lapTimePosition === 'top'}
           />

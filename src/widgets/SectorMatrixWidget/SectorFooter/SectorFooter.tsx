@@ -1,19 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
+  useDeltaStore,
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
-import {
-  formatDelta,
-  getDeltaState,
-  getGameDelta,
-} from '@utils/widget/delta-utils';
-import type {
-  LapDeltaReference,
-  SectorMatrixWidgetSettings,
-} from '@/types/widget-settings';
+import { formatDelta, getDeltaState } from '@utils/widget/delta-utils';
+import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
 import { ReferenceBadge } from '@/components/shared/ReferenceBadge/ReferenceBadge';
 import styles from './SectorFooter.module.scss';
 
@@ -24,54 +17,35 @@ const DELTA_CLASS = {
 };
 
 export const SectorFooter = observer(() => {
-  const { lapTiming } = useTelemetryStore();
+  const lapStore = useDeltaStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { reference } =
     widgetSettings.getSettings<SectorMatrixWidgetSettings>('sector-matrix');
 
-  const lastLap = lapTiming?.lap_last_lap_time ?? null;
-
-  const lapTimingRef = useRef(lapTiming);
-  lapTimingRef.current = lapTiming;
-
-  const referenceRef = useRef(reference);
-  referenceRef.current = reference;
-
-  const [lastLapDelta, setLastLapDelta] = useState<number | null>(null);
-  const [lastLapReference, setLastLapReference] =
-    useState<LapDeltaReference>(reference);
-  const prevLastLapRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (lastLap === null || lastLap <= 0) return;
-    if (prevLastLapRef.current === lastLap) return;
-
-    prevLastLapRef.current = lastLap;
-
-    const rawDelta = getGameDelta(lapTimingRef.current, referenceRef.current);
-    setLastLapDelta(rawDelta !== 0 ? rawDelta : null);
-    setLastLapReference(referenceRef.current);
-  }, [lastLap]);
-
-  const bestLap = lapTiming?.lap_best_lap_time ?? null;
+  const { lapTiming } = useTelemetryStore();
+  const lap = lapStore.lastCompletedLap;
+  const delta = lap?.deltas[reference] ?? null;
+  const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
 
   return (
     <div className={styles.root}>
       <div className={styles.entry}>
         <span className={styles.tag}>LAST</span>
 
-        <span className={styles.time}>{formatLapTime(lastLap)}</span>
+        <span className={styles.time}>
+          {formatLapTime(lap?.lapTime ?? null)}
+        </span>
 
-        {lastLapDelta !== null && (
+        {delta !== null && (
           <>
             <span
-              className={`${styles.delta} ${DELTA_CLASS[getDeltaState(lastLapDelta)]}`}
+              className={`${styles.delta} ${DELTA_CLASS[getDeltaState(delta)]}`}
             >
-              {formatDelta(lastLapDelta)}
+              {formatDelta(delta)}
             </span>
 
-            <ReferenceBadge reference={lastLapReference} />
+            <ReferenceBadge reference={reference} />
           </>
         )}
       </div>
@@ -80,7 +54,7 @@ export const SectorFooter = observer(() => {
         <span className={styles.tag}>BEST</span>
 
         <span className={`${styles.time} ${styles.bestTime}`}>
-          {formatLapTime(bestLap)}
+          {formatLapTime(bestLapTime)}
         </span>
       </div>
     </div>
