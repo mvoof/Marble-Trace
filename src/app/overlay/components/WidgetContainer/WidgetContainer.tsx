@@ -68,6 +68,7 @@ export const WidgetContainer = observer(
     const designWidth = widget?.designWidth ?? width;
     const designHeight = widget?.designHeight ?? height;
     const autoHeight = widget?.autoHeight ?? false;
+    const overflowVisible = widget?.overflowVisible ?? false;
 
     const widgetScale = width / designWidth;
 
@@ -217,7 +218,7 @@ export const WidgetContainer = observer(
         >
           <ErrorBoundary>
             <div
-              className={`${styles.widgetInner} ${dragMode ? styles.dragging : ''}`}
+              className={`${styles.widgetInner} ${dragMode ? styles.dragging : ''} ${overflowVisible ? styles.overflowVisible : ''}`}
               style={
                 {
                   ...(autoHeight ? { height: 'auto' } : undefined),

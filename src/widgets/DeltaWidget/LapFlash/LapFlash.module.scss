@@ -55,9 +55,14 @@
 
 .times {
   display: flex;
-  align-items: baseline;
-  gap: ws(14);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: ws(4);
   white-space: nowrap;
+}
+
+.timesReversed {
+  flex-direction: column-reverse;
 }
 
 .lapTime {

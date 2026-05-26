@@ -73,6 +73,7 @@ export const DeltaWidget = observer(() => {
             delta={delta}
             isBest={isNewBest}
             duration={flashDuration}
+            deltaAbove={lapTimePosition === 'top'}
           />
         </div>
       )}

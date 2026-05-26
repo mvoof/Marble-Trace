@@ -9,6 +9,7 @@ interface Props {
   delta: number;
   isBest: boolean;
   duration?: number;
+  deltaAbove?: boolean;
 }
 
 const DELTA_CLASS = {
@@ -18,8 +19,14 @@ const DELTA_CLASS = {
 };
 
 export const LapFlash = observer(
-  ({ lapTime, delta, isBest, duration = 5 }: Props) => {
+  ({ lapTime, delta, isBest, duration = 5, deltaAbove = false }: Props) => {
     const state = getDeltaState(delta);
+
+    const deltaEl = (
+      <span className={`${styles.lapDelta} ${DELTA_CLASS[state]}`}>
+        {formatDelta(delta)}
+      </span>
+    );
 
     return (
       <div
@@ -33,11 +40,12 @@ export const LapFlash = observer(
 
         {isBest && <span className={styles.best}>★ NEW BEST</span>}
 
-        <div className={styles.times}>
+        <div
+          className={`${styles.times} ${deltaAbove ? styles.timesReversed : ''}`}
+        >
+          {deltaAbove && deltaEl}
           <span className={styles.lapTime}>{formatLapTime(lapTime)}</span>
-          <span className={`${styles.lapDelta} ${DELTA_CLASS[state]}`}>
-            {formatDelta(delta)}
-          </span>
+          {!deltaAbove && deltaEl}
         </div>
       </div>
     );

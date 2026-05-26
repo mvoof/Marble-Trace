@@ -196,6 +196,7 @@ export interface WidgetMeta {
   designWidth: number;
   designHeight: number;
   autoHeight?: boolean;
+  overflowVisible?: boolean;
 }
 
 export interface BaseUserSettings {

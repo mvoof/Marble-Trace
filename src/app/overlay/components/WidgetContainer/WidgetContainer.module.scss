@@ -25,6 +25,10 @@
   position: relative;
   border-radius: rem(6);
   border: 2px solid;
+  overflow: hidden;
+}
+
+.overflowVisible {
   overflow: visible;
 }
 

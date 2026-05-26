@@ -446,6 +446,7 @@ export const WIDGETS: WidgetConfig[] = [
     description: 'Live delta HUD — one glance, am I faster or slower?',
     component: DeltaWidget,
     autoHeight: true,
+    overflowVisible: true,
     designWidth: 280,
     designHeight: 96,
     userSettings: {
