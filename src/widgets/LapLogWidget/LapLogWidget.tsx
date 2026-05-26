@@ -11,7 +11,10 @@ import {
   getDeltaState,
   getGameDelta,
 } from '@utils/widget/delta-utils';
-import type { LapLogWidgetSettings } from '@/types/widget-settings';
+import type {
+  LapDeltaReference,
+  LapLogWidgetSettings,
+} from '@/types/widget-settings';
 import { LapRow } from './LapRow/LapRow';
 import styles from './LapLogWidget.module.scss';
 
@@ -29,6 +32,7 @@ interface HistoryEntry {
   lapNum: number;
   lapTime: number;
   delta: number | null;
+  reference: LapDeltaReference;
   isBest: boolean;
 }
 
@@ -89,12 +93,13 @@ export const LapLogWidget = observer(() => {
     prevLastLapTimeRef.current = lastLapTime;
 
     const completedLapNum = (lapNum ?? 1) - 1;
-    const rawDelta = getGameDelta(lapTimingRef.current, referenceRef.current);
     const currentBest = lapTimingRef.current?.lap_best_lap_time ?? null;
+    const rawDelta = getGameDelta(lapTimingRef.current, referenceRef.current);
     const entry: HistoryEntry = {
       lapNum: completedLapNum,
       lapTime: lastLapTime,
       delta: rawDelta !== 0 ? rawDelta : null,
+      reference: referenceRef.current,
       isBest: lastLapTime === currentBest,
     };
 
@@ -150,6 +155,7 @@ export const LapLogWidget = observer(() => {
                 : undefined
           }
           isBest={entry.isBest}
+          reference={entry.reference}
         />
       ))}
     </WidgetPanel>

@@ -5,6 +5,7 @@ import {
   useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+import { getGameDelta } from '@utils/widget/delta-utils';
 import type {
   DeltaWidgetSettings,
   LapTimePosition,
@@ -25,32 +26,32 @@ export const DeltaWidget = observer(() => {
   const { lapTiming } = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { lapTimePosition, flashDuration } =
+  const { lapTimePosition, flashDuration, reference } =
     widgetSettings.getSettings<DeltaWidgetSettings>('delta');
 
   const lapNum = lapTiming?.lap ?? null;
   const lastLapTime = lapTiming?.lap_last_lap_time ?? null;
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
 
+  const lapTimingRef = useRef(lapTiming);
+  lapTimingRef.current = lapTiming;
+
+  const referenceRef = useRef(reference);
+  referenceRef.current = reference;
+
   const [flashKey, setFlashKey] = useState(0);
+  const [flashDelta, setFlashDelta] = useState(0);
   const prevLastLapTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (lastLapTime === null || lastLapTime <= 0) return;
+    if (prevLastLapTimeRef.current === lastLapTime) return;
 
-    if (prevLastLapTimeRef.current === null) {
-      prevLastLapTimeRef.current = lastLapTime;
-      return;
-    }
+    prevLastLapTimeRef.current = lastLapTime;
 
-    if (lastLapTime !== prevLastLapTimeRef.current) {
-      prevLastLapTimeRef.current = lastLapTime;
-      setFlashKey((k) => k + 1);
-    }
+    setFlashDelta(getGameDelta(lapTimingRef.current, referenceRef.current));
+    setFlashKey((k) => k + 1);
   }, [lastLapTime]);
-
-  // Flash always shows personal best comparison (last lap vs driver's best)
-  const delta = (lastLapTime ?? 0) - (bestLapTime ?? lastLapTime ?? 0);
 
   const isNewBest = lastLapTime !== null && lastLapTime === bestLapTime;
 
@@ -70,7 +71,7 @@ export const DeltaWidget = observer(() => {
             key={flashKey}
             lapNum={(lapNum ?? 1) - 1}
             lapTime={lastLapTime}
-            delta={delta}
+            delta={flashDelta}
             isBest={isNewBest}
             duration={flashDuration}
             deltaAbove={lapTimePosition === 'top'}
