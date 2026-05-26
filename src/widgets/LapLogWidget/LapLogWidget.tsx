@@ -29,6 +29,7 @@ interface HistoryEntry {
   lapNum: number;
   lapTime: number;
   delta: number | null;
+  isBest: boolean;
 }
 
 export const LapLogWidget = observer(() => {
@@ -52,6 +53,7 @@ export const LapLogWidget = observer(() => {
 
   const lapNum = lapTiming?.lap ?? null;
   const lastLapTime = lapTiming?.lap_last_lap_time ?? null;
+  const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
   const sessionNum = session?.session_num ?? null;
 
   useEffect(() => {
@@ -88,27 +90,27 @@ export const LapLogWidget = observer(() => {
 
     const completedLapNum = (lapNum ?? 1) - 1;
     const rawDelta = getGameDelta(lapTimingRef.current, referenceRef.current);
+    const currentBest = lapTimingRef.current?.lap_best_lap_time ?? null;
     const entry: HistoryEntry = {
       lapNum: completedLapNum,
       lapTime: lastLapTime,
       delta: rawDelta !== 0 ? rawDelta : null,
+      isBest: lastLapTime === currentBest,
     };
 
-    setHistory((prev) => [entry, ...prev].slice(0, HISTORY_STORE_SIZE));
+    setHistory((prev) =>
+      [entry, ...prev.map((e) => ({ ...e, isBest: false }))].slice(
+        0,
+        HISTORY_STORE_SIZE
+      )
+    );
   }, [lastLapTime, lapNum]);
 
   const currentLapTime = lapTiming?.lap_current_lap_time ?? 0;
-  const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
 
   const liveDelta = getGameDelta(lapTiming, reference);
 
   const visibleHistory = history.slice(0, HISTORY_SHOW_SIZE);
-
-  const bestIdx = visibleHistory.reduce<number>((best, entry, idx) => {
-    if (best === -1) return idx;
-
-    return entry.lapTime < visibleHistory[best].lapTime ? idx : best;
-  }, -1);
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={0}>
@@ -133,26 +135,22 @@ export const LapLogWidget = observer(() => {
         reference={reference}
       />
 
-      {visibleHistory.map((entry, idx) => {
-        const isThisBest = idx === bestIdx;
-
-        return (
-          <LapRow
-            key={entry.lapNum}
-            lapLabel={`L${entry.lapNum}`}
-            time={formatLapTime(entry.lapTime)}
-            deltaLabel={isThisBest ? '★ BEST' : formatDelta(entry.delta)}
-            deltaColor={
-              isThisBest
-                ? 'rgba(192, 132, 252, 0.85)' // TODO: use style class and variables
-                : entry.delta !== null
-                  ? DELTA_COLORS[getDeltaState(entry.delta)]
-                  : undefined
-            }
-            isBest={isThisBest}
-          />
-        );
-      })}
+      {visibleHistory.map((entry) => (
+        <LapRow
+          key={entry.lapNum}
+          lapLabel={`L${entry.lapNum}`}
+          time={formatLapTime(entry.lapTime)}
+          deltaLabel={entry.isBest ? '★ BEST' : formatDelta(entry.delta)}
+          deltaColor={
+            entry.isBest
+              ? 'rgba(192, 132, 252, 0.85)' // TODO: use style class and variables
+              : entry.delta !== null
+                ? DELTA_COLORS[getDeltaState(entry.delta)]
+                : undefined
+          }
+          isBest={entry.isBest}
+        />
+      ))}
     </WidgetPanel>
   );
 });
