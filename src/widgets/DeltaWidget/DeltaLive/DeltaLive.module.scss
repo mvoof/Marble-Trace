@@ -13,7 +13,7 @@
 
 .delta {
   font-family: $font-mono;
-  font-size: calc(var(--delta-fs, 64) * 1px * var(--wfs, 1));
+  font-size: ws(44);
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;

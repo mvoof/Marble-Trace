@@ -1,6 +1,7 @@
 import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import { getGameDelta } from '@utils/widget/delta-utils';
-import type { LapDeltaReference, LapTimingFrame } from '@/types/bindings';
+import type { LapTimingFrame } from '@/types/bindings';
+import type { LapDeltaReference } from '@/types/widget-settings';
 import type { RootStore } from '../root-store';
 
 export type LapDeltas = Record<LapDeltaReference, number | null>;
@@ -8,30 +9,34 @@ export type LapDeltas = Record<LapDeltaReference, number | null>;
 export interface CompletedLap {
   lapNum: number;
   lapTime: number;
-  isBest: boolean;
   deltas: LapDeltas;
 }
-
-const REFERENCES: LapDeltaReference[] = [
-  'personal_best',
-  'personal_optimal',
-  'session_best',
-  'session_optimal',
-  'session_last',
-];
 
 const toNullableDelta = (raw: number): number | null =>
   raw !== 0 ? raw : null;
 
-const captureDeltas = (frame: LapTimingFrame | null): LapDeltas =>
-  Object.fromEntries(
-    REFERENCES.map((ref) => [ref, toNullableDelta(getGameDelta(frame, ref))])
-  ) as LapDeltas;
+const captureDeltas = (frame: LapTimingFrame | null): LapDeltas => ({
+  personal_best: toNullableDelta(getGameDelta(frame, 'personal_best')),
+  personal_optimal: toNullableDelta(getGameDelta(frame, 'personal_optimal')),
+  session_best: toNullableDelta(getGameDelta(frame, 'session_best')),
+  session_optimal: toNullableDelta(getGameDelta(frame, 'session_optimal')),
+  session_last: toNullableDelta(getGameDelta(frame, 'session_last')),
+});
 
 export class LapStore {
   lastCompletedLap: CompletedLap | null = null;
 
   private prevSessionNum: number | null = null;
+
+  get isLastLapBest(): boolean {
+    if (!this.lastCompletedLap) return false;
+    const bestLapTime = this.root.telemetry.lapTiming?.lap_best_lap_time;
+    return (
+      bestLapTime != null &&
+      bestLapTime > 0 &&
+      this.lastCompletedLap.lapTime === bestLapTime
+    );
+  }
 
   constructor(private root: RootStore) {
     makeAutoObservable(this);
@@ -63,13 +68,11 @@ export class LapStore {
           if (!lastLapTime || lastLapTime <= 0) return;
 
           const deltas = captureDeltas(prev);
-          const bestLapTime = frame.lap_best_lap_time ?? null;
 
           runInAction(() => {
             this.lastCompletedLap = {
               lapNum: lapNum - 1,
               lapTime: lastLapTime,
-              isBest: lastLapTime === bestLapTime,
               deltas,
             };
           });

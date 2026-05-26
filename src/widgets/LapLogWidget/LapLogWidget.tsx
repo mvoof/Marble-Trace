@@ -66,7 +66,7 @@ export const LapLogWidget = observer(() => {
       lapTime: lap.lapTime,
       delta: lap.deltas[reference],
       reference,
-      isBest: lap.isBest,
+      isBest: lapStore.isLastLapBest,
     };
 
     setHistory((prev) => {
@@ -76,7 +76,7 @@ export const LapLogWidget = observer(() => {
 
       return [entry, ...prevEntries].slice(0, HISTORY_STORE_SIZE);
     });
-  }, [lap, reference]);
+  }, [lap, lapStore.isLastLapBest, reference]);
 
   const lapNum = lapTiming?.lap ?? null;
   const currentLapTime = lapTiming?.lap_current_lap_time ?? 0;

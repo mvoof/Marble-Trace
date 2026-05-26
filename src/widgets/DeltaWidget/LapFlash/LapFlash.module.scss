@@ -38,17 +38,6 @@
   }
 }
 
-.label {
-  font-family: $font-mono;
-  font-size: ws(9);
-  font-weight: 800;
-  letter-spacing: 0.15em;
-  color: $widget-text-secondary;
-  display: flex;
-  align-items: center;
-  gap: ws(8);
-}
-
 .best {
   color: $widget-text-best-lap;
 }

@@ -14,17 +14,10 @@ import { DeltaWidget } from './DeltaWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
 import { withStore } from '../../../.storybook/decorators';
 
-interface StoryArgs {
-  delta: number;
-}
-
-const applyArgs = (
-  stores: {
-    computed: BackendComputedStore;
-    widgetSettings: WidgetSettingsStore;
-  },
-  args: StoryArgs
-) => {
+const applyStores = (stores: {
+  computed: BackendComputedStore;
+  widgetSettings: WidgetSettingsStore;
+}) => {
   runInAction(() => {
     stores.widgetSettings.updateUserSettings('delta', {
       reference: 'personal_best',
@@ -39,13 +32,13 @@ const applyArgs = (
   });
 };
 
-const StoryHost = (args: StoryArgs) => {
+const StoryHost = () => {
   const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
   useLayoutEffect(() => {
-    applyArgs({ computed, widgetSettings }, args);
-  }, [args, computed, widgetSettings]);
+    applyStores({ computed, widgetSettings });
+  }, [computed, widgetSettings]);
 
   return <DeltaWidget />;
 };
@@ -58,23 +51,12 @@ const meta: Meta<typeof StoryHost> = {
     withStore(),
     widgetDecorator({ display: 'inline-block', minWidth: 200 }),
   ],
-  args: {
-    delta: -0.342,
-  },
 };
 
 export default meta;
 type Story = StoryObj<typeof StoryHost>;
 
-export const Ahead: Story = {};
-
-export const Behind: Story = {
-  args: { delta: 0.812 },
-};
-
-export const Neutral: Story = {
-  args: { delta: 0 },
-};
+export const Default: Story = {};
 
 export const FlashAhead: StoryObj = {
   name: 'Flash: Ahead',

@@ -27,7 +27,7 @@ export const DeltaWidget = observer(() => {
   const flashKey = dragMode ? 'preview' : String(lap?.lapNum ?? 0);
   const flashLapTime = lap?.lapTime ?? PREVIEW_LAP_TIME;
   const flashDelta = lap?.deltas[reference] ?? PREVIEW_DELTA;
-  const flashIsBest = lap?.isBest ?? false;
+  const flashIsBest = lapStore.isLastLapBest;
 
   return (
     <div className={styles.container}>
