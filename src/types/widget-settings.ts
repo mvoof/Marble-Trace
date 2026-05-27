@@ -37,6 +37,7 @@ export interface InputTraceSettings {
 export interface RadarSettings {
   proximityThreshold: number;
   hideDelay: number;
+  carLength: number;
 }
 
 export interface StandingsWidgetSettings {

@@ -20,7 +20,7 @@ export const RadarSettingsPanel = observer(
     return (
       <Card title="Radar Behavior">
         <Row gutter={24} className={styles.fieldGroup}>
-          <Col span={12}>
+          <Col span={8}>
             <span className={styles.fieldLabel}>Activation Range (m)</span>
             <InputNumber
               style={{ width: '100%' }}
@@ -36,7 +36,7 @@ export const RadarSettingsPanel = observer(
             />
           </Col>
 
-          <Col span={12}>
+          <Col span={8}>
             <span className={styles.fieldLabel}>Fade Out Delay (s)</span>
             <InputNumber
               style={{ width: '100%' }}
@@ -47,6 +47,22 @@ export const RadarSettingsPanel = observer(
               onChange={(v) => {
                 if (v !== null) {
                   update({ hideDelay: v });
+                }
+              }}
+            />
+          </Col>
+
+          <Col span={8}>
+            <span className={styles.fieldLabel}>Car Length (m)</span>
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.carLength}
+              min={1}
+              max={10}
+              step={0.1}
+              onChange={(v) => {
+                if (v !== null) {
+                  update({ carLength: v });
                 }
               }}
             />

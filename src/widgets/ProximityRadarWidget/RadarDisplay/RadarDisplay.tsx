@@ -7,7 +7,6 @@ import {
 } from '@utils/formatters/telemetry-format';
 import {
   CAR_WIDTH,
-  CAR_LENGTH,
   CAR_CORNER_RADIUS,
   SIDE_CAR_LATERAL_OFFSET,
   getCarColor,
@@ -24,15 +23,16 @@ const RADAR_SEARCH_RADIUS = 30;
 interface CarIconProps {
   color?: string;
   opacity?: number;
+  carLength: number;
 }
 
 const CarIcon = observer(
-  ({ color = 'currentColor', opacity = 1 }: CarIconProps) => (
+  ({ color = 'currentColor', opacity = 1, carLength }: CarIconProps) => (
     <rect
       x={-(CAR_WIDTH * PX_PER_METER) / 2}
-      y={-(CAR_LENGTH * PX_PER_METER) / 2}
+      y={-(carLength * PX_PER_METER) / 2}
       width={CAR_WIDTH * PX_PER_METER}
-      height={CAR_LENGTH * PX_PER_METER}
+      height={carLength * PX_PER_METER}
       rx={CAR_CORNER_RADIUS * PX_PER_METER}
       fill={color}
       opacity={opacity}
@@ -44,7 +44,7 @@ const CarIcon = observer(
 export const RadarDisplay = observer(() => {
   const units = useUnitsStore();
 
-  const { proximity, spotterLeft, spotterRight, visible } =
+  const { proximity, spotterLeft, spotterRight, visible, radarSettings } =
     useProximityRadarData('proximity-radar', RADAR_SEARCH_RADIUS);
   const { unitSystem: system } = units;
 
@@ -56,6 +56,8 @@ export const RadarDisplay = observer(() => {
   const { frontDist, rearDist, leftDist, rightDist } = radarDistances;
   const formatDistanceFn = (meters: number) => formatDistance(meters, system);
   const distanceUnitLabel = distanceUnit(system);
+
+  const { carLength } = radarSettings;
 
   const showFront = frontDist < RADAR_RENDER_RANGE;
   const showRear = rearDist < RADAR_RENDER_RANGE;
@@ -70,8 +72,8 @@ export const RadarDisplay = observer(() => {
     ? Math.max(0.01, 0.9 - rearDist / RADAR_RENDER_RANGE)
     : 0;
 
-  const frontBumperY = -(CAR_LENGTH / 2) * PX_PER_METER;
-  const rearBumperY = (CAR_LENGTH / 2) * PX_PER_METER;
+  const frontBumperY = -(carLength / 2) * PX_PER_METER;
+  const rearBumperY = (carLength / 2) * PX_PER_METER;
 
   return (
     <div className={styles.radarContainer}>
@@ -138,9 +140,9 @@ export const RadarDisplay = observer(() => {
 
         <rect
           x="-120"
-          y={-(CAR_LENGTH * PX_PER_METER) / 2}
+          y={-(carLength * PX_PER_METER) / 2}
           width="240"
-          height={CAR_LENGTH * PX_PER_METER}
+          height={carLength * PX_PER_METER}
           fill="url(#hatch-pattern)"
         />
 
@@ -160,10 +162,14 @@ export const RadarDisplay = observer(() => {
 
         {showFront && (
           <g
-            transform={`translate(0, ${-(frontDist * PX_PER_METER) - CAR_LENGTH * PX_PER_METER})`}
+            transform={`translate(0, ${-(frontDist * PX_PER_METER) - carLength * PX_PER_METER})`}
             className={styles.carTransition}
           >
-            <CarIcon opacity={frontOpacity} color={frontColor} />
+            <CarIcon
+              opacity={frontOpacity}
+              color={frontColor}
+              carLength={carLength}
+            />
             <text y="-18" fontSize={18} className={styles.radarMeasurementText}>
               {formatDistanceFn(frontDist)}
               {distanceUnitLabel}
@@ -173,10 +179,14 @@ export const RadarDisplay = observer(() => {
 
         {showRear && (
           <g
-            transform={`translate(0, ${rearDist * PX_PER_METER + CAR_LENGTH * PX_PER_METER})`}
+            transform={`translate(0, ${rearDist * PX_PER_METER + carLength * PX_PER_METER})`}
             className={styles.carTransition}
           >
-            <CarIcon opacity={rearOpacity} color={rearColor} />
+            <CarIcon
+              opacity={rearOpacity}
+              color={rearColor}
+              carLength={carLength}
+            />
             <text y="18" fontSize={18} className={styles.radarMeasurementText}>
               {formatDistanceFn(rearDist)}
               {distanceUnitLabel}
@@ -189,7 +199,11 @@ export const RadarDisplay = observer(() => {
             transform={`translate(${-(SIDE_CAR_LATERAL_OFFSET * PX_PER_METER)}, ${-(leftDist * PX_PER_METER)})`}
             className={styles.carTransition}
           >
-            <CarIcon opacity={0.8} color={getSideCarColor(leftDist)} />
+            <CarIcon
+              opacity={0.8}
+              color={getSideCarColor(leftDist)}
+              carLength={carLength}
+            />
             <text y="0" fontSize={18} className={styles.radarMeasurementText}>
               {formatDistanceFn(Math.abs(leftDist))}
               {distanceUnitLabel}
@@ -202,7 +216,11 @@ export const RadarDisplay = observer(() => {
             transform={`translate(${SIDE_CAR_LATERAL_OFFSET * PX_PER_METER}, ${-(rightDist * PX_PER_METER)})`}
             className={styles.carTransition}
           >
-            <CarIcon opacity={0.8} color={getSideCarColor(rightDist)} />
+            <CarIcon
+              opacity={0.8}
+              color={getSideCarColor(rightDist)}
+              carLength={carLength}
+            />
             <text y="0" fontSize={18} className={styles.radarMeasurementText}>
               {formatDistanceFn(Math.abs(rightDist))}
               {distanceUnitLabel}
@@ -210,7 +228,7 @@ export const RadarDisplay = observer(() => {
           </g>
         )}
 
-        <CarIcon color="currentColor" />
+        <CarIcon color="currentColor" carLength={carLength} />
       </svg>
     </div>
   );

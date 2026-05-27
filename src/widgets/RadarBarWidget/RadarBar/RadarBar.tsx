@@ -5,7 +5,7 @@ import {
   distanceUnit,
   formatDistance,
 } from '@utils/formatters/telemetry-format';
-import { CAR_LENGTH, getBarPillColor } from '@utils/constants/radar-constants';
+import { getBarPillColor } from '@utils/constants/radar-constants';
 
 import styles from './RadarBar.module.scss';
 import { useAppSettingsStore, useUnitsStore } from '@store/root-store-context';
@@ -23,7 +23,7 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
 
   const { dragMode } = useAppSettingsStore();
 
-  const { proximity, visible, spotterLeft, spotterRight } =
+  const { proximity, visible, spotterLeft, spotterRight, radarSettings } =
     useProximityRadarData('radar-bar', BAR_SEARCH_RADIUS);
 
   const spotterActive = side === 'left' ? spotterLeft : spotterRight;
@@ -42,8 +42,9 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
     return <div className={styles.bar} />;
   }
 
-  const topPercent = (100 * -rawDist) / CAR_LENGTH;
-  const bottomPercent = (100 * (CAR_LENGTH - rawDist)) / CAR_LENGTH;
+  const { carLength } = radarSettings;
+  const topPercent = (100 * -rawDist) / carLength;
+  const bottomPercent = (100 * (carLength - rawDist)) / carLength;
 
   let clampedTop = Math.max(0, Math.min(100, topPercent));
   const clampedBottom = Math.max(0, Math.min(100, bottomPercent));

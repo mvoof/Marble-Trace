@@ -207,6 +207,7 @@ export const WIDGETS: WidgetConfig[] = [
       hotkey: '',
       proximityThreshold: 5,
       hideDelay: 2,
+      carLength: 4.4,
     },
   },
   {
@@ -229,6 +230,7 @@ export const WIDGETS: WidgetConfig[] = [
       hotkey: '',
       proximityThreshold: 3,
       hideDelay: 2,
+      carLength: 4.4,
     },
   },
   {

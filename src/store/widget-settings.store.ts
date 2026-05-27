@@ -10,6 +10,7 @@ import type {
   StandingsWidgetSettings,
   WidgetSpecificSettings,
   WidgetUserSettings,
+  RadarSettings,
 } from '@/types/widget-settings';
 
 export class WidgetSettingsStore {
@@ -128,6 +129,18 @@ export class WidgetSettingsStore {
       });
 
       this.bumpMutation();
+
+      const radar = this.widgets.get('proximity-radar');
+      if (radar) {
+        const settings = radar.userSettings as unknown as RadarSettings;
+        if (settings.carLength !== undefined) {
+          void invoke('set_car_length', {
+            length: settings.carLength,
+          }).catch((error) =>
+            console.error('Failed to initialize car length on backend:', error)
+          );
+        }
+      }
     });
   }
 
@@ -229,6 +242,30 @@ export class WidgetSettingsStore {
         laps: (resolvedPartial as FuelWidgetSettings).pitWarningLaps,
       }).catch((error) =>
         console.error('Failed to update pit warning laps:', error)
+      );
+    }
+
+    if (
+      (id === 'proximity-radar' || id === 'radar-bar') &&
+      'carLength' in resolvedPartial &&
+      resolvedPartial.carLength !== undefined
+    ) {
+      const otherId =
+        id === 'proximity-radar' ? 'radar-bar' : 'proximity-radar';
+      const otherWidget = this.getWidget(otherId);
+
+      if (otherWidget) {
+        const otherSettings =
+          otherWidget.userSettings as unknown as RadarSettings;
+        if (otherSettings.carLength !== resolvedPartial.carLength) {
+          otherSettings.carLength = resolvedPartial.carLength;
+        }
+      }
+
+      void invoke('set_car_length', {
+        length: resolvedPartial.carLength,
+      }).catch((error) =>
+        console.error('Failed to update car length on backend:', error)
       );
     }
   }
