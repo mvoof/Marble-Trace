@@ -6,14 +6,14 @@
 
 .badge {
   position: absolute;
-  top: ws(6);
-  right: ws(2);
-  font-size: ws(16);
+  top: ws(0);
+  right: ws(0);
+  font-size: ws(12);
 }
 
 .delta {
   font-family: $font-mono;
-  font-size: ws(44);
+  font-size: ws(32);
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;

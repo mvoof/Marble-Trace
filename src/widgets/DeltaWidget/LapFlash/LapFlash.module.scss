@@ -1,11 +1,11 @@
 .root {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: ws(6);
-  padding: ws(5) ws(16);
+  padding: ws(5) ws(8);
   position: relative;
-  white-space: nowrap;
-  width: max-content;
+  width: 100%;
   animation: lapFlashFade linear forwards;
 }
 
@@ -52,7 +52,7 @@
 
 .lapTime {
   font-family: $font-mono;
-  font-size: ws(32);
+  font-size: ws(26);
   font-weight: 700;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
