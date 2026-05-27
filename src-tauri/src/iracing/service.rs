@@ -134,7 +134,9 @@ pub async fn set_pit_warning_laps(
 #[tauri::command]
 pub async fn set_active_events(state: State<'_, TelemetryState>, mask: u32) -> Result<(), String> {
     state.service.active_events.store(mask, Ordering::Relaxed);
+
     debug!("Active events mask updated to: {:#b}", mask);
+
     Ok(())
 }
 
@@ -145,6 +147,7 @@ pub async fn set_car_length(state: State<'_, TelemetryState>, length: f32) -> Re
     }
 
     let mut lock = lock_or_recover(&state.service.car_length_m);
+
     *lock = length;
     debug!("Car length updated in backend to: {}m", length);
 
@@ -157,13 +160,16 @@ pub async fn start_telemetry_stream(
     state: State<'_, TelemetryState>,
 ) -> Result<(), String> {
     info!("start_telemetry_stream command received");
+
     state.service.running.store(false, Ordering::SeqCst);
+
     sleep(Duration::from_millis(50)).await;
 
     state.service.running.store(true, Ordering::SeqCst);
 
     let service = state.service.clone();
     let pit = state.pit.clone();
+
     let computation = state.computation.clone();
     let app_clone = app.clone();
 
@@ -207,6 +213,7 @@ pub async fn start_telemetry_stream(
             run_telemetry_loop(&app_clone, stream.as_mut(), &service, &pit, &computation).await;
 
             session_task.abort();
+
             info!("Stream ended, will retry connection...");
             reset_telemetry_state(&app_clone, &service, &pit, &computation);
 
@@ -240,8 +247,10 @@ fn spawn_session_polling(
     service: Arc<TelemetryServiceState>,
 ) -> tokio::task::JoinHandle<()> {
     debug!("Spawning session polling task...");
+
     tokio::spawn(async move {
         debug!("Session polling task spawned and running");
+
         let mut last_version = -1;
         // Since Pitwall::connect() succeeded, we know shared memory is accessible.
         // We create a direct WindowsConnection for robust session info polling
@@ -257,6 +266,7 @@ fn spawn_session_polling(
         loop {
             if !service.running.load(Ordering::SeqCst) {
                 debug!("Session polling task: Stopping (service inactive)");
+
                 break;
             }
 
@@ -278,12 +288,14 @@ fn spawn_session_polling(
                             "Session polling task: Fetched raw YAML ({} bytes)",
                             raw_yaml.len()
                         );
+
                         match pitwall::preprocess_iracing_yaml(&raw_yaml) {
                             Ok(preprocessed) => {
                                 debug!(
                                     "Session polling task: YAML preprocessed ({} bytes)",
                                     preprocessed.len()
                                 );
+
                                 match serde_yaml_ng::from_str::<SessionInfo>(&preprocessed) {
                                     Ok(session) => {
                                         info!(
@@ -380,6 +392,7 @@ async fn run_telemetry_loop<S>(
     loop {
         if !service.running.load(Ordering::SeqCst) {
             debug!("Stream stopped by user");
+
             return;
         }
 
@@ -457,7 +470,9 @@ fn reset_telemetry_state(
 #[tauri::command]
 pub async fn stop_telemetry_stream(state: State<'_, TelemetryState>) -> Result<(), String> {
     state.service.running.store(false, Ordering::SeqCst);
+
     debug!("Telemetry stream stopped");
+
     Ok(())
 }
 
@@ -484,12 +499,15 @@ fn yaml_to_json(val: serde_yaml_ng::Value) -> JsonValue {
                 JsonValue::Null
             }
         }
+
         serde_yaml_ng::Value::String(s) => JsonValue::String(s),
         serde_yaml_ng::Value::Sequence(seq) => {
             JsonValue::Array(seq.into_iter().map(yaml_to_json).collect())
         }
+
         serde_yaml_ng::Value::Mapping(map) => {
             let mut obj = serde_json::Map::new();
+
             for (k, v) in map {
                 if let Some(key) = k.as_str() {
                     obj.insert(key.to_string(), yaml_to_json(v));
@@ -532,6 +550,7 @@ fn update_start_positions(
     start_positions: &Mutex<HashMap<i32, (i32, i32)>>,
 ) {
     let current_num = session.session_info.current_session_num as usize;
+
     let results = session
         .session_info
         .sessions
@@ -542,7 +561,9 @@ fn update_start_positions(
         if results.is_empty() {
             return;
         }
+
         let new_positions = standings::parse_start_positions(results);
+
         if !new_positions.is_empty() {
             if let Ok(mut lock) = start_positions.lock() {
                 *lock = new_positions;
@@ -641,9 +662,11 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
         if let Some(session) = session_info {
             let track_length = lock_or_recover(&ctx.service.track_length_m).unwrap_or(0.0);
             let car_length = *lock_or_recover(&ctx.service.car_length_m);
+
             bundle.proximity = Some(proximity::compute(frame, session, track_length, car_length));
 
             let start_pos_snapshot = lock_or_recover(&ctx.service.start_positions).clone();
+
             bundle.standings = Some(standings::compute(
                 frame,
                 session,
@@ -665,8 +688,10 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
 
             {
                 let mut state = lock_or_recover(&ctx.computation.fuel);
+
                 let current_lap = frame.lap.unwrap_or(-1);
                 let session_num = frame.session_num.unwrap_or(-1);
+
                 state.update(current_lap, frame.fuel_level, session_num);
             }
 

@@ -75,7 +75,9 @@ fn sectors_checksum(session: &SessionInfo) -> u64 {
         .unwrap_or(&[]);
 
     const MULTIPLIER: u64 = 6_364_136_223_846_793_005;
+
     let mut h: u64 = sectors.len() as u64;
+
     for s in sectors {
         if let (Some(num), Some(pct)) = (s.sector_num, s.sector_start_pct) {
             h = h.wrapping_mul(MULTIPLIER).wrapping_add(num as u64);
@@ -143,6 +145,7 @@ pub fn compute(
 
     if is_reset {
         handle_reset(&mut locked, sector_count);
+
         return build_frame(&locked, -1, 0.0);
     }
 
@@ -163,6 +166,7 @@ pub fn compute(
             lap_dist_pct,
             current_lap_time,
         );
+
         return build_frame(&locked, current_sector_idx, current_sector_fraction);
     }
 
@@ -197,12 +201,14 @@ pub fn compute(
 
 fn update_sector_cache(locked: &mut LapDeltaState, session: &SessionInfo) {
     let checksum = sectors_checksum(session);
+
     if locked.sectors_checksum != checksum {
         locked.sectors_checksum = checksum;
         locked.cached_sector_pcts = get_sector_pcts(session);
     }
 
     let sector_count = locked.cached_sector_pcts.len();
+
     if locked.sector_count != sector_count {
         locked.sector_times = vec![None; sector_count];
         locked.personal_best_lap_sectors = vec![None; sector_count];
@@ -226,12 +232,14 @@ fn handle_reset(locked: &mut LapDeltaState, sector_count: usize) {
 
 fn find_current_sector(locked: &LapDeltaState, lap_dist_pct: f64) -> i32 {
     let mut current_sector_idx = 0i32;
+
     for (i, &pct) in locked.cached_sector_pcts.iter().enumerate().rev() {
         if pct <= lap_dist_pct {
             current_sector_idx = i as i32;
             break;
         }
     }
+
     current_sector_idx
 }
 
@@ -242,12 +250,15 @@ fn compute_sector_fraction(
 ) -> f32 {
     let idx = current_sector_idx as usize;
     let start = locked.cached_sector_pcts.get(idx).copied().unwrap_or(0.0);
+
     let end = locked
         .cached_sector_pcts
         .get(idx + 1)
         .copied()
         .unwrap_or(1.0);
+
     let len = end - start;
+
     if len > 0.0 {
         ((lap_dist_pct - start) / len).clamp(0.0, 1.0) as f32
     } else {
@@ -280,6 +291,7 @@ fn handle_lap_change(
 
     // Save personal best if this completed lap is faster and all sectors valid.
     let lap_last_lap_time = last_lap_time_f64 as f32;
+
     if lap_last_lap_time > 0.0 && lap_last_lap_time < MAX_REASONABLE_LAP_TIME {
         let all_valid = locked.sector_times.iter().all(|t| t.is_some());
         if all_valid
@@ -319,6 +331,7 @@ fn init_state_on_first_lap(
     locked.sector_entry_time = current_lap_time;
     locked.last_frame_pct = lap_dist_pct;
     locked.last_frame_time = current_lap_time;
+
     if !on_pit_road && is_on_track {
         locked.is_sector_start_valid = true;
     }
@@ -338,6 +351,7 @@ fn handle_sector_change(
         .unwrap_or(0.0);
 
     let mut interpolated_time = current_lap_time;
+
     if locked.last_frame_pct >= 0.0
         && lap_dist_pct > locked.last_frame_pct
         && sector_start_pct > locked.last_frame_pct
@@ -347,6 +361,7 @@ fn handle_sector_change(
         let time_range = current_lap_time - locked.last_frame_time;
         let dist_to_sector = sector_start_pct - locked.last_frame_pct;
         let fraction = dist_to_sector / dist_range;
+
         interpolated_time = locked.last_frame_time + time_range * fraction;
     }
 
@@ -357,6 +372,7 @@ fn handle_sector_change(
         let elapsed = (interpolated_time - locked.sector_entry_time) as f32;
         if elapsed > 0.0 && elapsed < MAX_REASONABLE_SECTOR_TIME {
             let idx = locked.last_sector_idx as usize;
+
             if idx < sector_count {
                 locked.sector_times[idx] = Some(elapsed);
             }
@@ -364,6 +380,7 @@ fn handle_sector_change(
     }
 
     let was_emerging = locked.last_sector_idx == -1;
+
     locked.last_sector_idx = current_sector_idx;
     locked.sector_entry_time = interpolated_time;
 
@@ -378,11 +395,13 @@ fn handle_sector_change(
 
 fn update_live_sector(locked: &mut LapDeltaState, current_sector_idx: i32, current_lap_time: f64) {
     let sector_count = locked.sector_count;
+
     if locked.is_sector_start_valid
         && current_sector_idx >= 0
         && (current_sector_idx as usize) < sector_count
     {
         let live_elapsed = (current_lap_time - locked.sector_entry_time) as f32;
+
         if live_elapsed >= 0.0 {
             locked.sector_times[current_sector_idx as usize] = Some(live_elapsed);
         }
@@ -484,6 +503,7 @@ mod tests {
 
         let locked = state.lock().unwrap();
         let elapsed = locked.sector_times[0].unwrap();
+
         assert!((elapsed - 50.0).abs() < 0.001);
         assert!((locked.sector_entry_time - 50.0).abs() < 0.001);
         assert_eq!(locked.last_sector_idx, 1);
@@ -508,12 +528,14 @@ mod tests {
         });
 
         let mut frame = create_mock_frame(0.1, 5.0);
+
         frame.lap = Some(2);
         frame.lap_last_lap_time = Some(100.0);
 
         let _result = compute(&frame, &session, &state);
 
         let locked = state.lock().unwrap();
+
         assert_eq!(locked.last_lap, 2);
         assert_eq!(locked.last_sector_idx, 0);
         assert_eq!(locked.sector_times[1], Some(20.0));

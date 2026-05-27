@@ -43,6 +43,7 @@ pub fn parse_weather_forecast(
     ) -> Option<&'a serde_yaml_ng::Value> {
         if let Some(map) = value.as_mapping() {
             let target_lower = target.to_lowercase();
+
             for (k, v) in map {
                 if let Some(k_str) = k.as_str() {
                     if k_str.to_lowercase() == target_lower {

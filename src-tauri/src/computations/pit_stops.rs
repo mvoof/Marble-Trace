@@ -63,14 +63,17 @@ pub fn compute(
         .get(player_idx as usize)
         .copied()
         .unwrap_or(false);
+
     let was = state.was_on_pit_road.load(Ordering::Relaxed);
 
     if on_pit && !was {
         state.count.fetch_add(1, Ordering::Relaxed);
     }
+
     state.was_on_pit_road.store(on_pit, Ordering::Relaxed);
 
     let stops = state.count.load(Ordering::Relaxed);
+
     Some(PitStopsFrame {
         player_stops: stops,
     })
