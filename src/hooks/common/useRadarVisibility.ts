@@ -28,7 +28,7 @@ export const useRadarVisibility = (
 
   const [visible, dispatch] = useReducer(visibilityReducer, false);
 
-  const { visibilityMode, proximityThreshold, hideDelay } = settings;
+  const { proximityThreshold, hideDelay } = settings;
   const { dragMode } = appSettings;
 
   const hasNearby = useMemo(
@@ -39,12 +39,6 @@ export const useRadarVisibility = (
   );
 
   useEffect(() => {
-    if (visibilityMode === 'always') {
-      dispatch('SHOW');
-
-      return;
-    }
-
     if (hasNearby) {
       dispatch('SHOW');
     } else {
@@ -52,9 +46,11 @@ export const useRadarVisibility = (
         dispatch('HIDE');
       }, hideDelay * 1000);
 
-      return () => clearTimeout(timeoutId);
+      return () => {
+        clearTimeout(timeoutId);
+      };
     }
-  }, [hasNearby, visibilityMode, hideDelay]);
+  }, [hasNearby, hideDelay]);
 
-  return visibilityMode === 'always' || dragMode ? true : visible;
+  return dragMode ? true : visible;
 };
