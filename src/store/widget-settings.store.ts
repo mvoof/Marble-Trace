@@ -67,7 +67,9 @@ export class WidgetSettingsStore {
 
   cycleStandingsPrev(totalClasses: number) {
     if (totalClasses <= 1) return;
+
     const clamped = Math.min(this.standingsActiveClassIndex, totalClasses - 1);
+
     this.standingsActiveClassIndex =
       clamped === 0 ? totalClasses - 1 : clamped - 1;
   }
@@ -75,12 +77,14 @@ export class WidgetSettingsStore {
   cycleStandingsNext(totalClasses: number) {
     if (totalClasses <= 1) return;
     const clamped = Math.min(this.standingsActiveClassIndex, totalClasses - 1);
+
     this.standingsActiveClassIndex =
       clamped === totalClasses - 1 ? 0 : clamped + 1;
   }
 
   toggleStandingsClassCycling() {
     const settings = this.getSettings<StandingsWidgetSettings>('standings');
+
     this.updateUserSettings('standings', {
       ...settings,
       enableClassCycling: !settings.enableClassCycling,
@@ -130,16 +134,18 @@ export class WidgetSettingsStore {
 
       this.bumpMutation();
 
-      const radar = this.widgets.get('proximity-radar');
+      const radar =
+        this.widgets.get('proximity-radar') ?? this.widgets.get('radar-bar');
+
       if (radar) {
         const settings = radar.userSettings as unknown as RadarSettings;
-        if (settings.carLength !== undefined) {
-          void invoke('set_car_length', {
-            length: settings.carLength,
-          }).catch((error) =>
-            console.error('Failed to initialize car length on backend:', error)
-          );
-        }
+        const carLength = settings.carLength ?? 4.4;
+
+        void invoke('set_car_length', {
+          length: carLength,
+        }).catch((error) => {
+          console.error('Failed to initialize car length on backend:', error);
+        });
       }
     });
   }
@@ -193,6 +199,7 @@ export class WidgetSettingsStore {
     ) {
       widget.userSettings.x = x;
       widget.userSettings.y = y;
+
       this.bumpMutation();
     }
   }
@@ -207,6 +214,7 @@ export class WidgetSettingsStore {
     ) {
       widget.userSettings.currentWidth = width;
       widget.userSettings.currentHeight = height;
+
       this.bumpMutation();
     }
   }
@@ -252,11 +260,13 @@ export class WidgetSettingsStore {
     ) {
       const otherId =
         id === 'proximity-radar' ? 'radar-bar' : 'proximity-radar';
+
       const otherWidget = this.getWidget(otherId);
 
       if (otherWidget) {
         const otherSettings =
           otherWidget.userSettings as unknown as RadarSettings;
+
         if (otherSettings.carLength !== resolvedPartial.carLength) {
           otherSettings.carLength = resolvedPartial.carLength;
         }
