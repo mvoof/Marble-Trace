@@ -49,8 +49,8 @@ const buildColDefs = (settings: StandingsWidgetSettings): ColDef[] => [
   { width: ws(20), show: true }, // pos      "00"
   { width: ws(40), show: true }, // carNum   "#000"
   { width: `minmax(${ws(100)}, 1fr)`, show: true }, // name     — never collapses
-  { width: ws(30), show: settings.showBrand }, // brand
-  { width: ws(16), show: settings.showTire }, // tire
+  { width: ws(32), show: settings.showBrand }, // brand
+  { width: ws(18), show: settings.showTire }, // tire
   {
     width: ws(48),
     show: !settings.enableClassCycling && settings.showClassBadge,
