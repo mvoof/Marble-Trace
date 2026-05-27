@@ -52,7 +52,7 @@ const buildColDefs = (settings: StandingsWidgetSettings): ColDef[] => [
   { width: ws(30), show: settings.showBrand }, // brand
   { width: ws(16), show: settings.showTire }, // tire
   {
-    width: ws(34),
+    width: ws(48),
     show: !settings.enableClassCycling && settings.showClassBadge,
   }, // class
   { width: ws(70), show: settings.showIRatingBadge }, // lic/iRating
