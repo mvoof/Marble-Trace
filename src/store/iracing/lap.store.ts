@@ -78,7 +78,9 @@ export class LapStore {
 
           if (
             rawLapTime === 0 ||
-            (pendingPrevLapTime > 0 && rawLapTime === pendingPrevLapTime)
+            (pendingPrevLapTime !== null &&
+              pendingPrevLapTime > 0 &&
+              rawLapTime === pendingPrevLapTime)
           )
             return;
 
