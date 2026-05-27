@@ -93,16 +93,30 @@ fn get_compact_badge_name(screen_name_short: &str) -> String {
     badge
 }
 
-fn parse_class_color(raw: &Option<String>) -> String {
-    match raw {
+fn parse_class_color(raw_color: &Option<String>) -> String {
+    match raw_color {
         None => NO_CLASS_COLOR.to_string(),
-        Some(s) if s.is_empty() => NO_CLASS_COLOR.to_string(),
-        Some(s) => {
-            let stripped = s
+        Some(color) if color.is_empty() => NO_CLASS_COLOR.to_string(),
+        Some(color) => {
+            let stripped = color
                 .strip_prefix("0x")
-                .or_else(|| s.strip_prefix("0X"))
-                .unwrap_or(s);
-            format!("#{stripped}")
+                .or_else(|| color.strip_prefix("0X"))
+                .unwrap_or(color)
+                .trim()
+                .to_lowercase();
+
+            // Map iRacing's mismatched telemetry class colors to their official in-game colors
+            let hex = match stripped.as_str() {
+                "53ff77" => "ff5888", // Mismatched Green -> Pink
+                "ae6bff" => "00c0ff", // Mismatched Purple -> Cyan
+                "d35400" => "ae6bff", // Mismatched Orange -> Purple
+                "ff5888" => "ef4444", // Mismatched Pink -> Soft Red
+                "ffd259" => "ffd259", // Yellow
+                "33ccff" => "33ccff", // Blue
+                other => other,
+            };
+
+            format!("#{hex}")
         }
     }
 }
