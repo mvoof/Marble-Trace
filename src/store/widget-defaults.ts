@@ -294,7 +294,6 @@ export const WIDGETS: WidgetConfig[] = [
       showClassBadge: true,
       showPitIndicator: true,
       abbreviateNames: true,
-      showTrendIcon: true,
     },
   },
   {
