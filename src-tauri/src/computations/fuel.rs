@@ -42,21 +42,26 @@ impl FuelState {
             if current_lap < self.last_lap && self.last_lap >= 0 {
                 self.lap_fuel_history.clear();
             }
+
             self.last_lap = current_lap;
             self.last_lap_start_fuel = Some(fuel_level);
+
             return;
         }
 
         if current_lap != self.last_lap {
             if let Some(start_fuel) = self.last_lap_start_fuel {
                 let used = start_fuel - fuel_level;
+
                 if used > MIN_RECORDED_FUEL_USE && used < MAX_REALISTIC_LAP_FUEL {
                     self.lap_fuel_history.push(used);
+
                     if self.lap_fuel_history.len() > MAX_LAP_FUEL_HISTORY {
                         self.lap_fuel_history.remove(0);
                     }
                 }
             }
+
             self.last_lap = current_lap;
             self.last_lap_start_fuel = Some(fuel_level);
         }
@@ -66,7 +71,9 @@ impl FuelState {
         if self.lap_fuel_history.is_empty() {
             return None;
         }
+
         let sum: f32 = self.lap_fuel_history.iter().sum();
+
         Some(sum / self.lap_fuel_history.len() as f32)
     }
 }
@@ -138,8 +145,10 @@ pub fn compute(
     });
 
     let current_session_num = session_num.unwrap_or(session.session_info.current_session_num);
+
     let sessions = &session.session_info.sessions;
     let current_session = sessions.get(current_session_num as usize);
+
     let session_laps = current_session
         .map(|s| s.session_laps.as_str())
         .unwrap_or("unlimited");
@@ -149,13 +158,18 @@ pub fn compute(
     let laps_to_finish: Option<f32> = if !is_timed_race {
         let total = session_laps.parse::<f32>().ok()?;
         let current_lap = frame.lap.unwrap_or(0) as f32;
+
         let lap_dist_pct = frame.lap_dist_pct.unwrap_or(0.0);
+
         Some(total - current_lap - lap_dist_pct)
     } else {
         let best_lap = frame.lap_best_lap_time.filter(|&t| t > 0.0);
         let last_lap = frame.lap_last_lap_time.filter(|&t| t > 0.0);
+
         let lap_time_sec = best_lap.or(last_lap)?;
+
         let remain = frame.session_time_remain.filter(|&t| t > 0.0)?;
+
         Some(remain as f32 / lap_time_sec)
     };
 

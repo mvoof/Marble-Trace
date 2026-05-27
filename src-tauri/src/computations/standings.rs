@@ -68,6 +68,7 @@ fn get_compact_badge_name(screen_name_short: &str) -> String {
     for &brand in BRANDS_TO_STRIP {
         if badge.starts_with(brand) {
             badge = badge[brand.len()..].to_string();
+
             break;
         }
     }
@@ -83,6 +84,7 @@ fn get_compact_badge_name(screen_name_short: &str) -> String {
             .chars()
             .filter(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
             .collect();
+
         if abbr.len() >= MIN_ABBR_LENGTH && abbr.len() <= MAX_ABBR_LENGTH {
             return abbr;
         }
@@ -91,16 +93,30 @@ fn get_compact_badge_name(screen_name_short: &str) -> String {
     badge
 }
 
-fn parse_class_color(raw: &Option<String>) -> String {
-    match raw {
+fn parse_class_color(raw_color: &Option<String>) -> String {
+    match raw_color {
         None => NO_CLASS_COLOR.to_string(),
-        Some(s) if s.is_empty() => NO_CLASS_COLOR.to_string(),
-        Some(s) => {
-            let stripped = s
+        Some(color) if color.is_empty() => NO_CLASS_COLOR.to_string(),
+        Some(color) => {
+            let trimmed = color.trim();
+            let stripped = trimmed
                 .strip_prefix("0x")
-                .or_else(|| s.strip_prefix("0X"))
-                .unwrap_or(s);
-            format!("#{stripped}")
+                .or_else(|| trimmed.strip_prefix("0X"))
+                .unwrap_or(trimmed)
+                .to_lowercase();
+
+            // Map iRacing's mismatched telemetry class colors to their official in-game colors
+            let hex = match stripped.as_str() {
+                "53ff77" => "ff5888", // Mismatched Green -> Pink
+                "ae6bff" => "00c0ff", // Mismatched Purple -> Cyan
+                "d35400" => "ae6bff", // Mismatched Orange -> Purple
+                "ff5888" => "ef4444", // Mismatched Pink -> Soft Red
+                "ffd259" => "ffd259", // Yellow
+                "33ccff" => "33ccff", // Blue
+                other => other,
+            };
+
+            format!("#{hex}")
         }
     }
 }
@@ -189,6 +205,7 @@ pub fn compute(
     let mut seen_car_indices: std::collections::HashSet<i32> = std::collections::HashSet::new();
     let deduped_drivers: Vec<_> = {
         let mut result = Vec::new();
+
         // Pass 1: collect player entry (takes priority in dedup)
         for d in drivers.iter() {
             if d.car_idx == player_car_idx {
@@ -196,14 +213,18 @@ pub fn compute(
                 result.push(d);
             }
         }
+
         // Pass 2: collect first occurrence of each other car_idx
         for d in drivers.iter() {
             if seen_car_indices.insert(d.car_idx) {
                 result.push(d);
             }
         }
+
         result
     };
+
+    let mut locked_state = lock_or_recover(state);
 
     let mut entries: Vec<DriverEntry> = deduped_drivers
         .iter()
@@ -211,21 +232,27 @@ pub fn compute(
             if d.car_is_pace_car == Some(1) || d.is_spectator == Some(1) {
                 return false;
             }
+
             let idx = d.car_idx as usize;
+
             if idx >= frame.car_idx_position.len() {
                 return false;
             }
+
             if d.car_idx == player_car_idx {
                 return true;
             }
+
             let pos = frame.car_idx_position.get(idx).copied().unwrap_or(0);
             let lap_pct = frame.car_idx_lap_dist_pct.get(idx).copied().unwrap_or(-1.0);
+
             pos > 0 || lap_pct >= 0.0
         })
-        .map(|d| {
-            let idx = d.car_idx as usize;
+        .map(|driver| {
+            let idx = driver.car_idx as usize;
 
             let tire_compound_idx = frame.car_idx_tire_compound.get(idx).copied().unwrap_or(-1);
+
             let tire_compound = if tire_compound_idx >= 0 {
                 driver_tires
                     .iter()
@@ -236,39 +263,42 @@ pub fn compute(
                 String::new()
             };
 
-            let (start_overall, start_class) =
-                start_positions.get(&d.car_idx).copied().unwrap_or((0, 0));
+            let (start_overall, start_class) = start_positions
+                .get(&driver.car_idx)
+                .copied()
+                .unwrap_or((0, 0));
 
-            let car_screen_name_short = d.car_screen_name_short.clone().unwrap_or_default();
+            let car_screen_name_short = driver.car_screen_name_short.clone().unwrap_or_default();
+
             let car_class_short_name = if car_screen_name_short.is_empty() {
                 NO_CLASS_LABEL.to_string()
+            } else if let Some(cached) = locked_state.cached_car_classes.get(&car_screen_name_short)
+            {
+                cached.clone()
             } else {
-                let mut locked_state = lock_or_recover(state);
-                if let Some(cached) = locked_state.cached_car_classes.get(&car_screen_name_short) {
-                    let c: String = cached.clone();
-                    c
+                let badge = get_compact_badge_name(&car_screen_name_short);
+
+                let result = if badge.is_empty() {
+                    NO_CLASS_LABEL.to_string()
                 } else {
-                    let badge = get_compact_badge_name(&car_screen_name_short);
-                    let result = if badge.is_empty() {
-                        NO_CLASS_LABEL.to_string()
-                    } else {
-                        badge
-                    };
-                    locked_state
-                        .cached_car_classes
-                        .insert(car_screen_name_short.clone(), result.clone());
-                    result
-                }
+                    badge
+                };
+
+                locked_state
+                    .cached_car_classes
+                    .insert(car_screen_name_short.clone(), result.clone());
+
+                result
             };
 
             DriverEntry {
-                car_idx: d.car_idx,
-                user_name: d.user_name.clone(),
-                car_number: d.car_number.clone().unwrap_or_default(),
-                car_class_id: d.car_class_id.unwrap_or(-1),
+                car_idx: driver.car_idx,
+                user_name: driver.user_name.clone(),
+                car_number: driver.car_number.clone().unwrap_or_default(),
+                car_class_id: driver.car_class_id.unwrap_or(-1),
                 car_class_short_name,
-                car_class_color: parse_class_color(&d.car_class_color),
-                car_screen_name: d.car_screen_name.clone().unwrap_or_default(),
+                car_class_color: parse_class_color(&driver.car_class_color),
+                car_screen_name: driver.car_screen_name.clone().unwrap_or_default(),
                 car_screen_name_short,
                 tire_compound,
                 position: frame.car_idx_position.get(idx).copied().unwrap_or(0),
@@ -292,15 +322,21 @@ pub fn compute(
                 track_surface: TrackSurface::from(
                     frame.car_idx_track_surface.get(idx).copied().unwrap_or(-1),
                 ),
-                i_rating: d.i_rating.unwrap_or(0),
-                lic_string: d.lic_string.clone().unwrap_or_else(|| "R 0.00".to_string()),
-                lic_color: d.lic_color.clone().unwrap_or_else(|| "000000".to_string()),
-                incidents: d.cur_driver_incident_count.unwrap_or(0),
-                is_player: d.car_idx == player_car_idx,
+                i_rating: driver.i_rating.unwrap_or(0),
+                lic_string: driver
+                    .lic_string
+                    .clone()
+                    .unwrap_or_else(|| "R 0.00".to_string()),
+                lic_color: driver
+                    .lic_color
+                    .clone()
+                    .unwrap_or_else(|| "000000".to_string()),
+                incidents: driver.cur_driver_incident_count.unwrap_or(0),
+                is_player: driver.car_idx == player_car_idx,
                 on_pit_road: frame.car_idx_on_pit_road.get(idx).copied().unwrap_or(false),
                 estimated_ir_delta: None,
                 relative_lap_dist: 0.0,
-                class_est_lap_time: d.car_class_est_lap_time.unwrap_or(0.0) as f32,
+                class_est_lap_time: driver.car_class_est_lap_time.unwrap_or(0.0) as f32,
             }
         })
         .collect();
@@ -323,17 +359,21 @@ pub fn compute(
 
     for entry in &mut entries {
         let mut diff = entry.lap_dist_pct - player_lap_dist;
+
         if diff < -0.5 {
             diff += 1.0;
         }
+
         if diff > 0.5 {
             diff -= 1.0;
         }
+
         entry.relative_lap_dist = diff;
     }
 
     if compute_ir_delta {
         let deltas = compute_ir_deltas(&entries);
+
         for entry in &mut entries {
             entry.estimated_ir_delta = deltas.get(&entry.car_idx).copied();
         }
@@ -348,7 +388,9 @@ pub fn compute(
 // Turbo87 iRating delta algorithm — port of iracing-irating.ts
 fn chance(a: f64, b: f64, factor: f64) -> f64 {
     let exp_a = (-a / factor).exp();
+
     let exp_b = (-b / factor).exp();
+
     ((1.0 - exp_a) * exp_b) / ((1.0 - exp_b) * exp_a + (1.0 - exp_a) * exp_b)
 }
 
@@ -359,6 +401,7 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
 
     // Group by class
     let mut buckets: HashMap<i32, Vec<(i32, i32, i32)>> = HashMap::new(); // classId -> [(carIdx, classPos, iRating)]
+
     for e in entries {
         if e.i_rating <= 0 || e.class_position <= 0 {
             continue;
@@ -375,10 +418,12 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
         }
 
         let n = bucket.len();
+
         let ir_ratings: Vec<f64> = bucket.iter().map(|&(_, _, ir)| ir as f64).collect();
 
         // Build chances matrix
         let mut chances: Vec<Vec<f64>> = vec![vec![0.0; n]; n];
+
         for i in 0..n {
             for j in 0..n {
                 chances[i][j] = chance(ir_ratings[i], ir_ratings[j], br1);
@@ -437,14 +482,17 @@ pub fn parse_start_positions(results: &[serde_yaml_ng::Value]) -> HashMap<i32, (
     }
 
     let mut map = HashMap::new();
+
     for val in results {
         if let Ok(rp) = serde_yaml_ng::from_value::<ResultPos>(val.clone()) {
             if let (Some(idx), Some(pos)) = (rp.car_idx, rp.position) {
                 // Position is 1-indexed in iRacing YAML; ClassPosition is 0-indexed.
                 let class_pos = rp.class_position.unwrap_or(pos - 1);
+
                 map.insert(idx, (pos, class_pos + 1));
             }
         }
     }
+
     map
 }

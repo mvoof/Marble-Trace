@@ -112,17 +112,10 @@
 
 // F2 Time (gap) block
 .f2Block {
-  display: grid;
-  grid-template-columns: ws(15) 1fr;
+  display: flex;
+  justify-content: flex-end;
   align-items: center;
   padding-right: ws(2);
-}
-
-.trendSlot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: ws(15);
 }
 
 .f2Time {
@@ -142,15 +135,4 @@
 
 .f2Player {
   color: $widget-status-caution;
-}
-
-// Trend arrows
-.trendUp {
-  color: $widget-status-positive;
-  flex-shrink: 0;
-}
-
-.trendDown {
-  color: $widget-status-danger;
-  flex-shrink: 0;
 }

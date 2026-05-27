@@ -58,15 +58,21 @@ pub struct ProximityFrame {
 }
 
 pub fn parse_track_length(s: &str) -> f32 {
-    let s = s.trim();
+    let s = s.trim().to_lowercase();
+    let s = s.as_str();
+
     if let Some(km_idx) = s.find("km") {
         let num_str = s[..km_idx].trim();
+
         return num_str.parse::<f32>().unwrap_or(0.0) * 1000.0;
     }
+
     if let Some(mi_idx) = s.find("mi") {
         let num_str = s[..mi_idx].trim();
+
         return num_str.parse::<f32>().unwrap_or(0.0) * 1609.34;
     }
+
     0.0
 }
 
@@ -75,10 +81,12 @@ fn spotter_flags(car_left_right: i32) -> (bool, bool) {
         car_left_right,
         CLR_CAR_LEFT | CLR_CAR_LEFT_RIGHT | CLR_CARS_2_LEFT
     );
+
     let right = matches!(
         car_left_right,
         CLR_CAR_RIGHT | CLR_CAR_LEFT_RIGHT | CLR_CARS_2_RIGHT
     );
+
     (left, right)
 }
 
@@ -141,14 +149,17 @@ pub fn compute(
         if i == player_idx {
             continue;
         }
+
         if pct < 0.0 {
             continue;
         }
+
         if on_pit_road.get(i).copied().unwrap_or(false) {
             continue;
         }
 
         let mut diff = pct - player_pct;
+
         if diff > 0.5 {
             diff -= 1.0;
         } else if diff < -0.5 {
@@ -156,6 +167,7 @@ pub fn compute(
         }
 
         let lon_dist = diff * track_length_m;
+
         if lon_dist.abs() <= MAX_SEARCH_DIST_M {
             cars.push((i as i32, lon_dist));
         }
@@ -172,6 +184,7 @@ pub fn compute(
         .map(|&(idx, lon_dist)| {
             let clearance = lon_dist.abs();
             let is_alongside = clearance < ALONGSIDE_THRESHOLD_M;
+
             let lateral_side = if is_alongside {
                 if has_left && has_right {
                     if lon_dist >= 0.0 {
@@ -260,9 +273,11 @@ fn compute_radar_distances(
 
         if car.longitudinal_dist > BUMPER_THRESHOLD_M {
             let gap = (car.longitudinal_dist - car_length_m).max(0.0);
+
             front_dist = front_dist.min(gap);
         } else if car.longitudinal_dist < -BUMPER_THRESHOLD_M {
             let gap = (car.longitudinal_dist.abs() - car_length_m).max(0.0);
+
             rear_dist = rear_dist.min(gap);
         }
     }

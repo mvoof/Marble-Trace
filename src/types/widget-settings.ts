@@ -68,7 +68,6 @@ export interface RelativeWidgetSettings {
   showIRatingBadge: boolean;
   showClassBadge: boolean;
   showPitIndicator: boolean;
-  showTrendIcon: boolean;
   abbreviateNames: boolean;
 }
 

@@ -1,6 +1,4 @@
-﻿import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ChevronUp, ChevronDown } from 'lucide-react';
 import {
   abbreviateName,
   TRACK_SURFACE_IN_PIT_STALL,
@@ -20,17 +18,17 @@ import {
 
 interface DriverRowProps {
   driver: DriverEntry;
-  trendDelta: number;
 }
 
-export const DriverRow = observer(({ driver, trendDelta }: DriverRowProps) => {
-  const computed = useBackendComputedStore();
+export const DriverRow = observer(({ driver }: DriverRowProps) => {
+  const { relativeEntries } = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const settings =
     widgetSettings.getSettings<RelativeWidgetSettings>('relative');
-  const player =
-    computed.relativeEntries.find((entry) => entry.isPlayer) ?? null;
+
+  const player = relativeEntries.find((entry) => entry.isPlayer) ?? null;
+
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 
@@ -59,21 +57,6 @@ export const DriverRow = observer(({ driver, trendDelta }: DriverRowProps) => {
         ? styles.f2Negative
         : styles.f2Player;
 
-  let trendIcon: React.ReactNode = null;
-
-  if (
-    settings.showTrendIcon &&
-    !driver.isPlayer &&
-    Math.abs(trendDelta) > 0.00005
-  ) {
-    trendIcon =
-      trendDelta < 0 ? (
-        <ChevronUp size={16} className={styles.trendUp} />
-      ) : (
-        <ChevronDown size={16} className={styles.trendDown} />
-      );
-  }
-
   const rowClass = [
     styles.driverRow,
     driver.isPlayer ? styles.driverRowPlayer : '',
@@ -88,7 +71,7 @@ export const DriverRow = observer(({ driver, trendDelta }: DriverRowProps) => {
         <span
           className={`${styles.driverPosition} ${driver.isPlayer ? styles.driverPositionPlayer : ''}`}
         >
-          {driver.position}
+          {driver.classPosition || driver.position}
         </span>
       </div>
 
@@ -148,7 +131,6 @@ export const DriverRow = observer(({ driver, trendDelta }: DriverRowProps) => {
       </div>
 
       <div className={styles.f2Block}>
-        <span className={styles.trendSlot}>{trendIcon}</span>
         <span className={`${styles.f2Time} ${f2Class}`}>
           {driver.isPlayer ? '-' : f2TimeStr}
         </span>

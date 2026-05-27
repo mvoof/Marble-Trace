@@ -29,7 +29,6 @@ const DEFAULT_SETTINGS: RelativeWidgetSettings = {
   showIRatingBadge: false,
   showClassBadge: false,
   showPitIndicator: true,
-  showTrendIcon: true,
   abbreviateNames: false,
 };
 
@@ -85,7 +84,6 @@ export const MinimalView: Story = {
       showIRatingBadge: false,
       showClassBadge: false,
       showPitIndicator: false,
-      showTrendIcon: false,
     },
   },
 };

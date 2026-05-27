@@ -6,11 +6,17 @@ import styles from './StandingsHeaderCell.module.scss';
 interface StandingsHeaderCellProps {
   align?: 'left' | 'center' | 'right';
   title?: string;
+  className?: string;
   children: React.ReactNode;
 }
 
 export const StandingsHeaderCell = observer(
-  ({ align = 'left', title, children }: StandingsHeaderCellProps) => {
+  ({
+    align = 'left',
+    title,
+    className,
+    children,
+  }: StandingsHeaderCellProps) => {
     const alignClass =
       align === 'center'
         ? styles.thCenter
@@ -20,7 +26,7 @@ export const StandingsHeaderCell = observer(
 
     return (
       <span
-        className={`${styles.th}${alignClass ? ` ${alignClass}` : ''}`}
+        className={[styles.th, alignClass, className].filter(Boolean).join(' ')}
         title={title}
       >
         {children}

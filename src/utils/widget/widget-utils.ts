@@ -9,10 +9,6 @@ export const TRACK_SURFACE_IN_PIT_STALL: TrackSurfaceType =
 export const TRACK_SURFACE_ON_TRACK: TrackSurfaceType = TrackSurface.OnTrack;
 export const NEAR_DQ_INCIDENT_THRESHOLD = 15;
 
-// ─── Trend sampling ───────────────────────────────────────────────────────
-
-export const TREND_SAMPLE_INTERVAL_MS = 2000;
-
 // ─── Formatters ───────────────────────────────────────────────────────────
 
 export const formatIRating = (ir: number): string => {
