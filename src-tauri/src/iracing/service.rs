@@ -140,9 +140,7 @@ pub async fn set_active_events(state: State<'_, TelemetryState>, mask: u32) -> R
 
 #[tauri::command]
 pub async fn set_car_length(state: State<'_, TelemetryState>, length: f32) -> Result<(), String> {
-
-    if length < 0.5 || length > 15.0 || !length.is_finite() {
-
+    if !(0.5..=15.0).contains(&length) || !length.is_finite() {
         return Err("Car length must be a finite value between 0.5 and 15.0 meters".to_string());
     }
 
