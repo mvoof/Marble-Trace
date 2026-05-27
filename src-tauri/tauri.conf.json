@@ -37,7 +37,7 @@
         "alwaysOnTop": true,
         "skipTaskbar": true,
         "visible": true,
-        "resizable": true,
+        "resizable": false,
         "shadow": false,
         "url": "index.html#/overlay"
       }
