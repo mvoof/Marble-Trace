@@ -41,10 +41,11 @@ export const OverlayWindow = () => {
           const { size, position } = monitor;
           const window = getCurrentWindow();
 
-          await window.setSize(new PhysicalSize(size.width, size.height));
           await window.setPosition(
             new PhysicalPosition(position.x, position.y)
           );
+
+          await window.setSize(new PhysicalSize(size.width, size.height));
         }
       } catch (error) {
         console.error('Failed to resize overlay window:', error);
