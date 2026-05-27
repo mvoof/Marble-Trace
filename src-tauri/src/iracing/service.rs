@@ -140,10 +140,16 @@ pub async fn set_active_events(state: State<'_, TelemetryState>, mask: u32) -> R
 
 #[tauri::command]
 pub async fn set_car_length(state: State<'_, TelemetryState>, length: f32) -> Result<(), String> {
-    if let Ok(mut lock) = state.service.car_length_m.lock() {
-        *lock = length;
-        debug!("Car length updated in backend to: {}m", length);
+
+    if length < 0.5 || length > 15.0 || !length.is_finite() {
+
+        return Err("Car length must be a finite value between 0.5 and 15.0 meters".to_string());
     }
+
+    let mut lock = lock_or_recover(&state.service.car_length_m);
+    *lock = length;
+    debug!("Car length updated in backend to: {}m", length);
+
     Ok(())
 }
 
