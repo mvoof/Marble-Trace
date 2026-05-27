@@ -38,7 +38,7 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
       ? proximity.radarDistances.leftDist
       : proximity.radarDistances.rightDist;
 
-  if (rawDist === null) {
+  if (rawDist === null || rawDist === undefined) {
     return <div className={styles.bar} />;
   }
 
