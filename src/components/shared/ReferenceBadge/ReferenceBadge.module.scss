@@ -1,0 +1,12 @@
+.badge {
+  font-family: $font-mono;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: $widget-text-secondary;
+  text-transform: uppercase;
+  user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  // font-size set per-widget via className
+  font-size: ws(10);
+}

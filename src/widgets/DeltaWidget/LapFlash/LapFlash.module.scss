@@ -1,0 +1,78 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: ws(6);
+  padding: ws(5) ws(16);
+  position: relative;
+  white-space: nowrap;
+  width: max-content;
+  animation: lapFlashFade linear forwards;
+}
+
+@keyframes lapFlashFade {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.flashBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform-origin: left;
+  animation: shrink linear forwards;
+}
+
+@keyframes shrink {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.best {
+  color: $widget-text-best-lap;
+}
+
+.times {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: ws(4);
+  white-space: nowrap;
+}
+
+.lapTime {
+  font-family: $font-mono;
+  font-size: ws(32);
+  font-weight: 700;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.lapDelta {
+  font-family: $font-mono;
+  font-size: ws(22);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.ahead {
+  color: $widget-status-positive;
+}
+.behind {
+  color: $widget-status-danger;
+}
+.neutral {
+  color: $widget-status-warning;
+}

@@ -11,8 +11,9 @@ import { LinearMapSettingsPanel } from './panels/LinearMapSettingsPanel';
 import { TrackMapSettingsPanel } from './panels/TrackMapSettingsPanel';
 import { WeatherSettingsPanel } from './panels/WeatherSettingsPanel';
 import { FuelSettingsPanel } from './panels/FuelSettingsPanel';
-import { LapTimesSettingsPanel } from './panels/LapTimesSettingsPanel';
-import { LapDeltaSettingsPanel } from './panels/LapDeltaSettingsPanel';
+import { DeltaSettingsPanel } from './panels/DeltaSettingsPanel';
+import { SectorMatrixSettingsPanel } from './panels/SectorMatrixSettingsPanel';
+import { LapLogSettingsPanel } from './panels/LapLogSettingsPanel';
 import { ChassisSettingsPanel } from './panels/ChassisSettingsPanel';
 import { TimerSettingsPanel } from './panels/TimerSettingsPanel';
 import { FlagDisplaySettingsPanel } from './panels/FlagDisplaySettingsPanel';
@@ -183,8 +184,9 @@ export const WidgetSettings = observer(
         {widgetId === 'track-map' && <TrackMapSettingsPanel />}
         {widgetId === 'weather' && <WeatherSettingsPanel />}
         {widgetId === 'fuel' && <FuelSettingsPanel />}
-        {widgetId === 'lap-times' && <LapTimesSettingsPanel />}
-        {widgetId === 'lap-delta' && <LapDeltaSettingsPanel />}
+        {widgetId === 'delta' && <DeltaSettingsPanel />}
+        {widgetId === 'sector-matrix' && <SectorMatrixSettingsPanel />}
+        {widgetId === 'lap-log' && <LapLogSettingsPanel />}
         {widgetId === 'chassis' && <ChassisSettingsPanel />}
         {widgetId === 'timer' && <TimerSettingsPanel />}
         {(widgetId === 'led-flags' || widgetId === 'flat-flags') && (

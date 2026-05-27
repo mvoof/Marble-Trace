@@ -110,17 +110,6 @@ export interface WeatherWidgetSettings {
   showForecast: boolean;
 }
 
-export type LapTimesLayout = 'vertical' | 'horizontal';
-
-export interface LapTimesWidgetSettings {
-  showLastLap: boolean;
-  showBestLap: boolean;
-  showP1: boolean;
-  showPredicted: boolean;
-  layout: LapTimesLayout;
-  layoutWidths?: Partial<Record<LapTimesLayout, number>>;
-}
-
 export interface FuelWidgetSettings {
   showChart: boolean;
   pitWarningLaps: number;
@@ -128,14 +117,23 @@ export interface FuelWidgetSettings {
   barWidth: number;
 }
 
-export type LapDeltaLayout = 'vertical' | 'horizontal';
-export type LapDeltaReference = 'session_best' | 'personal_best';
-
-export interface LapDeltaWidgetSettings {
-  layout: LapDeltaLayout;
-  showSectorTimes: boolean;
+export type LapDeltaReference =
+  | 'personal_best'
+  | 'personal_optimal'
+  | 'session_best'
+  | 'session_optimal'
+  | 'session_last';
+export interface DeltaWidgetSettings {
   reference: LapDeltaReference;
-  layoutWidths?: Partial<Record<LapDeltaLayout, number>>;
+  showLapFlash: boolean;
+  flashDuration: number;
+  hideWhenNoReference: boolean;
+}
+
+export interface SectorMatrixWidgetSettings {
+  reference: LapDeltaReference;
+  showPredicted: boolean;
+  showSectors: boolean;
 }
 
 export interface TimerWidgetSettings {
@@ -168,7 +166,7 @@ export interface GMeterWidgetSettings {
 }
 
 export type WidgetSpecificSettings =
-  | Record<never, never> // id: exmple widget
+  | Record<never, never> // id: example widget
   | ChassisWidgetSettings
   | FlagDisplaySettings
   | SpeedWidgetSettings
@@ -180,8 +178,8 @@ export type WidgetSpecificSettings =
   | LinearMapWidgetSettings
   | WeatherWidgetSettings
   | FuelWidgetSettings
-  | LapTimesWidgetSettings
-  | LapDeltaWidgetSettings
+  | DeltaWidgetSettings
+  | SectorMatrixWidgetSettings
   | TimerWidgetSettings
   | GMeterWidgetSettings;
 
@@ -192,6 +190,7 @@ export interface WidgetMeta {
   designWidth: number;
   designHeight: number;
   autoHeight?: boolean;
+  overflowVisible?: boolean;
 }
 
 export interface BaseUserSettings {

@@ -1,0 +1,101 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: ws(4);
+  padding: ws(6) ws(8) ws(4);
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.topRowRight {
+  display: flex;
+  align-items: baseline;
+  gap: ws(8);
+}
+
+.lapInfo {
+  display: flex;
+  align-items: baseline;
+  gap: ws(8);
+}
+
+.lapTag {
+  font-family: $font-mono;
+  font-size: ws(9);
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: $widget-status-positive;
+}
+
+.lapTime {
+  font-family: $font-mono;
+  font-size: ws(20);
+  font-weight: 700;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.predInfo {
+  display: flex;
+  align-items: baseline;
+  gap: ws(5);
+}
+
+.predLabel {
+  font-family: $font-widget;
+  font-size: ws(10);
+  font-weight: 300;
+  letter-spacing: 1px;
+  color: $widget-text-primary;
+  text-transform: uppercase;
+}
+
+.predTime {
+  font-family: $font-mono;
+  font-size: ws(14);
+  font-weight: 700;
+  color: $widget-status-warning;
+  font-variant-numeric: tabular-nums;
+}
+
+.progressBar {
+  height: ws(3);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: ws(1);
+  position: relative;
+  overflow: hidden;
+}
+
+.sectorTick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2;
+  transform: translateX(-50%);
+}
+
+.progressFill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: $widget-status-positive;
+  transition: width 0.1s linear;
+}
+
+.progressMeta {
+  display: flex;
+  justify-content: space-between;
+  font-family: $font-mono;
+  font-size: ws(11);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: $widget-text-secondary;
+}

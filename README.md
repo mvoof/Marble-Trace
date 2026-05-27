@@ -46,12 +46,13 @@ Most iRacing overlays are either bloated desktop apps or locked behind subscript
 - [Standings](#standings) — Race table with deltas & multi-class
 - [Input Trace](#input-trace) — Real-time pedal history or bars
 - [Relative](#relative) — F3-style timing with closing trends
-- [Lap Delta](#lap-delta) — Live comparison vs best/optimal lap
+- [Delta HUD](#delta-hud) — Live delta vs any reference lap with lap flash card
+- [Sector Matrix](#sector-matrix) — Per-sector times, delta chips & predicted finish
+- [Lap Log](#lap-log) — Rolling lap history table with delta column
 - [Fuel](#fuel) — Consumption graph & pit-stop math
-- [Lap Times](#lap-times) — Current, last, best & predicted times
 - [Timer](#timer) — Session clock & laps-to-go
 - [Track Map](#track-map) — SVG map with live positions & sectors
-- [Linear Map](#linear-map) — 1-D relative track position
+- [Relative Map](#relative-map) — 1-D relative track position
 - [Proximity Radar](#proximity-radar) — 360° awareness & bumper gaps
 - [Radar Bar](#radar-bar) — Edge indicators for side-by-side
 - [Flags (LED/Flat)](#flags-led--flat) — Matrix and pill-style indicators
@@ -144,21 +145,24 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ---
 
-### Lap Delta
+### Delta HUD
 
-> Delta bar vs best / optimal lap with per-sector splits. Vertical or horizontal layout.
+> Live delta bar that compares your current lap against a configurable reference — your personal best (PB), your personal optimal (PO, best sectors combined), session best (SB), session optimal (SO), or the previous lap in the session (SL). The bar fills green when you are ahead and red when behind. When you cross the finish line a lap flash card appears (top, bottom, left, or right of the widget) showing the completed lap time and its delta. Card display duration is adjustable.
 
 ![Lap Delta — vertical with sectors](docs/assets/screenshots/widgets/lap-delta-widget.png)
 ![Lap Delta — horizontal](docs/assets/screenshots/widgets/lap-delta-horizontal.png)
 
 ---
 
-### Lap Times
+### Sector Matrix
 
-> Current lap, predicted finish time, last, and best lap with deltas. Vertical list or compact horizontal strip.
+> Grid of sector times for the current lap with color-coded delta chips (green = faster than personal best, red = slower). Header shows live delta and predicted finish time. Reference for the live delta and predicted time is configurable; sector chips always compare vs your personal best.
 
-![Lap Times — vertical with deltas](docs/assets/screenshots/widgets/lap-times-widget.png)
-![Lap Times — horizontal](docs/assets/screenshots/widgets/lap-times-horizontal.png)
+---
+
+### Lap Log
+
+> Rolling history of your completed laps — lap number, lap time, and delta vs personal best for each row. The live row at the top shows the current lap's real-time delta using the configured reference (PB / PO / SB / SO / SL). Historical rows always compare vs personal best.
 
 ---
 
@@ -187,7 +191,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ---
 
-### Linear Map
+### Relative Map
 
 > Compact 1-D track map showing relative car positions along the lap. Horizontal or vertical.
 

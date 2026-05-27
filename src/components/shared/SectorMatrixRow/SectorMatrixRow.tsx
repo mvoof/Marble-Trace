@@ -3,9 +3,9 @@ import { observer } from 'mobx-react-lite';
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 
-import styles from './LapTimingRow.module.scss';
+import styles from './SectorMatrixRow.module.scss';
 
-interface LapTimingRowProps {
+interface SectorMatrixRowProps {
   label: string;
   time: string;
   delta: string;
@@ -14,7 +14,7 @@ interface LapTimingRowProps {
   fill?: boolean;
 }
 
-export const LapTimingRow = observer(
+export const SectorMatrixRow = observer(
   ({
     label,
     time,
@@ -22,7 +22,7 @@ export const LapTimingRow = observer(
     accentColor,
     deltaColor,
     fill = false,
-  }: LapTimingRowProps) => (
+  }: SectorMatrixRowProps) => (
     <div
       className={`${styles.row} ${fill ? styles.fill : ''}`}
       style={{ borderLeftColor: accentColor }}

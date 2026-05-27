@@ -9,13 +9,14 @@ import { TrackMapWidget } from '@widgets/TrackMapWidget/TrackMapWidget';
 import { RelativeMapWidget } from '@widgets/RelativeMapWidget/RelativeMapWidget';
 import { LedFlagWidget } from '@widgets/LedFlagWidget/LedFlagWidget';
 import { ChassisWidget } from '@widgets/ChassisWidget/ChassisWidget';
-import { LapDeltaWidget } from '@widgets/LapDeltaWidget/LapDeltaWidget';
-import { LapTimesWidget } from '@widgets/LapTimesWidget/LapTimesWidget';
+import { DeltaWidget } from '@widgets/DeltaWidget/DeltaWidget';
 import { TimerWidget } from '@widgets/TimerWidget/TimerWidget';
 import { WeatherWidget } from '@widgets/WeatherWidget/WeatherWidget';
 import { FuelWidget } from '@widgets/FuelWidget/FuelWidget';
 import { FlatFlagsWidget } from '@widgets/FlatFlagsWidget/FlatFlagsWidget';
 import { GMeterWidget } from '@widgets/GMeterWidget/GMeterWidget';
+import { SectorMatrixWidget } from '@widgets/SectorMatrixWidget/SectorMatrixWidget';
+import { LapLogWidget } from '@widgets/LapLogWidget/LapLogWidget';
 import type {
   WidgetConfig,
   WidgetDefaultConfig,
@@ -64,39 +65,6 @@ const resolveInputTraceLayout: ResolveLayoutChange = (prev, next) => {
   };
 };
 
-// Factory for widgets with a `layout` field (e.g. vertical/horizontal).
-// Saves the current width under the outgoing layout key in `layoutWidths` so
-// the user's custom size is restored when switching back.
-const makeLayoutSwapResolver = (
-  defaultWidths: Record<string, number>
-): ResolveLayoutChange => {
-  return (prev, next, current) => {
-    if (!('layout' in next) || !next.layout) return null;
-
-    const prevLayout = 'layout' in prev ? prev.layout : 'vertical';
-    const nextLayout = next.layout;
-
-    if (prevLayout === nextLayout) return null;
-
-    const prevLayoutWidths =
-      'layoutWidths' in prev ? (prev.layoutWidths ?? {}) : {};
-    const savedWidths = {
-      ...prevLayoutWidths,
-      [prevLayout]: current.currentWidth,
-    };
-    const nextWidth =
-      savedWidths[nextLayout] ??
-      defaultWidths[nextLayout] ??
-      current.currentWidth;
-
-    return {
-      currentWidth: nextWidth,
-      designWidth: nextWidth,
-      userSettingsPatch: { layoutWidths: savedWidths },
-    };
-  };
-};
-
 const CHASSIS_DESIGN_WIDTH = 300;
 const CHASSIS_WITH_SUSPENSION_DESIGN_WIDTH = 430;
 const CHASSIS_DEFAULT_WIDTH = 280;
@@ -137,16 +105,6 @@ const resolveChassisLayout: ResolveLayoutChange = (prev, next, current) => {
     currentWidth: nextWidth,
     userSettingsPatch: { modeWidths: savedModeWidths },
   };
-};
-
-export const LAP_TIMES_DEFAULT_WIDTHS: Record<string, number> = {
-  vertical: 230,
-  horizontal: 1130,
-};
-
-export const LAP_DELTA_DEFAULT_WIDTHS: Record<string, number> = {
-  vertical: 230,
-  horizontal: 900,
 };
 
 export const LINEAR_MAP_SIZES: Record<
@@ -483,53 +441,27 @@ export const WIDGETS: WidgetConfig[] = [
     },
   },
   {
-    id: 'lap-delta',
-    label: 'Lap Delta',
-    description: 'Live delta against your best lap time.',
-    resolveLayoutChange: makeLayoutSwapResolver(LAP_DELTA_DEFAULT_WIDTHS),
-    component: LapDeltaWidget,
-    designWidth: 230,
-    designHeight: 180,
+    id: 'delta',
+    label: 'Delta HUD',
+    description: 'Live delta HUD — one glance, am I faster or slower?',
+    component: DeltaWidget,
+    designWidth: 520,
+    designHeight: 96,
     userSettings: {
       enabled: false,
       x: 400,
       y: 200,
-      currentWidth: 230,
-      currentHeight: 180,
+      currentWidth: 520,
+      currentHeight: 96,
       opacity: 1,
-      backgroundColor: '#252525',
-      backgroundColorEdge: '#14141b',
-      borderColor: 'rgba(255, 255, 255, 0.1)',
+      backgroundColor: 'transparent',
+      backgroundColorEdge: 'transparent',
+      borderColor: 'transparent',
       hotkey: '',
-      layout: 'vertical',
-      showSectorTimes: true,
-      reference: 'session_best',
-    },
-  },
-  {
-    id: 'lap-times',
-    label: 'Lap Times',
-    description: 'Detailed history of your lap times.',
-    resolveLayoutChange: makeLayoutSwapResolver(LAP_TIMES_DEFAULT_WIDTHS),
-    component: LapTimesWidget,
-    designWidth: 230,
-    designHeight: 104,
-    userSettings: {
-      enabled: false,
-      x: 400,
-      y: 300,
-      currentWidth: 230,
-      currentHeight: 104,
-      opacity: 1,
-      backgroundColor: '#252525',
-      backgroundColorEdge: '#14141b',
-      borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
-      showLastLap: true,
-      showBestLap: true,
-      showP1: true,
-      showPredicted: true,
-      layout: 'vertical',
+      reference: 'personal_best',
+      showLapFlash: false,
+      flashDuration: 5,
+      hideWhenNoReference: false,
     },
   },
   {
@@ -631,6 +563,53 @@ export const WIDGETS: WidgetConfig[] = [
       displayMode: 'fading',
       scale: 4,
       colorMode: 'advanced',
+    },
+  },
+  {
+    id: 'sector-matrix',
+    label: 'Sector Matrix',
+    description:
+      'Sector-by-sector timing with progress bar, live delta per sector, LAST and BEST.',
+    component: SectorMatrixWidget,
+    autoHeight: true,
+    designWidth: 320,
+    designHeight: 180,
+    userSettings: {
+      enabled: false,
+      x: 100,
+      y: 300,
+      currentWidth: 320,
+      currentHeight: 180,
+      opacity: 1,
+      backgroundColor: '#252525',
+      backgroundColorEdge: '#14141b',
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      hotkey: '',
+      reference: 'personal_best',
+      showPredicted: true,
+      showSectors: true,
+    },
+  },
+  {
+    id: 'lap-log',
+    label: 'Lap Log',
+    description:
+      'Last 8 laps with time and delta vs personal best. Best lap highlighted.',
+    component: LapLogWidget,
+    autoHeight: true,
+    designWidth: 220,
+    designHeight: 260,
+    userSettings: {
+      enabled: false,
+      x: 700,
+      y: 300,
+      currentWidth: 220,
+      currentHeight: 260,
+      opacity: 1,
+      backgroundColor: '#252525',
+      backgroundColorEdge: '#14141b',
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      hotkey: '',
     },
   },
 ];

@@ -28,6 +28,10 @@
   overflow: hidden;
 }
 
+.overflowVisible {
+  overflow: visible;
+}
+
 .dragging {
   outline: 2px dashed $widget-text-accent;
   outline-offset: -2px;

@@ -876,21 +876,17 @@ export type FuelComputedFrame = {
   lapFuelHistory: number[];
 };
 
+/**
+ * Sector timing data for the sector matrix widget.
+ * Total delta is provided directly by iRacing via LapTimingFrame delta fields.
+ */
 export type LapDeltaFrame = {
   sectorTimes: (number | null)[];
   currentSectorIdx: number;
   /**
-   * Delta vs session best. Total uses iRacing's live delta when available.
-   * Sector deltas are snapshotted at boundaries so they always sum to total.
+   * Per-sector delta vs driver's personal best lap (sector matrix display only)
    */
-  sessionBestTotal: number;
-  sessionBestSectors: (number | null)[];
-  /**
-   * Delta vs personal best (the driver's own best completed lap).
-   * Sector deltas are from the same reference lap so they always sum to total.
-   */
-  personalBestTotal: number;
-  personalBestSectors: (number | null)[];
+  sectorDeltas: (number | null)[];
 };
 
 export type LapTimingFrame = {
@@ -942,6 +938,25 @@ export type LapTimingFrame = {
    * Live delta to session optimal lap
    */
   lap_delta_to_session_optimal_live: number | null;
+  /**
+   * Live delta to driver's personal best lap
+   */
+  lap_delta_to_driver_best_live: number | null;
+  lap_delta_to_best_lap: number | null;
+  lap_delta_to_best_lap_dd: boolean | null;
+  lap_delta_to_best_lap_ok: boolean | null;
+  lap_delta_to_optimal_lap: number | null;
+  lap_delta_to_optimal_lap_dd: boolean | null;
+  lap_delta_to_optimal_lap_ok: boolean | null;
+  lap_delta_to_session_best_lap: number | null;
+  lap_delta_to_session_best_lap_dd: boolean | null;
+  lap_delta_to_session_best_lap_ok: boolean | null;
+  lap_delta_to_session_lastl_lap: number | null;
+  lap_delta_to_session_lastl_lap_dd: boolean | null;
+  lap_delta_to_session_lastl_lap_ok: boolean | null;
+  lap_delta_to_session_optimal_lap: number | null;
+  lap_delta_to_session_optimal_lap_dd: boolean | null;
+  lap_delta_to_session_optimal_lap_ok: boolean | null;
 };
 
 export type LateralSide = 'left' | 'right' | 'center';

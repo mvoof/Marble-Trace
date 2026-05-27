@@ -71,7 +71,7 @@ export class TelemetryConnectionStore {
         mask |= EVENT_CAR_INPUTS;
       }
 
-      if (isEnabled('lap-delta')) {
+      if (isEnabled('delta')) {
         mask |= EVENT_LAP_DELTA;
       }
 

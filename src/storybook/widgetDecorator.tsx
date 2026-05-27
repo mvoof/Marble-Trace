@@ -34,7 +34,7 @@ export const widgetDecorator = (
           background,
           borderRadius: WIDGET_BORDER_RADIUS,
           border: WIDGET_BORDER,
-          overflow: 'hidden',
+          overflow: 'visible',
           display,
           minWidth,
           ['--widget-bg']: bgColor,
