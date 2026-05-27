@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
+import { getCurrentWindow, currentMonitor } from '@tauri-apps/api/window';
+import { PhysicalSize, PhysicalPosition } from '@tauri-apps/api/dpi';
 import { OverlayCanvas } from './OverlayCanvas/OverlayCanvas';
 import { initOverlaySync } from '@store/sync/sync-init';
 import {
@@ -30,6 +32,25 @@ export const OverlayWindow = () => {
     let isMounted = true;
 
     const init = async () => {
+      // Programmatically resize the window to span the entire screen, including taskbar area,
+      // avoiding Windows OS DWM decoration/accent borders on focus lost.
+      try {
+        const monitor = await currentMonitor();
+
+        if (monitor && isMounted) {
+          const { size, position } = monitor;
+          const window = getCurrentWindow();
+
+          await window.setPosition(
+            new PhysicalPosition(position.x, position.y)
+          );
+
+          await window.setSize(new PhysicalSize(size.width, size.height));
+        }
+      } catch (error) {
+        console.error('Failed to resize overlay window:', error);
+      }
+
       const result = await initOverlaySync(root);
 
       if (!isMounted) {
