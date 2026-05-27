@@ -58,7 +58,8 @@ pub struct ProximityFrame {
 }
 
 pub fn parse_track_length(s: &str) -> f32 {
-    let s = s.trim();
+    let s = s.trim().to_lowercase();
+    let s = s.as_str();
 
     if let Some(km_idx) = s.find("km") {
         let num_str = s[..km_idx].trim();
