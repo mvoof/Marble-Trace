@@ -7,5 +7,9 @@
   color: black;
   font-size: 0.85em;
   font-weight: 700;
+  line-height: 1;
   flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

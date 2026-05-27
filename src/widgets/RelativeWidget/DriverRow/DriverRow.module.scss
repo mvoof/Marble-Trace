@@ -2,9 +2,9 @@
 // Columns: pos | car# | name(1fr) | pit | class | lic+iR | gap
 .driverRow {
   display: grid;
-  grid-template-columns: ws(20) ws(40) 1fr ws(22) ws(34) ws(70) ws(70);
+  grid-template-columns: ws(20) ws(40) 1fr ws(22) ws(48) ws(70) ws(70);
   align-items: center;
-  column-gap: ws(6);
+  column-gap: ws(2);
   padding: ws(4) ws(9);
   position: relative;
   border-bottom: 1px solid $widget-row-border;

@@ -69,7 +69,7 @@ const meta: Meta<typeof StoryHost> = {
   title: 'Widgets/RelativeWidget',
   component: StoryHost,
   parameters: { layout: 'centered' },
-  decorators: [withStore(), widgetDecorator({ width: 420, height: 400 })],
+  decorators: [withStore(), widgetDecorator({ width: 460, height: 400 })],
   args: { settings: DEFAULT_SETTINGS },
 };
 

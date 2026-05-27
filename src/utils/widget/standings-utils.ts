@@ -48,17 +48,17 @@ type ColDef = { width: string; show: boolean };
 const buildColDefs = (settings: StandingsWidgetSettings): ColDef[] => [
   { width: ws(20), show: true }, // pos      "00"
   { width: ws(40), show: true }, // carNum   "#000"
-  { width: `minmax(${ws(30)}, 1fr)`, show: true }, // name     — never collapses
+  { width: `minmax(${ws(100)}, 1fr)`, show: true }, // name     — never collapses
   { width: ws(30), show: settings.showBrand }, // brand
   { width: ws(16), show: settings.showTire }, // tire
   {
-    width: ws(34),
+    width: ws(48),
     show: !settings.enableClassCycling && settings.showClassBadge,
   }, // class
   { width: ws(70), show: settings.showIRatingBadge }, // lic/iRating
   { width: ws(24), show: settings.showIrChange }, // ΔiR
   { width: ws(18), show: settings.showLapsCompleted }, // laps
-  { width: ws(24), show: settings.showPosChange }, // +/- pos
+  { width: ws(32), show: settings.showPosChange }, // +/- pos
   { width: ws(50), show: true }, // gap      "+000.0"
   { width: ws(70), show: true }, // last     "0:00.000"
   { width: ws(70), show: true }, // best     "0:00.000"
