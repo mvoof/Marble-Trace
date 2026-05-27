@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] — 2026-05-27
+
+### Added
+
+- **Delta HUD Widget (`DeltaWidget`):** Brand new widget replacing the old "Lap Delta". Shows live delta time to a reference lap (best, optimal, etc.) with custom color coding and a full screen flash on lap completion.
+- **Sector Matrix Widget (`SectorMatrixWidget`):** Brand new widget replacing the old "Lap Times". Provides a comprehensive sector grid showing current, best, and session sector times, color-coded based on personal improvement (green) or session best (purple). Features a progress bar for the current sector and overall lap.
+- **Lap Log Widget (`LapLogWidget`):** Brand new widget showing a history log of recent laps, flags, and delta times.
+- **RootStore & React Context Architecture:** Replaced singleton store exports with a centralized `RootStore` architecture provided through React Context, improving testability, Storybook isolation, and resource management (adds proper cleanups/disposes to prevent memory leaks).
+- **Centralized Design System:** Introduced dedicated design tokens (`_sys-tokens.scss`, `_widget-tokens.scss`, `_opacity.scss`) for colors, opacity, and layout spacing to ensure UI consistency.
+- **Auto-Hide System (`widgetAutoHideStore`):** Added a global auto-hide manager and `useWidgetAutoHide` hook to handle smooth, delayed widget hiding across multiple widgets (e.g. Radars, Flags).
+
+### Changed
+
+- **MobX Reactivity Overhaul:** Full transition to the observer pattern. Cleaned up widget rendering by moving store subscriptions from root components down to individual leaf/sub-components (preventing unnecessary 60Hz re-renders).
+- **Weather Widget Redesign:** Extracted into `ForecastBlock`, `StatsGrid`, and `WindCompass` (with observer subcomponents `RotatingRing` and `WindArrow`). Wind unit scales correctly, and the layout is redesigned to a 2x2 grid.
+- **G-Meter Optimization:** Decomposed into static rings (`GMeterRings`) and high-frequency trace (`GMeterTrace`) canvas layers for exceptional performance and CPU/GPU overhead reduction.
+- **Input Trace Redesign:** Removed horizontal bar mode, decomposed into independent observer components, and moved smoothing and circular buffer logic out of the root container.
+- **Chassis Widget Cleanup:** Decomposed tire and suspension stats into subcomponents (`TireWearCell`, `TireTempCell`, etc.) and moved telemetry reads to individual leaf nodes.
+- **Rating Badge Update:** The `RatingBadge` component now displays the license letter alongside the safety rating (e.g., A 4.99).
+
+### Fixed
+
+- **Diode Colors & Timer Reset:** Fixed LedFlag diode colors and auto-hide timer resets.
+- **Layout & Clipping Fixes:** Fixed canvas/compass clipping issues on resize.
+
 ## [0.12.0] — 2026-05-18
 
 ### Added
