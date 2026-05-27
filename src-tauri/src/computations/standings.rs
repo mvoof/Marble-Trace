@@ -224,27 +224,35 @@ pub fn compute(
         result
     };
 
+    let mut locked_state = lock_or_recover(state);
+
     let mut entries: Vec<DriverEntry> = deduped_drivers
         .iter()
         .filter(|d| {
             if d.car_is_pace_car == Some(1) || d.is_spectator == Some(1) {
                 return false;
             }
+
             let idx = d.car_idx as usize;
+
             if idx >= frame.car_idx_position.len() {
                 return false;
             }
+
             if d.car_idx == player_car_idx {
                 return true;
             }
+
             let pos = frame.car_idx_position.get(idx).copied().unwrap_or(0);
             let lap_pct = frame.car_idx_lap_dist_pct.get(idx).copied().unwrap_or(-1.0);
+
             pos > 0 || lap_pct >= 0.0
         })
         .map(|driver| {
             let idx = driver.car_idx as usize;
 
             let tire_compound_idx = frame.car_idx_tire_compound.get(idx).copied().unwrap_or(-1);
+
             let tire_compound = if tire_compound_idx >= 0 {
                 driver_tires
                     .iter()
@@ -264,28 +272,23 @@ pub fn compute(
 
             let car_class_short_name = if car_screen_name_short.is_empty() {
                 NO_CLASS_LABEL.to_string()
+            } else if let Some(cached) = locked_state.cached_car_classes.get(&car_screen_name_short)
+            {
+                cached.clone()
             } else {
-                let mut locked_state = lock_or_recover(state);
+                let badge = get_compact_badge_name(&car_screen_name_short);
 
-                if let Some(cached) = locked_state.cached_car_classes.get(&car_screen_name_short) {
-                    let c: String = cached.clone();
-
-                    c
+                let result = if badge.is_empty() {
+                    NO_CLASS_LABEL.to_string()
                 } else {
-                    let badge = get_compact_badge_name(&car_screen_name_short);
+                    badge
+                };
 
-                    let result = if badge.is_empty() {
-                        NO_CLASS_LABEL.to_string()
-                    } else {
-                        badge
-                    };
+                locked_state
+                    .cached_car_classes
+                    .insert(car_screen_name_short.clone(), result.clone());
 
-                    locked_state
-                        .cached_car_classes
-                        .insert(car_screen_name_short.clone(), result.clone());
-
-                    result
-                }
+                result
             };
 
             DriverEntry {
