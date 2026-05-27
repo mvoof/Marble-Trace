@@ -5,10 +5,10 @@ import {
   distanceUnit,
   formatDistance,
 } from '@utils/formatters/telemetry-format';
-import { CAR_LENGTH, getBarPillColor } from '@utils/constants/radar-constants';
+import { getBarPillColor } from '@utils/constants/radar-constants';
 
 import styles from './RadarBar.module.scss';
-import { useUnitsStore } from '@store/root-store-context';
+import { useAppSettingsStore, useUnitsStore } from '@store/root-store-context';
 
 const MIN_PILL_PERCENT = 8;
 const BAR_SEARCH_RADIUS = 10;
@@ -19,14 +19,15 @@ interface RadarBarProps {
 
 export const RadarBar = observer(({ side }: RadarBarProps) => {
   const units = useUnitsStore();
+  const { unitSystem: system } = units;
+
+  const { dragMode } = useAppSettingsStore();
 
   const { proximity, visible, spotterLeft, spotterRight, radarSettings } =
     useProximityRadarData('radar-bar', BAR_SEARCH_RADIUS);
-  const { unitSystem: system } = units;
 
   const spotterActive = side === 'left' ? spotterLeft : spotterRight;
-  const activeOnly = radarSettings.barDisplayMode === 'active-only';
-  const sideVisible = activeOnly ? spotterActive : true;
+  const sideVisible = dragMode || spotterActive;
 
   if (!visible || !sideVisible || !proximity) {
     return null;
@@ -34,11 +35,16 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
 
   const rawDist =
     side === 'left'
-      ? (proximity.radarDistances.leftDist ?? 0)
-      : (proximity.radarDistances.rightDist ?? 0);
+      ? proximity.radarDistances.leftDist
+      : proximity.radarDistances.rightDist;
 
-  const topPercent = (100 * -rawDist) / CAR_LENGTH;
-  const bottomPercent = (100 * (CAR_LENGTH - rawDist)) / CAR_LENGTH;
+  if (rawDist === null || rawDist === undefined) {
+    return <div className={styles.bar} />;
+  }
+
+  const { carLength } = radarSettings;
+  const topPercent = (100 * -rawDist) / carLength;
+  const bottomPercent = (100 * (carLength - rawDist)) / carLength;
 
   let clampedTop = Math.max(0, Math.min(100, topPercent));
   const clampedBottom = Math.max(0, Math.min(100, bottomPercent));

@@ -1,10 +1,6 @@
 import { observer } from 'mobx-react-lite';
-import { Col, InputNumber, Row, Segmented } from 'antd';
-import {
-  RadarBarDisplayMode,
-  RadarSettings,
-  RadarVisibilityMode,
-} from '@/types/widget-settings';
+import { Col, InputNumber, Row } from 'antd';
+import type { RadarSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './shared';
 import { useWidgetSettingsStore } from '@store/root-store-context';
@@ -23,67 +19,55 @@ export const RadarSettingsPanel = observer(
 
     return (
       <Card title="Radar Behavior">
-        <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>Visibility Logic</span>
-          <Segmented
-            block
-            value={settings.visibilityMode}
-            options={[
-              { label: 'Always Visible', value: 'always' },
-              { label: 'On Proximity Only', value: 'proximity' },
-            ]}
-            onChange={(v) =>
-              update({ visibilityMode: v as RadarVisibilityMode })
-            }
-          />
-        </div>
-
-        {settings.visibilityMode === 'proximity' && (
-          <Row gutter={24} className={styles.fieldGroup}>
-            <Col span={12}>
-              <span className={styles.fieldLabel}>Activation Range (m)</span>
-              <InputNumber
-                style={{ width: '100%' }}
-                value={settings.proximityThreshold}
-                min={1}
-                max={20}
-                step={0.5}
-                onChange={(v) =>
-                  v !== null && update({ proximityThreshold: v })
+        <Row gutter={24} className={styles.fieldGroup}>
+          <Col span={8}>
+            <span className={styles.fieldLabel}>Activation Range (m)</span>
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.proximityThreshold}
+              min={1}
+              max={20}
+              step={0.5}
+              onChange={(v) => {
+                if (v !== null) {
+                  update({ proximityThreshold: v });
                 }
-              />
-            </Col>
-
-            <Col span={12}>
-              <span className={styles.fieldLabel}>Fade Out Delay (s)</span>
-              <InputNumber
-                style={{ width: '100%' }}
-                value={settings.hideDelay}
-                min={0}
-                max={30}
-                step={0.5}
-                onChange={(v) => v !== null && update({ hideDelay: v })}
-              />
-            </Col>
-          </Row>
-        )}
-
-        {widgetId === 'radar-bar' && (
-          <div className={styles.fieldGroup}>
-            <span className={styles.fieldLabel}>Bar Display Mode</span>
-            <Segmented
-              block
-              value={settings.barDisplayMode ?? 'both'}
-              options={[
-                { label: 'Show Both Sides', value: 'both' },
-                { label: 'Active Side Only', value: 'active-only' },
-              ]}
-              onChange={(v) =>
-                update({ barDisplayMode: v as RadarBarDisplayMode })
-              }
+              }}
             />
-          </div>
-        )}
+          </Col>
+
+          <Col span={8}>
+            <span className={styles.fieldLabel}>Fade Out Delay (s)</span>
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.hideDelay}
+              min={0}
+              max={30}
+              step={0.5}
+              onChange={(v) => {
+                if (v !== null) {
+                  update({ hideDelay: v });
+                }
+              }}
+            />
+          </Col>
+
+          <Col span={8}>
+            <span className={styles.fieldLabel}>Car Length (m)</span>
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.carLength}
+              min={1}
+              max={10}
+              step={0.1}
+              onChange={(v) => {
+                if (v !== null) {
+                  update({ carLength: v });
+                }
+              }}
+            />
+          </Col>
+        </Row>
       </Card>
     );
   }

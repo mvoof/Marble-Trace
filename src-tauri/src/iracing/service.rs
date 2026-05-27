@@ -61,6 +61,8 @@ pub struct TelemetryServiceState {
     pub track_length_m: Mutex<Option<f32>>,
     /// Bitmask of active high-frequency events to emit.
     pub active_events: AtomicU32,
+    /// Configurable player car length in meters.
+    pub car_length_m: Mutex<f32>,
 }
 
 /// Bitmask flags for high-frequency events.
@@ -133,6 +135,19 @@ pub async fn set_pit_warning_laps(
 pub async fn set_active_events(state: State<'_, TelemetryState>, mask: u32) -> Result<(), String> {
     state.service.active_events.store(mask, Ordering::Relaxed);
     debug!("Active events mask updated to: {:#b}", mask);
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn set_car_length(state: State<'_, TelemetryState>, length: f32) -> Result<(), String> {
+    if !(0.5..=15.0).contains(&length) || !length.is_finite() {
+        return Err("Car length must be a finite value between 0.5 and 15.0 meters".to_string());
+    }
+
+    let mut lock = lock_or_recover(&state.service.car_length_m);
+    *lock = length;
+    debug!("Car length updated in backend to: {}m", length);
+
     Ok(())
 }
 
@@ -625,7 +640,8 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
         // Computed: proximity & standings (10 Hz)
         if let Some(session) = session_info {
             let track_length = lock_or_recover(&ctx.service.track_length_m).unwrap_or(0.0);
-            bundle.proximity = Some(proximity::compute(frame, session, track_length));
+            let car_length = *lock_or_recover(&ctx.service.car_length_m);
+            bundle.proximity = Some(proximity::compute(frame, session, track_length, car_length));
 
             let start_pos_snapshot = lock_or_recover(&ctx.service.start_positions).clone();
             bundle.standings = Some(standings::compute(

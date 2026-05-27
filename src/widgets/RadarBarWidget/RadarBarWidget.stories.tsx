@@ -3,10 +3,11 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
 import type { ProximityFrame, RadarDistances } from '@/types/bindings';
-import type { RadarSettings } from '@/types/widget-settings';
 import type { BackendComputedStore } from '@store/iracing/computed.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
+import type { AppSettingsStore } from '@store/app-settings.store';
 import {
+  useAppSettingsStore,
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -21,22 +22,22 @@ interface StoryArgs {
   radarDistances: RadarDistances;
   spotterLeft: boolean;
   spotterRight: boolean;
-  barDisplayMode: RadarSettings['barDisplayMode'];
 }
 
 const applyArgs = (
   stores: {
     computed: BackendComputedStore;
     widgetSettings: WidgetSettingsStore;
+    appSettings: AppSettingsStore;
   },
   args: StoryArgs
 ) => {
   runInAction(() => {
+    stores.appSettings.dragMode = true;
+
     stores.widgetSettings.updateUserSettings('radar-bar', {
-      visibilityMode: 'always',
       proximityThreshold: 3,
       hideDelay: 2,
-      barDisplayMode: args.barDisplayMode,
     });
 
     stores.computed.updateProximity({
@@ -51,10 +52,11 @@ const applyArgs = (
 const StoryHost = (args: StoryArgs) => {
   const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
+  const appSettings = useAppSettingsStore();
 
   useLayoutEffect(() => {
-    applyArgs({ computed, widgetSettings }, args);
-  }, [args, computed, widgetSettings]);
+    applyArgs({ computed, widgetSettings, appSettings }, args);
+  }, [args, computed, widgetSettings, appSettings]);
 
   return <RadarBarWidget />;
 };
@@ -76,7 +78,6 @@ const meta: Meta<typeof StoryHost> = {
     },
     spotterLeft: false,
     spotterRight: false,
-    barDisplayMode: 'both',
   },
 };
 
@@ -106,19 +107,6 @@ export const CarRight: Story = {
       rightDist: 0.8,
     },
     spotterRight: true,
-  },
-};
-
-export const ActiveOnly: Story = {
-  args: {
-    radarDistances: {
-      frontDist: 999,
-      rearDist: 999,
-      leftDist: 1.0,
-      rightDist: null,
-    },
-    spotterLeft: true,
-    barDisplayMode: 'active-only',
   },
 };
 

@@ -15,7 +15,6 @@ const CLR_CARS_2_RIGHT: i32 = 6;
 const MAX_SEARCH_DIST_M: f32 = 50.0;
 const ALONGSIDE_THRESHOLD_M: f32 = 5.0;
 const BUMPER_THRESHOLD_M: f32 = 2.2;
-const CAR_LENGTH_M: f32 = 4.4;
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -87,6 +86,7 @@ pub fn compute(
     frame: &AllFieldsFrame,
     session: &SessionInfo,
     track_length_m: f32,
+    car_length_m: f32,
 ) -> ProximityFrame {
     let player_idx = session
         .driver_info
@@ -205,7 +205,8 @@ pub fn compute(
         })
         .collect();
 
-    let radar_distances = compute_radar_distances(&nearby_cars, spotter_left, spotter_right);
+    let radar_distances =
+        compute_radar_distances(&nearby_cars, spotter_left, spotter_right, car_length_m);
 
     ProximityFrame {
         nearby_cars,
@@ -219,6 +220,7 @@ fn compute_radar_distances(
     cars: &[NearbyCar],
     spotter_left: bool,
     spotter_right: bool,
+    car_length_m: f32,
 ) -> RadarDistances {
     let mut left_dist: Option<f32> = None;
     let mut right_dist: Option<f32> = None;
@@ -257,10 +259,10 @@ fn compute_radar_distances(
         }
 
         if car.longitudinal_dist > BUMPER_THRESHOLD_M {
-            let gap = (car.longitudinal_dist - CAR_LENGTH_M).max(0.0);
+            let gap = (car.longitudinal_dist - car_length_m).max(0.0);
             front_dist = front_dist.min(gap);
         } else if car.longitudinal_dist < -BUMPER_THRESHOLD_M {
-            let gap = (car.longitudinal_dist.abs() - CAR_LENGTH_M).max(0.0);
+            let gap = (car.longitudinal_dist.abs() - car_length_m).max(0.0);
             rear_dist = rear_dist.min(gap);
         }
     }

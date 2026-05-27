@@ -205,9 +205,9 @@ export const WIDGETS: WidgetConfig[] = [
       backgroundColorEdge: 'transparent',
       borderColor: 'transparent',
       hotkey: '',
-      visibilityMode: 'proximity',
       proximityThreshold: 5,
       hideDelay: 2,
+      carLength: 4.4,
     },
   },
   {
@@ -228,10 +228,9 @@ export const WIDGETS: WidgetConfig[] = [
       backgroundColorEdge: 'transparent',
       borderColor: 'transparent',
       hotkey: '',
-      visibilityMode: 'proximity',
       proximityThreshold: 3,
       hideDelay: 2,
-      barDisplayMode: 'both',
+      carLength: 4.4,
     },
   },
   {

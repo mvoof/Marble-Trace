@@ -12,8 +12,8 @@ use computations::{
 };
 use computations::{fuel::FuelState, lap_delta::LapDeltaState, standings::StandingsState};
 use iracing::{
-    get_last_session_info, set_active_events, set_pit_warning_laps, start_telemetry_stream,
-    stop_telemetry_stream, TelemetryState,
+    get_last_session_info, set_active_events, set_car_length, set_pit_warning_laps,
+    start_telemetry_stream, stop_telemetry_stream, TelemetryState,
 };
 #[cfg(feature = "dev")]
 use iracing::{
@@ -113,7 +113,8 @@ pub fn run() {
             stop_telemetry_stream,
             get_last_session_info,
             set_pit_warning_laps,
-            set_active_events
+            set_active_events,
+            set_car_length
         ])
         .manage(TelemetryState {
             service: Arc::new(iracing::TelemetryServiceState {
@@ -122,6 +123,7 @@ pub fn run() {
                 start_positions: Mutex::new(std::collections::HashMap::new()),
                 track_length_m: Mutex::new(None),
                 active_events: std::sync::atomic::AtomicU32::new(0xFFFFFFFF),
+                car_length_m: Mutex::new(4.4),
             }),
             pit: Arc::new(crate::computations::pit_stops::PitStopState {
                 count: std::sync::atomic::AtomicU32::new(0),

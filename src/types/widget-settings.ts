@@ -34,15 +34,10 @@ export interface InputTraceSettings {
   smoothing: number;
 }
 
-export type RadarVisibilityMode = 'always' | 'proximity';
-export type RadarBarDisplayMode = 'both' | 'active-only';
-
 export interface RadarSettings {
-  visibilityMode: RadarVisibilityMode;
   proximityThreshold: number;
   hideDelay: number;
-  /** radar-bar: show both bars or only the side with a detected car */
-  barDisplayMode?: RadarBarDisplayMode;
+  carLength: number;
 }
 
 export interface StandingsWidgetSettings {
