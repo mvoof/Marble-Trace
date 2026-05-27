@@ -98,11 +98,11 @@ fn parse_class_color(raw_color: &Option<String>) -> String {
         None => NO_CLASS_COLOR.to_string(),
         Some(color) if color.is_empty() => NO_CLASS_COLOR.to_string(),
         Some(color) => {
-            let stripped = color
+            let trimmed = color.trim();
+            let stripped = trimmed
                 .strip_prefix("0x")
-                .or_else(|| color.strip_prefix("0X"))
-                .unwrap_or(color)
-                .trim()
+                .or_else(|| trimmed.strip_prefix("0X"))
+                .unwrap_or(trimmed)
                 .to_lowercase();
 
             // Map iRacing's mismatched telemetry class colors to their official in-game colors
