@@ -41,8 +41,9 @@ describe('LapStore', () => {
   it('invalid first lap — records INV', () => {
     push(telemetry, frame(0, null, null));
     push(telemetry, frame(1, null, null));
-    // lap time never comes, next lap starts
     push(telemetry, frame(2, null, null));
+    // lap time never comes; next lap starts → lap 1 flushed as null
+    push(telemetry, frame(3, null, null));
 
     expect(store.history).toHaveLength(1);
     expect(store.history[0]).toMatchObject({
@@ -117,6 +118,8 @@ describe('LapStore', () => {
       push(telemetry, frame(lap, lap === 2 ? 90.0 : null, 90.0));
       push(telemetry, frame(lap + 1, null, 90.0));
     }
+    // flush last pending lap (5) via a new lap change
+    push(telemetry, frame(7, null, 90.0));
 
     expect(store.history).toHaveLength(5);
     expect(store.history[0]).toMatchObject({ lapNum: 5, lapTime: null });
@@ -124,6 +127,59 @@ describe('LapStore', () => {
     expect(store.history[2]).toMatchObject({ lapNum: 3, lapTime: null });
     expect(store.history[3]).toMatchObject({ lapNum: 2, lapTime: null });
     expect(store.history[4]).toMatchObject({ lapNum: 1, lapTime: 90.0 });
+  });
+
+  it('valid first lap — time arrives one frame after lap change (original bug)', () => {
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, null, null)); // lap 1→2, time not yet updated
+    push(telemetry, frame(2, 90.0, 90.0)); // same lap, time arrives one frame late
+
+    expect(store.history).toHaveLength(1);
+    expect(store.history[0]).toMatchObject({
+      lapNum: 1,
+      lapTime: 90.0,
+      isBest: true,
+    });
+  });
+
+  it('valid first lap — time arrives two frames after lap change', () => {
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, null, null)); // lap 1→2, time not yet updated
+    push(telemetry, frame(2, null, null)); // still no time
+    push(telemetry, frame(2, 90.0, 90.0)); // time arrives
+
+    expect(store.history).toHaveLength(1);
+    expect(store.history[0]).toMatchObject({
+      lapNum: 1,
+      lapTime: 90.0,
+      isBest: true,
+    });
+  });
+
+  it('two consecutive invalid laps where both had no prior lap time', () => {
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null)); // lap 0→1, skip (completedLapNum=0)
+    push(telemetry, frame(2, null, null)); // lap 1→2, pendingLapNum=1
+    push(telemetry, frame(3, null, null)); // lap 2→3 → flushes lap 1 as null, sets lap 2 pending
+    push(telemetry, frame(4, null, null)); // lap 3→4 → flushes lap 2 as null
+
+    expect(store.history).toHaveLength(2);
+    expect(store.history[0]).toMatchObject({ lapNum: 2, lapTime: null });
+    expect(store.history[1]).toMatchObject({ lapNum: 1, lapTime: null });
+  });
+
+  it('history capped at HISTORY_SIZE (12)', () => {
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+
+    for (let lap = 1; lap <= 13; lap++) {
+      push(telemetry, frame(lap, lap === 1 ? null : 80.0 + lap, 81.0));
+      push(telemetry, frame(lap + 1, 80.0 + lap, 81.0));
+    }
+
+    expect(store.history).toHaveLength(12);
   });
 
   it('delta = lapTime - bestLapTime for non-best laps', () => {
