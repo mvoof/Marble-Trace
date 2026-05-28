@@ -46,7 +46,9 @@ export class LapStore {
         if (lapNum < prevLapNum) {
           pendingLapNum = null;
           pendingPrevLapTime = null;
+
           runInAction(() => this.reset());
+
           return;
         }
 
@@ -79,15 +81,17 @@ export class LapStore {
           if (
             rawLapTime === 0 ||
             (pendingPrevLapTime !== null &&
-              pendingPrevLapTime > 0 &&
-              rawLapTime === pendingPrevLapTime)
+              rawLapTime === pendingPrevLapTime &&
+              (frame.lap_current_lap_time ?? 0) < 1.0)
           )
             return;
 
           if (rawLapTime < 0) {
             const invalidLapNum = pendingLapNum;
+
             pendingLapNum = null;
             pendingPrevLapTime = null;
+
             runInAction(() => {
               this.history = [
                 {
@@ -99,16 +103,19 @@ export class LapStore {
                 ...this.history,
               ].slice(0, HISTORY_SIZE);
             });
+
             return;
           }
 
           const lapTime = rawLapTime;
           const completedLapNum = pendingLapNum;
+
           pendingLapNum = null;
           pendingPrevLapTime = null;
 
           const bestLapTime = frame.lap_best_lap_time ?? 0;
           const isBest = bestLapTime > 0 && lapTime === bestLapTime;
+
           const delta =
             bestLapTime > 0 && !isBest ? lapTime - bestLapTime : null;
 
