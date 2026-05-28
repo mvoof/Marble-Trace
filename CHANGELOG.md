@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] — 2026-05-28
+
+### Added
+
+- **Accurate Radar Proximity:** The selected car length setting is now synchronized and used directly in distance calculations for highly accurate proximity alerts.
+
+### Changed
+
+- **Clean Borderless Fullscreen:** Rebuilt the screen overlay so it perfectly matches your monitor size. This permanently resolves the Windows bug where thin colored borders appeared around the transparent screen when clicking outside the app.
+- **Class-Specific Positions:** In the Relative widget, driver positions are now shown within their own vehicle class rather than the overall race standings. This makes it much easier to track direct competitors in multi-class sessions.
+- **Official Class Colors:** Mapped all vehicle class telemetry colors to match the official iRacing class colors.
+- **Simplified Radar Settings:** Removed redundant and confusing options. The radar bar widget now automatically shows the active side only when active.
+- **Improved Radar Positioning:** Both side bars remain visible in Edit Mode (F9), making them easy to position on your screen.
+- **Cleaned Up Relative UI:** Removed the trend (pace change) icon to reduce visual clutter and improve app performance.
+- **Polished Layouts & Text Spacing:**
+  - Expanded the default width of Standings and Relative widgets to prevent long driver names and car labels from wrapping onto multiple lines.
+  - Reduced column spacing in Standings to make the data more compact and readable.
+  - Aligned class badge and safety rating badge heights for a consistent look.
+  - Reduced the default width of the Delta widget to 150px for a cleaner, less distracting HUD.
+
+### Fixed
+
+- **Phantom Radar Alerts:** Fixed an issue where the radar would occasionally show red proximity indicators when no car was nearby.
+- **Lap Timer Updates:** Fixed an issue where the app could miss lap time updates when recovering from negative telemetry values.
+
 ## [0.13.0] — 2026-05-27
 
 ### Added
