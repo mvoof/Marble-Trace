@@ -80,7 +80,9 @@ export class LapStore {
 
           if (
             rawLapTime === 0 ||
-            (pendingPrevLapTime !== null && rawLapTime === pendingPrevLapTime)
+            (pendingPrevLapTime !== null &&
+              rawLapTime === pendingPrevLapTime &&
+              (frame.lap_current_lap_time ?? 0) < 1.0)
           )
             return;
 

@@ -15,12 +15,14 @@ class MockTelemetryStore {
 const frame = (
   lap: number,
   lap_last_lap_time: number | null = null,
-  lap_best_lap_time: number | null = null
+  lap_best_lap_time: number | null = null,
+  lap_current_lap_time = 0
 ): LapTimingFrame =>
   ({
     lap,
     lap_last_lap_time,
     lap_best_lap_time,
+    lap_current_lap_time,
   }) as unknown as LapTimingFrame;
 
 const push = (telemetry: MockTelemetryStore, f: LapTimingFrame) => {
@@ -252,6 +254,37 @@ describe('LapStore', () => {
 
     expect(store.history).toHaveLength(0);
     expect(store.lastCompletedLap).toBeNull();
+  });
+
+  it('two consecutive laps with equal times — second lap recorded correctly', () => {
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, 90.0, 90.0)); // lap 1 recorded: time=90.0
+
+    // lap 2 also runs 90.0; pendingPrevLapTime=90.0 after transition
+    push(telemetry, frame(3, 90.0, 90.0, 0.0)); // lap_current_lap_time=0 → wait
+    push(telemetry, frame(3, 90.0, 90.0, 0.5)); // still < 1.0 → wait
+    push(telemetry, frame(3, 90.0, 90.0, 1.5)); // >= 1.0 → accept equal time
+
+    expect(store.history).toHaveLength(2);
+    expect(store.history[0]).toMatchObject({ lapNum: 2, lapTime: 90.0 });
+    expect(store.history[1]).toMatchObject({ lapNum: 1, lapTime: 90.0 });
+  });
+
+  it('equal lap time — waits until lap_current_lap_time >= 1.0', () => {
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, 90.0, 90.0));
+    push(telemetry, frame(3, 90.0, 90.0, 0.0)); // wait
+
+    expect(store.history).toHaveLength(1); // lap 2 not yet recorded
+
+    push(telemetry, frame(3, 90.0, 90.0, 0.99)); // still < 1.0 → wait
+    expect(store.history).toHaveLength(1);
+
+    push(telemetry, frame(3, 90.0, 90.0, 1.0)); // exactly 1.0 → accepted (condition is strict <)
+    expect(store.history).toHaveLength(2);
+    expect(store.history[0]).toMatchObject({ lapNum: 2, lapTime: 90.0 });
   });
 
   it('lastCompletedLap updates on valid lap, not on INV', () => {
