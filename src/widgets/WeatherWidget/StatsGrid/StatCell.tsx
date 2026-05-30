@@ -117,7 +117,7 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     const info = getTrackWetnessInfo(wetness);
 
     label = 'TRACK';
-    value = info?.label ?? 'DRY';
+    value = info?.label ?? '--';
     customBorderColor = info?.color;
   }
 
