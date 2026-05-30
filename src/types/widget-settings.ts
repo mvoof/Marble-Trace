@@ -89,6 +89,7 @@ export interface TrackMapWidgetSettings {
   trackBorderPx: number;
   sectorStrokePx: number;
   targetDotRadiusPx: number;
+  showStartFinish?: boolean;
 }
 
 export type LinearMapOrientation = 'horizontal' | 'vertical';

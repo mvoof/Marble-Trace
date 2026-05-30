@@ -326,6 +326,7 @@ export const WIDGETS: WidgetConfig[] = [
       trackBorderPx: 3,
       sectorStrokePx: 6,
       targetDotRadiusPx: 10,
+      showStartFinish: true,
     },
   },
   {

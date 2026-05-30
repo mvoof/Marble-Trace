@@ -111,6 +111,8 @@ export const TrackMapView = observer(
 
     const visibleSectors = settings.showSectorsOnMap ? sectors : null;
 
+    const showStartFinish = settings.showStartFinish ?? true;
+
     return (
       <WidgetPanel className={styles.trackMap} gap={0}>
         {dragMode && onRotate && <RotationControls onRotate={onRotate} />}
@@ -128,6 +130,7 @@ export const TrackMapView = observer(
           trackBorderPx={settings.trackBorderPx}
           sectorStrokePx={settings.sectorStrokePx}
           targetDotRadiusPx={settings.targetDotRadiusPx}
+          showStartFinish={showStartFinish}
         />
       </WidgetPanel>
     );
