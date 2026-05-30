@@ -2,7 +2,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: ws(2) ws(8) ws(8);
+  padding: ws(4) ws(8) ws(8);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: ws(2);
 }
 
 .footerItem {
