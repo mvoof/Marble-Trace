@@ -23,9 +23,10 @@ import {
 
 interface DriverRowProps {
   carIdx: number;
+  index: number;
 }
 
-export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
+export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
@@ -52,6 +53,7 @@ export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
   const rowClass = [
     styles.driverRow,
     driver.isPlayer ? styles.driverRowPlayer : '',
+    index % 2 !== 0 ? styles.rowOdd : '',
     isOffTrack ? styles.driverRowOffTrack : '',
   ]
     .filter(Boolean)

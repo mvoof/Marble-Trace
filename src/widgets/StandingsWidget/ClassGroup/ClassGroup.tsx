@@ -9,8 +9,8 @@ interface ClassGroupProps {
 
 export const ClassGroup = observer(({ group }: ClassGroupProps) => (
   <>
-    {group.drivers.map((driver) => (
-      <DriverRow key={driver.carIdx} carIdx={driver.carIdx} />
+    {group.drivers.map((driver, index) => (
+      <DriverRow key={driver.carIdx} carIdx={driver.carIdx} index={index} />
     ))}
   </>
 ));

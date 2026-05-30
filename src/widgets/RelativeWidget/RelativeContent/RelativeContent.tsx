@@ -38,8 +38,8 @@ export const RelativeContent = observer(() => {
 
   return (
     <div ref={driverListRef} className={styles.driverList}>
-      {displayEntries.map((entry) => (
-        <DriverRow key={entry.carIdx} driver={entry} />
+      {displayEntries.map((entry, index) => (
+        <DriverRow key={entry.carIdx} driver={entry} index={index} />
       ))}
     </div>
   );
