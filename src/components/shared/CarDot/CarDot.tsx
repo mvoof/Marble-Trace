@@ -25,7 +25,7 @@ export const CarDot = observer(
     isPlayer,
     radius = 10,
     label,
-    playerColor = 'white',
+    playerColor = '#18181b',
   }: CarDotProps) => {
     const r = isPlayer ? radius * PLAYER_RADIUS_SCALE : radius;
     const fontSize = radius * NUMBER_FONT_TO_RADIUS;
@@ -40,7 +40,7 @@ export const CarDot = observer(
       >
         <circle
           r={r}
-          fill={isPlayer ? playerColor : '#18181b'}
+          className={styles.carCircle}
           stroke={carClassColor}
           strokeWidth={radius * STROKE_TO_RADIUS}
         />

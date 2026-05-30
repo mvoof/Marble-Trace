@@ -1,4 +1,4 @@
-﻿import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { TrackPoint } from '@/types';
@@ -36,7 +36,7 @@ export const TrackMapSvg = observer(
     cars,
     sectors,
     sfLabel = 'S/F',
-    playerDotColor = 'white',
+    playerDotColor = '#18181b',
     showPlayerLabel = true,
     leaderLabelMode = 'all',
     trackStrokePx = 10,

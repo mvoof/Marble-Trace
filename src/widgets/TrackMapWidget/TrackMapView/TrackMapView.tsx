@@ -41,11 +41,15 @@ export const TrackMapView = observer(
     const telemetry = useTelemetryStore();
     const computed = useBackendComputedStore();
     const widgetSettings = useWidgetSettingsStore();
+
     const rawSettings =
       widgetSettings.getSettings<TrackMapWidgetSettings>('track-map');
+
     const showSectors = rawSettings.showSectors ?? true;
     const showSectorsOnMap = rawSettings.showSectorsOnMap ?? showSectors;
+
     const settings = { ...rawSettings, showSectors, showSectorsOnMap };
+
     const sectors = telemetry.sessionInfo?.SplitTimeInfo?.Sectors;
 
     const driverEntries = computed.standings?.entries ?? [];
