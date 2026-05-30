@@ -107,6 +107,7 @@ export interface WeatherWidgetSettings {
   showWind: boolean;
   showHumidity: boolean;
   showForecast: boolean;
+  showTrackWetness: boolean;
 }
 
 export interface FuelWidgetSettings {

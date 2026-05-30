@@ -32,10 +32,22 @@ export const DeltaLive = observer(() => {
     return null;
   }
 
+  const deltaStr = formatDelta(delta);
+  let fontSizeStyle = {};
+
+  if (deltaStr.length >= 12) {
+    fontSizeStyle = { fontSize: 'calc(18px * var(--wfs, 1))' };
+  } else if (deltaStr.length >= 9) {
+    fontSizeStyle = { fontSize: 'calc(24px * var(--wfs, 1))' };
+  }
+
   return (
     <div className={styles.root}>
-      <div className={`${styles.delta} ${DELTA_CLASS[getDeltaState(delta)]}`}>
-        {formatDelta(delta)}
+      <div
+        className={`${styles.delta} ${DELTA_CLASS[getDeltaState(delta)]}`}
+        style={fontSizeStyle}
+      >
+        {deltaStr}
       </div>
       <ReferenceBadge reference={reference} className={styles.badge} />
     </div>

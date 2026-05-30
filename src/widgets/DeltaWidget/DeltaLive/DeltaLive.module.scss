@@ -2,24 +2,28 @@
   position: relative;
   width: 100%;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .badge {
   position: absolute;
-  top: ws(0);
-  right: ws(0);
-  font-size: ws(12);
+  top: ws(4);
+  right: ws(8);
+  font-size: ws(11);
 }
 
 .delta {
   font-family: $font-mono;
   font-size: ws(32);
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.2;
   font-variant-numeric: tabular-nums;
   text-align: center;
   white-space: nowrap;
-  padding: ws(16) ws(12);
+  padding: ws(8) ws(8);
   width: 100%;
 }
 

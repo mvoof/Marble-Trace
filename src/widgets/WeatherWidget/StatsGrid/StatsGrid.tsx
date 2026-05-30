@@ -9,10 +9,11 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 export const StatsGrid = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
-  const { showAirTemp, showTrackTemp, showWind, showHumidity } =
+  const { showWind, showHumidity, showTrackWetness, showTrackTemp } =
     widgetSettings.getSettings<WeatherWidgetSettings>('weather');
 
-  const hasStats = showAirTemp || showTrackTemp || showWind || showHumidity;
+  const hasStats =
+    showWind || showHumidity || showTrackWetness || showTrackTemp;
 
   if (!hasStats) {
     return null;
@@ -20,9 +21,9 @@ export const StatsGrid = observer(() => {
 
   return (
     <div className={styles.statsGrid}>
-      <StatCell type="airTemp" />
       <StatCell type="trackTemp" />
       <StatCell type="wind" />
+      <StatCell type="trackWetness" />
       <StatCell type="humidity" />
     </div>
   );

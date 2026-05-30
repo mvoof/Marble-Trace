@@ -6,7 +6,12 @@ import {
   speedUnit as _speedUnit,
   tempUnit,
 } from '@utils/formatters/telemetry-format';
-import { getWindColor, parseWeekendFloat } from '@utils/widget/weather-utils';
+import {
+  getWindColor,
+  parseWeekendFloat,
+  getTrackWetnessInfo,
+} from '@utils/widget/weather-utils';
+import { getAirTempColor, getTrackTempColor } from '@utils/widget/widget-utils';
 
 import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
@@ -18,16 +23,26 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
-export type StatCellType = 'airTemp' | 'trackTemp' | 'wind' | 'humidity';
+export type StatCellType =
+  | 'airTemp'
+  | 'trackTemp'
+  | 'wind'
+  | 'humidity'
+  | 'trackWetness';
 
 const STAT_CELL_SETTING_KEY: Record<
   StatCellType,
-  'showAirTemp' | 'showTrackTemp' | 'showWind' | 'showHumidity'
+  | 'showAirTemp'
+  | 'showTrackTemp'
+  | 'showWind'
+  | 'showHumidity'
+  | 'showTrackWetness'
 > = {
   airTemp: 'showAirTemp',
   trackTemp: 'showTrackTemp',
   wind: 'showWind',
   humidity: 'showHumidity',
+  trackWetness: 'showTrackWetness',
 };
 
 const ACCENT_CLASS: Partial<Record<StatCellType, string>> = {
@@ -57,7 +72,8 @@ export const StatCell = observer(({ type }: StatCellProps) => {
   let label = '';
   let value = '';
   let unit: string | undefined;
-  let windColor: string | undefined;
+
+  let customBorderColor: string | undefined;
 
   if (type === 'airTemp') {
     const airTempC =
@@ -66,6 +82,10 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     label = 'AIR';
     value = formatTemp(airTempC, unitSystem);
     unit = tempUnit(unitSystem);
+
+    if (airTempC !== null) {
+      customBorderColor = getAirTempColor(airTempC);
+    }
   } else if (type === 'trackTemp') {
     const trackTempC =
       env?.track_temp ?? parseWeekendFloat(weekendInfo?.TrackSurfaceTemp);
@@ -73,6 +93,9 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     label = 'TRK';
     value = formatTemp(trackTempC, unitSystem);
     unit = tempUnit(unitSystem);
+    if (trackTempC !== null) {
+      customBorderColor = getTrackTempColor(trackTempC);
+    }
   } else if (type === 'wind') {
     const windVelMps =
       env?.wind_vel ?? parseWeekendFloat(weekendInfo?.TrackWindVel);
@@ -80,7 +103,7 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     label = 'WIND';
     value = windVelMps !== null ? _formatSpeed(windVelMps, unitSystem) : '--.-';
     unit = _speedUnit(unitSystem);
-    windColor = getWindColor(windVelMps);
+    customBorderColor = getWindColor(windVelMps);
   } else if (type === 'humidity') {
     const rawHumidity =
       env?.relative_humidity !== undefined && env?.relative_humidity !== null
@@ -89,6 +112,13 @@ export const StatCell = observer(({ type }: StatCellProps) => {
 
     label = 'HUM.';
     value = rawHumidity !== null ? `${Math.round(rawHumidity)}%` : '--%';
+  } else if (type === 'trackWetness') {
+    const wetness = env?.track_wetness;
+    const info = getTrackWetnessInfo(wetness);
+
+    label = 'TRACK';
+    value = info?.label ?? '--';
+    customBorderColor = info?.color;
   }
 
   const accentClass = ACCENT_CLASS[type] ?? styles.accentNeutral;
@@ -97,7 +127,9 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     <div
       className={`${styles.statCell} ${accentClass}`}
       style={
-        windColor !== undefined ? { borderLeftColor: windColor } : undefined
+        customBorderColor !== undefined
+          ? { borderLeftColor: customBorderColor }
+          : undefined
       }
     >
       <WidgetLabel mono uppercase={false} className={styles.statLabel}>

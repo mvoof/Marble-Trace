@@ -1,11 +1,31 @@
 .clockItem {
   display: flex;
-  white-space: nowrap;
-  align-items: center;
-  gap: 0.4em;
+  flex-direction: column;
+  align-items: flex-start;
   font-family: $font-mono;
-  font-size: ws(12);
+}
+
+.clockItemRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: $font-mono;
+}
+
+.label {
+  font-size: ws(8);
+  font-weight: 600;
+  color: $widget-text-muted;
+  letter-spacing: 0.8px;
+  line-height: 1;
+  margin-bottom: ws(1);
+}
+
+.value {
+  font-size: ws(13);
   font-weight: 900;
   color: $widget-text-primary;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  white-space: nowrap;
 }

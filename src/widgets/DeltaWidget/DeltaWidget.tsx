@@ -37,8 +37,10 @@ export const DeltaWidget = observer(() => {
     rawLapTime > 0 &&
     rawLapTime === (lapTiming?.lap_best_lap_time ?? 0);
 
+  const containerClass = `${styles.container} ${showFlash ? styles.hasFlash : ''}`;
+
   return (
-    <div className={styles.container}>
+    <div className={containerClass}>
       <div className={styles.deltaWrapper}>
         <DeltaLive />
       </div>

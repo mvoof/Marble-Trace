@@ -56,6 +56,12 @@ export const WeatherSettingsPanel = observer(() => {
           value: settings.showForecast,
           key: 'showForecast',
         },
+        {
+          title: 'Track Wetness State',
+          desc: 'Current track surface wetness level (Dry, Damp, Wet, Flooded).',
+          value: settings.showTrackWetness,
+          key: 'showTrackWetness',
+        },
       ].map((item) => (
         <div key={item.key} className={styles.fieldGroup}>
           <SettingRow title={item.title} desc={item.desc}>
