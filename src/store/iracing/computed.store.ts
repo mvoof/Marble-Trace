@@ -44,7 +44,7 @@ const normalizeIRacingColor = (raw: string): string => {
  * Colors not in the map are passed through as-is after normalization.
  */
 const resolveClassColor = (rawColor: string): string => {
-  if (!rawColor) return '';
+  if (!rawColor) return '#888888';
 
   const normalized = normalizeIRacingColor(rawColor);
 
