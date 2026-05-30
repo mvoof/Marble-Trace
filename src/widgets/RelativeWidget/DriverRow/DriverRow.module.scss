@@ -57,7 +57,7 @@
 }
 
 .driverCarNumber {
-  font-size: ws(13);
+  font-size: ws(12);
   font-family: $font-mono;
   color: $widget-text-primary;
 }
@@ -77,7 +77,7 @@
 
 .driverName {
   font-weight: 700;
-  font-size: ws(14);
+  font-size: ws(15);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

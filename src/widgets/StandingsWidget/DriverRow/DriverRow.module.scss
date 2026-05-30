@@ -73,8 +73,8 @@
   align-items: center;
   justify-content: center;
   font-family: $font-mono;
-  font-size: ws(12);
-  font-weight: 700;
+  font-size: ws(13);
+  font-weight: 400;
 }
 
 .posChangeDown {
@@ -83,8 +83,8 @@
   align-items: center;
   justify-content: center;
   font-family: $font-mono;
-  font-size: ws(12);
-  font-weight: 700;
+  font-size: ws(13);
+  font-weight: 400;
 }
 
 .posChangeNeutral {
@@ -97,7 +97,7 @@
 // Car number
 .carNumber {
   font-family: $font-mono;
-  font-size: ws(14);
+  font-size: ws(13);
   color: $widget-text-primary;
 }
 
@@ -134,7 +134,7 @@
 // Brand label
 .brandLabel {
   font-family: $font-mono;
-  font-size: ws(12);
+  font-size: ws(11);
   color: $widget-text-secondary;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -152,9 +152,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: ws(12);
+  font-size: ws(13);
   font-family: $font-mono;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .irChangeUp {
@@ -179,20 +179,23 @@
 .lapsCompleted {
   font-family: $font-mono;
   font-size: ws(13);
+  font-weight: 400;
   color: $widget-text-primary;
 }
 
 // Gap
 .gapLeader {
   font-family: $font-mono;
+  font-size: ws(13);
+  font-weight: 400;
   color: $widget-text-primary;
-  font-size: ws(14);
 }
 
 .gapValue {
   font-family: $font-mono;
+  font-size: ws(13);
+  font-weight: 400;
   color: $widget-text-primary;
-  font-size: ws(14);
 }
 
 // Lap time columns

@@ -93,11 +93,14 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       // In practice/qualifying, gap is the difference in best lap times
       if (driver.bestLapTime > 0 && leader && leader.bestLapTime > 0) {
         const timeDiff = driver.bestLapTime - leader.bestLapTime;
+
         if (timeDiff > 0) {
           return <span className={styles.gapValue}>{timeDiff.toFixed(1)}</span>;
         }
+
         return <span className={styles.gapLeader}>-</span>;
       }
+
       return <span className={styles.gapLeader}>--.-</span>;
     }
 
@@ -105,11 +108,13 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
     if (lapsBehind >= 1) {
       return <span className={styles.gapValue}>{lapsBehind} L</span>;
     }
+
     if (driver.f2Time > 0) {
       return (
         <span className={styles.gapValue}>{driver.f2Time.toFixed(1)}</span>
       );
     }
+
     return <span className={styles.gapLeader}>--.-</span>;
   })();
 
