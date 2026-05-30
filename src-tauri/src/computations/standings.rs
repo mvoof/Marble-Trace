@@ -8,7 +8,6 @@ use crate::iracing::enums::TrackSurface;
 use crate::iracing::frames::AllFieldsFrame;
 use crate::utils::lock_or_recover;
 
-const NO_CLASS_COLOR: &str = "#888888";
 const NO_CLASS_LABEL: &str = "No Class";
 const MAX_BADGE_LENGTH: usize = 8;
 const MIN_ABBR_LENGTH: usize = 2;
@@ -91,23 +90,6 @@ fn get_compact_badge_name(screen_name_short: &str) -> String {
     }
 
     badge
-}
-
-fn normalize_hex_color(raw_color: &Option<String>) -> String {
-    match raw_color {
-        None => NO_CLASS_COLOR.to_string(),
-        Some(color) if color.is_empty() => NO_CLASS_COLOR.to_string(),
-        Some(color) => {
-            let trimmed = color.trim();
-            let hex = trimmed
-                .strip_prefix("0x")
-                .or_else(|| trimmed.strip_prefix("0X"))
-                .unwrap_or(trimmed)
-                .to_lowercase();
-
-            format!("#{hex}")
-        }
-    }
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
@@ -287,7 +269,7 @@ pub fn compute(
                 car_number: driver.car_number.clone().unwrap_or_default(),
                 car_class_id: driver.car_class_id.unwrap_or(-1),
                 car_class_short_name,
-                car_class_color: normalize_hex_color(&driver.car_class_color),
+                car_class_color: driver.car_class_color.clone().unwrap_or_default(),
                 car_screen_name: driver.car_screen_name.clone().unwrap_or_default(),
                 car_screen_name_short,
                 tire_compound,

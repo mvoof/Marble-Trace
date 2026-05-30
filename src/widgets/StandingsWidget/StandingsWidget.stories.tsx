@@ -37,8 +37,8 @@ const PLAYER_CAR_IDX =
   DRIVER_ENTRIES.find((entry) => entry.isPlayer)?.carIdx ?? 0;
 
 const DEFAULT_SETTINGS: StandingsWidgetSettings = {
-  enableClassCycling: false,
-  classCyclingToggleHotkey: '',
+  viewMode: 'all',
+  viewModeHotkey: '',
   classPrevHotkey: '',
   classNextHotkey: '',
   showPosChange: true,
@@ -119,7 +119,7 @@ export const Default: Story = {};
 
 export const ClassCycling: Story = {
   args: {
-    settings: { ...DEFAULT_SETTINGS, enableClassCycling: true },
+    settings: { ...DEFAULT_SETTINGS, viewMode: 'cycling' },
     activeClassIndex: 0,
   },
 };
@@ -168,14 +168,14 @@ export const NoHeaders: Story = {
 
 export const SecondClass: Story = {
   args: {
-    settings: { ...DEFAULT_SETTINGS, enableClassCycling: true },
+    settings: { ...DEFAULT_SETTINGS, viewMode: 'cycling' },
     activeClassIndex: 1,
   },
 };
 
 export const ThirdClass: Story = {
   args: {
-    settings: { ...DEFAULT_SETTINGS, enableClassCycling: true },
+    settings: { ...DEFAULT_SETTINGS, viewMode: 'cycling' },
     activeClassIndex: 2,
   },
 };

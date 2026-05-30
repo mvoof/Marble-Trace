@@ -1,6 +1,9 @@
 import { observer } from 'mobx-react-lite';
-import { Switch } from 'antd';
-import { StandingsWidgetSettings } from '@/types/widget-settings';
+import { Switch, Segmented } from 'antd';
+import type {
+  StandingsViewMode,
+  StandingsWidgetSettings,
+} from '@/types/widget-settings';
 import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card, SettingRow } from './shared';
@@ -21,30 +24,33 @@ export const StandingsSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title="Logic & Grouping">
-        <SettingRow
-          title="Class Cycling"
-          desc="Show one class at a time. Off shows all drivers combined."
-        >
-          <Switch
-            checked={settings.enableClassCycling}
-            onChange={(v) => update({ enableClassCycling: v })}
+      <Card title="View Mode">
+        <div className={styles.fieldGroup}>
+          <Segmented<StandingsViewMode>
+            block
+            value={settings.viewMode}
+            onChange={(v) => update({ viewMode: v })}
+            options={[
+              { label: 'All Drivers', value: 'all' },
+              { label: 'Group by Class', value: 'grouped' },
+              { label: 'Class Cycling', value: 'cycling' },
+            ]}
           />
-        </SettingRow>
+        </div>
       </Card>
 
       <Card title="Hotkeys">
         <div className={styles.fieldGroup}>
           <HotkeyRecorder
-            label="Toggle Class Cycling"
-            currentHotkey={settings.classCyclingToggleHotkey}
-            onApply={(key) => update({ classCyclingToggleHotkey: key })}
+            label="Cycle View Mode (All → Grouped → Cycling)"
+            currentHotkey={settings.viewModeHotkey}
+            onApply={(key) => update({ viewModeHotkey: key })}
           />
         </div>
 
         <div className={styles.fieldGroup}>
           <HotkeyRecorder
-            label="Previous Class"
+            label="Previous Class (Cycling mode)"
             currentHotkey={settings.classPrevHotkey}
             onApply={(key) => update({ classPrevHotkey: key })}
           />
@@ -52,7 +58,7 @@ export const StandingsSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <HotkeyRecorder
-            label="Next Class"
+            label="Next Class (Cycling mode)"
             currentHotkey={settings.classNextHotkey}
             onApply={(key) => update({ classNextHotkey: key })}
           />

@@ -31,6 +31,9 @@ export const StandingsContent = observer(() => {
   const activeClassIndex = widgetSettings.standingsActiveClassIndex;
   const overallSof = computeClassSof(driverEntries);
 
+  const isGrouped =
+    settings.viewMode === 'grouped' && allClassGroups.length > 0;
+
   const { ref: listRef, count: visibleRowCount } =
     useVisibleRowCount<HTMLDivElement>(
       settings.showColumnHeaders ? 1 : 0,
@@ -38,8 +41,19 @@ export const StandingsContent = observer(() => {
       '[data-driver-row]'
     );
 
+  const rowsPerGroupedClass = (() => {
+    if (!isGrouped || allClassGroups.length === 0) {
+      return 0;
+    }
+
+    const classHeaderRows = allClassGroups.length;
+    const available = Math.max(1, visibleRowCount - classHeaderRows);
+
+    return Math.max(1, Math.floor(available / allClassGroups.length));
+  })();
+
   const displayGroup = (): DriverGroup => {
-    if (settings.enableClassCycling && allClassGroups.length > 0) {
+    if (settings.viewMode === 'cycling' && allClassGroups.length > 0) {
       const clampedIndex = Math.max(
         0,
         Math.min(activeClassIndex, allClassGroups.length - 1)
@@ -73,7 +87,20 @@ export const StandingsContent = observer(() => {
       <div ref={listRef} className={styles.listWrap}>
         <StandingsHeader />
 
-        <ClassGroup group={displayGroup()} />
+        {isGrouped ? (
+          allClassGroups.map((group) => (
+            <ClassGroup
+              key={group.classId}
+              group={{
+                ...group,
+                drivers: sliceWithPlayerPin(group.drivers, rowsPerGroupedClass),
+              }}
+              showHeader
+            />
+          ))
+        ) : (
+          <ClassGroup group={displayGroup()} />
+        )}
       </div>
 
       <SessionFooter />

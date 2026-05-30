@@ -16,19 +16,40 @@ interface StartPosition {
   class: number;
 }
 
-// iRacing telemetry class colors don't match in-game display colors.
-// This map corrects them to match what the player sees in-game.
+// iRacing session YAML reports class colors as "0xRRGGBB" strings.
+// Some telemetry colors don't match what iRacing displays in-game — this map corrects them.
+// Keys are normalized hex strings (#rrggbb from raw 0xRRGGBB), values are the in-game color.
 const IRACING_CLASS_COLOR_MAP = new Map<string, string>([
-  ['#53ff77', '#ff5888'], // Telemetry Green -> In-game Pink
-  ['#ae6bff', '#00c0ff'], // Telemetry Purple -> In-game Cyan
-  ['#d35400', '#ae6bff'], // Telemetry Orange -> In-game Purple
-  ['#ff5888', '#ef4444'], // Telemetry Pink -> In-game Soft Red
-  ['#ffda59', '#ffd259'], // Telemetry Yellow (slight hue correction)
-  ['#33ceff', '#006eff'], // Telemetry Cyan -> In-game Blue
+  ['#53ff77', '#ff7199'],
+  ['#ae6bff', '#5cecff'],
+  ['#d35400', '#a07cc8'],
+  ['#ff5888', '#ef4444'],
+  ['#ffda59', '#ffd259'],
+  ['#33ceff', '#4d7bd9'],
 ]);
 
-const resolveClassColor = (rawColor: string): string =>
-  IRACING_CLASS_COLOR_MAP.get(rawColor) ?? rawColor;
+const normalizeIRacingColor = (raw: string): string => {
+  const trimmed = raw.trim();
+
+  const hex =
+    trimmed.startsWith('0x') || trimmed.startsWith('0X')
+      ? trimmed.slice(2).toLowerCase()
+      : trimmed.replace(/^#/, '').toLowerCase();
+
+  return `#${hex}`;
+};
+
+/**
+ * Normalizes a raw iRacing class color (0xRRGGBB) and applies in-game color corrections.
+ * Colors not in the map are passed through as-is after normalization.
+ */
+const resolveClassColor = (rawColor: string): string => {
+  if (!rawColor) return '';
+
+  const normalized = normalizeIRacingColor(rawColor);
+
+  return IRACING_CLASS_COLOR_MAP.get(normalized) ?? normalized;
+};
 
 const computeClassSof = (drivers: DriverEntry[]): number => {
   if (drivers.length === 0) return 0;
@@ -109,8 +130,8 @@ export class BackendComputedStore {
 
         return {
           classId,
-          className: first.carScreenNameShort,
-          classShortName: first.carScreenNameShort,
+          className: first.carClassShortName,
+          classShortName: first.carClassShortName,
           classColor: first.carClassColor,
           totalDrivers: driversInClass.length,
           classSof: computeClassSof(driversInClass),

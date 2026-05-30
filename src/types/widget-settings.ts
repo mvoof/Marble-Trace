@@ -40,9 +40,11 @@ export interface RadarSettings {
   carLength: number;
 }
 
+export type StandingsViewMode = 'all' | 'cycling' | 'grouped';
+
 export interface StandingsWidgetSettings {
-  enableClassCycling: boolean;
-  classCyclingToggleHotkey: string;
+  viewMode: StandingsViewMode;
+  viewModeHotkey: string;
   classPrevHotkey: string;
   classNextHotkey: string;
   showPosChange: boolean;

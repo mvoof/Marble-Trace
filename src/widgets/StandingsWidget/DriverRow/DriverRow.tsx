@@ -55,9 +55,9 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
   const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
-  const pos = settings.enableClassCycling
-    ? driver.classPosition
-    : driver.position;
+  const useClassPos = settings.viewMode !== 'all';
+
+  const pos = useClassPos ? driver.classPosition : driver.position;
 
   const isLeader = pos === 1;
 
@@ -73,7 +73,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   const formattedCarNumber = formatCarNumber(driver.carNumber);
 
   // Get leader of current class/group from cached store for gap/deficit calculation
-  const leader = settings.enableClassCycling
+  const leader = useClassPos
     ? (computed.classLeaders.get(driver.carClassId) ?? null)
     : computed.overallLeader;
 
@@ -170,7 +170,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         </div>
       )}
 
-      {!settings.enableClassCycling && settings.showClassBadge && (
+      {settings.viewMode === 'all' && settings.showClassBadge && (
         <div className={`${styles.cell} ${styles.cellCenter}`}>
           <ClassBadge
             color={driver.carClassColor}

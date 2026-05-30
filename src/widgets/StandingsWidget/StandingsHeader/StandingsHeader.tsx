@@ -37,7 +37,7 @@ export const StandingsHeader = observer(() => {
         <StandingsHeaderCell align="center">Tire</StandingsHeaderCell>
       )}
 
-      {!settings.enableClassCycling && settings.showClassBadge && (
+      {settings.viewMode === 'all' && settings.showClassBadge && (
         <StandingsHeaderCell align="center">Class</StandingsHeaderCell>
       )}
 

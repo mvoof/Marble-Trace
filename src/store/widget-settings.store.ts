@@ -7,6 +7,7 @@ import type {
   WidgetDefaultConfig,
   BaseUserSettings,
   FuelWidgetSettings,
+  StandingsViewMode,
   StandingsWidgetSettings,
   WidgetSpecificSettings,
   WidgetUserSettings,
@@ -82,12 +83,15 @@ export class WidgetSettingsStore {
       clamped === totalClasses - 1 ? 0 : clamped + 1;
   }
 
-  toggleStandingsClassCycling() {
+  cycleStandingsViewMode() {
     const settings = this.getSettings<StandingsWidgetSettings>('standings');
+    const order: StandingsViewMode[] = ['all', 'grouped', 'cycling'];
+    const currentIdx = order.indexOf(settings.viewMode);
+    const nextIdx = (currentIdx + 1) % order.length;
 
     this.updateUserSettings('standings', {
       ...settings,
-      enableClassCycling: !settings.enableClassCycling,
+      viewMode: order[nextIdx],
     });
   }
 

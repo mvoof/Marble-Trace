@@ -25,11 +25,11 @@ export const PosChange = observer(({ carIdx }: PosChangeProps) => {
     return null;
   }
 
-  const position = settings.enableClassCycling
-    ? driver.classPosition
-    : driver.position;
+  const useClassPos = settings.viewMode !== 'all';
 
-  const startPos = settings.enableClassCycling
+  const position = useClassPos ? driver.classPosition : driver.position;
+
+  const startPos = useClassPos
     ? effectiveStartPos.class
     : effectiveStartPos.overall;
 
