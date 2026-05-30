@@ -122,24 +122,26 @@ export const extractForecast = (
 export type WeatherIconType = 'sun' | 'cloud-sun' | 'cloud' | 'cloud-rain';
 
 export const getWeatherIcon = (
-  skies: string | null | undefined,
+  skies: string | number | null | undefined,
   wetness: number | null | undefined
 ): WeatherIconType => {
   if (wetness != null && wetness >= 3) {
     return 'cloud-rain';
   }
 
-  if (!skies) return 'sun';
+  if (skies == null || skies === '') return 'sun';
 
-  if (skies === 'Clear' || skies === '0') return 'sun';
+  const skiesStr = String(skies);
 
-  if (skies === 'PartlyCloudy' || skies === '1') return 'cloud-sun';
+  if (skiesStr === 'Clear' || skiesStr === '0') return 'sun';
+
+  if (skiesStr === 'PartlyCloudy' || skiesStr === '1') return 'cloud-sun';
 
   if (
-    skies === 'MostlyCloudy' ||
-    skies === '2' ||
-    skies === 'Overcast' ||
-    skies === '3'
+    skiesStr === 'MostlyCloudy' ||
+    skiesStr === '2' ||
+    skiesStr === 'Overcast' ||
+    skiesStr === '3'
   ) {
     return 'cloud';
   }
