@@ -15,6 +15,7 @@ import { SessionHeader } from '@widgets/StandingsWidget/SessionHeader/SessionHea
 import { ClassGroup } from '@widgets/StandingsWidget/ClassGroup/ClassGroup';
 import { ClassSwitcher } from '@widgets/StandingsWidget/ClassSwitcher/ClassSwitcher';
 import { StandingsHeader } from '@widgets/StandingsWidget/StandingsHeader/StandingsHeader';
+import { SessionFooter } from '@widgets/StandingsWidget/SessionFooter/SessionFooter';
 
 import styles from './StandingsContent.module.scss';
 
@@ -74,6 +75,8 @@ export const StandingsContent = observer(() => {
 
         <ClassGroup group={displayGroup()} />
       </div>
+
+      <SessionFooter />
     </>
   );
 });
