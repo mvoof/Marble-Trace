@@ -21,6 +21,38 @@ export const getWindColor = (mps: number | null): string => {
   return '#3399ff';
 };
 
+export interface TrackWetnessInfo {
+  label: string;
+  color: string;
+  isWet: boolean;
+}
+
+export const getTrackWetnessInfo = (
+  wetness: number | null | undefined
+): TrackWetnessInfo | null => {
+  if (wetness == null) return null;
+
+  switch (wetness) {
+    case 0:
+      return { label: 'UNKNOWN', color: '#7d8794', isWet: false };
+    case 1:
+      return { label: 'DRY', color: '#a57d27', isWet: false };
+    case 2:
+      return { label: 'MOSTLY DRY', color: '#82a860', isWet: false };
+    case 3:
+      return { label: 'V. LIGHT WET', color: '#5f8fc4', isWet: true };
+    case 4:
+      return { label: 'LIGHTLY WET', color: '#4d78b8', isWet: true };
+    case 5:
+      return { label: 'MOD. WET', color: '#3d60a0', isWet: true };
+    case 6:
+      return { label: 'VERY WET', color: '#b87030', isWet: true };
+    case 7:
+    default:
+      return { label: 'EXT. WET', color: '#b04040', isWet: true };
+  }
+};
+
 export const parseWeekendFloat = (
   value: string | null | undefined
 ): number | null => {
@@ -86,3 +118,31 @@ export const extractForecast = (
   return [];
 };
 /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any */
+
+export type WeatherIconType = 'sun' | 'cloud-sun' | 'cloud' | 'cloud-rain';
+
+export const getWeatherIcon = (
+  skies: string | null | undefined,
+  wetness: number | null | undefined
+): WeatherIconType => {
+  if (wetness != null && wetness >= 3) {
+    return 'cloud-rain';
+  }
+
+  if (!skies) return 'sun';
+
+  if (skies === 'Clear' || skies === '0') return 'sun';
+
+  if (skies === 'PartlyCloudy' || skies === '1') return 'cloud-sun';
+
+  if (
+    skies === 'MostlyCloudy' ||
+    skies === '2' ||
+    skies === 'Overcast' ||
+    skies === '3'
+  ) {
+    return 'cloud';
+  }
+
+  return 'sun';
+};

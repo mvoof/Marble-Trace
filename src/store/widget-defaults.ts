@@ -516,6 +516,7 @@ export const WIDGETS: WidgetConfig[] = [
       showWind: true,
       showHumidity: true,
       showForecast: true,
+      showTrackWetness: true,
     },
   },
   {

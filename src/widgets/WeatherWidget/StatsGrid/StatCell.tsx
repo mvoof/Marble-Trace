@@ -6,7 +6,11 @@ import {
   speedUnit as _speedUnit,
   tempUnit,
 } from '@utils/formatters/telemetry-format';
-import { getWindColor, parseWeekendFloat } from '@utils/widget/weather-utils';
+import {
+  getWindColor,
+  parseWeekendFloat,
+  getTrackWetnessInfo,
+} from '@utils/widget/weather-utils';
 import { getAirTempColor, getTrackTempColor } from '@utils/widget/widget-utils';
 
 import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
@@ -19,16 +23,26 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
-export type StatCellType = 'airTemp' | 'trackTemp' | 'wind' | 'humidity';
+export type StatCellType =
+  | 'airTemp'
+  | 'trackTemp'
+  | 'wind'
+  | 'humidity'
+  | 'trackWetness';
 
 const STAT_CELL_SETTING_KEY: Record<
   StatCellType,
-  'showAirTemp' | 'showTrackTemp' | 'showWind' | 'showHumidity'
+  | 'showAirTemp'
+  | 'showTrackTemp'
+  | 'showWind'
+  | 'showHumidity'
+  | 'showTrackWetness'
 > = {
   airTemp: 'showAirTemp',
   trackTemp: 'showTrackTemp',
   wind: 'showWind',
   humidity: 'showHumidity',
+  trackWetness: 'showTrackWetness',
 };
 
 const ACCENT_CLASS: Partial<Record<StatCellType, string>> = {
@@ -98,6 +112,13 @@ export const StatCell = observer(({ type }: StatCellProps) => {
 
     label = 'HUM.';
     value = rawHumidity !== null ? `${Math.round(rawHumidity)}%` : '--%';
+  } else if (type === 'trackWetness') {
+    const wetness = env?.track_wetness;
+    const info = getTrackWetnessInfo(wetness);
+
+    label = 'TRACK';
+    value = info?.label ?? 'DRY';
+    customBorderColor = info?.color;
   }
 
   const accentClass = ACCENT_CLASS[type] ?? styles.accentNeutral;

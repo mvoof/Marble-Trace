@@ -1,9 +1,10 @@
 import { observer } from 'mobx-react-lite';
-import { Wrench, Thermometer } from 'lucide-react';
+import { Wrench, Thermometer, Droplet, CloudRain } from 'lucide-react';
 
 import { formatTemp, tempUnit } from '@utils/formatters/telemetry-format';
 import { parseWeekendTemp } from '@utils/widget/standings-utils';
 import { getAirTempColor, getTrackTempColor } from '@utils/widget/widget-utils';
+import { getTrackWetnessInfo } from '@utils/widget/weather-utils';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './SessionFooter.module.scss';
@@ -51,6 +52,8 @@ export const SessionFooter = observer(() => {
       ? `${formatTemp(trkCelsius, unitSystem)}${tUnit}`
       : null;
 
+  const wetnessInfo = getTrackWetnessInfo(environment?.track_wetness);
+
   return (
     <div className={styles.sessionFooter}>
       <div className={styles.footerLeft}>
@@ -83,6 +86,20 @@ export const SessionFooter = observer(() => {
             <span className={styles.statLabel}>TRK</span>
 
             <span className={styles.statValue}>{trkStr}</span>
+          </span>
+        )}
+
+        {showWeather && wetnessInfo && (
+          <span className={styles.statPill}>
+            {wetnessInfo.isWet ? (
+              <CloudRain size={11} color={wetnessInfo.color} />
+            ) : (
+              <Droplet size={11} color={wetnessInfo.color} />
+            )}
+
+            <span className={styles.statLabel}>TRACK</span>
+
+            <span className={styles.statValue}>{wetnessInfo.label}</span>
           </span>
         )}
       </div>

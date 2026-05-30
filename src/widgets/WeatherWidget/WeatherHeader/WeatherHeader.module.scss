@@ -1,0 +1,39 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 ws(5) ws(10);
+  width: 100%;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  width: ws(30);
+  height: ws(30);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.airTemp {
+  display: flex;
+  align-items: center;
+  font-family: $font-mono;
+}
+
+.airTempValue {
+  font-size: ws(22);
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.unit {
+  font-size: ws(13);
+  font-weight: 500;
+  margin-left: ws(2);
+  color: #ffffff;
+}
