@@ -3,6 +3,7 @@ import { formatLapTime } from '@utils/formatters/telemetry-format';
 import {
   abbreviateName,
   formatBrand,
+  formatCarNumber,
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
 } from '@utils/widget/widget-utils';
@@ -59,6 +60,8 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
     .filter(Boolean)
     .join(' ');
 
+  const formattedCarNumber = formatCarNumber(driver.carNumber);
+
   return (
     <div
       className={rowClass}
@@ -83,7 +86,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         <span
           className={`${styles.carNumber} ${driver.isPlayer ? styles.carNumberPlayer : ''}`}
         >
-          {driver.carNumber}
+          {formattedCarNumber}
         </span>
       </div>
 

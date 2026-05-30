@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import {
   abbreviateName,
+  formatCarNumber,
   TRACK_SURFACE_IN_PIT_STALL,
 } from '@utils/widget/widget-utils';
 import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
@@ -67,6 +68,8 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
     .filter(Boolean)
     .join(' ');
 
+  const formattedCarNumber = formatCarNumber(driver.carNumber);
+
   return (
     <div className={rowClass} data-relative-row>
       <div className={styles.posBlock}>
@@ -87,7 +90,7 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
         <span
           className={`${styles.driverCarNumber} ${driver.isPlayer ? styles.driverCarNumberPlayer : ''}`}
         >
-          #{driver.carNumber}
+          #{formattedCarNumber}
         </span>
       </div>
 

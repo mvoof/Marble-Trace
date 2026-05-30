@@ -49,3 +49,9 @@ export const getTrackTempColor = (celsius: number): string => {
   if (celsius < 40) return COLOR_STATUS_CAUTION;
   return COLOR_STATUS_DANGER;
 };
+
+export const formatCarNumber = (carNumber: string): string => {
+  return carNumber.length === 1 && /^\d$/.test(carNumber)
+    ? `0${carNumber}`
+    : carNumber;
+};
