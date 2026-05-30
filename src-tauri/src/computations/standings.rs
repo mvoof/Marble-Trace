@@ -93,28 +93,17 @@ fn get_compact_badge_name(screen_name_short: &str) -> String {
     badge
 }
 
-fn parse_class_color(raw_color: &Option<String>) -> String {
+fn normalize_hex_color(raw_color: &Option<String>) -> String {
     match raw_color {
         None => NO_CLASS_COLOR.to_string(),
         Some(color) if color.is_empty() => NO_CLASS_COLOR.to_string(),
         Some(color) => {
             let trimmed = color.trim();
-            let stripped = trimmed
+            let hex = trimmed
                 .strip_prefix("0x")
                 .or_else(|| trimmed.strip_prefix("0X"))
                 .unwrap_or(trimmed)
                 .to_lowercase();
-
-            // Map iRacing's mismatched telemetry class colors to their official in-game colors
-            let hex = match stripped.as_str() {
-                "53ff77" => "ff5888", // Mismatched Green -> Pink
-                "ae6bff" => "00c0ff", // Mismatched Purple -> Cyan
-                "d35400" => "ae6bff", // Mismatched Orange -> Purple
-                "ff5888" => "ef4444", // Mismatched Pink -> Soft Red
-                "ffd259" => "ffd259", // Yellow
-                "33ccff" => "33ccff", // Blue
-                other => other,
-            };
 
             format!("#{hex}")
         }
@@ -298,7 +287,7 @@ pub fn compute(
                 car_number: driver.car_number.clone().unwrap_or_default(),
                 car_class_id: driver.car_class_id.unwrap_or(-1),
                 car_class_short_name,
-                car_class_color: parse_class_color(&driver.car_class_color),
+                car_class_color: normalize_hex_color(&driver.car_class_color),
                 car_screen_name: driver.car_screen_name.clone().unwrap_or_default(),
                 car_screen_name_short,
                 tire_compound,
@@ -338,7 +327,11 @@ pub fn compute(
                 estimated_ir_delta: None,
                 relative_lap_dist: 0.0,
                 class_est_lap_time: driver.car_class_est_lap_time.unwrap_or(0.0) as f32,
-                raw_flags: frame.car_idx_session_flags.get(idx).map(|bf| bf.0).unwrap_or(0),
+                raw_flags: frame
+                    .car_idx_session_flags
+                    .get(idx)
+                    .map(|bf| bf.0)
+                    .unwrap_or(0),
             }
         })
         .collect();

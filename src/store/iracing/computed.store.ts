@@ -16,6 +16,20 @@ interface StartPosition {
   class: number;
 }
 
+// iRacing telemetry class colors don't match in-game display colors.
+// This map corrects them to match what the player sees in-game.
+const IRACING_CLASS_COLOR_MAP = new Map<string, string>([
+  ['#53ff77', '#ff5888'], // Telemetry Green -> In-game Pink
+  ['#ae6bff', '#00c0ff'], // Telemetry Purple -> In-game Cyan
+  ['#d35400', '#ae6bff'], // Telemetry Orange -> In-game Purple
+  ['#ff5888', '#ef4444'], // Telemetry Pink -> In-game Soft Red
+  ['#ffda59', '#ffd259'], // Telemetry Yellow (slight hue correction)
+  ['#33ceff', '#006eff'], // Telemetry Cyan -> In-game Blue
+]);
+
+const resolveClassColor = (rawColor: string): string =>
+  IRACING_CLASS_COLOR_MAP.get(rawColor) ?? rawColor;
+
 const computeClassSof = (drivers: DriverEntry[]): number => {
   if (drivers.length === 0) return 0;
   const total = drivers.reduce((sum, d) => sum + d.iRating, 0);
@@ -175,6 +189,7 @@ export class BackendComputedStore {
     const currentKeys = new Set<number>();
 
     for (const entry of frame.entries) {
+      entry.carClassColor = resolveClassColor(entry.carClassColor);
       currentKeys.add(entry.carIdx);
 
       if (!this.startPositionSnapshot.has(entry.carIdx) && entry.position > 0) {
