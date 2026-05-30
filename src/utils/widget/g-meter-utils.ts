@@ -5,7 +5,7 @@ export const SMOOTHING = 0.12;
 export const TRACE_LENGTH = 100;
 export const FADING_DECAY = 0.9992;
 export const ENVELOPE_SPREAD = 10;
-export const RADIUS_RATIO = 0.86;
+export const RADIUS_RATIO = 0.76;
 
 export const COLOR_TURN = '#3399ff';
 const COLOR_BRAKE = '#ef4444';
