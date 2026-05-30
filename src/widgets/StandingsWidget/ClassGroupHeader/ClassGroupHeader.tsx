@@ -26,7 +26,7 @@ export const ClassGroupHeader = observer(
     <div
       className={styles.header}
       style={{
-        background: `linear-gradient(90deg, ${classColor}22 0%, rgba(24,24,27,0.4) 38%, transparent 100%)`,
+        background: `linear-gradient(90deg, color-mix(in srgb, ${classColor} 13%, transparent) 0%, rgba(24,24,27,0.4) 38%, transparent 100%)`,
         borderLeft: `3px solid ${classColor}`,
       }}
     >
