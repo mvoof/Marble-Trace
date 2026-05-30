@@ -24,7 +24,9 @@ export const StandingsHeader = observer(() => {
       style={{ gridTemplateColumns: gridTemplate }}
     >
       <StandingsHeaderCell>Pos</StandingsHeaderCell>
-      <StandingsHeaderCell>#</StandingsHeaderCell>
+      <StandingsHeaderCell className={styles.carNumHeader}>
+        #
+      </StandingsHeaderCell>
       <StandingsHeaderCell>Driver</StandingsHeaderCell>
 
       {settings.showBrand && (
