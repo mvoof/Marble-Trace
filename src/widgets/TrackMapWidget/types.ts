@@ -21,6 +21,7 @@ interface StoredTrackData {
   points: TrackPoint[];
   recordedAt: string;
   version?: number;
+  rotation?: number;
 }
 
 export interface StoredTracks {

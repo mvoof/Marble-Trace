@@ -1,0 +1,40 @@
+.rotationControls {
+  position: absolute;
+  top: ws(8);
+  left: ws(8);
+  display: flex;
+  gap: ws(4);
+  z-index: 1001;
+  pointer-events: auto;
+}
+
+.rotateButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: ws(28);
+  height: ws(28);
+  background: $widget-surface-base;
+  border: 1px solid $widget-border-default;
+  border-radius: ws(4);
+  color: $widget-text-primary;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  padding: 0;
+
+  &:hover {
+    background: rgba($widget-text-accent, 0.85);
+    color: #000000;
+    border-color: transparent;
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    width: ws(16);
+    height: ws(16);
+  }
+}
