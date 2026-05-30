@@ -76,6 +76,9 @@ export const TrackMapContent = observer(() => {
   const { isRecording, isWaitingForSF, recordingProgress, trackData } =
     recState;
 
+  const trackDataRef = useRef(trackData);
+  trackDataRef.current = trackData;
+
   const recordingOverlayRef = useRef<RecordingOverlayHandle>(null);
 
   const setTrackData = useCallback((data: TrackData | null) => {
@@ -198,9 +201,13 @@ export const TrackMapContent = observer(() => {
   const handleRotate = useCallback(
     (direction: 'cw' | 'ccw') => {
       void (async () => {
-        if (!trackId || !trackData) return;
+        const currentTrackData = trackDataRef.current;
 
-        const currentRotation = trackData.rotation ?? 0;
+        if (!trackId || !currentTrackData) {
+          return;
+        }
+
+        const currentRotation = currentTrackData.rotation ?? 0;
         let newRotation = currentRotation + (direction === 'cw' ? 90 : -90);
 
         newRotation = (newRotation + 360) % 360;
@@ -208,7 +215,7 @@ export const TrackMapContent = observer(() => {
         dispatch({
           type: 'SET_TRACK_DATA',
           data: {
-            ...trackData,
+            ...currentTrackData,
             rotation: newRotation,
           },
         });
@@ -229,7 +236,7 @@ export const TrackMapContent = observer(() => {
         }
       })();
     },
-    [trackId, trackData]
+    [trackId]
   );
 
   return (
