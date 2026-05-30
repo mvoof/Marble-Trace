@@ -154,6 +154,7 @@ pub struct DriverEntry {
     pub estimated_ir_delta: Option<i32>,
     pub relative_lap_dist: f32,
     pub class_est_lap_time: f32,
+    pub raw_flags: u32,
 }
 
 #[derive(Default)]
@@ -337,6 +338,7 @@ pub fn compute(
                 estimated_ir_delta: None,
                 relative_lap_dist: 0.0,
                 class_est_lap_time: driver.car_class_est_lap_time.unwrap_or(0.0) as f32,
+                raw_flags: frame.car_idx_session_flags.get(idx).map(|bf| bf.0).unwrap_or(0),
             }
         })
         .collect();

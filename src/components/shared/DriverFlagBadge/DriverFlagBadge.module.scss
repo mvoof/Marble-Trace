@@ -1,0 +1,63 @@
+.flagBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: ws(18);
+  height: ws(18);
+  border-radius: 4px;
+}
+
+// 1. Meatball flag (Black with orange circle center)
+.meatball {
+  background: #000000;
+  border: 1.5px solid rgba(255, 255, 255, 0.87);
+
+  .orangeCircle {
+    width: ws(6);
+    height: ws(6);
+    background-color: #ff5500;
+    border-radius: 50%;
+    display: block;
+  }
+}
+
+// 2. Black Flag Warning (Black with white border)
+.black {
+  background: #000000;
+  border: 1.5px solid rgba(255, 255, 255, 0.87);
+}
+
+// 3. Black Flag Penalty (Black with yellow border)
+.penalty {
+  background: #000000;
+  border: 1.5px solid #fbbf24; // Yellow
+}
+
+// 4. Disqualified Flag (Black with red border)
+.dq {
+  background: #000000;
+  border: 1.5px solid #ef4444; // Red
+}
+
+// 5. Blue Flag (Pure blue square)
+.blue {
+  background-color: #2563eb;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+// 6. Checkered Flag (Black & White checkered pattern)
+.checkered {
+  background-color: #ffffff;
+  background-image:
+    linear-gradient(45deg, #000000 25%, transparent 25%),
+    linear-gradient(-45deg, #000000 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #000000 75%),
+    linear-gradient(-45deg, transparent 75%, #000000 75%);
+  background-size: 6px 6px;
+  background-position:
+    0 0,
+    0 3px,
+    3px -3px,
+    -3px 0px;
+  border: 1px solid rgba(255, 255, 255, 0.87);
+}

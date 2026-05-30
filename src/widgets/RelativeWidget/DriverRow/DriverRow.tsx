@@ -4,7 +4,9 @@ import {
   formatCarNumber,
   TRACK_SURFACE_IN_PIT_STALL,
 } from '@utils/widget/widget-utils';
+import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
+import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
 import { ClassBadge } from '@/components/shared/ClassBadge/ClassBadge';
 import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
 import { computeRelativeGap } from '@utils/widget/relative-utils';
@@ -36,6 +38,7 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 
   const pitState = computed.driverPitStates.get(driver.carIdx) ?? 'none';
+  const flagType = parseDriverFlags(driver.rawFlags);
 
   const relativeGap = player ? computeRelativeGap(driver, player) : 0;
 
@@ -112,6 +115,10 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
             ? abbreviateName(driver.userName)
             : driver.userName}
         </span>
+
+        {settings.showDriverFlags && flagType !== 'none' && (
+          <DriverFlagBadge type={flagType} />
+        )}
       </div>
 
       <div className={styles.colPit}>

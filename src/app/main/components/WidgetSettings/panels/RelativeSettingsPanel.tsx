@@ -45,6 +45,12 @@ export const RelativeSettingsPanel = observer(() => {
           value: settings.abbreviateNames,
           onChange: (v: boolean) => update({ abbreviateNames: v }),
         },
+        {
+          title: 'Driver Flags',
+          desc: 'Show active warning flags next to driver name.',
+          value: settings.showDriverFlags,
+          onChange: (v: boolean) => update({ showDriverFlags: v }),
+        },
       ].map((item) => (
         <div key={item.title} className={styles.fieldGroup}>
           <SettingRow title={item.title} desc={item.desc}>

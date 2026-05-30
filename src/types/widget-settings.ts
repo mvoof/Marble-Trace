@@ -62,6 +62,7 @@ export interface StandingsWidgetSettings {
   showLapsCompleted: boolean;
   showIncidentsBadge: boolean;
   abbreviateNames: boolean;
+  showDriverFlags: boolean;
 }
 
 export interface RelativeWidgetSettings {
@@ -69,6 +70,7 @@ export interface RelativeWidgetSettings {
   showClassBadge: boolean;
   showPitIndicator: boolean;
   abbreviateNames: boolean;
+  showDriverFlags: boolean;
 }
 
 type TrackMapRotationMode = 'fixed' | 'heading-up';

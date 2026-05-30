@@ -593,6 +593,7 @@ export type DriverEntry = {
   estimatedIrDelta: number | null;
   relativeLapDist: number;
   classEstLapTime: number;
+  rawFlags: number;
 };
 
 /**

@@ -7,7 +7,9 @@ import {
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
 } from '@utils/widget/widget-utils';
+import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
+import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
 import { ClassBadge } from '@/components/shared/ClassBadge/ClassBadge';
 import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
 import { TireBadge } from '@/components/shared/TireBadge/TireBadge';
@@ -44,6 +46,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 
   const pitState = computed.driverPitStates.get(carIdx) ?? 'none';
+  const flagType = parseDriverFlags(driver.rawFlags);
 
   const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
@@ -101,6 +104,9 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
             : driver.userName}
         </span>
 
+        {settings.showDriverFlags && flagType !== 'none' && (
+          <DriverFlagBadge type={flagType} />
+        )}
         {isPit && <PitBadge state={pitState} />}
       </div>
 

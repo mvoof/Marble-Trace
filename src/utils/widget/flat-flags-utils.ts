@@ -11,6 +11,8 @@ export const FLAG_LABEL: Record<FlagType, string> = {
   black: 'BLACK FLAG',
   meatball: 'MEATBALL',
   debris: 'DEBRIS',
+  penalty: 'PENALTY',
+  dq: 'DISQUALIFIED',
 };
 
 export const BLINK_FLAGS = new Set<FlagType>(['yellow', 'red']);

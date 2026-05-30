@@ -109,6 +109,12 @@ export const StandingsSettingsPanel = observer(() => {
             value: settings.abbreviateNames,
             key: 'abbreviateNames',
           },
+          {
+            title: 'Driver Flags',
+            desc: 'Display active warning flags (e.g. Mechanical Damage/Meatball) next to driver name.',
+            value: settings.showDriverFlags,
+            key: 'showDriverFlags',
+          },
         ].map((item) => (
           <div key={item.key} className={styles.fieldGroup}>
             <SettingRow title={item.title} desc={item.desc}>

@@ -69,6 +69,9 @@
 
 // Info block — name only, fills 1fr grid column
 .infoBlock {
+  display: flex;
+  align-items: center;
+  gap: ws(6);
   overflow: hidden;
   min-width: 0;
 }
@@ -80,7 +83,8 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: $widget-text-primary;
-  display: block;
+  min-width: 0;
+  flex: 1;
 }
 
 .driverNamePlayer {

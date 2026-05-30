@@ -15,6 +15,7 @@ const SESSION_FLAGS = {
   disqualify: 0x00020000,
   servicible: 0x00040000,
   repair: 0x00100000,
+  furled: 0x00080000,
 } as const;
 
 const MEATBALL_MASK = SESSION_FLAGS.servicible | SESSION_FLAGS.repair;
@@ -77,4 +78,15 @@ export const parseAllSessionFlags = (
   if (s & SESSION_FLAGS.green) flags.push('green');
 
   return flags;
+};
+
+export const parseDriverFlags = (rawFlags: number): FlagType => {
+  if (rawFlags & SESSION_FLAGS.disqualify) return 'dq';
+  if (rawFlags & SESSION_FLAGS.repair) return 'meatball';
+  if (rawFlags & SESSION_FLAGS.black) return 'penalty';
+  if (rawFlags & SESSION_FLAGS.furled) return 'black';
+  if (rawFlags & SESSION_FLAGS.blue) return 'blue';
+  if (rawFlags & SESSION_FLAGS.checkered) return 'checkered';
+
+  return 'none';
 };

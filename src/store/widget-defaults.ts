@@ -270,6 +270,7 @@ export const WIDGETS: WidgetConfig[] = [
       showLapsCompleted: false,
       showIncidentsBadge: true,
       abbreviateNames: false,
+      showDriverFlags: true,
     },
   },
   {
@@ -294,6 +295,7 @@ export const WIDGETS: WidgetConfig[] = [
       showClassBadge: true,
       showPitIndicator: true,
       abbreviateNames: true,
+      showDriverFlags: true,
     },
   },
   {
