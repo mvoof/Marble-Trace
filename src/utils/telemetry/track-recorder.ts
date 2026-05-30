@@ -148,6 +148,58 @@ export class TrackRecorder {
     if (crossedStartLine && this.pointsCount > MIN_POINTS_FOR_COMPLETION) {
       this.complete = true;
       this.recording = false;
+
+      this.postProcessPoints();
+    }
+  }
+
+  private postProcessPoints(): void {
+    if (this.points.length < 3) {
+      return;
+    }
+
+    let highestProgress = 0;
+    let clipIndex = -1;
+
+    for (let i = 0; i < this.points.length; i++) {
+      const p = this.points[i];
+      let rel = p.pct - this.startPct;
+
+      if (rel < 0) {
+        rel += 1;
+      }
+
+      if (rel > highestProgress) {
+        highestProgress = rel;
+      }
+
+      // If we have completed at least 90% of the lap, and now the progress
+      // has wrapped around back to the start (less than 10%), we've crossed S/F.
+      if (highestProgress > 0.9 && rel < 0.1) {
+        clipIndex = i;
+        break;
+      }
+    }
+
+    // Slice to keep only the points of the first lap, discarding any overlap
+    if (clipIndex !== -1) {
+      this.points = this.points.slice(0, clipIndex);
+    }
+
+    // Apply linear loop-closure drift correction
+    const N = this.points.length;
+
+    if (N > 1) {
+      const startPt = this.points[0];
+      const endPt = this.points[N - 1];
+      const driftX = endPt.x - startPt.x;
+      const driftY = endPt.y - startPt.y;
+
+      for (let i = 0; i < N; i++) {
+        const factor = i / (N - 1);
+        this.points[i].x -= factor * driftX;
+        this.points[i].y -= factor * driftY;
+      }
     }
   }
 
