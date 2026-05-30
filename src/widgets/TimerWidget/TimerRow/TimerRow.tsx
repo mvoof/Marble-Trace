@@ -59,7 +59,7 @@ export const TimerRow = observer(() => {
           {showPcDate && <TimerItem label="DATE">{wallClock.date}</TimerItem>}
 
           {showSimDate && (
-            <TimerItem label="DATE" align={showPcDate ? 'right' : 'left'}>
+            <TimerItem label="SIM DATE" align={showPcDate ? 'right' : 'left'}>
               {simDate}
             </TimerItem>
           )}
