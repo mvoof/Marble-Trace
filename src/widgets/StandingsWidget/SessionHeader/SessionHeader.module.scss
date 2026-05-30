@@ -14,7 +14,7 @@
 
 .sessionLeft {
   display: flex;
-  gap: ws(6);
+  gap: ws(16);
   align-items: center;
   min-width: 0;
   overflow: hidden;
@@ -26,53 +26,55 @@
   font-weight: 900;
 }
 
-.lapValue {
+.sessionType {
+  color: $widget-text-secondary;
+}
+
+.sessionLaps {
   color: $widget-text-primary;
   font-weight: 900;
 }
 
 .sessionRight {
   display: flex;
-  gap: ws(6);
+  gap: ws(8);
   align-items: center;
   flex-shrink: 0;
   white-space: nowrap;
 }
 
-.sessionDriverCount {
-  display: flex;
+.statPill {
+  display: inline-flex;
   align-items: center;
-  gap: ws(3);
+  gap: ws(5);
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
+  border-radius: ws(4);
+  padding: ws(2) ws(7);
+  font-family: $font-mono;
+  font-size: ws(11);
+  letter-spacing: 0.05em;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
-.sessionDriverCountValue {
-  color: $widget-text-primary;
-  font-weight: 900;
+.statLabel {
+  color: $widget-text-secondary;
 }
 
-.tempValue {
-  color: $widget-text-primary;
-  font-weight: 900;
+.statValue {
+  color: #f1f1f3;
+  font-weight: 700;
 }
 
-.sofValue {
-  color: $widget-text-sof;
-  font-weight: 900;
-}
-
-.pitStopsValue {
-  color: $widget-text-primary;
-  font-weight: 900;
-}
-
-.incidentsValue {
-  color: $widget-text-primary;
-  font-weight: 900;
-}
-
-.incidentsValueNearDQ {
+.valueDanger {
   color: $widget-status-danger;
-  font-weight: 900;
+  font-weight: 700;
+}
+
+.pulseWarning {
+  border-color: rgba(239, 68, 68, 0.5);
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
@@ -83,6 +85,6 @@
   }
 
   50% {
-    opacity: 0.5;
+    opacity: 0.6;
   }
 }

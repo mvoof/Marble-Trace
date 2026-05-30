@@ -1,18 +1,19 @@
+import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { formatIRating } from '@utils/widget/widget-utils';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import { ClassGroupHeader } from '@widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';
 
 import styles from './ClassSwitcher.module.scss';
 import {
-  useAppSettingsStore,
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
+const FLASH_DURATION_MS = 300;
+
 export const ClassSwitcher = observer(() => {
-  const appSettings = useAppSettingsStore();
   const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
 
@@ -20,12 +21,42 @@ export const ClassSwitcher = observer(() => {
     widgetSettings.getSettings<StandingsWidgetSettings>('standings');
   const allClassGroups = computed.allClassGroups;
   const activeIndex = widgetSettings.standingsActiveClassIndex;
-  const dragMode = appSettings.dragMode;
 
   const group = allClassGroups[activeIndex];
   const total = allClassGroups.length;
 
-  if (!settings.enableClassCycling || allClassGroups.length === 0 || !group) {
+  const [flashDir, setFlashDir] = useState<'prev' | 'next' | null>(null);
+  const prevIndexRef = useRef(activeIndex);
+
+  useEffect(() => {
+    const prev = prevIndexRef.current;
+    prevIndexRef.current = activeIndex;
+
+    if (prev === activeIndex || total <= 1) {
+      return;
+    }
+
+    let dir: 'prev' | 'next';
+
+    if (activeIndex === (prev + 1) % total) {
+      dir = 'next';
+    } else if (activeIndex === (prev - 1 + total) % total) {
+      dir = 'prev';
+    } else {
+      return;
+    }
+
+    setFlashDir(dir);
+    const timerId = setTimeout(() => setFlashDir(null), FLASH_DURATION_MS);
+
+    return () => clearTimeout(timerId);
+  }, [activeIndex, total]);
+
+  if (
+    settings.viewMode !== 'cycling' ||
+    allClassGroups.length === 0 ||
+    !group
+  ) {
     return null;
   }
 
@@ -37,52 +68,38 @@ export const ClassSwitcher = observer(() => {
     widgetSettings.cycleStandingsNext(total);
   };
 
+  const paginationLabel = total > 1 ? `${activeIndex + 1}/${total}` : undefined;
+
   return (
     <div className={styles.switcher}>
-      {dragMode && (
-        <button
-          className={styles.navBtn}
-          onClick={handlePrev}
-          onMouseDown={(e) => e.stopPropagation()}
-          disabled={total <= 1}
-          aria-label="Previous class"
-        >
-          <ChevronLeft size={14} />
-        </button>
-      )}
+      <button
+        className={`${styles.navBtn} ${flashDir === 'prev' ? styles.navBtnFlash : ''}`}
+        onClick={handlePrev}
+        onMouseDown={(e) => e.stopPropagation()}
+        disabled={total <= 1}
+        aria-label="Previous class"
+      >
+        <ChevronLeft size={14} />
+      </button>
 
-      <div className={styles.classInfo}>
-        <span
-          className={styles.className}
-          style={{ color: group.classColor || 'inherit' }}
-        >
-          {group.classShortName || group.className}
-        </span>
+      <ClassGroupHeader
+        className={group.className}
+        classShortName={group.classShortName}
+        classColor={group.classColor}
+        classSof={group.classSof}
+        totalDrivers={group.totalDrivers}
+        paginationLabel={paginationLabel}
+      />
 
-        <span className={styles.meta}>
-          {total > 1 && (
-            <span className={styles.pagination}>
-              {activeIndex + 1}/{total}
-            </span>
-          )}
-          <span className={styles.stat}>
-            SOF {formatIRating(group.classSof)}
-          </span>
-          <span className={styles.stat}>{group.totalDrivers} drivers</span>
-        </span>
-      </div>
-
-      {dragMode && (
-        <button
-          className={styles.navBtn}
-          onClick={handleNext}
-          onMouseDown={(e) => e.stopPropagation()}
-          disabled={total <= 1}
-          aria-label="Next class"
-        >
-          <ChevronRight size={14} />
-        </button>
-      )}
+      <button
+        className={`${styles.navBtn} ${flashDir === 'next' ? styles.navBtnFlash : ''}`}
+        onClick={handleNext}
+        onMouseDown={(e) => e.stopPropagation()}
+        disabled={total <= 1}
+        aria-label="Next class"
+      >
+        <ChevronRight size={14} />
+      </button>
     </div>
   );
 });

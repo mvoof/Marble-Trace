@@ -60,6 +60,9 @@ export const computeDriverEntries = (
       relativeLapDist: 0,
       estTime: carIdx.car_idx_est_time?.[idx] ?? 0,
       classEstLapTime: carIdx.car_idx_est_time?.[idx] ?? 0,
+      rawFlags: 0,
+      resultsPositionLap: null,
+      resultsPositionTime: null,
     });
   }
 

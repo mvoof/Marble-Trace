@@ -49,13 +49,13 @@ const buildColDefs = (settings: StandingsWidgetSettings): ColDef[] => [
   { width: ws(20), show: true }, // pos      "00"
   { width: ws(40), show: true }, // carNum   "#000"
   { width: `minmax(${ws(100)}, 1fr)`, show: true }, // name     — never collapses
-  { width: ws(32), show: settings.showBrand }, // brand
-  { width: ws(18), show: settings.showTire }, // tire
+  { width: ws(44), show: settings.showBrand }, // brand
+  { width: ws(30), show: settings.showTire }, // tire
   {
     width: ws(48),
-    show: !settings.enableClassCycling && settings.showClassBadge,
+    show: settings.viewMode === 'all' && settings.showClassBadge,
   }, // class
-  { width: ws(70), show: settings.showIRatingBadge }, // lic/iRating
+  { width: ws(78), show: settings.showIRatingBadge }, // lic/iRating
   { width: ws(24), show: settings.showIrChange }, // ΔiR
   { width: ws(18), show: settings.showLapsCompleted }, // laps
   { width: ws(32), show: settings.showPosChange }, // +/- pos
@@ -69,3 +69,86 @@ export const buildGridTemplate = (settings: StandingsWidgetSettings): string =>
     .filter((col) => col.show)
     .map((col) => col.width)
     .join(' ');
+
+interface DriverLapInfo {
+  lap: number;
+  lapDistPct: number;
+}
+
+export const calculateLapsBehind = (
+  leader: DriverLapInfo | null | undefined,
+  driver: DriverLapInfo
+): number => {
+  if (!leader) return 0;
+  const leaderAbs = leader.lap + leader.lapDistPct;
+  const driverAbs = driver.lap + driver.lapDistPct;
+  return Math.floor(leaderAbs - driverAbs);
+};
+
+export interface StandingsGapInfo {
+  value: string;
+  isLeader: boolean;
+  isEmpty: boolean;
+}
+
+export const getStandingsGap = (
+  driver: DriverEntry,
+  leader: DriverEntry | null,
+  isRace: boolean,
+  isLeader: boolean,
+  lapsBehind: number
+): StandingsGapInfo => {
+  if (isLeader) {
+    return { value: '-', isLeader: true, isEmpty: false };
+  }
+
+  if (!isRace) {
+    if (driver.bestLapTime > 0 && leader && leader.bestLapTime > 0) {
+      const timeDiff = driver.bestLapTime - leader.bestLapTime;
+
+      if (timeDiff > 0) {
+        return { value: timeDiff.toFixed(1), isLeader: false, isEmpty: false };
+      }
+
+      return { value: '-', isLeader: true, isEmpty: false };
+    }
+
+    return { value: '--.-', isLeader: false, isEmpty: true };
+  }
+
+  // In race, try to use Session ResultsPositions gap data
+  const resLap = driver.resultsPositionLap;
+  const resTime = driver.resultsPositionTime;
+
+  if (
+    resLap !== undefined &&
+    resLap !== null &&
+    resTime !== undefined &&
+    resTime !== null
+  ) {
+    if (resLap !== 0) {
+      return { value: `${resLap} L`, isLeader: false, isEmpty: false };
+    }
+
+    if (resTime > 0) {
+      return { value: resTime.toFixed(1), isLeader: false, isEmpty: false };
+    }
+
+    return { value: '-', isLeader: true, isEmpty: false };
+  }
+
+  // Fallback if resultsPosition values are not available (e.g. at the start of a session)
+  if (lapsBehind >= 1) {
+    return { value: `${lapsBehind} L`, isLeader: false, isEmpty: false };
+  }
+
+  if (driver.f2Time > 0) {
+    return {
+      value: driver.f2Time.toFixed(1),
+      isLeader: false,
+      isEmpty: false,
+    };
+  }
+
+  return { value: '--.-', isLeader: false, isEmpty: true };
+};

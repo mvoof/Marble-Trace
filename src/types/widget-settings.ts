@@ -40,9 +40,11 @@ export interface RadarSettings {
   carLength: number;
 }
 
+export type StandingsViewMode = 'all' | 'cycling' | 'grouped';
+
 export interface StandingsWidgetSettings {
-  enableClassCycling: boolean;
-  classCyclingToggleHotkey: string;
+  viewMode: StandingsViewMode;
+  viewModeHotkey: string;
   classPrevHotkey: string;
   classNextHotkey: string;
   showPosChange: boolean;
@@ -62,6 +64,7 @@ export interface StandingsWidgetSettings {
   showLapsCompleted: boolean;
   showIncidentsBadge: boolean;
   abbreviateNames: boolean;
+  showDriverFlags: boolean;
 }
 
 export interface RelativeWidgetSettings {
@@ -69,6 +72,7 @@ export interface RelativeWidgetSettings {
   showClassBadge: boolean;
   showPitIndicator: boolean;
   abbreviateNames: boolean;
+  showDriverFlags: boolean;
 }
 
 type TrackMapRotationMode = 'fixed' | 'heading-up';

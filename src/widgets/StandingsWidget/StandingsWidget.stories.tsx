@@ -31,14 +31,16 @@ const DRIVER_ENTRIES = RAW_ENTRIES.map((entry, idx) => ({
   bestLapTime: BASE_LAP_TIME + idx * LAP_TIME_SPREAD_PER_POS * 0.8,
   f2Time: idx === 0 ? 0 : idx * GAP_PER_POS + (idx % 4) * 0.3,
   carClassShortName: CLASS_LABELS[idx % CLASS_LABELS.length],
+  resultsPositionLap: idx > 6 ? 1 : 0,
+  resultsPositionTime: idx === 0 ? 0 : idx * GAP_PER_POS + (idx % 4) * 0.3,
 }));
 
 const PLAYER_CAR_IDX =
   DRIVER_ENTRIES.find((entry) => entry.isPlayer)?.carIdx ?? 0;
 
 const DEFAULT_SETTINGS: StandingsWidgetSettings = {
-  enableClassCycling: false,
-  classCyclingToggleHotkey: '',
+  viewMode: 'all',
+  viewModeHotkey: '',
   classPrevHotkey: '',
   classNextHotkey: '',
   showPosChange: true,
@@ -104,7 +106,7 @@ const meta: Meta<typeof StoryHost> = {
   parameters: { layout: 'centered' },
   decorators: [
     withStore(seedFromSnapshot),
-    widgetDecorator({ width: 800, height: 450 }),
+    widgetDecorator({ width: 860, height: 450 }),
   ],
   args: {
     settings: DEFAULT_SETTINGS,
@@ -119,7 +121,7 @@ export const Default: Story = {};
 
 export const ClassCycling: Story = {
   args: {
-    settings: { ...DEFAULT_SETTINGS, enableClassCycling: true },
+    settings: { ...DEFAULT_SETTINGS, viewMode: 'cycling' },
     activeClassIndex: 0,
   },
 };
@@ -168,14 +170,14 @@ export const NoHeaders: Story = {
 
 export const SecondClass: Story = {
   args: {
-    settings: { ...DEFAULT_SETTINGS, enableClassCycling: true },
+    settings: { ...DEFAULT_SETTINGS, viewMode: 'cycling' },
     activeClassIndex: 1,
   },
 };
 
 export const ThirdClass: Story = {
   args: {
-    settings: { ...DEFAULT_SETTINGS, enableClassCycling: true },
+    settings: { ...DEFAULT_SETTINGS, viewMode: 'cycling' },
     activeClassIndex: 2,
   },
 };

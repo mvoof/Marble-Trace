@@ -65,10 +65,10 @@ export const setupHotkeys = async (
     const settings =
       root.widgetSettings.getSettings<StandingsWidgetSettings>('standings');
 
-    if (settings.classCyclingToggleHotkey) {
-      addHandler(settings.classCyclingToggleHotkey, (event) => {
+    if (settings.viewModeHotkey) {
+      addHandler(settings.viewModeHotkey, (event) => {
         if (event.state === 'Pressed')
-          root.widgetSettings.toggleStandingsClassCycling();
+          root.widgetSettings.cycleStandingsViewMode();
       });
     }
 

@@ -16,6 +16,41 @@ interface StartPosition {
   class: number;
 }
 
+// iRacing session YAML reports class colors as "0xRRGGBB" strings.
+// Some telemetry colors don't match what iRacing displays in-game — this map corrects them.
+// Keys are normalized hex strings (#rrggbb from raw 0xRRGGBB), values are the in-game color.
+const IRACING_CLASS_COLOR_MAP = new Map<string, string>([
+  ['#53ff77', '#ff7199'],
+  ['#ae6bff', '#5cecff'],
+  ['#d35400', '#a07cc8'],
+  ['#ff5888', '#ef4444'],
+  ['#ffda59', '#ffd259'],
+  ['#33ceff', '#4d7bd9'],
+]);
+
+const normalizeIRacingColor = (raw: string): string => {
+  const trimmed = raw.trim();
+
+  const hex =
+    trimmed.startsWith('0x') || trimmed.startsWith('0X')
+      ? trimmed.slice(2).toLowerCase()
+      : trimmed.replace(/^#/, '').toLowerCase();
+
+  return `#${hex}`;
+};
+
+/**
+ * Normalizes a raw iRacing class color (0xRRGGBB) and applies in-game color corrections.
+ * Colors not in the map are passed through as-is after normalization.
+ */
+const resolveClassColor = (rawColor: string): string => {
+  if (!rawColor) return '#888888';
+
+  const normalized = normalizeIRacingColor(rawColor);
+
+  return IRACING_CLASS_COLOR_MAP.get(normalized) ?? normalized;
+};
+
 const computeClassSof = (drivers: DriverEntry[]): number => {
   if (drivers.length === 0) return 0;
   const total = drivers.reduce((sum, d) => sum + d.iRating, 0);
@@ -38,6 +73,7 @@ export class BackendComputedStore {
   standings: DriverEntriesFrame | null = null;
   pitStops: PitStopsFrame | null = null;
   lapDelta: LapDeltaFrame | null = null;
+  driverPitStates = new Map<number, 'none' | 'in' | 'stall' | 'exit'>();
 
   private readonly startPositionSnapshot = new Map<number, StartPosition>();
 
@@ -49,6 +85,25 @@ export class BackendComputedStore {
     if (!this.standings) return new Map();
 
     return new Map(this.standings.entries.map((e) => [e.carIdx, e]));
+  }
+
+  get classLeaders(): Map<number, DriverEntry> {
+    const map = new Map<number, DriverEntry>();
+    if (!this.standings) return map;
+
+    for (const entry of this.standings.entries) {
+      if (entry.classPosition === 1) {
+        map.set(entry.carClassId, entry);
+      }
+    }
+
+    return map;
+  }
+
+  get overallLeader(): DriverEntry | null {
+    if (!this.standings) return null;
+
+    return this.standings.entries.find((entry) => entry.position === 1) ?? null;
   }
 
   get allClassGroups(): DriverGroup[] {
@@ -75,8 +130,8 @@ export class BackendComputedStore {
 
         return {
           classId,
-          className: first.carScreenNameShort,
-          classShortName: first.carScreenNameShort,
+          className: first.carClassShortName,
+          classShortName: first.carClassShortName,
           classColor: first.carClassColor,
           totalDrivers: driversInClass.length,
           classSof: computeClassSof(driversInClass),
@@ -152,12 +207,48 @@ export class BackendComputedStore {
   }
 
   updateStandings(frame: DriverEntriesFrame) {
+    const currentKeys = new Set<number>();
+
     for (const entry of frame.entries) {
+      entry.carClassColor = resolveClassColor(entry.carClassColor);
+      currentKeys.add(entry.carIdx);
+
       if (!this.startPositionSnapshot.has(entry.carIdx) && entry.position > 0) {
         this.startPositionSnapshot.set(entry.carIdx, {
           overall: entry.position,
           class: entry.classPosition,
         });
+      }
+
+      // Update pit state tracking
+      const prev = this.driverPitStates.get(entry.carIdx);
+
+      if (!entry.onPitRoad) {
+        this.driverPitStates.set(entry.carIdx, 'none');
+      } else if (prev === undefined || prev === 'none') {
+        if (entry.trackSurface === 'InPitStall') {
+          this.driverPitStates.set(entry.carIdx, 'stall');
+        } else {
+          this.driverPitStates.set(entry.carIdx, 'in');
+        }
+      } else if (prev === 'in') {
+        if (entry.trackSurface === 'InPitStall') {
+          this.driverPitStates.set(entry.carIdx, 'stall');
+        }
+      } else if (prev === 'stall') {
+        if (
+          entry.trackSurface === 'AproachingPits' ||
+          entry.trackSurface === 'OnTrack'
+        ) {
+          this.driverPitStates.set(entry.carIdx, 'exit');
+        }
+      }
+    }
+
+    // Clean up old driver entries that are no longer active
+    for (const key of this.driverPitStates.keys()) {
+      if (!currentKeys.has(key)) {
+        this.driverPitStates.delete(key);
       }
     }
 
@@ -205,5 +296,6 @@ export class BackendComputedStore {
     this.pitStops = null;
     this.lapDelta = null;
     this.startPositionSnapshot.clear();
+    this.driverPitStates.clear();
   }
 }

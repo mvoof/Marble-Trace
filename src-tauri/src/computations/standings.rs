@@ -8,7 +8,6 @@ use crate::iracing::enums::TrackSurface;
 use crate::iracing::frames::AllFieldsFrame;
 use crate::utils::lock_or_recover;
 
-const NO_CLASS_COLOR: &str = "#888888";
 const NO_CLASS_LABEL: &str = "No Class";
 const MAX_BADGE_LENGTH: usize = 8;
 const MIN_ABBR_LENGTH: usize = 2;
@@ -93,34 +92,6 @@ fn get_compact_badge_name(screen_name_short: &str) -> String {
     badge
 }
 
-fn parse_class_color(raw_color: &Option<String>) -> String {
-    match raw_color {
-        None => NO_CLASS_COLOR.to_string(),
-        Some(color) if color.is_empty() => NO_CLASS_COLOR.to_string(),
-        Some(color) => {
-            let trimmed = color.trim();
-            let stripped = trimmed
-                .strip_prefix("0x")
-                .or_else(|| trimmed.strip_prefix("0X"))
-                .unwrap_or(trimmed)
-                .to_lowercase();
-
-            // Map iRacing's mismatched telemetry class colors to their official in-game colors
-            let hex = match stripped.as_str() {
-                "53ff77" => "ff5888", // Mismatched Green -> Pink
-                "ae6bff" => "00c0ff", // Mismatched Purple -> Cyan
-                "d35400" => "ae6bff", // Mismatched Orange -> Purple
-                "ff5888" => "ef4444", // Mismatched Pink -> Soft Red
-                "ffd259" => "ffd259", // Yellow
-                "33ccff" => "33ccff", // Blue
-                other => other,
-            };
-
-            format!("#{hex}")
-        }
-    }
-}
-
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -154,6 +125,9 @@ pub struct DriverEntry {
     pub estimated_ir_delta: Option<i32>,
     pub relative_lap_dist: f32,
     pub class_est_lap_time: f32,
+    pub raw_flags: u32,
+    pub results_position_lap: Option<i32>,
+    pub results_position_time: Option<f32>,
 }
 
 #[derive(Default)]
@@ -226,6 +200,32 @@ pub fn compute(
 
     let mut locked_state = lock_or_recover(state);
 
+    let current_num = session.session_info.current_session_num as usize;
+    let results = session
+        .session_info
+        .sessions
+        .get(current_num)
+        .and_then(|s| s.results_positions.as_deref());
+
+    let mut results_positions_map = HashMap::new();
+    if let Some(results) = results {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "PascalCase")]
+        struct ResultPosDeficit {
+            car_idx: Option<i32>,
+            lap: Option<i32>,
+            time: Option<f32>,
+        }
+
+        for val in results {
+            if let Ok(rpd) = serde_yaml_ng::from_value::<ResultPosDeficit>(val.clone()) {
+                if let Some(idx) = rpd.car_idx {
+                    results_positions_map.insert(idx, (rpd.lap, rpd.time));
+                }
+            }
+        }
+    }
+
     let mut entries: Vec<DriverEntry> = deduped_drivers
         .iter()
         .filter(|d| {
@@ -250,6 +250,11 @@ pub fn compute(
         })
         .map(|driver| {
             let idx = driver.car_idx as usize;
+
+            let (res_lap, res_time) = results_positions_map
+                .get(&driver.car_idx)
+                .copied()
+                .unwrap_or((None, None));
 
             let tire_compound_idx = frame.car_idx_tire_compound.get(idx).copied().unwrap_or(-1);
 
@@ -297,7 +302,7 @@ pub fn compute(
                 car_number: driver.car_number.clone().unwrap_or_default(),
                 car_class_id: driver.car_class_id.unwrap_or(-1),
                 car_class_short_name,
-                car_class_color: parse_class_color(&driver.car_class_color),
+                car_class_color: driver.car_class_color.clone().unwrap_or_default(),
                 car_screen_name: driver.car_screen_name.clone().unwrap_or_default(),
                 car_screen_name_short,
                 tire_compound,
@@ -337,6 +342,13 @@ pub fn compute(
                 estimated_ir_delta: None,
                 relative_lap_dist: 0.0,
                 class_est_lap_time: driver.car_class_est_lap_time.unwrap_or(0.0) as f32,
+                raw_flags: frame
+                    .car_idx_session_flags
+                    .get(idx)
+                    .map(|bf| bf.0)
+                    .unwrap_or(0),
+                results_position_lap: res_lap,
+                results_position_time: res_time,
             }
         })
         .collect();

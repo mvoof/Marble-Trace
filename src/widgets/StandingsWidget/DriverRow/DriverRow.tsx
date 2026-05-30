@@ -1,16 +1,23 @@
-﻿import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import {
   abbreviateName,
   formatBrand,
+  formatCarNumber,
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
 } from '@utils/widget/widget-utils';
+import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
+import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
 import { ClassBadge } from '@/components/shared/ClassBadge/ClassBadge';
 import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
 import { TireBadge } from '@/components/shared/TireBadge/TireBadge';
-import { buildGridTemplate } from '@utils/widget/standings-utils';
+import {
+  buildGridTemplate,
+  calculateLapsBehind,
+  getStandingsGap,
+} from '@utils/widget/standings-utils';
 import { PosChange } from './PosChange';
 import { IrChangeCell } from './IrChangeCell';
 
@@ -18,15 +25,18 @@ import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
 import {
   useBackendComputedStore,
+  useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 interface DriverRowProps {
   carIdx: number;
+  index: number;
 }
 
-export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
+export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   const computed = useBackendComputedStore();
+  const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const driver = computed.driverMap.get(carIdx);
@@ -41,21 +51,49 @@ export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 
+  const pitState = computed.driverPitStates.get(carIdx) ?? 'none';
+  const flagType = parseDriverFlags(driver.rawFlags);
+
   const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
-  const pos = settings.enableClassCycling
-    ? driver.classPosition
-    : driver.position;
+  const useClassPos = settings.viewMode !== 'all';
+
+  const pos = useClassPos ? driver.classPosition : driver.position;
 
   const isLeader = pos === 1;
 
   const rowClass = [
     styles.driverRow,
     driver.isPlayer ? styles.driverRowPlayer : '',
+    index % 2 !== 0 ? styles.rowOdd : '',
     isOffTrack ? styles.driverRowOffTrack : '',
   ]
     .filter(Boolean)
     .join(' ');
+
+  const formattedCarNumber = formatCarNumber(driver.carNumber);
+
+  // Get leader of current class/group from cached store for gap/deficit calculation
+  const leader = useClassPos
+    ? (computed.classLeaders.get(driver.carClassId) ?? null)
+    : computed.overallLeader;
+
+  const lapsBehind = calculateLapsBehind(leader, driver);
+
+  const sessionInfoData = telemetry.sessionInfo?.SessionInfo;
+  const sessions = sessionInfoData?.Sessions;
+  const currentSession = sessions?.[sessionInfoData?.CurrentSessionNum ?? 0];
+  const isRace = currentSession?.SessionType === 'Race';
+
+  const gapInfo = getStandingsGap(driver, leader, isRace, isLeader, lapsBehind);
+
+  const gapContent = gapInfo.isLeader ? (
+    <span className={styles.gapLeader}>{gapInfo.value}</span>
+  ) : gapInfo.isEmpty ? (
+    <span className={styles.gapLeader}>{gapInfo.value}</span>
+  ) : (
+    <span className={styles.gapValue}>{gapInfo.value}</span>
+  );
 
   return (
     <div
@@ -81,7 +119,7 @@ export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
         <span
           className={`${styles.carNumber} ${driver.isPlayer ? styles.carNumberPlayer : ''}`}
         >
-          {driver.carNumber}
+          {formattedCarNumber}
         </span>
       </div>
 
@@ -94,7 +132,10 @@ export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
             : driver.userName}
         </span>
 
-        {isPit && <PitBadge />}
+        {settings.showDriverFlags && flagType !== 'none' && (
+          <DriverFlagBadge type={flagType} />
+        )}
+        {isPit && <PitBadge state={pitState} />}
       </div>
 
       {settings.showBrand && (
@@ -111,12 +152,11 @@ export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
         </div>
       )}
 
-      {!settings.enableClassCycling && settings.showClassBadge && (
+      {settings.viewMode === 'all' && settings.showClassBadge && (
         <div className={`${styles.cell} ${styles.cellCenter}`}>
           <ClassBadge
             color={driver.carClassColor}
             label={driver.carClassShortName}
-            className={styles.classBadgeFull}
           />
         </div>
       )}
@@ -149,15 +189,7 @@ export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
         </div>
       )}
 
-      <div className={`${styles.cell} ${styles.cellRight}`}>
-        {isLeader ? (
-          <span className={styles.gapLeader}>-</span>
-        ) : driver.f2Time > 0 ? (
-          <span className={styles.gapValue}>+{driver.f2Time.toFixed(1)}</span>
-        ) : (
-          <span className={styles.gapLeader}>+--.-</span>
-        )}
-      </div>
+      <div className={`${styles.cell} ${styles.cellRight}`}>{gapContent}</div>
 
       <div className={`${styles.cell} ${styles.cellRight}`}>
         <span className={styles.lastLap}>

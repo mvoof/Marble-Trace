@@ -4,9 +4,21 @@
   border: 1px solid rgba($widget-status-danger, 0.4);
   padding: 0.125em 0.5em;
   border-radius: 4px;
-  font-size: 0.625em;
+  font-size: 0.65em;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   flex-shrink: 0;
+
+  &.pitIn {
+    background: rgba($widget-status-info, $opacity-muted);
+    color: $widget-status-info;
+    border: 1px solid rgba($widget-status-info, 0.4);
+  }
+
+  &.pitExit {
+    background: rgba($widget-status-warning, $opacity-muted);
+    color: $widget-status-warning;
+    border: 1px solid rgba($widget-status-warning, 0.4);
+  }
 }

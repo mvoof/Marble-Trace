@@ -1,11 +1,15 @@
 .switcher {
   display: flex;
-  align-items: center;
-  gap: 0;
-  background: rgba(18, 18, 22, $opacity-solid);
+  align-items: stretch;
   border-bottom: 1px solid rgba(255, 255, 255, $opacity-faint);
-  min-height: ws(28);
   flex-shrink: 0;
+
+  // ClassGroupHeader inside should not have its own bottom border
+  // (the switcher row provides it) and should fill all remaining space
+  > :nth-child(2) {
+    flex: 1 1 0;
+    border-bottom: none;
+  }
 }
 
 .navBtn {
@@ -14,18 +18,19 @@
   justify-content: center;
   width: ws(28);
   min-width: ws(28);
-  height: 100%;
-  min-height: ws(28);
-  background: none;
+  background: rgba(18, 18, 22, $opacity-solid);
   border: none;
   color: $widget-text-muted;
   cursor: pointer;
   padding: 0;
-  transition: color 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
   flex-shrink: 0;
 
   &:hover:not(:disabled) {
     color: $widget-text-primary;
+    background: rgba(255, 255, 255, 0.04);
   }
 
   &:disabled {
@@ -34,45 +39,18 @@
   }
 }
 
-.classInfo {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ws(8);
-  padding: 0 var(--widget-pad-x);
-  overflow: hidden;
+@keyframes navFlash {
+  0% {
+    color: $widget-text-primary;
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  100% {
+    color: $widget-text-muted;
+    background: rgba(18, 18, 22, $opacity-solid);
+  }
 }
 
-.className {
-  font-family: $font-widget;
-  font-weight: 700;
-  font-size: ws(14);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.meta {
-  display: flex;
-  align-items: center;
-  gap: ws(10);
-  flex-shrink: 0;
-}
-
-.pagination {
-  font-family: $font-mono;
-  font-size: ws(11);
-  color: $widget-text-muted;
-  letter-spacing: 0.04em;
-}
-
-.stat {
-  font-family: $font-mono;
-  font-size: ws(11);
-  color: $widget-text-muted;
-  white-space: nowrap;
+.navBtnFlash {
+  animation: navFlash 0.3s ease-out forwards;
 }

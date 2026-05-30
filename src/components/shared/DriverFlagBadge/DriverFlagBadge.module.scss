@@ -1,0 +1,59 @@
+.flagBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: ws(14);
+  height: ws(14);
+  border-radius: 4px;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+
+.checkered {
+  background-color: rgba(255, 255, 255, 0.1);
+  background-image:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.6) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.6) 75%);
+  background-size: 3px 3px;
+  background-position:
+    0 0,
+    0 1.5px,
+    1.5px -1.5px,
+    -1.5px 0px;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.blue {
+  background: rgba(#2563eb, 0.25);
+  border-color: rgba(#60a5fa, 0.6);
+}
+
+.meatball {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.4);
+
+  .orangeCircle {
+    width: ws(6);
+    height: ws(6);
+    background-color: #ff5500;
+    border-radius: 50%;
+    display: block;
+  }
+}
+
+.black {
+  background: rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.penalty {
+  background: rgba(0, 0, 0, 0.35);
+  border-color: rgba(#fbbf24, 0.6);
+}
+
+.dq {
+  background: rgba(#ef4444, 0.2);
+  border-color: rgba(#ef4444, 0.6);
+}

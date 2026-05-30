@@ -109,7 +109,7 @@ export const initMainSync = async (root: RootStore) => {
               ...root.widgetSettings.allWidgets.map(
                 (w) => w.userSettings.hotkey
               ),
-              standingsSettings.classCyclingToggleHotkey,
+              standingsSettings.viewModeHotkey,
               standingsSettings.classPrevHotkey,
               standingsSettings.classNextHotkey,
             ];

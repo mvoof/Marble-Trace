@@ -24,7 +24,9 @@ export const StandingsHeader = observer(() => {
       style={{ gridTemplateColumns: gridTemplate }}
     >
       <StandingsHeaderCell>Pos</StandingsHeaderCell>
-      <StandingsHeaderCell>#</StandingsHeaderCell>
+      <StandingsHeaderCell className={styles.carNumHeader}>
+        #
+      </StandingsHeaderCell>
       <StandingsHeaderCell>Driver</StandingsHeaderCell>
 
       {settings.showBrand && (
@@ -35,12 +37,12 @@ export const StandingsHeader = observer(() => {
         <StandingsHeaderCell align="center">Tire</StandingsHeaderCell>
       )}
 
-      {!settings.enableClassCycling && settings.showClassBadge && (
+      {settings.viewMode === 'all' && settings.showClassBadge && (
         <StandingsHeaderCell align="center">Class</StandingsHeaderCell>
       )}
 
       {settings.showIRatingBadge && (
-        <StandingsHeaderCell align="center">Lic/iR</StandingsHeaderCell>
+        <StandingsHeaderCell align="center">Lic / iR</StandingsHeaderCell>
       )}
 
       {settings.showIrChange && (

@@ -1,8 +1,8 @@
 // Driver row — grid layout for strict column alignment
-// Columns: pos | car# | name(1fr) | pit | class | lic+iR | gap
+// Columns: pos | car# | name+badges(1fr) | class | lic+iR | gap
 .driverRow {
   display: grid;
-  grid-template-columns: ws(20) ws(40) 1fr ws(22) ws(48) ws(70) ws(70);
+  grid-template-columns: ws(20) ws(40) 1fr ws(48) ws(70) ws(45);
   align-items: center;
   column-gap: ws(2);
   padding: ws(4) ws(9);
@@ -13,9 +13,12 @@
   font-size: ws(13);
 }
 
+.rowOdd {
+  background-color: rgba(255, 255, 255, 0.035);
+}
+
 .driverRowPlayer {
   background-color: $widget-row-player-bg;
-  box-shadow: inset 0 0 15px $widget-row-player-glow;
   z-index: 10;
 }
 
@@ -54,7 +57,7 @@
 }
 
 .driverCarNumber {
-  font-size: ws(13);
+  font-size: ws(12);
   font-family: $font-mono;
   color: $widget-text-primary;
 }
@@ -65,18 +68,22 @@
 
 // Info block — name only, fills 1fr grid column
 .infoBlock {
+  display: flex;
+  align-items: center;
+  gap: ws(6);
   overflow: hidden;
   min-width: 0;
 }
 
 .driverName {
   font-weight: 700;
-  font-size: ws(14);
+  font-size: ws(15);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: $widget-text-primary;
-  display: block;
+  min-width: 0;
+  flex: 1;
 }
 
 .driverNamePlayer {
@@ -93,7 +100,6 @@
 
 // Individual badge columns — each occupies a fixed grid column so appearance/disappearance
 // of one badge never shifts adjacent badges
-.colPit,
 .colClass,
 .colLic {
   display: flex;

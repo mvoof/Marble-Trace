@@ -1,30 +1,25 @@
 import { observer } from 'mobx-react-lite';
-import { Users } from 'lucide-react';
+import { Trophy, Users, TriangleAlert } from 'lucide-react';
 
 import {
   formatIRating,
   NEAR_DQ_INCIDENT_THRESHOLD,
 } from '@utils/widget/widget-utils';
-import { formatTemp, tempUnit } from '@utils/formatters/telemetry-format';
-import {
-  computeClassSof,
-  parseWeekendTemp,
-} from '@utils/widget/standings-utils';
+import { resolveSessionLaps } from '@utils/formatters/telemetry-format';
+import { computeClassSof } from '@utils/widget/standings-utils';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './SessionHeader.module.scss';
 import {
   useBackendComputedStore,
   useTelemetryStore,
-  useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const SessionHeader = observer(() => {
-  const { standings, pitStops } = useBackendComputedStore();
-  const { sessionInfo, weekendInfo, environment } = useTelemetryStore();
-  const { unitSystem } = useUnitsStore();
-
+  const { standings } = useBackendComputedStore();
+  const telemetry = useTelemetryStore();
+  const { sessionInfo, weekendInfo } = telemetry;
   const widgetSettings = useWidgetSettingsStore();
 
   const settings =
@@ -35,17 +30,13 @@ export const SessionHeader = observer(() => {
   }
 
   const sessionInfoData = sessionInfo?.SessionInfo;
-
   const driverEntries = standings?.entries ?? [];
   const overallSof = computeClassSof(driverEntries);
 
   const playerIncidents =
     driverEntries.find((entry) => entry.isPlayer)?.incidents ?? 0;
 
-  const playerPitStops = pitStops?.playerStops ?? 0;
-
   const sessions = sessionInfoData?.Sessions;
-
   const currentSession = sessions?.[sessionInfoData?.CurrentSessionNum ?? 0];
   const trackName = weekendInfo?.TrackDisplayName ?? '';
 
@@ -54,23 +45,14 @@ export const SessionHeader = observer(() => {
       ? Math.max(...driverEntries.map((entry) => entry.lap))
       : null;
 
-  const airCelsius =
-    environment?.air_temp ?? parseWeekendTemp(weekendInfo?.TrackAirTemp);
-
-  const trkCelsius =
-    environment?.track_temp ?? parseWeekendTemp(weekendInfo?.TrackSurfaceTemp);
-
-  const tUnit = tempUnit(unitSystem);
-
-  const airStr =
-    airCelsius !== null
-      ? `${formatTemp(airCelsius, unitSystem)}${tUnit}`
-      : null;
-
-  const trkStr =
-    trkCelsius !== null
-      ? `${formatTemp(trkCelsius, unitSystem)}${tUnit}`
-      : null;
+  const totalLaps = currentSession?.SessionLaps
+    ? resolveSessionLaps(
+        currentSession.SessionLaps,
+        telemetry.session?.session_time_remain ?? null,
+        leaderLap,
+        telemetry.leaderBestLapTime
+      )
+    : null;
 
   return (
     <div className={styles.sessionHeader}>
@@ -78,59 +60,64 @@ export const SessionHeader = observer(() => {
         {trackName && <span className={styles.trackName}>{trackName}</span>}
 
         {currentSession && (
-          <span>{currentSession.SessionType?.toUpperCase()}</span>
+          <span className={styles.sessionType}>
+            {currentSession.SessionType?.toUpperCase()}
+          </span>
+        )}
+
+        {leaderLap !== null && (
+          <span className={styles.sessionLaps}>
+            {totalLaps && totalLaps.toLowerCase() !== 'unlimited'
+              ? `LAP: ${leaderLap}/${totalLaps}`
+              : `LAP: ${leaderLap}`}
+          </span>
         )}
       </div>
 
       <div className={styles.sessionRight}>
-        {leaderLap !== null && (
-          <span>
-            LAP <span className={styles.lapValue}>{leaderLap}</span>
-          </span>
-        )}
+        {settings.showSOF && (
+          <span className={styles.statPill}>
+            <Trophy size={11} color="#eab308" />
 
-        {settings.showTotalDrivers && (
-          <span className={styles.sessionDriverCount}>
-            <Users size={10} />
+            <span className={styles.statLabel}>SOF</span>
 
-            <span className={styles.sessionDriverCountValue}>
-              {driverEntries.length}
+            <span className={styles.statValue}>
+              {formatIRating(overallSof)}
             </span>
           </span>
         )}
 
-        {settings.showWeather && airStr && (
-          <span>
-            Air: <span className={styles.tempValue}>{airStr}</span>
-          </span>
-        )}
-
-        {settings.showWeather && trkStr && (
-          <span>
-            Trk: <span className={styles.tempValue}>{trkStr}</span>
-          </span>
-        )}
-
-        {settings.showSOF && (
-          <span className={styles.sofValue}>
-            SOF: {formatIRating(overallSof)}
-          </span>
-        )}
-
-        {settings.showPitStops && (
-          <span className={styles.pitStopsBadge}>
-            PIT: <span className={styles.pitStopsValue}>{playerPitStops}</span>
+        {settings.showTotalDrivers && (
+          <span className={styles.statPill}>
+            <Users size={11} color="#9ca3af" />
+            <span className={styles.statValue}>{driverEntries.length}</span>
           </span>
         )}
 
         {settings.showIncidentsBadge && (
-          <span className={styles.incidentsBadge}>
-            INC:{' '}
+          <span
+            className={`${styles.statPill} ${
+              playerIncidents >= NEAR_DQ_INCIDENT_THRESHOLD
+                ? styles.pulseWarning
+                : ''
+            }`}
+          >
+            <TriangleAlert
+              size={11}
+              color={
+                playerIncidents >= NEAR_DQ_INCIDENT_THRESHOLD
+                  ? '#ef4444'
+                  : '#f59e0b'
+              }
+            />
+
+            <span className={styles.statLabel}>INC</span>
+
             <span
               className={
                 playerIncidents >= NEAR_DQ_INCIDENT_THRESHOLD
-                  ? styles.incidentsValueNearDQ
-                  : styles.incidentsValue
+                  ? styles.valueDanger
+                  : styles.statValue
               }
             >
               {playerIncidents}x

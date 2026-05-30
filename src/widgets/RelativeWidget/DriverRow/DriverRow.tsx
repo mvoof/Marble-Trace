@@ -1,9 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import {
   abbreviateName,
+  formatCarNumber,
   TRACK_SURFACE_IN_PIT_STALL,
 } from '@utils/widget/widget-utils';
+import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
+import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
 import { ClassBadge } from '@/components/shared/ClassBadge/ClassBadge';
 import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
 import { computeRelativeGap } from '@utils/widget/relative-utils';
@@ -18,10 +21,12 @@ import {
 
 interface DriverRowProps {
   driver: DriverEntry;
+  index: number;
 }
 
-export const DriverRow = observer(({ driver }: DriverRowProps) => {
-  const { relativeEntries } = useBackendComputedStore();
+export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
+  const computed = useBackendComputedStore();
+  const { relativeEntries } = computed;
   const widgetSettings = useWidgetSettingsStore();
 
   const settings =
@@ -31,6 +36,9 @@ export const DriverRow = observer(({ driver }: DriverRowProps) => {
 
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
+
+  const pitState = computed.driverPitStates.get(driver.carIdx) ?? 'none';
+  const flagType = parseDriverFlags(driver.rawFlags);
 
   const relativeGap = player ? computeRelativeGap(driver, player) : 0;
 
@@ -60,10 +68,13 @@ export const DriverRow = observer(({ driver }: DriverRowProps) => {
   const rowClass = [
     styles.driverRow,
     driver.isPlayer ? styles.driverRowPlayer : '',
+    index % 2 !== 0 ? styles.rowOdd : '',
     isPit ? styles.driverRowPit : '',
   ]
     .filter(Boolean)
     .join(' ');
+
+  const formattedCarNumber = formatCarNumber(driver.carNumber);
 
   return (
     <div className={rowClass} data-relative-row>
@@ -85,7 +96,7 @@ export const DriverRow = observer(({ driver }: DriverRowProps) => {
         <span
           className={`${styles.driverCarNumber} ${driver.isPlayer ? styles.driverCarNumberPlayer : ''}`}
         >
-          #{driver.carNumber}
+          #{formattedCarNumber}
         </span>
       </div>
 
@@ -104,10 +115,11 @@ export const DriverRow = observer(({ driver }: DriverRowProps) => {
             ? abbreviateName(driver.userName)
             : driver.userName}
         </span>
-      </div>
 
-      <div className={styles.colPit}>
-        {settings.showPitIndicator && isPit && <PitBadge />}
+        {settings.showDriverFlags && flagType !== 'none' && (
+          <DriverFlagBadge type={flagType} />
+        )}
+        {settings.showPitIndicator && isPit && <PitBadge state={pitState} />}
       </div>
 
       <div className={styles.colClass}>
@@ -115,7 +127,6 @@ export const DriverRow = observer(({ driver }: DriverRowProps) => {
           <ClassBadge
             color={driver.carClassColor}
             label={driver.carClassShortName}
-            className={styles.badgeFull}
           />
         )}
       </div>
