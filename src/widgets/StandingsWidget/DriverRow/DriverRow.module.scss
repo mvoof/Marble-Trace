@@ -113,7 +113,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  display: block;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .driverNamePlayer {
@@ -183,11 +184,13 @@
 
 // Gap
 .gapLeader {
+  font-family: $font-mono;
   color: $widget-text-primary;
   font-size: ws(14);
 }
 
 .gapValue {
+  font-family: $font-mono;
   color: $widget-text-primary;
   font-size: ws(14);
 }

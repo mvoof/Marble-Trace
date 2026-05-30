@@ -119,9 +119,6 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
         {settings.showDriverFlags && flagType !== 'none' && (
           <DriverFlagBadge type={flagType} />
         )}
-      </div>
-
-      <div className={styles.colPit}>
         {settings.showPitIndicator && isPit && <PitBadge state={pitState} />}
       </div>
 

@@ -1,8 +1,8 @@
 // Driver row — grid layout for strict column alignment
-// Columns: pos | car# | name(1fr) | pit | class | lic+iR | gap
+// Columns: pos | car# | name+badges(1fr) | class | lic+iR | gap
 .driverRow {
   display: grid;
-  grid-template-columns: ws(20) ws(40) 1fr ws(22) ws(48) ws(70) ws(70);
+  grid-template-columns: ws(20) ws(40) 1fr ws(48) ws(70) ws(45);
   align-items: center;
   column-gap: ws(2);
   padding: ws(4) ws(9);
@@ -100,7 +100,6 @@
 
 // Individual badge columns — each occupies a fixed grid column so appearance/disappearance
 // of one badge never shifts adjacent badges
-.colPit,
 .colClass,
 .colLic {
   display: flex;

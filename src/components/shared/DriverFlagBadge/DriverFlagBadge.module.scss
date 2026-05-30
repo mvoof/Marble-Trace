@@ -2,15 +2,37 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: ws(18);
-  height: ws(18);
+  width: ws(14);
+  height: ws(14);
   border-radius: 4px;
+  flex-shrink: 0;
+  border: 1px solid transparent;
 }
 
-// 1. Meatball flag (Black with orange circle center)
+.checkered {
+  background-color: rgba(255, 255, 255, 0.1);
+  background-image:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.6) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.6) 75%);
+  background-size: 3px 3px;
+  background-position:
+    0 0,
+    0 1.5px,
+    1.5px -1.5px,
+    -1.5px 0px;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.blue {
+  background: rgba(#2563eb, 0.25);
+  border-color: rgba(#60a5fa, 0.6);
+}
+
 .meatball {
-  background: #000000;
-  border: 1.5px solid rgba(255, 255, 255, 0.87);
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.4);
 
   .orangeCircle {
     width: ws(6);
@@ -21,43 +43,17 @@
   }
 }
 
-// 2. Black Flag Warning (Black with white border)
 .black {
-  background: #000000;
-  border: 1.5px solid rgba(255, 255, 255, 0.87);
+  background: rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-// 3. Black Flag Penalty (Black with yellow border)
 .penalty {
-  background: #000000;
-  border: 1.5px solid #fbbf24; // Yellow
+  background: rgba(0, 0, 0, 0.35);
+  border-color: rgba(#fbbf24, 0.6);
 }
 
-// 4. Disqualified Flag (Black with red border)
 .dq {
-  background: #000000;
-  border: 1.5px solid #ef4444; // Red
-}
-
-// 5. Blue Flag (Pure blue square)
-.blue {
-  background-color: #2563eb;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-// 6. Checkered Flag (Black & White checkered pattern)
-.checkered {
-  background-color: #ffffff;
-  background-image:
-    linear-gradient(45deg, #000000 25%, transparent 25%),
-    linear-gradient(-45deg, #000000 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #000000 75%),
-    linear-gradient(-45deg, transparent 75%, #000000 75%);
-  background-size: 6px 6px;
-  background-position:
-    0 0,
-    0 3px,
-    3px -3px,
-    -3px 0px;
-  border: 1px solid rgba(255, 255, 255, 0.87);
+  background: rgba(#ef4444, 0.2);
+  border-color: rgba(#ef4444, 0.6);
 }

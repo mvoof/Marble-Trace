@@ -3,13 +3,12 @@
   align-items: center;
   justify-content: center;
   width: calc(4ch + 0.8em);
-  padding: 0.15em 0.4em;
+  padding: 0.2em 0.4em;
   box-sizing: border-box;
-  border-radius: 0.2em;
+  border-radius: 0.25em;
   color: contrast-color(var(--badge-bg, #fff));
-  font-family: $font-mono;
   font-size: 0.85em;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   flex-shrink: 0;
   white-space: nowrap;
