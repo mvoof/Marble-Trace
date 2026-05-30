@@ -84,3 +84,71 @@ export const calculateLapsBehind = (
   const driverAbs = driver.lap + driver.lapDistPct;
   return Math.floor(leaderAbs - driverAbs);
 };
+
+export interface StandingsGapInfo {
+  value: string;
+  isLeader: boolean;
+  isEmpty: boolean;
+}
+
+export const getStandingsGap = (
+  driver: DriverEntry,
+  leader: DriverEntry | null,
+  isRace: boolean,
+  isLeader: boolean,
+  lapsBehind: number
+): StandingsGapInfo => {
+  if (isLeader) {
+    return { value: '-', isLeader: true, isEmpty: false };
+  }
+
+  if (!isRace) {
+    if (driver.bestLapTime > 0 && leader && leader.bestLapTime > 0) {
+      const timeDiff = driver.bestLapTime - leader.bestLapTime;
+
+      if (timeDiff > 0) {
+        return { value: timeDiff.toFixed(1), isLeader: false, isEmpty: false };
+      }
+
+      return { value: '-', isLeader: true, isEmpty: false };
+    }
+
+    return { value: '--.-', isLeader: false, isEmpty: true };
+  }
+
+  // In race, try to use Session ResultsPositions gap data
+  const resLap = driver.resultsPositionLap;
+  const resTime = driver.resultsPositionTime;
+
+  if (
+    resLap !== undefined &&
+    resLap !== null &&
+    resTime !== undefined &&
+    resTime !== null
+  ) {
+    if (resLap !== 0) {
+      return { value: `${resLap} L`, isLeader: false, isEmpty: false };
+    }
+
+    if (resTime > 0) {
+      return { value: resTime.toFixed(1), isLeader: false, isEmpty: false };
+    }
+
+    return { value: '-', isLeader: true, isEmpty: false };
+  }
+
+  // Fallback if resultsPosition values are not available (e.g. at the start of a session)
+  if (lapsBehind >= 1) {
+    return { value: `${lapsBehind} L`, isLeader: false, isEmpty: false };
+  }
+
+  if (driver.f2Time > 0) {
+    return {
+      value: driver.f2Time.toFixed(1),
+      isLeader: false,
+      isEmpty: false,
+    };
+  }
+
+  return { value: '--.-', isLeader: false, isEmpty: true };
+};

@@ -126,6 +126,8 @@ pub struct DriverEntry {
     pub relative_lap_dist: f32,
     pub class_est_lap_time: f32,
     pub raw_flags: u32,
+    pub results_position_lap: Option<i32>,
+    pub results_position_time: Option<f32>,
 }
 
 #[derive(Default)]
@@ -198,6 +200,32 @@ pub fn compute(
 
     let mut locked_state = lock_or_recover(state);
 
+    let current_num = session.session_info.current_session_num as usize;
+    let results = session
+        .session_info
+        .sessions
+        .get(current_num)
+        .and_then(|s| s.results_positions.as_deref());
+
+    let mut results_positions_map = HashMap::new();
+    if let Some(results) = results {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "PascalCase")]
+        struct ResultPosDeficit {
+            car_idx: Option<i32>,
+            lap: Option<i32>,
+            time: Option<f32>,
+        }
+
+        for val in results {
+            if let Ok(rpd) = serde_yaml_ng::from_value::<ResultPosDeficit>(val.clone()) {
+                if let Some(idx) = rpd.car_idx {
+                    results_positions_map.insert(idx, (rpd.lap, rpd.time));
+                }
+            }
+        }
+    }
+
     let mut entries: Vec<DriverEntry> = deduped_drivers
         .iter()
         .filter(|d| {
@@ -222,6 +250,11 @@ pub fn compute(
         })
         .map(|driver| {
             let idx = driver.car_idx as usize;
+
+            let (res_lap, res_time) = results_positions_map
+                .get(&driver.car_idx)
+                .copied()
+                .unwrap_or((None, None));
 
             let tire_compound_idx = frame.car_idx_tire_compound.get(idx).copied().unwrap_or(-1);
 
@@ -314,6 +347,8 @@ pub fn compute(
                     .get(idx)
                     .map(|bf| bf.0)
                     .unwrap_or(0),
+                results_position_lap: res_lap,
+                results_position_time: res_time,
             }
         })
         .collect();

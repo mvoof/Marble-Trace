@@ -61,6 +61,8 @@ export const computeDriverEntries = (
       estTime: carIdx.car_idx_est_time?.[idx] ?? 0,
       classEstLapTime: carIdx.car_idx_est_time?.[idx] ?? 0,
       rawFlags: 0,
+      resultsPositionLap: null,
+      resultsPositionTime: null,
     });
   }
 

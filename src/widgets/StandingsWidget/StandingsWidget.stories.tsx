@@ -31,6 +31,8 @@ const DRIVER_ENTRIES = RAW_ENTRIES.map((entry, idx) => ({
   bestLapTime: BASE_LAP_TIME + idx * LAP_TIME_SPREAD_PER_POS * 0.8,
   f2Time: idx === 0 ? 0 : idx * GAP_PER_POS + (idx % 4) * 0.3,
   carClassShortName: CLASS_LABELS[idx % CLASS_LABELS.length],
+  resultsPositionLap: idx > 6 ? 1 : 0,
+  resultsPositionTime: idx === 0 ? 0 : idx * GAP_PER_POS + (idx % 4) * 0.3,
 }));
 
 const PLAYER_CAR_IDX =

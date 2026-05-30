@@ -594,6 +594,8 @@ export type DriverEntry = {
   relativeLapDist: number;
   classEstLapTime: number;
   rawFlags: number;
+  resultsPositionLap: number | null;
+  resultsPositionTime: number | null;
 };
 
 /**
