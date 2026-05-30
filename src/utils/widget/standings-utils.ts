@@ -55,7 +55,7 @@ const buildColDefs = (settings: StandingsWidgetSettings): ColDef[] => [
     width: ws(48),
     show: !settings.enableClassCycling && settings.showClassBadge,
   }, // class
-  { width: ws(70), show: settings.showIRatingBadge }, // lic/iRating
+  { width: ws(78), show: settings.showIRatingBadge }, // lic/iRating
   { width: ws(24), show: settings.showIrChange }, // ΔiR
   { width: ws(18), show: settings.showLapsCompleted }, // laps
   { width: ws(32), show: settings.showPosChange }, // +/- pos
