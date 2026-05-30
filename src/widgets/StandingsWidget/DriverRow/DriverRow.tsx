@@ -43,6 +43,8 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 
+  const pitState = computed.driverPitStates.get(carIdx) ?? 'none';
+
   const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
   const pos = settings.enableClassCycling
@@ -99,7 +101,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
             : driver.userName}
         </span>
 
-        {isPit && <PitBadge />}
+        {isPit && <PitBadge state={pitState} />}
       </div>
 
       {settings.showBrand && (

@@ -38,6 +38,7 @@ export class BackendComputedStore {
   standings: DriverEntriesFrame | null = null;
   pitStops: PitStopsFrame | null = null;
   lapDelta: LapDeltaFrame | null = null;
+  driverPitStates = new Map<number, 'none' | 'in' | 'stall' | 'exit'>();
 
   private readonly startPositionSnapshot = new Map<number, StartPosition>();
 
@@ -152,12 +153,47 @@ export class BackendComputedStore {
   }
 
   updateStandings(frame: DriverEntriesFrame) {
+    const currentKeys = new Set<number>();
+
     for (const entry of frame.entries) {
+      currentKeys.add(entry.carIdx);
+
       if (!this.startPositionSnapshot.has(entry.carIdx) && entry.position > 0) {
         this.startPositionSnapshot.set(entry.carIdx, {
           overall: entry.position,
           class: entry.classPosition,
         });
+      }
+
+      // Update pit state tracking
+      const prev = this.driverPitStates.get(entry.carIdx);
+
+      if (!entry.onPitRoad) {
+        this.driverPitStates.set(entry.carIdx, 'none');
+      } else if (prev === undefined || prev === 'none') {
+        if (entry.trackSurface === 'InPitStall') {
+          this.driverPitStates.set(entry.carIdx, 'stall');
+        } else {
+          this.driverPitStates.set(entry.carIdx, 'in');
+        }
+      } else if (prev === 'in') {
+        if (entry.trackSurface === 'InPitStall') {
+          this.driverPitStates.set(entry.carIdx, 'stall');
+        }
+      } else if (prev === 'stall') {
+        if (
+          entry.trackSurface === 'AproachingPits' ||
+          entry.trackSurface === 'OnTrack'
+        ) {
+          this.driverPitStates.set(entry.carIdx, 'exit');
+        }
+      }
+    }
+
+    // Clean up old driver entries that are no longer active
+    for (const key of this.driverPitStates.keys()) {
+      if (!currentKeys.has(key)) {
+        this.driverPitStates.delete(key);
       }
     }
 
@@ -205,5 +241,6 @@ export class BackendComputedStore {
     this.pitStops = null;
     this.lapDelta = null;
     this.startPositionSnapshot.clear();
+    this.driverPitStates.clear();
   }
 }

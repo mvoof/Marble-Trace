@@ -104,7 +104,7 @@ const meta: Meta<typeof StoryHost> = {
   parameters: { layout: 'centered' },
   decorators: [
     withStore(seedFromSnapshot),
-    widgetDecorator({ width: 800, height: 450 }),
+    widgetDecorator({ width: 860, height: 450 }),
   ],
   args: {
     settings: DEFAULT_SETTINGS,

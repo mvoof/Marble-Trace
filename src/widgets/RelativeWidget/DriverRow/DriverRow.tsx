@@ -23,7 +23,8 @@ interface DriverRowProps {
 }
 
 export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
-  const { relativeEntries } = useBackendComputedStore();
+  const computed = useBackendComputedStore();
+  const { relativeEntries } = computed;
   const widgetSettings = useWidgetSettingsStore();
 
   const settings =
@@ -33,6 +34,8 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
 
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
+
+  const pitState = computed.driverPitStates.get(driver.carIdx) ?? 'none';
 
   const relativeGap = player ? computeRelativeGap(driver, player) : 0;
 
@@ -112,7 +115,7 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
       </div>
 
       <div className={styles.colPit}>
-        {settings.showPitIndicator && isPit && <PitBadge />}
+        {settings.showPitIndicator && isPit && <PitBadge state={pitState} />}
       </div>
 
       <div className={styles.colClass}>
