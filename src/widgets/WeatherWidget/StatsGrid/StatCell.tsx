@@ -7,6 +7,7 @@ import {
   tempUnit,
 } from '@utils/formatters/telemetry-format';
 import { getWindColor, parseWeekendFloat } from '@utils/widget/weather-utils';
+import { getAirTempColor, getTrackTempColor } from '@utils/widget/widget-utils';
 
 import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
@@ -57,7 +58,8 @@ export const StatCell = observer(({ type }: StatCellProps) => {
   let label = '';
   let value = '';
   let unit: string | undefined;
-  let windColor: string | undefined;
+
+  let customBorderColor: string | undefined;
 
   if (type === 'airTemp') {
     const airTempC =
@@ -66,6 +68,10 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     label = 'AIR';
     value = formatTemp(airTempC, unitSystem);
     unit = tempUnit(unitSystem);
+
+    if (airTempC !== null) {
+      customBorderColor = getAirTempColor(airTempC);
+    }
   } else if (type === 'trackTemp') {
     const trackTempC =
       env?.track_temp ?? parseWeekendFloat(weekendInfo?.TrackSurfaceTemp);
@@ -73,6 +79,9 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     label = 'TRK';
     value = formatTemp(trackTempC, unitSystem);
     unit = tempUnit(unitSystem);
+    if (trackTempC !== null) {
+      customBorderColor = getTrackTempColor(trackTempC);
+    }
   } else if (type === 'wind') {
     const windVelMps =
       env?.wind_vel ?? parseWeekendFloat(weekendInfo?.TrackWindVel);
@@ -80,7 +89,7 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     label = 'WIND';
     value = windVelMps !== null ? _formatSpeed(windVelMps, unitSystem) : '--.-';
     unit = _speedUnit(unitSystem);
-    windColor = getWindColor(windVelMps);
+    customBorderColor = getWindColor(windVelMps);
   } else if (type === 'humidity') {
     const rawHumidity =
       env?.relative_humidity !== undefined && env?.relative_humidity !== null
@@ -97,7 +106,9 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     <div
       className={`${styles.statCell} ${accentClass}`}
       style={
-        windColor !== undefined ? { borderLeftColor: windColor } : undefined
+        customBorderColor !== undefined
+          ? { borderLeftColor: customBorderColor }
+          : undefined
       }
     >
       <WidgetLabel mono uppercase={false} className={styles.statLabel}>
