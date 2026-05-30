@@ -1,24 +1,10 @@
+.carCircle {
+  fill: var(--car-dot-bg, #18181b);
+}
+
 .carNumber {
   font-family: $font-widget;
   font-weight: 700;
-  fill: white;
-  pointer-events: none;
-}
-
-.youTag {
-  font-family: $font-widget;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  fill: black;
-  pointer-events: none;
-}
-
-.p1Tag {
-  font-family: $font-widget;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  fill: white;
+  fill: contrast-color(var(--car-dot-bg, #18181b));
   pointer-events: none;
 }

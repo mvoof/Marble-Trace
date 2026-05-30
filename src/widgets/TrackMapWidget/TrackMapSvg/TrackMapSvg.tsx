@@ -1,4 +1,4 @@
-﻿import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { TrackPoint } from '@/types';
@@ -9,6 +9,7 @@ import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
 import { CarDot } from '@/components/shared/CarDot/CarDot';
 
 import { getSectorColor } from '@utils/widget/sector-utils';
+import { StartFinishMarker } from './StartFinishMarker/StartFinishMarker';
 
 import styles from './TrackMapSvg.module.scss';
 
@@ -26,6 +27,7 @@ interface TrackMapSvgProps {
   trackBorderPx?: number;
   sectorStrokePx?: number;
   targetDotRadiusPx?: number;
+  showStartFinish?: boolean;
 }
 
 export const TrackMapSvg = observer(
@@ -35,14 +37,14 @@ export const TrackMapSvg = observer(
     points,
     cars,
     sectors,
-    sfLabel = 'S/F',
-    playerDotColor = 'white',
+    playerDotColor = '#18181b',
     showPlayerLabel = true,
     leaderLabelMode = 'all',
     trackStrokePx = 10,
     trackBorderPx = 3,
     sectorStrokePx = 6,
     targetDotRadiusPx = 10,
+    showStartFinish = true,
   }: TrackMapSvgProps) => {
     const playerClassId = cars.find((c) => c.isPlayer)?.carClassId ?? -1;
     const parts = viewBox.split(' ').map(Number);
@@ -83,6 +85,23 @@ export const TrackMapSvg = observer(
         setPathLength(pathRef.current.getTotalLength());
       }
     }, [svgPath]);
+
+    const trackCenter = useMemo(() => {
+      if (points.length === 0) return { x: 0, y: 0 };
+
+      let sumX = 0;
+      let sumY = 0;
+
+      for (const p of points) {
+        sumX += p.x;
+        sumY += p.y;
+      }
+
+      return {
+        x: sumX / points.length,
+        y: sumY / points.length,
+      };
+    }, [points]);
 
     const validSectors = sectors
       ?.filter((s) => s.SectorStartPct != null && s.SectorNum != null)
@@ -138,39 +157,22 @@ export const TrackMapSvg = observer(
             })}
 
           {/* Start/Finish marker */}
-          {points.length > 0 &&
+          {showStartFinish &&
+            points.length > 0 &&
             (() => {
               const { x, y } = getPointAtPct(points, 0);
               const next = getPointAtPct(points, 0.01);
               const angle =
                 Math.atan2(next.y - y, next.x - x) * (180 / Math.PI);
-              // If the rotation angle is > 90 or < -90, the text will be upside down.
-              // In these cases, we rotate the text element itself by 180 degrees and
-              // flip its Y offset to keep it on the correct side of the line.
-              const isUpsideDown = Math.abs(angle) > 90;
 
               return (
-                <g transform={`translate(${x},${y}) rotate(${angle})`}>
-                  <line
-                    x1="0"
-                    y1="-20"
-                    x2="0"
-                    y2="20"
-                    stroke="white"
-                    strokeWidth="5"
-                    opacity="0.85"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                  <text
-                    x="0"
-                    y={isUpsideDown ? 32 : -25}
-                    textAnchor="middle"
-                    className={styles.sfLabel}
-                    transform={isUpsideDown ? 'rotate(180)' : ''}
-                  >
-                    {sfLabel}
-                  </text>
-                </g>
+                <StartFinishMarker
+                  x={x}
+                  y={y}
+                  angle={angle}
+                  trackCenterX={trackCenter.x}
+                  trackCenterY={trackCenter.y}
+                />
               );
             })()}
 

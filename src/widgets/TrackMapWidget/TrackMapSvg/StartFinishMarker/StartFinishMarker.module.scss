@@ -1,0 +1,33 @@
+.markerLine {
+  stroke: rgba(255, 255, 255, 0.45);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.markerAnchor {
+  fill: #ffffff;
+  opacity: 0.85;
+}
+
+.flagContainer {
+  // Expose checkered flag size configuration in SCSS.
+  // Adjust this single variable to change the HUD icon size dynamically!
+  --flag-size: 26px;
+
+  // Mathematically scale the base 20x20px SVG vector around its (0, 0) center.
+  transform: scale(calc(var(--flag-size) / 20px));
+}
+
+.flagWhite {
+  fill: #ffffff;
+}
+
+.flagDark {
+  fill: #18181b;
+}
+
+.flagBorder {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2px;
+}

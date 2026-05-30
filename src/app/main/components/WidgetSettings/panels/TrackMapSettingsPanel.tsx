@@ -66,6 +66,15 @@ export const TrackMapSettingsPanel = observer(() => {
             />
           </SettingRow>
         </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow title="Start/Finish Line">
+            <Switch
+              checked={settings.showStartFinish ?? true}
+              onChange={(v) => update({ showStartFinish: v })}
+            />
+          </SettingRow>
+        </div>
       </Card>
 
       <Card title="Player Marker">

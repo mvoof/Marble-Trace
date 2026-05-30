@@ -76,6 +76,9 @@ export const TrackMapContent = observer(() => {
   const { isRecording, isWaitingForSF, recordingProgress, trackData } =
     recState;
 
+  const trackDataRef = useRef(trackData);
+  trackDataRef.current = trackData;
+
   const recordingOverlayRef = useRef<RecordingOverlayHandle>(null);
 
   const setTrackData = useCallback((data: TrackData | null) => {
@@ -124,6 +127,7 @@ export const TrackMapContent = observer(() => {
               svgPath: saved.svgPath,
               viewBox: saved.viewBox,
               points: saved.points,
+              rotation: saved.rotation ?? 0,
             },
           });
         } else {
@@ -154,6 +158,7 @@ export const TrackMapContent = observer(() => {
           points,
           recordedAt: new Date().toISOString(),
           version: TRACK_DATA_VERSION,
+          rotation: 0,
         };
 
         await store.set(TRACKS_STORE_KEY, tracks);
@@ -193,6 +198,47 @@ export const TrackMapContent = observer(() => {
     };
   }, [clearCurrentTrack]);
 
+  const handleRotate = useCallback(
+    (direction: 'cw' | 'ccw') => {
+      void (async () => {
+        const currentTrackData = trackDataRef.current;
+
+        if (!trackId || !currentTrackData) {
+          return;
+        }
+
+        const currentRotation = currentTrackData.rotation ?? 0;
+        let newRotation = currentRotation + (direction === 'cw' ? 90 : -90);
+
+        newRotation = (newRotation + 360) % 360;
+
+        dispatch({
+          type: 'SET_TRACK_DATA',
+          data: {
+            ...currentTrackData,
+            rotation: newRotation,
+          },
+        });
+
+        try {
+          const { load } = await import('@tauri-apps/plugin-store');
+          const store = await load('tracks.json');
+          const tracks =
+            (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
+
+          if (tracks[trackId]) {
+            tracks[trackId].rotation = newRotation;
+            await store.set(TRACKS_STORE_KEY, tracks);
+            await store.save();
+          }
+        } catch {
+          // Silently fail
+        }
+      })();
+    },
+    [trackId]
+  );
+
   return (
     <>
       {!trackData && (
@@ -213,6 +259,7 @@ export const TrackMapContent = observer(() => {
         isWaitingForSF={isWaitingForSF}
         recordingProgress={recordingProgress}
         recordingOverlayRef={recordingOverlayRef}
+        onRotate={handleRotate}
       />
     </>
   );

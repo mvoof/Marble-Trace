@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import { useMemo, type RefObject } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
@@ -7,10 +7,16 @@ import type { RecordingOverlayHandle } from '@widgets/TrackMapWidget/RecordingOv
 import { RecordingOverlay } from '@widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
 import { TrackMapSvg } from '@widgets/TrackMapWidget/TrackMapSvg/TrackMapSvg';
 import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
+import { RotationControls } from './RotationControls/RotationControls';
+import {
+  rotatePoints,
+  buildSvgPathAndViewBox,
+} from '@utils/widget/track-map-utils';
 
 import styles from './TrackMapView.module.scss';
 import type { TrackMapWidgetSettings } from '@/types/widget-settings';
 import {
+  useAppSettingsStore,
   useBackendComputedStore,
   useTelemetryStore,
   useWidgetSettingsStore,
@@ -20,6 +26,7 @@ export interface TrackData {
   svgPath: string;
   viewBox: string;
   points: TrackPoint[];
+  rotation?: number;
 }
 
 export interface TrackMapViewProps {
@@ -28,6 +35,7 @@ export interface TrackMapViewProps {
   recordingProgress: number;
   isWaitingForSF: boolean;
   recordingOverlayRef?: RefObject<RecordingOverlayHandle | null>;
+  onRotate?: (direction: 'cw' | 'ccw') => void;
 }
 
 export const TrackMapView = observer(
@@ -37,19 +45,42 @@ export const TrackMapView = observer(
     recordingProgress,
     isWaitingForSF,
     recordingOverlayRef,
+    onRotate,
   }: TrackMapViewProps) => {
     const telemetry = useTelemetryStore();
     const computed = useBackendComputedStore();
     const widgetSettings = useWidgetSettingsStore();
+    const { dragMode } = useAppSettingsStore();
+
     const rawSettings =
       widgetSettings.getSettings<TrackMapWidgetSettings>('track-map');
+
     const showSectors = rawSettings.showSectors ?? true;
     const showSectorsOnMap = rawSettings.showSectorsOnMap ?? showSectors;
+
     const settings = { ...rawSettings, showSectors, showSectorsOnMap };
+
     const sectors = telemetry.sessionInfo?.SplitTimeInfo?.Sectors;
 
     const driverEntries = computed.standings?.entries ?? [];
     const carPositions = telemetry.carPositions;
+
+    const rotatedTrackData = useMemo(() => {
+      if (!trackData) return null;
+      const rotation = trackData.rotation ?? 0;
+      if (rotation === 0) return trackData;
+
+      const rotatedPts = rotatePoints(trackData.points, rotation);
+      const { svgPath: rotatedSvgPath, viewBox: rotatedViewBox } =
+        buildSvgPathAndViewBox(rotatedPts);
+
+      return {
+        svgPath: rotatedSvgPath,
+        viewBox: rotatedViewBox,
+        points: rotatedPts,
+        rotation,
+      };
+    }, [trackData]);
 
     const cars: CarOnTrack[] = driverEntries.map((entry) => ({
       carIdx: entry.carIdx,
@@ -65,7 +96,7 @@ export const TrackMapView = observer(
       classPosition: entry.classPosition,
     }));
 
-    if (!trackData) {
+    if (!rotatedTrackData) {
       return (
         <WidgetPanel className={styles.trackMap} gap={0}>
           <RecordingOverlay
@@ -80,12 +111,16 @@ export const TrackMapView = observer(
 
     const visibleSectors = settings.showSectorsOnMap ? sectors : null;
 
+    const showStartFinish = settings.showStartFinish ?? true;
+
     return (
       <WidgetPanel className={styles.trackMap} gap={0}>
+        {dragMode && onRotate && <RotationControls onRotate={onRotate} />}
+
         <TrackMapSvg
-          svgPath={trackData.svgPath}
-          viewBox={trackData.viewBox}
-          points={trackData.points}
+          svgPath={rotatedTrackData.svgPath}
+          viewBox={rotatedTrackData.viewBox}
+          points={rotatedTrackData.points}
           cars={cars}
           sectors={visibleSectors}
           playerDotColor={settings.playerDotColor}
@@ -95,6 +130,7 @@ export const TrackMapView = observer(
           trackBorderPx={settings.trackBorderPx}
           sectorStrokePx={settings.sectorStrokePx}
           targetDotRadiusPx={settings.targetDotRadiusPx}
+          showStartFinish={showStartFinish}
         />
       </WidgetPanel>
     );
