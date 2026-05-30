@@ -52,6 +52,25 @@ export class BackendComputedStore {
     return new Map(this.standings.entries.map((e) => [e.carIdx, e]));
   }
 
+  get classLeaders(): Map<number, DriverEntry> {
+    const map = new Map<number, DriverEntry>();
+    if (!this.standings) return map;
+
+    for (const entry of this.standings.entries) {
+      if (entry.classPosition === 1) {
+        map.set(entry.carClassId, entry);
+      }
+    }
+
+    return map;
+  }
+
+  get overallLeader(): DriverEntry | null {
+    if (!this.standings) return null;
+
+    return this.standings.entries.find((entry) => entry.position === 1) ?? null;
+  }
+
   get allClassGroups(): DriverGroup[] {
     const entries = this.standings?.entries ?? [];
 

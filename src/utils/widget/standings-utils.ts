@@ -69,3 +69,18 @@ export const buildGridTemplate = (settings: StandingsWidgetSettings): string =>
     .filter((col) => col.show)
     .map((col) => col.width)
     .join(' ');
+
+interface DriverLapInfo {
+  lap: number;
+  lapDistPct: number;
+}
+
+export const calculateLapsBehind = (
+  leader: DriverLapInfo | null | undefined,
+  driver: DriverLapInfo
+): number => {
+  if (!leader) return 0;
+  const leaderAbs = leader.lap + leader.lapDistPct;
+  const driverAbs = driver.lap + driver.lapDistPct;
+  return Math.floor(leaderAbs - driverAbs);
+};

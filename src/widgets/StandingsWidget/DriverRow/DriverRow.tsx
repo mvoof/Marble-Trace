@@ -13,7 +13,10 @@ import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagB
 import { ClassBadge } from '@/components/shared/ClassBadge/ClassBadge';
 import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
 import { TireBadge } from '@/components/shared/TireBadge/TireBadge';
-import { buildGridTemplate } from '@utils/widget/standings-utils';
+import {
+  buildGridTemplate,
+  calculateLapsBehind,
+} from '@utils/widget/standings-utils';
 import { PosChange } from './PosChange';
 import { IrChangeCell } from './IrChangeCell';
 
@@ -21,6 +24,7 @@ import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
 import {
   useBackendComputedStore,
+  useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -31,6 +35,7 @@ interface DriverRowProps {
 
 export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   const computed = useBackendComputedStore();
+  const telemetry = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const driver = computed.driverMap.get(carIdx);
@@ -66,6 +71,47 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
     .join(' ');
 
   const formattedCarNumber = formatCarNumber(driver.carNumber);
+
+  // Get leader of current class/group from cached store for gap/deficit calculation
+  const leader = settings.enableClassCycling
+    ? (computed.classLeaders.get(driver.carClassId) ?? null)
+    : computed.overallLeader;
+
+  const lapsBehind = calculateLapsBehind(leader, driver);
+
+  const sessionInfoData = telemetry.sessionInfo?.SessionInfo;
+  const sessions = sessionInfoData?.Sessions;
+  const currentSession = sessions?.[sessionInfoData?.CurrentSessionNum ?? 0];
+  const isRace = currentSession?.SessionType === 'Race';
+
+  const gapContent = (() => {
+    if (isLeader) {
+      return <span className={styles.gapLeader}>-</span>;
+    }
+
+    if (!isRace) {
+      // In practice/qualifying, gap is the difference in best lap times
+      if (driver.bestLapTime > 0 && leader && leader.bestLapTime > 0) {
+        const timeDiff = driver.bestLapTime - leader.bestLapTime;
+        if (timeDiff > 0) {
+          return <span className={styles.gapValue}>{timeDiff.toFixed(1)}</span>;
+        }
+        return <span className={styles.gapLeader}>-</span>;
+      }
+      return <span className={styles.gapLeader}>--.-</span>;
+    }
+
+    // In race, show lap deficit or time gap behind leader
+    if (lapsBehind >= 1) {
+      return <span className={styles.gapValue}>{lapsBehind} L</span>;
+    }
+    if (driver.f2Time > 0) {
+      return (
+        <span className={styles.gapValue}>{driver.f2Time.toFixed(1)}</span>
+      );
+    }
+    return <span className={styles.gapLeader}>--.-</span>;
+  })();
 
   return (
     <div
@@ -161,15 +207,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         </div>
       )}
 
-      <div className={`${styles.cell} ${styles.cellRight}`}>
-        {isLeader ? (
-          <span className={styles.gapLeader}>-</span>
-        ) : driver.f2Time > 0 ? (
-          <span className={styles.gapValue}>+{driver.f2Time.toFixed(1)}</span>
-        ) : (
-          <span className={styles.gapLeader}>+--.-</span>
-        )}
-      </div>
+      <div className={`${styles.cell} ${styles.cellRight}`}>{gapContent}</div>
 
       <div className={`${styles.cell} ${styles.cellRight}`}>
         <span className={styles.lastLap}>
