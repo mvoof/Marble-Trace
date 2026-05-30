@@ -1,34 +1,52 @@
 .badge {
   display: inline-flex;
-  align-items: stretch;
-  border-radius: 0.25em;
-  overflow: hidden;
+  align-items: center;
+  gap: 0.4em;
   font-weight: 700;
   font-size: 0.85em;
   line-height: 1;
   white-space: nowrap;
 }
 
-.licPart {
-  display: flex;
-  align-items: center;
-  padding: 0.2em 0.25em;
-  color: white;
+.licBadge {
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 0.25em;
+  overflow: hidden;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.divider {
-  width: 1px;
-  background: rgba(255, 255, 255, 0.25);
-  flex-shrink: 0;
+.licLetter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2em 0.35em;
+  color: white;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.licNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2em 0.4em;
+  background: rgba(0, 0, 0, 0.4);
+  color: rgba(255, 255, 255, 0.95);
+  font-family: $font-mono;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .irPart {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  padding: 0.2em 0.3em;
   font-family: $font-mono;
-  flex: 1;
-  justify-content: center;
+  font-weight: 600;
+  color: var(--mt-text-muted, #a1a1aa);
 }
 
 // License colors
@@ -50,35 +68,4 @@
 
 .licR {
   background: $rating-lic-r;
-}
-
-// iRating tiers (right part background + text)
-.irRookie {
-  background: $rating-ir-rookie-bg;
-  color: $rating-ir-rookie-color;
-}
-
-.irAvg {
-  background: $rating-ir-avg-bg;
-  color: $rating-ir-avg-color;
-}
-
-.irAboveAvg {
-  background: $rating-ir-above-avg-bg;
-  color: $rating-ir-above-avg-color;
-}
-
-.irFast {
-  background: $rating-ir-fast-bg;
-  color: $rating-ir-fast-color;
-}
-
-.irPro {
-  background: $rating-ir-pro-bg;
-  color: $rating-ir-pro-color;
-}
-
-.irElite {
-  background: $rating-ir-elite-bg;
-  color: $rating-ir-elite-color;
 }

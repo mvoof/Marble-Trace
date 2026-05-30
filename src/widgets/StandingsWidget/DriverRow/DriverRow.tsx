@@ -1,4 +1,4 @@
-﻿import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import {
   abbreviateName,
@@ -116,7 +116,6 @@ export const DriverRow = observer(({ carIdx }: DriverRowProps) => {
           <ClassBadge
             color={driver.carClassColor}
             label={driver.carClassShortName}
-            className={styles.classBadgeFull}
           />
         </div>
       )}

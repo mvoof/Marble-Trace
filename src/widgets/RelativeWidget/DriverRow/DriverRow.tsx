@@ -115,7 +115,6 @@ export const DriverRow = observer(({ driver }: DriverRowProps) => {
           <ClassBadge
             color={driver.carClassColor}
             label={driver.carClassShortName}
-            className={styles.badgeFull}
           />
         )}
       </div>
