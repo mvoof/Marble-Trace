@@ -140,8 +140,8 @@ export const TrackRecorderBridge = ({
       const playerCarIdx = sessionInfo?.DriverInfo?.DriverCarIdx ?? -1;
 
       const playerSurface =
-        playerCarIdx >= 0 && carPositions
-          ? carPositions.car_idx_track_surface[playerCarIdx]
+        playerCarIdx >= 0
+          ? carPositions?.car_idx_track_surface?.[playerCarIdx]
           : null;
 
       const onPitRoad =
