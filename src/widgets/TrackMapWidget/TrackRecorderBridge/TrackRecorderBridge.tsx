@@ -117,25 +117,49 @@ export const TrackRecorderBridge = ({
 
   useEffect(() => {
     const dispose = autorun(() => {
-      const { carDynamics, lapTiming } = telemetry;
+      const { carDynamics, lapTiming, carStatus, sessionInfo, carPositions } =
+        telemetry;
+
       const { isTrackMapForceStartPending } = widgetSettings;
 
-      if (!carDynamics || !lapTiming) return;
+      if (!carDynamics || !lapTiming) {
+        return;
+      }
 
       const speed = carDynamics.speed ?? 0;
       const yaw = carDynamics.yaw ?? 0;
       const lapDistPct = lapTiming.lap_dist_pct ?? -1;
 
-      if (lapDistPct < 0) return;
+      if (lapDistPct < 0) {
+        return;
+      }
 
       const recorder = recorderRef.current;
       const overlay = callbacksRef.current.recordingOverlayRef?.current;
 
+      const playerCarIdx = sessionInfo?.DriverInfo?.DriverCarIdx ?? -1;
+
+      const playerSurface =
+        playerCarIdx >= 0 && carPositions
+          ? carPositions.car_idx_track_surface[playerCarIdx]
+          : null;
+
+      const onPitRoad =
+        (carStatus?.on_pit_road ?? false) ||
+        playerSurface === 1 || // InPitStall
+        playerSurface === 2; // AproachingPits
+
       // Completion detection for S/F line crossing to start recording.
       // Jumps from > 0.8 to < 0.2 indicate crossing the Start/Finish line.
+      // We must not start recording if the player is on the pit road.
       let crossedSF = false;
 
-      if (lastLapDistRef.current > 0.8 && lapDistPct >= 0 && lapDistPct < 0.2) {
+      if (
+        !onPitRoad &&
+        lastLapDistRef.current > 0.8 &&
+        lapDistPct >= 0 &&
+        lapDistPct < 0.2
+      ) {
         crossedSF = true;
       }
 
