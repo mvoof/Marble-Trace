@@ -206,7 +206,7 @@ export const WidgetContainer = observer(
       (widget?.userSettings as unknown as Record<string, unknown>)
         ?.showSteering === true;
     const borderRadius = showSteering
-      ? `calc(12px * var(--wfs, 1)) ${height / 2}px ${height / 2}px calc(12px * var(--wfs, 1))`
+      ? `calc(12px * var(--wfs, 1)) 9999px 9999px calc(12px * var(--wfs, 1))`
       : undefined;
 
     return (
