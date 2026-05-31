@@ -264,5 +264,11 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
     };
   }, [telemetry, widgetSettings, drawTrace]);
 
-  return <canvas ref={canvasRef} className={styles.canvas} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className={styles.canvas}
+      aria-label="G-meter trace"
+    />
+  );
 };

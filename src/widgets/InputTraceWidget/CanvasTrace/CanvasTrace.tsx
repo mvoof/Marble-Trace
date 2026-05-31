@@ -320,7 +320,11 @@ export const CanvasTrace = () => {
 
   return (
     <div className={styles.container}>
-      <canvas ref={canvasRef} className={styles.canvas} />
+      <canvas
+        ref={canvasRef}
+        className={styles.canvas}
+        aria-label="Input trace"
+      />
     </div>
   );
 };

@@ -21,16 +21,10 @@ const WidgetListItem = observer(
     };
 
     return (
-      <div
+      <button
+        type="button"
         className={`${styles.listItem} ${isActive ? styles.active : ''}`}
         onClick={() => onSelect(widget.id)}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            onSelect(widget.id);
-          }
-        }}
       >
         <div className={styles.content}>
           <span className={styles.title}>{widget.label}</span>
@@ -50,7 +44,7 @@ const WidgetListItem = observer(
             onChange={handleToggle}
           />
         </div>
-      </div>
+      </button>
     );
   }
 );

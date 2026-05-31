@@ -93,7 +93,7 @@ export const RandomGlitchCanvas: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <canvas ref={canvasRef} className={styles.canvas} />
+      <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
       <div className={styles.vignetteVertical} />
       <div className={styles.vignetteHorizontal} />
     </div>

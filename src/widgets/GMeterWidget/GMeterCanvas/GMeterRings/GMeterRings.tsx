@@ -99,5 +99,11 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
     ctx.stroke();
   }, [width, height, scale]);
 
-  return <canvas ref={canvasRef} className={styles.canvas} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className={styles.canvas}
+      aria-label="G-meter rings"
+    />
+  );
 });
