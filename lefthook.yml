@@ -1,9 +1,10 @@
 pre-commit:
-  parallel: true
+  parallel: true # run all commands concurrently
   commands:
     lint:
       glob: "*.{ts,tsx,js,mjs}"
-      run: npx oxlint --type-aware {staged_files}
+      run: npx oxlint --type-aware --fix --deny-warnings {staged_files}
+      stage_fixed: true
     format:
       glob: "*.{ts,tsx,js,mjs,json,scss,md}"
       run: npx oxfmt --write {staged_files}
