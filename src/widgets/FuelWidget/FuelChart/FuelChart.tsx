@@ -78,7 +78,11 @@ export const FuelChart = observer(() => {
 
   return (
     <div className={styles.chartSection}>
-      <canvas ref={canvasRef} className={styles.chartCanvas} />
+      <canvas
+        ref={canvasRef}
+        className={styles.chartCanvas}
+        aria-label="Fuel chart"
+      />
     </div>
   );
 });

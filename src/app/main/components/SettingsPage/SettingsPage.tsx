@@ -133,7 +133,7 @@ export const SettingsPage = observer(() => {
             ]}
             value={units.unitSystem}
             onChange={(value) => {
-              void units.setSystem(value as UnitSystem);
+              units.setSystem(value as UnitSystem);
             }}
           />
         </div>

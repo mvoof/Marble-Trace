@@ -12,5 +12,5 @@ export const useWidgetAutoHide = (visible: boolean) => {
     if (!widgetId) return;
 
     widgetAutoHide.setVisible(widgetId, visible);
-  }, [widgetId, visible]);
+  }, [widgetId, visible, widgetAutoHide]);
 };

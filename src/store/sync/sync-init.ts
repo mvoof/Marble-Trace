@@ -157,7 +157,7 @@ export const initMainSync = async (root: RootStore) => {
       ];
 
       return () => {
-        void overlayLayoutUnlisten();
+        overlayLayoutUnlisten();
 
         mainUnlistens.forEach((u) => u());
         disposers.forEach((d) => d());

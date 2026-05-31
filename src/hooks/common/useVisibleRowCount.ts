@@ -87,7 +87,7 @@ export const useVisibleRowCount = <T extends HTMLElement>(
       rootRo.disconnect();
       mo.disconnect();
     };
-  }, [rowHeightRem, minRows]);
+  }, [rowHeightRem, minRows, rowSelector]);
 
   return { ref, count };
 };
