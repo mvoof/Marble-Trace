@@ -205,6 +205,11 @@ export type CarInputsFrame = {
    * @see https://sajax.github.io/irsdkdocs/telemetry/clutch/
    */
   clutch: number | null;
+  /**
+   * True if ABS is active
+   * @see https://sajax.github.io/irsdkdocs/telemetry/brakeabsactive/
+   */
+  brake_abs_active: boolean;
 };
 
 /**

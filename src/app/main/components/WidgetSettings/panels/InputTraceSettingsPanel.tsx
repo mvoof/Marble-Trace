@@ -52,6 +52,20 @@ export const InputTraceSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
+          <SettingRow
+            title="ABS Active"
+            desc="Color of the brake trace/bar when ABS is active."
+          >
+            <Space>
+              <ColorPicker
+                value={settings.absColor}
+                onChange={(c) => update({ absColor: c.toHexString() })}
+              />
+            </Space>
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
           <SettingRow title="Clutch" desc="Show clutch trace on the graph.">
             <Space>
               <ColorPicker

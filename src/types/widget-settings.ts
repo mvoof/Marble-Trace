@@ -28,6 +28,7 @@ export interface InputTraceSettings {
   throttleColor: string;
   brakeColor: string;
   clutchColor: string;
+  absColor: string;
   barMode: InputTraceBarMode;
   historySeconds: number;
   lineWidth: number;

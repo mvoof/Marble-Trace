@@ -181,6 +181,7 @@ export const WIDGETS: WidgetConfig[] = [
       throttleColor: '#00ff00',
       brakeColor: '#ff3333',
       clutchColor: '#3399ff',
+      absColor: '#fbbf24',
       barMode: 'vertical',
       historySeconds: 5,
       lineWidth: 3.5,
