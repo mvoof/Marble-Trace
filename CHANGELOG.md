@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] — 2026-05-31
+
+### Added
+
+- **ABS Active Indicator (Input Trace Widget):** The brake bar and the brake trace line in the graph now dynamically change to a customizable ABS active color when ABS is triggered, helping you visually monitor and analyze wheel lockups in real-time.
+- **Steering Wheel (Input Trace Widget):** Added display of steering wheel position, as well as a line on the graph.
+- **Interactive Track Rotation (Track Map Widget):** Rotate the track map by 90-degree increments in edit mode, with orientation preferences saved per track.
+- **Multi-Class View Mode (Standings Widget):** Group drivers by their vehicle class rather than overall position in multi-class races, complete with beautiful class headers.
+- **Pit Lane State Tracking (Standings & Relative):** Real-time tracking and styling for `PIT IN` and `PIT EXIT` states for each driver in the standings and relative tables.
+- **Track Wetness & Weather Tracking:** Real-time track wetness tracking, adding humidity, wind, and wetness details to the standings footer and weather widgets, including dynamic temperature-based color indicators.
+
+### Changed
+
+- **Player and Leader Markers (Track Map Widget):** Replaced basic text tags with custom inline SVGs for the player (featuring a dynamic glow effect) and class leaders (featuring a matching class-colored crown).
+- **Modernized Badge Designs:** Redesigned safety license displays into clean two-part pill badges and streamlined iRating displays by removing borders and backgrounds.
+- **Redesigned Standings Header & Footer:** Moved player pitstops and weather temperatures to a new dark-themed footer, freeing up header space for new stats like Strength of Field (SOF), Drivers, Incidents (INC), and Pit counters with dynamic, warning-colored icons.
+- **Adaptive Car Numbers:** Car number text inside dot markers automatically flips its color to maximize contrast and readability against the background.
+- **Streamlined Graph Settings (Input Trace Widget):** Replaced the old layout options with per-channel toggles (`showTrace` and `showSteering`), allowing the graph area to naturally resize and reclaim empty screen space when disabled.
+- **Polished Timer & G-Meter Widgets:** Right-aligned simulator dates in the Timer widget, added subtle divider lines, and resized the G-Meter labels slightly to prevent text clipping at the borders.
+
+### Fixed
+
+- **Perfect Track Recorder Loops:** The track recorder now automatically trims overlapping points and applies drift correction when a lap is completed, resolving squiggly or distorted start/finish lines.
+- **Robust Pit Lane Detection (Track Map Widget):** Fixed an issue where driving parallel to the start/finish line in the pits would accidentally trigger a new recording or lap, by combining vehicle telemetry with track surface status.
+- **Text Clipping (Delta Widget):** Optimized line-height and centering to prevent vertical and horizontal text clipping in the Delta HUD.
+- **Wasted Column Space (Relative Widget):** Flags and pit badges are now embedded directly in the driver name cell, saving precious screen width.
+- **Smooth Track Map Rendering:** Moved track data to reference objects to avoid unnecessary re-renders, preventing micro-stutters and stale state calculations.
+- **Accurate Lap Deficits (Standings Widget):** Lapped driver gaps (e.g. +1 L, +2 L) are now computed using high-precision continuous track coordinates.
+- **Graceful Weather Fallbacks:** The weather widget now handles missing telemetry robustly, showing clear placeholders (`--`) instead of falling back to incorrect default values like "DRY".
+
 ## [0.14.0] — 2026-05-28
 
 ### Added
