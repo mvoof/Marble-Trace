@@ -76,7 +76,12 @@ export const Bar = observer(
     }
 
     const clamped = Math.max(0, Math.min(1, smoothedRef.current));
-    const color = getChannelColor(widgetSettings, channel);
+    const isAbsActive =
+      channel === 'brake' && (telemetry.carInputs?.brake_abs_active ?? false);
+
+    const color = isAbsActive
+      ? settings.absColor
+      : getChannelColor(widgetSettings, channel);
 
     return (
       <div className={styles.verticalContainer}>

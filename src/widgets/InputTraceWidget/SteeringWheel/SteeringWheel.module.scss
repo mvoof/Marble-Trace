@@ -1,0 +1,155 @@
+// Single source of truth — change this number to resize the groove
+$groove-px: 6;
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  position: relative;
+  box-sizing: border-box;
+  /* Mathematically balances the left 8px flex gap so that the wheel is centered exactly between the bars and the right capsule edge */
+  padding: ws(4) calc(ws(4) + 4px) ws(4) max(0px, calc(ws(4) - 4px));
+  flex-shrink: 0;
+}
+
+.dial {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Full circle with inset shadow — shadows only visible in the ring
+   between this element and centerPad, creating the recessed groove effect */
+.groove {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #16161c4d;
+  // border: 1px solid rgba(0, 0, 0, 0.4);
+  box-shadow:
+    inset 0 0 ws($groove-px * 1.5) ws($groove-px * 0.3) rgba(0, 0, 0, 0.9),
+    inset 0 ws($groove-px * 0.3) ws($groove-px * 0.6) rgba(0, 0, 0, 0.5),
+    inset 0 ws(-$groove-px * 0.1) ws($groove-px * 0.4) rgba(192, 48, 48, 0.06);
+  z-index: 0;
+}
+
+.rotator {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.indicatorMarker {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: ws($groove-px * 1.5);
+  height: 50%;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  /* triangle: wide at outer edge (top), tip points to center (bottom) */
+  clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+  z-index: 2;
+}
+
+.centerPad {
+  position: absolute;
+  width: calc(100% - #{ws($groove-px * 2)});
+  height: calc(100% - #{ws($groove-px * 2)});
+  border-radius: 50%;
+  border: 1px solid #40404618;
+  background: radial-gradient(circle, #25252b 0%, #16161c 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  padding: ws(8);
+}
+
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+  color: #ffffff;
+}
+
+.centerText {
+  font-family: $font-widget;
+  font-size: ws($groove-px * 3.1);
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+}
+
+.centerNum {
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  min-width: 3ch;
+}
+
+.centerUnit {
+  width: 1ch;
+  flex-shrink: 0;
+}
+
+/* mirrors the ° width on the left so the number stays optically centered */
+.centerAngle {
+  padding-left: 1ch;
+}
+
+.speedGear {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ws($groove-px * 0.3);
+  width: 100%;
+}
+
+.speedGearSpeed {
+  font-family: $font-widget;
+  font-size: ws($groove-px * 2.5);
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.speedGearDivider {
+  width: 50%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.speedGearGear {
+  font-family: $font-widget;
+  font-size: ws($groove-px * 2.5);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1;
+}

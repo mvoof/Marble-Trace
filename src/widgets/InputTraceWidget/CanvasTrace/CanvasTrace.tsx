@@ -26,6 +26,8 @@ export const CanvasTrace = () => {
 
   const bufferStateRef = useRef({
     buffer: new Float32Array(0),
+    absBuffer: new Uint8Array(0),
+    steerBuffer: new Float32Array(0),
     head: 0,
     count: 0,
     smoothed: { throttle: 0, brake: 0, clutch: 0 } as SmoothedValues,
@@ -33,25 +35,34 @@ export const CanvasTrace = () => {
 
   const draw = useCallback((settings: InputTraceSettings) => {
     const canvas = canvasRef.current;
-    const { buffer, head, count } = bufferStateRef.current;
+    const { buffer, absBuffer, steerBuffer, head, count } =
+      bufferStateRef.current;
 
-    if (!canvas || buffer.length === 0) return;
+    if (!canvas || (buffer.length === 0 && !settings.showSteering)) return;
 
     const ctx = canvas.getContext('2d');
 
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
+
     const logicalW = canvas.width / dpr;
     const logicalH = canvas.height / dpr;
 
-    const channels: string[] = [];
+    const channels: { color: string; type: 'throttle' | 'brake' | 'clutch' }[] =
+      [];
 
-    if (settings.showThrottle) channels.push(settings.throttleColor);
+    if (settings.showThrottle) {
+      channels.push({ color: settings.throttleColor, type: 'throttle' });
+    }
 
-    if (settings.showBrake) channels.push(settings.brakeColor);
+    if (settings.showBrake) {
+      channels.push({ color: settings.brakeColor, type: 'brake' });
+    }
 
-    if (settings.showClutch) channels.push(settings.clutchColor);
+    if (settings.showClutch) {
+      channels.push({ color: settings.clutchColor, type: 'clutch' });
+    }
 
     ctx.clearRect(0, 0, logicalW, logicalH);
 
@@ -74,25 +85,104 @@ export const CanvasTrace = () => {
     const bufferSize = settings.historySeconds * 60;
 
     for (let channelIndex = 0; channelIndex < channels.length; channelIndex++) {
-      ctx.strokeStyle = channels[channelIndex] ?? '#ffffff';
+      const channel = channels[channelIndex];
+
+      ctx.lineWidth = settings.lineWidth;
+
+      if (channel.type === 'brake') {
+        let currentAbs = false;
+
+        ctx.strokeStyle = settings.brakeColor;
+        ctx.beginPath();
+
+        let started = false;
+
+        for (let sampleIndex = 0; sampleIndex < count; sampleIndex++) {
+          const circularIndex =
+            (head - count + sampleIndex + bufferSize) % bufferSize;
+
+          const sampleValue =
+            buffer[circularIndex * channels.length + channelIndex];
+
+          const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
+          const yPos = logicalH - sampleValue * logicalH;
+
+          const sampleAbs = absBuffer[circularIndex] === 1;
+
+          if (started && sampleAbs !== currentAbs) {
+            ctx.lineTo(xPos, yPos);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(xPos, yPos);
+            ctx.strokeStyle = sampleAbs
+              ? settings.absColor
+              : settings.brakeColor;
+            currentAbs = sampleAbs;
+          }
+
+          if (!started) {
+            ctx.strokeStyle = sampleAbs
+              ? settings.absColor
+              : settings.brakeColor;
+            currentAbs = sampleAbs;
+            ctx.moveTo(xPos, yPos);
+            started = true;
+          } else {
+            ctx.lineTo(xPos, yPos);
+          }
+        }
+
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = channel.color;
+        ctx.beginPath();
+
+        let started = false;
+
+        for (let sampleIndex = 0; sampleIndex < count; sampleIndex++) {
+          const circularIndex =
+            (head - count + sampleIndex + bufferSize) % bufferSize;
+
+          const sampleValue =
+            buffer[circularIndex * channels.length + channelIndex];
+
+          const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
+          const yPos = logicalH - sampleValue * logicalH;
+
+          if (!started) {
+            ctx.moveTo(xPos, yPos);
+
+            started = true;
+          } else {
+            ctx.lineTo(xPos, yPos);
+          }
+        }
+
+        ctx.stroke();
+      }
+    }
+
+    if (settings.showSteering) {
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
       ctx.lineWidth = settings.lineWidth;
       ctx.beginPath();
 
       let started = false;
+      const MAX_STEER_RAD = ((settings.steeringLimit / 2) * Math.PI) / 180;
 
       for (let sampleIndex = 0; sampleIndex < count; sampleIndex++) {
         const circularIndex =
           (head - count + sampleIndex + bufferSize) % bufferSize;
 
-        const sampleValue =
-          buffer[circularIndex * channels.length + channelIndex];
+        const rawSteer = steerBuffer[circularIndex] ?? 0;
+        const u = Math.max(-1, Math.min(1, rawSteer / MAX_STEER_RAD));
 
         const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
-        const yPos = logicalH - sampleValue * logicalH;
+        const yPos = logicalH / 2 - u * (logicalH / 2);
 
         if (!started) {
           ctx.moveTo(xPos, yPos);
-
           started = true;
         } else {
           ctx.lineTo(xPos, yPos);
@@ -128,6 +218,14 @@ export const CanvasTrace = () => {
         state.count = 0;
       }
 
+      if (state.absBuffer.length !== bufferSize) {
+        state.absBuffer = new Uint8Array(bufferSize);
+      }
+
+      if (state.steerBuffer.length !== bufferSize) {
+        state.steerBuffer = new Float32Array(bufferSize);
+      }
+
       const smoothing = settings.smoothing;
       const previous = state.smoothed;
 
@@ -160,6 +258,10 @@ export const CanvasTrace = () => {
       for (let channelIndex = 0; channelIndex < values.length; channelIndex++) {
         state.buffer[offset + channelIndex] = values[channelIndex] ?? 0;
       }
+
+      state.absBuffer[state.head] = inputs?.brake_abs_active ? 1 : 0;
+      state.steerBuffer[state.head] =
+        telemetry.carDynamics?.steering_wheel_angle ?? 0;
 
       state.head = (state.head + 1) % bufferSize;
 

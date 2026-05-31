@@ -200,6 +200,15 @@ export const WidgetContainer = observer(
       ? ['e', 'w']
       : ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
 
+    const isInputTrace = widgetId === 'input-trace';
+    const showSteering =
+      isInputTrace &&
+      (widget?.userSettings as unknown as Record<string, unknown>)
+        ?.showSteering === true;
+    const borderRadius = showSteering
+      ? `calc(12px * var(--wfs, 1)) 9999px 9999px calc(12px * var(--wfs, 1))`
+      : undefined;
+
     return (
       <div
         className={`${styles.container} ${shouldHide ? styles.hidden : ''}`}
@@ -224,6 +233,7 @@ export const WidgetContainer = observer(
                   ...(autoHeight ? { height: 'auto' } : undefined),
                   background,
                   borderColor: shouldHide ? 'transparent' : borderColor,
+                  borderRadius,
                   ['--wfs']: widgetScale,
                   ['--widget-bg']: backgroundColor,
                 } as React.CSSProperties

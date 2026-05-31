@@ -100,6 +100,8 @@ pub(crate) struct AllFieldsFrame {
     pub brake: f32,
     #[field_name = "Clutch"]
     pub clutch: Option<f32>,
+    #[field_name = "BrakeABSactive"]
+    pub brake_abs_active: Option<bool>,
 
     // === Car Status ===
     #[field_name = "PlayerCarSLShiftRPM"]

@@ -22,6 +22,10 @@ pub struct CarInputsFrame {
     /// Note: iRacing provides clutch engagement, not pedal input.
     /// @see https://sajax.github.io/irsdkdocs/telemetry/clutch/
     pub clutch: Option<f32>,
+
+    /// True if ABS is active
+    /// @see https://sajax.github.io/irsdkdocs/telemetry/brakeabsactive/
+    pub brake_abs_active: bool,
 }
 
 impl From<&AllFieldsFrame> for CarInputsFrame {
@@ -30,6 +34,7 @@ impl From<&AllFieldsFrame> for CarInputsFrame {
             throttle: f.throttle,
             brake: f.brake,
             clutch: f.clutch,
+            brake_abs_active: f.brake_abs_active.unwrap_or(false),
         }
     }
 }
