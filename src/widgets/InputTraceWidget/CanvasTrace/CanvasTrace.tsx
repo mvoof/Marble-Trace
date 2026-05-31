@@ -27,6 +27,7 @@ export const CanvasTrace = () => {
   const bufferStateRef = useRef({
     buffer: new Float32Array(0),
     absBuffer: new Uint8Array(0),
+    steerBuffer: new Float32Array(0),
     head: 0,
     count: 0,
     smoothed: { throttle: 0, brake: 0, clutch: 0 } as SmoothedValues,
@@ -34,9 +35,10 @@ export const CanvasTrace = () => {
 
   const draw = useCallback((settings: InputTraceSettings) => {
     const canvas = canvasRef.current;
-    const { buffer, absBuffer, head, count } = bufferStateRef.current;
+    const { buffer, absBuffer, steerBuffer, head, count } =
+      bufferStateRef.current;
 
-    if (!canvas || buffer.length === 0) return;
+    if (!canvas || (buffer.length === 0 && !settings.showSteering)) return;
 
     const ctx = canvas.getContext('2d');
 
@@ -160,6 +162,35 @@ export const CanvasTrace = () => {
         ctx.stroke();
       }
     }
+
+    if (settings.showSteering) {
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.lineWidth = settings.lineWidth;
+      ctx.beginPath();
+
+      let started = false;
+      const MAX_STEER_RAD = ((settings.steeringLimit / 2) * Math.PI) / 180;
+
+      for (let sampleIndex = 0; sampleIndex < count; sampleIndex++) {
+        const circularIndex =
+          (head - count + sampleIndex + bufferSize) % bufferSize;
+
+        const rawSteer = steerBuffer[circularIndex] ?? 0;
+        const u = Math.max(-1, Math.min(1, rawSteer / MAX_STEER_RAD));
+
+        const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
+        const yPos = logicalH / 2 - u * (logicalH / 2);
+
+        if (!started) {
+          ctx.moveTo(xPos, yPos);
+          started = true;
+        } else {
+          ctx.lineTo(xPos, yPos);
+        }
+      }
+
+      ctx.stroke();
+    }
   }, []);
 
   useEffect(() => {
@@ -189,6 +220,10 @@ export const CanvasTrace = () => {
 
       if (state.absBuffer.length !== bufferSize) {
         state.absBuffer = new Uint8Array(bufferSize);
+      }
+
+      if (state.steerBuffer.length !== bufferSize) {
+        state.steerBuffer = new Float32Array(bufferSize);
       }
 
       const smoothing = settings.smoothing;
@@ -225,6 +260,8 @@ export const CanvasTrace = () => {
       }
 
       state.absBuffer[state.head] = inputs?.brake_abs_active ? 1 : 0;
+      state.steerBuffer[state.head] =
+        telemetry.carDynamics?.steering_wheel_angle ?? 0;
 
       state.head = (state.head + 1) % bufferSize;
 

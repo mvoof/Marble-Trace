@@ -44,26 +44,7 @@ const resolveRelativeMapLayout: ResolveLayoutChange = (prev, next, current) => {
   };
 };
 
-// Resets widget to the fixed reference size for the new barMode.
-// hidde->vertical only: switching to hidden doesn't resize (the bar just disappears visually).
-const resolveInputTraceLayout: ResolveLayoutChange = (prev, next) => {
-  if (!('barMode' in next) || !next.barMode) return null;
-
-  const prevBarMode = 'barMode' in prev ? prev.barMode : 'vertical';
-
-  if (prevBarMode === next.barMode || next.barMode === 'hidden') return null;
-
-  const size = INPUT_TRACE_SIZES[next.barMode];
-
-  if (!size) return null;
-
-  return {
-    designWidth: size.designWidth,
-    designHeight: size.designHeight,
-    currentWidth: size.designWidth,
-    currentHeight: size.designHeight,
-  };
-};
+const resolveInputTraceLayout: ResolveLayoutChange = () => null;
 
 const CHASSIS_DESIGN_WIDTH = 300;
 const CHASSIS_WITH_SUSPENSION_DESIGN_WIDTH = 430;
@@ -162,13 +143,13 @@ export const WIDGETS: WidgetConfig[] = [
     description: 'Live throttle, brake, and clutch inputs.',
     resolveLayoutChange: resolveInputTraceLayout,
     component: InputTraceWidget,
-    designWidth: 400,
+    designWidth: 620,
     designHeight: 220,
     userSettings: {
       enabled: false,
       x: 400,
       y: 300,
-      currentWidth: 400,
+      currentWidth: 620,
       currentHeight: 220,
       opacity: 1,
       backgroundColor: '#252525',
@@ -178,14 +159,17 @@ export const WIDGETS: WidgetConfig[] = [
       showThrottle: true,
       showBrake: true,
       showClutch: true,
+      showSteering: true,
+      showTrace: true,
+      steeringCenterDisplay: 'logo',
       throttleColor: '#00ff00',
       brakeColor: '#ff3333',
       clutchColor: '#3399ff',
       absColor: '#fbbf24',
-      barMode: 'vertical',
       historySeconds: 5,
       lineWidth: 3.5,
       smoothing: 0,
+      steeringLimit: 900,
     },
   },
   {

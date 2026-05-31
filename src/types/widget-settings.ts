@@ -19,20 +19,28 @@ export interface SpeedWidgetSettings {
   ledShape: LedShape;
 }
 
-export type InputTraceBarMode = 'vertical' | 'hidden';
+export type SteeringCenterDisplay =
+  | 'logo'
+  | 'gear'
+  | 'speed'
+  | 'angle'
+  | 'speed-gear';
 
 export interface InputTraceSettings {
+  steeringCenterDisplay: SteeringCenterDisplay;
   showThrottle: boolean;
   showBrake: boolean;
   showClutch: boolean;
+  showSteering: boolean;
+  showTrace: boolean;
   throttleColor: string;
   brakeColor: string;
   clutchColor: string;
   absColor: string;
-  barMode: InputTraceBarMode;
   historySeconds: number;
   lineWidth: number;
   smoothing: number;
+  steeringLimit: number;
 }
 
 export interface RadarSettings {

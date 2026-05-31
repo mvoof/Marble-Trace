@@ -12,7 +12,7 @@ export const InputBars = observer(() => {
   const settings =
     widgetSettings.getSettings<InputTraceSettings>('input-trace');
 
-  if (settings.barMode === 'hidden') {
+  if (!settings.showThrottle && !settings.showBrake && !settings.showClutch) {
     return null;
   }
 

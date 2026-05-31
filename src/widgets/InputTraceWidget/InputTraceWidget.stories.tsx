@@ -2,7 +2,7 @@ import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import type { CarInputsFrame } from '@/types/bindings';
+import type { CarDynamicsFrame, CarInputsFrame } from '@/types/bindings';
 import type { InputTraceSettings } from '@/types/widget-settings';
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
@@ -15,17 +15,20 @@ import { widgetDecorator } from '@/storybook/widgetDecorator';
 import { withStore } from '../../../.storybook/decorators';
 import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
 
-const DESIGN_WIDTH = 500;
-const DESIGN_HEIGHT = 120;
+const DESIGN_WIDTH = 620;
+const DESIGN_HEIGHT = 220;
 
 interface StoryArgs {
   throttle: number;
   brake: number;
   clutch: number;
-  barMode: InputTraceSettings['barMode'];
   showThrottle: boolean;
   showBrake: boolean;
   showClutch: boolean;
+  showSteering: boolean;
+  showTrace: boolean;
+  steeringWheelAngle: number;
+  steeringLimit: number;
 }
 
 const applyArgs = (
@@ -34,17 +37,38 @@ const applyArgs = (
 ) => {
   runInAction(() => {
     stores.widgetSettings.updateUserSettings('input-trace', {
-      barMode: args.barMode,
       showThrottle: args.showThrottle,
       showBrake: args.showBrake,
       showClutch: args.showClutch,
-    });
+      showSteering: args.showSteering,
+      showTrace: args.showTrace,
+      steeringLimit: args.steeringLimit,
+    } as Partial<InputTraceSettings>);
 
     stores.telemetry.updateCarInputs({
       throttle: args.throttle,
       brake: args.brake,
       clutch: 1 - args.clutch,
+      brake_abs_active: false,
     } as CarInputsFrame);
+
+    stores.telemetry.updateCarDynamics({
+      steering_wheel_angle: args.steeringWheelAngle,
+      speed: 0,
+      rpm: 0,
+      gear: 0,
+      velocity_x: null,
+      velocity_y: null,
+      velocity_z: null,
+      lat_accel: null,
+      long_accel: null,
+      yaw_rate: null,
+      pitch: null,
+      roll: null,
+      yaw: null,
+      shift_indicator_pct: null,
+      shift_grind_rpm: null,
+    } as CarDynamicsFrame);
   });
 };
 
@@ -71,10 +95,13 @@ const meta: Meta<typeof StoryHost> = {
     throttle: 0.6,
     brake: 0,
     clutch: 0,
-    barMode: 'vertical',
     showThrottle: true,
     showBrake: true,
     showClutch: true,
+    showSteering: true,
+    showTrace: true,
+    steeringWheelAngle: 0.5,
+    steeringLimit: 900,
   },
 };
 
@@ -83,8 +110,8 @@ type Story = StoryObj<typeof StoryHost>;
 
 export const Default: Story = {};
 
-export const HiddenBars: Story = {
-  args: { barMode: 'hidden' },
+export const NoTrace: Story = {
+  args: { showTrace: false },
 };
 
 export const FullThrottle: Story = {
@@ -103,14 +130,18 @@ export const OnlyThrottleBrake: Story = {
   args: { throttle: 0.7, showClutch: false },
 };
 
-export const HorizontalBars: Story = {
-  args: { barMode: 'horizontal', throttle: 0.8, brake: 0.2 },
-};
-
 export const FullInputs: Story = {
   args: { throttle: 0.0, brake: 1.0, clutch: 0.5 },
 };
 
 export const OnlyBrake: Story = {
   args: { showThrottle: false, showClutch: false, brake: 0.7 },
+};
+
+export const SteeringLeft: Story = {
+  args: { steeringWheelAngle: 1.5 },
+};
+
+export const SteeringRight: Story = {
+  args: { steeringWheelAngle: -1.5 },
 };
