@@ -19,8 +19,6 @@ jobs:
       app: ${{ steps.filter.outputs.js == 'true' || steps.filter.outputs.rust == 'true' }}
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - name: Check for file changes
         id: filter
@@ -45,10 +43,10 @@ jobs:
           install-rust: 'false'
           install-system-deps: 'false'
 
-      - name: Run ESLint
+      - name: Run Oxlint
         run: npm run lint
 
-      - name: Check Formatting
+      - name: Check Formatting (Oxfmt)
         run: npm run format:check
 
       - name: Type Check
