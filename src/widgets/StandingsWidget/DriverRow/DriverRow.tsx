@@ -10,8 +10,7 @@ import {
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
-import { ClassBadge } from '@/components/shared/ClassBadge/ClassBadge';
-import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
+import { LicBadge, formatIr } from '@/components/shared/RatingBadge/LicBadge';
 import { TireBadge } from '@/components/shared/TireBadge/TireBadge';
 import {
   buildGridTemplate,
@@ -152,22 +151,15 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         </div>
       )}
 
-      {settings.viewMode === 'all' && settings.showClassBadge && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <ClassBadge
-            color={driver.carClassColor}
-            label={driver.carClassShortName}
-          />
+      {settings.showLicBadge && (
+        <div className={`${styles.cell} ${styles.cellRating}`}>
+          <LicBadge licString={driver.licString} />
         </div>
       )}
 
-      {settings.showIRatingBadge && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <RatingBadge
-            licString={driver.licString}
-            iRating={driver.iRating}
-            className={styles.ratingBadge}
-          />
+      {settings.showIRating && (
+        <div className={`${styles.cell} ${styles.cellRight}`}>
+          <span className={styles.irValue}>{formatIr(driver.iRating)}</span>
         </div>
       )}
 

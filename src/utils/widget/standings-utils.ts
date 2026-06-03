@@ -49,19 +49,16 @@ const buildColDefs = (settings: StandingsWidgetSettings): ColDef[] => [
   { width: ws(20), show: true }, // pos      "00"
   { width: ws(40), show: true }, // carNum   "#000"
   { width: `minmax(${ws(100)}, 1fr)`, show: true }, // name     — never collapses
-  { width: ws(44), show: settings.showBrand }, // brand
+  { width: ws(42), show: settings.showBrand }, // brand
   { width: ws(30), show: settings.showTire }, // tire
-  {
-    width: ws(48),
-    show: settings.viewMode === 'all' && settings.showClassBadge,
-  }, // class
-  { width: ws(78), show: settings.showIRatingBadge }, // lic/iRating
-  { width: ws(24), show: settings.showIrChange }, // ΔiR
-  { width: ws(18), show: settings.showLapsCompleted }, // laps
-  { width: ws(32), show: settings.showPosChange }, // +/- pos
-  { width: ws(50), show: true }, // gap      "+000.0"
-  { width: ws(70), show: true }, // last     "0:00.000"
-  { width: ws(70), show: true }, // best     "0:00.000"
+  { width: ws(54), show: settings.showLicBadge }, // lic badge
+  { width: ws(36), show: settings.showIRating }, // iRating value
+  { width: ws(36), show: settings.showIrChange }, // ΔiR
+  { width: ws(25), show: settings.showLapsCompleted }, // laps
+  { width: ws(36), show: settings.showPosChange }, // +/- pos
+  { width: ws(40), show: true }, // gap      "+000.0"
+  { width: ws(69), show: true }, // last     "0:00.000"
+  { width: ws(69), show: true }, // best     "0:00.000"
 ];
 
 export const buildGridTemplate = (settings: StandingsWidgetSettings): string =>

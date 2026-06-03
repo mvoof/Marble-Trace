@@ -37,12 +37,12 @@ export const StandingsHeader = observer(() => {
         <StandingsHeaderCell align="center">Tire</StandingsHeaderCell>
       )}
 
-      {settings.viewMode === 'all' && settings.showClassBadge && (
-        <StandingsHeaderCell align="center">Class</StandingsHeaderCell>
+      {settings.showLicBadge && (
+        <StandingsHeaderCell align="left">Lic</StandingsHeaderCell>
       )}
 
-      {settings.showIRatingBadge && (
-        <StandingsHeaderCell align="center">Lic / iR</StandingsHeaderCell>
+      {settings.showIRating && (
+        <StandingsHeaderCell align="right">iR</StandingsHeaderCell>
       )}
 
       {settings.showIrChange && (

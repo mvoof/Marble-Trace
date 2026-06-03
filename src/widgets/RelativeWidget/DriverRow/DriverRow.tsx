@@ -7,9 +7,11 @@ import {
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
-import { ClassBadge } from '@/components/shared/ClassBadge/ClassBadge';
-import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
-import { computeRelativeGap } from '@utils/widget/relative-utils';
+import { LicBadge, formatIr } from '@/components/shared/RatingBadge/LicBadge';
+import {
+  computeRelativeGap,
+  buildRelativeGridTemplate,
+} from '@utils/widget/relative-utils';
 import type { DriverEntry } from '@/types/bindings';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
@@ -76,8 +78,14 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
 
   const formattedCarNumber = formatCarNumber(driver.carNumber);
 
+  const gridTemplate = buildRelativeGridTemplate(settings);
+
   return (
-    <div className={rowClass} data-relative-row>
+    <div
+      className={rowClass}
+      style={{ gridTemplateColumns: gridTemplate }}
+      data-relative-row
+    >
       <div className={styles.posBlock}>
         <span
           className={`${styles.driverPosition} ${driver.isPlayer ? styles.driverPositionPlayer : ''}`}
@@ -122,24 +130,17 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
         {settings.showPitIndicator && isPit && <PitBadge state={pitState} />}
       </div>
 
-      <div className={styles.colClass}>
-        {settings.showClassBadge && (
-          <ClassBadge
-            color={driver.carClassColor}
-            label={driver.carClassShortName}
-          />
-        )}
-      </div>
+      {settings.showLicBadge ? (
+        <div className={styles.colLic}>
+          <LicBadge licString={driver.licString} />
+        </div>
+      ) : null}
 
-      <div className={styles.colLic}>
-        {settings.showIRatingBadge && (
-          <RatingBadge
-            licString={driver.licString}
-            iRating={driver.iRating}
-            className={styles.badgeFull}
-          />
-        )}
-      </div>
+      {settings.showIRating ? (
+        <div className={styles.colIr}>
+          <span>{formatIr(driver.iRating)}</span>
+        </div>
+      ) : null}
 
       <div className={styles.f2Block}>
         <span className={`${styles.f2Time} ${f2Class}`}>

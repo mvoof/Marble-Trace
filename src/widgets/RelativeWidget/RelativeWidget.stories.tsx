@@ -26,10 +26,11 @@ const PLAYER_CAR_IDX =
   DRIVER_ENTRIES.find((entry) => entry.isPlayer)?.carIdx ?? 0;
 
 const DEFAULT_SETTINGS: RelativeWidgetSettings = {
-  showIRatingBadge: false,
-  showClassBadge: false,
+  showLicBadge: false,
+  showIRating: false,
   showPitIndicator: true,
   abbreviateNames: false,
+  showDriverFlags: true,
 };
 
 interface StoryArgs {
@@ -81,8 +82,8 @@ export const MinimalView: Story = {
   args: {
     settings: {
       ...DEFAULT_SETTINGS,
-      showIRatingBadge: false,
-      showClassBadge: false,
+      showLicBadge: false,
+      showIRating: false,
       showPitIndicator: false,
     },
   },
@@ -94,15 +95,9 @@ export const AbbreviatedNames: Story = {
   },
 };
 
-export const WithClassBadge: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, showClassBadge: true },
-  },
-};
-
 export const WithIRatingBadge: Story = {
   args: {
-    settings: { ...DEFAULT_SETTINGS, showIRatingBadge: true },
+    settings: { ...DEFAULT_SETTINGS, showIRating: true },
   },
 };
 
@@ -110,8 +105,7 @@ export const FullBadges: Story = {
   args: {
     settings: {
       ...DEFAULT_SETTINGS,
-      showIRatingBadge: true,
-      showClassBadge: true,
+      showIRating: true,
     },
   },
 };
