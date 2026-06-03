@@ -76,6 +76,10 @@ export const OverlayWindow = () => {
 
       await positionToMonitor(root.appSettings.appSettings.overlayMonitorIndex);
 
+      if (!isMounted) {
+        return;
+      }
+
       const disposeReaction = reaction(
         () => root.appSettings.appSettings.overlayMonitorIndex,
         (index) => void positionToMonitor(index)
