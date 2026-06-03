@@ -1,8 +1,11 @@
 import { runInAction } from 'mobx';
-import { emit, listen, UnlistenFn } from '@tauri-apps/api/event';
+import { emit, emitTo, listen, UnlistenFn } from '@tauri-apps/api/event';
 import type { UnitSystem } from '@/types';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import type { RootStore } from '../root-store';
+
+const MAIN = 'main';
+const OVERLAY = 'overlay';
 
 export const setupMainListeners = async (
   root: RootStore
@@ -77,16 +80,18 @@ export const setupOverlayListeners = async (
 
 export const emitDragMode = (val: boolean) => emit('drag-mode-changed', val);
 export const emitHideAllWidgets = (val: boolean) =>
-  emit('hide-all-widgets-changed', val);
+  emitTo(OVERLAY, 'hide-all-widgets-changed', val);
 export const emitHideWidgetsWhenGameClosed = (val: boolean) =>
-  emit('hide-widgets-when-game-closed-changed', val);
+  emitTo(OVERLAY, 'hide-widgets-when-game-closed-changed', val);
 export const emitUnitsChanged = (system: UnitSystem) =>
-  emit('units-changed', system);
+  emitTo(OVERLAY, 'units-changed', system);
 export const emitStandingsClassIndex = (index: number) =>
-  emit('standings-class-index-changed', index);
+  emitTo(OVERLAY, 'standings-class-index-changed', index);
 export const emitTrackMapForceStartPending = (pending: boolean) =>
-  emit('track-map:force-start-pending-changed', pending);
+  emitTo(OVERLAY, 'track-map:force-start-pending-changed', pending);
 export const emitWidgetSettingsUpdated = (widgets: WidgetDefaultConfig[]) =>
-  emit('widget-settings-updated', widgets);
+  emitTo(OVERLAY, 'widget-settings-updated', widgets);
 export const emitOverlayMonitorChanged = (index: number | null) =>
-  emit('overlay-monitor-changed', index);
+  emitTo(OVERLAY, 'overlay-monitor-changed', index);
+export const emitWidgetLayoutChanged = (widgets: WidgetDefaultConfig[]) =>
+  emitTo(MAIN, 'widget-layout-changed', widgets);

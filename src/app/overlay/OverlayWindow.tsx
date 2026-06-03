@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { reaction } from 'mobx';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import {
   getCurrentWindow,
@@ -6,7 +7,6 @@ import {
   primaryMonitor,
 } from '@tauri-apps/api/window';
 import { PhysicalSize, PhysicalPosition } from '@tauri-apps/api/dpi';
-import { listen } from '@tauri-apps/api/event';
 import { OverlayCanvas } from './OverlayCanvas/OverlayCanvas';
 import { initOverlaySync } from '@store/sync/sync-init';
 import {
@@ -25,13 +25,13 @@ const positionToMonitor = async (monitorIndex: number | null) => {
 
     if (!monitor) return;
 
-    const window = getCurrentWindow();
+    const win = getCurrentWindow();
 
-    await window.setPosition(
+    await win.setPosition(
       new PhysicalPosition(monitor.position.x, monitor.position.y)
     );
 
-    await window.setSize(
+    await win.setSize(
       new PhysicalSize(monitor.size.width, monitor.size.height)
     );
   } catch (error) {
@@ -66,31 +66,23 @@ export const OverlayWindow = () => {
 
       if (!isMounted) {
         result();
-      } else {
-        cleanup = result;
+
+        return;
       }
 
-      const monitorIndex = root.appSettings.appSettings.overlayMonitorIndex;
+      cleanup = result;
 
-      await positionToMonitor(monitorIndex);
+      await positionToMonitor(root.appSettings.appSettings.overlayMonitorIndex);
 
-      const unlisten = await listen<number | null>(
-        'overlay-monitor-changed',
-        (e) => {
-          void positionToMonitor(e.payload);
-        }
+      const disposeReaction = reaction(
+        () => root.appSettings.appSettings.overlayMonitorIndex,
+        (index) => void positionToMonitor(index)
       );
 
-      if (!isMounted) {
-        unlisten();
-      } else {
-        const prevCleanup = cleanup;
-
-        cleanup = () => {
-          prevCleanup?.();
-          unlisten();
-        };
-      }
+      cleanup = () => {
+        result();
+        disposeReaction();
+      };
     };
 
     void init();
