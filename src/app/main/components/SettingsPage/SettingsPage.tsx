@@ -13,7 +13,7 @@ import styles from './SettingsPage.module.scss';
 import { useAppSettingsStore, useUnitsStore } from '@store/root-store-context';
 
 const isDev = import.meta.env.DEV;
-const WIN32_DISPLAY_PREFIX = /^\\\\\.\\/;
+const WIN32_DISPLAY_PREFIX = /^\\\\\.\\\\/;
 
 interface CardProps {
   title?: string;
