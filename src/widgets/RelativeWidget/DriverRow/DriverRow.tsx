@@ -130,13 +130,17 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
         {settings.showPitIndicator && isPit && <PitBadge state={pitState} />}
       </div>
 
-      <div className={styles.colLic}>
-        {settings.showLicBadge && <LicBadge licString={driver.licString} />}
-      </div>
+      {settings.showLicBadge ? (
+        <div className={styles.colLic}>
+          <LicBadge licString={driver.licString} />
+        </div>
+      ) : null}
 
-      <div className={styles.colIr}>
-        {settings.showIRating && <span>{formatIr(driver.iRating)}</span>}
-      </div>
+      {settings.showIRating ? (
+        <div className={styles.colIr}>
+          <span>{formatIr(driver.iRating)}</span>
+        </div>
+      ) : null}
 
       <div className={styles.f2Block}>
         <span className={`${styles.f2Time} ${f2Class}`}>
