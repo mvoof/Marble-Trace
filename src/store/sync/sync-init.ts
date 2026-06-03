@@ -1,5 +1,5 @@
 import { reaction } from 'mobx';
-import { emit, listen } from '@tauri-apps/api/event';
+import { listen } from '@tauri-apps/api/event';
 import { load } from '@tauri-apps/plugin-store';
 import {
   hydrateStores,
@@ -18,6 +18,8 @@ import {
   emitStandingsClassIndex,
   emitTrackMapForceStartPending,
   emitWidgetSettingsUpdated,
+  emitOverlayMonitorChanged,
+  emitWidgetLayoutChanged,
 } from './events';
 import type {
   WidgetDefaultConfig,
@@ -94,6 +96,13 @@ export const initMainSync = async (root: RootStore) => {
         reaction(
           () => root.appSettings.appSettings.lastUpdateCheck,
           () => {
+            void onSave();
+          }
+        ),
+        reaction(
+          () => root.appSettings.appSettings.overlayMonitorIndex,
+          (v) => {
+            void emitOverlayMonitorChanged(v);
             void onSave();
           }
         ),
@@ -200,7 +209,7 @@ export const initOverlaySync = async (root: RootStore) => {
     reaction(
       () => root.widgetSettings.changeToken,
       () => {
-        void emit('widget-layout-changed', root.widgetSettings.allWidgets);
+        void emitWidgetLayoutChanged(root.widgetSettings.allWidgets);
       },
       { delay: 500 }
     ),
