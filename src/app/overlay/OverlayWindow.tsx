@@ -1,13 +1,43 @@
 import { useEffect } from 'react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { getCurrentWindow, currentMonitor } from '@tauri-apps/api/window';
+import {
+  getCurrentWindow,
+  availableMonitors,
+  primaryMonitor,
+} from '@tauri-apps/api/window';
 import { PhysicalSize, PhysicalPosition } from '@tauri-apps/api/dpi';
+import { listen } from '@tauri-apps/api/event';
 import { OverlayCanvas } from './OverlayCanvas/OverlayCanvas';
 import { initOverlaySync } from '@store/sync/sync-init';
 import {
   useStore,
   useTelemetryConnectionStore,
 } from '@store/root-store-context';
+
+const positionToMonitor = async (monitorIndex: number | null) => {
+  try {
+    const monitors = await availableMonitors();
+
+    const monitor =
+      monitorIndex !== null && monitorIndex < monitors.length
+        ? monitors[monitorIndex]
+        : ((await primaryMonitor()) ?? monitors[0]);
+
+    if (!monitor) return;
+
+    const window = getCurrentWindow();
+
+    await window.setPosition(
+      new PhysicalPosition(monitor.position.x, monitor.position.y)
+    );
+
+    await window.setSize(
+      new PhysicalSize(monitor.size.width, monitor.size.height)
+    );
+  } catch (error) {
+    console.error('Failed to position overlay window:', error);
+  }
+};
 
 export const OverlayWindow = () => {
   const telemetryConnection = useTelemetryConnectionStore();
@@ -32,31 +62,34 @@ export const OverlayWindow = () => {
     let isMounted = true;
 
     const init = async () => {
-      // Programmatically resize the window to span the entire screen, including taskbar area,
-      // avoiding Windows OS DWM decoration/accent borders on focus lost.
-      try {
-        const monitor = await currentMonitor();
-
-        if (monitor && isMounted) {
-          const { size, position } = monitor;
-          const window = getCurrentWindow();
-
-          await window.setPosition(
-            new PhysicalPosition(position.x, position.y)
-          );
-
-          await window.setSize(new PhysicalSize(size.width, size.height));
-        }
-      } catch (error) {
-        console.error('Failed to resize overlay window:', error);
-      }
-
       const result = await initOverlaySync(root);
 
       if (!isMounted) {
         result();
       } else {
         cleanup = result;
+      }
+
+      const monitorIndex = root.appSettings.appSettings.overlayMonitorIndex;
+
+      await positionToMonitor(monitorIndex);
+
+      const unlisten = await listen<number | null>(
+        'overlay-monitor-changed',
+        (e) => {
+          void positionToMonitor(e.payload);
+        }
+      );
+
+      if (!isMounted) {
+        unlisten();
+      } else {
+        const prevCleanup = cleanup;
+
+        cleanup = () => {
+          prevCleanup?.();
+          unlisten();
+        };
       }
     };
 

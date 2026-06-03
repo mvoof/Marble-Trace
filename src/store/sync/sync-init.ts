@@ -18,6 +18,7 @@ import {
   emitStandingsClassIndex,
   emitTrackMapForceStartPending,
   emitWidgetSettingsUpdated,
+  emitOverlayMonitorChanged,
 } from './events';
 import type {
   WidgetDefaultConfig,
@@ -94,6 +95,13 @@ export const initMainSync = async (root: RootStore) => {
         reaction(
           () => root.appSettings.appSettings.lastUpdateCheck,
           () => {
+            void onSave();
+          }
+        ),
+        reaction(
+          () => root.appSettings.appSettings.overlayMonitorIndex,
+          (v) => {
+            void emitOverlayMonitorChanged(v);
             void onSave();
           }
         ),

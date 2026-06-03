@@ -66,6 +66,11 @@ export const setupOverlayListeners = async (
       );
     })
   );
+  unlistens.push(
+    await listen<number | null>('overlay-monitor-changed', (e) => {
+      runInAction(() => root.appSettings.setOverlayMonitorIndex(e.payload));
+    })
+  );
 
   return unlistens;
 };
@@ -83,3 +88,5 @@ export const emitTrackMapForceStartPending = (pending: boolean) =>
   emit('track-map:force-start-pending-changed', pending);
 export const emitWidgetSettingsUpdated = (widgets: WidgetDefaultConfig[]) =>
   emit('widget-settings-updated', widgets);
+export const emitOverlayMonitorChanged = (index: number | null) =>
+  emit('overlay-monitor-changed', index);

@@ -11,6 +11,7 @@ const DEFAULT_APP_SETTINGS = {
   autoUpdate: true,
   updateCheckInterval: 3,
   lastUpdateCheck: null as string | null,
+  overlayMonitorIndex: null as number | null,
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
@@ -206,5 +207,9 @@ export class AppSettingsStore {
 
   setHideWidgetsWhenGameClosed(value: boolean) {
     this.appSettings.hideWidgetsWhenGameClosed = value;
+  }
+
+  setOverlayMonitorIndex(value: number | null) {
+    this.appSettings.overlayMonitorIndex = value;
   }
 }
