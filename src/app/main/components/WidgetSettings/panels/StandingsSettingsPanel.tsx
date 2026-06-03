@@ -86,12 +86,6 @@ export const StandingsSettingsPanel = observer(() => {
             key: 'showTire',
           },
           {
-            title: 'Class Badge',
-            desc: "Colored badge for the driver's car class.",
-            value: settings.showClassBadge,
-            key: 'showClassBadge',
-          },
-          {
             title: 'License / iRating Badge',
             desc: 'Driver safety rating and iRating indicator.',
             value: settings.showIRatingBadge,

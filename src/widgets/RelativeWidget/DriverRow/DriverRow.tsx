@@ -7,7 +7,6 @@ import {
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
-import { ClassBadge } from '@/components/shared/ClassBadge/ClassBadge';
 import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
 import { computeRelativeGap } from '@utils/widget/relative-utils';
 import type { DriverEntry } from '@/types/bindings';
@@ -120,15 +119,6 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
           <DriverFlagBadge type={flagType} />
         )}
         {settings.showPitIndicator && isPit && <PitBadge state={pitState} />}
-      </div>
-
-      <div className={styles.colClass}>
-        {settings.showClassBadge && (
-          <ClassBadge
-            color={driver.carClassColor}
-            label={driver.carClassShortName}
-          />
-        )}
       </div>
 
       <div className={styles.colLic}>

@@ -27,7 +27,6 @@ const PLAYER_CAR_IDX =
 
 const DEFAULT_SETTINGS: RelativeWidgetSettings = {
   showIRatingBadge: false,
-  showClassBadge: false,
   showPitIndicator: true,
   abbreviateNames: false,
 };
@@ -82,7 +81,6 @@ export const MinimalView: Story = {
     settings: {
       ...DEFAULT_SETTINGS,
       showIRatingBadge: false,
-      showClassBadge: false,
       showPitIndicator: false,
     },
   },
@@ -91,12 +89,6 @@ export const MinimalView: Story = {
 export const AbbreviatedNames: Story = {
   args: {
     settings: { ...DEFAULT_SETTINGS, abbreviateNames: true },
-  },
-};
-
-export const WithClassBadge: Story = {
-  args: {
-    settings: { ...DEFAULT_SETTINGS, showClassBadge: true },
   },
 };
 
@@ -111,7 +103,6 @@ export const FullBadges: Story = {
     settings: {
       ...DEFAULT_SETTINGS,
       showIRatingBadge: true,
-      showClassBadge: true,
     },
   },
 };

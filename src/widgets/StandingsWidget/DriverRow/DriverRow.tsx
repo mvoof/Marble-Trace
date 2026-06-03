@@ -10,7 +10,6 @@ import {
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
-import { ClassBadge } from '@/components/shared/ClassBadge/ClassBadge';
 import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
 import { TireBadge } from '@/components/shared/TireBadge/TireBadge';
 import {
@@ -149,15 +148,6 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       {settings.showTire && (
         <div className={`${styles.cell} ${styles.cellCenter}`}>
           <TireBadge tire={driver.tireCompound} />
-        </div>
-      )}
-
-      {settings.viewMode === 'all' && settings.showClassBadge && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <ClassBadge
-            color={driver.carClassColor}
-            label={driver.carClassShortName}
-          />
         </div>
       )}
 
