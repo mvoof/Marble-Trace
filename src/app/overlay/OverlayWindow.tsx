@@ -19,7 +19,9 @@ const positionToMonitor = async (monitorIndex: number | null) => {
     const monitors = await availableMonitors();
 
     const monitor =
-      monitorIndex !== null && monitorIndex < monitors.length
+      monitorIndex !== null &&
+      monitorIndex >= 0 &&
+      monitorIndex < monitors.length
         ? monitors[monitorIndex]
         : ((await primaryMonitor()) ?? monitors[0]);
 
