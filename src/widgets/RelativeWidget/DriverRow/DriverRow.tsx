@@ -7,8 +7,11 @@ import {
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
-import { RatingBadge } from '@/components/shared/RatingBadge/RatingBadge';
-import { computeRelativeGap } from '@utils/widget/relative-utils';
+import { LicBadge, formatIr } from '@/components/shared/RatingBadge/LicBadge';
+import {
+  computeRelativeGap,
+  buildRelativeGridTemplate,
+} from '@utils/widget/relative-utils';
 import type { DriverEntry } from '@/types/bindings';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
@@ -75,8 +78,14 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
 
   const formattedCarNumber = formatCarNumber(driver.carNumber);
 
+  const gridTemplate = buildRelativeGridTemplate(settings);
+
   return (
-    <div className={rowClass} data-relative-row>
+    <div
+      className={rowClass}
+      style={{ gridTemplateColumns: gridTemplate }}
+      data-relative-row
+    >
       <div className={styles.posBlock}>
         <span
           className={`${styles.driverPosition} ${driver.isPlayer ? styles.driverPositionPlayer : ''}`}
@@ -122,13 +131,11 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
       </div>
 
       <div className={styles.colLic}>
-        {settings.showIRatingBadge && (
-          <RatingBadge
-            licString={driver.licString}
-            iRating={driver.iRating}
-            className={styles.badgeFull}
-          />
-        )}
+        {settings.showLicBadge && <LicBadge licString={driver.licString} />}
+      </div>
+
+      <div className={styles.colIr}>
+        {settings.showIRating && <span>{formatIr(driver.iRating)}</span>}
       </div>
 
       <div className={styles.f2Block}>

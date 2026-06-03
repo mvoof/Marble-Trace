@@ -86,10 +86,16 @@ export const StandingsSettingsPanel = observer(() => {
             key: 'showTire',
           },
           {
-            title: 'License / iRating Badge',
-            desc: 'Driver safety rating and iRating indicator.',
-            value: settings.showIRatingBadge,
-            key: 'showIRatingBadge',
+            title: 'License Badge',
+            desc: 'Driver safety rating badge (A, B, C, D, R).',
+            value: settings.showLicBadge,
+            key: 'showLicBadge',
+          },
+          {
+            title: 'iRating',
+            desc: 'Driver iRating value.',
+            value: settings.showIRating,
+            key: 'showIRating',
           },
           {
             title: 'iRating Delta (projected)',

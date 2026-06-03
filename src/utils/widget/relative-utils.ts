@@ -1,4 +1,21 @@
 import type { DriverEntry } from '@/types/bindings';
+import type { RelativeWidgetSettings } from '@/types/widget-settings';
+
+const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
+
+export const buildRelativeGridTemplate = (
+  settings: RelativeWidgetSettings
+): string =>
+  [
+    ws(20),
+    ws(40),
+    '1fr',
+    settings.showLicBadge ? ws(48) : null,
+    settings.showIRating ? ws(36) : null,
+    ws(56),
+  ]
+    .filter(Boolean)
+    .join(' ');
 
 export const computeRelativeGap = (
   driver: DriverEntry,

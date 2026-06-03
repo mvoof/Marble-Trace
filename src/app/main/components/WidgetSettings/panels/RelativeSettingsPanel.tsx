@@ -22,10 +22,16 @@ export const RelativeSettingsPanel = observer(() => {
     <Card title="Data Columns">
       {[
         {
-          title: 'License / iRating',
-          desc: 'Show driver license and iRating info.',
-          value: settings.showIRatingBadge,
-          onChange: (v: boolean) => update({ showIRatingBadge: v }),
+          title: 'License Badge',
+          desc: 'Driver safety rating badge (A, B, C, D, R).',
+          value: settings.showLicBadge,
+          onChange: (v: boolean) => update({ showLicBadge: v }),
+        },
+        {
+          title: 'iRating',
+          desc: 'Driver iRating value.',
+          value: settings.showIRating,
+          onChange: (v: boolean) => update({ showIRating: v }),
         },
         {
           title: 'Pit Indicator',

@@ -37,8 +37,12 @@ export const StandingsHeader = observer(() => {
         <StandingsHeaderCell align="center">Tire</StandingsHeaderCell>
       )}
 
-      {settings.showIRatingBadge && (
-        <StandingsHeaderCell align="center">Lic / iR</StandingsHeaderCell>
+      {settings.showLicBadge && (
+        <StandingsHeaderCell align="left">Lic</StandingsHeaderCell>
+      )}
+
+      {settings.showIRating && (
+        <StandingsHeaderCell align="right">iR</StandingsHeaderCell>
       )}
 
       {settings.showIrChange && (

@@ -1,8 +1,8 @@
 // Driver row — grid layout for strict column alignment
-// Columns: pos | car# | name+badges(1fr) | lic+iR | gap
+// Columns: pos | car# | name+badges(1fr) | lic? | iR? | gap
 .driverRow {
   display: grid;
-  grid-template-columns: ws(20) ws(40) 1fr ws(90) ws(56);
+  align-items: center;
   align-items: center;
   column-gap: ws(2);
   padding: ws(4) ws(9);
@@ -98,16 +98,21 @@
   color: $widget-status-danger;
 }
 
-// License/iRating badge column
+// License badge column
 .colLic {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
 }
 
-// Full width badge for class and license
-.badgeFull {
-  flex-shrink: 0;
+// iRating value column
+.colIr {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-family: $font-mono;
+  font-weight: 600;
+  color: $widget-text-primary;
 }
 
 // F2 Time (gap) block

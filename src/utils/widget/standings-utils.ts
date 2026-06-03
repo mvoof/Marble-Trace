@@ -51,7 +51,8 @@ const buildColDefs = (settings: StandingsWidgetSettings): ColDef[] => [
   { width: `minmax(${ws(100)}, 1fr)`, show: true }, // name     — never collapses
   { width: ws(42), show: settings.showBrand }, // brand
   { width: ws(30), show: settings.showTire }, // tire
-  { width: ws(90), show: settings.showIRatingBadge }, // lic/iRating
+  { width: ws(54), show: settings.showLicBadge }, // lic badge
+  { width: ws(36), show: settings.showIRating }, // iRating value
   { width: ws(36), show: settings.showIrChange }, // ΔiR
   { width: ws(25), show: settings.showLapsCompleted }, // laps
   { width: ws(36), show: settings.showPosChange }, // +/- pos
