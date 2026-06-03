@@ -1,7 +1,7 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4em;
+  gap: 0.8em;
   font-weight: 700;
   font-size: 0.85em;
   line-height: 1;
@@ -46,7 +46,7 @@
   align-items: center;
   font-family: $font-mono;
   font-weight: 600;
-  color: var(--mt-text-muted, #a1a1aa);
+  color: $widget-text-primary;
 }
 
 // License colors

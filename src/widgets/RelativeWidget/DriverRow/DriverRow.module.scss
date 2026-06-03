@@ -2,7 +2,7 @@
 // Columns: pos | car# | name+badges(1fr) | lic+iR | gap
 .driverRow {
   display: grid;
-  grid-template-columns: ws(20) ws(40) 1fr ws(82) ws(56);
+  grid-template-columns: ws(20) ws(40) 1fr ws(90) ws(56);
   align-items: center;
   column-gap: ws(2);
   padding: ws(4) ws(9);
@@ -107,11 +107,7 @@
 
 // Full width badge for class and license
 .badgeFull {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 // F2 Time (gap) block
