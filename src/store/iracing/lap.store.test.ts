@@ -120,7 +120,10 @@ describe('LapStore', () => {
       push(telemetry, frame(lap, lap === 2 ? 90.0 : null, 90.0));
       push(telemetry, frame(lap + 1, null, 90.0));
     }
-    // Invalid laps (rawLapTime < 0) are now recorded immediately — no flush needed.
+    // After the first invalid lap, lastRecordedLapTime becomes -1. Subsequent
+    // invalid laps (rawLapTime=-1) match the guard and are deferred until the
+    // next lap transition flushes them via the pending path.
+    push(telemetry, frame(7, null, 90.0));
 
     expect(store.history).toHaveLength(5);
     expect(store.history[0]).toMatchObject({ lapNum: 5, lapTime: null });
@@ -153,6 +156,35 @@ describe('LapStore', () => {
 
     expect(store.history).toHaveLength(1);
     expect(store.history[0]).toMatchObject({
+      lapNum: 1,
+      lapTime: 90.0,
+      isBest: true,
+    });
+  });
+
+  it('valid lap after invalid — not recorded as invalid when lap_last_lap_time still shows -1', () => {
+    // Regression: after an invalid lap (rawLapTime=-1), lastRecordedLapTime must
+    // be updated to -1. Otherwise the next lap's first frame with stale -1 won't
+    // match the guard and will be immediately recorded as invalid instead of waiting.
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, 90.0, 90.0)); // lap 1 = 90.0 recorded
+
+    push(telemetry, frame(2, 90.0, 90.0));
+    push(telemetry, frame(3, null, 90.0)); // lap 2 invalid — rawLapTime=-1
+
+    // lap 3 valid (91.0): first frame after transition still shows stale -1
+    push(telemetry, frame(4, null, 90.0)); // lap 3→4 transition, lap_last_lap_time stale (-1)
+    push(telemetry, frame(4, 91.0, 90.0)); // lap_last_lap_time now updated to 91.0
+
+    expect(store.history).toHaveLength(3);
+    expect(store.history[0]).toMatchObject({
+      lapNum: 3,
+      lapTime: 91.0,
+      isBest: false,
+    });
+    expect(store.history[1]).toMatchObject({ lapNum: 2, lapTime: null });
+    expect(store.history[2]).toMatchObject({
       lapNum: 1,
       lapTime: 90.0,
       isBest: true,

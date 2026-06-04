@@ -111,6 +111,10 @@ export class LapStore {
           if (rawLapTime < 0) {
             const invalidLapNum = pendingLapNum;
             pendingLapNum = null;
+            // Keep lastRecordedLapTime in sync so the next lap's guard correctly
+            // waits if lap_last_lap_time is still -1 on the first frame after
+            // the transition (stale value from this invalid lap).
+            lastRecordedLapTime = rawLapTime;
 
             runInAction(() => {
               this.history = [

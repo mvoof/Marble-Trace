@@ -107,7 +107,7 @@ export const NoHistory: Story = {
   args: { lapNum: 1, currentLapTime: 12.3, bestLapTime: 0 },
 };
 
-// История кругов: несколько кругов включая лучший
+// Lap history: multiple laps including a best lap
 export const WithHistory: Story = {
   decorators: [
     withStore((store) =>
@@ -124,7 +124,7 @@ export const WithHistory: Story = {
   ],
 };
 
-// Текущий круг — потенциально новый лучший (отрицательная дельта)
+// Current lap is potentially a new best (negative delta)
 export const PotentialBest: Story = {
   args: { liveDelta: -0.721, currentLapTime: 55.3, bestLapTime: 88.107 },
   decorators: [
@@ -139,7 +139,7 @@ export const PotentialBest: Story = {
   ],
 };
 
-// Все круги невалидны (выезды на пит, сбросы)
+// All laps are invalid (pit entries, resets)
 export const AllInvalid: Story = {
   args: { lapNum: 5, currentLapTime: 18.4, bestLapTime: 0 },
   decorators: [
