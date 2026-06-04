@@ -411,4 +411,89 @@ describe('LapStore', () => {
 
     expect(store.lastCompletedLap).toMatchObject({ lapNum: 1 });
   });
+
+  it('does not record stale lap time from previous run as Lap 1 after reset', () => {
+    // Run 1: Lap 1 is recorded as 90.0
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, 90.0, 90.0)); // Lap 1 recorded as 90.0
+    expect(store.history).toHaveLength(1);
+    expect(store.history[0]).toMatchObject({ lapNum: 1, lapTime: 90.0 });
+
+    // Reset run: player resets to pits, lap goes back to 1.
+    // However, telemetry.lap_last_lap_time STAYS 90.0 (iRacing behavior).
+    push(telemetry, frame(1, 90.0, 90.0)); // Reset occurs
+    expect(store.history).toHaveLength(0); // History cleared
+
+    // Run 2: outlap (Lap 1) ends, lap counter goes 1 -> 2.
+    // Since it's the outlap, lap_last_lap_time does not update and stays 90.0.
+    push(telemetry, frame(2, 90.0, 90.0)); // Lap 1 -> 2 transition
+
+    // Lap 1 of the new run should NOT be recorded as 90.0 immediately.
+    // It should wait because 90.0 is stale.
+    expect(store.history).toHaveLength(0);
+
+    // Then Lap 2 of the new run ends, lap counter goes 2 -> 3.
+    // This flushes Lap 1 as invalid (null) and sets Lap 2 pending.
+    push(telemetry, frame(3, 90.0, 90.0)); // Lap 2 -> 3 transition, lap_last_lap_time still stale (90.0)
+    expect(store.history).toHaveLength(1);
+    expect(store.history[0]).toMatchObject({ lapNum: 1, lapTime: null });
+
+    // Then Lap 2's new time (91.0) arrives.
+    push(telemetry, frame(3, 91.0, 90.0));
+    expect(store.history).toHaveLength(2);
+    expect(store.history[0]).toMatchObject({ lapNum: 2, lapTime: 91.0 });
+  });
+
+  it('waits to record if current lap time has not reset yet on the transition frame', () => {
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, 90.0, 90.0)); // Lap 1 recorded as 90.0
+    expect(store.history).toHaveLength(1);
+
+    // Lap 2 in progress
+    push(telemetry, frame(2, 90.0, 90.0, 89.0));
+
+    // Lap 2 ends, lap counter changes from 2 -> 3.
+    // However, on this first frame, lap_current_lap_time is still showing the end of Lap 2 (92.0),
+    // and lap_last_lap_time is still showing Lap 1's time (90.0).
+    push(telemetry, frame(3, 90.0, 90.0, 92.0));
+
+    // It should NOT record Lap 2 as 90.0 immediately because current lap time hasn't reset.
+    expect(store.history).toHaveLength(1);
+
+    // Next frame: lap_current_lap_time resets to 0.1, and lap_last_lap_time updates to Lap 2's time (91.0).
+    push(telemetry, frame(3, 91.0, 90.0, 0.1));
+
+    // It should now correctly record Lap 2 as 91.0!
+    expect(store.history).toHaveLength(2);
+    expect(store.history[0]).toMatchObject({ lapNum: 2, lapTime: 91.0 });
+  });
+
+  it('records lap correctly if telemetry drop out occurs at the start of a lap and resumes on the next lap', () => {
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, 90.0, 90.0)); // lap 1 recorded: time=90.0
+
+    // Lap 2 starts. We get one frame at 1.0s:
+    push(telemetry, frame(2, 90.0, 90.0, 1.0));
+
+    // Telemetry dropout occurs!
+    // We miss the rest of Lap 2 and resume on Lap 3 when current lap time is already 3.0s.
+    // The lap_last_lap_time updates to Lap 2's time (e.g. 91.0).
+    push(telemetry, frame(3, 91.0, 90.0, 3.0));
+
+    // Lap 2 should be recorded as 91.0 because the time reset happened during the dropout.
+    expect(store.history).toHaveLength(2);
+    expect(store.history[0]).toMatchObject({
+      lapNum: 2,
+      lapTime: 91.0,
+      isBest: false,
+    });
+    expect(store.history[1]).toMatchObject({
+      lapNum: 1,
+      lapTime: 90.0,
+      isBest: true,
+    });
+  });
 });

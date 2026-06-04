@@ -53,7 +53,10 @@ impl FuelState {
             if let Some(start_fuel) = self.last_lap_start_fuel {
                 let used = start_fuel - fuel_level;
 
-                if used > MIN_RECORDED_FUEL_USE && used < MAX_REALISTIC_LAP_FUEL {
+                if self.last_lap > 0
+                    && used > MIN_RECORDED_FUEL_USE
+                    && used < MAX_REALISTIC_LAP_FUEL
+                {
                     self.lap_fuel_history.push(used);
 
                     if self.lap_fuel_history.len() > MAX_LAP_FUEL_HISTORY {
@@ -243,5 +246,36 @@ mod tests {
 
         assert_eq!(result.avg_per_lap, Some(2.0));
         assert_eq!(result.laps_remaining, Some(25.0)); // 50.0 / 2.0
+    }
+
+    #[test]
+    fn test_fuel_state_updates_ignoring_lap_zero() {
+        let mut state = FuelState::default();
+
+        // Start on lap 0 with 50.0L of fuel
+        state.update(0, 50.0, 1);
+        assert_eq!(state.last_lap, 0);
+        assert_eq!(state.last_lap_start_fuel, Some(50.0));
+        assert!(state.lap_fuel_history.is_empty());
+
+        // Still on lap 0, fuel level drops to 49.5L
+        state.update(0, 49.5, 1);
+        assert_eq!(state.last_lap, 0);
+        assert_eq!(state.last_lap_start_fuel, Some(50.0)); // Should not change start fuel on same lap
+        assert!(state.lap_fuel_history.is_empty());
+
+        // Transition to lap 1 with fuel level 48.0L.
+        // The lap that completed was lap 0 (used 2.0L). It should be ignored.
+        state.update(1, 48.0, 1);
+        assert_eq!(state.last_lap, 1);
+        assert_eq!(state.last_lap_start_fuel, Some(48.0));
+        assert!(state.lap_fuel_history.is_empty());
+
+        // Transition to lap 2 with fuel level 45.5L.
+        // The lap that completed was lap 1 (used 2.5L). It should be recorded.
+        state.update(2, 45.5, 1);
+        assert_eq!(state.last_lap, 2);
+        assert_eq!(state.last_lap_start_fuel, Some(45.5));
+        assert_eq!(state.lap_fuel_history, vec![2.5]);
     }
 }
