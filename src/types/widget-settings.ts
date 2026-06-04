@@ -140,7 +140,6 @@ export interface DeltaWidgetSettings {
 }
 
 export interface SectorMatrixWidgetSettings {
-  reference: LapDeltaReference;
   showPredicted: boolean;
   showSectors: boolean;
 }

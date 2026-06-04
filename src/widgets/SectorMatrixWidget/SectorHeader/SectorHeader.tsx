@@ -7,7 +7,6 @@ import {
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import { getGameDelta } from '@utils/widget/delta-utils';
 import { getSectorColor } from '@utils/widget/sector-utils';
-import { ReferenceBadge } from '@/components/shared/ReferenceBadge/ReferenceBadge';
 import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
 import styles from './SectorHeader.module.scss';
 
@@ -21,7 +20,7 @@ export const SectorHeader = observer(({ sectorCount }: Props) => {
 
   const widgetSettings = useWidgetSettingsStore();
 
-  const { reference, showPredicted } =
+  const { showPredicted } =
     widgetSettings.getSettings<SectorMatrixWidgetSettings>('sector-matrix');
 
   const lapNum = lapTiming?.lap ?? null;
@@ -31,10 +30,12 @@ export const SectorHeader = observer(({ sectorCount }: Props) => {
 
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
 
-  const liveDelta = getGameDelta(lapTiming, reference);
+  const liveDelta = getGameDelta(lapTiming, 'personal_best');
 
   const predictedTime =
-    bestLapTime !== null && bestLapTime > 0 ? bestLapTime + liveDelta : null;
+    bestLapTime !== null && bestLapTime > 0 && liveDelta !== null
+      ? bestLapTime + liveDelta
+      : null;
 
   const currentSectorIdx = lapDelta?.currentSectorIdx ?? 0;
 
@@ -56,8 +57,6 @@ export const SectorHeader = observer(({ sectorCount }: Props) => {
             <span className={styles.predTime}>
               {formatLapTime(predictedTime)}
             </span>
-
-            <ReferenceBadge reference={reference} />
           </div>
         )}
       </div>

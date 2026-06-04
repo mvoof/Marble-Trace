@@ -554,7 +554,6 @@ export const WIDGETS: WidgetConfig[] = [
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
       hotkey: '',
-      reference: 'personal_best',
       showPredicted: true,
       showSectors: true,
     },
