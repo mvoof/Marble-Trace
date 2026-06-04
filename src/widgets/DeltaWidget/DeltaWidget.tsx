@@ -37,10 +37,10 @@ export const DeltaWidget = observer(() => {
       )}
 
       {showFlash && (
-        <div className={styles.flashWrapper}>
+        <div className={styles.deltaWrapper}>
           <LapFlash
-            key={String(lap?.lapNum ?? 0)}
-            lapNum={lap?.lapNum ?? 0}
+            key={String(lap.lapNum)}
+            lapNum={lap.lapNum}
             lapTime={flashLapTime}
             isBest={flashIsBest}
             duration={flashDuration}
