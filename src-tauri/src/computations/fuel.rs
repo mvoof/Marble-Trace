@@ -132,9 +132,13 @@ pub fn compute(
     pit_warning_laps: f32,
     fuel_state: &FuelState,
 ) -> Option<FuelComputedFrame> {
+    if fuel_state.lap_fuel_history.is_empty() {
+        return None;
+    }
+
     let fuel_level = frame.fuel_level;
 
-    let avg_per_lap = fuel_state.avg().or_else(|| instant_avg(frame, session));
+    let avg_per_lap = fuel_state.avg();
 
     let laps_remaining = avg_per_lap.and_then(|avg| {
         if avg > 0.0 {

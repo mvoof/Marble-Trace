@@ -459,6 +459,9 @@ fn reset_telemetry_state(
     if let Ok(mut s) = computation.lap_delta.lock() {
         s.reset();
     }
+    if let Ok(mut f) = computation.fuel.lock() {
+        f.reset();
+    }
     if let Ok(mut t) = service.track_length_m.lock() {
         *t = None;
     }
