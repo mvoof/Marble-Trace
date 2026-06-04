@@ -219,10 +219,10 @@ mod tests {
         assert_eq!(result.fuel_to_add, None);
         assert_eq!(result.fuel_to_add_with_buffer, None);
         assert_eq!(result.fuel_save_per_lap, None);
-        assert_eq!(result.pit_warning, false);
+        assert!(!result.pit_warning);
         assert_eq!(result.pit_window_start, None);
         assert_eq!(result.pit_window_end, None);
-        assert_eq!(result.is_timed_race, true);
+        assert!(result.is_timed_race);
         assert!(result.lap_fuel_history.is_empty());
     }
 
@@ -234,8 +234,10 @@ mod tests {
             ..Default::default()
         };
         let session = SessionInfo::default();
-        let mut fuel_state = FuelState::default();
-        fuel_state.lap_fuel_history = vec![2.0, 2.0, 2.0];
+        let fuel_state = FuelState {
+            lap_fuel_history: vec![2.0, 2.0, 2.0],
+            ..Default::default()
+        };
 
         let result = compute(&frame, &session, None, 3.0, &fuel_state);
 
