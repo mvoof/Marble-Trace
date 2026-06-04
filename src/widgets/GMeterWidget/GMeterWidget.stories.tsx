@@ -64,7 +64,7 @@ const meta: Meta<typeof StoryHost> = {
     widgetDecorator({
       width: 240,
       height: 280,
-      background: 'radial-gradient(circle, #252525 0%, #14141b 100%)',
+      background: 'rgba(21, 22, 26, 0.8)',
     }),
   ],
   args: {

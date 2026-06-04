@@ -210,7 +210,6 @@ export interface BaseUserSettings {
   currentHeight: number;
   opacity: number;
   backgroundColor: string;
-  backgroundColorEdge: string;
   borderColor: string;
   hotkey: string;
 }

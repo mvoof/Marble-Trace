@@ -52,9 +52,8 @@ export const WidgetContainer = observer(
       (appSettings.hideWidgetsWhenGameClosed && !isConnected && !dragMode) ||
       (!widgetAutoHide.isVisible(widgetId) && !dragMode);
 
-    const backgroundColor = widget?.userSettings.backgroundColor ?? '#1a1a1a';
-    const backgroundColorEdge =
-      widget?.userSettings.backgroundColorEdge ?? '#0a0a0a';
+    const backgroundColor =
+      widget?.userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)';
 
     const borderColor =
       widget?.userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
@@ -72,9 +71,7 @@ export const WidgetContainer = observer(
 
     const widgetScale = width / designWidth;
 
-    const background = shouldHide
-      ? 'transparent'
-      : `radial-gradient(circle, ${backgroundColor} 0%, ${backgroundColorEdge} 100%)`;
+    const background = shouldHide ? 'transparent' : backgroundColor;
 
     const handleDragMouseDown = useCallback(
       (e: React.MouseEvent) => {
