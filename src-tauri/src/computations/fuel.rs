@@ -97,34 +97,6 @@ pub struct FuelComputedFrame {
     pub lap_fuel_history: Vec<f32>,
 }
 
-fn kg_per_ltr_from_session(session: &SessionInfo) -> f32 {
-    session
-        .driver_info
-        .as_ref()
-        .and_then(|di| di.driver_car_fuel_kg_per_ltr)
-        .filter(|&k| k > 0.0)
-        .unwrap_or(1.0) as f32
-}
-
-/// Compute instant avg fuel per lap from current telemetry (fuel_use_per_hour × lap_time).
-/// Returns None when the car is not consuming fuel or no lap time is available.
-pub fn instant_avg(frame: &AllFieldsFrame, session: &SessionInfo) -> Option<f32> {
-    let fuel_use_per_hour = frame.fuel_use_per_hour.filter(|&v| v > 0.0)?;
-    let best_lap = frame.lap_best_lap_time.filter(|&t| t > 0.0);
-    let last_lap = frame.lap_last_lap_time.filter(|&t| t > 0.0);
-    let lap_time_sec = best_lap.or(last_lap)?;
-
-    let kg_per_ltr = kg_per_ltr_from_session(session);
-    let use_per_hour_ltr = fuel_use_per_hour / kg_per_ltr;
-    let avg = (use_per_hour_ltr / 3600.0) * lap_time_sec;
-
-    if avg > 0.0 {
-        Some(avg)
-    } else {
-        None
-    }
-}
-
 pub fn compute(
     frame: &AllFieldsFrame,
     session: &SessionInfo,
