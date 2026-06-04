@@ -6,6 +6,8 @@ import type { LapTimingFrame, LapDeltaFrame } from '@/types/bindings';
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
 import type { BackendComputedStore } from '@store/iracing/computed.store';
 import type { WidgetSettingsStore } from '@store/widget-settings.store';
+import type { RootStore } from '@store/root-store';
+import type { LapHistoryEntry } from '@store/iracing/lap.store';
 import {
   useTelemetryStore,
   useBackendComputedStore,
@@ -57,6 +59,12 @@ const applyArgs = (
   });
 };
 
+const seedHistory = (store: RootStore, entries: LapHistoryEntry[]) => {
+  runInAction(() => {
+    store.lap.history = entries;
+  });
+};
+
 const StoryHost = (args: StoryArgs) => {
   const telemetry = useTelemetryStore();
   const computed = useBackendComputedStore();
@@ -97,4 +105,51 @@ export const Behind: Story = {
 
 export const NoHistory: Story = {
   args: { lapNum: 1, currentLapTime: 12.3, bestLapTime: 0 },
+};
+
+// История кругов: несколько кругов включая лучший
+export const WithHistory: Story = {
+  decorators: [
+    withStore((store) =>
+      seedHistory(store, [
+        { lapNum: 8, lapTime: 89.512, delta: 1.405, isBest: false },
+        { lapNum: 7, lapTime: 88.107, delta: null, isBest: true },
+        { lapNum: 6, lapTime: 90.331, delta: 2.224, isBest: false },
+        { lapNum: 5, lapTime: 91.004, delta: 2.897, isBest: false },
+        { lapNum: 4, lapTime: null, delta: null, isBest: false },
+        { lapNum: 3, lapTime: 89.801, delta: 1.694, isBest: false },
+      ])
+    ),
+    widgetDecorator({ display: 'inline-flex', minWidth: 220 }),
+  ],
+};
+
+// Текущий круг — потенциально новый лучший (отрицательная дельта)
+export const PotentialBest: Story = {
+  args: { liveDelta: -0.721, currentLapTime: 55.3, bestLapTime: 88.107 },
+  decorators: [
+    withStore((store) =>
+      seedHistory(store, [
+        { lapNum: 8, lapTime: 89.512, delta: 1.405, isBest: false },
+        { lapNum: 7, lapTime: 88.107, delta: null, isBest: true },
+        { lapNum: 6, lapTime: 90.331, delta: 2.224, isBest: false },
+      ])
+    ),
+    widgetDecorator({ display: 'inline-flex', minWidth: 220 }),
+  ],
+};
+
+// Все круги невалидны (выезды на пит, сбросы)
+export const AllInvalid: Story = {
+  args: { lapNum: 5, currentLapTime: 18.4, bestLapTime: 0 },
+  decorators: [
+    withStore((store) =>
+      seedHistory(store, [
+        { lapNum: 4, lapTime: null, delta: null, isBest: false },
+        { lapNum: 3, lapTime: null, delta: null, isBest: false },
+        { lapNum: 2, lapTime: null, delta: null, isBest: false },
+      ])
+    ),
+    widgetDecorator({ display: 'inline-flex', minWidth: 220 }),
+  ],
 };

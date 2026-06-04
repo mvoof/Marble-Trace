@@ -120,8 +120,7 @@ describe('LapStore', () => {
       push(telemetry, frame(lap, lap === 2 ? 90.0 : null, 90.0));
       push(telemetry, frame(lap + 1, null, 90.0));
     }
-    // flush last pending lap (5) via a new lap change
-    push(telemetry, frame(7, null, 90.0));
+    // Invalid laps (rawLapTime < 0) are now recorded immediately — no flush needed.
 
     expect(store.history).toHaveLength(5);
     expect(store.history[0]).toMatchObject({ lapNum: 5, lapTime: null });
@@ -285,6 +284,54 @@ describe('LapStore', () => {
     push(telemetry, frame(3, 90.0, 90.0, 1.0)); // exactly 1.0 → accepted (condition is strict <)
     expect(store.history).toHaveLength(2);
     expect(store.history[0]).toMatchObject({ lapNum: 2, lapTime: 90.0 });
+  });
+
+  it('scenario A: lap_last_lap_time updates before lap counter increments — recorded immediately', () => {
+    // iRacing sometimes updates lap_last_lap_time one frame BEFORE `lap` increments.
+    // The old code used prev.lap_last_lap_time as the "wait" reference, which
+    // would equal the NEW time in this scenario and block recording until 1 s passed.
+    // The new code uses lastRecordedLapTime (previous recorded lap's time) so
+    // the new time is recognised immediately.
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    // lap_last_lap_time already shows T=90.0, but lap counter is still 1
+    push(telemetry, frame(1, 90.0, 90.0));
+    // now lap counter increments — should record lap 1 on this same frame
+    push(telemetry, frame(2, 90.0, 90.0));
+
+    expect(store.history).toHaveLength(1);
+    expect(store.history[0]).toMatchObject({
+      lapNum: 1,
+      lapTime: 90.0,
+      isBest: true,
+    });
+  });
+
+  it('scenario A with best lap: time pre-updates, next lap still recorded correctly', () => {
+    // Reported bug: after a best lap, the following lap would sometimes not be
+    // recorded (or lag by one lap) because lap_last_lap_time on the transition
+    // frame already equalled the best-lap time, triggering the old guard.
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+
+    // lap 1 = 90.0 (best)
+    push(telemetry, frame(2, 90.0, 90.0));
+
+    // lap 2 finishes with 92.0; scenario A — time arrives one frame early
+    push(telemetry, frame(2, 92.0, 90.0)); // lap still 2, time pre-updated
+    push(telemetry, frame(3, 92.0, 90.0)); // lap increments — must record immediately
+
+    expect(store.history).toHaveLength(2);
+    expect(store.history[0]).toMatchObject({
+      lapNum: 2,
+      lapTime: 92.0,
+      isBest: false,
+    });
+    expect(store.history[1]).toMatchObject({
+      lapNum: 1,
+      lapTime: 90.0,
+      isBest: true,
+    });
   });
 
   it('lastCompletedLap updates on valid lap, not on INV', () => {
