@@ -13,16 +13,10 @@ const DEFAULT_BG = 'rgba(21, 22, 26, 0.8)';
 const WIDGET_BORDER = '2px solid rgba(255, 255, 255, 0.1)';
 const WIDGET_BORDER_RADIUS = 6;
 
-const extractBgColor = (bg: string): string => {
-  const match = bg.match(/#[0-9a-fA-F]{3,6}/);
-  return match ? match[0] : DEFAULT_BG;
-};
-
 export const widgetDecorator = (
   options: WidgetDecoratorOptions = {}
 ): Decorator => {
   const { width, height, background = DEFAULT_BG, display, minWidth } = options;
-  const bgColor = extractBgColor(background);
 
   const WidgetDecoratorWrapper = (Story: Parameters<Decorator>[0]) => (
     <div
@@ -36,7 +30,7 @@ export const widgetDecorator = (
           overflow: 'visible',
           display,
           minWidth,
-          ['--widget-bg']: bgColor,
+          ['--widget-bg']: background,
         } as React.CSSProperties
       }
     >
