@@ -71,3 +71,19 @@
   min-width: 0;
   color: $widget-text-secondary;
 }
+
+.deltaAhead {
+  color: $widget-status-positive;
+}
+
+.deltaBehind {
+  color: $widget-status-danger;
+}
+
+.deltaNeutral {
+  color: $widget-status-warning;
+}
+
+.deltaBest {
+  color: $widget-text-best-lap;
+}

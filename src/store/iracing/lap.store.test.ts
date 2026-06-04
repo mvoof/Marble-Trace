@@ -5,7 +5,7 @@ import type { LapTimingFrame } from '@/types/bindings';
 
 class MockTelemetryStore {
   lapTiming: LapTimingFrame | null = null;
-  session = null;
+  session: { session_num: number } | null = null;
 
   constructor() {
     makeAutoObservable(this);
@@ -120,7 +120,9 @@ describe('LapStore', () => {
       push(telemetry, frame(lap, lap === 2 ? 90.0 : null, 90.0));
       push(telemetry, frame(lap + 1, null, 90.0));
     }
-    // flush last pending lap (5) via a new lap change
+    // After the first invalid lap, lastRecordedLapTime becomes -1. Subsequent
+    // invalid laps (rawLapTime=-1) match the guard and are deferred until the
+    // next lap transition flushes them via the pending path.
     push(telemetry, frame(7, null, 90.0));
 
     expect(store.history).toHaveLength(5);
@@ -154,6 +156,35 @@ describe('LapStore', () => {
 
     expect(store.history).toHaveLength(1);
     expect(store.history[0]).toMatchObject({
+      lapNum: 1,
+      lapTime: 90.0,
+      isBest: true,
+    });
+  });
+
+  it('valid lap after invalid — not recorded as invalid when lap_last_lap_time still shows -1', () => {
+    // Regression: after an invalid lap (rawLapTime=-1), lastRecordedLapTime must
+    // be updated to -1. Otherwise the next lap's first frame with stale -1 won't
+    // match the guard and will be immediately recorded as invalid instead of waiting.
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, 90.0, 90.0)); // lap 1 = 90.0 recorded
+
+    push(telemetry, frame(2, 90.0, 90.0));
+    push(telemetry, frame(3, null, 90.0)); // lap 2 invalid — rawLapTime=-1
+
+    // lap 3 valid (91.0): first frame after transition still shows stale -1
+    push(telemetry, frame(4, null, 90.0)); // lap 3→4 transition, lap_last_lap_time stale (-1)
+    push(telemetry, frame(4, 91.0, 90.0)); // lap_last_lap_time now updated to 91.0
+
+    expect(store.history).toHaveLength(3);
+    expect(store.history[0]).toMatchObject({
+      lapNum: 3,
+      lapTime: 91.0,
+      isBest: false,
+    });
+    expect(store.history[1]).toMatchObject({ lapNum: 2, lapTime: null });
+    expect(store.history[2]).toMatchObject({
       lapNum: 1,
       lapTime: 90.0,
       isBest: true,
@@ -285,6 +316,87 @@ describe('LapStore', () => {
     push(telemetry, frame(3, 90.0, 90.0, 1.0)); // exactly 1.0 → accepted (condition is strict <)
     expect(store.history).toHaveLength(2);
     expect(store.history[0]).toMatchObject({ lapNum: 2, lapTime: 90.0 });
+  });
+
+  it('scenario A: lap_last_lap_time updates before lap counter increments — recorded immediately', () => {
+    // iRacing sometimes updates lap_last_lap_time one frame BEFORE `lap` increments.
+    // The old code used prev.lap_last_lap_time as the "wait" reference, which
+    // would equal the NEW time in this scenario and block recording until 1 s passed.
+    // The new code uses lastRecordedLapTime (previous recorded lap's time) so
+    // the new time is recognised immediately.
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    // lap_last_lap_time already shows T=90.0, but lap counter is still 1
+    push(telemetry, frame(1, 90.0, 90.0));
+    // now lap counter increments — should record lap 1 on this same frame
+    push(telemetry, frame(2, 90.0, 90.0));
+
+    expect(store.history).toHaveLength(1);
+    expect(store.history[0]).toMatchObject({
+      lapNum: 1,
+      lapTime: 90.0,
+      isBest: true,
+    });
+  });
+
+  it('scenario A with best lap: time pre-updates, next lap still recorded correctly', () => {
+    // Reported bug: after a best lap, the following lap would sometimes not be
+    // recorded (or lag by one lap) because lap_last_lap_time on the transition
+    // frame already equalled the best-lap time, triggering the old guard.
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+
+    // lap 1 = 90.0 (best)
+    push(telemetry, frame(2, 90.0, 90.0));
+
+    // lap 2 finishes with 92.0; scenario A — time arrives one frame early
+    push(telemetry, frame(2, 92.0, 90.0)); // lap still 2, time pre-updated
+    push(telemetry, frame(3, 92.0, 90.0)); // lap increments — must record immediately
+
+    expect(store.history).toHaveLength(2);
+    expect(store.history[0]).toMatchObject({
+      lapNum: 2,
+      lapTime: 92.0,
+      isBest: false,
+    });
+    expect(store.history[1]).toMatchObject({
+      lapNum: 1,
+      lapTime: 90.0,
+      isBest: true,
+    });
+  });
+
+  it('session_num change clears history and resets state', () => {
+    runInAction(() => {
+      telemetry.session = { session_num: 0 };
+    });
+
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, 90.0, 90.0));
+    push(telemetry, frame(2, 90.0, 90.0));
+    push(telemetry, frame(3, 92.0, 90.0));
+
+    expect(store.history).toHaveLength(2);
+
+    runInAction(() => {
+      telemetry.session = { session_num: 1 };
+    });
+
+    expect(store.history).toHaveLength(0);
+    expect(store.lastCompletedLap).toBeNull();
+
+    // After reset a new outlap + valid lap should be recorded normally.
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, 88.0, 88.0));
+
+    expect(store.history).toHaveLength(1);
+    expect(store.history[0]).toMatchObject({
+      lapNum: 1,
+      lapTime: 88.0,
+      isBest: true,
+    });
   });
 
   it('lastCompletedLap updates on valid lap, not on INV', () => {

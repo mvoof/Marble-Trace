@@ -29,8 +29,26 @@ export class LapStore {
 
   private initReactions() {
     let prevFrame: LapTimingFrame | null = null;
+
+    // Lap number we're waiting to confirm and record. Set when `lap` increments,
+    // cleared after the entry is written to history.
     let pendingLapNum: number | null = null;
-    let pendingPrevLapTime: number | null = null;
+
+    // Time of the last successfully recorded lap. Used to detect when
+    // lap_last_lap_time has updated to the NEW completed lap's value.
+    //
+    // WHY this instead of prev.lap_last_lap_time:
+    // iRacing sometimes updates lap_last_lap_time one telemetry frame BEFORE
+    // the `lap` counter increments (esp. on best-lap finish). In that case
+    // prev.lap_last_lap_time already holds the NEW time, so comparing against
+    // it would never detect the change. lastRecordedLapTime always holds what
+    // we last wrote, so it stays one lap behind and the comparison is reliable.
+    let lastRecordedLapTime: number = -1;
+
+    const resetLocals = () => {
+      pendingLapNum = null;
+      lastRecordedLapTime = -1;
+    };
 
     reaction(
       () => this.telemetry.lapTiming,
@@ -43,20 +61,21 @@ export class LapStore {
         const lapNum = frame.lap ?? 0;
         const prevLapNum = prev.lap ?? 0;
 
+        // Lap counter went backwards — session reset or restart.
         if (lapNum < prevLapNum) {
-          pendingLapNum = null;
-          pendingPrevLapTime = null;
-
+          resetLocals();
           runInAction(() => this.reset());
-
           return;
         }
 
         if (lapNum > prevLapNum) {
           const completedLapNum = lapNum - 1;
 
+          // completedLapNum === 0 means the outlap just ended; no time to record.
           if (completedLapNum === 0) return;
 
+          // A pending lap that never resolved (lap_last_lap_time never updated).
+          // This can happen on an instant session restart — record it as invalid.
           if (pendingLapNum !== null) {
             runInAction(() => {
               this.history = [
@@ -72,25 +91,30 @@ export class LapStore {
           }
 
           pendingLapNum = completedLapNum;
-          pendingPrevLapTime = prev.lap_last_lap_time ?? -1;
         }
 
         if (pendingLapNum !== null) {
           const rawLapTime = frame.lap_last_lap_time ?? -1;
+          const currentLapTime = frame.lap_current_lap_time ?? 0;
 
-          if (
-            rawLapTime === 0 ||
-            (pendingPrevLapTime !== null &&
-              rawLapTime === pendingPrevLapTime &&
-              (frame.lap_current_lap_time ?? 0) < 1.0)
-          )
+          // 0 means lap_last_lap_time is not yet initialised — keep waiting.
+          if (rawLapTime === 0) return;
+
+          // lap_last_lap_time still shows the previous lap's time — SDK hasn't
+          // updated it yet. Keep waiting.
+          // After 1 s we fall through anyway: this handles the extremely rare
+          // case where two consecutive laps have the exact same float time.
+          if (rawLapTime === lastRecordedLapTime && currentLapTime < 1.0)
             return;
 
+          // Negative means the lap was invalidated (pit, SC, penalty, reset).
           if (rawLapTime < 0) {
             const invalidLapNum = pendingLapNum;
-
             pendingLapNum = null;
-            pendingPrevLapTime = null;
+            // Keep lastRecordedLapTime in sync so the next lap's guard correctly
+            // waits if lap_last_lap_time is still -1 on the first frame after
+            // the transition (stale value from this invalid lap).
+            lastRecordedLapTime = rawLapTime;
 
             runInAction(() => {
               this.history = [
@@ -111,17 +135,19 @@ export class LapStore {
           const completedLapNum = pendingLapNum;
 
           pendingLapNum = null;
-          pendingPrevLapTime = null;
+          lastRecordedLapTime = lapTime;
 
           const bestLapTime = frame.lap_best_lap_time ?? 0;
+          // isBest: lap_best_lap_time and lap_last_lap_time update together when
+          // a new best is set, so a direct equality check is reliable here.
           const isBest = bestLapTime > 0 && lapTime === bestLapTime;
-
           const delta =
             bestLapTime > 0 && !isBest ? lapTime - bestLapTime : null;
 
           runInAction(() => {
             this.lastCompletedLap = { lapNum: completedLapNum, delta };
 
+            // Clear isBest on all previous entries when a new best is set.
             const prevEntries = isBest
               ? this.history.map((entry) => ({ ...entry, isBest: false }))
               : this.history;
@@ -142,7 +168,8 @@ export class LapStore {
           this.prevSessionNum !== null &&
           sessionNum !== this.prevSessionNum
         ) {
-          this.reset();
+          resetLocals();
+          runInAction(() => this.reset());
         }
 
         this.prevSessionNum = sessionNum ?? null;

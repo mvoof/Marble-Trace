@@ -5,11 +5,11 @@ import { runInAction } from 'mobx';
 import type { LapTimingFrame, LapDeltaFrame } from '@/types/bindings';
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
 import type { BackendComputedStore } from '@store/iracing/computed.store';
-import type { WidgetSettingsStore } from '@store/widget-settings.store';
+import type { RootStore } from '@store/root-store';
+import type { LapHistoryEntry } from '@store/iracing/lap.store';
 import {
   useTelemetryStore,
   useBackendComputedStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { LapLogWidget } from './LapLogWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
@@ -20,14 +20,12 @@ interface StoryArgs {
   currentLapTime: number;
   bestLapTime: number;
   lapNum: number;
-  reference: 'personal_best' | 'session_best';
 }
 
 const applyArgs = (
   stores: {
     telemetry: TelemetryStore;
     computed: BackendComputedStore;
-    widgetSettings: WidgetSettingsStore;
   },
   args: StoryArgs
 ) => {
@@ -50,21 +48,22 @@ const applyArgs = (
       currentSectorIdx: 0,
       sectorDeltas: [],
     } as LapDeltaFrame);
+  });
+};
 
-    stores.widgetSettings.updateUserSettings('lap-log', {
-      reference: args.reference,
-    });
+const seedHistory = (store: RootStore, entries: LapHistoryEntry[]) => {
+  runInAction(() => {
+    store.lap.history = entries;
   });
 };
 
 const StoryHost = (args: StoryArgs) => {
   const telemetry = useTelemetryStore();
   const computed = useBackendComputedStore();
-  const widgetSettings = useWidgetSettingsStore();
 
   useLayoutEffect(() => {
-    applyArgs({ telemetry, computed, widgetSettings }, args);
-  }, [args, telemetry, computed, widgetSettings]);
+    applyArgs({ telemetry, computed }, args);
+  }, [args, telemetry, computed]);
 
   return <LapLogWidget />;
 };
@@ -82,7 +81,6 @@ const meta: Meta<typeof StoryHost> = {
     currentLapTime: 42.18,
     bestLapTime: 88.107,
     lapNum: 9,
-    reference: 'personal_best',
   },
 };
 
@@ -97,4 +95,51 @@ export const Behind: Story = {
 
 export const NoHistory: Story = {
   args: { lapNum: 1, currentLapTime: 12.3, bestLapTime: 0 },
+};
+
+// Lap history: multiple laps including a best lap
+export const WithHistory: Story = {
+  decorators: [
+    withStore((store) =>
+      seedHistory(store, [
+        { lapNum: 8, lapTime: 89.512, delta: 1.405, isBest: false },
+        { lapNum: 7, lapTime: 88.107, delta: null, isBest: true },
+        { lapNum: 6, lapTime: 90.331, delta: 2.224, isBest: false },
+        { lapNum: 5, lapTime: 91.004, delta: 2.897, isBest: false },
+        { lapNum: 4, lapTime: null, delta: null, isBest: false },
+        { lapNum: 3, lapTime: 89.801, delta: 1.694, isBest: false },
+      ])
+    ),
+    widgetDecorator({ display: 'inline-flex', minWidth: 220 }),
+  ],
+};
+
+// Current lap is potentially a new best (negative delta)
+export const PotentialBest: Story = {
+  args: { liveDelta: -0.721, currentLapTime: 55.3, bestLapTime: 88.107 },
+  decorators: [
+    withStore((store) =>
+      seedHistory(store, [
+        { lapNum: 8, lapTime: 89.512, delta: 1.405, isBest: false },
+        { lapNum: 7, lapTime: 88.107, delta: null, isBest: true },
+        { lapNum: 6, lapTime: 90.331, delta: 2.224, isBest: false },
+      ])
+    ),
+    widgetDecorator({ display: 'inline-flex', minWidth: 220 }),
+  ],
+};
+
+// All laps are invalid (pit entries, resets)
+export const AllInvalid: Story = {
+  args: { lapNum: 5, currentLapTime: 18.4, bestLapTime: 0 },
+  decorators: [
+    withStore((store) =>
+      seedHistory(store, [
+        { lapNum: 4, lapTime: null, delta: null, isBest: false },
+        { lapNum: 3, lapTime: null, delta: null, isBest: false },
+        { lapNum: 2, lapTime: null, delta: null, isBest: false },
+      ])
+    ),
+    widgetDecorator({ display: 'inline-flex', minWidth: 220 }),
+  ],
 };
