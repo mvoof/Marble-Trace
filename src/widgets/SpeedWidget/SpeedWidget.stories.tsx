@@ -19,7 +19,7 @@ import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
 
 const DESIGN_WIDTH = 500;
 const DESIGN_HEIGHT = 120;
-const BG = 'radial-gradient(circle, #252525 0%, #14141b 100%)';
+const BG = 'rgba(21, 22, 26, 0.8)';
 
 const RED_LINE = 8500;
 const SHIFT_RPM = 8000;

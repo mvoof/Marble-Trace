@@ -107,37 +107,23 @@ export const WidgetSettings = observer(
           <Card title="Aesthetics">
             <Row gutter={[24, 24]}>
               <Col span={12}>
-                <span className={styles.fieldLabel}>Background Center</span>
+                <span className={styles.fieldLabel}>Background</span>
                 <div className={styles.colorPickerContainer}>
                   <ColorPicker
-                    value={userSettings.backgroundColor ?? '#252525'}
+                    value={
+                      userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)'
+                    }
                     allowClear
                     onChange={(color) =>
                       widgetSettings.updateUserSettings(widgetId, {
-                        backgroundColor: color.toHexString(),
+                        backgroundColor: color
+                          ? color.toRgbString()
+                          : 'transparent',
                       })
                     }
                   />
                   <div className={styles.fieldDesc}>
                     {userSettings.backgroundColor ?? 'transparent'}
-                  </div>
-                </div>
-              </Col>
-
-              <Col span={12}>
-                <span className={styles.fieldLabel}>Background Edge</span>
-                <div className={styles.colorPickerContainer}>
-                  <ColorPicker
-                    value={userSettings.backgroundColorEdge ?? '#14141b'}
-                    allowClear
-                    onChange={(color) =>
-                      widgetSettings.updateUserSettings(widgetId, {
-                        backgroundColorEdge: color.toHexString(),
-                      })
-                    }
-                  />
-                  <div className={styles.fieldDesc}>
-                    {userSettings.backgroundColorEdge ?? 'transparent'}
                   </div>
                 </div>
               </Col>
