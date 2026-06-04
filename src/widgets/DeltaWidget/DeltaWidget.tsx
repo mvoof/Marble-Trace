@@ -10,8 +10,6 @@ import { DeltaLive } from './DeltaLive/DeltaLive';
 import { LapFlash } from './LapFlash/LapFlash';
 import styles from './DeltaWidget.module.scss';
 
-const PREVIEW_LAP_TIME = 83.456;
-
 export const DeltaWidget = observer(() => {
   const lapStore = useLapStore();
   const { lapTiming } = useTelemetryStore();
@@ -23,37 +21,31 @@ export const DeltaWidget = observer(() => {
 
   const lap = lapStore.lastCompletedLap;
 
-  const showFlash = showLapFlash && (lap !== null || dragMode);
+  const showFlash = !dragMode && showLapFlash && lap !== null;
 
-  const flashKey = dragMode ? 'preview' : String(lap?.lapNum ?? 0);
   const rawLapTime = lapTiming?.lap_last_lap_time ?? 0;
-  const flashLapTime = dragMode
-    ? PREVIEW_LAP_TIME
-    : rawLapTime > 0
-      ? rawLapTime
-      : 0;
+  const flashLapTime = rawLapTime > 0 ? rawLapTime : 0;
   const flashIsBest =
-    !dragMode &&
-    rawLapTime > 0 &&
-    rawLapTime === (lapTiming?.lap_best_lap_time ?? 0);
-
-  const containerClass = `${styles.container} ${showFlash ? styles.hasFlash : ''}`;
+    rawLapTime > 0 && rawLapTime === (lapTiming?.lap_best_lap_time ?? 0);
 
   return (
-    <div className={containerClass}>
-      <div className={styles.deltaWrapper}>
-        <DeltaLive />
-      </div>
+    <div className={styles.container}>
+      {!showFlash && (
+        <div className={styles.deltaWrapper}>
+          <DeltaLive />
+        </div>
+      )}
 
       {showFlash && (
-        <LapFlash
-          key={flashKey}
-          lapNum={lap?.lapNum ?? 0}
-          lapTime={flashLapTime}
-          isBest={flashIsBest}
-          duration={flashDuration}
-          preview={dragMode}
-        />
+        <div className={styles.deltaWrapper}>
+          <LapFlash
+            key={String(lap.lapNum)}
+            lapNum={lap.lapNum}
+            lapTime={flashLapTime}
+            isBest={flashIsBest}
+            duration={flashDuration}
+          />
+        </div>
       )}
     </div>
   );
