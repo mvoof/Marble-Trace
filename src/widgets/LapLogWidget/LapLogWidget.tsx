@@ -6,13 +6,6 @@ import { formatDelta, getDeltaState } from '@utils/widget/delta-utils';
 import { LapRow } from './LapRow/LapRow';
 import styles from './LapLogWidget.module.scss';
 
-// TODO: use style class and variables
-const DELTA_COLORS = {
-  ahead: '#22c55e',
-  behind: '#ef4444',
-  neutral: '#fbbf24',
-};
-
 const HISTORY_SHOW_SIZE = 8;
 
 export const LapLogWidget = observer(() => {
@@ -51,11 +44,11 @@ export const LapLogWidget = observer(() => {
           lapLabel={`L${entry.lapNum}`}
           time={entry.lapTime !== null ? formatLapTime(entry.lapTime) : null}
           deltaLabel={entry.isBest ? '★ BEST' : formatDelta(entry.delta)}
-          deltaColor={
+          deltaVariant={
             entry.isBest
-              ? 'rgba(192, 132, 252, 0.85)' // TODO: use style class and variables
+              ? 'best'
               : entry.delta !== null
-                ? DELTA_COLORS[getDeltaState(entry.delta)]
+                ? getDeltaState(entry.delta)
                 : undefined
           }
           isBest={entry.isBest}

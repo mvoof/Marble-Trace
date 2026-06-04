@@ -5,13 +5,11 @@ import { runInAction } from 'mobx';
 import type { LapTimingFrame, LapDeltaFrame } from '@/types/bindings';
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
 import type { BackendComputedStore } from '@store/iracing/computed.store';
-import type { WidgetSettingsStore } from '@store/widget-settings.store';
 import type { RootStore } from '@store/root-store';
 import type { LapHistoryEntry } from '@store/iracing/lap.store';
 import {
   useTelemetryStore,
   useBackendComputedStore,
-  useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { LapLogWidget } from './LapLogWidget';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
@@ -22,14 +20,12 @@ interface StoryArgs {
   currentLapTime: number;
   bestLapTime: number;
   lapNum: number;
-  reference: 'personal_best' | 'session_best';
 }
 
 const applyArgs = (
   stores: {
     telemetry: TelemetryStore;
     computed: BackendComputedStore;
-    widgetSettings: WidgetSettingsStore;
   },
   args: StoryArgs
 ) => {
@@ -52,10 +48,6 @@ const applyArgs = (
       currentSectorIdx: 0,
       sectorDeltas: [],
     } as LapDeltaFrame);
-
-    stores.widgetSettings.updateUserSettings('lap-log', {
-      reference: args.reference,
-    });
   });
 };
 
@@ -68,11 +60,10 @@ const seedHistory = (store: RootStore, entries: LapHistoryEntry[]) => {
 const StoryHost = (args: StoryArgs) => {
   const telemetry = useTelemetryStore();
   const computed = useBackendComputedStore();
-  const widgetSettings = useWidgetSettingsStore();
 
   useLayoutEffect(() => {
-    applyArgs({ telemetry, computed, widgetSettings }, args);
-  }, [args, telemetry, computed, widgetSettings]);
+    applyArgs({ telemetry, computed }, args);
+  }, [args, telemetry, computed]);
 
   return <LapLogWidget />;
 };
@@ -90,7 +81,6 @@ const meta: Meta<typeof StoryHost> = {
     currentLapTime: 42.18,
     bestLapTime: 88.107,
     lapNum: 9,
-    reference: 'personal_best',
   },
 };
 

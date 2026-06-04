@@ -5,7 +5,7 @@ import type { LapTimingFrame } from '@/types/bindings';
 
 class MockTelemetryStore {
   lapTiming: LapTimingFrame | null = null;
-  session = null;
+  session: { session_num: number } | null = null;
 
   constructor() {
     makeAutoObservable(this);
@@ -362,6 +362,39 @@ describe('LapStore', () => {
     expect(store.history[1]).toMatchObject({
       lapNum: 1,
       lapTime: 90.0,
+      isBest: true,
+    });
+  });
+
+  it('session_num change clears history and resets state', () => {
+    runInAction(() => {
+      telemetry.session = { session_num: 0 };
+    });
+
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, 90.0, 90.0));
+    push(telemetry, frame(2, 90.0, 90.0));
+    push(telemetry, frame(3, 92.0, 90.0));
+
+    expect(store.history).toHaveLength(2);
+
+    runInAction(() => {
+      telemetry.session = { session_num: 1 };
+    });
+
+    expect(store.history).toHaveLength(0);
+    expect(store.lastCompletedLap).toBeNull();
+
+    // After reset a new outlap + valid lap should be recorded normally.
+    push(telemetry, frame(0, null, null));
+    push(telemetry, frame(1, null, null));
+    push(telemetry, frame(2, 88.0, 88.0));
+
+    expect(store.history).toHaveLength(1);
+    expect(store.history[0]).toMatchObject({
+      lapNum: 1,
+      lapTime: 88.0,
       isBest: true,
     });
   });
