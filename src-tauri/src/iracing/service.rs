@@ -700,7 +700,13 @@ fn emit_domain_frames(ctx: EmitContext<'_>) {
 
             bundle.fuel = {
                 let state = lock_or_recover(&ctx.computation.fuel);
-                fuel::compute(frame, session, frame.session_num, pit_warning_laps, &state)
+                Some(fuel::compute(
+                    frame,
+                    session,
+                    frame.session_num,
+                    pit_warning_laps,
+                    &state,
+                ))
             };
 
             // Pit stop tracking
