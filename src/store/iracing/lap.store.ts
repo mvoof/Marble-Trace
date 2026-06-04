@@ -44,10 +44,12 @@ export class LapStore {
     // it would never detect the change. lastRecordedLapTime always holds what
     // we last wrote, so it stays one lap behind and the comparison is reliable.
     let lastRecordedLapTime: number = -1;
+    let timeResetReceived: boolean = true;
 
-    const resetLocals = () => {
+    const resetLocals = (f?: LapTimingFrame | null) => {
       pendingLapNum = null;
-      lastRecordedLapTime = -1;
+      lastRecordedLapTime = f?.lap_last_lap_time ?? -1;
+      timeResetReceived = true;
     };
 
     reaction(
@@ -56,14 +58,20 @@ export class LapStore {
         const prev = prevFrame;
         prevFrame = frame;
 
-        if (!frame || !prev) return;
+        if (!frame || !prev) {
+          if (frame) {
+            lastRecordedLapTime = frame.lap_last_lap_time ?? -1;
+            timeResetReceived = true;
+          }
+          return;
+        }
 
         const lapNum = frame.lap ?? 0;
         const prevLapNum = prev.lap ?? 0;
 
         // Lap counter went backwards — session reset or restart.
         if (lapNum < prevLapNum) {
-          resetLocals();
+          resetLocals(frame);
           runInAction(() => this.reset());
           return;
         }
@@ -91,11 +99,20 @@ export class LapStore {
           }
 
           pendingLapNum = completedLapNum;
+          timeResetReceived = false;
         }
 
         if (pendingLapNum !== null) {
-          const rawLapTime = frame.lap_last_lap_time ?? -1;
           const currentLapTime = frame.lap_current_lap_time ?? 0;
+          const prevCurrentLapTime = prev?.lap_current_lap_time ?? 0;
+
+          if (currentLapTime < 2.0 || currentLapTime < prevCurrentLapTime) {
+            timeResetReceived = true;
+          }
+
+          if (!timeResetReceived) return;
+
+          const rawLapTime = frame.lap_last_lap_time ?? -1;
 
           // 0 means lap_last_lap_time is not yet initialised — keep waiting.
           if (rawLapTime === 0) return;
