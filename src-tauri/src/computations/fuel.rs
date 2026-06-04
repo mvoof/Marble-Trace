@@ -97,44 +97,16 @@ pub struct FuelComputedFrame {
     pub lap_fuel_history: Vec<f32>,
 }
 
-fn kg_per_ltr_from_session(session: &SessionInfo) -> f32 {
-    session
-        .driver_info
-        .as_ref()
-        .and_then(|di| di.driver_car_fuel_kg_per_ltr)
-        .filter(|&k| k > 0.0)
-        .unwrap_or(1.0) as f32
-}
-
-/// Compute instant avg fuel per lap from current telemetry (fuel_use_per_hour × lap_time).
-/// Returns None when the car is not consuming fuel or no lap time is available.
-pub fn instant_avg(frame: &AllFieldsFrame, session: &SessionInfo) -> Option<f32> {
-    let fuel_use_per_hour = frame.fuel_use_per_hour.filter(|&v| v > 0.0)?;
-    let best_lap = frame.lap_best_lap_time.filter(|&t| t > 0.0);
-    let last_lap = frame.lap_last_lap_time.filter(|&t| t > 0.0);
-    let lap_time_sec = best_lap.or(last_lap)?;
-
-    let kg_per_ltr = kg_per_ltr_from_session(session);
-    let use_per_hour_ltr = fuel_use_per_hour / kg_per_ltr;
-    let avg = (use_per_hour_ltr / 3600.0) * lap_time_sec;
-
-    if avg > 0.0 {
-        Some(avg)
-    } else {
-        None
-    }
-}
-
 pub fn compute(
     frame: &AllFieldsFrame,
     session: &SessionInfo,
     session_num: Option<i32>,
     pit_warning_laps: f32,
     fuel_state: &FuelState,
-) -> Option<FuelComputedFrame> {
+) -> FuelComputedFrame {
     let fuel_level = frame.fuel_level;
 
-    let avg_per_lap = fuel_state.avg().or_else(|| instant_avg(frame, session));
+    let avg_per_lap = fuel_state.avg();
 
     let laps_remaining = avg_per_lap.and_then(|avg| {
         if avg > 0.0 {
@@ -147,7 +119,11 @@ pub fn compute(
     let current_session_num = session_num.unwrap_or(session.session_info.current_session_num);
 
     let sessions = &session.session_info.sessions;
-    let current_session = sessions.get(current_session_num as usize);
+    let current_session = if current_session_num >= 0 {
+        sessions.get(current_session_num as usize)
+    } else {
+        None
+    };
 
     let session_laps = current_session
         .map(|s| s.session_laps.as_str())
@@ -156,21 +132,21 @@ pub fn compute(
     let is_timed_race = session_laps.eq_ignore_ascii_case("unlimited");
 
     let laps_to_finish: Option<f32> = if !is_timed_race {
-        let total = session_laps.parse::<f32>().ok()?;
-        let current_lap = frame.lap.unwrap_or(0) as f32;
-
-        let lap_dist_pct = frame.lap_dist_pct.unwrap_or(0.0);
-
-        Some(total - current_lap - lap_dist_pct)
+        session_laps.parse::<f32>().ok().map(|total| {
+            let current_lap = frame.lap.unwrap_or(0) as f32;
+            let lap_dist_pct = frame.lap_dist_pct.unwrap_or(0.0);
+            total - current_lap - lap_dist_pct
+        })
     } else {
         let best_lap = frame.lap_best_lap_time.filter(|&t| t > 0.0);
         let last_lap = frame.lap_last_lap_time.filter(|&t| t > 0.0);
 
-        let lap_time_sec = best_lap.or(last_lap)?;
-
-        let remain = frame.session_time_remain.filter(|&t| t > 0.0)?;
-
-        Some(remain as f32 / lap_time_sec)
+        best_lap.or(last_lap).and_then(|lap_time_sec| {
+            frame
+                .session_time_remain
+                .filter(|&t| t > 0.0)
+                .map(|remain| remain as f32 / lap_time_sec)
+        })
     };
 
     let fuel_needed = match (laps_to_finish, avg_per_lap) {
@@ -205,7 +181,7 @@ pub fn compute(
         _ => None,
     };
 
-    Some(FuelComputedFrame {
+    FuelComputedFrame {
         avg_per_lap,
         laps_remaining,
         laps_to_finish,
@@ -218,5 +194,54 @@ pub fn compute(
         pit_window_end,
         is_timed_race,
         lap_fuel_history: fuel_state.lap_fuel_history.clone(),
-    })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_compute_empty_history() {
+        let frame = AllFieldsFrame {
+            fuel_level: 50.0,
+            ..Default::default()
+        };
+        let session = SessionInfo::default();
+        let fuel_state = FuelState::default();
+
+        let result = compute(&frame, &session, None, 3.0, &fuel_state);
+
+        assert_eq!(result.avg_per_lap, None);
+        assert_eq!(result.laps_remaining, None);
+        assert_eq!(result.laps_to_finish, None);
+        assert_eq!(result.shortage, None);
+        assert_eq!(result.fuel_to_add, None);
+        assert_eq!(result.fuel_to_add_with_buffer, None);
+        assert_eq!(result.fuel_save_per_lap, None);
+        assert!(!result.pit_warning);
+        assert_eq!(result.pit_window_start, None);
+        assert_eq!(result.pit_window_end, None);
+        assert!(result.is_timed_race);
+        assert!(result.lap_fuel_history.is_empty());
+    }
+
+    #[test]
+    fn test_compute_with_history() {
+        let frame = AllFieldsFrame {
+            fuel_level: 50.0,
+            lap: Some(5),
+            ..Default::default()
+        };
+        let session = SessionInfo::default();
+        let fuel_state = FuelState {
+            lap_fuel_history: vec![2.0, 2.0, 2.0],
+            ..Default::default()
+        };
+
+        let result = compute(&frame, &session, None, 3.0, &fuel_state);
+
+        assert_eq!(result.avg_per_lap, Some(2.0));
+        assert_eq!(result.laps_remaining, Some(25.0)); // 50.0 / 2.0
+    }
 }
