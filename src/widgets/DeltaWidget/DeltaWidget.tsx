@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   useAppSettingsStore,
@@ -21,7 +22,29 @@ export const DeltaWidget = observer(() => {
 
   const lap = lapStore.lastCompletedLap;
 
-  const showFlash = !dragMode && showLapFlash && lap !== null;
+  const [currentFlashLapNum, setCurrentFlashLapNum] = useState<number | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (lap) {
+      setCurrentFlashLapNum(lap.lapNum);
+
+      const timer = setTimeout(() => {
+        setCurrentFlashLapNum(null);
+      }, flashDuration * 1000);
+
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [lap, flashDuration]);
+
+  const showFlash =
+    !dragMode &&
+    showLapFlash &&
+    lap !== null &&
+    currentFlashLapNum === lap.lapNum;
 
   const rawLapTime = lapTiming?.lap_last_lap_time ?? 0;
   const flashLapTime = rawLapTime > 0 ? rawLapTime : 0;
