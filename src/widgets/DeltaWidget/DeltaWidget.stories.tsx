@@ -67,6 +67,14 @@ const applyBestLapStores = (stores: {
     } as LapDeltaFrame);
 
     stores.lap.lastCompletedLap = { lapNum: 5, delta: -1.235 };
+    stores.lap.history = [
+      {
+        lapNum: 5,
+        lapTime: 89.342,
+        delta: -1.235,
+        isBest: true,
+      },
+    ];
 
     stores.telemetry.lapTiming = {
       ...(stores.telemetry.lapTiming ?? {}),

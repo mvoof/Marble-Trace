@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import {
   useAppSettingsStore,
   useLapStore,
-  useTelemetryStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import type { DeltaWidgetSettings } from '@/types/widget-settings';
@@ -13,7 +12,6 @@ import styles from './DeltaWidget.module.scss';
 
 export const DeltaWidget = observer(() => {
   const lapStore = useLapStore();
-  const { lapTiming } = useTelemetryStore();
   const widgetSettings = useWidgetSettingsStore();
   const { dragMode } = useAppSettingsStore();
 
@@ -46,10 +44,14 @@ export const DeltaWidget = observer(() => {
     lap !== null &&
     currentFlashLapNum === lap.lapNum;
 
-  const rawLapTime = lapTiming?.lap_last_lap_time ?? 0;
-  const flashLapTime = rawLapTime > 0 ? rawLapTime : 0;
-  const flashIsBest =
-    rawLapTime > 0 && rawLapTime === (lapTiming?.lap_best_lap_time ?? 0);
+  const historyEntry = lap
+    ? lapStore.history.find((entry) => entry.lapNum === lap.lapNum)
+    : null;
+  const flashLapTime =
+    historyEntry?.lapTime && historyEntry.lapTime > 0
+      ? historyEntry.lapTime
+      : 0;
+  const flashIsBest = historyEntry?.isBest ?? false;
 
   return (
     <div className={styles.container}>
