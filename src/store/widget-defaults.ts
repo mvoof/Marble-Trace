@@ -151,7 +151,7 @@ export const WIDGETS: WidgetConfig[] = [
       currentWidth: 620,
       currentHeight: 220,
       opacity: 1,
-      backgroundColor: '#212622cc',
+      backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
       hotkey: '',
       showThrottle: true,
