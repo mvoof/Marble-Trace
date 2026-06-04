@@ -106,7 +106,11 @@ export class LapStore {
           const currentLapTime = frame.lap_current_lap_time ?? 0;
           const prevCurrentLapTime = prev?.lap_current_lap_time ?? 0;
 
-          if (currentLapTime < 2.0 || currentLapTime < prevCurrentLapTime) {
+          if (
+            currentLapTime < 2.0 ||
+            currentLapTime < prevCurrentLapTime ||
+            prevCurrentLapTime < 2.0
+          ) {
             timeResetReceived = true;
           }
 
