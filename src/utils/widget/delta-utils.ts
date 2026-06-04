@@ -114,6 +114,8 @@ export const getGameDelta = (
         ? lapTiming.lap_delta_to_session_lastl_lap
         : null;
   }
+
+  return null;
 };
 
 export const isGameDeltaOk = (
