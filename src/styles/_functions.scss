@@ -1,3 +1,5 @@
+@use 'sass:map';
+
 $base-font-size: 16px;
 
 @function rem($px) {
@@ -9,4 +11,66 @@ $base-font-size: 16px;
 // Borders (px) are exempt — they should not scale.
 @function ws($px) {
   @return calc(#{$px}px * var(--wfs, 1));
+}
+
+// ─── Widget design tokens ───────────────────────────────────────────────
+// Semantic scales layered on top of ws(). Use these instead of raw ws($px)
+// for fonts and spacing so sizing stays consistent across all widgets.
+// One source of truth — tune a step here and every widget follows.
+
+// Type scale (px at scale 1, fed through ws()).
+// Step names avoid leading digits — Sass parses `2xs` as a number, not an identifier.
+$widget-font-scale: (
+  'xxxs': 10,
+  'xxs': 11,
+  'xs': 12,
+  'sm': 13,
+  'md': 15,
+  'lg': 18,
+  'xl': 22,
+  'xxl': 28,
+  'xxxl': 32,
+);
+
+@function fs($step) {
+  @if not map.has-key($widget-font-scale, $step) {
+    @error "fs(): unknown font step '#{$step}'";
+  }
+
+  @return ws(map.get($widget-font-scale, $step));
+}
+
+// Spacing scale — 2px grid for padding, gap, margin.
+$widget-space-scale: (
+  'xxxs': 2,
+  'xxs': 4,
+  'xs': 6,
+  'sm': 8,
+  'md': 10,
+  'lg': 12,
+  'xl': 16,
+  'xxl': 20,
+);
+
+@function sp($step) {
+  @if not map.has-key($widget-space-scale, $step) {
+    @error "sp(): unknown space step '#{$step}'";
+  }
+
+  @return ws(map.get($widget-space-scale, $step));
+}
+
+// Border radius scale.
+$widget-radius-scale: (
+  'sm': 3,
+  'md': 4,
+  'lg': 6,
+);
+
+@function radius($step) {
+  @if not map.has-key($widget-radius-scale, $step) {
+    @error "radius(): unknown radius step '#{$step}'";
+  }
+
+  @return ws(map.get($widget-radius-scale, $step));
 }

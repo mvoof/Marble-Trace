@@ -3,13 +3,13 @@
 .driverRow {
   display: grid;
   align-items: center;
-  column-gap: ws(2);
-  padding: ws(4) ws(9);
+  column-gap: sp(xxxs);
+  padding: sp(xxs) sp(sm);
   position: relative;
   border-bottom: 1px solid $widget-row-border;
   background: $widget-row-bg-subtle;
   line-height: 1.15;
-  font-size: ws(13);
+  font-size: fs(sm);
 }
 
 .rowOdd {
@@ -35,7 +35,7 @@
 // Position — primary emphasis
 .driverPosition {
   font-weight: 700;
-  font-size: ws(15);
+  font-size: fs(md);
   color: $widget-text-primary;
   font-family: $font-mono;
 }
@@ -48,15 +48,15 @@
 // Negative margins compensate for row padding so border+gradient reach full row height
 .carNumberCell {
   align-self: stretch;
-  margin-top: ws(-4);
-  margin-bottom: ws(-4);
+  margin-top: calc(-1 * sp(xxs));
+  margin-bottom: calc(-1 * sp(xxs));
   display: flex;
   align-items: center;
-  padding: ws(4) ws(5);
+  padding: sp(xxs) sp(xxs);
 }
 
 .driverCarNumber {
-  font-size: ws(12);
+  font-size: fs(xs);
   font-family: $font-mono;
   color: $widget-text-primary;
 }
@@ -69,14 +69,14 @@
 .infoBlock {
   display: flex;
   align-items: center;
-  gap: ws(6);
+  gap: sp(xs);
   overflow: hidden;
   min-width: 0;
 }
 
 .driverName {
   font-weight: 700;
-  font-size: ws(15);
+  font-size: fs(md);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -119,13 +119,13 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding-right: ws(2);
+  padding-right: sp(xxxs);
 }
 
 .f2Time {
   font-family: $font-mono;
   font-weight: 900;
-  font-size: ws(15);
+  font-size: fs(md);
   text-align: right;
 }
 

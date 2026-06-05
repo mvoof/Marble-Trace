@@ -59,7 +59,11 @@ export const SessionFooter = observer(() => {
       <div className={styles.footerLeft}>
         {showPitStops && (
           <span className={styles.statPill}>
-            <Wrench size={11} color="#9ca3af" />
+            <Wrench
+              size={11}
+              color="currentColor"
+              className={styles.iconMuted}
+            />
 
             <span className={styles.statLabel}>PIT</span>
 

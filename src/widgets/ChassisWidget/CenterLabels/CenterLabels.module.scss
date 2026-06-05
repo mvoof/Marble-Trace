@@ -3,11 +3,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: ws(6);
+  gap: sp(xs);
 }
 
 .centerLabel {
-  font-size: ws(9);
+  font-size: fs(xxxs);
   color: $widget-text-muted;
   font-weight: 700;
   letter-spacing: 0.05em;

@@ -3,7 +3,7 @@
 .cornerWrapper {
   display: flex;
   align-items: center;
-  gap: ws(2);
+  gap: sp(xxxs);
 }
 
 .cornerRight {
@@ -23,20 +23,20 @@
   display: flex;
   justify-content: space-between;
   width: 100%;
-  margin-bottom: ws(6);
+  margin-bottom: sp(xs);
 }
 
 .tireVisual {
   position: relative;
   display: flex;
-  gap: ws(3);
+  gap: sp(xxs);
   width: ws(72);
   height: ws(85);
   background-color: rgba(0, 0, 0, $opacity-strong);
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: $widget-border-radius;
   overflow: hidden;
-  padding: ws(2);
+  padding: sp(xxxs);
 }
 
 .tireSection {
@@ -44,7 +44,7 @@
   background-color: #1a1a1a;
   display: flex;
   align-items: flex-end;
-  border-radius: ws(2);
+  border-radius: radius(sm);
   overflow: hidden;
 }
 
@@ -59,7 +59,7 @@
   display: flex;
   justify-content: space-between;
   width: 100%;
-  margin-top: ws(6);
+  margin-top: sp(xs);
 }
 
 // ===== Suspension panel =====
@@ -67,7 +67,7 @@
 .suspensionAndBrakesPanel {
   display: flex;
   align-items: center;
-  gap: ws(4);
+  gap: sp(xxs);
 }
 
 // For right-side corners: brake bar is on the right of the text block
@@ -78,7 +78,7 @@
 .brakeBar {
   width: ws(6);
   height: ws(65);
-  border-radius: ws(2);
+  border-radius: radius(sm);
   transition: background-color 0.3s ease;
   flex-shrink: 0;
 }
@@ -86,7 +86,7 @@
 .suspensionAndBrakesTexts {
   display: flex;
   flex-direction: column;
-  gap: ws(6);
+  gap: sp(xs);
   justify-content: center;
   width: ws(50);
 }

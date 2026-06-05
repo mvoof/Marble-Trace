@@ -1,20 +1,20 @@
 .sessionHeader {
   background: rgba(24, 24, 27, $opacity-heavy);
-  padding: ws(10) ws(10);
+  padding: sp(md) sp(md);
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid $widget-row-border;
   font-family: $font-mono;
   text-transform: uppercase;
-  font-size: ws(12);
+  font-size: fs(xs);
   font-weight: 400;
   color: $widget-text-secondary;
 }
 
 .sessionLeft {
   display: flex;
-  gap: ws(16);
+  gap: sp(xl);
   align-items: center;
   min-width: 0;
   overflow: hidden;
@@ -37,7 +37,7 @@
 
 .sessionRight {
   display: flex;
-  gap: ws(8);
+  gap: sp(sm);
   align-items: center;
   flex-shrink: 0;
   white-space: nowrap;
@@ -46,14 +46,14 @@
 .statPill {
   display: inline-flex;
   align-items: center;
-  gap: ws(5);
+  gap: sp(xs);
   background: rgba(0, 0, 0, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
-  border-radius: ws(4);
-  padding: ws(2) ws(7);
+  border-radius: radius(md);
+  padding: sp(xxxs) sp(sm);
   font-family: $font-mono;
-  font-size: ws(11);
+  font-size: fs(xxs);
   letter-spacing: 0.05em;
   line-height: 1;
   flex-shrink: 0;
@@ -64,7 +64,7 @@
 }
 
 .statValue {
-  color: #f1f1f3;
+  color: $widget-text-primary;
   font-weight: 700;
 }
 
@@ -73,8 +73,24 @@
   font-weight: 700;
 }
 
+.iconSof {
+  color: $race-gold;
+}
+
+.iconMuted {
+  color: $widget-text-secondary;
+}
+
+.iconDanger {
+  color: $widget-status-danger;
+}
+
+.iconWarning {
+  color: $widget-status-warning;
+}
+
 .pulseWarning {
-  border-color: rgba(239, 68, 68, 0.5);
+  border-color: rgba($race-red, 0.5);
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 

@@ -4,8 +4,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: ws(4);
-  padding: 0 ws(8);
+  gap: sp(xxs);
+  padding: 0 sp(sm);
 }
 
 .axisColumnDivider {
@@ -15,12 +15,12 @@
 .axisHeader {
   display: flex;
   align-items: baseline;
-  gap: ws(4);
+  gap: sp(xxs);
 }
 
 .axisLabel {
   color: $widget-text-primary;
-  font-size: ws(14);
+  font-size: fs(md);
   font-weight: 300;
   letter-spacing: 0.5px;
 }
@@ -29,7 +29,7 @@
   display: inline-block;
   width: 4ch;
   text-align: right;
-  font-size: ws(18);
+  font-size: fs(lg);
   font-weight: 900;
   color: $widget-text-primary;
 }
@@ -37,12 +37,12 @@
 .peakRow {
   display: flex;
   align-items: center;
-  gap: ws(4);
+  gap: sp(xxs);
   color: $widget-text-secondary;
 }
 
 .peakLabel {
-  font-size: ws(12);
+  font-size: fs(xs);
   font-weight: 400;
   letter-spacing: 0.5px;
 }
@@ -51,6 +51,6 @@
   display: inline-block;
   width: 3.5ch;
   text-align: right;
-  font-size: ws(14);
+  font-size: fs(md);
   font-weight: 400;
 }

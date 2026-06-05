@@ -1,21 +1,21 @@
 .gridCell {
   display: flex;
   flex-direction: column;
-  padding: ws(8) ws(10);
+  padding: sp(sm) sp(md);
   background: $widget-surface-overlay;
 }
 
 .cellLabel {
-  font-size: ws(9);
-  margin-bottom: ws(2);
+  font-size: fs(xxxs);
+  margin-bottom: sp(xxxs);
 }
 
 .cellValue {
   font-family: $font-mono;
-  font-size: ws(16);
+  font-size: fs(md);
 }
 
 .cellUnit {
-  font-size: ws(11);
-  margin-left: ws(4);
+  font-size: fs(xxs);
+  margin-left: sp(xxs);
 }

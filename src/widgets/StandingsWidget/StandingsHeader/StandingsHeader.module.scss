@@ -1,8 +1,8 @@
 .headerRow {
   display: grid;
   align-items: center;
-  column-gap: ws(3);
-  padding: ws(5) ws(10);
+  column-gap: sp(xxs);
+  padding: sp(xs) sp(md);
   background: rgb(24, 24, 27);
   border-bottom: 1px solid rgba(39, 39, 42, 0.5);
   position: sticky;
@@ -11,5 +11,5 @@
 }
 
 .carNumHeader {
-  padding-left: calc(3px + ws(6));
+  padding-left: calc(3px + sp(xs));
 }

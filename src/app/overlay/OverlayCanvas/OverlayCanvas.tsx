@@ -16,7 +16,7 @@ export const OverlayCanvas = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
   const { dragMode } = appSettings;
-  const { hideAllWidgets } = appSettings.appSettings;
+  const { hideAllWidgets, colorSaturation } = appSettings.appSettings;
 
   useEffect(() => {
     getCurrentWebviewWindow()
@@ -35,7 +35,11 @@ export const OverlayCanvas = observer(() => {
   return (
     <div
       className={`${styles.canvas} ${dragMode ? styles.dragActive : ''}`}
-      style={{ pointerEvents: dragMode ? 'auto' : 'none' }}
+      style={{
+        pointerEvents: dragMode ? 'auto' : 'none',
+        filter:
+          colorSaturation === 1 ? undefined : `saturate(${colorSaturation})`,
+      }}
     >
       {dragMode && (
         <div className={styles.exitButtonContainer}>

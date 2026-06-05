@@ -3,7 +3,7 @@
   min-width: 0;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.4);
-  padding: ws(5) ws(12);
+  padding: sp(xs) sp(lg);
   border-left: 2px solid transparent;
 
   &.accentNeutral {
@@ -18,12 +18,12 @@
 
 .statLabel {
   display: block;
-  font-size: ws(11);
+  font-size: fs(xxs);
 }
 
 .statValue {
   display: block;
-  font-size: ws(16);
+  font-size: fs(md);
   font-weight: 700;
   color: $widget-text-primary;
   line-height: 1.2;

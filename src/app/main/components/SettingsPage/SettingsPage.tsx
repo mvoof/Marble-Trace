@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Switch, Segmented, message, Select } from 'antd';
+import { Button, Switch, Segmented, message, Select, Slider } from 'antd';
 import type { UnitSystem } from '@/types';
 import { downloadSnapshot } from '@/storybook/capture-snapshot';
 import { useTelemetryStore } from '@store/root-store-context';
@@ -156,6 +156,31 @@ export const SettingsPage = observer(() => {
           <Switch
             checked={appSettings.appSettings.hideWidgetsWhenGameClosed}
             onChange={(v) => appSettings.setHideWidgetsWhenGameClosed(v)}
+          />
+        </div>
+      </Card>
+
+      <Card title="Color">
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>Color Saturation</div>
+
+            <div className={styles.fieldDesc}>
+              Adjust the vividness of all widget colors. Lower keeps things calm
+              and unobtrusive; higher makes status colors pop.
+            </div>
+          </div>
+
+          <Slider
+            min={0}
+            max={200}
+            step={5}
+            value={Math.round(appSettings.appSettings.colorSaturation * 100)}
+            onChange={(value: number) =>
+              appSettings.setColorSaturation(value / 100)
+            }
+            marks={{ 0: '0%', 100: '100%', 200: '200%' }}
+            tooltip={{ formatter: (value) => `${value}%` }}
           />
         </div>
       </Card>

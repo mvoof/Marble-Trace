@@ -2,9 +2,9 @@
   display: grid;
   grid-template-columns: ws(50) 1fr ws(65);
   align-items: center;
-  gap: ws(4);
+  gap: sp(xxs);
   font-family: $font-mono;
-  padding: ws(4) ws(6);
+  padding: sp(xxs) sp(xs);
   border-bottom: 1px solid $widget-row-border;
   border-left: 3px solid transparent;
   transition: background-color 0.2s;
@@ -27,7 +27,7 @@
 }
 
 .label {
-  font-size: ws(10);
+  font-size: fs(xxxs);
   font-weight: 300;
   color: $widget-text-primary;
   letter-spacing: 1px;
@@ -38,12 +38,12 @@
 }
 
 .time {
-  font-size: ws(13);
+  font-size: fs(sm);
   font-weight: 700;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
   text-align: right;
-  padding-right: ws(6);
+  padding-right: sp(xs);
   border-right: 1px solid $widget-border-default;
   overflow: hidden;
   white-space: nowrap;
@@ -55,7 +55,7 @@
 }
 
 .delta {
-  font-size: ws(13);
+  font-size: fs(sm);
   font-weight: 700;
   text-align: right;
   font-variant-numeric: tabular-nums;

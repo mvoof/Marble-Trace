@@ -2,14 +2,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: ws(4) ws(8) ws(8);
+  padding: sp(xxs) sp(sm) sp(sm);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  margin-top: ws(2);
+  margin-top: sp(xxxs);
 }
 
 .footerItem {
   font-family: $font-mono;
-  font-size: ws(12);
+  font-size: fs(xs);
   font-weight: 900;
   color: $widget-text-primary;
   letter-spacing: 1px;

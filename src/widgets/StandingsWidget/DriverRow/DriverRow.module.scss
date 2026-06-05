@@ -1,12 +1,12 @@
 .driverRow {
   display: grid;
   align-items: center;
-  column-gap: ws(3);
-  padding: ws(4) ws(10);
+  column-gap: sp(xs);
+  padding: sp(xs) sp(md);
   border-bottom: 1px solid $widget-row-border;
   position: relative;
   line-height: 1.15;
-  font-size: ws(13);
+  font-size: fs(md);
 
   &:hover:not(.driverRowPlayer) {
     background-color: $widget-row-hover;
@@ -45,21 +45,21 @@
 // Car number cell — stretch full row height for border + gradient
 .carNumberCell {
   align-self: stretch;
-  margin-top: ws(-4);
-  margin-bottom: ws(-4);
-  padding: ws(4) ws(6);
+  margin-top: calc(-1 * sp(xs));
+  margin-bottom: calc(-1 * sp(xs));
+  padding: sp(xs) sp(xs);
 }
 
 // Name cell — overflow truncation
 .nameCell {
   overflow: hidden;
-  gap: ws(6);
+  gap: sp(xs);
 }
 
 // Position
 .posCell {
   font-weight: 700;
-  font-size: ws(15);
+  font-size: fs(lg);
 }
 
 .posCellPlayer {
@@ -73,7 +73,7 @@
   align-items: center;
   justify-content: center;
   font-family: $font-mono;
-  font-size: ws(13);
+  font-size: fs(md);
   font-weight: 400;
 }
 
@@ -83,7 +83,7 @@
   align-items: center;
   justify-content: center;
   font-family: $font-mono;
-  font-size: ws(13);
+  font-size: fs(md);
   font-weight: 400;
 }
 
@@ -97,7 +97,7 @@
 // Car number
 .carNumber {
   font-family: $font-mono;
-  font-size: ws(13);
+  font-size: fs(md);
   color: $widget-text-primary;
 }
 
@@ -108,7 +108,7 @@
 // Driver name
 .driverName {
   font-weight: 700;
-  font-size: ws(15);
+  font-size: fs(lg);
   color: $widget-text-primary;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -134,7 +134,7 @@
 // Brand label
 .brandLabel {
   font-family: $font-mono;
-  font-size: ws(11);
+  font-size: fs(xs);
   color: $widget-text-secondary;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -150,7 +150,7 @@
 
 .irValue {
   font-family: $font-mono;
-  font-size: ws(13);
+  font-size: fs(md);
   font-weight: 600;
   color: $widget-text-primary;
 }
@@ -160,7 +160,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: ws(13);
+  font-size: fs(md);
   font-family: $font-mono;
   font-weight: 400;
 }
@@ -176,7 +176,7 @@
 // Pit stops
 .pitStops {
   font-family: $font-mono;
-  font-size: ws(12);
+  font-size: fs(sm);
   color: $widget-text-muted;
 }
 
@@ -186,7 +186,7 @@
 
 .lapsCompleted {
   font-family: $font-mono;
-  font-size: ws(13);
+  font-size: fs(md);
   font-weight: 400;
   color: $widget-text-primary;
 }
@@ -194,14 +194,14 @@
 // Gap
 .gapLeader {
   font-family: $font-mono;
-  font-size: ws(13);
+  font-size: fs(md);
   font-weight: 400;
   color: $widget-text-primary;
 }
 
 .gapValue {
   font-family: $font-mono;
-  font-size: ws(13);
+  font-size: fs(md);
   font-weight: 400;
   color: $widget-text-primary;
 }
@@ -209,14 +209,14 @@
 // Lap time columns
 .lastLap {
   font-family: $font-mono;
-  font-size: ws(13);
+  font-size: fs(md);
   font-weight: 900;
   color: $widget-text-primary;
 }
 
 .bestLap {
   font-family: $font-mono;
-  font-size: ws(13);
+  font-size: fs(md);
   font-weight: 900;
   color: $widget-text-best-lap;
 }

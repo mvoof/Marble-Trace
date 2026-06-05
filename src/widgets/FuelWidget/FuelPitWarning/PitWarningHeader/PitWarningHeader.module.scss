@@ -2,12 +2,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: ws(6);
+  margin-bottom: sp(xs);
 }
 
 .pitWarningHeaderLabel {
   font-family: $font-mono;
-  font-size: ws(11);
+  font-size: fs(xxs);
   color: $widget-status-warning;
   letter-spacing: 1px;
   font-weight: 700;
@@ -15,7 +15,7 @@
 
 .pitWarningWindow {
   font-family: $font-mono;
-  font-size: ws(12);
+  font-size: fs(xs);
   font-weight: 600;
   color: $widget-text-primary;
 }
@@ -23,5 +23,5 @@
 .pitWarningSeparator {
   height: 1px;
   background: rgba(255, 255, 255, $opacity-faint);
-  margin-bottom: ws(8);
+  margin-bottom: sp(sm);
 }

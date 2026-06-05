@@ -12,6 +12,7 @@ const DEFAULT_APP_SETTINGS = {
   updateCheckInterval: 3,
   lastUpdateCheck: null as string | null,
   overlayMonitorIndex: null as number | null,
+  colorSaturation: 1,
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
@@ -211,5 +212,9 @@ export class AppSettingsStore {
 
   setOverlayMonitorIndex(value: number | null) {
     this.appSettings.overlayMonitorIndex = value;
+  }
+
+  setColorSaturation(value: number) {
+    this.appSettings.colorSaturation = value;
   }
 }

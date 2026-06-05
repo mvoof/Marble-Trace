@@ -13,8 +13,8 @@
 }
 
 .pitWarning {
-  margin: ws(8) 0 ws(10);
-  padding: ws(8) ws(10);
+  margin: sp(sm) 0 sp(md);
+  padding: sp(sm) sp(md);
   background: rgba($widget-status-danger, $opacity-subtle);
   border-top: 1px solid rgba($widget-status-danger, $opacity-medium);
   border-bottom: 1px solid rgba($widget-status-danger, $opacity-medium);
@@ -36,5 +36,5 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: ws(2);
+  margin-bottom: sp(xxxs);
 }

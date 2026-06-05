@@ -1,7 +1,7 @@
 .header {
   display: flex;
   justify-content: space-between;
-  padding: ws(8) ws(10) ws(4);
+  padding: sp(sm) sp(md) sp(xxs);
   align-items: baseline;
 }
 
@@ -11,13 +11,13 @@
 
 .headerAmount {
   font-family: $font-mono;
-  font-size: ws(18);
+  font-size: fs(lg);
   font-weight: 700;
   color: $widget-text-primary;
 }
 
 .headerUnit {
-  font-size: ws(12);
+  font-size: fs(xs);
   color: $widget-text-primary;
-  margin-left: ws(5);
+  margin-left: sp(xs);
 }

@@ -7,7 +7,7 @@
   justify-content: center;
   gap: 0;
   border-right: 2px solid rgba(255, 255, 255, $opacity-subtle);
-  padding: ws(8) ws(12);
+  padding: sp(sm) sp(lg);
   transition: background 0.2s ease;
 }
 
@@ -27,13 +27,13 @@
 
 .pitSub {
   font-family: $font-mono;
-  font-size: ws(13);
+  font-size: fs(sm);
   font-weight: 900;
   color: rgba(255, 255, 255, 0.85);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.1em;
   line-height: 1;
-  margin-top: ws(6);
+  margin-top: sp(xs);
   white-space: nowrap;
 }
 

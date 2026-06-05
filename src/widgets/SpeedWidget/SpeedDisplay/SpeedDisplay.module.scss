@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: row;
   align-items: baseline;
-  gap: ws(4);
+  gap: sp(xxs);
   padding-left: ws(24);
 }
 
@@ -20,7 +20,7 @@
 
 .label {
   font-family: $font-mono;
-  font-size: ws(16);
+  font-size: fs(md);
   font-weight: 700;
   letter-spacing: 0.125em;
   color: $widget-text-secondary;

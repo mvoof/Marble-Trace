@@ -2,20 +2,20 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: ws(6) ws(8) ws(8);
+  padding: sp(xs) sp(sm) sp(sm);
   border-top: 1px solid $widget-border-subtle;
-  margin-top: ws(4);
+  margin-top: sp(xxs);
 }
 
 .entry {
   display: flex;
   align-items: baseline;
-  gap: ws(6);
+  gap: sp(xs);
 }
 
 .tag {
   font-family: $font-widget;
-  font-size: ws(10);
+  font-size: fs(xxxs);
   font-weight: 300;
   letter-spacing: 1px;
   color: $widget-text-primary;
@@ -24,7 +24,7 @@
 
 .time {
   font-family: $font-mono;
-  font-size: ws(13);
+  font-size: fs(sm);
   font-weight: 700;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
@@ -36,12 +36,12 @@
 }
 .star {
   color: $widget-text-best-lap;
-  font-size: ws(11);
+  font-size: fs(xxs);
 }
 
 .delta {
   font-family: $font-mono;
-  font-size: ws(11);
+  font-size: fs(xxs);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }

@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: ws(8) ws(10);
+  padding: sp(sm) sp(md);
   margin: ws(1) 0;
   width: 100%;
   background: rgba(255, 255, 255, $opacity-faint);
@@ -33,12 +33,12 @@
 
 .finishLabel {
   letter-spacing: 1.5px;
-  margin-bottom: ws(4);
+  margin-bottom: sp(xxs);
 }
 
 .finishValue {
   font-family: $font-mono;
-  font-size: ws(24);
+  font-size: fs(xl);
   font-weight: 800;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
