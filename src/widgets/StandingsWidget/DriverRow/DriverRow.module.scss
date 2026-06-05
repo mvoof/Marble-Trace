@@ -1,7 +1,7 @@
 .driverRow {
   display: grid;
   align-items: center;
-  column-gap: sp(xs);
+  column-gap: sp(xxxs);
   padding: sp(xs) sp(md);
   border-bottom: 1px solid $widget-row-border;
   position: relative;
@@ -211,7 +211,8 @@
   font-family: $font-mono;
   font-size: fs(md);
   font-weight: 900;
-  color: $widget-text-primary;
+  // Faint warm tint so the live lap stands apart from the rest of the row.
+  color: color-mix(in srgb, $widget-text-primary 65%, $race-yellow);
 }
 
 .bestLap {

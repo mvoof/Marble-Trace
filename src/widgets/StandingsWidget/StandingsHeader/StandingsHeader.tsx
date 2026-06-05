@@ -29,14 +29,6 @@ export const StandingsHeader = observer(() => {
       </StandingsHeaderCell>
       <StandingsHeaderCell>Driver</StandingsHeaderCell>
 
-      {settings.showBrand && (
-        <StandingsHeaderCell align="center">Brand</StandingsHeaderCell>
-      )}
-
-      {settings.showTire && (
-        <StandingsHeaderCell align="center">Tire</StandingsHeaderCell>
-      )}
-
       {settings.showLicBadge && (
         <StandingsHeaderCell align="left">Lic</StandingsHeaderCell>
       )}
@@ -65,6 +57,14 @@ export const StandingsHeader = observer(() => {
       <StandingsHeaderCell align="right">Gap</StandingsHeaderCell>
       <StandingsHeaderCell align="right">Last</StandingsHeaderCell>
       <StandingsHeaderCell align="right">Best</StandingsHeaderCell>
+
+      {settings.showBrand && (
+        <StandingsHeaderCell align="center">Brand</StandingsHeaderCell>
+      )}
+
+      {settings.showTire && (
+        <StandingsHeaderCell align="center">Tire</StandingsHeaderCell>
+      )}
     </div>
   );
 });

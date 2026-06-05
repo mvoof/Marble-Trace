@@ -137,20 +137,6 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         {isPit && <PitBadge state={pitState} />}
       </div>
 
-      {settings.showBrand && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <span className={styles.brandLabel} title={driver.carScreenName}>
-            {formatBrand(driver.carScreenName)}
-          </span>
-        </div>
-      )}
-
-      {settings.showTire && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <TireBadge tire={driver.tireCompound} />
-        </div>
-      )}
-
       {settings.showLicBadge && (
         <div className={`${styles.cell} ${styles.cellRating}`}>
           <LicBadge licString={driver.licString} />
@@ -196,6 +182,20 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
           {formatLapTime(driver.bestLapTime > 0 ? driver.bestLapTime : null)}
         </span>
       </div>
+
+      {settings.showBrand && (
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
+          <span className={styles.brandLabel} title={driver.carScreenName}>
+            {formatBrand(driver.carScreenName)}
+          </span>
+        </div>
+      )}
+
+      {settings.showTire && (
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
+          <TireBadge tire={driver.tireCompound} />
+        </div>
+      )}
     </div>
   );
 });
