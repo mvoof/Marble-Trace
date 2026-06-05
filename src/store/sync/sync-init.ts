@@ -19,7 +19,6 @@ import {
   emitTrackMapForceStartPending,
   emitWidgetSettingsUpdated,
   emitOverlayMonitorChanged,
-  emitColorSaturation,
   emitWidgetLayoutChanged,
 } from './events';
 import type {
@@ -104,13 +103,6 @@ export const initMainSync = async (root: RootStore) => {
           () => root.appSettings.appSettings.overlayMonitorIndex,
           (v) => {
             void emitOverlayMonitorChanged(v);
-            void onSave();
-          }
-        ),
-        reaction(
-          () => root.appSettings.appSettings.colorSaturation,
-          (v) => {
-            void emitColorSaturation(v);
             void onSave();
           }
         ),

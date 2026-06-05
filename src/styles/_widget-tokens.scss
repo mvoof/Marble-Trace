@@ -1,29 +1,26 @@
 // ─────────────────────────────────────────────────────────────────────────
 // RACE PALETTE — single source of truth for widget colors.
 //
-// ONE muted pastel family: every hue shares the SAME saturation and
-// lightness — HSL(hue, 65%, 70%). Only the hue rotates, so red/green/yellow/
-// blue/purple all read as the same tone, just shifted on the wheel. This is
-// what keeps the palette cohesive and calm (no single color jumps out and
-// distracts the driver), in the spirit of the sector-timing / class tones.
-//
-// Live richness is tuned per-driver via the global `--overlay-saturation`
-// CSS filter (Settings → Color), so this band stays the calm baseline.
+// Crisp, balanced palette — the Tailwind 500/600 family. Vivid enough to read
+// at a glance on a dark overlay, but evenly weighted so no single hue screams
+// or distracts the driver (all share a similar perceived lightness/saturation
+// band, like a well-tuned design system). Core red/green/blue/delta-purple
+// stay recognizable; the rest are harmonized around them.
 //
 // Rule: never hardcode a hex/rgba in a widget. Reference a semantic token
-// below; if a tone is missing, add it here — keep it on the 65%/70% band.
+// below; if a tone is missing, add it here from the same Tailwind band.
 // ─────────────────────────────────────────────────────────────────────────
 
-$race-red: #e48181; // hsl(  0, 65%, 70%) · danger · loss · brake · lapping
-$race-orange: #e4a581; // hsl( 22, 65%, 70%) · license D · mid tier
-$race-amber: #e4b681; // hsl( 32, 65%, 70%) · pit entry · above-average tier
-$race-yellow: #e4d481; // hsl( 50, 65%, 70%) · warning · caution
-$race-gold: #e4cb81; // hsl( 45, 65%, 70%) · player position-gain accent
-$race-green: #81e4aa; // hsl(145, 65%, 70%) · positive · gain · throttle · pro
-$race-blue: #81b3e4; // hsl(210, 65%, 70%) · info · clutch · wet · fast tier
-$race-lilac: #9181e4; // hsl(250, 65%, 70%) · SOF · elite tier
-$race-purple: #b381e4; // hsl(270, 65%, 70%) · best lap
-$race-neutral: #b0b0b8; // desaturated · rookie · inert
+$race-red: #ef4444; // red-500    · danger · loss · brake · lapping
+$race-orange: #f97316; // orange-500 · license D · mid tier
+$race-amber: #f59e0b; // amber-500  · pit entry · above-average tier
+$race-yellow: #eab308; // yellow-500 · warning · caution
+$race-gold: #facc15; // yellow-400 · player position-gain accent
+$race-green: #10b981; // emerald-500 · positive · gain · throttle · pro
+$race-blue: #3b82f6; // blue-500   · info · clutch · wet · fast tier
+$race-lilac: #8b5cf6; // violet-500 · SOF · elite tier
+$race-purple: #a855f7; // purple-500 · best lap (delta)
+$race-neutral: #9ca3af; // gray-400   · rookie · inert
 
 // Text — contrast-color() is a native CSS runtime function; Sass passes it through as-is.
 // --widget-bg is set inline by WidgetContainer.tsx.

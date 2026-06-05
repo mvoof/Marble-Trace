@@ -74,12 +74,6 @@ export const setupOverlayListeners = async (
       runInAction(() => root.appSettings.setOverlayMonitorIndex(e.payload));
     })
   );
-  unlistens.push(
-    await listen<number>('color-saturation-changed', (e) => {
-      runInAction(() => root.appSettings.setColorSaturation(e.payload));
-    })
-  );
-
   return unlistens;
 };
 
@@ -98,7 +92,5 @@ export const emitWidgetSettingsUpdated = (widgets: WidgetDefaultConfig[]) =>
   emitTo(OVERLAY, 'widget-settings-updated', widgets);
 export const emitOverlayMonitorChanged = (index: number | null) =>
   emitTo(OVERLAY, 'overlay-monitor-changed', index);
-export const emitColorSaturation = (value: number) =>
-  emitTo(OVERLAY, 'color-saturation-changed', value);
 export const emitWidgetLayoutChanged = (widgets: WidgetDefaultConfig[]) =>
   emitTo(MAIN, 'widget-layout-changed', widgets);
