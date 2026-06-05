@@ -21,7 +21,11 @@ import type {
   WidgetConfig,
   WidgetDefaultConfig,
   ResolveLayoutChange,
+  StandingsWidgetSettings,
+  RelativeWidgetSettings,
 } from '@/types/widget-settings';
+import { computeStandingsDesignWidth } from '@utils/widget/standings-utils';
+import { computeRelativeDesignWidth } from '@utils/widget/relative-utils';
 
 // Swaps width<->height when orientation changes (horizontal<->vertical rotation).
 // designWidth/Height are taken from LINEAR_MAP_SIZES to match the new orientation's reference size.
@@ -87,6 +91,82 @@ const resolveChassisLayout: ResolveLayoutChange = (prev, next, current) => {
     userSettingsPatch: { modeWidths: savedModeWidths },
   };
 };
+
+// Widgets with toggleable columns have a natural width that changes as columns
+// are shown/hidden. This builds a resolveLayoutChange that, when any of the
+// given toggle keys flips, recomputes designWidth from the visible columns AND
+// scales currentWidth by the same factor — keeping --wfs (and thus font/row
+// size) constant while the widget itself grows/shrinks to fit the content.
+// NOTE: only WIDTH-changing toggles need this (--wfs derives from width only);
+// height-changing toggles already leave text size untouched.
+const makeColumnLayoutResolver = <Settings>(
+  toggleKeys: (keyof Settings)[],
+  computeDesignWidth: (settings: Settings) => number
+): ResolveLayoutChange => {
+  return (prev, next, current) => {
+    const prevSettings = prev as unknown as Settings;
+    const nextSettings = next as unknown as Settings;
+
+    const changed = toggleKeys.some(
+      (key) => prevSettings[key] !== nextSettings[key]
+    );
+
+    if (!changed) {
+      return null;
+    }
+
+    const newDesignWidth = computeDesignWidth(nextSettings);
+    const scale = current.currentWidth / current.designWidth;
+
+    return {
+      designWidth: newDesignWidth,
+      currentWidth: Math.round(newDesignWidth * scale),
+    };
+  };
+};
+
+const resolveStandingsLayout =
+  makeColumnLayoutResolver<StandingsWidgetSettings>(
+    [
+      'showLicBadge',
+      'showIRating',
+      'showIrChange',
+      'showLapsCompleted',
+      'showPosChange',
+      'showBrand',
+      'showTire',
+    ],
+    computeStandingsDesignWidth
+  );
+
+const resolveRelativeLayout = makeColumnLayoutResolver<RelativeWidgetSettings>(
+  ['showLicBadge', 'showIRating'],
+  computeRelativeDesignWidth
+);
+
+// Default column visibility kept as a single source: the natural designWidth is
+// computed from it (so it can't drift from the colSpecs in *-utils.ts), and the
+// same object is spread into the widget's userSettings below.
+const STANDINGS_COLUMN_DEFAULTS = {
+  showPosChange: true,
+  showBrand: true,
+  showTire: true,
+  showLicBadge: true,
+  showIRating: true,
+  showIrChange: false,
+  showLapsCompleted: false,
+};
+const STANDINGS_DESIGN_WIDTH = computeStandingsDesignWidth(
+  STANDINGS_COLUMN_DEFAULTS as unknown as StandingsWidgetSettings
+);
+
+const RELATIVE_COLUMN_DEFAULTS = {
+  showLicBadge: true,
+  showIRating: true,
+};
+const RELATIVE_DESIGN_WIDTH = computeRelativeDesignWidth(
+  RELATIVE_COLUMN_DEFAULTS as unknown as RelativeWidgetSettings
+);
 
 export const LINEAR_MAP_SIZES: Record<
   string,
@@ -219,13 +299,14 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Standings',
     description: 'Live session standings and intervals.',
     component: StandingsWidget,
-    designWidth: 780,
+    resolveLayoutChange: resolveStandingsLayout,
+    designWidth: STANDINGS_DESIGN_WIDTH,
     designHeight: 500,
     userSettings: {
       enabled: false,
       x: 50,
       y: 50,
-      currentWidth: 780,
+      currentWidth: STANDINGS_DESIGN_WIDTH,
       currentHeight: 500,
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
@@ -235,19 +316,13 @@ export const WIDGETS: WidgetConfig[] = [
       viewModeHotkey: '',
       classPrevHotkey: '',
       classNextHotkey: '',
-      showPosChange: true,
+      ...STANDINGS_COLUMN_DEFAULTS,
       showColumnHeaders: true,
       showSessionHeader: true,
       showWeather: true,
       showSOF: true,
       showTotalDrivers: true,
-      showBrand: true,
-      showTire: true,
-      showLicBadge: true,
-      showIRating: true,
-      showIrChange: false,
       showPitStops: true,
-      showLapsCompleted: false,
       showIncidentsBadge: true,
       abbreviateNames: false,
       showDriverFlags: true,
@@ -258,20 +333,20 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Relative',
     description: 'Gaps to cars ahead and behind you.',
     component: RelativeWidget,
-    designWidth: 460,
+    resolveLayoutChange: resolveRelativeLayout,
+    designWidth: RELATIVE_DESIGN_WIDTH,
     designHeight: 400,
     userSettings: {
       enabled: false,
       x: 50,
       y: 300,
-      currentWidth: 460,
+      currentWidth: RELATIVE_DESIGN_WIDTH,
       currentHeight: 400,
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
       hotkey: '',
-      showLicBadge: true,
-      showIRating: true,
+      ...RELATIVE_COLUMN_DEFAULTS,
       showPitIndicator: true,
       abbreviateNames: true,
       showDriverFlags: true,
