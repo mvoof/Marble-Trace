@@ -1,100 +1,124 @@
 import React, { useEffect, useRef } from 'react';
 import styles from './RandomGlitchCanvas.module.scss';
 
+const CELL_SIZE = 14;
+const GAP = 3;
+const STEP = CELL_SIZE + GAP;
+
 export const RandomGlitchCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
+
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
+
     if (!ctx) return;
 
-    let animationFrameId: number;
-    let timeoutId: ReturnType<typeof setTimeout>;
-
-    // Сеттингс
-    const cellSize = 5;
-    const gap = 3;
-    const step = cellSize + gap;
+    let rafId: number;
+    let tickTimeout: ReturnType<typeof setTimeout>;
 
     let cols = 0;
     let rows = 0;
+
     let grid: number[][] = [];
+    let accentGrid: boolean[][] = [];
     let densityMap: number[][] = [];
 
     const initGrid = () => {
-      if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
+
       canvas.width = rect.width;
       canvas.height = rect.height;
-      cols = Math.floor(canvas.width / step);
-      rows = Math.floor(canvas.height / step);
+
+      cols = Math.floor(canvas.width / STEP);
+      rows = Math.floor(canvas.height / STEP);
 
       grid = Array(cols)
         .fill(0)
         .map(() => Array(rows).fill(0) as number[]);
+      accentGrid = Array(cols)
+        .fill(0)
+        .map(() => Array(rows).fill(false) as boolean[]);
+
+      const denseRows = 15;
 
       densityMap = Array(cols)
         .fill(0)
-        .map((_, x) =>
+        .map(() =>
           Array(rows)
             .fill(0)
             .map((_, y) => {
-              const noise =
-                Math.sin(x * 0.15) * Math.cos(y * 0.15) +
-                Math.sin((x + y) * 0.05);
-              if (noise > 0.8) return 1.0;
-              if (noise > 0.2) return 0.4;
-              return 0.0;
+              const fromBottom = rows - 1 - y;
+
+              if (fromBottom < denseRows) return 1.0;
+
+              const fade =
+                1 - (fromBottom - denseRows) / Math.max(rows - denseRows, 1);
+
+              return Math.max(0, fade * fade);
             })
         );
     };
 
-    const draw = () => {
+    const tick = () => {
       if (!ctx || !canvas) return;
 
-      ctx.fillStyle = 'rgba(13, 14, 18, 0.2)';
+      ctx.fillStyle = 'rgba(13, 14, 18, 0.18)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       for (let x = 0; x < cols; x++) {
         for (let y = 0; y < rows; y++) {
           const density = densityMap[x][y];
 
-          if (density > 0) {
-            if (Math.random() < 0.03 * density) {
-              grid[x][y] = Math.random() > 0.5 ? Math.random() * 0.8 + 0.2 : 0;
-            }
+          if (density <= 0.05) continue;
 
-            if (grid[x][y] > 0) {
-              ctx.fillStyle = `rgba(255, 255, 255, ${grid[x][y] * density})`;
-              ctx.fillRect(x * step, y * step, cellSize, cellSize);
-            }
+          if (Math.random() < 0.012 * density) {
+            const alive = Math.random() > 0.45;
+
+            grid[x][y] = alive ? Math.random() * 0.7 + 0.3 : 0;
+            accentGrid[x][y] = alive && Math.random() < 0.06;
+          }
+
+          if (grid[x][y] > 0) {
+            const alpha = grid[x][y] * density;
+
+            ctx.fillStyle = accentGrid[x][y]
+              ? `rgba(59,130,246,${(alpha * 0.95).toFixed(3)})`
+              : `rgba(255,255,255,${(alpha * 0.28).toFixed(3)})`;
+
+            ctx.fillRect(x * STEP, y * STEP, CELL_SIZE, CELL_SIZE);
           }
         }
       }
 
-      timeoutId = setTimeout(() => {
-        animationFrameId = requestAnimationFrame(draw);
-      }, 50);
+      tickTimeout = setTimeout(() => {
+        rafId = requestAnimationFrame(tick);
+      }, 80);
     };
 
     window.addEventListener('resize', initGrid);
+
     initGrid();
-    draw();
+
+    rafId = requestAnimationFrame(tick);
 
     return () => {
       window.removeEventListener('resize', initGrid);
-      clearTimeout(timeoutId);
-      cancelAnimationFrame(animationFrameId);
+
+      clearTimeout(tickTimeout);
+      cancelAnimationFrame(rafId);
     };
   }, []);
 
   return (
     <div className={styles.container}>
       <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
+
       <div className={styles.vignetteVertical} />
+
       <div className={styles.vignetteHorizontal} />
     </div>
   );
