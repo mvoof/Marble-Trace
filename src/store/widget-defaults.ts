@@ -51,7 +51,9 @@ const makeColumnLayoutResolver = <Settings>(
     }
 
     const newDesignWidth = computeDesignWidth(nextSettings);
-    const scale = current.currentWidth / current.designWidth;
+    const scale = current.designWidth
+      ? current.currentWidth / current.designWidth
+      : 1;
 
     return {
       designWidth: newDesignWidth,
