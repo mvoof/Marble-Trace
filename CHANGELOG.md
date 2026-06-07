@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] — 2026-06-07
+
+### Added
+
+- **Overlay Monitor Selection:** You can now choose which monitor displays the overlay in the app settings — essential for multi-monitor setups.
+- **Separate License and iRating Columns (Standings & Relative):** The license badge and iRating are now displayed in separate columns, making the tables easier to read at a glance.
+- **Reset Settings Button:** Added a button to reset all widget settings back to their defaults in case something goes wrong or you want a fresh start.
+
+### Changed
+
+- **Simplified Widget Background Settings:** Background color is now a single setting instead of two — less clutter, same result.
+- **PRED Always Uses Personal Best:** The predicted lap time (PRED) in the Sector Matrix widget now always compares against your personal best — no extra configuration needed.
+- **Smart Table Width Adjustment (Standings & Relative):** When you toggle columns on or off, the widget automatically resizes to fit the visible content — font size and row height stay the same.
+- **Updated app background animation.**
+
+### Fixed
+
+- **Accurate Lap Tracking:** Fixed an issue where the Delta widget and lap log could lag one lap behind and show duplicate times at the start of a session.
+- **Fuel Reset on Disconnect:** Fuel calculations and predictions now correctly reset when iRacing disconnects, preventing stale data from appearing at the start of a new session.
+- **Delta Widget Alignment:** Fixed text offset for delta time and lap time display.
+
 ## [0.15.0] — 2026-05-31
 
 ### Added
