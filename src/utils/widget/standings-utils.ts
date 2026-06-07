@@ -49,7 +49,7 @@ const ROW_PAD_X_PX = 10;
 // Name column flexes (minmax → 1fr); NAME_MIN never truncates, NAME_NATURAL is
 // the comfortable width used when computing the widget's natural design width.
 const NAME_MIN_PX = 120;
-const NAME_NATURAL_PX = 160;
+const NAME_NATURAL_PX = 200;
 
 // Single source of truth for column order + widths (px at scale 1). Order here
 // MUST match the render order in DriverRow.tsx and StandingsHeader.tsx.

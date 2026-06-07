@@ -207,8 +207,8 @@ const STANDINGS_COLUMN_DEFAULTS = {
   showTire: true,
   showLicBadge: true,
   showIRating: true,
-  showIrChange: false,
-  showLapsCompleted: false,
+  showIrChange: true,
+  showLapsCompleted: true,
 };
 const STANDINGS_DESIGN_WIDTH = computeStandingsDesignWidth(
   STANDINGS_COLUMN_DEFAULTS as unknown as StandingsWidgetSettings
@@ -290,7 +290,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: INPUT_TRACE_DESIGN_WIDTH,
     designHeight: 120,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 400,
       y: 300,
       currentWidth: INPUT_TRACE_DESIGN_WIDTH,
@@ -319,7 +319,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 200,
     designHeight: 300,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 600,
       y: 300,
       currentWidth: 200,
@@ -341,7 +341,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 800,
     designHeight: 380,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 200,
       y: 300,
       currentWidth: 800,
@@ -364,7 +364,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: STANDINGS_DESIGN_WIDTH,
     designHeight: 500,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 50,
       y: 50,
       currentWidth: STANDINGS_DESIGN_WIDTH,
@@ -398,7 +398,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: RELATIVE_DESIGN_WIDTH,
     designHeight: 400,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 50,
       y: 300,
       currentWidth: RELATIVE_DESIGN_WIDTH,
@@ -421,7 +421,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 400,
     designHeight: 400,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 800,
       y: 50,
       currentWidth: 400,
@@ -452,7 +452,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 400,
     designHeight: 40,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 50,
       y: 820,
       currentWidth: 400,
@@ -474,7 +474,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 232,
     designHeight: 232,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 760,
       y: 0,
       currentWidth: 232,
@@ -496,7 +496,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 280,
     designHeight: 160,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 760,
       y: 250,
       currentWidth: 280,
@@ -518,7 +518,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 300,
     designHeight: 290,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 100,
       y: 100,
       currentWidth: 280,
@@ -558,7 +558,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 200,
     designHeight: 100,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 400,
       y: 200,
       currentWidth: 200,
@@ -581,7 +581,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 240,
     designHeight: 120,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 50,
       y: 310,
       currentWidth: 240,
@@ -607,7 +607,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 200,
     designHeight: 240,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 760,
       y: 200,
       currentWidth: 200,
@@ -634,7 +634,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 240,
     designHeight: 360,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 760,
       y: 500,
       currentWidth: 240,
@@ -681,7 +681,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 320,
     designHeight: 180,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 100,
       y: 300,
       currentWidth: 320,
@@ -704,7 +704,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 220,
     designHeight: 260,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 700,
       y: 300,
       currentWidth: 220,
