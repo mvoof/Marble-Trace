@@ -86,8 +86,8 @@ export const RandomGlitchCanvas: React.FC = () => {
             const alpha = grid[x][y] * density;
 
             ctx.fillStyle = accentGrid[x][y]
-              ? `rgba(59,130,246,${(alpha * 0.95).toFixed(3)})`
-              : `rgba(255,255,255,${(alpha * 0.28).toFixed(3)})`;
+              ? `rgba(59,130,246,${alpha * 0.95})`
+              : `rgba(255,255,255,${alpha * 0.28})`;
 
             ctx.fillRect(x * STEP, y * STEP, CELL_SIZE, CELL_SIZE);
           }
