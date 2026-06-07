@@ -69,8 +69,8 @@ const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
   { px: 28, show: settings.showLapsCompleted }, // laps "00"
   { px: 38, show: settings.showPosChange }, // +/- pos  "▲12"
   { px: 50, show: true }, // gap      "+123.4" / "12 L"
-  { px: 74, show: true }, // last     "0:00.000"
-  { px: 74, show: true }, // best     "0:00.000"
+  { px: 82, show: true }, // last     "--:--.---" (9 chars mono)
+  { px: 82, show: true }, // best     "--:--.---" (9 chars mono)
   { px: 36, show: settings.showBrand }, // brand    "MERC" — at end
   { px: 30, show: settings.showTire }, // tire     badge — at end
 ];
