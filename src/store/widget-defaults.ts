@@ -21,7 +21,46 @@ import type {
   WidgetConfig,
   WidgetDefaultConfig,
   ResolveLayoutChange,
+  StandingsWidgetSettings,
+  RelativeWidgetSettings,
+  InputTraceSettings,
 } from '@/types/widget-settings';
+import { computeStandingsDesignWidth } from '@utils/widget/standings-utils';
+import { computeRelativeDesignWidth } from '@utils/widget/relative-utils';
+
+// Widgets with toggleable columns/sections have a natural width that changes as
+// elements are shown/hidden. This builds a resolveLayoutChange that, when any of
+// the given toggle keys flips, recomputes designWidth from the visible content AND
+// scales currentWidth by the same factor — keeping --wfs (and thus font/row size)
+// constant while the widget grows/shrinks to fit. Only WIDTH-changing toggles need
+// this; height-changing toggles don't affect --wfs (width-only).
+const makeColumnLayoutResolver = <Settings>(
+  toggleKeys: (keyof Settings)[],
+  computeDesignWidth: (settings: Settings) => number
+): ResolveLayoutChange => {
+  return (prev, next, current) => {
+    const prevSettings = prev as unknown as Settings;
+    const nextSettings = next as unknown as Settings;
+
+    const changed = toggleKeys.some(
+      (key) => prevSettings[key] !== nextSettings[key]
+    );
+
+    if (!changed) {
+      return null;
+    }
+
+    const newDesignWidth = computeDesignWidth(nextSettings);
+    const scale = current.designWidth
+      ? current.currentWidth / current.designWidth
+      : 1;
+
+    return {
+      designWidth: newDesignWidth,
+      currentWidth: Math.round(newDesignWidth * scale),
+    };
+  };
+};
 
 // Swaps width<->height when orientation changes (horizontal<->vertical rotation).
 // designWidth/Height are taken from LINEAR_MAP_SIZES to match the new orientation's reference size.
@@ -44,7 +83,59 @@ const resolveRelativeMapLayout: ResolveLayoutChange = (prev, next, current) => {
   };
 };
 
-const resolveInputTraceLayout: ResolveLayoutChange = () => null;
+// Layout constants matching JSX/SCSS values in InputTraceWidget.
+// Bar width = rem(18) @ 16px base = 18px; bar gap = $space-sm = rem(4) = 4px.
+// WidgetPanel gap={8} raw px; edgeInset padding: 2px × 2 = 4px total.
+// Wheel natural width = designHeight (aspect-ratio 1:1, height: 100%).
+// INPUT_TRACE_CHART_DESIGN_PX chosen so all-visible defaults sum to 520px.
+const INPUT_TRACE_BAR_PX = 18;
+const INPUT_TRACE_BAR_GAP_PX = 4;
+const INPUT_TRACE_WHEEL_PX = 120;
+const INPUT_TRACE_PANEL_GAP_PX = 8;
+const INPUT_TRACE_EDGE_PX = 4;
+const INPUT_TRACE_CHART_DESIGN_PX = 318;
+
+const computeInputTraceDesignWidth = (settings: InputTraceSettings): number => {
+  const barCount = [
+    settings.showThrottle,
+    settings.showBrake,
+    settings.showClutch,
+  ].filter(Boolean).length;
+  const hasBars = barCount > 0;
+  const barsWidth = hasBars
+    ? barCount * INPUT_TRACE_BAR_PX +
+      Math.max(0, barCount - 1) * INPUT_TRACE_BAR_GAP_PX
+    : 0;
+
+  const sections: number[] = [];
+
+  if (settings.showTrace) {
+    sections.push(INPUT_TRACE_CHART_DESIGN_PX);
+  }
+
+  if (hasBars) {
+    sections.push(barsWidth);
+  }
+
+  if (settings.showSteering) {
+    sections.push(INPUT_TRACE_WHEEL_PX);
+  }
+
+  if (sections.length === 0) {
+    return 520;
+  }
+
+  const gaps = Math.max(0, sections.length - 1) * INPUT_TRACE_PANEL_GAP_PX;
+
+  return Math.round(
+    sections.reduce((sum, width) => sum + width, 0) + gaps + INPUT_TRACE_EDGE_PX
+  );
+};
+
+const resolveInputTraceLayout = makeColumnLayoutResolver<InputTraceSettings>(
+  ['showTrace', 'showSteering', 'showThrottle', 'showBrake', 'showClutch'],
+  computeInputTraceDesignWidth
+);
 
 const CHASSIS_DESIGN_WIDTH = 300;
 const CHASSIS_WITH_SUSPENSION_DESIGN_WIDTH = 430;
@@ -88,6 +179,60 @@ const resolveChassisLayout: ResolveLayoutChange = (prev, next, current) => {
   };
 };
 
+const resolveStandingsLayout =
+  makeColumnLayoutResolver<StandingsWidgetSettings>(
+    [
+      'showLicBadge',
+      'showIRating',
+      'showIrChange',
+      'showLapsCompleted',
+      'showPosChange',
+      'showBrand',
+      'showTire',
+    ],
+    computeStandingsDesignWidth
+  );
+
+const resolveRelativeLayout = makeColumnLayoutResolver<RelativeWidgetSettings>(
+  ['showLicBadge', 'showIRating'],
+  computeRelativeDesignWidth
+);
+
+// Default column visibility kept as a single source: the natural designWidth is
+// computed from it (so it can't drift from the colSpecs in *-utils.ts), and the
+// same object is spread into the widget's userSettings below.
+const STANDINGS_COLUMN_DEFAULTS = {
+  showPosChange: true,
+  showBrand: true,
+  showTire: true,
+  showLicBadge: true,
+  showIRating: true,
+  showIrChange: true,
+  showLapsCompleted: true,
+};
+const STANDINGS_DESIGN_WIDTH = computeStandingsDesignWidth(
+  STANDINGS_COLUMN_DEFAULTS as unknown as StandingsWidgetSettings
+);
+
+const RELATIVE_COLUMN_DEFAULTS = {
+  showLicBadge: true,
+  showIRating: true,
+};
+const RELATIVE_DESIGN_WIDTH = computeRelativeDesignWidth(
+  RELATIVE_COLUMN_DEFAULTS as unknown as RelativeWidgetSettings
+);
+
+const INPUT_TRACE_VISIBILITY_DEFAULTS = {
+  showTrace: true,
+  showSteering: true,
+  showThrottle: true,
+  showBrake: true,
+  showClutch: true,
+};
+const INPUT_TRACE_DESIGN_WIDTH = computeInputTraceDesignWidth(
+  INPUT_TRACE_VISIBILITY_DEFAULTS as unknown as InputTraceSettings
+);
+
 export const LINEAR_MAP_SIZES: Record<
   string,
   { designWidth: number; designHeight: number }
@@ -122,16 +267,16 @@ export const WIDGETS: WidgetConfig[] = [
       borderColor: 'rgba(255, 255, 255, 0.1)',
       hotkey: '',
       rpmColorTheme: 'custom',
-      rpmColorLow: '#22c55e',
-      rpmColorMid: '#fbbf24',
+      rpmColorLow: '#10b981',
+      rpmColorMid: '#eab308',
       rpmColorHigh: '#ef4444',
       rpmColorShift: '#a855f7',
-      rpmColorLimit: '#ff4d00',
+      rpmColorLimit: '#f97316',
       showRpmBar: true,
       showTemps: true,
       showRpmColor: true,
       pitSpeedLimitOverride: null,
-      gearColor: '#fbbf24',
+      gearColor: '#eab308',
       gearPanelBg: 'rgba(255,255,255,0.05)',
       ledShape: 'square',
     },
@@ -142,28 +287,24 @@ export const WIDGETS: WidgetConfig[] = [
     description: 'Live throttle, brake, and clutch inputs.',
     resolveLayoutChange: resolveInputTraceLayout,
     component: InputTraceWidget,
-    designWidth: 520,
+    designWidth: INPUT_TRACE_DESIGN_WIDTH,
     designHeight: 120,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 400,
       y: 300,
-      currentWidth: 520,
+      currentWidth: INPUT_TRACE_DESIGN_WIDTH,
+      ...INPUT_TRACE_VISIBILITY_DEFAULTS,
       currentHeight: 120,
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
       hotkey: '',
-      showThrottle: true,
-      showBrake: true,
-      showClutch: true,
-      showSteering: true,
-      showTrace: true,
       steeringCenterDisplay: 'logo',
-      throttleColor: '#00ff00',
-      brakeColor: '#ff3333',
-      clutchColor: '#3399ff',
-      absColor: '#fbbf24',
+      throttleColor: '#10b981',
+      brakeColor: '#ef4444',
+      clutchColor: '#3b82f6',
+      absColor: '#eab308',
       historySeconds: 5,
       lineWidth: 3.5,
       smoothing: 0,
@@ -178,7 +319,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 200,
     designHeight: 300,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 600,
       y: 300,
       currentWidth: 200,
@@ -200,7 +341,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 800,
     designHeight: 380,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 200,
       y: 300,
       currentWidth: 800,
@@ -219,14 +360,15 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Standings',
     description: 'Live session standings and intervals.',
     component: StandingsWidget,
-    designWidth: 780,
-    designHeight: 450,
+    resolveLayoutChange: resolveStandingsLayout,
+    designWidth: STANDINGS_DESIGN_WIDTH,
+    designHeight: 500,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 50,
       y: 50,
-      currentWidth: 780,
-      currentHeight: 450,
+      currentWidth: STANDINGS_DESIGN_WIDTH,
+      currentHeight: 500,
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -235,19 +377,13 @@ export const WIDGETS: WidgetConfig[] = [
       viewModeHotkey: '',
       classPrevHotkey: '',
       classNextHotkey: '',
-      showPosChange: true,
+      ...STANDINGS_COLUMN_DEFAULTS,
       showColumnHeaders: true,
       showSessionHeader: true,
       showWeather: true,
       showSOF: true,
       showTotalDrivers: true,
-      showBrand: true,
-      showTire: true,
-      showLicBadge: true,
-      showIRating: true,
-      showIrChange: false,
       showPitStops: true,
-      showLapsCompleted: false,
       showIncidentsBadge: true,
       abbreviateNames: false,
       showDriverFlags: true,
@@ -258,20 +394,20 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Relative',
     description: 'Gaps to cars ahead and behind you.',
     component: RelativeWidget,
-    designWidth: 460,
+    resolveLayoutChange: resolveRelativeLayout,
+    designWidth: RELATIVE_DESIGN_WIDTH,
     designHeight: 400,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 50,
       y: 300,
-      currentWidth: 460,
+      currentWidth: RELATIVE_DESIGN_WIDTH,
       currentHeight: 400,
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
       hotkey: '',
-      showLicBadge: true,
-      showIRating: true,
+      ...RELATIVE_COLUMN_DEFAULTS,
       showPitIndicator: true,
       abbreviateNames: true,
       showDriverFlags: true,
@@ -285,7 +421,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 400,
     designHeight: 400,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 800,
       y: 50,
       currentWidth: 400,
@@ -316,7 +452,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 400,
     designHeight: 40,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 50,
       y: 820,
       currentWidth: 400,
@@ -338,7 +474,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 232,
     designHeight: 232,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 760,
       y: 0,
       currentWidth: 232,
@@ -360,7 +496,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 280,
     designHeight: 160,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 760,
       y: 250,
       currentWidth: 280,
@@ -382,7 +518,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 300,
     designHeight: 290,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 100,
       y: 100,
       currentWidth: 280,
@@ -422,7 +558,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 200,
     designHeight: 100,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 400,
       y: 200,
       currentWidth: 200,
@@ -445,7 +581,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 240,
     designHeight: 120,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 50,
       y: 310,
       currentWidth: 240,
@@ -471,7 +607,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 200,
     designHeight: 240,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 760,
       y: 200,
       currentWidth: 200,
@@ -498,7 +634,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 240,
     designHeight: 360,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 760,
       y: 500,
       currentWidth: 240,
@@ -545,7 +681,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 320,
     designHeight: 180,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 100,
       y: 300,
       currentWidth: 320,
@@ -568,7 +704,7 @@ export const WIDGETS: WidgetConfig[] = [
     designWidth: 220,
     designHeight: 260,
     userSettings: {
-      enabled: false,
+      enabled: true,
       x: 700,
       y: 300,
       currentWidth: 220,

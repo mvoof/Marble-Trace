@@ -1,9 +1,9 @@
 .rotationControls {
   position: absolute;
-  top: ws(8);
-  left: ws(8);
+  top: sp(sm);
+  left: sp(sm);
   display: flex;
-  gap: ws(4);
+  gap: sp(xxs);
   z-index: 1001;
   pointer-events: auto;
 }
@@ -16,7 +16,7 @@
   height: ws(28);
   background: $widget-surface-base;
   border: 1px solid $widget-border-default;
-  border-radius: ws(4);
+  border-radius: radius(md);
   color: $widget-text-primary;
   cursor: pointer;
   transition: all 0.15s ease-in-out;

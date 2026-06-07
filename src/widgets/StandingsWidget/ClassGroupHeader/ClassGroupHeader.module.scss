@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: ws(5) ws(10);
+  padding: sp(xs) sp(md);
   border-bottom: 1px solid $widget-row-border;
   flex-shrink: 0;
 }
@@ -10,21 +10,21 @@
 .left {
   display: flex;
   align-items: center;
-  gap: ws(8);
+  gap: sp(sm);
   min-width: 0;
   overflow: hidden;
 }
 
 .pagination {
   font-family: $font-mono;
-  font-size: ws(12);
+  font-size: fs(xs);
   font-weight: 700;
   color: $widget-text-primary;
   letter-spacing: 0.04em;
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: ws(3);
-  padding: ws(1) ws(5);
+  border-radius: radius(sm);
+  padding: sp(xxxs) sp(xs);
   line-height: 1.4;
   flex-shrink: 0;
 }
@@ -32,7 +32,7 @@
 .className {
   font-family: $font-widget;
   font-weight: 800;
-  font-size: ws(13);
+  font-size: fs(sm);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   white-space: nowrap;
@@ -44,21 +44,21 @@
 .pills {
   display: flex;
   align-items: center;
-  gap: ws(6);
+  gap: sp(xs);
   flex-shrink: 0;
 }
 
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: ws(5);
+  gap: sp(xs);
   background: rgba(0, 0, 0, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
-  border-radius: ws(4);
-  padding: ws(2) ws(7);
+  border-radius: radius(md);
+  padding: sp(xxxs) sp(sm);
   font-family: $font-mono;
-  font-size: ws(11);
+  font-size: fs(xxs);
   letter-spacing: 0.05em;
   line-height: 1;
   color: $widget-text-secondary;

@@ -7,10 +7,10 @@ export const FADING_DECAY = 0.9992;
 export const ENVELOPE_SPREAD = 10;
 export const RADIUS_RATIO = 0.76;
 
-export const COLOR_TURN = '#3399ff';
+export const COLOR_TURN = '#3b82f6';
 const COLOR_BRAKE = '#ef4444';
-const COLOR_ACCEL = '#22c55e';
-const COLOR_IDLE = '#adadad';
+const COLOR_ACCEL = '#10b981';
+const COLOR_IDLE = '#9ca3af';
 
 export const computeColor = (
   colorMode: GMeterColorMode,
@@ -34,17 +34,17 @@ export const computeColor = (
   const wTurn = 1.0 - wLon;
 
   if (lonG < 0) {
-    // brake (#ef4444 = 239,68,68) → turn (#3399ff = 51,153,255)
-    const r = Math.round(239 * wLon + 51 * wTurn);
-    const g = Math.round(68 * wLon + 153 * wTurn);
-    const b = Math.round(68 * wLon + 255 * wTurn);
+    // brake (#ef4444 = 239,68,68) → turn (#3b82f6 = 59,130,246)
+    const r = Math.round(239 * wLon + 59 * wTurn);
+    const g = Math.round(68 * wLon + 130 * wTurn);
+    const b = Math.round(68 * wLon + 246 * wTurn);
 
     return `rgb(${r},${g},${b})`;
   } else {
-    // accel (#22c55e = 34,197,94) → turn (#3399ff = 51,153,255)
-    const r = Math.round(34 * wLon + 51 * wTurn);
-    const g = Math.round(197 * wLon + 153 * wTurn);
-    const b = Math.round(94 * wLon + 255 * wTurn);
+    // accel (#10b981 = 16,185,129) → turn (#3b82f6 = 59,130,246)
+    const r = Math.round(16 * wLon + 59 * wTurn);
+    const g = Math.round(185 * wLon + 130 * wTurn);
+    const b = Math.round(129 * wLon + 246 * wTurn);
 
     return `rgb(${r},${g},${b})`;
   }

@@ -1,6 +1,6 @@
 .item {
-  padding: ws(11) ws(14);
-  font-size: ws(15);
+  padding: sp(md) sp(lg);
+  font-size: fs(md);
   font-weight: 800;
   font-family: $font-widget;
   text-transform: uppercase;
@@ -10,8 +10,8 @@
 
   &::before {
     content: '■';
-    font-size: ws(11);
-    margin-right: ws(11);
+    font-size: fs(xxs);
+    margin-right: sp(lg);
     color: rgba(0, 0, 0, 0.7);
   }
 }

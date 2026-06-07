@@ -1,3 +1,27 @@
+// ─────────────────────────────────────────────────────────────────────────
+// RACE PALETTE — single source of truth for widget colors.
+//
+// Crisp, balanced palette — the Tailwind 500/600 family. Vivid enough to read
+// at a glance on a dark overlay, but evenly weighted so no single hue screams
+// or distracts the driver (all share a similar perceived lightness/saturation
+// band, like a well-tuned design system). Core red/green/blue/delta-purple
+// stay recognizable; the rest are harmonized around them.
+//
+// Rule: never hardcode a hex/rgba in a widget. Reference a semantic token
+// below; if a tone is missing, add it here from the same Tailwind band.
+// ─────────────────────────────────────────────────────────────────────────
+
+$race-red: #ef4444; // red-500    · danger · loss · brake · lapping
+$race-orange: #f97316; // orange-500 · license D · mid tier
+$race-amber: #f59e0b; // amber-500  · pit entry · above-average tier
+$race-yellow: #eab308; // yellow-500 · warning · caution
+$race-gold: #facc15; // yellow-400 · player position-gain accent
+$race-green: #10b981; // emerald-500 · positive · gain · throttle · pro
+$race-blue: #3b82f6; // blue-500   · info · clutch · wet · fast tier
+$race-lilac: #8b5cf6; // violet-500 · SOF · elite tier
+$race-purple: #a855f7; // purple-500 · best lap (delta)
+$race-neutral: #9ca3af; // gray-400   · rookie · inert
+
 // Text — contrast-color() is a native CSS runtime function; Sass passes it through as-is.
 // --widget-bg is set inline by WidgetContainer.tsx.
 $widget-text-primary: contrast-color(var(--widget-bg));
@@ -11,9 +35,9 @@ $widget-text-muted: color-mix(
   contrast-color(var(--widget-bg)) 35%,
   transparent
 );
-$widget-text-accent: #00ff00;
-$widget-text-sof: rgba(167, 161, 250, 0.95);
-$widget-text-best-lap: rgba(192, 132, 252, 0.85);
+$widget-text-accent: $race-green;
+$widget-text-sof: $race-lilac;
+$widget-text-best-lap: $race-purple;
 
 // Surfaces
 $widget-surface-base: rgba(0, 0, 0, 0.75);
@@ -27,27 +51,33 @@ $widget-border-subtle: rgba(255, 255, 255, 0.08);
 $widget-row-border: rgba(39, 39, 42, 0.5);
 $widget-row-hover: rgba(39, 39, 42, 0.3);
 $widget-row-bg-subtle: rgba(24, 24, 27, 0.2);
-$widget-row-player-bg: rgba(245, 159, 11, 0.1);
+$widget-row-player-bg: rgba($race-yellow, 0.1);
+
+// Tints — translucent fills derived from palette (row highlights, sector cells)
+$widget-tint-positive: rgba($race-green, 0.12);
+$widget-tint-positive-subtle: rgba($race-green, 0.07);
+$widget-tint-best-lap: rgba($race-purple, 0.1);
 
 // Status
-$widget-status-positive: #22c55e;
-$widget-status-warning: #fbbf24;
-$widget-status-danger: #ef4444;
-$widget-status-info: #60a5fa;
-$widget-status-caution: #ffcc00;
-$widget-status-position-gain: #fcd34d;
+$widget-status-positive: $race-green;
+$widget-status-warning: $race-yellow;
+$widget-status-danger: $race-red;
+$widget-status-info: $race-blue;
+$widget-status-caution: $race-yellow;
+$widget-status-position-gain: $race-gold;
 
 // Inputs
-$widget-throttle: #00ff00;
-$widget-brake: #ff3333;
-$widget-clutch: #3399ff;
+$widget-throttle: $race-green;
+$widget-brake: $race-red;
+$widget-clutch: $race-blue;
 
 // Pit
-$widget-pit-entry: #f59e0b;
-$widget-pit-warning: #b91c1c;
-$widget-pit-active: #2563eb;
+$widget-pit-entry: $race-amber;
+$widget-pit-warning: $race-red;
+$widget-pit-active: $race-blue;
 
-// LED flags
+// LED flags — physical flag-panel emulation; kept fully saturated on purpose
+// (these mimic real marshalling lights, not UI accents).
 $led-green: #22ff00;
 $led-yellow: #ffe600;
 $led-red: #ff0a33;
@@ -60,34 +90,34 @@ $led-surface-off: #030304;
 $led-surface-panel: #16161a;
 $led-surface-matrix: #08080a;
 
-// Rating Badge — iRacing license tiers
-$rating-lic-a: #2563eb;
-$rating-lic-b: #16a34a;
-$rating-lic-c: #ca8a04;
-$rating-lic-d: #ea580c;
-$rating-lic-r: #dc2626;
+// Rating Badge — iRacing license tiers (muted to race palette)
+$rating-lic-a: $race-blue;
+$rating-lic-b: $race-green;
+$rating-lic-c: $race-amber;
+$rating-lic-d: $race-orange;
+$rating-lic-r: $race-red;
 
 // Rating Badge — iRating tiers
-$rating-ir-rookie-bg: rgba(113, 113, 122, 0.35);
-$rating-ir-rookie-color: #a1a1aa;
-$rating-ir-avg-bg: rgba(234, 88, 12, 0.25);
-$rating-ir-avg-color: #fb923c;
-$rating-ir-above-avg-bg: rgba(202, 138, 4, 0.25);
-$rating-ir-above-avg-color: #fbbf24;
-$rating-ir-fast-bg: rgba(37, 99, 235, 0.25);
-$rating-ir-fast-color: #60a5fa;
-$rating-ir-pro-bg: rgba(22, 163, 74, 0.25);
-$rating-ir-pro-color: #4ade80;
-$rating-ir-elite-bg: rgba(168, 85, 247, 0.25);
-$rating-ir-elite-color: #c084fc;
+$rating-ir-rookie-bg: rgba($race-neutral, 0.28);
+$rating-ir-rookie-color: $race-neutral;
+$rating-ir-avg-bg: rgba($race-orange, 0.22);
+$rating-ir-avg-color: $race-orange;
+$rating-ir-above-avg-bg: rgba($race-amber, 0.22);
+$rating-ir-above-avg-color: $race-amber;
+$rating-ir-fast-bg: rgba($race-blue, 0.22);
+$rating-ir-fast-color: $race-blue;
+$rating-ir-pro-bg: rgba($race-green, 0.22);
+$rating-ir-pro-color: $race-green;
+$rating-ir-elite-bg: rgba($race-lilac, 0.22);
+$rating-ir-elite-color: $race-lilac;
 
 // Tire badge states
-$widget-tire-worn-color: #eab308;
-$widget-tire-worn-border: rgba(234, 179, 8, 0.5);
-$widget-tire-worn-bg: rgba(234, 179, 8, 0.1);
+$widget-tire-worn-color: $race-yellow;
+$widget-tire-worn-border: rgba($race-yellow, 0.5);
+$widget-tire-worn-bg: rgba($race-yellow, 0.1);
 $widget-tire-new-color: #e5e7eb;
 $widget-tire-new-border: rgba(161, 161, 170, 0.5);
 $widget-tire-new-bg: rgba(161, 161, 170, 0.1);
-$widget-tire-wet-color: #60a5fa;
-$widget-tire-wet-border: rgba(96, 165, 250, 0.5);
-$widget-tire-wet-bg: rgba(96, 165, 250, 0.1);
+$widget-tire-wet-color: $race-blue;
+$widget-tire-wet-border: rgba($race-blue, 0.5);
+$widget-tire-wet-bg: rgba($race-blue, 0.1);

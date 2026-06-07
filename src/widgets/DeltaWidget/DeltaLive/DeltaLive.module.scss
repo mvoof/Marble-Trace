@@ -10,20 +10,20 @@
 
 .badge {
   position: absolute;
-  top: ws(4);
-  right: ws(8);
-  font-size: ws(11);
+  top: sp(xxs);
+  right: sp(sm);
+  font-size: fs(xxs);
 }
 
 .delta {
   font-family: $font-mono;
-  font-size: ws(32);
+  font-size: fs(xxxl);
   font-weight: 700;
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
   text-align: center;
   white-space: nowrap;
-  padding: ws(8) ws(8);
+  padding: sp(sm) sp(sm);
   width: 100%;
 }
 

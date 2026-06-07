@@ -7,9 +7,9 @@
 }
 
 .empty {
-  padding: ws(10) ws(14);
+  padding: sp(md) sp(lg);
   font-family: $font-mono;
-  font-size: ws(12);
+  font-size: fs(xs);
   color: $widget-text-muted;
   letter-spacing: 1px;
 }

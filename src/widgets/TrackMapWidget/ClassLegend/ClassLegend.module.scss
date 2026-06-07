@@ -4,8 +4,8 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: ws(4) ws(12);
-  padding: ws(4) ws(8);
+  gap: sp(xxs) sp(lg);
+  padding: sp(xxs) sp(sm);
   border-top: 1px solid rgba(255, 255, 255, $opacity-faint);
   flex-shrink: 0;
 }
@@ -13,7 +13,7 @@
 .legendItem {
   display: flex;
   align-items: center;
-  gap: ws(5);
+  gap: sp(xs);
 }
 
 .legendDot {
@@ -24,7 +24,7 @@
 }
 
 .legendLabel {
-  font-size: ws(14);
+  font-size: fs(md);
   font-weight: 400;
   color: $widget-text-muted;
   text-transform: uppercase;

@@ -8,8 +8,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: ws(2);
-  padding-right: ws(12);
+  gap: sp(xxxs);
+  padding-right: sp(lg);
   border-right: 1px solid rgba(255, 255, 255, $opacity-subtle);
 }
 
@@ -22,7 +22,7 @@
 
 .strategyLabel {
   font-family: $font-widget;
-  font-size: ws(8);
+  font-size: fs(xxxs);
   font-weight: 600;
   color: $widget-text-muted;
   letter-spacing: 0.5px;
@@ -31,7 +31,7 @@
 
 .strategyValue {
   font-family: $font-mono;
-  font-size: ws(18);
+  font-size: fs(lg);
   font-weight: 700;
   color: $widget-text-primary;
 }
@@ -40,5 +40,5 @@
   width: 100%;
   height: 1px;
   background: rgba(255, 255, 255, 0.12);
-  margin: ws(2) 0;
+  margin: sp(xxxs) 0;
 }

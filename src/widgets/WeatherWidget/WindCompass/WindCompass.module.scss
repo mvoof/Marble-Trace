@@ -1,6 +1,6 @@
 .compassBlock {
   width: 100%;
-  padding: ws(4) 0 ws(2);
+  padding: sp(xxs) 0 sp(xxxs);
 }
 
 .compassWrapper {
@@ -17,7 +17,7 @@
 
 .bearingText {
   font-family: $font-widget;
-  font-size: ws(22);
+  font-size: fs(xl);
   font-weight: 700;
   fill: #fff;
   font-variant-numeric: tabular-nums;

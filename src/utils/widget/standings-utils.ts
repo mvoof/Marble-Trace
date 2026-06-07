@@ -43,29 +43,57 @@ export const computeClassSof = (drivers: DriverEntry[]): number => {
 
 const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 
-type ColDef = { width: string; show: boolean };
+// Layout constants — must mirror the SCSS: column-gap sp(xxxs)=2, padding sp(md)=10.
+const COL_GAP_PX = 2;
+const ROW_PAD_X_PX = 10;
+// Name column flexes (minmax → 1fr); NAME_MIN never truncates, NAME_NATURAL is
+// the comfortable width used when computing the widget's natural design width.
+const NAME_MIN_PX = 120;
+const NAME_NATURAL_PX = 200;
 
-const buildColDefs = (settings: StandingsWidgetSettings): ColDef[] => [
-  { width: ws(20), show: true }, // pos      "00"
-  { width: ws(40), show: true }, // carNum   "#000"
-  { width: `minmax(${ws(100)}, 1fr)`, show: true }, // name     — never collapses
-  { width: ws(42), show: settings.showBrand }, // brand
-  { width: ws(30), show: settings.showTire }, // tire
-  { width: ws(54), show: settings.showLicBadge }, // lic badge
-  { width: ws(36), show: settings.showIRating }, // iRating value
-  { width: ws(36), show: settings.showIrChange }, // ΔiR
-  { width: ws(25), show: settings.showLapsCompleted }, // laps
-  { width: ws(36), show: settings.showPosChange }, // +/- pos
-  { width: ws(40), show: true }, // gap      "+000.0"
-  { width: ws(69), show: true }, // last     "0:00.000"
-  { width: ws(69), show: true }, // best     "0:00.000"
+// Single source of truth for column order + widths (px at scale 1). Order here
+// MUST match the render order in DriverRow.tsx and StandingsHeader.tsx.
+interface ColSpec {
+  px: number;
+  show: boolean;
+  flex?: boolean; // the name column — minmax(NAME_MIN, 1fr)
+}
+
+const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
+  { px: 22, show: true }, // pos      "00" (fs lg, bold)
+  { px: 46, show: true }, // carNum   "#000" + cell padding
+  { px: NAME_NATURAL_PX, show: true, flex: true }, // name — flexes, never collapses
+  { px: 54, show: settings.showLicBadge }, // lic badge "A 4.99"
+  { px: 42, show: settings.showIRating }, // iRating  "9.9k"
+  { px: 42, show: settings.showIrChange }, // ΔiR     "+123"
+  { px: 28, show: settings.showLapsCompleted }, // laps "00"
+  { px: 38, show: settings.showPosChange }, // +/- pos  "▲12"
+  { px: 50, show: true }, // gap      "+123.4" / "12 L"
+  { px: 82, show: true }, // last     "--:--.---" (9 chars mono)
+  { px: 82, show: true }, // best     "--:--.---" (9 chars mono)
+  { px: 36, show: settings.showBrand }, // brand    "MERC" — at end
+  { px: 30, show: settings.showTire }, // tire     badge — at end
 ];
 
 export const buildGridTemplate = (settings: StandingsWidgetSettings): string =>
-  buildColDefs(settings)
+  colSpecs(settings)
     .filter((col) => col.show)
-    .map((col) => col.width)
+    .map((col) => (col.flex ? `minmax(${ws(NAME_MIN_PX)}, 1fr)` : ws(col.px)))
     .join(' ');
+
+// Natural content width of the currently-visible columns (px at scale 1).
+// Used as the widget's designWidth so hiding columns shrinks the widget WITHOUT
+// shrinking text: --wfs = currentWidth / designWidth stays put when both move
+// together (see resolveStandingsLayout in widget-defaults).
+export const computeStandingsDesignWidth = (
+  settings: StandingsWidgetSettings
+): number => {
+  const visible = colSpecs(settings).filter((col) => col.show);
+  const columnsWidth = visible.reduce((sum, col) => sum + col.px, 0);
+  const gaps = Math.max(0, visible.length - 1) * COL_GAP_PX;
+
+  return Math.round(columnsWidth + gaps + ROW_PAD_X_PX * 2);
+};
 
 interface DriverLapInfo {
   lap: number;

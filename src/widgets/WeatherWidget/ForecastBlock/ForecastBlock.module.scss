@@ -3,31 +3,31 @@
   flex-direction: column;
   gap: 1px;
   width: 100%;
-  margin-top: ws(4);
+  margin-top: sp(xxs);
 }
 
 .forecastRow {
   display: grid;
   grid-template-columns: ws(34) 1fr ws(56);
   align-items: center;
-  gap: ws(4);
+  gap: sp(xxs);
   font-family: $font-mono;
-  padding: ws(4) ws(6);
+  padding: sp(xxs) sp(xs);
   background: rgba(0, 0, 0, $opacity-medium);
   border-left: 3px solid rgba(255, 255, 255, $opacity-subtle);
   opacity: 0.5;
-  font-size: ws(12);
+  font-size: fs(xs);
 }
 
 .forecastTime {
-  font-size: ws(10);
+  font-size: fs(xxxs);
   color: $widget-text-muted;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .forecastSkies {
-  font-size: ws(11);
+  font-size: fs(xxs);
   color: $widget-text-primary;
   font-weight: 600;
   overflow: hidden;
@@ -43,14 +43,14 @@
 }
 
 .forecastTemp {
-  font-size: ws(13);
+  font-size: fs(sm);
   font-weight: 700;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
 }
 
 .forecastWind {
-  font-size: ws(9);
+  font-size: fs(xxxs);
   color: $widget-text-muted;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;

@@ -74,7 +74,6 @@ export const setupOverlayListeners = async (
       runInAction(() => root.appSettings.setOverlayMonitorIndex(e.payload));
     })
   );
-
   return unlistens;
 };
 

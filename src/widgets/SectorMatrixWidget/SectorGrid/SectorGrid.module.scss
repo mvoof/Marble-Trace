@@ -8,23 +8,23 @@
 
 .grid {
   display: grid;
-  gap: ws(4);
-  padding: ws(0) ws(8);
+  gap: sp(xxs);
+  padding: 0 sp(sm);
 }
 
 .chip {
-  padding: ws(4) ws(6);
+  padding: sp(xxs) sp(xs);
   background: rgba(255, 255, 255, 0.04);
   border-left: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 1px;
   display: flex;
   flex-direction: column;
-  gap: ws(2);
+  gap: sp(xxxs);
   min-width: 0;
 }
 
 .chipCurrent {
-  background: rgba(34, 197, 94, 0.1);
+  background: $widget-tint-positive;
 }
 
 .chipFuture {
@@ -40,7 +40,7 @@
 
 .sectorLabel {
   font-family: $font-mono;
-  font-size: ws(9);
+  font-size: fs(xxxs);
   font-weight: 800;
   letter-spacing: 0.12em;
 }
@@ -57,14 +57,14 @@
 
 .sectorDelta {
   font-family: $font-mono;
-  font-size: ws(13);
+  font-size: fs(sm);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
 .chipTime {
   font-family: $font-mono;
-  font-size: ws(13);
+  font-size: fs(sm);
   font-weight: 700;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;

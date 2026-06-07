@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: ws(6);
-  padding: ws(5) ws(8);
+  gap: sp(xs);
+  padding: sp(xs) sp(sm);
   position: relative;
   width: 100%;
   animation: lapFlashFade linear forwards;
@@ -39,7 +39,7 @@
 }
 
 .best {
-  font-size: ws(14);
+  font-size: fs(md);
   white-space: nowrap;
   color: $widget-text-best-lap;
 }
@@ -48,13 +48,13 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: ws(4);
+  gap: sp(xxs);
   white-space: nowrap;
 }
 
 .lapTime {
   font-family: $font-mono;
-  font-size: ws(26);
+  font-size: fs(xxl);
   font-weight: 700;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
@@ -63,7 +63,7 @@
 
 .lapDelta {
   font-family: $font-mono;
-  font-size: ws(22);
+  font-size: fs(xl);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;

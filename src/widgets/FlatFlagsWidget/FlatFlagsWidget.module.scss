@@ -13,9 +13,9 @@
 }
 
 .header {
-  padding: ws(10) ws(14) ws(6);
+  padding: sp(md) sp(lg) sp(xs);
   font-family: $font-mono;
-  font-size: ws(11);
+  font-size: fs(xxs);
   color: $widget-text-muted;
   letter-spacing: 2px;
   font-weight: 600;

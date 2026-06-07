@@ -4,7 +4,7 @@
   justify-content: center;
   width: ws(14);
   height: ws(14);
-  border-radius: 4px;
+  border-radius: radius(md);
   flex-shrink: 0;
   border: 1px solid transparent;
 }
@@ -26,8 +26,8 @@
 }
 
 .blue {
-  background: rgba(#2563eb, 0.25);
-  border-color: rgba(#60a5fa, 0.6);
+  background: rgba($race-blue, 0.2);
+  border-color: rgba($race-blue, 0.6);
 }
 
 .meatball {
@@ -50,10 +50,10 @@
 
 .penalty {
   background: rgba(0, 0, 0, 0.35);
-  border-color: rgba(#fbbf24, 0.6);
+  border-color: rgba($race-yellow, 0.6);
 }
 
 .dq {
-  background: rgba(#ef4444, 0.2);
-  border-color: rgba(#ef4444, 0.6);
+  background: rgba($race-red, 0.2);
+  border-color: rgba($race-red, 0.6);
 }

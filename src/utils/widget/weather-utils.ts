@@ -7,7 +7,7 @@ import {
 
 export const getWindColor = (mps: number | null): string => {
   if (mps === null) {
-    return '#3399ff';
+    return '#3b82f6';
   }
 
   if (mps > 8) {
@@ -15,10 +15,10 @@ export const getWindColor = (mps: number | null): string => {
   }
 
   if (mps > 4) {
-    return '#ffcc00';
+    return '#eab308';
   }
 
-  return '#3399ff';
+  return '#3b82f6';
 };
 
 export interface TrackWetnessInfo {
@@ -34,22 +34,22 @@ export const getTrackWetnessInfo = (
 
   switch (wetness) {
     case 0:
-      return { label: 'UNKNOWN', color: '#7d8794', isWet: false };
+      return { label: 'UNKNOWN', color: '#9ca3af', isWet: false };
     case 1:
-      return { label: 'DRY', color: '#a57d27', isWet: false };
+      return { label: 'DRY', color: '#f59e0b', isWet: false };
     case 2:
-      return { label: 'MOSTLY DRY', color: '#82a860', isWet: false };
+      return { label: 'MOSTLY DRY', color: '#10b981', isWet: false };
     case 3:
-      return { label: 'V. LIGHT WET', color: '#5f8fc4', isWet: true };
+      return { label: 'V. LIGHT WET', color: '#60a5fa', isWet: true };
     case 4:
-      return { label: 'LIGHTLY WET', color: '#4d78b8', isWet: true };
+      return { label: 'LIGHTLY WET', color: '#3b82f6', isWet: true };
     case 5:
-      return { label: 'MOD. WET', color: '#3d60a0', isWet: true };
+      return { label: 'MOD. WET', color: '#2563eb', isWet: true };
     case 6:
-      return { label: 'VERY WET', color: '#b87030', isWet: true };
+      return { label: 'VERY WET', color: '#f97316', isWet: true };
     case 7:
     default:
-      return { label: 'EXT. WET', color: '#b04040', isWet: true };
+      return { label: 'EXT. WET', color: '#ef4444', isWet: true };
   }
 };
 

@@ -29,20 +29,12 @@ export const StandingsHeader = observer(() => {
       </StandingsHeaderCell>
       <StandingsHeaderCell>Driver</StandingsHeaderCell>
 
-      {settings.showBrand && (
-        <StandingsHeaderCell align="center">Brand</StandingsHeaderCell>
-      )}
-
-      {settings.showTire && (
-        <StandingsHeaderCell align="center">Tire</StandingsHeaderCell>
-      )}
-
       {settings.showLicBadge && (
-        <StandingsHeaderCell align="left">Lic</StandingsHeaderCell>
+        <StandingsHeaderCell align="center">Lic</StandingsHeaderCell>
       )}
 
       {settings.showIRating && (
-        <StandingsHeaderCell align="right">iR</StandingsHeaderCell>
+        <StandingsHeaderCell align="center">iR</StandingsHeaderCell>
       )}
 
       {settings.showIrChange && (
@@ -62,9 +54,17 @@ export const StandingsHeader = observer(() => {
         <StandingsHeaderCell align="center">+/-</StandingsHeaderCell>
       )}
 
-      <StandingsHeaderCell align="right">Gap</StandingsHeaderCell>
-      <StandingsHeaderCell align="right">Last</StandingsHeaderCell>
-      <StandingsHeaderCell align="right">Best</StandingsHeaderCell>
+      <StandingsHeaderCell align="center">Gap</StandingsHeaderCell>
+      <StandingsHeaderCell align="center">Last</StandingsHeaderCell>
+      <StandingsHeaderCell align="center">Best</StandingsHeaderCell>
+
+      {settings.showBrand && (
+        <StandingsHeaderCell align="center">Brand</StandingsHeaderCell>
+      )}
+
+      {settings.showTire && (
+        <StandingsHeaderCell align="center">Tire</StandingsHeaderCell>
+      )}
     </div>
   );
 });

@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 ws(5) ws(10);
+  padding: 0 sp(xs) sp(md);
   width: 100%;
 }
 
@@ -25,15 +25,15 @@
 }
 
 .airTempValue {
-  font-size: ws(22);
+  font-size: fs(xl);
   font-weight: 700;
   color: #ffffff;
   line-height: 1;
 }
 
 .unit {
-  font-size: ws(13);
+  font-size: fs(sm);
   font-weight: 500;
-  margin-left: ws(2);
+  margin-left: sp(xxxs);
   color: #ffffff;
 }

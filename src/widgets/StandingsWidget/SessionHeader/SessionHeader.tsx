@@ -77,7 +77,7 @@ export const SessionHeader = observer(() => {
       <div className={styles.sessionRight}>
         {settings.showSOF && (
           <span className={styles.statPill}>
-            <Trophy size={11} color="#eab308" />
+            <Trophy size={11} color="currentColor" className={styles.iconSof} />
 
             <span className={styles.statLabel}>SOF</span>
 
@@ -89,7 +89,11 @@ export const SessionHeader = observer(() => {
 
         {settings.showTotalDrivers && (
           <span className={styles.statPill}>
-            <Users size={11} color="#9ca3af" />
+            <Users
+              size={11}
+              color="currentColor"
+              className={styles.iconMuted}
+            />
             <span className={styles.statValue}>{driverEntries.length}</span>
           </span>
         )}
@@ -104,10 +108,11 @@ export const SessionHeader = observer(() => {
           >
             <TriangleAlert
               size={11}
-              color={
+              color="currentColor"
+              className={
                 playerIncidents >= NEAR_DQ_INCIDENT_THRESHOLD
-                  ? '#ef4444'
-                  : '#f59e0b'
+                  ? styles.iconDanger
+                  : styles.iconWarning
               }
             />
 

@@ -2,12 +2,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: ws(8) ws(8) ws(2);
+  padding: sp(sm) sp(sm) sp(xxxs);
 }
 
 .sessionLabel {
   font-family: $font-mono;
-  font-size: ws(10);
+  font-size: fs(xxxs);
   color: $widget-text-secondary;
   letter-spacing: 1px;
 }

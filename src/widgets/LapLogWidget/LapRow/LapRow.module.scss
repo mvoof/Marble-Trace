@@ -1,29 +1,29 @@
 .row {
   display: grid;
   grid-template-columns: ws(36) auto 1fr;
-  gap: ws(4);
+  gap: sp(xxs);
   align-items: baseline;
-  padding: ws(2) ws(6);
+  padding: sp(xxxs) sp(xs);
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   background: transparent;
 }
 
 .rowLive {
-  background: rgba(34, 197, 94, 0.06);
+  background: $widget-tint-positive-subtle;
 }
 .rowBest {
-  background: rgba(192, 132, 252, 0.05);
+  background: $widget-tint-best-lap;
 }
 
 .lapNum {
   font-family: $font-mono;
-  font-size: ws(10);
+  font-size: fs(xxxs);
   font-weight: 800;
   letter-spacing: 0.1em;
   color: $widget-text-secondary;
   display: flex;
   align-items: baseline;
-  gap: ws(2);
+  gap: sp(xxxs);
 }
 
 .lapNumLive {
@@ -34,12 +34,12 @@
 }
 
 .liveIcon {
-  margin-right: ws(2);
+  margin-right: sp(xxxs);
 }
 
 .lapTime {
   font-family: $font-mono;
-  font-size: ws(14);
+  font-size: fs(md);
   font-weight: 700;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
@@ -52,19 +52,19 @@
 
 .lapTimeInvalid {
   color: $widget-status-danger;
-  font-size: ws(10);
+  font-size: fs(xxxs);
 }
 
 .deltaCell {
   display: flex;
   align-items: baseline;
-  gap: ws(4);
+  gap: sp(xxs);
   justify-content: flex-end;
 }
 
 .delta {
   font-family: $font-mono;
-  font-size: ws(12);
+  font-size: fs(xs);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: right;
