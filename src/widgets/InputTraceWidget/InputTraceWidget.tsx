@@ -17,13 +17,7 @@ export const InputTraceWidget = observer(() => {
   const barsEffectivelyHidden =
     !settings.showThrottle && !settings.showBrake && !settings.showClutch;
 
-  const traceHasContent =
-    settings.showThrottle ||
-    settings.showBrake ||
-    settings.showClutch ||
-    settings.showSteering;
-
-  const showTrace = settings.showTrace && traceHasContent;
+  const showTrace = settings.showTrace;
 
   const allHidden =
     !showTrace && !settings.showSteering && barsEffectivelyHidden;
