@@ -1,6 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
+import { load } from '@tauri-apps/plugin-store';
 import { getVersion } from '@tauri-apps/api/app';
 
 const DEFAULT_APP_SETTINGS = {
@@ -211,5 +212,13 @@ export class AppSettingsStore {
 
   setOverlayMonitorIndex(value: number | null) {
     this.appSettings.overlayMonitorIndex = value;
+  }
+
+  async resetSettings() {
+    const store = await load('settings.json');
+
+    await store.clear();
+    await store.save();
+    await relaunch();
   }
 }

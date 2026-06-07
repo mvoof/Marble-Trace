@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Switch, Segmented, message, Select } from 'antd';
+import { Button, Switch, Segmented, message, Select, Popconfirm } from 'antd';
 import type { UnitSystem } from '@/types';
 import { downloadSnapshot } from '@/storybook/capture-snapshot';
 import { useTelemetryStore } from '@store/root-store-context';
 import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
-import { RefreshCw, ArrowUpCircle, AlertCircle, Clock } from 'lucide-react';
+import {
+  RefreshCw,
+  ArrowUpCircle,
+  AlertCircle,
+  Clock,
+  RotateCcw,
+} from 'lucide-react';
 import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/ReleaseNotesButton';
 import { availableMonitors } from '@tauri-apps/api/window';
 import type { Monitor } from '@tauri-apps/api/window';
@@ -310,6 +316,34 @@ export const SettingsPage = observer(() => {
                   : 'Check for Updates'}
               </Button>
             )}
+          </div>
+        </div>
+      </Card>
+
+      <Card title="Reset">
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>Reset All Settings</div>
+
+              <div className={styles.fieldDesc}>
+                Clears all widget positions, sizes, and preferences. The app
+                will restart automatically.
+              </div>
+            </div>
+
+            <Popconfirm
+              title="Reset all settings?"
+              description="Widget layout and all preferences will be lost."
+              okText="Reset & Restart"
+              okButtonProps={{ danger: true }}
+              cancelText="Cancel"
+              onConfirm={() => void appSettings.resetSettings()}
+            >
+              <Button danger icon={<RotateCcw size={16} />}>
+                Reset Settings
+              </Button>
+            </Popconfirm>
           </div>
         </div>
       </Card>
