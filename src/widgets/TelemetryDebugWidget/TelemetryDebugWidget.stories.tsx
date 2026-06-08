@@ -1,44 +1,41 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import type { TelemetryStatus } from '@/types';
 import { TelemetryDebugWidget } from './TelemetryDebugWidget';
-import { widgetDecorator } from '@/storybook/widgetDecorator';
-import { withStore } from '../../../.storybook/decorators';
-import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
+import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
-const meta: Meta<typeof TelemetryDebugWidget> = {
+interface StoryArgs {
+  status: TelemetryStatus;
+}
+
+const meta: Meta<StoryArgs> = {
   title: 'Widgets/TelemetryDebugWidget',
-  component: TelemetryDebugWidget,
-  parameters: { layout: 'centered' },
-  decorators: [withStore(seedFromSnapshot), widgetDecorator({ width: 420 })],
+  ...defineWidgetStories<StoryArgs>({
+    widget: TelemetryDebugWidget,
+    size: { width: 420 },
+    seedSnapshot: true,
+    seed: (store, args) => {
+      store.telemetryConnection.status = args.status;
+    },
+    args: { status: 'connected' },
+    argTypes: {
+      status: {
+        control: 'radio',
+        options: ['connected', 'disconnected', 'error'],
+      },
+    },
+  }),
 };
 
 export default meta;
-type Story = StoryObj<typeof TelemetryDebugWidget>;
+type Story = StoryObj<StoryArgs>;
 
-export const Connected: Story = {
-  decorators: [
-    withStore((store) => {
-      seedFromSnapshot(store);
-      store.telemetryConnection.status = 'connected';
-    }),
-    widgetDecorator({ width: 420 }),
-  ],
-};
+export const Connected: Story = {};
 
 export const Disconnected: Story = {
-  decorators: [
-    withStore((store) => {
-      store.telemetryConnection.status = 'disconnected';
-    }),
-    widgetDecorator({ width: 420 }),
-  ],
+  args: { status: 'disconnected' },
 };
 
-export const Error: Story = {
-  decorators: [
-    withStore((store) => {
-      store.telemetryConnection.status = 'error';
-    }),
-    widgetDecorator({ width: 420 }),
-  ],
+export const ConnectionError: Story = {
+  args: { status: 'error' },
 };

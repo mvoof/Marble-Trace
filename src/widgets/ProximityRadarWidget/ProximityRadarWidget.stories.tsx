@@ -1,16 +1,8 @@
-import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { runInAction } from 'mobx';
 
 import type { ProximityFrame } from '@/types/bindings';
-import type { BackendComputedStore } from '@store/iracing/computed.store';
-import { useBackendComputedStore } from '@store/root-store-context';
 import { ProximityRadarWidget } from './ProximityRadarWidget';
-import { widgetDecorator } from '@/storybook/widgetDecorator';
-import { withStore } from '../../../.storybook/decorators';
-
-const DESIGN_WIDTH = 200;
-const DESIGN_HEIGHT = 300;
+import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
 const NO_CARS: ProximityFrame = {
   nearbyCars: [],
@@ -28,35 +20,20 @@ interface StoryArgs {
   proximity: ProximityFrame;
 }
 
-const applyArgs = (computed: BackendComputedStore, args: StoryArgs) => {
-  runInAction(() => {
-    computed.updateProximity(args.proximity);
-  });
-};
-
-const StoryHost = (args: StoryArgs) => {
-  const computed = useBackendComputedStore();
-
-  useLayoutEffect(() => {
-    applyArgs(computed, args);
-  }, [args, computed]);
-
-  return <ProximityRadarWidget />;
-};
-
-const meta: Meta<typeof StoryHost> = {
+const meta: Meta<StoryArgs> = {
   title: 'Widgets/ProximityRadarWidget',
-  component: StoryHost,
-  parameters: { layout: 'centered' },
-  decorators: [
-    withStore(),
-    widgetDecorator({ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }),
-  ],
-  args: { proximity: NO_CARS },
+  ...defineWidgetStories<StoryArgs>({
+    widget: ProximityRadarWidget,
+    size: { width: 200, height: 300 },
+    seed: (store, args) => {
+      store.backendComputed.updateProximity(args.proximity);
+    },
+    args: { proximity: NO_CARS },
+  }),
 };
 
 export default meta;
-type Story = StoryObj<typeof StoryHost>;
+type Story = StoryObj<StoryArgs>;
 
 export const NoCars: Story = {};
 

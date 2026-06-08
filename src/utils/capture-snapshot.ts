@@ -1,5 +1,5 @@
 import type { TelemetryStore } from '@store/iracing/telemetry.store';
-import type { TelemetrySnapshot } from './snapshot.types';
+import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
 
 const captureSnapshot = (
   telemetryStore: TelemetryStore

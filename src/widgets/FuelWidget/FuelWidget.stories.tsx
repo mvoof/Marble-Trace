@@ -1,20 +1,9 @@
-import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { runInAction } from 'mobx';
 
 import type { FuelComputedFrame } from '@/types/bindings';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
-import type { BackendComputedStore } from '@store/iracing/computed.store';
-import type { TelemetryStore } from '@store/iracing/telemetry.store';
-import type { WidgetSettingsStore } from '@store/widget-settings.store';
-import {
-  useBackendComputedStore,
-  useTelemetryStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
 import { FuelWidget } from './FuelWidget';
-import { widgetDecorator } from '@/storybook/widgetDecorator';
-import { withStore } from '../../../.storybook/decorators';
+import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
 const LAP_FUEL_HISTORY = [
   3.2, 3.1, 3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3,
@@ -42,103 +31,73 @@ interface StoryArgs {
   pitWarningLaps: number;
 }
 
-const applyArgs = (
-  stores: {
-    computed: BackendComputedStore;
-    telemetry: TelemetryStore;
-    widgetSettings: WidgetSettingsStore;
-  },
-  args: StoryArgs
-) => {
-  runInAction(() => {
-    stores.telemetry.updateCarStatus({
-      fuel_level: args.fuelLevel,
-    } as Parameters<typeof stores.telemetry.updateCarStatus>[0]);
-
-    stores.telemetry.updateSessionInfo({
-      DriverInfo: { DriverCarFuelMaxLtr: args.fuelMax },
-    } as Parameters<typeof stores.telemetry.updateSessionInfo>[0]);
-
-    stores.computed.updateFuel({
-      avgPerLap: args.avgPerLap,
-      lapsRemaining: args.lapsRemaining,
-      lapsToFinish: args.lapsRemaining,
-      shortage: args.shortage,
-      fuelToAdd: args.fuelToAddWithBuffer,
-      fuelToAddWithBuffer: args.fuelToAddWithBuffer,
-      fuelSavePerLap: null,
-      pitWarning: args.pitWarning,
-      pitWindowStart: args.pitWindowStart,
-      pitWindowEnd: args.pitWindowEnd,
-      isTimedRace: false,
-      lapFuelHistory: args.lapFuelHistory,
-    } as FuelComputedFrame);
-
-    stores.widgetSettings.updateUserSettings('fuel', {
-      ...stores.widgetSettings.getSettings<FuelWidgetSettings>('fuel'),
-      showChart: args.showChart,
-      chartType: args.chartType,
-      barWidth: args.barWidth,
-      pitWarningLaps: args.pitWarningLaps,
-    });
-  });
-};
-
-const StoryHost = (args: StoryArgs) => {
-  const computed = useBackendComputedStore();
-  const telemetry = useTelemetryStore();
-  const widgetSettings = useWidgetSettingsStore();
-
-  useLayoutEffect(() => {
-    applyArgs({ computed, telemetry, widgetSettings }, args);
-  }, [args, computed, telemetry, widgetSettings]);
-
-  return <FuelWidget />;
-};
-
-const meta: Meta<typeof StoryHost> = {
+const meta: Meta<StoryArgs> = {
   title: 'Widgets/FuelWidget',
-  component: StoryHost,
-  parameters: { layout: 'centered' },
-  decorators: [withStore(), widgetDecorator({ width: 280 })],
-  args: {
-    fuelLevel: 28.5,
-    fuelMax: 55.0,
-    avgPerLap: 3.15,
-    lapsRemaining: 9.0,
-    shortage: 2.3,
-    fuelToAddWithBuffer: null,
-    pitWarning: false,
-    pitWindowStart: null,
-    pitWindowEnd: null,
-    showChart: false,
-    chartType: 'line',
-    barWidth: 5,
-    lapFuelHistory: LAP_FUEL_HISTORY,
-    pitWarningLaps: 3,
-  },
-  argTypes: {
-    barWidth: {
-      control: { type: 'range', min: 5, max: 20, step: 1 },
+  ...defineWidgetStories<StoryArgs>({
+    widget: FuelWidget,
+    size: { width: 240, height: 360 },
+    seed: (store, args) => {
+      store.telemetry.updateCarStatus({
+        fuel_level: args.fuelLevel,
+      } as Parameters<typeof store.telemetry.updateCarStatus>[0]);
+
+      store.telemetry.updateSessionInfo({
+        DriverInfo: { DriverCarFuelMaxLtr: args.fuelMax },
+      } as Parameters<typeof store.telemetry.updateSessionInfo>[0]);
+
+      store.backendComputed.updateFuel({
+        avgPerLap: args.avgPerLap,
+        lapsRemaining: args.lapsRemaining,
+        lapsToFinish: args.lapsRemaining,
+        shortage: args.shortage,
+        fuelToAdd: args.fuelToAddWithBuffer,
+        fuelToAddWithBuffer: args.fuelToAddWithBuffer,
+        fuelSavePerLap: null,
+        pitWarning: args.pitWarning,
+        pitWindowStart: args.pitWindowStart,
+        pitWindowEnd: args.pitWindowEnd,
+        isTimedRace: false,
+        lapFuelHistory: args.lapFuelHistory,
+      } as FuelComputedFrame);
+
+      store.widgetSettings.updateUserSettings('fuel', {
+        ...store.widgetSettings.getSettings<FuelWidgetSettings>('fuel'),
+        showChart: args.showChart,
+        chartType: args.chartType,
+        barWidth: args.barWidth,
+        pitWarningLaps: args.pitWarningLaps,
+      });
     },
-    chartType: {
-      control: 'inline-radio',
-      options: ['line', 'bar'],
+    args: {
+      fuelLevel: 28.5,
+      fuelMax: 55.0,
+      avgPerLap: 3.15,
+      lapsRemaining: 9.0,
+      shortage: 2.3,
+      fuelToAddWithBuffer: null,
+      pitWarning: false,
+      pitWindowStart: null,
+      pitWindowEnd: null,
+      showChart: false,
+      chartType: 'line',
+      barWidth: 5,
+      lapFuelHistory: LAP_FUEL_HISTORY,
+      pitWarningLaps: 3,
     },
-  },
+    argTypes: {
+      barWidth: { control: { type: 'range', min: 5, max: 20, step: 1 } },
+      chartType: { control: 'inline-radio', options: ['line', 'bar'] },
+    },
+  }),
 };
 
 export default meta;
-type Story = StoryObj<typeof StoryHost>;
+type Story = StoryObj<StoryArgs>;
 
 export const Comfortable: Story = {};
 
 export const CustomBarWidth: Story = {
-  args: {
-    showChart: true,
-    chartType: 'bar',
-    barWidth: 12,
-  },
+  args: { showChart: true, chartType: 'bar', barWidth: 12 },
 };
 
 export const LowFuel: Story = {
@@ -174,11 +133,7 @@ export const WithLineChart: Story = {
 };
 
 export const WithBarChart: Story = {
-  args: {
-    showChart: true,
-    chartType: 'bar',
-    lapFuelHistory: LAP_FUEL_HISTORY,
-  },
+  args: { showChart: true, chartType: 'bar', lapFuelHistory: LAP_FUEL_HISTORY },
 };
 
 export const NoChart: Story = {

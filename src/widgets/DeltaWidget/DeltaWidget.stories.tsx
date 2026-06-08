@@ -3,135 +3,87 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
 import type { LapDeltaFrame } from '@/types/bindings';
-import type { BackendComputedStore } from '@store/iracing/computed.store';
-import type { LapStore } from '@store/iracing/lap.store';
-import type { TelemetryStore } from '@store/iracing/telemetry.store';
-import type { WidgetSettingsStore } from '@store/widget-settings.store';
-import {
-  useBackendComputedStore,
-  useLapStore,
-  useTelemetryStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { useStore } from '@store/root-store-context';
 import { LapFlash } from './LapFlash/LapFlash';
 import { DeltaWidget } from './DeltaWidget';
-import { widgetDecorator } from '@/storybook/widgetDecorator';
-import { withStore } from '../../../.storybook/decorators';
+import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
-const applyStores = (stores: {
-  computed: BackendComputedStore;
-  widgetSettings: WidgetSettingsStore;
-}) => {
-  runInAction(() => {
-    stores.widgetSettings.updateUserSettings('delta', {
-      reference: 'personal_best',
-      showLapFlash: false,
-    });
+const EMPTY_LAP_DELTA = {
+  sectorTimes: [],
+  currentSectorIdx: 0,
+  sectorDeltas: [],
+} as LapDeltaFrame;
 
-    stores.computed.updateLapDelta({
-      sectorTimes: [],
-      currentSectorIdx: 0,
-      sectorDeltas: [],
-    } as LapDeltaFrame);
-  });
-};
-
-const StoryHost = () => {
-  const computed = useBackendComputedStore();
-  const widgetSettings = useWidgetSettingsStore();
-
-  useLayoutEffect(() => {
-    applyStores({ computed, widgetSettings });
-  }, [computed, widgetSettings]);
-
-  return <DeltaWidget />;
-};
-
-const applyBestLapStores = (stores: {
-  computed: BackendComputedStore;
-  widgetSettings: WidgetSettingsStore;
-  lap: LapStore;
-  telemetry: TelemetryStore;
-}) => {
-  runInAction(() => {
-    stores.widgetSettings.updateUserSettings('delta', {
-      reference: 'personal_best',
-      showLapFlash: true,
-      flashDuration: 999,
-    });
-
-    stores.computed.updateLapDelta({
-      sectorTimes: [],
-      currentSectorIdx: 0,
-      sectorDeltas: [],
-    } as LapDeltaFrame);
-
-    stores.lap.lastCompletedLap = { lapNum: 5, delta: -1.235 };
-    stores.lap.history = [
-      {
-        lapNum: 5,
-        lapTime: 89.342,
-        delta: -1.235,
-        isBest: true,
-      },
-    ];
-
-    stores.telemetry.lapTiming = {
-      ...(stores.telemetry.lapTiming ?? {}),
-      lap_last_lap_time: 89.342,
-      lap_best_lap_time: 89.342,
-    } as typeof stores.telemetry.lapTiming;
-  });
-};
-
-const BestLapHost = () => {
-  const computed = useBackendComputedStore();
-  const widgetSettings = useWidgetSettingsStore();
-  const lap = useLapStore();
-  const telemetry = useTelemetryStore();
-
-  useLayoutEffect(() => {
-    applyBestLapStores({ computed, widgetSettings, lap, telemetry });
-  }, [computed, widgetSettings, lap, telemetry]);
-
-  return <DeltaWidget />;
-};
-
-const meta: Meta<typeof StoryHost> = {
+const meta: Meta = {
   title: 'Widgets/DeltaWidget',
-  component: StoryHost,
-  parameters: { layout: 'centered' },
-  decorators: [
-    withStore(),
-    widgetDecorator({ display: 'inline-block', minWidth: 200 }),
-  ],
+  ...defineWidgetStories({
+    widget: DeltaWidget,
+    size: { width: 200, height: 100 },
+    seed: (store) => {
+      store.widgetSettings.updateUserSettings('delta', {
+        reference: 'personal_best',
+        showLapFlash: false,
+      });
+
+      store.backendComputed.updateLapDelta(EMPTY_LAP_DELTA);
+    },
+  }),
 };
 
 export default meta;
-type Story = StoryObj<typeof StoryHost>;
+type Story = StoryObj;
 
 export const Default: Story = {};
 
-export const BestLap: StoryObj = {
+const BestLapHost = () => {
+  const store = useStore();
+
+  useLayoutEffect(() => {
+    runInAction(() => {
+      store.widgetSettings.updateUserSettings('delta', {
+        reference: 'personal_best',
+        showLapFlash: true,
+        flashDuration: 999,
+      });
+
+      store.backendComputed.updateLapDelta(EMPTY_LAP_DELTA);
+
+      store.lap.lastCompletedLap = { lapNum: 5, delta: -1.235 };
+      store.lap.history = [
+        { lapNum: 5, lapTime: 89.342, delta: -1.235, isBest: true },
+      ];
+
+      store.telemetry.lapTiming = {
+        ...(store.telemetry.lapTiming ?? {}),
+        lap_last_lap_time: 89.342,
+        lap_best_lap_time: 89.342,
+      } as typeof store.telemetry.lapTiming;
+    });
+  }, [store]);
+
+  return <DeltaWidget />;
+};
+
+export const BestLap: Story = {
   name: 'Best Lap Flash',
   render: () => <BestLapHost />,
 };
 
-export const FlashAhead: StoryObj = {
+export const FlashAhead: Story = {
   name: 'Flash: Ahead',
   render: () => (
     <LapFlash lapNum={12} lapTime={89.342} delta={-0.521} isBest={false} />
   ),
 };
 
-export const FlashBehind: StoryObj = {
+export const FlashBehind: Story = {
   name: 'Flash: Behind',
   render: () => (
     <LapFlash lapNum={12} lapTime={91.123} delta={0.812} isBest={false} />
   ),
 };
 
-export const FlashNewBest: StoryObj = {
+export const FlashNewBest: Story = {
   name: 'Flash: New Best',
   render: () => <LapFlash lapNum={12} lapTime={89.342} delta={-1.235} isBest />,
 };

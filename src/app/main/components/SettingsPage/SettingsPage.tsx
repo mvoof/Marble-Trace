@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Switch, Segmented, message, Select, Popconfirm } from 'antd';
 import type { UnitSystem } from '@/types';
-import { downloadSnapshot } from '@/storybook/capture-snapshot';
+import { downloadSnapshot } from '@/utils/capture-snapshot';
 import { useTelemetryStore } from '@store/root-store-context';
 import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
 import {

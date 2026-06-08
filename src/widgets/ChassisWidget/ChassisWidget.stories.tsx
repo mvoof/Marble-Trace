@@ -1,18 +1,9 @@
-import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { runInAction } from 'mobx';
 
 import type { ChassisFrame } from '@/types/bindings';
 import type { ChassisWidgetSettings } from '@/types/widget-settings';
-import type { TelemetryStore } from '@store/iracing/telemetry.store';
-import type { WidgetSettingsStore } from '@store/widget-settings.store';
-import {
-  useTelemetryStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
 import { ChassisWidget } from './ChassisWidget';
-import { widgetDecorator } from '@/storybook/widgetDecorator';
-import { withStore } from '../../../.storybook/decorators';
+import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
 // All pressure values in kPa, ride heights / shock deflections in meters, temps in °C
 
@@ -108,54 +99,38 @@ const buildChassisFrame = (args: StoryArgs): ChassisFrame => ({
   rr_brake_temp: args.rr.brakeTemp,
 });
 
-const applyArgs = (
-  stores: { telemetry: TelemetryStore; widgetSettings: WidgetSettingsStore },
-  args: StoryArgs
-) => {
-  runInAction(() => {
-    stores.telemetry.updateChassis(buildChassisFrame(args));
+const SUSPENSION_FRAME = { widgetFrame: { width: 400, height: 290 } };
 
-    stores.telemetry.updateCarStatus({
-      on_pit_road: args.onPitRoad,
-    } as Parameters<typeof stores.telemetry.updateCarStatus>[0]);
-
-    stores.widgetSettings.updateUserSettings('chassis', {
-      ...stores.widgetSettings.getSettings<ChassisWidgetSettings>('chassis'),
-      showSuspensionAndBrakes: args.showSuspensionAndBrakes,
-    });
-  });
-};
-
-const StoryHost = (args: StoryArgs) => {
-  const telemetry = useTelemetryStore();
-  const widgetSettings = useWidgetSettingsStore();
-
-  useLayoutEffect(() => {
-    applyArgs({ telemetry, widgetSettings }, args);
-  }, [args, telemetry, widgetSettings]);
-
-  return <ChassisWidget />;
-};
-
-const DEFAULT_ARGS: StoryArgs = {
-  lf: makeCorner(),
-  rf: makeCorner(),
-  lr: makeCorner({ wearL: 0.7, wearM: 0.72, wearR: 0.68 }),
-  rr: makeCorner({ wearL: 0.7, wearM: 0.72, wearR: 0.68 }),
-  onPitRoad: false,
-  showSuspensionAndBrakes: false,
-};
-
-const meta: Meta<typeof StoryHost> = {
+const meta: Meta<StoryArgs> = {
   title: 'Widgets/ChassisWidget',
-  component: StoryHost,
-  parameters: { layout: 'centered' },
-  decorators: [withStore(), widgetDecorator({ display: 'inline-block' })],
-  args: DEFAULT_ARGS,
+  ...defineWidgetStories<StoryArgs>({
+    widget: ChassisWidget,
+    size: { width: 280, height: 290 },
+    seed: (store, args) => {
+      store.telemetry.updateChassis(buildChassisFrame(args));
+
+      store.telemetry.updateCarStatus({
+        on_pit_road: args.onPitRoad,
+      } as Parameters<typeof store.telemetry.updateCarStatus>[0]);
+
+      store.widgetSettings.updateUserSettings('chassis', {
+        ...store.widgetSettings.getSettings<ChassisWidgetSettings>('chassis'),
+        showSuspensionAndBrakes: args.showSuspensionAndBrakes,
+      });
+    },
+    args: {
+      lf: makeCorner(),
+      rf: makeCorner(),
+      lr: makeCorner({ wearL: 0.7, wearM: 0.72, wearR: 0.68 }),
+      rr: makeCorner({ wearL: 0.7, wearM: 0.72, wearR: 0.68 }),
+      onPitRoad: true,
+      showSuspensionAndBrakes: false,
+    },
+  }),
 };
 
 export default meta;
-type Story = StoryObj<typeof StoryHost>;
+type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {};
 
@@ -175,13 +150,11 @@ export const OnPitRoad: Story = {
 
 export const WithSuspensionAndBrakes: Story = {
   args: { showSuspensionAndBrakes: true, onPitRoad: true },
+  parameters: SUSPENSION_FRAME,
 };
 
 export const Punctured: Story = {
-  args: {
-    lf: makeCorner({ pressureKpa: 30 }),
-    onPitRoad: true,
-  },
+  args: { lf: makeCorner({ pressureKpa: 30 }), onPitRoad: true },
 };
 
 export const BrakeOverheat: Story = {
@@ -219,6 +192,7 @@ export const UnevenWear: Story = {
 };
 
 export const FullSuspensionData: Story = {
+  parameters: SUSPENSION_FRAME,
   args: {
     showSuspensionAndBrakes: true,
     onPitRoad: true,

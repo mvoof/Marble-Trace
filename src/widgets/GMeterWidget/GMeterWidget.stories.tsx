@@ -1,20 +1,11 @@
-import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { runInAction } from 'mobx';
 
 import type {
   GMeterColorMode,
   GMeterDisplayMode,
 } from '@/types/widget-settings';
-import type { TelemetryStore } from '@store/iracing/telemetry.store';
-import type { WidgetSettingsStore } from '@store/widget-settings.store';
-import {
-  useTelemetryStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
 import { GMeterWidget } from './GMeterWidget';
-import { widgetDecorator } from '@/storybook/widgetDecorator';
-import { withStore } from '../../../.storybook/decorators';
+import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
 const G_CONSTANT = 9.80665;
 
@@ -26,58 +17,35 @@ interface StoryArgs {
   longG: number;
 }
 
-const applyArgs = (
-  stores: { telemetry: TelemetryStore; widgetSettings: WidgetSettingsStore },
-  args: StoryArgs
-) => {
-  runInAction(() => {
-    stores.telemetry.updateCarDynamics({
-      lat_accel: args.latG * G_CONSTANT,
-      long_accel: args.longG * G_CONSTANT,
-    } as Parameters<typeof stores.telemetry.updateCarDynamics>[0]);
-
-    stores.widgetSettings.updateUserSettings('g-meter', {
-      displayMode: args.displayMode,
-      scale: args.scale,
-      colorMode: args.colorMode,
-    });
-  });
-};
-
-const StoryHost = (args: StoryArgs) => {
-  const telemetry = useTelemetryStore();
-  const widgetSettings = useWidgetSettingsStore();
-
-  useLayoutEffect(() => {
-    applyArgs({ telemetry, widgetSettings }, args);
-  }, [args, telemetry, widgetSettings]);
-
-  return <GMeterWidget />;
-};
-
-const meta: Meta<typeof StoryHost> = {
+const meta: Meta<StoryArgs> = {
   title: 'Widgets/GMeter',
-  component: StoryHost,
-  parameters: { layout: 'centered' },
-  decorators: [
-    withStore(),
-    widgetDecorator({
-      width: 240,
-      height: 280,
-      background: 'rgba(21, 22, 26, 0.8)',
-    }),
-  ],
-  args: {
-    displayMode: 'fading',
-    scale: 4,
-    colorMode: 'advanced',
-    latG: 0,
-    longG: 0,
-  },
+  ...defineWidgetStories<StoryArgs>({
+    widget: GMeterWidget,
+    size: { width: 240, height: 280, background: 'rgba(21, 22, 26, 0.8)' },
+    seed: (store, args) => {
+      store.telemetry.updateCarDynamics({
+        lat_accel: args.latG * G_CONSTANT,
+        long_accel: args.longG * G_CONSTANT,
+      } as Parameters<typeof store.telemetry.updateCarDynamics>[0]);
+
+      store.widgetSettings.updateUserSettings('g-meter', {
+        displayMode: args.displayMode,
+        scale: args.scale,
+        colorMode: args.colorMode,
+      });
+    },
+    args: {
+      displayMode: 'fading',
+      scale: 4,
+      colorMode: 'advanced',
+      latG: 0,
+      longG: 0,
+    },
+  }),
 };
 
 export default meta;
-type Story = StoryObj<typeof StoryHost>;
+type Story = StoryObj<StoryArgs>;
 
 export const Idle: Story = {};
 

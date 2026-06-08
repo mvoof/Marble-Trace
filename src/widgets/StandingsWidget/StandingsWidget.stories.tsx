@@ -1,22 +1,10 @@
-import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { runInAction } from 'mobx';
 
 import type { DriverEntriesFrame } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import type { BackendComputedStore } from '@store/iracing/computed.store';
-import type { TelemetryStore } from '@store/iracing/telemetry.store';
-import type { WidgetSettingsStore } from '@store/widget-settings.store';
-import {
-  useBackendComputedStore,
-  useTelemetryStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
 import { driverEntries as RAW_ENTRIES, snapshot } from '@/storybook/test-data';
 import { StandingsWidget } from './StandingsWidget';
-import { widgetDecorator } from '@/storybook/widgetDecorator';
-import { withStore } from '../../../.storybook/decorators';
-import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
+import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
 const BASE_LAP_TIME = 92.3;
 const LAP_TIME_SPREAD_PER_POS = 0.35;
@@ -65,57 +53,34 @@ interface StoryArgs {
   activeClassIndex: number;
 }
 
-const applyArgs = (
-  stores: {
-    computed: BackendComputedStore;
-    telemetry: TelemetryStore;
-    widgetSettings: WidgetSettingsStore;
-  },
-  args: StoryArgs
-) => {
-  runInAction(() => {
-    stores.computed.updateStandings({
-      entries: DRIVER_ENTRIES,
-      playerCarIdx: PLAYER_CAR_IDX,
-    } as DriverEntriesFrame);
-
-    if (snapshot.sessionInfo) {
-      stores.telemetry.updateSessionInfo(snapshot.sessionInfo);
-    }
-
-    stores.widgetSettings.updateUserSettings('standings', args.settings);
-    stores.widgetSettings.standingsActiveClassIndex = args.activeClassIndex;
-  });
-};
-
-const StoryHost = (args: StoryArgs) => {
-  const computed = useBackendComputedStore();
-  const telemetry = useTelemetryStore();
-  const widgetSettings = useWidgetSettingsStore();
-
-  useLayoutEffect(() => {
-    applyArgs({ computed, telemetry, widgetSettings }, args);
-  }, [args, computed, telemetry, widgetSettings]);
-
-  return <StandingsWidget />;
-};
-
-const meta: Meta<typeof StoryHost> = {
+const meta: Meta<StoryArgs> = {
   title: 'Widgets/StandingsWidget',
-  component: StoryHost,
-  parameters: { layout: 'centered' },
-  decorators: [
-    withStore(seedFromSnapshot),
-    widgetDecorator({ width: 860, height: 450 }),
-  ],
-  args: {
-    settings: DEFAULT_SETTINGS,
-    activeClassIndex: 0,
-  },
+  ...defineWidgetStories<StoryArgs>({
+    widget: StandingsWidget,
+    size: { width: 796, height: 500 },
+    seedSnapshot: true,
+    seed: (store, args) => {
+      store.backendComputed.updateStandings({
+        entries: DRIVER_ENTRIES,
+        playerCarIdx: PLAYER_CAR_IDX,
+      } as DriverEntriesFrame);
+
+      if (snapshot.sessionInfo) {
+        store.telemetry.updateSessionInfo(snapshot.sessionInfo);
+      }
+
+      store.widgetSettings.updateUserSettings('standings', args.settings);
+      store.widgetSettings.standingsActiveClassIndex = args.activeClassIndex;
+    },
+    args: {
+      settings: DEFAULT_SETTINGS,
+      activeClassIndex: 0,
+    },
+  }),
 };
 
 export default meta;
-type Story = StoryObj<typeof StoryHost>;
+type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {};
 
