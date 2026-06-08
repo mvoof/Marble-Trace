@@ -43,22 +43,22 @@ Most iRacing overlays are either bloated desktop apps or locked behind subscript
 ## Featured Widgets
 
 - [Speed & RPM](#speed--rpm) — HUD with gear, RPM ring & tire temps
-- [Standings](#standings) — Race table with deltas & multi-class
 - [Input Trace](#input-trace) — Real-time pedal history or bars
+- [Standings](#standings) — Race table with deltas & multi-class
 - [Relative](#relative) — F3-style timing with closing trends
+- [Track Map](#track-map) — SVG map with live positions & sectors
+- [Proximity Radar](#proximity-radar) — 360° awareness & bumper gaps
+- [Radar Bar](#radar-bar) — Edge indicators for side-by-side
+- [Chassis](#chassis) — Brake temps & suspension data
+- [Fuel](#fuel) — Consumption graph & pit-stop math
 - [Delta HUD](#delta-hud) — Live delta vs any reference lap with lap flash card
 - [Sector Matrix](#sector-matrix) — Per-sector times, delta chips & predicted finish
 - [Lap Log](#lap-log) — Rolling lap history table with delta column
-- [Fuel](#fuel) — Consumption graph & pit-stop math
 - [Timer](#timer) — Session clock & laps-to-go
-- [Track Map](#track-map) — SVG map with live positions & sectors
-- [Relative Map](#relative-map) — 1-D relative track position
-- [Proximity Radar](#proximity-radar) — 360° awareness & bumper gaps
-- [Radar Bar](#radar-bar) — Edge indicators for side-by-side
-- [Flags (LED/Flat)](#flags-led--flat) — Matrix and pill-style indicators
-- [G-Meter](#g-meter) — Lateral & longitudinal friction circle
-- [Chassis](#chassis) — Brake temps & suspension data
 - [Weather](#weather) — Live conditions & dynamic forecast
+- [Flags (LED/Flat)](#flags-led--flat) — Matrix and pill-style indicators
+- [Relative Map](#relative-map) — 1-D relative track position
+- [G-Meter](#g-meter) — Lateral & longitudinal friction circle
 
 ---
 
@@ -68,33 +68,32 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ### Speed & RPM
 
-> Your central driving HUD. A circular RPM ring fills up as you rev — it flashes red when you hit the shift point so you never miss a gear. Shows current gear, speed, and an active pit-limiter indicator. Optionally displays tire and brake temperatures per corner so you know exactly when your rubber is up to temperature or overheating.
+Your central driving HUD. A circular RPM ring fills up as you rev — it flashes red when you hit the shift point so you never miss a gear. Shows current gear, speed, and an active pit-limiter indicator. Optionally displays tire and brake temperatures per corner so you know exactly when your rubber is up to temperature or overheating.
 
 ![Speed widget — high RPM](docs/assets/screenshots/widgets/speed-widget.png)
-![Speed widget — with temps](docs/assets/screenshots/widgets/speed-widget-limiter.png)
 
 ---
 
 ### Input Trace
 
-> Watch your throttle, brake, and clutch inputs scroll in real time. The horizontal trace mode shows a rolling history so you can see exactly where you're trail-braking, blipping, or lifting early. Switch to vertical bars for a clean side-by-side view of all three pedals at once. Great for comparing your technique corner by corner.
+Watch your throttle, brake, and clutch inputs scroll in real time. The horizontal trace mode shows a rolling history so you can see exactly where you're trail-braking, blipping, or lifting early. Switch to vertical bars for a clean side-by-side view of all three pedals at once. Great for comparing your technique corner by corner.
 
 ![Input Trace — horizontal](docs/assets/screenshots/widgets/input-trace-widget.png)
-![Input Trace — vertical bars](docs/assets/screenshots/widgets/input-trace-vertical.png)
 
 ---
 
 ### Standings
 
-> Full race standings table with multi-class support, SOF, qualify deltas, brand & tire info, and a configurable row budget. All columns visible at once or stripped to essentials.
+Full race standings table with multi-class support, SOF, qualify deltas, brand & tire info, and a configurable row budget. All columns visible at once or stripped to essentials. Switch between the combined leaderboard and a single-class group view with its own SOF and field size.
 
 ![Standings — all columns](docs/assets/screenshots/widgets/standings-widget.png)
+![Standings — single-class group](docs/assets/screenshots/widgets/standings-widget-group.png)
 
 ---
 
 ### Relative
 
-> Relative timing sorted by F2Time — player always centred. Closing/gap trend arrows, lap status (lapping/lapped), class stripes.
+Relative timing sorted by F2Time — player always centred. Closing/gap trend arrows, lap status (lapping/lapped), class stripes.
 
 ![Relative widget](docs/assets/screenshots/widgets/relative-widget.png)
 
@@ -102,7 +101,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ### Track Map
 
-> SVG overhead track map with every car's position, class-coloured dots, P1 / YOU labels, class legend, and sector markers — recorded from your own lap data.
+SVG overhead track map with every car's position, class-coloured dots, P1 / YOU labels, class legend, and sector markers — recorded from your own lap data.
 
 ![Track Map — with sectors](docs/assets/screenshots/widgets/track-map-widget.png)
 
@@ -110,7 +109,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ### Proximity Radar
 
-> Circular radar centred on your car with a 10 m render range, bumper-to-bumper gap labels, sector masks, and spotter cones.
+Circular radar centred on your car with a 10 m render range, bumper-to-bumper gap labels, sector masks, and spotter cones.
 
 ![Proximity Radar — surrounded](docs/assets/screenshots/widgets/proximity-radar-widget.png)
 
@@ -118,7 +117,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ### Radar Bar
 
-> Two slim vertical bars at the screen edges — a quick-glance indicator for side-by-side situations.
+Two slim vertical bars at the screen edges — a quick-glance indicator for side-by-side situations.
 
 ![Radar Bar widget](docs/assets/screenshots/widgets/radar-bar-widget.png)
 
@@ -126,7 +125,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ### Chassis
 
-> Per-corner brake & tire temperatures with optional inboard suspension data and overheat warnings.
+Per-corner brake & tire temperatures with optional inboard suspension data and overheat warnings.
 
 ![Chassis — brake overheat](docs/assets/screenshots/widgets/chassis-overheat.png)
 
@@ -134,11 +133,11 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ### Fuel
 
-> Lap-by-lap consumption graph, laps remaining, add-fuel suggestion, and tank fill level. Line or bar chart mode.
->
-> - **LAPS LEFT:** Current driving range in laps based on fuel in the tank.
-> - **EST. FINISH:** Projected fuel balance (surplus or deficit in liters) at the end of the race.
-> - **PIT WARNING:** Appears when you need to refuel, showing exactly how many liters to add (including a +1 lap buffer) to reach the finish.
+Lap-by-lap consumption graph, laps remaining, add-fuel suggestion, and tank fill level. Line or bar chart mode.
+
+- **LAPS LEFT:** Current driving range in laps based on fuel in the tank.
+- **EST. FINISH:** Projected fuel balance (surplus or deficit in liters) at the end of the race.
+- **PIT WARNING:** Appears when you need to refuel, showing exactly how many liters to add (including a +1 lap buffer) to reach the finish.
 
 ![Fuel full preview](docs/assets/screenshots/widgets/fuel-widget.png)
 ![Fuel — small view](docs/assets/screenshots/widgets/fuel-widget-small.png)
@@ -147,28 +146,31 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ### Delta HUD
 
-> Live delta bar that compares your current lap against a configurable reference — your personal best (PB), your personal optimal (PO, best sectors combined), session best (SB), session optimal (SO), or the previous lap in the session (SL). The bar fills green when you are ahead and red when behind. When you cross the finish line a lap flash card appears (top, bottom, left, or right of the widget) showing the completed lap time and its delta. Card display duration is adjustable.
+Live delta bar that compares your current lap against a configurable reference — your personal best (PB), your personal optimal (PO, best sectors combined), session best (SB), session optimal (SO), or the previous lap in the session (SL). The bar fills green when you are ahead and red when behind. When you cross the finish line a lap flash card appears (top, bottom, left, or right of the widget) showing the completed lap time and its delta. Card display duration is adjustable.
 
 ![Lap Delta — vertical with sectors](docs/assets/screenshots/widgets/lap-delta-widget.png)
-![Lap Delta — horizontal](docs/assets/screenshots/widgets/lap-delta-horizontal.png)
 
 ---
 
 ### Sector Matrix
 
-> Grid of sector times for the current lap with color-coded delta chips (green = faster than personal best, red = slower). Header shows live delta and predicted finish time. Reference for the live delta and predicted time is configurable; sector chips always compare vs your personal best.
+Grid of sector times for the current lap with color-coded delta chips (green = faster than personal best, red = slower). Header shows live delta and predicted finish time. Reference for the live delta and predicted time is configurable; sector chips always compare vs your personal best.
+
+![Sector Matrix — live lap](docs/assets/screenshots/widgets/sextor-matrix.png)
 
 ---
 
 ### Lap Log
 
-> Rolling history of your completed laps — lap number, lap time, and delta vs personal best for each row. The live row at the top shows the current lap's real-time delta using the configured reference (PB / PO / SB / SO / SL). Historical rows always compare vs personal best.
+Rolling history of your completed laps — lap number, lap time, and delta vs personal best for each row. The live row at the top shows the current lap's real-time delta using the configured reference (PB / PO / SB / SO / SL). Historical rows always compare vs personal best.
+
+![Lap Log — recent laps](docs/assets/screenshots/widgets/lap-history.png)
 
 ---
 
 ### Timer
 
-> Session clock with laps-to-go, estimated total laps, and optional real-time clocks.
+Session clock with laps-to-go, estimated total laps, and optional real-time clocks.
 
 ![Timer — with laps and position](docs/assets/screenshots/widgets/timer-widget.png)
 
@@ -176,7 +178,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ### Weather
 
-> Wind direction compass, temperature, humidity, and forecast strip for dynamic weather sessions.
+Wind direction compass, temperature, humidity, and forecast strip for dynamic weather sessions.
 
 ![Weather — with forecast](docs/assets/screenshots/widgets/weather-widget.png)
 
@@ -184,7 +186,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ### Flags (LED & Flat)
 
-> LED matrix and flat pill-style flag indicators with green, yellow, red, blue, white, checkered, and meatball flag support.
+LED matrix and flat pill-style flag indicators with green, yellow, red, blue, white, checkered, and meatball flag support.
 
 ![Flags LED — green flag](docs/assets/screenshots/widgets/flags-widget.png)
 ![Flat Flags — multiple flags](docs/assets/screenshots/widgets/flat-flags-widget.png)
@@ -193,7 +195,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ### Relative Map
 
-> Compact 1-D track map showing relative car positions along the lap. Horizontal or vertical.
+Compact 1-D track map showing relative car positions along the lap. Horizontal or vertical.
 
 ![Linear Map — horizontal](docs/assets/screenshots/widgets/linear-map-horizontal.png)
 
@@ -201,9 +203,9 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 ### G-Meter
 
-> Friction circle visualising lateral and longitudinal G-forces in real time. Three display modes — **Trail** (fading line history), **Fading** (decaying envelope), **Peak** (static max-G envelope) — with three colour modes: **Mono**, **Simple** (red brake / green accel / cyan turn), and **Advanced** (smooth gradient blending). Adjustable scale from 2 G to 5 G.
+Friction circle visualising lateral and longitudinal G-forces in real time. Three display modes — **Trail** (fading line history), **Fading** (decaying envelope), **Peak** (static max-G envelope) — with three colour modes: **Mono**, **Simple** (red brake / green accel / cyan turn), and **Advanced** (smooth gradient blending). Adjustable scale from 2 G to 5 G.
 
-![image](docs/assets/screenshots/widgets/g-meter-default.png)
+![G-Meter — friction circle](docs/assets/screenshots/widgets/g-meter-default.png)
 
 ---
 
@@ -233,28 +235,6 @@ npm run tauri:dev
 ```bash
 npm run tauri:build:release
 ```
-
----
-
-## Architecture overview
-
-```
-iRacing SDK
-    │  (pitwall crate)
-    ▼
-Rust service (src-tauri/)
-    │  app.emit("iracing://telemetry/*")
-    ▼
-MobX stores (src/store/)
-    │  observer()
-    ▼
-Widget windows  ←──────── Main window (widget list + settings)
-(transparent overlays)
-```
-
-- **Telemetry events:** `iracing://telemetry/car-dynamics`, `car-inputs`, `car-status`, `lap-timing`, `session`, `environment`, `car-idx`, plus `iracing://session-info` and `iracing://status`
-- **Widget drag mode:** toggle with `F9` (configurable) — green border appears, drag to reposition, position is persisted
-- **Unit system:** metric / imperial, toggle in Settings, synced across all windows
 
 ---
 
