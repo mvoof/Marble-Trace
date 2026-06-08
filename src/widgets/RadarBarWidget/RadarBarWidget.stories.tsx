@@ -1,22 +1,8 @@
-import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { runInAction } from 'mobx';
 
 import type { ProximityFrame, RadarDistances } from '@/types/bindings';
-import type { BackendComputedStore } from '@store/iracing/computed.store';
-import type { WidgetSettingsStore } from '@store/widget-settings.store';
-import type { AppSettingsStore } from '@store/app-settings.store';
-import {
-  useAppSettingsStore,
-  useBackendComputedStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
 import { RadarBarWidget } from './RadarBarWidget';
-import { widgetDecorator } from '@/storybook/widgetDecorator';
-import { withStore } from '../../../.storybook/decorators';
-
-const DESIGN_WIDTH = 800;
-const DESIGN_HEIGHT = 380;
+import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
 interface StoryArgs {
   radarDistances: RadarDistances;
@@ -24,65 +10,41 @@ interface StoryArgs {
   spotterRight: boolean;
 }
 
-const applyArgs = (
-  stores: {
-    computed: BackendComputedStore;
-    widgetSettings: WidgetSettingsStore;
-    appSettings: AppSettingsStore;
-  },
-  args: StoryArgs
-) => {
-  runInAction(() => {
-    stores.appSettings.dragMode = true;
-
-    stores.widgetSettings.updateUserSettings('radar-bar', {
-      proximityThreshold: 3,
-      hideDelay: 2,
-    });
-
-    stores.computed.updateProximity({
-      radarDistances: args.radarDistances,
-      spotterLeft: args.spotterLeft,
-      spotterRight: args.spotterRight,
-      nearbyCars: [],
-    } as unknown as ProximityFrame);
-  });
-};
-
-const StoryHost = (args: StoryArgs) => {
-  const computed = useBackendComputedStore();
-  const widgetSettings = useWidgetSettingsStore();
-  const appSettings = useAppSettingsStore();
-
-  useLayoutEffect(() => {
-    applyArgs({ computed, widgetSettings, appSettings }, args);
-  }, [args, computed, widgetSettings, appSettings]);
-
-  return <RadarBarWidget />;
-};
-
-const meta: Meta<typeof StoryHost> = {
+const meta: Meta<StoryArgs> = {
   title: 'Widgets/RadarBarWidget',
-  component: StoryHost,
-  parameters: { layout: 'centered' },
-  decorators: [
-    withStore(),
-    widgetDecorator({ width: DESIGN_WIDTH, height: DESIGN_HEIGHT }),
-  ],
-  args: {
-    radarDistances: {
-      frontDist: 999,
-      rearDist: 999,
-      leftDist: null,
-      rightDist: null,
+  ...defineWidgetStories<StoryArgs>({
+    widget: RadarBarWidget,
+    size: { width: 800, height: 380 },
+    seed: (store, args) => {
+      store.appSettings.dragMode = true;
+
+      store.widgetSettings.updateUserSettings('radar-bar', {
+        proximityThreshold: 3,
+        hideDelay: 2,
+      });
+
+      store.backendComputed.updateProximity({
+        radarDistances: args.radarDistances,
+        spotterLeft: args.spotterLeft,
+        spotterRight: args.spotterRight,
+        nearbyCars: [],
+      } as unknown as ProximityFrame);
     },
-    spotterLeft: false,
-    spotterRight: false,
-  },
+    args: {
+      radarDistances: {
+        frontDist: 999,
+        rearDist: 999,
+        leftDist: null,
+        rightDist: null,
+      },
+      spotterLeft: false,
+      spotterRight: false,
+    },
+  }),
 };
 
 export default meta;
-type Story = StoryObj<typeof StoryHost>;
+type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {};
 

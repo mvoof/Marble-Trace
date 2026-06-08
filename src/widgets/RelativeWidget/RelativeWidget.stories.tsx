@@ -1,19 +1,10 @@
-import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { runInAction } from 'mobx';
 
 import type { DriverEntriesFrame } from '@/types/bindings';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
-import type { BackendComputedStore } from '@store/iracing/computed.store';
-import type { WidgetSettingsStore } from '@store/widget-settings.store';
-import {
-  useBackendComputedStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
 import { driverEntries } from '@/storybook/test-data';
 import { RelativeWidget } from './RelativeWidget';
-import { widgetDecorator } from '@/storybook/widgetDecorator';
-import { withStore } from '../../../.storybook/decorators';
+import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
 const CLASS_LABELS = ['GTE', 'GT3', 'LMP2'];
 
@@ -26,8 +17,8 @@ const PLAYER_CAR_IDX =
   DRIVER_ENTRIES.find((entry) => entry.isPlayer)?.carIdx ?? 0;
 
 const DEFAULT_SETTINGS: RelativeWidgetSettings = {
-  showLicBadge: false,
-  showIRating: false,
+  showLicBadge: true,
+  showIRating: true,
   showPitIndicator: true,
   abbreviateNames: false,
   showDriverFlags: true,
@@ -37,44 +28,25 @@ interface StoryArgs {
   settings: RelativeWidgetSettings;
 }
 
-const applyArgs = (
-  stores: {
-    computed: BackendComputedStore;
-    widgetSettings: WidgetSettingsStore;
-  },
-  args: StoryArgs
-) => {
-  runInAction(() => {
-    stores.computed.updateStandings({
-      entries: DRIVER_ENTRIES,
-      playerCarIdx: PLAYER_CAR_IDX,
-    } as DriverEntriesFrame);
-
-    stores.widgetSettings.updateUserSettings('relative', args.settings);
-  });
-};
-
-const StoryHost = (args: StoryArgs) => {
-  const computed = useBackendComputedStore();
-  const widgetSettings = useWidgetSettingsStore();
-
-  useLayoutEffect(() => {
-    applyArgs({ computed, widgetSettings }, args);
-  }, [args, computed, widgetSettings]);
-
-  return <RelativeWidget />;
-};
-
-const meta: Meta<typeof StoryHost> = {
+const meta: Meta<StoryArgs> = {
   title: 'Widgets/RelativeWidget',
-  component: StoryHost,
-  parameters: { layout: 'centered' },
-  decorators: [withStore(), widgetDecorator({ width: 460, height: 400 })],
-  args: { settings: DEFAULT_SETTINGS },
+  ...defineWidgetStories<StoryArgs>({
+    widget: RelativeWidget,
+    size: { width: 406, height: 400 },
+    seed: (store, args) => {
+      store.backendComputed.updateStandings({
+        entries: DRIVER_ENTRIES,
+        playerCarIdx: PLAYER_CAR_IDX,
+      } as DriverEntriesFrame);
+
+      store.widgetSettings.updateUserSettings('relative', args.settings);
+    },
+    args: { settings: DEFAULT_SETTINGS },
+  }),
 };
 
 export default meta;
-type Story = StoryObj<typeof StoryHost>;
+type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {};
 
@@ -103,9 +75,6 @@ export const WithIRatingBadge: Story = {
 
 export const FullBadges: Story = {
   args: {
-    settings: {
-      ...DEFAULT_SETTINGS,
-      showIRating: true,
-    },
+    settings: { ...DEFAULT_SETTINGS, showIRating: true },
   },
 };

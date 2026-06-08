@@ -1,21 +1,10 @@
-import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { runInAction } from 'mobx';
 
 import type { DriverEntriesFrame } from '@/types/bindings';
-import type { BackendComputedStore } from '@store/iracing/computed.store';
-import type {
-  TelemetryStore,
-  CarPositionsFrame,
-} from '@store/iracing/telemetry.store';
-import {
-  useBackendComputedStore,
-  useTelemetryStore,
-} from '@store/root-store-context';
+import type { CarPositionsFrame } from '@store/iracing/telemetry.store';
 import { driverEntries } from '@/storybook/test-data';
 import { RelativeMapWidget } from './RelativeMapWidget';
-import { widgetDecorator } from '@/storybook/widgetDecorator';
-import { withStore } from '../../../.storybook/decorators';
+import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
 const TRACK_SURFACE_ON_TRACK = 1;
 
@@ -24,7 +13,7 @@ const PLAYER_CAR_IDX =
   DRIVER_ENTRIES.find((entry) => entry.isPlayer)?.carIdx ?? 0;
 
 const buildCarPositions = (): CarPositionsFrame => {
-  const maxCarIdx = Math.max(...DRIVER_ENTRIES.map((e) => e.carIdx));
+  const maxCarIdx = Math.max(...DRIVER_ENTRIES.map((entry) => entry.carIdx));
   const car_idx_lap_dist_pct: number[] = new Array<number>(maxCarIdx + 1).fill(
     0
   );
@@ -39,46 +28,30 @@ const buildCarPositions = (): CarPositionsFrame => {
   return { car_idx_lap_dist_pct, car_idx_track_surface };
 };
 
-const applyArgs = (stores: {
-  computed: BackendComputedStore;
-  telemetry: TelemetryStore;
-}) => {
-  runInAction(() => {
-    stores.computed.updateStandings({
-      entries: DRIVER_ENTRIES,
-      playerCarIdx: PLAYER_CAR_IDX,
-    } as DriverEntriesFrame);
-    stores.telemetry.updateCarPositions(buildCarPositions());
-  });
-};
-
-const StoryHost = () => {
-  const computed = useBackendComputedStore();
-  const telemetry = useTelemetryStore();
-
-  useLayoutEffect(() => {
-    applyArgs({ computed, telemetry });
-  }, [computed, telemetry]);
-
-  return <RelativeMapWidget />;
-};
-
-const meta: Meta<typeof StoryHost> = {
+const meta: Meta = {
   title: 'Widgets/RelativeMapWidget',
-  component: StoryHost,
-  parameters: { layout: 'centered' },
-  decorators: [withStore(), widgetDecorator({ width: 400, height: 40 })],
+  ...defineWidgetStories({
+    widget: RelativeMapWidget,
+    size: { width: 400, height: 40 },
+    seed: (store) => {
+      store.backendComputed.updateStandings({
+        entries: DRIVER_ENTRIES,
+        playerCarIdx: PLAYER_CAR_IDX,
+      } as DriverEntriesFrame);
+      store.telemetry.updateCarPositions(buildCarPositions());
+    },
+  }),
 };
 
 export default meta;
-type Story = StoryObj<typeof StoryHost>;
+type Story = StoryObj;
 
 export const Horizontal: Story = {};
 
 export const Vertical: Story = {
-  decorators: [widgetDecorator({ width: 40, height: 300 })],
+  parameters: { widgetFrame: { width: 40, height: 300 } },
 };
 
 export const Wide: Story = {
-  decorators: [widgetDecorator({ width: 700, height: 40 })],
+  parameters: { widgetFrame: { width: 700, height: 40 } },
 };

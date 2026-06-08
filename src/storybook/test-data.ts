@@ -1,5 +1,5 @@
 import tracksJson from '../../test-data/tracks.json';
-import type { TelemetrySnapshot } from './snapshot.types';
+import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
 import { computeDriverEntries } from './compute-driver-entries';
 
 const snapshotModules = import.meta.glob('../../test-data/iracing-*.json', {

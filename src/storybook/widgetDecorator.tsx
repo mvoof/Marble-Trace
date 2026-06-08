@@ -7,6 +7,7 @@ interface WidgetDecoratorOptions {
   background?: string;
   display?: string;
   minWidth?: number;
+  borderRadius?: string | number;
 }
 
 const DEFAULT_BG = 'rgba(21, 22, 26, 0.8)';
@@ -16,7 +17,14 @@ const WIDGET_BORDER_RADIUS = 6;
 export const widgetDecorator = (
   options: WidgetDecoratorOptions = {}
 ): Decorator => {
-  const { width, height, background = DEFAULT_BG, display, minWidth } = options;
+  const {
+    width,
+    height,
+    background = DEFAULT_BG,
+    display,
+    minWidth,
+    borderRadius = WIDGET_BORDER_RADIUS,
+  } = options;
 
   const WidgetDecoratorWrapper = (Story: Parameters<Decorator>[0]) => (
     <div
@@ -25,9 +33,9 @@ export const widgetDecorator = (
           width,
           height,
           background,
-          borderRadius: WIDGET_BORDER_RADIUS,
+          borderRadius,
           border: WIDGET_BORDER,
-          overflow: 'visible',
+          overflow: 'hidden',
           display,
           minWidth,
           ['--widget-bg']: background,

@@ -2,34 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { FlagType } from '@/types';
 import { FlatFlagsWidget } from './FlatFlagsWidget';
-import { widgetDecorator } from '@/storybook/widgetDecorator';
-import { withStore } from '../../../.storybook/decorators';
+import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
-const meta: Meta<typeof FlatFlagsWidget> = {
-  title: 'Widgets/FlatFlagsWidget',
-  component: FlatFlagsWidget,
-  parameters: { layout: 'centered' },
-  decorators: [withStore(), widgetDecorator({ width: 300 })],
-};
-
-export default meta;
-type Story = StoryObj<typeof FlatFlagsWidget>;
-
-const flagStory = (...flags: FlagType[]): Story => ({
-  decorators: [
-    withStore((store) => {
-      store.flags.displayFlags = flags;
-    }),
-    widgetDecorator({ width: 300 }),
-  ],
-});
-
-export const NoFlags: Story = {};
-
-export const SingleGreen: Story = flagStory('green');
-export const Yellow: Story = flagStory('yellow');
-export const MultipleFlags: Story = flagStory('yellow', 'debris');
-export const AllFlags: Story = flagStory(
+const ALL_FLAGS: FlagType[] = [
   'green',
   'yellow',
   'red',
@@ -37,5 +12,34 @@ export const AllFlags: Story = flagStory(
   'white',
   'checkered',
   'black',
-  'debris'
-);
+  'debris',
+];
+
+interface StoryArgs {
+  flags: FlagType[];
+}
+
+const meta: Meta<StoryArgs> = {
+  title: 'Widgets/FlatFlagsWidget',
+  ...defineWidgetStories<StoryArgs>({
+    widget: FlatFlagsWidget,
+    size: { width: 300 },
+    seed: (store, args) => {
+      store.flags.displayFlags = args.flags;
+    },
+    args: { flags: [] },
+    argTypes: {
+      flags: { control: 'check', options: ALL_FLAGS },
+    },
+  }),
+};
+
+export default meta;
+type Story = StoryObj<StoryArgs>;
+
+export const NoFlags: Story = {};
+
+export const SingleGreen: Story = { args: { flags: ['green'] } };
+export const Yellow: Story = { args: { flags: ['yellow'] } };
+export const MultipleFlags: Story = { args: { flags: ['yellow', 'debris'] } };
+export const AllFlags: Story = { args: { flags: ALL_FLAGS } };
