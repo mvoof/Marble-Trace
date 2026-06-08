@@ -156,7 +156,7 @@ Live delta bar that compares your current lap against a configurable reference �
 
 Grid of sector times for the current lap with color-coded delta chips (green = faster than personal best, red = slower). Header shows live delta and predicted finish time. Reference for the live delta and predicted time is configurable; sector chips always compare vs your personal best.
 
-![Sector Matrix — live lap](docs/assets/screenshots/widgets/sextor-matrix.png)
+![Sector Matrix — live lap](docs/assets/screenshots/widgets/sector-matrix.png)
 
 ---
 
