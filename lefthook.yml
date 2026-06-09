@@ -14,3 +14,10 @@ pre-commit:
       root: "src-tauri/"
       run: cargo fmt
       stage_fixed: true
+    test:
+      glob: "*.{ts,tsx,js,mjs}"
+      run: npx vitest run --related {staged_files}
+    rust-test:
+      glob: "*.rs"
+      root: "src-tauri/"
+      run: cargo test
