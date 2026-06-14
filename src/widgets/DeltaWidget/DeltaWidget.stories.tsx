@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react';
+﻿import { useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
@@ -48,16 +48,16 @@ const BestLapHost = () => {
 
       store.backendComputed.updateLapDelta(EMPTY_LAP_DELTA);
 
-      store.lap.lastCompletedLap = { lapNum: 5, delta: -1.235 };
-      store.lap.history = [
+      store.backendComputed.lastCompletedLap = { lapNum: 5, delta: -1.235 };
+      store.backendComputed.lapHistory = [
         { lapNum: 5, lapTime: 89.342, delta: -1.235, isBest: true },
       ];
 
-      store.telemetry.lapTiming = {
-        ...(store.telemetry.lapTiming ?? {}),
+      store.player.lapTiming = {
+        ...(store.player.lapTiming ?? {}),
         lap_last_lap_time: 89.342,
         lap_best_lap_time: 89.342,
-      } as typeof store.telemetry.lapTiming;
+      } as typeof store.player.lapTiming;
     });
   }, [store]);
 

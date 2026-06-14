@@ -2,16 +2,17 @@ import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
 import styles from './DriverRow.module.scss';
-import { useBackendComputedStore } from '@store/root-store-context';
+import { useStandingsWidgetStore } from '@store/root-store-context';
 
 interface IrChangeCellProps {
   carIdx: number;
 }
 
 export const IrChangeCell = observer(({ carIdx }: IrChangeCellProps) => {
-  const computed = useBackendComputedStore();
+  const standingsWidget = useStandingsWidgetStore();
 
-  const delta = computed.driverMap.get(carIdx)?.estimatedIrDelta ?? undefined;
+  const delta =
+    standingsWidget.driverMap.get(carIdx)?.estimatedIrDelta ?? undefined;
   if (delta == null || delta === 0) {
     return <span className={styles.irChange}>-</span>;
   }

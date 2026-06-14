@@ -1,10 +1,10 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 import { formatSpeed, speedUnit } from '@utils/formatters/telemetry-format';
 import styles from './SpeedDisplay.module.scss';
-import { useTelemetryStore, useUnitsStore } from '@store/root-store-context';
+import { usePlayerStore, useUnitsStore } from '@store/root-store-context';
 
 export const SpeedDisplay = observer(() => {
-  const telemetry = useTelemetryStore();
+  const telemetry = usePlayerStore();
   const units = useUnitsStore();
 
   const speed = telemetry.carDynamics?.speed ?? 0;

@@ -1,5 +1,5 @@
 import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
-import type { RootStore } from '../root-store';
+import type { RootStore } from '@store/root-store';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 
 const registeredShortcuts = new Set<string>();
@@ -80,7 +80,7 @@ export const setupHotkeys = async (
               []
           ).size;
 
-          root.widgetSettings.cycleStandingsPrev(totalClasses);
+          root.standingsWidget.cyclePrev(totalClasses);
         }
       });
     }
@@ -92,7 +92,7 @@ export const setupHotkeys = async (
             root.backendComputed.standings?.entries.map((e) => e.carClassId) ??
               []
           ).size;
-          root.widgetSettings.cycleStandingsNext(totalClasses);
+          root.standingsWidget.cycleNext(totalClasses);
         }
       });
     }

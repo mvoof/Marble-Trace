@@ -188,28 +188,12 @@ export const TrackMapSettingsPanel = observer(() => {
             <Button
               style={{ flex: 1 }}
               size="small"
-              type={
-                widgetSettings.isTrackMapForceStartPending
-                  ? 'primary'
-                  : 'default'
-              }
-              danger={widgetSettings.isTrackMapForceStartPending}
               onClick={() => {
-                const next = !widgetSettings.isTrackMapForceStartPending;
-                widgetSettings.setTrackMapForceStartPending(next);
-                if (next) {
-                  void emit('track-map:force-start');
-                  message.info(
-                    'Manual start active. Drive to begin recording.'
-                  );
-                } else {
-                  message.warning('Manual start canceled.');
-                }
+                void emit('track-map:force-start');
+                message.info('Manual start active. Drive to begin recording.');
               }}
             >
-              {widgetSettings.isTrackMapForceStartPending
-                ? 'Cancel Force Start'
-                : 'Force Start Recording'}
+              Force Start Recording
             </Button>
           </Flex>
         </div>

@@ -12,14 +12,15 @@ import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './SessionHeader.module.scss';
 import {
   useBackendComputedStore,
-  useTelemetryStore,
+  useCarsStore,
+  useSessionStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const SessionHeader = observer(() => {
   const { standings } = useBackendComputedStore();
-  const telemetry = useTelemetryStore();
-  const { sessionInfo, weekendInfo } = telemetry;
+  const { sessionInfo, session } = useSessionStore();
+  const { leaderBestLapTime } = useCarsStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const settings =
@@ -29,28 +30,28 @@ export const SessionHeader = observer(() => {
     return null;
   }
 
-  const sessionInfoData = sessionInfo?.SessionInfo;
+  const sessionInfoData = sessionInfo;
   const driverEntries = standings?.entries ?? [];
   const overallSof = computeClassSof(driverEntries);
 
   const playerIncidents =
     driverEntries.find((entry) => entry.isPlayer)?.incidents ?? 0;
 
-  const sessions = sessionInfoData?.Sessions;
-  const currentSession = sessions?.[sessionInfoData?.CurrentSessionNum ?? 0];
-  const trackName = weekendInfo?.TrackDisplayName ?? '';
+  const sessions = sessionInfoData?.sessions;
+  const currentSession = sessions?.[sessionInfoData?.currentSessionNum ?? 0];
+  const trackName = sessionInfo?.trackDisplayName ?? '';
 
   const leaderLap =
     driverEntries.length > 0
       ? Math.max(...driverEntries.map((entry) => entry.lap))
       : null;
 
-  const totalLaps = currentSession?.SessionLaps
+  const totalLaps = currentSession?.sessionLaps
     ? resolveSessionLaps(
-        currentSession.SessionLaps,
-        telemetry.session?.session_time_remain ?? null,
+        currentSession.sessionLaps,
+        session?.session_time_remain ?? null,
         leaderLap,
-        telemetry.leaderBestLapTime
+        leaderBestLapTime
       )
     : null;
 
@@ -61,7 +62,7 @@ export const SessionHeader = observer(() => {
 
         {currentSession && (
           <span className={styles.sessionType}>
-            {currentSession.SessionType?.toUpperCase()}
+            {currentSession.sessionType.toUpperCase()}
           </span>
         )}
 

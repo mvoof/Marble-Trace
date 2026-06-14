@@ -1,9 +1,8 @@
 use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32, Ordering};
 
-use pitwall::SessionInfo;
+use crate::capabilities::Capabilities;
+use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use serde::{Deserialize, Serialize};
-
-use crate::iracing::frames::AllFieldsFrame;
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -32,22 +31,45 @@ impl Default for PitStopState {
     }
 }
 
-pub fn compute(
-    frame: &AllFieldsFrame,
-    session: &SessionInfo,
-    state: &PitStopState,
-) -> Option<PitStopsFrame> {
-    let player_idx = session
-        .driver_info
-        .as_ref()
-        .and_then(|di| di.driver_car_idx)
-        .unwrap_or(-1);
+/// Stateful processor wrapping the pit-stop counter.
+#[derive(Default)]
+pub struct PitStopsProcessor {
+    state: PitStopState,
+}
 
-    if player_idx < 0 {
-        return None;
+impl Processor for PitStopsProcessor {
+    fn id(&self) -> ProcessorId {
+        ProcessorId::PitStops
     }
 
-    let current_session_num = frame.session_num.unwrap_or(-1);
+    fn required(&self) -> Capabilities {
+        Capabilities::empty()
+    }
+
+    fn rate(&self) -> TickRate {
+        TickRate::Hz4
+    }
+
+    fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
+        let on_pit_road = ctx.car_status.on_pit_road?;
+        let frame = compute(ctx.session_num, on_pit_road, &self.state)?;
+
+        Some(ComputedOutput::PitStops(frame))
+    }
+
+    fn reset(&mut self) {
+        self.state.count.store(0, Ordering::Relaxed);
+        self.state.was_on_pit_road.store(false, Ordering::Relaxed);
+        self.state.tracked_session_num.store(-1, Ordering::Relaxed);
+    }
+}
+
+pub fn compute(
+    session_num: Option<i32>,
+    on_pit_road: bool,
+    state: &PitStopState,
+) -> Option<PitStopsFrame> {
+    let current_session_num = session_num.unwrap_or(-1);
     let tracked_session = state.tracked_session_num.load(Ordering::Relaxed);
 
     if current_session_num != tracked_session {
@@ -58,19 +80,13 @@ pub fn compute(
         state.was_on_pit_road.store(false, Ordering::Relaxed);
     }
 
-    let on_pit = frame
-        .car_idx_on_pit_road
-        .get(player_idx as usize)
-        .copied()
-        .unwrap_or(false);
-
     let was = state.was_on_pit_road.load(Ordering::Relaxed);
 
-    if on_pit && !was {
+    if on_pit_road && !was {
         state.count.fetch_add(1, Ordering::Relaxed);
     }
 
-    state.was_on_pit_road.store(on_pit, Ordering::Relaxed);
+    state.was_on_pit_road.store(on_pit_road, Ordering::Relaxed);
 
     let stops = state.count.load(Ordering::Relaxed);
 

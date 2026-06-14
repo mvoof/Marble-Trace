@@ -7,20 +7,20 @@ import { ClassGroupHeader } from '@widgets/StandingsWidget/ClassGroupHeader/Clas
 
 import styles from './ClassSwitcher.module.scss';
 import {
-  useBackendComputedStore,
+  useStandingsWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 const FLASH_DURATION_MS = 300;
 
 export const ClassSwitcher = observer(() => {
-  const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
+  const standingsWidget = useStandingsWidgetStore();
 
   const settings =
     widgetSettings.getSettings<StandingsWidgetSettings>('standings');
-  const allClassGroups = computed.allClassGroups;
-  const activeIndex = widgetSettings.standingsActiveClassIndex;
+  const { allClassGroups } = standingsWidget;
+  const activeIndex = standingsWidget.activeClassIndex;
 
   const group = allClassGroups[activeIndex];
   const total = allClassGroups.length;
@@ -61,11 +61,11 @@ export const ClassSwitcher = observer(() => {
   }
 
   const handlePrev = () => {
-    widgetSettings.cycleStandingsPrev(total);
+    standingsWidget.cyclePrev(total);
   };
 
   const handleNext = () => {
-    widgetSettings.cycleStandingsNext(total);
+    standingsWidget.cycleNext(total);
   };
 
   const paginationLabel = total > 1 ? `${activeIndex + 1}/${total}` : undefined;

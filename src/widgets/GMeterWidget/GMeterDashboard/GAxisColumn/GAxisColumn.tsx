@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+﻿import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import {
@@ -10,7 +10,7 @@ import {
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 import styles from './GAxisColumn.module.scss';
 import {
-  useTelemetryStore,
+  usePlayerStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
@@ -23,7 +23,7 @@ interface GAxisColumnProps {
 
 export const GAxisColumn = observer(
   ({ axis, hasDivider }: GAxisColumnProps) => {
-    const { carDynamics } = useTelemetryStore();
+    const { carDynamics } = usePlayerStore();
 
     const widgetSettings = useWidgetSettingsStore();
 

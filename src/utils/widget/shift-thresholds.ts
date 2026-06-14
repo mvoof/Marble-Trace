@@ -1,15 +1,16 @@
-import type { TelemetryStore } from '@store/iracing/telemetry.store';
+import type { CarStatusFrame, SessionSnapshot } from '@/types/bindings';
 
-export const computeShiftThresholds = (telemetryStore: TelemetryStore) => {
-  const { driverInfo } = telemetryStore;
+export const computeShiftThresholds = (
+  sessionInfo: SessionSnapshot | null,
+  carStatus: CarStatusFrame | null
+) => {
+  const slShiftArray = carStatus?.player_car_sl_shift_rpm ?? [];
+  const slBlinkArray = carStatus?.player_car_sl_blink_rpm ?? [];
 
-  const slShiftArray = telemetryStore.carStatus?.player_car_sl_shift_rpm ?? [];
-  const slBlinkArray = telemetryStore.carStatus?.player_car_sl_blink_rpm ?? [];
+  const redLine = sessionInfo?.driverCarRedLine || 10000;
 
-  const redLine = driverInfo?.DriverCarRedLine || 10000;
-
-  const yamlShiftRpm = driverInfo?.DriverCarSLShiftRPM || redLine * 0.9;
-  const rawYamlBlinkRpm = driverInfo?.DriverCarSLBlinkRPM || redLine;
+  const yamlShiftRpm = sessionInfo?.driverCarSlShiftRpm || redLine * 0.9;
+  const rawYamlBlinkRpm = sessionInfo?.driverCarSlBlinkRpm || redLine;
   const yamlBlinkRpm =
     rawYamlBlinkRpm <= redLine ? rawYamlBlinkRpm : yamlShiftRpm;
 

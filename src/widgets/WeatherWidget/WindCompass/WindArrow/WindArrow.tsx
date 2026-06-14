@@ -6,21 +6,25 @@ import {
   parseWeekendFloat,
   radsToBearing,
 } from '@utils/widget/weather-utils';
-import { useTelemetryStore } from '@store/root-store-context';
+import {
+  useEnvironmentStore,
+  usePlayerStore,
+  useSessionStore,
+} from '@store/root-store-context';
 
 // Re-renders at 60 Hz — driven by carDynamics.yaw updating at physics rate
 export const WindArrow = observer(() => {
-  const telemetry = useTelemetryStore();
+  const { sessionInfo } = useSessionStore();
+  const { environment: env } = useEnvironmentStore();
+  const { carDynamics } = usePlayerStore();
 
-  const weekendInfo = telemetry.weekendInfo;
-  const env = telemetry.environment;
-  const carYawRad = telemetry.carDynamics?.yaw ?? 0;
+  const carYawRad = carDynamics?.yaw ?? 0;
   const carYawDeg = carYawRad * (180 / Math.PI);
 
   const windVelMps =
-    env?.wind_vel ?? parseWeekendFloat(weekendInfo?.TrackWindVel);
+    env?.wind_vel ?? parseWeekendFloat(sessionInfo?.trackWindVel);
   const windDirRad =
-    env?.wind_dir ?? parseWeekendFloat(weekendInfo?.TrackWindDir);
+    env?.wind_dir ?? parseWeekendFloat(sessionInfo?.trackWindDir);
   const windBearing = windDirRad !== null ? radsToBearing(windDirRad) : 0;
   const arrowColor = getWindColor(windVelMps);
 

@@ -16,14 +16,20 @@ const WidgetListItem = observer(
   }) => {
     const widgetSettings = useWidgetSettingsStore();
 
+    const isAvailable = widgetSettings.availableWidgetIds.includes(widget.id);
+
     const handleToggle = (checked: boolean) => {
-      widgetSettings.setWidgetEnabled(widget.id, checked);
+      if (isAvailable) {
+        widgetSettings.setWidgetEnabled(widget.id, checked);
+      }
     };
 
     return (
       <button
         type="button"
-        className={`${styles.listItem} ${isActive ? styles.active : ''}`}
+        className={`${styles.listItem} ${isActive ? styles.active : ''} ${
+          !isAvailable ? styles.disabled : ''
+        }`}
         onClick={() => onSelect(widget.id)}
       >
         <div className={styles.content}>
@@ -31,6 +37,9 @@ const WidgetListItem = observer(
           <span className={styles.description}>
             {widget.description || 'Configure widget settings.'}
           </span>
+          {!isAvailable && (
+            <span className={styles.unavailable}>Unavailable</span>
+          )}
         </div>
         <div
           className={styles.switch}
@@ -39,9 +48,10 @@ const WidgetListItem = observer(
           role="presentation"
         >
           <Switch
-            checked={widget.userSettings.enabled}
+            checked={widget.userSettings.enabled && isAvailable}
             size="small"
             onChange={handleToggle}
+            disabled={!isAvailable}
           />
         </div>
       </button>

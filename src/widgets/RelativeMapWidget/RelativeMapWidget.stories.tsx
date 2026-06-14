@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { DriverEntriesFrame } from '@/types/bindings';
-import type { CarPositionsFrame } from '@store/iracing/telemetry.store';
+import type { CarPositionsFrame } from '@/types/bindings';
 import { driverEntries } from '@/storybook/test-data';
 import { RelativeMapWidget } from './RelativeMapWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
@@ -38,7 +38,7 @@ const meta: Meta = {
         entries: DRIVER_ENTRIES,
         playerCarIdx: PLAYER_CAR_IDX,
       } as DriverEntriesFrame);
-      store.telemetry.updateCarPositions(buildCarPositions());
+      store.cars.updateCarPositions(buildCarPositions());
     },
   }),
 };

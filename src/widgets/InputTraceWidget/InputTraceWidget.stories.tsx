@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { CarDynamicsFrame, CarInputsFrame } from '@/types/bindings';
 import type { InputTraceSettings } from '@/types/widget-settings';
@@ -38,14 +38,14 @@ const meta: Meta<StoryArgs> = {
         steeringLimit: args.steeringLimit,
       } as Partial<InputTraceSettings>);
 
-      store.telemetry.updateCarInputs({
+      store.player.updateCarInputs({
         throttle: args.throttle,
         brake: args.brake,
         clutch: 1 - args.clutch,
         brake_abs_active: false,
       } as CarInputsFrame);
 
-      store.telemetry.updateCarDynamics({
+      store.player.updateCarDynamics({
         steering_wheel_angle: args.steeringWheelAngle,
         speed: 0,
         rpm: 0,

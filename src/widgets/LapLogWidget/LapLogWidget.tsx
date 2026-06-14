@@ -1,6 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
-import { useLapStore, useTelemetryStore } from '@store/root-store-context';
+import {
+  useBackendComputedStore,
+  usePlayerStore,
+} from '@store/root-store-context';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import { formatDelta, getDeltaState } from '@utils/widget/delta-utils';
 import { LapRow } from './LapRow/LapRow';
@@ -9,14 +12,15 @@ import styles from './LapLogWidget.module.scss';
 const HISTORY_SHOW_SIZE = 8;
 
 export const LapLogWidget = observer(() => {
-  const lapStore = useLapStore();
-  const { lapTiming } = useTelemetryStore();
+  const { lapHistory, lastCompletedLap: _lastCompleted } =
+    useBackendComputedStore();
+  const { lapTiming } = usePlayerStore();
 
   const lapNum = lapTiming?.lap ?? null;
   const currentLapTime = lapTiming?.lap_current_lap_time ?? 0;
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;
 
-  const visibleHistory = lapStore.history.slice(0, HISTORY_SHOW_SIZE);
+  const visibleHistory = lapHistory.slice(0, HISTORY_SHOW_SIZE);
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={0}>

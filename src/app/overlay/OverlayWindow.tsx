@@ -9,10 +9,7 @@ import {
 import { PhysicalSize, PhysicalPosition } from '@tauri-apps/api/dpi';
 import { OverlayCanvas } from './OverlayCanvas/OverlayCanvas';
 import { initOverlaySync } from '@store/sync/sync-init';
-import {
-  useStore,
-  useTelemetryConnectionStore,
-} from '@store/root-store-context';
+import { useStore, useSimStore } from '@store/root-store-context';
 
 const positionToMonitor = async (monitorIndex: number | null) => {
   try {
@@ -42,14 +39,14 @@ const positionToMonitor = async (monitorIndex: number | null) => {
 };
 
 export const OverlayWindow = () => {
-  const telemetryConnection = useTelemetryConnectionStore();
+  const simStore = useSimStore();
   const root = useStore();
 
   useEffect(() => {
-    void telemetryConnection.startWidgetListener();
+    void simStore.startWidgetListener();
 
-    return () => telemetryConnection.stopWidgetListener();
-  }, [telemetryConnection]);
+    return () => simStore.stopWidgetListener();
+  }, [simStore]);
 
   useEffect(() => {
     [document.documentElement, document.body].forEach(

@@ -6,12 +6,12 @@ import {
   formatSpeed,
   speedUnit,
 } from '@utils/formatters/telemetry-format';
-import { extractForecast } from '@utils/widget/weather-utils';
 
 import styles from './ForecastBlock.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import {
-  useTelemetryStore,
+  useEnvironmentStore,
+  useSessionStore,
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -34,7 +34,8 @@ const formatForecastTime = (timeSec: number): string => {
 };
 
 export const ForecastBlock = observer(() => {
-  const telemetry = useTelemetryStore();
+  const { weatherForecast } = useEnvironmentStore();
+  const { sessionInfo } = useSessionStore();
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
@@ -45,16 +46,11 @@ export const ForecastBlock = observer(() => {
     return null;
   }
 
-  const weekendInfo = telemetry.weekendInfo;
   const { unitSystem } = units;
 
-  let forecast = telemetry.weatherForecast || [];
+  const forecast = weatherForecast || [];
 
-  if (forecast.length === 0 && weekendInfo) {
-    forecast = extractForecast(weekendInfo);
-  }
-
-  const weatherType = weekendInfo?.TrackWeatherType ?? null;
+  const weatherType = sessionInfo?.trackWeatherType || null;
 
   return (
     <div className={styles.forecastBlock}>

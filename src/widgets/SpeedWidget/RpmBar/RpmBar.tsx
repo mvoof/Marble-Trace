@@ -1,11 +1,12 @@
-import React from 'react';
+﻿import React from 'react';
 import { observer } from 'mobx-react-lite';
 import type { SpeedWidgetSettings } from '@/types/widget-settings';
 import { computeShiftThresholds } from '@utils/widget/shift-thresholds';
 import { getShiftZoneColor } from '@utils/widget/speed-utils';
 import styles from './RpmBar.module.scss';
 import {
-  useTelemetryStore,
+  usePlayerStore,
+  useSessionStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -20,7 +21,8 @@ export interface RpmColors {
 }
 
 export const RpmBar = observer(() => {
-  const telemetry = useTelemetryStore();
+  const { carDynamics, carStatus } = usePlayerStore();
+  const { sessionInfo } = useSessionStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const {
@@ -43,8 +45,8 @@ export const RpmBar = observer(() => {
     shift: rpmColorShift,
     limit: rpmColorLimit,
   };
-  const rpm = telemetry.carDynamics?.rpm ?? 0;
-  const { shiftRpm, blinkRpm } = computeShiftThresholds(telemetry);
+  const rpm = carDynamics?.rpm ?? 0;
+  const { shiftRpm, blinkRpm } = computeShiftThresholds(sessionInfo, carStatus);
 
   const isShift = rpm >= shiftRpm;
   const isBlink = rpm >= blinkRpm;

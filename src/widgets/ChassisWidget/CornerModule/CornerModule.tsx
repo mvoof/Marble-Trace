@@ -9,7 +9,7 @@ import { TirePressureOverlay } from './TirePressureOverlay/TirePressureOverlay';
 import styles from './CornerModule.module.scss';
 import type { ChassisWidgetSettings } from '@/types/widget-settings';
 import {
-  useTelemetryStore,
+  usePlayerStore,
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -30,7 +30,7 @@ interface CornerModuleProps {
 
 export const CornerModule = observer(
   ({ position, isRight }: CornerModuleProps) => {
-    const { chassis } = useTelemetryStore();
+    const { chassis } = usePlayerStore();
     const { unitSystem } = useUnitsStore();
 
     const widgetSettings = useWidgetSettingsStore();

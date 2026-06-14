@@ -3,14 +3,14 @@ import type { RootStore } from '@store/root-store';
 
 export const seedFromSnapshot = (store: RootStore) => {
   if (snapshot.carDynamics)
-    store.telemetry.updateCarDynamics(snapshot.carDynamics);
-  if (snapshot.carIdx) store.telemetry.updateCarIdx(snapshot.carIdx);
-  if (snapshot.carInputs) store.telemetry.updateCarInputs(snapshot.carInputs);
-  if (snapshot.carStatus) store.telemetry.updateCarStatus(snapshot.carStatus);
+    store.player.updateCarDynamics(snapshot.carDynamics);
+  if (snapshot.carIdx) store.cars.updateCarIdx(snapshot.carIdx);
+  if (snapshot.carInputs) store.player.updateCarInputs(snapshot.carInputs);
+  if (snapshot.carStatus) store.player.updateCarStatus(snapshot.carStatus);
   if (snapshot.environment)
-    store.telemetry.updateEnvironment(snapshot.environment);
-  if (snapshot.lapTiming) store.telemetry.updateLapTiming(snapshot.lapTiming);
-  if (snapshot.session) store.telemetry.updateSession(snapshot.session);
+    store.environment.updateEnvironment(snapshot.environment);
+  if (snapshot.lapTiming) store.player.updateLapTiming(snapshot.lapTiming);
+  if (snapshot.session) store.session.updateSession(snapshot.session);
   if (snapshot.sessionInfo)
-    store.telemetry.updateSessionInfo(snapshot.sessionInfo);
+    store.session.updateSessionInfo(snapshot.sessionInfo);
 };

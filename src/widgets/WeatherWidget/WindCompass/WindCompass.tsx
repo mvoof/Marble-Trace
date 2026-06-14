@@ -12,12 +12,14 @@ import { WindArrow } from './WindArrow/WindArrow';
 import styles from './WindCompass.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import {
-  useTelemetryStore,
+  useEnvironmentStore,
+  useSessionStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const WindCompass = observer(() => {
-  const telemetry = useTelemetryStore();
+  const { sessionInfo } = useSessionStore();
+  const { environment: env } = useEnvironmentStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { showCompass } =
@@ -27,11 +29,8 @@ export const WindCompass = observer(() => {
     return null;
   }
 
-  const weekendInfo = telemetry.weekendInfo;
-  const env = telemetry.environment;
-
   const windDirRad =
-    env?.wind_dir ?? parseWeekendFloat(weekendInfo?.TrackWindDir);
+    env?.wind_dir ?? parseWeekendFloat(sessionInfo?.trackWindDir);
   const windBearing = windDirRad !== null ? radsToBearing(windDirRad) : 0;
   const windCardinal = bearingToCardinal(windBearing);
 

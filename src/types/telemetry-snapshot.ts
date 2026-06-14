@@ -6,7 +6,7 @@ import type {
   EnvironmentFrame,
   LapTimingFrame,
   SessionFrame,
-  SessionInfo,
+  SessionSnapshot,
 } from '@/types/bindings';
 
 export interface TelemetrySnapshot {
@@ -18,5 +18,5 @@ export interface TelemetrySnapshot {
   environment: EnvironmentFrame | null;
   lapTiming: LapTimingFrame | null;
   session: SessionFrame | null;
-  sessionInfo: SessionInfo | null;
+  sessionInfo: SessionSnapshot | null;
 }

@@ -1,8 +1,8 @@
 import { TrackSurface } from '@/types';
 import type {
   CarIdxFrame,
-  DriverInfoData,
   DriverEntry,
+  SessionSnapshot,
 } from '@/types/bindings';
 
 const parseClassColor = (raw: string | null | undefined): string => {
@@ -13,31 +13,29 @@ const parseClassColor = (raw: string | null | undefined): string => {
 
 export const computeDriverEntries = (
   carIdx: CarIdxFrame | null,
-  driverInfo: DriverInfoData | null
+  sessionInfo: SessionSnapshot | null
 ): DriverEntry[] => {
-  if (!driverInfo?.Drivers || !carIdx) return [];
+  if (!sessionInfo?.cars.length || !carIdx) return [];
 
-  const playerCarIdx = driverInfo.DriverCarIdx ?? -1;
-  const paceCarIdx = driverInfo.PaceCarIdx ?? -1;
+  const playerCarIdx = sessionInfo.playerCarIdx;
 
   const entries: DriverEntry[] = [];
 
-  for (const driver of driverInfo.Drivers) {
-    const idx = driver.CarIdx;
+  for (const car of sessionInfo.cars) {
+    const idx = car.carIdx;
 
-    if (idx === paceCarIdx) continue;
-    if (driver.IsSpectator === 1) continue;
-    if (driver.CarIsPaceCar === 1) continue;
+    if (car.isSpectator) continue;
+    if (car.isPaceCar) continue;
 
     entries.push({
       carIdx: idx,
-      userName: driver.UserName,
-      carNumber: driver.CarNumber ?? String(idx),
-      carClassId: driver.CarClassID ?? 0,
-      carClassShortName: driver.CarClassShortName ?? '',
-      carClassColor: parseClassColor(driver.CarClassColor),
-      carScreenName: driver.CarScreenName ?? '',
-      carScreenNameShort: driver.CarScreenNameShort ?? '',
+      userName: car.userName,
+      carNumber: car.carNumber || String(idx),
+      carClassId: car.carClassId,
+      carClassShortName: car.carScreenNameShort,
+      carClassColor: parseClassColor(car.carClassColor),
+      carScreenName: car.carScreenName,
+      carScreenNameShort: car.carScreenNameShort,
       tireCompound: '',
       position: carIdx.car_idx_position[idx] ?? 0,
       classPosition: carIdx.car_idx_class_position[idx] ?? 0,
@@ -50,9 +48,9 @@ export const computeDriverEntries = (
       f2Time: carIdx.car_idx_f2_time[idx] ?? 0,
       trackSurface:
         carIdx.car_idx_track_surface[idx] ?? TrackSurface.NotInWorld,
-      iRating: driver.IRating ?? 0,
-      licString: driver.LicString ?? '',
-      licColor: parseClassColor(driver.LicColor),
+      iRating: car.iRating,
+      licString: car.licString,
+      licColor: parseClassColor(car.licColor),
       incidents: 0,
       isPlayer: idx === playerCarIdx,
       onPitRoad: carIdx.car_idx_on_pit_road[idx] ?? false,
@@ -63,6 +61,7 @@ export const computeDriverEntries = (
       rawFlags: 0,
       resultsPositionLap: null,
       resultsPositionTime: null,
+      pitState: 'none',
     });
   }
 

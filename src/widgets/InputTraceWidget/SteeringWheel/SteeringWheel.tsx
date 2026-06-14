@@ -1,6 +1,6 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 import {
-  useTelemetryStore,
+  usePlayerStore,
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -9,7 +9,7 @@ import Logo from '@assets/logo.svg?react';
 import styles from './SteeringWheel.module.scss';
 
 export const SteeringWheel = observer(() => {
-  const telemetry = useTelemetryStore();
+  const telemetry = usePlayerStore();
   const widgetSettings = useWidgetSettingsStore();
   const units = useUnitsStore();
 

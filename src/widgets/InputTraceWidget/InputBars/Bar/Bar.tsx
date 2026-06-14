@@ -1,12 +1,12 @@
 import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { TelemetryStore } from '@store/iracing/telemetry.store';
-import type { WidgetSettingsStore } from '@store/widget-settings.store';
+import type { CarInputsFrame } from '@/types/bindings';
+import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
 import type { InputTraceSettings } from '@/types/widget-settings';
 
 import styles from './Bar.module.scss';
 import {
-  useTelemetryStore,
+  usePlayerStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -20,11 +20,9 @@ interface BarProps {
 }
 
 const getRawValue = (
-  telemetry: TelemetryStore,
+  frame: CarInputsFrame | null,
   channel: BarChannel
 ): number => {
-  const frame = telemetry.carInputs;
-
   if (channel === 'throttle') return frame?.throttle ?? 0;
   if (channel === 'brake') return frame?.brake ?? 0;
 
@@ -55,7 +53,7 @@ const CHANNEL_VISIBILITY_KEY: Record<
 
 export const Bar = observer(
   ({ channel, width = 'md', rounded = true }: BarProps) => {
-    const telemetry = useTelemetryStore();
+    const { carInputs } = usePlayerStore();
     const widgetSettings = useWidgetSettingsStore();
     const settings =
       widgetSettings.getSettings<InputTraceSettings>('input-trace');
@@ -65,7 +63,7 @@ export const Bar = observer(
       return null;
     }
 
-    const rawValue = getRawValue(telemetry, channel);
+    const rawValue = getRawValue(carInputs, channel);
     const smoothing = settings.smoothing;
 
     if (smoothing <= 0) {
@@ -77,7 +75,7 @@ export const Bar = observer(
 
     const clamped = Math.max(0, Math.min(1, smoothedRef.current));
     const isAbsActive =
-      channel === 'brake' && (telemetry.carInputs?.brake_abs_active ?? false);
+      channel === 'brake' && (carInputs?.brake_abs_active ?? false);
 
     const color = isAbsActive
       ? settings.absColor

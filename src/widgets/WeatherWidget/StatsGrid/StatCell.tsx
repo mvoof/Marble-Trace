@@ -1,4 +1,4 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 
 import {
   formatTemp,
@@ -18,7 +18,8 @@ import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 import styles from './StatCell.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import {
-  useTelemetryStore,
+  useEnvironmentStore,
+  useSessionStore,
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -54,7 +55,8 @@ interface StatCellProps {
 }
 
 export const StatCell = observer(({ type }: StatCellProps) => {
-  const telemetry = useTelemetryStore();
+  const { sessionInfo } = useSessionStore();
+  const { environment: env } = useEnvironmentStore();
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
@@ -65,8 +67,6 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     return null;
   }
 
-  const weekendInfo = telemetry.weekendInfo;
-  const env = telemetry.environment;
   const { unitSystem } = units;
 
   let label = '';
@@ -77,7 +77,7 @@ export const StatCell = observer(({ type }: StatCellProps) => {
 
   if (type === 'airTemp') {
     const airTempC =
-      env?.air_temp ?? parseWeekendFloat(weekendInfo?.TrackAirTemp);
+      env?.air_temp ?? parseWeekendFloat(sessionInfo?.trackAirTemp);
 
     label = 'AIR';
     value = formatTemp(airTempC, unitSystem);
@@ -88,7 +88,7 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     }
   } else if (type === 'trackTemp') {
     const trackTempC =
-      env?.track_temp ?? parseWeekendFloat(weekendInfo?.TrackSurfaceTemp);
+      env?.track_temp ?? parseWeekendFloat(sessionInfo?.trackSurfaceTemp);
 
     label = 'TRK';
     value = formatTemp(trackTempC, unitSystem);
@@ -98,7 +98,7 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     }
   } else if (type === 'wind') {
     const windVelMps =
-      env?.wind_vel ?? parseWeekendFloat(weekendInfo?.TrackWindVel);
+      env?.wind_vel ?? parseWeekendFloat(sessionInfo?.trackWindVel);
 
     label = 'WIND';
     value = windVelMps !== null ? _formatSpeed(windVelMps, unitSystem) : '--.-';
@@ -108,7 +108,7 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     const rawHumidity =
       env?.relative_humidity !== undefined && env?.relative_humidity !== null
         ? env.relative_humidity * 100
-        : parseWeekendFloat(weekendInfo?.TrackRelativeHumidity);
+        : parseWeekendFloat(sessionInfo?.trackRelativeHumidity);
 
     label = 'HUM.';
     value = rawHumidity !== null ? `${Math.round(rawHumidity)}%` : '--%';

@@ -15,7 +15,7 @@ const meta: Meta<StoryArgs> = {
     size: { width: 420 },
     seedSnapshot: true,
     seed: (store, args) => {
-      store.telemetryConnection.status = args.status;
+      store.sim.status = args.status;
     },
     args: { status: 'connected' },
     argTypes: {

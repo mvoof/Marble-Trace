@@ -2,7 +2,7 @@ import { runInAction } from 'mobx';
 import { emit, emitTo, listen, UnlistenFn } from '@tauri-apps/api/event';
 import type { UnitSystem } from '@/types';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
-import type { RootStore } from '../root-store';
+import type { RootStore } from '@store/root-store';
 
 const MAIN = 'main';
 const OVERLAY = 'overlay';
@@ -58,15 +58,8 @@ export const setupOverlayListeners = async (
   unlistens.push(
     await listen<number>('standings-class-index-changed', (e) => {
       runInAction(() => {
-        root.widgetSettings.standingsActiveClassIndex = e.payload;
+        root.standingsWidget.activeClassIndex = e.payload;
       });
-    })
-  );
-  unlistens.push(
-    await listen<boolean>('track-map:force-start-pending-changed', (e) => {
-      runInAction(() =>
-        root.widgetSettings.setTrackMapForceStartPending(e.payload)
-      );
     })
   );
   unlistens.push(
@@ -86,8 +79,6 @@ export const emitUnitsChanged = (system: UnitSystem) =>
   emitTo(OVERLAY, 'units-changed', system);
 export const emitStandingsClassIndex = (index: number) =>
   emitTo(OVERLAY, 'standings-class-index-changed', index);
-export const emitTrackMapForceStartPending = (pending: boolean) =>
-  emitTo(OVERLAY, 'track-map:force-start-pending-changed', pending);
 export const emitWidgetSettingsUpdated = (widgets: WidgetDefaultConfig[]) =>
   emitTo(OVERLAY, 'widget-settings-updated', widgets);
 export const emitOverlayMonitorChanged = (index: number | null) =>

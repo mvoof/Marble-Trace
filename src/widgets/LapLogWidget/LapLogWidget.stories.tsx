@@ -1,7 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { LapTimingFrame, LapDeltaFrame } from '@/types/bindings';
-import type { LapHistoryEntry } from '@store/iracing/lap.store';
+import type {
+  LapTimingFrame,
+  LapDeltaFrame,
+  LapHistoryEntry,
+} from '@/types/bindings';
 import { LapLogWidget } from './LapLogWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
@@ -28,7 +31,7 @@ const meta: Meta<StoryArgs> = {
     widget: LapLogWidget,
     size: { width: 220, height: 260 },
     seed: (store, args) => {
-      store.telemetry.updateLapTiming({
+      store.player.updateLapTiming({
         lap: args.lapNum,
         lap_dist: null,
         lap_dist_pct: 0.42,
@@ -47,7 +50,7 @@ const meta: Meta<StoryArgs> = {
         sectorDeltas: [],
       } as LapDeltaFrame);
 
-      store.lap.history = args.history;
+      store.backendComputed.lapHistory = args.history;
     },
     args: {
       liveDelta: -0.312,

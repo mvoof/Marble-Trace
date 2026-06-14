@@ -1,4 +1,5 @@
 import type React from 'react';
+import type { CapabilitiesPayload } from '@/types/bindings';
 
 type RpmColorTheme = 'custom' | 'gradient' | 'classic';
 export type LedShape = 'square' | 'circle';
@@ -190,7 +191,6 @@ export type WidgetSpecificSettings =
   | SectorMatrixWidgetSettings
   | TimerWidgetSettings
   | GMeterWidgetSettings;
-
 export interface WidgetMeta {
   id: string;
   label: string;
@@ -199,6 +199,7 @@ export interface WidgetMeta {
   designHeight: number;
   autoHeight?: boolean;
   overflowVisible?: boolean;
+  requiredCapabilities?: (keyof CapabilitiesPayload)[];
 }
 
 export interface BaseUserSettings {

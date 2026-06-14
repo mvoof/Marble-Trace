@@ -12,12 +12,17 @@ export const useStore = (): RootStore => {
 
   return context;
 };
-
-export const useTelemetryStore = () => useStore().telemetry;
+export const usePlayerStore = () => useStore().player;
+export const useCarsStore = () => useStore().cars;
+export const useSessionStore = () => useStore().session;
+export const useEnvironmentStore = () => useStore().environment;
 export const useBackendComputedStore = () => useStore().backendComputed;
-export const useLapStore = () => useStore().lap;
-export const useTelemetryConnectionStore = () => useStore().telemetryConnection;
+export const useSimStore = () => useStore().sim;
 export const useFlagsStore = () => useStore().flags;
+
+export const useRadarWidgetStore = () => useStore().radar;
+export const useStandingsWidgetStore = () => useStore().standingsWidget;
+export const useTrackMapWidgetStore = () => useStore().trackMapWidget;
 export const useWidgetSettingsStore = () => useStore().widgetSettings;
 export const useAppSettingsStore = () => useStore().appSettings;
 export const useUnitsStore = () => useStore().units;

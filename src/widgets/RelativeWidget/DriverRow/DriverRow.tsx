@@ -39,7 +39,7 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 
-  const pitState = computed.driverPitStates.get(driver.carIdx) ?? 'none';
+  const pitState = driver.pitState;
   const flagType = parseDriverFlags(driver.rawFlags);
 
   const relativeGap = player ? computeRelativeGap(driver, player) : 0;

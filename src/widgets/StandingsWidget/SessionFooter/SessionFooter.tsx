@@ -10,15 +10,16 @@ import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './SessionFooter.module.scss';
 import {
   useBackendComputedStore,
-  useTelemetryStore,
+  useEnvironmentStore,
+  useSessionStore,
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const SessionFooter = observer(() => {
   const { pitStops } = useBackendComputedStore();
-  const telemetry = useTelemetryStore();
-  const { weekendInfo, environment } = telemetry;
+  const { sessionInfo } = useSessionStore();
+  const { environment } = useEnvironmentStore();
   const { unitSystem } = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
@@ -35,10 +36,10 @@ export const SessionFooter = observer(() => {
   const playerPitStops = pitStops?.playerStops ?? 0;
 
   const airCelsius =
-    environment?.air_temp ?? parseWeekendTemp(weekendInfo?.TrackAirTemp);
+    environment?.air_temp ?? parseWeekendTemp(sessionInfo?.trackAirTemp);
 
   const trkCelsius =
-    environment?.track_temp ?? parseWeekendTemp(weekendInfo?.TrackSurfaceTemp);
+    environment?.track_temp ?? parseWeekendTemp(sessionInfo?.trackSurfaceTemp);
 
   const tUnit = tempUnit(unitSystem);
 

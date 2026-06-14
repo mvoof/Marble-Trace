@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { FuelComputedFrame } from '@/types/bindings';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
@@ -37,13 +37,13 @@ const meta: Meta<StoryArgs> = {
     widget: FuelWidget,
     size: { width: 240, height: 360 },
     seed: (store, args) => {
-      store.telemetry.updateCarStatus({
+      store.player.updateCarStatus({
         fuel_level: args.fuelLevel,
-      } as Parameters<typeof store.telemetry.updateCarStatus>[0]);
+      } as Parameters<typeof store.player.updateCarStatus>[0]);
 
-      store.telemetry.updateSessionInfo({
-        DriverInfo: { DriverCarFuelMaxLtr: args.fuelMax },
-      } as Parameters<typeof store.telemetry.updateSessionInfo>[0]);
+      store.session.updateSessionInfo({
+        driverCarFuelMaxLtr: args.fuelMax,
+      } as Parameters<typeof store.session.updateSessionInfo>[0]);
 
       store.backendComputed.updateFuel({
         avgPerLap: args.avgPerLap,

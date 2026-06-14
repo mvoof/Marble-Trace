@@ -1,6 +1,6 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 import {
-  useTelemetryStore,
+  usePlayerStore,
   useBackendComputedStore,
 } from '@store/root-store-context';
 import {
@@ -24,7 +24,7 @@ const colsForCount = (count: number): number => {
 };
 
 export const SectorGrid = observer(({ sectorCount }: Props) => {
-  const { lapTiming } = useTelemetryStore();
+  const { lapTiming } = usePlayerStore();
   const { lapDelta } = useBackendComputedStore();
 
   const currentSectorIdx = lapDelta?.currentSectorIdx ?? 0;

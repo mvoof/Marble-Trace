@@ -1,12 +1,12 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 
 import { isSessionEnded, splitTime } from '@utils/widget/timer-utils';
 
-import { useTelemetryStore } from '@store/root-store-context';
+import { useSessionStore } from '@store/root-store-context';
 import styles from './TimerDisplay.module.scss';
 
 export const TimerDisplay = observer(() => {
-  const { session } = useTelemetryStore();
+  const { session } = useSessionStore();
 
   const sessionState = session?.session_state ?? null;
 

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Button, Switch, Segmented, message, Select, Popconfirm } from 'antd';
 import type { UnitSystem } from '@/types';
 import { downloadSnapshot } from '@/utils/capture-snapshot';
-import { useTelemetryStore } from '@store/root-store-context';
+import { useStore } from '@store/root-store-context';
 import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
 import {
   RefreshCw,
@@ -37,7 +37,7 @@ const Card: React.FC<CardProps> = ({ title, children }) => (
 export const SettingsPage = observer(() => {
   const appSettings = useAppSettingsStore();
   const units = useUnitsStore();
-  const telemetry = useTelemetryStore();
+  const store = useStore();
   const [monitors, setMonitors] = useState<Monitor[]>([]);
 
   const [messageApi, contextHolder] = message.useMessage();
@@ -47,7 +47,7 @@ export const SettingsPage = observer(() => {
   }, []);
 
   const handleCaptureSnapshot = () => {
-    downloadSnapshot(telemetry, 'iracing');
+    downloadSnapshot(store, 'iracing');
 
     messageApi.success('Snapshot saved — place the JSON in test-data/');
   };
@@ -150,19 +150,21 @@ export const SettingsPage = observer(() => {
       </Card>
 
       <Card title="Game Integration">
-        <div className={styles.fieldRow}>
-          <div className={styles.fieldTexts}>
-            <div className={styles.fieldTitle}>Auto-Hide System</div>
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>Auto-Hide System</div>
 
-            <div className={styles.fieldDesc}>
-              Hide widgets when iRacing is not running.
+              <div className={styles.fieldDesc}>
+                Hide widgets when the simulator is not running.
+              </div>
             </div>
-          </div>
 
-          <Switch
-            checked={appSettings.appSettings.hideWidgetsWhenGameClosed}
-            onChange={(v) => appSettings.setHideWidgetsWhenGameClosed(v)}
-          />
+            <Switch
+              checked={appSettings.appSettings.hideWidgetsWhenGameClosed}
+              onChange={(v) => appSettings.setHideWidgetsWhenGameClosed(v)}
+            />
+          </div>
         </div>
       </Card>
 

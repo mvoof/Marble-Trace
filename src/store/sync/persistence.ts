@@ -2,9 +2,9 @@ import { runInAction } from 'mobx';
 import { DEFAULT_WIDGETS } from '@store/widget-defaults';
 import type { UnitSystem } from '@/types';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
-import type { AppSettings } from '@store/app-settings.store';
+import type { AppSettings } from '@store/settings/app-settings.store';
 import { filterToDefaults } from '@utils/filter-to-defaults';
-import type { RootStore } from '../root-store';
+import type { RootStore } from '@store/root-store';
 
 export const SETTINGS_FILE = 'settings.json';
 
