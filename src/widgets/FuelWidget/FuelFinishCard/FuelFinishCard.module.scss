@@ -1,6 +1,6 @@
 .finishCard {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   padding: sp(sm) sp(md);
   margin: ws(1) 0;
@@ -9,6 +9,7 @@
   border-top: 1px solid rgba(255, 255, 255, $opacity-subtle);
   border-bottom: 1px solid rgba(255, 255, 255, $opacity-subtle);
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .finishSafe {
@@ -31,9 +32,46 @@
   }
 }
 
-.finishLabel {
-  letter-spacing: 1.5px;
-  margin-bottom: sp(xxs);
+.sideSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxxs);
+}
+
+.sideSection:last-child {
+  align-items: flex-end;
+}
+
+.sideLabel {
+  font-size: fs(xxxs);
+  letter-spacing: 1px;
+}
+
+.sideValue {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  color: $widget-text-primary;
+  line-height: 1;
+}
+
+.sideValueSafe {
+  color: $widget-status-positive;
+}
+
+.centerSection {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 sp(md);
+  gap: sp(xxxs);
+}
+
+.centerLabel {
+  font-size: fs(xxxs);
+  letter-spacing: 1px;
 }
 
 .finishValue {

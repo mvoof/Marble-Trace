@@ -6,7 +6,7 @@ import { formatFuel } from '@utils/formatters/telemetry-format';
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
-import styles from './FuelFinishCard.module.scss';
+import styles from './FuelMainSection.module.scss';
 import {
   useBackendComputedStore,
   useUnitsStore,
@@ -17,7 +17,7 @@ import {
   NO_LAPS_REMAINING_DATA_PLACEHOLDER,
 } from '@utils/constants/data-placeholders';
 
-export const FuelFinishCard = observer(() => {
+export const FuelMainSection = observer(() => {
   const { fuel } = useBackendComputedStore();
   const { unitSystem } = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
@@ -28,16 +28,16 @@ export const FuelFinishCard = observer(() => {
   const shortage = fuel?.shortage ?? null;
   const avgPerLap = fuel?.avgPerLap ?? null;
 
-  const finishCardClass = (): string => {
+  const centerClass = (): string => {
     if (lapsRemaining !== null && lapsRemaining <= settings.pitWarningLaps) {
-      return styles.finishDanger;
+      return styles.danger;
     }
 
     if (shortage !== null && shortage >= 0) {
-      return styles.finishSafe;
+      return styles.safe;
     }
 
-    return '';
+    return styles.warning;
   };
 
   const lapsValueClass = (): string => {
@@ -66,22 +66,21 @@ export const FuelFinishCard = observer(() => {
 
   const shortageClass =
     shortage !== null && shortage >= 0 ? styles.sideValueSafe : '';
-
   const avgText =
     avgPerLap !== null
       ? formatFuel(avgPerLap, unitSystem)
       : NO_FUEL_DATA_PLACEHOLDER;
 
   return (
-    <div className={`${styles.finishCard} ${finishCardClass()}`}>
-      <div className={styles.sideSection}>
+    <div className={styles.mainSection}>
+      <div className={styles.sideCard}>
         <WidgetLabel className={styles.sideLabel}>AVG / LAP</WidgetLabel>
         <WidgetValue className={styles.sideValue} value={avgText} />
       </div>
 
-      <div className={styles.centerSection}>
+      <div className={`${styles.centerCard} ${centerClass()}`}>
         <WidgetValue
-          className={`${styles.finishValue} ${lapsValueClass()}`}
+          className={`${styles.lapsValue} ${lapsValueClass()}`}
           value={
             lapsRemaining !== null
               ? lapsRemaining.toFixed(1)
@@ -90,7 +89,7 @@ export const FuelFinishCard = observer(() => {
         />
       </div>
 
-      <div className={styles.sideSection}>
+      <div className={`${styles.sideCard} ${styles.sideCardRight}`}>
         <WidgetLabel className={styles.sideLabel}>AT FINISH</WidgetLabel>
         <WidgetValue
           className={`${styles.sideValue} ${shortageClass}`}

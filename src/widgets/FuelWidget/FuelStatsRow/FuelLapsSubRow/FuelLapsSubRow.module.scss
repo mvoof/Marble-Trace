@@ -1,0 +1,31 @@
+.wrapper {
+  border-top: 1px solid rgba(255, 255, 255, $opacity-subtle);
+  margin-bottom: 1px;
+}
+
+.sectionLabel {
+  display: block;
+  font-size: fs(xxxs);
+  color: $widget-text-secondary;
+  letter-spacing: 1px;
+  padding: sp(xxxs) sp(sm);
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, $opacity-subtle);
+}
+
+.subRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: rgba(255, 255, 255, $opacity-faint);
+}
+
+.cell {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  color: $widget-text-primary;
+  background: $widget-surface-overlay;
+  text-align: center;
+  padding: sp(xxxs) sp(sm);
+  line-height: 1;
+}

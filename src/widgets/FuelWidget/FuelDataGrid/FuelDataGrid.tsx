@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
+import { formatFuel } from '@utils/formatters/telemetry-format';
 import { FuelDataCell } from './FuelDataCell/FuelDataCell';
 
 import styles from './FuelDataGrid.module.scss';
@@ -15,7 +15,6 @@ export const FuelDataGrid = observer(() => {
   const { unitSystem } = useUnitsStore();
 
   const shortage = fuel?.shortage ?? null;
-  const unit = fuelUnit(unitSystem);
 
   const shortageText =
     shortage !== null
@@ -33,12 +32,11 @@ export const FuelDataGrid = observer(() => {
 
   return (
     <div className={styles.dataGrid}>
-      <FuelDataCell label="AVG / LAP" value={avgText} unit={unit} />
+      <FuelDataCell label="AVG / LAP" value={avgText} />
 
       <FuelDataCell
-        label="EST. FINISH"
+        label="FUEL AT FINISH"
         value={shortageText}
-        unit={unit}
         valueClassName={shortageClass}
       />
     </div>

@@ -1,0 +1,92 @@
+// Same 4-column grid as FuelLapsSection so center card aligns with middle 2 cells above
+.mainSection {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid rgba(255, 255, 255, $opacity-subtle);
+  margin-bottom: 1px;
+}
+
+// ── Side cards ───────────────────────────────────────────────
+.sideCard {
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: sp(xxxs);
+  padding: sp(sm) sp(md);
+  background: $widget-surface-overlay;
+}
+
+.sideCardRight {
+  grid-column: 4;
+  align-items: flex-end;
+}
+
+.sideLabel {
+  font-size: fs(xxxs);
+  letter-spacing: 1px;
+}
+
+.sideValue {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  color: $widget-text-primary;
+  line-height: 1;
+}
+
+.sideValueSafe {
+  color: $widget-status-positive;
+}
+
+// ── Center card (spans middle 2 columns, no top border → connects to FuelLapsSection) ──
+.centerCard {
+  grid-column: 2 / 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: sp(sm) 0;
+
+  // no border-top — visually merges with cells 2&3 of FuelLapsSection above
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.safe {
+  border-left-color: rgba($widget-status-positive, $opacity-medium);
+  border-right-color: rgba($widget-status-positive, $opacity-medium);
+  border-bottom-color: rgba($widget-status-positive, $opacity-medium);
+}
+
+.warning {
+  border-left-color: rgba($widget-status-warning, $opacity-medium);
+  border-right-color: rgba($widget-status-warning, $opacity-medium);
+  border-bottom-color: rgba($widget-status-warning, $opacity-medium);
+}
+
+.danger {
+  border-left-color: rgba($widget-status-danger, $opacity-medium);
+  border-right-color: rgba($widget-status-danger, $opacity-medium);
+  border-bottom-color: rgba($widget-status-danger, $opacity-medium);
+}
+
+// ── Laps value ───────────────────────────────────────────────
+.lapsValue {
+  font-family: $font-mono;
+  font-size: fs(xl);
+  font-weight: 800;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.valueSafe {
+  color: $widget-status-positive;
+}
+.valueDanger {
+  color: $widget-status-danger;
+}
+.valueWarning {
+  color: $widget-status-warning;
+}
