@@ -171,6 +171,10 @@ impl LapLogState {
 
             // `lap_last_lap_time` still shows the previous lap's time — SDK hasn't
             // updated yet. Keep waiting unless >1 s has elapsed (same-time guard).
+            // Guard applies to negative values too: if the previous lap was invalid
+            // (-1.0) and the current lap is also invalid, the SDK still lags and may
+            // update from -1.0 to a valid positive time. Skipping the guard here would
+            // record a valid lap as invalid and permanently lose its time.
             if lap_last_lap_time == self.last_recorded_lap_time && lap_current_lap_time < 1.0 {
                 return self.current_frame();
             }
