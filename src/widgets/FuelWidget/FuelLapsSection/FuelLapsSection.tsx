@@ -5,6 +5,7 @@ import { formatFuel } from '@utils/formatters/telemetry-format';
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
+import { computeFuelHistoryStats } from '../fuel-utils';
 import styles from './FuelLapsSection.module.scss';
 import {
   useBackendComputedStore,
@@ -17,7 +18,6 @@ import {
   NO_LAPS_REMAINING_DATA_PLACEHOLDER,
 } from '@utils/constants/data-placeholders';
 
-const HISTORY_WINDOW = 10;
 const NO_LAPS = '—';
 
 const computeLaps = (fuelLevel: number, consumptionPerLap: number): string => {
@@ -45,14 +45,7 @@ export const FuelLapsSection = observer(() => {
   const laps = (val: number | null): string =>
     val !== null && fuelLevel > 0 ? computeLaps(fuelLevel, val) : NO_LAPS;
 
-  const last = history.length > 0 ? history[history.length - 1] : null;
-  const window10 = history.slice(-HISTORY_WINDOW);
-  const avg10 =
-    window10.length > 0
-      ? window10.reduce((sum, v) => sum + v, 0) / window10.length
-      : null;
-  const min = history.length > 0 ? Math.min(...history) : null;
-  const max = history.length > 0 ? Math.max(...history) : null;
+  const { last, avg10, min, max } = computeFuelHistoryStats(history);
 
   const lapsValueClass = (): string => {
     if (lapsRemaining === null) {

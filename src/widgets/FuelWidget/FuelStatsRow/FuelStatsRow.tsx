@@ -6,10 +6,9 @@ import {
   useUnitsStore,
 } from '@store/root-store-context';
 import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/constants/data-placeholders';
+import { computeFuelHistoryStats } from '../fuel-utils';
 import { FuelStatsCell } from './FuelStatsCell/FuelStatsCell';
 import styles from './FuelStatsRow.module.scss';
-
-const HISTORY_WINDOW = 10;
 
 export const FuelStatsRow = observer(() => {
   const { fuel } = useBackendComputedStore();
@@ -20,16 +19,7 @@ export const FuelStatsRow = observer(() => {
   const fmt = (val: number | null): string =>
     val !== null ? formatFuel(val, unitSystem) : NO_FUEL_DATA_PLACEHOLDER;
 
-  const last = history.length > 0 ? history[history.length - 1] : null;
-
-  const window10 = history.slice(-HISTORY_WINDOW);
-  const avg10 =
-    window10.length > 0
-      ? window10.reduce((sum, v) => sum + v, 0) / window10.length
-      : null;
-
-  const min = history.length > 0 ? Math.min(...history) : null;
-  const max = history.length > 0 ? Math.max(...history) : null;
+  const { last, avg10, min, max } = computeFuelHistoryStats(history);
 
   return (
     <div className={styles.statsRow}>
