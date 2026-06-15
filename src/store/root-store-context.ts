@@ -1,10 +1,10 @@
-import { createContext, useContext } from 'react';
+import { createContext, use } from 'react';
 import type { RootStore } from './root-store';
 
 export const RootStoreContext = createContext<RootStore | null>(null);
 
 export const useStore = (): RootStore => {
-  const context = useContext(RootStoreContext);
+  const context = use(RootStoreContext);
 
   if (!context) {
     throw new Error('Missing RootStoreProvider');

@@ -8,9 +8,6 @@
 /** Average car body width */
 export const CAR_WIDTH = 1.8;
 
-/** Average car body length */
-export const CAR_LENGTH = 4.4;
-
 /** Corner radius for car icon rendering */
 export const CAR_CORNER_RADIUS = 0.2;
 

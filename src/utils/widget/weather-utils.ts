@@ -1,9 +1,3 @@
-import type { UnitSystem } from '@/types';
-import {
-  formatSpeed as _formatSpeed,
-  speedUnit as _speedUnit,
-} from '@utils/formatters/telemetry-format';
-
 export const getWindColor = (mps: number | null): string => {
   if (mps === null) {
     return '#3b82f6';
@@ -69,14 +63,6 @@ export const bearingToCardinal = (deg: number): string => {
   const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
   const idx = Math.round(deg / 45) % 8;
   return dirs[idx];
-};
-
-export const formatWindSpeed = (
-  mps: number | null,
-  system: UnitSystem
-): string => {
-  if (mps === null) return '\u2014';
-  return `${_formatSpeed(mps, system)} ${_speedUnit(system)}`;
 };
 
 export type WeatherIconType = 'sun' | 'cloud-sun' | 'cloud' | 'cloud-rain';

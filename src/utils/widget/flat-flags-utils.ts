@@ -16,7 +16,3 @@ export const FLAG_LABEL: Record<FlagType, string> = {
 };
 
 export const BLINK_FLAGS = new Set<FlagType>(['yellow', 'red']);
-
-export const EMPTY_FLAGS: FlagType[] = [];
-
-export const IS_EMPTY_FLAGS = (flagsList: FlagType[]) => flagsList.length === 0;

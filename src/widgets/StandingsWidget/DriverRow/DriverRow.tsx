@@ -10,7 +10,8 @@ import {
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
-import { LicBadge, formatIr } from '@/components/shared/RatingBadge/LicBadge';
+import { LicBadge } from '@/components/shared/RatingBadge/LicBadge';
+import { formatIr } from '@/components/shared/RatingBadge/LicBadge.utils';
 import { TireBadge } from '@/components/shared/TireBadge/TireBadge';
 import {
   buildGridTemplate,

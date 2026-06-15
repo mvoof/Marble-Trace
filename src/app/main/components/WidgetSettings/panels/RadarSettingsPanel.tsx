@@ -1,8 +1,8 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 import { Col, InputNumber, Row } from 'antd';
 import type { RadarSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card } from './Card';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const RadarSettingsPanel = observer(

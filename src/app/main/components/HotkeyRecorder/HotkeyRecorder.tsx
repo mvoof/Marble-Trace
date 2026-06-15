@@ -1,10 +1,5 @@
-import React, {
-  useState,
-  useCallback,
-  useRef,
-  useEffect,
-  startTransition,
-} from 'react';
+import React, { useState, useCallback, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { Space, Button, Input } from 'antd';
 import type { InputRef } from 'antd';
 import styles from './HotkeyRecorder.module.scss';
@@ -34,16 +29,9 @@ export const HotkeyRecorder = ({
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const inputRef = useRef<InputRef>(null);
 
-  useEffect(() => {
-    if (recording) {
-      inputRef.current?.focus();
-    }
-  }, [recording]);
-
   const startRecording = () => {
-    startTransition(() => {
-      setRecording(true);
-    });
+    flushSync(() => setRecording(true));
+    inputRef.current?.focus();
   };
 
   const handleKeyDown = useCallback(

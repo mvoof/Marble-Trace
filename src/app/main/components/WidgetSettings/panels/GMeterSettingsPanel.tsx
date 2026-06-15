@@ -1,4 +1,4 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 import { Segmented } from 'antd';
 import type {
   GMeterColorMode,
@@ -6,7 +6,7 @@ import type {
   GMeterWidgetSettings,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { Card } from './shared';
+import { Card } from './Card';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const GMeterSettingsPanel = observer(() => {

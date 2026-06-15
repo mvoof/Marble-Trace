@@ -73,6 +73,7 @@ export const ClassSwitcher = observer(() => {
   return (
     <div className={styles.switcher}>
       <button
+        type="button"
         className={`${styles.navBtn} ${flashDir === 'prev' ? styles.navBtnFlash : ''}`}
         onClick={handlePrev}
         onMouseDown={(e) => e.stopPropagation()}
@@ -92,6 +93,7 @@ export const ClassSwitcher = observer(() => {
       />
 
       <button
+        type="button"
         className={`${styles.navBtn} ${flashDir === 'next' ? styles.navBtnFlash : ''}`}
         onClick={handleNext}
         onMouseDown={(e) => e.stopPropagation()}

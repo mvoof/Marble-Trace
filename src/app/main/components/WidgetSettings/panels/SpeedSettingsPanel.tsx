@@ -1,8 +1,9 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
 import { speedUnit } from '@utils/formatters/telemetry-format';
 import { SpeedWidgetSettings, LedShape } from '@/types/widget-settings';
-import { Card, SettingRow } from './shared';
+import { Card } from './Card';
+import { SettingRow } from './SettingRow';
 
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import {

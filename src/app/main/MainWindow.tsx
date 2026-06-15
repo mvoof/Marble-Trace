@@ -141,6 +141,7 @@ export const MainWindow = observer(() => {
 
               <div className={styles.sidebarFooter}>
                 <button
+                  type="button"
                   className={`${styles.settingsItem} ${
                     selectedId === 'app-settings' ? styles.active : ''
                   }`}

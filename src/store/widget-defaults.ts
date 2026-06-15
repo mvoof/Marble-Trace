@@ -241,14 +241,7 @@ export const LINEAR_MAP_SIZES: Record<
   vertical: { designWidth: 40, designHeight: 400 },
 };
 
-export const INPUT_TRACE_SIZES: Record<
-  string,
-  { designWidth: number; designHeight: number }
-> = {
-  vertical: { designWidth: 400, designHeight: 110 },
-};
-
-export const WIDGETS: WidgetConfig[] = [
+const WIDGETS: WidgetConfig[] = [
   {
     id: 'speed',
     label: 'Speed',
