@@ -32,7 +32,17 @@ pub fn compute(entries: &[DriverEntry], player_car_idx: i32) -> RelativeFrame {
 ///
 /// Runs at 10 Hz — same cadence as standings so the data is always fresh.
 /// Required capability: `RELATIVE` (already set by `IracingSource`).
-pub struct RelativeProcessor;
+pub struct RelativeProcessor {
+    state: std::sync::Mutex<crate::computations::standings::StandingsState>,
+}
+
+impl Default for RelativeProcessor {
+    fn default() -> Self {
+        Self {
+            state: std::sync::Mutex::new(crate::computations::standings::StandingsState::default()),
+        }
+    }
+}
 
 impl Processor for RelativeProcessor {
     fn id(&self) -> ProcessorId {
@@ -55,14 +65,12 @@ impl Processor for RelativeProcessor {
             return None;
         }
 
-        // Re-derive entries from the same source the standings processor uses
-        // so the relative frame is consistent with the standings frame.
         let standings_frame = crate::computations::standings::compute(
             ctx.car_idx,
             ctx.session,
             ctx.start_positions,
             false,
-            &std::sync::Mutex::new(crate::computations::standings::StandingsState::default()),
+            &self.state,
         );
 
         let frame = compute(&standings_frame.entries, player_car_idx);
@@ -70,7 +78,11 @@ impl Processor for RelativeProcessor {
         Some(ComputedOutput::Relative(frame))
     }
 
-    fn reset(&mut self) {}
+    fn reset(&mut self) {
+        if let Ok(mut locked) = self.state.lock() {
+            *locked = crate::computations::standings::StandingsState::default();
+        }
+    }
 }
 
 #[cfg(test)]

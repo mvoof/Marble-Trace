@@ -105,7 +105,7 @@ impl ProcessorRegistry {
                 Box::new(LapLogProcessor::default()),
                 Box::new(PitStopsProcessor::default()),
                 Box::new(ProximityProcessor),
-                Box::new(RelativeProcessor),
+                Box::new(RelativeProcessor::default()),
                 Box::new(StandingsProcessor::default()),
                 Box::new(TrackShapeProcessor::new(force_track_start)),
             ],
