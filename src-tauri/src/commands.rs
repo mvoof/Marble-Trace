@@ -30,6 +30,10 @@ pub async fn set_pit_warning_laps(
     state: State<'_, TelemetryState>,
     laps: f32,
 ) -> Result<(), String> {
+    if !laps.is_finite() || laps < 0.0 {
+        return Err("pit_warning_laps must be a finite non-negative number".to_string());
+    }
+
     state
         .pit_warning_laps
         .store(laps.to_bits(), Ordering::Relaxed);
