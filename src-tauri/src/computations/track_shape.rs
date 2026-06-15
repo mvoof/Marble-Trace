@@ -410,8 +410,26 @@ fn get_point_at_pct(points: &[TrackPoint], pct: f32) -> (f32, f32) {
         p += 1.0;
     }
 
+    let last_idx = points.len() - 1;
+
+    // p is outside the stored pct range — wrap-around segment (last → first point).
+    if p < points[0].pct || p > points[last_idx].pct {
+        let a = &points[last_idx];
+        let b = &points[0];
+        let seg_len = b.pct - a.pct + 1.0;
+        let mut t = (p - a.pct) / seg_len;
+
+        if t < 0.0 {
+            t += 1.0 / seg_len;
+        }
+
+        let t_clamped = t.clamp(0.0, 1.0);
+
+        return (a.x + (b.x - a.x) * t_clamped, a.y + (b.y - a.y) * t_clamped);
+    }
+
     let mut lo = 0usize;
-    let mut hi = points.len() - 1;
+    let mut hi = last_idx;
 
     while lo < hi.saturating_sub(1) {
         let mid = (lo + hi) / 2;
@@ -426,21 +444,15 @@ fn get_point_at_pct(points: &[TrackPoint], pct: f32) -> (f32, f32) {
     let a = &points[lo];
     let b = &points[hi];
 
-    let seg_len = b.pct - a.pct + if b.pct < a.pct { 1.0 } else { 0.0 };
+    let seg_len = b.pct - a.pct;
 
     if seg_len <= 0.0 {
         return (a.x, a.y);
     }
 
-    let mut t = (p - a.pct) / seg_len;
+    let t = ((p - a.pct) / seg_len).clamp(0.0, 1.0);
 
-    if t < 0.0 {
-        t += 1.0 / seg_len;
-    }
-
-    let t_clamped = t.clamp(0.0, 1.0);
-
-    (a.x + (b.x - a.x) * t_clamped, a.y + (b.y - a.y) * t_clamped)
+    (a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t)
 }
 
 #[cfg(test)]
