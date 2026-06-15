@@ -1,6 +1,6 @@
 ﻿import { observer } from 'mobx-react-lite';
 
-import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
+import { formatFuel } from '@utils/formatters/telemetry-format';
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 
@@ -45,7 +45,6 @@ export const PitWarningAmount = observer(() => {
               ? formatFuel(fuelToAddWithBuffer, unitSystem)
               : NO_FUEL_DATA_PLACEHOLDER
           }
-          unit={fuelUnit(unitSystem)}
         />
       </div>
 

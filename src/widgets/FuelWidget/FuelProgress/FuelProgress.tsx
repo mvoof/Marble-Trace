@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
+import { formatFuel } from '@utils/formatters/telemetry-format';
 
 import styles from './FuelProgress.module.scss';
 import {
@@ -34,9 +34,7 @@ export const FuelProgress = observer(() => {
         )}
 
         <span className={styles.progressLabelMax}>
-          {fuelMax !== null
-            ? `${formatFuel(fuelMax, unitSystem)} ${fuelUnit(unitSystem)} MAX`
-            : ''}
+          {fuelMax !== null ? `${formatFuel(fuelMax, unitSystem)} MAX` : ''}
         </span>
       </div>
     </div>

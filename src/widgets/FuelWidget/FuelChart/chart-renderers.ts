@@ -33,17 +33,6 @@ const drawAvgLine = (
   ctx.fillText('AVG', plotW, avgY - 1);
 };
 
-const drawTopLine = (ctx: CanvasRenderingContext2D, plotW: number) => {
-  ctx.strokeStyle = FUEL_COLORS.grid;
-  ctx.lineWidth = 1;
-
-  ctx.beginPath();
-  ctx.moveTo(0, 0);
-  ctx.lineTo(plotW, 0);
-
-  ctx.stroke();
-};
-
 const drawXLabels = (
   ctx: CanvasRenderingContext2D,
   n: number,
@@ -147,8 +136,6 @@ export const drawBarChart = (
     ctx.fillRect(x, plotH - bh, barWidth, bh);
   });
 
-  drawTopLine(ctx, w);
-
   if (avg !== null) {
     const avgY = plotH - toBarH(avg);
 
@@ -209,8 +196,6 @@ export const drawLineChart = (
 
     ctx.fill();
   });
-
-  drawTopLine(ctx, w);
 
   if (avg !== null) {
     drawAvgLine(ctx, toY(avg), w);

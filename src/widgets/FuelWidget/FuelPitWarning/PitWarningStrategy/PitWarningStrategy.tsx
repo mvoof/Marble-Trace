@@ -1,6 +1,6 @@
 ﻿import { observer } from 'mobx-react-lite';
 
-import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
+import { formatFuel } from '@utils/formatters/telemetry-format';
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 
@@ -50,7 +50,6 @@ export const PitWarningStrategy = observer(() => {
                 fuelToAddWithBuffer / Math.ceil(fuelToAddWithBuffer / fuelMax),
                 unitSystem
               )}
-              unit={fuelUnit(unitSystem)}
             />
           </div>
         </div>

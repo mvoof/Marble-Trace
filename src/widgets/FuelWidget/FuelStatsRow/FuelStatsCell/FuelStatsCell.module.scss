@@ -1,0 +1,26 @@
+.cell {
+  display: flex;
+  flex-direction: column;
+  padding: sp(xs) sp(sm);
+  background: $widget-surface-overlay;
+  gap: sp(xxxs);
+}
+
+.label {
+  font-size: fs(xxxs);
+  text-align: center;
+}
+
+.consumption {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  color: $widget-text-primary;
+  line-height: 1;
+  text-align: center;
+}
+
+.unit {
+  font-size: fs(xxs);
+  color: $widget-text-secondary;
+  margin-left: sp(xxs);
+}
