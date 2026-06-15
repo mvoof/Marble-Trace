@@ -2118,9 +2118,9 @@ dependencies = [
 
 [[package]]
 name = "kerb"
-version = "0.1.2"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "573cf6d8393c4e4b3745e52bd645fe9ed06e041bd941a5770f0ad2453ffacd4c"
+checksum = "ac14d02ab64f07ef0153b1c71864c8df4e09fb81245cbce2c7f87116cb89dd4a"
 dependencies = [
  "encoding_rs",
  "serde",

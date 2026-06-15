@@ -30,6 +30,17 @@ pub struct ParsedSession {
     pub weather_forecast: Vec<WeatherForecastEntry>,
 }
 
+/// Result of a single telemetry read attempt from a source.
+#[derive(Debug)]
+pub enum SourceReadResult<F> {
+    /// Telemetry data is ready.
+    Frame(F),
+    /// No data arrived within the timeout window.
+    NotReady,
+    /// The source has disconnected (game closed).
+    Disconnected,
+}
+
 /// Abstracts over a connected simulator; implementors live in `sources/`.
 pub trait TelemetrySource {
     /// Which simulator this source connects to.
@@ -39,14 +50,8 @@ pub trait TelemetrySource {
     /// Bitflags describing what this source can provide.
     fn capabilities(&self) -> Capabilities;
 
-    /// Whether the sim is currently broadcasting data.
-    fn is_connected(&self) -> bool;
-
-    /// Block until data arrives or `timeout_ms` elapses. Returns `true` if data is ready.
-    fn wait_for_data(&self, timeout_ms: u32) -> bool;
-
-    /// Read and adapt the current telemetry frame.
-    fn read_frame(&mut self) -> Option<SourceFrame>;
+    /// Read the next telemetry frame, blocking up to `timeout_ms`.
+    fn read_frame(&mut self, timeout_ms: u32) -> SourceReadResult<SourceFrame>;
 
     /// Returns `true` if the session YAML version has changed since the last `poll_session`.
     fn session_changed(&mut self) -> bool;

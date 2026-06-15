@@ -6,7 +6,7 @@ use tracing::{debug, warn};
 
 use super::session_parse;
 use crate::model::enums::SimType;
-use crate::sources::source::{ParsedSession, SourceFrame, TelemetrySource};
+use crate::sources::source::{ParsedSession, SourceFrame, SourceReadResult, TelemetrySource};
 use crate::telemetry::capabilities::Capabilities;
 
 pub struct IracingSource {
@@ -46,24 +46,14 @@ impl TelemetrySource for IracingSource {
         Capabilities::all()
     }
 
-    fn is_connected(&self) -> bool {
-        self.connection.is_connected()
-    }
-
-    fn wait_for_data(&self, timeout_ms: u32) -> bool {
-        self.connection.wait_for_data(timeout_ms)
-    }
-
-    /// Reads a single frame and converts it to `SourceFrame`.
-    /// Returns `None` and logs a warning on error.
-    fn read_frame(&mut self) -> Option<SourceFrame> {
-        match self.connection.frame() {
-            Ok(raw_frame) => Some(SourceFrame::from(&raw_frame)),
-            Err(e) => {
-                warn!("Failed to read telemetry frame: {e}");
-
-                None
+    /// Reads a single frame blocking up to `timeout_ms`.
+    fn read_frame(&mut self, timeout_ms: u32) -> SourceReadResult<SourceFrame> {
+        match self.connection.read_frame(timeout_ms) {
+            kerb::ReadResult::Frame(raw_frame) => {
+                SourceReadResult::Frame(SourceFrame::from(&raw_frame))
             }
+            kerb::ReadResult::NotReady => SourceReadResult::NotReady,
+            kerb::ReadResult::Disconnected => SourceReadResult::Disconnected,
         }
     }
 

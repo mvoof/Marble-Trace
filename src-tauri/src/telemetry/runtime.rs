@@ -24,8 +24,7 @@ use crate::model::capabilities::CapabilitiesPayload;
 use crate::model::enums::{SimStatus, SimType};
 use crate::model::session::SessionSnapshot;
 use crate::sources::create_source;
-use crate::sources::source::ParsedSession;
-use crate::sources::source::TelemetrySource;
+use crate::sources::source::{ParsedSession, SourceReadResult, TelemetrySource};
 
 const CONNECT_RETRY_DELAY: Duration = Duration::from_secs(1);
 /// How long a single `wait_for_data` call blocks before we re-check state.
@@ -132,41 +131,33 @@ fn run_telemetry_loop(
             return;
         }
 
-        if !source.wait_for_data(WAIT_FOR_DATA_TIMEOUT_MS) {
-            if !source.is_connected() {
-                info!("{:?} stopped broadcasting (sim closed)", source.sim_type());
+        let frame = match source.read_frame(WAIT_FOR_DATA_TIMEOUT_MS) {
+            SourceReadResult::Frame(f) => f,
+            SourceReadResult::NotReady => {
+                missed_waits += 1;
 
+                if missed_waits >= MISSED_WAITS_BEFORE_WAITING_STATUS && !is_waiting {
+                    is_waiting = true;
+                    debug!("No telemetry for 3s, waiting...");
+                    app.emit(
+                        EVENT_STATUS,
+                        &SimStatus {
+                            status: "waiting".into(),
+                            sim: None,
+                        },
+                    )
+                    .ok();
+                }
+
+                continue;
+            }
+            SourceReadResult::Disconnected => {
+                info!("{:?} stopped broadcasting (sim closed)", source.sim_type());
                 return;
             }
-
-            missed_waits += 1;
-
-            if missed_waits >= MISSED_WAITS_BEFORE_WAITING_STATUS && !is_waiting {
-                is_waiting = true;
-                debug!("No telemetry for 3s, waiting...");
-                app.emit(
-                    EVENT_STATUS,
-                    &SimStatus {
-                        status: "waiting".into(),
-                        sim: None,
-                    },
-                )
-                .ok();
-            }
-
-            continue;
-        }
+        };
 
         missed_waits = 0;
-
-        if !source.is_connected() {
-            info!("{:?} disconnected (detected after wait)", source.sim_type());
-            return;
-        }
-
-        let Some(frame) = source.read_frame() else {
-            continue;
-        };
 
         tick += 1;
 
