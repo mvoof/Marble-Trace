@@ -281,7 +281,7 @@ impl Processor for TrackShapeProcessor {
             let lap_dist = ctx.lap_timing.lap_dist_pct.unwrap_or(-1.0);
 
             let crossed_sf =
-                !on_pit_road && self.last_lap_dist_pct > 0.8 && lap_dist >= 0.0 && lap_dist < 0.2;
+                !on_pit_road && self.last_lap_dist_pct > 0.8 && (0.0..0.2).contains(&lap_dist);
 
             if (crossed_sf || force) && !on_pit_road && lap_dist >= 0.0 {
                 self.state.start();
@@ -314,7 +314,7 @@ impl Processor for TrackShapeProcessor {
 
         self.status_tick += 1;
 
-        if self.status_tick % STATUS_EMIT_INTERVAL == 0 {
+        if self.status_tick.is_multiple_of(STATUS_EMIT_INTERVAL) {
             let is_waiting = is_moving && !self.state.recording && !self.state.complete && !force;
 
             return Some(ComputedOutput::TrackRecording(TrackRecordingFrame {
@@ -395,6 +395,7 @@ fn build_payload(track_id: i32, state: &TrackShapeState) -> TrackShapePayload {
 }
 
 /// Find interpolated (x, y) at the given lapDistPct along a sorted points slice.
+#[allow(dead_code)]
 fn get_point_at_pct(points: &[TrackPoint], pct: f32) -> (f32, f32) {
     if points.is_empty() {
         return (0.0, 0.0);
