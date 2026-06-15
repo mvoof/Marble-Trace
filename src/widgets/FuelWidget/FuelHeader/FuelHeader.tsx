@@ -1,15 +1,15 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 
 import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
 
 import styles from './FuelHeader.module.scss';
-import { useTelemetryStore, useUnitsStore } from '@store/root-store-context';
+import { usePlayerStore, useUnitsStore } from '@store/root-store-context';
 import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/constants/data-placeholders';
 
 export const FuelHeader = observer(() => {
-  const { carStatus } = useTelemetryStore();
+  const { carStatus } = usePlayerStore();
   const { unitSystem } = useUnitsStore();
 
   const fuelLevel = carStatus?.fuel_level ?? null;

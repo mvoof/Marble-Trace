@@ -1,10 +1,10 @@
-import { useEffect, useRef, useCallback } from 'react';
+﻿import { useEffect, useRef, useCallback } from 'react';
 import { autorun } from 'mobx';
 
 import type { InputTraceSettings } from '@/types/widget-settings';
 import styles from './CanvasTrace.module.scss';
 import {
-  useTelemetryStore,
+  usePlayerStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -18,7 +18,7 @@ interface SmoothedValues {
 // to MobX observables directly, so React re-renders are not needed for data updates.
 // observer() would cause 60 Hz React re-renders on every carInputs change.
 export const CanvasTrace = () => {
-  const telemetry = useTelemetryStore();
+  const telemetry = usePlayerStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);

@@ -75,11 +75,19 @@ const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
   { px: 30, show: settings.showTire }, // tire     badge — at end
 ];
 
-export const buildGridTemplate = (settings: StandingsWidgetSettings): string =>
-  colSpecs(settings)
-    .filter((col) => col.show)
-    .map((col) => (col.flex ? `minmax(${ws(NAME_MIN_PX)}, 1fr)` : ws(col.px)))
-    .join(' ');
+export const buildGridTemplate = (
+  settings: StandingsWidgetSettings
+): string => {
+  const parts: string[] = [];
+
+  for (const col of colSpecs(settings)) {
+    if (col.show) {
+      parts.push(col.flex ? `minmax(${ws(NAME_MIN_PX)}, 1fr)` : ws(col.px));
+    }
+  }
+
+  return parts.join(' ');
+};
 
 // Natural content width of the currently-visible columns (px at scale 1).
 // Used as the widget's designWidth so hiding columns shrinks the widget WITHOUT

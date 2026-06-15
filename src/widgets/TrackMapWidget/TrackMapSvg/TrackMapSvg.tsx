@@ -2,8 +2,8 @@ import { useRef, useState, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { TrackPoint } from '@/types';
-import { getPointAtPct } from '@utils/telemetry/track-recorder';
-import type { Sector } from '@/types/bindings';
+import { getPointAtPct } from '@utils/widget/track-map-utils';
+import type { SectorEntry } from '@/types/bindings';
 import type { TrackMapLeaderLabelMode } from '@/types/widget-settings';
 import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
 import { CarDot } from '@/components/shared/CarDot/CarDot';
@@ -18,7 +18,7 @@ interface TrackMapSvgProps {
   viewBox: string;
   points: TrackPoint[];
   cars: CarOnTrack[];
-  sectors: Sector[] | null | undefined;
+  sectors: SectorEntry[] | null | undefined;
   sfLabel?: string;
   playerDotColor?: string;
   showPlayerLabel?: boolean;
@@ -104,8 +104,8 @@ export const TrackMapSvg = observer(
     }, [points]);
 
     const validSectors = sectors
-      ?.filter((s) => s.SectorStartPct != null && s.SectorNum != null)
-      .sort((a, b) => (a.SectorStartPct ?? 0) - (b.SectorStartPct ?? 0));
+      ?.filter((s) => s.sectorStartPct != null && s.sectorNum != null)
+      .sort((a, b) => (a.sectorStartPct ?? 0) - (b.sectorStartPct ?? 0));
 
     return (
       <svg ref={svgRef} viewBox={viewBox} className={styles.svgContainer}>
@@ -136,15 +136,15 @@ export const TrackMapSvg = observer(
           {pathLength > 0 &&
             validSectors?.map((sector, i) => {
               const nextSector = validSectors[i + 1];
-              const endPct = nextSector?.SectorStartPct ?? 1.0;
+              const endPct = nextSector?.sectorStartPct ?? 1.0;
 
-              const startDist = (sector.SectorStartPct ?? 0) * pathLength;
+              const startDist = (sector.sectorStartPct ?? 0) * pathLength;
               const sectorLen =
-                (endPct - (sector.SectorStartPct ?? 0)) * pathLength;
+                (endPct - (sector.sectorStartPct ?? 0)) * pathLength;
 
               return (
                 <path
-                  key={`arc-${sector.SectorNum}`}
+                  key={`arc-${sector.sectorNum}`}
                   d={svgPath}
                   fill="none"
                   strokeWidth={sectorStrokePx * pixelScale}

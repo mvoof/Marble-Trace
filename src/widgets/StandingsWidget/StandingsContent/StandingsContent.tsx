@@ -4,6 +4,7 @@ import type { DriverGroup } from '@/types';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import {
   useBackendComputedStore,
+  useStandingsWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import {
@@ -20,15 +21,17 @@ import { SessionFooter } from '@widgets/StandingsWidget/SessionFooter/SessionFoo
 import styles from './StandingsContent.module.scss';
 
 export const StandingsContent = observer(() => {
-  const { allClassGroups, standings } = useBackendComputedStore();
+  const { standings } = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
+  const standingsWidget = useStandingsWidgetStore();
+  const { allClassGroups } = standingsWidget;
 
   const settings =
     widgetSettings.getSettings<StandingsWidgetSettings>('standings');
 
   const driverEntries = standings?.entries ?? [];
 
-  const activeClassIndex = widgetSettings.standingsActiveClassIndex;
+  const activeClassIndex = standingsWidget.activeClassIndex;
   const overallSof = computeClassSof(driverEntries);
 
   const isGrouped =

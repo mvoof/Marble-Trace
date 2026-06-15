@@ -1,10 +1,10 @@
-import { observer } from 'mobx-react-lite';
-import { useTelemetryStore } from '@store/root-store-context';
+﻿import { observer } from 'mobx-react-lite';
+import { usePlayerStore } from '@store/root-store-context';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import styles from './SectorFooter.module.scss';
 
 export const SectorFooter = observer(() => {
-  const { lapTiming } = useTelemetryStore();
+  const { lapTiming } = usePlayerStore();
 
   const lastLapTime = lapTiming?.lap_last_lap_time ?? null;
   const bestLapTime = lapTiming?.lap_best_lap_time ?? null;

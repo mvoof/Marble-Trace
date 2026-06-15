@@ -1,148 +1,49 @@
-import { useCallback, useEffect, useReducer, useRef } from 'react';
+﻿import { useCallback, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { listen } from '@tauri-apps/api/event';
 
-import type { TrackPoint } from '@/types';
-
-import { TrackRecorderBridge } from '../TrackRecorderBridge/TrackRecorderBridge';
-import type { RecordingOverlayHandle } from '../RecordingOverlay/RecordingOverlay';
 import { TrackMapView, type TrackData } from '../TrackMapView/TrackMapView';
 import type { StoredTracks } from '../types';
 import { TRACKS_STORE_KEY, TRACK_DATA_VERSION } from '../types';
-import { useTelemetryStore } from '@store/root-store-context';
-
-type RecordingState = {
-  isRecording: boolean;
-  isWaitingForSF: boolean;
-  recordingProgress: number;
-  trackData: TrackData | null;
-};
-
-type RecordingAction =
-  | { type: 'SET_TRACK_DATA'; data: TrackData | null }
-  | { type: 'START_WAITING' }
-  | { type: 'START_RECORDING' }
-  | { type: 'SET_PROGRESS'; progress: number }
-  | { type: 'CLEAR' };
-
-const recordingReducer = (
-  state: RecordingState,
-  action: RecordingAction
-): RecordingState => {
-  switch (action.type) {
-    case 'SET_TRACK_DATA':
-      return {
-        ...state,
-        trackData: action.data,
-        isRecording: false,
-        isWaitingForSF: false,
-      };
-    case 'START_WAITING':
-      return { ...state, isWaitingForSF: true, recordingProgress: 0 };
-    case 'START_RECORDING':
-      return { ...state, isRecording: true, isWaitingForSF: false };
-    case 'SET_PROGRESS':
-      return { ...state, recordingProgress: action.progress };
-    case 'CLEAR':
-      return {
-        isRecording: false,
-        isWaitingForSF: false,
-        recordingProgress: 0,
-        trackData: null,
-      };
-    default:
-      return state;
-  }
-};
+import {
+  useSessionStore,
+  useTrackMapWidgetStore,
+} from '@store/root-store-context';
 
 export const TrackMapContent = observer(() => {
-  const telemetry = useTelemetryStore();
+  const sessionData = useSessionStore();
+  const trackMapWidget = useTrackMapWidgetStore();
 
-  const { weekendInfo } = telemetry;
+  const { sessionInfo } = sessionData;
 
-  const trackId = weekendInfo?.TrackID?.toString() ?? '';
-  const trackName = weekendInfo?.TrackDisplayName ?? '';
-  const trackConfig = weekendInfo?.TrackConfigName ?? '';
+  const trackId =
+    sessionInfo && sessionInfo.trackId >= 0 ? String(sessionInfo.trackId) : '';
+  const trackName = sessionInfo?.trackDisplayName ?? '';
+  const trackConfig = sessionInfo?.trackConfigName ?? '';
 
-  const hasSavedRef = useRef(false);
+  const trackDataRef = useRef<TrackData | null>(null);
 
-  const [recState, dispatch] = useReducer(recordingReducer, {
-    isRecording: false,
-    isWaitingForSF: false,
-    recordingProgress: 0,
-    trackData: null,
-  });
+  const savedRotationRef = useRef<number>(0);
 
-  const { isRecording, isWaitingForSF, recordingProgress, trackData } =
-    recState;
+  const buildTrackData = useCallback(
+    (
+      shape: {
+        svgPath: string;
+        viewBox: string;
+        points: Array<{ x: number; y: number; pct: number }>;
+      },
+      rotation: number
+    ): TrackData => ({
+      svgPath: shape.svgPath,
+      viewBox: shape.viewBox,
+      points: shape.points,
+      rotation,
+    }),
+    []
+  );
 
-  const trackDataRef = useRef(trackData);
-  trackDataRef.current = trackData;
-
-  const recordingOverlayRef = useRef<RecordingOverlayHandle>(null);
-
-  const setTrackData = useCallback((data: TrackData | null) => {
-    dispatch({ type: 'SET_TRACK_DATA', data });
-  }, []);
-
-  const setIsRecording = useCallback((nextIsRecording: boolean) => {
-    if (nextIsRecording) {
-      dispatch({ type: 'START_RECORDING' });
-    } else {
-      dispatch({ type: 'SET_TRACK_DATA', data: null });
-    }
-  }, []);
-
-  const setIsWaitingForSF = useCallback((isWaiting: boolean) => {
-    if (isWaiting) {
-      dispatch({ type: 'START_WAITING' });
-    }
-  }, []);
-
-  const setRecordingProgress = useCallback((progress: number) => {
-    dispatch({ type: 'SET_PROGRESS', progress });
-  }, []);
-
-  useEffect(() => {
-    if (!trackId) return;
-
-    hasSavedRef.current = false;
-
-    const loadTrack = async () => {
-      try {
-        const { load } = await import('@tauri-apps/plugin-store');
-        const store = await load('tracks.json');
-        const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
-        const saved = tracks[trackId];
-
-        if (
-          saved &&
-          saved.svgPath &&
-          saved.points?.length > 0 &&
-          (saved.version ?? 0) >= TRACK_DATA_VERSION
-        ) {
-          dispatch({
-            type: 'SET_TRACK_DATA',
-            data: {
-              svgPath: saved.svgPath,
-              viewBox: saved.viewBox,
-              points: saved.points,
-              rotation: saved.rotation ?? 0,
-            },
-          });
-        } else {
-          dispatch({ type: 'SET_TRACK_DATA', data: null });
-        }
-      } catch {
-        dispatch({ type: 'SET_TRACK_DATA', data: null });
-      }
-    };
-
-    void loadTrack();
-  }, [trackId]);
-
-  const saveTrack = useCallback(
-    async (svgPath: string, viewBox: string, points: TrackPoint[]) => {
+  const saveRotation = useCallback(
+    async (newRotation: number) => {
       if (!trackId) return;
 
       try {
@@ -150,28 +51,74 @@ export const TrackMapContent = observer(() => {
         const store = await load('tracks.json');
         const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
 
-        tracks[trackId] = {
-          trackName,
-          trackConfig,
-          svgPath,
-          viewBox,
-          points,
-          recordedAt: new Date().toISOString(),
-          version: TRACK_DATA_VERSION,
-          rotation: 0,
-        };
+        if (!tracks[trackId]) {
+          tracks[trackId] = {
+            trackName,
+            trackConfig,
+            svgPath: trackDataRef.current?.svgPath ?? '',
+            viewBox: trackDataRef.current?.viewBox ?? '0 0 100 100',
+            points: trackDataRef.current?.points ?? [],
+            recordedAt: new Date().toISOString(),
+            version: TRACK_DATA_VERSION,
+            rotation: newRotation,
+          };
+        } else {
+          tracks[trackId].rotation = newRotation;
+        }
 
         await store.set(TRACKS_STORE_KEY, tracks);
         await store.save();
       } catch {
-        // Silently fail — track will need re-recording
+        // Silently fail
       }
     },
     [trackId, trackName, trackConfig]
   );
 
-  const clearCurrentTrack = useCallback(async () => {
+  useEffect(() => {
     if (!trackId) return;
+
+    savedRotationRef.current = 0;
+    trackMapWidget.clearTrackShape();
+
+    const loadRotation = async () => {
+      try {
+        const { load } = await import('@tauri-apps/plugin-store');
+        const store = await load('tracks.json');
+        const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
+        const saved = tracks[trackId];
+
+        if (saved?.rotation != null) {
+          savedRotationRef.current = saved.rotation;
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    void loadRotation();
+  }, [trackId, trackMapWidget]);
+
+  useEffect(() => {
+    if (!trackMapWidget.trackShape) {
+      trackDataRef.current = null;
+
+      return;
+    }
+
+    const data = buildTrackData(
+      trackMapWidget.trackShape,
+      savedRotationRef.current
+    );
+    trackDataRef.current = data;
+  }, [trackMapWidget.trackShape, buildTrackData]);
+
+  const handleClearTrack = useCallback(async () => {
+    if (!trackId) return;
+
+    trackMapWidget.clearTrackShape();
+    trackDataRef.current = null;
+
     try {
       const { load } = await import('@tauri-apps/plugin-store');
       const store = await load('tracks.json');
@@ -181,86 +128,60 @@ export const TrackMapContent = observer(() => {
 
       await store.set(TRACKS_STORE_KEY, tracks);
       await store.save();
-
-      dispatch({ type: 'CLEAR' });
     } catch {
       // Silently fail
     }
-  }, [trackId]);
+  }, [trackId, trackMapWidget]);
 
   useEffect(() => {
     const unlisten = listen('track-map:clear', () => {
-      void clearCurrentTrack();
+      void handleClearTrack();
     });
 
     return () => {
       void unlisten.then((fn) => fn());
     };
-  }, [clearCurrentTrack]);
+  }, [handleClearTrack]);
 
   const handleRotate = useCallback(
     (direction: 'cw' | 'ccw') => {
       void (async () => {
-        const currentTrackData = trackDataRef.current;
+        const currentData = trackDataRef.current;
 
-        if (!trackId || !currentTrackData) {
+        if (!trackId || !currentData) {
           return;
         }
 
-        const currentRotation = currentTrackData.rotation ?? 0;
+        const currentRotation = currentData.rotation ?? 0;
         let newRotation = currentRotation + (direction === 'cw' ? 90 : -90);
-
         newRotation = (newRotation + 360) % 360;
 
-        dispatch({
-          type: 'SET_TRACK_DATA',
-          data: {
-            ...currentTrackData,
-            rotation: newRotation,
-          },
-        });
+        savedRotationRef.current = newRotation;
 
-        try {
-          const { load } = await import('@tauri-apps/plugin-store');
-          const store = await load('tracks.json');
-          const tracks =
-            (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
-
-          if (tracks[trackId]) {
-            tracks[trackId].rotation = newRotation;
-            await store.set(TRACKS_STORE_KEY, tracks);
-            await store.save();
-          }
-        } catch {
-          // Silently fail
+        if (trackMapWidget.trackShape) {
+          trackDataRef.current = buildTrackData(
+            trackMapWidget.trackShape,
+            newRotation
+          );
         }
+
+        await saveRotation(newRotation);
       })();
     },
-    [trackId]
+    [trackId, trackMapWidget, buildTrackData, saveRotation]
   );
 
-  return (
-    <>
-      {!trackData && (
-        <TrackRecorderBridge
-          trackId={trackId}
-          onTrackReady={setTrackData}
-          onIsRecordingChange={setIsRecording}
-          onWaitingForSFChange={setIsWaitingForSF}
-          onProgressChange={setRecordingProgress}
-          onSaveTrack={saveTrack}
-          recordingOverlayRef={recordingOverlayRef}
-        />
-      )}
+  const trackData = trackMapWidget.trackShape
+    ? buildTrackData(trackMapWidget.trackShape, savedRotationRef.current)
+    : null;
 
-      <TrackMapView
-        trackData={trackData}
-        isRecording={isRecording}
-        isWaitingForSF={isWaitingForSF}
-        recordingProgress={recordingProgress}
-        recordingOverlayRef={recordingOverlayRef}
-        onRotate={handleRotate}
-      />
-    </>
+  return (
+    <TrackMapView
+      trackData={trackData}
+      isRecording={trackMapWidget.isRecording}
+      isWaitingForSF={trackMapWidget.isWaitingForSF}
+      recordingProgress={trackMapWidget.recordingProgress}
+      onRotate={handleRotate}
+    />
   );
 });

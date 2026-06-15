@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   App,
@@ -18,8 +18,13 @@ import {
   TrackMapWidgetSettings,
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { Card, SettingRow } from './shared';
+import { Card } from './Card';
+import { SettingRow } from './SettingRow';
 import { useWidgetSettingsStore } from '@store/root-store-context';
+
+const handleRerecord = async () => {
+  await emit('track-map:clear');
+};
 
 export const TrackMapSettingsPanel = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
@@ -34,10 +39,6 @@ export const TrackMapSettingsPanel = observer(() => {
       ...settings,
       ...partial,
     });
-  };
-
-  const handleRerecord = async () => {
-    await emit('track-map:clear');
   };
 
   const handleShowPath = async () => {
@@ -188,28 +189,12 @@ export const TrackMapSettingsPanel = observer(() => {
             <Button
               style={{ flex: 1 }}
               size="small"
-              type={
-                widgetSettings.isTrackMapForceStartPending
-                  ? 'primary'
-                  : 'default'
-              }
-              danger={widgetSettings.isTrackMapForceStartPending}
               onClick={() => {
-                const next = !widgetSettings.isTrackMapForceStartPending;
-                widgetSettings.setTrackMapForceStartPending(next);
-                if (next) {
-                  void emit('track-map:force-start');
-                  message.info(
-                    'Manual start active. Drive to begin recording.'
-                  );
-                } else {
-                  message.warning('Manual start canceled.');
-                }
+                void emit('track-map:force-start');
+                message.info('Manual start active. Drive to begin recording.');
               }}
             >
-              {widgetSettings.isTrackMapForceStartPending
-                ? 'Cancel Force Start'
-                : 'Force Start Recording'}
+              Force Start Recording
             </Button>
           </Flex>
         </div>

@@ -1,6 +1,6 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 import {
-  useTelemetryStore,
+  usePlayerStore,
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -15,7 +15,7 @@ interface Props {
 }
 
 export const SectorHeader = observer(({ sectorCount }: Props) => {
-  const { lapTiming } = useTelemetryStore();
+  const { lapTiming } = usePlayerStore();
   const { lapDelta } = useBackendComputedStore();
 
   const widgetSettings = useWidgetSettingsStore();

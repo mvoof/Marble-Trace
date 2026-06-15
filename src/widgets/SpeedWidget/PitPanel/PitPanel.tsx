@@ -12,7 +12,8 @@ import { parsePitSpeedLimitMs } from '@utils/widget/speed-utils';
 
 import styles from './PitPanel.module.scss';
 import {
-  useTelemetryStore,
+  usePlayerStore,
+  useSessionStore,
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -29,20 +30,21 @@ const PIT_STATE_CLASS: Record<PitState, string> = {
 };
 
 export const PitPanel = observer(() => {
-  const telemetry = useTelemetryStore();
+  const player = usePlayerStore();
+  const { sessionInfo } = useSessionStore();
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { pitSpeedLimitOverride, gearColor, gearPanelBg } =
     widgetSettings.getSettings<SpeedWidgetSettings>('speed');
-  const carStatus = telemetry.carStatus;
-  const carDynamics = telemetry.carDynamics;
+  const carStatus = player.carStatus;
+  const carDynamics = player.carDynamics;
   const system = units.unitSystem;
   const speedFactor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
   const pitLimitMs =
     pitSpeedLimitOverride !== null
       ? pitSpeedLimitOverride / speedFactor
-      : parsePitSpeedLimitMs(telemetry.weekendInfo?.TrackPitSpeedLimit);
+      : parsePitSpeedLimitMs(sessionInfo?.trackPitSpeedLimit);
   const pitLimitFormatted =
     pitLimitMs > 0 ? formatSpeed(pitLimitMs, system) : '—';
 

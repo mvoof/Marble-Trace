@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type {
   GMeterColorMode,
@@ -23,10 +23,10 @@ const meta: Meta<StoryArgs> = {
     widget: GMeterWidget,
     size: { width: 240, height: 280, background: 'rgba(21, 22, 26, 0.8)' },
     seed: (store, args) => {
-      store.telemetry.updateCarDynamics({
+      store.player.updateCarDynamics({
         lat_accel: args.latG * G_CONSTANT,
         long_accel: args.longG * G_CONSTANT,
-      } as Parameters<typeof store.telemetry.updateCarDynamics>[0]);
+      } as Parameters<typeof store.player.updateCarDynamics>[0]);
 
       store.widgetSettings.updateUserSettings('g-meter', {
         displayMode: args.displayMode,

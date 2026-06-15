@@ -5,9 +5,12 @@ import { toJS } from 'mobx';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 
 import styles from './TelemetryDebugWidget.module.scss';
+
 import {
-  useTelemetryConnectionStore,
-  useTelemetryStore,
+  useEnvironmentStore,
+  usePlayerStore,
+  useSessionStore,
+  useSimStore,
 } from '@store/root-store-context';
 
 const fmt = (v: number | null | undefined, decimals = 1): string =>
@@ -23,29 +26,21 @@ const Row = observer(
 );
 
 export const TelemetryDebugWidget = observer(() => {
-  const telemetryConnection = useTelemetryConnectionStore();
-  const telemetry = useTelemetryStore();
+  const simStore = useSimStore();
+  const { carDynamics, carInputs, carStatus, lapTiming } = usePlayerStore();
+  const { session, sessionInfo } = useSessionStore();
+  const { environment } = useEnvironmentStore();
 
   const hasLoggedRef = useRef(false);
 
-  const {
-    carDynamics,
-    carInputs,
-    carStatus,
-    lapTiming,
-    session,
-    driverInfo,
-    weekendInfo,
-    environment,
-  } = telemetry;
-  const status = telemetryConnection.status;
+  const status = simStore.status;
 
   useEffect(() => {
-    if (driverInfo && !hasLoggedRef.current) {
-      console.log('DRIVER INFO (ONCE):', toJS(driverInfo));
+    if (sessionInfo && !hasLoggedRef.current) {
+      console.log('SESSION INFO (ONCE):', toJS(sessionInfo));
       hasLoggedRef.current = true;
     }
-  }, [driverInfo]);
+  }, [sessionInfo]);
 
   const isConnected = status === 'connected';
 
@@ -135,12 +130,12 @@ export const TelemetryDebugWidget = observer(() => {
 
         <span className={styles.sectionTitle}>Session</span>
         <Row label="Remain" value={`${fmt(session?.session_time_remain)} s`} />
-        <Row label="Redline" value={fmt(driverInfo?.DriverCarRedLine, 0)} />
+        <Row label="Redline" value={fmt(sessionInfo?.driverCarRedLine, 0)} />
         <Row
           label="Fuel Max"
-          value={`${fmt(driverInfo?.DriverCarFuelMaxLtr)} L`}
+          value={`${fmt(sessionInfo?.driverCarFuelMaxLtr)} L`}
         />
-        <Row label="Track" value={weekendInfo?.TrackName ?? '—'} />
+        <Row label="Track" value={sessionInfo?.trackName ?? '—'} />
       </div>
     </WidgetPanel>
   );

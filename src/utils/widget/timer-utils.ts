@@ -8,8 +8,8 @@ export const FLAG_LABEL: Record<FlagState, string> = {
   checkered: 'CHECKERED',
 };
 
-export const SECONDS_IN_HOUR = 3600;
-export const SECONDS_IN_MINUTE = 60;
+const SECONDS_IN_HOUR = 3600;
+const SECONDS_IN_MINUTE = 60;
 
 const FINAL_FLAG_THRESHOLD_SEC = 300;
 const SESSION_FLAG_CHECKERED = 0x0001;

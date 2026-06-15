@@ -28,11 +28,17 @@ const colSpecs = (settings: RelativeWidgetSettings): ColSpec[] => [
 
 export const buildRelativeGridTemplate = (
   settings: RelativeWidgetSettings
-): string =>
-  colSpecs(settings)
-    .filter((col) => col.show)
-    .map((col) => (col.flex ? `minmax(${ws(NAME_MIN_PX)}, 1fr)` : ws(col.px)))
-    .join(' ');
+): string => {
+  const parts: string[] = [];
+
+  for (const col of colSpecs(settings)) {
+    if (col.show) {
+      parts.push(col.flex ? `minmax(${ws(NAME_MIN_PX)}, 1fr)` : ws(col.px));
+    }
+  }
+
+  return parts.join(' ');
+};
 
 // Natural content width of the currently-visible columns (px at scale 1) — used
 // as designWidth so toggling lic/iR shrinks the widget WITHOUT shrinking text.

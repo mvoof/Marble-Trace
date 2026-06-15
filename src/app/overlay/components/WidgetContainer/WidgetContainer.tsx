@@ -5,7 +5,7 @@ import styles from './WidgetContainer.module.scss';
 import { WidgetIdContext } from './WidgetIdContext';
 import {
   useAppSettingsStore,
-  useTelemetryConnectionStore,
+  useSimStore,
   useWidgetAutoHideStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -22,7 +22,7 @@ export const WidgetContainer = observer(
     const { dragMode, appSettings } = useAppSettingsStore();
     const widgetSettings = useWidgetSettingsStore();
 
-    const telemetryConnection = useTelemetryConnectionStore();
+    const simStore = useSimStore();
     const widgetAutoHide = useWidgetAutoHideStore();
 
     const widget = widgetSettings.getWidget(widgetId);
@@ -46,7 +46,7 @@ export const WidgetContainer = observer(
       widgetY: 0,
     });
 
-    const isConnected = telemetryConnection.status === 'connected';
+    const isConnected = simStore.status === 'connected';
 
     const shouldHide =
       (appSettings.hideWidgetsWhenGameClosed && !isConnected && !dragMode) ||

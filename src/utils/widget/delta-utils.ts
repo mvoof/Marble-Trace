@@ -4,13 +4,6 @@ import type { LapDeltaReference } from '@/types/widget-settings';
 export type DeltaState = 'ahead' | 'behind' | 'neutral';
 export type LapDeltaLayout = 'vertical' | 'horizontal';
 
-//TODO: use scss vsriables instead hardcode color
-const DELTA_STATE_COLOR: Record<DeltaState, string> = {
-  ahead: '#22c55e',
-  behind: '#ef4444',
-  neutral: '#fbbf24',
-};
-
 const SECONDS_PER_MINUTE = 60;
 const SECONDS_PER_HOUR = 3600;
 
@@ -50,9 +43,6 @@ export const getDeltaState = (delta: number | null): DeltaState => {
 
   return 'neutral';
 };
-
-export const getDeltaColor = (state: DeltaState): string =>
-  DELTA_STATE_COLOR[state];
 
 export const formatSectorTime = (v: number | null): string => {
   if (v === null) return '--';
@@ -136,12 +126,4 @@ export const isGameDeltaOk = (
     case 'session_last':
       return !!lapTiming.lap_delta_to_session_lastl_lap_ok;
   }
-};
-
-export const getSectorDeltaState = (v: number | null): DeltaState => {
-  if (v === null) return 'neutral';
-  if (v < -0.001) return 'ahead';
-  if (v > 0.001) return 'behind';
-
-  return 'neutral';
 };

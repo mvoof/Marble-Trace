@@ -1,5 +1,9 @@
+mod capabilities;
+mod commands;
 mod computations;
-mod iracing;
+mod model;
+mod sources;
+mod telemetry;
 mod utils;
 
 #[cfg(feature = "dev")]
@@ -10,28 +14,40 @@ use computations::{
     proximity::{LateralSide, NearbyCar, ProximityFrame, RadarDistances},
     standings::{DriverEntriesFrame, DriverEntry},
 };
+#[cfg(feature = "dev")]
+use model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
 
-use computations::{fuel::FuelState, lap_delta::LapDeltaState, standings::StandingsState};
-use iracing::{
-    get_last_session_info, set_active_events, set_car_length, set_pit_warning_laps,
-    start_telemetry_stream, stop_telemetry_stream, TelemetryState,
+use commands::{
+    get_connection_status, get_last_session_info, set_active_events, set_car_length,
+    set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
 };
+use computations::ProcessorRegistry;
+use telemetry::state::TelemetryState;
 
 #[cfg(feature = "dev")]
-use iracing::{
-    CarDynamicsFrame, CarIdxFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, EnvironmentFrame,
-    LapTimingFrame, SessionFrame, WeatherForecastEntry,
+use model::capabilities::CapabilitiesPayload;
+#[cfg(feature = "dev")]
+use model::cars::CarIdxFrame;
+#[cfg(feature = "dev")]
+use model::enums::{SimStatus, SimType};
+#[cfg(feature = "dev")]
+use model::environment::{EnvironmentFrame, WeatherForecastEntry};
+#[cfg(feature = "dev")]
+use model::player::{
+    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
 };
+#[cfg(feature = "dev")]
+use model::session::SessionFrame;
 
 #[cfg(feature = "dev")]
-use pitwall::SessionInfo;
+use model::session::SessionSnapshot;
 #[cfg(feature = "dev")]
 use specta::TypeCollection;
 #[cfg(feature = "dev")]
 use specta_typescript::Typescript;
-use std::sync::atomic::AtomicBool;
+use std::sync::atomic::{AtomicBool, AtomicU32};
 use std::sync::{Arc, Mutex};
-use tauri::{generate_context, generate_handler, Builder, Manager, WindowEvent};
+use tauri::{generate_context, generate_handler, Builder, Listener, Manager, WindowEvent};
 use tauri_plugin_aptabase::EventTracker;
 use tracing_subscriber::EnvFilter;
 
@@ -56,18 +72,26 @@ pub fn run() {
             .register::<LapTimingFrame>()
             .register::<SessionFrame>()
             .register::<EnvironmentFrame>()
-            .register::<SessionInfo>()
-            .register::<ProximityFrame>()
             .register::<NearbyCar>()
             .register::<RadarDistances>()
             .register::<LateralSide>()
+            .register::<SessionSnapshot>()
+            .register::<ProximityFrame>()
             .register::<FuelComputedFrame>()
             .register::<DriverEntriesFrame>()
             .register::<DriverEntry>()
             .register::<PitStopsFrame>()
             .register::<LapDeltaFrame>()
-            .register::<iracing::service::TelemetryBundle>()
-            .register::<WeatherForecastEntry>();
+            .register::<telemetry::emitter::TelemetryBundle>()
+            .register::<WeatherForecastEntry>()
+            .register::<CapabilitiesPayload>()
+            .register::<SimType>()
+            .register::<SimStatus>();
+
+        types
+            .register::<TrackPoint>()
+            .register::<TrackShapePayload>()
+            .register::<TrackRecordingFrame>();
 
         Typescript::default()
             .export_to("../src/types/bindings.ts", &types)
@@ -75,6 +99,10 @@ pub fn run() {
     }
 
     let aptabase_key = option_env!("APTABASE_KEY").unwrap_or("");
+    let force_track_start = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+
+    let force_track_start_listener = std::sync::Arc::clone(&force_track_start);
+    let force_track_start_registry = std::sync::Arc::clone(&force_track_start);
 
     let builder = Builder::default()
         .plugin(
@@ -99,6 +127,13 @@ pub fn run() {
 
     builder
         .setup(|app| {
+            {
+                let flag = force_track_start_listener;
+                app.listen("track-map:force-start", move |_| {
+                    flag.store(true, std::sync::atomic::Ordering::Relaxed);
+                });
+            }
+
             let monitor = app.primary_monitor().ok().flatten();
             let locale = sys_locale::get_locale().unwrap_or_else(|| "unknown".to_string());
             let props = serde_json::json!({
@@ -117,30 +152,25 @@ pub fn run() {
             get_last_session_info,
             set_pit_warning_laps,
             set_active_events,
-            set_car_length
+            set_car_length,
+            get_connection_status
         ])
         .manage(TelemetryState {
-            service: Arc::new(iracing::TelemetryServiceState {
+            service: Arc::new(telemetry::state::TelemetryServiceState {
                 running: AtomicBool::new(false),
+                is_connected: AtomicBool::new(false),
                 last_session_info: Mutex::new(None),
                 start_positions: Mutex::new(std::collections::HashMap::new()),
                 track_length_m: Mutex::new(None),
-                active_events: std::sync::atomic::AtomicU32::new(0xFFFFFFFF),
+                active_events: AtomicU32::new(0xFFFFFFFF),
                 car_length_m: Mutex::new(4.4),
             }),
-            pit: Arc::new(crate::computations::pit_stops::PitStopState {
-                count: std::sync::atomic::AtomicU32::new(0),
-                was_on_pit_road: AtomicBool::new(false),
-                tracked_session_num: std::sync::atomic::AtomicI32::new(-1),
-            }),
-            computation: Arc::new(iracing::ComputationState {
-                lap_delta: Mutex::new(LapDeltaState::default()),
-                standings: Mutex::new(StandingsState::default()),
-                fuel: Mutex::new(FuelState::default()),
-                pit_warning_laps: std::sync::atomic::AtomicU32::new(
-                    crate::computations::fuel::DEFAULT_PIT_WARNING_LAPS.to_bits(),
-                ),
-            }),
+            registry: Arc::new(Mutex::new(ProcessorRegistry::new(
+                force_track_start_registry,
+            ))),
+            pit_warning_laps: Arc::new(AtomicU32::new(
+                crate::computations::fuel::DEFAULT_PIT_WARNING_LAPS.to_bits(),
+            )),
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {

@@ -16,25 +16,25 @@ import Logo from '@assets/logo.svg?react';
 import {
   useAppSettingsStore,
   useStore,
-  useTelemetryConnectionStore,
+  useSimStore,
 } from '@store/root-store-context';
 
 const { Content, Sider } = Layout;
 
 export const MainWindow = observer(() => {
   const appSettings = useAppSettingsStore();
-  const telemetryConnection = useTelemetryConnectionStore();
+  const simStore = useSimStore();
   const root = useStore();
 
   const [selectedId, setSelectedId] = useState<string>('app-settings');
 
   useEffect(() => {
-    void telemetryConnection.startStream();
+    void simStore.startStream();
 
     return () => {
-      void telemetryConnection.stopStream();
+      void simStore.stopStream();
     };
-  }, [telemetryConnection]);
+  }, [simStore]);
 
   useEffect(() => {
     let cleanup: (() => void) | undefined;
@@ -141,6 +141,7 @@ export const MainWindow = observer(() => {
 
               <div className={styles.sidebarFooter}>
                 <button
+                  type="button"
                   className={`${styles.settingsItem} ${
                     selectedId === 'app-settings' ? styles.active : ''
                   }`}

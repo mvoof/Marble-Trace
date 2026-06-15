@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { DriverEntriesFrame } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
@@ -66,11 +66,11 @@ const meta: Meta<StoryArgs> = {
       } as DriverEntriesFrame);
 
       if (snapshot.sessionInfo) {
-        store.telemetry.updateSessionInfo(snapshot.sessionInfo);
+        store.session.updateSessionInfo(snapshot.sessionInfo);
       }
 
       store.widgetSettings.updateUserSettings('standings', args.settings);
-      store.widgetSettings.standingsActiveClassIndex = args.activeClassIndex;
+      store.standingsWidget.activeClassIndex = args.activeClassIndex;
     },
     args: {
       settings: DEFAULT_SETTINGS,

@@ -1,4 +1,4 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import {
   abbreviateName,
@@ -10,7 +10,8 @@ import {
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
-import { LicBadge, formatIr } from '@/components/shared/RatingBadge/LicBadge';
+import { LicBadge } from '@/components/shared/RatingBadge/LicBadge';
+import { formatIr } from '@/components/shared/RatingBadge/LicBadge.utils';
 import { TireBadge } from '@/components/shared/TireBadge/TireBadge';
 import {
   buildGridTemplate,
@@ -23,8 +24,8 @@ import { IrChangeCell } from './IrChangeCell';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
 import {
-  useBackendComputedStore,
-  useTelemetryStore,
+  useStandingsWidgetStore,
+  useSessionStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -34,11 +35,11 @@ interface DriverRowProps {
 }
 
 export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
-  const computed = useBackendComputedStore();
-  const telemetry = useTelemetryStore();
+  const standingsWidget = useStandingsWidgetStore();
+  const session = useSessionStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const driver = computed.driverMap.get(carIdx);
+  const driver = standingsWidget.driverMap.get(carIdx);
   const settings =
     widgetSettings.getSettings<StandingsWidgetSettings>('standings');
   const gridTemplate = buildGridTemplate(settings);
@@ -50,7 +51,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 
-  const pitState = computed.driverPitStates.get(carIdx) ?? 'none';
+  const pitState = driver.pitState;
   const flagType = parseDriverFlags(driver.rawFlags);
 
   const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
@@ -74,15 +75,15 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
   // Get leader of current class/group from cached store for gap/deficit calculation
   const leader = useClassPos
-    ? (computed.classLeaders.get(driver.carClassId) ?? null)
-    : computed.overallLeader;
+    ? (standingsWidget.classLeaders.get(driver.carClassId) ?? null)
+    : standingsWidget.overallLeader;
 
   const lapsBehind = calculateLapsBehind(leader, driver);
 
-  const sessionInfoData = telemetry.sessionInfo?.SessionInfo;
-  const sessions = sessionInfoData?.Sessions;
-  const currentSession = sessions?.[sessionInfoData?.CurrentSessionNum ?? 0];
-  const isRace = currentSession?.SessionType === 'Race';
+  const sessionInfoData = session.sessionInfo;
+  const sessions = sessionInfoData?.sessions;
+  const currentSession = sessions?.[sessionInfoData?.currentSessionNum ?? 0];
+  const isRace = currentSession?.sessionType === 'Race';
 
   const gapInfo = getStandingsGap(driver, leader, isRace, isLeader, lapsBehind);
 

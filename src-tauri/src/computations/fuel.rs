@@ -1,7 +1,9 @@
-use pitwall::SessionInfo;
 use serde::{Deserialize, Serialize};
 
-use crate::iracing::frames::AllFieldsFrame;
+use crate::capabilities::Capabilities;
+use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::player::{CarStatusFrame, LapTimingFrame};
+use crate::model::session::SessionSnapshot;
 
 const MAX_LAP_FUEL_HISTORY: usize = 100;
 const MIN_RECORDED_FUEL_USE: f32 = 0.1;
@@ -101,13 +103,15 @@ pub struct FuelComputedFrame {
 }
 
 pub fn compute(
-    frame: &AllFieldsFrame,
-    session: &SessionInfo,
+    car_status: &CarStatusFrame,
+    lap_timing: &LapTimingFrame,
+    session: &SessionSnapshot,
     session_num: Option<i32>,
+    session_time_remain: Option<f64>,
     pit_warning_laps: f32,
     fuel_state: &FuelState,
 ) -> FuelComputedFrame {
-    let fuel_level = frame.fuel_level;
+    let fuel_level = car_status.fuel_level;
 
     let avg_per_lap = fuel_state.avg();
 
@@ -119,9 +123,9 @@ pub fn compute(
         }
     });
 
-    let current_session_num = session_num.unwrap_or(session.session_info.current_session_num);
+    let current_session_num = session_num.unwrap_or(session.current_session_num);
 
-    let sessions = &session.session_info.sessions;
+    let sessions = &session.sessions;
     let current_session = if current_session_num >= 0 {
         sessions.get(current_session_num as usize)
     } else {
@@ -136,17 +140,16 @@ pub fn compute(
 
     let laps_to_finish: Option<f32> = if !is_timed_race {
         session_laps.parse::<f32>().ok().map(|total| {
-            let current_lap = frame.lap.unwrap_or(0) as f32;
-            let lap_dist_pct = frame.lap_dist_pct.unwrap_or(0.0);
+            let current_lap = lap_timing.lap.unwrap_or(0) as f32;
+            let lap_dist_pct = lap_timing.lap_dist_pct.unwrap_or(0.0);
             total - current_lap - lap_dist_pct
         })
     } else {
-        let best_lap = frame.lap_best_lap_time.filter(|&t| t > 0.0);
-        let last_lap = frame.lap_last_lap_time.filter(|&t| t > 0.0);
+        let best_lap = lap_timing.lap_best_lap_time.filter(|&t| t > 0.0);
+        let last_lap = lap_timing.lap_last_lap_time.filter(|&t| t > 0.0);
 
         best_lap.or(last_lap).and_then(|lap_time_sec| {
-            frame
-                .session_time_remain
+            session_time_remain
                 .filter(|&t| t > 0.0)
                 .map(|remain| remain as f32 / lap_time_sec)
         })
@@ -164,7 +167,7 @@ pub fn compute(
         _ => None,
     };
 
-    let current_lap_i = frame.lap.unwrap_or(0);
+    let current_lap_i = lap_timing.lap.unwrap_or(0);
 
     let (pit_window_start, pit_window_end) = match (laps_remaining, avg_per_lap) {
         (Some(rem), Some(avg)) if avg > 0.0 => (
@@ -200,20 +203,121 @@ pub fn compute(
     }
 }
 
+/// Stateful processor wrapping the fuel computation.
+#[derive(Default)]
+pub struct FuelProcessor {
+    pub state: FuelState,
+}
+
+impl Processor for FuelProcessor {
+    fn id(&self) -> ProcessorId {
+        ProcessorId::Fuel
+    }
+
+    fn required(&self) -> Capabilities {
+        Capabilities::FUEL
+    }
+
+    fn rate(&self) -> TickRate {
+        TickRate::Hz4
+    }
+
+    fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
+        let current_lap = ctx.lap_timing.lap.unwrap_or(-1);
+        let session_num_i32 = ctx.session_num.unwrap_or(-1);
+
+        self.state
+            .update(current_lap, ctx.car_status.fuel_level, session_num_i32);
+
+        let frame = compute(
+            ctx.car_status,
+            ctx.lap_timing,
+            ctx.session,
+            ctx.session_num,
+            ctx.session_time_remain,
+            ctx.pit_warning_laps,
+            &self.state,
+        );
+
+        Some(ComputedOutput::Fuel(frame))
+    }
+
+    fn reset(&mut self) {
+        self.state.reset();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::model::player::{CarStatusFrame, LapTimingFrame};
+
+    fn make_car_status(fuel_level: f32) -> CarStatusFrame {
+        CarStatusFrame {
+            fuel_level,
+            fuel_level_pct: None,
+            fuel_use_per_hour: None,
+            oil_temp: None,
+            oil_press: None,
+            water_temp: None,
+            voltage: None,
+            on_pit_road: None,
+            is_on_track: None,
+            car_left_right: None,
+            engine_warnings: None,
+            player_car_sl_shift_rpm: vec![],
+            player_car_sl_blink_rpm: vec![],
+            flags: Default::default(),
+        }
+    }
+
+    fn make_lap_timing(lap: Option<i32>, lap_dist_pct: Option<f32>) -> LapTimingFrame {
+        LapTimingFrame {
+            lap,
+            lap_dist: None,
+            lap_dist_pct,
+            lap_current_lap_time: 0.0,
+            lap_last_lap_time: None,
+            lap_best_lap_time: None,
+            player_car_position: None,
+            player_car_class_position: None,
+            lap_delta_to_session_best_live: None,
+            lap_delta_to_session_optimal_live: None,
+            lap_delta_to_driver_best_live: None,
+            lap_delta_to_best_lap: None,
+            lap_delta_to_best_lap_dd: None,
+            lap_delta_to_best_lap_ok: None,
+            lap_delta_to_optimal_lap: None,
+            lap_delta_to_optimal_lap_dd: None,
+            lap_delta_to_optimal_lap_ok: None,
+            lap_delta_to_session_best_lap: None,
+            lap_delta_to_session_best_lap_dd: None,
+            lap_delta_to_session_best_lap_ok: None,
+            lap_delta_to_session_lastl_lap: None,
+            lap_delta_to_session_lastl_lap_dd: None,
+            lap_delta_to_session_lastl_lap_ok: None,
+            lap_delta_to_session_optimal_lap: None,
+            lap_delta_to_session_optimal_lap_dd: None,
+            lap_delta_to_session_optimal_lap_ok: None,
+        }
+    }
 
     #[test]
     fn test_compute_empty_history() {
-        let frame = AllFieldsFrame {
-            fuel_level: 50.0,
-            ..Default::default()
-        };
-        let session = SessionInfo::default();
+        let car_status = make_car_status(50.0);
+        let lap_timing = make_lap_timing(None, None);
+        let session = SessionSnapshot::default();
         let fuel_state = FuelState::default();
 
-        let result = compute(&frame, &session, None, 3.0, &fuel_state);
+        let result = compute(
+            &car_status,
+            &lap_timing,
+            &session,
+            None,
+            None,
+            3.0,
+            &fuel_state,
+        );
 
         assert_eq!(result.avg_per_lap, None);
         assert_eq!(result.laps_remaining, None);
@@ -231,18 +335,23 @@ mod tests {
 
     #[test]
     fn test_compute_with_history() {
-        let frame = AllFieldsFrame {
-            fuel_level: 50.0,
-            lap: Some(5),
-            ..Default::default()
-        };
-        let session = SessionInfo::default();
+        let car_status = make_car_status(50.0);
+        let lap_timing = make_lap_timing(Some(5), None);
+        let session = SessionSnapshot::default();
         let fuel_state = FuelState {
             lap_fuel_history: vec![2.0, 2.0, 2.0],
             ..Default::default()
         };
 
-        let result = compute(&frame, &session, None, 3.0, &fuel_state);
+        let result = compute(
+            &car_status,
+            &lap_timing,
+            &session,
+            None,
+            None,
+            3.0,
+            &fuel_state,
+        );
 
         assert_eq!(result.avg_per_lap, Some(2.0));
         assert_eq!(result.laps_remaining, Some(25.0)); // 50.0 / 2.0

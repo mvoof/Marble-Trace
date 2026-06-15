@@ -1,4 +1,4 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 import { Switch, Segmented } from 'antd';
 import type {
   StandingsViewMode,
@@ -6,7 +6,8 @@ import type {
 } from '@/types/widget-settings';
 import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { Card, SettingRow } from './shared';
+import { Card } from './Card';
+import { SettingRow } from './SettingRow';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
 export const StandingsSettingsPanel = observer(() => {

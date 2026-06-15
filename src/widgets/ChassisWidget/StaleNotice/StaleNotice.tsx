@@ -2,12 +2,12 @@ import { observer } from 'mobx-react-lite';
 import { Info } from 'lucide-react';
 
 import styles from './StaleNotice.module.scss';
-import { useTelemetryStore } from '@store/root-store-context';
+import { usePlayerStore } from '@store/root-store-context';
 
 export const StaleNotice = observer(() => {
-  const telemetry = useTelemetryStore();
+  const { carStatus } = usePlayerStore();
 
-  const onPitRoad = telemetry.carStatus?.on_pit_road ?? false;
+  const onPitRoad = carStatus?.on_pit_road ?? false;
 
   if (onPitRoad) {
     return null;

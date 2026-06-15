@@ -7,7 +7,8 @@ import {
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
-import { LicBadge, formatIr } from '@/components/shared/RatingBadge/LicBadge';
+import { LicBadge } from '@/components/shared/RatingBadge/LicBadge';
+import { formatIr } from '@/components/shared/RatingBadge/LicBadge.utils';
 import {
   computeRelativeGap,
   buildRelativeGridTemplate,
@@ -39,7 +40,7 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
   const isPit =
     driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
 
-  const pitState = computed.driverPitStates.get(driver.carIdx) ?? 'none';
+  const pitState = driver.pitState;
   const flagType = parseDriverFlags(driver.rawFlags);
 
   const relativeGap = player ? computeRelativeGap(driver, player) : 0;

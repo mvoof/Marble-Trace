@@ -66,3 +66,19 @@
 .switch {
   padding-left: rem(8);
 }
+
+.listItem.disabled {
+  opacity: 0.55;
+
+  &:hover {
+    background: transparent;
+  }
+}
+
+.unavailable {
+  display: block;
+  font-size: rem(10);
+  color: $widget-status-danger;
+  margin-top: rem(2);
+  font-weight: 500;
+}

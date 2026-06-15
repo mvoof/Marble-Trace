@@ -1,25 +1,20 @@
-import type { TelemetryStore } from '@store/iracing/telemetry.store';
+import type { RootStore } from '@store/root-store';
 import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
 
-const captureSnapshot = (
-  telemetryStore: TelemetryStore
-): TelemetrySnapshot => ({
+const captureSnapshot = (store: RootStore): TelemetrySnapshot => ({
   capturedAt: new Date().toISOString(),
-  carDynamics: telemetryStore.carDynamics,
-  carIdx: telemetryStore.carIdx,
-  carInputs: telemetryStore.carInputs,
-  carStatus: telemetryStore.carStatus,
-  environment: telemetryStore.environment,
-  lapTiming: telemetryStore.lapTiming,
-  session: telemetryStore.session,
-  sessionInfo: telemetryStore.sessionInfo,
+  carDynamics: store.player.carDynamics,
+  carIdx: store.cars.carIdx,
+  carInputs: store.player.carInputs,
+  carStatus: store.player.carStatus,
+  environment: store.environment.environment,
+  lapTiming: store.player.lapTiming,
+  session: store.session.session,
+  sessionInfo: store.session.sessionInfo,
 });
 
-export const downloadSnapshot = (
-  telemetryStore: TelemetryStore,
-  name = 'snapshot'
-) => {
-  const snapshot = captureSnapshot(telemetryStore);
+export const downloadSnapshot = (store: RootStore, name = 'snapshot') => {
+  const snapshot = captureSnapshot(store);
 
   const json = JSON.stringify(snapshot, null, 2);
   const blob = new Blob([json], { type: 'application/json' });

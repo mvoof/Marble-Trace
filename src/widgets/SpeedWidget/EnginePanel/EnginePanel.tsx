@@ -1,4 +1,4 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 import { Droplets, Thermometer } from 'lucide-react';
 
 import type { SpeedWidgetSettings } from '@/types/widget-settings';
@@ -7,13 +7,13 @@ import { isEngineTempWarning } from '@utils/widget/speed-utils';
 
 import styles from './EnginePanel.module.scss';
 import {
-  useTelemetryStore,
+  usePlayerStore,
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const EnginePanel = observer(() => {
-  const telemetry = useTelemetryStore();
+  const telemetry = usePlayerStore();
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 

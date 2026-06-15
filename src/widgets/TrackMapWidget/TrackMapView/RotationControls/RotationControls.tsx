@@ -16,6 +16,7 @@ interface RotateButtonProps {
 const RotateButton = observer(
   ({ title, onClick, children }: RotateButtonProps) => (
     <button
+      type="button"
       className={styles.rotateButton}
       title={title}
       onMouseDown={(e) => e.stopPropagation()}

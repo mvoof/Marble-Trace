@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type {
   EnvironmentFrame,
-  SessionInfo,
+  SessionSnapshot,
   WeatherForecastEntry,
 } from '@/types/bindings';
 import type { UnitSystem } from '@/types';
@@ -47,7 +47,7 @@ const meta: Meta<StoryArgs> = {
     seed: (store, args) => {
       store.units.setSystem(args.system);
 
-      store.telemetry.updateEnvironment({
+      store.environment.updateEnvironment({
         air_temp: args.airTempC,
         track_temp: args.trackTempC,
         wind_vel: args.windVelMps,
@@ -55,13 +55,11 @@ const meta: Meta<StoryArgs> = {
         relative_humidity: args.humidity / 100,
       } as EnvironmentFrame);
 
-      store.telemetry.updateSessionInfo({
-        WeekendInfo: {
-          TrackWeatherType: args.weatherType,
-        },
-      } as SessionInfo);
+      store.session.updateSessionInfo({
+        trackWeatherType: args.weatherType,
+      } as SessionSnapshot);
 
-      store.telemetry.updateWeatherForecast(args.forecast);
+      store.environment.updateWeatherForecast(args.forecast);
 
       store.widgetSettings.updateUserSettings('weather', {
         showCompass: args.showCompass,

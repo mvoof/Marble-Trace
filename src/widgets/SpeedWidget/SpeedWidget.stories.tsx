@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react';
+﻿import { useEffect, useRef } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import type { SessionInfo } from '@/types/bindings';
+import type { SessionSnapshot } from '@/types/bindings';
 import type { SpeedWidgetSettings } from '@/types/widget-settings';
-import type { TelemetryStore } from '@store/iracing/telemetry.store';
+import type { PlayerStore } from '@store/data/player.store';
 import { useStore } from '@store/root-store-context';
 import { SpeedWidget } from './SpeedWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
@@ -14,15 +14,11 @@ const SHIFT_RPM = 8000;
 const BLINK_RPM = 8200;
 
 const BASE_SESSION_INFO = {
-  DriverInfo: {
-    DriverCarRedLine: RED_LINE,
-    DriverCarSLShiftRPM: SHIFT_RPM,
-    DriverCarSLBlinkRPM: BLINK_RPM,
-  },
-  WeekendInfo: {
-    TrackPitSpeedLimit: '55 kph',
-  },
-} as SessionInfo;
+  driverCarRedLine: RED_LINE,
+  driverCarSlShiftRpm: SHIFT_RPM,
+  driverCarSlBlinkRpm: BLINK_RPM,
+  trackPitSpeedLimit: '55 kph',
+} as SessionSnapshot;
 
 interface StoryArgs {
   speedKmh: number;
@@ -38,12 +34,12 @@ interface StoryArgs {
   showRpmColor: boolean;
 }
 
-const setDynamics = (telemetry: TelemetryStore, rpm: number, gear: number) =>
-  telemetry.updateCarDynamics({
+const setDynamics = (player: PlayerStore, rpm: number, gear: number) =>
+  player.updateCarDynamics({
     speed: rpm / 140,
     rpm,
     gear,
-  } as Parameters<typeof telemetry.updateCarDynamics>[0]);
+  } as Parameters<typeof player.updateCarDynamics>[0]);
 
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/SpeedWidget',
@@ -52,20 +48,20 @@ const meta: Meta<StoryArgs> = {
     size: { width: 500, height: 120, background: 'rgba(21, 22, 26, 0.8)' },
     seedSnapshot: true,
     seed: (store, args) => {
-      store.telemetry.updateSessionInfo(BASE_SESSION_INFO);
+      store.session.updateSessionInfo(BASE_SESSION_INFO);
 
-      store.telemetry.updateCarDynamics({
+      store.player.updateCarDynamics({
         speed: args.speedKmh / 3.6,
         rpm: args.rpm,
         gear: args.gear,
-      } as Parameters<typeof store.telemetry.updateCarDynamics>[0]);
+      } as Parameters<typeof store.player.updateCarDynamics>[0]);
 
-      store.telemetry.updateCarStatus({
+      store.player.updateCarStatus({
         on_pit_road: args.onPitRoad,
         engine_warnings: args.engineWarnings,
         oil_temp: args.oilTemp,
         water_temp: args.waterTemp,
-      } as Parameters<typeof store.telemetry.updateCarStatus>[0]);
+      } as Parameters<typeof store.player.updateCarStatus>[0]);
 
       store.units.setSystem(args.units);
 
@@ -164,7 +160,7 @@ const RpmAnimatedRenderer = () => {
   const dirRef = useRef(1);
 
   useEffect(() => {
-    runInAction(() => store.telemetry.updateSessionInfo(BASE_SESSION_INFO));
+    runInAction(() => store.session.updateSessionInfo(BASE_SESSION_INFO));
 
     const intervalId = setInterval(() => {
       rpmRef.current += dirRef.current * 120;
@@ -177,7 +173,7 @@ const RpmAnimatedRenderer = () => {
 
       runInAction(() => {
         setDynamics(
-          store.telemetry,
+          store.player,
           rpmRef.current,
           Math.max(1, Math.ceil(rpmRef.current / 1500))
         );

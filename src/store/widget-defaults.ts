@@ -241,19 +241,13 @@ export const LINEAR_MAP_SIZES: Record<
   vertical: { designWidth: 40, designHeight: 400 },
 };
 
-export const INPUT_TRACE_SIZES: Record<
-  string,
-  { designWidth: number; designHeight: number }
-> = {
-  vertical: { designWidth: 400, designHeight: 110 },
-};
-
-export const WIDGETS: WidgetConfig[] = [
+const WIDGETS: WidgetConfig[] = [
   {
     id: 'speed',
     label: 'Speed',
     description: 'Speedometer with gear and RPM indicator.',
     component: SpeedWidget,
+    requiredCapabilities: ['playerDynamics'],
     designWidth: 500,
     designHeight: 120,
     userSettings: {
@@ -287,6 +281,7 @@ export const WIDGETS: WidgetConfig[] = [
     description: 'Live throttle, brake, and clutch inputs.',
     resolveLayoutChange: resolveInputTraceLayout,
     component: InputTraceWidget,
+    requiredCapabilities: ['inputs'],
     designWidth: INPUT_TRACE_DESIGN_WIDTH,
     designHeight: 120,
     userSettings: {
@@ -316,6 +311,7 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Proximity Radar',
     description: 'Visual radar for nearby traffic.',
     component: ProximityRadarWidget,
+    requiredCapabilities: ['radar'],
     designWidth: 200,
     designHeight: 300,
     userSettings: {
@@ -338,6 +334,7 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Radar Bar',
     description: 'Full-width side proximity indicators.',
     component: RadarBarWidget,
+    requiredCapabilities: ['radar'],
     designWidth: 800,
     designHeight: 380,
     userSettings: {
@@ -361,6 +358,7 @@ export const WIDGETS: WidgetConfig[] = [
     description: 'Live session standings and intervals.',
     component: StandingsWidget,
     resolveLayoutChange: resolveStandingsLayout,
+    requiredCapabilities: ['standings'],
     designWidth: STANDINGS_DESIGN_WIDTH,
     designHeight: 500,
     userSettings: {
@@ -395,6 +393,7 @@ export const WIDGETS: WidgetConfig[] = [
     description: 'Gaps to cars ahead and behind you.',
     component: RelativeWidget,
     resolveLayoutChange: resolveRelativeLayout,
+    requiredCapabilities: ['relative'],
     designWidth: RELATIVE_DESIGN_WIDTH,
     designHeight: 400,
     userSettings: {
@@ -418,6 +417,7 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Track Map',
     description: 'Dynamic 2D map of the current circuit.',
     component: TrackMapWidget,
+    requiredCapabilities: ['playerDynamics'],
     designWidth: 400,
     designHeight: 400,
     userSettings: {
@@ -449,6 +449,7 @@ export const WIDGETS: WidgetConfig[] = [
     description: 'Progress bar of car track positions.',
     resolveLayoutChange: resolveRelativeMapLayout,
     component: RelativeMapWidget,
+    requiredCapabilities: ['relative'],
     designWidth: 400,
     designHeight: 40,
     userSettings: {
@@ -515,6 +516,7 @@ export const WIDGETS: WidgetConfig[] = [
     description: 'Tire pressures and brake temperatures.',
     resolveLayoutChange: resolveChassisLayout,
     component: ChassisWidget,
+    requiredCapabilities: ['chassis'],
     designWidth: 300,
     designHeight: 290,
     userSettings: {
@@ -536,6 +538,7 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Telemetry Debug',
     description: 'Raw telemetry data debugger.',
     component: TelemetryDebugWidget,
+    requiredCapabilities: ['playerDynamics'],
     designWidth: 400,
     designHeight: 700,
     userSettings: {
@@ -555,6 +558,7 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Delta HUD',
     description: 'Live delta HUD — one glance, am I faster or slower?',
     component: DeltaWidget,
+    requiredCapabilities: ['sectors'],
     designWidth: 200,
     designHeight: 100,
     userSettings: {
@@ -578,6 +582,7 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Timer',
     description: 'Stint and total session timers.',
     component: TimerWidget,
+    requiredCapabilities: ['playerDynamics'],
     designWidth: 240,
     designHeight: 120,
     userSettings: {
@@ -604,6 +609,7 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Weather',
     description: 'Track conditions and wind information.',
     component: WeatherWidget,
+    requiredCapabilities: ['weatherCurrent'],
     designWidth: 200,
     designHeight: 240,
     userSettings: {
@@ -630,6 +636,7 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'Fuel',
     description: 'Fuel level and consumption calculator.',
     component: FuelWidget,
+    requiredCapabilities: ['fuel'],
     autoHeight: true,
     designWidth: 240,
     designHeight: 360,
@@ -654,6 +661,7 @@ export const WIDGETS: WidgetConfig[] = [
     label: 'G-Meter',
     description: 'Lateral and longitudinal G-force friction circle.',
     component: GMeterWidget,
+    requiredCapabilities: ['playerDynamics'],
     designWidth: 240,
     designHeight: 280,
     userSettings: {
@@ -677,6 +685,7 @@ export const WIDGETS: WidgetConfig[] = [
     description:
       'Sector-by-sector timing with progress bar, live delta per sector, LAST and BEST.',
     component: SectorMatrixWidget,
+    requiredCapabilities: ['sectors'],
     autoHeight: true,
     designWidth: 320,
     designHeight: 180,
@@ -700,6 +709,7 @@ export const WIDGETS: WidgetConfig[] = [
     description:
       'Last 8 laps with time and delta vs personal best. Best lap highlighted.',
     component: LapLogWidget,
+    requiredCapabilities: ['playerDynamics'],
     autoHeight: true,
     designWidth: 220,
     designHeight: 260,

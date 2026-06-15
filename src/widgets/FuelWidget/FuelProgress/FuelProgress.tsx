@@ -1,17 +1,22 @@
-import React from 'react';
+﻿import React from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
 
 import styles from './FuelProgress.module.scss';
-import { useTelemetryStore, useUnitsStore } from '@store/root-store-context';
+import {
+  usePlayerStore,
+  useSessionStore,
+  useUnitsStore,
+} from '@store/root-store-context';
 
 export const FuelProgress = observer(() => {
-  const { carStatus, driverInfo } = useTelemetryStore();
+  const { carStatus } = usePlayerStore();
+  const { sessionInfo } = useSessionStore();
   const { unitSystem } = useUnitsStore();
 
   const fuelLevel = carStatus?.fuel_level ?? null;
-  const fuelMax = driverInfo?.DriverCarFuelMaxLtr ?? null;
+  const fuelMax = sessionInfo?.driverCarFuelMaxLtr ?? null;
 
   const pct =
     fuelLevel !== null && fuelMax !== null && fuelMax > 0

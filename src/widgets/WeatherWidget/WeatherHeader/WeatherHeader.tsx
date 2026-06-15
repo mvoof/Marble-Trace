@@ -1,11 +1,12 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 import { Sun, CloudSun, Cloud, CloudRain } from 'lucide-react';
 
 import { convertTemp, tempUnit } from '@utils/formatters/telemetry-format';
 import { parseWeekendFloat, getWeatherIcon } from '@utils/widget/weather-utils';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import {
-  useTelemetryStore,
+  useEnvironmentStore,
+  useSessionStore,
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -22,7 +23,6 @@ const ICON_MAP = {
 const ICON_COLOR = '#ffffff';
 
 export const WeatherHeader = observer(() => {
-  const telemetry = useTelemetryStore();
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
@@ -33,12 +33,13 @@ export const WeatherHeader = observer(() => {
     return null;
   }
 
-  const { weekendInfo, environment } = telemetry;
+  const { sessionInfo } = useSessionStore();
+  const { environment } = useEnvironmentStore();
   const { unitSystem } = units;
   const tUnit = tempUnit(unitSystem);
 
   const airTempC =
-    environment?.air_temp ?? parseWeekendFloat(weekendInfo?.TrackAirTemp);
+    environment?.air_temp ?? parseWeekendFloat(sessionInfo?.trackAirTemp);
   const skies = environment?.skies;
   const wetness = environment?.track_wetness;
 

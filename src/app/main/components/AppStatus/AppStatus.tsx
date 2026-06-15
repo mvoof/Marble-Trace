@@ -1,23 +1,24 @@
 import { observer } from 'mobx-react-lite';
 import styles from './AppStatus.module.scss';
-import { useTelemetryConnectionStore } from '@store/root-store-context';
+import { useSimStore } from '@store/root-store-context';
+import { getSimDisplayName } from '@utils/sim-name';
 
 export const AppStatus = observer(() => {
-  const telemetryConnection = useTelemetryConnectionStore();
+  const simStore = useSimStore();
 
-  const { status, error } = telemetryConnection;
+  const { status, error, currentSim } = simStore;
 
   const getStatusConfig = () => {
     switch (status) {
       case 'connected':
         return {
-          label: 'SYSTEM CONNECTED',
+          label: `CONNECTED TO ${getSimDisplayName(currentSim).toUpperCase()}`,
           dotClass: styles.connected,
           textClass: styles.connectedText,
         };
       case 'waiting':
         return {
-          label: 'WAITING FOR IRACING',
+          label: 'WAITING FOR TELEMETRY',
           dotClass: styles.waiting,
           textClass: styles.waitingText,
         };
@@ -30,7 +31,7 @@ export const AppStatus = observer(() => {
       case 'disconnected':
       default:
         return {
-          label: 'IRACING NOT FOUND',
+          label: 'SIMULATOR OFFLINE',
           dotClass: styles.disconnected,
           textClass: styles.disconnectedText,
         };

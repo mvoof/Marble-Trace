@@ -1,4 +1,4 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 
 import {
   FLAG_LABEL,
@@ -9,7 +9,7 @@ import {
 import styles from './TimerFlagBadge.module.scss';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
 import {
-  useTelemetryStore,
+  useSessionStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -20,7 +20,7 @@ const FLAG_CLASS: Record<FlagState, string> = {
 };
 
 export const TimerFlagBadge = observer(() => {
-  const telemetry = useTelemetryStore();
+  const sessionData = useSessionStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { showFlag } = widgetSettings.getSettings<TimerWidgetSettings>('timer');
@@ -29,7 +29,7 @@ export const TimerFlagBadge = observer(() => {
     return null;
   }
 
-  const session = telemetry.session;
+  const session = sessionData.session;
   const remain = session?.session_time_remain ?? null;
   const flagState = resolveFlagState(session?.session_flags ?? null, remain);
 

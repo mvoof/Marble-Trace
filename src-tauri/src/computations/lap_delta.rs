@@ -1,9 +1,11 @@
 use std::sync::Mutex;
 
-use pitwall::SessionInfo;
 use serde::{Deserialize, Serialize};
 
-use crate::iracing::frames::AllFieldsFrame;
+use crate::capabilities::Capabilities;
+use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::player::{CarStatusFrame, LapTimingFrame};
+use crate::model::session::SessionSnapshot;
 use crate::utils::lock_or_recover;
 
 const MAX_REASONABLE_SECTOR_TIME: f32 = 120.0;
@@ -67,40 +69,29 @@ pub struct LapDeltaFrame {
     pub sector_deltas: Vec<Option<f32>>,
 }
 
-fn sectors_checksum(session: &SessionInfo) -> u64 {
-    let sectors = session
-        .split_time_info
-        .as_ref()
-        .and_then(|s| s.sectors.as_deref())
-        .unwrap_or(&[]);
-
+fn sectors_checksum(session: &SessionSnapshot) -> u64 {
     const MULTIPLIER: u64 = 6_364_136_223_846_793_005;
 
-    let mut h: u64 = sectors.len() as u64;
+    let mut h: u64 = session.sectors.len() as u64;
 
-    for s in sectors {
-        if let (Some(num), Some(pct)) = (s.sector_num, s.sector_start_pct) {
-            h = h.wrapping_mul(MULTIPLIER).wrapping_add(num as u64);
-            h = h.wrapping_mul(MULTIPLIER).wrapping_add(pct.to_bits());
-        }
+    for s in &session.sectors {
+        h = h.wrapping_mul(MULTIPLIER).wrapping_add(s.sector_num as u64);
+        h = h
+            .wrapping_mul(MULTIPLIER)
+            .wrapping_add(s.sector_start_pct.to_bits());
     }
     h
 }
 
-fn get_sector_pcts(session: &SessionInfo) -> Vec<f64> {
-    let sectors = session
-        .split_time_info
-        .as_ref()
-        .and_then(|s| s.sectors.as_deref())
-        .unwrap_or(&[]);
-
-    if sectors.is_empty() {
+fn get_sector_pcts(session: &SessionSnapshot) -> Vec<f64> {
+    if session.sectors.is_empty() {
         return Vec::new();
     }
 
-    let mut pcts: Vec<(i32, f64)> = sectors
+    let mut pcts: Vec<(i32, f64)> = session
+        .sectors
         .iter()
-        .filter_map(|s| Some((s.sector_num?, s.sector_start_pct?)))
+        .map(|s| (s.sector_num, s.sector_start_pct))
         .collect();
 
     pcts.sort_by(|a, b| a.1.total_cmp(&b.1));
@@ -108,8 +99,9 @@ fn get_sector_pcts(session: &SessionInfo) -> Vec<f64> {
 }
 
 pub fn compute(
-    frame: &AllFieldsFrame,
-    session: &SessionInfo,
+    lap_timing: &LapTimingFrame,
+    car_status: &CarStatusFrame,
+    session: &SessionSnapshot,
     state: &Mutex<LapDeltaState>,
 ) -> LapDeltaFrame {
     let mut locked = lock_or_recover(state);
@@ -118,17 +110,17 @@ pub fn compute(
 
     let sector_count = locked.cached_sector_pcts.len();
 
-    let lap_dist_pct = match frame.lap_dist_pct {
+    let lap_dist_pct = match lap_timing.lap_dist_pct {
         Some(p) if p >= 0.0 => p as f64,
         _ => {
             return build_frame(&locked, -1, 0.0);
         }
     };
 
-    let current_lap_time = frame.lap_current_lap_time as f64;
-    let current_lap = frame.lap.unwrap_or(0);
-    let is_on_track = frame.is_on_track.unwrap_or(false);
-    let on_pit_road = frame.on_pit_road.unwrap_or(false);
+    let current_lap_time = lap_timing.lap_current_lap_time as f64;
+    let current_lap = lap_timing.lap.unwrap_or(0);
+    let is_on_track = car_status.is_on_track.unwrap_or(false);
+    let on_pit_road = car_status.on_pit_road.unwrap_or(false);
 
     if on_pit_road || !is_on_track {
         locked.is_sector_start_valid = false;
@@ -160,7 +152,7 @@ pub fn compute(
     if current_lap != locked.last_lap && locked.last_lap >= 0 {
         handle_lap_change(
             &mut locked,
-            frame.lap_last_lap_time.unwrap_or(0.0) as f64,
+            lap_timing.lap_last_lap_time.unwrap_or(0.0) as f64,
             current_lap,
             current_sector_idx,
             lap_dist_pct,
@@ -199,7 +191,7 @@ pub fn compute(
     build_frame(&locked, current_sector_idx, current_sector_fraction)
 }
 
-fn update_sector_cache(locked: &mut LapDeltaState, session: &SessionInfo) {
+fn update_sector_cache(locked: &mut LapDeltaState, session: &SessionSnapshot) {
     let checksum = sectors_checksum(session);
 
     if locked.sectors_checksum != checksum {
@@ -439,40 +431,118 @@ fn build_frame(
     }
 }
 
+/// Stateful processor wrapping the lap-delta / sector-timing computation.
+pub struct LapDeltaProcessor {
+    state: Mutex<LapDeltaState>,
+}
+
+impl Default for LapDeltaProcessor {
+    fn default() -> Self {
+        Self {
+            state: Mutex::new(LapDeltaState::default()),
+        }
+    }
+}
+
+impl Processor for LapDeltaProcessor {
+    fn id(&self) -> ProcessorId {
+        ProcessorId::LapDelta
+    }
+
+    fn required(&self) -> Capabilities {
+        Capabilities::SECTORS
+    }
+
+    fn rate(&self) -> TickRate {
+        TickRate::Hz60
+    }
+
+    fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
+        if !ctx.lap_delta_active {
+            return None;
+        }
+
+        let frame = compute(ctx.lap_timing, ctx.car_status, ctx.session, &self.state);
+
+        Some(ComputedOutput::LapDelta(frame))
+    }
+
+    fn reset(&mut self) {
+        if let Ok(mut locked) = self.state.lock() {
+            locked.reset();
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::iracing::frames::AllFieldsFrame;
+    use crate::model::player::{CarStatusFrame, LapTimingFrame};
     use std::sync::Mutex;
 
-    fn create_mock_frame(lap_dist_pct: f32, lap_time: f32) -> AllFieldsFrame {
-        AllFieldsFrame {
-            lap_dist_pct: Some(lap_dist_pct),
-            lap_current_lap_time: lap_time,
-            lap: Some(1),
+    fn make_car_status_on_track() -> CarStatusFrame {
+        CarStatusFrame {
+            fuel_level: 0.0,
+            fuel_level_pct: None,
+            fuel_use_per_hour: None,
+            oil_temp: None,
+            oil_press: None,
+            water_temp: None,
+            voltage: None,
+            on_pit_road: Some(false),
             is_on_track: Some(true),
-            ..Default::default()
+            car_left_right: None,
+            engine_warnings: None,
+            player_car_sl_shift_rpm: vec![],
+            player_car_sl_blink_rpm: vec![],
+            flags: Default::default(),
         }
     }
 
-    fn create_mock_session() -> SessionInfo {
-        use pitwall::schema::session::{Sector, SplitTimeInfo};
-        SessionInfo {
-            split_time_info: Some(SplitTimeInfo {
-                sectors: Some(vec![
-                    Sector {
-                        sector_num: Some(0),
-                        sector_start_pct: Some(0.0),
-                        ..Default::default()
-                    },
-                    Sector {
-                        sector_num: Some(1),
-                        sector_start_pct: Some(0.5),
-                        ..Default::default()
-                    },
-                ]),
-                ..Default::default()
-            }),
+    fn make_lap_timing(lap_dist_pct: f32, lap_time: f32, lap: i32) -> LapTimingFrame {
+        LapTimingFrame {
+            lap: Some(lap),
+            lap_dist: None,
+            lap_dist_pct: Some(lap_dist_pct),
+            lap_current_lap_time: lap_time,
+            lap_last_lap_time: None,
+            lap_best_lap_time: None,
+            player_car_position: None,
+            player_car_class_position: None,
+            lap_delta_to_session_best_live: None,
+            lap_delta_to_session_optimal_live: None,
+            lap_delta_to_driver_best_live: None,
+            lap_delta_to_best_lap: None,
+            lap_delta_to_best_lap_dd: None,
+            lap_delta_to_best_lap_ok: None,
+            lap_delta_to_optimal_lap: None,
+            lap_delta_to_optimal_lap_dd: None,
+            lap_delta_to_optimal_lap_ok: None,
+            lap_delta_to_session_best_lap: None,
+            lap_delta_to_session_best_lap_dd: None,
+            lap_delta_to_session_best_lap_ok: None,
+            lap_delta_to_session_lastl_lap: None,
+            lap_delta_to_session_lastl_lap_dd: None,
+            lap_delta_to_session_lastl_lap_ok: None,
+            lap_delta_to_session_optimal_lap: None,
+            lap_delta_to_session_optimal_lap_dd: None,
+            lap_delta_to_session_optimal_lap_ok: None,
+        }
+    }
+
+    fn create_mock_session() -> SessionSnapshot {
+        use crate::model::session::SectorEntry;
+        SessionSnapshot {
+            sectors: vec![
+                SectorEntry {
+                    sector_num: 0,
+                    sector_start_pct: 0.0,
+                },
+                SectorEntry {
+                    sector_num: 1,
+                    sector_start_pct: 0.5,
+                },
+            ],
             ..Default::default()
         }
     }
@@ -497,9 +567,10 @@ mod tests {
             ..Default::default()
         });
 
-        let frame = create_mock_frame(0.6, 60.0);
+        let lap_timing = make_lap_timing(0.6, 60.0, 1);
+        let car_status = make_car_status_on_track();
 
-        let _result = compute(&frame, &session, &state);
+        let _result = compute(&lap_timing, &car_status, &session, &state);
 
         let locked = state.lock().unwrap();
         let elapsed = locked.sector_times[0].unwrap();
@@ -527,12 +598,11 @@ mod tests {
             ..Default::default()
         });
 
-        let mut frame = create_mock_frame(0.1, 5.0);
+        let mut lap_timing = make_lap_timing(0.1, 5.0, 2);
+        lap_timing.lap_last_lap_time = Some(100.0);
+        let car_status = make_car_status_on_track();
 
-        frame.lap = Some(2);
-        frame.lap_last_lap_time = Some(100.0);
-
-        let _result = compute(&frame, &session, &state);
+        let _result = compute(&lap_timing, &car_status, &session, &state);
 
         let locked = state.lock().unwrap();
 

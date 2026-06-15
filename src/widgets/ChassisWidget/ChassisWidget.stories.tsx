@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { ChassisFrame } from '@/types/bindings';
 import type { ChassisWidgetSettings } from '@/types/widget-settings';
@@ -107,11 +107,11 @@ const meta: Meta<StoryArgs> = {
     widget: ChassisWidget,
     size: { width: 280, height: 290 },
     seed: (store, args) => {
-      store.telemetry.updateChassis(buildChassisFrame(args));
+      store.player.updateChassis(buildChassisFrame(args));
 
-      store.telemetry.updateCarStatus({
+      store.player.updateCarStatus({
         on_pit_road: args.onPitRoad,
-      } as Parameters<typeof store.telemetry.updateCarStatus>[0]);
+      } as Parameters<typeof store.player.updateCarStatus>[0]);
 
       store.widgetSettings.updateUserSettings('chassis', {
         ...store.widgetSettings.getSettings<ChassisWidgetSettings>('chassis'),

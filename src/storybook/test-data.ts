@@ -28,5 +28,5 @@ export const trackData = Object.values(storedTracks['recorded-tracks'])[0];
 
 export const driverEntries = computeDriverEntries(
   snapshot.carIdx,
-  snapshot.sessionInfo?.DriverInfo ?? null
+  snapshot.sessionInfo ?? null
 );

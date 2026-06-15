@@ -4,7 +4,7 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
 import {
-  useBackendComputedStore,
+  useStandingsWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -13,13 +13,12 @@ interface PosChangeProps {
 }
 
 export const PosChange = observer(({ carIdx }: PosChangeProps) => {
-  const computed = useBackendComputedStore();
+  const standingsWidget = useStandingsWidgetStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const driver = computed.driverMap.get(carIdx);
+  const driver = standingsWidget.driverMap.get(carIdx);
   const settings =
     widgetSettings.getSettings<StandingsWidgetSettings>('standings');
-  const effectiveStartPos = computed.getEffectiveStartPos(carIdx);
 
   if (!driver) {
     return null;
@@ -29,9 +28,7 @@ export const PosChange = observer(({ carIdx }: PosChangeProps) => {
 
   const position = useClassPos ? driver.classPosition : driver.position;
 
-  const startPos = useClassPos
-    ? effectiveStartPos.class
-    : effectiveStartPos.overall;
+  const startPos = useClassPos ? driver.startPosClass : driver.startPosOverall;
 
   if (startPos === 0) {
     return <span className={styles.posChangeNeutral}>-</span>;

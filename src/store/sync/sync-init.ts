@@ -16,7 +16,6 @@ import {
   emitHideWidgetsWhenGameClosed,
   emitUnitsChanged,
   emitStandingsClassIndex,
-  emitTrackMapForceStartPending,
   emitWidgetSettingsUpdated,
   emitOverlayMonitorChanged,
   emitWidgetLayoutChanged,
@@ -136,15 +135,9 @@ export const initMainSync = async (root: RootStore) => {
           }
         ),
         reaction(
-          () => root.widgetSettings.standingsActiveClassIndex,
+          () => root.standingsWidget.activeClassIndex,
           (v) => {
             void emitStandingsClassIndex(v);
-          }
-        ),
-        reaction(
-          () => root.widgetSettings.isTrackMapForceStartPending,
-          (v) => {
-            void emitTrackMapForceStartPending(v);
           }
         ),
         reaction(

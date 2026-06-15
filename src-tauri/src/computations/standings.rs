@@ -1,11 +1,13 @@
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-use pitwall::SessionInfo;
 use serde::{Deserialize, Serialize};
 
-use crate::iracing::enums::TrackSurface;
-use crate::iracing::frames::AllFieldsFrame;
+use crate::capabilities::Capabilities;
+use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::cars::CarIdxFrame;
+use crate::model::enums::{PitState, TrackSurface};
+use crate::model::session::{QualifyResultEntry, ResultPosition, SessionSnapshot};
 use crate::utils::lock_or_recover;
 
 const NO_CLASS_LABEL: &str = "No Class";
@@ -128,11 +130,13 @@ pub struct DriverEntry {
     pub raw_flags: u32,
     pub results_position_lap: Option<i32>,
     pub results_position_time: Option<f32>,
+    pub pit_state: PitState,
 }
 
 #[derive(Default)]
 pub struct StandingsState {
     pub cached_car_classes: HashMap<String, String>,
+    pub pit_states: HashMap<i32, PitState>,
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
@@ -144,34 +148,23 @@ pub struct DriverEntriesFrame {
 }
 
 pub fn compute(
-    frame: &AllFieldsFrame,
-    session: &SessionInfo,
+    car_idx: &CarIdxFrame,
+    session: &SessionSnapshot,
     start_positions: &HashMap<i32, (i32, i32)>,
     compute_ir_delta: bool,
     state: &Mutex<StandingsState>,
 ) -> DriverEntriesFrame {
-    let driver_info = match session.driver_info.as_ref() {
-        Some(di) => di,
-        None => {
-            return DriverEntriesFrame {
-                entries: vec![],
-                player_car_idx: -1,
-            }
-        }
-    };
+    let player_car_idx = session.player_car_idx;
+    let drivers = &session.cars;
 
-    let player_car_idx = driver_info.driver_car_idx.unwrap_or(-1);
-    let drivers = match driver_info.drivers.as_ref() {
-        Some(d) => d,
-        None => {
-            return DriverEntriesFrame {
-                entries: vec![],
-                player_car_idx,
-            }
-        }
-    };
+    if drivers.is_empty() {
+        return DriverEntriesFrame {
+            entries: vec![],
+            player_car_idx,
+        };
+    }
 
-    let driver_tires = driver_info.driver_tires.as_deref().unwrap_or(&[]);
+    let driver_tires = &session.driver_tires;
 
     // In team races, multiple Driver entries share the same car_idx (one per co-driver).
     // Deduplicate by car_idx before building entries: prefer the player's own entry,
@@ -200,42 +193,32 @@ pub fn compute(
 
     let mut locked_state = lock_or_recover(state);
 
-    let current_num = session.session_info.current_session_num as usize;
+    let current_num = session.current_session_num as usize;
     let results = session
-        .session_info
         .sessions
         .get(current_num)
-        .and_then(|s| s.results_positions.as_deref());
+        .map(|s| s.results_positions.as_slice())
+        .unwrap_or(&[]);
 
     let mut results_positions_map = HashMap::new();
-    if let Some(results) = results {
-        #[derive(Deserialize)]
-        #[serde(rename_all = "PascalCase")]
-        struct ResultPosDeficit {
-            car_idx: Option<i32>,
-            lap: Option<i32>,
-            time: Option<f32>,
-        }
 
-        for val in results {
-            if let Ok(rpd) = serde_yaml_ng::from_value::<ResultPosDeficit>(val.clone()) {
-                if let Some(idx) = rpd.car_idx {
-                    results_positions_map.insert(idx, (rpd.lap, rpd.time));
-                }
-            }
-        }
+    for result_position in results {
+        results_positions_map.insert(
+            result_position.car_idx,
+            (result_position.lap, result_position.time),
+        );
     }
 
     let mut entries: Vec<DriverEntry> = deduped_drivers
         .iter()
         .filter(|d| {
-            if d.car_is_pace_car == Some(1) || d.is_spectator == Some(1) {
+            if d.is_pace_car || d.is_spectator {
                 return false;
             }
 
             let idx = d.car_idx as usize;
 
-            if idx >= frame.car_idx_position.len() {
+            if idx >= car_idx.car_idx_position.len() {
                 return false;
             }
 
@@ -243,8 +226,12 @@ pub fn compute(
                 return true;
             }
 
-            let pos = frame.car_idx_position.get(idx).copied().unwrap_or(0);
-            let lap_pct = frame.car_idx_lap_dist_pct.get(idx).copied().unwrap_or(-1.0);
+            let pos = car_idx.car_idx_position.get(idx).copied().unwrap_or(0);
+            let lap_pct = car_idx
+                .car_idx_lap_dist_pct
+                .get(idx)
+                .copied()
+                .unwrap_or(-1.0);
 
             pos > 0 || lap_pct >= 0.0
         })
@@ -256,13 +243,17 @@ pub fn compute(
                 .copied()
                 .unwrap_or((None, None));
 
-            let tire_compound_idx = frame.car_idx_tire_compound.get(idx).copied().unwrap_or(-1);
+            let tire_compound_idx = car_idx
+                .car_idx_tire_compound
+                .get(idx)
+                .copied()
+                .unwrap_or(-1);
 
             let tire_compound = if tire_compound_idx >= 0 {
                 driver_tires
                     .iter()
-                    .find(|t| t.tire_index == Some(tire_compound_idx))
-                    .and_then(|t| t.tire_compound_type.clone())
+                    .find(|t| t.tire_index == tire_compound_idx)
+                    .map(|t| t.tire_compound_type.clone())
                     .unwrap_or_default()
             } else {
                 String::new()
@@ -273,7 +264,7 @@ pub fn compute(
                 .copied()
                 .unwrap_or((0, 0));
 
-            let car_screen_name_short = driver.car_screen_name_short.clone().unwrap_or_default();
+            let car_screen_name_short = driver.car_screen_name_short.clone();
 
             let car_class_short_name = if car_screen_name_short.is_empty() {
                 NO_CLASS_LABEL.to_string()
@@ -299,56 +290,69 @@ pub fn compute(
             DriverEntry {
                 car_idx: driver.car_idx,
                 user_name: driver.user_name.clone(),
-                car_number: driver.car_number.clone().unwrap_or_default(),
-                car_class_id: driver.car_class_id.unwrap_or(-1),
+                car_number: driver.car_number.clone(),
+                car_class_id: driver.car_class_id,
                 car_class_short_name,
-                car_class_color: driver.car_class_color.clone().unwrap_or_default(),
-                car_screen_name: driver.car_screen_name.clone().unwrap_or_default(),
+                car_class_color: driver.car_class_color.clone(),
+                car_screen_name: driver.car_screen_name.clone(),
                 car_screen_name_short,
                 tire_compound,
-                position: frame.car_idx_position.get(idx).copied().unwrap_or(0),
-                class_position: frame.car_idx_class_position.get(idx).copied().unwrap_or(0),
+                position: car_idx.car_idx_position.get(idx).copied().unwrap_or(0),
+                class_position: car_idx
+                    .car_idx_class_position
+                    .get(idx)
+                    .copied()
+                    .unwrap_or(0),
                 start_pos_overall: start_overall,
                 start_pos_class: start_class,
-                lap: frame.car_idx_lap.get(idx).copied().unwrap_or(0),
-                lap_dist_pct: frame.car_idx_lap_dist_pct.get(idx).copied().unwrap_or(0.0),
-                last_lap_time: frame
+                lap: car_idx.car_idx_lap.get(idx).copied().unwrap_or(0),
+                lap_dist_pct: car_idx
+                    .car_idx_lap_dist_pct
+                    .get(idx)
+                    .copied()
+                    .unwrap_or(0.0),
+                last_lap_time: car_idx
                     .car_idx_last_lap_time
                     .get(idx)
                     .copied()
                     .unwrap_or(-1.0),
-                best_lap_time: frame
+                best_lap_time: car_idx
                     .car_idx_best_lap_time
                     .get(idx)
                     .copied()
                     .unwrap_or(-1.0),
-                f2_time: frame.car_idx_f2_time.get(idx).copied().unwrap_or(0.0),
-                est_time: frame.car_idx_est_time.get(idx).copied().unwrap_or(0.0),
-                track_surface: TrackSurface::from(
-                    frame.car_idx_track_surface.get(idx).copied().unwrap_or(-1),
-                ),
-                i_rating: driver.i_rating.unwrap_or(0),
-                lic_string: driver
-                    .lic_string
-                    .clone()
-                    .unwrap_or_else(|| "R 0.00".to_string()),
-                lic_color: driver
-                    .lic_color
-                    .clone()
-                    .unwrap_or_else(|| "000000".to_string()),
-                incidents: driver.cur_driver_incident_count.unwrap_or(0),
+                f2_time: car_idx.car_idx_f2_time.get(idx).copied().unwrap_or(0.0),
+                est_time: car_idx.car_idx_est_time.get(idx).copied().unwrap_or(0.0),
+                track_surface: car_idx
+                    .car_idx_track_surface
+                    .get(idx)
+                    .copied()
+                    .unwrap_or(TrackSurface::NotInWorld),
+                i_rating: driver.i_rating,
+                lic_string: if driver.lic_string.is_empty() {
+                    "R 0.00".to_string()
+                } else {
+                    driver.lic_string.clone()
+                },
+                lic_color: if driver.lic_color.is_empty() {
+                    "000000".to_string()
+                } else {
+                    driver.lic_color.clone()
+                },
+                incidents: driver.incident_count,
                 is_player: driver.car_idx == player_car_idx,
-                on_pit_road: frame.car_idx_on_pit_road.get(idx).copied().unwrap_or(false),
+                on_pit_road: car_idx
+                    .car_idx_on_pit_road
+                    .get(idx)
+                    .copied()
+                    .unwrap_or(false),
                 estimated_ir_delta: None,
                 relative_lap_dist: 0.0,
-                class_est_lap_time: driver.car_class_est_lap_time.unwrap_or(0.0) as f32,
-                raw_flags: frame
-                    .car_idx_session_flags
-                    .get(idx)
-                    .map(|bf| bf.0)
-                    .unwrap_or(0),
+                class_est_lap_time: driver.car_class_est_lap_time,
+                raw_flags: car_idx.car_idx_session_flags.get(idx).copied().unwrap_or(0),
                 results_position_lap: res_lap,
                 results_position_time: res_time,
+                pit_state: PitState::None,
             }
         })
         .collect();
@@ -381,6 +385,27 @@ pub fn compute(
         }
 
         entry.relative_lap_dist = diff;
+    }
+
+    // Pit state machine — per-car, persisted across ticks in locked_state.pit_states
+    let active_car_indices: std::collections::HashSet<i32> =
+        entries.iter().map(|e| e.car_idx).collect();
+
+    locked_state
+        .pit_states
+        .retain(|k, _| active_car_indices.contains(k));
+
+    for entry in &mut entries {
+        let prev = locked_state
+            .pit_states
+            .get(&entry.car_idx)
+            .copied()
+            .unwrap_or(PitState::None);
+
+        let next = next_pit_state(prev, entry.on_pit_road, entry.track_surface);
+
+        locked_state.pit_states.insert(entry.car_idx, next);
+        entry.pit_state = next;
     }
 
     if compute_ir_delta {
@@ -482,29 +507,255 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
     result
 }
 
-/// Parse start positions from pitwall's Session.results_positions (Vec<serde_yaml_ng::Value>).
-/// Returns a map of carIdx -> (overall_position, class_position) (1-indexed).
-pub fn parse_start_positions(results: &[serde_yaml_ng::Value]) -> HashMap<i32, (i32, i32)> {
-    #[derive(Deserialize)]
-    #[serde(rename_all = "PascalCase")]
-    struct ResultPos {
-        car_idx: Option<i32>,
-        position: Option<i32>,
-        class_position: Option<i32>,
+/// Stateful processor wrapping the standings computation.
+pub struct StandingsProcessor {
+    state: Mutex<StandingsState>,
+}
+
+impl Default for StandingsProcessor {
+    fn default() -> Self {
+        Self {
+            state: Mutex::new(StandingsState::default()),
+        }
+    }
+}
+
+impl Processor for StandingsProcessor {
+    fn id(&self) -> ProcessorId {
+        ProcessorId::Standings
     }
 
+    fn required(&self) -> Capabilities {
+        Capabilities::STANDINGS
+    }
+
+    fn rate(&self) -> TickRate {
+        TickRate::Hz10
+    }
+
+    fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
+        let frame = compute(
+            ctx.car_idx,
+            ctx.session,
+            ctx.start_positions,
+            true,
+            &self.state,
+        );
+
+        Some(ComputedOutput::Standings(frame))
+    }
+
+    fn reset(&mut self) {
+        if let Ok(mut locked) = self.state.lock() {
+            *locked = StandingsState::default();
+        }
+    }
+}
+
+/// Parse start positions from the current session's ResultsPositions.
+/// Returns a map of carIdx -> (overall_position, class_position) (1-indexed).
+pub fn parse_start_positions(results: &[ResultPosition]) -> HashMap<i32, (i32, i32)> {
     let mut map = HashMap::new();
 
-    for val in results {
-        if let Ok(rp) = serde_yaml_ng::from_value::<ResultPos>(val.clone()) {
-            if let (Some(idx), Some(pos)) = (rp.car_idx, rp.position) {
-                // Position is 1-indexed in iRacing YAML; ClassPosition is 0-indexed.
-                let class_pos = rp.class_position.unwrap_or(pos - 1);
+    for result_position in results {
+        // Position is 1-indexed in iRacing YAML; ClassPosition is 0-indexed.
+        let class_pos = result_position
+            .class_position
+            .unwrap_or(result_position.position - 1);
 
-                map.insert(idx, (pos, class_pos + 1));
-            }
-        }
+        map.insert(
+            result_position.car_idx,
+            (result_position.position, class_pos + 1),
+        );
     }
 
     map
+}
+
+/// Parse start positions from QualifyResultsInfo.
+/// Used as a fallback when ResultsPositions is empty (e.g. before a race starts).
+/// QualifyResultEntry.position is 0-indexed (iRacing convention); we convert to 1-indexed.
+pub fn parse_start_positions_from_qualify(
+    qualify_results: &[QualifyResultEntry],
+) -> HashMap<i32, (i32, i32)> {
+    let mut map = HashMap::new();
+
+    for entry in qualify_results {
+        let overall = entry.position + 1;
+        let class = entry.class_position.unwrap_or(entry.position) + 1;
+        map.insert(entry.car_idx, (overall, class));
+    }
+
+    map
+}
+
+/// Per-car pit phase transition: none → in → stall → exit → none.
+fn next_pit_state(prev: PitState, on_pit_road: bool, track_surface: TrackSurface) -> PitState {
+    if !on_pit_road {
+        return PitState::None;
+    }
+
+    match prev {
+        PitState::None | PitState::In => {
+            if track_surface == TrackSurface::InPitStall {
+                PitState::Stall
+            } else {
+                PitState::In
+            }
+        }
+        PitState::Stall => {
+            if track_surface == TrackSurface::AproachingPits
+                || track_surface == TrackSurface::OnTrack
+            {
+                PitState::Exit
+            } else {
+                PitState::Stall
+            }
+        }
+        PitState::Exit => PitState::Exit,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::enums::{PitState, TrackSurface};
+    use crate::model::session::QualifyResultEntry;
+
+    #[test]
+    fn test_parse_start_positions_from_qualify_converts_to_1indexed() {
+        let entries = vec![
+            QualifyResultEntry {
+                car_idx: 0,
+                position: 0,
+                class_position: Some(0),
+            },
+            QualifyResultEntry {
+                car_idx: 5,
+                position: 1,
+                class_position: Some(1),
+            },
+        ];
+
+        let map = parse_start_positions_from_qualify(&entries);
+
+        assert_eq!(map.get(&0), Some(&(1, 1)));
+        assert_eq!(map.get(&5), Some(&(2, 2)));
+    }
+
+    #[test]
+    fn test_parse_start_positions_from_qualify_fallback_class_pos() {
+        let entries = vec![QualifyResultEntry {
+            car_idx: 3,
+            position: 2,
+            class_position: None,
+        }];
+
+        let map = parse_start_positions_from_qualify(&entries);
+
+        // When class_position is None, falls back to overall position (0-indexed)
+        assert_eq!(map.get(&3), Some(&(3, 3)));
+    }
+
+    #[test]
+    fn test_parse_start_positions_prefers_results_over_qualify() {
+        // This test validates the priority rule exercised in runtime.rs:
+        // ResultsPositions (non-empty) wins over QualifyResultsInfo.
+        let results = vec![ResultPosition {
+            car_idx: 1,
+            position: 2,
+            class_position: Some(1),
+            lap: None,
+            time: None,
+        }];
+
+        let qualify = vec![QualifyResultEntry {
+            car_idx: 1,
+            position: 0, // would give overall=1 — different from results
+            class_position: Some(0),
+        }];
+
+        let from_results = parse_start_positions(&results);
+        let from_qualify = parse_start_positions_from_qualify(&qualify);
+
+        // Runtime picks from_results when non-empty
+        assert_eq!(from_results.get(&1), Some(&(2, 2)));
+        assert_eq!(from_qualify.get(&1), Some(&(1, 1)));
+        // Confirm they differ — so the selection matters
+        assert_ne!(from_results.get(&1), from_qualify.get(&1));
+    }
+
+    #[test]
+    fn test_parse_start_positions_from_qualify_empty() {
+        let map = parse_start_positions_from_qualify(&[]);
+        assert!(map.is_empty());
+    }
+
+    fn apply_pit_machine(
+        pit_states: &mut HashMap<i32, PitState>,
+        car_idx: i32,
+        on_pit_road: bool,
+        track_surface: TrackSurface,
+    ) -> PitState {
+        let prev = pit_states.get(&car_idx).copied().unwrap_or(PitState::None);
+        let next = next_pit_state(prev, on_pit_road, track_surface);
+        pit_states.insert(car_idx, next);
+        next
+    }
+
+    #[test]
+    fn test_pit_state_none_when_not_on_pit_road() {
+        let mut states: HashMap<i32, PitState> = HashMap::new();
+        let result = apply_pit_machine(&mut states, 1, false, TrackSurface::OnTrack);
+        assert_eq!(result, PitState::None);
+    }
+
+    #[test]
+    fn test_pit_state_in_when_entering_pit_road() {
+        let mut states: HashMap<i32, PitState> = HashMap::new();
+        let result = apply_pit_machine(&mut states, 1, true, TrackSurface::AproachingPits);
+        assert_eq!(result, PitState::In);
+    }
+
+    #[test]
+    fn test_pit_state_transitions_to_stall() {
+        let mut states: HashMap<i32, PitState> = HashMap::new();
+        apply_pit_machine(&mut states, 1, true, TrackSurface::AproachingPits);
+        let result = apply_pit_machine(&mut states, 1, true, TrackSurface::InPitStall);
+        assert_eq!(result, PitState::Stall);
+    }
+
+    #[test]
+    fn test_pit_state_transitions_to_exit_after_stall() {
+        let mut states: HashMap<i32, PitState> = HashMap::new();
+        apply_pit_machine(&mut states, 1, true, TrackSurface::AproachingPits);
+        apply_pit_machine(&mut states, 1, true, TrackSurface::InPitStall);
+        let result = apply_pit_machine(&mut states, 1, true, TrackSurface::AproachingPits);
+        assert_eq!(result, PitState::Exit);
+    }
+
+    #[test]
+    fn test_pit_state_resets_to_none_when_leaving_pit_road() {
+        let mut states: HashMap<i32, PitState> = HashMap::new();
+        apply_pit_machine(&mut states, 1, true, TrackSurface::AproachingPits);
+        apply_pit_machine(&mut states, 1, true, TrackSurface::InPitStall);
+        apply_pit_machine(&mut states, 1, true, TrackSurface::AproachingPits);
+        let result = apply_pit_machine(&mut states, 1, false, TrackSurface::OnTrack);
+        assert_eq!(result, PitState::None);
+    }
+
+    #[test]
+    fn test_pit_state_stall_directly_if_entering_already_in_stall() {
+        let mut states: HashMap<i32, PitState> = HashMap::new();
+        let result = apply_pit_machine(&mut states, 1, true, TrackSurface::InPitStall);
+        assert_eq!(result, PitState::Stall);
+    }
+
+    #[test]
+    fn test_pit_state_reset_clears_all_states() {
+        let mut processor = StandingsProcessor::default();
+        processor.reset();
+        let locked = processor.state.lock().unwrap();
+        assert!(locked.pit_states.is_empty());
+    }
 }

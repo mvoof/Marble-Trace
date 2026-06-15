@@ -1,14 +1,14 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 
 import { TimerFlagBadge } from './TimerFlagBadge/TimerFlagBadge';
-import { useTelemetryStore } from '@store/root-store-context';
+import { useSessionStore } from '@store/root-store-context';
 import styles from './TimerHeader.module.scss';
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 
 export const TimerHeader = observer(() => {
-  const { session, sessionInfo } = useTelemetryStore();
+  const { session, sessionInfo } = useSessionStore();
 
-  const sessions = sessionInfo?.SessionInfo?.Sessions ?? [];
+  const sessions = sessionInfo?.sessions ?? [];
 
   const sessionNum = session?.session_num ?? null;
 
@@ -16,7 +16,7 @@ export const TimerHeader = observer(() => {
     sessionNum !== null ? (sessions[sessionNum] ?? null) : null;
 
   const sessionTypeLabel =
-    currentSession?.SessionType?.toUpperCase() ?? 'NO SESSION';
+    currentSession?.sessionType.toUpperCase() || 'NO SESSION';
 
   return (
     <div className={styles.header}>

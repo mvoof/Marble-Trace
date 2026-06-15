@@ -1,9 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type {
   LapTimingFrame,
   LapDeltaFrame,
-  SessionInfo,
+  SessionSnapshot,
 } from '@/types/bindings';
 import { SectorMatrixWidget } from './SectorMatrixWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
@@ -27,7 +27,7 @@ const meta: Meta<StoryArgs> = {
     seed: (store, args) => {
       const sectorCount = args.sectorTimes.length || 3;
 
-      store.telemetry.updateLapTiming({
+      store.player.updateLapTiming({
         lap: 3,
         lap_dist: null,
         lap_dist_pct: args.lapDistPct,
@@ -40,14 +40,12 @@ const meta: Meta<StoryArgs> = {
         lap_delta_to_session_optimal_live: args.delta,
       } as LapTimingFrame);
 
-      store.telemetry.updateSessionInfo({
-        SplitTimeInfo: {
-          Sectors: Array.from({ length: sectorCount }, (_, idx) => ({
-            SectorNum: idx,
-            SectorStartPct: idx / sectorCount,
-          })),
-        },
-      } as unknown as SessionInfo);
+      store.session.updateSessionInfo({
+        sectors: Array.from({ length: sectorCount }, (_, idx) => ({
+          sectorNum: idx,
+          sectorStartPct: idx / sectorCount,
+        })),
+      } as unknown as SessionSnapshot);
 
       store.backendComputed.updateLapDelta({
         sectorTimes: args.sectorTimes,

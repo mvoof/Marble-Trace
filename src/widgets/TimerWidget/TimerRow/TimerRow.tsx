@@ -1,9 +1,9 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 
 import { useWallClock } from '@hooks/widget/useWallClock';
 import { formatSimDate, formatSimTime } from '@utils/widget/timer-utils';
 import {
-  useTelemetryStore,
+  useSessionStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
@@ -16,7 +16,7 @@ import {
 } from '@utils/constants/data-placeholders';
 
 export const TimerRow = observer(() => {
-  const { session, sessionInfo } = useTelemetryStore();
+  const { session, sessionInfo } = useSessionStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const { showWallClock, showSimTime, showPcDate, showSimDate } =
@@ -28,7 +28,7 @@ export const TimerRow = observer(() => {
   const simTime =
     rawSimTime !== null ? formatSimTime(rawSimTime) : NO_TIME_DATA_PLACEHOLDER;
 
-  const rawSimDate = sessionInfo?.WeekendInfo?.WeekendOptions?.Date ?? null;
+  const rawSimDate = sessionInfo?.weekendDate || null;
 
   const simDate =
     rawSimDate !== null ? formatSimDate(rawSimDate) : NO_DATE_DATA_PLACEHOLDER;

@@ -33,10 +33,10 @@ export const abbreviateName = (fullName: string): string => {
 
 // ─── Status color constants matching SCSS tokens in _widget-tokens.scss ─────
 
-export const COLOR_STATUS_INFO = '#60a5fa'; // $widget-status-info (Blue)
-export const COLOR_STATUS_WARNING = '#fbbf24'; // $widget-status-warning (Amber/Yellow)
-export const COLOR_STATUS_CAUTION = '#f97316'; // $widget-status-caution/warning (Orange)
-export const COLOR_STATUS_DANGER = '#ef4444'; // $widget-status-danger (Red)
+const COLOR_STATUS_INFO = '#60a5fa'; // $widget-status-info (Blue)
+const COLOR_STATUS_WARNING = '#fbbf24'; // $widget-status-warning (Amber/Yellow)
+const COLOR_STATUS_CAUTION = '#f97316'; // $widget-status-caution/warning (Orange)
+const COLOR_STATUS_DANGER = '#ef4444'; // $widget-status-danger (Red)
 
 export const getAirTempColor = (celsius: number): string => {
   if (celsius < 20) return COLOR_STATUS_INFO;

@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type {
   CarIdxFrame,
   LapTimingFrame,
   SessionFrame,
-  SessionInfo,
+  SessionSnapshot,
   SessionState as BindingSessionState,
 } from '@/types/bindings';
 import { TimerWidget } from './TimerWidget';
@@ -46,28 +46,22 @@ const meta: Meta<StoryArgs> = {
     size: { width: 240, height: 120 },
     seedSnapshot: true,
     seed: (store, args) => {
-      store.telemetry.updateSessionInfo({
-        DriverInfo: {
-          DriverCarIdx: PLAYER_CAR_IDX,
-          Drivers: new Array(args.totalDrivers).fill(null).map((_, idx) => ({
-            CarIdx: idx,
-          })),
-        },
-        SessionInfo: {
-          Sessions: [
-            {
-              SessionNum: 0,
-              SessionType: args.sessionType,
-              SessionLaps: args.sessionLaps,
-            },
-          ],
-        },
-        WeekendInfo: {
-          WeekendOptions: { Date: '2026 May 18' },
-        },
-      } as unknown as SessionInfo);
+      store.session.updateSessionInfo({
+        playerCarIdx: PLAYER_CAR_IDX,
+        cars: new Array(args.totalDrivers).fill(null).map((_, idx) => ({
+          carIdx: idx,
+        })),
+        sessions: [
+          {
+            sessionType: args.sessionType,
+            sessionLaps: String(args.sessionLaps),
+            resultsPositions: [],
+          },
+        ],
+        weekendDate: '2026 May 18',
+      } as unknown as SessionSnapshot);
 
-      store.telemetry.updateSession({
+      store.session.updateSession({
         session_num: 0,
         session_time_remain: args.remainSec,
         session_time: args.elapsedSec,
@@ -76,11 +70,11 @@ const meta: Meta<StoryArgs> = {
         session_state: args.sessionState,
       } as SessionFrame);
 
-      store.telemetry.updateCarIdx({
+      store.cars.updateCarIdx({
         car_idx_lap: buildCarIdxLap(args.currentLap),
       } as unknown as CarIdxFrame);
 
-      store.telemetry.updateLapTiming({
+      store.player.updateLapTiming({
         player_car_position: args.position,
       } as LapTimingFrame);
 

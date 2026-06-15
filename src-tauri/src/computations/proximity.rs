@@ -1,7 +1,8 @@
-use pitwall::SessionInfo;
+use crate::capabilities::Capabilities;
+use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::cars::CarIdxFrame;
+use crate::model::session::SessionSnapshot;
 use serde::{Deserialize, Serialize};
-
-use crate::iracing::frames::AllFieldsFrame;
 
 // CarLeftRight enum values from iRacing SDK
 const CLR_OFF: i32 = 0;
@@ -57,6 +58,36 @@ pub struct ProximityFrame {
     pub spotter_right: bool,
 }
 
+/// Stateless processor wrapping the proximity computation.
+pub struct ProximityProcessor;
+
+impl Processor for ProximityProcessor {
+    fn id(&self) -> ProcessorId {
+        ProcessorId::Proximity
+    }
+
+    fn required(&self) -> Capabilities {
+        Capabilities::RADAR
+    }
+
+    fn rate(&self) -> TickRate {
+        TickRate::Hz10
+    }
+
+    fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
+        let frame = compute(
+            ctx.car_idx,
+            ctx.session,
+            ctx.track_length_m,
+            ctx.car_length_m,
+        );
+
+        Some(ComputedOutput::Proximity(frame))
+    }
+
+    fn reset(&mut self) {}
+}
+
 pub fn parse_track_length(s: &str) -> f32 {
     let s = s.trim().to_lowercase();
     let s = s.as_str();
@@ -91,18 +122,14 @@ fn spotter_flags(car_left_right: i32) -> (bool, bool) {
 }
 
 pub fn compute(
-    frame: &AllFieldsFrame,
-    session: &SessionInfo,
+    car_idx: &CarIdxFrame,
+    session: &SessionSnapshot,
     track_length_m: f32,
     car_length_m: f32,
 ) -> ProximityFrame {
-    let player_idx = session
-        .driver_info
-        .as_ref()
-        .and_then(|di| di.driver_car_idx)
-        .unwrap_or(-1);
+    let player_idx = session.player_car_idx;
 
-    let car_left_right = frame.car_left_right.unwrap_or(CLR_CLEAR);
+    let car_left_right = car_idx.car_left_right.unwrap_or(CLR_CLEAR);
     let (spotter_left, spotter_right) = spotter_flags(car_left_right);
 
     let has_left = spotter_left;
@@ -123,8 +150,8 @@ pub fn compute(
     }
 
     let player_idx = player_idx as usize;
-    let lap_dist_pct = &frame.car_idx_lap_dist_pct;
-    let on_pit_road = &frame.car_idx_on_pit_road;
+    let lap_dist_pct = &car_idx.car_idx_lap_dist_pct;
+    let on_pit_road = &car_idx.car_idx_on_pit_road;
 
     let player_pct = match lap_dist_pct.get(player_idx) {
         Some(&p) if p >= 0.0 => p,

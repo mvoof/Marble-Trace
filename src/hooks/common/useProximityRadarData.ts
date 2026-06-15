@@ -1,8 +1,8 @@
 import type { RadarSettings } from '@/types/widget-settings';
-import { useRadarVisibility } from './useRadarVisibility';
 import { useWidgetAutoHide } from './useWidgetAutoHide';
 import {
   useBackendComputedStore,
+  useRadarWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -12,6 +12,7 @@ export const useProximityRadarData = (
 ) => {
   const computed = useBackendComputedStore();
   const widgetSettings = useWidgetSettingsStore();
+  const radarStore = useRadarWidgetStore();
 
   const proximity = computed.proximity;
   const radarSettings = widgetSettings.getSettings<RadarSettings>(widgetId);
@@ -22,11 +23,7 @@ export const useProximityRadarData = (
   const spotterLeft = proximity?.spotterLeft ?? false;
   const spotterRight = proximity?.spotterRight ?? false;
 
-  const visible = useRadarVisibility(
-    nearbyCars,
-    radarSettings,
-    spotterLeft || spotterRight
-  );
+  const visible = radarStore.isVisible;
 
   useWidgetAutoHide(visible);
 

@@ -3,6 +3,7 @@ pre-commit:
   commands:
     lint:
       glob: "*.{ts,tsx,js,mjs}"
+      exclude: "src/types/bindings.ts"
       run: npx oxlint --type-aware --fix --deny-warnings {staged_files}
       stage_fixed: true
     format:
@@ -16,7 +17,7 @@ pre-commit:
       stage_fixed: true
     test:
       glob: "*.{ts,tsx,js,mjs}"
-      run: npx vitest run --related {staged_files}
+      run: npx vitest related --run {staged_files}
     rust-test:
       glob: "*.rs"
       root: "src-tauri/"

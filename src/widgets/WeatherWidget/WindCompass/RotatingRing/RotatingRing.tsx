@@ -1,7 +1,7 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 
 import styles from './RotatingRing.module.scss';
-import { useTelemetryStore } from '@store/root-store-context';
+import { usePlayerStore } from '@store/root-store-context';
 
 const RING_RADIUS = 82;
 const TICK_OUTER = 88;
@@ -22,9 +22,9 @@ const RING_COLOR = 'rgba(255,255,255,0.22)';
 
 // Re-renders at 60 Hz — driven by carDynamics.yaw updating at physics rate
 export const RotatingRing = observer(() => {
-  const telemetry = useTelemetryStore();
+  const { carDynamics } = usePlayerStore();
 
-  const carYawRad = telemetry.carDynamics?.yaw ?? 0;
+  const carYawRad = carDynamics?.yaw ?? 0;
   const carYawDeg = carYawRad * (180 / Math.PI);
 
   return (

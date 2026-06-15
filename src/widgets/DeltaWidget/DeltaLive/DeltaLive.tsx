@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import {
-  useTelemetryStore,
+  usePlayerStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import {
@@ -20,7 +20,7 @@ const DELTA_CLASS = {
 };
 
 export const DeltaLive = observer(() => {
-  const { lapTiming } = useTelemetryStore();
+  const { lapTiming } = usePlayerStore();
   const widgetSettings = useWidgetSettingsStore();
   const { reference, hideWhenNoReference } =
     widgetSettings.getSettings<DeltaWidgetSettings>('delta');

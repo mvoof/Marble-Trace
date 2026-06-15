@@ -1,9 +1,8 @@
-import { useMemo, type RefObject } from 'react';
+import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import type { TrackPoint } from '@/types';
-import type { RecordingOverlayHandle } from '@widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
 import { RecordingOverlay } from '@widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
 import { TrackMapSvg } from '@widgets/TrackMapWidget/TrackMapSvg/TrackMapSvg';
 import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
@@ -18,7 +17,8 @@ import type { TrackMapWidgetSettings } from '@/types/widget-settings';
 import {
   useAppSettingsStore,
   useBackendComputedStore,
-  useTelemetryStore,
+  useCarsStore,
+  useSessionStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -34,7 +34,6 @@ export interface TrackMapViewProps {
   isRecording: boolean;
   recordingProgress: number;
   isWaitingForSF: boolean;
-  recordingOverlayRef?: RefObject<RecordingOverlayHandle | null>;
   onRotate?: (direction: 'cw' | 'ccw') => void;
 }
 
@@ -44,10 +43,10 @@ export const TrackMapView = observer(
     isRecording,
     recordingProgress,
     isWaitingForSF,
-    recordingOverlayRef,
     onRotate,
   }: TrackMapViewProps) => {
-    const telemetry = useTelemetryStore();
+    const { sessionInfo } = useSessionStore();
+    const { carPositions } = useCarsStore();
     const computed = useBackendComputedStore();
     const widgetSettings = useWidgetSettingsStore();
     const { dragMode } = useAppSettingsStore();
@@ -60,10 +59,9 @@ export const TrackMapView = observer(
 
     const settings = { ...rawSettings, showSectors, showSectorsOnMap };
 
-    const sectors = telemetry.sessionInfo?.SplitTimeInfo?.Sectors;
+    const sectors = sessionInfo?.sectors;
 
     const driverEntries = computed.standings?.entries ?? [];
-    const carPositions = telemetry.carPositions;
 
     const rotatedTrackData = useMemo(() => {
       if (!trackData) return null;
@@ -100,7 +98,6 @@ export const TrackMapView = observer(
       return (
         <WidgetPanel className={styles.trackMap} gap={0}>
           <RecordingOverlay
-            ref={recordingOverlayRef}
             isRecording={isRecording}
             isWaitingForSF={isWaitingForSF}
             progress={recordingProgress}

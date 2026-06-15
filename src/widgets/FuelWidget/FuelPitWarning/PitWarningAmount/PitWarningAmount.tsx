@@ -1,4 +1,4 @@
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 
 import { formatFuel, fuelUnit } from '@utils/formatters/telemetry-format';
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
@@ -7,17 +7,17 @@ import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 import styles from './PitWarningAmount.module.scss';
 import {
   useBackendComputedStore,
-  useTelemetryStore,
+  useSessionStore,
   useUnitsStore,
 } from '@store/root-store-context';
 import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/constants/data-placeholders';
 
 export const PitWarningAmount = observer(() => {
   const { fuel } = useBackendComputedStore();
-  const { driverInfo } = useTelemetryStore();
+  const { sessionInfo } = useSessionStore();
   const { unitSystem } = useUnitsStore();
 
-  const fuelMax = driverInfo?.DriverCarFuelMaxLtr ?? null;
+  const fuelMax = sessionInfo?.driverCarFuelMaxLtr ?? null;
 
   const fuelToAddWithBuffer = fuel?.fuelToAddWithBuffer ?? null;
   const shortage = fuel?.shortage ?? null;

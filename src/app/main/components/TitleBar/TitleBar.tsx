@@ -1,10 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import type { MouseEvent } from 'react';
 import { Button } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { Minus, Square, Copy, X } from 'lucide-react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import styles from './TitleBar.module.scss';
 import Logo from '@assets/logo.svg?react';
+
+const handleMinimize = (e: MouseEvent) => {
+  e.stopPropagation();
+  void getCurrentWindow().minimize();
+};
+
+const handleMaximize = (e: MouseEvent) => {
+  e.stopPropagation();
+  void getCurrentWindow().toggleMaximize();
+};
+
+const handleClose = (e: MouseEvent) => {
+  e.stopPropagation();
+  void getCurrentWindow().close();
+};
 
 export const TitleBar = observer(() => {
   const [isMaximized, setIsMaximized] = useState(false);
@@ -25,21 +41,6 @@ export const TitleBar = observer(() => {
       void unlisten.then((fn) => fn());
     };
   }, []);
-
-  const handleMinimize = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    void getCurrentWindow().minimize();
-  };
-
-  const handleMaximize = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    void getCurrentWindow().toggleMaximize();
-  };
-
-  const handleClose = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    void getCurrentWindow().close();
-  };
 
   return (
     <div className={styles.titleBar}>

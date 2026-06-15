@@ -1,0 +1,730 @@
+//! Track shape processor — dead reckoning from 60 Hz speed/yaw telemetry.
+//! Ports the TypeScript `TrackRecorder` class in full.
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use std::time::Instant;
+
+use crate::capabilities::Capabilities;
+use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
+
+const DT_CAP_SECONDS: f32 = 0.1;
+const DT_FALLBACK_SECONDS: f32 = 0.016;
+const LAP_WRAP_THRESHOLD: f32 = 0.5;
+const SAMPLING_THRESHOLD_PCT: f32 = 0.001;
+const NEAR_END_THRESHOLD: f32 = 0.9;
+const NEAR_START_THRESHOLD: f32 = 0.1;
+const MIN_POINTS_FOR_COMPLETION: usize = 100;
+const VIEWBOX_PADDING_FACTOR: f32 = 0.02;
+const SPEED_THRESHOLD_MPS: f32 = 5.0;
+/// Emit recording status every 15 60 Hz ticks (~4 Hz).
+const STATUS_EMIT_INTERVAL: u64 = 15;
+
+struct TrackShapeState {
+    points: Vec<TrackPoint>,
+    x: f32,
+    y: f32,
+    recording: bool,
+    complete: bool,
+    prev_time: Option<Instant>,
+    start_pct: f32,
+    highest_pct: f32,
+    last_lap_dist_pct: f32,
+    points_count: usize,
+}
+
+impl Default for TrackShapeState {
+    fn default() -> Self {
+        Self {
+            points: Vec::new(),
+            x: 0.0,
+            y: 0.0,
+            recording: false,
+            complete: false,
+            prev_time: None,
+            start_pct: -1.0,
+            highest_pct: -1.0,
+            last_lap_dist_pct: -1.0,
+            points_count: 0,
+        }
+    }
+}
+
+impl TrackShapeState {
+    fn reset(&mut self) {
+        *self = Self::default();
+    }
+
+    fn progress(&self) -> f32 {
+        if self.complete {
+            return 1.0;
+        }
+
+        if !self.recording || self.start_pct < 0.0 || self.highest_pct < 0.0 {
+            return 0.0;
+        }
+
+        let mut pct = self.highest_pct - self.start_pct;
+
+        if pct < 0.0 {
+            pct += 1.0;
+        }
+
+        pct.clamp(0.0, 0.99)
+    }
+
+    fn start(&mut self) {
+        self.reset();
+        self.recording = true;
+        self.prev_time = Some(Instant::now());
+    }
+
+    /// Feed one telemetry tick. Returns `true` if recording just completed.
+    fn tick_with_dt(&mut self, speed: f32, yaw: f32, lap_dist_pct: f32, dt: f32) -> bool {
+        if !self.recording || self.complete {
+            return false;
+        }
+
+        if self.start_pct < 0.0 {
+            if lap_dist_pct < 0.0 {
+                return false;
+            }
+
+            self.start_pct = lap_dist_pct;
+            self.highest_pct = lap_dist_pct;
+            self.last_lap_dist_pct = lap_dist_pct;
+            self.points.push(TrackPoint {
+                x: 0.0,
+                y: 0.0,
+                pct: lap_dist_pct,
+            });
+            self.points_count = 1;
+
+            return false;
+        }
+
+        let effective_dt = if dt > DT_CAP_SECONDS {
+            DT_FALLBACK_SECONDS
+        } else if dt <= 0.0 {
+            return false;
+        } else {
+            dt
+        };
+
+        let dx = speed * yaw.sin() * effective_dt;
+        let dy = speed * yaw.cos() * effective_dt;
+
+        self.x += dx;
+        self.y += dy;
+
+        let mut pct_diff = lap_dist_pct - self.last_lap_dist_pct;
+
+        if pct_diff < -LAP_WRAP_THRESHOLD {
+            pct_diff += 1.0;
+        }
+
+        if pct_diff > LAP_WRAP_THRESHOLD {
+            pct_diff -= 1.0;
+        }
+
+        if pct_diff.abs() >= SAMPLING_THRESHOLD_PCT {
+            self.points.push(TrackPoint {
+                x: self.x,
+                y: self.y,
+                pct: lap_dist_pct,
+            });
+            self.last_lap_dist_pct = lap_dist_pct;
+            self.points_count += 1;
+        }
+
+        let mut current_rel = lap_dist_pct - self.start_pct;
+
+        if current_rel < 0.0 {
+            current_rel += 1.0;
+        }
+
+        let mut highest_rel = self.highest_pct - self.start_pct;
+
+        if highest_rel < 0.0 {
+            highest_rel += 1.0;
+        }
+
+        if current_rel > highest_rel && current_rel - highest_rel < NEAR_START_THRESHOLD {
+            self.highest_pct = lap_dist_pct;
+        }
+
+        let crossed_start = highest_rel > NEAR_END_THRESHOLD && current_rel < NEAR_START_THRESHOLD;
+
+        if crossed_start && self.points_count > MIN_POINTS_FOR_COMPLETION {
+            self.complete = true;
+            self.recording = false;
+            self.post_process();
+            return true;
+        }
+
+        false
+    }
+
+    fn post_process(&mut self) {
+        if self.points.len() < 3 {
+            return;
+        }
+
+        let mut highest_progress: f32 = 0.0;
+        let mut clip_index: Option<usize> = None;
+
+        for (i, p) in self.points.iter().enumerate() {
+            let mut rel = p.pct - self.start_pct;
+
+            if rel < 0.0 {
+                rel += 1.0;
+            }
+
+            if rel > highest_progress {
+                highest_progress = rel;
+            }
+
+            if highest_progress > 0.9 && rel < 0.1 {
+                clip_index = Some(i);
+                break;
+            }
+        }
+
+        if let Some(idx) = clip_index {
+            self.points.truncate(idx);
+        }
+
+        let n = self.points.len();
+
+        if n > 1 {
+            let start_x = self.points[0].x;
+            let start_y = self.points[0].y;
+            let end_x = self.points[n - 1].x;
+            let end_y = self.points[n - 1].y;
+            let drift_x = end_x - start_x;
+            let drift_y = end_y - start_y;
+
+            for (i, p) in self.points.iter_mut().enumerate() {
+                let factor = i as f32 / (n - 1) as f32;
+                p.x -= factor * drift_x;
+                p.y -= factor * drift_y;
+            }
+        }
+    }
+
+    fn sorted_points(&self) -> Vec<TrackPoint> {
+        let mut pts = self.points.clone();
+        pts.sort_by(|a, b| {
+            a.pct
+                .partial_cmp(&b.pct)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+        pts
+    }
+}
+
+pub struct TrackShapeProcessor {
+    state: TrackShapeState,
+    last_track_id: Option<i32>,
+    force_start: Arc<AtomicBool>,
+    status_tick: u64,
+    last_lap_dist_pct: f32,
+}
+
+impl TrackShapeProcessor {
+    pub fn new(force_start: Arc<AtomicBool>) -> Self {
+        Self {
+            state: TrackShapeState::default(),
+            last_track_id: None,
+            force_start,
+            status_tick: 0,
+            last_lap_dist_pct: -1.0,
+        }
+    }
+}
+
+impl Processor for TrackShapeProcessor {
+    fn id(&self) -> ProcessorId {
+        ProcessorId::TrackShape
+    }
+
+    fn required(&self) -> Capabilities {
+        Capabilities::empty()
+    }
+
+    fn rate(&self) -> TickRate {
+        TickRate::Hz60
+    }
+
+    fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
+        let track_id = ctx.session.track_id;
+
+        if self.last_track_id != Some(track_id) {
+            self.state.reset();
+            self.last_track_id = Some(track_id);
+            self.status_tick = 0;
+        }
+
+        if self.state.complete {
+            return None;
+        }
+
+        let speed = ctx.car_dynamics.speed;
+        let yaw = ctx.car_dynamics.yaw.unwrap_or(0.0);
+        let lap_dist_pct = ctx.lap_timing.lap_dist_pct.unwrap_or(-1.0);
+        let is_moving = speed > SPEED_THRESHOLD_MPS;
+
+        let force = self.force_start.swap(false, Ordering::Relaxed);
+
+        if !self.state.recording && !self.state.complete && is_moving {
+            let on_pit_road = ctx.car_status.on_pit_road.unwrap_or(false);
+            let lap_dist = ctx.lap_timing.lap_dist_pct.unwrap_or(-1.0);
+
+            let crossed_sf =
+                !on_pit_road && self.last_lap_dist_pct > 0.8 && (0.0..0.2).contains(&lap_dist);
+
+            if (crossed_sf || force) && !on_pit_road && lap_dist >= 0.0 {
+                self.state.start();
+            }
+        }
+
+        if lap_dist_pct >= 0.0 {
+            self.last_lap_dist_pct = lap_dist_pct;
+        }
+
+        let just_completed = if self.state.recording {
+            let now = Instant::now();
+            let dt = self
+                .state
+                .prev_time
+                .map(|t| now.duration_since(t).as_secs_f32())
+                .unwrap_or(DT_FALLBACK_SECONDS);
+            self.state.prev_time = Some(now);
+            self.state.tick_with_dt(speed, yaw, lap_dist_pct, dt)
+        } else {
+            false
+        };
+
+        if just_completed {
+            return Some(ComputedOutput::TrackShape(build_payload(
+                track_id,
+                &self.state,
+            )));
+        }
+
+        self.status_tick += 1;
+
+        if self.status_tick.is_multiple_of(STATUS_EMIT_INTERVAL) {
+            let is_waiting = is_moving && !self.state.recording && !self.state.complete && !force;
+
+            return Some(ComputedOutput::TrackRecording(TrackRecordingFrame {
+                is_recording: self.state.recording,
+                is_waiting_for_sf: is_waiting,
+                progress: self.state.progress(),
+            }));
+        }
+
+        None
+    }
+
+    fn reset(&mut self) {
+        self.state.reset();
+        self.last_track_id = None;
+        self.status_tick = 0;
+        self.last_lap_dist_pct = -1.0;
+    }
+}
+
+fn build_payload(track_id: i32, state: &TrackShapeState) -> TrackShapePayload {
+    let pts = state.sorted_points();
+
+    if pts.len() < 3 {
+        return TrackShapePayload {
+            track_id,
+            svg_path: String::new(),
+            view_box: "0 0 100 100".to_string(),
+            points: pts,
+        };
+    }
+
+    let mut min_x = f32::MAX;
+    let mut min_y = f32::MAX;
+    let mut max_x = f32::MIN;
+    let mut max_y = f32::MIN;
+
+    for p in &pts {
+        if p.x < min_x {
+            min_x = p.x;
+        }
+        if p.y < min_y {
+            min_y = p.y;
+        }
+        if p.x > max_x {
+            max_x = p.x;
+        }
+        if p.y > max_y {
+            max_y = p.y;
+        }
+    }
+
+    let width = (max_x - min_x).max(1.0);
+    let height = (max_y - min_y).max(1.0);
+    let padding = width.max(height) * VIEWBOX_PADDING_FACTOR;
+
+    let vb_x = min_x - padding;
+    let vb_y = min_y - padding;
+    let vb_w = width + padding * 2.0;
+    let vb_h = height + padding * 2.0;
+
+    let view_box = format!("{:.0} {:.0} {:.0} {:.0}", vb_x, vb_y, vb_w, vb_h);
+
+    let mut d = format!("M {:.1} {:.1}", pts[0].x, pts[0].y);
+
+    for p in &pts[1..] {
+        d.push_str(&format!(" L {:.1} {:.1}", p.x, p.y));
+    }
+
+    d.push_str(" Z");
+
+    TrackShapePayload {
+        track_id,
+        svg_path: d,
+        view_box,
+        points: pts,
+    }
+}
+
+/// Find interpolated (x, y) at the given lapDistPct along a sorted points slice.
+#[allow(dead_code)]
+fn get_point_at_pct(points: &[TrackPoint], pct: f32) -> (f32, f32) {
+    if points.is_empty() {
+        return (0.0, 0.0);
+    }
+
+    if points.len() == 1 {
+        return (points[0].x, points[0].y);
+    }
+
+    let mut p = pct % 1.0;
+
+    if p < 0.0 {
+        p += 1.0;
+    }
+
+    let last_idx = points.len() - 1;
+
+    // p is outside the stored pct range — wrap-around segment (last → first point).
+    if p < points[0].pct || p > points[last_idx].pct {
+        let a = &points[last_idx];
+        let b = &points[0];
+        let seg_len = b.pct - a.pct + 1.0;
+        let mut t = (p - a.pct) / seg_len;
+
+        if t < 0.0 {
+            t += 1.0 / seg_len;
+        }
+
+        let t_clamped = t.clamp(0.0, 1.0);
+
+        return (a.x + (b.x - a.x) * t_clamped, a.y + (b.y - a.y) * t_clamped);
+    }
+
+    let mut lo = 0usize;
+    let mut hi = last_idx;
+
+    while lo < hi.saturating_sub(1) {
+        let mid = (lo + hi) / 2;
+
+        if points[mid].pct <= p {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+    }
+
+    let a = &points[lo];
+    let b = &points[hi];
+
+    let seg_len = b.pct - a.pct;
+
+    if seg_len <= 0.0 {
+        return (a.x, a.y);
+    }
+
+    let t = ((p - a.pct) / seg_len).clamp(0.0, 1.0);
+
+    (a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+    use std::sync::atomic::AtomicBool;
+
+    use crate::model::cars::CarIdxFrame;
+    use crate::model::player::{CarDynamicsFrame, CarStatusFrame, LapTimingFrame};
+    use crate::model::session::SessionSnapshot;
+
+    fn make_processor() -> TrackShapeProcessor {
+        TrackShapeProcessor::new(Arc::new(AtomicBool::new(false)))
+    }
+
+    fn make_dynamics(speed: f32, yaw: f32) -> CarDynamicsFrame {
+        CarDynamicsFrame {
+            speed,
+            rpm: 3000.0,
+            gear: 3,
+            steering_wheel_angle: 0.0,
+            velocity_x: None,
+            velocity_y: None,
+            velocity_z: None,
+            lat_accel: None,
+            long_accel: None,
+            yaw: Some(yaw),
+            yaw_rate: None,
+            pitch: None,
+            roll: None,
+            shift_indicator_pct: None,
+            shift_grind_rpm: None,
+        }
+    }
+
+    fn make_lap_timing(lap_dist_pct: f32) -> LapTimingFrame {
+        LapTimingFrame {
+            lap: None,
+            lap_dist: None,
+            lap_dist_pct: Some(lap_dist_pct),
+            lap_current_lap_time: 30.0,
+            lap_last_lap_time: None,
+            lap_best_lap_time: None,
+            player_car_position: None,
+            player_car_class_position: None,
+            lap_delta_to_session_best_live: None,
+            lap_delta_to_session_optimal_live: None,
+            lap_delta_to_driver_best_live: None,
+            lap_delta_to_best_lap: None,
+            lap_delta_to_best_lap_dd: None,
+            lap_delta_to_best_lap_ok: None,
+            lap_delta_to_optimal_lap: None,
+            lap_delta_to_optimal_lap_dd: None,
+            lap_delta_to_optimal_lap_ok: None,
+            lap_delta_to_session_best_lap: None,
+            lap_delta_to_session_best_lap_dd: None,
+            lap_delta_to_session_best_lap_ok: None,
+            lap_delta_to_session_lastl_lap: None,
+            lap_delta_to_session_lastl_lap_dd: None,
+            lap_delta_to_session_lastl_lap_ok: None,
+            lap_delta_to_session_optimal_lap: None,
+            lap_delta_to_session_optimal_lap_dd: None,
+            lap_delta_to_session_optimal_lap_ok: None,
+        }
+    }
+
+    fn make_car_status() -> CarStatusFrame {
+        CarStatusFrame {
+            fuel_level: 0.0,
+            fuel_level_pct: None,
+            fuel_use_per_hour: None,
+            oil_temp: None,
+            oil_press: None,
+            water_temp: None,
+            voltage: None,
+            on_pit_road: Some(false),
+            is_on_track: None,
+            car_left_right: None,
+            engine_warnings: None,
+            player_car_sl_shift_rpm: vec![],
+            player_car_sl_blink_rpm: vec![],
+            flags: crate::model::flags::RaceFlags::default(),
+        }
+    }
+
+    fn make_car_idx() -> CarIdxFrame {
+        CarIdxFrame {
+            car_idx_lap_dist_pct: vec![],
+            car_idx_on_pit_road: vec![],
+            car_idx_position: vec![],
+            car_idx_class_position: vec![],
+            car_idx_lap: vec![],
+            car_idx_last_lap_time: vec![],
+            car_idx_best_lap_time: vec![],
+            car_idx_f2_time: vec![],
+            car_idx_est_time: vec![],
+            car_idx_track_surface: vec![],
+            car_idx_tire_compound: vec![],
+            car_idx_session_flags: vec![],
+            car_left_right: None,
+        }
+    }
+
+    fn make_session(track_id: i32) -> SessionSnapshot {
+        SessionSnapshot {
+            track_id,
+            ..SessionSnapshot::default()
+        }
+    }
+
+    fn make_ctx<'a>(
+        dynamics: &'a CarDynamicsFrame,
+        lap_timing: &'a LapTimingFrame,
+        car_status: &'a CarStatusFrame,
+        session: &'a SessionSnapshot,
+        car_idx: &'a CarIdxFrame,
+        start_positions: &'a HashMap<i32, (i32, i32)>,
+    ) -> ComputeContext<'a> {
+        ComputeContext {
+            car_dynamics: dynamics,
+            car_idx,
+            lap_timing,
+            car_status,
+            session,
+            track_length_m: 3700.0,
+            car_length_m: 4.4,
+            start_positions,
+            pit_warning_laps: 2.0,
+            lap_delta_active: false,
+            session_num: Some(0),
+            session_time_remain: None,
+        }
+    }
+
+    #[test]
+    fn initial_state_is_idle() {
+        let proc = make_processor();
+        assert!(!proc.state.recording);
+        assert!(!proc.state.complete);
+        assert_eq!(proc.state.progress(), 0.0);
+        assert!(proc.state.points.is_empty());
+    }
+
+    #[test]
+    fn resets_on_track_id_change() {
+        let mut proc = make_processor();
+        let session2 = make_session(99);
+        let dynamics = make_dynamics(10.0, 0.0);
+        let lap_timing = make_lap_timing(0.5);
+        let car_status = make_car_status();
+        let car_idx = make_car_idx();
+        let start_pos = HashMap::new();
+
+        proc.state.recording = true;
+        proc.state.start_pct = 0.0;
+        proc.last_track_id = Some(42);
+
+        let ctx = make_ctx(
+            &dynamics,
+            &lap_timing,
+            &car_status,
+            &session2,
+            &car_idx,
+            &start_pos,
+        );
+        let _ = proc.compute(&ctx);
+
+        assert_eq!(proc.last_track_id, Some(99));
+        assert!(!proc.state.recording);
+    }
+
+    #[test]
+    fn force_start_triggers_recording() {
+        let flag = Arc::new(AtomicBool::new(true));
+        let mut proc = TrackShapeProcessor::new(Arc::clone(&flag));
+
+        let session = make_session(1);
+        let dynamics = make_dynamics(10.0, 0.0);
+        let lap_timing = make_lap_timing(0.5);
+        let car_status = make_car_status();
+        let car_idx = make_car_idx();
+        let start_pos = HashMap::new();
+
+        let ctx = make_ctx(
+            &dynamics,
+            &lap_timing,
+            &car_status,
+            &session,
+            &car_idx,
+            &start_pos,
+        );
+        let _ = proc.compute(&ctx);
+
+        assert!(proc.state.recording);
+        assert!(
+            !flag.load(Ordering::Relaxed),
+            "flag should be cleared after consume"
+        );
+    }
+
+    #[test]
+    fn records_and_completes_full_lap() {
+        let mut state = TrackShapeState::default();
+        state.start();
+
+        state.tick_with_dt(10.0, 0.0, 0.0, 0.016);
+
+        for i in 1..=110usize {
+            let mut pct = i as f32 / 100.0;
+
+            if pct > 1.0 {
+                pct -= 1.0;
+            }
+
+            state.tick_with_dt(10.0, 0.5, pct, 0.016);
+        }
+
+        assert!(state.complete);
+        assert!(!state.recording);
+
+        let pts = state.sorted_points();
+        assert!(!pts.is_empty());
+
+        let start = &pts[0];
+        let end = &pts[pts.len() - 1];
+
+        assert!(
+            (start.x - end.x).abs() < 0.01,
+            "drift correction: start.x≈end.x"
+        );
+        assert!(
+            (start.y - end.y).abs() < 0.01,
+            "drift correction: start.y≈end.y"
+        );
+
+        for window in pts.windows(2) {
+            assert!(
+                window[0].pct <= window[1].pct,
+                "points must be monotonically increasing by pct"
+            );
+        }
+    }
+
+    #[test]
+    fn get_point_at_pct_interpolates_correctly() {
+        let points = vec![
+            TrackPoint {
+                x: 0.0,
+                y: 0.0,
+                pct: 0.0,
+            },
+            TrackPoint {
+                x: 10.0,
+                y: 0.0,
+                pct: 0.5,
+            },
+            TrackPoint {
+                x: 20.0,
+                y: 0.0,
+                pct: 1.0,
+            },
+        ];
+
+        let (x, _) = get_point_at_pct(&points, 0.25);
+        assert!(
+            (x - 5.0).abs() < 0.5,
+            "midpoint between 0 and 10 should be ~5, got {x}"
+        );
+
+        let (x2, _) = get_point_at_pct(&points, 0.0);
+        assert!((x2 - 0.0).abs() < 0.01);
+    }
+}
