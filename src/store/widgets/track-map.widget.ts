@@ -7,6 +7,7 @@ export class TrackMapWidgetStore {
   isWaitingForSF = false;
   recordingProgress = 0;
   trackShape: TrackShapePayload | null = null;
+  currentTrackId: string | null = null;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -24,6 +25,7 @@ export class TrackMapWidgetStore {
 
   onTrackShapeReceived(payload: TrackShapePayload) {
     this.trackShape = payload;
+    this.currentTrackId = String(payload.trackId);
     this.isRecording = false;
     this.isWaitingForSF = false;
     this.recordingProgress = 1;
@@ -31,6 +33,7 @@ export class TrackMapWidgetStore {
 
   clearTrackShape() {
     this.trackShape = null;
+    this.currentTrackId = null;
     this.isRecording = false;
     this.isWaitingForSF = false;
     this.recordingProgress = 0;
@@ -41,5 +44,6 @@ export class TrackMapWidgetStore {
     this.isWaitingForSF = false;
     this.recordingProgress = 0;
     this.trackShape = null;
+    this.currentTrackId = null;
   }
 }

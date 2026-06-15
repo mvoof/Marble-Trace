@@ -78,8 +78,12 @@ export const TrackMapContent = observer(() => {
   useEffect(() => {
     if (!trackId) return;
 
-    savedRotationRef.current = 0;
-    trackMapWidget.clearTrackShape();
+    const trackChanged = trackMapWidget.currentTrackId !== trackId;
+
+    if (trackChanged) {
+      savedRotationRef.current = 0;
+      trackMapWidget.clearTrackShape();
+    }
 
     const loadRotation = async () => {
       try {
