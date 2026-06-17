@@ -52,7 +52,7 @@ export const initMainSync = async (root: RootStore) => {
 
       const [overlayLayoutUnlisten, mainUnlistens] = await Promise.all([
         listen<WidgetDefaultConfig[]>('widget-layout-changed', (e) => {
-          root.widgetSettings.applyLayoutSync(e.payload);
+          root.widgetSettings.applySettingsSync(e.payload);
           void onSave();
         }),
         setupMainListeners(root),
@@ -204,7 +204,7 @@ export const initOverlaySync = async (root: RootStore) => {
       () => {
         void emitWidgetLayoutChanged(root.widgetSettings.allWidgets);
       },
-      { delay: 500 }
+      { delay: 100 }
     ),
   ];
 

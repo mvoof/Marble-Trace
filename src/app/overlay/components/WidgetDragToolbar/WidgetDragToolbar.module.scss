@@ -1,0 +1,69 @@
+.toolbar {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dragLabel {
+  font-family: $font-mono;
+  font-size: 9px;
+  color: #000;
+  background: $widget-text-accent;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  position: relative;
+}
+
+.toolbarButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.12s ease;
+  pointer-events: auto;
+
+  &:hover {
+    background: rgba($widget-text-accent, 0.85);
+    color: #000;
+    border-color: transparent;
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+
+  &.active {
+    background: $widget-text-accent;
+    color: #000;
+    border-color: transparent;
+  }
+
+  svg {
+    width: 13px;
+    height: 13px;
+  }
+}

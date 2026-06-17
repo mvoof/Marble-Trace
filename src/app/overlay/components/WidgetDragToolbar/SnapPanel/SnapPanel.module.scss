@@ -1,0 +1,43 @@
+.snapPanel {
+  position: fixed;
+  display: grid;
+  grid-template-columns: repeat(3, 28px);
+  grid-template-rows: repeat(3, 28px);
+  gap: 3px;
+  padding: 6px;
+  background: rgba(13, 14, 18, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  z-index: 99999;
+}
+
+.snapButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.12s ease;
+
+  &:hover {
+    background: rgba($widget-text-accent, 0.15);
+    border-color: $widget-text-accent;
+    color: $widget-text-accent;
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
