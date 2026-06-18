@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import styles from './WidgetContainer.module.scss';
 import { WidgetIdContext } from './WidgetIdContext';
+import { WidgetDragToolbar } from '@app/overlay/components/WidgetDragToolbar/WidgetDragToolbar';
 import {
   useAppSettingsStore,
   useSimStore,
@@ -242,11 +243,7 @@ export const WidgetContainer = observer(
             </div>
           </ErrorBoundary>
 
-          {dragMode && (
-            <div className={styles.dragOverlay}>
-              <span className={styles.dragLabel}>DRAG MODE</span>
-            </div>
-          )}
+          {dragMode && <WidgetDragToolbar widgetId={widgetId} />}
 
           {dragMode &&
             resizeDirections.map((direction) => (

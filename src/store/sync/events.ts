@@ -81,7 +81,7 @@ export const emitStandingsClassIndex = (index: number) =>
   emitTo(OVERLAY, 'standings-class-index-changed', index);
 export const emitWidgetSettingsUpdated = (widgets: WidgetDefaultConfig[]) =>
   emitTo(OVERLAY, 'widget-settings-updated', widgets);
+export const emitWidgetSettingsToMain = (widgets: WidgetDefaultConfig[]) =>
+  emitTo(MAIN, 'widget-settings-updated', widgets);
 export const emitOverlayMonitorChanged = (index: number | null) =>
   emitTo(OVERLAY, 'overlay-monitor-changed', index);
-export const emitWidgetLayoutChanged = (widgets: WidgetDefaultConfig[]) =>
-  emitTo(MAIN, 'widget-layout-changed', widgets);

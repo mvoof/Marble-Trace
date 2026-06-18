@@ -45,25 +45,6 @@
   }
 }
 
-.dragOverlay {
-  position: absolute;
-  top: $space-xs;
-  right: $space-xs;
-  z-index: 1000;
-  pointer-events: none;
-}
-
-.dragLabel {
-  font-family: $font-mono;
-  font-size: rem(10);
-  color: $widget-surface-base;
-  background: $widget-text-accent;
-  padding: rem(2) rem(6);
-  border-radius: 2px;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-}
-
 // ── Resize handles ───────────────────────────────────────────
 
 $handle-corner: rem(14);
