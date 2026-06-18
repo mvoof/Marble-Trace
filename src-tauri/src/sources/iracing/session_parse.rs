@@ -16,41 +16,35 @@ use crate::model::session::{
 };
 use crate::sources::source::ParsedSession;
 
-#[derive(Deserialize, Default)]
 enum IracingSessionType {
     Practice,
-    #[serde(rename = "Lone Qualify")]
     LoneQualify,
-    #[serde(rename = "Open Qualify")]
     OpenQualify,
     Race,
-    #[serde(rename = "Offline Testing")]
     OfflineTesting,
     Warmup,
-    #[serde(other)]
-    #[default]
     Unknown,
 }
 
 impl IracingSessionType {
+    fn from_str(s: &str) -> Self {
+        match s {
+            "Practice" => Self::Practice,
+            "Lone Qualify" => Self::LoneQualify,
+            "Open Qualify" => Self::OpenQualify,
+            "Race" => Self::Race,
+            "Offline Testing" => Self::OfflineTesting,
+            "Warmup" => Self::Warmup,
+            _ => Self::Unknown,
+        }
+    }
+
     fn to_session_type(&self) -> SessionType {
         match self {
             Self::Practice | Self::OfflineTesting | Self::Warmup => SessionType::Practice,
             Self::LoneQualify | Self::OpenQualify => SessionType::Qualify,
             Self::Race => SessionType::Race,
             Self::Unknown => SessionType::Unknown,
-        }
-    }
-
-    fn label(&self) -> &'static str {
-        match self {
-            Self::Practice => "Practice",
-            Self::LoneQualify => "Lone Qualify",
-            Self::OpenQualify => "Open Qualify",
-            Self::Race => "Race",
-            Self::OfflineTesting => "Offline Testing",
-            Self::Warmup => "Warmup",
-            Self::Unknown => "Unknown",
         }
     }
 }
@@ -168,10 +162,11 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         .unwrap_or_default()
         .into_iter()
         .map(|raw_session| {
-            let iracing_type = raw_session.session_type.unwrap_or_default();
+            let raw_label = raw_session.session_type.unwrap_or_default();
+            let iracing_type = IracingSessionType::from_str(&raw_label);
             SessionEntry {
                 session_type: iracing_type.to_session_type(),
-                session_type_label: iracing_type.label().to_string(),
+                session_type_label: raw_label,
                 session_laps: raw_session.session_laps.unwrap_or_default(),
                 results_positions: raw_session
                     .results_positions
@@ -357,7 +352,7 @@ struct RawSessionInfo {
 #[derive(Deserialize, Default)]
 #[serde(rename_all = "PascalCase")]
 struct RawSessionEntry {
-    session_type: Option<IracingSessionType>,
+    session_type: Option<String>,
     session_laps: Option<String>,
     results_positions: Option<Vec<RawResultPosition>>,
 }
