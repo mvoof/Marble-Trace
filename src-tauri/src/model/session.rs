@@ -88,11 +88,22 @@ pub struct SessionSnapshot {
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+pub enum SessionType {
+    Practice,
+    Qualify,
+    Race,
+    #[default]
+    Unknown,
+}
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionEntry {
-    /// "Practice" | "Lone Qualify" | "Race" | ...
-    pub session_type: String,
+    pub session_type: SessionType,
+    /// Original label from the sim ("Lone Qualify", "Race", etc.) — use for display.
+    pub session_type_label: String,
     /// "unlimited" or a lap count as string (iRacing emits both forms).
     pub session_laps: String,
     pub results_positions: Vec<ResultPosition>,

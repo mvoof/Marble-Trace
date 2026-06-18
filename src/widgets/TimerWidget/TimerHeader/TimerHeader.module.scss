@@ -1,13 +1,46 @@
 .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: sp(sm) sp(sm) sp(xxxs);
+  padding: sp(xs) sp(sm);
+  border-radius: radius(md) radius(md) 0 0;
 }
 
 .sessionLabel {
   font-family: $font-mono;
   font-size: fs(xxxs);
-  color: $widget-text-secondary;
-  letter-spacing: 1px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.sessionPractice {
+  background-color: rgba($race-blue, 0.15);
+
+  .sessionLabel {
+    color: $race-blue;
+  }
+}
+
+.sessionQualify {
+  background-color: rgba($race-purple, 0.15);
+
+  .sessionLabel {
+    color: $race-purple;
+  }
+}
+
+.sessionRace {
+  background-color: rgba($race-green, 0.15);
+
+  .sessionLabel {
+    color: $race-green;
+  }
+}
+
+.sessionOther {
+  background-color: rgba(#ffffff, 0.06);
+
+  .sessionLabel {
+    color: $widget-text-secondary;
+  }
 }
