@@ -1,10 +1,13 @@
 import { observer } from 'mobx-react-lite';
 
-import { resolveSessionColorKey } from '@utils/widget/timer-utils';
+import {
+  resolveSessionColorKey,
+  type SessionColorKey,
+} from '@utils/widget/timer-utils';
 import { useSessionStore } from '@store/root-store-context';
 import styles from './TimerHeader.module.scss';
 
-const SESSION_LABEL_CLASS: Record<string, string> = {
+const SESSION_LABEL_CLASS: Record<SessionColorKey, string> = {
   practice: styles.sessionPractice,
   qualify: styles.sessionQualify,
   race: styles.sessionRace,
