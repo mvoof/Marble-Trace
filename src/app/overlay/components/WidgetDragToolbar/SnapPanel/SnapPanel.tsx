@@ -1,5 +1,6 @@
 import ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
+import { useClickOutside } from '@hooks/common/useClickOutside';
 import {
   ArrowDownLeft,
   ArrowDown,
@@ -52,11 +53,15 @@ interface SnapPanelProps {
 
 export const SnapPanel = observer(({ widgetId, onClose }: SnapPanelProps) => {
   const widgetSettings = useWidgetSettingsStore();
+  const panelRef = useClickOutside<HTMLDivElement>(onClose);
 
-  const widget = widgetSettings.getWidget(widgetId);
-  const widgetX = widget?.userSettings.x ?? 0;
-  const widgetY = widget?.userSettings.y ?? 0;
-  const widgetW = widget?.userSettings.currentWidth ?? 200;
+  if (!widget) {
+    return null;
+  }
+
+  const widgetX = widget.userSettings.x;
+  const widgetY = widget.userSettings.y;
+  const widgetW = widget.userSettings.currentWidth;
   const screenH = window.innerHeight;
 
   const panelLeft = widgetX + widgetW - PANEL_WIDTH - 4;
@@ -102,6 +107,7 @@ export const SnapPanel = observer(({ widgetId, onClose }: SnapPanelProps) => {
 
   return ReactDOM.createPortal(
     <div
+      ref={panelRef}
       role="menu"
       tabIndex={-1}
       className={styles.snapPanel}

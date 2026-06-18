@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
+import { useClickOutside } from '@hooks/common/useClickOutside';
 import { ConfigProvider, theme } from 'antd';
 import { X } from 'lucide-react';
 import { WidgetSettings } from '@app/main/components/WidgetSettings/WidgetSettings';
@@ -19,7 +19,7 @@ interface WidgetSettingsPopupProps {
 export const WidgetSettingsPopup = observer(
   ({ widgetId, onClose }: WidgetSettingsPopupProps) => {
     const widgetSettings = useWidgetSettingsStore();
-    const popupRef = useRef<HTMLDialogElement>(null);
+    const popupRef = useClickOutside<HTMLDialogElement>(onClose);
 
     const widget = widgetSettings.getWidget(widgetId);
     const widgetX = widget?.userSettings.x ?? 0;
@@ -38,18 +38,6 @@ export const WidgetSettingsPopup = observer(
       MARGIN,
       Math.min(widgetY, screenH - POPUP_MAX_HEIGHT - MARGIN)
     );
-
-    useEffect(() => {
-      const onMouseDown = (e: MouseEvent) => {
-        if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
-          onClose();
-        }
-      };
-
-      document.addEventListener('mousedown', onMouseDown);
-
-      return () => document.removeEventListener('mousedown', onMouseDown);
-    }, [onClose]);
 
     return ReactDOM.createPortal(
       <ConfigProvider
