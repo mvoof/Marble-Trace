@@ -17,8 +17,8 @@ import {
   emitUnitsChanged,
   emitStandingsClassIndex,
   emitWidgetSettingsUpdated,
+  emitWidgetSettingsToMain,
   emitOverlayMonitorChanged,
-  emitWidgetLayoutChanged,
 } from './events';
 import type {
   WidgetDefaultConfig,
@@ -50,8 +50,8 @@ export const initMainSync = async (root: RootStore) => {
 
       const onSave = () => saveSettings(store, root);
 
-      const [overlayLayoutUnlisten, mainUnlistens] = await Promise.all([
-        listen<WidgetDefaultConfig[]>('widget-layout-changed', (e) => {
+      const [overlaySettingsUnlisten, mainUnlistens] = await Promise.all([
+        listen<WidgetDefaultConfig[]>('widget-settings-updated', (e) => {
           root.widgetSettings.applySettingsSync(e.payload);
           void onSave();
         }),
@@ -159,7 +159,7 @@ export const initMainSync = async (root: RootStore) => {
       ];
 
       return () => {
-        overlayLayoutUnlisten();
+        overlaySettingsUnlisten();
 
         mainUnlistens.forEach((u) => u());
         disposers.forEach((d) => d());
@@ -202,7 +202,7 @@ export const initOverlaySync = async (root: RootStore) => {
     reaction(
       () => root.widgetSettings.changeToken,
       () => {
-        void emitWidgetLayoutChanged(root.widgetSettings.allWidgets);
+        void emitWidgetSettingsToMain(root.widgetSettings.allWidgets);
       },
       { delay: 100 }
     ),
