@@ -55,6 +55,8 @@ export const SnapPanel = observer(({ widgetId, onClose }: SnapPanelProps) => {
   const widgetSettings = useWidgetSettingsStore();
   const panelRef = useClickOutside<HTMLDivElement>(onClose);
 
+  const widget = widgetSettings.getWidget(widgetId);
+
   if (!widget) {
     return null;
   }
@@ -69,10 +71,6 @@ export const SnapPanel = observer(({ widgetId, onClose }: SnapPanelProps) => {
   const clampedTop = Math.min(panelTop, screenH - 120 - SNAP_MARGIN);
 
   const snapTo = (pos: SnapPosition) => {
-    if (!widget) {
-      return;
-    }
-
     const width = widget.userSettings.currentWidth;
     const height = widget.userSettings.currentHeight;
     const screenW = window.innerWidth;
