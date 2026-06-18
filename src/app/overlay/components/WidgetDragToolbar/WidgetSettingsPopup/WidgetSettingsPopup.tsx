@@ -22,9 +22,14 @@ export const WidgetSettingsPopup = observer(
     const popupRef = useClickOutside<HTMLDialogElement>(onClose);
 
     const widget = widgetSettings.getWidget(widgetId);
-    const widgetX = widget?.userSettings.x ?? 0;
-    const widgetY = widget?.userSettings.y ?? 0;
-    const widgetW = widget?.userSettings.currentWidth ?? 200;
+
+    if (!widget) {
+      return null;
+    }
+
+    const widgetX = widget.userSettings.x;
+    const widgetY = widget.userSettings.y;
+    const widgetW = widget.userSettings.currentWidth;
 
     const screenH = window.innerHeight;
 
