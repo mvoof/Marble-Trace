@@ -17,8 +17,17 @@
 }
 
 .driverRowPlayer {
-  background-color: $widget-row-player-bg;
+  background-color: transparent;
   z-index: 10;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    left: calc(ws(20) + sp(xxxs));
+    background: rgba($race-yellow, 0.07);
+    pointer-events: none;
+  }
 }
 
 .driverRowPit {
@@ -26,10 +35,14 @@
   filter: grayscale(100%);
 }
 
-// Position block
+// Position block — stretches full row height for class color border + gradient
 .posBlock {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  align-self: stretch;
+  margin-top: calc(-1 * sp(xxs));
+  margin-bottom: calc(-1 * sp(xxs));
+  padding: sp(xxs) sp(xxs);
 }
 
 // Position — primary emphasis
@@ -44,25 +57,18 @@
   color: $widget-status-caution;
 }
 
-// Car number cell — second grid column after pos
-// Negative margins compensate for row padding so border+gradient reach full row height
+// Car number cell
 .carNumberCell {
-  align-self: stretch;
-  margin-top: calc(-1 * sp(xxs));
-  margin-bottom: calc(-1 * sp(xxs));
   display: flex;
   align-items: center;
-  padding: sp(xxs) sp(xxs);
+  padding: 0 sp(xxs);
 }
 
+// Car number — muted, class identity comes from pos column color
 .driverCarNumber {
   font-size: fs(xs);
   font-family: $font-mono;
-  color: $widget-text-primary;
-}
-
-.driverCarNumberPlayer {
-  color: $widget-status-position-gain;
+  color: $widget-text-muted;
 }
 
 // Info block — name only, fills 1fr grid column
