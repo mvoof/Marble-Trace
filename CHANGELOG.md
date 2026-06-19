@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.17.0] — 2026-06-19
+
+### Added
+
+- **Drag Toolbar (Overlay):** In edit mode, a floating toolbar now appears near each widget — snap it to common positions or open its settings panel directly from the overlay without switching to the main window.
+
+### Changed
+
+- **LED Flags — Flag Matrix Animations:** The LED flags widget now features a fully animated flag matrix with two display variants — split and single.
+- **Standings & Relative — Visual Polish:** Class color is now shown next to the position number, columns have been reordered for better readability, and the player's row now has a subtle gradient highlight.
+- **Fuel Widget — Redesign:** The fuel widget has been rebuilt from scratch with a stats row, a laps bracket section, and the unit label moved into the header for a cleaner layout.
+- **Timer Widget — Session Header Colors:** The session type header is now color-coded to help you instantly identify the current session. End-of-session detection has also been fixed on checkered flag.
+- **Qualifying Start Positions:** Start positions for qualifying sessions now prefer the actual qualifying result over live race position, giving more accurate grid order in the standings.
+- **Track Settings Storage:** Track rotation preferences are now stored in a dedicated `track-settings.json` file, separating them from the main settings and making the data structure cleaner.
+
+### Fixed
+
+- **LED Flags — Auto-Hide:** Removed CSS overrides that were preventing the LED flags widget from hiding correctly when auto-hide was active.
+- **Standings — Zero Position Fallback:** Fixed a case where drivers could show position 0; the widget now correctly falls back to their start position.
+- **Track Map — Shape After Hide:** Fixed an issue where the track map shape would disappear after toggling the "hide all widgets" option and re-enabling it.
+
 ## [0.16.0] — 2026-06-07
 
 ### Added
