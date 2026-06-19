@@ -17,17 +17,12 @@
 }
 
 .driverRowPlayer {
-  background-color: transparent;
   z-index: 10;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    left: calc(ws(20) + sp(xxxs));
-    background: rgba($race-yellow, 0.07);
-    pointer-events: none;
-  }
+  background: linear-gradient(
+    to right,
+    transparent ws(68),
+    rgba($race-yellow, 0.11) ws(110)
+  );
 }
 
 .driverRowPit {
