@@ -297,12 +297,18 @@ pub fn compute(
                 car_screen_name: driver.car_screen_name.clone(),
                 car_screen_name_short,
                 tire_compound,
-                position: car_idx.car_idx_position.get(idx).copied().unwrap_or(0),
+                position: car_idx
+                    .car_idx_position
+                    .get(idx)
+                    .copied()
+                    .filter(|&pos| pos > 0)
+                    .unwrap_or(start_overall),
                 class_position: car_idx
                     .car_idx_class_position
                     .get(idx)
                     .copied()
-                    .unwrap_or(0),
+                    .filter(|&pos| pos > 0)
+                    .unwrap_or(start_class),
                 start_pos_overall: start_overall,
                 start_pos_class: start_class,
                 lap: car_idx.car_idx_lap.get(idx).copied().unwrap_or(0),
