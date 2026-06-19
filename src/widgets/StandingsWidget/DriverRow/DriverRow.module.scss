@@ -42,12 +42,13 @@
   justify-content: flex-end;
 }
 
-// Position cell — stretch full row height for class color border + gradient
+// Position cell — stretch to row edges for class color border + gradient
 .posCell {
   align-self: stretch;
   margin-top: calc(-1 * sp(xs));
   margin-bottom: calc(-1 * sp(xs));
-  padding: sp(xs) sp(xs);
+  margin-left: calc(-1 * sp(md));
+  padding: sp(xs) sp(xs) sp(xs) sp(md);
 }
 
 // Car number cell

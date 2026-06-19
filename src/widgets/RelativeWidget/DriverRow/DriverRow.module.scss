@@ -25,14 +25,15 @@
   filter: grayscale(100%);
 }
 
-// Position block — stretches full row height for class color border + gradient
+// Position block — stretches to row edges for class color border + gradient
 .posBlock {
   display: flex;
   align-items: center;
   align-self: stretch;
   margin-top: calc(-1 * sp(xs));
   margin-bottom: calc(-1 * sp(xs));
-  padding: sp(xs) sp(xs);
+  margin-left: calc(-1 * sp(md));
+  padding: sp(xs) sp(xs) sp(xs) sp(md);
 }
 
 // Position — primary emphasis
