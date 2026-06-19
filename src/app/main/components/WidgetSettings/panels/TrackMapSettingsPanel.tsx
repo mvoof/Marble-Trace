@@ -44,7 +44,7 @@ export const TrackMapSettingsPanel = observer(() => {
   const handleShowPath = async () => {
     try {
       const dir = await appDataDir();
-      setTracksPath(`${dir}tracks.json`);
+      setTracksPath(`${dir}track-settings.json`);
     } catch {
       setTracksPath('Could not resolve path');
     }
@@ -203,7 +203,7 @@ export const TrackMapSettingsPanel = observer(() => {
           <div className={styles.fieldTitle}>Storage Location</div>
           {!tracksPath ? (
             <Button block size="small" onClick={() => void handleShowPath()}>
-              Show tracks.json Path
+              Show track-settings.json Path
             </Button>
           ) : (
             <Flex vertical gap={8}>
