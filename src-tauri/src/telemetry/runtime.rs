@@ -324,8 +324,10 @@ fn try_load_and_emit_track(app: &AppHandle, track_id: i32) {
     }
 }
 
-/// Updates start_positions from the current session's ResultsPositions on each session change.
-/// Falls back to QualifyResultsInfo when ResultsPositions is empty (e.g. before a race starts).
+/// Updates start_positions from QualifyResultsInfo (the pre-race grid order) on each session
+/// change. Falls back to ResultsPositions only when qualify data is absent (e.g. sprint races
+/// without a separate qualify session). ResultsPositions reflects CURRENT race order, not the
+/// starting grid, so it must not be preferred over qualify data during an active race.
 fn update_start_positions(
     session: &SessionSnapshot,
     start_positions: &Mutex<HashMap<i32, (i32, i32)>>,
@@ -338,10 +340,10 @@ fn update_start_positions(
         .map(|s| s.results_positions.as_slice())
         .unwrap_or(&[]);
 
-    let new_positions = if !results.is_empty() {
-        standings::parse_start_positions(results)
-    } else {
+    let new_positions = if !session.qualify_results.is_empty() {
         standings::parse_start_positions_from_qualify(&session.qualify_results)
+    } else {
+        standings::parse_start_positions(results)
     };
 
     if !new_positions.is_empty() {
