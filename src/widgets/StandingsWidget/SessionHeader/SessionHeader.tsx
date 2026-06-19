@@ -14,6 +14,12 @@ import {
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './SessionHeader.module.scss';
+import {
+  useBackendComputedStore,
+  useCarsStore,
+  useSessionStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 const SESSION_TYPE_CLASS: Record<SessionColorKey, string> = {
   practice: styles.sessionTypePractice,
@@ -21,12 +27,6 @@ const SESSION_TYPE_CLASS: Record<SessionColorKey, string> = {
   race: styles.sessionTypeRace,
   other: styles.sessionTypeOther,
 };
-import {
-  useBackendComputedStore,
-  useCarsStore,
-  useSessionStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
 
 export const SessionHeader = observer(() => {
   const { standings } = useBackendComputedStore();
