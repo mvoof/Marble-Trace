@@ -45,7 +45,7 @@ use model::session::SessionSnapshot;
 use specta::TypeCollection;
 #[cfg(feature = "dev")]
 use specta_typescript::Typescript;
-use std::sync::atomic::{AtomicBool, AtomicU32};
+use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32};
 use std::sync::{Arc, Mutex};
 use tauri::{generate_context, generate_handler, Builder, Listener, Manager, WindowEvent};
 use tauri_plugin_aptabase::EventTracker;
@@ -162,6 +162,7 @@ pub fn run() {
                 is_connected: AtomicBool::new(false),
                 last_session_info: Mutex::new(None),
                 start_positions: Mutex::new(std::collections::HashMap::new()),
+                start_positions_session_num: AtomicI32::new(-1),
                 track_length_m: Mutex::new(None),
                 active_events: AtomicU32::new(0xFFFFFFFF),
                 car_length_m: Mutex::new(4.4),

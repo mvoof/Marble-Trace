@@ -664,9 +664,10 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_start_positions_prefers_results_over_qualify() {
+    fn test_parse_start_positions_prefers_qualify_over_results() {
         // This test validates the priority rule exercised in runtime.rs:
-        // ResultsPositions (non-empty) wins over QualifyResultsInfo.
+        // QualifyResultsInfo (non-empty) wins over ResultsPositions, because
+        // ResultsPositions reflects CURRENT race order, not the starting grid.
         let results = vec![ResultPosition {
             car_idx: 1,
             position: 2,
@@ -677,18 +678,18 @@ mod tests {
 
         let qualify = vec![QualifyResultEntry {
             car_idx: 1,
-            position: 0, // would give overall=1 — different from results
+            position: 0, // 0-indexed → overall=1 — different from results
             class_position: Some(0),
         }];
 
         let from_results = parse_start_positions(&results);
         let from_qualify = parse_start_positions_from_qualify(&qualify);
 
-        // Runtime picks from_results when non-empty
-        assert_eq!(from_results.get(&1), Some(&(2, 2)));
+        // Runtime picks from_qualify when non-empty
         assert_eq!(from_qualify.get(&1), Some(&(1, 1)));
+        assert_eq!(from_results.get(&1), Some(&(2, 2)));
         // Confirm they differ — so the selection matters
-        assert_ne!(from_results.get(&1), from_qualify.get(&1));
+        assert_ne!(from_qualify.get(&1), from_results.get(&1));
     }
 
     #[test]
