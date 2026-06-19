@@ -26,7 +26,7 @@ export const StandingsHeader = observer(() => {
       <StandingsHeaderCell>Pos</StandingsHeaderCell>
 
       {settings.showPosChange && (
-        <StandingsHeaderCell align="center">+/-</StandingsHeaderCell>
+        <StandingsHeaderCell align="center">±</StandingsHeaderCell>
       )}
 
       <StandingsHeaderCell className={styles.carNumHeader}>
