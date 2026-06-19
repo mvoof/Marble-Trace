@@ -13,7 +13,7 @@ export const SingleLed = observer(() => {
   const flags = useFlagsStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { alwaysShow } =
+  const { alwaysShow, animate } =
     widgetSettings.getSettings<FlagDisplaySettings>('led-flags');
 
   const { ledDisplayFlag: flag, blinkOn } = flags;
@@ -23,14 +23,17 @@ export const SingleLed = observer(() => {
   }
 
   const isOff =
-    flag === 'none' || ((flag === 'yellow' || flag === 'red') && !blinkOn);
+    flag === 'none' ||
+    (!animate && (flag === 'yellow' || flag === 'red') && !blinkOn);
 
   const colorClass = isOff
     ? ''
     : getSingleLedColorClass(flag, styles as unknown as ColorStyles);
 
   return (
-    <div className={styles.singleLed}>
+    <div
+      className={`${styles.singleLed}${animate ? ` ${styles.animate}` : ''}`}
+    >
       <div
         className={`${styles.singleLedInner}${colorClass ? ` ${colorClass}` : ''}`}
       />
