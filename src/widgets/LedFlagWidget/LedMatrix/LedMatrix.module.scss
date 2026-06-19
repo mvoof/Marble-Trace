@@ -1,3 +1,5 @@
+@use 'sass:math';
+
 $diode-size: 10px;
 $diode-margin: 1px;
 $diode-cell: $diode-size + $diode-margin * 2;
@@ -15,10 +17,6 @@ $board-padding: 4px;
   );
   gap: var(--board-gap, #{$block-gap});
   position: relative;
-}
-
-.animate {
-  visibility: visible;
 }
 
 .block {
@@ -221,10 +219,6 @@ $board-padding: 4px;
   }
 }
 
-.flag-red {
-  visibility: visible;
-}
-
 .board.animate.flag-red {
   .diode[data-is-outer='true'],
   .diode[data-is-center='true'] {
@@ -258,10 +252,6 @@ $board-padding: 4px;
   }
 }
 
-.flag-green {
-  visibility: visible;
-}
-
 @for $max-r from 0 through 12 {
   $steps: $max-r + 4;
 
@@ -273,7 +263,7 @@ $board-padding: 4px;
 
     @keyframes ledGreenFill-#{$max-r}-#{$r} {
       @for $s from 0 through $steps {
-        $pct: ($s / $steps) * 100%;
+        $pct: math.div($s, $steps) * 100%;
 
         $is-on: false;
         @if $s < $max-r {
@@ -288,7 +278,11 @@ $board-padding: 4px;
         }
 
         #{$pct} {
-          background-color: if($is-on, $led-green, $led-surface-panel);
+          @if $is-on {
+            background-color: $led-green;
+          } @else {
+            background-color: $led-surface-panel;
+          }
         }
       }
     }
