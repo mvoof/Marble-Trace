@@ -9,6 +9,8 @@ export interface ColorStyles {
   colorWhite: string;
   colorBlue: string;
   colorOrange: string;
+  colorCheckered?: string;
+  colorDebris?: string;
 }
 
 export const getColorClass = (
@@ -87,14 +89,15 @@ export const getSingleLedColorClass = (
     case 'red':
       return styles.colorRed;
     case 'white':
-    case 'checkered':
       return styles.colorWhite;
+    case 'checkered':
+      return styles.colorCheckered || styles.colorWhite;
     case 'blue':
       return styles.colorBlue;
     case 'meatball':
       return styles.colorOrange;
     case 'debris':
-      return styles.colorYellow;
+      return styles.colorDebris || styles.colorYellow;
     default:
       return '';
   }

@@ -46,6 +46,24 @@
   background-color: $led-orange;
 }
 
+.colorCheckered {
+  background: repeating-conic-gradient(
+      $led-surface-panel 0 25%,
+      $led-white 0 50%
+    )
+    0 0 / 20px 20px;
+}
+
+.colorDebris {
+  background: repeating-linear-gradient(
+    45deg,
+    $led-yellow,
+    $led-yellow 12px,
+    $led-red 12px,
+    $led-red 24px
+  );
+}
+
 .singleLed.animate {
   .colorGreen {
     animation: singleGreenPulse 1s infinite steps(1);
@@ -69,6 +87,14 @@
 
   .colorWhite {
     animation: singleWhiteBreathing 2s infinite ease-in-out;
+  }
+
+  .colorCheckered {
+    animation: singleCheckeredBlink 1s infinite steps(1);
+  }
+
+  .colorDebris {
+    animation: singleDebrisAlternating 1s infinite steps(1);
   }
 }
 
@@ -134,5 +160,37 @@
   }
   50% {
     background-color: color-mix(in srgb, $led-white 50%, $led-surface-panel);
+  }
+}
+
+@keyframes singleCheckeredBlink {
+  0%,
+  49.99% {
+    background: repeating-conic-gradient(
+        $led-surface-panel 0 25%,
+        $led-white 0 50%
+      )
+      0 0 / 20px 20px;
+  }
+  50%,
+  100% {
+    background: $led-surface-panel;
+  }
+}
+
+@keyframes singleDebrisAlternating {
+  0%,
+  49.99% {
+    background: repeating-linear-gradient(
+      45deg,
+      $led-yellow,
+      $led-yellow 12px,
+      $led-red 12px,
+      $led-red 24px
+    );
+  }
+  50%,
+  100% {
+    background: $led-surface-panel;
   }
 }
