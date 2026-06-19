@@ -91,7 +91,7 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
         className={styles.posBlock}
         style={{
           borderLeft: `3px solid ${driver.carClassColor}`,
-          background: `linear-gradient(to right, ${driver.carClassColor}33, transparent)`,
+          background: `linear-gradient(to right, color-mix(in srgb, ${driver.carClassColor} 20%, transparent), transparent)`,
         }}
       >
         <span
