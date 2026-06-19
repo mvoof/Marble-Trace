@@ -66,9 +66,16 @@
 .infoBlock {
   display: flex;
   align-items: center;
-  gap: sp(xs);
   overflow: hidden;
   min-width: 0;
+}
+
+// Badges column — flag / pit badges, separate from name to prevent overflow
+.badgesCell {
+  display: flex;
+  align-items: center;
+  gap: sp(xxxs);
+  overflow: hidden;
 }
 
 .driverName {

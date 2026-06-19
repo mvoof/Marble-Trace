@@ -60,7 +60,12 @@
 // Name cell — overflow truncation
 .nameCell {
   overflow: hidden;
-  gap: sp(xs);
+}
+
+// Badges column — flag / pit badges, separate from name to prevent overflow
+.badgesCell {
+  gap: sp(xxxs);
+  overflow: hidden;
 }
 
 // Position number

@@ -120,7 +120,9 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
             ? abbreviateName(driver.userName)
             : driver.userName}
         </span>
+      </div>
 
+      <div className={styles.badgesCell}>
         {settings.showDriverFlags && flagType !== 'none' && (
           <DriverFlagBadge type={flagType} />
         )}
