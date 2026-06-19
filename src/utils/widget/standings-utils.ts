@@ -60,9 +60,9 @@ interface ColSpec {
 }
 
 const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
-  { px: 28, show: true }, // pos      "#00" (fs lg, bold) — wider for # prefix + class color
+  { px: 28, show: true }, // pos      "00" (fs lg, bold) — wider for class color
   { px: 38, show: settings.showPosChange }, // +/- pos  "▲12" — between pos and carNum
-  { px: 40, show: true }, // carNum   "000" + cell padding
+  { px: 40, show: true }, // carNum   "#000" + cell padding
   { px: NAME_NATURAL_PX, show: true, flex: true }, // name — flexes, never collapses
   { px: 54, show: settings.showLicBadge }, // lic badge "A 4.99"
   { px: 42, show: settings.showIRating }, // iRating  "9.9k"
