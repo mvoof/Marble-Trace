@@ -102,8 +102,10 @@ pub async fn delete_track_shape(app: AppHandle, track_id: i32) -> Result<(), Str
 
     let path = data_dir.join("tracks").join(format!("{}.json", track_id));
 
-    if path.exists() {
-        std::fs::remove_file(&path).map_err(|e| e.to_string())?;
+    match std::fs::remove_file(&path) {
+        Ok(_) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => return Err(e.to_string()),
     }
 
     Ok(())
