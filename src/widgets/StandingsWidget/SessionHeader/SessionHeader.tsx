@@ -75,7 +75,9 @@ export const SessionHeader = observer(() => {
           <span
             className={`${styles.sessionType} ${SESSION_TYPE_CLASS[resolveSessionColorKey(currentSession.sessionType)]}`}
           >
-            {currentSession.sessionTypeLabel.toUpperCase()}
+            {(
+              currentSession.sessionTypeLabel ?? currentSession.sessionType
+            ).toUpperCase()}
           </span>
         )}
 
