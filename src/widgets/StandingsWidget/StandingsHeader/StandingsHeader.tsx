@@ -24,6 +24,11 @@ export const StandingsHeader = observer(() => {
       style={{ gridTemplateColumns: gridTemplate }}
     >
       <StandingsHeaderCell>Pos</StandingsHeaderCell>
+
+      {settings.showPosChange && (
+        <StandingsHeaderCell align="center">+/-</StandingsHeaderCell>
+      )}
+
       <StandingsHeaderCell className={styles.carNumHeader}>
         #
       </StandingsHeaderCell>
@@ -48,10 +53,6 @@ export const StandingsHeader = observer(() => {
 
       {settings.showLapsCompleted && (
         <StandingsHeaderCell align="center">Laps</StandingsHeaderCell>
-      )}
-
-      {settings.showPosChange && (
-        <StandingsHeaderCell align="center">+/-</StandingsHeaderCell>
       )}
 
       <StandingsHeaderCell align="center">Gap</StandingsHeaderCell>
