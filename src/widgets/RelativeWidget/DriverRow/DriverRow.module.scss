@@ -4,12 +4,11 @@
   display: grid;
   align-items: center;
   column-gap: sp(xxxs);
-  padding: sp(xxs) sp(sm);
+  padding: sp(xs) sp(md);
   position: relative;
   border-bottom: 1px solid $widget-row-border;
-  background: $widget-row-bg-subtle;
   line-height: 1.15;
-  font-size: fs(sm);
+  font-size: fs(md);
 }
 
 .rowOdd {
@@ -18,11 +17,7 @@
 
 .driverRowPlayer {
   z-index: 10;
-  background: linear-gradient(
-    to right,
-    transparent ws(68),
-    rgba($race-yellow, 0.11) ws(110)
-  );
+  background-color: $widget-row-player-bg;
 }
 
 .driverRowPit {
@@ -35,9 +30,9 @@
   display: flex;
   align-items: center;
   align-self: stretch;
-  margin-top: calc(-1 * sp(xxs));
-  margin-bottom: calc(-1 * sp(xxs));
-  padding: sp(xxs) sp(xxs);
+  margin-top: calc(-1 * sp(xs));
+  margin-bottom: calc(-1 * sp(xs));
+  padding: sp(xs) sp(xs);
 }
 
 // Position — primary emphasis
@@ -49,7 +44,7 @@
 }
 
 .driverPositionPlayer {
-  color: $widget-status-caution;
+  color: $widget-text-primary;
 }
 
 // Car number cell
@@ -87,7 +82,7 @@
 }
 
 .driverNamePlayer {
-  color: $widget-status-caution;
+  color: $widget-text-primary;
 }
 
 .driverNameLappedBehind {

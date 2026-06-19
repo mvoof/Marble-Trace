@@ -18,11 +18,7 @@
 }
 
 .driverRowPlayer {
-  background: linear-gradient(
-    to right,
-    transparent ws(72),
-    rgba($race-yellow, 0.11) ws(120)
-  );
+  background-color: $widget-row-player-bg;
 }
 
 .driverRowOffTrack {
@@ -73,7 +69,7 @@
 }
 
 .posNumberPlayer {
-  color: $widget-status-caution;
+  color: $widget-text-primary;
 }
 
 // Position change
@@ -124,7 +120,7 @@
 }
 
 .driverNamePlayer {
-  color: $widget-status-caution;
+  color: $widget-text-primary;
 }
 
 // Class badge
