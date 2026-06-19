@@ -27,6 +27,22 @@
 }
 
 .sessionType {
+  font-weight: 700;
+}
+
+.sessionTypePractice {
+  color: $race-blue;
+}
+
+.sessionTypeQualify {
+  color: $race-purple;
+}
+
+.sessionTypeRace {
+  color: $race-green;
+}
+
+.sessionTypeOther {
   color: $widget-text-secondary;
 }
 

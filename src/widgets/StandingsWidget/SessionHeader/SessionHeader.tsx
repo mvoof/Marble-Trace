@@ -7,9 +7,20 @@ import {
 } from '@utils/widget/widget-utils';
 import { resolveSessionLaps } from '@utils/formatters/telemetry-format';
 import { computeClassSof } from '@utils/widget/standings-utils';
+import {
+  resolveSessionColorKey,
+  type SessionColorKey,
+} from '@utils/widget/timer-utils';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './SessionHeader.module.scss';
+
+const SESSION_TYPE_CLASS: Record<SessionColorKey, string> = {
+  practice: styles.sessionTypePractice,
+  qualify: styles.sessionTypeQualify,
+  race: styles.sessionTypeRace,
+  other: styles.sessionTypeOther,
+};
 import {
   useBackendComputedStore,
   useCarsStore,
@@ -61,8 +72,10 @@ export const SessionHeader = observer(() => {
         {trackName && <span className={styles.trackName}>{trackName}</span>}
 
         {currentSession && (
-          <span className={styles.sessionType}>
-            {currentSession.sessionType.toUpperCase()}
+          <span
+            className={`${styles.sessionType} ${SESSION_TYPE_CLASS[resolveSessionColorKey(currentSession.sessionType)]}`}
+          >
+            {currentSession.sessionTypeLabel.toUpperCase()}
           </span>
         )}
 
