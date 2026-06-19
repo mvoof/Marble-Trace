@@ -9,6 +9,7 @@
   border-bottom: 1px solid $widget-row-border;
   line-height: 1.15;
   font-size: fs(md);
+  overflow: hidden;
 }
 
 .rowOdd {
