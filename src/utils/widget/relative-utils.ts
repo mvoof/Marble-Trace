@@ -6,7 +6,6 @@ const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 // Layout constants — mirror the SCSS: column-gap sp(xxxs)=2, padding sp(sm)=8.
 const COL_GAP_PX = 2;
 const ROW_PAD_X_PX = 8;
-const NAME_MIN_PX = 100;
 const NAME_NATURAL_PX = 180; // comfortable name width for the natural design size
 
 interface ColSpec {
@@ -33,7 +32,7 @@ export const buildRelativeGridTemplate = (
 
   for (const col of colSpecs(settings)) {
     if (col.show) {
-      parts.push(col.flex ? `minmax(${ws(NAME_MIN_PX)}, 1fr)` : ws(col.px));
+      parts.push(col.flex ? `minmax(0, 1fr)` : ws(col.px));
     }
   }
 
