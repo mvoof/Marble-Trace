@@ -1,5 +1,4 @@
 import type { TrackSurface } from '@/types/bindings';
-import type { TrackPoint } from '@/types';
 
 export interface CarOnTrack {
   carIdx: number;
@@ -14,13 +13,6 @@ export interface CarOnTrack {
 }
 
 interface StoredTrackData {
-  trackName: string;
-  trackConfig: string;
-  svgPath: string;
-  viewBox: string;
-  points: TrackPoint[];
-  recordedAt: string;
-  version?: number;
   rotation?: number;
 }
 
@@ -29,4 +21,3 @@ export interface StoredTracks {
 }
 
 export const TRACKS_STORE_KEY = 'recorded-tracks';
-export const TRACK_DATA_VERSION = 4;

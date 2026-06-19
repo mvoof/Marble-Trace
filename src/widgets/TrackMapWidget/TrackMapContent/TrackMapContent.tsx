@@ -1,10 +1,12 @@
 ﻿import { useCallback, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { listen } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/core';
 
 import { TrackMapView, type TrackData } from '../TrackMapView/TrackMapView';
 import type { StoredTracks } from '../types';
-import { TRACKS_STORE_KEY, TRACK_DATA_VERSION } from '../types';
+import { TRACKS_STORE_KEY } from '../types';
+import { TRACK_SETTINGS_STORE } from '../track-store';
 import {
   useSessionStore,
   useTrackMapWidgetStore,
@@ -18,8 +20,6 @@ export const TrackMapContent = observer(() => {
 
   const trackId =
     sessionInfo && sessionInfo.trackId >= 0 ? String(sessionInfo.trackId) : '';
-  const trackName = sessionInfo?.trackDisplayName ?? '';
-  const trackConfig = sessionInfo?.trackConfigName ?? '';
 
   const trackDataRef = useRef<TrackData | null>(null);
 
@@ -48,23 +48,10 @@ export const TrackMapContent = observer(() => {
 
       try {
         const { load } = await import('@tauri-apps/plugin-store');
-        const store = await load('tracks.json');
+        const store = await load(TRACK_SETTINGS_STORE);
         const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
 
-        if (!tracks[trackId]) {
-          tracks[trackId] = {
-            trackName,
-            trackConfig,
-            svgPath: trackDataRef.current?.svgPath ?? '',
-            viewBox: trackDataRef.current?.viewBox ?? '0 0 100 100',
-            points: trackDataRef.current?.points ?? [],
-            recordedAt: new Date().toISOString(),
-            version: TRACK_DATA_VERSION,
-            rotation: newRotation,
-          };
-        } else {
-          tracks[trackId].rotation = newRotation;
-        }
+        tracks[trackId] = { rotation: newRotation };
 
         await store.set(TRACKS_STORE_KEY, tracks);
         await store.save();
@@ -72,7 +59,7 @@ export const TrackMapContent = observer(() => {
         // Silently fail
       }
     },
-    [trackId, trackName, trackConfig]
+    [trackId]
   );
 
   useEffect(() => {
@@ -88,7 +75,7 @@ export const TrackMapContent = observer(() => {
     const loadRotation = async () => {
       try {
         const { load } = await import('@tauri-apps/plugin-store');
-        const store = await load('tracks.json');
+        const store = await load(TRACK_SETTINGS_STORE);
         const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
         const saved = tracks[trackId];
 
@@ -123,18 +110,17 @@ export const TrackMapContent = observer(() => {
     trackMapWidget.clearTrackShape();
     trackDataRef.current = null;
 
-    try {
-      const { load } = await import('@tauri-apps/plugin-store');
-      const store = await load('tracks.json');
-      const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
-
-      delete tracks[trackId];
-
-      await store.set(TRACKS_STORE_KEY, tracks);
-      await store.save();
-    } catch {
-      // Silently fail
-    }
+    await Promise.allSettled([
+      invoke('delete_track_shape', { trackId: Number(trackId) }),
+      (async () => {
+        const { load } = await import('@tauri-apps/plugin-store');
+        const store = await load(TRACK_SETTINGS_STORE);
+        const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
+        delete tracks[trackId];
+        await store.set(TRACKS_STORE_KEY, tracks);
+        await store.save();
+      })(),
+    ]);
   }, [trackId, trackMapWidget]);
 
   useEffect(() => {

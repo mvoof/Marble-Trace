@@ -1,5 +1,4 @@
-﻿import { useState } from 'react';
-import { observer } from 'mobx-react-lite';
+﻿import { observer } from 'mobx-react-lite';
 import {
   App,
   Button,
@@ -12,7 +11,6 @@ import {
   Switch,
 } from 'antd';
 import { emit } from '@tauri-apps/api/event';
-import { appDataDir } from '@tauri-apps/api/path';
 import {
   TrackMapLeaderLabelMode,
   TrackMapWidgetSettings,
@@ -31,7 +29,6 @@ export const TrackMapSettingsPanel = observer(() => {
 
   const settings =
     widgetSettings.getSettings<TrackMapWidgetSettings>('track-map');
-  const [tracksPath, setTracksPath] = useState<string | null>(null);
   const { message } = App.useApp();
 
   const update = (partial: Partial<TrackMapWidgetSettings>) => {
@@ -39,21 +36,6 @@ export const TrackMapSettingsPanel = observer(() => {
       ...settings,
       ...partial,
     });
-  };
-
-  const handleShowPath = async () => {
-    try {
-      const dir = await appDataDir();
-      setTracksPath(`${dir}tracks.json`);
-    } catch {
-      setTracksPath('Could not resolve path');
-    }
-  };
-
-  const handleCopyPath = async () => {
-    if (tracksPath) {
-      await navigator.clipboard.writeText(tracksPath);
-    }
   };
 
   return (
@@ -197,27 +179,6 @@ export const TrackMapSettingsPanel = observer(() => {
               Force Start Recording
             </Button>
           </Flex>
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <div className={styles.fieldTitle}>Storage Location</div>
-          {!tracksPath ? (
-            <Button block size="small" onClick={() => void handleShowPath()}>
-              Show tracks.json Path
-            </Button>
-          ) : (
-            <Flex vertical gap={8}>
-              <div
-                className={styles.fieldDesc}
-                style={{ wordBreak: 'break-all' }}
-              >
-                {tracksPath}
-              </div>
-              <Button block size="small" onClick={() => void handleCopyPath()}>
-                Copy Path
-              </Button>
-            </Flex>
-          )}
         </div>
       </Card>
     </>
