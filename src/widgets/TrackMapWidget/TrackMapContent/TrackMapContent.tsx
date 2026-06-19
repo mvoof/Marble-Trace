@@ -5,7 +5,8 @@ import { invoke } from '@tauri-apps/api/core';
 
 import { TrackMapView, type TrackData } from '../TrackMapView/TrackMapView';
 import type { StoredTracks } from '../types';
-import { TRACKS_STORE_KEY, TRACK_SETTINGS_STORE } from '../types';
+import { TRACKS_STORE_KEY } from '../types';
+import { TRACK_SETTINGS_STORE } from '../track-store';
 import {
   useSessionStore,
   useTrackMapWidgetStore,
