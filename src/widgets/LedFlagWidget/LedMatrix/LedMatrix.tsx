@@ -48,9 +48,12 @@ export const LedMatrix = observer(
 
     const checkerSize = dpbX >= 8 ? 3 : dpbX >= 6 ? 2 : 1;
 
-    const maxRing = split
-      ? Math.floor((matrixSizeY - 1) / 2)
-      : Math.floor((Math.min(matrixSizeX, matrixSizeY) - 1) / 2);
+    const maxRing = Math.min(
+      12,
+      split
+        ? Math.floor((matrixSizeY - 1) / 2)
+        : Math.floor((Math.min(matrixSizeX, matrixSizeY) - 1) / 2)
+    );
 
     return (
       <div
@@ -91,9 +94,12 @@ export const LedMatrix = observer(
                     styles as unknown as ColorStyles
                   );
 
-              const ring = split
-                ? Math.min(gy, matrixSizeY - 1 - gy)
-                : Math.min(gx, gy, matrixSizeX - 1 - gx, matrixSizeY - 1 - gy);
+              const ring = Math.min(
+                maxRing,
+                split
+                  ? Math.min(gy, matrixSizeY - 1 - gy)
+                  : Math.min(gx, gy, matrixSizeX - 1 - gx, matrixSizeY - 1 - gy)
+              );
               const cx = matrixSizeX / 2 - 0.5;
               const cy = matrixSizeY / 2 - 0.5;
               const distCenter = Math.sqrt((gx - cx) ** 2 + (gy - cy) ** 2);
@@ -110,7 +116,7 @@ export const LedMatrix = observer(
                 (split
                   ? ring >= maxRing - 4 && ring < maxRing - 1
                   : ring >= dpbX - 3 && ring < dpbX);
-              const isOuter = !isCenter && !isInner && ring <= 2;
+              const isOuter = !isCenter && !isInner;
 
               const chevronVal = gy - Math.abs(gx - cx);
               const chevronParity = Math.floor((chevronVal + 100) / 3) % 2;
