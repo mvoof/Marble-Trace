@@ -66,6 +66,10 @@
   .colorOrange {
     animation: singleOrangePulse 1s infinite steps(1);
   }
+
+  .colorWhite {
+    animation: singleWhiteBreathing 2s infinite ease-in-out;
+  }
 }
 
 @keyframes singleGreenPulse {
@@ -120,5 +124,15 @@
   50%,
   100% {
     background-color: $led-surface-panel;
+  }
+}
+
+@keyframes singleWhiteBreathing {
+  0%,
+  100% {
+    background-color: $led-white;
+  }
+  50% {
+    background-color: color-mix(in srgb, $led-white 50%, $led-surface-panel);
   }
 }

@@ -117,6 +117,10 @@ $board-padding: 4px;
   &.flag-black .colorWhite {
     animation: ledBlackBorderFlash 0.8s infinite steps(1);
   }
+
+  &.flag-white .colorWhite {
+    animation: ledWhiteBreathing 2s infinite ease-in-out;
+  }
 }
 
 @keyframes ledYellowAlternating {
@@ -204,6 +208,16 @@ $board-padding: 4px;
   50%,
   100% {
     background-color: $led-surface-panel;
+  }
+}
+
+@keyframes ledWhiteBreathing {
+  0%,
+  100% {
+    background-color: $led-white;
+  }
+  50% {
+    background-color: color-mix(in srgb, $led-white 50%, $led-surface-panel);
   }
 }
 
