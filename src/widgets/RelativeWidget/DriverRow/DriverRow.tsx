@@ -1,4 +1,3 @@
-import React from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   abbreviateName,
@@ -82,20 +81,10 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
 
   const gridTemplate = buildRelativeGridTemplate(settings);
 
-  // pos(28) + gap(2) + carNum(36) + gap(2) + rowPadL(10)
-  const hlLeft = driver.isPlayer
-    ? `calc(14px + 64px * var(--wfs, 1))`
-    : undefined;
-
   return (
     <div
       className={rowClass}
-      style={
-        {
-          gridTemplateColumns: gridTemplate,
-          '--hl-left': hlLeft,
-        } as React.CSSProperties
-      }
+      style={{ gridTemplateColumns: gridTemplate }}
       data-relative-row
     >
       <div

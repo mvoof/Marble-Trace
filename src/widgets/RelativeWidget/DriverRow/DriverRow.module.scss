@@ -17,15 +17,7 @@
 
 .driverRowPlayer {
   z-index: 10;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    left: var(--hl-left, 0);
-    background-color: $widget-row-player-bg;
-    pointer-events: none;
-  }
+  background: $widget-row-player-gradient;
 }
 
 .driverRowPit {

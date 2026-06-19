@@ -52,6 +52,13 @@ $widget-row-border: rgba(39, 39, 42, 0.5);
 $widget-row-hover: rgba(39, 39, 42, 0.3);
 $widget-row-bg-subtle: rgba(24, 24, 27, 0.2);
 $widget-row-player-bg: rgba($race-yellow, 0.1);
+$widget-row-player-gradient: linear-gradient(
+  to right,
+  transparent,
+  rgba($race-yellow, 0.13) 40%,
+  rgba($race-yellow, 0.13) 60%,
+  transparent
+);
 
 // Tints — translucent fills derived from palette (row highlights, sector cells)
 $widget-tint-positive: rgba($race-green, 0.12);
