@@ -8,7 +8,11 @@ import {
 } from '@utils/widget/led-flag-utils';
 import { SingleLed } from './SingleLed/SingleLed';
 import { LedMatrix } from './LedMatrix/LedMatrix';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import {
+  useWidgetSettingsStore,
+  useFlagsStore,
+} from '@store/root-store-context';
+import { useWidgetAutoHide } from '@hooks/common/useWidgetAutoHide';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
 
 import styles from './LedFlagWidget.module.scss';
@@ -16,8 +20,13 @@ import styles from './LedFlagWidget.module.scss';
 export const LedFlagWidget = observer(() => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const widgetSettings = useWidgetSettingsStore();
-  const { split, forceSingleLed } =
+  const flags = useFlagsStore();
+  const { split, forceSingleLed, alwaysShow } =
     widgetSettings.getSettings<FlagDisplaySettings>('led-flags');
+
+  const hasContent = alwaysShow || flags.ledDisplayFlag !== 'none';
+
+  useWidgetAutoHide(hasContent);
 
   const [layout, setLayout] = useState({
     diodesPerBlock: 6,
