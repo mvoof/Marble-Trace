@@ -24,13 +24,18 @@ export const StandingsHeader = observer(() => {
       style={{ gridTemplateColumns: gridTemplate }}
     >
       <StandingsHeaderCell>Pos</StandingsHeaderCell>
+
+      {settings.showPosChange && (
+        <StandingsHeaderCell align="center">±</StandingsHeaderCell>
+      )}
+
       <StandingsHeaderCell className={styles.carNumHeader}>
         #
       </StandingsHeaderCell>
       <StandingsHeaderCell>Driver</StandingsHeaderCell>
 
       {settings.showLicBadge && (
-        <StandingsHeaderCell align="center">Lic</StandingsHeaderCell>
+        <StandingsHeaderCell align="center">SR</StandingsHeaderCell>
       )}
 
       {settings.showIRating && (
@@ -42,16 +47,12 @@ export const StandingsHeader = observer(() => {
           align="center"
           title="Projected iR change (Elo estimate, not real iRacing data)"
         >
-          ΔiR
+          ±iR
         </StandingsHeaderCell>
       )}
 
       {settings.showLapsCompleted && (
         <StandingsHeaderCell align="center">Laps</StandingsHeaderCell>
-      )}
-
-      {settings.showPosChange && (
-        <StandingsHeaderCell align="center">+/-</StandingsHeaderCell>
       )}
 
       <StandingsHeaderCell align="center">Gap</StandingsHeaderCell>

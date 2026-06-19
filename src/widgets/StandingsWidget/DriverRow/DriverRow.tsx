@@ -101,26 +101,28 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       style={{ gridTemplateColumns: gridTemplate }}
       data-driver-row
     >
-      <div className={styles.cell}>
+      <div
+        className={`${styles.cell} ${styles.posCell}`}
+        style={{
+          borderLeft: `3px solid ${driver.carClassColor}`,
+          background: `linear-gradient(to right, color-mix(in srgb, ${driver.carClassColor} 20%, transparent), transparent)`,
+        }}
+      >
         <span
-          className={`${styles.posCell} ${driver.isPlayer ? styles.posCellPlayer : ''}`}
+          className={`${styles.posNumber} ${driver.isPlayer ? styles.posNumberPlayer : ''}`}
         >
           {pos}
         </span>
       </div>
 
-      <div
-        className={`${styles.cell} ${styles.carNumberCell}`}
-        style={{
-          borderLeft: `3px solid ${driver.carClassColor}`,
-          background: `linear-gradient(to right, ${driver.carClassColor}33, transparent)`,
-        }}
-      >
-        <span
-          className={`${styles.carNumber} ${driver.isPlayer ? styles.carNumberPlayer : ''}`}
-        >
-          {formattedCarNumber}
-        </span>
+      {settings.showPosChange && (
+        <div className={`${styles.cell} ${styles.cellCenter}`}>
+          <PosChange carIdx={carIdx} />
+        </div>
+      )}
+
+      <div className={`${styles.cell} ${styles.carNumberCell}`}>
+        <span className={styles.carNumber}>#{formattedCarNumber}</span>
       </div>
 
       <div className={`${styles.cell} ${styles.nameCell}`}>
@@ -159,12 +161,6 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       {settings.showLapsCompleted && (
         <div className={`${styles.cell} ${styles.cellCenter}`}>
           <span className={styles.lapsCompleted}>{driver.lap}</span>
-        </div>
-      )}
-
-      {settings.showPosChange && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <PosChange carIdx={carIdx} />
         </div>
       )}
 

@@ -4,12 +4,11 @@
   display: grid;
   align-items: center;
   column-gap: sp(xxxs);
-  padding: sp(xxs) sp(sm);
+  padding: sp(xs) sp(md);
   position: relative;
   border-bottom: 1px solid $widget-row-border;
-  background: $widget-row-bg-subtle;
   line-height: 1.15;
-  font-size: fs(sm);
+  font-size: fs(md);
 }
 
 .rowOdd {
@@ -17,8 +16,8 @@
 }
 
 .driverRowPlayer {
-  background-color: $widget-row-player-bg;
   z-index: 10;
+  background: $widget-row-player-gradient;
 }
 
 .driverRowPit {
@@ -26,10 +25,15 @@
   filter: grayscale(100%);
 }
 
-// Position block
+// Position block — stretches to row edges for class color border + gradient
 .posBlock {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  align-self: stretch;
+  margin-top: calc(-1 * sp(xs));
+  margin-bottom: calc(-1 * sp(xs));
+  margin-left: calc(-1 * sp(md));
+  padding: sp(xs) sp(xs) sp(xs) sp(md);
 }
 
 // Position — primary emphasis
@@ -41,28 +45,21 @@
 }
 
 .driverPositionPlayer {
-  color: $widget-status-caution;
-}
-
-// Car number cell — second grid column after pos
-// Negative margins compensate for row padding so border+gradient reach full row height
-.carNumberCell {
-  align-self: stretch;
-  margin-top: calc(-1 * sp(xxs));
-  margin-bottom: calc(-1 * sp(xxs));
-  display: flex;
-  align-items: center;
-  padding: sp(xxs) sp(xxs);
-}
-
-.driverCarNumber {
-  font-size: fs(xs);
-  font-family: $font-mono;
   color: $widget-text-primary;
 }
 
-.driverCarNumberPlayer {
-  color: $widget-status-position-gain;
+// Car number cell
+.carNumberCell {
+  display: flex;
+  align-items: center;
+  padding: 0 sp(xxs);
+}
+
+// Car number — muted, class identity comes from pos column color
+.driverCarNumber {
+  font-size: fs(xs);
+  font-family: $font-mono;
+  color: $widget-text-muted;
 }
 
 // Info block — name only, fills 1fr grid column
@@ -86,7 +83,7 @@
 }
 
 .driverNamePlayer {
-  color: $widget-status-caution;
+  color: $widget-text-primary;
 }
 
 .driverNameLappedBehind {

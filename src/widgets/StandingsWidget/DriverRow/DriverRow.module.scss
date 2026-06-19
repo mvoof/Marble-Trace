@@ -18,11 +18,12 @@
 }
 
 .driverRowPlayer {
-  background-color: $widget-row-player-bg;
+  background: $widget-row-player-gradient;
 }
 
 .driverRowOffTrack {
   opacity: 0.5;
+  filter: grayscale(100%);
 }
 
 // Base cell
@@ -42,12 +43,18 @@
   justify-content: flex-end;
 }
 
-// Car number cell — stretch full row height for border + gradient
-.carNumberCell {
+// Position cell — stretch to row edges for class color border + gradient
+.posCell {
   align-self: stretch;
   margin-top: calc(-1 * sp(xs));
   margin-bottom: calc(-1 * sp(xs));
-  padding: sp(xs) sp(xs);
+  margin-left: calc(-1 * sp(md));
+  padding: sp(xs) sp(xs) sp(xs) sp(md);
+}
+
+// Car number cell
+.carNumberCell {
+  padding: 0 sp(xxs);
 }
 
 // Name cell — overflow truncation
@@ -56,14 +63,15 @@
   gap: sp(xs);
 }
 
-// Position
-.posCell {
+// Position number
+.posNumber {
   font-weight: 700;
   font-size: fs(md);
+  color: $widget-text-primary;
 }
 
-.posCellPlayer {
-  color: $widget-status-caution;
+.posNumberPlayer {
+  color: $widget-text-primary;
 }
 
 // Position change
@@ -94,15 +102,11 @@
   justify-content: center;
 }
 
-// Car number
+// Car number — muted, class identity comes from pos column color
 .carNumber {
   font-family: $font-mono;
   font-size: fs(md);
-  color: $widget-text-primary;
-}
-
-.carNumberPlayer {
-  color: $widget-status-position-gain;
+  color: $widget-text-muted;
 }
 
 // Driver name
@@ -118,7 +122,7 @@
 }
 
 .driverNamePlayer {
-  color: $widget-status-caution;
+  color: $widget-text-primary;
 }
 
 // Class badge

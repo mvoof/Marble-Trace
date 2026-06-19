@@ -87,7 +87,13 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
       style={{ gridTemplateColumns: gridTemplate }}
       data-relative-row
     >
-      <div className={styles.posBlock}>
+      <div
+        className={styles.posBlock}
+        style={{
+          borderLeft: `3px solid ${driver.carClassColor}`,
+          background: `linear-gradient(to right, color-mix(in srgb, ${driver.carClassColor} 20%, transparent), transparent)`,
+        }}
+      >
         <span
           className={`${styles.driverPosition} ${driver.isPlayer ? styles.driverPositionPlayer : ''}`}
         >
@@ -95,18 +101,8 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
         </span>
       </div>
 
-      <div
-        className={styles.carNumberCell}
-        style={{
-          borderLeft: `4px solid ${driver.carClassColor}`,
-          background: `linear-gradient(to right, ${driver.carClassColor}33, transparent)`,
-        }}
-      >
-        <span
-          className={`${styles.driverCarNumber} ${driver.isPlayer ? styles.driverCarNumberPlayer : ''}`}
-        >
-          #{formattedCarNumber}
-        </span>
+      <div className={styles.carNumberCell}>
+        <span className={styles.driverCarNumber}>#{formattedCarNumber}</span>
       </div>
 
       <div className={styles.infoBlock}>

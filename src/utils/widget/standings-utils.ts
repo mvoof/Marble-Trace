@@ -60,14 +60,14 @@ interface ColSpec {
 }
 
 const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
-  { px: 22, show: true }, // pos      "00" (fs lg, bold)
-  { px: 46, show: true }, // carNum   "#000" + cell padding
+  { px: 28, show: true }, // pos      "00" (fs lg, bold) — wider for class color
+  { px: 38, show: settings.showPosChange }, // +/- pos  "▲12" — between pos and carNum
+  { px: 40, show: true }, // carNum   "#000" + cell padding
   { px: NAME_NATURAL_PX, show: true, flex: true }, // name — flexes, never collapses
   { px: 54, show: settings.showLicBadge }, // lic badge "A 4.99"
   { px: 42, show: settings.showIRating }, // iRating  "9.9k"
   { px: 42, show: settings.showIrChange }, // ΔiR     "+123"
   { px: 28, show: settings.showLapsCompleted }, // laps "00"
-  { px: 38, show: settings.showPosChange }, // +/- pos  "▲12"
   { px: 50, show: true }, // gap      "+123.4" / "12 L"
   { px: 82, show: true }, // last     "--:--.---" (9 chars mono)
   { px: 82, show: true }, // best     "--:--.---" (9 chars mono)

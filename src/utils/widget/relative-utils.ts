@@ -18,8 +18,8 @@ interface ColSpec {
 // Single source of truth for column order + widths (px at scale 1). Order MUST
 // match the render order in DriverRow.tsx.
 const colSpecs = (settings: RelativeWidgetSettings): ColSpec[] => [
-  { px: 20, show: true }, // pos
-  { px: 40, show: true }, // carNum
+  { px: 28, show: true }, // pos — wider for class color padding
+  { px: 36, show: true }, // carNum — with # prefix
   { px: NAME_NATURAL_PX, show: true, flex: true }, // name
   { px: 48, show: settings.showLicBadge }, // lic badge
   { px: 36, show: settings.showIRating }, // iRating

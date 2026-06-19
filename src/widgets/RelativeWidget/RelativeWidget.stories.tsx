@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { DriverEntriesFrame } from '@/types/bindings';
+import type { RelativeFrame } from '@/types/bindings';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 import { driverEntries } from '@/storybook/test-data';
 import { RelativeWidget } from './RelativeWidget';
@@ -34,10 +34,10 @@ const meta: Meta<StoryArgs> = {
     widget: RelativeWidget,
     size: { width: 406, height: 400 },
     seed: (store, args) => {
-      store.backendComputed.updateStandings({
+      store.backendComputed.updateRelative({
         entries: DRIVER_ENTRIES,
         playerCarIdx: PLAYER_CAR_IDX,
-      } as DriverEntriesFrame);
+      } as RelativeFrame);
 
       store.widgetSettings.updateUserSettings('relative', args.settings);
     },
