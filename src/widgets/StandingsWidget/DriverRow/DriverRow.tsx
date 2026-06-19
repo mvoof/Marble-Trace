@@ -1,4 +1,5 @@
-﻿import { observer } from 'mobx-react-lite';
+﻿import React from 'react';
+import { observer } from 'mobx-react-lite';
 import { formatLapTime } from '@utils/formatters/telemetry-format';
 import {
   abbreviateName,
@@ -95,10 +96,22 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
     <span className={styles.gapValue}>{gapInfo.value}</span>
   );
 
+  // pos(28) + gap(2) + [posChange(38) + gap(2)] + carNum(40) + gap(2) + rowPadL(10)
+  const hlSkipCols = settings.showPosChange ? 106 : 68;
+  const hlExtraPx = settings.showPosChange ? 16 : 14;
+  const hlLeft = driver.isPlayer
+    ? `calc(${hlExtraPx}px + ${hlSkipCols}px * var(--wfs, 1))`
+    : undefined;
+
   return (
     <div
       className={rowClass}
-      style={{ gridTemplateColumns: gridTemplate }}
+      style={
+        {
+          gridTemplateColumns: gridTemplate,
+          '--hl-left': hlLeft,
+        } as React.CSSProperties
+      }
       data-driver-row
     >
       <div
