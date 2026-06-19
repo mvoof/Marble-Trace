@@ -33,7 +33,6 @@ export const StandingsHeader = observer(() => {
         #
       </StandingsHeaderCell>
       <StandingsHeaderCell>Driver</StandingsHeaderCell>
-      <StandingsHeaderCell />
 
       {settings.showLicBadge && (
         <StandingsHeaderCell align="center">SR</StandingsHeaderCell>

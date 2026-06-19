@@ -21,7 +21,6 @@ const colSpecs = (settings: RelativeWidgetSettings): ColSpec[] => [
   { px: 28, show: true }, // pos — wider for class color padding
   { px: 36, show: true }, // carNum — with # prefix
   { px: NAME_NATURAL_PX, show: true, flex: true }, // name
-  { px: 64, show: true }, // badges (flag / pit)
   { px: 48, show: settings.showLicBadge }, // lic badge
   { px: 36, show: settings.showIRating }, // iRating
   { px: 56, show: true }, // gap
