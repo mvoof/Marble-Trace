@@ -4,17 +4,24 @@ import { observer } from 'mobx-react-lite';
 import {
   MIN_SINGLE_LED_PX,
   computeDiodesPerBlock,
+  computeSplitRows,
 } from '@utils/widget/led-flag-utils';
 import { SingleLed } from './SingleLed/SingleLed';
 import { LedMatrix } from './LedMatrix/LedMatrix';
+import { useWidgetSettingsStore } from '@store/root-store-context';
+import type { FlagDisplaySettings } from '@/types/widget-settings';
 
 import styles from './LedFlagWidget.module.scss';
 
 export const LedFlagWidget = observer(() => {
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const widgetSettings = useWidgetSettingsStore();
+  const { split, forceSingleLed } =
+    widgetSettings.getSettings<FlagDisplaySettings>('led-flags');
 
   const [layout, setLayout] = useState({
     diodesPerBlock: 6,
+    splitRows: 18,
     isSingleLed: false,
   });
 
@@ -26,10 +33,9 @@ export const LedFlagWidget = observer(() => {
     }
 
     const obs = new ResizeObserver(([entry]) => {
-      const smallestSide = Math.min(
-        entry.contentRect.width,
-        entry.contentRect.height
-      );
+      const smallestSide = split
+        ? entry.contentRect.height
+        : Math.min(entry.contentRect.width, entry.contentRect.height);
 
       if (smallestSide < MIN_SINGLE_LED_PX) {
         setLayout((prev) =>
@@ -37,11 +43,18 @@ export const LedFlagWidget = observer(() => {
         );
       } else {
         const nextDiodes = computeDiodesPerBlock(smallestSide);
+        const nextSplitRows = computeSplitRows(entry.contentRect.height);
 
         setLayout((prev) =>
-          !prev.isSingleLed && prev.diodesPerBlock === nextDiodes
+          !prev.isSingleLed &&
+          prev.diodesPerBlock === nextDiodes &&
+          prev.splitRows === nextSplitRows
             ? prev
-            : { isSingleLed: false, diodesPerBlock: nextDiodes }
+            : {
+                isSingleLed: false,
+                diodesPerBlock: nextDiodes,
+                splitRows: nextSplitRows,
+              }
         );
       }
     });
@@ -49,14 +62,29 @@ export const LedFlagWidget = observer(() => {
     obs.observe(el);
 
     return () => obs.disconnect();
-  }, []);
+  }, [split]);
+
+  const renderContent = () => {
+    if (forceSingleLed || layout.isSingleLed) {
+      return <SingleLed />;
+    }
+    return (
+      <LedMatrix
+        diodesPerBlock={layout.diodesPerBlock}
+        splitRows={layout.splitRows}
+      />
+    );
+  };
 
   return (
     <div ref={wrapperRef} className={styles.wrapper}>
-      {layout.isSingleLed ? (
-        <SingleLed />
+      {split ? (
+        <div className={styles.splitWrapper}>
+          <div className={styles.leftSlot}>{renderContent()}</div>
+          <div className={styles.rightSlot}>{renderContent()}</div>
+        </div>
       ) : (
-        <LedMatrix diodesPerBlock={layout.diodesPerBlock} />
+        renderContent()
       )}
     </div>
   );

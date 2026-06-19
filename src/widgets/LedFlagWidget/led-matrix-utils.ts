@@ -4,6 +4,7 @@ import { BLOCKS } from '@utils/widget/led-flag-utils';
 export interface ColorStyles {
   colorGreen: string;
   colorYellow: string;
+  colorYellowStatic: string;
   colorRed: string;
   colorWhite: string;
   colorBlue: string;
@@ -13,22 +14,29 @@ export interface ColorStyles {
 export const getColorClass = (
   gx: number,
   gy: number,
-  bx: number,
-  by: number,
+  _bx: number,
+  _by: number,
   flag: FlagType,
-  matrixSize: number,
+  matrixSizeX: number,
+  matrixSizeY: number,
   styles: ColorStyles
 ): string => {
-  const last = matrixSize - 1;
-  const isEdge = gx === 0 || gx === last || gy === 0 || gy === last;
-  const dpb = matrixSize / BLOCKS;
+  const lastX = matrixSizeX - 1;
+  const lastY = matrixSizeY - 1;
+  const isEdge = gx === 0 || gx === lastX || gy === 0 || gy === lastY;
+  const dpb = matrixSizeY / BLOCKS;
 
   switch (flag) {
     case 'green':
       return styles.colorGreen;
 
-    case 'yellow':
+    case 'yellow': {
+      const midX = matrixSizeX / 2 - 0.5;
+      if (Math.abs(gx - midX) < 0.8) {
+        return styles.colorYellowStatic;
+      }
       return styles.colorYellow;
+    }
 
     case 'red':
       return styles.colorRed;
@@ -42,10 +50,10 @@ export const getColorClass = (
         : styles.colorYellow;
 
     case 'checkered':
-      return (bx + by) % 2 === 0 ? styles.colorWhite : '';
+      return styles.colorWhite;
 
     case 'debris':
-      return Math.floor(gx / 3) % 2 === 0
+      return Math.floor((gx + gy) / 3) % 2 === 0
         ? styles.colorYellow
         : styles.colorRed;
 
@@ -54,9 +62,9 @@ export const getColorClass = (
 
     case 'meatball': {
       if (isEdge) return styles.colorWhite;
-      const cx = matrixSize / 2 - 0.5;
-      const cy = matrixSize / 2 - 0.5;
-      const radiusSq = Math.pow(matrixSize * 0.38, 2);
+      const cx = matrixSizeX / 2 - 0.5;
+      const cy = matrixSizeY / 2 - 0.5;
+      const radiusSq = Math.pow(Math.min(matrixSizeX, matrixSizeY) * 0.38, 2);
       const dx = gx - cx;
       const dy = gy - cy;
       return dx * dx + dy * dy <= radiusSq ? styles.colorOrange : '';

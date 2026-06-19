@@ -10,31 +10,22 @@ $board-padding: 4px;
   border-radius: 6px;
   display: grid;
   grid-template-columns: repeat(
-    var(--blocks),
+    var(--blocks-x, var(--blocks)),
     calc(var(--dpb) * #{$diode-cell})
   );
-  gap: $block-gap;
+  gap: var(--board-gap, #{$block-gap});
   position: relative;
 }
 
-.glassOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.05) 0%,
-    transparent 40%
-  );
-  pointer-events: none;
-  z-index: 10;
-  border-radius: 6px;
+.animate {
+  visibility: visible;
 }
 
 .block {
   background-color: $led-surface-matrix;
   display: grid;
-  grid-template-columns: repeat(var(--dpb), #{$diode-cell});
-  grid-template-rows: repeat(var(--dpb), #{$diode-cell});
+  grid-template-columns: repeat(var(--dpb-x, var(--dpb)), #{$diode-cell});
+  grid-template-rows: repeat(var(--dpb-y, var(--dpb)), #{$diode-cell});
 }
 
 .diode {
@@ -52,46 +43,240 @@ $board-padding: 4px;
   visibility: hidden;
 }
 
-// Color classes are intentionally duplicated in SingleLed.module.scss —
-// CSS Modules scope prevents sharing, and local definition avoids background override.
 .colorGreen {
   background-color: $led-green;
-  box-shadow:
-    0 0 4px $led-green,
-    0 0 8px $led-green;
 }
 
 .colorYellow {
   background-color: $led-yellow;
-  box-shadow:
-    0 0 4px $led-yellow,
-    0 0 8px $led-yellow;
+}
+
+.colorYellowStatic {
+  background-color: $led-yellow;
 }
 
 .colorRed {
   background-color: $led-red;
-  box-shadow:
-    0 0 4px $led-red,
-    0 0 8px $led-red;
 }
 
 .colorBlue {
   background-color: $led-blue;
-  box-shadow:
-    0 0 4px $led-blue,
-    0 0 8px $led-blue;
 }
 
 .colorWhite {
   background-color: $led-white;
-  box-shadow:
-    0 0 4px $led-white,
-    0 0 8px rgba($led-white, 0.6);
 }
 
 .colorOrange {
   background-color: $led-orange;
-  box-shadow:
-    0 0 4px $led-orange,
-    0 0 8px $led-orange;
+}
+
+.board.flag-checkered .colorWhite {
+  background-color: color-mix(
+    in srgb,
+    $led-white calc((1 - var(--checkered-parity)) * 100%),
+    $led-surface-panel
+  );
+}
+
+.board.animate {
+  &.flag-yellow .colorYellow {
+    animation: ledYellowAlternating 1s infinite steps(1);
+    animation-delay: calc(var(--col-parity) * 0.5s);
+  }
+
+  &.flag-blue {
+    .colorBlue {
+      animation: ledBlueScroll 1s infinite steps(1);
+    }
+    .colorYellow {
+      animation: ledYellowScrollBlue 1s infinite steps(1);
+    }
+  }
+
+  &.flag-checkered .colorWhite {
+    animation: ledCheckeredAlternating 1s infinite steps(1);
+    animation-delay: calc(var(--checkered-parity) * 0.5s);
+  }
+
+  &.flag-debris {
+    .colorYellow {
+      animation: ledYellowScrollRed 1s infinite steps(1);
+    }
+    .colorRed {
+      animation: ledRedScrollYellow 1s infinite steps(1);
+    }
+  }
+
+  &.flag-meatball {
+    .colorOrange {
+      animation: ledMeatballBlink 1s infinite steps(1);
+    }
+  }
+
+  &.flag-black .colorWhite {
+    animation: ledBlackBorderFlash 0.8s infinite steps(1);
+  }
+}
+
+@keyframes ledYellowAlternating {
+  0%,
+  49.99% {
+    background-color: $led-yellow;
+  }
+  50%,
+  100% {
+    background-color: $led-surface-panel;
+  }
+}
+
+@keyframes ledBlueScroll {
+  0%,
+  49.99% {
+    background-color: $led-blue;
+  }
+  50%,
+  100% {
+    background-color: $led-yellow;
+  }
+}
+
+@keyframes ledYellowScrollBlue {
+  0%,
+  49.99% {
+    background-color: $led-yellow;
+  }
+  50%,
+  100% {
+    background-color: $led-blue;
+  }
+}
+
+@keyframes ledCheckeredAlternating {
+  0%,
+  49.99% {
+    background-color: $led-white;
+  }
+  50%,
+  100% {
+    background-color: $led-surface-panel;
+  }
+}
+
+@keyframes ledYellowScrollRed {
+  0%,
+  49.99% {
+    background-color: $led-yellow;
+  }
+  50%,
+  100% {
+    background-color: $led-red;
+  }
+}
+
+@keyframes ledRedScrollYellow {
+  0%,
+  49.99% {
+    background-color: $led-red;
+  }
+  50%,
+  100% {
+    background-color: $led-yellow;
+  }
+}
+
+@keyframes ledMeatballBlink {
+  0%,
+  49.99% {
+    background-color: $led-orange;
+  }
+  50%,
+  100% {
+    background-color: $led-surface-panel;
+  }
+}
+
+@keyframes ledBlackBorderFlash {
+  0%,
+  49.99% {
+    background-color: $led-white;
+  }
+  50%,
+  100% {
+    background-color: $led-surface-panel;
+  }
+}
+
+.flag-red {
+  visibility: visible;
+}
+
+.board.animate.flag-red {
+  .diode[data-is-outer='true'],
+  .diode[data-is-center='true'] {
+    animation: ledRedStateA 1s infinite steps(1);
+  }
+
+  .diode[data-is-inner='true'] {
+    animation: ledRedStateB 1s infinite steps(1);
+  }
+}
+
+@keyframes ledRedStateA {
+  0%,
+  49.99% {
+    background-color: $led-red;
+  }
+  50%,
+  100% {
+    background-color: $led-surface-panel;
+  }
+}
+
+@keyframes ledRedStateB {
+  0%,
+  49.99% {
+    background-color: $led-surface-panel;
+  }
+  50%,
+  100% {
+    background-color: $led-red;
+  }
+}
+
+.flag-green {
+  visibility: visible;
+}
+
+@for $max-r from 0 through 12 {
+  $steps: $max-r + 4;
+
+  @for $r from 0 through $max-r {
+    .board.animate.flag-green[data-max-ring='#{$max-r}']
+      .colorGreen[data-ring='#{$r}'] {
+      animation: ledGreenFill-#{$max-r}-#{$r} 1s infinite steps(1);
+    }
+
+    @keyframes ledGreenFill-#{$max-r}-#{$r} {
+      @for $s from 0 through $steps {
+        $pct: ($s / $steps) * 100%;
+
+        $is-on: false;
+        @if $s < $max-r {
+          $pos: $max-r - $s;
+          @if $r >= $pos {
+            $is-on: true;
+          }
+        } @else if $s < $max-r + 2 {
+          $is-on: true;
+        } @else {
+          $is-on: false;
+        }
+
+        #{$pct} {
+          background-color: if($is-on, $led-green, $led-surface-panel);
+        }
+      }
+    }
+  }
 }

@@ -24,6 +24,7 @@ import type {
   StandingsWidgetSettings,
   RelativeWidgetSettings,
   InputTraceSettings,
+  FlagDisplaySettings,
 } from '@/types/widget-settings';
 import { computeStandingsDesignWidth } from '@utils/widget/standings-utils';
 import { computeRelativeDesignWidth } from '@utils/widget/relative-utils';
@@ -174,6 +175,40 @@ const resolveChassisLayout: ResolveLayoutChange = (prev, next, current) => {
     designWidth: nextShow
       ? CHASSIS_WITH_SUSPENSION_DESIGN_WIDTH
       : CHASSIS_DESIGN_WIDTH,
+    currentWidth: nextWidth,
+    userSettingsPatch: { modeWidths: savedModeWidths },
+  };
+};
+
+const resolveLedFlagsLayout: ResolveLayoutChange = (prev, next, current) => {
+  if (!('split' in next)) return null;
+
+  const prevSettings = prev as unknown as FlagDisplaySettings;
+  const nextSettings = next as unknown as FlagDisplaySettings;
+
+  const prevSplit = !!prevSettings.split;
+  const nextSplit = !!nextSettings.split;
+
+  if (prevSplit === nextSplit) return null;
+
+  const prevMode = prevSplit ? 'split' : 'single';
+  const nextMode = nextSplit ? 'split' : 'single';
+
+  const prevModeWidths =
+    'modeWidths' in prev
+      ? ((prev.modeWidths as Record<string, number>) ?? {})
+      : {};
+
+  const savedModeWidths: Record<string, number> = {
+    ...prevModeWidths,
+    [prevMode]: current.currentWidth,
+  };
+
+  const defaultNextWidth = nextSplit ? 696 : 232;
+  const nextWidth = savedModeWidths[nextMode] ?? defaultNextWidth;
+
+  return {
+    designWidth: nextSplit ? 696 : 232,
     currentWidth: nextWidth,
     userSettingsPatch: { modeWidths: savedModeWidths },
   };
@@ -472,6 +507,7 @@ const WIDGETS: WidgetConfig[] = [
     label: 'LED Flags',
     description: 'LED matrix display of track flags.',
     component: LedFlagWidget,
+    resolveLayoutChange: resolveLedFlagsLayout,
     designWidth: 232,
     designHeight: 232,
     userSettings: {
@@ -486,6 +522,9 @@ const WIDGETS: WidgetConfig[] = [
       hotkey: '',
       alwaysShow: true,
       holdDuration: 3,
+      split: false,
+      animate: true,
+      forceSingleLed: false,
     },
   },
   {

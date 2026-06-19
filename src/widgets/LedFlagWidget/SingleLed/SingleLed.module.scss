@@ -9,6 +9,10 @@
   position: relative;
 }
 
+.animate {
+  visibility: visible;
+}
+
 .singleLedInner {
   position: absolute;
   inset: 8px;
@@ -20,42 +24,101 @@
 // CSS Modules scope prevents sharing, and local definition avoids background override.
 .colorGreen {
   background-color: $led-green;
-  box-shadow:
-    0 0 4px $led-green,
-    0 0 8px $led-green;
 }
 
 .colorYellow {
   background-color: $led-yellow;
-  box-shadow:
-    0 0 4px $led-yellow,
-    0 0 8px $led-yellow;
 }
 
 .colorRed {
   background-color: $led-red;
-  box-shadow:
-    0 0 4px $led-red,
-    0 0 8px $led-red;
 }
 
 .colorBlue {
   background-color: $led-blue;
-  box-shadow:
-    0 0 4px $led-blue,
-    0 0 8px $led-blue;
 }
 
 .colorWhite {
   background-color: $led-white;
-  box-shadow:
-    0 0 4px $led-white,
-    0 0 8px rgba($led-white, 0.6);
 }
 
 .colorOrange {
   background-color: $led-orange;
-  box-shadow:
-    0 0 4px $led-orange,
-    0 0 8px $led-orange;
+}
+
+.singleLed.animate {
+  .colorGreen {
+    animation: singleGreenPulse 1s infinite steps(1);
+  }
+
+  .colorYellow {
+    animation: singleYellowPulse 1s infinite steps(1);
+  }
+
+  .colorRed {
+    animation: singleRedPulse 1s infinite steps(1);
+  }
+
+  .colorBlue {
+    animation: singleBluePulse 1s infinite steps(1);
+  }
+
+  .colorOrange {
+    animation: singleOrangePulse 1s infinite steps(1);
+  }
+}
+
+@keyframes singleGreenPulse {
+  0%,
+  49.99% {
+    background-color: $led-green;
+  }
+  50%,
+  100% {
+    background-color: $led-surface-panel;
+  }
+}
+
+@keyframes singleYellowPulse {
+  0%,
+  49.99% {
+    background-color: $led-yellow;
+  }
+  50%,
+  100% {
+    background-color: $led-surface-panel;
+  }
+}
+
+@keyframes singleRedPulse {
+  0%,
+  49.99% {
+    background-color: $led-red;
+  }
+  50%,
+  100% {
+    background-color: $led-surface-panel;
+  }
+}
+
+@keyframes singleBluePulse {
+  0%,
+  49.99% {
+    background-color: $led-blue;
+  }
+  50%,
+  100% {
+    background-color: $led-surface-panel;
+  }
+}
+
+@keyframes singleOrangePulse {
+  0%,
+  49.99% {
+    background-color: $led-orange;
+  }
+  50%,
+  100% {
+    background-color: $led-surface-panel;
+  }
 }

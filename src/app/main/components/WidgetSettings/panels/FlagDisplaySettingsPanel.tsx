@@ -1,4 +1,4 @@
-﻿import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import { Slider, Switch } from 'antd';
 import { FlagDisplaySettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
@@ -48,6 +48,46 @@ export const FlagDisplaySettingsPanel = observer(
               onChange={(v) => update({ holdDuration: v })}
             />
           </div>
+        )}
+
+        {widgetId === 'led-flags' && (
+          <>
+            <div className={styles.fieldGroup}>
+              <SettingRow
+                title="Force Single LED"
+                desc="Show a single large indicator instead of the LED matrix."
+              >
+                <Switch
+                  checked={settings.forceSingleLed ?? false}
+                  onChange={(v) => update({ forceSingleLed: v })}
+                />
+              </SettingRow>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <SettingRow
+                title="Split Display"
+                desc="Split matrix into left & right parts to place around mirror."
+              >
+                <Switch
+                  checked={settings.split ?? false}
+                  onChange={(v) => update({ split: v })}
+                />
+              </SettingRow>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <SettingRow
+                title="Animate LEDs"
+                desc="Enable dynamic scrolling and waving patterns for flags."
+              >
+                <Switch
+                  checked={settings.animate ?? true}
+                  onChange={(v) => update({ animate: v })}
+                />
+              </SettingRow>
+            </div>
+          </>
         )}
       </Card>
     );

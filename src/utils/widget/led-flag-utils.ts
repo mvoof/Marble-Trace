@@ -30,23 +30,36 @@ export const computeDiodesPerBlock = (containerSize: number): number => {
   );
 };
 
-export const buildGridData = (dpb: number): BlockData[] => {
-  const blocks: BlockData[] = [];
-  const last = BLOCKS * dpb - 1;
+export const computeSplitRows = (containerHeight: number): number => {
+  const available = containerHeight - BOARD_PADDING_PX * 2;
+  return Math.max(3, Math.floor(available / DIODE_CELL_PX));
+};
 
-  for (let by = 0; by < BLOCKS; by++) {
-    for (let bx = 0; bx < BLOCKS; bx++) {
+export const buildGridData = (
+  dpbX: number,
+  dpbY: number,
+  widthBlocks: number = 3,
+  heightBlocks: number = 3,
+  split: boolean = false
+): BlockData[] => {
+  const blocks: BlockData[] = [];
+  const lastX = widthBlocks * dpbX - 1;
+  const lastY = heightBlocks * dpbY - 1;
+
+  for (let by = 0; by < heightBlocks; by++) {
+    for (let bx = 0; bx < widthBlocks; bx++) {
       const diodes: DiodeData[] = [];
 
-      for (let dy = 0; dy < dpb; dy++) {
-        for (let dx = 0; dx < dpb; dx++) {
-          const gx = bx * dpb + dx;
-          const gy = by * dpb + dy;
+      for (let dy = 0; dy < dpbY; dy++) {
+        for (let dx = 0; dx < dpbX; dx++) {
+          const gx = bx * dpbX + dx;
+          const gy = by * dpbY + dy;
           const isCorner =
-            (gx === 0 && gy === 0) ||
-            (gx === last && gy === 0) ||
-            (gx === 0 && gy === last) ||
-            (gx === last && gy === last);
+            !split &&
+            ((gx === 0 && gy === 0) ||
+              (gx === lastX && gy === 0) ||
+              (gx === 0 && gy === lastY) ||
+              (gx === lastX && gy === lastY));
 
           diodes.push({ gx, gy, bx, by, isCorner, key: `${gx}-${gy}` });
         }

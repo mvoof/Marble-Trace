@@ -88,7 +88,7 @@ export const defineWidgetStories = <Args,>(
       });
     }, [store, argsSignature]);
 
-    return <Widget />;
+    return <Widget {...(hostArgs as object)} />;
   };
 
   const frameDecorator: Decorator = (Story, context) => {

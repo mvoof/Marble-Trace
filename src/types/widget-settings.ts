@@ -158,6 +158,9 @@ export interface TimerWidgetSettings {
 export interface FlagDisplaySettings {
   alwaysShow: boolean;
   holdDuration: number;
+  split?: boolean;
+  animate?: boolean;
+  forceSingleLed?: boolean;
 }
 
 export interface ChassisWidgetSettings {
