@@ -1,6 +1,6 @@
 /// Managed state shared between Tauri commands and the telemetry thread.
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, AtomicU32};
+use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32};
 use std::sync::{Arc, Mutex};
 
 use crate::computations::ProcessorRegistry;
@@ -13,6 +13,8 @@ pub struct TelemetryServiceState {
     pub last_session_info: Mutex<Option<Arc<SessionSnapshot>>>,
     /// Start grid positions keyed by carIdx: (overall_pos, class_pos), 1-indexed.
     pub start_positions: Mutex<HashMap<i32, (i32, i32)>>,
+    /// Session number for which start_positions was last populated. -1 = never set.
+    pub start_positions_session_num: AtomicI32,
     /// Cached track length in meters.
     pub track_length_m: Mutex<Option<f32>>,
     /// Bitmask of active high-frequency events to emit.

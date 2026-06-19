@@ -4,7 +4,7 @@
 /// (RefCell + raw shared-memory pointers). All kerb usage is encapsulated
 /// inside `IracingSource`.
 use std::collections::HashMap;
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicI32, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -230,7 +230,11 @@ fn apply_session_update(app: &AppHandle, parsed: ParsedSession, service: &Teleme
         "Session info updated"
     );
 
-    update_start_positions(&snapshot, &service.start_positions);
+    update_start_positions(
+        &snapshot,
+        &service.start_positions,
+        &service.start_positions_session_num,
+    );
 
     if let Ok(mut lock) = service.track_length_m.lock() {
         *lock = Some(snapshot.track_length_m);
@@ -324,28 +328,48 @@ fn try_load_and_emit_track(app: &AppHandle, track_id: i32) {
     }
 }
 
-/// Updates start_positions from QualifyResultsInfo (the pre-race grid order) on each session
-/// change. Falls back to ResultsPositions only when qualify data is absent (e.g. sprint races
-/// without a separate qualify session). ResultsPositions reflects CURRENT race order, not the
-/// starting grid, so it must not be preferred over qualify data during an active race.
+/// Updates start_positions from QualifyResultsInfo (the pre-race grid order).
+/// Falls back to ResultsPositions only when qualify data is absent AND start_positions has
+/// not yet been populated for this session — preventing live race order from overwriting
+/// the initial grid on repeated session-info updates.
 fn update_start_positions(
     session: &SessionSnapshot,
     start_positions: &Mutex<HashMap<i32, (i32, i32)>>,
+    last_session_num: &AtomicI32,
 ) {
-    let current_num = session.current_session_num as usize;
+    let session_num = session.current_session_num;
 
+    // Qualify results are immutable — always safe to refresh from them.
+    if !session.qualify_results.is_empty() {
+        let new_positions = standings::parse_start_positions_from_qualify(&session.qualify_results);
+        if let Ok(mut lock) = start_positions.lock() {
+            *lock = new_positions;
+        }
+        last_session_num.store(session_num, Ordering::Relaxed);
+        return;
+    }
+
+    // No qualify data: use ResultsPositions, but only once per session.
+    // ResultsPositions reflects live race order after the race starts, so re-applying it
+    // on subsequent session-info updates would overwrite the starting grid with current pos.
+    let session_changed = last_session_num.swap(session_num, Ordering::Relaxed) != session_num;
+
+    if !session_changed {
+        if let Ok(lock) = start_positions.lock() {
+            if !lock.is_empty() {
+                return;
+            }
+        }
+    }
+
+    let current_num = session_num as usize;
     let results = session
         .sessions
         .get(current_num)
         .map(|s| s.results_positions.as_slice())
         .unwrap_or(&[]);
 
-    let new_positions = if !session.qualify_results.is_empty() {
-        standings::parse_start_positions_from_qualify(&session.qualify_results)
-    } else {
-        standings::parse_start_positions(results)
-    };
-
+    let new_positions = standings::parse_start_positions(results);
     if !new_positions.is_empty() {
         if let Ok(mut lock) = start_positions.lock() {
             *lock = new_positions;
