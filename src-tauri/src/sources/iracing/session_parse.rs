@@ -12,9 +12,42 @@ use super::weather::parse_weather_forecast;
 use crate::computations::proximity::parse_track_length;
 use crate::model::session::{
     CarEntry, QualifyResultEntry, ResultPosition, SectorEntry, SessionEntry, SessionSnapshot,
-    TireCompoundEntry,
+    SessionType, TireCompoundEntry,
 };
 use crate::sources::source::ParsedSession;
+
+enum IracingSessionType {
+    Practice,
+    LoneQualify,
+    OpenQualify,
+    Race,
+    OfflineTesting,
+    Warmup,
+    Unknown,
+}
+
+impl IracingSessionType {
+    fn from_str(s: &str) -> Self {
+        match s {
+            "Practice" => Self::Practice,
+            "Lone Qualify" => Self::LoneQualify,
+            "Open Qualify" => Self::OpenQualify,
+            "Race" => Self::Race,
+            "Offline Testing" => Self::OfflineTesting,
+            "Warmup" => Self::Warmup,
+            _ => Self::Unknown,
+        }
+    }
+
+    fn to_session_type(&self) -> SessionType {
+        match self {
+            Self::Practice | Self::OfflineTesting | Self::Warmup => SessionType::Practice,
+            Self::LoneQualify | Self::OpenQualify => SessionType::Qualify,
+            Self::Race => SessionType::Race,
+            Self::Unknown => SessionType::Unknown,
+        }
+    }
+}
 
 /// iRacing emits these user-controlled text fields unquoted, so names like
 /// `? ?` or values containing `: ` break YAML parsing. Only these keys are
@@ -128,23 +161,28 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         .sessions
         .unwrap_or_default()
         .into_iter()
-        .map(|raw_session| SessionEntry {
-            session_type: raw_session.session_type.unwrap_or_default(),
-            session_laps: raw_session.session_laps.unwrap_or_default(),
-            results_positions: raw_session
-                .results_positions
-                .unwrap_or_default()
-                .into_iter()
-                .filter_map(|raw_pos| {
-                    Some(ResultPosition {
-                        car_idx: raw_pos.car_idx?,
-                        position: raw_pos.position?,
-                        class_position: raw_pos.class_position,
-                        lap: raw_pos.lap,
-                        time: raw_pos.time.filter(|t| t.is_finite()),
+        .map(|raw_session| {
+            let raw_label = raw_session.session_type.unwrap_or_default();
+            let iracing_type = IracingSessionType::from_str(&raw_label);
+            SessionEntry {
+                session_type: iracing_type.to_session_type(),
+                session_type_label: raw_label,
+                session_laps: raw_session.session_laps.unwrap_or_default(),
+                results_positions: raw_session
+                    .results_positions
+                    .unwrap_or_default()
+                    .into_iter()
+                    .filter_map(|raw_pos| {
+                        Some(ResultPosition {
+                            car_idx: raw_pos.car_idx?,
+                            position: raw_pos.position?,
+                            class_position: raw_pos.class_position,
+                            lap: raw_pos.lap,
+                            time: raw_pos.time.filter(|t| t.is_finite()),
+                        })
                     })
-                })
-                .collect(),
+                    .collect(),
+            }
         })
         .collect();
 
@@ -487,7 +525,8 @@ QualifyResultsInfo:
         assert_eq!(snapshot.current_session_num, 1);
         assert_eq!(snapshot.sessions.len(), 2);
         assert_eq!(snapshot.sessions[0].session_laps, "unlimited");
-        assert_eq!(snapshot.sessions[1].session_type, "Race");
+        assert_eq!(snapshot.sessions[1].session_type, SessionType::Race);
+        assert_eq!(snapshot.sessions[1].session_type_label, "Race");
         assert_eq!(snapshot.sessions[1].session_laps, "20");
         assert_eq!(snapshot.sessions[1].results_positions.len(), 2);
         assert_eq!(snapshot.sessions[1].results_positions[0].car_idx, 7);

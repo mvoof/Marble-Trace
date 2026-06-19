@@ -1,4 +1,4 @@
-﻿import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type {
   CarIdxFrame,
@@ -6,6 +6,7 @@ import type {
   SessionFrame,
   SessionSnapshot,
   SessionState as BindingSessionState,
+  SessionType,
 } from '@/types/bindings';
 import { TimerWidget } from './TimerWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
@@ -20,7 +21,8 @@ const buildCarIdxLap = (lap: number): number[] => {
 };
 
 interface StoryArgs {
-  sessionType: string;
+  sessionType: SessionType;
+  sessionTypeLabel: string;
   sessionLaps: string;
   remainSec: number | null;
   elapsedSec: number;
@@ -30,7 +32,6 @@ interface StoryArgs {
   currentLap: number;
   position: number;
   totalDrivers: number;
-  showFlag: boolean;
   showLaps: boolean;
   showPosition: boolean;
   showWallClock: boolean;
@@ -54,6 +55,7 @@ const meta: Meta<StoryArgs> = {
         sessions: [
           {
             sessionType: args.sessionType,
+            sessionTypeLabel: args.sessionTypeLabel,
             sessionLaps: String(args.sessionLaps),
             resultsPositions: [],
           },
@@ -79,7 +81,6 @@ const meta: Meta<StoryArgs> = {
       } as LapTimingFrame);
 
       store.widgetSettings.updateUserSettings('timer', {
-        showFlag: args.showFlag,
         showLaps: args.showLaps,
         showPosition: args.showPosition,
         showWallClock: args.showWallClock,
@@ -89,7 +90,8 @@ const meta: Meta<StoryArgs> = {
       });
     },
     args: {
-      sessionType: 'RACE',
+      sessionType: 'Race',
+      sessionTypeLabel: 'Race',
       sessionLaps: '30',
       remainSec: 42 * 60 + 18,
       elapsedSec: 0,
@@ -99,7 +101,6 @@ const meta: Meta<StoryArgs> = {
       currentLap: 12,
       position: 5,
       totalDrivers: 24,
-      showFlag: true,
       showLaps: true,
       showPosition: true,
       showWallClock: false,
@@ -117,11 +118,36 @@ export const RaceGreen: Story = {};
 
 export const Practice: Story = {
   args: {
-    sessionType: 'PRACTICE',
+    sessionType: 'Practice',
+    sessionTypeLabel: 'Practice',
     sessionLaps: 'unlimited',
     remainSec: 18 * 60 + 42,
     showLaps: false,
     showPosition: false,
+  },
+};
+
+export const LoneQualify: Story = {
+  args: {
+    sessionType: 'Qualify',
+    sessionTypeLabel: 'Lone Qualify',
+    sessionLaps: 'unlimited',
+    remainSec: 12 * 60,
+    showLaps: false,
+    showPosition: true,
+    position: 3,
+  },
+};
+
+export const OpenQualify: Story = {
+  args: {
+    sessionType: 'Qualify',
+    sessionTypeLabel: 'Open Qualify',
+    sessionLaps: 'unlimited',
+    remainSec: 12 * 60,
+    showLaps: false,
+    showPosition: true,
+    position: 3,
   },
 };
 
@@ -134,7 +160,7 @@ export const Checkered: Story = {
 };
 
 export const SessionEnded: Story = {
-  args: { sessionState: 'Checkered' },
+  args: { sessionState: 'CoolDown' },
 };
 
 export const WithClocks: Story = {
@@ -142,18 +168,11 @@ export const WithClocks: Story = {
 };
 
 export const MinimalView: Story = {
-  args: { showFlag: false, showLaps: false, showPosition: false },
+  args: { showLaps: false, showPosition: false },
 };
 
-export const Qualifying: Story = {
-  args: {
-    sessionType: 'QUALIFY',
-    sessionLaps: 'unlimited',
-    remainSec: 12 * 60,
-    showLaps: false,
-    showPosition: true,
-    position: 3,
-  },
+export const TimedRace: Story = {
+  args: { sessionLaps: 'unlimited', remainSec: 30 * 60, currentLap: 8 },
 };
 
 export const WithDates: Story = {
@@ -164,8 +183,4 @@ export const WithDates: Story = {
     showSimDate: true,
     simTimeOfDay: 14 * 3600 + 23 * 60,
   },
-};
-
-export const TimedRace: Story = {
-  args: { sessionLaps: 'unlimited', remainSec: 30 * 60, currentLap: 8 },
 };

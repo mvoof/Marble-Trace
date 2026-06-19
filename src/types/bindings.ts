@@ -709,10 +709,11 @@ export type ResultPosition = {
 export type SectorEntry = { sectorNum: number; sectorStartPct: number };
 
 export type SessionEntry = {
+  sessionType: SessionType;
   /**
-   * "Practice" | "Lone Qualify" | "Race" | ...
+   * Original label from the sim ("Lone Qualify", "Race", etc.) — use for display.
    */
-  sessionType: string;
+  sessionTypeLabel: string;
   /**
    * "unlimited" or a lap count as string (iRacing emits both forms).
    */
@@ -819,6 +820,8 @@ export type SessionState =
   | 'Racing'
   | 'Checkered'
   | 'CoolDown';
+
+export type SessionType = 'Practice' | 'Qualify' | 'Race' | 'Unknown';
 
 /**
  * Status payload emitted as `sim://status`.

@@ -1,4 +1,4 @@
-import type { SessionState } from '@/types/bindings';
+import type { SessionState, SessionType } from '@/types/bindings';
 
 export type FlagState = 'green' | 'final' | 'checkered';
 
@@ -117,7 +117,27 @@ export const isSessionEnded = (sessionState: SessionState | null): boolean => {
     return false;
   }
 
-  return sessionState === 'Checkered' || sessionState === 'CoolDown';
+  return sessionState === 'CoolDown';
+};
+
+export type SessionColorKey = 'practice' | 'qualify' | 'race' | 'other';
+
+export const resolveSessionColorKey = (
+  sessionType: SessionType
+): SessionColorKey => {
+  if (sessionType === 'Practice') {
+    return 'practice';
+  }
+
+  if (sessionType === 'Qualify') {
+    return 'qualify';
+  }
+
+  if (sessionType === 'Race') {
+    return 'race';
+  }
+
+  return 'other';
 };
 
 export const splitTime = (seconds: number): { main: string; secs: string } => {
