@@ -21,3 +21,4 @@ export interface StoredTracks {
 }
 
 export const TRACKS_STORE_KEY = 'recorded-tracks';
+export const TRACK_SETTINGS_STORE = 'track-settings.json';

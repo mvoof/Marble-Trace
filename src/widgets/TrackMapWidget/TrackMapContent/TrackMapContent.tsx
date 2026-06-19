@@ -5,7 +5,7 @@ import { invoke } from '@tauri-apps/api/core';
 
 import { TrackMapView, type TrackData } from '../TrackMapView/TrackMapView';
 import type { StoredTracks } from '../types';
-import { TRACKS_STORE_KEY } from '../types';
+import { TRACKS_STORE_KEY, TRACK_SETTINGS_STORE } from '../types';
 import {
   useSessionStore,
   useTrackMapWidgetStore,
@@ -47,7 +47,7 @@ export const TrackMapContent = observer(() => {
 
       try {
         const { load } = await import('@tauri-apps/plugin-store');
-        const store = await load('track-settings.json');
+        const store = await load(TRACK_SETTINGS_STORE);
         const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
 
         tracks[trackId] = { rotation: newRotation };
@@ -74,7 +74,7 @@ export const TrackMapContent = observer(() => {
     const loadRotation = async () => {
       try {
         const { load } = await import('@tauri-apps/plugin-store');
-        const store = await load('track-settings.json');
+        const store = await load(TRACK_SETTINGS_STORE);
         const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
         const saved = tracks[trackId];
 
@@ -113,7 +113,7 @@ export const TrackMapContent = observer(() => {
       invoke('delete_track_shape', { trackId: Number(trackId) }),
       (async () => {
         const { load } = await import('@tauri-apps/plugin-store');
-        const store = await load('track-settings.json');
+        const store = await load(TRACK_SETTINGS_STORE);
         const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
         delete tracks[trackId];
         await store.set(TRACKS_STORE_KEY, tracks);

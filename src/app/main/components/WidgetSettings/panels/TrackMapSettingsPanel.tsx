@@ -21,6 +21,7 @@ import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.sc
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetSettingsStore } from '@store/root-store-context';
+import { TRACK_SETTINGS_STORE } from '@widgets/TrackMapWidget/types';
 
 const handleRerecord = async () => {
   await emit('track-map:clear');
@@ -44,7 +45,7 @@ export const TrackMapSettingsPanel = observer(() => {
   const handleShowPath = async () => {
     try {
       const dir = await appDataDir();
-      setTracksPath(`${dir}track-settings.json`);
+      setTracksPath(`${dir}${TRACK_SETTINGS_STORE}`);
     } catch {
       setTracksPath('Could not resolve path');
     }
@@ -203,7 +204,7 @@ export const TrackMapSettingsPanel = observer(() => {
           <div className={styles.fieldTitle}>Storage Location</div>
           {!tracksPath ? (
             <Button block size="small" onClick={() => void handleShowPath()}>
-              Show track-settings.json Path
+              Show {TRACK_SETTINGS_STORE} Path
             </Button>
           ) : (
             <Flex vertical gap={8}>
