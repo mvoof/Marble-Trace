@@ -22,7 +22,7 @@ jobs:
     name: Check Changes
     runs-on: ubuntu-latest
     outputs:
-      app: ${{ steps.filter.outputs.rust == 'true' || steps.filter.outputs.ci == 'true' }}
+      app: ${{ steps.filter.outputs.rust == 'true' }}
     steps:
       - uses: actions/checkout@v5
 
