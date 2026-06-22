@@ -15,6 +15,9 @@ pre-commit:
       root: "src-tauri/"
       run: cargo fmt
       stage_fixed: true
+    typecheck:
+      glob: "*.{ts,tsx}"
+      run: npx tsc --noEmit
     test:
       glob: "*.{ts,tsx,js,mjs}"
       run: npx vitest related --run {staged_files}
