@@ -11,4 +11,7 @@ js:
 rust:
   - 'src-tauri/**'
 ci:
-  - '.github/**'
+  - '.github/workflows/pr-*.yml'
+  - '.github/workflows/reusable-*.yml'
+  - '.github/workflows/create-release.yml'
+  - '.github/actions/**'
