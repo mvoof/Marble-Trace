@@ -126,6 +126,10 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       </div>
 
       <div className={`${styles.cell} ${styles.nameCell}`}>
+        {settings.showDriverFlags && flagType !== 'none' && (
+          <DriverFlagBadge type={flagType} />
+        )}
+
         <span
           className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
         >
@@ -134,9 +138,6 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
             : driver.userName}
         </span>
 
-        {settings.showDriverFlags && flagType !== 'none' && (
-          <DriverFlagBadge type={flagType} />
-        )}
         {isPit && <PitBadge state={pitState} />}
       </div>
 

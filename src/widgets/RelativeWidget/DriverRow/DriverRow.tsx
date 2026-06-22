@@ -106,6 +106,10 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
       </div>
 
       <div className={styles.infoBlock}>
+        {settings.showDriverFlags && flagType !== 'none' && (
+          <DriverFlagBadge type={flagType} />
+        )}
+
         <span
           className={[
             styles.driverName,
@@ -121,9 +125,6 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
             : driver.userName}
         </span>
 
-        {settings.showDriverFlags && flagType !== 'none' && (
-          <DriverFlagBadge type={flagType} />
-        )}
         {settings.showPitIndicator && isPit && <PitBadge state={pitState} />}
       </div>
 

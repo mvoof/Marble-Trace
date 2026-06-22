@@ -20,6 +20,33 @@ const BASE_ENTRIES: DriverEntry[] = driverEntries.map((entry, idx) => ({
 
 const PLAYER_CAR_IDX =
   BASE_ENTRIES.find((entry) => entry.isPlayer)?.carIdx ?? 0;
+const PLAYER_IDX = BASE_ENTRIES.findIndex((entry) => entry.isPlayer);
+
+const BLUE_FLAG = 0x00000020;
+const MEATBALL_FLAG = 0x00100000;
+const PENALTY_FLAG = 0x00010000;
+
+const withOverrides = (
+  overrides: Record<number, Partial<DriverEntry>>
+): DriverEntry[] =>
+  BASE_ENTRIES.map((entry, idx) => {
+    const offset = idx - PLAYER_IDX;
+    const override = overrides[offset];
+
+    return override ? { ...entry, ...override } : entry;
+  });
+
+const PIT_ENTRIES = withOverrides({
+  [-2]: { onPitRoad: true, pitState: 'in' as const },
+  [-1]: { trackSurface: TrackSurface.InPitStall, pitState: 'stall' as const },
+  [2]: { onPitRoad: true, pitState: 'exit' as const },
+});
+
+const FLAG_ENTRIES = withOverrides({
+  [-3]: { rawFlags: BLUE_FLAG },
+  [-1]: { rawFlags: MEATBALL_FLAG },
+  [1]: { rawFlags: PENALTY_FLAG },
+});
 
 const DEFAULT_SETTINGS: RelativeWidgetSettings = {
   showLicBadge: true,
@@ -29,16 +56,10 @@ const DEFAULT_SETTINGS: RelativeWidgetSettings = {
   showDriverFlags: true,
 };
 
-const BLUE_FLAG = 0x00000020;
-const MEATBALL_FLAG = 0x00100000;
-const PENALTY_FLAG = 0x00010000;
-
 interface StoryArgs {
   settings: RelativeWidgetSettings;
+  entries: DriverEntry[];
 }
-
-const makeRelativeFrame = (entries: DriverEntry[]): RelativeFrame =>
-  ({ entries, playerCarIdx: PLAYER_CAR_IDX }) as RelativeFrame;
 
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/RelativeWidget',
@@ -46,10 +67,16 @@ const meta: Meta<StoryArgs> = {
     widget: RelativeWidget,
     size: { width: 406, height: 400 },
     seed: (store, args) => {
-      store.backendComputed.updateRelative(makeRelativeFrame(BASE_ENTRIES));
+      store.backendComputed.updateRelative({
+        entries: args.entries,
+        playerCarIdx: PLAYER_CAR_IDX,
+      } as RelativeFrame);
       store.widgetSettings.updateUserSettings('relative', args.settings);
     },
-    args: { settings: DEFAULT_SETTINGS },
+    args: { settings: DEFAULT_SETTINGS, entries: BASE_ENTRIES },
+    argTypes: {
+      entries: { table: { disable: true } },
+    },
   }),
 };
 
@@ -76,53 +103,9 @@ export const AbbreviatedNames: Story = {
 };
 
 export const WithPitBadges: Story = {
-  ...defineWidgetStories<StoryArgs>({
-    widget: RelativeWidget,
-    size: { width: 406, height: 400 },
-    seed: (store, args) => {
-      const entries = BASE_ENTRIES.map((entry, idx) => {
-        if (idx === 1) {
-          return { ...entry, onPitRoad: true, pitState: 'in' as const };
-        }
-
-        if (idx === 3) {
-          return {
-            ...entry,
-            trackSurface: TrackSurface.InPitStall,
-            pitState: 'stall' as const,
-          };
-        }
-
-        if (idx === 5) {
-          return { ...entry, onPitRoad: true, pitState: 'exit' as const };
-        }
-
-        return entry;
-      });
-
-      store.backendComputed.updateRelative(makeRelativeFrame(entries));
-      store.widgetSettings.updateUserSettings('relative', args.settings);
-    },
-    args: { settings: DEFAULT_SETTINGS },
-  }),
+  args: { entries: PIT_ENTRIES },
 };
 
 export const WithDriverFlags: Story = {
-  ...defineWidgetStories<StoryArgs>({
-    widget: RelativeWidget,
-    size: { width: 406, height: 400 },
-    seed: (store, args) => {
-      const entries = BASE_ENTRIES.map((entry, idx) => {
-        if (idx === 1) return { ...entry, rawFlags: BLUE_FLAG };
-        if (idx === 2) return { ...entry, rawFlags: MEATBALL_FLAG };
-        if (idx === 4) return { ...entry, rawFlags: PENALTY_FLAG };
-
-        return entry;
-      });
-
-      store.backendComputed.updateRelative(makeRelativeFrame(entries));
-      store.widgetSettings.updateUserSettings('relative', args.settings);
-    },
-    args: { settings: DEFAULT_SETTINGS },
-  }),
+  args: { entries: FLAG_ENTRIES },
 };

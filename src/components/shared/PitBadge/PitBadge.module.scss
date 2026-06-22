@@ -1,24 +1,25 @@
 .pitBadge {
-  background: rgba($widget-status-danger, $opacity-muted);
-  color: $widget-status-danger;
-  border: 1px solid rgba($widget-status-danger, 0.4);
-  padding: 0.4em 0.5em;
-  border-radius: 4px;
-  font-size: 0.65em;
-  font-weight: 700;
+  background: rgba($race-red, 0.35);
+  color: rgba($race-red, 0.9);
+  border: 1px solid rgba($race-red, 0.5);
+  padding: ws(2) ws(4);
+  border-radius: 2px;
+  font-size: ws(10);
+  font-family: $font-widget;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
   flex-shrink: 0;
+  line-height: 1.2;
+  color: #fff;
 
   &.pitIn {
-    background: rgba($widget-status-info, $opacity-muted);
-    color: $widget-status-info;
-    border: 1px solid rgba($widget-status-info, 0.4);
+    background: rgba($race-blue, 0.45);
+    border-color: rgba($race-blue, 0.6);
   }
 
   &.pitExit {
-    background: rgba($widget-status-warning, $opacity-muted);
-    color: $widget-status-warning;
-    border: 1px solid rgba($widget-status-warning, 0.4);
+    background: rgba($race-yellow, 0.35);
+    border-color: rgba($race-yellow, 0.6);
   }
 }

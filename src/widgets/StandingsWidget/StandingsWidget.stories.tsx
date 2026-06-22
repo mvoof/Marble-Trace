@@ -1,6 +1,7 @@
 ﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { DriverEntriesFrame } from '@/types/bindings';
+import { TrackSurface } from '@/types';
+import type { DriverEntriesFrame, DriverEntry } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { driverEntries as RAW_ENTRIES, snapshot } from '@/storybook/test-data';
 import { StandingsWidget } from './StandingsWidget';
@@ -12,7 +13,7 @@ const GAP_PER_POS = 1.8;
 
 const CLASS_LABELS = ['GTE', 'GT3', 'LMP2'];
 
-const DRIVER_ENTRIES = RAW_ENTRIES.map((entry, idx) => ({
+const BASE_ENTRIES: DriverEntry[] = RAW_ENTRIES.map((entry, idx) => ({
   ...entry,
   lap: 5,
   lastLapTime: BASE_LAP_TIME + idx * LAP_TIME_SPREAD_PER_POS + (idx % 3) * 0.12,
@@ -21,10 +22,40 @@ const DRIVER_ENTRIES = RAW_ENTRIES.map((entry, idx) => ({
   carClassShortName: CLASS_LABELS[idx % CLASS_LABELS.length],
   resultsPositionLap: idx > 6 ? 1 : 0,
   resultsPositionTime: idx === 0 ? 0 : idx * GAP_PER_POS + (idx % 4) * 0.3,
+  onPitRoad: false,
+  trackSurface: TrackSurface.OnTrack,
+  pitState: 'none' as const,
+  rawFlags: 0,
 }));
 
-const PLAYER_CAR_IDX =
-  DRIVER_ENTRIES.find((entry) => entry.isPlayer)?.carIdx ?? 0;
+const PLAYER_IDX = BASE_ENTRIES.findIndex((entry) => entry.isPlayer);
+const PLAYER_CAR_IDX = BASE_ENTRIES[PLAYER_IDX]?.carIdx ?? 0;
+
+const BLUE_FLAG = 0x00000020;
+const MEATBALL_FLAG = 0x00100000;
+const PENALTY_FLAG = 0x00010000;
+
+const withOverrides = (
+  overrides: Record<number, Partial<DriverEntry>>
+): DriverEntry[] =>
+  BASE_ENTRIES.map((entry, idx) => {
+    const offset = idx - PLAYER_IDX;
+    const override = overrides[offset];
+
+    return override ? { ...entry, ...override } : entry;
+  });
+
+const PIT_ENTRIES = withOverrides({
+  [-2]: { onPitRoad: true, pitState: 'in' as const },
+  [-1]: { trackSurface: TrackSurface.InPitStall, pitState: 'stall' as const },
+  [2]: { onPitRoad: true, pitState: 'exit' as const },
+});
+
+const FLAG_ENTRIES = withOverrides({
+  [-3]: { rawFlags: BLUE_FLAG },
+  [-1]: { rawFlags: MEATBALL_FLAG },
+  [1]: { rawFlags: PENALTY_FLAG },
+});
 
 const DEFAULT_SETTINGS: StandingsWidgetSettings = {
   viewMode: 'all',
@@ -46,11 +77,13 @@ const DEFAULT_SETTINGS: StandingsWidgetSettings = {
   showLapsCompleted: false,
   showIncidentsBadge: true,
   abbreviateNames: false,
+  showDriverFlags: true,
 };
 
 interface StoryArgs {
   settings: StandingsWidgetSettings;
   activeClassIndex: number;
+  entries: DriverEntry[];
 }
 
 const meta: Meta<StoryArgs> = {
@@ -61,7 +94,7 @@ const meta: Meta<StoryArgs> = {
     seedSnapshot: true,
     seed: (store, args) => {
       store.backendComputed.updateStandings({
-        entries: DRIVER_ENTRIES,
+        entries: args.entries,
         playerCarIdx: PLAYER_CAR_IDX,
       } as DriverEntriesFrame);
 
@@ -75,6 +108,10 @@ const meta: Meta<StoryArgs> = {
     args: {
       settings: DEFAULT_SETTINGS,
       activeClassIndex: 0,
+      entries: BASE_ENTRIES,
+    },
+    argTypes: {
+      entries: { table: { disable: true } },
     },
   }),
 };
@@ -145,4 +182,12 @@ export const ThirdClass: Story = {
     settings: { ...DEFAULT_SETTINGS, viewMode: 'cycling' },
     activeClassIndex: 2,
   },
+};
+
+export const WithPitBadges: Story = {
+  args: { entries: PIT_ENTRIES },
+};
+
+export const WithDriverFlags: Story = {
+  args: { entries: FLAG_ENTRIES },
 };

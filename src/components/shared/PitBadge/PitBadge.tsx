@@ -11,7 +11,7 @@ export const PitBadge = ({ state = 'stall' }: PitBadgeProps) => {
 
   if (state === 'exit') {
     return (
-      <span className={`${styles.pitBadge} ${styles.pitExit}`}>PIT EXIT</span>
+      <span className={`${styles.pitBadge} ${styles.pitExit}`}>PIT OUT</span>
     );
   }
 

@@ -3,9 +3,9 @@ import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 
-// Layout constants — mirror the SCSS: column-gap sp(xxxs)=2, padding sp(sm)=8.
+// Layout constants — mirror the SCSS: column-gap sp(xxxs)=2, padding sp(md)=10.
 const COL_GAP_PX = 2;
-const ROW_PAD_X_PX = 8;
+const ROW_PAD_X_PX = 10;
 const NAME_NATURAL_PX = 180; // comfortable name width for the natural design size
 
 interface ColSpec {
@@ -20,7 +20,7 @@ const colSpecs = (settings: RelativeWidgetSettings): ColSpec[] => [
   { px: 28, show: true }, // pos — wider for class color padding
   { px: 36, show: true }, // carNum — with # prefix
   { px: NAME_NATURAL_PX, show: true, flex: true }, // name
-  { px: 48, show: settings.showLicBadge }, // lic badge
+  { px: 60, show: settings.showLicBadge }, // lic badge
   { px: 36, show: settings.showIRating }, // iRating
   { px: 56, show: true }, // gap
 ];

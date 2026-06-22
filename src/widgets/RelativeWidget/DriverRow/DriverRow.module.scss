@@ -6,6 +6,7 @@
   column-gap: sp(xxxs);
   padding: sp(xs) sp(md);
   position: relative;
+  overflow: hidden;
   border-bottom: 1px solid $widget-row-border;
   line-height: 1.15;
   font-size: fs(md);
@@ -21,8 +22,7 @@
 }
 
 .driverRowPit {
-  opacity: 0.4;
-  filter: grayscale(100%);
+  opacity: 0.6;
 }
 
 // Position block — stretches to row edges for class color border + gradient
@@ -69,6 +69,7 @@
   gap: sp(xs);
   overflow: hidden;
   min-width: 0;
+  white-space: nowrap;
 }
 
 .driverName {
