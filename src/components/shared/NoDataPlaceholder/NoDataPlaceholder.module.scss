@@ -1,0 +1,16 @@
+.placeholder {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-height: ws(60);
+}
+
+.text {
+  font-family: $font-widget;
+  font-size: fs(sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: $widget-text-secondary;
+  text-transform: uppercase;
+}

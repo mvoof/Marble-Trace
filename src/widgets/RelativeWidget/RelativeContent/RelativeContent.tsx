@@ -3,12 +3,17 @@ import { observer } from 'mobx-react-lite';
 
 import { useVisibleRowCount } from '@hooks/common/useVisibleRowCount';
 import { DriverRow } from '@widgets/RelativeWidget/DriverRow/DriverRow';
+import { NoDataPlaceholder } from '@/components/shared/NoDataPlaceholder/NoDataPlaceholder';
+import {
+  useBackendComputedStore,
+  useSimStore,
+} from '@store/root-store-context';
 
 import styles from './RelativeContent.module.scss';
-import { useBackendComputedStore } from '@store/root-store-context';
 
 export const RelativeContent = observer(() => {
   const computed = useBackendComputedStore();
+  const sim = useSimStore();
 
   const entries = computed.relativeEntries;
 
@@ -35,6 +40,12 @@ export const RelativeContent = observer(() => {
 
     return entries.slice(playerIdx - above, playerIdx + below + 1);
   }, [entries, visibleRowCount]);
+
+  const hasData = sim.isConnected && entries.length > 0;
+
+  if (!hasData) {
+    return <NoDataPlaceholder />;
+  }
 
   return (
     <div ref={driverListRef} className={styles.driverList}>
