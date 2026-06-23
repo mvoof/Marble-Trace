@@ -14,6 +14,7 @@ import {
   emitDragMode,
   emitHideAllWidgets,
   emitHideWidgetsWhenGameClosed,
+  emitHideWidgetsInGarage,
   emitUnitsChanged,
   emitStandingsClassIndex,
   emitWidgetSettingsUpdated,
@@ -77,6 +78,13 @@ export const initMainSync = async (root: RootStore) => {
           () => root.appSettings.appSettings.hideWidgetsWhenGameClosed,
           (v) => {
             void emitHideWidgetsWhenGameClosed(v);
+            void onSave();
+          }
+        ),
+        reaction(
+          () => root.appSettings.appSettings.hideWidgetsInGarage,
+          (v) => {
+            void emitHideWidgetsInGarage(v);
             void onSave();
           }
         ),

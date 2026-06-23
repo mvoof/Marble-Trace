@@ -8,6 +8,7 @@ const DEFAULT_APP_SETTINGS = {
   dragHotkey: 'F9',
   hideAllWidgetsHotkey: 'F10',
   hideWidgetsWhenGameClosed: false,
+  hideWidgetsInGarage: false,
   hideAllWidgets: false,
   autoUpdate: true,
   updateCheckInterval: 3,
@@ -208,6 +209,10 @@ export class AppSettingsStore {
 
   setHideWidgetsWhenGameClosed(value: boolean) {
     this.appSettings.hideWidgetsWhenGameClosed = value;
+  }
+
+  setHideWidgetsInGarage(value: boolean) {
+    this.appSettings.hideWidgetsInGarage = value;
   }
 
   setOverlayMonitorIndex(value: number | null) {
