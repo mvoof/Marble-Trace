@@ -10,5 +10,12 @@ js:
   - 'index.html'
 rust:
   - 'src-tauri/**'
-ci:
-  - '.github/**'
+ci-js:
+  - '.github/workflows/reusable-quality.yml'
+  - '.github/workflows/pr-quality-check.yml'
+  - '.github/actions/**'
+  - '.github/filters.yml'
+ci-rust:
+  - '.github/workflows/reusable-quality.yml'
+  - '.github/actions/**'
+  - '.github/filters.yml'
