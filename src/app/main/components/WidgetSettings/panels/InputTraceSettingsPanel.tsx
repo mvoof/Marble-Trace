@@ -136,6 +136,22 @@ export const InputTraceSettingsPanel = observer(() => {
                 />
               </SettingRow>
             </div>
+
+            <div className={styles.fieldGroup}>
+              <SettingRow
+                title="Steering Zoom"
+                desc={`Graph shows ±${Math.round(settings.steeringLimit / 2 / (settings.steeringZoom ?? 1))}° (${settings.steeringZoom ?? 1}x)`}
+              >
+                <Slider
+                  min={1}
+                  max={4}
+                  step={0.5}
+                  value={settings.steeringZoom ?? 1}
+                  onChange={(v) => update({ steeringZoom: v })}
+                  style={{ width: 120 }}
+                />
+              </SettingRow>
+            </div>
           </>
         )}
       </Card>

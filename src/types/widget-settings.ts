@@ -42,6 +42,7 @@ export interface InputTraceSettings {
   lineWidth: number;
   smoothing: number;
   steeringLimit: number;
+  steeringZoom: number;
 }
 
 export interface RadarSettings {
