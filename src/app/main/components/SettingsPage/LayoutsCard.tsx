@@ -113,7 +113,7 @@ export const LayoutsCard = observer(() => {
             <Select
               className={styles.select}
               placeholder="Select a layout…"
-              value={selectedId}
+              value={selectedId ?? undefined}
               onChange={(id) => widgetSettings.loadLayout(id)}
               options={selectOptions}
             />

@@ -376,7 +376,7 @@ export class WidgetSettingsStore {
 
     layout.widgets = this.allWidgets.map((widget) => ({
       ...widget,
-      userSettings: { ...widget.userSettings },
+      userSettings: structuredClone(widget.userSettings),
     }));
 
     this.bumpMutation();
