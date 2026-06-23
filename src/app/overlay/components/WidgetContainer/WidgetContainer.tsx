@@ -50,7 +50,7 @@ export const WidgetContainer = observer(
     });
 
     const isConnected = simStore.status === 'connected';
-    const isOnTrack = player.carStatus?.is_on_track ?? true;
+    const isOnTrack = player.isOnTrack;
 
     const shouldHide =
       (appSettings.hideWidgetsWhenGameClosed && !isConnected && !dragMode) ||
