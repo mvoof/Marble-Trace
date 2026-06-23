@@ -15,7 +15,8 @@ jobs:
     outputs:
       js: ${{ steps.filter.outputs.js }}
       rust: ${{ steps.filter.outputs.rust }}
-      ci: ${{ steps.filter.outputs.ci }}
+      ci-js: ${{ steps.filter.outputs.ci-js }}
+      ci-rust: ${{ steps.filter.outputs.ci-rust }}
       app: ${{ steps.filter.outputs.js == 'true' || steps.filter.outputs.rust == 'true' }}
     steps:
       - uses: actions/checkout@v5
@@ -30,7 +31,7 @@ jobs:
     name: Frontend
     needs: check-changes
     runs-on: ubuntu-latest
-    if: ${{ inputs.force_all || needs.check-changes.outputs.js == 'true' || needs.check-changes.outputs.ci == 'true' }}
+    if: ${{ inputs.force_all || needs.check-changes.outputs.js == 'true' || needs.check-changes.outputs.ci-js == 'true' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -59,7 +60,7 @@ jobs:
     name: Rust
     needs: check-changes
     runs-on: windows-latest
-    if: ${{ inputs.force_all || needs.check-changes.outputs.rust == 'true' || needs.check-changes.outputs.ci == 'true' }}
+    if: ${{ inputs.force_all || needs.check-changes.outputs.rust == 'true' || needs.check-changes.outputs.ci-rust == 'true' }}
     steps:
       - uses: actions/checkout@v5
 

@@ -51,7 +51,8 @@ jobs:
 
             const artifacts = data.artifacts.filter(a => !a.expired);
             if (artifacts.length === 0) {
-              core.setFailed('No artifacts found');
+              core.info('No artifacts found — build was likely skipped, nothing to comment');
+              core.setOutput('skip', 'true');
               return;
             }
 
