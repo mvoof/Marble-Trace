@@ -46,6 +46,13 @@ export const setupOverlayListeners = async (
     })
   );
   unlistens.push(
+    await listen<boolean>('hide-widgets-in-garage-changed', (e) => {
+      runInAction(() => {
+        root.appSettings.appSettings.hideWidgetsInGarage = e.payload;
+      });
+    })
+  );
+  unlistens.push(
     await listen<UnitSystem>('units-changed', (e) => {
       runInAction(() => root.units.setSystem(e.payload));
     })
@@ -75,6 +82,8 @@ export const emitHideAllWidgets = (val: boolean) =>
   emitTo(OVERLAY, 'hide-all-widgets-changed', val);
 export const emitHideWidgetsWhenGameClosed = (val: boolean) =>
   emitTo(OVERLAY, 'hide-widgets-when-game-closed-changed', val);
+export const emitHideWidgetsInGarage = (val: boolean) =>
+  emitTo(OVERLAY, 'hide-widgets-in-garage-changed', val);
 export const emitUnitsChanged = (system: UnitSystem) =>
   emitTo(OVERLAY, 'units-changed', system);
 export const emitStandingsClassIndex = (index: number) =>

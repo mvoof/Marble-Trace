@@ -6,6 +6,7 @@ import { WidgetIdContext } from './WidgetIdContext';
 import { WidgetDragToolbar } from '@app/overlay/components/WidgetDragToolbar/WidgetDragToolbar';
 import {
   useAppSettingsStore,
+  usePlayerStore,
   useSimStore,
   useWidgetAutoHideStore,
   useWidgetSettingsStore,
@@ -25,6 +26,7 @@ export const WidgetContainer = observer(
 
     const simStore = useSimStore();
     const widgetAutoHide = useWidgetAutoHideStore();
+    const player = usePlayerStore();
 
     const widget = widgetSettings.getWidget(widgetId);
 
@@ -48,9 +50,14 @@ export const WidgetContainer = observer(
     });
 
     const isConnected = simStore.status === 'connected';
+    const isOnTrack = player.isOnTrack;
 
     const shouldHide =
       (appSettings.hideWidgetsWhenGameClosed && !isConnected && !dragMode) ||
+      (appSettings.hideWidgetsInGarage &&
+        !isOnTrack &&
+        isConnected &&
+        !dragMode) ||
       (!widgetAutoHide.isVisible(widgetId) && !dragMode);
 
     const backgroundColor =

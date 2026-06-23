@@ -165,6 +165,21 @@ export const SettingsPage = observer(() => {
               onChange={(v) => appSettings.setHideWidgetsWhenGameClosed(v)}
             />
           </div>
+
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>Hide in Garage</div>
+
+              <div className={styles.fieldDesc}>
+                Hide widgets when the car is in the garage.
+              </div>
+            </div>
+
+            <Switch
+              checked={appSettings.appSettings.hideWidgetsInGarage}
+              onChange={(v) => appSettings.setHideWidgetsInGarage(v)}
+            />
+          </div>
         </div>
       </Card>
 

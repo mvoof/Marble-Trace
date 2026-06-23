@@ -19,6 +19,10 @@ export class PlayerStore {
     makeAutoObservable(this);
   }
 
+  get isOnTrack(): boolean {
+    return this.carStatus?.is_on_track ?? true;
+  }
+
   updateCarDynamics(frame: CarDynamicsFrame) {
     this.carDynamics = frame;
   }
