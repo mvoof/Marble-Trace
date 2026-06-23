@@ -42,7 +42,7 @@ export const useVisibleRowCount = <T extends HTMLElement>(
       }
 
       if (firstReal) {
-        rowPx = Math.round(firstReal.getBoundingClientRect().height);
+        rowPx = firstReal.getBoundingClientRect().height;
       }
       if (rowPx <= 0) {
         const rootFontSize = parseFloat(
