@@ -240,13 +240,33 @@ npm run tauri:build:release
 
 ## Screenshots
 
-You can capture the current state of the overlay or main window using the included scripts. Make sure the app is running in **dev mode** (`npm run tauri:dev`).
+Capture the current state of the overlay or main window using the included scripts. The app must be running in **dev mode** (`npm run tauri:dev`).
 
-- **Via npm:** `npm run screenshot` (captures overlay by default)
-- **Via Batch:** `scripts\screenshot.bat [overlay|main]`
-- **Output:** Saved to `docs/assets/screenshots/overlay/` (git-ignored).
+```
+node scripts/screenshot.mjs [windowId] [--out-dir <dir>] [--crop]
+scripts\screenshot.bat      [windowId] [--out-dir <dir>] [--crop]
+```
 
-To update permanent documentation assets, move files from `overlay/` to `widgets/`.
+| Argument          | Default                            | Description                                                           |
+| ----------------- | ---------------------------------- | --------------------------------------------------------------------- |
+| `windowId`        | `overlay`                          | Window to capture: `overlay` or `main`                                |
+| `--out-dir <dir>` | `docs/assets/screenshots/overlay/` | Directory where the full screenshot is saved                          |
+| `--crop`          | off                                | Also crop each visible widget into `<out-dir>/widgets/<widgetId>.png` |
+
+**Examples:**
+
+```bash
+# Full overlay screenshot → docs/assets/screenshots/overlay/screenshot-<ts>.png
+npm run screenshot
+
+# Crop all visible widgets into docs/assets/screenshots/overlay/widgets/
+node scripts/screenshot.mjs overlay --crop
+
+# Custom output directory + crop
+node scripts/screenshot.mjs overlay --out-dir docs/assets/screenshots/widgets --crop
+```
+
+The `docs/assets/screenshots/overlay/` directory is git-ignored. To update permanent documentation assets, copy files from there into `docs/assets/screenshots/widgets/`.
 
 ---
 

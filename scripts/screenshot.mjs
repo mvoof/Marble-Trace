@@ -1,29 +1,32 @@
 #!/usr/bin/env node
-// Usage: node screenshot.mjs [windowId] [outputPath] [--crop]
-//   windowId   - "overlay" or "main" (default: overlay)
-//   outputPath - where to save PNG (default: docs/assets/screenshots/overlay/screenshot-<timestamp>.png)
-//   --crop     - also crop individual widgets into <outputPath>-widgets/<widgetId>.png
+// Usage: node screenshot.mjs [windowId] [--out-dir <dir>] [--crop]
+//   windowId      - "overlay" or "main" (default: overlay)
+//   --out-dir <d> - directory for the full screenshot (default: docs/assets/screenshots/overlay/)
+//   --crop        - also crop each visible widget into <out-dir>/widgets/<widgetId>.png
 
 import { writeFileSync, mkdirSync } from 'fs';
 import path from 'path';
 import WebSocket from 'ws';
 
 const args = process.argv.slice(2);
+
 const cropFlag = args.includes('--crop');
-const positional = args.filter((a) => a !== '--crop');
+
+const outDirIndex = args.indexOf('--out-dir');
+const outDir =
+  outDirIndex !== -1 && args[outDirIndex + 1]
+    ? path.resolve(args[outDirIndex + 1])
+    : path.join(process.cwd(), 'docs', 'assets', 'screenshots', 'overlay');
+
+const positional = args.filter(
+  (a, i) => a !== '--crop' && a !== '--out-dir' && args[i - 1] !== '--out-dir'
+);
 
 const windowId = positional[0] || 'overlay';
-const defaultDir = path.join(
-  process.cwd(),
-  'docs',
-  'assets',
-  'screenshots',
-  'overlay'
-);
-const outputPath =
-  positional[1] || path.join(defaultDir, `screenshot-${Date.now()}.png`);
 
-mkdirSync(path.dirname(outputPath), { recursive: true });
+mkdirSync(outDir, { recursive: true });
+
+const outputPath = path.join(outDir, `screenshot-${Date.now()}.png`);
 
 const ws = new WebSocket('ws://localhost:9223');
 
@@ -58,7 +61,7 @@ ws.on('open', () => {
         return;
       }
 
-      await cropWidgets(pngBuffer, outputPath);
+      await cropWidgets(pngBuffer, outDir);
       ws.close();
     } catch (err) {
       console.error('Failed:', err.message);
@@ -74,7 +77,7 @@ ws.on('error', (err) => {
   process.exit(1);
 });
 
-async function cropWidgets(pngBuffer, screenshotPath) {
+async function cropWidgets(pngBuffer, baseDir) {
   const { default: sharp } = await import('sharp');
 
   const jsCode = `
@@ -131,8 +134,8 @@ async function cropWidgets(pngBuffer, screenshotPath) {
           return;
         }
 
-        const outDir = `${screenshotPath}-widgets`;
-        mkdirSync(outDir, { recursive: true });
+        const widgetsDir = path.join(baseDir, 'widgets');
+        mkdirSync(widgetsDir, { recursive: true });
 
         const meta = await sharp(pngBuffer).metadata();
         const imgWidth = meta.width;
@@ -146,7 +149,7 @@ async function cropWidgets(pngBuffer, screenshotPath) {
 
           if (width <= 0 || height <= 0) continue;
 
-          const outFile = path.join(outDir, `${widget.id}.png`);
+          const outFile = path.join(widgetsDir, `${widget.id}.png`);
           await sharp(pngBuffer)
             .extract({ left, top, width, height })
             .toFile(outFile);
