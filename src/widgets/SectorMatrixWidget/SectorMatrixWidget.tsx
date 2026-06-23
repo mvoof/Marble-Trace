@@ -24,12 +24,12 @@ export const SectorMatrixWidget = observer(() => {
 
   return (
     <WidgetPanel direction="column" gap={0} minWidth={0}>
-      <SectorHeader sectorCount={sectorCount} />
-
       {!hasData ? (
         <NoDataPlaceholder />
       ) : (
         <>
+          <SectorHeader sectorCount={sectorCount} />
+
           {showSectors && <SectorGrid sectorCount={sectorCount} />}
 
           <SectorFooter />

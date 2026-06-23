@@ -84,7 +84,8 @@ export const StandingsContent = observer(() => {
     };
   };
 
-  const hasData = sim.isConnected && standings != null;
+  const hasData =
+    sim.isConnected && standings != null && standings.entries.length > 0;
 
   return (
     <>
