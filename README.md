@@ -240,13 +240,36 @@ npm run tauri:build:release
 
 ## Screenshots
 
-You can capture the current state of the overlay or main window using the included scripts. Make sure the app is running in **dev mode** (`npm run tauri:dev`).
+Capture the current state of the overlay or main window using the included scripts. The app must be running in **dev mode** (`npm run tauri:dev`).
 
-- **Via npm:** `npm run screenshot` (captures overlay by default)
-- **Via Batch:** `scripts\screenshot.bat [overlay|main]`
-- **Output:** Saved to `docs/assets/screenshots/overlay/` (git-ignored).
+```
+node scripts/screenshot.mjs [windowId] [--out-dir <dir>] [--crop]
+scripts\screenshot.bat      [windowId] [--out-dir <dir>] [--crop]
+```
 
-To update permanent documentation assets, move files from `overlay/` to `widgets/`.
+| Argument          | Default                                               | Description                                                   |
+| ----------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
+| `windowId`        | `overlay`                                             | Window to capture: `overlay` or `main`                        |
+| `--out-dir <dir>` | `overlay/` without `--crop`, `widgets/` with `--crop` | Directory where screenshots are saved                         |
+| `--crop`          | off                                                   | Also crop each visible widget into `<out-dir>/<widgetId>.png` |
+
+**Examples:**
+
+```bash
+# Full overlay screenshot → docs/assets/screenshots/overlay/screenshot-<ts>.png
+npm run screenshot
+
+# Crop all visible widgets → docs/assets/screenshots/widgets/<widgetId>.png
+npm run screenshot -- --crop
+
+# Custom output directory + crop (note the -- separator required by npm)
+npm run screenshot -- --out-dir docs/assets/screenshots/custom --crop
+
+# Or call node directly (no -- needed)
+node scripts/screenshot.mjs overlay --out-dir docs/assets/screenshots/widgets --crop
+```
+
+The `docs/assets/screenshots/overlay/` directory is git-ignored. To update permanent documentation assets, copy files from there into `docs/assets/screenshots/widgets/`.
 
 ---
 
