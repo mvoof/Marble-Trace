@@ -85,6 +85,8 @@ async function cropWidgets(pngBuffer, baseDir) {
       const els = document.querySelectorAll('[data-widget-id]');
       const result = [];
       for (const el of els) {
+        const style = getComputedStyle(el);
+        if (style.visibility === 'hidden' || style.display === 'none' || style.opacity === '0') continue;
         const rect = el.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
           result.push({
