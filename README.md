@@ -247,11 +247,11 @@ node scripts/screenshot.mjs [windowId] [--out-dir <dir>] [--crop]
 scripts\screenshot.bat      [windowId] [--out-dir <dir>] [--crop]
 ```
 
-| Argument          | Default                            | Description                                                           |
-| ----------------- | ---------------------------------- | --------------------------------------------------------------------- |
-| `windowId`        | `overlay`                          | Window to capture: `overlay` or `main`                                |
-| `--out-dir <dir>` | `docs/assets/screenshots/overlay/` | Directory where the full screenshot is saved                          |
-| `--crop`          | off                                | Also crop each visible widget into `<out-dir>/widgets/<widgetId>.png` |
+| Argument          | Default                                               | Description                                                   |
+| ----------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
+| `windowId`        | `overlay`                                             | Window to capture: `overlay` or `main`                        |
+| `--out-dir <dir>` | `overlay/` without `--crop`, `widgets/` with `--crop` | Directory where screenshots are saved                         |
+| `--crop`          | off                                                   | Also crop each visible widget into `<out-dir>/<widgetId>.png` |
 
 **Examples:**
 
@@ -259,11 +259,11 @@ scripts\screenshot.bat      [windowId] [--out-dir <dir>] [--crop]
 # Full overlay screenshot → docs/assets/screenshots/overlay/screenshot-<ts>.png
 npm run screenshot
 
-# Crop all visible widgets into docs/assets/screenshots/overlay/widgets/
+# Crop all visible widgets → docs/assets/screenshots/widgets/<widgetId>.png
 npm run screenshot -- --crop
 
 # Custom output directory + crop (note the -- separator required by npm)
-npm run screenshot -- --out-dir docs/assets/screenshots/widgets --crop
+npm run screenshot -- --out-dir docs/assets/screenshots/custom --crop
 
 # Or call node directly (no -- needed)
 node scripts/screenshot.mjs overlay --out-dir docs/assets/screenshots/widgets --crop

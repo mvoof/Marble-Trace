@@ -13,10 +13,14 @@ const args = process.argv.slice(2);
 const cropFlag = args.includes('--crop');
 
 const outDirIndex = args.indexOf('--out-dir');
+const defaultOutDir = cropFlag
+  ? path.join(process.cwd(), 'docs', 'assets', 'screenshots', 'widgets')
+  : path.join(process.cwd(), 'docs', 'assets', 'screenshots', 'overlay');
+
 const outDir =
   outDirIndex !== -1 && args[outDirIndex + 1]
     ? path.resolve(args[outDirIndex + 1])
-    : path.join(process.cwd(), 'docs', 'assets', 'screenshots', 'overlay');
+    : defaultOutDir;
 
 const positional = args.filter(
   (a, i) => a !== '--crop' && a !== '--out-dir' && args[i - 1] !== '--out-dir'
@@ -136,7 +140,7 @@ async function cropWidgets(pngBuffer, baseDir) {
           return;
         }
 
-        const widgetsDir = path.join(baseDir, 'widgets');
+        const widgetsDir = baseDir;
         mkdirSync(widgetsDir, { recursive: true });
 
         const meta = await sharp(pngBuffer).metadata();
