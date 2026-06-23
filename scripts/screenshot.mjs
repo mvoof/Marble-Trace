@@ -150,8 +150,10 @@ async function cropWidgets(pngBuffer, baseDir) {
         for (const widget of widgets) {
           const left = Math.max(0, widget.x);
           const top = Math.max(0, widget.y);
-          const width = Math.min(widget.width, imgWidth - left);
-          const height = Math.min(widget.height, imgHeight - top);
+          const right = Math.min(imgWidth, widget.x + widget.width);
+          const bottom = Math.min(imgHeight, widget.y + widget.height);
+          const width = right - left;
+          const height = bottom - top;
 
           if (width <= 0 || height <= 0) continue;
 
