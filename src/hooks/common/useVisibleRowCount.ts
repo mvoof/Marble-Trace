@@ -39,14 +39,14 @@ export const useVisibleRowCount = <T extends HTMLElement>(
           rowPx = firstReal.getBoundingClientRect().height;
         }
 
-        if (rowPx <= 0) {
+        if (!(rowPx > 0)) {
           const rootFontSize = parseFloat(
             getComputedStyle(document.documentElement).fontSize
           );
           rowPx = rowHeightRem * rootFontSize;
         }
 
-        if (rowPx <= 0) return;
+        if (!(rowPx > 0)) return;
 
         const next = Math.max(minRows, Math.floor(el.clientHeight / rowPx));
         dispatch(next);
