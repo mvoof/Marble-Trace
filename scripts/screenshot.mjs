@@ -2,7 +2,7 @@
 // Usage: node screenshot.mjs [windowId] [--out-dir <dir>] [--crop]
 //   windowId      - "overlay" or "main" (default: overlay)
 //   --out-dir <d> - directory for the full screenshot (default: docs/assets/screenshots/overlay/)
-//   --crop        - also crop each visible widget into <out-dir>/widgets/<widgetId>.png
+//   --crop        - also crop each visible widget into <out-dir>/<widgetId>.png
 
 import { writeFileSync, mkdirSync } from 'fs';
 import path from 'path';
@@ -65,7 +65,7 @@ ws.on('open', () => {
         return;
       }
 
-      await cropWidgets(pngBuffer, outDir);
+      await cropWidgets(ws, pngBuffer, outDir);
       ws.close();
     } catch (err) {
       console.error('Failed:', err.message);
@@ -81,7 +81,7 @@ ws.on('error', (err) => {
   process.exit(1);
 });
 
-async function cropWidgets(pngBuffer, baseDir) {
+async function cropWidgets(ws, pngBuffer, baseDir) {
   const { default: sharp } = await import('sharp');
 
   const jsCode = `
@@ -109,23 +109,11 @@ async function cropWidgets(pngBuffer, baseDir) {
   const jsId = `req_${Date.now()}_js`;
 
   return new Promise((resolve, reject) => {
-    const jsWs = new WebSocket('ws://localhost:9223');
-
-    jsWs.on('open', () => {
-      jsWs.send(
-        JSON.stringify({
-          id: jsId,
-          command: 'execute_js',
-          args: { script: jsCode, windowLabel: 'overlay' },
-        })
-      );
-    });
-
-    jsWs.on('message', async (data) => {
+    const onMessage = async (data) => {
       try {
         const msg = JSON.parse(data.toString());
         if (msg.id !== jsId) return;
-        jsWs.close();
+        ws.off('message', onMessage);
 
         if (!msg.success) {
           console.error('JS execution failed:', msg.error);
@@ -140,8 +128,7 @@ async function cropWidgets(pngBuffer, baseDir) {
           return;
         }
 
-        const widgetsDir = baseDir;
-        mkdirSync(widgetsDir, { recursive: true });
+        mkdirSync(baseDir, { recursive: true });
 
         const meta = await sharp(pngBuffer).metadata();
         const imgWidth = meta.width;
@@ -157,7 +144,7 @@ async function cropWidgets(pngBuffer, baseDir) {
 
           if (width <= 0 || height <= 0) continue;
 
-          const outFile = path.join(widgetsDir, `${widget.id}.png`);
+          const outFile = path.join(baseDir, `${widget.id}.png`);
           await sharp(pngBuffer)
             .extract({ left, top, width, height })
             .toFile(outFile);
@@ -167,13 +154,18 @@ async function cropWidgets(pngBuffer, baseDir) {
 
         resolve();
       } catch (err) {
-        jsWs.close();
+        ws.off('message', onMessage);
         reject(err);
       }
-    });
+    };
 
-    jsWs.on('error', (err) => {
-      reject(err);
-    });
+    ws.on('message', onMessage);
+    ws.send(
+      JSON.stringify({
+        id: jsId,
+        command: 'execute_js',
+        args: { script: jsCode, windowLabel: 'overlay' },
+      })
+    );
   });
 }
