@@ -210,6 +210,7 @@ export const WidgetContainer = observer(
     return (
       <div
         className={`${styles.container} ${shouldHide ? styles.hidden : ''}`}
+        data-widget-id={widgetId}
         style={{
           left: x,
           top: y,
