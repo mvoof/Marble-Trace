@@ -4,6 +4,7 @@ import type { DriverGroup } from '@/types';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import {
   useBackendComputedStore,
+  useSimStore,
   useStandingsWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -12,6 +13,7 @@ import {
   sliceWithPlayerPin,
 } from '@utils/widget/standings-utils';
 import { useVisibleRowCount } from '@/hooks/common/useVisibleRowCount';
+import { NoDataPlaceholder } from '@/components/shared/NoDataPlaceholder/NoDataPlaceholder';
 import { SessionHeader } from '@widgets/StandingsWidget/SessionHeader/SessionHeader';
 import { ClassGroup } from '@widgets/StandingsWidget/ClassGroup/ClassGroup';
 import { ClassSwitcher } from '@widgets/StandingsWidget/ClassSwitcher/ClassSwitcher';
@@ -22,6 +24,7 @@ import styles from './StandingsContent.module.scss';
 
 export const StandingsContent = observer(() => {
   const { standings } = useBackendComputedStore();
+  const sim = useSimStore();
   const widgetSettings = useWidgetSettingsStore();
   const standingsWidget = useStandingsWidgetStore();
   const { allClassGroups } = standingsWidget;
@@ -81,32 +84,43 @@ export const StandingsContent = observer(() => {
     };
   };
 
+  const hasData = sim.isConnected && standings != null;
+
   return (
     <>
       <SessionHeader />
 
-      <ClassSwitcher />
+      {!hasData ? (
+        <NoDataPlaceholder />
+      ) : (
+        <>
+          <ClassSwitcher />
 
-      <div ref={listRef} className={styles.listWrap}>
-        <StandingsHeader />
+          <div ref={listRef} className={styles.listWrap}>
+            <StandingsHeader />
 
-        {isGrouped ? (
-          allClassGroups.map((group) => (
-            <ClassGroup
-              key={group.classId}
-              group={{
-                ...group,
-                drivers: sliceWithPlayerPin(group.drivers, rowsPerGroupedClass),
-              }}
-              showHeader
-            />
-          ))
-        ) : (
-          <ClassGroup group={displayGroup()} />
-        )}
-      </div>
+            {isGrouped ? (
+              allClassGroups.map((group) => (
+                <ClassGroup
+                  key={group.classId}
+                  group={{
+                    ...group,
+                    drivers: sliceWithPlayerPin(
+                      group.drivers,
+                      rowsPerGroupedClass
+                    ),
+                  }}
+                  showHeader
+                />
+              ))
+            ) : (
+              <ClassGroup group={displayGroup()} />
+            )}
+          </div>
 
-      <SessionFooter />
+          <SessionFooter />
+        </>
+      )}
     </>
   );
 });
