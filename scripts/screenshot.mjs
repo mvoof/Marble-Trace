@@ -112,7 +112,7 @@ async function cropWidgets(pngBuffer, baseDir) {
         JSON.stringify({
           id: jsId,
           command: 'execute_js',
-          args: { code: jsCode, window_label: 'overlay' },
+          args: { script: jsCode, windowLabel: 'overlay' },
         })
       );
     });
