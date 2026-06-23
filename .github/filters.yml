@@ -12,4 +12,3 @@ rust:
   - 'src-tauri/**'
 ci:
   - '.github/**'
-  - '!.github/workflows/codeql.yml'
