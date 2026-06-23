@@ -251,3 +251,10 @@ export interface WidgetConfig extends WidgetMeta {
 export type WidgetDefaultConfig = WidgetMeta & {
   userSettings: WidgetUserSettings;
 };
+
+export interface SavedLayout {
+  id: string;
+  name: string;
+  createdAt: number;
+  widgets: WidgetDefaultConfig[];
+}

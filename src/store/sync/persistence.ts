@@ -1,7 +1,7 @@
 import { runInAction } from 'mobx';
 import { DEFAULT_WIDGETS } from '@store/widget-defaults';
 import type { UnitSystem } from '@/types';
-import type { WidgetDefaultConfig } from '@/types/widget-settings';
+import type { SavedLayout, WidgetDefaultConfig } from '@/types/widget-settings';
 import type { AppSettings } from '@store/settings/app-settings.store';
 import { filterToDefaults } from '@utils/filter-to-defaults';
 import type { RootStore } from '@store/root-store';
@@ -14,6 +14,8 @@ export interface Settings {
     system: UnitSystem;
   };
   widgets: WidgetDefaultConfig[];
+  layouts: SavedLayout[];
+  activeLayoutId: string | null;
 }
 
 const restoreWidgets = (
@@ -69,6 +71,13 @@ export const hydrateStores = (
         ? restoreWidgets(loadedSettings.widgets)
         : DEFAULT_WIDGETS
     );
+
+    if (loadedSettings.layouts) {
+      root.widgetSettings.setLayouts(
+        loadedSettings.layouts,
+        loadedSettings.activeLayoutId ?? null
+      );
+    }
   });
 };
 
@@ -84,6 +93,8 @@ export const saveSettings = async (store: Store, root: RootStore) => {
       system: root.units.unitSystem,
     },
     widgets: root.widgetSettings.allWidgets,
+    layouts: root.widgetSettings.layouts,
+    activeLayoutId: root.widgetSettings.activeLayoutId,
   });
 
   await store.save();

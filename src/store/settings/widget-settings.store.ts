@@ -7,6 +7,7 @@ import type {
   WidgetDefaultConfig,
   BaseUserSettings,
   FuelWidgetSettings,
+  SavedLayout,
   StandingsViewMode,
   StandingsWidgetSettings,
   WidgetSpecificSettings,
@@ -22,6 +23,9 @@ export class WidgetSettingsStore {
       { ...widgetConfig },
     ])
   );
+
+  layouts: SavedLayout[] = [];
+  activeLayoutId: string | null = null;
 
   // Incremented on every settings mutation. Reactions use this as a cheap
   // change trigger instead of subscribing to every field across all widgets.
@@ -325,6 +329,76 @@ export class WidgetSettingsStore {
     if (result.userSettingsPatch) {
       Object.assign(widget.userSettings, result.userSettingsPatch);
     }
+  }
+
+  setLayouts(layouts: SavedLayout[], activeLayoutId?: string | null) {
+    this.layouts = layouts;
+
+    if (activeLayoutId !== undefined) {
+      this.activeLayoutId = activeLayoutId;
+    }
+  }
+
+  saveLayout(name: string) {
+    const layout: SavedLayout = {
+      id: crypto.randomUUID(),
+      name: name.trim(),
+      createdAt: Date.now(),
+      widgets: this.allWidgets.map((widget) => ({
+        ...widget,
+        userSettings: { ...widget.userSettings },
+      })),
+    };
+
+    this.layouts = [...this.layouts, layout];
+    this.bumpMutation();
+  }
+
+  selectLayout(id: string | null) {
+    this.activeLayoutId = id;
+    this.bumpMutation();
+  }
+
+  loadLayout(id: string) {
+    const layout = this.layouts.find((savedLayout) => savedLayout.id === id);
+
+    if (!layout) return;
+
+    this.setWidgets(layout.widgets);
+    this.activeLayoutId = id;
+    this.bumpMutation();
+  }
+
+  updateLayout(id: string) {
+    const layout = this.layouts.find((savedLayout) => savedLayout.id === id);
+
+    if (!layout) return;
+
+    layout.widgets = this.allWidgets.map((widget) => ({
+      ...widget,
+      userSettings: { ...widget.userSettings },
+    }));
+
+    this.bumpMutation();
+  }
+
+  deleteLayout(id: string) {
+    this.layouts = this.layouts.filter((savedLayout) => savedLayout.id !== id);
+
+    if (this.activeLayoutId === id) {
+      this.activeLayoutId = null;
+    }
+
+    this.bumpMutation();
+  }
+
+  renameLayout(id: string, name: string) {
+    const layout = this.layouts.find((savedLayout) => savedLayout.id === id);
+
+    if (!layout) return;
+
+    layout.name = name.trim();
+    this.bumpMutation();
   }
 
   getSettings<SpecificSettings extends WidgetSpecificSettings>(
