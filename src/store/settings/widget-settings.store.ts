@@ -346,7 +346,7 @@ export class WidgetSettingsStore {
       createdAt: Date.now(),
       widgets: this.allWidgets.map((widget) => ({
         ...widget,
-        userSettings: { ...widget.userSettings },
+        userSettings: structuredClone(widget.userSettings),
       })),
     };
 
