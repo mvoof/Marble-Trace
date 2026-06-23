@@ -169,7 +169,10 @@ export const CanvasTrace = () => {
       ctx.beginPath();
 
       let started = false;
-      const MAX_STEER_RAD = ((settings.steeringLimit / 2) * Math.PI) / 180;
+      const MAX_STEER_RAD =
+        ((settings.steeringLimit / 2) * Math.PI) /
+        180 /
+        (settings.steeringZoom ?? 1);
 
       for (let sampleIndex = 0; sampleIndex < count; sampleIndex++) {
         const circularIndex =
