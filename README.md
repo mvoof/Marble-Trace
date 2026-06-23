@@ -260,9 +260,12 @@ scripts\screenshot.bat      [windowId] [--out-dir <dir>] [--crop]
 npm run screenshot
 
 # Crop all visible widgets into docs/assets/screenshots/overlay/widgets/
-node scripts/screenshot.mjs overlay --crop
+npm run screenshot -- --crop
 
-# Custom output directory + crop
+# Custom output directory + crop (note the -- separator required by npm)
+npm run screenshot -- --out-dir docs/assets/screenshots/widgets --crop
+
+# Or call node directly (no -- needed)
 node scripts/screenshot.mjs overlay --out-dir docs/assets/screenshots/widgets --crop
 ```
 
