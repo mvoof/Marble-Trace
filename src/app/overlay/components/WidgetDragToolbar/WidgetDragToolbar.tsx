@@ -64,6 +64,7 @@ export const WidgetDragToolbar = observer(
             type="button"
             className={styles.toolbarButton}
             title="Hide widget (re-enable in Settings)"
+            aria-label="Hide widget"
             onClick={hideWidget}
           >
             <EyeOff />
@@ -73,6 +74,7 @@ export const WidgetDragToolbar = observer(
             type="button"
             className={`${styles.toolbarButton} ${snapOpen ? styles.active : ''}`}
             title="Quick placement"
+            aria-label="Quick placement"
             onClick={toggleSnap}
           >
             <LayoutGrid />
@@ -82,6 +84,7 @@ export const WidgetDragToolbar = observer(
             type="button"
             className={`${styles.toolbarButton} ${settingsOpen ? styles.active : ''}`}
             title="Widget settings"
+            aria-label="Widget settings"
             onClick={toggleSettings}
           >
             <Settings2 />
