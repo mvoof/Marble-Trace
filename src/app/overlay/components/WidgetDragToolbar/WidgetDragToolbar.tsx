@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { LayoutGrid, Settings2 } from 'lucide-react';
+import { EyeOff, LayoutGrid, Settings2 } from 'lucide-react';
 import styles from './WidgetDragToolbar.module.scss';
 import { SnapPanel } from './SnapPanel/SnapPanel';
 import { WidgetSettingsPopup } from './WidgetSettingsPopup/WidgetSettingsPopup';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 
 interface WidgetDragToolbarProps {
   widgetId: string;
@@ -11,6 +12,7 @@ interface WidgetDragToolbarProps {
 
 export const WidgetDragToolbar = observer(
   ({ widgetId }: WidgetDragToolbarProps) => {
+    const widgetSettings = useWidgetSettingsStore();
     const [snapOpen, setSnapOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -43,6 +45,11 @@ export const WidgetDragToolbar = observer(
       setSnapOpen(false);
     };
 
+    const hideWidget = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      widgetSettings.setWidgetEnabled(widgetId, false);
+    };
+
     return (
       <div
         role="toolbar"
@@ -53,6 +60,15 @@ export const WidgetDragToolbar = observer(
         <span className={styles.dragLabel}>DRAG</span>
 
         <div className={styles.buttons}>
+          <button
+            type="button"
+            className={styles.toolbarButton}
+            title="Hide widget (re-enable in Settings)"
+            onClick={hideWidget}
+          >
+            <EyeOff />
+          </button>
+
           <button
             type="button"
             className={`${styles.toolbarButton} ${snapOpen ? styles.active : ''}`}
