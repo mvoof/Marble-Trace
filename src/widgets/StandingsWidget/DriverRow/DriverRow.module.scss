@@ -26,6 +26,11 @@
   filter: grayscale(100%);
 }
 
+.driverRowOut {
+  opacity: 0.45;
+  filter: grayscale(100%);
+}
+
 // Base cell
 .cell {
   display: flex;

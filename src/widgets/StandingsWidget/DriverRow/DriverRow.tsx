@@ -8,7 +8,7 @@ import {
   TRACK_SURFACE_OFF_TRACK,
 } from '@utils/widget/widget-utils';
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
-import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
+import { DriverStatusBadge } from '@/components/shared/DriverStatusBadge/DriverStatusBadge';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
 import { LicBadge } from '@/components/shared/RatingBadge/LicBadge';
 import { formatIr } from '@/components/shared/RatingBadge/LicBadge.utils';
@@ -48,8 +48,11 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
     return null;
   }
 
+  const isOut = driver.trackSurface === 'NotInWorld';
+
   const isPit =
-    driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
+    !isOut &&
+    (driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad);
 
   const pitState = driver.pitState;
   const flagType = parseDriverFlags(driver.rawFlags);
@@ -67,6 +70,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
     driver.isPlayer ? styles.driverRowPlayer : '',
     index % 2 !== 0 ? styles.rowOdd : '',
     isOffTrack ? styles.driverRowOffTrack : '',
+    isOut ? styles.driverRowOut : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -144,7 +148,18 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
             : driver.userName}
         </span>
 
-        {isPit && <PitBadge state={pitState} />}
+        {isOut && <DriverStatusBadge status="out" />}
+        {isPit && (
+          <DriverStatusBadge
+            status={
+              pitState === 'in'
+                ? 'pit_in'
+                : pitState === 'exit'
+                  ? 'pit_exit'
+                  : 'pit'
+            }
+          />
+        )}
       </div>
 
       {settings.showLicBadge && (

@@ -1,4 +1,4 @@
-.pitBadge {
+.badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -9,14 +9,22 @@
   flex-shrink: 0;
   line-height: 1;
   color: #fff;
+}
+
+.pit {
   background: $race-red;
+}
 
-  &.pitIn {
-    background: $race-blue;
-  }
+.pitIn {
+  background: $race-blue;
+}
 
-  &.pitExit {
-    background: $race-amber;
-    color: rgba(0, 0, 0, 0.85);
-  }
+.pitExit {
+  background: $race-amber;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.out {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.45);
 }
