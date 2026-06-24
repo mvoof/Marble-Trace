@@ -85,6 +85,12 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   const currentSession = sessions?.[sessionInfoData?.currentSessionNum ?? 0];
   const isRace = currentSession?.sessionType === 'Race';
 
+  const classBest = standingsWidget.classBestLapMap.get(driver.carClassId);
+  const isClassBestLap =
+    driver.bestLapTime > 0 &&
+    classBest !== undefined &&
+    driver.bestLapTime === classBest;
+
   const gapInfo = getStandingsGap(driver, leader, isRace, isLeader, lapsBehind);
 
   const gapContent = gapInfo.isLeader ? (
@@ -176,7 +182,9 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       </div>
 
       <div className={`${styles.cell} ${styles.cellRight}`}>
-        <span className={styles.bestLap}>
+        <span
+          className={`${styles.bestLap} ${isClassBestLap ? styles.bestLapFastest : ''}`}
+        >
           {formatLapTime(driver.bestLapTime > 0 ? driver.bestLapTime : null)}
         </span>
       </div>

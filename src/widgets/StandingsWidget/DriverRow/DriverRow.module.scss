@@ -215,13 +215,16 @@
   font-family: $font-mono;
   font-size: fs(md);
   font-weight: 900;
-  // Faint warm tint so the live lap stands apart from the rest of the row.
-  color: color-mix(in srgb, $widget-text-primary 65%, $race-yellow);
+  color: $widget-text-primary;
 }
 
 .bestLap {
   font-family: $font-mono;
   font-size: fs(md);
   font-weight: 900;
-  color: $widget-text-best-lap;
+  color: $widget-text-primary;
+}
+
+.bestLapFastest {
+  color: $race-purple;
 }
