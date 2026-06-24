@@ -4,7 +4,7 @@
   display: grid;
   align-items: center;
   column-gap: sp(xxxs);
-  padding: sp(xs) sp(md);
+  padding: sp(xxxs) sp(md);
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid $widget-row-border;
@@ -30,10 +30,10 @@
   display: flex;
   align-items: center;
   align-self: stretch;
-  margin-top: calc(-1 * sp(xs));
-  margin-bottom: calc(-1 * sp(xs));
+  margin-top: calc(-1 * sp(xxxs));
+  margin-bottom: calc(-1 * sp(xxxs));
   margin-left: calc(-1 * sp(md));
-  padding: sp(xs) sp(xs) sp(xs) sp(md);
+  padding: sp(xxxs) sp(xs) sp(xxxs) sp(md);
 }
 
 // Position — primary emphasis
@@ -52,7 +52,7 @@
 .carNumberCell {
   display: flex;
   align-items: center;
-  padding: 0 sp(xxs);
+  padding: 0 sp(xxxs);
 }
 
 // Car number — muted, class identity comes from pos column color

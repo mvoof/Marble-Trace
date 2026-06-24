@@ -2,7 +2,7 @@
   display: grid;
   align-items: center;
   column-gap: sp(xxxs);
-  padding: sp(xs) sp(md);
+  padding: sp(xxxs) sp(md);
   border-bottom: 1px solid $widget-row-border;
   position: relative;
   line-height: 1.15;
@@ -46,15 +46,15 @@
 // Position cell — stretch to row edges for class color border + gradient
 .posCell {
   align-self: stretch;
-  margin-top: calc(-1 * sp(xs));
-  margin-bottom: calc(-1 * sp(xs));
+  margin-top: calc(-1 * sp(xxxs));
+  margin-bottom: calc(-1 * sp(xxxs));
   margin-left: calc(-1 * sp(md));
-  padding: sp(xs) sp(xs) sp(xs) sp(md);
+  padding: sp(xxxs) sp(xs) sp(xxxs) sp(md);
 }
 
 // Car number cell
 .carNumberCell {
-  padding: 0 sp(xxs);
+  padding: 0 sp(xxxs);
 }
 
 // Name cell — overflow truncation
@@ -149,7 +149,7 @@
 }
 
 .cellRating {
-  justify-content: flex-start;
+  justify-content: flex-end;
 }
 
 .irValue {

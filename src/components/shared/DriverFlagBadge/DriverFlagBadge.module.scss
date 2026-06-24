@@ -2,8 +2,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: ws(13);
-  height: ws(13);
+  width: 0.9em;
+  height: 0.9em;
   border-radius: radius(sm);
   flex-shrink: 0;
   border: 1px solid transparent;
@@ -42,8 +42,8 @@
   border-color: rgba(255, 255, 255, 0.25);
 
   .orangeCircle {
-    width: ws(5);
-    height: ws(5);
+    width: 0.35em;
+    height: 0.35em;
     background-color: #ff5500;
     border-radius: 50%;
     display: block;
