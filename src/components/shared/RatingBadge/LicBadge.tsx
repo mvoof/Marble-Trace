@@ -19,8 +19,10 @@ export const LicBadge = ({ licString, className }: LicBadgeProps) => {
   const licNumber = licString?.slice(1).trim() || '';
 
   return (
-    <span className={`${styles.licBadge}${className ? ` ${className}` : ''}`}>
-      <span className={`${styles.licLetter} ${licClass}`}>{letter}</span>
+    <span
+      className={`${styles.licBadge} ${licClass}${className ? ` ${className}` : ''}`}
+    >
+      <span className={styles.licLetter}>{letter}</span>
       {licNumber ? <span className={styles.licNumber}>{licNumber}</span> : null}
     </span>
   );

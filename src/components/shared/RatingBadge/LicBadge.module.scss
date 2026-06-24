@@ -8,7 +8,6 @@
   flex-shrink: 0;
   font-size: 0.85em;
   font-weight: 700;
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .licLetter {
@@ -26,30 +25,36 @@
   align-items: center;
   justify-content: center;
   padding: 0.2em 0.4em;
-  background: rgba(0, 0, 0, 0.2);
-  color: rgba(255, 255, 255, 0.95);
+  background: color-mix(in srgb, var(--lic-color) 25%, black);
+  color: rgba(255, 255, 255, 0.9);
   font-family: $font-mono;
   font-weight: 700;
   line-height: 1;
 }
 
-// License colors
+// License color classes — applied to .licBadge so --lic-color is available
+// to both .licLetter (bg via inheritance) and .licNumber (color-mix bg).
 .licA {
   background: $rating-lic-a;
+  --lic-color: #{$rating-lic-a};
 }
 
 .licB {
   background: $rating-lic-b;
+  --lic-color: #{$rating-lic-b};
 }
 
 .licC {
   background: $rating-lic-c;
+  --lic-color: #{$rating-lic-c};
 }
 
 .licD {
   background: $rating-lic-d;
+  --lic-color: #{$rating-lic-d};
 }
 
 .licR {
   background: $rating-lic-r;
+  --lic-color: #{$rating-lic-r};
 }
