@@ -24,6 +24,12 @@
 .driverRowOut {
   opacity: 0.45;
   filter: grayscale(100%);
+
+  &.driverRowPlayer {
+    background: $widget-row-player-gradient;
+    filter: grayscale(100%);
+    opacity: 0.45;
+  }
 }
 
 // Position block — stretches to row edges for class color border + gradient
