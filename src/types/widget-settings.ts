@@ -54,9 +54,12 @@ export interface RadarSettings {
   qualifyingVisibility: RadarQualifyingVisibility;
 }
 
+export type RowPadding = 'narrow' | 'medium' | 'wide';
+
 export type StandingsViewMode = 'all' | 'cycling' | 'grouped';
 
 export interface StandingsWidgetSettings {
+  rowPadding: RowPadding;
   viewMode: StandingsViewMode;
   viewModeHotkey: string;
   classPrevHotkey: string;
@@ -82,6 +85,7 @@ export interface StandingsWidgetSettings {
 }
 
 export interface RelativeWidgetSettings {
+  rowPadding: RowPadding;
   showLicBadge: boolean;
   showIRating: boolean;
   showPitIndicator: boolean;
