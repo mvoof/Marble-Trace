@@ -48,6 +48,30 @@
   justify-content: flex-end;
 }
 
+.rowPaddingMedium {
+  padding-top: sp(xxs);
+  padding-bottom: sp(xxs);
+
+  .posCell {
+    margin-top: calc(-1 * sp(xxs));
+    margin-bottom: calc(-1 * sp(xxs));
+    padding-top: sp(xxs);
+    padding-bottom: sp(xxs);
+  }
+}
+
+.rowPaddingWide {
+  padding-top: sp(xs);
+  padding-bottom: sp(xs);
+
+  .posCell {
+    margin-top: calc(-1 * sp(xs));
+    margin-bottom: calc(-1 * sp(xs));
+    padding-top: sp(xs);
+    padding-bottom: sp(xs);
+  }
+}
+
 // Position cell — stretch to row edges for class color border + gradient
 .posCell {
   align-self: stretch;
