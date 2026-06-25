@@ -48,7 +48,14 @@ export const useVisibleRowCount = <T extends HTMLElement>(
 
         if (!(rowPx > 0)) return;
 
-        const next = Math.max(minRows, Math.floor(el.clientHeight / rowPx));
+        const headerOffset = firstReal
+          ? firstReal.getBoundingClientRect().top -
+            el.getBoundingClientRect().top
+          : 0;
+        const next = Math.max(
+          minRows,
+          Math.floor((el.clientHeight - headerOffset) / rowPx)
+        );
         dispatch(next);
       };
 

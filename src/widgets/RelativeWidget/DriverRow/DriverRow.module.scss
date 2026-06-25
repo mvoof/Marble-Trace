@@ -18,7 +18,7 @@
 
 .driverRowPlayer {
   z-index: 10;
-  background: $widget-row-player-gradient;
+  background: $widget-row-player-bg;
 }
 
 .driverRowOffTrack {
@@ -36,7 +36,7 @@
   filter: grayscale(100%);
 
   &.driverRowPlayer {
-    background: $widget-row-player-gradient;
+    background: $widget-row-player-bg;
     filter: grayscale(100%);
     opacity: 0.45;
   }
