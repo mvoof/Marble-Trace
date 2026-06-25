@@ -363,6 +363,7 @@ const WIDGETS: WidgetConfig[] = [
       proximityThreshold: 5,
       hideDelay: 2,
       carLength: 4.4,
+      qualifyingVisibility: 'auto',
     },
   },
   {
@@ -386,6 +387,7 @@ const WIDGETS: WidgetConfig[] = [
       proximityThreshold: 3,
       hideDelay: 2,
       carLength: 4.4,
+      qualifyingVisibility: 'auto',
     },
   },
   {

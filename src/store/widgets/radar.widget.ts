@@ -73,8 +73,59 @@ export class RadarWidgetStore {
     ).hideDelay;
   }
 
+  get isLoneQualifying(): boolean {
+    const sessionInfo = this.root.session.sessionInfo;
+
+    if (!sessionInfo) {
+      return false;
+    }
+
+    const currentSession = sessionInfo.sessions[sessionInfo.currentSessionNum];
+
+    if (!currentSession) {
+      return false;
+    }
+
+    return currentSession.sessionTypeLabel === 'Lone Qualify';
+  }
+
+  isHiddenInQualifyingFor(widgetId: 'proximity-radar' | 'radar-bar'): boolean {
+    const settings =
+      this.root.widgetSettings.getSettings<RadarSettings>(widgetId);
+    const visibility = settings.qualifyingVisibility;
+
+    if (visibility === 'never') {
+      const sessionInfo = this.root.session.sessionInfo;
+      const currentSession =
+        sessionInfo?.sessions[sessionInfo.currentSessionNum];
+      const isQualifying =
+        currentSession?.sessionTypeLabel.toLowerCase().includes('qualify') ??
+        false;
+
+      return isQualifying;
+    }
+
+    if (visibility === 'auto') {
+      return this.isLoneQualifying;
+    }
+
+    return false;
+  }
+
+  isVisibleForWidget(widgetId: 'proximity-radar' | 'radar-bar'): boolean {
+    if (this.root.appSettings.dragMode) {
+      return true;
+    }
+
+    if (this.isHiddenInQualifyingFor(widgetId)) {
+      return false;
+    }
+
+    return this.visible;
+  }
+
   get isVisible(): boolean {
-    return this.root.appSettings.dragMode ? true : this.visible;
+    return this.isVisibleForWidget('proximity-radar');
   }
 
   getNearbyCars(

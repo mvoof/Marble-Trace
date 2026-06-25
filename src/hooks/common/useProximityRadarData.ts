@@ -23,7 +23,7 @@ export const useProximityRadarData = (
   const spotterLeft = proximity?.spotterLeft ?? false;
   const spotterRight = proximity?.spotterRight ?? false;
 
-  const visible = radarStore.isVisible;
+  const visible = radarStore.isVisibleForWidget(widgetId);
 
   useWidgetAutoHide(visible);
 
