@@ -45,10 +45,13 @@ export interface InputTraceSettings {
   steeringZoom?: number;
 }
 
+export type RadarQualifyingVisibility = 'always' | 'never' | 'auto';
+
 export interface RadarSettings {
   proximityThreshold: number;
   hideDelay: number;
   carLength: number;
+  qualifyingVisibility: RadarQualifyingVisibility;
 }
 
 export type StandingsViewMode = 'all' | 'cycling' | 'grouped';
