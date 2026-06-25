@@ -21,6 +21,16 @@
   background: $widget-row-player-gradient;
 }
 
+.driverRowOffTrack {
+  opacity: 0.5;
+  filter: grayscale(100%);
+
+  &.driverRowPlayer {
+    filter: grayscale(100%);
+    opacity: 0.5;
+  }
+}
+
 .driverRowOut {
   opacity: 0.45;
   filter: grayscale(100%);

@@ -149,6 +149,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         </span>
 
         {isOut && <DriverStatusBadge status="out" />}
+        {isOffTrack && <DriverStatusBadge status="off_track" />}
         {isPit && (
           <DriverStatusBadge
             status={

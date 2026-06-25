@@ -3,6 +3,7 @@ import {
   abbreviateName,
   formatCarNumber,
   TRACK_SURFACE_IN_PIT_STALL,
+  TRACK_SURFACE_OFF_TRACK,
 } from '@utils/widget/widget-utils';
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { DriverStatusBadge } from '@/components/shared/DriverStatusBadge/DriverStatusBadge';
@@ -38,6 +39,7 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
   const player = relativeEntries.find((entry) => entry.isPlayer) ?? null;
 
   const isOut = driver.trackSurface === 'NotInWorld';
+  const isOffTrack = !isOut && driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
   const isPit =
     !isOut &&
@@ -75,6 +77,7 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
     styles.driverRow,
     driver.isPlayer ? styles.driverRowPlayer : '',
     index % 2 !== 0 ? styles.rowOdd : '',
+    isOffTrack ? styles.driverRowOffTrack : '',
     isOut ? styles.driverRowOut : '',
   ]
     .filter(Boolean)
@@ -129,6 +132,7 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
         </span>
 
         {isOut && <DriverStatusBadge status="out" />}
+        {isOffTrack && <DriverStatusBadge status="off_track" />}
         {settings.showPitIndicator && isPit && (
           <DriverStatusBadge
             status={
