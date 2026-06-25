@@ -64,7 +64,7 @@ const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
   { px: 38, show: settings.showPosChange }, // +/- pos  "▲12" — between pos and carNum
   { px: 40, show: true }, // carNum   "#000" + cell padding
   { px: NAME_NATURAL_PX, show: true, flex: true }, // name — flexes, never collapses
-  { px: 54, show: settings.showLicBadge }, // lic badge "A 4.99"
+  { px: 60, show: settings.showLicBadge }, // lic badge "A 4.99" — matches Relative for equal PIT↔SR gap
   { px: 42, show: settings.showIRating }, // iRating  "9.9k"
   { px: 42, show: settings.showIrChange }, // ΔiR     "+123"
   { px: 28, show: settings.showLapsCompleted }, // laps "00"

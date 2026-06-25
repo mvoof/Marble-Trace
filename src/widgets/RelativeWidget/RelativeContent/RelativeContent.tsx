@@ -27,16 +27,24 @@ export const RelativeContent = observer(() => {
       return entries.slice(0, visibleRowCount);
     }
 
-    const total = Math.min(visibleRowCount, entries.length);
-    const half = Math.floor(total / 2);
+    // Force an odd window so the player can sit dead-centre with an equal
+    // number of rows above and below. On resize, rows are then added/removed
+    // symmetrically from both ends — the player row never shifts position.
+    let total = Math.min(visibleRowCount, entries.length);
+
+    if (total % 2 === 0 && total > 1) {
+      total -= 1;
+    }
 
     const aboveAvail = playerIdx;
     const belowAvail = entries.length - playerIdx - 1;
+    const half = (total - 1) / 2;
 
     let above = Math.min(half, aboveAvail);
-    const below = Math.min(total - 1 - above, belowAvail);
-
+    let below = Math.min(half, belowAvail);
+    // Reclaim the opposite side's unused budget when the player is near an edge.
     above = Math.min(total - 1 - below, aboveAvail);
+    below = Math.min(total - 1 - above, belowAvail);
 
     return entries.slice(playerIdx - above, playerIdx + below + 1);
   }, [entries, visibleRowCount]);

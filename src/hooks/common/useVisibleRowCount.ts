@@ -48,32 +48,51 @@ export const useVisibleRowCount = <T extends HTMLElement>(
 
         if (!(rowPx > 0)) return;
 
-        const next = Math.max(minRows, Math.floor(el.clientHeight / rowPx));
+        const headerOffset = firstReal
+          ? firstReal.getBoundingClientRect().top -
+            el.getBoundingClientRect().top
+          : 0;
+        const next = Math.max(
+          minRows,
+          Math.floor((el.clientHeight - headerOffset) / rowPx)
+        );
         dispatch(next);
       };
 
-      let rafId = 0;
-      const scheduleMeasure = () => {
-        cancelAnimationFrame(rafId);
-        rafId = requestAnimationFrame(measure);
+      let rafId1 = 0;
+      let rafId2 = 0;
+      // Measure now (catches the case where layout is already settled) and
+      // again on the next two frames. Row height scales with --wfs, which React
+      // commits as an inline style: during a width drag the ResizeObserver can
+      // fire before that commit lands, so an immediate-only read sees the stale
+      // (shorter) row height and keeps too many rows → overflow on widen.
+      const remeasure = () => {
+        measure();
+        cancelAnimationFrame(rafId1);
+        cancelAnimationFrame(rafId2);
+        rafId1 = requestAnimationFrame(() => {
+          measure();
+          rafId2 = requestAnimationFrame(measure);
+        });
       };
 
-      scheduleMeasure();
+      remeasure();
 
-      const t1 = setTimeout(scheduleMeasure, 100);
-      const t2 = setTimeout(scheduleMeasure, 400);
+      const t1 = setTimeout(remeasure, 100);
+      const t2 = setTimeout(remeasure, 400);
 
-      const ro = new ResizeObserver(scheduleMeasure);
+      const ro = new ResizeObserver(remeasure);
       ro.observe(el);
 
-      const rootRo = new ResizeObserver(scheduleMeasure);
+      const rootRo = new ResizeObserver(remeasure);
       rootRo.observe(document.documentElement);
 
-      const mo = new MutationObserver(scheduleMeasure);
+      const mo = new MutationObserver(remeasure);
       mo.observe(el, { childList: true, subtree: false });
 
       cleanupRef.current = () => {
-        cancelAnimationFrame(rafId);
+        cancelAnimationFrame(rafId1);
+        cancelAnimationFrame(rafId2);
         clearTimeout(t1);
         clearTimeout(t2);
         ro.disconnect();

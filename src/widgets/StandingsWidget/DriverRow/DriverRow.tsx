@@ -8,7 +8,7 @@ import {
   TRACK_SURFACE_OFF_TRACK,
 } from '@utils/widget/widget-utils';
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
-import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
+import { DriverStatusBadge } from '@/components/shared/DriverStatusBadge/DriverStatusBadge';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
 import { LicBadge } from '@/components/shared/RatingBadge/LicBadge';
 import { formatIr } from '@/components/shared/RatingBadge/LicBadge.utils';
@@ -48,8 +48,11 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
     return null;
   }
 
+  const isOut = driver.trackSurface === 'NotInWorld';
+
   const isPit =
-    driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
+    !isOut &&
+    (driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad);
 
   const pitState = driver.pitState;
   const flagType = parseDriverFlags(driver.rawFlags);
@@ -67,6 +70,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
     driver.isPlayer ? styles.driverRowPlayer : '',
     index % 2 !== 0 ? styles.rowOdd : '',
     isOffTrack ? styles.driverRowOffTrack : '',
+    isOut ? styles.driverRowOut : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -84,6 +88,12 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   const sessions = sessionInfoData?.sessions;
   const currentSession = sessions?.[sessionInfoData?.currentSessionNum ?? 0];
   const isRace = currentSession?.sessionType === 'Race';
+
+  const classBest = standingsWidget.classBestLapMap.get(driver.carClassId);
+  const isClassBestLap =
+    driver.bestLapTime > 0 &&
+    classBest !== undefined &&
+    driver.bestLapTime === classBest;
 
   const gapInfo = getStandingsGap(driver, leader, isRace, isLeader, lapsBehind);
 
@@ -105,7 +115,9 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         className={`${styles.cell} ${styles.posCell}`}
         style={{
           borderLeft: `3px solid ${driver.carClassColor}`,
-          background: `linear-gradient(to right, color-mix(in srgb, ${driver.carClassColor} 20%, transparent), transparent)`,
+          background: driver.isPlayer
+            ? undefined
+            : `linear-gradient(to right, color-mix(in srgb, ${driver.carClassColor} 20%, transparent), transparent)`,
         }}
       >
         <span
@@ -138,7 +150,19 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
             : driver.userName}
         </span>
 
-        {isPit && <PitBadge state={pitState} />}
+        {isOut && <DriverStatusBadge status="out" />}
+        {isOffTrack && <DriverStatusBadge status="off_track" />}
+        {isPit && (
+          <DriverStatusBadge
+            status={
+              pitState === 'in'
+                ? 'pit_in'
+                : pitState === 'exit'
+                  ? 'pit_exit'
+                  : 'pit'
+            }
+          />
+        )}
       </div>
 
       {settings.showLicBadge && (
@@ -176,7 +200,9 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       </div>
 
       <div className={`${styles.cell} ${styles.cellRight}`}>
-        <span className={styles.bestLap}>
+        <span
+          className={`${styles.bestLap} ${isClassBestLap ? styles.bestLapFastest : ''}`}
+        >
           {formatLapTime(driver.bestLapTime > 0 ? driver.bestLapTime : null)}
         </span>
       </div>

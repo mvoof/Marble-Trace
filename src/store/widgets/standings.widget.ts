@@ -83,6 +83,25 @@ export class StandingsWidgetStore {
       });
   }
 
+  // Best lap time per class — used to highlight the class best-lap holder.
+  get classBestLapMap(): Map<number, number> {
+    const result = new Map<number, number>();
+
+    if (!this.root.backendComputed.standings) return result;
+
+    for (const entry of this.root.backendComputed.standings.entries) {
+      if (!(entry.bestLapTime > 0)) continue;
+
+      const current = result.get(entry.carClassId);
+
+      if (current === undefined || entry.bestLapTime < current) {
+        result.set(entry.carClassId, entry.bestLapTime);
+      }
+    }
+
+    return result;
+  }
+
   clampActiveClassIndex(totalClasses: number) {
     if (totalClasses > 0 && this.activeClassIndex >= totalClasses) {
       this.activeClassIndex = Math.max(0, totalClasses - 1);

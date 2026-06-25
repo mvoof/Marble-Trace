@@ -3,9 +3,10 @@ import {
   abbreviateName,
   formatCarNumber,
   TRACK_SURFACE_IN_PIT_STALL,
+  TRACK_SURFACE_OFF_TRACK,
 } from '@utils/widget/widget-utils';
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
-import { PitBadge } from '@/components/shared/PitBadge/PitBadge';
+import { DriverStatusBadge } from '@/components/shared/DriverStatusBadge/DriverStatusBadge';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
 import { LicBadge } from '@/components/shared/RatingBadge/LicBadge';
 import { formatIr } from '@/components/shared/RatingBadge/LicBadge.utils';
@@ -37,8 +38,12 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
 
   const player = relativeEntries.find((entry) => entry.isPlayer) ?? null;
 
+  const isOut = driver.trackSurface === 'NotInWorld';
+  const isOffTrack = !isOut && driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
+
   const isPit =
-    driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad;
+    !isOut &&
+    (driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad);
 
   const pitState = driver.pitState;
   const flagType = parseDriverFlags(driver.rawFlags);
@@ -72,7 +77,8 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
     styles.driverRow,
     driver.isPlayer ? styles.driverRowPlayer : '',
     index % 2 !== 0 ? styles.rowOdd : '',
-    isPit ? styles.driverRowPit : '',
+    isOffTrack ? styles.driverRowOffTrack : '',
+    isOut ? styles.driverRowOut : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -91,7 +97,9 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
         className={styles.posBlock}
         style={{
           borderLeft: `3px solid ${driver.carClassColor}`,
-          background: `linear-gradient(to right, color-mix(in srgb, ${driver.carClassColor} 20%, transparent), transparent)`,
+          background: driver.isPlayer
+            ? undefined
+            : `linear-gradient(to right, color-mix(in srgb, ${driver.carClassColor} 20%, transparent), transparent)`,
         }}
       >
         <span
@@ -125,7 +133,19 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
             : driver.userName}
         </span>
 
-        {settings.showPitIndicator && isPit && <PitBadge state={pitState} />}
+        {isOut && <DriverStatusBadge status="out" />}
+        {isOffTrack && <DriverStatusBadge status="off_track" />}
+        {settings.showPitIndicator && isPit && (
+          <DriverStatusBadge
+            status={
+              pitState === 'in'
+                ? 'pit_in'
+                : pitState === 'exit'
+                  ? 'pit_exit'
+                  : 'pit'
+            }
+          />
+        )}
       </div>
 
       {settings.showLicBadge ? (
