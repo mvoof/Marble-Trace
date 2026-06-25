@@ -2,7 +2,7 @@
   display: grid;
   align-items: center;
   column-gap: sp(xxxs);
-  padding: sp(xxxs) sp(md);
+  padding: 0 sp(md);
   border-bottom: 1px solid $widget-row-border;
   position: relative;
   line-height: 1.15;
@@ -46,6 +46,18 @@
 
 .cellRight {
   justify-content: flex-end;
+}
+
+.rowPaddingNarrow {
+  padding-top: sp(xxxs);
+  padding-bottom: sp(xxxs);
+
+  .posCell {
+    margin-top: calc(-1 * sp(xxxs));
+    margin-bottom: calc(-1 * sp(xxxs));
+    padding-top: sp(xxxs);
+    padding-bottom: sp(xxxs);
+  }
 }
 
 .rowPaddingMedium {

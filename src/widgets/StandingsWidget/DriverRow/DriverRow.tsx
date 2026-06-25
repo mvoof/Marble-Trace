@@ -67,6 +67,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
   const rowClass = [
     styles.driverRow,
+    settings.rowPadding === 'narrow' ? styles.rowPaddingNarrow : '',
     settings.rowPadding === 'medium' ? styles.rowPaddingMedium : '',
     settings.rowPadding === 'wide' ? styles.rowPaddingWide : '',
     driver.isPlayer ? styles.driverRowPlayer : '',

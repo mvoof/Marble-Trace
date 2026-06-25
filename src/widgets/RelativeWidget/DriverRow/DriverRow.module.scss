@@ -4,7 +4,7 @@
   display: grid;
   align-items: center;
   column-gap: sp(xxxs);
-  padding: sp(xxxs) sp(md);
+  padding: 0 sp(md);
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid $widget-row-border;
@@ -39,6 +39,18 @@
     background: $widget-row-player-bg;
     filter: grayscale(100%);
     opacity: 0.45;
+  }
+}
+
+.rowPaddingNarrow {
+  padding-top: sp(xxxs);
+  padding-bottom: sp(xxxs);
+
+  .posBlock {
+    margin-top: calc(-1 * sp(xxxs));
+    margin-bottom: calc(-1 * sp(xxxs));
+    padding-top: sp(xxxs);
+    padding-bottom: sp(xxxs);
   }
 }
 
