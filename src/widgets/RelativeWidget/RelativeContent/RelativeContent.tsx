@@ -7,18 +7,29 @@ import { NoDataPlaceholder } from '@/components/shared/NoDataPlaceholder/NoDataP
 import {
   useBackendComputedStore,
   useSimStore,
+  useWidgetSettingsStore,
 } from '@store/root-store-context';
+import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './RelativeContent.module.scss';
 
 export const RelativeContent = observer(() => {
   const computed = useBackendComputedStore();
   const sim = useSimStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { rowPadding } =
+    widgetSettings.getSettings<RelativeWidgetSettings>('relative');
 
   const entries = computed.relativeEntries;
 
   const { ref: driverListRef, count: visibleRowCount } =
-    useVisibleRowCount<HTMLDivElement>(2.75, 3, '[data-relative-row]');
+    useVisibleRowCount<HTMLDivElement>(
+      rowPadding === 'wide' ? 3.5 : rowPadding === 'medium' ? 3.25 : 2.75,
+      3,
+      '[data-relative-row]',
+      [rowPadding]
+    );
 
   const displayEntries = useMemo(() => {
     const playerIdx = entries.findIndex((entry) => entry.isPlayer);

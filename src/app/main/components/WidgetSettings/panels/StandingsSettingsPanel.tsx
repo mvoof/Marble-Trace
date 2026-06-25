@@ -1,6 +1,7 @@
 ﻿import { observer } from 'mobx-react-lite';
 import { Switch, Segmented } from 'antd';
 import type {
+  RowPadding,
   StandingsViewMode,
   StandingsWidgetSettings,
 } from '@/types/widget-settings';
@@ -25,6 +26,25 @@ export const StandingsSettingsPanel = observer(() => {
 
   return (
     <>
+      <Card title="Appearance">
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="Row Height"
+            desc="Vertical padding of each driver row."
+          >
+            <Segmented<RowPadding>
+              value={settings.rowPadding}
+              onChange={(v) => update({ rowPadding: v })}
+              options={[
+                { label: 'Narrow', value: 'narrow' },
+                { label: 'Medium', value: 'medium' },
+                { label: 'Wide', value: 'wide' },
+              ]}
+            />
+          </SettingRow>
+        </div>
+      </Card>
+
       <Card title="View Mode">
         <div className={styles.fieldGroup}>
           <Segmented<StandingsViewMode>
