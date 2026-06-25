@@ -24,9 +24,12 @@ export const RelativeContent = observer(() => {
   const entries = computed.relativeEntries;
 
   const { ref: driverListRef, count: visibleRowCount } =
-    useVisibleRowCount<HTMLDivElement>(2.75, 3, '[data-relative-row]', [
-      rowPadding,
-    ]);
+    useVisibleRowCount<HTMLDivElement>(
+      rowPadding === 'wide' ? 3.5 : rowPadding === 'medium' ? 3.25 : 2.75,
+      3,
+      '[data-relative-row]',
+      [rowPadding]
+    );
 
   const displayEntries = useMemo(() => {
     const playerIdx = entries.findIndex((entry) => entry.isPlayer);

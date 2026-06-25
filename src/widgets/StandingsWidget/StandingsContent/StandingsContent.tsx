@@ -42,10 +42,14 @@ export const StandingsContent = observer(() => {
 
   const { ref: listRef, count: visibleRowCount } =
     useVisibleRowCount<HTMLDivElement>(
-      settings.showColumnHeaders ? 1 : 0,
+      settings.rowPadding === 'wide'
+        ? 3.5
+        : settings.rowPadding === 'medium'
+          ? 3.25
+          : 2.75,
       5,
       '[data-driver-row]',
-      [settings.rowPadding]
+      [settings.rowPadding, settings.showColumnHeaders]
     );
 
   const rowsPerGroupedClass = (() => {
