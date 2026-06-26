@@ -82,6 +82,10 @@ export interface StandingsWidgetSettings {
   showIncidentsBadge: boolean;
   abbreviateNames: boolean;
   showDriverFlags: boolean;
+  /** Highlight color for the player's own row. */
+  playerRowColor: string;
+  /** Color of the player's position number and car number. */
+  playerAccentColor: string;
 }
 
 export interface RelativeWidgetSettings {
@@ -91,6 +95,10 @@ export interface RelativeWidgetSettings {
   showPitIndicator: boolean;
   abbreviateNames: boolean;
   showDriverFlags: boolean;
+  /** Highlight color for the player's own row. */
+  playerRowColor: string;
+  /** Color of the player's position number and car number. */
+  playerAccentColor: string;
 }
 
 type TrackMapRotationMode = 'fixed' | 'heading-up';

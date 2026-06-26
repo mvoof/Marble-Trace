@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { Switch, Segmented } from 'antd';
+import { Switch, Segmented, ColorPicker } from 'antd';
 import type {
   RowPadding,
   StandingsViewMode,
@@ -40,6 +40,34 @@ export const StandingsSettingsPanel = observer(() => {
                 { label: 'Medium', value: 'medium' },
                 { label: 'Wide', value: 'wide' },
               ]}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="Player Row Color"
+            desc="Highlight color for your own row."
+          >
+            <ColorPicker
+              value={settings.playerRowColor}
+              onChange={(color) =>
+                update({ playerRowColor: color.toRgbString() })
+              }
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="Player Number Color"
+            desc="Color of your position and car number."
+          >
+            <ColorPicker
+              value={settings.playerAccentColor}
+              onChange={(color) =>
+                update({ playerAccentColor: color.toRgbString() })
+              }
             />
           </SettingRow>
         </div>

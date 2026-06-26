@@ -36,8 +36,17 @@ export const useVisibleRowCount = <T extends HTMLElement>(
             ) ?? null;
         }
 
+        // getBoundingClientRect is scaled by ancestor CSS transforms (the layout
+        // editor scales the whole canvas), but clientHeight is not. Derive that
+        // scale from the container so the row height and offset are converted
+        // back into the same unscaled space as clientHeight. Scale is 1 in the
+        // overlay, so this is a no-op there.
+        const elRect = el.getBoundingClientRect();
+        const scale = el.clientHeight > 0 ? elRect.height / el.clientHeight : 1;
+        const safeScale = scale > 0 ? scale : 1;
+
         if (firstReal) {
-          rowPx = firstReal.getBoundingClientRect().height;
+          rowPx = firstReal.getBoundingClientRect().height / safeScale;
         }
 
         if (!(rowPx > 0)) {
@@ -50,8 +59,7 @@ export const useVisibleRowCount = <T extends HTMLElement>(
         if (!(rowPx > 0)) return;
 
         const headerOffset = firstReal
-          ? firstReal.getBoundingClientRect().top -
-            el.getBoundingClientRect().top
+          ? (firstReal.getBoundingClientRect().top - elRect.top) / safeScale
           : 0;
         const next = Math.max(
           minRows,

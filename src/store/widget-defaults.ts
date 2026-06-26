@@ -236,6 +236,13 @@ const resolveRelativeLayout = makeColumnLayoutResolver<RelativeWidgetSettings>(
 // Default column visibility kept as a single source: the natural designWidth is
 // computed from it (so it can't drift from the colSpecs in *-utils.ts), and the
 // same object is spread into the widget's userSettings below.
+// Default highlight color for the player's own row in the standings/relative
+// tables (#f5c518 yellow). Stored as a setting so users can recolor it.
+const DEFAULT_PLAYER_ROW_COLOR = 'rgba(245, 197, 24, 0.32)';
+
+// Default color of the player's position/car number (solid gold #f5c518).
+const DEFAULT_PLAYER_ACCENT_COLOR = '#f5c518';
+
 const STANDINGS_COLUMN_DEFAULTS = {
   showPosChange: true,
   showBrand: true,
@@ -424,6 +431,8 @@ const WIDGETS: WidgetConfig[] = [
       showIncidentsBadge: true,
       abbreviateNames: false,
       showDriverFlags: true,
+      playerRowColor: DEFAULT_PLAYER_ROW_COLOR,
+      playerAccentColor: DEFAULT_PLAYER_ACCENT_COLOR,
     },
   },
   {
@@ -450,6 +459,8 @@ const WIDGETS: WidgetConfig[] = [
       showPitIndicator: true,
       abbreviateNames: true,
       showDriverFlags: true,
+      playerRowColor: DEFAULT_PLAYER_ROW_COLOR,
+      playerAccentColor: DEFAULT_PLAYER_ACCENT_COLOR,
     },
   },
   {

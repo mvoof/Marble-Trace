@@ -8,6 +8,7 @@ import type {
   RelativeFrame,
 } from '@/types/bindings';
 import { action } from 'mobx';
+import { TrackSurface } from '@/types';
 import type { RootStore } from '@store/root-store';
 import { computeDriverEntries } from './compute-driver-entries';
 import { sampleTrack, SAMPLE_TRACK_ID } from './sample-track';
@@ -126,6 +127,15 @@ export const seedSampleTelemetry = action((store: RootStore) => {
 
   if (entries.length > 0) {
     const playerCarIdx = sampleSnapshot.sessionInfo?.playerCarIdx ?? 0;
+
+    // The recorded snapshot captured the player off-track / not-in-world, which
+    // renders the player's standings row grey. Force the player on-track so the
+    // preview shows the normal highlighted row.
+    const playerEntry = entries.find((entry) => entry.isPlayer);
+
+    if (playerEntry) {
+      playerEntry.trackSurface = TrackSurface.OnTrack;
+    }
 
     store.backendComputed.updateStandings({
       entries,

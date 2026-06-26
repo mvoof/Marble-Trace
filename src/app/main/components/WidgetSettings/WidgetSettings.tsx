@@ -22,7 +22,13 @@ import { GMeterSettingsPanel } from './panels/GMeterSettingsPanel';
 import { useWidgetEditor } from './WidgetEditorContext';
 
 export const WidgetSettings = observer(
-  ({ widgetId }: { widgetId: string | null }) => {
+  ({
+    widgetId,
+    compact = false,
+  }: {
+    widgetId: string | null;
+    compact?: boolean;
+  }) => {
     const widgetSettings = useWidgetEditor();
 
     if (!widgetId) {
@@ -40,7 +46,9 @@ export const WidgetSettings = observer(
     const userSettings = widget.userSettings;
 
     return (
-      <div className={styles.animateFadeIn}>
+      <div
+        className={`${styles.animateFadeIn} ${compact ? styles.compact : ''}`}
+      >
         <header className={styles.header}>
           <span className={styles.moduleLabel}>Module Config</span>
           <h1 className={styles.title}>{widget.label}</h1>

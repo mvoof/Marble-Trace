@@ -92,7 +92,7 @@ export const LayoutWidgetPanel = observer(
           </Button>
 
           <div className={styles.detailBody}>
-            <WidgetSettings widgetId={editingWidgetId} />
+            <WidgetSettings widgetId={editingWidgetId} compact />
           </div>
         </div>
       );

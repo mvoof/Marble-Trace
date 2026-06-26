@@ -78,6 +78,15 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
     .filter(Boolean)
     .join(' ');
 
+  // Player row: fill with the user-chosen color and stack the same color in a
+  // thin band at the top/bottom edges. Layering the color over the fill makes
+  // those edges brighter in the same hue — a glow that reads like a border.
+  const playerRowStyle = driver.isPlayer
+    ? {
+        background: `linear-gradient(to bottom, ${settings.playerRowColor}, transparent 2px), linear-gradient(to top, ${settings.playerRowColor}, transparent 2px), ${settings.playerRowColor}`,
+      }
+    : undefined;
+
   const formattedCarNumber = formatCarNumber(driver.carNumber);
 
   // Get leader of current class/group from cached store for gap/deficit calculation
@@ -111,7 +120,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   return (
     <div
       className={rowClass}
-      style={{ gridTemplateColumns: gridTemplate }}
+      style={{ gridTemplateColumns: gridTemplate, ...playerRowStyle }}
       data-driver-row
     >
       <div
@@ -125,6 +134,9 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       >
         <span
           className={`${styles.posNumber} ${driver.isPlayer ? styles.posNumberPlayer : ''}`}
+          style={
+            driver.isPlayer ? { color: settings.playerAccentColor } : undefined
+          }
         >
           {pos}
         </span>
@@ -137,7 +149,14 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       )}
 
       <div className={`${styles.cell} ${styles.carNumberCell}`}>
-        <span className={styles.carNumber}>#{formattedCarNumber}</span>
+        <span
+          className={styles.carNumber}
+          style={
+            driver.isPlayer ? { color: settings.playerAccentColor } : undefined
+          }
+        >
+          #{formattedCarNumber}
+        </span>
       </div>
 
       <div className={`${styles.cell} ${styles.nameCell}`}>

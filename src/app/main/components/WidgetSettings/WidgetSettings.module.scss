@@ -129,3 +129,53 @@
   background: $sys-border-sub;
   margin: rem(16) rem(16) 0;
 }
+
+// Compact mode: rendered inside the layout editor's narrow widget drawer. Stack
+// each setting's label above its control so wide controls (Segmented, sliders,
+// selects) get the full panel width instead of being clipped, and tighten the
+// surrounding chrome — all without widening the panel.
+.compact {
+  .header {
+    margin-bottom: rem(16);
+  }
+
+  .title {
+    font-size: rem(18);
+  }
+
+  .card {
+    margin-bottom: rem(16);
+  }
+
+  .cardContent {
+    padding: rem(12);
+  }
+
+  .fieldGroup {
+    padding-bottom: rem(14);
+    margin-bottom: rem(14);
+  }
+
+  // Stack label above control, but keep controls at their natural size and
+  // left-aligned — stretching toggles to full width looks bad.
+  .fieldRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: rem(8);
+  }
+
+  .fieldTexts {
+    padding-right: 0;
+  }
+
+  // Only the dropdown benefits from full width; Segmented/Switch/Slider stay
+  // their natural size.
+  :global(.ant-select) {
+    width: 100%;
+  }
+
+  // Segmented with many options: wrap instead of overflowing the panel edge.
+  :global(.ant-segmented-group) {
+    flex-wrap: wrap;
+  }
+}
