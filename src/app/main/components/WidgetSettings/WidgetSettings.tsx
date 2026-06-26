@@ -19,11 +19,11 @@ import { ChassisSettingsPanel } from './panels/ChassisSettingsPanel';
 import { TimerSettingsPanel } from './panels/TimerSettingsPanel';
 import { FlagDisplaySettingsPanel } from './panels/FlagDisplaySettingsPanel';
 import { GMeterSettingsPanel } from './panels/GMeterSettingsPanel';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useWidgetEditor } from './WidgetEditorContext';
 
 export const WidgetSettings = observer(
   ({ widgetId }: { widgetId: string | null }) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const widgetSettings = useWidgetEditor();
 
     if (!widgetId) {
       return (

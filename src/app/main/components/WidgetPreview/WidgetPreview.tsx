@@ -1,10 +1,8 @@
 import { useLayoutEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { RootStore } from '@store/root-store';
-import {
-  RootStoreContext,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { RootStoreContext } from '@store/root-store-context';
+import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
 import { WIDGET_BY_ID } from '@store/widget-defaults';
 import { WidgetIdContext } from '@app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
@@ -27,7 +25,7 @@ export const WidgetPreview = observer(
     widgetId,
     scenarioId = DEFAULT_PREVIEW_SCENARIO_ID,
   }: WidgetPreviewProps) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const editor = useWidgetEditor();
 
     const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
 
@@ -35,10 +33,10 @@ export const WidgetPreview = observer(
       seedScenario(previewStore, scenarioId);
     }, [previewStore, scenarioId]);
 
-    const widget = widgetSettings.getWidget(widgetId);
+    const widget = editor.getWidget(widgetId);
 
-    // Read the mutation token so the effect re-mirrors on any settings change.
-    const mutationToken = widgetSettings.changeToken;
+    // Read the change token so the effect re-mirrors on any settings change.
+    const mutationToken = editor.getChangeToken();
 
     useLayoutEffect(() => {
       if (!widget) return;

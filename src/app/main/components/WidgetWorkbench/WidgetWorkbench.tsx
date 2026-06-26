@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Select } from 'antd';
 import { WidgetPreview } from '../WidgetPreview/WidgetPreview';
 import { WidgetSettings } from '../WidgetSettings/WidgetSettings';
+import { DefaultsEditorProvider } from '../WidgetSettings/WidgetEditorContext';
 import {
   PREVIEW_SCENARIOS,
   DEFAULT_PREVIEW_SCENARIO_ID,
@@ -31,32 +32,34 @@ export const WidgetWorkbench = observer(
     }
 
     return (
-      <div className={styles.root}>
-        <div className={styles.previewColumn}>
-          <div className={styles.scenarioBar}>
-            <span className={styles.scenarioLabel}>Scenario</span>
-            <Select
-              size="small"
-              value={scenarioId}
-              onChange={setScenarioId}
-              options={SCENARIO_OPTIONS}
-              style={{ minWidth: 160 }}
-            />
+      <DefaultsEditorProvider>
+        <div className={styles.root}>
+          <div className={styles.previewColumn}>
+            <div className={styles.scenarioBar}>
+              <span className={styles.scenarioLabel}>Scenario</span>
+              <Select
+                size="small"
+                value={scenarioId}
+                onChange={setScenarioId}
+                options={SCENARIO_OPTIONS}
+                style={{ minWidth: 160 }}
+              />
+            </div>
+
+            <div className={styles.previewPane}>
+              <WidgetPreview
+                key={widgetId}
+                widgetId={widgetId}
+                scenarioId={scenarioId}
+              />
+            </div>
           </div>
 
-          <div className={styles.previewPane}>
-            <WidgetPreview
-              key={widgetId}
-              widgetId={widgetId}
-              scenarioId={scenarioId}
-            />
+          <div className={styles.settingsPane}>
+            <WidgetSettings widgetId={widgetId} />
           </div>
         </div>
-
-        <div className={styles.settingsPane}>
-          <WidgetSettings widgetId={widgetId} />
-        </div>
-      </div>
+      </DefaultsEditorProvider>
     );
   }
 );

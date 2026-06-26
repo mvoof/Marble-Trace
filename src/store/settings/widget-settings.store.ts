@@ -25,12 +25,28 @@ import type { RootStore } from '@store/root-store';
 const DEFAULT_LAYOUT_NAME = 'Default';
 
 export class WidgetSettingsStore {
+  // Live working copy of the ACTIVE layout. The overlay renders this; the layout
+  // editor and F9 drag mode edit this.
   widgets = new Map<string, WidgetDefaultConfig>(
     DEFAULT_WIDGETS.map((widgetConfig) => [
       widgetConfig.id,
-      { ...widgetConfig },
+      { ...widgetConfig, userSettings: { ...widgetConfig.userSettings } },
     ])
   );
+
+  // Global widget defaults — the template edited in the Widgets catalog. Never
+  // rendered on the overlay; copied into a layout when a new layout is created.
+  // Kept fully independent from `widgets` so editing one never affects the other.
+  defaultWidgets = new Map<string, WidgetDefaultConfig>(
+    DEFAULT_WIDGETS.map((widgetConfig) => [
+      widgetConfig.id,
+      { ...widgetConfig, userSettings: { ...widgetConfig.userSettings } },
+    ])
+  );
+
+  // Bumped on every defaults mutation so the Widgets-catalog preview can react
+  // without coupling to the live-layout changeToken.
+  defaultsChangeToken = 0;
 
   layouts: SavedLayout[] = [];
   activeLayoutId: string | null = null;
@@ -273,7 +289,7 @@ export class WidgetSettingsStore {
 
     Object.assign(widget.userSettings, resolvedPartial);
 
-    this.handleLayoutResize(id, prevSettings, widget.userSettings);
+    this.handleLayoutResize(id, widget, prevSettings, widget.userSettings);
 
     this.bumpMutation();
 
@@ -314,13 +330,10 @@ export class WidgetSettingsStore {
 
   private handleLayoutResize(
     id: string,
+    widget: WidgetDefaultConfig,
     prevSettings: WidgetUserSettings,
     newSettings: WidgetUserSettings
   ) {
-    const widget = this.getWidget(id);
-
-    if (!widget) return;
-
     const config = WIDGET_BY_ID.get(id);
     const resolver = config?.resolveLayoutChange;
 
@@ -354,6 +367,98 @@ export class WidgetSettingsStore {
     if (result.userSettingsPatch) {
       Object.assign(widget.userSettings, result.userSettingsPatch);
     }
+  }
+
+  // ── Global defaults (edited in the Widgets catalog) ──────────────────────
+  // These mirror the live-widget API but operate on `defaultWidgets` and never
+  // touch the overlay (no backend invokes). They drive the "what a widget looks
+  // like before it's placed in a layout" template.
+
+  getDefaultWidget(id: string): WidgetDefaultConfig | undefined {
+    return this.defaultWidgets.get(id);
+  }
+
+  getDefaultSettings<SpecificSettings extends WidgetSpecificSettings>(
+    id: string
+  ): BaseUserSettings & SpecificSettings {
+    const widget = this.defaultWidgets.get(id);
+
+    const fallback = DEFAULT_WIDGETS.find(
+      (defaultWidget) => defaultWidget.id === id
+    )?.userSettings as (BaseUserSettings & SpecificSettings) | undefined;
+
+    return (
+      (widget?.userSettings as unknown as BaseUserSettings &
+        SpecificSettings) ?? fallback
+    );
+  }
+
+  updateDefaultUserSettings(id: string, partial: Partial<WidgetUserSettings>) {
+    const widget = this.defaultWidgets.get(id);
+
+    if (!widget) return;
+
+    let resolvedPartial = partial;
+
+    if (
+      id === 'fuel' &&
+      'barWidth' in partial &&
+      partial.barWidth !== undefined
+    ) {
+      resolvedPartial = {
+        ...partial,
+        barWidth: Math.max(5, Math.min(20, partial.barWidth)),
+      };
+    }
+
+    const prevSettings = { ...widget.userSettings };
+
+    Object.assign(widget.userSettings, resolvedPartial);
+
+    this.handleLayoutResize(id, widget, prevSettings, widget.userSettings);
+
+    this.defaultsChangeToken++;
+  }
+
+  setDefaultWidgets(widgets: WidgetDefaultConfig[]) {
+    runInAction(() => {
+      DEFAULT_WIDGETS.forEach((defaultWidget) => {
+        const saved = widgets.find((widget) => widget.id === defaultWidget.id);
+
+        const mergedUserSettings = saved
+          ? filterToDefaults(
+              defaultWidget.userSettings,
+              saved.userSettings ?? {}
+            )
+          : { ...defaultWidget.userSettings };
+
+        const existing = this.defaultWidgets.get(defaultWidget.id);
+
+        if (existing) {
+          Object.assign(existing.userSettings, mergedUserSettings);
+
+          if (saved) {
+            const merged = filterToDefaults(defaultWidget, saved);
+            existing.designWidth = merged.designWidth;
+            existing.designHeight = merged.designHeight;
+          }
+        } else {
+          this.defaultWidgets.set(defaultWidget.id, {
+            ...defaultWidget,
+            userSettings: mergedUserSettings,
+          });
+        }
+      });
+
+      this.defaultsChangeToken++;
+    });
+  }
+
+  private snapshotDefaults(): WidgetDefaultConfig[] {
+    return Array.from(this.defaultWidgets.values()).map((widget) => ({
+      ...widget,
+      userSettings: { ...widget.userSettings },
+    }));
   }
 
   setOverlayResolution(resolution: LayoutResolution, monitorName?: string) {
@@ -421,11 +526,12 @@ export class WidgetSettingsStore {
         createdAt: Date.now(),
         targetResolution: { ...this.overlayResolution },
         targetMonitorName: this.overlayMonitorName,
-        widgets: this.snapshotWidgets(),
+        widgets: this.snapshotDefaults(),
       },
     ];
 
     this.activeLayoutId = id;
+    this.setWidgets(this.layouts[0].widgets);
     this.refreshActiveLayoutMismatch();
     this.bumpMutation();
   }

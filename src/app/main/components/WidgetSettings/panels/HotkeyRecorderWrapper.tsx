@@ -1,5 +1,5 @@
 import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const HotkeyRecorderWrapper = ({
   widgetId,
@@ -8,7 +8,7 @@ export const HotkeyRecorderWrapper = ({
   widgetId: string;
   currentHotkey: string;
 }) => {
-  const widgetSettings = useWidgetSettingsStore();
+  const widgetSettings = useWidgetEditor();
 
   return (
     <HotkeyRecorder

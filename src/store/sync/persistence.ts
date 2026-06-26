@@ -14,6 +14,7 @@ export interface Settings {
     system: UnitSystem;
   };
   widgets: WidgetDefaultConfig[];
+  defaultWidgets: WidgetDefaultConfig[];
   layouts: SavedLayout[];
   activeLayoutId: string | null;
 }
@@ -72,6 +73,12 @@ export const hydrateStores = (
         : DEFAULT_WIDGETS
     );
 
+    if (loadedSettings.defaultWidgets) {
+      root.widgetSettings.setDefaultWidgets(
+        restoreWidgets(loadedSettings.defaultWidgets)
+      );
+    }
+
     if (loadedSettings.layouts) {
       root.widgetSettings.setLayouts(
         loadedSettings.layouts,
@@ -93,6 +100,7 @@ export const saveSettings = async (store: Store, root: RootStore) => {
       system: root.units.unitSystem,
     },
     widgets: root.widgetSettings.allWidgets,
+    defaultWidgets: Array.from(root.widgetSettings.defaultWidgets.values()),
     layouts: root.widgetSettings.layouts,
     activeLayoutId: root.widgetSettings.activeLayoutId,
   });
