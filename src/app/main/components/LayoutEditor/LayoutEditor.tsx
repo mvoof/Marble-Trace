@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Input, Popconfirm, Select, Tooltip } from 'antd';
+import { Button, Input, InputNumber, Popconfirm, Select, Tooltip } from 'antd';
 import type { InputRef } from 'antd';
 import {
   Plus,
@@ -11,6 +11,8 @@ import {
   Image,
   ImageOff,
   Grid3x3,
+  Maximize,
+  Minimize,
 } from 'lucide-react';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 import {
@@ -43,9 +45,31 @@ export const LayoutEditor = observer(() => {
   const [draftName, setDraftName] = useState('');
   const nameInputRef = useRef<InputRef | null>(null);
   const backgroundInputRef = useRef<HTMLInputElement | null>(null);
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const activeId = widgetSettings.activeLayoutId;
   const activeLayout = widgetSettings.activeLayout;
+
+  const selectedWidget = selectedWidgetId
+    ? widgetSettings.getWidget(selectedWidgetId)
+    : undefined;
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    } else {
+      void canvasRef.current?.requestFullscreen();
+    }
+  };
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+
+    document.addEventListener('fullscreenchange', onChange);
+
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
 
   const handlePickBackground = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -236,11 +260,67 @@ export const LayoutEditor = observer(() => {
         </div>
 
         <div className={styles.previewControls}>
-          {activeLayout && (
-            <span className={styles.activeBadge}>
-              <span className={styles.activeDot} />
-              Active
-            </span>
+          {selectedWidget && (
+            <div className={styles.coords}>
+              <span className={styles.coordLabel}>X</span>
+              <InputNumber
+                size="small"
+                className={styles.coordInput}
+                value={selectedWidget.userSettings.x}
+                onChange={(value) =>
+                  value !== null &&
+                  widgetSettings.updatePosition(
+                    selectedWidget.id,
+                    value,
+                    selectedWidget.userSettings.y
+                  )
+                }
+              />
+              <span className={styles.coordLabel}>Y</span>
+              <InputNumber
+                size="small"
+                className={styles.coordInput}
+                value={selectedWidget.userSettings.y}
+                onChange={(value) =>
+                  value !== null &&
+                  widgetSettings.updatePosition(
+                    selectedWidget.id,
+                    selectedWidget.userSettings.x,
+                    value
+                  )
+                }
+              />
+              <span className={styles.coordLabel}>W</span>
+              <InputNumber
+                size="small"
+                className={styles.coordInput}
+                min={10}
+                value={selectedWidget.userSettings.currentWidth}
+                onChange={(value) =>
+                  value !== null &&
+                  widgetSettings.updateSize(
+                    selectedWidget.id,
+                    value,
+                    selectedWidget.userSettings.currentHeight
+                  )
+                }
+              />
+              <span className={styles.coordLabel}>H</span>
+              <InputNumber
+                size="small"
+                className={styles.coordInput}
+                min={10}
+                value={selectedWidget.userSettings.currentHeight}
+                onChange={(value) =>
+                  value !== null &&
+                  widgetSettings.updateSize(
+                    selectedWidget.id,
+                    selectedWidget.userSettings.currentWidth,
+                    value
+                  )
+                }
+              />
+            </div>
           )}
 
           <span className={styles.resolutionLabel}>
@@ -263,6 +343,15 @@ export const LayoutEditor = observer(() => {
               type={showGrid ? 'primary' : 'text'}
               icon={<Grid3x3 size={14} />}
               onClick={() => setShowGrid((prev) => !prev)}
+            />
+          </Tooltip>
+
+          <Tooltip title="Fullscreen preview">
+            <Button
+              size="small"
+              type="text"
+              icon={<Maximize size={14} />}
+              onClick={toggleFullscreen}
             />
           </Tooltip>
 
@@ -309,7 +398,24 @@ export const LayoutEditor = observer(() => {
           />
         </aside>
 
-        <main className={styles.canvas}>
+        <main
+          className={`${styles.canvas} ${
+            isFullscreen ? styles.canvasFullscreen : ''
+          }`}
+          ref={canvasRef}
+        >
+          {isFullscreen && (
+            <Tooltip title="Exit fullscreen (Esc)">
+              <Button
+                className={styles.exitFullscreen}
+                size="small"
+                type="text"
+                icon={<Minimize size={16} />}
+                onClick={toggleFullscreen}
+              />
+            </Tooltip>
+          )}
+
           <LayoutCanvas
             scenarioId={scenarioId}
             showGrid={showGrid}

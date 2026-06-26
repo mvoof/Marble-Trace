@@ -17,11 +17,21 @@ const ALL_DIRECTIONS: ResizeDirection[] = [
 ];
 const HORIZONTAL_DIRECTIONS: ResizeDirection[] = ['e', 'w'];
 
+// Snap distance (overlay px) for centering a widget on the canvas axes.
+const SNAP_CENTER_THRESHOLD = 24;
+
+const snapToGrid = (value: number, gridSize: number) =>
+  Math.round(value / gridSize) * gridSize;
+
 interface LayoutCanvasWidgetProps {
   widgetId: string;
   fit: number;
   mainSettings: WidgetSettingsStore;
   isSelected: boolean;
+  snap: boolean;
+  gridSize: number;
+  worldWidth: number;
+  worldHeight: number;
   onSelect: (id: string) => void;
   children: ReactNode;
 }
@@ -36,6 +46,10 @@ export const LayoutCanvasWidget = observer(
     fit,
     mainSettings,
     isSelected,
+    snap,
+    gridSize,
+    worldWidth,
+    worldHeight,
     onSelect,
     children,
   }: LayoutCanvasWidgetProps) => {
@@ -105,11 +119,29 @@ export const LayoutCanvasWidget = observer(
           const dx = (moveEvent.clientX - dragStartRef.current.mouseX) / fit;
           const dy = (moveEvent.clientY - dragStartRef.current.mouseY) / fit;
 
-          mainSettings.updatePosition(
-            widgetId,
-            Math.round(dragStartRef.current.widgetX + dx),
-            Math.round(dragStartRef.current.widgetY + dy)
-          );
+          let newX = Math.round(dragStartRef.current.widgetX + dx);
+          let newY = Math.round(dragStartRef.current.widgetY + dy);
+
+          if (snap) {
+            newX = snapToGrid(newX, gridSize);
+            newY = snapToGrid(newY, gridSize);
+
+            if (
+              Math.abs(newX + width / 2 - worldWidth / 2) <
+              SNAP_CENTER_THRESHOLD
+            ) {
+              newX = Math.round((worldWidth - width) / 2);
+            }
+
+            if (
+              Math.abs(newY + height / 2 - worldHeight / 2) <
+              SNAP_CENTER_THRESHOLD
+            ) {
+              newY = Math.round((worldHeight - height) / 2);
+            }
+          }
+
+          mainSettings.updatePosition(widgetId, newX, newY);
         };
 
         const onMouseUp = () => {
@@ -121,7 +153,18 @@ export const LayoutCanvasWidget = observer(
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       },
-      [fit, mainSettings, onSelect, widgetId]
+      [
+        fit,
+        mainSettings,
+        onSelect,
+        widgetId,
+        snap,
+        gridSize,
+        worldWidth,
+        worldHeight,
+        width,
+        height,
+      ]
     );
 
     const handleResizeMouseDown = useCallback(
@@ -185,6 +228,19 @@ export const LayoutCanvasWidget = observer(
             newY = Math.round(startY + startH - newH);
           }
 
+          if (snap) {
+            newW = Math.max(minW, snapToGrid(newW, gridSize));
+            newH = Math.max(minH, snapToGrid(newH, gridSize));
+
+            if (direction.includes('w')) {
+              newX = Math.round(startX + startW - newW);
+            }
+
+            if (direction.includes('n')) {
+              newY = Math.round(startY + startH - newH);
+            }
+          }
+
           mainSettings.updateSize(widgetId, newW, newH);
 
           if (newX !== startX || newY !== startY) {
@@ -201,7 +257,16 @@ export const LayoutCanvasWidget = observer(
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       },
-      [designHeight, designWidth, fit, mainSettings, onSelect, widgetId]
+      [
+        designHeight,
+        designWidth,
+        fit,
+        mainSettings,
+        onSelect,
+        widgetId,
+        snap,
+        gridSize,
+      ]
     );
 
     const resizeDirections = autoHeight

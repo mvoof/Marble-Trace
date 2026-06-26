@@ -526,7 +526,7 @@ export class WidgetSettingsStore {
         createdAt: Date.now(),
         targetResolution: { ...this.overlayResolution },
         targetMonitorName: this.overlayMonitorName,
-        widgets: this.snapshotDefaults(),
+        widgets: this.buildStarterWidgets(),
       },
     ];
 
@@ -534,6 +534,42 @@ export class WidgetSettingsStore {
     this.setWidgets(this.layouts[0].widgets);
     this.refreshActiveLayoutMismatch();
     this.bumpMutation();
+  }
+
+  // Curated onboarding layout: the default-enabled starter widgets placed at
+  // sensible anchors for the current overlay resolution (standings top-left,
+  // relative bottom-left, radar bottom-center) instead of the raw default
+  // positions clustered in a corner.
+  private buildStarterWidgets(): WidgetDefaultConfig[] {
+    const widgets = this.snapshotDefaults();
+    const { width, height } = this.overlayResolution;
+    const MARGIN = 24;
+
+    const place = (id: string, x: number, y: number) => {
+      const widget = widgets.find((candidate) => candidate.id === id);
+
+      if (widget) {
+        widget.userSettings.x = Math.round(x);
+        widget.userSettings.y = Math.round(y);
+      }
+    };
+
+    const heightOf = (id: string) =>
+      widgets.find((candidate) => candidate.id === id)?.userSettings
+        .currentHeight ?? 0;
+    const widthOf = (id: string) =>
+      widgets.find((candidate) => candidate.id === id)?.userSettings
+        .currentWidth ?? 0;
+
+    place('standings', MARGIN, MARGIN);
+    place('relative', MARGIN, height - heightOf('relative') - MARGIN);
+    place(
+      'proximity-radar',
+      (width - widthOf('proximity-radar')) / 2,
+      height - heightOf('proximity-radar') - MARGIN
+    );
+
+    return widgets;
   }
 
   saveLayout(name: string) {

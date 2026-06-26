@@ -190,7 +190,14 @@ export const initMainSync = async (root: RootStore) => {
           { delay: 16 }
         ),
         reaction(
-          () => root.widgetSettings.changeToken,
+          // Commit on local edits (changeToken) AND on edits synced in from the
+          // overlay's F9 drag mode (syncToken) so live-tweaks persist into the
+          // active layout. Only this reaction watches syncToken — the emit
+          // reaction must not, or main↔overlay would loop.
+          () => [
+            root.widgetSettings.changeToken,
+            root.widgetSettings.syncToken,
+          ],
           () => {
             root.widgetSettings.commitActiveLayout();
             void onSave();
