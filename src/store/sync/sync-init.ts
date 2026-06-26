@@ -131,6 +131,7 @@ export const initMainSync = async (root: RootStore) => {
           () => [
             root.appSettings.appSettings.editorShowGrid,
             root.appSettings.appSettings.editorSnapToGrid,
+            root.appSettings.appSettings.editorGridSize,
           ],
           () => {
             void onSave();

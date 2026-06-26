@@ -19,14 +19,11 @@ import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import { LayoutCanvasWidget } from './LayoutCanvasWidget';
 import styles from './LayoutCanvas.module.scss';
 
-// Overlay-space grid pitch — kept in sync with the `.grid` background in the
-// stylesheet. Drives both the visual grid and drag/resize snapping.
-const GRID_PX = 30;
-
 interface LayoutCanvasProps {
   scenarioId?: string;
   showGrid?: boolean;
   snapToGrid?: boolean;
+  gridSize?: number;
   fullscreen?: boolean;
   selectedWidgetId: string | null;
   onSelectWidget: (id: string) => void;
@@ -56,6 +53,7 @@ export const LayoutCanvas = observer(
     scenarioId = DEFAULT_PREVIEW_SCENARIO_ID,
     showGrid = false,
     snapToGrid = false,
+    gridSize = 20,
     fullscreen = false,
     selectedWidgetId,
     onSelectWidget,
@@ -155,6 +153,19 @@ export const LayoutCanvas = observer(
               }}
               onMouseDown={() => onSelectWidget('')}
             >
+              {showGrid && (
+                <div
+                  className={styles.grid}
+                  aria-hidden="true"
+                  style={{
+                    backgroundSize: `${gridSize * fit}px ${gridSize * fit}px`,
+                  }}
+                >
+                  <div className={styles.axisVertical} />
+                  <div className={styles.axisHorizontal} />
+                </div>
+              )}
+
               <div
                 className={styles.world}
                 style={{
@@ -163,13 +174,6 @@ export const LayoutCanvas = observer(
                   transform: `scale(${fit})`,
                 }}
               >
-                {showGrid && (
-                  <div className={styles.grid} aria-hidden="true">
-                    <div className={styles.axisVertical} />
-                    <div className={styles.axisHorizontal} />
-                  </div>
-                )}
-
                 {widgetSettings.enabledWidgetIds.map((id) => {
                   const config = WIDGET_BY_ID.get(id);
 
@@ -187,7 +191,7 @@ export const LayoutCanvas = observer(
                       mainSettings={widgetSettings}
                       isSelected={selectedWidgetId === id}
                       snap={snapToGrid}
-                      gridSize={GRID_PX}
+                      gridSize={gridSize}
                       worldWidth={targetResolution.width}
                       worldHeight={targetResolution.height}
                       onSelect={onSelectWidget}

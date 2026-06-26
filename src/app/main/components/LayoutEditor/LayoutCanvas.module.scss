@@ -41,28 +41,24 @@
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 1;
   transform-origin: 0 0;
 }
 
-// Alignment grid drawn in overlay-space (scales with the world). Minor lines on
-// a fixed pitch + brighter center axes for centering widgets.
+// Alignment grid drawn in screen-space on the stage (NOT inside the scaled
+// world) so the 1px lines stay crisp. The pitch is supplied inline as
+// `background-size` = gridSize * fit; downscaling a world-space grid would round
+// the lines into sparse, oversized squares.
 .grid {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 1;
-  // Pitch must match GRID_PX in LayoutCanvas.tsx.
+  z-index: 0;
+  // Match the F9 drag-mode tint (rgba(0, 102, 255, …)) so the lines stay
+  // visible over light backgrounds instead of washing out like white.
   background-image:
-    repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.06) 0 1px,
-      transparent 1px 30px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.06) 0 1px,
-      transparent 1px 30px
-    );
+    linear-gradient(0deg, rgba(0, 102, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 102, 255, 0.1) 1px, transparent 1px);
 }
 
 .axisVertical,

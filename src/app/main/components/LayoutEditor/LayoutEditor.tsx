@@ -14,6 +14,8 @@ import {
   Magnet,
   Maximize,
   Minimize,
+  PanelLeft,
+  PanelLeftClose,
 } from 'lucide-react';
 import {
   useAppSettingsStore,
@@ -36,6 +38,11 @@ const SCENARIO_OPTIONS = PREVIEW_SCENARIOS.map((scenario) => ({
   label: scenario.label,
 }));
 
+const GRID_SIZE_OPTIONS = [10, 15, 20, 30, 40].map((size) => ({
+  value: size,
+  label: `${size}px`,
+}));
+
 // Layout editor section: a WYSIWYG canvas of the active layout plus a
 // master-detail widget panel. Editing the canvas (drag/resize) or a widget's
 // settings auto-commits into the active layout via the store's change reaction.
@@ -45,6 +52,7 @@ export const LayoutEditor = observer(() => {
 
   const showGrid = appSettings.appSettings.editorShowGrid;
   const snapToGrid = appSettings.appSettings.editorSnapToGrid;
+  const gridSize = appSettings.appSettings.editorGridSize;
 
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
   const [editingWidgetId, setEditingWidgetId] = useState<string | null>(null);
@@ -56,8 +64,9 @@ export const LayoutEditor = observer(() => {
   const [draftName, setDraftName] = useState('');
   const nameInputRef = useRef<InputRef | null>(null);
   const backgroundInputRef = useRef<HTMLInputElement | null>(null);
-  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   const activeId = widgetSettings.activeLayoutId;
   const activeLayout = widgetSettings.activeLayout;
@@ -70,12 +79,20 @@ export const LayoutEditor = observer(() => {
     if (document.fullscreenElement) {
       void document.exitFullscreen();
     } else {
-      void canvasRef.current?.requestFullscreen();
+      void rootRef.current?.requestFullscreen();
     }
   };
 
   useEffect(() => {
-    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    const onChange = () => {
+      const fullscreen = !!document.fullscreenElement;
+
+      setIsFullscreen(fullscreen);
+
+      if (!fullscreen) {
+        setIsPanelOpen(false);
+      }
+    };
 
     document.addEventListener('fullscreenchange', onChange);
 
@@ -172,8 +189,26 @@ export const LayoutEditor = observer(() => {
   };
 
   return (
-    <div className={styles.root}>
-      <header className={styles.toolbar}>
+    <div
+      className={`${styles.root} ${isFullscreen ? styles.rootFullscreen : ''}`}
+      ref={rootRef}
+    >
+      <header
+        className={`${styles.toolbar} ${
+          isFullscreen ? styles.toolbarFullscreen : ''
+        }`}
+      >
+        {isFullscreen && (
+          <Tooltip title="Toggle widget panel">
+            <Button
+              size="small"
+              type={isPanelOpen ? 'primary' : 'text'}
+              icon={<PanelLeft size={14} />}
+              onClick={() => setIsPanelOpen((open) => !open)}
+            />
+          </Tooltip>
+        )}
+
         <div className={styles.layoutControls}>
           {isCreating ? (
             <>
@@ -375,6 +410,18 @@ export const LayoutEditor = observer(() => {
             />
           </Tooltip>
 
+          {showGrid && (
+            <Tooltip title="Grid size">
+              <Select
+                size="small"
+                value={gridSize}
+                onChange={(value) => appSettings.setEditorGridSize(value)}
+                options={GRID_SIZE_OPTIONS}
+                style={{ minWidth: 72 }}
+              />
+            </Tooltip>
+          )}
+
           <Tooltip title="Snap to grid">
             <Button
               size="small"
@@ -384,11 +431,15 @@ export const LayoutEditor = observer(() => {
             />
           </Tooltip>
 
-          <Tooltip title="Fullscreen preview">
+          <Tooltip
+            title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen preview'}
+          >
             <Button
               size="small"
               type="text"
-              icon={<Maximize size={14} />}
+              icon={
+                isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />
+              }
               onClick={toggleFullscreen}
             />
           </Tooltip>
@@ -424,8 +475,28 @@ export const LayoutEditor = observer(() => {
         </div>
       </header>
 
-      <div className={styles.body}>
-        <aside className={styles.panel}>
+      <div
+        className={`${styles.body} ${isFullscreen ? styles.bodyFullscreen : ''}`}
+      >
+        <aside
+          className={`${
+            isFullscreen ? styles.panelDrawer : styles.panel
+          } ${isFullscreen && isPanelOpen ? styles.panelDrawerOpen : ''}`}
+        >
+          {isFullscreen && (
+            <div className={styles.panelDrawerHeader}>
+              <span className={styles.panelDrawerTitle}>Widgets</span>
+              <Tooltip title="Hide panel">
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<PanelLeftClose size={16} />}
+                  onClick={() => setIsPanelOpen(false)}
+                />
+              </Tooltip>
+            </div>
+          )}
+
           <LayoutWidgetPanel
             selectedWidgetId={selectedWidgetId}
             editingWidgetId={editingWidgetId}
@@ -438,24 +509,12 @@ export const LayoutEditor = observer(() => {
           className={`${styles.canvas} ${
             isFullscreen ? styles.canvasFullscreen : ''
           }`}
-          ref={canvasRef}
         >
-          {isFullscreen && (
-            <Tooltip title="Exit fullscreen (Esc)">
-              <Button
-                className={styles.exitFullscreen}
-                size="small"
-                type="text"
-                icon={<Minimize size={16} />}
-                onClick={toggleFullscreen}
-              />
-            </Tooltip>
-          )}
-
           <LayoutCanvas
             scenarioId={scenarioId}
             showGrid={showGrid}
             snapToGrid={snapToGrid}
+            gridSize={gridSize}
             fullscreen={isFullscreen}
             selectedWidgetId={selectedWidgetId}
             onSelectWidget={handleSelectWidget}

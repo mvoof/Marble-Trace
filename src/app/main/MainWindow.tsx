@@ -66,6 +66,11 @@ export const MainWindow = observer(() => {
           fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
         },
         components: {
+          // colorPrimary is near-white, so primary buttons need dark text/icon
+          // or the icon blends into the active button background.
+          Button: {
+            primaryColor: '#15161a',
+          },
           Layout: {
             siderBg: '#111216',
             bodyBg: '#0d0e12',

@@ -17,6 +17,8 @@ const DEFAULT_APP_SETTINGS = {
   // Layout editor preferences (persisted across sessions).
   editorShowGrid: false,
   editorSnapToGrid: true,
+  // Overlay-space grid pitch (px). Drives both the visual grid and snapping.
+  editorGridSize: 20,
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
@@ -228,6 +230,10 @@ export class AppSettingsStore {
 
   setEditorSnapToGrid(value: boolean) {
     this.appSettings.editorSnapToGrid = value;
+  }
+
+  setEditorGridSize(value: number) {
+    this.appSettings.editorGridSize = value;
   }
 
   async resetSettings() {
