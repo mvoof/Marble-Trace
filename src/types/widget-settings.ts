@@ -259,9 +259,20 @@ export type WidgetDefaultConfig = WidgetMeta & {
   userSettings: WidgetUserSettings;
 };
 
+export interface LayoutResolution {
+  width: number;
+  height: number;
+}
+
 export interface SavedLayout {
   id: string;
   name: string;
   createdAt: number;
+  /** Resolution the layout was authored against (overlay-window px). */
+  targetResolution: LayoutResolution;
+  /** Monitor the layout is intended for; undefined for custom resolutions. */
+  targetMonitorName?: string;
+  /** Background image shown behind widgets in the layout editor. */
+  backgroundImage?: string;
   widgets: WidgetDefaultConfig[];
 }

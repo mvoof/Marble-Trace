@@ -7,6 +7,7 @@ import type {
   WidgetDefaultConfig,
   BaseUserSettings,
   FuelWidgetSettings,
+  LayoutResolution,
   SavedLayout,
   StandingsViewMode,
   StandingsWidgetSettings,
@@ -14,7 +15,14 @@ import type {
   WidgetUserSettings,
   RadarSettings,
 } from '@/types/widget-settings';
+import {
+  DEFAULT_LAYOUT_RESOLUTION,
+  resolutionsEqual,
+  scaleWidgetsToResolution,
+} from '@utils/widget/layout-resolution';
 import type { RootStore } from '@store/root-store';
+
+const DEFAULT_LAYOUT_NAME = 'Default';
 
 export class WidgetSettingsStore {
   widgets = new Map<string, WidgetDefaultConfig>(
@@ -26,6 +34,15 @@ export class WidgetSettingsStore {
 
   layouts: SavedLayout[] = [];
   activeLayoutId: string | null = null;
+
+  // Resolution of the overlay window the layouts are placed against. Populated
+  // from the selected monitor during sync; defaults until then.
+  overlayResolution: LayoutResolution = { ...DEFAULT_LAYOUT_RESOLUTION };
+  overlayMonitorName: string | undefined = undefined;
+
+  // Set when the active layout was authored against a different resolution than
+  // the current overlay. Drives the "adapt & save copy" banner. null = match.
+  activeLayoutResolutionMismatch: LayoutResolution | null = null;
 
   // Incremented on every settings mutation. Reactions use this as a cheap
   // change trigger instead of subscribing to every field across all widgets.
@@ -331,31 +348,99 @@ export class WidgetSettingsStore {
     }
   }
 
+  setOverlayResolution(resolution: LayoutResolution, monitorName?: string) {
+    this.overlayResolution = { ...resolution };
+    this.overlayMonitorName = monitorName;
+
+    this.refreshActiveLayoutMismatch();
+  }
+
+  private refreshActiveLayoutMismatch() {
+    const active = this.layouts.find(
+      (layout) => layout.id === this.activeLayoutId
+    );
+
+    this.activeLayoutResolutionMismatch =
+      active &&
+      !resolutionsEqual(active.targetResolution, this.overlayResolution)
+        ? { ...active.targetResolution }
+        : null;
+  }
+
+  private snapshotWidgets(): WidgetDefaultConfig[] {
+    return this.allWidgets.map((widget) => ({
+      ...widget,
+      userSettings: structuredClone(widget.userSettings),
+    }));
+  }
+
   setLayouts(layouts: SavedLayout[], activeLayoutId?: string | null) {
-    this.layouts = layouts;
+    this.layouts = layouts.map((layout) => ({
+      ...layout,
+      targetResolution: layout.targetResolution ?? {
+        ...this.overlayResolution,
+      },
+    }));
 
     if (activeLayoutId !== undefined) {
       this.activeLayoutId = activeLayoutId;
     }
+
+    this.refreshActiveLayoutMismatch();
+  }
+
+  // Guarantees there is always an active layout. Creates a "Default" layout from
+  // the current widgets on first run so the overlay is never in a layout-less
+  // state.
+  ensureDefaultLayout() {
+    if (this.layouts.length > 0) {
+      if (!this.activeLayoutId) {
+        this.activeLayoutId = this.layouts[0].id;
+        this.refreshActiveLayoutMismatch();
+      }
+
+      return;
+    }
+
+    const id = crypto.randomUUID();
+
+    this.layouts = [
+      {
+        id,
+        name: DEFAULT_LAYOUT_NAME,
+        createdAt: Date.now(),
+        targetResolution: { ...this.overlayResolution },
+        targetMonitorName: this.overlayMonitorName,
+        widgets: this.snapshotWidgets(),
+      },
+    ];
+
+    this.activeLayoutId = id;
+    this.refreshActiveLayoutMismatch();
+    this.bumpMutation();
   }
 
   saveLayout(name: string) {
+    const id = crypto.randomUUID();
+
     const layout: SavedLayout = {
-      id: crypto.randomUUID(),
+      id,
       name: name.trim(),
       createdAt: Date.now(),
-      widgets: this.allWidgets.map((widget) => ({
-        ...widget,
-        userSettings: structuredClone(widget.userSettings),
-      })),
+      targetResolution: { ...this.overlayResolution },
+      targetMonitorName: this.overlayMonitorName,
+      widgets: this.snapshotWidgets(),
     };
 
     this.layouts = [...this.layouts, layout];
+    this.activeLayoutId = id;
+    this.refreshActiveLayoutMismatch();
     this.bumpMutation();
   }
 
   selectLayout(id: string | null) {
     this.activeLayoutId = id;
+    this.refreshActiveLayoutMismatch();
     this.bumpMutation();
   }
 
@@ -364,8 +449,49 @@ export class WidgetSettingsStore {
 
     if (!layout) return;
 
-    this.setWidgets(layout.widgets);
+    const widgets = scaleWidgetsToResolution(
+      layout.widgets,
+      layout.targetResolution,
+      this.overlayResolution
+    );
+
+    this.setWidgets(widgets);
     this.activeLayoutId = id;
+    this.refreshActiveLayoutMismatch();
+    this.bumpMutation();
+  }
+
+  // Auto-commit: writes the live widgets back into the active layout. Skipped
+  // when the overlay resolution differs from the layout's target, so an
+  // unadapted mismatch is never silently re-stamped — the banner handles that.
+  commitActiveLayout() {
+    const layout = this.layouts.find(
+      (savedLayout) => savedLayout.id === this.activeLayoutId
+    );
+
+    if (!layout) return;
+
+    if (!resolutionsEqual(layout.targetResolution, this.overlayResolution)) {
+      return;
+    }
+
+    layout.widgets = this.snapshotWidgets();
+  }
+
+  // Banner action: re-stamp the active layout to the current overlay resolution,
+  // keeping the already-scaled widget placement.
+  adaptActiveLayoutToOverlay() {
+    const layout = this.layouts.find(
+      (savedLayout) => savedLayout.id === this.activeLayoutId
+    );
+
+    if (!layout) return;
+
+    layout.targetResolution = { ...this.overlayResolution };
+    layout.targetMonitorName = this.overlayMonitorName;
+    layout.widgets = this.snapshotWidgets();
+
+    this.refreshActiveLayoutMismatch();
     this.bumpMutation();
   }
 
@@ -374,10 +500,7 @@ export class WidgetSettingsStore {
 
     if (!layout) return;
 
-    layout.widgets = this.allWidgets.map((widget) => ({
-      ...widget,
-      userSettings: structuredClone(widget.userSettings),
-    }));
+    layout.widgets = this.snapshotWidgets();
 
     this.bumpMutation();
   }
@@ -386,9 +509,10 @@ export class WidgetSettingsStore {
     this.layouts = this.layouts.filter((savedLayout) => savedLayout.id !== id);
 
     if (this.activeLayoutId === id) {
-      this.activeLayoutId = null;
+      this.activeLayoutId = this.layouts[0]?.id ?? null;
     }
 
+    this.refreshActiveLayoutMismatch();
     this.bumpMutation();
   }
 

@@ -1,30 +1,16 @@
-import tracksJson from '../../test-data/tracks.json';
-import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
-import { computeDriverEntries } from './compute-driver-entries';
+import { sampleSnapshot } from '@store/preview/sample-telemetry';
+import { computeDriverEntries } from '@store/preview/compute-driver-entries';
+import { sampleTrack } from '@store/preview/sample-track';
 
-const snapshotModules = import.meta.glob('../../test-data/iracing-*.json', {
-  eager: true,
-  import: 'default',
-});
+// Storybook adapts to the app's data and formats — it consumes the neutral
+// preview fixtures, never the other way around. The app never imports from here.
+export const snapshot = sampleSnapshot;
 
-const firstSnapshot = Object.values(snapshotModules)[0];
-if (!firstSnapshot) {
-  throw new Error('No iracing-*.json snapshot found in test-data/');
-}
-
-export const snapshot = firstSnapshot as unknown as TelemetrySnapshot;
-
-interface StoredTrack {
-  svgPath: string;
-  viewBox: string;
-  points: { x: number; y: number; pct: number }[];
-  trackName: string;
-}
-
-const storedTracks = tracksJson as {
-  'recorded-tracks': Record<string, StoredTrack>;
+export const trackData = {
+  svgPath: sampleTrack.svgPath,
+  viewBox: sampleTrack.viewBox,
+  points: sampleTrack.points,
 };
-export const trackData = Object.values(storedTracks['recorded-tracks'])[0];
 
 export const driverEntries = computeDriverEntries(
   snapshot.carIdx,

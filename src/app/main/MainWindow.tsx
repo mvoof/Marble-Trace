@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { Settings } from 'lucide-react';
 import { initMainSync } from '@store/sync/sync-init';
 import { WidgetList } from './components/WidgetList/WidgetList';
-import { WidgetSettings } from './components/WidgetSettings/WidgetSettings';
+import { WidgetWorkbench } from './components/WidgetWorkbench/WidgetWorkbench';
 import { SettingsPage } from './components/SettingsPage/SettingsPage';
 import { TitleBar } from './components/TitleBar/TitleBar';
 import { AppStatus } from './components/AppStatus/AppStatus';
@@ -162,17 +162,22 @@ export const MainWindow = observer(() => {
             <Content className={styles.content}>
               <RandomGlitchCanvas />
 
-              <div className={styles.scrollContainer} key={selectedId}>
-                <div
-                  className={`${styles.contentInner} ${styles.animateFadeIn}`}
-                >
-                  {selectedId === 'app-settings' ? (
+              {selectedId === 'app-settings' ? (
+                <div className={styles.scrollContainer} key={selectedId}>
+                  <div
+                    className={`${styles.contentInner} ${styles.animateFadeIn}`}
+                  >
                     <SettingsPage />
-                  ) : (
-                    <WidgetSettings widgetId={selectedId} />
-                  )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div
+                  className={`${styles.workbenchContainer} ${styles.animateFadeIn}`}
+                  key={selectedId}
+                >
+                  <WidgetWorkbench widgetId={selectedId} />
+                </div>
+              )}
             </Content>
           </Layout>
         </Layout>
