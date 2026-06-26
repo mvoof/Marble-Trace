@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, type ReactNode } from 'react';
+import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
 import styles from './LayoutCanvas.module.scss';
@@ -57,6 +57,13 @@ export const LayoutCanvasWidget = observer(
 
     const isDraggingRef = useRef(false);
     const isResizingRef = useRef(false);
+
+    // Removes whichever document listeners a drag/resize gesture installed. Held
+    // in a ref so an unmount mid-gesture can tear them down (the gesture's own
+    // mouseup would otherwise never fire).
+    const detachListenersRef = useRef<(() => void) | null>(null);
+
+    useEffect(() => () => detachListenersRef.current?.(), []);
 
     const dragStartRef = useRef({
       mouseX: 0,
@@ -153,14 +160,20 @@ export const LayoutCanvasWidget = observer(
           mainSettings.updatePosition(widgetId, newX, newY);
         };
 
-        const onMouseUp = () => {
-          isDraggingRef.current = false;
+        const detach = () => {
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
+          detachListenersRef.current = null;
+        };
+
+        const onMouseUp = () => {
+          isDraggingRef.current = false;
+          detach();
         };
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
+        detachListenersRef.current = detach;
       },
       [
         fit,
@@ -257,14 +270,20 @@ export const LayoutCanvasWidget = observer(
           }
         };
 
-        const onMouseUp = () => {
-          isResizingRef.current = false;
+        const detach = () => {
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
+          detachListenersRef.current = null;
+        };
+
+        const onMouseUp = () => {
+          isResizingRef.current = false;
+          detach();
         };
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
+        detachListenersRef.current = detach;
       },
       [
         designHeight,
