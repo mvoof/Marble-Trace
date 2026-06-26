@@ -15,7 +15,6 @@ import {
 import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/ReleaseNotesButton';
 import { availableMonitors } from '@tauri-apps/api/window';
 import type { Monitor } from '@tauri-apps/api/window';
-import { LayoutsCard } from './LayoutsCard';
 import styles from './SettingsPage.module.scss';
 import { useAppSettingsStore, useUnitsStore } from '@store/root-store-context';
 
@@ -336,10 +335,6 @@ export const SettingsPage = observer(() => {
             )}
           </div>
         </div>
-      </Card>
-
-      <Card title="Layouts">
-        <LayoutsCard />
       </Card>
 
       <Card title="Reset">

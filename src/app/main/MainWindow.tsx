@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Layout, ConfigProvider, theme, App as AntdApp } from 'antd';
+import { Layout, ConfigProvider, theme, App as AntdApp, Segmented } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { Settings } from 'lucide-react';
 import { initMainSync } from '@store/sync/sync-init';
 import { WidgetList } from './components/WidgetList/WidgetList';
 import { WidgetWorkbench } from './components/WidgetWorkbench/WidgetWorkbench';
+import { LayoutEditor } from './components/LayoutEditor/LayoutEditor';
 import { SettingsPage } from './components/SettingsPage/SettingsPage';
 import { TitleBar } from './components/TitleBar/TitleBar';
 import { AppStatus } from './components/AppStatus/AppStatus';
@@ -26,7 +27,10 @@ export const MainWindow = observer(() => {
   const simStore = useSimStore();
   const root = useStore();
 
-  const [selectedId, setSelectedId] = useState<string>('app-settings');
+  const [activeSection, setActiveSection] = useState<
+    'layouts' | 'widgets' | 'settings'
+  >('layouts');
+  const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
 
   useEffect(() => {
     void simStore.startStream();
@@ -134,18 +138,41 @@ export const MainWindow = observer(() => {
               </div>
 
               <div className={styles.sidebarContent}>
-                <div className={styles.sectionTitle}>Widget Modules</div>
+                <Segmented
+                  block
+                  className={styles.sectionSwitch}
+                  value={activeSection}
+                  onChange={(value) =>
+                    setActiveSection(
+                      value as 'layouts' | 'widgets' | 'settings'
+                    )
+                  }
+                  options={[
+                    { label: 'Layouts', value: 'layouts' },
+                    { label: 'Widgets', value: 'widgets' },
+                    { label: 'Settings', value: 'settings' },
+                  ]}
+                />
 
-                <WidgetList selectedId={selectedId} onSelect={setSelectedId} />
+                {activeSection === 'widgets' && (
+                  <>
+                    <div className={styles.sectionTitle}>Widget Modules</div>
+
+                    <WidgetList
+                      selectedId={selectedWidgetId}
+                      onSelect={setSelectedWidgetId}
+                    />
+                  </>
+                )}
               </div>
 
               <div className={styles.sidebarFooter}>
                 <button
                   type="button"
                   className={`${styles.settingsItem} ${
-                    selectedId === 'app-settings' ? styles.active : ''
+                    activeSection === 'settings' ? styles.active : ''
                   }`}
-                  onClick={() => setSelectedId('app-settings')}
+                  onClick={() => setActiveSection('settings')}
                 >
                   <Settings
                     size={16}
@@ -162,20 +189,31 @@ export const MainWindow = observer(() => {
             <Content className={styles.content}>
               <RandomGlitchCanvas />
 
-              {selectedId === 'app-settings' ? (
-                <div className={styles.scrollContainer} key={selectedId}>
+              {activeSection === 'settings' && (
+                <div className={styles.scrollContainer} key="settings">
                   <div
                     className={`${styles.contentInner} ${styles.animateFadeIn}`}
                   >
                     <SettingsPage />
                   </div>
                 </div>
-              ) : (
+              )}
+
+              {activeSection === 'layouts' && (
                 <div
                   className={`${styles.workbenchContainer} ${styles.animateFadeIn}`}
-                  key={selectedId}
+                  key="layouts"
                 >
-                  <WidgetWorkbench widgetId={selectedId} />
+                  <LayoutEditor />
+                </div>
+              )}
+
+              {activeSection === 'widgets' && (
+                <div
+                  className={`${styles.workbenchContainer} ${styles.animateFadeIn}`}
+                  key={selectedWidgetId ?? 'widgets-empty'}
+                >
+                  <WidgetWorkbench widgetId={selectedWidgetId} />
                 </div>
               )}
             </Content>
