@@ -15,7 +15,9 @@ export const FuelChart = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
   const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
-  const fuelHistory = fuel?.lapFuelHistory ?? [];
+  // Keep the raw reference (undefined or a stable array per fuel frame) so the
+  // effect's dep is stable — `?? []` would allocate a new array every render.
+  const fuelHistory = fuel?.lapFuelHistory;
 
   // Read these in render so the observer tracks them — otherwise switching the
   // chart type (read only inside the effect) wouldn't trigger a redraw.
@@ -26,7 +28,7 @@ export const FuelChart = observer(() => {
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
 
-    if (!canvas || fuelHistory.length < 2) {
+    if (!canvas || !fuelHistory || fuelHistory.length < 2) {
       return;
     }
 
@@ -56,9 +58,11 @@ export const FuelChart = observer(() => {
     } else {
       drawLineChart(ctx, fuelHistory, width, height, avg, barWidth);
     }
-  });
+    // Redraw only when the history array (new reference per 4 Hz fuel-frame
+    // update — captures value changes, not just length) or chart settings change.
+  }, [fuelHistory, chartType, barWidth]);
 
-  if (!showChart || fuelHistory.length < 2) {
+  if (!showChart || !fuelHistory || fuelHistory.length < 2) {
     return null;
   }
 
