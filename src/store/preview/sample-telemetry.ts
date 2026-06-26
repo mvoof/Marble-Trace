@@ -7,6 +7,16 @@ import type {
 import { action } from 'mobx';
 import type { RootStore } from '@store/root-store';
 import { computeDriverEntries } from './compute-driver-entries';
+import { sampleTrack, SAMPLE_TRACK_ID } from './sample-track';
+
+// Mirror the active race flags into the FlagsStore's display state. The hold /
+// blink reactions that normally do this only run via FlagsStore.init(), which is
+// skipped in the isolated preview store — so without this the flag widgets stay
+// blank no matter what flag is active.
+export const syncFlagDisplay = action((store: RootStore) => {
+  store.flags.displayFlags = store.flags.parsedFlags;
+  store.flags.ledDisplayFlag = store.flags.parsedFlag;
+});
 
 // Neutral sample-telemetry fixture shared by any consumer that needs to render
 // widgets against representative data (in-app widget preview, Storybook, …).
@@ -39,7 +49,13 @@ export const seedSampleTelemetry = action((store: RootStore) => {
   if (sampleSnapshot.carInputs)
     store.player.updateCarInputs(sampleSnapshot.carInputs);
   if (sampleSnapshot.carStatus)
-    store.player.updateCarStatus(sampleSnapshot.carStatus);
+    // Baseline shows a green flag so the flag widgets are populated in the
+    // preview regardless of their visibility settings (which should only affect
+    // the live overlay). Flag scenarios override this.
+    store.player.updateCarStatus({
+      ...sampleSnapshot.carStatus,
+      flags: { ...sampleSnapshot.carStatus.flags, green: true },
+    });
   if (sampleSnapshot.environment)
     store.environment.updateEnvironment(sampleSnapshot.environment);
   if (sampleSnapshot.lapTiming)
@@ -47,7 +63,13 @@ export const seedSampleTelemetry = action((store: RootStore) => {
   if (sampleSnapshot.session)
     store.session.updateSession(sampleSnapshot.session);
   if (sampleSnapshot.sessionInfo)
-    store.session.updateSessionInfo(sampleSnapshot.sessionInfo);
+    // Pin the session's track to the synthetic sample track so the track-map
+    // widget keeps the seeded shape instead of clearing it and showing the
+    // "recording" placeholder.
+    store.session.updateSessionInfo({
+      ...sampleSnapshot.sessionInfo,
+      trackId: SAMPLE_TRACK_ID,
+    });
 
   const entries = computeDriverEntries(
     sampleSnapshot.carIdx ?? null,
@@ -109,4 +131,10 @@ export const seedSampleTelemetry = action((store: RootStore) => {
 
   store.backendComputed.updateProximity(baselineProximity);
   store.radar.visible = true;
+
+  // Seed the synthetic track outline so the track-map widget renders a map
+  // instead of the "recording track" placeholder.
+  store.trackMapWidget.onTrackShapeReceived(sampleTrack);
+
+  syncFlagDisplay(store);
 });

@@ -10,7 +10,7 @@ import type {
 } from '@/types/bindings';
 import { action } from 'mobx';
 import type { RootStore } from '@store/root-store';
-import { seedSampleTelemetry } from './sample-telemetry';
+import { seedSampleTelemetry, syncFlagDisplay } from './sample-telemetry';
 
 // Neutral, fully synthetic scenario fixtures. A recorded session never
 // guarantees the moment a flag waves, a badge appears, or traffic surrounds the
@@ -48,6 +48,8 @@ const applyFlags = (store: RootStore, overrides: Partial<RaceFlags>) => {
     ...carStatus,
     flags: { ...ALL_FLAGS_OFF, ...overrides },
   });
+
+  syncFlagDisplay(store);
 };
 
 const buildNearbyCar = (
