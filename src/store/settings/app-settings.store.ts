@@ -14,6 +14,9 @@ const DEFAULT_APP_SETTINGS = {
   updateCheckInterval: 3,
   lastUpdateCheck: null as string | null,
   overlayMonitorIndex: null as number | null,
+  // Layout editor preferences (persisted across sessions).
+  editorShowGrid: false,
+  editorSnapToGrid: true,
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
@@ -217,6 +220,14 @@ export class AppSettingsStore {
 
   setOverlayMonitorIndex(value: number | null) {
     this.appSettings.overlayMonitorIndex = value;
+  }
+
+  setEditorShowGrid(value: boolean) {
+    this.appSettings.editorShowGrid = value;
+  }
+
+  setEditorSnapToGrid(value: boolean) {
+    this.appSettings.editorSnapToGrid = value;
   }
 
   async resetSettings() {

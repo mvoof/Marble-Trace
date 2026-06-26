@@ -11,10 +11,14 @@ import {
   Image,
   ImageOff,
   Grid3x3,
+  Magnet,
   Maximize,
   Minimize,
 } from 'lucide-react';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import {
+  useAppSettingsStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 import {
   PREVIEW_SCENARIOS,
   DEFAULT_PREVIEW_SCENARIO_ID,
@@ -37,11 +41,14 @@ const SCENARIO_OPTIONS = PREVIEW_SCENARIOS.map((scenario) => ({
 // settings auto-commits into the active layout via the store's change reaction.
 export const LayoutEditor = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
+  const appSettings = useAppSettingsStore();
+
+  const showGrid = appSettings.appSettings.editorShowGrid;
+  const snapToGrid = appSettings.appSettings.editorSnapToGrid;
 
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
   const [editingWidgetId, setEditingWidgetId] = useState<string | null>(null);
   const [scenarioId, setScenarioId] = useState(DEFAULT_PREVIEW_SCENARIO_ID);
-  const [showGrid, setShowGrid] = useState(false);
 
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState('');
@@ -364,7 +371,16 @@ export const LayoutEditor = observer(() => {
               size="small"
               type={showGrid ? 'primary' : 'text'}
               icon={<Grid3x3 size={14} />}
-              onClick={() => setShowGrid((prev) => !prev)}
+              onClick={() => appSettings.setEditorShowGrid(!showGrid)}
+            />
+          </Tooltip>
+
+          <Tooltip title="Snap to grid">
+            <Button
+              size="small"
+              type={snapToGrid ? 'primary' : 'text'}
+              icon={<Magnet size={14} />}
+              onClick={() => appSettings.setEditorSnapToGrid(!snapToGrid)}
             />
           </Tooltip>
 
@@ -439,6 +455,7 @@ export const LayoutEditor = observer(() => {
           <LayoutCanvas
             scenarioId={scenarioId}
             showGrid={showGrid}
+            snapToGrid={snapToGrid}
             selectedWidgetId={selectedWidgetId}
             onSelectWidget={handleSelectWidget}
           />

@@ -20,11 +20,12 @@ import styles from './LayoutCanvas.module.scss';
 
 // Overlay-space grid pitch — kept in sync with the `.grid` background in the
 // stylesheet. Drives both the visual grid and drag/resize snapping.
-const GRID_PX = 60;
+const GRID_PX = 30;
 
 interface LayoutCanvasProps {
   scenarioId?: string;
   showGrid?: boolean;
+  snapToGrid?: boolean;
   selectedWidgetId: string | null;
   onSelectWidget: (id: string) => void;
 }
@@ -52,6 +53,7 @@ export const LayoutCanvas = observer(
   ({
     scenarioId = DEFAULT_PREVIEW_SCENARIO_ID,
     showGrid = false,
+    snapToGrid = false,
     selectedWidgetId,
     onSelectWidget,
   }: LayoutCanvasProps) => {
@@ -172,7 +174,7 @@ export const LayoutCanvas = observer(
                       fit={fit}
                       mainSettings={widgetSettings}
                       isSelected={selectedWidgetId === id}
-                      snap={showGrid}
+                      snap={snapToGrid}
                       gridSize={GRID_PX}
                       worldWidth={targetResolution.width}
                       worldHeight={targetResolution.height}
