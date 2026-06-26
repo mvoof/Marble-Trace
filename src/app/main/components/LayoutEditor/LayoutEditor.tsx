@@ -395,7 +395,7 @@ export const LayoutEditor = observer(() => {
           <input
             ref={backgroundInputRef}
             type="file"
-            accept="image/*"
+            accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
             aria-label="Layout background image"
             hidden
             onChange={(event) => void handlePickBackground(event)}
