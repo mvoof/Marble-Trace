@@ -456,6 +456,7 @@ export const LayoutEditor = observer(() => {
             scenarioId={scenarioId}
             showGrid={showGrid}
             snapToGrid={snapToGrid}
+            fullscreen={isFullscreen}
             selectedWidgetId={selectedWidgetId}
             onSelectWidget={handleSelectWidget}
           />

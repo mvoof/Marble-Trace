@@ -68,6 +68,14 @@ export const WidgetPreview = observer(
     const background = userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)';
     const borderColor = userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
 
+    const showSteering =
+      widgetId === 'input-trace' &&
+      (userSettings as unknown as Record<string, unknown>).showSteering ===
+        true;
+    const steeringRadius = showSteering
+      ? `calc(12px * var(--wfs, 1)) 9999px 9999px calc(12px * var(--wfs, 1))`
+      : undefined;
+
     return (
       <RootStoreContext.Provider value={previewStore}>
         <div className={styles.stage}>
@@ -81,6 +89,7 @@ export const WidgetPreview = observer(
                 height: autoHeight ? 'auto' : userSettings.currentHeight,
                 background,
                 borderColor,
+                borderRadius: steeringRadius,
                 ['--wfs']: widgetScale,
                 ['--widget-bg']: background,
               } as React.CSSProperties

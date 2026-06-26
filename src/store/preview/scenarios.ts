@@ -10,7 +10,11 @@ import type {
 } from '@/types/bindings';
 import { action } from 'mobx';
 import type { RootStore } from '@store/root-store';
-import { seedSampleTelemetry, syncFlagDisplay } from './sample-telemetry';
+import {
+  seedSampleTelemetry,
+  syncFlagDisplay,
+  sampleFuel,
+} from './sample-telemetry';
 
 // Neutral, fully synthetic scenario fixtures. A recorded session never
 // guarantees the moment a flag waves, a badge appears, or traffic surrounds the
@@ -262,6 +266,21 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     apply: (store) => {
       seedSampleTelemetry(store);
       applyTableBadges(store);
+    },
+  },
+  {
+    id: 'fuel-pit',
+    label: 'Fuel — pit window',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // Drop laps below the pit-warning threshold so the fuel widget's pit
+      // window panel becomes visible.
+      store.backendComputed.updateFuel({
+        ...sampleFuel,
+        lapsRemaining: 2,
+        shortage: -3.4,
+        pitWarning: true,
+      });
     },
   },
 ];

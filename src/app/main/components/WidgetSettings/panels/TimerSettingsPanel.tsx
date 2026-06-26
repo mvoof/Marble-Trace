@@ -22,10 +22,10 @@ export const TimerSettingsPanel = observer(() => {
     <Card title="Visible Elements">
       {[
         {
-          title: 'Show Flag State',
-          desc: 'Display session status: green running / final 5 min / checkered.',
-          value: settings.showFlag,
-          key: 'showFlag',
+          title: 'Show Session Type',
+          desc: 'Display the current session type (Race, Qualify, Practice).',
+          value: settings.showSessionType,
+          key: 'showSessionType',
         },
         {
           title: 'Show Lap Count',

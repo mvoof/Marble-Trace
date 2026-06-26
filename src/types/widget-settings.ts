@@ -154,7 +154,7 @@ export interface SectorMatrixWidgetSettings {
 }
 
 export interface TimerWidgetSettings {
-  showFlag: boolean;
+  showSessionType: boolean;
   showLaps: boolean;
   showPosition: boolean;
   showWallClock: boolean;

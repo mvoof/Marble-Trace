@@ -61,7 +61,7 @@ const buildSampleChassis = (): ChassisFrame => {
   return frame as unknown as ChassisFrame;
 };
 
-const sampleFuel: FuelComputedFrame = {
+export const sampleFuel: FuelComputedFrame = {
   avgPerLap: 2.6,
   lapsRemaining: 9,
   lapsToFinish: 14,

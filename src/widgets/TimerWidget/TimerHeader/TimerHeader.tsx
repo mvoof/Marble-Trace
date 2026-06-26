@@ -4,7 +4,11 @@ import {
   resolveSessionColorKey,
   type SessionColorKey,
 } from '@utils/widget/timer-utils';
-import { useSessionStore } from '@store/root-store-context';
+import type { TimerWidgetSettings } from '@/types/widget-settings';
+import {
+  useSessionStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 import styles from './TimerHeader.module.scss';
 
 const SESSION_LABEL_CLASS: Record<SessionColorKey, string> = {
@@ -16,6 +20,14 @@ const SESSION_LABEL_CLASS: Record<SessionColorKey, string> = {
 
 export const TimerHeader = observer(() => {
   const { session, sessionInfo } = useSessionStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const { showSessionType } =
+    widgetSettings.getSettings<TimerWidgetSettings>('timer');
+
+  if (!showSessionType) {
+    return null;
+  }
 
   const sessions = sessionInfo?.sessions ?? [];
   const sessionNum = session?.session_num ?? null;

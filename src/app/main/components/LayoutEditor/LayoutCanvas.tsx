@@ -26,6 +26,7 @@ interface LayoutCanvasProps {
   scenarioId?: string;
   showGrid?: boolean;
   snapToGrid?: boolean;
+  fullscreen?: boolean;
   selectedWidgetId: string | null;
   onSelectWidget: (id: string) => void;
 }
@@ -54,6 +55,7 @@ export const LayoutCanvas = observer(
     scenarioId = DEFAULT_PREVIEW_SCENARIO_ID,
     showGrid = false,
     snapToGrid = false,
+    fullscreen = false,
     selectedWidgetId,
     onSelectWidget,
   }: LayoutCanvasProps) => {
@@ -129,11 +131,16 @@ export const LayoutCanvas = observer(
 
     return (
       <RootStoreContext.Provider value={previewStore}>
-        <div className={styles.pane} ref={paneRef}>
+        <div
+          className={`${styles.pane} ${fullscreen ? styles.paneFullscreen : ''}`}
+          ref={paneRef}
+        >
           {fit > 0 && (
             // eslint-disable-next-line jsx-a11y/no-static-element-interactions
             <div
-              className={styles.stage}
+              className={`${styles.stage} ${
+                fullscreen ? styles.stageFullscreen : ''
+              }`}
               style={{
                 width: scaledWidth,
                 height: scaledHeight,

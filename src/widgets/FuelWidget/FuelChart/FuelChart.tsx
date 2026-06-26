@@ -17,16 +17,16 @@ export const FuelChart = observer(() => {
   const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
   const fuelHistory = fuel?.lapFuelHistory ?? [];
 
+  // Read these in render so the observer tracks them — otherwise switching the
+  // chart type (read only inside the effect) wouldn't trigger a redraw.
+  const { showChart, chartType, barWidth } = settings;
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
-    const currentHistory = fuel?.lapFuelHistory ?? [];
 
-    const currentSettings =
-      widgetSettings.getSettings<FuelWidgetSettings>('fuel');
-
-    if (!canvas || currentHistory.length < 2) {
+    if (!canvas || fuelHistory.length < 2) {
       return;
     }
 
@@ -37,8 +37,8 @@ export const FuelChart = observer(() => {
     }
 
     const avg =
-      currentHistory.reduce((acc: number, val: number) => acc + val, 0) /
-      currentHistory.length;
+      fuelHistory.reduce((acc: number, val: number) => acc + val, 0) /
+      fuelHistory.length;
 
     const dpr = window.devicePixelRatio || 1;
 
@@ -51,28 +51,14 @@ export const FuelChart = observer(() => {
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, width, height);
 
-    if (currentSettings.chartType === 'bar') {
-      drawBarChart(
-        ctx,
-        currentHistory,
-        width,
-        height,
-        avg,
-        currentSettings.barWidth
-      );
+    if (chartType === 'bar') {
+      drawBarChart(ctx, fuelHistory, width, height, avg, barWidth);
     } else {
-      drawLineChart(
-        ctx,
-        currentHistory,
-        width,
-        height,
-        avg,
-        currentSettings.barWidth
-      );
+      drawLineChart(ctx, fuelHistory, width, height, avg, barWidth);
     }
   });
 
-  if (!settings.showChart || fuelHistory.length < 2) {
+  if (!showChart || fuelHistory.length < 2) {
     return null;
   }
 

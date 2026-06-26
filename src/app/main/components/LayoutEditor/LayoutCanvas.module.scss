@@ -13,6 +13,12 @@
   border: 1px solid #2a2c32;
 }
 
+.paneFullscreen {
+  border: none;
+  border-radius: 0;
+  background: #000;
+}
+
 .stage {
   position: relative;
   flex: 0 0 auto;
@@ -24,6 +30,11 @@
   border: 1px solid #2a2c32;
   background-size: cover;
   background-position: center;
+}
+
+.stageFullscreen {
+  border: none;
+  border-radius: 0;
 }
 
 .world {
@@ -107,8 +118,10 @@
 
 .selected {
   .widgetInner {
-    outline: 3px solid $widget-text-accent;
-    outline-offset: 2px;
+    // Match the overlay F9 drag-mode selection: thin dashed outline on the
+    // widget edge.
+    outline: 2px dashed $widget-text-accent;
+    outline-offset: -2px;
   }
 }
 
