@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { reaction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { RootStore } from '@store/root-store';
@@ -13,6 +13,7 @@ import {
   seedScenario,
   DEFAULT_PREVIEW_SCENARIO_ID,
 } from '@store/preview/scenarios';
+import { resolveBackgroundSrc } from '@utils/widget/layout-background';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import { LayoutCanvasWidget } from './LayoutCanvasWidget';
 import styles from './LayoutCanvas.module.scss';
@@ -107,7 +108,22 @@ export const LayoutCanvas = observer(
     const scaledWidth = targetResolution.width * fit;
     const scaledHeight = targetResolution.height * fit;
 
-    const backgroundImage = widgetSettings.activeLayout?.backgroundImage;
+    const rawBackground = widgetSettings.activeLayout?.backgroundImage;
+    const [backgroundSrc, setBackgroundSrc] = useState<string | undefined>();
+
+    useEffect(() => {
+      let active = true;
+
+      void resolveBackgroundSrc(rawBackground).then((src) => {
+        if (active) {
+          setBackgroundSrc(src);
+        }
+      });
+
+      return () => {
+        active = false;
+      };
+    }, [rawBackground]);
 
     return (
       <RootStoreContext.Provider value={previewStore}>
@@ -119,8 +135,8 @@ export const LayoutCanvas = observer(
               style={{
                 width: scaledWidth,
                 height: scaledHeight,
-                backgroundImage: backgroundImage
-                  ? `url(${backgroundImage})`
+                backgroundImage: backgroundSrc
+                  ? `url(${backgroundSrc})`
                   : undefined,
               }}
               onMouseDown={() => onSelectWidget('')}

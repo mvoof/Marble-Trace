@@ -21,6 +21,10 @@ import {
 } from '@store/preview/scenarios';
 import { LayoutCanvas } from './LayoutCanvas';
 import { LayoutWidgetPanel } from './LayoutWidgetPanel';
+import {
+  saveBackgroundImage,
+  deleteBackgroundImage,
+} from '@utils/widget/layout-background';
 import styles from './LayoutEditor.module.scss';
 
 const SCENARIO_OPTIONS = PREVIEW_SCENARIOS.map((scenario) => ({
@@ -71,22 +75,42 @@ export const LayoutEditor = observer(() => {
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, []);
 
-  const handlePickBackground = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePickBackground = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
 
     event.target.value = '';
 
-    if (!file) {
+    if (!file || !activeId) {
       return;
     }
 
-    const reader = new FileReader();
+    const extension = (file.name.split('.').pop() ?? 'png').toLowerCase();
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const previous = widgetSettings.activeLayout?.backgroundImage;
 
-    reader.onload = () => {
-      widgetSettings.setActiveLayoutBackground(reader.result as string);
-    };
+    const fileName = await saveBackgroundImage(activeId, bytes, extension);
 
-    reader.readAsDataURL(file);
+    if (previous && previous !== fileName) {
+      void deleteBackgroundImage(previous);
+    }
+
+    widgetSettings.setActiveLayoutBackground(fileName);
+  };
+
+  const handleClearBackground = () => {
+    void deleteBackgroundImage(activeLayout?.backgroundImage);
+    widgetSettings.setActiveLayoutBackground(undefined);
+  };
+
+  const handleDeleteLayout = () => {
+    if (!activeId) {
+      return;
+    }
+
+    void deleteBackgroundImage(widgetSettings.activeLayout?.backgroundImage);
+    widgetSettings.deleteLayout(activeId);
   };
 
   useEffect(() => {
@@ -241,9 +265,7 @@ export const LayoutEditor = observer(() => {
                 okButtonProps={{ danger: true }}
                 cancelText="Cancel"
                 disabled={!activeId}
-                onConfirm={() =>
-                  activeId && widgetSettings.deleteLayout(activeId)
-                }
+                onConfirm={handleDeleteLayout}
               >
                 <Tooltip title="Delete">
                   <Button
@@ -334,7 +356,7 @@ export const LayoutEditor = observer(() => {
             accept="image/*"
             aria-label="Layout background image"
             hidden
-            onChange={handlePickBackground}
+            onChange={(event) => void handlePickBackground(event)}
           />
 
           <Tooltip title="Toggle alignment grid">
@@ -371,9 +393,7 @@ export const LayoutEditor = observer(() => {
                 size="small"
                 type="text"
                 icon={<ImageOff size={14} />}
-                onClick={() =>
-                  widgetSettings.setActiveLayoutBackground(undefined)
-                }
+                onClick={handleClearBackground}
               />
             </Tooltip>
           )}
