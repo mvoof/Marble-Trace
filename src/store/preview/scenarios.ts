@@ -216,6 +216,54 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     },
   },
   {
+    id: 'green-flag',
+    label: 'Green flag',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { green: true });
+    },
+  },
+  {
+    id: 'white-flag',
+    label: 'White flag (last lap)',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { white: true });
+    },
+  },
+  {
+    id: 'checkered-flag',
+    label: 'Checkered flag',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { checkered: true });
+    },
+  },
+  {
+    id: 'red-flag',
+    label: 'Red flag',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { red: true });
+    },
+  },
+  {
+    id: 'meatball-flag',
+    label: 'Meatball flag (repair)',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { meatball: true, repair: true });
+    },
+  },
+  {
+    id: 'debris-flag',
+    label: 'Debris flag',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { debris: true });
+    },
+  },
+  {
     id: 'radar-traffic',
     label: 'Radar traffic',
     apply: (store) => {

@@ -14,6 +14,7 @@ import {
   DEFAULT_PREVIEW_SCENARIO_ID,
 } from '@store/preview/scenarios';
 import { resolveBackgroundSrc } from '@utils/widget/layout-background';
+import { seedInputHistory } from '@store/preview/preview-animator';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import { LayoutCanvasWidget } from './LayoutCanvasWidget';
 import styles from './LayoutCanvas.module.scss';
@@ -67,6 +68,10 @@ export const LayoutCanvas = observer(
 
     useLayoutEffect(() => {
       seedScenario(previewStore, scenarioId);
+    }, [previewStore, scenarioId]);
+
+    useEffect(() => {
+      seedInputHistory(previewStore);
     }, [previewStore, scenarioId]);
 
     useLayoutEffect(() => {

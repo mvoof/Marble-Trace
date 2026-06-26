@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { RootStore } from '@store/root-store';
 import { RootStoreContext } from '@store/root-store-context';
@@ -10,6 +10,7 @@ import {
   seedScenario,
   DEFAULT_PREVIEW_SCENARIO_ID,
 } from '@store/preview/scenarios';
+import { seedInputHistory } from '@store/preview/preview-animator';
 import styles from './WidgetPreview.module.scss';
 
 interface WidgetPreviewProps {
@@ -31,6 +32,10 @@ export const WidgetPreview = observer(
 
     useLayoutEffect(() => {
       seedScenario(previewStore, scenarioId);
+    }, [previewStore, scenarioId]);
+
+    useEffect(() => {
+      seedInputHistory(previewStore);
     }, [previewStore, scenarioId]);
 
     const widget = editor.getWidget(widgetId);
