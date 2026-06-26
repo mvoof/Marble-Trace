@@ -1,0 +1,30 @@
+.controls {
+  display: flex;
+  align-items: center;
+  gap: rem(4);
+}
+
+.button {
+  width: rem(30);
+  height: rem(30);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #5e626d;
+  cursor: pointer;
+  border-radius: radius(sm);
+  transition: all 0.15s;
+
+  &:hover {
+    color: #e0e0e0;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  &.close:hover {
+    color: #ffffff;
+    background: #ff5a5a;
+  }
+}

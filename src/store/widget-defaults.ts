@@ -286,7 +286,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 500,
     designHeight: 120,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 400,
       y: 100,
       currentWidth: 500,
@@ -320,7 +320,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: INPUT_TRACE_DESIGN_WIDTH,
     designHeight: 120,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 400,
       y: 300,
       currentWidth: INPUT_TRACE_DESIGN_WIDTH,
@@ -375,7 +375,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 800,
     designHeight: 380,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 200,
       y: 300,
       currentWidth: 800,
@@ -461,7 +461,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 400,
     designHeight: 400,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 800,
       y: 50,
       currentWidth: 400,
@@ -493,7 +493,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 400,
     designHeight: 40,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 50,
       y: 820,
       currentWidth: 400,
@@ -516,7 +516,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 232,
     designHeight: 232,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 760,
       y: 0,
       currentWidth: 232,
@@ -541,7 +541,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 280,
     designHeight: 160,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 760,
       y: 250,
       currentWidth: 280,
@@ -564,7 +564,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 300,
     designHeight: 290,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 100,
       y: 100,
       currentWidth: 280,
@@ -606,7 +606,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 200,
     designHeight: 100,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 400,
       y: 200,
       currentWidth: 200,
@@ -630,7 +630,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 240,
     designHeight: 120,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 50,
       y: 310,
       currentWidth: 240,
@@ -657,7 +657,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 200,
     designHeight: 240,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 760,
       y: 200,
       currentWidth: 200,
@@ -685,7 +685,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 240,
     designHeight: 360,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 760,
       y: 500,
       currentWidth: 240,
@@ -709,7 +709,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 240,
     designHeight: 280,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 100,
       y: 100,
       currentWidth: 240,
@@ -734,7 +734,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 320,
     designHeight: 180,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 100,
       y: 300,
       currentWidth: 320,
@@ -758,7 +758,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 220,
     designHeight: 260,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 700,
       y: 300,
       currentWidth: 220,

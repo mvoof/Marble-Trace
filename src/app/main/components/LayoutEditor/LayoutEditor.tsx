@@ -2,7 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Input, Popconfirm, Select, Tooltip } from 'antd';
 import type { InputRef } from 'antd';
-import { Plus, Pencil, Trash2, Check, X } from 'lucide-react';
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  Image,
+  ImageOff,
+  Grid3x3,
+} from 'lucide-react';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 import {
   PREVIEW_SCENARIOS,
@@ -26,17 +35,35 @@ export const LayoutEditor = observer(() => {
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
   const [editingWidgetId, setEditingWidgetId] = useState<string | null>(null);
   const [scenarioId, setScenarioId] = useState(DEFAULT_PREVIEW_SCENARIO_ID);
+  const [showGrid, setShowGrid] = useState(false);
 
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [isRenaming, setIsRenaming] = useState(false);
   const [draftName, setDraftName] = useState('');
   const nameInputRef = useRef<InputRef | null>(null);
+  const backgroundInputRef = useRef<HTMLInputElement | null>(null);
 
   const activeId = widgetSettings.activeLayoutId;
-  const activeLayout = widgetSettings.layouts.find(
-    (layout) => layout.id === activeId
-  );
+  const activeLayout = widgetSettings.activeLayout;
+
+  const handlePickBackground = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    event.target.value = '';
+
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      widgetSettings.setActiveLayoutBackground(reader.result as string);
+    };
+
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     if (isCreating || isRenaming) {
@@ -209,10 +236,58 @@ export const LayoutEditor = observer(() => {
         </div>
 
         <div className={styles.previewControls}>
+          {activeLayout && (
+            <span className={styles.activeBadge}>
+              <span className={styles.activeDot} />
+              Active
+            </span>
+          )}
+
           <span className={styles.resolutionLabel}>
             {widgetSettings.overlayResolution.width}×
             {widgetSettings.overlayResolution.height}
           </span>
+
+          <input
+            ref={backgroundInputRef}
+            type="file"
+            accept="image/*"
+            aria-label="Layout background image"
+            hidden
+            onChange={handlePickBackground}
+          />
+
+          <Tooltip title="Toggle alignment grid">
+            <Button
+              size="small"
+              type={showGrid ? 'primary' : 'text'}
+              icon={<Grid3x3 size={14} />}
+              onClick={() => setShowGrid((prev) => !prev)}
+            />
+          </Tooltip>
+
+          <Tooltip title="Set editor background (e.g. cockpit view)">
+            <Button
+              size="small"
+              type="text"
+              icon={<Image size={14} />}
+              disabled={!activeLayout}
+              onClick={() => backgroundInputRef.current?.click()}
+            />
+          </Tooltip>
+
+          {activeLayout?.backgroundImage && (
+            <Tooltip title="Clear background">
+              <Button
+                size="small"
+                type="text"
+                icon={<ImageOff size={14} />}
+                onClick={() =>
+                  widgetSettings.setActiveLayoutBackground(undefined)
+                }
+              />
+            </Tooltip>
+          )}
 
           <Select
             size="small"
@@ -237,6 +312,7 @@ export const LayoutEditor = observer(() => {
         <main className={styles.canvas}>
           <LayoutCanvas
             scenarioId={scenarioId}
+            showGrid={showGrid}
             selectedWidgetId={selectedWidgetId}
             onSelectWidget={handleSelectWidget}
           />

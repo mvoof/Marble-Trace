@@ -1,6 +1,5 @@
 import { useLayoutEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { toJS } from 'mobx';
 import { RootStore } from '@store/root-store';
 import {
   RootStoreContext,
@@ -54,7 +53,7 @@ export const WidgetPreview = observer(
           autoHeight: widget.autoHeight,
           overflowVisible: widget.overflowVisible,
           requiredCapabilities: widget.requiredCapabilities,
-          userSettings: toJS(widget.userSettings),
+          userSettings: { ...widget.userSettings },
         },
       ]);
     }, [previewStore, widget, mutationToken]);

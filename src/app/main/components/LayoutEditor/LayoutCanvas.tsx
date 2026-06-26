@@ -1,7 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { reaction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { toJS } from 'mobx';
 import { RootStore } from '@store/root-store';
 import {
   RootStoreContext,
@@ -20,6 +19,7 @@ import styles from './LayoutCanvas.module.scss';
 
 interface LayoutCanvasProps {
   scenarioId?: string;
+  showGrid?: boolean;
   selectedWidgetId: string | null;
   onSelectWidget: (id: string) => void;
 }
@@ -35,7 +35,7 @@ const mirrorAllWidgets = (
   previewStore.widgetSettings.applySettingsSync(
     source.map((widget) => ({
       ...widget,
-      userSettings: toJS(widget.userSettings),
+      userSettings: { ...widget.userSettings },
     }))
   );
 };
@@ -46,6 +46,7 @@ const mirrorAllWidgets = (
 export const LayoutCanvas = observer(
   ({
     scenarioId = DEFAULT_PREVIEW_SCENARIO_ID,
+    showGrid = false,
     selectedWidgetId,
     onSelectWidget,
   }: LayoutCanvasProps) => {
@@ -63,7 +64,7 @@ export const LayoutCanvas = observer(
       mirrorAllWidgets(widgetSettings.allWidgets, previewStore);
 
       return reaction(
-        () => widgetSettings.changeToken,
+        () => [widgetSettings.changeToken, widgetSettings.syncToken],
         () => mirrorAllWidgets(widgetSettings.allWidgets, previewStore)
       );
     }, [previewStore, widgetSettings]);
@@ -102,6 +103,8 @@ export const LayoutCanvas = observer(
     const scaledWidth = targetResolution.width * fit;
     const scaledHeight = targetResolution.height * fit;
 
+    const backgroundImage = widgetSettings.activeLayout?.backgroundImage;
+
     return (
       <RootStoreContext.Provider value={previewStore}>
         <div className={styles.pane} ref={paneRef}>
@@ -109,7 +112,13 @@ export const LayoutCanvas = observer(
             // eslint-disable-next-line jsx-a11y/no-static-element-interactions
             <div
               className={styles.stage}
-              style={{ width: scaledWidth, height: scaledHeight }}
+              style={{
+                width: scaledWidth,
+                height: scaledHeight,
+                backgroundImage: backgroundImage
+                  ? `url(${backgroundImage})`
+                  : undefined,
+              }}
               onMouseDown={() => onSelectWidget('')}
             >
               <div
@@ -120,6 +129,13 @@ export const LayoutCanvas = observer(
                   transform: `scale(${fit})`,
                 }}
               >
+                {showGrid && (
+                  <div className={styles.grid} aria-hidden="true">
+                    <div className={styles.axisVertical} />
+                    <div className={styles.axisHorizontal} />
+                  </div>
+                )}
+
                 {widgetSettings.enabledWidgetIds.map((id) => {
                   const config = WIDGET_BY_ID.get(id);
 

@@ -8,6 +8,9 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+  border-radius: radius(lg);
+  background: #0b0c10;
+  border: 1px solid #2a2c32;
 }
 
 .stage {
@@ -28,6 +31,48 @@
   top: 0;
   left: 0;
   transform-origin: 0 0;
+}
+
+// Alignment grid drawn in overlay-space (scales with the world). Minor lines on
+// a fixed pitch + brighter center axes for centering widgets.
+.grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.07) 0 2px,
+      transparent 2px 120px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.07) 0 2px,
+      transparent 2px 120px
+    );
+}
+
+.axisVertical,
+.axisHorizontal {
+  position: absolute;
+  background: rgba($race-green, 0.5);
+}
+
+.axisVertical {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-1px);
+}
+
+.axisHorizontal {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-1px);
 }
 
 // ── Widget box ───────────────────────────────────────────────

@@ -41,6 +41,24 @@
   font-size: fs(xs);
 }
 
+.activeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: sp(xxs);
+  color: $race-green;
+  font-family: $font-widget;
+  font-size: fs(xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.activeDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: $race-green;
+}
+
 .body {
   display: flex;
   flex: 1 1 0;

@@ -48,6 +48,12 @@ export class WidgetSettingsStore {
   // change trigger instead of subscribing to every field across all widgets.
   changeToken = 0;
 
+  // Incremented when settings arrive from the other window (overlay drag / F9).
+  // Kept separate from changeToken so cross-window sync does NOT re-trigger the
+  // emit/commit reactions (which would loop), while UI that needs to reflect
+  // those external edits (the layout editor preview) can still react to it.
+  syncToken = 0;
+
   constructor(private readonly root?: RootStore) {
     makeAutoObservable(
       this,
@@ -185,6 +191,8 @@ export class WidgetSettingsStore {
         existing.designWidth = incoming.designWidth;
         existing.designHeight = incoming.designHeight;
       }
+
+      this.syncToken++;
     });
   }
 
@@ -368,9 +376,11 @@ export class WidgetSettingsStore {
   }
 
   private snapshotWidgets(): WidgetDefaultConfig[] {
+    // Spread into plain object literals so each layout owns a detached copy of
+    // the live widgets. (structuredClone throws on MobX observable proxies.)
     return this.allWidgets.map((widget) => ({
       ...widget,
-      userSettings: structuredClone(widget.userSettings),
+      userSettings: { ...widget.userSettings },
     }));
   }
 
@@ -435,6 +445,22 @@ export class WidgetSettingsStore {
     this.layouts = [...this.layouts, layout];
     this.activeLayoutId = id;
     this.refreshActiveLayoutMismatch();
+    this.bumpMutation();
+  }
+
+  get activeLayout(): SavedLayout | undefined {
+    return this.layouts.find((layout) => layout.id === this.activeLayoutId);
+  }
+
+  // Background image shown behind widgets in the layout editor (e.g. a cockpit
+  // view) so widgets can be placed relative to a virtual cockpit. Stored on the
+  // layout; undefined clears it.
+  setActiveLayoutBackground(image: string | undefined) {
+    const layout = this.activeLayout;
+
+    if (!layout) return;
+
+    layout.backgroundImage = image;
     this.bumpMutation();
   }
 

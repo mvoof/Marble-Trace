@@ -189,8 +189,8 @@
 }
 
 .contentInner {
-  max-width: rem(800);
-  margin: 0;
+  max-width: rem(1120);
+  margin: 0 auto;
 }
 
 .workbenchContainer {
@@ -199,6 +199,47 @@
   height: 100%;
   overflow: hidden;
   padding: rem(24);
+}
+
+.sectionContainer {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  overflow: hidden;
+  padding: rem(24);
+}
+
+.widgetsSection {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  gap: rem(16);
+}
+
+.widgetCatalog {
+  flex: 0 0 rem(260);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid $sys-border-sub;
+  padding-right: rem(12);
+}
+
+.catalogTitle {
+  padding: rem(4) rem(8) rem(12);
+  font-size: rem(10);
+  font-weight: 600;
+  color: $sys-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.widgetWorkbench {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
 }
 
 @keyframes fadeIn {

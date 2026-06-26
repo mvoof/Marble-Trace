@@ -1,5 +1,9 @@
 import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
-import type { DriverEntriesFrame, RelativeFrame } from '@/types/bindings';
+import type {
+  DriverEntriesFrame,
+  ProximityFrame,
+  RelativeFrame,
+} from '@/types/bindings';
 import { action } from 'mobx';
 import type { RootStore } from '@store/root-store';
 import { computeDriverEntries } from './compute-driver-entries';
@@ -63,4 +67,46 @@ export const seedSampleTelemetry = action((store: RootStore) => {
       playerCarIdx,
     } as RelativeFrame);
   }
+
+  // Seed a light proximity frame and force the radar visible so radar widgets
+  // render in the preview/editor. The auto-hide reaction that normally gates
+  // visibility never runs in the isolated preview store (skipInit), so without
+  // this the radar would always be blank. Richer traffic is layered by the
+  // radar-traffic scenario.
+  const baselineProximity: ProximityFrame = {
+    nearbyCars: [
+      {
+        carIdx: 7,
+        longitudinalDist: 3.2,
+        lateralSide: 'center',
+        clearance: 3.2,
+      },
+      {
+        carIdx: 12,
+        longitudinalDist: -4.1,
+        lateralSide: 'center',
+        clearance: 4.1,
+      },
+      { carIdx: 3, longitudinalDist: 1.4, lateralSide: 'left', clearance: 1.4 },
+      {
+        carIdx: 19,
+        longitudinalDist: 1.9,
+        lateralSide: 'right',
+        clearance: 1.9,
+      },
+    ],
+    // Side distances + spotter contact so the Radar Bar (side indicators) and
+    // the proximity radar's side cones both render in the preview.
+    radarDistances: {
+      frontDist: 3.2,
+      rearDist: 4.1,
+      leftDist: 1.4,
+      rightDist: 1.9,
+    },
+    spotterLeft: true,
+    spotterRight: true,
+  };
+
+  store.backendComputed.updateProximity(baselineProximity);
+  store.radar.visible = true;
 });

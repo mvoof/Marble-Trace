@@ -1,9 +1,11 @@
 import { observer } from 'mobx-react-lite';
-import { Switch } from 'antd';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import styles from './WidgetList.module.scss';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
+// Pure widget catalog. Visibility is governed by presence in the active layout
+// (the Layouts editor), so this list has no enable/disable toggle — selecting a
+// widget previews it and exposes its global defaults.
 const WidgetListItem = observer(
   ({
     widget,
@@ -17,12 +19,6 @@ const WidgetListItem = observer(
     const widgetSettings = useWidgetSettingsStore();
 
     const isAvailable = widgetSettings.availableWidgetIds.includes(widget.id);
-
-    const handleToggle = (checked: boolean) => {
-      if (isAvailable) {
-        widgetSettings.setWidgetEnabled(widget.id, checked);
-      }
-    };
 
     return (
       <button
@@ -40,19 +36,6 @@ const WidgetListItem = observer(
           {!isAvailable && (
             <span className={styles.unavailable}>Unavailable</span>
           )}
-        </div>
-        <div
-          className={styles.switch}
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-          role="presentation"
-        >
-          <Switch
-            checked={widget.userSettings.enabled && isAvailable}
-            size="small"
-            onChange={handleToggle}
-            disabled={!isAvailable}
-          />
         </div>
       </button>
     );

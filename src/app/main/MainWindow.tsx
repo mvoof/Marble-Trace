@@ -1,35 +1,24 @@
 import { useEffect, useState } from 'react';
-import { Layout, ConfigProvider, theme, App as AntdApp, Segmented } from 'antd';
+import { Layout, ConfigProvider, theme, App as AntdApp } from 'antd';
 import { observer } from 'mobx-react-lite';
-import { Settings } from 'lucide-react';
 import { initMainSync } from '@store/sync/sync-init';
 import { WidgetList } from './components/WidgetList/WidgetList';
 import { WidgetWorkbench } from './components/WidgetWorkbench/WidgetWorkbench';
 import { LayoutEditor } from './components/LayoutEditor/LayoutEditor';
 import { SettingsPage } from './components/SettingsPage/SettingsPage';
-import { TitleBar } from './components/TitleBar/TitleBar';
-import { AppStatus } from './components/AppStatus/AppStatus';
-import { SidebarLinks } from './components/SidebarLinks/SidebarLinks';
-import { RandomGlitchCanvas } from './components/BackgroundAnimation/RandomGlitchCanvas';
+import { AppHeader, type AppSection } from './components/AppHeader/AppHeader';
+import { AppFooter } from './components/AppFooter/AppFooter';
 import { UpdateBanner } from './components/UpdateBanner/UpdateBanner';
 import styles from './MainWindow.module.scss';
-import Logo from '@assets/logo.svg?react';
-import {
-  useAppSettingsStore,
-  useStore,
-  useSimStore,
-} from '@store/root-store-context';
+import { useStore, useSimStore } from '@store/root-store-context';
 
-const { Content, Sider } = Layout;
+const { Content } = Layout;
 
 export const MainWindow = observer(() => {
-  const appSettings = useAppSettingsStore();
   const simStore = useSimStore();
   const root = useStore();
 
-  const [activeSection, setActiveSection] = useState<
-    'layouts' | 'widgets' | 'settings'
-  >('layouts');
+  const [activeSection, setActiveSection] = useState<AppSection>('layouts');
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -112,112 +101,56 @@ export const MainWindow = observer(() => {
     >
       <AntdApp style={{ height: '100%' }}>
         <Layout className={styles.layout}>
-          <TitleBar />
+          <AppHeader
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+          />
+
           <UpdateBanner />
 
-          <Layout className={styles.mainContainer}>
-            <Sider width={320} className={styles.sider}>
-              <div className={styles.sidebarHeader}>
-                <div className={styles.logoContainer}>
-                  <Logo className={styles.logo} />
-                </div>
-
-                <div className={styles.headerText}>
-                  <div className={styles.brandContainer}>
-                    <span className={styles.brandName}>Marble Trace</span>
-
-                    {appSettings.currentVersion && (
-                      <span className={styles.version}>
-                        &nbsp;v{appSettings.currentVersion}
-                      </span>
-                    )}
-                  </div>
-
-                  <AppStatus />
+          <Content className={styles.content}>
+            {activeSection === 'settings' && (
+              <div className={styles.scrollContainer} key="settings">
+                <div
+                  className={`${styles.contentInner} ${styles.animateFadeIn}`}
+                >
+                  <SettingsPage />
                 </div>
               </div>
+            )}
 
-              <div className={styles.sidebarContent}>
-                <Segmented
-                  block
-                  className={styles.sectionSwitch}
-                  value={activeSection}
-                  onChange={(value) =>
-                    setActiveSection(
-                      value as 'layouts' | 'widgets' | 'settings'
-                    )
-                  }
-                  options={[
-                    { label: 'Layouts', value: 'layouts' },
-                    { label: 'Widgets', value: 'widgets' },
-                    { label: 'Settings', value: 'settings' },
-                  ]}
-                />
+            {activeSection === 'layouts' && (
+              <div
+                className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
+                key="layouts"
+              >
+                <LayoutEditor />
+              </div>
+            )}
 
-                {activeSection === 'widgets' && (
-                  <>
-                    <div className={styles.sectionTitle}>Widget Modules</div>
-
+            {activeSection === 'widgets' && (
+              <div
+                className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
+                key="widgets"
+              >
+                <div className={styles.widgetsSection}>
+                  <div className={styles.widgetCatalog}>
+                    <div className={styles.catalogTitle}>Widget Modules</div>
                     <WidgetList
                       selectedId={selectedWidgetId}
                       onSelect={setSelectedWidgetId}
                     />
-                  </>
-                )}
-              </div>
+                  </div>
 
-              <div className={styles.sidebarFooter}>
-                <button
-                  type="button"
-                  className={`${styles.settingsItem} ${
-                    activeSection === 'settings' ? styles.active : ''
-                  }`}
-                  onClick={() => setActiveSection('settings')}
-                >
-                  <Settings
-                    size={16}
-                    className={styles.settingsIcon}
-                    strokeWidth={2}
-                  />
-                  <span className={styles.settingsLabel}>Global Settings</span>
-                </button>
-
-                <SidebarLinks />
-              </div>
-            </Sider>
-
-            <Content className={styles.content}>
-              <RandomGlitchCanvas />
-
-              {activeSection === 'settings' && (
-                <div className={styles.scrollContainer} key="settings">
-                  <div
-                    className={`${styles.contentInner} ${styles.animateFadeIn}`}
-                  >
-                    <SettingsPage />
+                  <div className={styles.widgetWorkbench}>
+                    <WidgetWorkbench widgetId={selectedWidgetId} />
                   </div>
                 </div>
-              )}
+              </div>
+            )}
+          </Content>
 
-              {activeSection === 'layouts' && (
-                <div
-                  className={`${styles.workbenchContainer} ${styles.animateFadeIn}`}
-                  key="layouts"
-                >
-                  <LayoutEditor />
-                </div>
-              )}
-
-              {activeSection === 'widgets' && (
-                <div
-                  className={`${styles.workbenchContainer} ${styles.animateFadeIn}`}
-                  key={selectedWidgetId ?? 'widgets-empty'}
-                >
-                  <WidgetWorkbench widgetId={selectedWidgetId} />
-                </div>
-              )}
-            </Content>
-          </Layout>
+          <AppFooter />
         </Layout>
       </AntdApp>
     </ConfigProvider>
