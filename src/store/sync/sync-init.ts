@@ -151,9 +151,11 @@ export const initMainSync = async (root: RootStore) => {
         ),
         reaction(
           () => root.appSettings.appSettings.overlayMonitorIndex,
-          (v) => {
+          async (v) => {
             void emitOverlayMonitorChanged(v);
-            void applyOverlayResolution();
+            // Await so the new resolution lands in the store before we persist —
+            // otherwise onSave would write the stale resolution.
+            await applyOverlayResolution();
             void onSave();
           }
         ),
