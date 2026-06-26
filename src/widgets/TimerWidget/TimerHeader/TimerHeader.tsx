@@ -24,7 +24,7 @@ export const TimerHeader = observer(() => {
   const sessionType = currentSession?.sessionType ?? 'Unknown';
   const colorKey = resolveSessionColorKey(sessionType);
   const sessionTypeLabel =
-    currentSession?.sessionTypeLabel.toUpperCase() ?? 'NO SESSION';
+    currentSession?.sessionTypeLabel?.toUpperCase() ?? 'NO SESSION';
 
   return (
     <div className={`${styles.header} ${SESSION_LABEL_CLASS[colorKey]}`}>

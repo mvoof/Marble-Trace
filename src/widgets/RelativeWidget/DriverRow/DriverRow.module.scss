@@ -6,6 +6,9 @@
   column-gap: sp(xxxs);
   padding: 0 sp(md);
   position: relative;
+  // Don't let a too-short container squish rows into each other — clip extra
+  // rows (the list is overflow: hidden) instead of overlapping their text.
+  flex-shrink: 0;
   overflow: hidden;
   border-bottom: 1px solid $widget-row-border;
   line-height: 1.15;

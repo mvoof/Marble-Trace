@@ -653,6 +653,7 @@ const WIDGETS: WidgetConfig[] = [
     label: 'Weather',
     description: 'Track conditions and wind information.',
     component: WeatherWidget,
+    autoHeight: true,
     requiredCapabilities: ['weatherCurrent'],
     designWidth: 200,
     designHeight: 240,

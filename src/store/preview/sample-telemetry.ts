@@ -1,6 +1,9 @@
 import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
 import type {
+  ChassisFrame,
   DriverEntriesFrame,
+  FuelComputedFrame,
+  LapDeltaFrame,
   ProximityFrame,
   RelativeFrame,
 } from '@/types/bindings';
@@ -33,6 +36,51 @@ if (!firstSnapshot) {
 }
 
 export const sampleSnapshot = firstSnapshot as unknown as TelemetrySnapshot;
+
+// The recorded snapshot has no chassis / fuel / sector frames (they ride on the
+// 4 Hz tier and aren't captured), so widgets reading them show dashes. Build
+// representative synthetic frames for the preview.
+const TIRE_CORNERS = ['lf', 'rf', 'lr', 'rr'] as const;
+
+const buildSampleChassis = (): ChassisFrame => {
+  const frame: Record<string, number> = {};
+
+  for (const corner of TIRE_CORNERS) {
+    frame[`${corner}_ride_height`] = 0.05;
+    frame[`${corner}_shock_defl`] = 0.03;
+    frame[`${corner}_temp_cl`] = 82;
+    frame[`${corner}_temp_cm`] = 88;
+    frame[`${corner}_temp_cr`] = 85;
+    frame[`${corner}_pressure`] = 165;
+    frame[`${corner}_wear_l`] = 0.97;
+    frame[`${corner}_wear_m`] = 0.95;
+    frame[`${corner}_wear_r`] = 0.96;
+    frame[`${corner}_brake_temp`] = 340;
+  }
+
+  return frame as unknown as ChassisFrame;
+};
+
+const sampleFuel: FuelComputedFrame = {
+  avgPerLap: 2.6,
+  lapsRemaining: 9,
+  lapsToFinish: 14,
+  shortage: -5.2,
+  fuelToAdd: 12,
+  fuelToAddWithBuffer: 14,
+  fuelSavePerLap: 0.15,
+  pitWarning: true,
+  pitWindowStart: 12,
+  pitWindowEnd: 16,
+  isTimedRace: false,
+  lapFuelHistory: [2.7, 2.5, 2.6, 2.6, 2.55, 2.62],
+};
+
+const sampleLapDelta: LapDeltaFrame = {
+  sectorTimes: [28.4, 31.2, 26.9],
+  currentSectorIdx: 1,
+  sectorDeltas: [-0.12, 0.08, -0.05],
+};
 
 // Wrapped in `action` so the whole batch of setters runs as a single MobX
 // transaction — callers (preview, layout editor, Storybook) invoke it directly
@@ -131,6 +179,10 @@ export const seedSampleTelemetry = action((store: RootStore) => {
 
   store.backendComputed.updateProximity(baselineProximity);
   store.radar.visible = true;
+
+  store.player.updateChassis(buildSampleChassis());
+  store.backendComputed.updateFuel(sampleFuel);
+  store.backendComputed.updateLapDelta(sampleLapDelta);
 
   // Seed the synthetic track outline so the track-map widget renders a map
   // instead of the "recording track" placeholder.
