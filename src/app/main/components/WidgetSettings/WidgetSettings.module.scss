@@ -168,6 +168,14 @@
     padding-right: 0;
   }
 
+  // Stack every Row/Col grid (position/size inputs, radar's 3-up numbers, track
+  // map fields…) into a single full-width column so narrow numeric fields don't
+  // shrink and their labels stop wrapping.
+  :global(.ant-col) {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
   // Only the dropdown benefits from full width; Segmented/Switch/Slider stay
   // their natural size.
   :global(.ant-select) {
@@ -177,5 +185,14 @@
   // Segmented with many options: wrap instead of overflowing the panel edge.
   :global(.ant-segmented-group) {
     flex-wrap: wrap;
+  }
+
+  // RPM color swatches (Low/Mid/High/Shift/Blink) overflow the narrow panel in
+  // a single row — wrap them and let the swatches flow instead of clipping.
+  .rpmColorGrid {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: rem(12);
+    padding: rem(12);
   }
 }
