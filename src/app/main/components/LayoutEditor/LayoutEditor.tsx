@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   Plus,
   Pencil,
+  Play,
   Trash2,
   Check,
   X,
@@ -113,6 +114,39 @@ export const LayoutEditor = observer(
         setLocalMode(nextMode);
       }
     };
+
+    // When the editor is opened for a layout that wasn't previously active,
+    // prevActiveId holds the id we should restore when the user goes back
+    // without clicking "Make Active".
+    const [prevActiveId, setPrevActiveId] = useState<string | null>(null);
+
+    const handleOpenEditorWithId = (id: string) => {
+      const currentActiveId = widgetSettings.activeLayoutId;
+
+      if (id !== currentActiveId) {
+        widgetSettings.loadLayout(id);
+        setPrevActiveId(currentActiveId);
+      } else {
+        setPrevActiveId(null);
+      }
+
+      handleModeChange('editor');
+    };
+
+    const handleBack = () => {
+      if (prevActiveId) {
+        widgetSettings.loadLayout(prevActiveId);
+        setPrevActiveId(null);
+      }
+
+      handleModeChange('list');
+    };
+
+    const handleMakeActive = () => {
+      setPrevActiveId(null);
+    };
+
+    const isEditingLayoutActive = prevActiveId === null;
 
     const showGrid = appSettings.appSettings.editorShowGrid;
     const snapToGrid = appSettings.appSettings.editorSnapToGrid;
@@ -367,7 +401,7 @@ export const LayoutEditor = observer(
     };
 
     if (activeMode === 'list') {
-      return <LayoutList onOpenEditor={() => handleModeChange('editor')} />;
+      return <LayoutList onOpenEditor={handleOpenEditorWithId} />;
     }
 
     return (
@@ -387,7 +421,7 @@ export const LayoutEditor = observer(
               <Button
                 size="small"
                 icon={<ArrowLeft size={14} />}
-                onClick={() => handleModeChange('list')}
+                onClick={handleBack}
               >
                 Back to Layouts
               </Button>
@@ -519,6 +553,21 @@ export const LayoutEditor = observer(
                 </>
               )}
             </div>
+
+            {isEditingLayoutActive ? (
+              <span className={styles.activeChip}>Active</span>
+            ) : (
+              <Tooltip title="Apply this layout to the overlay">
+                <Button
+                  size="small"
+                  type="primary"
+                  icon={<Play size={14} />}
+                  onClick={handleMakeActive}
+                >
+                  Make Active
+                </Button>
+              </Tooltip>
+            )}
 
             <Tooltip title="Monitor this layout is authored for">
               <Select

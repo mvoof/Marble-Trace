@@ -35,6 +35,17 @@
   gap: sp(sm);
 }
 
+.activeChip {
+  color: #52c41a;
+  font-size: fs(xs);
+  font-family: $font-mono;
+  font-weight: 600;
+  padding: 2px sp(xxs);
+  border: 1px solid rgba(82, 196, 26, 0.35);
+  border-radius: radius(sm);
+  white-space: nowrap;
+}
+
 .resolutionLabel {
   color: #8b8e98;
   font-family: $font-mono;

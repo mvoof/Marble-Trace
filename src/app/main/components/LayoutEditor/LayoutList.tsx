@@ -106,7 +106,7 @@ const LayoutPreview = observer(({ layout }: LayoutPreviewProps) => {
 });
 
 interface LayoutListProps {
-  onOpenEditor: () => void;
+  onOpenEditor: (id: string) => void;
 }
 
 export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
@@ -164,8 +164,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
 
   const handleOpenEditor = () => {
     if (selectedId) {
-      widgetSettings.selectLayout(selectedId);
-      onOpenEditor();
+      onOpenEditor(selectedId);
     }
   };
 
@@ -212,8 +211,8 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
         <div className={styles.headerInfo}>
           <h2 className={styles.title}>Layouts</h2>
           <p className={styles.subtitle}>
-            Select, activate, or open layouts in the editor. Double-click a card
-            to edit.
+            Select a layout to see details. Double-click a card to open it in
+            the editor.
           </p>
         </div>
 
@@ -269,8 +268,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   }}
                   onDoubleClick={() => {
                     setSelectedId(layout.id);
-                    widgetSettings.selectLayout(layout.id);
-                    onOpenEditor();
+                    onOpenEditor(layout.id);
                   }}
                 >
                   <LayoutPreview layout={layout} />
