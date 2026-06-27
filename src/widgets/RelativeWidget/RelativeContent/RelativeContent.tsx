@@ -27,8 +27,7 @@ export const RelativeContent = observer(() => {
     useVisibleRowCount<HTMLDivElement>(
       rowPadding === 'wide' ? 3.5 : rowPadding === 'medium' ? 3.25 : 2.75,
       3,
-      '[data-relative-row]',
-      [rowPadding]
+      '[data-relative-row]'
     );
 
   const displayEntries = useMemo(() => {

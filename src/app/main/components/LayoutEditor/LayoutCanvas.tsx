@@ -146,7 +146,6 @@ export const LayoutCanvas = observer(
           ref={paneRef}
         >
           {fit > 0 && (
-            // eslint-disable-next-line jsx-a11y/no-static-element-interactions
             <div
               className={`${styles.stage} ${
                 fullscreen ? styles.stageFullscreen : ''
@@ -158,6 +157,7 @@ export const LayoutCanvas = observer(
                   ? `url(${backgroundSrc})`
                   : undefined,
               }}
+              role="presentation"
               onMouseDown={() => onSelectWidget('')}
             >
               {showGrid && (

@@ -311,8 +311,11 @@ export const LayoutCanvasWidget = observer(
           height: autoHeight ? 'auto' : height,
         }}
       >
-        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-        <div className={styles.dragWrapper} onMouseDown={handleDragMouseDown}>
+        <div
+          role="presentation"
+          className={styles.dragWrapper}
+          onMouseDown={handleDragMouseDown}
+        >
           <div
             className={`${styles.widgetInner} ${
               overflowVisible ? styles.overflowVisible : ''
@@ -333,9 +336,9 @@ export const LayoutCanvasWidget = observer(
 
           {isSelected &&
             resizeDirections.map((direction) => (
-              // eslint-disable-next-line jsx-a11y/no-static-element-interactions
               <div
                 key={direction}
+                role="presentation"
                 className={`${styles.resizeHandle} ${
                   styles[`resizeHandle${direction.toUpperCase()}`]
                 }`}

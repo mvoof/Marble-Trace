@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Input, InputNumber, Popconfirm, Select, Tooltip } from 'antd';
 import type { InputRef } from 'antd';
@@ -62,7 +62,13 @@ export const LayoutEditor = observer(() => {
   const [newName, setNewName] = useState('');
   const [isRenaming, setIsRenaming] = useState(false);
   const [draftName, setDraftName] = useState('');
-  const nameInputRef = useRef<InputRef | null>(null);
+  const pendingNameFocusRef = useRef(false);
+  const nameInputCallbackRef = useCallback((node: InputRef | null) => {
+    if (node && pendingNameFocusRef.current) {
+      pendingNameFocusRef.current = false;
+      node.focus?.();
+    }
+  }, []);
   const backgroundInputRef = useRef<HTMLInputElement | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -141,12 +147,6 @@ export const LayoutEditor = observer(() => {
     widgetSettings.deleteLayout(activeId);
   };
 
-  useEffect(() => {
-    if (isCreating || isRenaming) {
-      nameInputRef.current?.focus?.();
-    }
-  }, [isCreating, isRenaming]);
-
   const layoutOptions = widgetSettings.layouts.map((layout) => ({
     value: layout.id,
     label: layout.name,
@@ -217,7 +217,7 @@ export const LayoutEditor = observer(() => {
           {isCreating ? (
             <>
               <Input
-                ref={nameInputRef}
+                ref={nameInputCallbackRef}
                 size="small"
                 placeholder="New layout name"
                 value={newName}
@@ -245,7 +245,7 @@ export const LayoutEditor = observer(() => {
           ) : isRenaming ? (
             <>
               <Input
-                ref={nameInputRef}
+                ref={nameInputCallbackRef}
                 size="small"
                 value={draftName}
                 onChange={(event) => setDraftName(event.target.value)}
@@ -287,6 +287,7 @@ export const LayoutEditor = observer(() => {
                   icon={<Plus size={14} />}
                   onClick={() => {
                     setNewName('');
+                    pendingNameFocusRef.current = true;
                     setIsCreating(true);
                   }}
                 />
@@ -300,6 +301,7 @@ export const LayoutEditor = observer(() => {
                   disabled={!activeLayout}
                   onClick={() => {
                     setDraftName(activeLayout?.name ?? '');
+                    pendingNameFocusRef.current = true;
                     setIsRenaming(true);
                   }}
                 />

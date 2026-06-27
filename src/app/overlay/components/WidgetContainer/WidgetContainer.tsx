@@ -225,8 +225,8 @@ export const WidgetContainer = observer(
           height: autoHeight ? 'auto' : height,
         }}
       >
-        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
+          role="presentation"
           className={`${styles.dragWrapper} ${dragMode ? styles.draggingCursor : ''}`}
           style={autoHeight ? { height: 'auto' } : undefined}
           onMouseDown={handleDragMouseDown}
@@ -255,9 +255,9 @@ export const WidgetContainer = observer(
 
           {dragMode &&
             resizeDirections.map((direction) => (
-              // eslint-disable-next-line jsx-a11y/no-static-element-interactions
               <div
                 key={direction}
+                role="presentation"
                 className={`${styles.resizeHandle} ${styles[`resizeHandle${direction.toUpperCase()}`]}`}
                 onMouseDown={(e) => handleResizeMouseDown(e, direction)}
               />

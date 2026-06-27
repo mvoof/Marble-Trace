@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, use, useMemo, type ReactNode } from 'react';
 import type {
   BaseUserSettings,
   WidgetDefaultConfig,
@@ -41,7 +41,7 @@ const defaultsEditor = (store: WidgetSettingsStore): WidgetEditor => ({
 const WidgetEditorContext = createContext<WidgetEditor | null>(null);
 
 export const useWidgetEditor = (): WidgetEditor => {
-  const context = useContext(WidgetEditorContext);
+  const context = use(WidgetEditorContext);
   const store = useWidgetSettingsStore();
 
   return useMemo(() => context ?? liveEditor(store), [context, store]);

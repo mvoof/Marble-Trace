@@ -140,6 +140,10 @@ export const HeaderTrace = () => {
   }, []);
 
   return (
-    <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
+    <canvas
+      ref={canvasRef}
+      className={styles.canvas}
+      aria-label="Background animation"
+    />
   );
 };

@@ -3,8 +3,7 @@ import { useCallback, useReducer, useRef, type RefCallback } from 'react';
 export const useVisibleRowCount = <T extends HTMLElement>(
   rowHeightRem: number,
   minRows = 1,
-  rowSelector?: string,
-  deps: readonly unknown[] = []
+  rowSelector?: string
 ): { ref: RefCallback<T>; count: number } => {
   const [count, dispatch] = useReducer(
     (state: number, action: number) => (state === action ? state : action),
@@ -109,8 +108,7 @@ export const useVisibleRowCount = <T extends HTMLElement>(
         mo.disconnect();
       };
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rowHeightRem, minRows, rowSelector, ...deps]
+    [rowHeightRem, minRows, rowSelector]
   );
 
   return { ref, count };

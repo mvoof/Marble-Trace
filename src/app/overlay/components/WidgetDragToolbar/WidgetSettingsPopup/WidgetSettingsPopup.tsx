@@ -61,6 +61,7 @@ export const WidgetSettingsPopup = observer(
           ref={popupRef}
           className={styles.popup}
           style={{ left: popupX, top: popupY, width: POPUP_WIDTH }}
+          aria-label={`${widget.label} settings`}
           open
         >
           <button
