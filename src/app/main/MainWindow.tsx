@@ -20,6 +20,7 @@ export const MainWindow = observer(() => {
 
   const [activeSection, setActiveSection] = useState<AppSection>('layouts');
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
+  const [layoutsMode, setLayoutsMode] = useState<'list' | 'editor'>('list');
 
   useEffect(() => {
     void simStore.startStream();
@@ -129,7 +130,10 @@ export const MainWindow = observer(() => {
                 className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
                 key="layouts"
               >
-                <LayoutEditor />
+                <LayoutEditor
+                  mode={layoutsMode}
+                  onModeChange={setLayoutsMode}
+                />
               </div>
             )}
 
