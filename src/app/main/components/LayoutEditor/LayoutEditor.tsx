@@ -110,17 +110,21 @@ export const LayoutEditor = observer(() => {
       return;
     }
 
-    const extension = (file.name.split('.').pop() ?? 'png').toLowerCase();
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    const previous = widgetSettings.activeLayout?.backgroundImage;
+    try {
+      const extension = (file.name.split('.').pop() ?? 'png').toLowerCase();
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const previous = widgetSettings.activeLayout?.backgroundImage;
 
-    const fileName = await saveBackgroundImage(activeId, bytes, extension);
+      const fileName = await saveBackgroundImage(activeId, bytes, extension);
 
-    if (previous && previous !== fileName) {
-      void deleteBackgroundImage(previous);
+      if (previous && previous !== fileName) {
+        void deleteBackgroundImage(previous);
+      }
+
+      widgetSettings.setActiveLayoutBackground(fileName);
+    } catch (error) {
+      console.error('Failed to save background image:', error);
     }
-
-    widgetSettings.setActiveLayoutBackground(fileName);
   };
 
   const handleClearBackground = () => {
