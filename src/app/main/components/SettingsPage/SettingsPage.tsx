@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button, Switch, Segmented, message, Select, Popconfirm } from 'antd';
 import type { UnitSystem } from '@/types';
@@ -13,13 +13,10 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/ReleaseNotesButton';
-import { availableMonitors } from '@tauri-apps/api/window';
-import type { Monitor } from '@tauri-apps/api/window';
 import styles from './SettingsPage.module.scss';
 import { useAppSettingsStore, useUnitsStore } from '@store/root-store-context';
 
 const isDev = import.meta.env.DEV;
-const WIN32_DISPLAY_PREFIX = /^\\\\\.\\/;
 
 interface CardProps {
   title?: string;
@@ -38,13 +35,7 @@ export const SettingsPage = observer(() => {
   const appSettings = useAppSettingsStore();
   const units = useUnitsStore();
   const store = useStore();
-  const [monitors, setMonitors] = useState<Monitor[]>([]);
-
   const [messageApi, contextHolder] = message.useMessage();
-
-  useEffect(() => {
-    availableMonitors().then(setMonitors).catch(console.error);
-  }, []);
 
   const handleCaptureSnapshot = () => {
     downloadSnapshot(store, 'iracing');
@@ -116,39 +107,6 @@ export const SettingsPage = observer(() => {
               currentHotkey={appSettings.appSettings.dragHotkey}
               onApply={(key) => appSettings.setDragHotkey(key)}
             />
-          </div>
-        </Card>
-
-        <Card title="Display">
-          <div className={styles.fieldGroup}>
-            <div className={styles.fieldRow}>
-              <div className={styles.fieldTexts}>
-                <div className={styles.fieldTitle}>Overlay Monitor</div>
-
-                <div className={styles.fieldDesc}>
-                  Select which monitor the overlay is rendered on.
-                </div>
-              </div>
-
-              <Select
-                className={styles.selectWidth}
-                value={appSettings.appSettings.overlayMonitorIndex ?? -1}
-                onChange={(value: number) =>
-                  appSettings.setOverlayMonitorIndex(
-                    value === -1 ? null : value
-                  )
-                }
-                options={[
-                  { label: 'Primary monitor', value: -1 },
-                  ...monitors.map((monitor, index) => ({
-                    label: monitor.name
-                      ? `${monitor.name.replace(WIN32_DISPLAY_PREFIX, '')} (${monitor.size.width}×${monitor.size.height})`
-                      : `Monitor ${index + 1} (${monitor.size.width}×${monitor.size.height})`,
-                    value: index,
-                  })),
-                ]}
-              />
-            </div>
           </div>
         </Card>
 
@@ -235,7 +193,7 @@ export const SettingsPage = observer(() => {
               <Select
                 className={styles.selectWidth}
                 value={appSettings.appSettings.updateCheckInterval}
-                onChange={(v) => appSettings.setUpdateCheckInterval(v)}
+                onChange={(v: number) => appSettings.setUpdateCheckInterval(v)}
                 options={[
                   { label: 'Every hour', value: 1 },
                   { label: 'Every 3 hours', value: 3 },

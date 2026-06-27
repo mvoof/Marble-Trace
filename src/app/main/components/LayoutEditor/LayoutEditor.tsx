@@ -14,6 +14,7 @@ import {
   Magnet,
   Maximize,
   Minimize,
+  Monitor,
   PanelLeft,
   PanelLeftClose,
 } from 'lucide-react';
@@ -25,6 +26,10 @@ import {
   PREVIEW_SCENARIOS,
   DEFAULT_PREVIEW_SCENARIO_ID,
 } from '@store/preview/scenarios';
+import {
+  listOverlayMonitors,
+  type OverlayMonitor,
+} from '@store/sync/overlay-resolution';
 import { LayoutCanvas } from './LayoutCanvas';
 import { LayoutWidgetPanel } from './LayoutWidgetPanel';
 import {
@@ -58,6 +63,8 @@ export const LayoutEditor = observer(() => {
   const [editingWidgetId, setEditingWidgetId] = useState<string | null>(null);
   const [scenarioId, setScenarioId] = useState(DEFAULT_PREVIEW_SCENARIO_ID);
 
+  const [monitors, setMonitors] = useState<OverlayMonitor[]>([]);
+
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [isRenaming, setIsRenaming] = useState(false);
@@ -88,6 +95,10 @@ export const LayoutEditor = observer(() => {
       void rootRef.current?.requestFullscreen();
     }
   };
+
+  useEffect(() => {
+    listOverlayMonitors().then(setMonitors).catch(console.error);
+  }, []);
 
   useEffect(() => {
     const onChange = () => {
@@ -151,6 +162,19 @@ export const LayoutEditor = observer(() => {
     value: layout.id,
     label: layout.name,
   }));
+
+  const monitorOptions = monitors.map((monitor) => ({
+    value: monitor.name,
+    label: `${monitor.name} (${monitor.resolution.width}×${monitor.resolution.height})`,
+  }));
+
+  const handleSelectMonitor = (name: string) => {
+    const monitor = monitors.find((candidate) => candidate.name === name);
+
+    if (!monitor) return;
+
+    widgetSettings.selectMonitorForActiveLayout(name, monitor.resolution);
+  };
 
   const handleSelectWidget = (id: string) => {
     setSelectedWidgetId(id === '' ? null : id);
@@ -328,6 +352,22 @@ export const LayoutEditor = observer(() => {
             </>
           )}
         </div>
+
+        <Tooltip title="Monitor this layout is authored for">
+          <Select
+            size="small"
+            placeholder={
+              <>
+                <Monitor size={12} /> Monitor…
+              </>
+            }
+            value={activeLayout?.activeMonitorName ?? undefined}
+            onChange={handleSelectMonitor}
+            options={monitorOptions}
+            disabled={!activeLayout}
+            style={{ minWidth: 180 }}
+          />
+        </Tooltip>
 
         <div className={styles.previewControls}>
           {selectedWidget && (

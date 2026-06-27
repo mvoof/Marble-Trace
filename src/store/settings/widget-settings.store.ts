@@ -8,6 +8,7 @@ import type {
   BaseUserSettings,
   FuelWidgetSettings,
   LayoutResolution,
+  MonitorConfig,
   SavedLayout,
   StandingsViewMode,
   StandingsWidgetSettings,
@@ -17,12 +18,42 @@ import type {
 } from '@/types/widget-settings';
 import {
   DEFAULT_LAYOUT_RESOLUTION,
-  resolutionsEqual,
   scaleWidgetsToResolution,
 } from '@utils/widget/layout-resolution';
 import type { RootStore } from '@store/root-store';
 
 const DEFAULT_LAYOUT_NAME = 'Default';
+
+// Converts persisted layouts from the old format (targetResolution + widgets[])
+// to the new per-monitor config format. Safe to call on already-migrated data.
+const migrateLayout = (saved: unknown): SavedLayout => {
+  const raw = saved as Record<string, unknown>;
+
+  if ('monitorConfigs' in raw && !('widgets' in raw)) {
+    return raw as unknown as SavedLayout;
+  }
+
+  const monitorName = (raw['targetMonitorName'] as string | undefined) ?? null;
+  const targetResolution = raw['targetResolution'] as
+    | LayoutResolution
+    | undefined;
+  const widgets = raw['widgets'] as WidgetDefaultConfig[] | undefined;
+  const configs: Record<string, MonitorConfig> = {};
+  const configKey = monitorName ?? '__legacy__';
+
+  if (targetResolution && widgets) {
+    configs[configKey] = { resolution: targetResolution, widgets };
+  }
+
+  return {
+    id: raw['id'] as string,
+    name: raw['name'] as string,
+    createdAt: raw['createdAt'] as number,
+    backgroundImage: raw['backgroundImage'] as string | undefined,
+    monitorConfigs: configs,
+    activeMonitorName: Object.keys(configs).length > 0 ? configKey : null,
+  };
+};
 
 export class WidgetSettingsStore {
   // Live working copy of the ACTIVE layout. The overlay renders this; the layout
@@ -51,14 +82,10 @@ export class WidgetSettingsStore {
   layouts: SavedLayout[] = [];
   activeLayoutId: string | null = null;
 
-  // Resolution of the overlay window the layouts are placed against. Populated
-  // from the selected monitor during sync; defaults until then.
+  // Logical (CSS px) resolution of the overlay window. Set by the overlay after
+  // positioning, and by selectMonitorForActiveLayout when the active config
+  // changes. Drives the editor canvas scale.
   overlayResolution: LayoutResolution = { ...DEFAULT_LAYOUT_RESOLUTION };
-  overlayMonitorName: string | undefined = undefined;
-
-  // Set when the active layout was authored against a different resolution than
-  // the current overlay. Drives the "adapt & save copy" banner. null = match.
-  activeLayoutResolutionMismatch: LayoutResolution | null = null;
 
   // Incremented on every settings mutation. Reactions use this as a cheap
   // change trigger instead of subscribing to every field across all widgets.
@@ -461,23 +488,53 @@ export class WidgetSettingsStore {
     }));
   }
 
-  setOverlayResolution(resolution: LayoutResolution, monitorName?: string) {
+  setOverlayResolution(resolution: LayoutResolution) {
     this.overlayResolution = { ...resolution };
-    this.overlayMonitorName = monitorName;
-
-    this.refreshActiveLayoutMismatch();
   }
 
-  private refreshActiveLayoutMismatch() {
-    const active = this.layouts.find(
-      (layout) => layout.id === this.activeLayoutId
-    );
+  // Switches the active layout to a different monitor config. Saves the current
+  // live widgets into the previous config, then loads (or creates) the new one.
+  // resolution is the logical px size of the target monitor, needed to create a
+  // new config when the monitor hasn't been configured before.
+  selectMonitorForActiveLayout(
+    monitorName: string,
+    resolution: LayoutResolution
+  ) {
+    const layout = this.activeLayout;
 
-    this.activeLayoutResolutionMismatch =
-      active &&
-      !resolutionsEqual(active.targetResolution, this.overlayResolution)
-        ? { ...active.targetResolution }
-        : null;
+    if (!layout) return;
+
+    if (
+      layout.activeMonitorName &&
+      layout.monitorConfigs[layout.activeMonitorName]
+    ) {
+      layout.monitorConfigs[layout.activeMonitorName].widgets =
+        this.snapshotWidgets();
+    }
+
+    layout.activeMonitorName = monitorName;
+
+    if (layout.monitorConfigs[monitorName]) {
+      const config = layout.monitorConfigs[monitorName];
+
+      this.overlayResolution = { ...config.resolution };
+      this.setWidgets(config.widgets);
+    } else {
+      const scaledWidgets = scaleWidgetsToResolution(
+        this.allWidgets,
+        this.overlayResolution,
+        resolution
+      );
+
+      layout.monitorConfigs[monitorName] = {
+        resolution: { ...resolution },
+        widgets: scaledWidgets,
+      };
+      this.overlayResolution = { ...resolution };
+      this.setWidgets(scaledWidgets);
+    }
+
+    this.bumpMutation();
   }
 
   private snapshotWidgets(): WidgetDefaultConfig[] {
@@ -490,28 +547,20 @@ export class WidgetSettingsStore {
   }
 
   setLayouts(layouts: SavedLayout[], activeLayoutId?: string | null) {
-    this.layouts = layouts.map((layout) => ({
-      ...layout,
-      targetResolution: layout.targetResolution ?? {
-        ...this.overlayResolution,
-      },
-    }));
+    this.layouts = layouts.map((layout) => migrateLayout(layout));
 
     if (activeLayoutId !== undefined) {
       this.activeLayoutId = activeLayoutId;
     }
-
-    this.refreshActiveLayoutMismatch();
   }
 
-  // Guarantees there is always an active layout. Creates a "Default" layout from
-  // the current widgets on first run so the overlay is never in a layout-less
-  // state.
+  // Guarantees there is always an active layout. Creates a "Default" layout on
+  // first run. The layout starts without monitor configs — the user selects a
+  // monitor in the layout editor to configure one.
   ensureDefaultLayout() {
     if (this.layouts.length > 0) {
       if (!this.activeLayoutId) {
         this.activeLayoutId = this.layouts[0].id;
-        this.refreshActiveLayoutMismatch();
       }
 
       return;
@@ -524,15 +573,13 @@ export class WidgetSettingsStore {
         id,
         name: DEFAULT_LAYOUT_NAME,
         createdAt: Date.now(),
-        targetResolution: { ...this.overlayResolution },
-        targetMonitorName: this.overlayMonitorName,
-        widgets: this.buildStarterWidgets(),
+        monitorConfigs: {},
+        activeMonitorName: null,
       },
     ];
 
     this.activeLayoutId = id;
-    this.setWidgets(this.layouts[0].widgets);
-    this.refreshActiveLayoutMismatch();
+    this.setWidgets(this.buildStarterWidgets());
     this.bumpMutation();
   }
 
@@ -579,14 +626,12 @@ export class WidgetSettingsStore {
       id,
       name: name.trim(),
       createdAt: Date.now(),
-      targetResolution: { ...this.overlayResolution },
-      targetMonitorName: this.overlayMonitorName,
-      widgets: this.snapshotWidgets(),
+      monitorConfigs: {},
+      activeMonitorName: null,
     };
 
     this.layouts = [...this.layouts, layout];
     this.activeLayoutId = id;
-    this.refreshActiveLayoutMismatch();
     this.bumpMutation();
   }
 
@@ -617,7 +662,6 @@ export class WidgetSettingsStore {
     }
 
     this.activeLayoutId = null;
-    this.refreshActiveLayoutMismatch();
     this.bumpMutation();
   }
 
@@ -626,58 +670,44 @@ export class WidgetSettingsStore {
 
     if (!layout) return;
 
-    const widgets = scaleWidgetsToResolution(
-      layout.widgets,
-      layout.targetResolution,
-      this.overlayResolution
-    );
-
-    this.setWidgets(widgets);
     this.activeLayoutId = id;
-    this.refreshActiveLayoutMismatch();
-    this.bumpMutation();
-  }
 
-  // Auto-commit: writes the live widgets back into the active layout. Skipped
-  // when the overlay resolution differs from the layout's target, so an
-  // unadapted mismatch is never silently re-stamped — the banner handles that.
-  commitActiveLayout() {
-    const layout = this.layouts.find(
-      (savedLayout) => savedLayout.id === this.activeLayoutId
-    );
+    const config = layout.activeMonitorName
+      ? layout.monitorConfigs[layout.activeMonitorName]
+      : undefined;
 
-    if (!layout) return;
-
-    if (!resolutionsEqual(layout.targetResolution, this.overlayResolution)) {
-      return;
+    if (config) {
+      this.overlayResolution = { ...config.resolution };
+      this.setWidgets(config.widgets);
     }
 
-    layout.widgets = this.snapshotWidgets();
+    this.bumpMutation();
   }
 
-  // Banner action: re-stamp the active layout to the current overlay resolution,
-  // keeping the already-scaled widget placement.
-  adaptActiveLayoutToOverlay() {
-    const layout = this.layouts.find(
-      (savedLayout) => savedLayout.id === this.activeLayoutId
-    );
+  // Auto-commit: writes the live widgets back into the active monitor config.
+  // Skipped when no monitor is selected for the layout.
+  commitActiveLayout() {
+    const layout = this.activeLayout;
 
-    if (!layout) return;
+    if (!layout?.activeMonitorName) return;
 
-    layout.targetResolution = { ...this.overlayResolution };
-    layout.targetMonitorName = this.overlayMonitorName;
-    layout.widgets = this.snapshotWidgets();
+    const config = layout.monitorConfigs[layout.activeMonitorName];
 
-    this.refreshActiveLayoutMismatch();
-    this.bumpMutation();
+    if (!config) return;
+
+    config.widgets = this.snapshotWidgets();
   }
 
   updateLayout(id: string) {
     const layout = this.layouts.find((savedLayout) => savedLayout.id === id);
 
-    if (!layout) return;
+    if (!layout?.activeMonitorName) return;
 
-    layout.widgets = this.snapshotWidgets();
+    const config = layout.monitorConfigs[layout.activeMonitorName];
+
+    if (config) {
+      config.widgets = this.snapshotWidgets();
+    }
 
     this.bumpMutation();
   }
@@ -686,7 +716,6 @@ export class WidgetSettingsStore {
     this.layouts = this.layouts.filter((savedLayout) => savedLayout.id !== id);
 
     if (this.activeLayoutId !== id) {
-      this.refreshActiveLayoutMismatch();
       this.bumpMutation();
 
       return;
@@ -695,9 +724,7 @@ export class WidgetSettingsStore {
     const fallbackId = this.layouts[0]?.id ?? null;
 
     // Load the fallback's saved widgets into the live store BEFORE bumping the
-    // mutation. The commit reaction snapshots the live widgets into the active
-    // layout, so without this the deleted layout's stale widgets would clobber
-    // the fallback layout.
+    // mutation so the commit reaction doesn't clobber the fallback.
     if (fallbackId) {
       this.loadLayout(fallbackId);
 
@@ -705,7 +732,6 @@ export class WidgetSettingsStore {
     }
 
     this.activeLayoutId = null;
-    this.refreshActiveLayoutMismatch();
     this.bumpMutation();
   }
 

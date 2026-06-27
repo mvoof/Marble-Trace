@@ -13,7 +13,6 @@ const DEFAULT_APP_SETTINGS = {
   autoUpdate: true,
   updateCheckInterval: 3,
   lastUpdateCheck: null as string | null,
-  overlayMonitorIndex: null as number | null,
   // Layout editor preferences (persisted across sessions).
   editorShowGrid: false,
   editorSnapToGrid: true,
@@ -218,10 +217,6 @@ export class AppSettingsStore {
 
   setHideWidgetsInGarage(value: boolean) {
     this.appSettings.hideWidgetsInGarage = value;
-  }
-
-  setOverlayMonitorIndex(value: number | null) {
-    this.appSettings.overlayMonitorIndex = value;
   }
 
   setEditorShowGrid(value: boolean) {

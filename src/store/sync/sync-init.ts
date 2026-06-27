@@ -8,7 +8,6 @@ import {
   Settings,
 } from './persistence';
 import { setupHotkeys, cleanupHotkeys } from './hotkeys';
-import { resolveOverlayResolution } from './overlay-resolution';
 import {
   setupMainListeners,
   setupOverlayListeners,
@@ -40,33 +39,6 @@ export const initMainSync = async (root: RootStore) => {
       const loadedSettings = await store.get<Settings>('settings');
       console.log({ loadedSettings });
 
-      const applyOverlayResolution = async () => {
-        const resolved = await resolveOverlayResolution(
-          root.appSettings.appSettings.overlayMonitorIndex
-        );
-
-        if (resolved) {
-          root.widgetSettings.setOverlayResolution(
-            resolved.resolution,
-            resolved.monitorName
-          );
-        }
-      };
-
-      // Resolve resolution before hydration so legacy layouts (without a
-      // targetResolution) are migrated against the real overlay resolution
-      // rather than the placeholder default.
-      const initialResolved = await resolveOverlayResolution(
-        loadedSettings?.app?.overlayMonitorIndex ?? null
-      );
-
-      if (initialResolved) {
-        root.widgetSettings.setOverlayResolution(
-          initialResolved.resolution,
-          initialResolved.monitorName
-        );
-      }
-
       if (loadedSettings) {
         try {
           hydrateStores(root, loadedSettings);
@@ -77,7 +49,6 @@ export const initMainSync = async (root: RootStore) => {
         }
       }
 
-      await applyOverlayResolution();
       root.widgetSettings.ensureDefaultLayout();
 
       const onSave = () => saveSettings(store, root);
@@ -150,13 +121,9 @@ export const initMainSync = async (root: RootStore) => {
           }
         ),
         reaction(
-          () => root.appSettings.appSettings.overlayMonitorIndex,
-          async (v) => {
-            void emitOverlayMonitorChanged(v);
-            // Await so the new resolution lands in the store before we persist —
-            // otherwise onSave would write the stale resolution.
-            await applyOverlayResolution();
-            void onSave();
+          () => root.widgetSettings.activeLayout?.activeMonitorName ?? null,
+          (name) => {
+            void emitOverlayMonitorChanged(name);
           }
         ),
         reaction(
@@ -252,10 +219,8 @@ export const initOverlaySync = async (root: RootStore) => {
     hydrateStores(root, loadedSettings);
   }
 
-  root.widgetSettings.setOverlayResolution({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
+  // Overlay resolution is set by OverlayWindow AFTER it resizes the window to the
+  // target monitor — setting it here would capture the stale pre-resize size.
 
   const unlistens = await setupOverlayListeners(root);
 
