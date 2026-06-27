@@ -8,6 +8,7 @@ export class TrackMapWidgetStore {
   recordingProgress = 0;
   trackShape: TrackShapePayload | null = null;
   currentTrackId: string | null = null;
+  trackRotation = 0;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -31,12 +32,17 @@ export class TrackMapWidgetStore {
     this.recordingProgress = 1;
   }
 
+  setTrackRotation(rotation: number) {
+    this.trackRotation = rotation;
+  }
+
   clearTrackShape() {
     this.trackShape = null;
     this.currentTrackId = null;
     this.isRecording = false;
     this.isWaitingForSF = false;
     this.recordingProgress = 0;
+    this.trackRotation = 0;
   }
 
   reset() {
@@ -45,5 +51,6 @@ export class TrackMapWidgetStore {
     this.recordingProgress = 0;
     this.trackShape = null;
     this.currentTrackId = null;
+    this.trackRotation = 0;
   }
 }

@@ -78,6 +78,11 @@ export const defineWidgetStories = <Args,>(
 
     useLayoutEffect(() => {
       runInAction(() => {
+        // Widgets gate their content on a live connection (otherwise they show
+        // the "no data" placeholder). Stories always render sample data, so mark
+        // the sim connected before seeding.
+        store.sim.isConnected = true;
+
         if (seedSnapshot) {
           seedFromSnapshot(store);
         }

@@ -2,7 +2,6 @@ import { observer } from 'mobx-react-lite';
 import { InputNumber, Row, Col, ColorPicker } from 'antd';
 import styles from './WidgetSettings.module.scss';
 import { Card } from './panels/Card';
-import { HotkeyRecorderWrapper } from './panels/HotkeyRecorderWrapper';
 import { SpeedSettingsPanel } from './panels/SpeedSettingsPanel';
 import { InputTraceSettingsPanel } from './panels/InputTraceSettingsPanel';
 import { RadarSettingsPanel } from './panels/RadarSettingsPanel';
@@ -19,11 +18,17 @@ import { ChassisSettingsPanel } from './panels/ChassisSettingsPanel';
 import { TimerSettingsPanel } from './panels/TimerSettingsPanel';
 import { FlagDisplaySettingsPanel } from './panels/FlagDisplaySettingsPanel';
 import { GMeterSettingsPanel } from './panels/GMeterSettingsPanel';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useWidgetEditor } from './WidgetEditorContext';
 
 export const WidgetSettings = observer(
-  ({ widgetId }: { widgetId: string | null }) => {
-    const widgetSettings = useWidgetSettingsStore();
+  ({
+    widgetId,
+    compact = false,
+  }: {
+    widgetId: string | null;
+    compact?: boolean;
+  }) => {
+    const widgetSettings = useWidgetEditor();
 
     if (!widgetId) {
       return (
@@ -40,7 +45,9 @@ export const WidgetSettings = observer(
     const userSettings = widget.userSettings;
 
     return (
-      <div className={styles.animateFadeIn}>
+      <div
+        className={`${styles.animateFadeIn} ${compact ? styles.compact : ''}`}
+      >
         <header className={styles.header}>
           <span className={styles.moduleLabel}>Module Config</span>
           <h1 className={styles.title}>{widget.label}</h1>
@@ -53,10 +60,12 @@ export const WidgetSettings = observer(
               <InputNumber
                 style={{ width: '100%' }}
                 value={userSettings.x}
-                onChange={(v) =>
-                  v !== null &&
-                  widgetSettings.updateUserSettings(widgetId, { x: v })
-                }
+                onChange={(v) => {
+                  if (v !== null) {
+                    widgetSettings.pushUndo?.();
+                    widgetSettings.updateUserSettings(widgetId, { x: v });
+                  }
+                }}
               />
             </Col>
 
@@ -65,10 +74,12 @@ export const WidgetSettings = observer(
               <InputNumber
                 style={{ width: '100%' }}
                 value={userSettings.y}
-                onChange={(v) =>
-                  v !== null &&
-                  widgetSettings.updateUserSettings(widgetId, { y: v })
-                }
+                onChange={(v) => {
+                  if (v !== null) {
+                    widgetSettings.pushUndo?.();
+                    widgetSettings.updateUserSettings(widgetId, { y: v });
+                  }
+                }}
               />
             </Col>
 
@@ -78,12 +89,14 @@ export const WidgetSettings = observer(
                 style={{ width: '100%' }}
                 value={userSettings.currentWidth}
                 min={10}
-                onChange={(v) =>
-                  v !== null &&
-                  widgetSettings.updateUserSettings(widgetId, {
-                    currentWidth: v,
-                  })
-                }
+                onChange={(v) => {
+                  if (v !== null) {
+                    widgetSettings.pushUndo?.();
+                    widgetSettings.updateUserSettings(widgetId, {
+                      currentWidth: v,
+                    });
+                  }
+                }}
               />
             </Col>
 
@@ -93,12 +106,30 @@ export const WidgetSettings = observer(
                 style={{ width: '100%' }}
                 value={userSettings.currentHeight}
                 min={10}
-                onChange={(v) =>
-                  v !== null &&
-                  widgetSettings.updateUserSettings(widgetId, {
-                    currentHeight: v,
-                  })
-                }
+                onChange={(v) => {
+                  if (v !== null) {
+                    widgetSettings.pushUndo?.();
+                    widgetSettings.updateUserSettings(widgetId, {
+                      currentHeight: v,
+                    });
+                  }
+                }}
+              />
+            </Col>
+
+            <Col span={12}>
+              <span className={styles.fieldLabel}>Layer Depth (Z-Index)</span>
+              <InputNumber
+                style={{ width: '100%' }}
+                value={userSettings.zIndex ?? 0}
+                onChange={(v) => {
+                  if (v !== null) {
+                    widgetSettings.pushUndo?.();
+                    widgetSettings.updateUserSettings(widgetId, {
+                      zIndex: v,
+                    });
+                  }
+                }}
               />
             </Col>
           </Row>
@@ -151,14 +182,6 @@ export const WidgetSettings = observer(
             </Row>
           </Card>
         )}
-
-        <Card title="Controls">
-          <HotkeyRecorderWrapper
-            key={widgetId}
-            widgetId={widgetId}
-            currentHotkey={userSettings.hotkey}
-          />
-        </Card>
 
         {widgetId === 'speed' && <SpeedSettingsPanel />}
         {widgetId === 'input-trace' && <InputTraceSettingsPanel />}

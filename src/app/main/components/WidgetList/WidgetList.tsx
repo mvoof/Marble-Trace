@@ -1,8 +1,7 @@
 import { observer } from 'mobx-react-lite';
-import { Switch } from 'antd';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
-import styles from './WidgetList.module.scss';
 import { useWidgetSettingsStore } from '@store/root-store-context';
+import styles from './WidgetList.module.scss';
 
 const WidgetListItem = observer(
   ({
@@ -18,41 +17,30 @@ const WidgetListItem = observer(
 
     const isAvailable = widgetSettings.availableWidgetIds.includes(widget.id);
 
-    const handleToggle = (checked: boolean) => {
-      if (isAvailable) {
-        widgetSettings.setWidgetEnabled(widget.id, checked);
-      }
-    };
-
     return (
       <button
         type="button"
+        aria-label={widget.label}
         className={`${styles.listItem} ${isActive ? styles.active : ''} ${
           !isAvailable ? styles.disabled : ''
         }`}
-        onClick={() => onSelect(widget.id)}
+        onClick={() => {
+          if (isAvailable) {
+            onSelect(widget.id);
+          }
+        }}
+        disabled={!isAvailable}
       >
         <div className={styles.content}>
-          <span className={styles.title}>{widget.label}</span>
+          <div className={styles.headerRow}>
+            <span className={styles.title}>{widget.label}</span>
+            {!isAvailable && (
+              <span className={styles.unavailable}>Unavailable</span>
+            )}
+          </div>
           <span className={styles.description}>
             {widget.description || 'Configure widget settings.'}
           </span>
-          {!isAvailable && (
-            <span className={styles.unavailable}>Unavailable</span>
-          )}
-        </div>
-        <div
-          className={styles.switch}
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-          role="presentation"
-        >
-          <Switch
-            checked={widget.userSettings.enabled && isAvailable}
-            size="small"
-            onChange={handleToggle}
-            disabled={!isAvailable}
-          />
         </div>
       </button>
     );

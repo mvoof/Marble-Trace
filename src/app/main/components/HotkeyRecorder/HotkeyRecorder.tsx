@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { flushSync } from 'react-dom';
 import { Space, Button, Input } from 'antd';
 import type { InputRef } from 'antd';
 import styles from './HotkeyRecorder.module.scss';
@@ -27,11 +26,18 @@ export const HotkeyRecorder = ({
 }: HotkeyRecorderProps) => {
   const [recording, setRecording] = useState(false);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
-  const inputRef = useRef<InputRef>(null);
+  const pendingFocusRef = useRef(false);
+
+  const inputCallbackRef = useCallback((node: InputRef | null) => {
+    if (node && pendingFocusRef.current) {
+      pendingFocusRef.current = false;
+      node.focus();
+    }
+  }, []);
 
   const startRecording = () => {
-    flushSync(() => setRecording(true));
-    inputRef.current?.focus();
+    pendingFocusRef.current = true;
+    setRecording(true);
   };
 
   const handleKeyDown = useCallback(
@@ -96,7 +102,7 @@ export const HotkeyRecorder = ({
       <Space>
         {recording ? (
           <Input
-            ref={inputRef}
+            ref={inputCallbackRef}
             readOnly
             placeholder="Press a key combination..."
             className={styles.recordingInput}

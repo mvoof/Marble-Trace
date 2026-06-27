@@ -49,7 +49,11 @@ export const initMainSync = async (root: RootStore) => {
         }
       }
 
+      root.widgetSettings.ensureDefaultLayout();
+
       const onSave = () => saveSettings(store, root);
+
+      await onSave();
 
       const [overlaySettingsUnlisten, mainUnlistens] = await Promise.all([
         listen<WidgetDefaultConfig[]>('widget-settings-updated', (e) => {
@@ -95,6 +99,16 @@ export const initMainSync = async (root: RootStore) => {
           }
         ),
         reaction(
+          () => [
+            root.appSettings.appSettings.editorShowGrid,
+            root.appSettings.appSettings.editorSnapToGrid,
+            root.appSettings.appSettings.editorGridSize,
+          ],
+          () => {
+            void onSave();
+          }
+        ),
+        reaction(
           () => root.appSettings.appSettings.updateCheckInterval,
           () => {
             void onSave();
@@ -107,10 +121,9 @@ export const initMainSync = async (root: RootStore) => {
           }
         ),
         reaction(
-          () => root.appSettings.appSettings.overlayMonitorIndex,
-          (v) => {
-            void emitOverlayMonitorChanged(v);
-            void onSave();
+          () => root.widgetSettings.activeLayout?.activeMonitorName ?? null,
+          (name) => {
+            void emitOverlayMonitorChanged(name);
           }
         ),
         reaction(
@@ -122,9 +135,6 @@ export const initMainSync = async (root: RootStore) => {
             return [
               root.appSettings.appSettings.dragHotkey,
               root.appSettings.appSettings.hideAllWidgetsHotkey,
-              ...root.widgetSettings.allWidgets.map(
-                (w) => w.userSettings.hotkey
-              ),
               standingsSettings.viewModeHotkey,
               standingsSettings.classPrevHotkey,
               standingsSettings.classNextHotkey,
@@ -156,8 +166,16 @@ export const initMainSync = async (root: RootStore) => {
           { delay: 16 }
         ),
         reaction(
-          () => root.widgetSettings.changeToken,
+          // Commit on local edits (changeToken) AND on edits synced in from the
+          // overlay's F9 drag mode (syncToken) so live-tweaks persist into the
+          // active layout. Only this reaction watches syncToken — the emit
+          // reaction must not, or main↔overlay would loop.
+          () => [
+            root.widgetSettings.changeToken,
+            root.widgetSettings.syncToken,
+          ],
           () => {
+            root.widgetSettings.commitActiveLayout();
             void onSave();
           },
           {
@@ -197,6 +215,9 @@ export const initOverlaySync = async (root: RootStore) => {
   if (loadedSettings) {
     hydrateStores(root, loadedSettings);
   }
+
+  // Overlay resolution is set by OverlayWindow AFTER it resizes the window to the
+  // target monitor — setting it here would capture the stale pre-resize size.
 
   const unlistens = await setupOverlayListeners(root);
 

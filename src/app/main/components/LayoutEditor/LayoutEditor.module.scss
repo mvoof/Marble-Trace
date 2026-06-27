@@ -1,0 +1,166 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  gap: sp(md);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: sp(md);
+  flex: 0 0 auto;
+}
+
+.layoutControls {
+  display: flex;
+  align-items: center;
+  gap: sp(xxs);
+}
+
+.layoutSelect {
+  min-width: 180px;
+}
+
+.nameInput {
+  width: 180px;
+}
+
+.previewControls {
+  display: flex;
+  align-items: center;
+  gap: sp(sm);
+}
+
+.activeChip {
+  color: #52c41a;
+  font-size: fs(xs);
+  font-family: $font-mono;
+  font-weight: 600;
+  padding: 2px sp(xxs);
+  border: 1px solid rgba(82, 196, 26, 0.35);
+  border-radius: radius(sm);
+  white-space: nowrap;
+}
+
+.resolutionLabel {
+  color: #8b8e98;
+  font-family: $font-mono;
+  font-size: fs(xs);
+}
+
+.coords {
+  display: flex;
+  align-items: center;
+  gap: sp(xxs);
+}
+
+.coordLabel {
+  color: #5e626d;
+  font-family: $font-mono;
+  font-size: fs(xs);
+  margin-left: sp(xxs);
+}
+
+.coordInput {
+  width: 64px;
+}
+
+// Fullscreen: the canvas fills the whole screen edge-to-edge and the toolbar
+// floats on top as a translucent panel so the overlay underneath stays visible.
+.rootFullscreen {
+  position: relative;
+  background: #000;
+}
+
+// Small floating panel centered at the top instead of a full-width bar. Width
+// shrinks to its content; the widget-panel toggle sits at its left edge.
+.toolbarFullscreen {
+  position: absolute;
+  top: sp(sm);
+  left: 50%;
+  z-index: 40;
+  width: auto;
+  justify-content: flex-start;
+  gap: sp(sm);
+  transform: translateX(-50%);
+  padding: sp(xs) sp(sm);
+  background: rgba(11, 12, 16, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: radius(lg);
+  backdrop-filter: blur(6px);
+}
+
+.body {
+  display: flex;
+  flex: 1 1 0;
+  min-height: 0;
+  gap: sp(lg);
+}
+
+// In fullscreen the widget panel becomes an overlay drawer so toggling it never
+// resizes the editing canvas.
+.bodyFullscreen {
+  position: relative;
+  gap: 0;
+}
+
+.panel {
+  flex: 0 0 280px;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panelDrawer {
+  position: absolute;
+  // Sit below the floating toolbar (toolbar top + its height).
+  top: 56px;
+  left: sp(md);
+  bottom: sp(sm);
+  z-index: 30;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: sp(sm);
+  background: rgba(11, 12, 16, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: radius(lg);
+  backdrop-filter: blur(6px);
+  transform: translateX(calc(-100% - #{sp(md)}));
+  transition: transform 0.2s ease;
+}
+
+.panelDrawerOpen {
+  transform: translateX(0);
+}
+
+.panelDrawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  margin-bottom: sp(xs);
+}
+
+.panelDrawerTitle {
+  color: #e0e0e0;
+  font-size: fs(sm);
+  font-weight: 600;
+}
+
+.canvas {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+.canvasFullscreen {
+  background: #000;
+}

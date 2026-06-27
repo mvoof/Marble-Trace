@@ -73,27 +73,25 @@ export const LedFlagWidget = observer(() => {
     return () => obs.disconnect();
   }, [split]);
 
-  const renderContent = () => {
-    if (forceSingleLed || layout.isSingleLed) {
-      return <SingleLed />;
-    }
-    return (
+  const content =
+    forceSingleLed || layout.isSingleLed ? (
+      <SingleLed />
+    ) : (
       <LedMatrix
         diodesPerBlock={layout.diodesPerBlock}
         splitRows={layout.splitRows}
       />
     );
-  };
 
   return (
     <div ref={wrapperRef} className={styles.wrapper}>
       {split ? (
         <div className={styles.splitWrapper}>
-          <div className={styles.leftSlot}>{renderContent()}</div>
-          <div className={styles.rightSlot}>{renderContent()}</div>
+          <div className={styles.leftSlot}>{content}</div>
+          <div className={styles.rightSlot}>{content}</div>
         </div>
       ) : (
-        renderContent()
+        content
       )}
     </div>
   );

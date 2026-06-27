@@ -1,32 +1,26 @@
 import { useEffect, useState } from 'react';
 import { Layout, ConfigProvider, theme, App as AntdApp } from 'antd';
 import { observer } from 'mobx-react-lite';
-import { Settings } from 'lucide-react';
 import { initMainSync } from '@store/sync/sync-init';
 import { WidgetList } from './components/WidgetList/WidgetList';
-import { WidgetSettings } from './components/WidgetSettings/WidgetSettings';
+import { WidgetWorkbench } from './components/WidgetWorkbench/WidgetWorkbench';
+import { LayoutEditor } from './components/LayoutEditor/LayoutEditor';
 import { SettingsPage } from './components/SettingsPage/SettingsPage';
-import { TitleBar } from './components/TitleBar/TitleBar';
-import { AppStatus } from './components/AppStatus/AppStatus';
-import { SidebarLinks } from './components/SidebarLinks/SidebarLinks';
-import { RandomGlitchCanvas } from './components/BackgroundAnimation/RandomGlitchCanvas';
+import { AppHeader, type AppSection } from './components/AppHeader/AppHeader';
+import { AppFooter } from './components/AppFooter/AppFooter';
 import { UpdateBanner } from './components/UpdateBanner/UpdateBanner';
 import styles from './MainWindow.module.scss';
-import Logo from '@assets/logo.svg?react';
-import {
-  useAppSettingsStore,
-  useStore,
-  useSimStore,
-} from '@store/root-store-context';
+import { useStore, useSimStore } from '@store/root-store-context';
 
-const { Content, Sider } = Layout;
+const { Content } = Layout;
 
 export const MainWindow = observer(() => {
-  const appSettings = useAppSettingsStore();
   const simStore = useSimStore();
   const root = useStore();
 
-  const [selectedId, setSelectedId] = useState<string>('app-settings');
+  const [activeSection, setActiveSection] = useState<AppSection>('layouts');
+  const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
+  const [layoutsMode, setLayoutsMode] = useState<'list' | 'editor'>('list');
 
   useEffect(() => {
     void simStore.startStream();
@@ -73,6 +67,11 @@ export const MainWindow = observer(() => {
           fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
         },
         components: {
+          // colorPrimary is near-white, so primary buttons need dark text/icon
+          // or the icon blends into the active button background.
+          Button: {
+            primaryColor: '#15161a',
+          },
           Layout: {
             siderBg: '#111216',
             bodyBg: '#0d0e12',
@@ -108,73 +107,62 @@ export const MainWindow = observer(() => {
     >
       <AntdApp style={{ height: '100%' }}>
         <Layout className={styles.layout}>
-          <TitleBar />
+          <AppHeader
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+          />
+
           <UpdateBanner />
 
-          <Layout className={styles.mainContainer}>
-            <Sider width={320} className={styles.sider}>
-              <div className={styles.sidebarHeader}>
-                <div className={styles.logoContainer}>
-                  <Logo className={styles.logo} />
-                </div>
-
-                <div className={styles.headerText}>
-                  <div className={styles.brandContainer}>
-                    <span className={styles.brandName}>Marble Trace</span>
-
-                    {appSettings.currentVersion && (
-                      <span className={styles.version}>
-                        &nbsp;v{appSettings.currentVersion}
-                      </span>
-                    )}
-                  </div>
-
-                  <AppStatus />
-                </div>
-              </div>
-
-              <div className={styles.sidebarContent}>
-                <div className={styles.sectionTitle}>Widget Modules</div>
-
-                <WidgetList selectedId={selectedId} onSelect={setSelectedId} />
-              </div>
-
-              <div className={styles.sidebarFooter}>
-                <button
-                  type="button"
-                  className={`${styles.settingsItem} ${
-                    selectedId === 'app-settings' ? styles.active : ''
-                  }`}
-                  onClick={() => setSelectedId('app-settings')}
-                >
-                  <Settings
-                    size={16}
-                    className={styles.settingsIcon}
-                    strokeWidth={2}
-                  />
-                  <span className={styles.settingsLabel}>Global Settings</span>
-                </button>
-
-                <SidebarLinks />
-              </div>
-            </Sider>
-
-            <Content className={styles.content}>
-              <RandomGlitchCanvas />
-
-              <div className={styles.scrollContainer} key={selectedId}>
+          <Content className={styles.content}>
+            {activeSection === 'settings' && (
+              <div className={styles.scrollContainer} key="settings">
                 <div
                   className={`${styles.contentInner} ${styles.animateFadeIn}`}
                 >
-                  {selectedId === 'app-settings' ? (
-                    <SettingsPage />
-                  ) : (
-                    <WidgetSettings widgetId={selectedId} />
-                  )}
+                  <SettingsPage />
                 </div>
               </div>
-            </Content>
-          </Layout>
+            )}
+
+            {activeSection === 'layouts' && (
+              <div
+                className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
+                key="layouts"
+              >
+                <LayoutEditor
+                  mode={layoutsMode}
+                  onModeChange={setLayoutsMode}
+                />
+              </div>
+            )}
+
+            {activeSection === 'widgets' && (
+              <div
+                className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
+                key="widgets"
+              >
+                <div className={styles.widgetsSection}>
+                  <div className={styles.widgetCatalog}>
+                    <div className={styles.catalogTitle}>Widget Modules</div>
+                    <WidgetList
+                      selectedId={selectedWidgetId}
+                      onSelect={setSelectedWidgetId}
+                    />
+                  </div>
+
+                  <div className={styles.widgetWorkbench}>
+                    <WidgetWorkbench
+                      widgetId={selectedWidgetId}
+                      onSelectWidget={setSelectedWidgetId}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </Content>
+
+          <AppFooter />
         </Layout>
       </AntdApp>
     </ConfigProvider>

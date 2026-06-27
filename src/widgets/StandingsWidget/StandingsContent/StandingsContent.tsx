@@ -48,8 +48,7 @@ export const StandingsContent = observer(() => {
           ? 3.25
           : 2.75,
       5,
-      '[data-driver-row]',
-      [settings.rowPadding, settings.showColumnHeaders]
+      '[data-driver-row]'
     );
 
   const rowsPerGroupedClass = (() => {

@@ -90,10 +90,19 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
 
   const gridTemplate = buildRelativeGridTemplate(settings);
 
+  // Player row: fill with the user-chosen color and stack the same color in a
+  // thin band at the top/bottom edges. Layering the color over the fill makes
+  // those edges brighter in the same hue — a glow that reads like a border.
+  const playerRowStyle = driver.isPlayer
+    ? {
+        background: `linear-gradient(to bottom, ${settings.playerRowColor}, transparent 2px), linear-gradient(to top, ${settings.playerRowColor}, transparent 2px), ${settings.playerRowColor}`,
+      }
+    : undefined;
+
   return (
     <div
       className={rowClass}
-      style={{ gridTemplateColumns: gridTemplate }}
+      style={{ gridTemplateColumns: gridTemplate, ...playerRowStyle }}
       data-relative-row
     >
       <div
@@ -107,13 +116,23 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
       >
         <span
           className={`${styles.driverPosition} ${driver.isPlayer ? styles.driverPositionPlayer : ''}`}
+          style={
+            driver.isPlayer ? { color: settings.playerAccentColor } : undefined
+          }
         >
           {driver.classPosition || driver.position}
         </span>
       </div>
 
       <div className={styles.carNumberCell}>
-        <span className={styles.driverCarNumber}>#{formattedCarNumber}</span>
+        <span
+          className={styles.driverCarNumber}
+          style={
+            driver.isPlayer ? { color: settings.playerAccentColor } : undefined
+          }
+        >
+          #{formattedCarNumber}
+        </span>
       </div>
 
       <div className={styles.infoBlock}>

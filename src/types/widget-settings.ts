@@ -82,6 +82,10 @@ export interface StandingsWidgetSettings {
   showIncidentsBadge: boolean;
   abbreviateNames: boolean;
   showDriverFlags: boolean;
+  /** Highlight color for the player's own row. */
+  playerRowColor: string;
+  /** Color of the player's position number and car number. */
+  playerAccentColor: string;
 }
 
 export interface RelativeWidgetSettings {
@@ -91,6 +95,10 @@ export interface RelativeWidgetSettings {
   showPitIndicator: boolean;
   abbreviateNames: boolean;
   showDriverFlags: boolean;
+  /** Highlight color for the player's own row. */
+  playerRowColor: string;
+  /** Color of the player's position number and car number. */
+  playerAccentColor: string;
 }
 
 type TrackMapRotationMode = 'fixed' | 'heading-up';
@@ -154,7 +162,7 @@ export interface SectorMatrixWidgetSettings {
 }
 
 export interface TimerWidgetSettings {
-  showFlag: boolean;
+  showSessionType: boolean;
   showLaps: boolean;
   showPosition: boolean;
   showWallClock: boolean;
@@ -223,7 +231,7 @@ export interface BaseUserSettings {
   opacity: number;
   backgroundColor: string;
   borderColor: string;
-  hotkey: string;
+  zIndex?: number;
 }
 
 export type WidgetUserSettings = BaseUserSettings & WidgetSpecificSettings;
@@ -259,9 +267,24 @@ export type WidgetDefaultConfig = WidgetMeta & {
   userSettings: WidgetUserSettings;
 };
 
+export interface LayoutResolution {
+  width: number;
+  height: number;
+}
+
+export interface MonitorConfig {
+  resolution: LayoutResolution;
+  widgets: WidgetDefaultConfig[];
+}
+
 export interface SavedLayout {
   id: string;
   name: string;
   createdAt: number;
-  widgets: WidgetDefaultConfig[];
+  /** Background image shown behind widgets in the layout editor. */
+  backgroundImage?: string;
+  /** Per-monitor widget configs. Key = monitor name (Win32 prefix stripped). */
+  monitorConfigs: Record<string, MonitorConfig>;
+  /** Which monitor config is currently active. null = no monitor selected yet. */
+  activeMonitorName: string | null;
 }

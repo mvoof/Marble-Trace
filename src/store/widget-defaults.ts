@@ -236,6 +236,13 @@ const resolveRelativeLayout = makeColumnLayoutResolver<RelativeWidgetSettings>(
 // Default column visibility kept as a single source: the natural designWidth is
 // computed from it (so it can't drift from the colSpecs in *-utils.ts), and the
 // same object is spread into the widget's userSettings below.
+// Default highlight color for the player's own row in the standings/relative
+// tables (#f5c518 yellow). Stored as a setting so users can recolor it.
+const DEFAULT_PLAYER_ROW_COLOR = 'rgba(245, 197, 24, 0.32)';
+
+// Default color of the player's position/car number (solid gold #f5c518).
+const DEFAULT_PLAYER_ACCENT_COLOR = '#f5c518';
+
 const STANDINGS_COLUMN_DEFAULTS = {
   showPosChange: true,
   showBrand: true,
@@ -286,7 +293,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 500,
     designHeight: 120,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 400,
       y: 100,
       currentWidth: 500,
@@ -294,7 +301,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
       rpmColorTheme: 'custom',
       rpmColorLow: '#10b981',
       rpmColorMid: '#eab308',
@@ -320,7 +326,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: INPUT_TRACE_DESIGN_WIDTH,
     designHeight: 120,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 400,
       y: 300,
       currentWidth: INPUT_TRACE_DESIGN_WIDTH,
@@ -329,7 +335,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
       steeringCenterDisplay: 'logo',
       throttleColor: '#10b981',
       brakeColor: '#ef4444',
@@ -359,7 +364,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'transparent',
       borderColor: 'transparent',
-      hotkey: '',
       proximityThreshold: 5,
       hideDelay: 2,
       carLength: 4.4,
@@ -375,7 +379,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 800,
     designHeight: 380,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 200,
       y: 300,
       currentWidth: 800,
@@ -383,7 +387,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'transparent',
       borderColor: 'transparent',
-      hotkey: '',
       proximityThreshold: 3,
       hideDelay: 2,
       carLength: 4.4,
@@ -408,7 +411,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
       rowPadding: 'narrow',
       viewMode: 'all',
       viewModeHotkey: '',
@@ -424,6 +426,8 @@ const WIDGETS: WidgetConfig[] = [
       showIncidentsBadge: true,
       abbreviateNames: false,
       showDriverFlags: true,
+      playerRowColor: DEFAULT_PLAYER_ROW_COLOR,
+      playerAccentColor: DEFAULT_PLAYER_ACCENT_COLOR,
     },
   },
   {
@@ -444,12 +448,13 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
       rowPadding: 'narrow',
       ...RELATIVE_COLUMN_DEFAULTS,
       showPitIndicator: true,
       abbreviateNames: true,
       showDriverFlags: true,
+      playerRowColor: DEFAULT_PLAYER_ROW_COLOR,
+      playerAccentColor: DEFAULT_PLAYER_ACCENT_COLOR,
     },
   },
   {
@@ -461,7 +466,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 400,
     designHeight: 400,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 800,
       y: 50,
       currentWidth: 400,
@@ -469,7 +474,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'transparent',
       borderColor: 'transparent',
-      hotkey: '',
       showSectors: true,
       showSectorsOnMap: true,
       rotationMode: 'fixed',
@@ -493,7 +497,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 400,
     designHeight: 40,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 50,
       y: 820,
       currentWidth: 400,
@@ -501,7 +505,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
       orientation: 'horizontal',
       playerDotColor: '#18181b',
       targetDotRadiusPx: 10,
@@ -516,7 +519,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 232,
     designHeight: 232,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 760,
       y: 0,
       currentWidth: 232,
@@ -524,7 +527,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'transparent',
       borderColor: 'transparent',
-      hotkey: '',
       alwaysShow: true,
       holdDuration: 3,
       split: false,
@@ -541,7 +543,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 280,
     designHeight: 160,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 760,
       y: 250,
       currentWidth: 280,
@@ -549,7 +551,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'transparent',
       borderColor: 'transparent',
-      hotkey: '',
       alwaysShow: true,
       holdDuration: 3,
     },
@@ -564,7 +565,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 300,
     designHeight: 290,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 100,
       y: 100,
       currentWidth: 280,
@@ -572,7 +573,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
       showSuspensionAndBrakes: false,
       modeWidths: {},
     },
@@ -594,7 +594,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
     },
   },
   {
@@ -606,7 +605,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 200,
     designHeight: 100,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 400,
       y: 200,
       currentWidth: 200,
@@ -614,7 +613,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'transparent',
       borderColor: 'transparent',
-      hotkey: '',
       reference: 'personal_best',
       showLapFlash: false,
       flashDuration: 5,
@@ -626,11 +624,12 @@ const WIDGETS: WidgetConfig[] = [
     label: 'Timer',
     description: 'Stint and total session timers.',
     component: TimerWidget,
+    autoHeight: true,
     requiredCapabilities: ['playerDynamics'],
     designWidth: 240,
     designHeight: 120,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 50,
       y: 310,
       currentWidth: 240,
@@ -638,8 +637,7 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
-      showFlag: true,
+      showSessionType: true,
       showLaps: true,
       showPosition: true,
       showWallClock: true,
@@ -653,11 +651,12 @@ const WIDGETS: WidgetConfig[] = [
     label: 'Weather',
     description: 'Track conditions and wind information.',
     component: WeatherWidget,
+    autoHeight: true,
     requiredCapabilities: ['weatherCurrent'],
     designWidth: 200,
     designHeight: 240,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 760,
       y: 200,
       currentWidth: 200,
@@ -665,7 +664,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
       showCompass: true,
       showAirTemp: true,
       showTrackTemp: true,
@@ -685,7 +683,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 240,
     designHeight: 360,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 760,
       y: 500,
       currentWidth: 240,
@@ -693,7 +691,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
       showChart: false,
       pitWarningLaps: 3,
       chartType: 'bar',
@@ -709,7 +706,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 240,
     designHeight: 280,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 100,
       y: 100,
       currentWidth: 240,
@@ -717,7 +714,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
       displayMode: 'fading',
       scale: 4,
       colorMode: 'advanced',
@@ -734,7 +730,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 320,
     designHeight: 180,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 100,
       y: 300,
       currentWidth: 320,
@@ -742,7 +738,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
       showPredicted: true,
       showSectors: true,
     },
@@ -758,7 +753,7 @@ const WIDGETS: WidgetConfig[] = [
     designWidth: 220,
     designHeight: 260,
     userSettings: {
-      enabled: true,
+      enabled: false,
       x: 700,
       y: 300,
       currentWidth: 220,
@@ -766,7 +761,6 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      hotkey: '',
     },
   },
 ];

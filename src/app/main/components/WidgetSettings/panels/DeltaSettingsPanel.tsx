@@ -1,4 +1,4 @@
-﻿import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import { Segmented, Slider, Switch } from 'antd';
 import type {
   LapDeltaReference,
@@ -7,10 +7,10 @@ import type {
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { DELTA_REFERENCE_DESC } from './shared';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const DeltaSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetSettingsStore();
+  const widgetSettings = useWidgetEditor();
   const settings = widgetSettings.getSettings<DeltaWidgetSettings>('delta');
 
   const update = (partial: Partial<DeltaWidgetSettings>) => {

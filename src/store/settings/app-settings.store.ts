@@ -13,7 +13,11 @@ const DEFAULT_APP_SETTINGS = {
   autoUpdate: true,
   updateCheckInterval: 3,
   lastUpdateCheck: null as string | null,
-  overlayMonitorIndex: null as number | null,
+  // Layout editor preferences (persisted across sessions).
+  editorShowGrid: false,
+  editorSnapToGrid: true,
+  // Overlay-space grid pitch (px). Drives both the visual grid and snapping.
+  editorGridSize: 20,
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
@@ -215,8 +219,16 @@ export class AppSettingsStore {
     this.appSettings.hideWidgetsInGarage = value;
   }
 
-  setOverlayMonitorIndex(value: number | null) {
-    this.appSettings.overlayMonitorIndex = value;
+  setEditorShowGrid(value: boolean) {
+    this.appSettings.editorShowGrid = value;
+  }
+
+  setEditorSnapToGrid(value: boolean) {
+    this.appSettings.editorSnapToGrid = value;
+  }
+
+  setEditorGridSize(value: number) {
+    this.appSettings.editorGridSize = value;
   }
 
   async resetSettings() {

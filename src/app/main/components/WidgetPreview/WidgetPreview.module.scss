@@ -1,0 +1,31 @@
+.stage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: sp(xl);
+}
+
+.widgetInner {
+  position: relative;
+  border-radius: rem(6);
+  border: 2px solid;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+
+.overflowVisible {
+  overflow: visible;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: $widget-text-secondary;
+  font-family: $font-widget;
+}

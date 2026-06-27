@@ -1,5 +1,5 @@
-﻿import { observer } from 'mobx-react-lite';
-import { Switch, Segmented } from 'antd';
+import { observer } from 'mobx-react-lite';
+import { Switch, Segmented, ColorPicker } from 'antd';
 import type {
   RowPadding,
   StandingsViewMode,
@@ -9,10 +9,10 @@ import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecord
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const StandingsSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetSettingsStore();
+  const widgetSettings = useWidgetEditor();
 
   const settings =
     widgetSettings.getSettings<StandingsWidgetSettings>('standings');
@@ -40,6 +40,34 @@ export const StandingsSettingsPanel = observer(() => {
                 { label: 'Medium', value: 'medium' },
                 { label: 'Wide', value: 'wide' },
               ]}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="Player Row Color"
+            desc="Highlight color for your own row."
+          >
+            <ColorPicker
+              value={settings.playerRowColor}
+              onChange={(color) =>
+                update({ playerRowColor: color.toRgbString() })
+              }
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="Player Number Color"
+            desc="Color of your position and car number."
+          >
+            <ColorPicker
+              value={settings.playerAccentColor}
+              onChange={(color) =>
+                update({ playerAccentColor: color.toRgbString() })
+              }
             />
           </SettingRow>
         </div>

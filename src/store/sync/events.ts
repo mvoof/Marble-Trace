@@ -3,6 +3,7 @@ import { emit, emitTo, listen, UnlistenFn } from '@tauri-apps/api/event';
 import type { UnitSystem } from '@/types';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
+import { positionOverlayToMonitor } from './position-overlay';
 
 const MAIN = 'main';
 const OVERLAY = 'overlay';
@@ -70,8 +71,8 @@ export const setupOverlayListeners = async (
     })
   );
   unlistens.push(
-    await listen<number | null>('overlay-monitor-changed', (e) => {
-      runInAction(() => root.appSettings.setOverlayMonitorIndex(e.payload));
+    await listen<string | null>('overlay-monitor-changed', (e) => {
+      void positionOverlayToMonitor(e.payload, root);
     })
   );
   return unlistens;
@@ -92,5 +93,5 @@ export const emitWidgetSettingsUpdated = (widgets: WidgetDefaultConfig[]) =>
   emitTo(OVERLAY, 'widget-settings-updated', widgets);
 export const emitWidgetSettingsToMain = (widgets: WidgetDefaultConfig[]) =>
   emitTo(MAIN, 'widget-settings-updated', widgets);
-export const emitOverlayMonitorChanged = (index: number | null) =>
-  emitTo(OVERLAY, 'overlay-monitor-changed', index);
+export const emitOverlayMonitorChanged = (name: string | null) =>
+  emitTo(OVERLAY, 'overlay-monitor-changed', name);

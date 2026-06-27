@@ -1,0 +1,222 @@
+.pane {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: radius(lg);
+  background: #0b0c10;
+  border: 1px solid #2a2c32;
+}
+
+.paneFullscreen {
+  border: none;
+  border-radius: 0;
+  background: #000;
+}
+
+.stage {
+  position: relative;
+  flex: 0 0 auto;
+  border-radius: radius(md);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(80, 90, 120, 0.2), transparent 60%),
+    linear-gradient(135deg, #16181d 0%, #0b0c10 100%);
+  border: 1px solid #2a2c32;
+  background-size: cover;
+  background-position: center;
+}
+
+.stageFullscreen {
+  border: none;
+  border-radius: 0;
+}
+
+.world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  transform-origin: 0 0;
+}
+
+// Alignment grid drawn in screen-space on the stage (NOT inside the scaled
+// world) so the 1px lines stay crisp. The pitch is supplied inline as
+// `background-size` = gridSize * fit; downscaling a world-space grid would round
+// the lines into sparse, oversized squares.
+.grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  // Match the F9 drag-mode tint (rgba(0, 102, 255, …)) so the lines stay
+  // visible over light backgrounds instead of washing out like white.
+  background-image:
+    linear-gradient(0deg, rgba(0, 102, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 102, 255, 0.1) 1px, transparent 1px);
+}
+
+.axisVertical,
+.axisHorizontal {
+  position: absolute;
+  background: rgba($race-green, 0.5);
+}
+
+.axisVertical {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-1px);
+}
+
+.axisHorizontal {
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-1px);
+}
+
+// ── Widget box ───────────────────────────────────────────────
+.widgetBox {
+  position: absolute;
+}
+
+.dragWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.widgetInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: rem(6);
+  border: 2px solid;
+  overflow: hidden;
+}
+
+.overflowVisible {
+  overflow: visible;
+}
+
+.selected {
+  .widgetInner {
+    // Match the overlay F9 drag-mode selection: thin dashed outline on the
+    // widget edge.
+    outline: 2px dashed $widget-text-accent;
+    outline-offset: -2px;
+  }
+}
+
+// ── Resize handles (overlay-space px; visually scaled with the world) ──
+$handle-corner: 18px;
+$handle-edge: 8px;
+
+.resizeHandle {
+  position: absolute;
+  z-index: 10;
+}
+
+.resizeHandleSE {
+  bottom: 0;
+  right: 0;
+  width: $handle-corner;
+  height: $handle-corner;
+  cursor: se-resize;
+}
+
+.resizeHandleSW {
+  bottom: 0;
+  left: 0;
+  width: $handle-corner;
+  height: $handle-corner;
+  cursor: sw-resize;
+}
+
+.resizeHandleNE {
+  top: 0;
+  right: 0;
+  width: $handle-corner;
+  height: $handle-corner;
+  cursor: ne-resize;
+}
+
+.resizeHandleNW {
+  top: 0;
+  left: 0;
+  width: $handle-corner;
+  height: $handle-corner;
+  cursor: nw-resize;
+}
+
+.resizeHandleN {
+  top: 0;
+  left: $handle-corner;
+  right: $handle-corner;
+  height: $handle-edge;
+  cursor: n-resize;
+}
+
+.resizeHandleS {
+  bottom: 0;
+  left: $handle-corner;
+  right: $handle-corner;
+  height: $handle-edge;
+  cursor: s-resize;
+}
+
+.resizeHandleE {
+  top: $handle-corner;
+  bottom: $handle-corner;
+  right: 0;
+  width: $handle-edge;
+  cursor: e-resize;
+}
+
+.resizeHandleW {
+  top: $handle-corner;
+  bottom: $handle-corner;
+  left: 0;
+  width: $handle-edge;
+  cursor: w-resize;
+}
+
+.resizeHandleSE,
+.resizeHandleSW,
+.resizeHandleNE,
+.resizeHandleNW {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 2px solid $widget-text-accent;
+    border-radius: 2px;
+    background: rgba(13, 14, 18, 0.6);
+  }
+}
+
+.backgroundLoader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 12, 16, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  color: #ffffff;
+}

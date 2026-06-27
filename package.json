@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "~2.10",
+    "@tauri-apps/plugin-fs": "^2.5.1",
     "@tauri-apps/plugin-global-shortcut": "^2.3.1",
     "@tauri-apps/plugin-opener": "^2.5.4",
     "@tauri-apps/plugin-process": "^2.3.1",
@@ -69,7 +70,6 @@
     "playwright": "^1.59.1",
     "sharp": "^0.35.2",
     "storybook": "^10.3.5",
-    "tauri-plugin-mcp-server": "^0.1.0",
     "typescript": "~5.9.2",
     "vite": "^7.1.7",
     "vitest": "^4.1.4",

@@ -4,11 +4,11 @@ import { FlagDisplaySettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const FlagDisplaySettingsPanel = observer(
   ({ widgetId }: { widgetId: 'led-flags' | 'flat-flags' }) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const widgetSettings = useWidgetEditor();
     const settings = widgetSettings.getSettings<FlagDisplaySettings>(widgetId);
 
     const update = (partial: Partial<FlagDisplaySettings>) => {

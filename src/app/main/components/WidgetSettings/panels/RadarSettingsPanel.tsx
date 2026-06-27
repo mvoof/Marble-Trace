@@ -1,4 +1,4 @@
-﻿import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import { Col, InputNumber, Row, Segmented } from 'antd';
 import type {
   RadarQualifyingVisibility,
@@ -6,11 +6,11 @@ import type {
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const RadarSettingsPanel = observer(
   ({ widgetId }: { widgetId: 'proximity-radar' | 'radar-bar' }) => {
-    const widgetSettings = useWidgetSettingsStore();
+    const widgetSettings = useWidgetEditor();
     const settings = widgetSettings.getSettings<RadarSettings>(widgetId);
 
     const update = (partial: Partial<RadarSettings>) => {

@@ -1,13 +1,13 @@
-﻿import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import { Switch } from 'antd';
 import { TimerWidgetSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const TimerSettingsPanel = observer(() => {
-  const widgetSettings = useWidgetSettingsStore();
+  const widgetSettings = useWidgetEditor();
 
   const settings = widgetSettings.getSettings<TimerWidgetSettings>('timer');
 
@@ -22,10 +22,10 @@ export const TimerSettingsPanel = observer(() => {
     <Card title="Visible Elements">
       {[
         {
-          title: 'Show Flag State',
-          desc: 'Display session status: green running / final 5 min / checkered.',
-          value: settings.showFlag,
-          key: 'showFlag',
+          title: 'Show Session Type',
+          desc: 'Display the current session type (Race, Qualify, Practice).',
+          value: settings.showSessionType,
+          key: 'showSessionType',
         },
         {
           title: 'Show Lap Count',

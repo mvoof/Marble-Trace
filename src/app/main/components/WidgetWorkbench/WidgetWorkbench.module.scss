@@ -1,0 +1,60 @@
+.root {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  gap: sp(lg);
+}
+
+.previewColumn {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  gap: sp(sm);
+}
+
+.scenarioBar {
+  display: flex;
+  align-items: center;
+  gap: sp(sm);
+  flex: 0 0 auto;
+}
+
+.scenarioLabel {
+  color: #8b8e98;
+  font-family: $font-widget;
+  font-size: fs(sm);
+}
+
+.previewPane {
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: radius(lg);
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 30% 20%,
+      rgba(80, 90, 120, 0.25),
+      transparent 60%
+    ),
+    linear-gradient(135deg, #1a1c22 0%, #0d0e12 100%);
+  border: 1px solid #2a2c32;
+}
+
+.settingsPane {
+  flex: 0 0 360px;
+  min-width: 0;
+  overflow-y: auto;
+  padding-right: sp(xs);
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #8b8e98;
+  font-family: $font-widget;
+}
