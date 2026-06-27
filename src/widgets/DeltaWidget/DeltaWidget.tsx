@@ -19,14 +19,15 @@ export const DeltaWidget = observer(() => {
     widgetSettings.getSettings<DeltaWidgetSettings>('delta');
 
   const lap = lapStore.lastCompletedLap;
+  const lapNum = lap?.lapNum ?? null;
 
   const [currentFlashLapNum, setCurrentFlashLapNum] = useState<number | null>(
     null
   );
 
   useEffect(() => {
-    if (lap) {
-      setCurrentFlashLapNum(lap.lapNum);
+    if (lapNum !== null) {
+      setCurrentFlashLapNum(lapNum);
 
       const timer = setTimeout(() => {
         setCurrentFlashLapNum(null);
@@ -36,7 +37,7 @@ export const DeltaWidget = observer(() => {
         clearTimeout(timer);
       };
     }
-  }, [lap, flashDuration]);
+  }, [lapNum, flashDuration]);
 
   const showFlash =
     !dragMode &&
