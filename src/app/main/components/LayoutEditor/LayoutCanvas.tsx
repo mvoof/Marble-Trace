@@ -121,11 +121,15 @@ export const LayoutCanvas = observer(
     useEffect(() => {
       let active = true;
 
-      void resolveBackgroundSrc(rawBackground).then((src) => {
-        if (active) {
-          setBackgroundSrc(src);
-        }
-      });
+      void resolveBackgroundSrc(rawBackground)
+        .then((src) => {
+          if (active) {
+            setBackgroundSrc(src);
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to resolve background source:', error);
+        });
 
       return () => {
         active = false;
