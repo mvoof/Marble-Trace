@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { filterToDefaults } from '@utils/filter-to-defaults';
 import { invoke } from '@tauri-apps/api/core';
 import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-defaults';
+import { resolveMonitorByName } from '@store/sync/overlay-resolution';
 
 import type {
   WidgetDefaultConfig,
@@ -595,12 +596,22 @@ export class WidgetSettingsStore {
     this.bumpMutation();
   }
 
-  // Curated onboarding layout: the default-enabled starter widgets placed at
+  // Curated onboarding la  // Curated onboarding layout: the default-enabled starter widgets placed at
   // sensible anchors for the current overlay resolution (standings top-left,
   // relative bottom-left, radar bottom-center) instead of the raw default
   // positions clustered in a corner.
-  private buildStarterWidgets(): WidgetDefaultConfig[] {
+  // When clean is true, it returns all widgets disabled.
+  private buildStarterWidgets(clean: boolean = false): WidgetDefaultConfig[] {
     const widgets = this.snapshotDefaults();
+
+    if (clean) {
+      for (const widget of widgets) {
+        widget.userSettings.enabled = false;
+      }
+
+      return widgets;
+    }
+
     const { width, height } = this.overlayResolution;
     const MARGIN = 24;
 
@@ -644,7 +655,33 @@ export class WidgetSettingsStore {
 
     this.layouts = [...this.layouts, layout];
     this.activeLayoutId = id;
+    this.setWidgets(this.buildStarterWidgets(true));
     this.bumpMutation();
+
+    void resolveMonitorByName(null).then((monitor) => {
+      if (monitor) {
+        runInAction(() => {
+          const targetLayout = this.layouts.find(
+            (candidate) => candidate.id === id
+          );
+
+          if (targetLayout) {
+            targetLayout.monitorConfigs[monitor.name] = {
+              resolution: { ...monitor.resolution },
+              widgets: this.buildStarterWidgets(true),
+            };
+
+            targetLayout.activeMonitorName = monitor.name;
+
+            if (this.activeLayoutId === id) {
+              this.overlayResolution = { ...monitor.resolution };
+            }
+
+            this.bumpMutation();
+          }
+        });
+      }
+    });
   }
 
   get activeLayout(): SavedLayout | undefined {
