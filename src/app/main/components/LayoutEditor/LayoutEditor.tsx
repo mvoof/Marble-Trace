@@ -336,7 +336,7 @@ export const LayoutEditor = observer(() => {
                 className={styles.coordInput}
                 value={selectedWidget.userSettings.x}
                 onChange={(value) =>
-                  value !== null &&
+                  typeof value === 'number' &&
                   widgetSettings.updatePosition(
                     selectedWidget.id,
                     value,
@@ -350,7 +350,7 @@ export const LayoutEditor = observer(() => {
                 className={styles.coordInput}
                 value={selectedWidget.userSettings.y}
                 onChange={(value) =>
-                  value !== null &&
+                  typeof value === 'number' &&
                   widgetSettings.updatePosition(
                     selectedWidget.id,
                     selectedWidget.userSettings.x,
@@ -365,7 +365,7 @@ export const LayoutEditor = observer(() => {
                 min={10}
                 value={selectedWidget.userSettings.currentWidth}
                 onChange={(value) =>
-                  value !== null &&
+                  typeof value === 'number' &&
                   widgetSettings.updateSize(
                     selectedWidget.id,
                     value,
@@ -380,7 +380,7 @@ export const LayoutEditor = observer(() => {
                 min={10}
                 value={selectedWidget.userSettings.currentHeight}
                 onChange={(value) =>
-                  value !== null &&
+                  typeof value === 'number' &&
                   widgetSettings.updateSize(
                     selectedWidget.id,
                     selectedWidget.userSettings.currentWidth,
