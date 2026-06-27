@@ -231,7 +231,6 @@ export interface BaseUserSettings {
   opacity: number;
   backgroundColor: string;
   borderColor: string;
-  hotkey: string;
 }
 
 export type WidgetUserSettings = BaseUserSettings & WidgetSpecificSettings;

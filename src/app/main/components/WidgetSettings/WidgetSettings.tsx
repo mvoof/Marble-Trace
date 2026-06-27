@@ -2,7 +2,6 @@ import { observer } from 'mobx-react-lite';
 import { InputNumber, Row, Col, ColorPicker } from 'antd';
 import styles from './WidgetSettings.module.scss';
 import { Card } from './panels/Card';
-import { HotkeyRecorderWrapper } from './panels/HotkeyRecorderWrapper';
 import { SpeedSettingsPanel } from './panels/SpeedSettingsPanel';
 import { InputTraceSettingsPanel } from './panels/InputTraceSettingsPanel';
 import { RadarSettingsPanel } from './panels/RadarSettingsPanel';
@@ -159,14 +158,6 @@ export const WidgetSettings = observer(
             </Row>
           </Card>
         )}
-
-        <Card title="Controls">
-          <HotkeyRecorderWrapper
-            key={widgetId}
-            widgetId={widgetId}
-            currentHotkey={userSettings.hotkey}
-          />
-        </Card>
 
         {widgetId === 'speed' && <SpeedSettingsPanel />}
         {widgetId === 'input-trace' && <InputTraceSettingsPanel />}

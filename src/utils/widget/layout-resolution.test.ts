@@ -22,7 +22,6 @@ const makeWidget = (
       opacity: 1,
       backgroundColor: 'transparent',
       borderColor: 'transparent',
-      hotkey: '',
       ...overrides,
     },
   }) as WidgetDefaultConfig;

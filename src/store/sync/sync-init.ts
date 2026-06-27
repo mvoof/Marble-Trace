@@ -135,9 +135,6 @@ export const initMainSync = async (root: RootStore) => {
             return [
               root.appSettings.appSettings.dragHotkey,
               root.appSettings.appSettings.hideAllWidgetsHotkey,
-              ...root.widgetSettings.allWidgets.map(
-                (w) => w.userSettings.hotkey
-              ),
               standingsSettings.viewModeHotkey,
               standingsSettings.classPrevHotkey,
               standingsSettings.classNextHotkey,

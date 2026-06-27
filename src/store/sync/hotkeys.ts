@@ -49,19 +49,6 @@ export const setupHotkeys = async (
       });
     }
 
-    for (const widget of root.widgetSettings.allWidgets) {
-      if (widget.userSettings.hotkey) {
-        addHandler(widget.userSettings.hotkey, (event) => {
-          if (event.state === 'Pressed') {
-            root.widgetSettings.setWidgetEnabled(
-              widget.id,
-              !widget.userSettings.enabled
-            );
-          }
-        });
-      }
-    }
-
     const settings =
       root.widgetSettings.getSettings<StandingsWidgetSettings>('standings');
 
