@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Button, Input, InputNumber, Popconfirm, Select, Tooltip } from 'antd';
 import type { InputRef } from 'antd';
 import {
+  ArrowLeft,
   Plus,
   Pencil,
   Trash2,
@@ -32,6 +33,7 @@ import {
 } from '@store/sync/overlay-resolution';
 import { LayoutCanvas } from './LayoutCanvas';
 import { LayoutWidgetPanel } from './LayoutWidgetPanel';
+import { LayoutList } from './LayoutList';
 import {
   saveBackgroundImage,
   deleteBackgroundImage,
@@ -54,6 +56,8 @@ const GRID_SIZE_OPTIONS = [10, 15, 20, 30, 40].map((size) => ({
 export const LayoutEditor = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
   const appSettings = useAppSettingsStore();
+
+  const [mode, setMode] = useState<'list' | 'editor'>('list');
 
   const showGrid = appSettings.appSettings.editorShowGrid;
   const snapToGrid = appSettings.appSettings.editorSnapToGrid;
@@ -216,6 +220,10 @@ export const LayoutEditor = observer(() => {
     }
   };
 
+  if (mode === 'list') {
+    return <LayoutList onOpenEditor={() => setMode('editor')} />;
+  }
+
   return (
     <div
       className={`${styles.root} ${isFullscreen ? styles.rootFullscreen : ''}`}
@@ -226,6 +234,16 @@ export const LayoutEditor = observer(() => {
           isFullscreen ? styles.toolbarFullscreen : ''
         }`}
       >
+        {!isFullscreen && (
+          <Button
+            size="small"
+            icon={<ArrowLeft size={14} />}
+            onClick={() => setMode('list')}
+          >
+            Back to Layouts
+          </Button>
+        )}
+
         {isFullscreen && (
           <Tooltip title="Toggle widget panel">
             <Button
