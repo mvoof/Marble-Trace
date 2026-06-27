@@ -90,6 +90,11 @@ export const cloneBackgroundImage = async (
       const bytes = await readFile(oldPath, { baseDir: BaseDirectory.AppData });
       const newFileName = `${newLayoutId}.${extension}`;
 
+      await mkdir(BACKGROUNDS_DIR, {
+        baseDir: BaseDirectory.AppData,
+        recursive: true,
+      });
+
       await writeFile(`${BACKGROUNDS_DIR}/${newFileName}`, bytes, {
         baseDir: BaseDirectory.AppData,
       });

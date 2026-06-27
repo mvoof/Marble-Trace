@@ -87,6 +87,63 @@ describe('scaleWidgetsToResolution', () => {
     );
   });
 
+  it('returns widgets unchanged when from dimensions are zero or negative', () => {
+    const widgets = [makeWidget()];
+
+    expect(
+      scaleWidgetsToResolution(
+        widgets,
+        { width: 0, height: 1080 },
+        { width: 1920, height: 1080 }
+      )
+    ).toBe(widgets);
+
+    expect(
+      scaleWidgetsToResolution(
+        widgets,
+        { width: 1920, height: -1 },
+        { width: 1920, height: 1080 }
+      )
+    ).toBe(widgets);
+  });
+
+  it('returns widgets unchanged when to dimensions are zero or negative', () => {
+    const widgets = [makeWidget()];
+
+    expect(
+      scaleWidgetsToResolution(
+        widgets,
+        { width: 1920, height: 1080 },
+        { width: 0, height: 1080 }
+      )
+    ).toBe(widgets);
+
+    expect(
+      scaleWidgetsToResolution(
+        widgets,
+        { width: 1920, height: 1080 },
+        { width: 1920, height: -1 }
+      )
+    ).toBe(widgets);
+  });
+
+  it('scales down from 4K to 1080p', () => {
+    const widgets = [
+      makeWidget({ x: 200, y: 400, currentWidth: 800, currentHeight: 400 }),
+    ];
+
+    const scaled = scaleWidgetsToResolution(
+      widgets,
+      { width: 3840, height: 2160 },
+      { width: 1920, height: 1080 }
+    );
+
+    expect(scaled[0].userSettings.x).toBe(100);
+    expect(scaled[0].userSettings.y).toBe(200);
+    expect(scaled[0].userSettings.currentWidth).toBe(400);
+    expect(scaled[0].userSettings.currentHeight).toBe(200);
+  });
+
   it('does not mutate the input widgets', () => {
     const widgets = [makeWidget()];
 

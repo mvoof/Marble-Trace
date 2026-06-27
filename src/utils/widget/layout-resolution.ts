@@ -21,7 +21,13 @@ export const scaleWidgetsToResolution = (
   from: LayoutResolution,
   to: LayoutResolution
 ): WidgetDefaultConfig[] => {
-  if (resolutionsEqual(from, to) || from.width <= 0 || from.height <= 0) {
+  if (
+    resolutionsEqual(from, to) ||
+    from.width <= 0 ||
+    from.height <= 0 ||
+    to.width <= 0 ||
+    to.height <= 0
+  ) {
     return widgets;
   }
 

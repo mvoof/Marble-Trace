@@ -170,7 +170,6 @@ export class WidgetSettingsStore {
     const nextIdx = (currentIdx + 1) % order.length;
 
     this.updateUserSettings('standings', {
-      ...settings,
       viewMode: order[nextIdx],
     });
   }
@@ -384,24 +383,6 @@ export class WidgetSettingsStore {
       }
 
       this.syncToken++;
-    });
-  }
-
-  applyLayoutSync(widgets: WidgetDefaultConfig[]) {
-    runInAction(() => {
-      for (const incoming of widgets) {
-        const existing = this.widgets.get(incoming.id);
-
-        if (!existing) continue;
-
-        const { x, y, currentWidth, currentHeight } = incoming.userSettings;
-        Object.assign(existing.userSettings, {
-          x,
-          y,
-          currentWidth,
-          currentHeight,
-        });
-      }
     });
   }
 
@@ -744,7 +725,7 @@ export class WidgetSettingsStore {
     this.bumpMutation();
   }
 
-  // Curated onboarding la  // Curated onboarding layout: the default-enabled starter widgets placed at
+  // Curated onboarding layout: the default-enabled starter widgets placed at
   // sensible anchors for the current overlay resolution (standings top-left,
   // relative bottom-left, radar bottom-center) instead of the raw default
   // positions clustered in a corner.
