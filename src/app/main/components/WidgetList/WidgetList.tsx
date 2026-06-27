@@ -1,11 +1,8 @@
 import { observer } from 'mobx-react-lite';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
-import styles from './WidgetList.module.scss';
 import { useWidgetSettingsStore } from '@store/root-store-context';
+import styles from './WidgetList.module.scss';
 
-// Pure widget catalog. Visibility is governed by presence in the active layout
-// (the Layouts editor), so this list has no enable/disable toggle — selecting a
-// widget previews it and exposes its global defaults.
 const WidgetListItem = observer(
   ({
     widget,
@@ -23,19 +20,27 @@ const WidgetListItem = observer(
     return (
       <button
         type="button"
+        aria-label={widget.label}
         className={`${styles.listItem} ${isActive ? styles.active : ''} ${
           !isAvailable ? styles.disabled : ''
         }`}
-        onClick={() => onSelect(widget.id)}
+        onClick={() => {
+          if (isAvailable) {
+            onSelect(widget.id);
+          }
+        }}
+        disabled={!isAvailable}
       >
         <div className={styles.content}>
-          <span className={styles.title}>{widget.label}</span>
+          <div className={styles.headerRow}>
+            <span className={styles.title}>{widget.label}</span>
+            {!isAvailable && (
+              <span className={styles.unavailable}>Unavailable</span>
+            )}
+          </div>
           <span className={styles.description}>
             {widget.description || 'Configure widget settings.'}
           </span>
-          {!isAvailable && (
-            <span className={styles.unavailable}>Unavailable</span>
-          )}
         </div>
       </button>
     );
