@@ -88,6 +88,8 @@ export const LayoutEditor = observer(
 
     const [monitors, setMonitors] = useState<OverlayMonitor[]>([]);
 
+    const [isUploadingBackground, setIsUploadingBackground] = useState(false);
+
     const [isCreating, setIsCreating] = useState(false);
     const [newName, setNewName] = useState('');
     const [isRenaming, setIsRenaming] = useState(false);
@@ -150,6 +152,8 @@ export const LayoutEditor = observer(
         return;
       }
 
+      setIsUploadingBackground(true);
+
       try {
         const extension = (file.name.split('.').pop() ?? 'png').toLowerCase();
         const bytes = new Uint8Array(await file.arrayBuffer());
@@ -164,6 +168,8 @@ export const LayoutEditor = observer(
         widgetSettings.setActiveLayoutBackground(fileName);
       } catch (error) {
         console.error('Failed to save background image:', error);
+      } finally {
+        setIsUploadingBackground(false);
       }
     };
 
@@ -601,6 +607,7 @@ export const LayoutEditor = observer(
               fullscreen={isFullscreen}
               selectedWidgetId={selectedWidgetId}
               onSelectWidget={handleSelectWidget}
+              isUploading={isUploadingBackground}
             />
           </main>
         </div>

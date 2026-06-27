@@ -207,3 +207,16 @@ $handle-edge: 8px;
     background: rgba(13, 14, 18, 0.6);
   }
 }
+
+.backgroundLoader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 12, 16, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  color: #ffffff;
+}

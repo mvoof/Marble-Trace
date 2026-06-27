@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { reaction } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import { Spin } from 'antd';
 import { RootStore } from '@store/root-store';
 import {
   RootStoreContext,
@@ -27,6 +28,7 @@ interface LayoutCanvasProps {
   fullscreen?: boolean;
   selectedWidgetId: string | null;
   onSelectWidget: (id: string) => void;
+  isUploading?: boolean;
 }
 
 // Mirror the full widget set from the main store into the isolated preview store
@@ -57,6 +59,7 @@ export const LayoutCanvas = observer(
     fullscreen = false,
     selectedWidgetId,
     onSelectWidget,
+    isUploading = false,
   }: LayoutCanvasProps) => {
     const widgetSettings = useWidgetSettingsStore();
     const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
@@ -120,22 +123,62 @@ export const LayoutCanvas = observer(
 
     const rawBackground = widgetSettings.activeLayout?.backgroundImage;
     const [backgroundSrc, setBackgroundSrc] = useState<string | undefined>();
+    const [isBackgroundLoading, setIsBackgroundLoading] = useState(false);
 
     useEffect(() => {
-      let active = true;
+      let isEffectActive = true;
+
+      if (!rawBackground) {
+        setBackgroundSrc(undefined);
+        setIsBackgroundLoading(false);
+
+        return;
+      }
+
+      setIsBackgroundLoading(true);
 
       void resolveBackgroundSrc(rawBackground)
-        .then((src) => {
-          if (active) {
-            setBackgroundSrc(src);
+        .then((resolvedSrc) => {
+          if (!isEffectActive) {
+            return;
           }
+
+          if (!resolvedSrc) {
+            setBackgroundSrc(undefined);
+            setIsBackgroundLoading(false);
+
+            return;
+          }
+
+          const imagePreloader = new Image();
+          imagePreloader.src = resolvedSrc;
+
+          imagePreloader.onload = () => {
+            if (isEffectActive) {
+              setBackgroundSrc(resolvedSrc);
+              setIsBackgroundLoading(false);
+            }
+          };
+
+          imagePreloader.onerror = (preloadError) => {
+            console.error('Failed to preload background image:', preloadError);
+
+            if (isEffectActive) {
+              setBackgroundSrc(resolvedSrc);
+              setIsBackgroundLoading(false);
+            }
+          };
         })
-        .catch((error) => {
-          console.error('Failed to resolve background source:', error);
+        .catch((resolveError) => {
+          console.error('Failed to resolve background source:', resolveError);
+
+          if (isEffectActive) {
+            setIsBackgroundLoading(false);
+          }
         });
 
       return () => {
-        active = false;
+        isEffectActive = false;
       };
     }, [rawBackground]);
 
@@ -160,6 +203,11 @@ export const LayoutCanvas = observer(
               role="presentation"
               onMouseDown={() => onSelectWidget('')}
             >
+              {(isBackgroundLoading || isUploading) && (
+                <div className={styles.backgroundLoader}>
+                  <Spin size="large" tip="Loading background..." />
+                </div>
+              )}
               {showGrid && (
                 <div
                   className={styles.grid}
