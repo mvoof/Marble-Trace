@@ -65,6 +65,8 @@ import {
 } from '@utils/widget/layout-background';
 import styles from './LayoutEditor.module.scss';
 
+const SNAP_MARGIN = 8;
+
 type SnapPosition =
   | 'topLeft'
   | 'topCenter'
@@ -151,6 +153,16 @@ export const LayoutEditor = observer(
 
     const activeId = widgetSettings.activeLayoutId;
     const activeLayout = widgetSettings.activeLayout;
+
+    const prevActiveIdRef = useRef(activeId);
+
+    useEffect(() => {
+      if (prevActiveIdRef.current !== activeId) {
+        prevActiveIdRef.current = activeId;
+        setSelectedWidgetId(null);
+        setEditingWidgetId(null);
+      }
+    }, [activeId]);
 
     const selectedWidget = selectedWidgetId
       ? widgetSettings.getWidget(selectedWidgetId)
@@ -284,27 +296,28 @@ export const LayoutEditor = observer(
       const height = selectedWidget.userSettings.currentHeight;
       const worldWidth = widgetSettings.overlayResolution.width;
       const worldHeight = widgetSettings.overlayResolution.height;
-      const m = 8; // SNAP_MARGIN
-
       const positions = {
-        topLeft: { x: m, y: m },
-        topCenter: { x: Math.round((worldWidth - width) / 2), y: m },
-        topRight: { x: worldWidth - width - m, y: m },
-        midLeft: { x: m, y: Math.round((worldHeight - height) / 2) },
+        topLeft: { x: SNAP_MARGIN, y: SNAP_MARGIN },
+        topCenter: { x: Math.round((worldWidth - width) / 2), y: SNAP_MARGIN },
+        topRight: { x: worldWidth - width - SNAP_MARGIN, y: SNAP_MARGIN },
+        midLeft: { x: SNAP_MARGIN, y: Math.round((worldHeight - height) / 2) },
         center: {
           x: Math.round((worldWidth - width) / 2),
           y: Math.round((worldHeight - height) / 2),
         },
         midRight: {
-          x: worldWidth - width - m,
+          x: worldWidth - width - SNAP_MARGIN,
           y: Math.round((worldHeight - height) / 2),
         },
-        bottomLeft: { x: m, y: worldHeight - height - m },
+        bottomLeft: { x: SNAP_MARGIN, y: worldHeight - height - SNAP_MARGIN },
         bottomCenter: {
           x: Math.round((worldWidth - width) / 2),
-          y: worldHeight - height - m,
+          y: worldHeight - height - SNAP_MARGIN,
         },
-        bottomRight: { x: worldWidth - width - m, y: worldHeight - height - m },
+        bottomRight: {
+          x: worldWidth - width - SNAP_MARGIN,
+          y: worldHeight - height - SNAP_MARGIN,
+        },
       };
 
       const { x, y } = positions[pos];
@@ -314,6 +327,7 @@ export const LayoutEditor = observer(
 
     const handleSelectWidget = (id: string) => {
       setSelectedWidgetId(id === '' ? null : id);
+      setEditingWidgetId(null);
     };
 
     const handleCreate = () => {
@@ -530,9 +544,9 @@ export const LayoutEditor = observer(
                     size="small"
                     className={styles.coordInput}
                     value={selectedWidget.userSettings.x}
+                    onFocus={() => widgetSettings.pushUndo()}
                     onChange={(value) => {
                       if (typeof value === 'number') {
-                        widgetSettings.pushUndo();
                         widgetSettings.updatePosition(
                           selectedWidget.id,
                           value,
@@ -546,9 +560,9 @@ export const LayoutEditor = observer(
                     size="small"
                     className={styles.coordInput}
                     value={selectedWidget.userSettings.y}
+                    onFocus={() => widgetSettings.pushUndo()}
                     onChange={(value) => {
                       if (typeof value === 'number') {
-                        widgetSettings.pushUndo();
                         widgetSettings.updatePosition(
                           selectedWidget.id,
                           selectedWidget.userSettings.x,
@@ -563,10 +577,9 @@ export const LayoutEditor = observer(
                     className={styles.coordInput}
                     min={10}
                     value={selectedWidget.userSettings.currentWidth}
+                    onFocus={() => widgetSettings.pushUndo()}
                     onChange={(value) => {
                       if (typeof value === 'number') {
-                        widgetSettings.pushUndo();
-
                         if (
                           lockedRatios[selectedWidget.id] &&
                           selectedWidget.userSettings.currentHeight > 0
@@ -600,10 +613,9 @@ export const LayoutEditor = observer(
                     className={styles.coordInput}
                     min={10}
                     value={selectedWidget.userSettings.currentHeight}
+                    onFocus={() => widgetSettings.pushUndo()}
                     onChange={(value) => {
                       if (typeof value === 'number') {
-                        widgetSettings.pushUndo();
-
                         if (
                           lockedRatios[selectedWidget.id] &&
                           selectedWidget.userSettings.currentWidth > 0
