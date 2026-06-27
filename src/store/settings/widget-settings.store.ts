@@ -606,8 +606,17 @@ export class WidgetSettingsStore {
     this.bumpMutation();
   }
 
+  // Selecting a layout loads its saved widgets into the live store. Repointing
+  // activeLayoutId alone would let the commit reaction clobber the selected
+  // layout with the previously-active layout's stale widgets.
   selectLayout(id: string | null) {
-    this.activeLayoutId = id;
+    if (id) {
+      this.loadLayout(id);
+
+      return;
+    }
+
+    this.activeLayoutId = null;
     this.refreshActiveLayoutMismatch();
     this.bumpMutation();
   }
@@ -676,10 +685,26 @@ export class WidgetSettingsStore {
   deleteLayout(id: string) {
     this.layouts = this.layouts.filter((savedLayout) => savedLayout.id !== id);
 
-    if (this.activeLayoutId === id) {
-      this.activeLayoutId = this.layouts[0]?.id ?? null;
+    if (this.activeLayoutId !== id) {
+      this.refreshActiveLayoutMismatch();
+      this.bumpMutation();
+
+      return;
     }
 
+    const fallbackId = this.layouts[0]?.id ?? null;
+
+    // Load the fallback's saved widgets into the live store BEFORE bumping the
+    // mutation. The commit reaction snapshots the live widgets into the active
+    // layout, so without this the deleted layout's stale widgets would clobber
+    // the fallback layout.
+    if (fallbackId) {
+      this.loadLayout(fallbackId);
+
+      return;
+    }
+
+    this.activeLayoutId = null;
     this.refreshActiveLayoutMismatch();
     this.bumpMutation();
   }
