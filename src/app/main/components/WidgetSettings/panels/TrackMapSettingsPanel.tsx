@@ -1,16 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import {
-  App,
-  Button,
-  ColorPicker,
-  Flex,
-  InputNumber,
-  Row,
-  Col,
-  Segmented,
-  Switch,
-} from 'antd';
-import { emit } from '@tauri-apps/api/event';
+import { ColorPicker, InputNumber, Row, Col, Segmented, Switch } from 'antd';
 import {
   TrackMapLeaderLabelMode,
   TrackMapWidgetSettings,
@@ -20,16 +9,11 @@ import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
-const handleRerecord = async () => {
-  await emit('track-map:clear');
-};
-
 export const TrackMapSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
 
   const settings =
     widgetSettings.getSettings<TrackMapWidgetSettings>('track-map');
-  const { message } = App.useApp();
 
   const update = (partial: Partial<TrackMapWidgetSettings>) => {
     widgetSettings.updateUserSettings('track-map', {
@@ -150,36 +134,6 @@ export const TrackMapSettingsPanel = observer(() => {
             />
           </Col>
         </Row>
-      </Card>
-
-      <Card title="Track Database">
-        <div className={styles.fieldGroup}>
-          <div className={styles.fieldTitle}>Re-record Track</div>
-          <div className={styles.fieldDesc} style={{ marginBottom: 16 }}>
-            Clears current map data and starts fresh on next lap crossing or
-            manual trigger.
-          </div>
-          <Flex gap={8}>
-            <Button
-              style={{ flex: 1 }}
-              size="small"
-              danger
-              onClick={() => void handleRerecord()}
-            >
-              Reset Current Track Data
-            </Button>
-            <Button
-              style={{ flex: 1 }}
-              size="small"
-              onClick={() => {
-                void emit('track-map:force-start');
-                message.info('Manual start active. Drive to begin recording.');
-              }}
-            >
-              Force Start Recording
-            </Button>
-          </Flex>
-        </div>
       </Card>
     </>
   );

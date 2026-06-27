@@ -1,6 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Switch, Segmented, message, Select, Popconfirm } from 'antd';
+import { App, Button, Switch, Segmented, Select, Popconfirm, Flex } from 'antd';
+import { emit } from '@tauri-apps/api/event';
 import type { UnitSystem } from '@/types';
 import { downloadSnapshot } from '@/utils/capture-snapshot';
 import { useStore } from '@store/root-store-context';
@@ -35,18 +36,16 @@ export const SettingsPage = observer(() => {
   const appSettings = useAppSettingsStore();
   const units = useUnitsStore();
   const store = useStore();
-  const [messageApi, contextHolder] = message.useMessage();
+  const { message } = App.useApp();
 
   const handleCaptureSnapshot = () => {
     downloadSnapshot(store, 'iracing');
 
-    messageApi.success('Snapshot saved — place the JSON in test-data/');
+    message.success('Snapshot saved — place the JSON in test-data/');
   };
 
   return (
     <div className={styles.animateFadeIn}>
-      {contextHolder}
-
       <header className={styles.header}>
         <span className={styles.moduleLabel}>Configuration</span>
 
@@ -297,6 +296,43 @@ export const SettingsPage = observer(() => {
                 </Button>
               )}
             </div>
+          </div>
+        </Card>
+
+        <Card title="Track Map">
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldTitle}>Re-record Track</div>
+
+            <div
+              className={`${styles.fieldDesc} ${styles.fieldDescBeforeAction}`}
+            >
+              Clears current map data and starts fresh on next lap crossing or
+              manual trigger.
+            </div>
+
+            <Flex gap={8}>
+              <Button
+                style={{ flex: 1 }}
+                size="small"
+                danger
+                onClick={() => void emit('track-map:clear')}
+              >
+                Reset Current Track Data
+              </Button>
+
+              <Button
+                style={{ flex: 1 }}
+                size="small"
+                onClick={() => {
+                  void emit('track-map:force-start');
+                  message.info(
+                    'Manual start active. Drive to begin recording.'
+                  );
+                }}
+              >
+                Force Start Recording
+              </Button>
+            </Flex>
           </div>
         </Card>
 
