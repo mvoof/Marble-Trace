@@ -231,6 +231,7 @@ export interface BaseUserSettings {
   opacity: number;
   backgroundColor: string;
   borderColor: string;
+  zIndex?: number;
 }
 
 export type WidgetUserSettings = BaseUserSettings & WidgetSpecificSettings;

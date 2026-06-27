@@ -33,6 +33,7 @@ interface LayoutCanvasWidgetProps {
   worldWidth: number;
   worldHeight: number;
   onSelect: (id: string) => void;
+  isRatioLocked?: boolean;
   children: ReactNode;
 }
 
@@ -51,6 +52,7 @@ export const LayoutCanvasWidget = observer(
     worldWidth,
     worldHeight,
     onSelect,
+    isRatioLocked = false,
     children,
   }: LayoutCanvasWidgetProps) => {
     const widget = mainSettings.getWidget(widgetId);
@@ -116,6 +118,8 @@ export const LayoutCanvasWidget = observer(
         event.preventDefault();
         event.stopPropagation();
         onSelect(widgetId);
+
+        mainSettings.pushUndo();
 
         const current = mainSettings.getWidget(widgetId);
 
@@ -199,6 +203,8 @@ export const LayoutCanvasWidget = observer(
         event.stopPropagation();
         onSelect(widgetId);
 
+        mainSettings.pushUndo();
+
         const current = mainSettings.getWidget(widgetId);
 
         isResizingRef.current = true;
@@ -263,6 +269,28 @@ export const LayoutCanvasWidget = observer(
             }
           }
 
+          const shouldLockRatio = moveEvent.shiftKey || isRatioLocked;
+
+          if (shouldLockRatio && startW > 0 && startH > 0) {
+            const aspect = startW / startH;
+
+            if (direction === 'e' || direction === 'w') {
+              newH = Math.max(minH, Math.round(newW / aspect));
+            } else if (direction === 'n' || direction === 's') {
+              newW = Math.max(minW, Math.round(newH * aspect));
+            } else {
+              newH = Math.max(minH, Math.round(newW / aspect));
+            }
+
+            if (direction.includes('w')) {
+              newX = Math.round(startX + startW - newW);
+            }
+
+            if (direction.includes('n')) {
+              newY = Math.round(startY + startH - newH);
+            }
+          }
+
           mainSettings.updateSize(widgetId, newW, newH);
 
           if (newX !== startX || newY !== startY) {
@@ -294,6 +322,7 @@ export const LayoutCanvasWidget = observer(
         widgetId,
         snap,
         gridSize,
+        isRatioLocked,
       ]
     );
 

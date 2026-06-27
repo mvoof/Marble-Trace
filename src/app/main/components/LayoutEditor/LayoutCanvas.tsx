@@ -29,6 +29,7 @@ interface LayoutCanvasProps {
   selectedWidgetId: string | null;
   onSelectWidget: (id: string) => void;
   isUploading?: boolean;
+  isRatioLocked?: boolean;
 }
 
 // Mirror the full widget set from the main store into the isolated preview store
@@ -60,6 +61,7 @@ export const LayoutCanvas = observer(
     selectedWidgetId,
     onSelectWidget,
     isUploading = false,
+    isRatioLocked = false,
   }: LayoutCanvasProps) => {
     const widgetSettings = useWidgetSettingsStore();
     const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
@@ -104,6 +106,116 @@ export const LayoutCanvas = observer(
 
       return () => observer.disconnect();
     }, []);
+
+    useEffect(() => {
+      const handleKeyDown = (event: KeyboardEvent) => {
+        const active = document.activeElement;
+
+        if (active) {
+          const tagName = active.tagName.toLowerCase();
+
+          if (
+            tagName === 'input' ||
+            tagName === 'textarea' ||
+            active.getAttribute('contenteditable') === 'true'
+          ) {
+            return;
+          }
+        }
+
+        let handled = false;
+
+        if (
+          (event.ctrlKey || event.metaKey) &&
+          !event.shiftKey &&
+          event.key.toLowerCase() === 'z'
+        ) {
+          event.preventDefault();
+          widgetSettings.undo();
+          handled = true;
+        } else if (
+          (event.ctrlKey || event.metaKey) &&
+          (event.key.toLowerCase() === 'y' ||
+            (event.shiftKey && event.key.toLowerCase() === 'z'))
+        ) {
+          event.preventDefault();
+          widgetSettings.redo();
+          handled = true;
+        }
+
+        if (handled) return;
+
+        if (!selectedWidgetId) return;
+
+        const widget = widgetSettings.getWidget(selectedWidgetId);
+
+        if (!widget) return;
+
+        const currentX = widget.userSettings.x;
+        const currentY = widget.userSettings.y;
+
+        let step = 1;
+
+        if (event.shiftKey) {
+          step = snapToGrid ? gridSize : 10;
+        }
+
+        let newX = currentX;
+        let newY = currentY;
+
+        switch (event.key) {
+          case 'ArrowUp':
+            newY = currentY - step;
+            handled = true;
+            break;
+          case 'ArrowDown':
+            newY = currentY + step;
+            handled = true;
+            break;
+          case 'ArrowLeft':
+            newX = currentX - step;
+            handled = true;
+            break;
+          case 'ArrowRight':
+            newX = currentX + step;
+            handled = true;
+            break;
+          case 'Delete':
+          case 'Backspace':
+            widgetSettings.setWidgetEnabled(selectedWidgetId, false);
+            onSelectWidget('');
+            handled = true;
+            break;
+          case 'Escape':
+            onSelectWidget('');
+            handled = true;
+            break;
+          default:
+            break;
+        }
+
+        if (handled) {
+          event.preventDefault();
+
+          if (newX !== currentX || newY !== currentY) {
+            widgetSettings.pushUndo();
+            widgetSettings.updatePosition(selectedWidgetId, newX, newY);
+          }
+        }
+      };
+
+      document.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }, [
+      selectedWidgetId,
+      widgetSettings,
+      snapToGrid,
+      gridSize,
+      onSelectWidget,
+    ]);
 
     const targetResolution = widgetSettings.overlayResolution;
 
@@ -245,6 +357,7 @@ export const LayoutCanvas = observer(
                       fit={fit}
                       mainSettings={widgetSettings}
                       isSelected={selectedWidgetId === id}
+                      isRatioLocked={selectedWidgetId === id && isRatioLocked}
                       snap={snapToGrid}
                       gridSize={gridSize}
                       worldWidth={targetResolution.width}

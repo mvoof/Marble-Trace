@@ -1,6 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Input, InputNumber, Popconfirm, Select, Tooltip } from 'antd';
+import {
+  Button,
+  Input,
+  InputNumber,
+  Popconfirm,
+  Select,
+  Tooltip,
+  Modal,
+  Popover,
+  ConfigProvider,
+} from 'antd';
 import type { InputRef } from 'antd';
 import {
   ArrowLeft,
@@ -18,6 +28,21 @@ import {
   Monitor,
   PanelLeft,
   PanelLeftClose,
+  Lock,
+  Unlock,
+  BringToFront,
+  SendToBack,
+  Undo2,
+  Redo2,
+  ArrowUpLeft,
+  ArrowUp,
+  ArrowUpRight,
+  Maximize2,
+  ArrowRight,
+  ArrowDownLeft,
+  ArrowDown,
+  ArrowDownRight,
+  LayoutGrid,
 } from 'lucide-react';
 import {
   useAppSettingsStore,
@@ -39,6 +64,17 @@ import {
   deleteBackgroundImage,
 } from '@utils/widget/layout-background';
 import styles from './LayoutEditor.module.scss';
+
+type SnapPosition =
+  | 'topLeft'
+  | 'topCenter'
+  | 'topRight'
+  | 'midLeft'
+  | 'center'
+  | 'midRight'
+  | 'bottomLeft'
+  | 'bottomCenter'
+  | 'bottomRight';
 
 const SCENARIO_OPTIONS = PREVIEW_SCENARIOS.map((scenario) => ({
   value: scenario.id,
@@ -105,6 +141,13 @@ export const LayoutEditor = observer(
     const rootRef = useRef<HTMLDivElement | null>(null);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
+
+    const [lockedRatios, setLockedRatios] = useState<Record<string, boolean>>(
+      {}
+    );
+    const [isCustomResModalOpen, setIsCustomResModalOpen] = useState(false);
+    const [customWidth, setCustomWidth] = useState(1920);
+    const [customHeight, setCustomHeight] = useState(1080);
 
     const activeId = widgetSettings.activeLayoutId;
     const activeLayout = widgetSettings.activeLayout;
@@ -192,17 +235,81 @@ export const LayoutEditor = observer(
       label: layout.name,
     }));
 
-    const monitorOptions = monitors.map((monitor) => ({
-      value: monitor.name,
-      label: `${monitor.name} (${monitor.resolution.width}×${monitor.resolution.height})`,
-    }));
+    const monitorOptions = [
+      ...monitors.map((monitor) => ({
+        value: monitor.name,
+        label: `${monitor.name} (${monitor.resolution.width}×${monitor.resolution.height})`,
+      })),
+      { value: 'custom', label: 'Custom Resolution...' },
+    ];
+
+    if (activeLayout?.activeMonitorName === 'Custom') {
+      const config = activeLayout.monitorConfigs['Custom'];
+      const res = config?.resolution ?? { width: 1920, height: 1080 };
+
+      monitorOptions.unshift({
+        value: 'Custom',
+        label: `Custom (${res.width}×${res.height})`,
+      });
+    }
 
     const handleSelectMonitor = (name: string) => {
+      if (name === 'custom') {
+        const currentConfig = activeLayout?.monitorConfigs['Custom'];
+
+        setCustomWidth(
+          currentConfig?.resolution.width ??
+            widgetSettings.overlayResolution.width
+        );
+        setCustomHeight(
+          currentConfig?.resolution.height ??
+            widgetSettings.overlayResolution.height
+        );
+        setIsCustomResModalOpen(true);
+
+        return;
+      }
+
       const monitor = monitors.find((candidate) => candidate.name === name);
 
       if (!monitor) return;
 
       widgetSettings.selectMonitorForActiveLayout(name, monitor.resolution);
+    };
+
+    const handleSnap = (pos: SnapPosition) => {
+      if (!selectedWidget) return;
+
+      const width = selectedWidget.userSettings.currentWidth;
+      const height = selectedWidget.userSettings.currentHeight;
+      const worldWidth = widgetSettings.overlayResolution.width;
+      const worldHeight = widgetSettings.overlayResolution.height;
+      const m = 8; // SNAP_MARGIN
+
+      const positions = {
+        topLeft: { x: m, y: m },
+        topCenter: { x: Math.round((worldWidth - width) / 2), y: m },
+        topRight: { x: worldWidth - width - m, y: m },
+        midLeft: { x: m, y: Math.round((worldHeight - height) / 2) },
+        center: {
+          x: Math.round((worldWidth - width) / 2),
+          y: Math.round((worldHeight - height) / 2),
+        },
+        midRight: {
+          x: worldWidth - width - m,
+          y: Math.round((worldHeight - height) / 2),
+        },
+        bottomLeft: { x: m, y: worldHeight - height - m },
+        bottomCenter: {
+          x: Math.round((worldWidth - width) / 2),
+          y: worldHeight - height - m,
+        },
+        bottomRight: { x: worldWidth - width - m, y: worldHeight - height - m },
+      };
+
+      const { x, y } = positions[pos];
+      widgetSettings.pushUndo();
+      widgetSettings.updatePosition(selectedWidget.id, x, y);
     };
 
     const handleSelectWidget = (id: string) => {
@@ -250,368 +357,612 @@ export const LayoutEditor = observer(
     }
 
     return (
-      <div
-        className={`${styles.root} ${isFullscreen ? styles.rootFullscreen : ''}`}
-        ref={rootRef}
+      <ConfigProvider
+        getPopupContainer={() => rootRef.current || document.body}
       >
-        <header
-          className={`${styles.toolbar} ${
-            isFullscreen ? styles.toolbarFullscreen : ''
-          }`}
+        <div
+          className={`${styles.root} ${isFullscreen ? styles.rootFullscreen : ''}`}
+          ref={rootRef}
         >
-          {!isFullscreen && (
-            <Button
-              size="small"
-              icon={<ArrowLeft size={14} />}
-              onClick={() => handleModeChange('list')}
-            >
-              Back to Layouts
-            </Button>
-          )}
-
-          {isFullscreen && (
-            <Tooltip title="Toggle widget panel">
+          <header
+            className={`${styles.toolbar} ${
+              isFullscreen ? styles.toolbarFullscreen : ''
+            }`}
+          >
+            {!isFullscreen && (
               <Button
                 size="small"
-                type={isPanelOpen ? 'primary' : 'text'}
-                icon={<PanelLeft size={14} />}
-                onClick={() => setIsPanelOpen((open) => !open)}
-              />
-            </Tooltip>
-          )}
+                icon={<ArrowLeft size={14} />}
+                onClick={() => handleModeChange('list')}
+              >
+                Back to Layouts
+              </Button>
+            )}
 
-          <div className={styles.layoutControls}>
-            {isCreating ? (
-              <>
-                <Input
-                  ref={nameInputCallbackRef}
+            {isFullscreen && (
+              <Tooltip title="Toggle widget panel">
+                <Button
                   size="small"
-                  placeholder="New layout name"
-                  value={newName}
-                  onChange={(event) => setNewName(event.target.value)}
-                  onKeyDown={handleCreateKeyDown}
-                  className={styles.nameInput}
+                  type={isPanelOpen ? 'primary' : 'text'}
+                  icon={<PanelLeft size={14} />}
+                  onClick={() => setIsPanelOpen((open) => !open)}
                 />
-                <Tooltip title="Create">
-                  <Button
-                    size="small"
-                    type="text"
-                    icon={<Check size={14} />}
-                    onClick={handleCreate}
-                  />
-                </Tooltip>
-                <Tooltip title="Cancel">
-                  <Button
-                    size="small"
-                    type="text"
-                    icon={<X size={14} />}
-                    onClick={() => setIsCreating(false)}
-                  />
-                </Tooltip>
-              </>
-            ) : isRenaming ? (
-              <>
-                <Input
-                  ref={nameInputCallbackRef}
-                  size="small"
-                  value={draftName}
-                  onChange={(event) => setDraftName(event.target.value)}
-                  onKeyDown={handleRenameKeyDown}
-                  className={styles.nameInput}
-                />
-                <Tooltip title="Save name">
-                  <Button
-                    size="small"
-                    type="text"
-                    icon={<Check size={14} />}
-                    onClick={handleRenameConfirm}
-                  />
-                </Tooltip>
-                <Tooltip title="Cancel">
-                  <Button
-                    size="small"
-                    type="text"
-                    icon={<X size={14} />}
-                    onClick={() => setIsRenaming(false)}
-                  />
-                </Tooltip>
-              </>
-            ) : (
-              <>
-                <Select
-                  size="small"
-                  className={styles.layoutSelect}
-                  placeholder="Select a layout…"
-                  value={activeId ?? undefined}
-                  onChange={(id) => widgetSettings.loadLayout(id)}
-                  options={layoutOptions}
-                />
+              </Tooltip>
+            )}
 
-                <Tooltip title="New layout">
-                  <Button
+            <div className={styles.layoutControls}>
+              {isCreating ? (
+                <>
+                  <Input
+                    ref={nameInputCallbackRef}
                     size="small"
-                    type="text"
-                    icon={<Plus size={14} />}
-                    onClick={() => {
-                      setNewName('');
-                      pendingNameFocusRef.current = true;
-                      setIsCreating(true);
-                    }}
+                    placeholder="New layout name"
+                    value={newName}
+                    onChange={(event) => setNewName(event.target.value)}
+                    onKeyDown={handleCreateKeyDown}
+                    className={styles.nameInput}
                   />
-                </Tooltip>
-
-                <Tooltip title="Rename">
-                  <Button
-                    size="small"
-                    type="text"
-                    icon={<Pencil size={14} />}
-                    disabled={!activeLayout}
-                    onClick={() => {
-                      setDraftName(activeLayout?.name ?? '');
-                      pendingNameFocusRef.current = true;
-                      setIsRenaming(true);
-                    }}
-                  />
-                </Tooltip>
-
-                <Popconfirm
-                  title="Delete this layout?"
-                  okText="Delete"
-                  okButtonProps={{ danger: true }}
-                  cancelText="Cancel"
-                  disabled={!activeId}
-                  onConfirm={handleDeleteLayout}
-                >
-                  <Tooltip title="Delete">
+                  <Tooltip title="Create">
                     <Button
                       size="small"
                       type="text"
-                      danger
-                      icon={<Trash2 size={14} />}
-                      disabled={!activeId}
+                      icon={<Check size={14} />}
+                      onClick={handleCreate}
                     />
                   </Tooltip>
-                </Popconfirm>
-              </>
-            )}
-          </div>
-
-          <Tooltip title="Monitor this layout is authored for">
-            <Select
-              size="small"
-              placeholder={
-                <>
-                  <Monitor size={12} /> Monitor…
+                  <Tooltip title="Cancel">
+                    <Button
+                      size="small"
+                      type="text"
+                      icon={<X size={14} />}
+                      onClick={() => setIsCreating(false)}
+                    />
+                  </Tooltip>
                 </>
-              }
-              value={activeLayout?.activeMonitorName ?? undefined}
-              onChange={handleSelectMonitor}
-              options={monitorOptions}
-              disabled={!activeLayout}
-              style={{ minWidth: 180 }}
-            />
-          </Tooltip>
+              ) : isRenaming ? (
+                <>
+                  <Input
+                    ref={nameInputCallbackRef}
+                    size="small"
+                    value={draftName}
+                    onChange={(event) => setDraftName(event.target.value)}
+                    onKeyDown={handleRenameKeyDown}
+                    className={styles.nameInput}
+                  />
+                  <Tooltip title="Save name">
+                    <Button
+                      size="small"
+                      type="text"
+                      icon={<Check size={14} />}
+                      onClick={handleRenameConfirm}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Cancel">
+                    <Button
+                      size="small"
+                      type="text"
+                      icon={<X size={14} />}
+                      onClick={() => setIsRenaming(false)}
+                    />
+                  </Tooltip>
+                </>
+              ) : (
+                <>
+                  <Select
+                    size="small"
+                    className={styles.layoutSelect}
+                    placeholder="Select a layout…"
+                    value={activeId ?? undefined}
+                    onChange={(id) => widgetSettings.loadLayout(id)}
+                    options={layoutOptions}
+                  />
 
-          <div className={styles.previewControls}>
-            {selectedWidget && (
-              <div className={styles.coords}>
-                <span className={styles.coordLabel}>X</span>
-                <InputNumber
-                  size="small"
-                  className={styles.coordInput}
-                  value={selectedWidget.userSettings.x}
-                  onChange={(value) =>
-                    typeof value === 'number' &&
-                    widgetSettings.updatePosition(
-                      selectedWidget.id,
-                      value,
-                      selectedWidget.userSettings.y
-                    )
-                  }
-                />
-                <span className={styles.coordLabel}>Y</span>
-                <InputNumber
-                  size="small"
-                  className={styles.coordInput}
-                  value={selectedWidget.userSettings.y}
-                  onChange={(value) =>
-                    typeof value === 'number' &&
-                    widgetSettings.updatePosition(
-                      selectedWidget.id,
-                      selectedWidget.userSettings.x,
-                      value
-                    )
-                  }
-                />
-                <span className={styles.coordLabel}>W</span>
-                <InputNumber
-                  size="small"
-                  className={styles.coordInput}
-                  min={10}
-                  value={selectedWidget.userSettings.currentWidth}
-                  onChange={(value) =>
-                    typeof value === 'number' &&
-                    widgetSettings.updateSize(
-                      selectedWidget.id,
-                      value,
-                      selectedWidget.userSettings.currentHeight
-                    )
-                  }
-                />
-                <span className={styles.coordLabel}>H</span>
-                <InputNumber
-                  size="small"
-                  className={styles.coordInput}
-                  min={10}
-                  value={selectedWidget.userSettings.currentHeight}
-                  onChange={(value) =>
-                    typeof value === 'number' &&
-                    widgetSettings.updateSize(
-                      selectedWidget.id,
-                      selectedWidget.userSettings.currentWidth,
-                      value
-                    )
-                  }
-                />
-              </div>
-            )}
+                  <Tooltip title="New layout">
+                    <Button
+                      size="small"
+                      type="text"
+                      icon={<Plus size={14} />}
+                      onClick={() => {
+                        setNewName('');
+                        pendingNameFocusRef.current = true;
+                        setIsCreating(true);
+                      }}
+                    />
+                  </Tooltip>
 
-            <span className={styles.resolutionLabel}>
-              {widgetSettings.overlayResolution.width}×
-              {widgetSettings.overlayResolution.height}
-            </span>
+                  <Tooltip title="Rename">
+                    <Button
+                      size="small"
+                      type="text"
+                      icon={<Pencil size={14} />}
+                      disabled={!activeLayout}
+                      onClick={() => {
+                        setDraftName(activeLayout?.name ?? '');
+                        pendingNameFocusRef.current = true;
+                        setIsRenaming(true);
+                      }}
+                    />
+                  </Tooltip>
 
-            <input
-              ref={backgroundInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
-              aria-label="Layout background image"
-              hidden
-              onChange={(event) => void handlePickBackground(event)}
-            />
+                  <Popconfirm
+                    title="Delete this layout?"
+                    okText="Delete"
+                    okButtonProps={{ danger: true }}
+                    cancelText="Cancel"
+                    disabled={!activeId}
+                    onConfirm={handleDeleteLayout}
+                  >
+                    <Tooltip title="Delete">
+                      <Button
+                        size="small"
+                        type="text"
+                        danger
+                        icon={<Trash2 size={14} />}
+                        disabled={!activeId}
+                      />
+                    </Tooltip>
+                  </Popconfirm>
+                </>
+              )}
+            </div>
 
-            <Tooltip title="Toggle alignment grid">
-              <Button
+            <Tooltip title="Monitor this layout is authored for">
+              <Select
                 size="small"
-                type={showGrid ? 'primary' : 'text'}
-                icon={<Grid3x3 size={14} />}
-                onClick={() => appSettings.setEditorShowGrid(!showGrid)}
-              />
-            </Tooltip>
-
-            {showGrid && (
-              <Tooltip title="Grid size">
-                <Select
-                  size="small"
-                  value={gridSize}
-                  onChange={(value) => appSettings.setEditorGridSize(value)}
-                  options={GRID_SIZE_OPTIONS}
-                  style={{ minWidth: 72 }}
-                />
-              </Tooltip>
-            )}
-
-            <Tooltip title="Snap to grid">
-              <Button
-                size="small"
-                type={snapToGrid ? 'primary' : 'text'}
-                icon={<Magnet size={14} />}
-                onClick={() => appSettings.setEditorSnapToGrid(!snapToGrid)}
-              />
-            </Tooltip>
-
-            <Tooltip
-              title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen preview'}
-            >
-              <Button
-                size="small"
-                type="text"
-                icon={
-                  isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />
+                placeholder={
+                  <>
+                    <Monitor size={12} /> Monitor…
+                  </>
                 }
-                onClick={toggleFullscreen}
-              />
-            </Tooltip>
-
-            <Tooltip title="Set editor background (e.g. cockpit view)">
-              <Button
-                size="small"
-                type="text"
-                icon={<Image size={14} />}
+                value={activeLayout?.activeMonitorName ?? undefined}
+                onChange={handleSelectMonitor}
+                options={monitorOptions}
                 disabled={!activeLayout}
-                onClick={() => backgroundInputRef.current?.click()}
+                style={{ minWidth: 180 }}
               />
             </Tooltip>
 
-            {activeLayout?.backgroundImage && (
-              <Tooltip title="Clear background">
+            <div className={styles.previewControls}>
+              {selectedWidget && (
+                <div className={styles.coords}>
+                  <span className={styles.coordLabel}>X</span>
+                  <InputNumber
+                    size="small"
+                    className={styles.coordInput}
+                    value={selectedWidget.userSettings.x}
+                    onChange={(value) => {
+                      if (typeof value === 'number') {
+                        widgetSettings.pushUndo();
+                        widgetSettings.updatePosition(
+                          selectedWidget.id,
+                          value,
+                          selectedWidget.userSettings.y
+                        );
+                      }
+                    }}
+                  />
+                  <span className={styles.coordLabel}>Y</span>
+                  <InputNumber
+                    size="small"
+                    className={styles.coordInput}
+                    value={selectedWidget.userSettings.y}
+                    onChange={(value) => {
+                      if (typeof value === 'number') {
+                        widgetSettings.pushUndo();
+                        widgetSettings.updatePosition(
+                          selectedWidget.id,
+                          selectedWidget.userSettings.x,
+                          value
+                        );
+                      }
+                    }}
+                  />
+                  <span className={styles.coordLabel}>W</span>
+                  <InputNumber
+                    size="small"
+                    className={styles.coordInput}
+                    min={10}
+                    value={selectedWidget.userSettings.currentWidth}
+                    onChange={(value) => {
+                      if (typeof value === 'number') {
+                        widgetSettings.pushUndo();
+
+                        if (
+                          lockedRatios[selectedWidget.id] &&
+                          selectedWidget.userSettings.currentHeight > 0
+                        ) {
+                          const ratio =
+                            selectedWidget.userSettings.currentWidth /
+                            selectedWidget.userSettings.currentHeight;
+                          const newHeight = Math.max(
+                            10,
+                            Math.round(value / ratio)
+                          );
+
+                          widgetSettings.updateSize(
+                            selectedWidget.id,
+                            value,
+                            newHeight
+                          );
+                        } else {
+                          widgetSettings.updateSize(
+                            selectedWidget.id,
+                            value,
+                            selectedWidget.userSettings.currentHeight
+                          );
+                        }
+                      }
+                    }}
+                  />
+                  <span className={styles.coordLabel}>H</span>
+                  <InputNumber
+                    size="small"
+                    className={styles.coordInput}
+                    min={10}
+                    value={selectedWidget.userSettings.currentHeight}
+                    onChange={(value) => {
+                      if (typeof value === 'number') {
+                        widgetSettings.pushUndo();
+
+                        if (
+                          lockedRatios[selectedWidget.id] &&
+                          selectedWidget.userSettings.currentWidth > 0
+                        ) {
+                          const ratio =
+                            selectedWidget.userSettings.currentWidth /
+                            selectedWidget.userSettings.currentHeight;
+                          const newWidth = Math.max(
+                            10,
+                            Math.round(value * ratio)
+                          );
+
+                          widgetSettings.updateSize(
+                            selectedWidget.id,
+                            newWidth,
+                            value
+                          );
+                        } else {
+                          widgetSettings.updateSize(
+                            selectedWidget.id,
+                            selectedWidget.userSettings.currentWidth,
+                            value
+                          );
+                        }
+                      }
+                    }}
+                  />
+
+                  <Tooltip
+                    title={
+                      lockedRatios[selectedWidget.id]
+                        ? 'Unlock aspect ratio'
+                        : 'Lock aspect ratio'
+                    }
+                  >
+                    <Button
+                      size="small"
+                      type="text"
+                      icon={
+                        lockedRatios[selectedWidget.id] ? (
+                          <Lock size={12} />
+                        ) : (
+                          <Unlock size={12} />
+                        )
+                      }
+                      onClick={() => {
+                        setLockedRatios((prev) => ({
+                          ...prev,
+                          [selectedWidget.id]: !prev[selectedWidget.id],
+                        }));
+                      }}
+                    />
+                  </Tooltip>
+
+                  <Tooltip title="Bring to front">
+                    <Button
+                      size="small"
+                      type="text"
+                      icon={<BringToFront size={12} />}
+                      onClick={() =>
+                        widgetSettings.bringToFront(selectedWidget.id)
+                      }
+                    />
+                  </Tooltip>
+
+                  <Tooltip title="Send to back">
+                    <Button
+                      size="small"
+                      type="text"
+                      icon={<SendToBack size={12} />}
+                      onClick={() =>
+                        widgetSettings.sendToBack(selectedWidget.id)
+                      }
+                    />
+                  </Tooltip>
+
+                  <Popover
+                    trigger="click"
+                    placement="bottom"
+                    getPopupContainer={() => rootRef.current || document.body}
+                    content={
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(3, 32px)',
+                          gap: '4px',
+                        }}
+                      >
+                        <Button
+                          size="small"
+                          type="text"
+                          icon={<ArrowUpLeft size={14} />}
+                          onClick={() => handleSnap('topLeft')}
+                        />
+                        <Button
+                          size="small"
+                          type="text"
+                          icon={<ArrowUp size={14} />}
+                          onClick={() => handleSnap('topCenter')}
+                        />
+                        <Button
+                          size="small"
+                          type="text"
+                          icon={<ArrowUpRight size={14} />}
+                          onClick={() => handleSnap('topRight')}
+                        />
+                        <Button
+                          size="small"
+                          type="text"
+                          icon={<ArrowLeft size={14} />}
+                          onClick={() => handleSnap('midLeft')}
+                        />
+                        <Button
+                          size="small"
+                          type="text"
+                          icon={<Maximize2 size={14} />}
+                          onClick={() => handleSnap('center')}
+                        />
+                        <Button
+                          size="small"
+                          type="text"
+                          icon={<ArrowRight size={14} />}
+                          onClick={() => handleSnap('midRight')}
+                        />
+                        <Button
+                          size="small"
+                          type="text"
+                          icon={<ArrowDownLeft size={14} />}
+                          onClick={() => handleSnap('bottomLeft')}
+                        />
+                        <Button
+                          size="small"
+                          type="text"
+                          icon={<ArrowDown size={14} />}
+                          onClick={() => handleSnap('bottomCenter')}
+                        />
+                        <Button
+                          size="small"
+                          type="text"
+                          icon={<ArrowDownRight size={14} />}
+                          onClick={() => handleSnap('bottomRight')}
+                        />
+                      </div>
+                    }
+                  >
+                    <Tooltip title="Quick placement">
+                      <Button
+                        size="small"
+                        type="text"
+                        icon={<LayoutGrid size={14} />}
+                      />
+                    </Tooltip>
+                  </Popover>
+                </div>
+              )}
+
+              <span className={styles.resolutionLabel}>
+                {widgetSettings.overlayResolution.width}×
+                {widgetSettings.overlayResolution.height}
+              </span>
+
+              <input
+                ref={backgroundInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
+                aria-label="Layout background image"
+                hidden
+                onChange={(event) => void handlePickBackground(event)}
+              />
+
+              <Tooltip title="Undo (Ctrl+Z)">
                 <Button
                   size="small"
                   type="text"
-                  icon={<ImageOff size={14} />}
-                  onClick={handleClearBackground}
+                  icon={<Undo2 size={14} />}
+                  disabled={widgetSettings.undoStack.length === 0}
+                  onClick={() => widgetSettings.undo()}
                 />
               </Tooltip>
-            )}
 
-            <Select
-              size="small"
-              value={scenarioId}
-              onChange={setScenarioId}
-              options={SCENARIO_OPTIONS}
-              style={{ minWidth: 150 }}
-            />
-          </div>
-        </header>
+              <Tooltip title="Redo (Ctrl+Y)">
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<Redo2 size={14} />}
+                  disabled={widgetSettings.redoStack.length === 0}
+                  onClick={() => widgetSettings.redo()}
+                />
+              </Tooltip>
 
-        <div
-          className={`${styles.body} ${isFullscreen ? styles.bodyFullscreen : ''}`}
-        >
-          <aside
-            className={`${
-              isFullscreen ? styles.panelDrawer : styles.panel
-            } ${isFullscreen && isPanelOpen ? styles.panelDrawerOpen : ''}`}
-          >
-            {isFullscreen && (
-              <div className={styles.panelDrawerHeader}>
-                <span className={styles.panelDrawerTitle}>Widgets</span>
-                <Tooltip title="Hide panel">
+              <Tooltip title="Toggle alignment grid">
+                <Button
+                  size="small"
+                  type={showGrid ? 'primary' : 'text'}
+                  icon={<Grid3x3 size={14} />}
+                  onClick={() => appSettings.setEditorShowGrid(!showGrid)}
+                />
+              </Tooltip>
+
+              {showGrid && (
+                <Tooltip title="Grid size">
+                  <Select
+                    size="small"
+                    value={gridSize}
+                    onChange={(value) => appSettings.setEditorGridSize(value)}
+                    options={GRID_SIZE_OPTIONS}
+                    style={{ minWidth: 72 }}
+                  />
+                </Tooltip>
+              )}
+
+              <Tooltip title="Snap to grid">
+                <Button
+                  size="small"
+                  type={snapToGrid ? 'primary' : 'text'}
+                  icon={<Magnet size={14} />}
+                  onClick={() => appSettings.setEditorSnapToGrid(!snapToGrid)}
+                />
+              </Tooltip>
+
+              <Tooltip
+                title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen preview'}
+              >
+                <Button
+                  size="small"
+                  type="text"
+                  icon={
+                    isFullscreen ? (
+                      <Minimize size={14} />
+                    ) : (
+                      <Maximize size={14} />
+                    )
+                  }
+                  onClick={toggleFullscreen}
+                />
+              </Tooltip>
+
+              <Tooltip title="Set editor background (e.g. cockpit view)">
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<Image size={14} />}
+                  disabled={!activeLayout}
+                  onClick={() => backgroundInputRef.current?.click()}
+                />
+              </Tooltip>
+
+              {activeLayout?.backgroundImage && (
+                <Tooltip title="Clear background">
                   <Button
                     size="small"
                     type="text"
-                    icon={<PanelLeftClose size={16} />}
-                    onClick={() => setIsPanelOpen(false)}
+                    icon={<ImageOff size={14} />}
+                    onClick={handleClearBackground}
                   />
                 </Tooltip>
-              </div>
-            )}
+              )}
 
-            <LayoutWidgetPanel
-              selectedWidgetId={selectedWidgetId}
-              editingWidgetId={editingWidgetId}
-              onSelectWidget={handleSelectWidget}
-              onEditWidget={setEditingWidgetId}
-            />
-          </aside>
+              <Select
+                size="small"
+                value={scenarioId}
+                onChange={setScenarioId}
+                options={SCENARIO_OPTIONS}
+                style={{ minWidth: 150 }}
+              />
+            </div>
+          </header>
 
-          <main
-            className={`${styles.canvas} ${
-              isFullscreen ? styles.canvasFullscreen : ''
-            }`}
+          <div
+            className={`${styles.body} ${isFullscreen ? styles.bodyFullscreen : ''}`}
           >
-            <LayoutCanvas
-              scenarioId={scenarioId}
-              showGrid={showGrid}
-              snapToGrid={snapToGrid}
-              gridSize={gridSize}
-              fullscreen={isFullscreen}
-              selectedWidgetId={selectedWidgetId}
-              onSelectWidget={handleSelectWidget}
-              isUploading={isUploadingBackground}
-            />
-          </main>
+            <aside
+              className={`${
+                isFullscreen ? styles.panelDrawer : styles.panel
+              } ${isFullscreen && isPanelOpen ? styles.panelDrawerOpen : ''}`}
+            >
+              {isFullscreen && (
+                <div className={styles.panelDrawerHeader}>
+                  <span className={styles.panelDrawerTitle}>Widgets</span>
+                  <Tooltip title="Hide panel">
+                    <Button
+                      size="small"
+                      type="text"
+                      icon={<PanelLeftClose size={16} />}
+                      onClick={() => setIsPanelOpen(false)}
+                    />
+                  </Tooltip>
+                </div>
+              )}
+
+              <LayoutWidgetPanel
+                selectedWidgetId={selectedWidgetId}
+                editingWidgetId={editingWidgetId}
+                onSelectWidget={handleSelectWidget}
+                onEditWidget={setEditingWidgetId}
+              />
+            </aside>
+
+            <main
+              className={`${styles.canvas} ${
+                isFullscreen ? styles.canvasFullscreen : ''
+              }`}
+            >
+              <LayoutCanvas
+                scenarioId={scenarioId}
+                showGrid={showGrid}
+                snapToGrid={snapToGrid}
+                gridSize={gridSize}
+                fullscreen={isFullscreen}
+                selectedWidgetId={selectedWidgetId}
+                onSelectWidget={handleSelectWidget}
+                isUploading={isUploadingBackground}
+                isRatioLocked={
+                  selectedWidgetId ? !!lockedRatios[selectedWidgetId] : false
+                }
+              />
+            </main>
+          </div>
+
+          <Modal
+            title="Custom Screen Resolution"
+            open={isCustomResModalOpen}
+            getContainer={() => rootRef.current || document.body}
+            onOk={() => {
+              widgetSettings.selectMonitorForActiveLayout('Custom', {
+                width: customWidth,
+                height: customHeight,
+              });
+              setIsCustomResModalOpen(false);
+            }}
+            onCancel={() => setIsCustomResModalOpen(false)}
+            okText="Apply"
+            cancelText="Cancel"
+          >
+            <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
+              <div>
+                <div style={{ marginBottom: '4px' }}>Width (px)</div>
+                <InputNumber
+                  min={800}
+                  max={7680}
+                  value={customWidth}
+                  onChange={(val) => val && setCustomWidth(val)}
+                  style={{ width: '120px' }}
+                />
+              </div>
+              <div>
+                <div style={{ marginBottom: '4px' }}>Height (px)</div>
+                <InputNumber
+                  min={600}
+                  max={4320}
+                  value={customHeight}
+                  onChange={(val) => val && setCustomHeight(val)}
+                  style={{ width: '120px' }}
+                />
+              </div>
+            </div>
+          </Modal>
         </div>
-      </div>
+      </ConfigProvider>
     );
   }
 );

@@ -9,6 +9,7 @@ import {
   Check,
   X,
   LayoutTemplate,
+  Copy,
 } from 'lucide-react';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 import {
@@ -179,6 +180,13 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
       }
 
       widgetSettings.deleteLayout(selectedId);
+    }
+  };
+
+  const handleDuplicateLayout = async () => {
+    if (selectedId) {
+      await widgetSettings.cloneLayout(selectedId);
+      setSelectedId(widgetSettings.activeLayoutId);
     }
   };
 
@@ -391,6 +399,14 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   style={{ width: '100%' }}
                 >
                   Open Editor
+                </Button>
+
+                <Button
+                  icon={<Copy size={16} />}
+                  onClick={handleDuplicateLayout}
+                  style={{ width: '100%', marginTop: '8px' }}
+                >
+                  Duplicate Layout
                 </Button>
 
                 <Popconfirm

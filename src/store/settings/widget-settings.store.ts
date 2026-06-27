@@ -21,6 +21,7 @@ import {
   DEFAULT_LAYOUT_RESOLUTION,
   scaleWidgetsToResolution,
 } from '@utils/widget/layout-resolution';
+import { cloneBackgroundImage } from '@utils/widget/layout-background';
 import type { RootStore } from '@store/root-store';
 
 const DEFAULT_LAYOUT_NAME = 'Default';
@@ -65,6 +66,9 @@ export class WidgetSettingsStore {
       { ...widgetConfig, userSettings: { ...widgetConfig.userSettings } },
     ])
   );
+
+  undoStack: WidgetDefaultConfig[][] = [];
+  redoStack: WidgetDefaultConfig[][] = [];
 
   // Global widget defaults — the template edited in the Widgets catalog. Never
   // rendered on the overlay; copied into a layout when a new layout is created.
@@ -150,7 +154,13 @@ export class WidgetSettingsStore {
       }
     }
 
-    return ids;
+    return ids.sort((a, b) => {
+      const widgetA = this.getWidget(a);
+      const widgetB = this.getWidget(b);
+      const zA = widgetA?.userSettings.zIndex ?? 0;
+      const zB = widgetB?.userSettings.zIndex ?? 0;
+      return zA - zB;
+    });
   }
 
   cycleStandingsViewMode() {
@@ -162,6 +172,143 @@ export class WidgetSettingsStore {
     this.updateUserSettings('standings', {
       ...settings,
       viewMode: order[nextIdx],
+    });
+  }
+
+  pushUndo() {
+    const snapshot = this.snapshotWidgets();
+
+    if (this.undoStack.length > 0) {
+      const last = this.undoStack[this.undoStack.length - 1];
+
+      if (JSON.stringify(last) === JSON.stringify(snapshot)) {
+        return;
+      }
+    }
+
+    this.undoStack.push(snapshot);
+
+    if (this.undoStack.length > 10) {
+      this.undoStack.shift();
+    }
+
+    this.redoStack = [];
+  }
+
+  undo() {
+    if (this.undoStack.length === 0) return;
+
+    const previous = this.undoStack.pop()!;
+
+    this.redoStack.push(this.snapshotWidgets());
+    this.setWidgets(previous);
+    this.commitActiveLayout();
+    this.bumpMutation();
+  }
+
+  redo() {
+    if (this.redoStack.length === 0) return;
+
+    const next = this.redoStack.pop()!;
+
+    this.undoStack.push(this.snapshotWidgets());
+    this.setWidgets(next);
+    this.commitActiveLayout();
+    this.bumpMutation();
+  }
+
+  bringToFront(id: string) {
+    const widget = this.getWidget(id);
+
+    if (!widget) return;
+
+    this.pushUndo();
+
+    let maxZ = 0;
+
+    for (const w of this.widgets.values()) {
+      if (w.id !== id) {
+        const z = w.userSettings.zIndex ?? 0;
+
+        if (z > maxZ) maxZ = z;
+      }
+    }
+
+    widget.userSettings.zIndex = maxZ + 1;
+    this.bumpMutation();
+  }
+
+  sendToBack(id: string) {
+    const widget = this.getWidget(id);
+
+    if (!widget) return;
+
+    this.pushUndo();
+
+    let minZ = 0;
+
+    for (const w of this.widgets.values()) {
+      if (w.id !== id) {
+        const z = w.userSettings.zIndex ?? 0;
+
+        if (z < minZ) minZ = z;
+      }
+    }
+
+    widget.userSettings.zIndex = minZ - 1;
+    this.bumpMutation();
+  }
+
+  async cloneLayout(id: string) {
+    const layout = this.layouts.find((savedLayout) => savedLayout.id === id);
+
+    if (!layout) return;
+
+    const newId = crypto.randomUUID();
+    const name = `${layout.name} (Copy)`;
+
+    let clonedBg: string | undefined = undefined;
+
+    if (layout.backgroundImage) {
+      clonedBg = await cloneBackgroundImage(
+        layout.backgroundImage,
+        newId
+      ).catch((err) => {
+        console.error('Failed to clone background image:', err);
+        return undefined;
+      });
+    }
+
+    const monitorConfigs: Record<string, MonitorConfig> = {};
+
+    for (const [key, config] of Object.entries(layout.monitorConfigs)) {
+      monitorConfigs[key] = {
+        resolution: { ...config.resolution },
+        widgets: config.widgets.map((w) => ({
+          ...w,
+          userSettings: { ...w.userSettings },
+        })),
+      };
+    }
+
+    const cloned: SavedLayout = {
+      id: newId,
+      name,
+      createdAt: Date.now(),
+      backgroundImage: clonedBg,
+      monitorConfigs,
+      activeMonitorName: layout.activeMonitorName,
+    };
+
+    runInAction(() => {
+      this.layouts = [...this.layouts, cloned];
+      this.activeLayoutId = newId;
+      this.setWidgets(
+        layout.activeMonitorName && monitorConfigs[layout.activeMonitorName]
+          ? monitorConfigs[layout.activeMonitorName].widgets
+          : this.buildStarterWidgets(true)
+      );
+      this.bumpMutation();
     });
   }
 
@@ -263,6 +410,7 @@ export class WidgetSettingsStore {
   }
 
   setWidgetEnabled(id: string, enabled: boolean) {
+    this.pushUndo();
     this.updateUserSettings(id, { enabled });
   }
 

@@ -60,10 +60,12 @@ export const WidgetSettings = observer(
               <InputNumber
                 style={{ width: '100%' }}
                 value={userSettings.x}
-                onChange={(v) =>
-                  v !== null &&
-                  widgetSettings.updateUserSettings(widgetId, { x: v })
-                }
+                onChange={(v) => {
+                  if (v !== null) {
+                    widgetSettings.pushUndo?.();
+                    widgetSettings.updateUserSettings(widgetId, { x: v });
+                  }
+                }}
               />
             </Col>
 
@@ -72,10 +74,12 @@ export const WidgetSettings = observer(
               <InputNumber
                 style={{ width: '100%' }}
                 value={userSettings.y}
-                onChange={(v) =>
-                  v !== null &&
-                  widgetSettings.updateUserSettings(widgetId, { y: v })
-                }
+                onChange={(v) => {
+                  if (v !== null) {
+                    widgetSettings.pushUndo?.();
+                    widgetSettings.updateUserSettings(widgetId, { y: v });
+                  }
+                }}
               />
             </Col>
 
@@ -85,12 +89,14 @@ export const WidgetSettings = observer(
                 style={{ width: '100%' }}
                 value={userSettings.currentWidth}
                 min={10}
-                onChange={(v) =>
-                  v !== null &&
-                  widgetSettings.updateUserSettings(widgetId, {
-                    currentWidth: v,
-                  })
-                }
+                onChange={(v) => {
+                  if (v !== null) {
+                    widgetSettings.pushUndo?.();
+                    widgetSettings.updateUserSettings(widgetId, {
+                      currentWidth: v,
+                    });
+                  }
+                }}
               />
             </Col>
 
@@ -100,12 +106,30 @@ export const WidgetSettings = observer(
                 style={{ width: '100%' }}
                 value={userSettings.currentHeight}
                 min={10}
-                onChange={(v) =>
-                  v !== null &&
-                  widgetSettings.updateUserSettings(widgetId, {
-                    currentHeight: v,
-                  })
-                }
+                onChange={(v) => {
+                  if (v !== null) {
+                    widgetSettings.pushUndo?.();
+                    widgetSettings.updateUserSettings(widgetId, {
+                      currentHeight: v,
+                    });
+                  }
+                }}
+              />
+            </Col>
+
+            <Col span={12}>
+              <span className={styles.fieldLabel}>Layer Depth (Z-Index)</span>
+              <InputNumber
+                style={{ width: '100%' }}
+                value={userSettings.zIndex ?? 0}
+                onChange={(v) => {
+                  if (v !== null) {
+                    widgetSettings.pushUndo?.();
+                    widgetSettings.updateUserSettings(widgetId, {
+                      zIndex: v,
+                    });
+                  }
+                }}
               />
             </Col>
           </Row>

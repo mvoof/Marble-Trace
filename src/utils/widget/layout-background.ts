@@ -4,6 +4,7 @@ import {
   remove,
   exists,
   BaseDirectory,
+  readFile,
 } from '@tauri-apps/plugin-fs';
 import { appDataDir, join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
@@ -67,4 +68,37 @@ export const resolveBackgroundSrc = async (
   const absolutePath = await join(await appDataDir(), BACKGROUNDS_DIR, value);
 
   return convertFileSrc(absolutePath);
+};
+
+export const cloneBackgroundImage = async (
+  oldFileName: string | undefined,
+  newLayoutId: string
+): Promise<string | undefined> => {
+  if (!oldFileName) {
+    return undefined;
+  }
+
+  if (oldFileName.startsWith('data:')) {
+    return oldFileName;
+  }
+
+  try {
+    const extension = (oldFileName.split('.').pop() ?? 'png').toLowerCase();
+    const oldPath = `${BACKGROUNDS_DIR}/${oldFileName}`;
+
+    if (await exists(oldPath, { baseDir: BaseDirectory.AppData })) {
+      const bytes = await readFile(oldPath, { baseDir: BaseDirectory.AppData });
+      const newFileName = `${newLayoutId}.${extension}`;
+
+      await writeFile(`${BACKGROUNDS_DIR}/${newFileName}`, bytes, {
+        baseDir: BaseDirectory.AppData,
+      });
+
+      return newFileName;
+    }
+  } catch (error) {
+    console.error('Failed to clone background image:', error);
+  }
+
+  return undefined;
 };

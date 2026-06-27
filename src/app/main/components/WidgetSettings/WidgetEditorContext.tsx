@@ -19,6 +19,7 @@ export interface WidgetEditor {
   updateUserSettings(id: string, partial: Partial<WidgetUserSettings>): void;
   // Reactive change counter the preview reads to know when to re-mirror.
   getChangeToken(): number;
+  pushUndo?(): void;
 }
 
 const liveEditor = (store: WidgetSettingsStore): WidgetEditor => ({
@@ -27,6 +28,7 @@ const liveEditor = (store: WidgetSettingsStore): WidgetEditor => ({
     store.getSettings<S>(id),
   updateUserSettings: (id, partial) => store.updateUserSettings(id, partial),
   getChangeToken: () => store.changeToken,
+  pushUndo: () => store.pushUndo(),
 });
 
 const defaultsEditor = (store: WidgetSettingsStore): WidgetEditor => ({
@@ -36,6 +38,7 @@ const defaultsEditor = (store: WidgetSettingsStore): WidgetEditor => ({
   updateUserSettings: (id, partial) =>
     store.updateDefaultUserSettings(id, partial),
   getChangeToken: () => store.defaultsChangeToken,
+  pushUndo: () => {},
 });
 
 const WidgetEditorContext = createContext<WidgetEditor | null>(null);
