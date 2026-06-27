@@ -105,7 +105,10 @@ export const LayoutCanvas = observer(
     const targetResolution = widgetSettings.overlayResolution;
 
     const fit =
-      paneSize.width > 0 && paneSize.height > 0
+      paneSize.width > 0 &&
+      paneSize.height > 0 &&
+      targetResolution.width > 0 &&
+      targetResolution.height > 0
         ? Math.min(
             paneSize.width / targetResolution.width,
             paneSize.height / targetResolution.height
