@@ -76,7 +76,11 @@ export const SessionFooter = observer(() => {
       <div className={styles.footerRight}>
         {showWeather && airCelsius !== null && airStr && (
           <span className={styles.statPill}>
-            <Thermometer size={11} color={getAirTempColor(airCelsius)} />
+            <Thermometer
+              size={11}
+              color={getAirTempColor(airCelsius)}
+              className={styles.iconColored}
+            />
 
             <span className={styles.statLabel}>AIR</span>
 
@@ -86,7 +90,11 @@ export const SessionFooter = observer(() => {
 
         {showWeather && trkCelsius !== null && trkStr && (
           <span className={styles.statPill}>
-            <Thermometer size={11} color={getTrackTempColor(trkCelsius)} />
+            <Thermometer
+              size={11}
+              color={getTrackTempColor(trkCelsius)}
+              className={styles.iconColored}
+            />
 
             <span className={styles.statLabel}>TRK</span>
 
@@ -97,9 +105,17 @@ export const SessionFooter = observer(() => {
         {showWeather && wetnessInfo && (
           <span className={styles.statPill}>
             {wetnessInfo.isWet ? (
-              <CloudRain size={11} color={wetnessInfo.color} />
+              <CloudRain
+                size={11}
+                color={wetnessInfo.color}
+                className={styles.iconColored}
+              />
             ) : (
-              <Droplet size={11} color={wetnessInfo.color} />
+              <Droplet
+                size={11}
+                color={wetnessInfo.color}
+                className={styles.iconColored}
+              />
             )}
 
             <span className={styles.statLabel}>TRACK</span>
