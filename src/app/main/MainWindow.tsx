@@ -152,7 +152,10 @@ export const MainWindow = observer(() => {
                   </div>
 
                   <div className={styles.widgetWorkbench}>
-                    <WidgetWorkbench widgetId={selectedWidgetId} />
+                    <WidgetWorkbench
+                      widgetId={selectedWidgetId}
+                      onSelectWidget={setSelectedWidgetId}
+                    />
                   </div>
                 </div>
               </div>

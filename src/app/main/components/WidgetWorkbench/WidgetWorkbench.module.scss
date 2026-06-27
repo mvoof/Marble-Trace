@@ -58,3 +58,130 @@
   color: #8b8e98;
   font-family: $font-widget;
 }
+
+/* Catalog View */
+.catalogContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  gap: sp(md);
+  min-height: 0;
+}
+
+.catalogHeader {
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxs);
+  flex: 0 0 auto;
+}
+
+.catalogTitle {
+  font-size: fs(md);
+  font-weight: 600;
+  color: #e0e0e0;
+  margin: 0;
+}
+
+.catalogSubtitle {
+  font-size: fs(xs);
+  color: #8b8e98;
+  margin: 0;
+}
+
+.catalogGrid {
+  flex: 1 1 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: sp(md);
+  overflow-y: auto;
+  padding-right: sp(xs);
+}
+
+.catalogCard {
+  background: #15161a;
+  border: 1px solid #2a2c32;
+  border-radius: radius(md);
+  padding: sp(md);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: sp(xs);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  width: 100%;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: #5e626d;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  &.cardDisabled {
+    opacity: 0.6;
+  }
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.cardIcon {
+  color: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardStatusBadge {
+  font-size: 10px;
+  padding: 0 sp(xxs);
+  border-radius: radius(sm);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badgeActive {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.badgeDisabled {
+  background: rgba(94, 98, 109, 0.1);
+  color: #8b8e98;
+  border: 1px solid rgba(94, 98, 109, 0.2);
+}
+
+.badgeUnavailable {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.cardTitle {
+  font-size: fs(sm);
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+.cardDesc {
+  font-size: fs(xs);
+  color: #8b8e98;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.cardMeta {
+  font-size: fs(xxs);
+  color: #5e626d;
+  font-family: $font-mono;
+}
