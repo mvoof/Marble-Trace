@@ -552,6 +552,18 @@ export class WidgetSettingsStore {
     if (activeLayoutId !== undefined) {
       this.activeLayoutId = activeLayoutId;
     }
+
+    const resolvedId = activeLayoutId ?? this.activeLayoutId;
+    const activeLayout = this.layouts.find(
+      (layout) => layout.id === resolvedId
+    );
+    const config = activeLayout?.activeMonitorName
+      ? activeLayout.monitorConfigs[activeLayout.activeMonitorName]
+      : undefined;
+
+    if (config) {
+      this.overlayResolution = { ...config.resolution };
+    }
   }
 
   // Guarantees there is always an active layout. Creates a "Default" layout on
