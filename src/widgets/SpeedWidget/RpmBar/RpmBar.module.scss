@@ -2,13 +2,14 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: sp(xxs);
+  gap: ws(3);
   width: 100%;
+  padding: ws(5) ws(6);
 }
 
 .rpmSeg {
   flex: 1 1 0;
-  aspect-ratio: 1 / 1;
+  height: ws(11);
   border-radius: 15%;
   background: rgba(255, 255, 255, 0.06);
   transition: background 0.04s ease;

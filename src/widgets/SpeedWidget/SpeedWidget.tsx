@@ -1,24 +1,26 @@
 import { observer } from 'mobx-react-lite';
+
 import { SpeedDisplay } from './SpeedDisplay/SpeedDisplay';
-import { EnginePanel } from './EnginePanel/EnginePanel';
-import { RpmPanel } from './RpmPanel/RpmPanel';
-import { RpmBar } from './RpmBar/RpmBar';
+import { InfoColumn } from './InfoColumn/InfoColumn';
 import { PitPanel } from './PitPanel/PitPanel';
+import { PitOverlay } from './PitOverlay/PitOverlay';
+import { RpmBar } from './RpmBar/RpmBar';
+import { EnginePanel } from './EnginePanel/EnginePanel';
 
 import styles from './SpeedWidget.module.scss';
 
 export const SpeedWidget = observer(() => (
   <div className={styles.root}>
-    <PitPanel />
+    <RpmBar />
 
-    <div className={styles.rightPanel}>
-      <div className={styles.speedRow}>
+    <div className={styles.mainRow}>
+      <PitPanel />
+
+      <div className={styles.centerRight}>
         <SpeedDisplay />
-
-        <RpmPanel />
+        <InfoColumn />
+        <PitOverlay />
       </div>
-
-      <RpmBar />
     </div>
 
     <div className={styles.tempsOverlay}>

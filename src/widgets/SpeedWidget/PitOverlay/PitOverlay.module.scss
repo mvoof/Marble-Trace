@@ -1,0 +1,116 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: sp(xxs);
+  padding: sp(xs) sp(md);
+}
+
+// ── State backgrounds ──────────────────────────────────────────
+
+.statePitLane {
+  background: rgba($widget-pit-entry, 0.92);
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.stateLimiter {
+  background: rgba($widget-pit-active, 0.92);
+  color: #fff;
+}
+
+.stateOverLimit {
+  background: $widget-pit-warning;
+  color: #fff;
+  animation: overLimitPulse 0.7s ease-in-out infinite;
+}
+
+// ── Content ───────────────────────────────────────────────────
+
+.headline {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.speedRow {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxs);
+}
+
+.speedNum {
+  font-family: $font-widget;
+  font-size: ws(44);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.speedUnit {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+}
+
+// ── Speed bar ─────────────────────────────────────────────────
+
+.barSection {
+  width: 100%;
+  margin-top: sp(xxs);
+}
+
+.barLabels {
+  display: flex;
+  justify-content: space-between;
+  font-family: $font-mono;
+  font-size: fs(xxxs);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  margin-bottom: sp(xxxs);
+}
+
+.barTrack {
+  width: 100%;
+  height: ws(8);
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: radius(sm);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: $race-green;
+  border-radius: radius(sm);
+  transition: width 0.1s linear;
+}
+
+.barFillClose {
+  background: $race-amber;
+}
+
+.barFillOver {
+  background: $widget-pit-warning;
+}
+
+// ── Animations ────────────────────────────────────────────────
+
+@keyframes overLimitPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.65;
+  }
+}

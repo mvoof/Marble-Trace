@@ -1,8 +1,8 @@
-﻿import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import type { SessionSnapshot } from '@/types/bindings';
+import type { LapTimingFrame, SessionSnapshot } from '@/types/bindings';
 import type { SpeedWidgetSettings } from '@/types/widget-settings';
 import type { PlayerStore } from '@store/data/player.store';
 import { useStore } from '@store/root-store-context';
@@ -24,6 +24,8 @@ interface StoryArgs {
   speedKmh: number;
   rpm: number;
   gear: number;
+  lap: number;
+  position: number;
   onPitRoad: boolean;
   engineWarnings: number;
   oilTemp: number | null;
@@ -45,7 +47,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/SpeedWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: SpeedWidget,
-    size: { width: 500, height: 120, background: 'rgba(21, 22, 26, 0.8)' },
+    size: { width: 500, height: 140, background: 'rgba(21, 22, 26, 0.8)' },
     seedSnapshot: true,
     seed: (store, args) => {
       store.session.updateSessionInfo(BASE_SESSION_INFO);
@@ -63,6 +65,11 @@ const meta: Meta<StoryArgs> = {
         water_temp: args.waterTemp,
       } as Parameters<typeof store.player.updateCarStatus>[0]);
 
+      store.player.updateLapTiming({
+        lap: args.lap,
+        player_car_position: args.position,
+      } as LapTimingFrame);
+
       store.units.setSystem(args.units);
 
       store.widgetSettings.updateUserSettings('speed', {
@@ -76,6 +83,8 @@ const meta: Meta<StoryArgs> = {
       speedKmh: 120,
       rpm: 5400,
       gear: 3,
+      lap: 12,
+      position: 3,
       onPitRoad: false,
       engineWarnings: 0,
       oilTemp: null,
@@ -89,6 +98,8 @@ const meta: Meta<StoryArgs> = {
       speedKmh: { control: { type: 'number', step: 1 }, name: 'speed (km/h)' },
       rpm: { control: { type: 'number', step: 100 } },
       gear: { control: { type: 'number', min: -1, max: 8, step: 1 } },
+      lap: { control: { type: 'number', min: 1 } },
+      position: { control: { type: 'number', min: 1 } },
       onPitRoad: { control: 'boolean' },
       engineWarnings: { control: { type: 'number' } },
       oilTemp: { control: { type: 'number' } },
@@ -112,7 +123,7 @@ export const HighSpeed: Story = {
 
 export const PitLimiterActive: Story = {
   args: {
-    speedKmh: 60,
+    speedKmh: 51,
     rpm: 3100,
     gear: 3,
     onPitRoad: true,
@@ -127,6 +138,16 @@ export const OverPitLimit: Story = {
     gear: 3,
     onPitRoad: true,
     engineWarnings: 0x10,
+  },
+};
+
+export const PitLaneNoLimiter: Story = {
+  args: {
+    speedKmh: 40,
+    rpm: 2800,
+    gear: 2,
+    onPitRoad: true,
+    engineWarnings: 0,
   },
 };
 
@@ -161,6 +182,12 @@ const RpmAnimatedRenderer = () => {
 
   useEffect(() => {
     runInAction(() => store.session.updateSessionInfo(BASE_SESSION_INFO));
+    runInAction(() =>
+      store.player.updateLapTiming({
+        lap: 8,
+        player_car_position: 2,
+      } as LapTimingFrame)
+    );
 
     const intervalId = setInterval(() => {
       rpmRef.current += dirRef.current * 120;

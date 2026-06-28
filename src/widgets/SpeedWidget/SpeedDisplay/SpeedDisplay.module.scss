@@ -1,9 +1,11 @@
 .group {
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: row;
   align-items: baseline;
+  justify-content: center;
   gap: sp(xxs);
-  padding-left: ws(24);
 }
 
 .value {
