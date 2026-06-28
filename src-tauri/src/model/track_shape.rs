@@ -18,6 +18,12 @@ pub struct TrackShapePayload {
     pub svg_path: String,
     pub view_box: String,
     pub points: Vec<TrackPoint>,
+    /// Lap distance fraction where player crossed into pit road (on_pit_road false→true).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pit_in_pct: Option<f32>,
+    /// Lap distance fraction where player exited pit road (on_pit_road true→false).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pit_exit_pct: Option<f32>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

@@ -870,6 +870,14 @@ export type TrackShapePayload = {
   svgPath: string;
   viewBox: string;
   points: TrackPoint[];
+  /**
+   * Lap distance fraction where player crossed into pit road (on_pit_road false→true).
+   */
+  pitInPct?: number | null;
+  /**
+   * Lap distance fraction where player exited pit road (on_pit_road true→false).
+   */
+  pitExitPct?: number | null;
 };
 
 export type TrackSurface =

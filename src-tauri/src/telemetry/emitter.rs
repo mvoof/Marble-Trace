@@ -165,6 +165,13 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
 
                     save_track_shape(app, payload);
                 }
+                ComputedOutput::PitLanePct {
+                    track_id,
+                    pit_in_pct,
+                    pit_exit_pct,
+                } => {
+                    patch_pit_lane_pct(app, track_id, pit_in_pct, pit_exit_pct);
+                }
                 other => scatter_output(&mut bundle, other),
             }
         }
@@ -217,6 +224,7 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
         ComputedOutput::Standings(frame) => bundle.standings = Some(frame),
         ComputedOutput::TrackRecording(frame) => bundle.track_recording = Some(frame),
         ComputedOutput::TrackShape(_) => {} // handled in Hz60 loop directly
+        ComputedOutput::PitLanePct { .. } => {} // handled in Hz60 loop directly
     }
 }
 
@@ -247,6 +255,34 @@ fn save_track_shape(app: &AppHandle, payload: &TrackShapePayload) {
     };
 
     if let Ok(json) = serde_json::to_string(&stored) {
+        let _ = fs::write(&path, json);
+    }
+}
+
+/// Patch pit_in_pct / pit_exit_pct into an existing track JSON without overwriting geometry.
+fn patch_pit_lane_pct(app: &AppHandle, track_id: i32, pit_in_pct: f32, pit_exit_pct: f32) {
+    use std::fs;
+
+    let Ok(data_dir) = app.path().app_data_dir() else {
+        return;
+    };
+
+    let path = data_dir.join("tracks").join(format!("{}.json", track_id));
+
+    let Ok(bytes) = fs::read(&path) else {
+        return;
+    };
+
+    let Ok(mut value) = serde_json::from_slice::<serde_json::Value>(&bytes) else {
+        return;
+    };
+
+    if let Some(obj) = value.as_object_mut() {
+        obj.insert("pitInPct".to_string(), serde_json::json!(pit_in_pct));
+        obj.insert("pitExitPct".to_string(), serde_json::json!(pit_exit_pct));
+    }
+
+    if let Ok(json) = serde_json::to_string(&value) {
         let _ = fs::write(&path, json);
     }
 }

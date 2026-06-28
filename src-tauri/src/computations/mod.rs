@@ -81,6 +81,11 @@ pub enum ComputedOutput {
     Standings(DriverEntriesFrame),
     TrackShape(TrackShapePayload),
     TrackRecording(TrackRecordingFrame),
+    PitLanePct {
+        track_id: i32,
+        pit_in_pct: f32,
+        pit_exit_pct: f32,
+    },
 }
 
 pub trait Processor: Send {

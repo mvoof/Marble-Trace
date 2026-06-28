@@ -229,6 +229,9 @@ pub struct TrackShapeProcessor {
     force_start: Arc<AtomicBool>,
     status_tick: u64,
     last_lap_dist_pct: f32,
+    was_on_pit_road: bool,
+    pit_in_pct: Option<f32>,
+    pit_exit_pct: Option<f32>,
 }
 
 impl TrackShapeProcessor {
@@ -239,6 +242,9 @@ impl TrackShapeProcessor {
             force_start,
             status_tick: 0,
             last_lap_dist_pct: -1.0,
+            was_on_pit_road: false,
+            pit_in_pct: None,
+            pit_exit_pct: None,
         }
     }
 }
@@ -263,21 +269,45 @@ impl Processor for TrackShapeProcessor {
             self.state.reset();
             self.last_track_id = Some(track_id);
             self.status_tick = 0;
-        }
-
-        if self.state.complete {
-            return None;
+            self.was_on_pit_road = false;
+            self.pit_in_pct = None;
+            self.pit_exit_pct = None;
         }
 
         let speed = ctx.car_dynamics.speed;
         let yaw = ctx.car_dynamics.yaw.unwrap_or(0.0);
         let lap_dist_pct = ctx.lap_timing.lap_dist_pct.unwrap_or(-1.0);
         let is_moving = speed > SPEED_THRESHOLD_MPS;
+        let on_pit_road = ctx.car_status.on_pit_road.unwrap_or(false);
+
+        // Detect pit entry / exit transitions and record lap_dist_pct at that moment.
+        if lap_dist_pct >= 0.0 {
+            if !self.was_on_pit_road && on_pit_road {
+                self.pit_in_pct = Some(lap_dist_pct);
+            } else if self.was_on_pit_road && !on_pit_road {
+                self.pit_exit_pct = Some(lap_dist_pct);
+
+                if let (Some(pit_in_pct), Some(pit_exit_pct)) = (self.pit_in_pct, self.pit_exit_pct)
+                {
+                    return Some(ComputedOutput::PitLanePct {
+                        track_id,
+                        pit_in_pct,
+                        pit_exit_pct,
+                    });
+                }
+            }
+
+            self.was_on_pit_road = on_pit_road;
+            self.last_lap_dist_pct = lap_dist_pct;
+        }
+
+        if self.state.complete {
+            return None;
+        }
 
         let force = self.force_start.swap(false, Ordering::Relaxed);
 
         if !self.state.recording && !self.state.complete && is_moving {
-            let on_pit_road = ctx.car_status.on_pit_road.unwrap_or(false);
             let lap_dist = ctx.lap_timing.lap_dist_pct.unwrap_or(-1.0);
 
             let crossed_sf =
@@ -286,10 +316,6 @@ impl Processor for TrackShapeProcessor {
             if (crossed_sf || force) && !on_pit_road && lap_dist >= 0.0 {
                 self.state.start();
             }
-        }
-
-        if lap_dist_pct >= 0.0 {
-            self.last_lap_dist_pct = lap_dist_pct;
         }
 
         let just_completed = if self.state.recording {
@@ -309,6 +335,8 @@ impl Processor for TrackShapeProcessor {
             return Some(ComputedOutput::TrackShape(build_payload(
                 track_id,
                 &self.state,
+                self.pit_in_pct,
+                self.pit_exit_pct,
             )));
         }
 
@@ -332,10 +360,18 @@ impl Processor for TrackShapeProcessor {
         self.last_track_id = None;
         self.status_tick = 0;
         self.last_lap_dist_pct = -1.0;
+        self.was_on_pit_road = false;
+        self.pit_in_pct = None;
+        self.pit_exit_pct = None;
     }
 }
 
-fn build_payload(track_id: i32, state: &TrackShapeState) -> TrackShapePayload {
+fn build_payload(
+    track_id: i32,
+    state: &TrackShapeState,
+    pit_in_pct: Option<f32>,
+    pit_exit_pct: Option<f32>,
+) -> TrackShapePayload {
     let pts = state.sorted_points();
 
     if pts.len() < 3 {
@@ -344,6 +380,8 @@ fn build_payload(track_id: i32, state: &TrackShapeState) -> TrackShapePayload {
             svg_path: String::new(),
             view_box: "0 0 100 100".to_string(),
             points: pts,
+            pit_in_pct,
+            pit_exit_pct,
         };
     }
 
@@ -391,6 +429,8 @@ fn build_payload(track_id: i32, state: &TrackShapeState) -> TrackShapePayload {
         svg_path: d,
         view_box,
         points: pts,
+        pit_in_pct,
+        pit_exit_pct,
     }
 }
 
