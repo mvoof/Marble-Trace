@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import { formatSpeed } from '@utils/formatters/telemetry-format';
 import { usePitState } from '../hooks/usePitState';
 import type { PitState } from '../hooks/usePitState';
 
@@ -43,19 +42,11 @@ export const PitOverlay = observer(() => {
       </div>
 
       {showBar && pitLimitMs > 0 && (
-        <div className={styles.barSection}>
-          <div className={styles.barLabels}>
-            <span>{speedKmhOrMph}</span>
-            <span>
-              {formatSpeed(pitLimitMs, system)} {unit}
-            </span>
-          </div>
-          <div className={styles.barTrack}>
-            <div
-              className={`${styles.barFill} ${fillPct > 100 ? styles.barFillOver : fillPct > 85 ? styles.barFillClose : ''}`}
-              style={{ width: `${Math.min(fillPct, 100)}%` }}
-            />
-          </div>
+        <div className={styles.barTrack}>
+          <div
+            className={`${styles.barFill} ${fillPct > 100 ? styles.barFillOver : fillPct > 85 ? styles.barFillClose : ''}`}
+            style={{ width: `${Math.min(fillPct, 100)}%` }}
+          />
         </div>
       )}
     </div>

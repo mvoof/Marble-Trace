@@ -2,14 +2,14 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: ws(3);
+  gap: sp(xxs);
   width: 100%;
-  padding: ws(5) ws(6);
+  padding: sp(xxs) sp(xs);
 }
 
 .rpmSeg {
   flex: 1 1 0;
-  height: ws(11);
+  aspect-ratio: 1 / 1;
   border-radius: 15%;
   background: rgba(255, 255, 255, 0.06);
   transition: background 0.04s ease;
@@ -17,9 +17,7 @@
 
 .rpmSegLit {
   background: var(--rpm-seg-color);
-  box-shadow:
-    0 0 ws(6) var(--rpm-seg-color),
-    0 0 ws(3) var(--rpm-seg-color);
+  box-shadow: 0 0 ws(3) var(--rpm-seg-color);
 }
 
 .rpmBarBlink .rpmSeg {

@@ -5,7 +5,6 @@ import { InfoColumn } from './InfoColumn/InfoColumn';
 import { PitPanel } from './PitPanel/PitPanel';
 import { PitOverlay } from './PitOverlay/PitOverlay';
 import { RpmBar } from './RpmBar/RpmBar';
-import { EnginePanel } from './EnginePanel/EnginePanel';
 
 import styles from './SpeedWidget.module.scss';
 
@@ -21,10 +20,6 @@ export const SpeedWidget = observer(() => (
         <InfoColumn />
         <PitOverlay />
       </div>
-    </div>
-
-    <div className={styles.tempsOverlay}>
-      <EnginePanel />
     </div>
   </div>
 ));

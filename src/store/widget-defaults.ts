@@ -308,7 +308,6 @@ const WIDGETS: WidgetConfig[] = [
       rpmColorShift: '#a855f7',
       rpmColorLimit: '#f97316',
       showRpmBar: true,
-      showTemps: true,
       showRpmColor: true,
       pitSpeedLimitOverride: null,
       gearColor: '#eab308',

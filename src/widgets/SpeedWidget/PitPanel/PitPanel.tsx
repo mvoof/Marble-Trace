@@ -25,7 +25,7 @@ export const PitPanel = observer(() => {
   const { gearColor, gearPanelBg } =
     widgetSettings.getSettings<SpeedWidgetSettings>('speed');
 
-  const { pitState, pitSubLabel } = usePitState();
+  const { pitState } = usePitState();
 
   const gear = player.carDynamics?.gear ?? 0;
 
@@ -42,19 +42,9 @@ export const PitPanel = observer(() => {
         {formatGear(gear)}
       </span>
 
-      <span
-        className={`${styles.pitSub} ${
-          pitState === 'normal'
-            ? styles.pitSubNormal
-            : pitState === 'pit-lane'
-              ? styles.pitSubLimOff
-              : pitState === 'over-limit'
-                ? styles.pitSubOver
-                : ''
-        }`}
-      >
-        {pitSubLabel}
-      </span>
+      {pitState === 'normal' && (
+        <span className={`${styles.pitSub} ${styles.pitSubNormal}`}>GEAR</span>
+      )}
     </div>
   );
 });

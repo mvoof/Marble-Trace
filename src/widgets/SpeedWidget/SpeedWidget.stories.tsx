@@ -32,7 +32,6 @@ interface StoryArgs {
   waterTemp: number | null;
   units: 'metric' | 'imperial';
   showRpmBar: boolean;
-  showTemps: boolean;
   showRpmColor: boolean;
 }
 
@@ -75,7 +74,6 @@ const meta: Meta<StoryArgs> = {
       store.widgetSettings.updateUserSettings('speed', {
         ...store.widgetSettings.getSettings<SpeedWidgetSettings>('speed'),
         showRpmBar: args.showRpmBar,
-        showTemps: args.showTemps,
         showRpmColor: args.showRpmColor,
       });
     },
@@ -91,7 +89,6 @@ const meta: Meta<StoryArgs> = {
       waterTemp: null,
       units: 'metric',
       showRpmBar: true,
-      showTemps: false,
       showRpmColor: true,
     },
     argTypes: {
@@ -106,7 +103,6 @@ const meta: Meta<StoryArgs> = {
       waterTemp: { control: { type: 'number' } },
       units: { control: 'radio', options: ['metric', 'imperial'] },
       showRpmBar: { control: 'boolean' },
-      showTemps: { control: 'boolean' },
       showRpmColor: { control: 'boolean' },
     },
   }),
@@ -152,7 +148,7 @@ export const PitLaneNoLimiter: Story = {
 };
 
 export const TempWarning: Story = {
-  args: { oilTemp: 135, waterTemp: 132, showTemps: true },
+  args: { oilTemp: 135, waterTemp: 132 },
 };
 
 export const Imperial: Story = {
@@ -172,7 +168,7 @@ export const NoRpmBar: Story = {
 };
 
 export const WithTemps: Story = {
-  args: { oilTemp: 95, waterTemp: 88, showTemps: true },
+  args: { oilTemp: 95, waterTemp: 88 },
 };
 
 const RpmAnimatedRenderer = () => {

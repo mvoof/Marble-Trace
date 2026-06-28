@@ -12,19 +12,18 @@
 // ── State backgrounds ──────────────────────────────────────────
 
 .statePitLane {
-  background: rgba($widget-pit-entry, 0.92);
+  background: $widget-pit-entry;
   color: rgba(0, 0, 0, 0.85);
 }
 
 .stateLimiter {
-  background: rgba($widget-pit-active, 0.92);
+  background: $widget-pit-active;
   color: #fff;
 }
 
 .stateOverLimit {
   background: $widget-pit-warning;
   color: #fff;
-  animation: overLimitPulse 0.7s ease-in-out infinite;
 }
 
 // ── Content ───────────────────────────────────────────────────
@@ -63,28 +62,13 @@
 
 // ── Speed bar ─────────────────────────────────────────────────
 
-.barSection {
-  width: 100%;
-  margin-top: sp(xxs);
-}
-
-.barLabels {
-  display: flex;
-  justify-content: space-between;
-  font-family: $font-mono;
-  font-size: fs(xxxs);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  opacity: 0.7;
-  margin-bottom: sp(xxxs);
-}
-
 .barTrack {
   width: 100%;
   height: ws(8);
   background: rgba(0, 0, 0, 0.25);
   border-radius: radius(sm);
   overflow: hidden;
+  margin-top: sp(xxs);
 }
 
 .barFill {
@@ -100,17 +84,4 @@
 
 .barFillOver {
   background: $widget-pit-warning;
-}
-
-// ── Animations ────────────────────────────────────────────────
-
-@keyframes overLimitPulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.65;
-  }
 }

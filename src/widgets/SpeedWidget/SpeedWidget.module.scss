@@ -7,13 +7,6 @@
   overflow: hidden;
 }
 
-// ── LED bar (top, full width) ─────────────────────────────────
-
-// RpmBar renders directly as first child — no wrapper needed.
-// It fills horizontally and sizes itself by its LED aspect-ratio.
-
-// ── Main content row ─────────────────────────────────────────
-
 .mainRow {
   flex: 1 1 0;
   min-height: 0;
@@ -21,8 +14,6 @@
   flex-direction: row;
   align-items: stretch;
 }
-
-// ── Center + right area (speed + info col + pit overlay) ──────
 
 .centerRight {
   flex: 1 1 0;
@@ -32,13 +23,4 @@
   flex-direction: row;
   align-items: center;
   padding: sp(sm) sp(md) sp(sm) 0;
-}
-
-// ── Temps overlay (top-right corner) ─────────────────────────
-
-.tempsOverlay {
-  position: absolute;
-  top: sp(xs);
-  right: sp(md);
-  pointer-events: none;
 }

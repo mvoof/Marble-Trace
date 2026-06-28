@@ -12,7 +12,6 @@ export interface SpeedWidgetSettings {
   rpmColorShift: string;
   rpmColorLimit: string;
   showRpmBar: boolean;
-  showTemps: boolean;
   showRpmColor: boolean;
   pitSpeedLimitOverride: number | null;
   gearColor: string;

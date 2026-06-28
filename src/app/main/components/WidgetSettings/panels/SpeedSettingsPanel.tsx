@@ -154,18 +154,6 @@ export const SpeedSettingsPanel = observer(() => {
 
       <Card title="Display">
         <div className={styles.fieldGroup}>
-          <SettingRow
-            title="Temperatures"
-            desc="Show oil and water temperature badges."
-          >
-            <Switch
-              checked={settings.showTemps}
-              onChange={(value) => update({ showTemps: value })}
-            />
-          </SettingRow>
-        </div>
-
-        <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
             Pit Speed Override ({speedUnit(units.unitSystem)})
           </span>
