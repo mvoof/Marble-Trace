@@ -3,17 +3,17 @@
   inset: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  gap: sp(xxs);
-  padding: sp(xs) sp(md);
+  gap: 0;
+  padding: sp(xs) sp(lg);
 }
 
 // ── State backgrounds ──────────────────────────────────────────
 
 .statePitLane {
   background: $widget-pit-entry;
-  color: rgba(0, 0, 0, 0.85);
+  color: rgba(0, 0, 0, 0.9);
 }
 
 .stateLimiter {
@@ -26,26 +26,88 @@
   color: #fff;
 }
 
-// ── Content ───────────────────────────────────────────────────
+// ── Headline row ──────────────────────────────────────────────
 
-.headline {
-  font-family: $font-mono;
-  font-size: fs(sm);
-  font-weight: 900;
-  letter-spacing: 0.15em;
-  line-height: 1;
-  opacity: 0.85;
+.headlineRow {
+  display: flex;
+  align-items: center;
+  gap: sp(sm);
+  margin-bottom: sp(xxs);
 }
+
+.headlineText {
+  font-family: $font-mono;
+  font-size: fs(md);
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+// Stripe blocks fill remaining space on both sides of the label
+.stripeLeft,
+.stripeRight {
+  display: block;
+  height: ws(14);
+  border-radius: 1px;
+  flex: 1 1 0;
+}
+
+.statePitLane .stripeLeft,
+.statePitLane .stripeRight {
+  background: repeating-linear-gradient(
+    60deg,
+    rgba(0, 0, 0, 0.3) 0px,
+    rgba(0, 0, 0, 0.3) ws(5),
+    transparent ws(5),
+    transparent ws(10)
+  );
+}
+
+.stateLimiter .stripeLeft {
+  background: repeating-linear-gradient(
+    60deg,
+    rgba(255, 255, 255, 0.5) 0px,
+    rgba(255, 255, 255, 0.5) ws(5),
+    transparent ws(5),
+    transparent ws(10)
+  );
+}
+
+.stateLimiter .stripeRight {
+  background: repeating-linear-gradient(
+    -60deg,
+    rgba(255, 255, 255, 0.5) 0px,
+    rgba(255, 255, 255, 0.5) ws(5),
+    transparent ws(5),
+    transparent ws(10)
+  );
+}
+
+.stateOverLimit .stripeLeft,
+.stateOverLimit .stripeRight {
+  background: repeating-linear-gradient(
+    -60deg,
+    rgba(255, 255, 255, 0.5) 0px,
+    rgba(255, 255, 255, 0.5) ws(5),
+    transparent ws(5),
+    transparent ws(10)
+  );
+}
+
+// ── Speed row — centered ──────────────────────────────────────
 
 .speedRow {
   display: flex;
   align-items: baseline;
+  justify-content: center;
   gap: sp(xxs);
 }
 
 .speedNum {
   font-family: $font-widget;
-  font-size: ws(44);
+  font-size: ws(52);
   font-weight: 700;
   line-height: 0.9;
   letter-spacing: -0.04em;
@@ -54,34 +116,111 @@
 
 .speedUnit {
   font-family: $font-mono;
-  font-size: fs(xs);
+  font-size: fs(sm);
   font-weight: 700;
-  letter-spacing: 0.1em;
-  opacity: 0.7;
+  letter-spacing: 0.12em;
+  opacity: 0.65;
 }
 
-// ── Speed bar ─────────────────────────────────────────────────
+// ── Pit assist section — always reserves height ───────────────
+// Prevents layout shift when pit data becomes available.
 
-.barTrack {
+.assistSection {
+  margin-top: sp(xxs);
+  height: ws(36);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: sp(xxxs);
   width: 100%;
+}
+
+// ── Throttle / brake input bars ───────────────────────────────
+
+.inputRow {
+  display: flex;
+  gap: sp(xxs);
+  margin-bottom: sp(xxxs);
+}
+
+.inputBar {
+  flex: 1 1 0;
   height: ws(8);
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: radius(sm);
   overflow: hidden;
-  margin-top: sp(xxs);
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.barFill {
+.inputBarFillThrottle {
+  position: absolute;
+  left: 0;
+  top: 0;
   height: 100%;
   background: $race-green;
   border-radius: radius(sm);
-  transition: width 0.1s linear;
+  transition: width 0.05s linear;
 }
 
-.barFillClose {
-  background: $race-amber;
-}
-
-.barFillOver {
+.inputBarFillBrake {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
   background: $widget-pit-warning;
+  border-radius: radius(sm);
+  transition: width 0.05s linear;
+}
+
+.inputLabel {
+  position: relative;
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: rgba(0, 0, 0, 0.4);
+  padding-left: sp(xxxs);
+  line-height: 1;
+  z-index: 1;
+}
+
+.stateLimiter .inputLabel,
+.stateOverLimit .inputLabel {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.exitLabel {
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  opacity: 0.65;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.laneBarTrack {
+  width: 100%;
+  height: ws(8);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: radius(sm);
+  overflow: hidden;
+}
+
+.laneBarFill {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: radius(sm);
+  transition: width 0.15s linear;
+}
+
+.assistSectionReady .exitLabel {
+  opacity: 1;
+  color: $race-green;
+}
+
+.assistSectionReady .laneBarFill {
+  background: $race-green;
 }

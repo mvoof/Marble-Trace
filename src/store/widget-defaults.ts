@@ -310,6 +310,7 @@ const WIDGETS: WidgetConfig[] = [
       showRpmBar: true,
       showRpmColor: true,
       pitSpeedLimitOverride: null,
+      showPitAssist: true,
       gearColor: '#eab308',
       gearPanelBg: 'rgba(255,255,255,0.05)',
       ledShape: 'square',

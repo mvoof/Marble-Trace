@@ -14,6 +14,7 @@ export interface SpeedWidgetSettings {
   showRpmBar: boolean;
   showRpmColor: boolean;
   pitSpeedLimitOverride: number | null;
+  showPitAssist: boolean;
   gearColor: string;
   gearPanelBg: string;
   ledShape: LedShape;
