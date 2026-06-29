@@ -170,6 +170,8 @@ pub fn run() {
                 start_positions: Mutex::new(std::collections::HashMap::new()),
                 start_positions_session_num: AtomicI32::new(-1),
                 track_length_m: Mutex::new(None),
+                pit_in_pct: Mutex::new(None),
+                pit_exit_pct: Mutex::new(None),
                 active_events: AtomicU32::new(0xFFFFFFFF),
                 car_length_m: Mutex::new(4.4),
             }),

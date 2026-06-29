@@ -249,7 +249,7 @@ fn apply_session_update(app: &AppHandle, parsed: ParsedSession, service: &Teleme
     }
 
     if prev_track_id != Some(new_track_id) {
-        try_load_and_emit_track(app, new_track_id);
+        try_load_and_emit_track(app, new_track_id, service);
     }
 
     if !parsed.weather_forecast.is_empty() {
@@ -294,7 +294,7 @@ fn reset_telemetry_state(
     app.emit(EVENT_DISCONNECTED, &()).ok();
 }
 
-fn try_load_and_emit_track(app: &AppHandle, track_id: i32) {
+fn try_load_and_emit_track(app: &AppHandle, track_id: i32, service: &TelemetryServiceState) {
     use std::fs;
 
     use crate::model::track_shape::TrackShapePayload;
@@ -321,6 +321,13 @@ fn try_load_and_emit_track(app: &AppHandle, track_id: i32) {
 
     if stored.version < 1 {
         return;
+    }
+
+    if let Ok(mut lock) = service.pit_in_pct.lock() {
+        *lock = stored.payload.pit_in_pct;
+    }
+    if let Ok(mut lock) = service.pit_exit_pct.lock() {
+        *lock = stored.payload.pit_exit_pct;
     }
 
     if let Err(e) = app.emit(EVENT_TRACK_SHAPE, &stored.payload) {

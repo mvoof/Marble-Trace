@@ -52,7 +52,7 @@ export const PitOverlay = observer(() => {
   const showCalibrating = isPitLaneRecording && pitLaneProgressPct === null;
 
   const isNearExit =
-    distMode === 'pitexit' &&
+    distMode === 'pitExit' &&
     distM !== null &&
     distM <= PIT_EXIT_READY_M &&
     distM >= 0;

@@ -133,6 +133,13 @@ pub async fn reset_pit_lane_pct(
         }
     }
 
+    if let Ok(mut lock) = state.service.pit_in_pct.lock() {
+        *lock = None;
+    }
+    if let Ok(mut lock) = state.service.pit_exit_pct.lock() {
+        *lock = None;
+    }
+
     state
         .reset_pit_pcts
         .store(true, std::sync::atomic::Ordering::Relaxed);

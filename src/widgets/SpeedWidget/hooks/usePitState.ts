@@ -29,8 +29,8 @@ export interface PitStateResult {
   pitSubLabel: string;
   /** Meters remaining to pit exit line. null = pit pcts not yet calibrated for this track. */
   distToExitM: number | null;
-  /** Whether the distance counts down to pitbox or pitexit. */
-  distMode: 'pitbox' | 'pitexit' | null;
+  /** Whether the distance counts down to pitbox or pitExit. */
+  distMode: 'pitbox' | 'pitExit' | null;
   /** The distance value in meters to the current target (pitbox or pitexit). */
   distM: number | null;
   /** Progress through pit lane 0..1. null = not calibrated. */
@@ -41,24 +41,6 @@ export interface PitStateResult {
   throttle: number;
   brake: number;
 }
-
-/** Compute distance remaining to pit exit, handling start/finish wrap-around. */
-const computePitExitData = (
-  lapDistPct: number,
-  pitInPct: number,
-  pitExitPct: number,
-  trackLengthM: number
-): { distToExitM: number; pitLaneProgressPct: number } => {
-  const laneLengthPct = (pitExitPct - pitInPct + 1) % 1 || 1;
-  const traveledPct = (lapDistPct - pitInPct + 1) % 1;
-  const pitLaneProgressPct = Math.min(traveledPct / laneLengthPct, 1);
-  const remainingPct = Math.max(0, 1 - pitLaneProgressPct);
-
-  return {
-    distToExitM: remainingPct * laneLengthPct * trackLengthM,
-    pitLaneProgressPct,
-  };
-};
 
 export const usePitState = (): PitStateResult => {
   const player = usePlayerStore();
@@ -129,58 +111,6 @@ export const usePitState = (): PitStateResult => {
     return 'LIM OFF';
   })();
 
-  const lapDistPct = player.lapTiming?.lap_dist_pct ?? null;
-  const pitInPct = trackMap.trackShape?.pitInPct ?? null;
-  const pitExitPct = trackMap.trackShape?.pitExitPct ?? null;
-  const trackLengthM = sessionInfo?.trackLengthM ?? 0;
-  const pitboxPct = sessionInfo?.driverPitTrkPct ?? null;
-
-  const pitExitData =
-    lapDistPct !== null &&
-    pitInPct !== null &&
-    pitExitPct !== null &&
-    trackLengthM > 0
-      ? computePitExitData(lapDistPct, pitInPct, pitExitPct, trackLengthM)
-      : null;
-
-  const pitboxData = (() => {
-    if (lapDistPct === null || pitboxPct === null || trackLengthM <= 0) {
-      return null;
-    }
-
-    let distanceToPitboxM = (pitboxPct - lapDistPct) * trackLengthM;
-    const halfTrack = trackLengthM * 0.5;
-    const wrapThreshold = halfTrack + 10;
-
-    if (Math.abs(distanceToPitboxM) > wrapThreshold) {
-      if (distanceToPitboxM > 0) {
-        distanceToPitboxM -= trackLengthM;
-      } else {
-        distanceToPitboxM += trackLengthM;
-      }
-    }
-
-    return { distanceToPitboxM };
-  })();
-
-  const { distMode, distM } = (() => {
-    if (pitExitData === null) {
-      return { distMode: null, distM: null };
-    }
-
-    if (pitboxData !== null && pitboxData.distanceToPitboxM > -10.0) {
-      return {
-        distMode: 'pitbox' as const,
-        distM: Math.max(0, pitboxData.distanceToPitboxM),
-      };
-    }
-
-    return {
-      distMode: 'pitexit' as const,
-      distM: pitExitData.distToExitM,
-    };
-  })();
-
   return {
     pitState,
     pitLimitMs,
@@ -190,10 +120,11 @@ export const usePitState = (): PitStateResult => {
     limitKmhOrMph: Math.round(pitLimitMs * speedFactor),
     system,
     pitSubLabel,
-    distToExitM: pitExitData?.distToExitM ?? null,
-    distMode,
-    distM,
-    pitLaneProgressPct: pitExitData?.pitLaneProgressPct ?? null,
+    distToExitM:
+      player.pitTargetType === 'pitExit' ? player.pitTargetDistM : null,
+    distMode: player.pitTargetType,
+    distM: player.pitTargetDistM,
+    pitLaneProgressPct: player.pitLaneProgressPct,
     showPitAssist,
     isPitLaneRecording,
     throttle: player.carInputs?.throttle ?? 0,

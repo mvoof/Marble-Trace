@@ -14,6 +14,9 @@ export class PlayerStore {
   carStatus: CarStatusFrame | null = null;
   chassis: ChassisFrame | null = null;
   lapTiming: LapTimingFrame | null = null;
+  pitTargetDistM: number | null = null;
+  pitTargetType: 'pitbox' | 'pitExit' | null = null;
+  pitLaneProgressPct: number | null = null;
 
   constructor() {
     makeAutoObservable(this);
@@ -43,11 +46,24 @@ export class PlayerStore {
     this.lapTiming = frame;
   }
 
+  updatePitTarget(
+    dist: number | null,
+    type: 'pitbox' | 'pitExit' | null,
+    progress: number | null
+  ) {
+    this.pitTargetDistM = dist;
+    this.pitTargetType = type;
+    this.pitLaneProgressPct = progress;
+  }
+
   reset() {
     this.carDynamics = null;
     this.carInputs = null;
     this.carStatus = null;
     this.chassis = null;
     this.lapTiming = null;
+    this.pitTargetDistM = null;
+    this.pitTargetType = null;
+    this.pitLaneProgressPct = null;
   }
 }

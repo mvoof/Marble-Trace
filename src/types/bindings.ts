@@ -624,6 +624,8 @@ export type PitState = 'none' | 'in' | 'stall' | 'exit';
 
 export type PitStopsFrame = { playerStops: number };
 
+export type PitTargetType = 'pitbox' | 'pitExit';
+
 export type ProximityFrame = {
   nearbyCars: NearbyCar[];
   radarDistances: RadarDistances;
@@ -854,6 +856,9 @@ export type TelemetryBundle = {
   session?: SessionFrame | null;
   environment?: EnvironmentFrame | null;
   track_recording?: TrackRecordingFrame | null;
+  pit_target_dist_m?: number | null;
+  pit_target_type?: PitTargetType | null;
+  pit_lane_progress_pct?: number | null;
 };
 
 export type TireCompoundEntry = { tireIndex: number; tireCompoundType: string };

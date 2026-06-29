@@ -100,3 +100,11 @@ pub enum PitState {
     Stall,
     Exit,
 }
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum PitTargetType {
+    Pitbox,
+    PitExit,
+}
