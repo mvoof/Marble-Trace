@@ -6,7 +6,7 @@
   align-items: stretch;
   justify-content: center;
   gap: 0;
-  padding: sp(xs) sp(lg);
+  padding: sp(xxxs) sp(lg);
 }
 
 // ── State backgrounds ──────────────────────────────────────────
@@ -32,7 +32,7 @@
   display: flex;
   align-items: center;
   gap: sp(sm);
-  margin-bottom: sp(xxs);
+  margin-bottom: sp(xxxs);
 }
 
 .headlineText {
@@ -96,13 +96,33 @@
   );
 }
 
-// ── Speed row ─────────────────────────────────────────────────
+// ── Speed row — 3-column: [LIM] [speed] [delta] ──────────────
 
 .speedRow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.limitSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+}
+
+.speedCenter {
   display: flex;
   align-items: baseline;
   justify-content: center;
   gap: sp(xxs);
+}
+
+.deltaSide {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .speedNum {
@@ -121,11 +141,81 @@
   letter-spacing: 0.12em;
 }
 
+// ── Limit badge — speed limit sign style ─────────────────────
+
+.limitBadge {
+  width: ws(38);
+  height: ws(38);
+  border-radius: 50%;
+  border: 2px solid $race-red;
+  background: rgba(255, 255, 255, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.limitBadgeNum {
+  font-family: $font-widget;
+  font-size: ws(20);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(0, 0, 0, 0.85);
+  line-height: 1;
+}
+
+.limitBadgeOver {
+  border-width: 3px;
+  animation: badgePulse 0.6s ease-in-out infinite alternate;
+}
+
+.stateOverLimit .limitBadge {
+  border-color: #fff;
+}
+
+.stateOverLimit .limitBadgeOver {
+  animation: badgePulseWhite 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes badgePulse {
+  from {
+    box-shadow: 0 0 0 0 rgba($race-red, 0);
+  }
+  to {
+    box-shadow: 0 0 0 ws(4) rgba($race-red, 0.5);
+  }
+}
+
+@keyframes badgePulseWhite {
+  from {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+  to {
+    box-shadow: 0 0 0 ws(4) rgba(255, 255, 255, 0.5);
+  }
+}
+
+// ── Delta ─────────────────────────────────────────────────────
+
+.limitDelta {
+  font-family: $font-mono;
+  font-size: fs(md);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.9;
+}
+
+.stateOverLimit .limitDelta {
+  opacity: 1;
+}
+
 // ── Bar section — reserves height, holds distance label + progress bar ─
 
 .barSection {
-  margin-top: sp(xs);
-  height: ws(28);
+  margin-top: sp(xxs);
+  height: ws(22);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;

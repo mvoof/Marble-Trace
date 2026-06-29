@@ -31,6 +31,8 @@ export interface PitStateResult {
   distToExitM: number | null;
   /** Progress through pit lane 0..1. null = not calibrated. */
   pitLaneProgressPct: number | null;
+  /** pit_in_pct recorded but pit_exit_pct not yet — actively traversing pit lane for calibration. */
+  isPitLaneRecording: boolean;
   showPitAssist: boolean;
   throttle: number;
   brake: number;
@@ -59,6 +61,7 @@ export const usePitState = (): PitStateResult => {
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
   const trackMap = useTrackMapWidgetStore();
+  const isPitLaneRecording = trackMap.isPitLaneRecording;
 
   const { pitSpeedLimitOverride, showPitAssist } =
     widgetSettings.getSettings<SpeedWidgetSettings>('speed');
@@ -146,6 +149,7 @@ export const usePitState = (): PitStateResult => {
     distToExitM: pitExitData?.distToExitM ?? null,
     pitLaneProgressPct: pitExitData?.pitLaneProgressPct ?? null,
     showPitAssist,
+    isPitLaneRecording,
     throttle: player.carInputs?.throttle ?? 0,
     brake: player.carInputs?.brake ?? 0,
   };

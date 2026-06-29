@@ -276,7 +276,8 @@ export class SimStore {
             this.root.trackMapWidget.updateRecordingStatus(
               b.track_recording.isRecording,
               b.track_recording.isWaitingForSf,
-              b.track_recording.progress
+              b.track_recording.progress,
+              b.track_recording.pitLaneRecording
             );
           }
         });

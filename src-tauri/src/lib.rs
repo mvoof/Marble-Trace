@@ -101,9 +101,12 @@ pub fn run() {
 
     let aptabase_key = option_env!("APTABASE_KEY").unwrap_or("");
     let force_track_start = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let reset_pit_pcts = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
 
     let force_track_start_listener = std::sync::Arc::clone(&force_track_start);
     let force_track_start_registry = std::sync::Arc::clone(&force_track_start);
+    let reset_pit_pcts_registry = std::sync::Arc::clone(&reset_pit_pcts);
+    let reset_pit_pcts_state = std::sync::Arc::clone(&reset_pit_pcts);
 
     let builder = Builder::default()
         .plugin(
@@ -172,10 +175,12 @@ pub fn run() {
             }),
             registry: Arc::new(Mutex::new(ProcessorRegistry::new(
                 force_track_start_registry,
+                reset_pit_pcts_registry,
             ))),
             pit_warning_laps: Arc::new(AtomicU32::new(
                 crate::computations::fuel::DEFAULT_PIT_WARNING_LAPS.to_bits(),
             )),
+            reset_pit_pcts: reset_pit_pcts_state,
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {

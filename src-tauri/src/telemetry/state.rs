@@ -36,4 +36,6 @@ pub struct TelemetryState {
     pub registry: Arc<Mutex<ProcessorRegistry>>,
     /// User-configured pit warning laps (stored as bits of f32).
     pub pit_warning_laps: Arc<AtomicU32>,
+    /// Set by reset_pit_lane_pct command; consumed by TrackShapeProcessor on next tick.
+    pub reset_pit_pcts: Arc<AtomicBool>,
 }

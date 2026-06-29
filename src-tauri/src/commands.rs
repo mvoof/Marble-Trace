@@ -95,7 +95,11 @@ pub async fn stop_telemetry_stream(state: State<'_, TelemetryState>) -> Result<(
 }
 
 #[tauri::command]
-pub async fn reset_pit_lane_pct(app: AppHandle, track_id: i32) -> Result<(), String> {
+pub async fn reset_pit_lane_pct(
+    app: AppHandle,
+    state: State<'_, TelemetryState>,
+    track_id: i32,
+) -> Result<(), String> {
     use crate::model::track_shape::TrackShapePayload;
     use crate::telemetry::emitter::EVENT_TRACK_SHAPE;
     use std::fs;
@@ -128,6 +132,10 @@ pub async fn reset_pit_lane_pct(app: AppHandle, track_id: i32) -> Result<(), Str
             let _ = app.emit(EVENT_TRACK_SHAPE, &payload);
         }
     }
+
+    state
+        .reset_pit_pcts
+        .store(true, std::sync::atomic::Ordering::Relaxed);
 
     Ok(())
 }

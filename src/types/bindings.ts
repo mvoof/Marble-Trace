@@ -863,6 +863,10 @@ export type TrackRecordingFrame = {
   isRecording: boolean;
   isWaitingForSf: boolean;
   progress: number;
+  /**
+   * pit_in_pct detected but pit_exit_pct not yet — actively traversing pit lane.
+   */
+  pitLaneRecording: boolean;
 };
 
 export type TrackShapePayload = {

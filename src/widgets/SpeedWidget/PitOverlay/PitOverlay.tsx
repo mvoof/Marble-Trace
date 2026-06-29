@@ -18,9 +18,11 @@ export const PitOverlay = observer(() => {
   const {
     pitState,
     speedKmhOrMph,
+    limitKmhOrMph,
     system,
     distToExitM,
     pitLaneProgressPct,
+    isPitLaneRecording,
     showPitAssist,
   } = usePitState();
 
@@ -38,9 +40,12 @@ export const PitOverlay = observer(() => {
   const unit = system === 'metric' ? 'KM/H' : 'MPH';
   const distUnit = system === 'metric' ? 'm' : 'ft';
 
-  const showBar = pitLaneProgressPct !== null && pitState === 'pit-lane';
-  const showCalibrating =
-    pitLaneProgressPct === null && pitState === 'pit-lane';
+  const showLimit =
+    limitKmhOrMph > 0 && (pitState === 'pit-lane' || pitState === 'over-limit');
+  const speedDelta = showLimit ? speedKmhOrMph - limitKmhOrMph : 0;
+
+  const showBar = pitLaneProgressPct !== null;
+  const showCalibrating = isPitLaneRecording && pitLaneProgressPct === null;
 
   const isNearExit =
     distToExitM !== null && distToExitM <= PIT_EXIT_READY_M && distToExitM >= 0;
@@ -66,8 +71,26 @@ export const PitOverlay = observer(() => {
       </div>
 
       <div className={styles.speedRow}>
-        <span className={styles.speedNum}>{speedKmhOrMph}</span>
-        <span className={styles.speedUnit}>{unit}</span>
+        <div className={styles.limitSide}>
+          {showLimit && (
+            <div
+              className={`${styles.limitBadge} ${speedDelta > 0 ? styles.limitBadgeOver : ''}`}
+            >
+              <span className={styles.limitBadgeNum}>{limitKmhOrMph}</span>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.speedCenter}>
+          <span className={styles.speedNum}>{speedKmhOrMph}</span>
+          <span className={styles.speedUnit}>{unit}</span>
+        </div>
+
+        <div className={styles.deltaSide}>
+          {showLimit && speedDelta > 0 && (
+            <span className={styles.limitDelta}>+{speedDelta}</span>
+          )}
+        </div>
       </div>
 
       <div

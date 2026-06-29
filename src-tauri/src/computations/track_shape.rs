@@ -227,6 +227,7 @@ pub struct TrackShapeProcessor {
     state: TrackShapeState,
     last_track_id: Option<i32>,
     force_start: Arc<AtomicBool>,
+    reset_pit_pcts: Arc<AtomicBool>,
     status_tick: u64,
     last_lap_dist_pct: f32,
     was_on_pit_road: bool,
@@ -235,11 +236,12 @@ pub struct TrackShapeProcessor {
 }
 
 impl TrackShapeProcessor {
-    pub fn new(force_start: Arc<AtomicBool>) -> Self {
+    pub fn new(force_start: Arc<AtomicBool>, reset_pit_pcts: Arc<AtomicBool>) -> Self {
         Self {
             state: TrackShapeState::default(),
             last_track_id: None,
             force_start,
+            reset_pit_pcts,
             status_tick: 0,
             last_lap_dist_pct: -1.0,
             was_on_pit_road: false,
@@ -264,6 +266,12 @@ impl Processor for TrackShapeProcessor {
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
         let track_id = ctx.session.track_id;
+
+        if self.reset_pit_pcts.swap(false, Ordering::Relaxed) {
+            self.pit_in_pct = None;
+            self.pit_exit_pct = None;
+            self.was_on_pit_road = false;
+        }
 
         if self.last_track_id != Some(track_id) {
             self.state.reset();
@@ -364,6 +372,7 @@ impl Processor for TrackShapeProcessor {
                 is_recording: self.state.recording,
                 is_waiting_for_sf: is_waiting,
                 progress: self.state.progress(),
+                pit_lane_recording: self.pit_in_pct.is_some() && self.pit_exit_pct.is_none(),
             }));
         }
 
@@ -522,7 +531,10 @@ mod tests {
     use crate::model::session::SessionSnapshot;
 
     fn make_processor() -> TrackShapeProcessor {
-        TrackShapeProcessor::new(Arc::new(AtomicBool::new(false)))
+        TrackShapeProcessor::new(
+            Arc::new(AtomicBool::new(false)),
+            Arc::new(AtomicBool::new(false)),
+        )
     }
 
     fn make_dynamics(speed: f32, yaw: f32) -> CarDynamicsFrame {
@@ -684,7 +696,8 @@ mod tests {
     #[test]
     fn force_start_triggers_recording() {
         let flag = Arc::new(AtomicBool::new(true));
-        let mut proc = TrackShapeProcessor::new(Arc::clone(&flag));
+        let mut proc =
+            TrackShapeProcessor::new(Arc::clone(&flag), Arc::new(AtomicBool::new(false)));
 
         let session = make_session(1);
         let dynamics = make_dynamics(10.0, 0.0);

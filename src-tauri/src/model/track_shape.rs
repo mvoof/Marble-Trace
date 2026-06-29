@@ -33,4 +33,6 @@ pub struct TrackRecordingFrame {
     pub is_recording: bool,
     pub is_waiting_for_sf: bool,
     pub progress: f32,
+    /// pit_in_pct detected but pit_exit_pct not yet — actively traversing pit lane.
+    pub pit_lane_recording: bool,
 }
