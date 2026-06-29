@@ -29,6 +29,10 @@ export interface PitStateResult {
   pitSubLabel: string;
   /** Meters remaining to pit exit line. null = pit pcts not yet calibrated for this track. */
   distToExitM: number | null;
+  /** Whether the distance counts down to pitbox or pitexit. */
+  distMode: 'pitbox' | 'pitexit' | null;
+  /** The distance value in meters to the current target (pitbox or pitexit). */
+  distM: number | null;
   /** Progress through pit lane 0..1. null = not calibrated. */
   pitLaneProgressPct: number | null;
   /** pit_in_pct recorded but pit_exit_pct not yet — actively traversing pit lane for calibration. */
@@ -129,6 +133,7 @@ export const usePitState = (): PitStateResult => {
   const pitInPct = trackMap.trackShape?.pitInPct ?? null;
   const pitExitPct = trackMap.trackShape?.pitExitPct ?? null;
   const trackLengthM = sessionInfo?.trackLengthM ?? 0;
+  const pitboxPct = sessionInfo?.driverPitTrkPct ?? null;
 
   const pitExitData =
     lapDistPct !== null &&
@@ -137,6 +142,44 @@ export const usePitState = (): PitStateResult => {
     trackLengthM > 0
       ? computePitExitData(lapDistPct, pitInPct, pitExitPct, trackLengthM)
       : null;
+
+  const pitboxData = (() => {
+    if (lapDistPct === null || pitboxPct === null || trackLengthM <= 0) {
+      return null;
+    }
+
+    let distanceToPitboxM = (pitboxPct - lapDistPct) * trackLengthM;
+    const halfTrack = trackLengthM * 0.5;
+    const wrapThreshold = halfTrack + 10;
+
+    if (Math.abs(distanceToPitboxM) > wrapThreshold) {
+      if (distanceToPitboxM > 0) {
+        distanceToPitboxM -= trackLengthM;
+      } else {
+        distanceToPitboxM += trackLengthM;
+      }
+    }
+
+    return { distanceToPitboxM };
+  })();
+
+  const { distMode, distM } = (() => {
+    if (pitExitData === null) {
+      return { distMode: null, distM: null };
+    }
+
+    if (pitboxData !== null && pitboxData.distanceToPitboxM > -10.0) {
+      return {
+        distMode: 'pitbox' as const,
+        distM: Math.max(0, pitboxData.distanceToPitboxM),
+      };
+    }
+
+    return {
+      distMode: 'pitexit' as const,
+      distM: pitExitData.distToExitM,
+    };
+  })();
 
   return {
     pitState,
@@ -148,6 +191,8 @@ export const usePitState = (): PitStateResult => {
     system,
     pitSubLabel,
     distToExitM: pitExitData?.distToExitM ?? null,
+    distMode,
+    distM,
     pitLaneProgressPct: pitExitData?.pitLaneProgressPct ?? null,
     showPitAssist,
     isPitLaneRecording,

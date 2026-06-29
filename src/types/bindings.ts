@@ -778,6 +778,7 @@ export type SessionSnapshot = {
   trackName: string;
   trackDisplayName: string;
   trackConfigName: string;
+  driverPitTrkPct: number | null;
   /**
    * Track length in meters, parsed from iRacing's "3.70 km" / "2.30 mi".
    */

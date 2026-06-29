@@ -61,6 +61,7 @@ pub struct SessionSnapshot {
     pub track_name: String,
     pub track_display_name: String,
     pub track_config_name: String,
+    pub driver_pit_trk_pct: Option<f32>,
     /// Track length in meters, parsed from iRacing's "3.70 km" / "2.30 mi".
     pub track_length_m: f32,
     /// Raw iRacing display strings with units (e.g. "56.33 kph", "25.55 C").

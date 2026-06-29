@@ -20,7 +20,8 @@ export const PitOverlay = observer(() => {
     speedKmhOrMph,
     limitKmhOrMph,
     system,
-    distToExitM,
+    distMode,
+    distM,
     pitLaneProgressPct,
     isPitLaneRecording,
     showPitAssist,
@@ -46,22 +47,26 @@ export const PitOverlay = observer(() => {
   const showDeltaUnder =
     showLimit && speedDelta <= 0 && pitState === 'pit-lane';
 
-  const showBar = pitLaneProgressPct !== null;
+  const showBar =
+    pitLaneProgressPct !== null && distM !== null && distMode !== null;
   const showCalibrating = isPitLaneRecording && pitLaneProgressPct === null;
 
   const isNearExit =
-    distToExitM !== null && distToExitM <= PIT_EXIT_READY_M && distToExitM >= 0;
+    distMode === 'pitexit' &&
+    distM !== null &&
+    distM <= PIT_EXIT_READY_M &&
+    distM >= 0;
 
   const distValue = (() => {
-    if (!showBar || distToExitM === null || distToExitM <= 0) return null;
+    if (!showBar || distM === null || distM < 0 || distMode === null)
+      return null;
     if (isNearExit) return 'GO!';
 
     const value =
-      system === 'metric'
-        ? Math.round(distToExitM)
-        : Math.round(distToExitM * 3.28084);
+      system === 'metric' ? Math.round(distM) : Math.round(distM * 3.28084);
 
-    return `${value} ${distUnit}`;
+    const prefix = distMode === 'pitbox' ? 'BOX ' : 'EXIT ';
+    return `${prefix}${value} ${distUnit}`;
   })();
 
   return (
