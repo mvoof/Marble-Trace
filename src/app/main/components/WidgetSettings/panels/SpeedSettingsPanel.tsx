@@ -125,6 +125,7 @@ export const SpeedSettingsPanel = observer(() => {
             options={[
               { label: 'Square', value: 'square' },
               { label: 'Circle', value: 'circle' },
+              { label: 'Slant', value: 'parallelogram' },
             ]}
             onChange={(value) => update({ ledShape: value as LedShape })}
           />

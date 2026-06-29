@@ -31,7 +31,7 @@
 .headlineRow {
   display: flex;
   align-items: center;
-  gap: sp(sm);
+  justify-content: center;
   margin-bottom: sp(xxxs);
 }
 
@@ -42,61 +42,9 @@
   letter-spacing: 0.15em;
   line-height: 1;
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
-// Stripe blocks fill remaining space on both sides of the label
-.stripeLeft,
-.stripeRight {
-  display: block;
-  height: ws(14);
-  border-radius: 1px;
-  flex: 1 1 0;
-}
-
-.statePitLane .stripeLeft,
-.statePitLane .stripeRight {
-  background: repeating-linear-gradient(
-    60deg,
-    rgba(0, 0, 0, 0.3) 0px,
-    rgba(0, 0, 0, 0.3) ws(5),
-    transparent ws(5),
-    transparent ws(10)
-  );
-}
-
-.stateLimiter .stripeLeft {
-  background: repeating-linear-gradient(
-    60deg,
-    rgba(255, 255, 255, 0.5) 0px,
-    rgba(255, 255, 255, 0.5) ws(5),
-    transparent ws(5),
-    transparent ws(10)
-  );
-}
-
-.stateLimiter .stripeRight {
-  background: repeating-linear-gradient(
-    -60deg,
-    rgba(255, 255, 255, 0.5) 0px,
-    rgba(255, 255, 255, 0.5) ws(5),
-    transparent ws(5),
-    transparent ws(10)
-  );
-}
-
-.stateOverLimit .stripeLeft,
-.stateOverLimit .stripeRight {
-  background: repeating-linear-gradient(
-    -60deg,
-    rgba(255, 255, 255, 0.5) 0px,
-    rgba(255, 255, 255, 0.5) ws(5),
-    transparent ws(5),
-    transparent ws(10)
-  );
-}
-
-// ── Speed row — 3-column: [LIM] [speed] [delta] ──────────────
+// ── Speed row — 3-column: [LIM tag] [speed] [delta] ───────────
 
 .speedRow {
   display: grid;
@@ -106,10 +54,8 @@
 
 .limitSide {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .speedCenter {
@@ -141,74 +87,53 @@
   letter-spacing: 0.12em;
 }
 
-// ── Limit badge — speed limit sign style ─────────────────────
+// ── Limit tag — compact text stack with left accent bar ────────
 
-.limitBadge {
-  width: ws(38);
-  height: ws(38);
-  border-radius: 50%;
-  border: 2px solid $race-red;
-  background: rgba(255, 255, 255, 0.88);
+.limitTag {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding-left: sp(xxs);
+  border-left: 3px solid currentColor;
+  opacity: 0.75;
 }
 
-.limitBadgeNum {
+.limitTagLabel {
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  line-height: 1.1;
+  opacity: 0.6;
+}
+
+.limitTagNum {
   font-family: $font-widget;
-  font-size: ws(20);
+  font-size: ws(24);
   font-weight: 900;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
-  color: rgba(0, 0, 0, 0.85);
   line-height: 1;
-}
-
-.limitBadgeOver {
-  border-width: 3px;
-  animation: badgePulse 0.6s ease-in-out infinite alternate;
-}
-
-.stateOverLimit .limitBadge {
-  border-color: #fff;
-}
-
-.stateOverLimit .limitBadgeOver {
-  animation: badgePulseWhite 0.6s ease-in-out infinite alternate;
-}
-
-@keyframes badgePulse {
-  from {
-    box-shadow: 0 0 0 0 rgba($race-red, 0);
-  }
-  to {
-    box-shadow: 0 0 0 ws(4) rgba($race-red, 0.5);
-  }
-}
-
-@keyframes badgePulseWhite {
-  from {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-  }
-  to {
-    box-shadow: 0 0 0 ws(4) rgba(255, 255, 255, 0.5);
-  }
 }
 
 // ── Delta ─────────────────────────────────────────────────────
 
-.limitDelta {
+.limitDeltaOver {
   font-family: $font-mono;
   font-size: fs(md);
   font-weight: 900;
   letter-spacing: 0.05em;
   font-variant-numeric: tabular-nums;
-  opacity: 0.9;
 }
 
-.stateOverLimit .limitDelta {
-  opacity: 1;
+.limitDeltaUnder {
+  font-family: $font-mono;
+  font-size: fs(md);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.45;
 }
 
 // ── Bar section — reserves height, holds distance label + progress bar ─
@@ -264,6 +189,7 @@
   100% {
     opacity: 0.5;
   }
+
   50% {
     opacity: 0.15;
   }

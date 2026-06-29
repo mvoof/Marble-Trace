@@ -140,7 +140,11 @@ export const RpmBar = observer(() => {
   }
 
   const isCircle = ledShape === 'circle';
-  const borderRadius = isCircle ? '50%' : '15%';
+  const isParallelogram = ledShape === 'parallelogram';
+  const borderRadius = isCircle ? '50%' : isParallelogram ? '0' : '15%';
+  const clipPath = isParallelogram
+    ? 'polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%)'
+    : undefined;
 
   if (isPitMode) {
     return (
@@ -160,6 +164,7 @@ export const RpmBar = observer(() => {
                 {
                   '--rpm-seg-color': color,
                   borderRadius,
+                  clipPath,
                 } as React.CSSProperties
               }
             />
@@ -196,7 +201,7 @@ export const RpmBar = observer(() => {
             <div
               key={`led-${index}`}
               className={styles.rpmSeg}
-              style={{ borderRadius }}
+              style={{ borderRadius, clipPath }}
             />
           );
         }
@@ -215,6 +220,7 @@ export const RpmBar = observer(() => {
               {
                 '--rpm-seg-color': color,
                 borderRadius,
+                clipPath,
               } as React.CSSProperties
             }
           />

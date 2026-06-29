@@ -40,9 +40,11 @@ export const PitOverlay = observer(() => {
   const unit = system === 'metric' ? 'KM/H' : 'MPH';
   const distUnit = system === 'metric' ? 'm' : 'ft';
 
-  const showLimit =
-    limitKmhOrMph > 0 && (pitState === 'pit-lane' || pitState === 'over-limit');
+  const showLimit = limitKmhOrMph > 0;
   const speedDelta = showLimit ? speedKmhOrMph - limitKmhOrMph : 0;
+  const showDeltaOver = showLimit && speedDelta > 0;
+  const showDeltaUnder =
+    showLimit && speedDelta <= 0 && pitState === 'pit-lane';
 
   const showBar = pitLaneProgressPct !== null;
   const showCalibrating = isPitLaneRecording && pitLaneProgressPct === null;
@@ -65,18 +67,15 @@ export const PitOverlay = observer(() => {
   return (
     <div className={`${styles.overlay} ${STATE_CLASS[pitState]}`}>
       <div className={styles.headlineRow}>
-        <span className={styles.stripeLeft} aria-hidden="true" />
         <span className={styles.headlineText}>{headline}</span>
-        <span className={styles.stripeRight} aria-hidden="true" />
       </div>
 
       <div className={styles.speedRow}>
         <div className={styles.limitSide}>
           {showLimit && (
-            <div
-              className={`${styles.limitBadge} ${speedDelta > 0 ? styles.limitBadgeOver : ''}`}
-            >
-              <span className={styles.limitBadgeNum}>{limitKmhOrMph}</span>
+            <div className={styles.limitTag}>
+              <span className={styles.limitTagLabel}>LIM</span>
+              <span className={styles.limitTagNum}>{limitKmhOrMph}</span>
             </div>
           )}
         </div>
@@ -87,8 +86,13 @@ export const PitOverlay = observer(() => {
         </div>
 
         <div className={styles.deltaSide}>
-          {showLimit && speedDelta > 0 && (
-            <span className={styles.limitDelta}>+{speedDelta}</span>
+          {showDeltaOver && (
+            <span className={styles.limitDeltaOver}>+{speedDelta}</span>
+          )}
+          {showDeltaUnder && (
+            <span className={styles.limitDeltaUnder}>
+              -{Math.abs(speedDelta)}
+            </span>
           )}
         </div>
       </div>

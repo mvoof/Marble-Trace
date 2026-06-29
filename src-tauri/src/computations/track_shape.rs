@@ -267,12 +267,6 @@ impl Processor for TrackShapeProcessor {
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
         let track_id = ctx.session.track_id;
 
-        if self.reset_pit_pcts.swap(false, Ordering::Relaxed) {
-            self.pit_in_pct = None;
-            self.pit_exit_pct = None;
-            self.was_on_pit_road = false;
-        }
-
         if self.last_track_id != Some(track_id) {
             self.state.reset();
             self.last_track_id = Some(track_id);
@@ -287,6 +281,14 @@ impl Processor for TrackShapeProcessor {
         let lap_dist_pct = ctx.lap_timing.lap_dist_pct.unwrap_or(-1.0);
         let is_moving = speed > SPEED_THRESHOLD_MPS;
         let on_pit_road = ctx.car_status.on_pit_road.unwrap_or(false);
+
+        // Reset pit pcts if commanded; preserve was_on_pit_road so we don't
+        // create a false entry transition if the car is already on pit road.
+        if self.reset_pit_pcts.swap(false, Ordering::Relaxed) {
+            self.pit_in_pct = None;
+            self.pit_exit_pct = None;
+            self.was_on_pit_road = on_pit_road;
+        }
 
         // Detect pit entry / exit transitions and record lap_dist_pct at that moment.
         // Require is_moving so sessions that start with the car already on pit road
