@@ -142,7 +142,7 @@ export const RpmBar = observer(() => {
   const isCircle = ledShape === 'circle';
   const isParallelogram = ledShape === 'parallelogram';
   const borderRadius = isCircle ? '50%' : isParallelogram ? '0' : '15%';
-  const clipPath = isParallelogram
+  const clipPathLeft = isParallelogram
     ? 'polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%)'
     : undefined;
 
@@ -155,6 +155,7 @@ export const RpmBar = observer(() => {
             color === PIT_RED_DIM ||
             color === LED_OFF ||
             color === 'transparent';
+          const clipPath = clipPathLeft;
 
           return (
             <div
@@ -196,6 +197,8 @@ export const RpmBar = observer(() => {
       {Array.from({ length: LED_COUNT }, (_, index) => {
         const isLit = index < litCount;
 
+        const clipPath = clipPathLeft;
+
         if (!isLit) {
           return (
             <div
@@ -220,7 +223,7 @@ export const RpmBar = observer(() => {
               {
                 '--rpm-seg-color': color,
                 borderRadius,
-                clipPath,
+                clipPath: clipPathLeft,
               } as React.CSSProperties
             }
           />

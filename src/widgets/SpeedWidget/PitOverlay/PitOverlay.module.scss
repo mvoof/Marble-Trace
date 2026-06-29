@@ -128,12 +128,12 @@
 }
 
 .limitDeltaUnder {
-  font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-family: $font-widget;
+  font-size: ws(24);
+  font-weight: 900;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
-  opacity: 0.45;
+  opacity: 0.75;
 }
 
 // ── Bar section — reserves height, holds distance label + progress bar ─
@@ -160,16 +160,16 @@
 
 .laneBarTrack {
   width: 100%;
-  height: ws(10);
+  height: ws(14);
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 2px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
 .laneBarFill {
   height: 100%;
   background: rgba(255, 255, 255, 0.85);
-  border-radius: 2px;
+  border-radius: 3px;
   transition: width 0.15s linear;
 }
 
