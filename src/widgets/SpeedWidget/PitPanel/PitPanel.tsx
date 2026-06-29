@@ -45,9 +45,7 @@ export const PitPanel = observer(() => {
         {formatGear(gear)}
       </span>
 
-      {effectivePitState === 'normal' && (
-        <span className={`${styles.pitSub} ${styles.pitSubNormal}`}>GEAR</span>
-      )}
+      <span className={`${styles.pitSub} ${styles.pitSubNormal}`}>GEAR</span>
     </div>
   );
 });

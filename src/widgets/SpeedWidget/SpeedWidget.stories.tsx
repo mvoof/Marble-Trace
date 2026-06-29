@@ -3,7 +3,6 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
 import type {
-  CarInputsFrame,
   LapTimingFrame,
   SessionSnapshot,
   TrackShapePayload,
@@ -194,10 +193,6 @@ const PIT_LANE_LAP_END = 0.025;
 const PitAssistantRenderer = () => {
   const store = useStore();
   const pctRef = useRef(PIT_LANE_LAP_START);
-  const throttleRef = useRef(0.3);
-  const brakeRef = useRef(0);
-  const tDirRef = useRef(1);
-
   useEffect(() => {
     runInAction(() => {
       store.session.updateSessionInfo(BASE_SESSION_INFO);
@@ -224,26 +219,10 @@ const PitAssistantRenderer = () => {
         pctRef.current -= 1;
       }
 
-      throttleRef.current += tDirRef.current * 0.02;
-
-      if (throttleRef.current >= 0.7) {
-        tDirRef.current = -1;
-      } else if (throttleRef.current <= 0.1) {
-        tDirRef.current = 1;
-      }
-
-      brakeRef.current = throttleRef.current < 0.2 ? 0.3 : 0;
-
       runInAction(() => {
         store.player.updateLapTiming({
           lap_dist_pct: pctRef.current,
         } as LapTimingFrame);
-        store.player.updateCarInputs({
-          throttle: throttleRef.current,
-          brake: brakeRef.current,
-          clutch: null,
-          brake_abs_active: false,
-        } as CarInputsFrame);
       });
     }, 80);
 

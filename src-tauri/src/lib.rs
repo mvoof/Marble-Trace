@@ -18,8 +18,9 @@ use computations::{
 use model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
 
 use commands::{
-    delete_track_shape, get_connection_status, get_last_session_info, set_active_events,
-    set_car_length, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
+    delete_track_shape, get_connection_status, get_last_session_info, reset_pit_lane_pct,
+    set_active_events, set_car_length, set_pit_warning_laps, start_telemetry_stream,
+    stop_telemetry_stream,
 };
 use computations::ProcessorRegistry;
 use telemetry::state::TelemetryState;
@@ -155,7 +156,8 @@ pub fn run() {
             set_active_events,
             set_car_length,
             get_connection_status,
-            delete_track_shape
+            delete_track_shape,
+            reset_pit_lane_pct
         ])
         .manage(TelemetryState {
             service: Arc::new(telemetry::state::TelemetryServiceState {

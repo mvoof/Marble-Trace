@@ -281,19 +281,34 @@ impl Processor for TrackShapeProcessor {
         let on_pit_road = ctx.car_status.on_pit_road.unwrap_or(false);
 
         // Detect pit entry / exit transitions and record lap_dist_pct at that moment.
+        // Require is_moving so sessions that start with the car already on pit road
+        // (garage, pit box) don't record a bogus pit_in_pct at speed = 0.
         if lap_dist_pct >= 0.0 {
-            if !self.was_on_pit_road && on_pit_road {
-                self.pit_in_pct = Some(lap_dist_pct);
-            } else if self.was_on_pit_road && !on_pit_road {
-                self.pit_exit_pct = Some(lap_dist_pct);
+            let entered_pit = !self.was_on_pit_road && on_pit_road;
+            let exited_pit = self.was_on_pit_road && !on_pit_road;
 
-                if let (Some(pit_in_pct), Some(pit_exit_pct)) = (self.pit_in_pct, self.pit_exit_pct)
-                {
-                    return Some(ComputedOutput::PitLanePct {
-                        track_id,
-                        pit_in_pct,
-                        pit_exit_pct,
-                    });
+            if entered_pit && is_moving {
+                self.pit_in_pct = Some(lap_dist_pct);
+            } else if exited_pit && is_moving {
+                if let Some(pit_in_pct) = self.pit_in_pct {
+                    let pit_exit_pct = lap_dist_pct;
+                    let lane_length_pct = (pit_exit_pct - pit_in_pct + 1.0) % 1.0;
+
+                    // Sanity check: pit lane must be at least 0.5% and at most 30% of track.
+                    // Rejects reversed exits and bogus recordings.
+                    if (0.005..=0.30).contains(&lane_length_pct) {
+                        self.pit_exit_pct = Some(pit_exit_pct);
+
+                        return Some(ComputedOutput::PitLanePct {
+                            track_id,
+                            pit_in_pct,
+                            pit_exit_pct,
+                        });
+                    } else {
+                        // Bad recording — reset and wait for a clean pass.
+                        self.pit_in_pct = None;
+                        self.pit_exit_pct = None;
+                    }
                 }
             }
 

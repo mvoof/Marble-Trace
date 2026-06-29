@@ -22,8 +22,6 @@ export const PitOverlay = observer(() => {
     distToExitM,
     pitLaneProgressPct,
     showPitAssist,
-    throttle,
-    brake,
   } = usePitState();
 
   if (pitState === 'normal' || !showPitAssist) {
@@ -31,23 +29,32 @@ export const PitOverlay = observer(() => {
   }
 
   const headline = (() => {
-    if (pitState === 'pit-lane') return 'LIM OFF';
+    if (pitState === 'pit-lane') return 'LIMITER OFF';
     if (pitState === 'limiter-active') return 'PIT LIMITER';
-    return 'SLOW DOWN';
+
+    return 'SLOW DOWN!';
   })();
 
   const unit = system === 'metric' ? 'KM/H' : 'MPH';
+  const distUnit = system === 'metric' ? 'm' : 'ft';
 
-  // Assist bar shown only when limiter is off — driver manages speed manually
-  const showAssist = pitLaneProgressPct !== null && pitState === 'pit-lane';
+  const showBar = pitLaneProgressPct !== null && pitState === 'pit-lane';
+  const showCalibrating =
+    pitLaneProgressPct === null && pitState === 'pit-lane';
 
   const isNearExit =
     distToExitM !== null && distToExitM <= PIT_EXIT_READY_M && distToExitM >= 0;
 
-  const distLabel = (() => {
-    if (!showAssist || distToExitM === null || distToExitM <= 0) return null;
-    if (isNearExit) return 'GO';
-    return `EXIT  ${Math.round(distToExitM)} m`;
+  const distValue = (() => {
+    if (!showBar || distToExitM === null || distToExitM <= 0) return null;
+    if (isNearExit) return 'GO!';
+
+    const value =
+      system === 'metric'
+        ? Math.round(distToExitM)
+        : Math.round(distToExitM * 3.28084);
+
+    return `${value} ${distUnit}`;
   })();
 
   return (
@@ -63,30 +70,12 @@ export const PitOverlay = observer(() => {
         <span className={styles.speedUnit}>{unit}</span>
       </div>
 
-      {/* Always reserve height for assist section to prevent layout shift */}
       <div
-        className={`${styles.assistSection} ${isNearExit ? styles.assistSectionReady : ''}`}
+        className={`${styles.barSection} ${isNearExit ? styles.barSectionReady : ''}`}
       >
-        {showAssist && (
+        {showBar && (
           <>
-            <div className={styles.inputRow}>
-              <div className={styles.inputBar}>
-                <div
-                  className={styles.inputBarFillThrottle}
-                  style={{ width: `${throttle * 100}%` }}
-                />
-                <span className={styles.inputLabel}>T</span>
-              </div>
-              <div className={styles.inputBar}>
-                <div
-                  className={styles.inputBarFillBrake}
-                  style={{ width: `${brake * 100}%` }}
-                />
-                <span className={styles.inputLabel}>B</span>
-              </div>
-            </div>
-
-            {distLabel && <span className={styles.exitLabel}>{distLabel}</span>}
+            <span className={styles.distLabel}>{distValue ?? ''}</span>
             <div className={styles.laneBarTrack}>
               <div
                 className={styles.laneBarFill}
@@ -96,6 +85,9 @@ export const PitOverlay = observer(() => {
               />
             </div>
           </>
+        )}
+        {showCalibrating && (
+          <span className={styles.calibratingLabel}>● RECORDING PIT LANE</span>
         )}
       </div>
     </div>

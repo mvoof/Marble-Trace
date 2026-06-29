@@ -259,7 +259,8 @@ fn save_track_shape(app: &AppHandle, payload: &TrackShapePayload) {
     }
 }
 
-/// Patch pit_in_pct / pit_exit_pct into an existing track JSON without overwriting geometry.
+/// Patch pit_in_pct / pit_exit_pct into an existing track JSON without overwriting geometry,
+/// then re-emit the updated TrackShapePayload so the frontend reflects the new values immediately.
 fn patch_pit_lane_pct(app: &AppHandle, track_id: i32, pit_in_pct: f32, pit_exit_pct: f32) {
     use std::fs;
 
@@ -282,7 +283,15 @@ fn patch_pit_lane_pct(app: &AppHandle, track_id: i32, pit_in_pct: f32, pit_exit_
         obj.insert("pitExitPct".to_string(), serde_json::json!(pit_exit_pct));
     }
 
-    if let Ok(json) = serde_json::to_string(&value) {
-        let _ = fs::write(&path, json);
+    let Ok(json) = serde_json::to_string(&value) else {
+        return;
+    };
+
+    if fs::write(&path, &json).is_ok() {
+        if let Ok(payload) = serde_json::from_str::<TrackShapePayload>(&json) {
+            if let Err(e) = app.emit(EVENT_TRACK_SHAPE, &payload) {
+                warn!("Failed to re-emit track shape after pit pct patch: {}", e);
+            }
+        }
     }
 }

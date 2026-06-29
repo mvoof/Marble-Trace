@@ -179,7 +179,7 @@ export const SpeedSettingsPanel = observer(() => {
         <div className={styles.fieldGroup}>
           <SettingRow
             title="Pit Lane Assist"
-            desc="Show distance to pit exit and throttle/brake indicators when driving without pit limiter."
+            desc="Show distance to pit exit when driving without pit limiter."
           >
             <Switch
               checked={settings.showPitAssist}

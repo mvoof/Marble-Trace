@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { App, Button, Switch, Segmented, Select, Popconfirm, Flex } from 'antd';
 import { emit } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/core';
 import type { UnitSystem } from '@/types';
 import { downloadSnapshot } from '@/utils/capture-snapshot';
 import { useStore } from '@store/root-store-context';
@@ -15,7 +16,12 @@ import {
 } from 'lucide-react';
 import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/ReleaseNotesButton';
 import styles from './SettingsPage.module.scss';
-import { useAppSettingsStore, useUnitsStore } from '@store/root-store-context';
+import {
+  useAppSettingsStore,
+  useSessionStore,
+  useTrackMapWidgetStore,
+  useUnitsStore,
+} from '@store/root-store-context';
 
 const isDev = import.meta.env.DEV;
 
@@ -36,7 +42,26 @@ export const SettingsPage = observer(() => {
   const appSettings = useAppSettingsStore();
   const units = useUnitsStore();
   const store = useStore();
+  const trackMap = useTrackMapWidgetStore();
+  const session = useSessionStore();
   const { message } = App.useApp();
+  const [resettingPitLane, setResettingPitLane] = useState(false);
+
+  const trackId = trackMap.trackShape?.trackId ?? null;
+  const trackDisplayName = session.sessionInfo?.trackDisplayName ?? null;
+
+  const handleResetPitLane = async () => {
+    if (trackId === null) return;
+    setResettingPitLane(true);
+    try {
+      await invoke('reset_pit_lane_pct', { trackId });
+      message.success(
+        'Pit lane data cleared. Drive through pit lane to re-calibrate.'
+      );
+    } finally {
+      setResettingPitLane(false);
+    }
+  };
 
   const handleCaptureSnapshot = () => {
     downloadSnapshot(store, 'iracing');
@@ -333,6 +358,31 @@ export const SettingsPage = observer(() => {
                 Force Start Recording
               </Button>
             </Flex>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldTitle}>Pit Lane Calibration</div>
+
+            <div
+              className={`${styles.fieldDesc} ${styles.fieldDescBeforeAction}`}
+            >
+              {trackId !== null && trackDisplayName !== null
+                ? `Clears pit entry/exit points recorded for "${trackDisplayName}". Drive through the pit lane again to re-calibrate.`
+                : 'No track loaded. Load a session to reset pit lane data for the active track.'}
+            </div>
+
+            <Button
+              block
+              size="small"
+              danger
+              disabled={trackId === null}
+              loading={resettingPitLane}
+              onClick={() => void handleResetPitLane()}
+            >
+              {trackDisplayName !== null
+                ? `Reset Pit Lane Data for ${trackDisplayName}`
+                : 'Reset Pit Lane Data'}
+            </Button>
           </div>
         </Card>
 

@@ -2,7 +2,7 @@
 use std::sync::atomic::Ordering;
 use std::time::Duration;
 
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 use tokio::time::sleep;
 use tracing::{debug, info};
 
@@ -90,6 +90,44 @@ pub async fn stop_telemetry_stream(state: State<'_, TelemetryState>) -> Result<(
     state.service.running.store(false, Ordering::SeqCst);
 
     debug!("Telemetry stream stopped");
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn reset_pit_lane_pct(app: AppHandle, track_id: i32) -> Result<(), String> {
+    use crate::model::track_shape::TrackShapePayload;
+    use crate::telemetry::emitter::EVENT_TRACK_SHAPE;
+    use std::fs;
+
+    let Ok(data_dir) = app.path().app_data_dir() else {
+        return Err("Cannot resolve app data dir".to_string());
+    };
+
+    let path = data_dir.join("tracks").join(format!("{}.json", track_id));
+
+    let Ok(bytes) = fs::read(&path) else {
+        return Ok(());
+    };
+
+    let Ok(mut value) = serde_json::from_slice::<serde_json::Value>(&bytes) else {
+        return Ok(());
+    };
+
+    if let Some(obj) = value.as_object_mut() {
+        obj.remove("pitInPct");
+        obj.remove("pitExitPct");
+    }
+
+    let Ok(json) = serde_json::to_string(&value) else {
+        return Ok(());
+    };
+
+    if fs::write(&path, &json).is_ok() {
+        if let Ok(payload) = serde_json::from_str::<TrackShapePayload>(&json) {
+            let _ = app.emit(EVENT_TRACK_SHAPE, &payload);
+        }
+    }
 
     Ok(())
 }

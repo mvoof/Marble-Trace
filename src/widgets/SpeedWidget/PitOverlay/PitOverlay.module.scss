@@ -37,9 +37,9 @@
 
 .headlineText {
   font-family: $font-mono;
-  font-size: fs(md);
+  font-size: fs(lg);
   font-weight: 900;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.15em;
   line-height: 1;
   white-space: nowrap;
   flex-shrink: 0;
@@ -96,7 +96,7 @@
   );
 }
 
-// ── Speed row — centered ──────────────────────────────────────
+// ── Speed row ─────────────────────────────────────────────────
 
 .speedRow {
   display: flex;
@@ -107,7 +107,7 @@
 
 .speedNum {
   font-family: $font-widget;
-  font-size: ws(52);
+  font-size: ws(58);
   font-weight: 700;
   line-height: 0.9;
   letter-spacing: -0.04em;
@@ -116,18 +116,16 @@
 
 .speedUnit {
   font-family: $font-mono;
-  font-size: fs(sm);
+  font-size: fs(md);
   font-weight: 700;
   letter-spacing: 0.12em;
-  opacity: 0.65;
 }
 
-// ── Pit assist section — always reserves height ───────────────
-// Prevents layout shift when pit data becomes available.
+// ── Bar section — reserves height, holds distance label + progress bar ─
 
-.assistSection {
-  margin-top: sp(xxs);
-  height: ws(36);
+.barSection {
+  margin-top: sp(xs);
+  height: ws(28);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -135,92 +133,58 @@
   width: 100%;
 }
 
-// ── Throttle / brake input bars ───────────────────────────────
-
-.inputRow {
-  display: flex;
-  gap: sp(xxs);
-  margin-bottom: sp(xxxs);
-}
-
-.inputBar {
-  flex: 1 1 0;
-  height: ws(8);
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: radius(sm);
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.inputBarFillThrottle {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  background: $race-green;
-  border-radius: radius(sm);
-  transition: width 0.05s linear;
-}
-
-.inputBarFillBrake {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  background: $widget-pit-warning;
-  border-radius: radius(sm);
-  transition: width 0.05s linear;
-}
-
-.inputLabel {
-  position: relative;
+.distLabel {
   font-family: $font-mono;
-  font-size: fs(xxs);
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  color: rgba(0, 0, 0, 0.4);
-  padding-left: sp(xxxs);
-  line-height: 1;
-  z-index: 1;
-}
-
-.stateLimiter .inputLabel,
-.stateOverLimit .inputLabel {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.exitLabel {
-  font-family: $font-mono;
-  font-size: fs(xxs);
+  font-size: fs(xs);
   font-weight: 700;
-  letter-spacing: 0.12em;
-  opacity: 0.65;
-  white-space: nowrap;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
   text-align: right;
+  white-space: nowrap;
 }
 
 .laneBarTrack {
   width: 100%;
-  height: ws(8);
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: radius(sm);
+  height: ws(10);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 2px;
   overflow: hidden;
 }
 
 .laneBarFill {
   height: 100%;
-  background: rgba(255, 255, 255, 0.45);
-  border-radius: radius(sm);
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 2px;
   transition: width 0.15s linear;
 }
 
-.assistSectionReady .exitLabel {
+.calibratingLabel {
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  opacity: 0.5;
+  text-align: right;
+  white-space: nowrap;
+  animation: blink 1.2s step-start infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+// Near exit — highlight bar and label green
+.barSectionReady .distLabel {
   opacity: 1;
   color: $race-green;
 }
 
-.assistSectionReady .laneBarFill {
+.barSectionReady .laneBarFill {
   background: $race-green;
 }
