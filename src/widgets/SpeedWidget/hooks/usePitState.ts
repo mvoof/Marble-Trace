@@ -47,11 +47,12 @@ const computePitExitData = (
 ): { distToExitM: number; pitLaneProgressPct: number } => {
   const laneLengthPct = (pitExitPct - pitInPct + 1) % 1 || 1;
   const traveledPct = (lapDistPct - pitInPct + 1) % 1;
-  const remainingPct = (pitExitPct - lapDistPct + 1) % 1;
+  const pitLaneProgressPct = Math.min(traveledPct / laneLengthPct, 1);
+  const remainingPct = Math.max(0, 1 - pitLaneProgressPct);
 
   return {
-    distToExitM: remainingPct * trackLengthM,
-    pitLaneProgressPct: Math.min(traveledPct / laneLengthPct, 1),
+    distToExitM: remainingPct * laneLengthPct * trackLengthM,
+    pitLaneProgressPct,
   };
 };
 

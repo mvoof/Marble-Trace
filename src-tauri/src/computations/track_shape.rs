@@ -6,6 +6,7 @@ use std::time::Instant;
 
 use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::enums::TrackSurface;
 use crate::model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
 
 const DT_CAP_SECONDS: f32 = 0.1;
@@ -266,12 +267,13 @@ impl Processor for TrackShapeProcessor {
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
         let track_id = ctx.session.track_id;
+        let on_pit_road = ctx.car_status.on_pit_road.unwrap_or(false);
 
         if self.last_track_id != Some(track_id) {
             self.state.reset();
             self.last_track_id = Some(track_id);
             self.status_tick = 0;
-            self.was_on_pit_road = false;
+            self.was_on_pit_road = on_pit_road;
             self.pit_in_pct = None;
             self.pit_exit_pct = None;
         }
@@ -280,7 +282,14 @@ impl Processor for TrackShapeProcessor {
         let yaw = ctx.car_dynamics.yaw.unwrap_or(0.0);
         let lap_dist_pct = ctx.lap_timing.lap_dist_pct.unwrap_or(-1.0);
         let is_moving = speed > SPEED_THRESHOLD_MPS;
-        let on_pit_road = ctx.car_status.on_pit_road.unwrap_or(false);
+        let is_on_track = ctx.car_status.is_on_track.unwrap_or(false);
+
+        // Reset if player is not on track or telemetry is invalid (garage/menus/tow/loading screen)
+        if !is_on_track || lap_dist_pct < 0.0 {
+            self.pit_in_pct = None;
+            self.pit_exit_pct = None;
+            self.was_on_pit_road = on_pit_road;
+        }
 
         // Reset pit pcts if commanded; preserve was_on_pit_road so we don't
         // create a false entry transition if the car is already on pit road.
@@ -293,12 +302,22 @@ impl Processor for TrackShapeProcessor {
         // Detect pit entry / exit transitions and record lap_dist_pct at that moment.
         // Require is_moving so sessions that start with the car already on pit road
         // (garage, pit box) don't record a bogus pit_in_pct at speed = 0.
-        if lap_dist_pct >= 0.0 {
+        if lap_dist_pct >= 0.0 && is_on_track {
             let entered_pit = !self.was_on_pit_road && on_pit_road;
             let exited_pit = self.was_on_pit_road && !on_pit_road;
 
             if entered_pit && is_moving {
-                self.pit_in_pct = Some(lap_dist_pct);
+                let player_idx = ctx.session.player_car_idx as usize;
+                let track_surface = ctx
+                    .car_idx
+                    .car_idx_track_surface
+                    .get(player_idx)
+                    .copied()
+                    .unwrap_or(TrackSurface::NotInWorld);
+
+                if track_surface != TrackSurface::InPitStall {
+                    self.pit_in_pct = Some(lap_dist_pct);
+                }
             } else if exited_pit && is_moving {
                 if let Some(pit_in_pct) = self.pit_in_pct {
                     let pit_exit_pct = lap_dist_pct;
@@ -309,11 +328,17 @@ impl Processor for TrackShapeProcessor {
                     if (0.005..=0.30).contains(&lane_length_pct) {
                         self.pit_exit_pct = Some(pit_exit_pct);
 
-                        return Some(ComputedOutput::PitLanePct {
+                        let out = Some(ComputedOutput::PitLanePct {
                             track_id,
                             pit_in_pct,
                             pit_exit_pct,
                         });
+
+                        // Clear memory after successful calibration to prevent corrupt pairings on telemetry drop/reset
+                        self.pit_in_pct = None;
+                        self.pit_exit_pct = None;
+
+                        return out;
                     } else {
                         // Bad recording — reset and wait for a clean pass.
                         self.pit_in_pct = None;
