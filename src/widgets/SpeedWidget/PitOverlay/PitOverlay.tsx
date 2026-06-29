@@ -26,7 +26,7 @@ export const PitOverlay = observer(() => {
     brake,
   } = usePitState();
 
-  if (pitState === 'normal') {
+  if (pitState === 'normal' || !showPitAssist) {
     return null;
   }
 
@@ -38,9 +38,8 @@ export const PitOverlay = observer(() => {
 
   const unit = system === 'metric' ? 'KM/H' : 'MPH';
 
-  // Assist shown only when limiter is off — driver manages speed manually
-  const showAssist =
-    showPitAssist && pitLaneProgressPct !== null && pitState === 'pit-lane';
+  // Assist bar shown only when limiter is off — driver manages speed manually
+  const showAssist = pitLaneProgressPct !== null && pitState === 'pit-lane';
 
   const isNearExit =
     distToExitM !== null && distToExitM <= PIT_EXIT_READY_M && distToExitM >= 0;

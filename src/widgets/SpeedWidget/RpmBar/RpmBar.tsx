@@ -87,7 +87,9 @@ export const RpmBar = observer(() => {
   const { carDynamics, carStatus } = usePlayerStore();
   const { sessionInfo } = useSessionStore();
   const widgetSettings = useWidgetSettingsStore();
-  const { pitState } = usePitState();
+  const { pitState, showPitAssist } = usePitState();
+
+  const effectivePitState: PitState = showPitAssist ? pitState : 'normal';
 
   const {
     rpmColorLow,
@@ -99,7 +101,7 @@ export const RpmBar = observer(() => {
     showRpmBar,
   } = widgetSettings.getSettings<SpeedWidgetSettings>('speed');
 
-  const isPitMode = pitState !== 'normal';
+  const isPitMode = effectivePitState !== 'normal';
 
   const [tick, setTick] = useState(0);
   const rafRef = useRef<number>(0);
@@ -111,7 +113,7 @@ export const RpmBar = observer(() => {
       return;
     }
 
-    const interval = PIT_TICK_INTERVAL[pitState];
+    const interval = PIT_TICK_INTERVAL[effectivePitState];
 
     if (interval === 0) {
       return;
@@ -131,7 +133,7 @@ export const RpmBar = observer(() => {
     return () => {
       cancelAnimationFrame(rafRef.current);
     };
-  }, [isPitMode, pitState]);
+  }, [isPitMode, effectivePitState]);
 
   if (!showRpmBar && !isPitMode) {
     return null;
@@ -144,7 +146,7 @@ export const RpmBar = observer(() => {
     return (
       <div className={styles.rpmBar}>
         {Array.from({ length: LED_COUNT }, (_, index) => {
-          const color = getPitLedColor(index, pitState, tick);
+          const color = getPitLedColor(index, effectivePitState, tick);
           const isDim =
             color === PIT_RED_DIM ||
             color === LED_OFF ||

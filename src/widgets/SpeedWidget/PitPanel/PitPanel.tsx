@@ -25,24 +25,27 @@ export const PitPanel = observer(() => {
   const { gearColor, gearPanelBg } =
     widgetSettings.getSettings<SpeedWidgetSettings>('speed');
 
-  const { pitState } = usePitState();
+  const { pitState, showPitAssist } = usePitState();
 
   const gear = player.carDynamics?.gear ?? 0;
 
+  const effectivePitState: PitState = showPitAssist ? pitState : 'normal';
+
   const panelStyle =
-    pitState === 'normal' ? { background: gearPanelBg } : undefined;
-  const gearStyle = pitState === 'normal' ? { color: gearColor } : undefined;
+    effectivePitState === 'normal' ? { background: gearPanelBg } : undefined;
+  const gearStyle =
+    effectivePitState === 'normal' ? { color: gearColor } : undefined;
 
   return (
     <div
-      className={`${styles.panel} ${PIT_STATE_CLASS[pitState]}`}
+      className={`${styles.panel} ${PIT_STATE_CLASS[effectivePitState]}`}
       style={panelStyle}
     >
       <span className={styles.gearDigit} style={gearStyle}>
         {formatGear(gear)}
       </span>
 
-      {pitState === 'normal' && (
+      {effectivePitState === 'normal' && (
         <span className={`${styles.pitSub} ${styles.pitSubNormal}`}>GEAR</span>
       )}
     </div>
