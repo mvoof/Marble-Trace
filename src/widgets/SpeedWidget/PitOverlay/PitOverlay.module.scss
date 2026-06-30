@@ -80,6 +80,10 @@
   font-variant-numeric: tabular-nums;
 }
 
+.speedNumOver {
+  color: $race-red;
+}
+
 .speedUnit {
   font-family: $font-mono;
   font-size: fs(md);
@@ -115,25 +119,6 @@
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
   line-height: 1;
-}
-
-// ── Delta ─────────────────────────────────────────────────────
-
-.limitDeltaOver {
-  font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 900;
-  letter-spacing: 0.05em;
-  font-variant-numeric: tabular-nums;
-}
-
-.limitDeltaUnder {
-  font-family: $font-widget;
-  font-size: ws(24);
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-  opacity: 0.75;
 }
 
 // ── Bar section — reserves height, holds distance label + progress bar ─

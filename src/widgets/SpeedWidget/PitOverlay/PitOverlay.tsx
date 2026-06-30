@@ -42,10 +42,8 @@ export const PitOverlay = observer(() => {
   const distUnit = system === 'metric' ? 'm' : 'ft';
 
   const showLimit = limitKmhOrMph > 0;
-  const speedDelta = showLimit ? speedKmhOrMph - limitKmhOrMph : 0;
-  const showDeltaOver = showLimit && speedDelta > 0;
-  const showDeltaUnder =
-    showLimit && speedDelta <= 0 && pitState === 'pit-lane';
+  // Compare rounded display values so "same number shown = not over limit"
+  const isOverLimit = showLimit && speedKmhOrMph > limitKmhOrMph;
 
   const showBar =
     pitLaneProgressPct !== null && distM !== null && distMode !== null;
@@ -86,20 +84,15 @@ export const PitOverlay = observer(() => {
         </div>
 
         <div className={styles.speedCenter}>
-          <span className={styles.speedNum}>{speedKmhOrMph}</span>
+          <span
+            className={`${styles.speedNum} ${isOverLimit ? styles.speedNumOver : ''}`}
+          >
+            {speedKmhOrMph}
+          </span>
           <span className={styles.speedUnit}>{unit}</span>
         </div>
 
-        <div className={styles.deltaSide}>
-          {showDeltaOver && (
-            <span className={styles.limitDeltaOver}>+{speedDelta}</span>
-          )}
-          {showDeltaUnder && (
-            <span className={styles.limitDeltaUnder}>
-              -{Math.abs(speedDelta)}
-            </span>
-          )}
-        </div>
+        <div className={styles.deltaSide} />
       </div>
 
       <div
