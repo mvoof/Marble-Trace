@@ -1,4 +1,4 @@
-﻿import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import { Sun, CloudSun, Cloud, CloudRain } from 'lucide-react';
 
 import { convertTemp, tempUnit } from '@utils/formatters/telemetry-format';
@@ -20,6 +20,13 @@ const ICON_MAP = {
   'cloud-rain': CloudRain,
 };
 
+const SKIES_LABELS: Record<string, string> = {
+  Clear: 'Clear',
+  PartlyCloudy: 'Partly Cloudy',
+  MostlyCloudy: 'Mostly Cloudy',
+  Overcast: 'Overcast',
+};
+
 const ICON_COLOR = '#ffffff';
 
 export const WeatherHeader = observer(() => {
@@ -27,7 +34,7 @@ export const WeatherHeader = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
   const settings = widgetSettings.getSettings<WeatherWidgetSettings>('weather');
-  const { showAirTemp } = settings;
+  const { showAirTemp, showCompass } = settings;
 
   if (!showAirTemp) {
     return null;
@@ -47,19 +54,22 @@ export const WeatherHeader = observer(() => {
   const WeatherIcon = ICON_MAP[iconName] ?? Sun;
   const iconColor = ICON_COLOR;
 
+  const skiesLabel = skies ? (SKIES_LABELS[skies] ?? skies) : 'Clear';
+
   return (
-    <div className={styles.header}>
-      <div className={styles.iconWrapper}>
-        <WeatherIcon size={30} color={iconColor} className={styles.icon} />
+    <div className={`${styles.header} ${showCompass ? styles.hasCompass : ''}`}>
+      <div className={styles.conditionSection}>
+        <div className={styles.iconWrapper}>
+          <WeatherIcon size={24} color={iconColor} className={styles.icon} />
+        </div>
+        <span className={styles.conditionText}>{skiesLabel}</span>
       </div>
 
-      {showAirTemp && airTempC !== null && (
-        <div className={styles.airTemp}>
-          <span className={styles.airTempValue}>
-            {Math.round(convertTemp(airTempC, unitSystem))}
-            <span className={styles.unit}>{tUnit}</span>
-          </span>
-        </div>
+      {airTempC !== null && (
+        <span className={styles.airTempValue}>
+          {Math.round(convertTemp(airTempC, unitSystem))}
+          <span className={styles.unit}>{tUnit}</span>
+        </span>
       )}
     </div>
   );

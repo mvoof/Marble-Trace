@@ -1,39 +1,63 @@
 .header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  padding: 0 sp(xs) sp(md);
+  padding: sp(xs) sp(lg);
+  background: $widget-surface-cell;
+  border-left: 2px solid transparent;
   width: 100%;
+  margin-bottom: 1px;
+
+  &.hasCompass {
+    margin-top: sp(sm);
+  }
+}
+
+.conditionSection {
+  display: flex;
+  align-items: flex-end;
+  gap: sp(xs);
+  min-width: 0;
+  overflow: hidden;
 }
 
 .iconWrapper {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .icon {
-  width: ws(30);
-  height: ws(30);
+  width: ws(24);
+  height: ws(24);
+  color: $widget-text-primary;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
 }
 
-.airTemp {
-  display: flex;
-  align-items: center;
-  font-family: $font-mono;
+.conditionText {
+  font-family: $font-widget;
+  font-size: fs(md);
+  font-weight: 600;
+  color: $widget-text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .airTempValue {
-  font-size: fs(xl);
+  font-family: $font-mono;
+  font-size: fs(lg);
   font-weight: 700;
-  color: #ffffff;
+  color: $widget-text-primary;
   line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .unit {
   font-size: fs(sm);
   font-weight: 500;
   margin-left: sp(xxxs);
-  color: #ffffff;
+  color: $widget-text-secondary;
 }
