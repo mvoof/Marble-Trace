@@ -102,6 +102,11 @@ export class WidgetSettingsStore {
   // those external edits (the layout editor preview) can still react to it.
   syncToken = 0;
 
+  // When true the editor is showing a layout that is NOT the overlay-active one.
+  // The overlay-sync reaction skips emitting while this flag is set so the
+  // overlay keeps displaying the previously-active layout.
+  editorPreviewMode = false;
+
   constructor(private readonly root?: RootStore) {
     makeAutoObservable(
       this,
@@ -843,11 +848,41 @@ export class WidgetSettingsStore {
     this.bumpMutation();
   }
 
+  // Load a layout into the editor without pushing it to the overlay.
+  // The overlay keeps showing whatever was active before. Use activateEditorLayout()
+  // or loadLayout() to make the overlay reflect the change.
+  switchEditorLayout(id: string) {
+    const layout = this.layouts.find((savedLayout) => savedLayout.id === id);
+
+    if (!layout) return;
+
+    this.editorPreviewMode = true;
+    this.activeLayoutId = id;
+
+    const config = layout.activeMonitorName
+      ? layout.monitorConfigs[layout.activeMonitorName]
+      : undefined;
+
+    if (config) {
+      this.overlayResolution = { ...config.resolution };
+      this.setWidgets(config.widgets);
+    }
+
+    this.bumpMutation();
+  }
+
+  // Make the layout currently shown in the editor the active one in the overlay.
+  activateEditorLayout() {
+    this.editorPreviewMode = false;
+    this.bumpMutation();
+  }
+
   loadLayout(id: string) {
     const layout = this.layouts.find((savedLayout) => savedLayout.id === id);
 
     if (!layout) return;
 
+    this.editorPreviewMode = false;
     this.activeLayoutId = id;
 
     const config = layout.activeMonitorName

@@ -124,7 +124,7 @@ export const LayoutEditor = observer(
       const currentActiveId = widgetSettings.activeLayoutId;
 
       if (id !== currentActiveId) {
-        widgetSettings.loadLayout(id);
+        widgetSettings.switchEditorLayout(id);
         setPrevActiveId(currentActiveId);
       } else {
         setPrevActiveId(null);
@@ -137,12 +137,15 @@ export const LayoutEditor = observer(
       if (prevActiveId) {
         widgetSettings.loadLayout(prevActiveId);
         setPrevActiveId(null);
+      } else {
+        widgetSettings.activateEditorLayout();
       }
 
       handleModeChange('list');
     };
 
     const handleMakeActive = () => {
+      widgetSettings.activateEditorLayout();
       setPrevActiveId(null);
     };
 
@@ -501,7 +504,21 @@ export const LayoutEditor = observer(
                     className={styles.layoutSelect}
                     placeholder="Select a layout…"
                     value={activeId ?? undefined}
-                    onChange={(id) => widgetSettings.loadLayout(id)}
+                    onChange={(id) => {
+                      const trueActiveId =
+                        prevActiveId ?? widgetSettings.activeLayoutId;
+
+                      if (id === trueActiveId) {
+                        widgetSettings.loadLayout(id);
+                        setPrevActiveId(null);
+                      } else {
+                        if (prevActiveId === null) {
+                          setPrevActiveId(widgetSettings.activeLayoutId);
+                        }
+
+                        widgetSettings.switchEditorLayout(id);
+                      }
+                    }}
                     options={layoutOptions}
                   />
 
