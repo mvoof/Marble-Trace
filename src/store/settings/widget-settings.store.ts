@@ -306,14 +306,10 @@ export class WidgetSettingsStore {
 
     runInAction(() => {
       this.layouts = [...this.layouts, cloned];
-      this.activeLayoutId = newId;
-      this.setWidgets(
-        layout.activeMonitorName && monitorConfigs[layout.activeMonitorName]
-          ? monitorConfigs[layout.activeMonitorName].widgets
-          : this.buildStarterWidgets(true)
-      );
       this.bumpMutation();
     });
+
+    return newId;
   }
 
   private bumpMutation() {

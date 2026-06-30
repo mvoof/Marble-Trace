@@ -119,6 +119,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newLayoutName, setNewLayoutName] = useState('');
   const [isRenaming, setIsRenaming] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
   const [renameValue, setRenameValue] = useState('');
 
   const selectedLayout = widgetSettings.layouts.find(
@@ -183,9 +184,18 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   };
 
   const handleDuplicateLayout = async () => {
-    if (selectedId) {
-      await widgetSettings.cloneLayout(selectedId);
-      setSelectedId(widgetSettings.activeLayoutId);
+    if (selectedId && !isDuplicating) {
+      setIsDuplicating(true);
+
+      try {
+        const newId = await widgetSettings.cloneLayout(selectedId);
+
+        if (newId) {
+          setSelectedId(newId);
+        }
+      } finally {
+        setIsDuplicating(false);
+      }
     }
   };
 
@@ -402,6 +412,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                 <Button
                   icon={<Copy size={16} />}
                   onClick={handleDuplicateLayout}
+                  loading={isDuplicating}
                   style={{ width: '100%', marginTop: '8px' }}
                 >
                   Duplicate Layout
