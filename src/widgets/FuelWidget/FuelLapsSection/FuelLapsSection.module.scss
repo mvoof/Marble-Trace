@@ -73,7 +73,7 @@ $sb: rgba(255, 255, 255, $opacity-subtle);
   justify-content: center;
   gap: sp(xxxs);
   padding: sp(sm) sp(md);
-  background: rgba(16, 16, 18, 0.65);
+  background: $widget-surface-cell;
   border-left: 1px solid $sb;
   border-bottom: 1px solid $sb;
 }
@@ -87,7 +87,7 @@ $sb: rgba(255, 255, 255, $opacity-subtle);
   justify-content: center;
   gap: sp(xxxs);
   padding: sp(sm) sp(md);
-  background: rgba(16, 16, 18, 0.65);
+  background: $widget-surface-cell;
   border-right: 1px solid $sb;
   border-bottom: 1px solid $sb;
 }

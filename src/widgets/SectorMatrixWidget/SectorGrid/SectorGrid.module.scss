@@ -14,7 +14,7 @@
 
 .chip {
   padding: sp(xxs) sp(xs);
-  background: rgba(16, 16, 18, 0.65);
+  background: $widget-surface-cell;
   border-left: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 1px;
   display: flex;
@@ -28,7 +28,7 @@
 }
 
 .chipFuture {
-  background: rgba(16, 16, 18, 0.65);
+  background: $widget-surface-cell;
   border-left-color: rgba(255, 255, 255, 0.1);
 }
 
