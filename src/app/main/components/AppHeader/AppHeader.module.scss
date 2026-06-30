@@ -4,7 +4,7 @@
   height: rem(60);
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  align-items: center;
+  align-items: stretch;
   padding: 0 rem(20);
   background: #111216;
   border-bottom: 1px solid #1d1f25;
@@ -37,6 +37,7 @@
 .nav {
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .status {

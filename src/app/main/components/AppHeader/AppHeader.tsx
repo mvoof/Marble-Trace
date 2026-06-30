@@ -43,7 +43,7 @@ export const AppHeader = observer(
           />
         </div>
 
-        <div className={styles.status}>
+        <div className={styles.status} data-tauri-drag-region>
           <div className={styles.statusInfo} data-tauri-drag-region>
             <AppStatus />
 

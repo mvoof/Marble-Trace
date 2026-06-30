@@ -41,7 +41,11 @@ export const WindowControls = () => {
   }, []);
 
   return (
-    <div className={styles.controls}>
+    <div
+      className={styles.controls}
+      onMouseDown={(e) => e.stopPropagation()}
+      role="presentation"
+    >
       <button
         type="button"
         className={styles.button}
