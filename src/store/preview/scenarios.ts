@@ -317,6 +317,84 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     },
   },
   {
+    id: 'pit-lane',
+    label: 'Pit — no limiter',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      const carStatus = store.player.carStatus;
+      const sessionInfo = store.session.sessionInfo;
+
+      if (carStatus) {
+        store.player.updateCarStatus({
+          ...carStatus,
+          on_pit_road: true,
+          engine_warnings: 0,
+        });
+      }
+
+      if (sessionInfo) {
+        store.session.updateSessionInfo({
+          ...sessionInfo,
+          trackPitSpeedLimit: '55 kph',
+        });
+      }
+
+      applyDynamics(store, { speed: 40 / 3.6, rpm: 2800, gear: 2 });
+    },
+  },
+  {
+    id: 'pit-limiter',
+    label: 'Pit — limiter active',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      const carStatus = store.player.carStatus;
+      const sessionInfo = store.session.sessionInfo;
+
+      if (carStatus) {
+        store.player.updateCarStatus({
+          ...carStatus,
+          on_pit_road: true,
+          engine_warnings: 0x10,
+        });
+      }
+
+      if (sessionInfo) {
+        store.session.updateSessionInfo({
+          ...sessionInfo,
+          trackPitSpeedLimit: '55 kph',
+        });
+      }
+
+      applyDynamics(store, { speed: 52 / 3.6, rpm: 3100, gear: 3 });
+    },
+  },
+  {
+    id: 'pit-over-limit',
+    label: 'Pit — over speed limit',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      const carStatus = store.player.carStatus;
+      const sessionInfo = store.session.sessionInfo;
+
+      if (carStatus) {
+        store.player.updateCarStatus({
+          ...carStatus,
+          on_pit_road: true,
+          engine_warnings: 0x10,
+        });
+      }
+
+      if (sessionInfo) {
+        store.session.updateSessionInfo({
+          ...sessionInfo,
+          trackPitSpeedLimit: '55 kph',
+        });
+      }
+
+      applyDynamics(store, { speed: 70 / 3.6, rpm: 3400, gear: 3 });
+    },
+  },
+  {
     id: 'fuel-pit',
     label: 'Fuel — pit window',
     apply: (store) => {
