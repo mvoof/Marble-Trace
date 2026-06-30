@@ -71,6 +71,17 @@
 .stateOverLimit {
   background: $widget-pit-warning;
   border-right-color: rgba($widget-pit-warning, 0.5);
+  animation: overLimitPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes overLimitPulse {
+  from {
+    background: $widget-pit-warning;
+  }
+
+  to {
+    background: color-mix(in srgb, $widget-pit-warning 60%, #000);
+  }
 }
 
 .stateOverLimit .gearDigit {
