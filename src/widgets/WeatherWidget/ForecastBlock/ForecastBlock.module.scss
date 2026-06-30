@@ -13,7 +13,7 @@
   gap: sp(xxs);
   font-family: $font-mono;
   padding: sp(xxs) sp(xs);
-  background: rgba(0, 0, 0, $opacity-medium);
+  background: $widget-surface-cell;
   border-left: 3px solid rgba(255, 255, 255, $opacity-subtle);
   opacity: 0.5;
   font-size: fs(xs);
