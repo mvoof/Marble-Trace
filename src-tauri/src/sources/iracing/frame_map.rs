@@ -99,6 +99,10 @@ impl From<&IracingFrame> for CarStatusFrame {
             player_car_sl_shift_rpm: vec![f.player_car_sl_shift_rpm],
             player_car_sl_blink_rpm: vec![f.player_car_sl_blink_rpm],
             flags: decode_race_flags(session_bits, player_car_bits),
+            dc_abs: Some(f.dc_abs),
+            dc_brake_bias: Some(f.dc_brake_bias),
+            dc_traction_control: Some(f.dc_traction_control),
+            dc_throttle_shape: Some(f.dc_throttle_shape),
         }
     }
 }

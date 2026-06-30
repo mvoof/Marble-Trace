@@ -17,6 +17,7 @@ import { FlatFlagsWidget } from '@widgets/FlatFlagsWidget/FlatFlagsWidget';
 import { GMeterWidget } from '@widgets/GMeterWidget/GMeterWidget';
 import { SectorMatrixWidget } from '@widgets/SectorMatrixWidget/SectorMatrixWidget';
 import { LapLogWidget } from '@widgets/LapLogWidget/LapLogWidget';
+import { EnginePanelWidget } from '@widgets/EnginePanelWidget/EnginePanelWidget';
 import type {
   WidgetConfig,
   WidgetDefaultConfig,
@@ -25,6 +26,7 @@ import type {
   RelativeWidgetSettings,
   InputTraceSettings,
   FlagDisplaySettings,
+  EnginePanelWidgetSettings,
 } from '@/types/widget-settings';
 import { computeStandingsDesignWidth } from '@utils/widget/standings-utils';
 import { computeRelativeDesignWidth } from '@utils/widget/relative-utils';
@@ -232,6 +234,72 @@ const resolveRelativeLayout = makeColumnLayoutResolver<RelativeWidgetSettings>(
   ['showLicBadge', 'showIRating'],
   computeRelativeDesignWidth
 );
+
+const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
+  const prevHorizontal = 'horizontal' in prev ? !!prev.horizontal : true;
+  const nextHorizontal =
+    'horizontal' in next ? !!next.horizontal : prevHorizontal;
+
+  const prevVertCols =
+    'verticalColumns' in prev ? Number(prev.verticalColumns) : 2;
+  const nextVertCols =
+    'verticalColumns' in next ? Number(next.verticalColumns) : prevVertCols;
+
+  const prevHorizCols =
+    'horizontalColumns' in prev ? Number(prev.horizontalColumns) : 8;
+  const nextHorizCols =
+    'horizontalColumns' in next
+      ? Number(next.horizontalColumns)
+      : prevHorizCols;
+
+  if (
+    prevHorizontal === nextHorizontal &&
+    prevVertCols === nextVertCols &&
+    prevHorizCols === nextHorizCols
+  ) {
+    return null;
+  }
+
+  const prevSettings = prev as unknown as EnginePanelWidgetSettings;
+  const prevLayoutSizes = prevSettings.layoutSizes ?? {};
+
+  const prevModeKey = prevHorizontal
+    ? `horizontal-${prevHorizCols}`
+    : `vertical-${prevVertCols}`;
+  const nextModeKey = nextHorizontal
+    ? `horizontal-${nextHorizCols}`
+    : `vertical-${nextVertCols}`;
+
+  const savedLayoutSizes = {
+    ...prevLayoutSizes,
+    [prevModeKey]: {
+      width: current.currentWidth,
+      height: current.currentHeight,
+    },
+  };
+
+  const defaultNext = nextHorizontal
+    ? {
+        width: nextHorizCols * 62.5,
+        height: Math.ceil(8 / nextHorizCols) * 65,
+      }
+    : {
+        width: nextVertCols * 62.5,
+        height: Math.ceil(8 / nextVertCols) * 65,
+      };
+
+  const nextSize = savedLayoutSizes[nextModeKey] ?? defaultNext;
+
+  return {
+    designWidth: nextHorizontal ? nextHorizCols * 62.5 : nextVertCols * 62.5,
+    designHeight: nextHorizontal
+      ? Math.ceil(8 / nextHorizCols) * 65
+      : Math.ceil(8 / nextVertCols) * 65,
+    currentWidth: nextSize.width,
+    currentHeight: nextSize.height,
+    userSettingsPatch: { layoutSizes: savedLayoutSizes },
+  };
+};
 
 // Default column visibility kept as a single source: the natural designWidth is
 // computed from it (so it can't drift from the colSpecs in *-utils.ts), and the
@@ -764,6 +832,38 @@ const WIDGETS: WidgetConfig[] = [
       opacity: 1,
       backgroundColor: 'rgba(21, 22, 26, 0.8)',
       borderColor: 'rgba(255, 255, 255, 0.1)',
+    },
+  },
+  {
+    id: 'engine-panel',
+    label: 'Engine Panel',
+    description:
+      'Liquid temperatures, pressures, and system adjustments (ABS, TC, Brake Bias, Engine Map).',
+    component: EnginePanelWidget,
+    requiredCapabilities: ['playerDynamics'],
+    designWidth: 500,
+    designHeight: 65,
+    resolveLayoutChange: resolveEnginePanelLayout,
+    userSettings: {
+      enabled: false,
+      x: 400,
+      y: 400,
+      currentWidth: 500,
+      currentHeight: 65,
+      opacity: 1,
+      backgroundColor: 'rgba(21, 22, 26, 0.8)',
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      showOilTemp: true,
+      showWaterTemp: true,
+      showOilPress: true,
+      showVoltage: true,
+      showAbs: true,
+      showTc: true,
+      showBrakeBias: true,
+      showEngineMap: true,
+      horizontal: true,
+      verticalColumns: 2,
+      horizontalColumns: 8,
     },
   },
 ];

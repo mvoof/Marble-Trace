@@ -7,8 +7,8 @@ import { WidgetSettings } from '@app/main/components/WidgetSettings/WidgetSettin
 import { useWidgetSettingsStore } from '@store/root-store-context';
 import styles from './WidgetSettingsPopup.module.scss';
 
-const POPUP_WIDTH = 420;
-const POPUP_MAX_HEIGHT = 560;
+const POPUP_WIDTH = 500;
+const POPUP_MAX_HEIGHT = 650;
 const MARGIN = 8;
 
 interface WidgetSettingsPopupProps {

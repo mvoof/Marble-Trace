@@ -198,6 +198,21 @@ export interface GMeterWidgetSettings {
   colorMode: GMeterColorMode;
 }
 
+export interface EnginePanelWidgetSettings {
+  showOilTemp: boolean;
+  showWaterTemp: boolean;
+  showOilPress: boolean;
+  showVoltage: boolean;
+  showAbs: boolean;
+  showTc: boolean;
+  showBrakeBias: boolean;
+  showEngineMap: boolean;
+  horizontal: boolean;
+  verticalColumns: number;
+  horizontalColumns: number;
+  layoutSizes?: Record<string, { width: number; height: number }>;
+}
+
 export type WidgetSpecificSettings =
   | Record<never, never> // id: example widget
   | ChassisWidgetSettings
@@ -214,7 +229,8 @@ export type WidgetSpecificSettings =
   | DeltaWidgetSettings
   | SectorMatrixWidgetSettings
   | TimerWidgetSettings
-  | GMeterWidgetSettings;
+  | GMeterWidgetSettings
+  | EnginePanelWidgetSettings;
 export interface WidgetMeta {
   id: string;
   label: string;
