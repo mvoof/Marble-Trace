@@ -166,36 +166,31 @@ export const LayoutCanvas = observer(
           step = snapToGrid ? gridSize * 5 : 10;
         }
 
+        const snappedX = snapToGrid
+          ? Math.round(currentX / gridSize) * gridSize
+          : currentX;
+        const snappedY = snapToGrid
+          ? Math.round(currentY / gridSize) * gridSize
+          : currentY;
+
         let newX = currentX;
         let newY = currentY;
 
         switch (event.key) {
           case 'ArrowUp':
-            newY =
-              (snapToGrid
-                ? Math.round(currentY / gridSize) * gridSize
-                : currentY) - step;
+            newY = snappedY - step;
             handled = true;
             break;
           case 'ArrowDown':
-            newY =
-              (snapToGrid
-                ? Math.round(currentY / gridSize) * gridSize
-                : currentY) + step;
+            newY = snappedY + step;
             handled = true;
             break;
           case 'ArrowLeft':
-            newX =
-              (snapToGrid
-                ? Math.round(currentX / gridSize) * gridSize
-                : currentX) - step;
+            newX = snappedX - step;
             handled = true;
             break;
           case 'ArrowRight':
-            newX =
-              (snapToGrid
-                ? Math.round(currentX / gridSize) * gridSize
-                : currentX) + step;
+            newX = snappedX + step;
             handled = true;
             break;
           case 'Delete':
