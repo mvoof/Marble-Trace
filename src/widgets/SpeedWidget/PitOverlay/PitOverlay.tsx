@@ -11,7 +11,7 @@ const STATE_CLASS: Record<PitState, string> = {
   'pit-lane': styles.statePitLane,
   'limiter-active': styles.stateLimiter,
   'limiter-near-exit': styles.stateLimiter,
-  'limiter-exit': '',
+  'limiter-exit': styles.stateLimiter,
   'over-limit': styles.stateOverLimit,
 };
 
@@ -39,7 +39,7 @@ export const PitOverlay = observer(() => {
     distMode === 'pitbox' && distM !== null && distM <= boxCueDistM;
   const BoxArrowIcon = pitBoxSide === 'left' ? CornerUpLeft : CornerUpRight;
 
-  if (pitState === 'normal' || pitState === 'limiter-exit' || !showPitAssist) {
+  if (pitState === 'normal' || !showPitAssist) {
     return null;
   }
 
@@ -47,6 +47,7 @@ export const PitOverlay = observer(() => {
     if (pitState === 'pit-lane') return 'LIMITER OFF';
     if (pitState === 'limiter-active') return 'PIT LIMITER';
     if (pitState === 'limiter-near-exit') return 'NEAR EXIT';
+    if (pitState === 'limiter-exit') return 'LIM ON TRACK';
 
     return 'SLOW DOWN!';
   })();
@@ -70,7 +71,7 @@ export const PitOverlay = observer(() => {
       ? styles.speedNumNearLimit
       : '';
 
-  const showBar = pitLaneProgressPct !== null;
+  const showBar = pitLaneProgressPct !== null && pitState !== 'limiter-exit';
   const showCalibrating = isPitLaneRecording && pitLaneProgressPct === null;
 
   const pitLaneLabel = (() => {
