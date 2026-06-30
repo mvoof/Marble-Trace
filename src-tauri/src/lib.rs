@@ -102,7 +102,7 @@ pub fn run() {
     let aptabase_key = option_env!("APTABASE_KEY").unwrap_or("");
     let force_track_start = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     let reset_pit_pcts = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
-    let track_cached = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let track_cached = std::sync::Arc::new(std::sync::atomic::AtomicI32::new(-1));
 
     let force_track_start_listener = std::sync::Arc::clone(&force_track_start);
     let force_track_start_registry = std::sync::Arc::clone(&force_track_start);

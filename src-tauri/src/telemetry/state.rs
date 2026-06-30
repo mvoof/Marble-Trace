@@ -25,7 +25,7 @@ pub struct TelemetryServiceState {
     pub car_length_m: Mutex<f32>,
     /// Set when a cached track was loaded from disk; consumed by TrackShapeProcessor
     /// on the first tick after a track_id change to skip re-recording.
-    pub track_cached: Arc<AtomicBool>,
+    pub track_cached: Arc<std::sync::atomic::AtomicI32>,
 }
 
 /// Bitmask flags for high-frequency events.

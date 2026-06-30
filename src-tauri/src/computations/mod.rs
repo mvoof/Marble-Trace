@@ -105,7 +105,7 @@ impl ProcessorRegistry {
     pub fn new(
         force_track_start: std::sync::Arc<std::sync::atomic::AtomicBool>,
         reset_pit_pcts: std::sync::Arc<std::sync::atomic::AtomicBool>,
-        track_cached: std::sync::Arc<std::sync::atomic::AtomicBool>,
+        track_cached: std::sync::Arc<std::sync::atomic::AtomicI32>,
     ) -> Self {
         Self {
             processors: vec![

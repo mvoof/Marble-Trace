@@ -335,7 +335,7 @@ fn try_load_and_emit_track(app: &AppHandle, track_id: i32, service: &TelemetrySe
     }
 
     // Signal TrackShapeProcessor to skip re-recording since the track already exists.
-    service.track_cached.store(true, Ordering::Relaxed);
+    service.track_cached.store(track_id, Ordering::Relaxed);
 }
 
 /// Updates start_positions from QualifyResultsInfo (the pre-race grid order).

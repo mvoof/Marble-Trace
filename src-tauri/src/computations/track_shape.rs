@@ -230,8 +230,9 @@ pub struct TrackShapeProcessor {
     last_track_id: Option<i32>,
     force_start: Arc<AtomicBool>,
     reset_pit_pcts: Arc<AtomicBool>,
-    /// Set externally when a cached track was loaded from disk — skip re-recording.
-    track_cached: Arc<AtomicBool>,
+    /// Set to a loaded track_id when a cached track was loaded from disk; -1 = unset.
+    /// Consumed by compute() on the first tick after a track_id change to skip re-recording.
+    track_cached: Arc<std::sync::atomic::AtomicI32>,
     status_tick: u64,
     last_lap_dist_pct: f32,
     /// Previous frame's on_pit_road per car (CarIdx-indexed).
@@ -246,7 +247,7 @@ impl TrackShapeProcessor {
     pub fn new(
         force_start: Arc<AtomicBool>,
         reset_pit_pcts: Arc<AtomicBool>,
-        track_cached: Arc<AtomicBool>,
+        track_cached: Arc<std::sync::atomic::AtomicI32>,
     ) -> Self {
         Self {
             state: TrackShapeState::default(),
@@ -289,7 +290,7 @@ impl Processor for TrackShapeProcessor {
             self.pit_in_pcts_by_car.clear();
 
             // A cached track was loaded from disk for this track_id — skip re-recording.
-            if self.track_cached.swap(false, Ordering::Relaxed) {
+            if self.track_cached.swap(-1, Ordering::Relaxed) == track_id {
                 self.state.complete = true;
             }
         }
@@ -584,7 +585,7 @@ mod tests {
         TrackShapeProcessor::new(
             Arc::new(AtomicBool::new(false)),
             Arc::new(AtomicBool::new(false)),
-            Arc::new(AtomicBool::new(false)),
+            Arc::new(std::sync::atomic::AtomicI32::new(-1)),
         )
     }
 
@@ -722,7 +723,7 @@ mod tests {
 
     #[test]
     fn track_cached_flag_skips_recording() {
-        let track_cached = Arc::new(AtomicBool::new(true));
+        let track_cached = Arc::new(std::sync::atomic::AtomicI32::new(1));
         let mut proc = TrackShapeProcessor::new(
             Arc::new(AtomicBool::new(false)),
             Arc::new(AtomicBool::new(false)),
@@ -753,9 +754,10 @@ mod tests {
             !proc.state.recording,
             "processor must not start recording when track_cached was set"
         );
-        assert!(
-            !track_cached.load(Ordering::Relaxed),
-            "track_cached flag must be consumed"
+        assert_eq!(
+            track_cached.load(Ordering::Relaxed),
+            -1,
+            "track_cached must be reset to -1 after being consumed"
         );
     }
 
@@ -793,7 +795,7 @@ mod tests {
         let mut proc = TrackShapeProcessor::new(
             Arc::clone(&flag),
             Arc::new(AtomicBool::new(false)),
-            Arc::new(AtomicBool::new(false)),
+            Arc::new(std::sync::atomic::AtomicI32::new(-1)),
         );
 
         let session = make_session(1);
