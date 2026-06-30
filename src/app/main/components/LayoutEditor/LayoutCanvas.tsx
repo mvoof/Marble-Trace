@@ -237,6 +237,14 @@ export const LayoutCanvas = observer(
     const [backgroundSrc, setBackgroundSrc] = useState<string | undefined>();
     const [isBackgroundLoading, setIsBackgroundLoading] = useState(false);
 
+    // Mark loading synchronously before paint so there is no visible gap
+    // between the upload spinner disappearing and the load spinner appearing.
+    useLayoutEffect(() => {
+      if (rawBackground) {
+        setIsBackgroundLoading(true);
+      }
+    }, [rawBackground]);
+
     useEffect(() => {
       let isEffectActive = true;
 
@@ -246,8 +254,6 @@ export const LayoutCanvas = observer(
 
         return;
       }
-
-      setIsBackgroundLoading(true);
 
       void resolveBackgroundSrc(rawBackground)
         .then((resolvedSrc) => {

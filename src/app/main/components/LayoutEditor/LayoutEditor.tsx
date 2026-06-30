@@ -241,10 +241,10 @@ export const LayoutEditor = observer(
       event.target.value = '';
 
       if (!file || !activeId) {
+        setIsUploadingBackground(false);
+
         return;
       }
-
-      setIsUploadingBackground(true);
 
       try {
         const extension = (file.name.split('.').pop() ?? 'png').toLowerCase();
@@ -844,7 +844,13 @@ export const LayoutEditor = observer(
               </span>
 
               <input
-                ref={backgroundInputRef}
+                ref={(node) => {
+                  backgroundInputRef.current = node;
+
+                  if (node) {
+                    node.oncancel = () => setIsUploadingBackground(false);
+                  }
+                }}
                 type="file"
                 accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
                 aria-label="Layout background image"
@@ -925,7 +931,10 @@ export const LayoutEditor = observer(
                   type="text"
                   icon={<Image size={14} />}
                   disabled={!activeLayout}
-                  onClick={() => backgroundInputRef.current?.click()}
+                  onClick={() => {
+                    setIsUploadingBackground(true);
+                    backgroundInputRef.current?.click();
+                  }}
                 />
               </Tooltip>
 
