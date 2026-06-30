@@ -14,7 +14,12 @@ import {
 } from '@utils/formatters/telemetry-format';
 import { parsePitSpeedLimitMs } from '@utils/widget/speed-utils';
 
-export type PitState = 'normal' | 'pit-lane' | 'limiter-active' | 'over-limit';
+export type PitState =
+  | 'normal'
+  | 'pit-lane'
+  | 'limiter-active'
+  | 'limiter-exit'
+  | 'over-limit';
 
 const PIT_LIMITER_BIT = 0x10;
 
@@ -91,7 +96,7 @@ export const usePitState = (): PitStateResult => {
     }
 
     if (isLimiter) {
-      return 'limiter-active';
+      return onPitRoad ? 'limiter-active' : 'limiter-exit';
     }
 
     return 'pit-lane';

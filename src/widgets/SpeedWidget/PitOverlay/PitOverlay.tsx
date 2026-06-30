@@ -10,6 +10,7 @@ const STATE_CLASS: Record<PitState, string> = {
   normal: '',
   'pit-lane': styles.statePitLane,
   'limiter-active': styles.stateLimiter,
+  'limiter-exit': '',
   'over-limit': styles.stateOverLimit,
 };
 
@@ -37,7 +38,7 @@ export const PitOverlay = observer(() => {
     distMode === 'pitbox' && distM !== null && distM <= boxCueDistM;
   const BoxArrowIcon = pitBoxSide === 'left' ? CornerUpLeft : CornerUpRight;
 
-  if (pitState === 'normal' || !showPitAssist) {
+  if (pitState === 'normal' || pitState === 'limiter-exit' || !showPitAssist) {
     return null;
   }
 

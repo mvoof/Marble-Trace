@@ -17,6 +17,7 @@ import {
 const LED_COUNT = 22;
 
 const PIT_YELLOW = '#ca8a04';
+const PIT_GREEN = '#16a34a';
 const PIT_BLUE = '#2563eb';
 const PIT_WHITE = 'rgba(255,255,255,0.85)';
 const PIT_RED = '#dc2626';
@@ -25,9 +26,10 @@ const LED_OFF = 'rgba(255,255,255,0.06)';
 
 const PIT_TICK_INTERVAL: Record<PitState, number> = {
   normal: 0,
-  'pit-lane': 500,
+  'pit-lane': 300,
   'limiter-active': 500,
-  'over-limit': 500,
+  'limiter-exit': 300,
+  'over-limit': 300,
 };
 
 // Left indicators: LED[0], LED[1]. Right indicators: LED[20], LED[21].
@@ -38,15 +40,16 @@ const isIndicator = (i: number): boolean => i <= 1 || i >= LED_COUNT - 2;
 const getIndicatorColor = (
   i: number,
   pitState: PitState,
-  tick: number
+  indicatorTick: number
 ): string => {
   const isOutermost = i === 0 || i === LED_COUNT - 1;
-  const lit = tick % 2 === 0 ? isOutermost : !isOutermost;
+  const lit = indicatorTick % 2 === 0 ? isOutermost : !isOutermost;
 
   if (!lit) return LED_OFF;
 
   if (pitState === 'pit-lane') return PIT_RED;
   if (pitState === 'limiter-active') return PIT_YELLOW;
+  if (pitState === 'limiter-exit') return PIT_GREEN;
 
   return LED_OFF;
 };
@@ -62,14 +65,15 @@ export interface RpmColors {
 const getPitLedColor = (
   i: number,
   pitState: PitState,
-  tick: number
+  tick: number,
+  indicatorTick: number
 ): string => {
   // Over-limit overrides everything: all LEDs alternate red/dim every other.
   if (pitState === 'over-limit') {
-    return i % 2 === tick % 2 ? PIT_RED : PIT_RED_DIM;
+    return i % 2 === indicatorTick % 2 ? PIT_RED : PIT_RED_DIM;
   }
 
-  if (isIndicator(i)) return getIndicatorColor(i, pitState, tick);
+  if (isIndicator(i)) return getIndicatorColor(i, pitState, indicatorTick);
 
   // Main body (LED 2..19).
   if (pitState === 'pit-lane') {
@@ -78,6 +82,10 @@ const getPitLedColor = (
 
   if (pitState === 'limiter-active') {
     return (i + tick) % 2 === 0 ? PIT_BLUE : PIT_WHITE;
+  }
+
+  if (pitState === 'limiter-exit') {
+    return LED_OFF;
   }
 
   return LED_OFF;
@@ -104,25 +112,34 @@ export const RpmBar = observer(() => {
   const isPitMode = effectivePitState !== 'normal';
 
   const [tick, setTick] = useState(0);
+  const [indicatorTick, setIndicatorTick] = useState(0);
   const rafRef = useRef<number>(0);
-  const lastTimeRef = useRef(0);
+  const lastBodyRef = useRef(0);
+  const lastIndicatorRef = useRef(0);
 
   useEffect(() => {
     if (!isPitMode) {
       setTick(0);
+      setIndicatorTick(0);
       return;
     }
 
-    const interval = PIT_TICK_INTERVAL[effectivePitState];
+    const bodyInterval = PIT_TICK_INTERVAL[effectivePitState];
+    const indicatorInterval = Math.round(bodyInterval / 2);
 
-    if (interval === 0) {
+    if (bodyInterval === 0) {
       return;
     }
 
     const loop = (now: number) => {
-      if (now - lastTimeRef.current >= interval) {
+      if (now - lastBodyRef.current >= bodyInterval) {
         setTick((prev) => prev + 1);
-        lastTimeRef.current = now;
+        lastBodyRef.current = now;
+      }
+
+      if (now - lastIndicatorRef.current >= indicatorInterval) {
+        setIndicatorTick((prev) => prev + 1);
+        lastIndicatorRef.current = now;
       }
 
       rafRef.current = requestAnimationFrame(loop);
@@ -150,7 +167,12 @@ export const RpmBar = observer(() => {
     return (
       <div className={styles.rpmBar}>
         {Array.from({ length: LED_COUNT }, (_, index) => {
-          const color = getPitLedColor(index, effectivePitState, tick);
+          const color = getPitLedColor(
+            index,
+            effectivePitState,
+            tick,
+            indicatorTick
+          );
           const isDim =
             color === PIT_RED_DIM ||
             color === LED_OFF ||

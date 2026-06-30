@@ -15,6 +15,7 @@ const PIT_STATE_CLASS: Record<PitState, string> = {
   normal: '',
   'pit-lane': styles.statePitLane,
   'limiter-active': styles.stateLimiter,
+  'limiter-exit': '',
   'over-limit': styles.stateOverLimit,
 };
 
@@ -29,7 +30,8 @@ export const PitPanel = observer(() => {
 
   const gear = player.carDynamics?.gear ?? 0;
 
-  const effectivePitState: PitState = showPitAssist ? pitState : 'normal';
+  const effectivePitState: PitState =
+    showPitAssist && pitState !== 'limiter-exit' ? pitState : 'normal';
 
   const panelStyle =
     effectivePitState === 'normal' ? { background: gearPanelBg } : undefined;
