@@ -184,8 +184,11 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
 
   const handleDuplicateLayout = async () => {
     if (selectedId) {
-      await widgetSettings.cloneLayout(selectedId);
-      setSelectedId(widgetSettings.activeLayoutId);
+      const newId = await widgetSettings.cloneLayout(selectedId);
+
+      if (newId) {
+        setSelectedId(newId);
+      }
     }
   };
 
