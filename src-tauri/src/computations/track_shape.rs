@@ -285,7 +285,7 @@ impl Processor for TrackShapeProcessor {
         let is_on_track = ctx.car_status.is_on_track.unwrap_or(false);
 
         // Reset if player is not on track or telemetry is invalid (garage/menus/tow/loading screen)
-        if !is_on_track || lap_dist_pct < 0.0 {
+        if (!is_on_track && !on_pit_road) || lap_dist_pct < 0.0 {
             self.pit_in_pct = None;
             self.pit_exit_pct = None;
             self.was_on_pit_road = on_pit_road;
@@ -302,9 +302,12 @@ impl Processor for TrackShapeProcessor {
         // Detect pit entry / exit transitions and record lap_dist_pct at that moment.
         // Require is_moving so sessions that start with the car already on pit road
         // (garage, pit box) don't record a bogus pit_in_pct at speed = 0.
-        if lap_dist_pct >= 0.0 && is_on_track {
+        if lap_dist_pct >= 0.0 && (is_on_track || on_pit_road) {
             let entered_pit = !self.was_on_pit_road && on_pit_road;
             let exited_pit = self.was_on_pit_road && !on_pit_road;
+
+            // next_was tracks what was_on_pit_road becomes; can be overridden below.
+            let mut next_was_on_pit_road = on_pit_road;
 
             if entered_pit && is_moving {
                 let player_idx = ctx.session.player_car_idx as usize;
@@ -323,9 +326,10 @@ impl Processor for TrackShapeProcessor {
                     let pit_exit_pct = lap_dist_pct;
                     let lane_length_pct = (pit_exit_pct - pit_in_pct + 1.0) % 1.0;
 
-                    // Sanity check: pit lane must be at least 0.5% and at most 30% of track.
-                    // Rejects reversed exits and bogus recordings.
-                    if (0.005..=0.30).contains(&lane_length_pct) {
+                    // Sanity check: pit lane must be at least 3% and at most 30% of track.
+                    // 0.5% was too loose — an on_pit_road glitch a few meters in (~1-2% of track)
+                    // would pass and record a bogus short pit lane. Real pit lanes are always ≥ 3%.
+                    if (0.03..=0.30).contains(&lane_length_pct) {
                         self.pit_exit_pct = Some(pit_exit_pct);
 
                         let out = Some(ComputedOutput::PitLanePct {
@@ -340,18 +344,28 @@ impl Processor for TrackShapeProcessor {
 
                         return out;
                     } else {
-                        // Bad recording — reset and wait for a clean pass.
-                        self.pit_in_pct = None;
-                        self.pit_exit_pct = None;
+                        // Sanity failed — likely a 1-2 frame on_pit_road glitch near pit entry.
+                        // Keep pit_in_pct and pretend the exit never happened so the real exit
+                        // can still pair with the original entry point.
+                        next_was_on_pit_road = true;
                     }
                 }
             }
 
-            self.was_on_pit_road = on_pit_road;
+            self.was_on_pit_road = next_was_on_pit_road;
             self.last_lap_dist_pct = lap_dist_pct;
         }
 
         if self.state.complete {
+            self.status_tick += 1;
+            if self.status_tick.is_multiple_of(STATUS_EMIT_INTERVAL) {
+                return Some(ComputedOutput::TrackRecording(TrackRecordingFrame {
+                    is_recording: false,
+                    is_waiting_for_sf: false,
+                    progress: 1.0,
+                    pit_lane_recording: self.pit_in_pct.is_some() && self.pit_exit_pct.is_none(),
+                }));
+            }
             return None;
         }
 

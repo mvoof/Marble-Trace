@@ -332,22 +332,29 @@ fn save_track_shape(app: &AppHandle, payload: &TrackShapePayload) {
     }
 }
 
-/// Patch pit_in_pct / pit_exit_pct into an existing track JSON without overwriting geometry,
-/// then re-emit the updated TrackShapePayload so the frontend reflects the new values immediately.
 fn patch_pit_lane_pct(app: &AppHandle, track_id: i32, pit_in_pct: f32, pit_exit_pct: f32) {
     use std::fs;
+    use tracing::info;
+
+    info!(
+        "patch_pit_lane_pct triggered for track {} (in: {}, exit: {})",
+        track_id, pit_in_pct, pit_exit_pct
+    );
 
     let Ok(data_dir) = app.path().app_data_dir() else {
+        warn!("Failed to resolve app data dir in patch_pit_lane_pct");
         return;
     };
 
     let path = data_dir.join("tracks").join(format!("{}.json", track_id));
 
     let Ok(bytes) = fs::read(&path) else {
+        warn!("Failed to read track JSON file from {:?} in patch_pit_lane_pct (maybe track is not complete/recorded yet)", path);
         return;
     };
 
     let Ok(mut value) = serde_json::from_slice::<serde_json::Value>(&bytes) else {
+        warn!("Failed to parse track JSON from {:?}", path);
         return;
     };
 
@@ -357,14 +364,21 @@ fn patch_pit_lane_pct(app: &AppHandle, track_id: i32, pit_in_pct: f32, pit_exit_
     }
 
     let Ok(json) = serde_json::to_string(&value) else {
+        warn!("Failed to serialize patched JSON in patch_pit_lane_pct");
         return;
     };
 
     if fs::write(&path, &json).is_ok() {
+        info!(
+            "Successfully patched and saved pit lane calibration to {:?}",
+            path
+        );
         if let Ok(payload) = serde_json::from_str::<TrackShapePayload>(&json) {
             if let Err(e) = app.emit(EVENT_TRACK_SHAPE, &payload) {
                 warn!("Failed to re-emit track shape after pit pct patch: {}", e);
             }
         }
+    } else {
+        warn!("Failed to write patched track JSON back to {:?}", path);
     }
 }
