@@ -105,6 +105,7 @@ impl ProcessorRegistry {
     pub fn new(
         force_track_start: std::sync::Arc<std::sync::atomic::AtomicBool>,
         reset_pit_pcts: std::sync::Arc<std::sync::atomic::AtomicBool>,
+        track_cached: std::sync::Arc<std::sync::atomic::AtomicI32>,
     ) -> Self {
         Self {
             processors: vec![
@@ -115,7 +116,11 @@ impl ProcessorRegistry {
                 Box::new(ProximityProcessor),
                 Box::new(RelativeProcessor::default()),
                 Box::new(StandingsProcessor::default()),
-                Box::new(TrackShapeProcessor::new(force_track_start, reset_pit_pcts)),
+                Box::new(TrackShapeProcessor::new(
+                    force_track_start,
+                    reset_pit_pcts,
+                    track_cached,
+                )),
             ],
         }
     }
