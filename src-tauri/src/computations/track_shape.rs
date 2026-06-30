@@ -304,8 +304,7 @@ impl Processor for TrackShapeProcessor {
         let current_lap_dist = &ctx.car_idx.car_idx_lap_dist_pct;
         let current_surface = &ctx.car_idx.car_idx_track_surface;
 
-        for i in 0..current_on_pit_road.len() {
-            let is_on_pit = current_on_pit_road[i];
+        for (i, &is_on_pit) in current_on_pit_road.iter().enumerate() {
             let was_on_pit = self.prev_on_pit_road.get(i).copied().unwrap_or(false);
             let car_lap_dist = match current_lap_dist.get(i).copied() {
                 Some(d) if d >= 0.0 => d,
