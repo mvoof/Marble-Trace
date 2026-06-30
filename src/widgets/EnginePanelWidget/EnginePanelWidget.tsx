@@ -147,7 +147,7 @@ export const EnginePanelWidget = observer(() => {
   ].filter(Boolean);
 
   const cols = settings.horizontal
-    ? (settings.horizontalColumns ?? 8)
+    ? Math.max(1, Math.min(settings.horizontalColumns ?? 8, cells.length))
     : (settings.verticalColumns ?? 2);
 
   return (

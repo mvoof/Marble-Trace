@@ -148,7 +148,9 @@ export const EnginePanelSettingsPanel = observer(() => {
           <SettingRow title={item.title} desc={item.desc}>
             <Switch
               checked={item.value}
-              onChange={(v) => update({ [item.key]: v })}
+              onChange={(v) =>
+                update({ [item.key as keyof EnginePanelWidgetSettings]: v })
+              }
             />
           </SettingRow>
         </div>

@@ -235,6 +235,19 @@ const resolveRelativeLayout = makeColumnLayoutResolver<RelativeWidgetSettings>(
   computeRelativeDesignWidth
 );
 
+const getCellCount = (s: any) => {
+  return [
+    s.showOilTemp !== false,
+    s.showWaterTemp !== false,
+    s.showOilPress !== false,
+    s.showVoltage !== false,
+    s.showAbs !== false,
+    s.showTc !== false,
+    s.showBrakeBias !== false,
+    s.showEngineMap !== false,
+  ].filter(Boolean).length;
+};
+
 const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
   const prevHorizontal = 'horizontal' in prev ? !!prev.horizontal : true;
   const nextHorizontal =
@@ -252,13 +265,41 @@ const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
       ? Number(next.horizontalColumns)
       : prevHorizCols;
 
-  if (
-    prevHorizontal === nextHorizontal &&
-    prevVertCols === nextVertCols &&
-    prevHorizCols === nextHorizCols
-  ) {
+  const cellKeys = [
+    'showOilTemp',
+    'showWaterTemp',
+    'showOilPress',
+    'showVoltage',
+    'showAbs',
+    'showTc',
+    'showBrakeBias',
+    'showEngineMap',
+  ];
+
+  const modeChanged =
+    prevHorizontal !== nextHorizontal ||
+    prevVertCols !== nextVertCols ||
+    prevHorizCols !== nextHorizCols;
+
+  const cellsChanged = cellKeys.some(
+    (key) => (prev as any)[key] !== (next as any)[key]
+  );
+
+  if (!modeChanged && !cellsChanged) {
     return null;
   }
+
+  const prevCells = getCellCount(prev);
+  const nextCells = getCellCount(next);
+
+  const prevCols = prevHorizontal ? prevHorizCols : prevVertCols;
+  const nextCols = nextHorizontal ? nextHorizCols : nextVertCols;
+
+  const prevRows = Math.max(1, Math.ceil(prevCells / prevCols));
+  const nextRows = Math.max(1, Math.ceil(nextCells / nextCols));
+
+  const nextDesignWidth = nextCols * 62.5;
+  const nextDesignHeight = nextRows * 65;
 
   const prevSettings = prev as unknown as EnginePanelWidgetSettings;
   const prevLayoutSizes = prevSettings.layoutSizes ?? {};
@@ -270,33 +311,36 @@ const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
     ? `horizontal-${nextHorizCols}`
     : `vertical-${nextVertCols}`;
 
-  const savedLayoutSizes = {
-    ...prevLayoutSizes,
-    [prevModeKey]: {
-      width: current.currentWidth,
-      height: current.currentHeight,
-    },
-  };
+  let savedLayoutSizes = prevLayoutSizes;
+  let nextWidth = current.currentWidth;
+  let nextHeight = current.currentHeight;
 
-  const defaultNext = nextHorizontal
-    ? {
-        width: nextHorizCols * 62.5,
-        height: Math.ceil(8 / nextHorizCols) * 65,
-      }
-    : {
-        width: nextVertCols * 62.5,
-        height: Math.ceil(8 / nextVertCols) * 65,
-      };
+  if (modeChanged) {
+    savedLayoutSizes = {
+      ...prevLayoutSizes,
+      [prevModeKey]: {
+        width: current.currentWidth,
+        height: current.currentHeight,
+      },
+    };
 
-  const nextSize = savedLayoutSizes[nextModeKey] ?? defaultNext;
+    const defaultNext = {
+      width: nextDesignWidth,
+      height: nextDesignHeight,
+    };
+
+    const savedSize = savedLayoutSizes[nextModeKey] ?? defaultNext;
+    nextWidth = savedSize.width;
+    nextHeight = savedSize.height;
+  } else if (cellsChanged) {
+    nextHeight = Math.round(current.currentHeight * (nextRows / prevRows));
+  }
 
   return {
-    designWidth: nextHorizontal ? nextHorizCols * 62.5 : nextVertCols * 62.5,
-    designHeight: nextHorizontal
-      ? Math.ceil(8 / nextHorizCols) * 65
-      : Math.ceil(8 / nextVertCols) * 65,
-    currentWidth: nextSize.width,
-    currentHeight: nextSize.height,
+    designWidth: nextDesignWidth,
+    designHeight: nextDesignHeight,
+    currentWidth: nextWidth,
+    currentHeight: nextHeight,
     userSettingsPatch: { layoutSizes: savedLayoutSizes },
   };
 };
@@ -841,6 +885,7 @@ const WIDGETS: WidgetConfig[] = [
       'Liquid temperatures, pressures, and system adjustments (ABS, TC, Brake Bias, Engine Map).',
     component: EnginePanelWidget,
     requiredCapabilities: ['playerDynamics'],
+    autoHeight: true,
     designWidth: 500,
     designHeight: 65,
     resolveLayoutChange: resolveEnginePanelLayout,
