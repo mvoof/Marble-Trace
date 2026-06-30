@@ -16,7 +16,7 @@ import {
 
 const LED_COUNT = 22;
 
-const PIT_YELLOW = '#d97706';
+const PIT_YELLOW = '#ca8a04';
 const PIT_BLUE = '#2563eb';
 const PIT_WHITE = 'rgba(255,255,255,0.85)';
 const PIT_RED = '#dc2626';
