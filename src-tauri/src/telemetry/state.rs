@@ -17,6 +17,8 @@ pub struct TelemetryServiceState {
     pub start_positions_session_num: AtomicI32,
     /// Cached track length in meters.
     pub track_length_m: Mutex<Option<f32>>,
+    pub pit_in_pct: Mutex<Option<f32>>,
+    pub pit_exit_pct: Mutex<Option<f32>>,
     /// Bitmask of active high-frequency events to emit.
     pub active_events: AtomicU32,
     /// Configurable player car length in meters.
@@ -36,4 +38,6 @@ pub struct TelemetryState {
     pub registry: Arc<Mutex<ProcessorRegistry>>,
     /// User-configured pit warning laps (stored as bits of f32).
     pub pit_warning_laps: Arc<AtomicU32>,
+    /// Set by reset_pit_lane_pct command; consumed by TrackShapeProcessor on next tick.
+    pub reset_pit_pcts: Arc<AtomicBool>,
 }

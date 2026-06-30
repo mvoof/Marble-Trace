@@ -261,6 +261,7 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         track_name: weekend.track_name.unwrap_or_default(),
         track_display_name: weekend.track_display_name.unwrap_or_default(),
         track_config_name: weekend.track_config_name.unwrap_or_default(),
+        driver_pit_trk_pct: driver_info.driver_pit_trk_pct,
         track_length_m: parse_track_length(&weekend.track_length.unwrap_or_default()),
         track_pit_speed_limit: weekend.track_pit_speed_limit.unwrap_or_default(),
         track_weather_type: weekend.track_weather_type.unwrap_or_default(),
@@ -377,6 +378,8 @@ struct RawDriverInfo {
     driver_car_sl_shift_rpm: Option<f32>,
     #[serde(rename = "DriverCarSLBlinkRPM")]
     driver_car_sl_blink_rpm: Option<f32>,
+    #[serde(rename = "DriverPitTrkPct")]
+    driver_pit_trk_pct: Option<f32>,
     drivers: Option<Vec<RawDriver>>,
     driver_tires: Option<Vec<RawDriverTire>>,
 }

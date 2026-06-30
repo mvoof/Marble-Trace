@@ -8,7 +8,6 @@
   gap: 0;
   border-right: 2px solid rgba(255, 255, 255, $opacity-subtle);
   padding: sp(sm) sp(lg);
-  transition: background 0.2s ease;
 }
 
 // ── Gear digit ───────────────────────────────────────────────
@@ -23,33 +22,26 @@
   color: rgba(255, 255, 255, $opacity-solid);
 }
 
-// ── Sub-label (GEAR / PIT / LIM / SLOW!) ────────────────────
+// ── Sub-label (GEAR — always visible) ────────────────────────
 
 .pitSub {
   font-family: $font-mono;
   font-size: fs(sm);
   font-weight: 900;
-  color: rgba(255, 255, 255, 0.85);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.1em;
   line-height: 1;
   margin-top: sp(xs);
   white-space: nowrap;
+  color: rgba(255, 255, 255, $opacity-strong);
+}
+
+.statePitLane .pitSub {
+  color: rgba(0, 0, 0, 0.5);
 }
 
 .pitSubNormal {
-  color: rgba(255, 255, 255, $opacity-strong);
   letter-spacing: 0.1em;
-}
-
-.pitSubLimOff {
-  color: $widget-pit-warning;
-  animation: limOffBlink 1s ease-in-out infinite;
-}
-
-.pitSubOver {
-  color: #fff;
-  animation: overLimitSubBlink 0.5s steps(2, start) infinite;
 }
 
 // ── Pit state backgrounds ────────────────────────────────────
@@ -60,18 +52,8 @@
   border-right-color: rgba($widget-pit-entry, 0.6);
 }
 
-// bright amber bg → black gear text for contrast
 .statePitLane .gearDigit {
   color: rgba(0, 0, 0, 0.85);
-}
-
-.statePitLane .pitSub {
-  color: rgba(0, 0, 0, 0.55);
-}
-
-.statePitLane .pitSubLimOff {
-  color: $widget-pit-warning;
-  animation: limOffBlink 1s ease-in-out infinite;
 }
 
 // limiter active → bright blue
@@ -84,46 +66,23 @@
   color: rgba(255, 255, 255, 0.95);
 }
 
-// over speed limit → bright red pulse
+// over speed limit → bright red
 .stateOverLimit {
   background: $widget-pit-warning;
   border-right-color: rgba($widget-pit-warning, 0.5);
-  animation: overLimitPulse 0.7s ease-in-out infinite;
+  animation: overLimitPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes overLimitPulse {
+  from {
+    background: $widget-pit-warning;
+  }
+
+  to {
+    background: color-mix(in srgb, $widget-pit-warning 60%, #000);
+  }
 }
 
 .stateOverLimit .gearDigit {
   color: #fff;
-}
-
-@keyframes limOffBlink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.3;
-  }
-}
-
-@keyframes overLimitPulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.65;
-  }
-}
-
-@keyframes overLimitSubBlink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.3;
-  }
 }

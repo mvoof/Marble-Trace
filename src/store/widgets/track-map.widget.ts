@@ -6,6 +6,7 @@ export class TrackMapWidgetStore {
   isRecording = false;
   isWaitingForSF = false;
   recordingProgress = 0;
+  isPitLaneRecording = false;
   trackShape: TrackShapePayload | null = null;
   currentTrackId: string | null = null;
   trackRotation = 0;
@@ -17,11 +18,13 @@ export class TrackMapWidgetStore {
   updateRecordingStatus(
     isRecording: boolean,
     isWaitingForSF: boolean,
-    progress: number
+    progress: number,
+    isPitLaneRecording: boolean
   ) {
     this.isRecording = isRecording;
     this.isWaitingForSF = isWaitingForSF;
     this.recordingProgress = progress;
+    this.isPitLaneRecording = isPitLaneRecording;
   }
 
   onTrackShapeReceived(payload: TrackShapePayload) {
@@ -29,6 +32,7 @@ export class TrackMapWidgetStore {
     this.currentTrackId = String(payload.trackId);
     this.isRecording = false;
     this.isWaitingForSF = false;
+    this.isPitLaneRecording = false;
     this.recordingProgress = 1;
   }
 
@@ -41,6 +45,7 @@ export class TrackMapWidgetStore {
     this.currentTrackId = null;
     this.isRecording = false;
     this.isWaitingForSF = false;
+    this.isPitLaneRecording = false;
     this.recordingProgress = 0;
     this.trackRotation = 0;
   }
@@ -48,6 +53,7 @@ export class TrackMapWidgetStore {
   reset() {
     this.isRecording = false;
     this.isWaitingForSF = false;
+    this.isPitLaneRecording = false;
     this.recordingProgress = 0;
     this.trackShape = null;
     this.currentTrackId = null;

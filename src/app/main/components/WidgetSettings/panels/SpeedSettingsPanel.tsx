@@ -1,7 +1,11 @@
 import { observer } from 'mobx-react-lite';
 import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
 import { speedUnit } from '@utils/formatters/telemetry-format';
-import { SpeedWidgetSettings, LedShape } from '@/types/widget-settings';
+import {
+  SpeedWidgetSettings,
+  LedShape,
+  PitBoxSide,
+} from '@/types/widget-settings';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 
@@ -125,6 +129,7 @@ export const SpeedSettingsPanel = observer(() => {
             options={[
               { label: 'Square', value: 'square' },
               { label: 'Circle', value: 'circle' },
+              { label: 'Slant', value: 'parallelogram' },
             ]}
             onChange={(value) => update({ ledShape: value as LedShape })}
           />
@@ -154,18 +159,6 @@ export const SpeedSettingsPanel = observer(() => {
 
       <Card title="Display">
         <div className={styles.fieldGroup}>
-          <SettingRow
-            title="Temperatures"
-            desc="Show oil and water temperature badges."
-          >
-            <Switch
-              checked={settings.showTemps}
-              onChange={(value) => update({ showTemps: value })}
-            />
-          </SettingRow>
-        </div>
-
-        <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
             Pit Speed Override ({speedUnit(units.unitSystem)})
           </span>
@@ -185,6 +178,67 @@ export const SpeedSettingsPanel = observer(() => {
                 pitSpeedLimitOverride: value && value > 0 ? value : null,
               })
             }
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="Pit Lane Assist"
+            desc="Show distance to pit exit when driving without pit limiter."
+          >
+            <Switch
+              checked={settings.showPitAssist}
+              onChange={(value) => update({ showPitAssist: value })}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>Pit Box Side</span>
+          <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+            Which side the pit box entry is on.
+          </div>
+          <Segmented
+            block
+            value={settings.pitBoxSide}
+            options={[
+              { label: 'Left', value: 'left' },
+              { label: 'Right', value: 'right' },
+            ]}
+            onChange={(value) => update({ pitBoxSide: value as PitBoxSide })}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>Box Cue Distance (m)</span>
+          <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+            Show BOX indicator this many meters before your pit box.
+          </div>
+          <InputNumber
+            style={{ width: '100%' }}
+            value={settings.boxCueDistM}
+            min={5}
+            max={300}
+            step={5}
+            onChange={(value) => update({ boxCueDistM: value ?? 50 })}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            Near-Limit Warning ({speedUnit(units.unitSystem)})
+          </span>
+          <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+            Color speed red when this many {speedUnit(units.unitSystem)} below
+            the pit speed limit.
+          </div>
+          <InputNumber
+            style={{ width: '100%' }}
+            value={settings.nearLimitDelta}
+            min={1}
+            max={30}
+            step={1}
+            onChange={(value) => update({ nearLimitDelta: value ?? 5 })}
           />
         </div>
       </Card>

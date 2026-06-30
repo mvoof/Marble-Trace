@@ -255,6 +255,11 @@ export class SimStore {
             this.root.cars.updateCarPositions(b.car_positions);
           if (b.car_status) this.root.player.updateCarStatus(b.car_status);
           if (b.lap_timing) this.root.player.updateLapTiming(b.lap_timing);
+          this.root.player.updatePitTarget(
+            b.pit_target_dist_m ?? null,
+            b.pit_target_type ?? null,
+            b.pit_lane_progress_pct ?? null
+          );
           if (b.session) this.root.session.updateSession(b.session);
           if (b.environment)
             this.root.environment.updateEnvironment(b.environment);
@@ -276,7 +281,8 @@ export class SimStore {
             this.root.trackMapWidget.updateRecordingStatus(
               b.track_recording.isRecording,
               b.track_recording.isWaitingForSf,
-              b.track_recording.progress
+              b.track_recording.progress,
+              b.track_recording.pitLaneRecording
             );
           }
         });

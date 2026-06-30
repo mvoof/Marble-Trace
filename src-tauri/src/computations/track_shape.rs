@@ -1,11 +1,13 @@
 //! Track shape processor — dead reckoning from 60 Hz speed/yaw telemetry.
 //! Ports the TypeScript `TrackRecorder` class in full.
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Instant;
 
 use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
+use crate::model::enums::TrackSurface;
 use crate::model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
 
 const DT_CAP_SECONDS: f32 = 0.1;
@@ -227,18 +229,29 @@ pub struct TrackShapeProcessor {
     state: TrackShapeState,
     last_track_id: Option<i32>,
     force_start: Arc<AtomicBool>,
+    reset_pit_pcts: Arc<AtomicBool>,
     status_tick: u64,
     last_lap_dist_pct: f32,
+    /// Previous frame's on_pit_road per car (CarIdx-indexed).
+    prev_on_pit_road: Vec<bool>,
+    /// Previous frame's track surface per car — used to reject pit stall exits.
+    prev_track_surface: Vec<TrackSurface>,
+    /// Recorded pit entry pct per car; present while car is inside pit lane, awaiting exit.
+    pit_in_pcts_by_car: HashMap<usize, f32>,
 }
 
 impl TrackShapeProcessor {
-    pub fn new(force_start: Arc<AtomicBool>) -> Self {
+    pub fn new(force_start: Arc<AtomicBool>, reset_pit_pcts: Arc<AtomicBool>) -> Self {
         Self {
             state: TrackShapeState::default(),
             last_track_id: None,
             force_start,
+            reset_pit_pcts,
             status_tick: 0,
             last_lap_dist_pct: -1.0,
+            prev_on_pit_road: Vec::new(),
+            prev_track_surface: Vec::new(),
+            pit_in_pcts_by_car: HashMap::new(),
         }
     }
 }
@@ -258,26 +271,107 @@ impl Processor for TrackShapeProcessor {
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
         let track_id = ctx.session.track_id;
+        let on_pit_road = ctx.car_status.on_pit_road.unwrap_or(false);
 
         if self.last_track_id != Some(track_id) {
             self.state.reset();
             self.last_track_id = Some(track_id);
             self.status_tick = 0;
-        }
-
-        if self.state.complete {
-            return None;
+            self.prev_on_pit_road.clear();
+            self.prev_track_surface.clear();
+            self.pit_in_pcts_by_car.clear();
         }
 
         let speed = ctx.car_dynamics.speed;
         let yaw = ctx.car_dynamics.yaw.unwrap_or(0.0);
         let lap_dist_pct = ctx.lap_timing.lap_dist_pct.unwrap_or(-1.0);
         let is_moving = speed > SPEED_THRESHOLD_MPS;
+        let player_idx = ctx.session.player_car_idx as usize;
+
+        // Reset pit tracking if commanded by the user (manual recalibrate).
+        if self.reset_pit_pcts.swap(false, Ordering::Relaxed) {
+            self.prev_on_pit_road.clear();
+            self.prev_track_surface.clear();
+            self.pit_in_pcts_by_car.clear();
+        }
+
+        // Detect pit entry / exit for every car using CarIdx arrays (10 Hz, less noisy than
+        // the player's own 60 Hz OnPitRoad signal which can glitch for 1-2 frames on entry).
+        // Any car that completes a valid pit lane traversal calibrates the track.
+        let mut pit_lane_output: Option<ComputedOutput> = None;
+
+        let current_on_pit_road = &ctx.car_idx.car_idx_on_pit_road;
+        let current_lap_dist = &ctx.car_idx.car_idx_lap_dist_pct;
+        let current_surface = &ctx.car_idx.car_idx_track_surface;
+
+        for (i, &is_on_pit) in current_on_pit_road.iter().enumerate() {
+            let was_on_pit = self.prev_on_pit_road.get(i).copied().unwrap_or(false);
+            let car_lap_dist = match current_lap_dist.get(i).copied() {
+                Some(d) if d >= 0.0 => d,
+                _ => continue,
+            };
+
+            // Pit entry: false → true
+            if !was_on_pit && is_on_pit {
+                let prev_surface = self
+                    .prev_track_surface
+                    .get(i)
+                    .copied()
+                    .unwrap_or(TrackSurface::NotInWorld);
+
+                // Reject cars leaving a pit stall — their on_pit_road transition goes false→true
+                // just like a real track→pit entry, but we don't want to record that.
+                if prev_surface != TrackSurface::InPitStall {
+                    self.pit_in_pcts_by_car.insert(i, car_lap_dist);
+                }
+            }
+
+            // Pit exit: true → false
+            if was_on_pit && !is_on_pit {
+                if let Some(pit_in) = self.pit_in_pcts_by_car.remove(&i) {
+                    let lane_length_pct = (car_lap_dist - pit_in + 1.0) % 1.0;
+
+                    // Sanity: pit lane must be 3–30% of track length.
+                    // <3% catches on_pit_road glitch frames; >30% catches reversed/warped data.
+                    if (0.03..=0.30).contains(&lane_length_pct) && pit_lane_output.is_none() {
+                        pit_lane_output = Some(ComputedOutput::PitLanePct {
+                            track_id,
+                            pit_in_pct: pit_in,
+                            pit_exit_pct: car_lap_dist,
+                        });
+                    }
+                }
+            }
+        }
+
+        // Update previous-frame snapshots for next tick.
+        self.prev_on_pit_road.clear();
+        self.prev_on_pit_road.extend_from_slice(current_on_pit_road);
+        self.prev_track_surface.clear();
+        self.prev_track_surface.extend_from_slice(current_surface);
+
+        if pit_lane_output.is_some() {
+            return pit_lane_output;
+        }
+
+        let player_is_recording_pit = self.pit_in_pcts_by_car.contains_key(&player_idx);
+
+        if self.state.complete {
+            self.status_tick += 1;
+            if self.status_tick.is_multiple_of(STATUS_EMIT_INTERVAL) {
+                return Some(ComputedOutput::TrackRecording(TrackRecordingFrame {
+                    is_recording: false,
+                    is_waiting_for_sf: false,
+                    progress: 1.0,
+                    pit_lane_recording: player_is_recording_pit,
+                }));
+            }
+            return None;
+        }
 
         let force = self.force_start.swap(false, Ordering::Relaxed);
 
         if !self.state.recording && !self.state.complete && is_moving {
-            let on_pit_road = ctx.car_status.on_pit_road.unwrap_or(false);
             let lap_dist = ctx.lap_timing.lap_dist_pct.unwrap_or(-1.0);
 
             let crossed_sf =
@@ -321,6 +415,7 @@ impl Processor for TrackShapeProcessor {
                 is_recording: self.state.recording,
                 is_waiting_for_sf: is_waiting,
                 progress: self.state.progress(),
+                pit_lane_recording: player_is_recording_pit,
             }));
         }
 
@@ -332,6 +427,9 @@ impl Processor for TrackShapeProcessor {
         self.last_track_id = None;
         self.status_tick = 0;
         self.last_lap_dist_pct = -1.0;
+        self.prev_on_pit_road.clear();
+        self.prev_track_surface.clear();
+        self.pit_in_pcts_by_car.clear();
     }
 }
 
@@ -344,6 +442,8 @@ fn build_payload(track_id: i32, state: &TrackShapeState) -> TrackShapePayload {
             svg_path: String::new(),
             view_box: "0 0 100 100".to_string(),
             points: pts,
+            pit_in_pct: None,
+            pit_exit_pct: None,
         };
     }
 
@@ -391,6 +491,8 @@ fn build_payload(track_id: i32, state: &TrackShapeState) -> TrackShapePayload {
         svg_path: d,
         view_box,
         points: pts,
+        pit_in_pct: None,
+        pit_exit_pct: None,
     }
 }
 
@@ -467,7 +569,10 @@ mod tests {
     use crate::model::session::SessionSnapshot;
 
     fn make_processor() -> TrackShapeProcessor {
-        TrackShapeProcessor::new(Arc::new(AtomicBool::new(false)))
+        TrackShapeProcessor::new(
+            Arc::new(AtomicBool::new(false)),
+            Arc::new(AtomicBool::new(false)),
+        )
     }
 
     fn make_dynamics(speed: f32, yaw: f32) -> CarDynamicsFrame {
@@ -629,7 +734,8 @@ mod tests {
     #[test]
     fn force_start_triggers_recording() {
         let flag = Arc::new(AtomicBool::new(true));
-        let mut proc = TrackShapeProcessor::new(Arc::clone(&flag));
+        let mut proc =
+            TrackShapeProcessor::new(Arc::clone(&flag), Arc::new(AtomicBool::new(false)));
 
         let session = make_session(1);
         let dynamics = make_dynamics(10.0, 0.0);

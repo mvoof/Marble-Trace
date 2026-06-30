@@ -1,131 +1,53 @@
 import { observer } from 'mobx-react-lite';
 
 import type { SpeedWidgetSettings } from '@/types/widget-settings';
-import {
-  formatGear,
-  formatSpeed,
-  speedUnit,
-  MPS_TO_KMH,
-  MPS_TO_MPH,
-} from '@utils/formatters/telemetry-format';
-import { parsePitSpeedLimitMs } from '@utils/widget/speed-utils';
+import { formatGear } from '@utils/formatters/telemetry-format';
 
 import styles from './PitPanel.module.scss';
 import {
   usePlayerStore,
-  useSessionStore,
-  useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-
-export type PitState = 'normal' | 'pit-lane' | 'limiter-active' | 'over-limit';
-
-const PIT_LIMITER_BIT = 0x10;
+import { usePitState } from '../hooks/usePitState';
+import type { PitState } from '../hooks/usePitState';
 
 const PIT_STATE_CLASS: Record<PitState, string> = {
   normal: '',
   'pit-lane': styles.statePitLane,
   'limiter-active': styles.stateLimiter,
+  'limiter-near-exit': styles.stateLimiter,
+  'limiter-exit': styles.stateLimiter,
   'over-limit': styles.stateOverLimit,
 };
 
 export const PitPanel = observer(() => {
   const player = usePlayerStore();
-  const { sessionInfo } = useSessionStore();
-  const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { pitSpeedLimitOverride, gearColor, gearPanelBg } =
+  const { gearColor, gearPanelBg } =
     widgetSettings.getSettings<SpeedWidgetSettings>('speed');
-  const carStatus = player.carStatus;
-  const carDynamics = player.carDynamics;
-  const system = units.unitSystem;
-  const speedFactor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
-  const pitLimitMs =
-    pitSpeedLimitOverride !== null
-      ? pitSpeedLimitOverride / speedFactor
-      : parsePitSpeedLimitMs(sessionInfo?.trackPitSpeedLimit);
-  const pitLimitFormatted =
-    pitLimitMs > 0 ? formatSpeed(pitLimitMs, system) : '—';
 
-  const gear = carDynamics?.gear ?? 0;
-  const speed = carDynamics?.speed ?? 0;
+  const { pitState, showPitAssist } = usePitState();
 
-  const isLimiter = ((carStatus?.engine_warnings ?? 0) & PIT_LIMITER_BIT) !== 0;
-  const onPitRoad = carStatus?.on_pit_road ?? false;
+  const gear = player.carDynamics?.gear ?? 0;
 
-  const isPitActive = onPitRoad || isLimiter;
-
-  const pitState: PitState = (() => {
-    if (!isPitActive) {
-      return 'normal';
-    }
-
-    if (pitLimitMs > 0 && speed > pitLimitMs) {
-      return 'over-limit';
-    }
-
-    if (isLimiter) {
-      return 'limiter-active';
-    }
-
-    return 'pit-lane';
-  })();
-
-  const pitSubLabel = (() => {
-    if (pitState === 'normal') {
-      return 'GEAR';
-    }
-
-    if (pitState === 'over-limit') {
-      return 'SLOW!';
-    }
-
-    if (pitState === 'limiter-active') {
-      if (pitLimitMs > 0) {
-        const factor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
-        const delta = Math.round((speed - pitLimitMs) * factor);
-
-        if (delta > 0) {
-          return `+${delta} ${speedUnit(system)}`;
-        }
-
-        return `LIM ${pitLimitFormatted}`;
-      }
-
-      return 'LIM';
-    }
-
-    return 'LIM OFF';
-  })();
+  const effectivePitState: PitState = showPitAssist ? pitState : 'normal';
 
   const panelStyle =
-    pitState === 'normal' ? { background: gearPanelBg } : undefined;
-
-  const gearStyle = pitState === 'normal' ? { color: gearColor } : undefined;
+    effectivePitState === 'normal' ? { background: gearPanelBg } : undefined;
+  const gearStyle =
+    effectivePitState === 'normal' ? { color: gearColor } : undefined;
 
   return (
     <div
-      className={`${styles.panel} ${PIT_STATE_CLASS[pitState]}`}
+      className={`${styles.panel} ${PIT_STATE_CLASS[effectivePitState]}`}
       style={panelStyle}
     >
       <span className={styles.gearDigit} style={gearStyle}>
         {formatGear(gear)}
       </span>
 
-      <span
-        className={`${styles.pitSub} ${
-          pitState === 'normal'
-            ? styles.pitSubNormal
-            : pitState === 'pit-lane'
-              ? styles.pitSubLimOff
-              : pitState === 'over-limit'
-                ? styles.pitSubOver
-                : ''
-        }`}
-      >
-        {pitSubLabel}
-      </span>
+      <span className={`${styles.pitSub} ${styles.pitSubNormal}`}>GEAR</span>
     </div>
   );
 });

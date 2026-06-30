@@ -624,6 +624,8 @@ export type PitState = 'none' | 'in' | 'stall' | 'exit';
 
 export type PitStopsFrame = { playerStops: number };
 
+export type PitTargetType = 'pitbox' | 'pitExit';
+
 export type ProximityFrame = {
   nearbyCars: NearbyCar[];
   radarDistances: RadarDistances;
@@ -778,6 +780,7 @@ export type SessionSnapshot = {
   trackName: string;
   trackDisplayName: string;
   trackConfigName: string;
+  driverPitTrkPct: number | null;
   /**
    * Track length in meters, parsed from iRacing's "3.70 km" / "2.30 mi".
    */
@@ -853,6 +856,9 @@ export type TelemetryBundle = {
   session?: SessionFrame | null;
   environment?: EnvironmentFrame | null;
   track_recording?: TrackRecordingFrame | null;
+  pit_target_dist_m?: number | null;
+  pit_target_type?: PitTargetType | null;
+  pit_lane_progress_pct?: number | null;
 };
 
 export type TireCompoundEntry = { tireIndex: number; tireCompoundType: string };
@@ -863,6 +869,10 @@ export type TrackRecordingFrame = {
   isRecording: boolean;
   isWaitingForSf: boolean;
   progress: number;
+  /**
+   * pit_in_pct detected but pit_exit_pct not yet — actively traversing pit lane.
+   */
+  pitLaneRecording: boolean;
 };
 
 export type TrackShapePayload = {
@@ -870,6 +880,14 @@ export type TrackShapePayload = {
   svgPath: string;
   viewBox: string;
   points: TrackPoint[];
+  /**
+   * Lap distance fraction where player crossed into pit road (on_pit_road false→true).
+   */
+  pitInPct?: number | null;
+  /**
+   * Lap distance fraction where player exited pit road (on_pit_road true→false).
+   */
+  pitExitPct?: number | null;
 };
 
 export type TrackSurface =

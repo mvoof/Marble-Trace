@@ -78,10 +78,10 @@ $widget-throttle: $race-green;
 $widget-brake: $race-red;
 $widget-clutch: $race-blue;
 
-// Pit
-$widget-pit-entry: $race-amber;
-$widget-pit-warning: $race-red;
-$widget-pit-active: $race-blue;
+// Pit — 600-level (deeper than race-* 500s, less glaring on overlay)
+$widget-pit-entry: #eab308; // yellow-500
+$widget-pit-warning: #dc2626; // red-600
+$widget-pit-active: #2563eb; // blue-600
 
 // LED flags — physical flag-panel emulation; kept fully saturated on purpose
 // (these mimic real marshalling lights, not UI accents).

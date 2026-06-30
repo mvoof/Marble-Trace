@@ -1,0 +1,244 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  padding: sp(xxxs) sp(lg);
+}
+
+// ── State backgrounds ──────────────────────────────────────────
+
+.statePitLane {
+  background: $widget-pit-entry;
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.stateLimiter {
+  background: $widget-pit-active;
+  color: #fff;
+}
+
+.stateOverLimit {
+  background: $widget-pit-warning;
+  color: #fff;
+  animation: overLimitPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes overLimitPulse {
+  from {
+    background: $widget-pit-warning;
+  }
+
+  to {
+    background: color-mix(in srgb, $widget-pit-warning 60%, #000);
+  }
+}
+
+// ── Headline row ──────────────────────────────────────────────
+
+.headlineRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: sp(xxxs);
+}
+
+.headlineText {
+  font-family: $font-mono;
+  font-size: fs(lg);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+// ── Speed row — 3-column: [LIM tag] [speed] [delta] ───────────
+
+.speedRow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.limitSide {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.speedCenter {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: sp(xxs);
+}
+
+.deltaSide {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.boxSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  padding-right: sp(xxs);
+  border-right: 3px solid currentColor;
+  opacity: 0.75;
+}
+
+.boxLabel {
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  line-height: 1.1;
+  opacity: 0.6;
+}
+
+.boxBottom {
+  display: flex;
+  align-items: center;
+  gap: sp(xxxs);
+}
+
+.boxDist {
+  font-family: $font-widget;
+  font-size: ws(24);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.boxArrow {
+  width: ws(24);
+  height: ws(24);
+}
+
+.speedNum {
+  font-family: $font-widget;
+  font-size: ws(58);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+// Over limit — red bg, white number so it doesn't blend into the background
+.speedNumOver {
+  color: #fff;
+}
+
+// Approaching limit (within 5 km/h) with limiter off — red on yellow bg
+.speedNumNearLimit {
+  color: $race-red;
+}
+
+.speedUnit {
+  font-family: $font-mono;
+  font-size: fs(md);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+// ── Limit tag — compact text stack with left accent bar ────────
+
+.limitTag {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  padding-left: sp(xxs);
+  border-left: 3px solid currentColor;
+  opacity: 0.75;
+}
+
+.limitTagLabel {
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  line-height: 1.1;
+  opacity: 0.6;
+}
+
+.limitTagNum {
+  font-family: $font-widget;
+  font-size: ws(24);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+// ── Bar section — reserves height, holds distance label + progress bar ─
+
+.barSection {
+  margin-top: sp(xxs);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: sp(xxxs);
+  width: 100%;
+}
+
+.distLabel {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.laneBarTrack {
+  position: relative;
+  width: 100%;
+  height: ws(10);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pitboxZone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba($race-red, 0.75);
+}
+
+.laneBarFill {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 0;
+  transition: width 0.15s linear;
+}
+
+.calibratingLabel {
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  opacity: 0.5;
+  text-align: right;
+  white-space: nowrap;
+  animation: blink 1.2s step-start infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 0.15;
+  }
+}

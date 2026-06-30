@@ -2,7 +2,8 @@ import type React from 'react';
 import type { CapabilitiesPayload } from '@/types/bindings';
 
 type RpmColorTheme = 'custom' | 'gradient' | 'classic';
-export type LedShape = 'square' | 'circle';
+export type LedShape = 'square' | 'circle' | 'parallelogram';
+export type PitBoxSide = 'left' | 'right';
 
 export interface SpeedWidgetSettings {
   rpmColorTheme: RpmColorTheme;
@@ -12,9 +13,12 @@ export interface SpeedWidgetSettings {
   rpmColorShift: string;
   rpmColorLimit: string;
   showRpmBar: boolean;
-  showTemps: boolean;
   showRpmColor: boolean;
   pitSpeedLimitOverride: number | null;
+  showPitAssist: boolean;
+  pitBoxSide: PitBoxSide;
+  boxCueDistM: number;
+  nearLimitDelta: number;
   gearColor: string;
   gearPanelBg: string;
   ledShape: LedShape;

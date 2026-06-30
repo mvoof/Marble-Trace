@@ -18,8 +18,9 @@ use computations::{
 use model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
 
 use commands::{
-    delete_track_shape, get_connection_status, get_last_session_info, set_active_events,
-    set_car_length, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
+    delete_track_shape, get_connection_status, get_last_session_info, reset_pit_lane_pct,
+    set_active_events, set_car_length, set_pit_warning_laps, start_telemetry_stream,
+    stop_telemetry_stream,
 };
 use computations::ProcessorRegistry;
 use telemetry::state::TelemetryState;
@@ -100,9 +101,12 @@ pub fn run() {
 
     let aptabase_key = option_env!("APTABASE_KEY").unwrap_or("");
     let force_track_start = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let reset_pit_pcts = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
 
     let force_track_start_listener = std::sync::Arc::clone(&force_track_start);
     let force_track_start_registry = std::sync::Arc::clone(&force_track_start);
+    let reset_pit_pcts_registry = std::sync::Arc::clone(&reset_pit_pcts);
+    let reset_pit_pcts_state = std::sync::Arc::clone(&reset_pit_pcts);
 
     let builder = Builder::default()
         .plugin(
@@ -155,7 +159,8 @@ pub fn run() {
             set_active_events,
             set_car_length,
             get_connection_status,
-            delete_track_shape
+            delete_track_shape,
+            reset_pit_lane_pct
         ])
         .manage(TelemetryState {
             service: Arc::new(telemetry::state::TelemetryServiceState {
@@ -165,15 +170,19 @@ pub fn run() {
                 start_positions: Mutex::new(std::collections::HashMap::new()),
                 start_positions_session_num: AtomicI32::new(-1),
                 track_length_m: Mutex::new(None),
+                pit_in_pct: Mutex::new(None),
+                pit_exit_pct: Mutex::new(None),
                 active_events: AtomicU32::new(0xFFFFFFFF),
                 car_length_m: Mutex::new(4.4),
             }),
             registry: Arc::new(Mutex::new(ProcessorRegistry::new(
                 force_track_start_registry,
+                reset_pit_pcts_registry,
             ))),
             pit_warning_laps: Arc::new(AtomicU32::new(
                 crate::computations::fuel::DEFAULT_PIT_WARNING_LAPS.to_bits(),
             )),
+            reset_pit_pcts: reset_pit_pcts_state,
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {

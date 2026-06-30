@@ -2,9 +2,9 @@
 use std::sync::atomic::Ordering;
 use std::time::Duration;
 
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 use tokio::time::sleep;
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 
 use crate::model::session::SessionSnapshot;
 use crate::telemetry::runtime::spawn_telemetry_thread;
@@ -91,6 +91,69 @@ pub async fn stop_telemetry_stream(state: State<'_, TelemetryState>) -> Result<(
 
     debug!("Telemetry stream stopped");
 
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn reset_pit_lane_pct(
+    app: AppHandle,
+    state: State<'_, TelemetryState>,
+    track_id: i32,
+) -> Result<(), String> {
+    use crate::model::track_shape::TrackShapePayload;
+    use crate::telemetry::emitter::EVENT_TRACK_SHAPE;
+    use std::fs;
+
+    info!("reset_pit_lane_pct command received for track {}", track_id);
+
+    let Ok(data_dir) = app.path().app_data_dir() else {
+        warn!("Failed to resolve app data dir in reset_pit_lane_pct");
+        return Err("Cannot resolve app data dir".to_string());
+    };
+
+    let path = data_dir.join("tracks").join(format!("{}.json", track_id));
+
+    let Ok(bytes) = fs::read(&path) else {
+        warn!("No track file found at {:?}, nothing to reset", path);
+        return Ok(());
+    };
+
+    let Ok(mut value) = serde_json::from_slice::<serde_json::Value>(&bytes) else {
+        warn!("Failed to parse track json from {:?}", path);
+        return Ok(());
+    };
+
+    if let Some(obj) = value.as_object_mut() {
+        obj.remove("pitInPct");
+        obj.remove("pitExitPct");
+    }
+
+    let Ok(json) = serde_json::to_string(&value) else {
+        warn!("Failed to serialize track JSON after removing pit pcts");
+        return Ok(());
+    };
+
+    if fs::write(&path, &json).is_ok() {
+        info!("Successfully removed pit pcts from {:?} on disk", path);
+        if let Ok(payload) = serde_json::from_str::<TrackShapePayload>(&json) {
+            let _ = app.emit(EVENT_TRACK_SHAPE, &payload);
+        }
+    } else {
+        warn!("Failed to write updated track JSON to {:?}", path);
+    }
+
+    if let Ok(mut lock) = state.service.pit_in_pct.lock() {
+        *lock = None;
+    }
+    if let Ok(mut lock) = state.service.pit_exit_pct.lock() {
+        *lock = None;
+    }
+
+    state
+        .reset_pit_pcts
+        .store(true, std::sync::atomic::Ordering::Relaxed);
+
+    info!("Pit lane pcts successfully reset in memory and scheduled for processor");
     Ok(())
 }
 

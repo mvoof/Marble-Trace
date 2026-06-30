@@ -3,30 +3,24 @@
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: row;
-  align-items: stretch;
+  flex-direction: column;
   overflow: hidden;
 }
 
-.rightPanel {
+.mainRow {
   flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: sp(md) sp(xl) sp(md);
-}
-
-.speedRow {
+  min-height: 0;
   display: flex;
   flex-direction: row;
-  align-items: baseline;
-  justify-content: space-between;
+  align-items: stretch;
 }
 
-.tempsOverlay {
-  position: absolute;
-  top: sp(lg);
-  right: sp(lg);
-  pointer-events: none;
+.centerRight {
+  flex: 1 1 0;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: sp(sm) sp(md) sp(sm) 0;
 }

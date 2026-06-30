@@ -1,3 +1,5 @@
+export const convertFileSrc = (path: string): string => path;
+
 export const invoke = async (
   _cmd: string,
   _args?: unknown

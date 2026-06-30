@@ -4,6 +4,7 @@
   align-items: center;
   gap: sp(xxs);
   width: 100%;
+  padding: sp(xxs) sp(xs);
 }
 
 .rpmSeg {
@@ -16,9 +17,6 @@
 
 .rpmSegLit {
   background: var(--rpm-seg-color);
-  box-shadow:
-    0 0 ws(6) var(--rpm-seg-color),
-    0 0 ws(3) var(--rpm-seg-color);
 }
 
 .rpmBarBlink .rpmSeg {

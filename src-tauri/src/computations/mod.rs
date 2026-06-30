@@ -81,6 +81,11 @@ pub enum ComputedOutput {
     Standings(DriverEntriesFrame),
     TrackShape(TrackShapePayload),
     TrackRecording(TrackRecordingFrame),
+    PitLanePct {
+        track_id: i32,
+        pit_in_pct: f32,
+        pit_exit_pct: f32,
+    },
 }
 
 pub trait Processor: Send {
@@ -97,7 +102,10 @@ pub struct ProcessorRegistry {
 }
 
 impl ProcessorRegistry {
-    pub fn new(force_track_start: std::sync::Arc<std::sync::atomic::AtomicBool>) -> Self {
+    pub fn new(
+        force_track_start: std::sync::Arc<std::sync::atomic::AtomicBool>,
+        reset_pit_pcts: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    ) -> Self {
         Self {
             processors: vec![
                 Box::new(FuelProcessor::default()),
@@ -107,7 +115,7 @@ impl ProcessorRegistry {
                 Box::new(ProximityProcessor),
                 Box::new(RelativeProcessor::default()),
                 Box::new(StandingsProcessor::default()),
-                Box::new(TrackShapeProcessor::new(force_track_start)),
+                Box::new(TrackShapeProcessor::new(force_track_start, reset_pit_pcts)),
             ],
         }
     }

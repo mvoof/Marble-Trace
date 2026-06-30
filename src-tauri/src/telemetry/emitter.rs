@@ -86,6 +86,12 @@ pub struct TelemetryBundle {
     pub environment: Option<EnvironmentFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub track_recording: Option<TrackRecordingFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pit_target_dist_m: Option<f32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pit_target_type: Option<crate::model::enums::PitTargetType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pit_lane_progress_pct: Option<f32>,
 }
 
 pub fn emit_domain_frames(ctx: EmitContext<'_>) {
@@ -112,6 +118,9 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
         session: None,
         environment: None,
         track_recording: None,
+        pit_target_dist_m: None,
+        pit_target_type: None,
+        pit_lane_progress_pct: None,
     };
 
     // 60 Hz — raw frames
@@ -165,7 +174,78 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
 
                     save_track_shape(app, payload);
                 }
+                ComputedOutput::PitLanePct {
+                    track_id,
+                    pit_in_pct,
+                    pit_exit_pct,
+                } => {
+                    if let Ok(mut lock) = ctx.service.pit_in_pct.lock() {
+                        *lock = Some(pit_in_pct);
+                    }
+                    if let Ok(mut lock) = ctx.service.pit_exit_pct.lock() {
+                        *lock = Some(pit_exit_pct);
+                    }
+                    patch_pit_lane_pct(app, track_id, pit_in_pct, pit_exit_pct);
+                }
                 other => scatter_output(&mut bundle, other),
+            }
+        }
+
+        // Compute real-time pit target distance and type
+        let lap_dist_pct = frame.lap_timing.lap_dist_pct;
+        let pit_in_pct = ctx
+            .service
+            .pit_in_pct
+            .lock()
+            .map(|lock| *lock)
+            .unwrap_or(None);
+        let pit_exit_pct = ctx
+            .service
+            .pit_exit_pct
+            .lock()
+            .map(|lock| *lock)
+            .unwrap_or(None);
+        let pitbox_pct = session.driver_pit_trk_pct;
+
+        if let (Some(lap_dist), Some(pit_in), Some(pit_exit)) =
+            (lap_dist_pct, pit_in_pct, pit_exit_pct)
+        {
+            if track_length > 0.0 {
+                let raw_lane_length = (pit_exit - pit_in + 1.0) % 1.0;
+                let lane_length_pct = if raw_lane_length == 0.0 {
+                    1.0
+                } else {
+                    raw_lane_length
+                };
+                let traveled_pct = (lap_dist - pit_in + 1.0) % 1.0;
+                let progress = (traveled_pct / lane_length_pct).min(1.0);
+                let dist_to_exit_m = (1.0 - progress) * lane_length_pct * track_length;
+
+                let mut target_dist = dist_to_exit_m;
+                let mut target_type = crate::model::enums::PitTargetType::PitExit;
+
+                if let Some(pitbox) = pitbox_pct {
+                    let mut dist_to_pitbox = (pitbox - lap_dist) * track_length;
+                    let half_track = track_length * 0.5;
+                    let wrap_threshold = half_track + 10.0;
+
+                    if dist_to_pitbox.abs() > wrap_threshold {
+                        if dist_to_pitbox > 0.0 {
+                            dist_to_pitbox -= track_length;
+                        } else {
+                            dist_to_pitbox += track_length;
+                        }
+                    }
+
+                    if dist_to_pitbox > -10.0 {
+                        target_dist = dist_to_pitbox.max(0.0);
+                        target_type = crate::model::enums::PitTargetType::Pitbox;
+                    }
+                }
+
+                bundle.pit_target_dist_m = Some(target_dist);
+                bundle.pit_target_type = Some(target_type);
+                bundle.pit_lane_progress_pct = Some(progress);
             }
         }
 
@@ -217,6 +297,7 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
         ComputedOutput::Standings(frame) => bundle.standings = Some(frame),
         ComputedOutput::TrackRecording(frame) => bundle.track_recording = Some(frame),
         ComputedOutput::TrackShape(_) => {} // handled in Hz60 loop directly
+        ComputedOutput::PitLanePct { .. } => {} // handled in Hz60 loop directly
     }
 }
 
@@ -248,5 +329,56 @@ fn save_track_shape(app: &AppHandle, payload: &TrackShapePayload) {
 
     if let Ok(json) = serde_json::to_string(&stored) {
         let _ = fs::write(&path, json);
+    }
+}
+
+fn patch_pit_lane_pct(app: &AppHandle, track_id: i32, pit_in_pct: f32, pit_exit_pct: f32) {
+    use std::fs;
+    use tracing::info;
+
+    info!(
+        "patch_pit_lane_pct triggered for track {} (in: {}, exit: {})",
+        track_id, pit_in_pct, pit_exit_pct
+    );
+
+    let Ok(data_dir) = app.path().app_data_dir() else {
+        warn!("Failed to resolve app data dir in patch_pit_lane_pct");
+        return;
+    };
+
+    let path = data_dir.join("tracks").join(format!("{}.json", track_id));
+
+    let Ok(bytes) = fs::read(&path) else {
+        warn!("Failed to read track JSON file from {:?} in patch_pit_lane_pct (maybe track is not complete/recorded yet)", path);
+        return;
+    };
+
+    let Ok(mut value) = serde_json::from_slice::<serde_json::Value>(&bytes) else {
+        warn!("Failed to parse track JSON from {:?}", path);
+        return;
+    };
+
+    if let Some(obj) = value.as_object_mut() {
+        obj.insert("pitInPct".to_string(), serde_json::json!(pit_in_pct));
+        obj.insert("pitExitPct".to_string(), serde_json::json!(pit_exit_pct));
+    }
+
+    let Ok(json) = serde_json::to_string(&value) else {
+        warn!("Failed to serialize patched JSON in patch_pit_lane_pct");
+        return;
+    };
+
+    if fs::write(&path, &json).is_ok() {
+        info!(
+            "Successfully patched and saved pit lane calibration to {:?}",
+            path
+        );
+        if let Ok(payload) = serde_json::from_str::<TrackShapePayload>(&json) {
+            if let Err(e) = app.emit(EVENT_TRACK_SHAPE, &payload) {
+                warn!("Failed to re-emit track shape after pit pct patch: {}", e);
+            }
+        }
+    } else {
+        warn!("Failed to write patched track JSON back to {:?}", path);
     }
 }
