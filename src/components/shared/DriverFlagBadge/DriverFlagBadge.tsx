@@ -30,6 +30,7 @@ export const DriverFlagBadge = ({ type }: DriverFlagBadgeProps) => {
   return (
     <div className={`${styles.flagBadge} ${styles[type]}`} title={getTitle()}>
       {type === 'meatball' && <span className={styles.orangeCircle} />}
+      {type === 'dq' && <span className={styles.dqX} />}
     </div>
   );
 };

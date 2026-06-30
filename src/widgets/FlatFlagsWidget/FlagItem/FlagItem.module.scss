@@ -72,6 +72,15 @@
   }
 }
 
+.itemDq {
+  background-color: #111;
+  color: $race-red;
+
+  &::before {
+    color: rgba($race-red, 0.6);
+  }
+}
+
 .itemBlinkOff {
   background-color: #2a2a2a !important;
   color: #555 !important;

@@ -18,7 +18,7 @@ const FLAG_ITEM_CLASS: Record<FlagType, string> = {
   meatball: styles.itemMeatball,
   debris: styles.itemDebris,
   penalty: styles.itemBlack,
-  dq: styles.itemBlack,
+  dq: styles.itemDq,
 };
 
 interface FlagItemProps {

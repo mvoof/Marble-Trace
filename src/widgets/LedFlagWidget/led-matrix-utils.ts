@@ -11,6 +11,7 @@ export interface ColorStyles {
   colorOrange: string;
   colorCheckered?: string;
   colorDebris?: string;
+  colorDq?: string;
 }
 
 export const getColorClass = (
@@ -62,6 +63,15 @@ export const getColorClass = (
     case 'black':
       return isEdge ? styles.colorWhite : '';
 
+    case 'dq': {
+      if (isEdge) return styles.colorWhite;
+      const normX = gx / (matrixSizeX - 1);
+      const normY = gy / (matrixSizeY - 1);
+      const onDiag1 = Math.abs(normX - normY) < 0.15;
+      const onDiag2 = Math.abs(normX - (1 - normY)) < 0.15;
+      return onDiag1 || onDiag2 ? styles.colorRed : '';
+    }
+
     case 'meatball': {
       if (isEdge) return styles.colorWhite;
       const cx = matrixSizeX / 2 - 0.5;
@@ -98,6 +108,8 @@ export const getSingleLedColorClass = (
       return styles.colorOrange;
     case 'debris':
       return styles.colorDebris || styles.colorYellow;
+    case 'dq':
+      return styles.colorDq || styles.colorRed;
     default:
       return '';
   }
