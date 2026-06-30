@@ -13,6 +13,7 @@ const ALL_FLAGS: FlagType[] = [
   'checkered',
   'black',
   'debris',
+  'dq',
 ];
 
 interface StoryArgs {
@@ -42,4 +43,5 @@ export const NoFlags: Story = {};
 export const SingleGreen: Story = { args: { flags: ['green'] } };
 export const Yellow: Story = { args: { flags: ['yellow'] } };
 export const MultipleFlags: Story = { args: { flags: ['yellow', 'debris'] } };
+export const DqFlag: Story = { args: { flags: ['dq'] } };
 export const AllFlags: Story = { args: { flags: ALL_FLAGS } };

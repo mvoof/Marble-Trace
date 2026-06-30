@@ -155,9 +155,12 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
             : driver.userName}
         </span>
 
-        {isOut && <DriverStatusBadge status="out" />}
-        {isOffTrack && <DriverStatusBadge status="off_track" />}
-        {settings.showPitIndicator && isPit && (
+        {flagType === 'dq' && <DriverStatusBadge status="dnf" />}
+        {isOut && flagType !== 'dq' && <DriverStatusBadge status="out" />}
+        {isOffTrack && flagType !== 'dq' && (
+          <DriverStatusBadge status="off_track" />
+        )}
+        {settings.showPitIndicator && isPit && flagType !== 'dq' && (
           <DriverStatusBadge
             status={
               pitState === 'in'

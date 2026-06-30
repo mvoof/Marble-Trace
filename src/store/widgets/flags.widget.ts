@@ -11,8 +11,12 @@ const NO_FLAGS: FlagType[] = [];
 const flagsToList = (flags: RaceFlags): FlagType[] => {
   const result: FlagType[] = [];
 
-  if (flags.black || flags.disqualify) {
+  if (flags.black) {
     result.push('black');
+  }
+
+  if (flags.disqualify) {
+    result.push('dq');
   }
 
   if (flags.meatball) {
@@ -51,7 +55,11 @@ const flagsToList = (flags: RaceFlags): FlagType[] => {
 };
 
 const flagToPriority = (flags: RaceFlags): FlagType => {
-  if (flags.black || flags.disqualify) {
+  if (flags.disqualify) {
+    return 'dq';
+  }
+
+  if (flags.black) {
     return 'black';
   }
 

@@ -58,6 +58,10 @@
   );
 }
 
+.colorDq {
+  background-color: color-mix(in srgb, $led-red 40%, $led-surface-panel);
+}
+
 .singleLed.animate {
   .colorGreen {
     animation: singleGreenPulse 1s infinite steps(1);
@@ -89,6 +93,10 @@
 
   .colorDebris {
     animation: singleDebrisAlternating 1s infinite steps(1);
+  }
+
+  .colorDq {
+    animation: singleDqDoubleBlink 1.2s infinite steps(1);
   }
 }
 
@@ -169,6 +177,25 @@
   50%,
   100% {
     background: $led-surface-panel;
+  }
+}
+
+@keyframes singleDqDoubleBlink {
+  0%,
+  16.66% {
+    background-color: $led-red;
+  }
+  16.67%,
+  33.33% {
+    background-color: color-mix(in srgb, $led-red 40%, $led-surface-panel);
+  }
+  33.34%,
+  50% {
+    background-color: $led-red;
+  }
+  50.01%,
+  100% {
+    background-color: color-mix(in srgb, $led-red 40%, $led-surface-panel);
   }
 }
 

@@ -216,6 +216,14 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     },
   },
   {
+    id: 'dq-flag',
+    label: 'Disqualify flag (DQ)',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      applyFlags(store, { disqualify: true });
+    },
+  },
+  {
     id: 'green-flag',
     label: 'Green flag',
     apply: (store) => {
