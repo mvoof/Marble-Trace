@@ -5,7 +5,7 @@ import {
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import type { SpeedWidgetSettings } from '@/types/widget-settings';
+import type { PitBoxSide, SpeedWidgetSettings } from '@/types/widget-settings';
 import {
   formatSpeed,
   MPS_TO_KMH,
@@ -35,9 +35,16 @@ export interface PitStateResult {
   distM: number | null;
   /** Progress through pit lane 0..1. null = not calibrated. */
   pitLaneProgressPct: number | null;
+  /** Total pit lane length in meters. null = not calibrated. */
+  pitLaneLengthM: number | null;
+  /** Pitbox position as fraction of pit lane 0..1. null = not calibrated. */
+  pitboxLanePct: number | null;
   /** pit_in_pct recorded but pit_exit_pct not yet — actively traversing pit lane for calibration. */
   isPitLaneRecording: boolean;
   showPitAssist: boolean;
+  pitBoxSide: PitBoxSide;
+  boxCueDistM: number;
+  nearLimitDelta: number;
   throttle: number;
   brake: number;
 }
@@ -50,8 +57,13 @@ export const usePitState = (): PitStateResult => {
   const trackMap = useTrackMapWidgetStore();
   const isPitLaneRecording = trackMap.isPitLaneRecording;
 
-  const { pitSpeedLimitOverride, showPitAssist } =
-    widgetSettings.getSettings<SpeedWidgetSettings>('speed');
+  const {
+    pitSpeedLimitOverride,
+    showPitAssist,
+    pitBoxSide,
+    boxCueDistM,
+    nearLimitDelta,
+  } = widgetSettings.getSettings<SpeedWidgetSettings>('speed');
   const system = units.unitSystem;
   const speedFactor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
 
@@ -111,6 +123,32 @@ export const usePitState = (): PitStateResult => {
     return 'LIM OFF';
   })();
 
+  const trackLengthM = sessionInfo?.trackLengthM ?? 0;
+  const pitInPct = trackMap.trackShape?.pitInPct ?? null;
+  const pitExitPct = trackMap.trackShape?.pitExitPct ?? null;
+  const pitboxPct = sessionInfo?.driverPitTrkPct ?? null;
+
+  const pitLaneLengthM = (() => {
+    if (pitInPct === null || pitExitPct === null || trackLengthM <= 0)
+      return null;
+
+    return ((pitExitPct - pitInPct + 1) % 1) * trackLengthM;
+  })();
+
+  const pitboxLanePct = (() => {
+    if (pitInPct === null || pitExitPct === null || pitboxPct === null)
+      return null;
+
+    const laneLengthPct = (pitExitPct - pitInPct + 1) % 1;
+
+    if (laneLengthPct <= 0) return null;
+
+    return Math.min(
+      Math.max(((pitboxPct - pitInPct + 1) % 1) / laneLengthPct, 0),
+      1
+    );
+  })();
+
   return {
     pitState,
     pitLimitMs,
@@ -125,7 +163,12 @@ export const usePitState = (): PitStateResult => {
     distMode: player.pitTargetType,
     distM: player.pitTargetDistM,
     pitLaneProgressPct: player.pitLaneProgressPct,
+    pitLaneLengthM,
+    pitboxLanePct,
     showPitAssist,
+    pitBoxSide,
+    boxCueDistM,
+    nearLimitDelta,
     isPitLaneRecording,
     throttle: player.carInputs?.throttle ?? 0,
     brake: player.carInputs?.brake ?? 0,

@@ -71,6 +71,45 @@
   justify-content: flex-end;
 }
 
+.boxSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+  padding-right: sp(xxs);
+  border-right: 3px solid currentColor;
+  opacity: 0.75;
+}
+
+.boxLabel {
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  line-height: 1.1;
+  opacity: 0.6;
+}
+
+.boxBottom {
+  display: flex;
+  align-items: center;
+  gap: sp(xxxs);
+}
+
+.boxDist {
+  font-family: $font-widget;
+  font-size: ws(24);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.boxArrow {
+  width: ws(24);
+  height: ws(24);
+}
+
 .speedNum {
   font-family: $font-widget;
   font-size: ws(58);
@@ -80,7 +119,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+// Over limit — red bg, white number so it doesn't blend into the background
 .speedNumOver {
+  color: #fff;
+}
+
+// Approaching limit (within 5 km/h) with limiter off — red on yellow bg
+.speedNumNearLimit {
   color: $race-red;
 }
 
@@ -143,11 +188,19 @@
 }
 
 .laneBarTrack {
+  position: relative;
   width: 100%;
   height: ws(10);
   background: rgba(0, 0, 0, 0.3);
   border-radius: 2px;
   overflow: hidden;
+}
+
+.pitboxZone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba($race-red, 0.75);
 }
 
 .laneBarFill {
@@ -177,14 +230,4 @@
   50% {
     opacity: 0.15;
   }
-}
-
-// Near exit — highlight bar and label green
-.barSectionReady .distLabel {
-  opacity: 1;
-  color: $race-green;
-}
-
-.barSectionReady .laneBarFill {
-  background: $race-green;
 }

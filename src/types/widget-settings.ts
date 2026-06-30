@@ -3,6 +3,7 @@ import type { CapabilitiesPayload } from '@/types/bindings';
 
 type RpmColorTheme = 'custom' | 'gradient' | 'classic';
 export type LedShape = 'square' | 'circle' | 'parallelogram';
+export type PitBoxSide = 'left' | 'right';
 
 export interface SpeedWidgetSettings {
   rpmColorTheme: RpmColorTheme;
@@ -15,6 +16,9 @@ export interface SpeedWidgetSettings {
   showRpmColor: boolean;
   pitSpeedLimitOverride: number | null;
   showPitAssist: boolean;
+  pitBoxSide: PitBoxSide;
+  boxCueDistM: number;
+  nearLimitDelta: number;
   gearColor: string;
   gearPanelBg: string;
   ledShape: LedShape;
