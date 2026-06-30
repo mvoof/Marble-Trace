@@ -94,3 +94,19 @@ export const getWeatherIcon = (
 
   return 'sun';
 };
+
+const SKIES_LABELS: Record<string, string> = {
+  Clear: 'Clear',
+  '0': 'Clear',
+  PartlyCloudy: 'Partly Cloudy',
+  '1': 'Partly Cloudy',
+  MostlyCloudy: 'Mostly Cloudy',
+  '2': 'Mostly Cloudy',
+  Overcast: 'Overcast',
+  '3': 'Overcast',
+};
+
+export const getSkiesLabel = (
+  skies: string | number | null | undefined
+): string =>
+  skies != null ? (SKIES_LABELS[String(skies)] ?? String(skies)) : 'Clear';

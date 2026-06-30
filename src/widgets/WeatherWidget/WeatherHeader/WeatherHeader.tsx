@@ -2,7 +2,11 @@ import { observer } from 'mobx-react-lite';
 import { Sun, CloudSun, Cloud, CloudRain } from 'lucide-react';
 
 import { convertTemp, tempUnit } from '@utils/formatters/telemetry-format';
-import { parseWeekendFloat, getWeatherIcon } from '@utils/widget/weather-utils';
+import {
+  parseWeekendFloat,
+  getWeatherIcon,
+  getSkiesLabel,
+} from '@utils/widget/weather-utils';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import {
   useEnvironmentStore,
@@ -19,15 +23,6 @@ const ICON_MAP = {
   cloud: Cloud,
   'cloud-rain': CloudRain,
 };
-
-const SKIES_LABELS: Record<string, string> = {
-  Clear: 'Clear',
-  PartlyCloudy: 'Partly Cloudy',
-  MostlyCloudy: 'Mostly Cloudy',
-  Overcast: 'Overcast',
-};
-
-const ICON_COLOR = '#ffffff';
 
 export const WeatherHeader = observer(() => {
   const units = useUnitsStore();
@@ -52,20 +47,19 @@ export const WeatherHeader = observer(() => {
 
   const iconName = getWeatherIcon(skies, wetness);
   const WeatherIcon = ICON_MAP[iconName] ?? Sun;
-  const iconColor = ICON_COLOR;
 
-  const skiesLabel = skies ? (SKIES_LABELS[skies] ?? skies) : 'Clear';
+  const skiesLabel = getSkiesLabel(skies);
 
   return (
     <div className={`${styles.header} ${showCompass ? styles.hasCompass : ''}`}>
       <div className={styles.conditionSection}>
         <div className={styles.iconWrapper}>
-          <WeatherIcon size={24} color={iconColor} className={styles.icon} />
+          <WeatherIcon size={24} className={styles.icon} />
         </div>
         <span className={styles.conditionText}>{skiesLabel}</span>
       </div>
 
-      {airTempC !== null && (
+      {airTempC != null && (
         <span className={styles.airTempValue}>
           {Math.round(convertTemp(airTempC, unitSystem))}
           <span className={styles.unit}>{tUnit}</span>
