@@ -496,6 +496,10 @@ mod tests {
             player_car_sl_shift_rpm: vec![],
             player_car_sl_blink_rpm: vec![],
             flags: Default::default(),
+            dc_abs: None,
+            dc_brake_bias: None,
+            dc_traction_control: None,
+            dc_throttle_shape: None,
         }
     }
 

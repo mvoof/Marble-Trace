@@ -161,6 +161,18 @@ pub struct CarStatusFrame {
 
     /// Decoded race flag state for the session and the player's car.
     pub flags: RaceFlags,
+
+    /// In car abs adjustment
+    pub dc_abs: Option<f32>,
+
+    /// In car brake bias adjustment
+    pub dc_brake_bias: Option<f32>,
+
+    /// In car traction control adjustment
+    pub dc_traction_control: Option<f32>,
+
+    /// In car throttle shape adjustment
+    pub dc_throttle_shape: Option<f32>,
 }
 
 // iRacing emits uninitialized memory (garbage floats or zeroes) for temp fields

@@ -306,6 +306,22 @@ export type CarStatusFrame = {
    * Decoded race flag state for the session and the player's car.
    */
   flags: RaceFlags;
+  /**
+   * In car abs adjustment
+   */
+  dc_abs: number | null;
+  /**
+   * In car brake bias adjustment
+   */
+  dc_brake_bias: number | null;
+  /**
+   * In car traction control adjustment
+   */
+  dc_traction_control: number | null;
+  /**
+   * In car throttle shape adjustment
+   */
+  dc_throttle_shape: number | null;
 };
 
 /**

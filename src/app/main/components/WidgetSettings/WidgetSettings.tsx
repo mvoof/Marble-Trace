@@ -18,6 +18,7 @@ import { ChassisSettingsPanel } from './panels/ChassisSettingsPanel';
 import { TimerSettingsPanel } from './panels/TimerSettingsPanel';
 import { FlagDisplaySettingsPanel } from './panels/FlagDisplaySettingsPanel';
 import { GMeterSettingsPanel } from './panels/GMeterSettingsPanel';
+import { EnginePanelSettingsPanel } from './panels/EnginePanelSettingsPanel';
 import { useWidgetEditor } from './WidgetEditorContext';
 
 export const WidgetSettings = observer(
@@ -203,6 +204,7 @@ export const WidgetSettings = observer(
           <FlagDisplaySettingsPanel widgetId={widgetId} />
         )}
         {widgetId === 'g-meter' && <GMeterSettingsPanel />}
+        {widgetId === 'engine-panel' && <EnginePanelSettingsPanel />}
       </div>
     );
   }
