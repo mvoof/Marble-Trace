@@ -174,8 +174,10 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
         {flagType === 'dq' && <DriverStatusBadge status="dnf" />}
         {isOut && flagType !== 'dq' && <DriverStatusBadge status="out" />}
-        {isOffTrack && <DriverStatusBadge status="off_track" />}
-        {isPit && (
+        {isOffTrack && flagType !== 'dq' && (
+          <DriverStatusBadge status="off_track" />
+        )}
+        {isPit && flagType !== 'dq' && (
           <DriverStatusBadge
             status={
               pitState === 'in'

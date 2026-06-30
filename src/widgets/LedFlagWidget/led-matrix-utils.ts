@@ -65,8 +65,8 @@ export const getColorClass = (
 
     case 'dq': {
       if (isEdge) return styles.colorWhite;
-      const normX = gx / (matrixSizeX - 1);
-      const normY = gy / (matrixSizeY - 1);
+      const normX = matrixSizeX > 1 ? gx / (matrixSizeX - 1) : 0.5;
+      const normY = matrixSizeY > 1 ? gy / (matrixSizeY - 1) : 0.5;
       const onDiag1 = Math.abs(normX - normY) < 0.15;
       const onDiag2 = Math.abs(normX - (1 - normY)) < 0.15;
       return onDiag1 || onDiag2 ? styles.colorRed : '';
