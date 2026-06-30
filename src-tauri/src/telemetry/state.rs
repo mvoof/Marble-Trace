@@ -23,6 +23,9 @@ pub struct TelemetryServiceState {
     pub active_events: AtomicU32,
     /// Configurable player car length in meters.
     pub car_length_m: Mutex<f32>,
+    /// Set when a cached track was loaded from disk; consumed by TrackShapeProcessor
+    /// on the first tick after a track_id change to skip re-recording.
+    pub track_cached: Arc<AtomicBool>,
 }
 
 /// Bitmask flags for high-frequency events.

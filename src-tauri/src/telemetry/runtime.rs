@@ -333,6 +333,9 @@ fn try_load_and_emit_track(app: &AppHandle, track_id: i32, service: &TelemetrySe
     if let Err(e) = app.emit(EVENT_TRACK_SHAPE, &stored.payload) {
         warn!("Failed to emit cached track shape: {}", e);
     }
+
+    // Signal TrackShapeProcessor to skip re-recording since the track already exists.
+    service.track_cached.store(true, Ordering::Relaxed);
 }
 
 /// Updates start_positions from QualifyResultsInfo (the pre-race grid order).

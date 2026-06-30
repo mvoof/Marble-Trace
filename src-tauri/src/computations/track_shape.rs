@@ -230,6 +230,8 @@ pub struct TrackShapeProcessor {
     last_track_id: Option<i32>,
     force_start: Arc<AtomicBool>,
     reset_pit_pcts: Arc<AtomicBool>,
+    /// Set externally when a cached track was loaded from disk — skip re-recording.
+    track_cached: Arc<AtomicBool>,
     status_tick: u64,
     last_lap_dist_pct: f32,
     /// Previous frame's on_pit_road per car (CarIdx-indexed).
@@ -241,12 +243,17 @@ pub struct TrackShapeProcessor {
 }
 
 impl TrackShapeProcessor {
-    pub fn new(force_start: Arc<AtomicBool>, reset_pit_pcts: Arc<AtomicBool>) -> Self {
+    pub fn new(
+        force_start: Arc<AtomicBool>,
+        reset_pit_pcts: Arc<AtomicBool>,
+        track_cached: Arc<AtomicBool>,
+    ) -> Self {
         Self {
             state: TrackShapeState::default(),
             last_track_id: None,
             force_start,
             reset_pit_pcts,
+            track_cached,
             status_tick: 0,
             last_lap_dist_pct: -1.0,
             prev_on_pit_road: Vec::new(),
@@ -280,6 +287,11 @@ impl Processor for TrackShapeProcessor {
             self.prev_on_pit_road.clear();
             self.prev_track_surface.clear();
             self.pit_in_pcts_by_car.clear();
+
+            // A cached track was loaded from disk for this track_id — skip re-recording.
+            if self.track_cached.swap(false, Ordering::Relaxed) {
+                self.state.complete = true;
+            }
         }
 
         let speed = ctx.car_dynamics.speed;
@@ -572,6 +584,7 @@ mod tests {
         TrackShapeProcessor::new(
             Arc::new(AtomicBool::new(false)),
             Arc::new(AtomicBool::new(false)),
+            Arc::new(AtomicBool::new(false)),
         )
     }
 
@@ -708,6 +721,45 @@ mod tests {
     }
 
     #[test]
+    fn track_cached_flag_skips_recording() {
+        let track_cached = Arc::new(AtomicBool::new(true));
+        let mut proc = TrackShapeProcessor::new(
+            Arc::new(AtomicBool::new(false)),
+            Arc::new(AtomicBool::new(false)),
+            Arc::clone(&track_cached),
+        );
+        let session = make_session(1);
+        let dynamics = make_dynamics(10.0, 0.0);
+        let lap_timing = make_lap_timing(0.5);
+        let car_status = make_car_status();
+        let car_idx = make_car_idx();
+        let start_pos = HashMap::new();
+
+        let ctx = make_ctx(
+            &dynamics,
+            &lap_timing,
+            &car_status,
+            &session,
+            &car_idx,
+            &start_pos,
+        );
+        let _ = proc.compute(&ctx);
+
+        assert!(
+            proc.state.complete,
+            "processor must be complete when track_cached was set"
+        );
+        assert!(
+            !proc.state.recording,
+            "processor must not start recording when track_cached was set"
+        );
+        assert!(
+            !track_cached.load(Ordering::Relaxed),
+            "track_cached flag must be consumed"
+        );
+    }
+
+    #[test]
     fn resets_on_track_id_change() {
         let mut proc = make_processor();
         let session2 = make_session(99);
@@ -738,8 +790,11 @@ mod tests {
     #[test]
     fn force_start_triggers_recording() {
         let flag = Arc::new(AtomicBool::new(true));
-        let mut proc =
-            TrackShapeProcessor::new(Arc::clone(&flag), Arc::new(AtomicBool::new(false)));
+        let mut proc = TrackShapeProcessor::new(
+            Arc::clone(&flag),
+            Arc::new(AtomicBool::new(false)),
+            Arc::new(AtomicBool::new(false)),
+        );
 
         let session = make_session(1);
         let dynamics = make_dynamics(10.0, 0.0);

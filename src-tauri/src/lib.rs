@@ -102,11 +102,14 @@ pub fn run() {
     let aptabase_key = option_env!("APTABASE_KEY").unwrap_or("");
     let force_track_start = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     let reset_pit_pcts = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let track_cached = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
 
     let force_track_start_listener = std::sync::Arc::clone(&force_track_start);
     let force_track_start_registry = std::sync::Arc::clone(&force_track_start);
     let reset_pit_pcts_registry = std::sync::Arc::clone(&reset_pit_pcts);
     let reset_pit_pcts_state = std::sync::Arc::clone(&reset_pit_pcts);
+    let track_cached_registry = std::sync::Arc::clone(&track_cached);
+    let track_cached_service = std::sync::Arc::clone(&track_cached);
 
     let builder = Builder::default()
         .plugin(
@@ -174,10 +177,12 @@ pub fn run() {
                 pit_exit_pct: Mutex::new(None),
                 active_events: AtomicU32::new(0xFFFFFFFF),
                 car_length_m: Mutex::new(4.4),
+                track_cached: track_cached_service,
             }),
             registry: Arc::new(Mutex::new(ProcessorRegistry::new(
                 force_track_start_registry,
                 reset_pit_pcts_registry,
+                track_cached_registry,
             ))),
             pit_warning_laps: Arc::new(AtomicU32::new(
                 crate::computations::fuel::DEFAULT_PIT_WARNING_LAPS.to_bits(),
