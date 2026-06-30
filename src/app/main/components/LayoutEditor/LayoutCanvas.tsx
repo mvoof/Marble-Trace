@@ -175,19 +175,19 @@ export const LayoutCanvas = observer(
 
         switch (event.key) {
           case 'ArrowUp':
-            newY = currentY - step;
+            newY = newY - step;
             handled = true;
             break;
           case 'ArrowDown':
-            newY = currentY + step;
+            newY = newY + step;
             handled = true;
             break;
           case 'ArrowLeft':
-            newX = currentX - step;
+            newX = newX - step;
             handled = true;
             break;
           case 'ArrowRight':
-            newX = currentX + step;
+            newX = newX + step;
             handled = true;
             break;
           case 'Delete':

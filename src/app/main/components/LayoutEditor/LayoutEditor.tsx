@@ -932,8 +932,10 @@ export const LayoutEditor = observer(
                   icon={<Image size={14} />}
                   disabled={!activeLayout}
                   onClick={() => {
-                    setIsUploadingBackground(true);
-                    backgroundInputRef.current?.click();
+                    if (backgroundInputRef.current) {
+                      setIsUploadingBackground(true);
+                      backgroundInputRef.current.click();
+                    }
                   }}
                 />
               </Tooltip>
