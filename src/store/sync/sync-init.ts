@@ -161,7 +161,9 @@ export const initMainSync = async (root: RootStore) => {
         reaction(
           () => root.widgetSettings.changeToken,
           () => {
-            void emitWidgetSettingsUpdated(root.widgetSettings.allWidgets);
+            if (!root.widgetSettings.editorPreviewMode) {
+              void emitWidgetSettingsUpdated(root.widgetSettings.allWidgets);
+            }
           },
           { delay: 16 }
         ),

@@ -2,6 +2,12 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { reaction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { Spin } from 'antd';
+import {
+  SquareArrowUp,
+  SquareArrowDown,
+  SquareArrowLeft,
+  SquareArrowRight,
+} from 'lucide-react';
 import { RootStore } from '@store/root-store';
 import {
   RootStoreContext,
@@ -154,14 +160,18 @@ export const LayoutCanvas = observer(
         const currentX = widget.userSettings.x;
         const currentY = widget.userSettings.y;
 
-        let step = 1;
+        let step = snapToGrid ? gridSize : 1;
 
         if (event.shiftKey) {
-          step = snapToGrid ? gridSize : 10;
+          step = snapToGrid ? gridSize * 5 : 10;
         }
 
-        let newX = currentX;
-        let newY = currentY;
+        let newX = snapToGrid
+          ? Math.round(currentX / gridSize) * gridSize
+          : currentX;
+        let newY = snapToGrid
+          ? Math.round(currentY / gridSize) * gridSize
+          : currentY;
 
         switch (event.key) {
           case 'ArrowUp':
@@ -237,6 +247,14 @@ export const LayoutCanvas = observer(
     const [backgroundSrc, setBackgroundSrc] = useState<string | undefined>();
     const [isBackgroundLoading, setIsBackgroundLoading] = useState(false);
 
+    // Mark loading synchronously before paint so there is no visible gap
+    // between the upload spinner disappearing and the load spinner appearing.
+    useLayoutEffect(() => {
+      if (rawBackground) {
+        setIsBackgroundLoading(true);
+      }
+    }, [rawBackground]);
+
     useEffect(() => {
       let isEffectActive = true;
 
@@ -246,8 +264,6 @@ export const LayoutCanvas = observer(
 
         return;
       }
-
-      setIsBackgroundLoading(true);
 
       void resolveBackgroundSrc(rawBackground)
         .then((resolvedSrc) => {
@@ -373,6 +389,28 @@ export const LayoutCanvas = observer(
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {selectedWidgetId && (
+            <div className={styles.keyboardHint}>
+              <div className={styles.arrowCluster}>
+                <SquareArrowUp size={16} className={styles.arrowKey} />
+                <div className={styles.arrowRow}>
+                  <SquareArrowLeft size={16} className={styles.arrowKey} />
+                  <SquareArrowDown size={16} className={styles.arrowKey} />
+                  <SquareArrowRight size={16} className={styles.arrowKey} />
+                </div>
+              </div>
+              <span className={styles.keyboardHintLabel}>Move</span>
+              <span className={styles.keyboardHintSep}>·</span>
+              <kbd className={styles.kbd}>Shift</kbd>
+              <span className={styles.keyboardHintLabel}>
+                {snapToGrid ? `${gridSize * 5}px` : 'Large'} step
+              </span>
+              <span className={styles.keyboardHintSep}>·</span>
+              <kbd className={styles.kbd}>Del</kbd>
+              <span className={styles.keyboardHintLabel}>Remove</span>
             </div>
           )}
         </div>

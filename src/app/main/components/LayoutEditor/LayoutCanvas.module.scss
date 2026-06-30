@@ -208,6 +208,67 @@ $handle-edge: 8px;
   }
 }
 
+.keyboardHint {
+  position: absolute;
+  bottom: sp(xs);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: sp(xxs);
+  padding: sp(xxxs) sp(sm);
+  border-radius: radius(md);
+  background: rgba(11, 12, 16, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(4px);
+  font-family: $font-widget;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 20;
+}
+
+.arrowCluster {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.arrowRow {
+  display: flex;
+  gap: 1px;
+}
+
+.arrowKey {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.keyboardHintLabel {
+  margin-right: sp(xxs);
+}
+
+.keyboardHintSep {
+  opacity: 0.25;
+  margin: 0 sp(xxxs);
+}
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.07);
+  font-family: $font-widget;
+  font-size: 10px;
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
 .backgroundLoader {
   position: absolute;
   inset: 0;
