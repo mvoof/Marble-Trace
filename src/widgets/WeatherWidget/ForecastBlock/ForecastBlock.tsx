@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react-lite';
 
-import type { Skies as BindingSkies } from '@/types/bindings';
 import {
   convertTemp,
   formatSpeed,
   speedUnit,
 } from '@utils/formatters/telemetry-format';
+import { getSkiesLabel } from '@utils/widget/weather-utils';
 
 import styles from './ForecastBlock.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
@@ -15,16 +15,6 @@ import {
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-
-const SKIES_LABELS: Record<BindingSkies, string> = {
-  Clear: 'Clear',
-  PartlyCloudy: 'Partly Cloudy',
-  MostlyCloudy: 'Mostly Cloudy',
-  Overcast: 'Overcast',
-};
-
-const getSkiesLabel = (skies: BindingSkies): string =>
-  SKIES_LABELS[skies] ?? 'Unknown';
 
 const formatForecastTime = (timeSec: number): string => {
   const hours = Math.floor(timeSec / 3600);

@@ -1,8 +1,12 @@
-﻿import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 import { Sun, CloudSun, Cloud, CloudRain } from 'lucide-react';
 
 import { convertTemp, tempUnit } from '@utils/formatters/telemetry-format';
-import { parseWeekendFloat, getWeatherIcon } from '@utils/widget/weather-utils';
+import {
+  parseWeekendFloat,
+  getWeatherIcon,
+  getSkiesLabel,
+} from '@utils/widget/weather-utils';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import {
   useEnvironmentStore,
@@ -20,14 +24,12 @@ const ICON_MAP = {
   'cloud-rain': CloudRain,
 };
 
-const ICON_COLOR = '#ffffff';
-
 export const WeatherHeader = observer(() => {
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const settings = widgetSettings.getSettings<WeatherWidgetSettings>('weather');
-  const { showAirTemp } = settings;
+  const { showAirTemp, showCompass } = settings;
 
   if (!showAirTemp) {
     return null;
@@ -45,21 +47,23 @@ export const WeatherHeader = observer(() => {
 
   const iconName = getWeatherIcon(skies, wetness);
   const WeatherIcon = ICON_MAP[iconName] ?? Sun;
-  const iconColor = ICON_COLOR;
+
+  const skiesLabel = getSkiesLabel(skies);
 
   return (
-    <div className={styles.header}>
-      <div className={styles.iconWrapper}>
-        <WeatherIcon size={30} color={iconColor} className={styles.icon} />
+    <div className={`${styles.header} ${showCompass ? styles.hasCompass : ''}`}>
+      <div className={styles.conditionSection}>
+        <div className={styles.iconWrapper}>
+          <WeatherIcon size={24} className={styles.icon} />
+        </div>
+        <span className={styles.conditionText}>{skiesLabel}</span>
       </div>
 
-      {showAirTemp && airTempC !== null && (
-        <div className={styles.airTemp}>
-          <span className={styles.airTempValue}>
-            {Math.round(convertTemp(airTempC, unitSystem))}
-            <span className={styles.unit}>{tUnit}</span>
-          </span>
-        </div>
+      {airTempC != null && (
+        <span className={styles.airTempValue}>
+          {Math.round(convertTemp(airTempC, unitSystem))}
+          <span className={styles.unit}>{tUnit}</span>
+        </span>
       )}
     </div>
   );
