@@ -1,32 +1,32 @@
 {
-  "capturedAt": "2026-05-30T15:38:43.587Z",
+  "capturedAt": "2026-06-30T16:54:50.453Z",
   "carDynamics": {
-    "speed": 42.440166,
-    "rpm": 6872.651,
-    "gear": 3,
-    "steering_wheel_angle": 0.06561271,
-    "velocity_x": 42.439873,
-    "velocity_y": 0.15759516,
-    "velocity_z": -0.13547927,
-    "lat_accel": -1.2730314,
-    "long_accel": 0.52732384,
-    "yaw": 0.3612736,
-    "yaw_rate": 0.09899878,
-    "pitch": 0.007329801,
-    "roll": -0.018870436,
-    "shift_indicator_pct": 0.60602564,
+    "speed": 22.441488,
+    "rpm": 2643.782,
+    "gear": 5,
+    "steering_wheel_angle": 0.8006651,
+    "velocity_x": 22.437141,
+    "velocity_y": -0.4416301,
+    "velocity_z": 0.20781267,
+    "lat_accel": 4.2527423,
+    "long_accel": -11.606969,
+    "yaw": -1.3370019,
+    "yaw_rate": 0.19705328,
+    "pitch": 0.051162455,
+    "roll": -0.01609387,
+    "shift_indicator_pct": 0,
     "shift_grind_rpm": 0
   },
   "carIdx": {
     "car_idx_lap_dist_pct": [
-      0.28770176, 0.3184578, 0.098711066, 0.10166887, 0.83673245, 0.49440786,
-      0.20507161, 0.9444419, 0.47705805, 0.35249496, 0.5471105, 0.4916707,
-      0.9061229, 0.99159503, 0.2929144, 0.9501764, 0.024880057, 0.7738332,
-      0.62078345, 0.40284333, 0.96688354, 0.013995088, 0.28566852, 0.4215513,
-      0.4302242, 0.9213324, 0.14407857, 0.21295322, 0.4475694, 0.12828797,
-      0.5093663, 0.39024076, 0.30781066, 0.4973157, 0.031073332, 0.03374678, -1,
+      0.16963278, 0.09518315, 0.24740773, 0.6523624, 0.73360765, 0.44609714,
+      0.99706054, 0.01656173, 0.07782343, 0.80728364, 0.42275557, 0.572038,
+      0.4210054, 0.3690144, 0.14412545, 0.6333295, 0.82409686, 0.52733046,
+      0.38786638, 0.36617097, 0.5069095, 0.024647042, 0.23718117, 0.93394935,
+      0.68911463, -1, 0.0036001212, 0.41682106, 0.009921551, 0.66376257,
+      0.4825988, 0.51064456, 0.26158082, 0.0070407637, 0.72141457, -1, -1, -1,
       -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-      -1, -1, -1, -1, -1, -1, -1, -1, -1
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
     ],
     "car_idx_on_pit_road": [
       false,
@@ -36,6 +36,11 @@
       false,
       false,
       false,
+      true,
+      false,
+      false,
+      false,
+      false,
       false,
       false,
       false,
@@ -52,19 +57,22 @@
       false,
       false,
       false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
+      true,
       false,
       false,
       false,
       false,
       true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
       false,
       false,
       false,
@@ -95,66 +103,59 @@
       false
     ],
     "car_idx_position": [
-      35, 16, 17, 20, 23, 6, 4, 5, 10, 15, 13, 8, 21, 22, 19, 18, 24, 1, 2, 3,
-      33, 32, 28, 27, 26, 34, 30, 29, 25, 31, 7, 14, 11, 9, 12, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    ],
-    "car_idx_class_position": [
-      6, 5, 1, 6, 6, 6, 4, 5, 2, 4, 3, 1, 4, 5, 3, 2, 7, 1, 2, 3, 5, 4, 3, 2, 1,
-      5, 3, 2, 1, 4, 1, 5, 3, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    ],
-    "car_idx_lap": [
-      5, 39, 39, 38, 37, 42, 43, 42, 40, 39, 39, 40, 37, 37, 38, 38, 37, 43, 43,
-      43, 35, 36, 36, 36, 36, 35, 36, 36, 36, 36, 40, 39, 40, 40, 40, 0, -1, -1,
-      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-      -1, -1, -1, -1, -1, -1, -1, -1
-    ],
-    "car_idx_last_lap_time": [
-      -1, 117.9052, 117.3888, 117.6872, 115.8337, 107.8518, 107.4426, 105.1809,
-      114.4563, 118.3758, 116.9513, 115.451, -1, 117.3009, 117.2433, 118.1547,
-      -1, 103.3019, 105.3745, 105.1098, 127.704, 123.9389, 128.07, 125.1608,
-      130.2475, 126.8052, 126.9998, 125.103, 127.5504, 128.2644, 112.7051,
-      114.1988, 111.354, 111.9636, 113.1014, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-      -1, -1
-    ],
-    "car_idx_best_lap_time": [
-      -1, 115.2341, 116.2793, 116.8042, 115.6869, 105.0545, 102.5536, 103.5587,
-      112.3259, 115.1565, 115.8718, 112.6338, 115.6509, 114.9156, 115.3419,
-      116.7427, 115.5726, 101.8251, 102.5406, 101.875, 123.9587, 123.9389,
-      122.3022, 123.091, 122.1606, 125.6844, 125.0596, 123.1747, 123.7745,
-      125.3421, 110.2173, 110.766, 110.0339, 109.6567, 110.5778, -1, -1, -1, -1,
-      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+      35, 22, 21, 16, 15, 5, 2, 6, 12, 23, 20, 13, 19, 17, 14, 27, 18, 1, 3, 4,
+      24, 28, 29, 26, 25, 34, 32, 30, 31, 33, 7, 11, 9, 8, 10, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1,
       -1, -1, -1, -1, -1, -1, -1
     ],
+    "car_idx_class_position": [
+      6, 5, 6, 3, 2, 5, 2, 6, 1, 6, 4, 2, 5, 3, 1, 7, 4, 1, 3, 4, 1, 4, 5, 3, 2,
+      5, 3, 1, 2, 4, 1, 5, 3, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, -1, -1, -1, -1, -1
+    ],
+    "car_idx_lap": [
+      3, 15, 13, 15, 16, 17, 20, 17, 17, 16, 15, 15, 16, 16, 15, 10, 13, 17, 17,
+      21, 17, 13, 15, 13, 14, -1, 15, 13, 15, 12, 17, 17, 16, 17, 15, -1, -1,
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+    ],
+    "car_idx_last_lap_time": [
+      131.5528, 119.3, 117.571, 120.2957, 243.9516, 102.5151, 100.4528,
+      109.3153, 111.8528, 114.5534, 191.4619, 116.5199, 114.507, 115.5616,
+      112.2376, 124.4329, 115.979, 104.4384, 114.3062, 104.4518, 119.2279,
+      214.8672, 120.9818, 117.8835, 118.54, -1, 122.2204, 123.4352, 127.541,
+      123.3799, 108.2056, 120.1469, 109.4146, 115.0125, 109.2384, -1, -1, -1,
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+    ],
+    "car_idx_best_lap_time": [
+      131.5528, 114.4881, 113.8695, 113.1174, 112.8213, 100.2774, 97.4453,
+      100.9154, 110.9077, 114.5469, 113.8091, 111.461, 113.7223, 113.6565,
+      112.2376, 117.3091, 113.6589, 97.2079, 97.5036, 98.0666, 115.5736,
+      117.5411, 117.5746, 116.8495, 116.8019, -1, 122.2204, 121.694, 122.13,
+      123.3799, 108.0395, 110.1246, 108.5466, 108.3839, 109.2384, -1, -1, -1,
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+    ],
     "car_idx_f2_time": [
-      1615.299, 466.8333, 489.9149, 592.6954, 609.9127, 128.8513, 60.0535,
-      83.8285, 342.6082, 464.2201, 437.4594, 339.885, 549.72, 588.5591,
-      570.7412, 489.6312, 703.9332, 0, 15.3464, 40.5596, 828.8699, 827.3314,
-      778.2767, 761.6503, 758.7215, 836.7311, 795.2155, 786.8856, 757.5028,
-      796.2735, 338.7779, 457.8922, 362.6613, 340.3282, 392.1367, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      131.5528, 114.4881, 113.8695, 113.1174, 112.8213, 100.2774, 97.4453,
+      100.9154, 110.9077, 114.5469, 113.8091, 111.461, 113.7223, 113.6565,
+      112.2376, 117.3091, 113.6589, 97.2079, 97.5036, 98.0666, 115.5736,
+      117.5411, 117.5746, 116.8495, 116.8019, 124.1087, 122.2204, 121.694,
+      122.13, 123.3799, 108.0395, 110.1246, 108.5466, 108.3839, 109.2384, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, -1, -1, -1, -1, -1, -1, -1, -1
     ],
     "car_idx_est_time": [
-      29.586365, 29.467705, 9.83281, 9.886155, 88.43883, 44.715477, 17.780428,
-      88.16921, 46.962543, 32.416164, 55.608192, 49.283825, 94.67394, 105.01566,
-      28.189852, 100.64025, 2.29268, 71.94983, 57.75651, 35.191696, 109.54697,
-      1.3563011, 29.406143, 45.137512, 46.158375, 105.11348, 15.410412,
-      22.789122, 49.251465, 13.802427, 50.994648, 36.77752, 28.106749, 49.49629,
-      2.4770017, 2.4933503, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+      16.254442, 9.263722, 24.238907, 68.5609, 78.414, 39.43496, 92.88407,
+      1.2496456, 7.472535, 83.46545, 41.600685, 57.809635, 42.07172, 34.66741,
+      14.06334, 67.37037, 87.19839, 48.27166, 33.01171, 30.08858, 55.973034,
+      2.3570518, 24.900639, 105.46179, 79.218124, 0, 0.38726383, 45.61627,
+      1.0603421, 77.08024, 47.15663, 51.14199, 24.520374, 0.5812081, 74.355774,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     ],
     "car_idx_track_surface": [
-      "OffTrack",
-      "OnTrack",
-      "OnTrack",
-      "OnTrack",
-      "OnTrack",
-      "OnTrack",
-      "OnTrack",
-      "OnTrack",
-      "OnTrack",
       "OnTrack",
       "OnTrack",
       "OnTrack",
@@ -176,12 +177,29 @@
       "OnTrack",
       "OnTrack",
       "OnTrack",
+      "InPitStall",
       "OnTrack",
+      "OnTrack",
+      "OnTrack",
+      "NotInWorld",
+      "OnTrack",
+      "OnTrack",
+      "AproachingPits",
       "OnTrack",
       "OnTrack",
       "OnTrack",
       "OnTrack",
       "AproachingPits",
+      "OnTrack",
+      "NotInWorld",
+      "NotInWorld",
+      "NotInWorld",
+      "NotInWorld",
+      "NotInWorld",
+      "NotInWorld",
+      "NotInWorld",
+      "NotInWorld",
+      "NotInWorld",
       "NotInWorld",
       "NotInWorld",
       "NotInWorld",
@@ -213,34 +231,65 @@
     ],
     "car_idx_tire_compound": [
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+      -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+      -1, -1, -1, -1, -1, -1, -1, -1
+    ],
+    "car_idx_session_flags": [
+      262144, 262144, 262144, 262144, 262144, 262144, 262144, 262144, 262144,
+      262144, 262144, 262144, 262144, 262144, 262144, 262144, 262144, 262144,
+      262144, 262144, 262144, 262144, 262144, 262144, 262144, 1310720, 262144,
+      262144, 262144, 262144, 262144, 262144, 262144, 262144, 262144, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0
     ],
     "car_left_right": 1
   },
   "carInputs": {
-    "throttle": 0.94765544,
-    "brake": 0,
-    "clutch": 1
+    "throttle": 0,
+    "brake": 0.9918981,
+    "clutch": 1,
+    "brake_abs_active": true
   },
   "carStatus": {
-    "fuel_level": 44.31976,
-    "fuel_level_pct": 0.9851755,
-    "fuel_use_per_hour": 27.941666,
-    "oil_temp": 107.162476,
-    "oil_press": 4.081999,
-    "water_temp": 86.05703,
-    "voltage": 12.400001,
+    "fuel_level": 39.224934,
+    "fuel_level_pct": 0.4358326,
+    "fuel_use_per_hour": 0.61557174,
+    "oil_temp": 101.18128,
+    "oil_press": 4.7299953,
+    "water_temp": 84.44085,
+    "voltage": 14.400001,
     "on_pit_road": false,
     "is_on_track": true,
     "car_left_right": 1,
     "engine_warnings": 0,
-    "player_car_sl_shift_rpm": [7200],
-    "player_car_sl_blink_rpm": [7700]
+    "player_car_sl_shift_rpm": [6600],
+    "player_car_sl_blink_rpm": [6600],
+    "flags": {
+      "checkered": false,
+      "white": false,
+      "green": false,
+      "yellow": false,
+      "red": false,
+      "blue": false,
+      "debris": false,
+      "yellowWaving": false,
+      "caution": false,
+      "cautionWaving": false,
+      "black": false,
+      "disqualify": false,
+      "meatball": false,
+      "furled": false,
+      "repair": false
+    },
+    "dc_abs": 2,
+    "dc_brake_bias": 50,
+    "dc_traction_control": 7,
+    "dc_throttle_shape": 2
   },
   "environment": {
-    "air_temp": 32.22222,
-    "track_temp": 45.555573,
+    "air_temp": 18.333334,
+    "track_temp": 31.666656,
     "wind_vel": 2.68224,
     "wind_dir": 2.3561945,
     "relative_humidity": 0.55,
@@ -252,41 +301,41 @@
     "weather_version": null
   },
   "lapTiming": {
-    "lap": 5,
-    "lap_dist": 1233.2445,
-    "lap_dist_pct": 0.28770176,
-    "lap_current_lap_time": 2505.834,
-    "lap_last_lap_time": -1,
-    "lap_best_lap_time": -1,
+    "lap": 3,
+    "lap_dist": 727.1374,
+    "lap_dist_pct": 0.16963278,
+    "lap_current_lap_time": 21.265633,
+    "lap_last_lap_time": 131.5528,
+    "lap_best_lap_time": 131.5528,
     "player_car_position": 35,
     "player_car_class_position": 6,
     "lap_delta_to_session_best_live": null,
     "lap_delta_to_session_optimal_live": null,
     "lap_delta_to_driver_best_live": null,
-    "lap_delta_to_best_lap": 5.1907253,
-    "lap_delta_to_best_lap_dd": null,
+    "lap_delta_to_best_lap": 3.2611644,
+    "lap_delta_to_best_lap_dd": true,
     "lap_delta_to_best_lap_ok": true,
-    "lap_delta_to_optimal_lap": 5.293748,
-    "lap_delta_to_optimal_lap_dd": null,
+    "lap_delta_to_optimal_lap": 3.8849056,
+    "lap_delta_to_optimal_lap_dd": true,
     "lap_delta_to_optimal_lap_ok": true,
-    "lap_delta_to_session_best_lap": 0,
-    "lap_delta_to_session_best_lap_dd": null,
-    "lap_delta_to_session_best_lap_ok": false,
-    "lap_delta_to_session_lastl_lap": 0,
-    "lap_delta_to_session_lastl_lap_dd": null,
-    "lap_delta_to_session_lastl_lap_ok": false,
-    "lap_delta_to_session_optimal_lap": 0,
-    "lap_delta_to_session_optimal_lap_dd": null,
-    "lap_delta_to_session_optimal_lap_ok": false
+    "lap_delta_to_session_best_lap": -13.004852,
+    "lap_delta_to_session_best_lap_dd": true,
+    "lap_delta_to_session_best_lap_ok": true,
+    "lap_delta_to_session_lastl_lap": -13.004852,
+    "lap_delta_to_session_lastl_lap_dd": true,
+    "lap_delta_to_session_lastl_lap_ok": true,
+    "lap_delta_to_session_optimal_lap": 2.5246394,
+    "lap_delta_to_session_optimal_lap_dd": true,
+    "lap_delta_to_session_optimal_lap_ok": true
   },
   "session": {
-    "session_time": 4586.9333333516,
-    "session_time_remain": 81860.5166666484,
+    "session_time": 2347.7833320640525,
+    "session_time_remain": 4852.250001269282,
     "session_state": "Racing",
-    "session_flags": 268697632,
+    "session_flags": 268697600,
     "session_num": 0,
     "session_time_of_day": 43200,
-    "session_laps_remain_ex": 58,
+    "session_laps_remain_ex": 32767,
     "player_car_idx": 0,
     "player_car_flags": 262144
   },
@@ -295,11 +344,12 @@
     "trackName": "oulton international",
     "trackDisplayName": "Oulton Park Circuit",
     "trackConfigName": "International",
+    "driverPitTrkPct": 0.031322,
     "trackLengthM": 4286.5,
     "trackPitSpeedLimit": "49.97 kph",
     "trackWeatherType": "Static",
-    "trackAirTemp": "32.22 C",
-    "trackSurfaceTemp": "46.47 C",
+    "trackAirTemp": "18.33 C",
+    "trackSurfaceTemp": "32.58 C",
     "trackWindVel": "2.68 m/s",
     "trackWindDir": "2.36 rad",
     "trackRelativeHumidity": "55 %",
@@ -307,291 +357,292 @@
     "currentSessionNum": 0,
     "sessions": [
       {
-        "sessionType": "Race",
-        "sessionLaps": "100",
+        "sessionType": "Practice",
+        "sessionTypeLabel": "Practice",
+        "sessionLaps": "unlimited",
         "resultsPositions": [
           {
             "carIdx": 17,
             "position": 1,
             "classPosition": 0,
-            "lap": 0,
-            "time": 0
-          },
-          {
-            "carIdx": 18,
-            "position": 2,
-            "classPosition": 1,
-            "lap": 0,
-            "time": 15.3464
-          },
-          {
-            "carIdx": 19,
-            "position": 3,
-            "classPosition": 2,
-            "lap": 0,
-            "time": 40.5596
+            "lap": 3,
+            "time": 97.2079
           },
           {
             "carIdx": 6,
-            "position": 4,
-            "classPosition": 3,
-            "lap": 0,
-            "time": 60.0535
+            "position": 2,
+            "classPosition": 1,
+            "lap": 16,
+            "time": 97.4453
           },
           {
-            "carIdx": 7,
-            "position": 5,
-            "classPosition": 4,
-            "lap": 0,
-            "time": 83.8285
+            "carIdx": 18,
+            "position": 3,
+            "classPosition": 2,
+            "lap": 10,
+            "time": 97.5036
+          },
+          {
+            "carIdx": 19,
+            "position": 4,
+            "classPosition": 3,
+            "lap": 3,
+            "time": 98.0666
           },
           {
             "carIdx": 5,
+            "position": 5,
+            "classPosition": 4,
+            "lap": 8,
+            "time": 100.2774
+          },
+          {
+            "carIdx": 7,
             "position": 6,
             "classPosition": 5,
-            "lap": 1,
-            "time": 128.8513
+            "lap": 4,
+            "time": 100.9154
           },
           {
             "carIdx": 30,
             "position": 7,
             "classPosition": 0,
-            "lap": 3,
-            "time": 338.7779
-          },
-          {
-            "carIdx": 11,
-            "position": 8,
-            "classPosition": 0,
-            "lap": 3,
-            "time": 339.885
+            "lap": 8,
+            "time": 108.0395
           },
           {
             "carIdx": 33,
-            "position": 9,
+            "position": 8,
             "classPosition": 1,
-            "lap": 3,
-            "time": 340.3282
-          },
-          {
-            "carIdx": 8,
-            "position": 10,
-            "classPosition": 1,
-            "lap": 3,
-            "time": 342.6082
+            "lap": 13,
+            "time": 108.3839
           },
           {
             "carIdx": 32,
-            "position": 11,
+            "position": 9,
             "classPosition": 2,
-            "lap": 3,
-            "time": 362.6613
+            "lap": 5,
+            "time": 108.5466
           },
           {
             "carIdx": 34,
-            "position": 12,
+            "position": 10,
             "classPosition": 3,
-            "lap": 3,
-            "time": 392.1367
-          },
-          {
-            "carIdx": 10,
-            "position": 13,
-            "classPosition": 2,
-            "lap": 4,
-            "time": 437.4594
+            "lap": 14,
+            "time": 109.2384
           },
           {
             "carIdx": 31,
-            "position": 14,
+            "position": 11,
             "classPosition": 4,
-            "lap": 4,
-            "time": 457.8922
+            "lap": 8,
+            "time": 110.1246
           },
           {
-            "carIdx": 9,
-            "position": 15,
-            "classPosition": 3,
-            "lap": 4,
-            "time": 464.2201
-          },
-          {
-            "carIdx": 1,
-            "position": 16,
-            "classPosition": 4,
-            "lap": 4,
-            "time": 466.8333
-          },
-          {
-            "carIdx": 2,
-            "position": 17,
+            "carIdx": 8,
+            "position": 12,
             "classPosition": 0,
-            "lap": 4,
-            "time": 489.9149
+            "lap": 11,
+            "time": 110.9077
           },
           {
-            "carIdx": 15,
-            "position": 18,
+            "carIdx": 11,
+            "position": 13,
             "classPosition": 1,
-            "lap": 4,
-            "time": 489.6312
+            "lap": 7,
+            "time": 111.461
           },
           {
             "carIdx": 14,
-            "position": 19,
-            "classPosition": 2,
-            "lap": 5,
-            "time": 570.7412
-          },
-          {
-            "carIdx": 3,
-            "position": 20,
-            "classPosition": 5,
-            "lap": 5,
-            "time": 592.6954
-          },
-          {
-            "carIdx": 12,
-            "position": 21,
-            "classPosition": 3,
-            "lap": 5,
-            "time": 549.72
-          },
-          {
-            "carIdx": 13,
-            "position": 22,
-            "classPosition": 4,
-            "lap": 5,
-            "time": 588.5591
+            "position": 14,
+            "classPosition": 0,
+            "lap": 14,
+            "time": 112.2376
           },
           {
             "carIdx": 4,
-            "position": 23,
-            "classPosition": 5,
-            "lap": 5,
-            "time": 609.9127
+            "position": 15,
+            "classPosition": 1,
+            "lap": 10,
+            "time": 112.8213
+          },
+          {
+            "carIdx": 3,
+            "position": 16,
+            "classPosition": 2,
+            "lap": 12,
+            "time": 113.1174
+          },
+          {
+            "carIdx": 13,
+            "position": 17,
+            "classPosition": 2,
+            "lap": 3,
+            "time": 113.6565
           },
           {
             "carIdx": 16,
-            "position": 24,
-            "classPosition": 6,
+            "position": 18,
+            "classPosition": 3,
+            "lap": 8,
+            "time": 113.6589
+          },
+          {
+            "carIdx": 12,
+            "position": 19,
+            "classPosition": 4,
+            "lap": 14,
+            "time": 113.7223
+          },
+          {
+            "carIdx": 10,
+            "position": 20,
+            "classPosition": 3,
+            "lap": 8,
+            "time": 113.8091
+          },
+          {
+            "carIdx": 2,
+            "position": 21,
+            "classPosition": 5,
+            "lap": 2,
+            "time": 113.8695
+          },
+          {
+            "carIdx": 1,
+            "position": 22,
+            "classPosition": 4,
+            "lap": 11,
+            "time": 114.4881
+          },
+          {
+            "carIdx": 9,
+            "position": 23,
+            "classPosition": 5,
             "lap": 6,
-            "time": 703.9332
-          },
-          {
-            "carIdx": 28,
-            "position": 25,
-            "classPosition": 0,
-            "lap": 7,
-            "time": 757.5028
-          },
-          {
-            "carIdx": 24,
-            "position": 26,
-            "classPosition": 0,
-            "lap": 7,
-            "time": 758.7215
-          },
-          {
-            "carIdx": 23,
-            "position": 27,
-            "classPosition": 1,
-            "lap": 7,
-            "time": 761.6503
-          },
-          {
-            "carIdx": 22,
-            "position": 28,
-            "classPosition": 2,
-            "lap": 7,
-            "time": 778.2767
-          },
-          {
-            "carIdx": 27,
-            "position": 29,
-            "classPosition": 1,
-            "lap": 7,
-            "time": 786.8856
-          },
-          {
-            "carIdx": 26,
-            "position": 30,
-            "classPosition": 2,
-            "lap": 7,
-            "time": 795.2155
-          },
-          {
-            "carIdx": 29,
-            "position": 31,
-            "classPosition": 3,
-            "lap": 7,
-            "time": 796.2735
-          },
-          {
-            "carIdx": 21,
-            "position": 32,
-            "classPosition": 3,
-            "lap": 7,
-            "time": 827.3314
+            "time": 114.5469
           },
           {
             "carIdx": 20,
-            "position": 33,
-            "classPosition": 4,
+            "position": 24,
+            "classPosition": 0,
+            "lap": 6,
+            "time": 115.5736
+          },
+          {
+            "carIdx": 24,
+            "position": 25,
+            "classPosition": 1,
+            "lap": 6,
+            "time": 116.8019
+          },
+          {
+            "carIdx": 23,
+            "position": 26,
+            "classPosition": 2,
+            "lap": 5,
+            "time": 116.8495
+          },
+          {
+            "carIdx": 15,
+            "position": 27,
+            "classPosition": 6,
             "lap": 7,
-            "time": 828.8699
+            "time": 117.3091
+          },
+          {
+            "carIdx": 21,
+            "position": 28,
+            "classPosition": 3,
+            "lap": 1,
+            "time": 117.5411
+          },
+          {
+            "carIdx": 22,
+            "position": 29,
+            "classPosition": 4,
+            "lap": 5,
+            "time": 117.5746
+          },
+          {
+            "carIdx": 27,
+            "position": 30,
+            "classPosition": 0,
+            "lap": 5,
+            "time": 121.694
+          },
+          {
+            "carIdx": 28,
+            "position": 31,
+            "classPosition": 1,
+            "lap": 6,
+            "time": 122.13
+          },
+          {
+            "carIdx": 26,
+            "position": 32,
+            "classPosition": 2,
+            "lap": 13,
+            "time": 122.2204
+          },
+          {
+            "carIdx": 29,
+            "position": 33,
+            "classPosition": 3,
+            "lap": 11,
+            "time": 123.3799
           },
           {
             "carIdx": 25,
             "position": 34,
             "classPosition": 4,
-            "lap": 7,
-            "time": 836.7311
+            "lap": 2,
+            "time": 124.1087
           },
           {
             "carIdx": 0,
             "position": 35,
             "classPosition": 5,
-            "lap": 37,
-            "time": 1615.299
+            "lap": 2,
+            "time": 131.5528
           }
         ]
       }
     ],
     "playerCarIdx": 0,
-    "driverCarFuelMaxLtr": 44.987,
-    "driverCarRedLine": 7525,
-    "driverCarSlShiftRpm": 7200,
-    "driverCarSlBlinkRpm": 7700,
+    "driverCarFuelMaxLtr": 90,
+    "driverCarRedLine": 7000,
+    "driverCarSlShiftRpm": 6600,
+    "driverCarSlBlinkRpm": 6600,
     "cars": [
       {
         "carIdx": 0,
         "userName": "Sergey V",
-        "carNumber": "13",
+        "carNumber": "64",
         "carClassId": 74,
-        "carClassColor": "0x53ff77",
-        "carScreenName": "Mazda MX-5 Cup",
-        "carScreenNameShort": "MX-5 Cup",
+        "carClassColor": "#ff7199",
+        "carScreenName": "BMW M2 Racing (G87)",
+        "carScreenNameShort": "BMW M2 Racing (G87)",
         "iRating": 1,
         "licString": "R 0.01",
         "licColor": "0xundefined",
-        "incidentCount": 27,
+        "incidentCount": 8,
         "isPaceCar": false,
         "isSpectator": false,
-        "carClassEstLapTime": 113.018
+        "carClassEstLapTime": 105.2994
       },
       {
         "carIdx": 1,
         "userName": "Steve Reis",
         "carNumber": "1",
         "carClassId": 4073,
-        "carClassColor": "0xff5888",
+        "carClassColor": "#ef4444",
         "carScreenName": "BMW M2 CS Racing",
         "carScreenNameShort": "BMW M2 CS Racing",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 8,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 103.2846
@@ -601,7 +652,7 @@
         "userName": "Yuzhi Steven Zhu",
         "carNumber": "940",
         "carClassId": 4012,
-        "carClassColor": "0xae6bff",
+        "carClassColor": "#5cecff",
         "carScreenName": "Toyota GR86",
         "carScreenNameShort": "Toyota GR86",
         "iRating": 0,
@@ -617,13 +668,13 @@
         "userName": "Kevin Combs",
         "carNumber": "2",
         "carClassId": 4073,
-        "carClassColor": "0xff5888",
+        "carClassColor": "#ef4444",
         "carScreenName": "BMW M2 CS Racing",
         "carScreenNameShort": "BMW M2 CS Racing",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 11,
+        "incidentCount": 1,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 103.2846
@@ -633,13 +684,13 @@
         "userName": "Casey Seitz",
         "carNumber": "3",
         "carClassId": 4012,
-        "carClassColor": "0xae6bff",
+        "carClassColor": "#5cecff",
         "carScreenName": "Toyota GR86",
         "carScreenNameShort": "Toyota GR86",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 13,
+        "incidentCount": 2,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 105.8271
@@ -649,13 +700,13 @@
         "userName": "Christopher Bell",
         "carNumber": "4",
         "carClassId": 45,
-        "carClassColor": "0xffda59",
+        "carClassColor": "#ffd259",
         "carScreenName": "Cadillac CTS-V Racecar",
         "carScreenNameShort": "CTS-V",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 13,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 93.114
@@ -665,13 +716,13 @@
         "userName": "Austin Peterson",
         "carNumber": "77",
         "carClassId": 45,
-        "carClassColor": "0xffda59",
+        "carClassColor": "#ffd259",
         "carScreenName": "Cadillac CTS-V Racecar",
         "carScreenNameShort": "CTS-V",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 11,
+        "incidentCount": 1,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 93.114
@@ -681,13 +732,13 @@
         "userName": "Jimmy Broadbent",
         "carNumber": "69",
         "carClassId": 45,
-        "carClassColor": "0xffda59",
+        "carClassColor": "#ffd259",
         "carScreenName": "Cadillac CTS-V Racecar",
         "carScreenNameShort": "CTS-V",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 10,
+        "incidentCount": 3,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 93.114
@@ -697,13 +748,13 @@
         "userName": "Josh Garner",
         "carNumber": "42",
         "carClassId": 4073,
-        "carClassColor": "0xff5888",
+        "carClassColor": "#ef4444",
         "carScreenName": "BMW M2 CS Racing",
         "carScreenNameShort": "BMW M2 CS Racing",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 8,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 103.2846
@@ -713,13 +764,13 @@
         "userName": "Paul Coleman",
         "carNumber": "299",
         "carClassId": 4073,
-        "carClassColor": "0xff5888",
+        "carClassColor": "#ef4444",
         "carScreenName": "BMW M2 CS Racing",
         "carScreenNameShort": "BMW M2 CS Racing",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 9,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 103.2846
@@ -729,13 +780,13 @@
         "userName": "Cory Vervynckt",
         "carNumber": "12",
         "carClassId": 4073,
-        "carClassColor": "0xff5888",
+        "carClassColor": "#ef4444",
         "carScreenName": "BMW M2 CS Racing",
         "carScreenNameShort": "BMW M2 CS Racing",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 8,
+        "incidentCount": 1,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 103.2846
@@ -745,13 +796,13 @@
         "userName": "Jaime Baker",
         "carNumber": "5",
         "carClassId": 4073,
-        "carClassColor": "0xff5888",
+        "carClassColor": "#ef4444",
         "carScreenName": "BMW M2 CS Racing",
         "carScreenNameShort": "BMW M2 CS Racing",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 8,
+        "incidentCount": 3,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 103.2846
@@ -761,13 +812,13 @@
         "userName": "John Hughes",
         "carNumber": "6",
         "carClassId": 4012,
-        "carClassColor": "0xae6bff",
+        "carClassColor": "#5cecff",
         "carScreenName": "Toyota GR86",
         "carScreenNameShort": "Toyota GR86",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 14,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 105.8271
@@ -777,13 +828,13 @@
         "userName": "Alex Gustafson",
         "carNumber": "19",
         "carClassId": 4012,
-        "carClassColor": "0xae6bff",
+        "carClassColor": "#5cecff",
         "carScreenName": "Toyota GR86",
         "carScreenNameShort": "Toyota GR86",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 16,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 105.8271
@@ -793,13 +844,13 @@
         "userName": "Peter Inglis",
         "carNumber": "7",
         "carClassId": 4012,
-        "carClassColor": "0xae6bff",
+        "carClassColor": "#5cecff",
         "carScreenName": "Toyota GR86",
         "carScreenNameShort": "Toyota GR86",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 14,
+        "incidentCount": 2,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 105.8271
@@ -809,13 +860,13 @@
         "userName": "Jimmy Van Veen",
         "carNumber": "8",
         "carClassId": 4012,
-        "carClassColor": "0xae6bff",
+        "carClassColor": "#5cecff",
         "carScreenName": "Toyota GR86",
         "carScreenNameShort": "Toyota GR86",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 10,
+        "incidentCount": 3,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 105.8271
@@ -825,13 +876,13 @@
         "userName": "Chris Weidner",
         "carNumber": "37",
         "carClassId": 4012,
-        "carClassColor": "0xae6bff",
+        "carClassColor": "#5cecff",
         "carScreenName": "Toyota GR86",
         "carScreenNameShort": "Toyota GR86",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 18,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 105.8271
@@ -841,13 +892,13 @@
         "userName": "Eric Hudec",
         "carNumber": "9",
         "carClassId": 45,
-        "carClassColor": "0xffda59",
+        "carClassColor": "#ffd259",
         "carScreenName": "Cadillac CTS-V Racecar",
         "carScreenNameShort": "CTS-V",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 11,
+        "incidentCount": 1,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 93.114
@@ -857,13 +908,13 @@
         "userName": "Kipling Knaus",
         "carNumber": "10",
         "carClassId": 45,
-        "carClassColor": "0xffda59",
+        "carClassColor": "#ffd259",
         "carScreenName": "Cadillac CTS-V Racecar",
         "carScreenNameShort": "CTS-V",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 11,
+        "incidentCount": 1,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 93.114
@@ -873,13 +924,13 @@
         "userName": "Derek Edgerton",
         "carNumber": "32",
         "carClassId": 45,
-        "carClassColor": "0xffda59",
+        "carClassColor": "#ffd259",
         "carScreenName": "Cadillac CTS-V Racecar",
         "carScreenNameShort": "CTS-V",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 15,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 93.114
@@ -889,13 +940,13 @@
         "userName": "Chris Lerch",
         "carNumber": "11",
         "carClassId": 74,
-        "carClassColor": "0x53ff77",
+        "carClassColor": "#ff7199",
         "carScreenName": "Mazda MX-5 Cup",
         "carScreenNameShort": "MX-5 Cup",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 13,
+        "incidentCount": 3,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 113.018
@@ -903,15 +954,15 @@
       {
         "carIdx": 21,
         "userName": "Chris Page",
-        "carNumber": "301",
+        "carNumber": "13",
         "carClassId": 74,
-        "carClassColor": "0x53ff77",
+        "carClassColor": "#ff7199",
         "carScreenName": "Mazda MX-5 Cup",
         "carScreenNameShort": "MX-5 Cup",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 11,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 113.018
@@ -921,13 +972,13 @@
         "userName": "Mike Gladfelter",
         "carNumber": "14",
         "carClassId": 74,
-        "carClassColor": "0x53ff77",
+        "carClassColor": "#ff7199",
         "carScreenName": "Mazda MX-5 Cup",
         "carScreenNameShort": "MX-5 Cup",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 13,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 113.018
@@ -937,13 +988,13 @@
         "userName": "Tom Brown",
         "carNumber": "17",
         "carClassId": 74,
-        "carClassColor": "0x53ff77",
+        "carClassColor": "#ff7199",
         "carScreenName": "Mazda MX-5 Cup",
         "carScreenNameShort": "MX-5 Cup",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 12,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 113.018
@@ -953,13 +1004,13 @@
         "userName": "Brian Rainville",
         "carNumber": "15",
         "carClassId": 74,
-        "carClassColor": "0x53ff77",
+        "carClassColor": "#ff7199",
         "carScreenName": "Mazda MX-5 Cup",
         "carScreenNameShort": "MX-5 Cup",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 14,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 113.018
@@ -969,13 +1020,13 @@
         "userName": "Jennifer Young",
         "carNumber": "16",
         "carClassId": 3002,
-        "carClassColor": "0xd35400",
-        "carScreenName": "Formula Vee",
-        "carScreenNameShort": "Formula Vee",
+        "carClassColor": "#a07cc8",
+        "carScreenName": "Formula Vee - Classic",
+        "carScreenNameShort": "Formula Vee - Classic",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 10,
+        "incidentCount": 4,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 114.9098
@@ -985,13 +1036,13 @@
         "userName": "Richard Jobling",
         "carNumber": "18",
         "carClassId": 3002,
-        "carClassColor": "0xd35400",
-        "carScreenName": "Formula Vee",
-        "carScreenNameShort": "Formula Vee",
+        "carClassColor": "#a07cc8",
+        "carScreenName": "Formula Vee - Classic",
+        "carScreenNameShort": "Formula Vee - Classic",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 11,
+        "incidentCount": 1,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 114.9098
@@ -1001,13 +1052,13 @@
         "userName": "Dean Marsh",
         "carNumber": "20",
         "carClassId": 3002,
-        "carClassColor": "0xd35400",
-        "carScreenName": "Formula Vee",
-        "carScreenNameShort": "Formula Vee",
+        "carClassColor": "#a07cc8",
+        "carScreenName": "Formula Vee - Classic",
+        "carScreenNameShort": "Formula Vee - Classic",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 10,
+        "incidentCount": 1,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 114.9098
@@ -1017,13 +1068,13 @@
         "userName": "Travis Sollenberger",
         "carNumber": "66",
         "carClassId": 3002,
-        "carClassColor": "0xd35400",
-        "carScreenName": "Formula Vee",
-        "carScreenNameShort": "Formula Vee",
+        "carClassColor": "#a07cc8",
+        "carScreenName": "Formula Vee - Classic",
+        "carScreenNameShort": "Formula Vee - Classic",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 10,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 114.9098
@@ -1033,13 +1084,13 @@
         "userName": "Dave Kaemmer",
         "carNumber": "21",
         "carClassId": 3002,
-        "carClassColor": "0xd35400",
-        "carScreenName": "Formula Vee",
-        "carScreenNameShort": "Formula Vee",
+        "carClassColor": "#a07cc8",
+        "carScreenName": "Formula Vee - Classic",
+        "carScreenNameShort": "Formula Vee - Classic",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 10,
+        "incidentCount": 3,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 114.9098
@@ -1049,13 +1100,13 @@
         "userName": "Otto Szebeni",
         "carNumber": "22",
         "carClassId": 48,
-        "carClassColor": "0x33ceff",
+        "carClassColor": "#4d7bd9",
         "carScreenName": "Kia Optima",
         "carScreenNameShort": "Kia Optima",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 10,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 101.6236
@@ -1065,13 +1116,13 @@
         "userName": "Grant Reeve",
         "carNumber": "23",
         "carClassId": 48,
-        "carClassColor": "0x33ceff",
+        "carClassColor": "#4d7bd9",
         "carScreenName": "Kia Optima",
         "carScreenNameShort": "Kia Optima",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 10,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 101.6236
@@ -1081,13 +1132,13 @@
         "userName": "Greg Hill",
         "carNumber": "24",
         "carClassId": 48,
-        "carClassColor": "0x33ceff",
+        "carClassColor": "#4d7bd9",
         "carScreenName": "Kia Optima",
         "carScreenNameShort": "Kia Optima",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 12,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 101.6236
@@ -1097,13 +1148,13 @@
         "userName": "Doug Hunt",
         "carNumber": "25",
         "carClassId": 48,
-        "carClassColor": "0x33ceff",
+        "carClassColor": "#4d7bd9",
         "carScreenName": "Kia Optima",
         "carScreenNameShort": "Kia Optima",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 10,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 101.6236
@@ -1113,32 +1164,16 @@
         "userName": "Jason Bryfogle",
         "carNumber": "26",
         "carClassId": 48,
-        "carClassColor": "0x33ceff",
+        "carClassColor": "#4d7bd9",
         "carScreenName": "Kia Optima",
         "carScreenNameShort": "Kia Optima",
         "iRating": 0,
         "licString": "R 0.00",
         "licColor": "0x8800A0",
-        "incidentCount": 10,
+        "incidentCount": 0,
         "isPaceCar": false,
         "isSpectator": false,
         "carClassEstLapTime": 101.6236
-      },
-      {
-        "carIdx": 35,
-        "userName": "Pace Car",
-        "carNumber": "0",
-        "carClassId": 11,
-        "carClassColor": "0x000000",
-        "carScreenName": "safety pcsedan",
-        "carScreenNameShort": "safety pcsedan",
-        "iRating": 0,
-        "licString": "R 0.00",
-        "licColor": "0xffffff",
-        "incidentCount": 0,
-        "isPaceCar": true,
-        "isSpectator": false,
-        "carClassEstLapTime": 95.0065
       }
     ],
     "driverTires": [
@@ -1181,182 +1216,6 @@
         "sectorStartPct": 0.879426
       }
     ],
-    "qualifyResults": [
-      {
-        "carIdx": 17,
-        "position": 0,
-        "classPosition": 0
-      },
-      {
-        "carIdx": 19,
-        "position": 1,
-        "classPosition": 1
-      },
-      {
-        "carIdx": 18,
-        "position": 2,
-        "classPosition": 2
-      },
-      {
-        "carIdx": 6,
-        "position": 3,
-        "classPosition": 3
-      },
-      {
-        "carIdx": 7,
-        "position": 4,
-        "classPosition": 4
-      },
-      {
-        "carIdx": 5,
-        "position": 5,
-        "classPosition": 5
-      },
-      {
-        "carIdx": 32,
-        "position": 6,
-        "classPosition": 0
-      },
-      {
-        "carIdx": 33,
-        "position": 7,
-        "classPosition": 1
-      },
-      {
-        "carIdx": 30,
-        "position": 8,
-        "classPosition": 2
-      },
-      {
-        "carIdx": 34,
-        "position": 9,
-        "classPosition": 3
-      },
-      {
-        "carIdx": 31,
-        "position": 10,
-        "classPosition": 4
-      },
-      {
-        "carIdx": 11,
-        "position": 11,
-        "classPosition": 0
-      },
-      {
-        "carIdx": 8,
-        "position": 12,
-        "classPosition": 1
-      },
-      {
-        "carIdx": 10,
-        "position": 13,
-        "classPosition": 2
-      },
-      {
-        "carIdx": 9,
-        "position": 14,
-        "classPosition": 3
-      },
-      {
-        "carIdx": 3,
-        "position": 15,
-        "classPosition": 4
-      },
-      {
-        "carIdx": 1,
-        "position": 16,
-        "classPosition": 5
-      },
-      {
-        "carIdx": 4,
-        "position": 17,
-        "classPosition": 0
-      },
-      {
-        "carIdx": 13,
-        "position": 18,
-        "classPosition": 1
-      },
-      {
-        "carIdx": 12,
-        "position": 19,
-        "classPosition": 2
-      },
-      {
-        "carIdx": 14,
-        "position": 20,
-        "classPosition": 3
-      },
-      {
-        "carIdx": 16,
-        "position": 21,
-        "classPosition": 4
-      },
-      {
-        "carIdx": 2,
-        "position": 22,
-        "classPosition": 5
-      },
-      {
-        "carIdx": 15,
-        "position": 23,
-        "classPosition": 6
-      },
-      {
-        "carIdx": 0,
-        "position": 24,
-        "classPosition": 0
-      },
-      {
-        "carIdx": 20,
-        "position": 25,
-        "classPosition": 1
-      },
-      {
-        "carIdx": 23,
-        "position": 26,
-        "classPosition": 2
-      },
-      {
-        "carIdx": 24,
-        "position": 27,
-        "classPosition": 3
-      },
-      {
-        "carIdx": 22,
-        "position": 28,
-        "classPosition": 4
-      },
-      {
-        "carIdx": 21,
-        "position": 29,
-        "classPosition": 5
-      },
-      {
-        "carIdx": 27,
-        "position": 30,
-        "classPosition": 0
-      },
-      {
-        "carIdx": 28,
-        "position": 31,
-        "classPosition": 1
-      },
-      {
-        "carIdx": 26,
-        "position": 32,
-        "classPosition": 2
-      },
-      {
-        "carIdx": 25,
-        "position": 33,
-        "classPosition": 3
-      },
-      {
-        "carIdx": 29,
-        "position": 34,
-        "classPosition": 4
-      }
-    ]
+    "qualifyResults": []
   }
 }
