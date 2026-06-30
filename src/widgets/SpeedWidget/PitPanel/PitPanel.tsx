@@ -15,6 +15,7 @@ const PIT_STATE_CLASS: Record<PitState, string> = {
   normal: '',
   'pit-lane': styles.statePitLane,
   'limiter-active': styles.stateLimiter,
+  'limiter-near-exit': styles.stateLimiter,
   'limiter-exit': '',
   'over-limit': styles.stateOverLimit,
 };

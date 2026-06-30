@@ -287,6 +287,47 @@ export const PitOverlayOverLimit: StoryObj = {
   render: makePitOverlayRenderer(70, 0x10, 0.96),
 };
 
+// Pit lane with progress bar + BOX cue visible + limiter-near-exit indicators.
+// driverPitTrkPct = 0.935 places pitbox at ~45% through pit lane.
+// pitLaneProgressPct ~0.85 = near exit (≥0.75 → limiter-near-exit state, green indicators).
+// distM = 8 m → within default boxCueDistM (15 m) so BOX cue renders.
+const PitLaneWithBoxRenderer = () => {
+  const store = useStore();
+
+  useEffect(() => {
+    runInAction(() => {
+      store.session.updateSessionInfo({
+        ...BASE_SESSION_INFO,
+        driverPitTrkPct: 0.935,
+      } as SessionSnapshot);
+      store.trackMapWidget.onTrackShapeReceived(SAMPLE_TRACK_SHAPE);
+      store.player.updateCarStatus({
+        on_pit_road: true,
+        engine_warnings: 0x10,
+      } as Parameters<typeof store.player.updateCarStatus>[0]);
+      store.player.updateCarDynamics({
+        speed: 49 / 3.6,
+        rpm: 3000,
+        gear: 2,
+      } as Parameters<typeof store.player.updateCarDynamics>[0]);
+      store.player.updateLapTiming({
+        lap: 5,
+        player_car_position: 3,
+        lap_dist_pct: 0.955,
+      } as LapTimingFrame);
+      store.player.updatePitTarget(8, 'pitbox', 0.85);
+    });
+  }, [store]);
+
+  return <SpeedWidget />;
+};
+
+PitLaneWithBoxRenderer.displayName = 'PitLaneWithBoxRenderer';
+
+export const PitLaneWithBox: StoryObj = {
+  render: PitLaneWithBoxRenderer,
+};
+
 // ── RPM animated (LED bar states) ────────────────────────────
 
 const RpmAnimatedRenderer = () => {

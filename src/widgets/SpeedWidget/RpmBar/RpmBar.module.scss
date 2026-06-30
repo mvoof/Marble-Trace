@@ -17,19 +17,6 @@
 
 .rpmSegLit {
   background: var(--rpm-seg-color);
-  animation: segPop 0.08s ease-out forwards;
-}
-
-@keyframes segPop {
-  from {
-    transform: scale(0.7);
-    opacity: 0.4;
-  }
-
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
 }
 
 .rpmBarBlink .rpmSeg {

@@ -18,6 +18,7 @@ export type PitState =
   | 'normal'
   | 'pit-lane'
   | 'limiter-active'
+  | 'limiter-near-exit'
   | 'limiter-exit'
   | 'over-limit';
 
@@ -96,7 +97,12 @@ export const usePitState = (): PitStateResult => {
     }
 
     if (isLimiter) {
-      return onPitRoad ? 'limiter-active' : 'limiter-exit';
+      if (!onPitRoad) return 'limiter-exit';
+
+      const nearExit =
+        player.pitLaneProgressPct !== null && player.pitLaneProgressPct >= 0.75;
+
+      return nearExit ? 'limiter-near-exit' : 'limiter-active';
     }
 
     return 'pit-lane';

@@ -10,6 +10,7 @@ const STATE_CLASS: Record<PitState, string> = {
   normal: '',
   'pit-lane': styles.statePitLane,
   'limiter-active': styles.stateLimiter,
+  'limiter-near-exit': styles.stateLimiter,
   'limiter-exit': '',
   'over-limit': styles.stateOverLimit,
 };
@@ -45,6 +46,7 @@ export const PitOverlay = observer(() => {
   const headline = (() => {
     if (pitState === 'pit-lane') return 'LIMITER OFF';
     if (pitState === 'limiter-active') return 'PIT LIMITER';
+    if (pitState === 'limiter-near-exit') return 'NEAR EXIT';
 
     return 'SLOW DOWN!';
   })();

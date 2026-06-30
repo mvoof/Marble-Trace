@@ -16,7 +16,7 @@ import {
 
 const LED_COUNT = 22;
 
-const PIT_YELLOW = '#ca8a04';
+const PIT_YELLOW = '#eab308';
 const PIT_GREEN = '#16a34a';
 const PIT_BLUE = '#2563eb';
 const PIT_WHITE = 'rgba(255,255,255,0.85)';
@@ -26,10 +26,11 @@ const LED_OFF = 'rgba(255,255,255,0.06)';
 
 const PIT_TICK_INTERVAL: Record<PitState, number> = {
   normal: 0,
-  'pit-lane': 300,
-  'limiter-active': 500,
-  'limiter-exit': 300,
-  'over-limit': 300,
+  'pit-lane': 100,
+  'limiter-active': 600,
+  'limiter-near-exit': 600,
+  'limiter-exit': 420,
+  'over-limit': 80,
 };
 
 // Left indicators: LED[0], LED[1]. Right indicators: LED[20], LED[21].
@@ -48,7 +49,9 @@ const getIndicatorColor = (
   if (!lit) return LED_OFF;
 
   if (pitState === 'pit-lane') return PIT_RED;
+  if (pitState === 'over-limit') return PIT_RED;
   if (pitState === 'limiter-active') return PIT_YELLOW;
+  if (pitState === 'limiter-near-exit') return PIT_GREEN;
   if (pitState === 'limiter-exit') return PIT_GREEN;
 
   return LED_OFF;
@@ -68,20 +71,46 @@ const getPitLedColor = (
   tick: number,
   indicatorTick: number
 ): string => {
-  // Over-limit overrides everything: all LEDs alternate red/dim every other.
-  if (pitState === 'over-limit') {
-    return i % 2 === indicatorTick % 2 ? PIT_RED : PIT_RED_DIM;
-  }
-
   if (isIndicator(i)) return getIndicatorColor(i, pitState, indicatorTick);
 
-  // Main body (LED 2..19).
-  if (pitState === 'pit-lane') {
-    return (i + tick * 2) % 4 < 2 ? PIT_YELLOW : LED_OFF;
+  if (i === 2 || i === LED_COUNT - 3) return LED_OFF;
+
+  // Over-limit: double pulse — flash, flash, long pause.
+  if (pitState === 'over-limit') {
+    const phase = tick % 16;
+    const isOn = phase === 0 || phase === 2;
+
+    return isOn ? PIT_RED : LED_OFF;
   }
 
-  if (pitState === 'limiter-active') {
-    return (i + tick) % 2 === 0 ? PIT_BLUE : PIT_WHITE;
+  // Main body (LED 3..18) — wave expands from center outward, fading toward edges, then all off.
+  if (pitState === 'pit-lane') {
+    const RADIUS = 8;
+    const CYCLE = RADIUS + 4;
+    const phase = tick % CYCLE;
+    const isExpanding = phase < RADIUS;
+
+    if (!isExpanding) return LED_OFF;
+
+    const bodyIndex = i - 3;
+    const distFromCenter = Math.abs(bodyIndex - 7.5);
+
+    if (distFromCenter > phase) return LED_OFF;
+
+    const opacity = Math.max(0.05, 1 - distFromCenter * 0.12);
+
+    return `rgba(234,179,8,${opacity.toFixed(2)})`;
+  }
+
+  if (pitState === 'limiter-active' || pitState === 'limiter-near-exit') {
+    const bodyIndex = i - 3;
+    const offset = tick % 2;
+    const slot = (bodyIndex + offset) % 5;
+
+    if (slot === 0 || slot === 1) return PIT_BLUE;
+    if (slot === 3) return PIT_WHITE;
+
+    return LED_OFF;
   }
 
   if (pitState === 'limiter-exit') {
@@ -125,7 +154,7 @@ export const RpmBar = observer(() => {
     }
 
     const bodyInterval = PIT_TICK_INTERVAL[effectivePitState];
-    const indicatorInterval = Math.round(bodyInterval / 2);
+    const indicatorInterval = 260;
 
     if (bodyInterval === 0) {
       return;
