@@ -92,7 +92,7 @@ export const usePitState = (): PitStateResult => {
       return 'normal';
     }
 
-    if (pitLimitMs > 0 && speed > pitLimitMs) {
+    if (pitLimitMs > 0 && speed > pitLimitMs + 1 / speedFactor) {
       return 'over-limit';
     }
 
