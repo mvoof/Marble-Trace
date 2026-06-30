@@ -8,6 +8,7 @@ import { getShiftZoneColor } from '@utils/widget/speed-utils';
 
 import styles from './InfoColumn.module.scss';
 import {
+  useCarsStore,
   usePlayerStore,
   useSessionStore,
   useWidgetSettingsStore,
@@ -18,6 +19,7 @@ const RPM_COLOR_OFF = 'rgba(255,255,255,0.55)';
 export const InfoColumn = observer(() => {
   const player = usePlayerStore();
   const { sessionInfo, session } = useSessionStore();
+  const { leaderBestLapTime } = useCarsStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const {
@@ -60,9 +62,9 @@ export const InfoColumn = observer(() => {
   const totalLapsStr = currentSession?.sessionLaps
     ? resolveSessionLaps(
         currentSession.sessionLaps,
-        session?.session_laps_remain_ex ?? null,
+        session?.session_time_remain ?? null,
         currentLap ?? null,
-        null
+        leaderBestLapTime
       )
     : null;
   const isUnlimited =
