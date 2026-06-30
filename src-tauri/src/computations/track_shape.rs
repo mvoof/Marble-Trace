@@ -1,5 +1,6 @@
 //! Track shape processor — dead reckoning from 60 Hz speed/yaw telemetry.
 //! Ports the TypeScript `TrackRecorder` class in full.
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Instant;
@@ -231,9 +232,12 @@ pub struct TrackShapeProcessor {
     reset_pit_pcts: Arc<AtomicBool>,
     status_tick: u64,
     last_lap_dist_pct: f32,
-    was_on_pit_road: bool,
-    pit_in_pct: Option<f32>,
-    pit_exit_pct: Option<f32>,
+    /// Previous frame's on_pit_road per car (CarIdx-indexed).
+    prev_on_pit_road: Vec<bool>,
+    /// Previous frame's track surface per car — used to reject pit stall exits.
+    prev_track_surface: Vec<TrackSurface>,
+    /// Recorded pit entry pct per car; present while car is inside pit lane, awaiting exit.
+    pit_in_pcts_by_car: HashMap<usize, f32>,
 }
 
 impl TrackShapeProcessor {
@@ -245,9 +249,9 @@ impl TrackShapeProcessor {
             reset_pit_pcts,
             status_tick: 0,
             last_lap_dist_pct: -1.0,
-            was_on_pit_road: false,
-            pit_in_pct: None,
-            pit_exit_pct: None,
+            prev_on_pit_road: Vec::new(),
+            prev_track_surface: Vec::new(),
+            pit_in_pcts_by_car: HashMap::new(),
         }
     }
 }
@@ -273,88 +277,85 @@ impl Processor for TrackShapeProcessor {
             self.state.reset();
             self.last_track_id = Some(track_id);
             self.status_tick = 0;
-            self.was_on_pit_road = on_pit_road;
-            self.pit_in_pct = None;
-            self.pit_exit_pct = None;
+            self.prev_on_pit_road.clear();
+            self.prev_track_surface.clear();
+            self.pit_in_pcts_by_car.clear();
         }
 
         let speed = ctx.car_dynamics.speed;
         let yaw = ctx.car_dynamics.yaw.unwrap_or(0.0);
         let lap_dist_pct = ctx.lap_timing.lap_dist_pct.unwrap_or(-1.0);
         let is_moving = speed > SPEED_THRESHOLD_MPS;
-        let is_on_track = ctx.car_status.is_on_track.unwrap_or(false);
+        let player_idx = ctx.session.player_car_idx as usize;
 
-        // Reset if player is not on track or telemetry is invalid (garage/menus/tow/loading screen)
-        if (!is_on_track && !on_pit_road) || lap_dist_pct < 0.0 {
-            self.pit_in_pct = None;
-            self.pit_exit_pct = None;
-            self.was_on_pit_road = on_pit_road;
-        }
-
-        // Reset pit pcts if commanded; preserve was_on_pit_road so we don't
-        // create a false entry transition if the car is already on pit road.
+        // Reset pit tracking if commanded by the user (manual recalibrate).
         if self.reset_pit_pcts.swap(false, Ordering::Relaxed) {
-            self.pit_in_pct = None;
-            self.pit_exit_pct = None;
-            self.was_on_pit_road = on_pit_road;
+            self.prev_on_pit_road.clear();
+            self.prev_track_surface.clear();
+            self.pit_in_pcts_by_car.clear();
         }
 
-        // Detect pit entry / exit transitions and record lap_dist_pct at that moment.
-        // Require is_moving so sessions that start with the car already on pit road
-        // (garage, pit box) don't record a bogus pit_in_pct at speed = 0.
-        if lap_dist_pct >= 0.0 && (is_on_track || on_pit_road) {
-            let entered_pit = !self.was_on_pit_road && on_pit_road;
-            let exited_pit = self.was_on_pit_road && !on_pit_road;
+        // Detect pit entry / exit for every car using CarIdx arrays (10 Hz, less noisy than
+        // the player's own 60 Hz OnPitRoad signal which can glitch for 1-2 frames on entry).
+        // Any car that completes a valid pit lane traversal calibrates the track.
+        let mut pit_lane_output: Option<ComputedOutput> = None;
 
-            // next_was tracks what was_on_pit_road becomes; can be overridden below.
-            let mut next_was_on_pit_road = on_pit_road;
+        let current_on_pit_road = &ctx.car_idx.car_idx_on_pit_road;
+        let current_lap_dist = &ctx.car_idx.car_idx_lap_dist_pct;
+        let current_surface = &ctx.car_idx.car_idx_track_surface;
 
-            if entered_pit && is_moving {
-                let player_idx = ctx.session.player_car_idx as usize;
-                let track_surface = ctx
-                    .car_idx
-                    .car_idx_track_surface
-                    .get(player_idx)
+        for i in 0..current_on_pit_road.len() {
+            let is_on_pit = current_on_pit_road[i];
+            let was_on_pit = self.prev_on_pit_road.get(i).copied().unwrap_or(false);
+            let car_lap_dist = match current_lap_dist.get(i).copied() {
+                Some(d) if d >= 0.0 => d,
+                _ => continue,
+            };
+
+            // Pit entry: false → true
+            if !was_on_pit && is_on_pit {
+                let prev_surface = self
+                    .prev_track_surface
+                    .get(i)
                     .copied()
                     .unwrap_or(TrackSurface::NotInWorld);
 
-                if track_surface != TrackSurface::InPitStall {
-                    self.pit_in_pct = Some(lap_dist_pct);
-                }
-            } else if exited_pit && is_moving {
-                if let Some(pit_in_pct) = self.pit_in_pct {
-                    let pit_exit_pct = lap_dist_pct;
-                    let lane_length_pct = (pit_exit_pct - pit_in_pct + 1.0) % 1.0;
-
-                    // Sanity check: pit lane must be at least 3% and at most 30% of track.
-                    // 0.5% was too loose — an on_pit_road glitch a few meters in (~1-2% of track)
-                    // would pass and record a bogus short pit lane. Real pit lanes are always ≥ 3%.
-                    if (0.03..=0.30).contains(&lane_length_pct) {
-                        self.pit_exit_pct = Some(pit_exit_pct);
-
-                        let out = Some(ComputedOutput::PitLanePct {
-                            track_id,
-                            pit_in_pct,
-                            pit_exit_pct,
-                        });
-
-                        // Clear memory after successful calibration to prevent corrupt pairings on telemetry drop/reset
-                        self.pit_in_pct = None;
-                        self.pit_exit_pct = None;
-
-                        return out;
-                    } else {
-                        // Sanity failed — likely a 1-2 frame on_pit_road glitch near pit entry.
-                        // Keep pit_in_pct and pretend the exit never happened so the real exit
-                        // can still pair with the original entry point.
-                        next_was_on_pit_road = true;
-                    }
+                // Reject cars leaving a pit stall — their on_pit_road transition goes false→true
+                // just like a real track→pit entry, but we don't want to record that.
+                if prev_surface != TrackSurface::InPitStall {
+                    self.pit_in_pcts_by_car.insert(i, car_lap_dist);
                 }
             }
 
-            self.was_on_pit_road = next_was_on_pit_road;
-            self.last_lap_dist_pct = lap_dist_pct;
+            // Pit exit: true → false
+            if was_on_pit && !is_on_pit {
+                if let Some(pit_in) = self.pit_in_pcts_by_car.remove(&i) {
+                    let lane_length_pct = (car_lap_dist - pit_in + 1.0) % 1.0;
+
+                    // Sanity: pit lane must be 3–30% of track length.
+                    // <3% catches on_pit_road glitch frames; >30% catches reversed/warped data.
+                    if (0.03..=0.30).contains(&lane_length_pct) && pit_lane_output.is_none() {
+                        pit_lane_output = Some(ComputedOutput::PitLanePct {
+                            track_id,
+                            pit_in_pct: pit_in,
+                            pit_exit_pct: car_lap_dist,
+                        });
+                    }
+                }
+            }
         }
+
+        // Update previous-frame snapshots for next tick.
+        self.prev_on_pit_road.clear();
+        self.prev_on_pit_road.extend_from_slice(current_on_pit_road);
+        self.prev_track_surface.clear();
+        self.prev_track_surface.extend_from_slice(current_surface);
+
+        if pit_lane_output.is_some() {
+            return pit_lane_output;
+        }
+
+        let player_is_recording_pit = self.pit_in_pcts_by_car.contains_key(&player_idx);
 
         if self.state.complete {
             self.status_tick += 1;
@@ -363,7 +364,7 @@ impl Processor for TrackShapeProcessor {
                     is_recording: false,
                     is_waiting_for_sf: false,
                     progress: 1.0,
-                    pit_lane_recording: self.pit_in_pct.is_some() && self.pit_exit_pct.is_none(),
+                    pit_lane_recording: player_is_recording_pit,
                 }));
             }
             return None;
@@ -380,6 +381,10 @@ impl Processor for TrackShapeProcessor {
             if (crossed_sf || force) && !on_pit_road && lap_dist >= 0.0 {
                 self.state.start();
             }
+        }
+
+        if lap_dist_pct >= 0.0 {
+            self.last_lap_dist_pct = lap_dist_pct;
         }
 
         let just_completed = if self.state.recording {
@@ -399,8 +404,6 @@ impl Processor for TrackShapeProcessor {
             return Some(ComputedOutput::TrackShape(build_payload(
                 track_id,
                 &self.state,
-                self.pit_in_pct,
-                self.pit_exit_pct,
             )));
         }
 
@@ -413,7 +416,7 @@ impl Processor for TrackShapeProcessor {
                 is_recording: self.state.recording,
                 is_waiting_for_sf: is_waiting,
                 progress: self.state.progress(),
-                pit_lane_recording: self.pit_in_pct.is_some() && self.pit_exit_pct.is_none(),
+                pit_lane_recording: player_is_recording_pit,
             }));
         }
 
@@ -425,18 +428,13 @@ impl Processor for TrackShapeProcessor {
         self.last_track_id = None;
         self.status_tick = 0;
         self.last_lap_dist_pct = -1.0;
-        self.was_on_pit_road = false;
-        self.pit_in_pct = None;
-        self.pit_exit_pct = None;
+        self.prev_on_pit_road.clear();
+        self.prev_track_surface.clear();
+        self.pit_in_pcts_by_car.clear();
     }
 }
 
-fn build_payload(
-    track_id: i32,
-    state: &TrackShapeState,
-    pit_in_pct: Option<f32>,
-    pit_exit_pct: Option<f32>,
-) -> TrackShapePayload {
+fn build_payload(track_id: i32, state: &TrackShapeState) -> TrackShapePayload {
     let pts = state.sorted_points();
 
     if pts.len() < 3 {
@@ -445,8 +443,8 @@ fn build_payload(
             svg_path: String::new(),
             view_box: "0 0 100 100".to_string(),
             points: pts,
-            pit_in_pct,
-            pit_exit_pct,
+            pit_in_pct: None,
+            pit_exit_pct: None,
         };
     }
 
@@ -494,8 +492,8 @@ fn build_payload(
         svg_path: d,
         view_box,
         points: pts,
-        pit_in_pct,
-        pit_exit_pct,
+        pit_in_pct: None,
+        pit_exit_pct: None,
     }
 }
 
