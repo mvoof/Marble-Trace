@@ -236,6 +236,57 @@ export const PitLaneAssistant: StoryObj = {
   render: PitAssistantRenderer,
 };
 
+// ── Pit overlay states (full overlay with progress bar) ───────
+
+const makePitOverlayRenderer = (
+  speedKmh: number,
+  engineWarnings: number,
+  lapDistPct: number
+) => {
+  const Renderer = () => {
+    const store = useStore();
+
+    useEffect(() => {
+      runInAction(() => {
+        store.session.updateSessionInfo(BASE_SESSION_INFO);
+        store.trackMapWidget.onTrackShapeReceived(SAMPLE_TRACK_SHAPE);
+        store.player.updateCarStatus({
+          on_pit_road: true,
+          engine_warnings: engineWarnings,
+        } as Parameters<typeof store.player.updateCarStatus>[0]);
+        store.player.updateCarDynamics({
+          speed: speedKmh / 3.6,
+          rpm: 3000,
+          gear: 2,
+        } as Parameters<typeof store.player.updateCarDynamics>[0]);
+        store.player.updateLapTiming({
+          lap: 5,
+          player_car_position: 3,
+          lap_dist_pct: lapDistPct,
+        } as LapTimingFrame);
+      });
+    }, [store]);
+
+    return <SpeedWidget />;
+  };
+
+  Renderer.displayName = 'PitOverlayRenderer';
+
+  return Renderer;
+};
+
+export const PitOverlayEntry: StoryObj = {
+  render: makePitOverlayRenderer(40, 0, 0.91),
+};
+
+export const PitOverlayLimiter: StoryObj = {
+  render: makePitOverlayRenderer(52, 0x10, 0.94),
+};
+
+export const PitOverlayOverLimit: StoryObj = {
+  render: makePitOverlayRenderer(70, 0x10, 0.96),
+};
+
 // ── RPM animated (LED bar states) ────────────────────────────
 
 const RpmAnimatedRenderer = () => {

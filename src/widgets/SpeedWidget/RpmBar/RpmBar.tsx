@@ -16,11 +16,11 @@ import {
 
 const LED_COUNT = 22;
 
-const PIT_YELLOW = '#eab308';
-const PIT_BLUE = '#3b82f6';
-const PIT_WHITE = '#ffffff';
-const PIT_RED = '#ef4444';
-const PIT_RED_DIM = 'rgba(239,68,68,0.12)';
+const PIT_YELLOW = '#d97706';
+const PIT_BLUE = '#2563eb';
+const PIT_WHITE = 'rgba(255,255,255,0.85)';
+const PIT_RED = '#dc2626';
+const PIT_RED_DIM = 'rgba(220,38,38,0.12)';
 const LED_OFF = 'rgba(255,255,255,0.06)';
 
 const PIT_TICK_INTERVAL: Record<PitState, number> = {
