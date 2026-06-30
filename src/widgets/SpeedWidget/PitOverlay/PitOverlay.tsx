@@ -65,7 +65,7 @@ export const PitOverlay = observer(() => {
     const value =
       system === 'metric' ? Math.round(distM) : Math.round(distM * 3.28084);
 
-    const prefix = distMode === 'pitbox' ? 'BOX ' : 'EXIT ';
+    const prefix = distMode === 'pitbox' ? 'PIT IN ' : 'PIT OUT ';
     return `${prefix}${value} ${distUnit}`;
   })();
 
