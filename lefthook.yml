@@ -21,7 +21,7 @@ pre-commit:
     test:
       glob: "*.{ts,tsx,js,mjs}"
       run: npx vitest related --run {staged_files}
-    rust-test:
+    rust-clippy:
       glob: "*.rs"
       root: "src-tauri/"
-      run: cargo test
+      run: cargo clippy --all-targets -- -D warnings && cargo test
