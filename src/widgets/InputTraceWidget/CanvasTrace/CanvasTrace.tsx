@@ -1,7 +1,7 @@
-﻿import { useEffect, useLayoutEffect, useRef, useCallback } from 'react';
-import { autorun } from 'mobx';
+﻿import { useEffect, useRef, useCallback } from 'react';
 
 import type { InputTraceSettings } from '@/types/widget-settings';
+import { useReactiveCanvasLoop } from '@/hooks/widget/useReactiveCanvasLoop';
 import styles from './CanvasTrace.module.scss';
 import {
   usePlayerStore,
@@ -14,15 +14,14 @@ interface SmoothedValues {
   clutch: number;
 }
 
-// Not wrapped in observer() intentionally: autorun() inside useLayoutEffect subscribes
-// to MobX observables directly, so React re-renders are not needed for data updates.
+// Not wrapped in observer() intentionally: useReactiveCanvasLoop subscribes to
+// MobX observables directly, so React re-renders are not needed for data updates.
 // observer() would cause 60 Hz React re-renders on every carInputs change.
 export const CanvasTrace = () => {
   const telemetry = usePlayerStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rafRef = useRef<number>(0);
 
   const bufferStateRef = useRef({
     buffer: new Float32Array(0),
@@ -196,8 +195,8 @@ export const CanvasTrace = () => {
     }
   }, []);
 
-  useLayoutEffect(() => {
-    const disposer = autorun(() => {
+  useReactiveCanvasLoop(
+    (scheduleDraw) => {
       const inputs = telemetry.carInputs;
       const settings =
         widgetSettings.getSettings<InputTraceSettings>('input-trace');
@@ -272,21 +271,17 @@ export const CanvasTrace = () => {
         state.count++;
       }
 
-      cancelAnimationFrame(rafRef.current);
-
-      rafRef.current = requestAnimationFrame(() => draw(settings));
-    });
-
-    return () => {
-      disposer();
-      cancelAnimationFrame(rafRef.current);
-    };
-  }, [telemetry, widgetSettings, draw]);
+      scheduleDraw(() => draw(settings));
+    },
+    [telemetry, widgetSettings, draw]
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
 
     if (!canvas) return;
+
+    let resizeRafId = 0;
 
     const resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0];
@@ -311,14 +306,17 @@ export const CanvasTrace = () => {
       const currentSettings =
         widgetSettings.getSettings<InputTraceSettings>('input-trace');
 
-      cancelAnimationFrame(rafRef.current);
+      cancelAnimationFrame(resizeRafId);
 
-      rafRef.current = requestAnimationFrame(() => draw(currentSettings));
+      resizeRafId = requestAnimationFrame(() => draw(currentSettings));
     });
 
     resizeObserver.observe(canvas.parentElement ?? canvas);
 
-    return () => resizeObserver.disconnect();
+    return () => {
+      resizeObserver.disconnect();
+      cancelAnimationFrame(resizeRafId);
+    };
   }, [widgetSettings, draw]);
 
   return (
