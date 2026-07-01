@@ -1,6 +1,6 @@
-﻿import { useEffect, useRef, useCallback } from 'react';
-import { autorun } from 'mobx';
+﻿import { useRef, useCallback } from 'react';
 
+import { useReactiveCanvasLoop } from '@/hooks/widget/useReactiveCanvasLoop';
 import {
   COLOR_TURN,
   ENVELOPE_SPREAD,
@@ -25,17 +25,16 @@ interface GMeterTraceProps {
   height: number;
 }
 
-// Not wrapped in observer() intentionally: autorun() inside useEffect subscribes
-// to MobX observables directly, so React re-renders are not needed for data updates.
+// Not wrapped in observer() intentionally: useReactiveCanvasLoop subscribes to
+// MobX observables directly, so React re-renders are not needed for data updates.
 // observer() would cause 60 Hz React re-renders on every carDynamics change.
 export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
   const telemetry = usePlayerStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rafIdRef = useRef(0);
 
-  // Synced each render so autorun always reads fresh props without effect restart.
+  // Synced each render so the reactive loop always reads fresh props without effect restart.
   const dimsRef = useRef({ width, height });
 
   dimsRef.current = { width, height };
@@ -171,8 +170,8 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
     []
   );
 
-  useEffect(() => {
-    const disposer = autorun(() => {
+  useReactiveCanvasLoop(
+    (scheduleDraw) => {
       const dynamics = telemetry.carDynamics;
       const settings =
         widgetSettings.getSettings<GMeterWidgetSettings>('g-meter');
@@ -251,18 +250,12 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
         state.gHistory.shift();
       }
 
-      cancelAnimationFrame(rafIdRef.current);
-
-      rafIdRef.current = requestAnimationFrame(() => {
+      scheduleDraw(() => {
         drawTrace(canvas, settings.displayMode, settings.scale);
       });
-    });
-
-    return () => {
-      disposer();
-      cancelAnimationFrame(rafIdRef.current);
-    };
-  }, [telemetry, widgetSettings, drawTrace]);
+    },
+    [telemetry, widgetSettings, drawTrace, width, height]
+  );
 
   return (
     <canvas
