@@ -254,7 +254,7 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
         drawTrace(canvas, settings.displayMode, settings.scale);
       });
     },
-    [telemetry, widgetSettings, drawTrace]
+    [telemetry, widgetSettings, drawTrace, width, height]
   );
 
   return (

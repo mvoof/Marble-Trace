@@ -17,6 +17,9 @@ export const useReactiveCanvasLoop = (
   deps: DependencyList
 ) => {
   const rafRef = useRef(0);
+  const effectRef = useRef(reactiveEffect);
+
+  effectRef.current = reactiveEffect;
 
   const scheduleDraw = useCallback((draw: () => void) => {
     cancelAnimationFrame(rafRef.current);
@@ -24,7 +27,7 @@ export const useReactiveCanvasLoop = (
   }, []);
 
   useLayoutEffect(() => {
-    const disposer = autorun(() => reactiveEffect(scheduleDraw));
+    const disposer = autorun(() => effectRef.current(scheduleDraw));
 
     return () => {
       disposer();
