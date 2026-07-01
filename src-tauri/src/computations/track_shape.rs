@@ -289,6 +289,7 @@ impl Processor for TrackShapeProcessor {
         if self.reset_track_shape.swap(false, Ordering::Relaxed) {
             self.state.reset();
             self.status_tick = 0;
+            self.last_lap_dist_pct = -1.0;
         }
 
         if self.last_track_id != Some(track_id) {
