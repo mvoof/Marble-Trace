@@ -11,6 +11,7 @@ import {
   useSessionStore,
   useTrackMapWidgetStore,
 } from '@store/root-store-context';
+import { TRACK_MAP_CLEAR } from '@store/sync/sim-events';
 
 export const TrackMapContent = observer(() => {
   const sessionData = useSessionStore();
@@ -87,7 +88,7 @@ export const TrackMapContent = observer(() => {
   }, [trackId, trackMapWidget]);
 
   useEffect(() => {
-    const unlisten = listen('track-map:clear', () => {
+    const unlisten = listen(TRACK_MAP_CLEAR, () => {
       void handleClearTrack();
     });
 
