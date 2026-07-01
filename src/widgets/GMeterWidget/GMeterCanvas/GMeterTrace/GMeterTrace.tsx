@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useCallback } from 'react';
+﻿import { useLayoutEffect, useRef, useCallback } from 'react';
 import { autorun } from 'mobx';
 
 import {
@@ -25,7 +25,7 @@ interface GMeterTraceProps {
   height: number;
 }
 
-// Not wrapped in observer() intentionally: autorun() inside useEffect subscribes
+// Not wrapped in observer() intentionally: autorun() inside useLayoutEffect subscribes
 // to MobX observables directly, so React re-renders are not needed for data updates.
 // observer() would cause 60 Hz React re-renders on every carDynamics change.
 export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
@@ -171,7 +171,7 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
     []
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const disposer = autorun(() => {
       const dynamics = telemetry.carDynamics;
       const settings =

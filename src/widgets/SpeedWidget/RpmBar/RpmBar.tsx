@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { SpeedWidgetSettings } from '@/types/widget-settings';
@@ -146,7 +146,7 @@ export const RpmBar = observer(() => {
   const lastBodyRef = useRef(0);
   const lastIndicatorRef = useRef(0);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isPitMode) {
       setTick(0);
       setIndicatorTick(0);
