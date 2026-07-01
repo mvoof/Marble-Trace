@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   usePlayerStore,
@@ -32,29 +32,27 @@ export const DeltaLive = observer(() => {
   const liveDelta = getGameDelta(lapTiming, reference);
   const deltaOk = isGameDeltaOk(lapTiming, reference);
 
-  const [latch, setLatch] = useState(() =>
-    advanceDeltaLatch(INITIAL_DELTA_LATCH_STATE, deltaOk, liveDelta)
-  );
+  const latchRef = useRef(INITIAL_DELTA_LATCH_STATE);
+  const previousReferenceRef = useRef(reference);
+  const previousHasLapTimingRef = useRef(!!lapTiming);
 
-  useEffect(() => {
-    setLatch((previous) => advanceDeltaLatch(previous, deltaOk, liveDelta));
-  }, [deltaOk, liveDelta]);
+  const referenceChanged = reference !== previousReferenceRef.current;
+  const telemetryDropped = !lapTiming && previousHasLapTimingRef.current;
 
-  useEffect(() => {
-    setLatch(INITIAL_DELTA_LATCH_STATE);
-  }, [reference]);
+  if (referenceChanged || telemetryDropped) {
+    latchRef.current = INITIAL_DELTA_LATCH_STATE;
+  }
 
-  useEffect(() => {
-    if (!lapTiming) {
-      setLatch(INITIAL_DELTA_LATCH_STATE);
-    }
-  }, [lapTiming]);
+  previousReferenceRef.current = reference;
+  previousHasLapTimingRef.current = !!lapTiming;
 
-  if (hideWhenNoReference && !latch.hasHadReference) {
+  latchRef.current = advanceDeltaLatch(latchRef.current, deltaOk, liveDelta);
+
+  if (hideWhenNoReference && !latchRef.current.hasHadReference) {
     return null;
   }
 
-  const delta = getDisplayedDelta(latch, deltaOk, liveDelta);
+  const delta = getDisplayedDelta(latchRef.current, deltaOk, liveDelta);
 
   const deltaStr = formatDelta(delta);
   let fontSizeStyle = {};
