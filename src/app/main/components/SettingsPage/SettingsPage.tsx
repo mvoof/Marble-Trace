@@ -50,6 +50,10 @@ export const SettingsPage = observer(() => {
 
   const trackId = trackMap.trackShape?.trackId ?? null;
   const trackDisplayName = session.sessionInfo?.trackDisplayName ?? null;
+  const sessionTrackId =
+    session.sessionInfo && session.sessionInfo.trackId >= 0
+      ? session.sessionInfo.trackId
+      : null;
 
   const handleResetPitLane = async () => {
     if (trackId === null) return;
@@ -341,7 +345,7 @@ export const SettingsPage = observer(() => {
                 style={{ flex: 1 }}
                 size="small"
                 danger
-                disabled={trackId === null}
+                disabled={sessionTrackId === null}
                 onClick={() => void emit(TRACK_MAP_CLEAR)}
               >
                 Reset Current Track Data
@@ -350,7 +354,7 @@ export const SettingsPage = observer(() => {
               <Button
                 style={{ flex: 1 }}
                 size="small"
-                disabled={trackId === null}
+                disabled={sessionTrackId === null}
                 onClick={() => {
                   void emit('track-map:force-start');
                   message.info(
