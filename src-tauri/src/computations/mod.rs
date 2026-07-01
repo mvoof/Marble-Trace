@@ -106,6 +106,7 @@ impl ProcessorRegistry {
         force_track_start: std::sync::Arc<std::sync::atomic::AtomicBool>,
         reset_pit_pcts: std::sync::Arc<std::sync::atomic::AtomicBool>,
         track_cached: std::sync::Arc<std::sync::atomic::AtomicI32>,
+        reset_track_shape: std::sync::Arc<std::sync::atomic::AtomicBool>,
     ) -> Self {
         Self {
             processors: vec![
@@ -120,6 +121,7 @@ impl ProcessorRegistry {
                     force_track_start,
                     reset_pit_pcts,
                     track_cached,
+                    reset_track_shape,
                 )),
             ],
         }

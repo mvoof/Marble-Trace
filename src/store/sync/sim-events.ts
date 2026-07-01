@@ -5,3 +5,4 @@ export const SIM_STATUS = 'sim://status';
 export const SIM_DISCONNECTED = 'sim://disconnected';
 export const SIM_CAPABILITIES = 'sim://capabilities';
 export const SIM_TRACK_SHAPE = 'sim://track-shape';
+export const TRACK_MAP_CLEAR = 'track-map:clear';

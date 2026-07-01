@@ -103,6 +103,7 @@ pub fn run() {
     let force_track_start = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     let reset_pit_pcts = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     let track_cached = std::sync::Arc::new(std::sync::atomic::AtomicI32::new(-1));
+    let reset_track_shape = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
 
     let force_track_start_listener = std::sync::Arc::clone(&force_track_start);
     let force_track_start_registry = std::sync::Arc::clone(&force_track_start);
@@ -110,6 +111,9 @@ pub fn run() {
     let reset_pit_pcts_state = std::sync::Arc::clone(&reset_pit_pcts);
     let track_cached_registry = std::sync::Arc::clone(&track_cached);
     let track_cached_service = std::sync::Arc::clone(&track_cached);
+    let reset_track_shape_listener = std::sync::Arc::clone(&reset_track_shape);
+    let reset_track_shape_registry = std::sync::Arc::clone(&reset_track_shape);
+    let reset_track_shape_state = std::sync::Arc::clone(&reset_track_shape);
 
     let builder = Builder::default()
         .plugin(
@@ -138,6 +142,12 @@ pub fn run() {
             {
                 let flag = force_track_start_listener;
                 app.listen("track-map:force-start", move |_| {
+                    flag.store(true, std::sync::atomic::Ordering::Relaxed);
+                });
+            }
+            {
+                let flag = reset_track_shape_listener;
+                app.listen("track-map:clear", move |_| {
                     flag.store(true, std::sync::atomic::Ordering::Relaxed);
                 });
             }
@@ -183,11 +193,13 @@ pub fn run() {
                 force_track_start_registry,
                 reset_pit_pcts_registry,
                 track_cached_registry,
+                reset_track_shape_registry,
             ))),
             pit_warning_laps: Arc::new(AtomicU32::new(
                 crate::computations::fuel::DEFAULT_PIT_WARNING_LAPS.to_bits(),
             )),
             reset_pit_pcts: reset_pit_pcts_state,
+            reset_track_shape: reset_track_shape_state,
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {

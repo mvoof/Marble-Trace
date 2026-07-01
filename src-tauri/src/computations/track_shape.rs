@@ -233,6 +233,9 @@ pub struct TrackShapeProcessor {
     /// Set to a loaded track_id when a cached track was loaded from disk; -1 = unset.
     /// Consumed by compute() on the first tick after a track_id change to skip re-recording.
     track_cached: Arc<std::sync::atomic::AtomicI32>,
+    /// Set when the user manually clears the current track's recorded shape.
+    /// Consumed on next tick to un-complete the in-memory recording state.
+    reset_track_shape: Arc<AtomicBool>,
     status_tick: u64,
     last_lap_dist_pct: f32,
     /// Previous frame's on_pit_road per car (CarIdx-indexed).
@@ -248,6 +251,7 @@ impl TrackShapeProcessor {
         force_start: Arc<AtomicBool>,
         reset_pit_pcts: Arc<AtomicBool>,
         track_cached: Arc<std::sync::atomic::AtomicI32>,
+        reset_track_shape: Arc<AtomicBool>,
     ) -> Self {
         Self {
             state: TrackShapeState::default(),
@@ -255,6 +259,7 @@ impl TrackShapeProcessor {
             force_start,
             reset_pit_pcts,
             track_cached,
+            reset_track_shape,
             status_tick: 0,
             last_lap_dist_pct: -1.0,
             prev_on_pit_road: Vec::new(),
@@ -280,6 +285,11 @@ impl Processor for TrackShapeProcessor {
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
         let track_id = ctx.session.track_id;
         let on_pit_road = ctx.car_status.on_pit_road.unwrap_or(false);
+
+        if self.reset_track_shape.swap(false, Ordering::Relaxed) {
+            self.state.reset();
+            self.status_tick = 0;
+        }
 
         if self.last_track_id != Some(track_id) {
             self.state.reset();
@@ -586,6 +596,7 @@ mod tests {
             Arc::new(AtomicBool::new(false)),
             Arc::new(AtomicBool::new(false)),
             Arc::new(std::sync::atomic::AtomicI32::new(-1)),
+            Arc::new(AtomicBool::new(false)),
         )
     }
 
@@ -728,6 +739,7 @@ mod tests {
             Arc::new(AtomicBool::new(false)),
             Arc::new(AtomicBool::new(false)),
             Arc::clone(&track_cached),
+            Arc::new(AtomicBool::new(false)),
         );
         let session = make_session(1);
         let dynamics = make_dynamics(10.0, 0.0);
@@ -796,6 +808,7 @@ mod tests {
             Arc::clone(&flag),
             Arc::new(AtomicBool::new(false)),
             Arc::new(std::sync::atomic::AtomicI32::new(-1)),
+            Arc::new(AtomicBool::new(false)),
         );
 
         let session = make_session(1);

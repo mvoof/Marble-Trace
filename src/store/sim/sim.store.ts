@@ -22,6 +22,7 @@ import {
   SIM_DISCONNECTED,
   SIM_TRACK_SHAPE,
   SIM_CAPABILITIES,
+  TRACK_MAP_CLEAR,
 } from '@store/sync/sim-events';
 
 const EVENT_CAR_DYNAMICS = 1 << 0;
@@ -335,6 +336,16 @@ export class SimStore {
 
         runInAction(() => {
           this.root.trackMapWidget.onTrackShapeReceived(event.payload);
+        });
+      })
+    );
+
+    this.unlistens.push(
+      await listen(TRACK_MAP_CLEAR, () => {
+        if (this.initId !== guardId) return;
+
+        runInAction(() => {
+          this.root.trackMapWidget.clearTrackShape();
         });
       })
     );

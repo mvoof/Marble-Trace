@@ -15,6 +15,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/ReleaseNotesButton';
+import { TRACK_MAP_CLEAR } from '@store/sync/sim-events';
 import styles from './SettingsPage.module.scss';
 import {
   useAppSettingsStore,
@@ -340,7 +341,8 @@ export const SettingsPage = observer(() => {
                 style={{ flex: 1 }}
                 size="small"
                 danger
-                onClick={() => void emit('track-map:clear')}
+                disabled={trackId === null}
+                onClick={() => void emit(TRACK_MAP_CLEAR)}
               >
                 Reset Current Track Data
               </Button>
@@ -348,6 +350,7 @@ export const SettingsPage = observer(() => {
               <Button
                 style={{ flex: 1 }}
                 size="small"
+                disabled={trackId === null}
                 onClick={() => {
                   void emit('track-map:force-start');
                   message.info(

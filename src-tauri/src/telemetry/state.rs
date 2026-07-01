@@ -43,4 +43,7 @@ pub struct TelemetryState {
     pub pit_warning_laps: Arc<AtomicU32>,
     /// Set by reset_pit_lane_pct command; consumed by TrackShapeProcessor on next tick.
     pub reset_pit_pcts: Arc<AtomicBool>,
+    /// Set when the user clears the current track's recorded shape; consumed by
+    /// TrackShapeProcessor on next tick to un-complete the in-memory recording state.
+    pub reset_track_shape: Arc<AtomicBool>,
 }
