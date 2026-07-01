@@ -127,3 +127,34 @@ export const isGameDeltaOk = (
       return !!lapTiming.lap_delta_to_session_lastl_lap_ok;
   }
 };
+
+// The SDK's per-frame `_ok` flag drops transiently in legitimate cases that
+// aren't "no reference lap exists" — e.g. right after setting a new best lap,
+// until the game re-establishes the comparison for the next lap. This latch
+// tracks whether a reference has EVER been valid, and holds the last known
+// delta so the display doesn't blank out during those transient windows.
+export interface DeltaLatchState {
+  hasHadReference: boolean;
+  lastValidDelta: number | null;
+}
+
+export const INITIAL_DELTA_LATCH_STATE: DeltaLatchState = {
+  hasHadReference: false,
+  lastValidDelta: null,
+};
+
+export const advanceDeltaLatch = (
+  state: DeltaLatchState,
+  deltaOk: boolean,
+  liveDelta: number | null
+): DeltaLatchState => {
+  if (!deltaOk) return state;
+
+  return { hasHadReference: true, lastValidDelta: liveDelta };
+};
+
+export const getDisplayedDelta = (
+  state: DeltaLatchState,
+  deltaOk: boolean,
+  liveDelta: number | null
+): number | null => (deltaOk ? liveDelta : state.lastValidDelta);

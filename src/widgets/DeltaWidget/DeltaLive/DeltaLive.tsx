@@ -1,12 +1,16 @@
+import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   usePlayerStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import {
+  advanceDeltaLatch,
   formatDelta,
   getDeltaState,
+  getDisplayedDelta,
   getGameDelta,
+  INITIAL_DELTA_LATCH_STATE,
   isGameDeltaOk,
 } from '@utils/widget/delta-utils';
 import type { DeltaWidgetSettings } from '@/types/widget-settings';
@@ -25,12 +29,32 @@ export const DeltaLive = observer(() => {
   const { reference, hideWhenNoReference } =
     widgetSettings.getSettings<DeltaWidgetSettings>('delta');
 
-  const delta = getGameDelta(lapTiming, reference);
+  const liveDelta = getGameDelta(lapTiming, reference);
   const deltaOk = isGameDeltaOk(lapTiming, reference);
 
-  if (hideWhenNoReference && !deltaOk) {
+  const [latch, setLatch] = useState(() =>
+    advanceDeltaLatch(INITIAL_DELTA_LATCH_STATE, deltaOk, liveDelta)
+  );
+
+  useEffect(() => {
+    setLatch((previous) => advanceDeltaLatch(previous, deltaOk, liveDelta));
+  }, [deltaOk, liveDelta]);
+
+  useEffect(() => {
+    setLatch(INITIAL_DELTA_LATCH_STATE);
+  }, [reference]);
+
+  useEffect(() => {
+    if (!lapTiming) {
+      setLatch(INITIAL_DELTA_LATCH_STATE);
+    }
+  }, [lapTiming]);
+
+  if (hideWhenNoReference && !latch.hasHadReference) {
     return null;
   }
+
+  const delta = getDisplayedDelta(latch, deltaOk, liveDelta);
 
   const deltaStr = formatDelta(delta);
   let fontSizeStyle = {};
