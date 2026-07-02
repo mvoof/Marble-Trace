@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.0] — 2026-07-01
+
+### Added
+
+- **Layouts:** You can now save, load, rename, and delete complete widget setups as named layouts, so you can quickly switch between different arrangements for different needs.
+- **Layout Editor:** A brand new visual editor lets you arrange, resize, and preview your widgets directly on the overlay, making it much easier to build the exact setup you want.
+- **Widget Preview:** While editing a layout, widgets now show a live preview of how they'll actually look, so you can fine-tune everything before saving.
+- **Engine Panel Widget:** A new widget showing key engine information at a glance.
+
+### Changed
+
+- **Speed Widget Overhaul:** The speed widget has been redesigned. It now shows clear pit stop status, along with your current race position and lap number, right alongside your speed.
+- **Visual Polish Everywhere:** Lots of small visual improvements across the app — refreshed weather icons and temperature display, better contrast on safety rating badges, cleaner widget backgrounds, a redesigned DQ flag and DNF badge, and general spacing and badge touch-ups in the standings and relative widgets.
+
+### Fixed
+
+- **Track Map Recording:** Fixed the track map sometimes re-recording a track that was already saved, and made sure recording resets correctly across windows, with buttons disabled when no track is loaded.
+- **Delta Widget Flicker:** Fixed the delta widget briefly disappearing due to momentary data glitches.
+- **Title Bar Dragging:** Fixed spots along the window title bar where dragging the window didn't work.
+
 ## [0.17.0] — 2026-06-19
 
 ### Added
