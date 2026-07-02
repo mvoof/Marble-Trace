@@ -1,3 +1,12 @@
+// Lets every rule below react to the space actually available to this panel
+// instead of a manually-toggled "compact" flag — the same panel renders
+// inside a 280px layout-editor drawer, a ~460px drag-mode popup, and a
+// preview pane, and each needs to stack independently.
+.settingsRoot {
+  container-type: inline-size;
+  container-name: settingsPanel;
+}
+
 .header {
   margin-bottom: rem(40);
 }
@@ -130,11 +139,13 @@
   margin: rem(16) rem(16) 0;
 }
 
-// Compact mode: rendered inside the layout editor's narrow widget drawer. Stack
-// each setting's label above its control so wide controls (Segmented, sliders,
-// selects) get the full panel width instead of being clipped, and tighten the
-// surrounding chrome — all without widening the panel.
-.compact {
+// Narrow container: label above its control (Segmented/slider/select) so wide
+// controls get the full panel width instead of squeezing fieldTexts down to a
+// wrapped, off-balance column, plus tighter chrome to match. Fires from the
+// panel's own measured width, so it applies equally to the layout-editor
+// drawer, the drag-mode overlay popup, and a narrowed preview pane — no
+// per-surface flag needed.
+@container settingsPanel (max-width: 480px) {
   .header {
     margin-bottom: rem(16);
   }
@@ -156,8 +167,6 @@
     margin-bottom: rem(14);
   }
 
-  // Stack label above control, but keep controls at their natural size and
-  // left-aligned — stretching toggles to full width looks bad.
   .fieldRow {
     flex-direction: column;
     align-items: flex-start;

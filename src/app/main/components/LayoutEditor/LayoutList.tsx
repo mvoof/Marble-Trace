@@ -264,7 +264,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   type="button"
                   className={`${styles.layoutCard} ${
                     isSelected ? styles.layoutCardSelected : ''
-                  } ${isActive ? styles.layoutCardActive : ''}`}
+                  }`}
                   onClick={() => {
                     setSelectedId(layout.id);
                     setRenameValue(layout.name);
