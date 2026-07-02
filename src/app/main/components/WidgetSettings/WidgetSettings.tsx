@@ -22,13 +22,7 @@ import { EnginePanelSettingsPanel } from './panels/EnginePanelSettingsPanel';
 import { useWidgetEditor } from './WidgetEditorContext';
 
 export const WidgetSettings = observer(
-  ({
-    widgetId,
-    compact = false,
-  }: {
-    widgetId: string | null;
-    compact?: boolean;
-  }) => {
+  ({ widgetId }: { widgetId: string | null }) => {
     const widgetSettings = useWidgetEditor();
 
     if (!widgetId) {
@@ -46,9 +40,7 @@ export const WidgetSettings = observer(
     const userSettings = widget.userSettings;
 
     return (
-      <div
-        className={`${styles.animateFadeIn} ${compact ? styles.compact : ''}`}
-      >
+      <div className={`${styles.animateFadeIn} ${styles.settingsRoot}`}>
         <header className={styles.header}>
           <span className={styles.moduleLabel}>Module Config</span>
           <h1 className={styles.title}>{widget.label}</h1>

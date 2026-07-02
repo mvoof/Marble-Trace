@@ -85,15 +85,6 @@
   box-shadow: 0 0 0 2px rgba(224, 224, 224, 0.15);
 }
 
-.layoutCardActive {
-  border-color: #3b82f6;
-
-  &.layoutCardSelected {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
-  }
-}
-
 .previewWrapper {
   aspect-ratio: 16 / 9;
   width: 100%;
@@ -230,6 +221,8 @@
   display: flex;
   flex-direction: column;
   gap: sp(xs);
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .infoRow {
@@ -272,7 +265,8 @@
   display: flex;
   flex-direction: column;
   gap: sp(xxs);
-  max-height: 150px;
+  flex: 1 1 0;
+  min-height: 0;
   overflow-y: auto;
   padding: sp(xxs);
   background: #0d0e12;

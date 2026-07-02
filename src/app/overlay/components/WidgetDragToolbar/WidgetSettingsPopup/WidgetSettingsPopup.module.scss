@@ -69,99 +69,12 @@
   z-index: 100000 !important;
 }
 
-// Adapt WidgetSettings (designed for ~680px) to fit the 420px popup.
-// All rules are scoped so they only affect popup content.
+// WidgetSettings adapts its own field layout via a CSS container query keyed
+// off .settingsRoot's measured width (see WidgetSettings.module.scss), so it
+// self-stacks correctly inside this ~460px popup without any override here.
+// Only clip antd Row's negative-margin bleed against the popup edge.
 .popupInner {
-  // ── Header ───────────────────────────────────────────────────
-  :global([class*='header']) {
-    margin-bottom: 14px !important;
-  }
-
-  :global([class*='moduleLabel']) {
-    font-size: 10px !important;
-    margin-bottom: 4px !important;
-  }
-
-  :global([class*='title']) {
-    font-size: 20px !important;
-  }
-
-  // ── Cards ─────────────────────────────────────────────────────
-  :global(
-    [class*='card']:not([class*='cardContent']):not([class*='cardTitle'])
-  ) {
-    margin-bottom: 12px !important;
-  }
-
-  :global([class*='cardTitle']) {
-    font-size: 11px !important;
-    margin-bottom: 8px !important;
-  }
-
   :global([class*='cardContent']) {
-    padding: 12px !important;
-    overflow: hidden; // clip negative-margin bleed from antd Row
-  }
-
-  // ── antd 2-col grid → 1-col ───────────────────────────────────
-  :global(.ant-row) {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    row-gap: 8px;
-  }
-
-  :global(.ant-col) {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    flex: 0 0 100% !important;
-    max-width: 100% !important;
-  }
-
-  // Full-width antd controls
-  :global(.ant-input-number),
-  :global(.ant-slider),
-  :global(.ant-segmented) {
-    width: 100% !important;
-  }
-
-  // ── Field labels ──────────────────────────────────────────────
-  :global([class*='fieldLabel']) {
-    font-size: 12px !important;
-    margin-bottom: 6px !important;
-  }
-
-  :global([class*='fieldGroup']) {
-    padding-bottom: 12px !important;
-    margin-bottom: 12px !important;
-  }
-
-  // ── SettingRow ────────────────────────────────────────────────
-  :global([class*='fieldRow']) {
-    gap: 10px;
-    align-items: center;
-  }
-
-  :global([class*='fieldTexts']) {
-    padding-right: 0 !important;
-    min-width: 0;
-    flex: 1;
-  }
-
-  :global([class*='fieldTitle']) {
-    font-size: 14px !important;
-    margin-bottom: 2px;
-  }
-
-  :global([class*='fieldDesc']) {
-    font-size: 11px !important;
-    white-space: normal;
-    word-break: break-word;
-    line-height: 1.35;
-  }
-
-  // ── Color picker row ──────────────────────────────────────────
-  :global([class*='colorPickerContainer']) {
-    flex-wrap: wrap;
-    gap: 8px;
+    overflow: hidden;
   }
 }
