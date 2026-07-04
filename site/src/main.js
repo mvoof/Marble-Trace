@@ -53,8 +53,18 @@ const startTrace = (canvas) => {
     const rect = canvas.getBoundingClientRect();
     width = rect.width;
     height = rect.height;
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
+    const nextCanvasWidth = Math.round(width * dpr);
+    const nextCanvasHeight = Math.round(height * dpr);
+
+    if (
+      canvas.width === nextCanvasWidth &&
+      canvas.height === nextCanvasHeight
+    ) {
+      return;
+    }
+
+    canvas.width = nextCanvasWidth;
+    canvas.height = nextCanvasHeight;
     context.setTransform(dpr, 0, 0, dpr, 0, 0);
   };
 
@@ -114,7 +124,16 @@ if (headerCanvas) {
 /* ---------- i18n ---------- */
 
 const SUPPORTED_LANGUAGES = Object.keys(I18N);
-const savedLanguage = localStorage.getItem('mt-lang');
+
+const readSavedLanguage = () => {
+  try {
+    return localStorage.getItem('mt-lang');
+  } catch {
+    return null;
+  }
+};
+
+const savedLanguage = readSavedLanguage();
 const urlLanguage = new URLSearchParams(location.search).get('lang');
 const browserLanguage = (navigator.language || 'en').slice(0, 2);
 
@@ -129,7 +148,12 @@ const applyLanguage = (language) => {
   currentLanguage = language;
   const dictionary = I18N[language];
   document.documentElement.lang = language;
-  localStorage.setItem('mt-lang', language);
+
+  try {
+    localStorage.setItem('mt-lang', language);
+  } catch {
+    // Storage may be unavailable (privacy settings, private browsing) — language still applies for this session.
+  }
 
   document.querySelectorAll('[data-i18n]').forEach((element) => {
     const key = element.dataset.i18n;
@@ -217,7 +241,14 @@ document
   .getElementById('lightboxClose')
   .addEventListener('click', () => lightbox.close());
 lightbox.addEventListener('click', (event) => {
-  if (event.target === lightbox) {
+  const rect = lightbox.getBoundingClientRect();
+  const isInsideDialog =
+    event.clientX >= rect.left &&
+    event.clientX <= rect.right &&
+    event.clientY >= rect.top &&
+    event.clientY <= rect.bottom;
+
+  if (!isInsideDialog) {
     lightbox.close();
   }
 });
