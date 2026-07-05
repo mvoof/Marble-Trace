@@ -15,12 +15,14 @@ use computations::{
     standings::{DriverEntriesFrame, DriverEntry},
 };
 #[cfg(feature = "dev")]
+use model::reference_lap::{ReferenceLapData, ReferenceLapSample};
+#[cfg(feature = "dev")]
 use model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
 
 use commands::{
-    delete_track_shape, get_connection_status, get_last_session_info, reset_pit_lane_pct,
-    set_active_events, set_car_length, set_pit_warning_laps, start_telemetry_stream,
-    stop_telemetry_stream,
+    delete_reference_lap, delete_track_shape, get_connection_status, get_last_session_info,
+    get_reference_lap, reset_pit_lane_pct, set_active_events, set_car_length, set_pit_warning_laps,
+    start_telemetry_stream, stop_telemetry_stream,
 };
 use computations::ProcessorRegistry;
 use telemetry::state::TelemetryState;
@@ -92,7 +94,9 @@ pub fn run() {
         types
             .register::<TrackPoint>()
             .register::<TrackShapePayload>()
-            .register::<TrackRecordingFrame>();
+            .register::<TrackRecordingFrame>()
+            .register::<ReferenceLapData>()
+            .register::<ReferenceLapSample>();
 
         Typescript::default()
             .export_to("../src/types/bindings.ts", &types)
@@ -172,7 +176,9 @@ pub fn run() {
             set_car_length,
             get_connection_status,
             delete_track_shape,
-            reset_pit_lane_pct
+            reset_pit_lane_pct,
+            get_reference_lap,
+            delete_reference_lap
         ])
         .manage(TelemetryState {
             service: Arc::new(telemetry::state::TelemetryServiceState {

@@ -19,6 +19,7 @@ import { TimerSettingsPanel } from './panels/TimerSettingsPanel';
 import { FlagDisplaySettingsPanel } from './panels/FlagDisplaySettingsPanel';
 import { GMeterSettingsPanel } from './panels/GMeterSettingsPanel';
 import { EnginePanelSettingsPanel } from './panels/EnginePanelSettingsPanel';
+import { DrivingCoachSettingsPanel } from './panels/DrivingCoachSettingsPanel';
 import { useWidgetEditor } from './WidgetEditorContext';
 
 export const WidgetSettings = observer(
@@ -128,7 +129,9 @@ export const WidgetSettings = observer(
           </Row>
         </Card>
 
-        {!['radar-bar', 'led-flags', 'flat-flags'].includes(widgetId) && (
+        {!['radar-bar', 'led-flags', 'flat-flags', 'driving-coach'].includes(
+          widgetId
+        ) && (
           <Card title="Aesthetics">
             <Row gutter={[24, 24]}>
               <Col span={12}>
@@ -196,6 +199,7 @@ export const WidgetSettings = observer(
           <FlagDisplaySettingsPanel widgetId={widgetId} />
         )}
         {widgetId === 'g-meter' && <GMeterSettingsPanel />}
+        {widgetId === 'driving-coach' && <DrivingCoachSettingsPanel />}
         {widgetId === 'engine-panel' && <EnginePanelSettingsPanel />}
       </div>
     );

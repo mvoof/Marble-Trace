@@ -589,7 +589,7 @@ mod tests {
     use std::sync::atomic::AtomicBool;
 
     use crate::model::cars::CarIdxFrame;
-    use crate::model::player::{CarDynamicsFrame, CarStatusFrame, LapTimingFrame};
+    use crate::model::player::{CarDynamicsFrame, CarInputsFrame, CarStatusFrame, LapTimingFrame};
     use crate::model::session::SessionSnapshot;
 
     fn make_processor() -> TrackShapeProcessor {
@@ -618,6 +618,15 @@ mod tests {
             roll: None,
             shift_indicator_pct: None,
             shift_grind_rpm: None,
+        }
+    }
+
+    fn make_car_inputs() -> CarInputsFrame {
+        CarInputsFrame {
+            throttle: 0.0,
+            brake: 0.0,
+            clutch: None,
+            brake_abs_active: false,
         }
     }
 
@@ -707,9 +716,11 @@ mod tests {
         session: &'a SessionSnapshot,
         car_idx: &'a CarIdxFrame,
         start_positions: &'a HashMap<i32, (i32, i32)>,
+        car_inputs: &'a CarInputsFrame,
     ) -> ComputeContext<'a> {
         ComputeContext {
             car_dynamics: dynamics,
+            car_inputs,
             car_idx,
             lap_timing,
             car_status,
@@ -748,6 +759,7 @@ mod tests {
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
+        let car_inputs = make_car_inputs();
 
         let ctx = make_ctx(
             &dynamics,
@@ -756,6 +768,7 @@ mod tests {
             &session,
             &car_idx,
             &start_pos,
+            &car_inputs,
         );
         let _ = proc.compute(&ctx);
 
@@ -783,6 +796,7 @@ mod tests {
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
+        let car_inputs = make_car_inputs();
 
         proc.state.recording = true;
         proc.state.start_pct = 0.0;
@@ -795,6 +809,7 @@ mod tests {
             &session2,
             &car_idx,
             &start_pos,
+            &car_inputs,
         );
         let _ = proc.compute(&ctx);
 
@@ -818,6 +833,7 @@ mod tests {
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
+        let car_inputs = make_car_inputs();
 
         let ctx = make_ctx(
             &dynamics,
@@ -826,6 +842,7 @@ mod tests {
             &session,
             &car_idx,
             &start_pos,
+            &car_inputs,
         );
         let _ = proc.compute(&ctx);
 

@@ -10,6 +10,7 @@ import type {
   SimType,
   SimStatus,
   CapabilitiesPayload,
+  ReferenceLapData,
 } from '@/types/bindings';
 import { debug } from '@utils/debug';
 import type { TelemetryStatus } from '@/types';
@@ -22,6 +23,7 @@ import {
   SIM_DISCONNECTED,
   SIM_TRACK_SHAPE,
   SIM_CAPABILITIES,
+  SIM_REFERENCE_LAP_UPDATED,
   TRACK_MAP_CLEAR,
 } from '@store/sync/sim-events';
 
@@ -62,6 +64,48 @@ export class SimStore {
         { fireImmediately: true }
       );
     }
+
+    reaction(
+      () => {
+        const info = this.root.session.sessionInfo;
+        const car = info?.cars.find(
+          (entry) => entry.carIdx === info.playerCarIdx
+        );
+
+        return info && car
+          ? { trackId: info.trackId, carScreenName: car.carScreenName }
+          : null;
+      },
+      (identity, previousIdentity) => {
+        if (!identity) return;
+
+        if (
+          previousIdentity &&
+          previousIdentity.trackId === identity.trackId &&
+          previousIdentity.carScreenName === identity.carScreenName
+        ) {
+          return;
+        }
+
+        void this.loadReferenceLap(identity.trackId, identity.carScreenName);
+      },
+      { fireImmediately: true }
+    );
+  }
+
+  private async loadReferenceLap(trackId: number, carScreenName: string) {
+    try {
+      const data = await invoke<ReferenceLapData | null>('get_reference_lap', {
+        trackId,
+        carScreenName,
+      });
+
+      if (data) {
+        runInAction(() => this.root.referenceLap.updateReferenceLap(data));
+      }
+    } catch (err) {
+      debug.telemetry('Failed to load reference lap: %o', err);
+    }
   }
 
   private updateActiveEvents() {
@@ -78,12 +122,13 @@ export class SimStore {
         isEnabled('speed') ||
         isEnabled('g-meter') ||
         isEnabled('weather') ||
-        isEnabled('track-map')
+        isEnabled('track-map') ||
+        isEnabled('driving-coach')
       ) {
         mask |= EVENT_CAR_DYNAMICS;
       }
 
-      if (isEnabled('input-trace')) {
+      if (isEnabled('input-trace') || isEnabled('driving-coach')) {
         mask |= EVENT_CAR_INPUTS;
       }
 
@@ -196,6 +241,7 @@ export class SimStore {
     this.root.session.reset();
     this.root.environment.reset();
     this.root.backendComputed.reset();
+    this.root.drivingCoachWidget.reset();
   }
 
   private setStatus(status: TelemetryStatus) {
@@ -346,6 +392,16 @@ export class SimStore {
 
         runInAction(() => {
           this.root.trackMapWidget.clearTrackShape();
+        });
+      })
+    );
+
+    this.unlistens.push(
+      await listen<ReferenceLapData>(SIM_REFERENCE_LAP_UPDATED, (event) => {
+        if (this.initId !== guardId) return;
+
+        runInAction(() => {
+          this.root.referenceLap.updateReferenceLap(event.payload);
         });
       })
     );

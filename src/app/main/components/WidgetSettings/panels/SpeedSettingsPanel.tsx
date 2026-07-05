@@ -241,6 +241,18 @@ export const SpeedSettingsPanel = observer(() => {
             onChange={(value) => update({ nearLimitDelta: value ?? 5 })}
           />
         </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="Reference Lap Speed"
+            desc="Show your best lap's recorded speed at this point on track."
+          >
+            <Switch
+              checked={settings.showReferenceLap}
+              onChange={(value) => update({ showReferenceLap: value })}
+            />
+          </SettingRow>
+        </div>
       </Card>
     </>
   );

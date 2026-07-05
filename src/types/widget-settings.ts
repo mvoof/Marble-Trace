@@ -22,6 +22,7 @@ export interface SpeedWidgetSettings {
   gearColor: string;
   gearPanelBg: string;
   ledShape: LedShape;
+  showReferenceLap: boolean;
 }
 
 export type SteeringCenterDisplay =
@@ -198,6 +199,11 @@ export interface GMeterWidgetSettings {
   colorMode: GMeterColorMode;
 }
 
+export interface DrivingCoachWidgetSettings {
+  brakeColor: string;
+  gasColor: string;
+}
+
 export interface EnginePanelWidgetSettings {
   showOilTemp: boolean;
   showWaterTemp: boolean;
@@ -230,7 +236,8 @@ export type WidgetSpecificSettings =
   | SectorMatrixWidgetSettings
   | TimerWidgetSettings
   | GMeterWidgetSettings
-  | EnginePanelWidgetSettings;
+  | EnginePanelWidgetSettings
+  | DrivingCoachWidgetSettings;
 export interface WidgetMeta {
   id: string;
   label: string;

@@ -3,6 +3,7 @@ pub mod lap_delta;
 pub mod lap_log;
 pub mod pit_stops;
 pub mod proximity;
+pub mod reference_lap;
 pub mod relative;
 pub mod standings;
 pub mod track_shape;
@@ -11,17 +12,19 @@ use std::collections::HashMap;
 
 use crate::capabilities::Capabilities;
 use crate::model::cars::CarIdxFrame;
-use crate::model::player::{CarDynamicsFrame, CarStatusFrame, LapTimingFrame};
+use crate::model::player::{CarDynamicsFrame, CarInputsFrame, CarStatusFrame, LapTimingFrame};
 use crate::model::session::SessionSnapshot;
 use crate::model::track_shape::{TrackRecordingFrame, TrackShapePayload};
 
 use crate::model::lap_log::LapLogFrame;
+use crate::model::reference_lap::ReferenceLapData;
 use crate::model::relative::RelativeFrame;
 use fuel::{FuelComputedFrame, FuelProcessor};
 use lap_delta::{LapDeltaFrame, LapDeltaProcessor};
 use lap_log::LapLogProcessor;
 use pit_stops::{PitStopsFrame, PitStopsProcessor};
 use proximity::{ProximityFrame, ProximityProcessor};
+use reference_lap::ReferenceLapProcessor;
 use relative::RelativeProcessor;
 use standings::{DriverEntriesFrame, StandingsProcessor};
 use track_shape::TrackShapeProcessor;
@@ -35,6 +38,7 @@ pub enum ProcessorId {
     LapLog,
     PitStops,
     Proximity,
+    ReferenceLap,
     Relative,
     Standings,
     TrackShape,
@@ -54,6 +58,7 @@ pub enum TickRate {
 /// arguments from all five free `compute(...)` functions.
 pub struct ComputeContext<'a> {
     pub car_dynamics: &'a CarDynamicsFrame,
+    pub car_inputs: &'a CarInputsFrame,
     pub car_idx: &'a CarIdxFrame,
     pub lap_timing: &'a LapTimingFrame,
     pub car_status: &'a CarStatusFrame,
@@ -77,6 +82,7 @@ pub enum ComputedOutput {
     LapLog(LapLogFrame),
     PitStops(PitStopsFrame),
     Proximity(ProximityFrame),
+    ReferenceLap(ReferenceLapData),
     Relative(RelativeFrame),
     Standings(DriverEntriesFrame),
     TrackShape(TrackShapePayload),
@@ -115,6 +121,7 @@ impl ProcessorRegistry {
                 Box::new(LapLogProcessor::default()),
                 Box::new(PitStopsProcessor::default()),
                 Box::new(ProximityProcessor),
+                Box::new(ReferenceLapProcessor::default()),
                 Box::new(RelativeProcessor::default()),
                 Box::new(StandingsProcessor::default()),
                 Box::new(TrackShapeProcessor::new(

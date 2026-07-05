@@ -1,0 +1,15 @@
+.panel {
+  align-items: center;
+  justify-content: center;
+  padding: sp(lg) sp(xxl);
+  border-radius: radius(lg);
+}
+
+.label {
+  font-family: $font-widget;
+  font-size: fs(xxxl);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}

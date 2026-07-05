@@ -18,6 +18,7 @@ import { GMeterWidget } from '@widgets/GMeterWidget/GMeterWidget';
 import { SectorMatrixWidget } from '@widgets/SectorMatrixWidget/SectorMatrixWidget';
 import { LapLogWidget } from '@widgets/LapLogWidget/LapLogWidget';
 import { EnginePanelWidget } from '@widgets/EnginePanelWidget/EnginePanelWidget';
+import { DrivingCoachWidget } from '@widgets/DrivingCoachWidget/DrivingCoachWidget';
 import type {
   WidgetConfig,
   WidgetDefaultConfig,
@@ -429,6 +430,7 @@ const WIDGETS: WidgetConfig[] = [
       gearColor: '#eab308',
       gearPanelBg: 'rgba(255,255,255,0.05)',
       ledShape: 'square',
+      showReferenceLap: false,
     },
   },
   {
@@ -909,6 +911,28 @@ const WIDGETS: WidgetConfig[] = [
       horizontal: true,
       verticalColumns: 2,
       horizontalColumns: 8,
+    },
+  },
+  {
+    id: 'driving-coach',
+    label: 'Driving Coach',
+    description:
+      'Brake/gas advisory banner comparing you to your best-lap reference.',
+    component: DrivingCoachWidget,
+    requiredCapabilities: ['playerDynamics', 'inputs'],
+    designWidth: 400,
+    designHeight: 140,
+    userSettings: {
+      enabled: false,
+      x: 700,
+      y: 500,
+      currentWidth: 400,
+      currentHeight: 140,
+      opacity: 1,
+      backgroundColor: 'transparent',
+      borderColor: 'transparent',
+      brakeColor: 'rgba(239, 68, 68, 0.85)',
+      gasColor: 'rgba(16, 185, 129, 0.85)',
     },
   },
 ];
