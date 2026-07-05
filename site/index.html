@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Marble Trace — Free Open-Source iRacing Telemetry Overlay</title>
+  <meta name="description" content="Marble Trace is a free, open-source iRacing overlay built with Rust and Tauri. Standings, relative, track map, fuel, delta, radar and 17+ widgets — lightweight, beautiful, always on top.">
+  <meta name="keywords" content="iRacing overlay, iRacing telemetry, sim racing overlay, free racing overlay, iRacing HUD, relative widget, standings overlay, fuel calculator iRacing">
+  <link rel="canonical" href="https://mvoof.github.io/Marble-Trace/">
+  <link rel="alternate" hreflang="en" href="https://mvoof.github.io/Marble-Trace/">
+  <link rel="alternate" hreflang="ru" href="https://mvoof.github.io/Marble-Trace/?lang=ru">
+  <link rel="alternate" hreflang="x-default" href="https://mvoof.github.io/Marble-Trace/">
+  <link rel="icon" type="image/svg+xml" href="assets/logo-light.svg">
+  <meta name="theme-color" content="#0d0e12">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Marble Trace">
+  <meta property="og:title" content="Marble Trace — Free Open-Source iRacing Telemetry Overlay">
+  <meta property="og:description" content="Beautiful, lightweight iRacing overlay. 17+ widgets, Rust-powered, MIT licensed, completely free.">
+  <meta property="og:url" content="https://mvoof.github.io/Marble-Trace/">
+  <meta property="og:image" content="https://mvoof.github.io/Marble-Trace/assets/widgets/standings-widget-group.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Marble Trace — Free Open-Source iRacing Telemetry Overlay">
+  <meta name="twitter:description" content="Beautiful, lightweight iRacing overlay. 17+ widgets, Rust-powered, MIT licensed, completely free.">
+  <meta name="twitter:image" content="https://mvoof.github.io/Marble-Trace/assets/widgets/standings-widget-group.png">
+
+  <!-- Single font with full Latin + Cyrillic coverage so the language switch
+       never changes the typeface. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Marble Trace",
+    "operatingSystem": "Windows",
+    "applicationCategory": "GameApplication",
+    "applicationSubCategory": "Sim racing telemetry overlay",
+    "description": "Free, open-source iRacing telemetry overlay built with Rust and Tauri. Standings, relative, track map, fuel, delta, proximity radar and more.",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "license": "https://opensource.org/licenses/MIT",
+    "downloadUrl": "https://github.com/mvoof/Marble-Trace/releases/latest",
+    "url": "https://mvoof.github.io/Marble-Trace/",
+    "author": { "@type": "Person", "name": "mvoof", "url": "https://github.com/mvoof" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is Marble Trace really free?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Marble Trace is MIT-licensed open source. Every widget and every feature is free — no subscription, no trial, no locked content." }
+      },
+      {
+        "@type": "Question",
+        "name": "Will it affect my FPS in iRacing?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Barely. The backend is native Rust reading the iRacing shared memory directly, and the UI is a single lightweight transparent window. It is built specifically to save resources." }
+      },
+      {
+        "@type": "Question",
+        "name": "Which sims are supported?",
+        "acceptedAnswer": { "@type": "Answer", "text": "iRacing today. The telemetry layer is multi-sim by design, so more simulators can be added in the future." }
+      },
+      {
+        "@type": "Question",
+        "name": "Is it allowed by iRacing?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Marble Trace only reads the official telemetry that iRacing publishes for third-party apps — the same data every overlay and pit tool uses." }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skipLink" href="#main" data-i18n="skip">Skip to content</a>
+
+  <header class="siteHeader">
+    <canvas id="headerTrace" class="headerTrace" aria-hidden="true"></canvas>
+    <div class="headerInner">
+      <a class="brand" href="#" aria-label="Marble Trace — home">
+        <img src="assets/logo-light.svg" alt="" width="28" height="28">
+        <span class="brandName">Marble Trace</span>
+      </a>
+      <nav class="mainNav" aria-label="Main">
+        <a href="#features" data-i18n="nav.features">Features</a>
+        <a href="#gallery" data-i18n="nav.widgets">Widgets</a>
+        <a href="#faq" data-i18n="nav.faq">FAQ</a>
+        <a href="#download" data-i18n="nav.download">Download</a>
+        <a href="https://github.com/mvoof/Marble-Trace" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+      <div class="langSwitch" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="ru" aria-pressed="false">RU</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="heroBackdrop" aria-hidden="true"></div>
+      <div class="heroInner">
+        <div class="startLights" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <p class="heroKicker" data-i18n="hero.kicker">Open-source iRacing overlay</p>
+        <h1 id="heroTitle" data-i18n="hero.title">Telemetry that looks as good as your driving</h1>
+        <p class="heroSub" data-i18n="hero.sub">Marble Trace is a free, lightweight overlay for iRacing. A tiny Rust core reads telemetry straight from the sim — beautiful widgets float above it, costing you almost no FPS.</p>
+        <div class="heroActions">
+          <a class="btnPrimary" href="https://github.com/mvoof/Marble-Trace/releases/latest" target="_blank" rel="noopener">
+            <span data-i18n="hero.download">Download for Windows</span>
+          </a>
+          <a class="btnGhost" href="https://github.com/mvoof/Marble-Trace" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+            <span>GitHub</span>
+          </a>
+          <a class="btnGhost" href="https://discord.gg/GVaRsHbjxV" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.8 13.8 0 0 0-.64 1.29 18.3 18.3 0 0 0-5.5 0 12.6 12.6 0 0 0-.64-1.29c-1.71.29-3.37.8-4.93 1.51A20.3 20.3 0 0 0 .1 18.06a19.9 19.9 0 0 0 6.07 3.03c.49-.66.92-1.37 1.29-2.11-.71-.27-1.39-.6-2.03-.99.17-.12.34-.25.5-.38a14.2 14.2 0 0 0 12.14 0c.16.13.33.26.5.38-.64.39-1.32.72-2.03.99.37.74.8 1.45 1.29 2.11a19.9 19.9 0 0 0 6.07-3.03 20.3 20.3 0 0 0-3.58-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42s.95-2.42 2.16-2.42c1.21 0 2.18 1.09 2.16 2.42 0 1.34-.95 2.42-2.16 2.42Zm7.96 0c-1.18 0-2.16-1.08-2.16-2.42s.95-2.42 2.16-2.42c1.21 0 2.18 1.09 2.16 2.42 0 1.34-.95 2.42-2.16 2.42Z"/></svg>
+            <span>Discord</span>
+          </a>
+        </div>
+        <p class="heroNote" data-i18n="hero.note">Free forever · MIT licensed · Windows · iRacing</p>
+      </div>
+
+      <!--
+        IMAGE PLACEHOLDER — hero screenshot.
+        Replace this composed mock with a single real in-game screenshot
+        (1920×1080, iRacing with the overlay active, several widgets visible)
+        saved as  public/assets/hero-ingame.jpg  and swap the div below for:
+        <img class="heroShotImg" src="assets/hero-ingame.jpg" alt="Marble Trace overlay running in iRacing">
+      -->
+      <div class="heroShot reveal" aria-label="Marble Trace widgets preview">
+        <div class="heroShotFrame">
+          <img src="assets/widgets/standings-widget.png" alt="Standings widget" class="hsStandings">
+          <img src="assets/widgets/speed-widget.png" alt="Speed and RPM widget" class="hsSpeed">
+          <img src="assets/widgets/proximity-radar-widget.png" alt="Proximity radar widget" class="hsRadar">
+          <img src="assets/widgets/lap-delta-widget.png" alt="Delta widget" class="hsDelta">
+          <img src="assets/widgets/fuel-widget.png" alt="Fuel widget" class="hsFuel">
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats strip -->
+    <section class="stats reveal" aria-label="Key numbers">
+      <dl class="statsGrid">
+        <div><dt>17+</dt><dd data-i18n="stats.widgets">customizable widgets</dd></div>
+        <div><dt>60 Hz</dt><dd data-i18n="stats.rate">live telemetry rate</dd></div>
+        <div><dt>$0</dt><dd data-i18n="stats.price">now and forever</dd></div>
+        <div><dt>MIT</dt><dd data-i18n="stats.license">open-source license</dd></div>
+      </dl>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features" aria-labelledby="featuresTitle">
+      <h2 id="featuresTitle" class="reveal" data-i18n="features.title">Built to disappear into your sim</h2>
+      <p class="sectionSub reveal" data-i18n="features.sub">Everything a paid overlay does — without the subscription, the bloat, or the FPS tax.</p>
+      <div class="featureGrid">
+        <article class="featureCard reveal">
+          <div class="featureMark featureMarkGreen" aria-hidden="true"></div>
+          <h3 data-i18n="features.light.title">Featherweight by design</h3>
+          <p data-i18n="features.light.text">A native Rust backend and Tauri shell instead of a bundled browser app. Marble Trace sips CPU and RAM, so every frame stays with the sim.</p>
+        </article>
+        <article class="featureCard reveal">
+          <div class="featureMark featureMarkCyan" aria-hidden="true"></div>
+          <h3 data-i18n="features.free.title">Free. Actually free.</h3>
+          <p data-i18n="features.free.text">No subscription, no locked widgets, no trial. MIT licensed and developed in the open — extend it, theme it, submit a PR.</p>
+        </article>
+        <article class="featureCard reveal">
+          <div class="featureMark featureMarkRed" aria-hidden="true"></div>
+          <h3 data-i18n="features.modular.title">Fully modular</h3>
+          <p data-i18n="features.modular.text">Enable only what you need. Every widget can be dragged anywhere, scaled, restyled and tuned — from data columns to opacity.</p>
+        </article>
+        <article class="featureCard reveal">
+          <div class="featureMark featureMarkGreen" aria-hidden="true"></div>
+          <h3 data-i18n="features.live.title">Real-time telemetry</h3>
+          <p data-i18n="features.live.text">Up to 60 Hz data straight from the iRacing SDK: inputs, deltas, fuel math, proximity, standings — with zero perceptible lag.</p>
+        </article>
+        <article class="featureCard reveal">
+          <div class="featureMark featureMarkCyan" aria-hidden="true"></div>
+          <h3 data-i18n="features.updates.title">Always improving</h3>
+          <p data-i18n="features.updates.text">Auto-updates deliver new widgets and fixes regularly. The roadmap is public and the community votes with issues and PRs.</p>
+        </article>
+        <article class="featureCard reveal">
+          <div class="featureMark featureMarkRed" aria-hidden="true"></div>
+          <h3 data-i18n="features.privacy.title">Private by default</h3>
+          <p data-i18n="features.privacy.text">No accounts, no personal data collection. Only anonymous usage events through an open-source, privacy-first analytics platform.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="howto" aria-labelledby="howtoTitle">
+      <h2 id="howtoTitle" class="reveal" data-i18n="howto.title">On track in under a minute</h2>
+      <ol class="howtoSteps">
+        <li class="reveal">
+          <span class="stepIndex" aria-hidden="true">01</span>
+          <h3 data-i18n="howto.s1.title">Download &amp; install</h3>
+          <p data-i18n="howto.s1.text">Grab the installer from GitHub Releases. No account, no sign-up — run it and you're done.</p>
+        </li>
+        <li class="reveal">
+          <span class="stepIndex" aria-hidden="true">02</span>
+          <h3 data-i18n="howto.s2.title">Pick your widgets</h3>
+          <p data-i18n="howto.s2.text">Toggle the widgets you want, drag them anywhere on screen, scale and style them to match your setup.</p>
+        </li>
+        <li class="reveal">
+          <span class="stepIndex" aria-hidden="true">03</span>
+          <h3 data-i18n="howto.s3.title">Launch iRacing &amp; drive</h3>
+          <p data-i18n="howto.s3.text">Marble Trace detects the sim automatically and your telemetry appears instantly. Focus on the racing.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- Gallery -->
+    <section class="gallery" id="gallery" aria-labelledby="galleryTitle">
+      <h2 id="galleryTitle" class="reveal" data-i18n="gallery.title">The widget grid</h2>
+      <p class="sectionSub reveal" data-i18n="gallery.sub">Seventeen-plus widgets, each on its own pad. Click any of them to take a closer look.</p>
+      <div class="galleryGrid" id="galleryGrid"></div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq" aria-labelledby="faqTitle">
+      <h2 id="faqTitle" class="reveal" data-i18n="faq.title">Questions, answered</h2>
+      <div class="faqList">
+        <details class="reveal">
+          <summary data-i18n="faq.q1">Is Marble Trace really free?</summary>
+          <p data-i18n="faq.a1">Yes. It's MIT-licensed open source. Every widget and every feature is free — no subscription, no trial, no locked content. If it helps your racing, a GitHub star is all we ask.</p>
+        </details>
+        <details class="reveal">
+          <summary data-i18n="faq.q2">Will it affect my FPS?</summary>
+          <p data-i18n="faq.a2">Barely. The backend is native Rust reading iRacing shared memory directly, and the UI is a single lightweight transparent window. Saving your resources is the whole point of the architecture.</p>
+        </details>
+        <details class="reveal">
+          <summary data-i18n="faq.q3">Which sims are supported?</summary>
+          <p data-i18n="faq.a3">iRacing today. The telemetry layer is multi-sim by design, so more simulators can be added in the future.</p>
+        </details>
+        <details class="reveal">
+          <summary data-i18n="faq.q4">Is it allowed by iRacing?</summary>
+          <p data-i18n="faq.a4">Yes. Marble Trace only reads the official telemetry iRacing publishes for third-party apps — the same data every overlay and pit tool uses.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- Download -->
+    <section class="download" id="download" aria-labelledby="downloadTitle">
+      <div class="downloadCard reveal">
+        <h2 id="downloadTitle" data-i18n="download.title">Ready for the grid?</h2>
+        <p data-i18n="download.text">Grab the latest release, launch iRacing, and your telemetry is on screen in under a minute. Auto-updates keep you current.</p>
+        <div class="heroActions">
+          <a class="btnPrimary" href="https://github.com/mvoof/Marble-Trace/releases/latest" target="_blank" rel="noopener">
+            <span data-i18n="hero.download">Download for Windows</span>
+          </a>
+          <a class="btnGhost" href="https://discord.gg/GVaRsHbjxV" target="_blank" rel="noopener" data-i18n="download.discord">Join the Discord</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="siteFooter">
+    <div class="footerInner">
+      <p>© <span id="year">2026</span> Marble Trace · <span data-i18n="footer.license">MIT License</span></p>
+      <nav aria-label="Footer">
+        <a href="https://github.com/mvoof/Marble-Trace" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://discord.gg/GVaRsHbjxV" target="_blank" rel="noopener">Discord</a>
+        <a href="https://github.com/mvoof/Marble-Trace/releases" target="_blank" rel="noopener" data-i18n="footer.releases">Releases</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- Lightbox -->
+  <dialog id="lightbox" class="lightbox" aria-label="Widget screenshot viewer">
+    <button type="button" class="lightboxClose" id="lightboxClose" aria-label="Close">✕</button>
+    <figure>
+      <img id="lightboxImg" src="" alt="">
+      <figcaption id="lightboxCaption"></figcaption>
+    </figure>
+  </dialog>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
