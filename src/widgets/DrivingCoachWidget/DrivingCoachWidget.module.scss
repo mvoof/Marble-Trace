@@ -1,74 +1,118 @@
 .panel {
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: sp(xs);
-  padding: sp(md) sp(lg);
+  justify-content: flex-start;
+  gap: 0;
+  padding: 0;
   border-radius: radius(lg);
+  overflow: hidden;
 }
 
-.advisory {
-  font-family: $font-widget;
-  font-size: fs(xl);
-  font-weight: 800;
-  letter-spacing: 0.12em;
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: sp(sm);
+  padding: sp(xs) sp(md);
+}
+
+.title {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: $widget-text-muted;
+}
+
+.chipIdle {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
   line-height: 1;
-  color: $widget-text-primary;
+  color: $widget-text-secondary;
+  background: rgba(255, 255, 255, 0.08);
+  padding: sp(xxs) sp(xs);
+  border-radius: radius(sm);
+}
+
+// Full-width advisory banner — this is the primary, time-critical signal, so
+// it gets the largest type in the widget and fills a fixed share of the panel
+// (not just a small badge) so it reads at a glance while driving.
+.banner {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: sp(sm) sp(md);
+}
+
+.bannerText {
+  font-family: $font-widget;
+  font-size: fs(xxxl);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  color: #ffffff;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
-.advisoryIdle {
-  font-size: fs(sm);
-  color: $widget-text-muted;
-  text-shadow: none;
+.body {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: sp(sm);
+  padding: sp(xs) sp(md) sp(sm);
 }
 
-.refBlock {
+.speedGroup {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: baseline;
+  gap: sp(xxs);
+  min-width: 0;
+}
+
+.speedValue {
+  font-family: $font-widget;
+  font-size: fs(xxxl);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: $widget-text-primary;
+}
+
+.speedUnit {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: $widget-text-secondary;
+}
+
+.deltaGroup {
+  display: flex;
+  flex-direction: row;
   align-items: center;
   gap: sp(xxs);
 }
 
-.refRow {
-  display: flex;
-  flex-direction: row;
-  align-items: baseline;
-  gap: sp(xs);
+.deltaIcon {
+  width: ws(20);
+  height: ws(20);
 }
 
-.refLabel {
-  font-family: $font-mono;
-  font-size: fs(xs);
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: $widget-text-muted;
-}
-
-.refValue {
+.deltaValue {
   font-family: $font-widget;
   font-size: fs(xxl);
-  font-weight: 700;
+  font-weight: 800;
   line-height: 0.9;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.03em;
-  color: $widget-text-primary;
-}
-
-.refUnit {
-  font-family: $font-mono;
-  font-size: fs(xs);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: $widget-text-secondary;
-}
-
-.delta {
-  font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
 }
 
 .deltaFaster {
@@ -83,23 +127,10 @@
   color: $widget-text-secondary;
 }
 
-.refPlaceholder {
+.placeholder {
   font-family: $font-mono;
-  font-size: fs(xs);
+  font-size: fs(sm);
   font-weight: 700;
   letter-spacing: 0.12em;
   color: $widget-text-muted;
-}
-
-// When an advisory banner is active the panel is filled with the accent color;
-// force all content white so it stays legible against brake-red / gas-green.
-.hasAccent {
-  .advisory,
-  .refLabel,
-  .refValue,
-  .refUnit,
-  .delta {
-    color: #ffffff;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
-  }
 }

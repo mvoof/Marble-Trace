@@ -28,7 +28,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/DrivingCoachWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: DrivingCoachWidget,
-    size: { width: 240, height: 120 },
+    size: { width: 260, height: 92, background: 'rgba(21, 22, 26, 0.8)' },
     seed: (store, args) => {
       // Drag mode forces the widget to render even when idle with no reference
       // (matches the real overlay's editing behavior).

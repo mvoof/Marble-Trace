@@ -190,7 +190,11 @@ export const RpmLightsWidget = observer(() => {
 
   if (isPitMode) {
     return (
-      <WidgetPanel direction="row" gap={0} className={styles.bar}>
+      <WidgetPanel
+        direction="row"
+        style={{ gap: undefined }}
+        className={styles.bar}
+      >
         {Array.from({ length: LED_COUNT }, (_, index) => {
           const color = getPitLedColor(
             index,
@@ -241,7 +245,7 @@ export const RpmLightsWidget = observer(() => {
   return (
     <WidgetPanel
       direction="row"
-      gap={0}
+      style={{ gap: undefined }}
       className={`${styles.bar} ${isBlink ? styles.barBlink : ''}`}
     >
       {Array.from({ length: LED_COUNT }, (_, index) => {

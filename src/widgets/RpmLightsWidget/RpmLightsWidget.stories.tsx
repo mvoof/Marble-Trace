@@ -34,7 +34,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/RpmLightsWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: RpmLightsWidget,
-    size: { width: 360, height: 44, background: 'rgba(21, 22, 26, 0.8)' },
+    size: { width: 360, height: 36, background: 'rgba(21, 22, 26, 0.8)' },
     seedSnapshot: true,
     seed: (store, args) => {
       store.session.updateSessionInfo(BASE_SESSION_INFO);
