@@ -4,14 +4,11 @@ import { SpeedDisplay } from './SpeedDisplay/SpeedDisplay';
 import { InfoColumn } from './InfoColumn/InfoColumn';
 import { PitPanel } from './PitPanel/PitPanel';
 import { PitOverlay } from './PitOverlay/PitOverlay';
-import { RpmBar } from './RpmBar/RpmBar';
 
 import styles from './SpeedWidget.module.scss';
 
 export const SpeedWidget = observer(() => (
   <div className={styles.root}>
-    <RpmBar />
-
     <div className={styles.mainRow}>
       <PitPanel />
 

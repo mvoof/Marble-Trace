@@ -26,19 +26,3 @@
   letter-spacing: 0.125em;
   color: $widget-text-secondary;
 }
-
-.faster {
-  color: $widget-status-positive;
-}
-
-.slower {
-  color: $widget-status-danger;
-}
-
-.reference {
-  font-family: $font-mono;
-  font-size: fs(sm);
-  font-weight: 600;
-  color: $widget-text-secondary;
-  font-variant-numeric: tabular-nums;
-}

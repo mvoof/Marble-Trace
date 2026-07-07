@@ -1,15 +1,105 @@
 .panel {
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: sp(lg) sp(xxl);
+  gap: sp(xs);
+  padding: sp(md) sp(lg);
   border-radius: radius(lg);
 }
 
-.label {
+.advisory {
   font-family: $font-widget;
-  font-size: fs(xxxl);
+  font-size: fs(xl);
   font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #ffffff;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  color: $widget-text-primary;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.advisoryIdle {
+  font-size: fs(sm);
+  color: $widget-text-muted;
+  text-shadow: none;
+}
+
+.refBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: sp(xxs);
+}
+
+.refRow {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: sp(xs);
+}
+
+.refLabel {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: $widget-text-muted;
+}
+
+.refValue {
+  font-family: $font-widget;
+  font-size: fs(xxl);
+  font-weight: 700;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  color: $widget-text-primary;
+}
+
+.refUnit {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: $widget-text-secondary;
+}
+
+.delta {
+  font-family: $font-mono;
+  font-size: fs(md);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.deltaFaster {
+  color: $widget-status-positive;
+}
+
+.deltaSlower {
+  color: $widget-status-danger;
+}
+
+.deltaFlat {
+  color: $widget-text-secondary;
+}
+
+.refPlaceholder {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: $widget-text-muted;
+}
+
+// When an advisory banner is active the panel is filled with the accent color;
+// force all content white so it stays legible against brake-red / gas-green.
+.hasAccent {
+  .advisory,
+  .refLabel,
+  .refValue,
+  .refUnit,
+  .delta {
+    color: #ffffff;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  }
 }

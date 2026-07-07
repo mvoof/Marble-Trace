@@ -1,11 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
 import { speedUnit } from '@utils/formatters/telemetry-format';
-import {
-  SpeedWidgetSettings,
-  LedShape,
-  PitBoxSide,
-} from '@/types/widget-settings';
+import { SpeedWidgetSettings, PitBoxSide } from '@/types/widget-settings';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 
@@ -46,112 +42,6 @@ export const SpeedSettingsPanel = observer(() => {
             <ColorPicker
               value={settings.gearPanelBg}
               onChange={(color) => update({ gearPanelBg: color.toRgbString() })}
-            />
-          </SettingRow>
-        </div>
-      </Card>
-
-      <Card title="RPM Bar">
-        <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>Colors</span>
-
-          <div className={styles.rpmColorGrid}>
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>Low</span>
-
-              <ColorPicker
-                value={settings.rpmColorLow}
-                onChange={(color) =>
-                  update({ rpmColorLow: color.toHexString() })
-                }
-              />
-            </div>
-            <div className={styles.rpmColorLine} />
-
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>Mid</span>
-
-              <ColorPicker
-                value={settings.rpmColorMid}
-                onChange={(color) =>
-                  update({ rpmColorMid: color.toHexString() })
-                }
-              />
-            </div>
-
-            <div className={styles.rpmColorLine} />
-
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>High</span>
-
-              <ColorPicker
-                value={settings.rpmColorHigh}
-                onChange={(color) =>
-                  update({ rpmColorHigh: color.toHexString() })
-                }
-              />
-            </div>
-
-            <div className={styles.rpmColorLine} />
-
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>Shift</span>
-
-              <ColorPicker
-                value={settings.rpmColorShift}
-                onChange={(color) =>
-                  update({ rpmColorShift: color.toHexString() })
-                }
-              />
-            </div>
-
-            <div className={styles.rpmColorLine} />
-
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>Blink</span>
-
-              <ColorPicker
-                value={settings.rpmColorLimit}
-                onChange={(color) =>
-                  update({ rpmColorLimit: color.toHexString() })
-                }
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>LED Shape</span>
-
-          <Segmented
-            block
-            value={settings.ledShape}
-            options={[
-              { label: 'Square', value: 'square' },
-              { label: 'Circle', value: 'circle' },
-              { label: 'Slant', value: 'parallelogram' },
-            ]}
-            onChange={(value) => update({ ledShape: value as LedShape })}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SettingRow title="RPM Bar" desc="Show segmented RPM bar.">
-            <Switch
-              checked={settings.showRpmBar}
-              onChange={(value) => update({ showRpmBar: value })}
-            />
-          </SettingRow>
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SettingRow
-            title="Color RPM Text"
-            desc="Apply zone color to the RPM number display."
-          >
-            <Switch
-              checked={settings.showRpmColor}
-              onChange={(value) => update({ showRpmColor: value })}
             />
           </SettingRow>
         </div>
@@ -240,18 +130,6 @@ export const SpeedSettingsPanel = observer(() => {
             step={1}
             onChange={(value) => update({ nearLimitDelta: value ?? 5 })}
           />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SettingRow
-            title="Reference Lap Speed"
-            desc="Show your best lap's recorded speed at this point on track."
-          >
-            <Switch
-              checked={settings.showReferenceLap}
-              onChange={(value) => update({ showReferenceLap: value })}
-            />
-          </SettingRow>
         </div>
       </Card>
     </>

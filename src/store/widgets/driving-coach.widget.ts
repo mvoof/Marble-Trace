@@ -1,6 +1,7 @@
 import { action, makeAutoObservable, reaction } from 'mobx';
 
 import type { RootStore } from '@store/root-store';
+import type { ReferenceLapSample } from '@/types/bindings';
 import {
   computeDrivingAdvisory,
   extractCornerTargets,
@@ -26,6 +27,33 @@ export class DrivingCoachWidgetStore {
       () => this.rawAdvisory,
       (advisory) => this.scheduleAdvisoryChange(advisory)
     );
+  }
+
+  /** Best-lap reference sample at the player's current track position. */
+  get referenceSample(): ReferenceLapSample | null {
+    const lapDistPct = this.root.player.lapTiming?.lap_dist_pct;
+
+    if (lapDistPct == null || lapDistPct < 0) return null;
+
+    return this.root.referenceLap.getSampleAtDistPct(lapDistPct);
+  }
+
+  get currentSpeedMps(): number {
+    return this.root.player.carDynamics?.speed ?? 0;
+  }
+
+  /** Recorded reference speed (m/s) at the current track position, or null. */
+  get referenceSpeedMps(): number | null {
+    return this.referenceSample?.speed ?? null;
+  }
+
+  /** Current speed minus reference speed (m/s). Positive = faster than reference. */
+  get speedDeltaMps(): number | null {
+    const reference = this.referenceSpeedMps;
+
+    if (reference === null) return null;
+
+    return this.currentSpeedMps - reference;
   }
 
   private get cornerTargets(): CornerTarget[] {

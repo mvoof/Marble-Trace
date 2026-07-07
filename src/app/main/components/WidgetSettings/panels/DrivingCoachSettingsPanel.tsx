@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { ColorPicker } from 'antd';
+import { ColorPicker, Switch } from 'antd';
 import type { DrivingCoachWidgetSettings } from '@/types/widget-settings';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
@@ -20,7 +20,19 @@ export const DrivingCoachSettingsPanel = observer(() => {
   };
 
   return (
-    <Card title="Advisory Colors">
+    <Card title="Driving Coach">
+      <div className={styles.fieldGroup}>
+        <SettingRow
+          title="Reference Speed"
+          desc="Show your best lap's speed at this point on track, with live delta."
+        >
+          <Switch
+            checked={settings.showReferenceSpeed}
+            onChange={(value) => update({ showReferenceSpeed: value })}
+          />
+        </SettingRow>
+      </div>
+
       <div className={styles.fieldGroup}>
         <SettingRow title="Brake Banner" desc="Background when braking now.">
           <ColorPicker

@@ -6,14 +6,6 @@ export type LedShape = 'square' | 'circle' | 'parallelogram';
 export type PitBoxSide = 'left' | 'right';
 
 export interface SpeedWidgetSettings {
-  rpmColorTheme: RpmColorTheme;
-  rpmColorLow: string;
-  rpmColorMid: string;
-  rpmColorHigh: string;
-  rpmColorShift: string;
-  rpmColorLimit: string;
-  showRpmBar: boolean;
-  showRpmColor: boolean;
   pitSpeedLimitOverride: number | null;
   showPitAssist: boolean;
   pitBoxSide: PitBoxSide;
@@ -21,8 +13,16 @@ export interface SpeedWidgetSettings {
   nearLimitDelta: number;
   gearColor: string;
   gearPanelBg: string;
+}
+
+export interface RpmLightsWidgetSettings {
+  rpmColorTheme: RpmColorTheme;
+  rpmColorLow: string;
+  rpmColorMid: string;
+  rpmColorHigh: string;
+  rpmColorShift: string;
+  rpmColorLimit: string;
   ledShape: LedShape;
-  showReferenceLap: boolean;
 }
 
 export type SteeringCenterDisplay =
@@ -202,6 +202,7 @@ export interface GMeterWidgetSettings {
 export interface DrivingCoachWidgetSettings {
   brakeColor: string;
   gasColor: string;
+  showReferenceSpeed: boolean;
 }
 
 export interface EnginePanelWidgetSettings {
@@ -224,6 +225,7 @@ export type WidgetSpecificSettings =
   | ChassisWidgetSettings
   | FlagDisplaySettings
   | SpeedWidgetSettings
+  | RpmLightsWidgetSettings
   | InputTraceSettings
   | RadarSettings
   | StandingsWidgetSettings

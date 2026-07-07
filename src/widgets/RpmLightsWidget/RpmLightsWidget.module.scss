@@ -1,25 +1,23 @@
-.rpmBar {
-  display: flex;
-  flex-direction: row;
+.bar {
   align-items: center;
   gap: sp(xxs);
-  width: 100%;
-  padding: sp(xxs) sp(xs);
+  padding: sp(xs);
 }
 
-.rpmSeg {
+.seg {
   flex: 1 1 0;
-  aspect-ratio: 1 / 1;
+  height: 100%;
+  min-width: 0;
   border-radius: 15%;
   background: rgba(255, 255, 255, 0.06);
   transition: background 0.04s ease;
 }
 
-.rpmSegLit {
+.segLit {
   background: var(--rpm-seg-color);
 }
 
-.rpmBarBlink .rpmSeg {
+.barBlink .seg {
   animation: blinkBar 0.12s steps(2, start) infinite;
 }
 

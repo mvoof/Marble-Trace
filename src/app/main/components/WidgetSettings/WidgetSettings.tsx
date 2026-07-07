@@ -3,6 +3,7 @@ import { InputNumber, Row, Col, ColorPicker } from 'antd';
 import styles from './WidgetSettings.module.scss';
 import { Card } from './panels/Card';
 import { SpeedSettingsPanel } from './panels/SpeedSettingsPanel';
+import { RpmLightsSettingsPanel } from './panels/RpmLightsSettingsPanel';
 import { InputTraceSettingsPanel } from './panels/InputTraceSettingsPanel';
 import { RadarSettingsPanel } from './panels/RadarSettingsPanel';
 import { StandingsSettingsPanel } from './panels/StandingsSettingsPanel';
@@ -129,9 +130,7 @@ export const WidgetSettings = observer(
           </Row>
         </Card>
 
-        {!['radar-bar', 'led-flags', 'flat-flags', 'driving-coach'].includes(
-          widgetId
-        ) && (
+        {!['radar-bar', 'led-flags', 'flat-flags'].includes(widgetId) && (
           <Card title="Aesthetics">
             <Row gutter={[24, 24]}>
               <Col span={12}>
@@ -180,6 +179,7 @@ export const WidgetSettings = observer(
         )}
 
         {widgetId === 'speed' && <SpeedSettingsPanel />}
+        {widgetId === 'rpm-lights' && <RpmLightsSettingsPanel />}
         {widgetId === 'input-trace' && <InputTraceSettingsPanel />}
         {(widgetId === 'proximity-radar' || widgetId === 'radar-bar') && (
           <RadarSettingsPanel widgetId={widgetId} />

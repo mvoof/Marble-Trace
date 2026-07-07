@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
@@ -7,8 +7,6 @@ import type {
   SessionSnapshot,
   TrackShapePayload,
 } from '@/types/bindings';
-import type { SpeedWidgetSettings } from '@/types/widget-settings';
-import type { PlayerStore } from '@store/data/player.store';
 import { useStore } from '@store/root-store-context';
 import { SpeedWidget } from './SpeedWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
@@ -45,22 +43,13 @@ interface StoryArgs {
   onPitRoad: boolean;
   engineWarnings: number;
   units: 'metric' | 'imperial';
-  showRpmBar: boolean;
-  showRpmColor: boolean;
 }
-
-const setDynamics = (player: PlayerStore, rpm: number, gear: number) =>
-  player.updateCarDynamics({
-    speed: rpm / 140,
-    rpm,
-    gear,
-  } as Parameters<typeof player.updateCarDynamics>[0]);
 
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/SpeedWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: SpeedWidget,
-    size: { width: 500, height: 140, background: 'rgba(21, 22, 26, 0.8)' },
+    size: { width: 500, height: 96, background: 'rgba(21, 22, 26, 0.8)' },
     seedSnapshot: true,
     seed: (store, args) => {
       store.session.updateSessionInfo(BASE_SESSION_INFO);
@@ -82,12 +71,6 @@ const meta: Meta<StoryArgs> = {
       } as LapTimingFrame);
 
       store.units.setSystem(args.units);
-
-      store.widgetSettings.updateUserSettings('speed', {
-        ...store.widgetSettings.getSettings<SpeedWidgetSettings>('speed'),
-        showRpmBar: args.showRpmBar,
-        showRpmColor: args.showRpmColor,
-      });
     },
     args: {
       speedKmh: 120,
@@ -98,8 +81,6 @@ const meta: Meta<StoryArgs> = {
       onPitRoad: false,
       engineWarnings: 0,
       units: 'metric',
-      showRpmBar: true,
-      showRpmColor: true,
     },
     argTypes: {
       speedKmh: { control: { type: 'number', step: 1 }, name: 'speed (km/h)' },
@@ -110,8 +91,6 @@ const meta: Meta<StoryArgs> = {
       onPitRoad: { control: 'boolean' },
       engineWarnings: { control: { type: 'number' } },
       units: { control: 'radio', options: ['metric', 'imperial'] },
-      showRpmBar: { control: 'boolean' },
-      showRpmColor: { control: 'boolean' },
     },
   }),
 };
@@ -127,14 +106,6 @@ export const HighSpeed: Story = {
   args: { speedKmh: 267, rpm: 7800, gear: 6 },
 };
 
-export const ShiftLight: Story = {
-  args: { speedKmh: 220, rpm: 8050, gear: 5 },
-};
-
-export const BlinkLight: Story = {
-  args: { speedKmh: 230, rpm: 8300, gear: 5 },
-};
-
 export const Imperial: Story = {
   args: { speedKmh: 200, rpm: 7200, gear: 5, units: 'imperial' },
 };
@@ -145,10 +116,6 @@ export const Reverse: Story = {
 
 export const Neutral: Story = {
   args: { speedKmh: 0, rpm: 900, gear: 0 },
-};
-
-export const NoRpmBar: Story = {
-  args: { showRpmBar: false },
 };
 
 // ── Pit states ────────────────────────────────────────────────
@@ -181,59 +148,6 @@ export const OverPitLimit: Story = {
     onPitRoad: true,
     engineWarnings: 0x10,
   },
-};
-
-// ── Pit Lane Assistant (animated) ─────────────────────────────
-// No limiter — driver manages speed manually.
-// Throttle/brake animate, lap_dist_pct advances through pit lane.
-
-const PIT_LANE_LAP_START = 0.895;
-const PIT_LANE_LAP_END = 0.025;
-
-const PitAssistantRenderer = () => {
-  const store = useStore();
-  const pctRef = useRef(PIT_LANE_LAP_START);
-  useEffect(() => {
-    runInAction(() => {
-      store.session.updateSessionInfo(BASE_SESSION_INFO);
-      store.trackMapWidget.onTrackShapeReceived(SAMPLE_TRACK_SHAPE);
-      store.player.updateCarStatus({
-        on_pit_road: true,
-        engine_warnings: 0,
-      } as Parameters<typeof store.player.updateCarStatus>[0]);
-      store.player.updateCarDynamics({
-        speed: 40 / 3.6,
-        rpm: 2800,
-        gear: 2,
-      } as Parameters<typeof store.player.updateCarDynamics>[0]);
-    });
-
-    const intervalId = setInterval(() => {
-      pctRef.current += 0.0008;
-
-      if (pctRef.current > PIT_LANE_LAP_END + 0.01) {
-        pctRef.current = PIT_LANE_LAP_START;
-      }
-
-      if (pctRef.current > 1) {
-        pctRef.current -= 1;
-      }
-
-      runInAction(() => {
-        store.player.updateLapTiming({
-          lap_dist_pct: pctRef.current,
-        } as LapTimingFrame);
-      });
-    }, 80);
-
-    return () => clearInterval(intervalId);
-  }, [store]);
-
-  return <SpeedWidget />;
-};
-
-export const PitLaneAssistant: StoryObj = {
-  render: PitAssistantRenderer,
 };
 
 // ── Pit overlay states (full overlay with progress bar) ───────
@@ -288,9 +202,6 @@ export const PitOverlayOverLimit: StoryObj = {
 };
 
 // Pit lane with progress bar + BOX cue visible + limiter-near-exit indicators.
-// driverPitTrkPct = 0.935 places pitbox at ~45% through pit lane.
-// pitLaneProgressPct ~0.85 = near exit (≥0.75 → limiter-near-exit state, green indicators).
-// distM = 8 m → within default boxCueDistM (15 m) so BOX cue renders.
 const PitLaneWithBoxRenderer = () => {
   const store = useStore();
 
@@ -326,101 +237,4 @@ PitLaneWithBoxRenderer.displayName = 'PitLaneWithBoxRenderer';
 
 export const PitLaneWithBox: StoryObj = {
   render: PitLaneWithBoxRenderer,
-};
-
-// ── RPM animated (LED bar states) ────────────────────────────
-
-const RpmAnimatedRenderer = () => {
-  const store = useStore();
-  const rpmRef = useRef(800);
-  const dirRef = useRef(1);
-
-  useEffect(() => {
-    runInAction(() => {
-      store.session.updateSessionInfo(BASE_SESSION_INFO);
-      store.player.updateLapTiming({
-        lap: 8,
-        player_car_position: 2,
-      } as LapTimingFrame);
-    });
-
-    const intervalId = setInterval(() => {
-      rpmRef.current += dirRef.current * 120;
-
-      if (rpmRef.current >= RED_LINE) {
-        dirRef.current = -1;
-      } else if (rpmRef.current <= 800) {
-        dirRef.current = 1;
-      }
-
-      runInAction(() => {
-        setDynamics(
-          store.player,
-          rpmRef.current,
-          Math.max(1, Math.ceil(rpmRef.current / 1500))
-        );
-      });
-    }, 50);
-
-    return () => clearInterval(intervalId);
-  }, [store]);
-
-  return <SpeedWidget />;
-};
-
-export const RpmAnimated: StoryObj = {
-  render: RpmAnimatedRenderer,
-};
-
-// ── Pit LED animations (animated) ────────────────────────────
-
-const PitLedsRenderer = () => {
-  const store = useStore();
-  const phaseRef = useRef<'pit-lane' | 'limiter' | 'over-limit'>('pit-lane');
-  const phaseTickRef = useRef(0);
-
-  useEffect(() => {
-    runInAction(() => {
-      store.session.updateSessionInfo(BASE_SESSION_INFO);
-      store.player.updateLapTiming({
-        lap: 3,
-        player_car_position: 5,
-      } as LapTimingFrame);
-    });
-
-    const intervalId = setInterval(() => {
-      phaseTickRef.current += 1;
-
-      if (phaseTickRef.current > 30) {
-        phaseTickRef.current = 0;
-        phaseRef.current =
-          phaseRef.current === 'pit-lane'
-            ? 'limiter'
-            : phaseRef.current === 'limiter'
-              ? 'over-limit'
-              : 'pit-lane';
-      }
-
-      runInAction(() => {
-        const phase = phaseRef.current;
-        store.player.updateCarStatus({
-          on_pit_road: true,
-          engine_warnings: phase === 'pit-lane' ? 0 : 0x10,
-        } as Parameters<typeof store.player.updateCarStatus>[0]);
-        store.player.updateCarDynamics({
-          speed: phase === 'over-limit' ? 70 / 3.6 : 48 / 3.6,
-          rpm: 3000,
-          gear: 2,
-        } as Parameters<typeof store.player.updateCarDynamics>[0]);
-      });
-    }, 500);
-
-    return () => clearInterval(intervalId);
-  }, [store]);
-
-  return <SpeedWidget />;
-};
-
-export const PitLedsAnimated: StoryObj = {
-  render: PitLedsRenderer,
 };
