@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { widgetFrameBorderRadius } from '@utils/widget/widget-frame';
 import styles from './WidgetContainer.module.scss';
 import { WidgetIdContext } from './WidgetIdContext';
 import { WidgetDragToolbar } from '@app/overlay/components/WidgetDragToolbar/WidgetDragToolbar';
@@ -209,16 +210,10 @@ export const WidgetContainer = observer(
       ? ['e', 'w']
       : ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
 
-    const isInputTrace = widgetId === 'input-trace';
-    const showSteering =
-      isInputTrace &&
-      (widget?.userSettings as unknown as Record<string, unknown>)
-        ?.showSteering === true;
-    const borderRadius = showSteering
-      ? `calc(12px * var(--wfs, 1)) 9999px 9999px calc(12px * var(--wfs, 1))`
-      : widgetId === 'race-dash'
-        ? `calc(52px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(52px * var(--wfs, 1))`
-        : undefined;
+    const borderRadius = widgetFrameBorderRadius(
+      widgetId,
+      (widget?.userSettings ?? {}) as unknown as Record<string, unknown>
+    );
 
     return (
       <div

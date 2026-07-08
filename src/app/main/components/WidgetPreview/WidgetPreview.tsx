@@ -6,6 +6,7 @@ import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
 import { WIDGET_BY_ID } from '@store/widget-defaults';
 import { WidgetIdContext } from '@app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { widgetFrameBorderRadius } from '@utils/widget/widget-frame';
 import {
   seedScenario,
   DEFAULT_PREVIEW_SCENARIO_ID,
@@ -78,15 +79,10 @@ export const WidgetPreview = observer(
       ? 'transparent'
       : backgroundColor;
 
-    const showSteering =
-      widgetId === 'input-trace' &&
-      (userSettings as unknown as Record<string, unknown>).showSteering ===
-        true;
-    const steeringRadius = showSteering
-      ? `calc(12px * var(--wfs, 1)) 9999px 9999px calc(12px * var(--wfs, 1))`
-      : widgetId === 'race-dash'
-        ? `calc(52px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(52px * var(--wfs, 1))`
-        : undefined;
+    const frameBorderRadius = widgetFrameBorderRadius(
+      widgetId,
+      userSettings as unknown as Record<string, unknown>
+    );
 
     return (
       <RootStoreContext.Provider value={previewStore}>
@@ -104,7 +100,7 @@ export const WidgetPreview = observer(
                   ? 'transparent'
                   : borderColor,
                 borderWidth: widget.transparentContainer ? 0 : undefined,
-                borderRadius: steeringRadius,
+                borderRadius: frameBorderRadius,
                 ['--wfs']: widgetScale,
                 ['--widget-bg']: backgroundColor,
                 ['--widget-border']: borderColor,
