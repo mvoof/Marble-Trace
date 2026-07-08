@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
-import { ColorPicker, InputNumber, Switch } from 'antd';
+import { Button, ColorPicker, InputNumber, Popconfirm, Switch } from 'antd';
+import { invoke } from '@tauri-apps/api/core';
 
 import { speedUnit } from '@utils/formatters/telemetry-format';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
@@ -7,12 +8,35 @@ import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
-import { useUnitsStore } from '@store/root-store-context';
+import {
+  useReferenceLapStore,
+  useSessionStore,
+  useUnitsStore,
+} from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const RaceDashSettingsPanel = observer(() => {
   const units = useUnitsStore();
   const widgetSettings = useWidgetEditor();
+  const { sessionInfo } = useSessionStore();
+  const referenceLap = useReferenceLapStore();
+
+  const playerCar = sessionInfo?.cars.find(
+    (car) => car.carIdx === sessionInfo.playerCarIdx
+  );
+  const canDeleteReference = sessionInfo != null && playerCar != null;
+
+  const handleDeleteReferenceLap = async () => {
+    if (!sessionInfo || !playerCar) {
+      return;
+    }
+
+    await invoke('delete_reference_lap', {
+      trackId: sessionInfo.trackId,
+      carScreenName: playerCar.carScreenName,
+    });
+    referenceLap.reset();
+  };
 
   const settings =
     widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
@@ -132,6 +156,24 @@ export const RaceDashSettingsPanel = observer(() => {
               value={settings.gasColor}
               onChange={(color) => update({ gasColor: color.toHexString() })}
             />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="Delete Reference Lap"
+            desc="Remove the stored best lap for the current track and car; recording restarts on the next completed lap."
+          >
+            <Popconfirm
+              title="Delete the stored reference lap?"
+              okText="Delete"
+              okButtonProps={{ danger: true }}
+              onConfirm={handleDeleteReferenceLap}
+            >
+              <Button danger disabled={!canDeleteReference}>
+                Delete
+              </Button>
+            </Popconfirm>
           </SettingRow>
         </div>
       </Card>

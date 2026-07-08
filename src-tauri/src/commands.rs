@@ -188,6 +188,7 @@ pub async fn get_reference_lap(
 #[tauri::command]
 pub async fn delete_reference_lap(
     app: AppHandle,
+    state: State<'_, TelemetryState>,
     track_id: i32,
     car_screen_name: String,
 ) -> Result<(), String> {
@@ -204,6 +205,14 @@ pub async fn delete_reference_lap(
         Err(e) => return Err(e.to_string()),
     }
 
+    // The processor keeps the session's best time in memory and would refuse
+    // to commit a slower lap as the new reference — reset it so recording
+    // starts fresh from the next completed lap.
+    state
+        .reset_reference_lap
+        .store(true, std::sync::atomic::Ordering::Relaxed);
+
+    info!("Reference lap deleted for track {track_id} / {car_screen_name}");
     Ok(())
 }
 

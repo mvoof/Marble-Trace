@@ -43,4 +43,6 @@ pub struct TelemetryState {
     pub pit_warning_laps: Arc<AtomicU32>,
     /// Set by reset_pit_lane_pct command; consumed by TrackShapeProcessor on next tick.
     pub reset_pit_pcts: Arc<AtomicBool>,
+    /// Set by delete_reference_lap command; consumed by ReferenceLapProcessor on next tick.
+    pub reset_reference_lap: Arc<AtomicBool>,
 }

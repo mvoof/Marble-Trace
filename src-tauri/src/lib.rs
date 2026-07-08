@@ -117,6 +117,9 @@ pub fn run() {
     let track_cached_service = std::sync::Arc::clone(&track_cached);
     let reset_track_shape_listener = std::sync::Arc::clone(&reset_track_shape);
     let reset_track_shape_registry = reset_track_shape;
+    let reset_reference_lap = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let reset_reference_lap_registry = std::sync::Arc::clone(&reset_reference_lap);
+    let reset_reference_lap_state = reset_reference_lap;
 
     let builder = Builder::default()
         .plugin(
@@ -199,11 +202,13 @@ pub fn run() {
                 reset_pit_pcts_registry,
                 track_cached_registry,
                 reset_track_shape_registry,
+                reset_reference_lap_registry,
             ))),
             pit_warning_laps: Arc::new(AtomicU32::new(
                 crate::computations::fuel::DEFAULT_PIT_WARNING_LAPS.to_bits(),
             )),
             reset_pit_pcts: reset_pit_pcts_state,
+            reset_reference_lap: reset_reference_lap_state,
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {

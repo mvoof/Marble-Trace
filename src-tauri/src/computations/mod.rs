@@ -113,6 +113,7 @@ impl ProcessorRegistry {
         reset_pit_pcts: std::sync::Arc<std::sync::atomic::AtomicBool>,
         track_cached: std::sync::Arc<std::sync::atomic::AtomicI32>,
         reset_track_shape: std::sync::Arc<std::sync::atomic::AtomicBool>,
+        reset_reference_lap: std::sync::Arc<std::sync::atomic::AtomicBool>,
     ) -> Self {
         Self {
             processors: vec![
@@ -121,7 +122,7 @@ impl ProcessorRegistry {
                 Box::new(LapLogProcessor::default()),
                 Box::new(PitStopsProcessor::default()),
                 Box::new(ProximityProcessor),
-                Box::new(ReferenceLapProcessor::default()),
+                Box::new(ReferenceLapProcessor::new(reset_reference_lap)),
                 Box::new(RelativeProcessor::default()),
                 Box::new(StandingsProcessor::default()),
                 Box::new(TrackShapeProcessor::new(

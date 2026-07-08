@@ -7,6 +7,8 @@ use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId
 use crate::model::reference_lap::{
     ReferenceLapData, ReferenceLapSample, REFERENCE_LAP_BUCKET_COUNT,
 };
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 /// Above this `lap_dist_pct` we consider the car "near the finish line".
 const WRAP_HIGH_THRESHOLD: f32 = 0.9;
@@ -27,9 +29,20 @@ pub struct ReferenceLapProcessor {
     /// between ticks (e.g. high speed relative to bucket resolution) so they
     /// don't fall back to a default zero-speed sample.
     last_bucket: Option<usize>,
+    /// Set by the delete_reference_lap command; consumed on the next tick so
+    /// the in-memory best does not block re-recording after the stored
+    /// reference file was deleted.
+    reset_requested: Arc<AtomicBool>,
 }
 
 impl ReferenceLapProcessor {
+    pub fn new(reset_requested: Arc<AtomicBool>) -> Self {
+        Self {
+            reset_requested,
+            ..Self::default()
+        }
+    }
+
     fn ensure_working_buffer(&mut self) {
         if self.working.len() != REFERENCE_LAP_BUCKET_COUNT {
             self.working = vec![ReferenceLapSample::default(); REFERENCE_LAP_BUCKET_COUNT];
@@ -63,6 +76,10 @@ impl Processor for ReferenceLapProcessor {
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
         self.ensure_working_buffer();
+
+        if self.reset_requested.swap(false, Ordering::Relaxed) {
+            self.reset_for_new_identity();
+        }
 
         let track_id = ctx.session.track_id;
         let player_idx = ctx.session.player_car_idx;
