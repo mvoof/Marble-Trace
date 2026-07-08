@@ -1,0 +1,65 @@
+// Triptych cluster: center panel taller than the side panels; entering the
+// pit lane slides the center right while the left panel widens into the
+// merged pit block and the right panel slides away underneath it.
+.cluster {
+  position: relative;
+  overflow: visible;
+}
+
+.panelBox {
+  position: absolute;
+  overflow: hidden;
+  border-radius: radius(lg);
+  // Panels draw their own plates — the widget container background stays
+  // transparent so the gaps between panels show through.
+  background: linear-gradient(
+    180deg,
+    $widget-dash-panel-top,
+    $widget-dash-panel-bottom
+  );
+  transition:
+    transform 0.55s cubic-bezier(0.6, 0, 0.2, 1),
+    width 0.55s cubic-bezier(0.6, 0, 0.2, 1),
+    opacity 0.4s ease;
+}
+
+.left {
+  left: 0;
+  top: ws(40);
+  width: ws(148);
+  height: ws(118);
+}
+
+.right {
+  left: ws(372);
+  top: ws(40);
+  width: ws(148);
+  height: ws(118);
+}
+
+.center {
+  left: ws(156);
+  top: ws(14);
+  width: ws(208);
+  height: ws(158);
+  z-index: 2;
+}
+
+.pitMode .center {
+  transform: translateX(ws(156));
+}
+
+.pitMode .left {
+  width: ws(300);
+}
+
+.pitMode .right {
+  transform: translateX(ws(-372));
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panelBox {
+    transition: none;
+  }
+}

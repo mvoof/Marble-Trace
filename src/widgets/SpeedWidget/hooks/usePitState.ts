@@ -22,7 +22,7 @@ export type PitState =
   | 'limiter-exit'
   | 'over-limit';
 
-const PIT_LIMITER_BIT = 0x10;
+export const PIT_LIMITER_BIT = 0x10;
 
 export interface PitStateResult {
   pitState: PitState;
@@ -55,7 +55,12 @@ export interface PitStateResult {
   brake: number;
 }
 
-export const usePitState = (): PitStateResult => {
+/** Widgets whose user settings carry the pit-assist fields read below. */
+export type PitSettingsWidgetId = 'speed' | 'race-dash';
+
+export const usePitState = (
+  settingsWidgetId: PitSettingsWidgetId = 'speed'
+): PitStateResult => {
   const player = usePlayerStore();
   const { sessionInfo } = useSessionStore();
   const units = useUnitsStore();
@@ -69,7 +74,7 @@ export const usePitState = (): PitStateResult => {
     pitBoxSide,
     boxCueDistM,
     nearLimitDelta,
-  } = widgetSettings.getSettings<SpeedWidgetSettings>('speed');
+  } = widgetSettings.getSettings<SpeedWidgetSettings>(settingsWidgetId);
   const system = units.unitSystem;
   const speedFactor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
 

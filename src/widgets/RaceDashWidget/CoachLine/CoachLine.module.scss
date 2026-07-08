@@ -1,0 +1,34 @@
+.idle {
+  font-family: $font-widget;
+  font-size: fs(xs);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: $widget-text-muted;
+  font-variant-numeric: tabular-nums;
+}
+
+.active {
+  font-family: $font-widget;
+  font-size: fs(lg);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 ws(10) color-mix(in srgb, currentColor 50%, transparent);
+  animation: coachPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes coachPulse {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .active {
+    animation: none;
+  }
+}

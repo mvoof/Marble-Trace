@@ -21,6 +21,7 @@ import { FlagDisplaySettingsPanel } from './panels/FlagDisplaySettingsPanel';
 import { GMeterSettingsPanel } from './panels/GMeterSettingsPanel';
 import { EnginePanelSettingsPanel } from './panels/EnginePanelSettingsPanel';
 import { DrivingCoachSettingsPanel } from './panels/DrivingCoachSettingsPanel';
+import { RaceDashSettingsPanel } from './panels/RaceDashSettingsPanel';
 import { useWidgetEditor } from './WidgetEditorContext';
 
 export const WidgetSettings = observer(
@@ -200,6 +201,7 @@ export const WidgetSettings = observer(
         )}
         {widgetId === 'g-meter' && <GMeterSettingsPanel />}
         {widgetId === 'driving-coach' && <DrivingCoachSettingsPanel />}
+        {widgetId === 'race-dash' && <RaceDashSettingsPanel />}
         {widgetId === 'engine-panel' && <EnginePanelSettingsPanel />}
       </div>
     );

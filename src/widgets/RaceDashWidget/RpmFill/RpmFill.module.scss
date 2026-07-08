@@ -1,0 +1,36 @@
+// Dotted RPM gradient rising from the panel floor: the zone color shows
+// through a dot-grid mask, dense at the bottom and dissolving upward.
+.fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--rpm-fill-color) 80%, transparent),
+    color-mix(in srgb, var(--rpm-fill-color) 12%, transparent)
+  );
+  mask-image: radial-gradient(
+    circle at ws(2) ws(2),
+    #000 ws(1),
+    transparent ws(1.5)
+  );
+  mask-size: ws(5) ws(5);
+  transition: height 0.08s linear;
+}
+
+.blink {
+  animation: fillBlink 0.14s steps(2, start) infinite;
+}
+
+@keyframes fillBlink {
+  50% {
+    opacity: 0.15;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blink {
+    animation: none;
+  }
+}

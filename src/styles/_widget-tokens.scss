@@ -44,6 +44,11 @@ $widget-surface-base: rgba(0, 0, 0, 0.75);
 $widget-surface-overlay: rgba(0, 0, 0, 0.8);
 $widget-surface-cell: rgba(16, 16, 18, 0.65);
 
+// Race Dash cluster — panel plates and the text-legibility scrim base
+$widget-dash-panel-top: rgba(30, 33, 40, 0.95);
+$widget-dash-panel-bottom: rgba(11, 12, 15, 0.88);
+$widget-dash-scrim: #0b0c0f;
+
 // Borders
 $widget-border-default: rgba(255, 255, 255, 0.15);
 $widget-border-subtle: rgba(255, 255, 255, 0.08);

@@ -20,6 +20,7 @@ import { LapLogWidget } from '@widgets/LapLogWidget/LapLogWidget';
 import { EnginePanelWidget } from '@widgets/EnginePanelWidget/EnginePanelWidget';
 import { DrivingCoachWidget } from '@widgets/DrivingCoachWidget/DrivingCoachWidget';
 import { RpmLightsWidget } from '@widgets/RpmLightsWidget/RpmLightsWidget';
+import { RaceDashWidget } from '@widgets/RaceDashWidget/RaceDashWidget';
 import type {
   WidgetConfig,
   WidgetDefaultConfig,
@@ -952,6 +953,42 @@ const WIDGETS: WidgetConfig[] = [
       rpmColorShift: '#a855f7',
       rpmColorLimit: '#f97316',
       ledShape: 'square',
+    },
+  },
+  {
+    id: 'race-dash',
+    label: 'Race Dash',
+    description:
+      'Combined cockpit cluster: speed and gear over a dotted RPM fill, lap/position info, best-lap coach with reference speed and delta, plus an animated pit-lane mode with limiter assist. Successor to the Speed, RPM Lights and Driving Coach widgets.',
+    component: RaceDashWidget,
+    requiredCapabilities: ['playerDynamics'],
+    designWidth: 520,
+    designHeight: 172,
+    userSettings: {
+      enabled: false,
+      x: 400,
+      y: 100,
+      currentWidth: 520,
+      currentHeight: 172,
+      opacity: 1,
+      // Panels draw their own plates; the container background stays clear so
+      // the gaps between the three panels show through.
+      backgroundColor: 'transparent',
+      borderColor: 'transparent',
+      pitSpeedLimitOverride: null,
+      showPitAssist: true,
+      pitBoxSide: 'right',
+      boxCueDistM: 50,
+      nearLimitDelta: 5,
+      rpmColorLow: '#10b981',
+      rpmColorMid: '#eab308',
+      rpmColorHigh: '#ef4444',
+      rpmColorShift: '#a855f7',
+      rpmColorLimit: '#f97316',
+      brakeColor: '#ef4444',
+      gasColor: '#10b981',
+      showReferenceSpeed: true,
+      colorizeByRpmZone: true,
     },
   },
 ];

@@ -25,6 +25,24 @@ export interface RpmLightsWidgetSettings {
   ledShape: LedShape;
 }
 
+export interface RaceDashWidgetSettings {
+  pitSpeedLimitOverride: number | null;
+  showPitAssist: boolean;
+  pitBoxSide: PitBoxSide;
+  boxCueDistM: number;
+  nearLimitDelta: number;
+  rpmColorLow: string;
+  rpmColorMid: string;
+  rpmColorHigh: string;
+  rpmColorShift: string;
+  rpmColorLimit: string;
+  brakeColor: string;
+  gasColor: string;
+  showReferenceSpeed: boolean;
+  /** Tint the gear digit and RPM number with the zone color at high revs. */
+  colorizeByRpmZone: boolean;
+}
+
 export type SteeringCenterDisplay =
   | 'logo'
   | 'gear'
@@ -239,7 +257,8 @@ export type WidgetSpecificSettings =
   | TimerWidgetSettings
   | GMeterWidgetSettings
   | EnginePanelWidgetSettings
-  | DrivingCoachWidgetSettings;
+  | DrivingCoachWidgetSettings
+  | RaceDashWidgetSettings;
 export interface WidgetMeta {
   id: string;
   label: string;

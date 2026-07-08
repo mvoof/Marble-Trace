@@ -1,0 +1,18 @@
+.value {
+  font-family: $font-widget;
+  font-size: ws(21);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.faster {
+  color: $widget-status-positive;
+}
+
+.slower {
+  color: $widget-status-danger;
+}
+
+.flat {
+  color: $widget-text-secondary;
+}

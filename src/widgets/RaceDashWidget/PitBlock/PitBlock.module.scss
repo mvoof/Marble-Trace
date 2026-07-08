@@ -1,0 +1,300 @@
+// Merged pit panel: the plate stays dark — the pit state paints a grid of
+// colored dots across it with a brightness wave running in the direction of
+// travel, and a center scrim keeps the readouts legible over the dots.
+.root {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  padding: sp(xxs) sp(xl);
+  color: $widget-text-primary;
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    100deg,
+    var(--pit-dot-dim) 0%,
+    var(--pit-dot-dim) 34%,
+    var(--pit-dot-hot) 48%,
+    var(--pit-dot-hot) 52%,
+    var(--pit-dot-dim) 66%,
+    var(--pit-dot-dim) 100%
+  );
+  background-size: 250% 100%;
+  mask-image: radial-gradient(
+    circle at ws(2) ws(2),
+    #000 ws(1),
+    transparent ws(1.5)
+  );
+  mask-size: ws(5) ws(5);
+  animation: pitWave 2.4s linear infinite;
+}
+
+.root::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    85% 78% at 50% 52%,
+    rgba($widget-dash-scrim, 0.92) 38%,
+    rgba($widget-dash-scrim, 0.55) 62%,
+    transparent 88%
+  );
+}
+
+@keyframes pitWave {
+  from {
+    background-position: 125% 0;
+  }
+
+  to {
+    background-position: -125% 0;
+  }
+}
+
+.stateLimiter {
+  --pit-dot-dim: color-mix(in srgb, #{$widget-pit-active} 45%, transparent);
+  --pit-dot-hot: color-mix(in srgb, #{$widget-pit-active} 55%, white);
+}
+
+.stateLane {
+  --pit-dot-dim: color-mix(in srgb, #{$widget-pit-entry} 40%, transparent);
+  --pit-dot-hot: color-mix(in srgb, #{$widget-pit-entry} 70%, white);
+}
+
+.stateOverLimit {
+  --pit-dot-dim: color-mix(in srgb, #{$widget-pit-warning} 50%, transparent);
+  --pit-dot-hot: color-mix(in srgb, #{$widget-pit-warning} 55%, white);
+}
+
+.stateOverLimit::before {
+  animation-duration: 1s;
+}
+
+.headlineRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: sp(xxs);
+}
+
+.headlineText {
+  font-family: $font-mono;
+  font-size: fs(md);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.stateLimiter .headlineText {
+  color: $widget-pit-active;
+}
+
+.stateLane .headlineText {
+  color: $widget-pit-entry;
+}
+
+.stateOverLimit .headlineText {
+  color: $widget-status-danger;
+  animation: headlinePulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes headlinePulse {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.35;
+  }
+}
+
+.speedRow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.limitSide {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.limitTag {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  opacity: 0.75;
+}
+
+.limitTagLabel {
+  font-family: $font-mono;
+  font-size: fs(xxxs);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  line-height: 1.1;
+  opacity: 0.6;
+}
+
+.limitTagNum {
+  font-family: $font-widget;
+  font-size: ws(22);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.speedCenter {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: sp(xxs);
+}
+
+.speedNum {
+  font-family: $font-widget;
+  font-size: ws(46);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.speedNumOver {
+  color: $widget-status-danger;
+}
+
+.speedNumNearLimit {
+  color: $widget-status-danger;
+}
+
+.speedUnit {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.boxSideSlot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.boxSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  opacity: 0.85;
+}
+
+.boxLabel {
+  font-family: $font-mono;
+  font-size: fs(xxxs);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  line-height: 1.1;
+  color: $widget-status-warning;
+}
+
+.boxBottom {
+  display: flex;
+  align-items: center;
+  gap: sp(xxxs);
+}
+
+.boxDist {
+  font-family: $font-widget;
+  font-size: ws(20);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.boxArrow {
+  width: ws(19);
+  height: ws(19);
+  color: $widget-status-warning;
+}
+
+.barSection {
+  margin-top: sp(xs);
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxxs);
+  width: 100%;
+}
+
+.distLabel {
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.laneBarTrack {
+  position: relative;
+  width: 100%;
+  height: ws(9);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: radius(sm);
+  overflow: hidden;
+}
+
+.laneBarFill {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  transition: width 0.15s linear;
+}
+
+.pitboxZone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, #{$race-red} 75%, transparent);
+}
+
+.calibratingLabel {
+  font-family: $font-mono;
+  font-size: fs(xxxs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  opacity: 0.5;
+  text-align: right;
+  white-space: nowrap;
+  animation: calibratingBlink 1.2s step-start infinite;
+}
+
+@keyframes calibratingBlink {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 0.15;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root::before,
+  .stateOverLimit .headlineText,
+  .calibratingLabel {
+    animation: none;
+  }
+}
