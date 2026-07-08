@@ -23,6 +23,10 @@ pub struct ReferenceLapProcessor {
     prev_best_lap_time: f32,
     last_track_id: Option<i32>,
     last_car_screen_name: Option<String>,
+    /// Last bucket written this lap — lets us forward-fill buckets skipped
+    /// between ticks (e.g. high speed relative to bucket resolution) so they
+    /// don't fall back to a default zero-speed sample.
+    last_bucket: Option<usize>,
 }
 
 impl ReferenceLapProcessor {
@@ -34,6 +38,7 @@ impl ReferenceLapProcessor {
 
     fn reset_for_new_lap(&mut self) {
         self.working = vec![ReferenceLapSample::default(); REFERENCE_LAP_BUCKET_COUNT];
+        self.last_bucket = None;
     }
 
     fn reset_for_new_identity(&mut self) {
@@ -85,11 +90,22 @@ impl Processor for ReferenceLapProcessor {
         let bucket = ((lap_dist_pct * REFERENCE_LAP_BUCKET_COUNT as f32) as usize)
             .min(REFERENCE_LAP_BUCKET_COUNT - 1);
 
-        self.working[bucket] = ReferenceLapSample {
+        let sample = ReferenceLapSample {
             speed: ctx.car_dynamics.speed,
             throttle: ctx.car_inputs.throttle,
             brake: ctx.car_inputs.brake,
         };
+
+        if let Some(last) = self.last_bucket {
+            if bucket > last + 1 {
+                for skipped in (last + 1)..bucket {
+                    self.working[skipped] = sample;
+                }
+            }
+        }
+
+        self.working[bucket] = sample;
+        self.last_bucket = Some(bucket);
 
         let crossed_finish_line =
             self.prev_lap_dist_pct > WRAP_HIGH_THRESHOLD && lap_dist_pct < WRAP_LOW_THRESHOLD;
