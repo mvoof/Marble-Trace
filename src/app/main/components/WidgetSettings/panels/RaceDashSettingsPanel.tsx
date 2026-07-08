@@ -1,11 +1,8 @@
 import { observer } from 'mobx-react-lite';
-import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
+import { ColorPicker, InputNumber, Switch } from 'antd';
 
 import { speedUnit } from '@utils/formatters/telemetry-format';
-import type {
-  PitBoxSide,
-  RaceDashWidgetSettings,
-} from '@/types/widget-settings';
+import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 
@@ -174,42 +171,11 @@ export const RaceDashSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>Pit Box Side</span>
-          <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-            Which side the pit box entry is on.
-          </div>
-          <Segmented
-            block
-            value={settings.pitBoxSide}
-            options={[
-              { label: 'Left', value: 'left' },
-              { label: 'Right', value: 'right' },
-            ]}
-            onChange={(value) => update({ pitBoxSide: value as PitBoxSide })}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>Box Cue Distance (m)</span>
-          <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-            Show BOX indicator this many meters before your pit box.
-          </div>
-          <InputNumber
-            style={{ width: '100%' }}
-            value={settings.boxCueDistM}
-            min={5}
-            max={300}
-            step={5}
-            onChange={(value) => update({ boxCueDistM: value ?? 50 })}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
             Near-Limit Warning ({speedUnit(units.unitSystem)})
           </span>
           <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-            Color speed red when this many {speedUnit(units.unitSystem)} below
+            Color speed amber when this many {speedUnit(units.unitSystem)} below
             the pit speed limit.
           </div>
           <InputNumber

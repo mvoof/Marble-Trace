@@ -1,21 +1,17 @@
 import { observer } from 'mobx-react-lite';
 
 import { resolveSessionLaps } from '@utils/formatters/telemetry-format';
-import { PitBlock } from '../PitBlock/PitBlock';
 import { RpmValue } from '../RpmValue/RpmValue';
+import { SpeedReadout } from '../SpeedReadout/SpeedReadout';
 import {
   useCarsStore,
   usePlayerStore,
   useSessionStore,
 } from '@store/root-store-context';
 
-import styles from './LeftPanel.module.scss';
+import styles from './StatsStrip.module.scss';
 
-interface LeftPanelProps {
-  isPitMode: boolean;
-}
-
-export const LeftPanel = observer(({ isPitMode }: LeftPanelProps) => {
+export const StatsStrip = observer(() => {
   const player = usePlayerStore();
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
@@ -45,29 +41,27 @@ export const LeftPanel = observer(({ isPitMode }: LeftPanelProps) => {
 
   return (
     <div className={styles.root}>
-      <div className={`${styles.layer} ${isPitMode ? styles.hidden : ''}`}>
-        <div className={styles.rows}>
-          <div className={styles.row}>
-            <span className={styles.label}>RPM</span>
-            <RpmValue />
-          </div>
+      <SpeedReadout />
 
-          <div className={styles.row}>
-            <span className={styles.label}>LAP</span>
-            <span className={styles.value}>{lapText}</span>
-          </div>
+      <div className={styles.divider} />
 
-          <div className={styles.row}>
-            <span className={styles.label}>POS</span>
-            <span className={styles.value}>
-              {position != null ? `P${position}` : '—'}
-            </span>
-          </div>
+      <div className={styles.column}>
+        <div className={styles.row}>
+          <span className={styles.label}>RPM</span>
+          <RpmValue />
         </div>
-      </div>
 
-      <div className={`${styles.layer} ${!isPitMode ? styles.hidden : ''}`}>
-        {isPitMode && <PitBlock />}
+        <div className={styles.row}>
+          <span className={styles.label}>Lap</span>
+          <span className={styles.value}>{lapText}</span>
+        </div>
+
+        <div className={styles.row}>
+          <span className={styles.label}>Pos</span>
+          <span className={styles.value}>
+            {position != null ? `P${position}` : '—'}
+          </span>
+        </div>
       </div>
     </div>
   );

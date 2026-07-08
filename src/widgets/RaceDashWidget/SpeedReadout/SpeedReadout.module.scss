@@ -1,24 +1,27 @@
+// Fixed min-width so speed going from 99 → 100 or turning red near the pit
+// limit never shifts the columns after it.
 .root {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: sp(xxs);
+  align-items: flex-start;
+  gap: sp(xxxs);
+  min-width: ws(96);
 }
 
 .value {
-  font-family: $font-widget;
-  font-size: ws(62);
-  font-weight: 700;
-  line-height: 0.88;
-  letter-spacing: -0.04em;
+  font-family: $font-mono;
+  font-size: ws(40);
+  font-weight: 800;
+  line-height: 0.95;
   font-variant-numeric: tabular-nums;
   color: $widget-text-primary;
 }
 
 .unit {
-  font-family: $font-mono;
-  font-size: fs(xxxs);
+  font-family: $font-widget;
+  font-size: ws(11);
   font-weight: 700;
-  letter-spacing: 0.2em;
-  color: $widget-text-secondary;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $widget-text-muted;
 }

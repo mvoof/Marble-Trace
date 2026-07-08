@@ -959,22 +959,28 @@ const WIDGETS: WidgetConfig[] = [
     id: 'race-dash',
     label: 'Race Dash',
     description:
-      'Combined cockpit cluster: speed and gear over a dotted RPM fill, lap/position info, best-lap coach with reference speed and delta, plus an animated pit-lane mode with limiter assist. Successor to the Speed, RPM Lights and Driving Coach widgets.',
+      'Combined cockpit cluster: a gear ring with an RPM arc and printed shift zone, dominant speed readout with lap/position/RPM, a coach tab with reference speed, plus a pit-lane mode with limiter assist. Successor to the Speed, RPM Lights and Driving Coach widgets.',
     component: RaceDashWidget,
     requiredCapabilities: ['playerDynamics'],
-    designWidth: 520,
-    designHeight: 172,
+    // The prototype plate measures 430×104: ring 104 + stats strip
+    // (16 + 96 + 14 + 1 + 14 + 77 + 10) + coach margin 12 + coach 84 + border 2.
+    designWidth: 430,
+    designHeight: 104,
+    transparentContainer: true,
+    // The pit banner hangs over the plate's top edge like in the prototype —
+    // the container must not clip it.
+    overflowVisible: true,
     userSettings: {
       enabled: false,
       x: 400,
       y: 100,
-      currentWidth: 520,
-      currentHeight: 172,
+      currentWidth: 430,
+      currentHeight: 104,
       opacity: 1,
-      // Panels draw their own plates; the container background stays clear so
-      // the gaps between the three panels show through.
-      backgroundColor: 'transparent',
-      borderColor: 'transparent',
+      // Container stays transparent (transparentContainer); these colors are
+      // applied to the plate itself instead, see RaceDashWidget.module.scss.
+      backgroundColor: 'rgba(21, 22, 26, 0.8)',
+      borderColor: 'rgba(255, 255, 255, 0.1)',
       pitSpeedLimitOverride: null,
       showPitAssist: true,
       pitBoxSide: 'right',

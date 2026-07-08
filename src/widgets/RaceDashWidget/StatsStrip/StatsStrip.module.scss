@@ -1,0 +1,51 @@
+.root {
+  display: flex;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  gap: ws(14);
+  padding: 0 sp(md) 0 sp(xl);
+}
+
+// Internal hairlines use a fixed token, not var(--widget-border) — the
+// user's border-color setting must restyle only the plate outline.
+.divider {
+  width: ws(1);
+  align-self: center;
+  height: ws(56);
+  background: $widget-border-subtle;
+}
+
+// Reserves room for the widest realistic values (5-digit RPM, "12/24" laps)
+// so the column never resizes as numbers change.
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: sp(sm);
+  min-width: ws(77);
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: sp(md);
+}
+
+.label {
+  font-family: $font-widget;
+  font-size: ws(11);
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: $widget-text-muted;
+}
+
+.value {
+  font-family: $font-mono;
+  font-size: ws(16);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: $widget-text-primary;
+}

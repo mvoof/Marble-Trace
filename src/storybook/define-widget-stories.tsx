@@ -14,8 +14,10 @@ interface WidgetStorySize {
   height?: number | string;
   minWidth?: number;
   background?: string;
+  widgetBg?: string;
   display?: string;
   borderRadius?: number | string;
+  overflow?: string;
 }
 
 interface DefineWidgetStoriesOptions<Args> {

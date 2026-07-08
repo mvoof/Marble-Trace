@@ -55,6 +55,7 @@ export const WidgetPreview = observer(
           designHeight: widget.designHeight,
           autoHeight: widget.autoHeight,
           overflowVisible: widget.overflowVisible,
+          transparentContainer: widget.transparentContainer,
           requiredCapabilities: widget.requiredCapabilities,
           userSettings: { ...widget.userSettings },
         },
@@ -70,8 +71,12 @@ export const WidgetPreview = observer(
 
     const { userSettings, designWidth, autoHeight, overflowVisible } = widget;
     const widgetScale = userSettings.currentWidth / designWidth;
-    const background = userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)';
+    const backgroundColor =
+      userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)';
     const borderColor = userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
+    const background = widget.transparentContainer
+      ? 'transparent'
+      : backgroundColor;
 
     const showSteering =
       widgetId === 'input-trace' &&
@@ -79,7 +84,9 @@ export const WidgetPreview = observer(
         true;
     const steeringRadius = showSteering
       ? `calc(12px * var(--wfs, 1)) 9999px 9999px calc(12px * var(--wfs, 1))`
-      : undefined;
+      : widgetId === 'race-dash'
+        ? `calc(52px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(52px * var(--wfs, 1))`
+        : undefined;
 
     return (
       <RootStoreContext.Provider value={previewStore}>
@@ -93,10 +100,14 @@ export const WidgetPreview = observer(
                 width: userSettings.currentWidth,
                 height: autoHeight ? 'auto' : userSettings.currentHeight,
                 background,
-                borderColor,
+                borderColor: widget.transparentContainer
+                  ? 'transparent'
+                  : borderColor,
+                borderWidth: widget.transparentContainer ? 0 : undefined,
                 borderRadius: steeringRadius,
                 ['--wfs']: widgetScale,
-                ['--widget-bg']: background,
+                ['--widget-bg']: backgroundColor,
+                ['--widget-border']: borderColor,
               } as React.CSSProperties
             }
           >

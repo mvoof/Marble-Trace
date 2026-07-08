@@ -1,47 +1,46 @@
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
-import type { RaceDashWidgetSettings } from '@/types/widget-settings';
-import { PIT_LIMITER_BIT } from '@widgets/SpeedWidget/hooks/usePitState';
-import {
-  usePlayerStore,
-  useWidgetSettingsStore,
-} from '@store/root-store-context';
+import { usePitState } from '@widgets/SpeedWidget/hooks/usePitState';
 
-import { CenterPanel } from './CenterPanel/CenterPanel';
-import { LeftPanel } from './LeftPanel/LeftPanel';
-import { RightPanel } from './RightPanel/RightPanel';
+import { CoachTab } from './CoachTab/CoachTab';
+import { PitBlock } from './PitBlock/PitBlock';
+import { RingBadge } from './RingBadge/RingBadge';
+import { StatsStrip } from './StatsStrip/StatsStrip';
 
 import styles from './RaceDashWidget.module.scss';
 
+const PLATE_STATE_CLASS: Record<string, string> = {
+  'limiter-active': styles.plateSafe,
+  'limiter-near-exit': styles.plateSafe,
+  'limiter-exit': styles.plateSafe,
+  'pit-lane': styles.plateWarning,
+  'over-limit': styles.plateDanger,
+};
+
 export const RaceDashWidget = observer(() => {
-  const { carStatus } = usePlayerStore();
-  const widgetSettings = useWidgetSettingsStore();
+  const { pitState, showPitAssist } = usePitState('race-dash');
 
-  const { showPitAssist } =
-    widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
-
-  const isLimiter = ((carStatus?.engine_warnings ?? 0) & PIT_LIMITER_BIT) !== 0;
-  const onPitRoad = carStatus?.on_pit_road ?? false;
-  const isPitMode = showPitAssist && (onPitRoad || isLimiter);
+  const isPitMode = showPitAssist && pitState !== 'normal';
+  const plateStateClass = isPitMode ? PLATE_STATE_CLASS[pitState] : '';
 
   return (
     <WidgetPanel
       gap={0}
       minWidth={0}
-      className={`${styles.cluster} ${isPitMode ? styles.pitMode : ''}`}
+      direction="row"
+      className={`${styles.plate} ${plateStateClass}`}
     >
-      <div className={`${styles.panelBox} ${styles.left}`}>
-        <LeftPanel isPitMode={isPitMode} />
-      </div>
+      <RingBadge />
 
-      <div className={`${styles.panelBox} ${styles.right}`}>
-        <RightPanel />
-      </div>
-
-      <div className={`${styles.panelBox} ${styles.center}`}>
-        <CenterPanel isPitMode={isPitMode} />
-      </div>
+      {isPitMode ? (
+        <PitBlock />
+      ) : (
+        <>
+          <StatsStrip />
+          <CoachTab />
+        </>
+      )}
     </WidgetPanel>
   );
 });

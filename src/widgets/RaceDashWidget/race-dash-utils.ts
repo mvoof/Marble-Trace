@@ -11,7 +11,7 @@ const MID_ZONE_PCT = 0.35;
 export const COACH_DELTA_DEADZONE = 1;
 
 export interface RpmZoneState {
-  /** RPM as a fraction of the blink threshold, clamped to 0..1. */
+  /** RPM as a fraction of redline, clamped to 0..1 — the ring's full scale. */
   pct: number;
   zone: RpmZone;
 }
@@ -19,10 +19,15 @@ export interface RpmZoneState {
 export const computeRpmZoneState = (
   rpm: number,
   sessionInfo: SessionSnapshot | null,
-  carStatus: CarStatusFrame | null
+  carStatus: CarStatusFrame | null,
+  gear: number
 ): RpmZoneState => {
-  const { shiftRpm, blinkRpm } = computeShiftThresholds(sessionInfo, carStatus);
-  const pct = Math.min(Math.max(rpm / (blinkRpm || 1), 0), 1);
+  const { shiftRpm, blinkRpm, redLine } = computeShiftThresholds(
+    sessionInfo,
+    carStatus,
+    gear
+  );
+  const pct = Math.min(Math.max(rpm / (redLine || 1), 0), 1);
 
   if (rpm >= blinkRpm) {
     return { pct, zone: 'blink' };

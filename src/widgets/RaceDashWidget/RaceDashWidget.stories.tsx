@@ -13,6 +13,7 @@ interface StoryArgs {
   rpm: number;
   gear: number;
   pitMode: 'none' | 'limiter' | 'pit-lane';
+  boxDistM: number;
 }
 
 const REFERENCE_BUCKET_COUNT = 1000;
@@ -32,7 +33,15 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/RaceDashWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: RaceDashWidget,
-    size: { width: 520, height: 172, background: 'transparent' },
+    seedSnapshot: true,
+    size: {
+      width: 430,
+      height: 104,
+      background: 'transparent',
+      widgetBg: 'rgba(21, 22, 26, 0.8)',
+      borderRadius: '52px 14px 14px 52px',
+      overflow: 'visible',
+    },
     seed: (store, args) => {
       store.drivingCoachWidget.displayedAdvisory = args.advisory;
 
@@ -71,6 +80,12 @@ const meta: Meta<StoryArgs> = {
               : carStatus.engine_warnings & ~PIT_LIMITER_BIT,
         });
       }
+
+      if (args.pitMode !== 'none' && args.boxDistM > 0) {
+        store.player.updatePitTarget(args.boxDistM, 'pitbox', 0.4);
+      } else {
+        store.player.updatePitTarget(null, null, null);
+      }
     },
     args: {
       advisory: 'neutral',
@@ -79,6 +94,7 @@ const meta: Meta<StoryArgs> = {
       rpm: 6400,
       gear: 4,
       pitMode: 'none',
+      boxDistM: 0,
     },
     argTypes: {
       advisory: { control: 'radio', options: ['neutral', 'brake', 'gas'] },
@@ -87,6 +103,7 @@ const meta: Meta<StoryArgs> = {
       rpm: { control: { type: 'number' } },
       gear: { control: { type: 'number' } },
       pitMode: { control: 'radio', options: ['none', 'limiter', 'pit-lane'] },
+      boxDistM: { control: { type: 'number' } },
     },
   }),
 };
@@ -115,11 +132,43 @@ export const ShiftBlink: Story = {
 };
 
 export const PitLimiter: Story = {
-  args: { pitMode: 'limiter', speedKmh: 58, rpm: 3200, gear: 1 },
+  args: {
+    pitMode: 'limiter',
+    speedKmh: 48,
+    rpm: 3200,
+    gear: 1,
+    boxDistM: 184,
+  },
+};
+
+export const PitLimiterNearBox: Story = {
+  args: {
+    pitMode: 'limiter',
+    speedKmh: 32,
+    rpm: 2400,
+    gear: 1,
+    boxDistM: 28,
+  },
 };
 
 export const PitLaneNoLimiter: Story = {
-  args: { pitMode: 'pit-lane', speedKmh: 57, rpm: 3400, gear: 2 },
+  args: {
+    pitMode: 'pit-lane',
+    speedKmh: 57,
+    rpm: 3400,
+    gear: 2,
+    boxDistM: 180,
+  },
+};
+
+export const PitLaneNoLimiterUnderLimit: Story = {
+  args: {
+    pitMode: 'pit-lane',
+    speedKmh: 42,
+    rpm: 2800,
+    gear: 2,
+    boxDistM: 180,
+  },
 };
 
 export const NoReferenceLap: Story = {

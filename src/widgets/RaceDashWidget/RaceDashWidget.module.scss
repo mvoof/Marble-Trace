@@ -1,65 +1,31 @@
-// Triptych cluster: center panel taller than the side panels; entering the
-// pit lane slides the center right while the left panel widens into the
-// merged pit block and the right panel slides away underneath it.
-.cluster {
+// Single plate: left cap is a true circle sized to match the RingBadge
+// (diameter == plate height = 104 design px), right corners stay rectangular
+// with a moderate radius, mirroring the approved prototype.
+.plate {
   position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: ws(52) ws(14) ws(14) ws(52);
+  border: 1px solid var(--widget-border);
+  background: var(--widget-bg);
+  // The pit banner hangs over the top edge — this must beat WidgetPanel's
+  // own overflow: hidden, and the widget config sets overflowVisible so the
+  // overlay container does not clip it either.
   overflow: visible;
 }
 
-.panelBox {
-  position: absolute;
-  overflow: hidden;
-  border-radius: radius(lg);
-  // Panels draw their own plates — the widget container background stays
-  // transparent so the gaps between panels show through.
-  background: linear-gradient(
-    180deg,
-    $widget-dash-panel-top,
-    $widget-dash-panel-bottom
-  );
-  transition:
-    transform 0.55s cubic-bezier(0.6, 0, 0.2, 1),
-    width 0.55s cubic-bezier(0.6, 0, 0.2, 1),
-    opacity 0.4s ease;
+// Full-strength border plus an outer glow — a 1px translucent line reads as
+// nearly invisible on the overlay, and the pit state must be unmissable.
+.plateSafe {
+  border-color: $widget-pit-active;
 }
 
-.left {
-  left: 0;
-  top: ws(40);
-  width: ws(148);
-  height: ws(118);
+.plateWarning {
+  border-color: $widget-pit-entry;
 }
 
-.right {
-  left: ws(372);
-  top: ws(40);
-  width: ws(148);
-  height: ws(118);
-}
-
-.center {
-  left: ws(156);
-  top: ws(14);
-  width: ws(208);
-  height: ws(158);
-  z-index: 2;
-}
-
-.pitMode .center {
-  transform: translateX(ws(156));
-}
-
-.pitMode .left {
-  width: ws(300);
-}
-
-.pitMode .right {
-  transform: translateX(ws(-372));
-  opacity: 0;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .panelBox {
-    transition: none;
-  }
+.plateDanger {
+  border-color: $race-red;
 }

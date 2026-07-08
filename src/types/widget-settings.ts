@@ -267,6 +267,7 @@ export interface WidgetMeta {
   designHeight: number;
   autoHeight?: boolean;
   overflowVisible?: boolean;
+  transparentContainer?: boolean;
   requiredCapabilities?: (keyof CapabilitiesPayload)[];
 }
 

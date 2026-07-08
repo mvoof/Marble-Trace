@@ -234,7 +234,11 @@ export const RpmLightsWidget = observer(() => {
   };
 
   const rpm = carDynamics?.rpm ?? 0;
-  const { shiftRpm, blinkRpm } = computeShiftThresholds(sessionInfo, carStatus);
+  const { shiftRpm, blinkRpm } = computeShiftThresholds(
+    sessionInfo,
+    carStatus,
+    carDynamics?.gear ?? 0
+  );
 
   const isShift = rpm >= shiftRpm;
   const isBlink = rpm >= blinkRpm;

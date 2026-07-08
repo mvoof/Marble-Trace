@@ -19,7 +19,8 @@ export const RpmValue = observer(() => {
     widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
 
   const rpm = Math.round(carDynamics?.rpm ?? 0);
-  const { zone } = computeRpmZoneState(rpm, sessionInfo, carStatus);
+  const gear = carDynamics?.gear ?? 0;
+  const { zone } = computeRpmZoneState(rpm, sessionInfo, carStatus, gear);
   const zoneColor = rpmNumberColor(zone, settings);
   const isBlink = zoneColor !== null && zone === 'blink';
 

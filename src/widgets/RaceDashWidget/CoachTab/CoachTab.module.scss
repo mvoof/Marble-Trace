@@ -1,0 +1,69 @@
+// Fixed-width tab: an active BRAKE/GAS call only recolors and pulses this
+// slot, it never resizes or reflows the rest of the plate.
+// The divider edge uses a fixed token, not var(--widget-border) — the
+// user's border-color setting must restyle only the plate outline.
+.root {
+  align-self: stretch;
+  flex-shrink: 0;
+  width: ws(84);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: sp(xxs);
+  margin-left: sp(lg);
+  border-left: ws(1) solid $widget-border-subtle;
+  border-radius: 0 ws(13) ws(13) 0;
+}
+
+.call {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: $widget-text-secondary;
+}
+
+// The reference speed is the tab's main number — larger than the call word.
+.ref {
+  font-family: $font-mono;
+  font-size: ws(22);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: $widget-text-primary;
+}
+
+.idle .call {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.gasCall {
+  background: rgba($race-green, 0.14);
+  border-left-color: rgba($race-green, 0.5);
+}
+
+.gasCall .call {
+  color: $race-green;
+}
+
+.brakeCall {
+  background: rgba($race-red, 0.16);
+  border-left-color: rgba($race-red, 0.55);
+}
+
+.brakeCall .call {
+  animation: callPulse 0.5s steps(2, start) infinite;
+}
+
+@keyframes callPulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brakeCall .call {
+    animation: none;
+  }
+}

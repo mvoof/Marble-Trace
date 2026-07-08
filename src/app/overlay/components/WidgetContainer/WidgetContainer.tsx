@@ -76,10 +76,14 @@ export const WidgetContainer = observer(
     const designHeight = widget?.designHeight ?? height;
     const autoHeight = widget?.autoHeight ?? false;
     const overflowVisible = widget?.overflowVisible ?? false;
+    const transparentContainer = widget?.transparentContainer ?? false;
 
     const widgetScale = width / designWidth;
 
-    const background = shouldHide ? 'transparent' : backgroundColor;
+    const background =
+      shouldHide || transparentContainer ? 'transparent' : backgroundColor;
+    const containerBorderColor =
+      shouldHide || transparentContainer ? 'transparent' : borderColor;
 
     const handleDragMouseDown = useCallback(
       (e: React.MouseEvent) => {
@@ -212,7 +216,9 @@ export const WidgetContainer = observer(
         ?.showSteering === true;
     const borderRadius = showSteering
       ? `calc(12px * var(--wfs, 1)) 9999px 9999px calc(12px * var(--wfs, 1))`
-      : undefined;
+      : widgetId === 'race-dash'
+        ? `calc(52px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(52px * var(--wfs, 1))`
+        : undefined;
 
     return (
       <div
@@ -238,10 +244,12 @@ export const WidgetContainer = observer(
                 {
                   ...(autoHeight ? { height: 'auto' } : undefined),
                   background,
-                  borderColor: shouldHide ? 'transparent' : borderColor,
+                  borderColor: containerBorderColor,
+                  borderWidth: transparentContainer ? 0 : undefined,
                   borderRadius,
                   ['--wfs']: widgetScale,
                   ['--widget-bg']: backgroundColor,
+                  ['--widget-border']: borderColor,
                 } as React.CSSProperties
               }
             >
