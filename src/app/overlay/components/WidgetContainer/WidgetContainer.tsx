@@ -177,32 +177,22 @@ export const WidgetContainer = observer(
             newX = Math.round(startX + startW - newW);
           }
 
-          if (direction.includes('s')) {
-            newH = Math.max(minH, Math.round(startH + dy));
-          }
-
-          if (direction.includes('n')) {
-            newH = Math.max(minH, Math.round(startH - dy));
-            newY = Math.round(startY + startH - newH);
-          }
-
           if (widget?.lockAspectRatio) {
-            const aspectRatio = designWidth / designHeight;
-            const changesWidth =
-              direction.includes('e') || direction.includes('w');
+            // Only e/w handles are offered for these widgets (see
+            // resizeDirections below) — height always tracks width so a
+            // circular badge sized off the height never distorts.
+            newH = Math.max(
+              minH,
+              Math.round(newW * (designHeight / designWidth))
+            );
+          } else {
+            if (direction.includes('s')) {
+              newH = Math.max(minH, Math.round(startH + dy));
+            }
 
-            if (changesWidth) {
-              newH = Math.max(minH, Math.round(newW / aspectRatio));
-
-              if (direction.includes('n')) {
-                newY = Math.round(startY + startH - newH);
-              }
-            } else {
-              newW = Math.max(minW, Math.round(newH * aspectRatio));
-
-              if (direction.includes('w')) {
-                newX = Math.round(startX + startW - newW);
-              }
+            if (direction.includes('n')) {
+              newH = Math.max(minH, Math.round(startH - dy));
+              newY = Math.round(startY + startH - newH);
             }
           }
 
@@ -233,9 +223,10 @@ export const WidgetContainer = observer(
       ]
     );
 
-    const resizeDirections: ResizeDirection[] = autoHeight
-      ? ['e', 'w']
-      : ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
+    const resizeDirections: ResizeDirection[] =
+      autoHeight || widget?.lockAspectRatio
+        ? ['e', 'w']
+        : ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
 
     const borderRadius = widgetFrameBorderRadius(
       widgetId,
