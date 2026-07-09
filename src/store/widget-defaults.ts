@@ -970,6 +970,11 @@ const WIDGETS: WidgetConfig[] = [
     // The pit banner hangs over the plate's top edge like in the prototype —
     // the container must not clip it.
     overflowVisible: true,
+    // The ring badge's diameter is tied to the widget's height (RING_SIZE ==
+    // designHeight) — resizing width alone without height in lockstep makes
+    // the ring's ws() size diverge from the actual box height, breaking both
+    // the ring and the plate's circular left cap.
+    lockAspectRatio: true,
     userSettings: {
       enabled: false,
       x: 400,

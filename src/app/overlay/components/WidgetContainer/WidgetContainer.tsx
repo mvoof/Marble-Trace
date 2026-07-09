@@ -186,6 +186,26 @@ export const WidgetContainer = observer(
             newY = Math.round(startY + startH - newH);
           }
 
+          if (widget?.lockAspectRatio) {
+            const aspectRatio = designWidth / designHeight;
+            const changesWidth =
+              direction.includes('e') || direction.includes('w');
+
+            if (changesWidth) {
+              newH = Math.max(minH, Math.round(newW / aspectRatio));
+
+              if (direction.includes('n')) {
+                newY = Math.round(startY + startH - newH);
+              }
+            } else {
+              newW = Math.max(minW, Math.round(newH * aspectRatio));
+
+              if (direction.includes('w')) {
+                newX = Math.round(startX + startW - newW);
+              }
+            }
+          }
+
           widgetSettings.updateSize(widgetId, newW, newH);
 
           if (newX !== startX || newY !== startY) {
@@ -203,7 +223,14 @@ export const WidgetContainer = observer(
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       },
-      [dragMode, widgetSettings, widgetId, designWidth, designHeight]
+      [
+        dragMode,
+        widgetSettings,
+        widgetId,
+        designWidth,
+        designHeight,
+        widget?.lockAspectRatio,
+      ]
     );
 
     const resizeDirections: ResizeDirection[] = autoHeight

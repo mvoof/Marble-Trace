@@ -268,6 +268,9 @@ export interface WidgetMeta {
   autoHeight?: boolean;
   overflowVisible?: boolean;
   transparentContainer?: boolean;
+  /** Resize handles keep designWidth:designHeight ratio locked (e.g. a widget
+   * with a circular badge sized off the height). */
+  lockAspectRatio?: boolean;
   requiredCapabilities?: (keyof CapabilitiesPayload)[];
 }
 
