@@ -10,6 +10,12 @@ interface WidgetDecoratorOptions {
   borderRadius?: string | number;
   overflow?: string;
   /**
+   * Frame border override. transparentContainer widgets render border-free in
+   * the real overlay (WidgetContainer zeroes the border), so their stories
+   * pass 'none' to keep the inner content at the exact design size.
+   */
+  border?: string;
+  /**
    * Value for --widget-bg, independent of the wrapper's own `background`.
    * Needed for transparentContainer widgets (e.g. RaceDash), which paint
    * their own plate from --widget-bg while the decorator wrapper itself
@@ -34,6 +40,7 @@ export const widgetDecorator = (
     minWidth,
     borderRadius = WIDGET_BORDER_RADIUS,
     overflow = 'hidden',
+    border = WIDGET_BORDER,
     widgetBg = background,
   } = options;
 
@@ -45,7 +52,7 @@ export const widgetDecorator = (
           height,
           background,
           borderRadius,
-          border: WIDGET_BORDER,
+          border,
           overflow,
           display,
           minWidth,

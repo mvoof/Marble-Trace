@@ -11,7 +11,8 @@
 // Internal hairlines use a fixed token, not var(--widget-border) — the
 // user's border-color setting must restyle only the plate outline.
 .divider {
-  width: ws(1);
+  width: 1px;
+  flex-shrink: 0;
   align-self: center;
   height: ws(56);
   background: $widget-border-subtle;

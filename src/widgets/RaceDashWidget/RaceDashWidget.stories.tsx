@@ -41,6 +41,7 @@ const meta: Meta<StoryArgs> = {
       widgetBg: 'rgba(21, 22, 26, 0.8)',
       borderRadius: '52px 14px 14px 52px',
       overflow: 'visible',
+      border: 'none',
     },
     seed: (store, args) => {
       store.drivingCoachWidget.displayedAdvisory = args.advisory;
