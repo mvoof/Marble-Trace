@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import type { RpmLightsWidgetSettings } from '@/types/widget-settings';
 import { computeShiftThresholds } from '@utils/widget/shift-thresholds';
-import { getShiftZoneColor } from '@utils/widget/speed-utils';
+import { rpmZoneColorByPct } from '@utils/widget/rpm-zone';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import { usePitState } from '@widgets/SpeedWidget/hooks/usePitState';
 import type { PitState } from '@widgets/SpeedWidget/hooks/usePitState';
@@ -269,7 +269,7 @@ export const RpmLightsWidget = observer(() => {
           ? colors.limit
           : isShift
             ? colors.shift
-            : getShiftZoneColor((index + 1) / LED_COUNT, colors);
+            : rpmZoneColorByPct((index + 1) / LED_COUNT, colors);
 
         return (
           <div

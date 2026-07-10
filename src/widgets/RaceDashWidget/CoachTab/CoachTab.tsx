@@ -25,7 +25,6 @@ export const CoachTab = observer(() => {
 
   const referenceSpeedMps = coach.referenceSpeedMps;
   const hasReference = referenceSpeedMps !== null;
-  const showReference = settings.showReferenceSpeed && hasReference;
 
   const advisory = coach.displayedAdvisory;
   const accentColor =
@@ -59,7 +58,7 @@ export const CoachTab = observer(() => {
       </span>
 
       <span className={styles.ref}>
-        {showReference
+        {hasReference
           ? formatSpeed(referenceSpeedMps ?? 0, units.unitSystem)
           : '—'}
       </span>

@@ -1,11 +1,9 @@
 import type { CarStatusFrame, SessionSnapshot } from '@/types/bindings';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import { computeShiftThresholds } from '@utils/widget/shift-thresholds';
+import { rpmSubZoneForPct } from '@utils/widget/rpm-zone';
 
 export type RpmZone = 'low' | 'mid' | 'high' | 'shift' | 'blink';
-
-const HIGH_ZONE_PCT = 0.7;
-const MID_ZONE_PCT = 0.35;
 
 /** Below this |delta| (km/h or mph) the player is treated as on-pace with the reference. */
 export const COACH_DELTA_DEADZONE = 1;
@@ -37,15 +35,12 @@ export const computeRpmZoneState = (
     return { pct, zone: 'shift' };
   }
 
-  if (pct >= HIGH_ZONE_PCT) {
-    return { pct, zone: 'high' };
-  }
+  // Same scale as RpmLightsWidget (fraction of blinkRpm, not redline) so the
+  // low/mid/high bands line up with that widget's zone coloring.
+  const zonePct = Math.min(Math.max(rpm / (blinkRpm || 1), 0), 1);
+  const subZone = rpmSubZoneForPct(zonePct);
 
-  if (pct >= MID_ZONE_PCT) {
-    return { pct, zone: 'mid' };
-  }
-
-  return { pct, zone: 'low' };
+  return { pct, zone: subZone === 'limit' ? 'high' : subZone };
 };
 
 /** Color of the dotted RPM fill inside the center panel. */
@@ -62,6 +57,10 @@ export const rpmFillColor = (
   }
 
   if (zone === 'high') {
+    return settings.rpmColorHigh;
+  }
+
+  if (zone === 'mid') {
     return settings.rpmColorMid;
   }
 
@@ -89,7 +88,7 @@ export const rpmNumberColor = (
   }
 
   if (zone === 'high') {
-    return settings.rpmColorMid;
+    return settings.rpmColorHigh;
   }
 
   return null;

@@ -1,10 +1,15 @@
+import { useEffect, useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { runInAction } from 'mobx';
 
 import type { DrivingAdvisory } from '@store/widgets/driving-coach-utils';
 import type { ReferenceLapData } from '@/types/bindings';
+import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import { PIT_LIMITER_BIT } from '@widgets/SpeedWidget/hooks/usePitState';
+import { useStore } from '@store/root-store-context';
 import { RaceDashWidget } from './RaceDashWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
+import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
 
 interface StoryArgs {
   advisory: DrivingAdvisory;
@@ -111,6 +116,72 @@ const meta: Meta<StoryArgs> = {
 
 export default meta;
 type Story = StoryObj<StoryArgs>;
+
+const RPM_SWEEP_LOW = 1500;
+const RPM_SWEEP_MS = 3000;
+
+// Sweeps RPM from idle to redline on a loop so the ring's zone coloring,
+// shift/blink thresholds, and rim-glow alert can be previewed without a live
+// game connection.
+const RpmSweepPreview = ({ showRpmFill }: { showRpmFill: boolean }) => {
+  const store = useStore();
+
+  useLayoutEffect(() => {
+    runInAction(() => {
+      store.sim.isConnected = true;
+      seedFromSnapshot(store);
+      store.widgetSettings.updateUserSettings('race-dash', {
+        ...store.widgetSettings.getSettings<RaceDashWidgetSettings>(
+          'race-dash'
+        ),
+        showRpmFill,
+      });
+    });
+  }, [store, showRpmFill]);
+
+  useEffect(() => {
+    let animationFrame = 0;
+    const startTime = performance.now();
+
+    const tick = (now: number) => {
+      const elapsedMs = (now - startTime) % RPM_SWEEP_MS;
+      const sweepPct = elapsedMs / RPM_SWEEP_MS;
+      const redLine = store.session.sessionInfo?.driverCarRedLine ?? 9500;
+      const rpm = RPM_SWEEP_LOW + sweepPct * (redLine - RPM_SWEEP_LOW);
+
+      runInAction(() => {
+        const carDynamics = store.player.carDynamics;
+
+        if (carDynamics) {
+          store.player.updateCarDynamics({
+            ...carDynamics,
+            rpm,
+            gear: 4,
+            speed: 60,
+          });
+        }
+      });
+
+      animationFrame = requestAnimationFrame(tick);
+    };
+
+    animationFrame = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(animationFrame);
+    };
+  }, [store]);
+
+  return <RaceDashWidget />;
+};
+
+export const RpmSweepAnimation: Story = {
+  render: () => <RpmSweepPreview showRpmFill />,
+};
+
+export const RpmSweepAnimationHiddenRing: Story = {
+  render: () => <RpmSweepPreview showRpmFill={false} />,
+};
 
 export const OnPace: Story = {};
 

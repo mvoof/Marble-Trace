@@ -21,14 +21,3 @@ export const parsePitSpeedLimitMs = (
 
   return unit === 'mph' ? value * MPH_TO_MS : value * KPH_TO_MS;
 };
-
-export const getShiftZoneColor = (
-  pct: number,
-  colors: { low: string; mid: string; high: string; limit: string }
-): string => {
-  if (pct >= 1) return colors.limit;
-  if (pct >= 0.7) return colors.high;
-  if (pct >= 0.35) return colors.mid;
-
-  return colors.low;
-};

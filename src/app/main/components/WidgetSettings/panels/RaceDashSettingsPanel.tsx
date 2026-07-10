@@ -102,13 +102,25 @@ export const RaceDashSettingsPanel = observer(() => {
             />
           </SettingRow>
         </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title="RPM Fill"
+            desc="Show the colored RPM arc around the ring. When off, the rim glows near shift instead."
+          >
+            <Switch
+              checked={settings.showRpmFill}
+              onChange={(value) => update({ showRpmFill: value })}
+            />
+          </SettingRow>
+        </div>
       </Card>
 
       <Card title="Driving Coach">
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="Reference Speed"
-            desc="Show your best lap's speed at this point on track."
+            title="Coach Section"
+            desc="Show the brake/gas call and best-lap reference speed."
           >
             <Switch
               checked={settings.showReferenceSpeed}

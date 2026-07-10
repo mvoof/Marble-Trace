@@ -41,6 +41,8 @@ export interface RaceDashWidgetSettings {
   showReferenceSpeed: boolean;
   /** Tint the gear digit and RPM number with the zone color at high revs. */
   colorizeByRpmZone: boolean;
+  /** Show the colored RPM fill arc around the ring. When off, the rim glows instead. */
+  showRpmFill: boolean;
 }
 
 export type SteeringCenterDisplay =

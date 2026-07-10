@@ -1000,6 +1000,7 @@ const WIDGETS: WidgetConfig[] = [
       gasColor: '#10b981',
       showReferenceSpeed: true,
       colorizeByRpmZone: true,
+      showRpmFill: true,
     },
   },
 ];
