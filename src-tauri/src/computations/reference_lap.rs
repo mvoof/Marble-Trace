@@ -29,6 +29,11 @@ pub struct ReferenceLapProcessor {
     /// between ticks (e.g. high speed relative to bucket resolution) so they
     /// don't fall back to a default zero-speed sample.
     last_bucket: Option<usize>,
+    /// Set when `lap_dist_pct` was invalid/missing mid-lap (e.g. a pit
+    /// teleport) — the resulting position discontinuity can look like a
+    /// finish-line crossing even though no real lap was driven, so the
+    /// working buffer must not be committed as a new best.
+    lap_invalidated: bool,
     /// Set by the delete_reference_lap command; consumed on the next tick so
     /// the in-memory best does not block re-recording after the stored
     /// reference file was deleted.
@@ -52,6 +57,7 @@ impl ReferenceLapProcessor {
     fn reset_for_new_lap(&mut self) {
         self.working = vec![ReferenceLapSample::default(); REFERENCE_LAP_BUCKET_COUNT];
         self.last_bucket = None;
+        self.lap_invalidated = false;
     }
 
     fn reset_for_new_identity(&mut self) {
@@ -101,7 +107,10 @@ impl Processor for ReferenceLapProcessor {
 
         let lap_dist_pct = match ctx.lap_timing.lap_dist_pct {
             Some(pct) if pct >= 0.0 => pct,
-            _ => return None,
+            _ => {
+                self.lap_invalidated = true;
+                return None;
+            }
         };
 
         let bucket = ((lap_dist_pct * REFERENCE_LAP_BUCKET_COUNT as f32) as usize)
@@ -133,7 +142,8 @@ impl Processor for ReferenceLapProcessor {
         }
 
         let best_lap_time = ctx.lap_timing.lap_best_lap_time.unwrap_or(0.0);
-        let is_new_best = best_lap_time > 0.0
+        let is_new_best = !self.lap_invalidated
+            && best_lap_time > 0.0
             && (self.prev_best_lap_time <= 0.0
                 || best_lap_time < self.prev_best_lap_time - BEST_TIME_EPSILON);
 
