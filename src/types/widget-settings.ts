@@ -25,6 +25,8 @@ export interface RpmLightsWidgetSettings {
   ledShape: LedShape;
 }
 
+export type RpmIndicatorMode = 'fill' | 'glow' | 'off';
+
 export interface RaceDashWidgetSettings {
   pitSpeedLimitOverride: number | null;
   showPitAssist: boolean;
@@ -41,8 +43,8 @@ export interface RaceDashWidgetSettings {
   showReferenceSpeed: boolean;
   /** Tint the gear digit and RPM number with the zone color at high revs. */
   colorizeByRpmZone: boolean;
-  /** Show the colored RPM fill arc around the ring. When off, the rim glows instead. */
-  showRpmFill: boolean;
+  /** 'fill' = colored RPM arc around the ring, 'glow' = rim glows near shift, 'off' = no RPM indication. */
+  rpmIndicatorMode: RpmIndicatorMode;
 }
 
 export type SteeringCenterDisplay =

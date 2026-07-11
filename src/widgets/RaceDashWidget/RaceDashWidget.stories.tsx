@@ -4,7 +4,10 @@ import { runInAction } from 'mobx';
 
 import type { DrivingAdvisory } from '@store/widgets/driving-coach-utils';
 import type { ReferenceLapData } from '@/types/bindings';
-import type { RaceDashWidgetSettings } from '@/types/widget-settings';
+import type {
+  RaceDashWidgetSettings,
+  RpmIndicatorMode,
+} from '@/types/widget-settings';
 import { PIT_LIMITER_BIT } from '@widgets/SpeedWidget/hooks/usePitState';
 import { useStore } from '@store/root-store-context';
 import { RaceDashWidget } from './RaceDashWidget';
@@ -123,7 +126,11 @@ const RPM_SWEEP_MS = 3000;
 // Sweeps RPM from idle to redline on a loop so the ring's zone coloring,
 // shift/blink thresholds, and rim-glow alert can be previewed without a live
 // game connection.
-const RpmSweepPreview = ({ showRpmFill }: { showRpmFill: boolean }) => {
+const RpmSweepPreview = ({
+  rpmIndicatorMode,
+}: {
+  rpmIndicatorMode: RpmIndicatorMode;
+}) => {
   const store = useStore();
 
   useLayoutEffect(() => {
@@ -134,10 +141,10 @@ const RpmSweepPreview = ({ showRpmFill }: { showRpmFill: boolean }) => {
         ...store.widgetSettings.getSettings<RaceDashWidgetSettings>(
           'race-dash'
         ),
-        showRpmFill,
+        rpmIndicatorMode,
       });
     });
-  }, [store, showRpmFill]);
+  }, [store, rpmIndicatorMode]);
 
   useEffect(() => {
     let animationFrame = 0;
@@ -176,11 +183,15 @@ const RpmSweepPreview = ({ showRpmFill }: { showRpmFill: boolean }) => {
 };
 
 export const RpmSweepAnimation: Story = {
-  render: () => <RpmSweepPreview showRpmFill />,
+  render: () => <RpmSweepPreview rpmIndicatorMode="fill" />,
 };
 
 export const RpmSweepAnimationHiddenRing: Story = {
-  render: () => <RpmSweepPreview showRpmFill={false} />,
+  render: () => <RpmSweepPreview rpmIndicatorMode="glow" />,
+};
+
+export const RpmSweepAnimationOff: Story = {
+  render: () => <RpmSweepPreview rpmIndicatorMode="off" />,
 };
 
 export const OnPace: Story = {};

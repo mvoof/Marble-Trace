@@ -49,13 +49,13 @@ export const RingBadge = observer(() => {
 
   const fillColor = rpmFillColor(zone, settings);
   const isBlink = zone === 'blink';
+  const showFill = settings.rpmIndicatorMode === 'fill';
+  const showGlow = settings.rpmIndicatorMode === 'glow';
 
   // When the fill arc is hidden, the gear digit stays white — the core
   // glow already carries the zone color, so tinting the digit too would
   // wash the two together.
-  const gearColor = settings.showRpmFill
-    ? rpmNumberColor(zone, settings)
-    : null;
+  const gearColor = showFill ? rpmNumberColor(zone, settings) : null;
 
   // Grows from a small dot at the center out to the full circle by the time
   // rpm hits the shift point — same zone colors as the fill arc, just as a
@@ -75,7 +75,7 @@ export const RingBadge = observer(() => {
 
   useEffect(() => {
     if (
-      !settings.showRpmFill &&
+      showGlow &&
       gear > previousGearRef.current &&
       previousGearRef.current > 0
     ) {
@@ -91,11 +91,11 @@ export const RingBadge = observer(() => {
     }
 
     previousGearRef.current = gear;
-  }, [gear, settings.showRpmFill]);
+  }, [gear, showGlow]);
 
   return (
     <div className={styles.root}>
-      {settings.showRpmFill && (
+      {showFill && (
         <svg
           className={styles.arc}
           viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
@@ -124,7 +124,7 @@ export const RingBadge = observer(() => {
       <div className={styles.scrim} />
       <div className={styles.rim} />
 
-      {!settings.showRpmFill && (
+      {showGlow && (
         <div
           className={coreGlowClassName}
           style={

@@ -1,8 +1,11 @@
 import { observer } from 'mobx-react-lite';
-import { ColorPicker, InputNumber, Switch } from 'antd';
+import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
 
 import { speedUnit } from '@utils/formatters/telemetry-format';
-import type { RaceDashWidgetSettings } from '@/types/widget-settings';
+import type {
+  RaceDashWidgetSettings,
+  RpmIndicatorMode,
+} from '@/types/widget-settings';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 
@@ -104,15 +107,19 @@ export const RaceDashSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
-            title="RPM Fill"
-            desc="Show the colored RPM arc around the ring. When off, the rim glows near shift instead."
-          >
-            <Switch
-              checked={settings.showRpmFill}
-              onChange={(value) => update({ showRpmFill: value })}
-            />
-          </SettingRow>
+          <span className={styles.fieldLabel}>RPM Indicator</span>
+          <Segmented
+            block
+            value={settings.rpmIndicatorMode}
+            options={[
+              { label: 'Fill', value: 'fill' },
+              { label: 'Glow', value: 'glow' },
+              { label: 'Off', value: 'off' },
+            ]}
+            onChange={(value) =>
+              update({ rpmIndicatorMode: value as RpmIndicatorMode })
+            }
+          />
         </div>
       </Card>
 
