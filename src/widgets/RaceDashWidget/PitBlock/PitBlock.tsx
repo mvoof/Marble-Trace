@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { usePitState } from '@widgets/SpeedWidget/hooks/usePitState';
-import type { PitState } from '@widgets/SpeedWidget/hooks/usePitState';
+import { usePitState } from '@hooks/usePitState';
+import type { PitState } from '@hooks/usePitState';
 import { usePlayerStore } from '@store/root-store-context';
 
 import styles from './PitBlock.module.scss';
@@ -24,7 +24,7 @@ export const PitBlock = observer(() => {
     distMode,
     distM,
     nearLimitDelta,
-  } = usePitState('race-dash');
+  } = usePitState();
 
   const isSafe = isLimiterSafe(pitState);
   // Speed color tracks the actual overage, not the limiter state — with the

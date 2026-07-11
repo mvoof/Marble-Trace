@@ -2,7 +2,6 @@ import { observer } from 'mobx-react-lite';
 import { InputNumber, Row, Col, ColorPicker } from 'antd';
 import styles from './WidgetSettings.module.scss';
 import { Card } from './panels/Card';
-import { SpeedSettingsPanel } from './panels/SpeedSettingsPanel';
 import { RpmLightsSettingsPanel } from './panels/RpmLightsSettingsPanel';
 import { InputTraceSettingsPanel } from './panels/InputTraceSettingsPanel';
 import { RadarSettingsPanel } from './panels/RadarSettingsPanel';
@@ -20,7 +19,6 @@ import { TimerSettingsPanel } from './panels/TimerSettingsPanel';
 import { FlagDisplaySettingsPanel } from './panels/FlagDisplaySettingsPanel';
 import { GMeterSettingsPanel } from './panels/GMeterSettingsPanel';
 import { EnginePanelSettingsPanel } from './panels/EnginePanelSettingsPanel';
-import { DrivingCoachSettingsPanel } from './panels/DrivingCoachSettingsPanel';
 import { RaceDashSettingsPanel } from './panels/RaceDashSettingsPanel';
 import { useWidgetEditor } from './WidgetEditorContext';
 
@@ -179,7 +177,6 @@ export const WidgetSettings = observer(
           </Card>
         )}
 
-        {widgetId === 'speed' && <SpeedSettingsPanel />}
         {widgetId === 'rpm-lights' && <RpmLightsSettingsPanel />}
         {widgetId === 'input-trace' && <InputTraceSettingsPanel />}
         {(widgetId === 'proximity-radar' || widgetId === 'radar-bar') && (
@@ -200,7 +197,6 @@ export const WidgetSettings = observer(
           <FlagDisplaySettingsPanel widgetId={widgetId} />
         )}
         {widgetId === 'g-meter' && <GMeterSettingsPanel />}
-        {widgetId === 'driving-coach' && <DrivingCoachSettingsPanel />}
         {widgetId === 'race-dash' && <RaceDashSettingsPanel />}
         {widgetId === 'engine-panel' && <EnginePanelSettingsPanel />}
       </div>

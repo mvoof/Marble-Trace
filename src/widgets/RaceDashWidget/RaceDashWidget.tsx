@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
-import { usePitState } from '@widgets/SpeedWidget/hooks/usePitState';
+import { usePitState } from '@hooks/usePitState';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 
@@ -21,7 +21,7 @@ const PLATE_STATE_CLASS: Record<string, string> = {
 };
 
 export const RaceDashWidget = observer(() => {
-  const { pitState, showPitAssist } = usePitState('race-dash');
+  const { pitState, showPitAssist } = usePitState();
   const widgetSettings = useWidgetSettingsStore();
 
   const settings =

@@ -5,7 +5,10 @@ import {
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import type { PitBoxSide, SpeedWidgetSettings } from '@/types/widget-settings';
+import type {
+  PitBoxSide,
+  RaceDashWidgetSettings,
+} from '@/types/widget-settings';
 import {
   formatSpeed,
   MPS_TO_KMH,
@@ -55,12 +58,7 @@ export interface PitStateResult {
   brake: number;
 }
 
-/** Widgets whose user settings carry the pit-assist fields read below. */
-export type PitSettingsWidgetId = 'speed' | 'race-dash';
-
-export const usePitState = (
-  settingsWidgetId: PitSettingsWidgetId = 'speed'
-): PitStateResult => {
+export const usePitState = (): PitStateResult => {
   const player = usePlayerStore();
   const { sessionInfo } = useSessionStore();
   const units = useUnitsStore();
@@ -74,7 +72,7 @@ export const usePitState = (
     pitBoxSide,
     boxCueDistM,
     nearLimitDelta,
-  } = widgetSettings.getSettings<SpeedWidgetSettings>(settingsWidgetId);
+  } = widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
   const system = units.unitSystem;
   const speedFactor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
 

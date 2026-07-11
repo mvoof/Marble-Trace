@@ -5,16 +5,6 @@ type RpmColorTheme = 'custom' | 'gradient' | 'classic';
 export type LedShape = 'square' | 'circle' | 'parallelogram';
 export type PitBoxSide = 'left' | 'right';
 
-export interface SpeedWidgetSettings {
-  pitSpeedLimitOverride: number | null;
-  showPitAssist: boolean;
-  pitBoxSide: PitBoxSide;
-  boxCueDistM: number;
-  nearLimitDelta: number;
-  gearColor: string;
-  gearPanelBg: string;
-}
-
 export interface RpmLightsWidgetSettings {
   rpmColorTheme: RpmColorTheme;
   rpmColorLow: string;
@@ -221,12 +211,6 @@ export interface GMeterWidgetSettings {
   colorMode: GMeterColorMode;
 }
 
-export interface DrivingCoachWidgetSettings {
-  brakeColor: string;
-  gasColor: string;
-  showReferenceSpeed: boolean;
-}
-
 export interface EnginePanelWidgetSettings {
   showOilTemp: boolean;
   showWaterTemp: boolean;
@@ -246,7 +230,6 @@ export type WidgetSpecificSettings =
   | Record<never, never> // id: example widget
   | ChassisWidgetSettings
   | FlagDisplaySettings
-  | SpeedWidgetSettings
   | RpmLightsWidgetSettings
   | InputTraceSettings
   | RadarSettings
@@ -261,7 +244,6 @@ export type WidgetSpecificSettings =
   | TimerWidgetSettings
   | GMeterWidgetSettings
   | EnginePanelWidgetSettings
-  | DrivingCoachWidgetSettings
   | RaceDashWidgetSettings;
 export interface WidgetMeta {
   id: string;

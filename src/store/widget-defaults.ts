@@ -1,5 +1,4 @@
 import { TelemetryDebugWidget } from '@widgets/TelemetryDebugWidget/TelemetryDebugWidget';
-import { SpeedWidget } from '@widgets/SpeedWidget/SpeedWidget';
 import { InputTraceWidget } from '@widgets/InputTraceWidget/InputTraceWidget';
 import { ProximityRadarWidget } from '@widgets/ProximityRadarWidget/ProximityRadarWidget';
 import { RadarBarWidget } from '@widgets/RadarBarWidget/RadarBarWidget';
@@ -18,7 +17,6 @@ import { GMeterWidget } from '@widgets/GMeterWidget/GMeterWidget';
 import { SectorMatrixWidget } from '@widgets/SectorMatrixWidget/SectorMatrixWidget';
 import { LapLogWidget } from '@widgets/LapLogWidget/LapLogWidget';
 import { EnginePanelWidget } from '@widgets/EnginePanelWidget/EnginePanelWidget';
-import { DrivingCoachWidget } from '@widgets/DrivingCoachWidget/DrivingCoachWidget';
 import { RpmLightsWidget } from '@widgets/RpmLightsWidget/RpmLightsWidget';
 import { RaceDashWidget } from '@widgets/RaceDashWidget/RaceDashWidget';
 import type {
@@ -399,32 +397,6 @@ export const LINEAR_MAP_SIZES: Record<
 };
 
 const WIDGETS: WidgetConfig[] = [
-  {
-    id: 'speed',
-    label: 'Speed',
-    description: 'Speedometer with gear digit and pit-lane assist.',
-    component: SpeedWidget,
-    requiredCapabilities: ['playerDynamics'],
-    designWidth: 500,
-    designHeight: 96,
-    userSettings: {
-      enabled: false,
-      x: 400,
-      y: 100,
-      currentWidth: 500,
-      currentHeight: 96,
-      opacity: 1,
-      backgroundColor: 'rgba(21, 22, 26, 0.8)',
-      borderColor: 'rgba(255, 255, 255, 0.1)',
-      pitSpeedLimitOverride: null,
-      showPitAssist: true,
-      pitBoxSide: 'right',
-      boxCueDistM: 50,
-      nearLimitDelta: 5,
-      gearColor: '#eab308',
-      gearPanelBg: 'rgba(255,255,255,0.05)',
-    },
-  },
   {
     id: 'input-trace',
     label: 'Input Trace',
@@ -906,29 +878,6 @@ const WIDGETS: WidgetConfig[] = [
     },
   },
   {
-    id: 'driving-coach',
-    label: 'Driving Coach',
-    description:
-      'Best-lap reference speed with live delta, plus a brake/gas advisory accent comparing you to your best-lap reference. Shows whenever a reference lap is loaded; preview via the "Driving Coach — Brake/Gas" scenarios, or enable drag mode to see its idle placeholder.',
-    component: DrivingCoachWidget,
-    requiredCapabilities: ['playerDynamics', 'inputs'],
-    designWidth: 260,
-    designHeight: 92,
-    userSettings: {
-      enabled: false,
-      x: 700,
-      y: 500,
-      currentWidth: 260,
-      currentHeight: 92,
-      opacity: 1,
-      backgroundColor: 'rgba(21, 22, 26, 0.8)',
-      borderColor: 'rgba(255, 255, 255, 0.1)',
-      brakeColor: 'rgba(239, 68, 68, 0.85)',
-      gasColor: 'rgba(16, 185, 129, 0.85)',
-      showReferenceSpeed: true,
-    },
-  },
-  {
     id: 'rpm-lights',
     label: 'RPM Lights',
     description:
@@ -959,7 +908,7 @@ const WIDGETS: WidgetConfig[] = [
     id: 'race-dash',
     label: 'Race Dash',
     description:
-      'Combined cockpit cluster: a gear ring with an RPM arc and printed shift zone, dominant speed readout with lap/position/RPM, a coach tab with reference speed, plus a pit-lane mode with limiter assist. Successor to the Speed, RPM Lights and Driving Coach widgets.',
+      'Combined cockpit cluster: a gear ring with an RPM arc and printed shift zone, dominant speed readout with lap/position/RPM, a coach tab with reference speed, plus a pit-lane mode with limiter assist. Replaces the former Speed, RPM Lights, and Driving Coach widgets.',
     component: RaceDashWidget,
     requiredCapabilities: ['playerDynamics'],
     // The prototype plate measures 430×104: ring 104 + stats strip

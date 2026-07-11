@@ -119,16 +119,15 @@ export class SimStore {
         widgets.find((w) => w.id === id)?.userSettings.enabled ?? false;
 
       if (
-        isEnabled('speed') ||
         isEnabled('g-meter') ||
         isEnabled('weather') ||
         isEnabled('track-map') ||
-        isEnabled('driving-coach')
+        isEnabled('race-dash')
       ) {
         mask |= EVENT_CAR_DYNAMICS;
       }
 
-      if (isEnabled('input-trace') || isEnabled('driving-coach')) {
+      if (isEnabled('input-trace') || isEnabled('race-dash')) {
         mask |= EVENT_CAR_INPUTS;
       }
 

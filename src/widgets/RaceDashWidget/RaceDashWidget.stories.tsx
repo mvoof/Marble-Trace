@@ -8,7 +8,7 @@ import type {
   RaceDashWidgetSettings,
   RpmIndicatorMode,
 } from '@/types/widget-settings';
-import { PIT_LIMITER_BIT } from '@widgets/SpeedWidget/hooks/usePitState';
+import { PIT_LIMITER_BIT } from '@hooks/usePitState';
 import { useStore } from '@store/root-store-context';
 import { RaceDashWidget } from './RaceDashWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';

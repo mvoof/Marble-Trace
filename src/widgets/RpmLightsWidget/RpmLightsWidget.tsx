@@ -5,8 +5,8 @@ import type { RpmLightsWidgetSettings } from '@/types/widget-settings';
 import { computeShiftThresholds } from '@utils/widget/shift-thresholds';
 import { rpmZoneColorByPct } from '@utils/widget/rpm-zone';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
-import { usePitState } from '@widgets/SpeedWidget/hooks/usePitState';
-import type { PitState } from '@widgets/SpeedWidget/hooks/usePitState';
+import { usePitState } from '@hooks/usePitState';
+import type { PitState } from '@hooks/usePitState';
 
 import styles from './RpmLightsWidget.module.scss';
 import {
