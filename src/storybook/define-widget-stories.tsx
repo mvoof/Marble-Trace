@@ -14,8 +14,11 @@ interface WidgetStorySize {
   height?: number | string;
   minWidth?: number;
   background?: string;
+  widgetBg?: string;
   display?: string;
   borderRadius?: number | string;
+  overflow?: string;
+  border?: string;
 }
 
 interface DefineWidgetStoriesOptions<Args> {
@@ -47,8 +50,8 @@ type WidgetMeta<Args> = Pick<
  *
  * ```ts
  * const meta: Meta<StoryArgs> = {
- *   title: 'Widgets/SpeedWidget',
- *   ...defineWidgetStories<StoryArgs>({ widget: SpeedWidget, size, seed, args }),
+ *   title: 'Widgets/FuelWidget',
+ *   ...defineWidgetStories<StoryArgs>({ widget: FuelWidget, size, seed, args }),
  * };
  * export default meta;
  * ```

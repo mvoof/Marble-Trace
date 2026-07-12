@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import type { SpeedWidgetSettings } from '@/types/widget-settings';
+import type { RpmLightsWidgetSettings } from '@/types/widget-settings';
 import { computeShiftThresholds } from '@utils/widget/shift-thresholds';
-import { getShiftZoneColor } from '@utils/widget/speed-utils';
-import { usePitState } from '../hooks/usePitState';
-import type { PitState } from '../hooks/usePitState';
+import { rpmZoneColorByPct } from '@utils/widget/rpm-zone';
+import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
+import { usePitState } from '@hooks/usePitState';
+import type { PitState } from '@hooks/usePitState';
 
-import styles from './RpmBar.module.scss';
+import styles from './RpmLightsWidget.module.scss';
 import {
   usePlayerStore,
   useSessionStore,
@@ -120,7 +121,7 @@ const getPitLedColor = (
   return LED_OFF;
 };
 
-export const RpmBar = observer(() => {
+export const RpmLightsWidget = observer(() => {
   const { carDynamics, carStatus } = usePlayerStore();
   const { sessionInfo } = useSessionStore();
   const widgetSettings = useWidgetSettingsStore();
@@ -135,8 +136,7 @@ export const RpmBar = observer(() => {
     rpmColorShift,
     rpmColorLimit,
     ledShape,
-    showRpmBar,
-  } = widgetSettings.getSettings<SpeedWidgetSettings>('speed');
+  } = widgetSettings.getSettings<RpmLightsWidgetSettings>('rpm-lights');
 
   const isPitMode = effectivePitState !== 'normal';
 
@@ -181,10 +181,6 @@ export const RpmBar = observer(() => {
     };
   }, [isPitMode, effectivePitState]);
 
-  if (!showRpmBar && !isPitMode) {
-    return null;
-  }
-
   const isCircle = ledShape === 'circle';
   const isParallelogram = ledShape === 'parallelogram';
   const borderRadius = isCircle ? '50%' : isParallelogram ? '0' : '15%';
@@ -194,7 +190,11 @@ export const RpmBar = observer(() => {
 
   if (isPitMode) {
     return (
-      <div className={styles.rpmBar}>
+      <WidgetPanel
+        direction="row"
+        style={{ gap: undefined }}
+        className={styles.bar}
+      >
         {Array.from({ length: LED_COUNT }, (_, index) => {
           const color = getPitLedColor(
             index,
@@ -206,23 +206,22 @@ export const RpmBar = observer(() => {
             color === PIT_RED_DIM ||
             color === LED_OFF ||
             color === 'transparent';
-          const clipPath = clipPathLeft;
 
           return (
             <div
               key={`led-${index}`}
-              className={`${styles.rpmSeg} ${!isDim ? styles.rpmSegLit : ''}`}
+              className={`${styles.seg} ${!isDim ? styles.segLit : ''}`}
               style={
                 {
                   '--rpm-seg-color': color,
                   borderRadius,
-                  clipPath,
+                  clipPath: clipPathLeft,
                 } as React.CSSProperties
               }
             />
           );
         })}
-      </div>
+      </WidgetPanel>
     );
   }
 
@@ -235,7 +234,11 @@ export const RpmBar = observer(() => {
   };
 
   const rpm = carDynamics?.rpm ?? 0;
-  const { shiftRpm, blinkRpm } = computeShiftThresholds(sessionInfo, carStatus);
+  const { shiftRpm, blinkRpm } = computeShiftThresholds(
+    sessionInfo,
+    carStatus,
+    carDynamics?.gear ?? 0
+  );
 
   const isShift = rpm >= shiftRpm;
   const isBlink = rpm >= blinkRpm;
@@ -244,18 +247,20 @@ export const RpmBar = observer(() => {
   const litCount = Math.floor(displayPct * LED_COUNT);
 
   return (
-    <div className={`${styles.rpmBar} ${isBlink ? styles.rpmBarBlink : ''}`}>
+    <WidgetPanel
+      direction="row"
+      style={{ gap: undefined }}
+      className={`${styles.bar} ${isBlink ? styles.barBlink : ''}`}
+    >
       {Array.from({ length: LED_COUNT }, (_, index) => {
         const isLit = index < litCount;
-
-        const clipPath = clipPathLeft;
 
         if (!isLit) {
           return (
             <div
               key={`led-${index}`}
-              className={styles.rpmSeg}
-              style={{ borderRadius, clipPath }}
+              className={styles.seg}
+              style={{ borderRadius, clipPath: clipPathLeft }}
             />
           );
         }
@@ -264,12 +269,12 @@ export const RpmBar = observer(() => {
           ? colors.limit
           : isShift
             ? colors.shift
-            : getShiftZoneColor((index + 1) / LED_COUNT, colors);
+            : rpmZoneColorByPct((index + 1) / LED_COUNT, colors);
 
         return (
           <div
             key={`led-${index}`}
-            className={`${styles.rpmSeg} ${styles.rpmSegLit}`}
+            className={`${styles.seg} ${styles.segLit}`}
             style={
               {
                 '--rpm-seg-color': color,
@@ -280,6 +285,6 @@ export const RpmBar = observer(() => {
           />
         );
       })}
-    </div>
+    </WidgetPanel>
   );
 });

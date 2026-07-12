@@ -55,6 +55,11 @@ export const SettingsPage = observer(() => {
       ? session.sessionInfo.trackId
       : null;
 
+  const playerCar = session.sessionInfo?.cars.find(
+    (car) => car.carIdx === session.sessionInfo?.playerCarIdx
+  );
+  const canDeleteReferenceLap = sessionTrackId !== null && playerCar != null;
+
   const handleResetPitLane = async () => {
     if (trackId === null) return;
     setResettingPitLane(true);
@@ -66,6 +71,19 @@ export const SettingsPage = observer(() => {
     } finally {
       setResettingPitLane(false);
     }
+  };
+
+  const handleDeleteReferenceLap = async () => {
+    if (sessionTrackId === null || !playerCar) return;
+
+    await invoke('delete_reference_lap', {
+      trackId: sessionTrackId,
+      carScreenName: playerCar.carScreenName,
+    });
+    store.referenceLap.reset();
+    message.success(
+      'Reference lap deleted. Recording restarts on the next completed lap.'
+    );
   };
 
   const handleCaptureSnapshot = () => {
@@ -390,6 +408,34 @@ export const SettingsPage = observer(() => {
                 ? `Reset Pit Lane Data for ${trackDisplayName}`
                 : 'Reset Pit Lane Data'}
             </Button>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldTitle}>Reference Lap</div>
+
+            <div
+              className={`${styles.fieldDesc} ${styles.fieldDescBeforeAction}`}
+            >
+              {canDeleteReferenceLap
+                ? `Deletes the stored best lap for "${playerCar?.carScreenName}" on the current track. Recording restarts on the next completed lap.`
+                : 'No session loaded. Load a session to delete the reference lap for the active track and car.'}
+            </div>
+
+            <Popconfirm
+              title="Delete the stored reference lap?"
+              okText="Delete"
+              okButtonProps={{ danger: true }}
+              onConfirm={() => void handleDeleteReferenceLap()}
+            >
+              <Button
+                block
+                size="small"
+                danger
+                disabled={!canDeleteReferenceLap}
+              >
+                Delete Reference Lap
+              </Button>
+            </Popconfirm>
           </div>
         </Card>
 

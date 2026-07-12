@@ -5,7 +5,10 @@ import {
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import type { PitBoxSide, SpeedWidgetSettings } from '@/types/widget-settings';
+import type {
+  PitBoxSide,
+  RaceDashWidgetSettings,
+} from '@/types/widget-settings';
 import {
   formatSpeed,
   MPS_TO_KMH,
@@ -22,7 +25,7 @@ export type PitState =
   | 'limiter-exit'
   | 'over-limit';
 
-const PIT_LIMITER_BIT = 0x10;
+export const PIT_LIMITER_BIT = 0x10;
 
 export interface PitStateResult {
   pitState: PitState;
@@ -69,7 +72,7 @@ export const usePitState = (): PitStateResult => {
     pitBoxSide,
     boxCueDistM,
     nearLimitDelta,
-  } = widgetSettings.getSettings<SpeedWidgetSettings>('speed');
+  } = widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
   const system = units.unitSystem;
   const speedFactor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
 

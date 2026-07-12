@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::model::enums::Skies;
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct EnvironmentFrame {
     /// Ambient air temperature in °C
     /// @see https://sajax.github.io/irsdkdocs/telemetry/airtemp/

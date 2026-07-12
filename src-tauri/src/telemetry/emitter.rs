@@ -25,6 +25,7 @@ use crate::model::lap_log::LapLogFrame;
 use crate::model::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
 };
+use crate::model::reference_lap::ReferenceLapData;
 use crate::model::relative::RelativeFrame;
 use crate::model::session::SessionFrame;
 use crate::model::track_shape::{TrackRecordingFrame, TrackShapePayload};
@@ -38,6 +39,7 @@ pub const EVENT_SESSION_INFO: &str = "sim://session";
 pub const EVENT_WEATHER_FORECAST: &str = "sim://weather";
 pub const EVENT_STATUS: &str = "sim://status";
 pub const EVENT_DISCONNECTED: &str = "sim://disconnected";
+pub const EVENT_REFERENCE_LAP_UPDATED: &str = "sim://reference-lap/updated";
 
 pub struct EmitContext<'a> {
     pub app: &'a AppHandle,
@@ -149,9 +151,12 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
 
         let compute_ctx = ComputeContext {
             car_dynamics: &frame.car_dynamics,
+            car_inputs: &frame.car_inputs,
             car_idx: &frame.car_idx,
             lap_timing: &frame.lap_timing,
             car_status: &frame.car_status,
+            chassis: &frame.chassis,
+            environment: &frame.environment,
             session,
             track_length_m: track_length,
             car_length_m: car_length,
@@ -173,6 +178,13 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
                     }
 
                     save_track_shape(app, payload);
+                }
+                ComputedOutput::ReferenceLap(ref data) => {
+                    if let Err(e) = app.emit(EVENT_REFERENCE_LAP_UPDATED, data) {
+                        warn!("Failed to emit reference lap update: {}", e);
+                    }
+
+                    save_reference_lap(app, data);
                 }
                 ComputedOutput::PitLanePct {
                     track_id,
@@ -297,6 +309,7 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
         ComputedOutput::Standings(frame) => bundle.standings = Some(frame),
         ComputedOutput::TrackRecording(frame) => bundle.track_recording = Some(frame),
         ComputedOutput::TrackShape(_) => {} // handled in Hz60 loop directly
+        ComputedOutput::ReferenceLap(_) => {} // handled in Hz60 loop directly
         ComputedOutput::PitLanePct { .. } => {} // handled in Hz60 loop directly
     }
 }
@@ -325,6 +338,49 @@ fn save_track_shape(app: &AppHandle, payload: &TrackShapePayload) {
     let stored = StoredTrack {
         version: 1,
         payload,
+    };
+
+    if let Ok(json) = serde_json::to_string(&stored) {
+        let _ = fs::write(&path, json);
+    }
+}
+
+/// Filesystem-safe key for a track+car reference lap file, shared with the
+/// `get_reference_lap`/`delete_reference_lap` commands.
+pub fn reference_lap_key(track_id: i32, car_screen_name: &str) -> String {
+    let sanitized: String = car_screen_name
+        .chars()
+        .map(|c| if c.is_alphanumeric() { c } else { '_' })
+        .collect();
+
+    format!("{track_id}__{sanitized}")
+}
+
+fn save_reference_lap(app: &AppHandle, data: &ReferenceLapData) {
+    use std::fs;
+
+    #[derive(serde::Serialize)]
+    struct StoredReferenceLap<'a> {
+        version: u32,
+        #[serde(flatten)]
+        payload: &'a ReferenceLapData,
+    }
+
+    let Ok(data_dir) = app.path().app_data_dir() else {
+        return;
+    };
+
+    let dir = data_dir.join("reference_laps");
+
+    if fs::create_dir_all(&dir).is_err() {
+        return;
+    }
+
+    let key = reference_lap_key(data.track_id, &data.car_screen_name);
+    let path = dir.join(format!("{key}.json"));
+    let stored = StoredReferenceLap {
+        version: 1,
+        payload: data,
     };
 
     if let Ok(json) = serde_json::to_string(&stored) {

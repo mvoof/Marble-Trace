@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { widgetFrameBorderRadius } from '@utils/widget/widget-frame';
 import styles from './WidgetContainer.module.scss';
 import { WidgetIdContext } from './WidgetIdContext';
 import { WidgetDragToolbar } from '@app/overlay/components/WidgetDragToolbar/WidgetDragToolbar';
@@ -76,10 +77,14 @@ export const WidgetContainer = observer(
     const designHeight = widget?.designHeight ?? height;
     const autoHeight = widget?.autoHeight ?? false;
     const overflowVisible = widget?.overflowVisible ?? false;
+    const transparentContainer = widget?.transparentContainer ?? false;
 
     const widgetScale = width / designWidth;
 
-    const background = shouldHide ? 'transparent' : backgroundColor;
+    const background =
+      shouldHide || transparentContainer ? 'transparent' : backgroundColor;
+    const containerBorderColor =
+      shouldHide || transparentContainer ? 'transparent' : borderColor;
 
     const handleDragMouseDown = useCallback(
       (e: React.MouseEvent) => {
@@ -172,13 +177,23 @@ export const WidgetContainer = observer(
             newX = Math.round(startX + startW - newW);
           }
 
-          if (direction.includes('s')) {
-            newH = Math.max(minH, Math.round(startH + dy));
-          }
+          if (widget?.lockAspectRatio) {
+            // Only e/w handles are offered for these widgets (see
+            // resizeDirections below) — height always tracks width so a
+            // circular badge sized off the height never distorts.
+            newH = Math.max(
+              minH,
+              Math.round(newW * (designHeight / designWidth))
+            );
+          } else {
+            if (direction.includes('s')) {
+              newH = Math.max(minH, Math.round(startH + dy));
+            }
 
-          if (direction.includes('n')) {
-            newH = Math.max(minH, Math.round(startH - dy));
-            newY = Math.round(startY + startH - newH);
+            if (direction.includes('n')) {
+              newH = Math.max(minH, Math.round(startH - dy));
+              newY = Math.round(startY + startH - newH);
+            }
           }
 
           widgetSettings.updateSize(widgetId, newW, newH);
@@ -198,21 +213,25 @@ export const WidgetContainer = observer(
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       },
-      [dragMode, widgetSettings, widgetId, designWidth, designHeight]
+      [
+        dragMode,
+        widgetSettings,
+        widgetId,
+        designWidth,
+        designHeight,
+        widget?.lockAspectRatio,
+      ]
     );
 
-    const resizeDirections: ResizeDirection[] = autoHeight
-      ? ['e', 'w']
-      : ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
+    const resizeDirections: ResizeDirection[] =
+      autoHeight || widget?.lockAspectRatio
+        ? ['e', 'w']
+        : ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
 
-    const isInputTrace = widgetId === 'input-trace';
-    const showSteering =
-      isInputTrace &&
-      (widget?.userSettings as unknown as Record<string, unknown>)
-        ?.showSteering === true;
-    const borderRadius = showSteering
-      ? `calc(12px * var(--wfs, 1)) 9999px 9999px calc(12px * var(--wfs, 1))`
-      : undefined;
+    const borderRadius = widgetFrameBorderRadius(
+      widgetId,
+      (widget?.userSettings ?? {}) as unknown as Record<string, unknown>
+    );
 
     return (
       <div
@@ -238,10 +257,12 @@ export const WidgetContainer = observer(
                 {
                   ...(autoHeight ? { height: 'auto' } : undefined),
                   background,
-                  borderColor: shouldHide ? 'transparent' : borderColor,
+                  borderColor: containerBorderColor,
+                  borderWidth: transparentContainer ? 0 : undefined,
                   borderRadius,
                   ['--wfs']: widgetScale,
                   ['--widget-bg']: backgroundColor,
+                  ['--widget-border']: borderColor,
                 } as React.CSSProperties
               }
             >

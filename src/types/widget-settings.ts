@@ -5,23 +5,36 @@ type RpmColorTheme = 'custom' | 'gradient' | 'classic';
 export type LedShape = 'square' | 'circle' | 'parallelogram';
 export type PitBoxSide = 'left' | 'right';
 
-export interface SpeedWidgetSettings {
+export interface RpmLightsWidgetSettings {
   rpmColorTheme: RpmColorTheme;
   rpmColorLow: string;
   rpmColorMid: string;
   rpmColorHigh: string;
   rpmColorShift: string;
   rpmColorLimit: string;
-  showRpmBar: boolean;
-  showRpmColor: boolean;
+  ledShape: LedShape;
+}
+
+export type RpmIndicatorMode = 'fill' | 'glow' | 'off';
+
+export interface RaceDashWidgetSettings {
   pitSpeedLimitOverride: number | null;
   showPitAssist: boolean;
   pitBoxSide: PitBoxSide;
   boxCueDistM: number;
   nearLimitDelta: number;
-  gearColor: string;
-  gearPanelBg: string;
-  ledShape: LedShape;
+  rpmColorLow: string;
+  rpmColorMid: string;
+  rpmColorHigh: string;
+  rpmColorShift: string;
+  rpmColorLimit: string;
+  brakeColor: string;
+  gasColor: string;
+  showReferenceSpeed: boolean;
+  /** Tint the gear digit and RPM number with the zone color at high revs. */
+  colorizeByRpmZone: boolean;
+  /** 'fill' = colored RPM arc around the ring, 'glow' = rim glows near shift, 'off' = no RPM indication. */
+  rpmIndicatorMode: RpmIndicatorMode;
 }
 
 export type SteeringCenterDisplay =
@@ -217,7 +230,7 @@ export type WidgetSpecificSettings =
   | Record<never, never> // id: example widget
   | ChassisWidgetSettings
   | FlagDisplaySettings
-  | SpeedWidgetSettings
+  | RpmLightsWidgetSettings
   | InputTraceSettings
   | RadarSettings
   | StandingsWidgetSettings
@@ -230,7 +243,8 @@ export type WidgetSpecificSettings =
   | SectorMatrixWidgetSettings
   | TimerWidgetSettings
   | GMeterWidgetSettings
-  | EnginePanelWidgetSettings;
+  | EnginePanelWidgetSettings
+  | RaceDashWidgetSettings;
 export interface WidgetMeta {
   id: string;
   label: string;
@@ -239,6 +253,10 @@ export interface WidgetMeta {
   designHeight: number;
   autoHeight?: boolean;
   overflowVisible?: boolean;
+  transparentContainer?: boolean;
+  /** Resize handles keep designWidth:designHeight ratio locked (e.g. a widget
+   * with a circular badge sized off the height). */
+  lockAspectRatio?: boolean;
   requiredCapabilities?: (keyof CapabilitiesPayload)[];
 }
 

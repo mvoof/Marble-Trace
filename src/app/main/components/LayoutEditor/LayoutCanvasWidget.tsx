@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
+import { widgetFrameBorderRadius } from '@utils/widget/widget-frame';
 import styles from './LayoutCanvas.module.scss';
 
 type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
@@ -92,6 +93,7 @@ export const LayoutCanvasWidget = observer(
     const designHeight = widget?.designHeight ?? height;
     const autoHeight = widget?.autoHeight ?? false;
     const overflowVisible = widget?.overflowVisible ?? false;
+    const transparentContainer = widget?.transparentContainer ?? false;
 
     const widgetScale = width / designWidth;
 
@@ -99,15 +101,15 @@ export const LayoutCanvasWidget = observer(
       widget?.userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)';
     const borderColor =
       widget?.userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
+    const background = transparentContainer ? 'transparent' : backgroundColor;
+    const containerBorderColor = transparentContainer
+      ? 'transparent'
+      : borderColor;
 
-    // Mirror the overlay's rounded "steering wheel" edge for the input trace.
-    const showSteering =
-      widgetId === 'input-trace' &&
-      (widget?.userSettings as unknown as Record<string, unknown>)
-        ?.showSteering === true;
-    const steeringRadius = showSteering
-      ? `calc(12px * var(--wfs, 1)) 9999px 9999px calc(12px * var(--wfs, 1))`
-      : undefined;
+    const frameBorderRadius = widgetFrameBorderRadius(
+      widgetId,
+      (widget?.userSettings ?? {}) as unknown as Record<string, unknown>
+    );
 
     const handleDragMouseDown = useCallback(
       (event: React.MouseEvent) => {
@@ -352,11 +354,13 @@ export const LayoutCanvasWidget = observer(
             style={
               {
                 ...(autoHeight ? { height: 'auto' } : undefined),
-                background: backgroundColor,
-                borderColor,
-                borderRadius: steeringRadius,
+                background,
+                borderColor: containerBorderColor,
+                borderWidth: transparentContainer ? 0 : undefined,
+                borderRadius: frameBorderRadius,
                 ['--wfs']: widgetScale,
                 ['--widget-bg']: backgroundColor,
+                ['--widget-border']: borderColor,
               } as React.CSSProperties
             }
           >

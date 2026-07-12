@@ -43,7 +43,7 @@ describe('WidgetSettingsStore capabilities gating', () => {
 
     const available = rootStore.widgetSettings.availableWidgetIds;
     expect(available).not.toContain('fuel');
-    expect(available).toContain('speed'); // speed requires playerDynamics, which is true
+    expect(available).toContain('race-dash'); // race-dash requires playerDynamics, which is true
   });
 
   it('hides inputs widget when inputs capability is missing', () => {
@@ -56,7 +56,7 @@ describe('WidgetSettingsStore capabilities gating', () => {
 
     const available = rootStore.widgetSettings.availableWidgetIds;
     expect(available).not.toContain('input-trace');
-    expect(available).toContain('speed');
+    expect(available).toContain('race-dash');
   });
 
   it('filters enabledWidgetIds based on availableWidgetIds', () => {

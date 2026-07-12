@@ -4,6 +4,7 @@ import { FlagsStore } from './widgets/flags.widget';
 import { RadarWidgetStore } from './widgets/radar.widget';
 import { StandingsWidgetStore } from './widgets/standings.widget';
 import { TrackMapWidgetStore } from './widgets/track-map.widget';
+import { DrivingCoachWidgetStore } from './widgets/driving-coach.widget';
 import { WidgetSettingsStore } from './settings/widget-settings.store';
 import { AppSettingsStore } from './settings/app-settings.store';
 import { UnitsStore } from './settings/units.store';
@@ -12,18 +13,21 @@ import { PlayerStore } from './data/player.store';
 import { CarsStore } from './data/cars.store';
 import { SessionStore } from './data/session.store';
 import { EnvironmentStore } from './data/environment.store';
+import { ReferenceLapStore } from './data/reference-lap.store';
 
 export class RootStore {
   player: PlayerStore;
   cars: CarsStore;
   session: SessionStore;
   environment: EnvironmentStore;
+  referenceLap: ReferenceLapStore;
   backendComputed: BackendComputedStore;
   sim: SimStore;
   flags: FlagsStore;
   radar: RadarWidgetStore;
   standingsWidget: StandingsWidgetStore;
   trackMapWidget: TrackMapWidgetStore;
+  drivingCoachWidget: DrivingCoachWidgetStore;
   widgetSettings: WidgetSettingsStore;
   appSettings: AppSettingsStore;
   units: UnitsStore;
@@ -34,6 +38,7 @@ export class RootStore {
     this.cars = new CarsStore();
     this.session = new SessionStore();
     this.environment = new EnvironmentStore();
+    this.referenceLap = new ReferenceLapStore();
     this.backendComputed = new BackendComputedStore();
     this.widgetSettings = new WidgetSettingsStore(this);
     this.appSettings = new AppSettingsStore();
@@ -42,6 +47,7 @@ export class RootStore {
     this.radar = new RadarWidgetStore(this);
     this.standingsWidget = new StandingsWidgetStore(this);
     this.trackMapWidget = new TrackMapWidgetStore();
+    this.drivingCoachWidget = new DrivingCoachWidgetStore(this);
     this.sim = new SimStore(this);
     this.widgetAutoHide = new WidgetAutoHideStore();
 
@@ -50,6 +56,7 @@ export class RootStore {
       this.radar.init();
       this.sim.init();
       this.appSettings.init();
+      this.drivingCoachWidget.init();
     }
   }
 }

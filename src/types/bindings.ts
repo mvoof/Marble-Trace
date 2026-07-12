@@ -692,6 +692,55 @@ export type RadarDistances = {
   rightDist: number | null;
 };
 
+export type ReferenceLapData = {
+  trackId: number;
+  carScreenName: string;
+  /**
+   * Best lap time in seconds this reference telemetry was recorded from.
+   */
+  lapTime: number;
+  /**
+   * Fixed-size, distance-bucketed samples — index `i` covers
+   * `lap_dist_pct` in `[i / REFERENCE_LAP_BUCKET_COUNT, (i+1) / REFERENCE_LAP_BUCKET_COUNT)`.
+   */
+  samples: ReferenceLapSample[];
+  /**
+   * Track wetness (0=dry to 7=flooded) averaged over this lap, when available.
+   */
+  recordedWetness: number | null;
+  /**
+   * Average tire wear (0.0-1.0, 1.0=fresh) across all four tires at the moment this lap was committed.
+   */
+  recordedTireWear: number | null;
+  /**
+   * Fuel level (liters) at the moment this lap was committed.
+   */
+  recordedFuelLevel: number | null;
+};
+
+export type ReferenceLapSample = {
+  /**
+   * Speed in m/s.
+   */
+  speed: number;
+  /**
+   * Throttle input, 0.0-1.0.
+   */
+  throttle: number;
+  /**
+   * Brake input, 0.0-1.0.
+   */
+  brake: number;
+  /**
+   * Lateral acceleration in m/s^2, when the sim provides it.
+   */
+  latAccel: number | null;
+  /**
+   * Steering wheel angle in radians.
+   */
+  steeringWheelAngle: number;
+};
+
 /**
  * Relative frame — emitted at 10 Hz in `TelemetryBundle.relative`.
  *

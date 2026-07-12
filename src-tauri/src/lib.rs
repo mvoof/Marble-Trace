@@ -15,12 +15,14 @@ use computations::{
     standings::{DriverEntriesFrame, DriverEntry},
 };
 #[cfg(feature = "dev")]
+use model::reference_lap::{ReferenceLapData, ReferenceLapSample};
+#[cfg(feature = "dev")]
 use model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
 
 use commands::{
-    delete_track_shape, get_connection_status, get_last_session_info, reset_pit_lane_pct,
-    set_active_events, set_car_length, set_pit_warning_laps, start_telemetry_stream,
-    stop_telemetry_stream,
+    delete_reference_lap, delete_track_shape, get_connection_status, get_last_session_info,
+    get_reference_lap, reset_pit_lane_pct, set_active_events, set_car_length, set_pit_warning_laps,
+    start_telemetry_stream, stop_telemetry_stream,
 };
 use computations::ProcessorRegistry;
 use telemetry::state::TelemetryState;
@@ -92,7 +94,9 @@ pub fn run() {
         types
             .register::<TrackPoint>()
             .register::<TrackShapePayload>()
-            .register::<TrackRecordingFrame>();
+            .register::<TrackRecordingFrame>()
+            .register::<ReferenceLapData>()
+            .register::<ReferenceLapSample>();
 
         Typescript::default()
             .export_to("../src/types/bindings.ts", &types)
@@ -113,6 +117,9 @@ pub fn run() {
     let track_cached_service = std::sync::Arc::clone(&track_cached);
     let reset_track_shape_listener = std::sync::Arc::clone(&reset_track_shape);
     let reset_track_shape_registry = reset_track_shape;
+    let reset_reference_lap = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let reset_reference_lap_registry = std::sync::Arc::clone(&reset_reference_lap);
+    let reset_reference_lap_state = reset_reference_lap;
 
     let builder = Builder::default()
         .plugin(
@@ -172,7 +179,9 @@ pub fn run() {
             set_car_length,
             get_connection_status,
             delete_track_shape,
-            reset_pit_lane_pct
+            reset_pit_lane_pct,
+            get_reference_lap,
+            delete_reference_lap
         ])
         .manage(TelemetryState {
             service: Arc::new(telemetry::state::TelemetryServiceState {
@@ -193,11 +202,13 @@ pub fn run() {
                 reset_pit_pcts_registry,
                 track_cached_registry,
                 reset_track_shape_registry,
+                reset_reference_lap_registry,
             ))),
             pit_warning_laps: Arc::new(AtomicU32::new(
                 crate::computations::fuel::DEFAULT_PIT_WARNING_LAPS.to_bits(),
             )),
             reset_pit_pcts: reset_pit_pcts_state,
+            reset_reference_lap: reset_reference_lap_state,
         })
         .on_window_event(|window, event| {
             if let WindowEvent::Destroyed = event {

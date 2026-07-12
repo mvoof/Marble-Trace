@@ -6,7 +6,9 @@ use tauri::{AppHandle, Emitter, Manager, State};
 use tokio::time::sleep;
 use tracing::{debug, info, warn};
 
+use crate::model::reference_lap::ReferenceLapData;
 use crate::model::session::SessionSnapshot;
+use crate::telemetry::emitter::reference_lap_key;
 use crate::telemetry::runtime::spawn_telemetry_thread;
 use crate::telemetry::state::TelemetryState;
 use crate::utils::lock_or_recover;
@@ -154,6 +156,63 @@ pub async fn reset_pit_lane_pct(
         .store(true, std::sync::atomic::Ordering::Relaxed);
 
     info!("Pit lane pcts successfully reset in memory and scheduled for processor");
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_reference_lap(
+    app: AppHandle,
+    track_id: i32,
+    car_screen_name: String,
+) -> Result<Option<ReferenceLapData>, String> {
+    let Ok(data_dir) = app.path().app_data_dir() else {
+        return Err("Cannot resolve app data dir".to_string());
+    };
+
+    let key = reference_lap_key(track_id, &car_screen_name);
+    let path = data_dir.join("reference_laps").join(format!("{key}.json"));
+
+    let Ok(bytes) = tokio::fs::read(&path).await else {
+        return Ok(None);
+    };
+
+    match serde_json::from_slice::<ReferenceLapData>(&bytes) {
+        Ok(data) => Ok(Some(data)),
+        Err(e) => {
+            warn!("Failed to parse reference lap file at {:?}: {}", path, e);
+            Ok(None)
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn delete_reference_lap(
+    app: AppHandle,
+    state: State<'_, TelemetryState>,
+    track_id: i32,
+    car_screen_name: String,
+) -> Result<(), String> {
+    let Ok(data_dir) = app.path().app_data_dir() else {
+        return Err("Cannot resolve app data dir".to_string());
+    };
+
+    let key = reference_lap_key(track_id, &car_screen_name);
+    let path = data_dir.join("reference_laps").join(format!("{key}.json"));
+
+    match tokio::fs::remove_file(&path).await {
+        Ok(_) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => return Err(e.to_string()),
+    }
+
+    // The processor keeps the session's best time in memory and would refuse
+    // to commit a slower lap as the new reference — reset it so recording
+    // starts fresh from the next completed lap.
+    state
+        .reset_reference_lap
+        .store(true, std::sync::atomic::Ordering::Relaxed);
+
+    info!("Reference lap deleted for track {track_id} / {car_screen_name}");
     Ok(())
 }
 

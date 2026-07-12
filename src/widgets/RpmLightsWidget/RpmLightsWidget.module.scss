@@ -1,0 +1,41 @@
+.bar {
+  align-items: center;
+  justify-content: center;
+  gap: ws(5);
+  padding: ws(5) ws(6);
+}
+
+// Fixed geometry in ws() units — LED size and gap scale together off --wfs
+// (currentWidth / designWidth, same convention every widget in this app
+// follows), so squares and spacing stay proportional on resize. 22 LEDs *
+// ws(11) + 21 gaps * ws(5) + 2 * ws(6) padding = 359, matching designWidth
+// (360) so the bar never overflows. Resizable in all 8 directions like other
+// widgets — the row stays vertically centered (.bar align-items: center) if
+// someone drags the box taller than the LEDs themselves.
+.seg {
+  flex: 0 0 auto;
+  width: ws(11);
+  height: ws(11);
+  border-radius: 15%;
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 0.04s ease;
+}
+
+.segLit {
+  background: var(--rpm-seg-color);
+}
+
+.barBlink .seg {
+  animation: blinkBar 0.12s steps(2, start) infinite;
+}
+
+@keyframes blinkBar {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.1;
+  }
+}

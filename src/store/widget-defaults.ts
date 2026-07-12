@@ -1,5 +1,4 @@
 import { TelemetryDebugWidget } from '@widgets/TelemetryDebugWidget/TelemetryDebugWidget';
-import { SpeedWidget } from '@widgets/SpeedWidget/SpeedWidget';
 import { InputTraceWidget } from '@widgets/InputTraceWidget/InputTraceWidget';
 import { ProximityRadarWidget } from '@widgets/ProximityRadarWidget/ProximityRadarWidget';
 import { RadarBarWidget } from '@widgets/RadarBarWidget/RadarBarWidget';
@@ -18,6 +17,8 @@ import { GMeterWidget } from '@widgets/GMeterWidget/GMeterWidget';
 import { SectorMatrixWidget } from '@widgets/SectorMatrixWidget/SectorMatrixWidget';
 import { LapLogWidget } from '@widgets/LapLogWidget/LapLogWidget';
 import { EnginePanelWidget } from '@widgets/EnginePanelWidget/EnginePanelWidget';
+import { RpmLightsWidget } from '@widgets/RpmLightsWidget/RpmLightsWidget';
+import { RaceDashWidget } from '@widgets/RaceDashWidget/RaceDashWidget';
 import type {
   WidgetConfig,
   WidgetDefaultConfig,
@@ -396,41 +397,6 @@ export const LINEAR_MAP_SIZES: Record<
 };
 
 const WIDGETS: WidgetConfig[] = [
-  {
-    id: 'speed',
-    label: 'Speed',
-    description: 'Speedometer with gear and RPM indicator.',
-    component: SpeedWidget,
-    requiredCapabilities: ['playerDynamics'],
-    designWidth: 500,
-    designHeight: 120,
-    userSettings: {
-      enabled: false,
-      x: 400,
-      y: 100,
-      currentWidth: 500,
-      currentHeight: 120,
-      opacity: 1,
-      backgroundColor: 'rgba(21, 22, 26, 0.8)',
-      borderColor: 'rgba(255, 255, 255, 0.1)',
-      rpmColorTheme: 'custom',
-      rpmColorLow: '#10b981',
-      rpmColorMid: '#eab308',
-      rpmColorHigh: '#ef4444',
-      rpmColorShift: '#a855f7',
-      rpmColorLimit: '#f97316',
-      showRpmBar: true,
-      showRpmColor: true,
-      pitSpeedLimitOverride: null,
-      showPitAssist: true,
-      pitBoxSide: 'right',
-      boxCueDistM: 50,
-      nearLimitDelta: 5,
-      gearColor: '#eab308',
-      gearPanelBg: 'rgba(255,255,255,0.05)',
-      ledShape: 'square',
-    },
-  },
   {
     id: 'input-trace',
     label: 'Input Trace',
@@ -909,6 +875,81 @@ const WIDGETS: WidgetConfig[] = [
       horizontal: true,
       verticalColumns: 2,
       horizontalColumns: 8,
+    },
+  },
+  {
+    id: 'rpm-lights',
+    label: 'RPM Lights',
+    description:
+      'Standalone shift-light LED bar driven by engine RPM, with pit-limiter animations. Split out from the Speed widget so the rev lights never distort the speedometer layout.',
+    component: RpmLightsWidget,
+    requiredCapabilities: ['playerDynamics'],
+    designWidth: 360,
+    designHeight: 36,
+    userSettings: {
+      enabled: false,
+      x: 400,
+      y: 60,
+      currentWidth: 360,
+      currentHeight: 36,
+      opacity: 1,
+      backgroundColor: 'rgba(21, 22, 26, 0.8)',
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      rpmColorTheme: 'custom',
+      rpmColorLow: '#10b981',
+      rpmColorMid: '#eab308',
+      rpmColorHigh: '#ef4444',
+      rpmColorShift: '#a855f7',
+      rpmColorLimit: '#f97316',
+      ledShape: 'square',
+    },
+  },
+  {
+    id: 'race-dash',
+    label: 'Race Dash',
+    description:
+      'Combined cockpit cluster: a gear ring with an RPM arc and printed shift zone, dominant speed readout with lap/position/RPM, a coach tab with reference speed, plus a pit-lane mode with limiter assist. Replaces the former Speed, RPM Lights, and Driving Coach widgets.',
+    component: RaceDashWidget,
+    requiredCapabilities: ['playerDynamics'],
+    // The prototype plate measures 430×104: ring 104 + stats strip
+    // (16 + 96 + 14 + 1 + 14 + 77 + 10) + coach margin 12 + coach 84 + border 2.
+    designWidth: 430,
+    designHeight: 104,
+    transparentContainer: true,
+    // The pit banner hangs over the plate's top edge like in the prototype —
+    // the container must not clip it.
+    overflowVisible: true,
+    // The ring badge's diameter is tied to the widget's height (RING_SIZE ==
+    // designHeight) — resizing width alone without height in lockstep makes
+    // the ring's ws() size diverge from the actual box height, breaking both
+    // the ring and the plate's circular left cap.
+    lockAspectRatio: true,
+    userSettings: {
+      enabled: false,
+      x: 400,
+      y: 100,
+      currentWidth: 430,
+      currentHeight: 104,
+      opacity: 1,
+      // Container stays transparent (transparentContainer); these colors are
+      // applied to the plate itself instead, see RaceDashWidget.module.scss.
+      backgroundColor: 'rgba(21, 22, 26, 0.8)',
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      pitSpeedLimitOverride: null,
+      showPitAssist: true,
+      pitBoxSide: 'right',
+      boxCueDistM: 50,
+      nearLimitDelta: 5,
+      rpmColorLow: '#10b981',
+      rpmColorMid: '#eab308',
+      rpmColorHigh: '#ef4444',
+      rpmColorShift: '#a855f7',
+      rpmColorLimit: '#f97316',
+      brakeColor: '#ef4444',
+      gasColor: '#10b981',
+      showReferenceSpeed: true,
+      colorizeByRpmZone: true,
+      rpmIndicatorMode: 'fill',
     },
   },
 ];

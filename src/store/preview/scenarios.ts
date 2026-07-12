@@ -6,6 +6,8 @@ import type {
   NearbyCar,
   ProximityFrame,
   RaceFlags,
+  ReferenceLapData,
+  ReferenceLapSample,
   RelativeFrame,
 } from '@/types/bindings';
 import { action } from 'mobx';
@@ -110,6 +112,48 @@ const applyDynamics = (
   }
 
   store.player.updateCarDynamics({ ...carDynamics, ...overrides });
+};
+
+const REFERENCE_BUCKET_COUNT = 1000;
+
+// Seeds a flat synthetic reference lap plus the player's position on it so the
+// Driving Coach preview can render its reference speed + delta. `referenceKmh`
+// is the recorded reference speed at the player's spot; `deltaKmh` offsets the
+// player's live speed from it (negative = slower than reference).
+const applyCoachReference = (
+  store: RootStore,
+  referenceKmh: number,
+  deltaKmh: number
+) => {
+  const referenceMps = referenceKmh / 3.6;
+  const sample: ReferenceLapSample = {
+    speed: referenceMps,
+    throttle: 1,
+    brake: 0,
+    latAccel: null,
+    steeringWheelAngle: 0,
+  };
+  const data: ReferenceLapData = {
+    trackId: 0,
+    carScreenName: 'Preview Car',
+    lapTime: 90,
+    samples: Array.from({ length: REFERENCE_BUCKET_COUNT }, () => ({
+      ...sample,
+    })),
+    recordedWetness: null,
+    recordedTireWear: null,
+    recordedFuelLevel: null,
+  };
+
+  store.referenceLap.updateReferenceLap(data);
+
+  const lapTiming = store.player.lapTiming;
+
+  if (lapTiming) {
+    store.player.updateLapTiming({ ...lapTiming, lap_dist_pct: 0.5 });
+  }
+
+  applyDynamics(store, { speed: (referenceKmh + deltaKmh) / 3.6 });
 };
 
 const patchEntries = (
@@ -314,6 +358,29 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     apply: (store) => {
       seedSampleTelemetry(store);
       applyDynamics(store, { lat_accel: 17.6, long_accel: -12.4 });
+    },
+  },
+  {
+    id: 'driving-coach-brake',
+    label: 'Driving Coach — Brake',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // The reactive advisory computation depends on a real reference lap +
+      // corner geometry, which the preview snapshot doesn't have. Force the
+      // displayed state directly instead — same reasoning as `radar.visible`
+      // above: the auto-hide/advisory reaction never runs in this isolated
+      // preview store, so nothing overrides it.
+      store.drivingCoachWidget.displayedAdvisory = 'brake';
+      applyCoachReference(store, 198, 12);
+    },
+  },
+  {
+    id: 'driving-coach-gas',
+    label: 'Driving Coach — Gas',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      store.drivingCoachWidget.displayedAdvisory = 'gas';
+      applyCoachReference(store, 205, -8);
     },
   },
   {

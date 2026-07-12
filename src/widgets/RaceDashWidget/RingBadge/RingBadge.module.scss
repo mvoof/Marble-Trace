@@ -1,0 +1,174 @@
+// Diameter matches the widget's design height (104px) so it always fills
+// the plate's circular left cap exactly — see RaceDashWidget.module.scss.
+// The arc band is SVG (native anti-aliasing), geometry in ring-geometry.ts.
+.root {
+  position: relative;
+  width: ws(104);
+  height: ws(104);
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.arc {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.arc path {
+  fill: none;
+  stroke-width: 6;
+}
+
+// Dim 300° band with the redline zone printed in red — a static sector so
+// shifting reads from geometry rather than a color that only appears once
+// the driver is already past the point to react.
+.trackDim {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.trackRedline {
+  stroke: rgba($race-red, 0.32);
+}
+
+.rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 ws(1) rgba(255, 255, 255, 0.14);
+  z-index: 2;
+  pointer-events: none;
+}
+
+// Substitute shift indicator when the RPM fill arc is hidden: a filled disc
+// behind the gear digit grows from a small dot at the center out to the
+// full circle as rpm climbs toward the shift point, tinted in the current
+// zone color. Kept dim — the digit stays white (see RingBadge.tsx) so the
+// two never blend together.
+.coreGlow {
+  position: absolute;
+  // 5px smaller than the ring itself, so the glow's own edge never lines up
+  // with (and doesn't peek past) the ring's boundary.
+  inset: ws(5);
+  border-radius: 50%;
+  // Soft-brush falloff: solid through the middle, then eases gradually
+  // toward transparent — the blur keeps the rim feathered instead of a
+  // crisp circular cutoff.
+  background: radial-gradient(
+    circle,
+    var(--core-glow-color, transparent) 0%,
+    color-mix(in srgb, var(--core-glow-color, transparent) 85%, transparent) 30%,
+    color-mix(in srgb, var(--core-glow-color, transparent) 55%, transparent) 50%,
+    color-mix(in srgb, var(--core-glow-color, transparent) 25%, transparent) 68%,
+    transparent 100%
+  );
+  filter: blur(ws(4));
+  transform: scale(var(--core-glow-scale, 0));
+  opacity: 0.8;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.coreGlowBlink {
+  animation: coreGlowPulse 0.5s steps(2, start) infinite;
+}
+
+@keyframes coreGlowPulse {
+  50% {
+    opacity: 0.14;
+  }
+
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coreGlowBlink {
+    animation: none;
+  }
+}
+
+// One-shot ring pulse fired the instant the driver upshifts — confirms the
+// shift landed, on top of the continuous core glow.
+.shiftFlash {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: ws(2) solid rgba(255, 255, 255, 0.8);
+  z-index: 4;
+  pointer-events: none;
+  animation: shiftFlashPulse 220ms ease-out forwards;
+}
+
+@keyframes shiftFlashPulse {
+  from {
+    transform: scale(0.85);
+    opacity: 0.9;
+  }
+
+  to {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shiftFlash {
+    animation: none;
+    display: none;
+  }
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    56% 50% at 50% 50%,
+    rgba($widget-dash-scrim, 0.9) 26%,
+    rgba($widget-dash-scrim, 0.45) 58%,
+    transparent 80%
+  );
+  z-index: 1;
+}
+
+.core {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gear {
+  font-family: $font-mono;
+  font-weight: 800;
+  font-size: ws(52);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: $widget-text-primary;
+}
+
+.blinkPulse {
+  animation: gearPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes gearPulse {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blinkPulse {
+    animation: none;
+  }
+}

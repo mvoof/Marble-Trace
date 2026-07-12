@@ -1,0 +1,27 @@
+.value {
+  font-family: $font-mono;
+  font-size: ws(16);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: $widget-text-primary;
+}
+
+.blinkPulse {
+  animation: rpmPulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes rpmPulse {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blinkPulse {
+    animation: none;
+  }
+}

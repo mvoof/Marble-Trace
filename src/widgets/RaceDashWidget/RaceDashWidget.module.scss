@@ -1,0 +1,31 @@
+// Single plate: left cap is a true circle sized to match the RingBadge
+// (diameter == plate height = 104 design px), right corners stay rectangular
+// with a moderate radius, mirroring the approved prototype.
+.plate {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: ws(52) ws(14) ws(14) ws(52);
+  border: 1px solid var(--widget-border);
+  background: var(--widget-bg);
+  // The pit banner hangs over the top edge — this must beat WidgetPanel's
+  // own overflow: hidden, and the widget config sets overflowVisible so the
+  // overlay container does not clip it either.
+  overflow: visible;
+}
+
+// Full-strength border plus an outer glow — a 1px translucent line reads as
+// nearly invisible on the overlay, and the pit state must be unmissable.
+.plateSafe {
+  border-color: $widget-pit-active;
+}
+
+.plateWarning {
+  border-color: $widget-pit-entry;
+}
+
+.plateDanger {
+  border-color: $race-red;
+}

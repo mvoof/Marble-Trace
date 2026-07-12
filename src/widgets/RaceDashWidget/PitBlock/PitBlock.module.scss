@@ -1,0 +1,193 @@
+// Mirrors StatsStrip's layout so the pit view swaps in cleanly next to the
+// same RingBadge — only the content and accent colors change.
+// Hangs over the plate's top edge like in the prototype — the widget config
+// sets overflowVisible so neither the plate nor the container clips it.
+.banner {
+  position: absolute;
+  top: ws(-11);
+  right: ws(24);
+  z-index: 4;
+  padding: sp(xxs) sp(lg);
+  border-radius: radius(lg);
+  font-family: $font-widget;
+  font-size: ws(10);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.bannerSafe {
+  background: $widget-pit-active;
+}
+
+// Dark text — white on yellow is unreadable.
+.bannerWarning {
+  background: $widget-pit-entry;
+  color: $widget-dash-scrim;
+}
+
+.bannerDanger {
+  background: $race-red;
+}
+
+// Top-anchored, not centered: .statsRow sits at a fixed offset so PitLaneBar
+// growing/disappearing below it never shifts Speed/Limit/Pos/Box.
+.stats {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+}
+
+.statsRow {
+  position: absolute;
+  top: ws(24);
+  left: ws(16);
+  right: ws(10);
+  display: flex;
+  align-items: center;
+  gap: ws(14);
+}
+
+.speedBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: sp(xxxs);
+  min-width: ws(96);
+}
+
+.speedValue {
+  font-family: $font-mono;
+  font-size: ws(40);
+  font-weight: 800;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+  color: $widget-text-primary;
+}
+
+.speedNear {
+  color: $race-amber;
+}
+
+.speedOver {
+  color: $race-red;
+}
+
+.unit {
+  font-family: $font-widget;
+  font-size: ws(11);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $widget-text-muted;
+}
+
+.divider {
+  width: 1px;
+  flex-shrink: 0;
+  align-self: center;
+  height: ws(56);
+  background: $widget-border-subtle;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: sp(sm);
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: sp(md);
+}
+
+.label {
+  font-family: $font-widget;
+  font-size: ws(11);
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: $widget-text-muted;
+}
+
+.value {
+  font-family: $font-mono;
+  font-size: ws(16);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: $widget-text-primary;
+}
+
+.limitSafe {
+  color: $race-amber;
+}
+
+.limitDanger {
+  color: $race-red;
+}
+
+.boxCue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: sp(xxs);
+  padding-right: ws(14);
+}
+
+.boxLabel {
+  font-family: $font-widget;
+  font-size: ws(11);
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: $race-amber;
+}
+
+.boxValue {
+  font-family: $font-mono;
+  font-size: ws(26);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: $race-amber;
+
+  small {
+    font-family: $font-mono;
+    font-size: fs(xs);
+    font-weight: 700;
+    color: rgba($race-amber, 0.6);
+  }
+}
+
+.boxCueNear {
+  .boxLabel {
+    color: $race-green;
+  }
+
+  .boxValue {
+    color: $race-green;
+    animation: countPulse 0.7s ease-in-out infinite;
+
+    small {
+      color: rgba($race-green, 0.6);
+    }
+  }
+}
+
+@keyframes countPulse {
+  50% {
+    transform: scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boxCueNear .boxValue {
+    animation: none;
+  }
+}

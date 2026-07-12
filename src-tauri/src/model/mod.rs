@@ -9,6 +9,7 @@ pub mod environment;
 pub mod flags;
 pub mod lap_log;
 pub mod player;
+pub mod reference_lap;
 pub mod relative;
 pub mod session;
 pub mod track_shape;

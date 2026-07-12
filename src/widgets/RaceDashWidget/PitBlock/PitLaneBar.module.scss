@@ -1,0 +1,49 @@
+// Anchored to the bottom of PitBlock's .stats slot, independent of the
+// statsRow above — growing/hiding this never shifts Speed/Limit/Pos/Box.
+.row {
+  position: absolute;
+  left: ws(16);
+  right: ws(10);
+  bottom: ws(12);
+  display: flex;
+  align-items: center;
+  gap: sp(sm);
+  height: ws(14);
+}
+
+.track {
+  position: relative;
+  flex: 1 1 0;
+  height: ws(7);
+  border-radius: radius(sm);
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid $widget-border-subtle;
+}
+
+// Amber while heading to box, blue once past it heading to exit — mirrors
+// the plate border color (.plateWarning / .plateSafe in RaceDashWidget), so
+// the phase reads from color alone without repeating the Box/Exit number.
+.fill {
+  position: absolute;
+  inset: 0;
+  right: auto;
+  border-radius: radius(sm);
+  background: $widget-pit-entry;
+  transition: background-color 0.2s ease;
+}
+
+.fillExit {
+  background: $widget-pit-active;
+}
+
+// Fixed reference point on the track — stays put through both phases so the
+// bar reads as one continuous lane, not two different views.
+.pitboxZone {
+  position: absolute;
+  top: ws(-3);
+  bottom: ws(-3);
+  width: ws(3);
+  border-radius: radius(sm);
+  background: $race-green;
+  box-shadow: 0 0 ws(5) rgba($race-green, 0.8);
+}
