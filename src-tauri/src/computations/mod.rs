@@ -12,7 +12,10 @@ use std::collections::HashMap;
 
 use crate::capabilities::Capabilities;
 use crate::model::cars::CarIdxFrame;
-use crate::model::player::{CarDynamicsFrame, CarInputsFrame, CarStatusFrame, LapTimingFrame};
+use crate::model::environment::EnvironmentFrame;
+use crate::model::player::{
+    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
+};
 use crate::model::session::SessionSnapshot;
 use crate::model::track_shape::{TrackRecordingFrame, TrackShapePayload};
 
@@ -62,6 +65,8 @@ pub struct ComputeContext<'a> {
     pub car_idx: &'a CarIdxFrame,
     pub lap_timing: &'a LapTimingFrame,
     pub car_status: &'a CarStatusFrame,
+    pub chassis: &'a ChassisFrame,
+    pub environment: &'a EnvironmentFrame,
     pub session: &'a SessionSnapshot,
     pub track_length_m: f32,
     pub car_length_m: f32,

@@ -188,7 +188,7 @@ pub struct CarStatusFrame {
 ///
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct ChassisFrame {
     // === Ride Height (meters) ===
     pub lf_ride_height: Option<f32>,

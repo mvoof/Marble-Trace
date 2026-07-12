@@ -5,6 +5,8 @@ import type { ReferenceLapSample } from '@/types/bindings';
 import {
   computeDrivingAdvisory,
   extractCornerTargets,
+  getAverageTireWear,
+  isConditionMismatch,
   type CornerTarget,
   type DrivingAdvisory,
 } from './driving-coach-utils';
@@ -65,6 +67,22 @@ export class DrivingCoachWidgetStore {
     return extractCornerTargets(data.samples, trackLengthM);
   }
 
+  /** Whether current wetness/tire wear/fuel load have diverged too far from the reference lap's recorded conditions to trust the comparison. */
+  private get conditionsMismatched(): boolean {
+    const data = this.root.referenceLap.data;
+
+    if (!data) return false;
+
+    return isConditionMismatch({
+      currentWetness: this.root.environment.environment?.track_wetness ?? null,
+      recordedWetness: data.recordedWetness,
+      currentTireWear: getAverageTireWear(this.root.player.chassis),
+      recordedTireWear: data.recordedTireWear,
+      currentFuelLevel: this.root.player.carStatus?.fuel_level ?? null,
+      recordedFuelLevel: data.recordedFuelLevel,
+    });
+  }
+
   get rawAdvisory(): DrivingAdvisory {
     const player = this.root.player;
     const dynamics = player.carDynamics;
@@ -82,6 +100,8 @@ export class DrivingCoachWidgetStore {
       return 'neutral';
     }
 
+    if (this.conditionsMismatched) return 'neutral';
+
     const cornerTargets = this.cornerTargets;
 
     if (cornerTargets.length === 0) return 'neutral';
@@ -97,6 +117,12 @@ export class DrivingCoachWidgetStore {
       cornerTargets,
       referenceSpeedAtCurrent: referenceSample?.speed ?? null,
       referenceThrottleAtCurrent: referenceSample?.throttle ?? null,
+      brakeAbsActive: inputs.brake_abs_active,
+      currentSteeringWheelAngle: dynamics.steering_wheel_angle,
+      referenceSteeringWheelAngleAtCurrent:
+        referenceSample?.steeringWheelAngle ?? null,
+      currentLatAccel: dynamics.lat_accel ?? null,
+      referenceLatAccelAtCurrent: referenceSample?.latAccel ?? null,
     });
   }
 

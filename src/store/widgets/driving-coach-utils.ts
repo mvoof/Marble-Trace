@@ -1,4 +1,4 @@
-import type { ReferenceLapSample } from '@/types/bindings';
+import type { ChassisFrame, ReferenceLapSample } from '@/types/bindings';
 
 /** Minimum separation between two detected corner targets, as a fraction of lap distance. */
 const MIN_CORNER_SEPARATION_PCT = 0.02;
@@ -18,6 +18,16 @@ const GAS_SPEED_DEADZONE_MPS = 2.0;
 const GAS_MARGIN_FACTOR = 1.5;
 /** Don't look further ahead than this for the next corner target. */
 const MAX_LOOKAHEAD_M = 500;
+/** Steering wheel angle divergence from the reference at the same track position beyond which the comparison is considered a different line/phase, not a speed difference. */
+const MAX_STEERING_MISMATCH_RAD = 0.35;
+/** Lateral acceleration divergence (m/s^2) from the reference at the same track position beyond which the comparison is considered a different line/phase. */
+const MAX_LAT_ACCEL_MISMATCH_MPS2 = 4.0;
+/** Track wetness (0-7 scale) divergence from the reference lap's recorded wetness beyond which the advisory is suppressed. */
+const MAX_WETNESS_MISMATCH = 1;
+/** Average tire wear (0.0-1.0) divergence from the reference lap's recorded wear beyond which the advisory is suppressed. */
+const MAX_TIRE_WEAR_MISMATCH = 0.15;
+/** Fuel level (liters) divergence from the reference lap's recorded fuel beyond which the advisory is suppressed. */
+const MAX_FUEL_LEVEL_MISMATCH_L = 20;
 
 export interface CornerTarget {
   distPct: number;
@@ -155,6 +165,104 @@ export const findNextCornerTarget = (
   return nearest;
 };
 
+/** Average remaining tread (0.0-1.0, 1.0=fresh) across all sampled tire zones, or null when no wear data is available. */
+export const getAverageTireWear = (
+  chassis: ChassisFrame | null
+): number | null => {
+  if (!chassis) return null;
+
+  const readings = [
+    chassis.lf_wear_l,
+    chassis.lf_wear_m,
+    chassis.lf_wear_r,
+    chassis.rf_wear_l,
+    chassis.rf_wear_m,
+    chassis.rf_wear_r,
+    chassis.lr_wear_l,
+    chassis.lr_wear_m,
+    chassis.lr_wear_r,
+    chassis.rr_wear_l,
+    chassis.rr_wear_m,
+    chassis.rr_wear_r,
+  ].filter((reading): reading is number => reading !== null);
+
+  if (readings.length === 0) return null;
+
+  return readings.reduce((sum, reading) => sum + reading, 0) / readings.length;
+};
+
+export interface ConditionMismatchInput {
+  currentWetness: number | null;
+  recordedWetness: number | null;
+  currentTireWear: number | null;
+  recordedTireWear: number | null;
+  currentFuelLevel: number | null;
+  recordedFuelLevel: number | null;
+}
+
+/**
+ * Whether current session conditions have diverged enough from the reference
+ * lap's recorded conditions that comparing braking/throttle points to it is
+ * no longer trustworthy (wet vs dry, worn vs fresh tires, heavy vs light fuel load).
+ */
+export const isConditionMismatch = (input: ConditionMismatchInput): boolean => {
+  const {
+    currentWetness,
+    recordedWetness,
+    currentTireWear,
+    recordedTireWear,
+    currentFuelLevel,
+    recordedFuelLevel,
+  } = input;
+
+  if (currentWetness !== null && recordedWetness !== null) {
+    if (Math.abs(currentWetness - recordedWetness) > MAX_WETNESS_MISMATCH)
+      return true;
+  }
+
+  if (currentTireWear !== null && recordedTireWear !== null) {
+    if (Math.abs(currentTireWear - recordedTireWear) > MAX_TIRE_WEAR_MISMATCH)
+      return true;
+  }
+
+  if (currentFuelLevel !== null && recordedFuelLevel !== null) {
+    if (
+      Math.abs(currentFuelLevel - recordedFuelLevel) > MAX_FUEL_LEVEL_MISMATCH_L
+    )
+      return true;
+  }
+
+  return false;
+};
+
+/**
+ * Whether the current steering/lateral-load state diverges enough from the
+ * reference lap at this track position that the two aren't in the same phase
+ * of the corner (different line/timing) — makes the speed/throttle comparison unreliable.
+ */
+const isTrajectoryMismatch = (
+  currentSteeringWheelAngle: number,
+  referenceSteeringWheelAngleAtCurrent: number | null,
+  currentLatAccel: number | null,
+  referenceLatAccelAtCurrent: number | null
+): boolean => {
+  if (referenceSteeringWheelAngleAtCurrent !== null) {
+    const steeringDiff = Math.abs(
+      currentSteeringWheelAngle - referenceSteeringWheelAngleAtCurrent
+    );
+
+    if (steeringDiff > MAX_STEERING_MISMATCH_RAD) return true;
+  }
+
+  if (currentLatAccel !== null && referenceLatAccelAtCurrent !== null) {
+    const latAccelDiff = Math.abs(currentLatAccel - referenceLatAccelAtCurrent);
+
+    if (latAccelDiff > MAX_LAT_ACCEL_MISMATCH_MPS2) return true;
+  }
+
+  return false;
+};
+
 export interface DrivingAdvisoryInput {
   currentSpeed: number;
   currentThrottle: number;
@@ -163,6 +271,12 @@ export interface DrivingAdvisoryInput {
   cornerTargets: CornerTarget[];
   referenceSpeedAtCurrent: number | null;
   referenceThrottleAtCurrent: number | null;
+  /** True when ABS is currently intervening — the player is already at max achievable brake, so a Brake call would be wrong. */
+  brakeAbsActive: boolean;
+  currentSteeringWheelAngle: number;
+  referenceSteeringWheelAngleAtCurrent: number | null;
+  currentLatAccel: number | null;
+  referenceLatAccelAtCurrent: number | null;
 }
 
 /**
@@ -181,9 +295,25 @@ export const computeDrivingAdvisory = (
     cornerTargets,
     referenceSpeedAtCurrent,
     referenceThrottleAtCurrent,
+    brakeAbsActive,
+    currentSteeringWheelAngle,
+    referenceSteeringWheelAngleAtCurrent,
+    currentLatAccel,
+    referenceLatAccelAtCurrent,
   } = input;
 
   if (trackLengthM <= 0) return 'neutral';
+
+  if (
+    isTrajectoryMismatch(
+      currentSteeringWheelAngle,
+      referenceSteeringWheelAngleAtCurrent,
+      currentLatAccel,
+      referenceLatAccelAtCurrent
+    )
+  ) {
+    return 'neutral';
+  }
 
   const nextTarget = findNextCornerTarget(
     cornerTargets,
@@ -191,7 +321,7 @@ export const computeDrivingAdvisory = (
     trackLengthM
   );
 
-  if (nextTarget && currentSpeed > nextTarget.targetSpeed) {
+  if (!brakeAbsActive && nextTarget && currentSpeed > nextTarget.targetSpeed) {
     const remainingDistanceM =
       pctDistanceAhead(currentDistPct, nextTarget.distPct) * trackLengthM;
     const requiredBrakeDistanceM =

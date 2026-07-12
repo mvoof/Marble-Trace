@@ -709,7 +709,7 @@ mod tests {
         }
     }
 
-    fn make_ctx<'a>(
+    struct MakeCtxArgs<'a> {
         dynamics: &'a CarDynamicsFrame,
         lap_timing: &'a LapTimingFrame,
         car_status: &'a CarStatusFrame,
@@ -717,17 +717,23 @@ mod tests {
         car_idx: &'a CarIdxFrame,
         start_positions: &'a HashMap<i32, (i32, i32)>,
         car_inputs: &'a CarInputsFrame,
-    ) -> ComputeContext<'a> {
+        chassis: &'a crate::model::player::ChassisFrame,
+        environment: &'a crate::model::environment::EnvironmentFrame,
+    }
+
+    fn make_ctx(args: MakeCtxArgs) -> ComputeContext {
         ComputeContext {
-            car_dynamics: dynamics,
-            car_inputs,
-            car_idx,
-            lap_timing,
-            car_status,
-            session,
+            car_dynamics: args.dynamics,
+            car_inputs: args.car_inputs,
+            car_idx: args.car_idx,
+            lap_timing: args.lap_timing,
+            car_status: args.car_status,
+            chassis: args.chassis,
+            environment: args.environment,
+            session: args.session,
             track_length_m: 3700.0,
             car_length_m: 4.4,
-            start_positions,
+            start_positions: args.start_positions,
             pit_warning_laps: 2.0,
             lap_delta_active: false,
             session_num: Some(0),
@@ -759,17 +765,21 @@ mod tests {
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
+        let chassis = crate::model::player::ChassisFrame::default();
+        let environment = crate::model::environment::EnvironmentFrame::default();
         let car_inputs = make_car_inputs();
 
-        let ctx = make_ctx(
-            &dynamics,
-            &lap_timing,
-            &car_status,
-            &session,
-            &car_idx,
-            &start_pos,
-            &car_inputs,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            car_inputs: &car_inputs,
+            chassis: &chassis,
+            environment: &environment,
+        });
         let _ = proc.compute(&ctx);
 
         assert!(
@@ -796,21 +806,25 @@ mod tests {
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
+        let chassis = crate::model::player::ChassisFrame::default();
+        let environment = crate::model::environment::EnvironmentFrame::default();
         let car_inputs = make_car_inputs();
 
         proc.state.recording = true;
         proc.state.start_pct = 0.0;
         proc.last_track_id = Some(42);
 
-        let ctx = make_ctx(
-            &dynamics,
-            &lap_timing,
-            &car_status,
-            &session2,
-            &car_idx,
-            &start_pos,
-            &car_inputs,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session2,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            car_inputs: &car_inputs,
+            chassis: &chassis,
+            environment: &environment,
+        });
         let _ = proc.compute(&ctx);
 
         assert_eq!(proc.last_track_id, Some(99));
@@ -833,17 +847,21 @@ mod tests {
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
+        let chassis = crate::model::player::ChassisFrame::default();
+        let environment = crate::model::environment::EnvironmentFrame::default();
         let car_inputs = make_car_inputs();
 
-        let ctx = make_ctx(
-            &dynamics,
-            &lap_timing,
-            &car_status,
-            &session,
-            &car_idx,
-            &start_pos,
-            &car_inputs,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            car_inputs: &car_inputs,
+            chassis: &chassis,
+            environment: &environment,
+        });
         let _ = proc.compute(&ctx);
 
         assert!(proc.state.recording);

@@ -16,6 +16,10 @@ pub struct ReferenceLapSample {
     pub throttle: f32,
     /// Brake input, 0.0-1.0.
     pub brake: f32,
+    /// Lateral acceleration in m/s^2, when the sim provides it.
+    pub lat_accel: Option<f32>,
+    /// Steering wheel angle in radians.
+    pub steering_wheel_angle: f32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -29,4 +33,10 @@ pub struct ReferenceLapData {
     /// Fixed-size, distance-bucketed samples — index `i` covers
     /// `lap_dist_pct` in `[i / REFERENCE_LAP_BUCKET_COUNT, (i+1) / REFERENCE_LAP_BUCKET_COUNT)`.
     pub samples: Vec<ReferenceLapSample>,
+    /// Track wetness (0=dry to 7=flooded) averaged over this lap, when available.
+    pub recorded_wetness: Option<f32>,
+    /// Average tire wear (0.0-1.0, 1.0=fresh) across all four tires at the moment this lap was committed.
+    pub recorded_tire_wear: Option<f32>,
+    /// Fuel level (liters) at the moment this lap was committed.
+    pub recorded_fuel_level: Option<f32>,
 }

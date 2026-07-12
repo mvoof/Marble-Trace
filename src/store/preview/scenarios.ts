@@ -130,6 +130,8 @@ const applyCoachReference = (
     speed: referenceMps,
     throttle: 1,
     brake: 0,
+    latAccel: null,
+    steeringWheelAngle: 0,
   };
   const data: ReferenceLapData = {
     trackId: 0,
@@ -138,6 +140,9 @@ const applyCoachReference = (
     samples: Array.from({ length: REFERENCE_BUCKET_COUNT }, () => ({
       ...sample,
     })),
+    recordedWetness: null,
+    recordedTireWear: null,
+    recordedFuelLevel: null,
   };
 
   store.referenceLap.updateReferenceLap(data);

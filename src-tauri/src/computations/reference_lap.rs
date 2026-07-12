@@ -40,6 +40,32 @@ pub struct ReferenceLapProcessor {
     reset_requested: Arc<AtomicBool>,
 }
 
+/// Average remaining tread (0.0-1.0, 1.0=fresh) across all sampled tire zones, when any are present.
+fn average_tire_wear(chassis: &crate::model::player::ChassisFrame) -> Option<f32> {
+    let readings = [
+        chassis.lf_wear_l,
+        chassis.lf_wear_m,
+        chassis.lf_wear_r,
+        chassis.rf_wear_l,
+        chassis.rf_wear_m,
+        chassis.rf_wear_r,
+        chassis.lr_wear_l,
+        chassis.lr_wear_m,
+        chassis.lr_wear_r,
+        chassis.rr_wear_l,
+        chassis.rr_wear_m,
+        chassis.rr_wear_r,
+    ];
+
+    let present: Vec<f32> = readings.into_iter().flatten().collect();
+
+    if present.is_empty() {
+        return None;
+    }
+
+    Some(present.iter().sum::<f32>() / present.len() as f32)
+}
+
 impl ReferenceLapProcessor {
     pub fn new(reset_requested: Arc<AtomicBool>) -> Self {
         Self {
@@ -120,6 +146,8 @@ impl Processor for ReferenceLapProcessor {
             speed: ctx.car_dynamics.speed,
             throttle: ctx.car_inputs.throttle,
             brake: ctx.car_inputs.brake,
+            lat_accel: ctx.car_dynamics.lat_accel,
+            steering_wheel_angle: ctx.car_dynamics.steering_wheel_angle,
         };
 
         if let Some(last) = self.last_bucket {
@@ -155,6 +183,9 @@ impl Processor for ReferenceLapProcessor {
                 car_screen_name,
                 lap_time: best_lap_time,
                 samples: self.working.clone(),
+                recorded_wetness: ctx.environment.track_wetness.map(|wetness| wetness as f32),
+                recorded_tire_wear: average_tire_wear(ctx.chassis),
+                recorded_fuel_level: Some(ctx.car_status.fuel_level),
             }))
         } else {
             None
@@ -294,7 +325,7 @@ mod tests {
         }
     }
 
-    fn make_ctx<'a>(
+    struct MakeCtxArgs<'a> {
         dynamics: &'a CarDynamicsFrame,
         inputs: &'a CarInputsFrame,
         lap_timing: &'a LapTimingFrame,
@@ -302,17 +333,23 @@ mod tests {
         session: &'a SessionSnapshot,
         car_idx: &'a CarIdxFrame,
         start_positions: &'a HashMap<i32, (i32, i32)>,
-    ) -> ComputeContext<'a> {
+        chassis: &'a crate::model::player::ChassisFrame,
+        environment: &'a crate::model::environment::EnvironmentFrame,
+    }
+
+    fn make_ctx(args: MakeCtxArgs) -> ComputeContext {
         ComputeContext {
-            car_dynamics: dynamics,
-            car_inputs: inputs,
-            car_idx,
-            lap_timing,
-            car_status,
-            session,
+            car_dynamics: args.dynamics,
+            car_inputs: args.inputs,
+            car_idx: args.car_idx,
+            lap_timing: args.lap_timing,
+            car_status: args.car_status,
+            chassis: args.chassis,
+            environment: args.environment,
+            session: args.session,
             track_length_m: 3700.0,
             car_length_m: 4.4,
-            start_positions,
+            start_positions: args.start_positions,
             pit_warning_laps: 2.0,
             lap_delta_active: false,
             session_num: Some(0),
@@ -327,21 +364,25 @@ mod tests {
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
+        let chassis = crate::model::player::ChassisFrame::default();
+        let environment = crate::model::environment::EnvironmentFrame::default();
 
         // Drive through the lap, sampling a couple of points.
         for pct in [0.1_f32, 0.5, 0.95] {
             let dynamics = make_dynamics(50.0);
             let inputs = make_inputs(1.0, 0.0);
             let lap_timing = make_lap_timing(pct, None);
-            let ctx = make_ctx(
-                &dynamics,
-                &inputs,
-                &lap_timing,
-                &car_status,
-                &session,
-                &car_idx,
-                &start_pos,
-            );
+            let ctx = make_ctx(MakeCtxArgs {
+                dynamics: &dynamics,
+                inputs: &inputs,
+                lap_timing: &lap_timing,
+                car_status: &car_status,
+                session: &session,
+                car_idx: &car_idx,
+                start_positions: &start_pos,
+                chassis: &chassis,
+                environment: &environment,
+            });
             assert!(proc.compute(&ctx).is_none());
         }
 
@@ -349,15 +390,17 @@ mod tests {
         let dynamics = make_dynamics(50.0);
         let inputs = make_inputs(1.0, 0.0);
         let lap_timing = make_lap_timing(0.05, Some(90.0));
-        let ctx = make_ctx(
-            &dynamics,
-            &inputs,
-            &lap_timing,
-            &car_status,
-            &session,
-            &car_idx,
-            &start_pos,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
         let output = proc.compute(&ctx);
 
         match output {
@@ -373,84 +416,156 @@ mod tests {
     }
 
     #[test]
+    fn commits_recorded_conditions_from_the_committing_tick() {
+        let mut proc = ReferenceLapProcessor::default();
+        let session = make_session(1);
+        let mut car_status = make_car_status();
+        car_status.fuel_level = 42.0;
+        let car_idx = make_car_idx();
+        let start_pos = HashMap::new();
+        let chassis = crate::model::player::ChassisFrame {
+            lf_wear_l: Some(0.9),
+            rf_wear_l: Some(0.7),
+            ..Default::default()
+        };
+        let environment = crate::model::environment::EnvironmentFrame {
+            track_wetness: Some(3),
+            ..Default::default()
+        };
+
+        let dynamics = make_dynamics(50.0);
+        let inputs = make_inputs(1.0, 0.0);
+        let lap_timing = make_lap_timing(0.95, None);
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
+        let _ = proc.compute(&ctx);
+
+        let lap_timing = make_lap_timing(0.05, Some(90.0));
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
+        let output = proc.compute(&ctx);
+
+        match output {
+            Some(ComputedOutput::ReferenceLap(data)) => {
+                assert_eq!(data.recorded_wetness, Some(3.0));
+                assert!((data.recorded_tire_wear.unwrap() - 0.8).abs() < 1e-4);
+                assert_eq!(data.recorded_fuel_level, Some(42.0));
+            }
+            other => panic!("expected ReferenceLap output, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn slower_lap_does_not_overwrite_reference() {
         let mut proc = ReferenceLapProcessor::default();
         let session = make_session(1);
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
+        let chassis = crate::model::player::ChassisFrame::default();
+        let environment = crate::model::environment::EnvironmentFrame::default();
 
         let dynamics = make_dynamics(50.0);
         let inputs = make_inputs(1.0, 0.0);
 
         // First lap sets the best.
         let lap_timing = make_lap_timing(0.5, None);
-        let ctx = make_ctx(
-            &dynamics,
-            &inputs,
-            &lap_timing,
-            &car_status,
-            &session,
-            &car_idx,
-            &start_pos,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
         let _ = proc.compute(&ctx);
         let lap_timing = make_lap_timing(0.95, None);
-        let ctx = make_ctx(
-            &dynamics,
-            &inputs,
-            &lap_timing,
-            &car_status,
-            &session,
-            &car_idx,
-            &start_pos,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
         let _ = proc.compute(&ctx);
         let lap_timing = make_lap_timing(0.05, Some(90.0));
-        let ctx = make_ctx(
-            &dynamics,
-            &inputs,
-            &lap_timing,
-            &car_status,
-            &session,
-            &car_idx,
-            &start_pos,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
         assert!(proc.compute(&ctx).is_some());
 
         // Second lap is slower — best lap time is unchanged.
         let lap_timing = make_lap_timing(0.5, Some(90.0));
-        let ctx = make_ctx(
-            &dynamics,
-            &inputs,
-            &lap_timing,
-            &car_status,
-            &session,
-            &car_idx,
-            &start_pos,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
         let _ = proc.compute(&ctx);
         let lap_timing = make_lap_timing(0.95, None);
-        let ctx = make_ctx(
-            &dynamics,
-            &inputs,
-            &lap_timing,
-            &car_status,
-            &session,
-            &car_idx,
-            &start_pos,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
         let _ = proc.compute(&ctx);
         let lap_timing = make_lap_timing(0.05, Some(90.0));
-        let ctx = make_ctx(
-            &dynamics,
-            &inputs,
-            &lap_timing,
-            &car_status,
-            &session,
-            &car_idx,
-            &start_pos,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
         assert!(proc.compute(&ctx).is_none());
     }
 
@@ -460,78 +575,92 @@ mod tests {
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
+        let chassis = crate::model::player::ChassisFrame::default();
+        let environment = crate::model::environment::EnvironmentFrame::default();
         let dynamics = make_dynamics(50.0);
         let inputs = make_inputs(1.0, 0.0);
 
         let session1 = make_session(1);
         let lap_timing = make_lap_timing(0.5, None);
-        let ctx = make_ctx(
-            &dynamics,
-            &inputs,
-            &lap_timing,
-            &car_status,
-            &session1,
-            &car_idx,
-            &start_pos,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session1,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
         let _ = proc.compute(&ctx);
         let lap_timing = make_lap_timing(0.95, None);
-        let ctx = make_ctx(
-            &dynamics,
-            &inputs,
-            &lap_timing,
-            &car_status,
-            &session1,
-            &car_idx,
-            &start_pos,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session1,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
         let _ = proc.compute(&ctx);
         let lap_timing = make_lap_timing(0.05, Some(90.0));
-        let ctx = make_ctx(
-            &dynamics,
-            &inputs,
-            &lap_timing,
-            &car_status,
-            &session1,
-            &car_idx,
-            &start_pos,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session1,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
         assert!(proc.compute(&ctx).is_some());
 
         // Switch tracks — a slower time than the old best should still count as new best.
         let session2 = make_session(2);
         let lap_timing = make_lap_timing(0.5, None);
-        let ctx = make_ctx(
-            &dynamics,
-            &inputs,
-            &lap_timing,
-            &car_status,
-            &session2,
-            &car_idx,
-            &start_pos,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session2,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
         let _ = proc.compute(&ctx);
         let lap_timing = make_lap_timing(0.95, None);
-        let ctx = make_ctx(
-            &dynamics,
-            &inputs,
-            &lap_timing,
-            &car_status,
-            &session2,
-            &car_idx,
-            &start_pos,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session2,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
         let _ = proc.compute(&ctx);
         let lap_timing = make_lap_timing(0.05, Some(95.0));
-        let ctx = make_ctx(
-            &dynamics,
-            &inputs,
-            &lap_timing,
-            &car_status,
-            &session2,
-            &car_idx,
-            &start_pos,
-        );
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session2,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
         assert!(proc.compute(&ctx).is_some());
     }
 }

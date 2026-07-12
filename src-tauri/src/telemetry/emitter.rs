@@ -155,6 +155,8 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
             car_idx: &frame.car_idx,
             lap_timing: &frame.lap_timing,
             car_status: &frame.car_status,
+            chassis: &frame.chassis,
+            environment: &frame.environment,
             session,
             track_length_m: track_length,
             car_length_m: car_length,
