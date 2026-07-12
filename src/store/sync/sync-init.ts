@@ -99,6 +99,12 @@ export const initMainSync = async (root: RootStore) => {
           }
         ),
         reaction(
+          () => root.appSettings.appSettings.startMinimized,
+          () => {
+            void onSave();
+          }
+        ),
+        reaction(
           () => [
             root.appSettings.appSettings.editorShowGrid,
             root.appSettings.appSettings.editorSnapToGrid,
