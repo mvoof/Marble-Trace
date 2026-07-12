@@ -21,6 +21,7 @@ interface StoryArgs {
   rpm: number;
   gear: number;
   pitMode: 'none' | 'limiter' | 'pit-lane';
+  pitPhase: 'toBox' | 'toExit';
   boxDistM: number;
 }
 
@@ -91,7 +92,13 @@ const meta: Meta<StoryArgs> = {
       }
 
       if (args.pitMode !== 'none' && args.boxDistM > 0) {
-        store.player.updatePitTarget(args.boxDistM, 'pitbox', 0.4);
+        const progress = args.pitPhase === 'toExit' ? 0.85 : 0.4;
+
+        store.player.updatePitTarget(
+          args.boxDistM,
+          args.pitPhase === 'toExit' ? 'pitExit' : 'pitbox',
+          progress
+        );
       } else {
         store.player.updatePitTarget(null, null, null);
       }
@@ -103,6 +110,7 @@ const meta: Meta<StoryArgs> = {
       rpm: 6400,
       gear: 4,
       pitMode: 'none',
+      pitPhase: 'toBox',
       boxDistM: 0,
     },
     argTypes: {
@@ -112,6 +120,7 @@ const meta: Meta<StoryArgs> = {
       rpm: { control: { type: 'number' } },
       gear: { control: { type: 'number' } },
       pitMode: { control: 'radio', options: ['none', 'limiter', 'pit-lane'] },
+      pitPhase: { control: 'radio', options: ['toBox', 'toExit'] },
       boxDistM: { control: { type: 'number' } },
     },
   }),
@@ -231,6 +240,17 @@ export const PitLimiterNearBox: Story = {
     rpm: 2400,
     gear: 1,
     boxDistM: 28,
+  },
+};
+
+export const PitLimiterToExit: Story = {
+  args: {
+    pitMode: 'limiter',
+    pitPhase: 'toExit',
+    speedKmh: 59,
+    rpm: 3200,
+    gear: 1,
+    boxDistM: 140,
   },
 };
 

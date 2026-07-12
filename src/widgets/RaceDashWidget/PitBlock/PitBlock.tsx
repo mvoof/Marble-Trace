@@ -4,6 +4,8 @@ import { usePitState } from '@hooks/usePitState';
 import type { PitState } from '@hooks/usePitState';
 import { usePlayerStore } from '@store/root-store-context';
 
+import { PitLaneBar } from './PitLaneBar';
+
 import styles from './PitBlock.module.scss';
 
 // Final stretch to the box turns the countdown green — "almost there".
@@ -43,8 +45,9 @@ export const PitBlock = observer(() => {
       ? styles.speedNear
       : '';
 
-  const showBoxCue = distMode === 'pitbox' && distM !== null;
+  const showBoxCue = distMode !== null && distM !== null;
   const isNearBox = distM !== null && distM <= BOX_NEAR_M;
+  const boxCueLabel = distMode === 'pitExit' ? 'Exit' : 'Box';
 
   const unit = system === 'metric' ? 'KM/H' : 'MPH';
   const distUnit = system === 'metric' ? 'm' : 'ft';
@@ -67,49 +70,53 @@ export const PitBlock = observer(() => {
       <span className={`${styles.banner} ${bannerClass}`}>{bannerText}</span>
 
       <div className={styles.stats}>
-        <div className={styles.speedBlock}>
-          <span className={`${styles.speedValue} ${speedValueClass}`}>
-            {speedKmhOrMph}
-          </span>
-          <span className={styles.unit}>{unit}</span>
-        </div>
-
-        <div className={styles.divider} />
-
-        <div className={styles.column}>
-          {showLimit && (
-            <div className={styles.row}>
-              <span className={styles.label}>Limit</span>
-              <span
-                className={`${styles.value} ${pitState === 'over-limit' ? styles.limitDanger : styles.limitSafe}`}
-              >
-                {limitKmhOrMph}
-              </span>
-            </div>
-          )}
-
-          <div className={styles.row}>
-            <span className={styles.label}>Pos</span>
-            <span className={styles.value}>
-              {position != null ? `P${position}` : '—'}
+        <div className={styles.statsRow}>
+          <div className={styles.speedBlock}>
+            <span className={`${styles.speedValue} ${speedValueClass}`}>
+              {speedKmhOrMph}
             </span>
+            <span className={styles.unit}>{unit}</span>
           </div>
-        </div>
 
-        {showBoxCue && (
-          <>
-            <div className={styles.divider} />
+          <div className={styles.divider} />
 
-            <div
-              className={`${styles.boxCue} ${isNearBox ? styles.boxCueNear : ''}`}
-            >
-              <span className={styles.boxLabel}>Box</span>
-              <span className={styles.boxValue}>
-                {Math.round(distM ?? 0)} <small>{distUnit}</small>
+          <div className={styles.column}>
+            {showLimit && (
+              <div className={styles.row}>
+                <span className={styles.label}>Limit</span>
+                <span
+                  className={`${styles.value} ${pitState === 'over-limit' ? styles.limitDanger : styles.limitSafe}`}
+                >
+                  {limitKmhOrMph}
+                </span>
+              </div>
+            )}
+
+            <div className={styles.row}>
+              <span className={styles.label}>Pos</span>
+              <span className={styles.value}>
+                {position != null ? `P${position}` : '—'}
               </span>
             </div>
-          </>
-        )}
+          </div>
+
+          {showBoxCue && (
+            <>
+              <div className={styles.divider} />
+
+              <div
+                className={`${styles.boxCue} ${isNearBox ? styles.boxCueNear : ''}`}
+              >
+                <span className={styles.boxLabel}>{boxCueLabel}</span>
+                <span className={styles.boxValue}>
+                  {Math.round(distM ?? 0)} <small>{distUnit}</small>
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+
+        <PitLaneBar />
       </div>
     </>
   );
