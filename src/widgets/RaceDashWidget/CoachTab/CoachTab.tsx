@@ -25,24 +25,26 @@ export const CoachTab = observer(() => {
 
   const referenceSpeedMps = coach.referenceSpeedMps;
   const hasReference = referenceSpeedMps !== null;
+  const hasReferenceLap = coach.hasReferenceLap;
 
   const advisory = coach.displayedAdvisory;
   const accentColor =
-    advisory === 'brake'
+    hasReferenceLap && advisory === 'brake'
       ? settings.brakeColor
-      : advisory === 'gas'
+      : hasReferenceLap && advisory === 'gas'
         ? settings.gasColor
         : null;
 
   const stateClass =
-    advisory === 'brake'
+    hasReferenceLap && advisory === 'brake'
       ? styles.brakeCall
-      : advisory === 'gas'
+      : hasReferenceLap && advisory === 'gas'
         ? styles.gasCall
         : styles.idle;
 
-  const callText =
-    advisory === 'neutral'
+  const callText = !hasReferenceLap
+    ? 'NO LAP'
+    : advisory === 'neutral'
       ? hasReference
         ? 'PACE'
         : '—'

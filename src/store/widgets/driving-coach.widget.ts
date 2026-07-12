@@ -31,6 +31,11 @@ export class DrivingCoachWidgetStore {
     );
   }
 
+  /** Whether a best-lap reference has been recorded at all for this track+car. */
+  get hasReferenceLap(): boolean {
+    return this.root.referenceLap.data !== null;
+  }
+
   /** Best-lap reference sample at the player's current track position. */
   get referenceSample(): ReferenceLapSample | null {
     const lapDistPct = this.root.player.lapTiming?.lap_dist_pct;
