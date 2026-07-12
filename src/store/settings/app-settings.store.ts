@@ -10,6 +10,7 @@ const DEFAULT_APP_SETTINGS = {
   hideWidgetsWhenGameClosed: false,
   hideWidgetsInGarage: false,
   hideAllWidgets: false,
+  startMinimized: false,
   autoUpdate: true,
   updateCheckInterval: 3,
   lastUpdateCheck: null as string | null,
@@ -201,6 +202,10 @@ export class AppSettingsStore {
 
   setHideAllWidgets(value: boolean) {
     this.appSettings.hideAllWidgets = value;
+  }
+
+  setStartMinimized(value: boolean) {
+    this.appSettings.startMinimized = value;
   }
 
   setHideAllWidgetsHotkey(key: string) {

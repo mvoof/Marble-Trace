@@ -129,6 +129,25 @@ export const SettingsPage = observer(() => {
           </div>
         </Card>
 
+        <Card title="Startup Behavior">
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldRow}>
+              <div className={styles.fieldTexts}>
+                <div className={styles.fieldTitle}>Launch Minimized</div>
+
+                <div className={styles.fieldDesc}>
+                  Start the application minimized to the taskbar.
+                </div>
+              </div>
+
+              <Switch
+                checked={appSettings.appSettings.startMinimized}
+                onChange={(v) => appSettings.setStartMinimized(v)}
+              />
+            </div>
+          </div>
+        </Card>
+
         <Card title="Interaction Mode">
           <div className={styles.fieldGroup}>
             <div className={styles.fieldRow}>

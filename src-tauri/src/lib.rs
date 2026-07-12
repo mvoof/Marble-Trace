@@ -52,6 +52,7 @@ use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32};
 use std::sync::{Arc, Mutex};
 use tauri::{generate_context, generate_handler, Builder, Listener, Manager, WindowEvent};
 use tauri_plugin_aptabase::EventTracker;
+use tauri_plugin_store::StoreExt;
 use tracing_subscriber::EnvFilter;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -168,6 +169,20 @@ pub fn run() {
                 "locale": locale,
             });
             let _ = app.track_event("app_started", Some(props));
+
+            let start_minimized = app
+                .store("settings.json")
+                .ok()
+                .and_then(|store| store.get("settings"))
+                .and_then(|settings| settings.get("app")?.get("startMinimized")?.as_bool())
+                .unwrap_or(false);
+
+            if start_minimized {
+                if let Some(main_window) = app.get_webview_window("main") {
+                    let _ = main_window.minimize();
+                }
+            }
+
             Ok(())
         })
         .invoke_handler(generate_handler![
