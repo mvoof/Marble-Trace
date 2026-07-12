@@ -93,6 +93,7 @@ export const LayoutCanvasWidget = observer(
     const designHeight = widget?.designHeight ?? height;
     const autoHeight = widget?.autoHeight ?? false;
     const overflowVisible = widget?.overflowVisible ?? false;
+    const transparentContainer = widget?.transparentContainer ?? false;
 
     const widgetScale = width / designWidth;
 
@@ -100,6 +101,10 @@ export const LayoutCanvasWidget = observer(
       widget?.userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)';
     const borderColor =
       widget?.userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
+    const background = transparentContainer ? 'transparent' : backgroundColor;
+    const containerBorderColor = transparentContainer
+      ? 'transparent'
+      : borderColor;
 
     const frameBorderRadius = widgetFrameBorderRadius(
       widgetId,
@@ -349,11 +354,13 @@ export const LayoutCanvasWidget = observer(
             style={
               {
                 ...(autoHeight ? { height: 'auto' } : undefined),
-                background: backgroundColor,
-                borderColor,
+                background,
+                borderColor: containerBorderColor,
+                borderWidth: transparentContainer ? 0 : undefined,
                 borderRadius: frameBorderRadius,
                 ['--wfs']: widgetScale,
                 ['--widget-bg']: backgroundColor,
+                ['--widget-border']: borderColor,
               } as React.CSSProperties
             }
           >
