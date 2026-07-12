@@ -57,10 +57,11 @@ export class DrivingCoachWidgetStore {
   /** Current speed minus reference speed (m/s). Positive = faster than reference. */
   get speedDeltaMps(): number | null {
     const reference = this.referenceSpeedMps;
+    const speed = this.root.player.carDynamics?.speed;
 
-    if (reference === null) return null;
+    if (reference === null || speed === undefined) return null;
 
-    return this.currentSpeedMps - reference;
+    return speed - reference;
   }
 
   private get cornerTargets(): CornerTarget[] {

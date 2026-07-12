@@ -172,7 +172,7 @@ pub async fn get_reference_lap(
     let key = reference_lap_key(track_id, &car_screen_name);
     let path = data_dir.join("reference_laps").join(format!("{key}.json"));
 
-    let Ok(bytes) = std::fs::read(&path) else {
+    let Ok(bytes) = tokio::fs::read(&path).await else {
         return Ok(None);
     };
 
@@ -199,7 +199,7 @@ pub async fn delete_reference_lap(
     let key = reference_lap_key(track_id, &car_screen_name);
     let path = data_dir.join("reference_laps").join(format!("{key}.json"));
 
-    match std::fs::remove_file(&path) {
+    match tokio::fs::remove_file(&path).await {
         Ok(_) => {}
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
         Err(e) => return Err(e.to_string()),

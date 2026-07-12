@@ -77,7 +77,11 @@ export class SimStore {
           : null;
       },
       (identity, previousIdentity) => {
-        if (!identity) return;
+        if (!identity) {
+          this.root.referenceLap.reset();
+
+          return;
+        }
 
         if (
           previousIdentity &&
@@ -94,6 +98,8 @@ export class SimStore {
   }
 
   private async loadReferenceLap(trackId: number, carScreenName: string) {
+    this.root.referenceLap.reset();
+
     try {
       const data = await invoke<ReferenceLapData | null>('get_reference_lap', {
         trackId,

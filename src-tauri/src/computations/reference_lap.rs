@@ -81,7 +81,12 @@ impl ReferenceLapProcessor {
     }
 
     fn reset_for_new_lap(&mut self) {
-        self.working = vec![ReferenceLapSample::default(); REFERENCE_LAP_BUCKET_COUNT];
+        if self.working.len() == REFERENCE_LAP_BUCKET_COUNT {
+            self.working.fill(ReferenceLapSample::default());
+        } else {
+            self.working = vec![ReferenceLapSample::default(); REFERENCE_LAP_BUCKET_COUNT];
+        }
+
         self.last_bucket = None;
         self.lap_invalidated = false;
     }
