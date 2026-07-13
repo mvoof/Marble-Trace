@@ -14,8 +14,8 @@ use crate::utils::lock_or_recover;
 use tracing::{debug, info, warn};
 
 use super::emitter::{
-    emit_domain_frames, EmitContext, EVENT_CAPABILITIES, EVENT_DISCONNECTED, EVENT_SESSION_INFO,
-    EVENT_STATUS, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
+    emit_domain_frames, reference_lap_key, EmitContext, EVENT_CAPABILITIES, EVENT_DISCONNECTED,
+    EVENT_SESSION_INFO, EVENT_STATUS, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
 };
 use super::scheduler::EmitScheduler;
 use super::state::TelemetryServiceState;
@@ -252,6 +252,8 @@ fn apply_session_update(app: &AppHandle, parsed: ParsedSession, service: &Teleme
         try_load_and_emit_track(app, new_track_id, service);
     }
 
+    refresh_stored_reference_lap_time(app, service);
+
     if !parsed.weather_forecast.is_empty() {
         debug!(
             "Weather forecast: {} entries emitted",
@@ -336,6 +338,53 @@ fn try_load_and_emit_track(app: &AppHandle, track_id: i32, service: &TelemetrySe
 
     // Signal TrackShapeProcessor to skip re-recording since the track already exists.
     service.track_cached.store(track_id, Ordering::Relaxed);
+}
+
+/// Reads the lap time of the persisted reference lap for the current track+car
+/// and publishes it for ReferenceLapProcessor, so a slower session best never
+/// overwrites a faster stored reference.
+fn refresh_stored_reference_lap_time(app: &AppHandle, service: &TelemetryServiceState) {
+    use std::fs;
+
+    #[derive(serde::Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    struct StoredLapTime {
+        lap_time: f32,
+    }
+
+    let identity = {
+        let lock = lock_or_recover(&service.last_session_info);
+        lock.as_deref().map(|session| {
+            let car_screen_name = session
+                .cars
+                .iter()
+                .find(|car| car.car_idx == session.player_car_idx)
+                .map(|car| car.car_screen_name.clone())
+                .unwrap_or_default();
+            (session.track_id, car_screen_name)
+        })
+    };
+
+    let Some((track_id, car_screen_name)) = identity else {
+        return;
+    };
+
+    let stored_time = app
+        .path()
+        .app_data_dir()
+        .ok()
+        .map(|data_dir| {
+            let key = reference_lap_key(track_id, &car_screen_name);
+            data_dir.join("reference_laps").join(format!("{key}.json"))
+        })
+        .and_then(|path| fs::read_to_string(path).ok())
+        .and_then(|json| serde_json::from_str::<StoredLapTime>(&json).ok())
+        .map(|stored| stored.lap_time)
+        .filter(|lap_time| *lap_time > 0.0);
+
+    if let Ok(mut lock) = service.stored_reference_lap_time.lock() {
+        *lock = stored_time;
+    }
 }
 
 /// Updates start_positions from QualifyResultsInfo (the pre-race grid order).

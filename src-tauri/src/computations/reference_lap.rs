@@ -1,14 +1,16 @@
 //! Reference lap processor — buffers speed/throttle/brake for the current lap,
 //! bucketed by lap distance, and commits the buffer as the new reference lap
 //! whenever `lap_best_lap_time` improves (i.e. the lap just completed was a
-//! new personal best for this track+car).
+//! new personal best for this track+car) AND beats the reference lap already
+//! persisted on disk, so a fresh session's best never degrades a faster
+//! stored reference.
 use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use crate::model::reference_lap::{
     ReferenceLapData, ReferenceLapSample, REFERENCE_LAP_BUCKET_COUNT,
 };
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 /// Above this `lap_dist_pct` we consider the car "near the finish line".
 const WRAP_HIGH_THRESHOLD: f32 = 0.9;
@@ -44,6 +46,11 @@ pub struct ReferenceLapProcessor {
     /// the in-memory best does not block re-recording after the stored
     /// reference file was deleted.
     reset_requested: Arc<AtomicBool>,
+    /// Lap time of the reference persisted on disk for the current track+car
+    /// (refreshed by the telemetry runtime on session-info updates). A lap is
+    /// committed only when it also beats this time, so a session best that is
+    /// slower than the stored reference never overwrites it.
+    stored_best_lap_time: Arc<Mutex<Option<f32>>>,
 }
 
 /// Average remaining tread (0.0-1.0, 1.0=fresh) across all sampled tire zones, when any are present.
@@ -73,9 +80,13 @@ fn average_tire_wear(chassis: &crate::model::player::ChassisFrame) -> Option<f32
 }
 
 impl ReferenceLapProcessor {
-    pub fn new(reset_requested: Arc<AtomicBool>) -> Self {
+    pub fn new(
+        reset_requested: Arc<AtomicBool>,
+        stored_best_lap_time: Arc<Mutex<Option<f32>>>,
+    ) -> Self {
         Self {
             reset_requested,
+            stored_best_lap_time,
             ..Self::default()
         }
     }
@@ -197,12 +208,26 @@ impl Processor for ReferenceLapProcessor {
         }
 
         let best_lap_time = ctx.lap_timing.lap_best_lap_time.unwrap_or(0.0);
+        let stored_time = self
+            .stored_best_lap_time
+            .lock()
+            .ok()
+            .and_then(|stored| *stored);
+        let beats_stored = stored_time
+            .is_none_or(|stored| stored <= 0.0 || best_lap_time < stored - BEST_TIME_EPSILON);
         let is_new_best = !self.lap_invalidated
             && best_lap_time > 0.0
+            && beats_stored
             && (self.prev_best_lap_time <= 0.0
                 || best_lap_time < self.prev_best_lap_time - BEST_TIME_EPSILON);
 
         self.prev_best_lap_time = best_lap_time;
+
+        if is_new_best {
+            if let Ok(mut stored) = self.stored_best_lap_time.lock() {
+                *stored = Some(best_lap_time);
+            }
+        }
 
         let output = if is_new_best {
             Some(ComputedOutput::ReferenceLap(ReferenceLapData {
@@ -541,14 +566,48 @@ mod tests {
     }
 
     #[test]
+    fn session_best_slower_than_stored_reference_is_not_committed() {
+        let stored = Arc::new(Mutex::new(Some(85.0_f32)));
+        let mut proc =
+            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let session = make_session(1);
+
+        // First session best (90.0) is slower than the persisted reference (85.0).
+        drive_segment(&mut proc, &session, 0.005, 0.995);
+        assert!(run_tick(&mut proc, &session, 0.05, Some(90.0)).is_none());
+
+        // A lap faster than the stored reference commits and updates the shared time.
+        drive_segment(&mut proc, &session, 0.055, 0.995);
+        assert!(run_tick(&mut proc, &session, 0.05, Some(84.0)).is_some());
+        assert_eq!(*stored.lock().unwrap(), Some(84.0));
+    }
+
+    #[test]
+    fn cleared_stored_reference_allows_recommit() {
+        let stored = Arc::new(Mutex::new(None::<f32>));
+        let mut proc =
+            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let session = make_session(1);
+
+        drive_segment(&mut proc, &session, 0.005, 0.995);
+        assert!(run_tick(&mut proc, &session, 0.05, Some(90.0)).is_some());
+        assert_eq!(*stored.lock().unwrap(), Some(90.0));
+    }
+
+    #[test]
     fn track_change_resets_prior_best() {
-        let mut proc = ReferenceLapProcessor::default();
+        let stored = Arc::new(Mutex::new(None::<f32>));
+        let mut proc =
+            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
 
         let session1 = make_session(1);
         drive_segment(&mut proc, &session1, 0.005, 0.995);
         assert!(run_tick(&mut proc, &session1, 0.05, Some(90.0)).is_some());
 
-        // Switch tracks — a slower time than the old best should still count as new best.
+        // Switch tracks — a slower time than the old best should still count as
+        // new best. The runtime refreshes the shared stored time on the
+        // session-info update that changes the track; mimic finding no file.
+        *stored.lock().unwrap() = None;
         let session2 = make_session(2);
         drive_segment(&mut proc, &session2, 0.005, 0.995);
         assert!(run_tick(&mut proc, &session2, 0.05, Some(95.0)).is_some());
