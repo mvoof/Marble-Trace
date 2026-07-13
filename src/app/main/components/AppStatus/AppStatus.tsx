@@ -17,8 +17,16 @@ export const AppStatus = observer(() => {
           textClass: styles.connectedText,
         };
       case 'waiting':
+        if (currentSim) {
+          return {
+            label: 'WAITING FOR TELEMETRY',
+            dotClass: styles.waiting,
+            textClass: styles.waitingText,
+          };
+        }
+
         return {
-          label: 'WAITING FOR TELEMETRY',
+          label: 'WAITING FOR GAME TO START',
           dotClass: styles.waiting,
           textClass: styles.waitingText,
         };
@@ -31,9 +39,9 @@ export const AppStatus = observer(() => {
       case 'disconnected':
       default:
         return {
-          label: 'SIMULATOR OFFLINE',
-          dotClass: styles.disconnected,
-          textClass: styles.disconnectedText,
+          label: 'WAITING FOR GAME TO START',
+          dotClass: styles.waiting,
+          textClass: styles.waitingText,
         };
     }
   };

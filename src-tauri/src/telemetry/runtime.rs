@@ -143,7 +143,7 @@ fn run_telemetry_loop(
                         EVENT_STATUS,
                         &SimStatus {
                             status: "waiting".into(),
-                            sim: None,
+                            sim: Some(source.sim_type()),
                         },
                     )
                     .ok();
