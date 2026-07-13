@@ -957,6 +957,7 @@ export const LayoutEditor = observer(
                 onChange={setScenarioId}
                 options={SCENARIO_OPTIONS}
                 style={{ minWidth: 150 }}
+                popupMatchSelectWidth={false}
               />
             </div>
           </header>
