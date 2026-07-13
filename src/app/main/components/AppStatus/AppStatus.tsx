@@ -25,25 +25,20 @@ export const AppStatus = observer(() => {
           };
         }
 
-        return {
-          label: 'WAITING FOR GAME TO START',
-          dotClass: styles.waiting,
-          textClass: styles.waitingText,
-        };
+        break;
       case 'error':
         return {
           label: error || 'SYSTEM ERROR',
           dotClass: styles.error,
           textClass: styles.errorText,
         };
-      case 'disconnected':
-      default:
-        return {
-          label: 'WAITING FOR GAME TO START',
-          dotClass: styles.waiting,
-          textClass: styles.waitingText,
-        };
     }
+
+    return {
+      label: 'WAITING FOR GAME TO START',
+      dotClass: styles.waiting,
+      textClass: styles.waitingText,
+    };
   };
 
   const config = getStatusConfig();
