@@ -26,6 +26,11 @@ pub struct TelemetryServiceState {
     /// Set when a cached track was loaded from disk; consumed by TrackShapeProcessor
     /// on the first tick after a track_id change to skip re-recording.
     pub track_cached: Arc<std::sync::atomic::AtomicI32>,
+    /// Lap time of the reference lap stored on disk for the current track+car,
+    /// refreshed on every session-info update. ReferenceLapProcessor commits a
+    /// new reference only when a lap beats this time, so a slower session best
+    /// never overwrites a faster persisted reference.
+    pub stored_reference_lap_time: Arc<Mutex<Option<f32>>>,
 }
 
 /// Bitmask flags for high-frequency events.

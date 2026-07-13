@@ -131,6 +131,7 @@ const applyCoachReference = (
     throttle: 1,
     brake: 0,
     latAccel: null,
+    longAccel: null,
     steeringWheelAngle: 0,
   };
   const data: ReferenceLapData = {

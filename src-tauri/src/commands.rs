@@ -212,6 +212,10 @@ pub async fn delete_reference_lap(
         .reset_reference_lap
         .store(true, std::sync::atomic::Ordering::Relaxed);
 
+    if let Ok(mut stored) = state.service.stored_reference_lap_time.lock() {
+        *stored = None;
+    }
+
     info!("Reference lap deleted for track {track_id} / {car_screen_name}");
     Ok(())
 }

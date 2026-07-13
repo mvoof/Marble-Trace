@@ -121,6 +121,9 @@ pub fn run() {
     let reset_reference_lap = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     let reset_reference_lap_registry = std::sync::Arc::clone(&reset_reference_lap);
     let reset_reference_lap_state = reset_reference_lap;
+    let stored_reference_lap_time = std::sync::Arc::new(Mutex::new(None));
+    let stored_reference_lap_time_registry = std::sync::Arc::clone(&stored_reference_lap_time);
+    let stored_reference_lap_time_service = stored_reference_lap_time;
 
     let builder = Builder::default()
         .plugin(
@@ -211,6 +214,7 @@ pub fn run() {
                 active_events: AtomicU32::new(0xFFFFFFFF),
                 car_length_m: Mutex::new(4.4),
                 track_cached: track_cached_service,
+                stored_reference_lap_time: stored_reference_lap_time_service,
             }),
             registry: Arc::new(Mutex::new(ProcessorRegistry::new(
                 force_track_start_registry,
@@ -218,6 +222,7 @@ pub fn run() {
                 track_cached_registry,
                 reset_track_shape_registry,
                 reset_reference_lap_registry,
+                stored_reference_lap_time_registry,
             ))),
             pit_warning_laps: Arc::new(AtomicU32::new(
                 crate::computations::fuel::DEFAULT_PIT_WARNING_LAPS.to_bits(),

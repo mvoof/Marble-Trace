@@ -1,14 +1,16 @@
 //! Reference lap processor — buffers speed/throttle/brake for the current lap,
 //! bucketed by lap distance, and commits the buffer as the new reference lap
 //! whenever `lap_best_lap_time` improves (i.e. the lap just completed was a
-//! new personal best for this track+car).
+//! new personal best for this track+car) AND beats the reference lap already
+//! persisted on disk, so a fresh session's best never degrades a faster
+//! stored reference.
 use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use crate::model::reference_lap::{
     ReferenceLapData, ReferenceLapSample, REFERENCE_LAP_BUCKET_COUNT,
 };
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 /// Above this `lap_dist_pct` we consider the car "near the finish line".
 const WRAP_HIGH_THRESHOLD: f32 = 0.9;
@@ -16,6 +18,19 @@ const WRAP_HIGH_THRESHOLD: f32 = 0.9;
 const WRAP_LOW_THRESHOLD: f32 = 0.1;
 /// Guards against float-equality false negatives when comparing best lap times.
 const BEST_TIME_EPSILON: f32 = 1e-4;
+/// Minimum allowed `lap_dist_pct` advance between two ticks before the jump is
+/// treated as a teleport. Even at 150 m/s on a 1 km track a 60 Hz tick covers
+/// 150/60/1000 = 0.0025 of the lap; a larger jump (in either direction,
+/// outside the finish-line wrap) means the car was teleported (pit tow,
+/// session reset) — the working buffer then holds forward-filled garbage and
+/// must not be committed as a reference lap.
+const MAX_TICK_DIST_PCT_JUMP: f32 = 0.01;
+/// Lag-spike budget (s): frame drops / CPU stalls make consecutive processed
+/// ticks arbitrarily far apart in time, so the allowed jump also scales with
+/// the distance the car could genuinely cover at its current speed within this
+/// budget. A pit teleport lands the car at ~0 speed, so the speed-scaled
+/// allowance collapses back to the floor and real teleports are still caught.
+const MAX_LAG_SPIKE_S: f32 = 1.5;
 
 #[derive(Debug, Default)]
 pub struct ReferenceLapProcessor {
@@ -38,6 +53,11 @@ pub struct ReferenceLapProcessor {
     /// the in-memory best does not block re-recording after the stored
     /// reference file was deleted.
     reset_requested: Arc<AtomicBool>,
+    /// Lap time of the reference persisted on disk for the current track+car
+    /// (refreshed by the telemetry runtime on session-info updates). A lap is
+    /// committed only when it also beats this time, so a session best that is
+    /// slower than the stored reference never overwrites it.
+    stored_best_lap_time: Arc<Mutex<Option<f32>>>,
 }
 
 /// Average remaining tread (0.0-1.0, 1.0=fresh) across all sampled tire zones, when any are present.
@@ -67,9 +87,13 @@ fn average_tire_wear(chassis: &crate::model::player::ChassisFrame) -> Option<f32
 }
 
 impl ReferenceLapProcessor {
-    pub fn new(reset_requested: Arc<AtomicBool>) -> Self {
+    pub fn new(
+        reset_requested: Arc<AtomicBool>,
+        stored_best_lap_time: Arc<Mutex<Option<f32>>>,
+    ) -> Self {
         Self {
             reset_requested,
+            stored_best_lap_time,
             ..Self::default()
         }
     }
@@ -144,6 +168,28 @@ impl Processor for ReferenceLapProcessor {
             }
         };
 
+        // A pit teleport keeps `lap_dist_pct` valid but makes it jump. Detect
+        // any discontinuity that is not the finish-line wrap and invalidate the
+        // lap: the forward-fill below would otherwise smear a single stationary
+        // pit-stall sample (speed ~0) across every skipped bucket, and a later
+        // commit would bake those zeros into the reference lap.
+        if self.prev_lap_dist_pct >= 0.0 {
+            let delta = lap_dist_pct - self.prev_lap_dist_pct;
+            let is_finish_wrap =
+                self.prev_lap_dist_pct > WRAP_HIGH_THRESHOLD && lap_dist_pct < WRAP_LOW_THRESHOLD;
+
+            let lag_travel_pct = if ctx.track_length_m > 0.0 {
+                (ctx.car_dynamics.speed * MAX_LAG_SPIKE_S) / ctx.track_length_m
+            } else {
+                0.0
+            };
+            let max_allowed_jump = lag_travel_pct.max(MAX_TICK_DIST_PCT_JUMP);
+
+            if delta.abs() > max_allowed_jump && !is_finish_wrap {
+                self.lap_invalidated = true;
+            }
+        }
+
         let bucket = ((lap_dist_pct * REFERENCE_LAP_BUCKET_COUNT as f32) as usize)
             .min(REFERENCE_LAP_BUCKET_COUNT - 1);
 
@@ -152,6 +198,7 @@ impl Processor for ReferenceLapProcessor {
             throttle: ctx.car_inputs.throttle,
             brake: ctx.car_inputs.brake,
             lat_accel: ctx.car_dynamics.lat_accel,
+            long_accel: ctx.car_dynamics.long_accel,
             steering_wheel_angle: ctx.car_dynamics.steering_wheel_angle,
         };
 
@@ -175,12 +222,26 @@ impl Processor for ReferenceLapProcessor {
         }
 
         let best_lap_time = ctx.lap_timing.lap_best_lap_time.unwrap_or(0.0);
+        let stored_time = self
+            .stored_best_lap_time
+            .lock()
+            .ok()
+            .and_then(|stored| *stored);
+        let beats_stored = stored_time
+            .is_none_or(|stored| stored <= 0.0 || best_lap_time < stored - BEST_TIME_EPSILON);
         let is_new_best = !self.lap_invalidated
             && best_lap_time > 0.0
+            && beats_stored
             && (self.prev_best_lap_time <= 0.0
                 || best_lap_time < self.prev_best_lap_time - BEST_TIME_EPSILON);
 
         self.prev_best_lap_time = best_lap_time;
+
+        if is_new_best {
+            if let Ok(mut stored) = self.stored_best_lap_time.lock() {
+                *stored = Some(best_lap_time);
+            }
+        }
 
         let output = if is_new_best {
             Some(ComputedOutput::ReferenceLap(ReferenceLapData {
@@ -330,6 +391,50 @@ mod tests {
         }
     }
 
+    /// Advance the processor by one tick at `lap_dist_pct` with default frames.
+    fn run_tick(
+        proc: &mut ReferenceLapProcessor,
+        session: &SessionSnapshot,
+        lap_dist_pct: f32,
+        best_lap_time: Option<f32>,
+    ) -> Option<ComputedOutput> {
+        let dynamics = make_dynamics(50.0);
+        let inputs = make_inputs(1.0, 0.0);
+        let lap_timing = make_lap_timing(lap_dist_pct, best_lap_time);
+        let car_status = make_car_status();
+        let car_idx = make_car_idx();
+        let start_pos = HashMap::new();
+        let chassis = crate::model::player::ChassisFrame::default();
+        let environment = crate::model::environment::EnvironmentFrame::default();
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
+        proc.compute(&ctx)
+    }
+
+    /// Drive `from..to` in steps small enough to stay under the teleport
+    /// detection threshold, as a real 60 Hz feed would.
+    fn drive_segment(
+        proc: &mut ReferenceLapProcessor,
+        session: &SessionSnapshot,
+        from_pct: f32,
+        to_pct: f32,
+    ) {
+        let mut pct = from_pct;
+        while pct < to_pct {
+            assert!(run_tick(proc, session, pct, None).is_none());
+            pct += 0.005;
+        }
+    }
+
     struct MakeCtxArgs<'a> {
         dynamics: &'a CarDynamicsFrame,
         inputs: &'a CarInputsFrame,
@@ -366,47 +471,11 @@ mod tests {
     fn first_valid_lap_is_committed_as_best() {
         let mut proc = ReferenceLapProcessor::default();
         let session = make_session(1);
-        let car_status = make_car_status();
-        let car_idx = make_car_idx();
-        let start_pos = HashMap::new();
-        let chassis = crate::model::player::ChassisFrame::default();
-        let environment = crate::model::environment::EnvironmentFrame::default();
 
-        // Drive through the lap, sampling a couple of points.
-        for pct in [0.1_f32, 0.5, 0.95] {
-            let dynamics = make_dynamics(50.0);
-            let inputs = make_inputs(1.0, 0.0);
-            let lap_timing = make_lap_timing(pct, None);
-            let ctx = make_ctx(MakeCtxArgs {
-                dynamics: &dynamics,
-                inputs: &inputs,
-                lap_timing: &lap_timing,
-                car_status: &car_status,
-                session: &session,
-                car_idx: &car_idx,
-                start_positions: &start_pos,
-                chassis: &chassis,
-                environment: &environment,
-            });
-            assert!(proc.compute(&ctx).is_none());
-        }
+        drive_segment(&mut proc, &session, 0.005, 0.995);
 
         // Cross the finish line with a freshly-set best lap time.
-        let dynamics = make_dynamics(50.0);
-        let inputs = make_inputs(1.0, 0.0);
-        let lap_timing = make_lap_timing(0.05, Some(90.0));
-        let ctx = make_ctx(MakeCtxArgs {
-            dynamics: &dynamics,
-            inputs: &inputs,
-            lap_timing: &lap_timing,
-            car_status: &car_status,
-            session: &session,
-            car_idx: &car_idx,
-            start_positions: &start_pos,
-            chassis: &chassis,
-            environment: &environment,
-        });
-        let output = proc.compute(&ctx);
+        let output = run_tick(&mut proc, &session, 0.05, Some(90.0));
 
         match output {
             Some(ComputedOutput::ReferenceLap(data)) => {
@@ -418,6 +487,24 @@ mod tests {
             }
             other => panic!("expected ReferenceLap output, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn pit_teleport_jump_invalidates_the_lap() {
+        let mut proc = ReferenceLapProcessor::default();
+        let session = make_session(1);
+
+        // Mid-lap teleport: lap_dist_pct stays valid but jumps 0.4 → 0.85.
+        drive_segment(&mut proc, &session, 0.005, 0.4);
+        assert!(run_tick(&mut proc, &session, 0.85, None).is_none());
+        drive_segment(&mut proc, &session, 0.855, 0.995);
+
+        // Crossing with a fresh best must NOT commit the teleport-tainted buffer.
+        assert!(run_tick(&mut proc, &session, 0.05, Some(90.0)).is_none());
+
+        // The next cleanly driven lap commits again.
+        drive_segment(&mut proc, &session, 0.055, 0.995);
+        assert!(run_tick(&mut proc, &session, 0.05, Some(89.0)).is_some());
     }
 
     #[test]
@@ -482,190 +569,61 @@ mod tests {
     fn slower_lap_does_not_overwrite_reference() {
         let mut proc = ReferenceLapProcessor::default();
         let session = make_session(1);
-        let car_status = make_car_status();
-        let car_idx = make_car_idx();
-        let start_pos = HashMap::new();
-        let chassis = crate::model::player::ChassisFrame::default();
-        let environment = crate::model::environment::EnvironmentFrame::default();
-
-        let dynamics = make_dynamics(50.0);
-        let inputs = make_inputs(1.0, 0.0);
 
         // First lap sets the best.
-        let lap_timing = make_lap_timing(0.5, None);
-        let ctx = make_ctx(MakeCtxArgs {
-            dynamics: &dynamics,
-            inputs: &inputs,
-            lap_timing: &lap_timing,
-            car_status: &car_status,
-            session: &session,
-            car_idx: &car_idx,
-            start_positions: &start_pos,
-            chassis: &chassis,
-            environment: &environment,
-        });
-        let _ = proc.compute(&ctx);
-        let lap_timing = make_lap_timing(0.95, None);
-        let ctx = make_ctx(MakeCtxArgs {
-            dynamics: &dynamics,
-            inputs: &inputs,
-            lap_timing: &lap_timing,
-            car_status: &car_status,
-            session: &session,
-            car_idx: &car_idx,
-            start_positions: &start_pos,
-            chassis: &chassis,
-            environment: &environment,
-        });
-        let _ = proc.compute(&ctx);
-        let lap_timing = make_lap_timing(0.05, Some(90.0));
-        let ctx = make_ctx(MakeCtxArgs {
-            dynamics: &dynamics,
-            inputs: &inputs,
-            lap_timing: &lap_timing,
-            car_status: &car_status,
-            session: &session,
-            car_idx: &car_idx,
-            start_positions: &start_pos,
-            chassis: &chassis,
-            environment: &environment,
-        });
-        assert!(proc.compute(&ctx).is_some());
+        drive_segment(&mut proc, &session, 0.005, 0.995);
+        assert!(run_tick(&mut proc, &session, 0.05, Some(90.0)).is_some());
 
         // Second lap is slower — best lap time is unchanged.
-        let lap_timing = make_lap_timing(0.5, Some(90.0));
-        let ctx = make_ctx(MakeCtxArgs {
-            dynamics: &dynamics,
-            inputs: &inputs,
-            lap_timing: &lap_timing,
-            car_status: &car_status,
-            session: &session,
-            car_idx: &car_idx,
-            start_positions: &start_pos,
-            chassis: &chassis,
-            environment: &environment,
-        });
-        let _ = proc.compute(&ctx);
-        let lap_timing = make_lap_timing(0.95, None);
-        let ctx = make_ctx(MakeCtxArgs {
-            dynamics: &dynamics,
-            inputs: &inputs,
-            lap_timing: &lap_timing,
-            car_status: &car_status,
-            session: &session,
-            car_idx: &car_idx,
-            start_positions: &start_pos,
-            chassis: &chassis,
-            environment: &environment,
-        });
-        let _ = proc.compute(&ctx);
-        let lap_timing = make_lap_timing(0.05, Some(90.0));
-        let ctx = make_ctx(MakeCtxArgs {
-            dynamics: &dynamics,
-            inputs: &inputs,
-            lap_timing: &lap_timing,
-            car_status: &car_status,
-            session: &session,
-            car_idx: &car_idx,
-            start_positions: &start_pos,
-            chassis: &chassis,
-            environment: &environment,
-        });
-        assert!(proc.compute(&ctx).is_none());
+        drive_segment(&mut proc, &session, 0.055, 0.995);
+        assert!(run_tick(&mut proc, &session, 0.05, Some(90.0)).is_none());
+    }
+
+    #[test]
+    fn session_best_slower_than_stored_reference_is_not_committed() {
+        let stored = Arc::new(Mutex::new(Some(85.0_f32)));
+        let mut proc =
+            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let session = make_session(1);
+
+        // First session best (90.0) is slower than the persisted reference (85.0).
+        drive_segment(&mut proc, &session, 0.005, 0.995);
+        assert!(run_tick(&mut proc, &session, 0.05, Some(90.0)).is_none());
+
+        // A lap faster than the stored reference commits and updates the shared time.
+        drive_segment(&mut proc, &session, 0.055, 0.995);
+        assert!(run_tick(&mut proc, &session, 0.05, Some(84.0)).is_some());
+        assert_eq!(*stored.lock().unwrap(), Some(84.0));
+    }
+
+    #[test]
+    fn cleared_stored_reference_allows_recommit() {
+        let stored = Arc::new(Mutex::new(None::<f32>));
+        let mut proc =
+            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let session = make_session(1);
+
+        drive_segment(&mut proc, &session, 0.005, 0.995);
+        assert!(run_tick(&mut proc, &session, 0.05, Some(90.0)).is_some());
+        assert_eq!(*stored.lock().unwrap(), Some(90.0));
     }
 
     #[test]
     fn track_change_resets_prior_best() {
-        let mut proc = ReferenceLapProcessor::default();
-        let car_status = make_car_status();
-        let car_idx = make_car_idx();
-        let start_pos = HashMap::new();
-        let chassis = crate::model::player::ChassisFrame::default();
-        let environment = crate::model::environment::EnvironmentFrame::default();
-        let dynamics = make_dynamics(50.0);
-        let inputs = make_inputs(1.0, 0.0);
+        let stored = Arc::new(Mutex::new(None::<f32>));
+        let mut proc =
+            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
 
         let session1 = make_session(1);
-        let lap_timing = make_lap_timing(0.5, None);
-        let ctx = make_ctx(MakeCtxArgs {
-            dynamics: &dynamics,
-            inputs: &inputs,
-            lap_timing: &lap_timing,
-            car_status: &car_status,
-            session: &session1,
-            car_idx: &car_idx,
-            start_positions: &start_pos,
-            chassis: &chassis,
-            environment: &environment,
-        });
-        let _ = proc.compute(&ctx);
-        let lap_timing = make_lap_timing(0.95, None);
-        let ctx = make_ctx(MakeCtxArgs {
-            dynamics: &dynamics,
-            inputs: &inputs,
-            lap_timing: &lap_timing,
-            car_status: &car_status,
-            session: &session1,
-            car_idx: &car_idx,
-            start_positions: &start_pos,
-            chassis: &chassis,
-            environment: &environment,
-        });
-        let _ = proc.compute(&ctx);
-        let lap_timing = make_lap_timing(0.05, Some(90.0));
-        let ctx = make_ctx(MakeCtxArgs {
-            dynamics: &dynamics,
-            inputs: &inputs,
-            lap_timing: &lap_timing,
-            car_status: &car_status,
-            session: &session1,
-            car_idx: &car_idx,
-            start_positions: &start_pos,
-            chassis: &chassis,
-            environment: &environment,
-        });
-        assert!(proc.compute(&ctx).is_some());
+        drive_segment(&mut proc, &session1, 0.005, 0.995);
+        assert!(run_tick(&mut proc, &session1, 0.05, Some(90.0)).is_some());
 
-        // Switch tracks — a slower time than the old best should still count as new best.
+        // Switch tracks — a slower time than the old best should still count as
+        // new best. The runtime refreshes the shared stored time on the
+        // session-info update that changes the track; mimic finding no file.
+        *stored.lock().unwrap() = None;
         let session2 = make_session(2);
-        let lap_timing = make_lap_timing(0.5, None);
-        let ctx = make_ctx(MakeCtxArgs {
-            dynamics: &dynamics,
-            inputs: &inputs,
-            lap_timing: &lap_timing,
-            car_status: &car_status,
-            session: &session2,
-            car_idx: &car_idx,
-            start_positions: &start_pos,
-            chassis: &chassis,
-            environment: &environment,
-        });
-        let _ = proc.compute(&ctx);
-        let lap_timing = make_lap_timing(0.95, None);
-        let ctx = make_ctx(MakeCtxArgs {
-            dynamics: &dynamics,
-            inputs: &inputs,
-            lap_timing: &lap_timing,
-            car_status: &car_status,
-            session: &session2,
-            car_idx: &car_idx,
-            start_positions: &start_pos,
-            chassis: &chassis,
-            environment: &environment,
-        });
-        let _ = proc.compute(&ctx);
-        let lap_timing = make_lap_timing(0.05, Some(95.0));
-        let ctx = make_ctx(MakeCtxArgs {
-            dynamics: &dynamics,
-            inputs: &inputs,
-            lap_timing: &lap_timing,
-            car_status: &car_status,
-            session: &session2,
-            car_idx: &car_idx,
-            start_positions: &start_pos,
-            chassis: &chassis,
-            environment: &environment,
-        });
-        assert!(proc.compute(&ctx).is_some());
+        drive_segment(&mut proc, &session2, 0.005, 0.995);
+        assert!(run_tick(&mut proc, &session2, 0.05, Some(95.0)).is_some());
     }
 }

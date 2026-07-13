@@ -736,6 +736,11 @@ export type ReferenceLapSample = {
    */
   latAccel: number | null;
   /**
+   * Longitudinal acceleration in m/s^2, when the sim provides it.
+   * `serde(default)` keeps reference laps persisted before this field existed loadable.
+   */
+  longAccel?: number | null;
+  /**
    * Steering wheel angle in radians.
    */
   steeringWheelAngle: number;

@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 import { observer } from 'mobx-react-lite';
 
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
@@ -15,6 +17,9 @@ const ADVISORY_LABEL = {
   gas: 'GAS',
 } as const;
 
+/** Brake urgency at/above this pre-arms the tab ("SOON") before the hard BRAKE call fires. */
+const BRAKE_SOON_URGENCY = 0.7;
+
 export const CoachTab = observer(() => {
   const coach = useDrivingCoachWidgetStore();
   const units = useUnitsStore();
@@ -28,30 +33,58 @@ export const CoachTab = observer(() => {
   const hasReferenceLap = coach.hasReferenceLap;
 
   const advisory = coach.displayedAdvisory;
+  const brakeSoon =
+    hasReferenceLap &&
+    advisory === 'neutral' &&
+    coach.displayedBrakeUrgency >= BRAKE_SOON_URGENCY;
+
   const accentColor =
     hasReferenceLap && advisory === 'brake'
       ? settings.brakeColor
       : hasReferenceLap && advisory === 'gas'
         ? settings.gasColor
-        : null;
+        : brakeSoon
+          ? settings.brakeColor
+          : null;
 
   const stateClass =
     hasReferenceLap && advisory === 'brake'
       ? styles.brakeCall
       : hasReferenceLap && advisory === 'gas'
         ? styles.gasCall
-        : styles.idle;
+        : brakeSoon
+          ? styles.brakeSoon
+          : styles.idle;
 
   const callText = !hasReferenceLap
     ? 'NO LAP'
     : advisory === 'neutral'
-      ? hasReference
-        ? 'PACE'
-        : '—'
+      ? brakeSoon
+        ? 'SOON'
+        : hasReference
+          ? 'PACE'
+          : '—'
       : ADVISORY_LABEL[advisory];
 
+  const soonFillPercent = brakeSoon
+    ? Math.min(
+        1,
+        (coach.displayedBrakeUrgency - BRAKE_SOON_URGENCY) /
+          (1 - BRAKE_SOON_URGENCY)
+      ) * 100
+    : 0;
+
   return (
-    <div className={`${styles.root} ${stateClass}`}>
+    <div
+      className={`${styles.root} ${stateClass}`}
+      style={
+        brakeSoon
+          ? ({ '--soon-fill': `${soonFillPercent}%` } as CSSProperties)
+          : undefined
+      }
+    >
+      {brakeSoon ? <div className={styles.soonFill} /> : null}
+
       <span
         className={styles.call}
         style={accentColor ? { color: accentColor } : undefined}

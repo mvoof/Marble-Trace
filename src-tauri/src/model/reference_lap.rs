@@ -18,6 +18,10 @@ pub struct ReferenceLapSample {
     pub brake: f32,
     /// Lateral acceleration in m/s^2, when the sim provides it.
     pub lat_accel: Option<f32>,
+    /// Longitudinal acceleration in m/s^2, when the sim provides it.
+    /// `serde(default)` keeps reference laps persisted before this field existed loadable.
+    #[serde(default)]
+    pub long_accel: Option<f32>,
     /// Steering wheel angle in radians.
     pub steering_wheel_angle: f32,
 }
