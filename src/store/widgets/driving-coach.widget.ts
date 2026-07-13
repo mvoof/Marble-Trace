@@ -50,40 +50,56 @@ export class DrivingCoachWidgetStore {
   private lastDistPctUpdateAt: number | null = null;
   private pendingAdvisory: DrivingAdvisory | null = null;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private reactionDisposers: (() => void)[] = [];
 
   constructor(private readonly root: RootStore) {
     makeAutoObservable<
       DrivingCoachWidgetStore,
-      'advisoryState' | 'lastDistPctUpdateAt'
+      'advisoryState' | 'lastDistPctUpdateAt' | 'reactionDisposers'
     >(
       this,
-      { advisoryState: false, lastDistPctUpdateAt: false },
+      {
+        advisoryState: false,
+        lastDistPctUpdateAt: false,
+        reactionDisposers: false,
+      },
       { autoBind: true }
     );
   }
 
   init() {
-    reaction(
-      () => this.root.player.lapTiming?.lap_dist_pct,
-      () => {
-        this.lastDistPctUpdateAt = performance.now();
-      }
+    this.disposeReactions();
+
+    this.reactionDisposers.push(
+      reaction(
+        () => this.root.player.lapTiming?.lap_dist_pct,
+        () => {
+          this.lastDistPctUpdateAt = performance.now();
+        }
+      )
     );
 
-    reaction(
-      () => this.advisoryInput,
-      (input) => {
-        const next = input
-          ? computeDrivingAdvisory(
-              this.withExtrapolatedPosition(input),
-              this.advisoryState
-            )
-          : NEUTRAL_ADVISORY_STATE;
+    this.reactionDisposers.push(
+      reaction(
+        () => this.advisoryInput,
+        (input) => {
+          const next = input
+            ? computeDrivingAdvisory(
+                this.withExtrapolatedPosition(input),
+                this.advisoryState
+              )
+            : NEUTRAL_ADVISORY_STATE;
 
-        this.advisoryState = next;
-        this.applyAdvisoryState(next);
-      }
+          this.advisoryState = next;
+          this.applyAdvisoryState(next);
+        }
+      )
     );
+  }
+
+  private disposeReactions() {
+    this.reactionDisposers.forEach((dispose) => dispose());
+    this.reactionDisposers = [];
   }
 
   /** Whether a best-lap reference has been recorded at all for this track+car. */

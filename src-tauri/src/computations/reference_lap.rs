@@ -18,12 +18,19 @@ const WRAP_HIGH_THRESHOLD: f32 = 0.9;
 const WRAP_LOW_THRESHOLD: f32 = 0.1;
 /// Guards against float-equality false negatives when comparing best lap times.
 const BEST_TIME_EPSILON: f32 = 1e-4;
-/// Max plausible `lap_dist_pct` advance between two 60 Hz ticks. Even at
-/// 150 m/s on a 1 km track a tick covers 150/60/1000 = 0.0025 of the lap;
-/// a larger jump (in either direction, outside the finish-line wrap) means the
-/// car was teleported (pit tow, session reset) — the working buffer then holds
-/// forward-filled garbage and must not be committed as a reference lap.
+/// Minimum allowed `lap_dist_pct` advance between two ticks before the jump is
+/// treated as a teleport. Even at 150 m/s on a 1 km track a 60 Hz tick covers
+/// 150/60/1000 = 0.0025 of the lap; a larger jump (in either direction,
+/// outside the finish-line wrap) means the car was teleported (pit tow,
+/// session reset) — the working buffer then holds forward-filled garbage and
+/// must not be committed as a reference lap.
 const MAX_TICK_DIST_PCT_JUMP: f32 = 0.01;
+/// Lag-spike budget (s): frame drops / CPU stalls make consecutive processed
+/// ticks arbitrarily far apart in time, so the allowed jump also scales with
+/// the distance the car could genuinely cover at its current speed within this
+/// budget. A pit teleport lands the car at ~0 speed, so the speed-scaled
+/// allowance collapses back to the floor and real teleports are still caught.
+const MAX_LAG_SPIKE_S: f32 = 1.5;
 
 #[derive(Debug, Default)]
 pub struct ReferenceLapProcessor {
@@ -171,7 +178,14 @@ impl Processor for ReferenceLapProcessor {
             let is_finish_wrap =
                 self.prev_lap_dist_pct > WRAP_HIGH_THRESHOLD && lap_dist_pct < WRAP_LOW_THRESHOLD;
 
-            if delta.abs() > MAX_TICK_DIST_PCT_JUMP && !is_finish_wrap {
+            let lag_travel_pct = if ctx.track_length_m > 0.0 {
+                (ctx.car_dynamics.speed * MAX_LAG_SPIKE_S) / ctx.track_length_m
+            } else {
+                0.0
+            };
+            let max_allowed_jump = lag_travel_pct.max(MAX_TICK_DIST_PCT_JUMP);
+
+            if delta.abs() > max_allowed_jump && !is_finish_wrap {
                 self.lap_invalidated = true;
             }
         }
