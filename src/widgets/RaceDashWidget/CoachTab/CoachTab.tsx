@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+
 import { observer } from 'mobx-react-lite';
 
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
@@ -64,8 +66,25 @@ export const CoachTab = observer(() => {
           : '—'
       : ADVISORY_LABEL[advisory];
 
+  const soonFillPercent = brakeSoon
+    ? Math.min(
+        1,
+        (coach.displayedBrakeUrgency - BRAKE_SOON_URGENCY) /
+          (1 - BRAKE_SOON_URGENCY)
+      ) * 100
+    : 0;
+
   return (
-    <div className={`${styles.root} ${stateClass}`}>
+    <div
+      className={`${styles.root} ${stateClass}`}
+      style={
+        brakeSoon
+          ? ({ '--soon-fill': `${soonFillPercent}%` } as CSSProperties)
+          : undefined
+      }
+    >
+      {brakeSoon ? <div className={styles.soonFill} /> : null}
+
       <span
         className={styles.call}
         style={accentColor ? { color: accentColor } : undefined}

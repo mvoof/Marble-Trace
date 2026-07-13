@@ -3,6 +3,7 @@
 // The divider edge uses a fixed token, not var(--widget-border) — the
 // user's border-color setting must restyle only the plate outline.
 .root {
+  position: relative;
   align-self: stretch;
   flex-shrink: 0;
   width: ws(84);
@@ -14,11 +15,25 @@
   margin-left: sp(lg);
   border-left: 1px solid $widget-border-subtle;
   border-radius: 0 ws(13) ws(13) 0;
+  overflow: hidden;
+}
+
+// Bottom-up fill that tracks brake urgency while pre-armed ("SOON") — the
+// call hasn't fired yet, so the fill communicates how close it is.
+.soonFill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--soon-fill, 0%);
+  background: rgba($race-red, 0.22);
+  transition: height 0.1s linear;
 }
 
 .call {
+  position: relative;
   font-family: $font-mono;
-  font-size: fs(sm);
+  font-size: fs(lg);
   font-weight: 800;
   letter-spacing: 0.04em;
   color: $widget-text-secondary;
@@ -26,6 +41,7 @@
 
 // The reference speed is the tab's main number — larger than the call word.
 .ref {
+  position: relative;
   font-family: $font-mono;
   font-size: ws(22);
   font-weight: 700;
@@ -55,7 +71,6 @@
 // Pre-arm state: the braking point is approaching (urgency high) but the hard
 // call hasn't fired yet — dimmer than .brakeCall, no pulse.
 .brakeSoon {
-  background: rgba($race-red, 0.07);
   border-left-color: rgba($race-red, 0.3);
 }
 
