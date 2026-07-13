@@ -54,7 +54,7 @@ export const WidgetWorkbench = observer(
                 value={scenarioId}
                 onChange={setScenarioId}
                 options={SCENARIO_OPTIONS}
-                style={{ minWidth: 220 }}
+                style={{ minWidth: 160 }}
                 popupMatchSelectWidth={false}
               />
             </div>
