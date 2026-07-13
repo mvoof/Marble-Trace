@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import type { ChassisFrame, ReferenceLapSample } from '@/types/bindings';
 import {
+  buildTargetSpeedProfile,
   computeDrivingAdvisory,
   extractCornerTargets,
   findNextCornerTarget,
   getAverageTireWear,
+  interpolateReferenceSample,
   isConditionMismatch,
   NEUTRAL_ADVISORY_STATE,
 } from './driving-coach-utils';
@@ -15,22 +17,17 @@ const BUCKET_COUNT = 1000;
 const sample = (
   speed: number,
   throttle = 0,
-  brake = 0
+  brake = 0,
+  latAccel: number | null = 0,
+  longAccel: number | null = 0
 ): ReferenceLapSample => ({
   speed,
   throttle,
   brake,
-  latAccel: null,
+  latAccel,
+  longAccel,
   steeringWheelAngle: 0,
 });
-
-const baseAdvisoryInput = {
-  brakeAbsActive: false,
-  currentSteeringWheelAngle: 0,
-  referenceSteeringWheelAngleAtCurrent: null,
-  currentLatAccel: null,
-  referenceLatAccelAtCurrent: null,
-};
 
 /** Build a straight-brake-apex-throttle corner profile spanning the whole lap. */
 const buildSingleCornerSamples = (): ReferenceLapSample[] => {
@@ -51,16 +48,46 @@ const buildSingleCornerSamples = (): ReferenceLapSample[] => {
   return samples;
 };
 
+const cornerSamples = buildSingleCornerSamples();
+const cornerTargets = extractCornerTargets(cornerSamples, TRACK_LENGTH_M);
+
+const baseAdvisoryInput = {
+  trackLengthM: TRACK_LENGTH_M,
+  cornerTargets,
+  referenceSamples: cornerSamples,
+  targetSpeedProfile: null,
+  brakeAbsActive: false,
+  currentThrottle: 1,
+  currentBrake: 0,
+  currentSteeringWheelAngle: 0,
+  currentLatAccel: null,
+  currentLongAccel: null,
+};
+
+describe('interpolateReferenceSample', () => {
+  const samples = [sample(10), sample(20), sample(30), sample(40)];
+
+  it('interpolates linearly between bucket centers', () => {
+    // pct 0.25 → x = 0.25*4 - 0.5 = 0.5 → halfway between buckets 0 and 1.
+    expect(interpolateReferenceSample(samples, 0.25)?.speed).toBeCloseTo(15, 5);
+  });
+
+  it('wraps across the lap boundary', () => {
+    // pct 0 → x = -0.5 → halfway between the last and first buckets.
+    expect(interpolateReferenceSample(samples, 0)?.speed).toBeCloseTo(25, 5);
+  });
+});
+
 describe('extractCornerTargets', () => {
   it('finds the single corner apex and derives a positive braking deceleration', () => {
-    const targets = extractCornerTargets(
-      buildSingleCornerSamples(),
-      TRACK_LENGTH_M
-    );
+    expect(cornerTargets).toHaveLength(1);
+    expect(cornerTargets[0].targetSpeed).toBeCloseTo(10, 0);
+    expect(cornerTargets[0].brakingDecel).toBeGreaterThan(0);
+  });
 
-    expect(targets).toHaveLength(1);
-    expect(targets[0].targetSpeed).toBeCloseTo(10, 0);
-    expect(targets[0].brakingDecel).toBeGreaterThan(0);
+  it('records where the reference driver first pressed the brake', () => {
+    // Braking starts at bucket 400 in the fixture profile.
+    expect(cornerTargets[0].brakeStartPct).toBeCloseTo(0.4, 2);
   });
 
   it('ignores noise below the minimum speed-drop threshold', () => {
@@ -76,68 +103,70 @@ describe('extractCornerTargets', () => {
 
 describe('findNextCornerTarget', () => {
   it('finds the nearest target ahead, wrapping around the lap', () => {
-    const targets = extractCornerTargets(
-      buildSingleCornerSamples(),
-      TRACK_LENGTH_M
-    );
-
-    const ahead = findNextCornerTarget(targets, 0.3, TRACK_LENGTH_M);
-    expect(ahead?.distPct).toBeCloseTo(targets[0].distPct, 2);
+    const ahead = findNextCornerTarget(cornerTargets, 0.3, TRACK_LENGTH_M);
+    expect(ahead?.distPct).toBeCloseTo(cornerTargets[0].distPct, 2);
 
     // Just past the apex — the same target is now behind us, so wrap to "none within range".
-    const justPast = findNextCornerTarget(targets, 0.46, TRACK_LENGTH_M);
+    const justPast = findNextCornerTarget(cornerTargets, 0.46, TRACK_LENGTH_M);
     expect(justPast).toBeNull();
   });
 });
 
-describe('extractCornerTargets braking zone', () => {
-  it('records where the reference driver first pressed the brake', () => {
-    const targets = extractCornerTargets(
-      buildSingleCornerSamples(),
-      TRACK_LENGTH_M
-    );
+describe('buildTargetSpeedProfile', () => {
+  it('derives the physics target speed from curvature and demonstrated grip', () => {
+    // Half the lap at κ = 8/20² = 0.02 (grip-limited: v_target = ref speed),
+    // half at κ = 2/20² = 0.005 (under-driven: v_target = √(8/0.005) = 40).
+    const samples: ReferenceLapSample[] = new Array(BUCKET_COUNT);
 
-    // Braking starts at bucket 400 in the fixture profile.
-    expect(targets[0].brakeStartPct).toBeCloseTo(0.4, 2);
+    for (let i = 0; i < BUCKET_COUNT; i++) {
+      samples[i] = i < 500 ? sample(20, 0.5, 0, 8) : sample(20, 0.5, 0, 2);
+    }
+
+    const profile = buildTargetSpeedProfile(samples);
+
+    expect(profile).not.toBeNull();
+    expect(profile?.[100]).toBeCloseTo(20, 1);
+    expect(profile?.[700]).toBeCloseTo(40, 1);
+  });
+
+  it('leaves straights unconstrained and rejects laps without lateral data', () => {
+    const straight: ReferenceLapSample[] = new Array(BUCKET_COUNT).fill(
+      sample(50, 1, 0, 0.1)
+    );
+    const profile = buildTargetSpeedProfile(straight);
+
+    // κ = 0.1/50² = 0.00004 < MIN_PROFILE_CURVATURE → no constraint anywhere.
+    expect(profile?.every((target) => target === null)).toBe(true);
+
+    const noLatData: ReferenceLapSample[] = new Array(BUCKET_COUNT).fill(
+      sample(50, 1, 0, null)
+    );
+    expect(buildTargetSpeedProfile(noLatData)).toBeNull();
   });
 });
 
 describe('computeDrivingAdvisory', () => {
-  const targets = extractCornerTargets(
-    buildSingleCornerSamples(),
-    TRACK_LENGTH_M
-  );
-
   it('advises brake when current speed cannot be shed in time for the apex', () => {
     const state = computeDrivingAdvisory(
       {
         ...baseAdvisoryInput,
         currentSpeed: 60,
-        currentThrottle: 1,
         currentDistPct: 0.44, // right before the apex, almost no braking zone left
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 20,
-        referenceThrottleAtCurrent: 0,
       },
       NEUTRAL_ADVISORY_STATE
     );
 
     expect(state.advisory).toBe('brake');
-    expect(state.brakeCornerPct).toBeCloseTo(targets[0].distPct, 5);
+    expect(state.brakeCornerPct).toBeCloseTo(cornerTargets[0].distPct, 5);
+    expect(state.brakeUrgency).toBe(1);
   });
 
-  it('advises brake when overspeeding inside the reference braking zone even if still kinematically feasible', () => {
+  it('advises brake for the whole reference braking zone while above the apex speed', () => {
     const state = computeDrivingAdvisory(
       {
         ...baseAdvisoryInput,
-        currentSpeed: 45, // reference is ~55 here and already braking
-        currentThrottle: 1,
-        currentDistPct: 0.405,
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 55,
-        referenceThrottleAtCurrent: 0,
+        currentSpeed: 45,
+        currentDistPct: 0.405, // just inside the zone, apex target is 10 m/s
       },
       NEUTRAL_ADVISORY_STATE
     );
@@ -150,12 +179,7 @@ describe('computeDrivingAdvisory', () => {
       {
         ...baseAdvisoryInput,
         currentSpeed: 60,
-        currentThrottle: 1,
         currentDistPct: 0.44,
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 20,
-        referenceThrottleAtCurrent: 0,
       },
       NEUTRAL_ADVISORY_STATE
     );
@@ -167,11 +191,8 @@ describe('computeDrivingAdvisory', () => {
         ...baseAdvisoryInput,
         currentSpeed: 25,
         currentThrottle: 0,
+        currentBrake: 0.9,
         currentDistPct: 0.45,
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 12,
-        referenceThrottleAtCurrent: 0,
       },
       latched
     );
@@ -185,10 +206,6 @@ describe('computeDrivingAdvisory', () => {
         currentSpeed: 10,
         currentThrottle: 0,
         currentDistPct: 0.452,
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 10,
-        referenceThrottleAtCurrent: 0,
       },
       stillBraking
     );
@@ -196,22 +213,63 @@ describe('computeDrivingAdvisory', () => {
     expect(released.advisory).toBe('neutral');
   });
 
-  it('stays neutral when on the reference braking curve ahead of the braking zone', () => {
+  it('stays neutral at reference pace on the straight', () => {
     const state = computeDrivingAdvisory(
       {
         ...baseAdvisoryInput,
-        currentSpeed: 30,
-        currentThrottle: 0,
-        currentDistPct: 0.3, // long before the zone, slow enough for the apex
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 60,
-        referenceThrottleAtCurrent: 0,
+        currentSpeed: 59, // within the gas deadzone of the 60 m/s reference
+        currentDistPct: 0.2,
       },
       NEUTRAL_ADVISORY_STATE
     );
 
     expect(state.advisory).toBe('neutral');
+  });
+
+  it('reports partial brake urgency on the approach before the call fires', () => {
+    const state = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentSpeed: 59,
+        currentDistPct: 0.2, // 250 m from the apex
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
+
+    expect(state.brakeUrgency).toBeGreaterThan(0);
+    expect(state.brakeUrgency).toBeLessThan(1);
+  });
+
+  it('advises brake on mid-corner overspeed vs. the physics target profile', () => {
+    const profile: (number | null)[] = new Array(BUCKET_COUNT).fill(null);
+    profile[200] = 30;
+
+    const state = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        targetSpeedProfile: profile,
+        currentSpeed: 40, // > 30 * 1.05
+        currentDistPct: 0.2005,
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
+
+    expect(state.advisory).toBe('brake');
+  });
+
+  it('advises brake when under-braking during the reference braking phase without a detected corner target', () => {
+    const state = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        cornerTargets: [], // decel derivation failed — zone/feasibility checks unavailable
+        currentSpeed: 45, // reference is ~38 here and hard on the brakes
+        currentBrake: 0.1,
+        currentDistPct: 0.422,
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
+
+    expect(state.advisory).toBe('brake');
   });
 
   it('advises gas when well under the reference speed on a full-throttle straight', () => {
@@ -221,10 +279,6 @@ describe('computeDrivingAdvisory', () => {
         currentSpeed: 50,
         currentThrottle: 0.5,
         currentDistPct: 0.1,
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 60,
-        referenceThrottleAtCurrent: 1,
       },
       NEUTRAL_ADVISORY_STATE
     );
@@ -239,10 +293,6 @@ describe('computeDrivingAdvisory', () => {
         currentSpeed: 50,
         currentThrottle: 0.5,
         currentDistPct: 0.1,
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 60,
-        referenceThrottleAtCurrent: 1,
       },
       NEUTRAL_ADVISORY_STATE
     );
@@ -255,10 +305,6 @@ describe('computeDrivingAdvisory', () => {
         currentSpeed: 59,
         currentThrottle: 0.9,
         currentDistPct: 0.15,
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 60,
-        referenceThrottleAtCurrent: 1,
       },
       latched
     );
@@ -269,17 +315,36 @@ describe('computeDrivingAdvisory', () => {
       {
         ...baseAdvisoryInput,
         currentSpeed: 59.8,
-        currentThrottle: 1,
         currentDistPct: 0.2,
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 60,
-        referenceThrottleAtCurrent: 1,
       },
       stillClosing
     );
 
     expect(closed.advisory).toBe('neutral');
+  });
+
+  it('advises gas on combined-grip headroom even when the reference is not flat out', () => {
+    // Reference: mid-exit at 0.6 throttle pulling 8 m/s² lateral. Player is
+    // slower and uses well under that grip, on a matching line (Δlat < 4).
+    const gripSamples: ReferenceLapSample[] = new Array(BUCKET_COUNT).fill(
+      sample(30, 0.6, 0, 8)
+    );
+
+    const state = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        referenceSamples: gripSamples,
+        cornerTargets: [],
+        currentSpeed: 27,
+        currentThrottle: 0.4,
+        currentLatAccel: 5,
+        currentLongAccel: 0,
+        currentDistPct: 0.5,
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
+
+    expect(state.advisory).toBe('gas');
   });
 
   it('suppresses the brake call when ABS is already active', () => {
@@ -288,12 +353,7 @@ describe('computeDrivingAdvisory', () => {
         ...baseAdvisoryInput,
         brakeAbsActive: true,
         currentSpeed: 60,
-        currentThrottle: 1,
         currentDistPct: 0.44,
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 20,
-        referenceThrottleAtCurrent: 0,
       },
       NEUTRAL_ADVISORY_STATE
     );
@@ -306,14 +366,8 @@ describe('computeDrivingAdvisory', () => {
       {
         ...baseAdvisoryInput,
         currentSteeringWheelAngle: 1.2,
-        referenceSteeringWheelAngleAtCurrent: 0,
         currentSpeed: 60,
-        currentThrottle: 1,
         currentDistPct: 0.44,
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 20,
-        referenceThrottleAtCurrent: 0,
       },
       NEUTRAL_ADVISORY_STATE
     );
@@ -326,14 +380,9 @@ describe('computeDrivingAdvisory', () => {
       {
         ...baseAdvisoryInput,
         currentSteeringWheelAngle: 1.2,
-        referenceSteeringWheelAngleAtCurrent: 0,
         currentSpeed: 50,
         currentThrottle: 0.5,
         currentDistPct: 0.1,
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 60,
-        referenceThrottleAtCurrent: 1,
       },
       NEUTRAL_ADVISORY_STATE
     );
@@ -345,15 +394,10 @@ describe('computeDrivingAdvisory', () => {
     const state = computeDrivingAdvisory(
       {
         ...baseAdvisoryInput,
-        currentLatAccel: 12,
-        referenceLatAccelAtCurrent: 0,
+        currentLatAccel: 12, // reference recorded 0 here
         currentSpeed: 50,
         currentThrottle: 0.5,
         currentDistPct: 0.1,
-        trackLengthM: TRACK_LENGTH_M,
-        cornerTargets: targets,
-        referenceSpeedAtCurrent: 60,
-        referenceThrottleAtCurrent: 1,
       },
       NEUTRAL_ADVISORY_STATE
     );

@@ -52,6 +52,17 @@
   border-left-color: rgba($race-red, 0.55);
 }
 
+// Pre-arm state: the braking point is approaching (urgency high) but the hard
+// call hasn't fired yet — dimmer than .brakeCall, no pulse.
+.brakeSoon {
+  background: rgba($race-red, 0.07);
+  border-left-color: rgba($race-red, 0.3);
+}
+
+.brakeSoon .call {
+  opacity: 0.7;
+}
+
 .brakeCall .call {
   animation: callPulse 0.5s steps(2, start) infinite;
 }

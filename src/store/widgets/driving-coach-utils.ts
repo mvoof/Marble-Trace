@@ -55,6 +55,29 @@ const MAX_WETNESS_MISMATCH = 1;
 const MAX_TIRE_WEAR_MISMATCH = 0.15;
 /** Fuel level (liters) divergence from the reference lap's recorded fuel beyond which the advisory is suppressed. */
 const MAX_FUEL_LEVEL_MISMATCH_L = 20;
+/**
+ * Curvature (1/m) below this is treated as a straight — the physics target
+ * speed is unbounded there. Corresponds to a corner radius of 2000 m.
+ */
+const MIN_PROFILE_CURVATURE = 1 / 2000;
+/** Curvature derivation `κ = a_lat / v²` divides by v² — below this speed the estimate is meaningless noise. */
+const MIN_PROFILE_SPEED_MPS = 5;
+/** Fraction of buckets that must carry `latAccel` for the target-speed profile to be trusted. */
+const MIN_PROFILE_COVERAGE = 0.5;
+/** Mid-corner overspeed: current speed above the physics target by this factor triggers a Brake call. */
+const MID_CORNER_OVERSPEED_FACTOR = 1.05;
+/** Reference brake input above this marks the reference "braking phase" for input-profile comparison. */
+const TRAIL_BRAKE_PHASE_THRESHOLD = 0.3;
+/** Player brake trailing the reference by more than this (0-1 input) while overspeed = under-braking. */
+const TRAIL_BRAKE_INPUT_DEFICIT = 0.25;
+/** Overspeed vs. the reference (m/s) required for the under-braking call — avoids nagging when already matching pace. */
+const TRAIL_BRAKE_SPEED_DEADZONE_MPS = 1.0;
+/** Reference combined acceleration (m/s^2) must exceed this for grip-utilization comparisons to be meaningful. */
+const GRIP_SIGNIFICANT_MPS2 = 6.0;
+/** Player using less than this fraction of the reference's combined grip counts as grip headroom. */
+const GRIP_UTILIZATION_RATIO = 0.7;
+/** Grip-headroom Gas only applies where the reference is driving (not braking) with at least this much throttle. */
+const GRIP_GAS_MIN_REF_THROTTLE = 0.5;
 
 export interface CornerTarget {
   /** Apex position as a fraction of lap distance. */
@@ -80,17 +103,148 @@ export interface AdvisoryState {
   advisory: DrivingAdvisory;
   /** Apex `distPct` of the corner the Brake latch is currently held for, or null. */
   brakeCornerPct: number | null;
+  /**
+   * How close the player is to the last possible braking point for the next
+   * corner: `u = d_required / d_remaining`, clamped to [0, 1]. 0 = no corner
+   * ahead or already slow enough; 1 = must brake now (or is braking).
+   */
+  brakeUrgency: number;
 }
 
 export const NEUTRAL_ADVISORY_STATE: AdvisoryState = {
   advisory: 'neutral',
   brakeCornerPct: null,
+  brakeUrgency: 0,
 };
 
 /** Distance ahead from `fromPct` to `toPct`, wrapping around the lap, as a `[0, 1)` fraction. */
 const pctDistanceAhead = (fromPct: number, toPct: number): number => {
   const diff = toPct - fromPct;
   return diff >= 0 ? diff : diff + 1;
+};
+
+/**
+ * Linearly interpolated reference sample at `lapDistPct`, wrapping across the
+ * lap boundary. Buckets store the value for the *interval* `[i/N, (i+1)/N)`,
+ * so each bucket's value is treated as located at the interval center
+ * `(i + 0.5)/N`; the continuous position between two centers is
+ *
+ *   x = lapDistPct * N - 0.5,   t = frac(x)
+ *   value = sample[floor(x)] * (1 - t) + sample[floor(x) + 1] * t
+ *
+ * At ~5 m per bucket a car at 80 m/s crosses more than a bucket per 60 Hz
+ * frame — nearest-bucket lookup steps by up to a full bucket, interpolation
+ * removes that quantization from speed/throttle comparisons.
+ */
+export const interpolateReferenceSample = (
+  samples: ReferenceLapSample[],
+  lapDistPct: number
+): ReferenceLapSample | null => {
+  const bucketCount = samples.length;
+
+  if (bucketCount === 0) return null;
+
+  const position = lapDistPct * bucketCount - 0.5;
+  const lowerBucket =
+    ((Math.floor(position) % bucketCount) + bucketCount) % bucketCount;
+  const upperBucket = (lowerBucket + 1) % bucketCount;
+  const t = position - Math.floor(position);
+
+  const lower = samples[lowerBucket];
+  const upper = samples[upperBucket];
+
+  if (!lower || !upper) return lower ?? upper ?? null;
+
+  const lerp = (a: number, b: number) => a * (1 - t) + b * t;
+  // `longAccel` is optional in bindings (serde(default) on the Rust side) — normalize undefined to null.
+  const lerpNullable = (
+    a: number | null | undefined,
+    b: number | null | undefined
+  ) => (a != null && b != null ? lerp(a, b) : (a ?? b ?? null));
+
+  return {
+    speed: lerp(lower.speed, upper.speed),
+    throttle: lerp(lower.throttle, upper.throttle),
+    brake: lerp(lower.brake, upper.brake),
+    latAccel: lerpNullable(lower.latAccel, upper.latAccel),
+    longAccel: lerpNullable(lower.longAccel, upper.longAccel),
+    steeringWheelAngle: lerp(
+      lower.steeringWheelAngle,
+      upper.steeringWheelAngle
+    ),
+  };
+};
+
+/**
+ * Per-bucket physics target speed derived from the reference lap, or null for
+ * buckets with no cornering constraint (straights / missing data).
+ *
+ * The track curvature at each bucket comes from circular motion
+ * `a_lat = v² * κ  →  κ = a_lat / v²`, and the reference lap's maximum
+ * demonstrated combined acceleration `a_max = max √(a_lat² + a_long²)` is
+ * taken as the car's available grip. The speed that grip supports on that
+ * curvature is then
+ *
+ *   v_target = √(a_max / κ)
+ *
+ * clamped from below by the reference's own speed there (the reference
+ * demonstrably carried it), so `v_target ≥ v_ref` everywhere. This turns the
+ * apex-only speed target into a continuous profile — overspeed can be called
+ * mid-corner, not just on the approach.
+ */
+export const buildTargetSpeedProfile = (
+  samples: ReferenceLapSample[]
+): (number | null)[] | null => {
+  const bucketCount = samples.length;
+
+  if (bucketCount === 0) return null;
+
+  let maxCombinedAccel = 0;
+  let latAccelCoverage = 0;
+
+  for (const sample of samples) {
+    if (sample.latAccel === null) continue;
+
+    latAccelCoverage++;
+    const combined = Math.hypot(sample.latAccel, sample.longAccel ?? 0);
+    maxCombinedAccel = Math.max(maxCombinedAccel, combined);
+  }
+
+  if (
+    latAccelCoverage / bucketCount < MIN_PROFILE_COVERAGE ||
+    maxCombinedAccel <= 0
+  ) {
+    return null;
+  }
+
+  return samples.map((sample) => {
+    if (sample.latAccel === null || sample.speed < MIN_PROFILE_SPEED_MPS) {
+      return null;
+    }
+
+    const curvature = Math.abs(sample.latAccel) / sample.speed ** 2;
+
+    if (curvature < MIN_PROFILE_CURVATURE) return null;
+
+    const physicsTarget = Math.sqrt(maxCombinedAccel / curvature);
+
+    return Math.max(physicsTarget, sample.speed);
+  });
+};
+
+/** Profile lookup at `lapDistPct` (nearest bucket — the profile is already a smooth derived curve). */
+const targetSpeedAt = (
+  profile: (number | null)[] | null,
+  lapDistPct: number
+): number | null => {
+  if (!profile || profile.length === 0) return null;
+
+  const bucket = Math.min(
+    Math.max(Math.floor(lapDistPct * profile.length), 0),
+    profile.length - 1
+  );
+
+  return profile[bucket];
 };
 
 /**
@@ -331,17 +485,19 @@ const isTrajectoryMismatch = (
 export interface DrivingAdvisoryInput {
   currentSpeed: number;
   currentThrottle: number;
+  currentBrake: number;
   currentDistPct: number;
   trackLengthM: number;
   cornerTargets: CornerTarget[];
-  referenceSpeedAtCurrent: number | null;
-  referenceThrottleAtCurrent: number | null;
+  /** The committed reference lap's samples — reference values are interpolated at `currentDistPct` internally. */
+  referenceSamples: ReferenceLapSample[];
+  /** Precomputed physics target-speed profile (see `buildTargetSpeedProfile`), or null when unavailable. */
+  targetSpeedProfile: (number | null)[] | null;
   /** True when ABS is currently intervening — the player is already at max achievable brake, so a Brake call would be wrong. */
   brakeAbsActive: boolean;
   currentSteeringWheelAngle: number;
-  referenceSteeringWheelAngleAtCurrent: number | null;
   currentLatAccel: number | null;
-  referenceLatAccelAtCurrent: number | null;
+  currentLongAccel: number | null;
 }
 
 /**
@@ -376,21 +532,42 @@ const isInsideBrakingZone = (
   return pctDistanceAhead(target.brakeStartPct, distPct) < zoneLengthPct;
 };
 
+/** Combined (vector) acceleration `√(a_lat² + a_long²)` — total grip in use — or null without lateral data. */
+const combinedAccel = (
+  latAccel: number | null | undefined,
+  longAccel: number | null | undefined
+): number | null => {
+  if (latAccel == null) return null;
+
+  return Math.hypot(latAccel, longAccel ?? 0);
+};
+
 /**
  * Zone-latched driving advisory.
  *
- * Brake — enters when the player can no longer shed enough speed by the next
- * apex at the reference driver's own demonstrated deceleration (see
- * `requiredBrakeDistanceM`), or when overspeeding inside the reference braking
- * zone itself. Once latched onto a corner it stays on until the target apex
- * speed is reached (within `BRAKE_EXIT_SPEED_FACTOR`) or the apex is passed —
- * so the light covers the whole braking zone.
+ * Brake — any of:
+ *  - infeasibility: cannot shed enough speed by the next apex at the reference
+ *    driver's own demonstrated deceleration (see `requiredBrakeDistanceM`);
+ *  - overspeed inside the reference braking zone itself;
+ *  - mid-corner overspeed vs. the physics target-speed profile;
+ *  - under-braking during the reference braking phase: player's brake input
+ *    trails the reference by `TRAIL_BRAKE_INPUT_DEFICIT`, or the player uses
+ *    < `GRIP_UTILIZATION_RATIO` of the reference's combined grip, while
+ *    running faster than the reference.
+ * Once latched onto a corner it stays on until the target apex speed is
+ * reached (within `BRAKE_EXIT_SPEED_FACTOR`) or the apex is passed — so the
+ * light covers the whole braking zone.
  *
- * Gas — enters when under-driving a section the reference took (near) flat out
- * with a ≥`GAS_SPEED_DEADZONE_MPS` deficit; stays on until the deficit closes
- * to `GAS_EXIT_SPEED_DEADZONE_MPS` or the reference starts lifting below
+ * Gas — under-driving a section the reference took (near) flat out, or leaving
+ * combined-grip headroom on a driving (non-braking) section, with a
+ * ≥`GAS_SPEED_DEADZONE_MPS` deficit; stays on until the deficit closes to
+ * `GAS_EXIT_SPEED_DEADZONE_MPS` or the reference starts lifting below
  * `GAS_EXIT_THROTTLE`. The asymmetric enter/exit thresholds are the hysteresis
  * that keeps the light lit across the whole full-throttle section.
+ *
+ * `brakeUrgency` is always reported: `u = d_required / d_remaining` toward the
+ * next corner, clamped to [0, 1] — the UI can pre-arm ("brake soon") before
+ * the hard call fires.
  */
 export const computeDrivingAdvisory = (
   input: DrivingAdvisoryInput,
@@ -399,25 +576,30 @@ export const computeDrivingAdvisory = (
   const {
     currentSpeed,
     currentThrottle,
+    currentBrake,
     currentDistPct,
     trackLengthM,
     cornerTargets,
-    referenceSpeedAtCurrent,
-    referenceThrottleAtCurrent,
+    referenceSamples,
+    targetSpeedProfile,
     brakeAbsActive,
     currentSteeringWheelAngle,
-    referenceSteeringWheelAngleAtCurrent,
     currentLatAccel,
-    referenceLatAccelAtCurrent,
+    currentLongAccel,
   } = input;
 
   if (trackLengthM <= 0) return NEUTRAL_ADVISORY_STATE;
 
+  const reference = interpolateReferenceSample(
+    referenceSamples,
+    currentDistPct
+  );
+
   const trajectoryMismatch = isTrajectoryMismatch(
     currentSteeringWheelAngle,
-    referenceSteeringWheelAngleAtCurrent,
+    reference?.steeringWheelAngle ?? null,
     currentLatAccel,
-    referenceLatAccelAtCurrent
+    reference?.latAccel ?? null
   );
 
   const nextTarget = findNextCornerTarget(
@@ -425,6 +607,17 @@ export const computeDrivingAdvisory = (
     currentDistPct,
     trackLengthM
   );
+
+  const remainingToApexM = nextTarget
+    ? pctDistanceAhead(currentDistPct, nextTarget.distPct) * trackLengthM
+    : null;
+  const brakeUrgency =
+    nextTarget && remainingToApexM !== null && remainingToApexM > 0
+      ? Math.min(
+          requiredBrakeDistanceM(currentSpeed, nextTarget) / remainingToApexM,
+          1
+        )
+      : 0;
 
   if (previous.advisory === 'brake' && previous.brakeCornerPct !== null) {
     const latchedTarget = cornerTargets.find(
@@ -446,31 +639,80 @@ export const computeDrivingAdvisory = (
       latchedTarget !== undefined &&
       currentSpeed > latchedTarget.targetSpeed * BRAKE_EXIT_SPEED_FACTOR;
 
-    if (!apexPassed && stillOverspeed) return previous;
+    if (!apexPassed && stillOverspeed) {
+      return { ...previous, brakeUrgency: 1 };
+    }
   }
 
   // A Brake call is valid even on a different line — overspeeding toward an
   // apex must brake regardless — so trajectory mismatch does NOT gate it.
   // ABS intervening means the player is already at max braking; a call would be noise.
-  if (!brakeAbsActive && nextTarget && currentSpeed > nextTarget.targetSpeed) {
-    const remainingM =
-      pctDistanceAhead(currentDistPct, nextTarget.distPct) * trackLengthM;
-    const infeasible =
-      requiredBrakeDistanceM(currentSpeed, nextTarget) >= remainingM;
-    const overspeedInZone = isInsideBrakingZone(currentDistPct, nextTarget);
+  if (!brakeAbsActive) {
+    if (nextTarget && currentSpeed > nextTarget.targetSpeed) {
+      const infeasible =
+        remainingToApexM !== null &&
+        requiredBrakeDistanceM(currentSpeed, nextTarget) >= remainingToApexM;
+      const overspeedInZone = isInsideBrakingZone(currentDistPct, nextTarget);
 
-    if (infeasible || overspeedInZone) {
-      return { advisory: 'brake', brakeCornerPct: nextTarget.distPct };
+      if (infeasible || overspeedInZone) {
+        return {
+          advisory: 'brake',
+          brakeCornerPct: nextTarget.distPct,
+          brakeUrgency: 1,
+        };
+      }
+    }
+
+    // Mid-corner overspeed vs. the physics profile — catches carrying too much
+    // speed *through* a corner, which the apex-approach check cannot see.
+    const profileTarget = targetSpeedAt(targetSpeedProfile, currentDistPct);
+
+    if (
+      profileTarget !== null &&
+      currentSpeed > profileTarget * MID_CORNER_OVERSPEED_FACTOR
+    ) {
+      return {
+        advisory: 'brake',
+        brakeCornerPct: nextTarget?.distPct ?? null,
+        brakeUrgency: 1,
+      };
+    }
+
+    // Under-braking during the reference braking phase (trail-braking check):
+    // the reference is hard on the brakes here, the player is faster than the
+    // reference and either far off the reference brake pressure or leaving a
+    // large share of the demonstrated grip unused.
+    if (
+      reference !== null &&
+      reference.brake >= TRAIL_BRAKE_PHASE_THRESHOLD &&
+      currentSpeed > reference.speed + TRAIL_BRAKE_SPEED_DEADZONE_MPS
+    ) {
+      const brakeInputDeficit =
+        currentBrake < reference.brake - TRAIL_BRAKE_INPUT_DEFICIT;
+      const referenceCombined = combinedAccel(
+        reference.latAccel,
+        reference.longAccel
+      );
+      const currentCombined = combinedAccel(currentLatAccel, currentLongAccel);
+      const gripDeficit =
+        referenceCombined !== null &&
+        currentCombined !== null &&
+        referenceCombined > GRIP_SIGNIFICANT_MPS2 &&
+        currentCombined < referenceCombined * GRIP_UTILIZATION_RATIO;
+
+      if (brakeInputDeficit || gripDeficit) {
+        return {
+          advisory: 'brake',
+          brakeCornerPct: nextTarget?.distPct ?? null,
+          brakeUrgency: 1,
+        };
+      }
     }
   }
 
   // Gas compares like-for-like driving states, so a different line/phase
   // (trajectory mismatch) does invalidate it.
-  if (
-    !trajectoryMismatch &&
-    referenceSpeedAtCurrent !== null &&
-    referenceThrottleAtCurrent !== null
-  ) {
+  if (!trajectoryMismatch && reference !== null) {
     // Hysteresis: entering needs a real deficit on a (near) flat-out section;
     // once latched, keep advising until the deficit has essentially closed or
     // the reference driver starts lifting for the next corner.
@@ -482,28 +724,46 @@ export const computeDrivingAdvisory = (
       ? GAS_EXIT_THROTTLE
       : GAS_THROTTLE_THRESHOLD;
 
+    const flatOutDeficit =
+      reference.throttle >= throttleFloor &&
+      currentThrottle < reference.throttle;
+
+    // Grip headroom on a driving (non-braking) section: the reference pulled
+    // significant combined g here while the player uses well under it — the
+    // corner exit has more acceleration available.
+    const referenceCombined = combinedAccel(
+      reference.latAccel,
+      reference.longAccel
+    );
+    const currentCombined = combinedAccel(currentLatAccel, currentLongAccel);
+    const gripHeadroom =
+      reference.brake < BRAKE_ON_THRESHOLD &&
+      reference.throttle >= GRIP_GAS_MIN_REF_THROTTLE &&
+      referenceCombined !== null &&
+      currentCombined !== null &&
+      referenceCombined > GRIP_SIGNIFICANT_MPS2 &&
+      currentCombined < referenceCombined * GRIP_UTILIZATION_RATIO;
+
     const underDriving =
-      currentSpeed < referenceSpeedAtCurrent - deficitMps &&
-      referenceThrottleAtCurrent >= throttleFloor &&
-      currentThrottle < referenceThrottleAtCurrent;
+      currentSpeed < reference.speed - deficitMps &&
+      (flatOutDeficit || gripHeadroom);
 
     if (underDriving) {
-      if (!nextTarget) return { advisory: 'gas', brakeCornerPct: null };
+      if (!nextTarget || remainingToApexM === null) {
+        return { advisory: 'gas', brakeCornerPct: null, brakeUrgency };
+      }
 
       // Never advise Gas when the upcoming corner leaves too little braking
       // margin: required distance (with reaction budget) scaled by
       // GAS_MARGIN_FACTOR must still fit into the remaining distance.
-      const remainingM =
-        pctDistanceAhead(currentDistPct, nextTarget.distPct) * trackLengthM;
-
       if (
         requiredBrakeDistanceM(currentSpeed, nextTarget) * GAS_MARGIN_FACTOR <
-        remainingM
+        remainingToApexM
       ) {
-        return { advisory: 'gas', brakeCornerPct: null };
+        return { advisory: 'gas', brakeCornerPct: null, brakeUrgency };
       }
     }
   }
 
-  return NEUTRAL_ADVISORY_STATE;
+  return { ...NEUTRAL_ADVISORY_STATE, brakeUrgency };
 };
