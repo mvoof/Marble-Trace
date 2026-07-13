@@ -7,27 +7,52 @@ import {
   extractCornerTargets,
   getAverageTireWear,
   isConditionMismatch,
+  NEUTRAL_ADVISORY_STATE,
+  type AdvisoryState,
   type CornerTarget,
   type DrivingAdvisory,
+  type DrivingAdvisoryInput,
 } from './driving-coach-utils';
 
-/** Debounce entry/exit into a new advisory to avoid flicker near the trigger boundary. */
+/**
+ * Debounce entry/exit into a new advisory. With the zone latch in
+ * `computeDrivingAdvisory` this no longer carries the anti-flicker load —
+ * hysteresis does — it only smooths single-frame glitches at zone boundaries.
+ */
 const ADVISORY_DEBOUNCE_MS = 250;
 
 export class DrivingCoachWidgetStore {
   displayedAdvisory: DrivingAdvisory = 'neutral';
 
+  /**
+   * Latched advisory state fed back into `computeDrivingAdvisory` each tick —
+   * the transition function needs the previous state to hold an advisory
+   * across its whole zone (hysteresis). Not observable: the UI only reacts to
+   * `displayedAdvisory`.
+   */
+  private advisoryState: AdvisoryState = NEUTRAL_ADVISORY_STATE;
   private pendingAdvisory: DrivingAdvisory | null = null;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private readonly root: RootStore) {
-    makeAutoObservable(this, {}, { autoBind: true });
+    makeAutoObservable<DrivingCoachWidgetStore, 'advisoryState'>(
+      this,
+      { advisoryState: false },
+      { autoBind: true }
+    );
   }
 
   init() {
     reaction(
-      () => this.rawAdvisory,
-      (advisory) => this.scheduleAdvisoryChange(advisory)
+      () => this.advisoryInput,
+      (input) => {
+        const next = input
+          ? computeDrivingAdvisory(input, this.advisoryState)
+          : NEUTRAL_ADVISORY_STATE;
+
+        this.advisoryState = next;
+        this.scheduleAdvisoryChange(next.advisory);
+      }
     );
   }
 
@@ -36,13 +61,13 @@ export class DrivingCoachWidgetStore {
     return this.root.referenceLap.data !== null;
   }
 
-  /** Best-lap reference sample at the player's current track position. */
+  /** Best-lap reference sample interpolated at the player's current track position. */
   get referenceSample(): ReferenceLapSample | null {
     const lapDistPct = this.root.player.lapTiming?.lap_dist_pct;
 
     if (lapDistPct == null || lapDistPct < 0) return null;
 
-    return this.root.referenceLap.getSampleAtDistPct(lapDistPct);
+    return this.root.referenceLap.getInterpolatedSampleAtDistPct(lapDistPct);
   }
 
   get currentSpeedMps(): number {
@@ -89,7 +114,7 @@ export class DrivingCoachWidgetStore {
     });
   }
 
-  get rawAdvisory(): DrivingAdvisory {
+  private get advisoryInput(): DrivingAdvisoryInput | null {
     const player = this.root.player;
     const dynamics = player.carDynamics;
     const inputs = player.carInputs;
@@ -103,19 +128,19 @@ export class DrivingCoachWidgetStore {
       lapDistPct < 0 ||
       trackLengthM <= 0
     ) {
-      return 'neutral';
+      return null;
     }
 
-    if (this.conditionsMismatched) return 'neutral';
+    if (this.conditionsMismatched) return null;
 
     const cornerTargets = this.cornerTargets;
 
-    if (cornerTargets.length === 0) return 'neutral';
+    if (cornerTargets.length === 0) return null;
 
     const referenceSample =
-      this.root.referenceLap.getSampleAtDistPct(lapDistPct);
+      this.root.referenceLap.getInterpolatedSampleAtDistPct(lapDistPct);
 
-    return computeDrivingAdvisory({
+    return {
       currentSpeed: dynamics.speed,
       currentThrottle: inputs.throttle,
       currentDistPct: lapDistPct,
@@ -129,7 +154,7 @@ export class DrivingCoachWidgetStore {
         referenceSample?.steeringWheelAngle ?? null,
       currentLatAccel: dynamics.lat_accel ?? null,
       referenceLatAccelAtCurrent: referenceSample?.latAccel ?? null,
-    });
+    };
   }
 
   private scheduleAdvisoryChange(advisory: DrivingAdvisory) {
@@ -163,6 +188,7 @@ export class DrivingCoachWidgetStore {
 
   reset() {
     this.clearDebounce();
+    this.advisoryState = NEUTRAL_ADVISORY_STATE;
     this.displayedAdvisory = 'neutral';
   }
 }

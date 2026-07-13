@@ -8,12 +8,39 @@ const MIN_SPEED_DROP_MPS = 10 / 3.6;
 const BRAKE_ON_THRESHOLD = 0.05;
 /** Max buckets between a detected apex and the nearest preceding braking sample (covers brake-release-before-apex coasting). */
 const MAX_APEX_TO_BRAKE_GAP_BUCKETS = 20;
-/** Required-brake-distance must be at least this fraction of the remaining distance to trigger a Brake advisory. */
-const BRAKE_SAFETY_MARGIN = 0.9;
+/**
+ * Driver reaction time (s) budgeted into the brake call: the advisory must fire
+ * this much *earlier* than the physical last-possible braking point, otherwise
+ * by the time the driver reacts the corner is already unmakeable.
+ * At 250 km/h (~70 m/s) this moves the call ~28 m earlier.
+ */
+const REACTION_TIME_S = 0.4;
+/**
+ * Brake latch release: hold the Brake advisory until current speed is within
+ * this factor of the corner's target speed (3% tolerance), so the light stays
+ * on for the whole braking zone instead of flickering off the moment the
+ * required-distance check stops failing.
+ */
+const BRAKE_EXIT_SPEED_FACTOR = 1.03;
+/**
+ * Brake latch release: the apex counts as "passed" once the car is this far
+ * beyond it (fraction of lap distance, ~5 buckets) — a safety valve so a latch
+ * that never reaches the target speed (e.g. a missed corner) cannot stay lit
+ * down the following straight.
+ */
+const BRAKE_APEX_PASS_MARGIN_PCT = 0.005;
 /** Reference throttle above this is considered "at/near full throttle" for the Gas advisory. */
 const GAS_THROTTLE_THRESHOLD = 0.95;
-/** Current speed must trail the reference by at least this much (m/s) to consider a Gas advisory. */
+/** Current speed must trail the reference by at least this much (m/s) to *enter* a Gas advisory. */
 const GAS_SPEED_DEADZONE_MPS = 2.0;
+/**
+ * Gas latch release: exit only once the speed deficit has closed to this (m/s).
+ * Entry needs a 2 m/s deficit, exit needs it nearly closed — the hysteresis gap
+ * keeps the light lit across the whole full-throttle section.
+ */
+const GAS_EXIT_SPEED_DEADZONE_MPS = 0.5;
+/** Gas latch release: exit once the reference driver starts lifting below this throttle. */
+const GAS_EXIT_THROTTLE = 0.8;
 /** Required-brake-distance for the next corner must have at least this much margin vs. remaining distance for Gas. */
 const GAS_MARGIN_FACTOR = 1.5;
 /** Don't look further ahead than this for the next corner target. */
@@ -30,13 +57,35 @@ const MAX_TIRE_WEAR_MISMATCH = 0.15;
 const MAX_FUEL_LEVEL_MISMATCH_L = 20;
 
 export interface CornerTarget {
+  /** Apex position as a fraction of lap distance. */
   distPct: number;
+  /** Apex (minimum) speed of the reference lap, m/s. */
   targetSpeed: number;
+  /** Where the reference driver first applied the brakes for this corner, as a fraction of lap distance. */
+  brakeStartPct: number;
   /** Achievable deceleration (m/s^2) derived from this reference lap's own braking zone for this corner. */
   brakingDecel: number;
 }
 
 export type DrivingAdvisory = 'brake' | 'gas' | 'neutral';
+
+/**
+ * Advisory plus the latch bookkeeping needed to keep it lit across a whole
+ * zone. Entry and exit conditions are deliberately different (hysteresis):
+ * a Brake advisory latches onto a specific corner and only releases when the
+ * target speed is reached or the apex is passed; a Gas advisory releases when
+ * the deficit closes or the reference starts lifting.
+ */
+export interface AdvisoryState {
+  advisory: DrivingAdvisory;
+  /** Apex `distPct` of the corner the Brake latch is currently held for, or null. */
+  brakeCornerPct: number | null;
+}
+
+export const NEUTRAL_ADVISORY_STATE: AdvisoryState = {
+  advisory: 'neutral',
+  brakeCornerPct: null,
+};
 
 /** Distance ahead from `fromPct` to `toPct`, wrapping around the lap, as a `[0, 1)` fraction. */
 const pctDistanceAhead = (fromPct: number, toPct: number): number => {
@@ -82,11 +131,16 @@ export const extractCornerTargets = (
       continue;
     }
 
-    const brakingDecel = deriveBrakingDecel(samples, i, trackLengthM);
+    const brakingZone = deriveBrakingZone(samples, i, trackLengthM);
 
-    if (brakingDecel === null) continue;
+    if (brakingZone === null) continue;
 
-    targets.push({ distPct, targetSpeed: speed, brakingDecel });
+    targets.push({
+      distPct,
+      targetSpeed: speed,
+      brakeStartPct: brakingZone.brakeStartPct,
+      brakingDecel: brakingZone.decel,
+    });
     lastTargetDistPct = distPct;
     runningMaxSpeed = speed;
   }
@@ -94,16 +148,24 @@ export const extractCornerTargets = (
   return targets;
 };
 
+interface BrakingZone {
+  /** Fraction of lap distance where the reference driver first pressed the brake for this apex. */
+  brakeStartPct: number;
+  /** Average deceleration over brake-start → apex, m/s^2. */
+  decel: number;
+}
+
 /**
  * Walk backward from the apex index to find the nearest preceding braking zone
  * (allowing a small coast-out gap between brake release and the true apex) and
- * derive `a = (v0^2 - v1^2) / (2*ds)` over it.
+ * derive the average deceleration over it from the kinematic relation
+ * `v1^2 = v0^2 - 2*a*ds`  →  `a = (v0^2 - v1^2) / (2*ds)`.
  */
-const deriveBrakingDecel = (
+const deriveBrakingZone = (
   samples: ReferenceLapSample[],
   apexIndex: number,
   trackLengthM: number
-): number | null => {
+): BrakingZone | null => {
   const bucketCount = samples.length;
 
   let brakeEndIndex = apexIndex;
@@ -136,7 +198,10 @@ const deriveBrakingDecel = (
 
   if (deltaDistanceM <= 0 || vStart <= vEnd) return null;
 
-  return (vStart ** 2 - vEnd ** 2) / (2 * deltaDistanceM);
+  return {
+    brakeStartPct: brakeStartIndex / bucketCount,
+    decel: (vStart ** 2 - vEnd ** 2) / (2 * deltaDistanceM),
+  };
 };
 
 /** Nearest corner target strictly ahead of `currentDistPct`, within `MAX_LOOKAHEAD_M`. */
@@ -280,13 +345,57 @@ export interface DrivingAdvisoryInput {
 }
 
 /**
- * "Will I make the corner" feasibility check — brakes if the player cannot shed
- * enough speed by the next apex at the reference driver's own demonstrated
- * deceleration; suggests gas if under-driving a section the reference took flat out.
+ * Distance (m) needed to slow from `currentSpeed` to the corner's target speed:
+ *
+ *   d = (v^2 - v_target^2) / (2*a)  +  v * t_reaction
+ *
+ * The first term is the kinematic braking distance at the reference lap's own
+ * demonstrated deceleration `a`; the second budgets driver reaction time — the
+ * distance covered at current speed before the driver actually responds to the
+ * light. This margin also absorbs the 10 Hz quantization of `lap_dist_pct`.
+ */
+const requiredBrakeDistanceM = (
+  currentSpeed: number,
+  target: CornerTarget
+): number => {
+  if (currentSpeed <= target.targetSpeed) return 0;
+
+  const kinematicM =
+    (currentSpeed ** 2 - target.targetSpeed ** 2) / (2 * target.brakingDecel);
+
+  return kinematicM + currentSpeed * REACTION_TIME_S;
+};
+
+/** Whether `distPct` lies inside the reference braking zone `[brakeStartPct, apexPct)`, wrapping around the lap. */
+const isInsideBrakingZone = (
+  distPct: number,
+  target: CornerTarget
+): boolean => {
+  const zoneLengthPct = pctDistanceAhead(target.brakeStartPct, target.distPct);
+
+  return pctDistanceAhead(target.brakeStartPct, distPct) < zoneLengthPct;
+};
+
+/**
+ * Zone-latched driving advisory.
+ *
+ * Brake — enters when the player can no longer shed enough speed by the next
+ * apex at the reference driver's own demonstrated deceleration (see
+ * `requiredBrakeDistanceM`), or when overspeeding inside the reference braking
+ * zone itself. Once latched onto a corner it stays on until the target apex
+ * speed is reached (within `BRAKE_EXIT_SPEED_FACTOR`) or the apex is passed —
+ * so the light covers the whole braking zone.
+ *
+ * Gas — enters when under-driving a section the reference took (near) flat out
+ * with a ≥`GAS_SPEED_DEADZONE_MPS` deficit; stays on until the deficit closes
+ * to `GAS_EXIT_SPEED_DEADZONE_MPS` or the reference starts lifting below
+ * `GAS_EXIT_THROTTLE`. The asymmetric enter/exit thresholds are the hysteresis
+ * that keeps the light lit across the whole full-throttle section.
  */
 export const computeDrivingAdvisory = (
-  input: DrivingAdvisoryInput
-): DrivingAdvisory => {
+  input: DrivingAdvisoryInput,
+  previous: AdvisoryState
+): AdvisoryState => {
   const {
     currentSpeed,
     currentThrottle,
@@ -302,18 +411,14 @@ export const computeDrivingAdvisory = (
     referenceLatAccelAtCurrent,
   } = input;
 
-  if (trackLengthM <= 0) return 'neutral';
+  if (trackLengthM <= 0) return NEUTRAL_ADVISORY_STATE;
 
-  if (
-    isTrajectoryMismatch(
-      currentSteeringWheelAngle,
-      referenceSteeringWheelAngleAtCurrent,
-      currentLatAccel,
-      referenceLatAccelAtCurrent
-    )
-  ) {
-    return 'neutral';
-  }
+  const trajectoryMismatch = isTrajectoryMismatch(
+    currentSteeringWheelAngle,
+    referenceSteeringWheelAngleAtCurrent,
+    currentLatAccel,
+    referenceLatAccelAtCurrent
+  );
 
   const nextTarget = findNextCornerTarget(
     cornerTargets,
@@ -321,39 +426,84 @@ export const computeDrivingAdvisory = (
     trackLengthM
   );
 
+  if (previous.advisory === 'brake' && previous.brakeCornerPct !== null) {
+    const latchedTarget = cornerTargets.find(
+      (target) => target.distPct === previous.brakeCornerPct
+    );
+
+    // Release the latch only once slowed to the apex target speed or the apex
+    // is clearly behind us — this is what keeps the light on for the entire
+    // braking zone. "Behind" uses the wrapped lap distance: less than half a
+    // lap ahead of the apex but past the small margin means we've crossed it.
+    const distancePastApexPct = pctDistanceAhead(
+      previous.brakeCornerPct,
+      currentDistPct
+    );
+    const apexPassed =
+      distancePastApexPct > BRAKE_APEX_PASS_MARGIN_PCT &&
+      distancePastApexPct < 0.5;
+    const stillOverspeed =
+      latchedTarget !== undefined &&
+      currentSpeed > latchedTarget.targetSpeed * BRAKE_EXIT_SPEED_FACTOR;
+
+    if (!apexPassed && stillOverspeed) return previous;
+  }
+
+  // A Brake call is valid even on a different line — overspeeding toward an
+  // apex must brake regardless — so trajectory mismatch does NOT gate it.
+  // ABS intervening means the player is already at max braking; a call would be noise.
   if (!brakeAbsActive && nextTarget && currentSpeed > nextTarget.targetSpeed) {
-    const remainingDistanceM =
+    const remainingM =
       pctDistanceAhead(currentDistPct, nextTarget.distPct) * trackLengthM;
-    const requiredBrakeDistanceM =
-      (currentSpeed ** 2 - nextTarget.targetSpeed ** 2) /
-      (2 * nextTarget.brakingDecel);
+    const infeasible =
+      requiredBrakeDistanceM(currentSpeed, nextTarget) >= remainingM;
+    const overspeedInZone = isInsideBrakingZone(currentDistPct, nextTarget);
 
-    if (requiredBrakeDistanceM >= remainingDistanceM * BRAKE_SAFETY_MARGIN) {
-      return 'brake';
+    if (infeasible || overspeedInZone) {
+      return { advisory: 'brake', brakeCornerPct: nextTarget.distPct };
     }
   }
 
+  // Gas compares like-for-like driving states, so a different line/phase
+  // (trajectory mismatch) does invalidate it.
   if (
+    !trajectoryMismatch &&
     referenceSpeedAtCurrent !== null &&
-    referenceThrottleAtCurrent !== null &&
-    currentSpeed < referenceSpeedAtCurrent - GAS_SPEED_DEADZONE_MPS &&
-    referenceThrottleAtCurrent >= GAS_THROTTLE_THRESHOLD &&
-    currentThrottle < referenceThrottleAtCurrent
+    referenceThrottleAtCurrent !== null
   ) {
-    if (!nextTarget) return 'gas';
+    // Hysteresis: entering needs a real deficit on a (near) flat-out section;
+    // once latched, keep advising until the deficit has essentially closed or
+    // the reference driver starts lifting for the next corner.
+    const gasLatched = previous.advisory === 'gas';
+    const deficitMps = gasLatched
+      ? GAS_EXIT_SPEED_DEADZONE_MPS
+      : GAS_SPEED_DEADZONE_MPS;
+    const throttleFloor = gasLatched
+      ? GAS_EXIT_THROTTLE
+      : GAS_THROTTLE_THRESHOLD;
 
-    const remainingDistanceM =
-      pctDistanceAhead(currentDistPct, nextTarget.distPct) * trackLengthM;
-    const requiredBrakeDistanceM =
-      currentSpeed > nextTarget.targetSpeed
-        ? (currentSpeed ** 2 - nextTarget.targetSpeed ** 2) /
-          (2 * nextTarget.brakingDecel)
-        : 0;
+    const underDriving =
+      currentSpeed < referenceSpeedAtCurrent - deficitMps &&
+      referenceThrottleAtCurrent >= throttleFloor &&
+      currentThrottle < referenceThrottleAtCurrent;
 
-    if (requiredBrakeDistanceM * GAS_MARGIN_FACTOR < remainingDistanceM) {
-      return 'gas';
+    if (underDriving) {
+      if (!nextTarget) return { advisory: 'gas', brakeCornerPct: null };
+
+      // Never advise Gas when the upcoming corner leaves too little braking
+      // margin: required distance (with reaction budget) scaled by
+      // GAS_MARGIN_FACTOR must still fit into the remaining distance.
+      const remainingM =
+        pctDistanceAhead(currentDistPct, nextTarget.distPct) * trackLengthM;
+
+      if (
+        requiredBrakeDistanceM(currentSpeed, nextTarget) * GAS_MARGIN_FACTOR <
+        remainingM
+      ) {
+        return { advisory: 'gas', brakeCornerPct: null };
+      }
     }
   }
 
-  return 'neutral';
+  return NEUTRAL_ADVISORY_STATE;
 };

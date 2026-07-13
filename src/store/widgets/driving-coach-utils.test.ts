@@ -6,6 +6,7 @@ import {
   findNextCornerTarget,
   getAverageTireWear,
   isConditionMismatch,
+  NEUTRAL_ADVISORY_STATE,
 } from './driving-coach-utils';
 
 const TRACK_LENGTH_M = 1000;
@@ -89,6 +90,18 @@ describe('findNextCornerTarget', () => {
   });
 });
 
+describe('extractCornerTargets braking zone', () => {
+  it('records where the reference driver first pressed the brake', () => {
+    const targets = extractCornerTargets(
+      buildSingleCornerSamples(),
+      TRACK_LENGTH_M
+    );
+
+    // Braking starts at bucket 400 in the fixture profile.
+    expect(targets[0].brakeStartPct).toBeCloseTo(0.4, 2);
+  });
+});
+
 describe('computeDrivingAdvisory', () => {
   const targets = extractCornerTargets(
     buildSingleCornerSamples(),
@@ -96,98 +109,256 @@ describe('computeDrivingAdvisory', () => {
   );
 
   it('advises brake when current speed cannot be shed in time for the apex', () => {
-    const advisory = computeDrivingAdvisory({
-      ...baseAdvisoryInput,
-      currentSpeed: 60,
-      currentThrottle: 1,
-      currentDistPct: 0.44, // right before the apex, almost no braking zone left
-      trackLengthM: TRACK_LENGTH_M,
-      cornerTargets: targets,
-      referenceSpeedAtCurrent: 20,
-      referenceThrottleAtCurrent: 0,
-    });
+    const state = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentSpeed: 60,
+        currentThrottle: 1,
+        currentDistPct: 0.44, // right before the apex, almost no braking zone left
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 20,
+        referenceThrottleAtCurrent: 0,
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
 
-    expect(advisory).toBe('brake');
+    expect(state.advisory).toBe('brake');
+    expect(state.brakeCornerPct).toBeCloseTo(targets[0].distPct, 5);
   });
 
-  it('stays neutral when on the reference braking curve', () => {
-    const advisory = computeDrivingAdvisory({
-      ...baseAdvisoryInput,
-      currentSpeed: 30,
-      currentThrottle: 0,
-      currentDistPct: 0.42,
-      trackLengthM: TRACK_LENGTH_M,
-      cornerTargets: targets,
-      referenceSpeedAtCurrent: 30,
-      referenceThrottleAtCurrent: 0,
-    });
+  it('advises brake when overspeeding inside the reference braking zone even if still kinematically feasible', () => {
+    const state = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentSpeed: 45, // reference is ~55 here and already braking
+        currentThrottle: 1,
+        currentDistPct: 0.405,
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 55,
+        referenceThrottleAtCurrent: 0,
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
 
-    expect(advisory).toBe('neutral');
+    expect(state.advisory).toBe('brake');
+  });
+
+  it('holds the brake latch through the zone until the target speed is reached', () => {
+    const latched = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentSpeed: 60,
+        currentThrottle: 1,
+        currentDistPct: 0.44,
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 20,
+        referenceThrottleAtCurrent: 0,
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
+
+    // Player is now braking hard — the momentary feasibility check alone would
+    // release, but the latch must hold while still above the apex target speed.
+    const stillBraking = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentSpeed: 25,
+        currentThrottle: 0,
+        currentDistPct: 0.45,
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 12,
+        referenceThrottleAtCurrent: 0,
+      },
+      latched
+    );
+
+    expect(stillBraking.advisory).toBe('brake');
+
+    // Slowed to the apex target — latch releases.
+    const released = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentSpeed: 10,
+        currentThrottle: 0,
+        currentDistPct: 0.452,
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 10,
+        referenceThrottleAtCurrent: 0,
+      },
+      stillBraking
+    );
+
+    expect(released.advisory).toBe('neutral');
+  });
+
+  it('stays neutral when on the reference braking curve ahead of the braking zone', () => {
+    const state = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentSpeed: 30,
+        currentThrottle: 0,
+        currentDistPct: 0.3, // long before the zone, slow enough for the apex
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 60,
+        referenceThrottleAtCurrent: 0,
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
+
+    expect(state.advisory).toBe('neutral');
   });
 
   it('advises gas when well under the reference speed on a full-throttle straight', () => {
-    const advisory = computeDrivingAdvisory({
-      ...baseAdvisoryInput,
-      currentSpeed: 50,
-      currentThrottle: 0.5,
-      currentDistPct: 0.1,
-      trackLengthM: TRACK_LENGTH_M,
-      cornerTargets: targets,
-      referenceSpeedAtCurrent: 60,
-      referenceThrottleAtCurrent: 1,
-    });
+    const state = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentSpeed: 50,
+        currentThrottle: 0.5,
+        currentDistPct: 0.1,
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 60,
+        referenceThrottleAtCurrent: 1,
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
 
-    expect(advisory).toBe('gas');
+    expect(state.advisory).toBe('gas');
+  });
+
+  it('holds the gas latch while the deficit is closing, releases once it has closed', () => {
+    const latched = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentSpeed: 50,
+        currentThrottle: 0.5,
+        currentDistPct: 0.1,
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 60,
+        referenceThrottleAtCurrent: 1,
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
+
+    // Deficit shrank below the 2 m/s entry deadzone but not yet closed —
+    // without the latch this would flicker to neutral.
+    const stillClosing = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentSpeed: 59,
+        currentThrottle: 0.9,
+        currentDistPct: 0.15,
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 60,
+        referenceThrottleAtCurrent: 1,
+      },
+      latched
+    );
+
+    expect(stillClosing.advisory).toBe('gas');
+
+    const closed = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentSpeed: 59.8,
+        currentThrottle: 1,
+        currentDistPct: 0.2,
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 60,
+        referenceThrottleAtCurrent: 1,
+      },
+      stillClosing
+    );
+
+    expect(closed.advisory).toBe('neutral');
   });
 
   it('suppresses the brake call when ABS is already active', () => {
-    const advisory = computeDrivingAdvisory({
-      ...baseAdvisoryInput,
-      brakeAbsActive: true,
-      currentSpeed: 60,
-      currentThrottle: 1,
-      currentDistPct: 0.44,
-      trackLengthM: TRACK_LENGTH_M,
-      cornerTargets: targets,
-      referenceSpeedAtCurrent: 20,
-      referenceThrottleAtCurrent: 0,
-    });
+    const state = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        brakeAbsActive: true,
+        currentSpeed: 60,
+        currentThrottle: 1,
+        currentDistPct: 0.44,
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 20,
+        referenceThrottleAtCurrent: 0,
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
 
-    expect(advisory).toBe('neutral');
+    expect(state.advisory).toBe('neutral');
   });
 
-  it('suppresses the call when steering diverges from the reference at this point (different line/phase)', () => {
-    const advisory = computeDrivingAdvisory({
-      ...baseAdvisoryInput,
-      currentSteeringWheelAngle: 1.2,
-      referenceSteeringWheelAngleAtCurrent: 0,
-      currentSpeed: 60,
-      currentThrottle: 1,
-      currentDistPct: 0.44,
-      trackLengthM: TRACK_LENGTH_M,
-      cornerTargets: targets,
-      referenceSpeedAtCurrent: 20,
-      referenceThrottleAtCurrent: 0,
-    });
+  it('still advises brake on a diverging line — overspeed toward an apex must brake regardless', () => {
+    const state = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentSteeringWheelAngle: 1.2,
+        referenceSteeringWheelAngleAtCurrent: 0,
+        currentSpeed: 60,
+        currentThrottle: 1,
+        currentDistPct: 0.44,
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 20,
+        referenceThrottleAtCurrent: 0,
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
 
-    expect(advisory).toBe('neutral');
+    expect(state.advisory).toBe('brake');
   });
 
-  it('suppresses the call when lateral acceleration diverges from the reference at this point', () => {
-    const advisory = computeDrivingAdvisory({
-      ...baseAdvisoryInput,
-      currentLatAccel: 12,
-      referenceLatAccelAtCurrent: 0,
-      currentSpeed: 60,
-      currentThrottle: 1,
-      currentDistPct: 0.44,
-      trackLengthM: TRACK_LENGTH_M,
-      cornerTargets: targets,
-      referenceSpeedAtCurrent: 20,
-      referenceThrottleAtCurrent: 0,
-    });
+  it('suppresses the gas call when steering diverges from the reference at this point (different line/phase)', () => {
+    const state = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentSteeringWheelAngle: 1.2,
+        referenceSteeringWheelAngleAtCurrent: 0,
+        currentSpeed: 50,
+        currentThrottle: 0.5,
+        currentDistPct: 0.1,
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 60,
+        referenceThrottleAtCurrent: 1,
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
 
-    expect(advisory).toBe('neutral');
+    expect(state.advisory).toBe('neutral');
+  });
+
+  it('suppresses the gas call when lateral acceleration diverges from the reference at this point', () => {
+    const state = computeDrivingAdvisory(
+      {
+        ...baseAdvisoryInput,
+        currentLatAccel: 12,
+        referenceLatAccelAtCurrent: 0,
+        currentSpeed: 50,
+        currentThrottle: 0.5,
+        currentDistPct: 0.1,
+        trackLengthM: TRACK_LENGTH_M,
+        cornerTargets: targets,
+        referenceSpeedAtCurrent: 60,
+        referenceThrottleAtCurrent: 1,
+      },
+      NEUTRAL_ADVISORY_STATE
+    );
+
+    expect(state.advisory).toBe('neutral');
   });
 });
 
