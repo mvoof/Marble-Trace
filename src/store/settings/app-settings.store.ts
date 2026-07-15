@@ -3,6 +3,7 @@ import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { load } from '@tauri-apps/plugin-store';
 import { getVersion } from '@tauri-apps/api/app';
+import { mergeWithDefaults } from '@utils/deep-merge';
 
 const DEFAULT_APP_SETTINGS = {
   dragHotkey: 'F9',
@@ -87,13 +88,8 @@ export class AppSettingsStore {
   }
 
   applySettings(saved: Partial<AppSettings>) {
-    const filtered = Object.fromEntries(
-      (Object.keys(DEFAULT_APP_SETTINGS) as (keyof AppSettings)[]).map(
-        (key) => [key, key in saved ? saved[key] : DEFAULT_APP_SETTINGS[key]]
-      )
-    );
-
-    Object.assign(this.appSettings, filtered);
+    const merged = mergeWithDefaults(DEFAULT_APP_SETTINGS, saved);
+    Object.assign(this.appSettings, merged);
   }
 
   setAutoUpdate(value: boolean) {

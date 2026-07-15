@@ -7,7 +7,7 @@ import type {
   SessionContext,
 } from '@/types/widget-settings';
 import type { AppSettings } from '@store/settings/app-settings.store';
-import { filterToDefaults } from '@utils/filter-to-defaults';
+import { mergeWithDefaults } from '@utils/deep-merge';
 import type { RootStore } from '@store/root-store';
 
 export const SETTINGS_FILE = 'settings.json';
@@ -38,7 +38,7 @@ const restoreWidgets = (
 
     if (!widgetDefaults) continue;
 
-    const mergedUserSettings = filterToDefaults(
+    const mergedUserSettings = mergeWithDefaults(
       widgetDefaults.userSettings,
       saved.userSettings ?? {}
     );
