@@ -315,6 +315,8 @@ export interface MonitorConfig {
   widgets: WidgetDefaultConfig[];
 }
 
+export type SessionContext = 'Practice' | 'Qualify' | 'Race' | 'Garage';
+
 export interface SavedLayout {
   id: string;
   name: string;

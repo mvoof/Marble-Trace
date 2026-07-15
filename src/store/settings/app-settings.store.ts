@@ -8,8 +8,8 @@ const DEFAULT_APP_SETTINGS = {
   dragHotkey: 'F9',
   hideAllWidgetsHotkey: 'F10',
   hideWidgetsWhenGameClosed: false,
-  hideWidgetsInGarage: false,
   hideAllWidgets: false,
+  autoSwitchLayouts: true,
   startMinimized: false,
   autoUpdate: true,
   updateCheckInterval: 3,
@@ -220,8 +220,8 @@ export class AppSettingsStore {
     this.appSettings.hideWidgetsWhenGameClosed = value;
   }
 
-  setHideWidgetsInGarage(value: boolean) {
-    this.appSettings.hideWidgetsInGarage = value;
+  setAutoSwitchLayouts(value: boolean) {
+    this.appSettings.autoSwitchLayouts = value;
   }
 
   setEditorShowGrid(value: boolean) {

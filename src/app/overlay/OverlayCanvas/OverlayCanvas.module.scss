@@ -26,3 +26,50 @@
   font-weight: 600;
   text-transform: uppercase;
 }
+
+.toastContainer {
+  position: fixed;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  pointer-events: none;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
+  background: rgba(21, 22, 26, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: sp(xs) sp(md);
+  border-radius: radius(md);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+.toastIcon {
+  color: $race-blue;
+  flex-shrink: 0;
+}
+
+.toastText {
+  color: #e0e0e0;
+  font-size: fs(xs);
+  font-weight: 500;
+  font-family: $font-widget;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translate(-50%, -20px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}

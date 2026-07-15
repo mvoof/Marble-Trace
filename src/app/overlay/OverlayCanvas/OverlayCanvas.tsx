@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button } from 'antd';
-import { X } from 'lucide-react';
+import { X, Layers } from 'lucide-react';
+import { listen } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { WIDGET_BY_ID } from '@store/widget-defaults';
 import { WidgetContainer } from '@app/overlay/components/WidgetContainer/WidgetContainer';
@@ -15,14 +16,41 @@ export const OverlayCanvas = observer(() => {
   const appSettings = useAppSettingsStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { dragMode } = appSettings;
-  const { hideAllWidgets } = appSettings.appSettings;
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     getCurrentWebviewWindow()
-      .setIgnoreCursorEvents(!dragMode)
+      .setIgnoreCursorEvents(!appSettings.dragMode)
       .catch((err: unknown) => console.error(err));
-  }, [dragMode]);
+  }, [appSettings.dragMode]);
+
+  useEffect(() => {
+    let timer: number | null = null;
+
+    const unlistenPromise = listen<string>('layout-activated', (event) => {
+      setToastMessage(`Layout switched to "${event.payload}"`);
+      setShowToast(true);
+
+      if (timer !== null) {
+        window.clearTimeout(timer);
+      }
+
+      timer = window.setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+    });
+
+    return () => {
+      if (timer !== null) {
+        window.clearTimeout(timer);
+      }
+      void unlistenPromise.then((unlisten) => unlisten());
+    };
+  }, []);
+
+  const { dragMode } = appSettings;
+  const { hideAllWidgets } = appSettings.appSettings;
 
   const handleExitDragMode = () => {
     appSettings.setDragMode(false);
@@ -64,6 +92,15 @@ export const OverlayCanvas = observer(() => {
           </WidgetContainer>
         );
       })}
+
+      {showToast && toastMessage && (
+        <div className={styles.toastContainer}>
+          <div className={styles.toast}>
+            <Layers size={14} className={styles.toastIcon} />
+            <span className={styles.toastText}>{toastMessage}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 });
