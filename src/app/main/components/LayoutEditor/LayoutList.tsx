@@ -271,7 +271,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                 ['Practice', 'Qualify', 'Race', 'Garage'] as SessionContext[]
               ).filter(
                 (context) =>
-                  widgetSettings.sessionLayouts[context] === layout.id
+                  widgetSettings.sessionLayouts?.[context] === layout.id
               );
 
               const monitorName =
@@ -424,7 +424,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                       ] as SessionContext[]
                     ).map((context) => {
                       const isAssigned =
-                        widgetSettings.sessionLayouts[context] ===
+                        widgetSettings.sessionLayouts?.[context] ===
                         selectedLayout.id;
                       return (
                         <Checkbox

@@ -53,7 +53,7 @@ export const WidgetContainer = observer(
     const isConnected = simStore.status === 'connected';
     const isOnTrack = player.isOnTrack;
 
-    const hasGarageLayout = widgetSettings.sessionLayouts?.Garage !== null;
+    const hasGarageLayout = !!widgetSettings.sessionLayouts?.Garage;
 
     const shouldHide =
       (appSettings.hideWidgetsWhenGameClosed && !isConnected && !dragMode) ||

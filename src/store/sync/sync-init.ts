@@ -121,7 +121,7 @@ export const initMainSync = async (root: RootStore) => {
             }
 
             if (context) {
-              const layoutId = root.widgetSettings.sessionLayouts[context];
+              const layoutId = root.widgetSettings.sessionLayouts?.[context];
               if (layoutId && layoutId !== root.widgetSettings.activeLayoutId) {
                 const exists = root.widgetSettings.layouts.some(
                   (l) => l.id === layoutId

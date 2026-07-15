@@ -193,8 +193,14 @@ export class WidgetSettingsStore {
     this.bumpMutation();
   }
 
-  setSessionLayouts(layouts: Record<SessionContext, string | null>) {
-    this.sessionLayouts = { ...layouts };
+  setSessionLayouts(layouts: Partial<Record<SessionContext, string | null>>) {
+    this.sessionLayouts = {
+      Practice: null,
+      Qualify: null,
+      Race: null,
+      Garage: null,
+      ...layouts,
+    };
     this.bumpMutation();
   }
 
