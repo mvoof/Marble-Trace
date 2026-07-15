@@ -84,3 +84,77 @@ describe('WidgetSettingsStore capabilities gating', () => {
     expect(rootStore.widgetSettings.enabledWidgetIds).toContain('fuel');
   });
 });
+
+describe('WidgetSettingsStore session layouts', () => {
+  let rootStore: RootStore;
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+    // Создаем несколько фейковых лейаутов
+    rootStore.widgetSettings.setLayouts([
+      {
+        id: 'layout-practice',
+        name: 'Practice Layout',
+        createdAt: Date.now(),
+        monitorConfigs: {},
+        activeMonitorName: null,
+      },
+      {
+        id: 'layout-race',
+        name: 'Race Layout',
+        createdAt: Date.now(),
+        monitorConfigs: {},
+        activeMonitorName: null,
+      },
+    ]);
+  });
+
+  it('correctly sets and maps session layouts', () => {
+    rootStore.widgetSettings.setSessionLayout('Practice', 'layout-practice');
+    rootStore.widgetSettings.setSessionLayout('Race', 'layout-race');
+
+    expect(rootStore.widgetSettings.sessionLayouts.Practice).toBe(
+      'layout-practice'
+    );
+    expect(rootStore.widgetSettings.sessionLayouts.Race).toBe('layout-race');
+    expect(rootStore.widgetSettings.sessionLayouts.Qualify).toBeNull();
+  });
+
+  it('returns correct currentSessionType based on sessionInfo', () => {
+    expect(rootStore.session.currentSessionType).toBeNull();
+
+    runInAction(() => {
+      rootStore.session.updateSessionInfo({
+        trackId: 1,
+        trackName: 'Spa',
+        currentSessionNum: 1,
+        playerCarIdx: 0,
+        cars: [],
+        sessions: [
+          {
+            sessionType: 'Practice',
+            sessionTypeLabel: 'Practice',
+            sessionLaps: 'unlimited',
+            resultsPositions: [],
+          },
+          {
+            sessionType: 'Race',
+            sessionTypeLabel: 'Race',
+            sessionLaps: '10',
+            resultsPositions: [],
+          },
+        ],
+      } as any);
+    });
+
+    expect(rootStore.session.currentSessionType).toBe('Race');
+
+    runInAction(() => {
+      if (rootStore.session.sessionInfo) {
+        rootStore.session.sessionInfo.currentSessionNum = 0;
+      }
+    });
+
+    expect(rootStore.session.currentSessionType).toBe('Practice');
+  });
+});

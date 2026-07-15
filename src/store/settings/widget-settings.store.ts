@@ -16,7 +16,9 @@ import type {
   WidgetSpecificSettings,
   WidgetUserSettings,
   RadarSettings,
+  SessionContext,
 } from '@/types/widget-settings';
+import { emit } from '@tauri-apps/api/event';
 import {
   DEFAULT_LAYOUT_RESOLUTION,
   scaleWidgetsToResolution,
@@ -86,6 +88,13 @@ export class WidgetSettingsStore {
 
   layouts: SavedLayout[] = [];
   activeLayoutId: string | null = null;
+
+  sessionLayouts: Record<SessionContext, string | null> = {
+    Practice: null,
+    Qualify: null,
+    Race: null,
+    Garage: null,
+  };
 
   // Logical (CSS px) resolution of the overlay window. Set by the overlay after
   // positioning, and by selectMonitorForActiveLayout when the active config
@@ -177,6 +186,22 @@ export class WidgetSettingsStore {
     this.updateUserSettings('standings', {
       viewMode: order[nextIdx],
     });
+  }
+
+  setSessionLayout(context: SessionContext, layoutId: string | null) {
+    this.sessionLayouts[context] = layoutId;
+    this.bumpMutation();
+  }
+
+  setSessionLayouts(layouts: Partial<Record<SessionContext, string | null>>) {
+    this.sessionLayouts = {
+      Practice: null,
+      Qualify: null,
+      Race: null,
+      Garage: null,
+      ...layouts,
+    };
+    this.bumpMutation();
   }
 
   pushUndo() {
@@ -722,6 +747,12 @@ export class WidgetSettingsStore {
     ];
 
     this.activeLayoutId = id;
+    this.sessionLayouts = {
+      Practice: id,
+      Qualify: id,
+      Race: id,
+      Garage: null,
+    };
     this.setWidgets(this.buildStarterWidgets());
     this.bumpMutation();
   }
@@ -891,6 +922,7 @@ export class WidgetSettingsStore {
     }
 
     this.bumpMutation();
+    void emit('layout-activated', layout.name);
   }
 
   // Auto-commit: writes the live widgets back into the active monitor config.

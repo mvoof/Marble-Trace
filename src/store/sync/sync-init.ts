@@ -14,7 +14,6 @@ import {
   emitDragMode,
   emitHideAllWidgets,
   emitHideWidgetsWhenGameClosed,
-  emitHideWidgetsInGarage,
   emitUnitsChanged,
   emitStandingsClassIndex,
   emitWidgetSettingsUpdated,
@@ -24,6 +23,7 @@ import {
 import type {
   WidgetDefaultConfig,
   StandingsWidgetSettings,
+  SessionContext,
 } from '@/types/widget-settings';
 import type { RootStore } from '../root-store';
 
@@ -86,11 +86,53 @@ export const initMainSync = async (root: RootStore) => {
           }
         ),
         reaction(
-          () => root.appSettings.appSettings.hideWidgetsInGarage,
-          (v) => {
-            void emitHideWidgetsInGarage(v);
+          () => root.appSettings.appSettings.autoSwitchLayouts,
+          () => {
             void onSave();
           }
+        ),
+        reaction(
+          () => JSON.stringify(root.widgetSettings.sessionLayouts),
+          () => {
+            void onSave();
+          }
+        ),
+        reaction(
+          () => {
+            const isConnected = root.sim.isConnected;
+            const isOnTrack = root.player.isOnTrack;
+            const sessionType = root.session.currentSessionType;
+            return { isConnected, isOnTrack, sessionType };
+          },
+          ({ isConnected, isOnTrack, sessionType }) => {
+            if (!root.appSettings.appSettings.autoSwitchLayouts) return;
+            if (root.widgetSettings.editorPreviewMode) return;
+            if (!isConnected) return;
+
+            let context: SessionContext | null = null;
+            if (!isOnTrack) {
+              context = 'Garage';
+            } else if (sessionType === 'Practice') {
+              context = 'Practice';
+            } else if (sessionType === 'Qualify') {
+              context = 'Qualify';
+            } else if (sessionType === 'Race') {
+              context = 'Race';
+            }
+
+            if (context) {
+              const layoutId = root.widgetSettings.sessionLayouts?.[context];
+              if (layoutId && layoutId !== root.widgetSettings.activeLayoutId) {
+                const exists = root.widgetSettings.layouts.some(
+                  (l) => l.id === layoutId
+                );
+                if (exists) {
+                  root.widgetSettings.loadLayout(layoutId);
+                }
+              }
+            }
+          },
+          { fireImmediately: true }
         ),
         reaction(
           () => root.appSettings.appSettings.autoUpdate,

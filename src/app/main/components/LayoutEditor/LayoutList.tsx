@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Button, Input, Modal, Popconfirm } from 'antd';
+import { Button, Checkbox, Input, Modal, Popconfirm } from 'antd';
 import {
   Plus,
   Play,
@@ -11,12 +11,16 @@ import {
   LayoutTemplate,
   Copy,
 } from 'lucide-react';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import {
+  useWidgetSettingsStore,
+  useAppSettingsStore,
+  useSimStore,
+} from '@store/root-store-context';
 import {
   resolveBackgroundSrc,
   deleteBackgroundImage,
 } from '@utils/widget/layout-background';
-import type { SavedLayout } from '@/types/widget-settings';
+import type { SavedLayout, SessionContext } from '@/types/widget-settings';
 import styles from './LayoutList.module.scss';
 
 interface LayoutPreviewProps {
@@ -111,6 +115,10 @@ interface LayoutListProps {
 
 export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   const widgetSettings = useWidgetSettingsStore();
+  const appSettings = useAppSettingsStore();
+  const simStore = useSimStore();
+  const autoSwitchEnabled = appSettings.appSettings.autoSwitchLayouts;
+  const isAutoSwitchActive = autoSwitchEnabled && simStore.isConnected;
 
   const [selectedId, setSelectedId] = useState<string | null>(
     widgetSettings.activeLayoutId
@@ -219,23 +227,38 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerInfo}>
-          <h2 className={styles.title}>Layouts</h2>
+          <span className={styles.moduleLabel}>Layouts</span>
+
+          <h1 className={styles.title}>Manage Widget Layouts</h1>
           <p className={styles.subtitle}>
-            Select a layout to see details. Double-click a card to open it in
-            the editor.
+            {autoSwitchEnabled
+              ? 'Auto-switching is active. Layouts will load dynamically matching your game session.'
+              : 'Select a layout to see details. Double-click a card to open it in the editor.'}
           </p>
         </div>
 
-        <Button
-          type="primary"
-          icon={<Plus size={16} />}
-          onClick={() => {
-            setNewLayoutName('');
-            setIsCreateModalOpen(true);
-          }}
-        >
-          New Layout
-        </Button>
+        <div className={styles.headerActions}>
+          <Button
+            className={`${styles.headerToggle} ${
+              autoSwitchEnabled ? styles.headerToggleActive : ''
+            }`}
+            onClick={() => appSettings.setAutoSwitchLayouts(!autoSwitchEnabled)}
+            title="Toggle Auto-Switching mode"
+          >
+            Auto-Switch: {autoSwitchEnabled ? 'On' : 'Off'}
+          </Button>
+
+          <Button
+            type="primary"
+            icon={<Plus size={16} />}
+            onClick={() => {
+              setNewLayoutName('');
+              setIsCreateModalOpen(true);
+            }}
+          >
+            New Layout
+          </Button>
+        </div>
       </header>
 
       <div className={styles.content}>
@@ -244,6 +267,12 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
             {widgetSettings.layouts.map((layout) => {
               const isSelected = layout.id === selectedId;
               const isActive = layout.id === widgetSettings.activeLayoutId;
+              const assignedSessions = (
+                ['Practice', 'Qualify', 'Race', 'Garage'] as SessionContext[]
+              ).filter(
+                (context) =>
+                  widgetSettings.sessionLayouts?.[context] === layout.id
+              );
 
               const monitorName =
                 layout.activeMonitorName ||
@@ -287,9 +316,37 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                     <div className={styles.cardHeaderRow}>
                       <span className={styles.cardName}>{layout.name}</span>
                       {isActive && (
-                        <span className={styles.activeBadge}>Active</span>
+                        <span className={styles.activeBadge}>
+                          {isAutoSwitchActive ? 'Current' : 'Active'}
+                        </span>
                       )}
                     </div>
+
+                    <div className={styles.badgesWrapper}>
+                      {assignedSessions.length > 0 ? (
+                        assignedSessions.map((session) => (
+                          <span
+                            key={session}
+                            className={`${styles.sessionBadge} ${
+                              autoSwitchEnabled
+                                ? styles[`sessionBadge${session}`]
+                                : styles.sessionBadgeDisabled
+                            }`}
+                            title={`Assigned to ${session}`}
+                          >
+                            {session}
+                          </span>
+                        ))
+                      ) : (
+                        <span
+                          className={`${styles.sessionBadge} ${styles.sessionBadgeManual}`}
+                          title="Manual activation only"
+                        >
+                          Manual
+                        </span>
+                      )}
+                    </div>
+
                     <span className={styles.cardMeta}>
                       {enabledWidgetsCount} widget
                       {enabledWidgetsCount !== 1 ? 's' : ''}
@@ -353,6 +410,41 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
               </div>
 
               <div className={styles.detailsInfoGroup}>
+                <div className={styles.assignmentSection}>
+                  <span className={styles.sectionLabel}>
+                    Auto-Switch Assignment
+                  </span>
+                  <div className={styles.assignmentGrid}>
+                    {(
+                      [
+                        'Practice',
+                        'Qualify',
+                        'Race',
+                        'Garage',
+                      ] as SessionContext[]
+                    ).map((context) => {
+                      const isAssigned =
+                        widgetSettings.sessionLayouts?.[context] ===
+                        selectedLayout.id;
+                      return (
+                        <Checkbox
+                          key={context}
+                          checked={isAssigned}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            widgetSettings.setSessionLayout(
+                              context,
+                              checked ? selectedLayout.id : null
+                            );
+                          }}
+                        >
+                          {context}
+                        </Checkbox>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>Active Monitor</span>
                   <span className={styles.infoValue}>
