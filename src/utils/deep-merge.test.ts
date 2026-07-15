@@ -99,4 +99,29 @@ describe('mergeWithDefaults', () => {
     expect(result).toEqual({ nullableField: 42, nullableString: null });
     expect(console.warn).not.toHaveBeenCalled();
   });
+
+  it('prevents array-object and object-array type bypass', () => {
+    const defaults = { arr: [1, 2], obj: { a: 1 } };
+    const saved = { arr: { a: 1 }, obj: [1, 2] };
+
+    const result = mergeWithDefaults(defaults, saved);
+
+    expect(result).toEqual({ arr: [1, 2], obj: { a: 1 } });
+    expect(console.warn).toHaveBeenCalledTimes(2);
+  });
+
+  it('prevents mutating global defaults via shared nested object references', () => {
+    const defaults = { nested: { value: 42, arr: [1, 2] } };
+    const saved = {}; // nested is completely missing
+
+    const result = mergeWithDefaults(defaults, saved);
+
+    // Mutate the result
+    result.nested.value = 99;
+    result.nested.arr.push(3);
+
+    // Verify defaults is unchanged
+    expect(defaults.nested.value).toBe(42);
+    expect(defaults.nested.arr).toEqual([1, 2]);
+  });
 });
