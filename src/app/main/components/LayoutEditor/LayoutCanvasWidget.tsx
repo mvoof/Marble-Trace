@@ -346,7 +346,7 @@ export const LayoutCanvasWidget = observer(
 
     return (
       <div
-        className={`${styles.widgetBox} ${isSelected ? styles.selected : ''}`}
+        className={styles.widgetBox}
         style={{
           left: x,
           top: y,
@@ -378,6 +378,14 @@ export const LayoutCanvasWidget = observer(
           >
             {children}
           </div>
+
+          {isSelected && (
+            <div
+              role="presentation"
+              className={styles.selectionOutline}
+              style={{ borderRadius: frameBorderRadius }}
+            />
+          )}
 
           {isSelected &&
             resizeDirections.map((direction) => (
