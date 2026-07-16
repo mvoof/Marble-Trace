@@ -123,6 +123,10 @@
   "layoutWidgetPanel": {
     "back": "返回"
   },
+  "widgetWorkbench": {
+    "scenario": "场景",
+    "noWidgets": "没有可用的小组件。"
+  },
   "layoutCanvas": {
     "move": "移动",
     "stepSize": "步长 {{size}}",

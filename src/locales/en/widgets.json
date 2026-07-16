@@ -58,10 +58,10 @@
       "description": "Liquid temperatures, pressures, and system adjustments (ABS, TC, Brake Bias, Engine Map)."
     },
     "rpm-lights": {
-      "description": "Standalone shift-light LED bar driven by engine RPM, with pit-limiter animations. Split out from the Speed widget so the rev lights never distort the speedometer layout."
+      "description": "Standalone shift-light LED bar driven by engine RPM, with pit-limiter animations."
     },
     "race-dash": {
-      "description": "Combined cockpit cluster: a gear ring with an RPM arc and printed shift zone, dominant speed readout with lap/position/RPM, a coach tab with reference speed, plus a pit-lane mode with limiter assist. Replaces the former Speed, RPM Lights, and Driving Coach widgets."
+      "description": "Cockpit cluster: gear ring, speed readout with lap/position/RPM, coach tab, and pit-lane mode."
     }
   },
   "settingsPanels": {

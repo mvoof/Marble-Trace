@@ -126,6 +126,10 @@
   "layoutWidgetPanel": {
     "back": "Назад"
   },
+  "widgetWorkbench": {
+    "scenario": "Сценарий",
+    "noWidgets": "Нет доступных виджетов."
+  },
   "layoutCanvas": {
     "move": "Перемещение",
     "stepSize": "Шаг {{size}}",

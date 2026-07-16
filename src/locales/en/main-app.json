@@ -124,6 +124,10 @@
   "layoutWidgetPanel": {
     "back": "Back"
   },
+  "widgetWorkbench": {
+    "scenario": "Scenario",
+    "noWidgets": "No widgets available."
+  },
   "layoutCanvas": {
     "move": "Move",
     "stepSize": "{{size}} step",
