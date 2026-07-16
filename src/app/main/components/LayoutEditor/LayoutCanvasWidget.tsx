@@ -347,6 +347,7 @@ export const LayoutCanvasWidget = observer(
     return (
       <div
         className={styles.widgetBox}
+        data-widget-id={widgetId}
         style={{
           left: x,
           top: y,

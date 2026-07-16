@@ -21,6 +21,7 @@ import type {
 import { emit } from '@tauri-apps/api/event';
 import {
   DEFAULT_LAYOUT_RESOLUTION,
+  resolutionsEqual,
   scaleWidgetsToResolution,
 } from '@utils/widget/layout-resolution';
 import { cloneBackgroundImage } from '@utils/widget/layout-background';
@@ -672,6 +673,15 @@ export class WidgetSettingsStore {
 
     if (layout.monitorConfigs[monitorName]) {
       const config = layout.monitorConfigs[monitorName];
+
+      if (!resolutionsEqual(config.resolution, resolution)) {
+        config.widgets = scaleWidgetsToResolution(
+          config.widgets,
+          config.resolution,
+          resolution
+        );
+        config.resolution = { ...resolution };
+      }
 
       this.overlayResolution = { ...config.resolution };
       this.setWidgets(config.widgets);

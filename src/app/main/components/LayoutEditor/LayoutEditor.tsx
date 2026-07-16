@@ -330,7 +330,18 @@ export const LayoutEditor = observer(
       if (!selectedWidget) return;
 
       const width = selectedWidget.userSettings.currentWidth;
-      const height = selectedWidget.userSettings.currentHeight;
+      // autoHeight widgets size themselves from content, so the stored
+      // currentHeight is stale -- measure the real rendered box and convert
+      // it from screen pixels (the canvas is zoomed via CSS transform: scale)
+      // back to world units using the known width as a scale reference.
+      const widgetElement = document.querySelector(
+        `[data-widget-id="${selectedWidget.id}"]`
+      );
+      const widgetRect = widgetElement?.getBoundingClientRect();
+      const height =
+        selectedWidget.autoHeight && widgetRect && widgetRect.width > 0
+          ? Math.round(widgetRect.height * (width / widgetRect.width))
+          : selectedWidget.userSettings.currentHeight;
       const worldWidth = widgetSettings.overlayResolution.width;
       const worldHeight = widgetSettings.overlayResolution.height;
       const positions = {
@@ -596,6 +607,13 @@ export const LayoutEditor = observer(
                 }
                 value={activeLayout?.activeMonitorName ?? undefined}
                 onChange={handleSelectMonitor}
+                onDropdownVisibleChange={(open) => {
+                  if (open) {
+                    listOverlayMonitors()
+                      .then(setMonitors)
+                      .catch(console.error);
+                  }
+                }}
                 options={monitorOptions}
                 disabled={!activeLayout}
                 style={{ minWidth: 180 }}
