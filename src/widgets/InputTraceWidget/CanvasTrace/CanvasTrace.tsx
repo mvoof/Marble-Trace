@@ -207,6 +207,31 @@ export const CanvasTrace = () => {
       const settings =
         widgetSettings.getSettings<InputTraceSettings>('input-trace');
 
+      // Touch every field draw() reads so autorun tracks them as dependencies —
+      // draw() itself runs deferred inside requestAnimationFrame, outside the
+      // autorun's synchronous tracking window, so settings-only changes (no
+      // telemetry update, e.g. the static widget preview) would otherwise never
+      // trigger a redraw.
+      const {
+        lineWidth,
+        throttleColor,
+        brakeColor,
+        clutchColor,
+        absColor,
+        showSteering,
+        steeringLimit,
+        steeringZoom,
+      } = settings;
+
+      void lineWidth;
+      void throttleColor;
+      void brakeColor;
+      void clutchColor;
+      void absColor;
+      void showSteering;
+      void steeringLimit;
+      void steeringZoom;
+
       const rawThrottle = inputs?.throttle ?? 0;
       const rawBrake = inputs?.brake ?? 0;
       const rawClutch = inputs?.clutch != null ? 1 - inputs.clutch : 0;
