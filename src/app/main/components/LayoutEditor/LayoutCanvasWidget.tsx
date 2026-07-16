@@ -271,25 +271,35 @@ export const LayoutCanvasWidget = observer(
             }
           }
 
-          const shouldLockRatio = moveEvent.shiftKey || isRatioLocked;
+          if (widget?.lockAspectRatio) {
+            // Only e/w handles are offered for these widgets (see
+            // resizeDirections below) — height always tracks the design
+            // aspect ratio, mirroring the overlay's WidgetContainer.
+            newH = Math.max(
+              minH,
+              Math.round(newW * (designHeight / designWidth))
+            );
+          } else {
+            const shouldLockRatio = moveEvent.shiftKey || isRatioLocked;
 
-          if (shouldLockRatio && startW > 0 && startH > 0) {
-            const aspect = startW / startH;
+            if (shouldLockRatio && startW > 0 && startH > 0) {
+              const aspect = startW / startH;
 
-            if (direction === 'e' || direction === 'w') {
-              newH = Math.max(minH, Math.round(newW / aspect));
-            } else if (direction === 'n' || direction === 's') {
-              newW = Math.max(minW, Math.round(newH * aspect));
-            } else {
-              newH = Math.max(minH, Math.round(newW / aspect));
-            }
+              if (direction === 'e' || direction === 'w') {
+                newH = Math.max(minH, Math.round(newW / aspect));
+              } else if (direction === 'n' || direction === 's') {
+                newW = Math.max(minW, Math.round(newH * aspect));
+              } else {
+                newH = Math.max(minH, Math.round(newW / aspect));
+              }
 
-            if (direction.includes('w')) {
-              newX = Math.round(startX + startW - newW);
-            }
+              if (direction.includes('w')) {
+                newX = Math.round(startX + startW - newW);
+              }
 
-            if (direction.includes('n')) {
-              newY = Math.round(startY + startH - newH);
+              if (direction.includes('n')) {
+                newY = Math.round(startY + startH - newH);
+              }
             }
           }
 
@@ -325,16 +335,19 @@ export const LayoutCanvasWidget = observer(
         snap,
         gridSize,
         isRatioLocked,
+        widget?.lockAspectRatio,
       ]
     );
 
-    const resizeDirections = autoHeight
-      ? HORIZONTAL_DIRECTIONS
-      : ALL_DIRECTIONS;
+    const resizeDirections =
+      autoHeight || widget?.lockAspectRatio
+        ? HORIZONTAL_DIRECTIONS
+        : ALL_DIRECTIONS;
 
     return (
       <div
-        className={`${styles.widgetBox} ${isSelected ? styles.selected : ''}`}
+        className={styles.widgetBox}
+        data-widget-id={widgetId}
         style={{
           left: x,
           top: y,
@@ -366,6 +379,14 @@ export const LayoutCanvasWidget = observer(
           >
             {children}
           </div>
+
+          {isSelected && (
+            <div
+              role="presentation"
+              className={styles.selectionOutline}
+              style={{ borderRadius: frameBorderRadius }}
+            />
+          )}
 
           {isSelected &&
             resizeDirections.map((direction) => (

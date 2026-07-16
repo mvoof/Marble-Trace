@@ -32,9 +32,21 @@
   overflow: visible;
 }
 
-.dragging {
-  outline: 2px dashed $widget-text-accent;
-  outline-offset: -2px;
+// A dedicated sibling, not a descendant of widgetInner — widgets like
+// RaceDash have internal elements with their own explicit z-index (pit
+// banner, ring glow layers) that can escape widgetInner's own outline in
+// some Chromium paint-order edge cases. A sibling with a high z-index of
+// its own is guaranteed to composite above all of that regardless.
+.selectionOutline {
+  position: absolute;
+  // Flush with widgetInner's own edge, on top of its 2px border, instead of
+  // inset inside it — otherwise the dashed line reads as sitting behind/
+  // under the widget's real border rather than marking the widget's edge.
+  inset: 0;
+  box-sizing: border-box;
+  border: 2px dashed $widget-text-accent;
+  pointer-events: none;
+  z-index: 50;
 }
 
 .draggingCursor {
@@ -56,6 +68,61 @@ $handle-edge: rem(6);
   z-index: 10;
 }
 
+// Resting-state corner indicator: a small L-shaped hook, the single
+// standard shared by every widget regardless of which resize directions
+// it offers (aspect-locked/autoHeight widgets simply omit the N/S or
+// corner handles entirely — that is expected, not an inconsistency).
+$corner-hook-size: rem(8);
+$corner-hook-width: 2px;
+$edge-hover-thickness: rem(4);
+
+@mixin corner-hook($vertical, $horizontal) {
+  &::after {
+    content: '';
+    position: absolute;
+    #{$vertical}: rem(3);
+    #{$horizontal}: rem(3);
+    width: $corner-hook-size;
+    height: $corner-hook-size;
+    border-#{$vertical}: $corner-hook-width solid $widget-text-accent;
+    border-#{$horizontal}: $corner-hook-width solid $widget-text-accent;
+    border-radius: 1px;
+    transition:
+      width 0.1s ease,
+      height 0.1s ease,
+      border-width 0.1s ease;
+  }
+
+  // On hover the hook grows into a thick, solid bracket — same idea as the
+  // edge handles turning their dashed segment into a solid bar.
+  &:hover::after {
+    width: rem(12);
+    height: rem(12);
+    border-width: 3px;
+  }
+}
+
+// Edge handles rest with no extra decoration (the dashed selection outline
+// already marks the edge); on hover that dashed segment is replaced by a
+// solid, thicker bar so the draggable edge reads unambiguously.
+@mixin edge-hover-highlight($side) {
+  &::before {
+    content: '';
+    position: absolute;
+    #{$side}: 0;
+    background: $widget-text-accent;
+    opacity: 0;
+    transition:
+      opacity 0.1s ease,
+      width 0.1s ease,
+      height 0.1s ease;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
 // Corner handles — square hit area with visual indicator
 .resizeHandleSE {
   bottom: 0;
@@ -64,17 +131,7 @@ $handle-edge: rem(6);
   height: $handle-corner;
   cursor: se-resize;
 
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: rem(3);
-    right: rem(3);
-    width: rem(8);
-    height: rem(8);
-    border-right: 2px solid $widget-text-accent;
-    border-bottom: 2px solid $widget-text-accent;
-    border-radius: 1px;
-  }
+  @include corner-hook(bottom, right);
 }
 
 .resizeHandleSW {
@@ -84,17 +141,7 @@ $handle-edge: rem(6);
   height: $handle-corner;
   cursor: sw-resize;
 
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: rem(3);
-    left: rem(3);
-    width: rem(8);
-    height: rem(8);
-    border-left: 2px solid $widget-text-accent;
-    border-bottom: 2px solid $widget-text-accent;
-    border-radius: 1px;
-  }
+  @include corner-hook(bottom, left);
 }
 
 .resizeHandleNE {
@@ -104,17 +151,7 @@ $handle-edge: rem(6);
   height: $handle-corner;
   cursor: ne-resize;
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: rem(3);
-    right: rem(3);
-    width: rem(8);
-    height: rem(8);
-    border-right: 2px solid $widget-text-accent;
-    border-top: 2px solid $widget-text-accent;
-    border-radius: 1px;
-  }
+  @include corner-hook(top, right);
 }
 
 .resizeHandleNW {
@@ -124,17 +161,7 @@ $handle-edge: rem(6);
   height: $handle-corner;
   cursor: nw-resize;
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: rem(3);
-    left: rem(3);
-    width: rem(8);
-    height: rem(8);
-    border-left: 2px solid $widget-text-accent;
-    border-top: 2px solid $widget-text-accent;
-    border-radius: 1px;
-  }
+  @include corner-hook(top, left);
 }
 
 // Edge handles — thin strip along each side, inset from corners
@@ -144,6 +171,22 @@ $handle-edge: rem(6);
   right: $handle-corner;
   height: $handle-edge;
   cursor: n-resize;
+
+  // The hit area is inset from the corners, but the visual highlight
+  // reaches all the way to them — hovering should light up the whole
+  // edge, corner to corner, not just the strip between them.
+  &::before {
+    left: -$handle-corner;
+    right: -$handle-corner;
+    top: 0;
+    height: 2px;
+  }
+
+  &:hover::before {
+    height: $edge-hover-thickness;
+  }
+
+  @include edge-hover-highlight(top);
 }
 
 .resizeHandleS {
@@ -152,6 +195,19 @@ $handle-edge: rem(6);
   right: $handle-corner;
   height: $handle-edge;
   cursor: s-resize;
+
+  &::before {
+    left: -$handle-corner;
+    right: -$handle-corner;
+    bottom: 0;
+    height: 2px;
+  }
+
+  &:hover::before {
+    height: $edge-hover-thickness;
+  }
+
+  @include edge-hover-highlight(bottom);
 }
 
 .resizeHandleE {
@@ -160,6 +216,19 @@ $handle-edge: rem(6);
   right: 0;
   width: $handle-edge;
   cursor: e-resize;
+
+  &::before {
+    top: -$handle-corner;
+    bottom: -$handle-corner;
+    right: 0;
+    width: 2px;
+  }
+
+  &:hover::before {
+    width: $edge-hover-thickness;
+  }
+
+  @include edge-hover-highlight(right);
 }
 
 .resizeHandleW {
@@ -168,4 +237,17 @@ $handle-edge: rem(6);
   left: 0;
   width: $handle-edge;
   cursor: w-resize;
+
+  &::before {
+    top: -$handle-corner;
+    bottom: -$handle-corner;
+    left: 0;
+    width: 2px;
+  }
+
+  &:hover::before {
+    width: $edge-hover-thickness;
+  }
+
+  @include edge-hover-highlight(left);
 }

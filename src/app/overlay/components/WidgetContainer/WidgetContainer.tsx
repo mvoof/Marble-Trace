@@ -251,7 +251,7 @@ export const WidgetContainer = observer(
         >
           <ErrorBoundary>
             <div
-              className={`${styles.widgetInner} ${dragMode ? styles.dragging : ''} ${overflowVisible ? styles.overflowVisible : ''}`}
+              className={`${styles.widgetInner} ${overflowVisible ? styles.overflowVisible : ''}`}
               style={
                 {
                   ...(autoHeight ? { height: 'auto' } : undefined),
@@ -270,6 +270,14 @@ export const WidgetContainer = observer(
               </WidgetIdContext.Provider>
             </div>
           </ErrorBoundary>
+
+          {dragMode && (
+            <div
+              role="presentation"
+              className={styles.selectionOutline}
+              style={{ borderRadius }}
+            />
+          )}
 
           {dragMode && <WidgetDragToolbar widgetId={widgetId} />}
 

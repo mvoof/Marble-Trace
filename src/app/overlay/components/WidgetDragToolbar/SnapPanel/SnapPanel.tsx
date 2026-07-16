@@ -72,7 +72,16 @@ export const SnapPanel = observer(({ widgetId, onClose }: SnapPanelProps) => {
 
   const snapTo = (pos: SnapPosition) => {
     const width = widget.userSettings.currentWidth;
-    const height = widget.userSettings.currentHeight;
+    // autoHeight widgets size themselves from content, so the stored
+    // currentHeight is stale -- measure the real rendered box instead,
+    // otherwise center/bottom snaps land using a phantom height.
+    const measuredHeight = document
+      .querySelector(`[data-widget-id="${widgetId}"]`)
+      ?.getBoundingClientRect().height;
+    const height =
+      widget.autoHeight && measuredHeight
+        ? measuredHeight
+        : widget.userSettings.currentHeight;
     const screenW = window.innerWidth;
     const m = SNAP_MARGIN;
 

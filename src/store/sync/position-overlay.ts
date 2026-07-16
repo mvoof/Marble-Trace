@@ -5,6 +5,10 @@ import {
 } from '@tauri-apps/api/window';
 import { PhysicalSize, PhysicalPosition } from '@tauri-apps/api/dpi';
 import type { RootStore } from '@store/root-store';
+import {
+  resolutionsEqual,
+  scaleWidgetsToResolution,
+} from '@utils/widget/layout-resolution';
 
 const WIN32_DISPLAY_PREFIX = '\\\\.\\';
 
@@ -42,10 +46,30 @@ export const positionOverlayToMonitor = async (
 
     const scale = monitor.scaleFactor || 1;
 
-    root.widgetSettings.setOverlayResolution({
+    const liveResolution = {
       width: Math.round(monitor.size.width / scale),
       height: Math.round(monitor.size.height / scale),
-    });
+    };
+
+    // Widgets are stored as raw pixel positions authored for the layout's
+    // configured resolution. If the real monitor the overlay just landed on
+    // doesn't match that (resolution changed since the layout was authored,
+    // "Custom" resolution with no matching real monitor, etc.), the widgets
+    // themselves must be rescaled too — otherwise they keep the coordinates
+    // of the old design canvas inside a differently-sized real window.
+    const authoredResolution = root.widgetSettings.overlayResolution;
+
+    if (!resolutionsEqual(authoredResolution, liveResolution)) {
+      root.widgetSettings.setWidgets(
+        scaleWidgetsToResolution(
+          root.widgetSettings.allWidgets,
+          authoredResolution,
+          liveResolution
+        )
+      );
+    }
+
+    root.widgetSettings.setOverlayResolution(liveResolution);
   } catch (error) {
     console.error('Failed to position overlay window:', error);
   }

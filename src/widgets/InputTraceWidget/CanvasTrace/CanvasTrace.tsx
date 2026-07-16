@@ -88,6 +88,9 @@ export const CanvasTrace = () => {
 
       ctx.lineWidth = settings.lineWidth;
 
+      const verticalInset = settings.lineWidth / 2;
+      const drawableHeight = logicalH - verticalInset * 2;
+
       if (channel.type === 'brake') {
         let currentAbs = false;
 
@@ -104,7 +107,7 @@ export const CanvasTrace = () => {
             buffer[circularIndex * channels.length + channelIndex];
 
           const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
-          const yPos = logicalH - sampleValue * logicalH;
+          const yPos = verticalInset + (1 - sampleValue) * drawableHeight;
 
           const sampleAbs = absBuffer[circularIndex] === 1;
 
@@ -147,7 +150,7 @@ export const CanvasTrace = () => {
             buffer[circularIndex * channels.length + channelIndex];
 
           const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
-          const yPos = logicalH - sampleValue * logicalH;
+          const yPos = verticalInset + (1 - sampleValue) * drawableHeight;
 
           if (!started) {
             ctx.moveTo(xPos, yPos);
@@ -167,6 +170,9 @@ export const CanvasTrace = () => {
       ctx.lineWidth = settings.lineWidth;
       ctx.beginPath();
 
+      const steerVerticalInset = settings.lineWidth / 2;
+      const steerDrawableHalfHeight = logicalH / 2 - steerVerticalInset;
+
       let started = false;
       const MAX_STEER_RAD =
         ((settings.steeringLimit / 2) * Math.PI) /
@@ -181,7 +187,7 @@ export const CanvasTrace = () => {
         const u = Math.max(-1, Math.min(1, rawSteer / MAX_STEER_RAD));
 
         const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
-        const yPos = logicalH / 2 - u * (logicalH / 2);
+        const yPos = logicalH / 2 - u * steerDrawableHalfHeight;
 
         if (!started) {
           ctx.moveTo(xPos, yPos);
@@ -201,6 +207,22 @@ export const CanvasTrace = () => {
       const settings =
         widgetSettings.getSettings<InputTraceSettings>('input-trace');
 
+      // Touch every field draw() reads so autorun tracks them as dependencies —
+      // draw() itself runs deferred inside requestAnimationFrame, outside the
+      // autorun's synchronous tracking window, so settings-only changes (no
+      // telemetry update, e.g. the static widget preview) would otherwise never
+      // trigger a redraw.
+      const {
+        lineWidth: _lineWidth,
+        throttleColor: _throttleColor,
+        brakeColor: _brakeColor,
+        clutchColor: _clutchColor,
+        absColor: _absColor,
+        showSteering: _showSteering,
+        steeringLimit: _steeringLimit,
+        steeringZoom: _steeringZoom,
+      } = settings;
+
       const rawThrottle = inputs?.throttle ?? 0;
       const rawBrake = inputs?.brake ?? 0;
       const rawClutch = inputs?.clutch != null ? 1 - inputs.clutch : 0;
@@ -214,18 +236,31 @@ export const CanvasTrace = () => {
       const requiredBufferLength = bufferSize * numChannels;
       const state = bufferStateRef.current;
 
+      // A resize of any circular buffer invalidates head/count for all of
+      // them — e.g. with every channel toggle off, requiredBufferLength
+      // stays 0 across a historySeconds change, but absBuffer/steerBuffer
+      // still get reallocated to the new (smaller) bufferSize; leaving a
+      // stale head from the old size would write out of bounds on them.
+      let buffersResized = false;
+
       if (state.buffer.length !== requiredBufferLength) {
         state.buffer = new Float32Array(requiredBufferLength);
-        state.head = 0;
-        state.count = 0;
+        buffersResized = true;
       }
 
       if (state.absBuffer.length !== bufferSize) {
         state.absBuffer = new Uint8Array(bufferSize);
+        buffersResized = true;
       }
 
       if (state.steerBuffer.length !== bufferSize) {
         state.steerBuffer = new Float32Array(bufferSize);
+        buffersResized = true;
+      }
+
+      if (buffersResized) {
+        state.head = 0;
+        state.count = 0;
       }
 
       const smoothing = settings.smoothing;
