@@ -64,7 +64,8 @@ export const MainWindow = observer(() => {
           colorTextBase: '#e0e0e0',
           colorTextDescription: '#8b8e98',
           borderRadius: 4,
-          fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+          fontFamily:
+            "'Exo 2', 'Noto Sans SC', system-ui, Avenir, Helvetica, Arial, sans-serif",
         },
         components: {
           // colorPrimary is near-white, so primary buttons need dark text/icon
