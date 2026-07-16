@@ -15,7 +15,11 @@ fn delete_old_logs(log_dir: &Path) {
         return;
     };
 
-    let cutoff = SystemTime::now() - Duration::from_secs(LOG_RETENTION_DAYS * 24 * 60 * 60);
+    let Some(cutoff) =
+        SystemTime::now().checked_sub(Duration::from_secs(LOG_RETENTION_DAYS * 24 * 60 * 60))
+    else {
+        return;
+    };
 
     for entry in entries.flatten() {
         let path = entry.path();
@@ -73,10 +77,10 @@ pub fn init(app: &App) -> LogFileGuard {
         .with_writer(non_blocking)
         .with_filter(build_env_filter("marble_trace_lib=info"));
 
-    tracing_subscriber::registry()
+    let _ = tracing_subscriber::registry()
         .with(stdout_layer)
         .with(file_layer)
-        .init();
+        .try_init();
 
     tracing::info!("===== SESSION START =====");
     tracing::info!(log_dir = %log_dir.display(), "file logging initialized");
@@ -134,7 +138,10 @@ fn sessions_by_layout_id(
     if let Some(map) = session_layouts.and_then(|value| value.as_object()) {
         for (context, layout_id) in map {
             if let Some(layout_id) = layout_id.as_str() {
-                sessions.entry(layout_id).or_default().push(context);
+                sessions
+                    .entry(layout_id)
+                    .or_default()
+                    .push(context.as_str());
             }
         }
     }
@@ -197,19 +204,19 @@ pub fn log_settings_snapshot(settings: &serde_json::Value) {
     let app = settings.get("app");
     let active_layout_id = settings.get("activeLayoutId").and_then(|id| id.as_str());
 
-    let raw_layouts = settings
-        .get("layouts")
-        .and_then(|layouts| layouts.as_array())
-        .cloned()
-        .unwrap_or_default();
-
     let sessions_by_layout_id = sessions_by_layout_id(settings.get("sessionLayouts"));
 
-    let layouts = raw_layouts
-        .iter()
-        .map(|layout| summarize_layout(layout, active_layout_id, &sessions_by_layout_id))
-        .collect::<Vec<_>>()
-        .join(" | ");
+    let layouts = settings
+        .get("layouts")
+        .and_then(|layouts| layouts.as_array())
+        .map(|layouts| {
+            layouts
+                .iter()
+                .map(|layout| summarize_layout(layout, active_layout_id, &sessions_by_layout_id))
+                .collect::<Vec<_>>()
+                .join(" | ")
+        })
+        .unwrap_or_default();
 
     let units = settings
         .get("units")
