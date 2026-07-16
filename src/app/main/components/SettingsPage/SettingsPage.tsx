@@ -48,7 +48,7 @@ export const SettingsPage = observer(() => {
   const trackMap = useTrackMapWidgetStore();
   const session = useSessionStore();
   const { message } = App.useApp();
-  const { t } = useTranslation('main-app');
+  const { t, i18n } = useTranslation('main-app');
   const [resettingPitLane, setResettingPitLane] = useState(false);
 
   const languageOptions: { value: AppLanguage; label: string }[] = [
@@ -338,7 +338,7 @@ export const SettingsPage = observer(() => {
                     {t('settingsPage.applicationUpdates.lastChecked')}{' '}
                     {new Date(
                       appSettings.appSettings.lastUpdateCheck
-                    ).toLocaleString()}
+                    ).toLocaleString(i18n.language)}
                   </div>
                 )}
 

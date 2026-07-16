@@ -129,7 +129,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   const widgetSettings = useWidgetSettingsStore();
   const appSettings = useAppSettingsStore();
   const simStore = useSimStore();
-  const { t } = useTranslation('main-app');
+  const { t, i18n } = useTranslation('main-app');
   const autoSwitchEnabled = appSettings.appSettings.autoSwitchLayouts;
   const isAutoSwitchActive = autoSwitchEnabled && simStore.isConnected;
 
@@ -429,7 +429,9 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                 )}
                 <span className={styles.detailsMeta}>
                   {t('layoutList.created')}{' '}
-                  {new Date(selectedLayout.createdAt).toLocaleDateString()}
+                  {new Date(selectedLayout.createdAt).toLocaleDateString(
+                    i18n.language
+                  )}
                 </span>
               </div>
 
