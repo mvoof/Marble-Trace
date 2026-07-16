@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useEffect, useRef } from 'react';
 import { Switch, Button } from 'antd';
 import { Settings2, ArrowLeft } from 'lucide-react';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
@@ -27,6 +28,7 @@ const WidgetRow = observer(
   }) => {
     const widgetSettings = useWidgetSettingsStore();
     const isAvailable = widgetSettings.availableWidgetIds.includes(widget.id);
+    const rowRef = useRef<HTMLDivElement>(null);
 
     const handleToggle = (checked: boolean) => {
       if (isAvailable) {
@@ -34,8 +36,18 @@ const WidgetRow = observer(
       }
     };
 
+    useEffect(() => {
+      if (isSelected) {
+        rowRef.current?.scrollIntoView({
+          block: 'nearest',
+          behavior: 'smooth',
+        });
+      }
+    }, [isSelected]);
+
     return (
       <div
+        ref={rowRef}
         className={`${styles.row} ${isSelected ? styles.selected : ''} ${
           !isAvailable ? styles.disabled : ''
         }`}
