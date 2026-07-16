@@ -88,6 +88,9 @@ export const CanvasTrace = () => {
 
       ctx.lineWidth = settings.lineWidth;
 
+      const verticalInset = settings.lineWidth / 2;
+      const drawableHeight = logicalH - verticalInset * 2;
+
       if (channel.type === 'brake') {
         let currentAbs = false;
 
@@ -104,7 +107,7 @@ export const CanvasTrace = () => {
             buffer[circularIndex * channels.length + channelIndex];
 
           const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
-          const yPos = logicalH - sampleValue * logicalH;
+          const yPos = verticalInset + (1 - sampleValue) * drawableHeight;
 
           const sampleAbs = absBuffer[circularIndex] === 1;
 
@@ -147,7 +150,7 @@ export const CanvasTrace = () => {
             buffer[circularIndex * channels.length + channelIndex];
 
           const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
-          const yPos = logicalH - sampleValue * logicalH;
+          const yPos = verticalInset + (1 - sampleValue) * drawableHeight;
 
           if (!started) {
             ctx.moveTo(xPos, yPos);
@@ -167,6 +170,9 @@ export const CanvasTrace = () => {
       ctx.lineWidth = settings.lineWidth;
       ctx.beginPath();
 
+      const steerVerticalInset = settings.lineWidth / 2;
+      const steerDrawableHalfHeight = logicalH / 2 - steerVerticalInset;
+
       let started = false;
       const MAX_STEER_RAD =
         ((settings.steeringLimit / 2) * Math.PI) /
@@ -181,7 +187,7 @@ export const CanvasTrace = () => {
         const u = Math.max(-1, Math.min(1, rawSteer / MAX_STEER_RAD));
 
         const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
-        const yPos = logicalH / 2 - u * (logicalH / 2);
+        const yPos = logicalH / 2 - u * steerDrawableHalfHeight;
 
         if (!started) {
           ctx.moveTo(xPos, yPos);
