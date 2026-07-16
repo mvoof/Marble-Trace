@@ -32,12 +32,16 @@ $widget-font-scale: (
   'xxxl': 32,
 );
 
+// Fonts get an extra multiplier (--font-scale, user-controlled) on top of
+// --wfs so text can be enlarged independently of the widget's width/layout.
 @function fs($step) {
   @if not map.has-key($widget-font-scale, $step) {
     @error "fs(): unknown font step '#{$step}'";
   }
 
-  @return ws(map.get($widget-font-scale, $step));
+  @return calc(
+    #{ws(map.get($widget-font-scale, $step))} * var(--font-scale, 1)
+  );
 }
 
 // Spacing scale — 2px grid for padding, gap, margin.

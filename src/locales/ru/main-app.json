@@ -154,6 +154,8 @@
     "width": "Ширина (px)",
     "height": "Высота (px)",
     "layerDepth": "Глубина слоя (Z-Index)",
+    "fontScale": "Размер текста",
+    "fontScaleDesc": "Масштабирует только текст, независимо от ширины/высоты виджета",
     "aesthetics": "Внешний вид",
     "background": "Фон",
     "border": "Рамка"

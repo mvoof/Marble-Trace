@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { InputNumber, Row, Col, ColorPicker } from 'antd';
+import { InputNumber, Row, Col, ColorPicker, Slider } from 'antd';
 import { getWidgetLabel } from '@utils/widget-i18n';
 import styles from './WidgetSettings.module.scss';
 import { Card } from './panels/Card';
@@ -144,6 +144,28 @@ export const WidgetSettings = observer(
                   }
                 }}
               />
+            </Col>
+
+            <Col span={24}>
+              <span className={styles.fieldLabel}>
+                {t('widgetSettings.fontScale')}
+              </span>
+              <Slider
+                min={0.7}
+                max={1.8}
+                step={0.05}
+                value={userSettings.fontScale ?? 1}
+                tooltip={{ formatter: (value) => `${value?.toFixed(2)}x` }}
+                onChangeComplete={() => widgetSettings.pushUndo?.()}
+                onChange={(v) => {
+                  widgetSettings.updateUserSettings(widgetId, {
+                    fontScale: v,
+                  });
+                }}
+              />
+              <div className={styles.fieldDesc}>
+                {t('widgetSettings.fontScaleDesc')}
+              </div>
             </Col>
           </Row>
         </Card>
