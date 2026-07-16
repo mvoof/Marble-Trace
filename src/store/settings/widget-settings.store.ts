@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { filterToDefaults } from '@utils/filter-to-defaults';
+import { mergeWithDefaults } from '@utils/deep-merge';
 import { invoke } from '@tauri-apps/api/core';
 import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-defaults';
 import { resolveMonitorByName } from '@store/sync/overlay-resolution';
@@ -349,7 +349,7 @@ export class WidgetSettingsStore {
         );
 
         const mergedUserSettings = savedWidget
-          ? filterToDefaults(
+          ? mergeWithDefaults(
               defaultWidget.userSettings,
               savedWidget.userSettings ?? {}
             )
@@ -361,7 +361,7 @@ export class WidgetSettingsStore {
           Object.assign(existing.userSettings, mergedUserSettings);
 
           if (savedWidget) {
-            const merged = filterToDefaults(defaultWidget, savedWidget);
+            const merged = mergeWithDefaults(defaultWidget, savedWidget);
             existing.designWidth = merged.designWidth;
             existing.designHeight = merged.designHeight;
           }
@@ -370,7 +370,7 @@ export class WidgetSettingsStore {
             defaultWidget.id,
             savedWidget
               ? {
-                  ...filterToDefaults(defaultWidget, savedWidget),
+                  ...mergeWithDefaults(defaultWidget, savedWidget),
                   userSettings: mergedUserSettings,
                 }
               : { ...defaultWidget, userSettings: mergedUserSettings }
@@ -609,7 +609,7 @@ export class WidgetSettingsStore {
         const saved = widgets.find((widget) => widget.id === defaultWidget.id);
 
         const mergedUserSettings = saved
-          ? filterToDefaults(
+          ? mergeWithDefaults(
               defaultWidget.userSettings,
               saved.userSettings ?? {}
             )
@@ -621,7 +621,7 @@ export class WidgetSettingsStore {
           Object.assign(existing.userSettings, mergedUserSettings);
 
           if (saved) {
-            const merged = filterToDefaults(defaultWidget, saved);
+            const merged = mergeWithDefaults(defaultWidget, saved);
             existing.designWidth = merged.designWidth;
             existing.designHeight = merged.designHeight;
           }
