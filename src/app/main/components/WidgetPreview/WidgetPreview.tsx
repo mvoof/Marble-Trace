@@ -74,6 +74,7 @@ export const WidgetPreview = observer(
 
     const { userSettings, designWidth, autoHeight, overflowVisible } = widget;
     const widgetScale = userSettings.currentWidth / designWidth;
+    const fontScale = userSettings.fontScale ?? 1;
     const backgroundColor =
       userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)';
     const borderColor = userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
@@ -104,6 +105,7 @@ export const WidgetPreview = observer(
                 borderWidth: widget.transparentContainer ? 0 : undefined,
                 borderRadius: frameBorderRadius,
                 ['--wfs']: widgetScale,
+                ['--font-scale']: fontScale,
                 ['--widget-bg']: backgroundColor,
                 ['--widget-border']: borderColor,
               } as React.CSSProperties

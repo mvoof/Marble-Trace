@@ -152,6 +152,8 @@
     "width": "Width (px)",
     "height": "Height (px)",
     "layerDepth": "Layer Depth (Z-Index)",
+    "fontScale": "Text Size",
+    "fontScaleDesc": "Scales only the text, independent of widget width/height",
     "aesthetics": "Aesthetics",
     "background": "Background",
     "border": "Border"

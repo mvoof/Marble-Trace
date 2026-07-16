@@ -267,6 +267,8 @@ export interface BaseUserSettings {
   currentWidth: number;
   currentHeight: number;
   opacity: number;
+  /** Multiplier applied to fs() font sizes only — independent of --wfs (width scale). */
+  fontScale: number;
   backgroundColor: string;
   borderColor: string;
   zIndex?: number;

@@ -96,6 +96,7 @@ export const LayoutCanvasWidget = observer(
     const transparentContainer = widget?.transparentContainer ?? false;
 
     const widgetScale = width / designWidth;
+    const fontScale = widget?.userSettings.fontScale ?? 1;
 
     const backgroundColor =
       widget?.userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)';
@@ -372,6 +373,7 @@ export const LayoutCanvasWidget = observer(
                 borderWidth: transparentContainer ? 0 : undefined,
                 borderRadius: frameBorderRadius,
                 ['--wfs']: widgetScale,
+                ['--font-scale']: fontScale,
                 ['--widget-bg']: backgroundColor,
                 ['--widget-border']: borderColor,
               } as React.CSSProperties

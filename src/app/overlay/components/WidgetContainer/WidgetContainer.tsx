@@ -79,6 +79,7 @@ export const WidgetContainer = observer(
     const transparentContainer = widget?.transparentContainer ?? false;
 
     const widgetScale = width / designWidth;
+    const fontScale = widget?.userSettings.fontScale ?? 1;
 
     const background =
       shouldHide || transparentContainer ? 'transparent' : backgroundColor;
@@ -260,6 +261,7 @@ export const WidgetContainer = observer(
                   borderWidth: transparentContainer ? 0 : undefined,
                   borderRadius,
                   ['--wfs']: widgetScale,
+                  ['--font-scale']: fontScale,
                   ['--widget-bg']: backgroundColor,
                   ['--widget-border']: borderColor,
                 } as React.CSSProperties
