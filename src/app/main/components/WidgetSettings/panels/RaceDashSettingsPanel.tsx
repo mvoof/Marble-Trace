@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
 
 import { speedUnit } from '@utils/formatters/telemetry-format';
@@ -16,6 +17,7 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 export const RaceDashSettingsPanel = observer(() => {
   const units = useUnitsStore();
   const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
 
   const settings =
     widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
@@ -29,13 +31,17 @@ export const RaceDashSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title="RPM Fill">
+      <Card title={t('settingsPanels.raceDash.rpmFill')}>
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>Zone Colors</span>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.raceDash.zoneColors')}
+          </span>
 
           <div className={styles.rpmColorGrid}>
             <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>Low</span>
+              <span className={styles.rpmColorLabel}>
+                {t('settingsPanels.raceDash.low')}
+              </span>
               <ColorPicker
                 value={settings.rpmColorLow}
                 onChange={(color) =>
@@ -47,7 +53,9 @@ export const RaceDashSettingsPanel = observer(() => {
             <div className={styles.rpmColorLine} />
 
             <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>Mid</span>
+              <span className={styles.rpmColorLabel}>
+                {t('settingsPanels.raceDash.mid')}
+              </span>
               <ColorPicker
                 value={settings.rpmColorMid}
                 onChange={(color) =>
@@ -59,7 +67,9 @@ export const RaceDashSettingsPanel = observer(() => {
             <div className={styles.rpmColorLine} />
 
             <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>High</span>
+              <span className={styles.rpmColorLabel}>
+                {t('settingsPanels.raceDash.high')}
+              </span>
               <ColorPicker
                 value={settings.rpmColorHigh}
                 onChange={(color) =>
@@ -71,7 +81,9 @@ export const RaceDashSettingsPanel = observer(() => {
             <div className={styles.rpmColorLine} />
 
             <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>Shift</span>
+              <span className={styles.rpmColorLabel}>
+                {t('settingsPanels.raceDash.shift')}
+              </span>
               <ColorPicker
                 value={settings.rpmColorShift}
                 onChange={(color) =>
@@ -83,7 +95,9 @@ export const RaceDashSettingsPanel = observer(() => {
             <div className={styles.rpmColorLine} />
 
             <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>Blink</span>
+              <span className={styles.rpmColorLabel}>
+                {t('settingsPanels.raceDash.blink')}
+              </span>
               <ColorPicker
                 value={settings.rpmColorLimit}
                 onChange={(color) =>
@@ -96,8 +110,8 @@ export const RaceDashSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="Colorize Digits"
-            desc="Tint the gear digit and RPM number with the zone color at high revs."
+            title={t('settingsPanels.raceDash.colorizeDigits')}
+            desc={t('settingsPanels.raceDash.colorizeDigitsDesc')}
           >
             <Switch
               checked={settings.colorizeByRpmZone}
@@ -107,14 +121,16 @@ export const RaceDashSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>RPM Indicator</span>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.raceDash.rpmIndicator')}
+          </span>
           <Segmented
             block
             value={settings.rpmIndicatorMode}
             options={[
-              { label: 'Fill', value: 'fill' },
-              { label: 'Glow', value: 'glow' },
-              { label: 'Off', value: 'off' },
+              { label: t('settingsPanels.raceDash.fill'), value: 'fill' },
+              { label: t('settingsPanels.raceDash.glow'), value: 'glow' },
+              { label: t('settingsPanels.raceDash.off'), value: 'off' },
             ]}
             onChange={(value) =>
               update({ rpmIndicatorMode: value as RpmIndicatorMode })
@@ -123,11 +139,11 @@ export const RaceDashSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title="Driving Coach">
+      <Card title={t('settingsPanels.raceDash.drivingCoach')}>
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="Coach Section"
-            desc="Show the brake/gas call and best-lap reference speed."
+            title={t('settingsPanels.raceDash.coachSection')}
+            desc={t('settingsPanels.raceDash.coachSectionDesc')}
           >
             <Switch
               checked={settings.showReferenceSpeed}
@@ -137,7 +153,10 @@ export const RaceDashSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title="Brake Accent" desc="Color of the BRAKE advisory.">
+          <SettingRow
+            title={t('settingsPanels.raceDash.brakeAccent')}
+            desc={t('settingsPanels.raceDash.brakeAccentDesc')}
+          >
             <ColorPicker
               value={settings.brakeColor}
               onChange={(color) => update({ brakeColor: color.toHexString() })}
@@ -146,7 +165,10 @@ export const RaceDashSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title="Gas Accent" desc="Color of the GAS advisory.">
+          <SettingRow
+            title={t('settingsPanels.raceDash.gasAccent')}
+            desc={t('settingsPanels.raceDash.gasAccentDesc')}
+          >
             <ColorPicker
               value={settings.gasColor}
               onChange={(color) => update({ gasColor: color.toHexString() })}
@@ -155,11 +177,11 @@ export const RaceDashSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title="Pit Assist">
+      <Card title={t('settingsPanels.raceDash.pitAssist')}>
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="Pit Lane Assist"
-            desc="Transform into the pit panel when entering the pit lane."
+            title={t('settingsPanels.raceDash.pitLaneAssist')}
+            desc={t('settingsPanels.raceDash.pitLaneAssistDesc')}
           >
             <Switch
               checked={settings.showPitAssist}
@@ -170,10 +192,12 @@ export const RaceDashSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
-            Pit Speed Override ({speedUnit(units.unitSystem)})
+            {t('settingsPanels.raceDash.pitSpeedOverride', {
+              unit: speedUnit(units.unitSystem),
+            })}
           </span>
           <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-            Leave 0 to auto-detect from session data.
+            {t('settingsPanels.raceDash.pitSpeedOverrideDesc')}
           </div>
           <InputNumber
             style={{ width: '100%' }}
@@ -191,11 +215,14 @@ export const RaceDashSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
-            Near-Limit Warning ({speedUnit(units.unitSystem)})
+            {t('settingsPanels.raceDash.nearLimitWarning', {
+              unit: speedUnit(units.unitSystem),
+            })}
           </span>
           <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-            Color speed amber when this many {speedUnit(units.unitSystem)} below
-            the pit speed limit.
+            {t('settingsPanels.raceDash.nearLimitWarningDesc', {
+              unit: speedUnit(units.unitSystem),
+            })}
           </div>
           <InputNumber
             style={{ width: '100%' }}

@@ -3,6 +3,7 @@ import { emit, emitTo, listen, UnlistenFn } from '@tauri-apps/api/event';
 import type { UnitSystem } from '@/types';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
+import type { AppLanguage } from '@store/settings/app-settings.store';
 import { positionOverlayToMonitor } from './position-overlay';
 
 const MAIN = 'main';
@@ -52,6 +53,11 @@ export const setupOverlayListeners = async (
     })
   );
   unlistens.push(
+    await listen<AppLanguage>('language-changed', (e) => {
+      root.appSettings.setLanguage(e.payload);
+    })
+  );
+  unlistens.push(
     await listen<WidgetDefaultConfig[]>('widget-settings-updated', (e) => {
       root.widgetSettings.applySettingsSync(e.payload);
     })
@@ -78,6 +84,8 @@ export const emitHideWidgetsWhenGameClosed = (val: boolean) =>
   emitTo(OVERLAY, 'hide-widgets-when-game-closed-changed', val);
 export const emitUnitsChanged = (system: UnitSystem) =>
   emitTo(OVERLAY, 'units-changed', system);
+export const emitLanguageChanged = (language: AppLanguage) =>
+  emitTo(OVERLAY, 'language-changed', language);
 export const emitStandingsClassIndex = (index: number) =>
   emitTo(OVERLAY, 'standings-class-index-changed', index);
 export const emitWidgetSettingsUpdated = (widgets: WidgetDefaultConfig[]) =>

@@ -1,0 +1,258 @@
+{
+  "mainWindow": {
+    "widgetModules": "Модули виджетов"
+  },
+  "appHeader": {
+    "sections": {
+      "layouts": "Раскладки",
+      "widgets": "Виджеты",
+      "settings": "Настройки"
+    }
+  },
+  "appStatus": {
+    "connectedTo": "ПОДКЛЮЧЕНО К {{sim}}",
+    "waitingForTelemetry": "ОЖИДАНИЕ ТЕЛЕМЕТРИИ",
+    "systemError": "СИСТЕМНАЯ ОШИБКА",
+    "waitingForGame": "ОЖИДАНИЕ ЗАПУСКА ИГРЫ"
+  },
+  "widgetList": {
+    "unavailable": "Недоступно",
+    "defaultDescription": "Настройка параметров виджета."
+  },
+  "releaseNotes": {
+    "whatsNew": "Что нового",
+    "title": "Что нового",
+    "titleWithVersion": "Что нового в v{{version}}"
+  },
+  "updateBanner": {
+    "downloading": "Загрузка обновления...",
+    "ready": "Обновление загружено. Перезапуск...",
+    "available": "Доступна версия v{{version}}",
+    "updateAndRestart": "Обновить и перезапустить"
+  },
+  "hotkeyRecorder": {
+    "none": "Нет",
+    "pressKeyCombination": "Нажмите комбинацию клавиш...",
+    "rebind": "Переназначить",
+    "record": "Записать",
+    "apply": "Применить",
+    "clear": "Очистить"
+  },
+  "layoutEditor": {
+    "backToLayouts": "Назад к раскладкам",
+    "toggleWidgetPanel": "Показать/скрыть панель виджетов",
+    "newLayoutNamePlaceholder": "Название новой раскладки",
+    "create": "Создать",
+    "cancel": "Отмена",
+    "saveName": "Сохранить имя",
+    "selectLayoutPlaceholder": "Выберите раскладку…",
+    "newLayout": "Новая раскладка",
+    "rename": "Переименовать",
+    "deleteLayoutConfirm": "Удалить эту раскладку?",
+    "delete": "Удалить",
+    "active": "Активна",
+    "applyLayoutTooltip": "Применить эту раскладку к оверлею",
+    "makeActive": "Сделать активной",
+    "monitorTooltip": "Монитор, для которого создана раскладка",
+    "monitorPlaceholder": "Монитор…",
+    "customResolutionOption": "Своё разрешение...",
+    "customResolutionLabel": "Своё ({{width}}×{{height}})",
+    "lockAspectRatio": "Зафиксировать пропорции",
+    "unlockAspectRatio": "Снять фиксацию пропорций",
+    "bringToFront": "На передний план",
+    "sendToBack": "На задний план",
+    "quickPlacement": "Быстрое размещение",
+    "backgroundImageAria": "Фоновое изображение раскладки",
+    "undoTooltip": "Отменить (Ctrl+Z)",
+    "redoTooltip": "Повторить (Ctrl+Y)",
+    "toggleGridTooltip": "Показать/скрыть сетку выравнивания",
+    "gridSizeTooltip": "Размер сетки",
+    "snapToGridTooltip": "Привязка к сетке",
+    "exitFullscreen": "Выйти из полноэкранного режима",
+    "fullscreenPreview": "Полноэкранный просмотр",
+    "setBackgroundTooltip": "Задать фон редактора (например, вид из кабины)",
+    "clearBackgroundTooltip": "Очистить фон",
+    "widgetsPanelTitle": "Виджеты",
+    "hidePanel": "Скрыть панель",
+    "customResolutionModal": {
+      "title": "Своё разрешение экрана",
+      "width": "Ширина (px)",
+      "height": "Высота (px)",
+      "apply": "Применить"
+    }
+  },
+  "layoutList": {
+    "moduleLabel": "Раскладки",
+    "title": "Управление раскладками виджетов",
+    "subtitleAutoSwitch": "Автопереключение активно. Раскладки будут загружаться автоматически в зависимости от вашей игровой сессии.",
+    "subtitleManual": "Выберите раскладку, чтобы увидеть детали. Дважды щёлкните карточку, чтобы открыть её в редакторе.",
+    "toggleAutoSwitchTooltip": "Переключить режим автопереключения",
+    "autoSwitchLabel": "Автопереключение: {{state}}",
+    "on": "Вкл",
+    "off": "Выкл",
+    "newLayout": "Новая раскладка",
+    "emptyLayout": "Пустая раскладка",
+    "current": "Текущая",
+    "active": "Активна",
+    "assignedTo": "Назначена для {{session}}",
+    "manualActivationOnly": "Только ручная активация",
+    "manual": "Вручную",
+    "widgetsCount_one": "{{count}} виджет",
+    "widgetsCount_few": "{{count}} виджета",
+    "widgetsCount_many": "{{count}} виджетов",
+    "widgetsCount_other": "{{count}} виджета",
+    "created": "Создана:",
+    "autoSwitchAssignment": "Назначение автопереключения",
+    "activeMonitor": "Активный монитор",
+    "none": "Нет",
+    "resolution": "Разрешение",
+    "activeWidgets": "Активные виджеты",
+    "activateLayout": "Активировать раскладку",
+    "openEditor": "Открыть редактор",
+    "duplicateLayout": "Дублировать раскладку",
+    "deleteLayoutConfirmTitle": "Удалить эту раскладку?",
+    "deleteLayoutConfirmDescription": "Это действие нельзя отменить.",
+    "deleteLayout": "Удалить раскладку",
+    "emptySelection": "Выберите раскладку, чтобы увидеть детали и действия",
+    "createNewLayout": "Создать новую раскладку",
+    "enterLayoutName": "Введите название раскладки...",
+    "sessions": {
+      "practice": "Практика",
+      "qualify": "Квалификация",
+      "race": "Гонка",
+      "garage": "Гараж"
+    }
+  },
+  "layoutWidgetPanel": {
+    "back": "Назад"
+  },
+  "widgetWorkbench": {
+    "scenario": "Сценарий",
+    "noWidgets": "Нет доступных виджетов."
+  },
+  "layoutCanvas": {
+    "move": "Перемещение",
+    "stepSize": "Шаг {{size}}",
+    "large": "Крупный",
+    "remove": "Удалить",
+    "loadingBackground": "Загрузка фона..."
+  },
+  "widgetSettingsPopup": {
+    "ariaLabel": "Настройки {{label}}",
+    "close": "Закрыть"
+  },
+  "widgetPreview": {
+    "noPreview": "Предпросмотр недоступен"
+  },
+  "widgetSettings": {
+    "selectToConfigure": "Выберите виджет для настройки",
+    "notFound": "Виджет не найден",
+    "moduleConfig": "Настройка модуля",
+    "layoutAndDimensions": "Расположение и размеры",
+    "positionX": "Позиция X",
+    "positionY": "Позиция Y",
+    "width": "Ширина (px)",
+    "height": "Высота (px)",
+    "layerDepth": "Глубина слоя (Z-Index)",
+    "aesthetics": "Внешний вид",
+    "background": "Фон",
+    "border": "Рамка"
+  },
+  "settingsPage": {
+    "moduleLabel": "Конфигурация",
+    "title": "Глобальные настройки приложения",
+    "language": {
+      "title": "Язык",
+      "fieldLabel": "Язык приложения",
+      "system": "Системная локаль"
+    },
+    "widgetDisplayOverride": {
+      "title": "Отображение виджетов",
+      "hideAllTitle": "Скрыть все активные виджеты",
+      "hideAllDesc": "Глобальный переключатель для быстрого скрытия или показа всех включённых элементов интерфейса.",
+      "toggleHotkey": "Горячая клавиша переключения"
+    },
+    "startupBehavior": {
+      "title": "Поведение при запуске",
+      "launchMinimizedTitle": "Запуск свёрнутым",
+      "launchMinimizedDesc": "Запускать приложение свёрнутым в трей."
+    },
+    "interactionMode": {
+      "title": "Режим взаимодействия",
+      "dragModeTitle": "Режим перетаскивания",
+      "dragModeDesc": "Разблокировать виджеты для свободного перемещения по экрану.",
+      "dragModeHotkey": "Горячая клавиша режима перетаскивания"
+    },
+    "gameIntegration": {
+      "title": "Интеграция с игрой",
+      "autoHideTitle": "Автоскрытие",
+      "autoHideDesc": "Скрывать виджеты, когда симулятор не запущен."
+    },
+    "systemUnits": {
+      "title": "Единицы измерения",
+      "fieldLabel": "Система измерения",
+      "metric": "Метрическая (км/ч, °C, л)",
+      "imperial": "Имперская (миль/ч, °F, гал)"
+    },
+    "applicationUpdates": {
+      "title": "Обновления приложения",
+      "autoCheckTitle": "Автопроверка обновлений",
+      "autoCheckDesc": "Автоматически проверять новые версии при запуске приложения.",
+      "checkIntervalTitle": "Интервал проверки",
+      "checkIntervalDesc": "Как часто проверять обновления во время работы приложения.",
+      "everyHour": "Каждый час",
+      "every3Hours": "Каждые 3 часа",
+      "every6Hours": "Каждые 6 часов",
+      "every12Hours": "Каждые 12 часов",
+      "daily": "Ежедневно",
+      "currentVersion": "Текущая версия:",
+      "lastChecked": "Последняя проверка:",
+      "upToDate": "У вас установлена последняя версия приложения.",
+      "checkingForUpdates": "Проверка обновлений...",
+      "newVersionAvailable": "Доступна новая версия v{{version}}!",
+      "downloadingUpdate": "Загрузка обновления...",
+      "updateDownloaded": "Обновление загружено. Перезапуск...",
+      "updateCheckFailed": "Не удалось проверить обновления.",
+      "restarting": "Перезапуск...",
+      "installAndRestart": "Установить и перезапустить",
+      "checkingEllipsis": "Проверка...",
+      "checkForUpdates": "Проверить обновления"
+    },
+    "trackMap": {
+      "title": "Карта трассы",
+      "reRecordTitle": "Перезаписать трассу",
+      "reRecordDesc": "Очищает текущие данные карты и начинает запись заново на следующем круге или при ручном запуске.",
+      "resetCurrentTrackData": "Сбросить данные текущей трассы",
+      "manualStartActive": "Активирован ручной запуск. Начните движение для начала записи.",
+      "forceStartRecording": "Принудительно начать запись",
+      "pitLaneCalibrationTitle": "Калибровка пит-лейн",
+      "pitLaneCalibrationDescWithTrack": "Очищает точки въезда/выезда пит-лейн, записанные для «{{track}}». Проедьте через пит-лейн ещё раз для повторной калибровки.",
+      "pitLaneCalibrationDescNoTrack": "Трасса не загружена. Загрузите сессию, чтобы сбросить данные пит-лейн для активной трассы.",
+      "resetPitLaneDataForTrack": "Сбросить данные пит-лейн для {{track}}",
+      "resetPitLaneData": "Сбросить данные пит-лейн",
+      "pitLaneResetSuccess": "Данные пит-лейн очищены. Проедьте через пит-лейн для повторной калибровки.",
+      "referenceLapTitle": "Эталонный круг",
+      "referenceLapDescWithCar": "Удаляет сохранённый лучший круг для «{{car}}» на текущей трассе. Запись начнётся заново после следующего завершённого круга.",
+      "referenceLapDescNoSession": "Сессия не загружена. Загрузите сессию, чтобы удалить эталонный круг для активной трассы и машины.",
+      "deleteReferenceLapConfirm": "Удалить сохранённый эталонный круг?",
+      "deleteReferenceLap": "Удалить эталонный круг",
+      "referenceLapDeleteSuccess": "Эталонный круг удалён. Запись начнётся заново после следующего завершённого круга."
+    },
+    "reset": {
+      "title": "Сброс",
+      "resetAllTitle": "Сбросить все настройки",
+      "resetAllDesc": "Очищает все позиции, размеры и настройки виджетов. Приложение автоматически перезапустится.",
+      "confirmTitle": "Сбросить все настройки?",
+      "confirmDescription": "Раскладка виджетов и все настройки будут потеряны.",
+      "confirmOk": "Сбросить и перезапустить",
+      "resetSettings": "Сбросить настройки"
+    },
+    "developerTools": {
+      "title": "Инструменты разработчика",
+      "snapshotTitle": "Снимок телеметрии",
+      "snapshotDesc": "Захватить текущее состояние телеметрии.",
+      "downloadSnapshot": "Скачать снимок JSON",
+      "snapshotSuccess": "Снимок сохранён — поместите JSON в test-data/"
+    }
+  }
+}

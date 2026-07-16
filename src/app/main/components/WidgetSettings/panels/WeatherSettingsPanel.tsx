@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { Switch } from 'antd';
 import { WeatherWidgetSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
@@ -8,6 +9,7 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const WeatherSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
 
   const settings = widgetSettings.getSettings<WeatherWidgetSettings>('weather');
 
@@ -18,54 +20,56 @@ export const WeatherSettingsPanel = observer(() => {
     });
   };
 
+  const items = [
+    {
+      titleKey: 'settingsPanels.weather.windCompass',
+      descKey: 'settingsPanels.weather.windCompassDesc',
+      value: settings.showCompass,
+      key: 'showCompass',
+    },
+    {
+      titleKey: 'settingsPanels.weather.airTemperature',
+      descKey: 'settingsPanels.weather.airTemperatureDesc',
+      value: settings.showAirTemp,
+      key: 'showAirTemp',
+    },
+    {
+      titleKey: 'settingsPanels.weather.trackTemperature',
+      descKey: 'settingsPanels.weather.trackTemperatureDesc',
+      value: settings.showTrackTemp,
+      key: 'showTrackTemp',
+    },
+    {
+      titleKey: 'settingsPanels.weather.windSpeedAndDir',
+      descKey: 'settingsPanels.weather.windSpeedAndDirDesc',
+      value: settings.showWind,
+      key: 'showWind',
+    },
+    {
+      titleKey: 'settingsPanels.weather.relativeHumidity',
+      descKey: 'settingsPanels.weather.relativeHumidityDesc',
+      value: settings.showHumidity,
+      key: 'showHumidity',
+    },
+    {
+      titleKey: 'settingsPanels.weather.weatherForecast',
+      descKey: 'settingsPanels.weather.weatherForecastDesc',
+      value: settings.showForecast,
+      key: 'showForecast',
+    },
+    {
+      titleKey: 'settingsPanels.weather.trackWetnessState',
+      descKey: 'settingsPanels.weather.trackWetnessStateDesc',
+      value: settings.showTrackWetness,
+      key: 'showTrackWetness',
+    },
+  ] as const;
+
   return (
-    <Card title="Module Parameters">
-      {[
-        {
-          title: 'Wind Compass',
-          desc: 'Animated compass showing current wind direction.',
-          value: settings.showCompass,
-          key: 'showCompass',
-        },
-        {
-          title: 'Air Temperature',
-          desc: 'Ambient air temperature at track level.',
-          value: settings.showAirTemp,
-          key: 'showAirTemp',
-        },
-        {
-          title: 'Track Temperature',
-          desc: 'Surface temperature of the racing surface.',
-          value: settings.showTrackTemp,
-          key: 'showTrackTemp',
-        },
-        {
-          title: 'Wind Speed & Dir',
-          desc: 'Numerical wind speed and cardinal direction.',
-          value: settings.showWind,
-          key: 'showWind',
-        },
-        {
-          title: 'Relative Humidity',
-          desc: 'Current humidity percentage.',
-          value: settings.showHumidity,
-          key: 'showHumidity',
-        },
-        {
-          title: 'Weather Forecast',
-          desc: 'Upcoming weather changes during the session.',
-          value: settings.showForecast,
-          key: 'showForecast',
-        },
-        {
-          title: 'Track Wetness State',
-          desc: 'Current track surface wetness level (Dry, Damp, Wet, Flooded).',
-          value: settings.showTrackWetness,
-          key: 'showTrackWetness',
-        },
-      ].map((item) => (
+    <Card title={t('settingsPanels.weather.moduleParameters')}>
+      {items.map((item) => (
         <div key={item.key} className={styles.fieldGroup}>
-          <SettingRow title={item.title} desc={item.desc}>
+          <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
             <Switch
               checked={item.value}
               onChange={(v) => update({ [item.key]: v })}

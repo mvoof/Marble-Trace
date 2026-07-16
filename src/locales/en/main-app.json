@@ -1,0 +1,256 @@
+{
+  "mainWindow": {
+    "widgetModules": "Widget Modules"
+  },
+  "appHeader": {
+    "sections": {
+      "layouts": "Layouts",
+      "widgets": "Widgets",
+      "settings": "Settings"
+    }
+  },
+  "appStatus": {
+    "connectedTo": "CONNECTED TO {{sim}}",
+    "waitingForTelemetry": "WAITING FOR TELEMETRY",
+    "systemError": "SYSTEM ERROR",
+    "waitingForGame": "WAITING FOR GAME TO START"
+  },
+  "widgetList": {
+    "unavailable": "Unavailable",
+    "defaultDescription": "Configure widget settings."
+  },
+  "releaseNotes": {
+    "whatsNew": "What's new",
+    "title": "What's new",
+    "titleWithVersion": "What's new in v{{version}}"
+  },
+  "updateBanner": {
+    "downloading": "Downloading update...",
+    "ready": "Update downloaded. Restarting...",
+    "available": "Version v{{version}} is available",
+    "updateAndRestart": "Update & Restart"
+  },
+  "hotkeyRecorder": {
+    "none": "None",
+    "pressKeyCombination": "Press a key combination...",
+    "rebind": "Rebind",
+    "record": "Record",
+    "apply": "Apply",
+    "clear": "Clear"
+  },
+  "layoutEditor": {
+    "backToLayouts": "Back to Layouts",
+    "toggleWidgetPanel": "Toggle widget panel",
+    "newLayoutNamePlaceholder": "New layout name",
+    "create": "Create",
+    "cancel": "Cancel",
+    "saveName": "Save name",
+    "selectLayoutPlaceholder": "Select a layout…",
+    "newLayout": "New layout",
+    "rename": "Rename",
+    "deleteLayoutConfirm": "Delete this layout?",
+    "delete": "Delete",
+    "active": "Active",
+    "applyLayoutTooltip": "Apply this layout to the overlay",
+    "makeActive": "Make Active",
+    "monitorTooltip": "Monitor this layout is authored for",
+    "monitorPlaceholder": "Monitor…",
+    "customResolutionOption": "Custom Resolution...",
+    "customResolutionLabel": "Custom ({{width}}×{{height}})",
+    "lockAspectRatio": "Lock aspect ratio",
+    "unlockAspectRatio": "Unlock aspect ratio",
+    "bringToFront": "Bring to front",
+    "sendToBack": "Send to back",
+    "quickPlacement": "Quick placement",
+    "backgroundImageAria": "Layout background image",
+    "undoTooltip": "Undo (Ctrl+Z)",
+    "redoTooltip": "Redo (Ctrl+Y)",
+    "toggleGridTooltip": "Toggle alignment grid",
+    "gridSizeTooltip": "Grid size",
+    "snapToGridTooltip": "Snap to grid",
+    "exitFullscreen": "Exit fullscreen",
+    "fullscreenPreview": "Fullscreen preview",
+    "setBackgroundTooltip": "Set editor background (e.g. cockpit view)",
+    "clearBackgroundTooltip": "Clear background",
+    "widgetsPanelTitle": "Widgets",
+    "hidePanel": "Hide panel",
+    "customResolutionModal": {
+      "title": "Custom Screen Resolution",
+      "width": "Width (px)",
+      "height": "Height (px)",
+      "apply": "Apply"
+    }
+  },
+  "layoutList": {
+    "moduleLabel": "Layouts",
+    "title": "Manage Widget Layouts",
+    "subtitleAutoSwitch": "Auto-switching is active. Layouts will load dynamically matching your game session.",
+    "subtitleManual": "Select a layout to see details. Double-click a card to open it in the editor.",
+    "toggleAutoSwitchTooltip": "Toggle Auto-Switching mode",
+    "autoSwitchLabel": "Auto-Switch: {{state}}",
+    "on": "On",
+    "off": "Off",
+    "newLayout": "New Layout",
+    "emptyLayout": "Empty Layout",
+    "current": "Current",
+    "active": "Active",
+    "assignedTo": "Assigned to {{session}}",
+    "manualActivationOnly": "Manual activation only",
+    "manual": "Manual",
+    "widgetsCount_one": "{{count}} widget",
+    "widgetsCount_other": "{{count}} widgets",
+    "created": "Created:",
+    "autoSwitchAssignment": "Auto-Switch Assignment",
+    "activeMonitor": "Active Monitor",
+    "none": "None",
+    "resolution": "Resolution",
+    "activeWidgets": "Active Widgets",
+    "activateLayout": "Activate Layout",
+    "openEditor": "Open Editor",
+    "duplicateLayout": "Duplicate Layout",
+    "deleteLayoutConfirmTitle": "Delete this layout?",
+    "deleteLayoutConfirmDescription": "This action cannot be undone.",
+    "deleteLayout": "Delete Layout",
+    "emptySelection": "Select a layout to see details and actions",
+    "createNewLayout": "Create New Layout",
+    "enterLayoutName": "Enter layout name...",
+    "sessions": {
+      "practice": "Practice",
+      "qualify": "Qualify",
+      "race": "Race",
+      "garage": "Garage"
+    }
+  },
+  "layoutWidgetPanel": {
+    "back": "Back"
+  },
+  "widgetWorkbench": {
+    "scenario": "Scenario",
+    "noWidgets": "No widgets available."
+  },
+  "layoutCanvas": {
+    "move": "Move",
+    "stepSize": "{{size}} step",
+    "large": "Large",
+    "remove": "Remove",
+    "loadingBackground": "Loading background..."
+  },
+  "widgetSettingsPopup": {
+    "ariaLabel": "{{label}} settings",
+    "close": "Close"
+  },
+  "widgetPreview": {
+    "noPreview": "No preview available"
+  },
+  "widgetSettings": {
+    "selectToConfigure": "Select a widget to configure",
+    "notFound": "Widget not found",
+    "moduleConfig": "Module Config",
+    "layoutAndDimensions": "Layout & Dimensions",
+    "positionX": "Position X",
+    "positionY": "Position Y",
+    "width": "Width (px)",
+    "height": "Height (px)",
+    "layerDepth": "Layer Depth (Z-Index)",
+    "aesthetics": "Aesthetics",
+    "background": "Background",
+    "border": "Border"
+  },
+  "settingsPage": {
+    "moduleLabel": "Configuration",
+    "title": "Global Application Settings",
+    "language": {
+      "title": "Language",
+      "fieldLabel": "Application Language",
+      "system": "System Locale"
+    },
+    "widgetDisplayOverride": {
+      "title": "Widget Display Override",
+      "hideAllTitle": "Hide all active widgets",
+      "hideAllDesc": "Global toggle to quickly hide or show all enabled UI elements.",
+      "toggleHotkey": "Toggle Hotkey"
+    },
+    "startupBehavior": {
+      "title": "Startup Behavior",
+      "launchMinimizedTitle": "Launch Minimized",
+      "launchMinimizedDesc": "Start the application minimized to the taskbar."
+    },
+    "interactionMode": {
+      "title": "Interaction Mode",
+      "dragModeTitle": "UI Drag Mode",
+      "dragModeDesc": "Unlock widgets to move them freely across the screen.",
+      "dragModeHotkey": "Drag Mode Hotkey"
+    },
+    "gameIntegration": {
+      "title": "Game Integration",
+      "autoHideTitle": "Auto-Hide",
+      "autoHideDesc": "Hide widgets when the simulator is not running."
+    },
+    "systemUnits": {
+      "title": "System Units",
+      "fieldLabel": "Measurement System",
+      "metric": "Metric (km/h, °C, L)",
+      "imperial": "Imperial (mph, °F, gal)"
+    },
+    "applicationUpdates": {
+      "title": "Application Updates",
+      "autoCheckTitle": "Auto-Check for Updates",
+      "autoCheckDesc": "Automatically check for new versions on application startup.",
+      "checkIntervalTitle": "Check Interval",
+      "checkIntervalDesc": "How often to check for updates while the app is running.",
+      "everyHour": "Every hour",
+      "every3Hours": "Every 3 hours",
+      "every6Hours": "Every 6 hours",
+      "every12Hours": "Every 12 hours",
+      "daily": "Daily",
+      "currentVersion": "Current Version:",
+      "lastChecked": "Last checked:",
+      "upToDate": "Your application is up to date.",
+      "checkingForUpdates": "Checking for updates...",
+      "newVersionAvailable": "New version v{{version}} is available!",
+      "downloadingUpdate": "Downloading update...",
+      "updateDownloaded": "Update downloaded. Restarting...",
+      "updateCheckFailed": "Update check failed.",
+      "restarting": "Restarting...",
+      "installAndRestart": "Install & Restart",
+      "checkingEllipsis": "Checking...",
+      "checkForUpdates": "Check for Updates"
+    },
+    "trackMap": {
+      "title": "Track Map",
+      "reRecordTitle": "Re-record Track",
+      "reRecordDesc": "Clears current map data and starts fresh on next lap crossing or manual trigger.",
+      "resetCurrentTrackData": "Reset Current Track Data",
+      "manualStartActive": "Manual start active. Drive to begin recording.",
+      "forceStartRecording": "Force Start Recording",
+      "pitLaneCalibrationTitle": "Pit Lane Calibration",
+      "pitLaneCalibrationDescWithTrack": "Clears pit entry/exit points recorded for \"{{track}}\". Drive through the pit lane again to re-calibrate.",
+      "pitLaneCalibrationDescNoTrack": "No track loaded. Load a session to reset pit lane data for the active track.",
+      "resetPitLaneDataForTrack": "Reset Pit Lane Data for {{track}}",
+      "resetPitLaneData": "Reset Pit Lane Data",
+      "pitLaneResetSuccess": "Pit lane data cleared. Drive through pit lane to re-calibrate.",
+      "referenceLapTitle": "Reference Lap",
+      "referenceLapDescWithCar": "Deletes the stored best lap for \"{{car}}\" on the current track. Recording restarts on the next completed lap.",
+      "referenceLapDescNoSession": "No session loaded. Load a session to delete the reference lap for the active track and car.",
+      "deleteReferenceLapConfirm": "Delete the stored reference lap?",
+      "deleteReferenceLap": "Delete Reference Lap",
+      "referenceLapDeleteSuccess": "Reference lap deleted. Recording restarts on the next completed lap."
+    },
+    "reset": {
+      "title": "Reset",
+      "resetAllTitle": "Reset All Settings",
+      "resetAllDesc": "Clears all widget positions, sizes, and preferences. The app will restart automatically.",
+      "confirmTitle": "Reset all settings?",
+      "confirmDescription": "Widget layout and all preferences will be lost.",
+      "confirmOk": "Reset & Restart",
+      "resetSettings": "Reset Settings"
+    },
+    "developerTools": {
+      "title": "Developer Tools",
+      "snapshotTitle": "Telemetry Snapshot",
+      "snapshotDesc": "Capture current telemetry state.",
+      "downloadSnapshot": "Download Snapshot JSON",
+      "snapshotSuccess": "Snapshot saved — place the JSON in test-data/"
+    }
+  }
+}

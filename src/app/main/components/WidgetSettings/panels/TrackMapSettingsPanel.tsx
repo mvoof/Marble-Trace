@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { ColorPicker, InputNumber, Row, Col, Segmented, Switch } from 'antd';
 import {
   TrackMapLeaderLabelMode,
@@ -11,6 +12,7 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const TrackMapSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
 
   const settings =
     widgetSettings.getSettings<TrackMapWidgetSettings>('track-map');
@@ -24,9 +26,9 @@ export const TrackMapSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title="Visual Elements">
+      <Card title={t('settingsPanels.trackMap.visualElements')}>
         <div className={styles.fieldGroup}>
-          <SettingRow title="Sectors on Map">
+          <SettingRow title={t('settingsPanels.trackMap.sectorsOnMap')}>
             <Switch
               checked={settings.showSectorsOnMap}
               onChange={(v) => update({ showSectorsOnMap: v })}
@@ -35,7 +37,7 @@ export const TrackMapSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title="Start/Finish Line">
+          <SettingRow title={t('settingsPanels.trackMap.startFinishLine')}>
             <Switch
               checked={settings.showStartFinish ?? true}
               onChange={(v) => update({ showStartFinish: v })}
@@ -44,11 +46,11 @@ export const TrackMapSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title="Player Marker">
+      <Card title={t('settingsPanels.linearMap.playerMarker')}>
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="Player Dot Color"
-            desc="Ping ring and label pill color for your car."
+            title={t('settingsPanels.trackMap.playerDotColor')}
+            desc={t('settingsPanels.trackMap.playerDotColorDesc')}
           >
             <ColorPicker
               value={settings.playerDotColor}
@@ -59,8 +61,8 @@ export const TrackMapSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title='Show "YOU" Label'
-            desc="Display the label above your car dot."
+            title={t('settingsPanels.trackMap.showYouLabel')}
+            desc={t('settingsPanels.trackMap.showYouLabelDesc')}
           >
             <Switch
               checked={settings.showPlayerLabel}
@@ -70,16 +72,24 @@ export const TrackMapSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title="Leader Labels">
+      <Card title={t('settingsPanels.trackMap.leaderLabels')}>
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>Show P1 Label</span>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.trackMap.showP1Label')}
+          </span>
           <Segmented
             block
             value={settings.leaderLabelMode}
             options={[
-              { label: 'All Classes', value: 'all' },
-              { label: 'Own Class', value: 'own-class' },
-              { label: 'Hidden', value: 'none' },
+              {
+                label: t('settingsPanels.trackMap.allClasses'),
+                value: 'all',
+              },
+              {
+                label: t('settingsPanels.trackMap.ownClass'),
+                value: 'own-class',
+              },
+              { label: t('settingsPanels.trackMap.hidden'), value: 'none' },
             ]}
             onChange={(v) =>
               update({ leaderLabelMode: v as TrackMapLeaderLabelMode })
@@ -88,10 +98,12 @@ export const TrackMapSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title="Track Styling">
+      <Card title={t('settingsPanels.trackMap.trackStyling')}>
         <Row gutter={[24, 24]}>
           <Col span={12}>
-            <span className={styles.fieldLabel}>Track Stroke (px)</span>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.trackMap.trackStroke')}
+            </span>
             <InputNumber
               style={{ width: '100%' }}
               value={settings.trackStrokePx}
@@ -102,7 +114,9 @@ export const TrackMapSettingsPanel = observer(() => {
           </Col>
 
           <Col span={12}>
-            <span className={styles.fieldLabel}>Track Border (px)</span>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.trackMap.trackBorder')}
+            </span>
             <InputNumber
               style={{ width: '100%' }}
               value={settings.trackBorderPx}
@@ -113,7 +127,9 @@ export const TrackMapSettingsPanel = observer(() => {
           </Col>
 
           <Col span={12}>
-            <span className={styles.fieldLabel}>Sector Stroke (px)</span>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.trackMap.sectorStroke')}
+            </span>
             <InputNumber
               style={{ width: '100%' }}
               value={settings.sectorStrokePx}
@@ -124,7 +140,9 @@ export const TrackMapSettingsPanel = observer(() => {
           </Col>
 
           <Col span={12}>
-            <span className={styles.fieldLabel}>Target Dot Radius (px)</span>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.trackMap.targetDotRadius')}
+            </span>
             <InputNumber
               style={{ width: '100%' }}
               value={settings.targetDotRadiusPx}

@@ -1,0 +1,255 @@
+{
+  "mainWindow": {
+    "widgetModules": "小组件模块"
+  },
+  "appHeader": {
+    "sections": {
+      "layouts": "布局",
+      "widgets": "小组件",
+      "settings": "设置"
+    }
+  },
+  "appStatus": {
+    "connectedTo": "已连接到 {{sim}}",
+    "waitingForTelemetry": "等待遥测数据",
+    "systemError": "系统错误",
+    "waitingForGame": "等待游戏启动"
+  },
+  "widgetList": {
+    "unavailable": "不可用",
+    "defaultDescription": "配置小组件设置。"
+  },
+  "releaseNotes": {
+    "whatsNew": "更新内容",
+    "title": "更新内容",
+    "titleWithVersion": "v{{version}} 更新内容"
+  },
+  "updateBanner": {
+    "downloading": "正在下载更新...",
+    "ready": "更新已下载，正在重启...",
+    "available": "v{{version}} 版本可用",
+    "updateAndRestart": "更新并重启"
+  },
+  "hotkeyRecorder": {
+    "none": "无",
+    "pressKeyCombination": "请按下组合键...",
+    "rebind": "重新绑定",
+    "record": "录制",
+    "apply": "应用",
+    "clear": "清除"
+  },
+  "layoutEditor": {
+    "backToLayouts": "返回布局列表",
+    "toggleWidgetPanel": "显示/隐藏小组件面板",
+    "newLayoutNamePlaceholder": "新布局名称",
+    "create": "创建",
+    "cancel": "取消",
+    "saveName": "保存名称",
+    "selectLayoutPlaceholder": "选择一个布局…",
+    "newLayout": "新建布局",
+    "rename": "重命名",
+    "deleteLayoutConfirm": "删除此布局？",
+    "delete": "删除",
+    "active": "已激活",
+    "applyLayoutTooltip": "将此布局应用到叠加层",
+    "makeActive": "设为激活",
+    "monitorTooltip": "此布局所适配的显示器",
+    "monitorPlaceholder": "显示器…",
+    "customResolutionOption": "自定义分辨率...",
+    "customResolutionLabel": "自定义 ({{width}}×{{height}})",
+    "lockAspectRatio": "锁定宽高比",
+    "unlockAspectRatio": "解锁宽高比",
+    "bringToFront": "置于顶层",
+    "sendToBack": "置于底层",
+    "quickPlacement": "快速定位",
+    "backgroundImageAria": "布局背景图片",
+    "undoTooltip": "撤销 (Ctrl+Z)",
+    "redoTooltip": "重做 (Ctrl+Y)",
+    "toggleGridTooltip": "显示/隐藏对齐网格",
+    "gridSizeTooltip": "网格大小",
+    "snapToGridTooltip": "吸附到网格",
+    "exitFullscreen": "退出全屏",
+    "fullscreenPreview": "全屏预览",
+    "setBackgroundTooltip": "设置编辑器背景（例如驾驶舱视图）",
+    "clearBackgroundTooltip": "清除背景",
+    "widgetsPanelTitle": "小组件",
+    "hidePanel": "隐藏面板",
+    "customResolutionModal": {
+      "title": "自定义屏幕分辨率",
+      "width": "宽度（像素）",
+      "height": "高度（像素）",
+      "apply": "应用"
+    }
+  },
+  "layoutList": {
+    "moduleLabel": "布局",
+    "title": "管理小组件布局",
+    "subtitleAutoSwitch": "自动切换已启用。布局将根据您的游戏会话自动动态加载。",
+    "subtitleManual": "选择一个布局查看详情。双击卡片以在编辑器中打开。",
+    "toggleAutoSwitchTooltip": "切换自动切换模式",
+    "autoSwitchLabel": "自动切换：{{state}}",
+    "on": "开",
+    "off": "关",
+    "newLayout": "新建布局",
+    "emptyLayout": "空布局",
+    "current": "当前",
+    "active": "已激活",
+    "assignedTo": "已分配给 {{session}}",
+    "manualActivationOnly": "仅手动激活",
+    "manual": "手动",
+    "widgetsCount_other": "{{count}} 个小组件",
+    "created": "创建于：",
+    "autoSwitchAssignment": "自动切换分配",
+    "activeMonitor": "当前显示器",
+    "none": "无",
+    "resolution": "分辨率",
+    "activeWidgets": "已启用的小组件",
+    "activateLayout": "激活布局",
+    "openEditor": "打开编辑器",
+    "duplicateLayout": "复制布局",
+    "deleteLayoutConfirmTitle": "删除此布局？",
+    "deleteLayoutConfirmDescription": "此操作无法撤销。",
+    "deleteLayout": "删除布局",
+    "emptySelection": "选择一个布局以查看详情和操作",
+    "createNewLayout": "创建新布局",
+    "enterLayoutName": "输入布局名称...",
+    "sessions": {
+      "practice": "练习赛",
+      "qualify": "排位赛",
+      "race": "正赛",
+      "garage": "车库"
+    }
+  },
+  "layoutWidgetPanel": {
+    "back": "返回"
+  },
+  "widgetWorkbench": {
+    "scenario": "场景",
+    "noWidgets": "没有可用的小组件。"
+  },
+  "layoutCanvas": {
+    "move": "移动",
+    "stepSize": "步长 {{size}}",
+    "large": "大",
+    "remove": "删除",
+    "loadingBackground": "正在加载背景..."
+  },
+  "widgetSettingsPopup": {
+    "ariaLabel": "{{label}} 设置",
+    "close": "关闭"
+  },
+  "widgetPreview": {
+    "noPreview": "无可用预览"
+  },
+  "widgetSettings": {
+    "selectToConfigure": "选择要配置的小组件",
+    "notFound": "未找到该小组件",
+    "moduleConfig": "模块配置",
+    "layoutAndDimensions": "布局与尺寸",
+    "positionX": "X 坐标",
+    "positionY": "Y 坐标",
+    "width": "宽度（像素）",
+    "height": "高度（像素）",
+    "layerDepth": "层级深度（Z-Index）",
+    "aesthetics": "外观",
+    "background": "背景",
+    "border": "边框"
+  },
+  "settingsPage": {
+    "moduleLabel": "配置",
+    "title": "全局应用设置",
+    "language": {
+      "title": "语言",
+      "fieldLabel": "应用语言",
+      "system": "系统语言"
+    },
+    "widgetDisplayOverride": {
+      "title": "小组件显示覆盖",
+      "hideAllTitle": "隐藏所有激活的小组件",
+      "hideAllDesc": "全局开关，用于快速隐藏或显示所有已启用的界面元素。",
+      "toggleHotkey": "切换快捷键"
+    },
+    "startupBehavior": {
+      "title": "启动行为",
+      "launchMinimizedTitle": "启动时最小化",
+      "launchMinimizedDesc": "启动应用程序时最小化到任务栏。"
+    },
+    "interactionMode": {
+      "title": "交互模式",
+      "dragModeTitle": "界面拖拽模式",
+      "dragModeDesc": "解锁小组件以在屏幕上自由移动。",
+      "dragModeHotkey": "拖拽模式快捷键"
+    },
+    "gameIntegration": {
+      "title": "游戏集成",
+      "autoHideTitle": "自动隐藏系统",
+      "autoHideDesc": "当模拟器未运行时隐藏小组件。"
+    },
+    "systemUnits": {
+      "title": "系统单位",
+      "fieldLabel": "计量单位系统",
+      "metric": "公制（km/h，°C，L）",
+      "imperial": "英制（mph，°F，gal）"
+    },
+    "applicationUpdates": {
+      "title": "应用更新",
+      "autoCheckTitle": "自动检查更新",
+      "autoCheckDesc": "应用启动时自动检查新版本。",
+      "checkIntervalTitle": "检查间隔",
+      "checkIntervalDesc": "应用运行期间检查更新的频率。",
+      "everyHour": "每小时",
+      "every3Hours": "每 3 小时",
+      "every6Hours": "每 6 小时",
+      "every12Hours": "每 12 小时",
+      "daily": "每天",
+      "currentVersion": "当前版本：",
+      "lastChecked": "上次检查：",
+      "upToDate": "您的应用程序已是最新版本。",
+      "checkingForUpdates": "正在检查更新...",
+      "newVersionAvailable": "新版本 v{{version}} 可用！",
+      "downloadingUpdate": "正在下载更新...",
+      "updateDownloaded": "更新已下载，正在重启...",
+      "updateCheckFailed": "检查更新失败。",
+      "restarting": "正在重启...",
+      "installAndRestart": "安装并重启",
+      "checkingEllipsis": "正在检查...",
+      "checkForUpdates": "检查更新"
+    },
+    "trackMap": {
+      "title": "赛道地图",
+      "reRecordTitle": "重新录制赛道",
+      "reRecordDesc": "清除当前地图数据，并在下一次过弯或手动触发时重新开始记录。",
+      "resetCurrentTrackData": "重置当前赛道数据",
+      "manualStartActive": "手动启动已激活。开始行驶以开始记录。",
+      "forceStartRecording": "强制开始记录",
+      "pitLaneCalibrationTitle": "维修区校准",
+      "pitLaneCalibrationDescWithTrack": "清除为“{{track}}”记录的维修区进出点。请再次驶过维修区以重新校准。",
+      "pitLaneCalibrationDescNoTrack": "未加载赛道。请加载会话以重置当前赛道的维修区数据。",
+      "resetPitLaneDataForTrack": "重置 {{track}} 的维修区数据",
+      "resetPitLaneData": "重置维修区数据",
+      "pitLaneResetSuccess": "维修区数据已清除。请驶过维修区以重新校准。",
+      "referenceLapTitle": "参考圈速",
+      "referenceLapDescWithCar": "删除当前赛道上“{{car}}”保存的最佳圈速。下一圈完成后将重新开始记录。",
+      "referenceLapDescNoSession": "未加载会话。请加载会话以删除当前赛道和车辆的参考圈速。",
+      "deleteReferenceLapConfirm": "删除已保存的参考圈速？",
+      "deleteReferenceLap": "删除参考圈速",
+      "referenceLapDeleteSuccess": "参考圈速已删除。下一圈完成后将重新开始记录。"
+    },
+    "reset": {
+      "title": "重置",
+      "resetAllTitle": "重置所有设置",
+      "resetAllDesc": "清除所有小组件的位置、大小和偏好设置。应用程序将自动重启。",
+      "confirmTitle": "重置所有设置？",
+      "confirmDescription": "布局和所有偏好设置将丢失。",
+      "confirmOk": "重置并重启",
+      "resetSettings": "重置设置"
+    },
+    "developerTools": {
+      "title": "开发者工具",
+      "snapshotTitle": "遥测数据快照",
+      "snapshotDesc": "捕获当前遥测状态。",
+      "downloadSnapshot": "下载快照 JSON",
+      "snapshotSuccess": "快照已保存 — 请将 JSON 放入 test-data/"
+    }
+  }
+}

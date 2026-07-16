@@ -1,0 +1,373 @@
+{
+  "catalog": {
+    "input-trace": {
+      "description": "Живые значения газа, тормоза и сцепления."
+    },
+    "proximity-radar": {
+      "description": "Визуальный радар ближайшего трафика."
+    },
+    "radar-bar": {
+      "description": "Полноширинные индикаторы бокового трафика."
+    },
+    "standings": {
+      "description": "Живые результаты сессии и интервалы."
+    },
+    "relative": {
+      "description": "Разрывы с машинами впереди и позади вас."
+    },
+    "track-map": {
+      "description": "Динамическая 2D-карта текущей трассы."
+    },
+    "relative-map": {
+      "description": "Полоса прогресса позиций машин на трассе."
+    },
+    "led-flags": {
+      "description": "Светодиодная матрица отображения флагов трассы."
+    },
+    "flat-flags": {
+      "description": "Баннерный список активных флагов трассы."
+    },
+    "chassis": {
+      "description": "Давление в шинах и температура тормозов."
+    },
+    "example": {
+      "description": "Отладчик сырых данных телеметрии."
+    },
+    "delta": {
+      "description": "Дельта в реальном времени — один взгляд, быстрее я или медленнее?"
+    },
+    "timer": {
+      "description": "Таймеры стинта и общей сессии."
+    },
+    "weather": {
+      "description": "Условия на трассе и информация о ветре."
+    },
+    "fuel": {
+      "description": "Уровень топлива и калькулятор расхода."
+    },
+    "g-meter": {
+      "description": "Круг силы поперечных и продольных перегрузок."
+    },
+    "sector-matrix": {
+      "description": "Хронометраж по секторам с полосой прогресса, дельтой по каждому сектору, LAST и BEST."
+    },
+    "lap-log": {
+      "description": "Последние 8 кругов со временем и дельтой к личному рекорду. Лучший круг подсвечен."
+    },
+    "engine-panel": {
+      "description": "Температуры жидкостей, давления и настройки систем (ABS, TC, баланс тормозов, карта двигателя)."
+    },
+    "rpm-lights": {
+      "description": "Отдельная LED-полоса переключения передач по оборотам с анимацией лимитера в пит-лейн."
+    },
+    "race-dash": {
+      "description": "Кластер кокпита: кольцо передачи, скорость с кругом/позицией/оборотами, тренер и режим пит-лейн."
+    }
+  },
+  "settingsPanels": {
+    "chassis": {
+      "moduleLayout": "Расположение модуля",
+      "suspensionAndBrakes": "Подвеска и тормоза",
+      "suspensionAndBrakesDesc": "Показать панели давления в шинах, температур и баланса тормозов."
+    },
+    "delta": {
+      "deltaReference": "Эталон дельты",
+      "referenceDesc": {
+        "personalBest": "Ваш лучший чистый круг в этой сессии.",
+        "personalOptimal": "Ваш теоретический лучший круг — лучший сектор из каждого вашего круга.",
+        "sessionBest": "Быстрейший круг любого гонщика в текущей сессии.",
+        "sessionOptimal": "Теоретический лучший — лучший сектор любого гонщика в сессии.",
+        "sessionLast": "Последний полностью завершённый круг любого гонщика в сессии."
+      },
+      "visibility": "Видимость",
+      "hideWhenNoReference": "Скрывать при отсутствии эталонного круга",
+      "lapCompletedCard": "Карточка завершения круга",
+      "showAfterLap": "Показывать после круга",
+      "displayDuration": "Длительность показа: {{seconds}} с"
+    },
+    "fuel": {
+      "analyticsAndWarnings": "Аналитика и предупреждения",
+      "historyChart": "График истории",
+      "historyChartDesc": "Визуальная история расхода топлива.",
+      "barChart": "Столбчатая диаграмма",
+      "lineChart": "Линейный график",
+      "chartStepWidth": "Ширина шага графика (px)",
+      "lowFuelWarningThreshold": "Порог предупреждения о низком топливе (круги)"
+    },
+    "enginePanel": {
+      "moduleParameters": "Параметры модуля",
+      "horizontalLayout": "Горизонтальное расположение",
+      "horizontalLayoutDesc": "Выравнивать ячейки горизонтально в одну строку вместо вертикальной сетки.",
+      "horizontalColumns": "Горизонтальные колонки",
+      "horizontalColumnsDesc": "Количество колонок для горизонтального расположения (3, 4 или Max).",
+      "verticalColumns": "Вертикальные колонки",
+      "verticalColumnsDesc": "Количество колонок для вертикального расположения (от 1 до 4).",
+      "cols1": "1 кол.",
+      "cols2": "2 кол.",
+      "cols3": "3 кол.",
+      "cols4": "4 кол.",
+      "maxRow": "Макс (строка)",
+      "oilTemperature": "Температура масла",
+      "oilTemperatureDesc": "Показать температуру масла двигателя.",
+      "waterTemperature": "Температура воды",
+      "waterTemperatureDesc": "Показать температуру охлаждающей жидкости двигателя.",
+      "oilPressure": "Давление масла",
+      "oilPressureDesc": "Показать давление масла двигателя.",
+      "systemVoltage": "Напряжение системы",
+      "systemVoltageDesc": "Показать напряжение электрической системы.",
+      "absLevel": "Уровень ABS",
+      "absLevelDesc": "Показать настройку ABS.",
+      "tractionControl": "Трэкшн-контроль (TC)",
+      "tractionControlDesc": "Показать настройку трэкшн-контроля.",
+      "brakeBias": "Баланс тормозов",
+      "brakeBiasDesc": "Показать текущий баланс тормозов.",
+      "engineMap": "Карта двигателя",
+      "engineMapDesc": "Показать карту газа/двигателя."
+    },
+    "flagDisplay": {
+      "displayMode": "Режим отображения",
+      "alwaysShow": "Всегда показывать",
+      "alwaysShowDesc": "Показывать виджет даже когда флаг не активен.",
+      "holdDuration": "Длительность показа: {{seconds}} с",
+      "holdDurationDesc": "Как долго показывать флаг после его снятия.",
+      "forceSingleLed": "Принудительный одиночный LED",
+      "forceSingleLedDesc": "Показать один крупный индикатор вместо LED-матрицы.",
+      "splitDisplay": "Разделённое отображение",
+      "splitDisplayDesc": "Разделить матрицу на левую и правую части для размещения вокруг зеркала.",
+      "animateLeds": "Анимировать LED",
+      "animateLedsDesc": "Включить динамическую прокрутку и волновые эффекты флагов."
+    },
+    "gMeter": {
+      "moduleParameters": "Параметры модуля",
+      "displayMode": "Режим отображения",
+      "trail": "След",
+      "fading": "Затухание",
+      "peak": "Пик",
+      "scale": "Масштаб",
+      "colorMode": "Цветовой режим",
+      "mono": "Моно",
+      "simple": "Простой",
+      "advanced": "Продвинутый"
+    },
+    "inputTrace": {
+      "dataChannels": "Каналы данных",
+      "throttle": "Газ",
+      "throttleDesc": "Показать след газа на графике.",
+      "brake": "Тормоз",
+      "brakeDesc": "Показать след тормоза на графике.",
+      "absActive": "ABS активен",
+      "absActiveDesc": "Цвет следа/полосы тормоза при активном ABS.",
+      "clutch": "Сцепление",
+      "clutchDesc": "Показать след сцепления на графике.",
+      "steeringWheel": "Руль",
+      "steeringWheelDesc": "Показать блок руля и след графика.",
+      "centerDisplay": "Центральный дисплей",
+      "centerDisplayDesc": "Что показывать в центре руля.",
+      "logo": "Логотип",
+      "gear": "Передача",
+      "speed": "Скорость",
+      "angle": "Угол",
+      "speedGear": "Скор.+Перед.",
+      "steeringLock": "Блокировка руля",
+      "steeringLockDesc": "Физический диапазон: {{full}}° (±{{half}}°)",
+      "steeringZoom": "Масштаб руля",
+      "steeringZoomDesc": "График показывает ±{{angle}}° ({{zoom}}x)",
+      "layout": "Расположение",
+      "traceGraph": "График следа",
+      "traceGraphDesc": "Показать прокручивающийся график истории ввода.",
+      "graphSettings": "Настройки графика",
+      "historyLength": "Длина истории",
+      "historyLengthDesc": "Видимая история: {{seconds}} с",
+      "smoothing": "Сглаживание",
+      "smoothingRaw": "Сырые данные (60 Гц)",
+      "smoothingFactor": "Коэффициент: {{factor}}",
+      "lineWidth": "Толщина линии",
+      "lineWidthDesc": "Толщина: {{px}}px"
+    },
+    "linearMap": {
+      "moduleLayout": "Расположение модуля",
+      "orientation": "Ориентация",
+      "horizontal": "Горизонтальная",
+      "vertical": "Вертикальная",
+      "playerMarker": "Маркер игрока",
+      "playerDotColor": "Цвет точки игрока",
+      "dotRadius": "Радиус точки (px)"
+    },
+    "radar": {
+      "radarBehavior": "Поведение радара",
+      "activationRange": "Радиус активации (м)",
+      "fadeOutDelay": "Задержка угасания (с)",
+      "carLength": "Длина машины (м)",
+      "qualifying": "Квалификация",
+      "showInQualifying": "Показывать в квалификации",
+      "always": "Всегда",
+      "auto": "Авто",
+      "never": "Никогда",
+      "autoDesc": "Авто: скрыт во время одиночной квалификации (одна машина на трассе)"
+    },
+    "raceDash": {
+      "rpmFill": "Заливка оборотов",
+      "zoneColors": "Цвета зон",
+      "low": "Низкие",
+      "mid": "Средние",
+      "high": "Высокие",
+      "shift": "Переключение",
+      "blink": "Мигание",
+      "colorizeDigits": "Раскрашивать цифры",
+      "colorizeDigitsDesc": "Окрашивать цифру передачи и число оборотов цветом зоны на высоких оборотах.",
+      "rpmIndicator": "Индикатор оборотов",
+      "fill": "Заливка",
+      "glow": "Свечение",
+      "off": "Выкл",
+      "drivingCoach": "Тренер по вождению",
+      "coachSection": "Секция тренера",
+      "coachSectionDesc": "Показать подсказку тормоз/газ и эталонную скорость лучшего круга.",
+      "brakeAccent": "Акцент тормоза",
+      "brakeAccentDesc": "Цвет подсказки ТОРМОЗ.",
+      "gasAccent": "Акцент газа",
+      "gasAccentDesc": "Цвет подсказки ГАЗ.",
+      "pitAssist": "Помощь в пит-лейн",
+      "pitLaneAssist": "Помощь в пит-лейн",
+      "pitLaneAssistDesc": "Превращать в панель пит-лейн при въезде в пит-лейн.",
+      "pitSpeedOverride": "Ограничение скорости в пит-лейн ({{unit}})",
+      "pitSpeedOverrideDesc": "Оставьте 0 для автоопределения из данных сессии.",
+      "nearLimitWarning": "Предупреждение о приближении к лимиту ({{unit}})",
+      "nearLimitWarningDesc": "Окрашивать скорость в жёлтый, когда осталось столько {{unit}} до лимита пит-лейн."
+    },
+    "relative": {
+      "appearance": "Внешний вид",
+      "rowHeight": "Высота строки",
+      "rowHeightDesc": "Вертикальные отступы каждой строки гонщика.",
+      "narrow": "Узкая",
+      "medium": "Средняя",
+      "wide": "Широкая",
+      "playerRowColor": "Цвет строки игрока",
+      "playerRowColorDesc": "Цвет подсветки вашей строки.",
+      "playerNumberColor": "Цвет номера игрока",
+      "playerNumberColorDesc": "Цвет вашей позиции и номера машины.",
+      "dataColumns": "Колонки данных",
+      "licenseBadge": "Значок лицензии",
+      "licenseBadgeDesc": "Значок рейтинга безопасности гонщика (A, B, C, D, R).",
+      "iRating": "iRating",
+      "iRatingDesc": "Значение iRating гонщика.",
+      "pitIndicator": "Индикатор пит-лейн",
+      "pitIndicatorDesc": "Показывать иконку, когда гонщик в питах.",
+      "abbreviateNames": "Сокращать имена",
+      "abbreviateNamesDesc": "Использовать короткие имена для экономии места.",
+      "driverFlags": "Флаги гонщика",
+      "driverFlagsDesc": "Показывать активные предупреждающие флаги рядом с именем гонщика."
+    },
+    "rpmLights": {
+      "shiftLights": "Огни переключения",
+      "colors": "Цвета",
+      "ledShape": "Форма LED",
+      "square": "Квадрат",
+      "circle": "Круг",
+      "slant": "Наклон"
+    },
+    "sectorMatrix": {
+      "options": "Параметры",
+      "showSectorTimes": "Показывать время секторов",
+      "showSectorTimesDesc": "Показывать сетку времени по секторам. Отключите для компактного вида только с полосой прогресса и временем круга.",
+      "showPredictedLap": "Показывать прогноз круга",
+      "showPredictedLapDesc": "Ожидаемое время финиша, отображаемое в шапке."
+    },
+    "standings": {
+      "appearance": "Внешний вид",
+      "viewMode": "Режим отображения",
+      "allDrivers": "Все гонщики",
+      "groupByClass": "Группировать по классу",
+      "classCycling": "Циклирование классов",
+      "hotkeys": "Горячие клавиши",
+      "cycleViewModeHotkey": "Циклировать режим (Все → По группам → Циклирование)",
+      "previousClassHotkey": "Предыдущий класс (режим циклирования)",
+      "nextClassHotkey": "Следующий класс (режим циклирования)",
+      "positionChange": "Изменение позиции (+/-)",
+      "positionChangeDesc": "Стрелка, показывающая позиции, набранные или потерянные с начала сессии.",
+      "brandLogo": "Логотип марки автомобиля",
+      "brandLogoDesc": "Значок производителя рядом с именем гонщика.",
+      "tireCompound": "Тип шин",
+      "tireCompoundDesc": "Визуальный индикатор текущего типа шин.",
+      "licenseBadge": "Значок лицензии",
+      "licenseBadgeDesc": "Значок рейтинга безопасности гонщика (A, B, C, D, R).",
+      "iRating": "iRating",
+      "iRatingDesc": "Значение iRating гонщика.",
+      "iRatingDelta": "Изменение iRating (прогноз)",
+      "iRatingDeltaDesc": "Прогнозируемое изменение iRating на основе текущей позиции.",
+      "lapsCompleted": "Пройдено кругов",
+      "lapsCompletedDesc": "Количество кругов, пройденных каждым гонщиком.",
+      "abbreviateNames": "Сокращать имена гонщиков",
+      "abbreviateNamesDesc": "Сокращать имена для экономии места в колонке.",
+      "driverFlags": "Флаги гонщика",
+      "driverFlagsDesc": "Показывать активные предупреждающие флаги (например, механические повреждения) рядом с именем гонщика.",
+      "headerInfo": "Информация в шапке",
+      "columnHeaders": "Заголовки колонок",
+      "columnHeadersDesc": "Показывать подписи над каждой колонкой данных.",
+      "sessionProgressInfo": "Прогресс сессии",
+      "sessionProgressInfoDesc": "Полоса оставшихся кругов или времени вверху.",
+      "liveWeatherInfo": "Погода в реальном времени",
+      "liveWeatherInfoDesc": "Строка ветра и температуры в шапке.",
+      "sof": "Сила состава (SOF)",
+      "sofDesc": "Средний iRating всех зарегистрированных гонщиков.",
+      "pitStopCounter": "Счётчик пит-стопов (только игрок)",
+      "pitStopCounterDesc": "Количество пит-стопов, сделанных машиной игрока.",
+      "incidentsBadge": "Значок инцидентов (только игрок)",
+      "incidentsBadgeDesc": "Количество инцидентов, накопленных машиной игрока.",
+      "totalDriversCount": "Общее количество гонщиков",
+      "totalDriversCountDesc": "Общее количество гонщиков в сессии."
+    },
+    "timer": {
+      "visibleElements": "Видимые элементы",
+      "showSessionType": "Показывать тип сессии",
+      "showSessionTypeDesc": "Показывать текущий тип сессии (гонка, квалификация, практика).",
+      "showLapCount": "Показывать счётчик кругов",
+      "showLapCountDesc": "Показывать текущий круг и общее количество кругов.",
+      "showPosition": "Показывать позицию",
+      "showPositionDesc": "Показывать вашу текущую позицию в гонке.",
+      "showPcClock": "Показывать часы ПК",
+      "showPcClockDesc": "Показывать текущее системное время (ЧЧ:ММ).",
+      "showSimTime": "Показывать время симулятора",
+      "showSimTimeDesc": "Показывать внутриигровое время суток (ЧЧ:ММ).",
+      "showPcDate": "Показывать дату ПК",
+      "showPcDateDesc": "Показывать текущую системную дату.",
+      "showSimDate": "Показывать дату симулятора",
+      "showSimDateDesc": "Показывать внутриигровую дату (может отличаться от реальной)."
+    },
+    "trackMap": {
+      "visualElements": "Визуальные элементы",
+      "sectorsOnMap": "Секторы на карте",
+      "startFinishLine": "Линия старт/финиш",
+      "playerDotColor": "Цвет точки игрока",
+      "playerDotColorDesc": "Цвет кольца пинга и подписи для вашей машины.",
+      "showYouLabel": "Показывать подпись «ВЫ»",
+      "showYouLabelDesc": "Показывать подпись над точкой вашей машины.",
+      "leaderLabels": "Подписи лидеров",
+      "showP1Label": "Показывать подпись P1",
+      "allClasses": "Все классы",
+      "ownClass": "Свой класс",
+      "hidden": "Скрыто",
+      "trackStyling": "Стиль трассы",
+      "trackStroke": "Толщина линии трассы (px)",
+      "trackBorder": "Обводка трассы (px)",
+      "sectorStroke": "Толщина линии сектора (px)",
+      "targetDotRadius": "Радиус целевой точки (px)"
+    },
+    "weather": {
+      "moduleParameters": "Параметры модуля",
+      "windCompass": "Компас ветра",
+      "windCompassDesc": "Анимированный компас, показывающий текущее направление ветра.",
+      "airTemperature": "Температура воздуха",
+      "airTemperatureDesc": "Температура окружающего воздуха на уровне трассы.",
+      "trackTemperature": "Температура трассы",
+      "trackTemperatureDesc": "Температура поверхности гоночного полотна.",
+      "windSpeedAndDir": "Скорость и направление ветра",
+      "windSpeedAndDirDesc": "Числовое значение скорости ветра и направление по сторонам света.",
+      "relativeHumidity": "Относительная влажность",
+      "relativeHumidityDesc": "Текущий процент влажности.",
+      "weatherForecast": "Прогноз погоды",
+      "weatherForecastDesc": "Предстоящие изменения погоды во время сессии.",
+      "trackWetnessState": "Состояние влажности трассы",
+      "trackWetnessStateDesc": "Текущий уровень влажности поверхности трассы (сухо, влажно, мокро, потоп)."
+    }
+  }
+}

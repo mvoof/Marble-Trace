@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { Switch } from 'antd';
 import { ChassisWidgetSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
@@ -8,6 +9,7 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const ChassisSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
 
   const settings = widgetSettings.getSettings<ChassisWidgetSettings>('chassis');
 
@@ -19,11 +21,11 @@ export const ChassisSettingsPanel = observer(() => {
   };
 
   return (
-    <Card title="Module Layout">
+    <Card title={t('settingsPanels.chassis.moduleLayout')}>
       <div className={styles.fieldGroup}>
         <SettingRow
-          title="Suspension & Brakes"
-          desc="Show tire pressures, temperatures, and brake bias panels."
+          title={t('settingsPanels.chassis.suspensionAndBrakes')}
+          desc={t('settingsPanels.chassis.suspensionAndBrakesDesc')}
         >
           <Switch
             checked={settings.showSuspensionAndBrakes}

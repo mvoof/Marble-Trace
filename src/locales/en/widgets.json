@@ -1,0 +1,373 @@
+{
+  "catalog": {
+    "input-trace": {
+      "description": "Live throttle, brake, and clutch inputs."
+    },
+    "proximity-radar": {
+      "description": "Visual radar for nearby traffic."
+    },
+    "radar-bar": {
+      "description": "Full-width side proximity indicators."
+    },
+    "standings": {
+      "description": "Live session standings and intervals."
+    },
+    "relative": {
+      "description": "Gaps to cars ahead and behind you."
+    },
+    "track-map": {
+      "description": "Dynamic 2D map of the current circuit."
+    },
+    "relative-map": {
+      "description": "Progress bar of car track positions."
+    },
+    "led-flags": {
+      "description": "LED matrix display of track flags."
+    },
+    "flat-flags": {
+      "description": "Banner-style list of active track flags."
+    },
+    "chassis": {
+      "description": "Tire pressures and brake temperatures."
+    },
+    "example": {
+      "description": "Raw telemetry data debugger."
+    },
+    "delta": {
+      "description": "Live delta HUD — one glance, am I faster or slower?"
+    },
+    "timer": {
+      "description": "Stint and total session timers."
+    },
+    "weather": {
+      "description": "Track conditions and wind information."
+    },
+    "fuel": {
+      "description": "Fuel level and consumption calculator."
+    },
+    "g-meter": {
+      "description": "Lateral and longitudinal G-force friction circle."
+    },
+    "sector-matrix": {
+      "description": "Sector-by-sector timing with progress bar, live delta per sector, LAST and BEST."
+    },
+    "lap-log": {
+      "description": "Last 8 laps with time and delta vs personal best. Best lap highlighted."
+    },
+    "engine-panel": {
+      "description": "Liquid temperatures, pressures, and system adjustments (ABS, TC, Brake Bias, Engine Map)."
+    },
+    "rpm-lights": {
+      "description": "Standalone shift-light LED bar driven by engine RPM, with pit-limiter animations."
+    },
+    "race-dash": {
+      "description": "Cockpit cluster: gear ring, speed readout with lap/position/RPM, coach tab, and pit-lane mode."
+    }
+  },
+  "settingsPanels": {
+    "chassis": {
+      "moduleLayout": "Module Layout",
+      "suspensionAndBrakes": "Suspension & Brakes",
+      "suspensionAndBrakesDesc": "Show tire pressures, temperatures, and brake bias panels."
+    },
+    "delta": {
+      "deltaReference": "Delta Reference",
+      "referenceDesc": {
+        "personalBest": "Your best clean lap this session.",
+        "personalOptimal": "Your theoretical best — fastest sector from each of your laps combined.",
+        "sessionBest": "Fastest lap set by any driver in the current session.",
+        "sessionOptimal": "Theoretical best — fastest sector from any driver in the session combined.",
+        "sessionLast": "Last fully completed lap by any driver in the session."
+      },
+      "visibility": "Visibility",
+      "hideWhenNoReference": "Hide when no reference lap",
+      "lapCompletedCard": "Lap Completed Card",
+      "showAfterLap": "Show after lap",
+      "displayDuration": "Display duration: {{seconds}}s"
+    },
+    "fuel": {
+      "analyticsAndWarnings": "Analytics & Warnings",
+      "historyChart": "History Chart",
+      "historyChartDesc": "Visual consumption history.",
+      "barChart": "Bar Chart",
+      "lineChart": "Line Chart",
+      "chartStepWidth": "Chart Step Width (px)",
+      "lowFuelWarningThreshold": "Low Fuel Warning Threshold (Laps)"
+    },
+    "enginePanel": {
+      "moduleParameters": "Module Parameters",
+      "horizontalLayout": "Horizontal Layout",
+      "horizontalLayoutDesc": "Align cells horizontally in a single row instead of a vertical grid.",
+      "horizontalColumns": "Horizontal Columns",
+      "horizontalColumnsDesc": "Number of columns for the horizontal layout (3, 4, or Max).",
+      "verticalColumns": "Vertical Columns",
+      "verticalColumnsDesc": "Number of columns for the vertical layout (1 to 4).",
+      "cols1": "1 Col",
+      "cols2": "2 Cols",
+      "cols3": "3 Cols",
+      "cols4": "4 Cols",
+      "maxRow": "Max (Row)",
+      "oilTemperature": "Oil Temperature",
+      "oilTemperatureDesc": "Show engine oil temperature.",
+      "waterTemperature": "Water Temperature",
+      "waterTemperatureDesc": "Show engine water temperature.",
+      "oilPressure": "Oil Pressure",
+      "oilPressureDesc": "Show engine oil pressure.",
+      "systemVoltage": "System Voltage",
+      "systemVoltageDesc": "Show electrical system voltage.",
+      "absLevel": "ABS Level",
+      "absLevelDesc": "Show ABS setting.",
+      "tractionControl": "Traction Control (TC)",
+      "tractionControlDesc": "Show traction control setting.",
+      "brakeBias": "Brake Bias",
+      "brakeBiasDesc": "Show active brake bias.",
+      "engineMap": "Engine Map",
+      "engineMapDesc": "Show throttle map / engine map."
+    },
+    "flagDisplay": {
+      "displayMode": "Display Mode",
+      "alwaysShow": "Always Show",
+      "alwaysShowDesc": "Show widget even when no flag is active.",
+      "holdDuration": "Hold Duration: {{seconds}}s",
+      "holdDurationDesc": "How long to keep the flag visible after it clears.",
+      "forceSingleLed": "Force Single LED",
+      "forceSingleLedDesc": "Show a single large indicator instead of the LED matrix.",
+      "splitDisplay": "Split Display",
+      "splitDisplayDesc": "Split matrix into left & right parts to place around mirror.",
+      "animateLeds": "Animate LEDs",
+      "animateLedsDesc": "Enable dynamic scrolling and waving patterns for flags."
+    },
+    "gMeter": {
+      "moduleParameters": "Module Parameters",
+      "displayMode": "Display Mode",
+      "trail": "Trail",
+      "fading": "Fading",
+      "peak": "Peak",
+      "scale": "Scale",
+      "colorMode": "Color Mode",
+      "mono": "Mono",
+      "simple": "Simple",
+      "advanced": "Advanced"
+    },
+    "inputTrace": {
+      "dataChannels": "Data Channels",
+      "throttle": "Throttle",
+      "throttleDesc": "Show throttle trace on the graph.",
+      "brake": "Brake",
+      "brakeDesc": "Show brake trace on the graph.",
+      "absActive": "ABS Active",
+      "absActiveDesc": "Color of the brake trace/bar when ABS is active.",
+      "clutch": "Clutch",
+      "clutchDesc": "Show clutch trace on the graph.",
+      "steeringWheel": "Steering Wheel",
+      "steeringWheelDesc": "Show steering wheel block and graph trace.",
+      "centerDisplay": "Center Display",
+      "centerDisplayDesc": "What to show in the center of the steering wheel.",
+      "logo": "Logo",
+      "gear": "Gear",
+      "speed": "Speed",
+      "angle": "Angle",
+      "speedGear": "Spd+Gear",
+      "steeringLock": "Steering Lock",
+      "steeringLockDesc": "Physical range: {{full}}° (±{{half}}°)",
+      "steeringZoom": "Steering Zoom",
+      "steeringZoomDesc": "Graph shows ±{{angle}}° ({{zoom}}x)",
+      "layout": "Layout",
+      "traceGraph": "Trace Graph",
+      "traceGraphDesc": "Show the scrolling input history graph.",
+      "graphSettings": "Graph Settings",
+      "historyLength": "History Length",
+      "historyLengthDesc": "Visible history: {{seconds}}s",
+      "smoothing": "Smoothing",
+      "smoothingRaw": "Raw data (60Hz)",
+      "smoothingFactor": "Factor: {{factor}}",
+      "lineWidth": "Line Width",
+      "lineWidthDesc": "Thickness: {{px}}px"
+    },
+    "linearMap": {
+      "moduleLayout": "Module Layout",
+      "orientation": "Orientation",
+      "horizontal": "Horizontal",
+      "vertical": "Vertical",
+      "playerMarker": "Player Marker",
+      "playerDotColor": "Player Dot Color",
+      "dotRadius": "Dot Radius (px)"
+    },
+    "radar": {
+      "radarBehavior": "Radar Behavior",
+      "activationRange": "Activation Range (m)",
+      "fadeOutDelay": "Fade Out Delay (s)",
+      "carLength": "Car Length (m)",
+      "qualifying": "Qualifying",
+      "showInQualifying": "Show in qualifying",
+      "always": "Always",
+      "auto": "Auto",
+      "never": "Never",
+      "autoDesc": "Auto: hidden during lone qualifying (single car on track)"
+    },
+    "raceDash": {
+      "rpmFill": "RPM Fill",
+      "zoneColors": "Zone Colors",
+      "low": "Low",
+      "mid": "Mid",
+      "high": "High",
+      "shift": "Shift",
+      "blink": "Blink",
+      "colorizeDigits": "Colorize Digits",
+      "colorizeDigitsDesc": "Tint the gear digit and RPM number with the zone color at high revs.",
+      "rpmIndicator": "RPM Indicator",
+      "fill": "Fill",
+      "glow": "Glow",
+      "off": "Off",
+      "drivingCoach": "Driving Coach",
+      "coachSection": "Coach Section",
+      "coachSectionDesc": "Show the brake/gas call and best-lap reference speed.",
+      "brakeAccent": "Brake Accent",
+      "brakeAccentDesc": "Color of the BRAKE advisory.",
+      "gasAccent": "Gas Accent",
+      "gasAccentDesc": "Color of the GAS advisory.",
+      "pitAssist": "Pit Assist",
+      "pitLaneAssist": "Pit Lane Assist",
+      "pitLaneAssistDesc": "Transform into the pit panel when entering the pit lane.",
+      "pitSpeedOverride": "Pit Speed Override ({{unit}})",
+      "pitSpeedOverrideDesc": "Leave 0 to auto-detect from session data.",
+      "nearLimitWarning": "Near-Limit Warning ({{unit}})",
+      "nearLimitWarningDesc": "Color speed amber when this many {{unit}} below the pit speed limit."
+    },
+    "relative": {
+      "appearance": "Appearance",
+      "rowHeight": "Row Height",
+      "rowHeightDesc": "Vertical padding of each driver row.",
+      "narrow": "Narrow",
+      "medium": "Medium",
+      "wide": "Wide",
+      "playerRowColor": "Player Row Color",
+      "playerRowColorDesc": "Highlight color for your own row.",
+      "playerNumberColor": "Player Number Color",
+      "playerNumberColorDesc": "Color of your position and car number.",
+      "dataColumns": "Data Columns",
+      "licenseBadge": "License Badge",
+      "licenseBadgeDesc": "Driver safety rating badge (A, B, C, D, R).",
+      "iRating": "iRating",
+      "iRatingDesc": "Driver iRating value.",
+      "pitIndicator": "Pit Indicator",
+      "pitIndicatorDesc": "Show icon when driver is in pits.",
+      "abbreviateNames": "Abbreviate Names",
+      "abbreviateNamesDesc": "Use short names to save space.",
+      "driverFlags": "Driver Flags",
+      "driverFlagsDesc": "Show active warning flags next to driver name."
+    },
+    "rpmLights": {
+      "shiftLights": "Shift Lights",
+      "colors": "Colors",
+      "ledShape": "LED Shape",
+      "square": "Square",
+      "circle": "Circle",
+      "slant": "Slant"
+    },
+    "sectorMatrix": {
+      "options": "Options",
+      "showSectorTimes": "Show Sector Times",
+      "showSectorTimesDesc": "Display per-sector timing grid. Disable for a compact view with just the progress bar and lap times.",
+      "showPredictedLap": "Show Predicted Lap",
+      "showPredictedLapDesc": "Estimated finish time displayed in the header."
+    },
+    "standings": {
+      "appearance": "Appearance",
+      "viewMode": "View Mode",
+      "allDrivers": "All Drivers",
+      "groupByClass": "Group by Class",
+      "classCycling": "Class Cycling",
+      "hotkeys": "Hotkeys",
+      "cycleViewModeHotkey": "Cycle View Mode (All → Grouped → Cycling)",
+      "previousClassHotkey": "Previous Class (Cycling mode)",
+      "nextClassHotkey": "Next Class (Cycling mode)",
+      "positionChange": "Position Change (+/-)",
+      "positionChangeDesc": "Arrow showing positions gained or lost since session start.",
+      "brandLogo": "Vehicle Brand Logo",
+      "brandLogoDesc": "Manufacturer badge next to driver name.",
+      "tireCompound": "Tire Compound",
+      "tireCompoundDesc": "Visual indicator of current tire type.",
+      "licenseBadge": "License Badge",
+      "licenseBadgeDesc": "Driver safety rating badge (A, B, C, D, R).",
+      "iRating": "iRating",
+      "iRatingDesc": "Driver iRating value.",
+      "iRatingDelta": "iRating Delta (projected)",
+      "iRatingDeltaDesc": "Projected iRating gain or loss based on current position.",
+      "lapsCompleted": "Laps Completed",
+      "lapsCompletedDesc": "Number of laps completed by each driver.",
+      "abbreviateNames": "Abbreviate Driver Names",
+      "abbreviateNamesDesc": "Shorten names to save column space.",
+      "driverFlags": "Driver Flags",
+      "driverFlagsDesc": "Display active warning flags (e.g. Mechanical Damage/Meatball) next to driver name.",
+      "headerInfo": "Header Info",
+      "columnHeaders": "Column Headers",
+      "columnHeadersDesc": "Show labels above each data column.",
+      "sessionProgressInfo": "Session Progress Info",
+      "sessionProgressInfoDesc": "Laps or time remaining bar at the top.",
+      "liveWeatherInfo": "Live Weather Info",
+      "liveWeatherInfoDesc": "Wind and temperature row in the header.",
+      "sof": "Strength of Field (SOF)",
+      "sofDesc": "Average iRating of all registered drivers.",
+      "pitStopCounter": "Pit Stop Counter (player only)",
+      "pitStopCounterDesc": "Number of pit stops made by the player car.",
+      "incidentsBadge": "Incidents Badge (player only)",
+      "incidentsBadgeDesc": "Incident count accumulated by the player car.",
+      "totalDriversCount": "Total Drivers Count",
+      "totalDriversCountDesc": "Total number of drivers in the session."
+    },
+    "timer": {
+      "visibleElements": "Visible Elements",
+      "showSessionType": "Show Session Type",
+      "showSessionTypeDesc": "Display the current session type (Race, Qualify, Practice).",
+      "showLapCount": "Show Lap Count",
+      "showLapCountDesc": "Display current lap and total laps.",
+      "showPosition": "Show Position",
+      "showPositionDesc": "Display your current race position.",
+      "showPcClock": "Show PC Clock",
+      "showPcClockDesc": "Display current system time (HH:MM).",
+      "showSimTime": "Show Sim Time",
+      "showSimTimeDesc": "Display in-simulator time of day (HH:MM).",
+      "showPcDate": "Show PC Date",
+      "showPcDateDesc": "Display current system date.",
+      "showSimDate": "Show Sim Date",
+      "showSimDateDesc": "Display in-simulator date (may differ from real date)."
+    },
+    "trackMap": {
+      "visualElements": "Visual Elements",
+      "sectorsOnMap": "Sectors on Map",
+      "startFinishLine": "Start/Finish Line",
+      "playerDotColor": "Player Dot Color",
+      "playerDotColorDesc": "Ping ring and label pill color for your car.",
+      "showYouLabel": "Show \"YOU\" Label",
+      "showYouLabelDesc": "Display the label above your car dot.",
+      "leaderLabels": "Leader Labels",
+      "showP1Label": "Show P1 Label",
+      "allClasses": "All Classes",
+      "ownClass": "Own Class",
+      "hidden": "Hidden",
+      "trackStyling": "Track Styling",
+      "trackStroke": "Track Stroke (px)",
+      "trackBorder": "Track Border (px)",
+      "sectorStroke": "Sector Stroke (px)",
+      "targetDotRadius": "Target Dot Radius (px)"
+    },
+    "weather": {
+      "moduleParameters": "Module Parameters",
+      "windCompass": "Wind Compass",
+      "windCompassDesc": "Animated compass showing current wind direction.",
+      "airTemperature": "Air Temperature",
+      "airTemperatureDesc": "Ambient air temperature at track level.",
+      "trackTemperature": "Track Temperature",
+      "trackTemperatureDesc": "Surface temperature of the racing surface.",
+      "windSpeedAndDir": "Wind Speed & Dir",
+      "windSpeedAndDirDesc": "Numerical wind speed and cardinal direction.",
+      "relativeHumidity": "Relative Humidity",
+      "relativeHumidityDesc": "Current humidity percentage.",
+      "weatherForecast": "Weather Forecast",
+      "weatherForecastDesc": "Upcoming weather changes during the session.",
+      "trackWetnessState": "Track Wetness State",
+      "trackWetnessStateDesc": "Current track surface wetness level (Dry, Damp, Wet, Flooded)."
+    }
+  }
+}

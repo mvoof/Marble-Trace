@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { ColorPicker, Segmented } from 'antd';
 import { RpmLightsWidgetSettings, LedShape } from '@/types/widget-settings';
 import { Card } from './Card';
@@ -8,6 +9,7 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const RpmLightsSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
 
   const settings =
     widgetSettings.getSettings<RpmLightsWidgetSettings>('rpm-lights');
@@ -20,13 +22,17 @@ export const RpmLightsSettingsPanel = observer(() => {
   };
 
   return (
-    <Card title="Shift Lights">
+    <Card title={t('settingsPanels.rpmLights.shiftLights')}>
       <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>Colors</span>
+        <span className={styles.fieldLabel}>
+          {t('settingsPanels.rpmLights.colors')}
+        </span>
 
         <div className={styles.rpmColorGrid}>
           <div className={styles.rpmColorItem}>
-            <span className={styles.rpmColorLabel}>Low</span>
+            <span className={styles.rpmColorLabel}>
+              {t('settingsPanels.raceDash.low')}
+            </span>
 
             <ColorPicker
               value={settings.rpmColorLow}
@@ -36,7 +42,9 @@ export const RpmLightsSettingsPanel = observer(() => {
           <div className={styles.rpmColorLine} />
 
           <div className={styles.rpmColorItem}>
-            <span className={styles.rpmColorLabel}>Mid</span>
+            <span className={styles.rpmColorLabel}>
+              {t('settingsPanels.raceDash.mid')}
+            </span>
 
             <ColorPicker
               value={settings.rpmColorMid}
@@ -47,7 +55,9 @@ export const RpmLightsSettingsPanel = observer(() => {
           <div className={styles.rpmColorLine} />
 
           <div className={styles.rpmColorItem}>
-            <span className={styles.rpmColorLabel}>High</span>
+            <span className={styles.rpmColorLabel}>
+              {t('settingsPanels.raceDash.high')}
+            </span>
 
             <ColorPicker
               value={settings.rpmColorHigh}
@@ -60,7 +70,9 @@ export const RpmLightsSettingsPanel = observer(() => {
           <div className={styles.rpmColorLine} />
 
           <div className={styles.rpmColorItem}>
-            <span className={styles.rpmColorLabel}>Shift</span>
+            <span className={styles.rpmColorLabel}>
+              {t('settingsPanels.raceDash.shift')}
+            </span>
 
             <ColorPicker
               value={settings.rpmColorShift}
@@ -73,7 +85,9 @@ export const RpmLightsSettingsPanel = observer(() => {
           <div className={styles.rpmColorLine} />
 
           <div className={styles.rpmColorItem}>
-            <span className={styles.rpmColorLabel}>Blink</span>
+            <span className={styles.rpmColorLabel}>
+              {t('settingsPanels.raceDash.blink')}
+            </span>
 
             <ColorPicker
               value={settings.rpmColorLimit}
@@ -86,15 +100,26 @@ export const RpmLightsSettingsPanel = observer(() => {
       </div>
 
       <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>LED Shape</span>
+        <span className={styles.fieldLabel}>
+          {t('settingsPanels.rpmLights.ledShape')}
+        </span>
 
         <Segmented
           block
           value={settings.ledShape}
           options={[
-            { label: 'Square', value: 'square' },
-            { label: 'Circle', value: 'circle' },
-            { label: 'Slant', value: 'parallelogram' },
+            {
+              label: t('settingsPanels.rpmLights.square'),
+              value: 'square',
+            },
+            {
+              label: t('settingsPanels.rpmLights.circle'),
+              value: 'circle',
+            },
+            {
+              label: t('settingsPanels.rpmLights.slant'),
+              value: 'parallelogram',
+            },
           ]}
           onChange={(value) => update({ ledShape: value as LedShape })}
         />

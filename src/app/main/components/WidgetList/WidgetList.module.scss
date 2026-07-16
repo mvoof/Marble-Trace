@@ -68,12 +68,12 @@
 .description {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   overflow: hidden;
   font-size: rem(11);
   color: #8b8e98;
   line-height: 1.4;
-  font-family: $font-mono;
+  font-family: $font-app;
 }
 
 .unavailable {

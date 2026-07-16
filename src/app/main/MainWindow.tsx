@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Layout, ConfigProvider, theme, App as AntdApp } from 'antd';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { initMainSync } from '@store/sync/sync-init';
 import { WidgetList } from './components/WidgetList/WidgetList';
 import { WidgetWorkbench } from './components/WidgetWorkbench/WidgetWorkbench';
@@ -17,6 +18,7 @@ const { Content } = Layout;
 export const MainWindow = observer(() => {
   const simStore = useSimStore();
   const root = useStore();
+  const { t } = useTranslation('main-app');
 
   const [activeSection, setActiveSection] = useState<AppSection>('layouts');
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
@@ -64,7 +66,8 @@ export const MainWindow = observer(() => {
           colorTextBase: '#e0e0e0',
           colorTextDescription: '#8b8e98',
           borderRadius: 4,
-          fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+          fontFamily:
+            "'Exo 2', 'Noto Sans SC', system-ui, Avenir, Helvetica, Arial, sans-serif",
         },
         components: {
           // colorPrimary is near-white, so primary buttons need dark text/icon
@@ -144,7 +147,9 @@ export const MainWindow = observer(() => {
               >
                 <div className={styles.widgetsSection}>
                   <div className={styles.widgetCatalog}>
-                    <div className={styles.catalogTitle}>Widget Modules</div>
+                    <div className={styles.catalogTitle}>
+                      {t('mainWindow.widgetModules')}
+                    </div>
                     <WidgetList
                       selectedId={selectedWidgetId}
                       onSelect={setSelectedWidgetId}

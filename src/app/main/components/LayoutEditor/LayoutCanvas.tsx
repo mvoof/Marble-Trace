@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { reaction } from 'mobx';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { Spin } from 'antd';
 import {
   SquareArrowUp,
@@ -70,6 +71,7 @@ export const LayoutCanvas = observer(
     isRatioLocked = false,
   }: LayoutCanvasProps) => {
     const widgetSettings = useWidgetSettingsStore();
+    const { t } = useTranslation('main-app');
     const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
 
     const paneRef = useRef<HTMLDivElement | null>(null);
@@ -336,7 +338,10 @@ export const LayoutCanvas = observer(
             >
               {(isBackgroundLoading || isUploading) && (
                 <div className={styles.backgroundLoader}>
-                  <Spin size="large" tip="Loading background..." />
+                  <Spin
+                    size="large"
+                    tip={t('layoutCanvas.loadingBackground')}
+                  />
                 </div>
               )}
               {showGrid && (
@@ -405,15 +410,23 @@ export const LayoutCanvas = observer(
                   <SquareArrowRight size={16} className={styles.arrowKey} />
                 </div>
               </div>
-              <span className={styles.keyboardHintLabel}>Move</span>
+              <span className={styles.keyboardHintLabel}>
+                {t('layoutCanvas.move')}
+              </span>
               <span className={styles.keyboardHintSep}>·</span>
               <kbd className={styles.kbd}>Shift</kbd>
               <span className={styles.keyboardHintLabel}>
-                {snapToGrid ? `${gridSize * 5}px` : 'Large'} step
+                {t('layoutCanvas.stepSize', {
+                  size: snapToGrid
+                    ? `${gridSize * 5}px`
+                    : t('layoutCanvas.large'),
+                })}
               </span>
               <span className={styles.keyboardHintSep}>·</span>
               <kbd className={styles.kbd}>Del</kbd>
-              <span className={styles.keyboardHintLabel}>Remove</span>
+              <span className={styles.keyboardHintLabel}>
+                {t('layoutCanvas.remove')}
+              </span>
             </div>
           )}
         </div>

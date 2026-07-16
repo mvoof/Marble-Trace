@@ -1,6 +1,8 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import { useWidgetSettingsStore } from '@store/root-store-context';
+import { getWidgetLabel, getWidgetDescription } from '@utils/widget-i18n';
 import styles from './WidgetList.module.scss';
 
 const WidgetListItem = observer(
@@ -14,13 +16,14 @@ const WidgetListItem = observer(
     onSelect: (id: string) => void;
   }) => {
     const widgetSettings = useWidgetSettingsStore();
+    const { t } = useTranslation('main-app');
 
     const isAvailable = widgetSettings.availableWidgetIds.includes(widget.id);
 
     return (
       <button
         type="button"
-        aria-label={widget.label}
+        aria-label={getWidgetLabel(t, widget)}
         className={`${styles.listItem} ${isActive ? styles.active : ''} ${
           !isAvailable ? styles.disabled : ''
         }`}
@@ -33,13 +36,16 @@ const WidgetListItem = observer(
       >
         <div className={styles.content}>
           <div className={styles.headerRow}>
-            <span className={styles.title}>{widget.label}</span>
+            <span className={styles.title}>{getWidgetLabel(t, widget)}</span>
             {!isAvailable && (
-              <span className={styles.unavailable}>Unavailable</span>
+              <span className={styles.unavailable}>
+                {t('widgetList.unavailable')}
+              </span>
             )}
           </div>
           <span className={styles.description}>
-            {widget.description || 'Configure widget settings.'}
+            {getWidgetDescription(t, widget) ||
+              t('widgetList.defaultDescription')}
           </span>
         </div>
       </button>

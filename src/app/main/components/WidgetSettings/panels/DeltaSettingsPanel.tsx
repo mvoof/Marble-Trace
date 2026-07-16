@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { Segmented, Slider, Switch } from 'antd';
 import type {
   LapDeltaReference,
@@ -6,11 +7,12 @@ import type {
 } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
-import { DELTA_REFERENCE_DESC } from './shared';
+import { getDeltaReferenceDesc } from './shared';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const DeltaSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
   const settings = widgetSettings.getSettings<DeltaWidgetSettings>('delta');
 
   const update = (partial: Partial<DeltaWidgetSettings>) => {
@@ -19,7 +21,7 @@ export const DeltaSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title="Delta Reference">
+      <Card title={t('settingsPanels.delta.deltaReference')}>
         <div className={styles.fieldGroup}>
           <Segmented
             block
@@ -36,16 +38,16 @@ export const DeltaSettingsPanel = observer(() => {
             }
           />
           <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
-            {DELTA_REFERENCE_DESC[settings.reference]}
+            {getDeltaReferenceDesc(t)[settings.reference]}
           </div>
         </div>
       </Card>
 
-      <Card title="Visibility">
+      <Card title={t('settingsPanels.delta.visibility')}>
         <div className={styles.fieldGroup}>
           <div className={styles.fieldRow}>
             <span className={styles.fieldLabel}>
-              Hide when no reference lap
+              {t('settingsPanels.delta.hideWhenNoReference')}
             </span>
             <Switch
               checked={settings.hideWhenNoReference}
@@ -55,10 +57,12 @@ export const DeltaSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title="Lap Completed Card">
+      <Card title={t('settingsPanels.delta.lapCompletedCard')}>
         <div className={styles.fieldGroup}>
           <div className={styles.fieldRow}>
-            <span className={styles.fieldLabel}>Show after lap</span>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.delta.showAfterLap')}
+            </span>
             <Switch
               checked={settings.showLapFlash}
               onChange={(value) => update({ showLapFlash: value })}
@@ -69,7 +73,9 @@ export const DeltaSettingsPanel = observer(() => {
         {settings.showLapFlash && (
           <div className={styles.fieldGroup}>
             <div className={styles.fieldLabel}>
-              Display duration: {settings.flashDuration}s
+              {t('settingsPanels.delta.displayDuration', {
+                seconds: settings.flashDuration,
+              })}
             </div>
             <Slider
               min={3}

@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { InputNumber, Segmented, Slider, Switch } from 'antd';
 import { FuelWidgetSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
@@ -8,6 +9,7 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const FuelSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
 
   const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
 
@@ -19,11 +21,11 @@ export const FuelSettingsPanel = observer(() => {
   };
 
   return (
-    <Card title="Analytics & Warnings">
+    <Card title={t('settingsPanels.fuel.analyticsAndWarnings')}>
       <div className={styles.fieldGroup}>
         <SettingRow
-          title="History Chart"
-          desc="Visual consumption history."
+          title={t('settingsPanels.fuel.historyChart')}
+          desc={t('settingsPanels.fuel.historyChartDesc')}
           style={{ marginBottom: settings.showChart ? 16 : 0 }}
         >
           <Switch
@@ -37,15 +39,17 @@ export const FuelSettingsPanel = observer(() => {
               block
               value={settings.chartType}
               options={[
-                { label: 'Bar Chart', value: 'bar' },
-                { label: 'Line Chart', value: 'line' },
+                { label: t('settingsPanels.fuel.barChart'), value: 'bar' },
+                { label: t('settingsPanels.fuel.lineChart'), value: 'line' },
               ]}
               onChange={(v) => update({ chartType: v as 'bar' | 'line' })}
               style={{ marginBottom: 16 }}
             />
 
             <div className={styles.fieldGroup}>
-              <span className={styles.fieldLabel}>Chart Step Width (px)</span>
+              <span className={styles.fieldLabel}>
+                {t('settingsPanels.fuel.chartStepWidth')}
+              </span>
               <Slider
                 min={5}
                 max={20}
@@ -60,7 +64,7 @@ export const FuelSettingsPanel = observer(() => {
 
       <div className={styles.fieldGroup}>
         <span className={styles.fieldLabel}>
-          Low Fuel Warning Threshold (Laps)
+          {t('settingsPanels.fuel.lowFuelWarningThreshold')}
         </span>
         <InputNumber
           style={{ width: '100%' }}

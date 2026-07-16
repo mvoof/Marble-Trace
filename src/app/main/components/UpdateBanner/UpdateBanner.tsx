@@ -1,16 +1,12 @@
 import { Alert, Button } from 'antd';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/ReleaseNotesButton';
 import styles from './UpdateBanner.module.scss';
 import { useAppSettingsStore } from '@store/root-store-context';
 import { UpdateStatus } from '@store/settings/app-settings.store';
 
 const BANNER_STATUSES: UpdateStatus[] = ['available', 'downloading', 'ready'];
-
-const TITLES: Partial<Record<UpdateStatus, string>> = {
-  downloading: 'Downloading update...',
-  ready: 'Update downloaded. Restarting...',
-};
 
 const ALERT_TYPES: Partial<
   Record<UpdateStatus, 'info' | 'success' | 'warning' | 'error'>
@@ -22,15 +18,21 @@ const ALERT_TYPES: Partial<
 
 export const UpdateBanner = observer(() => {
   const appSettings = useAppSettingsStore();
+  const { t } = useTranslation('main-app');
 
   const { updateStatus } = appSettings;
 
   if (!BANNER_STATUSES.includes(updateStatus)) return null;
 
+  const titles: Partial<Record<UpdateStatus, string>> = {
+    downloading: t('updateBanner.downloading'),
+    ready: t('updateBanner.ready'),
+  };
+
   const title =
     updateStatus === 'available'
-      ? `Version v${appSettings.availableVersion} is available`
-      : TITLES[updateStatus];
+      ? t('updateBanner.available', { version: appSettings.availableVersion })
+      : titles[updateStatus];
 
   return (
     <Alert
@@ -49,7 +51,7 @@ export const UpdateBanner = observer(() => {
               type="text"
               onClick={() => void appSettings.installUpdate()}
             >
-              Update & Restart
+              {t('updateBanner.updateAndRestart')}
             </Button>
           </>
         ) : undefined

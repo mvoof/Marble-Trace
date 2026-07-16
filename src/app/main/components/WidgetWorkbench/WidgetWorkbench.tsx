@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { Select } from 'antd';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 import { WidgetPreview } from '../WidgetPreview/WidgetPreview';
@@ -28,6 +29,7 @@ export const WidgetWorkbench = observer(
     onSelectWidget?: (id: string) => void;
   }) => {
     const widgetSettings = useWidgetSettingsStore();
+    const { t } = useTranslation('main-app');
     const [scenarioId, setScenarioId] = useState(DEFAULT_PREVIEW_SCENARIO_ID);
 
     useEffect(() => {
@@ -40,7 +42,9 @@ export const WidgetWorkbench = observer(
       widgetId || (widgetSettings.allWidgets[0]?.id ?? null);
 
     if (!activeWidgetId) {
-      return <div className={styles.empty}>No widgets available.</div>;
+      return (
+        <div className={styles.empty}>{t('widgetWorkbench.noWidgets')}</div>
+      );
     }
 
     return (
@@ -48,7 +52,9 @@ export const WidgetWorkbench = observer(
         <div className={styles.root}>
           <div className={styles.previewColumn}>
             <div className={styles.scenarioBar}>
-              <span className={styles.scenarioLabel}>Scenario</span>
+              <span className={styles.scenarioLabel}>
+                {t('widgetWorkbench.scenario')}
+              </span>
               <Select
                 size="small"
                 value={scenarioId}

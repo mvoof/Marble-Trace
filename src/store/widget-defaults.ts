@@ -885,7 +885,7 @@ const WIDGETS: WidgetConfig[] = [
     id: 'rpm-lights',
     label: 'RPM Lights',
     description:
-      'Standalone shift-light LED bar driven by engine RPM, with pit-limiter animations. Split out from the Speed widget so the rev lights never distort the speedometer layout.',
+      'Standalone shift-light LED bar driven by engine RPM, with pit-limiter animations.',
     component: RpmLightsWidget,
     requiredCapabilities: ['playerDynamics'],
     designWidth: 360,
@@ -912,7 +912,7 @@ const WIDGETS: WidgetConfig[] = [
     id: 'race-dash',
     label: 'Race Dash',
     description:
-      'Combined cockpit cluster: a gear ring with an RPM arc and printed shift zone, dominant speed readout with lap/position/RPM, a coach tab with reference speed, plus a pit-lane mode with limiter assist. Replaces the former Speed, RPM Lights, and Driving Coach widgets.',
+      'Cockpit cluster: gear ring, speed readout with lap/position/RPM, coach tab, and pit-lane mode.',
     component: RaceDashWidget,
     requiredCapabilities: ['playerDynamics'],
     // The prototype plate measures 430×104: ring 104 + stats strip

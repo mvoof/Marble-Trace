@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import {
   Button,
   Input,
@@ -102,6 +103,7 @@ export const LayoutEditor = observer(
   }) => {
     const widgetSettings = useWidgetSettingsStore();
     const appSettings = useAppSettingsStore();
+    const { t } = useTranslation('main-app');
 
     const [localMode, setLocalMode] = useState<'list' | 'editor'>('list');
 
@@ -289,7 +291,7 @@ export const LayoutEditor = observer(
         value: monitor.name,
         label: `${monitor.name} (${monitor.resolution.width}×${monitor.resolution.height})`,
       })),
-      { value: 'custom', label: 'Custom Resolution...' },
+      { value: 'custom', label: t('layoutEditor.customResolutionOption') },
     ];
 
     if (activeLayout?.activeMonitorName === 'Custom') {
@@ -298,7 +300,10 @@ export const LayoutEditor = observer(
 
       monitorOptions.unshift({
         value: 'Custom',
-        label: `Custom (${res.width}×${res.height})`,
+        label: t('layoutEditor.customResolutionLabel', {
+          width: res.width,
+          height: res.height,
+        }),
       });
     }
 
@@ -437,12 +442,12 @@ export const LayoutEditor = observer(
                 icon={<ArrowLeft size={14} />}
                 onClick={handleBack}
               >
-                Back to Layouts
+                {t('layoutEditor.backToLayouts')}
               </Button>
             )}
 
             {isFullscreen && (
-              <Tooltip title="Toggle widget panel">
+              <Tooltip title={t('layoutEditor.toggleWidgetPanel')}>
                 <Button
                   size="small"
                   type={isPanelOpen ? 'primary' : 'text'}
@@ -458,13 +463,13 @@ export const LayoutEditor = observer(
                   <Input
                     ref={nameInputCallbackRef}
                     size="small"
-                    placeholder="New layout name"
+                    placeholder={t('layoutEditor.newLayoutNamePlaceholder')}
                     value={newName}
                     onChange={(event) => setNewName(event.target.value)}
                     onKeyDown={handleCreateKeyDown}
                     className={styles.nameInput}
                   />
-                  <Tooltip title="Create">
+                  <Tooltip title={t('layoutEditor.create')}>
                     <Button
                       size="small"
                       type="text"
@@ -472,7 +477,7 @@ export const LayoutEditor = observer(
                       onClick={handleCreate}
                     />
                   </Tooltip>
-                  <Tooltip title="Cancel">
+                  <Tooltip title={t('layoutEditor.cancel')}>
                     <Button
                       size="small"
                       type="text"
@@ -491,7 +496,7 @@ export const LayoutEditor = observer(
                     onKeyDown={handleRenameKeyDown}
                     className={styles.nameInput}
                   />
-                  <Tooltip title="Save name">
+                  <Tooltip title={t('layoutEditor.saveName')}>
                     <Button
                       size="small"
                       type="text"
@@ -499,7 +504,7 @@ export const LayoutEditor = observer(
                       onClick={handleRenameConfirm}
                     />
                   </Tooltip>
-                  <Tooltip title="Cancel">
+                  <Tooltip title={t('layoutEditor.cancel')}>
                     <Button
                       size="small"
                       type="text"
@@ -513,7 +518,7 @@ export const LayoutEditor = observer(
                   <Select
                     size="small"
                     className={styles.layoutSelect}
-                    placeholder="Select a layout…"
+                    placeholder={t('layoutEditor.selectLayoutPlaceholder')}
                     value={activeId ?? undefined}
                     onChange={(id) => {
                       const trueActiveId =
@@ -533,7 +538,7 @@ export const LayoutEditor = observer(
                     options={layoutOptions}
                   />
 
-                  <Tooltip title="New layout">
+                  <Tooltip title={t('layoutEditor.newLayout')}>
                     <Button
                       size="small"
                       type="text"
@@ -546,7 +551,7 @@ export const LayoutEditor = observer(
                     />
                   </Tooltip>
 
-                  <Tooltip title="Rename">
+                  <Tooltip title={t('layoutEditor.rename')}>
                     <Button
                       size="small"
                       type="text"
@@ -561,14 +566,14 @@ export const LayoutEditor = observer(
                   </Tooltip>
 
                   <Popconfirm
-                    title="Delete this layout?"
-                    okText="Delete"
+                    title={t('layoutEditor.deleteLayoutConfirm')}
+                    okText={t('layoutEditor.delete')}
                     okButtonProps={{ danger: true }}
-                    cancelText="Cancel"
+                    cancelText={t('layoutEditor.cancel')}
                     disabled={!activeId}
                     onConfirm={handleDeleteLayout}
                   >
-                    <Tooltip title="Delete">
+                    <Tooltip title={t('layoutEditor.delete')}>
                       <Button
                         size="small"
                         type="text"
@@ -583,26 +588,28 @@ export const LayoutEditor = observer(
             </div>
 
             {isEditingLayoutActive ? (
-              <span className={styles.activeChip}>Active</span>
+              <span className={styles.activeChip}>
+                {t('layoutEditor.active')}
+              </span>
             ) : (
-              <Tooltip title="Apply this layout to the overlay">
+              <Tooltip title={t('layoutEditor.applyLayoutTooltip')}>
                 <Button
                   size="small"
                   type="primary"
                   icon={<Play size={14} />}
                   onClick={handleMakeActive}
                 >
-                  Make Active
+                  {t('layoutEditor.makeActive')}
                 </Button>
               </Tooltip>
             )}
 
-            <Tooltip title="Monitor this layout is authored for">
+            <Tooltip title={t('layoutEditor.monitorTooltip')}>
               <Select
                 size="small"
                 placeholder={
                   <>
-                    <Monitor size={12} /> Monitor…
+                    <Monitor size={12} /> {t('layoutEditor.monitorPlaceholder')}
                   </>
                 }
                 value={activeLayout?.activeMonitorName ?? undefined}
@@ -731,8 +738,8 @@ export const LayoutEditor = observer(
                   <Tooltip
                     title={
                       lockedRatios[selectedWidget.id]
-                        ? 'Unlock aspect ratio'
-                        : 'Lock aspect ratio'
+                        ? t('layoutEditor.unlockAspectRatio')
+                        : t('layoutEditor.lockAspectRatio')
                     }
                   >
                     <Button
@@ -754,7 +761,7 @@ export const LayoutEditor = observer(
                     />
                   </Tooltip>
 
-                  <Tooltip title="Bring to front">
+                  <Tooltip title={t('layoutEditor.bringToFront')}>
                     <Button
                       size="small"
                       type="text"
@@ -765,7 +772,7 @@ export const LayoutEditor = observer(
                     />
                   </Tooltip>
 
-                  <Tooltip title="Send to back">
+                  <Tooltip title={t('layoutEditor.sendToBack')}>
                     <Button
                       size="small"
                       type="text"
@@ -845,7 +852,7 @@ export const LayoutEditor = observer(
                       </div>
                     }
                   >
-                    <Tooltip title="Quick placement">
+                    <Tooltip title={t('layoutEditor.quickPlacement')}>
                       <Button
                         size="small"
                         type="text"
@@ -871,12 +878,12 @@ export const LayoutEditor = observer(
                 }}
                 type="file"
                 accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
-                aria-label="Layout background image"
+                aria-label={t('layoutEditor.backgroundImageAria')}
                 hidden
                 onChange={(event) => void handlePickBackground(event)}
               />
 
-              <Tooltip title="Undo (Ctrl+Z)">
+              <Tooltip title={t('layoutEditor.undoTooltip')}>
                 <Button
                   size="small"
                   type="text"
@@ -886,7 +893,7 @@ export const LayoutEditor = observer(
                 />
               </Tooltip>
 
-              <Tooltip title="Redo (Ctrl+Y)">
+              <Tooltip title={t('layoutEditor.redoTooltip')}>
                 <Button
                   size="small"
                   type="text"
@@ -896,7 +903,7 @@ export const LayoutEditor = observer(
                 />
               </Tooltip>
 
-              <Tooltip title="Toggle alignment grid">
+              <Tooltip title={t('layoutEditor.toggleGridTooltip')}>
                 <Button
                   size="small"
                   type={showGrid ? 'primary' : 'text'}
@@ -906,7 +913,7 @@ export const LayoutEditor = observer(
               </Tooltip>
 
               {showGrid && (
-                <Tooltip title="Grid size">
+                <Tooltip title={t('layoutEditor.gridSizeTooltip')}>
                   <Select
                     size="small"
                     value={gridSize}
@@ -917,7 +924,7 @@ export const LayoutEditor = observer(
                 </Tooltip>
               )}
 
-              <Tooltip title="Snap to grid">
+              <Tooltip title={t('layoutEditor.snapToGridTooltip')}>
                 <Button
                   size="small"
                   type={snapToGrid ? 'primary' : 'text'}
@@ -927,7 +934,11 @@ export const LayoutEditor = observer(
               </Tooltip>
 
               <Tooltip
-                title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen preview'}
+                title={
+                  isFullscreen
+                    ? t('layoutEditor.exitFullscreen')
+                    : t('layoutEditor.fullscreenPreview')
+                }
               >
                 <Button
                   size="small"
@@ -943,7 +954,7 @@ export const LayoutEditor = observer(
                 />
               </Tooltip>
 
-              <Tooltip title="Set editor background (e.g. cockpit view)">
+              <Tooltip title={t('layoutEditor.setBackgroundTooltip')}>
                 <Button
                   size="small"
                   type="text"
@@ -959,7 +970,7 @@ export const LayoutEditor = observer(
               </Tooltip>
 
               {activeLayout?.backgroundImage && (
-                <Tooltip title="Clear background">
+                <Tooltip title={t('layoutEditor.clearBackgroundTooltip')}>
                   <Button
                     size="small"
                     type="text"
@@ -990,8 +1001,10 @@ export const LayoutEditor = observer(
             >
               {isFullscreen && (
                 <div className={styles.panelDrawerHeader}>
-                  <span className={styles.panelDrawerTitle}>Widgets</span>
-                  <Tooltip title="Hide panel">
+                  <span className={styles.panelDrawerTitle}>
+                    {t('layoutEditor.widgetsPanelTitle')}
+                  </span>
+                  <Tooltip title={t('layoutEditor.hidePanel')}>
                     <Button
                       size="small"
                       type="text"
@@ -1032,7 +1045,7 @@ export const LayoutEditor = observer(
           </div>
 
           <Modal
-            title="Custom Screen Resolution"
+            title={t('layoutEditor.customResolutionModal.title')}
             open={isCustomResModalOpen}
             getContainer={() => rootRef.current || document.body}
             onOk={() => {
@@ -1043,12 +1056,14 @@ export const LayoutEditor = observer(
               setIsCustomResModalOpen(false);
             }}
             onCancel={() => setIsCustomResModalOpen(false)}
-            okText="Apply"
-            cancelText="Cancel"
+            okText={t('layoutEditor.customResolutionModal.apply')}
+            cancelText={t('layoutEditor.cancel')}
           >
             <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
               <div>
-                <div style={{ marginBottom: '4px' }}>Width (px)</div>
+                <div style={{ marginBottom: '4px' }}>
+                  {t('layoutEditor.customResolutionModal.width')}
+                </div>
                 <InputNumber
                   min={800}
                   max={7680}
@@ -1058,7 +1073,9 @@ export const LayoutEditor = observer(
                 />
               </div>
               <div>
-                <div style={{ marginBottom: '4px' }}>Height (px)</div>
+                <div style={{ marginBottom: '4px' }}>
+                  {t('layoutEditor.customResolutionModal.height')}
+                </div>
                 <InputNumber
                   min={600}
                   max={4320}

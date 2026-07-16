@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { App, Button, Switch, Segmented, Select, Popconfirm, Flex } from 'antd';
 import { emit } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import type { UnitSystem } from '@/types';
+import type { AppLanguage } from '@store/settings/app-settings.store';
 import { downloadSnapshot } from '@/utils/capture-snapshot';
 import { useStore } from '@store/root-store-context';
 import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
@@ -46,7 +48,15 @@ export const SettingsPage = observer(() => {
   const trackMap = useTrackMapWidgetStore();
   const session = useSessionStore();
   const { message } = App.useApp();
+  const { t, i18n } = useTranslation('main-app');
   const [resettingPitLane, setResettingPitLane] = useState(false);
+
+  const languageOptions: { value: AppLanguage; label: string }[] = [
+    { value: 'system', label: t('settingsPage.language.system') },
+    { value: 'en', label: 'English' },
+    { value: 'ru', label: 'Русский' },
+    { value: 'zh', label: '中文' },
+  ];
 
   const trackId = trackMap.trackShape?.trackId ?? null;
   const trackDisplayName = session.sessionInfo?.trackDisplayName ?? null;
@@ -65,9 +75,7 @@ export const SettingsPage = observer(() => {
     setResettingPitLane(true);
     try {
       await invoke('reset_pit_lane_pct', { trackId });
-      message.success(
-        'Pit lane data cleared. Drive through pit lane to re-calibrate.'
-      );
+      message.success(t('settingsPage.trackMap.pitLaneResetSuccess'));
     } finally {
       setResettingPitLane(false);
     }
@@ -81,34 +89,51 @@ export const SettingsPage = observer(() => {
       carScreenName: playerCar.carScreenName,
     });
     store.referenceLap.reset();
-    message.success(
-      'Reference lap deleted. Recording restarts on the next completed lap.'
-    );
+    message.success(t('settingsPage.trackMap.referenceLapDeleteSuccess'));
   };
 
   const handleCaptureSnapshot = () => {
     downloadSnapshot(store, 'iracing');
 
-    message.success('Snapshot saved — place the JSON in test-data/');
+    message.success(t('settingsPage.developerTools.snapshotSuccess'));
   };
 
   return (
     <div className={styles.animateFadeIn}>
       <header className={styles.header}>
-        <span className={styles.moduleLabel}>Configuration</span>
+        <span className={styles.moduleLabel}>
+          {t('settingsPage.moduleLabel')}
+        </span>
 
-        <h1 className={styles.title}>Global Application Settings</h1>
+        <h1 className={styles.title}>{t('settingsPage.title')}</h1>
       </header>
 
       <div className={styles.cardGrid}>
-        <Card title="Widget Display Override">
+        <Card title={t('settingsPage.language.title')}>
+          <div className={styles.fieldGroup}>
+            <span className={styles.fieldLabel}>
+              {t('settingsPage.language.fieldLabel')}
+            </span>
+
+            <Select
+              className={styles.selectWidth}
+              value={appSettings.appSettings.language}
+              onChange={(value: AppLanguage) => appSettings.setLanguage(value)}
+              options={languageOptions}
+            />
+          </div>
+        </Card>
+
+        <Card title={t('settingsPage.widgetDisplayOverride.title')}>
           <div className={styles.fieldGroup}>
             <div className={styles.fieldRow}>
               <div className={styles.fieldTexts}>
-                <div className={styles.fieldTitle}>Hide all active widgets</div>
+                <div className={styles.fieldTitle}>
+                  {t('settingsPage.widgetDisplayOverride.hideAllTitle')}
+                </div>
 
                 <div className={styles.fieldDesc}>
-                  Global toggle to quickly hide or show all enabled UI elements.
+                  {t('settingsPage.widgetDisplayOverride.hideAllDesc')}
                 </div>
               </div>
 
@@ -120,7 +145,9 @@ export const SettingsPage = observer(() => {
           </div>
 
           <div className={styles.fieldGroup}>
-            <span className={styles.fieldLabel}>Toggle Hotkey</span>
+            <span className={styles.fieldLabel}>
+              {t('settingsPage.widgetDisplayOverride.toggleHotkey')}
+            </span>
 
             <HotkeyRecorder
               currentHotkey={appSettings.appSettings.hideAllWidgetsHotkey}
@@ -129,14 +156,16 @@ export const SettingsPage = observer(() => {
           </div>
         </Card>
 
-        <Card title="Startup Behavior">
+        <Card title={t('settingsPage.startupBehavior.title')}>
           <div className={styles.fieldGroup}>
             <div className={styles.fieldRow}>
               <div className={styles.fieldTexts}>
-                <div className={styles.fieldTitle}>Launch Minimized</div>
+                <div className={styles.fieldTitle}>
+                  {t('settingsPage.startupBehavior.launchMinimizedTitle')}
+                </div>
 
                 <div className={styles.fieldDesc}>
-                  Start the application minimized to the taskbar.
+                  {t('settingsPage.startupBehavior.launchMinimizedDesc')}
                 </div>
               </div>
 
@@ -148,14 +177,16 @@ export const SettingsPage = observer(() => {
           </div>
         </Card>
 
-        <Card title="Interaction Mode">
+        <Card title={t('settingsPage.interactionMode.title')}>
           <div className={styles.fieldGroup}>
             <div className={styles.fieldRow}>
               <div className={styles.fieldTexts}>
-                <div className={styles.fieldTitle}>UI Drag Mode</div>
+                <div className={styles.fieldTitle}>
+                  {t('settingsPage.interactionMode.dragModeTitle')}
+                </div>
 
                 <div className={styles.fieldDesc}>
-                  Unlock widgets to move them freely across the screen.
+                  {t('settingsPage.interactionMode.dragModeDesc')}
                 </div>
               </div>
 
@@ -167,7 +198,9 @@ export const SettingsPage = observer(() => {
           </div>
 
           <div className={styles.fieldGroup}>
-            <span className={styles.fieldLabel}>Drag Mode Hotkey</span>
+            <span className={styles.fieldLabel}>
+              {t('settingsPage.interactionMode.dragModeHotkey')}
+            </span>
 
             <HotkeyRecorder
               currentHotkey={appSettings.appSettings.dragHotkey}
@@ -176,14 +209,16 @@ export const SettingsPage = observer(() => {
           </div>
         </Card>
 
-        <Card title="Game Integration">
+        <Card title={t('settingsPage.gameIntegration.title')}>
           <div className={styles.fieldGroup}>
             <div className={styles.fieldRow}>
               <div className={styles.fieldTexts}>
-                <div className={styles.fieldTitle}>Auto-Hide System</div>
+                <div className={styles.fieldTitle}>
+                  {t('settingsPage.gameIntegration.autoHideTitle')}
+                </div>
 
                 <div className={styles.fieldDesc}>
-                  Hide widgets when the simulator is not running.
+                  {t('settingsPage.gameIntegration.autoHideDesc')}
                 </div>
               </div>
 
@@ -195,15 +230,23 @@ export const SettingsPage = observer(() => {
           </div>
         </Card>
 
-        <Card title="System Units">
+        <Card title={t('settingsPage.systemUnits.title')}>
           <div className={styles.fieldGroup}>
-            <span className={styles.fieldLabel}>Measurement System</span>
+            <span className={styles.fieldLabel}>
+              {t('settingsPage.systemUnits.fieldLabel')}
+            </span>
 
             <Segmented
               block
               options={[
-                { label: 'Metric (km/h, °C, L)', value: 'metric' },
-                { label: 'Imperial (mph, °F, gal)', value: 'imperial' },
+                {
+                  label: t('settingsPage.systemUnits.metric'),
+                  value: 'metric',
+                },
+                {
+                  label: t('settingsPage.systemUnits.imperial'),
+                  value: 'imperial',
+                },
               ]}
               value={units.unitSystem}
               onChange={(value) => {
@@ -213,14 +256,16 @@ export const SettingsPage = observer(() => {
           </div>
         </Card>
 
-        <Card title="Application Updates">
+        <Card title={t('settingsPage.applicationUpdates.title')}>
           <div className={styles.fieldGroup}>
             <div className={styles.fieldRow}>
               <div className={styles.fieldTexts}>
-                <div className={styles.fieldTitle}>Auto-Check for Updates</div>
+                <div className={styles.fieldTitle}>
+                  {t('settingsPage.applicationUpdates.autoCheckTitle')}
+                </div>
 
                 <div className={styles.fieldDesc}>
-                  Automatically check for new versions on application startup.
+                  {t('settingsPage.applicationUpdates.autoCheckDesc')}
                 </div>
               </div>
 
@@ -234,10 +279,12 @@ export const SettingsPage = observer(() => {
           <div className={styles.fieldGroup}>
             <div className={styles.fieldRow}>
               <div className={styles.fieldTexts}>
-                <div className={styles.fieldTitle}>Check Interval</div>
+                <div className={styles.fieldTitle}>
+                  {t('settingsPage.applicationUpdates.checkIntervalTitle')}
+                </div>
 
                 <div className={styles.fieldDesc}>
-                  How often to check for updates while the app is running.
+                  {t('settingsPage.applicationUpdates.checkIntervalDesc')}
                 </div>
               </div>
 
@@ -246,11 +293,26 @@ export const SettingsPage = observer(() => {
                 value={appSettings.appSettings.updateCheckInterval}
                 onChange={(v: number) => appSettings.setUpdateCheckInterval(v)}
                 options={[
-                  { label: 'Every hour', value: 1 },
-                  { label: 'Every 3 hours', value: 3 },
-                  { label: 'Every 6 hours', value: 6 },
-                  { label: 'Every 12 hours', value: 12 },
-                  { label: 'Daily', value: 24 },
+                  {
+                    label: t('settingsPage.applicationUpdates.everyHour'),
+                    value: 1,
+                  },
+                  {
+                    label: t('settingsPage.applicationUpdates.every3Hours'),
+                    value: 3,
+                  },
+                  {
+                    label: t('settingsPage.applicationUpdates.every6Hours'),
+                    value: 6,
+                  },
+                  {
+                    label: t('settingsPage.applicationUpdates.every12Hours'),
+                    value: 12,
+                  },
+                  {
+                    label: t('settingsPage.applicationUpdates.daily'),
+                    value: 24,
+                  },
                 ]}
                 disabled={!appSettings.appSettings.autoUpdate}
               />
@@ -261,7 +323,7 @@ export const SettingsPage = observer(() => {
             <div className={styles.fieldRow}>
               <div className={styles.fieldTexts}>
                 <div className={styles.fieldTitle}>
-                  Current Version:{' '}
+                  {t('settingsPage.applicationUpdates.currentVersion')}{' '}
                   <span className={styles.versionLabel}>
                     v{appSettings.currentVersion}
                   </span>
@@ -273,10 +335,10 @@ export const SettingsPage = observer(() => {
                     suppressHydrationWarning
                   >
                     <Clock size={12} />
-                    Last checked:{' '}
+                    {t('settingsPage.applicationUpdates.lastChecked')}{' '}
                     {new Date(
                       appSettings.appSettings.lastUpdateCheck
-                    ).toLocaleString()}
+                    ).toLocaleString(i18n.language)}
                   </div>
                 )}
 
@@ -284,26 +346,31 @@ export const SettingsPage = observer(() => {
                   className={`${styles.fieldDesc} ${styles.fieldDescOffset}`}
                 >
                   {appSettings.updateStatus === 'idle' &&
-                    'Your application is up to date.'}
+                    t('settingsPage.applicationUpdates.upToDate')}
 
                   {appSettings.updateStatus === 'checking' &&
-                    'Checking for updates...'}
+                    t('settingsPage.applicationUpdates.checkingForUpdates')}
 
                   {appSettings.updateStatus === 'available' && (
                     <span className={styles.statusSuccess}>
-                      New version v{appSettings.availableVersion} is available!
+                      {t(
+                        'settingsPage.applicationUpdates.newVersionAvailable',
+                        {
+                          version: appSettings.availableVersion,
+                        }
+                      )}
                     </span>
                   )}
                   {appSettings.updateStatus === 'downloading' &&
-                    'Downloading update...'}
+                    t('settingsPage.applicationUpdates.downloadingUpdate')}
 
                   {appSettings.updateStatus === 'ready' &&
-                    'Update downloaded. Restarting...'}
+                    t('settingsPage.applicationUpdates.updateDownloaded')}
 
                   {appSettings.updateStatus === 'error' && (
                     <span className={styles.statusError}>
                       <AlertCircle size={12} className={styles.errorIcon} />
-                      Update check failed.
+                      {t('settingsPage.applicationUpdates.updateCheckFailed')}
                     </span>
                   )}
                 </div>
@@ -323,8 +390,8 @@ export const SettingsPage = observer(() => {
                     disabled={appSettings.updateStatus === 'ready'}
                   >
                     {appSettings.updateStatus === 'ready'
-                      ? 'Restarting...'
-                      : 'Install & Restart'}
+                      ? t('settingsPage.applicationUpdates.restarting')
+                      : t('settingsPage.applicationUpdates.installAndRestart')}
                   </Button>
                 </div>
               ) : (
@@ -343,23 +410,24 @@ export const SettingsPage = observer(() => {
                   disabled={appSettings.updateStatus === 'checking'}
                 >
                   {appSettings.updateStatus === 'checking'
-                    ? 'Checking...'
-                    : 'Check for Updates'}
+                    ? t('settingsPage.applicationUpdates.checkingEllipsis')
+                    : t('settingsPage.applicationUpdates.checkForUpdates')}
                 </Button>
               )}
             </div>
           </div>
         </Card>
 
-        <Card title="Track Map">
+        <Card title={t('settingsPage.trackMap.title')}>
           <div className={styles.fieldGroup}>
-            <div className={styles.fieldTitle}>Re-record Track</div>
+            <div className={styles.fieldTitle}>
+              {t('settingsPage.trackMap.reRecordTitle')}
+            </div>
 
             <div
               className={`${styles.fieldDesc} ${styles.fieldDescBeforeAction}`}
             >
-              Clears current map data and starts fresh on next lap crossing or
-              manual trigger.
+              {t('settingsPage.trackMap.reRecordDesc')}
             </div>
 
             <Flex gap={8}>
@@ -370,7 +438,7 @@ export const SettingsPage = observer(() => {
                 disabled={sessionTrackId === null}
                 onClick={() => void emit(TRACK_MAP_CLEAR)}
               >
-                Reset Current Track Data
+                {t('settingsPage.trackMap.resetCurrentTrackData')}
               </Button>
 
               <Button
@@ -379,25 +447,27 @@ export const SettingsPage = observer(() => {
                 disabled={sessionTrackId === null}
                 onClick={() => {
                   void emit('track-map:force-start');
-                  message.info(
-                    'Manual start active. Drive to begin recording.'
-                  );
+                  message.info(t('settingsPage.trackMap.manualStartActive'));
                 }}
               >
-                Force Start Recording
+                {t('settingsPage.trackMap.forceStartRecording')}
               </Button>
             </Flex>
           </div>
 
           <div className={styles.fieldGroup}>
-            <div className={styles.fieldTitle}>Pit Lane Calibration</div>
+            <div className={styles.fieldTitle}>
+              {t('settingsPage.trackMap.pitLaneCalibrationTitle')}
+            </div>
 
             <div
               className={`${styles.fieldDesc} ${styles.fieldDescBeforeAction}`}
             >
               {trackId !== null && trackDisplayName !== null
-                ? `Clears pit entry/exit points recorded for "${trackDisplayName}". Drive through the pit lane again to re-calibrate.`
-                : 'No track loaded. Load a session to reset pit lane data for the active track.'}
+                ? t('settingsPage.trackMap.pitLaneCalibrationDescWithTrack', {
+                    track: trackDisplayName,
+                  })
+                : t('settingsPage.trackMap.pitLaneCalibrationDescNoTrack')}
             </div>
 
             <Button
@@ -409,25 +479,31 @@ export const SettingsPage = observer(() => {
               onClick={() => void handleResetPitLane()}
             >
               {trackDisplayName !== null
-                ? `Reset Pit Lane Data for ${trackDisplayName}`
-                : 'Reset Pit Lane Data'}
+                ? t('settingsPage.trackMap.resetPitLaneDataForTrack', {
+                    track: trackDisplayName,
+                  })
+                : t('settingsPage.trackMap.resetPitLaneData')}
             </Button>
           </div>
 
           <div className={styles.fieldGroup}>
-            <div className={styles.fieldTitle}>Reference Lap</div>
+            <div className={styles.fieldTitle}>
+              {t('settingsPage.trackMap.referenceLapTitle')}
+            </div>
 
             <div
               className={`${styles.fieldDesc} ${styles.fieldDescBeforeAction}`}
             >
               {canDeleteReferenceLap
-                ? `Deletes the stored best lap for "${playerCar?.carScreenName}" on the current track. Recording restarts on the next completed lap.`
-                : 'No session loaded. Load a session to delete the reference lap for the active track and car.'}
+                ? t('settingsPage.trackMap.referenceLapDescWithCar', {
+                    car: playerCar?.carScreenName,
+                  })
+                : t('settingsPage.trackMap.referenceLapDescNoSession')}
             </div>
 
             <Popconfirm
-              title="Delete the stored reference lap?"
-              okText="Delete"
+              title={t('settingsPage.trackMap.deleteReferenceLapConfirm')}
+              okText={t('layoutEditor.delete')}
               okButtonProps={{ danger: true }}
               onConfirm={() => void handleDeleteReferenceLap()}
             >
@@ -437,34 +513,35 @@ export const SettingsPage = observer(() => {
                 danger
                 disabled={!canDeleteReferenceLap}
               >
-                Delete Reference Lap
+                {t('settingsPage.trackMap.deleteReferenceLap')}
               </Button>
             </Popconfirm>
           </div>
         </Card>
 
-        <Card title="Reset">
+        <Card title={t('settingsPage.reset.title')}>
           <div className={styles.fieldGroup}>
             <div className={styles.fieldRow}>
               <div className={styles.fieldTexts}>
-                <div className={styles.fieldTitle}>Reset All Settings</div>
+                <div className={styles.fieldTitle}>
+                  {t('settingsPage.reset.resetAllTitle')}
+                </div>
 
                 <div className={styles.fieldDesc}>
-                  Clears all widget positions, sizes, and preferences. The app
-                  will restart automatically.
+                  {t('settingsPage.reset.resetAllDesc')}
                 </div>
               </div>
 
               <Popconfirm
-                title="Reset all settings?"
-                description="Widget layout and all preferences will be lost."
-                okText="Reset & Restart"
+                title={t('settingsPage.reset.confirmTitle')}
+                description={t('settingsPage.reset.confirmDescription')}
+                okText={t('settingsPage.reset.confirmOk')}
                 okButtonProps={{ danger: true }}
-                cancelText="Cancel"
+                cancelText={t('layoutEditor.cancel')}
                 onConfirm={() => void appSettings.resetSettings()}
               >
                 <Button danger icon={<RotateCcw size={16} />}>
-                  Reset Settings
+                  {t('settingsPage.reset.resetSettings')}
                 </Button>
               </Popconfirm>
             </div>
@@ -472,18 +549,20 @@ export const SettingsPage = observer(() => {
         </Card>
 
         {isDev && (
-          <Card title="Developer Tools">
+          <Card title={t('settingsPage.developerTools.title')}>
             <div className={styles.fieldGroup}>
-              <div className={styles.fieldTitle}>Telemetry Snapshot</div>
+              <div className={styles.fieldTitle}>
+                {t('settingsPage.developerTools.snapshotTitle')}
+              </div>
 
               <div
                 className={`${styles.fieldDesc} ${styles.fieldDescBeforeAction}`}
               >
-                Capture current telemetry state.
+                {t('settingsPage.developerTools.snapshotDesc')}
               </div>
 
               <Button block size="small" onClick={handleCaptureSnapshot}>
-                Download Snapshot JSON
+                {t('settingsPage.developerTools.downloadSnapshot')}
               </Button>
             </div>
           </Card>

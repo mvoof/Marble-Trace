@@ -1,10 +1,12 @@
 import ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { useClickOutside } from '@hooks/common/useClickOutside';
 import { ConfigProvider, theme } from 'antd';
 import { X } from 'lucide-react';
 import { WidgetSettings } from '@app/main/components/WidgetSettings/WidgetSettings';
 import { useWidgetSettingsStore } from '@store/root-store-context';
+import { getWidgetLabel } from '@utils/widget-i18n';
 import styles from './WidgetSettingsPopup.module.scss';
 
 const POPUP_WIDTH = 500;
@@ -20,6 +22,7 @@ export const WidgetSettingsPopup = observer(
   ({ widgetId, onClose }: WidgetSettingsPopupProps) => {
     const widgetSettings = useWidgetSettingsStore();
     const popupRef = useClickOutside<HTMLDialogElement>(onClose);
+    const { t } = useTranslation('main-app');
 
     const widget = widgetSettings.getWidget(widgetId);
 
@@ -61,13 +64,15 @@ export const WidgetSettingsPopup = observer(
           ref={popupRef}
           className={styles.popup}
           style={{ left: popupX, top: popupY, width: POPUP_WIDTH }}
-          aria-label={`${widget.label} settings`}
+          aria-label={t('widgetSettingsPopup.ariaLabel', {
+            label: getWidgetLabel(t, widget),
+          })}
           open
         >
           <button
             type="button"
             className={styles.closeButton}
-            title="Close"
+            title={t('widgetSettingsPopup.close')}
             onClick={(e) => {
               e.stopPropagation();
               onClose();
