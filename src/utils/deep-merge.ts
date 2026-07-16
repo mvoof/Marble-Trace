@@ -1,5 +1,9 @@
 export const isPlainObject = (item: unknown): item is Record<string, any> => {
-  return !!item && typeof item === 'object' && !Array.isArray(item);
+  if (typeof item !== 'object' || item === null) return false;
+
+  const proto = Object.getPrototypeOf(item);
+
+  return proto === null || proto === Object.prototype;
 };
 
 /**
@@ -12,6 +16,9 @@ const deepCloneJSON = <V>(val: V): V => {
   }
   if (Array.isArray(val)) {
     return val.map(deepCloneJSON) as unknown as V;
+  }
+  if (!isPlainObject(val)) {
+    return val;
   }
   const cloned = {} as any;
   for (const key of Object.keys(val)) {
@@ -26,7 +33,7 @@ const deepCloneJSON = <V>(val: V): V => {
 const getRefinedType = (value: unknown): string => {
   if (value === null) return 'null';
   if (Array.isArray(value)) return 'array';
-  if (isPlainObject(value)) return 'object';
+  if (isPlainObject(value)) return 'plain-object';
   return typeof value;
 };
 
@@ -40,6 +47,10 @@ export const mergeWithDefaults = <T extends Record<string, any>>(
   defaults: T,
   saved: Record<string, any>
 ): T => {
+  if (!isPlainObject(saved)) {
+    return deepCloneJSON(defaults);
+  }
+
   const result = { ...defaults } as any;
 
   for (const key of Object.keys(defaults)) {
