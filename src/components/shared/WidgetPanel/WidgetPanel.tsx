@@ -39,7 +39,7 @@ export const WidgetPanel = ({
       .filter(Boolean)
       .join(' ')}
     style={{
-      minWidth,
+      minWidth: `calc(${minWidth}px * var(--wfs, 1))`,
       flexDirection: direction,
       gap,
       ...style,
