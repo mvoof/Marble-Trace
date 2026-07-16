@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { RootStore } from '@store/root-store';
 import { RootStoreContext } from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
@@ -28,6 +29,7 @@ export const WidgetPreview = observer(
     scenarioId = DEFAULT_PREVIEW_SCENARIO_ID,
   }: WidgetPreviewProps) => {
     const editor = useWidgetEditor();
+    const { t } = useTranslation('main-app');
 
     const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
 
@@ -67,7 +69,7 @@ export const WidgetPreview = observer(
     const Widget = config?.component;
 
     if (!widget || !Widget) {
-      return <div className={styles.empty}>No preview available</div>;
+      return <div className={styles.empty}>{t('widgetPreview.noPreview')}</div>;
     }
 
     const { userSettings, designWidth, autoHeight, overflowVisible } = widget;

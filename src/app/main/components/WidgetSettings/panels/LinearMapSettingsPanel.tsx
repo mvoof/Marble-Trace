@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { ColorPicker, InputNumber, Segmented } from 'antd';
 import {
   LinearMapOrientation,
@@ -11,6 +12,7 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const LinearMapSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
 
   const settings =
     widgetSettings.getSettings<LinearMapWidgetSettings>('relative-map');
@@ -24,31 +26,41 @@ export const LinearMapSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title="Module Layout">
+      <Card title={t('settingsPanels.linearMap.moduleLayout')}>
         <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>Orientation</span>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.linearMap.orientation')}
+          </span>
           <Segmented
             block
             value={settings.orientation}
             options={[
-              { label: 'Horizontal', value: 'horizontal' },
-              { label: 'Vertical', value: 'vertical' },
+              {
+                label: t('settingsPanels.linearMap.horizontal'),
+                value: 'horizontal',
+              },
+              {
+                label: t('settingsPanels.linearMap.vertical'),
+                value: 'vertical',
+              },
             ]}
             onChange={(v) => update({ orientation: v as LinearMapOrientation })}
           />
         </div>
       </Card>
 
-      <Card title="Player Marker">
+      <Card title={t('settingsPanels.linearMap.playerMarker')}>
         <div className={styles.fieldGroup}>
-          <SettingRow title="Player Dot Color">
+          <SettingRow title={t('settingsPanels.linearMap.playerDotColor')}>
             <ColorPicker
               value={settings.playerDotColor}
               onChange={(c) => update({ playerDotColor: c.toHexString() })}
             />
           </SettingRow>
 
-          <span className={styles.fieldLabel}>Dot Radius (px)</span>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.linearMap.dotRadius')}
+          </span>
           <InputNumber
             style={{ width: '100%' }}
             value={settings.targetDotRadiusPx}

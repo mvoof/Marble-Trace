@@ -15,6 +15,7 @@ import {
   emitHideAllWidgets,
   emitHideWidgetsWhenGameClosed,
   emitUnitsChanged,
+  emitLanguageChanged,
   emitStandingsClassIndex,
   emitWidgetSettingsUpdated,
   emitWidgetSettingsToMain,
@@ -87,6 +88,13 @@ export const initMainSync = async (root: RootStore) => {
         reaction(
           () => root.appSettings.appSettings.autoSwitchLayouts,
           () => {
+            void onSave();
+          }
+        ),
+        reaction(
+          () => root.appSettings.appSettings.language,
+          (v) => {
+            void emitLanguageChanged(v);
             void onSave();
           }
         ),

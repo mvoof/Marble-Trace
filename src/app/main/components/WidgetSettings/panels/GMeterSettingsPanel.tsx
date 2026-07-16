@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { Segmented } from 'antd';
 import type {
   GMeterColorMode,
@@ -11,6 +12,7 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const GMeterSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
 
   const settings = widgetSettings.getSettings<GMeterWidgetSettings>('g-meter');
 
@@ -22,23 +24,27 @@ export const GMeterSettingsPanel = observer(() => {
   };
 
   return (
-    <Card title="Module Parameters">
+    <Card title={t('settingsPanels.gMeter.moduleParameters')}>
       <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>Display Mode</span>
+        <span className={styles.fieldLabel}>
+          {t('settingsPanels.gMeter.displayMode')}
+        </span>
         <Segmented
           block
           value={settings.displayMode}
           options={[
-            { label: 'Trail', value: 'trail' },
-            { label: 'Fading', value: 'fading' },
-            { label: 'Peak', value: 'peak' },
+            { label: t('settingsPanels.gMeter.trail'), value: 'trail' },
+            { label: t('settingsPanels.gMeter.fading'), value: 'fading' },
+            { label: t('settingsPanels.gMeter.peak'), value: 'peak' },
           ]}
           onChange={(v) => update({ displayMode: v as GMeterDisplayMode })}
         />
       </div>
 
       <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>Scale</span>
+        <span className={styles.fieldLabel}>
+          {t('settingsPanels.gMeter.scale')}
+        </span>
         <Segmented
           block
           value={settings.scale}
@@ -53,14 +59,16 @@ export const GMeterSettingsPanel = observer(() => {
       </div>
 
       <div className={styles.fieldGroup}>
-        <span className={styles.fieldLabel}>Color Mode</span>
+        <span className={styles.fieldLabel}>
+          {t('settingsPanels.gMeter.colorMode')}
+        </span>
         <Segmented
           block
           value={settings.colorMode}
           options={[
-            { label: 'Mono', value: 'mono' },
-            { label: 'Simple', value: 'simple' },
-            { label: 'Advanced', value: 'advanced' },
+            { label: t('settingsPanels.gMeter.mono'), value: 'mono' },
+            { label: t('settingsPanels.gMeter.simple'), value: 'simple' },
+            { label: t('settingsPanels.gMeter.advanced'), value: 'advanced' },
           ]}
           onChange={(v) => update({ colorMode: v as GMeterColorMode })}
         />

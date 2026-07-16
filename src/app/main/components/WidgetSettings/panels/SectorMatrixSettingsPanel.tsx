@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { Switch } from 'antd';
 import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
@@ -8,6 +9,7 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const SectorMatrixSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
   const settings =
     widgetSettings.getSettings<SectorMatrixWidgetSettings>('sector-matrix');
 
@@ -20,11 +22,11 @@ export const SectorMatrixSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title="Options">
+      <Card title={t('settingsPanels.sectorMatrix.options')}>
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="Show Sector Times"
-            desc="Display per-sector timing grid. Disable for a compact view with just the progress bar and lap times."
+            title={t('settingsPanels.sectorMatrix.showSectorTimes')}
+            desc={t('settingsPanels.sectorMatrix.showSectorTimesDesc')}
           >
             <Switch
               checked={settings.showSectors}
@@ -33,8 +35,8 @@ export const SectorMatrixSettingsPanel = observer(() => {
           </SettingRow>
 
           <SettingRow
-            title="Show Predicted Lap"
-            desc="Estimated finish time displayed in the header."
+            title={t('settingsPanels.sectorMatrix.showPredictedLap')}
+            desc={t('settingsPanels.sectorMatrix.showPredictedLapDesc')}
           >
             <Switch
               checked={settings.showPredicted}

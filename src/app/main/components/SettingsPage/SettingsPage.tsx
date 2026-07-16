@@ -41,12 +41,6 @@ const Card: React.FC<CardProps> = ({ title, children }) => (
   </div>
 );
 
-const LANGUAGE_OPTIONS: { value: AppLanguage; label: string }[] = [
-  { value: 'en', label: 'English' },
-  { value: 'ru', label: 'Русский' },
-  { value: 'zh', label: '中文' },
-];
-
 export const SettingsPage = observer(() => {
   const appSettings = useAppSettingsStore();
   const units = useUnitsStore();
@@ -56,6 +50,13 @@ export const SettingsPage = observer(() => {
   const { message } = App.useApp();
   const { t } = useTranslation('main-app');
   const [resettingPitLane, setResettingPitLane] = useState(false);
+
+  const languageOptions: { value: AppLanguage; label: string }[] = [
+    { value: 'system', label: t('settingsPage.language.system') },
+    { value: 'en', label: 'English' },
+    { value: 'ru', label: 'Русский' },
+    { value: 'zh', label: '中文' },
+  ];
 
   const trackId = trackMap.trackShape?.trackId ?? null;
   const trackDisplayName = session.sessionInfo?.trackDisplayName ?? null;
@@ -118,7 +119,7 @@ export const SettingsPage = observer(() => {
               className={styles.selectWidth}
               value={appSettings.appSettings.language}
               onChange={(value: AppLanguage) => appSettings.setLanguage(value)}
-              options={LANGUAGE_OPTIONS}
+              options={languageOptions}
             />
           </div>
         </Card>

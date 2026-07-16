@@ -1,11 +1,22 @@
+import type { TFunction } from 'i18next';
 import type { LapDeltaReference } from '@/types/widget-settings';
 
-export const DELTA_REFERENCE_DESC: Record<LapDeltaReference, string> = {
-  personal_best: 'Your best clean lap this session.',
-  personal_optimal:
-    'Your theoretical best — fastest sector from each of your laps combined.',
-  session_best: 'Fastest lap set by any driver in the current session.',
-  session_optimal:
-    'Theoretical best — fastest sector from any driver in the session combined.',
-  session_last: 'Last fully completed lap by any driver in the session.',
-};
+export const getDeltaReferenceDesc = (
+  t: TFunction
+): Record<LapDeltaReference, string> => ({
+  personal_best: t('settingsPanels.delta.referenceDesc.personalBest', {
+    ns: 'widgets',
+  }),
+  personal_optimal: t('settingsPanels.delta.referenceDesc.personalOptimal', {
+    ns: 'widgets',
+  }),
+  session_best: t('settingsPanels.delta.referenceDesc.sessionBest', {
+    ns: 'widgets',
+  }),
+  session_optimal: t('settingsPanels.delta.referenceDesc.sessionOptimal', {
+    ns: 'widgets',
+  }),
+  session_last: t('settingsPanels.delta.referenceDesc.sessionLast', {
+    ns: 'widgets',
+  }),
+});

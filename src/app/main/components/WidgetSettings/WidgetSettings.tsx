@@ -1,5 +1,7 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { InputNumber, Row, Col, ColorPicker } from 'antd';
+import { getWidgetLabel } from '@utils/widget-i18n';
 import styles from './WidgetSettings.module.scss';
 import { Card } from './panels/Card';
 import { RpmLightsSettingsPanel } from './panels/RpmLightsSettingsPanel';
@@ -25,17 +27,22 @@ import { useWidgetEditor } from './WidgetEditorContext';
 export const WidgetSettings = observer(
   ({ widgetId }: { widgetId: string | null }) => {
     const widgetSettings = useWidgetEditor();
+    const { t } = useTranslation('main-app');
 
     if (!widgetId) {
       return (
-        <div className={styles.fieldDesc}>Select a widget to configure</div>
+        <div className={styles.fieldDesc}>
+          {t('widgetSettings.selectToConfigure')}
+        </div>
       );
     }
 
     const widget = widgetSettings.getWidget(widgetId);
 
     if (!widget) {
-      return <div className={styles.fieldDesc}>Widget not found</div>;
+      return (
+        <div className={styles.fieldDesc}>{t('widgetSettings.notFound')}</div>
+      );
     }
 
     const userSettings = widget.userSettings;
@@ -43,14 +50,18 @@ export const WidgetSettings = observer(
     return (
       <div className={`${styles.animateFadeIn} ${styles.settingsRoot}`}>
         <header className={styles.header}>
-          <span className={styles.moduleLabel}>Module Config</span>
-          <h1 className={styles.title}>{widget.label}</h1>
+          <span className={styles.moduleLabel}>
+            {t('widgetSettings.moduleConfig')}
+          </span>
+          <h1 className={styles.title}>{getWidgetLabel(t, widget)}</h1>
         </header>
 
-        <Card title="Layout & Dimensions">
+        <Card title={t('widgetSettings.layoutAndDimensions')}>
           <Row gutter={[24, 24]}>
             <Col span={12}>
-              <span className={styles.fieldLabel}>Position X</span>
+              <span className={styles.fieldLabel}>
+                {t('widgetSettings.positionX')}
+              </span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={userSettings.x}
@@ -64,7 +75,9 @@ export const WidgetSettings = observer(
             </Col>
 
             <Col span={12}>
-              <span className={styles.fieldLabel}>Position Y</span>
+              <span className={styles.fieldLabel}>
+                {t('widgetSettings.positionY')}
+              </span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={userSettings.y}
@@ -78,7 +91,9 @@ export const WidgetSettings = observer(
             </Col>
 
             <Col span={12}>
-              <span className={styles.fieldLabel}>Width (px)</span>
+              <span className={styles.fieldLabel}>
+                {t('widgetSettings.width')}
+              </span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={userSettings.currentWidth}
@@ -95,7 +110,9 @@ export const WidgetSettings = observer(
             </Col>
 
             <Col span={12}>
-              <span className={styles.fieldLabel}>Height (px)</span>
+              <span className={styles.fieldLabel}>
+                {t('widgetSettings.height')}
+              </span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={userSettings.currentHeight}
@@ -112,7 +129,9 @@ export const WidgetSettings = observer(
             </Col>
 
             <Col span={12}>
-              <span className={styles.fieldLabel}>Layer Depth (Z-Index)</span>
+              <span className={styles.fieldLabel}>
+                {t('widgetSettings.layerDepth')}
+              </span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={userSettings.zIndex ?? 0}
@@ -130,10 +149,12 @@ export const WidgetSettings = observer(
         </Card>
 
         {!['radar-bar', 'led-flags', 'flat-flags'].includes(widgetId) && (
-          <Card title="Aesthetics">
+          <Card title={t('widgetSettings.aesthetics')}>
             <Row gutter={[24, 24]}>
               <Col span={12}>
-                <span className={styles.fieldLabel}>Background</span>
+                <span className={styles.fieldLabel}>
+                  {t('widgetSettings.background')}
+                </span>
                 <div className={styles.colorPickerContainer}>
                   <ColorPicker
                     value={
@@ -155,7 +176,9 @@ export const WidgetSettings = observer(
               </Col>
 
               <Col span={12}>
-                <span className={styles.fieldLabel}>Border</span>
+                <span className={styles.fieldLabel}>
+                  {t('widgetSettings.border')}
+                </span>
                 <div className={styles.colorPickerContainer}>
                   <ColorPicker
                     value={

@@ -22,6 +22,7 @@ import {
   deleteBackgroundImage,
 } from '@utils/widget/layout-background';
 import type { SavedLayout, SessionContext } from '@/types/widget-settings';
+import { getWidgetLabel } from '@utils/widget-i18n';
 import styles from './LayoutList.module.scss';
 
 interface LayoutPreviewProps {
@@ -500,7 +501,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                     {selectedEnabledWidgets.map((widget) => (
                       <div key={widget.id} className={styles.widgetItem}>
                         <span className={styles.widgetActiveLabel}>
-                          {widget.label}
+                          {getWidgetLabel(t, widget)}
                         </span>
                         <span className={styles.infoValue}>
                           {widget.userSettings.x},{widget.userSettings.y}

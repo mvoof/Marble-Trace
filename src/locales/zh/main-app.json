@@ -130,12 +130,34 @@
     "remove": "删除",
     "loadingBackground": "正在加载背景..."
   },
+  "widgetSettingsPopup": {
+    "ariaLabel": "{{label}} 设置",
+    "close": "关闭"
+  },
+  "widgetPreview": {
+    "noPreview": "无可用预览"
+  },
+  "widgetSettings": {
+    "selectToConfigure": "选择要配置的小组件",
+    "notFound": "未找到该小组件",
+    "moduleConfig": "模块配置",
+    "layoutAndDimensions": "布局与尺寸",
+    "positionX": "X 坐标",
+    "positionY": "Y 坐标",
+    "width": "宽度（像素）",
+    "height": "高度（像素）",
+    "layerDepth": "层级深度（Z-Index）",
+    "aesthetics": "外观",
+    "background": "背景",
+    "border": "边框"
+  },
   "settingsPage": {
     "moduleLabel": "配置",
     "title": "全局应用设置",
     "language": {
       "title": "语言",
-      "fieldLabel": "应用语言"
+      "fieldLabel": "应用语言",
+      "system": "系统语言"
     },
     "widgetDisplayOverride": {
       "title": "小组件显示覆盖",

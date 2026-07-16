@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { ColorPicker, Segmented, Slider, Space, Switch } from 'antd';
 import {
   InputTraceSettings,
@@ -11,6 +12,7 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const InputTraceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
 
   const settings =
     widgetSettings.getSettings<InputTraceSettings>('input-trace');
@@ -24,9 +26,12 @@ export const InputTraceSettingsPanel = observer(() => {
 
   return (
     <Space direction="vertical" style={{ width: '100%' }} size="middle">
-      <Card title="Data Channels">
+      <Card title={t('settingsPanels.inputTrace.dataChannels')}>
         <div className={styles.fieldGroup}>
-          <SettingRow title="Throttle" desc="Show throttle trace on the graph.">
+          <SettingRow
+            title={t('settingsPanels.inputTrace.throttle')}
+            desc={t('settingsPanels.inputTrace.throttleDesc')}
+          >
             <Space>
               <ColorPicker
                 value={settings.throttleColor}
@@ -41,7 +46,10 @@ export const InputTraceSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title="Brake" desc="Show brake trace on the graph.">
+          <SettingRow
+            title={t('settingsPanels.inputTrace.brake')}
+            desc={t('settingsPanels.inputTrace.brakeDesc')}
+          >
             <Space>
               <ColorPicker
                 value={settings.brakeColor}
@@ -57,8 +65,8 @@ export const InputTraceSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="ABS Active"
-            desc="Color of the brake trace/bar when ABS is active."
+            title={t('settingsPanels.inputTrace.absActive')}
+            desc={t('settingsPanels.inputTrace.absActiveDesc')}
           >
             <Space>
               <ColorPicker
@@ -70,7 +78,10 @@ export const InputTraceSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title="Clutch" desc="Show clutch trace on the graph.">
+          <SettingRow
+            title={t('settingsPanels.inputTrace.clutch')}
+            desc={t('settingsPanels.inputTrace.clutchDesc')}
+          >
             <Space>
               <ColorPicker
                 value={settings.clutchColor}
@@ -86,8 +97,8 @@ export const InputTraceSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="Steering Wheel"
-            desc="Show steering wheel block and graph trace."
+            title={t('settingsPanels.inputTrace.steeringWheel')}
+            desc={t('settingsPanels.inputTrace.steeringWheelDesc')}
           >
             <Switch
               checked={settings.showSteering}
@@ -100,17 +111,32 @@ export const InputTraceSettingsPanel = observer(() => {
           <>
             <div className={styles.fieldGroup}>
               <SettingRow
-                title="Center Display"
-                desc="What to show in the center of the steering wheel."
+                title={t('settingsPanels.inputTrace.centerDisplay')}
+                desc={t('settingsPanels.inputTrace.centerDisplayDesc')}
               >
                 <Segmented
                   value={settings.steeringCenterDisplay}
                   options={[
-                    { label: 'Logo', value: 'logo' },
-                    { label: 'Gear', value: 'gear' },
-                    { label: 'Speed', value: 'speed' },
-                    { label: 'Angle', value: 'angle' },
-                    { label: 'Spd+Gear', value: 'speed-gear' },
+                    {
+                      label: t('settingsPanels.inputTrace.logo'),
+                      value: 'logo',
+                    },
+                    {
+                      label: t('settingsPanels.inputTrace.gear'),
+                      value: 'gear',
+                    },
+                    {
+                      label: t('settingsPanels.inputTrace.speed'),
+                      value: 'speed',
+                    },
+                    {
+                      label: t('settingsPanels.inputTrace.angle'),
+                      value: 'angle',
+                    },
+                    {
+                      label: t('settingsPanels.inputTrace.speedGear'),
+                      value: 'speed-gear',
+                    },
                   ]}
                   onChange={(v) =>
                     update({
@@ -123,8 +149,11 @@ export const InputTraceSettingsPanel = observer(() => {
 
             <div className={styles.fieldGroup}>
               <SettingRow
-                title="Steering Lock"
-                desc={`Physical range: ${settings.steeringLimit}° (±${settings.steeringLimit / 2}°)`}
+                title={t('settingsPanels.inputTrace.steeringLock')}
+                desc={t('settingsPanels.inputTrace.steeringLockDesc', {
+                  full: settings.steeringLimit,
+                  half: settings.steeringLimit / 2,
+                })}
               >
                 <Slider
                   min={180}
@@ -139,8 +168,13 @@ export const InputTraceSettingsPanel = observer(() => {
 
             <div className={styles.fieldGroup}>
               <SettingRow
-                title="Steering Zoom"
-                desc={`Graph shows ±${Math.round(settings.steeringLimit / 2 / (settings.steeringZoom ?? 1))}° (${settings.steeringZoom ?? 1}x)`}
+                title={t('settingsPanels.inputTrace.steeringZoom')}
+                desc={t('settingsPanels.inputTrace.steeringZoomDesc', {
+                  angle: Math.round(
+                    settings.steeringLimit / 2 / (settings.steeringZoom ?? 1)
+                  ),
+                  zoom: settings.steeringZoom ?? 1,
+                })}
               >
                 <Slider
                   min={1}
@@ -156,11 +190,11 @@ export const InputTraceSettingsPanel = observer(() => {
         )}
       </Card>
 
-      <Card title="Layout">
+      <Card title={t('settingsPanels.inputTrace.layout')}>
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="Trace Graph"
-            desc="Show the scrolling input history graph."
+            title={t('settingsPanels.inputTrace.traceGraph')}
+            desc={t('settingsPanels.inputTrace.traceGraphDesc')}
           >
             <Switch
               checked={settings.showTrace}
@@ -170,11 +204,13 @@ export const InputTraceSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title="Graph Settings">
+      <Card title={t('settingsPanels.inputTrace.graphSettings')}>
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="History Length"
-            desc={`Visible history: ${settings.historySeconds}s`}
+            title={t('settingsPanels.inputTrace.historyLength')}
+            desc={t('settingsPanels.inputTrace.historyLengthDesc', {
+              seconds: settings.historySeconds,
+            })}
           >
             <Slider
               min={1}
@@ -189,11 +225,13 @@ export const InputTraceSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="Smoothing"
+            title={t('settingsPanels.inputTrace.smoothing')}
             desc={
               settings.smoothing === 0
-                ? 'Raw data (60Hz)'
-                : `Factor: ${settings.smoothing}`
+                ? t('settingsPanels.inputTrace.smoothingRaw')
+                : t('settingsPanels.inputTrace.smoothingFactor', {
+                    factor: settings.smoothing,
+                  })
             }
           >
             <Slider
@@ -209,8 +247,10 @@ export const InputTraceSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="Line Width"
-            desc={`Thickness: ${settings.lineWidth}px`}
+            title={t('settingsPanels.inputTrace.lineWidth')}
+            desc={t('settingsPanels.inputTrace.lineWidthDesc', {
+              px: settings.lineWidth,
+            })}
           >
             <Slider
               min={1}

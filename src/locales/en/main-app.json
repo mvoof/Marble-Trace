@@ -131,12 +131,34 @@
     "remove": "Remove",
     "loadingBackground": "Loading background..."
   },
+  "widgetSettingsPopup": {
+    "ariaLabel": "{{label}} settings",
+    "close": "Close"
+  },
+  "widgetPreview": {
+    "noPreview": "No preview available"
+  },
+  "widgetSettings": {
+    "selectToConfigure": "Select a widget to configure",
+    "notFound": "Widget not found",
+    "moduleConfig": "Module Config",
+    "layoutAndDimensions": "Layout & Dimensions",
+    "positionX": "Position X",
+    "positionY": "Position Y",
+    "width": "Width (px)",
+    "height": "Height (px)",
+    "layerDepth": "Layer Depth (Z-Index)",
+    "aesthetics": "Aesthetics",
+    "background": "Background",
+    "border": "Border"
+  },
   "settingsPage": {
     "moduleLabel": "Configuration",
     "title": "Global Application Settings",
     "language": {
       "title": "Language",
-      "fieldLabel": "Application Language"
+      "fieldLabel": "Application Language",
+      "system": "System Locale"
     },
     "widgetDisplayOverride": {
       "title": "Widget Display Override",

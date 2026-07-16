@@ -1,1 +1,373 @@
-{}
+{
+  "catalog": {
+    "input-trace": {
+      "description": "实时油门、刹车和离合器输入。"
+    },
+    "proximity-radar": {
+      "description": "附近车辆的可视化雷达。"
+    },
+    "radar-bar": {
+      "description": "全宽侧向接近指示器。"
+    },
+    "standings": {
+      "description": "实时赛事排名和间隔时间。"
+    },
+    "relative": {
+      "description": "与前后车辆的差距。"
+    },
+    "track-map": {
+      "description": "当前赛道的动态二维地图。"
+    },
+    "relative-map": {
+      "description": "车辆赛道位置进度条。"
+    },
+    "led-flags": {
+      "description": "赛道旗帜的 LED 矩阵显示。"
+    },
+    "flat-flags": {
+      "description": "横幅样式的当前赛道旗帜列表。"
+    },
+    "chassis": {
+      "description": "胎压和刹车温度。"
+    },
+    "example": {
+      "description": "原始遥测数据调试器。"
+    },
+    "delta": {
+      "description": "实时圈速差 HUD——一眼看出更快还是更慢。"
+    },
+    "timer": {
+      "description": "单节和总会话计时器。"
+    },
+    "weather": {
+      "description": "赛道状况和风力信息。"
+    },
+    "fuel": {
+      "description": "燃油量和消耗计算器。"
+    },
+    "g-meter": {
+      "description": "横向和纵向 G 力摩擦圆。"
+    },
+    "sector-matrix": {
+      "description": "逐分段计时，带进度条、每段实时差值、LAST 和 BEST。"
+    },
+    "lap-log": {
+      "description": "最近 8 圈的时间及与个人最佳的差值，最佳圈高亮显示。"
+    },
+    "engine-panel": {
+      "description": "液体温度、压力和系统调整（ABS、牵引力控制、刹车偏移、引擎映射）。"
+    },
+    "rpm-lights": {
+      "description": "由发动机转速驱动的独立换挡灯条，带维修区限速动画。从速度小组件中拆分出来，以免换挡灯干扰速度表布局。"
+    },
+    "race-dash": {
+      "description": "综合座舱组件：带转速弧和换挡区的挡位环、显示圈数/位置/转速的主速度读数、带参考速度的教练标签，以及带限速辅助的维修区模式。取代了原来的速度、转速灯和驾驶教练小组件。"
+    }
+  },
+  "settingsPanels": {
+    "chassis": {
+      "moduleLayout": "模块布局",
+      "suspensionAndBrakes": "悬挂与刹车",
+      "suspensionAndBrakesDesc": "显示胎压、温度和刹车偏移面板。"
+    },
+    "delta": {
+      "deltaReference": "差值参考",
+      "referenceDesc": {
+        "personalBest": "本次会话中您的最佳干净圈速。",
+        "personalOptimal": "您的理论最佳——由您各圈最快分段组合而成。",
+        "sessionBest": "当前会话中任意车手创造的最快圈速。",
+        "sessionOptimal": "理论最佳——由会话中任意车手的最快分段组合而成。",
+        "sessionLast": "会话中任意车手最近完成的一圈。"
+      },
+      "visibility": "可见性",
+      "hideWhenNoReference": "无参考圈速时隐藏",
+      "lapCompletedCard": "圈速完成卡片",
+      "showAfterLap": "圈后显示",
+      "displayDuration": "显示时长：{{seconds}} 秒"
+    },
+    "fuel": {
+      "analyticsAndWarnings": "分析与警告",
+      "historyChart": "历史图表",
+      "historyChartDesc": "燃油消耗的可视化历史记录。",
+      "barChart": "柱状图",
+      "lineChart": "折线图",
+      "chartStepWidth": "图表步长宽度（像素）",
+      "lowFuelWarningThreshold": "低油量警告阈值（圈数）"
+    },
+    "enginePanel": {
+      "moduleParameters": "模块参数",
+      "horizontalLayout": "水平布局",
+      "horizontalLayoutDesc": "将单元格水平排列成一行，而非垂直网格。",
+      "horizontalColumns": "水平列数",
+      "horizontalColumnsDesc": "水平布局的列数（3、4 或最大）。",
+      "verticalColumns": "垂直列数",
+      "verticalColumnsDesc": "垂直布局的列数（1 至 4）。",
+      "cols1": "1 列",
+      "cols2": "2 列",
+      "cols3": "3 列",
+      "cols4": "4 列",
+      "maxRow": "最大（单行）",
+      "oilTemperature": "机油温度",
+      "oilTemperatureDesc": "显示发动机机油温度。",
+      "waterTemperature": "水温",
+      "waterTemperatureDesc": "显示发动机水温。",
+      "oilPressure": "机油压力",
+      "oilPressureDesc": "显示发动机机油压力。",
+      "systemVoltage": "系统电压",
+      "systemVoltageDesc": "显示电气系统电压。",
+      "absLevel": "ABS 等级",
+      "absLevelDesc": "显示 ABS 设置。",
+      "tractionControl": "牵引力控制（TC）",
+      "tractionControlDesc": "显示牵引力控制设置。",
+      "brakeBias": "刹车偏移",
+      "brakeBiasDesc": "显示当前刹车偏移。",
+      "engineMap": "引擎映射",
+      "engineMapDesc": "显示油门映射/引擎映射。"
+    },
+    "flagDisplay": {
+      "displayMode": "显示模式",
+      "alwaysShow": "始终显示",
+      "alwaysShowDesc": "即使没有旗帜激活也显示小组件。",
+      "holdDuration": "保持时长：{{seconds}} 秒",
+      "holdDurationDesc": "旗帜消失后保持可见的时长。",
+      "forceSingleLed": "强制单个 LED",
+      "forceSingleLedDesc": "显示单个大指示灯而非 LED 矩阵。",
+      "splitDisplay": "分离显示",
+      "splitDisplayDesc": "将矩阵分为左右两部分以放置在后视镜周围。",
+      "animateLeds": "LED 动画",
+      "animateLedsDesc": "启用旗帜的动态滚动和波浪效果。"
+    },
+    "gMeter": {
+      "moduleParameters": "模块参数",
+      "displayMode": "显示模式",
+      "trail": "轨迹",
+      "fading": "渐隐",
+      "peak": "峰值",
+      "scale": "比例",
+      "colorMode": "颜色模式",
+      "mono": "单色",
+      "simple": "简单",
+      "advanced": "高级"
+    },
+    "inputTrace": {
+      "dataChannels": "数据通道",
+      "throttle": "油门",
+      "throttleDesc": "在图表上显示油门轨迹。",
+      "brake": "刹车",
+      "brakeDesc": "在图表上显示刹车轨迹。",
+      "absActive": "ABS 激活",
+      "absActiveDesc": "ABS 激活时刹车轨迹/条的颜色。",
+      "clutch": "离合器",
+      "clutchDesc": "在图表上显示离合器轨迹。",
+      "steeringWheel": "方向盘",
+      "steeringWheelDesc": "显示方向盘模块和图表轨迹。",
+      "centerDisplay": "中央显示",
+      "centerDisplayDesc": "方向盘中央显示的内容。",
+      "logo": "标志",
+      "gear": "挡位",
+      "speed": "速度",
+      "angle": "角度",
+      "speedGear": "速度+挡位",
+      "steeringLock": "转向锁定角",
+      "steeringLockDesc": "物理范围：{{full}}°（±{{half}}°）",
+      "steeringZoom": "转向缩放",
+      "steeringZoomDesc": "图表显示 ±{{angle}}°（{{zoom}}x）",
+      "layout": "布局",
+      "traceGraph": "轨迹图",
+      "traceGraphDesc": "显示滚动的输入历史图表。",
+      "graphSettings": "图表设置",
+      "historyLength": "历史长度",
+      "historyLengthDesc": "可见历史：{{seconds}} 秒",
+      "smoothing": "平滑",
+      "smoothingRaw": "原始数据（60Hz）",
+      "smoothingFactor": "系数：{{factor}}",
+      "lineWidth": "线宽",
+      "lineWidthDesc": "粗细：{{px}}px"
+    },
+    "linearMap": {
+      "moduleLayout": "模块布局",
+      "orientation": "方向",
+      "horizontal": "水平",
+      "vertical": "垂直",
+      "playerMarker": "玩家标记",
+      "playerDotColor": "玩家点颜色",
+      "dotRadius": "点半径（像素）"
+    },
+    "radar": {
+      "radarBehavior": "雷达行为",
+      "activationRange": "激活范围（米）",
+      "fadeOutDelay": "淡出延迟（秒）",
+      "carLength": "车长（米）",
+      "qualifying": "排位赛",
+      "showInQualifying": "在排位赛中显示",
+      "always": "始终",
+      "auto": "自动",
+      "never": "从不",
+      "autoDesc": "自动：单独排位赛期间隐藏（赛道上仅一辆车）"
+    },
+    "raceDash": {
+      "rpmFill": "转速填充",
+      "zoneColors": "区域颜色",
+      "low": "低",
+      "mid": "中",
+      "high": "高",
+      "shift": "换挡",
+      "blink": "闪烁",
+      "colorizeDigits": "数字上色",
+      "colorizeDigitsDesc": "高转速时用区域颜色为挡位数字和转速数字上色。",
+      "rpmIndicator": "转速指示器",
+      "fill": "填充",
+      "glow": "发光",
+      "off": "关闭",
+      "drivingCoach": "驾驶教练",
+      "coachSection": "教练区域",
+      "coachSectionDesc": "显示刹车/油门提示和最佳圈参考速度。",
+      "brakeAccent": "刹车强调色",
+      "brakeAccentDesc": "刹车提示的颜色。",
+      "gasAccent": "油门强调色",
+      "gasAccentDesc": "油门提示的颜色。",
+      "pitAssist": "维修区辅助",
+      "pitLaneAssist": "维修区辅助",
+      "pitLaneAssistDesc": "进入维修区时切换为维修区面板。",
+      "pitSpeedOverride": "维修区速度限制覆盖（{{unit}}）",
+      "pitSpeedOverrideDesc": "保留 0 以从会话数据自动检测。",
+      "nearLimitWarning": "接近限速警告（{{unit}}）",
+      "nearLimitWarningDesc": "当速度低于维修区限速这么多 {{unit}} 时将速度显示为琥珀色。"
+    },
+    "relative": {
+      "appearance": "外观",
+      "rowHeight": "行高",
+      "rowHeightDesc": "每个车手行的垂直内边距。",
+      "narrow": "窄",
+      "medium": "中",
+      "wide": "宽",
+      "playerRowColor": "玩家行颜色",
+      "playerRowColorDesc": "您自己所在行的高亮颜色。",
+      "playerNumberColor": "玩家编号颜色",
+      "playerNumberColorDesc": "您的名次和车号颜色。",
+      "dataColumns": "数据列",
+      "licenseBadge": "驾照徽章",
+      "licenseBadgeDesc": "车手安全等级徽章（A、B、C、D、R）。",
+      "iRating": "iRating",
+      "iRatingDesc": "车手的 iRating 数值。",
+      "pitIndicator": "维修区指示器",
+      "pitIndicatorDesc": "车手在维修区时显示图标。",
+      "abbreviateNames": "缩写姓名",
+      "abbreviateNamesDesc": "使用简短姓名以节省空间。",
+      "driverFlags": "车手旗帜",
+      "driverFlagsDesc": "在车手姓名旁显示激活的警告旗帜。"
+    },
+    "rpmLights": {
+      "shiftLights": "换挡灯",
+      "colors": "颜色",
+      "ledShape": "LED 形状",
+      "square": "方形",
+      "circle": "圆形",
+      "slant": "斜角"
+    },
+    "sectorMatrix": {
+      "options": "选项",
+      "showSectorTimes": "显示分段时间",
+      "showSectorTimesDesc": "显示逐分段计时网格。禁用后为仅含进度条和圈速的紧凑视图。",
+      "showPredictedLap": "显示预测圈速",
+      "showPredictedLapDesc": "在标题栏中显示预计完成时间。"
+    },
+    "standings": {
+      "appearance": "外观",
+      "viewMode": "视图模式",
+      "allDrivers": "全部车手",
+      "groupByClass": "按组别分组",
+      "classCycling": "组别轮播",
+      "hotkeys": "快捷键",
+      "cycleViewModeHotkey": "循环视图模式（全部 → 分组 → 轮播）",
+      "previousClassHotkey": "上一组别（轮播模式）",
+      "nextClassHotkey": "下一组别（轮播模式）",
+      "positionChange": "名次变化（+/-）",
+      "positionChangeDesc": "显示自会话开始以来获得或失去的名次箭头。",
+      "brandLogo": "车辆品牌标志",
+      "brandLogoDesc": "车手姓名旁的厂商徽章。",
+      "tireCompound": "轮胎配方",
+      "tireCompoundDesc": "当前轮胎类型的可视化指示器。",
+      "licenseBadge": "驾照徽章",
+      "licenseBadgeDesc": "车手安全等级徽章（A、B、C、D、R）。",
+      "iRating": "iRating",
+      "iRatingDesc": "车手的 iRating 数值。",
+      "iRatingDelta": "iRating 变化（预测）",
+      "iRatingDeltaDesc": "基于当前名次预测的 iRating 增减。",
+      "lapsCompleted": "完成圈数",
+      "lapsCompletedDesc": "每位车手完成的圈数。",
+      "abbreviateNames": "缩写车手姓名",
+      "abbreviateNamesDesc": "缩短姓名以节省列宽。",
+      "driverFlags": "车手旗帜",
+      "driverFlagsDesc": "在车手姓名旁显示激活的警告旗帜（例如机械损坏/肉丸旗）。",
+      "headerInfo": "标题信息",
+      "columnHeaders": "列标题",
+      "columnHeadersDesc": "在每个数据列上方显示标签。",
+      "sessionProgressInfo": "会话进度信息",
+      "sessionProgressInfoDesc": "顶部的剩余圈数或时间条。",
+      "liveWeatherInfo": "实时天气信息",
+      "liveWeatherInfoDesc": "标题中的风速和温度行。",
+      "sof": "参赛强度（SOF）",
+      "sofDesc": "所有注册车手的平均 iRating。",
+      "pitStopCounter": "进站计数器（仅玩家）",
+      "pitStopCounterDesc": "玩家车辆的进站次数。",
+      "incidentsBadge": "违规徽章（仅玩家）",
+      "incidentsBadgeDesc": "玩家车辆累计的违规次数。",
+      "totalDriversCount": "车手总数",
+      "totalDriversCountDesc": "会话中的车手总数。"
+    },
+    "timer": {
+      "visibleElements": "可见元素",
+      "showSessionType": "显示会话类型",
+      "showSessionTypeDesc": "显示当前会话类型（正赛、排位赛、练习赛）。",
+      "showLapCount": "显示圈数",
+      "showLapCountDesc": "显示当前圈数和总圈数。",
+      "showPosition": "显示名次",
+      "showPositionDesc": "显示您当前的比赛名次。",
+      "showPcClock": "显示电脑时钟",
+      "showPcClockDesc": "显示当前系统时间（时:分）。",
+      "showSimTime": "显示模拟器时间",
+      "showSimTimeDesc": "显示模拟器内的时刻（时:分）。",
+      "showPcDate": "显示电脑日期",
+      "showPcDateDesc": "显示当前系统日期。",
+      "showSimDate": "显示模拟器日期",
+      "showSimDateDesc": "显示模拟器内日期（可能与实际日期不同）。"
+    },
+    "trackMap": {
+      "visualElements": "视觉元素",
+      "sectorsOnMap": "地图上的分段",
+      "startFinishLine": "起点/终点线",
+      "playerDotColor": "玩家点颜色",
+      "playerDotColorDesc": "您的车辆的提示环和标签颜色。",
+      "showYouLabel": "显示“YOU”标签",
+      "showYouLabelDesc": "在您的车辆点上方显示标签。",
+      "leaderLabels": "领跑者标签",
+      "showP1Label": "显示 P1 标签",
+      "allClasses": "所有组别",
+      "ownClass": "本组别",
+      "hidden": "隐藏",
+      "trackStyling": "赛道样式",
+      "trackStroke": "赛道线宽（像素）",
+      "trackBorder": "赛道边框（像素）",
+      "sectorStroke": "分段线宽（像素）",
+      "targetDotRadius": "目标点半径（像素）"
+    },
+    "weather": {
+      "moduleParameters": "模块参数",
+      "windCompass": "风向罗盘",
+      "windCompassDesc": "显示当前风向的动画罗盘。",
+      "airTemperature": "气温",
+      "airTemperatureDesc": "赛道水平的环境气温。",
+      "trackTemperature": "赛道温度",
+      "trackTemperatureDesc": "赛道表面的温度。",
+      "windSpeedAndDir": "风速与风向",
+      "windSpeedAndDirDesc": "风速数值和方位方向。",
+      "relativeHumidity": "相对湿度",
+      "relativeHumidityDesc": "当前湿度百分比。",
+      "weatherForecast": "天气预报",
+      "weatherForecastDesc": "会话期间即将到来的天气变化。",
+      "trackWetnessState": "赛道湿滑状态",
+      "trackWetnessStateDesc": "当前赛道表面的湿滑程度（干燥、潮湿、湿滑、积水）。"
+    }
+  }
+}

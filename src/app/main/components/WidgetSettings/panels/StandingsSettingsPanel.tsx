@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { Switch, Segmented, ColorPicker } from 'antd';
 import type {
   RowPadding,
@@ -13,6 +14,7 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const StandingsSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
 
   const settings =
     widgetSettings.getSettings<StandingsWidgetSettings>('standings');
@@ -24,21 +26,129 @@ export const StandingsSettingsPanel = observer(() => {
     });
   };
 
+  const dataColumns = [
+    {
+      titleKey: 'settingsPanels.standings.positionChange',
+      descKey: 'settingsPanels.standings.positionChangeDesc',
+      value: settings.showPosChange,
+      key: 'showPosChange',
+    },
+    {
+      titleKey: 'settingsPanels.standings.brandLogo',
+      descKey: 'settingsPanels.standings.brandLogoDesc',
+      value: settings.showBrand,
+      key: 'showBrand',
+    },
+    {
+      titleKey: 'settingsPanels.standings.tireCompound',
+      descKey: 'settingsPanels.standings.tireCompoundDesc',
+      value: settings.showTire,
+      key: 'showTire',
+    },
+    {
+      titleKey: 'settingsPanels.standings.licenseBadge',
+      descKey: 'settingsPanels.standings.licenseBadgeDesc',
+      value: settings.showLicBadge,
+      key: 'showLicBadge',
+    },
+    {
+      titleKey: 'settingsPanels.standings.iRating',
+      descKey: 'settingsPanels.standings.iRatingDesc',
+      value: settings.showIRating,
+      key: 'showIRating',
+    },
+    {
+      titleKey: 'settingsPanels.standings.iRatingDelta',
+      descKey: 'settingsPanels.standings.iRatingDeltaDesc',
+      value: settings.showIrChange,
+      key: 'showIrChange',
+    },
+    {
+      titleKey: 'settingsPanels.standings.lapsCompleted',
+      descKey: 'settingsPanels.standings.lapsCompletedDesc',
+      value: settings.showLapsCompleted,
+      key: 'showLapsCompleted',
+    },
+    {
+      titleKey: 'settingsPanels.standings.abbreviateNames',
+      descKey: 'settingsPanels.standings.abbreviateNamesDesc',
+      value: settings.abbreviateNames,
+      key: 'abbreviateNames',
+    },
+    {
+      titleKey: 'settingsPanels.standings.driverFlags',
+      descKey: 'settingsPanels.standings.driverFlagsDesc',
+      value: settings.showDriverFlags,
+      key: 'showDriverFlags',
+    },
+  ] as const;
+
+  const headerInfo = [
+    {
+      titleKey: 'settingsPanels.standings.columnHeaders',
+      descKey: 'settingsPanels.standings.columnHeadersDesc',
+      value: settings.showColumnHeaders,
+      key: 'showColumnHeaders',
+    },
+    {
+      titleKey: 'settingsPanels.standings.sessionProgressInfo',
+      descKey: 'settingsPanels.standings.sessionProgressInfoDesc',
+      value: settings.showSessionHeader,
+      key: 'showSessionHeader',
+    },
+    {
+      titleKey: 'settingsPanels.standings.liveWeatherInfo',
+      descKey: 'settingsPanels.standings.liveWeatherInfoDesc',
+      value: settings.showWeather,
+      key: 'showWeather',
+    },
+    {
+      titleKey: 'settingsPanels.standings.sof',
+      descKey: 'settingsPanels.standings.sofDesc',
+      value: settings.showSOF,
+      key: 'showSOF',
+    },
+    {
+      titleKey: 'settingsPanels.standings.pitStopCounter',
+      descKey: 'settingsPanels.standings.pitStopCounterDesc',
+      value: settings.showPitStops,
+      key: 'showPitStops',
+    },
+    {
+      titleKey: 'settingsPanels.standings.incidentsBadge',
+      descKey: 'settingsPanels.standings.incidentsBadgeDesc',
+      value: settings.showIncidentsBadge,
+      key: 'showIncidentsBadge',
+    },
+    {
+      titleKey: 'settingsPanels.standings.totalDriversCount',
+      descKey: 'settingsPanels.standings.totalDriversCountDesc',
+      value: settings.showTotalDrivers,
+      key: 'showTotalDrivers',
+    },
+  ] as const;
+
   return (
     <>
-      <Card title="Appearance">
+      <Card title={t('settingsPanels.standings.appearance')}>
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="Row Height"
-            desc="Vertical padding of each driver row."
+            title={t('settingsPanels.relative.rowHeight')}
+            desc={t('settingsPanels.relative.rowHeightDesc')}
           >
             <Segmented<RowPadding>
               value={settings.rowPadding}
               onChange={(v) => update({ rowPadding: v })}
               options={[
-                { label: 'Narrow', value: 'narrow' },
-                { label: 'Medium', value: 'medium' },
-                { label: 'Wide', value: 'wide' },
+                {
+                  label: t('settingsPanels.relative.narrow'),
+                  value: 'narrow',
+                },
+                {
+                  label: t('settingsPanels.relative.medium'),
+                  value: 'medium',
+                },
+                { label: t('settingsPanels.relative.wide'), value: 'wide' },
               ]}
             />
           </SettingRow>
@@ -46,8 +156,8 @@ export const StandingsSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="Player Row Color"
-            desc="Highlight color for your own row."
+            title={t('settingsPanels.relative.playerRowColor')}
+            desc={t('settingsPanels.relative.playerRowColorDesc')}
           >
             <ColorPicker
               value={settings.playerRowColor}
@@ -60,8 +170,8 @@ export const StandingsSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title="Player Number Color"
-            desc="Color of your position and car number."
+            title={t('settingsPanels.relative.playerNumberColor')}
+            desc={t('settingsPanels.relative.playerNumberColorDesc')}
           >
             <ColorPicker
               value={settings.playerAccentColor}
@@ -73,25 +183,34 @@ export const StandingsSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title="View Mode">
+      <Card title={t('settingsPanels.standings.viewMode')}>
         <div className={styles.fieldGroup}>
           <Segmented<StandingsViewMode>
             block
             value={settings.viewMode}
             onChange={(v) => update({ viewMode: v })}
             options={[
-              { label: 'All Drivers', value: 'all' },
-              { label: 'Group by Class', value: 'grouped' },
-              { label: 'Class Cycling', value: 'cycling' },
+              {
+                label: t('settingsPanels.standings.allDrivers'),
+                value: 'all',
+              },
+              {
+                label: t('settingsPanels.standings.groupByClass'),
+                value: 'grouped',
+              },
+              {
+                label: t('settingsPanels.standings.classCycling'),
+                value: 'cycling',
+              },
             ]}
           />
         </div>
       </Card>
 
-      <Card title="Hotkeys">
+      <Card title={t('settingsPanels.standings.hotkeys')}>
         <div className={styles.fieldGroup}>
           <HotkeyRecorder
-            label="Cycle View Mode (All → Grouped → Cycling)"
+            label={t('settingsPanels.standings.cycleViewModeHotkey')}
             currentHotkey={settings.viewModeHotkey}
             onApply={(key) => update({ viewModeHotkey: key })}
           />
@@ -99,7 +218,7 @@ export const StandingsSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <HotkeyRecorder
-            label="Previous Class (Cycling mode)"
+            label={t('settingsPanels.standings.previousClassHotkey')}
             currentHotkey={settings.classPrevHotkey}
             onApply={(key) => update({ classPrevHotkey: key })}
           />
@@ -107,72 +226,17 @@ export const StandingsSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <HotkeyRecorder
-            label="Next Class (Cycling mode)"
+            label={t('settingsPanels.standings.nextClassHotkey')}
             currentHotkey={settings.classNextHotkey}
             onApply={(key) => update({ classNextHotkey: key })}
           />
         </div>
       </Card>
 
-      <Card title="Data Columns">
-        {[
-          {
-            title: 'Position Change (+/-)',
-            desc: 'Arrow showing positions gained or lost since session start.',
-            value: settings.showPosChange,
-            key: 'showPosChange',
-          },
-          {
-            title: 'Vehicle Brand Logo',
-            desc: 'Manufacturer badge next to driver name.',
-            value: settings.showBrand,
-            key: 'showBrand',
-          },
-          {
-            title: 'Tire Compound',
-            desc: 'Visual indicator of current tire type.',
-            value: settings.showTire,
-            key: 'showTire',
-          },
-          {
-            title: 'License Badge',
-            desc: 'Driver safety rating badge (A, B, C, D, R).',
-            value: settings.showLicBadge,
-            key: 'showLicBadge',
-          },
-          {
-            title: 'iRating',
-            desc: 'Driver iRating value.',
-            value: settings.showIRating,
-            key: 'showIRating',
-          },
-          {
-            title: 'iRating Delta (projected)',
-            desc: 'Projected iRating gain or loss based on current position.',
-            value: settings.showIrChange,
-            key: 'showIrChange',
-          },
-          {
-            title: 'Laps Completed',
-            desc: 'Number of laps completed by each driver.',
-            value: settings.showLapsCompleted,
-            key: 'showLapsCompleted',
-          },
-          {
-            title: 'Abbreviate Driver Names',
-            desc: 'Shorten names to save column space.',
-            value: settings.abbreviateNames,
-            key: 'abbreviateNames',
-          },
-          {
-            title: 'Driver Flags',
-            desc: 'Display active warning flags (e.g. Mechanical Damage/Meatball) next to driver name.',
-            value: settings.showDriverFlags,
-            key: 'showDriverFlags',
-          },
-        ].map((item) => (
+      <Card title={t('settingsPanels.relative.dataColumns')}>
+        {dataColumns.map((item) => (
           <div key={item.key} className={styles.fieldGroup}>
-            <SettingRow title={item.title} desc={item.desc}>
+            <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
               <Switch
                 checked={item.value}
                 onChange={(v) => update({ [item.key]: v })}
@@ -182,53 +246,10 @@ export const StandingsSettingsPanel = observer(() => {
         ))}
       </Card>
 
-      <Card title="Header Info">
-        {[
-          {
-            title: 'Column Headers',
-            desc: 'Show labels above each data column.',
-            value: settings.showColumnHeaders,
-            key: 'showColumnHeaders',
-          },
-          {
-            title: 'Session Progress Info',
-            desc: 'Laps or time remaining bar at the top.',
-            value: settings.showSessionHeader,
-            key: 'showSessionHeader',
-          },
-          {
-            title: 'Live Weather Info',
-            desc: 'Wind and temperature row in the header.',
-            value: settings.showWeather,
-            key: 'showWeather',
-          },
-          {
-            title: 'Strength of Field (SOF)',
-            desc: 'Average iRating of all registered drivers.',
-            value: settings.showSOF,
-            key: 'showSOF',
-          },
-          {
-            title: 'Pit Stop Counter (player only)',
-            desc: 'Number of pit stops made by the player car.',
-            value: settings.showPitStops,
-            key: 'showPitStops',
-          },
-          {
-            title: 'Incidents Badge (player only)',
-            desc: 'Incident count accumulated by the player car.',
-            value: settings.showIncidentsBadge,
-            key: 'showIncidentsBadge',
-          },
-          {
-            title: 'Total Drivers Count',
-            desc: 'Total number of drivers in the session.',
-            value: settings.showTotalDrivers,
-            key: 'showTotalDrivers',
-          },
-        ].map((item) => (
+      <Card title={t('settingsPanels.standings.headerInfo')}>
+        {headerInfo.map((item) => (
           <div key={item.key} className={styles.fieldGroup}>
-            <SettingRow title={item.title} desc={item.desc}>
+            <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
               <Switch
                 checked={item.value}
                 onChange={(v) => update({ [item.key]: v })}

@@ -133,12 +133,34 @@
     "remove": "Удалить",
     "loadingBackground": "Загрузка фона..."
   },
+  "widgetSettingsPopup": {
+    "ariaLabel": "Настройки {{label}}",
+    "close": "Закрыть"
+  },
+  "widgetPreview": {
+    "noPreview": "Предпросмотр недоступен"
+  },
+  "widgetSettings": {
+    "selectToConfigure": "Выберите виджет для настройки",
+    "notFound": "Виджет не найден",
+    "moduleConfig": "Настройка модуля",
+    "layoutAndDimensions": "Расположение и размеры",
+    "positionX": "Позиция X",
+    "positionY": "Позиция Y",
+    "width": "Ширина (px)",
+    "height": "Высота (px)",
+    "layerDepth": "Глубина слоя (Z-Index)",
+    "aesthetics": "Внешний вид",
+    "background": "Фон",
+    "border": "Рамка"
+  },
   "settingsPage": {
     "moduleLabel": "Конфигурация",
     "title": "Глобальные настройки приложения",
     "language": {
       "title": "Язык",
-      "fieldLabel": "Язык приложения"
+      "fieldLabel": "Язык приложения",
+      "system": "Системная локаль"
     },
     "widgetDisplayOverride": {
       "title": "Отображение виджетов",

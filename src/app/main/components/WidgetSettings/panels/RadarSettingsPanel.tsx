@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { Col, InputNumber, Row, Segmented } from 'antd';
 import type {
   RadarQualifyingVisibility,
@@ -11,6 +12,7 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 export const RadarSettingsPanel = observer(
   ({ widgetId }: { widgetId: 'proximity-radar' | 'radar-bar' }) => {
     const widgetSettings = useWidgetEditor();
+    const { t } = useTranslation('widgets');
     const settings = widgetSettings.getSettings<RadarSettings>(widgetId);
 
     const update = (partial: Partial<RadarSettings>) => {
@@ -22,10 +24,12 @@ export const RadarSettingsPanel = observer(
 
     return (
       <>
-        <Card title="Radar Behavior">
+        <Card title={t('settingsPanels.radar.radarBehavior')}>
           <Row gutter={24} className={styles.fieldGroup}>
             <Col span={8}>
-              <span className={styles.fieldLabel}>Activation Range (m)</span>
+              <span className={styles.fieldLabel}>
+                {t('settingsPanels.radar.activationRange')}
+              </span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={settings.proximityThreshold}
@@ -41,7 +45,9 @@ export const RadarSettingsPanel = observer(
             </Col>
 
             <Col span={8}>
-              <span className={styles.fieldLabel}>Fade Out Delay (s)</span>
+              <span className={styles.fieldLabel}>
+                {t('settingsPanels.radar.fadeOutDelay')}
+              </span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={settings.hideDelay}
@@ -57,7 +63,9 @@ export const RadarSettingsPanel = observer(
             </Col>
 
             <Col span={8}>
-              <span className={styles.fieldLabel}>Car Length (m)</span>
+              <span className={styles.fieldLabel}>
+                {t('settingsPanels.radar.carLength')}
+              </span>
               <InputNumber
                 style={{ width: '100%' }}
                 value={settings.carLength}
@@ -74,10 +82,12 @@ export const RadarSettingsPanel = observer(
           </Row>
         </Card>
 
-        <Card title="Qualifying">
+        <Card title={t('settingsPanels.radar.qualifying')}>
           <Row gutter={24} className={styles.fieldGroup}>
             <Col span={24}>
-              <span className={styles.fieldLabel}>Show in qualifying</span>
+              <span className={styles.fieldLabel}>
+                {t('settingsPanels.radar.showInQualifying')}
+              </span>
               <Segmented
                 value={settings.qualifyingVisibility}
                 onChange={(v) => {
@@ -86,13 +96,13 @@ export const RadarSettingsPanel = observer(
                   });
                 }}
                 options={[
-                  { label: 'Always', value: 'always' },
-                  { label: 'Auto', value: 'auto' },
-                  { label: 'Never', value: 'never' },
+                  { label: t('settingsPanels.radar.always'), value: 'always' },
+                  { label: t('settingsPanels.radar.auto'), value: 'auto' },
+                  { label: t('settingsPanels.radar.never'), value: 'never' },
                 ]}
               />
               <div className={styles.fieldDesc}>
-                Auto: hidden during lone qualifying (single car on track)
+                {t('settingsPanels.radar.autoDesc')}
               </div>
             </Col>
           </Row>

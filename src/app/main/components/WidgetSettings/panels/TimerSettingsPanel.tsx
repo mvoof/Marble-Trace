@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { Switch } from 'antd';
 import { TimerWidgetSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
@@ -8,6 +9,7 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 
 export const TimerSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
 
   const settings = widgetSettings.getSettings<TimerWidgetSettings>('timer');
 
@@ -18,54 +20,56 @@ export const TimerSettingsPanel = observer(() => {
     });
   };
 
+  const items = [
+    {
+      titleKey: 'settingsPanels.timer.showSessionType',
+      descKey: 'settingsPanels.timer.showSessionTypeDesc',
+      value: settings.showSessionType,
+      key: 'showSessionType',
+    },
+    {
+      titleKey: 'settingsPanels.timer.showLapCount',
+      descKey: 'settingsPanels.timer.showLapCountDesc',
+      value: settings.showLaps,
+      key: 'showLaps',
+    },
+    {
+      titleKey: 'settingsPanels.timer.showPosition',
+      descKey: 'settingsPanels.timer.showPositionDesc',
+      value: settings.showPosition,
+      key: 'showPosition',
+    },
+    {
+      titleKey: 'settingsPanels.timer.showPcClock',
+      descKey: 'settingsPanels.timer.showPcClockDesc',
+      value: settings.showWallClock,
+      key: 'showWallClock',
+    },
+    {
+      titleKey: 'settingsPanels.timer.showSimTime',
+      descKey: 'settingsPanels.timer.showSimTimeDesc',
+      value: settings.showSimTime,
+      key: 'showSimTime',
+    },
+    {
+      titleKey: 'settingsPanels.timer.showPcDate',
+      descKey: 'settingsPanels.timer.showPcDateDesc',
+      value: settings.showPcDate,
+      key: 'showPcDate',
+    },
+    {
+      titleKey: 'settingsPanels.timer.showSimDate',
+      descKey: 'settingsPanels.timer.showSimDateDesc',
+      value: settings.showSimDate,
+      key: 'showSimDate',
+    },
+  ] as const;
+
   return (
-    <Card title="Visible Elements">
-      {[
-        {
-          title: 'Show Session Type',
-          desc: 'Display the current session type (Race, Qualify, Practice).',
-          value: settings.showSessionType,
-          key: 'showSessionType',
-        },
-        {
-          title: 'Show Lap Count',
-          desc: 'Display current lap and total laps.',
-          value: settings.showLaps,
-          key: 'showLaps',
-        },
-        {
-          title: 'Show Position',
-          desc: 'Display your current race position.',
-          value: settings.showPosition,
-          key: 'showPosition',
-        },
-        {
-          title: 'Show PC Clock',
-          desc: 'Display current system time (HH:MM).',
-          value: settings.showWallClock,
-          key: 'showWallClock',
-        },
-        {
-          title: 'Show Sim Time',
-          desc: 'Display in-simulator time of day (HH:MM).',
-          value: settings.showSimTime,
-          key: 'showSimTime',
-        },
-        {
-          title: 'Show PC Date',
-          desc: 'Display current system date.',
-          value: settings.showPcDate,
-          key: 'showPcDate',
-        },
-        {
-          title: 'Show Sim Date',
-          desc: 'Display in-simulator date (may differ from real date).',
-          value: settings.showSimDate,
-          key: 'showSimDate',
-        },
-      ].map((item) => (
+    <Card title={t('settingsPanels.timer.visibleElements')}>
+      {items.map((item) => (
         <div key={item.key} className={styles.fieldGroup}>
-          <SettingRow title={item.title} desc={item.desc}>
+          <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
             <Switch
               checked={item.value}
               onChange={(v) => update({ [item.key]: v })}
