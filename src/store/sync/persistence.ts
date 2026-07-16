@@ -1,4 +1,5 @@
 import { runInAction } from 'mobx';
+import { invoke } from '@tauri-apps/api/core';
 import { DEFAULT_WIDGETS } from '@store/widget-defaults';
 import type { UnitSystem } from '@/types';
 import type {
@@ -103,7 +104,7 @@ interface Store {
 }
 
 export const saveSettings = async (store: Store, root: RootStore) => {
-  await store.set('settings', {
+  const settings: Settings = {
     app: { ...root.appSettings.appSettings },
     units: {
       system: root.units.unitSystem,
@@ -113,7 +114,10 @@ export const saveSettings = async (store: Store, root: RootStore) => {
     layouts: root.widgetSettings.layouts,
     activeLayoutId: root.widgetSettings.activeLayoutId,
     sessionLayouts: root.widgetSettings.sessionLayouts,
-  });
+  };
 
+  await store.set('settings', settings);
   await store.save();
+
+  void invoke('log_settings_snapshot', { settings });
 };

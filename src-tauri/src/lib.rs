@@ -1,6 +1,7 @@
 mod capabilities;
 mod commands;
 mod computations;
+mod logging;
 mod model;
 mod sources;
 mod telemetry;
@@ -21,8 +22,8 @@ use model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
 
 use commands::{
     delete_reference_lap, delete_track_shape, get_connection_status, get_last_session_info,
-    get_reference_lap, reset_pit_lane_pct, set_active_events, set_car_length, set_pit_warning_laps,
-    start_telemetry_stream, stop_telemetry_stream,
+    get_reference_lap, log_settings_snapshot, reset_pit_lane_pct, set_active_events,
+    set_car_length, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
 };
 use computations::ProcessorRegistry;
 use telemetry::state::TelemetryState;
@@ -53,17 +54,9 @@ use std::sync::{Arc, Mutex};
 use tauri::{generate_context, generate_handler, Builder, Listener, Manager, WindowEvent};
 use tauri_plugin_aptabase::EventTracker;
 use tauri_plugin_store::StoreExt;
-use tracing_subscriber::EnvFilter;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| EnvFilter::new("marble_trace_lib=info")),
-        )
-        .init();
-
     #[cfg(feature = "dev")]
     {
         let mut types = TypeCollection::default();
@@ -149,6 +142,10 @@ pub fn run() {
 
     builder
         .setup(|app| {
+            let log_file_guard = logging::init(app);
+            app.manage(log_file_guard);
+            logging::log_startup_info(app);
+
             {
                 let flag = force_track_start_listener;
                 app.listen("track-map:force-start", move |_| {
@@ -199,7 +196,8 @@ pub fn run() {
             delete_track_shape,
             reset_pit_lane_pct,
             get_reference_lap,
-            delete_reference_lap
+            delete_reference_lap,
+            log_settings_snapshot
         ])
         .manage(TelemetryState {
             service: Arc::new(telemetry::state::TelemetryServiceState {
@@ -230,14 +228,36 @@ pub fn run() {
             reset_pit_pcts: reset_pit_pcts_state,
             reset_reference_lap: reset_reference_lap_state,
         })
-        .on_window_event(|window, event| {
-            if let WindowEvent::Destroyed = event {
+        .on_window_event(|window, event| match event {
+            WindowEvent::Destroyed => {
+                tracing::info!(window = window.label(), "window destroyed");
+
                 if window.label() == "main" {
                     if let Some(overlay) = window.app_handle().get_webview_window("overlay") {
                         let _ = overlay.destroy();
                     }
                 }
             }
+            WindowEvent::Resized(size) => {
+                tracing::debug!(
+                    window = window.label(),
+                    width = size.width,
+                    height = size.height,
+                    "window resized"
+                );
+            }
+            WindowEvent::Moved(position) => {
+                tracing::debug!(
+                    window = window.label(),
+                    x = position.x,
+                    y = position.y,
+                    "window moved"
+                );
+            }
+            WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
+                tracing::info!(window = window.label(), scale_factor, "window DPI changed");
+            }
+            _ => {}
         })
         .run(generate_context!())
         .expect("error while running tauri application");

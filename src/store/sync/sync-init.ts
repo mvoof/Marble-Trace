@@ -37,7 +37,6 @@ export const initMainSync = async (root: RootStore) => {
     mainSyncInitPromise = (async () => {
       const store = await load(SETTINGS_FILE);
       const loadedSettings = await store.get<Settings>('settings');
-      console.log({ loadedSettings });
 
       if (loadedSettings) {
         try {
