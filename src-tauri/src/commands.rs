@@ -19,6 +19,13 @@ pub async fn get_connection_status(state: State<'_, TelemetryState>) -> Result<b
 }
 
 #[tauri::command]
+pub async fn log_settings_snapshot(settings: serde_json::Value) -> Result<(), String> {
+    crate::logging::log_settings_snapshot(&settings);
+
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn get_last_session_info(
     state: State<'_, TelemetryState>,
 ) -> Result<Option<SessionSnapshot>, String> {
