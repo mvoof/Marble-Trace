@@ -1,10 +1,12 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import styles from './AppStatus.module.scss';
 import { useSimStore } from '@store/root-store-context';
 import { getSimDisplayName } from '@utils/sim-name';
 
 export const AppStatus = observer(() => {
   const simStore = useSimStore();
+  const { t } = useTranslation('main-app');
 
   const { status, error, currentSim } = simStore;
 
@@ -12,14 +14,16 @@ export const AppStatus = observer(() => {
     switch (status) {
       case 'connected':
         return {
-          label: `CONNECTED TO ${getSimDisplayName(currentSim).toUpperCase()}`,
+          label: t('appStatus.connectedTo', {
+            sim: getSimDisplayName(currentSim).toUpperCase(),
+          }),
           dotClass: styles.connected,
           textClass: styles.connectedText,
         };
       case 'waiting':
         if (currentSim) {
           return {
-            label: 'WAITING FOR TELEMETRY',
+            label: t('appStatus.waitingForTelemetry'),
             dotClass: styles.waiting,
             textClass: styles.waitingText,
           };
@@ -28,14 +32,14 @@ export const AppStatus = observer(() => {
         break;
       case 'error':
         return {
-          label: error || 'SYSTEM ERROR',
+          label: error || t('appStatus.systemError'),
           dotClass: styles.error,
           textClass: styles.errorText,
         };
     }
 
     return {
-      label: 'WAITING FOR GAME TO START',
+      label: t('appStatus.waitingForGame'),
       dotClass: styles.waiting,
       textClass: styles.waitingText,
     };

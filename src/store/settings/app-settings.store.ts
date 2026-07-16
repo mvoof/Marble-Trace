@@ -4,6 +4,9 @@ import { relaunch } from '@tauri-apps/plugin-process';
 import { load } from '@tauri-apps/plugin-store';
 import { getVersion } from '@tauri-apps/api/app';
 import { mergeWithDefaults } from '@utils/deep-merge';
+import i18n from '@/i18n';
+
+export type AppLanguage = 'en' | 'ru' | 'zh';
 
 const DEFAULT_APP_SETTINGS = {
   dragHotkey: 'F9',
@@ -20,6 +23,7 @@ const DEFAULT_APP_SETTINGS = {
   editorSnapToGrid: true,
   // Overlay-space grid pitch (px). Drives both the visual grid and snapping.
   editorGridSize: 20,
+  language: 'en' as AppLanguage,
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
@@ -90,6 +94,12 @@ export class AppSettingsStore {
   applySettings(saved: Partial<AppSettings>) {
     const merged = mergeWithDefaults(DEFAULT_APP_SETTINGS, saved);
     Object.assign(this.appSettings, merged);
+    void i18n.changeLanguage(this.appSettings.language);
+  }
+
+  setLanguage(value: AppLanguage) {
+    this.appSettings.language = value;
+    void i18n.changeLanguage(value);
   }
 
   setAutoUpdate(value: boolean) {

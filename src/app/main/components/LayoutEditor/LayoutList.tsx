@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { Button, Checkbox, Input, Modal, Popconfirm } from 'antd';
 import {
   Plus,
@@ -28,6 +29,7 @@ interface LayoutPreviewProps {
 }
 
 const LayoutPreview = observer(({ layout }: LayoutPreviewProps) => {
+  const { t } = useTranslation('main-app');
   const [backgroundSrc, setBackgroundSrc] = useState<string | undefined>();
 
   useEffect(() => {
@@ -102,7 +104,9 @@ const LayoutPreview = observer(({ layout }: LayoutPreviewProps) => {
         })}
 
         {enabledWidgets.length === 0 && (
-          <div className={styles.emptyPreviewText}>Empty Layout</div>
+          <div className={styles.emptyPreviewText}>
+            {t('layoutList.emptyLayout')}
+          </div>
         )}
       </div>
     </div>
@@ -113,10 +117,18 @@ interface LayoutListProps {
   onOpenEditor: (id: string) => void;
 }
 
+const SESSION_LABEL_KEYS: Record<SessionContext, string> = {
+  Practice: 'layoutList.sessions.practice',
+  Qualify: 'layoutList.sessions.qualify',
+  Race: 'layoutList.sessions.race',
+  Garage: 'layoutList.sessions.garage',
+};
+
 export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   const widgetSettings = useWidgetSettingsStore();
   const appSettings = useAppSettingsStore();
   const simStore = useSimStore();
+  const { t } = useTranslation('main-app');
   const autoSwitchEnabled = appSettings.appSettings.autoSwitchLayouts;
   const isAutoSwitchActive = autoSwitchEnabled && simStore.isConnected;
 
@@ -227,13 +239,15 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerInfo}>
-          <span className={styles.moduleLabel}>Layouts</span>
+          <span className={styles.moduleLabel}>
+            {t('layoutList.moduleLabel')}
+          </span>
 
-          <h1 className={styles.title}>Manage Widget Layouts</h1>
+          <h1 className={styles.title}>{t('layoutList.title')}</h1>
           <p className={styles.subtitle}>
             {autoSwitchEnabled
-              ? 'Auto-switching is active. Layouts will load dynamically matching your game session.'
-              : 'Select a layout to see details. Double-click a card to open it in the editor.'}
+              ? t('layoutList.subtitleAutoSwitch')
+              : t('layoutList.subtitleManual')}
           </p>
         </div>
 
@@ -243,9 +257,13 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
               autoSwitchEnabled ? styles.headerToggleActive : ''
             }`}
             onClick={() => appSettings.setAutoSwitchLayouts(!autoSwitchEnabled)}
-            title="Toggle Auto-Switching mode"
+            title={t('layoutList.toggleAutoSwitchTooltip')}
           >
-            Auto-Switch: {autoSwitchEnabled ? 'On' : 'Off'}
+            {t('layoutList.autoSwitchLabel', {
+              state: autoSwitchEnabled
+                ? t('layoutList.on')
+                : t('layoutList.off'),
+            })}
           </Button>
 
           <Button
@@ -256,7 +274,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
               setIsCreateModalOpen(true);
             }}
           >
-            New Layout
+            {t('layoutList.newLayout')}
           </Button>
         </div>
       </header>
@@ -317,7 +335,9 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                       <span className={styles.cardName}>{layout.name}</span>
                       {isActive && (
                         <span className={styles.activeBadge}>
-                          {isAutoSwitchActive ? 'Current' : 'Active'}
+                          {isAutoSwitchActive
+                            ? t('layoutList.current')
+                            : t('layoutList.active')}
                         </span>
                       )}
                     </div>
@@ -332,24 +352,27 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                                 ? styles[`sessionBadge${session}`]
                                 : styles.sessionBadgeDisabled
                             }`}
-                            title={`Assigned to ${session}`}
+                            title={t('layoutList.assignedTo', {
+                              session: t(SESSION_LABEL_KEYS[session]),
+                            })}
                           >
-                            {session}
+                            {t(SESSION_LABEL_KEYS[session])}
                           </span>
                         ))
                       ) : (
                         <span
                           className={`${styles.sessionBadge} ${styles.sessionBadgeManual}`}
-                          title="Manual activation only"
+                          title={t('layoutList.manualActivationOnly')}
                         >
-                          Manual
+                          {t('layoutList.manual')}
                         </span>
                       )}
                     </div>
 
                     <span className={styles.cardMeta}>
-                      {enabledWidgetsCount} widget
-                      {enabledWidgetsCount !== 1 ? 's' : ''}
+                      {t('layoutList.widgetsCount', {
+                        count: enabledWidgetsCount,
+                      })}
                       {monitorConfig?.resolution
                         ? ` • ${monitorConfig.resolution.width}x${monitorConfig.resolution.height}`
                         : ''}
@@ -404,7 +427,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   </div>
                 )}
                 <span className={styles.detailsMeta}>
-                  Created:{' '}
+                  {t('layoutList.created')}{' '}
                   {new Date(selectedLayout.createdAt).toLocaleDateString()}
                 </span>
               </div>
@@ -412,7 +435,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
               <div className={styles.detailsInfoGroup}>
                 <div className={styles.assignmentSection}>
                   <span className={styles.sectionLabel}>
-                    Auto-Switch Assignment
+                    {t('layoutList.autoSwitchAssignment')}
                   </span>
                   <div className={styles.assignmentGrid}>
                     {(
@@ -438,7 +461,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                             );
                           }}
                         >
-                          {context}
+                          {t(SESSION_LABEL_KEYS[context])}
                         </Checkbox>
                       );
                     })}
@@ -446,21 +469,27 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                 </div>
 
                 <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>Active Monitor</span>
+                  <span className={styles.infoLabel}>
+                    {t('layoutList.activeMonitor')}
+                  </span>
                   <span className={styles.infoValue}>
-                    {selectedMonitorName || 'None'}
+                    {selectedMonitorName || t('layoutList.none')}
                   </span>
                 </div>
                 {selectedResolution && (
                   <div className={styles.infoRow}>
-                    <span className={styles.infoLabel}>Resolution</span>
+                    <span className={styles.infoLabel}>
+                      {t('layoutList.resolution')}
+                    </span>
                     <span className={styles.infoValue}>
                       {selectedResolution.width}×{selectedResolution.height}
                     </span>
                   </div>
                 )}
                 <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>Active Widgets</span>
+                  <span className={styles.infoLabel}>
+                    {t('layoutList.activeWidgets')}
+                  </span>
                   <span className={styles.infoValue}>
                     {selectedEnabledWidgets.length}
                   </span>
@@ -490,7 +519,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   disabled={selectedId === widgetSettings.activeLayoutId}
                   style={{ width: '100%' }}
                 >
-                  Activate Layout
+                  {t('layoutList.activateLayout')}
                 </Button>
 
                 <Button
@@ -498,7 +527,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   onClick={handleOpenEditor}
                   style={{ width: '100%' }}
                 >
-                  Open Editor
+                  {t('layoutList.openEditor')}
                 </Button>
 
                 <Button
@@ -507,15 +536,15 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   loading={isDuplicating}
                   style={{ width: '100%', marginTop: '8px' }}
                 >
-                  Duplicate Layout
+                  {t('layoutList.duplicateLayout')}
                 </Button>
 
                 <Popconfirm
-                  title="Delete this layout?"
-                  description="This action cannot be undone."
-                  okText="Delete"
+                  title={t('layoutList.deleteLayoutConfirmTitle')}
+                  description={t('layoutList.deleteLayoutConfirmDescription')}
+                  okText={t('layoutEditor.delete')}
                   okButtonProps={{ danger: true }}
-                  cancelText="Cancel"
+                  cancelText={t('layoutEditor.cancel')}
                   onConfirm={handleDeleteLayout}
                 >
                   <Button
@@ -524,7 +553,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                     icon={<Trash2 size={16} />}
                     style={{ width: '100%', marginTop: '8px' }}
                   >
-                    Delete Layout
+                    {t('layoutList.deleteLayout')}
                   </Button>
                 </Popconfirm>
               </div>
@@ -532,22 +561,22 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
           ) : (
             <div className={styles.detailsEmpty}>
               <LayoutTemplate size={32} />
-              <p>Select a layout to see details and actions</p>
+              <p>{t('layoutList.emptySelection')}</p>
             </div>
           )}
         </aside>
       </div>
 
       <Modal
-        title="Create New Layout"
+        title={t('layoutList.createNewLayout')}
         open={isCreateModalOpen}
         onOk={handleCreateLayout}
         onCancel={() => setIsCreateModalOpen(false)}
-        okText="Create"
-        cancelText="Cancel"
+        okText={t('layoutEditor.create')}
+        cancelText={t('layoutEditor.cancel')}
       >
         <Input
-          placeholder="Enter layout name..."
+          placeholder={t('layoutList.enterLayoutName')}
           value={newLayoutName}
           onChange={(event) => setNewLayoutName(event.target.value)}
           onPressEnter={handleCreateLayout}

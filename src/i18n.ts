@@ -1,27 +1,27 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import en from './locales/en.json';
-import ru from './locales/ru.json';
-import fr from './locales/fr.json';
-import es from './locales/es.json';
+import enMainApp from './locales/en/main-app.json';
+import enWidgets from './locales/en/widgets.json';
+import ruMainApp from './locales/ru/main-app.json';
+import ruWidgets from './locales/ru/widgets.json';
+import zhMainApp from './locales/zh/main-app.json';
+import zhWidgets from './locales/zh/widgets.json';
 
 const resources = {
-  en: { translation: en.translation },
-  ru: { translation: ru.translation },
-  fr: { translation: fr.translation },
-  es: { translation: es.translation },
+  en: { 'main-app': enMainApp, widgets: enWidgets },
+  ru: { 'main-app': ruMainApp, widgets: ruWidgets },
+  zh: { 'main-app': zhMainApp, widgets: zhWidgets },
 };
 
 void i18n.use(initReactI18next).init({
   resources,
-  lng: 'en', // Default language
+  lng: 'en',
   fallbackLng: 'en',
   interpolation: {
     escapeValue: false,
   },
-  ns: ['translation'],
-  defaultNS: 'translation',
+  ns: ['main-app', 'widgets'],
+  defaultNS: 'main-app',
 });
 
-// TODO: Will be used when localizing the application
 export default i18n;

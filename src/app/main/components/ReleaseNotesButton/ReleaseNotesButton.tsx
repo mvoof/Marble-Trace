@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Button, Modal } from 'antd';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { useAppSettingsStore } from '@store/root-store-context';
 import styles from './ReleaseNotesButton.module.scss';
 
 export const ReleaseNotesButton = observer(() => {
   const appSettings = useAppSettingsStore();
+  const { t } = useTranslation('main-app');
   const [isOpen, setIsOpen] = useState(false);
   const { releaseNotes, availableVersion } = appSettings;
 
@@ -14,11 +16,15 @@ export const ReleaseNotesButton = observer(() => {
   return (
     <>
       <Button size="small" type="text" onClick={() => setIsOpen(true)}>
-        What&apos;s new
+        {t('releaseNotes.whatsNew')}
       </Button>
 
       <Modal
-        title={`What's new${availableVersion ? ` in v${availableVersion}` : ''}`}
+        title={
+          availableVersion
+            ? t('releaseNotes.titleWithVersion', { version: availableVersion })
+            : t('releaseNotes.title')
+        }
         open={isOpen}
         onCancel={() => setIsOpen(false)}
         footer={null}

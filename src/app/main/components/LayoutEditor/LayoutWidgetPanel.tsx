@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Switch, Button } from 'antd';
 import { Settings2, ArrowLeft } from 'lucide-react';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
@@ -89,6 +90,7 @@ export const LayoutWidgetPanel = observer(
     onEditWidget,
   }: LayoutWidgetPanelProps) => {
     const widgetSettings = useWidgetSettingsStore();
+    const { t } = useTranslation('main-app');
 
     if (editingWidgetId) {
       return (
@@ -100,7 +102,7 @@ export const LayoutWidgetPanel = observer(
             className={styles.backButton}
             onClick={() => onEditWidget(null)}
           >
-            Back
+            {t('layoutWidgetPanel.back')}
           </Button>
 
           <div className={styles.detailBody}>

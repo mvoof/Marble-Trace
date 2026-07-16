@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Space, Button, Input } from 'antd';
 import type { InputRef } from 'antd';
+import { useTranslation } from 'react-i18next';
 import styles from './HotkeyRecorder.module.scss';
 
 interface HotkeyRecorderProps {
@@ -24,6 +25,7 @@ export const HotkeyRecorder = ({
   onClear,
   label,
 }: HotkeyRecorderProps) => {
+  const { t } = useTranslation('main-app');
   const [recording, setRecording] = useState(false);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const pendingFocusRef = useRef(false);
@@ -89,7 +91,9 @@ export const HotkeyRecorder = ({
       {label && <span className={styles.label}>{label}</span>}
 
       <div className={styles.hotkeyDisplay}>
-        <div className={styles.keyBadge}>{currentHotkey || 'None'}</div>
+        <div className={styles.keyBadge}>
+          {currentHotkey || t('hotkeyRecorder.none')}
+        </div>
 
         {pendingKey && (
           <>
@@ -104,26 +108,28 @@ export const HotkeyRecorder = ({
           <Input
             ref={inputCallbackRef}
             readOnly
-            placeholder="Press a key combination..."
+            placeholder={t('hotkeyRecorder.pressKeyCombination')}
             className={styles.recordingInput}
             onBlur={() => setRecording(false)}
             onKeyDown={handleKeyDown}
           />
         ) : (
           <Button size="small" onClick={startRecording}>
-            {currentHotkey ? 'Rebind' : 'Record'}
+            {currentHotkey
+              ? t('hotkeyRecorder.rebind')
+              : t('hotkeyRecorder.record')}
           </Button>
         )}
 
         {pendingKey && (
           <Button size="small" type="primary" onClick={applyHotkey}>
-            Apply
+            {t('hotkeyRecorder.apply')}
           </Button>
         )}
 
         {currentHotkey && !recording && (
           <Button size="small" danger onClick={clearHotkey}>
-            Clear
+            {t('hotkeyRecorder.clear')}
           </Button>
         )}
       </Space>

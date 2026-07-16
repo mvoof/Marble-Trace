@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { Segmented } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { AppStatus } from '../AppStatus/AppStatus';
 import { HeaderTrace } from './HeaderTrace';
 import { WindowControls } from './WindowControls';
@@ -8,12 +9,6 @@ import { useAppSettingsStore } from '@store/root-store-context';
 import styles from './AppHeader.module.scss';
 
 export type AppSection = 'layouts' | 'widgets' | 'settings';
-
-const SECTION_OPTIONS = [
-  { label: 'Layouts', value: 'layouts' },
-  { label: 'Widgets', value: 'widgets' },
-  { label: 'Settings', value: 'settings' },
-];
 
 interface AppHeaderProps {
   activeSection: AppSection;
@@ -25,6 +20,13 @@ interface AppHeaderProps {
 export const AppHeader = observer(
   ({ activeSection, onSectionChange }: AppHeaderProps) => {
     const appSettings = useAppSettingsStore();
+    const { t } = useTranslation('main-app');
+
+    const sectionOptions = [
+      { label: t('appHeader.sections.layouts'), value: 'layouts' },
+      { label: t('appHeader.sections.widgets'), value: 'widgets' },
+      { label: t('appHeader.sections.settings'), value: 'settings' },
+    ];
 
     return (
       <header className={styles.header} data-tauri-drag-region>
@@ -39,7 +41,7 @@ export const AppHeader = observer(
           <Segmented
             value={activeSection}
             onChange={(value) => onSectionChange(value as AppSection)}
-            options={SECTION_OPTIONS}
+            options={sectionOptions}
           />
         </div>
 
