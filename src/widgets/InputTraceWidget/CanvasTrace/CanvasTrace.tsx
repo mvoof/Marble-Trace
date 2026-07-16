@@ -213,24 +213,15 @@ export const CanvasTrace = () => {
       // telemetry update, e.g. the static widget preview) would otherwise never
       // trigger a redraw.
       const {
-        lineWidth,
-        throttleColor,
-        brakeColor,
-        clutchColor,
-        absColor,
-        showSteering,
-        steeringLimit,
-        steeringZoom,
+        lineWidth: _lineWidth,
+        throttleColor: _throttleColor,
+        brakeColor: _brakeColor,
+        clutchColor: _clutchColor,
+        absColor: _absColor,
+        showSteering: _showSteering,
+        steeringLimit: _steeringLimit,
+        steeringZoom: _steeringZoom,
       } = settings;
-
-      void lineWidth;
-      void throttleColor;
-      void brakeColor;
-      void clutchColor;
-      void absColor;
-      void showSteering;
-      void steeringLimit;
-      void steeringZoom;
 
       const rawThrottle = inputs?.throttle ?? 0;
       const rawBrake = inputs?.brake ?? 0;
