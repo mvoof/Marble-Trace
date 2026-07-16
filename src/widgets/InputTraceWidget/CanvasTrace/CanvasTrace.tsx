@@ -245,18 +245,31 @@ export const CanvasTrace = () => {
       const requiredBufferLength = bufferSize * numChannels;
       const state = bufferStateRef.current;
 
+      // A resize of any circular buffer invalidates head/count for all of
+      // them — e.g. with every channel toggle off, requiredBufferLength
+      // stays 0 across a historySeconds change, but absBuffer/steerBuffer
+      // still get reallocated to the new (smaller) bufferSize; leaving a
+      // stale head from the old size would write out of bounds on them.
+      let buffersResized = false;
+
       if (state.buffer.length !== requiredBufferLength) {
         state.buffer = new Float32Array(requiredBufferLength);
-        state.head = 0;
-        state.count = 0;
+        buffersResized = true;
       }
 
       if (state.absBuffer.length !== bufferSize) {
         state.absBuffer = new Uint8Array(bufferSize);
+        buffersResized = true;
       }
 
       if (state.steerBuffer.length !== bufferSize) {
         state.steerBuffer = new Float32Array(bufferSize);
+        buffersResized = true;
+      }
+
+      if (buffersResized) {
+        state.head = 0;
+        state.count = 0;
       }
 
       const smoothing = settings.smoothing;
