@@ -244,13 +244,13 @@ export const RpmLightsWidget = observer(() => {
   const isBlink = rpm >= blinkRpm;
 
   const displayPct = Math.min(Math.max(rpm / (blinkRpm || 1), 0), 1);
-  const litCount = Math.floor(displayPct * LED_COUNT);
+  const litCount = isShift ? LED_COUNT : Math.floor(displayPct * LED_COUNT);
 
   return (
     <WidgetPanel
       direction="row"
       style={{ gap: undefined }}
-      className={`${styles.bar} ${isBlink ? styles.barBlink : ''}`}
+      className={`${styles.bar} ${isShift ? styles.barBlink : ''}`}
     >
       {Array.from({ length: LED_COUNT }, (_, index) => {
         const isLit = index < litCount;
