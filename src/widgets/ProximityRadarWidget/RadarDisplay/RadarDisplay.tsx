@@ -170,7 +170,7 @@ export const RadarDisplay = observer(() => {
               color={frontColor}
               carLength={carLength}
             />
-            <text y="-18" fontSize={18} className={styles.radarMeasurementText}>
+            <text y="-18" className={styles.radarMeasurementText}>
               {formatDistanceFn(frontDist)}
               {distanceUnitLabel}
             </text>
@@ -187,7 +187,7 @@ export const RadarDisplay = observer(() => {
               color={rearColor}
               carLength={carLength}
             />
-            <text y="18" fontSize={18} className={styles.radarMeasurementText}>
+            <text y="18" className={styles.radarMeasurementText}>
               {formatDistanceFn(rearDist)}
               {distanceUnitLabel}
             </text>
@@ -204,7 +204,7 @@ export const RadarDisplay = observer(() => {
               color={getSideCarColor(leftDist)}
               carLength={carLength}
             />
-            <text y="0" fontSize={18} className={styles.radarMeasurementText}>
+            <text y="0" className={styles.radarMeasurementText}>
               {formatDistanceFn(Math.abs(leftDist))}
               {distanceUnitLabel}
             </text>
@@ -221,7 +221,7 @@ export const RadarDisplay = observer(() => {
               color={getSideCarColor(rightDist)}
               carLength={carLength}
             />
-            <text y="0" fontSize={18} className={styles.radarMeasurementText}>
+            <text y="0" className={styles.radarMeasurementText}>
               {formatDistanceFn(Math.abs(rightDist))}
               {distanceUnitLabel}
             </text>

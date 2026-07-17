@@ -48,7 +48,7 @@ export const CarDot = observer(
         <text
           textAnchor="middle"
           dy={fontSize * NUMBER_DY_TO_FONT}
-          fontSize={fontSize}
+          style={{ fontSize: `calc(${fontSize}px * var(--font-scale, 1))` }}
           className={styles.carNumber}
         >
           {carNumber}

@@ -50,7 +50,7 @@
 
 .label {
   font-family: $font-widget;
-  font-size: ws(11);
+  font-size: wfs(11);
   font-weight: 600;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -59,7 +59,7 @@
 
 .value {
   font-family: $font-mono;
-  font-size: ws(16);
+  font-size: wfs(16);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: $widget-text-primary;
