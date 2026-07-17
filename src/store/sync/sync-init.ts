@@ -20,6 +20,8 @@ import {
   emitWidgetSettingsUpdated,
   emitWidgetSettingsToMain,
   emitOverlayMonitorChanged,
+  emitSessionLayoutsChanged,
+  emitAutoSwitchLayoutsChanged,
 } from './events';
 import type {
   WidgetDefaultConfig,
@@ -87,7 +89,8 @@ export const initMainSync = async (root: RootStore) => {
         ),
         reaction(
           () => root.appSettings.appSettings.autoSwitchLayouts,
-          () => {
+          (v) => {
+            void emitAutoSwitchLayoutsChanged(v);
             void onSave();
           }
         ),
@@ -101,6 +104,7 @@ export const initMainSync = async (root: RootStore) => {
         reaction(
           () => JSON.stringify(root.widgetSettings.sessionLayouts),
           () => {
+            void emitSessionLayoutsChanged(root.widgetSettings.sessionLayouts);
             void onSave();
           }
         ),
@@ -109,10 +113,21 @@ export const initMainSync = async (root: RootStore) => {
             const isConnected = root.sim.isConnected;
             const isOnTrack = root.player.isOnTrack;
             const sessionType = root.session.currentSessionType;
-            return { isConnected, isOnTrack, sessionType };
+            const autoSwitchLayouts =
+              root.appSettings.appSettings.autoSwitchLayouts;
+            const sessionLayouts = JSON.stringify(
+              root.widgetSettings.sessionLayouts
+            );
+            return {
+              isConnected,
+              isOnTrack,
+              sessionType,
+              autoSwitchLayouts,
+              sessionLayouts,
+            };
           },
-          ({ isConnected, isOnTrack, sessionType }) => {
-            if (!root.appSettings.appSettings.autoSwitchLayouts) return;
+          ({ isConnected, isOnTrack, sessionType, autoSwitchLayouts }) => {
+            if (!autoSwitchLayouts) return;
             if (root.widgetSettings.editorPreviewMode) return;
             if (!isConnected) return;
 

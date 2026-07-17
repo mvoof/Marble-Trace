@@ -1,7 +1,10 @@
 import { runInAction } from 'mobx';
 import { emit, emitTo, listen, UnlistenFn } from '@tauri-apps/api/event';
 import type { UnitSystem } from '@/types';
-import type { WidgetDefaultConfig } from '@/types/widget-settings';
+import type {
+  SessionContext,
+  WidgetDefaultConfig,
+} from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
 import type { AppLanguage } from '@store/settings/app-settings.store';
 import { positionOverlayToMonitor } from './position-overlay';
@@ -74,6 +77,23 @@ export const setupOverlayListeners = async (
       void positionOverlayToMonitor(e.payload, root);
     })
   );
+  unlistens.push(
+    await listen<Record<SessionContext, string | null>>(
+      'session-layouts-changed',
+      (e) => {
+        runInAction(() => {
+          root.widgetSettings.sessionLayouts = e.payload;
+        });
+      }
+    )
+  );
+  unlistens.push(
+    await listen<boolean>('auto-switch-layouts-changed', (e) => {
+      runInAction(() => {
+        root.appSettings.appSettings.autoSwitchLayouts = e.payload;
+      });
+    })
+  );
   return unlistens;
 };
 
@@ -94,3 +114,8 @@ export const emitWidgetSettingsToMain = (widgets: WidgetDefaultConfig[]) =>
   emitTo(MAIN, 'widget-settings-updated', widgets);
 export const emitOverlayMonitorChanged = (name: string | null) =>
   emitTo(OVERLAY, 'overlay-monitor-changed', name);
+export const emitSessionLayoutsChanged = (
+  sessionLayouts: Record<SessionContext, string | null>
+) => emitTo(OVERLAY, 'session-layouts-changed', sessionLayouts);
+export const emitAutoSwitchLayoutsChanged = (val: boolean) =>
+  emitTo(OVERLAY, 'auto-switch-layouts-changed', val);

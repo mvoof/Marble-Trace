@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Button, Checkbox, Input, Modal, Popconfirm } from 'antd';
+import { Button, Checkbox, Input, Modal, Popconfirm, Segmented } from 'antd';
 import {
   Plus,
   Play,
@@ -253,19 +253,18 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
         </div>
 
         <div className={styles.headerActions}>
-          <Button
-            className={`${styles.headerToggle} ${
-              autoSwitchEnabled ? styles.headerToggleActive : ''
-            }`}
-            onClick={() => appSettings.setAutoSwitchLayouts(!autoSwitchEnabled)}
+          <Segmented
+            className={styles.modeSwitch}
+            value={autoSwitchEnabled ? 'auto' : 'manual'}
+            onChange={(value) =>
+              appSettings.setAutoSwitchLayouts(value === 'auto')
+            }
+            options={[
+              { label: t('layoutList.modeManual'), value: 'manual' },
+              { label: t('layoutList.modeAuto'), value: 'auto' },
+            ]}
             title={t('layoutList.toggleAutoSwitchTooltip')}
-          >
-            {t('layoutList.autoSwitchLabel', {
-              state: autoSwitchEnabled
-                ? t('layoutList.on')
-                : t('layoutList.off'),
-            })}
-          </Button>
+          />
 
           <Button
             type="primary"
@@ -334,11 +333,9 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   <div className={styles.cardFooter}>
                     <div className={styles.cardHeaderRow}>
                       <span className={styles.cardName}>{layout.name}</span>
-                      {isActive && (
+                      {isActive && !isAutoSwitchActive && (
                         <span className={styles.activeBadge}>
-                          {isAutoSwitchActive
-                            ? t('layoutList.current')
-                            : t('layoutList.active')}
+                          {t('layoutList.active')}
                         </span>
                       )}
                     </div>
@@ -519,7 +516,15 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   type="primary"
                   icon={<Play size={16} />}
                   onClick={handleActivate}
-                  disabled={selectedId === widgetSettings.activeLayoutId}
+                  disabled={
+                    selectedId === widgetSettings.activeLayoutId ||
+                    autoSwitchEnabled
+                  }
+                  title={
+                    autoSwitchEnabled
+                      ? t('layoutList.activateDisabledAutoSwitch')
+                      : undefined
+                  }
                   style={{ width: '100%' }}
                 >
                   {t('layoutList.activateLayout')}

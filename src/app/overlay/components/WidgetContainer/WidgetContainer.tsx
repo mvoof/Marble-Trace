@@ -55,9 +55,12 @@ export const WidgetContainer = observer(
 
     const hasGarageLayout = !!widgetSettings.sessionLayouts?.Garage;
 
+    const shouldHideInGarage =
+      appSettings.autoSwitchLayouts && !hasGarageLayout;
+
     const shouldHide =
       (appSettings.hideWidgetsWhenGameClosed && !isConnected && !dragMode) ||
-      (!isOnTrack && isConnected && !dragMode && !hasGarageLayout) ||
+      (!isOnTrack && isConnected && !dragMode && shouldHideInGarage) ||
       (!widgetAutoHide.isVisible(widgetId) && !dragMode);
 
     const backgroundColor =
