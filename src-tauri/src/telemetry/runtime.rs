@@ -89,6 +89,14 @@ pub fn spawn_telemetry_thread(
                 if !service.running.load(Ordering::SeqCst) {
                     break;
                 }
+
+                // The shared-memory handle can open successfully while iRacing is
+                // only sitting in the lobby (not actually broadcasting), so the
+                // loop above returns immediately without ever reading a frame.
+                // Without this delay, that produces a tight reconnect spin that
+                // floods the logs — wait_for_connection only backs off when
+                // `create_source` itself fails, which doesn't happen here.
+                std::thread::sleep(CONNECT_RETRY_DELAY);
             }
         });
 
