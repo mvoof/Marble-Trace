@@ -518,10 +518,10 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   onClick={handleActivate}
                   disabled={
                     selectedId === widgetSettings.activeLayoutId ||
-                    isAutoSwitchActive
+                    autoSwitchEnabled
                   }
                   title={
-                    isAutoSwitchActive
+                    autoSwitchEnabled
                       ? t('layoutList.activateDisabledAutoSwitch')
                       : undefined
                   }
