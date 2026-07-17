@@ -470,6 +470,7 @@ const WIDGETS: WidgetConfig[] = [
       hideDelay: 2,
       carLength: 4.4,
       qualifyingVisibility: 'auto',
+      showDistance: true,
     },
   },
   {
@@ -492,6 +493,7 @@ const WIDGETS: WidgetConfig[] = [
       hideDelay: 2,
       carLength: 4.4,
       qualifyingVisibility: 'auto',
+      showDistance: true,
     },
   },
   {

@@ -198,6 +198,7 @@
       "activationRange": "Activation Range (m)",
       "fadeOutDelay": "Fade Out Delay (s)",
       "carLength": "Car Length (m)",
+      "showDistance": "Show distance",
       "qualifying": "Qualifying",
       "showInQualifying": "Show in qualifying",
       "always": "Always",

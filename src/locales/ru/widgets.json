@@ -198,6 +198,7 @@
       "activationRange": "Радиус активации (м)",
       "fadeOutDelay": "Задержка угасания (с)",
       "carLength": "Длина машины (м)",
+      "showDistance": "Показывать дистанцию",
       "qualifying": "Квалификация",
       "showInQualifying": "Показывать в квалификации",
       "always": "Всегда",

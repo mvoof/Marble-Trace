@@ -78,14 +78,16 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
           backgroundColor: color,
         }}
       >
-        <span
-          className={styles.pillText}
-          style={{ transform: `rotate(${rotation})` }}
-        >
-          {rawDist > 0 ? '+' : rawDist < 0 ? '-' : ''}
-          {formatDistanceFn(Math.abs(rawDist))}
-          {distanceUnitLabel}
-        </span>
+        {radarSettings.showDistance && (
+          <span
+            className={styles.pillText}
+            style={{ transform: `rotate(${rotation})` }}
+          >
+            {rawDist > 0 ? '+' : rawDist < 0 ? '-' : ''}
+            {formatDistanceFn(Math.abs(rawDist))}
+            {distanceUnitLabel}
+          </span>
+        )}
       </div>
     </div>
   );

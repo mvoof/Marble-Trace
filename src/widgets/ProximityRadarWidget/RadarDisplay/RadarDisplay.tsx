@@ -170,10 +170,12 @@ export const RadarDisplay = observer(() => {
               color={frontColor}
               carLength={carLength}
             />
-            <text y="-18" className={styles.radarMeasurementText}>
-              {formatDistanceFn(frontDist)}
-              {distanceUnitLabel}
-            </text>
+            {radarSettings.showDistance && (
+              <text y="-18" className={styles.radarMeasurementText}>
+                {formatDistanceFn(frontDist)}
+                {distanceUnitLabel}
+              </text>
+            )}
           </g>
         )}
 
@@ -187,10 +189,12 @@ export const RadarDisplay = observer(() => {
               color={rearColor}
               carLength={carLength}
             />
-            <text y="18" className={styles.radarMeasurementText}>
-              {formatDistanceFn(rearDist)}
-              {distanceUnitLabel}
-            </text>
+            {radarSettings.showDistance && (
+              <text y="18" className={styles.radarMeasurementText}>
+                {formatDistanceFn(rearDist)}
+                {distanceUnitLabel}
+              </text>
+            )}
           </g>
         )}
 
@@ -204,10 +208,12 @@ export const RadarDisplay = observer(() => {
               color={getSideCarColor(leftDist)}
               carLength={carLength}
             />
-            <text y="0" className={styles.radarMeasurementText}>
-              {formatDistanceFn(Math.abs(leftDist))}
-              {distanceUnitLabel}
-            </text>
+            {radarSettings.showDistance && (
+              <text y="0" className={styles.radarMeasurementText}>
+                {formatDistanceFn(Math.abs(leftDist))}
+                {distanceUnitLabel}
+              </text>
+            )}
           </g>
         )}
 
@@ -221,10 +227,12 @@ export const RadarDisplay = observer(() => {
               color={getSideCarColor(rightDist)}
               carLength={carLength}
             />
-            <text y="0" className={styles.radarMeasurementText}>
-              {formatDistanceFn(Math.abs(rightDist))}
-              {distanceUnitLabel}
-            </text>
+            {radarSettings.showDistance && (
+              <text y="0" className={styles.radarMeasurementText}>
+                {formatDistanceFn(Math.abs(rightDist))}
+                {distanceUnitLabel}
+              </text>
+            )}
           </g>
         )}
 
