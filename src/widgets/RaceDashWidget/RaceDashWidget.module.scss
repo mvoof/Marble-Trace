@@ -15,17 +15,3 @@
   // overlay container does not clip it either.
   overflow: visible;
 }
-
-// Full-strength border plus an outer glow — a 1px translucent line reads as
-// nearly invisible on the overlay, and the pit state must be unmissable.
-.plateSafe {
-  border-color: $widget-pit-active;
-}
-
-.plateWarning {
-  border-color: $widget-pit-entry;
-}
-
-.plateDanger {
-  border-color: $race-red;
-}
