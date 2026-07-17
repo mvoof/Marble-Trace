@@ -198,6 +198,7 @@
       "activationRange": "激活范围（米）",
       "fadeOutDelay": "淡出延迟（秒）",
       "carLength": "车长（米）",
+      "showDistance": "显示距离",
       "qualifying": "排位赛",
       "showInQualifying": "在排位赛中显示",
       "always": "始终",

@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Col, InputNumber, Row, Segmented } from 'antd';
+import { Col, InputNumber, Row, Segmented, Switch } from 'antd';
 import type {
   RadarQualifyingVisibility,
   RadarSettings,
@@ -76,6 +76,20 @@ export const RadarSettingsPanel = observer(
                   if (v !== null) {
                     update({ carLength: v });
                   }
+                }}
+              />
+            </Col>
+          </Row>
+
+          <Row gutter={24} className={styles.fieldGroup}>
+            <Col span={24}>
+              <span className={styles.fieldLabel}>
+                {t('settingsPanels.radar.showDistance')}
+              </span>
+              <Switch
+                checked={settings.showDistance}
+                onChange={(checked) => {
+                  update({ showDistance: checked });
                 }}
               />
             </Col>

@@ -69,6 +69,7 @@ export interface RadarSettings {
   hideDelay: number;
   carLength: number;
   qualifyingVisibility: RadarQualifyingVisibility;
+  showDistance: boolean;
 }
 
 export type RowPadding = 'narrow' | 'medium' | 'wide';
