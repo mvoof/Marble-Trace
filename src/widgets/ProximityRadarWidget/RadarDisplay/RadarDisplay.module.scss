@@ -28,6 +28,7 @@
   fill: currentColor;
   color: #ffffff;
   font-weight: bold;
+  font-size: calc(18px * var(--font-scale, 1));
   text-anchor: middle;
   dominant-baseline: central;
   font-family: $font-widget;

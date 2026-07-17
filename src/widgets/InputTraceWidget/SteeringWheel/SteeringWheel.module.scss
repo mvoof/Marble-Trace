@@ -99,7 +99,7 @@ $groove-px: 8;
 
 .centerText {
   font-family: $font-widget;
-  font-size: ws($groove-px * 3.1);
+  font-size: wfs($groove-px * 3.1);
   font-weight: 700;
   color: #ffffff;
   line-height: 1;
@@ -133,7 +133,7 @@ $groove-px: 8;
 
 .speedGearSpeed {
   font-family: $font-widget;
-  font-size: ws($groove-px * 2.5);
+  font-size: wfs($groove-px * 2.5);
   font-weight: 700;
   color: #ffffff;
   line-height: 1;
@@ -148,7 +148,7 @@ $groove-px: 8;
 
 .speedGearGear {
   font-family: $font-widget;
-  font-size: ws($groove-px * 2.5);
+  font-size: wfs($groove-px * 2.5);
   font-weight: 700;
   color: rgba(255, 255, 255, 0.7);
   line-height: 1;

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { RADIUS_RATIO } from '@utils/widget/g-meter-utils';
@@ -6,6 +6,7 @@ import { RADIUS_RATIO } from '@utils/widget/g-meter-utils';
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 import styles from './GMeterRings.module.scss';
 import { useWidgetSettingsStore } from '@store/root-store-context';
+import { WidgetIdContext } from '@app/overlay/components/WidgetContainer/WidgetIdContext';
 
 interface GMeterRingsProps {
   width: number;
@@ -13,9 +14,12 @@ interface GMeterRingsProps {
 }
 
 export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
+  const widgetId = useContext(WidgetIdContext);
   const widgetSettings = useWidgetSettingsStore();
 
   const { scale } = widgetSettings.getSettings<GMeterWidgetSettings>('g-meter');
+  const fontScale =
+    widgetSettings.getWidget(widgetId)?.userSettings.fontScale ?? 1;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -60,7 +64,7 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
       ctx.stroke();
     }
 
-    const labelSize = Math.round(14 * (width / 240));
+    const labelSize = Math.round(14 * (width / 240) * fontScale);
 
     ctx.font = `600 ${labelSize}px 'Rajdhani', sans-serif`;
     ctx.fillStyle = 'rgba(120,120,130,0.7)';
@@ -97,7 +101,7 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
     ctx.lineWidth = 1;
 
     ctx.stroke();
-  }, [width, height, scale]);
+  }, [width, height, scale, fontScale]);
 
   return (
     <canvas

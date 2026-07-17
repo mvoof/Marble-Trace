@@ -44,6 +44,12 @@ $widget-font-scale: (
   );
 }
 
+// Non-token font size: like fs() but for arbitrary px values that don't
+// land on the type scale. Still gets the --font-scale multiplier.
+@function wfs($px) {
+  @return calc(#{ws($px)} * var(--font-scale, 1));
+}
+
 // Spacing scale — 2px grid for padding, gap, margin.
 $widget-space-scale: (
   'xxxs': 2,

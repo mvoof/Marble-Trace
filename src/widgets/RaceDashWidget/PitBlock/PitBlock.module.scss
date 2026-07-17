@@ -10,7 +10,7 @@
   padding: sp(xxs) sp(lg);
   border-radius: radius(lg);
   font-family: $font-widget;
-  font-size: ws(10);
+  font-size: wfs(10);
   font-weight: 700;
   letter-spacing: 0.1em;
   line-height: 1;
@@ -61,7 +61,7 @@
 
 .speedValue {
   font-family: $font-mono;
-  font-size: ws(40);
+  font-size: wfs(40);
   font-weight: 800;
   line-height: 0.95;
   font-variant-numeric: tabular-nums;
@@ -78,7 +78,7 @@
 
 .unit {
   font-family: $font-widget;
-  font-size: ws(11);
+  font-size: wfs(11);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -108,7 +108,7 @@
 
 .label {
   font-family: $font-widget;
-  font-size: ws(11);
+  font-size: wfs(11);
   font-weight: 600;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -117,7 +117,7 @@
 
 .value {
   font-family: $font-mono;
-  font-size: ws(16);
+  font-size: wfs(16);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: $widget-text-primary;
@@ -141,7 +141,7 @@
 
 .boxLabel {
   font-family: $font-widget;
-  font-size: ws(11);
+  font-size: wfs(11);
   font-weight: 600;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -150,7 +150,7 @@
 
 .boxValue {
   font-family: $font-mono;
-  font-size: ws(26);
+  font-size: wfs(26);
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
