@@ -72,6 +72,8 @@ export const initMainSync = async (root: RootStore) => {
 
             await logSettingsSnapshot(root);
 
+            cleanup();
+
             await getCurrentWindow().destroy();
           }),
         ]);
@@ -266,7 +268,7 @@ export const initMainSync = async (root: RootStore) => {
         ),
       ];
 
-      return () => {
+      const cleanup = () => {
         overlaySettingsUnlisten();
         closeRequestedUnlisten();
 
@@ -277,6 +279,8 @@ export const initMainSync = async (root: RootStore) => {
 
         mainSyncInitPromise = null;
       };
+
+      return cleanup;
     })();
   }
 

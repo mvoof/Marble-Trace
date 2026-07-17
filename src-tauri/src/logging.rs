@@ -13,15 +13,21 @@ const PREVIOUS_LOG_FILE_NAME: &str = "marble-trace.log.old";
 /// Rotates the previous session's log out of the way so each run starts with
 /// a fresh file. Only the current and immediately previous session are ever
 /// kept on disk, so repeated launches never accumulate log files.
-fn rotate_log_file(log_dir: &Path) -> PathBuf {
+///
+/// Returns whether the previous log was successfully rotated out of the way.
+/// If rotation fails (e.g. the file is locked), the caller must not truncate
+/// `current`, since that would discard the previous session's log content.
+fn rotate_log_file(log_dir: &Path) -> (PathBuf, bool) {
     let current = log_dir.join(LOG_FILE_NAME);
     let previous = log_dir.join(PREVIOUS_LOG_FILE_NAME);
 
-    if current.exists() {
-        let _ = std::fs::rename(&current, &previous);
-    }
+    let rotated = if current.exists() {
+        std::fs::rename(&current, &previous).is_ok()
+    } else {
+        true
+    };
 
-    current
+    (current, rotated)
 }
 
 /// Verbose diagnostics (full widget/settings dumps) are tagged with this
@@ -40,9 +46,17 @@ pub fn init(app: &App) -> LogFileGuard {
         .unwrap_or_else(|_| PathBuf::from("."))
         .join("logs");
     let _ = std::fs::create_dir_all(&log_dir);
-    let log_file_path = rotate_log_file(&log_dir);
+    let (log_file_path, rotated) = rotate_log_file(&log_dir);
 
-    let log_file = std::fs::File::create(&log_file_path).expect("failed to create log file");
+    let log_file = if rotated {
+        std::fs::File::create(&log_file_path)
+    } else {
+        std::fs::OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(&log_file_path)
+    }
+    .expect("failed to create log file");
     let (non_blocking, guard) = tracing_appender::non_blocking(log_file);
 
     let stdout_layer = fmt::layer().with_filter(build_env_filter(&format!(
