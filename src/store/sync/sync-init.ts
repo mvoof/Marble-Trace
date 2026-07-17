@@ -70,11 +70,15 @@ export const initMainSync = async (root: RootStore) => {
           getCurrentWindow().onCloseRequested(async (event) => {
             event.preventDefault();
 
-            await logSettingsSnapshot(root);
+            try {
+              await logSettingsSnapshot(root);
+            } catch (error) {
+              console.error('Failed to log settings snapshot on close:', error);
+            } finally {
+              cleanup();
 
-            cleanup();
-
-            await getCurrentWindow().destroy();
+              await getCurrentWindow().destroy();
+            }
           }),
         ]);
 

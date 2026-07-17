@@ -55,9 +55,15 @@ pub fn init(app: &App) -> LogFileGuard {
             .append(true)
             .create(true)
             .open(&log_file_path)
-    }
-    .expect("failed to create log file");
-    let (non_blocking, guard) = tracing_appender::non_blocking(log_file);
+    };
+
+    let (non_blocking, guard) = match log_file {
+        Ok(file) => tracing_appender::non_blocking(file),
+        Err(error) => {
+            eprintln!("Failed to initialize file logging: {error}");
+            tracing_appender::non_blocking(std::io::sink())
+        }
+    };
 
     let stdout_layer = fmt::layer().with_filter(build_env_filter(&format!(
         "marble_trace_lib=info,{SETTINGS_SNAPSHOT_TARGET}=off"
