@@ -929,6 +929,11 @@ export class WidgetSettingsStore {
     if (config) {
       this.overlayResolution = { ...config.resolution };
       this.setWidgets(config.widgets);
+    } else {
+      // No monitor config yet (e.g. a brand-new layout whose auto-resolve
+      // hasn't landed). Fall back to a blank layout instead of silently
+      // leaving the previously-active layout's widgets on screen.
+      this.setWidgets(this.buildStarterWidgets(true));
     }
 
     this.bumpMutation();

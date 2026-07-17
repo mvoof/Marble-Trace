@@ -71,6 +71,11 @@ export const initMainSync = async (root: RootStore) => {
             event.preventDefault();
 
             try {
+              // The layout commit and settings save both run on debounced
+              // reactions (500ms). Closing before that timer fires would
+              // persist stale layout/widget state, so flush them here.
+              root.widgetSettings.commitActiveLayout();
+              await onSave();
               await logSettingsSnapshot(root);
             } catch (error) {
               console.error('Failed to log settings snapshot on close:', error);
