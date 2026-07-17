@@ -103,21 +103,25 @@ interface Store {
   save(): Promise<void>;
 }
 
+export const buildSettings = (root: RootStore): Settings => ({
+  app: { ...root.appSettings.appSettings },
+  units: {
+    system: root.units.unitSystem,
+  },
+  widgets: root.widgetSettings.allWidgets,
+  defaultWidgets: Array.from(root.widgetSettings.defaultWidgets.values()),
+  layouts: root.widgetSettings.layouts,
+  activeLayoutId: root.widgetSettings.activeLayoutId,
+  sessionLayouts: root.widgetSettings.sessionLayouts,
+});
+
 export const saveSettings = async (store: Store, root: RootStore) => {
-  const settings: Settings = {
-    app: { ...root.appSettings.appSettings },
-    units: {
-      system: root.units.unitSystem,
-    },
-    widgets: root.widgetSettings.allWidgets,
-    defaultWidgets: Array.from(root.widgetSettings.defaultWidgets.values()),
-    layouts: root.widgetSettings.layouts,
-    activeLayoutId: root.widgetSettings.activeLayoutId,
-    sessionLayouts: root.widgetSettings.sessionLayouts,
-  };
+  const settings = buildSettings(root);
 
   await store.set('settings', settings);
   await store.save();
+};
 
-  void invoke('log_settings_snapshot', { settings });
+export const logSettingsSnapshot = async (root: RootStore) => {
+  await invoke('log_settings_snapshot', { settings: buildSettings(root) });
 };
