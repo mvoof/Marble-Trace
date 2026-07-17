@@ -1,9 +1,11 @@
 import { reaction } from 'mobx';
 import { listen } from '@tauri-apps/api/event';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { load } from '@tauri-apps/plugin-store';
 import {
   hydrateStores,
   saveSettings,
+  logSettingsSnapshot,
   SETTINGS_FILE,
   Settings,
 } from './persistence';
@@ -57,14 +59,22 @@ export const initMainSync = async (root: RootStore) => {
 
       await onSave();
 
-      const [overlaySettingsUnlisten, mainUnlistens] = await Promise.all([
-        listen<WidgetDefaultConfig[]>('widget-settings-updated', (e) => {
-          root.widgetSettings.applySettingsSync(e.payload);
-          void onSave();
-        }),
-        setupMainListeners(root),
-        setupHotkeys(root, onSave),
-      ]);
+      const [overlaySettingsUnlisten, mainUnlistens, , closeRequestedUnlisten] =
+        await Promise.all([
+          listen<WidgetDefaultConfig[]>('widget-settings-updated', (e) => {
+            root.widgetSettings.applySettingsSync(e.payload);
+            void onSave();
+          }),
+          setupMainListeners(root),
+          setupHotkeys(root, onSave),
+          getCurrentWindow().onCloseRequested(async (event) => {
+            event.preventDefault();
+
+            await logSettingsSnapshot(root);
+
+            await getCurrentWindow().destroy();
+          }),
+        ]);
 
       const disposers = [
         reaction(
@@ -258,6 +268,7 @@ export const initMainSync = async (root: RootStore) => {
 
       return () => {
         overlaySettingsUnlisten();
+        closeRequestedUnlisten();
 
         mainUnlistens.forEach((u) => u());
         disposers.forEach((d) => d());

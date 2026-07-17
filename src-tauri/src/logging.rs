@@ -1,5 +1,4 @@
 use std::path::{Path, PathBuf};
-use std::time::{Duration, SystemTime};
 use tauri::{App, Manager};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer};
@@ -8,39 +7,21 @@ use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt, Env
 /// Dropping it would silently stop flushing log lines to disk.
 pub struct LogFileGuard(#[allow(dead_code)] WorkerGuard);
 
-const LOG_RETENTION_DAYS: u64 = 7;
+const LOG_FILE_NAME: &str = "marble-trace.log";
+const PREVIOUS_LOG_FILE_NAME: &str = "marble-trace.log.old";
 
-fn delete_old_logs(log_dir: &Path) {
-    let Ok(entries) = std::fs::read_dir(log_dir) else {
-        return;
-    };
+/// Rotates the previous session's log out of the way so each run starts with
+/// a fresh file. Only the current and immediately previous session are ever
+/// kept on disk, so repeated launches never accumulate log files.
+fn rotate_log_file(log_dir: &Path) -> PathBuf {
+    let current = log_dir.join(LOG_FILE_NAME);
+    let previous = log_dir.join(PREVIOUS_LOG_FILE_NAME);
 
-    let Some(cutoff) =
-        SystemTime::now().checked_sub(Duration::from_secs(LOG_RETENTION_DAYS * 24 * 60 * 60))
-    else {
-        return;
-    };
-
-    for entry in entries.flatten() {
-        let path = entry.path();
-        let is_log_file = path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .is_some_and(|name| name.starts_with("marble-trace.") && name.ends_with(".log"));
-
-        if !is_log_file {
-            continue;
-        }
-
-        let is_stale = entry
-            .metadata()
-            .and_then(|metadata| metadata.modified())
-            .is_ok_and(|modified| modified < cutoff);
-
-        if is_stale {
-            let _ = std::fs::remove_file(&path);
-        }
+    if current.exists() {
+        let _ = std::fs::rename(&current, &previous);
     }
+
+    current
 }
 
 /// Verbose diagnostics (full widget/settings dumps) are tagged with this
@@ -59,15 +40,10 @@ pub fn init(app: &App) -> LogFileGuard {
         .unwrap_or_else(|_| PathBuf::from("."))
         .join("logs");
     let _ = std::fs::create_dir_all(&log_dir);
-    delete_old_logs(&log_dir);
+    let log_file_path = rotate_log_file(&log_dir);
 
-    let file_appender = tracing_appender::rolling::Builder::new()
-        .rotation(tracing_appender::rolling::Rotation::DAILY)
-        .filename_prefix("marble-trace")
-        .filename_suffix("log")
-        .build(&log_dir)
-        .expect("failed to build rolling file appender");
-    let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
+    let log_file = std::fs::File::create(&log_file_path).expect("failed to create log file");
+    let (non_blocking, guard) = tracing_appender::non_blocking(log_file);
 
     let stdout_layer = fmt::layer().with_filter(build_env_filter(&format!(
         "marble_trace_lib=info,{SETTINGS_SNAPSHOT_TARGET}=off"
