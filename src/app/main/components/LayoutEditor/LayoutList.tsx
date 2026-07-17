@@ -334,11 +334,9 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   <div className={styles.cardFooter}>
                     <div className={styles.cardHeaderRow}>
                       <span className={styles.cardName}>{layout.name}</span>
-                      {isActive && (
+                      {isActive && !isAutoSwitchActive && (
                         <span className={styles.activeBadge}>
-                          {isAutoSwitchActive
-                            ? t('layoutList.current')
-                            : t('layoutList.active')}
+                          {t('layoutList.active')}
                         </span>
                       )}
                     </div>
@@ -519,7 +517,15 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   type="primary"
                   icon={<Play size={16} />}
                   onClick={handleActivate}
-                  disabled={selectedId === widgetSettings.activeLayoutId}
+                  disabled={
+                    selectedId === widgetSettings.activeLayoutId ||
+                    isAutoSwitchActive
+                  }
+                  title={
+                    isAutoSwitchActive
+                      ? t('layoutList.activateDisabledAutoSwitch')
+                      : undefined
+                  }
                   style={{ width: '100%' }}
                 >
                   {t('layoutList.activateLayout')}
