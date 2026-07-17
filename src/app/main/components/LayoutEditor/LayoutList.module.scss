@@ -39,34 +39,10 @@
   gap: sp(sm);
 }
 
-.headerToggle {
-  font-size: fs(xs) !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: #8b8e98 !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  transition: all 0.2s ease !important;
-  font-family: $font-mono !important;
-  text-transform: uppercase !important;
-
-  &:hover,
-  &:focus {
-    background: rgba(255, 255, 255, 0.08) !important;
-    color: #e0e0e0 !important;
-    border-color: rgba(255, 255, 255, 0.15) !important;
-  }
-}
-
-.headerToggleActive {
-  background: rgba(16, 185, 129, 0.1) !important;
-  color: #10b981 !important;
-  border: 1px solid rgba(16, 185, 129, 0.25) !important;
-
-  &:hover,
-  &:focus {
-    background: rgba(16, 185, 129, 0.15) !important;
-    color: #10b981 !important;
-    border-color: rgba(16, 185, 129, 0.4) !important;
-  }
+.modeSwitch {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  text-transform: uppercase;
 }
 
 .headerActions {
