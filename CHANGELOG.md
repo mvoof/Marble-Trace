@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.0] — 2026-07-18
+
+### Added
+
+- **RaceDash Widget:** A brand new dashboard widget replacing the old Speed widget, combining your speed, position, lap, pit status, RPM, and a driving coach into one polished display. The coach compares your driving to a saved reference lap and gives you real-time brake and throttle guidance, including an early "get ready to brake" warning before each braking zone.
+- **RPM Lights Widget:** The RPM lights, previously part of the Speed widget, are now their own standalone widget, and light up and blink the entire LED bar when you hit your shift point.
+- **Auto-Switch Layouts:** Widget layouts can now automatically switch based on what you're doing in the sim — practice, qualifying, race, or sitting in the garage — with an on-screen notification when a switch happens.
+- **Independent Text Size:** A new setting lets you scale widget text size on its own, separate from the widget's overall size, so shrinking a widget no longer forces smaller text.
+- **Multi-Language Support:** The main app window is now available in English, Russian, and Chinese, with an option to follow your system language automatically.
+- **Launch Minimized:** You can now set the app to start minimized instead of opening its window every time.
+- **Radar Distance Labels Toggle:** Added a setting to hide distance labels in the radar bar and proximity radar for a cleaner look.
+- **Activity Log File:** The app now keeps a log file on disk with startup and settings details, making it much easier to diagnose problems.
+
+### Changed
+
+- **Widget Selection & Resizing Polish:** Selecting and resizing widgets feels smoother now, with a visible highlight on resize handles and a selection outline that always stays on top.
+- **Smarter Settings Recovery:** If your saved settings are missing pieces or slightly out of date, the app now fills in the gaps intelligently instead of resetting things it doesn't need to.
+
+### Fixed
+
+- **Reconnect Spam:** Fixed the app repeatedly trying to reconnect while sitting in the online lobby.
+- **Input Trace Glitches:** Fixed the input trace graph clipping at the very top and bottom, and fixed data getting dropped when toggling channels on and off.
+- **Widget Snapping Accuracy:** Fixed widgets snapping to the wrong position on some widgets and monitor setups.
+- **Status Flicker:** Fixed the status indicator flickering and showing the wrong waiting state between sessions.
+
 ## [0.18.0] — 2026-07-01
 
 ### Added
