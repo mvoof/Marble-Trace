@@ -12,14 +12,6 @@ import { StatsStrip } from './StatsStrip/StatsStrip';
 
 import styles from './RaceDashWidget.module.scss';
 
-const PLATE_STATE_CLASS: Record<string, string> = {
-  'limiter-active': styles.plateSafe,
-  'limiter-near-exit': styles.plateSafe,
-  'limiter-exit': styles.plateSafe,
-  'pit-lane': styles.plateWarning,
-  'over-limit': styles.plateDanger,
-};
-
 export const RaceDashWidget = observer(() => {
   const { pitState, showPitAssist } = usePitState();
   const widgetSettings = useWidgetSettingsStore();
@@ -28,15 +20,9 @@ export const RaceDashWidget = observer(() => {
     widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
 
   const isPitMode = showPitAssist && pitState !== 'normal';
-  const plateStateClass = isPitMode ? PLATE_STATE_CLASS[pitState] : '';
 
   return (
-    <WidgetPanel
-      gap={0}
-      minWidth={0}
-      direction="row"
-      className={`${styles.plate} ${plateStateClass}`}
-    >
+    <WidgetPanel gap={0} minWidth={0} direction="row" className={styles.plate}>
       <RingBadge />
 
       {isPitMode ? (

@@ -95,57 +95,60 @@ export const RingBadge = observer(() => {
 
   return (
     <div className={styles.root}>
-      {showFill && (
-        <svg
-          className={styles.arc}
-          viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
-          aria-hidden="true"
-        >
-          {sectorStartDeg > MIN_VISIBLE_ARC_DEG && (
-            <path
-              className={styles.trackDim}
-              d={ringArcPath(0, sectorStartDeg)}
-            />
-          )}
+      <div className={styles.clip}>
+        {showFill && (
+          <svg
+            className={styles.arc}
+            viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
+            aria-hidden="true"
+          >
+            {sectorStartDeg > MIN_VISIBLE_ARC_DEG && (
+              <path
+                className={styles.trackDim}
+                d={ringArcPath(0, sectorStartDeg)}
+              />
+            )}
 
-          {sectorStartDeg < ARC_SWEEP_DEG - MIN_VISIBLE_ARC_DEG && (
-            <path
-              className={styles.trackRedline}
-              d={ringArcPath(sectorStartDeg, ARC_SWEEP_DEG)}
-            />
-          )}
+            {sectorStartDeg < ARC_SWEEP_DEG - MIN_VISIBLE_ARC_DEG && (
+              <path
+                className={styles.trackRedline}
+                d={ringArcPath(sectorStartDeg, ARC_SWEEP_DEG)}
+              />
+            )}
 
-          {fillDeg > MIN_VISIBLE_ARC_DEG && (
-            <path d={ringArcPath(0, fillDeg)} style={{ stroke: fillColor }} />
-          )}
-        </svg>
-      )}
+            {fillDeg > MIN_VISIBLE_ARC_DEG && (
+              <path d={ringArcPath(0, fillDeg)} style={{ stroke: fillColor }} />
+            )}
+          </svg>
+        )}
 
-      <div className={styles.scrim} />
-      <div className={styles.rim} />
+        <div className={styles.scrim} />
 
-      {showGlow && (
-        <div
-          className={coreGlowClassName}
-          style={
-            {
-              '--core-glow-color': fillColor,
-              '--core-glow-scale': coreGlowScale,
-            } as CSSProperties
-          }
-        />
-      )}
+        {showGlow && (
+          <div
+            className={coreGlowClassName}
+            style={
+              {
+                '--core-glow-color': fillColor,
+                '--core-glow-scale': coreGlowScale,
+              } as CSSProperties
+            }
+          />
+        )}
 
-      {showShiftFlash && <div className={styles.shiftFlash} />}
+        {showShiftFlash && <div className={styles.shiftFlash} />}
 
-      <div className={styles.core}>
-        <span
-          className={`${styles.gear} ${isBlink ? styles.blinkPulse : ''}`}
-          style={gearColor ? { color: gearColor } : undefined}
-        >
-          {formatGear(gear)}
-        </span>
+        <div className={styles.core}>
+          <span
+            className={`${styles.gear} ${isBlink ? styles.blinkPulse : ''}`}
+            style={gearColor ? { color: gearColor } : undefined}
+          >
+            {formatGear(gear)}
+          </span>
+        </div>
       </div>
+
+      <div className={styles.sheen} />
     </div>
   );
 });

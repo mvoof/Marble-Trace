@@ -1,11 +1,27 @@
 // Diameter matches the widget's design height (104px) so it always fills
 // the plate's circular left cap exactly — see RaceDashWidget.module.scss.
 // The arc band is SVG (native anti-aliasing), geometry in ring-geometry.ts.
+// No traced edge/rim on the ring itself — volume comes only from the outer
+// drop-shadow below (lift) and .sheen (a directional highlight), so the ring
+// reads as a raised disc sitting on the plate rather than a bordered shape.
 .root {
   position: relative;
   width: ws(104);
   height: ws(104);
   flex-shrink: 0;
+  border-radius: 50%;
+  overflow: visible;
+  box-shadow:
+    0 ws(4) ws(10) rgba(0, 0, 0, 0.5),
+    0 ws(1) ws(1) rgba(0, 0, 0, 0.35);
+}
+
+// Everything that must stay clipped to the circle (arc, scrim, core) lives in
+// here — .root itself is overflow: visible so the drop-shadow above can
+// escape the circle's bounds.
+.clip {
+  position: absolute;
+  inset: 0;
   border-radius: 50%;
   overflow: hidden;
 }
@@ -22,24 +38,34 @@
   stroke-width: 6;
 }
 
-// Dim 300° band with the redline zone printed in red — a static sector so
-// shifting reads from geometry rather than a color that only appears once
-// the driver is already past the point to react.
+// Flat idle track — just a touch lighter than the plate background, no
+// shadow/filter. A static sector so shifting reads from geometry rather
+// than a color that only appears once the driver is already past the point
+// to react.
 .trackDim {
-  stroke: rgba(255, 255, 255, 0.08);
+  stroke: rgba(255, 255, 255, 0.045);
 }
 
 .trackRedline {
   stroke: rgba($race-red, 0.32);
 }
 
-.rim {
+// Soft diagonal light catching the disc's surface — light source top-left,
+// the way a raised physical dial would catch light. No line traces the
+// circle's outline.
+.sheen {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  box-shadow: inset 0 0 0 ws(1) rgba(255, 255, 255, 0.14);
-  z-index: 2;
+  z-index: 3;
   pointer-events: none;
+  background: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 32%,
+    transparent 68%,
+    rgba(0, 0, 0, 0.18) 100%
+  );
 }
 
 // Substitute shift indicator when the RPM fill arc is hidden: a filled disc

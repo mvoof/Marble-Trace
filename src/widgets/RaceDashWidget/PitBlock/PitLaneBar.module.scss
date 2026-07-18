@@ -21,7 +21,7 @@
 }
 
 // Amber while heading to box, blue once past it heading to exit — mirrors
-// the plate border color (.plateWarning / .plateSafe in RaceDashWidget), so
+// the pit banner's state colors (.bannerWarning / .bannerSafe in PitBlock), so
 // the phase reads from color alone without repeating the Box/Exit number.
 .fill {
   position: absolute;
