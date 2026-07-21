@@ -26,6 +26,7 @@ const meta: Meta<StoryArgs> = {
     widget: ProximityRadarWidget,
     size: { width: 200, height: 300 },
     seed: (store, args) => {
+      store.appSettings.dragMode = true;
       store.backendComputed.updateProximity(args.proximity);
     },
     args: { proximity: NO_CARS },

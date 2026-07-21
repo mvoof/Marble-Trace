@@ -26,6 +26,12 @@ const meta: Meta = {
       });
 
       store.backendComputed.updateLapDelta(EMPTY_LAP_DELTA);
+
+      store.player.lapTiming = {
+        ...(store.player.lapTiming ?? {}),
+        lap_delta_to_best_lap: -0.842,
+        lap_delta_to_best_lap_ok: true,
+      } as typeof store.player.lapTiming;
     },
   }),
 };
