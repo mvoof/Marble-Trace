@@ -170,7 +170,7 @@ export const initMainSync = async (root: RootStore) => {
                   (l) => l.id === layoutId
                 );
                 if (exists) {
-                  root.widgetSettings.loadLayout(layoutId);
+                  root.widgetSettings.loadLayout(layoutId, { notify: true });
                 }
               }
             }

@@ -914,7 +914,7 @@ export class WidgetSettingsStore {
     this.bumpMutation();
   }
 
-  loadLayout(id: string) {
+  loadLayout(id: string, options?: { notify?: boolean }) {
     const layout = this.layouts.find((savedLayout) => savedLayout.id === id);
 
     if (!layout) return;
@@ -937,7 +937,10 @@ export class WidgetSettingsStore {
     }
 
     this.bumpMutation();
-    void emit('layout-activated', layout.name);
+
+    if (options?.notify) {
+      void emit('layout-activated', layout.name);
+    }
   }
 
   // Auto-commit: writes the live widgets back into the active monitor config.
