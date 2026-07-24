@@ -12,6 +12,8 @@ export interface ColorStyles {
   colorCheckered?: string;
   colorDebris?: string;
   colorDq?: string;
+  colorSc?: string;
+  colorScDark?: string;
 }
 
 export const getColorClass = (
@@ -43,6 +45,15 @@ export const getColorClass = (
 
     case 'red':
       return styles.colorRed;
+
+    case 'sc': {
+      // Diagonal hazard stripes at the same width as the blue flag (grouped by
+      // diodes-per-block), scrolling via the animation below.
+      const stripe = Math.floor((gx + gy) / dpb) % 2;
+      return stripe === 0
+        ? styles.colorSc || styles.colorYellow
+        : styles.colorScDark || '';
+    }
 
     case 'white':
       return styles.colorWhite;
@@ -98,6 +109,8 @@ export const getSingleLedColorClass = (
       return styles.colorYellow;
     case 'red':
       return styles.colorRed;
+    case 'sc':
+      return styles.colorSc || styles.colorYellow;
     case 'white':
       return styles.colorWhite;
     case 'checkered':

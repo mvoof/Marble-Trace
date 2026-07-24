@@ -351,7 +351,14 @@
       "trackStroke": "Track Stroke (px)",
       "trackBorder": "Track Border (px)",
       "sectorStroke": "Sector Stroke (px)",
-      "targetDotRadius": "Target Dot Radius (px)"
+      "targetDotRadius": "Target Dot Radius (px)",
+      "safetyCar": "Safety Car",
+      "paceCarUseClassColor": "Use Class Color",
+      "paceCarUseClassColorDesc": "Color the safety-car marker by its class instead of a custom color.",
+      "paceCarColor": "Safety Car Color",
+      "paceCarRadius": "Safety Car Size (px)",
+      "paceCarShowInPits": "Show In Pits",
+      "paceCarShowInPitsDesc": "Keep showing the safety car while it's parked in its pit stall."
     },
     "weather": {
       "moduleParameters": "Module Parameters",

@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
-import type { TrackPoint } from '@/types';
+import { TrackSurface, type TrackPoint } from '@/types';
+import { parseClassColor } from '@utils/formatters/color-utils';
 import { RecordingOverlay } from '@widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
 import { TrackMapSvg } from '@widgets/TrackMapWidget/TrackMapSvg/TrackMapSvg';
 import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
@@ -18,6 +19,7 @@ import {
   useAppSettingsStore,
   useBackendComputedStore,
   useCarsStore,
+  usePaceCarStore,
   useSessionStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -49,6 +51,7 @@ export const TrackMapView = observer(
     const { carPositions } = useCarsStore();
     const computed = useBackendComputedStore();
     const widgetSettings = useWidgetSettingsStore();
+    const paceCarStore = usePaceCarStore();
     const { dragMode } = useAppSettingsStore();
 
     const rawSettings =
@@ -80,7 +83,7 @@ export const TrackMapView = observer(
       };
     }, [trackData]);
 
-    const cars: CarOnTrack[] = driverEntries.map((entry) => ({
+    const competitorCars: CarOnTrack[] = driverEntries.map((entry) => ({
       carIdx: entry.carIdx,
       carNumber: entry.carNumber,
       carClassColor: entry.carClassColor,
@@ -93,6 +96,40 @@ export const TrackMapView = observer(
       position: entry.position,
       classPosition: entry.classPosition,
     }));
+
+    // Pace cars are filtered out of standings, so pull them straight from the
+    // session roster. In multiclass races each class has its own pace car.
+    // Only shown while physically on track (lapDistPct >= 0). Hidden while
+    // parked in its pit stall (or driving in) unless paceCarShowInPits is on —
+    // driving back out is always shown so you can time the merge behind it.
+    const paceCarShowInPits = settings.paceCarShowInPits ?? false;
+
+    const paceCars: CarOnTrack[] = (sessionInfo?.cars ?? [])
+      .filter((car) => car.isPaceCar)
+      .map((car) => ({
+        carIdx: car.carIdx,
+        carNumber: '',
+        carClassColor: parseClassColor(car.carClassColor),
+        carClassId: car.carClassId,
+        lapDistPct: carPositions?.car_idx_lap_dist_pct[car.carIdx] ?? -1,
+        trackSurface:
+          carPositions?.car_idx_track_surface[car.carIdx] ??
+          TrackSurface.NotInWorld,
+        isPlayer: false,
+        position: 0,
+        classPosition: 0,
+        isPaceCar: true,
+        pitPhase: paceCarStore.getPitPhase(car.carIdx),
+      }))
+      .filter((car) => car.lapDistPct >= 0)
+      .filter(
+        (car) =>
+          paceCarShowInPits ||
+          car.pitPhase === 'onTrack' ||
+          car.pitPhase === 'pitOut'
+      );
+
+    const cars: CarOnTrack[] = [...competitorCars, ...paceCars];
 
     if (!rotatedTrackData) {
       return (
@@ -128,6 +165,11 @@ export const TrackMapView = observer(
           sectorStrokePx={settings.sectorStrokePx}
           targetDotRadiusPx={settings.targetDotRadiusPx}
           showStartFinish={showStartFinish}
+          paceCarUseClassColor={settings.paceCarUseClassColor}
+          paceCarColor={settings.paceCarColor}
+          paceCarRadiusPx={
+            settings.paceCarRadiusPx ?? settings.targetDotRadiusPx
+          }
         />
       </WidgetPanel>
     );

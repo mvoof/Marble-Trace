@@ -4,12 +4,7 @@ import type {
   DriverEntry,
   SessionSnapshot,
 } from '@/types/bindings';
-
-const parseClassColor = (raw: string | null | undefined): string => {
-  if (!raw) return '#888888';
-  const hex = raw.replace('0x', '').replace('#', '');
-  return hex.length >= 6 ? `#${hex.slice(-6)}` : '#888888';
-};
+import { parseClassColor } from '@utils/formatters/color-utils';
 
 export const computeDriverEntries = (
   carIdx: CarIdxFrame | null,

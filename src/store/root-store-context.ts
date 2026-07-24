@@ -20,6 +20,7 @@ export const useReferenceLapStore = () => useStore().referenceLap;
 export const useBackendComputedStore = () => useStore().backendComputed;
 export const useSimStore = () => useStore().sim;
 export const useFlagsStore = () => useStore().flags;
+export const usePaceCarStore = () => useStore().paceCar;
 
 export const useRadarWidgetStore = () => useStore().radar;
 export const useStandingsWidgetStore = () => useStore().standingsWidget;

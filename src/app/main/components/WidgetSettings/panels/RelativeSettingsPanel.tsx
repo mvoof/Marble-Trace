@@ -121,6 +121,20 @@ export const RelativeSettingsPanel = observer(() => {
           </div>
         ))}
       </Card>
+
+      <Card title={t('settingsPanels.trackMap.safetyCar')}>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.trackMap.paceCarShowInPits')}
+            desc={t('settingsPanels.trackMap.paceCarShowInPitsDesc')}
+          >
+            <Switch
+              checked={settings.paceCarShowInPits ?? false}
+              onChange={(v) => update({ paceCarShowInPits: v })}
+            />
+          </SettingRow>
+        </div>
+      </Card>
     </>
   );
 });

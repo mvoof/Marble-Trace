@@ -351,7 +351,14 @@
       "trackStroke": "Толщина линии трассы (px)",
       "trackBorder": "Обводка трассы (px)",
       "sectorStroke": "Толщина линии сектора (px)",
-      "targetDotRadius": "Радиус целевой точки (px)"
+      "targetDotRadius": "Радиус целевой точки (px)",
+      "safetyCar": "Машина безопасности",
+      "paceCarUseClassColor": "Использовать цвет класса",
+      "paceCarUseClassColorDesc": "Окрашивать маркер машины безопасности по её классу вместо своего цвета.",
+      "paceCarColor": "Цвет машины безопасности",
+      "paceCarRadius": "Размер машины безопасности (px)",
+      "paceCarShowInPits": "Показывать на пит-лейн",
+      "paceCarShowInPitsDesc": "Не скрывать машину безопасности, пока она стоит в своём боксе."
     },
     "weather": {
       "moduleParameters": "Параметры модуля",

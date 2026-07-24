@@ -19,6 +19,7 @@ const ALL_FLAGS: FlagType[] = [
   'black',
   'meatball',
   'debris',
+  'sc',
   'dq',
 ];
 
@@ -69,7 +70,22 @@ export const CheckeredFlag: Story = { args: { flag: 'checkered' } };
 export const BlackFlag: Story = { args: { flag: 'black' } };
 export const MeatballFlag: Story = { args: { flag: 'meatball' } };
 export const DebrisFlag: Story = { args: { flag: 'debris' } };
+export const SafetyCar: Story = { args: { flag: 'sc' } };
 export const DqFlag: Story = { args: { flag: 'dq' } };
+
+export const SafetyCarSingleLed: Story = {
+  args: { flag: 'sc', split: false, animate: true, forceSingleLed: true },
+  parameters: {
+    widgetFrame: { width: 200, height: 200 },
+  },
+};
+
+export const SafetyCarSplit: Story = {
+  args: { flag: 'sc', split: true, animate: true },
+  parameters: {
+    widgetFrame: { width: 900, height: 300 },
+  },
+};
 
 export const DqFlagSplit: Story = {
   args: { flag: 'dq', split: true, animate: true },

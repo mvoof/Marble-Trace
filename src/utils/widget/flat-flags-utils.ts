@@ -12,6 +12,7 @@ export const FLAG_LABEL: Record<FlagType, string> = {
   meatball: 'MEATBALL',
   debris: 'DEBRIS',
   penalty: 'PENALTY',
+  sc: 'PACE CAR',
   dq: 'DISQUALIFIED',
 };
 

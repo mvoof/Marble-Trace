@@ -7,6 +7,7 @@ import type { SectorEntry } from '@/types/bindings';
 import type { TrackMapLeaderLabelMode } from '@/types/widget-settings';
 import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
 import { CarDot } from '@/components/shared/CarDot/CarDot';
+import { PaceCarMarker } from './PaceCarMarker/PaceCarMarker';
 
 import { getSectorColor } from '@utils/widget/sector-utils';
 import { StartFinishMarker } from './StartFinishMarker/StartFinishMarker';
@@ -28,6 +29,9 @@ interface TrackMapSvgProps {
   sectorStrokePx?: number;
   targetDotRadiusPx?: number;
   showStartFinish?: boolean;
+  paceCarUseClassColor?: boolean;
+  paceCarColor?: string;
+  paceCarRadiusPx?: number;
 }
 
 export const TrackMapSvg = observer(
@@ -45,6 +49,9 @@ export const TrackMapSvg = observer(
     sectorStrokePx = 6,
     targetDotRadiusPx = 10,
     showStartFinish = true,
+    paceCarUseClassColor = false,
+    paceCarColor = '#facc15',
+    paceCarRadiusPx = 10,
   }: TrackMapSvgProps) => {
     const playerClassId = cars.find((c) => c.isPlayer)?.carClassId ?? -1;
     const parts = viewBox.split(' ').map(Number);
@@ -180,6 +187,21 @@ export const TrackMapSvg = observer(
           {points.length > 0 &&
             cars.map((car) => {
               const { x, y } = getPointAtPct(points, car.lapDistPct);
+
+              if (car.isPaceCar) {
+                const paceColor = paceCarUseClassColor
+                  ? car.carClassColor
+                  : paceCarColor;
+
+                return (
+                  <g key={car.carIdx} transform={`translate(${x}, ${y})`}>
+                    <PaceCarMarker
+                      radius={paceCarRadiusPx * pixelScale}
+                      color={paceColor}
+                    />
+                  </g>
+                );
+              }
 
               const isClassLeader = car.classPosition === 1 && !car.isPlayer;
               const showLeaderLabel =

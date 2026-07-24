@@ -87,3 +87,48 @@ export const WaitingForSF: Story = {
     isWaitingForSF: true,
   },
 };
+
+const PACE_CAR_IDX = 61;
+const PACE_CAR_LAP_PCT = 0.35;
+const TRACK_SURFACE_ON_TRACK = 3;
+
+export const WithPaceCar: Story = {
+  decorators: [
+    withStore((store) => {
+      const player = DRIVER_ENTRIES.find((d) => d.isPlayer);
+
+      if (snapshot.sessionInfo) {
+        const template = snapshot.sessionInfo.cars[0];
+        const paceCar = {
+          ...template,
+          carIdx: PACE_CAR_IDX,
+          userName: 'Pace Car',
+          carNumber: '0',
+          isPaceCar: true,
+          carClassId: player?.carClassId ?? template.carClassId,
+          carClassColor: player?.carClassColor ?? template.carClassColor,
+        };
+
+        store.session.updateSessionInfo({
+          ...snapshot.sessionInfo,
+          cars: [...snapshot.sessionInfo.cars, paceCar],
+        });
+      }
+
+      store.backendComputed.updateStandings({
+        entries: DRIVER_ENTRIES.slice(0, 10),
+        playerCarIdx: player?.carIdx ?? 0,
+      });
+
+      const lapDist = new Array(PACE_CAR_IDX + 1).fill(-1);
+      const surface = new Array(PACE_CAR_IDX + 1).fill(-1);
+      lapDist[PACE_CAR_IDX] = PACE_CAR_LAP_PCT;
+      surface[PACE_CAR_IDX] = TRACK_SURFACE_ON_TRACK;
+
+      store.cars.updateCarPositions({
+        car_idx_lap_dist_pct: lapDist,
+        car_idx_track_surface: surface,
+      });
+    }),
+  ],
+};

@@ -247,6 +247,7 @@ export class SimStore {
     this.root.environment.reset();
     this.root.backendComputed.reset();
     this.root.drivingCoachWidget.reset();
+    this.root.paceCar.reset();
   }
 
   private setStatus(status: TelemetryStatus) {

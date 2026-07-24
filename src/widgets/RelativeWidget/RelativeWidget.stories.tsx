@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { TrackSurface } from '@/types';
-import type { DriverEntry, RelativeFrame } from '@/types/bindings';
+import type { CarIdxFrame, DriverEntry, RelativeFrame } from '@/types/bindings';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
-import { driverEntries } from '@/storybook/test-data';
+import { driverEntries, snapshot } from '@/storybook/test-data';
 import { RelativeWidget } from './RelativeWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
@@ -56,9 +56,70 @@ const DEFAULT_SETTINGS: RelativeWidgetSettings = {
   showDriverFlags: true,
 };
 
+const PACE_CAR_IDX = 61;
+const SECOND_PACE_CAR_IDX = 62;
+
+const seedPaceCar = (
+  updateSessionInfo: (info: NonNullable<typeof snapshot.sessionInfo>) => void,
+  updateCarIdx: (frame: CarIdxFrame) => void,
+  multiclass = false
+) => {
+  const player = BASE_ENTRIES[PLAYER_IDX];
+  const otherClassEntry = BASE_ENTRIES.find(
+    (entry) => entry.carClassId !== player.carClassId
+  );
+
+  const lapDist = new Array(SECOND_PACE_CAR_IDX + 1).fill(-1);
+  const estTime = new Array(SECOND_PACE_CAR_IDX + 1).fill(0);
+  lapDist[PACE_CAR_IDX] = player.lapDistPct + 0.05;
+  estTime[PACE_CAR_IDX] = player.estTime + 4;
+
+  if (snapshot.sessionInfo) {
+    const template = snapshot.sessionInfo.cars[0];
+    const paceCars = [
+      {
+        ...template,
+        carIdx: PACE_CAR_IDX,
+        userName: 'Pace Car',
+        carNumber: '0',
+        isPaceCar: true,
+        carClassId: player.carClassId,
+        carClassEstLapTime: player.classEstLapTime,
+      },
+    ];
+
+    if (multiclass && otherClassEntry) {
+      paceCars.push({
+        ...template,
+        carIdx: SECOND_PACE_CAR_IDX,
+        userName: 'Pace Car',
+        carNumber: '00',
+        isPaceCar: true,
+        carClassId: otherClassEntry.carClassId,
+        carClassEstLapTime: otherClassEntry.classEstLapTime,
+      });
+
+      lapDist[SECOND_PACE_CAR_IDX] = otherClassEntry.lapDistPct - 0.04;
+      estTime[SECOND_PACE_CAR_IDX] = otherClassEntry.estTime - 3;
+    }
+
+    updateSessionInfo({
+      ...snapshot.sessionInfo,
+      cars: [...snapshot.sessionInfo.cars, ...paceCars],
+    });
+  }
+
+  updateCarIdx({
+    car_idx_lap_dist_pct: lapDist,
+    car_idx_est_time: estTime,
+  } as CarIdxFrame);
+};
+
 interface StoryArgs {
   settings: RelativeWidgetSettings;
   entries: DriverEntry[];
+  paceCar?: boolean;
+  multiclassPaceCar?: boolean;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -72,6 +133,14 @@ const meta: Meta<StoryArgs> = {
         playerCarIdx: PLAYER_CAR_IDX,
       } as RelativeFrame);
       store.widgetSettings.updateUserSettings('relative', args.settings);
+
+      if (args.paceCar || args.multiclassPaceCar) {
+        seedPaceCar(
+          (info) => store.session.updateSessionInfo(info),
+          (frame) => store.cars.updateCarIdx(frame),
+          args.multiclassPaceCar
+        );
+      }
     },
     args: { settings: DEFAULT_SETTINGS, entries: BASE_ENTRIES },
     argTypes: {
@@ -108,4 +177,12 @@ export const WithPitBadges: Story = {
 
 export const WithDriverFlags: Story = {
   args: { entries: FLAG_ENTRIES },
+};
+
+export const WithSafetyCarRow: Story = {
+  args: { paceCar: true },
+};
+
+export const WithMulticlassSafetyCarRows: Story = {
+  args: { multiclassPaceCar: true },
 };

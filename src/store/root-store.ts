@@ -1,6 +1,7 @@
 import { BackendComputedStore } from './data/computed.store';
 import { SimStore } from './sim/sim.store';
 import { FlagsStore } from './widgets/flags.widget';
+import { PaceCarStore } from './widgets/pace-car.widget';
 import { RadarWidgetStore } from './widgets/radar.widget';
 import { StandingsWidgetStore } from './widgets/standings.widget';
 import { TrackMapWidgetStore } from './widgets/track-map.widget';
@@ -24,6 +25,7 @@ export class RootStore {
   backendComputed: BackendComputedStore;
   sim: SimStore;
   flags: FlagsStore;
+  paceCar: PaceCarStore;
   radar: RadarWidgetStore;
   standingsWidget: StandingsWidgetStore;
   trackMapWidget: TrackMapWidgetStore;
@@ -44,6 +46,7 @@ export class RootStore {
     this.appSettings = new AppSettingsStore();
     this.units = new UnitsStore();
     this.flags = new FlagsStore(this);
+    this.paceCar = new PaceCarStore(this);
     this.radar = new RadarWidgetStore(this);
     this.standingsWidget = new StandingsWidgetStore(this);
     this.trackMapWidget = new TrackMapWidgetStore();
@@ -53,6 +56,7 @@ export class RootStore {
 
     if (!options?.skipInit) {
       this.flags.init();
+      this.paceCar.init();
       this.radar.init();
       this.sim.init();
       this.appSettings.init();

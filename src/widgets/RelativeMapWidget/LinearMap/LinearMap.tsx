@@ -1,18 +1,26 @@
 ﻿import { useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { TRACK_SURFACE_ON_TRACK } from '@utils/widget/widget-utils';
+import { parseClassColor } from '@utils/formatters/color-utils';
 import { CarDot } from '@/components/shared/CarDot/CarDot';
+import { PaceCarMarker } from '@widgets/TrackMapWidget/TrackMapSvg/PaceCarMarker/PaceCarMarker';
 
 import styles from './LinearMap.module.scss';
 import type { LinearMapWidgetSettings } from '@/types/widget-settings';
 import {
   useBackendComputedStore,
+  useCarsStore,
+  usePaceCarStore,
+  useSessionStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const LinearMap = observer(() => {
   const computed = useBackendComputedStore();
+  const { carPositions } = useCarsStore();
+  const { sessionInfo } = useSessionStore();
   const widgetSettings = useWidgetSettingsStore();
+  const paceCarStore = usePaceCarStore();
 
   const settings =
     widgetSettings.getSettings<LinearMapWidgetSettings>('relative-map');
@@ -21,6 +29,10 @@ export const LinearMap = observer(() => {
   const isHorizontal = settings.orientation === 'horizontal';
   const playerDotColor = settings.playerDotColor;
   const targetDotRadiusPx = settings.targetDotRadiusPx ?? 9;
+  const paceCarUseClassColor = settings.paceCarUseClassColor ?? false;
+  const paceCarColor = settings.paceCarColor ?? '#facc15';
+  const paceCarRadiusPx = settings.paceCarRadiusPx ?? targetDotRadiusPx;
+  const paceCarShowInPits = settings.paceCarShowInPits ?? false;
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
 
@@ -44,23 +56,57 @@ export const LinearMap = observer(() => {
     ? styles.linearMapHorizontal
     : styles.linearMapVertical;
 
+  const projectLapDistPct = (lapDistPct: number) => {
+    let diff = lapDistPct - (player?.lapDistPct ?? 0);
+
+    if (diff < -0.5) diff += 1;
+
+    if (diff > 0.5) diff -= 1;
+
+    const cx = isHorizontal ? (diff + 0.5) * size.w : size.w / 2;
+    const cy = isHorizontal ? size.h / 2 : (0.5 - diff) * size.h;
+
+    return { cx, cy };
+  };
+
   const dots =
     player && size.w > 0
       ? entries.flatMap((d) => {
           if (d.trackSurface !== TRACK_SURFACE_ON_TRACK && !d.isPlayer)
             return [];
 
-          let diff = d.lapDistPct - player.lapDistPct;
-
-          if (diff < -0.5) diff += 1;
-
-          if (diff > 0.5) diff -= 1;
-
-          const cx = isHorizontal ? (diff + 0.5) * size.w : size.w / 2;
-          const cy = isHorizontal ? size.h / 2 : (0.5 - diff) * size.h;
-
-          return [{ d, cx, cy }];
+          return [{ d, ...projectLapDistPct(d.lapDistPct) }];
         })
+      : [];
+
+  const paceCarDots =
+    player && size.w > 0
+      ? (sessionInfo?.cars ?? [])
+          .filter((car) => car.isPaceCar)
+          .flatMap((car) => {
+            const lapDistPct =
+              carPositions?.car_idx_lap_dist_pct[car.carIdx] ?? -1;
+
+            if (lapDistPct < 0) return [];
+
+            const pitPhase = paceCarStore.getPitPhase(car.carIdx);
+
+            if (
+              !paceCarShowInPits &&
+              pitPhase !== 'onTrack' &&
+              pitPhase !== 'pitOut'
+            ) {
+              return [];
+            }
+
+            return [
+              {
+                carIdx: car.carIdx,
+                carClassColor: parseClassColor(car.carClassColor),
+                ...projectLapDistPct(lapDistPct),
+              },
+            ];
+          })
       : [];
 
   return (
@@ -79,6 +125,15 @@ export const LinearMap = observer(() => {
                 isPlayer={d.isPlayer}
                 radius={targetDotRadiusPx}
                 playerColor={playerDotColor}
+              />
+            </g>
+          ))}
+
+          {paceCarDots.map(({ carIdx, carClassColor, cx, cy }) => (
+            <g key={carIdx} transform={`translate(${cx}, ${cy})`}>
+              <PaceCarMarker
+                radius={paceCarRadiusPx}
+                color={paceCarUseClassColor ? carClassColor : paceCarColor}
               />
             </g>
           ))}
