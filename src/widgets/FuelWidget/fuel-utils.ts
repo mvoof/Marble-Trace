@@ -22,3 +22,61 @@ export const computeFuelHistoryStats = (
 
   return { last, avg10, min, max };
 };
+
+const SECONDS_IN_MINUTE = 60;
+const SECONDS_IN_HOUR = 3600;
+
+export interface NextStopForecastInput {
+  lapsRemaining: number | null;
+  pitWindowStart: number | null;
+  pitWarningLaps: number;
+  lapTimeSec: number | null;
+}
+
+export interface NextStopForecast {
+  targetLap: number | null;
+  lapsUntil: number;
+  secondsUntil: number | null;
+}
+
+/**
+ * Forecast of the upcoming pit stop, shown before the pit window opens.
+ * `lapsUntil` counts down to the moment the window starts, not to a dry tank.
+ */
+export const computeNextStopForecast = (
+  input: NextStopForecastInput
+): NextStopForecast | null => {
+  const { lapsRemaining, pitWindowStart, pitWarningLaps, lapTimeSec } = input;
+
+  if (lapsRemaining === null || !Number.isFinite(lapsRemaining)) {
+    return null;
+  }
+
+  const lapsUntil = lapsRemaining - pitWarningLaps;
+
+  if (lapsUntil <= 0) {
+    return null;
+  }
+
+  const secondsUntil =
+    lapTimeSec !== null && lapTimeSec > 0 ? lapsUntil * lapTimeSec : null;
+
+  return {
+    targetLap: pitWindowStart,
+    lapsUntil,
+    secondsUntil,
+  };
+};
+
+export const formatCountdown = (seconds: number): string => {
+  const total = Math.max(0, Math.round(seconds));
+  const hours = Math.floor(total / SECONDS_IN_HOUR);
+  const minutes = Math.floor((total % SECONDS_IN_HOUR) / SECONDS_IN_MINUTE);
+  const secs = total % SECONDS_IN_MINUTE;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
+
+  return `${minutes}:${String(secs).padStart(2, '0')}`;
+};

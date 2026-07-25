@@ -92,6 +92,8 @@
       "barChart": "Bar Chart",
       "lineChart": "Line Chart",
       "chartStepWidth": "Chart Step Width (px)",
+      "nextStopForecast": "Next Stop Forecast",
+      "nextStopForecastDesc": "Estimated lap and time until the pit window opens.",
       "lowFuelWarningThreshold": "Low Fuel Warning Threshold (Laps)"
     },
     "enginePanel": {

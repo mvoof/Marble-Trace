@@ -381,6 +381,21 @@ export class WidgetSettingsStore {
 
       this.bumpMutation();
 
+      const fuel = this.widgets.get('fuel');
+
+      if (fuel) {
+        const settings = fuel.userSettings as unknown as FuelWidgetSettings;
+
+        void invoke('set_pit_warning_laps', {
+          laps: settings.pitWarningLaps,
+        }).catch((error) => {
+          console.error(
+            'Failed to initialize pit warning laps on backend:',
+            error
+          );
+        });
+      }
+
       const radar =
         this.widgets.get('proximity-radar') ?? this.widgets.get('radar-bar');
 

@@ -1,0 +1,62 @@
+$sb: rgba(255, 255, 255, $opacity-subtle);
+
+.nextStop {
+  margin: 0;
+  padding: sp(sm) sp(md);
+  background: $widget-surface-cell;
+  border-top: 1px solid $sb;
+  border-bottom: 1px solid $sb;
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxxs);
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  color: $widget-text-secondary;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lap {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 600;
+  color: $widget-text-primary;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detailCell {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxs);
+}
+
+.detailLabel {
+  font-size: fs(xxxs);
+  color: $widget-text-secondary;
+  letter-spacing: 1px;
+}
+
+.detailValue {
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
