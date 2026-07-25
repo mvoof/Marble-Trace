@@ -48,10 +48,6 @@ export function formatFuel(liters: number, unitSystem: UnitSystem): string {
   return liters.toFixed(2);
 }
 
-export function fuelUnit(unitSystem: UnitSystem): string {
-  return unitSystem === 'metric' ? 'L' : 'GAL';
-}
-
 export function formatDistance(
   meters: number | null | undefined,
   unitSystem: UnitSystem

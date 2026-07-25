@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   usePlayerStore,
@@ -32,23 +32,32 @@ export const DeltaLive = observer(() => {
   const liveDelta = getGameDelta(lapTiming, reference);
   const deltaOk = isGameDeltaOk(lapTiming, reference);
 
+  // The latch is history, not a render output — advancing it on commit keeps
+  // render pure, so React replaying or discarding a render cannot corrupt it.
+  // `hasHadReference` gates visibility, so it also needs to be React state.
   const latchRef = useRef(INITIAL_DELTA_LATCH_STATE);
   const previousReferenceRef = useRef(reference);
   const previousHasLapTimingRef = useRef(!!lapTiming);
+  const [hasHadReference, setHasHadReference] = useState(false);
 
-  const referenceChanged = reference !== previousReferenceRef.current;
-  const telemetryDropped = !lapTiming && previousHasLapTimingRef.current;
+  useLayoutEffect(() => {
+    const referenceChanged = reference !== previousReferenceRef.current;
+    const telemetryDropped = !lapTiming && previousHasLapTimingRef.current;
 
-  if (referenceChanged || telemetryDropped) {
-    latchRef.current = INITIAL_DELTA_LATCH_STATE;
-  }
+    if (referenceChanged || telemetryDropped) {
+      latchRef.current = INITIAL_DELTA_LATCH_STATE;
+      setHasHadReference(false);
+    }
 
-  previousReferenceRef.current = reference;
-  previousHasLapTimingRef.current = !!lapTiming;
+    previousReferenceRef.current = reference;
+    previousHasLapTimingRef.current = !!lapTiming;
 
-  latchRef.current = advanceDeltaLatch(latchRef.current, deltaOk, liveDelta);
+    latchRef.current = advanceDeltaLatch(latchRef.current, deltaOk, liveDelta);
 
-  if (hideWhenNoReference && !latchRef.current.hasHadReference) {
+    setHasHadReference(latchRef.current.hasHadReference);
+  }, [reference, lapTiming, deltaOk, liveDelta]);
+
+  if (hideWhenNoReference && !hasHadReference) {
     return null;
   }
 

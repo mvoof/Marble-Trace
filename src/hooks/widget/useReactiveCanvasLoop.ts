@@ -19,7 +19,12 @@ export const useReactiveCanvasLoop = (
   const rafRef = useRef(0);
   const effectRef = useRef(reactiveEffect);
 
-  effectRef.current = reactiveEffect;
+  // Declared before the autorun effect below so the commit order refreshes the
+  // callback first; writing the ref during render would break under React's
+  // replayed/discarded renders.
+  useLayoutEffect(() => {
+    effectRef.current = reactiveEffect;
+  });
 
   const scheduleDraw = useCallback((draw: () => void) => {
     cancelAnimationFrame(rafRef.current);

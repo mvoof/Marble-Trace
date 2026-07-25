@@ -6,6 +6,7 @@ import { RadarWidgetStore } from './widgets/radar.widget';
 import { StandingsWidgetStore } from './widgets/standings.widget';
 import { TrackMapWidgetStore } from './widgets/track-map.widget';
 import { DrivingCoachWidgetStore } from './widgets/driving-coach.widget';
+import { InputTraceWidgetStore } from './widgets/input-trace.widget';
 import { WidgetSettingsStore } from './settings/widget-settings.store';
 import { AppSettingsStore } from './settings/app-settings.store';
 import { UnitsStore } from './settings/units.store';
@@ -30,6 +31,7 @@ export class RootStore {
   standingsWidget: StandingsWidgetStore;
   trackMapWidget: TrackMapWidgetStore;
   drivingCoachWidget: DrivingCoachWidgetStore;
+  inputTraceWidget: InputTraceWidgetStore;
   widgetSettings: WidgetSettingsStore;
   appSettings: AppSettingsStore;
   units: UnitsStore;
@@ -51,6 +53,7 @@ export class RootStore {
     this.standingsWidget = new StandingsWidgetStore(this);
     this.trackMapWidget = new TrackMapWidgetStore();
     this.drivingCoachWidget = new DrivingCoachWidgetStore(this);
+    this.inputTraceWidget = new InputTraceWidgetStore(this);
     this.sim = new SimStore(this);
     this.widgetAutoHide = new WidgetAutoHideStore();
 
@@ -62,5 +65,13 @@ export class RootStore {
       this.appSettings.init();
       this.drivingCoachWidget.init();
     }
+  }
+
+  // Short-lived stores (widget previews, layout canvas, Storybook) must call
+  // this on unmount — their reactions otherwise keep running against telemetry.
+  dispose() {
+    this.inputTraceWidget.dispose();
+    this.flags.dispose();
+    this.sim.dispose();
   }
 }

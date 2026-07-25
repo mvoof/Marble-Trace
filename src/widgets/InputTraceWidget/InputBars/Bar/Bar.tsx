@@ -1,16 +1,16 @@
-import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { CarInputsFrame } from '@/types/bindings';
 import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
 import type { InputTraceSettings } from '@/types/widget-settings';
 
 import styles from './Bar.module.scss';
 import {
+  useInputTraceWidgetStore,
   usePlayerStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+import type { InputChannel } from '@store/widgets/input-trace.widget';
 
-type BarChannel = 'throttle' | 'brake' | 'clutch';
+type BarChannel = InputChannel;
 type BarWidth = 'sm' | 'md' | 'lg';
 
 interface BarProps {
@@ -18,16 +18,6 @@ interface BarProps {
   width?: BarWidth;
   rounded?: boolean;
 }
-
-const getRawValue = (
-  frame: CarInputsFrame | null,
-  channel: BarChannel
-): number => {
-  if (channel === 'throttle') return frame?.throttle ?? 0;
-  if (channel === 'brake') return frame?.brake ?? 0;
-
-  return frame?.clutch != null ? 1 - frame.clutch : 0;
-};
 
 const getChannelColor = (
   widgetSettings: WidgetSettingsStore,
@@ -55,25 +45,15 @@ export const Bar = observer(
   ({ channel, width = 'md', rounded = true }: BarProps) => {
     const { carInputs } = usePlayerStore();
     const widgetSettings = useWidgetSettingsStore();
+    const inputTrace = useInputTraceWidgetStore();
     const settings =
       widgetSettings.getSettings<InputTraceSettings>('input-trace');
-    const smoothedRef = useRef(0);
 
     if (!settings[CHANNEL_VISIBILITY_KEY[channel]]) {
       return null;
     }
 
-    const rawValue = getRawValue(carInputs, channel);
-    const smoothing = settings.smoothing;
-
-    if (smoothing <= 0) {
-      smoothedRef.current = rawValue;
-    } else {
-      smoothedRef.current =
-        (smoothedRef.current * smoothing + rawValue) / (smoothing + 1);
-    }
-
-    const clamped = Math.max(0, Math.min(1, smoothedRef.current));
+    const clamped = Math.max(0, Math.min(1, inputTrace.smoothed[channel]));
     const isAbsActive =
       channel === 'brake' && (carInputs?.brake_abs_active ?? false);
 

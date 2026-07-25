@@ -33,6 +33,8 @@ export const WidgetPreview = observer(
 
     const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
 
+    useEffect(() => () => previewStore.dispose(), [previewStore]);
+
     useLayoutEffect(() => {
       seedScenario(previewStore, scenarioId);
     }, [previewStore, scenarioId]);

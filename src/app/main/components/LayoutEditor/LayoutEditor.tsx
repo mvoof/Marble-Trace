@@ -404,6 +404,12 @@ export const LayoutEditor = observer(
     };
 
     const handleCreateKeyDown = (event: React.KeyboardEvent) => {
+      // An IME (Japanese/Chinese/Korean) uses Enter to confirm a candidate
+      // word; committing here would swallow that keystroke mid-composition.
+      if (event.nativeEvent.isComposing) {
+        return;
+      }
+
       if (event.key === 'Enter') {
         handleCreate();
       } else if (event.key === 'Escape') {
@@ -412,6 +418,10 @@ export const LayoutEditor = observer(
     };
 
     const handleRenameKeyDown = (event: React.KeyboardEvent) => {
+      if (event.nativeEvent.isComposing) {
+        return;
+      }
+
       if (event.key === 'Enter') {
         handleRenameConfirm();
       } else if (event.key === 'Escape') {

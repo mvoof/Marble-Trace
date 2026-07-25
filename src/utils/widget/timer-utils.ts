@@ -1,18 +1,7 @@
 import type { SessionState, SessionType } from '@/types/bindings';
 
-export type FlagState = 'green' | 'final' | 'checkered';
-
-export const FLAG_LABEL: Record<FlagState, string> = {
-  green: 'GREEN',
-  final: 'FINAL 5 MIN',
-  checkered: 'CHECKERED',
-};
-
 const SECONDS_IN_HOUR = 3600;
 const SECONDS_IN_MINUTE = 60;
-
-const FINAL_FLAG_THRESHOLD_SEC = 300;
-const SESSION_FLAG_CHECKERED = 0x0001;
 
 const MONTH_ABBR = [
   'JAN',
@@ -91,25 +80,6 @@ export const formatSimTime = (secondsSinceMidnight: number): string => {
   ).padStart(2, '0');
 
   return `${hours}:${minutes}`;
-};
-
-export const resolveFlagState = (
-  flags: number | null,
-  remainSeconds: number | null
-): FlagState => {
-  if (flags !== null && (flags & SESSION_FLAG_CHECKERED) !== 0) {
-    return 'checkered';
-  }
-
-  if (
-    remainSeconds !== null &&
-    remainSeconds >= 0 &&
-    remainSeconds < FINAL_FLAG_THRESHOLD_SEC
-  ) {
-    return 'final';
-  }
-
-  return 'green';
 };
 
 export const isSessionEnded = (sessionState: SessionState | null): boolean => {
