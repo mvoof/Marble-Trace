@@ -5,7 +5,6 @@ import type { RootStore } from '@store/root-store';
 export type PaceCarPitPhase = 'onTrack' | 'stall' | 'pitIn' | 'pitOut';
 
 const NOT_IN_WORLD = -1;
-const OFF_TRACK = 0;
 const IN_PIT_STALL = 1;
 const APPROACHING_PITS = 2;
 const ON_TRACK = 3;
@@ -26,10 +25,6 @@ export const nextPaceCarPitPhase = (
     return previousPhase === 'stall' || previousPhase === 'pitOut'
       ? 'pitOut'
       : 'pitIn';
-  }
-
-  if (trackSurface === OFF_TRACK || trackSurface === NOT_IN_WORLD) {
-    return previousPhase;
   }
 
   return previousPhase;
@@ -53,7 +48,8 @@ export class PaceCarStore {
           .map((car) => car.carIdx);
 
         for (const idx of paceCarIndices) {
-          const surface = carPositions.car_idx_track_surface[idx] ?? -1;
+          const surface =
+            carPositions.car_idx_track_surface[idx] ?? NOT_IN_WORLD;
           const previousPhase = this.phaseByCarIdx.get(idx) ?? 'onTrack';
 
           this.phaseByCarIdx.set(

@@ -85,16 +85,14 @@ export const RelativeContent = observer(() => {
   }
 
   return (
-    <>
-      <div ref={driverListRef} className={styles.driverList}>
-        {displayEntries.map((entry, index) =>
-          'isPaceCar' in entry ? (
-            <PaceCarRow key={entry.carIdx} driver={entry} index={index} />
-          ) : (
-            <DriverRow key={entry.carIdx} driver={entry} index={index} />
-          )
-        )}
-      </div>
-    </>
+    <div ref={driverListRef} className={styles.driverList}>
+      {displayEntries.map((entry, index) =>
+        'isPaceCar' in entry ? (
+          <PaceCarRow key={entry.carIdx} driver={entry} index={index} />
+        ) : (
+          <DriverRow key={entry.carIdx} driver={entry} index={index} />
+        )
+      )}
+    </div>
   );
 });
