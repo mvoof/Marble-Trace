@@ -2,8 +2,8 @@ import { useLayoutEffect, useRef, useState, type RefCallback } from 'react';
 
 const ROW_SELECTOR = '[data-driver-row]';
 const ROW_KEY_ATTRIBUTE = 'data-row-key';
-const MOVE_DURATION_MS = 280;
-const MOVE_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
+const MOVE_DURATION_MS = 360;
+const MOVE_EASING = 'cubic-bezier(0.33, 0, 0.15, 1)';
 // Sub-pixel drift from rounding must not trigger a transition.
 const MIN_MOVE_PX = 1;
 
@@ -14,6 +14,26 @@ const readRows = (container: HTMLElement): HTMLElement[] =>
 
 const rowKey = (row: HTMLElement): string =>
   row.getAttribute(ROW_KEY_ATTRIBUTE) ?? '';
+
+// Vertical offset a still-running transition has already applied. Without it a
+// reorder that lands mid-flight would restart from the settled layout position
+// and the row would visibly jump.
+const currentShift = (row: HTMLElement): number => {
+  const { transform } = getComputedStyle(row);
+
+  if (!transform || transform === 'none') {
+    return 0;
+  }
+
+  const values = transform
+    .slice(transform.indexOf('(') + 1, -1)
+    .split(',')
+    .map(Number);
+
+  const translateY = values.length === 16 ? values[13] : values[5];
+
+  return Number.isFinite(translateY) ? translateY : 0;
+};
 
 const measureTops = (rows: HTMLElement[]): RowTops => {
   const tops: RowTops = new Map();
@@ -70,9 +90,11 @@ export const useRowMoveAnimation = <
         continue;
       }
 
-      const delta = before - after;
+      const delta = before + currentShift(row) - after;
 
       if (Math.abs(delta) < MIN_MOVE_PX) {
+        row.style.transition = 'none';
+        row.style.transform = '';
         continue;
       }
 

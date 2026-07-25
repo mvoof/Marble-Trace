@@ -35,7 +35,7 @@ export const StandingsContent = observer(() => {
   const settings =
     widgetSettings.getSettings<StandingsWidgetSettings>('standings');
 
-  const driverEntries = standings?.entries ?? [];
+  const driverEntries = standingsWidget.orderedEntries;
 
   const activeClassIndex = standingsWidget.activeClassIndex;
   const overallSof = computeClassSof(driverEntries);
@@ -108,7 +108,7 @@ export const StandingsContent = observer(() => {
       classColor: '',
       totalDrivers: driverEntries.length,
       classSof: overallSof,
-      ...visibleRows([...driverEntries], visibleRowCount),
+      ...visibleRows(driverEntries, visibleRowCount),
     };
   };
 

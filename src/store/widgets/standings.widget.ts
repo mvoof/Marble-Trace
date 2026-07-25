@@ -15,11 +15,23 @@ export type PositionChangeDirection = 'up' | 'down';
 // How long the arrow replaces the position number after a car gains or loses a place.
 const POSITION_CHANGE_DURATION_MS = 3000;
 
+// A swap must hold this long before the rows are allowed to trade places. Cars
+// side by side in a fight (and the whole field on the opening lap) exchange
+// live positions several times a second, which would otherwise shake the table.
+const ORDER_SETTLE_MS = 900;
+
+type PendingPosition = { position: number; since: number };
+
 export class StandingsWidgetStore {
   activeClassIndex = 0;
 
   /** carIdx → direction of the position change currently being flashed. */
   positionChanges = new Map<number, PositionChangeDirection>();
+
+  /** carIdx → position the table is currently drawn with (debounced). */
+  private settledPositions = new Map<number, number>();
+
+  private readonly pendingPositions = new Map<number, PendingPosition>();
 
   private readonly previousPositions = new Map<number, number>();
 
@@ -35,17 +47,27 @@ export class StandingsWidgetStore {
   constructor(private readonly root: RootStore) {
     makeAutoObservable<
       StandingsWidgetStore,
-      'previousPositions' | 'changeTimers' | 'disposers'
+      'previousPositions' | 'pendingPositions' | 'changeTimers' | 'disposers'
     >(
       this,
-      { previousPositions: false, changeTimers: false, disposers: false },
+      {
+        previousPositions: false,
+        pendingPositions: false,
+        changeTimers: false,
+        disposers: false,
+      },
       { autoBind: true }
     );
 
     this.disposers.push(
       reaction(
         () => this.root.backendComputed.standings,
-        (frame) => this.trackPositionChanges(frame?.entries ?? [])
+        (frame) => {
+          const entries = frame?.entries ?? [];
+
+          this.settleOrder(entries);
+          this.trackPositionChanges(entries);
+        }
       )
     );
   }
@@ -66,23 +88,102 @@ export class StandingsWidgetStore {
     this.changeTimers.clear();
     this.positionChanges.clear();
     this.previousPositions.clear();
+    this.pendingPositions.clear();
+    this.settledPositions = new Map();
   }
 
+  // Holds back a car's new position until it has survived ORDER_SETTLE_MS, so
+  // the table only reorders once a pass has actually stuck. Cars seen for the
+  // first time settle immediately — the opening order must not fade in.
+  private settleOrder(entries: DriverEntry[]) {
+    const now = performance.now();
+    const next = new Map(this.settledPositions);
+    const seen = new Set<number>();
+    let changed = false;
+
+    for (const entry of entries) {
+      seen.add(entry.carIdx);
+
+      const settled = next.get(entry.carIdx);
+
+      if (settled === undefined) {
+        next.set(entry.carIdx, entry.livePosition);
+        this.pendingPositions.delete(entry.carIdx);
+        changed = true;
+        continue;
+      }
+
+      if (settled === entry.livePosition) {
+        this.pendingPositions.delete(entry.carIdx);
+        continue;
+      }
+
+      const pending = this.pendingPositions.get(entry.carIdx);
+
+      if (!pending || pending.position !== entry.livePosition) {
+        this.pendingPositions.set(entry.carIdx, {
+          position: entry.livePosition,
+          since: now,
+        });
+        continue;
+      }
+
+      if (now - pending.since >= ORDER_SETTLE_MS) {
+        next.set(entry.carIdx, entry.livePosition);
+        this.pendingPositions.delete(entry.carIdx);
+        changed = true;
+      }
+    }
+
+    for (const carIdx of next.keys()) {
+      if (!seen.has(carIdx)) {
+        next.delete(carIdx);
+        this.pendingPositions.delete(carIdx);
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      this.settledPositions = next;
+    }
+  }
+
+  // Arrows follow the settled order, not the raw frame, so the flash and the
+  // row sliding into its new place happen together.
   private trackPositionChanges(entries: DriverEntry[]) {
     for (const entry of entries) {
+      const position = this.settledPositions.get(entry.carIdx);
+
+      if (position === undefined) {
+        continue;
+      }
+
       const previous = this.previousPositions.get(entry.carIdx);
 
-      this.previousPositions.set(entry.carIdx, entry.livePosition);
+      this.previousPositions.set(entry.carIdx, position);
 
-      if (previous === undefined || previous === entry.livePosition) {
+      if (previous === undefined || previous === position) {
         continue;
       }
 
       this.flashPositionChange(
         entry.carIdx,
-        entry.livePosition < previous ? 'up' : 'down'
+        position < previous ? 'up' : 'down'
       );
     }
+  }
+
+  /** Field ordered by the debounced positions — the order the table renders. */
+  get orderedEntries(): DriverEntry[] {
+    const entries = this.root.backendComputed.standings?.entries ?? [];
+
+    const positions = this.settledPositions;
+
+    return [...entries].sort(
+      (a, b) =>
+        (positions.get(a.carIdx) ?? a.livePosition) -
+        (positions.get(b.carIdx) ?? b.livePosition)
+    );
   }
 
   private flashPositionChange(
@@ -144,7 +245,7 @@ export class StandingsWidgetStore {
   }
 
   get allClassGroups(): DriverGroup[] {
-    const entries = this.root.backendComputed.standings?.entries ?? [];
+    const entries = this.orderedEntries;
 
     if (entries.length === 0) return [];
 
@@ -173,9 +274,8 @@ export class StandingsWidgetStore {
           totalDrivers: driversInClass.length,
           classSof: computeClassSof(driversInClass),
           windowStartIndex: -1,
-          drivers: driversInClass.sort(
-            (a, b) => a.liveClassPosition - b.liveClassPosition
-          ),
+          // Already in settled overall order, which within a class is the class order.
+          drivers: driversInClass,
         };
       });
   }
