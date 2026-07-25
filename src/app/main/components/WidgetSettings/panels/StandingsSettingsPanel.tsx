@@ -17,6 +17,8 @@ const PLAYER_WINDOW_OPTIONS = [0, 1, 2, 3, 4, 5].map((count) => ({
   value: count,
 }));
 
+const GROUPED_ROWS_PER_CLASS_OPTIONS = [0, 2, 3, 4, 5, 6, 8];
+
 export const StandingsSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');
@@ -216,6 +218,27 @@ export const StandingsSettingsPanel = observer(() => {
             ]}
           />
         </div>
+
+        {settings.viewMode === 'grouped' ? (
+          <div className={styles.fieldGroup}>
+            <SettingRow
+              title={t('settingsPanels.standings.groupedRowsPerClass')}
+              desc={t('settingsPanels.standings.groupedRowsPerClassDesc')}
+            >
+              <Segmented<number>
+                value={settings.groupedRowsPerClass}
+                onChange={(v) => update({ groupedRowsPerClass: v })}
+                options={GROUPED_ROWS_PER_CLASS_OPTIONS.map((count) => ({
+                  label:
+                    count === 0
+                      ? t('settingsPanels.standings.rowsPerClassAuto')
+                      : String(count),
+                  value: count,
+                }))}
+              />
+            </SettingRow>
+          </div>
+        ) : null}
       </Card>
 
       <Card title={t('settingsPanels.standings.playerWindow')}>

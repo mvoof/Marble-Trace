@@ -522,6 +522,7 @@ const WIDGETS: WidgetConfig[] = [
       showLivePosChange: true,
       driversAhead: 0,
       driversBehind: 0,
+      groupedRowsPerClass: 0,
       showColumnHeaders: true,
       showSessionHeader: true,
       showWeather: true,

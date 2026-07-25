@@ -55,6 +55,13 @@ describe('buildVisibleRows', () => {
     expect(result.windowStartIndex).toBe(1);
   });
 
+  it('keeps the player row when the budget leaves room for a single row', () => {
+    const result = buildVisibleRows(makeField(20, 12), 1, 5, 5);
+
+    expect(carIndices(result.drivers)).toEqual([12]);
+    expect(result.windowStartIndex).toBe(0);
+  });
+
   it('never pads the window with cars ahead when nobody is behind', () => {
     const result = buildVisibleRows(makeField(20, 19), 8, 2, 3);
 

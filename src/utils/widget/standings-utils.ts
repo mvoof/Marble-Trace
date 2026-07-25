@@ -13,67 +13,76 @@ const MIN_TOP_ROWS = 1;
 
 /**
  * Picks the rows to render: the top of the table, plus — when the player has
- * dropped out of it — either a single pinned player row (`ahead`/`behind` both 0)
- * or a contiguous window of `ahead` cars in front and `behind` cars behind them.
+ * dropped out of it — either a single pinned player row (`requestedAhead` and
+ * `requestedBehind` both 0) or a contiguous window of that many cars around them.
  */
 export const buildVisibleRows = (
   drivers: DriverEntry[],
-  budget: number,
-  ahead: number,
-  behind: number
+  maxRows: number,
+  requestedAhead: number,
+  requestedBehind: number
 ): VisibleRows => {
-  if (budget <= 0) {
+  if (maxRows <= 0) {
     return { drivers: [], windowStartIndex: NO_WINDOW };
   }
 
-  if (drivers.length <= budget) {
+  if (drivers.length <= maxRows) {
     return { drivers, windowStartIndex: NO_WINDOW };
   }
 
-  const playerIdx = drivers.findIndex((driver) => driver.isPlayer);
+  const playerIndex = drivers.findIndex((driver) => driver.isPlayer);
 
-  if (playerIdx < 0 || playerIdx < budget) {
-    return { drivers: drivers.slice(0, budget), windowStartIndex: NO_WINDOW };
+  if (playerIndex < 0 || playerIndex < maxRows) {
+    return { drivers: drivers.slice(0, maxRows), windowStartIndex: NO_WINDOW };
   }
 
-  if (ahead === 0 && behind === 0) {
-    const visible = drivers.slice(0, budget);
+  if (requestedAhead === 0 && requestedBehind === 0) {
+    const topBlock = drivers.slice(0, maxRows);
 
-    if (budget >= 2) {
-      visible[budget - 1] = drivers[playerIdx];
-    }
+    topBlock[topBlock.length - 1] = drivers[playerIndex];
 
-    return { drivers: visible, windowStartIndex: NO_WINDOW };
+    return { drivers: topBlock, windowStartIndex: NO_WINDOW };
   }
 
   // Rows that actually exist on each side of the player. A short field must not
   // be padded from the other side — a driver ahead rendered below the player (or
   // the reverse) would read as the wrong side of the fight.
-  const behindRows = Math.min(behind, drivers.length - 1 - playerIdx);
-  const aheadRows = Math.min(ahead, playerIdx - MIN_TOP_ROWS);
-
-  // A tight budget trims the block from the back first: the car you are chasing
-  // matters more than the one chasing you.
-  const overflow = Math.max(
-    0,
-    aheadRows + 1 + behindRows - (budget - MIN_TOP_ROWS)
+  const availableBehind = Math.min(
+    requestedBehind,
+    drivers.length - 1 - playerIndex
   );
 
-  const trimmedBehind = Math.max(0, behindRows - overflow);
-  const trimmedAhead = aheadRows - Math.max(0, overflow - behindRows);
+  const availableAhead = Math.min(requestedAhead, playerIndex - MIN_TOP_ROWS);
 
-  const windowSize = trimmedAhead + 1 + trimmedBehind;
-  const topCount = budget - windowSize;
-  const start = playerIdx - trimmedAhead;
+  // Rows the requested window asks for beyond what is left once the top block
+  // keeps its leader. Trimmed from the back first: the car you are chasing
+  // matters more than the one chasing you.
+  const excessRows = Math.max(
+    0,
+    availableAhead + 1 + availableBehind - (maxRows - MIN_TOP_ROWS)
+  );
 
-  const visible = [
-    ...drivers.slice(0, topCount),
-    ...drivers.slice(start, start + windowSize),
+  const behindRows = Math.max(0, availableBehind - excessRows);
+  // Clamped at zero: a single available row cannot hold both the leader and the
+  // player, and the window the player sits in wins — a standings block without
+  // the player row is useless.
+  const aheadRows = Math.max(
+    0,
+    availableAhead - Math.max(0, excessRows - availableBehind)
+  );
+
+  const windowRowCount = aheadRows + 1 + behindRows;
+  const topRowCount = maxRows - windowRowCount;
+  const windowStart = playerIndex - aheadRows;
+
+  const visibleDrivers = [
+    ...drivers.slice(0, topRowCount),
+    ...drivers.slice(windowStart, windowStart + windowRowCount),
   ];
 
   return {
-    drivers: visible,
-    windowStartIndex: start > topCount ? topCount : NO_WINDOW,
+    drivers: visibleDrivers,
+    windowStartIndex: windowStart > topRowCount ? topRowCount : NO_WINDOW,
   };
 };
 

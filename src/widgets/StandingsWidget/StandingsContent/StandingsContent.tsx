@@ -71,16 +71,20 @@ export const StandingsContent = observer(() => {
       return 0;
     }
 
-    const classHeaderRows = allClassGroups.length;
-    const available = Math.max(1, visibleRowCount - classHeaderRows);
+    if (settings.groupedRowsPerClass > 0) {
+      return settings.groupedRowsPerClass;
+    }
 
-    return Math.max(1, Math.floor(available / allClassGroups.length));
+    const classHeaderRows = allClassGroups.length;
+    const rowsLeftForDrivers = Math.max(1, visibleRowCount - classHeaderRows);
+
+    return Math.max(1, Math.floor(rowsLeftForDrivers / allClassGroups.length));
   })();
 
-  const visibleRows = (drivers: DriverEntry[], budget: number) =>
+  const visibleRows = (drivers: DriverEntry[], maxRows: number) =>
     buildVisibleRows(
       drivers,
-      budget,
+      maxRows,
       settings.driversAhead,
       settings.driversBehind
     );

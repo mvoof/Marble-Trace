@@ -89,6 +89,8 @@ export interface StandingsWidgetSettings {
   driversAhead: number;
   /** Rows shown behind the player when they no longer fit in the top block. */
   driversBehind: number;
+  /** Driver rows each class gets in grouped view (0 = split the widget height evenly between classes). */
+  groupedRowsPerClass: number;
   showColumnHeaders: boolean;
   showSessionHeader: boolean;
   showWeather: boolean;
