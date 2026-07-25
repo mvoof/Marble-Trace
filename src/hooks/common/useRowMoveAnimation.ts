@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState, type RefCallback } from 'react';
 
 const ROW_SELECTOR = '[data-driver-row]';
 const ROW_KEY_ATTRIBUTE = 'data-row-key';
-const MOVE_DURATION_MS = 360;
+export const MOVE_DURATION_MS = 360;
 const MOVE_EASING = 'cubic-bezier(0.33, 0, 0.15, 1)';
 // Sub-pixel drift from rounding must not trigger a transition.
 const MIN_MOVE_PX = 1;

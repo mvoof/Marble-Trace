@@ -8,12 +8,17 @@ import {
 import type { DriverEntry } from '@/types/bindings';
 import type { DriverGroup } from '@/types';
 import { computeClassSof } from '@utils/widget/standings-utils';
+import { MOVE_DURATION_MS } from '@/hooks/common/useRowMoveAnimation';
 import type { RootStore } from '@store/root-store';
 
 export type PositionChangeDirection = 'up' | 'down';
 
-// How long the arrow replaces the position number after a car gains or loses a place.
-const POSITION_CHANGE_DURATION_MS = 3000;
+// Fallback lifetime of the arrow: it normally clears once the row has finished
+// moving, but a swap that keeps flapping never settles, so it must expire anyway.
+const POSITION_CHANGE_MAX_MS = 3000;
+
+// The arrow lingers for this long after the row has slid into its new place.
+const ARROW_LINGER_MS = 400;
 
 // A swap must hold this long before the rows are allowed to trade places. Cars
 // side by side in a fight (and the whole field on the opening lap) exchange
@@ -131,6 +136,7 @@ export class StandingsWidgetStore {
       if (now - pending.since >= ORDER_SETTLE_MS) {
         next.set(entry.carIdx, entry.livePosition);
         this.pendingPositions.delete(entry.carIdx);
+        this.clearArrowAfterMove(entry.carIdx);
         changed = true;
       }
     }
@@ -148,27 +154,22 @@ export class StandingsWidgetStore {
     }
   }
 
-  // Arrows follow the settled order, not the raw frame, so the flash and the
-  // row sliding into its new place happen together.
+  // Arrows read the raw frame, not the settled order: the flash is the instant
+  // signal that a place changed hands, while the row itself only slides once the
+  // swap has held.
   private trackPositionChanges(entries: DriverEntry[]) {
     for (const entry of entries) {
-      const position = this.settledPositions.get(entry.carIdx);
-
-      if (position === undefined) {
-        continue;
-      }
-
       const previous = this.previousPositions.get(entry.carIdx);
 
-      this.previousPositions.set(entry.carIdx, position);
+      this.previousPositions.set(entry.carIdx, entry.livePosition);
 
-      if (previous === undefined || previous === position) {
+      if (previous === undefined || previous === entry.livePosition) {
         continue;
       }
 
       this.flashPositionChange(
         entry.carIdx,
-        position < previous ? 'up' : 'down'
+        entry.livePosition < previous ? 'up' : 'down'
       );
     }
   }
@@ -186,17 +187,50 @@ export class StandingsWidgetStore {
     );
   }
 
+  /**
+   * Rank each car holds in the table as it is currently drawn — derived from the
+   * settled order rather than the raw frame, so the ± column flips at the moment
+   * the row changes places instead of ahead of it.
+   */
+  get renderedRanks(): Map<number, { overall: number; inClass: number }> {
+    const result = new Map<number, { overall: number; inClass: number }>();
+    const classCounts = new Map<number, number>();
+
+    this.orderedEntries.forEach((entry, index) => {
+      const inClass = (classCounts.get(entry.carClassId) ?? 0) + 1;
+
+      classCounts.set(entry.carClassId, inClass);
+      result.set(entry.carIdx, { overall: index + 1, inClass });
+    });
+
+    return result;
+  }
+
   private flashPositionChange(
     carIdx: number,
     direction: PositionChangeDirection
   ) {
+    this.positionChanges.set(carIdx, direction);
+    this.clearChangeAfter(carIdx, POSITION_CHANGE_MAX_MS);
+  }
+
+  // The row starts sliding on the render that follows the settle, so the arrow
+  // is given the move duration plus a short tail before it hands the cell back
+  // to the position number.
+  private clearArrowAfterMove(carIdx: number) {
+    if (!this.positionChanges.has(carIdx)) {
+      return;
+    }
+
+    this.clearChangeAfter(carIdx, MOVE_DURATION_MS + ARROW_LINGER_MS);
+  }
+
+  private clearChangeAfter(carIdx: number, delayMs: number) {
     const running = this.changeTimers.get(carIdx);
 
     if (running) {
       clearTimeout(running);
     }
-
-    this.positionChanges.set(carIdx, direction);
 
     this.changeTimers.set(
       carIdx,
@@ -205,7 +239,7 @@ export class StandingsWidgetStore {
           this.positionChanges.delete(carIdx);
           this.changeTimers.delete(carIdx);
         });
-      }, POSITION_CHANGE_DURATION_MS)
+      }, delayMs)
     );
   }
 

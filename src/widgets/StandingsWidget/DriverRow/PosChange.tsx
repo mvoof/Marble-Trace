@@ -26,7 +26,13 @@ export const PosChange = observer(({ carIdx }: PosChangeProps) => {
 
   const useClassPos = settings.viewMode !== 'all';
 
-  const position = useClassPos ? driver.liveClassPosition : driver.livePosition;
+  // Rank as drawn, not as reported: the ± must change together with the row
+  // sliding into its new place, otherwise it contradicts the table around it.
+  const rank = standingsWidget.renderedRanks.get(carIdx);
+
+  const position = useClassPos
+    ? (rank?.inClass ?? driver.liveClassPosition)
+    : (rank?.overall ?? driver.livePosition);
 
   const startPos = useClassPos ? driver.startPosClass : driver.startPosOverall;
 

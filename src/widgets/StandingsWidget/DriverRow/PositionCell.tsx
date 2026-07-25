@@ -27,10 +27,12 @@ export const PositionCell = observer(({ carIdx }: PositionCellProps) => {
     return null;
   }
 
+  const rank = standingsWidget.renderedRanks.get(carIdx);
+
   const position =
     settings.viewMode === 'all'
-      ? driver.livePosition
-      : driver.liveClassPosition;
+      ? (rank?.overall ?? driver.livePosition)
+      : (rank?.inClass ?? driver.liveClassPosition);
 
   const change = settings.showLivePosChange
     ? standingsWidget.positionChanges.get(carIdx)
