@@ -1,4 +1,4 @@
-﻿import { useRef, useCallback } from 'react';
+﻿import { useRef, useCallback, useLayoutEffect } from 'react';
 
 import { useReactiveCanvasLoop } from '@/hooks/widget/useReactiveCanvasLoop';
 import {
@@ -34,10 +34,14 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Synced each render so the reactive loop always reads fresh props without effect restart.
+  // Synced on commit so the reactive loop always reads fresh props without an
+  // effect restart. Writing this during render would break under React's
+  // replayed/discarded renders.
   const dimsRef = useRef({ width, height });
 
-  dimsRef.current = { width, height };
+  useLayoutEffect(() => {
+    dimsRef.current = { width, height };
+  }, [width, height]);
 
   const stateRef = useRef({
     smoothedLatG: 0,

@@ -5,9 +5,6 @@ import { rpmSubZoneForPct } from '@utils/widget/rpm-zone';
 
 export type RpmZone = 'low' | 'mid' | 'high' | 'shift' | 'blink';
 
-/** Below this |delta| (km/h or mph) the player is treated as on-pace with the reference. */
-export const COACH_DELTA_DEADZONE = 1;
-
 export interface RpmZoneState {
   /** RPM as a fraction of redline, clamped to 0..1 — the ring's full scale. */
   pct: number;

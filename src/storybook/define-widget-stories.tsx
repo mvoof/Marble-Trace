@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect } from 'react';
 import type { ComponentType } from 'react';
 import { runInAction } from 'mobx';
 import type { Decorator, Meta, ArgTypes } from '@storybook/react-vite';
@@ -73,11 +73,6 @@ export const defineWidgetStories = <Args,>(
     const store = useStore();
 
     const argsSignature = JSON.stringify(hostArgs);
-    const cachedArgs = useRef(hostArgs);
-
-    if (cachedArgs.current !== hostArgs) {
-      cachedArgs.current = hostArgs;
-    }
 
     useLayoutEffect(() => {
       runInAction(() => {
@@ -91,9 +86,11 @@ export const defineWidgetStories = <Args,>(
         }
 
         if (seed) {
-          seed(store, cachedArgs.current);
+          seed(store, hostArgs);
         }
       });
+      // hostArgs is re-read through argsSignature, its structural identity.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [store, argsSignature]);
 
     return <Widget {...(hostArgs as object)} />;

@@ -24,6 +24,11 @@ export const MainWindow = observer(() => {
   const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
   const [layoutsMode, setLayoutsMode] = useState<'list' | 'editor'>('list');
 
+  // Nothing selected yet falls back to the first widget in the catalog, so the
+  // workbench never has to report a default choice back up here.
+  const activeWidgetId =
+    selectedWidgetId ?? root.widgetSettings.allWidgets[0]?.id ?? null;
+
   useEffect(() => {
     void simStore.startStream();
 
@@ -151,16 +156,13 @@ export const MainWindow = observer(() => {
                       {t('mainWindow.widgetModules')}
                     </div>
                     <WidgetList
-                      selectedId={selectedWidgetId}
+                      selectedId={activeWidgetId}
                       onSelect={setSelectedWidgetId}
                     />
                   </div>
 
                   <div className={styles.widgetWorkbench}>
-                    <WidgetWorkbench
-                      widgetId={selectedWidgetId}
-                      onSelectWidget={setSelectedWidgetId}
-                    />
+                    <WidgetWorkbench widgetId={activeWidgetId} />
                   </div>
                 </div>
               </div>

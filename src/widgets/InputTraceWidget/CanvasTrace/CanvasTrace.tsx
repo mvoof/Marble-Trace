@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 import type { InputTraceSettings } from '@/types/widget-settings';
 import { useReactiveCanvasLoop } from '@/hooks/widget/useReactiveCanvasLoop';
@@ -7,12 +7,12 @@ import {
   usePlayerStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-
-interface SmoothedValues {
-  throttle: number;
-  brake: number;
-  clutch: number;
-}
+import {
+  createTraceBufferState,
+  drawInputTrace,
+  pushTraceSample,
+  type TraceBufferState,
+} from './canvas-trace-render';
 
 // Not wrapped in observer() intentionally: useReactiveCanvasLoop subscribes to
 // MobX observables directly, so React re-renders are not needed for data updates.
@@ -22,183 +22,17 @@ export const CanvasTrace = () => {
   const widgetSettings = useWidgetSettingsStore();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bufferStateRef = useRef<TraceBufferState | null>(null);
 
-  const bufferStateRef = useRef({
-    buffer: new Float32Array(0),
-    absBuffer: new Uint8Array(0),
-    steerBuffer: new Float32Array(0),
-    head: 0,
-    count: 0,
-    smoothed: { throttle: 0, brake: 0, clutch: 0 } as SmoothedValues,
-  });
+  bufferStateRef.current ??= createTraceBufferState();
 
   const draw = useCallback((settings: InputTraceSettings) => {
     const canvas = canvasRef.current;
-    const { buffer, absBuffer, steerBuffer, head, count } =
-      bufferStateRef.current;
+    const state = bufferStateRef.current;
 
-    if (!canvas || (buffer.length === 0 && !settings.showSteering)) return;
+    if (!canvas || !state) return;
 
-    const ctx = canvas.getContext('2d');
-
-    if (!ctx) return;
-
-    const dpr = window.devicePixelRatio || 1;
-
-    const logicalW = canvas.width / dpr;
-    const logicalH = canvas.height / dpr;
-
-    const channels: { color: string; type: 'throttle' | 'brake' | 'clutch' }[] =
-      [];
-
-    if (settings.showThrottle) {
-      channels.push({ color: settings.throttleColor, type: 'throttle' });
-    }
-
-    if (settings.showBrake) {
-      channels.push({ color: settings.brakeColor, type: 'brake' });
-    }
-
-    if (settings.showClutch) {
-      channels.push({ color: settings.clutchColor, type: 'clutch' });
-    }
-
-    ctx.clearRect(0, 0, logicalW, logicalH);
-
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-
-    for (let gridIndex = 1; gridIndex <= 3; gridIndex++) {
-      const yPos = logicalH * (gridIndex / 4);
-
-      ctx.moveTo(0, yPos);
-      ctx.lineTo(logicalW, yPos);
-    }
-
-    ctx.stroke();
-
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-
-    const bufferSize = settings.historySeconds * 60;
-
-    for (let channelIndex = 0; channelIndex < channels.length; channelIndex++) {
-      const channel = channels[channelIndex];
-
-      ctx.lineWidth = settings.lineWidth;
-
-      const verticalInset = settings.lineWidth / 2;
-      const drawableHeight = logicalH - verticalInset * 2;
-
-      if (channel.type === 'brake') {
-        let currentAbs = false;
-
-        ctx.strokeStyle = settings.brakeColor;
-        ctx.beginPath();
-
-        let started = false;
-
-        for (let sampleIndex = 0; sampleIndex < count; sampleIndex++) {
-          const circularIndex =
-            (head - count + sampleIndex + bufferSize) % bufferSize;
-
-          const sampleValue =
-            buffer[circularIndex * channels.length + channelIndex];
-
-          const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
-          const yPos = verticalInset + (1 - sampleValue) * drawableHeight;
-
-          const sampleAbs = absBuffer[circularIndex] === 1;
-
-          if (started && sampleAbs !== currentAbs) {
-            ctx.lineTo(xPos, yPos);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(xPos, yPos);
-            ctx.strokeStyle = sampleAbs
-              ? settings.absColor
-              : settings.brakeColor;
-            currentAbs = sampleAbs;
-          }
-
-          if (!started) {
-            ctx.strokeStyle = sampleAbs
-              ? settings.absColor
-              : settings.brakeColor;
-            currentAbs = sampleAbs;
-            ctx.moveTo(xPos, yPos);
-            started = true;
-          } else {
-            ctx.lineTo(xPos, yPos);
-          }
-        }
-
-        ctx.stroke();
-      } else {
-        ctx.strokeStyle = channel.color;
-        ctx.beginPath();
-
-        let started = false;
-
-        for (let sampleIndex = 0; sampleIndex < count; sampleIndex++) {
-          const circularIndex =
-            (head - count + sampleIndex + bufferSize) % bufferSize;
-
-          const sampleValue =
-            buffer[circularIndex * channels.length + channelIndex];
-
-          const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
-          const yPos = verticalInset + (1 - sampleValue) * drawableHeight;
-
-          if (!started) {
-            ctx.moveTo(xPos, yPos);
-
-            started = true;
-          } else {
-            ctx.lineTo(xPos, yPos);
-          }
-        }
-
-        ctx.stroke();
-      }
-    }
-
-    if (settings.showSteering) {
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-      ctx.lineWidth = settings.lineWidth;
-      ctx.beginPath();
-
-      const steerVerticalInset = settings.lineWidth / 2;
-      const steerDrawableHalfHeight = logicalH / 2 - steerVerticalInset;
-
-      let started = false;
-      const MAX_STEER_RAD =
-        ((settings.steeringLimit / 2) * Math.PI) /
-        180 /
-        (settings.steeringZoom ?? 1);
-
-      for (let sampleIndex = 0; sampleIndex < count; sampleIndex++) {
-        const circularIndex =
-          (head - count + sampleIndex + bufferSize) % bufferSize;
-
-        const rawSteer = steerBuffer[circularIndex] ?? 0;
-        const u = Math.max(-1, Math.min(1, rawSteer / MAX_STEER_RAD));
-
-        const xPos = (sampleIndex / (bufferSize - 1)) * logicalW;
-        const yPos = logicalH / 2 - u * steerDrawableHalfHeight;
-
-        if (!started) {
-          ctx.moveTo(xPos, yPos);
-          started = true;
-        } else {
-          ctx.lineTo(xPos, yPos);
-        }
-      }
-
-      ctx.stroke();
-    }
+    drawInputTrace(canvas, state, settings);
   }, []);
 
   useReactiveCanvasLoop(
@@ -206,12 +40,15 @@ export const CanvasTrace = () => {
       const inputs = telemetry.carInputs;
       const settings =
         widgetSettings.getSettings<InputTraceSettings>('input-trace');
+      const state = bufferStateRef.current;
 
-      // Touch every field draw() reads so autorun tracks them as dependencies —
-      // draw() itself runs deferred inside requestAnimationFrame, outside the
-      // autorun's synchronous tracking window, so settings-only changes (no
-      // telemetry update, e.g. the static widget preview) would otherwise never
-      // trigger a redraw.
+      if (!state) return;
+
+      // Touch every field drawInputTrace() reads so autorun tracks them as
+      // dependencies — the draw itself runs deferred inside requestAnimationFrame,
+      // outside the autorun's synchronous tracking window, so settings-only
+      // changes (no telemetry update, e.g. the static widget preview) would
+      // otherwise never trigger a redraw.
       const {
         lineWidth: _lineWidth,
         throttleColor: _throttleColor,
@@ -223,88 +60,17 @@ export const CanvasTrace = () => {
         steeringZoom: _steeringZoom,
       } = settings;
 
-      const rawThrottle = inputs?.throttle ?? 0;
-      const rawBrake = inputs?.brake ?? 0;
-      const rawClutch = inputs?.clutch != null ? 1 - inputs.clutch : 0;
-
-      const bufferSize = settings.historySeconds * 60;
-      const numChannels =
-        (settings.showThrottle ? 1 : 0) +
-        (settings.showBrake ? 1 : 0) +
-        (settings.showClutch ? 1 : 0);
-
-      const requiredBufferLength = bufferSize * numChannels;
-      const state = bufferStateRef.current;
-
-      // A resize of any circular buffer invalidates head/count for all of
-      // them — e.g. with every channel toggle off, requiredBufferLength
-      // stays 0 across a historySeconds change, but absBuffer/steerBuffer
-      // still get reallocated to the new (smaller) bufferSize; leaving a
-      // stale head from the old size would write out of bounds on them.
-      let buffersResized = false;
-
-      if (state.buffer.length !== requiredBufferLength) {
-        state.buffer = new Float32Array(requiredBufferLength);
-        buffersResized = true;
-      }
-
-      if (state.absBuffer.length !== bufferSize) {
-        state.absBuffer = new Uint8Array(bufferSize);
-        buffersResized = true;
-      }
-
-      if (state.steerBuffer.length !== bufferSize) {
-        state.steerBuffer = new Float32Array(bufferSize);
-        buffersResized = true;
-      }
-
-      if (buffersResized) {
-        state.head = 0;
-        state.count = 0;
-      }
-
-      const smoothing = settings.smoothing;
-      const previous = state.smoothed;
-
-      if (smoothing <= 0) {
-        state.smoothed = {
-          throttle: rawThrottle,
-          brake: rawBrake,
-          clutch: rawClutch,
-        };
-      } else {
-        state.smoothed = {
-          throttle:
-            (previous.throttle * smoothing + rawThrottle) / (smoothing + 1),
-          brake: (previous.brake * smoothing + rawBrake) / (smoothing + 1),
-          clutch: (previous.clutch * smoothing + rawClutch) / (smoothing + 1),
-        };
-      }
-
-      const { throttle, brake, clutch } = state.smoothed;
-      const values: number[] = [];
-
-      if (settings.showThrottle) values.push(throttle);
-
-      if (settings.showBrake) values.push(brake);
-
-      if (settings.showClutch) values.push(clutch);
-
-      const offset = state.head * values.length;
-
-      for (let channelIndex = 0; channelIndex < values.length; channelIndex++) {
-        state.buffer[offset + channelIndex] = values[channelIndex] ?? 0;
-      }
-
-      state.absBuffer[state.head] = inputs?.brake_abs_active ? 1 : 0;
-      state.steerBuffer[state.head] =
-        telemetry.carDynamics?.steering_wheel_angle ?? 0;
-
-      state.head = (state.head + 1) % bufferSize;
-
-      if (state.count < bufferSize) {
-        state.count++;
-      }
+      pushTraceSample(
+        state,
+        {
+          throttle: inputs?.throttle ?? 0,
+          brake: inputs?.brake ?? 0,
+          clutch: inputs?.clutch != null ? 1 - inputs.clutch : 0,
+          absActive: !!inputs?.brake_abs_active,
+          steeringWheelAngle: telemetry.carDynamics?.steering_wheel_angle ?? 0,
+        },
+        settings
+      );
 
       scheduleDraw(() => draw(settings));
     },

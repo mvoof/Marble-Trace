@@ -1,4 +1,9 @@
-import { makeAutoObservable, reaction, runInAction } from 'mobx';
+import {
+  makeAutoObservable,
+  reaction,
+  runInAction,
+  type IReactionDisposer,
+} from 'mobx';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 
@@ -42,6 +47,7 @@ export class SimStore {
 
   private initId = 0;
   private unlistens: UnlistenFn[] = [];
+  private readonly disposers: IReactionDisposer[] = [];
 
   constructor(private readonly root: RootStore) {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -52,49 +58,64 @@ export class SimStore {
       typeof window !== 'undefined' &&
       !window.location.hash.includes('overlay')
     ) {
-      reaction(
-        () => ({
-          widgets: this.root.widgetSettings.allWidgets.map((w) => ({
-            id: w.id,
-            enabled: w.userSettings.enabled,
-          })),
-          hideAll: this.root.appSettings.appSettings.hideAllWidgets,
-        }),
-        () => this.updateActiveEvents(),
-        { fireImmediately: true }
+      this.disposers.push(
+        reaction(
+          () => ({
+            widgets: this.root.widgetSettings.allWidgets.map((w) => ({
+              id: w.id,
+              enabled: w.userSettings.enabled,
+            })),
+            hideAll: this.root.appSettings.appSettings.hideAllWidgets,
+          }),
+          () => this.updateActiveEvents(),
+          { fireImmediately: true }
+        )
       );
     }
 
-    reaction(
-      () => {
-        const info = this.root.session.sessionInfo;
-        const car = info?.cars.find(
-          (entry) => entry.carIdx === info.playerCarIdx
-        );
+    this.disposers.push(
+      reaction(
+        () => {
+          const info = this.root.session.sessionInfo;
+          const car = info?.cars.find(
+            (entry) => entry.carIdx === info.playerCarIdx
+          );
 
-        return info && car
-          ? { trackId: info.trackId, carScreenName: car.carScreenName }
-          : null;
-      },
-      (identity, previousIdentity) => {
-        if (!identity) {
-          this.root.referenceLap.reset();
+          return info && car
+            ? { trackId: info.trackId, carScreenName: car.carScreenName }
+            : null;
+        },
+        (identity, previousIdentity) => {
+          if (!identity) {
+            this.root.referenceLap.reset();
 
-          return;
-        }
+            return;
+          }
 
-        if (
-          previousIdentity &&
-          previousIdentity.trackId === identity.trackId &&
-          previousIdentity.carScreenName === identity.carScreenName
-        ) {
-          return;
-        }
+          if (
+            previousIdentity &&
+            previousIdentity.trackId === identity.trackId &&
+            previousIdentity.carScreenName === identity.carScreenName
+          ) {
+            return;
+          }
 
-        void this.loadReferenceLap(identity.trackId, identity.carScreenName);
-      },
-      { fireImmediately: true }
+          void this.loadReferenceLap(identity.trackId, identity.carScreenName);
+        },
+        { fireImmediately: true }
+      )
     );
+  }
+
+  // Every RootStore instance creates its own reactions; without this they
+  // outlive the store that owns them.
+  dispose() {
+    for (const disposer of this.disposers) {
+      disposer();
+    }
+
+    this.disposers.length = 0;
+    this.disposeListeners();
   }
 
   private async loadReferenceLap(trackId: number, carScreenName: string) {
