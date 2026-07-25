@@ -1,6 +1,8 @@
+import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { DriverGroup } from '@/types';
+import type { DriverEntry } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import {
   useBackendComputedStore,
@@ -9,10 +11,11 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import {
+  buildVisibleRows,
   computeClassSof,
-  sliceWithPlayerPin,
 } from '@utils/widget/standings-utils';
 import { useVisibleRowCount } from '@/hooks/common/useVisibleRowCount';
+import { useRowMoveAnimation } from '@/hooks/common/useRowMoveAnimation';
 import { NoDataPlaceholder } from '@/components/shared/NoDataPlaceholder/NoDataPlaceholder';
 import { SessionHeader } from '@widgets/StandingsWidget/SessionHeader/SessionHeader';
 import { ClassGroup } from '@widgets/StandingsWidget/ClassGroup/ClassGroup';
@@ -32,7 +35,7 @@ export const StandingsContent = observer(() => {
   const settings =
     widgetSettings.getSettings<StandingsWidgetSettings>('standings');
 
-  const driverEntries = standings?.entries ?? [];
+  const driverEntries = standingsWidget.orderedEntries;
 
   const activeClassIndex = standingsWidget.activeClassIndex;
   const overallSof = computeClassSof(driverEntries);
@@ -40,7 +43,9 @@ export const StandingsContent = observer(() => {
   const isGrouped =
     settings.viewMode === 'grouped' && allClassGroups.length > 0;
 
-  const { ref: listRef, count: visibleRowCount } =
+  const animateRows = useRowMoveAnimation<HTMLDivElement>();
+
+  const { ref: measureRows, count: visibleRowCount } =
     useVisibleRowCount<HTMLDivElement>(
       settings.rowPadding === 'wide'
         ? 3.5
@@ -51,16 +56,38 @@ export const StandingsContent = observer(() => {
       '[data-driver-row]'
     );
 
+  // Both hooks hand back a state setter, so the merged callback must stay stable
+  // — a fresh identity would detach and re-attach the node on every render.
+  const attachList = useCallback(
+    (node: HTMLDivElement | null) => {
+      measureRows(node);
+      animateRows(node);
+    },
+    [measureRows, animateRows]
+  );
+
   const rowsPerGroupedClass = (() => {
     if (!isGrouped || allClassGroups.length === 0) {
       return 0;
     }
 
-    const classHeaderRows = allClassGroups.length;
-    const available = Math.max(1, visibleRowCount - classHeaderRows);
+    if (settings.groupedRowsPerClass > 0) {
+      return settings.groupedRowsPerClass;
+    }
 
-    return Math.max(1, Math.floor(available / allClassGroups.length));
+    const classHeaderRows = allClassGroups.length;
+    const rowsLeftForDrivers = Math.max(1, visibleRowCount - classHeaderRows);
+
+    return Math.max(1, Math.floor(rowsLeftForDrivers / allClassGroups.length));
   })();
+
+  const visibleRows = (drivers: DriverEntry[], maxRows: number) =>
+    buildVisibleRows(
+      drivers,
+      maxRows,
+      settings.driversAhead,
+      settings.driversBehind
+    );
 
   const displayGroup = (): DriverGroup => {
     if (settings.viewMode === 'cycling' && allClassGroups.length > 0) {
@@ -71,10 +98,7 @@ export const StandingsContent = observer(() => {
 
       const group = allClassGroups[clampedIndex];
 
-      return {
-        ...group,
-        drivers: sliceWithPlayerPin(group.drivers, visibleRowCount),
-      };
+      return { ...group, ...visibleRows(group.drivers, visibleRowCount) };
     }
 
     return {
@@ -84,7 +108,7 @@ export const StandingsContent = observer(() => {
       classColor: '',
       totalDrivers: driverEntries.length,
       classSof: overallSof,
-      drivers: sliceWithPlayerPin([...driverEntries], visibleRowCount),
+      ...visibleRows(driverEntries, visibleRowCount),
     };
   };
 
@@ -101,7 +125,7 @@ export const StandingsContent = observer(() => {
         <>
           <ClassSwitcher />
 
-          <div ref={listRef} className={styles.listWrap}>
+          <div ref={attachList} className={styles.listWrap}>
             <StandingsHeader />
 
             {isGrouped ? (
@@ -110,10 +134,7 @@ export const StandingsContent = observer(() => {
                   key={group.classId}
                   group={{
                     ...group,
-                    drivers: sliceWithPlayerPin(
-                      group.drivers,
-                      rowsPerGroupedClass
-                    ),
+                    ...visibleRows(group.drivers, rowsPerGroupedClass),
                   }}
                   showHeader
                 />

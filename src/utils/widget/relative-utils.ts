@@ -159,6 +159,8 @@ export const buildPaceCarRowEntries = (
         tireCompound: '',
         position: 0,
         classPosition: 0,
+        livePosition: 0,
+        liveClassPosition: 0,
         startPosOverall: 0,
         startPosClass: 0,
         lap: player.lap,

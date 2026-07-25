@@ -1,26 +1,89 @@
 import type { DriverEntry } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 
-export const sliceWithPlayerPin = (
+export interface VisibleRows {
+  drivers: DriverEntry[];
+  /** Index of the first row of the "around the player" block, or -1 when there is none. */
+  windowStartIndex: number;
+}
+
+const NO_WINDOW: number = -1;
+// The top block must keep at least the leader when a player window is carved out.
+const MIN_TOP_ROWS = 1;
+
+/**
+ * Picks the rows to render: the top of the table, plus — when the player has
+ * dropped out of it — either a single pinned player row (`requestedAhead` and
+ * `requestedBehind` both 0) or a contiguous window of that many cars around them.
+ */
+export const buildVisibleRows = (
   drivers: DriverEntry[],
-  budget: number
-): DriverEntry[] => {
-  if (budget <= 0) {
-    return [];
+  maxRows: number,
+  requestedAhead: number,
+  requestedBehind: number
+): VisibleRows => {
+  if (maxRows <= 0) {
+    return { drivers: [], windowStartIndex: NO_WINDOW };
   }
 
-  if (drivers.length <= budget) {
-    return drivers;
+  if (drivers.length <= maxRows) {
+    return { drivers, windowStartIndex: NO_WINDOW };
   }
 
-  const playerIdx = drivers.findIndex((driver) => driver.isPlayer);
-  const visible = drivers.slice(0, budget);
+  const playerIndex = drivers.findIndex((driver) => driver.isPlayer);
 
-  if (playerIdx >= budget && budget >= 2) {
-    visible[budget - 1] = drivers[playerIdx];
+  if (playerIndex < 0 || playerIndex < maxRows) {
+    return { drivers: drivers.slice(0, maxRows), windowStartIndex: NO_WINDOW };
   }
 
-  return visible;
+  if (requestedAhead === 0 && requestedBehind === 0) {
+    const topBlock = drivers.slice(0, maxRows);
+
+    topBlock[topBlock.length - 1] = drivers[playerIndex];
+
+    return { drivers: topBlock, windowStartIndex: NO_WINDOW };
+  }
+
+  // Rows that actually exist on each side of the player. A short field must not
+  // be padded from the other side — a driver ahead rendered below the player (or
+  // the reverse) would read as the wrong side of the fight.
+  const availableBehind = Math.min(
+    requestedBehind,
+    drivers.length - 1 - playerIndex
+  );
+
+  const availableAhead = Math.min(requestedAhead, playerIndex - MIN_TOP_ROWS);
+
+  // Rows the requested window asks for beyond what is left once the top block
+  // keeps its leader. Trimmed from the back first: the car you are chasing
+  // matters more than the one chasing you.
+  const excessRows = Math.max(
+    0,
+    availableAhead + 1 + availableBehind - (maxRows - MIN_TOP_ROWS)
+  );
+
+  const behindRows = Math.max(0, availableBehind - excessRows);
+  // Clamped at zero: a single available row cannot hold both the leader and the
+  // player, and the window the player sits in wins — a standings block without
+  // the player row is useless.
+  const aheadRows = Math.max(
+    0,
+    availableAhead - Math.max(0, excessRows - availableBehind)
+  );
+
+  const windowRowCount = aheadRows + 1 + behindRows;
+  const topRowCount = maxRows - windowRowCount;
+  const windowStart = playerIndex - aheadRows;
+
+  const visibleDrivers = [
+    ...drivers.slice(0, topRowCount),
+    ...drivers.slice(windowStart, windowStart + windowRowCount),
+  ];
+
+  return {
+    drivers: visibleDrivers,
+    windowStartIndex: windowStart > topRowCount ? topRowCount : NO_WINDOW,
+  };
 };
 
 export const parseWeekendTemp = (

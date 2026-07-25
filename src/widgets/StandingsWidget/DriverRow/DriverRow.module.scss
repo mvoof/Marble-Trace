@@ -31,6 +31,13 @@
   filter: grayscale(100%);
 }
 
+// First row of the "around the player" block — detaches it from the top block
+.driverRowWindowStart {
+  margin-top: sp(sm);
+  border-top: 1px solid $widget-border-default;
+  box-shadow: 0 -4px 6px -4px rgba(0, 0, 0, 0.6);
+}
+
 // Base cell
 .cell {
   display: flex;
@@ -113,6 +120,17 @@
 
 .posNumberPlayer {
   color: $widget-text-primary;
+}
+
+// Live position change — replaces the position number for a few seconds
+.livePosArrowUp {
+  color: $widget-status-positive;
+  flex-shrink: 0;
+}
+
+.livePosArrowDown {
+  color: $widget-status-danger;
+  flex-shrink: 0;
 }
 
 // Position change

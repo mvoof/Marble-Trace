@@ -23,7 +23,12 @@ export const ClassGroup = observer(
       )}
 
       {group.drivers.map((driver, index) => (
-        <DriverRow key={driver.carIdx} carIdx={driver.carIdx} index={index} />
+        <DriverRow
+          key={driver.carIdx}
+          carIdx={driver.carIdx}
+          index={index}
+          startsPlayerWindow={index === group.windowStartIndex}
+        />
       ))}
     </>
   )

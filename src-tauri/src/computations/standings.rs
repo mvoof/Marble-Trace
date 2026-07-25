@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
@@ -7,7 +8,7 @@ use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use crate::model::cars::CarIdxFrame;
 use crate::model::enums::{PitState, TrackSurface};
-use crate::model::session::{QualifyResultEntry, ResultPosition, SessionSnapshot};
+use crate::model::session::{QualifyResultEntry, ResultPosition, SessionSnapshot, SessionType};
 use crate::utils::lock_or_recover;
 
 const NO_CLASS_LABEL: &str = "No Class";
@@ -109,6 +110,12 @@ pub struct DriverEntry {
     pub tire_compound: String,
     pub position: i32,
     pub class_position: i32,
+    /// Track order recomputed from lap progress every tick (race sessions only).
+    /// Official `position` only refreshes when a car crosses the start/finish line,
+    /// so an overtake mid-lap is invisible there. Outside a race this mirrors `position`.
+    pub live_position: i32,
+    /// Same as `live_position`, but ranked within the car's class.
+    pub live_class_position: i32,
     pub start_pos_overall: i32,
     pub start_pos_class: i32,
     pub lap: i32,
@@ -309,6 +316,8 @@ pub fn compute(
                     .copied()
                     .filter(|&pos| pos > 0)
                     .unwrap_or(start_class),
+                live_position: 0,
+                live_class_position: 0,
                 start_pos_overall: start_overall,
                 start_pos_class: start_class,
                 lap: car_idx.car_idx_lap.get(idx).copied().unwrap_or(0),
@@ -373,6 +382,14 @@ pub fn compute(
         }
     });
 
+    let is_race = session
+        .sessions
+        .get(current_num)
+        .map(|s| s.session_type == SessionType::Race)
+        .unwrap_or(false);
+
+    assign_live_positions(&mut entries, is_race);
+
     let player_lap_dist = entries
         .iter()
         .find(|e| e.car_idx == player_car_idx)
@@ -425,6 +442,50 @@ pub fn compute(
     DriverEntriesFrame {
         entries,
         player_car_idx,
+    }
+}
+
+/// Distance covered so far, used to rank cars between start/finish crossings.
+/// `None` for cars that are not on track at all — they cannot be ranked by progress.
+fn lap_progress(entry: &DriverEntry) -> Option<f64> {
+    if entry.track_surface == TrackSurface::NotInWorld || entry.lap_dist_pct < 0.0 {
+        return None;
+    }
+
+    Some(entry.lap as f64 + entry.lap_dist_pct as f64)
+}
+
+/// Reorders `entries` into live track order and fills the `live_*` position fields.
+/// Outside a race the official order is authoritative (it ranks by best lap, which
+/// lap progress knows nothing about), so the live fields just mirror it.
+fn assign_live_positions(entries: &mut [DriverEntry], is_race: bool) {
+    if !is_race {
+        for entry in entries.iter_mut() {
+            entry.live_position = entry.position;
+            entry.live_class_position = entry.class_position;
+        }
+
+        return;
+    }
+
+    // Cars still in the world rank by covered distance; the rest keep their official
+    // order and sit below everyone running.
+    entries.sort_by(|a, b| match (lap_progress(a), lap_progress(b)) {
+        (Some(left), Some(right)) => right.partial_cmp(&left).unwrap_or(Ordering::Equal),
+        (Some(_), None) => Ordering::Less,
+        (None, Some(_)) => Ordering::Greater,
+        (None, None) => a.position.cmp(&b.position),
+    });
+
+    let mut class_counters: HashMap<i32, i32> = HashMap::new();
+
+    for (index, entry) in entries.iter_mut().enumerate() {
+        entry.live_position = index as i32 + 1;
+
+        let counter = class_counters.entry(entry.car_class_id).or_insert(0);
+
+        *counter += 1;
+        entry.live_class_position = *counter;
     }
 }
 
@@ -756,6 +817,129 @@ mod tests {
         let mut states: HashMap<i32, PitState> = HashMap::new();
         let result = apply_pit_machine(&mut states, 1, true, TrackSurface::InPitStall);
         assert_eq!(result, PitState::Stall);
+    }
+
+    fn make_live_entry(
+        car_idx: i32,
+        position: i32,
+        lap: i32,
+        lap_dist_pct: f32,
+        track_surface: TrackSurface,
+    ) -> DriverEntry {
+        DriverEntry {
+            car_idx,
+            user_name: String::new(),
+            car_number: String::new(),
+            car_class_id: 0,
+            car_class_short_name: String::new(),
+            car_class_color: String::new(),
+            car_screen_name: String::new(),
+            car_screen_name_short: String::new(),
+            tire_compound: String::new(),
+            position,
+            class_position: position,
+            live_position: 0,
+            live_class_position: 0,
+            start_pos_overall: position,
+            start_pos_class: position,
+            lap,
+            lap_dist_pct,
+            last_lap_time: -1.0,
+            best_lap_time: -1.0,
+            f2_time: 0.0,
+            est_time: 0.0,
+            track_surface,
+            i_rating: 0,
+            lic_string: String::new(),
+            lic_color: String::new(),
+            incidents: 0,
+            is_player: false,
+            on_pit_road: false,
+            estimated_ir_delta: None,
+            relative_lap_dist: 0.0,
+            class_est_lap_time: 0.0,
+            raw_flags: 0,
+            results_position_lap: None,
+            results_position_time: None,
+            pit_state: PitState::None,
+        }
+    }
+
+    #[test]
+    fn test_live_positions_mirror_official_outside_race() {
+        let mut entries = vec![
+            make_live_entry(0, 2, 3, 0.90, TrackSurface::OnTrack),
+            make_live_entry(1, 1, 3, 0.10, TrackSurface::OnTrack),
+        ];
+
+        assign_live_positions(&mut entries, false);
+
+        // Order untouched, live fields copied from the official ones.
+        assert_eq!(entries[0].car_idx, 0);
+        assert_eq!(entries[0].live_position, 2);
+        assert_eq!(entries[1].live_position, 1);
+    }
+
+    #[test]
+    fn test_live_positions_reflect_mid_lap_overtake() {
+        // Car 0 is officially P2 but is ahead on track — the pass has not reached
+        // the start/finish line yet, so CarIdxPosition still shows the old order.
+        let mut entries = vec![
+            make_live_entry(1, 1, 3, 0.10, TrackSurface::OnTrack),
+            make_live_entry(0, 2, 3, 0.90, TrackSurface::OnTrack),
+        ];
+
+        assign_live_positions(&mut entries, true);
+
+        assert_eq!(entries[0].car_idx, 0);
+        assert_eq!(entries[0].live_position, 1);
+        assert_eq!(entries[1].car_idx, 1);
+        assert_eq!(entries[1].live_position, 2);
+    }
+
+    #[test]
+    fn test_live_positions_rank_lapped_cars_behind() {
+        let mut entries = vec![
+            make_live_entry(0, 1, 2, 0.05, TrackSurface::OnTrack),
+            make_live_entry(1, 2, 1, 0.95, TrackSurface::OnTrack),
+        ];
+
+        assign_live_positions(&mut entries, true);
+
+        assert_eq!(entries[0].car_idx, 0);
+        assert_eq!(entries[1].car_idx, 1);
+    }
+
+    #[test]
+    fn test_live_positions_push_cars_out_of_world_to_the_back() {
+        let mut entries = vec![
+            make_live_entry(0, 1, 5, 0.50, TrackSurface::NotInWorld),
+            make_live_entry(1, 2, 1, 0.10, TrackSurface::OnTrack),
+        ];
+
+        assign_live_positions(&mut entries, true);
+
+        assert_eq!(entries[0].car_idx, 1);
+        assert_eq!(entries[0].live_position, 1);
+        assert_eq!(entries[1].car_idx, 0);
+        assert_eq!(entries[1].live_position, 2);
+    }
+
+    #[test]
+    fn test_live_class_positions_count_within_class() {
+        let mut entries = vec![
+            make_live_entry(0, 1, 3, 0.90, TrackSurface::OnTrack),
+            make_live_entry(1, 2, 3, 0.80, TrackSurface::OnTrack),
+            make_live_entry(2, 3, 3, 0.70, TrackSurface::OnTrack),
+        ];
+
+        entries[1].car_class_id = 7;
+
+        assign_live_positions(&mut entries, true);
+
+        assert_eq!(entries[0].live_class_position, 1);
+        assert_eq!(entries[1].live_class_position, 1);
+        assert_eq!(entries[2].live_class_position, 2);
     }
 
     #[test]

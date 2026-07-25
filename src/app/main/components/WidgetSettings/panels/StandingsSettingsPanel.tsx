@@ -12,6 +12,13 @@ import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
+const PLAYER_WINDOW_OPTIONS = [0, 1, 2, 3, 4, 5].map((count) => ({
+  label: String(count),
+  value: count,
+}));
+
+const GROUPED_ROWS_PER_CLASS_OPTIONS = [0, 2, 3, 4, 5, 6, 8];
+
 export const StandingsSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');
@@ -32,6 +39,12 @@ export const StandingsSettingsPanel = observer(() => {
       descKey: 'settingsPanels.standings.positionChangeDesc',
       value: settings.showPosChange,
       key: 'showPosChange',
+    },
+    {
+      titleKey: 'settingsPanels.standings.livePositionChange',
+      descKey: 'settingsPanels.standings.livePositionChangeDesc',
+      value: settings.showLivePosChange,
+      key: 'showLivePosChange',
     },
     {
       titleKey: 'settingsPanels.standings.brandLogo',
@@ -204,6 +217,55 @@ export const StandingsSettingsPanel = observer(() => {
               },
             ]}
           />
+        </div>
+
+        {settings.viewMode === 'grouped' ? (
+          <div className={styles.fieldGroup}>
+            <SettingRow
+              title={t('settingsPanels.standings.groupedRowsPerClass')}
+              desc={t('settingsPanels.standings.groupedRowsPerClassDesc')}
+            >
+              <Segmented<number>
+                value={settings.groupedRowsPerClass}
+                onChange={(v) => update({ groupedRowsPerClass: v })}
+                options={GROUPED_ROWS_PER_CLASS_OPTIONS.map((count) => ({
+                  label:
+                    count === 0
+                      ? t('settingsPanels.standings.rowsPerClassAuto')
+                      : String(count),
+                  value: count,
+                }))}
+              />
+            </SettingRow>
+          </div>
+        ) : null}
+      </Card>
+
+      <Card title={t('settingsPanels.standings.playerWindow')}>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.standings.driversAhead')}
+            desc={t('settingsPanels.standings.driversAheadDesc')}
+          >
+            <Segmented<number>
+              value={settings.driversAhead}
+              onChange={(v) => update({ driversAhead: v })}
+              options={PLAYER_WINDOW_OPTIONS}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.standings.driversBehind')}
+            desc={t('settingsPanels.standings.driversBehindDesc')}
+          >
+            <Segmented<number>
+              value={settings.driversBehind}
+              onChange={(v) => update({ driversBehind: v })}
+              options={PLAYER_WINDOW_OPTIONS}
+            />
+          </SettingRow>
         </div>
       </Card>
 

@@ -105,6 +105,8 @@ mod tests {
             tire_compound: String::new(),
             position: 0,
             class_position: 0,
+            live_position: 0,
+            live_class_position: 0,
             start_pos_overall: 0,
             start_pos_class: 0,
             lap: 0,

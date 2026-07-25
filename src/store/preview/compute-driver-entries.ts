@@ -34,6 +34,8 @@ export const computeDriverEntries = (
       tireCompound: '',
       position: carIdx.car_idx_position[idx] ?? 0,
       classPosition: carIdx.car_idx_class_position[idx] ?? 0,
+      livePosition: carIdx.car_idx_position[idx] ?? 0,
+      liveClassPosition: carIdx.car_idx_class_position[idx] ?? 0,
       startPosOverall: 0,
       startPosClass: 0,
       lap: carIdx.car_idx_lap[idx] ?? 0,
