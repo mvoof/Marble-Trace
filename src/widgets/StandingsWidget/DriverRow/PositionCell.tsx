@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowBigUp, ArrowBigDown } from 'lucide-react';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import {
@@ -47,11 +47,19 @@ export const PositionCell = observer(({ carIdx }: PositionCellProps) => {
       }}
     >
       {change === 'up' && (
-        <ChevronUp className={styles.livePosArrowUp} size={ARROW_SIZE_PX} />
+        <ArrowBigUp
+          className={styles.livePosArrowUp}
+          size={ARROW_SIZE_PX}
+          fill="currentColor"
+        />
       )}
 
       {change === 'down' && (
-        <ChevronDown className={styles.livePosArrowDown} size={ARROW_SIZE_PX} />
+        <ArrowBigDown
+          className={styles.livePosArrowDown}
+          size={ARROW_SIZE_PX}
+          fill="currentColor"
+        />
       )}
 
       {change === undefined && (

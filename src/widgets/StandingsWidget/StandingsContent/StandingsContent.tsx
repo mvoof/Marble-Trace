@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { DriverGroup } from '@/types';
@@ -14,6 +15,7 @@ import {
   computeClassSof,
 } from '@utils/widget/standings-utils';
 import { useVisibleRowCount } from '@/hooks/common/useVisibleRowCount';
+import { useRowMoveAnimation } from '@/hooks/common/useRowMoveAnimation';
 import { NoDataPlaceholder } from '@/components/shared/NoDataPlaceholder/NoDataPlaceholder';
 import { SessionHeader } from '@widgets/StandingsWidget/SessionHeader/SessionHeader';
 import { ClassGroup } from '@widgets/StandingsWidget/ClassGroup/ClassGroup';
@@ -41,7 +43,9 @@ export const StandingsContent = observer(() => {
   const isGrouped =
     settings.viewMode === 'grouped' && allClassGroups.length > 0;
 
-  const { ref: listRef, count: visibleRowCount } =
+  const animateRows = useRowMoveAnimation<HTMLDivElement>();
+
+  const { ref: measureRows, count: visibleRowCount } =
     useVisibleRowCount<HTMLDivElement>(
       settings.rowPadding === 'wide'
         ? 3.5
@@ -51,6 +55,16 @@ export const StandingsContent = observer(() => {
       5,
       '[data-driver-row]'
     );
+
+  // Both hooks hand back a state setter, so the merged callback must stay stable
+  // — a fresh identity would detach and re-attach the node on every render.
+  const attachList = useCallback(
+    (node: HTMLDivElement | null) => {
+      measureRows(node);
+      animateRows(node);
+    },
+    [measureRows, animateRows]
+  );
 
   const rowsPerGroupedClass = (() => {
     if (!isGrouped || allClassGroups.length === 0) {
@@ -107,7 +121,7 @@ export const StandingsContent = observer(() => {
         <>
           <ClassSwitcher />
 
-          <div ref={listRef} className={styles.listWrap}>
+          <div ref={attachList} className={styles.listWrap}>
             <StandingsHeader />
 
             {isGrouped ? (

@@ -132,6 +132,7 @@ export const DriverRow = observer(
         className={rowClass}
         style={{ gridTemplateColumns: gridTemplate, ...playerRowStyle }}
         data-driver-row
+        data-row-key={carIdx}
       >
         <PositionCell carIdx={carIdx} />
 
