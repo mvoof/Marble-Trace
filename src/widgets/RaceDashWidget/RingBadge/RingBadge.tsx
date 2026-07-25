@@ -40,11 +40,15 @@ export const RingBadge = observer(() => {
     gear
   );
 
-  // Printed redline zone spans blink RPM → redline on the same 0..redline
-  // scale as the fill arc — the moment the fill sweeps into it is the shift
-  // cue, no text needed.
-  const sectorStartDeg =
-    Math.min(Math.max(blinkRpm / (redLine || 1), 0), 1) * ARC_SWEEP_DEG;
+  // Printed bands sit on the same 0..redline scale as the fill arc, and their
+  // boundaries are the very thresholds that switch the fill color: shift RPM
+  // opens the amber band, blink RPM opens the redline band. The moment the fill
+  // crosses a printed edge is the moment the zone changes — no text needed.
+  const degForRpm = (value: number) =>
+    Math.min(Math.max(value / (redLine || 1), 0), 1) * ARC_SWEEP_DEG;
+
+  const shiftStartDeg = degForRpm(shiftRpm);
+  const blinkStartDeg = Math.max(degForRpm(blinkRpm), shiftStartDeg);
   const fillDeg = pct * ARC_SWEEP_DEG;
 
   const fillColor = rpmFillColor(zone, settings);
@@ -102,17 +106,24 @@ export const RingBadge = observer(() => {
             viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
             aria-hidden="true"
           >
-            {sectorStartDeg > MIN_VISIBLE_ARC_DEG && (
+            {shiftStartDeg > MIN_VISIBLE_ARC_DEG && (
               <path
                 className={styles.trackDim}
-                d={ringArcPath(0, sectorStartDeg)}
+                d={ringArcPath(0, shiftStartDeg)}
               />
             )}
 
-            {sectorStartDeg < ARC_SWEEP_DEG - MIN_VISIBLE_ARC_DEG && (
+            {blinkStartDeg - shiftStartDeg > MIN_VISIBLE_ARC_DEG && (
+              <path
+                className={styles.trackShift}
+                d={ringArcPath(shiftStartDeg, blinkStartDeg)}
+              />
+            )}
+
+            {blinkStartDeg < ARC_SWEEP_DEG - MIN_VISIBLE_ARC_DEG && (
               <path
                 className={styles.trackRedline}
-                d={ringArcPath(sectorStartDeg, ARC_SWEEP_DEG)}
+                d={ringArcPath(blinkStartDeg, ARC_SWEEP_DEG)}
               />
             )}
 

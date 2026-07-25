@@ -20,6 +20,7 @@ import type { RelativeWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
 import {
   useBackendComputedStore,
+  useStandingsWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -32,6 +33,7 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
   const computed = useBackendComputedStore();
   const { relativeEntries } = computed;
   const widgetSettings = useWidgetSettingsStore();
+  const standingsWidget = useStandingsWidgetStore();
 
   const settings =
     widgetSettings.getSettings<RelativeWidgetSettings>('relative');
@@ -120,7 +122,9 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
             driver.isPlayer ? { color: settings.playerAccentColor } : undefined
           }
         >
-          {driver.classPosition || driver.position}
+          {standingsWidget.classRankOf(driver) ||
+            standingsWidget.rankOf(driver) ||
+            driver.position}
         </span>
       </div>
 

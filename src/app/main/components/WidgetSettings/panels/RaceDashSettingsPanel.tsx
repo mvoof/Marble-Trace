@@ -4,6 +4,7 @@ import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
 
 import { speedUnit } from '@utils/formatters/telemetry-format';
 import type {
+  PositionSource,
   RaceDashWidgetSettings,
   RpmIndicatorMode,
 } from '@/types/widget-settings';
@@ -134,6 +135,26 @@ export const RaceDashSettingsPanel = observer(() => {
             ]}
             onChange={(value) =>
               update({ rpmIndicatorMode: value as RpmIndicatorMode })
+            }
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.common.positionSource')}
+          </span>
+          <Segmented
+            block
+            value={settings.positionSource}
+            options={[
+              { label: t('settingsPanels.common.positionLive'), value: 'live' },
+              {
+                label: t('settingsPanels.common.positionOfficial'),
+                value: 'official',
+              },
+            ]}
+            onChange={(value) =>
+              update({ positionSource: value as PositionSource })
             }
           />
         </div>

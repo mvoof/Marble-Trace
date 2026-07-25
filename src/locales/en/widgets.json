@@ -65,6 +65,11 @@
     }
   },
   "settingsPanels": {
+    "common": {
+      "positionSource": "Position Source",
+      "positionLive": "Live",
+      "positionOfficial": "Official"
+    },
     "chassis": {
       "moduleLayout": "Module Layout",
       "suspensionAndBrakes": "Suspension & Brakes",
@@ -289,6 +294,8 @@
       "positionChangeDesc": "Arrow showing positions gained or lost since session start.",
       "livePositionChange": "Live Overtake Arrow",
       "livePositionChangeDesc": "Flash an up or down arrow over the position number for a few seconds after a place changes.",
+      "liveOrderOutsideRace": "Track Order in Practice/Qual",
+      "liveOrderOutsideRaceDesc": "Rank practice and qualifying by position on track instead of by best lap time. Races always use track order.",
       "groupedRowsPerClass": "Rows Per Class",
       "groupedRowsPerClassDesc": "Driver rows each class gets in grouped view. Auto splits the widget height evenly between the classes on track.",
       "rowsPerClassAuto": "Auto",

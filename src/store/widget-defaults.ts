@@ -520,6 +520,7 @@ const WIDGETS: WidgetConfig[] = [
       classNextHotkey: '',
       ...STANDINGS_COLUMN_DEFAULTS,
       showLivePosChange: true,
+      liveOrderOutsideRace: false,
       driversAhead: 0,
       driversBehind: 0,
       groupedRowsPerClass: 0,
@@ -746,6 +747,7 @@ const WIDGETS: WidgetConfig[] = [
       showSessionType: true,
       showLaps: true,
       showPosition: true,
+      positionSource: 'live',
       showWallClock: true,
       showSimTime: true,
       showPcDate: false,
@@ -968,6 +970,7 @@ const WIDGETS: WidgetConfig[] = [
       showReferenceSpeed: true,
       colorizeByRpmZone: true,
       rpmIndicatorMode: 'fill',
+      positionSource: 'live',
     },
   },
 ];

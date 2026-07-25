@@ -65,6 +65,11 @@
     }
   },
   "settingsPanels": {
+    "common": {
+      "positionSource": "名次来源",
+      "positionLive": "实时",
+      "positionOfficial": "官方"
+    },
     "chassis": {
       "moduleLayout": "模块布局",
       "suspensionAndBrakes": "悬挂与刹车",
@@ -290,6 +295,8 @@
       "livePositionChange": "实时超车箭头",
       "livePositionChangeDesc": "名次变化后，在名次数字上短暂显示向上或向下的箭头。",
       "playerWindow": "你周围的行数",
+      "liveOrderOutsideRace": "练习/排位按赛道顺序",
+      "liveOrderOutsideRaceDesc": "练习赛和排位赛按赛道上的位置排序，而非按最快圈速。正赛始终使用赛道顺序。",
       "groupedRowsPerClass": "每个组别的行数",
       "groupedRowsPerClassDesc": "分组视图中每个组别显示的车手行数。「自动」会在赛道上的各组别之间平均分配控件高度。",
       "rowsPerClassAuto": "自动",

@@ -3,10 +3,13 @@ import { observer } from 'mobx-react-lite';
 import { resolveSessionLaps } from '@utils/formatters/telemetry-format';
 import { RpmValue } from '../RpmValue/RpmValue';
 import { SpeedReadout } from '../SpeedReadout/SpeedReadout';
+import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import {
   useCarsStore,
   usePlayerStore,
   useSessionStore,
+  useStandingsWidgetStore,
+  useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 import styles from './StatsStrip.module.scss';
@@ -19,9 +22,14 @@ export const StatsStrip = observer(({ expanded }: StatsStripProps) => {
   const player = usePlayerStore();
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
+  const standingsWidget = useStandingsWidgetStore();
+  const widgetSettings = useWidgetSettingsStore();
+
+  const settings =
+    widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
 
   const currentLap = player.lapTiming?.lap;
-  const position = player.lapTiming?.player_car_position;
+  const position = standingsWidget.playerPosition(settings.positionSource);
 
   const sessions = sessionInfo?.sessions;
   const currentSession = sessions?.[sessionInfo?.currentSessionNum ?? 0];

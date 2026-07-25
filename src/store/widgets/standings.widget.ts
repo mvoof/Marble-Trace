@@ -7,6 +7,10 @@ import {
 
 import type { DriverEntry } from '@/types/bindings';
 import type { DriverGroup } from '@/types';
+import type {
+  PositionSource,
+  StandingsWidgetSettings,
+} from '@/types/widget-settings';
 import { computeClassSof } from '@utils/widget/standings-utils';
 import { MOVE_DURATION_MS } from '@/hooks/common/useRowMoveAnimation';
 import type { RootStore } from '@store/root-store';
@@ -75,6 +79,74 @@ export class StandingsWidgetStore {
         }
       )
     );
+
+    // Switching the ranking source rebuilds the whole table at once, so the
+    // settle debounce is dropped instead of dragging every row through it.
+    this.disposers.push(
+      reaction(
+        () => this.useTrackOrder,
+        () => {
+          this.settledPositions = new Map();
+          this.pendingPositions.clear();
+          this.previousPositions.clear();
+        }
+      )
+    );
+  }
+
+  /**
+   * Whether the table ranks by position on track rather than by the official
+   * order. A race is always track order; practice and qualifying rank by best
+   * lap unless the driver opts in.
+   */
+  get useTrackOrder(): boolean {
+    if (this.root.session.currentSessionType === 'Race') {
+      return true;
+    }
+
+    return this.root.widgetSettings.getSettings<StandingsWidgetSettings>(
+      'standings'
+    ).liveOrderOutsideRace;
+  }
+
+  /** Rank a car holds under the active ordering — overall. */
+  rankOf(entry: DriverEntry): number {
+    return this.useTrackOrder ? entry.livePosition : entry.position;
+  }
+
+  /** Rank a car holds under the active ordering — within its class. */
+  classRankOf(entry: DriverEntry): number {
+    return this.useTrackOrder ? entry.liveClassPosition : entry.classPosition;
+  }
+
+  get playerEntry(): DriverEntry | null {
+    return (
+      this.root.backendComputed.standings?.entries.find(
+        (entry) => entry.isPlayer
+      ) ?? null
+    );
+  }
+
+  /**
+   * Player's overall position for the readouts outside the table. `live` follows
+   * the same order the standings table draws, `official` is the sim's own number,
+   * which only refreshes at the start/finish line. Falls back to the official one
+   * whenever the standings frame has no entry for the player yet.
+   */
+  playerPosition(source: PositionSource): number | null {
+    const official = this.root.player.lapTiming?.player_car_position ?? null;
+
+    if (source === 'official') {
+      return official;
+    }
+
+    const entry = this.playerEntry;
+
+    if (!entry) {
+      return official;
+    }
+
+    return this.rankOf(entry) || official;
   }
 
   // Every RootStore instance (main window, overlay window, each isolated widget
@@ -112,29 +184,29 @@ export class StandingsWidgetStore {
       const settled = next.get(entry.carIdx);
 
       if (settled === undefined) {
-        next.set(entry.carIdx, entry.livePosition);
+        next.set(entry.carIdx, this.rankOf(entry));
         this.pendingPositions.delete(entry.carIdx);
         changed = true;
         continue;
       }
 
-      if (settled === entry.livePosition) {
+      if (settled === this.rankOf(entry)) {
         this.pendingPositions.delete(entry.carIdx);
         continue;
       }
 
       const pending = this.pendingPositions.get(entry.carIdx);
 
-      if (!pending || pending.position !== entry.livePosition) {
+      if (!pending || pending.position !== this.rankOf(entry)) {
         this.pendingPositions.set(entry.carIdx, {
-          position: entry.livePosition,
+          position: this.rankOf(entry),
           since: now,
         });
         continue;
       }
 
       if (now - pending.since >= ORDER_SETTLE_MS) {
-        next.set(entry.carIdx, entry.livePosition);
+        next.set(entry.carIdx, this.rankOf(entry));
         this.pendingPositions.delete(entry.carIdx);
         this.clearArrowAfterMove(entry.carIdx);
         changed = true;
@@ -160,16 +232,17 @@ export class StandingsWidgetStore {
   private trackPositionChanges(entries: DriverEntry[]) {
     for (const entry of entries) {
       const previous = this.previousPositions.get(entry.carIdx);
+      const current = this.rankOf(entry);
 
-      this.previousPositions.set(entry.carIdx, entry.livePosition);
+      this.previousPositions.set(entry.carIdx, current);
 
-      if (previous === undefined || previous === entry.livePosition) {
+      if (previous === undefined || previous === current) {
         continue;
       }
 
       this.flashPositionChange(
         entry.carIdx,
-        entry.livePosition < previous ? 'up' : 'down'
+        current < previous ? 'up' : 'down'
       );
     }
   }
@@ -182,8 +255,8 @@ export class StandingsWidgetStore {
 
     return [...entries].sort(
       (a, b) =>
-        (positions.get(a.carIdx) ?? a.livePosition) -
-        (positions.get(b.carIdx) ?? b.livePosition)
+        (positions.get(a.carIdx) ?? this.rankOf(a)) -
+        (positions.get(b.carIdx) ?? this.rankOf(b))
     );
   }
 
@@ -260,7 +333,7 @@ export class StandingsWidgetStore {
     if (!this.root.backendComputed.standings) return result;
 
     for (const entry of this.root.backendComputed.standings.entries) {
-      if (entry.liveClassPosition === 1) {
+      if (this.classRankOf(entry) === 1) {
         result.set(entry.carClassId, entry);
       }
     }
@@ -273,7 +346,7 @@ export class StandingsWidgetStore {
 
     return (
       this.root.backendComputed.standings.entries.find(
-        (entry) => entry.livePosition === 1
+        (entry) => this.rankOf(entry) === 1
       ) ?? null
     );
   }

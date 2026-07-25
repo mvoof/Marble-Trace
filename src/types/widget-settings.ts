@@ -17,6 +17,12 @@ export interface RpmLightsWidgetSettings {
 
 export type RpmIndicatorMode = 'fill' | 'glow' | 'off';
 
+/**
+ * Which position number a readout shows: the live track order the standings table
+ * is drawn with, or the sim's official number that only updates at start/finish.
+ */
+export type PositionSource = 'live' | 'official';
+
 export interface RaceDashWidgetSettings {
   pitSpeedLimitOverride: number | null;
   showPitAssist: boolean;
@@ -35,6 +41,8 @@ export interface RaceDashWidgetSettings {
   colorizeByRpmZone: boolean;
   /** 'fill' = colored RPM arc around the ring, 'glow' = rim glows near shift, 'off' = no RPM indication. */
   rpmIndicatorMode: RpmIndicatorMode;
+  /** Source of the P-number in the stats strip and the pit block. */
+  positionSource: PositionSource;
 }
 
 export type SteeringCenterDisplay =
@@ -85,6 +93,12 @@ export interface StandingsWidgetSettings {
   showPosChange: boolean;
   /** Transient up/down arrow shown in the position cell right after a live position change. */
   showLivePosChange: boolean;
+  /**
+   * Rank practice and qualifying by track order too, instead of by the official
+   * best-lap order. Races always use track order. Also drives the position number
+   * shown in the Relative widget.
+   */
+  liveOrderOutsideRace: boolean;
   /** Rows shown in front of the player when they no longer fit in the top block (0 = pin the player row only). */
   driversAhead: number;
   /** Rows shown behind the player when they no longer fit in the top block. */
@@ -210,6 +224,8 @@ export interface TimerWidgetSettings {
   showSessionType: boolean;
   showLaps: boolean;
   showPosition: boolean;
+  /** Source of the position shown in the footer. */
+  positionSource: PositionSource;
   showWallClock: boolean;
   showSimTime: boolean;
   showPcDate: boolean;
