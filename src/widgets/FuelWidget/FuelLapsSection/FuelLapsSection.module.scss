@@ -2,10 +2,9 @@ $sb: rgba(255, 255, 255, $opacity-subtle);
 
 .grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(
-      0,
-      1.5fr
-    );
+  grid-template-columns:
+    minmax(min-content, 1.5fr) minmax(0, 1fr) minmax(0, 1fr)
+    minmax(min-content, 1.5fr);
   grid-template-rows: auto auto auto;
   margin: 0;
 }
@@ -72,7 +71,7 @@ $sb: rgba(255, 255, 255, $opacity-subtle);
   flex-direction: column;
   justify-content: center;
   gap: sp(xxxs);
-  padding: sp(sm) sp(md);
+  padding: sp(sm) sp(xs);
   background: $widget-surface-cell;
   border-left: 1px solid $sb;
   border-bottom: 1px solid $sb;
@@ -86,7 +85,7 @@ $sb: rgba(255, 255, 255, $opacity-subtle);
   align-items: flex-end;
   justify-content: center;
   gap: sp(xxxs);
-  padding: sp(sm) sp(md);
+  padding: sp(sm) sp(xs);
   background: $widget-surface-cell;
   border-right: 1px solid $sb;
   border-bottom: 1px solid $sb;
@@ -94,7 +93,8 @@ $sb: rgba(255, 255, 255, $opacity-subtle);
 
 .sideLabel {
   font-size: fs(xxxs);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .sideValue {
@@ -102,6 +102,7 @@ $sb: rgba(255, 255, 255, $opacity-subtle);
   font-size: fs(sm);
   color: $widget-text-primary;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .sideValueSafe {

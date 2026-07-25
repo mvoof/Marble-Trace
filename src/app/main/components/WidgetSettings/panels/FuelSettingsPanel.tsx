@@ -63,6 +63,18 @@ export const FuelSettingsPanel = observer(() => {
       </div>
 
       <div className={styles.fieldGroup}>
+        <SettingRow
+          title={t('settingsPanels.fuel.nextStopForecast')}
+          desc={t('settingsPanels.fuel.nextStopForecastDesc')}
+        >
+          <Switch
+            checked={settings.showNextStopForecast}
+            onChange={(v) => update({ showNextStopForecast: v })}
+          />
+        </SettingRow>
+      </div>
+
+      <div className={styles.fieldGroup}>
         <span className={styles.fieldLabel}>
           {t('settingsPanels.fuel.lowFuelWarningThreshold')}
         </span>

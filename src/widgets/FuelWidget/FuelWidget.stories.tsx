@@ -29,6 +29,8 @@ interface StoryArgs {
   barWidth: number;
   lapFuelHistory: number[];
   pitWarningLaps: number;
+  showNextStopForecast: boolean;
+  bestLapTime: number | null;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -40,6 +42,11 @@ const meta: Meta<StoryArgs> = {
       store.player.updateCarStatus({
         fuel_level: args.fuelLevel,
       } as Parameters<typeof store.player.updateCarStatus>[0]);
+
+      store.player.updateLapTiming({
+        lap_best_lap_time: args.bestLapTime,
+        lap_last_lap_time: args.bestLapTime,
+      } as Parameters<typeof store.player.updateLapTiming>[0]);
 
       store.session.updateSessionInfo({
         driverCarFuelMaxLtr: args.fuelMax,
@@ -66,6 +73,7 @@ const meta: Meta<StoryArgs> = {
         chartType: args.chartType,
         barWidth: args.barWidth,
         pitWarningLaps: args.pitWarningLaps,
+        showNextStopForecast: args.showNextStopForecast,
       });
     },
     args: {
@@ -83,6 +91,8 @@ const meta: Meta<StoryArgs> = {
       barWidth: 5,
       lapFuelHistory: LAP_FUEL_HISTORY,
       pitWarningLaps: 3,
+      showNextStopForecast: true,
+      bestLapTime: 92.4,
     },
     argTypes: {
       barWidth: { control: { type: 'range', min: 5, max: 20, step: 1 } },
@@ -94,7 +104,29 @@ const meta: Meta<StoryArgs> = {
 export default meta;
 type Story = StoryObj<StoryArgs>;
 
-export const Comfortable: Story = {};
+export const Comfortable: Story = {
+  args: { pitWindowStart: 18, pitWindowEnd: 20 },
+};
+
+export const NextStopForecast: Story = {
+  args: {
+    fuelLevel: 28.5,
+    lapsRemaining: 9.0,
+    shortage: 2.3,
+    pitWarning: false,
+    pitWindowStart: 18,
+    pitWindowEnd: 20,
+  },
+};
+
+export const NextStopForecastNoLapTime: Story = {
+  args: {
+    lapsRemaining: 9.0,
+    pitWindowStart: 18,
+    pitWindowEnd: 20,
+    bestLapTime: null,
+  },
+};
 
 export const CustomBarWidth: Story = {
   args: { showChart: true, chartType: 'bar', barWidth: 12 },

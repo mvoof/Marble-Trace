@@ -13,7 +13,7 @@
 }
 
 .pitWarning {
-  margin: sp(sm) 0 sp(md);
+  margin: 0;
   padding: sp(sm) sp(md);
   background: rgba($widget-status-danger, $opacity-subtle);
   border-top: 1px solid rgba($widget-status-danger, $opacity-medium);

@@ -92,6 +92,8 @@
       "barChart": "Столбчатая диаграмма",
       "lineChart": "Линейный график",
       "chartStepWidth": "Ширина шага графика (px)",
+      "nextStopForecast": "Прогноз следующего пит-стопа",
+      "nextStopForecastDesc": "Ожидаемый круг и время до открытия пит-окна.",
       "lowFuelWarningThreshold": "Порог предупреждения о низком топливе (круги)"
     },
     "enginePanel": {

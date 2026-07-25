@@ -183,6 +183,7 @@ export interface WeatherWidgetSettings {
 export interface FuelWidgetSettings {
   showChart: boolean;
   pitWarningLaps: number;
+  showNextStopForecast: boolean;
   chartType: 'line' | 'bar';
   barWidth: number;
 }

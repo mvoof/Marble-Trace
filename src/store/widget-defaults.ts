@@ -797,6 +797,7 @@ const WIDGETS: WidgetConfig[] = [
       ...PANEL_APPEARANCE_DEFAULTS,
       showChart: false,
       pitWarningLaps: 3,
+      showNextStopForecast: true,
       chartType: 'bar',
       barWidth: 5,
     },

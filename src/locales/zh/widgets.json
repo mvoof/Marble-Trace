@@ -92,6 +92,8 @@
       "barChart": "柱状图",
       "lineChart": "折线图",
       "chartStepWidth": "图表步长宽度（像素）",
+      "nextStopForecast": "下一次进站预测",
+      "nextStopForecastDesc": "预计进站窗口开启的圈数与时间。",
       "lowFuelWarningThreshold": "低油量警告阈值（圈数）"
     },
     "enginePanel": {

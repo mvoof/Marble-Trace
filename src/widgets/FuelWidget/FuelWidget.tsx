@@ -7,6 +7,7 @@ import { FuelProgress } from './FuelProgress/FuelProgress';
 import { FuelStatsRow } from './FuelStatsRow/FuelStatsRow';
 import { FuelLapsSection } from './FuelLapsSection/FuelLapsSection';
 import { FuelPitWarning } from './FuelPitWarning/FuelPitWarning';
+import { FuelNextStop } from './FuelNextStop/FuelNextStop';
 
 export const FuelWidget = observer(() => {
   return (
@@ -16,6 +17,7 @@ export const FuelWidget = observer(() => {
       <FuelStatsRow />
       <FuelLapsSection />
       <FuelChart />
+      <FuelNextStop />
       <FuelPitWarning />
     </WidgetPanel>
   );
