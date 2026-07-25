@@ -71,6 +71,7 @@ export class RootStore {
   // this on unmount — their reactions otherwise keep running against telemetry.
   dispose() {
     this.inputTraceWidget.dispose();
+    this.standingsWidget.dispose();
     this.flags.dispose();
     this.sim.dispose();
   }

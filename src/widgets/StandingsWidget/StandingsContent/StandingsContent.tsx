@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import type { DriverGroup } from '@/types';
+import type { DriverEntry } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import {
   useBackendComputedStore,
@@ -9,8 +10,8 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import {
+  buildVisibleRows,
   computeClassSof,
-  sliceWithPlayerPin,
 } from '@utils/widget/standings-utils';
 import { useVisibleRowCount } from '@/hooks/common/useVisibleRowCount';
 import { NoDataPlaceholder } from '@/components/shared/NoDataPlaceholder/NoDataPlaceholder';
@@ -62,6 +63,14 @@ export const StandingsContent = observer(() => {
     return Math.max(1, Math.floor(available / allClassGroups.length));
   })();
 
+  const visibleRows = (drivers: DriverEntry[], budget: number) =>
+    buildVisibleRows(
+      drivers,
+      budget,
+      settings.driversAhead,
+      settings.driversBehind
+    );
+
   const displayGroup = (): DriverGroup => {
     if (settings.viewMode === 'cycling' && allClassGroups.length > 0) {
       const clampedIndex = Math.max(
@@ -71,10 +80,7 @@ export const StandingsContent = observer(() => {
 
       const group = allClassGroups[clampedIndex];
 
-      return {
-        ...group,
-        drivers: sliceWithPlayerPin(group.drivers, visibleRowCount),
-      };
+      return { ...group, ...visibleRows(group.drivers, visibleRowCount) };
     }
 
     return {
@@ -84,7 +90,7 @@ export const StandingsContent = observer(() => {
       classColor: '',
       totalDrivers: driverEntries.length,
       classSof: overallSof,
-      drivers: sliceWithPlayerPin([...driverEntries], visibleRowCount),
+      ...visibleRows([...driverEntries], visibleRowCount),
     };
   };
 
@@ -110,10 +116,7 @@ export const StandingsContent = observer(() => {
                   key={group.classId}
                   group={{
                     ...group,
-                    drivers: sliceWithPlayerPin(
-                      group.drivers,
-                      rowsPerGroupedClass
-                    ),
+                    ...visibleRows(group.drivers, rowsPerGroupedClass),
                   }}
                   showHeader
                 />

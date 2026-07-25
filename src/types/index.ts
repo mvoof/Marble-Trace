@@ -34,6 +34,8 @@ export type DriverGroup = {
   totalDrivers: number;
   classSof: number;
   drivers: DriverEntry[];
+  /** Index of the first row of the "around the player" block, or -1 when there is none. */
+  windowStartIndex: number;
 };
 
 export type TelemetryStatus =

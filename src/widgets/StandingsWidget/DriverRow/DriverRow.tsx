@@ -19,6 +19,7 @@ import {
   getStandingsGap,
 } from '@utils/widget/standings-utils';
 import { PosChange } from './PosChange';
+import { PositionCell } from './PositionCell';
 import { IrChangeCell } from './IrChangeCell';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
@@ -32,219 +33,216 @@ import {
 interface DriverRowProps {
   carIdx: number;
   index: number;
+  /** First row of the "around the player" block — gets the separator above it. */
+  startsPlayerWindow?: boolean;
 }
 
-export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
-  const standingsWidget = useStandingsWidgetStore();
-  const session = useSessionStore();
-  const widgetSettings = useWidgetSettingsStore();
+export const DriverRow = observer(
+  ({ carIdx, index, startsPlayerWindow = false }: DriverRowProps) => {
+    const standingsWidget = useStandingsWidgetStore();
+    const session = useSessionStore();
+    const widgetSettings = useWidgetSettingsStore();
 
-  const driver = standingsWidget.driverMap.get(carIdx);
-  const settings =
-    widgetSettings.getSettings<StandingsWidgetSettings>('standings');
-  const gridTemplate = buildGridTemplate(settings);
+    const driver = standingsWidget.driverMap.get(carIdx);
+    const settings =
+      widgetSettings.getSettings<StandingsWidgetSettings>('standings');
+    const gridTemplate = buildGridTemplate(settings);
 
-  if (!driver) {
-    return null;
-  }
+    if (!driver) {
+      return null;
+    }
 
-  const isOut = driver.trackSurface === 'NotInWorld';
+    const isOut = driver.trackSurface === 'NotInWorld';
 
-  const isPit =
-    !isOut &&
-    (driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad);
+    const isPit =
+      !isOut &&
+      (driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad);
 
-  const pitState = driver.pitState;
-  const flagType = parseDriverFlags(driver.rawFlags);
+    const pitState = driver.pitState;
+    const flagType = parseDriverFlags(driver.rawFlags);
 
-  const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
+    const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
-  const useClassPos = settings.viewMode !== 'all';
+    const useClassPos = settings.viewMode !== 'all';
 
-  const pos = useClassPos ? driver.classPosition : driver.position;
+    const isLeader =
+      (useClassPos ? driver.liveClassPosition : driver.livePosition) === 1;
 
-  const isLeader = pos === 1;
+    const rowClass = [
+      styles.driverRow,
+      settings.rowPadding === 'narrow' ? styles.rowPaddingNarrow : '',
+      settings.rowPadding === 'medium' ? styles.rowPaddingMedium : '',
+      settings.rowPadding === 'wide' ? styles.rowPaddingWide : '',
+      driver.isPlayer ? styles.driverRowPlayer : '',
+      index % 2 !== 0 ? styles.rowOdd : '',
+      isOffTrack ? styles.driverRowOffTrack : '',
+      isOut ? styles.driverRowOut : '',
+      startsPlayerWindow ? styles.driverRowWindowStart : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
 
-  const rowClass = [
-    styles.driverRow,
-    settings.rowPadding === 'narrow' ? styles.rowPaddingNarrow : '',
-    settings.rowPadding === 'medium' ? styles.rowPaddingMedium : '',
-    settings.rowPadding === 'wide' ? styles.rowPaddingWide : '',
-    driver.isPlayer ? styles.driverRowPlayer : '',
-    index % 2 !== 0 ? styles.rowOdd : '',
-    isOffTrack ? styles.driverRowOffTrack : '',
-    isOut ? styles.driverRowOut : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+    // Player row: fill with the user-chosen color and stack the same color in a
+    // thin band at the top/bottom edges. Layering the color over the fill makes
+    // those edges brighter in the same hue — a glow that reads like a border.
+    const playerRowStyle = driver.isPlayer
+      ? {
+          background: `linear-gradient(to bottom, ${settings.playerRowColor}, transparent 2px), linear-gradient(to top, ${settings.playerRowColor}, transparent 2px), ${settings.playerRowColor}`,
+        }
+      : undefined;
 
-  // Player row: fill with the user-chosen color and stack the same color in a
-  // thin band at the top/bottom edges. Layering the color over the fill makes
-  // those edges brighter in the same hue — a glow that reads like a border.
-  const playerRowStyle = driver.isPlayer
-    ? {
-        background: `linear-gradient(to bottom, ${settings.playerRowColor}, transparent 2px), linear-gradient(to top, ${settings.playerRowColor}, transparent 2px), ${settings.playerRowColor}`,
-      }
-    : undefined;
+    const formattedCarNumber = formatCarNumber(driver.carNumber);
 
-  const formattedCarNumber = formatCarNumber(driver.carNumber);
+    // Get leader of current class/group from cached store for gap/deficit calculation
+    const leader = useClassPos
+      ? (standingsWidget.classLeaders.get(driver.carClassId) ?? null)
+      : standingsWidget.overallLeader;
 
-  // Get leader of current class/group from cached store for gap/deficit calculation
-  const leader = useClassPos
-    ? (standingsWidget.classLeaders.get(driver.carClassId) ?? null)
-    : standingsWidget.overallLeader;
+    const lapsBehind = calculateLapsBehind(leader, driver);
 
-  const lapsBehind = calculateLapsBehind(leader, driver);
+    const sessionInfoData = session.sessionInfo;
+    const sessions = sessionInfoData?.sessions;
+    const currentSession = sessions?.[sessionInfoData?.currentSessionNum ?? 0];
+    const isRace = currentSession?.sessionType === 'Race';
 
-  const sessionInfoData = session.sessionInfo;
-  const sessions = sessionInfoData?.sessions;
-  const currentSession = sessions?.[sessionInfoData?.currentSessionNum ?? 0];
-  const isRace = currentSession?.sessionType === 'Race';
+    const classBest = standingsWidget.classBestLapMap.get(driver.carClassId);
+    const isClassBestLap =
+      driver.bestLapTime > 0 &&
+      classBest !== undefined &&
+      driver.bestLapTime === classBest;
 
-  const classBest = standingsWidget.classBestLapMap.get(driver.carClassId);
-  const isClassBestLap =
-    driver.bestLapTime > 0 &&
-    classBest !== undefined &&
-    driver.bestLapTime === classBest;
+    const gapInfo = getStandingsGap(
+      driver,
+      leader,
+      isRace,
+      isLeader,
+      lapsBehind
+    );
 
-  const gapInfo = getStandingsGap(driver, leader, isRace, isLeader, lapsBehind);
+    const gapContent = gapInfo.isLeader ? (
+      <span className={styles.gapLeader}>{gapInfo.value}</span>
+    ) : gapInfo.isEmpty ? (
+      <span className={styles.gapLeader}>{gapInfo.value}</span>
+    ) : (
+      <span className={styles.gapValue}>{gapInfo.value}</span>
+    );
 
-  const gapContent = gapInfo.isLeader ? (
-    <span className={styles.gapLeader}>{gapInfo.value}</span>
-  ) : gapInfo.isEmpty ? (
-    <span className={styles.gapLeader}>{gapInfo.value}</span>
-  ) : (
-    <span className={styles.gapValue}>{gapInfo.value}</span>
-  );
-
-  return (
-    <div
-      className={rowClass}
-      style={{ gridTemplateColumns: gridTemplate, ...playerRowStyle }}
-      data-driver-row
-    >
+    return (
       <div
-        className={`${styles.cell} ${styles.posCell}`}
-        style={{
-          borderLeft: `3px solid ${driver.carClassColor}`,
-          background: driver.isPlayer
-            ? undefined
-            : `linear-gradient(to right, color-mix(in srgb, ${driver.carClassColor} 20%, transparent), transparent)`,
-        }}
+        className={rowClass}
+        style={{ gridTemplateColumns: gridTemplate, ...playerRowStyle }}
+        data-driver-row
       >
-        <span
-          className={`${styles.posNumber} ${driver.isPlayer ? styles.posNumberPlayer : ''}`}
-          style={
-            driver.isPlayer ? { color: settings.playerAccentColor } : undefined
-          }
-        >
-          {pos}
-        </span>
-      </div>
+        <PositionCell carIdx={carIdx} />
 
-      {settings.showPosChange && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <PosChange carIdx={carIdx} />
-        </div>
-      )}
-
-      <div className={`${styles.cell} ${styles.carNumberCell}`}>
-        <span
-          className={styles.carNumber}
-          style={
-            driver.isPlayer ? { color: settings.playerAccentColor } : undefined
-          }
-        >
-          #{formattedCarNumber}
-        </span>
-      </div>
-
-      <div className={`${styles.cell} ${styles.nameCell}`}>
-        {settings.showDriverFlags && flagType !== 'none' && (
-          <DriverFlagBadge type={flagType} />
+        {settings.showPosChange && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <PosChange carIdx={carIdx} />
+          </div>
         )}
 
-        <span
-          className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
-        >
-          {settings.abbreviateNames
-            ? abbreviateName(driver.userName)
-            : driver.userName}
-        </span>
-
-        {flagType === 'dq' && <DriverStatusBadge status="dnf" />}
-        {isOut && flagType !== 'dq' && <DriverStatusBadge status="out" />}
-        {isOffTrack && flagType !== 'dq' && (
-          <DriverStatusBadge status="off_track" />
-        )}
-        {isPit && flagType !== 'dq' && (
-          <DriverStatusBadge
-            status={
-              pitState === 'in'
-                ? 'pit_in'
-                : pitState === 'exit'
-                  ? 'pit_exit'
-                  : 'pit'
+        <div className={`${styles.cell} ${styles.carNumberCell}`}>
+          <span
+            className={styles.carNumber}
+            style={
+              driver.isPlayer
+                ? { color: settings.playerAccentColor }
+                : undefined
             }
-          />
-        )}
-      </div>
-
-      {settings.showLicBadge && (
-        <div className={`${styles.cell} ${styles.cellRating}`}>
-          <LicBadge licString={driver.licString} />
-        </div>
-      )}
-
-      {settings.showIRating && (
-        <div className={`${styles.cell} ${styles.cellRight}`}>
-          <span className={styles.irValue}>{formatIr(driver.iRating)}</span>
-        </div>
-      )}
-
-      {settings.showIrChange && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <IrChangeCell carIdx={carIdx} />
-        </div>
-      )}
-
-      {settings.showLapsCompleted && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <span className={styles.lapsCompleted}>{driver.lap}</span>
-        </div>
-      )}
-
-      <div className={`${styles.cell} ${styles.cellRight}`}>{gapContent}</div>
-
-      <div className={`${styles.cell} ${styles.cellRight}`}>
-        <span className={styles.lastLap}>
-          {isPit
-            ? '-'
-            : formatLapTime(driver.lastLapTime > 0 ? driver.lastLapTime : null)}
-        </span>
-      </div>
-
-      <div className={`${styles.cell} ${styles.cellRight}`}>
-        <span
-          className={`${styles.bestLap} ${isClassBestLap ? styles.bestLapFastest : ''}`}
-        >
-          {formatLapTime(driver.bestLapTime > 0 ? driver.bestLapTime : null)}
-        </span>
-      </div>
-
-      {settings.showBrand && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <span className={styles.brandLabel} title={driver.carScreenName}>
-            {formatBrand(driver.carScreenName)}
+          >
+            #{formattedCarNumber}
           </span>
         </div>
-      )}
 
-      {settings.showTire && (
-        <div className={`${styles.cell} ${styles.cellCenter}`}>
-          <TireBadge tire={driver.tireCompound} />
+        <div className={`${styles.cell} ${styles.nameCell}`}>
+          {settings.showDriverFlags && flagType !== 'none' && (
+            <DriverFlagBadge type={flagType} />
+          )}
+
+          <span
+            className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
+          >
+            {settings.abbreviateNames
+              ? abbreviateName(driver.userName)
+              : driver.userName}
+          </span>
+
+          {flagType === 'dq' && <DriverStatusBadge status="dnf" />}
+          {isOut && flagType !== 'dq' && <DriverStatusBadge status="out" />}
+          {isOffTrack && flagType !== 'dq' && (
+            <DriverStatusBadge status="off_track" />
+          )}
+          {isPit && flagType !== 'dq' && (
+            <DriverStatusBadge
+              status={
+                pitState === 'in'
+                  ? 'pit_in'
+                  : pitState === 'exit'
+                    ? 'pit_exit'
+                    : 'pit'
+              }
+            />
+          )}
         </div>
-      )}
-    </div>
-  );
-});
+
+        {settings.showLicBadge && (
+          <div className={`${styles.cell} ${styles.cellRating}`}>
+            <LicBadge licString={driver.licString} />
+          </div>
+        )}
+
+        {settings.showIRating && (
+          <div className={`${styles.cell} ${styles.cellRight}`}>
+            <span className={styles.irValue}>{formatIr(driver.iRating)}</span>
+          </div>
+        )}
+
+        {settings.showIrChange && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <IrChangeCell carIdx={carIdx} />
+          </div>
+        )}
+
+        {settings.showLapsCompleted && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <span className={styles.lapsCompleted}>{driver.lap}</span>
+          </div>
+        )}
+
+        <div className={`${styles.cell} ${styles.cellRight}`}>{gapContent}</div>
+
+        <div className={`${styles.cell} ${styles.cellRight}`}>
+          <span className={styles.lastLap}>
+            {isPit
+              ? '-'
+              : formatLapTime(
+                  driver.lastLapTime > 0 ? driver.lastLapTime : null
+                )}
+          </span>
+        </div>
+
+        <div className={`${styles.cell} ${styles.cellRight}`}>
+          <span
+            className={`${styles.bestLap} ${isClassBestLap ? styles.bestLapFastest : ''}`}
+          >
+            {formatLapTime(driver.bestLapTime > 0 ? driver.bestLapTime : null)}
+          </span>
+        </div>
+
+        {settings.showBrand && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <span className={styles.brandLabel} title={driver.carScreenName}>
+              {formatBrand(driver.carScreenName)}
+            </span>
+          </div>
+        )}
+
+        {settings.showTire && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <TireBadge tire={driver.tireCompound} />
+          </div>
+        )}
+      </div>
+    );
+  }
+);

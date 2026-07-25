@@ -12,6 +12,11 @@ import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
+const PLAYER_WINDOW_OPTIONS = [0, 1, 2, 3, 4, 5].map((count) => ({
+  label: String(count),
+  value: count,
+}));
+
 export const StandingsSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');
@@ -32,6 +37,12 @@ export const StandingsSettingsPanel = observer(() => {
       descKey: 'settingsPanels.standings.positionChangeDesc',
       value: settings.showPosChange,
       key: 'showPosChange',
+    },
+    {
+      titleKey: 'settingsPanels.standings.livePositionChange',
+      descKey: 'settingsPanels.standings.livePositionChangeDesc',
+      value: settings.showLivePosChange,
+      key: 'showLivePosChange',
     },
     {
       titleKey: 'settingsPanels.standings.brandLogo',
@@ -204,6 +215,34 @@ export const StandingsSettingsPanel = observer(() => {
               },
             ]}
           />
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.standings.playerWindow')}>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.standings.driversAhead')}
+            desc={t('settingsPanels.standings.driversAheadDesc')}
+          >
+            <Segmented<number>
+              value={settings.driversAhead}
+              onChange={(v) => update({ driversAhead: v })}
+              options={PLAYER_WINDOW_OPTIONS}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.standings.driversBehind')}
+            desc={t('settingsPanels.standings.driversBehindDesc')}
+          >
+            <Segmented<number>
+              value={settings.driversBehind}
+              onChange={(v) => update({ driversBehind: v })}
+              options={PLAYER_WINDOW_OPTIONS}
+            />
+          </SettingRow>
         </div>
       </Card>
 

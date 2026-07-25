@@ -83,6 +83,12 @@ export interface StandingsWidgetSettings {
   classPrevHotkey: string;
   classNextHotkey: string;
   showPosChange: boolean;
+  /** Transient up/down arrow shown in the position cell right after a live position change. */
+  showLivePosChange: boolean;
+  /** Rows shown in front of the player when they no longer fit in the top block (0 = pin the player row only). */
+  driversAhead: number;
+  /** Rows shown behind the player when they no longer fit in the top block. */
+  driversBehind: number;
   showColumnHeaders: boolean;
   showSessionHeader: boolean;
   showWeather: boolean;

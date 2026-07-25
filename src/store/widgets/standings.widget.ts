@@ -1,15 +1,111 @@
-import { makeAutoObservable } from 'mobx';
+import {
+  makeAutoObservable,
+  reaction,
+  runInAction,
+  type IReactionDisposer,
+} from 'mobx';
 
 import type { DriverEntry } from '@/types/bindings';
 import type { DriverGroup } from '@/types';
 import { computeClassSof } from '@utils/widget/standings-utils';
 import type { RootStore } from '@store/root-store';
 
+export type PositionChangeDirection = 'up' | 'down';
+
+// How long the arrow replaces the position number after a car gains or loses a place.
+const POSITION_CHANGE_DURATION_MS = 3000;
+
 export class StandingsWidgetStore {
   activeClassIndex = 0;
 
+  /** carIdx → direction of the position change currently being flashed. */
+  positionChanges = new Map<number, PositionChangeDirection>();
+
+  private readonly previousPositions = new Map<number, number>();
+
+  private readonly changeTimers = new Map<
+    number,
+    ReturnType<typeof setTimeout>
+  >();
+
+  private readonly disposers: IReactionDisposer[] = [];
+
+  // Wired in the constructor rather than an init() step: the arrows compare
+  // consecutive telemetry frames, so the very first frame must already be seen.
   constructor(private readonly root: RootStore) {
-    makeAutoObservable(this, {}, { autoBind: true });
+    makeAutoObservable<
+      StandingsWidgetStore,
+      'previousPositions' | 'changeTimers' | 'disposers'
+    >(
+      this,
+      { previousPositions: false, changeTimers: false, disposers: false },
+      { autoBind: true }
+    );
+
+    this.disposers.push(
+      reaction(
+        () => this.root.backendComputed.standings,
+        (frame) => this.trackPositionChanges(frame?.entries ?? [])
+      )
+    );
+  }
+
+  // Every RootStore instance (main window, overlay window, each isolated widget
+  // preview) creates its own reaction and timers; without this they outlive the store.
+  dispose() {
+    for (const disposer of this.disposers) {
+      disposer();
+    }
+
+    this.disposers.length = 0;
+
+    for (const timer of this.changeTimers.values()) {
+      clearTimeout(timer);
+    }
+
+    this.changeTimers.clear();
+    this.positionChanges.clear();
+    this.previousPositions.clear();
+  }
+
+  private trackPositionChanges(entries: DriverEntry[]) {
+    for (const entry of entries) {
+      const previous = this.previousPositions.get(entry.carIdx);
+
+      this.previousPositions.set(entry.carIdx, entry.livePosition);
+
+      if (previous === undefined || previous === entry.livePosition) {
+        continue;
+      }
+
+      this.flashPositionChange(
+        entry.carIdx,
+        entry.livePosition < previous ? 'up' : 'down'
+      );
+    }
+  }
+
+  private flashPositionChange(
+    carIdx: number,
+    direction: PositionChangeDirection
+  ) {
+    const running = this.changeTimers.get(carIdx);
+
+    if (running) {
+      clearTimeout(running);
+    }
+
+    this.positionChanges.set(carIdx, direction);
+
+    this.changeTimers.set(
+      carIdx,
+      setTimeout(() => {
+        runInAction(() => {
+          this.positionChanges.delete(carIdx);
+          this.changeTimers.delete(carIdx);
+        });
+      }, POSITION_CHANGE_DURATION_MS)
+    );
   }
 
   get driverMap(): Map<number, DriverEntry> {
@@ -29,7 +125,7 @@ export class StandingsWidgetStore {
     if (!this.root.backendComputed.standings) return result;
 
     for (const entry of this.root.backendComputed.standings.entries) {
-      if (entry.classPosition === 1) {
+      if (entry.liveClassPosition === 1) {
         result.set(entry.carClassId, entry);
       }
     }
@@ -42,7 +138,7 @@ export class StandingsWidgetStore {
 
     return (
       this.root.backendComputed.standings.entries.find(
-        (entry) => entry.position === 1
+        (entry) => entry.livePosition === 1
       ) ?? null
     );
   }
@@ -76,8 +172,9 @@ export class StandingsWidgetStore {
           classColor: first.carClassColor,
           totalDrivers: driversInClass.length,
           classSof: computeClassSof(driversInClass),
+          windowStartIndex: -1,
           drivers: driversInClass.sort(
-            (a, b) => a.classPosition - b.classPosition
+            (a, b) => a.liveClassPosition - b.liveClassPosition
           ),
         };
       });

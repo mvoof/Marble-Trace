@@ -395,6 +395,16 @@ export type DriverEntry = {
   tireCompound: string;
   position: number;
   classPosition: number;
+  /**
+   * Track order recomputed from lap progress every tick (race sessions only).
+   * Official `position` only refreshes when a car crosses the start/finish line,
+   * so an overtake mid-lap is invisible there. Outside a race this mirrors `position`.
+   */
+  livePosition: number;
+  /**
+   * Same as `live_position`, but ranked within the car's class.
+   */
+  liveClassPosition: number;
   startPosOverall: number;
   startPosClass: number;
   lap: number;
