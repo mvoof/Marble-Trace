@@ -1,11 +1,5 @@
 import type { InputTraceSettings } from '@/types/widget-settings';
 
-export interface SmoothedValues {
-  throttle: number;
-  brake: number;
-  clutch: number;
-}
-
 // Circular sample buffers shared by the ingest and paint passes. Channel
 // samples are interleaved: buffer[sampleIndex * channelCount + channelIndex].
 export interface TraceBufferState {
@@ -14,7 +8,6 @@ export interface TraceBufferState {
   steerBuffer: Float32Array;
   head: number;
   count: number;
-  smoothed: SmoothedValues;
 }
 
 export const createTraceBufferState = (): TraceBufferState => ({
@@ -23,7 +16,6 @@ export const createTraceBufferState = (): TraceBufferState => ({
   steerBuffer: new Float32Array(0),
   head: 0,
   count: 0,
-  smoothed: { throttle: 0, brake: 0, clutch: 0 },
 });
 
 const SAMPLES_PER_SECOND = 60;
@@ -273,7 +265,9 @@ interface TraceSample {
 }
 
 // Resizes the circular buffers when the settings change, then appends one
-// smoothed sample. Mutates `state` in place — it is per-instance scratch space.
+// sample. Channel values arrive already smoothed by InputTraceWidgetStore, so
+// the trace and the bars never drift apart. Mutates `state` in place — it is
+// per-instance scratch space.
 export const pushTraceSample = (
   state: TraceBufferState,
   sample: TraceSample,
@@ -314,24 +308,13 @@ export const pushTraceSample = (
     state.count = 0;
   }
 
-  const smoothing = settings.smoothing;
-  const previous = state.smoothed;
-  const smooth = (previousValue: number, raw: number) =>
-    smoothing <= 0 ? raw : (previousValue * smoothing + raw) / (smoothing + 1);
-
-  state.smoothed = {
-    throttle: smooth(previous.throttle, sample.throttle),
-    brake: smooth(previous.brake, sample.brake),
-    clutch: smooth(previous.clutch, sample.clutch),
-  };
-
   const values: number[] = [];
 
-  if (settings.showThrottle) values.push(state.smoothed.throttle);
+  if (settings.showThrottle) values.push(sample.throttle);
 
-  if (settings.showBrake) values.push(state.smoothed.brake);
+  if (settings.showBrake) values.push(sample.brake);
 
-  if (settings.showClutch) values.push(state.smoothed.clutch);
+  if (settings.showClutch) values.push(sample.clutch);
 
   const offset = state.head * values.length;
 

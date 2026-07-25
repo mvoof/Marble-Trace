@@ -66,4 +66,12 @@ export class RootStore {
       this.drivingCoachWidget.init();
     }
   }
+
+  // Short-lived stores (widget previews, layout canvas, Storybook) must call
+  // this on unmount — their reactions otherwise keep running against telemetry.
+  dispose() {
+    this.inputTraceWidget.dispose();
+    this.flags.dispose();
+    this.sim.dispose();
+  }
 }

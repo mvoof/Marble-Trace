@@ -77,6 +77,8 @@ export const LayoutCanvas = observer(
     const paneRef = useRef<HTMLDivElement | null>(null);
     const [paneSize, setPaneSize] = useState({ width: 0, height: 0 });
 
+    useEffect(() => () => previewStore.dispose(), [previewStore]);
+
     useLayoutEffect(() => {
       seedScenario(previewStore, scenarioId);
     }, [previewStore, scenarioId]);

@@ -4,6 +4,7 @@ import type { InputTraceSettings } from '@/types/widget-settings';
 import { useReactiveCanvasLoop } from '@/hooks/widget/useReactiveCanvasLoop';
 import styles from './CanvasTrace.module.scss';
 import {
+  useInputTraceWidgetStore,
   usePlayerStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -20,6 +21,7 @@ import {
 export const CanvasTrace = () => {
   const telemetry = usePlayerStore();
   const widgetSettings = useWidgetSettingsStore();
+  const inputTrace = useInputTraceWidgetStore();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bufferStateRef = useRef<TraceBufferState | null>(null);
@@ -60,12 +62,14 @@ export const CanvasTrace = () => {
         steeringZoom: _steeringZoom,
       } = settings;
 
+      const smoothed = inputTrace.smoothed;
+
       pushTraceSample(
         state,
         {
-          throttle: inputs?.throttle ?? 0,
-          brake: inputs?.brake ?? 0,
-          clutch: inputs?.clutch != null ? 1 - inputs.clutch : 0,
+          throttle: smoothed.throttle,
+          brake: smoothed.brake,
+          clutch: smoothed.clutch,
           absActive: !!inputs?.brake_abs_active,
           steeringWheelAngle: telemetry.carDynamics?.steering_wheel_angle ?? 0,
         },
@@ -74,7 +78,7 @@ export const CanvasTrace = () => {
 
       scheduleDraw(() => draw(settings));
     },
-    [telemetry, widgetSettings, draw]
+    [telemetry, widgetSettings, inputTrace, draw]
   );
 
   useEffect(() => {
