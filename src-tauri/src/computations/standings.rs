@@ -508,12 +508,17 @@ fn assign_live_positions(entries: &mut [DriverEntry]) {
 
     let mut merged = racing;
 
+    // `merged` is ordered by lap progress, so official positions are not monotonic
+    // along it — a car that just crossed the line has a fresher `position` than one
+    // mid-lap ahead of it. Counting the cars with a better official position places
+    // the parked car by how many cars actually outrank it, instead of stopping at
+    // the first out-of-order entry.
     for entry in parked {
         let key = official_sort_key(&entry);
         let index = merged
             .iter()
-            .position(|other| official_sort_key(other) > key)
-            .unwrap_or(merged.len());
+            .filter(|other| official_sort_key(other) < key)
+            .count();
 
         merged.insert(index, entry);
     }
