@@ -129,23 +129,25 @@ export const buildPaceCarRowEntries = (
 
   if (!player) return [];
 
-  const onTrackPaceCars = cars.filter(
-    (car) =>
-      car.isPaceCar && (carIdx.car_idx_lap_dist_pct[car.carIdx] ?? -1) >= 0
-  );
+  return cars.flatMap((paceCar): PaceCarRowEntry[] => {
+    const idx = paceCar.carIdx;
+    const paceLapDist = carIdx.car_idx_lap_dist_pct[idx] ?? -1;
 
-  return onTrackPaceCars
-    .map((paceCar): PaceCarRowEntry => {
-      const idx = paceCar.carIdx;
-      const paceLapDist = carIdx.car_idx_lap_dist_pct[idx] ?? -1;
-      const pitPhase = getPitPhase(idx);
+    if (!paceCar.isPaceCar || paceLapDist < 0) return [];
 
-      let relativeLapDist = paceLapDist - player.lapDistPct;
+    const pitPhase = getPitPhase(idx);
 
-      if (relativeLapDist > 0.5) relativeLapDist -= 1;
-      if (relativeLapDist < -0.5) relativeLapDist += 1;
+    if (!showInPits && pitPhase !== 'onTrack' && pitPhase !== 'pitOut') {
+      return [];
+    }
 
-      return {
+    let relativeLapDist = paceLapDist - player.lapDistPct;
+
+    if (relativeLapDist > 0.5) relativeLapDist -= 1;
+    if (relativeLapDist < -0.5) relativeLapDist += 1;
+
+    return [
+      {
         carIdx: idx,
         userName: buildPaceCarRowName(paceCar.userName, pitPhase),
         carNumber: paceCar.carNumber,
@@ -181,14 +183,9 @@ export const buildPaceCarRowEntries = (
         pitState: 'none',
         isPaceCar: true,
         pitPhase,
-      };
-    })
-    .filter(
-      (entry) =>
-        showInPits ||
-        entry.pitPhase === 'onTrack' ||
-        entry.pitPhase === 'pitOut'
-    );
+      },
+    ];
+  });
 };
 
 // Merges synthetic pace-car rows into the relative list, sorted the same way

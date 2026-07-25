@@ -104,30 +104,41 @@ export const TrackMapView = observer(
     // driving back out is always shown so you can time the merge behind it.
     const paceCarShowInPits = settings.paceCarShowInPits ?? false;
 
-    const paceCars: CarOnTrack[] = (sessionInfo?.cars ?? [])
-      .filter((car) => car.isPaceCar)
-      .map((car) => ({
-        carIdx: car.carIdx,
-        carNumber: '',
-        carClassColor: parseClassColor(car.carClassColor),
-        carClassId: car.carClassId,
-        lapDistPct: carPositions?.car_idx_lap_dist_pct[car.carIdx] ?? -1,
-        trackSurface:
-          carPositions?.car_idx_track_surface[car.carIdx] ??
-          TrackSurface.NotInWorld,
-        isPlayer: false,
-        position: 0,
-        classPosition: 0,
-        isPaceCar: true,
-        pitPhase: paceCarStore.getPitPhase(car.carIdx),
-      }))
-      .filter((car) => car.lapDistPct >= 0)
-      .filter(
-        (car) =>
-          paceCarShowInPits ||
-          car.pitPhase === 'onTrack' ||
-          car.pitPhase === 'pitOut'
-      );
+    const paceCars: CarOnTrack[] = (sessionInfo?.cars ?? []).flatMap((car) => {
+      if (!car.isPaceCar) return [];
+
+      const lapDistPct = carPositions?.car_idx_lap_dist_pct[car.carIdx] ?? -1;
+
+      if (lapDistPct < 0) return [];
+
+      const pitPhase = paceCarStore.getPitPhase(car.carIdx);
+
+      if (
+        !paceCarShowInPits &&
+        pitPhase !== 'onTrack' &&
+        pitPhase !== 'pitOut'
+      ) {
+        return [];
+      }
+
+      return [
+        {
+          carIdx: car.carIdx,
+          carNumber: '',
+          carClassColor: parseClassColor(car.carClassColor),
+          carClassId: car.carClassId,
+          lapDistPct,
+          trackSurface:
+            carPositions?.car_idx_track_surface[car.carIdx] ??
+            TrackSurface.NotInWorld,
+          isPlayer: false,
+          position: 0,
+          classPosition: 0,
+          isPaceCar: true,
+          pitPhase,
+        },
+      ];
+    });
 
     const cars: CarOnTrack[] = [...competitorCars, ...paceCars];
 

@@ -81,32 +81,32 @@ export const LinearMap = observer(() => {
 
   const paceCarDots =
     player && size.w > 0
-      ? (sessionInfo?.cars ?? [])
-          .filter((car) => car.isPaceCar)
-          .flatMap((car) => {
-            const lapDistPct =
-              carPositions?.car_idx_lap_dist_pct[car.carIdx] ?? -1;
+      ? (sessionInfo?.cars ?? []).flatMap((car) => {
+          if (!car.isPaceCar) return [];
 
-            if (lapDistPct < 0) return [];
+          const lapDistPct =
+            carPositions?.car_idx_lap_dist_pct[car.carIdx] ?? -1;
 
-            const pitPhase = paceCarStore.getPitPhase(car.carIdx);
+          if (lapDistPct < 0) return [];
 
-            if (
-              !paceCarShowInPits &&
-              pitPhase !== 'onTrack' &&
-              pitPhase !== 'pitOut'
-            ) {
-              return [];
-            }
+          const pitPhase = paceCarStore.getPitPhase(car.carIdx);
 
-            return [
-              {
-                carIdx: car.carIdx,
-                carClassColor: parseClassColor(car.carClassColor),
-                ...projectLapDistPct(lapDistPct),
-              },
-            ];
-          })
+          if (
+            !paceCarShowInPits &&
+            pitPhase !== 'onTrack' &&
+            pitPhase !== 'pitOut'
+          ) {
+            return [];
+          }
+
+          return [
+            {
+              carIdx: car.carIdx,
+              carClassColor: parseClassColor(car.carClassColor),
+              ...projectLapDistPct(lapDistPct),
+            },
+          ];
+        })
       : [];
 
   return (

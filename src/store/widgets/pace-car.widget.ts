@@ -43,11 +43,10 @@ export class PaceCarStore {
       (carPositions) => {
         if (!carPositions) return;
 
-        const paceCarIndices = (this.root.session.sessionInfo?.cars ?? [])
-          .filter((car) => car.isPaceCar)
-          .map((car) => car.carIdx);
+        for (const car of this.root.session.sessionInfo?.cars ?? []) {
+          if (!car.isPaceCar) continue;
 
-        for (const idx of paceCarIndices) {
+          const idx = car.carIdx;
           const surface =
             carPositions.car_idx_track_surface[idx] ?? NOT_IN_WORLD;
           const previousPhase = this.phaseByCarIdx.get(idx) ?? 'onTrack';
