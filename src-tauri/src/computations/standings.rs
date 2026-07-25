@@ -487,13 +487,13 @@ fn is_racing(entry: &DriverEntry) -> bool {
 /// which one to show (`liveOrderOutsideRace` in the standings widget settings).
 fn assign_live_positions(entries: &mut [DriverEntry]) {
     let mut racing: Vec<DriverEntry> = Vec::with_capacity(entries.len());
-    let mut parked: Vec<DriverEntry> = Vec::new();
+    let mut non_racing: Vec<DriverEntry> = Vec::new();
 
     for entry in entries.iter() {
         if is_racing(entry) && lap_progress(entry).is_some() {
             racing.push(entry.clone());
         } else {
-            parked.push(entry.clone());
+            non_racing.push(entry.clone());
         }
     }
 
@@ -502,18 +502,19 @@ fn assign_live_positions(entries: &mut [DriverEntry]) {
         _ => a.position.cmp(&b.position),
     });
 
-    // Worst official position first, so repeated inserts at the same index keep
-    // the parked cars in official order among themselves.
-    parked.sort_by_key(|entry| std::cmp::Reverse(official_sort_key(entry)));
+    // Placement below is independent of insertion order, so this only settles cars
+    // the sim has not placed at all: they share FALLBACK_SORT_POSITION and would
+    // otherwise land in an order that depends on the entry list.
+    non_racing.sort_by_key(|entry| std::cmp::Reverse(official_sort_key(entry)));
 
     let mut merged = racing;
 
     // `merged` is ordered by lap progress, so official positions are not monotonic
     // along it — a car that just crossed the line has a fresher `position` than one
     // mid-lap ahead of it. Counting the cars with a better official position places
-    // the parked car by how many cars actually outrank it, instead of stopping at
-    // the first out-of-order entry.
-    for entry in parked {
+    // the car by how many actually outrank it, instead of stopping at the first
+    // out-of-order entry.
+    for entry in non_racing {
         let key = official_sort_key(&entry);
         let index = merged
             .iter()
@@ -1035,7 +1036,7 @@ mod tests {
     }
 
     #[test]
-    fn test_parked_cars_keep_official_order_among_themselves() {
+    fn test_non_racing_cars_keep_official_order_among_themselves() {
         let mut entries = vec![
             make_live_entry(1, 5, -1, -1.0, TrackSurface::NotInWorld),
             make_live_entry(2, 3, 4, 0.80, TrackSurface::InPitStall),
