@@ -47,12 +47,6 @@ $sb: rgba(255, 255, 255, $opacity-subtle);
   gap: sp(xxs);
 }
 
-.detailCellRight {
-  display: flex;
-  align-items: baseline;
-  gap: sp(xxs);
-}
-
 .detailLabel {
   font-size: fs(xxxs);
   color: $widget-text-secondary;

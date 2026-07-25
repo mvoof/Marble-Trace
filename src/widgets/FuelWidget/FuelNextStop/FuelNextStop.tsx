@@ -61,7 +61,7 @@ export const FuelNextStop = observer(() => {
         </div>
 
         {forecast.secondsUntil !== null && (
-          <div className={styles.detailCellRight}>
+          <div className={styles.detailCell}>
             <WidgetLabel className={styles.detailLabel}>IN TIME</WidgetLabel>
             <WidgetValue
               className={styles.detailValue}
