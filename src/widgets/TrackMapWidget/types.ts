@@ -1,4 +1,5 @@
 import type { TrackSurface } from '@/types/bindings';
+import type { PaceCarPitPhase } from '@store/widgets/pace-car.widget';
 
 export interface CarOnTrack {
   carIdx: number;
@@ -10,6 +11,8 @@ export interface CarOnTrack {
   isPlayer: boolean;
   position: number;
   classPosition: number;
+  isPaceCar?: boolean;
+  pitPhase?: PaceCarPitPhase;
 }
 
 interface StoredTrackData {

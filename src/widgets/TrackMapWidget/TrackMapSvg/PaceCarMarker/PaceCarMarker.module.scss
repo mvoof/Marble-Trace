@@ -1,0 +1,11 @@
+.diamond {
+  stroke: #111;
+  stroke-linejoin: round;
+}
+
+.label {
+  font-family: $font-widget;
+  font-weight: 800;
+  fill: #111;
+  pointer-events: none;
+}

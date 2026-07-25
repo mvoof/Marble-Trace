@@ -556,6 +556,7 @@ const WIDGETS: WidgetConfig[] = [
       showDriverFlags: true,
       playerRowColor: DEFAULT_PLAYER_ROW_COLOR,
       playerAccentColor: DEFAULT_PLAYER_ACCENT_COLOR,
+      paceCarShowInPits: false,
     },
   },
   {
@@ -585,6 +586,10 @@ const WIDGETS: WidgetConfig[] = [
       sectorStrokePx: 6,
       targetDotRadiusPx: 10,
       showStartFinish: true,
+      paceCarUseClassColor: false,
+      paceCarColor: '#facc15',
+      paceCarRadiusPx: 10,
+      paceCarShowInPits: false,
     },
   },
   {
@@ -607,6 +612,10 @@ const WIDGETS: WidgetConfig[] = [
       orientation: 'horizontal',
       playerDotColor: '#18181b',
       targetDotRadiusPx: 10,
+      paceCarUseClassColor: false,
+      paceCarColor: '#facc15',
+      paceCarRadiusPx: 10,
+      paceCarShowInPits: false,
     },
   },
   {

@@ -28,6 +28,16 @@
   background-color: $led-red;
 }
 
+.colorSc {
+  background: repeating-linear-gradient(
+    45deg,
+    $led-yellow,
+    $led-yellow 12px,
+    #111 12px,
+    #111 24px
+  );
+}
+
 .colorBlue {
   background-color: $led-blue;
 }
@@ -73,6 +83,10 @@
 
   .colorRed {
     animation: singleRedPulse 1s infinite steps(1);
+  }
+
+  .colorSc {
+    animation: singleScAlternating 1s infinite steps(1);
   }
 
   .colorBlue {
@@ -130,6 +144,23 @@
   50%,
   100% {
     background-color: $led-surface-panel;
+  }
+}
+
+@keyframes singleScAlternating {
+  0%,
+  49.99% {
+    background: repeating-linear-gradient(
+      45deg,
+      $led-yellow,
+      $led-yellow 12px,
+      #111 12px,
+      #111 24px
+    );
+  }
+  50%,
+  100% {
+    background: $led-surface-panel;
   }
 }
 

@@ -1,0 +1,118 @@
+// Safety car row — same column grid as DriverRow (pos | car# | ... | gap) for
+// alignment, but the name spans the whole middle area (through where lic/iR
+// would sit) instead of being confined to the name column, and stripes across
+// the full row read as "not a competitor".
+.paceCarRow {
+  display: grid;
+  align-items: center;
+  column-gap: sp(xxxs);
+  padding: 0 sp(md);
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-bottom: 1px solid $widget-row-border;
+  line-height: 1.15;
+  font-size: fs(md);
+  // Opaque colors with hard stops at identical positions — translucent stripes
+  // blend into a muddy blur along the 45° edges, so keep both fully opaque
+  // (muted toward black) and let the row-level appearance settings dim it.
+  background: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, $widget-status-caution 5%, #23231f) 0,
+    color-mix(in srgb, $widget-status-caution 5%, #23231f) ws(10),
+    color-mix(in srgb, $widget-status-caution 15%, #23231f) ws(10),
+    color-mix(in srgb, $widget-status-caution 15%, #23231f) ws(20)
+  );
+}
+
+.rowOdd {
+  background-color: rgba(255, 255, 255, 0.035);
+}
+
+.rowPaddingNarrow {
+  padding-top: sp(xxxs);
+  padding-bottom: sp(xxxs);
+
+  .posBlock {
+    margin-top: calc(-1 * sp(xxxs));
+    margin-bottom: calc(-1 * sp(xxxs));
+    padding-top: sp(xxxs);
+    padding-bottom: sp(xxxs);
+  }
+}
+
+.rowPaddingMedium {
+  padding-top: sp(xxs);
+  padding-bottom: sp(xxs);
+
+  .posBlock {
+    margin-top: calc(-1 * sp(xxs));
+    margin-bottom: calc(-1 * sp(xxs));
+    padding-top: sp(xxs);
+    padding-bottom: sp(xxs);
+  }
+}
+
+.rowPaddingWide {
+  padding-top: sp(xs);
+  padding-bottom: sp(xs);
+
+  .posBlock {
+    margin-top: calc(-1 * sp(xs));
+    margin-bottom: calc(-1 * sp(xs));
+    padding-top: sp(xs);
+    padding-bottom: sp(xs);
+  }
+}
+
+.posBlock {
+  grid-column: 1;
+  align-self: stretch;
+  margin-top: calc(-1 * sp(xxxs));
+  margin-bottom: calc(-1 * sp(xxxs));
+  margin-left: calc(-1 * sp(md));
+}
+
+.carNumberCell {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  padding: 0 sp(xxxs);
+}
+
+.carNumber {
+  font-size: fs(xs);
+  font-family: $font-mono;
+  color: $widget-text-primary;
+}
+
+// Spans from the name column through wherever lic/iR would be, so the label
+// centers across the whole row rather than just its own narrow column.
+.centerLabel {
+  grid-column: 3 / -2;
+  text-align: center;
+  font-weight: 700;
+  font-size: fs(md);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $widget-text-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gapBlock {
+  grid-column: -2 / -1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: sp(xxxs);
+}
+
+.gap {
+  font-family: $font-mono;
+  font-weight: 900;
+  font-size: fs(md);
+  text-align: right;
+  color: $widget-status-caution;
+}

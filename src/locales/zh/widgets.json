@@ -351,7 +351,14 @@
       "trackStroke": "赛道线宽（像素）",
       "trackBorder": "赛道边框（像素）",
       "sectorStroke": "分段线宽（像素）",
-      "targetDotRadius": "目标点半径（像素）"
+      "targetDotRadius": "目标点半径（像素）",
+      "safetyCar": "安全车",
+      "paceCarUseClassColor": "使用组别颜色",
+      "paceCarUseClassColorDesc": "按组别为安全车标记着色，而非自定义颜色。",
+      "paceCarColor": "安全车颜色",
+      "paceCarRadius": "安全车大小（像素）",
+      "paceCarShowInPits": "在维修区显示",
+      "paceCarShowInPitsDesc": "安全车停在维修位时仍然显示。"
     },
     "weather": {
       "moduleParameters": "模块参数",

@@ -1,5 +1,7 @@
-import type { DriverEntry } from '@/types/bindings';
+import { parseClassColor } from '@utils/formatters/color-utils';
+import type { CarEntry, CarIdxFrame, DriverEntry } from '@/types/bindings';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
+import type { PaceCarPitPhase } from '@store/widgets/pace-car.widget';
 
 const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 
@@ -86,4 +88,116 @@ export const computeRelativeGap = (
   }
 
   return delta;
+};
+
+export type PaceCarRowEntry = DriverEntry & {
+  isPaceCar: true;
+  pitPhase: PaceCarPitPhase;
+};
+
+const buildPaceCarRowName = (
+  gameName: string,
+  pitPhase: PaceCarPitPhase
+): string => {
+  const baseName = gameName.trim();
+
+  if (pitPhase === 'pitIn') return `${baseName} Pit In`;
+
+  if (pitPhase === 'pitOut') return `${baseName} Pit Out`;
+
+  return baseName;
+};
+
+// Pace cars are excluded from the backend relative list, so they're synthesized
+// here from the raw car-index frame and merged into the row list as regular
+// DriverEntry-shaped rows — this lets DriverRow's existing gap/sort logic handle
+// them for free. On ovals the crew uses the gap to time repairs so the car
+// rejoins ahead of the pace car without losing a lap. All on-track pace cars are
+// included (in multiclass sessions each class runs its own), colored by their
+// own carClassColor so they read as distinct. Parked-in-pits cars are dropped
+// unless showInPits is on — nothing useful to time against a stationary car.
+export const buildPaceCarRowEntries = (
+  carIdx: CarIdxFrame | null,
+  cars: CarEntry[] | undefined,
+  relativeEntries: DriverEntry[],
+  getPitPhase: (carIdx: number) => PaceCarPitPhase,
+  showInPits: boolean
+): PaceCarRowEntry[] => {
+  if (!carIdx || !cars || relativeEntries.length === 0) return [];
+
+  const player = relativeEntries.find((entry) => entry.isPlayer);
+
+  if (!player) return [];
+
+  return cars.flatMap((paceCar): PaceCarRowEntry[] => {
+    const idx = paceCar.carIdx;
+    const paceLapDist = carIdx.car_idx_lap_dist_pct[idx] ?? -1;
+
+    if (!paceCar.isPaceCar || paceLapDist < 0) return [];
+
+    const pitPhase = getPitPhase(idx);
+
+    if (!showInPits && pitPhase !== 'onTrack' && pitPhase !== 'pitOut') {
+      return [];
+    }
+
+    let relativeLapDist = paceLapDist - player.lapDistPct;
+
+    if (relativeLapDist > 0.5) relativeLapDist -= 1;
+    if (relativeLapDist < -0.5) relativeLapDist += 1;
+
+    return [
+      {
+        carIdx: idx,
+        userName: buildPaceCarRowName(paceCar.userName, pitPhase),
+        carNumber: paceCar.carNumber,
+        carClassId: paceCar.carClassId,
+        carClassShortName: '',
+        carClassColor: parseClassColor(paceCar.carClassColor),
+        carScreenName: '',
+        carScreenNameShort: '',
+        tireCompound: '',
+        position: 0,
+        classPosition: 0,
+        startPosOverall: 0,
+        startPosClass: 0,
+        lap: player.lap,
+        lapDistPct: paceLapDist,
+        lastLapTime: 0,
+        bestLapTime: 0,
+        f2Time: 0,
+        estTime: carIdx.car_idx_est_time[idx] ?? 0,
+        trackSurface: 'OnTrack',
+        iRating: 0,
+        licString: '',
+        licColor: '',
+        incidents: 0,
+        isPlayer: false,
+        onPitRoad: false,
+        estimatedIrDelta: null,
+        relativeLapDist,
+        classEstLapTime: paceCar.carClassEstLapTime,
+        rawFlags: 0,
+        resultsPositionLap: null,
+        resultsPositionTime: null,
+        pitState: 'none',
+        isPaceCar: true,
+        pitPhase,
+      },
+    ];
+  });
+};
+
+// Merges synthetic pace-car rows into the relative list, sorted the same way
+// the backend already orders relativeEntries — most-ahead first, player in the
+// middle, most-behind last.
+export const mergePaceCarRows = (
+  relativeEntries: DriverEntry[],
+  paceCarEntries: PaceCarRowEntry[]
+): (DriverEntry | PaceCarRowEntry)[] => {
+  if (paceCarEntries.length === 0) return relativeEntries;
+
+  return [...relativeEntries, ...paceCarEntries].sort(
+    (a, b) => b.relativeLapDist - a.relativeLapDist
+  );
 };

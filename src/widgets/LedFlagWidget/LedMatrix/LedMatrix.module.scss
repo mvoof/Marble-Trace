@@ -57,6 +57,14 @@ $board-padding: 4px;
   background-color: $led-red;
 }
 
+.colorSc {
+  background-color: $led-yellow;
+}
+
+.colorScDark {
+  background-color: $led-surface-panel;
+}
+
 .colorBlue {
   background-color: $led-blue;
 }
@@ -118,6 +126,17 @@ $board-padding: 4px;
 
   &.flag-white .colorWhite {
     animation: ledWhiteBreathing 2s infinite ease-in-out;
+  }
+
+  // Safety car: diagonal yellow/black hazard stripes that scroll, mirroring
+  // the blue flag's scrolling treatment.
+  &.flag-sc {
+    .colorSc {
+      animation: ledScScrollYellow 1s infinite steps(1);
+    }
+    .colorScDark {
+      animation: ledScScrollDark 1s infinite steps(1);
+    }
   }
 
   &.flag-dq {
@@ -227,6 +246,28 @@ $board-padding: 4px;
   50%,
   100% {
     background-color: $led-surface-panel;
+  }
+}
+
+@keyframes ledScScrollYellow {
+  0%,
+  49.99% {
+    background-color: $led-yellow;
+  }
+  50%,
+  100% {
+    background-color: $led-surface-panel;
+  }
+}
+
+@keyframes ledScScrollDark {
+  0%,
+  49.99% {
+    background-color: $led-surface-panel;
+  }
+  50%,
+  100% {
+    background-color: $led-yellow;
   }
 }
 

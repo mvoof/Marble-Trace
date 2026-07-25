@@ -117,6 +117,8 @@ export interface RelativeWidgetSettings {
   playerRowColor: string;
   /** Color of the player's position number and car number. */
   playerAccentColor: string;
+  /** When true, keeps showing the safety car row while it's parked in its pit stall. */
+  paceCarShowInPits?: boolean;
 }
 
 type TrackMapRotationMode = 'fixed' | 'heading-up';
@@ -134,6 +136,14 @@ export interface TrackMapWidgetSettings {
   sectorStrokePx: number;
   targetDotRadiusPx: number;
   showStartFinish?: boolean;
+  /** When true the safety-car marker uses the pace car's class color. */
+  paceCarUseClassColor?: boolean;
+  /** Custom safety-car marker color used when not tracking the class color. */
+  paceCarColor?: string;
+  /** Safety-car marker radius in px (independent of the competitor dots). */
+  paceCarRadiusPx?: number;
+  /** When true, keeps showing the safety-car marker while it's parked in its pit stall. */
+  paceCarShowInPits?: boolean;
 }
 
 export type LinearMapOrientation = 'horizontal' | 'vertical';
@@ -142,6 +152,14 @@ export interface LinearMapWidgetSettings {
   orientation: LinearMapOrientation;
   playerDotColor: string;
   targetDotRadiusPx: number;
+  /** When true the safety-car marker uses the pace car's class color. */
+  paceCarUseClassColor?: boolean;
+  /** Custom safety-car marker color used when not tracking the class color. */
+  paceCarColor?: string;
+  /** Safety-car marker radius in px (independent of the competitor dots). */
+  paceCarRadiusPx?: number;
+  /** When true, keeps showing the safety-car marker while it's parked in its pit stall. */
+  paceCarShowInPits?: boolean;
 }
 
 export interface WeatherWidgetSettings {

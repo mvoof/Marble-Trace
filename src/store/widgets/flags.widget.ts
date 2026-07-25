@@ -35,7 +35,9 @@ const flagsToList = (flags: RaceFlags): FlagType[] => {
     result.push('white');
   }
 
-  if (flags.yellow) {
+  if (flags.caution || flags.cautionWaving) {
+    result.push('sc');
+  } else if (flags.yellow) {
     result.push('yellow');
   }
 
@@ -77,6 +79,10 @@ const flagToPriority = (flags: RaceFlags): FlagType => {
 
   if (flags.white) {
     return 'white';
+  }
+
+  if (flags.caution || flags.cautionWaving) {
+    return 'sc';
   }
 
   if (flags.yellow) {
@@ -151,22 +157,24 @@ export class FlagsStore {
 
   get parsedFlags(): FlagType[] {
     const flags = this.root.player.carStatus?.flags;
+    const list = flags ? flagsToList(flags) : [];
 
-    if (!flags) {
-      return [];
+    if (this.root.paceCar.isPaceCarOnTrack && !list.includes('sc')) {
+      list.push('sc');
     }
 
-    return flagsToList(flags);
+    return list;
   }
 
   get parsedFlag(): FlagType {
     const flags = this.root.player.carStatus?.flags;
+    const priority = flags ? flagToPriority(flags) : 'none';
 
-    if (!flags) {
-      return 'none';
+    if (priority === 'none' && this.root.paceCar.isPaceCarOnTrack) {
+      return 'sc';
     }
 
-    return flagToPriority(flags);
+    return priority;
   }
 
   private createHoldReaction<T>(

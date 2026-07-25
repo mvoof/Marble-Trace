@@ -18,6 +18,7 @@ const FLAG_ITEM_CLASS: Record<FlagType, string> = {
   meatball: styles.itemMeatball,
   debris: styles.itemDebris,
   penalty: styles.itemBlack,
+  sc: styles.itemSc,
   dq: styles.itemDq,
 };
 

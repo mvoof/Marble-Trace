@@ -12,6 +12,7 @@ export type FlagType =
   | 'meatball'
   | 'debris'
   | 'penalty'
+  | 'sc'
   | 'dq';
 
 /**

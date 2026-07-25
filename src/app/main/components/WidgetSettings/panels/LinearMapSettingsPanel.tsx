@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, InputNumber, Segmented } from 'antd';
+import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
 import {
   LinearMapOrientation,
   LinearMapWidgetSettings,
@@ -68,6 +68,56 @@ export const LinearMapSettingsPanel = observer(() => {
             max={30}
             onChange={(v) => v !== null && update({ targetDotRadiusPx: v })}
           />
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.trackMap.safetyCar')}>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.trackMap.paceCarUseClassColor')}
+            desc={t('settingsPanels.trackMap.paceCarUseClassColorDesc')}
+          >
+            <Switch
+              checked={settings.paceCarUseClassColor ?? false}
+              onChange={(v) => update({ paceCarUseClassColor: v })}
+            />
+          </SettingRow>
+        </div>
+
+        {!settings.paceCarUseClassColor && (
+          <div className={styles.fieldGroup}>
+            <SettingRow title={t('settingsPanels.trackMap.paceCarColor')}>
+              <ColorPicker
+                value={settings.paceCarColor ?? '#facc15'}
+                onChange={(c) => update({ paceCarColor: c.toHexString() })}
+              />
+            </SettingRow>
+          </div>
+        )}
+
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.trackMap.paceCarRadius')}
+          </span>
+          <InputNumber
+            style={{ width: '100%' }}
+            value={settings.paceCarRadiusPx ?? settings.targetDotRadiusPx}
+            min={1}
+            max={30}
+            onChange={(v) => v !== null && update({ paceCarRadiusPx: v })}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.trackMap.paceCarShowInPits')}
+            desc={t('settingsPanels.trackMap.paceCarShowInPitsDesc')}
+          >
+            <Switch
+              checked={settings.paceCarShowInPits ?? false}
+              onChange={(v) => update({ paceCarShowInPits: v })}
+            />
+          </SettingRow>
         </div>
       </Card>
     </>

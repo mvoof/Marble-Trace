@@ -3,9 +3,17 @@ import { observer } from 'mobx-react-lite';
 
 import { useVisibleRowCount } from '@hooks/common/useVisibleRowCount';
 import { DriverRow } from '@widgets/RelativeWidget/DriverRow/DriverRow';
+import { PaceCarRow } from '@widgets/RelativeWidget/PaceCarRow/PaceCarRow';
 import { NoDataPlaceholder } from '@/components/shared/NoDataPlaceholder/NoDataPlaceholder';
 import {
+  buildPaceCarRowEntries,
+  mergePaceCarRows,
+} from '@utils/widget/relative-utils';
+import {
   useBackendComputedStore,
+  useCarsStore,
+  usePaceCarStore,
+  useSessionStore,
   useSimStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -16,12 +24,23 @@ import styles from './RelativeContent.module.scss';
 export const RelativeContent = observer(() => {
   const computed = useBackendComputedStore();
   const sim = useSimStore();
+  const { carIdx } = useCarsStore();
+  const { sessionInfo } = useSessionStore();
   const widgetSettings = useWidgetSettingsStore();
+  const paceCarStore = usePaceCarStore();
 
-  const { rowPadding } =
+  const { rowPadding, paceCarShowInPits } =
     widgetSettings.getSettings<RelativeWidgetSettings>('relative');
 
-  const entries = computed.relativeEntries;
+  const paceCarEntries = buildPaceCarRowEntries(
+    carIdx,
+    sessionInfo?.cars,
+    computed.relativeEntries,
+    (entryCarIdx) => paceCarStore.getPitPhase(entryCarIdx),
+    paceCarShowInPits ?? false
+  );
+
+  const entries = mergePaceCarRows(computed.relativeEntries, paceCarEntries);
 
   const { ref: driverListRef, count: visibleRowCount } =
     useVisibleRowCount<HTMLDivElement>(
@@ -67,9 +86,13 @@ export const RelativeContent = observer(() => {
 
   return (
     <div ref={driverListRef} className={styles.driverList}>
-      {displayEntries.map((entry, index) => (
-        <DriverRow key={entry.carIdx} driver={entry} index={index} />
-      ))}
+      {displayEntries.map((entry, index) =>
+        'isPaceCar' in entry ? (
+          <PaceCarRow key={entry.carIdx} driver={entry} index={index} />
+        ) : (
+          <DriverRow key={entry.carIdx} driver={entry} index={index} />
+        )
+      )}
     </div>
   );
 });
