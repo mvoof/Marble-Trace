@@ -1,0 +1,97 @@
+name: Bug report
+description: Something in the overlay, settings window, or site does not work as expected.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report! Logs and screenshots help the most.
+        For questions and setup help, use [Discord](https://discord.gg/GVaRsHbjxV) instead.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: A clear description of the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Launch Marble Trace
+        2. Join a session in iRacing
+        3. Open the ... widget
+        4. See the wrong value
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      description: Used for triage — maintainers will apply the matching `area:` label.
+      multiple: true
+      options:
+        - Widgets (overlay)
+        - Main app (settings window, layouts)
+        - iRacing data (wrong or missing telemetry values)
+        - Site
+        - UI / visual glitch
+        - Performance (FPS, CPU, stutter)
+        - Installer / auto-update
+        - Localization
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: widget
+    attributes:
+      label: Widget name
+      description: If the issue is in a specific widget (Standings, Relative, Fuel, Track Map, ...).
+
+  - type: input
+    id: app-version
+    attributes:
+      label: Marble Trace version
+      placeholder: e.g. 1.4.2
+    validations:
+      required: true
+
+  - type: input
+    id: session
+    attributes:
+      label: Session details
+      placeholder: e.g. official race, 24 cars, 3 classes, Spa
+
+  - type: input
+    id: os
+    attributes:
+      label: Windows version
+      placeholder: e.g. Windows 11 Pro 24H2
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Attach or paste the app log. Verbose backend logs can be produced with
+        `RUST_LOG=marble_trace_lib=debug`.
+      render: text
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or video
+      description: Drag files here.
