@@ -259,6 +259,16 @@ export const initMainSync = async (root: RootStore) => {
           { delay: 16 }
         ),
         reaction(
+          // Widgets-catalog (preview page) edits only touch `defaultWidgets`,
+          // which no other reaction observes — without this they'd never be
+          // persisted and would reset on restart.
+          () => root.widgetSettings.defaultsChangeToken,
+          () => {
+            void onSave();
+          },
+          { delay: 500 }
+        ),
+        reaction(
           // Commit on local edits (changeToken) AND on edits synced in from the
           // overlay's F9 drag mode (syncToken) so live-tweaks persist into the
           // active layout. Only this reaction watches syncToken — the emit
