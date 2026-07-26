@@ -8,8 +8,8 @@ import {
 } from '@utils/widget/timer-utils';
 import {
   useCarsStore,
-  usePlayerStore,
   useSessionStore,
+  useStandingsWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
@@ -19,10 +19,10 @@ import styles from './TimerFooter.module.scss';
 export const TimerFooter = observer(() => {
   const { session, sessionInfo } = useSessionStore();
   const { carIdx, leaderBestLapTime } = useCarsStore();
-  const { lapTiming } = usePlayerStore();
+  const standingsWidget = useStandingsWidgetStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { showLaps, showPosition } =
+  const { showLaps, showPosition, positionSource } =
     widgetSettings.getSettings<TimerWidgetSettings>('timer');
 
   if (!showLaps && !showPosition) {
@@ -52,7 +52,7 @@ export const TimerFooter = observer(() => {
         )
       : null;
 
-  const position = lapTiming?.player_car_position ?? null;
+  const position = standingsWidget.playerPosition(positionSource);
   const totalDrivers = sessionInfo?.cars.length || null;
 
   return (

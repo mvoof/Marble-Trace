@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Switch } from 'antd';
-import { TimerWidgetSettings } from '@/types/widget-settings';
+import { Segmented, Switch } from 'antd';
+import { PositionSource, TimerWidgetSettings } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
@@ -77,6 +77,28 @@ export const TimerSettingsPanel = observer(() => {
           </SettingRow>
         </div>
       ))}
+
+      {settings.showPosition && (
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.common.positionSource')}
+          </span>
+          <Segmented
+            block
+            value={settings.positionSource}
+            options={[
+              { label: t('settingsPanels.common.positionLive'), value: 'live' },
+              {
+                label: t('settingsPanels.common.positionOfficial'),
+                value: 'official',
+              },
+            ]}
+            onChange={(value) =>
+              update({ positionSource: value as PositionSource })
+            }
+          />
+        </div>
+      )}
     </Card>
   );
 });

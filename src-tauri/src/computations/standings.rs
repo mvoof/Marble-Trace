@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
@@ -8,7 +8,7 @@ use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use crate::model::cars::CarIdxFrame;
 use crate::model::enums::{PitState, TrackSurface};
-use crate::model::session::{QualifyResultEntry, ResultPosition, SessionSnapshot, SessionType};
+use crate::model::session::{QualifyResultEntry, ResultPosition, SessionSnapshot};
 use crate::utils::lock_or_recover;
 
 const NO_CLASS_LABEL: &str = "No Class";
@@ -110,9 +110,10 @@ pub struct DriverEntry {
     pub tire_compound: String,
     pub position: i32,
     pub class_position: i32,
-    /// Track order recomputed from lap progress every tick (race sessions only).
+    /// Track order recomputed from lap progress every tick, in every session type.
     /// Official `position` only refreshes when a car crosses the start/finish line,
-    /// so an overtake mid-lap is invisible there. Outside a race this mirrors `position`.
+    /// so an overtake mid-lap is invisible there; outside a race it ranks by best lap
+    /// instead of track order. Which of the two is displayed is a frontend choice.
     pub live_position: i32,
     /// Same as `live_position`, but ranked within the car's class.
     pub live_class_position: i32,
@@ -382,13 +383,7 @@ pub fn compute(
         }
     });
 
-    let is_race = session
-        .sessions
-        .get(current_num)
-        .map(|s| s.session_type == SessionType::Race)
-        .unwrap_or(false);
-
-    assign_live_positions(&mut entries, is_race);
+    assign_live_positions(&mut entries);
 
     let player_lap_dist = entries
         .iter()
@@ -411,8 +406,7 @@ pub fn compute(
     }
 
     // Pit state machine — per-car, persisted across ticks in locked_state.pit_states
-    let active_car_indices: std::collections::HashSet<i32> =
-        entries.iter().map(|e| e.car_idx).collect();
+    let active_car_indices: HashSet<i32> = entries.iter().map(|e| e.car_idx).collect();
 
     locked_state
         .pit_states
@@ -455,27 +449,82 @@ fn lap_progress(entry: &DriverEntry) -> Option<f64> {
     Some(entry.lap as f64 + entry.lap_dist_pct as f64)
 }
 
-/// Reorders `entries` into live track order and fills the `live_*` position fields.
-/// Outside a race the official order is authoritative (it ranks by best lap, which
-/// lap progress knows nothing about), so the live fields just mirror it.
-fn assign_live_positions(entries: &mut [DriverEntry], is_race: bool) {
-    if !is_race {
-        for entry in entries.iter_mut() {
-            entry.live_position = entry.position;
-            entry.live_class_position = entry.class_position;
-        }
+/// Official race position, with cars the sim has not placed yet pushed to the back.
+fn official_sort_key(entry: &DriverEntry) -> i32 {
+    if entry.position > 0 {
+        entry.position
+    } else if entry.start_pos_overall > 0 {
+        entry.start_pos_overall
+    } else {
+        FALLBACK_SORT_POSITION
+    }
+}
 
-        return;
+/// A car is racing when it is out on track under its own race position — not in
+/// the pit lane, not in its box, and not sitting in the garage or being towed.
+fn is_racing(entry: &DriverEntry) -> bool {
+    if entry.on_pit_road {
+        return false;
     }
 
-    // Cars still in the world rank by covered distance; the rest keep their official
-    // order and sit below everyone running.
-    entries.sort_by(|a, b| match (lap_progress(a), lap_progress(b)) {
+    matches!(
+        entry.track_surface,
+        TrackSurface::OnTrack | TrackSurface::OffTrack
+    )
+}
+
+/// Reorders `entries` into live track order and fills the `live_*` position fields.
+///
+/// Only cars actually racing are re-ranked by covered distance. Lap distance says
+/// nothing about the race position of a car that is stopped in its box or sitting
+/// in the garage: iRacing projects pit road onto the main track, and a car rejoining
+/// after a stop lands in the middle of a pack it has already lost the time to. Those
+/// cars therefore keep the official position and are slotted between the racing cars
+/// by it, so a driver who pits neither floats up the table nor drops off the bottom.
+///
+/// Filled in every session type — outside a race the official order ranks by best
+/// lap instead, so the two are genuinely different answers and the frontend picks
+/// which one to show (`liveOrderOutsideRace` in the standings widget settings).
+fn assign_live_positions(entries: &mut [DriverEntry]) {
+    let mut racing: Vec<DriverEntry> = Vec::with_capacity(entries.len());
+    let mut non_racing: Vec<DriverEntry> = Vec::new();
+
+    for entry in entries.iter() {
+        if is_racing(entry) && lap_progress(entry).is_some() {
+            racing.push(entry.clone());
+        } else {
+            non_racing.push(entry.clone());
+        }
+    }
+
+    racing.sort_by(|a, b| match (lap_progress(a), lap_progress(b)) {
         (Some(left), Some(right)) => right.partial_cmp(&left).unwrap_or(Ordering::Equal),
-        (Some(_), None) => Ordering::Less,
-        (None, Some(_)) => Ordering::Greater,
-        (None, None) => a.position.cmp(&b.position),
+        _ => a.position.cmp(&b.position),
     });
+
+    // Placement below is independent of insertion order, so this only settles cars
+    // the sim has not placed at all: they share FALLBACK_SORT_POSITION and would
+    // otherwise land in an order that depends on the entry list.
+    non_racing.sort_by_key(|entry| std::cmp::Reverse(official_sort_key(entry)));
+
+    let mut merged = racing;
+
+    // `merged` is ordered by lap progress, so official positions are not monotonic
+    // along it — a car that just crossed the line has a fresher `position` than one
+    // mid-lap ahead of it. Counting the cars with a better official position places
+    // the car by how many actually outrank it, instead of stopping at the first
+    // out-of-order entry.
+    for entry in non_racing {
+        let key = official_sort_key(&entry);
+        let index = merged
+            .iter()
+            .filter(|other| official_sort_key(other) < key)
+            .count();
+
+        merged.insert(index, entry);
+    }
+
+    entries.clone_from_slice(&merged);
 
     let mut class_counters: HashMap<i32, i32> = HashMap::new();
 
@@ -866,18 +915,21 @@ mod tests {
     }
 
     #[test]
-    fn test_live_positions_mirror_official_outside_race() {
+    fn test_live_positions_ignore_official_order() {
+        // Practice/qualifying: official position ranks by best lap, live ranks by
+        // track order. Both are kept; the frontend decides which one to show.
         let mut entries = vec![
             make_live_entry(0, 2, 3, 0.90, TrackSurface::OnTrack),
             make_live_entry(1, 1, 3, 0.10, TrackSurface::OnTrack),
         ];
 
-        assign_live_positions(&mut entries, false);
+        assign_live_positions(&mut entries);
 
-        // Order untouched, live fields copied from the official ones.
         assert_eq!(entries[0].car_idx, 0);
-        assert_eq!(entries[0].live_position, 2);
-        assert_eq!(entries[1].live_position, 1);
+        assert_eq!(entries[0].live_position, 1);
+        assert_eq!(entries[0].position, 2);
+        assert_eq!(entries[1].live_position, 2);
+        assert_eq!(entries[1].position, 1);
     }
 
     #[test]
@@ -889,7 +941,7 @@ mod tests {
             make_live_entry(0, 2, 3, 0.90, TrackSurface::OnTrack),
         ];
 
-        assign_live_positions(&mut entries, true);
+        assign_live_positions(&mut entries);
 
         assert_eq!(entries[0].car_idx, 0);
         assert_eq!(entries[0].live_position, 1);
@@ -904,25 +956,26 @@ mod tests {
             make_live_entry(1, 2, 1, 0.95, TrackSurface::OnTrack),
         ];
 
-        assign_live_positions(&mut entries, true);
+        assign_live_positions(&mut entries);
 
         assert_eq!(entries[0].car_idx, 0);
         assert_eq!(entries[1].car_idx, 1);
     }
 
     #[test]
-    fn test_live_positions_push_cars_out_of_world_to_the_back() {
+    fn test_cars_out_of_world_slot_in_by_official_position() {
         let mut entries = vec![
-            make_live_entry(0, 1, 5, 0.50, TrackSurface::NotInWorld),
+            make_live_entry(0, 3, 5, 0.50, TrackSurface::NotInWorld),
             make_live_entry(1, 2, 1, 0.10, TrackSurface::OnTrack),
+            make_live_entry(2, 4, 1, 0.05, TrackSurface::OnTrack),
         ];
 
-        assign_live_positions(&mut entries, true);
+        assign_live_positions(&mut entries);
 
         assert_eq!(entries[0].car_idx, 1);
-        assert_eq!(entries[0].live_position, 1);
         assert_eq!(entries[1].car_idx, 0);
         assert_eq!(entries[1].live_position, 2);
+        assert_eq!(entries[2].car_idx, 2);
     }
 
     #[test]
@@ -935,11 +988,68 @@ mod tests {
 
         entries[1].car_class_id = 7;
 
-        assign_live_positions(&mut entries, true);
+        assign_live_positions(&mut entries);
 
         assert_eq!(entries[0].live_class_position, 1);
         assert_eq!(entries[1].live_class_position, 1);
         assert_eq!(entries[2].live_class_position, 2);
+    }
+
+    #[test]
+    fn test_pitting_car_holds_its_official_position() {
+        // Captured from a live race: the car in its box is far along the lap, but
+        // its official position is well down the order. Track distance must not
+        // promote it over the cars still racing.
+        let mut entries = vec![
+            make_live_entry(9, 31, 5, 0.99, TrackSurface::InPitStall),
+            make_live_entry(4, 25, 5, 0.507, TrackSurface::OnTrack),
+            make_live_entry(28, 26, 5, 0.503, TrackSurface::OnTrack),
+            make_live_entry(7, 30, 5, 0.490, TrackSurface::OnTrack),
+        ];
+
+        entries[0].on_pit_road = true;
+
+        assign_live_positions(&mut entries);
+
+        assert_eq!(entries[0].car_idx, 4);
+        assert_eq!(entries[1].car_idx, 28);
+        assert_eq!(entries[2].car_idx, 7);
+        assert_eq!(entries[3].car_idx, 9);
+        assert_eq!(entries[3].live_position, 4);
+    }
+
+    #[test]
+    fn test_car_in_the_garage_keeps_its_official_position() {
+        // The leader being towed must not fall to the bottom of the table.
+        let mut entries = vec![
+            make_live_entry(11, 1, -1, -1.0, TrackSurface::NotInWorld),
+            make_live_entry(37, 2, 6, 0.208, TrackSurface::OnTrack),
+            make_live_entry(23, 3, 6, 0.188, TrackSurface::OnTrack),
+        ];
+
+        assign_live_positions(&mut entries);
+
+        assert_eq!(entries[0].car_idx, 11);
+        assert_eq!(entries[0].live_position, 1);
+        assert_eq!(entries[1].car_idx, 37);
+        assert_eq!(entries[2].car_idx, 23);
+    }
+
+    #[test]
+    fn test_non_racing_cars_keep_official_order_among_themselves() {
+        let mut entries = vec![
+            make_live_entry(1, 5, -1, -1.0, TrackSurface::NotInWorld),
+            make_live_entry(2, 3, 4, 0.80, TrackSurface::InPitStall),
+            make_live_entry(3, 1, 6, 0.10, TrackSurface::OnTrack),
+        ];
+
+        entries[1].on_pit_road = true;
+
+        assign_live_positions(&mut entries);
+
+        assert_eq!(entries[0].car_idx, 3);
+        assert_eq!(entries[1].car_idx, 2);
+        assert_eq!(entries[2].car_idx, 1);
     }
 
     #[test]

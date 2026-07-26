@@ -396,9 +396,10 @@ export type DriverEntry = {
   position: number;
   classPosition: number;
   /**
-   * Track order recomputed from lap progress every tick (race sessions only).
+   * Track order recomputed from lap progress every tick, in every session type.
    * Official `position` only refreshes when a car crosses the start/finish line,
-   * so an overtake mid-lap is invisible there. Outside a race this mirrors `position`.
+   * so an overtake mid-lap is invisible there; outside a race it ranks by best lap
+   * instead of track order. Which of the two is displayed is a frontend choice.
    */
   livePosition: number;
   /**

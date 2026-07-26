@@ -47,6 +47,12 @@ export const StandingsSettingsPanel = observer(() => {
       key: 'showLivePosChange',
     },
     {
+      titleKey: 'settingsPanels.standings.liveOrderOutsideRace',
+      descKey: 'settingsPanels.standings.liveOrderOutsideRaceDesc',
+      value: settings.liveOrderOutsideRace,
+      key: 'liveOrderOutsideRace',
+    },
+    {
       titleKey: 'settingsPanels.standings.brandLogo',
       descKey: 'settingsPanels.standings.brandLogoDesc',
       value: settings.showBrand,

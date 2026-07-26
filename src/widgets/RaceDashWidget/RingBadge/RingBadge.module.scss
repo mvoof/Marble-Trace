@@ -46,6 +46,10 @@
   stroke: rgba(255, 255, 255, 0.045);
 }
 
+.trackShift {
+  stroke: rgba($race-amber, 0.28);
+}
+
 .trackRedline {
   stroke: rgba($race-red, 0.32);
 }
