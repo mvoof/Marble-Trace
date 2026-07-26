@@ -15,6 +15,7 @@ import {
   useSessionStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+import { SteeringMarker } from '../SteeringMarker/SteeringMarker';
 import { ARC_SWEEP_DEG, RING_SIZE, ringArcPath } from './ring-geometry';
 
 import styles from './RingBadge.module.scss';
@@ -100,6 +101,8 @@ export const RingBadge = observer(() => {
   return (
     <div className={styles.root}>
       <div className={styles.clip}>
+        <SteeringMarker />
+
         {showFill && (
           <svg
             className={styles.arc}

@@ -43,6 +43,8 @@ export interface RaceDashWidgetSettings {
   rpmIndicatorMode: RpmIndicatorMode;
   /** Source of the P-number in the stats strip and the pit block. */
   positionSource: PositionSource;
+  /** Steering angle wedge riding the outer rim of the gear ring. */
+  showSteeringMarker: boolean;
 }
 
 export type SteeringCenterDisplay =

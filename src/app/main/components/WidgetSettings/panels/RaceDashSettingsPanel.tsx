@@ -140,6 +140,18 @@ export const RaceDashSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.raceDash.steeringMarker')}
+            desc={t('settingsPanels.raceDash.steeringMarkerDesc')}
+          >
+            <Switch
+              checked={settings.showSteeringMarker}
+              onChange={(value) => update({ showSteeringMarker: value })}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
             {t('settingsPanels.common.positionSource')}
           </span>

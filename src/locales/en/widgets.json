@@ -227,6 +227,8 @@
       "fill": "Fill",
       "glow": "Glow",
       "off": "Off",
+      "steeringMarker": "Steering Marker",
+      "steeringMarkerDesc": "Show a steering angle arc segment sliding along the outer rim of the gear ring.",
       "drivingCoach": "Driving Coach",
       "coachSection": "Coach Section",
       "coachSectionDesc": "Show the brake/gas call and best-lap reference speed.",

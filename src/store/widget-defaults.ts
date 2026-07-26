@@ -971,6 +971,7 @@ const WIDGETS: WidgetConfig[] = [
       colorizeByRpmZone: true,
       rpmIndicatorMode: 'fill',
       positionSource: 'live',
+      showSteeringMarker: false,
     },
   },
 ];

@@ -1,0 +1,21 @@
+// Sits at the bottom of the badge's stack: the RPM arc, scrim, core glow, gear
+// digit and sheen all paint over it, so the marker reads as part of the disc.
+// Nothing is painted outside the stroke itself — no cover disc, so the plate's
+// own translucency stays untouched.
+.root {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+// Thickness must stay in sync with RIM_MARKER_THICKNESS in ring-geometry.ts —
+// that is what keeps the 2px gap to the badge edge while the inner side runs
+// flush against the RPM arc.
+.segment {
+  fill: none;
+  stroke: $widget-text-primary;
+  stroke-width: 7;
+}
