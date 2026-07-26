@@ -1,0 +1,59 @@
+name: Feature request
+description: A new widget or a substantial new capability.
+title: "[Feature]: "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a small improvement to something that already exists, use the
+        **Enhancement** template instead.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is missing or awkward today? Describe the situation on track, not the solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should the app show or do?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Used for triage — maintainers will apply the matching `area:` label.
+      multiple: true
+      options:
+        - Widgets (overlay)
+        - Main app (settings window, layouts)
+        - iRacing data
+        - Site
+        - Localization
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: data
+    attributes:
+      label: Required telemetry data
+      description: If known, which sim values does this need? Not required.
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Mockups, screenshots from other overlays, or links.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

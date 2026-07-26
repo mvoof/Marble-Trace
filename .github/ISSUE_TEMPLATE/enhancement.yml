@@ -1,0 +1,48 @@
+name: Enhancement
+description: A small improvement to an existing widget, setting, or screen.
+title: "[Enhancement]: "
+labels: ["enhancement"]
+body:
+  - type: input
+    id: target
+    attributes:
+      label: What should be improved?
+      placeholder: e.g. Standings widget — class colour column
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: How it behaves now
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: How it should behave
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Used for triage — maintainers will apply the matching `area:` label.
+      multiple: true
+      options:
+        - Widgets (overlay)
+        - Main app (settings window, layouts)
+        - iRacing data
+        - Site
+        - UI / visual polish
+        - UX / workflow
+        - Localization
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Screenshots or references
