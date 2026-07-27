@@ -62,12 +62,35 @@ const restoreWidgets = (
   return [...result, ...unseenWidgets];
 };
 
+// Steering lock used to be an Input Trace widget setting before it became an
+// app-wide one. Settings files written by older builds carry the user's value
+// only there, so it is lifted into the app settings on first load.
+const legacySteeringLock = (loadedSettings: Partial<Settings>) => {
+  if (loadedSettings.app?.steeringLock !== undefined) {
+    return undefined;
+  }
+
+  const inputTrace = loadedSettings.widgets?.find(
+    (widget) => widget.id === 'input-trace'
+  );
+  const savedLock = (inputTrace?.userSettings as { steeringLimit?: number })
+    ?.steeringLimit;
+
+  return typeof savedLock === 'number' ? savedLock : undefined;
+};
+
 export const hydrateStores = (
   root: RootStore,
   loadedSettings: Partial<Settings>
 ) => {
   runInAction(() => {
+    const migratedLock = legacySteeringLock(loadedSettings);
+
     root.appSettings.applySettings(loadedSettings.app ?? {});
+
+    if (migratedLock !== undefined) {
+      root.appSettings.setSteeringLock(migratedLock);
+    }
 
     if (loadedSettings.units) {
       root.units.setSystem(loadedSettings.units.system);

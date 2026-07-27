@@ -4,6 +4,7 @@ import type { InputTraceSettings } from '@/types/widget-settings';
 import { useReactiveCanvasLoop } from '@/hooks/widget/useReactiveCanvasLoop';
 import styles from './CanvasTrace.module.scss';
 import {
+  useAppSettingsStore,
   useInputTraceWidgetStore,
   usePlayerStore,
   useWidgetSettingsStore,
@@ -22,20 +23,24 @@ export const CanvasTrace = () => {
   const telemetry = usePlayerStore();
   const widgetSettings = useWidgetSettingsStore();
   const inputTrace = useInputTraceWidgetStore();
+  const appSettings = useAppSettingsStore();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bufferStateRef = useRef<TraceBufferState | null>(null);
 
   bufferStateRef.current ??= createTraceBufferState();
 
-  const draw = useCallback((settings: InputTraceSettings) => {
-    const canvas = canvasRef.current;
-    const state = bufferStateRef.current;
+  const draw = useCallback(
+    (settings: InputTraceSettings, steeringLockDeg: number) => {
+      const canvas = canvasRef.current;
+      const state = bufferStateRef.current;
 
-    if (!canvas || !state) return;
+      if (!canvas || !state) return;
 
-    drawInputTrace(canvas, state, settings);
-  }, []);
+      drawInputTrace(canvas, state, settings, steeringLockDeg);
+    },
+    []
+  );
 
   useReactiveCanvasLoop(
     (scheduleDraw) => {
@@ -58,9 +63,12 @@ export const CanvasTrace = () => {
         clutchColor: _clutchColor,
         absColor: _absColor,
         showSteering: _showSteering,
-        steeringLimit: _steeringLimit,
         steeringZoom: _steeringZoom,
       } = settings;
+
+      // Read inside the autorun for the same reason: the lock lives in app
+      // settings, and changing it must repaint the steering trace.
+      const steeringLockDeg = appSettings.appSettings.steeringLock;
 
       const smoothed = inputTrace.smoothed;
 
@@ -76,9 +84,9 @@ export const CanvasTrace = () => {
         settings
       );
 
-      scheduleDraw(() => draw(settings));
+      scheduleDraw(() => draw(settings, steeringLockDeg));
     },
-    [telemetry, widgetSettings, inputTrace, draw]
+    [telemetry, widgetSettings, inputTrace, appSettings, draw]
   );
 
   useEffect(() => {
@@ -113,7 +121,9 @@ export const CanvasTrace = () => {
 
       cancelAnimationFrame(resizeRafId);
 
-      resizeRafId = requestAnimationFrame(() => draw(currentSettings));
+      resizeRafId = requestAnimationFrame(() =>
+        draw(currentSettings, appSettings.appSettings.steeringLock)
+      );
     });
 
     resizeObserver.observe(canvas.parentElement ?? canvas);
@@ -122,7 +132,7 @@ export const CanvasTrace = () => {
       resizeObserver.disconnect();
       cancelAnimationFrame(resizeRafId);
     };
-  }, [widgetSettings, draw]);
+  }, [widgetSettings, appSettings, draw]);
 
   return (
     <div className={styles.container}>

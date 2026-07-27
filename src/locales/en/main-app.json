@@ -193,6 +193,11 @@
       "metric": "Metric (km/h, °C, L)",
       "imperial": "Imperial (mph, °F, gal)"
     },
+    "steeringLock": {
+      "title": "Steering Wheel",
+      "rangeTitle": "Steering Lock",
+      "rangeDesc": "Physical range of your wheel: {{full}}° (±{{half}}°). Shared by every widget that shows steering."
+    },
     "applicationUpdates": {
       "title": "Application Updates",
       "autoCheckTitle": "Auto-Check for Updates",

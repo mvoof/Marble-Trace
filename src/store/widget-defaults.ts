@@ -446,7 +446,6 @@ const WIDGETS: WidgetConfig[] = [
       historySeconds: 5,
       lineWidth: 3.5,
       smoothing: 0,
-      steeringLimit: 900,
       steeringZoom: 1,
     },
   },

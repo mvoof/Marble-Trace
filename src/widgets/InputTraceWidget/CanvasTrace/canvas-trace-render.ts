@@ -1,4 +1,5 @@
 import type { InputTraceSettings } from '@/types/widget-settings';
+import { normalizedSteering } from '@utils/widget/steering-angle';
 
 // Circular sample buffers shared by the ingest and paint passes. Channel
 // samples are interleaved: buffer[sampleIndex * channelCount + channelIndex].
@@ -22,7 +23,6 @@ const SAMPLES_PER_SECOND = 60;
 const GRID_LINE_COUNT = 3;
 const GRID_LINE_COLOR = 'rgba(255, 255, 255, 0.06)';
 const STEERING_LINE_COLOR = 'rgba(255, 255, 255, 0.7)';
-const DEGREES_TO_RADIANS = Math.PI / 180;
 
 type TraceChannel = { color: string; type: 'throttle' | 'brake' | 'clutch' };
 
@@ -70,6 +70,7 @@ interface ChannelPassContext {
   ctx: CanvasRenderingContext2D;
   state: TraceBufferState;
   settings: InputTraceSettings;
+  steeringLockDeg: number;
   logicalWidth: number;
   logicalHeight: number;
   channelCount: number;
@@ -164,7 +165,8 @@ const drawPlainChannel = (
 };
 
 const drawSteering = (pass: ChannelPassContext) => {
-  const { ctx, state, settings, logicalWidth, logicalHeight } = pass;
+  const { ctx, state, settings, steeringLockDeg, logicalWidth, logicalHeight } =
+    pass;
 
   ctx.strokeStyle = STEERING_LINE_COLOR;
   ctx.lineWidth = settings.lineWidth;
@@ -172,16 +174,17 @@ const drawSteering = (pass: ChannelPassContext) => {
 
   const verticalInset = settings.lineWidth / 2;
   const drawableHalfHeight = logicalHeight / 2 - verticalInset;
-  const maxSteerRad =
-    ((settings.steeringLimit / 2) * DEGREES_TO_RADIANS) /
-    (settings.steeringZoom ?? 1);
 
   let started = false;
 
   for (let sampleIndex = 0; sampleIndex < state.count; sampleIndex++) {
     const circularIndex = sampleAt(pass, sampleIndex);
     const rawSteer = state.steerBuffer[circularIndex] ?? 0;
-    const normalized = Math.max(-1, Math.min(1, rawSteer / maxSteerRad));
+    const normalized = normalizedSteering(
+      rawSteer,
+      steeringLockDeg,
+      settings.steeringZoom ?? 1
+    );
 
     const xPos = (sampleIndex / (pass.bufferSize - 1)) * logicalWidth;
     const yPos = logicalHeight / 2 - normalized * drawableHalfHeight;
@@ -200,7 +203,8 @@ const drawSteering = (pass: ChannelPassContext) => {
 export const drawInputTrace = (
   canvas: HTMLCanvasElement,
   state: TraceBufferState,
-  settings: InputTraceSettings
+  settings: InputTraceSettings,
+  steeringLockDeg: number
 ) => {
   if (state.buffer.length === 0 && !settings.showSteering) return;
 
@@ -224,6 +228,7 @@ export const drawInputTrace = (
     ctx,
     state,
     settings,
+    steeringLockDeg,
     logicalWidth,
     logicalHeight,
     channelCount: channels.length,

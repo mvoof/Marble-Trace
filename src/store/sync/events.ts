@@ -72,6 +72,12 @@ export const setupOverlayListeners = async (
     })
   );
   unlistens.push(
+    await listen<number>('steering-lock-changed', (e) => {
+      runInAction(() => root.appSettings.setSteeringLock(e.payload));
+    })
+  );
+
+  unlistens.push(
     await listen<AppLanguage>('language-changed', (e) => {
       root.appSettings.setLanguage(e.payload);
     })
@@ -133,6 +139,12 @@ export const emitHideWidgetsWhenGameClosed = async (val: boolean) => {
 export const emitUnitsChanged = async (system: UnitSystem) => {
   if (await isOverlayReady()) {
     await emitTo(OVERLAY, 'units-changed', system);
+  }
+};
+
+export const emitSteeringLockChanged = async (degrees: number) => {
+  if (await isOverlayReady()) {
+    await emitTo(OVERLAY, 'steering-lock-changed', degrees);
   }
 };
 

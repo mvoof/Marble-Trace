@@ -68,7 +68,9 @@ export interface InputTraceSettings {
   historySeconds: number;
   lineWidth: number;
   smoothing: number;
-  steeringLimit: number;
+  // The physical lock-to-lock range is app-wide (appSettings.steeringLock) —
+  // it describes the wheel on the desk, not this widget. Only the display
+  // zoom on top of it belongs here.
   steeringZoom?: number;
 }
 

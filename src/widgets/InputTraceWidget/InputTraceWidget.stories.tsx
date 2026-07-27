@@ -15,7 +15,7 @@ interface StoryArgs {
   showSteering: boolean;
   showTrace: boolean;
   steeringWheelAngle: number;
-  steeringLimit: number;
+  steeringLock: number;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -35,8 +35,9 @@ const meta: Meta<StoryArgs> = {
         showClutch: args.showClutch,
         showSteering: args.showSteering,
         showTrace: args.showTrace,
-        steeringLimit: args.steeringLimit,
       } as Partial<InputTraceSettings>);
+
+      store.appSettings.setSteeringLock(args.steeringLock);
 
       store.player.updateCarInputs({
         throttle: args.throttle,
@@ -73,7 +74,7 @@ const meta: Meta<StoryArgs> = {
       showSteering: true,
       showTrace: true,
       steeringWheelAngle: 0.5,
-      steeringLimit: 900,
+      steeringLock: 900,
     },
   }),
 };

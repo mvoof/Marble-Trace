@@ -9,10 +9,17 @@ import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.sc
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { useAppSettingsStore } from '@store/root-store-context';
 
 export const InputTraceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const appSettings = useAppSettingsStore();
   const { t } = useTranslation('widgets');
+
+  // Lock-to-lock range describes the user's wheel rather than this widget, so
+  // it is edited once in the app settings — read-only here, where it only
+  // gives the zoom its real-world angle.
+  const steeringLock = appSettings.appSettings.steeringLock;
 
   const settings =
     widgetSettings.getSettings<InputTraceSettings>('input-trace');
@@ -149,29 +156,10 @@ export const InputTraceSettingsPanel = observer(() => {
 
             <div className={styles.fieldGroup}>
               <SettingRow
-                title={t('settingsPanels.inputTrace.steeringLock')}
-                desc={t('settingsPanels.inputTrace.steeringLockDesc', {
-                  full: settings.steeringLimit,
-                  half: settings.steeringLimit / 2,
-                })}
-              >
-                <Slider
-                  min={180}
-                  max={1080}
-                  step={90}
-                  value={settings.steeringLimit}
-                  onChange={(v) => update({ steeringLimit: v })}
-                  style={{ width: 120 }}
-                />
-              </SettingRow>
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <SettingRow
                 title={t('settingsPanels.inputTrace.steeringZoom')}
                 desc={t('settingsPanels.inputTrace.steeringZoomDesc', {
                   angle: Math.round(
-                    settings.steeringLimit / 2 / (settings.steeringZoom ?? 1)
+                    steeringLock / 2 / (settings.steeringZoom ?? 1)
                   ),
                   zoom: settings.steeringZoom ?? 1,
                 })}
