@@ -71,6 +71,7 @@ export const setupOverlayListeners = async (
       runInAction(() => root.units.setSystem(e.payload));
     })
   );
+
   unlistens.push(
     await listen<number>('steering-lock-changed', (e) => {
       runInAction(() => root.appSettings.setSteeringLock(e.payload));

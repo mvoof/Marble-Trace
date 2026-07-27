@@ -23,6 +23,8 @@ interface StoryArgs {
   pitMode: 'none' | 'limiter' | 'pit-lane';
   pitPhase: 'toBox' | 'toExit';
   boxDistM: number;
+  showSteeringMarker: boolean;
+  steeringWheelAngle: number;
 }
 
 const REFERENCE_BUCKET_COUNT = 1000;
@@ -55,6 +57,10 @@ const meta: Meta<StoryArgs> = {
     seed: (store, args) => {
       store.drivingCoachWidget.displayedAdvisory = args.advisory;
 
+      store.widgetSettings.updateUserSettings('race-dash', {
+        showSteeringMarker: args.showSteeringMarker,
+      } as Partial<RaceDashWidgetSettings>);
+
       if (args.referenceKmh > 0) {
         store.referenceLap.updateReferenceLap(
           buildReferenceLap(args.referenceKmh / 3.6)
@@ -75,6 +81,7 @@ const meta: Meta<StoryArgs> = {
           speed: args.speedKmh / 3.6,
           rpm: args.rpm,
           gear: args.gear,
+          steering_wheel_angle: (args.steeringWheelAngle * Math.PI) / 180,
         });
       }
 
@@ -112,6 +119,8 @@ const meta: Meta<StoryArgs> = {
       pitMode: 'none',
       pitPhase: 'toBox',
       boxDistM: 0,
+      showSteeringMarker: false,
+      steeringWheelAngle: 0,
     },
     argTypes: {
       advisory: { control: 'radio', options: ['neutral', 'brake', 'gas'] },
@@ -122,6 +131,10 @@ const meta: Meta<StoryArgs> = {
       pitMode: { control: 'radio', options: ['none', 'limiter', 'pit-lane'] },
       pitPhase: { control: 'radio', options: ['toBox', 'toExit'] },
       boxDistM: { control: { type: 'number' } },
+      showSteeringMarker: { control: 'boolean' },
+      steeringWheelAngle: {
+        control: { type: 'range', min: -450, max: 450, step: 5 },
+      },
     },
   }),
 };
@@ -272,6 +285,26 @@ export const PitLaneNoLimiterUnderLimit: Story = {
     gear: 2,
     boxDistM: 180,
   },
+};
+
+export const SteeringMarkerCentered: Story = {
+  args: { showSteeringMarker: true, steeringWheelAngle: 0 },
+};
+
+export const SteeringMarkerQuarterTurn: Story = {
+  args: { showSteeringMarker: true, steeringWheelAngle: 90 },
+};
+
+// Past a half turn the trail must keep winding the way the wheel went instead
+// of flipping to the short arc on the other side.
+export const SteeringMarkerBeyondHalfTurn: Story = {
+  args: { showSteeringMarker: true, steeringWheelAngle: -260 },
+};
+
+// Beyond a full turn the marker laps the badge, the way a marker taped to a
+// real rim does.
+export const SteeringMarkerLapped: Story = {
+  args: { showSteeringMarker: true, steeringWheelAngle: 430 },
 };
 
 export const NoReferenceLap: Story = {

@@ -176,7 +176,7 @@
       "angle": "Angle",
       "speedGear": "Spd+Gear",
       "steeringZoom": "Steering Zoom",
-      "steeringZoomDesc": "Graph shows ±{{angle}}° ({{zoom}}x)",
+      "steeringZoomDesc": "Graph shows ±{{angle}}° ({{zoom}}x) of the {{lock}}° steering lock — change the lock in Settings › Steering Wheel",
       "layout": "Layout",
       "traceGraph": "Trace Graph",
       "traceGraphDesc": "Show the scrolling input history graph.",

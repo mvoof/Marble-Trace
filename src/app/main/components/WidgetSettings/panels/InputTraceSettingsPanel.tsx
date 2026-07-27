@@ -162,6 +162,7 @@ export const InputTraceSettingsPanel = observer(() => {
                     steeringLock / 2 / (settings.steeringZoom ?? 1)
                   ),
                   zoom: settings.steeringZoom ?? 1,
+                  lock: steeringLock,
                 })}
               >
                 <Slider

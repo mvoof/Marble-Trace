@@ -176,7 +176,7 @@
       "angle": "角度",
       "speedGear": "速度+挡位",
       "steeringZoom": "转向缩放",
-      "steeringZoomDesc": "图表显示 ±{{angle}}°（{{zoom}}x）",
+      "steeringZoomDesc": "图表显示 {{lock}}° 转角范围中的 ±{{angle}}°（{{zoom}}x）——转角范围在「设置 › 方向盘」中修改",
       "layout": "布局",
       "traceGraph": "轨迹图",
       "traceGraphDesc": "显示滚动的输入历史图表。",

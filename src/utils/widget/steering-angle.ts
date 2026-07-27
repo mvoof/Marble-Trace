@@ -29,7 +29,7 @@ export const normalizedSteering = (
 };
 
 /**
- * Wraps an angle into (-180, 180] — a marker riding a circle passes the same
+ * Wraps an angle into [-180, 180) — a marker riding a circle passes the same
  * point every full turn, the way a marker on a real wheel's rim does.
  */
 export const wrapToHalfTurn = (deg: number): number => {
