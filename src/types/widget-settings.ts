@@ -43,6 +43,8 @@ export interface RaceDashWidgetSettings {
   rpmIndicatorMode: RpmIndicatorMode;
   /** Source of the P-number in the stats strip and the pit block. */
   positionSource: PositionSource;
+  /** Steering angle wedge riding the outer rim of the gear ring. */
+  showSteeringMarker: boolean;
 }
 
 export type SteeringCenterDisplay =
@@ -66,7 +68,9 @@ export interface InputTraceSettings {
   historySeconds: number;
   lineWidth: number;
   smoothing: number;
-  steeringLimit: number;
+  // The physical lock-to-lock range is app-wide (appSettings.steeringLock) —
+  // it describes the wheel on the desk, not this widget. Only the display
+  // zoom on top of it belongs here.
   steeringZoom?: number;
 }
 

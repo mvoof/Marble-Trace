@@ -192,6 +192,11 @@
       "metric": "公制（km/h，°C，L）",
       "imperial": "英制（mph，°F，gal）"
     },
+    "steeringLock": {
+      "title": "方向盘",
+      "rangeTitle": "方向盘转角范围",
+      "rangeDesc": "方向盘的物理转角范围：{{full}}°（±{{half}}°）。所有显示转向的挂件共用此设置。"
+    },
     "applicationUpdates": {
       "title": "应用更新",
       "autoCheckTitle": "自动检查更新",

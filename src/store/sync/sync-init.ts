@@ -16,6 +16,7 @@ import {
   emitDragMode,
   emitHideAllWidgets,
   emitHideWidgetsWhenGameClosed,
+  emitSteeringLockChanged,
   emitUnitsChanged,
   emitLanguageChanged,
   emitStandingsClassIndex,
@@ -240,6 +241,13 @@ export const initMainSync = async (root: RootStore) => {
           () => root.units.unitSystem,
           (v) => {
             void emitUnitsChanged(v);
+            void onSave();
+          }
+        ),
+        reaction(
+          () => root.appSettings.appSettings.steeringLock,
+          (v) => {
+            void emitSteeringLockChanged(v);
             void onSave();
           }
         ),

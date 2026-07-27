@@ -28,6 +28,10 @@ const DEFAULT_APP_SETTINGS = {
   // Overlay-space grid pitch (px). Drives both the visual grid and snapping.
   editorGridSize: 20,
   language: 'system' as AppLanguage,
+  // Physical rotation range of the driver's wheel, in degrees, lock to lock.
+  // A property of the hardware rather than of any one widget or layout, so
+  // every steering visual (input trace, race dash marker) reads it from here.
+  steeringLock: 900,
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
@@ -228,6 +232,10 @@ export class AppSettingsStore {
 
   setHideWidgetsWhenGameClosed(value: boolean) {
     this.appSettings.hideWidgetsWhenGameClosed = value;
+  }
+
+  setSteeringLock(value: number) {
+    this.appSettings.steeringLock = value;
   }
 
   setAutoSwitchLayouts(value: boolean) {

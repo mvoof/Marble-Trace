@@ -5,6 +5,7 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import type { InputTraceSettings } from '@/types/widget-settings';
+import { steeringAngleDeg } from '@utils/widget/steering-angle';
 import Logo from '@assets/logo.svg?react';
 import styles from './SteeringWheel.module.scss';
 
@@ -16,7 +17,7 @@ const WheelCenter = observer(() => {
   const settings =
     widgetSettings.getSettings<InputTraceSettings>('input-trace');
   const rawAngle = telemetry.carDynamics?.steering_wheel_angle ?? 0;
-  const angleDegrees = Math.round(rawAngle * (180 / Math.PI));
+  const angleDegrees = Math.round(steeringAngleDeg(rawAngle));
   const gear = telemetry.carDynamics?.gear ?? 0;
   const speed = telemetry.carDynamics?.speed ?? 0;
   const gearLabel = gear === 0 ? 'N' : gear === -1 ? 'R' : String(gear);

@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { App, Button, Switch, Segmented, Select, Popconfirm, Flex } from 'antd';
+import {
+  App,
+  Button,
+  Switch,
+  Segmented,
+  Select,
+  Slider,
+  Popconfirm,
+  Flex,
+} from 'antd';
 import { emit } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import type { UnitSystem } from '@/types';
@@ -253,6 +262,34 @@ export const SettingsPage = observer(() => {
                 units.setSystem(value as UnitSystem);
               }}
             />
+          </div>
+        </Card>
+
+        <Card title={t('settingsPage.steeringLock.title')}>
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldRow}>
+              <div className={styles.fieldTexts}>
+                <div className={styles.fieldTitle}>
+                  {t('settingsPage.steeringLock.rangeTitle')}
+                </div>
+
+                <div className={styles.fieldDesc}>
+                  {t('settingsPage.steeringLock.rangeDesc', {
+                    full: appSettings.appSettings.steeringLock,
+                    half: appSettings.appSettings.steeringLock / 2,
+                  })}
+                </div>
+              </div>
+
+              <Slider
+                min={180}
+                max={1080}
+                step={90}
+                value={appSettings.appSettings.steeringLock}
+                onChange={(v) => appSettings.setSteeringLock(v)}
+                style={{ width: 160 }}
+              />
+            </div>
           </div>
         </Card>
 
