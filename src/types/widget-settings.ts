@@ -15,7 +15,7 @@ export interface RpmLightsWidgetSettings {
   ledShape: LedShape;
 }
 
-export type RpmIndicatorMode = 'fill' | 'glow' | 'off';
+export type RpmIndicatorMode = 'fill' | 'comb' | 'glow' | 'off';
 
 /**
  * Which position number a readout shows: the live track order the standings table
@@ -39,7 +39,7 @@ export interface RaceDashWidgetSettings {
   showReferenceSpeed: boolean;
   /** Tint the gear digit and RPM number with the zone color at high revs. */
   colorizeByRpmZone: boolean;
-  /** 'fill' = colored RPM arc around the ring, 'glow' = rim glows near shift, 'off' = no RPM indication. */
+  /** 'fill' = colored RPM arc around the ring, 'comb' = discrete ticks on that same ring, 'glow' = rim glows near shift, 'off' = no RPM indication. */
   rpmIndicatorMode: RpmIndicatorMode;
   /** Source of the P-number in the stats strip and the pit block. */
   positionSource: PositionSource;

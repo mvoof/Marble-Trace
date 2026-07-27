@@ -1,0 +1,33 @@
+// Sits in the same band as the fill arc (see ring-geometry.ts) — the ticks
+// span the arc's full thickness, so the two modes occupy identical geometry.
+.root {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.root line {
+  stroke-width: 2.6;
+  stroke-linecap: butt;
+}
+
+// Unlit ticks carry the printed bands of the fill arc: neutral below the shift
+// point, amber through the shift band, red past the blink point.
+.idle {
+  stroke: rgba(255, 255, 255, 0.09);
+}
+
+.idleShift {
+  stroke: rgba($race-amber, 0.3);
+}
+
+.idleRedline {
+  stroke: rgba($race-red, 0.34);
+}
+
+// Lit ticks take the zone color inline (user-configurable), and grow slightly
+// so the lit run has visible weight against the idle comb.
+.lit {
+  stroke-width: 3.4;
+}

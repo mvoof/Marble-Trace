@@ -223,6 +223,7 @@
       "colorizeDigitsDesc": "Tint the gear digit and RPM number with the zone color at high revs.",
       "rpmIndicator": "RPM Indicator",
       "fill": "Fill",
+      "comb": "Comb",
       "glow": "Glow",
       "off": "Off",
       "steeringMarker": "Steering Marker",

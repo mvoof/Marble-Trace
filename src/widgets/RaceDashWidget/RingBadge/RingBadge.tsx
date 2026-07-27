@@ -15,6 +15,7 @@ import {
   useSessionStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+import { RpmComb } from '../RpmComb/RpmComb';
 import { SteeringMarker } from '../SteeringMarker/SteeringMarker';
 import { ARC_SWEEP_DEG, RING_SIZE, ringArcPath } from './ring-geometry';
 
@@ -55,12 +56,14 @@ export const RingBadge = observer(() => {
   const fillColor = rpmFillColor(zone, settings);
   const isBlink = zone === 'blink';
   const showFill = settings.rpmIndicatorMode === 'fill';
+  const showComb = settings.rpmIndicatorMode === 'comb';
   const showGlow = settings.rpmIndicatorMode === 'glow';
 
-  // When the fill arc is hidden, the gear digit stays white — the core
+  // When neither ring scale is shown, the gear digit stays white — the core
   // glow already carries the zone color, so tinting the digit too would
   // wash the two together.
-  const gearColor = showFill ? rpmNumberColor(zone, settings) : null;
+  const gearColor =
+    showFill || showComb ? rpmNumberColor(zone, settings) : null;
 
   // Grows from a small dot at the center out to the full circle by the time
   // rpm hits the shift point — same zone colors as the fill arc, just as a
@@ -135,6 +138,8 @@ export const RingBadge = observer(() => {
             )}
           </svg>
         )}
+
+        {showComb && <RpmComb />}
 
         <div className={styles.scrim} />
 

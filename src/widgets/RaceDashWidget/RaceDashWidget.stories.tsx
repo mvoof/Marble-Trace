@@ -208,6 +208,10 @@ export const RpmSweepAnimation: Story = {
   render: () => <RpmSweepPreview rpmIndicatorMode="fill" />,
 };
 
+export const RpmSweepAnimationComb: Story = {
+  render: () => <RpmSweepPreview rpmIndicatorMode="comb" />,
+};
+
 export const RpmSweepAnimationHiddenRing: Story = {
   render: () => <RpmSweepPreview rpmIndicatorMode="glow" />,
 };
