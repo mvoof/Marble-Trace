@@ -56,6 +56,28 @@ export const rimTrailPath = (deg: number, radius: number): string => {
   return `M ${start.x.toFixed(3)} ${start.y.toFixed(3)} A ${radius} ${radius} 0 ${largeArc} ${sweep} ${end.x.toFixed(3)} ${end.y.toFixed(3)}`;
 };
 
+/**
+ * One radial tick of the comb, centered on `sweepDeg` of the 300° sweep and
+ * spanning the full thickness of the arc band, so a row of them occupies
+ * exactly the same ring the fill arc does.
+ */
+export const ringTickSegment = (
+  sweepDeg: number
+): { x1: number; y1: number; x2: number; y2: number } => {
+  const angleRad = ((ARC_START_DEG + sweepDeg) * Math.PI) / 180;
+  const sin = Math.sin(angleRad);
+  const cos = Math.cos(angleRad);
+  const inner = RING_RADIUS - RING_THICKNESS / 2;
+  const outer = RING_RADIUS + RING_THICKNESS / 2;
+
+  return {
+    x1: CENTER + inner * sin,
+    y1: CENTER - inner * cos,
+    x2: CENTER + outer * sin,
+    y2: CENTER - outer * cos,
+  };
+};
+
 /** SVG path for the arc segment spanning [fromDeg, toDeg] of the 300° sweep. */
 export const ringArcPath = (fromDeg: number, toDeg: number): string => {
   const start = toPoint(fromDeg);

@@ -223,6 +223,7 @@
       "colorizeDigitsDesc": "高转速时用区域颜色为挡位数字和转速数字上色。",
       "rpmIndicator": "转速指示器",
       "fill": "填充",
+      "comb": "刻度",
       "glow": "发光",
       "off": "关闭",
       "steeringMarker": "方向盘指示",

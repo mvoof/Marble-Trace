@@ -130,6 +130,7 @@ export const RaceDashSettingsPanel = observer(() => {
             value={settings.rpmIndicatorMode}
             options={[
               { label: t('settingsPanels.raceDash.fill'), value: 'fill' },
+              { label: t('settingsPanels.raceDash.comb'), value: 'comb' },
               { label: t('settingsPanels.raceDash.glow'), value: 'glow' },
               { label: t('settingsPanels.raceDash.off'), value: 'off' },
             ]}

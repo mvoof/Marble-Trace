@@ -4,6 +4,7 @@ import {
   RING_SIZE,
   rimPoint,
   rimTrailPath,
+  ringTickSegment,
 } from './ring-geometry';
 
 const CENTER = RING_SIZE / 2;
@@ -68,5 +69,38 @@ describe('rimTrailPath', () => {
         `${end.x.toFixed(3)} ${end.y.toFixed(3)}`
       )
     ).toBe(true);
+  });
+});
+
+describe('ringTickSegment', () => {
+  const lengthOf = ({
+    x1,
+    y1,
+    x2,
+    y2,
+  }: {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  }) => Math.hypot(x2 - x1, y2 - y1);
+
+  it('spans the full thickness of the arc band, radially', () => {
+    expect(lengthOf(ringTickSegment(0))).toBeCloseTo(8, 6);
+    expect(lengthOf(ringTickSegment(150))).toBeCloseTo(8, 6);
+  });
+
+  it("starts the sweep at -120° from 12 o'clock, like the fill arc", () => {
+    const { x1, x2 } = ringTickSegment(0);
+
+    expect(x1).toBeLessThan(CENTER);
+    expect(x2).toBeLessThan(x1);
+  });
+
+  it('ends the 300° sweep at 6 o’clock, closing the ring', () => {
+    const end = ringTickSegment(300);
+
+    expect(end.x1).toBeCloseTo(CENTER, 6);
+    expect(end.y1).toBeGreaterThan(CENTER);
   });
 });
