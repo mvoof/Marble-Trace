@@ -1,5 +1,27 @@
 import { useLayoutEffect, useReducer, useState, type RefCallback } from 'react';
 
+// A row mid-flight in the FLIP move animation (useRowMoveAnimation) carries a
+// translateY that getBoundingClientRect would otherwise read as part of its
+// position — reordering every row at once (e.g. a view-mode switch) briefly
+// swings this wildly and would wedge the row count at minRows. The shift is
+// declared in the row's own local CSS pixels, unaffected by ancestor scale.
+const transformShift = (element: HTMLElement): number => {
+  const { transform } = getComputedStyle(element);
+
+  if (!transform || transform === 'none') {
+    return 0;
+  }
+
+  const values = transform
+    .slice(transform.indexOf('(') + 1, -1)
+    .split(',')
+    .map(Number);
+
+  const translateY = values.length === 16 ? values[13] : values[5];
+
+  return Number.isFinite(translateY) ? translateY : 0;
+};
+
 export const useVisibleRowCount = <T extends HTMLElement>(
   rowHeightRem: number,
   minRows = 1,
@@ -54,12 +76,14 @@ export const useVisibleRowCount = <T extends HTMLElement>(
       if (!(rowPx > 0)) return;
 
       const headerOffset = firstReal
-        ? (firstReal.getBoundingClientRect().top - elRect.top) / safeScale
+        ? (firstReal.getBoundingClientRect().top - elRect.top) / safeScale -
+          transformShift(firstReal)
         : 0;
       const next = Math.max(
         minRows,
         Math.floor((el.clientHeight - headerOffset) / rowPx)
       );
+
       dispatch(next);
     };
 
