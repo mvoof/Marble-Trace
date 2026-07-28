@@ -7,6 +7,21 @@ import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
+interface StatColumnRow {
+  key: keyof Pick<
+    FuelWidgetSettings,
+    'showStatLast' | 'showStatAvg10' | 'showStatMin' | 'showStatMax'
+  >;
+  labelKey: string;
+}
+
+const STAT_COLUMN_ROWS: StatColumnRow[] = [
+  { key: 'showStatLast', labelKey: 'settingsPanels.fuel.statLast' },
+  { key: 'showStatAvg10', labelKey: 'settingsPanels.fuel.statAvg10' },
+  { key: 'showStatMin', labelKey: 'settingsPanels.fuel.statMin' },
+  { key: 'showStatMax', labelKey: 'settingsPanels.fuel.statMax' },
+];
+
 export const FuelSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');
@@ -60,6 +75,20 @@ export const FuelSettingsPanel = observer(() => {
             </div>
           </>
         )}
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <span className={styles.fieldLabel}>
+          {t('settingsPanels.fuel.statColumns')}
+        </span>
+        {STAT_COLUMN_ROWS.map(({ key, labelKey }) => (
+          <SettingRow key={key} title={t(labelKey)}>
+            <Switch
+              checked={settings[key]}
+              onChange={(v) => update({ [key]: v })}
+            />
+          </SettingRow>
+        ))}
       </div>
 
       <div className={styles.fieldGroup}>

@@ -1,0 +1,111 @@
+$sb: rgba(255, 255, 255, $opacity-subtle);
+
+.grid {
+  display: grid;
+  margin: 0;
+}
+
+// Too few stat columns above to mirror — use the widget's own proportions.
+.gridFree {
+  grid-template-columns:
+    minmax(min-content, 1.5fr) minmax(0, 2fr)
+    minmax(min-content, 1.5fr);
+}
+
+// Stat columns hidden — nothing above to connect the borders to.
+.gridStandalone {
+  border-top: 1px solid $sb;
+}
+
+.sideLeft {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: sp(xxxs);
+  padding: sp(sm) sp(xs);
+  background: $widget-surface-cell;
+  border-left: 1px solid $sb;
+  border-bottom: 1px solid $sb;
+}
+
+.sideLeftAligned {
+  grid-column: 1;
+}
+
+.sideRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: sp(xxxs);
+  padding: sp(sm) sp(xs);
+  background: $widget-surface-cell;
+  border-right: 1px solid $sb;
+  border-bottom: 1px solid $sb;
+}
+
+.sideRightAligned {
+  grid-column: -2 / -1;
+}
+
+.sideLabel {
+  font-size: fs(xxxs);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.sideValue {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  color: $widget-text-primary;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.sideValueSafe {
+  color: $widget-status-positive;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: sp(xxxs);
+  padding: sp(sm) 0;
+  // no border-top — connects to the laps cells above when they are visible
+  border-left: 1px solid $sb;
+  border-right: 1px solid $sb;
+  border-bottom: 1px solid $sb;
+}
+
+.mainAligned {
+  grid-column: 2 / -2;
+}
+
+.mainLabel {
+  font-size: fs(xxxs);
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.mainValue {
+  font-family: $font-mono;
+  font-size: fs(xl);
+  font-weight: 800;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.valueSafe {
+  color: $widget-status-positive;
+}
+
+.valueDanger {
+  color: $widget-status-danger;
+}
+
+.valueWarning {
+  color: $widget-status-warning;
+}

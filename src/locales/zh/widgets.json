@@ -97,6 +97,11 @@
       "barChart": "柱状图",
       "lineChart": "折线图",
       "chartStepWidth": "图表步长宽度（像素）",
+      "statColumns": "油耗列",
+      "statLast": "LAST — 上一圈",
+      "statAvg10": "AVG 10 — 最近 10 圈平均",
+      "statMin": "MIN — 最省油圈",
+      "statMax": "MAX — 最费油圈",
       "nextStopForecast": "下一次进站预测",
       "nextStopForecastDesc": "预计进站窗口开启的圈数与时间。",
       "lowFuelWarningThreshold": "低油量警告阈值（圈数）"

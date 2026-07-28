@@ -97,6 +97,11 @@
       "barChart": "Bar Chart",
       "lineChart": "Line Chart",
       "chartStepWidth": "Chart Step Width (px)",
+      "statColumns": "Consumption Columns",
+      "statLast": "LAST — last lap",
+      "statAvg10": "AVG 10 — average of last 10 laps",
+      "statMin": "MIN — best lap",
+      "statMax": "MAX — worst lap",
       "nextStopForecast": "Next Stop Forecast",
       "nextStopForecastDesc": "Estimated lap and time until the pit window opens.",
       "lowFuelWarningThreshold": "Low Fuel Warning Threshold (Laps)"

@@ -1,3 +1,5 @@
+import type { FuelWidgetSettings } from '@/types/widget-settings';
+
 const HISTORY_WINDOW = 10;
 
 export interface FuelHistoryStats {
@@ -22,6 +24,29 @@ export const computeFuelHistoryStats = (
 
   return { last, avg10, min, max };
 };
+
+export type FuelStatKey = keyof FuelHistoryStats;
+
+const FUEL_STAT_ORDER: FuelStatKey[] = ['last', 'avg10', 'min', 'max'];
+
+export const FUEL_STAT_LABELS: Record<FuelStatKey, string> = {
+  last: 'LAST',
+  avg10: 'AVG 10',
+  min: 'MIN',
+  max: 'MAX',
+};
+
+const FUEL_STAT_SETTING_KEYS: Record<FuelStatKey, keyof FuelWidgetSettings> = {
+  last: 'showStatLast',
+  avg10: 'showStatAvg10',
+  min: 'showStatMin',
+  max: 'showStatMax',
+};
+
+export const getVisibleFuelStatKeys = (
+  settings: FuelWidgetSettings
+): FuelStatKey[] =>
+  FUEL_STAT_ORDER.filter((key) => settings[FUEL_STAT_SETTING_KEYS[key]]);
 
 const SECONDS_IN_MINUTE = 60;
 const SECONDS_IN_HOUR = 3600;
