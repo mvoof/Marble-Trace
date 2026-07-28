@@ -90,6 +90,10 @@ export class WidgetSettingsStore {
   layouts: SavedLayout[] = [];
   activeLayoutId: string | null = null;
 
+  // Set in an overlay window to the monitor that window covers. Null in the
+  // main window, which edits one monitor at a time via activeMonitorName.
+  ownMonitorName: string | null = null;
+
   sessionLayouts: Record<SessionContext, string | null> = {
     Practice: null,
     Qualify: null,
@@ -664,6 +668,113 @@ export class WidgetSettingsStore {
     this.overlayResolution = { ...resolution };
   }
 
+  // Monitor names the active layout is configured for. Drives which overlay
+  // windows the manager keeps open.
+  get activeMonitorNames(): string[] {
+    return this.activeLayout
+      ? Object.keys(this.activeLayout.monitorConfigs)
+      : [];
+  }
+
+  setOwnMonitorName(monitorName: string) {
+    this.ownMonitorName = monitorName;
+  }
+
+  // Overlay-window entry point: loads the widgets this window's monitor is
+  // configured with. Returns false when the active layout has nothing for it.
+  loadOwnMonitorConfig(): boolean {
+    const monitorName = this.ownMonitorName;
+    const config = monitorName
+      ? this.activeLayout?.monitorConfigs[monitorName]
+      : undefined;
+
+    if (!config) return false;
+
+    this.overlayResolution = { ...config.resolution };
+    this.setWidgets(config.widgets);
+
+    return true;
+  }
+
+  // Applies widgets edited on a monitor that is NOT the one open in the editor
+  // (an F9 drag on another screen). Writes straight into that monitor's config
+  // so the live working copy — which belongs to the edited monitor — is left
+  // alone.
+  applySettingsSyncForMonitor(
+    monitorName: string,
+    widgets: WidgetDefaultConfig[]
+  ) {
+    const config = this.activeLayout?.monitorConfigs[monitorName];
+
+    if (!config) return;
+
+    config.widgets = widgets.map((widget) => ({
+      ...widget,
+      userSettings: { ...widget.userSettings },
+    }));
+
+    this.syncToken++;
+  }
+
+  // Removes a monitor from the layout. Its overlay window closes on the next
+  // window sync. Falls back to another configured monitor for editing so the
+  // editor never points at a config that no longer exists.
+  removeMonitorConfig(layoutId: string, monitorName: string) {
+    const layout = this.layouts.find((candidate) => candidate.id === layoutId);
+
+    if (!layout?.monitorConfigs[monitorName]) return;
+
+    delete layout.monitorConfigs[monitorName];
+
+    if (layout.activeMonitorName === monitorName) {
+      const fallback = Object.keys(layout.monitorConfigs)[0] ?? null;
+
+      layout.activeMonitorName = fallback;
+
+      if (layout.id === this.activeLayoutId) {
+        const config = fallback ? layout.monitorConfigs[fallback] : undefined;
+
+        if (config) {
+          this.overlayResolution = { ...config.resolution };
+          this.setWidgets(config.widgets);
+        } else {
+          this.setWidgets(this.buildStarterWidgets(true));
+        }
+      }
+    }
+
+    this.bumpMutation();
+  }
+
+  // Moves a widget from the monitor open in the editor to another monitor of
+  // the same layout, rescaling its geometry for the target resolution. Widgets
+  // cannot be dragged across screens — the editor canvas only ever shows one.
+  moveWidgetToMonitor(widgetId: string, targetMonitorName: string) {
+    const layout = this.activeLayout;
+    const sourceName = layout?.activeMonitorName;
+
+    if (!layout || !sourceName || sourceName === targetMonitorName) return;
+
+    const target = layout.monitorConfigs[targetMonitorName];
+    const widget = this.widgets.get(widgetId);
+
+    if (!target || !widget) return;
+
+    const [scaled] = scaleWidgetsToResolution(
+      [{ ...widget, userSettings: { ...widget.userSettings, enabled: true } }],
+      this.overlayResolution,
+      target.resolution
+    );
+
+    target.widgets = [
+      ...target.widgets.filter((candidate) => candidate.id !== widgetId),
+      scaled,
+    ];
+
+    widget.userSettings.enabled = false;
+    this.bumpMutation();
+  }
+
   // Switches the active layout to a different monitor config. Saves the current
   // live widgets into the previous config, then loads (or creates) the new one.
   // resolution is the logical px size of the target monitor, needed to create a
@@ -780,6 +891,51 @@ export class WidgetSettingsStore {
     };
     this.setWidgets(this.buildStarterWidgets());
     this.bumpMutation();
+
+    // A layout with no monitor config gets no overlay window at all, so the
+    // starter layout is anchored to the primary monitor right away.
+    void resolveMonitorByName(null).then((monitor) => {
+      if (!monitor) return;
+
+      runInAction(() => {
+        const target = this.layouts.find((candidate) => candidate.id === id);
+
+        if (!target || Object.keys(target.monitorConfigs).length > 0) return;
+
+        this.overlayResolution = { ...monitor.resolution };
+
+        const widgets = this.buildStarterWidgets();
+
+        target.monitorConfigs[monitor.name] = {
+          resolution: { ...monitor.resolution },
+          widgets,
+        };
+        target.activeMonitorName = monitor.name;
+
+        this.setWidgets(widgets);
+        this.bumpMutation();
+      });
+    });
+  }
+
+  // Monitors of the active layout that already carry an enabled copy of this
+  // widget, excluding the one open in the editor. Surfaced in the widget panel
+  // so enabling a widget that already lives on another screen is a visible
+  // choice rather than an accidental duplicate.
+  monitorsHostingWidget(widgetId: string): string[] {
+    const layout = this.activeLayout;
+
+    if (!layout) return [];
+
+    return Object.entries(layout.monitorConfigs)
+      .filter(([monitorName, config]) => {
+        if (monitorName === layout.activeMonitorName) return false;
+
+        return config.widgets.some(
+          (widget) => widget.id === widgetId && widget.userSettings.enabled
+        );
+      })
+      .map(([monitorName]) => monitorName);
   }
 
   // Curated onboarding layout: the default-enabled starter widgets placed at

@@ -44,6 +44,18 @@
   white-space: nowrap;
 }
 
+.onOtherMonitor {
+  flex: 0 0 auto;
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  color: #5e626d;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: radius(sm);
+  padding: 0 sp(xxs);
+  white-space: nowrap;
+}
+
 .detail {
   display: flex;
   flex-direction: column;

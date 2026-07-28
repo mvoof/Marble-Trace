@@ -232,9 +232,13 @@ pub fn run() {
             WindowEvent::Destroyed => {
                 tracing::info!(window = window.label(), "window destroyed");
 
+                // Overlay windows are created per monitor at runtime, labelled
+                // "overlay-<monitor>", so they are torn down by prefix.
                 if window.label() == "main" {
-                    if let Some(overlay) = window.app_handle().get_webview_window("overlay") {
-                        let _ = overlay.destroy();
+                    for (label, overlay) in window.app_handle().webview_windows() {
+                        if label.starts_with("overlay-") {
+                            let _ = overlay.destroy();
+                        }
                     }
                 }
             }

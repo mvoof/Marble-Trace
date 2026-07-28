@@ -79,7 +79,10 @@
       "width": "Ширина (px)",
       "height": "Высота (px)",
       "apply": "Применить"
-    }
+    },
+    "editingMonitor": "Правлю: {{monitor}}",
+    "monitorAdd": "добавить",
+    "moveToMonitor": "Перенести на монитор"
   },
   "layoutList": {
     "moduleLabel": "Раскладки",
@@ -120,10 +123,20 @@
       "qualify": "Квалификация",
       "race": "Гонка",
       "garage": "Гараж"
-    }
+    },
+    "monitorsCount_one": "{{count}} монитор",
+    "monitorsCount_few": "{{count}} монитора",
+    "monitorsCount_many": "{{count}} мониторов",
+    "monitorsCount_other": "{{count}} монитора",
+    "noMonitors": "Нет мониторов",
+    "monitors": "Мониторы",
+    "removeMonitor": "Убрать монитор из лейаута",
+    "monitorOffline": "не найден",
+    "totalWidgets": "Всего виджетов"
   },
   "layoutWidgetPanel": {
-    "back": "Назад"
+    "back": "Назад",
+    "onMonitor": "на {{monitor}}"
   },
   "widgetWorkbench": {
     "scenario": "Сценарий",

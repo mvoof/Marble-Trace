@@ -24,22 +24,6 @@
         "decorations": false,
         "alwaysOnTop": false,
         "shadow": false
-      },
-      {
-        "label": "overlay",
-        "title": "",
-        "width": 1920,
-        "height": 1080,
-        "fullscreen": false,
-        "maximized": false,
-        "transparent": true,
-        "decorations": false,
-        "alwaysOnTop": true,
-        "skipTaskbar": true,
-        "visible": true,
-        "resizable": false,
-        "shadow": false,
-        "url": "index.html#/overlay"
       }
     ],
     "security": {

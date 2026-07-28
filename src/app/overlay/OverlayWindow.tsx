@@ -1,10 +1,19 @@
 import { useEffect } from 'react';
-import { reaction } from 'mobx';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { OverlayCanvas } from './OverlayCanvas/OverlayCanvas';
 import { initOverlaySync } from '@store/sync/sync-init';
-import { positionOverlayToMonitor } from '@store/sync/position-overlay';
 import { useStore, useSimStore } from '@store/root-store-context';
+
+// The window manager passes the monitor this window covers in the URL. Read
+// straight from the hash rather than through the router: the store needs it
+// before sync init runs, which happens on the first effect.
+const readMonitorName = (): string | null => {
+  const query = window.location.hash.split('?')[1];
+
+  if (!query) return null;
+
+  return new URLSearchParams(query).get('monitor');
+};
 
 export const OverlayWindow = () => {
   const simStore = useSimStore();
@@ -23,6 +32,12 @@ export const OverlayWindow = () => {
 
     getCurrentWebviewWindow().setIgnoreCursorEvents(true).catch(console.error);
 
+    const monitorName = readMonitorName();
+
+    if (monitorName) {
+      root.widgetSettings.setOwnMonitorName(monitorName);
+    }
+
     let cleanup: (() => void) | undefined;
     let isMounted = true;
 
@@ -36,25 +51,6 @@ export const OverlayWindow = () => {
       }
 
       cleanup = result;
-
-      await positionOverlayToMonitor(
-        root.widgetSettings.activeLayout?.activeMonitorName ?? null,
-        root
-      );
-
-      if (!isMounted) {
-        return;
-      }
-
-      const disposeReaction = reaction(
-        () => root.widgetSettings.activeLayout?.activeMonitorName ?? null,
-        (name) => void positionOverlayToMonitor(name, root)
-      );
-
-      cleanup = () => {
-        result();
-        disposeReaction();
-      };
     };
 
     void init();

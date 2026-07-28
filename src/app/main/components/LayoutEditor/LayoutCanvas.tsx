@@ -8,6 +8,7 @@ import {
   SquareArrowDown,
   SquareArrowLeft,
   SquareArrowRight,
+  Monitor,
 } from 'lucide-react';
 import { RootStore } from '@store/root-store';
 import {
@@ -71,6 +72,8 @@ export const LayoutCanvas = observer(
     isRatioLocked = false,
   }: LayoutCanvasProps) => {
     const widgetSettings = useWidgetSettingsStore();
+    const editedMonitorName =
+      widgetSettings.activeLayout?.activeMonitorName ?? null;
     const { t } = useTranslation('main-app');
     const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
 
@@ -338,6 +341,16 @@ export const LayoutCanvas = observer(
               role="presentation"
               onMouseDown={() => onSelectWidget('')}
             >
+              {/* The canvas shows one monitor at a time; without naming it,
+                  switching monitors reads as the widgets disappearing. */}
+              {editedMonitorName && !fullscreen && (
+                <div className={styles.monitorTag}>
+                  <Monitor size={11} />
+                  <b>{editedMonitorName}</b>
+                  {` · ${targetResolution.width}×${targetResolution.height}`}
+                </div>
+              )}
+
               {(isBackgroundLoading || isUploading) && (
                 <div className={styles.backgroundLoader}>
                   <Spin

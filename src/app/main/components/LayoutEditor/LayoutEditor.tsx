@@ -28,6 +28,7 @@ import {
   Maximize,
   Minimize,
   Monitor,
+  MonitorUp,
   PanelLeft,
   PanelLeftClose,
   Lock,
@@ -286,11 +287,20 @@ export const LayoutEditor = observer(
       label: layout.name,
     }));
 
+    // Every configured monitor gets its own overlay window, so the option list
+    // tells which screens the layout already covers and how much sits on each.
     const monitorOptions = [
-      ...monitors.map((monitor) => ({
-        value: monitor.name,
-        label: `${monitor.name} (${monitor.resolution.width}×${monitor.resolution.height})`,
-      })),
+      ...monitors.map((monitor) => {
+        const config = activeLayout?.monitorConfigs[monitor.name];
+        const suffix = config
+          ? `${config.widgets.filter((widget) => widget.userSettings.enabled).length}`
+          : t('layoutEditor.monitorAdd');
+
+        return {
+          value: monitor.name,
+          label: `${monitor.name} · ${monitor.resolution.width}×${monitor.resolution.height} · ${suffix}`,
+        };
+      }),
       { value: 'custom', label: t('layoutEditor.customResolutionOption') },
     ];
 
@@ -306,6 +316,12 @@ export const LayoutEditor = observer(
         }),
       });
     }
+
+    // Widgets can't be dragged between screens — the canvas only ever shows
+    // one — so moving one is an explicit pick from the layout's other monitors.
+    const moveTargetOptions = Object.keys(activeLayout?.monitorConfigs ?? {})
+      .filter((monitorName) => monitorName !== activeLayout?.activeMonitorName)
+      .map((monitorName) => ({ value: monitorName, label: monitorName }));
 
     const handleSelectMonitor = (name: string) => {
       if (name === 'custom') {
@@ -622,7 +638,13 @@ export const LayoutEditor = observer(
                     <Monitor size={12} /> {t('layoutEditor.monitorPlaceholder')}
                   </>
                 }
-                value={activeLayout?.activeMonitorName ?? undefined}
+                value={
+                  activeLayout?.activeMonitorName
+                    ? t('layoutEditor.editingMonitor', {
+                        monitor: activeLayout.activeMonitorName,
+                      })
+                    : undefined
+                }
                 onChange={handleSelectMonitor}
                 onDropdownVisibleChange={(open) => {
                   if (open) {
@@ -633,6 +655,7 @@ export const LayoutEditor = observer(
                 }}
                 options={monitorOptions}
                 disabled={!activeLayout}
+                popupMatchSelectWidth={240}
                 style={{ minWidth: 180 }}
               />
             </Tooltip>
@@ -770,6 +793,24 @@ export const LayoutEditor = observer(
                       }}
                     />
                   </Tooltip>
+
+                  {moveTargetOptions.length > 0 && (
+                    <Tooltip title={t('layoutEditor.moveToMonitor')}>
+                      <Select
+                        size="small"
+                        value={null}
+                        placeholder={<MonitorUp size={12} />}
+                        onChange={(monitorName: string) =>
+                          widgetSettings.moveWidgetToMonitor(
+                            selectedWidget.id,
+                            monitorName
+                          )
+                        }
+                        options={moveTargetOptions}
+                        style={{ width: 52 }}
+                      />
+                    </Tooltip>
+                  )}
 
                   <Tooltip title={t('layoutEditor.bringToFront')}>
                     <Button

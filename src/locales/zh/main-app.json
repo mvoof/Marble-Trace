@@ -79,7 +79,10 @@
       "width": "宽度（像素）",
       "height": "高度（像素）",
       "apply": "应用"
-    }
+    },
+    "editingMonitor": "正在编辑：{{monitor}}",
+    "monitorAdd": "添加",
+    "moveToMonitor": "移动到显示器"
   },
   "layoutList": {
     "moduleLabel": "布局",
@@ -117,10 +120,17 @@
       "qualify": "排位赛",
       "race": "正赛",
       "garage": "车库"
-    }
+    },
+    "monitorsCount_other": "{{count}} 个显示器",
+    "noMonitors": "无显示器",
+    "monitors": "显示器",
+    "removeMonitor": "从布局中移除该显示器",
+    "monitorOffline": "未找到",
+    "totalWidgets": "部件总数"
   },
   "layoutWidgetPanel": {
-    "back": "返回"
+    "back": "返回",
+    "onMonitor": "在 {{monitor}}"
   },
   "widgetWorkbench": {
     "scenario": "场景",

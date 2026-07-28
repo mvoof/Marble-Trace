@@ -21,14 +21,14 @@ import {
   emitUnitsChanged,
   emitLanguageChanged,
   emitStandingsClassIndex,
-  emitWidgetSettingsUpdated,
+  emitActiveLayoutToOverlays,
   emitWidgetSettingsToMain,
-  emitOverlayMonitorChanged,
   emitSessionLayoutsChanged,
   emitAutoSwitchLayoutsChanged,
 } from './events';
+import type { MonitorWidgetsPayload } from './events';
+import { syncOverlayWindows } from './overlay-windows';
 import type {
-  WidgetDefaultConfig,
   StandingsWidgetSettings,
   SessionContext,
 } from '@/types/widget-settings';
@@ -61,10 +61,25 @@ export const initMainSync = async (root: RootStore) => {
 
       await onSave();
 
+      await syncOverlayWindows(root);
+
       const [overlaySettingsUnlisten, mainUnlistens, , closeRequestedUnlisten] =
         await Promise.all([
-          listen<WidgetDefaultConfig[]>('widget-settings-updated', (e) => {
-            root.widgetSettings.applySettingsSync(e.payload);
+          listen<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
+            const { monitorName, widgets } = e.payload;
+
+            if (
+              monitorName ===
+              root.widgetSettings.activeLayout?.activeMonitorName
+            ) {
+              root.widgetSettings.applySettingsSync(widgets);
+            } else {
+              root.widgetSettings.applySettingsSyncForMonitor(
+                monitorName,
+                widgets
+              );
+            }
+
             void onSave();
           }),
           setupMainListeners(root),
@@ -220,9 +235,17 @@ export const initMainSync = async (root: RootStore) => {
           }
         ),
         reaction(
-          () => root.widgetSettings.activeLayout?.activeMonitorName ?? null,
-          (name) => {
-            void emitOverlayMonitorChanged(name);
+          // One overlay window per monitor the active layout is configured
+          // for. Both switching layouts and adding/removing a monitor config
+          // change that set.
+          () => [
+            root.widgetSettings.activeLayoutId,
+            root.widgetSettings.activeMonitorNames.join('|'),
+          ],
+          () => {
+            void syncOverlayWindows(root).then(() =>
+              emitActiveLayoutToOverlays(root)
+            );
           }
         ),
         reaction(
@@ -272,7 +295,7 @@ export const initMainSync = async (root: RootStore) => {
           () => root.widgetSettings.changeToken,
           () => {
             if (!root.widgetSettings.editorPreviewMode) {
-              void emitWidgetSettingsUpdated(root.widgetSettings.allWidgets);
+              void emitActiveLayoutToOverlays(root);
             }
           },
           { delay: 16 }
@@ -341,8 +364,10 @@ export const initOverlaySync = async (root: RootStore) => {
     hydrateStores(root, loadedSettings);
   }
 
-  // Overlay resolution is set by OverlayWindow AFTER it resizes the window to the
-  // target monitor — setting it here would capture the stale pre-resize size.
+  // Each overlay window covers exactly one monitor and renders only that
+  // monitor's config, which hydrateStores cannot know about — the live widget
+  // map it fills comes from the last edited monitor.
+  root.widgetSettings.loadOwnMonitorConfig();
 
   const unlistens = await setupOverlayListeners(root);
 
@@ -356,7 +381,14 @@ export const initOverlaySync = async (root: RootStore) => {
     reaction(
       () => root.widgetSettings.changeToken,
       () => {
-        void emitWidgetSettingsToMain(root.widgetSettings.allWidgets);
+        const monitorName = root.widgetSettings.ownMonitorName;
+
+        if (!monitorName) return;
+
+        void emitWidgetSettingsToMain({
+          monitorName,
+          widgets: root.widgetSettings.allWidgets,
+        });
       },
       { delay: 100 }
     ),
