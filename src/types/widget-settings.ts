@@ -208,6 +208,10 @@ export interface FuelWidgetSettings {
   showNextStopForecast: boolean;
   chartType: 'line' | 'bar';
   barWidth: number;
+  showStatLast: boolean;
+  showStatAvg10: boolean;
+  showStatMin: boolean;
+  showStatMax: boolean;
 }
 
 export type LapDeltaReference =

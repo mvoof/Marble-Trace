@@ -97,6 +97,11 @@
       "barChart": "Столбчатая диаграмма",
       "lineChart": "Линейный график",
       "chartStepWidth": "Ширина шага графика (px)",
+      "statColumns": "Колонки расхода",
+      "statLast": "LAST — последний круг",
+      "statAvg10": "AVG 10 — среднее за 10 кругов",
+      "statMin": "MIN — лучший круг",
+      "statMax": "MAX — худший круг",
       "nextStopForecast": "Прогноз следующего пит-стопа",
       "nextStopForecastDesc": "Ожидаемый круг и время до открытия пит-окна.",
       "lowFuelWarningThreshold": "Порог предупреждения о низком топливе (круги)"

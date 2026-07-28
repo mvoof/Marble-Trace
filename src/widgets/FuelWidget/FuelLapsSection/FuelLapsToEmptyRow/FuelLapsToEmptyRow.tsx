@@ -1,24 +1,30 @@
 import { observer } from 'mobx-react-lite';
 
-import { formatFuel } from '@utils/formatters/telemetry-format';
 import {
   useBackendComputedStore,
-  useUnitsStore,
+  usePlayerStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/constants/data-placeholders';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import {
   computeFuelHistoryStats,
-  FUEL_STAT_LABELS,
   getVisibleFuelStatKeys,
-} from '../fuel-utils';
-import { FuelStatsCell } from './FuelStatsCell/FuelStatsCell';
-import styles from './FuelStatsRow.module.scss';
+} from '../../fuel-utils';
+import styles from './FuelLapsToEmptyRow.module.scss';
 
-export const FuelStatsRow = observer(() => {
+const NO_LAPS = '—';
+
+const computeLaps = (fuelLevel: number, consumptionPerLap: number): string => {
+  if (consumptionPerLap <= 0) {
+    return NO_LAPS;
+  }
+
+  return (fuelLevel / consumptionPerLap).toFixed(1);
+};
+
+export const FuelLapsToEmptyRow = observer(() => {
   const { fuel } = useBackendComputedStore();
-  const { unitSystem } = useUnitsStore();
+  const { carStatus } = usePlayerStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
@@ -29,23 +35,23 @@ export const FuelStatsRow = observer(() => {
   }
 
   const history = fuel?.lapFuelHistory ?? [];
-
-  const fmt = (val: number | null): string =>
-    val !== null ? formatFuel(val, unitSystem) : NO_FUEL_DATA_PLACEHOLDER;
-
+  const fuelLevel = carStatus?.fuel_level ?? 0;
   const stats = computeFuelHistoryStats(history);
+
+  const laps = (val: number | null): string =>
+    val !== null && fuelLevel > 0 ? computeLaps(fuelLevel, val) : NO_LAPS;
 
   return (
     <div
-      className={styles.statsRow}
+      className={styles.grid}
       style={{ gridTemplateColumns: `repeat(${visibleKeys.length}, 1fr)` }}
     >
+      <span className={styles.label}>LAPS TO EMPTY</span>
+
       {visibleKeys.map((key) => (
-        <FuelStatsCell
-          key={key}
-          label={FUEL_STAT_LABELS[key]}
-          consumption={fmt(stats[key])}
-        />
+        <span key={key} className={styles.cell}>
+          {laps(stats[key])}
+        </span>
       ))}
     </div>
   );

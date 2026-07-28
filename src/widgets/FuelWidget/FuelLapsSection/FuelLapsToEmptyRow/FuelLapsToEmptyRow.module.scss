@@ -1,0 +1,34 @@
+$sb: rgba(255, 255, 255, $opacity-subtle);
+
+.grid {
+  display: grid;
+  grid-template-rows: auto auto;
+  margin: 0;
+}
+
+.label {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  text-align: center;
+  font-size: fs(xxxs);
+  color: $widget-text-secondary;
+  letter-spacing: 1px;
+  padding: sp(xxxs) sp(sm);
+  border-top: 1px solid $sb;
+  border-left: 1px solid $sb;
+  border-right: 1px solid $sb;
+  border-bottom: 1px solid $sb;
+}
+
+.cell {
+  grid-row: 2;
+  font-family: $font-mono;
+  font-size: fs(sm);
+  color: $widget-text-primary;
+  text-align: center;
+  padding: sp(xs) 0;
+  line-height: 1;
+  border-left: 1px solid $sb;
+  border-right: 1px solid $sb;
+  border-bottom: 1px solid $sb;
+}

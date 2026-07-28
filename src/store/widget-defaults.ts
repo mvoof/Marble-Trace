@@ -804,6 +804,10 @@ const WIDGETS: WidgetConfig[] = [
       showNextStopForecast: true,
       chartType: 'bar',
       barWidth: 5,
+      showStatLast: true,
+      showStatAvg10: true,
+      showStatMin: true,
+      showStatMax: true,
     },
   },
   {
