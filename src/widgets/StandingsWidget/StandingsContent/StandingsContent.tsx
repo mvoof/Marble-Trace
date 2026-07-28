@@ -146,15 +146,21 @@ export const StandingsContent = observer(() => {
     SINGLE_LIST_SCROLL_KEY
   );
 
+  const groupKeys = allClassGroups.map((group) => group.classId);
+  const groupKeysSignature = groupKeys.join();
+
   const latestBounds = useRef(scrollBounds);
   latestBounds.current = scrollBounds;
+
+  const latestGroupKeys = useRef(groupKeys);
+  latestGroupKeys.current = groupKeys;
 
   useEffect(() => {
     standingsWidget.setScrollBounds(
       latestBounds.current,
-      allClassGroups.length
+      latestGroupKeys.current
     );
-  }, [standingsWidget, boundsSignature, allClassGroups.length]);
+  }, [standingsWidget, boundsSignature, groupKeysSignature]);
 
   const visibleRows = (
     drivers: DriverEntry[],

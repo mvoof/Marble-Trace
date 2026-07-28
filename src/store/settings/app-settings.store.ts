@@ -266,8 +266,14 @@ export class AppSettingsStore {
     this.setInteractMode(false);
   }
 
+  // The watchdog holds the duration it was armed with, so a change made while
+  // interact mode is already on has to re-arm it with the new one.
   setInteractAutoOffSeconds(seconds: number) {
     this.appSettings.interactAutoOffSeconds = seconds;
+
+    if (this.interactMode) {
+      this.setInteractMode(true);
+    }
   }
 
   setHideAllWidgets(value: boolean) {

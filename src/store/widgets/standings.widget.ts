@@ -59,7 +59,8 @@ export class StandingsWidgetStore {
    */
   groupScrollIndex = 0;
 
-  private groupCount = 0;
+  /** Every class in drawing order, drawn or cut off — published with the bounds. */
+  private groupKeys: number[] = [];
 
   /**
    * Class whose drivers the cursor sits on in grouped view, so the rows about to be
@@ -99,7 +100,7 @@ export class StandingsWidgetStore {
       | 'changeTimers'
       | 'disposers'
       | 'scrollBounds'
-      | 'groupCount'
+      | 'groupKeys'
       | 'scrollResetTimer'
     >(
       this,
@@ -109,7 +110,7 @@ export class StandingsWidgetStore {
         changeTimers: false,
         disposers: false,
         scrollBounds: false,
-        groupCount: false,
+        groupKeys: false,
         scrollResetTimer: false,
       },
       { autoBind: true }
@@ -518,7 +519,7 @@ export class StandingsWidgetStore {
   scrollClasses(delta: number) {
     const next = Math.min(
       Math.max(0, this.groupScrollIndex + Math.sign(delta)),
-      Math.max(0, this.groupCount - 1)
+      Math.max(0, this.groupKeys.length - 1)
     );
 
     if (next === this.groupScrollIndex) {
@@ -526,7 +527,9 @@ export class StandingsWidgetStore {
     }
 
     if (next > this.groupScrollIndex) {
-      const leavingKey = Array.from(this.scrollBounds.keys())[0];
+      // Taken from the published order, not from the drawn bounds: two scrolls
+      // before the next commit would otherwise drop the same class twice.
+      const leavingKey = this.groupKeys[this.groupScrollIndex];
 
       if (leavingKey !== undefined) {
         this.scrollOffsets.delete(leavingKey);
@@ -555,15 +558,15 @@ export class StandingsWidgetStore {
   /**
    * Published by the rendered rows every time their number or the field changes —
    * hotkeys fire outside the render tree and have no other way to know the limits.
-   * `groupCount` counts every class, drawn or not, so the scroll knows there are
+   * `groupKeys` lists every class, drawn or not, so the scroll knows there are
    * more classes waiting below the ones that fit the widget.
    */
-  setScrollBounds(bounds: Map<number, number>, groupCount = 0) {
+  setScrollBounds(bounds: Map<number, number>, groupKeys: number[] = []) {
     this.scrollBounds = bounds;
-    this.groupCount = groupCount;
+    this.groupKeys = groupKeys;
 
-    if (this.groupScrollIndex >= groupCount) {
-      this.groupScrollIndex = Math.max(0, groupCount - 1);
+    if (this.groupScrollIndex >= groupKeys.length) {
+      this.groupScrollIndex = Math.max(0, groupKeys.length - 1);
     }
 
     for (const [key, offset] of this.scrollOffsets) {
@@ -650,6 +653,7 @@ export class StandingsWidgetStore {
     this.scrollResetTimer = setTimeout(() => {
       runInAction(() => {
         this.scrollOffsets.clear();
+        this.groupScrollIndex = 0;
         this.scrollResetTimer = null;
       });
     }, resetSeconds * MS_PER_SECOND);

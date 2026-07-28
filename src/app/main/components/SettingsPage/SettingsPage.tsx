@@ -19,7 +19,6 @@ import type {
   InteractHotkeyMode,
 } from '@store/settings/app-settings.store';
 import { downloadSnapshot } from '@/utils/capture-snapshot';
-import { useStore } from '@store/root-store-context';
 import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
 import {
   RefreshCw,
@@ -32,13 +31,15 @@ import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/Rele
 import { TRACK_MAP_CLEAR } from '@store/sync/sim-events';
 import styles from './SettingsPage.module.scss';
 
-const INTERACT_AUTO_OFF_OPTIONS = [0, 10, 15, 30, 60];
 import {
+  useStore,
   useAppSettingsStore,
   useSessionStore,
   useTrackMapWidgetStore,
   useUnitsStore,
 } from '@store/root-store-context';
+
+const INTERACT_AUTO_OFF_OPTIONS = [0, 10, 15, 30, 60];
 
 const isDev = import.meta.env.DEV;
 
