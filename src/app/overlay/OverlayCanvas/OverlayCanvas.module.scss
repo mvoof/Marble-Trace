@@ -88,8 +88,9 @@
 }
 
 // Shifts virtual-desktop widget coordinates into this window's local space.
-// Not a positioned container: widgets are absolutely positioned against the
-// canvas, and an offset parent would re-anchor them.
+// Covers the canvas exactly (inset: 0) so widgets anchored to it land where
+// they would against the canvas itself, offset by the monitor origin. Clicks
+// pass through; WidgetContainer re-enables pointer events on the widget box.
 .monitorOrigin {
   position: absolute;
   inset: 0;

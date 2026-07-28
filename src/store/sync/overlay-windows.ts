@@ -81,17 +81,16 @@ const createOverlayWindow = async (monitor: PhysicalMonitor) => {
   return overlay;
 };
 
-let syncInFlight: Promise<void> | null = null;
+let syncInFlight: Promise<void> = Promise.resolve();
 
 // Brings the set of open overlay windows in line with the active layout: one
 // window per monitor of the layout that is physically attached. A monitor the
 // machine no longer has keeps its widgets in the layout but gets no window.
-export const syncOverlayWindows = async (root: RootStore): Promise<void> => {
-  if (syncInFlight) {
-    await syncInFlight;
-  }
-
-  syncInFlight = (async () => {
+// Runs are chained rather than awaited-then-replaced: two concurrent callers
+// awaiting the same promise before replacing it would both start a body, and
+// the same monitor would get two window creations.
+export const syncOverlayWindows = (root: RootStore): Promise<void> => {
+  syncInFlight = syncInFlight.then(async () => {
     try {
       const layout = root.widgetSettings.activeLayout;
       const configuredNames = (layout?.monitors ?? []).map(
@@ -143,11 +142,9 @@ export const syncOverlayWindows = async (root: RootStore): Promise<void> => {
     } catch (error) {
       console.error('Failed to sync overlay windows:', error);
     }
-  })();
+  });
 
-  await syncInFlight;
-
-  syncInFlight = null;
+  return syncInFlight;
 };
 
 export const closeAllOverlayWindows = async (): Promise<void> => {

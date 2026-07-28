@@ -493,8 +493,7 @@ export const LayoutCanvas = observer(
                       isRatioLocked={selectedWidgetId === id && isRatioLocked}
                       snap={snapToGrid}
                       gridSize={gridSize}
-                      worldWidth={desktop.width}
-                      worldHeight={desktop.height}
+                      world={view}
                       onSelect={onSelectWidget}
                     >
                       <ErrorBoundary>

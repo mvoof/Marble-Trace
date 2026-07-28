@@ -61,6 +61,7 @@ import {
   saveBackgroundImage,
   deleteBackgroundImage,
 } from '@utils/widget/layout-background';
+import { monitorForWidget } from '@utils/widget/virtual-desktop';
 import styles from './LayoutEditor.module.scss';
 
 const SNAP_MARGIN = 8;
@@ -378,30 +379,31 @@ export const LayoutEditor = observer(
         selectedWidget.autoHeight && widgetRect && widgetRect.width > 0
           ? Math.round(widgetRect.height * (width / widgetRect.width))
           : selectedWidget.userSettings.currentHeight;
-      const worldWidth = widgetSettings.overlayResolution.width;
-      const worldHeight = widgetSettings.overlayResolution.height;
+      // Widget coordinates are virtual-desktop wide, so the corners are those
+      // of the screen the widget currently sits on, not of the desktop box.
+      const monitors = widgetSettings.activeLayout?.monitors ?? [];
+      const screen = monitorForWidget(selectedWidget, monitors)?.bounds ?? {
+        x: 0,
+        y: 0,
+        width: widgetSettings.overlayResolution.width,
+        height: widgetSettings.overlayResolution.height,
+      };
+      const left = screen.x + SNAP_MARGIN;
+      const right = screen.x + screen.width - width - SNAP_MARGIN;
+      const top = screen.y + SNAP_MARGIN;
+      const bottom = screen.y + screen.height - height - SNAP_MARGIN;
+      const centerX = Math.round(screen.x + (screen.width - width) / 2);
+      const centerY = Math.round(screen.y + (screen.height - height) / 2);
       const positions = {
-        topLeft: { x: SNAP_MARGIN, y: SNAP_MARGIN },
-        topCenter: { x: Math.round((worldWidth - width) / 2), y: SNAP_MARGIN },
-        topRight: { x: worldWidth - width - SNAP_MARGIN, y: SNAP_MARGIN },
-        midLeft: { x: SNAP_MARGIN, y: Math.round((worldHeight - height) / 2) },
-        center: {
-          x: Math.round((worldWidth - width) / 2),
-          y: Math.round((worldHeight - height) / 2),
-        },
-        midRight: {
-          x: worldWidth - width - SNAP_MARGIN,
-          y: Math.round((worldHeight - height) / 2),
-        },
-        bottomLeft: { x: SNAP_MARGIN, y: worldHeight - height - SNAP_MARGIN },
-        bottomCenter: {
-          x: Math.round((worldWidth - width) / 2),
-          y: worldHeight - height - SNAP_MARGIN,
-        },
-        bottomRight: {
-          x: worldWidth - width - SNAP_MARGIN,
-          y: worldHeight - height - SNAP_MARGIN,
-        },
+        topLeft: { x: left, y: top },
+        topCenter: { x: centerX, y: top },
+        topRight: { x: right, y: top },
+        midLeft: { x: left, y: centerY },
+        center: { x: centerX, y: centerY },
+        midRight: { x: right, y: centerY },
+        bottomLeft: { x: left, y: bottom },
+        bottomCenter: { x: centerX, y: bottom },
+        bottomRight: { x: right, y: bottom },
       };
 
       const { x, y } = positions[pos];

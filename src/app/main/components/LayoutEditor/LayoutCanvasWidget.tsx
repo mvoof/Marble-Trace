@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
+import type { MonitorBounds } from '@/types/widget-settings';
 import { widgetFrameBorderRadius } from '@utils/widget/widget-frame';
 import styles from './LayoutCanvas.module.scss';
 
@@ -31,8 +32,7 @@ interface LayoutCanvasWidgetProps {
   isSelected: boolean;
   snap: boolean;
   gridSize: number;
-  worldWidth: number;
-  worldHeight: number;
+  world: MonitorBounds;
   onSelect: (id: string) => void;
   isRatioLocked?: boolean;
   children: ReactNode;
@@ -50,8 +50,7 @@ export const LayoutCanvasWidget = observer(
     isSelected,
     snap,
     gridSize,
-    worldWidth,
-    worldHeight,
+    world,
     onSelect,
     isRatioLocked = false,
     children,
@@ -149,18 +148,15 @@ export const LayoutCanvasWidget = observer(
             newX = snapToGrid(newX, gridSize);
             newY = snapToGrid(newY, gridSize);
 
-            if (
-              Math.abs(newX + width / 2 - worldWidth / 2) <
-              SNAP_CENTER_THRESHOLD
-            ) {
-              newX = Math.round((worldWidth - width) / 2);
+            const centreX = world.x + world.width / 2;
+            const centreY = world.y + world.height / 2;
+
+            if (Math.abs(newX + width / 2 - centreX) < SNAP_CENTER_THRESHOLD) {
+              newX = Math.round(centreX - width / 2);
             }
 
-            if (
-              Math.abs(newY + height / 2 - worldHeight / 2) <
-              SNAP_CENTER_THRESHOLD
-            ) {
-              newY = Math.round((worldHeight - height) / 2);
+            if (Math.abs(newY + height / 2 - centreY) < SNAP_CENTER_THRESHOLD) {
+              newY = Math.round(centreY - height / 2);
             }
           }
 
@@ -189,8 +185,7 @@ export const LayoutCanvasWidget = observer(
         widgetId,
         snap,
         gridSize,
-        worldWidth,
-        worldHeight,
+        world,
         width,
         height,
       ]
