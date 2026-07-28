@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type RefCallback } from 'react';
 
 const ROW_SELECTOR = '[data-driver-row]';
-const ROW_KEY_ATTRIBUTE = 'data-row-key';
+export const ROW_KEY_ATTRIBUTE = 'data-row-key';
 export const MOVE_DURATION_MS = 360;
 const MOVE_EASING = 'cubic-bezier(0.33, 0, 0.15, 1)';
 // Sub-pixel drift from rounding must not trigger a transition.
@@ -54,13 +54,14 @@ const measureTops = (rows: HTMLElement[]): RowTops => {
  * they are per-frame geometry, and re-rendering to animate would fight the
  * 10 Hz telemetry updates that cause the reorder in the first place.
  */
-export const useRowMoveAnimation = <
-  T extends HTMLElement,
->(): RefCallback<T> => {
+export const useRowMoveAnimation = <T extends HTMLElement>(
+  animate = true
+): RefCallback<T> => {
   const [container, setContainer] = useState<T | null>(null);
   const previousTops = useRef<RowTops>(new Map());
   const previousOrder = useRef('');
   const frameId = useRef(0);
+  const wasAnimating = useRef(animate);
 
   // No dependency array: the order can change on any render, and comparing the
   // rendered key order is cheaper than measuring, so unchanged renders cost a
@@ -78,6 +79,26 @@ export const useRowMoveAnimation = <
     }
 
     previousOrder.current = order;
+
+    // Skipped both while animation is off and on the first render after it comes
+    // back on: the rows moved because the list itself moved, not because of a
+    // pass, so sliding them would animate the scroll instead of an overtake.
+    const skipAnimation = !animate || !wasAnimating.current;
+
+    wasAnimating.current = animate;
+
+    if (skipAnimation) {
+      cancelAnimationFrame(frameId.current);
+
+      for (const row of rows) {
+        row.style.transition = 'none';
+        row.style.transform = '';
+      }
+
+      previousTops.current = measureTops(rows);
+
+      return;
+    }
 
     const tops = measureTops(rows);
     const moved: HTMLElement[] = [];

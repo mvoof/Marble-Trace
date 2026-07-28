@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { DriverEntry } from '@/types/bindings';
-import { buildVisibleRows } from './standings-utils';
+import { buildVisibleRows, maxScrollOffset } from './standings-utils';
 
 const makeField = (count: number, playerIdx: number): DriverEntry[] =>
   Array.from(
@@ -75,5 +75,47 @@ describe('buildVisibleRows', () => {
 
     expect(carIndices(result.drivers)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
     expect(result.windowStartIndex).toBe(-1);
+  });
+
+  it('scrolls the top block while keeping the player window pinned', () => {
+    const result = buildVisibleRows(makeField(20, 12), 5, 2, 2, 6);
+
+    expect(carIndices(result.drivers)).toEqual([6, 10, 11, 12, 13]);
+    expect(result.windowStartIndex).toBe(1);
+  });
+
+  it('absorbs the player window once the scroll reaches the player', () => {
+    const result = buildVisibleRows(makeField(20, 12), 5, 2, 2, 9);
+
+    expect(carIndices(result.drivers)).toEqual([9, 10, 11, 12, 13]);
+    expect(result.windowStartIndex).toBe(-1);
+  });
+
+  it('keeps the pinned player row at the bottom while scrolling', () => {
+    const result = buildVisibleRows(makeField(20, 12), 5, 0, 0, 4);
+
+    expect(carIndices(result.drivers)).toEqual([4, 5, 6, 7, 12]);
+  });
+
+  it('stops the scroll with the last driver on the bottom row', () => {
+    const result = buildVisibleRows(makeField(20, 12), 5, 2, 2, 99);
+
+    expect(carIndices(result.drivers)).toEqual([15, 16, 17, 18, 19]);
+  });
+
+  it('ignores the scroll offset when the whole field already fits', () => {
+    const result = buildVisibleRows(makeField(5, 4), 8, 2, 2, 3);
+
+    expect(carIndices(result.drivers)).toEqual([0, 1, 2, 3, 4]);
+  });
+});
+
+describe('maxScrollOffset', () => {
+  it('is the driver count minus the rows on screen', () => {
+    expect(maxScrollOffset(20, 5)).toBe(15);
+  });
+
+  it('is zero when every driver fits', () => {
+    expect(maxScrollOffset(4, 10)).toBe(0);
   });
 });

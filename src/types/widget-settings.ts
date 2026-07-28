@@ -94,6 +94,10 @@ export interface StandingsWidgetSettings {
   viewModeHotkey: string;
   classPrevHotkey: string;
   classNextHotkey: string;
+  scrollUpHotkey: string;
+  scrollDownHotkey: string;
+  /** Seconds of inactivity after which a manual scroll returns to the automatic view (0 = keep it). */
+  scrollResetSeconds: number;
   showPosChange: boolean;
   /** Transient up/down arrow shown in the position cell right after a live position change. */
   showLivePosChange: boolean;

@@ -1,6 +1,11 @@
 import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
 import type { RootStore } from '@store/root-store';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import { emitStandingsScroll } from './events';
+
+// One keypress moves the standings by a small block rather than a single row —
+// a hotkey has no inertia, so row-by-row stepping is too slow to be usable.
+const SCROLL_STEP_ROWS = 3;
 
 const registeredShortcuts = new Set<string>();
 let isSettingUp = false;
@@ -43,6 +48,20 @@ export const setupHotkeys = async (
       });
     }
 
+    if (root.appSettings.appSettings.interactHotkey) {
+      addHandler(root.appSettings.appSettings.interactHotkey, (event) => {
+        if (root.appSettings.appSettings.interactHotkeyMode === 'hold') {
+          root.appSettings.setInteractMode(event.state === 'Pressed');
+
+          return;
+        }
+
+        if (event.state === 'Pressed') {
+          root.appSettings.toggleInteractMode();
+        }
+      });
+    }
+
     if (root.appSettings.appSettings.hideAllWidgetsHotkey) {
       addHandler(root.appSettings.appSettings.hideAllWidgetsHotkey, (event) => {
         if (event.state === 'Pressed') root.appSettings.toggleHideAllWidgets();
@@ -80,6 +99,22 @@ export const setupHotkeys = async (
               []
           ).size;
           root.standingsWidget.cycleNext(totalClasses);
+        }
+      });
+    }
+
+    if (settings.scrollUpHotkey) {
+      addHandler(settings.scrollUpHotkey, (event) => {
+        if (event.state === 'Pressed') {
+          void emitStandingsScroll(-SCROLL_STEP_ROWS);
+        }
+      });
+    }
+
+    if (settings.scrollDownHotkey) {
+      addHandler(settings.scrollDownHotkey, (event) => {
+        if (event.state === 'Pressed') {
+          void emitStandingsScroll(SCROLL_STEP_ROWS);
         }
       });
     }

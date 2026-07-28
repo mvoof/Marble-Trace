@@ -5,6 +5,9 @@ import { formatIRating } from '@utils/widget/widget-utils';
 
 import styles from './ClassGroupHeader.module.scss';
 
+/** Marks the class header rows, which scroll the classes rather than the drivers. */
+export const CLASS_HEADER_ATTRIBUTE = 'data-class-header';
+
 interface ClassGroupHeaderProps {
   className: string;
   classShortName: string;
@@ -12,6 +15,8 @@ interface ClassGroupHeaderProps {
   classSof: number;
   totalDrivers: number;
   paginationLabel?: string;
+  /** Cursor is on this class, so the wheel would scroll its drivers. */
+  isScrollTarget?: boolean;
 }
 
 export const ClassGroupHeader = observer(
@@ -22,9 +27,11 @@ export const ClassGroupHeader = observer(
     classSof,
     totalDrivers,
     paginationLabel,
+    isScrollTarget = false,
   }: ClassGroupHeaderProps) => (
     <div
-      className={styles.header}
+      className={`${styles.header} ${isScrollTarget ? styles.headerScrollTarget : ''}`}
+      data-class-header
       style={{
         background: `linear-gradient(90deg, color-mix(in srgb, ${classColor} 13%, transparent) 0%, rgba(24,24,27,0.4) 38%, transparent 100%)`,
         borderLeft: `3px solid ${classColor}`,

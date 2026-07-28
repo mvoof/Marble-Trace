@@ -38,6 +38,12 @@
   box-shadow: 0 -4px 6px -4px rgba(0, 0, 0, 0.6);
 }
 
+// Rows the wheel is about to scroll — the cursor sits on this class. No highlight
+// at all means the next notch moves the classes themselves instead.
+.driverRowScrollTarget {
+  background: rgba(255, 255, 255, 0.09);
+}
+
 // Base cell
 .cell {
   display: flex;

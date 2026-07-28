@@ -12,9 +12,19 @@ export type AppLanguage = 'system' | 'en' | 'ru' | 'zh';
 export const resolveAppLanguage = (language: AppLanguage) =>
   language === 'system' ? detectSystemLanguage() : language;
 
+export type InteractHotkeyMode = 'toggle' | 'hold';
+
+const MS_PER_SECOND = 1000;
+
 const DEFAULT_APP_SETTINGS = {
   dragHotkey: 'F9',
   hideAllWidgetsHotkey: 'F10',
+  // Interact mode: mouse events reach the overlay without unlocking widget dragging.
+  interactHotkey: 'F8',
+  // 'toggle' — the hotkey flips the mode on and off, 'hold' — active only while held.
+  interactHotkeyMode: 'toggle' as InteractHotkeyMode,
+  // Seconds of interact mode before it switches itself off (0 = stay on). Toggle mode only.
+  interactAutoOffSeconds: 15,
   hideWidgetsWhenGameClosed: false,
   hideAllWidgets: false,
   autoSwitchLayouts: true,
@@ -48,12 +58,14 @@ export class AppSettingsStore {
   appSettings: AppSettings = { ...DEFAULT_APP_SETTINGS };
 
   dragMode = false;
+  interactMode = false;
   updateStatus: UpdateStatus = 'idle';
   availableVersion: string | null = null;
   releaseNotes: string | null = null;
   currentVersion = '';
   updateError: string | null = null;
   private updateTimer: number | null = null;
+  private interactAutoOffTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -212,6 +224,50 @@ export class AppSettingsStore {
 
   setDragMode(value: boolean) {
     this.dragMode = value;
+  }
+
+  toggleInteractMode() {
+    this.setInteractMode(!this.interactMode);
+  }
+
+  /**
+   * Interact mode lets the mouse reach the overlay, which means the game stops
+   * receiving it — so toggle mode arms a watchdog that switches it back off.
+   */
+  setInteractMode(value: boolean) {
+    this.interactMode = value;
+
+    if (this.interactAutoOffTimer !== null) {
+      clearTimeout(this.interactAutoOffTimer);
+      this.interactAutoOffTimer = null;
+    }
+
+    const autoOffSeconds = this.appSettings.interactAutoOffSeconds;
+
+    if (!value || autoOffSeconds <= 0) {
+      return;
+    }
+
+    this.interactAutoOffTimer = setTimeout(() => {
+      runInAction(() => {
+        this.interactMode = false;
+        this.interactAutoOffTimer = null;
+      });
+    }, autoOffSeconds * MS_PER_SECOND);
+  }
+
+  setInteractHotkey(key: string) {
+    this.appSettings.interactHotkey = key;
+  }
+
+  setInteractHotkeyMode(mode: InteractHotkeyMode) {
+    this.appSettings.interactHotkeyMode = mode;
+
+    this.setInteractMode(false);
+  }
+
+  setInteractAutoOffSeconds(seconds: number) {
+    this.appSettings.interactAutoOffSeconds = seconds;
   }
 
   setHideAllWidgets(value: boolean) {

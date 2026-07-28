@@ -98,6 +98,22 @@ export const setupOverlayListeners = async (
     })
   );
 
+  // Scroll travels as a delta rather than an offset: only the overlay knows how
+  // many rows fit and how long the target list is, so only it can clamp.
+  unlistens.push(
+    await listen<number>('standings-scroll', (e) => {
+      runInAction(() => root.standingsWidget.scrollByRows(e.payload));
+    })
+  );
+
+  unlistens.push(
+    await listen<boolean>('interact-mode-changed', (e) => {
+      runInAction(() => {
+        root.appSettings.interactMode = e.payload;
+      });
+    })
+  );
+
   unlistens.push(
     await listen<string | null>('overlay-monitor-changed', (e) => {
       void positionOverlayToMonitor(e.payload, root);
@@ -158,6 +174,18 @@ export const emitLanguageChanged = async (language: AppLanguage) => {
 export const emitStandingsClassIndex = async (index: number) => {
   if (await isOverlayReady()) {
     await emitTo(OVERLAY, 'standings-class-index-changed', index);
+  }
+};
+
+export const emitStandingsScroll = async (delta: number) => {
+  if (await isOverlayReady()) {
+    await emitTo(OVERLAY, 'standings-scroll', delta);
+  }
+};
+
+export const emitInteractMode = async (active: boolean) => {
+  if (await isOverlayReady()) {
+    await emitTo(OVERLAY, 'interact-mode-changed', active);
   }
 };
 

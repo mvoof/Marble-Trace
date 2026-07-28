@@ -11,6 +11,10 @@ const NO_WINDOW: number = -1;
 // The top block must keep at least the leader when a player window is carved out.
 const MIN_TOP_ROWS = 1;
 
+/** Rows the list can be scrolled down by before the last driver reaches the bottom. */
+export const maxScrollOffset = (totalDrivers: number, maxRows: number) =>
+  Math.max(0, totalDrivers - maxRows);
+
 /**
  * Picks the rows to render: the top of the table, plus — when the player has
  * dropped out of it — either a single pinned player row (`requestedAhead` and
@@ -20,7 +24,8 @@ export const buildVisibleRows = (
   drivers: DriverEntry[],
   maxRows: number,
   requestedAhead: number,
-  requestedBehind: number
+  requestedBehind: number,
+  scrollOffset = 0
 ): VisibleRows => {
   if (maxRows <= 0) {
     return { drivers: [], windowStartIndex: NO_WINDOW };
@@ -30,14 +35,24 @@ export const buildVisibleRows = (
     return { drivers, windowStartIndex: NO_WINDOW };
   }
 
+  // Scrolling moves the top block down the field; the player window stays pinned
+  // to the bottom until the block itself reaches the player and absorbs it.
+  const start = Math.min(
+    scrollOffset,
+    maxScrollOffset(drivers.length, maxRows)
+  );
+
   const playerIndex = drivers.findIndex((driver) => driver.isPlayer);
 
-  if (playerIndex < 0 || playerIndex < maxRows) {
-    return { drivers: drivers.slice(0, maxRows), windowStartIndex: NO_WINDOW };
+  if (playerIndex < 0 || playerIndex < start + maxRows) {
+    return {
+      drivers: drivers.slice(start, start + maxRows),
+      windowStartIndex: NO_WINDOW,
+    };
   }
 
   if (requestedAhead === 0 && requestedBehind === 0) {
-    const topBlock = drivers.slice(0, maxRows);
+    const topBlock = drivers.slice(start, start + maxRows);
 
     topBlock[topBlock.length - 1] = drivers[playerIndex];
 
@@ -52,7 +67,10 @@ export const buildVisibleRows = (
     drivers.length - 1 - playerIndex
   );
 
-  const availableAhead = Math.min(requestedAhead, playerIndex - MIN_TOP_ROWS);
+  const availableAhead = Math.min(
+    requestedAhead,
+    playerIndex - start - MIN_TOP_ROWS
+  );
 
   // Rows the requested window asks for beyond what is left once the top block
   // keeps its leader. Trimmed from the back first: the car you are chasing
@@ -76,13 +94,14 @@ export const buildVisibleRows = (
   const windowStart = playerIndex - aheadRows;
 
   const visibleDrivers = [
-    ...drivers.slice(0, topRowCount),
+    ...drivers.slice(start, start + topRowCount),
     ...drivers.slice(windowStart, windowStart + windowRowCount),
   ];
 
   return {
     drivers: visibleDrivers,
-    windowStartIndex: windowStart > topRowCount ? topRowCount : NO_WINDOW,
+    windowStartIndex:
+      windowStart > start + topRowCount ? topRowCount : NO_WINDOW,
   };
 };
 
