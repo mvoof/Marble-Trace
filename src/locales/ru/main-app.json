@@ -53,8 +53,8 @@
     "active": "Активна",
     "applyLayoutTooltip": "Применить эту раскладку к оверлею",
     "makeActive": "Сделать активной",
-    "monitorTooltip": "Монитор, для которого создана раскладка",
-    "monitorPlaceholder": "Монитор…",
+    "monitorTooltip": "Выбор экрана для редактирования или обзор всех сразу. Экран, которого ещё нет в раскладке, добавится.",
+    "monitorPlaceholder": "Экран…",
     "customResolutionOption": "Своё разрешение...",
     "customResolutionLabel": "Своё ({{width}}×{{height}})",
     "lockAspectRatio": "Зафиксировать пропорции",
@@ -82,7 +82,9 @@
     },
     "editingMonitor": "Правлю: {{monitor}}",
     "monitorAdd": "добавить",
-    "moveToMonitor": "Перенести на монитор"
+    "moveToMonitor": "Перенести на монитор",
+    "allMonitors": "Все мониторы",
+    "removeMonitor": "Убрать монитор из раскладки"
   },
   "layoutList": {
     "moduleLabel": "Раскладки",
@@ -147,7 +149,8 @@
     "stepSize": "Шаг {{size}}",
     "large": "Крупный",
     "remove": "Удалить",
-    "loadingBackground": "Загрузка фона..."
+    "loadingBackground": "Загрузка фона...",
+    "allMonitors": "Все мониторы"
   },
   "widgetSettingsPopup": {
     "ariaLabel": "Настройки {{label}}",

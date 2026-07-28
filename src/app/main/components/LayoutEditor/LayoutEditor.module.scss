@@ -164,3 +164,32 @@
 .canvasFullscreen {
   background: #000;
 }
+
+.monitorOption {
+  display: flex;
+  align-items: center;
+  gap: sp(sm);
+}
+
+.monitorOptionLabel {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.monitorOptionRemove {
+  flex: 0 0 auto;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  color: #8b8e98;
+
+  &:hover {
+    color: $race-red;
+  }
+}

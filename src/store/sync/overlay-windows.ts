@@ -8,10 +8,6 @@ import {
   listOverlayWindowLabels,
   OVERLAY_LABEL_PREFIX,
 } from './overlay-labels';
-import {
-  resolutionsEqual,
-  scaleWidgetsToResolution,
-} from '@utils/widget/layout-resolution';
 
 const WIN32_DISPLAY_PREFIX = '\\\\.\\';
 
@@ -77,39 +73,19 @@ const createOverlayWindow = async (monitor: PhysicalMonitor) => {
   await overlay.setPosition(new PhysicalPosition(monitor.x, monitor.y));
   await overlay.setSize(new PhysicalSize(monitor.width, monitor.height));
 
+  // Also set here, not only from inside the overlay: a full-screen always-on-top
+  // window that fails to reach its own init would swallow every click on that
+  // monitor, leaving the user unable to interact with anything.
+  await overlay.setIgnoreCursorEvents(true);
+
   return overlay;
-};
-
-// The layout stores widget coordinates for the resolution the monitor had when
-// the config was authored. If the screen changed since, the stored widgets are
-// rescaled once, in the layout itself, so every window that later loads this
-// config already gets the right coordinates.
-const reconcileResolution = (
-  root: RootStore,
-  monitorName: string,
-  liveResolution: LayoutResolution
-) => {
-  const layout = root.widgetSettings.activeLayout;
-  const config = layout?.monitorConfigs[monitorName];
-
-  if (!config) return;
-
-  if (resolutionsEqual(config.resolution, liveResolution)) return;
-
-  config.widgets = scaleWidgetsToResolution(
-    config.widgets,
-    config.resolution,
-    liveResolution
-  );
-  config.resolution = { ...liveResolution };
 };
 
 let syncInFlight: Promise<void> | null = null;
 
 // Brings the set of open overlay windows in line with the active layout: one
-// window per monitor config that matches a physically present screen. Configs
-// without a screen (a disconnected monitor, the "Custom" editor-only
-// resolution) keep their widgets but get no window.
+// window per monitor of the layout that is physically attached. A monitor the
+// machine no longer has keeps its widgets in the layout but gets no window.
 export const syncOverlayWindows = async (root: RootStore): Promise<void> => {
   if (syncInFlight) {
     await syncInFlight;
@@ -118,7 +94,9 @@ export const syncOverlayWindows = async (root: RootStore): Promise<void> => {
   syncInFlight = (async () => {
     try {
       const layout = root.widgetSettings.activeLayout;
-      const configuredNames = layout ? Object.keys(layout.monitorConfigs) : [];
+      const configuredNames = (layout?.monitors ?? []).map(
+        (monitor) => monitor.name
+      );
       const monitors = await readMonitors();
       const monitorByName = new Map(
         monitors.map((monitor) => [monitor.name, monitor])
@@ -145,8 +123,6 @@ export const syncOverlayWindows = async (root: RootStore): Promise<void> => {
       }
 
       for (const [label, monitor] of wanted) {
-        reconcileResolution(root, monitor.name, monitor.resolution);
-
         if (openLabels.includes(label)) {
           const existing = await WebviewWindow.getByLabel(label);
 

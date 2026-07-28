@@ -2,6 +2,7 @@ import { runInAction } from 'mobx';
 import { emit, emitTo, listen, UnlistenFn } from '@tauri-apps/api/event';
 import type { UnitSystem } from '@/types';
 import type {
+  LayoutMonitor,
   SessionContext,
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
@@ -18,6 +19,12 @@ type SessionLayoutMap = Record<SessionContext, string | null>;
 export interface MonitorWidgetsPayload {
   monitorName: string;
   widgets: WidgetDefaultConfig[];
+  /**
+   * The layout's monitors. An overlay window needs them to decide which
+   * widgets are its own — the test is a centre point against monitor bounds,
+   * so a window that only knew its own name could not place anything.
+   */
+  monitors?: LayoutMonitor[];
 }
 
 // Fan-out to every open overlay window. During startup the main window can
@@ -95,6 +102,10 @@ export const setupOverlayListeners = async (
     await listen<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
       if (e.payload.monitorName !== root.widgetSettings.ownMonitorName) return;
 
+      if (e.payload.monitors) {
+        root.widgetSettings.applyMonitorsSync(e.payload.monitors);
+      }
+
       root.widgetSettings.applySettingsSync(e.payload.widgets);
     })
   );
@@ -168,31 +179,33 @@ export const emitStandingsScroll = (delta: number) =>
 export const emitInteractMode = (active: boolean) =>
   emitToOverlays('interact-mode-changed', active);
 
-// Pushes the active layout to every open overlay window, each getting only its
-// own monitor's widgets. The monitor being edited receives the live widgets:
-// its config is only written back on the debounced commit, so reading it here
-// would lag a drag by half a second.
+/**
+ * Pushes the active layout to every open overlay window.
+ *
+ * Every window receives the whole widget list, not a per-monitor slice: a
+ * widget dragged over a monitor edge has to appear on the neighbour, and only
+ * the receiving window can decide that, by testing centre points against its
+ * own bounds. The live widgets are sent rather than the layout's stored copy —
+ * the layout is only written back on the debounced commit, which would lag a
+ * drag by half a second.
+ */
 export const emitActiveLayoutToOverlays = async (root: RootStore) => {
   const layout = root.widgetSettings.activeLayout;
 
   if (!layout) return;
 
-  const editedName = layout.activeMonitorName;
+  const widgets = root.widgetSettings.allWidgets;
   const labels = await listOverlayWindowLabels();
 
-  for (const [monitorName, config] of Object.entries(layout.monitorConfigs)) {
-    const label = monitorLabel(monitorName);
+  for (const monitor of layout.monitors) {
+    const label = monitorLabel(monitor.name);
 
     if (!labels.includes(label)) continue;
 
-    const widgets =
-      monitorName === editedName
-        ? root.widgetSettings.allWidgets
-        : config.widgets;
-
     await emitTo(label, 'widget-settings-updated', {
-      monitorName,
+      monitorName: monitor.name,
       widgets,
+      monitors: layout.monitors,
     } satisfies MonitorWidgetsPayload);
   }
 };

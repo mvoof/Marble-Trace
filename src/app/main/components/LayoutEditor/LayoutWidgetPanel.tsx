@@ -31,10 +31,6 @@ const WidgetRow = observer(
     const widgetSettings = useWidgetSettingsStore();
     const { t } = useTranslation('main-app');
     const isAvailable = widgetSettings.availableWidgetIds.includes(widget.id);
-    // Enabling a widget that already sits on another screen of this layout is
-    // a legitimate choice, but it must be a visible one — otherwise it reads as
-    // the widget having moved rather than been duplicated.
-    const otherMonitors = widgetSettings.monitorsHostingWidget(widget.id);
     const rowRef = useRef<HTMLDivElement>(null);
 
     const handleToggle = (checked: boolean) => {
@@ -73,17 +69,6 @@ const WidgetRow = observer(
         >
           {getWidgetLabel(t, widget)}
         </button>
-
-        {otherMonitors.length > 0 && (
-          <span
-            className={styles.onOtherMonitor}
-            title={t('layoutWidgetPanel.onMonitor', {
-              monitor: otherMonitors.join(', '),
-            })}
-          >
-            {t('layoutWidgetPanel.onMonitor', { monitor: otherMonitors[0] })}
-          </span>
-        )}
 
         <Button
           size="small"

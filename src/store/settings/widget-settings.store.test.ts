@@ -96,15 +96,15 @@ describe('WidgetSettingsStore session layouts', () => {
         id: 'layout-practice',
         name: 'Practice Layout',
         createdAt: Date.now(),
-        monitorConfigs: {},
-        activeMonitorName: null,
+        monitors: [],
+        widgets: [],
       },
       {
         id: 'layout-race',
         name: 'Race Layout',
         createdAt: Date.now(),
-        monitorConfigs: {},
-        activeMonitorName: null,
+        monitors: [],
+        widgets: [],
       },
     ]);
   });

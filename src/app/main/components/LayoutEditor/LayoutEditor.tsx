@@ -8,7 +8,6 @@ import {
   Popconfirm,
   Select,
   Tooltip,
-  Modal,
   Popover,
   ConfigProvider,
 } from 'antd';
@@ -55,10 +54,6 @@ import {
   PREVIEW_SCENARIOS,
   DEFAULT_PREVIEW_SCENARIO_ID,
 } from '@store/preview/scenarios';
-import {
-  listOverlayMonitors,
-  type OverlayMonitor,
-} from '@store/sync/overlay-resolution';
 import { LayoutCanvas } from './LayoutCanvas';
 import { LayoutWidgetPanel } from './LayoutWidgetPanel';
 import { LayoutList } from './LayoutList';
@@ -69,6 +64,9 @@ import {
 import styles from './LayoutEditor.module.scss';
 
 const SNAP_MARGIN = 8;
+
+// Sentinel for the picker entry that zooms the canvas out to the whole desktop.
+const ALL_MONITORS = '__all__';
 
 type SnapPosition =
   | 'topLeft'
@@ -164,7 +162,11 @@ export const LayoutEditor = observer(
     const [editingWidgetId, setEditingWidgetId] = useState<string | null>(null);
     const [scenarioId, setScenarioId] = useState(DEFAULT_PREVIEW_SCENARIO_ID);
 
-    const [monitors, setMonitors] = useState<OverlayMonitor[]>([]);
+    // Which screen fills the canvas. Null shows every monitor of the layout at
+    // once — needed to drag widgets between screens, useless for fine work.
+    const [focusedMonitorName, setFocusedMonitorName] = useState<string | null>(
+      null
+    );
 
     const [isUploadingBackground, setIsUploadingBackground] = useState(false);
 
@@ -187,12 +189,15 @@ export const LayoutEditor = observer(
     const [lockedRatios, setLockedRatios] = useState<Record<string, boolean>>(
       {}
     );
-    const [isCustomResModalOpen, setIsCustomResModalOpen] = useState(false);
-    const [customWidth, setCustomWidth] = useState(1920);
-    const [customHeight, setCustomHeight] = useState(1080);
 
     const activeId = widgetSettings.activeLayoutId;
     const activeLayout = widgetSettings.activeLayout;
+    const monitors = widgetSettings.attachedMonitors;
+
+    // Background images belong to a screen, so setting one needs a screen in
+    // focus; in overview the first monitor is the sensible target.
+    const backgroundTargetName =
+      focusedMonitorName ?? activeLayout?.monitors[0]?.name;
 
     const prevActiveIdRef = useRef(activeId);
 
@@ -215,10 +220,6 @@ export const LayoutEditor = observer(
         void rootRef.current?.requestFullscreen();
       }
     };
-
-    useEffect(() => {
-      listOverlayMonitors().then(setMonitors).catch(console.error);
-    }, []);
 
     useEffect(() => {
       const onChange = () => {
@@ -252,7 +253,11 @@ export const LayoutEditor = observer(
       try {
         const extension = (file.name.split('.').pop() ?? 'png').toLowerCase();
         const bytes = new Uint8Array(await file.arrayBuffer());
-        const previous = widgetSettings.activeLayout?.backgroundImage;
+        const previous = backgroundTargetName
+          ? widgetSettings.activeLayout?.backgroundImages?.[
+              backgroundTargetName
+            ]
+          : undefined;
 
         const fileName = await saveBackgroundImage(activeId, bytes, extension);
 
@@ -260,7 +265,9 @@ export const LayoutEditor = observer(
           void deleteBackgroundImage(previous);
         }
 
-        widgetSettings.setActiveLayoutBackground(fileName);
+        if (backgroundTargetName) {
+          widgetSettings.setMonitorBackground(backgroundTargetName, fileName);
+        }
       } catch (error) {
         console.error('Failed to save background image:', error);
       } finally {
@@ -269,8 +276,12 @@ export const LayoutEditor = observer(
     };
 
     const handleClearBackground = () => {
-      void deleteBackgroundImage(activeLayout?.backgroundImage);
-      widgetSettings.setActiveLayoutBackground(undefined);
+      if (!backgroundTargetName) return;
+
+      void deleteBackgroundImage(
+        activeLayout?.backgroundImages?.[backgroundTargetName]
+      );
+      widgetSettings.setMonitorBackground(backgroundTargetName, undefined);
     };
 
     const handleDeleteLayout = () => {
@@ -278,7 +289,12 @@ export const LayoutEditor = observer(
         return;
       }
 
-      void deleteBackgroundImage(widgetSettings.activeLayout?.backgroundImage);
+      for (const image of Object.values(
+        widgetSettings.activeLayout?.backgroundImages ?? {}
+      )) {
+        void deleteBackgroundImage(image);
+      }
+
       widgetSettings.deleteLayout(activeId);
     };
 
@@ -287,55 +303,47 @@ export const LayoutEditor = observer(
       label: layout.name,
     }));
 
-    // Every configured monitor gets its own overlay window, so the option list
-    // tells which screens the layout already covers and how much sits on each.
-    const monitorOptions = [
-      ...monitors.map((monitor) => {
-        const config = activeLayout?.monitorConfigs[monitor.name];
-        const suffix = config
-          ? `${config.widgets.filter((widget) => widget.userSettings.enabled).length}`
-          : t('layoutEditor.monitorAdd');
+    const layoutMonitorNames = new Set(
+      (activeLayout?.monitors ?? []).map((monitor) => monitor.name)
+    );
 
-        return {
-          value: monitor.name,
-          label: `${monitor.name} · ${monitor.resolution.width}×${monitor.resolution.height} · ${suffix}`,
-        };
-      }),
-      { value: 'custom', label: t('layoutEditor.customResolutionOption') },
+    // The picker does double duty: it zooms the canvas to one screen, and it is
+    // how a screen joins the layout in the first place. Attached monitors that
+    // are not part of the layout yet are offered with an "add" hint.
+    const monitorOptions = [
+      {
+        value: ALL_MONITORS,
+        label: t('layoutEditor.allMonitors'),
+        inLayout: false,
+      },
+      ...monitors.map((monitor) => ({
+        value: monitor.name,
+        inLayout: layoutMonitorNames.has(monitor.name),
+        label: layoutMonitorNames.has(monitor.name)
+          ? `${monitor.name} · ${monitor.bounds.width}×${monitor.bounds.height}`
+          : `${monitor.name} · ${t('layoutEditor.monitorAdd')}`,
+      })),
     ];
 
-    if (activeLayout?.activeMonitorName === 'Custom') {
-      const config = activeLayout.monitorConfigs['Custom'];
-      const res = config?.resolution ?? { width: 1920, height: 1080 };
+    const moveTargetOptions = (activeLayout?.monitors ?? [])
+      .filter((monitor) => monitor.name !== focusedMonitorName)
+      .map((monitor) => ({ value: monitor.name, label: monitor.name }));
 
-      monitorOptions.unshift({
-        value: 'Custom',
-        label: t('layoutEditor.customResolutionLabel', {
-          width: res.width,
-          height: res.height,
-        }),
-      });
-    }
+    // Dropping a screen leaves its widgets on the first remaining monitor
+    // rather than deleting them — a mis-click here must not cost a layout.
+    const handleRemoveMonitor = (monitorName: string) => {
+      if (!activeId) return;
 
-    // Widgets can't be dragged between screens — the canvas only ever shows
-    // one — so moving one is an explicit pick from the layout's other monitors.
-    const moveTargetOptions = Object.keys(activeLayout?.monitorConfigs ?? {})
-      .filter((monitorName) => monitorName !== activeLayout?.activeMonitorName)
-      .map((monitorName) => ({ value: monitorName, label: monitorName }));
+      widgetSettings.removeMonitor(activeId, monitorName);
+
+      if (focusedMonitorName === monitorName) {
+        setFocusedMonitorName(null);
+      }
+    };
 
     const handleSelectMonitor = (name: string) => {
-      if (name === 'custom') {
-        const currentConfig = activeLayout?.monitorConfigs['Custom'];
-
-        setCustomWidth(
-          currentConfig?.resolution.width ??
-            widgetSettings.overlayResolution.width
-        );
-        setCustomHeight(
-          currentConfig?.resolution.height ??
-            widgetSettings.overlayResolution.height
-        );
-        setIsCustomResModalOpen(true);
+      if (name === ALL_MONITORS) {
+        setFocusedMonitorName(null);
 
         return;
       }
@@ -344,7 +352,14 @@ export const LayoutEditor = observer(
 
       if (!monitor) return;
 
-      widgetSettings.selectMonitorForActiveLayout(name, monitor.resolution);
+      if (!layoutMonitorNames.has(name)) {
+        widgetSettings.addMonitor({
+          name: monitor.name,
+          bounds: monitor.bounds,
+        });
+      }
+
+      setFocusedMonitorName(name);
     };
 
     const handleSnap = (pos: SnapPosition) => {
@@ -638,22 +653,34 @@ export const LayoutEditor = observer(
                     <Monitor size={12} /> {t('layoutEditor.monitorPlaceholder')}
                   </>
                 }
-                value={
-                  activeLayout?.activeMonitorName
-                    ? t('layoutEditor.editingMonitor', {
-                        monitor: activeLayout.activeMonitorName,
-                      })
-                    : undefined
-                }
+                value={focusedMonitorName ?? ALL_MONITORS}
                 onChange={handleSelectMonitor}
-                onDropdownVisibleChange={(open) => {
-                  if (open) {
-                    listOverlayMonitors()
-                      .then(setMonitors)
-                      .catch(console.error);
-                  }
-                }}
                 options={monitorOptions}
+                optionRender={(option) => (
+                  <div className={styles.monitorOption}>
+                    <span className={styles.monitorOptionLabel}>
+                      {option.label}
+                    </span>
+
+                    {option.data.inLayout && (
+                      <button
+                        type="button"
+                        className={styles.monitorOptionRemove}
+                        tabIndex={-1}
+                        title={t('layoutEditor.removeMonitor')}
+                        // The click must not reach the option itself, or
+                        // removing a screen would also focus it.
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          handleRemoveMonitor(String(option.value));
+                        }}
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
+                )}
                 disabled={!activeLayout}
                 popupMatchSelectWidth={240}
                 style={{ minWidth: 180 }}
@@ -807,7 +834,8 @@ export const LayoutEditor = observer(
                           )
                         }
                         options={moveTargetOptions}
-                        style={{ width: 52 }}
+                        popupMatchSelectWidth={200}
+                        style={{ width: 56 }}
                       />
                     </Tooltip>
                   )}
@@ -914,11 +942,6 @@ export const LayoutEditor = observer(
                 </div>
               )}
 
-              <span className={styles.resolutionLabel}>
-                {widgetSettings.overlayResolution.width}×
-                {widgetSettings.overlayResolution.height}
-              </span>
-
               <input
                 ref={(node) => {
                   backgroundInputRef.current = node;
@@ -1020,16 +1043,17 @@ export const LayoutEditor = observer(
                 />
               </Tooltip>
 
-              {activeLayout?.backgroundImage && (
-                <Tooltip title={t('layoutEditor.clearBackgroundTooltip')}>
-                  <Button
-                    size="small"
-                    type="text"
-                    icon={<ImageOff size={14} />}
-                    onClick={handleClearBackground}
-                  />
-                </Tooltip>
-              )}
+              {backgroundTargetName &&
+                activeLayout?.backgroundImages?.[backgroundTargetName] && (
+                  <Tooltip title={t('layoutEditor.clearBackgroundTooltip')}>
+                    <Button
+                      size="small"
+                      type="text"
+                      icon={<ImageOff size={14} />}
+                      onClick={handleClearBackground}
+                    />
+                  </Tooltip>
+                )}
 
               <Select
                 size="small"
@@ -1091,52 +1115,10 @@ export const LayoutEditor = observer(
                 isRatioLocked={
                   selectedWidgetId ? !!lockedRatios[selectedWidgetId] : false
                 }
+                focusedMonitorName={focusedMonitorName}
               />
             </main>
           </div>
-
-          <Modal
-            title={t('layoutEditor.customResolutionModal.title')}
-            open={isCustomResModalOpen}
-            getContainer={() => rootRef.current || document.body}
-            onOk={() => {
-              widgetSettings.selectMonitorForActiveLayout('Custom', {
-                width: customWidth,
-                height: customHeight,
-              });
-              setIsCustomResModalOpen(false);
-            }}
-            onCancel={() => setIsCustomResModalOpen(false)}
-            okText={t('layoutEditor.customResolutionModal.apply')}
-            cancelText={t('layoutEditor.cancel')}
-          >
-            <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
-              <div>
-                <div style={{ marginBottom: '4px' }}>
-                  {t('layoutEditor.customResolutionModal.width')}
-                </div>
-                <InputNumber
-                  min={800}
-                  max={7680}
-                  value={customWidth}
-                  onChange={(val) => val && setCustomWidth(val)}
-                  style={{ width: '120px' }}
-                />
-              </div>
-              <div>
-                <div style={{ marginBottom: '4px' }}>
-                  {t('layoutEditor.customResolutionModal.height')}
-                </div>
-                <InputNumber
-                  min={600}
-                  max={4320}
-                  value={customHeight}
-                  onChange={(val) => val && setCustomHeight(val)}
-                  style={{ width: '120px' }}
-                />
-              </div>
-            </div>
-          </Modal>
         </div>
       </ConfigProvider>
     );

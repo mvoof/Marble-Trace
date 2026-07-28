@@ -86,3 +86,12 @@
     opacity: 1;
   }
 }
+
+// Shifts virtual-desktop widget coordinates into this window's local space.
+// Not a positioned container: widgets are absolutely positioned against the
+// canvas, and an offset parent would re-anchor them.
+.monitorOrigin {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}

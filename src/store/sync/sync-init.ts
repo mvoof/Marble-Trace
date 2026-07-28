@@ -28,6 +28,8 @@ import {
 } from './events';
 import type { MonitorWidgetsPayload } from './events';
 import { syncOverlayWindows } from './overlay-windows';
+import { listMonitorBounds } from './overlay-resolution';
+import { watchMonitorArrangement } from './monitor-watch';
 import type {
   StandingsWidgetSettings,
   SessionContext,
@@ -57,28 +59,34 @@ export const initMainSync = async (root: RootStore) => {
 
       root.widgetSettings.ensureDefaultLayout();
 
+      // Migrated layouts carry placeholder monitor positions — persisted
+      // settings never recorded where the screens actually are. Nothing may
+      // render or open a window before this lands them on the real desktop.
+      root.widgetSettings.alignMonitorsToHardware(await listMonitorBounds());
+
       const onSave = () => saveSettings(store, root);
 
       await onSave();
 
       await syncOverlayWindows(root);
 
+      // Windows raises no event a Tauri app can subscribe to when displays are
+      // rearranged, so the arrangement is polled while the app has focus.
+      const stopMonitorWatch = watchMonitorArrangement(root, () => {
+        void emitActiveLayoutToOverlays(root);
+        void onSave();
+      });
+
       const [overlaySettingsUnlisten, mainUnlistens, , closeRequestedUnlisten] =
         await Promise.all([
           listen<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
-            const { monitorName, widgets } = e.payload;
-
-            if (
-              monitorName ===
-              root.widgetSettings.activeLayout?.activeMonitorName
-            ) {
-              root.widgetSettings.applySettingsSync(widgets);
-            } else {
-              root.widgetSettings.applySettingsSyncForMonitor(
-                monitorName,
-                widgets
-              );
-            }
+            // An overlay window only ever speaks for the widgets on its own
+            // screen; taking the rest of its list would overwrite the other
+            // monitors with a stale copy.
+            root.widgetSettings.applySettingsSyncForMonitor(
+              e.payload.monitorName,
+              e.payload.widgets
+            );
 
             void onSave();
           }),
@@ -330,6 +338,7 @@ export const initMainSync = async (root: RootStore) => {
       ];
 
       const cleanup = () => {
+        stopMonitorWatch();
         overlaySettingsUnlisten();
         closeRequestedUnlisten();
 
@@ -364,10 +373,10 @@ export const initOverlaySync = async (root: RootStore) => {
     hydrateStores(root, loadedSettings);
   }
 
-  // Each overlay window covers exactly one monitor and renders only that
-  // monitor's config, which hydrateStores cannot know about — the live widget
-  // map it fills comes from the last edited monitor.
-  root.widgetSettings.loadOwnMonitorConfig();
+  // hydrateStores fills the live widget map from the persisted snapshot, which
+  // can lag behind the active layout. The window renders the layout, so it is
+  // the layout that has to win.
+  root.widgetSettings.loadActiveLayoutWidgets();
 
   const unlistens = await setupOverlayListeners(root);
 

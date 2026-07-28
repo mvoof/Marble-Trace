@@ -416,3 +416,15 @@ $edge-hover-thickness: 4px;
   z-index: 10;
   color: #ffffff;
 }
+
+// A monitor's area inside the desktop-space world. Sits under the widgets and
+// never takes pointer events — clicking empty space must still clear selection.
+.monitorPlate {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border: 1px solid #2a2c32;
+  background-color: #0b0c10;
+  background-size: cover;
+  background-position: center;
+}

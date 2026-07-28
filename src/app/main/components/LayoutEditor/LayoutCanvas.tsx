@@ -23,8 +23,13 @@ import {
   DEFAULT_PREVIEW_SCENARIO_ID,
 } from '@store/preview/scenarios';
 import { resolveBackgroundSrc } from '@utils/widget/layout-background';
+import { monitorsBounds } from '@utils/widget/virtual-desktop';
 import { seedInputHistory } from '@store/preview/preview-animator';
-import type { WidgetDefaultConfig } from '@/types/widget-settings';
+import type {
+  LayoutMonitor,
+  MonitorBounds,
+  WidgetDefaultConfig,
+} from '@/types/widget-settings';
 import { LayoutCanvasWidget } from './LayoutCanvasWidget';
 import styles from './LayoutCanvas.module.scss';
 
@@ -38,6 +43,8 @@ interface LayoutCanvasProps {
   onSelectWidget: (id: string) => void;
   isUploading?: boolean;
   isRatioLocked?: boolean;
+  /** Monitor filling the canvas, or null to view the whole desktop at once. */
+  focusedMonitorName?: string | null;
 }
 
 // Mirror the full widget set from the main store into the isolated preview store
@@ -56,6 +63,77 @@ const mirrorAllWidgets = (
   );
 };
 
+// One screen of the layout, drawn in desktop coordinates behind the widgets.
+// Each monitor carries its own background image — a cockpit shot for the main
+// screen, whatever sits on the others.
+const MonitorPlate = observer(
+  ({
+    monitor,
+    image,
+    fit,
+    view,
+    showGrid,
+    gridSize,
+  }: {
+    monitor: LayoutMonitor;
+    image?: string;
+    fit: number;
+    view: MonitorBounds;
+    showGrid: boolean;
+    gridSize: number;
+  }) => {
+    const [src, setSrc] = useState<string | undefined>();
+
+    useEffect(() => {
+      let active = true;
+
+      if (!image) {
+        setSrc(undefined);
+
+        return;
+      }
+
+      resolveBackgroundSrc(image)
+        .then((resolved) => {
+          if (active) setSrc(resolved);
+        })
+        .catch((error: unknown) =>
+          console.error('Failed to resolve background image:', error)
+        );
+
+      return () => {
+        active = false;
+      };
+    }, [image]);
+
+    return (
+      <div
+        className={styles.monitorPlate}
+        style={{
+          left: (monitor.bounds.x - view.x) * fit,
+          top: (monitor.bounds.y - view.y) * fit,
+          width: monitor.bounds.width * fit,
+          height: monitor.bounds.height * fit,
+          backgroundImage: src ? `url(${src})` : undefined,
+        }}
+      >
+        {showGrid && (
+          <div
+            className={styles.grid}
+            aria-hidden="true"
+            style={{
+              backgroundSize: `${gridSize * fit}px ${gridSize * fit}px`,
+            }}
+          >
+            <div className={styles.axisVertical} />
+            <div className={styles.axisHorizontal} />
+          </div>
+        )}
+      </div>
+    );
+  }
+);
+
 // Letterboxed editor canvas: a fixed target-resolution world scaled to fit the
 // available pane (WYSIWYG with the overlay). Each enabled widget is a draggable,
 // resizable box writing back into the main store — the single source of truth.
@@ -70,10 +148,13 @@ export const LayoutCanvas = observer(
     onSelectWidget,
     isUploading = false,
     isRatioLocked = false,
+    focusedMonitorName = null,
   }: LayoutCanvasProps) => {
     const widgetSettings = useWidgetSettingsStore();
-    const editedMonitorName =
-      widgetSettings.activeLayout?.activeMonitorName ?? null;
+    const monitors = widgetSettings.activeLayout?.monitors ?? [];
+    const focusedMonitor = focusedMonitorName
+      ? monitors.find((monitor) => monitor.name === focusedMonitorName)
+      : undefined;
     const { t } = useTranslation('main-app');
     const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
 
@@ -237,23 +318,29 @@ export const LayoutCanvas = observer(
       onSelectWidget,
     ]);
 
-    const targetResolution = widgetSettings.overlayResolution;
+    // Overview fits every monitor of the layout at once — the only way to drag
+    // a widget between screens. Focusing one zooms to it, because three or more
+    // screens side by side leave widgets too small to grab.
+    const desktop = monitorsBounds(monitors);
+    const view = focusedMonitor ? focusedMonitor.bounds : desktop;
 
     const fit =
       paneSize.width > 0 &&
       paneSize.height > 0 &&
-      targetResolution.width > 0 &&
-      targetResolution.height > 0
-        ? Math.min(
-            paneSize.width / targetResolution.width,
-            paneSize.height / targetResolution.height
-          )
+      view.width > 0 &&
+      view.height > 0
+        ? Math.min(paneSize.width / view.width, paneSize.height / view.height)
         : 0;
 
-    const scaledWidth = targetResolution.width * fit;
-    const scaledHeight = targetResolution.height * fit;
+    const scaledWidth = view.width * fit;
+    const scaledHeight = view.height * fit;
 
-    const rawBackground = widgetSettings.activeLayout?.backgroundImage;
+    const backgroundImages = widgetSettings.activeLayout?.backgroundImages;
+    // In overview every monitor paints its own image inside its rectangle; the
+    // stage itself only carries one when a single monitor fills it.
+    const rawBackground = focusedMonitor
+      ? backgroundImages?.[focusedMonitor.name]
+      : undefined;
     const [backgroundSrc, setBackgroundSrc] = useState<string | undefined>();
     const [isBackgroundLoading, setIsBackgroundLoading] = useState(false);
 
@@ -343,13 +430,32 @@ export const LayoutCanvas = observer(
             >
               {/* The canvas shows one monitor at a time; without naming it,
                   switching monitors reads as the widgets disappearing. */}
-              {editedMonitorName && !fullscreen && (
+              {!fullscreen && (
                 <div className={styles.monitorTag}>
                   <Monitor size={11} />
-                  <b>{editedMonitorName}</b>
-                  {` · ${targetResolution.width}×${targetResolution.height}`}
+                  <b>
+                    {focusedMonitor
+                      ? focusedMonitor.name
+                      : t('layoutCanvas.allMonitors')}
+                  </b>
+                  {` · ${view.width}×${view.height}`}
                 </div>
               )}
+
+              {/* Screen-space, not inside the scaled world: the alignment grid
+                  sits between the monitors and the widgets, and a plate drawn
+                  in the world would paint over it. */}
+              {monitors.map((monitor) => (
+                <MonitorPlate
+                  key={monitor.name}
+                  monitor={monitor}
+                  image={backgroundImages?.[monitor.name]}
+                  fit={fit}
+                  view={view}
+                  showGrid={showGrid}
+                  gridSize={gridSize}
+                />
+              ))}
 
               {(isBackgroundLoading || isUploading) && (
                 <div className={styles.backgroundLoader}>
@@ -359,25 +465,13 @@ export const LayoutCanvas = observer(
                   />
                 </div>
               )}
-              {showGrid && (
-                <div
-                  className={styles.grid}
-                  aria-hidden="true"
-                  style={{
-                    backgroundSize: `${gridSize * fit}px ${gridSize * fit}px`,
-                  }}
-                >
-                  <div className={styles.axisVertical} />
-                  <div className={styles.axisHorizontal} />
-                </div>
-              )}
 
               <div
                 className={styles.world}
                 style={{
-                  width: targetResolution.width,
-                  height: targetResolution.height,
-                  transform: `scale(${fit})`,
+                  width: view.width,
+                  height: view.height,
+                  transform: `scale(${fit}) translate(${-view.x}px, ${-view.y}px)`,
                 }}
               >
                 {widgetSettings.enabledWidgetIds.map((id) => {
@@ -399,8 +493,8 @@ export const LayoutCanvas = observer(
                       isRatioLocked={selectedWidgetId === id && isRatioLocked}
                       snap={snapToGrid}
                       gridSize={gridSize}
-                      worldWidth={targetResolution.width}
-                      worldHeight={targetResolution.height}
+                      worldWidth={desktop.width}
+                      worldHeight={desktop.height}
                       onSelect={onSelectWidget}
                     >
                       <ErrorBoundary>

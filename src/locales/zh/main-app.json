@@ -53,8 +53,8 @@
     "active": "已激活",
     "applyLayoutTooltip": "将此布局应用到叠加层",
     "makeActive": "设为激活",
-    "monitorTooltip": "此布局所适配的显示器",
-    "monitorPlaceholder": "显示器…",
+    "monitorTooltip": "选择要编辑的屏幕，或一次查看全部。选择尚未加入布局的屏幕即可添加。",
+    "monitorPlaceholder": "屏幕…",
     "customResolutionOption": "自定义分辨率...",
     "customResolutionLabel": "自定义 ({{width}}×{{height}})",
     "lockAspectRatio": "锁定宽高比",
@@ -82,7 +82,9 @@
     },
     "editingMonitor": "正在编辑：{{monitor}}",
     "monitorAdd": "添加",
-    "moveToMonitor": "移动到显示器"
+    "moveToMonitor": "移动到显示器",
+    "allMonitors": "所有显示器",
+    "removeMonitor": "从布局中移除显示器"
   },
   "layoutList": {
     "moduleLabel": "布局",
@@ -141,7 +143,8 @@
     "stepSize": "步长 {{size}}",
     "large": "大",
     "remove": "删除",
-    "loadingBackground": "正在加载背景..."
+    "loadingBackground": "正在加载背景...",
+    "allMonitors": "所有显示器"
   },
   "widgetSettingsPopup": {
     "ariaLabel": "{{label}} 设置",
