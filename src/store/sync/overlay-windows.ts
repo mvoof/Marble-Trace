@@ -81,21 +81,33 @@ const createOverlayWindow = async (monitor: PhysicalMonitor) => {
   return overlay;
 };
 
+// Monitors that deserve an overlay window. A full-screen transparent
+// always-on-top window costs DWM composition over the game and its own copy of
+// every telemetry bundle, so screens with nothing on them get none. Drag mode
+// is the exception: it needs a window on every configured screen, empty ones
+// included, or a widget dragged over the edge would land on a monitor that
+// draws nothing and vanish.
+export const overlayMonitorNames = (root: RootStore): string[] => {
+  if (root.appSettings.dragMode) {
+    return root.widgetSettings.activeMonitorNames;
+  }
+
+  return root.widgetSettings.populatedMonitorNames;
+};
+
 let syncInFlight: Promise<void> = Promise.resolve();
 
 // Brings the set of open overlay windows in line with the active layout: one
-// window per monitor of the layout that is physically attached. A monitor the
-// machine no longer has keeps its widgets in the layout but gets no window.
+// window per monitor of `overlayMonitorNames` that is physically attached. A
+// monitor the machine no longer has keeps its widgets in the layout but gets
+// no window.
 // Runs are chained rather than awaited-then-replaced: two concurrent callers
 // awaiting the same promise before replacing it would both start a body, and
 // the same monitor would get two window creations.
 export const syncOverlayWindows = (root: RootStore): Promise<void> => {
   syncInFlight = syncInFlight.then(async () => {
     try {
-      const layout = root.widgetSettings.activeLayout;
-      const configuredNames = (layout?.monitors ?? []).map(
-        (monitor) => monitor.name
-      );
+      const configuredNames = overlayMonitorNames(root);
       const monitors = await readMonitors();
       const monitorByName = new Map(
         monitors.map((monitor) => [monitor.name, monitor])

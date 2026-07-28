@@ -27,7 +27,7 @@ import {
   emitAutoSwitchLayoutsChanged,
 } from './events';
 import type { MonitorWidgetsPayload } from './events';
-import { syncOverlayWindows } from './overlay-windows';
+import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
 import { listMonitorBounds } from './overlay-resolution';
 import { watchMonitorArrangement } from './monitor-watch';
 import type {
@@ -243,12 +243,13 @@ export const initMainSync = async (root: RootStore) => {
           }
         ),
         reaction(
-          // One overlay window per monitor the active layout is configured
-          // for. Both switching layouts and adding/removing a monitor config
-          // change that set.
+          // One overlay window per monitor that has widgets on it. Switching
+          // layouts, adding or removing a monitor config, enabling a widget,
+          // dragging one to another screen and entering drag mode all change
+          // that set.
           () => [
             root.widgetSettings.activeLayoutId,
-            root.widgetSettings.activeMonitorNames.join('|'),
+            overlayMonitorNames(root).join('|'),
           ],
           () => {
             void syncOverlayWindows(root).then(() =>
