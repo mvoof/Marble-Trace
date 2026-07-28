@@ -368,8 +368,18 @@ export class StandingsWidgetStore {
       }
     }
 
+    const playerClassId = this.playerEntry?.carClassId ?? null;
+
     return Array.from(classMap.entries())
-      .sort(([a], [b]) => a - b)
+      .sort(([a], [b]) => {
+        if (playerClassId !== null) {
+          if (a === playerClassId) return -1;
+
+          if (b === playerClassId) return 1;
+        }
+
+        return a - b;
+      })
       .map(([classId, driversInClass]) => {
         const first = driversInClass[0];
 
