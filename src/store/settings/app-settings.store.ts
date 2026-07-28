@@ -215,15 +215,22 @@ export class AppSettingsStore {
   }
 
   toggleDragMode() {
-    this.dragMode = !this.dragMode;
+    this.setDragMode(!this.dragMode);
   }
 
   toggleHideAllWidgets() {
     this.appSettings.hideAllWidgets = !this.appSettings.hideAllWidgets;
   }
 
+  // Drag and interact both grab the mouse, but fight over it: drag consumes
+  // pointer events on the container while interact needs them to reach widget
+  // content. Only one may be active at a time.
   setDragMode(value: boolean) {
     this.dragMode = value;
+
+    if (value) {
+      this.setInteractMode(false);
+    }
   }
 
   toggleInteractMode() {
@@ -236,6 +243,10 @@ export class AppSettingsStore {
    */
   setInteractMode(value: boolean) {
     this.interactMode = value;
+
+    if (value) {
+      this.dragMode = false;
+    }
 
     if (this.interactAutoOffTimer !== null) {
       clearTimeout(this.interactAutoOffTimer);
