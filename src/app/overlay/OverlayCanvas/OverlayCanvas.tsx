@@ -55,8 +55,7 @@ export const OverlayCanvas = observer(() => {
   const { dragMode } = appSettings;
   const { hideAllWidgets } = appSettings.appSettings;
 
-  // Drag mode already announces itself with its own banner and backdrop.
-  const showInteractBanner = appSettings.interactMode && !dragMode;
+  const showInteractBanner = appSettings.interactMode;
 
   const { interactHotkey, interactHotkeyMode } = appSettings.appSettings;
 
