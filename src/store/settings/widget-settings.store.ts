@@ -838,7 +838,7 @@ export class WidgetSettingsStore {
     return monitorsBounds(this.activeLayout?.monitors ?? []);
   }
 
-  // Monitors the active layout covers. Drives which overlay windows stay open.
+  // Monitors the active layout covers, empty ones included.
   get activeMonitorNames(): string[] {
     return (this.activeLayout?.monitors ?? []).map((monitor) => monitor.name);
   }
@@ -890,6 +890,21 @@ export class WidgetSettingsStore {
 
   get enabledWidgets(): WidgetDefaultConfig[] {
     return this.allWidgets.filter((widget) => widget.userSettings.enabled);
+  }
+
+  // Monitors of the active layout that actually have something to draw. A
+  // full-screen transparent always-on-top window costs DWM composition over the
+  // game and a copy of every telemetry bundle, so empty screens get none.
+  get populatedMonitorNames(): string[] {
+    const monitors = this.activeLayout?.monitors ?? [];
+    const enabled = this.enabledWidgets;
+
+    return monitors
+      .filter(
+        (monitor) =>
+          widgetsOnMonitor(enabled, monitor.name, monitors).length > 0
+      )
+      .map((monitor) => monitor.name);
   }
 
   // Adds a monitor to the layout, extending the area widgets can be dragged
