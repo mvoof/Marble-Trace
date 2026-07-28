@@ -7,6 +7,12 @@
   flex-shrink: 0;
 }
 
+// Marks the class the wheel is about to scroll; without it there is no telling
+// whether the next notch moves this class's drivers or the classes themselves.
+.headerScrollTarget {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
 .left {
   display: flex;
   align-items: center;

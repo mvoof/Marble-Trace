@@ -14,6 +14,7 @@ import {
   setupMainListeners,
   setupOverlayListeners,
   emitDragMode,
+  emitInteractMode,
   emitHideAllWidgets,
   emitHideWidgetsWhenGameClosed,
   emitSteeringLockChanged,
@@ -93,6 +94,12 @@ export const initMainSync = async (root: RootStore) => {
           () => root.appSettings.dragMode,
           (v) => {
             void emitDragMode(v);
+          }
+        ),
+        reaction(
+          () => root.appSettings.interactMode,
+          (v) => {
+            void emitInteractMode(v);
           }
         ),
         reaction(
@@ -227,9 +234,13 @@ export const initMainSync = async (root: RootStore) => {
             return [
               root.appSettings.appSettings.dragHotkey,
               root.appSettings.appSettings.hideAllWidgetsHotkey,
+              root.appSettings.appSettings.interactHotkey,
+              root.appSettings.appSettings.interactHotkeyMode,
               standingsSettings.viewModeHotkey,
               standingsSettings.classPrevHotkey,
               standingsSettings.classNextHotkey,
+              standingsSettings.scrollUpHotkey,
+              standingsSettings.scrollDownHotkey,
             ];
           },
           () => {

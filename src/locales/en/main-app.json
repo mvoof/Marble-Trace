@@ -180,7 +180,17 @@
       "title": "Interaction Mode",
       "dragModeTitle": "UI Drag Mode",
       "dragModeDesc": "Unlock widgets to move them freely across the screen.",
-      "dragModeHotkey": "Drag Mode Hotkey"
+      "dragModeHotkey": "Drag Mode Hotkey",
+      "interactModeTitle": "Interact Mode",
+      "interactModeDesc": "Let the mouse reach the overlay (scrolling, buttons) without unlocking widget dragging. While it is on, the game does not receive the mouse.",
+      "interactModeHotkey": "Interact Mode Hotkey",
+      "interactHotkeyModeTitle": "Hotkey Behaviour",
+      "interactHotkeyModeDesc": "Toggle switches the mode on and off, Hold keeps it on only while the key is pressed.",
+      "interactToggle": "Toggle",
+      "interactHold": "Hold",
+      "interactAutoOffTitle": "Auto-Disable",
+      "interactAutoOffDesc": "Turn interact mode off automatically so the mouse returns to the game.",
+      "interactAutoOffNever": "Never"
     },
     "gameIntegration": {
       "title": "Game Integration",

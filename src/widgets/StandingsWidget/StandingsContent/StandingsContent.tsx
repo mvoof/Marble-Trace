@@ -1,4 +1,10 @@
-import { useCallback } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  type MouseEvent,
+  type WheelEvent,
+} from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { DriverGroup } from '@/types';
@@ -13,17 +19,27 @@ import {
 import {
   buildVisibleRows,
   computeClassSof,
+  maxScrollOffset,
 } from '@utils/widget/standings-utils';
+import { SINGLE_LIST_SCROLL_KEY } from '@store/widgets/standings.widget';
 import { useVisibleRowCount } from '@/hooks/common/useVisibleRowCount';
-import { useRowMoveAnimation } from '@/hooks/common/useRowMoveAnimation';
+import {
+  useRowMoveAnimation,
+  ROW_KEY_ATTRIBUTE,
+} from '@/hooks/common/useRowMoveAnimation';
 import { NoDataPlaceholder } from '@/components/shared/NoDataPlaceholder/NoDataPlaceholder';
 import { SessionHeader } from '@widgets/StandingsWidget/SessionHeader/SessionHeader';
 import { ClassGroup } from '@widgets/StandingsWidget/ClassGroup/ClassGroup';
+import { CLASS_HEADER_ATTRIBUTE } from '@widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';
 import { ClassSwitcher } from '@widgets/StandingsWidget/ClassSwitcher/ClassSwitcher';
 import { StandingsHeader } from '@widgets/StandingsWidget/StandingsHeader/StandingsHeader';
 import { SessionFooter } from '@widgets/StandingsWidget/SessionFooter/SessionFooter';
 
 import styles from './StandingsContent.module.scss';
+
+// One wheel notch moves a small block of rows — matching a text editor's feel
+// rather than crawling a single row at a time.
+const WHEEL_STEP_ROWS = 3;
 
 export const StandingsContent = observer(() => {
   const { standings } = useBackendComputedStore();
@@ -43,7 +59,11 @@ export const StandingsContent = observer(() => {
   const isGrouped =
     settings.viewMode === 'grouped' && allClassGroups.length > 0;
 
-  const animateRows = useRowMoveAnimation<HTMLDivElement>();
+  // While the table is scrolled the rows shift because the window moved, not
+  // because anyone passed anyone — sliding them would just smear the scroll.
+  const animateRows = useRowMoveAnimation<HTMLDivElement>(
+    !standingsWidget.isScrolled
+  );
 
   const { ref: measureRows, count: visibleRowCount } =
     useVisibleRowCount<HTMLDivElement>(
@@ -66,8 +86,14 @@ export const StandingsContent = observer(() => {
     [measureRows, animateRows]
   );
 
+  // Classes below the widget height are cut off, so the drawn set starts at the
+  // class the scroll has raised to the top.
+  const drawnClassGroups = isGrouped
+    ? allClassGroups.slice(standingsWidget.groupScrollIndex)
+    : allClassGroups;
+
   const rowsPerGroupedClass = (() => {
-    if (!isGrouped || allClassGroups.length === 0) {
+    if (!isGrouped || drawnClassGroups.length === 0) {
       return 0;
     }
 
@@ -75,19 +101,133 @@ export const StandingsContent = observer(() => {
       return settings.groupedRowsPerClass;
     }
 
-    const classHeaderRows = allClassGroups.length;
+    const classHeaderRows = drawnClassGroups.length;
     const rowsLeftForDrivers = Math.max(1, visibleRowCount - classHeaderRows);
 
-    return Math.max(1, Math.floor(rowsLeftForDrivers / allClassGroups.length));
+    return Math.max(
+      1,
+      Math.floor(rowsLeftForDrivers / drawnClassGroups.length)
+    );
   })();
 
-  const visibleRows = (drivers: DriverEntry[], maxRows: number) =>
+  const clampedClassIndex = Math.min(
+    activeClassIndex,
+    Math.max(0, allClassGroups.length - 1)
+  );
+
+  const singleListDrivers =
+    settings.viewMode === 'cycling' && allClassGroups.length > 0
+      ? (allClassGroups[clampedClassIndex]?.drivers ?? [])
+      : driverEntries;
+
+  // Grouped view draws every class as its own list, so each one gets its own limit.
+  const scrollBounds = isGrouped
+    ? new Map(
+        drawnClassGroups.map((group) => [
+          group.classId,
+          maxScrollOffset(group.drivers.length, rowsPerGroupedClass),
+        ])
+      )
+    : new Map([
+        [
+          SINGLE_LIST_SCROLL_KEY,
+          maxScrollOffset(singleListDrivers.length, visibleRowCount),
+        ],
+      ]);
+
+  // A fresh Map every render would re-run the effect forever, so the limits are
+  // compared by value. Published from an effect rather than during render because
+  // clamping an offset writes to the store, which must not happen while rendering.
+  const boundsSignature = Array.from(scrollBounds)
+    .map(([key, bound]) => `${key}:${bound}`)
+    .join();
+
+  const singleListOffset = standingsWidget.scrollOffsetFor(
+    SINGLE_LIST_SCROLL_KEY
+  );
+
+  const groupKeys = allClassGroups.map((group) => group.classId);
+  const groupKeysSignature = groupKeys.join();
+
+  const latestBounds = useRef(scrollBounds);
+  latestBounds.current = scrollBounds;
+
+  const latestGroupKeys = useRef(groupKeys);
+  latestGroupKeys.current = groupKeys;
+
+  useEffect(() => {
+    standingsWidget.setScrollBounds(
+      latestBounds.current,
+      latestGroupKeys.current
+    );
+  }, [standingsWidget, boundsSignature, groupKeysSignature]);
+
+  const visibleRows = (
+    drivers: DriverEntry[],
+    maxRows: number,
+    scrollOffset = 0
+  ) =>
     buildVisibleRows(
       drivers,
       maxRows,
       settings.driversAhead,
-      settings.driversBehind
+      settings.driversBehind,
+      scrollOffset
     );
+
+  /**
+   * What the wheel would move from where it is pointed: a driver row scrolls its own
+   * class, a class header moves the classes themselves. The rows already carry their
+   * car index, so the class comes from the driver map — no extra markup needed.
+   */
+  const scrollTargetAt = (
+    target: EventTarget
+  ): { classId: number | null; onClassHeader: boolean } => {
+    const none = { classId: null, onClassHeader: false };
+
+    if (!isGrouped || !(target instanceof Element)) {
+      return none;
+    }
+
+    if (target.closest(`[${CLASS_HEADER_ATTRIBUTE}]`)) {
+      return { classId: null, onClassHeader: true };
+    }
+
+    const row = target.closest(`[${ROW_KEY_ATTRIBUTE}]`);
+    const carIdx = Number(row?.getAttribute(ROW_KEY_ATTRIBUTE));
+
+    if (!row || Number.isNaN(carIdx)) {
+      return none;
+    }
+
+    return {
+      classId: standingsWidget.driverMap.get(carIdx)?.carClassId ?? null,
+      onClassHeader: false,
+    };
+  };
+
+  const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
+    const delta = Math.sign(event.deltaY) * WHEEL_STEP_ROWS;
+    const { classId, onClassHeader } = scrollTargetAt(event.target);
+
+    if (onClassHeader) {
+      standingsWidget.scrollClasses(delta);
+
+      return;
+    }
+
+    standingsWidget.scrollByRows(delta, classId ?? undefined);
+  };
+
+  const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
+    const { classId, onClassHeader } = scrollTargetAt(event.target);
+
+    standingsWidget.setScrollHover(classId, onClassHeader);
+  };
+
+  const handleMouseLeave = () => {
+    standingsWidget.setScrollHover(null);
+  };
 
   const displayGroup = (): DriverGroup => {
     if (settings.viewMode === 'cycling' && allClassGroups.length > 0) {
@@ -98,7 +238,10 @@ export const StandingsContent = observer(() => {
 
       const group = allClassGroups[clampedIndex];
 
-      return { ...group, ...visibleRows(group.drivers, visibleRowCount) };
+      return {
+        ...group,
+        ...visibleRows(group.drivers, visibleRowCount, singleListOffset),
+      };
     }
 
     return {
@@ -108,7 +251,7 @@ export const StandingsContent = observer(() => {
       classColor: '',
       totalDrivers: driverEntries.length,
       classSof: overallSof,
-      ...visibleRows(driverEntries, visibleRowCount),
+      ...visibleRows(driverEntries, visibleRowCount, singleListOffset),
     };
   };
 
@@ -125,16 +268,26 @@ export const StandingsContent = observer(() => {
         <>
           <ClassSwitcher />
 
-          <div ref={attachList} className={styles.listWrap}>
+          <div
+            ref={attachList}
+            className={styles.listWrap}
+            onWheel={handleWheel}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+          >
             <StandingsHeader />
 
             {isGrouped ? (
-              allClassGroups.map((group) => (
+              drawnClassGroups.map((group) => (
                 <ClassGroup
                   key={group.classId}
                   group={{
                     ...group,
-                    ...visibleRows(group.drivers, rowsPerGroupedClass),
+                    ...visibleRows(
+                      group.drivers,
+                      rowsPerGroupedClass,
+                      standingsWidget.scrollOffsetFor(group.classId)
+                    ),
                   }}
                   showHeader
                 />

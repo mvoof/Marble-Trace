@@ -34,6 +34,10 @@
   transform: translateX(-50%);
   z-index: 10000;
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: sp(xs);
   animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -47,6 +51,15 @@
   border-radius: radius(md);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px);
+}
+
+.toastInteract {
+  border-color: rgba($race-amber, 0.55);
+}
+
+.toastIconInteract {
+  color: $race-amber;
+  flex-shrink: 0;
 }
 
 .toastIcon {

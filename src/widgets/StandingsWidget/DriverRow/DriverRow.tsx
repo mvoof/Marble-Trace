@@ -78,6 +78,9 @@ export const DriverRow = observer(
       isOffTrack ? styles.driverRowOffTrack : '',
       isOut ? styles.driverRowOut : '',
       startsPlayerWindow ? styles.driverRowWindowStart : '',
+      standingsWidget.hoveredClassId === driver.carClassId
+        ? styles.driverRowScrollTarget
+        : '',
     ]
       .filter(Boolean)
       .join(' ');

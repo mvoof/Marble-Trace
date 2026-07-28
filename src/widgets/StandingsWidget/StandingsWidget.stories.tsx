@@ -170,6 +170,16 @@ export const NoHeaders: Story = {
   },
 };
 
+export const GroupedByClass: Story = {
+  args: {
+    settings: {
+      ...DEFAULT_SETTINGS,
+      viewMode: 'grouped',
+      groupedRowsPerClass: 3,
+    },
+  },
+};
+
 export const SecondClass: Story = {
   args: {
     settings: { ...DEFAULT_SETTINGS, viewMode: 'cycling' },

@@ -14,9 +14,11 @@ import {
 import { emit } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import type { UnitSystem } from '@/types';
-import type { AppLanguage } from '@store/settings/app-settings.store';
+import type {
+  AppLanguage,
+  InteractHotkeyMode,
+} from '@store/settings/app-settings.store';
 import { downloadSnapshot } from '@/utils/capture-snapshot';
-import { useStore } from '@store/root-store-context';
 import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
 import {
   RefreshCw,
@@ -28,12 +30,16 @@ import {
 import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/ReleaseNotesButton';
 import { TRACK_MAP_CLEAR } from '@store/sync/sim-events';
 import styles from './SettingsPage.module.scss';
+
 import {
+  useStore,
   useAppSettingsStore,
   useSessionStore,
   useTrackMapWidgetStore,
   useUnitsStore,
 } from '@store/root-store-context';
+
+const INTERACT_AUTO_OFF_OPTIONS = [0, 10, 15, 30, 60];
 
 const isDev = import.meta.env.DEV;
 
@@ -216,6 +222,93 @@ export const SettingsPage = observer(() => {
               onApply={(key) => appSettings.setDragHotkey(key)}
             />
           </div>
+
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldRow}>
+              <div className={styles.fieldTexts}>
+                <div className={styles.fieldTitle}>
+                  {t('settingsPage.interactionMode.interactModeTitle')}
+                </div>
+
+                <div className={styles.fieldDesc}>
+                  {t('settingsPage.interactionMode.interactModeDesc')}
+                </div>
+              </div>
+
+              <Switch
+                checked={appSettings.interactMode}
+                onChange={() => appSettings.toggleInteractMode()}
+              />
+            </div>
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <span className={styles.fieldLabel}>
+              {t('settingsPage.interactionMode.interactModeHotkey')}
+            </span>
+
+            <HotkeyRecorder
+              currentHotkey={appSettings.appSettings.interactHotkey}
+              onApply={(key) => appSettings.setInteractHotkey(key)}
+            />
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldRow}>
+              <div className={styles.fieldTexts}>
+                <div className={styles.fieldTitle}>
+                  {t('settingsPage.interactionMode.interactHotkeyModeTitle')}
+                </div>
+
+                <div className={styles.fieldDesc}>
+                  {t('settingsPage.interactionMode.interactHotkeyModeDesc')}
+                </div>
+              </div>
+
+              <Segmented<InteractHotkeyMode>
+                value={appSettings.appSettings.interactHotkeyMode}
+                onChange={(v) => appSettings.setInteractHotkeyMode(v)}
+                options={[
+                  {
+                    label: t('settingsPage.interactionMode.interactToggle'),
+                    value: 'toggle',
+                  },
+                  {
+                    label: t('settingsPage.interactionMode.interactHold'),
+                    value: 'hold',
+                  },
+                ]}
+              />
+            </div>
+          </div>
+
+          {appSettings.appSettings.interactHotkeyMode === 'toggle' ? (
+            <div className={styles.fieldGroup}>
+              <div className={styles.fieldRow}>
+                <div className={styles.fieldTexts}>
+                  <div className={styles.fieldTitle}>
+                    {t('settingsPage.interactionMode.interactAutoOffTitle')}
+                  </div>
+
+                  <div className={styles.fieldDesc}>
+                    {t('settingsPage.interactionMode.interactAutoOffDesc')}
+                  </div>
+                </div>
+
+                <Segmented<number>
+                  value={appSettings.appSettings.interactAutoOffSeconds}
+                  onChange={(v) => appSettings.setInteractAutoOffSeconds(v)}
+                  options={INTERACT_AUTO_OFF_OPTIONS.map((seconds) => ({
+                    label:
+                      seconds === 0
+                        ? t('settingsPage.interactionMode.interactAutoOffNever')
+                        : `${seconds}s`,
+                    value: seconds,
+                  }))}
+                />
+              </div>
+            </div>
+          ) : null}
         </Card>
 
         <Card title={t('settingsPage.gameIntegration.title')}>

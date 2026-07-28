@@ -19,6 +19,8 @@ const PLAYER_WINDOW_OPTIONS = [0, 1, 2, 3, 4, 5].map((count) => ({
 
 const GROUPED_ROWS_PER_CLASS_OPTIONS = [0, 2, 3, 4, 5, 6, 8];
 
+const SCROLL_RESET_OPTIONS = [0, 5, 8, 15, 30];
+
 export const StandingsSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');
@@ -298,6 +300,41 @@ export const StandingsSettingsPanel = observer(() => {
             currentHotkey={settings.classNextHotkey}
             onApply={(key) => update({ classNextHotkey: key })}
           />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <HotkeyRecorder
+            label={t('settingsPanels.standings.scrollUpHotkey')}
+            currentHotkey={settings.scrollUpHotkey}
+            onApply={(key) => update({ scrollUpHotkey: key })}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <HotkeyRecorder
+            label={t('settingsPanels.standings.scrollDownHotkey')}
+            currentHotkey={settings.scrollDownHotkey}
+            onApply={(key) => update({ scrollDownHotkey: key })}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.standings.scrollResetSeconds')}
+            desc={t('settingsPanels.standings.scrollResetSecondsDesc')}
+          >
+            <Segmented<number>
+              value={settings.scrollResetSeconds}
+              onChange={(v) => update({ scrollResetSeconds: v })}
+              options={SCROLL_RESET_OPTIONS.map((seconds) => ({
+                label:
+                  seconds === 0
+                    ? t('settingsPanels.standings.scrollResetOff')
+                    : `${seconds}s`,
+                value: seconds,
+              }))}
+            />
+          </SettingRow>
         </div>
       </Card>
 

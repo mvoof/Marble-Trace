@@ -179,7 +179,17 @@
       "title": "交互模式",
       "dragModeTitle": "界面拖拽模式",
       "dragModeDesc": "解锁小组件以在屏幕上自由移动。",
-      "dragModeHotkey": "拖拽模式快捷键"
+      "dragModeHotkey": "拖拽模式快捷键",
+      "interactModeTitle": "交互模式",
+      "interactModeDesc": "让鼠标可以操作悬浮层（滚动、按钮），但不解锁部件拖拽。开启期间游戏无法接收鼠标。",
+      "interactModeHotkey": "交互模式快捷键",
+      "interactHotkeyModeTitle": "按键方式",
+      "interactHotkeyModeDesc": "「切换」按一次开、再按一次关；「按住」仅在按住按键时生效。",
+      "interactToggle": "切换",
+      "interactHold": "按住",
+      "interactAutoOffTitle": "自动关闭",
+      "interactAutoOffDesc": "自动关闭交互模式，让鼠标回到游戏。",
+      "interactAutoOffNever": "从不"
     },
     "gameIntegration": {
       "title": "游戏集成",

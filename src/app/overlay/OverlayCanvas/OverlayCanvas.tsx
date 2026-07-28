@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Button } from 'antd';
-import { X, Layers } from 'lucide-react';
+import { X, Layers, MousePointer2 } from 'lucide-react';
 import { listen } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { WIDGET_BY_ID } from '@store/widget-defaults';
@@ -19,11 +19,14 @@ export const OverlayCanvas = observer(() => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
 
+  // Both modes hand the mouse to the overlay; drag mode also unlocks widget moving.
+  const mouseEnabled = appSettings.dragMode || appSettings.interactMode;
+
   useEffect(() => {
     getCurrentWebviewWindow()
-      .setIgnoreCursorEvents(!appSettings.dragMode)
+      .setIgnoreCursorEvents(!mouseEnabled)
       .catch((err: unknown) => console.error(err));
-  }, [appSettings.dragMode]);
+  }, [mouseEnabled]);
 
   useEffect(() => {
     let timer: number | null = null;
@@ -52,6 +55,16 @@ export const OverlayCanvas = observer(() => {
   const { dragMode } = appSettings;
   const { hideAllWidgets } = appSettings.appSettings;
 
+  // Drag mode already announces itself with its own banner and backdrop.
+  const showInteractBanner = appSettings.interactMode && !dragMode;
+
+  const { interactHotkey, interactHotkeyMode } = appSettings.appSettings;
+
+  const interactBannerText =
+    interactHotkeyMode === 'hold'
+      ? `Interact mode — release ${interactHotkey} to exit`
+      : `Interact mode — ${interactHotkey} to exit`;
+
   const handleExitDragMode = () => {
     appSettings.setDragMode(false);
   };
@@ -63,7 +76,7 @@ export const OverlayCanvas = observer(() => {
   return (
     <div
       className={`${styles.canvas} ${dragMode ? styles.dragActive : ''}`}
-      style={{ pointerEvents: dragMode ? 'auto' : 'none' }}
+      style={{ pointerEvents: mouseEnabled ? 'auto' : 'none' }}
     >
       {dragMode && (
         <div className={styles.exitButtonContainer}>
@@ -93,14 +106,21 @@ export const OverlayCanvas = observer(() => {
         );
       })}
 
-      {showToast && toastMessage && (
-        <div className={styles.toastContainer}>
+      <div className={styles.toastContainer}>
+        {showInteractBanner && (
+          <div className={`${styles.toast} ${styles.toastInteract}`}>
+            <MousePointer2 size={14} className={styles.toastIconInteract} />
+            <span className={styles.toastText}>{interactBannerText}</span>
+          </div>
+        )}
+
+        {showToast && toastMessage && (
           <div className={styles.toast}>
             <Layers size={14} className={styles.toastIcon} />
             <span className={styles.toastText}>{toastMessage}</span>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 });
