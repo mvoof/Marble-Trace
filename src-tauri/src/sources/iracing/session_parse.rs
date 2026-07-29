@@ -60,6 +60,111 @@ const FREE_TEXT_YAML_KEYS: [&str; 5] = [
     "DriverSetupName",
 ];
 
+/// Badges for classes iRacing leaves unnamed. Keys are `CarClassID`, which is
+/// stable across sessions; values were read off live session dumps. A class can
+/// hold several car models (4109 covers all GT3 makes), so falling back to the
+/// car name there would label one class with a random manufacturer.
+const CLASS_BADGE_BY_ID: [(i32, &str); 8] = [
+    (11, "Safety"),
+    (34, "Street Stock"),
+    (74, "MX-5"),
+    (3002, "FVee"),
+    (4012, "GR86"),
+    (4016, "FF1600"),
+    (4102, "M2"),
+    (4109, "GT3"),
+];
+
+const MIN_BADGE_TOKEN_LENGTH: usize = 2;
+
+/// Words shared by unrelated models in a class carry no class meaning.
+const NON_BADGE_TOKENS: [&str; 4] = ["racing", "car", "cup", "series"];
+
+/// Derives a class badge from the models actually in the class: tokens present
+/// in every car name are what the class is about ("BMW M4 GT3 EVO" +
+/// "Ferrari 296 GT3" + "Porsche 911 GT3 R (992)" → "GT3"). Needs at least two
+/// distinct models, otherwise the car name is the best label there is.
+fn derive_badge_from_car_names(car_names: &[&str]) -> String {
+    let mut distinct: Vec<&str> = car_names.iter().map(|name| name.trim()).collect();
+    distinct.sort_unstable();
+    distinct.dedup();
+
+    if distinct.len() < 2 {
+        return String::new();
+    }
+
+    let tokenize = |name: &str| -> Vec<String> {
+        name.split_whitespace()
+            .map(|token| {
+                token
+                    .trim_matches(|c: char| !c.is_ascii_alphanumeric())
+                    .to_string()
+            })
+            .filter(|token| {
+                token.len() >= MIN_BADGE_TOKEN_LENGTH
+                    && !NON_BADGE_TOKENS.contains(&token.to_lowercase().as_str())
+            })
+            .collect()
+    };
+
+    let mut shared = tokenize(distinct[0]);
+
+    for name in &distinct[1..] {
+        let tokens = tokenize(name);
+        shared.retain(|token| tokens.iter().any(|other| other.eq_ignore_ascii_case(token)));
+    }
+
+    shared.join(" ")
+}
+
+/// Fills in `car_class_short_name` for classes the sim left unnamed (AI and
+/// hosted sessions): curated badge first, then one derived from the class roster,
+/// and finally the car name.
+fn apply_class_badges(cars: &mut [CarEntry]) {
+    let class_ids: Vec<i32> = {
+        let mut ids: Vec<i32> = cars
+            .iter()
+            .filter(|car| car.car_class_short_name.is_empty())
+            .map(|car| car.car_class_id)
+            .collect();
+        ids.sort_unstable();
+        ids.dedup();
+
+        ids
+    };
+
+    for class_id in class_ids {
+        let car_names: Vec<&str> = cars
+            .iter()
+            .filter(|car| car.car_class_id == class_id)
+            .map(|car| car.car_screen_name_short.as_str())
+            .collect();
+
+        let curated = CLASS_BADGE_BY_ID
+            .iter()
+            .find(|(key, _)| *key == class_id)
+            .map(|(_, badge)| (*badge).to_string())
+            .unwrap_or_default();
+
+        let badge = if curated.is_empty() {
+            derive_badge_from_car_names(&car_names)
+        } else {
+            curated
+        };
+
+        for car in cars
+            .iter_mut()
+            .filter(|car| car.car_class_id == class_id && car.car_class_short_name.is_empty())
+        {
+            car.car_class_short_name = if badge.is_empty() {
+                car.car_screen_name_short.clone()
+            } else {
+                badge.clone()
+            };
+        }
+    }
+}
+
 /// Quote the values of free-text keys so arbitrary driver/team names cannot
 /// break the YAML document structure.
 fn sanitize_session_yaml(yaml: &str) -> String {
@@ -186,7 +291,7 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         })
         .collect();
 
-    let cars = driver_info
+    let mut cars: Vec<CarEntry> = driver_info
         .drivers
         .unwrap_or_default()
         .into_iter()
@@ -196,6 +301,11 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
                 user_name: raw_driver.user_name.unwrap_or_default(),
                 car_number: raw_driver.car_number.unwrap_or_default(),
                 car_class_id: raw_driver.car_class_id.unwrap_or(-1),
+                car_class_short_name: raw_driver
+                    .car_class_short_name
+                    .unwrap_or_default()
+                    .trim()
+                    .to_string(),
                 car_class_color: normalize_class_color(
                     raw_driver.car_class_color.as_deref().unwrap_or_default(),
                 ),
@@ -214,6 +324,8 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
             })
         })
         .collect();
+
+    apply_class_badges(&mut cars);
 
     let driver_tires = driver_info
         .driver_tires
@@ -392,6 +504,7 @@ struct RawDriver {
     car_number: Option<String>,
     #[serde(rename = "CarClassID")]
     car_class_id: Option<i32>,
+    car_class_short_name: Option<String>,
     car_class_color: Option<String>,
     car_screen_name: Option<String>,
     car_screen_name_short: Option<String>,
@@ -490,6 +603,7 @@ DriverInfo:
    UserName: Test Driver
    CarNumber: "11"
    CarClassID: 4011
+   CarClassShortName: MX5
    CarClassColor: 0xffda59
    CarScreenName: Mazda MX-5
    CarScreenNameShort: MX-5
@@ -517,6 +631,58 @@ QualifyResultsInfo:
 "#;
 
     #[test]
+    fn derives_badge_from_shared_tokens_in_class_roster() {
+        assert_eq!(
+            derive_badge_from_car_names(&[
+                "BMW M4 GT3 EVO",
+                "Ferrari 296 GT3",
+                "Ford Mustang GT3",
+                "Porsche 911 GT3 R (992)",
+            ]),
+            "GT3"
+        );
+        assert_eq!(
+            derive_badge_from_car_names(&["Dallara P217 LMP2", "Oreca 07 LMP2"]),
+            "LMP2"
+        );
+        assert_eq!(derive_badge_from_car_names(&["MX-5 Cup", "MX-5 Cup"]), "");
+        assert_eq!(derive_badge_from_car_names(&["Toyota GR86"]), "");
+        assert_eq!(
+            derive_badge_from_car_names(&["Ferrari 296 GT3", "Toyota GR86"]),
+            ""
+        );
+    }
+
+    #[test]
+    fn class_badges_fill_in_only_what_the_sim_left_empty() {
+        let make_car = |car_idx: i32, class_id: i32, model: &str, sim_label: &str| CarEntry {
+            car_idx,
+            car_class_id: class_id,
+            car_class_short_name: sim_label.to_string(),
+            car_screen_name_short: model.to_string(),
+            ..CarEntry::default()
+        };
+
+        let mut cars = vec![
+            make_car(0, 4109, "Ferrari 296 GT3", ""),
+            make_car(1, 4109, "BMW M4 GT3 EVO", ""),
+            make_car(2, 4012, "Toyota GR86", ""),
+            make_car(3, 74, "MX-5 Cup", "Global Mazda MX-5 Cup"),
+            make_car(4, 5001, "Oreca 07 LMP2", ""),
+            make_car(5, 5001, "Dallara P217 LMP2", ""),
+        ];
+
+        apply_class_badges(&mut cars);
+
+        assert_eq!(cars[0].car_class_short_name, "GT3");
+        assert_eq!(cars[1].car_class_short_name, "GT3");
+        assert_eq!(cars[2].car_class_short_name, "GR86");
+        assert_eq!(cars[3].car_class_short_name, "Global Mazda MX-5 Cup");
+        assert_eq!(cars[4].car_class_short_name, "LMP2");
+        assert_eq!(cars[5].car_class_short_name, "LMP2");
+    }
+
+    #[test]
     fn parses_all_consumed_sections() {
         let parsed = parse_session(SAMPLE_YAML).expect("sample YAML must parse");
         let snapshot = parsed.snapshot;
@@ -542,6 +708,7 @@ QualifyResultsInfo:
 
         let player = &snapshot.cars[0];
         assert_eq!(player.car_class_id, 4011);
+        assert_eq!(player.car_class_short_name, "MX5");
         assert_eq!(player.car_class_color, "#ffd259");
         assert_eq!(player.i_rating, 2350);
         assert!(!player.is_pace_car);

@@ -12,88 +12,9 @@ use crate::model::session::{QualifyResultEntry, ResultPosition, SessionSnapshot}
 use crate::utils::lock_or_recover;
 
 const NO_CLASS_LABEL: &str = "No Class";
-const MAX_BADGE_LENGTH: usize = 8;
-const MIN_ABBR_LENGTH: usize = 2;
-const MAX_ABBR_LENGTH: usize = 5;
 const FALLBACK_SORT_POSITION: i32 = 999;
 const IR_CHANGE_SCALE_FACTOR: f64 = 200.0;
 const IR_CHANGE_OFFSET: f64 = 100.0;
-
-static BADGE_EXCEPTIONS: &[(&str, &str)] = &[
-    ("Formula Vee", "FVee"),
-    ("Ray FF1600", "FF1600"),
-    ("Global Mazda MX-5 Cup", "MX-5"),
-    ("Legends Ford '34 Coupe", "Legends"),
-    ("Skip Barber Formula 2000", "Skippy"),
-    ("Dirt Sprint Car", "Sprint"),
-    ("Dirt Late Model", "DLM"),
-];
-
-static BRANDS_TO_STRIP: &[&str] = &[
-    "Toyota ",
-    "Cadillac ",
-    "Porsche ",
-    "Ferrari ",
-    "BMW ",
-    "Mercedes-AMG ",
-    "Dallara ",
-    "Chevrolet ",
-    "Ford ",
-    "Aston Martin ",
-    "Audi ",
-    "McLaren ",
-    "Honda ",
-    "Hyundai ",
-    "Nissan ",
-    "Radical ",
-    "Renault ",
-    "Volkswagen ",
-];
-
-static FLUFF_TO_STRIP: &[&str] = &[
-    " Racecar", " Cup", " Series", " Global", " Track", " Sprint", " Lite",
-];
-
-fn get_compact_badge_name(screen_name_short: &str) -> String {
-    if screen_name_short.is_empty() {
-        return "—".to_string();
-    }
-
-    for &(key, val) in BADGE_EXCEPTIONS {
-        if screen_name_short == key {
-            return val.to_string();
-        }
-    }
-
-    let mut badge = screen_name_short.to_string();
-
-    for &brand in BRANDS_TO_STRIP {
-        if badge.starts_with(brand) {
-            badge = badge[brand.len()..].to_string();
-
-            break;
-        }
-    }
-
-    for &fluff in FLUFF_TO_STRIP {
-        badge = badge.replace(fluff, "");
-    }
-
-    badge = badge.trim().to_string();
-
-    if badge.len() > MAX_BADGE_LENGTH {
-        let abbr: String = badge
-            .chars()
-            .filter(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
-            .collect();
-
-        if abbr.len() >= MIN_ABBR_LENGTH && abbr.len() <= MAX_ABBR_LENGTH {
-            return abbr;
-        }
-    }
-
-    badge
-}
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -143,7 +64,6 @@ pub struct DriverEntry {
 
 #[derive(Default)]
 pub struct StandingsState {
-    pub cached_car_classes: HashMap<String, String>,
     pub pit_states: HashMap<i32, PitState>,
 }
 
@@ -274,25 +194,12 @@ pub fn compute(
 
             let car_screen_name_short = driver.car_screen_name_short.clone();
 
-            let car_class_short_name = if car_screen_name_short.is_empty() {
+            let sim_class_short_name = driver.car_class_short_name.trim();
+
+            let car_class_short_name = if sim_class_short_name.is_empty() {
                 NO_CLASS_LABEL.to_string()
-            } else if let Some(cached) = locked_state.cached_car_classes.get(&car_screen_name_short)
-            {
-                cached.clone()
             } else {
-                let badge = get_compact_badge_name(&car_screen_name_short);
-
-                let result = if badge.is_empty() {
-                    NO_CLASS_LABEL.to_string()
-                } else {
-                    badge
-                };
-
-                locked_state
-                    .cached_car_classes
-                    .insert(car_screen_name_short.clone(), result.clone());
-
-                result
+                sim_class_short_name.to_string()
             };
 
             DriverEntry {
