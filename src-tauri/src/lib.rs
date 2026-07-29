@@ -21,9 +21,10 @@ use model::reference_lap::{ReferenceLapData, ReferenceLapSample};
 use model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
 
 use commands::{
-    delete_reference_lap, delete_track_shape, get_connection_status, get_last_session_info,
-    get_reference_lap, log_settings_snapshot, reset_pit_lane_pct, set_active_events,
-    set_car_length, set_pit_warning_laps, start_telemetry_stream, stop_telemetry_stream,
+    delete_reference_lap, delete_track_shape, get_cached_track_shape, get_connection_status,
+    get_last_session_info, get_reference_lap, log_settings_snapshot, reset_pit_lane_pct,
+    set_active_events, set_car_length, set_pit_warning_laps, start_telemetry_stream,
+    stop_telemetry_stream,
 };
 use computations::ProcessorRegistry;
 use telemetry::state::TelemetryState;
@@ -194,6 +195,7 @@ pub fn run() {
             set_car_length,
             get_connection_status,
             delete_track_shape,
+            get_cached_track_shape,
             reset_pit_lane_pct,
             get_reference_lap,
             delete_reference_lap,

@@ -23,6 +23,7 @@ use crate::computations::{standings, ProcessorRegistry};
 use crate::model::capabilities::CapabilitiesPayload;
 use crate::model::enums::{SimStatus, SimType};
 use crate::model::session::SessionSnapshot;
+use crate::model::track_shape::TrackShapePayload;
 use crate::sources::create_source;
 use crate::sources::source::{ParsedSession, SourceReadResult, TelemetrySource};
 
@@ -304,10 +305,13 @@ fn reset_telemetry_state(
     app.emit(EVENT_DISCONNECTED, &()).ok();
 }
 
-fn try_load_and_emit_track(app: &AppHandle, track_id: i32, service: &TelemetryServiceState) {
+/// Reads a previously recorded track shape from disk. Returns `None` when no
+/// cached file exists for this track or it was written by an older version.
+///
+/// Shared with the `get_cached_track_shape` command, which re-hydrates windows
+/// that subscribed after the one-shot `sim://track-shape` emit.
+pub fn load_cached_track_shape(app: &AppHandle, track_id: i32) -> Option<TrackShapePayload> {
     use std::fs;
-
-    use crate::model::track_shape::TrackShapePayload;
 
     #[derive(serde::Deserialize)]
     struct StoredTrack {
@@ -316,31 +320,31 @@ fn try_load_and_emit_track(app: &AppHandle, track_id: i32, service: &TelemetrySe
         payload: TrackShapePayload,
     }
 
-    let Ok(data_dir) = app.path().app_data_dir() else {
-        return;
-    };
-
+    let data_dir = app.path().app_data_dir().ok()?;
     let path = data_dir.join("tracks").join(format!("{}.json", track_id));
-    let Ok(json) = fs::read_to_string(&path) else {
-        return;
-    };
-
-    let Ok(stored) = serde_json::from_str::<StoredTrack>(&json) else {
-        return;
-    };
+    let json = fs::read_to_string(&path).ok()?;
+    let stored = serde_json::from_str::<StoredTrack>(&json).ok()?;
 
     if stored.version < 1 {
-        return;
+        return None;
     }
+
+    Some(stored.payload)
+}
+
+fn try_load_and_emit_track(app: &AppHandle, track_id: i32, service: &TelemetryServiceState) {
+    let Some(payload) = load_cached_track_shape(app, track_id) else {
+        return;
+    };
 
     if let Ok(mut lock) = service.pit_in_pct.lock() {
-        *lock = stored.payload.pit_in_pct;
+        *lock = payload.pit_in_pct;
     }
     if let Ok(mut lock) = service.pit_exit_pct.lock() {
-        *lock = stored.payload.pit_exit_pct;
+        *lock = payload.pit_exit_pct;
     }
 
-    if let Err(e) = app.emit(EVENT_TRACK_SHAPE, &stored.payload) {
+    if let Err(e) = app.emit(EVENT_TRACK_SHAPE, &payload) {
         warn!("Failed to emit cached track shape: {}", e);
     }
 
