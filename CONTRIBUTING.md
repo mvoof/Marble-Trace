@@ -105,3 +105,28 @@ On every app start the loaded settings are validated against the current default
 **Renaming a widget `id`** — the saved widget with the old `id` is dropped and replaced with a new one at its default position. The user will need to reposition it.
 
 If `loadSettings` throws (e.g. a type mismatch in the store file), the saved settings are automatically deleted and the app starts fresh with defaults.
+
+## Car class badges
+
+Everything class-related — constants, resolution logic, tests — lives in `src-tauri/src/sources/iracing/car_classes.rs`. `session_parse.rs` only calls `apply_class_badges()` and `normalize_class_color()`.
+
+iRacing's `CarClassShortName` is **empty in AI and hosted sessions**, and in single-model classes it holds the _car_ name ("BMW M4 GT4"), not a class label. So `car_class_short_name` is resolved in this order:
+
+| #   | Source                          | Notes                                                                                    |
+| --- | ------------------------------- | ---------------------------------------------------------------------------------------- |
+| 1   | `CarClassShortName`             | whatever the sim reports — never overwritten                                             |
+| 2   | `CLASS_BADGE_BY_ID`             | curated badge per `CarClassID` — the only hand-maintained list                           |
+| 3   | `derive_badge_from_car_names()` | tokens shared by every model in the class ("BMW M4 GT3 EVO" + "Ferrari 296 GT3" → `GT3`) |
+| 4   | `CarScreenNameShort`            | the car name, as a last resort                                                           |
+
+**Adding a class** — add to `CLASS_BADGE_BY_ID` only when a class holds a single model whose name is too long for the badge column. Multi-model classes (GT3, LMP2, TCR…) resolve themselves at step 3 and need no entry. `CarClassID` is stable across sessions and seasons.
+
+**Class colors** — `CLASS_COLOR_MAP` corrects known mismatches between the telemetry color and what iRacing displays in-game.
+
+**Reading real values** — dump the session YAML with the sim running (`kerb::utils::save_session`, or `cargo run --example session_diagnostics` in `kerb/examples`), then:
+
+```bash
+grep -o "CarClassID: [0-9]*\|CarScreenNameShort: .*" dump.yaml | paste - - | sort -u
+```
+
+The same list is available from the iRacing `/data/carclass/get` endpoint (fields `car_class_id` / `name`), which requires an account login — note that its `short_name` is the _longer_ car name and `name` is the concise one.
