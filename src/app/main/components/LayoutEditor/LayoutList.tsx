@@ -21,6 +21,11 @@ import {
   resolveBackgroundSrc,
   deleteBackgroundImage,
 } from '@utils/widget/layout-background';
+import { listOverlayMonitors } from '@store/sync/overlay-resolution';
+import {
+  monitorsBounds,
+  widgetsOnMonitor,
+} from '@utils/widget/virtual-desktop';
 import type { SavedLayout, SessionContext } from '@/types/widget-settings';
 import { getWidgetLabel } from '@utils/widget-i18n';
 import styles from './LayoutList.module.scss';
@@ -28,81 +33,105 @@ import styles from './LayoutList.module.scss';
 interface LayoutPreviewProps {
   layout: SavedLayout;
 }
+const PREVIEW_ASPECT = 16 / 9;
 
 const LayoutPreview = observer(({ layout }: LayoutPreviewProps) => {
   const { t } = useTranslation('main-app');
-  const [backgroundSrc, setBackgroundSrc] = useState<string | undefined>();
+  const [backgrounds, setBackgrounds] = useState<Record<string, string>>({});
+
+  const images = layout.backgroundImages;
 
   useEffect(() => {
     let active = true;
 
-    const loadBg = async () => {
-      if (layout.backgroundImage) {
-        try {
-          const src = await resolveBackgroundSrc(layout.backgroundImage);
+    const loadBackgrounds = async () => {
+      const entries = await Promise.all(
+        Object.entries(images ?? {}).map(async ([monitorName, image]) => {
+          try {
+            return [monitorName, await resolveBackgroundSrc(image)] as const;
+          } catch (error) {
+            console.error('Failed to resolve background image:', error);
 
-          if (active) {
-            setBackgroundSrc(src);
+            return null;
           }
-        } catch (error) {
-          console.error('Failed to resolve background image:', error);
-        }
-      } else {
-        if (active) {
-          setBackgroundSrc(undefined);
-        }
-      }
+        })
+      );
+
+      if (!active) return;
+
+      setBackgrounds(
+        Object.fromEntries(
+          entries.filter((entry): entry is [string, string] => entry !== null)
+        )
+      );
     };
 
-    void loadBg();
+    void loadBackgrounds();
 
     return () => {
       active = false;
     };
-  }, [layout.backgroundImage]);
+  }, [images]);
 
-  const monitorName =
-    layout.activeMonitorName || Object.keys(layout.monitorConfigs)[0];
-
-  const monitorConfig = monitorName
-    ? layout.monitorConfigs[monitorName]
-    : undefined;
-
-  const resolution = monitorConfig?.resolution || { width: 1920, height: 1080 };
-  const widgets = monitorConfig?.widgets || [];
-  const enabledWidgets = widgets.filter(
+  const desktop = monitorsBounds(layout.monitors);
+  const enabledWidgets = layout.widgets.filter(
     (widget) => widget.userSettings.enabled
   );
 
+  // The card is a fixed 16:9 box, but a multi-monitor desktop is any shape at
+  // all, so the arrangement is letterboxed inside it rather than stretched.
+  const desktopAspect = desktop.width / desktop.height;
+  const fitsWidth = desktopAspect >= PREVIEW_ASPECT;
+
+  const stageStyle = {
+    width: fitsWidth ? '100%' : `${(desktopAspect / PREVIEW_ASPECT) * 100}%`,
+    height: fitsWidth ? `${(PREVIEW_ASPECT / desktopAspect) * 100}%` : '100%',
+  };
+
+  const percentOf = (value: number, origin: number, span: number) =>
+    `${((value - origin) / span) * 100}%`;
+
   return (
     <div className={styles.previewWrapper}>
-      <div
-        className={styles.previewContainer}
-        style={{
-          backgroundImage: backgroundSrc ? `url(${backgroundSrc})` : undefined,
-        }}
-      >
-        {enabledWidgets.map((widget) => {
-          const xPct = (widget.userSettings.x / resolution.width) * 100;
-          const yPct = (widget.userSettings.y / resolution.height) * 100;
-          const wPct =
-            (widget.userSettings.currentWidth / resolution.width) * 100;
-          const hPct =
-            (widget.userSettings.currentHeight / resolution.height) * 100;
+      <div className={styles.previewStage} style={stageStyle}>
+        {layout.monitors.map((monitor) => {
+          const background = backgrounds[monitor.name];
 
           return (
             <div
-              key={widget.id}
-              className={styles.previewWidget}
+              key={monitor.name}
+              className={styles.previewMonitor}
               style={{
-                left: `${xPct}%`,
-                top: `${yPct}%`,
-                width: `${wPct}%`,
-                height: `${hPct}%`,
+                left: percentOf(monitor.bounds.x, desktop.x, desktop.width),
+                top: percentOf(monitor.bounds.y, desktop.y, desktop.height),
+                width: percentOf(monitor.bounds.width, 0, desktop.width),
+                height: percentOf(monitor.bounds.height, 0, desktop.height),
+                backgroundImage: background ? `url(${background})` : undefined,
               }}
             />
           );
         })}
+
+        {enabledWidgets.map((widget) => (
+          <div
+            key={widget.id}
+            className={styles.previewWidget}
+            style={{
+              left: percentOf(widget.userSettings.x, desktop.x, desktop.width),
+              top: percentOf(widget.userSettings.y, desktop.y, desktop.height),
+              width: percentOf(
+                widget.userSettings.currentWidth,
+                0,
+                desktop.width
+              ),
+              height: percentOf(
+                widget.userSettings.currentHeight,
+                0,
+                desktop.height
+              ),
+            }}
+          />
+        ))}
 
         {enabledWidgets.length === 0 && (
           <div className={styles.emptyPreviewText}>
@@ -136,6 +165,31 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(
     widgetSettings.activeLayoutId
   );
+
+  // Monitors physically attached right now. A layout can hold configs for
+  // screens that are currently unplugged — those keep their widgets but get no
+  // overlay window, and are shown greyed out.
+  const [onlineMonitorNames, setOnlineMonitorNames] = useState<Set<string>>(
+    new Set()
+  );
+
+  useEffect(() => {
+    let active = true;
+
+    listOverlayMonitors()
+      .then((monitors) => {
+        if (active) {
+          setOnlineMonitorNames(
+            new Set(monitors.map((monitor) => monitor.name))
+          );
+        }
+      })
+      .catch(console.error);
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newLayoutName, setNewLayoutName] = useState('');
@@ -196,8 +250,8 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
         (layout) => layout.id === selectedId
       );
 
-      if (activeLayout?.backgroundImage) {
-        void deleteBackgroundImage(activeLayout.backgroundImage);
+      for (const image of Object.values(activeLayout?.backgroundImages ?? {})) {
+        void deleteBackgroundImage(image);
       }
 
       widgetSettings.deleteLayout(selectedId);
@@ -220,21 +274,20 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
     }
   };
 
-  const selectedMonitorName = selectedLayout
-    ? selectedLayout.activeMonitorName ||
-      Object.keys(selectedLayout.monitorConfigs)[0]
-    : undefined;
+  const selectedMonitors = selectedLayout?.monitors ?? [];
 
-  const selectedMonitorConfig =
-    selectedLayout && selectedMonitorName
-      ? selectedLayout.monitorConfigs[selectedMonitorName]
-      : undefined;
-
-  const selectedResolution = selectedMonitorConfig?.resolution;
-  const selectedWidgets = selectedMonitorConfig?.widgets || [];
-  const selectedEnabledWidgets = selectedWidgets.filter(
-    (w) => w.userSettings.enabled
+  const selectedEnabledWidgets = (selectedLayout?.widgets ?? []).filter(
+    (widget) => widget.userSettings.enabled
   );
+
+  const widgetCountOnMonitor = (monitorName: string) =>
+    selectedLayout
+      ? widgetsOnMonitor(
+          selectedEnabledWidgets,
+          monitorName,
+          selectedLayout.monitors
+        ).length
+      : 0;
 
   return (
     <div className={styles.container}>
@@ -292,17 +345,11 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                   widgetSettings.sessionLayouts?.[context] === layout.id
               );
 
-              const monitorName =
-                layout.activeMonitorName ||
-                Object.keys(layout.monitorConfigs)[0];
-
-              const monitorConfig = monitorName
-                ? layout.monitorConfigs[monitorName]
-                : undefined;
-
-              const widgets = monitorConfig?.widgets || [];
-              const enabledWidgetsCount = widgets.filter(
-                (w) => w.userSettings.enabled
+              const monitorNames = layout.monitors.map(
+                (monitor) => monitor.name
+              );
+              const enabledWidgetsCount = layout.widgets.filter(
+                (widget) => widget.userSettings.enabled
               ).length;
 
               return (
@@ -368,12 +415,15 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                     </div>
 
                     <span className={styles.cardMeta}>
+                      {monitorNames.length > 0
+                        ? t('layoutList.monitorsCount', {
+                            count: monitorNames.length,
+                          })
+                        : t('layoutList.noMonitors')}
+                      {' • '}
                       {t('layoutList.widgetsCount', {
                         count: enabledWidgetsCount,
                       })}
-                      {monitorConfig?.resolution
-                        ? ` • ${monitorConfig.resolution.width}x${monitorConfig.resolution.height}`
-                        : ''}
                     </span>
                   </div>
                 </button>
@@ -470,25 +520,72 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
 
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>
-                    {t('layoutList.activeMonitor')}
+                    {t('layoutList.monitors')}
                   </span>
                   <span className={styles.infoValue}>
-                    {selectedMonitorName || t('layoutList.none')}
+                    {selectedMonitors.length}
                   </span>
                 </div>
-                {selectedResolution && (
-                  <div className={styles.infoRow}>
-                    <span className={styles.infoLabel}>
-                      {t('layoutList.resolution')}
-                    </span>
-                    <span className={styles.infoValue}>
-                      {selectedResolution.width}×{selectedResolution.height}
-                    </span>
-                  </div>
-                )}
+
+                <div className={styles.monitorList}>
+                  {selectedMonitors.length === 0 ? (
+                    <div className={styles.monitorEmpty}>
+                      {t('layoutList.noMonitors')}
+                    </div>
+                  ) : (
+                    selectedMonitors.map(({ name: monitorName, bounds }) => {
+                      const isOnline = onlineMonitorNames.has(monitorName);
+                      const widgetCount = widgetCountOnMonitor(monitorName);
+
+                      return (
+                        <div
+                          key={monitorName}
+                          className={`${styles.monitorRow} ${
+                            isOnline ? '' : styles.monitorRowOffline
+                          }`}
+                        >
+                          <span
+                            className={`${styles.monitorDot} ${
+                              isOnline ? '' : styles.monitorDotOffline
+                            }`}
+                          />
+                          <span className={styles.monitorName}>
+                            {monitorName}
+                          </span>
+                          <span className={styles.monitorMeta}>
+                            {isOnline
+                              ? `${bounds.width}×${bounds.height}`
+                              : t('layoutList.monitorOffline')}
+                            {` · ${widgetCount}`}
+                          </span>
+                          <Popconfirm
+                            title={t('layoutList.removeMonitor')}
+                            okText={t('layoutEditor.delete')}
+                            okButtonProps={{ danger: true }}
+                            cancelText={t('layoutEditor.cancel')}
+                            onConfirm={() =>
+                              widgetSettings.removeMonitor(
+                                selectedLayout.id,
+                                monitorName
+                              )
+                            }
+                          >
+                            <Button
+                              size="small"
+                              type="text"
+                              icon={<X size={12} />}
+                              title={t('layoutList.removeMonitor')}
+                            />
+                          </Popconfirm>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>
-                    {t('layoutList.activeWidgets')}
+                    {t('layoutList.totalWidgets')}
                   </span>
                   <span className={styles.infoValue}>
                     {selectedEnabledWidgets.length}

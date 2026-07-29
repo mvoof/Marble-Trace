@@ -53,8 +53,8 @@
     "active": "Active",
     "applyLayoutTooltip": "Apply this layout to the overlay",
     "makeActive": "Make Active",
-    "monitorTooltip": "Monitor this layout is authored for",
-    "monitorPlaceholder": "Monitor…",
+    "monitorTooltip": "Choose the screen to edit, or view them all at once. Picking a screen the layout does not cover yet adds it.",
+    "monitorPlaceholder": "Screen…",
     "customResolutionOption": "Custom Resolution...",
     "customResolutionLabel": "Custom ({{width}}×{{height}})",
     "lockAspectRatio": "Lock aspect ratio",
@@ -79,7 +79,12 @@
       "width": "Width (px)",
       "height": "Height (px)",
       "apply": "Apply"
-    }
+    },
+    "editingMonitor": "Editing: {{monitor}}",
+    "monitorAdd": "add",
+    "moveToMonitor": "Move to monitor",
+    "allMonitors": "All monitors",
+    "removeMonitor": "Remove monitor from layout"
   },
   "layoutList": {
     "moduleLabel": "Layouts",
@@ -118,10 +123,18 @@
       "qualify": "Qualify",
       "race": "Race",
       "garage": "Garage"
-    }
+    },
+    "monitorsCount_one": "{{count}} monitor",
+    "monitorsCount_other": "{{count}} monitors",
+    "noMonitors": "No monitors",
+    "monitors": "Monitors",
+    "removeMonitor": "Remove this monitor from the layout",
+    "monitorOffline": "not found",
+    "totalWidgets": "Total Widgets"
   },
   "layoutWidgetPanel": {
-    "back": "Back"
+    "back": "Back",
+    "onMonitor": "on {{monitor}}"
   },
   "widgetWorkbench": {
     "scenario": "Scenario",
@@ -132,7 +145,8 @@
     "stepSize": "{{size}} step",
     "large": "Large",
     "remove": "Remove",
-    "loadingBackground": "Loading background..."
+    "loadingBackground": "Loading background...",
+    "allMonitors": "All monitors"
   },
   "widgetSettingsPopup": {
     "ariaLabel": "{{label}} settings",

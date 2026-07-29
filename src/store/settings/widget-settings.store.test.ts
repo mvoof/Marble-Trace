@@ -96,15 +96,15 @@ describe('WidgetSettingsStore session layouts', () => {
         id: 'layout-practice',
         name: 'Practice Layout',
         createdAt: Date.now(),
-        monitorConfigs: {},
-        activeMonitorName: null,
+        monitors: [],
+        widgets: [],
       },
       {
         id: 'layout-race',
         name: 'Race Layout',
         createdAt: Date.now(),
-        monitorConfigs: {},
-        activeMonitorName: null,
+        monitors: [],
+        widgets: [],
       },
     ]);
   });
@@ -156,5 +156,65 @@ describe('WidgetSettingsStore session layouts', () => {
     });
 
     expect(rootStore.session.currentSessionType).toBe('Practice');
+  });
+});
+
+describe('WidgetSettingsStore populated monitors', () => {
+  let rootStore: RootStore;
+  const SECOND_MONITOR_X = 1920;
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+    rootStore.widgetSettings.setLayouts(
+      [
+        {
+          id: 'layout-multi',
+          name: 'Multi',
+          createdAt: Date.now(),
+          monitors: [
+            {
+              name: 'DISPLAY1',
+              bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+            },
+            {
+              name: 'DISPLAY2',
+              bounds: {
+                x: SECOND_MONITOR_X,
+                y: 0,
+                width: 1920,
+                height: 1080,
+              },
+            },
+          ],
+          widgets: [],
+        },
+      ],
+      'layout-multi'
+    );
+
+    for (const widget of rootStore.widgetSettings.allWidgets) {
+      rootStore.widgetSettings.setWidgetEnabled(widget.id, false);
+    }
+  });
+
+  it('lists no monitor while every widget is disabled', () => {
+    expect(rootStore.widgetSettings.populatedMonitorNames).toEqual([]);
+  });
+
+  it('lists only the monitor the enabled widget sits on', () => {
+    const [widget] = rootStore.widgetSettings.allWidgets;
+
+    rootStore.widgetSettings.setWidgetEnabled(widget.id, true);
+    rootStore.widgetSettings.updatePosition(widget.id, 0, 0);
+
+    expect(rootStore.widgetSettings.populatedMonitorNames).toEqual([
+      'DISPLAY1',
+    ]);
+
+    rootStore.widgetSettings.updatePosition(widget.id, SECOND_MONITOR_X, 0);
+
+    expect(rootStore.widgetSettings.populatedMonitorNames).toEqual([
+      'DISPLAY2',
+    ]);
   });
 });

@@ -119,15 +119,20 @@
   overflow: hidden;
 }
 
-.previewContainer {
-  width: 100%;
-  height: 100%;
+.previewStage {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.previewMonitor {
+  position: absolute;
+  background: #101115;
+  border: 1px solid #2a2c32;
+  border-radius: 1px;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
 }
 
 .previewWidget {
@@ -311,6 +316,68 @@
 
 .widgetActiveLabel {
   color: #e0e0e0;
+}
+
+.monitorList {
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxs);
+  padding: sp(xxs);
+  background: #0d0e12;
+  border: 1px solid #2a2c32;
+  border-radius: radius(sm);
+}
+
+.monitorRow {
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
+  font-size: fs(xs);
+  padding: sp(xxs) sp(xs);
+  border-radius: radius(sm);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.monitorRowOffline {
+  opacity: 0.6;
+}
+
+.monitorDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $race-green;
+  flex: 0 0 auto;
+}
+
+.monitorDotOffline {
+  background: #3a3d45;
+}
+
+.monitorName {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #e0e0e0;
+  font-family: $font-mono;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.monitorMeta {
+  color: #8b8e98;
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  white-space: nowrap;
+}
+
+.monitorEmpty {
+  padding: sp(xs);
+  text-align: center;
+  color: #5e626d;
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  text-transform: uppercase;
 }
 
 .badgesWrapper {

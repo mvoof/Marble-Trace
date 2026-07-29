@@ -368,9 +368,22 @@ export interface LayoutResolution {
   height: number;
 }
 
-export interface MonitorConfig {
-  resolution: LayoutResolution;
-  widgets: WidgetDefaultConfig[];
+/** A monitor's placement in virtual-desktop space, in logical (CSS) pixels. */
+export interface MonitorBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * A monitor the layout is spread across. Added explicitly by the user — the
+ * machine can have screens a layout ignores. Bounds are kept even while the
+ * monitor is unplugged, so the editor can still show and edit that area.
+ */
+export interface LayoutMonitor {
+  name: string;
+  bounds: MonitorBounds;
 }
 
 export type SessionContext = 'Practice' | 'Qualify' | 'Race' | 'Garage';
@@ -379,10 +392,14 @@ export interface SavedLayout {
   id: string;
   name: string;
   createdAt: number;
-  /** Background image shown behind widgets in the layout editor. */
-  backgroundImage?: string;
-  /** Per-monitor widget configs. Key = monitor name (Win32 prefix stripped). */
-  monitorConfigs: Record<string, MonitorConfig>;
-  /** Which monitor config is currently active. null = no monitor selected yet. */
-  activeMonitorName: string | null;
+  /** Background image per monitor name, drawn behind widgets in the editor. */
+  backgroundImages?: Record<string, string>;
+  /** Monitors this layout covers. One overlay window is opened per monitor. */
+  monitors: LayoutMonitor[];
+  /**
+   * Every widget of the layout, positioned in virtual-desktop space. The
+   * monitor a widget belongs to follows from its centre point, so dragging it
+   * over an edge reassigns it. Exactly one instance of each widget per layout.
+   */
+  widgets: WidgetDefaultConfig[];
 }

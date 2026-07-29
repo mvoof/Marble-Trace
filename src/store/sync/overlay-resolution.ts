@@ -1,5 +1,5 @@
 import { availableMonitors, primaryMonitor } from '@tauri-apps/api/window';
-import type { LayoutResolution } from '@/types/widget-settings';
+import type { LayoutMonitor, LayoutResolution } from '@/types/widget-settings';
 
 const WIN32_DISPLAY_PREFIX = '\\\\.\\';
 
@@ -7,6 +7,34 @@ export interface OverlayMonitor {
   name: string;
   resolution: LayoutResolution;
 }
+
+/**
+ * Attached monitors with their placement on the virtual desktop, in logical
+ * pixels — the coordinate space layouts store widget positions in.
+ */
+export const listMonitorBounds = async (): Promise<LayoutMonitor[]> => {
+  const monitors = await availableMonitors();
+
+  return monitors
+    .map((monitor) => {
+      const name = stripName(monitor.name);
+
+      if (!name) return null;
+
+      const scale = monitor.scaleFactor || 1;
+
+      return {
+        name,
+        bounds: {
+          x: Math.round(monitor.position.x / scale),
+          y: Math.round(monitor.position.y / scale),
+          width: Math.round(monitor.size.width / scale),
+          height: Math.round(monitor.size.height / scale),
+        },
+      };
+    })
+    .filter((monitor): monitor is LayoutMonitor => monitor !== null);
+};
 
 const stripName = (raw: string | null | undefined): string | undefined =>
   raw ? raw.replace(WIN32_DISPLAY_PREFIX, '') : undefined;

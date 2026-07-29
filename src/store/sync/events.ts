@@ -1,28 +1,42 @@
 import { runInAction } from 'mobx';
 import { emit, emitTo, listen, UnlistenFn } from '@tauri-apps/api/event';
-import { getAllWebviewWindows } from '@tauri-apps/api/webviewWindow';
 import type { UnitSystem } from '@/types';
 import type {
+  LayoutMonitor,
   SessionContext,
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
 import type { AppLanguage } from '@store/settings/app-settings.store';
-import { positionOverlayToMonitor } from './position-overlay';
+import { listOverlayWindowLabels, monitorLabel } from './overlay-labels';
 
 const MAIN = 'main';
-const OVERLAY = 'overlay';
 
 type SessionLayoutMap = Record<SessionContext, string | null>;
 
-// True once the overlay window exists. During startup the main window can react
-// before the overlay has registered its listeners, which makes Tauri log "event
-// emitted but no listeners found". The overlay hydrates the same values from
-// disk on its own boot, so skipping an emit before it's up is harmless.
-const isOverlayReady = async () => {
-  const windows = await getAllWebviewWindows();
+// Widget lists always travel with the monitor they belong to. Without it an
+// edit made on one screen would overwrite the widgets of another.
+export interface MonitorWidgetsPayload {
+  monitorName: string;
+  widgets: WidgetDefaultConfig[];
+  /**
+   * The layout's monitors. An overlay window needs them to decide which
+   * widgets are its own — the test is a centre point against monitor bounds,
+   * so a window that only knew its own name could not place anything.
+   */
+  monitors?: LayoutMonitor[];
+}
 
-  return windows.some((window) => window.label === OVERLAY);
+// Fan-out to every open overlay window. During startup the main window can
+// react before any overlay exists, which makes Tauri log "event emitted but no
+// listeners found"; overlays hydrate the same values from disk on their own
+// boot, so skipping an emit before they are up is harmless.
+const emitToOverlays = async (event: string, payload: unknown) => {
+  const labels = await listOverlayWindowLabels();
+
+  for (const label of labels) {
+    await emitTo(label, event, payload);
+  }
 };
 
 export const setupMainListeners = async (
@@ -85,8 +99,14 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
-    await listen<WidgetDefaultConfig[]>('widget-settings-updated', (e) => {
-      root.widgetSettings.applySettingsSync(e.payload);
+    await listen<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
+      if (e.payload.monitorName !== root.widgetSettings.ownMonitorName) return;
+
+      if (e.payload.monitors) {
+        root.widgetSettings.applyMonitorsSync(e.payload.monitors);
+      }
+
+      root.widgetSettings.applySettingsSync(e.payload.widgets);
     })
   );
 
@@ -115,12 +135,6 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
-    await listen<string | null>('overlay-monitor-changed', (e) => {
-      void positionOverlayToMonitor(e.payload, root);
-    })
-  );
-
-  unlistens.push(
     await listen<SessionLayoutMap>('session-layouts-changed', (e) => {
       runInAction(() => {
         root.widgetSettings.sessionLayouts = e.payload;
@@ -141,81 +155,66 @@ export const setupOverlayListeners = async (
 
 export const emitDragMode = (val: boolean) => emit('drag-mode-changed', val);
 
-export const emitHideAllWidgets = async (val: boolean) => {
-  if (await isOverlayReady()) {
-    await emitTo(OVERLAY, 'hide-all-widgets-changed', val);
+export const emitHideAllWidgets = (val: boolean) =>
+  emitToOverlays('hide-all-widgets-changed', val);
+
+export const emitHideWidgetsWhenGameClosed = (val: boolean) =>
+  emitToOverlays('hide-widgets-when-game-closed-changed', val);
+
+export const emitUnitsChanged = (system: UnitSystem) =>
+  emitToOverlays('units-changed', system);
+
+export const emitSteeringLockChanged = (degrees: number) =>
+  emitToOverlays('steering-lock-changed', degrees);
+
+export const emitLanguageChanged = (language: AppLanguage) =>
+  emitToOverlays('language-changed', language);
+
+export const emitStandingsClassIndex = (index: number) =>
+  emitToOverlays('standings-class-index-changed', index);
+
+export const emitStandingsScroll = (delta: number) =>
+  emitToOverlays('standings-scroll', delta);
+
+export const emitInteractMode = (active: boolean) =>
+  emitToOverlays('interact-mode-changed', active);
+
+/**
+ * Pushes the active layout to every open overlay window.
+ *
+ * Every window receives the whole widget list, not a per-monitor slice: a
+ * widget dragged over a monitor edge has to appear on the neighbour, and only
+ * the receiving window can decide that, by testing centre points against its
+ * own bounds. The live widgets are sent rather than the layout's stored copy —
+ * the layout is only written back on the debounced commit, which would lag a
+ * drag by half a second.
+ */
+export const emitActiveLayoutToOverlays = async (root: RootStore) => {
+  const layout = root.widgetSettings.activeLayout;
+
+  if (!layout) return;
+
+  const widgets = root.widgetSettings.allWidgets;
+  const labels = await listOverlayWindowLabels();
+
+  for (const monitor of layout.monitors) {
+    const label = monitorLabel(monitor.name);
+
+    if (!labels.includes(label)) continue;
+
+    await emitTo(label, 'widget-settings-updated', {
+      monitorName: monitor.name,
+      widgets,
+      monitors: layout.monitors,
+    } satisfies MonitorWidgetsPayload);
   }
 };
 
-export const emitHideWidgetsWhenGameClosed = async (val: boolean) => {
-  if (await isOverlayReady()) {
-    await emitTo(OVERLAY, 'hide-widgets-when-game-closed-changed', val);
-  }
-};
+export const emitWidgetSettingsToMain = (payload: MonitorWidgetsPayload) =>
+  emitTo(MAIN, 'widget-settings-updated', payload);
 
-export const emitUnitsChanged = async (system: UnitSystem) => {
-  if (await isOverlayReady()) {
-    await emitTo(OVERLAY, 'units-changed', system);
-  }
-};
+export const emitSessionLayoutsChanged = (sessionLayouts: SessionLayoutMap) =>
+  emitToOverlays('session-layouts-changed', sessionLayouts);
 
-export const emitSteeringLockChanged = async (degrees: number) => {
-  if (await isOverlayReady()) {
-    await emitTo(OVERLAY, 'steering-lock-changed', degrees);
-  }
-};
-
-export const emitLanguageChanged = async (language: AppLanguage) => {
-  if (await isOverlayReady()) {
-    await emitTo(OVERLAY, 'language-changed', language);
-  }
-};
-
-export const emitStandingsClassIndex = async (index: number) => {
-  if (await isOverlayReady()) {
-    await emitTo(OVERLAY, 'standings-class-index-changed', index);
-  }
-};
-
-export const emitStandingsScroll = async (delta: number) => {
-  if (await isOverlayReady()) {
-    await emitTo(OVERLAY, 'standings-scroll', delta);
-  }
-};
-
-export const emitInteractMode = async (active: boolean) => {
-  if (await isOverlayReady()) {
-    await emitTo(OVERLAY, 'interact-mode-changed', active);
-  }
-};
-
-export const emitWidgetSettingsUpdated = async (
-  widgets: WidgetDefaultConfig[]
-) => {
-  if (await isOverlayReady()) {
-    await emitTo(OVERLAY, 'widget-settings-updated', widgets);
-  }
-};
-
-export const emitWidgetSettingsToMain = (widgets: WidgetDefaultConfig[]) =>
-  emitTo(MAIN, 'widget-settings-updated', widgets);
-
-export const emitOverlayMonitorChanged = async (name: string | null) => {
-  if (await isOverlayReady()) {
-    await emitTo(OVERLAY, 'overlay-monitor-changed', name);
-  }
-};
-
-export const emitSessionLayoutsChanged = async (
-  sessionLayouts: SessionLayoutMap
-) => {
-  if (await isOverlayReady()) {
-    await emitTo(OVERLAY, 'session-layouts-changed', sessionLayouts);
-  }
-};
-
-export const emitAutoSwitchLayoutsChanged = async (val: boolean) => {
-  if (await isOverlayReady()) {
-    await emitTo(OVERLAY, 'auto-switch-layouts-changed', val);
-  }
-};
+export const emitAutoSwitchLayoutsChanged = (val: boolean) =>
+  emitToOverlays('auto-switch-layouts-changed', val);

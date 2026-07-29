@@ -68,6 +68,14 @@ export const OverlayCanvas = observer(() => {
     appSettings.setDragMode(false);
   };
 
+  const ownBounds = widgetSettings.ownMonitorName
+    ? widgetSettings.monitorByName(widgetSettings.ownMonitorName)?.bounds
+    : undefined;
+
+  const monitorOffset = {
+    transform: `translate(${-(ownBounds?.x ?? 0)}px, ${-(ownBounds?.y ?? 0)}px)`,
+  };
+
   if (hideAllWidgets) {
     return null;
   }
@@ -91,19 +99,25 @@ export const OverlayCanvas = observer(() => {
         </div>
       )}
 
-      {widgetSettings.enabledWidgetIds.map((id) => {
-        const widgetDefinition = WIDGET_BY_ID.get(id);
+      {/* Widget coordinates are virtual-desktop wide, so this window shifts
+          them by its own monitor's origin. Only the widgets whose centre lands
+          on this monitor are drawn — dragging one over an edge hands it to the
+          neighbouring window. */}
+      <div className={styles.monitorOrigin} style={monitorOffset}>
+        {widgetSettings.ownMonitorWidgets.map((widget) => {
+          const widgetDefinition = WIDGET_BY_ID.get(widget.id);
 
-        if (!widgetDefinition) return null;
+          if (!widgetDefinition) return null;
 
-        const WidgetComponent = widgetDefinition.component;
+          const WidgetComponent = widgetDefinition.component;
 
-        return (
-          <WidgetContainer key={id} widgetId={id}>
-            <WidgetComponent />
-          </WidgetContainer>
-        );
-      })}
+          return (
+            <WidgetContainer key={widget.id} widgetId={widget.id}>
+              <WidgetComponent />
+            </WidgetContainer>
+          );
+        })}
+      </div>
 
       <div className={styles.toastContainer}>
         {showInteractBanner && (

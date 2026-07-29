@@ -37,6 +37,29 @@
   border-radius: 0;
 }
 
+.monitorTag {
+  position: absolute;
+  top: sp(sm);
+  left: sp(sm);
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
+  padding: 2px sp(xs);
+  border: 1px solid #2a2c32;
+  border-radius: radius(sm);
+  background: rgba(11, 12, 16, 0.72);
+  color: #8b8e98;
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  pointer-events: none;
+
+  b {
+    color: #e0e0e0;
+    font-weight: 600;
+  }
+}
+
 .world {
   position: absolute;
   top: 0;
@@ -392,4 +415,16 @@ $edge-hover-thickness: 4px;
   backdrop-filter: blur(4px);
   z-index: 10;
   color: #ffffff;
+}
+
+// A monitor's area inside the desktop-space world. Sits under the widgets and
+// never takes pointer events — clicking empty space must still clear selection.
+.monitorPlate {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border: 1px solid #2a2c32;
+  background-color: #0b0c10;
+  background-size: cover;
+  background-position: center;
 }

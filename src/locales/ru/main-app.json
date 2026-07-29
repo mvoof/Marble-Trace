@@ -53,8 +53,8 @@
     "active": "Активна",
     "applyLayoutTooltip": "Применить эту раскладку к оверлею",
     "makeActive": "Сделать активной",
-    "monitorTooltip": "Монитор, для которого создана раскладка",
-    "monitorPlaceholder": "Монитор…",
+    "monitorTooltip": "Выбор экрана для редактирования или обзор всех сразу. Экран, которого ещё нет в раскладке, добавится.",
+    "monitorPlaceholder": "Экран…",
     "customResolutionOption": "Своё разрешение...",
     "customResolutionLabel": "Своё ({{width}}×{{height}})",
     "lockAspectRatio": "Зафиксировать пропорции",
@@ -79,7 +79,12 @@
       "width": "Ширина (px)",
       "height": "Высота (px)",
       "apply": "Применить"
-    }
+    },
+    "editingMonitor": "Правлю: {{monitor}}",
+    "monitorAdd": "добавить",
+    "moveToMonitor": "Перенести на монитор",
+    "allMonitors": "Все мониторы",
+    "removeMonitor": "Убрать монитор из раскладки"
   },
   "layoutList": {
     "moduleLabel": "Раскладки",
@@ -120,10 +125,20 @@
       "qualify": "Квалификация",
       "race": "Гонка",
       "garage": "Гараж"
-    }
+    },
+    "monitorsCount_one": "{{count}} монитор",
+    "monitorsCount_few": "{{count}} монитора",
+    "monitorsCount_many": "{{count}} мониторов",
+    "monitorsCount_other": "{{count}} монитора",
+    "noMonitors": "Нет мониторов",
+    "monitors": "Мониторы",
+    "removeMonitor": "Убрать монитор из лейаута",
+    "monitorOffline": "не найден",
+    "totalWidgets": "Всего виджетов"
   },
   "layoutWidgetPanel": {
-    "back": "Назад"
+    "back": "Назад",
+    "onMonitor": "на {{monitor}}"
   },
   "widgetWorkbench": {
     "scenario": "Сценарий",
@@ -134,7 +149,8 @@
     "stepSize": "Шаг {{size}}",
     "large": "Крупный",
     "remove": "Удалить",
-    "loadingBackground": "Загрузка фона..."
+    "loadingBackground": "Загрузка фона...",
+    "allMonitors": "Все мониторы"
   },
   "widgetSettingsPopup": {
     "ariaLabel": "Настройки {{label}}",
