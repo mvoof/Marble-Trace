@@ -66,9 +66,11 @@
   },
   "settingsPanels": {
     "common": {
-      "positionSource": "名次来源",
-      "positionLive": "实时",
-      "positionOfficial": "官方"
+      "positions": "名次",
+      "useLivePositions": "使用实时名次",
+      "useLivePositionsDesc": "按赛道上的位置排名，每帧重算。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。适用于所有场次类型。",
+      "useLivePositionsStandingsDesc": "按赛道上的位置排名，每帧重算——影响名次数字、行排序、移动动画和 iR 变化预估。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。适用于所有场次类型。",
+      "useLivePositionsRelativeDesc": "按赛道上的位置排名，每帧重算。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。行排序始终按赛道上的间隔。"
     },
     "chassis": {
       "moduleLayout": "模块布局",
@@ -306,8 +308,6 @@
       "livePositionChange": "实时超车箭头",
       "livePositionChangeDesc": "名次变化后，在名次数字上短暂显示向上或向下的箭头。",
       "playerWindow": "你周围的行数",
-      "liveOrderOutsideRace": "练习/排位按赛道顺序",
-      "liveOrderOutsideRaceDesc": "练习赛和排位赛按赛道上的位置排序，而非按最快圈速。正赛始终使用赛道顺序。",
       "groupedRowsPerClass": "每个组别的行数",
       "groupedRowsPerClassDesc": "分组视图中每个组别显示的车手行数。「自动」会在赛道上的各组别之间平均分配控件高度。",
       "rowsPerClassAuto": "自动",

@@ -29,7 +29,7 @@ export const StatsStrip = observer(({ expanded }: StatsStripProps) => {
     widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
 
   const currentLap = player.lapTiming?.lap;
-  const position = standingsWidget.playerPosition(settings.positionSource);
+  const position = standingsWidget.playerPosition(settings.useLivePositions);
 
   const sessions = sessionInfo?.sessions;
   const currentSession = sessions?.[sessionInfo?.currentSessionNum ?? 0];

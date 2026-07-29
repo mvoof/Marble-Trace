@@ -176,7 +176,8 @@ export const buildPaceCarRowEntries = (
         incidents: 0,
         isPlayer: false,
         onPitRoad: false,
-        estimatedIrDelta: null,
+        estimatedIrDeltaLive: null,
+        estimatedIrDeltaOfficial: null,
         relativeLapDist,
         classEstLapTime: paceCar.carClassEstLapTime,
         rawFlags: 0,
@@ -202,4 +203,22 @@ export const mergePaceCarRows = (
   return [...relativeEntries, ...paceCarEntries].sort(
     (a, b) => b.relativeLapDist - a.relativeLapDist
   );
+};
+
+// Position number for a row. Class position comes first — in a multi-class field
+// that is the number the driver races against — and the overall rank stands in
+// for single-class fields, where the sim leaves class position at 0. The sim's
+// official number is the last resort in both modes: it is the only one a car the
+// sim has not placed on track yet ever has.
+export const resolveRowPosition = (
+  driver: DriverEntry,
+  useLivePositions: boolean
+): number => {
+  if (useLivePositions) {
+    return (
+      driver.liveClassPosition || driver.livePosition || driver.position || 0
+    );
+  }
+
+  return driver.classPosition || driver.position || 0;
 };
