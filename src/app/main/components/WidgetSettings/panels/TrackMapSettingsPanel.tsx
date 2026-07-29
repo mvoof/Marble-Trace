@@ -1,6 +1,14 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, InputNumber, Row, Col, Segmented, Switch } from 'antd';
+import {
+  ColorPicker,
+  InputNumber,
+  Row,
+  Col,
+  Segmented,
+  Slider,
+  Switch,
+} from 'antd';
 import {
   TrackMapLeaderLabelMode,
   TrackMapWidgetSettings,
@@ -9,6 +17,11 @@ import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.sc
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+
+const MIN_ZOOM_LEVEL = 1.5;
+const MAX_ZOOM_LEVEL = 10;
+const ZOOM_STEP = 0.5;
+const DEFAULT_ZOOM_LEVEL = 3;
 
 export const TrackMapSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -44,6 +57,50 @@ export const TrackMapSettingsPanel = observer(() => {
             />
           </SettingRow>
         </div>
+      </Card>
+
+      <Card title={t('settingsPanels.trackMap.zoomView')}>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.trackMap.zoomEnabled')}
+            desc={t('settingsPanels.trackMap.zoomEnabledDesc')}
+          >
+            <Switch
+              checked={settings.zoomEnabled ?? false}
+              onChange={(v) => update({ zoomEnabled: v })}
+            />
+          </SettingRow>
+        </div>
+
+        {settings.zoomEnabled && (
+          <div className={styles.fieldGroup}>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.trackMap.zoomLevel')}
+            </span>
+            <Slider
+              min={MIN_ZOOM_LEVEL}
+              max={MAX_ZOOM_LEVEL}
+              step={ZOOM_STEP}
+              value={settings.zoomLevel ?? DEFAULT_ZOOM_LEVEL}
+              tooltip={{ formatter: (v) => `${v}x` }}
+              onChange={(v) => update({ zoomLevel: v })}
+            />
+          </div>
+        )}
+
+        {settings.zoomEnabled && (
+          <div className={styles.fieldGroup}>
+            <SettingRow
+              title={t('settingsPanels.trackMap.zoomRotate')}
+              desc={t('settingsPanels.trackMap.zoomRotateDesc')}
+            >
+              <Switch
+                checked={settings.zoomRotate ?? false}
+                onChange={(v) => update({ zoomRotate: v })}
+              />
+            </SettingRow>
+          </div>
+        )}
       </Card>
 
       <Card title={t('settingsPanels.linearMap.playerMarker')}>

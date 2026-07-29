@@ -15,6 +15,8 @@ export interface CarOnTrack {
   pitPhase?: PaceCarPitPhase;
 }
 
+export type TrackRotateDirection = 'cw' | 'ccw';
+
 interface StoredTrackData {
   rotation?: number;
 }

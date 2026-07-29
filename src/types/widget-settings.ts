@@ -176,6 +176,12 @@ export interface TrackMapWidgetSettings {
   paceCarRadiusPx?: number;
   /** When true, keeps showing the safety-car marker while it's parked in its pit stall. */
   paceCarShowInPits?: boolean;
+  /** When true the map shows only a magnified window centered on the player. */
+  zoomEnabled?: boolean;
+  /** Magnification factor of the zoomed view (1 = whole track). */
+  zoomLevel?: number;
+  /** Rotates the zoomed view so the player's travel direction points up. */
+  zoomRotate?: boolean;
 }
 
 export type LinearMapOrientation = 'horizontal' | 'vertical';

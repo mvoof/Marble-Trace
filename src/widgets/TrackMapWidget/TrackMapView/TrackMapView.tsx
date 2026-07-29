@@ -158,9 +158,16 @@ export const TrackMapView = observer(
 
     const showStartFinish = settings.showStartFinish ?? true;
 
+    const headingUpActive =
+      (settings.zoomEnabled ?? false) && (settings.zoomRotate ?? false);
+
     return (
       <WidgetPanel className={styles.trackMap} gap={0}>
-        {dragMode && onRotate && <RotationControls onRotate={onRotate} />}
+        {/* Heading-up mode drives the orientation from the car, so the manual
+            90° rotation would have no visible effect here. */}
+        {dragMode && onRotate && !headingUpActive && (
+          <RotationControls onRotate={onRotate} />
+        )}
 
         <TrackMapSvg
           svgPath={rotatedTrackData.svgPath}
@@ -181,6 +188,9 @@ export const TrackMapView = observer(
           paceCarRadiusPx={
             settings.paceCarRadiusPx ?? settings.targetDotRadiusPx
           }
+          zoomEnabled={settings.zoomEnabled}
+          zoomLevel={settings.zoomLevel}
+          zoomRotate={settings.zoomRotate}
         />
       </WidgetPanel>
     );
