@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.20.0] — 2026-07-29
+
+### Added
+
+- **Live Track Positions:** The standings and relative widgets can now order drivers by where they actually are on track right now, instead of waiting for the sim to update the official order at the start/finish line. Cars in the pits, the garage or being towed keep their official position, so a car sitting in its box no longer creeps up the table.
+- **Live / Official Positions Toggle:** Every widget that shows a position number — standings, relative, race dash and timer — now has its own switch between the live track order and the official order from the sim, so you can use live order in the table and official order on your dash if you prefer.
+- **Overtake Arrows:** When someone gains or loses places, a large arrow appears next to their row and the row slides to its new spot with a smooth animation, so you can see the move happen rather than just noticing a different number.
+- **Drivers Ahead and Behind You:** A new standings setting lets you show a chosen number of drivers directly ahead of and behind you, instead of only the top of the field, so your own battle is always on screen.
+- **Rows Per Class in Grouped View:** In the grouped multi-class view you can now limit how many drivers are shown for each class, keeping the widget compact in big fields.
+- **Your Own Class First:** In multi-class races your class is now listed first in both the grouped and the class-cycling views, so you never have to look past other classes to find yourself.
+- **Scrollable Standings Table:** The standings table can now be scrolled through the whole field instead of showing a fixed slice, and it returns to its normal view by itself after a few seconds of no input.
+- **Interact Mode:** A new mode lets your mouse reach the overlay — scrolling the standings, pressing buttons — without unlocking widget dragging. It is bound to **F8** by default, works either as a toggle or hold-to-use, and switches itself off after 15 seconds so the mouse goes back to the game. (Widget editing stays on **F9**.)
+- **Standings Hotkeys:** You can assign your own keys for switching the view mode, stepping to the previous or next class, and scrolling the table up and down, so the standings can be operated from the wheel without touching the mouse.
+- **Multi-Monitor Overlay:** The overlay now covers all of your screens at once instead of living on a single chosen monitor. Each layout remembers which screens it uses, and you can add or remove screens from the layout toolbar.
+- **Drag Widgets Between Monitors:** Widgets can be dragged straight across a screen edge onto the neighbouring monitor, and the layout editor can either show all your screens at once for moving things around or zoom into a single screen for detail work. Each monitor can have its own background image, and everything follows along if you rearrange your displays in Windows. Existing layouts are carried over automatically.
+- **Session Clock in the Standings Header:** The standings header can now show the remaining session time, with a toggle to hide it.
+- **Car Class Badges from the Sim:** Class badges now come from the sim itself instead of being guessed from the car name, so every car in a class carries the same badge (`GT3`) rather than a different one per manufacturer. AI and hosted races, where the sim leaves the class name empty, are handled too.
+- **Track Map — Zoom on Your Car:** A new zoomed view keeps your car centered on the track map so nearby traffic is easier to read.
+- **Track Map — Heading-Up Rotation:** An optional mode rotates the zoomed map with you, so the direction you are driving is always up.
+- **Fuel — Next Pit Stop Forecast:** The fuel widget now tells you which lap you are due to pit on before the pit window even opens.
+- **Fuel — Consumption Columns:** Optional extra columns show your fuel consumption figures, and the widget rearranges its grid to fit whichever ones you turn on.
+- **Race Dash — Steering Marker:** An optional dot orbits the gear ring exactly like a marker taped to your real wheel — 90 degrees of steering is 90 degrees of orbit — with a trail showing how far you have wound the wheel.
+- **Steering Lock in App Settings:** Your wheel's steering lock is now set once on the general settings page instead of separately per widget, and is applied everywhere it is needed. Your existing value is carried over.
+- **Race Dash — RPM Comb:** The gear ring can now show a comb-style RPM scale around it.
+- **Race Dash — Shift Zones on the Ring:** The ring is now printed in three zones — normal, shift and blink — so the moment the color changes matches a marked edge instead of happening at an invisible point.
+- **Pace Car:** The pace car is now recognised and marked with its own indicator in the flags, track map and relative widgets, and there is a setting for whether it should still be shown while it sits in the pits.
+
+### Fixed
+
+- **Blue Flag at the Start:** Fixed the blue flag from the pace lap staying lit alongside the green flag when the race starts. Green now takes priority.
+- **iRating Estimate Before the Start:** Fixed the ± iRating column showing a gain nobody had made while the field was still loading onto the grid — it now stays empty until the green flag, and is based on your position within your own class.
+- **Track Map Empty on Startup:** Fixed the track map showing a stuck recording overlay instead of the shape it had already saved for that track.
+- **Layout Editor Preview:** Previewing a layout in the editor no longer changes what is actually shown on the overlay.
+- **Wrong "Layout Switched" Notification:** Fixed the layout-switch message appearing when simply closing the layout editor, even though nothing had switched.
+- **Widget Defaults on the Preview Page:** Fixed settings changed on the widget preview page not being saved.
+- **Cut-Off Button Labels:** Fixed some buttons showing truncated text in other languages.
+- **Relative and Standings Disagreeing:** Fixed the relative widget showing a different position number than the standings table for the same driver.
+- **Overlay Stability:** Fixed several internal issues that could cause glitches over long sessions, including leftover background work left behind by every widget preview, and the input trace graph drifting out of sync with its bars.
+
 ## [0.19.0] — 2026-07-18
 
 ### Added
