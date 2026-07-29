@@ -556,13 +556,21 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
     let mut buckets: HashMap<i32, Vec<(i32, i32, i32)>> = HashMap::new(); // classId -> [(carIdx, classPos, iRating)]
 
     for e in entries {
-        if e.i_rating <= 0 || e.class_position <= 0 {
+        // Live class position reflects on-track order, so the projected gain/loss
+        // updates mid-lap instead of only when a car crosses start/finish.
+        let class_pos = if e.live_class_position > 0 {
+            e.live_class_position
+        } else {
+            e.class_position
+        };
+
+        if e.i_rating <= 0 || class_pos <= 0 {
             continue;
         }
         buckets
             .entry(e.car_class_id)
             .or_default()
-            .push((e.car_idx, e.class_position, e.i_rating));
+            .push((e.car_idx, class_pos, e.i_rating));
     }
 
     for bucket in buckets.values() {
