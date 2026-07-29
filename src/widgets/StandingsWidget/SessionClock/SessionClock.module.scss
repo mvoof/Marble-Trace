@@ -1,0 +1,7 @@
+// Matches the track name in the same header row — font, color and size.
+.sessionClock {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  color: $widget-text-primary;
+  font-weight: 900;
+}

@@ -336,6 +336,8 @@
       "columnHeadersDesc": "在每个数据列上方显示标签。",
       "sessionProgressInfo": "会话进度信息",
       "sessionProgressInfoDesc": "顶部的剩余圈数或时间条。",
+      "sessionTime": "会话时间",
+      "sessionTimeDesc": "标题中的剩余（或已用）时间，与计时器小组件一致。",
       "liveWeatherInfo": "实时天气信息",
       "liveWeatherInfoDesc": "标题中的风速和温度行。",
       "sof": "参赛强度（SOF）",

@@ -118,6 +118,12 @@ export const StandingsSettingsPanel = observer(() => {
       key: 'showSessionHeader',
     },
     {
+      titleKey: 'settingsPanels.standings.sessionTime',
+      descKey: 'settingsPanels.standings.sessionTimeDesc',
+      value: settings.showSessionTime,
+      key: 'showSessionTime',
+    },
+    {
       titleKey: 'settingsPanels.standings.liveWeatherInfo',
       descKey: 'settingsPanels.standings.liveWeatherInfoDesc',
       value: settings.showWeather,

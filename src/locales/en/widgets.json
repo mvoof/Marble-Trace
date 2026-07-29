@@ -336,6 +336,8 @@
       "columnHeadersDesc": "Show labels above each data column.",
       "sessionProgressInfo": "Session Progress Info",
       "sessionProgressInfoDesc": "Laps or time remaining bar at the top.",
+      "sessionTime": "Session Time",
+      "sessionTimeDesc": "Time remaining (or elapsed) in the header, same clock as the Timer widget.",
       "liveWeatherInfo": "Live Weather Info",
       "liveWeatherInfoDesc": "Wind and temperature row in the header.",
       "sof": "Strength of Field (SOF)",

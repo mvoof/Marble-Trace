@@ -65,6 +65,7 @@ const DEFAULT_SETTINGS: StandingsWidgetSettings = {
   showPosChange: true,
   showColumnHeaders: true,
   showSessionHeader: true,
+  showSessionTime: true,
   showWeather: true,
   showSOF: true,
   showTotalDrivers: true,

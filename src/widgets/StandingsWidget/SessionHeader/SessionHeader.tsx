@@ -13,6 +13,7 @@ import {
 } from '@utils/widget/timer-utils';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import { SessionClock } from '@widgets/StandingsWidget/SessionClock/SessionClock';
 import styles from './SessionHeader.module.scss';
 import {
   useBackendComputedStore,
@@ -88,6 +89,8 @@ export const SessionHeader = observer(() => {
               : `LAP: ${leaderLap}`}
           </span>
         )}
+
+        <SessionClock />
       </div>
 
       <div className={styles.sessionRight}>
