@@ -115,6 +115,8 @@ export interface StandingsWidgetSettings {
   groupedRowsPerClass: number;
   showColumnHeaders: boolean;
   showSessionHeader: boolean;
+  /** Session time remaining (or elapsed) in the header, same clock as the Timer widget. */
+  showSessionTime: boolean;
   showWeather: boolean;
   showSOF: boolean;
   showTotalDrivers: boolean;

@@ -528,6 +528,7 @@ const WIDGETS: WidgetConfig[] = [
       groupedRowsPerClass: 0,
       showColumnHeaders: true,
       showSessionHeader: true,
+      showSessionTime: true,
       showWeather: true,
       showSOF: true,
       showTotalDrivers: true,
