@@ -32,7 +32,16 @@ interface TrackMapSvgProps {
   paceCarUseClassColor?: boolean;
   paceCarColor?: string;
   paceCarRadiusPx?: number;
+  zoomEnabled?: boolean;
+  zoomLevel?: number;
+  zoomRotate?: boolean;
 }
+
+const MIN_ZOOM_LEVEL = 1;
+/** Lap fraction sampled ahead of the player to read the travel direction. */
+const HEADING_SAMPLE_PCT = 0.004;
+/** Screen "up" in SVG coordinates, where the Y axis grows downwards. */
+const SCREEN_UP_DEG = -90;
 
 export const TrackMapSvg = observer(
   ({
@@ -52,8 +61,12 @@ export const TrackMapSvg = observer(
     paceCarUseClassColor = false,
     paceCarColor = '#facc15',
     paceCarRadiusPx = 10,
+    zoomEnabled = false,
+    zoomLevel = MIN_ZOOM_LEVEL,
+    zoomRotate = false,
   }: TrackMapSvgProps) => {
-    const playerClassId = cars.find((c) => c.isPlayer)?.carClassId ?? -1;
+    const playerCar = cars.find((c) => c.isPlayer);
+    const playerClassId = playerCar?.carClassId ?? -1;
     const parts = viewBox.split(' ').map(Number);
     const vbW = parts[2];
     const vbH = parts[3];
@@ -82,8 +95,6 @@ export const TrackMapSvg = observer(
       return () => obs.disconnect();
     }, [vbW, vbH]);
 
-    const dotRadius = targetDotRadiusPx * pixelScale;
-
     const pathRef = useRef<SVGPathElement>(null);
     const [pathLength, setPathLength] = useState(0);
 
@@ -110,19 +121,71 @@ export const TrackMapSvg = observer(
       };
     }, [points]);
 
+    // Magnifier view: shrink the visible window around the player. Stroke and
+    // dot sizes are divided by the same factor so they keep their on-screen
+    // size — only the covered track area changes, not the drawing itself.
+    const zoomActive =
+      zoomEnabled &&
+      zoomLevel > MIN_ZOOM_LEVEL &&
+      !!playerCar &&
+      points.length > 0;
+
+    const playerPoint = zoomActive
+      ? getPointAtPct(points, playerCar.lapDistPct)
+      : null;
+
+    const effectiveViewBox = (() => {
+      if (!playerPoint) return viewBox;
+
+      const zoomedW = vbW / zoomLevel;
+      const zoomedH = vbH / zoomLevel;
+
+      return `${playerPoint.x - zoomedW / 2} ${playerPoint.y - zoomedH / 2} ${zoomedW} ${zoomedH}`;
+    })();
+
+    // Heading-up mode: the track tangent at the player's position is the travel
+    // direction, so rotating the whole drawing until it points up keeps the car
+    // fixed and facing forward. Labels counter-rotate to stay readable.
+    const screenRotation = (() => {
+      if (!playerPoint || !playerCar || !zoomRotate) return 0;
+
+      const aheadPct = (playerCar.lapDistPct + HEADING_SAMPLE_PCT) % 1;
+      const ahead = getPointAtPct(points, aheadPct);
+      const headingDeg =
+        Math.atan2(ahead.y - playerPoint.y, ahead.x - playerPoint.x) *
+        (180 / Math.PI);
+
+      return SCREEN_UP_DEG - headingDeg;
+    })();
+
+    const contentTransform =
+      screenRotation === 0
+        ? undefined
+        : `rotate(${screenRotation} ${playerPoint?.x} ${playerPoint?.y})`;
+
+    const uprightTransform =
+      screenRotation === 0 ? '' : ` rotate(${-screenRotation})`;
+
+    const renderScale = zoomActive ? pixelScale / zoomLevel : pixelScale;
+    const dotRadius = targetDotRadiusPx * renderScale;
+
     const validSectors = sectors
       ?.filter((s) => s.sectorStartPct != null && s.sectorNum != null)
       .sort((a, b) => (a.sectorStartPct ?? 0) - (b.sectorStartPct ?? 0));
 
     return (
-      <svg ref={svgRef} viewBox={viewBox} className={styles.svgContainer}>
-        <g>
+      <svg
+        ref={svgRef}
+        viewBox={effectiveViewBox}
+        className={styles.svgContainer}
+      >
+        <g transform={contentTransform}>
           {/* Track border */}
           <path
             d={svgPath}
             fill="none"
             stroke="#252525"
-            strokeWidth={trackBorderPx * pixelScale}
+            strokeWidth={trackBorderPx * renderScale}
             strokeLinejoin="round"
             strokeLinecap="round"
             opacity="0.6"
@@ -134,7 +197,7 @@ export const TrackMapSvg = observer(
             d={svgPath}
             fill="none"
             stroke="#272727"
-            strokeWidth={trackStrokePx * pixelScale}
+            strokeWidth={trackStrokePx * renderScale}
             strokeLinejoin="round"
             strokeLinecap="round"
           />
@@ -154,7 +217,7 @@ export const TrackMapSvg = observer(
                   key={`arc-${sector.sectorNum}`}
                   d={svgPath}
                   fill="none"
-                  strokeWidth={sectorStrokePx * pixelScale}
+                  strokeWidth={sectorStrokePx * renderScale}
                   strokeLinecap="butt"
                   strokeDasharray={`0 ${startDist} ${sectorLen} ${pathLength}`}
                   className={styles.sectorArc}
@@ -179,6 +242,8 @@ export const TrackMapSvg = observer(
                   angle={angle}
                   trackCenterX={trackCenter.x}
                   trackCenterY={trackCenter.y}
+                  scale={zoomActive ? 1 / zoomLevel : 1}
+                  screenRotation={screenRotation}
                 />
               );
             })()}
@@ -194,9 +259,12 @@ export const TrackMapSvg = observer(
                   : paceCarColor;
 
                 return (
-                  <g key={car.carIdx} transform={`translate(${x}, ${y})`}>
+                  <g
+                    key={car.carIdx}
+                    transform={`translate(${x}, ${y})${uprightTransform}`}
+                  >
                     <PaceCarMarker
-                      radius={paceCarRadiusPx * pixelScale}
+                      radius={paceCarRadiusPx * renderScale}
                       color={paceColor}
                     />
                   </g>
@@ -219,7 +287,10 @@ export const TrackMapSvg = observer(
                   : undefined;
 
               return (
-                <g key={car.carIdx} transform={`translate(${x}, ${y})`}>
+                <g
+                  key={car.carIdx}
+                  transform={`translate(${x}, ${y})${uprightTransform}`}
+                >
                   <CarDot
                     carNumber={car.carNumber}
                     carClassColor={car.carClassColor}

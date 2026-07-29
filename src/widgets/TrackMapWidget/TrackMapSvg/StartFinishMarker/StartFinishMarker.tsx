@@ -7,10 +7,22 @@ interface StartFinishMarkerProps {
   angle: number;
   trackCenterX: number;
   trackCenterY: number;
+  /** Keeps the marker at a constant on-screen size when the map is zoomed. */
+  scale?: number;
+  /** Rotation applied to the whole map, compensated so the flag stays upright. */
+  screenRotation?: number;
 }
 
 export const StartFinishMarker = observer(
-  ({ x, y, angle, trackCenterX, trackCenterY }: StartFinishMarkerProps) => {
+  ({
+    x,
+    y,
+    angle,
+    trackCenterX,
+    trackCenterY,
+    scale = 1,
+    screenRotation = 0,
+  }: StartFinishMarkerProps) => {
     // Convert angle to radians to calculate the local Y-axis direction in global coordinates
     const rad = (angle * Math.PI) / 180;
     const lyx = -Math.sin(rad);
@@ -35,7 +47,7 @@ export const StartFinishMarker = observer(
     const offset = isPlusOutside ? calloutLength : -calloutLength;
 
     return (
-      <g transform={`translate(${x},${y}) rotate(${angle})`}>
+      <g transform={`translate(${x},${y}) rotate(${angle}) scale(${scale})`}>
         {/* Thin perpendicular technical callout line */}
         <line x1="0" y1="0" x2="0" y2={offset} className={styles.markerLine} />
 
@@ -46,7 +58,7 @@ export const StartFinishMarker = observer(
         <g transform={`translate(0, ${offset})`}>
           {/* Counter-rotate by -angle to stay upright relative to screen */}
           <g
-            transform={`rotate(${-angle})`}
+            transform={`rotate(${-angle - screenRotation})`}
             className="transition-transform duration-500 ease-in-out"
           >
             <g className={styles.flagContainer}>

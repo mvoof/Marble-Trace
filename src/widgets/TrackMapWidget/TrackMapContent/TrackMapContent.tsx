@@ -4,7 +4,7 @@ import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 
 import { TrackMapView, type TrackData } from '../TrackMapView/TrackMapView';
-import type { StoredTracks } from '../types';
+import type { StoredTracks, TrackRotateDirection } from '../types';
 import { TRACKS_STORE_KEY } from '../types';
 import { TRACK_SETTINGS_STORE } from '../track-store';
 import {
@@ -98,7 +98,7 @@ export const TrackMapContent = observer(() => {
   }, [handleClearTrack]);
 
   const handleRotate = useCallback(
-    (direction: 'cw' | 'ccw') => {
+    (direction: TrackRotateDirection) => {
       if (!trackId || !trackMapWidget.trackShape) return;
 
       const currentRotation = trackMapWidget.trackRotation;
