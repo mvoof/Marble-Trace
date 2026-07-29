@@ -46,7 +46,9 @@ const flagsToList = (flags: RaceFlags): FlagType[] => {
     result.push('yellow');
   }
 
-  if (flags.blue) {
+  // The sim leaves the blue bit lit from the pace lap while the green flag
+  // drops; showing both at the start is misleading, so green wins.
+  if (flags.blue && !flags.green) {
     result.push('blue');
   }
 
@@ -94,16 +96,18 @@ const flagToPriority = (flags: RaceFlags): FlagType => {
     return 'yellow';
   }
 
+  // Green outranks blue: knowing the track is clear to race matters more than
+  // being told to let someone by, and the sim can raise both in one frame.
+  if (flags.green) {
+    return 'green';
+  }
+
   if (flags.blue) {
     return 'blue';
   }
 
   if (flags.debris) {
     return 'debris';
-  }
-
-  if (flags.green) {
-    return 'green';
   }
 
   return 'none';
