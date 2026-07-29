@@ -205,6 +205,8 @@ export class SimStore {
         this.root.session.updateSessionInfo(initialInfo);
       }
 
+      await this.hydrateTrackShape(currentId);
+
       await invoke('start_telemetry_stream');
 
       if (this.initId === currentId) {
@@ -252,8 +254,29 @@ export class SimStore {
           this.root.session.updateSessionInfo(initialInfo);
         }
       });
+
+      await this.hydrateTrackShape(this.initId);
     } catch (err) {
       debug.telemetry('Failed to fetch initial status: %o', err);
+    }
+  }
+
+  // `sim://track-shape` is emitted once per track change, so a window that
+  // subscribed after that emit never receives the cached map and would sit on
+  // the recording overlay. Pull it explicitly on startup.
+  private async hydrateTrackShape(guardId: number) {
+    try {
+      const cachedShape = await invoke<TrackShapePayload | null>(
+        'get_cached_track_shape'
+      );
+
+      if (!cachedShape || this.initId !== guardId) return;
+
+      runInAction(() => {
+        this.root.trackMapWidget.onTrackShapeReceived(cachedShape);
+      });
+    } catch (err) {
+      debug.telemetry('Failed to hydrate cached track shape: %o', err);
     }
   }
 

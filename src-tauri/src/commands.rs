@@ -8,8 +8,9 @@ use tracing::{debug, info, warn};
 
 use crate::model::reference_lap::ReferenceLapData;
 use crate::model::session::SessionSnapshot;
+use crate::model::track_shape::TrackShapePayload;
 use crate::telemetry::emitter::reference_lap_key;
-use crate::telemetry::runtime::spawn_telemetry_thread;
+use crate::telemetry::runtime::{load_cached_track_shape, spawn_telemetry_thread};
 use crate::telemetry::state::TelemetryState;
 use crate::utils::lock_or_recover;
 
@@ -109,7 +110,6 @@ pub async fn reset_pit_lane_pct(
     state: State<'_, TelemetryState>,
     track_id: i32,
 ) -> Result<(), String> {
-    use crate::model::track_shape::TrackShapePayload;
     use crate::telemetry::emitter::EVENT_TRACK_SHAPE;
     use std::fs;
 
@@ -225,6 +225,27 @@ pub async fn delete_reference_lap(
 
     info!("Reference lap deleted for track {track_id} / {car_screen_name}");
     Ok(())
+}
+
+/// Returns the cached shape of the session's current track, if one was recorded
+/// before. `sim://track-shape` is emitted once per track change, so a window
+/// that subscribed later (overlay opened mid-session, dev reload) needs this to
+/// hydrate its map instead of sitting on the recording overlay forever.
+#[tauri::command]
+pub async fn get_cached_track_shape(
+    app: AppHandle,
+    state: State<'_, TelemetryState>,
+) -> Result<Option<TrackShapePayload>, String> {
+    let track_id = {
+        let lock = lock_or_recover(&state.service.last_session_info);
+        lock.as_deref().map(|session| session.track_id)
+    };
+
+    let Some(track_id) = track_id else {
+        return Ok(None);
+    };
+
+    Ok(load_cached_track_shape(&app, track_id))
 }
 
 #[tauri::command]
