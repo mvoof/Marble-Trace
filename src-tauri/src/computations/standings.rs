@@ -556,21 +556,33 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
     let mut buckets: HashMap<i32, Vec<(i32, i32, i32)>> = HashMap::new(); // classId -> [(carIdx, classPos, iRating)]
 
     for e in entries {
-        // Live class position reflects on-track order, so the projected gain/loss
-        // updates mid-lap instead of only when a car crosses start/finish.
-        let class_pos = if e.live_class_position > 0 {
-            e.live_class_position
-        } else {
-            e.class_position
-        };
-
-        if e.i_rating <= 0 || class_pos <= 0 {
+        // `class_position` gates who takes part: a car the sim has not placed at all
+        // (garage, never left the pits) is not racing anyone yet. `assign_live_positions`
+        // hands every entry a `live_class_position`, so it cannot make that call.
+        if e.i_rating <= 0 || e.class_position <= 0 {
             continue;
         }
-        buckets
-            .entry(e.car_class_id)
-            .or_default()
-            .push((e.car_idx, class_pos, e.i_rating));
+
+        // Ranking inside the bucket uses the live position: it reflects on-track order,
+        // so the projected gain/loss updates mid-lap instead of only when a car crosses
+        // start/finish.
+        buckets.entry(e.car_class_id).or_default().push((
+            e.car_idx,
+            e.live_class_position,
+            e.i_rating,
+        ));
+    }
+
+    // The scoring below treats the position as a dense rank in `1..=n` — it subtracts it
+    // from the field size. `live_class_position` is numbered over every entry, including
+    // the ones skipped above, so it can exceed `n` and leave gaps. Re-rank by it instead
+    // of trusting its raw value.
+    for bucket in buckets.values_mut() {
+        bucket.sort_by_key(|&(_, live_class_pos, _)| live_class_pos);
+
+        for (index, entry) in bucket.iter_mut().enumerate() {
+            entry.1 = index as i32 + 1;
+        }
     }
 
     for bucket in buckets.values() {
@@ -920,6 +932,57 @@ mod tests {
             results_position_time: None,
             pit_state: PitState::None,
         }
+    }
+
+    fn make_ir_entry(
+        car_idx: i32,
+        class_position: i32,
+        live_class_position: i32,
+        i_rating: i32,
+    ) -> DriverEntry {
+        let mut entry = make_live_entry(car_idx, class_position, 0, 0.0, TrackSurface::OnTrack);
+
+        entry.class_position = class_position;
+        entry.live_class_position = live_class_position;
+        entry.i_rating = i_rating;
+
+        entry
+    }
+
+    #[test]
+    fn test_ir_deltas_rank_densely_around_skipped_cars() {
+        // Car 9 sits in the garage: the sim never placed it, so it races nobody and
+        // drops out of the bucket. It still holds a live position, leaving a gap the
+        // scoring must not see — the field has to score as three cars ranked 1..3.
+        let sparse = vec![
+            make_ir_entry(0, 1, 1, 3000),
+            make_ir_entry(1, 2, 2, 2000),
+            make_ir_entry(9, 0, 3, 1500),
+            make_ir_entry(2, 3, 4, 1000),
+        ];
+
+        let dense = vec![
+            make_ir_entry(0, 1, 1, 3000),
+            make_ir_entry(1, 2, 2, 2000),
+            make_ir_entry(2, 3, 3, 1000),
+        ];
+
+        let sparse_deltas = compute_ir_deltas(&sparse);
+
+        assert_eq!(sparse_deltas.get(&9), None);
+        assert_eq!(sparse_deltas, compute_ir_deltas(&dense));
+    }
+
+    #[test]
+    fn test_ir_deltas_follow_live_order_mid_lap() {
+        // Official positions still show the pre-overtake order; on track car 1 is ahead.
+        // Equal iRating, so the delta is symmetric and the live leader is the one gaining.
+        let entries = vec![make_ir_entry(0, 1, 2, 2000), make_ir_entry(1, 2, 1, 2000)];
+
+        let deltas = compute_ir_deltas(&entries);
+
+        assert!(deltas[&1] > 0);
+        assert!(deltas[&0] < 0);
     }
 
     #[test]
