@@ -17,7 +17,7 @@ export interface RpmLightsWidgetSettings {
 
 export type RpmIndicatorMode = 'fill' | 'comb' | 'glow' | 'off';
 
-/**
+/*
  * Every widget that prints a position number carries its own `useLivePositions`
  * flag with these semantics. On: rank by order on track, recomputed from covered
  * distance every tick. Off: the sim's official number, which only refreshes when
