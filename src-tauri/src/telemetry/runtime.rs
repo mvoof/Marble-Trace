@@ -239,6 +239,13 @@ fn apply_session_update(app: &AppHandle, parsed: ParsedSession, service: &Teleme
         "Session info updated"
     );
 
+    // A new track means a new event, and the grid below is only snapshotted once per
+    // session number — which repeats across events. Drop the old one first or the
+    // stale grid wins.
+    if prev_track_id.is_some_and(|track_id| track_id != new_track_id) {
+        clear_start_positions(service);
+    }
+
     update_start_positions(
         &snapshot,
         &service.start_positions,
@@ -289,6 +296,11 @@ fn reset_telemetry_state(
     if let Ok(mut lock) = service.track_length_m.lock() {
         *lock = None;
     }
+
+    // Without qualifying data the grid is snapshotted once per session number, and those
+    // repeat from event to event — a stale grid would survive the reconnect and silently
+    // become the baseline for the next race's gain/loss column.
+    clear_start_positions(service);
 
     if let Ok(mut reg) = registry.lock() {
         reg.reset_all();
@@ -397,6 +409,18 @@ fn refresh_stored_reference_lap_time(app: &AppHandle, service: &TelemetryService
     if let Ok(mut lock) = service.stored_reference_lap_time.lock() {
         *lock = stored_time;
     }
+}
+
+/// Forgets the cached grid, so the next session snapshots its own.
+/// `-1` is the "never populated" marker, matching the initial state in `lib.rs`.
+fn clear_start_positions(service: &TelemetryServiceState) {
+    if let Ok(mut lock) = service.start_positions.lock() {
+        lock.clear();
+    }
+
+    service
+        .start_positions_session_num
+        .store(-1, Ordering::Relaxed);
 }
 
 /// Updates start_positions from QualifyResultsInfo (the pre-race grid order).
