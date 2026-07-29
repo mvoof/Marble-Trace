@@ -112,6 +112,20 @@ export const RelativeSettingsPanel = observer(() => {
         </div>
       </Card>
 
+      <Card title={t('settingsPanels.common.positions')}>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.common.useLivePositions')}
+            desc={t('settingsPanels.common.useLivePositionsRelativeDesc')}
+          >
+            <Switch
+              checked={settings.useLivePositions}
+              onChange={(value) => update({ useLivePositions: value })}
+            />
+          </SettingRow>
+        </div>
+      </Card>
+
       <Card title={t('settingsPanels.relative.dataColumns')}>
         {dataColumns.map((item) => (
           <div key={item.titleKey} className={styles.fieldGroup}>

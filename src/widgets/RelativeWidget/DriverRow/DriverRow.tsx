@@ -13,6 +13,7 @@ import { formatIr } from '@/components/shared/RatingBadge/LicBadge.utils';
 import {
   computeRelativeGap,
   buildRelativeGridTemplate,
+  resolveRowPosition,
 } from '@utils/widget/relative-utils';
 import type { DriverEntry } from '@/types/bindings';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
@@ -20,7 +21,6 @@ import type { RelativeWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
 import {
   useBackendComputedStore,
-  useStandingsWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -33,7 +33,6 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
   const computed = useBackendComputedStore();
   const { relativeEntries } = computed;
   const widgetSettings = useWidgetSettingsStore();
-  const standingsWidget = useStandingsWidgetStore();
 
   const settings =
     widgetSettings.getSettings<RelativeWidgetSettings>('relative');
@@ -49,6 +48,8 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
 
   const pitState = driver.pitState;
   const flagType = parseDriverFlags(driver.rawFlags);
+
+  const position = resolveRowPosition(driver, settings.useLivePositions);
 
   const relativeGap = player ? computeRelativeGap(driver, player) : 0;
 
@@ -122,9 +123,7 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
             driver.isPlayer ? { color: settings.playerAccentColor } : undefined
           }
         >
-          {standingsWidget.classRankOf(driver) ||
-            standingsWidget.rankOf(driver) ||
-            driver.position}
+          {position}
         </span>
       </div>
 

@@ -7,10 +7,7 @@ import {
 
 import type { DriverEntry } from '@/types/bindings';
 import type { DriverGroup } from '@/types';
-import type {
-  PositionSource,
-  StandingsWidgetSettings,
-} from '@/types/widget-settings';
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { computeClassSof } from '@utils/widget/standings-utils';
 import { MOVE_DURATION_MS } from '@/hooks/common/useRowMoveAnimation';
 import type { RootStore } from '@store/root-store';
@@ -158,17 +155,13 @@ export class StandingsWidgetStore {
 
   /**
    * Whether the table ranks by position on track rather than by the official
-   * order. A race is always track order; practice and qualifying rank by best
-   * lap unless the driver opts in.
+   * order, in every session type alike. Outside a race the official order ranks
+   * by best lap, so the two are genuinely different answers there.
    */
   get useTrackOrder(): boolean {
-    if (this.root.session.currentSessionType === 'Race') {
-      return true;
-    }
-
     return this.root.widgetSettings.getSettings<StandingsWidgetSettings>(
       'standings'
-    ).liveOrderOutsideRace;
+    ).useLivePositions;
   }
 
   /** Rank a car holds under the active ordering — overall. */
@@ -190,15 +183,16 @@ export class StandingsWidgetStore {
   }
 
   /**
-   * Player's overall position for the readouts outside the table. `live` follows
-   * the same order the standings table draws, `official` is the sim's own number,
-   * which only refreshes at the start/finish line. Falls back to the official one
-   * whenever the standings frame has no entry for the player yet.
+   * Player's overall position for the readouts outside the table. Live follows the
+   * on-track order, official is the sim's own number, which only refreshes at the
+   * start/finish line. Falls back to the official one whenever the standings frame
+   * has no entry for the player yet. Callers pass their own widget's flag — this
+   * readout is not tied to the standings table's own setting.
    */
-  playerPosition(source: PositionSource): number | null {
+  playerPosition(useLivePositions: boolean): number | null {
     const official = this.root.player.lapTiming?.player_car_position ?? null;
 
-    if (source === 'official') {
+    if (!useLivePositions) {
       return official;
     }
 
@@ -208,7 +202,7 @@ export class StandingsWidgetStore {
       return official;
     }
 
-    return this.rankOf(entry) || official;
+    return entry.livePosition || official;
   }
 
   // Every RootStore instance (main window, overlay window, each isolated widget

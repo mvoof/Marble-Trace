@@ -22,7 +22,7 @@ export const TimerFooter = observer(() => {
   const standingsWidget = useStandingsWidgetStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { showLaps, showPosition, positionSource } =
+  const { showLaps, showPosition, useLivePositions } =
     widgetSettings.getSettings<TimerWidgetSettings>('timer');
 
   if (!showLaps && !showPosition) {
@@ -52,7 +52,7 @@ export const TimerFooter = observer(() => {
         )
       : null;
 
-  const position = standingsWidget.playerPosition(positionSource);
+  const position = standingsWidget.playerPosition(useLivePositions);
   const totalDrivers = sessionInfo?.cars.length || null;
 
   return (

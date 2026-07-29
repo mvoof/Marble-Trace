@@ -53,7 +53,8 @@ pub struct DriverEntry {
     pub incidents: i32,
     pub is_player: bool,
     pub on_pit_road: bool,
-    pub estimated_ir_delta: Option<i32>,
+    pub estimated_ir_delta_live: Option<i32>,
+    pub estimated_ir_delta_official: Option<i32>,
     pub relative_lap_dist: f32,
     pub class_est_lap_time: f32,
     pub raw_flags: u32,
@@ -269,7 +270,8 @@ pub fn compute(
                     .get(idx)
                     .copied()
                     .unwrap_or(false),
-                estimated_ir_delta: None,
+                estimated_ir_delta_live: None,
+                estimated_ir_delta_official: None,
                 relative_lap_dist: 0.0,
                 class_est_lap_time: driver.car_class_est_lap_time,
                 raw_flags: car_idx.car_idx_session_flags.get(idx).copied().unwrap_or(0),
@@ -333,10 +335,12 @@ pub fn compute(
     }
 
     if compute_ir_delta {
-        let deltas = compute_ir_deltas(&entries);
+        let live_deltas = compute_ir_deltas(&entries, true);
+        let official_deltas = compute_ir_deltas(&entries, false);
 
         for entry in &mut entries {
-            entry.estimated_ir_delta = deltas.get(&entry.car_idx).copied();
+            entry.estimated_ir_delta_live = live_deltas.get(&entry.car_idx).copied();
+            entry.estimated_ir_delta_official = official_deltas.get(&entry.car_idx).copied();
         }
     }
 
@@ -391,7 +395,7 @@ fn is_racing(entry: &DriverEntry) -> bool {
 ///
 /// Filled in every session type — outside a race the official order ranks by best
 /// lap instead, so the two are genuinely different answers and the frontend picks
-/// which one to show (`liveOrderOutsideRace` in the standings widget settings).
+/// which one to show (`useLivePositions`, held per widget).
 fn assign_live_positions(entries: &mut [DriverEntry]) {
     let mut racing: Vec<DriverEntry> = Vec::with_capacity(entries.len());
     let mut non_racing: Vec<DriverEntry> = Vec::new();
@@ -454,7 +458,11 @@ fn chance(a: f64, b: f64, factor: f64) -> f64 {
     ((1.0 - exp_a) * exp_b) / ((1.0 - exp_b) * exp_a + (1.0 - exp_a) * exp_b)
 }
 
-fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
+/// `use_live` picks which finishing order the projection assumes: the live on-track
+/// order, so the gain/loss updates mid-lap, or the sim's official one, which only
+/// moves when a car crosses start/finish. Both are computed every tick and the
+/// frontend shows whichever the standings widget is set to.
+fn compute_ir_deltas(entries: &[DriverEntry], use_live: bool) -> HashMap<i32, i32> {
     let mut result = HashMap::new();
 
     let br1 = 1600.0 / std::f64::consts::LN_2;
@@ -470,22 +478,24 @@ fn compute_ir_deltas(entries: &[DriverEntry]) -> HashMap<i32, i32> {
             continue;
         }
 
-        // Ranking inside the bucket uses the live position: it reflects on-track order,
-        // so the projected gain/loss updates mid-lap instead of only when a car crosses
-        // start/finish.
-        buckets.entry(e.car_class_id).or_default().push((
-            e.car_idx,
-            e.live_class_position,
-            e.i_rating,
-        ));
+        let rank = if use_live {
+            e.live_class_position
+        } else {
+            e.class_position
+        };
+
+        buckets
+            .entry(e.car_class_id)
+            .or_default()
+            .push((e.car_idx, rank, e.i_rating));
     }
 
     // The scoring below treats the position as a dense rank in `1..=n` — it subtracts it
-    // from the field size. `live_class_position` is numbered over every entry, including
-    // the ones skipped above, so it can exceed `n` and leave gaps. Re-rank by it instead
-    // of trusting its raw value.
+    // from the field size. Either source is numbered over every entry, including the ones
+    // skipped above, so it can exceed `n` and leave gaps. Re-rank by it instead of
+    // trusting its raw value.
     for bucket in buckets.values_mut() {
-        bucket.sort_by_key(|&(_, live_class_pos, _)| live_class_pos);
+        bucket.sort_by_key(|&(_, class_pos, _)| class_pos);
 
         for (index, entry) in bucket.iter_mut().enumerate() {
             entry.1 = index as i32 + 1;
@@ -831,7 +841,8 @@ mod tests {
             incidents: 0,
             is_player: false,
             on_pit_road: false,
-            estimated_ir_delta: None,
+            estimated_ir_delta_live: None,
+            estimated_ir_delta_official: None,
             relative_lap_dist: 0.0,
             class_est_lap_time: 0.0,
             raw_flags: 0,
@@ -874,10 +885,10 @@ mod tests {
             make_ir_entry(2, 3, 3, 1000),
         ];
 
-        let sparse_deltas = compute_ir_deltas(&sparse);
+        let sparse_deltas = compute_ir_deltas(&sparse, true);
 
         assert_eq!(sparse_deltas.get(&9), None);
-        assert_eq!(sparse_deltas, compute_ir_deltas(&dense));
+        assert_eq!(sparse_deltas, compute_ir_deltas(&dense, true));
     }
 
     #[test]
@@ -886,10 +897,22 @@ mod tests {
         // Equal iRating, so the delta is symmetric and the live leader is the one gaining.
         let entries = vec![make_ir_entry(0, 1, 2, 2000), make_ir_entry(1, 2, 1, 2000)];
 
-        let deltas = compute_ir_deltas(&entries);
+        let deltas = compute_ir_deltas(&entries, true);
 
         assert!(deltas[&1] > 0);
         assert!(deltas[&0] < 0);
+    }
+
+    #[test]
+    fn test_ir_deltas_follow_official_order_when_not_live() {
+        // Same mid-overtake frame as above. Scored on the official order instead, the
+        // car still officially leading is the one gaining — the mirror of the live answer.
+        let entries = vec![make_ir_entry(0, 1, 2, 2000), make_ir_entry(1, 2, 1, 2000)];
+
+        let deltas = compute_ir_deltas(&entries, false);
+
+        assert!(deltas[&0] > 0);
+        assert!(deltas[&1] < 0);
     }
 
     #[test]

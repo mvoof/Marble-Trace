@@ -425,7 +425,8 @@ export type DriverEntry = {
   incidents: number;
   isPlayer: boolean;
   onPitRoad: boolean;
-  estimatedIrDelta: number | null;
+  estimatedIrDeltaLive: number | null;
+  estimatedIrDeltaOfficial: number | null;
   relativeLapDist: number;
   classEstLapTime: number;
   rawFlags: number;

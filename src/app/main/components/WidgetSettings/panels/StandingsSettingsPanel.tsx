@@ -49,12 +49,6 @@ export const StandingsSettingsPanel = observer(() => {
       key: 'showLivePosChange',
     },
     {
-      titleKey: 'settingsPanels.standings.liveOrderOutsideRace',
-      descKey: 'settingsPanels.standings.liveOrderOutsideRaceDesc',
-      value: settings.liveOrderOutsideRace,
-      key: 'liveOrderOutsideRace',
-    },
-    {
       titleKey: 'settingsPanels.standings.brandLogo',
       descKey: 'settingsPanels.standings.brandLogoDesc',
       value: settings.showBrand,
@@ -205,6 +199,20 @@ export const StandingsSettingsPanel = observer(() => {
               onChange={(color) =>
                 update({ playerAccentColor: color.toRgbString() })
               }
+            />
+          </SettingRow>
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.common.positions')}>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.common.useLivePositions')}
+            desc={t('settingsPanels.common.useLivePositionsStandingsDesc')}
+          >
+            <Switch
+              checked={settings.useLivePositions}
+              onChange={(v) => update({ useLivePositions: v })}
             />
           </SettingRow>
         </div>

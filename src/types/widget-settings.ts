@@ -17,11 +17,13 @@ export interface RpmLightsWidgetSettings {
 
 export type RpmIndicatorMode = 'fill' | 'comb' | 'glow' | 'off';
 
-/**
- * Which position number a readout shows: the live track order the standings table
- * is drawn with, or the sim's official number that only updates at start/finish.
+/*
+ * Every widget that prints a position number carries its own `useLivePositions`
+ * flag with these semantics. On: rank by order on track, recomputed from covered
+ * distance every tick. Off: the sim's official number, which only refreshes when
+ * a car crosses start/finish — outside a race that order is by best lap. The flag
+ * is not conditioned on session type; practice, qualifying and race behave alike.
  */
-export type PositionSource = 'live' | 'official';
 
 export interface RaceDashWidgetSettings {
   pitSpeedLimitOverride: number | null;
@@ -42,7 +44,7 @@ export interface RaceDashWidgetSettings {
   /** 'fill' = colored RPM arc around the ring, 'comb' = discrete ticks on that same ring, 'glow' = rim glows near shift, 'off' = no RPM indication. */
   rpmIndicatorMode: RpmIndicatorMode;
   /** Source of the P-number in the stats strip and the pit block. */
-  positionSource: PositionSource;
+  useLivePositions: boolean;
   /** Steering angle wedge riding the outer rim of the gear ring. */
   showSteeringMarker: boolean;
 }
@@ -102,11 +104,10 @@ export interface StandingsWidgetSettings {
   /** Transient up/down arrow shown in the position cell right after a live position change. */
   showLivePosChange: boolean;
   /**
-   * Rank practice and qualifying by track order too, instead of by the official
-   * best-lap order. Races always use track order. Also drives the position number
-   * shown in the Relative widget.
+   * Drives the position number, the row order of the table, the move animation
+   * and its arrows, and which of the two projected iR deltas the ΔiR column reads.
    */
-  liveOrderOutsideRace: boolean;
+  useLivePositions: boolean;
   /** Rows shown in front of the player when they no longer fit in the top block (0 = pin the player row only). */
   driversAhead: number;
   /** Rows shown behind the player when they no longer fit in the top block. */
@@ -139,6 +140,11 @@ export interface StandingsWidgetSettings {
 }
 
 export interface RelativeWidgetSettings {
+  /**
+   * Source of the position number in the leftmost column. Row order is always by
+   * gap on track — that is what the widget is for — so this affects the number only.
+   */
+  useLivePositions: boolean;
   rowPadding: RowPadding;
   showLicBadge: boolean;
   showIRating: boolean;
@@ -245,7 +251,7 @@ export interface TimerWidgetSettings {
   showLaps: boolean;
   showPosition: boolean;
   /** Source of the position shown in the footer. */
-  positionSource: PositionSource;
+  useLivePositions: boolean;
   showWallClock: boolean;
   showSimTime: boolean;
   showPcDate: boolean;
