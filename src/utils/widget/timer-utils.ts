@@ -90,6 +90,25 @@ export const isSessionEnded = (sessionState: SessionState | null): boolean => {
   return sessionState === 'CoolDown';
 };
 
+const STATES_AFTER_GREEN_FLAG: SessionState[] = [
+  'Racing',
+  'Checkered',
+  'CoolDown',
+];
+
+/**
+ * Whether the green flag has dropped. Before it, the field is still filling the
+ * grid and positions mean nothing yet — anything derived from how far a car has
+ * moved since the start is undefined rather than zero.
+ */
+export const hasRaceStarted = (sessionState: SessionState | null): boolean => {
+  if (sessionState === null) {
+    return false;
+  }
+
+  return STATES_AFTER_GREEN_FLAG.includes(sessionState);
+};
+
 export type SessionColorKey = 'practice' | 'qualify' | 'race' | 'other';
 
 export const resolveSessionColorKey = (
