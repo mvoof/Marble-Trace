@@ -8,6 +8,7 @@ use std::collections::HashMap;
 
 use serde::Deserialize;
 
+use super::car_classes::{apply_class_badges, normalize_class_color};
 use super::weather::parse_weather_forecast;
 use crate::computations::proximity::parse_track_length;
 use crate::model::session::{
@@ -99,44 +100,6 @@ fn sanitize_session_yaml(yaml: &str) -> String {
     sanitized
 }
 
-/// iRacing session YAML reports class colors as "0xRRGGBB" strings.
-/// Some telemetry colors don't match what iRacing displays in-game.
-/// This map corrects the known mismatches: keys are normalized "#rrggbb",
-/// values are the in-game color.
-const CLASS_COLOR_MAP: [(&str, &str); 6] = [
-    ("#53ff77", "#ff7199"),
-    ("#ae6bff", "#5cecff"),
-    ("#d35400", "#a07cc8"),
-    ("#ff5888", "#ef4444"),
-    ("#ffda59", "#ffd259"),
-    ("#33ceff", "#4d7bd9"),
-];
-
-/// Convert a raw iRacing class color string ("0xRRGGBB" or "#RRGGBB") to a
-/// lowercase "#rrggbb" hex string, then apply in-game color corrections.
-/// Returns "#888888" for empty/missing values.
-fn normalize_class_color(raw: &str) -> String {
-    let trimmed = raw.trim();
-
-    if trimmed.is_empty() {
-        return "#888888".to_string();
-    }
-
-    let hex = if trimmed.starts_with("0x") || trimmed.starts_with("0X") {
-        trimmed[2..].to_lowercase()
-    } else {
-        trimmed.trim_start_matches('#').to_lowercase()
-    };
-
-    let normalized = format!("#{hex}");
-
-    CLASS_COLOR_MAP
-        .iter()
-        .find(|(key, _)| *key == normalized)
-        .map(|(_, val)| (*val).to_string())
-        .unwrap_or(normalized)
-}
-
 /// Parse the raw iRacing session YAML into the project model.
 /// Returns `None` only if the YAML does not parse at all.
 pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
@@ -186,7 +149,7 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         })
         .collect();
 
-    let cars = driver_info
+    let mut cars: Vec<CarEntry> = driver_info
         .drivers
         .unwrap_or_default()
         .into_iter()
@@ -196,6 +159,11 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
                 user_name: raw_driver.user_name.unwrap_or_default(),
                 car_number: raw_driver.car_number.unwrap_or_default(),
                 car_class_id: raw_driver.car_class_id.unwrap_or(-1),
+                car_class_short_name: raw_driver
+                    .car_class_short_name
+                    .unwrap_or_default()
+                    .trim()
+                    .to_string(),
                 car_class_color: normalize_class_color(
                     raw_driver.car_class_color.as_deref().unwrap_or_default(),
                 ),
@@ -214,6 +182,8 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
             })
         })
         .collect();
+
+    apply_class_badges(&mut cars);
 
     let driver_tires = driver_info
         .driver_tires
@@ -392,6 +362,7 @@ struct RawDriver {
     car_number: Option<String>,
     #[serde(rename = "CarClassID")]
     car_class_id: Option<i32>,
+    car_class_short_name: Option<String>,
     car_class_color: Option<String>,
     car_screen_name: Option<String>,
     car_screen_name_short: Option<String>,
@@ -490,6 +461,7 @@ DriverInfo:
    UserName: Test Driver
    CarNumber: "11"
    CarClassID: 4011
+   CarClassShortName: MX5
    CarClassColor: 0xffda59
    CarScreenName: Mazda MX-5
    CarScreenNameShort: MX-5
@@ -542,6 +514,7 @@ QualifyResultsInfo:
 
         let player = &snapshot.cars[0];
         assert_eq!(player.car_class_id, 4011);
+        assert_eq!(player.car_class_short_name, "MX5");
         assert_eq!(player.car_class_color, "#ffd259");
         assert_eq!(player.i_rating, 2350);
         assert!(!player.is_pace_car);
@@ -561,20 +534,6 @@ QualifyResultsInfo:
 
         assert_eq!(parsed.snapshot.cars.len(), 1);
         assert_eq!(parsed.snapshot.cars[0].user_name, "? ?");
-    }
-
-    #[test]
-    fn normalizes_class_color_applies_map() {
-        assert_eq!(normalize_class_color("0xffda59"), "#ffd259");
-        assert_eq!(normalize_class_color("0x53ff77"), "#ff7199");
-        assert_eq!(normalize_class_color("0xAE6BFF"), "#5cecff");
-    }
-
-    #[test]
-    fn normalizes_class_color_passthrough() {
-        assert_eq!(normalize_class_color("0xaabbcc"), "#aabbcc");
-        assert_eq!(normalize_class_color("#AABBCC"), "#aabbcc");
-        assert_eq!(normalize_class_color(""), "#888888");
     }
 
     #[test]

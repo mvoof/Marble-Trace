@@ -100,6 +100,10 @@ export type CarEntry = {
   carNumber: string;
   carClassId: number;
   /**
+   * Class label provided by the sim (e.g. "GT3", "LMP2"); empty in single-class series.
+   */
+  carClassShortName: string;
+  /**
    * Raw iRacing color string (e.g. "0xffda59").
    */
   carClassColor: string;

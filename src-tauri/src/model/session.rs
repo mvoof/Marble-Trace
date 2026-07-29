@@ -131,6 +131,8 @@ pub struct CarEntry {
     pub user_name: String,
     pub car_number: String,
     pub car_class_id: i32,
+    /// Class label provided by the sim (e.g. "GT3", "LMP2"); empty in single-class series.
+    pub car_class_short_name: String,
     /// Raw iRacing color string (e.g. "0xffda59").
     pub car_class_color: String,
     pub car_screen_name: String,
