@@ -250,8 +250,14 @@ export const initMainSync = async (root: RootStore) => {
           () => [
             root.widgetSettings.activeLayoutId,
             overlayMonitorNames(root).join('|'),
+            root.widgetSettings.editorPreviewMode,
           ],
           () => {
+            // While the editor previews a layout that isn't the active one, the
+            // overlay must keep showing the previously-active layout — both its
+            // widgets and its set of monitor windows.
+            if (root.widgetSettings.editorPreviewMode) return;
+
             void syncOverlayWindows(root).then(() =>
               emitActiveLayoutToOverlays(root)
             );
