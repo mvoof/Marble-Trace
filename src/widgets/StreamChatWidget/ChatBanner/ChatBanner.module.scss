@@ -1,0 +1,27 @@
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: sp(xxs);
+  padding: sp(xs);
+  font-size: fs(xs);
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.bannerWarn {
+  color: $widget-status-warning;
+  background-color: rgba(234, 179, 8, 0.12);
+}
+
+.bannerError {
+  color: $widget-status-danger;
+  background-color: rgba(239, 68, 68, 0.12);
+}
+
+.bannerInfo {
+  color: $widget-status-info;
+  background-color: rgba(59, 130, 246, 0.12);
+}

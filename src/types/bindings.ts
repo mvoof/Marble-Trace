@@ -382,6 +382,147 @@ export type ChassisFrame = {
   rr_brake_temp: number | null;
 };
 
+export type ChatBadge = {
+  /**
+   * Stable key the widget maps to a colour: "moderator", "subscriber", "vip".
+   */
+  kind: string;
+  /**
+   * Short uppercase text shown in the badge plate.
+   */
+  label: string;
+  /**
+   * Artwork, when it could be resolved. Twitch retired the anonymous badge
+   * endpoint, so on Twitch this is filled only while signed in; the text
+   * plate is always the fallback.
+   */
+  url: string | null;
+};
+
+/**
+ * Everything the chat runtime needs to connect, sent from the frontend when
+ * the user edits the source settings.
+ */
+export type ChatConfig = {
+  /**
+   * Twitch login name, without the leading '#'. Empty disables Twitch.
+   */
+  twitchChannel: string | null;
+  /**
+   * YouTube video id, full watch URL, channel URL or @handle.
+   */
+  youtubeTarget: string | null;
+  twitchClientId: string | null;
+  /**
+   * Bumped by the frontend on sign-in and sign-out. The tokens themselves
+   * live in the OS credential store and are read there by the runtime, so
+   * they never cross the IPC bridge; this only tells it to reconnect.
+   */
+  authRevision: number;
+};
+
+/**
+ * Connection state of a single platform, surfaced as the footer status dot.
+ */
+export type ChatConnectionStatus =
+  | 'live'
+  | 'connecting'
+  | 'reconnecting'
+  | 'offline'
+  | 'error';
+
+/**
+ * Moderation event — removes an already rendered row.
+ */
+export type ChatDeletion = {
+  platform: ChatPlatform;
+  /**
+   * Single message id, when the platform names one.
+   */
+  messageId: string | null;
+  /**
+   * Author whose whole history is cleared (Twitch ban / timeout).
+   */
+  authorName: string | null;
+};
+
+/**
+ * A message is a sequence of fragments, never a raw string: emote positions
+ * arrive as index ranges (Twitch) or as separate runs (YouTube), and both
+ * collapse to this list so the renderer just walks it.
+ */
+export type ChatFragment =
+  | { kind: 'text'; text: string }
+  | { kind: 'emote'; name: string; url: string };
+
+export type ChatHighlight = {
+  kind: ChatHighlightKind;
+  /**
+   * Pre-rendered line for event rows ("kartoshka resubscribed · 8 months").
+   */
+  text: string;
+  /**
+   * Super Chat / bits amount, already formatted with its currency.
+   */
+  amount: string | null;
+};
+
+export type ChatHighlightKind =
+  | 'subscription'
+  | 'raid'
+  | 'paid'
+  | 'firstMessage';
+
+export type ChatMessage = {
+  platform: ChatPlatform;
+  /**
+   * Platform message id — required to drop the row when a mod deletes it.
+   */
+  id: string;
+  authorName: string;
+  /**
+   * Hex colour. Twitch sends it in the `color` tag; YouTube has none, so the
+   * source derives a stable colour from the author name.
+   */
+  authorColor: string;
+  badges: ChatBadge[];
+  fragments: ChatFragment[];
+  timestampMs: number;
+  highlight: ChatHighlight | null;
+};
+
+export type ChatPlatform = 'twitch' | 'youtube';
+
+/**
+ * Per-platform presence, emitted on its own slow cadence rather than riding
+ * along with messages: viewer counts refresh every 30-60 s, messages do not.
+ */
+export type ChatPresence = {
+  platform: ChatPlatform;
+  status: ChatConnectionStatus;
+  /**
+   * None when the platform does not expose a count on the current auth path.
+   */
+  viewers: number | null;
+  /**
+   * Seconds since the stream went live, when known. u32 rather than u64
+   * because specta forbids BigInt-width integers in the TS contract.
+   */
+  uptimeSeconds: number | null;
+  /**
+   * Active room restriction ("sub only", "followers only", "slow 30s").
+   */
+  roomMode: string | null;
+  /**
+   * Reconnect attempt number, shown in the reconnect banner.
+   */
+  retry: number | null;
+  /**
+   * Human-readable failure reason for the error banner.
+   */
+  detail: string | null;
+};
+
 export type DriverEntriesFrame = {
   entries: DriverEntry[];
   playerCarIdx: number;
@@ -982,6 +1123,33 @@ export type TrackSurface =
   | 'InPitStall'
   | 'AproachingPits'
   | 'OnTrack';
+
+/**
+ * Device code flow, step one — what the user must type in to authorize.
+ */
+export type TwitchDeviceCode = {
+  deviceCode: string;
+  userCode: string;
+  verificationUri: string;
+  expiresIn: number;
+  interval: number;
+};
+
+/**
+ * Device code flow, step two — the result of one poll attempt.
+ *
+ * Carries no tokens on purpose: they are written straight to the OS credential
+ * store by the backend, so the frontend only ever learns *that* sign-in
+ * succeeded and *who* signed in.
+ */
+export type TwitchTokenResult = {
+  /**
+   * False while the user has not finished authorizing yet.
+   */
+  authorized: boolean;
+  login: string | null;
+  error: string | null;
+};
 
 export type WeatherForecastEntry = {
   Time: number;

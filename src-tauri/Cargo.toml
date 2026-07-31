@@ -44,6 +44,15 @@ specta-typescript = { version = "0.0.9", optional = true }
 specta-serde = { version = "0.0.9", optional = true }
 serde_yaml_ng = "0.10"
 bitflags = "2"
+# Stream chat: Twitch IRC rides a WebSocket, YouTube InnerTube is plain HTTP.
+# rustls throughout so no OpenSSL toolchain is needed on Windows builds.
+tokio-tungstenite = { version = "0.26", features = ["rustls-tls-webpki-roots"] }
+# OAuth tokens go to the Windows Credential Manager, never to settings.json.
+keyring = { version = "3", features = ["windows-native"] }
+reqwest = { version = "0.12", default-features = false, features = [
+    "json",
+    "rustls-tls",
+] }
 
 [features]
 default = []

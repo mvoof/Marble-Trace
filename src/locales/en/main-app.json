@@ -281,6 +281,34 @@
       "snapshotDesc": "Capture current telemetry state.",
       "downloadSnapshot": "Download Snapshot JSON",
       "snapshotSuccess": "Snapshot saved — place the JSON in test-data/"
+    },
+    "streamChat": {
+      "title": "Stream chat",
+      "twitchChannel": "Twitch channel",
+      "twitchChannelPlaceholder": "twitchdev",
+      "twitchChannelDesc": "Only the name from the channel address: twitch.tv/twitchdev → twitchdev. Read anonymously, no account needed. Leave empty to disable Twitch.",
+      "youtubeTarget": "YouTube stream",
+      "youtubeTargetPlaceholder": "@handle or stream link",
+      "youtubeTargetDesc": "Any of these works: @MrBeast, youtube.com/watch?v=dQw4w9WgXcQ, youtu.be/dQw4w9WgXcQ, or just dQw4w9WgXcQ. Given a channel, the current live stream is found automatically.",
+      "hideCommands": "Hide bot commands",
+      "hideCommandsDesc": "Drops messages starting with an exclamation mark.",
+      "ignoredBots": "Ignored accounts",
+      "ignoredBotsDesc": "Comma separated. Their messages never reach the widget.",
+      "signInTitle": "Sign in to Twitch",
+      "signInDesc": "Optional. Unlocks the viewer count and stream uptime in the footer — chat itself works without it.",
+      "clientId": "Application client id",
+      "clientIdDesc": "This build has no client id, so sign-in needs your own application from dev.twitch.tv/console/apps. Register it as a Public client; no client secret is needed.",
+      "signIn": "Sign in",
+      "signOut": "Sign out",
+      "signedIn": "Signed in",
+      "cancel": "Cancel",
+      "openActivate": "Open twitch.tv/activate",
+      "deviceHint": "Enter this code on twitch.tv/activate, then come back — this window updates itself.",
+      "errors": {
+        "clientIdRequired": "Fill in the client id first.",
+        "codeExpired": "The code expired. Start again.",
+        "sessionExpired": "The Twitch session expired. Sign in again."
+      }
     }
   }
 }

@@ -16,6 +16,9 @@ import { CarsStore } from './data/cars.store';
 import { SessionStore } from './data/session.store';
 import { EnvironmentStore } from './data/environment.store';
 import { ReferenceLapStore } from './data/reference-lap.store';
+import { ChatStore } from './data/chat.store';
+import { TwitchAuthStore } from './settings/twitch-auth.store';
+import { StreamChatWidgetStore } from './widgets/stream-chat.widget';
 
 export class RootStore {
   player: PlayerStore;
@@ -23,6 +26,7 @@ export class RootStore {
   session: SessionStore;
   environment: EnvironmentStore;
   referenceLap: ReferenceLapStore;
+  chat: ChatStore;
   backendComputed: BackendComputedStore;
   sim: SimStore;
   flags: FlagsStore;
@@ -32,8 +36,10 @@ export class RootStore {
   trackMapWidget: TrackMapWidgetStore;
   drivingCoachWidget: DrivingCoachWidgetStore;
   inputTraceWidget: InputTraceWidgetStore;
+  streamChatWidget: StreamChatWidgetStore;
   widgetSettings: WidgetSettingsStore;
   appSettings: AppSettingsStore;
+  twitchAuth: TwitchAuthStore;
   units: UnitsStore;
   widgetAutoHide: WidgetAutoHideStore;
 
@@ -43,9 +49,11 @@ export class RootStore {
     this.session = new SessionStore();
     this.environment = new EnvironmentStore();
     this.referenceLap = new ReferenceLapStore();
+    this.chat = new ChatStore();
     this.backendComputed = new BackendComputedStore();
     this.widgetSettings = new WidgetSettingsStore(this);
     this.appSettings = new AppSettingsStore();
+    this.twitchAuth = new TwitchAuthStore(this);
     this.units = new UnitsStore();
     this.flags = new FlagsStore(this);
     this.paceCar = new PaceCarStore(this);
@@ -54,6 +62,7 @@ export class RootStore {
     this.trackMapWidget = new TrackMapWidgetStore();
     this.drivingCoachWidget = new DrivingCoachWidgetStore(this);
     this.inputTraceWidget = new InputTraceWidgetStore(this);
+    this.streamChatWidget = new StreamChatWidgetStore(this);
     this.sim = new SimStore(this);
     this.widgetAutoHide = new WidgetAutoHideStore();
 
@@ -64,12 +73,18 @@ export class RootStore {
       this.sim.init();
       this.appSettings.init();
       this.drivingCoachWidget.init();
+      this.streamChatWidget.init();
+      void this.chat.init();
+      void this.twitchAuth.init();
     }
   }
 
   // Short-lived stores (widget previews, layout canvas, Storybook) must call
   // this on unmount — their reactions otherwise keep running against telemetry.
   dispose() {
+    this.twitchAuth.dispose();
+    this.streamChatWidget.dispose();
+    this.chat.dispose();
     this.inputTraceWidget.dispose();
     this.standingsWidget.dispose();
     this.flags.dispose();

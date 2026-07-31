@@ -285,6 +285,34 @@
       "snapshotDesc": "Захватить текущее состояние телеметрии.",
       "downloadSnapshot": "Скачать снимок JSON",
       "snapshotSuccess": "Снимок сохранён — поместите JSON в test-data/"
+    },
+    "streamChat": {
+      "title": "Чат стрима",
+      "twitchChannel": "Канал Twitch",
+      "twitchChannelPlaceholder": "twitchdev",
+      "twitchChannelDesc": "Только имя из адреса канала: twitch.tv/twitchdev → twitchdev. Читается анонимно, аккаунт не нужен. Пусто — Twitch выключен.",
+      "youtubeTarget": "Трансляция YouTube",
+      "youtubeTargetPlaceholder": "@handle или ссылка на трансляцию",
+      "youtubeTargetDesc": "Подойдёт любое: @MrBeast, youtube.com/watch?v=dQw4w9WgXcQ, youtu.be/dQw4w9WgXcQ или просто dQw4w9WgXcQ. Если указан канал, текущая трансляция находится сама.",
+      "hideCommands": "Скрывать команды ботов",
+      "hideCommandsDesc": "Убирает сообщения, начинающиеся с восклицательного знака.",
+      "ignoredBots": "Игнорируемые аккаунты",
+      "ignoredBotsDesc": "Через запятую. Их сообщения не попадают в виджет.",
+      "signInTitle": "Вход через Twitch",
+      "signInDesc": "Необязательно. Открывает счётчик зрителей и аптайм в футере — сам чат работает и без входа.",
+      "clientId": "Client id приложения",
+      "clientIdDesc": "В этой сборке нет client id, поэтому для входа нужно своё приложение с dev.twitch.tv/console/apps. Регистрируй как Public-клиент, client secret не нужен.",
+      "signIn": "Войти",
+      "signOut": "Выйти",
+      "signedIn": "Вход выполнен",
+      "cancel": "Отмена",
+      "openActivate": "Открыть twitch.tv/activate",
+      "deviceHint": "Введите этот код на twitch.tv/activate и возвращайтесь — окно обновится само.",
+      "errors": {
+        "clientIdRequired": "Сначала заполните client id.",
+        "codeExpired": "Код истёк. Начните заново.",
+        "sessionExpired": "Сессия Twitch истекла. Войдите заново."
+      }
     }
   }
 }

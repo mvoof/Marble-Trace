@@ -1,0 +1,16 @@
+.glyph {
+  width: ws(16);
+  height: ws(16);
+  flex-shrink: 0;
+  display: block;
+}
+
+// Platform identity is carried by colour AND shape: at low widget opacity the
+// stripe colours stop separating, the silhouette still does.
+.glyphTwitch {
+  fill: $race-lilac;
+}
+
+.glyphYoutube {
+  fill: $race-red;
+}

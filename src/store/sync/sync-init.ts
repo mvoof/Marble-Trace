@@ -1,5 +1,6 @@
-import { reaction } from 'mobx';
+import { comparer, reaction } from 'mobx';
 import { listen } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { load } from '@tauri-apps/plugin-store';
 import {
@@ -25,6 +26,7 @@ import {
   emitWidgetSettingsToMain,
   emitSessionLayoutsChanged,
   emitAutoSwitchLayoutsChanged,
+  emitStreamChatFilters,
 } from './events';
 import type { MonitorWidgetsPayload } from './events';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
@@ -56,6 +58,12 @@ export const initMainSync = async (root: RootStore) => {
           await store.save();
         }
       }
+
+      // Reconcile the persisted login with what the credential store actually
+      // holds. Must run after hydration: the store is constructed before
+      // settings load, so checking any earlier gets overwritten by the stale
+      // value from disk and the UI claims a signed-in session that is gone.
+      void root.twitchAuth.syncLogin();
 
       root.widgetSettings.ensureDefaultLayout();
 
@@ -299,6 +307,36 @@ export const initMainSync = async (root: RootStore) => {
             void emitSteeringLockChanged(v);
             void onSave();
           }
+        ),
+        // Only the main window opens chat connections; overlays just listen to
+        // the resulting chat:// events. Restarting on any source change keeps a
+        // single code path for "connect" and "reconnect with new settings".
+        reaction(
+          () => ({
+            twitchChannel: root.appSettings.appSettings.streamChatTwitchChannel,
+            youtubeTarget: root.appSettings.appSettings.streamChatYoutubeTarget,
+            twitchClientId:
+              root.appSettings.appSettings.streamChatTwitchClientId,
+            // Tokens stay in the OS credential store; this only signals that
+            // the signed-in state changed and the connectors should restart.
+            authRevision: root.appSettings.appSettings.streamChatAuthRevision,
+          }),
+          (config) => {
+            void invoke('start_chat_stream', { config });
+            void onSave();
+          },
+          { equals: comparer.structural, fireImmediately: true, delay: 400 }
+        ),
+        reaction(
+          () => ({
+            hideCommands: root.appSettings.appSettings.streamChatHideCommands,
+            ignoredBots: root.appSettings.appSettings.streamChatIgnoredBots,
+          }),
+          (filters) => {
+            void emitStreamChatFilters(filters);
+            void onSave();
+          },
+          { equals: comparer.structural }
         ),
         reaction(
           () => root.standingsWidget.activeClassIndex,
