@@ -27,6 +27,7 @@ import {
   emitSessionLayoutsChanged,
   emitAutoSwitchLayoutsChanged,
   emitStreamChatFilters,
+  emitStreamChatCleared,
 } from './events';
 import type { MonitorWidgetsPayload } from './events';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
@@ -37,6 +38,8 @@ import type {
   SessionContext,
 } from '@/types/widget-settings';
 import type { RootStore } from '../root-store';
+
+const STREAM_CHAT_WIDGET_ID = 'stream-chat';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
 let mainSyncRefCount = 0;
@@ -313,25 +316,49 @@ export const initMainSync = async (root: RootStore) => {
         // single code path for "connect" and "reconnect with new settings".
         reaction(
           () => ({
-            twitchChannel: root.appSettings.appSettings.streamChatTwitchChannel,
-            youtubeTarget: root.appSettings.appSettings.streamChatYoutubeTarget,
-            twitchClientId:
-              root.appSettings.appSettings.streamChatTwitchClientId,
-            // Tokens stay in the OS credential store; this only signals that
-            // the signed-in state changed and the connectors should restart.
-            authRevision: root.appSettings.appSettings.streamChatAuthRevision,
+            // A disabled widget means nobody is reading chat, so the sockets
+            // and the Helix polling should not be running either. The widgets
+            // page renders its preview against a seeded store, so it never
+            // needs a live connection.
+            enabled:
+              root.widgetSettings.getWidget(STREAM_CHAT_WIDGET_ID)?.userSettings
+                .enabled === true,
+            // Previewing another layout in the editor swaps the working copy
+            // while the overlay still draws the active one — the connectors
+            // follow the overlay, not the preview.
+            editorPreviewMode: root.widgetSettings.editorPreviewMode,
+            config: {
+              twitchChannel:
+                root.appSettings.appSettings.streamChatTwitchChannel,
+              youtubeTarget:
+                root.appSettings.appSettings.streamChatYoutubeTarget,
+              twitchClientId:
+                root.appSettings.appSettings.streamChatTwitchClientId,
+              // Tokens stay in the OS credential store; this only signals that
+              // the signed-in state changed and the connectors should restart.
+              authRevision: root.appSettings.appSettings.streamChatAuthRevision,
+            },
           }),
-          (config) => {
+          ({ enabled, editorPreviewMode, config }) => {
+            // The flag is part of the tracked value, so leaving preview mode
+            // re-runs this with the real active layout.
+            if (editorPreviewMode) {
+              return;
+            }
+
             const hasTarget = Boolean(
               config.twitchChannel?.trim() || config.youtubeTarget?.trim()
             );
 
-            if (hasTarget) {
+            if (enabled && hasTarget) {
               void invoke('start_chat_stream', { config });
             } else {
-              // No channel left to read: tear the connectors down instead of
-              // starting a generation that connects to nothing.
+              // Nothing to read, or nothing to read it with: tear the
+              // connectors down and drop the buffer so re-enabling starts on
+              // live messages instead of a stale backlog.
               void invoke('stop_chat_stream');
+              root.chat.reset();
+              void emitStreamChatCleared();
             }
 
             void onSave();

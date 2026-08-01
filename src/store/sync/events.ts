@@ -109,6 +109,14 @@ export const setupOverlayListeners = async (
     })
   );
 
+  // The connectors live in main, so only main knows when the feed was shut
+  // down; the overlay drops its own buffer on that signal.
+  unlistens.push(
+    await listen('stream-chat-cleared', () => {
+      runInAction(() => root.chat.reset());
+    })
+  );
+
   unlistens.push(
     await listen<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
       if (e.payload.monitorName !== root.widgetSettings.ownMonitorName) return;
@@ -188,6 +196,9 @@ export interface StreamChatFilters {
 
 export const emitStreamChatFilters = (filters: StreamChatFilters) =>
   emitToOverlays('stream-chat-filters-changed', filters);
+
+export const emitStreamChatCleared = () =>
+  emitToOverlays('stream-chat-cleared', null);
 
 export const emitStandingsClassIndex = (index: number) =>
   emitToOverlays('standings-class-index-changed', index);
