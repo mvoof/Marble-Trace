@@ -38,11 +38,29 @@ export const ChatMessageList = observer(() => {
     );
   }
 
+  const thumb = chatWidget.scrollThumb;
+  // Off the overlay's normal look: the bar is only useful while the mouse can
+  // reach the widget, or as the reminder that the feed is parked in history.
+  const showScrollbar =
+    thumb !== null && (appSettings.interactMode || chatWidget.isScrolled);
+
   return (
     <div className={styles.list} onWheel={handleWheel}>
       {chatWidget.visibleMessages.map((message) => (
         <ChatMessageRow key={message.id} message={message} />
       ))}
+
+      {showScrollbar && (
+        <div className={styles.scrollTrack}>
+          <div
+            className={styles.scrollThumb}
+            style={{
+              height: `${thumb.heightPercent}%`,
+              top: `${thumb.topPercent}%`,
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 });

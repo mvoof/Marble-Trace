@@ -107,6 +107,35 @@ export class StreamChatWidgetStore {
     this.scrollTo(this.scrollOffset + rows);
   }
 
+  /**
+   * Geometry of the scrollbar thumb in percent of the track, or null when the
+   * history fits and there is nothing to indicate. The size floor keeps the
+   * thumb grabbable-looking on a long backlog, so the offset is mapped onto the
+   * leftover track rather than onto the raw message count.
+   */
+  get scrollThumb(): { heightPercent: number; topPercent: number } | null {
+    const total = this.filteredMessages.length;
+    const windowSize = Math.min(this.settings.maxMessages, total);
+
+    if (this.maxScrollOffset === 0 || windowSize === 0) {
+      return null;
+    }
+
+    const heightPercent = Math.max(
+      MIN_THUMB_PERCENT,
+      (windowSize / total) * 100
+    );
+
+    // Offset counts up from the newest message, so a zero offset parks the
+    // thumb at the bottom of the track.
+    const travelled = 1 - this.scrollOffset / this.maxScrollOffset;
+
+    return {
+      heightPercent,
+      topPercent: (100 - heightPercent) * travelled,
+    };
+  }
+
   private get settings(): StreamChatWidgetSettings {
     return this.root.widgetSettings.getSettings<StreamChatWidgetSettings>(
       WIDGET_ID
