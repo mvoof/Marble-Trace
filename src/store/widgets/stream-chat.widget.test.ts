@@ -80,6 +80,32 @@ describe('StreamChatWidgetStore', () => {
     );
   });
 
+  it('scrolls the window back through the history and clamps at both ends', () => {
+    setSettings({ maxMessages: 2 });
+    seed([
+      makeMessage('1', 'a', 'one'),
+      makeMessage('2', 'b', 'two'),
+      makeMessage('3', 'c', 'three'),
+      makeMessage('4', 'd', 'four'),
+    ]);
+
+    runInAction(() => rootStore.streamChatWidget.scrollByRows(1));
+    expect(rootStore.streamChatWidget.visibleMessages.map((m) => m.id)).toEqual(
+      ['2', '3']
+    );
+
+    runInAction(() => rootStore.streamChatWidget.scrollByRows(10));
+    expect(rootStore.streamChatWidget.visibleMessages.map((m) => m.id)).toEqual(
+      ['1', '2']
+    );
+
+    runInAction(() => rootStore.streamChatWidget.scrollByRows(-10));
+    expect(rootStore.streamChatWidget.isScrolled).toBe(false);
+    expect(rootStore.streamChatWidget.visibleMessages.map((m) => m.id)).toEqual(
+      ['3', '4']
+    );
+  });
+
   it('caps the feed at maxMessages keeping the newest', () => {
     setSettings({ maxMessages: 2 });
     seed([
