@@ -322,7 +322,18 @@ export const initMainSync = async (root: RootStore) => {
             authRevision: root.appSettings.appSettings.streamChatAuthRevision,
           }),
           (config) => {
-            void invoke('start_chat_stream', { config });
+            const hasTarget = Boolean(
+              config.twitchChannel?.trim() || config.youtubeTarget?.trim()
+            );
+
+            if (hasTarget) {
+              void invoke('start_chat_stream', { config });
+            } else {
+              // No channel left to read: tear the connectors down instead of
+              // starting a generation that connects to nothing.
+              void invoke('stop_chat_stream');
+            }
+
             void onSave();
           },
           { equals: comparer.structural, fireImmediately: true, delay: 400 }
