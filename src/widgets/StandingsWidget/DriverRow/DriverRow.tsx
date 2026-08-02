@@ -170,12 +170,12 @@ export const DriverRow = observer(
         </div>
 
         <div className={`${styles.cell} ${styles.nameCell}`}>
-          {isFinished ? (
-            <DriverFlagBadge type="checkered" />
-          ) : (
-            settings.showDriverFlags &&
-            flagType !== 'none' && <DriverFlagBadge type={flagType} />
-          )}
+          {settings.showDriverFlags &&
+            (isFinished ? (
+              <DriverFlagBadge type="checkered" />
+            ) : (
+              flagType !== 'none' && <DriverFlagBadge type={flagType} />
+            ))}
 
           <span
             className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
