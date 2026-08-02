@@ -1,12 +1,12 @@
 .statCell {
+  position: relative;
   flex: 1 1 0;
   min-width: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 1px;
   background: $widget-surface-cell;
-  padding: sp(xxs) sp(sm) sp(xxs);
+  padding: sp(xs) sp(sm);
   font-family: $font-mono;
 }
 
@@ -15,6 +15,7 @@
   align-items: center;
   gap: sp(xxs);
   min-width: 0;
+  margin-bottom: sp(xs);
 }
 
 .statIcon {
@@ -26,7 +27,9 @@
 
 .statLabel {
   font-size: fs(xxxs);
+  font-weight: 500;
   letter-spacing: 0.08em;
+  color: $widget-text-secondary;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -48,17 +51,17 @@
 }
 
 .statUnit {
-  font-size: fs(xxs);
+  font-size: fs(xxxs);
   font-weight: 500;
   margin-left: 1px;
-  color: $widget-text-secondary;
+  color: $widget-text-muted;
 }
 
 .statBar {
   height: 2px;
   width: 100%;
   background: rgba(255, 255, 255, $opacity-subtle);
-  margin-top: 2px;
+  margin-top: sp(xs);
 }
 
 .statBarFill {

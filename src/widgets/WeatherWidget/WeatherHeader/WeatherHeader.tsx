@@ -24,6 +24,8 @@ const ICON_MAP = {
   'cloud-rain': CloudRain,
 };
 
+const ICON_SIZE_PX = 20;
+
 export const WeatherHeader = observer(() => {
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
@@ -54,7 +56,7 @@ export const WeatherHeader = observer(() => {
     <div className={`${styles.header} ${showCompass ? styles.hasCompass : ''}`}>
       <div className={styles.conditionSection}>
         <div className={styles.iconWrapper}>
-          <WeatherIcon size={24} className={styles.icon} />
+          <WeatherIcon size={ICON_SIZE_PX} className={styles.icon} />
         </div>
         <span className={styles.conditionText}>{skiesLabel}</span>
       </div>

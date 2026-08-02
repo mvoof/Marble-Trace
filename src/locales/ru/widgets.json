@@ -411,6 +411,8 @@
       "trackTemperatureDesc": "Температура поверхности гоночного полотна.",
       "windSpeedAndDir": "Скорость и направление ветра",
       "windSpeedAndDirDesc": "Числовое значение скорости ветра и направление по сторонам света.",
+      "windBearing": "Азимут ветра",
+      "windBearingDesc": "Точный азимут ветра в градусах рядом с подписью ветра.",
       "relativeHumidity": "Относительная влажность",
       "relativeHumidityDesc": "Текущий процент влажности.",
       "weatherForecast": "Прогноз погоды",

@@ -120,12 +120,16 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     const windDirRad =
       env?.wind_dir ?? parseWeekendFloat(sessionInfo?.trackWindDir);
 
-    const cardinal =
-      windDirRad !== null
-        ? bearingToCardinal(radsToBearing(windDirRad))
-        : undefined;
+    label = 'WIND';
 
-    label = cardinal !== undefined ? `WIND ${cardinal}` : 'WIND';
+    if (windDirRad !== null) {
+      const bearing = radsToBearing(windDirRad);
+
+      label = settings.showWindBearing
+        ? `WIND ${Math.round(bearing)}°`
+        : `WIND ${bearingToCardinal(bearing)}`;
+    }
+
     value = windVelMps !== null ? _formatSpeed(windVelMps, unitSystem) : '--.-';
     unit = _speedUnit(unitSystem);
     accentColor = getWindColor(windVelMps);

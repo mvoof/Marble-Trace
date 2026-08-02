@@ -46,6 +46,12 @@ export const WeatherSettingsPanel = observer(() => {
       key: 'showWind',
     },
     {
+      titleKey: 'settingsPanels.weather.windBearing',
+      descKey: 'settingsPanels.weather.windBearingDesc',
+      value: settings.showWindBearing,
+      key: 'showWindBearing',
+    },
+    {
       titleKey: 'settingsPanels.weather.relativeHumidity',
       descKey: 'settingsPanels.weather.relativeHumidityDesc',
       value: settings.showHumidity,

@@ -816,6 +816,7 @@ const WIDGETS: WidgetConfig[] = [
       showHumidity: true,
       showForecast: true,
       showTrackWetness: true,
+      showWindBearing: true,
     },
   },
   {

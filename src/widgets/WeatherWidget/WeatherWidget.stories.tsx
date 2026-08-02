@@ -37,6 +37,7 @@ interface StoryArgs {
   showWind: boolean;
   showHumidity: boolean;
   showTrackWetness: boolean;
+  showWindBearing: boolean;
   showForecast: boolean;
 }
 
@@ -44,7 +45,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/WeatherWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: WeatherWidget,
-    size: { width: 200, height: 380 },
+    size: { width: 200, height: 440 },
     seedSnapshot: true,
     seed: (store, args) => {
       store.units.setSystem(args.system);
@@ -71,6 +72,7 @@ const meta: Meta<StoryArgs> = {
         showWind: args.showWind,
         showHumidity: args.showHumidity,
         showTrackWetness: args.showTrackWetness,
+        showWindBearing: args.showWindBearing,
         showForecast: args.showForecast,
       });
     },
@@ -90,6 +92,7 @@ const meta: Meta<StoryArgs> = {
       showWind: true,
       showHumidity: true,
       showTrackWetness: true,
+      showWindBearing: true,
       showForecast: false,
     },
   }),
@@ -126,6 +129,10 @@ export const HotDay: Story = {
 
 export const WetTrack: Story = {
   args: { trackWetness: 5, airTempC: 14, trackTempC: 17, humidity: 88 },
+};
+
+export const OddStatCount: Story = {
+  args: { showHumidity: false },
 };
 
 export const StrongWind: Story = {
