@@ -1,13 +1,28 @@
 .cell {
+  position: relative;
   display: flex;
   flex-direction: column;
-  padding: sp(xs) sp(sm);
+  align-items: center;
+  padding: sp(xs) sp(xxxs);
   background: $widget-surface-cell;
-  gap: sp(xxxs);
+  gap: sp(xxs);
+}
+
+// Dividers are hairlines inset from the row edges, never full bleed.
+.cell:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: sp(xs);
+  bottom: sp(xs);
+  right: 0;
+  width: 1px;
+  background: $widget-border-subtle;
 }
 
 .label {
-  font-size: fs(xxxs);
+  font-size: wfs(9);
+  letter-spacing: 0.09em;
+  color: $widget-text-muted;
   text-align: center;
 }
 
@@ -19,8 +34,20 @@
   text-align: center;
 }
 
-.unit {
+// Laps to empty at this consumption — same quantity the summary shows large.
+.laps {
+  font-family: $font-mono;
   font-size: fs(xxs);
   color: $widget-text-secondary;
-  margin-left: sp(xxs);
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+// Spelled out because a bare "L" reads as litres next to a fuel figure.
+.lapsUnit {
+  font-family: $font-widget;
+  font-size: wfs(9);
+  color: $widget-text-muted;
+  margin-left: 2px;
 }

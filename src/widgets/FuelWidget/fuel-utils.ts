@@ -1,44 +1,66 @@
 import type { FuelWidgetSettings } from '@/types/widget-settings';
-
-const HISTORY_WINDOW = 10;
+import {
+  FUEL_AVG_WINDOW_ALL_LAPS,
+  FUEL_THRESHOLDS,
+} from '@utils/constants/fuel-constants';
 
 export interface FuelHistoryStats {
   last: number | null;
-  avg10: number | null;
+  avg: number | null;
   min: number | null;
   max: number | null;
 }
 
+/**
+ * Every stat shares the averaging window the user configured, so MIN/MAX cannot
+ * drag in the out-lap or a caution lap that the average itself already ignores.
+ * `window === 0` means the whole recorded history, matching `FuelState::avg`.
+ */
 export const computeFuelHistoryStats = (
-  history: number[]
+  history: number[],
+  window: number
 ): FuelHistoryStats => {
   if (history.length === 0) {
-    return { last: null, avg10: null, min: null, max: null };
+    return { last: null, avg: null, min: null, max: null };
   }
 
-  const last = history[history.length - 1];
-  const window10 = history.slice(-HISTORY_WINDOW);
-  const avg10 = window10.reduce((sum, v) => sum + v, 0) / window10.length;
-  const min = Math.min(...history);
-  const max = Math.max(...history);
+  const laps =
+    window === FUEL_AVG_WINDOW_ALL_LAPS ? history : history.slice(-window);
 
-  return { last, avg10, min, max };
+  const last = history[history.length - 1];
+  const avg = laps.reduce((sum, value) => sum + value, 0) / laps.length;
+  const min = Math.min(...laps);
+  const max = Math.max(...laps);
+
+  return { last, avg, min, max };
 };
 
 export type FuelStatKey = keyof FuelHistoryStats;
 
-const FUEL_STAT_ORDER: FuelStatKey[] = ['last', 'avg10', 'min', 'max'];
+const FUEL_STAT_ORDER: FuelStatKey[] = ['last', 'avg', 'min', 'max'];
 
-export const FUEL_STAT_LABELS: Record<FuelStatKey, string> = {
+const FUEL_STAT_STATIC_LABELS: Record<Exclude<FuelStatKey, 'avg'>, string> = {
   last: 'LAST',
-  avg10: 'AVG 10',
   min: 'MIN',
   max: 'MAX',
 };
 
+/** The average column names its own window so the setting is visible in-place. */
+export const getFuelStatLabel = (key: FuelStatKey, window: number): string => {
+  if (key !== 'avg') {
+    return FUEL_STAT_STATIC_LABELS[key];
+  }
+
+  if (window === FUEL_AVG_WINDOW_ALL_LAPS) {
+    return 'AVG ALL';
+  }
+
+  return `AVG ${window}`;
+};
+
 const FUEL_STAT_SETTING_KEYS: Record<FuelStatKey, keyof FuelWidgetSettings> = {
   last: 'showStatLast',
-  avg10: 'showStatAvg10',
+  avg: 'showStatAvg10',
   min: 'showStatMin',
   max: 'showStatMax',
 };
@@ -48,18 +70,93 @@ export const getVisibleFuelStatKeys = (
 ): FuelStatKey[] =>
   FUEL_STAT_ORDER.filter((key) => settings[FUEL_STAT_SETTING_KEYS[key]]);
 
+/** Laps the current tank covers at a given per-lap consumption. */
+export const computeLapsToEmpty = (
+  fuelLevel: number | null,
+  consumptionPerLap: number | null
+): number | null => {
+  if (
+    fuelLevel === null ||
+    consumptionPerLap === null ||
+    fuelLevel <= 0 ||
+    consumptionPerLap <= 0
+  ) {
+    return null;
+  }
+
+  return fuelLevel / consumptionPerLap;
+};
+
+export type FuelLapsStatus = 'safe' | 'warning' | 'danger';
+
+/**
+ * Shared by the summary and the pit forecast so both speak about urgency with
+ * the same thresholds instead of drifting apart.
+ */
+export const resolveLapsStatus = (
+  lapsRemaining: number | null,
+  pitWarningLaps: number
+): FuelLapsStatus | null => {
+  if (lapsRemaining === null) {
+    return null;
+  }
+
+  if (lapsRemaining <= pitWarningLaps) {
+    return 'danger';
+  }
+
+  if (lapsRemaining > pitWarningLaps + FUEL_THRESHOLDS.LAPS_LEFT_GREEN_BUFFER) {
+    return 'safe';
+  }
+
+  return 'warning';
+};
+
+export interface RefuelPlan {
+  /** Stops needed to take on the whole amount, 1 when a single tank covers it. */
+  stops: number;
+  /** What to dial in at this stop — a full tank while more stops remain. */
+  fillNow: number;
+}
+
+/**
+ * Splitting the total evenly across stops would recommend an amount no real
+ * stop uses. Drivers fill to the brim early and take the remainder last, so
+ * `fillNow` is capped by tank capacity instead.
+ */
+export const computeRefuelPlan = (
+  fuelToAdd: number | null,
+  fuelMax: number | null
+): RefuelPlan | null => {
+  if (fuelToAdd === null || fuelToAdd <= 0) {
+    return null;
+  }
+
+  if (fuelMax === null || fuelMax <= 0) {
+    return { stops: 1, fillNow: fuelToAdd };
+  }
+
+  return {
+    stops: Math.ceil(fuelToAdd / fuelMax),
+    fillNow: Math.min(fuelToAdd, fuelMax),
+  };
+};
+
 const SECONDS_IN_MINUTE = 60;
 const SECONDS_IN_HOUR = 3600;
 
 export interface NextStopForecastInput {
   lapsRemaining: number | null;
   pitWindowStart: number | null;
+  pitWindowEnd: number | null;
   pitWarningLaps: number;
   lapTimeSec: number | null;
 }
 
 export interface NextStopForecast {
   targetLap: number | null;
+  /** Last lap of the window; the stop is a range, not a single lap. */
+  windowEndLap: number | null;
   lapsUntil: number;
   secondsUntil: number | null;
 }
@@ -71,7 +168,13 @@ export interface NextStopForecast {
 export const computeNextStopForecast = (
   input: NextStopForecastInput
 ): NextStopForecast | null => {
-  const { lapsRemaining, pitWindowStart, pitWarningLaps, lapTimeSec } = input;
+  const {
+    lapsRemaining,
+    pitWindowStart,
+    pitWindowEnd,
+    pitWarningLaps,
+    lapTimeSec,
+  } = input;
 
   if (lapsRemaining === null || !Number.isFinite(lapsRemaining)) {
     return null;
@@ -88,6 +191,7 @@ export const computeNextStopForecast = (
 
   return {
     targetLap: pitWindowStart,
+    windowEndLap: pitWindowEnd,
     lapsUntil,
     secondsUntil,
   };

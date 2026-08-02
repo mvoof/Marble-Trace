@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-import { FUEL_THRESHOLDS } from '@utils/constants/fuel-constants';
 import { formatFuel } from '@utils/formatters/telemetry-format';
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
@@ -14,12 +13,14 @@ import {
   NO_FUEL_DATA_PLACEHOLDER,
   NO_LAPS_REMAINING_DATA_PLACEHOLDER,
 } from '@utils/constants/data-placeholders';
-import { getVisibleFuelStatKeys } from '../../fuel-utils';
+import { type FuelLapsStatus, resolveLapsStatus } from '../fuel-utils';
 import styles from './FuelSummaryRow.module.scss';
 
-// Below this the laps row has too few cells for the side/main cells to mirror
-// its column edges, so the summary keeps its own proportions instead.
-const MIN_MIRRORED_STAT_COLUMNS = 3;
+const LAPS_STATUS_CLASSES: Record<FuelLapsStatus, string> = {
+  safe: styles.valueSafe,
+  warning: styles.valueWarning,
+  danger: styles.valueDanger,
+};
 
 export const FuelSummaryRow = observer(() => {
   const { fuel } = useBackendComputedStore();
@@ -27,32 +28,14 @@ export const FuelSummaryRow = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
 
   const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
-  const statColumnCount = getVisibleFuelStatKeys(settings).length;
-  const isStandalone = statColumnCount === 0;
-  const isMirrored = statColumnCount >= MIN_MIRRORED_STAT_COLUMNS;
 
   const lapsRemaining = fuel?.lapsRemaining ?? null;
   const shortage = fuel?.shortage ?? null;
   const avgPerLap = fuel?.avgPerLap ?? null;
 
-  const lapsValueClass = (): string => {
-    if (lapsRemaining === null) {
-      return '';
-    }
-
-    if (
-      lapsRemaining >
-      settings.pitWarningLaps + FUEL_THRESHOLDS.LAPS_LEFT_GREEN_BUFFER
-    ) {
-      return styles.valueSafe;
-    }
-
-    if (lapsRemaining <= settings.pitWarningLaps) {
-      return styles.valueDanger;
-    }
-
-    return styles.valueWarning;
-  };
+  const lapsStatus = resolveLapsStatus(lapsRemaining, settings.pitWarningLaps);
+  const lapsValueClass =
+    lapsStatus !== null ? LAPS_STATUS_CLASSES[lapsStatus] : '';
 
   const shortageText =
     shortage !== null
@@ -67,48 +50,33 @@ export const FuelSummaryRow = observer(() => {
       ? formatFuel(avgPerLap, unitSystem)
       : NO_FUEL_DATA_PLACEHOLDER;
 
-  const gridClasses = [styles.grid, isMirrored ? '' : styles.gridFree];
-
-  if (isStandalone) {
-    gridClasses.push(styles.gridStandalone);
-  }
-
-  const gridStyle = isMirrored
-    ? { gridTemplateColumns: `repeat(${statColumnCount}, 1fr)` }
-    : undefined;
-
   return (
-    <div className={gridClasses.join(' ')} style={gridStyle}>
-      <div
-        className={`${styles.sideLeft} ${isMirrored ? styles.sideLeftAligned : ''}`}
-      >
-        <WidgetLabel className={styles.sideLabel}>AVG / LAP</WidgetLabel>
+    <div className={styles.grid}>
+      <div className={styles.sideLeft}>
         <WidgetValue className={styles.sideValue} value={avgText} />
+        <WidgetLabel className={styles.sideLabel}>AVG / LAP</WidgetLabel>
       </div>
 
-      <div className={`${styles.main} ${isMirrored ? styles.mainAligned : ''}`}>
-        {isStandalone && (
-          <WidgetLabel className={styles.mainLabel}>LAPS TO EMPTY</WidgetLabel>
-        )}
-
+      <div className={styles.main}>
         <WidgetValue
-          className={`${styles.mainValue} ${lapsValueClass()}`}
+          className={`${styles.mainValue} ${lapsValueClass}`}
           value={
             lapsRemaining !== null
               ? lapsRemaining.toFixed(1)
               : NO_LAPS_REMAINING_DATA_PLACEHOLDER
           }
         />
+
+        <WidgetLabel className={styles.mainLabel}>LAPS LEFT</WidgetLabel>
       </div>
 
-      <div
-        className={`${styles.sideRight} ${isMirrored ? styles.sideRightAligned : ''}`}
-      >
-        <WidgetLabel className={styles.sideLabel}>FINISH</WidgetLabel>
+      <div className={styles.sideRight}>
         <WidgetValue
           className={`${styles.sideValue} ${shortageClass}`}
           value={shortageText}
         />
+
+        <WidgetLabel className={styles.sideLabel}>FINISH</WidgetLabel>
       </div>
     </div>
   );

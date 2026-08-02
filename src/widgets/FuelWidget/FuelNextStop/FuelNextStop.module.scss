@@ -1,20 +1,29 @@
-$sb: rgba(255, 255, 255, $opacity-subtle);
-
 .nextStop {
   margin: 0;
   padding: sp(sm) sp(md);
   background: $widget-surface-cell;
-  border-top: 1px solid $sb;
-  border-bottom: 1px solid $sb;
+  border-bottom: 1px solid $widget-border-subtle;
   display: flex;
   flex-direction: column;
-  gap: sp(xxxs);
 }
 
 .headerRow {
+  position: relative;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
+  padding-bottom: sp(sm);
+}
+
+// Hairline inset from the block padding, matching the cell dividers below.
+.headerRow::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: $widget-border-subtle;
 }
 
 .label {
@@ -28,35 +37,72 @@ $sb: rgba(255, 255, 255, $opacity-subtle);
 
 .lap {
   font-family: $font-mono;
-  font-size: fs(xs);
-  font-weight: 600;
+  font-size: fs(md);
+  font-weight: 700;
   color: $widget-text-primary;
   line-height: 1;
   white-space: nowrap;
 }
 
+// The window closing lap matters for planning, but the opening lap leads.
+.lapRangeEnd {
+  color: $widget-text-secondary;
+  font-weight: 400;
+}
+
 .detailRow {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: sp(sm);
 }
 
+// Value first, label beneath — same hierarchy as the summary above.
 .detailCell {
+  position: relative;
   display: flex;
-  align-items: baseline;
-  gap: sp(xxs);
+  flex-direction: column;
+  align-items: center;
+  gap: sp(xxxs);
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.detailCell:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 1px;
+  background: $widget-border-subtle;
 }
 
 .detailLabel {
-  font-size: fs(xxxs);
-  color: $widget-text-secondary;
-  letter-spacing: 1px;
+  font-size: wfs(9);
+  color: $widget-text-muted;
+  letter-spacing: 0.09em;
+  white-space: nowrap;
 }
 
 .detailValue {
   font-family: $font-mono;
-  font-size: fs(xxs);
+  font-size: fs(md);
+  font-weight: 700;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
   line-height: 1;
+  white-space: nowrap;
+}
+
+.valueSafe {
+  color: $widget-status-positive;
+}
+
+.valueWarning {
+  color: $widget-status-warning;
+}
+
+.valueDanger {
+  color: $widget-status-danger;
 }

@@ -1,15 +1,14 @@
 .pitWarningHeader {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: sp(xs);
+  align-items: baseline;
 }
 
 .pitWarningHeaderLabel {
   font-family: $font-mono;
   font-size: fs(xxs);
   color: $widget-status-warning;
-  letter-spacing: 1px;
+  letter-spacing: 0.1em;
   font-weight: 700;
 }
 
@@ -20,8 +19,14 @@
   color: $widget-text-primary;
 }
 
+// Closing lap supports the opening lap rather than competing with it.
+.pitWarningWindowEnd {
+  color: $widget-text-secondary;
+  font-weight: 400;
+}
+
 .pitWarningSeparator {
   height: 1px;
   background: rgba(255, 255, 255, $opacity-faint);
-  margin-bottom: sp(sm);
+  margin: sp(xs) 0 sp(sm);
 }

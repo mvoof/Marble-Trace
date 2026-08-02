@@ -1,8 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { PitWarningHeader } from './PitWarningHeader/PitWarningHeader';
-import { PitWarningStrategy } from './PitWarningStrategy/PitWarningStrategy';
-import { PitWarningAmount } from './PitWarningAmount/PitWarningAmount';
+import { PitWarningFill } from './PitWarningFill/PitWarningFill';
 
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import styles from './FuelPitWarning.module.scss';
@@ -18,7 +17,6 @@ export const FuelPitWarning = observer(() => {
   const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
 
   const lapsRemaining = fuel?.lapsRemaining ?? null;
-  const shortage = fuel?.shortage ?? null;
 
   const isVisible =
     lapsRemaining !== null && lapsRemaining <= settings.pitWarningLaps;
@@ -27,21 +25,11 @@ export const FuelPitWarning = observer(() => {
     return null;
   }
 
-  const isShort = shortage !== null && shortage < 0;
-
   return (
-    <div
-      className={`${styles.pitWarning} ${isShort ? styles.pitWarningUrgent : ''}`}
-    >
+    <div className={styles.pitWarning}>
       <PitWarningHeader />
 
-      <div className={styles.pitWarningBody}>
-        <div className={styles.pitWarningMainRow}>
-          <PitWarningStrategy />
-
-          <PitWarningAmount />
-        </div>
-      </div>
+      <PitWarningFill />
     </div>
   );
 });

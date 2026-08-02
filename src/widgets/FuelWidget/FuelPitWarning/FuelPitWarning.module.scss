@@ -1,40 +1,11 @@
-@keyframes pitPulse {
-  0%,
-  100% {
-    background: rgba($widget-status-danger, $opacity-subtle);
-    border-top-color: rgba($widget-status-danger, $opacity-medium);
-    border-bottom-color: rgba($widget-status-danger, $opacity-medium);
-  }
-  50% {
-    background: rgba($widget-status-danger, 0.2);
-    border-top-color: rgba($widget-status-danger, 0.5);
-    border-bottom-color: rgba($widget-status-danger, 0.5);
-  }
-}
-
+// Static by design — a flashing block sits in the driver's periphery for the
+// whole end of a stint, and the red tint already reads as "now".
 .pitWarning {
   margin: 0;
-  padding: sp(sm) sp(md);
-  background: rgba($widget-status-danger, $opacity-subtle);
+  padding: sp(sm) sp(md) sp(sm);
+  background: rgba($widget-status-danger, $opacity-faint);
   border-top: 1px solid rgba($widget-status-danger, $opacity-medium);
   border-bottom: 1px solid rgba($widget-status-danger, $opacity-medium);
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
-}
-
-.pitWarningUrgent {
-  animation: pitPulse 1.2s ease-in-out infinite;
-}
-
-.pitWarningBody {
-  display: flex;
-  flex-direction: column;
-}
-
-.pitWarningMainRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: sp(xxxs);
 }

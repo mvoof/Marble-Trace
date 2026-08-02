@@ -1,0 +1,94 @@
+// Columns mirror an even stat grid below, so the headline cell lines up with
+// the two middle stat cells instead of straddling their edges.
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  margin: 0;
+  border-top: 1px solid $widget-border-subtle;
+  border-bottom: 1px solid $widget-border-subtle;
+}
+
+// One surface across the whole row — the headline reads by size and colour,
+// not by sitting on a lighter plate than its neighbours.
+.sideLeft,
+.main,
+.sideRight {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: sp(xxxs);
+  padding: sp(xs) sp(sm) sp(sm);
+  background: $widget-surface-cell;
+}
+
+.sideLeft::after,
+.main::after {
+  content: '';
+  position: absolute;
+  top: sp(xs);
+  bottom: sp(xs);
+  right: 0;
+  width: 1px;
+  background: $widget-border-subtle;
+}
+
+.sideRight {
+  align-items: flex-end;
+}
+
+.main {
+  align-items: center;
+  gap: sp(xxs);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+// Values lead, labels support — the label sits below and stays quiet.
+.sideLabel {
+  font-size: wfs(9);
+  letter-spacing: 0.09em;
+  color: $widget-text-muted;
+  white-space: nowrap;
+}
+
+.sideValue {
+  font-family: $font-mono;
+  font-size: fs(md);
+  font-weight: 700;
+  color: $widget-text-primary;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.sideValueSafe {
+  color: $widget-status-positive;
+}
+
+.mainLabel {
+  font-size: wfs(9);
+  letter-spacing: 0.1em;
+  color: $widget-text-muted;
+  white-space: nowrap;
+}
+
+.mainValue {
+  font-family: $font-mono;
+  font-size: fs(xxl);
+  font-weight: 800;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.9;
+}
+
+.valueSafe {
+  color: $widget-status-positive;
+}
+
+.valueDanger {
+  color: $widget-status-danger;
+}
+
+.valueWarning {
+  color: $widget-status-warning;
+}

@@ -2,20 +2,34 @@ import { observer } from 'mobx-react-lite';
 
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
+import { formatFuel } from '@utils/formatters/telemetry-format';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
-import { computeNextStopForecast, formatCountdown } from '../fuel-utils';
+import {
+  computeNextStopForecast,
+  formatCountdown,
+  type FuelLapsStatus,
+  resolveLapsStatus,
+} from '../fuel-utils';
 import styles from './FuelNextStop.module.scss';
 import {
   useBackendComputedStore,
   usePlayerStore,
+  useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 const NO_LAP_PLACEHOLDER = '--';
 
+const LAPS_STATUS_CLASSES: Record<FuelLapsStatus, string> = {
+  safe: styles.valueSafe,
+  warning: styles.valueWarning,
+  danger: styles.valueDanger,
+};
+
 export const FuelNextStop = observer(() => {
   const { fuel } = useBackendComputedStore();
   const { lapTiming } = usePlayerStore();
+  const { unitSystem } = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const settings = widgetSettings.getSettings<FuelWidgetSettings>('fuel');
@@ -31,6 +45,7 @@ export const FuelNextStop = observer(() => {
   const forecast = computeNextStopForecast({
     lapsRemaining: fuel?.lapsRemaining ?? null,
     pitWindowStart: fuel?.pitWindowStart ?? null,
+    pitWindowEnd: fuel?.pitWindowEnd ?? null,
     pitWarningLaps: settings.pitWarningLaps,
     lapTimeSec,
   });
@@ -44,29 +59,61 @@ export const FuelNextStop = observer(() => {
       ? `LAP ${forecast.targetLap}`
       : `LAP ${NO_LAP_PLACEHOLDER}`;
 
+  // Before the window opens there is often nothing to add yet — an empty cell
+  // would only take space from the two counters that do have an answer.
+  const fuelToAdd = fuel?.fuelToAddWithBuffer ?? null;
+  const hasFuelToAdd = fuelToAdd !== null && fuelToAdd > 0;
+
+  const lapsStatus = resolveLapsStatus(
+    fuel?.lapsRemaining ?? null,
+    settings.pitWarningLaps
+  );
+
+  const lapsClass = lapsStatus !== null ? LAPS_STATUS_CLASSES[lapsStatus] : '';
+
   return (
     <div className={styles.nextStop}>
       <div className={styles.headerRow}>
         <WidgetLabel className={styles.label}>NEXT PIT WINDOW</WidgetLabel>
-        <WidgetValue className={styles.lap} value={lapText} />
+
+        <span className={styles.lap}>
+          {lapText}
+
+          {forecast.windowEndLap !== null && (
+            <span className={styles.lapRangeEnd}>–{forecast.windowEndLap}</span>
+          )}
+        </span>
       </div>
 
       <div className={styles.detailRow}>
         <div className={styles.detailCell}>
-          <WidgetLabel className={styles.detailLabel}>IN LAPS</WidgetLabel>
           <WidgetValue
-            className={styles.detailValue}
+            className={`${styles.detailValue} ${lapsClass}`}
             value={forecast.lapsUntil.toFixed(1)}
           />
+
+          <WidgetLabel className={styles.detailLabel}>IN LAPS</WidgetLabel>
         </div>
 
         {forecast.secondsUntil !== null && (
           <div className={styles.detailCell}>
-            <WidgetLabel className={styles.detailLabel}>IN TIME</WidgetLabel>
             <WidgetValue
               className={styles.detailValue}
               value={formatCountdown(forecast.secondsUntil)}
             />
+
+            <WidgetLabel className={styles.detailLabel}>IN TIME</WidgetLabel>
+          </div>
+        )}
+
+        {hasFuelToAdd && (
+          <div className={styles.detailCell}>
+            <WidgetValue
+              className={styles.detailValue}
+              value={formatFuel(fuelToAdd, unitSystem)}
+            />
+
+            <WidgetLabel className={styles.detailLabel}>ADD</WidgetLabel>
           </div>
         )}
       </div>
