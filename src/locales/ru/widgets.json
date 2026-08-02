@@ -109,7 +109,8 @@
       "statMax": "MAX — худший круг",
       "nextStopForecast": "Прогноз следующего пит-стопа",
       "nextStopForecastDesc": "Ожидаемый круг и время до открытия пит-окна.",
-      "lowFuelWarningThreshold": "Порог предупреждения о низком топливе (круги)"
+      "lowFuelWarningThreshold": "Порог предупреждения о низком топливе (круги)",
+      "avgWindow": "Окно усреднения расхода, кругов (0 — все круги)"
     },
     "enginePanel": {
       "moduleParameters": "Параметры модуля",

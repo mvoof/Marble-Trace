@@ -109,7 +109,8 @@
       "statMax": "MAX — 最费油圈",
       "nextStopForecast": "下一次进站预测",
       "nextStopForecastDesc": "预计进站窗口开启的圈数与时间。",
-      "lowFuelWarningThreshold": "低油量警告阈值（圈数）"
+      "lowFuelWarningThreshold": "低油量警告阈值（圈数）",
+      "avgWindow": "油耗平均窗口，圈数（0 = 全部圈数）"
     },
     "enginePanel": {
       "moduleParameters": "模块参数",

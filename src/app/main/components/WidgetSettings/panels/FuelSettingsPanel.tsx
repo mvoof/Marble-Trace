@@ -2,6 +2,10 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { InputNumber, Segmented, Slider, Switch } from 'antd';
 import { FuelWidgetSettings } from '@/types/widget-settings';
+import {
+  FUEL_AVG_WINDOW_ALL_LAPS,
+  FUEL_AVG_WINDOW_MAX,
+} from '@utils/constants/fuel-constants';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
@@ -113,6 +117,26 @@ export const FuelSettingsPanel = observer(() => {
           min={1}
           max={20}
           onChange={(v) => v !== null && update({ pitWarningLaps: v })}
+        />
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <span className={styles.fieldLabel}>
+          {t('settingsPanels.fuel.avgWindow')}
+        </span>
+        <InputNumber
+          style={{ width: '100%' }}
+          value={settings.fuelAvgWindow}
+          min={FUEL_AVG_WINDOW_ALL_LAPS}
+          max={FUEL_AVG_WINDOW_MAX}
+          step={1}
+          precision={0}
+          parser={(v) =>
+            Number.parseInt(v ?? '', 10) || FUEL_AVG_WINDOW_ALL_LAPS
+          }
+          onChange={(v) =>
+            v !== null && update({ fuelAvgWindow: Math.round(v) })
+          }
         />
       </div>
     </Card>

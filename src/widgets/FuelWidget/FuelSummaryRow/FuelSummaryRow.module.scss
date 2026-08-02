@@ -1,0 +1,102 @@
+// Columns mirror an even stat grid below, so the headline cell lines up with
+// the two middle stat cells instead of straddling their edges.
+//
+// Two shared rows — values, then labels — so the three cells read along the
+// same horizontals even though the headline is twice the size of its
+// neighbours. The surface sits on the row itself: one plate, not three.
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-rows: auto auto;
+  row-gap: sp(xxs);
+  margin: 0;
+  padding: sp(xs) 0 sp(sm);
+  background: $widget-surface-cell;
+  border-top: 1px solid $widget-border-subtle;
+  border-bottom: 1px solid $widget-border-subtle;
+}
+
+.sideLeft,
+.main,
+.sideRight {
+  position: relative;
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  justify-items: start;
+  padding: 0 sp(sm);
+}
+
+.sideLeft::after,
+.main::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 1px;
+  background: $widget-border-subtle;
+}
+
+.sideRight {
+  justify-items: end;
+}
+
+.main {
+  justify-items: center;
+  padding: 0;
+}
+
+// Values share a baseline; labels share the row below it.
+.sideValue,
+.mainValue {
+  align-self: last baseline;
+  font-family: $font-mono;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sideValue {
+  font-size: fs(md);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.mainValue {
+  font-size: fs(xxl);
+  font-weight: 800;
+  line-height: 0.9;
+}
+
+.sideLabel,
+.mainLabel {
+  align-self: start;
+  font-size: wfs(9);
+  color: $widget-text-primary;
+  white-space: nowrap;
+}
+
+.sideLabel {
+  letter-spacing: 0.09em;
+}
+
+.mainLabel {
+  letter-spacing: 0.1em;
+}
+
+.sideValueSafe {
+  color: $widget-status-positive;
+}
+
+.valueSafe {
+  color: $widget-status-positive;
+}
+
+.valueDanger {
+  color: $widget-status-danger;
+}
+
+.valueWarning {
+  color: $widget-status-warning;
+}

@@ -5,7 +5,7 @@ import { FuelChart } from '@widgets/FuelWidget/FuelChart/FuelChart';
 import { FuelHeader } from './FuelHeader/FuelHeader';
 import { FuelProgress } from './FuelProgress/FuelProgress';
 import { FuelStatsRow } from './FuelStatsRow/FuelStatsRow';
-import { FuelLapsSection } from './FuelLapsSection/FuelLapsSection';
+import { FuelSummaryRow } from './FuelSummaryRow/FuelSummaryRow';
 import { FuelPitWarning } from './FuelPitWarning/FuelPitWarning';
 import { FuelNextStop } from './FuelNextStop/FuelNextStop';
 
@@ -14,8 +14,8 @@ export const FuelWidget = observer(() => {
     <WidgetPanel direction="column" gap={0} minWidth={220}>
       <FuelHeader />
       <FuelProgress />
+      <FuelSummaryRow />
       <FuelStatsRow />
-      <FuelLapsSection />
       <FuelChart />
       <FuelNextStop />
       <FuelPitWarning />

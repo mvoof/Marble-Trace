@@ -1,0 +1,72 @@
+.fill {
+  display: flex;
+  flex-direction: column;
+}
+
+.mainRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: sp(sm);
+}
+
+.amountCell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: sp(xxs);
+  min-width: 0;
+}
+
+// Primary, not danger: red on the block's red tint is the worst contrast pair
+// in the widget, and the surrounding border already carries the urgency.
+.amount {
+  font-family: $font-mono;
+  font-size: fs(xxxl);
+  font-weight: 700;
+  color: $widget-text-primary;
+  line-height: 0.9;
+  white-space: nowrap;
+}
+
+.amountUnit {
+  font-size: fs(md);
+  font-weight: 500;
+  color: $widget-text-secondary;
+  margin-left: sp(xxs);
+}
+
+.amountLabel {
+  font-family: $font-mono;
+  font-size: wfs(9);
+  color: $widget-text-primary;
+  letter-spacing: 0.09em;
+}
+
+.stops {
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  color: $widget-text-secondary;
+  white-space: nowrap;
+}
+
+.stopsCount {
+  font-size: fs(md);
+  font-weight: 700;
+  color: $widget-text-primary;
+}
+
+.footer {
+  display: flex;
+  gap: sp(sm);
+  margin-top: sp(sm);
+  padding-top: sp(xs);
+  border-top: 1px solid rgba(255, 255, 255, $opacity-faint);
+  font-family: $font-mono;
+  font-size: fs(xxxs);
+  color: $widget-text-secondary;
+}
+
+.footerDot {
+  opacity: 0.4;
+}

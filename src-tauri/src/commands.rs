@@ -14,6 +14,9 @@ use crate::telemetry::runtime::{load_cached_track_shape, spawn_telemetry_thread}
 use crate::telemetry::state::TelemetryState;
 use crate::utils::lock_or_recover;
 
+/// Upper bound for `set_fuel_avg_window`, matching MAX_LAP_FUEL_HISTORY. 0 = all laps.
+const MAX_FUEL_AVG_WINDOW: u32 = 100;
+
 #[tauri::command]
 pub async fn get_connection_status(state: State<'_, TelemetryState>) -> Result<bool, String> {
     Ok(state.service.is_connected.load(Ordering::Relaxed))
@@ -45,8 +48,31 @@ pub async fn set_pit_warning_laps(
     }
 
     state
+        .fuel_tuning
         .pit_warning_laps
         .store(laps.to_bits(), Ordering::Relaxed);
+
+    Ok(())
+}
+
+/// Number of recent laps averaged for fuel consumption. 0 = the whole session.
+#[tauri::command]
+pub async fn set_fuel_avg_window(
+    state: State<'_, TelemetryState>,
+    window: u32,
+) -> Result<(), String> {
+    if window > MAX_FUEL_AVG_WINDOW {
+        return Err(format!(
+            "fuel_avg_window must be between 0 (all laps) and {MAX_FUEL_AVG_WINDOW}"
+        ));
+    }
+
+    state
+        .fuel_tuning
+        .avg_window
+        .store(window as usize, Ordering::Relaxed);
+
+    debug!("Fuel average window updated to: {window}");
 
     Ok(())
 }
@@ -91,7 +117,7 @@ pub async fn start_telemetry_stream(
         app,
         state.service.clone(),
         state.registry.clone(),
-        state.pit_warning_laps.clone(),
+        state.fuel_tuning.clone(),
     )
 }
 

@@ -220,6 +220,8 @@ export interface WeatherWidgetSettings {
 export interface FuelWidgetSettings {
   showChart: boolean;
   pitWarningLaps: number;
+  /** Laps averaged for consumption; 0 = every lap of the session. */
+  fuelAvgWindow: number;
   showNextStopForecast: boolean;
   chartType: 'line' | 'bar';
   barWidth: number;

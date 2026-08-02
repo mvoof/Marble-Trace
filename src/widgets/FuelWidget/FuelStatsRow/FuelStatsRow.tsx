@@ -3,14 +3,19 @@ import { observer } from 'mobx-react-lite';
 import { formatFuel } from '@utils/formatters/telemetry-format';
 import {
   useBackendComputedStore,
+  usePlayerStore,
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/constants/data-placeholders';
+import {
+  NO_FUEL_DATA_PLACEHOLDER,
+  NO_LAPS_REMAINING_DATA_PLACEHOLDER,
+} from '@utils/constants/data-placeholders';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import {
   computeFuelHistoryStats,
-  FUEL_STAT_LABELS,
+  computeLapsToEmpty,
+  getFuelStatLabel,
   getVisibleFuelStatKeys,
 } from '../fuel-utils';
 import { FuelStatsCell } from './FuelStatsCell/FuelStatsCell';
@@ -18,6 +23,7 @@ import styles from './FuelStatsRow.module.scss';
 
 export const FuelStatsRow = observer(() => {
   const { fuel } = useBackendComputedStore();
+  const { carStatus } = usePlayerStore();
   const { unitSystem } = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
@@ -29,11 +35,18 @@ export const FuelStatsRow = observer(() => {
   }
 
   const history = fuel?.lapFuelHistory ?? [];
+  const fuelLevel = carStatus?.fuel_level ?? null;
 
-  const fmt = (val: number | null): string =>
-    val !== null ? formatFuel(val, unitSystem) : NO_FUEL_DATA_PLACEHOLDER;
+  const stats = computeFuelHistoryStats(history, settings.fuelAvgWindow);
 
-  const stats = computeFuelHistoryStats(history);
+  const formatConsumption = (value: number | null): string =>
+    value !== null ? formatFuel(value, unitSystem) : NO_FUEL_DATA_PLACEHOLDER;
+
+  const formatLaps = (value: number | null): string => {
+    const laps = computeLapsToEmpty(fuelLevel, value);
+
+    return laps !== null ? laps.toFixed(1) : NO_LAPS_REMAINING_DATA_PLACEHOLDER;
+  };
 
   return (
     <div
@@ -43,8 +56,9 @@ export const FuelStatsRow = observer(() => {
       {visibleKeys.map((key) => (
         <FuelStatsCell
           key={key}
-          label={FUEL_STAT_LABELS[key]}
-          consumption={fmt(stats[key])}
+          label={getFuelStatLabel(key, settings.fuelAvgWindow)}
+          consumption={formatConsumption(stats[key])}
+          laps={formatLaps(stats[key])}
         />
       ))}
     </div>

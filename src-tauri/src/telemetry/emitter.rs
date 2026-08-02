@@ -47,7 +47,7 @@ pub struct EmitContext<'a> {
     pub due: DueGroups,
     pub service: &'a TelemetryServiceState,
     pub registry: &'a Mutex<ProcessorRegistry>,
-    pub pit_warning_laps: f32,
+    pub fuel_settings: fuel::FuelSettings,
     pub capabilities: Capabilities,
 }
 
@@ -161,7 +161,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
             track_length_m: track_length,
             car_length_m: car_length,
             start_positions: &start_pos_snapshot,
-            pit_warning_laps: ctx.pit_warning_laps,
+            fuel_settings: ctx.fuel_settings,
             lap_delta_active: (active_mask & EVENT_LAP_DELTA) != 0,
             session_num: frame.session.session_num,
             session_time_remain: frame.session.session_time_remain,

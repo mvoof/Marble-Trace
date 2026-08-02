@@ -1,10 +1,38 @@
 /// Managed state shared between Tauri commands and the telemetry thread.
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32};
+use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32, AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
+use crate::computations::fuel::{FuelSettings, DEFAULT_FUEL_AVG_WINDOW, DEFAULT_PIT_WARNING_LAPS};
 use crate::computations::ProcessorRegistry;
 use crate::model::session::SessionSnapshot;
+
+/// User-configured fuel parameters, written by commands and read once per tick
+/// by the telemetry thread.
+pub struct FuelTuning {
+    /// Pit warning laps, stored as the bits of an f32.
+    pub pit_warning_laps: AtomicU32,
+    /// Laps averaged for consumption. 0 = the whole recorded history.
+    pub avg_window: AtomicUsize,
+}
+
+impl Default for FuelTuning {
+    fn default() -> Self {
+        Self {
+            pit_warning_laps: AtomicU32::new(DEFAULT_PIT_WARNING_LAPS.to_bits()),
+            avg_window: AtomicUsize::new(DEFAULT_FUEL_AVG_WINDOW),
+        }
+    }
+}
+
+impl FuelTuning {
+    pub fn snapshot(&self) -> FuelSettings {
+        FuelSettings {
+            pit_warning_laps: f32::from_bits(self.pit_warning_laps.load(Ordering::Relaxed)),
+            avg_window: self.avg_window.load(Ordering::Relaxed),
+        }
+    }
+}
 
 /// Shared state for the telemetry service.
 pub struct TelemetryServiceState {
@@ -44,8 +72,8 @@ pub struct TelemetryState {
     pub service: Arc<TelemetryServiceState>,
     /// All stateful processors. Reset on disconnect.
     pub registry: Arc<Mutex<ProcessorRegistry>>,
-    /// User-configured pit warning laps (stored as bits of f32).
-    pub pit_warning_laps: Arc<AtomicU32>,
+    /// User-configured fuel parameters.
+    pub fuel_tuning: Arc<FuelTuning>,
     /// Set by reset_pit_lane_pct command; consumed by TrackShapeProcessor on next tick.
     pub reset_pit_pcts: Arc<AtomicBool>,
     /// Set by delete_reference_lap command; consumed by ReferenceLapProcessor on next tick.

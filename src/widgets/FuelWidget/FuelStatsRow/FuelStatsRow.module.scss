@@ -1,6 +1,6 @@
+// Cells carry their own right border instead of a gap — a 1px gap lets the
+// panel show through as a light seam, which reads brighter than the values.
 .statsRow {
   display: grid;
-  gap: 1px;
-  background: rgba(255, 255, 255, $opacity-faint);
-  border-top: 1px solid rgba(255, 255, 255, $opacity-subtle);
+  border-bottom: 1px solid $widget-border-subtle;
 }
