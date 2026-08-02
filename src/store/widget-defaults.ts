@@ -538,6 +538,7 @@ const WIDGETS: WidgetConfig[] = [
       showIncidentsBadge: true,
       abbreviateNames: false,
       showDriverFlags: true,
+      hideRetiredDrivers: false,
       playerRowColor: DEFAULT_PLAYER_ROW_COLOR,
       playerAccentColor: DEFAULT_PLAYER_ACCENT_COLOR,
     },

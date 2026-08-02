@@ -119,6 +119,7 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
     let driver_info = raw.driver_info.unwrap_or_default();
 
     let weather_forecast = parse_weather_forecast(&weekend.extra);
+    let weekend_options = weekend.weekend_options;
 
     let sessions = session_info
         .sessions
@@ -142,6 +143,12 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
                             class_position: raw_pos.class_position,
                             lap: raw_pos.lap,
                             time: raw_pos.time.filter(|t| t.is_finite()),
+                            fastest_time: raw_pos
+                                .fastest_time
+                                .filter(|t| t.is_finite() && *t > 0.0),
+                            last_time: raw_pos.last_time.filter(|t| t.is_finite() && *t > 0.0),
+                            laps_complete: raw_pos.laps_complete,
+                            reason_out_id: raw_pos.reason_out_id,
                         })
                     })
                     .collect(),
@@ -240,10 +247,15 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         track_wind_vel: weekend.track_wind_vel.unwrap_or_default(),
         track_wind_dir: weekend.track_wind_dir.unwrap_or_default(),
         track_relative_humidity: weekend.track_relative_humidity.unwrap_or_default(),
-        weekend_date: weekend
-            .weekend_options
-            .and_then(|options| options.date)
+        weekend_date: weekend_options
+            .as_ref()
+            .and_then(|options| options.date.clone())
             .unwrap_or_default(),
+        incident_limit: parse_incident_limit(
+            weekend_options
+                .as_ref()
+                .and_then(|options| options.incident_limit.as_ref()),
+        ),
         current_session_num: session_info.current_session_num.unwrap_or(0),
         sessions,
         player_car_idx: driver_info.driver_car_idx.unwrap_or(-1),
@@ -311,6 +323,26 @@ struct RawWeekendInfo {
 #[serde(rename_all = "PascalCase")]
 struct RawWeekendOptions {
     date: Option<String>,
+    /// Either a plain count or the literal "unlimited", so the raw node is kept
+    /// and narrowed in `parse_incident_limit`.
+    incident_limit: Option<serde_yaml_ng::Value>,
+}
+
+/// `IncidentLimit` is a number when the session caps incidents and the string
+/// "unlimited" otherwise. Anything unrecognised is treated as no limit.
+fn parse_incident_limit(raw: Option<&serde_yaml_ng::Value>) -> Option<i32> {
+    let value = raw?;
+
+    if let Some(number) = value.as_i64() {
+        return i32::try_from(number).ok().filter(|limit| *limit > 0);
+    }
+
+    value
+        .as_str()?
+        .trim()
+        .parse::<i32>()
+        .ok()
+        .filter(|limit| *limit > 0)
 }
 
 #[derive(Deserialize, Default)]
@@ -336,6 +368,10 @@ struct RawResultPosition {
     class_position: Option<i32>,
     lap: Option<i32>,
     time: Option<f32>,
+    fastest_time: Option<f32>,
+    last_time: Option<f32>,
+    laps_complete: Option<i32>,
+    reason_out_id: Option<i32>,
 }
 
 #[derive(Deserialize, Default)]
@@ -427,6 +463,7 @@ WeekendInfo:
  TrackRelativeHumidity: 45 %
  WeekendOptions:
   Date: 2025-05-21
+  IncidentLimit: 17
 SessionInfo:
  CurrentSessionNum: 1
  Sessions:
@@ -497,6 +534,7 @@ QualifyResultsInfo:
         assert!((snapshot.track_length_m - 3700.0).abs() < 0.01);
         assert_eq!(snapshot.track_air_temp, "25.55 C");
         assert_eq!(snapshot.weekend_date, "2025-05-21");
+        assert_eq!(snapshot.incident_limit, Some(17));
         assert_eq!(snapshot.current_session_num, 1);
         assert_eq!(snapshot.sessions.len(), 2);
         assert_eq!(snapshot.sessions[0].session_laps, "unlimited");
@@ -550,5 +588,23 @@ QualifyResultsInfo:
         assert_eq!(parsed.snapshot.cars.len(), 0);
         assert_eq!(parsed.snapshot.player_car_idx, -1);
         assert_eq!(parsed.snapshot.current_session_num, 0);
+    }
+
+    #[test]
+    fn unlimited_incident_limit_parses_as_none() {
+        let yaml = "WeekendInfo:\n WeekendOptions:\n  IncidentLimit: unlimited\n";
+
+        let parsed = parse_session(yaml).expect("yaml must parse");
+
+        assert_eq!(parsed.snapshot.incident_limit, None);
+    }
+
+    #[test]
+    fn quoted_incident_limit_parses_as_count() {
+        let yaml = "WeekendInfo:\n WeekendOptions:\n  IncidentLimit: \"25\"\n";
+
+        let parsed = parse_session(yaml).expect("yaml must parse");
+
+        assert_eq!(parsed.snapshot.incident_limit, Some(25));
     }
 }

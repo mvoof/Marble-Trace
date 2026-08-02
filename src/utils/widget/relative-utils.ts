@@ -183,6 +183,7 @@ export const buildPaceCarRowEntries = (
         rawFlags: 0,
         resultsPositionLap: null,
         resultsPositionTime: null,
+        isRetired: false,
         pitState: 'none',
         isPaceCar: true,
         pitPhase,

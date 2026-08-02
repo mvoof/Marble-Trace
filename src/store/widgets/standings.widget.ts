@@ -305,9 +305,28 @@ export class StandingsWidgetStore {
     }
   }
 
+  /**
+   * Cars the sim classified as retired or disqualified, dropped when the user asked
+   * for it. The player's own row always stays — the widget is unusable without it.
+   */
+  private get visibleEntries(): DriverEntry[] {
+    const entries = this.root.backendComputed.standings?.entries ?? [];
+
+    const hideRetired =
+      this.root.widgetSettings.getSettings<StandingsWidgetSettings>(
+        'standings'
+      ).hideRetiredDrivers;
+
+    if (!hideRetired) {
+      return entries;
+    }
+
+    return entries.filter((entry) => !entry.isRetired || entry.isPlayer);
+  }
+
   /** Field ordered by the debounced positions — the order the table renders. */
   get orderedEntries(): DriverEntry[] {
-    const entries = this.root.backendComputed.standings?.entries ?? [];
+    const entries = this.visibleEntries;
 
     const positions = this.settledPositions;
 

@@ -96,6 +96,12 @@ export const StandingsSettingsPanel = observer(() => {
       value: settings.showDriverFlags,
       key: 'showDriverFlags',
     },
+    {
+      titleKey: 'settingsPanels.standings.hideRetiredDrivers',
+      descKey: 'settingsPanels.standings.hideRetiredDriversDesc',
+      value: settings.hideRetiredDrivers,
+      key: 'hideRetiredDrivers',
+    },
   ] as const;
 
   const headerInfo = [

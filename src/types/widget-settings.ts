@@ -133,6 +133,11 @@ export interface StandingsWidgetSettings {
   showIncidentsBadge: boolean;
   abbreviateNames: boolean;
   showDriverFlags: boolean;
+  /**
+   * Drop rows for cars the sim marked as retired or disqualified. The player's own
+   * row is always kept, and cars merely sitting in the garage are not affected.
+   */
+  hideRetiredDrivers: boolean;
   /** Highlight color for the player's own row. */
   playerRowColor: string;
   /** Color of the player's position number and car number. */

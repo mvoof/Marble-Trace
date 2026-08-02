@@ -8,6 +8,7 @@ import {
   TRACK_SURFACE_OFF_TRACK,
 } from '@utils/widget/widget-utils';
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
+import { isSessionEnded } from '@utils/widget/timer-utils';
 import { DriverStatusBadge } from '@/components/shared/DriverStatusBadge/DriverStatusBadge';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
 import { LicBadge } from '@/components/shared/RatingBadge/LicBadge';
@@ -52,10 +53,16 @@ export const DriverRow = observer(
       return null;
     }
 
-    const isOut = driver.trackSurface === 'NotInWorld';
+    const isInGarage = driver.trackSurface === 'NotInWorld';
+
+    // Once the session is over everybody drops to the garage, so leaving the world
+    // is no longer a status worth flagging — only a sim-confirmed retirement is.
+    const isOut =
+      driver.isRetired ||
+      (isInGarage && !isSessionEnded(session.session?.session_state ?? null));
 
     const isPit =
-      !isOut &&
+      !isInGarage &&
       (driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad);
 
     const pitState = driver.pitState;
