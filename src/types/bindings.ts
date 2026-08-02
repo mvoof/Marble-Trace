@@ -578,6 +578,11 @@ export type DriverEntry = {
    * A car merely sitting in the garage is *not* retired.
    */
   isRetired: boolean;
+  /**
+   * The car has taken the checkered flag in the current race. Latched: the sim
+   * only pulses the per-car checkered bit as the car crosses the line.
+   */
+  isFinished: boolean;
   pitState: PitState;
 };
 

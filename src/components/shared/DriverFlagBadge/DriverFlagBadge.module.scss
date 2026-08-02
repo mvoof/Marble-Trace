@@ -16,12 +16,12 @@
     linear-gradient(-45deg, #fff 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, #fff 75%),
     linear-gradient(-45deg, transparent 75%, #fff 75%);
-  background-size: 4px 4px;
+  background-size: 6px 6px;
   background-position:
     0 0,
-    0 2px,
-    2px -2px,
-    -2px 0px;
+    0 3px,
+    3px -3px,
+    -3px 0px;
   border-color: rgba(255, 255, 255, 0.3);
 }
 

@@ -738,6 +738,7 @@ mod tests {
             lap_delta_active: false,
             session_num: Some(0),
             session_time_remain: None,
+            session_state: None,
         }
     }
 

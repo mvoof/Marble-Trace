@@ -12,6 +12,7 @@ use std::collections::HashMap;
 
 use crate::capabilities::Capabilities;
 use crate::model::cars::CarIdxFrame;
+use crate::model::enums::SessionState;
 use crate::model::environment::EnvironmentFrame;
 use crate::model::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
@@ -78,6 +79,8 @@ pub struct ComputeContext<'a> {
     pub session_num: Option<i32>,
     /// Remaining session time in seconds (used by fuel for timed races).
     pub session_time_remain: Option<f64>,
+    /// Session state from the telemetry frame (used by standings to latch finishers).
+    pub session_state: Option<SessionState>,
 }
 
 #[derive(Debug, Clone)]

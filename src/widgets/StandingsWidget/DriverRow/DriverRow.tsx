@@ -68,6 +68,10 @@ export const DriverRow = observer(
     const pitState = driver.pitState;
     const flagType = parseDriverFlags(driver.rawFlags);
 
+    // Latched in the backend — the sim only pulses the per-car checkered bit as the
+    // car crosses the line, so this outlives the drive back to the garage.
+    const isFinished = driver.isFinished && !driver.isRetired;
+
     const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
     const useClassPos = settings.viewMode !== 'all';
@@ -166,9 +170,12 @@ export const DriverRow = observer(
         </div>
 
         <div className={`${styles.cell} ${styles.nameCell}`}>
-          {settings.showDriverFlags && flagType !== 'none' && (
-            <DriverFlagBadge type={flagType} />
-          )}
+          {settings.showDriverFlags &&
+            (isFinished ? (
+              <DriverFlagBadge type="checkered" />
+            ) : (
+              flagType !== 'none' && <DriverFlagBadge type={flagType} />
+            ))}
 
           <span
             className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
@@ -179,11 +186,13 @@ export const DriverRow = observer(
           </span>
 
           {flagType === 'dq' && <DriverStatusBadge status="dnf" />}
-          {isOut && flagType !== 'dq' && <DriverStatusBadge status="out" />}
-          {isOffTrack && flagType !== 'dq' && (
+          {isOut && flagType !== 'dq' && !isFinished && (
+            <DriverStatusBadge status="out" />
+          )}
+          {isOffTrack && flagType !== 'dq' && !isFinished && (
             <DriverStatusBadge status="off_track" />
           )}
-          {isPit && flagType !== 'dq' && (
+          {isPit && flagType !== 'dq' && !isFinished && (
             <DriverStatusBadge
               status={
                 pitState === 'in'
