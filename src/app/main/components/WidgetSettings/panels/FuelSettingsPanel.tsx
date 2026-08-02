@@ -16,12 +16,15 @@ interface StatColumnRow {
     FuelWidgetSettings,
     'showStatLast' | 'showStatAvg10' | 'showStatMin' | 'showStatMax'
   >;
-  labelKey: string;
+  /** Absent for the average column, whose caption follows the window setting. */
+  labelKey?: string;
 }
 
+// `showStatAvg10` is a historical key kept as-is because it is persisted in
+// user settings — the column itself has not been fixed at ten laps for a while.
 const STAT_COLUMN_ROWS: StatColumnRow[] = [
   { key: 'showStatLast', labelKey: 'settingsPanels.fuel.statLast' },
-  { key: 'showStatAvg10', labelKey: 'settingsPanels.fuel.statAvg10' },
+  { key: 'showStatAvg10' },
   { key: 'showStatMin', labelKey: 'settingsPanels.fuel.statMin' },
   { key: 'showStatMax', labelKey: 'settingsPanels.fuel.statMax' },
 ];
@@ -37,6 +40,20 @@ export const FuelSettingsPanel = observer(() => {
       ...settings,
       ...partial,
     });
+  };
+
+  // Quotes the window actually in force instead of a fixed number, so the row
+  // cannot promise ten laps while the setting below it says something else.
+  const statLabel = (labelKey?: string): string => {
+    if (labelKey !== undefined) {
+      return t(labelKey);
+    }
+
+    if (settings.fuelAvgWindow === FUEL_AVG_WINDOW_ALL_LAPS) {
+      return t('settingsPanels.fuel.statAvgAll');
+    }
+
+    return t('settingsPanels.fuel.statAvg', { window: settings.fuelAvgWindow });
   };
 
   return (
@@ -86,7 +103,7 @@ export const FuelSettingsPanel = observer(() => {
           {t('settingsPanels.fuel.statColumns')}
         </span>
         {STAT_COLUMN_ROWS.map(({ key, labelKey }) => (
-          <SettingRow key={key} title={t(labelKey)}>
+          <SettingRow key={key} title={statLabel(labelKey)}>
             <Switch
               checked={settings[key]}
               onChange={(v) => update({ [key]: v })}
@@ -124,6 +141,9 @@ export const FuelSettingsPanel = observer(() => {
         <span className={styles.fieldLabel}>
           {t('settingsPanels.fuel.avgWindow')}
         </span>
+        <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+          {t('settingsPanels.fuel.avgWindowDesc')}
+        </div>
         <InputNumber
           style={{ width: '100%' }}
           value={settings.fuelAvgWindow}
