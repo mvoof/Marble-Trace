@@ -141,7 +141,8 @@ export const StatCell = observer(({ type }: StatCellProps) => {
         : parseWeekendFloat(sessionInfo?.trackRelativeHumidity);
 
     label = 'HUMIDITY';
-    value = rawHumidity !== null ? `${Math.round(rawHumidity)}%` : '--%';
+    value = rawHumidity !== null ? `${Math.round(rawHumidity)}` : '--';
+    unit = '%';
     accentColor = HUMIDITY_COLOR;
     fillFraction = humidityFraction(rawHumidity);
   } else if (type === 'trackWetness') {
