@@ -1,4 +1,5 @@
 mod capabilities;
+mod chat;
 mod commands;
 mod computations;
 mod logging;
@@ -20,6 +21,11 @@ use model::reference_lap::{ReferenceLapData, ReferenceLapSample};
 #[cfg(feature = "dev")]
 use model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
 
+use chat::commands::{
+    start_chat_stream, stop_chat_stream, twitch_current_login, twitch_has_client_id,
+    twitch_poll_device_token, twitch_request_device_code, twitch_sign_out,
+};
+use chat::state::{ChatServiceState, ChatState};
 use commands::{
     delete_reference_lap, delete_track_shape, get_cached_track_shape, get_connection_status,
     get_last_session_info, get_reference_lap, log_settings_snapshot, reset_pit_lane_pct,
@@ -33,6 +39,12 @@ use telemetry::state::TelemetryState;
 use model::capabilities::CapabilitiesPayload;
 #[cfg(feature = "dev")]
 use model::cars::CarIdxFrame;
+#[cfg(feature = "dev")]
+use model::chat::{
+    ChatBadge, ChatConfig, ChatConnectionStatus, ChatDeletion, ChatFragment, ChatHighlight,
+    ChatHighlightKind, ChatMessage, ChatPlatform, ChatPresence, TwitchDeviceCode,
+    TwitchTokenResult,
+};
 #[cfg(feature = "dev")]
 use model::enums::{SimStatus, SimType};
 #[cfg(feature = "dev")]
@@ -85,6 +97,20 @@ pub fn run() {
             .register::<CapabilitiesPayload>()
             .register::<SimType>()
             .register::<SimStatus>();
+
+        types
+            .register::<ChatPlatform>()
+            .register::<ChatConnectionStatus>()
+            .register::<ChatFragment>()
+            .register::<ChatBadge>()
+            .register::<ChatHighlightKind>()
+            .register::<ChatHighlight>()
+            .register::<ChatMessage>()
+            .register::<ChatDeletion>()
+            .register::<ChatPresence>()
+            .register::<ChatConfig>()
+            .register::<TwitchDeviceCode>()
+            .register::<TwitchTokenResult>();
 
         types
             .register::<TrackPoint>()
@@ -199,8 +225,18 @@ pub fn run() {
             reset_pit_lane_pct,
             get_reference_lap,
             delete_reference_lap,
-            log_settings_snapshot
+            log_settings_snapshot,
+            start_chat_stream,
+            stop_chat_stream,
+            twitch_request_device_code,
+            twitch_poll_device_token,
+            twitch_has_client_id,
+            twitch_current_login,
+            twitch_sign_out
         ])
+        .manage(ChatState {
+            service: Arc::new(ChatServiceState::new()),
+        })
         .manage(TelemetryState {
             service: Arc::new(telemetry::state::TelemetryServiceState {
                 running: AtomicBool::new(false),

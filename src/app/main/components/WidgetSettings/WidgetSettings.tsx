@@ -18,6 +18,7 @@ import { SectorMatrixSettingsPanel } from './panels/SectorMatrixSettingsPanel';
 import { LapLogSettingsPanel } from './panels/LapLogSettingsPanel';
 import { ChassisSettingsPanel } from './panels/ChassisSettingsPanel';
 import { TimerSettingsPanel } from './panels/TimerSettingsPanel';
+import { StreamChatSettingsPanel } from './panels/StreamChatSettingsPanel';
 import { FlagDisplaySettingsPanel } from './panels/FlagDisplaySettingsPanel';
 import { GMeterSettingsPanel } from './panels/GMeterSettingsPanel';
 import { EnginePanelSettingsPanel } from './panels/EnginePanelSettingsPanel';
@@ -238,6 +239,7 @@ export const WidgetSettings = observer(
         {widgetId === 'lap-log' && <LapLogSettingsPanel />}
         {widgetId === 'chassis' && <ChassisSettingsPanel />}
         {widgetId === 'timer' && <TimerSettingsPanel />}
+        {widgetId === 'stream-chat' && <StreamChatSettingsPanel />}
         {(widgetId === 'led-flags' || widgetId === 'flat-flags') && (
           <FlagDisplaySettingsPanel widgetId={widgetId} />
         )}

@@ -4,6 +4,7 @@
 
 pub mod capabilities;
 pub mod cars;
+pub mod chat;
 pub mod enums;
 pub mod environment;
 pub mod flags;

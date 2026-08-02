@@ -98,6 +98,25 @@ export const setupOverlayListeners = async (
     })
   );
 
+  // The overlay renders the chat, so it needs the source-level filters even
+  // though it never opens a connection itself.
+  unlistens.push(
+    await listen<StreamChatFilters>('stream-chat-filters-changed', (e) => {
+      runInAction(() => {
+        root.appSettings.setStreamChatHideCommands(e.payload.hideCommands);
+        root.appSettings.setStreamChatIgnoredBots(e.payload.ignoredBots);
+      });
+    })
+  );
+
+  // The connectors live in main, so only main knows when the feed was shut
+  // down; the overlay drops its own buffer on that signal.
+  unlistens.push(
+    await listen('stream-chat-cleared', () => {
+      runInAction(() => root.chat.reset());
+    })
+  );
+
   unlistens.push(
     await listen<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
       if (e.payload.monitorName !== root.widgetSettings.ownMonitorName) return;
@@ -169,6 +188,17 @@ export const emitSteeringLockChanged = (degrees: number) =>
 
 export const emitLanguageChanged = (language: AppLanguage) =>
   emitToOverlays('language-changed', language);
+
+export interface StreamChatFilters {
+  hideCommands: boolean;
+  ignoredBots: string;
+}
+
+export const emitStreamChatFilters = (filters: StreamChatFilters) =>
+  emitToOverlays('stream-chat-filters-changed', filters);
+
+export const emitStreamChatCleared = () =>
+  emitToOverlays('stream-chat-cleared', null);
 
 export const emitStandingsClassIndex = (index: number) =>
   emitToOverlays('standings-class-index-changed', index);

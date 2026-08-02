@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/ReleaseNotesButton';
 import { TRACK_MAP_CLEAR } from '@store/sync/sim-events';
+import { StreamChatSourceCard } from './StreamChatSourceCard/StreamChatSourceCard';
 import styles from './SettingsPage.module.scss';
 
 import {
@@ -138,6 +139,8 @@ export const SettingsPage = observer(() => {
             />
           </div>
         </Card>
+
+        <StreamChatSourceCard />
 
         <Card title={t('settingsPage.widgetDisplayOverride.title')}>
           <div className={styles.fieldGroup}>

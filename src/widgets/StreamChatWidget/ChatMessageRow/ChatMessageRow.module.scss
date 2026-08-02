@@ -1,0 +1,189 @@
+// Row geometry mirrors DriverRow: stripe column plus one content column.
+// Never use `display: contents` on the meta group — it would promote the nick
+// and badges to grid items and collapse every word into its own column.
+.row {
+  display: grid;
+  grid-template-columns: ws(3) 1fr;
+  align-items: stretch;
+  column-gap: sp(xs);
+  padding: sp(xxs) sp(md) sp(xxs) 0;
+  line-height: 1.3;
+  font-size: fs(md);
+  position: relative;
+
+  &:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.025);
+  }
+}
+
+.rowHighlight {
+  background-color: rgba(139, 92, 246, 0.16);
+}
+
+.rowPaid {
+  background-color: rgba(245, 158, 11, 0.15);
+}
+
+.rowFirst {
+  background-color: rgba(16, 185, 129, 0.12);
+}
+
+.stripe {
+  align-self: stretch;
+  border-radius: 0 radius(sm) radius(sm) 0;
+}
+
+.stripeTwitch {
+  background-color: $race-lilac;
+}
+
+.stripeYoutube {
+  background-color: $race-red;
+}
+
+.content {
+  min-width: 0;
+}
+
+// Two-line mode: the meta group is its own row above the message.
+.meta {
+  display: flex;
+  align-items: center;
+  gap: sp(xxs);
+  flex-shrink: 0;
+}
+
+// Inline-block rather than block so the glyph keeps a baseline to sit on once
+// the meta group drops to inline flow in compact mode.
+.metaGlyph {
+  display: inline-block;
+  vertical-align: -0.2em;
+}
+
+.nick {
+  font-weight: 700;
+  font-size: fs(md);
+  white-space: nowrap;
+}
+
+// Text badges instead of the platform's bitmap ones: raster badges turn to mush
+// at overlay scale and do not follow --wfs.
+.badge {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: fs(xxxs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: sp(xxxs) ws(3);
+  border-radius: radius(sm);
+  flex-shrink: 0;
+  color: $widget-text-secondary;
+  background-color: rgba(156, 163, 175, 0.2);
+}
+
+// Platform artwork. Twitch serves 4x assets, so downscaling to the row height
+// stays crisp at any --wfs.
+.badgeImage {
+  display: inline-block;
+  vertical-align: middle;
+  height: ws(16);
+  width: auto;
+  flex-shrink: 0;
+  border-radius: radius(sm);
+}
+
+.badgeMod {
+  color: $race-green;
+  background-color: rgba(16, 185, 129, 0.22);
+}
+
+.badgeHost {
+  color: $race-red;
+  background-color: rgba(239, 68, 68, 0.22);
+}
+
+.badgeSub {
+  color: $race-lilac;
+  background-color: rgba(139, 92, 246, 0.22);
+}
+
+.badgeVip {
+  color: $race-amber;
+  background-color: rgba(245, 158, 11, 0.22);
+}
+
+.body {
+  display: block;
+  color: $widget-text-primary;
+  // Rajdhani has no Cyrillic; message text falls back to the app UI face so
+  // Russian chat does not land in an arbitrary system font.
+  font-family: $font-app;
+  font-size: fs(sm);
+  font-weight: 400;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.emote {
+  display: inline-block;
+  vertical-align: -0.18em;
+  height: ws(18);
+  width: auto;
+  max-width: ws(72);
+  margin: 0 ws(1);
+}
+
+.event {
+  display: flex;
+  align-items: center;
+  gap: sp(xxs);
+  font-size: fs(xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $race-lilac;
+}
+
+.amount {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
+  color: $race-amber;
+  flex-shrink: 0;
+}
+
+// Compact mode: nick and message share one wrapped line.
+//
+// The meta group drops to plain inline flow rather than inline-flex. An
+// inline-flex box with centred items exposes a synthesized baseline taken from
+// its bottom edge, so the nick (Rajdhani 15px) and the message (Exo 2 13px)
+// ended up sitting on different baselines. Pure inline flow makes both share
+// the line box's baseline, which is what "one line" actually means.
+.rowCompact {
+  padding-top: sp(xxxs);
+  padding-bottom: sp(xxxs);
+
+  .meta {
+    display: inline;
+  }
+
+  // `gap` does not apply to inline flow, so the chips space themselves.
+  .metaGlyph,
+  .badge,
+  .badgeImage {
+    margin-right: sp(xxs);
+  }
+
+  .body {
+    display: inline;
+    margin-left: sp(xxs);
+  }
+
+  .nick::after {
+    content: ':';
+    color: $widget-text-muted;
+    font-weight: 400;
+  }
+}

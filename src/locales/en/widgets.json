@@ -62,6 +62,9 @@
     },
     "race-dash": {
       "description": "Cockpit cluster: gear ring, speed readout with lap/position/RPM, coach tab, and pit-lane mode."
+    },
+    "stream-chat": {
+      "description": "Twitch and YouTube live chat in one feed."
     }
   },
   "settingsPanels": {
@@ -414,6 +417,36 @@
       "weatherForecastDesc": "Upcoming weather changes during the session.",
       "trackWetnessState": "Track Wetness State",
       "trackWetnessStateDesc": "Current track surface wetness level (Dry, Damp, Wet, Flooded)."
+    },
+    "streamChat": {
+      "feed": "Feed",
+      "visibleElements": "Visible elements",
+      "maxMessages": "Message limit",
+      "maxMessagesDesc": "How many rows the feed keeps on screen.",
+      "messageLifetime": "Message lifetime",
+      "messageLifetimeDesc": "Seconds before a message fades out. 0 keeps everything.",
+      "compactRows": "Compact rows",
+      "compactRowsDesc": "Nick and message share one line. Off puts the message under the nick.",
+      "showPlatformGlyph": "Platform icon",
+      "showPlatformGlyphDesc": "Platform icon before the nick, so the source stays readable when the stripe colours blur.",
+      "showBadges": "Badges",
+      "showBadgesDesc": "Moderator, subscriber and VIP plates.",
+      "showEvents": "Subs and raids",
+      "showEventsDesc": "Subscriptions, raids and Super Chat rows.",
+      "showFooter": "Footer",
+      "showFooterDesc": "Viewer counts and connection state.",
+      "showActivity": "Chat activity",
+      "showActivityDesc": "Messages per minute, counted locally.",
+      "badgeImages": "Badge artwork",
+      "badgeImagesDesc": "Draw the real badges instead of text plates. Twitch needs sign-in; YouTube member badges work without it."
     }
+  },
+  "streamChat": {
+    "waitingForMessages": "Waiting for messages…",
+    "perMinute": "/min",
+    "total": "Total",
+    "connecting": "Connecting",
+    "reconnecting": "Reconnecting · {{attempt}}",
+    "connectionFailed": "Connection failed"
   }
 }

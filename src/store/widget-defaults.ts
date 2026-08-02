@@ -19,6 +19,7 @@ import { LapLogWidget } from '@widgets/LapLogWidget/LapLogWidget';
 import { EnginePanelWidget } from '@widgets/EnginePanelWidget/EnginePanelWidget';
 import { RpmLightsWidget } from '@widgets/RpmLightsWidget/RpmLightsWidget';
 import { RaceDashWidget } from '@widgets/RaceDashWidget/RaceDashWidget';
+import { StreamChatWidget } from '@widgets/StreamChatWidget/StreamChatWidget';
 import type {
   WidgetConfig,
   WidgetDefaultConfig,
@@ -759,6 +760,36 @@ const WIDGETS: WidgetConfig[] = [
       showSimTime: true,
       showPcDate: false,
       showSimDate: true,
+    },
+  },
+  {
+    id: 'stream-chat',
+    label: 'Stream Chat',
+    description: 'Twitch and YouTube live chat in one feed.',
+    component: StreamChatWidget,
+    // No requiredCapabilities on purpose: chat is not sim data and stays
+    // useful while no sim is running at all.
+    designWidth: 380,
+    designHeight: 340,
+    userSettings: {
+      enabled: false,
+      x: 50,
+      y: 600,
+      currentWidth: 380,
+      currentHeight: 340,
+      ...COMMON_WIDGET_DEFAULTS,
+      ...PANEL_APPEARANCE_DEFAULTS,
+      compactRows: true,
+      maxMessages: 50,
+      messageLifetimeSeconds: 0,
+      showPlatformGlyph: true,
+      showBadges: true,
+      // Text plates by default: badge artwork is colourful and busy, and this
+      // widget sits over a race track where a glanceable MOD reads faster.
+      badgeImages: false,
+      showFooter: true,
+      showActivity: true,
+      showEvents: true,
     },
   },
   {

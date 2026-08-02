@@ -42,6 +42,22 @@ const DEFAULT_APP_SETTINGS = {
   // A property of the hardware rather than of any one widget or layout, so
   // every steering visual (input trace, race dash marker) reads it from here.
   steeringLock: 900,
+  // Stream chat source. A channel is a property of the account, not of a
+  // layout — the same reasoning as steeringLock above. Keeping it here also
+  // means one connection serves every layout instead of reconnecting on each
+  // layout switch.
+  streamChatTwitchChannel: '',
+  streamChatYoutubeTarget: '',
+  /** Twitch application client id, needed only for the optional sign-in. */
+  streamChatTwitchClientId: '',
+  /** Display only. The tokens themselves live in the OS credential store and
+   *  never appear in this file — mergeWithDefaults prunes the old plaintext
+   *  keys from settings.json on the next save. */
+  streamChatTwitchLogin: null as string | null,
+  /** Bumped on sign-in and sign-out so the backend knows to reconnect. */
+  streamChatAuthRevision: 0,
+  streamChatHideCommands: true,
+  streamChatIgnoredBots: 'Nightbot, StreamElements, Moobot',
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
@@ -309,6 +325,31 @@ export class AppSettingsStore {
 
   setSteeringLock(value: number) {
     this.appSettings.steeringLock = value;
+  }
+
+  setStreamChatTwitchChannel(value: string) {
+    this.appSettings.streamChatTwitchChannel = value;
+  }
+
+  setStreamChatYoutubeTarget(value: string) {
+    this.appSettings.streamChatYoutubeTarget = value;
+  }
+
+  setStreamChatTwitchClientId(value: string) {
+    this.appSettings.streamChatTwitchClientId = value;
+  }
+
+  setStreamChatTwitchLogin(login: string | null) {
+    this.appSettings.streamChatTwitchLogin = login;
+    this.appSettings.streamChatAuthRevision += 1;
+  }
+
+  setStreamChatHideCommands(value: boolean) {
+    this.appSettings.streamChatHideCommands = value;
+  }
+
+  setStreamChatIgnoredBots(value: string) {
+    this.appSettings.streamChatIgnoredBots = value;
   }
 
   setAutoSwitchLayouts(value: boolean) {

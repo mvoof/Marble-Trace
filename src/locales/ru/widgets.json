@@ -62,6 +62,9 @@
     },
     "race-dash": {
       "description": "Кластер кокпита: кольцо передачи, скорость с кругом/позицией/оборотами, тренер и режим пит-лейн."
+    },
+    "stream-chat": {
+      "description": "Чат Twitch и YouTube одной лентой."
     }
   },
   "settingsPanels": {
@@ -414,6 +417,36 @@
       "weatherForecastDesc": "Предстоящие изменения погоды во время сессии.",
       "trackWetnessState": "Состояние влажности трассы",
       "trackWetnessStateDesc": "Текущий уровень влажности поверхности трассы (сухо, влажно, мокро, потоп)."
+    },
+    "streamChat": {
+      "feed": "Лента",
+      "visibleElements": "Что показывать",
+      "maxMessages": "Лимит сообщений",
+      "maxMessagesDesc": "Сколько строк лента держит на экране.",
+      "messageLifetime": "Время жизни сообщения",
+      "messageLifetimeDesc": "Через сколько секунд сообщение гаснет. 0 — не гасить.",
+      "compactRows": "Компактные строки",
+      "compactRowsDesc": "Ник и сообщение в одной строке. Выключено — сообщение переносится под ник.",
+      "showPlatformGlyph": "Иконка платформы",
+      "showPlatformGlyphDesc": "Значок платформы перед ником — источник виден, даже если цвета полос сливаются.",
+      "showBadges": "Значки",
+      "showBadgesDesc": "Плашки модератора, подписчика и VIP.",
+      "showEvents": "Подписки и рейды",
+      "showEventsDesc": "Строки подписок, рейдов и Super Chat.",
+      "showFooter": "Футер",
+      "showFooterDesc": "Счётчики зрителей и состояние связи.",
+      "showActivity": "Активность чата",
+      "showActivityDesc": "Сообщений в минуту, считается локально.",
+      "badgeImages": "Значки картинками",
+      "badgeImagesDesc": "Рисовать настоящие значки вместо текстовых плашек. Для Twitch нужен вход, значки YouTube работают и без него."
     }
+  },
+  "streamChat": {
+    "waitingForMessages": "Ждём сообщений…",
+    "perMinute": "/мин",
+    "total": "Всего",
+    "connecting": "Подключение",
+    "reconnecting": "Переподключение · {{attempt}}",
+    "connectionFailed": "Не удалось подключиться"
   }
 }

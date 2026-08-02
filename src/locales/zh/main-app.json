@@ -279,6 +279,34 @@
       "snapshotDesc": "捕获当前遥测状态。",
       "downloadSnapshot": "下载快照 JSON",
       "snapshotSuccess": "快照已保存 — 请将 JSON 放入 test-data/"
+    },
+    "streamChat": {
+      "title": "直播聊天",
+      "twitchChannel": "Twitch 频道",
+      "twitchChannelPlaceholder": "twitchdev",
+      "twitchChannelDesc": "只填频道地址中的名称：twitch.tv/twitchdev → twitchdev。匿名读取，无需账号。留空则关闭 Twitch。",
+      "youtubeTarget": "YouTube 直播",
+      "youtubeTargetPlaceholder": "@handle 或直播链接",
+      "youtubeTargetDesc": "以下均可：@MrBeast、youtube.com/watch?v=dQw4w9WgXcQ、youtu.be/dQw4w9WgXcQ，或直接填 dQw4w9WgXcQ。填频道时会自动定位当前直播。",
+      "hideCommands": "隐藏机器人命令",
+      "hideCommandsDesc": "过滤以感叹号开头的消息。",
+      "ignoredBots": "忽略的账号",
+      "ignoredBotsDesc": "用逗号分隔，其消息不会进入小组件。",
+      "signInTitle": "登录 Twitch",
+      "signInDesc": "可选。启用页脚的观众数和开播时长——聊天本身无需登录。",
+      "clientId": "应用 client id",
+      "clientIdDesc": "此版本未内置 client id，登录需要你自己的应用（dev.twitch.tv/console/apps）。注册为 Public 客户端，无需 client secret。",
+      "signIn": "登录",
+      "signOut": "退出",
+      "signedIn": "已登录",
+      "cancel": "取消",
+      "openActivate": "打开 twitch.tv/activate",
+      "deviceHint": "在 twitch.tv/activate 输入此代码，然后返回——本窗口会自动更新。",
+      "errors": {
+        "clientIdRequired": "请先填写 client id。",
+        "codeExpired": "代码已过期，请重新开始。",
+        "sessionExpired": "Twitch 会话已过期，请重新登录。"
+      }
     }
   }
 }

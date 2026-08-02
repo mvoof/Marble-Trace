@@ -246,6 +246,31 @@ export interface SectorMatrixWidgetSettings {
   showSectors: boolean;
 }
 
+/**
+ * Presentation only. The channel to read and the sign-in state live in
+ * appSettings instead: a chat source is a property of the account, not of a
+ * layout, and re-entering the channel per layout would be absurd.
+ */
+export interface StreamChatWidgetSettings {
+  /** Nick and text share one wrapped line, the way Twitch itself renders it. */
+  compactRows: boolean;
+  maxMessages: number;
+  /** Seconds before a message fades out. 0 keeps everything. */
+  messageLifetimeSeconds: number;
+  showPlatformGlyph: boolean;
+  showBadges: boolean;
+  /**
+   * Draw the platform's own badge artwork instead of text plates. Twitch
+   * artwork resolves only while signed in (the anonymous badge host was
+   * retired), so this silently falls back to plates otherwise.
+   */
+  badgeImages: boolean;
+  showFooter: boolean;
+  showActivity: boolean;
+  /** Subscriptions, raids and Super Chat rows. */
+  showEvents: boolean;
+}
+
 export interface TimerWidgetSettings {
   showSessionType: boolean;
   showLaps: boolean;
@@ -314,7 +339,8 @@ export type WidgetSpecificSettings =
   | TimerWidgetSettings
   | GMeterWidgetSettings
   | EnginePanelWidgetSettings
-  | RaceDashWidgetSettings;
+  | RaceDashWidgetSettings
+  | StreamChatWidgetSettings;
 export interface WidgetMeta {
   id: string;
   label: string;

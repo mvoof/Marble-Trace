@@ -62,6 +62,9 @@
     },
     "race-dash": {
       "description": "座舱组件：带转速弧的挡位环、显示圈数/位置/转速的速度读数、教练标签，以及带限速辅助的维修区模式。"
+    },
+    "stream-chat": {
+      "description": "Twitch 与 YouTube 直播聊天合并为一条信息流。"
     }
   },
   "settingsPanels": {
@@ -414,6 +417,36 @@
       "weatherForecastDesc": "会话期间即将到来的天气变化。",
       "trackWetnessState": "赛道湿滑状态",
       "trackWetnessStateDesc": "当前赛道表面的湿滑程度（干燥、潮湿、湿滑、积水）。"
+    },
+    "streamChat": {
+      "feed": "信息流",
+      "visibleElements": "显示内容",
+      "maxMessages": "消息上限",
+      "maxMessagesDesc": "信息流在屏幕上保留的行数。",
+      "messageLifetime": "消息存留时间",
+      "messageLifetimeDesc": "消息淡出前的秒数，0 表示不淡出。",
+      "compactRows": "紧凑行",
+      "compactRowsDesc": "昵称与消息同行。关闭时消息显示在昵称下方。",
+      "showPlatformGlyph": "平台图标",
+      "showPlatformGlyphDesc": "昵称前显示平台图标，色条难以分辨时仍能看出来源。",
+      "showBadges": "徽章",
+      "showBadgesDesc": "房管、订阅者与 VIP 标记。",
+      "showEvents": "订阅与突袭",
+      "showEventsDesc": "订阅、突袭与 Super Chat 行。",
+      "showFooter": "页脚",
+      "showFooterDesc": "观众数与连接状态。",
+      "showActivity": "聊天活跃度",
+      "showActivityDesc": "每分钟消息数，本地统计。",
+      "badgeImages": "徽章图片",
+      "badgeImagesDesc": "显示真实徽章而非文字标记。Twitch 需要登录；YouTube 会员徽章无需登录。"
     }
+  },
+  "streamChat": {
+    "waitingForMessages": "等待消息…",
+    "perMinute": "/分钟",
+    "total": "总计",
+    "connecting": "连接中",
+    "reconnecting": "重新连接 · {{attempt}}",
+    "connectionFailed": "连接失败"
   }
 }

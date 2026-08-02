@@ -1,0 +1,121 @@
+// The only chrome the widget has — there is no header. Connection state rides
+// here as a dot next to each platform, which is all a header would have shown.
+// Everything text-bearing aligns on its baseline, not on box centres. The
+// footer mixes Consolas digits with Rajdhani labels at three different sizes,
+// and those fonts place their glyphs differently inside the em box — centring
+// boxes leaves "699" and "ВСЕГО" visibly at different heights. Baseline
+// alignment is what "on one line" actually means for text.
+//
+// Icons and the status dot carry no baseline, so they centre themselves
+// instead; otherwise the spec synthesizes one from their bottom edge and they
+// hang below the text.
+.footer {
+  display: flex;
+  align-items: baseline;
+  gap: sp(lg);
+  padding: sp(sm) sp(md);
+  background-color: rgb(24, 24, 27);
+  border-top: 1px solid $widget-row-border;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.count {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxs);
+  font-family: $font-mono;
+  font-size: fs(sm);
+  font-weight: 700;
+  line-height: 1;
+  color: $widget-text-secondary;
+  // Without this the numbers jitter the row width on every refresh.
+  font-variant-numeric: tabular-nums;
+}
+
+.countStale {
+  color: $widget-text-muted;
+}
+
+// Sized here rather than through a descendant selector: CSS Modules hash class
+// names per file, so `.footer .glyph` would never match PlatformGlyph's class.
+.footerGlyph {
+  align-self: center;
+  width: ws(13);
+  height: ws(13);
+}
+
+.dot {
+  align-self: center;
+  width: ws(6);
+  height: ws(6);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dotLive {
+  background-color: $widget-status-positive;
+}
+
+.dotWarn {
+  background-color: $widget-status-warning;
+}
+
+.dotError {
+  background-color: $widget-status-danger;
+}
+
+.dotOff {
+  background-color: $race-neutral;
+}
+
+.rate {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxs);
+  font-family: $font-mono;
+  font-size: fs(sm);
+  font-weight: 700;
+  line-height: 1;
+  color: $widget-text-secondary;
+  font-variant-numeric: tabular-nums;
+}
+
+.rateIcon {
+  align-self: center;
+  width: ws(13);
+  height: ws(13);
+  color: $race-green;
+  flex-shrink: 0;
+}
+
+.rateUnit {
+  font-family: $font-widget;
+  font-size: fs(xxs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: $widget-text-muted;
+}
+
+.total {
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxs);
+  font-family: $font-mono;
+  font-size: fs(sm);
+  font-weight: 700;
+  line-height: 1;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.totalLabel {
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: $widget-text-muted;
+}

@@ -1,0 +1,100 @@
+// Mirrors the SettingsPage card shell. Duplicated rather than imported from
+// the parent: module styles are never shared across components in this project.
+.card {
+  margin-bottom: rem(24);
+  break-inside: avoid;
+}
+
+.cardTitle {
+  color: $sys-text-secondary;
+  font-weight: 500;
+  margin-bottom: rem(12);
+  font-size: rem(11);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.cardContent {
+  background: $sys-bg-card;
+  backdrop-filter: blur(20px);
+  border: 1px solid $sys-border-main;
+  border-radius: 6px;
+  padding: rem(20);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.fieldLabel {
+  display: block;
+  font-size: rem(11);
+  color: $sys-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: rem(8);
+}
+
+.fieldGroup {
+  padding-bottom: rem(20);
+  margin-bottom: rem(20);
+  border-bottom: 1px solid $sys-border-sub;
+
+  &:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(8);
+}
+
+.fieldTexts {
+  flex: 1;
+  padding-right: rem(24);
+}
+
+.fieldTitle {
+  font-size: rem(14);
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: rem(4);
+}
+
+.fieldDesc {
+  display: block;
+  font-size: rem(12);
+  color: $sys-text-secondary;
+  margin-top: rem(6);
+}
+
+.divider {
+  height: 1px;
+  background: $sys-border-sub;
+  margin: rem(4) 0 rem(20);
+}
+
+.deviceBox {
+  display: flex;
+  flex-direction: column;
+  gap: rem(10);
+}
+
+// The code the user retypes on twitch.tv/activate — large and monospaced so it
+// is readable at a glance while switching to a phone or browser.
+.deviceCode {
+  font-family: $font-mono;
+  font-size: rem(28);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #ffffff;
+}
+
+.error {
+  display: block;
+  margin-top: rem(12);
+  font-size: rem(12);
+  color: $race-red;
+}

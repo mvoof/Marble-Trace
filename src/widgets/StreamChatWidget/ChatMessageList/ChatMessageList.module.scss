@@ -1,0 +1,41 @@
+// Newest message sits at the bottom. justify-content pins the block down
+// without needing a scroll container — rows beyond the cap are never rendered.
+.list {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  min-height: 0;
+  position: relative;
+}
+
+// Indicator only: the feed is windowed in the store, so there is no native
+// scrollbar to style. Sits over the rows rather than in flow to avoid
+// reserving a column when there is nothing to scroll.
+.scrollTrack {
+  position: absolute;
+  top: sp(xxs);
+  right: ws(2);
+  bottom: sp(xxs);
+  width: ws(3);
+  border-radius: radius(sm);
+  background-color: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.scrollThumb {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  border-radius: radius(sm);
+  background-color: rgba(255, 255, 255, 0.45);
+}
+
+.empty {
+  padding: sp(xl) sp(md);
+  text-align: center;
+  font-size: fs(sm);
+  letter-spacing: 0.05em;
+  color: $widget-text-muted;
+}
