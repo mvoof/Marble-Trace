@@ -46,6 +46,44 @@ export const getTrackWetnessInfo = (
   }
 };
 
+export const HUMIDITY_COLOR = '#3b82f6';
+
+const TRACK_TEMP_MIN_C = 10;
+const TRACK_TEMP_MAX_C = 60;
+const HUMIDITY_MAX_PERCENT = 100;
+const WIND_MAX_MPS = 15;
+const WETNESS_MAX_LEVEL = 7;
+
+const clampFraction = (value: number): number =>
+  Math.min(1, Math.max(0, value));
+
+const toFraction = (
+  value: number | null | undefined,
+  min: number,
+  max: number
+): number => {
+  if (value == null) {
+    return 0;
+  }
+
+  return clampFraction((value - min) / (max - min));
+};
+
+export const trackTempFraction = (celsius: number | null): number =>
+  toFraction(celsius, TRACK_TEMP_MIN_C, TRACK_TEMP_MAX_C);
+
+export const airTempFraction = (celsius: number | null): number =>
+  toFraction(celsius, TRACK_TEMP_MIN_C, TRACK_TEMP_MAX_C);
+
+export const humidityFraction = (percent: number | null): number =>
+  toFraction(percent, 0, HUMIDITY_MAX_PERCENT);
+
+export const windFraction = (mps: number | null): number =>
+  toFraction(mps, 0, WIND_MAX_MPS);
+
+export const wetnessFraction = (level: number | null | undefined): number =>
+  toFraction(level, 0, WETNESS_MAX_LEVEL);
+
 export const parseWeekendFloat = (
   value: string | null | undefined
 ): number | null => {

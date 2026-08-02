@@ -28,6 +28,7 @@ interface StoryArgs {
   windVelMps: number;
   windDirRad: number;
   humidity: number;
+  trackWetness: number;
   weatherType: string | null;
   forecast: WeatherForecastEntry[];
   showCompass: boolean;
@@ -35,6 +36,7 @@ interface StoryArgs {
   showTrackTemp: boolean;
   showWind: boolean;
   showHumidity: boolean;
+  showTrackWetness: boolean;
   showForecast: boolean;
 }
 
@@ -42,7 +44,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/WeatherWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: WeatherWidget,
-    size: { width: 200, height: 330 },
+    size: { width: 200, height: 380 },
     seedSnapshot: true,
     seed: (store, args) => {
       store.units.setSystem(args.system);
@@ -53,6 +55,7 @@ const meta: Meta<StoryArgs> = {
         wind_vel: args.windVelMps,
         wind_dir: args.windDirRad,
         relative_humidity: args.humidity / 100,
+        track_wetness: args.trackWetness,
       } as EnvironmentFrame);
 
       store.session.updateSessionInfo({
@@ -67,6 +70,7 @@ const meta: Meta<StoryArgs> = {
         showTrackTemp: args.showTrackTemp,
         showWind: args.showWind,
         showHumidity: args.showHumidity,
+        showTrackWetness: args.showTrackWetness,
         showForecast: args.showForecast,
       });
     },
@@ -77,6 +81,7 @@ const meta: Meta<StoryArgs> = {
       windVelMps: 3.5,
       windDirRad: Math.PI,
       humidity: 58,
+      trackWetness: 1,
       weatherType: null,
       forecast: [],
       showCompass: true,
@@ -84,6 +89,7 @@ const meta: Meta<StoryArgs> = {
       showTrackTemp: true,
       showWind: true,
       showHumidity: true,
+      showTrackWetness: true,
       showForecast: false,
     },
   }),
@@ -116,6 +122,10 @@ export const MinimalView: Story = {
 
 export const HotDay: Story = {
   args: { airTempC: 38, trackTempC: 58, windVelMps: 1.0, humidity: 30 },
+};
+
+export const WetTrack: Story = {
+  args: { trackWetness: 5, airTempC: 14, trackTempC: 17, humidity: 88 },
 };
 
 export const StrongWind: Story = {

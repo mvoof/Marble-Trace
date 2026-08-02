@@ -22,9 +22,9 @@ export const StatsGrid = observer(() => {
   return (
     <div className={styles.statsGrid}>
       <StatCell type="trackTemp" />
-      <StatCell type="wind" />
-      <StatCell type="trackWetness" />
       <StatCell type="humidity" />
+      <StatCell type="trackWetness" />
+      <StatCell type="wind" />
     </div>
   );
 });

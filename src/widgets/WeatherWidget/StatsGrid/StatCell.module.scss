@@ -2,23 +2,34 @@
   flex: 1 1 0;
   min-width: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
   background: $widget-surface-cell;
-  padding: sp(xs) sp(lg);
-  border-left: 2px solid transparent;
-
-  &.accentNeutral {
-    border-left-color: $widget-text-primary;
-  }
-
-  &.accentWarning {
-    border-left-color: $widget-status-warning;
-  }
+  padding: sp(xxs) sp(sm) sp(xxs);
   font-family: $font-mono;
 }
 
+.statTop {
+  display: flex;
+  align-items: center;
+  gap: sp(xxs);
+  min-width: 0;
+}
+
+.statIcon {
+  width: ws(11);
+  height: ws(11);
+  flex-shrink: 0;
+  color: $widget-text-secondary;
+}
+
 .statLabel {
-  display: block;
-  font-size: fs(xxs);
+  font-size: fs(xxxs);
+  letter-spacing: 0.08em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .statValue {
@@ -26,6 +37,31 @@
   font-size: fs(md);
   font-weight: 700;
   color: $widget-text-primary;
-  line-height: 1.2;
+  line-height: 1;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.statValueCompact {
+    font-size: fs(sm);
+  }
+}
+
+.statUnit {
+  font-size: fs(xxs);
+  font-weight: 500;
+  margin-left: 1px;
+  color: $widget-text-secondary;
+}
+
+.statBar {
+  height: 2px;
+  width: 100%;
+  background: rgba(255, 255, 255, $opacity-subtle);
+  margin-top: 2px;
+}
+
+.statBarFill {
+  display: block;
+  height: 100%;
 }
