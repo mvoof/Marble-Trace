@@ -39,7 +39,7 @@ pub fn spawn_telemetry_thread(
     app: AppHandle,
     service: Arc<TelemetryServiceState>,
     registry: Arc<Mutex<ProcessorRegistry>>,
-    pit_warning_laps: Arc<std::sync::atomic::AtomicU32>,
+    fuel_tuning: Arc<crate::telemetry::state::FuelTuning>,
 ) -> Result<(), String> {
     let spawn_result = std::thread::Builder::new()
         .name("telemetry-runtime".into())
@@ -80,7 +80,7 @@ pub fn spawn_telemetry_thread(
                     source.as_mut(),
                     &service,
                     &registry,
-                    &pit_warning_laps,
+                    &fuel_tuning,
                     capabilities,
                 );
 
@@ -125,7 +125,7 @@ fn run_telemetry_loop(
     source: &mut dyn TelemetrySource,
     service: &Arc<TelemetryServiceState>,
     registry: &Arc<Mutex<ProcessorRegistry>>,
-    pit_warning_laps: &Arc<std::sync::atomic::AtomicU32>,
+    fuel_tuning: &Arc<crate::telemetry::state::FuelTuning>,
     capabilities: crate::capabilities::Capabilities,
 ) {
     let mut tick: u64 = 0;
@@ -209,7 +209,7 @@ fn run_telemetry_loop(
         }
 
         let due = scheduler.due(Instant::now());
-        let pit_warning = f32::from_bits(pit_warning_laps.load(Ordering::Relaxed));
+        let fuel_settings = fuel_tuning.snapshot();
 
         let ctx = EmitContext {
             app,
@@ -217,7 +217,7 @@ fn run_telemetry_loop(
             due,
             service,
             registry,
-            pit_warning_laps: pit_warning,
+            fuel_settings,
             capabilities,
         };
 

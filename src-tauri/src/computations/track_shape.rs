@@ -734,7 +734,7 @@ mod tests {
             track_length_m: 3700.0,
             car_length_m: 4.4,
             start_positions: args.start_positions,
-            pit_warning_laps: 2.0,
+            fuel_settings: crate::computations::fuel::FuelSettings::default(),
             lap_delta_active: false,
             session_num: Some(0),
             session_time_remain: None,

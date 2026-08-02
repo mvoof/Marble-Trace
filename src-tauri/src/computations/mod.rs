@@ -71,7 +71,7 @@ pub struct ComputeContext<'a> {
     pub track_length_m: f32,
     pub car_length_m: f32,
     pub start_positions: &'a HashMap<i32, (i32, i32)>,
-    pub pit_warning_laps: f32,
+    pub fuel_settings: fuel::FuelSettings,
     /// `false` suppresses LapDelta output (EVENT_LAP_DELTA gate).
     pub lap_delta_active: bool,
     /// Current session number from the telemetry frame (used by fuel + pit_stops).

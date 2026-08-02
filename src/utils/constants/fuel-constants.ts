@@ -36,6 +36,12 @@ export const FUEL_CHART_CONFIG = {
   MAX_SCALE: 1.05,
 } as const;
 
+/** `fuelAvgWindow` value meaning "average every recorded lap of the session". */
+export const FUEL_AVG_WINDOW_ALL_LAPS = 0;
+
+/** Longest averaging window; must match `MAX_FUEL_AVG_WINDOW` in commands.rs. */
+export const FUEL_AVG_WINDOW_MAX = 100;
+
 export const FUEL_THRESHOLDS = {
   /** Additional laps of fuel beyond pitWarningLaps to consider "Safe" */
   LAPS_LEFT_GREEN_BUFFER: 2,

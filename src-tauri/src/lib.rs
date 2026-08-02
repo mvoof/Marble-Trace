@@ -29,8 +29,8 @@ use chat::state::{ChatServiceState, ChatState};
 use commands::{
     delete_reference_lap, delete_track_shape, get_cached_track_shape, get_connection_status,
     get_last_session_info, get_reference_lap, log_settings_snapshot, reset_pit_lane_pct,
-    set_active_events, set_car_length, set_pit_warning_laps, start_telemetry_stream,
-    stop_telemetry_stream,
+    set_active_events, set_car_length, set_fuel_avg_window, set_pit_warning_laps,
+    start_telemetry_stream, stop_telemetry_stream,
 };
 use computations::ProcessorRegistry;
 use telemetry::state::TelemetryState;
@@ -217,6 +217,7 @@ pub fn run() {
             stop_telemetry_stream,
             get_last_session_info,
             set_pit_warning_laps,
+            set_fuel_avg_window,
             set_active_events,
             set_car_length,
             get_connection_status,
@@ -260,9 +261,7 @@ pub fn run() {
                 reset_reference_lap_registry,
                 stored_reference_lap_time_registry,
             ))),
-            pit_warning_laps: Arc::new(AtomicU32::new(
-                crate::computations::fuel::DEFAULT_PIT_WARNING_LAPS.to_bits(),
-            )),
+            fuel_tuning: Arc::new(crate::telemetry::state::FuelTuning::default()),
             reset_pit_pcts: reset_pit_pcts_state,
             reset_reference_lap: reset_reference_lap_state,
         })

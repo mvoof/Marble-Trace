@@ -10,6 +10,24 @@ const MIN_RECORDED_FUEL_USE: f32 = 0.1;
 const MAX_REALISTIC_LAP_FUEL: f32 = 20.0;
 
 pub const DEFAULT_PIT_WARNING_LAPS: f32 = 3.0;
+/// Averaging window in laps. 0 = every recorded lap of the session.
+pub const DEFAULT_FUEL_AVG_WINDOW: usize = 0;
+
+/// User-tunable fuel parameters, snapshotted once per tick.
+#[derive(Debug, Clone, Copy)]
+pub struct FuelSettings {
+    pub pit_warning_laps: f32,
+    pub avg_window: usize,
+}
+
+impl Default for FuelSettings {
+    fn default() -> Self {
+        Self {
+            pit_warning_laps: DEFAULT_PIT_WARNING_LAPS,
+            avg_window: DEFAULT_FUEL_AVG_WINDOW,
+        }
+    }
+}
 
 pub struct FuelState {
     pub lap_fuel_history: Vec<f32>,
@@ -72,14 +90,22 @@ impl FuelState {
         }
     }
 
-    pub fn avg(&self) -> Option<f32> {
+    /// Mean fuel use over the last `window` laps; `window == 0` averages the
+    /// whole recorded history.
+    pub fn avg(&self, window: usize) -> Option<f32> {
         if self.lap_fuel_history.is_empty() {
             return None;
         }
 
-        let sum: f32 = self.lap_fuel_history.iter().sum();
+        let take = if window == 0 {
+            self.lap_fuel_history.len()
+        } else {
+            window.min(self.lap_fuel_history.len())
+        };
 
-        Some(sum / self.lap_fuel_history.len() as f32)
+        let sum: f32 = self.lap_fuel_history.iter().rev().take(take).sum();
+
+        Some(sum / take as f32)
     }
 }
 
@@ -108,12 +134,13 @@ pub fn compute(
     session: &SessionSnapshot,
     session_num: Option<i32>,
     session_time_remain: Option<f64>,
-    pit_warning_laps: f32,
+    fuel_settings: FuelSettings,
     fuel_state: &FuelState,
 ) -> FuelComputedFrame {
     let fuel_level = car_status.fuel_level;
+    let pit_warning_laps = fuel_settings.pit_warning_laps;
 
-    let avg_per_lap = fuel_state.avg();
+    let avg_per_lap = fuel_state.avg(fuel_settings.avg_window);
 
     let laps_remaining = avg_per_lap.and_then(|avg| {
         if avg > 0.0 {
@@ -235,7 +262,7 @@ impl Processor for FuelProcessor {
             ctx.session,
             ctx.session_num,
             ctx.session_time_remain,
-            ctx.pit_warning_laps,
+            ctx.fuel_settings,
             &self.state,
         );
 
@@ -319,7 +346,7 @@ mod tests {
             &session,
             None,
             None,
-            3.0,
+            FuelSettings::default(),
             &fuel_state,
         );
 
@@ -353,12 +380,56 @@ mod tests {
             &session,
             None,
             None,
-            3.0,
+            FuelSettings::default(),
             &fuel_state,
         );
 
         assert_eq!(result.avg_per_lap, Some(2.0));
         assert_eq!(result.laps_remaining, Some(25.0)); // 50.0 / 2.0
+    }
+
+    #[test]
+    fn test_avg_window_uses_most_recent_laps() {
+        let state = FuelState {
+            lap_fuel_history: vec![4.0, 4.0, 4.0, 2.0, 2.0],
+            ..Default::default()
+        };
+
+        // Window 0 averages everything: (4+4+4+2+2) / 5
+        assert_eq!(state.avg(0), Some(3.2));
+
+        // A short window only sees the recent, cheaper laps.
+        assert_eq!(state.avg(2), Some(2.0));
+
+        // A window longer than the history falls back to the full history.
+        assert_eq!(state.avg(50), Some(3.2));
+    }
+
+    #[test]
+    fn test_avg_window_changes_laps_remaining() {
+        let car_status = make_car_status(20.0);
+        let lap_timing = make_lap_timing(Some(5), None);
+        let session = SessionSnapshot::default();
+        let fuel_state = FuelState {
+            lap_fuel_history: vec![4.0, 4.0, 4.0, 2.0, 2.0],
+            ..Default::default()
+        };
+
+        let windowed = compute(
+            &car_status,
+            &lap_timing,
+            &session,
+            None,
+            None,
+            FuelSettings {
+                avg_window: 2,
+                ..Default::default()
+            },
+            &fuel_state,
+        );
+
+        assert_eq!(windowed.avg_per_lap, Some(2.0));
+        assert_eq!(windowed.laps_remaining, Some(10.0)); // 20.0 / 2.0
     }
 
     #[test]

@@ -494,6 +494,15 @@ export class WidgetSettingsStore {
             error
           );
         });
+
+        void invoke('set_fuel_avg_window', {
+          window: settings.fuelAvgWindow,
+        }).catch((error) => {
+          console.error(
+            'Failed to initialize fuel average window on backend:',
+            error
+          );
+        });
       }
 
       const radar =
@@ -597,6 +606,14 @@ export class WidgetSettingsStore {
         laps: (resolvedPartial as FuelWidgetSettings).pitWarningLaps,
       }).catch((error) =>
         console.error('Failed to update pit warning laps:', error)
+      );
+    }
+
+    if (id === 'fuel' && 'fuelAvgWindow' in resolvedPartial) {
+      void invoke('set_fuel_avg_window', {
+        window: (resolvedPartial as FuelWidgetSettings).fuelAvgWindow,
+      }).catch((error) =>
+        console.error('Failed to update fuel average window:', error)
       );
     }
 

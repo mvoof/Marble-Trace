@@ -109,7 +109,8 @@
       "statMax": "MAX — worst lap",
       "nextStopForecast": "Next Stop Forecast",
       "nextStopForecastDesc": "Estimated lap and time until the pit window opens.",
-      "lowFuelWarningThreshold": "Low Fuel Warning Threshold (Laps)"
+      "lowFuelWarningThreshold": "Low Fuel Warning Threshold (Laps)",
+      "avgWindow": "Consumption Averaging Window, Laps (0 = All Laps)"
     },
     "enginePanel": {
       "moduleParameters": "Module Parameters",
