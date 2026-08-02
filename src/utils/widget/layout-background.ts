@@ -17,6 +17,13 @@ const BACKGROUNDS_DIR = 'backgrounds';
 
 const isDataUrl = (value: string) => value.startsWith('data:');
 
+// Every saved image gets its own file name: a layout can hold one background
+// per monitor, and reusing the layout id alone would make those overwrite each
+// other and keep the stored value (and therefore the asset URL) unchanged when
+// the user picks a new image.
+const buildFileName = (layoutId: string, extension: string) =>
+  `${layoutId}-${crypto.randomUUID()}.${extension}`;
+
 export const saveBackgroundImage = async (
   layoutId: string,
   bytes: Uint8Array,
@@ -27,7 +34,7 @@ export const saveBackgroundImage = async (
     recursive: true,
   });
 
-  const fileName = `${layoutId}.${extension}`;
+  const fileName = buildFileName(layoutId, extension);
 
   await writeFile(`${BACKGROUNDS_DIR}/${fileName}`, bytes, {
     baseDir: BaseDirectory.AppData,
@@ -88,7 +95,7 @@ export const cloneBackgroundImage = async (
 
     if (await exists(oldPath, { baseDir: BaseDirectory.AppData })) {
       const bytes = await readFile(oldPath, { baseDir: BaseDirectory.AppData });
-      const newFileName = `${newLayoutId}.${extension}`;
+      const newFileName = buildFileName(newLayoutId, extension);
 
       await mkdir(BACKGROUNDS_DIR, {
         baseDir: BaseDirectory.AppData,
