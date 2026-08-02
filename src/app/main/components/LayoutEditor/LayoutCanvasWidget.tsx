@@ -19,6 +19,16 @@ const ALL_DIRECTIONS: ResizeDirection[] = [
 ];
 const HORIZONTAL_DIRECTIONS: ResizeDirection[] = ['e', 'w'];
 
+// Aspect-locked widgets keep the corners so they can be scaled up as a whole.
+const LOCKED_RATIO_DIRECTIONS: ResizeDirection[] = [
+  'e',
+  'w',
+  'ne',
+  'nw',
+  'se',
+  'sw',
+];
+
 // Snap distance (overlay px) for centering a widget on the canvas axes.
 const SNAP_CENTER_THRESHOLD = 24;
 
@@ -94,7 +104,12 @@ export const LayoutCanvasWidget = observer(
     const overflowVisible = widget?.overflowVisible ?? false;
     const transparentContainer = widget?.transparentContainer ?? false;
 
-    const widgetScale = width / designWidth;
+    const scaleFromHeight = widget?.scaleFromHeight ?? false;
+
+    const widgetScale = scaleFromHeight
+      ? height / designHeight
+      : width / designWidth;
+
     const fontScale = widget?.userSettings.fontScale ?? 1;
 
     const backgroundColor =
@@ -267,14 +282,30 @@ export const LayoutCanvasWidget = observer(
             }
           }
 
-          if (widget?.lockAspectRatio) {
-            // Only e/w handles are offered for these widgets (see
+          if (widget?.scaleFromHeight) {
+            // e/w only stretches the widget (its scale comes from the
+            // unchanged height); corners rescale it keeping the current shape.
+            const isCorner = direction.length === 2;
+
+            if (isCorner && startW > 0) {
+              newH = Math.max(minH, Math.round(newW * (startH / startW)));
+
+              if (direction.includes('n')) {
+                newY = Math.round(startY + startH - newH);
+              }
+            }
+          } else if (widget?.lockAspectRatio) {
+            // Only e/w and corner handles are offered for these widgets (see
             // resizeDirections below) — height always tracks the design
             // aspect ratio, mirroring the overlay's WidgetContainer.
             newH = Math.max(
               minH,
               Math.round(newW * (designHeight / designWidth))
             );
+
+            if (direction.includes('n')) {
+              newY = Math.round(startY + startH - newH);
+            }
           } else {
             const shouldLockRatio = moveEvent.shiftKey || isRatioLocked;
 
@@ -332,12 +363,14 @@ export const LayoutCanvasWidget = observer(
         gridSize,
         isRatioLocked,
         widget?.lockAspectRatio,
+        widget?.scaleFromHeight,
       ]
     );
 
-    const resizeDirections =
-      autoHeight || widget?.lockAspectRatio
-        ? HORIZONTAL_DIRECTIONS
+    const resizeDirections = autoHeight
+      ? HORIZONTAL_DIRECTIONS
+      : widget?.lockAspectRatio || scaleFromHeight
+        ? LOCKED_RATIO_DIRECTIONS
         : ALL_DIRECTIONS;
 
     return (

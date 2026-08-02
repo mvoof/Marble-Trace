@@ -10,4 +10,7 @@
 .canvas {
   display: block;
   width: 100%;
+  // Without this the element height falls back to the pixel-buffer `height`
+  // attribute (backing-store size), which overflows once the widget is taller.
+  height: 100%;
 }
