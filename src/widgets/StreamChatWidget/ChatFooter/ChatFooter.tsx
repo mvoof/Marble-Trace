@@ -20,12 +20,13 @@ const STATUS_CLASS: Record<ChatPresence['status'], string> = {
   error: styles.dotError,
 };
 
-const formatCount = (value: number) => value.toLocaleString('ru-RU');
+const formatCount = (value: number, locale: string) =>
+  value.toLocaleString(locale);
 
 export const ChatFooter = observer(() => {
   const chatWidget = useStreamChatWidgetStore();
   const widgetSettings = useWidgetSettingsStore();
-  const { t } = useTranslation('widgets');
+  const { t, i18n } = useTranslation('widgets');
 
   const settings =
     widgetSettings.getSettings<StreamChatWidgetSettings>('stream-chat');
@@ -46,7 +47,9 @@ export const ChatFooter = observer(() => {
           {/* A platform that never reports viewers shows a dash rather than a
               zero — zero would read as "nobody is watching". */}
           <span className={presence.viewers === null ? styles.countStale : ''}>
-            {presence.viewers === null ? '—' : formatCount(presence.viewers)}
+            {presence.viewers === null
+              ? '—'
+              : formatCount(presence.viewers, i18n.language)}
           </span>
         </span>
       ))}
@@ -62,7 +65,7 @@ export const ChatFooter = observer(() => {
       {total !== null && (
         <span className={styles.total}>
           <span className={styles.totalLabel}>{t('streamChat.total')}</span>
-          {formatCount(total)}
+          {formatCount(total, i18n.language)}
         </span>
       )}
     </div>
