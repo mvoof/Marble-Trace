@@ -40,6 +40,46 @@ export const computeRpmZoneState = (
   return { pct, zone: subZone === 'limit' ? 'high' : subZone };
 };
 
+// Ramp endpoints for the pit limit digit: amber while there is room left,
+// red once the limit is reached. Same hexes as $race-amber / $race-red.
+const LIMIT_CALM_RGB: [number, number, number] = [245, 158, 11];
+const LIMIT_ALERT_RGB: [number, number, number] = [239, 68, 68];
+// The digit starts reacting this many times the near-limit warning delta below
+// the limit, so the growth is a slow approach cue rather than a late jump.
+const LIMIT_APPROACH_WINDOW_MULT = 4;
+// Reads from the corner of the eye at the limit while still fitting the row.
+const LIMIT_MAX_SCALE = 1.45;
+
+export interface PitLimitEmphasis {
+  color: string;
+  scale: number;
+}
+
+/**
+ * How loudly the pit speed limit digit reads: it warms from amber to red and
+ * grows slightly as the car closes on the limit, and sits at full alert once
+ * the limit is exceeded.
+ */
+export const pitLimitEmphasis = (
+  speed: number,
+  limit: number,
+  nearLimitDelta: number
+): PitLimitEmphasis => {
+  const window = Math.max(nearLimitDelta * LIMIT_APPROACH_WINDOW_MULT, 1);
+  const approach = Math.min(Math.max(1 - (limit - speed) / window, 0), 1);
+
+  const channel = (index: number): number =>
+    Math.round(
+      LIMIT_CALM_RGB[index] +
+        (LIMIT_ALERT_RGB[index] - LIMIT_CALM_RGB[index]) * approach
+    );
+
+  return {
+    color: `rgb(${channel(0)}, ${channel(1)}, ${channel(2)})`,
+    scale: 1 + (LIMIT_MAX_SCALE - 1) * approach,
+  };
+};
+
 /** Color of the dotted RPM fill inside the center panel. */
 export const rpmFillColor = (
   zone: RpmZone,

@@ -47,6 +47,8 @@ export interface RaceDashWidgetSettings {
   useLivePositions: boolean;
   /** Steering angle wedge riding the outer rim of the gear ring. */
   showSteeringMarker: boolean;
+  /** Color of the trail the steering marker leaves behind it on the rim. */
+  steeringTrailColor: string;
 }
 
 export type SteeringCenterDisplay =

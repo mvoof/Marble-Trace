@@ -241,6 +241,8 @@
       "off": "Off",
       "steeringMarker": "Steering Marker",
       "steeringMarkerDesc": "Show a dot orbiting the outer rim of the gear ring one-to-one with the steering wheel.",
+      "steeringTrail": "Steering Trail Color",
+      "steeringTrailDesc": "Color of the trail the steering marker leaves behind it on the rim.",
       "drivingCoach": "Driving Coach",
       "coachSection": "Coach Section",
       "coachSectionDesc": "Show the brake/gas call and best-lap reference speed.",

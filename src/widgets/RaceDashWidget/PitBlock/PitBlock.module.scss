@@ -123,12 +123,21 @@
   color: $widget-text-primary;
 }
 
-.limitSafe {
-  color: $race-amber;
+// Color and scale are driven per-frame from the speed-to-limit gap; the
+// transition keeps the growth a smooth swell instead of a 4 Hz staircase.
+// Grows leftwards from its right edge so it never pushes past the row.
+.limitValue {
+  display: inline-block;
+  transform-origin: right center;
+  transition:
+    transform 0.25s ease-out,
+    color 0.25s ease-out;
 }
 
-.limitDanger {
-  color: $race-red;
+@media (prefers-reduced-motion: reduce) {
+  .limitValue {
+    transition: none;
+  }
 }
 
 .boxCue {

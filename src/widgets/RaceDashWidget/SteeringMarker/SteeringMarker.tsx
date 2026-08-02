@@ -25,6 +25,9 @@ const MAX_TRAIL_DEG = 359.5;
 // or the RPM arc.
 const DOT_RADIUS = 3.5;
 const MIN_VISIBLE_TRAIL_DEG = 1;
+// The trail is context, not a value — it stays far below the dot in weight
+// whatever color the user picks for it.
+const TRAIL_OPACITY = 0.22;
 
 /**
  * Steering angle as a dot orbiting the badge one-to-one with the driver's
@@ -62,6 +65,8 @@ export const SteeringMarker = observer(() => {
         <path
           className={styles.trail}
           d={rimTrailPath(trailDeg, RIM_MARKER_RADIUS)}
+          stroke={settings.steeringTrailColor}
+          strokeOpacity={TRAIL_OPACITY}
         />
       )}
 

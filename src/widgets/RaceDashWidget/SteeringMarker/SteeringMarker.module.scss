@@ -17,10 +17,10 @@
 
 // Reads as the path the marker has already travelled from straight-ahead, so
 // it must stay well below the dot in weight — the dot is the value, the trail
-// is only its distance from centre.
+// is only its distance from centre. Stroke color and opacity come from the
+// user's setting, applied on the element.
 .trail {
   fill: none;
-  stroke: rgba($race-amber, 0.22);
   stroke-width: 4;
   stroke-linecap: round;
 }

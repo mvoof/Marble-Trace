@@ -24,6 +24,7 @@ interface StoryArgs {
   pitPhase: 'toBox' | 'toExit';
   boxDistM: number;
   showSteeringMarker: boolean;
+  steeringTrailColor: string;
   steeringWheelAngle: number;
 }
 
@@ -59,6 +60,7 @@ const meta: Meta<StoryArgs> = {
 
       store.widgetSettings.updateUserSettings('race-dash', {
         showSteeringMarker: args.showSteeringMarker,
+        steeringTrailColor: args.steeringTrailColor,
       } as Partial<RaceDashWidgetSettings>);
 
       if (args.referenceKmh > 0) {
@@ -120,6 +122,7 @@ const meta: Meta<StoryArgs> = {
       pitPhase: 'toBox',
       boxDistM: 0,
       showSteeringMarker: false,
+      steeringTrailColor: '#f59e0b',
       steeringWheelAngle: 0,
     },
     argTypes: {
@@ -132,6 +135,7 @@ const meta: Meta<StoryArgs> = {
       pitPhase: { control: 'radio', options: ['toBox', 'toExit'] },
       boxDistM: { control: { type: 'number' } },
       showSteeringMarker: { control: 'boolean' },
+      steeringTrailColor: { control: 'color' },
       steeringWheelAngle: {
         control: { type: 'range', min: -450, max: 450, step: 5 },
       },

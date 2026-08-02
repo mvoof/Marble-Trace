@@ -1017,6 +1017,7 @@ const WIDGETS: WidgetConfig[] = [
       rpmIndicatorMode: 'fill',
       useLivePositions: true,
       showSteeringMarker: false,
+      steeringTrailColor: '#f59e0b',
     },
   },
 ];
