@@ -9,6 +9,11 @@ const MAX_LAP_FUEL_HISTORY: usize = 100;
 const MIN_RECORDED_FUEL_USE: f32 = 0.1;
 const MAX_REALISTIC_LAP_FUEL: f32 = 20.0;
 
+/// Laps of margin kept between the close of the pit window and a dry tank —
+/// the same one-lap cushion `fuel_to_add_with_buffer` adds to the refuel
+/// figure, so the two agree on what "with a lap in hand" means.
+const PIT_WINDOW_END_BUFFER_LAPS: f32 = 1.0;
+
 pub const DEFAULT_PIT_WARNING_LAPS: f32 = 3.0;
 /// Averaging window in laps. 0 = every recorded lap of the session.
 pub const DEFAULT_FUEL_AVG_WINDOW: usize = 0;
@@ -196,11 +201,23 @@ pub fn compute(
 
     let current_lap_i = lap_timing.lap.unwrap_or(0);
 
+    // `laps_remaining` counts from where the car is right now, not from the
+    // start/finish line, so the lap counter alone is not a position to add it
+    // to — the distance already covered on this lap has to come with it.
+    // Without it both edges sit up to a full lap early, and the window creeps
+    // as the lap runs on.
+    let lap_position = current_lap_i as f32 + lap_timing.lap_dist_pct.unwrap_or(0.0);
+
     let (pit_window_start, pit_window_end) = match (laps_remaining, avg_per_lap) {
-        (Some(rem), Some(avg)) if avg > 0.0 => (
-            Some((current_lap_i as f32 + rem - pit_warning_laps).floor() as i32),
-            Some((current_lap_i as f32 + rem - 1.0).floor() as i32),
-        ),
+        (Some(rem), Some(avg)) if avg > 0.0 => {
+            let empty_at = lap_position + rem;
+            let start = (empty_at - pit_warning_laps).floor() as i32;
+            // A one-lap cushion: the window shuts before the lap the tank runs
+            // out on, never on it.
+            let end = (empty_at - PIT_WINDOW_END_BUFFER_LAPS).floor() as i32;
+
+            (Some(start), Some(end.max(start)))
+        }
         _ => (None, None),
     };
 
@@ -386,6 +403,63 @@ mod tests {
 
         assert_eq!(result.avg_per_lap, Some(2.0));
         assert_eq!(result.laps_remaining, Some(25.0)); // 50.0 / 2.0
+    }
+
+    /// 3.6L at 2.0L/lap = 1.8 laps of fuel left, on lap 17.
+    fn compute_window(
+        lap_dist_pct: Option<f32>,
+        pit_warning_laps: f32,
+    ) -> (Option<i32>, Option<i32>) {
+        let car_status = make_car_status(3.6);
+        let lap_timing = make_lap_timing(Some(17), lap_dist_pct);
+        let session = SessionSnapshot::default();
+        let fuel_state = FuelState {
+            lap_fuel_history: vec![2.0, 2.0, 2.0],
+            ..Default::default()
+        };
+
+        let result = compute(
+            &car_status,
+            &lap_timing,
+            &session,
+            None,
+            None,
+            FuelSettings {
+                pit_warning_laps,
+                ..Default::default()
+            },
+            &fuel_state,
+        );
+
+        (result.pit_window_start, result.pit_window_end)
+    }
+
+    #[test]
+    fn test_pit_window_counts_from_the_car_position() {
+        // 40% into lap 17 with 1.8 laps of fuel runs the tank dry 20% into
+        // lap 19, so the window covers 16 through 18. Reading the lap counter
+        // alone would place it a lap early, at 15 through 17.
+        assert_eq!(
+            compute_window(Some(0.4), DEFAULT_PIT_WARNING_LAPS),
+            (Some(16), Some(18))
+        );
+    }
+
+    #[test]
+    fn test_pit_window_falls_back_to_the_lap_line() {
+        // No distance reading: the car is treated as sitting on the line it
+        // last crossed, which is where the lap counter puts it.
+        assert_eq!(
+            compute_window(None, DEFAULT_PIT_WARNING_LAPS),
+            (Some(15), Some(17))
+        );
+    }
+
+    #[test]
+    fn test_pit_window_never_closes_before_it_opens() {
+        // A warning margin under the closing cushion would invert the range:
+        // opening on 19, closing on 18.
+        assert_eq!(compute_window(Some(0.4), 0.1), (Some(19), Some(19)));
     }
 
     #[test]
