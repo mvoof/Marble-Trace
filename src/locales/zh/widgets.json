@@ -411,6 +411,8 @@
       "trackTemperatureDesc": "赛道表面的温度。",
       "windSpeedAndDir": "风速与风向",
       "windSpeedAndDirDesc": "风速数值和方位方向。",
+      "windBearing": "风向方位角",
+      "windBearingDesc": "显示在风向标签旁的精确风向角度。",
       "relativeHumidity": "相对湿度",
       "relativeHumidityDesc": "当前湿度百分比。",
       "weatherForecast": "天气预报",

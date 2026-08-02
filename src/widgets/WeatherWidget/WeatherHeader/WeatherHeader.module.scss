@@ -1,21 +1,32 @@
 .header {
+  position: relative;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  padding: sp(xs) sp(lg);
+  gap: sp(sm);
+  padding: sp(md) sp(sm);
   background: $widget-surface-cell;
-  border-left: 2px solid transparent;
   width: 100%;
-  margin-bottom: 1px;
 
   &.hasCompass {
     margin-top: sp(sm);
   }
 }
 
+// Absolutely positioned, so it stays out of the flex flow.
+.header::after {
+  content: '';
+  position: absolute;
+  left: sp(sm);
+  right: sp(sm);
+  bottom: 0;
+  height: 1px;
+  background: $widget-border-subtle;
+}
+
 .conditionSection {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: sp(xs);
   min-width: 0;
   overflow: hidden;
@@ -29,8 +40,8 @@
 }
 
 .icon {
-  width: ws(24);
-  height: ws(24);
+  width: ws(20);
+  height: ws(20);
   color: $widget-text-primary;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
 }
@@ -40,6 +51,7 @@
   font-size: fs(md);
   font-weight: 600;
   color: $widget-text-primary;
+  line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -56,8 +68,8 @@
 }
 
 .unit {
-  font-size: fs(sm);
+  font-size: fs(xxs);
   font-weight: 500;
-  margin-left: sp(xxxs);
-  color: $widget-text-secondary;
+  margin-left: 1px;
+  color: $widget-text-muted;
 }

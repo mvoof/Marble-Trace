@@ -411,6 +411,8 @@
       "trackTemperatureDesc": "Surface temperature of the racing surface.",
       "windSpeedAndDir": "Wind Speed & Dir",
       "windSpeedAndDirDesc": "Numerical wind speed and cardinal direction.",
+      "windBearing": "Wind Bearing",
+      "windBearingDesc": "Exact wind bearing in degrees, shown next to the wind label.",
       "relativeHumidity": "Relative Humidity",
       "relativeHumidityDesc": "Current humidity percentage.",
       "weatherForecast": "Weather Forecast",

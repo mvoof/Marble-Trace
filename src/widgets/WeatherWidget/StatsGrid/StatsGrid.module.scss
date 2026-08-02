@@ -1,6 +1,32 @@
 .statsGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1px;
   width: 100%;
+  margin-bottom: sp(md);
+}
+
+// A lone cell left on its row fills the widget instead of half of it.
+.statsGrid > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+// Dividers are hairlines inset from the plate edges, never full bleed.
+.statsGrid > :nth-child(odd):not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: sp(sm);
+  bottom: sp(sm);
+  right: 0;
+  width: 1px;
+  background: $widget-border-subtle;
+}
+
+.statsGrid > :nth-child(n + 3)::before {
+  content: '';
+  position: absolute;
+  left: sp(sm);
+  right: sp(sm);
+  top: 0;
+  height: 1px;
+  background: $widget-border-subtle;
 }

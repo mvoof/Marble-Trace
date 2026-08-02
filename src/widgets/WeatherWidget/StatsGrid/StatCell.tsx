@@ -1,4 +1,5 @@
-﻿import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
+import { Droplets, Thermometer, Waves, Wind } from 'lucide-react';
 
 import {
   formatTemp,
@@ -7,9 +8,17 @@ import {
   tempUnit,
 } from '@utils/formatters/telemetry-format';
 import {
-  getWindColor,
-  parseWeekendFloat,
+  HUMIDITY_COLOR,
+  airTempFraction,
+  bearingToCardinal,
   getTrackWetnessInfo,
+  getWindColor,
+  humidityFraction,
+  parseWeekendFloat,
+  radsToBearing,
+  trackTempFraction,
+  wetnessFraction,
+  windFraction,
 } from '@utils/widget/weather-utils';
 import { getAirTempColor, getTrackTempColor } from '@utils/widget/widget-utils';
 
@@ -46,9 +55,15 @@ const STAT_CELL_SETTING_KEY: Record<
   trackWetness: 'showTrackWetness',
 };
 
-const ACCENT_CLASS: Partial<Record<StatCellType, string>> = {
-  trackTemp: styles.accentWarning,
+const STAT_CELL_ICON = {
+  airTemp: Thermometer,
+  trackTemp: Thermometer,
+  wind: Wind,
+  humidity: Droplets,
+  trackWetness: Waves,
 };
+
+const ICON_SIZE_PX = 11;
 
 interface StatCellProps {
   type: StatCellType;
@@ -72,8 +87,8 @@ export const StatCell = observer(({ type }: StatCellProps) => {
   let label = '';
   let value = '';
   let unit: string | undefined;
-
-  let customBorderColor: string | undefined;
+  let accentColor: string | undefined;
+  let fillFraction = 0;
 
   if (type === 'airTemp') {
     const airTempC =
@@ -82,61 +97,98 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     label = 'AIR';
     value = formatTemp(airTempC, unitSystem);
     unit = tempUnit(unitSystem);
+    fillFraction = airTempFraction(airTempC);
 
     if (airTempC !== null) {
-      customBorderColor = getAirTempColor(airTempC);
+      accentColor = getAirTempColor(airTempC);
     }
   } else if (type === 'trackTemp') {
     const trackTempC =
       env?.track_temp ?? parseWeekendFloat(sessionInfo?.trackSurfaceTemp);
 
-    label = 'TRK';
+    label = 'TRACK';
     value = formatTemp(trackTempC, unitSystem);
     unit = tempUnit(unitSystem);
+    fillFraction = trackTempFraction(trackTempC);
+
     if (trackTempC !== null) {
-      customBorderColor = getTrackTempColor(trackTempC);
+      accentColor = getTrackTempColor(trackTempC);
     }
   } else if (type === 'wind') {
     const windVelMps =
       env?.wind_vel ?? parseWeekendFloat(sessionInfo?.trackWindVel);
+    const windDirRad =
+      env?.wind_dir ?? parseWeekendFloat(sessionInfo?.trackWindDir);
 
     label = 'WIND';
+
+    if (windDirRad !== null) {
+      const bearing = radsToBearing(windDirRad);
+
+      label = settings.showWindBearing
+        ? `WIND ${Math.round(bearing)}°`
+        : `WIND ${bearingToCardinal(bearing)}`;
+    }
+
     value = windVelMps !== null ? _formatSpeed(windVelMps, unitSystem) : '--.-';
     unit = _speedUnit(unitSystem);
-    customBorderColor = getWindColor(windVelMps);
+    accentColor = getWindColor(windVelMps);
+    fillFraction = windFraction(windVelMps);
   } else if (type === 'humidity') {
     const rawHumidity =
       env?.relative_humidity !== undefined && env?.relative_humidity !== null
         ? env.relative_humidity * 100
         : parseWeekendFloat(sessionInfo?.trackRelativeHumidity);
 
-    label = 'HUM.';
-    value = rawHumidity !== null ? `${Math.round(rawHumidity)}%` : '--%';
+    label = 'HUMIDITY';
+    value = rawHumidity !== null ? `${Math.round(rawHumidity)}` : '--';
+    unit = '%';
+    accentColor = HUMIDITY_COLOR;
+    fillFraction = humidityFraction(rawHumidity);
   } else if (type === 'trackWetness') {
     const wetness = env?.track_wetness;
     const info = getTrackWetnessInfo(wetness);
 
-    label = 'TRACK';
+    label = 'SURFACE';
     value = info?.label ?? '--';
-    customBorderColor = info?.color;
+    accentColor = info?.color;
+    fillFraction = wetnessFraction(wetness);
   }
 
-  const accentClass = ACCENT_CLASS[type] ?? styles.accentNeutral;
+  const Icon = STAT_CELL_ICON[type];
+
+  const isCompactValue = value.length > 5;
 
   return (
-    <div
-      className={`${styles.statCell} ${accentClass}`}
-      style={
-        customBorderColor !== undefined
-          ? { borderLeftColor: customBorderColor }
-          : undefined
-      }
-    >
-      <WidgetLabel mono uppercase={false} className={styles.statLabel}>
-        {label}
-      </WidgetLabel>
+    <div className={styles.statCell}>
+      <div className={styles.statTop}>
+        <Icon
+          size={ICON_SIZE_PX}
+          className={styles.statIcon}
+          style={accentColor !== undefined ? { color: accentColor } : undefined}
+        />
 
-      <WidgetValue value={value} unit={unit} className={styles.statValue} />
+        <WidgetLabel mono uppercase={false} className={styles.statLabel}>
+          {label}
+        </WidgetLabel>
+      </div>
+
+      <WidgetValue
+        value={value}
+        unit={unit}
+        className={`${styles.statValue} ${isCompactValue ? styles.statValueCompact : ''}`}
+        unitClassName={styles.statUnit}
+      />
+
+      <div className={styles.statBar}>
+        <span
+          className={styles.statBarFill}
+          style={{
+            width: `${fillFraction * 100}%`,
+            background: accentColor,
+          }}
+        />
+      </div>
     </div>
   );
 });
