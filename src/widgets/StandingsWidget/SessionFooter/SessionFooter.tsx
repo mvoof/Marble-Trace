@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { Wrench, Thermometer, Droplet, CloudRain } from 'lucide-react';
+import { Wrench, Thermometer, Waves } from 'lucide-react';
 
 import { formatTemp, tempUnit } from '@utils/formatters/telemetry-format';
 import { parseWeekendTemp } from '@utils/widget/standings-utils';
@@ -96,7 +96,7 @@ export const SessionFooter = observer(() => {
               className={styles.iconColored}
             />
 
-            <span className={styles.statLabel}>TRK</span>
+            <span className={styles.statLabel}>TRACK</span>
 
             <span className={styles.statValue}>{trkStr}</span>
           </span>
@@ -104,21 +104,13 @@ export const SessionFooter = observer(() => {
 
         {showWeather && wetnessInfo && (
           <span className={styles.statPill}>
-            {wetnessInfo.isWet ? (
-              <CloudRain
-                size={11}
-                color={wetnessInfo.color}
-                className={styles.iconColored}
-              />
-            ) : (
-              <Droplet
-                size={11}
-                color={wetnessInfo.color}
-                className={styles.iconColored}
-              />
-            )}
+            <Waves
+              size={11}
+              color={wetnessInfo.color}
+              className={styles.iconColored}
+            />
 
-            <span className={styles.statLabel}>TRACK</span>
+            <span className={styles.statLabel}>SURFACE</span>
 
             <span className={styles.statValue}>{wetnessInfo.label}</span>
           </span>
