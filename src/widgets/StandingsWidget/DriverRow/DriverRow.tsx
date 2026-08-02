@@ -62,7 +62,7 @@ export const DriverRow = observer(
       (isInGarage && !isSessionEnded(session.session?.session_state ?? null));
 
     const isPit =
-      !isInGarage &&
+      !isOut &&
       (driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad);
 
     const pitState = driver.pitState;
