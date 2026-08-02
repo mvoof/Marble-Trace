@@ -129,7 +129,14 @@ export const FuelSettingsPanel = observer(() => {
           value={settings.fuelAvgWindow}
           min={FUEL_AVG_WINDOW_ALL_LAPS}
           max={FUEL_AVG_WINDOW_MAX}
-          onChange={(v) => v !== null && update({ fuelAvgWindow: v })}
+          step={1}
+          precision={0}
+          parser={(v) =>
+            Number.parseInt(v ?? '', 10) || FUEL_AVG_WINDOW_ALL_LAPS
+          }
+          onChange={(v) =>
+            v !== null && update({ fuelAvgWindow: Math.round(v) })
+          }
         />
       </div>
     </Card>
