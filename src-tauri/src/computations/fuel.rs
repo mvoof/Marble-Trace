@@ -1,4 +1,7 @@
+use std::time::Instant;
+
 use serde::{Deserialize, Serialize};
+use tracing::debug;
 
 use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
@@ -8,6 +11,21 @@ use crate::model::session::SessionSnapshot;
 const MAX_LAP_FUEL_HISTORY: usize = 100;
 const MIN_RECORDED_FUEL_USE: f32 = 0.1;
 const MAX_REALISTIC_LAP_FUEL: f32 = 20.0;
+
+/// A lap counter that advances sooner than this did not come from driving one —
+/// a tow, a reset or a session jump moved it.
+const MIN_LAP_SECS: f64 = 10.0;
+/// Smallest rise in tank level counted as refuelling rather than sensor jitter.
+const MIN_REFUEL_STEP: f32 = 0.05;
+/// Laps of context the outlier test judges a new lap against.
+const OUTLIER_SAMPLE_LAPS: usize = 10;
+/// Below this the spread is not yet meaningful and every lap is taken.
+const OUTLIER_MIN_HISTORY: usize = 3;
+/// 1.5 is the textbook whisker; racing consumption is noisier, so widen it.
+const OUTLIER_IQR_FACTOR: f32 = 2.0;
+/// Laps this close to the mean are kept whatever the spread says — in a very
+/// consistent stint the IQR collapses and would start rejecting good laps.
+const OUTLIER_MEAN_TOLERANCE: f32 = 0.15;
 
 /// Laps of margin kept between the close of the pit window and a dry tank —
 /// the same one-lap cushion `fuel_to_add_with_buffer` adds to the refuel
@@ -34,11 +52,29 @@ impl Default for FuelSettings {
     }
 }
 
+/// One tick of everything the lap bookkeeping needs to judge a lap.
+#[derive(Debug, Clone, Copy)]
+pub struct FuelSample {
+    pub lap: i32,
+    pub fuel_level: f32,
+    pub session_num: i32,
+    /// False while towed, in the garage, or otherwise not on track.
+    pub on_track: bool,
+    /// A full-course caution is out — the lap is not run at racing pace.
+    pub caution: bool,
+}
+
 pub struct FuelState {
     pub lap_fuel_history: Vec<f32>,
     pub last_lap: i32,
     pub last_lap_start_fuel: Option<f32>,
     pub tracked_session_num: i32,
+    /// Fuel taken on since the lap began, so a stop does not lose the lap.
+    refuelled_this_lap: f32,
+    prev_fuel_level: Option<f32>,
+    lap_left_track: bool,
+    lap_under_caution: bool,
+    lap_started_at: Option<Instant>,
 }
 
 impl Default for FuelState {
@@ -48,8 +84,38 @@ impl Default for FuelState {
             last_lap: -1,
             last_lap_start_fuel: None,
             tracked_session_num: -1,
+            refuelled_this_lap: 0.0,
+            prev_fuel_level: None,
+            lap_left_track: false,
+            lap_under_caution: false,
+            lap_started_at: None,
         }
     }
+}
+
+/// Whether a lap's consumption is too far from recent laps to be believable.
+///
+/// An interquartile fence rather than a distance from the mean: one wild lap
+/// drags a mean far enough to start rejecting the good laps after it.
+fn is_outlier(used: f32, history: &[f32]) -> bool {
+    let sample_start = history.len().saturating_sub(OUTLIER_SAMPLE_LAPS);
+    let mut sample: Vec<f32> = history[sample_start..].to_vec();
+
+    if sample.len() < OUTLIER_MIN_HISTORY {
+        return false;
+    }
+
+    sample.sort_by(f32::total_cmp);
+
+    let quartile = |fraction: f32| sample[((sample.len() as f32) * fraction) as usize];
+    let (q1, q3) = (quartile(0.25), quartile(0.75));
+    let fence = OUTLIER_IQR_FACTOR * (q3 - q1);
+    let within_fence = used >= q1 - fence && used <= q3 + fence;
+
+    let mean = sample.iter().sum::<f32>() / sample.len() as f32;
+    let within_tolerance = (used - mean).abs() <= mean * OUTLIER_MEAN_TOLERANCE;
+
+    !(within_fence || within_tolerance)
 }
 
 impl FuelState {
@@ -57,42 +123,124 @@ impl FuelState {
         *self = Self::default();
     }
 
-    pub fn update(&mut self, current_lap: i32, fuel_level: f32, session_num: i32) {
-        if session_num != self.tracked_session_num {
+    pub fn update(&mut self, sample: FuelSample) {
+        if sample.session_num != self.tracked_session_num {
             self.reset();
-            self.tracked_session_num = session_num;
+            self.tracked_session_num = sample.session_num;
         }
 
-        if self.last_lap < 0 || current_lap < self.last_lap {
-            if current_lap < self.last_lap && self.last_lap >= 0 {
+        self.track_refuel(sample.fuel_level);
+
+        if !sample.on_track {
+            self.lap_left_track = true;
+        }
+
+        if sample.caution {
+            self.lap_under_caution = true;
+        }
+
+        if self.last_lap < 0 || sample.lap < self.last_lap {
+            if sample.lap < self.last_lap && self.last_lap >= 0 {
                 self.lap_fuel_history.clear();
             }
 
-            self.last_lap = current_lap;
-            self.last_lap_start_fuel = Some(fuel_level);
+            self.begin_lap(sample.lap, sample.fuel_level);
 
             return;
         }
 
-        if current_lap != self.last_lap {
-            if let Some(start_fuel) = self.last_lap_start_fuel {
-                let used = start_fuel - fuel_level;
-
-                if self.last_lap > 0
-                    && used > MIN_RECORDED_FUEL_USE
-                    && used < MAX_REALISTIC_LAP_FUEL
-                {
-                    self.lap_fuel_history.push(used);
-
-                    if self.lap_fuel_history.len() > MAX_LAP_FUEL_HISTORY {
-                        self.lap_fuel_history.remove(0);
-                    }
-                }
-            }
-
-            self.last_lap = current_lap;
-            self.last_lap_start_fuel = Some(fuel_level);
+        if sample.lap != self.last_lap {
+            self.finish_lap(sample.fuel_level);
+            self.begin_lap(sample.lap, sample.fuel_level);
         }
+    }
+
+    /// A rising tank means fuel went in. Counting it keeps the lap a stop was
+    /// taken on: without it the lap reads as negative use and is thrown away,
+    /// which costs the history exactly the laps a long stint depends on.
+    fn track_refuel(&mut self, fuel_level: f32) {
+        if let Some(prev) = self.prev_fuel_level {
+            let added = fuel_level - prev;
+
+            if added > MIN_REFUEL_STEP {
+                self.refuelled_this_lap += added;
+            }
+        }
+
+        self.prev_fuel_level = Some(fuel_level);
+    }
+
+    fn begin_lap(&mut self, lap: i32, fuel_level: f32) {
+        self.last_lap = lap;
+        self.last_lap_start_fuel = Some(fuel_level);
+        self.refuelled_this_lap = 0.0;
+        self.lap_left_track = false;
+        self.lap_under_caution = false;
+        self.lap_started_at = Some(Instant::now());
+    }
+
+    fn finish_lap(&mut self, fuel_level: f32) {
+        let Some(start_fuel) = self.last_lap_start_fuel else {
+            return;
+        };
+
+        let used = start_fuel + self.refuelled_this_lap - fuel_level;
+        let lap_secs = self.lap_started_at.map(|at| at.elapsed().as_secs_f64());
+        let rejected = self.rejection_reason(used, lap_secs);
+
+        // Every completed lap, kept or dropped, with the readings it was
+        // measured between — the only way to tell a wrong per-lap figure apart
+        // from a wrong average downstream.
+        debug!(
+            lap = self.last_lap,
+            start_fuel,
+            end_fuel = fuel_level,
+            refuelled = self.refuelled_this_lap,
+            used,
+            rejected = rejected.unwrap_or("no"),
+            "fuel lap"
+        );
+
+        if rejected.is_some() {
+            return;
+        }
+
+        self.lap_fuel_history.push(used);
+
+        if self.lap_fuel_history.len() > MAX_LAP_FUEL_HISTORY {
+            self.lap_fuel_history.remove(0);
+        }
+    }
+
+    /// Why a completed lap does not belong in the consumption history, if it
+    /// does not. Only laps driven flat out under green describe race pace;
+    /// everything else drags the average somewhere the strategy cannot follow.
+    fn rejection_reason(&self, used: f32, lap_secs: Option<f64>) -> Option<&'static str> {
+        if self.last_lap <= 0 {
+            return Some("out-lap");
+        }
+
+        if lap_secs.is_some_and(|secs| secs < MIN_LAP_SECS) {
+            return Some("too-short");
+        }
+
+        if used <= MIN_RECORDED_FUEL_USE || used >= MAX_REALISTIC_LAP_FUEL {
+            return Some("implausible");
+        }
+
+        if self.lap_left_track {
+            return Some("left-track");
+        }
+
+        if self.lap_under_caution {
+            return Some("caution");
+        }
+
+        if is_outlier(used, &self.lap_fuel_history) {
+            return Some("outlier");
+        }
+
+        None
     }
 
     /// Mean fuel use over the last `window` laps; `window == 0` averages the
@@ -267,11 +415,19 @@ impl Processor for FuelProcessor {
     }
 
     fn compute(&mut self, ctx: &ComputeContext) -> Option<ComputedOutput> {
-        let current_lap = ctx.lap_timing.lap.unwrap_or(-1);
-        let session_num_i32 = ctx.session_num.unwrap_or(-1);
+        let flags = &ctx.car_status.flags;
 
-        self.state
-            .update(current_lap, ctx.car_status.fuel_level, session_num_i32);
+        self.state.update(FuelSample {
+            lap: ctx.lap_timing.lap.unwrap_or(-1),
+            fuel_level: ctx.car_status.fuel_level,
+            session_num: ctx.session_num.unwrap_or(-1),
+            on_track: ctx.car_status.is_on_track.unwrap_or(true),
+            caution: flags.yellow
+                || flags.yellow_waving
+                || flags.caution
+                || flags.caution_waving
+                || flags.red,
+        });
 
         let frame = compute(
             ctx.car_status,
@@ -293,6 +449,8 @@ impl Processor for FuelProcessor {
 
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
     use super::*;
     use crate::model::player::{CarStatusFrame, LapTimingFrame};
 
@@ -506,34 +664,143 @@ mod tests {
         assert_eq!(windowed.laps_remaining, Some(10.0)); // 20.0 / 2.0
     }
 
+    fn green(lap: i32, fuel_level: f32) -> FuelSample {
+        FuelSample {
+            lap,
+            fuel_level,
+            session_num: 1,
+            on_track: true,
+            caution: false,
+        }
+    }
+
+    /// Feeds a sample as if a full-length lap had elapsed since the last one.
+    /// The state clock only exists to catch counter jumps no lap could have
+    /// produced, and a test runs far faster than any lap.
+    fn drive(state: &mut FuelState, sample: FuelSample) {
+        state.lap_started_at = state
+            .lap_started_at
+            .map(|at| at - Duration::from_secs_f64(MIN_LAP_SECS * 2.0));
+
+        state.update(sample);
+    }
+
     #[test]
     fn test_fuel_state_updates_ignoring_lap_zero() {
         let mut state = FuelState::default();
 
-        // Start on lap 0 with 50.0L of fuel
-        state.update(0, 50.0, 1);
+        drive(&mut state, green(0, 50.0));
         assert_eq!(state.last_lap, 0);
         assert_eq!(state.last_lap_start_fuel, Some(50.0));
         assert!(state.lap_fuel_history.is_empty());
 
-        // Still on lap 0, fuel level drops to 49.5L
-        state.update(0, 49.5, 1);
-        assert_eq!(state.last_lap, 0);
-        assert_eq!(state.last_lap_start_fuel, Some(50.0)); // Should not change start fuel on same lap
+        // Same lap: the opening reading stands.
+        drive(&mut state, green(0, 49.5));
+        assert_eq!(state.last_lap_start_fuel, Some(50.0));
         assert!(state.lap_fuel_history.is_empty());
 
-        // Transition to lap 1 with fuel level 48.0L.
-        // The lap that completed was lap 0 (used 2.0L). It should be ignored.
-        state.update(1, 48.0, 1);
+        // Lap 0 completed — the lap out of the garage tells nothing about pace.
+        drive(&mut state, green(1, 48.0));
         assert_eq!(state.last_lap, 1);
-        assert_eq!(state.last_lap_start_fuel, Some(48.0));
         assert!(state.lap_fuel_history.is_empty());
 
-        // Transition to lap 2 with fuel level 45.5L.
-        // The lap that completed was lap 1 (used 2.5L). It should be recorded.
-        state.update(2, 45.5, 1);
-        assert_eq!(state.last_lap, 2);
-        assert_eq!(state.last_lap_start_fuel, Some(45.5));
+        // Lap 1 completed on 2.5L, the first lap worth recording.
+        drive(&mut state, green(2, 45.5));
         assert_eq!(state.lap_fuel_history, vec![2.5]);
+    }
+
+    #[test]
+    fn test_refuelled_lap_is_still_recorded() {
+        let mut state = FuelState::default();
+
+        drive(&mut state, green(4, 20.0));
+
+        // Burns 2L, takes on 30L in the pits, then trickles to the line.
+        drive(&mut state, green(4, 18.0));
+        drive(&mut state, green(4, 48.0));
+        drive(&mut state, green(4, 47.5));
+
+        drive(&mut state, green(5, 47.5));
+
+        // 20 burned down to 47.5 having gained 30 — the stop is not fuel saved.
+        assert_eq!(state.lap_fuel_history, vec![2.5]);
+    }
+
+    #[test]
+    fn test_caution_lap_is_dropped() {
+        let mut state = FuelState::default();
+
+        drive(&mut state, green(4, 20.0));
+        drive(
+            &mut state,
+            FuelSample {
+                caution: true,
+                ..green(4, 19.0)
+            },
+        );
+        drive(&mut state, green(5, 18.5));
+
+        assert!(state.lap_fuel_history.is_empty());
+    }
+
+    #[test]
+    fn test_off_track_lap_is_dropped() {
+        let mut state = FuelState::default();
+
+        drive(&mut state, green(4, 20.0));
+        drive(
+            &mut state,
+            FuelSample {
+                on_track: false,
+                ..green(4, 19.0)
+            },
+        );
+        drive(&mut state, green(5, 17.5));
+
+        assert!(state.lap_fuel_history.is_empty());
+    }
+
+    #[test]
+    fn test_counter_jump_without_a_lap_is_dropped() {
+        let mut state = FuelState::default();
+
+        drive(&mut state, green(4, 20.0));
+        // No back-dating: the counter advanced with no time for a lap to pass.
+        state.update(green(5, 17.5));
+
+        assert!(state.lap_fuel_history.is_empty());
+    }
+
+    #[test]
+    fn test_outlier_lap_is_dropped_but_a_normal_one_is_kept() {
+        // Same session number the samples carry, or the first one would be
+        // read as a session change and wipe the seeded history.
+        let mut state = FuelState {
+            lap_fuel_history: vec![2.5, 2.5, 2.5],
+            tracked_session_num: 1,
+            ..Default::default()
+        };
+
+        drive(&mut state, green(4, 20.0));
+        drive(&mut state, green(5, 15.0)); // 5.0L — double the stint's pace
+        assert_eq!(state.lap_fuel_history, vec![2.5, 2.5, 2.5]);
+
+        drive(&mut state, green(6, 12.4)); // 2.6L — ordinary variation
+        assert_eq!(state.lap_fuel_history.len(), 4);
+        assert!((state.lap_fuel_history[3] - 2.6).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_outlier_needs_a_baseline_before_it_rejects_anything() {
+        assert!(!is_outlier(9.0, &[]));
+        assert!(!is_outlier(9.0, &[2.5, 2.5]));
+        assert!(is_outlier(9.0, &[2.5, 2.5, 2.5]));
+    }
+
+    #[test]
+    fn test_outlier_keeps_laps_near_the_mean_when_the_spread_collapses() {
+        // Identical laps give a zero interquartile range; without the mean
+        // tolerance the fence would be a point and reject every next lap.
+        assert!(!is_outlier(2.55, &[2.5, 2.5, 2.5, 2.5]));
     }
 }
