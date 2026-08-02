@@ -81,7 +81,11 @@ export const WidgetContainer = observer(
     const overflowVisible = widget?.overflowVisible ?? false;
     const transparentContainer = widget?.transparentContainer ?? false;
 
-    const widgetScale = width / designWidth;
+    const scaleFromHeight = widget?.scaleFromHeight ?? false;
+
+    const widgetScale = scaleFromHeight
+      ? height / designHeight
+      : width / designWidth;
     const fontScale = widget?.userSettings.fontScale ?? 1;
 
     const background =
@@ -180,14 +184,32 @@ export const WidgetContainer = observer(
             newX = Math.round(startX + startW - newW);
           }
 
-          if (widget?.lockAspectRatio) {
-            // Only e/w handles are offered for these widgets (see
+          if (widget?.scaleFromHeight) {
+            // e/w only stretches the widget (its scale comes from the
+            // unchanged height); corners rescale it keeping the current shape.
+            const isCorner = direction.length === 2;
+
+            if (isCorner && startH > 0) {
+              newH = Math.max(minH, Math.round(newW * (startH / startW)));
+
+              if (direction.includes('n')) {
+                newY = Math.round(startY + startH - newH);
+              }
+            }
+          } else if (widget?.lockAspectRatio) {
+            // Only e/w and corner handles are offered for these widgets (see
             // resizeDirections below) — height always tracks width so a
-            // circular badge sized off the height never distorts.
+            // circular badge sized off the height never distorts. Corners
+            // resize the widget proportionally, which is the only way to make
+            // these widgets taller.
             newH = Math.max(
               minH,
               Math.round(newW * (designHeight / designWidth))
             );
+
+            if (direction.includes('n')) {
+              newY = Math.round(startY + startH - newH);
+            }
           } else {
             if (direction.includes('s')) {
               newH = Math.max(minH, Math.round(startH + dy));
@@ -223,12 +245,14 @@ export const WidgetContainer = observer(
         designWidth,
         designHeight,
         widget?.lockAspectRatio,
+        widget?.scaleFromHeight,
       ]
     );
 
-    const resizeDirections: ResizeDirection[] =
-      autoHeight || widget?.lockAspectRatio
-        ? ['e', 'w']
+    const resizeDirections: ResizeDirection[] = autoHeight
+      ? ['e', 'w']
+      : widget?.lockAspectRatio || scaleFromHeight
+        ? ['e', 'w', 'ne', 'nw', 'se', 'sw']
         : ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
 
     const borderRadius = widgetFrameBorderRadius(

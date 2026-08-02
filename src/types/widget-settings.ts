@@ -361,6 +361,12 @@ export interface WidgetMeta {
   /** Resize handles keep designWidth:designHeight ratio locked (e.g. a widget
    * with a circular badge sized off the height). */
   lockAspectRatio?: boolean;
+  /** Widget scale (--wfs) follows the height instead of the width, and the
+   * e/w handles only stretch the widget without rescaling it — for widgets
+   * whose middle section (a chart) is meant to grow horizontally while the
+   * fixed-size parts around it stay put. Corner handles still scale the whole
+   * widget proportionally; there are no n/s handles. */
+  scaleFromHeight?: boolean;
   requiredCapabilities?: (keyof CapabilitiesPayload)[];
 }
 

@@ -427,10 +427,9 @@ const WIDGETS: WidgetConfig[] = [
     requiredCapabilities: ['inputs'],
     designWidth: INPUT_TRACE_DESIGN_WIDTH,
     designHeight: 120,
-    // Dragging width alone should scale the whole widget uniformly (bars,
-    // wheel, trace chart together) instead of stretching the box while the
-    // internals stay pinned to the old height.
-    lockAspectRatio: true,
+    // Dragging the side handles only widens the trace chart; the corners scale
+    // the whole widget (bars, wheel and chart) proportionally.
+    scaleFromHeight: true,
     userSettings: {
       enabled: false,
       x: 400,
