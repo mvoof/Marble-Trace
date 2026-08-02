@@ -70,6 +70,7 @@ impl Processor for RelativeProcessor {
             ctx.session,
             ctx.start_positions,
             false,
+            ctx.session_state,
             &self.state,
         );
 
@@ -140,6 +141,7 @@ mod tests {
             results_position_lap: None,
             results_position_time: None,
             is_retired: false,
+            is_finished: false,
             pit_state: PitState::None,
         }
     }

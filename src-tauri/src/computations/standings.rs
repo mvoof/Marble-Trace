@@ -7,14 +7,16 @@ use serde::{Deserialize, Serialize};
 use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use crate::model::cars::CarIdxFrame;
-use crate::model::enums::{PitState, TrackSurface};
-use crate::model::session::{QualifyResultEntry, ResultPosition, SessionSnapshot};
+use crate::model::enums::{PitState, SessionState, TrackSurface};
+use crate::model::session::{QualifyResultEntry, ResultPosition, SessionSnapshot, SessionType};
 use crate::utils::lock_or_recover;
 
 const NO_CLASS_LABEL: &str = "No Class";
 const FALLBACK_SORT_POSITION: i32 = 999;
 const IR_CHANGE_SCALE_FACTOR: f64 = 200.0;
 const IR_CHANGE_OFFSET: f64 = 100.0;
+/// `irsdk_checkered` in the per-car `CarIdxSessionFlags` bit field.
+const CHECKERED_FLAG_BIT: u32 = 0x0000_0001;
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -63,12 +65,18 @@ pub struct DriverEntry {
     /// The sim marked the car as retired or disqualified (`ReasonOutId` != 0).
     /// A car merely sitting in the garage is *not* retired.
     pub is_retired: bool,
+    /// The car has taken the checkered flag in the current race. Latched: the sim
+    /// only pulses the per-car checkered bit as the car crosses the line.
+    pub is_finished: bool,
     pub pit_state: PitState,
 }
 
 #[derive(Default)]
 pub struct StandingsState {
     pub pit_states: HashMap<i32, PitState>,
+    pub finished_cars: HashSet<i32>,
+    /// Session the latched finishers belong to — a new session clears them.
+    pub finished_session_num: Option<i32>,
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
@@ -84,6 +92,7 @@ pub fn compute(
     session: &SessionSnapshot,
     start_positions: &HashMap<i32, (i32, i32)>,
     compute_ir_delta: bool,
+    session_state: Option<SessionState>,
     state: &Mutex<StandingsState>,
 ) -> DriverEntriesFrame {
     let player_car_idx = session.player_car_idx;
@@ -126,11 +135,17 @@ pub fn compute(
     let mut locked_state = lock_or_recover(state);
 
     let current_num = session.current_session_num as usize;
-    let results = session
-        .sessions
-        .get(current_num)
+    let current_session = session.sessions.get(current_num);
+    let results = current_session
         .map(|s| s.results_positions.as_slice())
         .unwrap_or(&[]);
+
+    let is_race = current_session.is_some_and(|s| s.session_type == SessionType::Race);
+
+    if locked_state.finished_session_num != Some(session.current_session_num) {
+        locked_state.finished_session_num = Some(session.current_session_num);
+        locked_state.finished_cars.clear();
+    }
 
     let mut results_positions_map: HashMap<i32, &ResultPosition> = HashMap::new();
 
@@ -304,6 +319,7 @@ pub fn compute(
                 is_retired: result
                     .and_then(|position| position.reason_out_id)
                     .is_some_and(|reason| reason != 0),
+                is_finished: false,
                 pit_state: PitState::None,
             }
         })
@@ -339,6 +355,27 @@ pub fn compute(
         }
 
         entry.relative_lap_dist = diff;
+    }
+
+    // Finish latch — the per-car checkered bit only pulses while the car crosses the
+    // line, so it is remembered for the rest of the session. Cars that never get the
+    // bit (rejoined late, sim quirks) are classified once the race itself is over.
+    let race_is_over = matches!(
+        session_state,
+        Some(SessionState::Checkered) | Some(SessionState::CoolDown)
+    );
+
+    if is_race {
+        for entry in &mut entries {
+            let took_checkered = entry.raw_flags & CHECKERED_FLAG_BIT != 0;
+            let classified = race_is_over && !entry.is_retired && entry.lap > 0;
+
+            if took_checkered || classified {
+                locked_state.finished_cars.insert(entry.car_idx);
+            }
+
+            entry.is_finished = locked_state.finished_cars.contains(&entry.car_idx);
+        }
     }
 
     // Pit state machine — per-car, persisted across ticks in locked_state.pit_states
@@ -619,6 +656,7 @@ impl Processor for StandingsProcessor {
             ctx.session,
             ctx.start_positions,
             true,
+            ctx.session_state,
             &self.state,
         );
 
@@ -738,6 +776,144 @@ mod tests {
         }
     }
 
+    fn race_session() -> SessionSnapshot {
+        SessionSnapshot {
+            player_car_idx: 0,
+            current_session_num: 0,
+            cars: vec![CarEntry {
+                car_idx: 0,
+                user_name: "Driver".to_string(),
+                ..Default::default()
+            }],
+            sessions: vec![SessionEntry {
+                session_type: SessionType::Race,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    fn racing_car_idx_frame(flags: u32) -> CarIdxFrame {
+        let mut car_idx = garaged_car_idx_frame();
+
+        car_idx.car_idx_lap_dist_pct = vec![0.3];
+        car_idx.car_idx_position = vec![1];
+        car_idx.car_idx_lap = vec![12];
+        car_idx.car_idx_track_surface = vec![TrackSurface::OnTrack];
+        car_idx.car_idx_session_flags = vec![flags];
+
+        car_idx
+    }
+
+    #[test]
+    fn test_checkered_flag_latches_after_the_bit_clears() {
+        let session = race_session();
+        let state = Mutex::new(StandingsState::default());
+
+        let frame = compute(
+            &racing_car_idx_frame(CHECKERED_FLAG_BIT),
+            &session,
+            &HashMap::new(),
+            false,
+            None,
+            &state,
+        );
+
+        assert!(frame.entries[0].is_finished);
+
+        // Next tick the sim has already dropped the bit — the latch must hold.
+        let frame = compute(
+            &racing_car_idx_frame(0),
+            &session,
+            &HashMap::new(),
+            false,
+            None,
+            &state,
+        );
+
+        assert!(frame.entries[0].is_finished);
+    }
+
+    #[test]
+    fn test_cool_down_classifies_cars_that_never_got_the_bit() {
+        let session = race_session();
+        let state = Mutex::new(StandingsState::default());
+
+        let frame = compute(
+            &racing_car_idx_frame(0),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        assert!(!frame.entries[0].is_finished);
+
+        let frame = compute(
+            &racing_car_idx_frame(0),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::CoolDown),
+            &state,
+        );
+
+        assert!(frame.entries[0].is_finished);
+    }
+
+    #[test]
+    fn test_finish_latch_does_not_apply_outside_a_race() {
+        let mut session = race_session();
+        session.sessions[0].session_type = SessionType::Practice;
+
+        let state = Mutex::new(StandingsState::default());
+
+        let frame = compute(
+            &racing_car_idx_frame(CHECKERED_FLAG_BIT),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::CoolDown),
+            &state,
+        );
+
+        assert!(!frame.entries[0].is_finished);
+    }
+
+    #[test]
+    fn test_finish_latch_clears_on_the_next_session() {
+        let session = race_session();
+        let state = Mutex::new(StandingsState::default());
+
+        compute(
+            &racing_car_idx_frame(CHECKERED_FLAG_BIT),
+            &session,
+            &HashMap::new(),
+            false,
+            None,
+            &state,
+        );
+
+        let mut next_session = race_session();
+        next_session.current_session_num = 1;
+        next_session.sessions.push(SessionEntry {
+            session_type: SessionType::Race,
+            ..Default::default()
+        });
+
+        let frame = compute(
+            &racing_car_idx_frame(0),
+            &next_session,
+            &HashMap::new(),
+            false,
+            None,
+            &state,
+        );
+
+        assert!(!frame.entries[0].is_finished);
+    }
+
     #[test]
     fn test_garaged_car_falls_back_to_results_positions() {
         let session = session_with_result(ResultPosition {
@@ -758,6 +934,7 @@ mod tests {
             &session,
             &HashMap::new(),
             false,
+            None,
             &state,
         );
 
@@ -795,7 +972,7 @@ mod tests {
         car_idx.car_idx_track_surface = vec![TrackSurface::OnTrack];
 
         let state = Mutex::new(StandingsState::default());
-        let frame = compute(&car_idx, &session, &HashMap::new(), false, &state);
+        let frame = compute(&car_idx, &session, &HashMap::new(), false, None, &state);
 
         let entry = &frame.entries[0];
 
@@ -826,6 +1003,7 @@ mod tests {
             &session,
             &HashMap::new(),
             false,
+            None,
             &state,
         );
 
@@ -1010,6 +1188,7 @@ mod tests {
             results_position_lap: None,
             results_position_time: None,
             is_retired: false,
+            is_finished: false,
             pit_state: PitState::None,
         }
     }
