@@ -39,7 +39,7 @@
 .amountLabel {
   font-family: $font-mono;
   font-size: wfs(9);
-  color: $widget-text-muted;
+  color: $widget-text-primary;
   letter-spacing: 0.09em;
 }
 
@@ -64,7 +64,7 @@
   border-top: 1px solid rgba(255, 255, 255, $opacity-faint);
   font-family: $font-mono;
   font-size: fs(xxxs);
-  color: $widget-text-muted;
+  color: $widget-text-secondary;
 }
 
 .footerDot {
