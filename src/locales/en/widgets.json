@@ -335,6 +335,8 @@
       "abbreviateNamesDesc": "Shorten names to save column space.",
       "driverFlags": "Driver Flags",
       "driverFlagsDesc": "Display active warning flags (e.g. Mechanical Damage/Meatball) next to driver name.",
+      "hideRetiredDrivers": "Hide Retired Drivers",
+      "hideRetiredDriversDesc": "Remove rows for cars that left the session for good. Your own row always stays.",
       "headerInfo": "Header Info",
       "columnHeaders": "Column Headers",
       "columnHeadersDesc": "Show labels above each data column.",

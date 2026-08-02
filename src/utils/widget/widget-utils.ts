@@ -9,6 +9,25 @@ export const TRACK_SURFACE_IN_PIT_STALL: TrackSurfaceType =
 export const TRACK_SURFACE_ON_TRACK: TrackSurfaceType = TrackSurface.OnTrack;
 export const NEAR_DQ_INCIDENT_THRESHOLD = 15;
 
+/** Incidents left before disqualification at which the counter starts warning. */
+const NEAR_DQ_INCIDENT_MARGIN = 2;
+
+/**
+ * Whether the incident counter should warn. With a limit reported by the sim the
+ * warning tracks it; without one it falls back to the threshold of a default
+ * 17x session, which is what most official series run.
+ */
+export const isNearIncidentLimit = (
+  incidents: number,
+  incidentLimit: number | null
+): boolean => {
+  if (incidentLimit === null) {
+    return incidents >= NEAR_DQ_INCIDENT_THRESHOLD;
+  }
+
+  return incidents >= incidentLimit - NEAR_DQ_INCIDENT_MARGIN;
+};
+
 // ─── Formatters ───────────────────────────────────────────────────────────
 
 export const formatIRating = (ir: number): string => {

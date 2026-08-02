@@ -60,6 +60,9 @@ pub struct DriverEntry {
     pub raw_flags: u32,
     pub results_position_lap: Option<i32>,
     pub results_position_time: Option<f32>,
+    /// The sim marked the car as retired or disqualified (`ReasonOutId` != 0).
+    /// A car merely sitting in the garage is *not* retired.
+    pub is_retired: bool,
     pub pit_state: PitState,
 }
 
@@ -129,13 +132,10 @@ pub fn compute(
         .map(|s| s.results_positions.as_slice())
         .unwrap_or(&[]);
 
-    let mut results_positions_map = HashMap::new();
+    let mut results_positions_map: HashMap<i32, &ResultPosition> = HashMap::new();
 
     for result_position in results {
-        results_positions_map.insert(
-            result_position.car_idx,
-            (result_position.lap, result_position.time),
-        );
+        results_positions_map.insert(result_position.car_idx, result_position);
     }
 
     let mut entries: Vec<DriverEntry> = deduped_drivers
@@ -167,9 +167,9 @@ pub fn compute(
         .map(|driver| {
             let idx = driver.car_idx as usize;
 
-            let (res_lap, res_time) = results_positions_map
-                .get(&driver.car_idx)
-                .copied()
+            let result = results_positions_map.get(&driver.car_idx).copied();
+            let (res_lap, res_time) = result
+                .map(|position| (position.lap, position.time))
                 .unwrap_or((None, None));
 
             let tire_compound_idx = car_idx
@@ -218,32 +218,56 @@ pub fn compute(
                     .get(idx)
                     .copied()
                     .filter(|&pos| pos > 0)
+                    .or_else(|| {
+                        result
+                            .map(|position| position.position)
+                            .filter(|&pos| pos > 0)
+                    })
                     .unwrap_or(start_overall),
                 class_position: car_idx
                     .car_idx_class_position
                     .get(idx)
                     .copied()
                     .filter(|&pos| pos > 0)
+                    .or_else(|| {
+                        // `ResultsPositions` reports class position 0-indexed.
+                        result
+                            .and_then(|position| position.class_position)
+                            .map(|pos| pos + 1)
+                    })
                     .unwrap_or(start_class),
                 live_position: 0,
                 live_class_position: 0,
                 start_pos_overall: start_overall,
                 start_pos_class: start_class,
-                lap: car_idx.car_idx_lap.get(idx).copied().unwrap_or(0),
+                lap: car_idx
+                    .car_idx_lap
+                    .get(idx)
+                    .copied()
+                    .filter(|&lap| lap > 0)
+                    .or_else(|| result.and_then(|position| position.laps_complete))
+                    .unwrap_or(0),
                 lap_dist_pct: car_idx
                     .car_idx_lap_dist_pct
                     .get(idx)
                     .copied()
                     .unwrap_or(0.0),
+                // The sim zeroes the live CarIdx lap times once a car leaves the world
+                // (garage after a session, tow, disconnect). `ResultsPositions` keeps
+                // the official times, so they stand in whenever the live value is gone.
                 last_lap_time: car_idx
                     .car_idx_last_lap_time
                     .get(idx)
                     .copied()
+                    .filter(|time| *time > 0.0)
+                    .or_else(|| result.and_then(|position| position.last_time))
                     .unwrap_or(-1.0),
                 best_lap_time: car_idx
                     .car_idx_best_lap_time
                     .get(idx)
                     .copied()
+                    .filter(|time| *time > 0.0)
+                    .or_else(|| result.and_then(|position| position.fastest_time))
                     .unwrap_or(-1.0),
                 f2_time: car_idx.car_idx_f2_time.get(idx).copied().unwrap_or(0.0),
                 est_time: car_idx.car_idx_est_time.get(idx).copied().unwrap_or(0.0),
@@ -277,6 +301,9 @@ pub fn compute(
                 raw_flags: car_idx.car_idx_session_flags.get(idx).copied().unwrap_or(0),
                 results_position_lap: res_lap,
                 results_position_time: res_time,
+                is_retired: result
+                    .and_then(|position| position.reason_out_id)
+                    .is_some_and(|reason| reason != 0),
                 pit_state: PitState::None,
             }
         })
@@ -673,7 +700,137 @@ fn next_pit_state(prev: PitState, on_pit_road: bool, track_surface: TrackSurface
 mod tests {
     use super::*;
     use crate::model::enums::{PitState, TrackSurface};
-    use crate::model::session::QualifyResultEntry;
+    use crate::model::session::{CarEntry, QualifyResultEntry, SessionEntry};
+
+    fn garaged_car_idx_frame() -> CarIdxFrame {
+        // What the sim reports for a car that left the world: everything cleared.
+        CarIdxFrame {
+            car_idx_lap_dist_pct: vec![-1.0],
+            car_idx_on_pit_road: vec![false],
+            car_idx_position: vec![0],
+            car_idx_class_position: vec![0],
+            car_idx_lap: vec![0],
+            car_idx_last_lap_time: vec![-1.0],
+            car_idx_best_lap_time: vec![-1.0],
+            car_idx_f2_time: vec![0.0],
+            car_idx_est_time: vec![0.0],
+            car_idx_track_surface: vec![TrackSurface::NotInWorld],
+            car_idx_tire_compound: vec![-1],
+            car_idx_session_flags: vec![0],
+            car_left_right: None,
+        }
+    }
+
+    fn session_with_result(result: ResultPosition) -> SessionSnapshot {
+        SessionSnapshot {
+            player_car_idx: 0,
+            current_session_num: 0,
+            cars: vec![CarEntry {
+                car_idx: 0,
+                user_name: "Driver".to_string(),
+                ..Default::default()
+            }],
+            sessions: vec![SessionEntry {
+                results_positions: vec![result],
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_garaged_car_falls_back_to_results_positions() {
+        let session = session_with_result(ResultPosition {
+            car_idx: 0,
+            position: 4,
+            class_position: Some(1),
+            lap: Some(0),
+            time: Some(12.5),
+            fastest_time: Some(91.2),
+            last_time: Some(92.4),
+            laps_complete: Some(17),
+            reason_out_id: Some(0),
+        });
+
+        let state = Mutex::new(StandingsState::default());
+        let frame = compute(
+            &garaged_car_idx_frame(),
+            &session,
+            &HashMap::new(),
+            false,
+            &state,
+        );
+
+        let entry = &frame.entries[0];
+
+        assert_eq!(entry.position, 4);
+        assert_eq!(entry.class_position, 2);
+        assert_eq!(entry.lap, 17);
+        assert_eq!(entry.best_lap_time, 91.2);
+        assert_eq!(entry.last_lap_time, 92.4);
+        assert!(!entry.is_retired);
+    }
+
+    #[test]
+    fn test_live_values_win_over_results_positions() {
+        let session = session_with_result(ResultPosition {
+            car_idx: 0,
+            position: 4,
+            class_position: Some(1),
+            lap: Some(0),
+            time: Some(12.5),
+            fastest_time: Some(91.2),
+            last_time: Some(92.4),
+            laps_complete: Some(17),
+            reason_out_id: Some(0),
+        });
+
+        let mut car_idx = garaged_car_idx_frame();
+        car_idx.car_idx_lap_dist_pct = vec![0.3];
+        car_idx.car_idx_position = vec![2];
+        car_idx.car_idx_class_position = vec![1];
+        car_idx.car_idx_lap = vec![19];
+        car_idx.car_idx_best_lap_time = vec![90.0];
+        car_idx.car_idx_last_lap_time = vec![90.5];
+        car_idx.car_idx_track_surface = vec![TrackSurface::OnTrack];
+
+        let state = Mutex::new(StandingsState::default());
+        let frame = compute(&car_idx, &session, &HashMap::new(), false, &state);
+
+        let entry = &frame.entries[0];
+
+        assert_eq!(entry.position, 2);
+        assert_eq!(entry.class_position, 1);
+        assert_eq!(entry.lap, 19);
+        assert_eq!(entry.best_lap_time, 90.0);
+        assert_eq!(entry.last_lap_time, 90.5);
+    }
+
+    #[test]
+    fn test_non_zero_reason_out_marks_entry_retired() {
+        let session = session_with_result(ResultPosition {
+            car_idx: 0,
+            position: 12,
+            class_position: Some(5),
+            lap: None,
+            time: None,
+            fastest_time: Some(95.0),
+            last_time: Some(96.0),
+            laps_complete: Some(3),
+            reason_out_id: Some(2),
+        });
+
+        let state = Mutex::new(StandingsState::default());
+        let frame = compute(
+            &garaged_car_idx_frame(),
+            &session,
+            &HashMap::new(),
+            false,
+            &state,
+        );
+
+        assert!(frame.entries[0].is_retired);
+    }
 
     #[test]
     fn test_parse_start_positions_from_qualify_converts_to_1indexed() {
@@ -721,6 +878,10 @@ mod tests {
             class_position: Some(1),
             lap: None,
             time: None,
+            fastest_time: None,
+            last_time: None,
+            laps_complete: None,
+            reason_out_id: None,
         }];
 
         let qualify = vec![QualifyResultEntry {
@@ -848,6 +1009,7 @@ mod tests {
             raw_flags: 0,
             results_position_lap: None,
             results_position_time: None,
+            is_retired: false,
             pit_state: PitState::None,
         }
     }

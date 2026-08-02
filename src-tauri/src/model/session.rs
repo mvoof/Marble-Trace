@@ -74,6 +74,9 @@ pub struct SessionSnapshot {
     pub track_relative_humidity: String,
     /// Simulated session date from WeekendOptions (e.g. "2026-06-11").
     pub weekend_date: String,
+    /// Incident count that disqualifies a driver. `None` when the sim reports
+    /// "unlimited" — the usual value in practice and hosted sessions.
+    pub incident_limit: Option<i32>,
     pub current_session_num: i32,
     pub sessions: Vec<SessionEntry>,
     pub player_car_idx: i32,
@@ -121,6 +124,13 @@ pub struct ResultPosition {
     pub class_position: Option<i32>,
     pub lap: Option<i32>,
     pub time: Option<f32>,
+    /// Best lap of the session, kept by the sim after the car leaves the world.
+    pub fastest_time: Option<f32>,
+    /// Last completed lap, kept by the sim after the car leaves the world.
+    pub last_time: Option<f32>,
+    pub laps_complete: Option<i32>,
+    /// 0 while the car is still running; non-zero once the sim marks it retired/DQ'd.
+    pub reason_out_id: Option<i32>,
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]

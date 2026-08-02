@@ -139,6 +139,7 @@ mod tests {
             raw_flags: 0,
             results_position_lap: None,
             results_position_time: None,
+            is_retired: false,
             pit_state: PitState::None,
         }
     }

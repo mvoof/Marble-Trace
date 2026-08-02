@@ -1,10 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { Trophy, Users, TriangleAlert } from 'lucide-react';
 
-import {
-  formatIRating,
-  NEAR_DQ_INCIDENT_THRESHOLD,
-} from '@utils/widget/widget-utils';
+import { formatIRating, isNearIncidentLimit } from '@utils/widget/widget-utils';
 import { resolveSessionLaps } from '@utils/formatters/telemetry-format';
 import { computeClassSof } from '@utils/widget/standings-utils';
 import {
@@ -48,6 +45,10 @@ export const SessionHeader = observer(() => {
 
   const playerIncidents =
     driverEntries.find((entry) => entry.isPlayer)?.incidents ?? 0;
+
+  // Null in practice and most hosted sessions, where incidents are uncapped.
+  const incidentLimit = sessionInfo?.incidentLimit ?? null;
+  const isNearLimit = isNearIncidentLimit(playerIncidents, incidentLimit);
 
   const sessions = sessionInfoData?.sessions;
   const currentSession = sessions?.[sessionInfoData?.currentSessionNum ?? 0];
@@ -120,31 +121,23 @@ export const SessionHeader = observer(() => {
         {settings.showIncidentsBadge && (
           <span
             className={`${styles.statPill} ${
-              playerIncidents >= NEAR_DQ_INCIDENT_THRESHOLD
-                ? styles.pulseWarning
-                : ''
+              isNearLimit ? styles.pulseWarning : ''
             }`}
           >
             <TriangleAlert
               size={11}
               color="currentColor"
-              className={
-                playerIncidents >= NEAR_DQ_INCIDENT_THRESHOLD
-                  ? styles.iconDanger
-                  : styles.iconWarning
-              }
+              className={isNearLimit ? styles.iconDanger : styles.iconWarning}
             />
 
             <span className={styles.statLabel}>INC</span>
 
             <span
-              className={
-                playerIncidents >= NEAR_DQ_INCIDENT_THRESHOLD
-                  ? styles.valueDanger
-                  : styles.statValue
-              }
+              className={isNearLimit ? styles.valueDanger : styles.statValue}
             >
-              {playerIncidents}x
+              {incidentLimit === null
+                ? `${playerIncidents}x`
+                : `${playerIncidents}/${incidentLimit}x`}
             </span>
           </span>
         )}

@@ -573,6 +573,11 @@ export type DriverEntry = {
   rawFlags: number;
   resultsPositionLap: number | null;
   resultsPositionTime: number | null;
+  /**
+   * The sim marked the car as retired or disqualified (`ReasonOutId` != 0).
+   * A car merely sitting in the garage is *not* retired.
+   */
+  isRetired: boolean;
   pitState: PitState;
 };
 
@@ -933,6 +938,19 @@ export type ResultPosition = {
   classPosition: number | null;
   lap: number | null;
   time: number | null;
+  /**
+   * Best lap of the session, kept by the sim after the car leaves the world.
+   */
+  fastestTime: number | null;
+  /**
+   * Last completed lap, kept by the sim after the car leaves the world.
+   */
+  lastTime: number | null;
+  lapsComplete: number | null;
+  /**
+   * 0 while the car is still running; non-zero once the sim marks it retired/DQ'd.
+   */
+  reasonOutId: number | null;
 };
 
 export type SectorEntry = { sectorNum: number; sectorStartPct: number };
@@ -1026,6 +1044,11 @@ export type SessionSnapshot = {
    * Simulated session date from WeekendOptions (e.g. "2026-06-11").
    */
   weekendDate: string;
+  /**
+   * Incident count that disqualifies a driver. `None` when the sim reports
+   * "unlimited" — the usual value in practice and hosted sessions.
+   */
+  incidentLimit: number | null;
   currentSessionNum: number;
   sessions: SessionEntry[];
   playerCarIdx: number;
