@@ -50,6 +50,8 @@ export const HUMIDITY_COLOR = '#3b82f6';
 
 const TRACK_TEMP_MIN_C = 10;
 const TRACK_TEMP_MAX_C = 60;
+const AIR_TEMP_MIN_C = 0;
+const AIR_TEMP_MAX_C = 40;
 const HUMIDITY_MAX_PERCENT = 100;
 const WIND_MAX_MPS = 15;
 const WETNESS_MAX_LEVEL = 7;
@@ -73,7 +75,7 @@ export const trackTempFraction = (celsius: number | null): number =>
   toFraction(celsius, TRACK_TEMP_MIN_C, TRACK_TEMP_MAX_C);
 
 export const airTempFraction = (celsius: number | null): number =>
-  toFraction(celsius, TRACK_TEMP_MIN_C, TRACK_TEMP_MAX_C);
+  toFraction(celsius, AIR_TEMP_MIN_C, AIR_TEMP_MAX_C);
 
 export const humidityFraction = (percent: number | null): number =>
   toFraction(percent, 0, HUMIDITY_MAX_PERCENT);
