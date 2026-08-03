@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 
 import type { ChatMessage } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
@@ -20,6 +21,7 @@ const BADGE_CLASS: Record<string, string> = {
 
 export const ChatMessageRow = observer(({ message }: ChatMessageRowProps) => {
   const widgetSettings = useWidgetSettingsStore();
+  const { t } = useTranslation('widgets');
   const settings =
     widgetSettings.getSettings<StreamChatWidgetSettings>('stream-chat');
 
@@ -93,8 +95,16 @@ export const ChatMessageRow = observer(({ message }: ChatMessageRowProps) => {
                 {message.authorName}
               </span>
 
+              {/* Super Chat arrives pre-formatted with its currency; a Twitch
+                  cheer is a bare count, so the unit is translated here. */}
               {highlight?.amount && (
                 <span className={styles.amount}>{highlight.amount}</span>
+              )}
+
+              {highlight?.bits != null && (
+                <span className={styles.amount}>
+                  {t('streamChat.bits', { count: highlight.bits })}
+                </span>
               )}
             </span>
 

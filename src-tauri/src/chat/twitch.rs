@@ -21,7 +21,7 @@ use super::{
 };
 use crate::model::chat::{
     ChatBadge, ChatConnectionStatus, ChatDeletion, ChatFragment, ChatHighlight, ChatHighlightKind,
-    ChatMessage, ChatPlatform, ChatPresence,
+    ChatMessage, ChatPlatform, ChatPresence, ChatRoomMode,
 };
 
 const IRC_WS_URL: &str = "wss://irc-ws.chat.twitch.tv:443";
@@ -217,24 +217,24 @@ fn build_fragments(text: &str, emotes_tag: &str) -> Vec<ChatFragment> {
     fragments
 }
 
-fn room_mode_from_tags(tags: &HashMap<String, String>) -> Option<String> {
+fn room_mode_from_tags(tags: &HashMap<String, String>) -> Option<ChatRoomMode> {
     if tags.get("subs-only").map(String::as_str) == Some("1") {
-        return Some("subs only".to_string());
+        return Some(ChatRoomMode::SubsOnly);
     }
 
     if tags.get("emote-only").map(String::as_str) == Some("1") {
-        return Some("emote only".to_string());
+        return Some(ChatRoomMode::EmoteOnly);
     }
 
-    if let Some(seconds) = tags.get("slow") {
-        if seconds != "0" {
-            return Some(format!("slow {seconds}s"));
+    if let Some(seconds) = tags.get("slow").and_then(|slow| slow.parse::<u32>().ok()) {
+        if seconds != 0 {
+            return Some(ChatRoomMode::Slow { seconds });
         }
     }
 
     if let Some(minutes) = tags.get("followers-only") {
         if minutes != "-1" {
-            return Some("followers only".to_string());
+            return Some(ChatRoomMode::FollowersOnly);
         }
     }
 
@@ -258,11 +258,27 @@ fn message_from_privmsg(line: &IrcLine, service: &ChatServiceState) -> Option<Ch
         .cloned()
         .unwrap_or_else(|| DEFAULT_AUTHOR_COLOR.to_string());
 
-    let highlight = if line.tags.get("first-msg").map(String::as_str) == Some("1") {
+    // A cheer outranks the first-message mark: the money is the reason the row
+    // stands out, and only one highlight fits on a row.
+    let bits = line
+        .tags
+        .get("bits")
+        .and_then(|value| value.parse::<u32>().ok())
+        .filter(|value| *value > 0);
+
+    let highlight = if let Some(bits) = bits {
+        Some(ChatHighlight {
+            kind: ChatHighlightKind::Paid,
+            text: String::new(),
+            amount: None,
+            bits: Some(bits),
+        })
+    } else if line.tags.get("first-msg").map(String::as_str) == Some("1") {
         Some(ChatHighlight {
             kind: ChatHighlightKind::FirstMessage,
             text: String::new(),
             amount: None,
+            bits: None,
         })
     } else {
         None
@@ -330,6 +346,7 @@ fn message_from_usernotice(line: &IrcLine) -> Option<ChatMessage> {
             kind,
             text: system_message,
             amount: None,
+            bits: None,
         }),
     })
 }

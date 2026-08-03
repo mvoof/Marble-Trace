@@ -16,7 +16,7 @@ export const StreamChatWidget = observer(() => {
 
   return (
     <WidgetPanel className={styles.chat} gap={0}>
-      <ChatBanner />
+      {settings.showBanner && <ChatBanner />}
       <ChatMessageList />
       {settings.showFooter && <ChatFooter />}
     </WidgetPanel>

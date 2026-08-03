@@ -59,6 +59,42 @@ describe('StreamChatWidgetStore', () => {
     expect(rootStore.streamChatWidget.visibleMessages[0].id).toBe('2');
   });
 
+  it('hides only subs and raids when events are off', () => {
+    setSettings({ showEvents: false });
+    seed([
+      {
+        ...makeMessage('1', 'viewer', ''),
+        highlight: { kind: 'raid', text: 'raid', amount: null, bits: null },
+      },
+      {
+        ...makeMessage('2', 'viewer', ''),
+        highlight: {
+          kind: 'subscription',
+          text: 'sub',
+          amount: null,
+          bits: null,
+        },
+      },
+      {
+        ...makeMessage('3', 'viewer', 'cheer1000'),
+        highlight: { kind: 'paid', text: '', amount: null, bits: 1000 },
+      },
+      {
+        ...makeMessage('4', 'viewer', 'hello'),
+        highlight: {
+          kind: 'firstMessage',
+          text: '',
+          amount: null,
+          bits: null,
+        },
+      },
+    ]);
+
+    expect(
+      rootStore.streamChatWidget.visibleMessages.map((message) => message.id)
+    ).toEqual(['3', '4']);
+  });
+
   it('keeps commands when the filter is off', () => {
     runInAction(() => rootStore.appSettings.setStreamChatHideCommands(false));
     seed([makeMessage('1', 'viewer', '!drops')]);

@@ -443,7 +443,9 @@
       "showBadges": "Badges",
       "showBadgesDesc": "Moderator, subscriber and VIP plates.",
       "showEvents": "Subs and raids",
-      "showEventsDesc": "Subscriptions, raids and Super Chat rows.",
+      "showEventsDesc": "Subscription and raid rows. Paid messages — Super Chat and cheers — always stay visible.",
+      "showBanner": "Header",
+      "showBannerDesc": "Top line with the connection state and room restrictions such as followers only.",
       "showFooter": "Footer",
       "showFooterDesc": "Viewer counts and connection state.",
       "showActivity": "Chat activity",
@@ -458,6 +460,21 @@
     "total": "Total",
     "connecting": "Connecting",
     "reconnecting": "Reconnecting · {{attempt}}",
-    "connectionFailed": "Connection failed"
+    "connectionFailed": "Connection failed",
+    "bits_one": "{{count}} bit",
+    "bits_other": "{{count}} bits",
+    "roomMode": {
+      "subsOnly": "Subscribers only",
+      "emoteOnly": "Emotes only",
+      "followersOnly": "Followers only",
+      "slow": "Slow mode · {{seconds}}s"
+    },
+    "status": {
+      "live": "Live",
+      "connecting": "Connecting",
+      "reconnecting": "Reconnecting",
+      "offline": "Offline",
+      "error": "Connection failed"
+    }
   }
 }

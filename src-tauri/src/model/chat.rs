@@ -70,8 +70,11 @@ pub struct ChatHighlight {
     pub kind: ChatHighlightKind,
     /// Pre-rendered line for event rows ("kartoshka resubscribed · 8 months").
     pub text: String,
-    /// Super Chat / bits amount, already formatted with its currency.
+    /// Super Chat amount, already formatted with its currency by the platform.
     pub amount: Option<String>,
+    /// Twitch cheer size. A raw count rather than a formatted string: unlike a
+    /// Super Chat sum, "bits" is a word the frontend has to translate.
+    pub bits: Option<u32>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -103,6 +106,21 @@ pub struct ChatDeletion {
     pub author_name: Option<String>,
 }
 
+/// Active room restriction. Kept structured rather than pre-rendered: the
+/// banner text is translated in the frontend, next to every other UI string.
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[serde(tag = "kind", rename_all = "camelCase")]
+pub enum ChatRoomMode {
+    SubsOnly,
+    EmoteOnly,
+    FollowersOnly,
+    #[serde(rename_all = "camelCase")]
+    Slow {
+        seconds: u32,
+    },
+}
+
 /// Per-platform presence, emitted on its own slow cadence rather than riding
 /// along with messages: viewer counts refresh every 30-60 s, messages do not.
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -116,8 +134,7 @@ pub struct ChatPresence {
     /// Seconds since the stream went live, when known. u32 rather than u64
     /// because specta forbids BigInt-width integers in the TS contract.
     pub uptime_seconds: Option<u32>,
-    /// Active room restriction ("sub only", "followers only", "slow 30s").
-    pub room_mode: Option<String>,
+    pub room_mode: Option<ChatRoomMode>,
     /// Reconnect attempt number, shown in the reconnect banner.
     pub retry: Option<u32>,
     /// Human-readable failure reason for the error banner.

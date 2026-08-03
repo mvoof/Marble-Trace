@@ -789,6 +789,7 @@ const WIDGETS: WidgetConfig[] = [
       // Text plates by default: badge artwork is colourful and busy, and this
       // widget sits over a race track where a glanceable MOD reads faster.
       badgeImages: false,
+      showBanner: true,
       showFooter: true,
       showActivity: true,
       showEvents: true,

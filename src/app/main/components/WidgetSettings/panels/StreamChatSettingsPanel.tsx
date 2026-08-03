@@ -63,6 +63,12 @@ export const StreamChatSettingsPanel = observer(() => {
       key: 'showEvents',
     },
     {
+      titleKey: 'settingsPanels.streamChat.showBanner',
+      descKey: 'settingsPanels.streamChat.showBannerDesc',
+      value: settings.showBanner,
+      key: 'showBanner',
+    },
+    {
       titleKey: 'settingsPanels.streamChat.showFooter',
       descKey: 'settingsPanels.streamChat.showFooterDesc',
       value: settings.showFooter,
