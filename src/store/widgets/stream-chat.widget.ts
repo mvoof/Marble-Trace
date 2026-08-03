@@ -179,8 +179,16 @@ export class StreamChatWidgetStore {
       (message) => !this.isFiltered(message)
     );
 
+    // Only the event rows themselves are dropped. A cheer or a first message is
+    // still a message someone wrote, so hiding "subs and raids" must not take
+    // them with it.
     if (!showEvents) {
-      messages = messages.filter((message) => message.highlight === null);
+      messages = messages.filter(
+        (message) =>
+          message.highlight === null ||
+          (message.highlight.kind !== 'subscription' &&
+            message.highlight.kind !== 'raid')
+      );
     }
 
     if (messageLifetimeSeconds > 0) {

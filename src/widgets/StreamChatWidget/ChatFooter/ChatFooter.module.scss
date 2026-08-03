@@ -1,6 +1,6 @@
-// The only chrome the widget has — there is no header. Connection state rides
-// here as a dot next to each platform, which is all a header would have shown.
-// Everything text-bearing aligns on its baseline, not on box centres. The
+// Chrome, kept at the same weight as the banner strip above it: small caps
+// labels, mono digits, nothing that competes with the feed. Connection state
+// rides here as a dot next to each platform. Everything text-bearing aligns on its baseline, not on box centres. The
 // footer mixes Consolas digits with Rajdhani labels at three different sizes,
 // and those fonts place their glyphs differently inside the em box — centring
 // boxes leaves "699" and "ВСЕГО" visibly at different heights. Baseline
@@ -12,9 +12,9 @@
 .footer {
   display: flex;
   align-items: baseline;
-  gap: sp(lg);
-  padding: sp(sm) sp(md);
-  background-color: rgb(24, 24, 27);
+  gap: sp(md);
+  padding: sp(xs) sp(sm);
+  background-color: rgba(24, 24, 27, 0.72);
   border-top: 1px solid $widget-row-border;
   flex-shrink: 0;
   line-height: 1;
@@ -25,7 +25,7 @@
   align-items: baseline;
   gap: sp(xxs);
   font-family: $font-mono;
-  font-size: fs(sm);
+  font-size: fs(xs);
   font-weight: 700;
   line-height: 1;
   color: $widget-text-secondary;
@@ -41,14 +41,14 @@
 // names per file, so `.footer .glyph` would never match PlatformGlyph's class.
 .footerGlyph {
   align-self: center;
-  width: ws(13);
-  height: ws(13);
+  width: ws(11);
+  height: ws(11);
 }
 
 .dot {
   align-self: center;
-  width: ws(6);
-  height: ws(6);
+  width: ws(5);
+  height: ws(5);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -74,7 +74,7 @@
   align-items: baseline;
   gap: sp(xxs);
   font-family: $font-mono;
-  font-size: fs(sm);
+  font-size: fs(xs);
   font-weight: 700;
   line-height: 1;
   color: $widget-text-secondary;
@@ -83,15 +83,15 @@
 
 .rateIcon {
   align-self: center;
-  width: ws(13);
-  height: ws(13);
+  width: ws(11);
+  height: ws(11);
   color: $race-green;
   flex-shrink: 0;
 }
 
 .rateUnit {
   font-family: $font-widget;
-  font-size: fs(xxs);
+  font-size: fs(xxxs);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   line-height: 1;
@@ -104,7 +104,7 @@
   align-items: baseline;
   gap: sp(xxs);
   font-family: $font-mono;
-  font-size: fs(sm);
+  font-size: fs(xs);
   font-weight: 700;
   line-height: 1;
   color: $widget-text-primary;

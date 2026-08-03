@@ -53,13 +53,17 @@ const MESSAGES: ChatMessage[] = [
       kind: 'raid',
       text: 'apexhunter пришёл с рейдом · 142 зрителя',
       amount: null,
+      bits: null,
     },
   },
   {
     ...makeMessage('7', 'youtube', 'Sergey K', '#facc15', 'удачи в квале!'),
-    highlight: { kind: 'paid', text: '', amount: '250 ₽' },
+    highlight: { kind: 'paid', text: '', amount: '250 ₽', bits: null },
   },
-  makeMessage('8', 'twitch', 'brakelate', '#ef4444', 'вот это сейв'),
+  {
+    ...makeMessage('8', 'twitch', 'brakelate', '#ef4444', 'вот это сейв'),
+    highlight: { kind: 'paid', text: '', amount: null, bits: 500 },
+  },
 ];
 
 const PRESENCE: ChatPresence[] = [
@@ -137,6 +141,6 @@ export const Reconnecting: Story = {
 
 export const SubscriberOnlyMode: Story = {
   args: {
-    presence: [{ ...PRESENCE[0], roomMode: 'subs only' }, PRESENCE[1]],
+    presence: [{ ...PRESENCE[0], roomMode: { kind: 'subsOnly' } }, PRESENCE[1]],
   },
 };

@@ -443,7 +443,9 @@
       "showBadges": "Значки",
       "showBadgesDesc": "Плашки модератора, подписчика и VIP.",
       "showEvents": "Подписки и рейды",
-      "showEventsDesc": "Строки подписок, рейдов и Super Chat.",
+      "showEventsDesc": "Строки подписок и рейдов. Платные сообщения — Super Chat и биты — остаются видны всегда.",
+      "showBanner": "Шапка",
+      "showBannerDesc": "Верхняя строка с состоянием подключения и ограничениями чата — например «только для подписчиков».",
       "showFooter": "Футер",
       "showFooterDesc": "Счётчики зрителей и состояние связи.",
       "showActivity": "Активность чата",
@@ -458,6 +460,22 @@
     "total": "Всего",
     "connecting": "Подключение",
     "reconnecting": "Переподключение · {{attempt}}",
-    "connectionFailed": "Не удалось подключиться"
+    "connectionFailed": "Не удалось подключиться",
+    "bits_one": "{{count}} бит",
+    "bits_few": "{{count}} бита",
+    "bits_many": "{{count}} битов",
+    "roomMode": {
+      "subsOnly": "Только для платных подписчиков",
+      "emoteOnly": "Только эмоции",
+      "followersOnly": "Только для подписчиков",
+      "slow": "Медленный режим · {{seconds}} с"
+    },
+    "status": {
+      "live": "В эфире",
+      "connecting": "Подключение",
+      "reconnecting": "Переподключение",
+      "offline": "Не в эфире",
+      "error": "Не удалось подключиться"
+    }
   }
 }

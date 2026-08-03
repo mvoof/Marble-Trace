@@ -42,7 +42,7 @@ use model::cars::CarIdxFrame;
 #[cfg(feature = "dev")]
 use model::chat::{
     ChatBadge, ChatConfig, ChatConnectionStatus, ChatDeletion, ChatFragment, ChatHighlight,
-    ChatHighlightKind, ChatMessage, ChatPlatform, ChatPresence, TwitchDeviceCode,
+    ChatHighlightKind, ChatMessage, ChatPlatform, ChatPresence, ChatRoomMode, TwitchDeviceCode,
     TwitchTokenResult,
 };
 #[cfg(feature = "dev")]
@@ -107,6 +107,7 @@ pub fn run() {
             .register::<ChatHighlight>()
             .register::<ChatMessage>()
             .register::<ChatDeletion>()
+            .register::<ChatRoomMode>()
             .register::<ChatPresence>()
             .register::<ChatConfig>()
             .register::<TwitchDeviceCode>()

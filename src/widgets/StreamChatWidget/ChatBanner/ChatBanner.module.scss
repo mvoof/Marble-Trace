@@ -1,27 +1,38 @@
+// A strip, not a block: one text line at the smallest readable size, tinted
+// just enough to read as chrome rather than as a message row. The tone classes
+// only set colour — geometry stays identical across states so the feed below
+// never shifts when the connection flips.
 .banner {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: sp(xxs);
-  padding: sp(xs);
-  font-size: fs(xs);
+  padding: sp(xxs) sp(sm);
+  font-size: fs(xxxs);
   font-weight: 700;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  line-height: 1;
   flex-shrink: 0;
+  border-bottom: 1px solid $widget-row-border;
+}
+
+.label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .bannerWarn {
   color: $widget-status-warning;
-  background-color: rgba(234, 179, 8, 0.12);
+  background-color: rgba(234, 179, 8, 0.08);
 }
 
 .bannerError {
   color: $widget-status-danger;
-  background-color: rgba(239, 68, 68, 0.12);
+  background-color: rgba(239, 68, 68, 0.08);
 }
 
 .bannerInfo {
   color: $widget-status-info;
-  background-color: rgba(59, 130, 246, 0.12);
+  background-color: rgba(59, 130, 246, 0.08);
 }

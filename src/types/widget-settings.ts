@@ -277,6 +277,8 @@ export interface StreamChatWidgetSettings {
    * retired), so this silently falls back to plates otherwise.
    */
   badgeImages: boolean;
+  /** Header line with the connection state and the room restriction. */
+  showBanner: boolean;
   showFooter: boolean;
   showActivity: boolean;
   /** Subscriptions, raids and Super Chat rows. */

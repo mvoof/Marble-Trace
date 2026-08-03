@@ -377,6 +377,7 @@ fn handle_actions(app: &AppHandle, payload: &serde_json::Value) -> (Option<Strin
                         kind: ChatHighlightKind::Paid,
                         text: String::new(),
                         amount,
+                        bits: None,
                     }),
                 )
             } else if item["liveChatMembershipItemRenderer"].is_object() {
@@ -397,6 +398,7 @@ fn handle_actions(app: &AppHandle, payload: &serde_json::Value) -> (Option<Strin
                         kind: ChatHighlightKind::Subscription,
                         text,
                         amount: None,
+                        bits: None,
                     }),
                 )
             } else {

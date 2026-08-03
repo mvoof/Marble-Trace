@@ -462,9 +462,14 @@ export type ChatHighlight = {
    */
   text: string;
   /**
-   * Super Chat / bits amount, already formatted with its currency.
+   * Super Chat amount, already formatted with its currency by the platform.
    */
   amount: string | null;
+  /**
+   * Twitch cheer size. A raw count rather than a formatted string: unlike a
+   * Super Chat sum, "bits" is a word the frontend has to translate.
+   */
+  bits: number | null;
 };
 
 export type ChatHighlightKind =
@@ -509,10 +514,7 @@ export type ChatPresence = {
    * because specta forbids BigInt-width integers in the TS contract.
    */
   uptimeSeconds: number | null;
-  /**
-   * Active room restriction ("sub only", "followers only", "slow 30s").
-   */
-  roomMode: string | null;
+  roomMode: ChatRoomMode | null;
   /**
    * Reconnect attempt number, shown in the reconnect banner.
    */
@@ -522,6 +524,16 @@ export type ChatPresence = {
    */
   detail: string | null;
 };
+
+/**
+ * Active room restriction. Kept structured rather than pre-rendered: the
+ * banner text is translated in the frontend, next to every other UI string.
+ */
+export type ChatRoomMode =
+  | { kind: 'subsOnly' }
+  | { kind: 'emoteOnly' }
+  | { kind: 'followersOnly' }
+  | { kind: 'slow'; seconds: number };
 
 export type DriverEntriesFrame = {
   entries: DriverEntry[];

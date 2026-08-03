@@ -38,7 +38,7 @@ export const ChatFooter = observer(() => {
         <span key={presence.platform} className={styles.count}>
           <span
             className={`${styles.dot} ${STATUS_CLASS[presence.status]}`}
-            title={presence.status}
+            title={t(`streamChat.status.${presence.status}`)}
           />
           <PlatformGlyph
             platform={presence.platform}

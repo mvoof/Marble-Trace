@@ -443,7 +443,9 @@
       "showBadges": "徽章",
       "showBadgesDesc": "房管、订阅者与 VIP 标记。",
       "showEvents": "订阅与突袭",
-      "showEventsDesc": "订阅、突袭与 Super Chat 行。",
+      "showEventsDesc": "订阅与突袭行。付费消息（Super Chat 与 Bits）始终显示。",
+      "showBanner": "顶栏",
+      "showBannerDesc": "顶部一行，显示连接状态与聊天限制（如仅关注者）。",
       "showFooter": "页脚",
       "showFooterDesc": "观众数与连接状态。",
       "showActivity": "聊天活跃度",
@@ -458,6 +460,20 @@
     "total": "总计",
     "connecting": "连接中",
     "reconnecting": "重新连接 · {{attempt}}",
-    "connectionFailed": "连接失败"
+    "connectionFailed": "连接失败",
+    "bits_other": "{{count}} Bits",
+    "roomMode": {
+      "subsOnly": "仅订阅者",
+      "emoteOnly": "仅表情",
+      "followersOnly": "仅关注者",
+      "slow": "慢速模式 · {{seconds}} 秒"
+    },
+    "status": {
+      "live": "直播中",
+      "connecting": "连接中",
+      "reconnecting": "重新连接",
+      "offline": "未直播",
+      "error": "连接失败"
+    }
   }
 }
