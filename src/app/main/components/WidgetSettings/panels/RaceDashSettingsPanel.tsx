@@ -150,6 +150,22 @@ export const RaceDashSettingsPanel = observer(() => {
             />
           </SettingRow>
         </div>
+
+        {settings.showSteeringMarker && (
+          <div className={styles.fieldGroup}>
+            <SettingRow
+              title={t('settingsPanels.raceDash.steeringTrail')}
+              desc={t('settingsPanels.raceDash.steeringTrailDesc')}
+            >
+              <ColorPicker
+                value={settings.steeringTrailColor}
+                onChange={(color) =>
+                  update({ steeringTrailColor: color.toHexString() })
+                }
+              />
+            </SettingRow>
+          </div>
+        )}
       </Card>
 
       <Card title={t('settingsPanels.common.positions')}>
@@ -161,6 +177,16 @@ export const RaceDashSettingsPanel = observer(() => {
             <Switch
               checked={settings.useLivePositions}
               onChange={(value) => update({ useLivePositions: value })}
+            />
+          </SettingRow>
+
+          <SettingRow
+            title={t('settingsPanels.common.classPositionInMulticlass')}
+            desc={t('settingsPanels.common.classPositionInMulticlassDesc')}
+          >
+            <Switch
+              checked={settings.classPositionInMulticlass}
+              onChange={(value) => update({ classPositionInMulticlass: value })}
             />
           </SettingRow>
         </div>

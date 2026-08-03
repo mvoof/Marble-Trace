@@ -73,7 +73,9 @@
       "useLivePositions": "使用实时名次",
       "useLivePositionsDesc": "按赛道上的位置排名，每帧重算。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。适用于所有场次类型。",
       "useLivePositionsStandingsDesc": "按赛道上的位置排名，每帧重算——影响名次数字、行排序、移动动画和 iR 变化预估。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。适用于所有场次类型。",
-      "useLivePositionsRelativeDesc": "按赛道上的位置排名，每帧重算。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。行排序始终按赛道上的间隔。"
+      "useLivePositionsRelativeDesc": "按赛道上的位置排名，每帧重算。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。行排序始终按赛道上的间隔。",
+      "classPositionInMulticlass": "多组别中显示组内名次",
+      "classPositionInMulticlassDesc": "在多组别赛事中按自己所在组别计算名次，而非全场名次。单一组别赛事不受影响——两者是同一个数字。"
     },
     "chassis": {
       "moduleLayout": "模块布局",
@@ -241,6 +243,8 @@
       "off": "关闭",
       "steeringMarker": "方向盘指示",
       "steeringMarkerDesc": "在挡位圆环外缘显示与方向盘同步转动的圆点。",
+      "steeringTrail": "方向盘轨迹颜色",
+      "steeringTrailDesc": "方向盘指示圆点在圆环上留下的轨迹颜色。",
       "drivingCoach": "驾驶教练",
       "coachSection": "教练区域",
       "coachSectionDesc": "显示刹车/油门提示和最佳圈参考速度。",

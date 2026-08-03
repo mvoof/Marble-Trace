@@ -8,6 +8,7 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
+import { pitLimitEmphasis } from '../race-dash-utils';
 import { PitLaneBar } from './PitLaneBar';
 
 import styles from './PitBlock.module.scss';
@@ -50,6 +51,12 @@ export const PitBlock = observer(() => {
       ? styles.speedNear
       : '';
 
+  const limitEmphasis = pitLimitEmphasis(
+    speedKmhOrMph,
+    limitKmhOrMph,
+    nearLimitDelta
+  );
+
   const showBoxCue = distMode !== null && distM !== null;
   const isNearBox = distM !== null && distM <= BOX_NEAR_M;
   const boxCueLabel = distMode === 'pitExit' ? 'Exit' : 'Box';
@@ -58,7 +65,10 @@ export const PitBlock = observer(() => {
   const distUnit = system === 'metric' ? 'm' : 'ft';
   const settings =
     widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
-  const position = standingsWidget.playerPosition(settings.useLivePositions);
+  const { position } = standingsWidget.playerPositionInfo(
+    settings.useLivePositions,
+    settings.classPositionInMulticlass
+  );
 
   const bannerClass = isSafe
     ? styles.bannerSafe
@@ -92,7 +102,11 @@ export const PitBlock = observer(() => {
               <div className={styles.row}>
                 <span className={styles.label}>Limit</span>
                 <span
-                  className={`${styles.value} ${pitState === 'over-limit' ? styles.limitDanger : styles.limitSafe}`}
+                  className={`${styles.value} ${styles.limitValue}`}
+                  style={{
+                    color: limitEmphasis.color,
+                    transform: `scale(${limitEmphasis.scale.toFixed(3)})`,
+                  }}
                 >
                   {limitKmhOrMph}
                 </span>

@@ -22,8 +22,12 @@ export const TimerFooter = observer(() => {
   const standingsWidget = useStandingsWidgetStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { showLaps, showPosition, useLivePositions } =
-    widgetSettings.getSettings<TimerWidgetSettings>('timer');
+  const {
+    showLaps,
+    showPosition,
+    useLivePositions,
+    classPositionInMulticlass,
+  } = widgetSettings.getSettings<TimerWidgetSettings>('timer');
 
   if (!showLaps && !showPosition) {
     return null;
@@ -52,8 +56,10 @@ export const TimerFooter = observer(() => {
         )
       : null;
 
-  const position = standingsWidget.playerPosition(useLivePositions);
-  const totalDrivers = sessionInfo?.cars.length || null;
+  const { position, total: totalDrivers } = standingsWidget.playerPositionInfo(
+    useLivePositions,
+    classPositionInMulticlass
+  );
 
   return (
     <div className={styles.footer}>

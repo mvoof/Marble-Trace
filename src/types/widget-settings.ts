@@ -45,8 +45,12 @@ export interface RaceDashWidgetSettings {
   rpmIndicatorMode: RpmIndicatorMode;
   /** Source of the P-number in the stats strip and the pit block. */
   useLivePositions: boolean;
+  /** Count the P-number within the player's own class instead of the whole field, in multiclass sessions. */
+  classPositionInMulticlass: boolean;
   /** Steering angle wedge riding the outer rim of the gear ring. */
   showSteeringMarker: boolean;
+  /** Color of the trail the steering marker leaves behind it on the rim. */
+  steeringTrailColor: string;
 }
 
 export type SteeringCenterDisplay =
@@ -285,6 +289,8 @@ export interface TimerWidgetSettings {
   showPosition: boolean;
   /** Source of the position shown in the footer. */
   useLivePositions: boolean;
+  /** Count the footer position within the player's own class instead of the whole field, in multiclass sessions. */
+  classPositionInMulticlass: boolean;
   showWallClock: boolean;
   showSimTime: boolean;
   showPcDate: boolean;
