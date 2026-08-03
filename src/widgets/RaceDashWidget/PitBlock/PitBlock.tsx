@@ -65,7 +65,10 @@ export const PitBlock = observer(() => {
   const distUnit = system === 'metric' ? 'm' : 'ft';
   const settings =
     widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
-  const position = standingsWidget.playerPosition(settings.useLivePositions);
+  const { position } = standingsWidget.playerPositionInfo(
+    settings.useLivePositions,
+    settings.classPositionInMulticlass
+  );
 
   const bannerClass = isSafe
     ? styles.bannerSafe

@@ -91,6 +91,16 @@ export const TimerSettingsPanel = observer(() => {
               onChange={(value) => update({ useLivePositions: value })}
             />
           </SettingRow>
+
+          <SettingRow
+            title={t('settingsPanels.common.classPositionInMulticlass')}
+            desc={t('settingsPanels.common.classPositionInMulticlassDesc')}
+          >
+            <Switch
+              checked={settings.classPositionInMulticlass}
+              onChange={(value) => update({ classPositionInMulticlass: value })}
+            />
+          </SettingRow>
         </div>
       </Card>
     </>

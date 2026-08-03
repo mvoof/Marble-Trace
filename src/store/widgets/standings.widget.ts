@@ -205,6 +205,55 @@ export class StandingsWidgetStore {
     return entry.livePosition || official;
   }
 
+  /** More than one car class is entered, so a class position is a different number. */
+  get isMultiClass(): boolean {
+    const entries = this.root.backendComputed.standings?.entries ?? [];
+
+    if (entries.length === 0) {
+      return false;
+    }
+
+    const classIds = new Set(entries.map((entry) => entry.carClassId));
+
+    return classIds.size > 1;
+  }
+
+  /**
+   * Player's position and the field it is counted against, for the readouts
+   * outside the table. `byClass` only takes effect in a multiclass field — with a
+   * single class the class position is the overall one anyway. Falls back to the
+   * overall numbers whenever the standings frame has no entry for the player yet.
+   */
+  playerPositionInfo(
+    useLivePositions: boolean,
+    byClass: boolean
+  ): { position: number | null; total: number | null } {
+    const entries = this.root.backendComputed.standings?.entries ?? [];
+    const overallTotal =
+      this.root.session.sessionInfo?.cars.length || entries.length || null;
+    const entry = this.playerEntry;
+
+    if (!byClass || !this.isMultiClass || !entry) {
+      return {
+        position: this.playerPosition(useLivePositions),
+        total: overallTotal,
+      };
+    }
+
+    const classTotal = entries.filter(
+      (other) => other.carClassId === entry.carClassId
+    ).length;
+
+    const classRank = useLivePositions
+      ? entry.liveClassPosition || entry.classPosition
+      : entry.classPosition;
+
+    return {
+      position: classRank || null,
+      total: classTotal || null,
+    };
+  }
+
   // Every RootStore instance (main window, overlay window, each isolated widget
   // preview) creates its own reaction and timers; without this they outlive the store.
   dispose() {
