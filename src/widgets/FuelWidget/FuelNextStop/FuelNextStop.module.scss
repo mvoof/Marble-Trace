@@ -1,3 +1,6 @@
+// Caption over its reading, both centered — the same stacking the stat cells
+// elsewhere in the widget use. One line could not hold the caption and the
+// full window plus countdown at the widget's design width.
 .nextStop {
   margin: 0;
   padding: sp(sm) sp(md);
@@ -5,41 +8,25 @@
   border-bottom: 1px solid $widget-border-subtle;
   display: flex;
   flex-direction: column;
-}
-
-.headerRow {
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding-bottom: sp(sm);
-}
-
-// Hairline inset from the block padding, matching the cell dividers below.
-.headerRow::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: $widget-border-subtle;
+  align-items: center;
+  gap: sp(xxs);
 }
 
 .label {
   font-family: $font-mono;
-  font-size: fs(xxs);
-  color: $widget-text-secondary;
+  font-size: wfs(9);
+  color: $widget-text-primary;
   letter-spacing: 0.09em;
   font-weight: 400;
   white-space: nowrap;
 }
 
-.lap {
+.window {
   font-family: $font-mono;
   font-size: fs(md);
   font-weight: 700;
   color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
   white-space: nowrap;
 }
@@ -50,59 +37,19 @@
   font-weight: 400;
 }
 
-.detailRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding-top: sp(sm);
+.separator {
+  margin: 0 sp(xs);
+  color: $widget-text-muted;
+  font-weight: 400;
 }
 
-// Value first, label beneath — same hierarchy as the summary above.
-.detailCell {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: sp(xxxs);
-  flex: 1 1 0;
-  min-width: 0;
+.countdown {
+  color: $widget-text-secondary;
+  font-weight: 400;
 }
 
-.detailCell:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: 1px;
-  background: $widget-border-subtle;
-}
-
-.detailLabel {
-  font-size: wfs(9);
-  color: $widget-text-primary;
-  letter-spacing: 0.09em;
-  white-space: nowrap;
-}
-
-.detailValue {
-  font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 700;
-  color: $widget-text-primary;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.valueSafe {
-  color: $widget-status-positive;
-}
-
-.valueWarning {
-  color: $widget-status-warning;
-}
-
-.valueDanger {
-  color: $widget-status-danger;
+// A placeholder is not a reading — it must not read as a live countdown.
+.countdownEmpty {
+  color: $widget-text-muted;
+  font-weight: 400;
 }
