@@ -142,6 +142,7 @@ mod tests {
             results_position_time: None,
             is_retired: false,
             is_finished: false,
+            is_towed: false,
             pit_state: PitState::None,
         }
     }

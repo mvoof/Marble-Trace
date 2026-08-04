@@ -591,10 +591,15 @@ export type DriverEntry = {
    */
   isRetired: boolean;
   /**
-   * The car has taken the checkered flag in the current race. Latched: the sim
-   * only pulses the per-car checkered bit as the car crosses the line.
+   * The car has crossed the finish line in the current race. Latched — see
+   * the finish-latch block in `compute`.
    */
   isFinished: boolean;
+  /**
+   * The car was recovered by the tow truck: it left the world from the track
+   * without ever entering the pit lane. Cleared once it is back in the world.
+   */
+  isTowed: boolean;
   pitState: PitState;
 };
 

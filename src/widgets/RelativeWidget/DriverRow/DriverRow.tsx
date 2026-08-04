@@ -159,7 +159,12 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
         </span>
 
         {flagType === 'dq' && <DriverStatusBadge status="dnf" />}
-        {isOut && flagType !== 'dq' && <DriverStatusBadge status="out" />}
+        {driver.isTowed && flagType !== 'dq' && (
+          <DriverStatusBadge status="tow" />
+        )}
+        {isOut && !driver.isTowed && flagType !== 'dq' && (
+          <DriverStatusBadge status="out" />
+        )}
         {isOffTrack && flagType !== 'dq' && (
           <DriverStatusBadge status="off_track" />
         )}

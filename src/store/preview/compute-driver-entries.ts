@@ -61,6 +61,7 @@ export const computeDriverEntries = (
       resultsPositionTime: null,
       isRetired: false,
       isFinished: false,
+      isTowed: false,
       pitState: 'none',
     });
   }

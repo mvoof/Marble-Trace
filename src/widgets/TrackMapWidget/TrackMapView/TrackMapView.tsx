@@ -83,6 +83,11 @@ export const TrackMapView = observer(
       };
     }, [trackData]);
 
+    // The official positions only refresh at the start/finish line, so a leader the
+    // tow truck picked up mid-lap keeps the P1 label until the next crossing that
+    // never comes. The live order re-ranks him the moment the field drives past.
+    const useLivePositions = rawSettings.useLivePositions ?? true;
+
     const competitorCars: CarOnTrack[] = driverEntries.map((entry) => ({
       carIdx: entry.carIdx,
       carNumber: entry.carNumber,
@@ -93,8 +98,12 @@ export const TrackMapView = observer(
       trackSurface:
         carPositions?.car_idx_track_surface[entry.carIdx] ?? entry.trackSurface,
       isPlayer: entry.isPlayer,
-      position: entry.position,
-      classPosition: entry.classPosition,
+      position: useLivePositions
+        ? entry.livePosition || entry.position
+        : entry.position,
+      classPosition: useLivePositions
+        ? entry.liveClassPosition || entry.classPosition
+        : entry.classPosition,
     }));
 
     // Pace cars are filtered out of standings, so pull them straight from the

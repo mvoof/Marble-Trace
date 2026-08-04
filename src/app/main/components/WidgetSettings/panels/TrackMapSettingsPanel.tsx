@@ -152,6 +152,16 @@ export const TrackMapSettingsPanel = observer(() => {
               update({ leaderLabelMode: v as TrackMapLeaderLabelMode })
             }
           />
+
+          <SettingRow
+            title={t('settingsPanels.common.useLivePositions')}
+            desc={t('settingsPanels.common.useLivePositionsTrackMapDesc')}
+          >
+            <Switch
+              checked={settings.useLivePositions}
+              onChange={(v) => update({ useLivePositions: v })}
+            />
+          </SettingRow>
         </div>
       </Card>
 

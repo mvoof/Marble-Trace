@@ -15,8 +15,6 @@ const NO_CLASS_LABEL: &str = "No Class";
 const FALLBACK_SORT_POSITION: i32 = 999;
 const IR_CHANGE_SCALE_FACTOR: f64 = 200.0;
 const IR_CHANGE_OFFSET: f64 = 100.0;
-/// `irsdk_checkered` in the per-car `CarIdxSessionFlags` bit field.
-const CHECKERED_FLAG_BIT: u32 = 0x0000_0001;
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -65,9 +63,12 @@ pub struct DriverEntry {
     /// The sim marked the car as retired or disqualified (`ReasonOutId` != 0).
     /// A car merely sitting in the garage is *not* retired.
     pub is_retired: bool,
-    /// The car has taken the checkered flag in the current race. Latched: the sim
-    /// only pulses the per-car checkered bit as the car crosses the line.
+    /// The car has crossed the finish line in the current race. Latched — see
+    /// the finish-latch block in `compute`.
     pub is_finished: bool,
+    /// The car was recovered by the tow truck: it left the world from the track
+    /// without ever entering the pit lane. Cleared once it is back in the world.
+    pub is_towed: bool,
     pub pit_state: PitState,
 }
 
@@ -77,6 +78,20 @@ pub struct StandingsState {
     pub finished_cars: HashSet<i32>,
     /// Session the latched finishers belong to — a new session clears them.
     pub finished_session_num: Option<i32>,
+    /// Lap counter of every car on the previous tick, used as the baseline the
+    /// finish latch compares against once the checkered flag comes out.
+    pub previous_laps: HashMap<i32, i32>,
+    /// Lap counters snapshotted when the checkered flag came out. `None` while
+    /// the race is still running.
+    pub laps_at_checkered: Option<HashMap<i32, i32>>,
+    /// Cars currently under tow, plus the lap progress they had when they were
+    /// picked up — a car being carried has no lap distance of its own.
+    pub towed_cars: HashMap<i32, f64>,
+    /// Track surface and pit-road flag of every car on the previous tick.
+    pub previous_location: HashMap<i32, (TrackSurface, bool)>,
+    /// Lap progress of every car on the previous tick, kept so a car that vanishes
+    /// mid-lap can still be ranked by where it actually was.
+    pub previous_progress: HashMap<i32, f64>,
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
@@ -145,6 +160,11 @@ pub fn compute(
     if locked_state.finished_session_num != Some(session.current_session_num) {
         locked_state.finished_session_num = Some(session.current_session_num);
         locked_state.finished_cars.clear();
+        locked_state.laps_at_checkered = None;
+        locked_state.previous_laps.clear();
+        locked_state.towed_cars.clear();
+        locked_state.previous_location.clear();
+        locked_state.previous_progress.clear();
     }
 
     let mut results_positions_map: HashMap<i32, &ResultPosition> = HashMap::new();
@@ -320,6 +340,7 @@ pub fn compute(
                     .and_then(|position| position.reason_out_id)
                     .is_some_and(|reason| reason != 0),
                 is_finished: false,
+                is_towed: false,
                 pit_state: PitState::None,
             }
         })
@@ -335,7 +356,9 @@ pub fn compute(
         }
     });
 
-    assign_live_positions(&mut entries);
+    update_tow_states(&mut entries, &mut locked_state);
+
+    assign_live_positions(&mut entries, &locked_state.towed_cars);
 
     let player_lap_dist = entries
         .iter()
@@ -357,26 +380,51 @@ pub fn compute(
         entry.relative_lap_dist = diff;
     }
 
-    // Finish latch — the per-car checkered bit only pulses while the car crosses the
-    // line, so it is remembered for the rest of the session. Cars that never get the
-    // bit (rejoined late, sim quirks) are classified once the race itself is over.
-    let race_is_over = matches!(
-        session_state,
-        Some(SessionState::Checkered) | Some(SessionState::CoolDown)
-    );
-
+    // Finish latch. The per-car checkered bit is *not* a per-car finish signal: the
+    // sim shows the checkered flag to the whole field the moment the leader takes it,
+    // so `CarIdxSessionFlags` lights up for everyone at once. A car has actually
+    // finished only once it crosses the line after the flag came out — which is what
+    // the lap counter, snapshotted from the tick before the flag, records. The leader
+    // is covered too: its lap had already incremented on the tick the flag appeared.
+    // Whatever is left over is classified when the race itself ends (`CoolDown`).
     if is_race {
-        for entry in &mut entries {
-            let took_checkered = entry.raw_flags & CHECKERED_FLAG_BIT != 0;
-            let classified = race_is_over && !entry.is_retired && entry.lap > 0;
+        let checkered_is_out = matches!(
+            session_state,
+            Some(SessionState::Checkered) | Some(SessionState::CoolDown)
+        );
 
-            if took_checkered || classified {
-                locked_state.finished_cars.insert(entry.car_idx);
+        if checkered_is_out && locked_state.laps_at_checkered.is_none() {
+            let baseline = locked_state.previous_laps.clone();
+
+            locked_state.laps_at_checkered = Some(baseline);
+        }
+
+        let race_has_ended = matches!(session_state, Some(SessionState::CoolDown));
+
+        let state = &mut *locked_state;
+
+        for entry in &mut entries {
+            // A car missing from the snapshot was not in the field when the flag
+            // came out (it joined, rejoined, or this is the first tick after a
+            // reconnect). Seed its baseline with the lap it has right now, so it
+            // can still latch on its next crossing instead of never at all.
+            let crossed_the_line = state.laps_at_checkered.as_mut().is_some_and(|laps| {
+                let baseline = laps.entry(entry.car_idx).or_insert(entry.lap);
+
+                entry.lap > *baseline
+            });
+
+            let classified = race_has_ended && !entry.is_retired && entry.lap > 0;
+
+            if crossed_the_line || classified {
+                state.finished_cars.insert(entry.car_idx);
             }
 
-            entry.is_finished = locked_state.finished_cars.contains(&entry.car_idx);
+            entry.is_finished = state.finished_cars.contains(&entry.car_idx);
         }
     }
+
+    locked_state.previous_laps = entries.iter().map(|e| (e.car_idx, e.lap)).collect();
 
     // Pit state machine — per-car, persisted across ticks in locked_state.pit_states
     let active_car_indices: HashSet<i32> = entries.iter().map(|e| e.car_idx).collect();
@@ -448,6 +496,67 @@ fn is_racing(entry: &DriverEntry) -> bool {
     )
 }
 
+/// Flags the cars the tow truck picked up and remembers the lap progress they had
+/// at that moment.
+///
+/// iRacing has no per-car tow field, but a tow has a shape nothing else does: the
+/// car leaves the world straight off the racing surface, without ever driving into
+/// the pit lane. A normal stop always shows `on_pit_road` first, so the two cannot
+/// be confused. The flag is cleared as soon as the car is back in the world — by
+/// then it has a real lap distance of its own once more.
+fn update_tow_states(entries: &mut [DriverEntry], state: &mut StandingsState) {
+    let active_car_indices: HashSet<i32> = entries.iter().map(|e| e.car_idx).collect();
+
+    state
+        .previous_location
+        .retain(|car_idx, _| active_car_indices.contains(car_idx));
+    state
+        .towed_cars
+        .retain(|car_idx, _| active_car_indices.contains(car_idx));
+
+    for entry in entries.iter_mut() {
+        let previous = state.previous_location.get(&entry.car_idx).copied();
+
+        let left_the_track_surface = previous.is_some_and(|(surface, on_pit_road)| {
+            !on_pit_road && matches!(surface, TrackSurface::OnTrack | TrackSurface::OffTrack)
+        });
+
+        let vanished = entry.track_surface == TrackSurface::NotInWorld;
+
+        if vanished && left_the_track_surface && !entry.is_retired {
+            let frozen = state
+                .previous_progress
+                .get(&entry.car_idx)
+                .copied()
+                .unwrap_or(entry.lap as f64);
+
+            state.towed_cars.entry(entry.car_idx).or_insert(frozen);
+        }
+
+        // The tow ends the moment the car is back in the world — which is its pit
+        // box, not the track. Waiting for it to be racing again would keep the flag
+        // on a car that is repaired but still stopped, or forever on one abandoned
+        // in its box.
+        if entry.track_surface != TrackSurface::NotInWorld {
+            state.towed_cars.remove(&entry.car_idx);
+        }
+
+        entry.is_towed = state.towed_cars.contains_key(&entry.car_idx);
+
+        state
+            .previous_location
+            .insert(entry.car_idx, (entry.track_surface, entry.on_pit_road));
+
+        if let Some(progress) = lap_progress(entry) {
+            state.previous_progress.insert(entry.car_idx, progress);
+        }
+    }
+
+    state
+        .previous_progress
+        .retain(|car_idx, _| active_car_indices.contains(car_idx));
+}
+
 /// Reorders `entries` into live track order and fills the `live_*` position fields.
 ///
 /// Only cars actually racing are re-ranked by covered distance. Lap distance says
@@ -460,19 +569,35 @@ fn is_racing(entry: &DriverEntry) -> bool {
 /// Filled in every session type — outside a race the official order ranks by best
 /// lap instead, so the two are genuinely different answers and the frontend picks
 /// which one to show (`useLivePositions`, held per widget).
-fn assign_live_positions(entries: &mut [DriverEntry]) {
+///
+/// Towed cars are the exception to the rule above: keeping the official position
+/// would leave a car that is being carried back to the pits sitting at the top of
+/// the table while the field drives past it. They are ranked by lap progress like
+/// racing cars — frozen at where they were picked up while they are out of the
+/// world, and by their real progress again once the truck drops them off.
+fn assign_live_positions(entries: &mut [DriverEntry], towed_progress: &HashMap<i32, f64>) {
+    let progress_of = |entry: &DriverEntry| -> Option<f64> {
+        lap_progress(entry).or_else(|| towed_progress.get(&entry.car_idx).copied())
+    };
+
     let mut racing: Vec<DriverEntry> = Vec::with_capacity(entries.len());
     let mut non_racing: Vec<DriverEntry> = Vec::new();
 
     for entry in entries.iter() {
-        if is_racing(entry) && lap_progress(entry).is_some() {
+        let ranked_by_progress = if entry.is_towed {
+            progress_of(entry).is_some()
+        } else {
+            is_racing(entry) && lap_progress(entry).is_some()
+        };
+
+        if ranked_by_progress {
             racing.push(entry.clone());
         } else {
             non_racing.push(entry.clone());
         }
     }
 
-    racing.sort_by(|a, b| match (lap_progress(a), lap_progress(b)) {
+    racing.sort_by(|a, b| match (progress_of(a), progress_of(b)) {
         (Some(left), Some(right)) => right.partial_cmp(&left).unwrap_or(Ordering::Equal),
         _ => a.position.cmp(&b.position),
     });
@@ -793,12 +918,195 @@ mod tests {
         }
     }
 
+    /// The checkered flag bit the sim broadcasts to the whole field once the leader
+    /// takes it — never a per-car finish signal.
+    const BROADCAST_CHECKERED_BIT: u32 = 0x0000_0001;
+
+    fn two_car_race_session() -> SessionSnapshot {
+        let mut session = race_session();
+
+        session.cars.push(CarEntry {
+            car_idx: 1,
+            user_name: "Rival".to_string(),
+            ..Default::default()
+        });
+
+        session
+    }
+
+    /// Car 0 is the player, car 1 the race leader.
+    fn two_car_frame(
+        leader_surface: TrackSurface,
+        leader_pct: f32,
+        player_pct: f32,
+    ) -> CarIdxFrame {
+        CarIdxFrame {
+            car_idx_lap_dist_pct: vec![player_pct, leader_pct],
+            car_idx_on_pit_road: vec![false, false],
+            car_idx_position: vec![2, 1],
+            car_idx_class_position: vec![2, 1],
+            car_idx_lap: vec![1, 1],
+            car_idx_last_lap_time: vec![-1.0, -1.0],
+            car_idx_best_lap_time: vec![-1.0, -1.0],
+            car_idx_f2_time: vec![0.0, 0.0],
+            car_idx_est_time: vec![0.0, 0.0],
+            car_idx_track_surface: vec![TrackSurface::OnTrack, leader_surface],
+            car_idx_tire_compound: vec![-1, -1],
+            car_idx_session_flags: vec![0, 0],
+            car_left_right: None,
+        }
+    }
+
+    #[test]
+    fn test_a_towed_leader_loses_the_live_lead() {
+        let session = two_car_race_session();
+        let state = Mutex::new(StandingsState::default());
+
+        compute(
+            &two_car_frame(TrackSurface::OnTrack, 0.5, 0.3),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        // The truck picks the leader up straight off the track: it leaves the world
+        // without ever having been on pit road.
+        let frame = compute(
+            &two_car_frame(TrackSurface::NotInWorld, -1.0, 0.35),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        let leader = frame.entries.iter().find(|e| e.car_idx == 1).unwrap();
+
+        assert!(leader.is_towed);
+
+        // It is still ahead on the road it covered, so the order has not changed yet.
+        assert_eq!(leader.live_position, 1);
+
+        // Once the player drives past the point the leader was picked up at, the
+        // live order must hand him the lead — the official one still says otherwise.
+        let frame = compute(
+            &two_car_frame(TrackSurface::NotInWorld, -1.0, 0.6),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        let player = frame.entries.iter().find(|e| e.car_idx == 0).unwrap();
+
+        assert_eq!(player.position, 2);
+        assert_eq!(player.live_position, 1);
+    }
+
+    #[test]
+    fn test_a_car_entering_the_pits_is_not_treated_as_towed() {
+        let session = two_car_race_session();
+        let state = Mutex::new(StandingsState::default());
+
+        let mut driving_in = two_car_frame(TrackSurface::OnTrack, 0.95, 0.3);
+        driving_in.car_idx_on_pit_road = vec![false, true];
+
+        compute(
+            &driving_in,
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        let mut in_the_box = two_car_frame(TrackSurface::InPitStall, 0.97, 0.35);
+        in_the_box.car_idx_on_pit_road = vec![false, true];
+
+        let frame = compute(
+            &in_the_box,
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        let leader = frame.entries.iter().find(|e| e.car_idx == 1).unwrap();
+
+        assert!(!leader.is_towed);
+        assert_eq!(leader.live_position, 1);
+    }
+
+    #[test]
+    fn test_tow_flag_clears_once_the_car_is_dropped_in_its_box() {
+        let session = two_car_race_session();
+        let state = Mutex::new(StandingsState::default());
+
+        compute(
+            &two_car_frame(TrackSurface::OnTrack, 0.5, 0.3),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        let frame = compute(
+            &two_car_frame(TrackSurface::NotInWorld, -1.0, 0.35),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        assert!(
+            frame
+                .entries
+                .iter()
+                .find(|e| e.car_idx == 1)
+                .unwrap()
+                .is_towed
+        );
+
+        // The truck sets it down in its pit box. It is not racing yet — and may
+        // never race again — but the tow is over.
+        let mut dropped_off = two_car_frame(TrackSurface::InPitStall, 0.97, 0.4);
+        dropped_off.car_idx_on_pit_road = vec![false, true];
+
+        let frame = compute(
+            &dropped_off,
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        assert!(
+            !frame
+                .entries
+                .iter()
+                .find(|e| e.car_idx == 1)
+                .unwrap()
+                .is_towed
+        );
+    }
+
     fn racing_car_idx_frame(flags: u32) -> CarIdxFrame {
+        racing_car_idx_frame_on_lap(flags, 12)
+    }
+
+    fn racing_car_idx_frame_on_lap(flags: u32, lap: i32) -> CarIdxFrame {
         let mut car_idx = garaged_car_idx_frame();
 
         car_idx.car_idx_lap_dist_pct = vec![0.3];
         car_idx.car_idx_position = vec![1];
-        car_idx.car_idx_lap = vec![12];
+        car_idx.car_idx_lap = vec![lap];
         car_idx.car_idx_track_surface = vec![TrackSurface::OnTrack];
         car_idx.car_idx_session_flags = vec![flags];
 
@@ -806,28 +1114,38 @@ mod tests {
     }
 
     #[test]
-    fn test_checkered_flag_latches_after_the_bit_clears() {
+    fn test_car_finishes_when_it_crosses_the_line_under_the_checkered() {
         let session = race_session();
         let state = Mutex::new(StandingsState::default());
 
-        let frame = compute(
-            &racing_car_idx_frame(CHECKERED_FLAG_BIT),
+        compute(
+            &racing_car_idx_frame_on_lap(0, 12),
             &session,
             &HashMap::new(),
             false,
-            None,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        // The flag comes out on the tick the leader's lap counter ticks over.
+        let frame = compute(
+            &racing_car_idx_frame_on_lap(BROADCAST_CHECKERED_BIT, 13),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
             &state,
         );
 
         assert!(frame.entries[0].is_finished);
 
-        // Next tick the sim has already dropped the bit — the latch must hold.
+        // The latch holds once the sim drops the bit again.
         let frame = compute(
-            &racing_car_idx_frame(0),
+            &racing_car_idx_frame_on_lap(0, 13),
             &session,
             &HashMap::new(),
             false,
-            None,
+            Some(SessionState::Checkered),
             &state,
         );
 
@@ -835,7 +1153,65 @@ mod tests {
     }
 
     #[test]
-    fn test_cool_down_classifies_cars_that_never_got_the_bit() {
+    fn test_car_absent_at_the_flag_can_still_finish() {
+        let session = race_session();
+        let state = Mutex::new(StandingsState::default());
+
+        // The flag is already out on the very first tick we see: there is no
+        // previous lap counter to build the baseline from.
+        let frame = compute(
+            &racing_car_idx_frame_on_lap(BROADCAST_CHECKERED_BIT, 12),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            &state,
+        );
+
+        assert!(!frame.entries[0].is_finished);
+
+        let frame = compute(
+            &racing_car_idx_frame_on_lap(0, 13),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            &state,
+        );
+
+        assert!(frame.entries[0].is_finished);
+    }
+
+    #[test]
+    fn test_broadcast_checkered_bit_alone_does_not_finish_a_car() {
+        let session = race_session();
+        let state = Mutex::new(StandingsState::default());
+
+        compute(
+            &racing_car_idx_frame_on_lap(0, 12),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        // The leader has taken the flag, so the sim shows the checkered bit to this
+        // car too — but it is still a lap away from the line.
+        let frame = compute(
+            &racing_car_idx_frame_on_lap(BROADCAST_CHECKERED_BIT, 12),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            &state,
+        );
+
+        assert!(!frame.entries[0].is_finished);
+    }
+
+    #[test]
+    fn test_cool_down_classifies_cars_that_never_crossed_the_line() {
         let session = race_session();
         let state = Mutex::new(StandingsState::default());
 
@@ -870,7 +1246,7 @@ mod tests {
         let state = Mutex::new(StandingsState::default());
 
         let frame = compute(
-            &racing_car_idx_frame(CHECKERED_FLAG_BIT),
+            &racing_car_idx_frame(BROADCAST_CHECKERED_BIT),
             &session,
             &HashMap::new(),
             false,
@@ -887,11 +1263,11 @@ mod tests {
         let state = Mutex::new(StandingsState::default());
 
         compute(
-            &racing_car_idx_frame(CHECKERED_FLAG_BIT),
+            &racing_car_idx_frame(0),
             &session,
             &HashMap::new(),
             false,
-            None,
+            Some(SessionState::CoolDown),
             &state,
         );
 
@@ -907,7 +1283,7 @@ mod tests {
             &next_session,
             &HashMap::new(),
             false,
-            None,
+            Some(SessionState::Racing),
             &state,
         );
 
@@ -1189,6 +1565,7 @@ mod tests {
             results_position_time: None,
             is_retired: false,
             is_finished: false,
+            is_towed: false,
             pit_state: PitState::None,
         }
     }
@@ -1265,7 +1642,7 @@ mod tests {
             make_live_entry(1, 1, 3, 0.10, TrackSurface::OnTrack),
         ];
 
-        assign_live_positions(&mut entries);
+        assign_live_positions(&mut entries, &HashMap::new());
 
         assert_eq!(entries[0].car_idx, 0);
         assert_eq!(entries[0].live_position, 1);
@@ -1283,7 +1660,7 @@ mod tests {
             make_live_entry(0, 2, 3, 0.90, TrackSurface::OnTrack),
         ];
 
-        assign_live_positions(&mut entries);
+        assign_live_positions(&mut entries, &HashMap::new());
 
         assert_eq!(entries[0].car_idx, 0);
         assert_eq!(entries[0].live_position, 1);
@@ -1298,7 +1675,7 @@ mod tests {
             make_live_entry(1, 2, 1, 0.95, TrackSurface::OnTrack),
         ];
 
-        assign_live_positions(&mut entries);
+        assign_live_positions(&mut entries, &HashMap::new());
 
         assert_eq!(entries[0].car_idx, 0);
         assert_eq!(entries[1].car_idx, 1);
@@ -1312,7 +1689,7 @@ mod tests {
             make_live_entry(2, 4, 1, 0.05, TrackSurface::OnTrack),
         ];
 
-        assign_live_positions(&mut entries);
+        assign_live_positions(&mut entries, &HashMap::new());
 
         assert_eq!(entries[0].car_idx, 1);
         assert_eq!(entries[1].car_idx, 0);
@@ -1330,7 +1707,7 @@ mod tests {
 
         entries[1].car_class_id = 7;
 
-        assign_live_positions(&mut entries);
+        assign_live_positions(&mut entries, &HashMap::new());
 
         assert_eq!(entries[0].live_class_position, 1);
         assert_eq!(entries[1].live_class_position, 1);
@@ -1351,7 +1728,7 @@ mod tests {
 
         entries[0].on_pit_road = true;
 
-        assign_live_positions(&mut entries);
+        assign_live_positions(&mut entries, &HashMap::new());
 
         assert_eq!(entries[0].car_idx, 4);
         assert_eq!(entries[1].car_idx, 28);
@@ -1369,7 +1746,7 @@ mod tests {
             make_live_entry(23, 3, 6, 0.188, TrackSurface::OnTrack),
         ];
 
-        assign_live_positions(&mut entries);
+        assign_live_positions(&mut entries, &HashMap::new());
 
         assert_eq!(entries[0].car_idx, 11);
         assert_eq!(entries[0].live_position, 1);
@@ -1387,7 +1764,7 @@ mod tests {
 
         entries[1].on_pit_road = true;
 
-        assign_live_positions(&mut entries);
+        assign_live_positions(&mut entries, &HashMap::new());
 
         assert_eq!(entries[0].car_idx, 3);
         assert_eq!(entries[1].car_idx, 2);

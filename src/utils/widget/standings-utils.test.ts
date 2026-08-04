@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import type { DriverEntry } from '@/types/bindings';
-import { buildVisibleRows, maxScrollOffset } from './standings-utils';
+import {
+  buildVisibleRows,
+  getStandingsGap,
+  maxScrollOffset,
+} from './standings-utils';
 
 const makeField = (count: number, playerIdx: number): DriverEntry[] =>
   Array.from(
@@ -117,5 +121,71 @@ describe('maxScrollOffset', () => {
 
   it('is zero when every driver fits', () => {
     expect(maxScrollOffset(4, 10)).toBe(0);
+  });
+});
+
+const makeGapEntry = (entry: Partial<DriverEntry>): DriverEntry =>
+  ({
+    bestLapTime: 0,
+    f2Time: 0,
+    resultsPositionLap: null,
+    resultsPositionTime: null,
+    ...entry,
+  }) as DriverEntry;
+
+describe('getStandingsGap', () => {
+  it('measures the race gap against the leader it is given', () => {
+    // Both gaps come from the sim measured against the overall leader.
+    const classLeader = makeGapEntry({
+      resultsPositionLap: 0,
+      resultsPositionTime: 12.4,
+    });
+    const driver = makeGapEntry({
+      resultsPositionLap: 0,
+      resultsPositionTime: 20.9,
+    });
+
+    expect(getStandingsGap(driver, classLeader, true, false, 0).value).toBe(
+      '8.5'
+    );
+  });
+
+  it('leaves the overall view untouched', () => {
+    const overallLeader = makeGapEntry({
+      resultsPositionLap: 0,
+      resultsPositionTime: 0,
+    });
+    const driver = makeGapEntry({
+      resultsPositionLap: 0,
+      resultsPositionTime: 20.9,
+    });
+
+    expect(getStandingsGap(driver, overallLeader, true, false, 0).value).toBe(
+      '20.9'
+    );
+  });
+
+  it('counts laps down from the class leader, not the overall one', () => {
+    const classLeader = makeGapEntry({
+      resultsPositionLap: 2,
+      resultsPositionTime: 0,
+    });
+    const driver = makeGapEntry({
+      resultsPositionLap: 3,
+      resultsPositionTime: 0,
+    });
+
+    expect(getStandingsGap(driver, classLeader, true, false, 0).value).toBe(
+      '1 L'
+    );
+  });
+
+  it('re-bases the F2 fallback on the class leader too', () => {
+    const classLeader = makeGapEntry({ f2Time: 5 });
+    const driver = makeGapEntry({ f2Time: 9.2 });
+
+    expect(getStandingsGap(driver, classLeader, true, false, 0).value).toBe(
+      '4.2'
+    );
   });
 });

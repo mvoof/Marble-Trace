@@ -185,6 +185,7 @@ export const buildPaceCarRowEntries = (
         resultsPositionTime: null,
         isRetired: false,
         isFinished: false,
+        isTowed: false,
         pitState: 'none',
         isPaceCar: true,
         pitPhase,

@@ -592,6 +592,7 @@ const WIDGETS: WidgetConfig[] = [
       playerDotColor: '#18181b',
       showPlayerLabel: true,
       leaderLabelMode: 'all',
+      useLivePositions: true,
       trackStrokePx: 10,
       trackBorderPx: 3,
       sectorStrokePx: 6,
