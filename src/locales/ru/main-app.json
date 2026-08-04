@@ -152,6 +152,13 @@
     "loadingBackground": "Загрузка фона...",
     "allMonitors": "Все мониторы"
   },
+  "overlayWidgetPicker": {
+    "addWidget": "Добавить виджет",
+    "search": "Поиск виджетов",
+    "empty": "Добавлять нечего",
+    "moveHere": "перенести с {{monitor}}",
+    "unavailable": "Недоступно в этом симуляторе"
+  },
   "widgetSettingsPopup": {
     "ariaLabel": "Настройки {{label}}",
     "close": "Закрыть"

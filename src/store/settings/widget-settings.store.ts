@@ -31,6 +31,20 @@ import type { RootStore } from '@store/root-store';
 
 const DEFAULT_LAYOUT_NAME = 'Default';
 
+// Diagonal offset applied when a freshly added widget would land on top of one
+// that is already centred on the same screen.
+const WIDGET_CASCADE_STEP = 40;
+
+/** A widget offered by the overlay's F9 "add widget" picker. */
+export interface PickableWidget {
+  id: string;
+  label: string;
+  description?: string;
+  available: boolean;
+  /** Monitor it currently lives on, or null when it isn't in the layout yet. */
+  currentMonitorName: string | null;
+}
+
 interface LegacyMonitorConfig {
   resolution: LayoutResolution;
   widgets: WidgetDefaultConfig[];
@@ -544,6 +558,97 @@ export class WidgetSettingsStore {
   setWidgetEnabled(id: string, enabled: boolean) {
     this.pushUndo();
     this.updateUserSettings(id, { enabled });
+  }
+
+  /**
+   * Widgets the F9 picker can drop onto a screen: everything the overlay window
+   * isn't already drawing there. A widget that is enabled but lives on another
+   * monitor is kept in the list with that monitor's name, so the picker offers
+   * to move it instead of pretending a second copy could exist.
+   */
+  pickableWidgetsForMonitor(monitorName: string): PickableWidget[] {
+    const monitors = this.activeLayout?.monitors ?? [];
+    const available = new Set(this.availableWidgetIds);
+
+    const drawnHere = new Set(
+      widgetsOnMonitor(this.enabledWidgets, monitorName, monitors).map(
+        (widget) => widget.id
+      )
+    );
+
+    return this.allWidgets
+      .filter((widget) => !drawnHere.has(widget.id))
+      .map((widget) => ({
+        id: widget.id,
+        label: widget.label,
+        description: widget.description,
+        available: available.has(widget.id),
+        currentMonitorName: widget.userSettings.enabled
+          ? (monitorForWidget(widget, monitors)?.name ?? null)
+          : null,
+      }))
+      .sort((first, second) => first.label.localeCompare(second.label));
+  }
+
+  /**
+   * Enables a widget and drops it in the middle of the given monitor, on top of
+   * whatever is already there. Placement is not cosmetic: an overlay window
+   * only speaks for the widgets whose centre lands on its own screen, so a
+   * widget left at its stale coordinates would be enabled in the overlay and
+   * then dropped by the main window's sync.
+   */
+  addWidgetToMonitor(id: string, monitorName: string) {
+    const widget = this.getWidget(id);
+    const monitor = this.monitorByName(monitorName);
+
+    if (!widget || !monitor) return;
+
+    this.pushUndo();
+
+    const { bounds } = monitor;
+    const { currentWidth, currentHeight } = widget.userSettings;
+
+    const occupied = widgetsOnMonitor(
+      this.enabledWidgets,
+      monitorName,
+      this.activeLayout?.monitors ?? []
+    ).filter((placed) => placed.id !== id);
+
+    let x = Math.round(bounds.x + (bounds.width - currentWidth) / 2);
+    let y = Math.round(bounds.y + (bounds.height - currentHeight) / 2);
+
+    // Cascade off anything already sitting in the middle so repeated adds don't
+    // stack into one indistinguishable pile.
+    while (
+      occupied.some(
+        (placed) =>
+          Math.abs(placed.userSettings.x - x) < WIDGET_CASCADE_STEP &&
+          Math.abs(placed.userSettings.y - y) < WIDGET_CASCADE_STEP
+      )
+    ) {
+      x += WIDGET_CASCADE_STEP;
+      y += WIDGET_CASCADE_STEP;
+    }
+
+    const maxX = Math.max(bounds.x, bounds.x + bounds.width - currentWidth);
+    const maxY = Math.max(bounds.y, bounds.y + bounds.height - currentHeight);
+
+    let maxZ = 0;
+
+    for (const other of this.widgets.values()) {
+      if (other.id === id) continue;
+
+      const zIndex = other.userSettings.zIndex ?? 0;
+
+      if (zIndex > maxZ) maxZ = zIndex;
+    }
+
+    widget.userSettings.x = Math.min(Math.max(x, bounds.x), maxX);
+    widget.userSettings.y = Math.min(Math.max(y, bounds.y), maxY);
+    widget.userSettings.zIndex = maxZ + 1;
+    widget.userSettings.enabled = true;
+
+    this.bumpMutation();
   }
 
   updatePosition(id: string, x: number, y: number) {

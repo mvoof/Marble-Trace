@@ -6,6 +6,7 @@ import { listen } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { WIDGET_BY_ID } from '@store/widget-defaults';
 import { WidgetContainer } from '@app/overlay/components/WidgetContainer/WidgetContainer';
+import { WidgetPicker } from '@app/overlay/components/WidgetPicker/WidgetPicker';
 import styles from './OverlayCanvas.module.scss';
 import {
   useAppSettingsStore,
@@ -87,6 +88,8 @@ export const OverlayCanvas = observer(() => {
     >
       {dragMode && (
         <div className={styles.exitButtonContainer}>
+          <WidgetPicker />
+
           <Button
             type="primary"
             danger

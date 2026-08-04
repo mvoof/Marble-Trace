@@ -1,0 +1,153 @@
+.container {
+  position: relative;
+  pointer-events: auto;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 420px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(13, 14, 18, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: radius(lg);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  text-transform: none;
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
+  padding: sp(sm) sp(md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.searchIcon {
+  width: 14px;
+  height: 14px;
+  color: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1 1 0;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e0e0e0;
+  font-family: $font-widget;
+  font-size: fs(sm);
+  font-weight: 500;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+// The panel is absolutely positioned, so it has no height of its own to divide
+// up — a flex-grow list would collapse to zero. The scroll box is sized here.
+.list {
+  flex: 0 1 auto;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: sp(xxs);
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+  }
+}
+
+.empty {
+  padding: sp(lg);
+  text-align: center;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: $font-widget;
+  font-size: fs(xs);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: sp(sm);
+  width: 100%;
+  padding: sp(xs) sp(sm);
+  background: transparent;
+  border: none;
+  border-radius: radius(md);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.07);
+  }
+}
+
+.rowDisabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+
+  &:hover {
+    background: transparent;
+  }
+}
+
+.rowText {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.rowLabel {
+  color: #e0e0e0;
+  font-family: $font-widget;
+  font-size: fs(sm);
+  font-weight: 600;
+}
+
+.rowDescription {
+  color: rgba(255, 255, 255, 0.45);
+  font-family: $font-widget;
+  font-size: fs(xxs);
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowBadge {
+  display: flex;
+  align-items: center;
+  gap: sp(xxs);
+  flex-shrink: 0;
+  padding: 2px sp(xs);
+  border: 1px solid rgba($race-amber, 0.5);
+  border-radius: radius(sm);
+  color: $race-amber;
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  font-weight: 600;
+  letter-spacing: 0.4px;
+
+  svg {
+    width: 11px;
+    height: 11px;
+  }
+}
