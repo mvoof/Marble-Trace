@@ -67,7 +67,7 @@ pub struct DriverEntry {
     /// the finish-latch block in `compute`.
     pub is_finished: bool,
     /// The car was recovered by the tow truck: it left the world from the track
-    /// without ever entering the pit lane. Cleared once it is back on track.
+    /// without ever entering the pit lane. Cleared once it is back in the world.
     pub is_towed: bool,
     pub pit_state: PitState,
 }
@@ -401,20 +401,26 @@ pub fn compute(
 
         let race_has_ended = matches!(session_state, Some(SessionState::CoolDown));
 
+        let state = &mut *locked_state;
+
         for entry in &mut entries {
-            let crossed_the_line = locked_state
-                .laps_at_checkered
-                .as_ref()
-                .and_then(|laps| laps.get(&entry.car_idx))
-                .is_some_and(|baseline| entry.lap > *baseline);
+            // A car missing from the snapshot was not in the field when the flag
+            // came out (it joined, rejoined, or this is the first tick after a
+            // reconnect). Seed its baseline with the lap it has right now, so it
+            // can still latch on its next crossing instead of never at all.
+            let crossed_the_line = state.laps_at_checkered.as_mut().is_some_and(|laps| {
+                let baseline = laps.entry(entry.car_idx).or_insert(entry.lap);
+
+                entry.lap > *baseline
+            });
 
             let classified = race_has_ended && !entry.is_retired && entry.lap > 0;
 
             if crossed_the_line || classified {
-                locked_state.finished_cars.insert(entry.car_idx);
+                state.finished_cars.insert(entry.car_idx);
             }
 
-            entry.is_finished = locked_state.finished_cars.contains(&entry.car_idx);
+            entry.is_finished = state.finished_cars.contains(&entry.car_idx);
         }
     }
 
@@ -496,8 +502,8 @@ fn is_racing(entry: &DriverEntry) -> bool {
 /// iRacing has no per-car tow field, but a tow has a shape nothing else does: the
 /// car leaves the world straight off the racing surface, without ever driving into
 /// the pit lane. A normal stop always shows `on_pit_road` first, so the two cannot
-/// be confused. The flag is cleared as soon as the car is racing again — by then it
-/// has a real lap distance of its own once more.
+/// be confused. The flag is cleared as soon as the car is back in the world — by
+/// then it has a real lap distance of its own once more.
 fn update_tow_states(entries: &mut [DriverEntry], state: &mut StandingsState) {
     let active_car_indices: HashSet<i32> = entries.iter().map(|e| e.car_idx).collect();
 
@@ -527,7 +533,11 @@ fn update_tow_states(entries: &mut [DriverEntry], state: &mut StandingsState) {
             state.towed_cars.entry(entry.car_idx).or_insert(frozen);
         }
 
-        if is_racing(entry) {
+        // The tow ends the moment the car is back in the world — which is its pit
+        // box, not the track. Waiting for it to be racing again would keep the flag
+        // on a car that is repaired but still stopped, or forever on one abandoned
+        // in its box.
+        if entry.track_surface != TrackSurface::NotInWorld {
             state.towed_cars.remove(&entry.car_idx);
         }
 
@@ -1031,6 +1041,62 @@ mod tests {
         assert_eq!(leader.live_position, 1);
     }
 
+    #[test]
+    fn test_tow_flag_clears_once_the_car_is_dropped_in_its_box() {
+        let session = two_car_race_session();
+        let state = Mutex::new(StandingsState::default());
+
+        compute(
+            &two_car_frame(TrackSurface::OnTrack, 0.5, 0.3),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        let frame = compute(
+            &two_car_frame(TrackSurface::NotInWorld, -1.0, 0.35),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        assert!(
+            frame
+                .entries
+                .iter()
+                .find(|e| e.car_idx == 1)
+                .unwrap()
+                .is_towed
+        );
+
+        // The truck sets it down in its pit box. It is not racing yet — and may
+        // never race again — but the tow is over.
+        let mut dropped_off = two_car_frame(TrackSurface::InPitStall, 0.97, 0.4);
+        dropped_off.car_idx_on_pit_road = vec![false, true];
+
+        let frame = compute(
+            &dropped_off,
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        assert!(
+            !frame
+                .entries
+                .iter()
+                .find(|e| e.car_idx == 1)
+                .unwrap()
+                .is_towed
+        );
+    }
+
     fn racing_car_idx_frame(flags: u32) -> CarIdxFrame {
         racing_car_idx_frame_on_lap(flags, 12)
     }
@@ -1074,6 +1140,36 @@ mod tests {
         assert!(frame.entries[0].is_finished);
 
         // The latch holds once the sim drops the bit again.
+        let frame = compute(
+            &racing_car_idx_frame_on_lap(0, 13),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            &state,
+        );
+
+        assert!(frame.entries[0].is_finished);
+    }
+
+    #[test]
+    fn test_car_absent_at_the_flag_can_still_finish() {
+        let session = race_session();
+        let state = Mutex::new(StandingsState::default());
+
+        // The flag is already out on the very first tick we see: there is no
+        // previous lap counter to build the baseline from.
+        let frame = compute(
+            &racing_car_idx_frame_on_lap(BROADCAST_CHECKERED_BIT, 12),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            &state,
+        );
+
+        assert!(!frame.entries[0].is_finished);
+
         let frame = compute(
             &racing_car_idx_frame_on_lap(0, 13),
             &session,

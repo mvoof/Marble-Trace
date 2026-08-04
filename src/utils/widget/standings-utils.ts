@@ -225,7 +225,7 @@ export const getStandingsGap = (
         return { value: timeDiff.toFixed(1), isLeader: false, isEmpty: false };
       }
 
-      return { value: '-', isLeader: true, isEmpty: false };
+      return { value: '--.-', isLeader: false, isEmpty: true };
     }
 
     return { value: '--.-', isLeader: false, isEmpty: true };
@@ -265,7 +265,10 @@ export const getStandingsGap = (
       }
     }
 
-    return { value: '-', isLeader: true, isEmpty: false };
+    // Only the row the caller marked as leader may render as leader. A
+    // non-positive difference here means the reference row is not actually
+    // ahead of this car — showing a second '-' would read as a second leader.
+    return { value: '--.-', isLeader: false, isEmpty: true };
   }
 
   // Fallback if resultsPosition values are not available (e.g. at the start of a

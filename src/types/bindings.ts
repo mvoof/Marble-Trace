@@ -597,7 +597,7 @@ export type DriverEntry = {
   isFinished: boolean;
   /**
    * The car was recovered by the tow truck: it left the world from the track
-   * without ever entering the pit lane. Cleared once it is back on track.
+   * without ever entering the pit lane. Cleared once it is back in the world.
    */
   isTowed: boolean;
   pitState: PitState;
