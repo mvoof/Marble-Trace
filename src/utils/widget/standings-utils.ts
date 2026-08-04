@@ -231,7 +231,12 @@ export const getStandingsGap = (
     return { value: '--.-', isLeader: false, isEmpty: true };
   }
 
-  // In race, try to use Session ResultsPositions gap data
+  // In race, try to use Session ResultsPositions gap data. Everything the sim
+  // reports — `ResultsPositions` and `CarIdxF2Time` alike — is measured against
+  // the *overall* leader; there is no per-class gap field. Subtracting the
+  // leader row's own gap re-bases it onto whoever the caller passed in, so the
+  // class views measure against the class leader and the overall view is
+  // unchanged (the overall leader's gap is zero).
   const resLap = driver.resultsPositionLap;
   const resTime = driver.resultsPositionTime;
 
@@ -241,25 +246,39 @@ export const getStandingsGap = (
     resTime !== undefined &&
     resTime !== null
   ) {
-    if (resLap !== 0) {
-      return { value: `${resLap} L`, isLeader: false, isEmpty: false };
+    const leaderLap = leader?.resultsPositionLap ?? 0;
+    const leaderTime = leader?.resultsPositionTime ?? 0;
+
+    const lapsDown = resLap - leaderLap;
+
+    if (lapsDown > 0) {
+      return { value: `${lapsDown} L`, isLeader: false, isEmpty: false };
     }
 
-    if (resTime > 0) {
-      return { value: resTime.toFixed(1), isLeader: false, isEmpty: false };
+    // A lapped leader row would make the time difference meaningless — the two
+    // gaps are then measured over a different number of laps.
+    if (lapsDown === 0) {
+      const timeDiff = resTime - leaderTime;
+
+      if (timeDiff > 0) {
+        return { value: timeDiff.toFixed(1), isLeader: false, isEmpty: false };
+      }
     }
 
     return { value: '-', isLeader: true, isEmpty: false };
   }
 
-  // Fallback if resultsPosition values are not available (e.g. at the start of a session)
+  // Fallback if resultsPosition values are not available (e.g. at the start of a
+  // session). `lapsBehind` is already measured against the leader passed in.
   if (lapsBehind >= 1) {
     return { value: `${lapsBehind} L`, isLeader: false, isEmpty: false };
   }
 
-  if (driver.f2Time > 0) {
+  const f2Diff = driver.f2Time - (leader?.f2Time ?? 0);
+
+  if (f2Diff > 0) {
     return {
-      value: driver.f2Time.toFixed(1),
+      value: f2Diff.toFixed(1),
       isLeader: false,
       isEmpty: false,
     };
