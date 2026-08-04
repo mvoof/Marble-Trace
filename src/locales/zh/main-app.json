@@ -146,6 +146,13 @@
     "loadingBackground": "正在加载背景...",
     "allMonitors": "所有显示器"
   },
+  "overlayWidgetPicker": {
+    "addWidget": "添加组件",
+    "search": "搜索组件",
+    "empty": "没有可添加的组件",
+    "moveHere": "从 {{monitor}} 移入",
+    "unavailable": "此模拟器不支持"
+  },
   "widgetSettingsPopup": {
     "ariaLabel": "{{label}} 设置",
     "close": "关闭"

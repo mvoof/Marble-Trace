@@ -148,6 +148,13 @@
     "loadingBackground": "Loading background...",
     "allMonitors": "All monitors"
   },
+  "overlayWidgetPicker": {
+    "addWidget": "Add Widget",
+    "search": "Search widgets",
+    "empty": "Nothing left to add",
+    "moveHere": "move from {{monitor}}",
+    "unavailable": "Not available in this sim"
+  },
   "widgetSettingsPopup": {
     "ariaLabel": "{{label}} settings",
     "close": "Close"

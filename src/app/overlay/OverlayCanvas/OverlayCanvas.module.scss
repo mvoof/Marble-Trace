@@ -25,6 +25,9 @@
   pointer-events: auto;
   font-weight: 600;
   text-transform: uppercase;
+  display: flex;
+  align-items: flex-start;
+  gap: sp(sm);
 }
 
 .toastContainer {

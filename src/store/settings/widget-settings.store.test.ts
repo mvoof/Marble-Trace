@@ -218,3 +218,95 @@ describe('WidgetSettingsStore populated monitors', () => {
     ]);
   });
 });
+
+describe('WidgetSettingsStore overlay widget picker', () => {
+  let rootStore: RootStore;
+  const SECOND_MONITOR_X = 1920;
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+    rootStore.widgetSettings.setLayouts(
+      [
+        {
+          id: 'layout-multi',
+          name: 'Multi',
+          createdAt: Date.now(),
+          monitors: [
+            {
+              name: 'DISPLAY1',
+              bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+            },
+            {
+              name: 'DISPLAY2',
+              bounds: {
+                x: SECOND_MONITOR_X,
+                y: 0,
+                width: 1920,
+                height: 1080,
+              },
+            },
+          ],
+          widgets: [],
+        },
+      ],
+      'layout-multi'
+    );
+
+    for (const widget of rootStore.widgetSettings.allWidgets) {
+      rootStore.widgetSettings.setWidgetEnabled(widget.id, false);
+      rootStore.widgetSettings.updatePosition(widget.id, 0, 0);
+    }
+  });
+
+  it('centres a newly added widget on the target monitor', () => {
+    const [widget] = rootStore.widgetSettings.allWidgets;
+
+    rootStore.widgetSettings.addWidgetToMonitor(widget.id, 'DISPLAY2');
+
+    const added = rootStore.widgetSettings.getWidget(widget.id)!;
+    const { currentWidth, currentHeight } = added.userSettings;
+
+    expect(added.userSettings.enabled).toBe(true);
+    expect(added.userSettings.x).toBe(
+      Math.round(SECOND_MONITOR_X + (1920 - currentWidth) / 2)
+    );
+    expect(added.userSettings.y).toBe(Math.round((1080 - currentHeight) / 2));
+    expect(rootStore.widgetSettings.populatedMonitorNames).toEqual([
+      'DISPLAY2',
+    ]);
+  });
+
+  it('cascades a second widget instead of stacking it', () => {
+    const [first, second] = rootStore.widgetSettings.allWidgets;
+
+    rootStore.widgetSettings.addWidgetToMonitor(first.id, 'DISPLAY1');
+    rootStore.widgetSettings.addWidgetToMonitor(second.id, 'DISPLAY1');
+
+    const placedFirst = rootStore.widgetSettings.getWidget(first.id)!;
+    const placedSecond = rootStore.widgetSettings.getWidget(second.id)!;
+
+    expect(placedSecond.userSettings.x).not.toBe(placedFirst.userSettings.x);
+    expect(placedSecond.userSettings.zIndex).toBeGreaterThan(
+      placedFirst.userSettings.zIndex ?? 0
+    );
+  });
+
+  it('offers widgets drawn elsewhere with the monitor they live on', () => {
+    const [widget] = rootStore.widgetSettings.allWidgets;
+
+    rootStore.widgetSettings.addWidgetToMonitor(widget.id, 'DISPLAY2');
+
+    const onFirst =
+      rootStore.widgetSettings.pickableWidgetsForMonitor('DISPLAY1');
+    const entry = onFirst.find((candidate) => candidate.id === widget.id);
+
+    expect(entry?.currentMonitorName).toBe('DISPLAY2');
+
+    const onSecond =
+      rootStore.widgetSettings.pickableWidgetsForMonitor('DISPLAY2');
+
+    expect(onSecond.some((candidate) => candidate.id === widget.id)).toBe(
+      false
+    );
+  });
+});
