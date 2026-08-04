@@ -1,6 +1,13 @@
 import styles from './DriverStatusBadge.module.scss';
 
-type DriverStatus = 'pit' | 'pit_in' | 'pit_exit' | 'out' | 'off_track' | 'dnf';
+type DriverStatus =
+  | 'pit'
+  | 'pit_in'
+  | 'pit_exit'
+  | 'out'
+  | 'off_track'
+  | 'dnf'
+  | 'tow';
 
 interface DriverStatusBadgeProps {
   status: DriverStatus;
@@ -17,6 +24,10 @@ export const DriverStatusBadge = ({ status }: DriverStatusBadgeProps) => {
 
   if (status === 'pit_exit') {
     return <span className={`${styles.badge} ${styles.pitExit}`}>PIT OUT</span>;
+  }
+
+  if (status === 'tow') {
+    return <span className={`${styles.badge} ${styles.tow}`}>TOW</span>;
   }
 
   if (status === 'out') {

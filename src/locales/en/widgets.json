@@ -74,6 +74,7 @@
       "useLivePositionsDesc": "Rank by position on track, recomputed every tick. Off: the sim's official number, which only updates when a car crosses start/finish. Applies to every session type.",
       "useLivePositionsStandingsDesc": "Rank by position on track, recomputed every tick — drives the position number, row order, move animation and the projected iR change. Off: the sim's official number, which only updates when a car crosses start/finish. Applies to every session type.",
       "useLivePositionsRelativeDesc": "Rank by position on track, recomputed every tick. Off: the sim's official number, which only updates when a car crosses start/finish. Row order always follows the gap on track.",
+      "useLivePositionsTrackMapDesc": "Pick the P1 label by position on track, recomputed every tick. Off: the sim's official number, which only updates when a car crosses start/finish — a car towed back to the pits keeps the lead until then.",
       "classPositionInMulticlass": "Class Position in Multiclass",
       "classPositionInMulticlassDesc": "In a multiclass session count the position within your own class instead of the whole field. Single-class sessions are unaffected — there the two are the same number."
     },

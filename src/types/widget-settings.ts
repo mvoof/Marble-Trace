@@ -178,6 +178,11 @@ export interface TrackMapWidgetSettings {
   playerDotColor: string;
   showPlayerLabel: boolean;
   leaderLabelMode: TrackMapLeaderLabelMode;
+  /**
+   * Picks which order the leader label follows: the live on-track one, or the
+   * sim's official positions, which only refresh at the start/finish line.
+   */
+  useLivePositions: boolean;
   trackStrokePx: number;
   trackBorderPx: number;
   sectorStrokePx: number;

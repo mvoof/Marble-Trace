@@ -68,9 +68,13 @@ export const DriverRow = observer(
     const pitState = driver.pitState;
     const flagType = parseDriverFlags(driver.rawFlags);
 
-    // Latched in the backend — the sim only pulses the per-car checkered bit as the
-    // car crosses the line, so this outlives the drive back to the garage.
+    // Latched in the backend once the car crosses the line under the checkered
+    // flag, so this outlives the drive back to the garage.
     const isFinished = driver.isFinished && !driver.isRetired;
+
+    // The tow truck has the car: it left the world without going through the pit
+    // lane, which OUT alone would not tell apart from a garage exit.
+    const isTowed = driver.isTowed && !isFinished;
 
     const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
 
@@ -186,7 +190,8 @@ export const DriverRow = observer(
           </span>
 
           {flagType === 'dq' && <DriverStatusBadge status="dnf" />}
-          {isOut && flagType !== 'dq' && !isFinished && (
+          {isTowed && flagType !== 'dq' && <DriverStatusBadge status="tow" />}
+          {isOut && !isTowed && flagType !== 'dq' && !isFinished && (
             <DriverStatusBadge status="out" />
           )}
           {isOffTrack && flagType !== 'dq' && !isFinished && (
