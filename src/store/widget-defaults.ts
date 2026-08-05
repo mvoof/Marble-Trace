@@ -7,7 +7,7 @@ import { RelativeWidget } from '@widgets/RelativeWidget/RelativeWidget';
 import { TrackMapWidget } from '@widgets/TrackMapWidget/TrackMapWidget';
 import { RelativeMapWidget } from '@widgets/RelativeMapWidget/RelativeMapWidget';
 import { LedFlagWidget } from '@widgets/LedFlagWidget/LedFlagWidget';
-import { ChassisWidget } from '@widgets/ChassisWidget/ChassisWidget';
+import { PitServiceWidget } from '@widgets/PitServiceWidget/PitServiceWidget';
 import { DeltaWidget } from '@widgets/DeltaWidget/DeltaWidget';
 import { TimerWidget } from '@widgets/TimerWidget/TimerWidget';
 import { WeatherWidget } from '@widgets/WeatherWidget/WeatherWidget';
@@ -142,48 +142,6 @@ const resolveInputTraceLayout = makeColumnLayoutResolver<InputTraceSettings>(
   ['showTrace', 'showSteering', 'showThrottle', 'showBrake', 'showClutch'],
   computeInputTraceDesignWidth
 );
-
-const CHASSIS_DESIGN_WIDTH = 300;
-const CHASSIS_WITH_SUSPENSION_DESIGN_WIDTH = 430;
-const CHASSIS_DEFAULT_WIDTH = 280;
-const CHASSIS_WITH_SUSPENSION_DEFAULT_WIDTH = 400;
-
-// Same width-memory pattern as makeLayoutSwapResolver but triggered by a boolean
-// (showSuspensionAndBrakes) instead of a layout string. Saves width per mode in
-// `modeWidths` so the user's resize is preserved on toggle.
-const resolveChassisLayout: ResolveLayoutChange = (prev, next, current) => {
-  if (!('showSuspensionAndBrakes' in next)) return null;
-
-  const prevShow =
-    'showSuspensionAndBrakes' in prev ? prev.showSuspensionAndBrakes : false;
-  const nextShow = next.showSuspensionAndBrakes;
-
-  if (prevShow === nextShow) return null;
-
-  const prevMode = prevShow ? 'suspensionAndBrakes' : 'chassis';
-  const nextMode = nextShow ? 'suspensionAndBrakes' : 'chassis';
-
-  const prevModeWidths = 'modeWidths' in prev ? (prev.modeWidths ?? {}) : {};
-
-  const savedModeWidths = {
-    ...prevModeWidths,
-    [prevMode]: current.currentWidth,
-  };
-
-  const defaultNextWidth = nextShow
-    ? CHASSIS_WITH_SUSPENSION_DEFAULT_WIDTH
-    : CHASSIS_DEFAULT_WIDTH;
-
-  const nextWidth = savedModeWidths[nextMode] ?? defaultNextWidth;
-
-  return {
-    designWidth: nextShow
-      ? CHASSIS_WITH_SUSPENSION_DESIGN_WIDTH
-      : CHASSIS_DESIGN_WIDTH,
-    currentWidth: nextWidth,
-    userSettingsPatch: { modeWidths: savedModeWidths },
-  };
-};
 
 const resolveLedFlagsLayout: ResolveLayoutChange = (prev, next, current) => {
   if (!('split' in next)) return null;
@@ -677,24 +635,31 @@ const WIDGETS: WidgetConfig[] = [
     },
   },
   {
-    id: 'chassis',
-    label: 'Chassis',
-    description: 'Tire pressures and brake temperatures.',
-    resolveLayoutChange: resolveChassisLayout,
-    component: ChassisWidget,
+    id: 'pit-service',
+    label: 'Pit Service',
+    description: 'Pit stop order, repairs, tow time and pit lane speed.',
+    component: PitServiceWidget,
     requiredCapabilities: ['chassis'],
     designWidth: 300,
-    designHeight: 290,
+    designHeight: 540,
     userSettings: {
       enabled: false,
       x: 100,
       y: 100,
-      currentWidth: 280,
-      currentHeight: 290,
+      currentWidth: 300,
+      currentHeight: 540,
       ...COMMON_WIDGET_DEFAULTS,
       ...PANEL_APPEARANCE_DEFAULTS,
-      showSuspensionAndBrakes: false,
-      modeWidths: {},
+      showPitSpeed: true,
+      useLivePositions: true,
+      classPositionInMulticlass: true,
+      showProjectedPosition: true,
+      showFuel: true,
+      showTires: true,
+      showRepairs: true,
+      showFooter: false,
+      alwaysVisible: false,
+      toggleHotkey: 'F7',
     },
   },
   {

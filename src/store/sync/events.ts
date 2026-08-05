@@ -146,6 +146,12 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
+    await listen('pit-service-toggle', () => {
+      runInAction(() => root.pitServiceWidget.toggleManualShow());
+    })
+  );
+
+  unlistens.push(
     await listen<boolean>('interact-mode-changed', (e) => {
       runInAction(() => {
         root.appSettings.interactMode = e.payload;
@@ -202,6 +208,9 @@ export const emitStreamChatCleared = () =>
 
 export const emitStandingsClassIndex = (index: number) =>
   emitToOverlays('standings-class-index-changed', index);
+
+export const emitPitServiceToggle = () =>
+  emitToOverlays('pit-service-toggle', null);
 
 export const emitStandingsScroll = (delta: number) =>
   emitToOverlays('standings-scroll', delta);

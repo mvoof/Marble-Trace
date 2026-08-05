@@ -27,9 +27,6 @@
     "flat-flags": {
       "description": "横幅样式的当前赛道旗帜列表。"
     },
-    "chassis": {
-      "description": "胎压和刹车温度。"
-    },
     "example": {
       "description": "原始遥测数据调试器。"
     },
@@ -65,6 +62,9 @@
     },
     "stream-chat": {
       "description": "Twitch 与 YouTube 直播聊天合并为一条信息流。"
+    },
+    "pit-service": {
+      "description": "维修站服务项目、维修、拖车时间与维修道限速。"
     }
   },
   "settingsPanels": {
@@ -77,11 +77,6 @@
       "useLivePositionsTrackMapDesc": "按赛道上的位置选择 P1 标签，每帧重算。关闭时使用模拟器的官方名次，仅在通过起终点线时更新——被拖车拖回维修区的赛车在此之前仍显示为领跑者。",
       "classPositionInMulticlass": "多组别中显示组内名次",
       "classPositionInMulticlassDesc": "在多组别赛事中按自己所在组别计算名次，而非全场名次。单一组别赛事不受影响——两者是同一个数字。"
-    },
-    "chassis": {
-      "moduleLayout": "模块布局",
-      "suspensionAndBrakes": "悬挂与刹车",
-      "suspensionAndBrakesDesc": "显示胎压、温度和刹车偏移面板。"
     },
     "delta": {
       "deltaReference": "差值参考",
@@ -453,6 +448,27 @@
       "showActivityDesc": "每分钟消息数，本地统计。",
       "badgeImages": "徽章图片",
       "badgeImagesDesc": "显示真实徽章而非文字标记。Twitch 需要登录；YouTube 会员徽章无需登录。"
+    },
+    "pitService": {
+      "sections": "区块",
+      "visibility": "显示",
+      "pitSpeed": "维修道速度",
+      "pitSpeedDesc": "速度与限速并排显示；超速时填充越过分隔线。",
+      "fuel": "加油量",
+      "fuelDesc": "已下单油量、计算推荐值以及两者差值。",
+      "tires": "轮胎",
+      "tiresDesc": "每个轮位的更换项、磨损、温度与胎压。",
+      "repairs": "维修",
+      "repairsDesc": "强制与可选维修倒计时，以及剩余快修次数。",
+      "footer": "底栏",
+      "footerDesc": "进站次数与当前名次。",
+      "alwaysVisible": "始终显示",
+      "alwaysVisibleDesc": "保持显示，而不是仅在维修道和拖车时出现。",
+      "toggleHotkey": "显示/隐藏快捷键",
+      "toggleHotkeyDesc": "在赛道任意位置显示，便于进站前一圈提前设置。",
+      "position": "名次",
+      "projectedPosition": "预计名次",
+      "projectedPositionDesc": "根据维修与拖车倒计时以及后方车辆的时间差，估算重回赛道后的名次。仅为估算：假定后车保持节奏且不进站。"
     }
   },
   "streamChat": {

@@ -1,0 +1,81 @@
+.plate {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: $widget-surface-cell;
+  border-radius: radius(md);
+  overflow: hidden;
+  font-family: $font-widget;
+}
+
+// The fill spans both cells: the divider between them marks the limit, so the
+// left half reads as "below limit" and anything past it as overspeed.
+.fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba($race-green, 0.3);
+}
+
+.fillOver {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba($race-red, 0.45);
+}
+
+.cell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: sp(xxxs);
+  padding: sp(xxs) sp(xs) sp(xs);
+}
+
+// Hairline divider inset from the plate edges, never full bleed.
+.cellNow::after {
+  content: '';
+  position: absolute;
+  top: sp(xs);
+  bottom: sp(xs);
+  right: 0;
+  width: 1px;
+  background: $widget-border-subtle;
+}
+
+.key {
+  font-size: fs(xxxs);
+  letter-spacing: 0.12em;
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.value {
+  font-family: $font-mono;
+  font-size: fs(xxxl);
+  line-height: 0.9;
+  color: $race-green;
+  font-variant-numeric: tabular-nums;
+}
+
+.valueOver {
+  color: $race-red;
+}
+
+.valueLimit {
+  font-family: $font-mono;
+  font-size: fs(xxxl);
+  line-height: 0.9;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  font-size: fs(xxxs);
+  letter-spacing: 0.08em;
+  color: $widget-label;
+  font-weight: 600;
+}

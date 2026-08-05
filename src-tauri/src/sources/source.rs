@@ -4,7 +4,7 @@ use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::enums::SimType;
 use crate::model::environment::{EnvironmentFrame, WeatherForecastEntry};
 use crate::model::player::{
-    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
+    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
 };
 use crate::model::session::{SessionFrame, SessionSnapshot};
 use crate::telemetry::capabilities::Capabilities;
@@ -19,6 +19,7 @@ pub struct SourceFrame {
     pub chassis: ChassisFrame,
     pub lap_timing: LapTimingFrame,
     pub car_status: CarStatusFrame,
+    pub pit_service: PitServiceFrame,
     pub session: SessionFrame,
     pub environment: EnvironmentFrame,
 }

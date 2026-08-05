@@ -51,7 +51,7 @@ use model::enums::{SimStatus, SimType};
 use model::environment::{EnvironmentFrame, WeatherForecastEntry};
 #[cfg(feature = "dev")]
 use model::player::{
-    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
+    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
 };
 #[cfg(feature = "dev")]
 use model::session::SessionFrame;
@@ -79,6 +79,7 @@ pub fn run() {
             .register::<CarInputsFrame>()
             .register::<CarStatusFrame>()
             .register::<ChassisFrame>()
+            .register::<PitServiceFrame>()
             .register::<LapTimingFrame>()
             .register::<SessionFrame>()
             .register::<EnvironmentFrame>()

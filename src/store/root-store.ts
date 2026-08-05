@@ -3,6 +3,7 @@ import { SimStore } from './sim/sim.store';
 import { FlagsStore } from './widgets/flags.widget';
 import { PaceCarStore } from './widgets/pace-car.widget';
 import { RadarWidgetStore } from './widgets/radar.widget';
+import { PitServiceWidgetStore } from './widgets/pit-service.widget';
 import { StandingsWidgetStore } from './widgets/standings.widget';
 import { TrackMapWidgetStore } from './widgets/track-map.widget';
 import { DrivingCoachWidgetStore } from './widgets/driving-coach.widget';
@@ -33,6 +34,7 @@ export class RootStore {
   paceCar: PaceCarStore;
   radar: RadarWidgetStore;
   standingsWidget: StandingsWidgetStore;
+  pitServiceWidget: PitServiceWidgetStore;
   trackMapWidget: TrackMapWidgetStore;
   drivingCoachWidget: DrivingCoachWidgetStore;
   inputTraceWidget: InputTraceWidgetStore;
@@ -59,6 +61,7 @@ export class RootStore {
     this.paceCar = new PaceCarStore(this);
     this.radar = new RadarWidgetStore(this);
     this.standingsWidget = new StandingsWidgetStore(this);
+    this.pitServiceWidget = new PitServiceWidgetStore(this);
     this.trackMapWidget = new TrackMapWidgetStore();
     this.drivingCoachWidget = new DrivingCoachWidgetStore(this);
     this.inputTraceWidget = new InputTraceWidgetStore(this);

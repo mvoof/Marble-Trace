@@ -315,9 +315,20 @@ export interface FlagDisplaySettings {
   modeWidths?: Record<string, number>;
 }
 
-export interface ChassisWidgetSettings {
-  showSuspensionAndBrakes: boolean;
-  modeWidths?: { chassis?: number; suspensionAndBrakes?: number };
+export interface PitServiceWidgetSettings {
+  showPitSpeed: boolean;
+  /** Source of the P-number in the footer. */
+  useLivePositions: boolean;
+  /** Count the P-number within the player own class in multiclass sessions. */
+  classPositionInMulticlass: boolean;
+  /** Estimate the position the car rejoins in, based on the repair and tow waits. */
+  showProjectedPosition: boolean;
+  showFuel: boolean;
+  showTires: boolean;
+  showRepairs: boolean;
+  showFooter: boolean;
+  alwaysVisible: boolean;
+  toggleHotkey: string;
 }
 
 export type GMeterDisplayMode = 'trail' | 'fading' | 'peak';
@@ -346,7 +357,7 @@ export interface EnginePanelWidgetSettings {
 
 export type WidgetSpecificSettings =
   | Record<never, never> // id: example widget
-  | ChassisWidgetSettings
+  | PitServiceWidgetSettings
   | FlagDisplaySettings
   | RpmLightsWidgetSettings
   | InputTraceSettings

@@ -1,7 +1,10 @@
 import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
 import type { RootStore } from '@store/root-store';
-import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { emitStandingsScroll } from './events';
+import type {
+  PitServiceWidgetSettings,
+  StandingsWidgetSettings,
+} from '@/types/widget-settings';
+import { emitPitServiceToggle, emitStandingsScroll } from './events';
 
 // One keypress moves the standings by a small block rather than a single row —
 // a hotkey has no inertia, so row-by-row stepping is too slow to be usable.
@@ -107,6 +110,18 @@ export const setupHotkeys = async (
       addHandler(settings.scrollUpHotkey, (event) => {
         if (event.state === 'Pressed') {
           void emitStandingsScroll(-SCROLL_STEP_ROWS);
+        }
+      });
+    }
+
+    const pitService =
+      root.widgetSettings.getSettings<PitServiceWidgetSettings>('pit-service');
+
+    if (pitService.toggleHotkey) {
+      addHandler(pitService.toggleHotkey, (event) => {
+        if (event.state === 'Pressed') {
+          root.pitServiceWidget.toggleManualShow();
+          void emitPitServiceToggle();
         }
       });
     }

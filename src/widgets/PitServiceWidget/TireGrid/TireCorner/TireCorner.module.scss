@@ -1,0 +1,137 @@
+.corner {
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxxs);
+  padding: sp(xxs) sp(xs);
+  border-radius: radius(sm);
+  background: $widget-surface-cell;
+  border-left: 2px solid $widget-border-subtle;
+  font-family: $font-widget;
+  font-variant-numeric: tabular-nums;
+}
+
+.cornerOrdered {
+  border-left-color: $race-green;
+  background: rgba($race-green, 0.1);
+}
+
+.cornerKept {
+  opacity: 0.6;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: sp(xs);
+}
+
+.side {
+  font-size: fs(xxs);
+  letter-spacing: 0.1em;
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.order {
+  font-size: fs(xs);
+  color: $widget-text-primary;
+}
+
+.cornerKept .order {
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.zoneRow {
+  display: grid;
+  grid-template-columns: repeat(3, ws(30));
+  gap: 2px;
+  justify-content: center;
+  text-align: center;
+}
+
+// Temperatures carry their own zone color — the same one that fills the tread
+// below them, so the number and the block agree without a second legend.
+.zoneTemp {
+  font-size: fs(sm);
+}
+
+.zoneWear {
+  font-size: fs(sm);
+  color: $widget-text-primary;
+}
+
+.good {
+  color: $race-green;
+}
+
+.worn {
+  color: $race-amber;
+}
+
+.critical {
+  color: $race-red;
+}
+
+.tire {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, ws(26));
+  gap: 2px;
+  justify-content: center;
+  align-self: center;
+  height: ws(72);
+  padding: 2px;
+  background: rgba(0, 0, 0, $opacity-strong);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: $widget-border-radius;
+  overflow: hidden;
+}
+
+.section {
+  position: relative;
+  background: #1a1a1a;
+  border-radius: radius(sm);
+  overflow: hidden;
+}
+
+.fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: block;
+  transition:
+    height 0.5s ease,
+    background-color 0.5s ease;
+}
+
+.pressure {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: fs(lg);
+  color: $widget-text-primary;
+  text-shadow:
+    0 0 3px #000,
+    0 0 6px #000;
+  pointer-events: none;
+}
+
+@keyframes puncturePulse {
+  0%,
+  100% {
+    outline: 1px solid transparent;
+  }
+
+  50% {
+    outline: 1px solid rgba($race-red, 0.6);
+  }
+}
+
+.puncture {
+  animation: puncturePulse 1.2s infinite;
+}

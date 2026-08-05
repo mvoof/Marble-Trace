@@ -10,6 +10,8 @@ use crate::model::enums::{SessionState, Skies, TrackSurface};
 use crate::model::environment::EnvironmentFrame;
 use crate::model::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
+    PitServiceFrame, PIT_SV_FAST_REPAIR, PIT_SV_FUEL_FILL, PIT_SV_LF_TIRE_CHANGE,
+    PIT_SV_LR_TIRE_CHANGE, PIT_SV_RF_TIRE_CHANGE, PIT_SV_RR_TIRE_CHANGE, PIT_SV_WINDSHIELD_TEAROFF,
 };
 use crate::model::session::SessionFrame;
 use crate::sources::iracing::flags::decode_race_flags;
@@ -26,6 +28,7 @@ impl From<&IracingFrame> for SourceFrame {
             chassis: ChassisFrame::from(f),
             lap_timing: LapTimingFrame::from(f),
             car_status: CarStatusFrame::from(f),
+            pit_service: PitServiceFrame::from(f),
             session: SessionFrame::from(f),
             environment: EnvironmentFrame::from(f),
         }
@@ -103,6 +106,37 @@ impl From<&IracingFrame> for CarStatusFrame {
             dc_brake_bias: Some(f.dc_brake_bias),
             dc_traction_control: Some(f.dc_traction_control),
             dc_throttle_shape: Some(f.dc_throttle_shape),
+        }
+    }
+}
+
+impl From<&IracingFrame> for PitServiceFrame {
+    fn from(f: &IracingFrame) -> Self {
+        let flags = f.pit_sv_flags as u32;
+
+        Self {
+            flags: Some(flags),
+            change_lf: flags & PIT_SV_LF_TIRE_CHANGE != 0,
+            change_rf: flags & PIT_SV_RF_TIRE_CHANGE != 0,
+            change_lr: flags & PIT_SV_LR_TIRE_CHANGE != 0,
+            change_rr: flags & PIT_SV_RR_TIRE_CHANGE != 0,
+            add_fuel: flags & PIT_SV_FUEL_FILL != 0,
+            clean_windshield: flags & PIT_SV_WINDSHIELD_TEAROFF != 0,
+            fast_repair: flags & PIT_SV_FAST_REPAIR != 0,
+            fuel_amount: Some(f.pit_sv_fuel),
+            lf_pressure: Some(f.pit_sv_lfp),
+            rf_pressure: Some(f.pit_sv_rfp),
+            lr_pressure: Some(f.pit_sv_lrp),
+            rr_pressure: Some(f.pit_sv_rrp),
+            tire_compound: Some(f.pit_sv_tire_compound),
+            repair_left_s: Some(f.pit_repair_left),
+            opt_repair_left_s: Some(f.pit_opt_repair_left),
+            tow_time_s: Some(f.player_car_tow_time),
+            fast_repairs_available: Some(f.fast_repair_available),
+            fast_repairs_used: Some(f.player_fast_repairs_used),
+            service_status: Some(f.player_car_pit_sv_status),
+            in_pit_stall: f.player_car_in_pit_stall,
+            service_active: f.pitstop_active,
         }
     }
 }

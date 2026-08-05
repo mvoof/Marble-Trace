@@ -23,6 +23,7 @@ export const usePaceCarStore = () => useStore().paceCar;
 
 export const useRadarWidgetStore = () => useStore().radar;
 export const useStandingsWidgetStore = () => useStore().standingsWidget;
+export const usePitServiceWidgetStore = () => useStore().pitServiceWidget;
 export const useTrackMapWidgetStore = () => useStore().trackMapWidget;
 export const useDrivingCoachWidgetStore = () => useStore().drivingCoachWidget;
 export const useInputTraceWidgetStore = () => useStore().inputTraceWidget;

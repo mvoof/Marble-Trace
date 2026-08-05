@@ -1,0 +1,41 @@
+.fuel {
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxxs);
+  font-family: $font-widget;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: sp(sm);
+}
+
+.label {
+  font-size: fs(xxs);
+  letter-spacing: 0.06em;
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.value {
+  font-family: $font-mono;
+  font-size: fs(xl);
+  line-height: 1;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  font-size: fs(xxs);
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.sub {
+  font-size: fs(xxs);
+  color: $widget-label;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
