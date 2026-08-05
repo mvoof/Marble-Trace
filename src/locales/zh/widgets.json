@@ -107,7 +107,6 @@
       "chartStepWidth": "图表步长宽度（像素）",
       "statColumns": "油耗列",
       "statLast": "LAST — 上一圈",
-      "statAvg": "AVG {{window}} — 最近 {{window}} 圈平均",
       "statAvgAll": "AVG ALL — 全部圈平均",
       "statMin": "MIN — 最省油圈",
       "statMax": "MAX — 最费油圈",
@@ -115,7 +114,7 @@
       "nextStopForecastDesc": "预计进站窗口开启的圈数与时间。",
       "lowFuelWarningThreshold": "低油量警告阈值（圈数）",
       "avgWindow": "油耗平均窗口，圈数（0 = 全部圈数）",
-      "avgWindowDesc": "该平均值几乎决定整个小组件：AVG / LAP、LAPS LEFT、到达终点的余量、加油量以及进站窗口的边界。窗口越短越贴近当前节奏但波动大；越长数值越稳定，但对节奏或天气变化反应迟缓。"
+      "avgWindowDesc": "该平均值几乎决定整个小组件：概览中的 AVG 单元格、LAPS LEFT、到达终点的余量、加油量以及进站窗口的边界。窗口越短越贴近当前节奏但波动大；越长数值越稳定，但对节奏或天气变化反应迟缓。AVG ALL 列始终按全部圈计算，便于两者对照。"
     },
     "enginePanel": {
       "moduleParameters": "模块参数",

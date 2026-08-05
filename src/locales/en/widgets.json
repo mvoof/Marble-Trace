@@ -107,7 +107,6 @@
       "chartStepWidth": "Chart Step Width (px)",
       "statColumns": "Consumption Columns",
       "statLast": "LAST — last lap",
-      "statAvg": "AVG {{window}} — average of last {{window}} laps",
       "statAvgAll": "AVG ALL — average of every lap",
       "statMin": "MIN — best lap",
       "statMax": "MAX — worst lap",
@@ -115,7 +114,7 @@
       "nextStopForecastDesc": "Estimated lap and time until the pit window opens.",
       "lowFuelWarningThreshold": "Low Fuel Warning Threshold (Laps)",
       "avgWindow": "Consumption Averaging Window, Laps (0 = All Laps)",
-      "avgWindowDesc": "Nearly the whole widget is derived from this average: AVG / LAP, LAPS LEFT, the fuel left at the finish, the refuel amount and the pit window edges. A short window tracks the current pace but jumps around; a long one reads steady but is slow to follow a change in pace or weather."
+      "avgWindowDesc": "Nearly the whole widget is derived from this average: the summary AVG cell, LAPS LEFT, the fuel left at the finish, the refuel amount and the pit window edges. A short window tracks the current pace but jumps around; a long one reads steady but is slow to follow a change in pace or weather. The AVG ALL column always spans every lap, so the two read side by side."
     },
     "enginePanel": {
       "moduleParameters": "Module Parameters",

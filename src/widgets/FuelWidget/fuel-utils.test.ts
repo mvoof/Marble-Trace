@@ -1,19 +1,30 @@
 import { describe, expect, it } from 'vitest';
 
+import type { FuelLapRecord } from '@/types/bindings';
 import { FUEL_AVG_WINDOW_ALL_LAPS } from '@utils/constants/fuel-constants';
 import {
   computeFuelHistoryStats,
+  countedLaps,
   computeLapsToEmpty,
   computeNextStopForecast,
   computeRefuelPlan,
   formatCountdown,
   getFuelStatLabel,
+  getSummaryAvgLabel,
+  isPitNow,
   resolveLapsStatus,
 } from './fuel-utils';
 
+const counted = (used: number[]): FuelLapRecord[] =>
+  used.map((value, index) => ({
+    lap: index + 1,
+    used: value,
+    rejected: null,
+  }));
+
 describe('computeFuelHistoryStats', () => {
   it('returns nulls for an empty history', () => {
-    expect(computeFuelHistoryStats([], 5)).toEqual({
+    expect(computeFuelHistoryStats([])).toEqual({
       last: null,
       avg: null,
       min: null,
@@ -21,39 +32,74 @@ describe('computeFuelHistoryStats', () => {
     });
   });
 
-  it('confines every stat to the configured window', () => {
-    // The 9.0 outlier is an out-lap the window deliberately leaves behind.
-    const stats = computeFuelHistoryStats([9.0, 2.0, 3.0, 4.0], 3);
-
-    expect(stats).toEqual({ last: 4.0, avg: 3.0, min: 2.0, max: 4.0 });
-  });
-
-  it('averages the whole history when the window is all laps', () => {
-    const stats = computeFuelHistoryStats(
-      [9.0, 2.0, 3.0, 4.0],
-      FUEL_AVG_WINDOW_ALL_LAPS
-    );
+  it('spans the whole history so it cannot restate the summary window', () => {
+    const stats = computeFuelHistoryStats(counted([9.0, 2.0, 3.0, 4.0]));
 
     expect(stats).toEqual({ last: 4.0, avg: 4.5, min: 2.0, max: 9.0 });
   });
 
-  it('falls back to the whole history when the window exceeds it', () => {
-    const stats = computeFuelHistoryStats([2.0, 4.0], 10);
+  it('leaves rejected laps out of every stat, MIN and MAX included', () => {
+    const stats = computeFuelHistoryStats([
+      { lap: 1, used: 9.0, rejected: 'out-lap' },
+      { lap: 2, used: 2.0, rejected: null },
+      { lap: 3, used: 0.4, rejected: 'caution' },
+      { lap: 4, used: 4.0, rejected: null },
+    ]);
 
     expect(stats).toEqual({ last: 4.0, avg: 3.0, min: 2.0, max: 4.0 });
+  });
+
+  it('returns nulls when no lap counted', () => {
+    expect(
+      computeFuelHistoryStats([{ lap: 1, used: 9.0, rejected: 'out-lap' }]).avg
+    ).toBeNull();
+  });
+});
+
+describe('countedLaps', () => {
+  it('keeps the laps that count, in order', () => {
+    const history: FuelLapRecord[] = [
+      { lap: 4, used: 2.0, rejected: null },
+      { lap: 5, used: 0.4, rejected: 'caution' },
+      { lap: 6, used: 2.2, rejected: null },
+    ];
+
+    expect(countedLaps(history).map((record) => record.lap)).toEqual([4, 6]);
   });
 });
 
 describe('getFuelStatLabel', () => {
-  it('names the averaging window in place', () => {
-    expect(getFuelStatLabel('avg', 25)).toBe('AVG 25');
-    expect(getFuelStatLabel('avg', FUEL_AVG_WINDOW_ALL_LAPS)).toBe('AVG ALL');
+  it('labels the average column as the whole history', () => {
+    expect(getFuelStatLabel('avg')).toBe('AVG ALL');
   });
 
   it('keeps static labels for the other stats', () => {
-    expect(getFuelStatLabel('last', 25)).toBe('LAST');
-    expect(getFuelStatLabel('min', 25)).toBe('MIN');
-    expect(getFuelStatLabel('max', 25)).toBe('MAX');
+    expect(getFuelStatLabel('last')).toBe('LAST');
+    expect(getFuelStatLabel('min')).toBe('MIN');
+    expect(getFuelStatLabel('max')).toBe('MAX');
+  });
+});
+
+describe('getSummaryAvgLabel', () => {
+  it('names the window driving the strategy figures', () => {
+    expect(getSummaryAvgLabel(5)).toBe('AVG 5');
+    expect(getSummaryAvgLabel(FUEL_AVG_WINDOW_ALL_LAPS)).toBe('AVG ALL');
+  });
+});
+
+describe('isPitNow', () => {
+  it('drops the lap range once under a lap of fuel is left', () => {
+    expect(isPitNow(1)).toBe(true);
+    expect(isPitNow(0.3)).toBe(true);
+  });
+
+  it('keeps the range while the window still has laps to offer', () => {
+    expect(isPitNow(1.1)).toBe(false);
+    expect(isPitNow(3)).toBe(false);
+  });
+
+  it('stays quiet without a reading', () => {
+    expect(isPitNow(null)).toBe(false);
   });
 });
 

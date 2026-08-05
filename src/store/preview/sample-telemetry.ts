@@ -74,7 +74,16 @@ export const sampleFuel: FuelComputedFrame = {
   pitWindowStart: 12,
   pitWindowEnd: 16,
   isTimedRace: false,
-  lapFuelHistory: [2.7, 2.5, 2.6, 2.6, 2.55, 2.62],
+  lapFuelHistory: [
+    { lap: 1, used: 3.4, rejected: 'out-lap' },
+    { lap: 2, used: 2.7, rejected: null },
+    { lap: 3, used: 2.5, rejected: null },
+    { lap: 4, used: 1.4, rejected: 'caution' },
+    { lap: 5, used: 2.6, rejected: null },
+    { lap: 6, used: 2.6, rejected: null },
+    { lap: 7, used: 2.55, rejected: null },
+    { lap: 8, used: 2.62, rejected: null },
+  ],
 };
 
 const sampleLapDelta: LapDeltaFrame = {

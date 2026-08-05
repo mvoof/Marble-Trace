@@ -671,7 +671,23 @@ export type FuelComputedFrame = {
   pitWindowStart: number | null;
   pitWindowEnd: number | null;
   isTimedRace: boolean;
-  lapFuelHistory: number[];
+  lapFuelHistory: FuelLapRecord[];
+};
+
+/**
+ * One completed lap as measured, kept whether or not it counts.
+ *
+ * A rejected lap still burned fuel and still happened, so it belongs in the
+ * history the widget draws — dropping it silently left the chart unable to say
+ * which lap any bar referred to. `rejected` carries why it does not count.
+ */
+export type FuelLapRecord = {
+  lap: number;
+  used: number;
+  /**
+   * `None` for a lap that counts towards the average.
+   */
+  rejected: string | null;
 };
 
 /**

@@ -1,8 +1,13 @@
+import type { FuelLapRecord } from '@/types/bindings';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import {
   FUEL_AVG_WINDOW_ALL_LAPS,
   FUEL_THRESHOLDS,
 } from '@utils/constants/fuel-constants';
+
+/** Laps that count towards the average; the rest are drawn but never measured. */
+export const countedLaps = (history: FuelLapRecord[]): FuelLapRecord[] =>
+  history.filter((record) => record.rejected === null);
 
 export interface FuelHistoryStats {
   last: number | null;
@@ -12,25 +17,28 @@ export interface FuelHistoryStats {
 }
 
 /**
- * Every stat shares the averaging window the user configured, so MIN/MAX cannot
- * drag in the out-lap or a caution lap that the average itself already ignores.
- * `window === 0` means the whole recorded history, matching `FuelState::avg`.
+ * The whole recorded history, deliberately ignoring the user's averaging
+ * window: that window already drives the summary row and every strategy figure
+ * with it. Repeating it here made this row restate the summary instead of
+ * adding to it — reading the two side by side is what tells the driver whether
+ * the current pace runs richer or leaner than the stint has averaged.
+ *
+ * Rejected laps are skipped outright, so an out-lap or a lap behind the safety
+ * car cannot become MIN or MAX however far it sits from the rest.
  */
 export const computeFuelHistoryStats = (
-  history: number[],
-  window: number
+  history: FuelLapRecord[]
 ): FuelHistoryStats => {
-  if (history.length === 0) {
+  const used = countedLaps(history).map((record) => record.used);
+
+  if (used.length === 0) {
     return { last: null, avg: null, min: null, max: null };
   }
 
-  const laps =
-    window === FUEL_AVG_WINDOW_ALL_LAPS ? history : history.slice(-window);
-
-  const last = history[history.length - 1];
-  const avg = laps.reduce((sum, value) => sum + value, 0) / laps.length;
-  const min = Math.min(...laps);
-  const max = Math.max(...laps);
+  const last = used[used.length - 1];
+  const avg = used.reduce((sum, value) => sum + value, 0) / used.length;
+  const min = Math.min(...used);
+  const max = Math.max(...used);
 
   return { last, avg, min, max };
 };
@@ -39,18 +47,21 @@ export type FuelStatKey = keyof FuelHistoryStats;
 
 const FUEL_STAT_ORDER: FuelStatKey[] = ['last', 'avg', 'min', 'max'];
 
-const FUEL_STAT_STATIC_LABELS: Record<Exclude<FuelStatKey, 'avg'>, string> = {
+const FUEL_STAT_LABELS: Record<FuelStatKey, string> = {
   last: 'LAST',
+  avg: 'AVG ALL',
   min: 'MIN',
   max: 'MAX',
 };
 
-/** The average column names its own window so the setting is visible in-place. */
-export const getFuelStatLabel = (key: FuelStatKey, window: number): string => {
-  if (key !== 'avg') {
-    return FUEL_STAT_STATIC_LABELS[key];
-  }
+export const getFuelStatLabel = (key: FuelStatKey): string =>
+  FUEL_STAT_LABELS[key];
 
+/**
+ * The summary average names its own window, so the setting behind LAPS LEFT and
+ * FINISH is readable on the overlay rather than only in the settings panel.
+ */
+export const getSummaryAvgLabel = (window: number): string => {
   if (window === FUEL_AVG_WINDOW_ALL_LAPS) {
     return 'AVG ALL';
   }
@@ -86,6 +97,14 @@ export const computeLapsToEmpty = (
 
   return fuelLevel / consumptionPerLap;
 };
+
+/**
+ * Whether the pit window has laps left to name. Once under a lap of fuel the
+ * range is behind the car — quoting a lap number would read as "you still have
+ * until lap 18" when the tank runs dry on the lap being driven.
+ */
+export const isPitNow = (lapsRemaining: number | null): boolean =>
+  lapsRemaining !== null && lapsRemaining <= FUEL_THRESHOLDS.PIT_NOW_LAPS;
 
 export type FuelLapsStatus = 'safe' | 'warning' | 'danger';
 

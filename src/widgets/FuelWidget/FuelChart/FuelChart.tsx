@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { drawBarChart, drawLineChart } from './chart-renderers';
+import { countedLaps } from '../fuel-utils';
 
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import styles from './FuelChart.module.scss';
@@ -38,9 +39,14 @@ export const FuelChart = observer(() => {
       return;
     }
 
+    // Only the laps that count set the AVG line — it has to sit where the
+    // widget's own average sits, not where the drawn bars happen to average.
+    const counted = countedLaps(fuelHistory);
+
     const avg =
-      fuelHistory.reduce((acc: number, val: number) => acc + val, 0) /
-      fuelHistory.length;
+      counted.length > 0
+        ? counted.reduce((sum, record) => sum + record.used, 0) / counted.length
+        : null;
 
     const dpr = window.devicePixelRatio || 1;
 
