@@ -56,7 +56,8 @@
     stroke-dashoffset: 0;
   }
   to {
-    stroke-dashoffset: 57;
+    // Set from RING_CIRCUMFERENCE in LapFlash.tsx so the ring lands exactly empty.
+    stroke-dashoffset: var(--ring-length);
   }
 }
 

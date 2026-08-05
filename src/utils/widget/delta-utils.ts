@@ -22,25 +22,33 @@ export const formatDelta = (delta: number | null): string => {
   const sign = delta >= 0 ? '+' : '-';
   const abs = Math.abs(delta);
 
+  // Each branch rounds to its own precision *before* splitting minutes from
+  // seconds — rounding after the split would let 119.97 print as "+1:60.0".
   // " +0.284" … "+59.999" — the range a driver actually reads. Padding goes
   // in front of the sign, so the sign stays glued to its digits and the
   // decimal point still lands in the same column every frame.
-  if (abs < SECONDS_PER_MINUTE) {
-    return padSlots(`${sign}${abs.toFixed(3)}`);
+  const rounded3 = Math.round(abs * 1000) / 1000;
+
+  if (rounded3 < SECONDS_PER_MINUTE) {
+    return padSlots(`${sign}${rounded3.toFixed(3)}`);
   }
 
   // "+1:02.4" — a tenth is plenty once a whole minute is on the board.
-  if (abs < TEN_MINUTES) {
-    const m = Math.floor(abs / SECONDS_PER_MINUTE);
-    const s = abs % SECONDS_PER_MINUTE;
+  const rounded1 = Math.round(abs * 10) / 10;
+
+  if (rounded1 < TEN_MINUTES) {
+    const m = Math.floor(rounded1 / SECONDS_PER_MINUTE);
+    const s = rounded1 % SECONDS_PER_MINUTE;
 
     return padSlots(`${sign}${m}:${s.toFixed(1).padStart(4, '0')}`);
   }
 
   // "+59:59" — lapped-by-minutes territory, seconds are noise.
-  if (abs < SECONDS_PER_HOUR) {
-    const m = Math.floor(abs / SECONDS_PER_MINUTE);
-    const s = Math.floor(abs % SECONDS_PER_MINUTE);
+  const roundedSeconds = Math.round(abs);
+
+  if (roundedSeconds < SECONDS_PER_HOUR) {
+    const m = Math.floor(roundedSeconds / SECONDS_PER_MINUTE);
+    const s = roundedSeconds % SECONDS_PER_MINUTE;
 
     return padSlots(`${sign}${m}:${String(s).padStart(2, '0')}`);
   }
@@ -56,7 +64,7 @@ export const getDeltaToPreviousBest = (
   lapTime: number
 ): number | null => {
   const previousTimes = history
-    .filter((entry) => entry.lapNum !== lapNum && entry.lapTime !== null)
+    .filter((entry) => entry.lapNum < lapNum && entry.lapTime !== null)
     .map((entry) => entry.lapTime as number);
 
   if (previousTimes.length === 0) return null;
