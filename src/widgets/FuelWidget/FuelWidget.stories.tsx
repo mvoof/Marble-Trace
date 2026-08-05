@@ -1,11 +1,11 @@
 ﻿import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { FuelComputedFrame } from '@/types/bindings';
+import type { FuelComputedFrame, FuelLapRecord } from '@/types/bindings';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import { FuelWidget } from './FuelWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
-const LAP_FUEL_HISTORY = [
+const LAP_FUEL_USED = [
   3.2, 3.1, 3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3,
   3, 4, 3.2, 3.5, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 3.2,
   3.1, 3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4,
@@ -13,6 +13,21 @@ const LAP_FUEL_HISTORY = [
   6, 3.3, 3, 3.2, 3.1, 3.4, 3, 2, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4,
   3.2, 3.5, 5, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 3, 4, 3.2, 3.5, 2, 5, 3, 4,
 ];
+
+// The lap the stint opened on plus a caution, so the grey bars and the gap they
+// leave in the trend line are visible without hunting for a rejected lap.
+const REJECTED_BY_LAP: Record<number, string> = {
+  1: 'out-lap',
+  9: 'caution',
+  10: 'caution',
+  73: 'outlier',
+};
+
+const LAP_FUEL_HISTORY: FuelLapRecord[] = LAP_FUEL_USED.map((used, index) => {
+  const lap = index + 1;
+
+  return { lap, used, rejected: REJECTED_BY_LAP[lap] ?? null };
+});
 
 interface StoryArgs {
   fuelLevel: number | null;
@@ -27,7 +42,7 @@ interface StoryArgs {
   showChart: boolean;
   chartType: 'line' | 'bar';
   barWidth: number;
-  lapFuelHistory: number[];
+  lapFuelHistory: FuelLapRecord[];
   pitWarningLaps: number;
   showNextStopForecast: boolean;
   bestLapTime: number | null;

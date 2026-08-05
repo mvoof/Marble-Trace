@@ -13,7 +13,11 @@ import {
   NO_FUEL_DATA_PLACEHOLDER,
   NO_LAPS_REMAINING_DATA_PLACEHOLDER,
 } from '@utils/constants/data-placeholders';
-import { type FuelLapsStatus, resolveLapsStatus } from '../fuel-utils';
+import {
+  type FuelLapsStatus,
+  getSummaryAvgLabel,
+  resolveLapsStatus,
+} from '../fuel-utils';
 import styles from './FuelSummaryRow.module.scss';
 
 const LAPS_STATUS_CLASSES: Record<FuelLapsStatus, string> = {
@@ -54,7 +58,9 @@ export const FuelSummaryRow = observer(() => {
     <div className={styles.grid}>
       <div className={styles.sideLeft}>
         <WidgetValue className={styles.sideValue} value={avgText} />
-        <WidgetLabel className={styles.sideLabel}>AVG / LAP</WidgetLabel>
+        <WidgetLabel className={styles.sideLabel}>
+          {getSummaryAvgLabel(settings.fuelAvgWindow)}
+        </WidgetLabel>
       </div>
 
       <div className={styles.main}>

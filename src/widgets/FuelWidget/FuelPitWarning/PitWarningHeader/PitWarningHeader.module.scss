@@ -25,6 +25,16 @@
   font-weight: 400;
 }
 
+// Replaces the lap range once there is no lap left to name, so it has to read
+// louder than the range it stands in for.
+.pitWarningNow {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  font-weight: 700;
+  color: $widget-status-danger;
+  letter-spacing: 0.06em;
+}
+
 .pitWarningSeparator {
   height: 1px;
   background: rgba(255, 255, 255, $opacity-faint);

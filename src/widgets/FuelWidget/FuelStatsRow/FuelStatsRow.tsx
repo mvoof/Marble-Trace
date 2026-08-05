@@ -37,7 +37,7 @@ export const FuelStatsRow = observer(() => {
   const history = fuel?.lapFuelHistory ?? [];
   const fuelLevel = carStatus?.fuel_level ?? null;
 
-  const stats = computeFuelHistoryStats(history, settings.fuelAvgWindow);
+  const stats = computeFuelHistoryStats(history);
 
   const formatConsumption = (value: number | null): string =>
     value !== null ? formatFuel(value, unitSystem) : NO_FUEL_DATA_PLACEHOLDER;
@@ -56,7 +56,7 @@ export const FuelStatsRow = observer(() => {
       {visibleKeys.map((key) => (
         <FuelStatsCell
           key={key}
-          label={getFuelStatLabel(key, settings.fuelAvgWindow)}
+          label={getFuelStatLabel(key)}
           consumption={formatConsumption(stats[key])}
           laps={formatLaps(stats[key])}
         />

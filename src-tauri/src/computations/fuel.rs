@@ -64,8 +64,29 @@ pub struct FuelSample {
     pub caution: bool,
 }
 
+/// One completed lap as measured, kept whether or not it counts.
+///
+/// A rejected lap still burned fuel and still happened, so it belongs in the
+/// history the widget draws — dropping it silently left the chart unable to say
+/// which lap any bar referred to. `rejected` carries why it does not count.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[serde(rename_all = "camelCase")]
+pub struct FuelLapRecord {
+    pub lap: i32,
+    pub used: f32,
+    /// `None` for a lap that counts towards the average.
+    pub rejected: Option<String>,
+}
+
+impl FuelLapRecord {
+    fn counts(&self) -> bool {
+        self.rejected.is_none()
+    }
+}
+
 pub struct FuelState {
-    pub lap_fuel_history: Vec<f32>,
+    pub lap_fuel_history: Vec<FuelLapRecord>,
     pub last_lap: i32,
     pub last_lap_start_fuel: Option<f32>,
     pub tracked_session_num: i32,
@@ -186,6 +207,7 @@ impl FuelState {
 
         let used = start_fuel + self.refuelled_this_lap - fuel_level;
         let lap_secs = self.lap_started_at.map(|at| at.elapsed().as_secs_f64());
+        // Judged against the laps that count, before this one joins them.
         let rejected = self.rejection_reason(used, lap_secs);
 
         // Every completed lap, kept or dropped, with the readings it was
@@ -201,15 +223,25 @@ impl FuelState {
             "fuel lap"
         );
 
-        if rejected.is_some() {
-            return;
-        }
-
-        self.lap_fuel_history.push(used);
+        self.lap_fuel_history.push(FuelLapRecord {
+            lap: self.last_lap,
+            used,
+            rejected: rejected.map(str::to_owned),
+        });
 
         if self.lap_fuel_history.len() > MAX_LAP_FUEL_HISTORY {
             self.lap_fuel_history.remove(0);
         }
+    }
+
+    /// Consumption of the laps that count, in order. Everything the average,
+    /// the outlier fence and the widget's statistics are built from.
+    pub fn counted_laps(&self) -> Vec<f32> {
+        self.lap_fuel_history
+            .iter()
+            .filter(|record| record.counts())
+            .map(|record| record.used)
+            .collect()
     }
 
     /// Why a completed lap does not belong in the consumption history, if it
@@ -236,7 +268,7 @@ impl FuelState {
             return Some("caution");
         }
 
-        if is_outlier(used, &self.lap_fuel_history) {
+        if is_outlier(used, &self.counted_laps()) {
             return Some("outlier");
         }
 
@@ -246,17 +278,19 @@ impl FuelState {
     /// Mean fuel use over the last `window` laps; `window == 0` averages the
     /// whole recorded history.
     pub fn avg(&self, window: usize) -> Option<f32> {
-        if self.lap_fuel_history.is_empty() {
+        let counted = self.counted_laps();
+
+        if counted.is_empty() {
             return None;
         }
 
         let take = if window == 0 {
-            self.lap_fuel_history.len()
+            counted.len()
         } else {
-            window.min(self.lap_fuel_history.len())
+            window.min(counted.len())
         };
 
-        let sum: f32 = self.lap_fuel_history.iter().rev().take(take).sum();
+        let sum: f32 = counted.iter().rev().take(take).sum();
 
         Some(sum / take as f32)
     }
@@ -278,7 +312,7 @@ pub struct FuelComputedFrame {
     pub pit_window_start: Option<i32>,
     pub pit_window_end: Option<i32>,
     pub is_timed_race: bool,
-    pub lap_fuel_history: Vec<f32>,
+    pub lap_fuel_history: Vec<FuelLapRecord>,
 }
 
 pub fn compute(
@@ -545,7 +579,7 @@ mod tests {
         let lap_timing = make_lap_timing(Some(5), None);
         let session = SessionSnapshot::default();
         let fuel_state = FuelState {
-            lap_fuel_history: vec![2.0, 2.0, 2.0],
+            lap_fuel_history: counted_history(&[2.0, 2.0, 2.0]),
             ..Default::default()
         };
 
@@ -572,7 +606,7 @@ mod tests {
         let lap_timing = make_lap_timing(Some(17), lap_dist_pct);
         let session = SessionSnapshot::default();
         let fuel_state = FuelState {
-            lap_fuel_history: vec![2.0, 2.0, 2.0],
+            lap_fuel_history: counted_history(&[2.0, 2.0, 2.0]),
             ..Default::default()
         };
 
@@ -623,7 +657,7 @@ mod tests {
     #[test]
     fn test_avg_window_uses_most_recent_laps() {
         let state = FuelState {
-            lap_fuel_history: vec![4.0, 4.0, 4.0, 2.0, 2.0],
+            lap_fuel_history: counted_history(&[4.0, 4.0, 4.0, 2.0, 2.0]),
             ..Default::default()
         };
 
@@ -643,7 +677,7 @@ mod tests {
         let lap_timing = make_lap_timing(Some(5), None);
         let session = SessionSnapshot::default();
         let fuel_state = FuelState {
-            lap_fuel_history: vec![4.0, 4.0, 4.0, 2.0, 2.0],
+            lap_fuel_history: counted_history(&[4.0, 4.0, 4.0, 2.0, 2.0]),
             ..Default::default()
         };
 
@@ -674,6 +708,27 @@ mod tests {
         }
     }
 
+    /// Seeds a history of laps that all count, as a stint of green laps leaves.
+    fn counted_history(used: &[f32]) -> Vec<FuelLapRecord> {
+        used.iter()
+            .enumerate()
+            .map(|(index, &used)| FuelLapRecord {
+                lap: index as i32 + 1,
+                used,
+                rejected: None,
+            })
+            .collect()
+    }
+
+    /// Why each recorded lap was rejected, in order — `None` where it counted.
+    fn rejections(state: &FuelState) -> Vec<Option<&str>> {
+        state
+            .lap_fuel_history
+            .iter()
+            .map(|record| record.rejected.as_deref())
+            .collect()
+    }
+
     /// Feeds a sample as if a full-length lap had elapsed since the last one.
     /// The state clock only exists to catch counter jumps no lap could have
     /// produced, and a test runs far faster than any lap.
@@ -699,14 +754,17 @@ mod tests {
         assert_eq!(state.last_lap_start_fuel, Some(50.0));
         assert!(state.lap_fuel_history.is_empty());
 
-        // Lap 0 completed — the lap out of the garage tells nothing about pace.
+        // Lap 0 completed — the lap out of the garage tells nothing about pace,
+        // but it is still recorded so the chart can show it greyed out.
         drive(&mut state, green(1, 48.0));
         assert_eq!(state.last_lap, 1);
-        assert!(state.lap_fuel_history.is_empty());
+        assert_eq!(rejections(&state), vec![Some("out-lap")]);
+        assert!(state.counted_laps().is_empty());
 
-        // Lap 1 completed on 2.5L, the first lap worth recording.
+        // Lap 1 completed on 2.5L, the first lap worth counting.
         drive(&mut state, green(2, 45.5));
-        assert_eq!(state.lap_fuel_history, vec![2.5]);
+        assert_eq!(state.counted_laps(), vec![2.5]);
+        assert_eq!(state.lap_fuel_history[1].lap, 1);
     }
 
     #[test]
@@ -723,7 +781,7 @@ mod tests {
         drive(&mut state, green(5, 47.5));
 
         // 20 burned down to 47.5 having gained 30 — the stop is not fuel saved.
-        assert_eq!(state.lap_fuel_history, vec![2.5]);
+        assert_eq!(state.counted_laps(), vec![2.5]);
     }
 
     #[test]
@@ -740,7 +798,8 @@ mod tests {
         );
         drive(&mut state, green(5, 18.5));
 
-        assert!(state.lap_fuel_history.is_empty());
+        assert!(state.counted_laps().is_empty());
+        assert_eq!(rejections(&state), vec![Some("caution")]);
     }
 
     #[test]
@@ -757,7 +816,8 @@ mod tests {
         );
         drive(&mut state, green(5, 17.5));
 
-        assert!(state.lap_fuel_history.is_empty());
+        assert!(state.counted_laps().is_empty());
+        assert_eq!(rejections(&state), vec![Some("left-track")]);
     }
 
     #[test]
@@ -768,7 +828,8 @@ mod tests {
         // No back-dating: the counter advanced with no time for a lap to pass.
         state.update(green(5, 17.5));
 
-        assert!(state.lap_fuel_history.is_empty());
+        assert!(state.counted_laps().is_empty());
+        assert_eq!(rejections(&state), vec![Some("too-short")]);
     }
 
     #[test]
@@ -776,18 +837,25 @@ mod tests {
         // Same session number the samples carry, or the first one would be
         // read as a session change and wipe the seeded history.
         let mut state = FuelState {
-            lap_fuel_history: vec![2.5, 2.5, 2.5],
+            lap_fuel_history: counted_history(&[2.5, 2.5, 2.5]),
             tracked_session_num: 1,
             ..Default::default()
         };
 
         drive(&mut state, green(4, 20.0));
         drive(&mut state, green(5, 15.0)); // 5.0L — double the stint's pace
-        assert_eq!(state.lap_fuel_history, vec![2.5, 2.5, 2.5]);
+        assert_eq!(state.counted_laps(), vec![2.5, 2.5, 2.5]);
+        // Kept on record with its reason rather than erased from the chart.
+        assert_eq!(
+            state.lap_fuel_history[3].rejected.as_deref(),
+            Some("outlier")
+        );
+        assert_eq!(state.lap_fuel_history[3].lap, 4);
 
         drive(&mut state, green(6, 12.4)); // 2.6L — ordinary variation
-        assert_eq!(state.lap_fuel_history.len(), 4);
-        assert!((state.lap_fuel_history[3] - 2.6).abs() < 0.001);
+        let counted = state.counted_laps();
+        assert_eq!(counted.len(), 4);
+        assert!((counted[3] - 2.6).abs() < 0.001);
     }
 
     #[test]

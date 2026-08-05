@@ -19,6 +19,12 @@ export const FUEL_COLORS = {
   grid: 'rgba(255,255,255,0.07)',
   /** Text and labels muted */
   textMuted: 'rgba(255,255,255,0.55)',
+  /**
+   * A lap that happened but does not count — an out-lap, a caution lap, a lap
+   * with a trip through the grass. Grey keeps it in the history without letting
+   * it read as a consumption the average should have followed.
+   */
+  rejected: 'rgba(255,255,255,0.28)',
 } as const;
 
 export const FUEL_CHART_CONFIG = {
@@ -45,4 +51,11 @@ export const FUEL_AVG_WINDOW_MAX = 100;
 export const FUEL_THRESHOLDS = {
   /** Additional laps of fuel beyond pitWarningLaps to consider "Safe" */
   LAPS_LEFT_GREEN_BUFFER: 2,
+  /**
+   * Laps of fuel left at which the pit window has run out of laps to offer and
+   * the header stops naming one. `pit_window_end` is computed as the dry-tank
+   * lap minus the same one-lap cushion (`PIT_WINDOW_END_BUFFER_LAPS` in
+   * `fuel.rs`), so the two describe the same moment.
+   */
+  PIT_NOW_LAPS: 1,
 } as const;
