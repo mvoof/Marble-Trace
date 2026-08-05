@@ -1,18 +1,25 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Select, Switch } from 'antd';
+import { Switch } from 'antd';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
-const TIRE_OPTIONS: PitServiceWidgetSettings['commandTires'][] = [
-  'none',
-  'all',
-  'fronts',
-  'rears',
-];
+/** Every hotkey in the commands card, in the order they are shown. */
+const COMMAND_HOTKEYS = [
+  'applyOrderHotkey',
+  'clearOrderHotkey',
+  'fuelHotkey',
+  'tiresAllHotkey',
+  'tireLfHotkey',
+  'tireRfHotkey',
+  'tireLrHotkey',
+  'tireRrHotkey',
+  'fastRepairHotkey',
+  'windshieldHotkey',
+] as const satisfies ReadonlyArray<keyof PitServiceWidgetSettings>;
 
 export const PitServiceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -136,42 +143,19 @@ export const PitServiceSettingsPanel = observer(() => {
           />
         </SettingRow>
 
-        <SettingRow
-          title={t('settingsPanels.pitService.commandTires')}
-          desc={t('settingsPanels.pitService.commandTiresDesc')}
-        >
-          <Select
-            value={settings.commandTires}
-            disabled={!settings.enableCommands}
-            onChange={(value) => update({ commandTires: value })}
-            options={TIRE_OPTIONS.map((option) => ({
-              value: option,
-              label: t(`settingsPanels.pitService.commandTires_${option}`),
-            }))}
-          />
-        </SettingRow>
-
-        <SettingRow
-          title={t('settingsPanels.pitService.applyOrderHotkey')}
-          desc={t('settingsPanels.pitService.applyOrderHotkeyDesc')}
-        >
-          <HotkeyRecorder
-            currentHotkey={settings.applyOrderHotkey}
-            onApply={(hotkey) => update({ applyOrderHotkey: hotkey })}
-            onClear={() => update({ applyOrderHotkey: '' })}
-          />
-        </SettingRow>
-
-        <SettingRow
-          title={t('settingsPanels.pitService.clearOrderHotkey')}
-          desc={t('settingsPanels.pitService.clearOrderHotkeyDesc')}
-        >
-          <HotkeyRecorder
-            currentHotkey={settings.clearOrderHotkey}
-            onApply={(hotkey) => update({ clearOrderHotkey: hotkey })}
-            onClear={() => update({ clearOrderHotkey: '' })}
-          />
-        </SettingRow>
+        {COMMAND_HOTKEYS.map((key) => (
+          <SettingRow
+            key={key}
+            title={t(`settingsPanels.pitService.${key}`)}
+            desc={t(`settingsPanels.pitService.${key}Desc`)}
+          >
+            <HotkeyRecorder
+              currentHotkey={settings[key]}
+              onApply={(hotkey) => update({ [key]: hotkey })}
+              onClear={() => update({ [key]: '' })}
+            />
+          </SettingRow>
+        ))}
       </Card>
     </>
   );

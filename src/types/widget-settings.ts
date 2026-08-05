@@ -334,10 +334,22 @@ export interface PitServiceWidgetSettings {
    * everything else in this widget only reads telemetry.
    */
   enableCommands: boolean;
-  /** Which corners the apply hotkey puts on the order. */
-  commandTires: 'none' | 'all' | 'fronts' | 'rears';
+  /** Sends the full stop in one press: clear, calculated fuel, all four tires. */
   applyOrderHotkey: string;
   clearOrderHotkey: string;
+  /**
+   * One hotkey per pit checkbox. Each of these toggles that box on top of
+   * whatever is already ordered — unlike `applyOrderHotkey`, they never clear
+   * the rest of the order. Empty string = unbound.
+   */
+  fuelHotkey: string;
+  tiresAllHotkey: string;
+  tireLfHotkey: string;
+  tireRfHotkey: string;
+  tireLrHotkey: string;
+  tireRrHotkey: string;
+  fastRepairHotkey: string;
+  windshieldHotkey: string;
 }
 
 export type GMeterDisplayMode = 'trail' | 'fading' | 'peak';

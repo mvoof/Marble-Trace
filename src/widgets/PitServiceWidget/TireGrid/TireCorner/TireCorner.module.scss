@@ -19,6 +19,14 @@
   opacity: 0.6;
 }
 
+.cornerClickable {
+  cursor: pointer;
+
+  &:hover {
+    background: rgba($race-blue, 0.18);
+  }
+}
+
 .head {
   display: flex;
   align-items: baseline;

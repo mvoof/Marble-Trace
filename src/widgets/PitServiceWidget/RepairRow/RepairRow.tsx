@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import styles from './RepairRow.module.scss';
+import { OrderToggle } from '@widgets/PitServiceWidget/OrderToggle/OrderToggle';
 import {
   countdownUnit,
   formatCountdown,
@@ -66,13 +67,36 @@ export const RepairRow = observer(() => {
         </div>
       )}
 
-      <div className={styles.chip}>
+      {/*
+        Both boxes are shown whether or not they are ordered — in interact mode
+        they double as the click target that toggles them, and a control that
+        appears only once it is on cannot be turned on.
+      */}
+      <OrderToggle
+        className={`${styles.chip} ${widget.isFastRepairOrdered ? styles.chipOrdered : ''}`}
+        clickableClassName={styles.chipClickable}
+        label="Toggle fast repair"
+        onToggle={() => void widget.toggleFastRepair()}
+      >
         <span className={styles.key}>FAST REPAIR</span>
 
         <span className={styles.value}>
           {used} / {available + used}
         </span>
-      </div>
+      </OrderToggle>
+
+      <OrderToggle
+        className={`${styles.chip} ${widget.isWindshieldOrdered ? styles.chipOrdered : ''}`}
+        clickableClassName={styles.chipClickable}
+        label="Toggle windshield clean"
+        onToggle={() => void widget.toggleWindshield()}
+      >
+        <span className={styles.key}>WINDSHIELD</span>
+
+        <span className={styles.value}>
+          {widget.isWindshieldOrdered ? 'ON' : '—'}
+        </span>
+      </OrderToggle>
     </div>
   );
 });

@@ -59,29 +59,19 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
   it('rounds fuel up so the order never lands a liter short', () => {
     setFuelPlan(25.2, 106);
-    setSettings({ commandTires: 'none' });
 
     expect(rootStore.pitServiceWidget.plannedOrder).toEqual([
       { kind: 'clear', value: 0 },
       { kind: 'fuel', value: 26 },
-    ]);
-  });
-
-  it('puts the selected corners on the order at the garage pressure', () => {
-    setFuelPlan(10, 106);
-    setSettings({ commandTires: 'fronts' });
-
-    expect(rootStore.pitServiceWidget.plannedOrder).toEqual([
-      { kind: 'clear', value: 0 },
-      { kind: 'fuel', value: 10 },
       { kind: 'lf', value: 0 },
       { kind: 'rf', value: 0 },
+      { kind: 'lr', value: 0 },
+      { kind: 'rr', value: 0 },
     ]);
   });
 
   it('omits fuel entirely when none is needed', () => {
     setFuelPlan(null, 106);
-    setSettings({ commandTires: 'all' });
 
     expect(rootStore.pitServiceWidget.plannedOrder).toEqual([
       { kind: 'clear', value: 0 },
@@ -109,7 +99,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
   it('invokes the backend once commands are enabled', async () => {
     setFuelPlan(30, 106);
-    setSettings({ enableCommands: true, commandTires: 'none' });
+    setSettings({ enableCommands: true });
 
     await rootStore.pitServiceWidget.sendPlannedOrder();
 
@@ -117,6 +107,10 @@ describe('PitServiceWidgetStore — pit orders', () => {
       requests: [
         { kind: 'clear', value: 0 },
         { kind: 'fuel', value: 30 },
+        { kind: 'lf', value: 0 },
+        { kind: 'rf', value: 0 },
+        { kind: 'lr', value: 0 },
+        { kind: 'rr', value: 0 },
       ],
     });
     expect(rootStore.pitServiceWidget.lastOrderResult).toBe('sent');
@@ -130,6 +124,103 @@ describe('PitServiceWidgetStore — pit orders', () => {
     await rootStore.pitServiceWidget.sendPlannedOrder();
 
     expect(rootStore.pitServiceWidget.lastOrderResult).toBe('failed');
+  });
+
+  const setPitService = (partial: Record<string, unknown>) => {
+    runInAction(() => {
+      rootStore.player.pitService = {
+        changeLf: false,
+        changeRf: false,
+        changeLr: false,
+        changeRr: false,
+        addFuel: false,
+        fastRepair: false,
+        cleanWindshield: false,
+        ...partial,
+      } as never;
+    });
+  };
+
+  it('checks a single corner without touching the rest of the order', async () => {
+    setSettings({ enableCommands: true });
+    setPitService({ changeRf: true });
+
+    await rootStore.pitServiceWidget.toggleTire('lf');
+
+    expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+      requests: [{ kind: 'lf', value: 0 }],
+    });
+  });
+
+  it('unchecks one corner by clearing all four and restoring the others', async () => {
+    setSettings({ enableCommands: true });
+    setPitService({
+      changeLf: true,
+      changeRf: true,
+      changeLr: true,
+      rfPressure: 165,
+      lrPressure: null,
+    });
+
+    await rootStore.pitServiceWidget.toggleTire('lf');
+
+    expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+      requests: [
+        { kind: 'clearTires', value: 0 },
+        { kind: 'rf', value: 165 },
+        { kind: 'lr', value: 0 },
+      ],
+    });
+  });
+
+  it('clears the tires only when all four are already ordered', async () => {
+    setSettings({ enableCommands: true });
+    setPitService({
+      changeLf: true,
+      changeRf: true,
+      changeLr: true,
+      changeRr: true,
+    });
+
+    await rootStore.pitServiceWidget.toggleAllTires();
+
+    expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+      requests: [{ kind: 'clearTires', value: 0 }],
+    });
+  });
+
+  it('sends the clear variant when a box is already checked', async () => {
+    setFuelPlan(30, 106);
+    setSettings({ enableCommands: true });
+    setPitService({ addFuel: true, fastRepair: true, cleanWindshield: false });
+
+    await rootStore.pitServiceWidget.toggleFuel();
+    await rootStore.pitServiceWidget.toggleFastRepair();
+    await rootStore.pitServiceWidget.toggleWindshield();
+
+    expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+      requests: [{ kind: 'clearFuel', value: 0 }],
+    });
+    expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+      requests: [{ kind: 'clearFastRepair', value: 0 }],
+    });
+    expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+      requests: [{ kind: 'windshield', value: 0 }],
+    });
+  });
+
+  it('keeps the per-checkbox commands behind the same opt-in', async () => {
+    setFuelPlan(30, 106);
+    setSettings({ enableCommands: false });
+
+    await rootStore.pitServiceWidget.toggleFuel();
+    await rootStore.pitServiceWidget.toggleTire('lf');
+    await rootStore.pitServiceWidget.toggleFastRepair();
+
+    expect(invokeMock).not.toHaveBeenCalledWith(
+      'send_pit_order',
+      expect.anything()
+    );
   });
 
   it('clears the whole order with a single command', async () => {

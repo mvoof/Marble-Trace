@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import styles from './TireCorner.module.scss';
+import { OrderToggle } from '@widgets/PitServiceWidget/OrderToggle/OrderToggle';
 import type { CornerPosition } from '@utils/widget/pit-service-utils';
 import {
   buildTireCorner,
@@ -9,7 +10,11 @@ import {
   orderedPressure,
   wearLevel,
 } from '@utils/widget/pit-service-utils';
-import { usePlayerStore, useUnitsStore } from '@store/root-store-context';
+import {
+  usePitServiceWidgetStore,
+  usePlayerStore,
+  useUnitsStore,
+} from '@store/root-store-context';
 
 const WEAR_TO_PCT = 100;
 const MIN_FILL_PCT = 5;
@@ -20,6 +25,7 @@ interface TireCornerProps {
 
 export const TireCorner = observer(({ position }: TireCornerProps) => {
   const { chassis, pitService } = usePlayerStore();
+  const widget = usePitServiceWidgetStore();
   const units = useUnitsStore();
 
   const data = buildTireCorner(position, chassis, units.unitSystem);
@@ -40,8 +46,11 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
   ];
 
   return (
-    <div
+    <OrderToggle
       className={`${styles.corner} ${ordered ? styles.cornerOrdered : styles.cornerKept}`}
+      clickableClassName={styles.cornerClickable}
+      label={`Toggle ${position.toUpperCase()} tire change`}
+      onToggle={() => void widget.toggleTire(position)}
     >
       <div className={styles.head}>
         <span className={styles.side}>{position.toUpperCase()}</span>
@@ -93,6 +102,6 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
           </span>
         ))}
       </div>
-    </div>
+    </OrderToggle>
   );
 });

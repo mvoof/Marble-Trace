@@ -5,6 +5,15 @@
   font-family: $font-widget;
 }
 
+.fuelClickable {
+  cursor: pointer;
+  border-radius: radius(sm);
+
+  &:hover {
+    background: rgba($race-blue, 0.18);
+  }
+}
+
 .row {
   display: flex;
   align-items: baseline;

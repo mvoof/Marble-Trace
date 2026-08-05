@@ -1,0 +1,10 @@
+// The block keeps the layout classes of its non-interactive form; this only
+// strips what the browser adds for a button.
+.reset {
+  appearance: none;
+  border: none;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}

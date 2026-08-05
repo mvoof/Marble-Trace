@@ -128,20 +128,29 @@ export const setupHotkeys = async (
 
     // Writing to the sim stays behind an explicit opt-in, and only ever runs
     // from a key press — never from a telemetry transition.
-    if (pitService.enableCommands && pitService.applyOrderHotkey) {
-      addHandler(pitService.applyOrderHotkey, (event) => {
-        if (event.state === 'Pressed') {
-          void root.pitServiceWidget.sendPlannedOrder();
-        }
-      });
-    }
+    if (pitService.enableCommands) {
+      const widget = root.pitServiceWidget;
 
-    if (pitService.enableCommands && pitService.clearOrderHotkey) {
-      addHandler(pitService.clearOrderHotkey, (event) => {
-        if (event.state === 'Pressed') {
-          void root.pitServiceWidget.sendClearOrder();
-        }
-      });
+      const pitCommands: Array<[string, () => Promise<void>]> = [
+        [pitService.applyOrderHotkey, () => widget.sendPlannedOrder()],
+        [pitService.clearOrderHotkey, () => widget.sendClearOrder()],
+        [pitService.fuelHotkey, () => widget.toggleFuel()],
+        [pitService.tiresAllHotkey, () => widget.toggleAllTires()],
+        [pitService.tireLfHotkey, () => widget.toggleTire('lf')],
+        [pitService.tireRfHotkey, () => widget.toggleTire('rf')],
+        [pitService.tireLrHotkey, () => widget.toggleTire('lr')],
+        [pitService.tireRrHotkey, () => widget.toggleTire('rr')],
+        [pitService.fastRepairHotkey, () => widget.toggleFastRepair()],
+        [pitService.windshieldHotkey, () => widget.toggleWindshield()],
+      ];
+
+      for (const [shortcut, run] of pitCommands) {
+        addHandler(shortcut, (event) => {
+          if (event.state === 'Pressed') {
+            void run();
+          }
+        });
+      }
     }
 
     if (settings.scrollDownHotkey) {

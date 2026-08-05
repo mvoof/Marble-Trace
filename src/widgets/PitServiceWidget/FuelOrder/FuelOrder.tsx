@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import styles from './FuelOrder.module.scss';
+import { OrderToggle } from '@widgets/PitServiceWidget/OrderToggle/OrderToggle';
 import { formatFuel } from '@utils/formatters/telemetry-format';
 import type { UnitSystem } from '@/types';
 import {
@@ -25,7 +26,12 @@ export const FuelOrder = observer(() => {
   const calculated = pitServiceWidget.plannedFuelLiters;
 
   return (
-    <div className={styles.fuel}>
+    <OrderToggle
+      className={styles.fuel}
+      clickableClassName={styles.fuelClickable}
+      label="Toggle fuel on the pit order"
+      onToggle={() => void pitServiceWidget.toggleFuel()}
+    >
       <div className={styles.row}>
         <span className={styles.label}>FUEL ADD</span>
 
@@ -41,6 +47,6 @@ export const FuelOrder = observer(() => {
           {fuelUnit(units.unitSystem)}
         </span>
       )}
-    </div>
+    </OrderToggle>
   );
 });

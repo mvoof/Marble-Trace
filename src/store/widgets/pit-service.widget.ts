@@ -3,8 +3,16 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import { computeRefuelPlan } from '@widgets/FuelWidget/fuel-utils';
 import type { RootStore } from '@store/root-store';
-import type { PitCommandKind, PitCommandRequest } from '@/types/bindings';
+import type { PitCommandRequest } from '@/types/bindings';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
+import type { CornerPosition } from '@utils/widget/pit-service-utils';
+import {
+  isCornerOrdered,
+  orderedPressure,
+} from '@utils/widget/pit-service-utils';
+
+/** Every corner, in the order the black box lists them. */
+const ALL_CORNERS: CornerPosition[] = ['lf', 'rf', 'lr', 'rr'];
 
 // The panel lingers briefly after pit exit so the last service result stays
 // readable while the car is already accelerating away.
@@ -18,17 +26,6 @@ const MS_IN_SECOND = 1000;
 // How long the widget confirms a sent order. The sim never acknowledges a
 // broadcast, so this only reports that the message left, not that it landed.
 const ORDER_FEEDBACK_MS = 2500;
-
-/** Corners each tire selection puts on the order. */
-const TIRE_CORNERS: Record<
-  PitServiceWidgetSettings['commandTires'],
-  PitCommandKind[]
-> = {
-  none: [],
-  all: ['lf', 'rf', 'lr', 'rr'],
-  fronts: ['lf', 'rf'],
-  rears: ['lr', 'rr'],
-};
 
 export class PitServiceWidgetStore {
   /** Manual override toggled by hotkey; independent of pit road state. */
@@ -136,6 +133,15 @@ export class PitServiceWidgetStore {
   }
 
   /**
+   * Whether the checkboxes in the overlay accept a click. The overlay only owns
+   * the mouse in interact mode, so outside it a click cannot reach the widget
+   * anyway — this keeps the affordance honest about that.
+   */
+  get canClickOrders(): boolean {
+    return this.canSendOrders && this.root.appSettings.interactMode;
+  }
+
+  /**
    * The order the apply hotkey would send. Rebuilt on every call rather than
    * stored, so it always reflects the current fuel calculation.
    *
@@ -151,11 +157,108 @@ export class PitServiceWidgetStore {
       order.push({ kind: 'fuel', value: Math.ceil(fuel) });
     }
 
-    for (const corner of TIRE_CORNERS[this.settings.commandTires]) {
+    for (const corner of ALL_CORNERS) {
       order.push({ kind: corner, value: 0 });
     }
 
     return order;
+  }
+
+  /** Whether the sim currently has this corner checked. */
+  isCornerOrdered(corner: CornerPosition): boolean {
+    return isCornerOrdered(corner, this.root.player.pitService);
+  }
+
+  get isFuelOrdered(): boolean {
+    return this.root.player.pitService?.addFuel ?? false;
+  }
+
+  get isFastRepairOrdered(): boolean {
+    return this.root.player.pitService?.fastRepair ?? false;
+  }
+
+  get isWindshieldOrdered(): boolean {
+    return this.root.player.pitService?.cleanWindshield ?? false;
+  }
+
+  get areAllTiresOrdered(): boolean {
+    return ALL_CORNERS.every((corner) => this.isCornerOrdered(corner));
+  }
+
+  /**
+   * Toggles fuel. The SDK has no toggle, only set and clear, so the current
+   * state read back from the sim decides which of the two to send.
+   */
+  async toggleFuel() {
+    if (this.isFuelOrdered) {
+      await this.send([{ kind: 'clearFuel', value: 0 }]);
+
+      return;
+    }
+
+    const fuel = this.plannedFuelLiters;
+
+    if (fuel === null || fuel <= 0) {
+      return;
+    }
+
+    await this.send([{ kind: 'fuel', value: Math.ceil(fuel) }]);
+  }
+
+  /**
+   * Toggles one corner. Unchecking is the awkward direction: the SDK can only
+   * clear all four at once, so the other ordered corners are re-sent right
+   * after — at the pressure the sim reports for them, so an explicitly set
+   * pressure survives the round trip.
+   */
+  async toggleTire(corner: CornerPosition) {
+    if (!this.isCornerOrdered(corner)) {
+      await this.send([{ kind: corner, value: 0 }]);
+
+      return;
+    }
+
+    const survivors = ALL_CORNERS.filter(
+      (other) => other !== corner && this.isCornerOrdered(other)
+    );
+
+    await this.send([
+      { kind: 'clearTires', value: 0 },
+      ...survivors.map((other) => ({
+        kind: other,
+        value: Math.round(
+          orderedPressure(other, this.root.player.pitService) ?? 0
+        ),
+      })),
+    ]);
+  }
+
+  async toggleAllTires() {
+    if (this.areAllTiresOrdered) {
+      await this.send([{ kind: 'clearTires', value: 0 }]);
+
+      return;
+    }
+
+    await this.send(ALL_CORNERS.map((corner) => ({ kind: corner, value: 0 })));
+  }
+
+  async toggleFastRepair() {
+    await this.send([
+      {
+        kind: this.isFastRepairOrdered ? 'clearFastRepair' : 'fastRepair',
+        value: 0,
+      },
+    ]);
+  }
+
+  async toggleWindshield() {
+    await this.send([
+      {
+        kind: this.isWindshieldOrdered ? 'clearWindshield' : 'windshield',
+        value: 0,
+      },
+    ]);
   }
 
   /**
@@ -163,23 +266,21 @@ export class PitServiceWidgetStore {
    * nothing in this store calls it on a telemetry transition.
    */
   async sendPlannedOrder() {
-    if (!this.canSendOrders) {
-      return;
-    }
-
     await this.send(this.plannedOrder);
   }
 
   /** Unchecks the whole pit order in the sim. */
   async sendClearOrder() {
+    await this.send([{ kind: 'clear', value: 0 }]);
+  }
+
+  // The opt-in is enforced here rather than at every call site: every path into
+  // the sim goes through this method, so there is one place to get it wrong.
+  private async send(requests: PitCommandRequest[]) {
     if (!this.canSendOrders) {
       return;
     }
 
-    await this.send([{ kind: 'clear', value: 0 }]);
-  }
-
-  private async send(requests: PitCommandRequest[]) {
     try {
       await invoke('send_pit_order', { requests });
       this.setOrderResult('sent');

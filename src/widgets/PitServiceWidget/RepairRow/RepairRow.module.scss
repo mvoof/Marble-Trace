@@ -15,6 +15,18 @@
   background: $widget-surface-cell;
 }
 
+.chipOrdered {
+  background: rgba($race-green, 0.15);
+}
+
+.chipClickable {
+  cursor: pointer;
+
+  &:hover {
+    background: rgba($race-blue, 0.18);
+  }
+}
+
 .key {
   font-size: fs(xxxs);
   letter-spacing: 0.08em;

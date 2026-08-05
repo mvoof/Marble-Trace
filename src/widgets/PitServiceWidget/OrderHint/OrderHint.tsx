@@ -7,12 +7,7 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
-const TIRE_LABEL: Record<PitServiceWidgetSettings['commandTires'], string> = {
-  none: 'FUEL',
-  all: 'FUEL + 4 TIRES',
-  fronts: 'FUEL + FRONTS',
-  rears: 'FUEL + REARS',
-};
+const FULL_ORDER_LABEL = 'FUEL + 4 TIRES';
 
 const RESULT_LABEL = {
   sent: 'ORDER SENT',
@@ -20,28 +15,34 @@ const RESULT_LABEL = {
 } as const;
 
 /**
- * What the apply hotkey would do, and how the last press went. The sim never
- * acknowledges a broadcast, so "sent" means the message left this app — the
- * tire checkboxes above are the real confirmation.
+ * What the full-order hotkey would do, and how the last press went. The sim
+ * never acknowledges a broadcast, so "sent" means the message left this app —
+ * the tire checkboxes above are the real confirmation.
  */
 export const OrderHint = observer(() => {
   const pitService = usePitServiceWidgetStore();
   const widgetSettings = useWidgetSettingsStore();
 
-  const { enableCommands, commandTires, applyOrderHotkey } =
+  const { enableCommands, applyOrderHotkey } =
     widgetSettings.getSettings<PitServiceWidgetSettings>('pit-service');
-
-  if (!enableCommands || !applyOrderHotkey) {
-    return null;
-  }
 
   const result = pitService.lastOrderResult;
 
+  // The per-checkbox hotkeys and the clicks report through the same line, so it
+  // stays around for them even when no full-order key is bound.
+  if (!enableCommands || (!applyOrderHotkey && result === null)) {
+    return null;
+  }
+
   return (
     <div className={styles.hint}>
-      <span className={styles.key}>{applyOrderHotkey}</span>
+      {applyOrderHotkey && (
+        <>
+          <span className={styles.key}>{applyOrderHotkey}</span>
 
-      <span className={styles.action}>{TIRE_LABEL[commandTires]}</span>
+          <span className={styles.action}>{FULL_ORDER_LABEL}</span>
+        </>
+      )}
 
       {result !== null && (
         <span
