@@ -19,8 +19,9 @@ use crate::utils::lock_or_recover;
 /// Upper bound for `set_fuel_avg_window`, matching MAX_LAP_FUEL_HISTORY. 0 = all laps.
 const MAX_FUEL_AVG_WINDOW: u32 = 100;
 
-/// A full order is fuel + four corners + windshield + fast repair, and a clear
-/// in front of it. Anything larger is a caller bug, not a real pit stop.
+/// A full order is a clear, fuel, four corners, windshield and fast repair —
+/// eight messages. The cap is set at twice that so adding a checkbox does not
+/// need a bump here; anything past it is a caller bug, not a real pit stop.
 const MAX_PIT_ORDER_COMMANDS: usize = 16;
 
 #[tauri::command]

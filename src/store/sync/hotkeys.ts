@@ -114,6 +114,14 @@ export const setupHotkeys = async (
       });
     }
 
+    if (settings.scrollDownHotkey) {
+      addHandler(settings.scrollDownHotkey, (event) => {
+        if (event.state === 'Pressed') {
+          void emitStandingsScroll(SCROLL_STEP_ROWS);
+        }
+      });
+    }
+
     const pitService =
       root.widgetSettings.getSettings<PitServiceWidgetSettings>('pit-service');
 
@@ -151,14 +159,6 @@ export const setupHotkeys = async (
           }
         });
       }
-    }
-
-    if (settings.scrollDownHotkey) {
-      addHandler(settings.scrollDownHotkey, (event) => {
-        if (event.state === 'Pressed') {
-          void emitStandingsScroll(SCROLL_STEP_ROWS);
-        }
-      });
     }
 
     await Promise.all(

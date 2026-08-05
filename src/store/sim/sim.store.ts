@@ -292,6 +292,9 @@ export class SimStore {
     this.root.backendComputed.reset();
     this.root.drivingCoachWidget.reset();
     this.root.paceCar.reset();
+    // Owns timers keyed off telemetry transitions — without a reset the stop
+    // clock keeps ticking after the last frame that could have stopped it.
+    this.root.pitServiceWidget.reset();
   }
 
   private setStatus(status: TelemetryStatus) {

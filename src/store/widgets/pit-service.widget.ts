@@ -64,7 +64,7 @@ export class PitServiceWidgetStore {
     return this.root.player.pitService?.inPitStall ?? false;
   }
 
-  /** The crew is working on the car —  from the sim. */
+  /** The crew is working on the car — `pitstop_active` from the sim. */
   get isServiceActive(): boolean {
     return this.root.player.pitService?.serviceActive ?? false;
   }
@@ -308,7 +308,7 @@ export class PitServiceWidgetStore {
   }
 
   /**
-   * Runs the stop clock off , not off standing in the box: the
+   * Runs the stop clock off `serviceActive`, not off standing in the box: the
    * sim reports no service duration, and the crew starts and finishes on its
    * own schedule — the car sits in the stall both before and after that.
    */

@@ -639,6 +639,8 @@ const WIDGETS: WidgetConfig[] = [
     label: 'Pit Service',
     description: 'Pit stop order, repairs, tow time and pit lane speed.',
     component: PitServiceWidget,
+    // The pit order itself needs no chassis telemetry, but the tire grid draws
+    // temperatures and wear from it — without them half the widget is blank.
     requiredCapabilities: ['chassis'],
     designWidth: 300,
     designHeight: 540,
