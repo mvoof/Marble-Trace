@@ -1,14 +1,21 @@
+import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { getDeltaState } from '@utils/widget/delta-utils';
+import {
+  DELTA_GAUGE_RANGES,
+  getDeltaState,
+  resolveGaugeRange,
+} from '@utils/widget/delta-utils';
 import styles from './DeltaGauge.module.scss';
 
 interface Props {
   delta: number | null;
-  /** Seconds mapped to each half of the track; beyond this the fill pins. */
+  /**
+   * Fixed seconds per half of the track. Omit to let the gauge auto-range
+   * through DELTA_GAUGE_RANGES the way the sim's own delta bar does.
+   */
   range?: number;
 }
 
-const DEFAULT_RANGE_SECONDS = 1;
 const HALF_TRACK_PCT = 50;
 
 const FILL_CLASS = {
@@ -17,20 +24,25 @@ const FILL_CLASS = {
   neutral: styles.neutral,
 };
 
-export const DeltaGauge = observer(
-  ({ delta, range = DEFAULT_RANGE_SECONDS }: Props) => {
-    const clamped = Math.max(-range, Math.min(range, delta ?? 0));
-    const widthPct = (Math.abs(clamped) / range) * HALF_TRACK_PCT;
-    const leftPct = clamped >= 0 ? HALF_TRACK_PCT : HALF_TRACK_PCT - widthPct;
+export const DeltaGauge = observer(({ delta, range }: Props) => {
+  const autoRangeRef = useRef<number>(DELTA_GAUGE_RANGES[0]);
 
-    return (
-      <div className={styles.track}>
-        <div
-          className={`${styles.fill} ${FILL_CLASS[getDeltaState(delta)]}`}
-          style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
-        />
-        <div className={styles.zero} />
-      </div>
-    );
+  if (range === undefined) {
+    autoRangeRef.current = resolveGaugeRange(delta, autoRangeRef.current);
   }
-);
+
+  const activeRange = range ?? autoRangeRef.current;
+  const clamped = Math.max(-activeRange, Math.min(activeRange, delta ?? 0));
+  const widthPct = (Math.abs(clamped) / activeRange) * HALF_TRACK_PCT;
+  const leftPct = clamped >= 0 ? HALF_TRACK_PCT : HALF_TRACK_PCT - widthPct;
+
+  return (
+    <div className={styles.track}>
+      <div
+        className={`${styles.fill} ${FILL_CLASS[getDeltaState(delta)]}`}
+        style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
+      />
+      <div className={styles.zero} />
+    </div>
+  );
+});

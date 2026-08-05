@@ -72,6 +72,39 @@ export const getDeltaToPreviousBest = (
   return lapTime - Math.min(...previousTimes);
 };
 
+// The gauge auto-ranges like the sim's own delta bar: a tight scale while the
+// lap is close, a wider one once the gap grows, so the fill never just pins at
+// the end of the track and stops carrying information.
+export const DELTA_GAUGE_RANGES = [0.5, 1, 2, 5, 10] as const;
+
+// A step is only given up once the delta drops well inside the smaller range —
+// without that margin a delta sitting on a boundary would flip the scale every
+// frame.
+const RANGE_SHRINK_MARGIN = 0.8;
+
+export const resolveGaugeRange = (
+  delta: number | null,
+  currentRange: number
+): number => {
+  const abs = Math.abs(delta ?? 0);
+  const currentIndex = DELTA_GAUGE_RANGES.indexOf(
+    currentRange as (typeof DELTA_GAUGE_RANGES)[number]
+  );
+  const index = currentIndex === -1 ? 0 : currentIndex;
+
+  if (abs > DELTA_GAUGE_RANGES[index]) {
+    const grown = DELTA_GAUGE_RANGES.find((range) => abs <= range);
+
+    return grown ?? DELTA_GAUGE_RANGES[DELTA_GAUGE_RANGES.length - 1];
+  }
+
+  if (index > 0 && abs <= DELTA_GAUGE_RANGES[index - 1] * RANGE_SHRINK_MARGIN) {
+    return DELTA_GAUGE_RANGES[index - 1];
+  }
+
+  return DELTA_GAUGE_RANGES[index];
+};
+
 export const getDeltaState = (delta: number | null): DeltaState => {
   if (delta === null) return 'neutral';
   if (delta < -0.001) return 'ahead';

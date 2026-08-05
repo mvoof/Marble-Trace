@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { LapHistoryEntry } from '@/types/bindings';
 import {
+  DELTA_GAUGE_RANGES,
   DELTA_SLOTS,
   formatDelta,
   getDeltaToPreviousBest,
+  resolveGaugeRange,
 } from './delta-utils';
 
 describe('formatDelta', () => {
@@ -47,5 +49,29 @@ describe('getDeltaToPreviousBest', () => {
 
   it('returns null when there is nothing to compare to', () => {
     expect(getDeltaToPreviousBest([entry(1, 91.2)], 1, 91.2)).toBeNull();
+  });
+});
+
+describe('resolveGaugeRange', () => {
+  it('starts at the tightest range', () => {
+    expect(resolveGaugeRange(0.2, DELTA_GAUGE_RANGES[0])).toBe(0.5);
+  });
+
+  it('grows straight to the range that fits the delta', () => {
+    expect(resolveGaugeRange(3.4, 0.5)).toBe(5);
+    expect(resolveGaugeRange(-1.5, 0.5)).toBe(2);
+  });
+
+  it('pins at the widest range', () => {
+    expect(resolveGaugeRange(45, 0.5)).toBe(10);
+  });
+
+  it('holds the current range until the delta drops well inside the next one', () => {
+    expect(resolveGaugeRange(0.9, 1)).toBe(1);
+    expect(resolveGaugeRange(0.39, 1)).toBe(0.5);
+  });
+
+  it('recovers from a range that is no longer on the ladder', () => {
+    expect(resolveGaugeRange(0.1, 3)).toBe(0.5);
   });
 });

@@ -10,9 +10,11 @@
   height: 100%;
 }
 
+// The bar deliberately overhangs the widget box on both sides — the widget is
+// registered with overflowVisible so nothing clips it.
 .gaugeSlot {
-  width: 80%;
-  max-width: ws(160);
+  width: 400%;
+  margin-inline: -50%;
 }
 
 .delta {

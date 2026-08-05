@@ -1,10 +1,11 @@
 .track {
   position: relative;
+  // Width comes from the slot the parent puts the gauge in — the gauge only
+  // owns its own thickness and shape.
   width: 100%;
   height: ws(8);
-  border-radius: radius(sm);
+  border-radius: 999px;
   background: $widget-row-bg-subtle;
-  border: 1px solid $widget-border-subtle;
   overflow: hidden;
 }
 
@@ -12,6 +13,9 @@
   position: absolute;
   top: 0;
   bottom: 0;
+  transition:
+    left 80ms linear,
+    width 80ms linear;
 }
 
 // Zero marker stays inside the track — it reads as part of the bar, not as a

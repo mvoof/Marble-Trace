@@ -723,6 +723,9 @@ const WIDGETS: WidgetConfig[] = [
     requiredCapabilities: ['sectors'],
     designWidth: 200,
     designHeight: 100,
+    // The delta bar deliberately runs wider than the widget box so the scale
+    // reads at a glance — it must not be clipped to the panel.
+    overflowVisible: true,
     userSettings: {
       enabled: false,
       x: 400,
