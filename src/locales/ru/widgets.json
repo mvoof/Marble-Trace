@@ -94,6 +94,7 @@
       },
       "visibility": "Видимость",
       "hideWhenNoReference": "Скрывать при отсутствии эталонного круга",
+      "showGauge": "Показывать шкалу дельты",
       "lapCompletedCard": "Карточка завершения круга",
       "showAfterLap": "Показывать после круга",
       "displayDuration": "Длительность показа: {{seconds}} с"

@@ -735,6 +735,7 @@ const WIDGETS: WidgetConfig[] = [
       showLapFlash: false,
       flashDuration: 5,
       hideWhenNoReference: false,
+      showGauge: true,
     },
   },
   {

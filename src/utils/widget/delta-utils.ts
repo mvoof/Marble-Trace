@@ -1,4 +1,4 @@
-import type { LapTimingFrame } from '@/types/bindings';
+import type { LapHistoryEntry, LapTimingFrame } from '@/types/bindings';
 import type { LapDeltaReference } from '@/types/widget-settings';
 
 export type DeltaState = 'ahead' | 'behind' | 'neutral';
@@ -7,33 +7,61 @@ export type LapDeltaLayout = 'vertical' | 'horizontal';
 const SECONDS_PER_MINUTE = 60;
 const SECONDS_PER_HOUR = 3600;
 
+// Every delta renders into the same number of monospace slots, so the widget
+// can reserve the space once and never rescale the glyphs: a growing number
+// changes its format, not its size.
+export const DELTA_SLOTS = 7;
+
+const TEN_MINUTES = 10 * SECONDS_PER_MINUTE;
+
+const padSlots = (text: string): string => text.padStart(DELTA_SLOTS, ' ');
+
 export const formatDelta = (delta: number | null): string => {
-  if (delta === null) return '+ -.---';
+  if (delta === null) return padSlots('-.---');
 
   const sign = delta >= 0 ? '+' : '-';
   const abs = Math.abs(delta);
 
+  // " +0.284" … "+59.999" — the range a driver actually reads. Padding goes
+  // in front of the sign, so the sign stays glued to its digits and the
+  // decimal point still lands in the same column every frame.
   if (abs < SECONDS_PER_MINUTE) {
-    const formattedAbs = abs.toFixed(3);
-    const [intStr, fracStr] = formattedAbs.split('.');
-    const paddedInt = intStr.length < 2 ? ` ${intStr}` : intStr;
-
-    return `${sign}${paddedInt}.${fracStr}`;
+    return padSlots(`${sign}${abs.toFixed(3)}`);
   }
 
-  if (abs < SECONDS_PER_HOUR) {
+  // "+1:02.4" — a tenth is plenty once a whole minute is on the board.
+  if (abs < TEN_MINUTES) {
     const m = Math.floor(abs / SECONDS_PER_MINUTE);
     const s = abs % SECONDS_PER_MINUTE;
 
-    return `${sign}${m}:${s.toFixed(3).padStart(6, '0')}`;
+    return padSlots(`${sign}${m}:${s.toFixed(1).padStart(4, '0')}`);
   }
 
-  const h = Math.floor(abs / SECONDS_PER_HOUR);
-  const rem = abs % SECONDS_PER_HOUR;
-  const m = Math.floor(rem / SECONDS_PER_MINUTE);
-  const s = rem % SECONDS_PER_MINUTE;
+  // "+59:59" — lapped-by-minutes territory, seconds are noise.
+  if (abs < SECONDS_PER_HOUR) {
+    const m = Math.floor(abs / SECONDS_PER_MINUTE);
+    const s = Math.floor(abs % SECONDS_PER_MINUTE);
 
-  return `${sign}${h}:${String(m).padStart(2, '0')}:${s.toFixed(3).padStart(6, '0')}`;
+    return padSlots(`${sign}${m}:${String(s).padStart(2, '0')}`);
+  }
+
+  return padSlots(`${sign}>1h`);
+};
+
+// Gap to the driver's own best lap *before* this one, so a new personal best
+// reports how much it beat the old mark by instead of a meaningless 0.000.
+export const getDeltaToPreviousBest = (
+  history: LapHistoryEntry[],
+  lapNum: number,
+  lapTime: number
+): number | null => {
+  const previousTimes = history
+    .filter((entry) => entry.lapNum !== lapNum && entry.lapTime !== null)
+    .map((entry) => entry.lapTime as number);
+
+  if (previousTimes.length === 0) return null;
+
+  return lapTime - Math.min(...previousTimes);
 };
 
 export const getDeltaState = (delta: number | null): DeltaState => {

@@ -94,6 +94,7 @@
       },
       "visibility": "Visibility",
       "hideWhenNoReference": "Hide when no reference lap",
+      "showGauge": "Show delta gauge",
       "lapCompletedCard": "Lap Completed Card",
       "showAfterLap": "Show after lap",
       "displayDuration": "Display duration: {{seconds}}s"

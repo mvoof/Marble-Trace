@@ -75,21 +75,30 @@ export const BestLap: Story = {
   render: () => <BestLapHost />,
 };
 
-export const FlashAhead: Story = {
-  name: 'Flash: Ahead',
+export const FlashCloseToBest: Story = {
+  name: 'Flash: Close To Best',
   render: () => (
-    <LapFlash lapNum={12} lapTime={89.342} delta={-0.521} isBest={false} />
+    <LapFlash lapTime={89.526} personalDelta={0.184} isBest={false} preview />
   ),
 };
 
 export const FlashBehind: Story = {
   name: 'Flash: Behind',
   render: () => (
-    <LapFlash lapNum={12} lapTime={91.123} delta={0.812} isBest={false} />
+    <LapFlash lapTime={91.123} personalDelta={1.965} isBest={false} preview />
   ),
 };
 
 export const FlashNewBest: Story = {
   name: 'Flash: New Best',
-  render: () => <LapFlash lapNum={12} lapTime={89.342} delta={-1.235} isBest />,
+  render: () => (
+    <LapFlash lapTime={89.342} personalDelta={-0.341} isBest preview />
+  ),
+};
+
+export const FlashFirstLap: Story = {
+  name: 'Flash: First Lap (no reference)',
+  render: () => (
+    <LapFlash lapTime={92.014} personalDelta={null} isBest preview />
+  ),
 };

@@ -1,0 +1,36 @@
+.track {
+  position: relative;
+  width: 100%;
+  height: ws(8);
+  border-radius: radius(sm);
+  background: $widget-row-bg-subtle;
+  border: 1px solid $widget-border-subtle;
+  overflow: hidden;
+}
+
+.fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+// Zero marker stays inside the track — it reads as part of the bar, not as a
+// tick sticking out of it.
+.zero {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 50%;
+  width: 1px;
+  background: $widget-text-muted;
+}
+
+.ahead {
+  background: $widget-status-positive;
+}
+.behind {
+  background: $widget-status-danger;
+}
+.neutral {
+  background: $widget-text-muted;
+}
