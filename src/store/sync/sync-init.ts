@@ -35,6 +35,7 @@ import { listMonitorBounds } from './overlay-resolution';
 import { watchMonitorArrangement } from './monitor-watch';
 import type {
   StandingsWidgetSettings,
+  PitServiceWidgetSettings,
   SessionContext,
 } from '@/types/widget-settings';
 import type { RootStore } from '../root-store';
@@ -280,6 +281,11 @@ export const initMainSync = async (root: RootStore) => {
               root.widgetSettings.getSettings<StandingsWidgetSettings>(
                 'standings'
               );
+            const pitServiceSettings =
+              root.widgetSettings.getSettings<PitServiceWidgetSettings>(
+                'pit-service'
+              );
+
             return [
               root.appSettings.appSettings.dragHotkey,
               root.appSettings.appSettings.hideAllWidgetsHotkey,
@@ -290,6 +296,10 @@ export const initMainSync = async (root: RootStore) => {
               standingsSettings.classNextHotkey,
               standingsSettings.scrollUpHotkey,
               standingsSettings.scrollDownHotkey,
+              pitServiceSettings.toggleHotkey,
+              pitServiceSettings.applyOrderHotkey,
+              pitServiceSettings.clearOrderHotkey,
+              pitServiceSettings.enableCommands,
             ];
           },
           () => {
