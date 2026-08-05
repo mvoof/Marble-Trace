@@ -29,7 +29,7 @@ use chat::state::{ChatServiceState, ChatState};
 use commands::{
     delete_reference_lap, delete_track_shape, get_cached_track_shape, get_connection_status,
     get_last_session_info, get_reference_lap, log_settings_snapshot, reset_pit_lane_pct,
-    set_active_events, set_car_length, set_fuel_avg_window, set_pit_warning_laps,
+    send_pit_order, set_active_events, set_car_length, set_fuel_avg_window, set_pit_warning_laps,
     start_telemetry_stream, stop_telemetry_stream,
 };
 use computations::ProcessorRegistry;
@@ -49,6 +49,8 @@ use model::chat::{
 use model::enums::{SimStatus, SimType};
 #[cfg(feature = "dev")]
 use model::environment::{EnvironmentFrame, WeatherForecastEntry};
+#[cfg(feature = "dev")]
+use model::pit_command::{PitCommandKind, PitCommandRequest};
 #[cfg(feature = "dev")]
 use model::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
@@ -97,6 +99,8 @@ pub fn run() {
             .register::<WeatherForecastEntry>()
             .register::<CapabilitiesPayload>()
             .register::<SimType>()
+            .register::<PitCommandKind>()
+            .register::<PitCommandRequest>()
             .register::<SimStatus>();
 
         types
@@ -229,6 +233,7 @@ pub fn run() {
             get_reference_lap,
             delete_reference_lap,
             log_settings_snapshot,
+            send_pit_order,
             start_chat_stream,
             stop_chat_stream,
             twitch_request_device_code,

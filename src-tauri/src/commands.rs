@@ -6,9 +6,11 @@ use tauri::{AppHandle, Emitter, Manager, State};
 use tokio::time::sleep;
 use tracing::{debug, info, warn};
 
+use crate::model::pit_command::PitCommandRequest;
 use crate::model::reference_lap::ReferenceLapData;
 use crate::model::session::SessionSnapshot;
 use crate::model::track_shape::TrackShapePayload;
+use crate::sources::iracing::pit_command::send_pit_order as send_pit_order_to_sim;
 use crate::telemetry::emitter::reference_lap_key;
 use crate::telemetry::runtime::{load_cached_track_shape, spawn_telemetry_thread};
 use crate::telemetry::state::TelemetryState;
@@ -16,6 +18,10 @@ use crate::utils::lock_or_recover;
 
 /// Upper bound for `set_fuel_avg_window`, matching MAX_LAP_FUEL_HISTORY. 0 = all laps.
 const MAX_FUEL_AVG_WINDOW: u32 = 100;
+
+/// A full order is fuel + four corners + windshield + fast repair, and a clear
+/// in front of it. Anything larger is a caller bug, not a real pit stop.
+const MAX_PIT_ORDER_COMMANDS: usize = 16;
 
 #[tauri::command]
 pub async fn get_connection_status(state: State<'_, TelemetryState>) -> Result<bool, String> {
@@ -289,4 +295,24 @@ pub async fn delete_track_shape(app: AppHandle, track_id: i32) -> Result<(), Str
     }
 
     Ok(())
+}
+
+/// Sends a pit service order to the sim. Only ever called from an explicit user
+/// action — the widget never orders anything on its own.
+///
+/// The SDK broadcast is fire-and-forget: a successful return means the messages
+/// were posted, not that iRacing accepted them. The sim ignores pit commands
+/// unless the driver is in the car.
+#[tauri::command]
+pub async fn send_pit_order(requests: Vec<PitCommandRequest>) -> Result<(), String> {
+    if requests.len() > MAX_PIT_ORDER_COMMANDS {
+        return Err(format!(
+            "pit order must not exceed {} commands",
+            MAX_PIT_ORDER_COMMANDS
+        ));
+    }
+
+    info!(count = requests.len(), "sending pit order");
+
+    send_pit_order_to_sim(&requests)
 }

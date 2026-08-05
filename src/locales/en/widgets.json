@@ -468,7 +468,20 @@
       "toggleHotkeyDesc": "Shows the widget anywhere on track — handy for building the order a lap before pitting.",
       "position": "Position",
       "projectedPosition": "Projected position",
-      "projectedPositionDesc": "Estimate of where the car rejoins, from the repair and tow countdowns and the gaps of the cars behind. An estimate, not a prediction — it assumes they keep their pace and do not pit."
+      "projectedPositionDesc": "Estimate of where the car rejoins, from the repair and tow countdowns and the gaps of the cars behind. An estimate, not a prediction — it assumes they keep their pace and do not pit.",
+      "commands": "Pit Commands",
+      "enableCommands": "Send orders to the sim",
+      "enableCommandsDesc": "Lets the hotkeys below write the pit order into iRacing over the SDK broadcast channel. Off by default — everything else in this widget only reads telemetry. Orders are only ever sent by a key press, never automatically, and the sim ignores them unless you are in the car.",
+      "commandTires": "Tires on the order",
+      "commandTiresDesc": "Which corners the apply hotkey checks. Pressures stay at whatever you set in the garage.",
+      "commandTires_none": "Fuel only",
+      "commandTires_all": "All four",
+      "commandTires_fronts": "Fronts",
+      "commandTires_rears": "Rears",
+      "applyOrderHotkey": "Apply order hotkey",
+      "applyOrderHotkeyDesc": "Clears the current order, then checks the calculated fuel and the tires selected above.",
+      "clearOrderHotkey": "Clear order hotkey",
+      "clearOrderHotkeyDesc": "Unchecks everything in the pit service box."
     }
   },
   "streamChat": {

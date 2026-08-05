@@ -126,6 +126,24 @@ export const setupHotkeys = async (
       });
     }
 
+    // Writing to the sim stays behind an explicit opt-in, and only ever runs
+    // from a key press — never from a telemetry transition.
+    if (pitService.enableCommands && pitService.applyOrderHotkey) {
+      addHandler(pitService.applyOrderHotkey, (event) => {
+        if (event.state === 'Pressed') {
+          void root.pitServiceWidget.sendPlannedOrder();
+        }
+      });
+    }
+
+    if (pitService.enableCommands && pitService.clearOrderHotkey) {
+      addHandler(pitService.clearOrderHotkey, (event) => {
+        if (event.state === 'Pressed') {
+          void root.pitServiceWidget.sendClearOrder();
+        }
+      });
+    }
+
     if (settings.scrollDownHotkey) {
       addHandler(settings.scrollDownHotkey, (event) => {
         if (event.state === 'Pressed') {

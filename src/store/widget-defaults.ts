@@ -660,6 +660,10 @@ const WIDGETS: WidgetConfig[] = [
       showFooter: false,
       alwaysVisible: false,
       toggleHotkey: 'F7',
+      enableCommands: false,
+      commandTires: 'all',
+      applyOrderHotkey: '',
+      clearOrderHotkey: '',
     },
   },
   {

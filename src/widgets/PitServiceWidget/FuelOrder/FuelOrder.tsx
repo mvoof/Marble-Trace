@@ -1,13 +1,11 @@
 import { observer } from 'mobx-react-lite';
 
 import styles from './FuelOrder.module.scss';
-import { computeRefuelPlan } from '@widgets/FuelWidget/fuel-utils';
 import { formatFuel } from '@utils/formatters/telemetry-format';
 import type { UnitSystem } from '@/types';
 import {
-  useBackendComputedStore,
+  usePitServiceWidgetStore,
   usePlayerStore,
-  useSessionStore,
   useUnitsStore,
 } from '@store/root-store-context';
 
@@ -17,21 +15,14 @@ const fuelUnit = (unitSystem: UnitSystem): string =>
 
 export const FuelOrder = observer(() => {
   const { pitService } = usePlayerStore();
-  const { fuel } = useBackendComputedStore();
-  const { sessionInfo } = useSessionStore();
+  const pitServiceWidget = usePitServiceWidgetStore();
   const units = useUnitsStore();
 
   const ordered = pitService?.addFuel ? (pitService.fuelAmount ?? 0) : 0;
 
-  // Same number the Fuel widget shows: the buffered recommendation capped by
-  // tank capacity. Reading the raw total here would advise an amount that does
-  // not fit in the car.
-  const plan = computeRefuelPlan(
-    fuel?.fuelToAddWithBuffer ?? null,
-    sessionInfo?.driverCarFuelMaxLtr ?? null
-  );
-
-  const calculated = plan?.fillNow ?? null;
+  // Owned by the widget store so the number shown here is exactly the number
+  // the order hotkey sends.
+  const calculated = pitServiceWidget.plannedFuelLiters;
 
   return (
     <div className={styles.fuel}>

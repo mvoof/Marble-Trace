@@ -468,7 +468,20 @@
       "toggleHotkeyDesc": "在赛道任意位置显示，便于进站前一圈提前设置。",
       "position": "名次",
       "projectedPosition": "预计名次",
-      "projectedPositionDesc": "根据维修与拖车倒计时以及后方车辆的时间差，估算重回赛道后的名次。仅为估算：假定后车保持节奏且不进站。"
+      "projectedPositionDesc": "根据维修与拖车倒计时以及后方车辆的时间差，估算重回赛道后的名次。仅为估算：假定后车保持节奏且不进站。",
+      "commands": "维修站指令",
+      "enableCommands": "向模拟器发送指令",
+      "enableCommandsDesc": "允许下方快捷键通过 SDK 广播通道将维修站指令写入 iRacing。默认关闭——本挂件的其余部分仅读取遥测数据。指令只会在按键时发送，绝不会自动发送，且只有在您坐进赛车时模拟器才会接受。",
+      "commandTires": "指令中的轮胎",
+      "commandTiresDesc": "应用快捷键会勾选哪些轮胎。胎压保持车库中的设置。",
+      "commandTires_none": "仅加油",
+      "commandTires_all": "四条全换",
+      "commandTires_fronts": "前轮",
+      "commandTires_rears": "后轮",
+      "applyOrderHotkey": "应用指令快捷键",
+      "applyOrderHotkeyDesc": "先清除当前指令，然后勾选计算出的油量和上方选择的轮胎。",
+      "clearOrderHotkey": "清除指令快捷键",
+      "clearOrderHotkeyDesc": "取消勾选维修站窗口中的全部选项。"
     }
   },
   "streamChat": {

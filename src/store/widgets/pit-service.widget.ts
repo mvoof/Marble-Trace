@@ -1,6 +1,10 @@
-import { makeAutoObservable } from 'mobx';
+import { invoke } from '@tauri-apps/api/core';
+import { makeAutoObservable, runInAction } from 'mobx';
 
+import { computeRefuelPlan } from '@widgets/FuelWidget/fuel-utils';
 import type { RootStore } from '@store/root-store';
+import type { PitCommandKind, PitCommandRequest } from '@/types/bindings';
+import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 
 // The panel lingers briefly after pit exit so the last service result stays
 // readable while the car is already accelerating away.
@@ -10,6 +14,21 @@ const HIDE_DELAY_MS = 3000;
 // tier runs at 4 Hz, which is too coarse to read as a running timer.
 const STOP_TICK_MS = 100;
 const MS_IN_SECOND = 1000;
+
+// How long the widget confirms a sent order. The sim never acknowledges a
+// broadcast, so this only reports that the message left, not that it landed.
+const ORDER_FEEDBACK_MS = 2500;
+
+/** Corners each tire selection puts on the order. */
+const TIRE_CORNERS: Record<
+  PitServiceWidgetSettings['commandTires'],
+  PitCommandKind[]
+> = {
+  none: [],
+  all: ['lf', 'rf', 'lr', 'rr'],
+  fronts: ['lf', 'rf'],
+  rears: ['lr', 'rr'],
+};
 
 export class PitServiceWidgetStore {
   /** Manual override toggled by hotkey; independent of pit road state. */
@@ -25,7 +44,11 @@ export class PitServiceWidgetStore {
    */
   lastStopDurationS: number | null = null;
 
+  /** Outcome of the last order, shown briefly under the fuel row. */
+  lastOrderResult: 'sent' | 'failed' | null = null;
+
   private lingering = false;
+  private orderFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
   private lastOnPitRoad = false;
   private lastServiceActive = false;
   private stallEnteredAt: number | null = null;
@@ -86,6 +109,101 @@ export class PitServiceWidgetStore {
     const serviceLeft = Math.max(0, this.lastStopDurationS - this.stopElapsedS);
 
     return Math.max(timed, serviceLeft);
+  }
+
+  private get settings(): PitServiceWidgetSettings {
+    return this.root.widgetSettings.getSettings<PitServiceWidgetSettings>(
+      'pit-service'
+    );
+  }
+
+  /**
+   * Liters the Fuel widget recommends, capped at tank capacity. Shared with
+   * `FuelOrder` so the number the driver reads is the number that gets sent.
+   */
+  get plannedFuelLiters(): number | null {
+    const plan = computeRefuelPlan(
+      this.root.backendComputed.fuel?.fuelToAddWithBuffer ?? null,
+      this.root.session.sessionInfo?.driverCarFuelMaxLtr ?? null
+    );
+
+    return plan?.fillNow ?? null;
+  }
+
+  /** Whether the hotkeys may write to the sim at all. */
+  get canSendOrders(): boolean {
+    return this.settings.enableCommands;
+  }
+
+  /**
+   * The order the apply hotkey would send. Rebuilt on every call rather than
+   * stored, so it always reflects the current fuel calculation.
+   *
+   * Fuel is rounded up: landing a liter short costs a whole extra stop, while a
+   * liter over costs nothing but weight. Tire pressures are left at whatever
+   * the driver set in the garage — the sim keeps them when passed 0.
+   */
+  get plannedOrder(): PitCommandRequest[] {
+    const order: PitCommandRequest[] = [{ kind: 'clear', value: 0 }];
+    const fuel = this.plannedFuelLiters;
+
+    if (fuel !== null && fuel > 0) {
+      order.push({ kind: 'fuel', value: Math.ceil(fuel) });
+    }
+
+    for (const corner of TIRE_CORNERS[this.settings.commandTires]) {
+      order.push({ kind: corner, value: 0 });
+    }
+
+    return order;
+  }
+
+  /**
+   * Sends the planned order. Only ever reached from an explicit key press —
+   * nothing in this store calls it on a telemetry transition.
+   */
+  async sendPlannedOrder() {
+    if (!this.canSendOrders) {
+      return;
+    }
+
+    await this.send(this.plannedOrder);
+  }
+
+  /** Unchecks the whole pit order in the sim. */
+  async sendClearOrder() {
+    if (!this.canSendOrders) {
+      return;
+    }
+
+    await this.send([{ kind: 'clear', value: 0 }]);
+  }
+
+  private async send(requests: PitCommandRequest[]) {
+    try {
+      await invoke('send_pit_order', { requests });
+      this.setOrderResult('sent');
+    } catch (error) {
+      console.error('[pit-service] order failed', error);
+      this.setOrderResult('failed');
+    }
+  }
+
+  private setOrderResult(result: 'sent' | 'failed') {
+    runInAction(() => {
+      this.lastOrderResult = result;
+    });
+
+    if (this.orderFeedbackTimer !== null) {
+      clearTimeout(this.orderFeedbackTimer);
+    }
+
+    this.orderFeedbackTimer = setTimeout(() => {
+      runInAction(() => {
+        this.lastOrderResult = null;
+        this.orderFeedbackTimer = null;
+      });
+    }, ORDER_FEEDBACK_MS);
   }
 
   /**
@@ -177,6 +295,12 @@ export class PitServiceWidgetStore {
 
     this.clearStopTimer();
 
+    if (this.orderFeedbackTimer !== null) {
+      clearTimeout(this.orderFeedbackTimer);
+      this.orderFeedbackTimer = null;
+    }
+
+    this.lastOrderResult = null;
     this.manualShow = false;
     this.lingering = false;
     this.lastOnPitRoad = false;

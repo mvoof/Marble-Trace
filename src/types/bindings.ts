@@ -837,6 +837,36 @@ export type NearbyCar = {
 };
 
 /**
+ * A single pit checkbox the sim should toggle.
+ */
+export type PitCommandKind =
+  | 'clear'
+  | 'windshield'
+  /**
+   * `value` = liters to add; 0 keeps the amount already ordered.
+   */
+  | 'fuel'
+  /**
+   * `value` = pressure in kPa; 0 keeps the pressure already ordered.
+   */
+  | 'lf'
+  | 'rf'
+  | 'lr'
+  | 'rr'
+  | 'clearTires'
+  | 'fastRepair'
+  | 'clearWindshield'
+  | 'clearFastRepair'
+  | 'clearFuel'
+  | 'tireCompound';
+
+/**
+ * One entry of a pit order. `value` is ignored by commands that take no
+ * parameter.
+ */
+export type PitCommandRequest = { kind: PitCommandKind; value?: number };
+
+/**
  * Pit service telemetry — what the sim will do at the next stop.
  *
  * Everything here only changes while the car is being serviced, so the

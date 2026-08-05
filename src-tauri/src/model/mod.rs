@@ -9,6 +9,7 @@ pub mod enums;
 pub mod environment;
 pub mod flags;
 pub mod lap_log;
+pub mod pit_command;
 pub mod player;
 pub mod reference_lap;
 pub mod relative;

@@ -4,6 +4,7 @@ import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import { ServiceHeader } from './ServiceHeader/ServiceHeader';
 import { PitSpeedPlate } from './PitSpeedPlate/PitSpeedPlate';
 import { FuelOrder } from './FuelOrder/FuelOrder';
+import { OrderHint } from './OrderHint/OrderHint';
 import { RepairRow } from './RepairRow/RepairRow';
 import { TowRow } from './TowRow/TowRow';
 import { TireGrid } from './TireGrid/TireGrid';
@@ -49,6 +50,8 @@ export const PitServiceWidget = observer(() => {
         {pitService.isTowing ? <TowRow /> : showPitSpeed && <PitSpeedPlate />}
 
         {showFuel && <FuelOrder />}
+
+        <OrderHint />
 
         {showRepairs && <RepairRow />}
 

@@ -61,3 +61,8 @@ dev = [
     "dep:specta-typescript",
     "dep:specta-serde",
 ]
+
+# Pit service broadcast lives in kerb's `iracing::broadcast`, unreleased as of
+# 0.2.1. Remove this override and bump the version above once kerb ships it.
+[patch.crates-io]
+kerb = { path = "../../kerb" }

@@ -329,6 +329,15 @@ export interface PitServiceWidgetSettings {
   showFooter: boolean;
   alwaysVisible: boolean;
   toggleHotkey: string;
+  /**
+   * Allow the hotkeys below to send the pit order into the sim. Off by default:
+   * everything else in this widget only reads telemetry.
+   */
+  enableCommands: boolean;
+  /** Which corners the apply hotkey puts on the order. */
+  commandTires: 'none' | 'all' | 'fronts' | 'rears';
+  applyOrderHotkey: string;
+  clearOrderHotkey: string;
 }
 
 export type GMeterDisplayMode = 'trail' | 'fading' | 'peak';
