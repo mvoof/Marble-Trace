@@ -5,6 +5,7 @@ import {
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+import { getDeltaToPreviousBest } from '@utils/widget/delta-utils';
 import type { DeltaWidgetSettings } from '@/types/widget-settings';
 import { DeltaLive } from './DeltaLive/DeltaLive';
 import { LapFlash } from './LapFlash/LapFlash';
@@ -53,6 +54,10 @@ export const DeltaWidget = observer(() => {
       ? historyEntry.lapTime
       : 0;
   const flashIsBest = historyEntry?.isBest ?? false;
+  const flashPersonalDelta =
+    lap && flashLapTime > 0
+      ? getDeltaToPreviousBest(lapStore.lapHistory, lap.lapNum, flashLapTime)
+      : null;
 
   return (
     <div className={styles.container}>
@@ -66,9 +71,9 @@ export const DeltaWidget = observer(() => {
         <div className={styles.deltaWrapper}>
           <LapFlash
             key={String(lap.lapNum)}
-            lapNum={lap.lapNum}
             lapTime={flashLapTime}
             isBest={flashIsBest}
+            personalDelta={flashPersonalDelta}
             duration={flashDuration}
           />
         </div>

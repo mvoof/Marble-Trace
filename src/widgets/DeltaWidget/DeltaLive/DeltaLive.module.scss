@@ -3,16 +3,18 @@
   width: 100%;
   min-width: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: sp(xs);
   height: 100%;
 }
 
-.badge {
-  position: absolute;
-  top: sp(xxs);
-  right: sp(sm);
-  font-size: fs(xxs);
+// The bar deliberately overhangs the widget box on both sides — the widget is
+// registered with overflowVisible so nothing clips it.
+.gaugeSlot {
+  width: 400%;
+  margin-inline: -50%;
 }
 
 .delta {
@@ -22,9 +24,12 @@
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
   text-align: center;
-  white-space: nowrap;
-  padding: sp(sm) sp(sm);
-  width: 100%;
+  // formatDelta() always emits DELTA_SLOTS (7) monospace slots, space-padded —
+  // `pre` keeps that padding so the glyphs never move or shrink, and the box
+  // reserves the widest possible reading up front.
+  white-space: pre;
+  width: 7ch;
+  padding: sp(sm) 0;
 }
 
 .ahead {

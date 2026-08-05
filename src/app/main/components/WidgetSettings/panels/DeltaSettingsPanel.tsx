@@ -54,6 +54,16 @@ export const DeltaSettingsPanel = observer(() => {
               onChange={(value) => update({ hideWhenNoReference: value })}
             />
           </div>
+
+          <div className={styles.fieldRow}>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.delta.showGauge')}
+            </span>
+            <Switch
+              checked={settings.showGauge}
+              onChange={(value) => update({ showGauge: value })}
+            />
+          </div>
         </div>
       </Card>
 

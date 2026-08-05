@@ -256,6 +256,8 @@ export interface DeltaWidgetSettings {
   showLapFlash: boolean;
   flashDuration: number;
   hideWhenNoReference: boolean;
+  /** Horizontal ±1 s bar under the number, filled from the centre. */
+  showGauge: boolean;
 }
 
 export interface SectorMatrixWidgetSettings {

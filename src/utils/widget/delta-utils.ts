@@ -1,4 +1,4 @@
-import type { LapTimingFrame } from '@/types/bindings';
+import type { LapHistoryEntry, LapTimingFrame } from '@/types/bindings';
 import type { LapDeltaReference } from '@/types/widget-settings';
 
 export type DeltaState = 'ahead' | 'behind' | 'neutral';
@@ -7,33 +7,102 @@ export type LapDeltaLayout = 'vertical' | 'horizontal';
 const SECONDS_PER_MINUTE = 60;
 const SECONDS_PER_HOUR = 3600;
 
+// Every delta renders into the same number of monospace slots, so the widget
+// can reserve the space once and never rescale the glyphs: a growing number
+// changes its format, not its size.
+export const DELTA_SLOTS = 7;
+
+const TEN_MINUTES = 10 * SECONDS_PER_MINUTE;
+
+const padSlots = (text: string): string => text.padStart(DELTA_SLOTS, ' ');
+
 export const formatDelta = (delta: number | null): string => {
-  if (delta === null) return '+ -.---';
+  if (delta === null) return padSlots('-.---');
 
   const sign = delta >= 0 ? '+' : '-';
   const abs = Math.abs(delta);
 
-  if (abs < SECONDS_PER_MINUTE) {
-    const formattedAbs = abs.toFixed(3);
-    const [intStr, fracStr] = formattedAbs.split('.');
-    const paddedInt = intStr.length < 2 ? ` ${intStr}` : intStr;
+  // Each branch rounds to its own precision *before* splitting minutes from
+  // seconds — rounding after the split would let 119.97 print as "+1:60.0".
+  // " +0.284" … "+59.999" — the range a driver actually reads. Padding goes
+  // in front of the sign, so the sign stays glued to its digits and the
+  // decimal point still lands in the same column every frame.
+  const rounded3 = Math.round(abs * 1000) / 1000;
 
-    return `${sign}${paddedInt}.${fracStr}`;
+  if (rounded3 < SECONDS_PER_MINUTE) {
+    return padSlots(`${sign}${rounded3.toFixed(3)}`);
   }
 
-  if (abs < SECONDS_PER_HOUR) {
-    const m = Math.floor(abs / SECONDS_PER_MINUTE);
-    const s = abs % SECONDS_PER_MINUTE;
+  // "+1:02.4" — a tenth is plenty once a whole minute is on the board.
+  const rounded1 = Math.round(abs * 10) / 10;
 
-    return `${sign}${m}:${s.toFixed(3).padStart(6, '0')}`;
+  if (rounded1 < TEN_MINUTES) {
+    const m = Math.floor(rounded1 / SECONDS_PER_MINUTE);
+    const s = rounded1 % SECONDS_PER_MINUTE;
+
+    return padSlots(`${sign}${m}:${s.toFixed(1).padStart(4, '0')}`);
   }
 
-  const h = Math.floor(abs / SECONDS_PER_HOUR);
-  const rem = abs % SECONDS_PER_HOUR;
-  const m = Math.floor(rem / SECONDS_PER_MINUTE);
-  const s = rem % SECONDS_PER_MINUTE;
+  // "+59:59" — lapped-by-minutes territory, seconds are noise.
+  const roundedSeconds = Math.round(abs);
 
-  return `${sign}${h}:${String(m).padStart(2, '0')}:${s.toFixed(3).padStart(6, '0')}`;
+  if (roundedSeconds < SECONDS_PER_HOUR) {
+    const m = Math.floor(roundedSeconds / SECONDS_PER_MINUTE);
+    const s = roundedSeconds % SECONDS_PER_MINUTE;
+
+    return padSlots(`${sign}${m}:${String(s).padStart(2, '0')}`);
+  }
+
+  return padSlots(`${sign}>1h`);
+};
+
+// Gap to the driver's own best lap *before* this one, so a new personal best
+// reports how much it beat the old mark by instead of a meaningless 0.000.
+export const getDeltaToPreviousBest = (
+  history: LapHistoryEntry[],
+  lapNum: number,
+  lapTime: number
+): number | null => {
+  const previousTimes = history
+    .filter((entry) => entry.lapNum < lapNum && entry.lapTime !== null)
+    .map((entry) => entry.lapTime as number);
+
+  if (previousTimes.length === 0) return null;
+
+  return lapTime - Math.min(...previousTimes);
+};
+
+// The gauge auto-ranges like the sim's own delta bar: a tight scale while the
+// lap is close, a wider one once the gap grows, so the fill never just pins at
+// the end of the track and stops carrying information.
+export const DELTA_GAUGE_RANGES = [0.5, 1, 2, 5, 10] as const;
+
+// A step is only given up once the delta drops well inside the smaller range —
+// without that margin a delta sitting on a boundary would flip the scale every
+// frame.
+const RANGE_SHRINK_MARGIN = 0.8;
+
+export const resolveGaugeRange = (
+  delta: number | null,
+  currentRange: number
+): number => {
+  const abs = Math.abs(delta ?? 0);
+  const currentIndex = DELTA_GAUGE_RANGES.indexOf(
+    currentRange as (typeof DELTA_GAUGE_RANGES)[number]
+  );
+  const index = currentIndex === -1 ? 0 : currentIndex;
+
+  if (abs > DELTA_GAUGE_RANGES[index]) {
+    const grown = DELTA_GAUGE_RANGES.find((range) => abs <= range);
+
+    return grown ?? DELTA_GAUGE_RANGES[DELTA_GAUGE_RANGES.length - 1];
+  }
+
+  if (index > 0 && abs <= DELTA_GAUGE_RANGES[index - 1] * RANGE_SHRINK_MARGIN) {
+    return DELTA_GAUGE_RANGES[index - 1];
+  }
+
+  return DELTA_GAUGE_RANGES[index];
 };
 
 export const getDeltaState = (delta: number | null): DeltaState => {

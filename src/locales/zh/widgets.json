@@ -94,6 +94,7 @@
       },
       "visibility": "可见性",
       "hideWhenNoReference": "无参考圈速时隐藏",
+      "showGauge": "显示差值刻度条",
       "lapCompletedCard": "圈速完成卡片",
       "showAfterLap": "圈后显示",
       "displayDuration": "显示时长：{{seconds}} 秒"

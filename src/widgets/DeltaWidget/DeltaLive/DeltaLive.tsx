@@ -14,7 +14,7 @@ import {
   isGameDeltaOk,
 } from '@utils/widget/delta-utils';
 import type { DeltaWidgetSettings } from '@/types/widget-settings';
-import { ReferenceBadge } from '@/components/shared/ReferenceBadge/ReferenceBadge';
+import { DeltaGauge } from '../DeltaGauge/DeltaGauge';
 import styles from './DeltaLive.module.scss';
 
 const DELTA_CLASS = {
@@ -26,7 +26,7 @@ const DELTA_CLASS = {
 export const DeltaLive = observer(() => {
   const { lapTiming } = usePlayerStore();
   const widgetSettings = useWidgetSettingsStore();
-  const { reference, hideWhenNoReference } =
+  const { reference, hideWhenNoReference, showGauge } =
     widgetSettings.getSettings<DeltaWidgetSettings>('delta');
 
   const liveDelta = getGameDelta(lapTiming, reference);
@@ -63,24 +63,17 @@ export const DeltaLive = observer(() => {
 
   const delta = getDisplayedDelta(latchRef.current, deltaOk, liveDelta);
 
-  const deltaStr = formatDelta(delta);
-  let fontSizeStyle = {};
-
-  if (deltaStr.length >= 12) {
-    fontSizeStyle = { fontSize: 'calc(18px * var(--wfs, 1))' };
-  } else if (deltaStr.length >= 9) {
-    fontSizeStyle = { fontSize: 'calc(24px * var(--wfs, 1))' };
-  }
-
   return (
     <div className={styles.root}>
-      <div
-        className={`${styles.delta} ${DELTA_CLASS[getDeltaState(delta)]}`}
-        style={fontSizeStyle}
-      >
-        {deltaStr}
+      <div className={`${styles.delta} ${DELTA_CLASS[getDeltaState(delta)]}`}>
+        {formatDelta(delta)}
       </div>
-      <ReferenceBadge reference={reference} className={styles.badge} />
+
+      {showGauge && (
+        <div className={styles.gaugeSlot}>
+          <DeltaGauge delta={delta} />
+        </div>
+      )}
     </div>
   );
 });

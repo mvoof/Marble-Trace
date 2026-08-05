@@ -1,0 +1,40 @@
+.track {
+  position: relative;
+  // Width comes from the slot the parent puts the gauge in — the gauge only
+  // owns its own thickness and shape.
+  width: 100%;
+  height: ws(8);
+  border-radius: 999px;
+  background: $widget-row-bg-subtle;
+  overflow: hidden;
+}
+
+.fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transition:
+    left 80ms linear,
+    width 80ms linear;
+}
+
+// Zero marker stays inside the track — it reads as part of the bar, not as a
+// tick sticking out of it.
+.zero {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: 50%;
+  width: 1px;
+  background: $widget-text-muted;
+}
+
+.ahead {
+  background: $widget-status-positive;
+}
+.behind {
+  background: $widget-status-danger;
+}
+.neutral {
+  background: $widget-text-muted;
+}
