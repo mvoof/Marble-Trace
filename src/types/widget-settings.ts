@@ -350,6 +350,22 @@ export interface PitServiceWidgetSettings {
   tireRrHotkey: string;
   fastRepairHotkey: string;
   windshieldHotkey: string;
+  /**
+   * Build the order by itself on every pit road entry. Requires
+   * `enableCommands` — it writes into the sim through the same channel.
+   */
+  autoService: boolean;
+  /** Auto mode checks the calculated fuel amount. */
+  autoFuel: boolean;
+  /** Auto mode checks the corners worn past `autoTireWearThreshold`. */
+  autoTires: boolean;
+  /**
+   * Remaining tread, in percent, at or below which auto mode orders a corner.
+   * Measured on the most worn of the three points across the tread.
+   */
+  autoTireWearThreshold: number;
+  /** Turns auto mode on and off without opening the settings window. */
+  autoModeHotkey: string;
 }
 
 export type GMeterDisplayMode = 'trail' | 'fading' | 'peak';

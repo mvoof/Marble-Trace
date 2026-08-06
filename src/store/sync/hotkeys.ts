@@ -134,6 +134,20 @@ export const setupHotkeys = async (
       });
     }
 
+    if (pitService.autoModeHotkey) {
+      addHandler(pitService.autoModeHotkey, (event) => {
+        if (event.state === 'Pressed') {
+          root.widgetSettings.updateUserSettings('pit-service', {
+            autoService: !pitService.autoService,
+          });
+
+          // Turning auto back on mid-stop should act, not sit suspended by a
+          // manual change made before it was switched on.
+          root.pitServiceWidget.setAutoSuspended(false);
+        }
+      });
+    }
+
     // Writing to the sim stays behind an explicit opt-in, and only ever runs
     // from a key press — never from a telemetry transition.
     if (pitService.enableCommands) {

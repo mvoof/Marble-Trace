@@ -28,6 +28,7 @@ import {
   emitAutoSwitchLayoutsChanged,
   emitStreamChatFilters,
   emitStreamChatCleared,
+  emitPitServiceAutoSuspended,
 } from './events';
 import type { MonitorWidgetsPayload } from './events';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
@@ -308,6 +309,7 @@ export const initMainSync = async (root: RootStore) => {
               pitServiceSettings.fastRepairHotkey,
               pitServiceSettings.windshieldHotkey,
               pitServiceSettings.enableCommands,
+              pitServiceSettings.autoModeHotkey,
             ];
           },
           () => {
@@ -436,6 +438,23 @@ export const initMainSync = async (root: RootStore) => {
             delay: 500,
           }
         ),
+        reaction(
+          () => root.pitServiceWidget.autoSuspended,
+          (suspended) => {
+            void emitPitServiceAutoSuspended(suspended);
+          }
+        ),
+        // The automatic order is built on pit entry and sent from this window
+        // only: both windows run the same telemetry, so an overlay copy of this
+        // reaction would broadcast the same order a second time.
+        reaction(
+          () => root.pitServiceWidget.isOnPitRoad,
+          (onPitRoad) => {
+            if (onPitRoad) {
+              void root.pitServiceWidget.applyAutoOrder();
+            }
+          }
+        ),
       ];
 
       const cleanup = () => {
@@ -501,6 +520,14 @@ export const initOverlaySync = async (root: RootStore) => {
         });
       },
       { delay: 100 }
+    ),
+    // Clicks on the checkboxes land here, so this window can be the one that
+    // takes the order off auto.
+    reaction(
+      () => root.pitServiceWidget.autoSuspended,
+      (suspended) => {
+        void emitPitServiceAutoSuspended(suspended);
+      }
     ),
   ];
 

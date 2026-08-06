@@ -223,6 +223,119 @@ describe('PitServiceWidgetStore — pit orders', () => {
     );
   });
 
+  const setTireWear = (wearByCorner: Record<string, number>) => {
+    runInAction(() => {
+      const chassis: Record<string, number> = {};
+
+      for (const [corner, wear] of Object.entries(wearByCorner)) {
+        chassis[`${corner}_wear_l`] = wear;
+        chassis[`${corner}_wear_m`] = wear;
+        chassis[`${corner}_wear_r`] = wear;
+      }
+
+      rootStore.player.chassis = chassis as never;
+    });
+  };
+
+  describe('auto mode', () => {
+    const enableAuto = () =>
+      setSettings({
+        enableCommands: true,
+        autoService: true,
+        autoFuel: true,
+        autoTires: true,
+        autoTireWearThreshold: 60,
+      });
+
+    it('orders only the corners worn past the threshold', async () => {
+      setFuelPlan(24.1, 106);
+      enableAuto();
+      setTireWear({ lf: 0.55, rf: 0.62, lr: 0.9, rr: 0.6 });
+
+      await rootStore.pitServiceWidget.applyAutoOrder();
+
+      expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+        requests: [
+          { kind: 'clear', value: 0 },
+          { kind: 'fuel', value: 25 },
+          { kind: 'lf', value: 0 },
+          { kind: 'rr', value: 0 },
+        ],
+      });
+    });
+
+    it('takes the worst of the three points across the tread', () => {
+      enableAuto();
+      runInAction(() => {
+        rootStore.player.chassis = {
+          lf_wear_l: 0.4,
+          lf_wear_m: 0.95,
+          lf_wear_r: 0.95,
+        } as never;
+      });
+
+      expect(rootStore.pitServiceWidget.autoTireCorners).toEqual(['lf']);
+    });
+
+    it('leaves out a section the driver switched off', async () => {
+      setFuelPlan(30, 106);
+      enableAuto();
+      setSettings({ autoFuel: false });
+      setTireWear({ lf: 0.1 });
+
+      await rootStore.pitServiceWidget.applyAutoOrder();
+
+      expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+        requests: [
+          { kind: 'clear', value: 0 },
+          { kind: 'lf', value: 0 },
+        ],
+      });
+    });
+
+    it('stands down for the rest of the stop after a manual change', async () => {
+      setFuelPlan(30, 106);
+      enableAuto();
+      setTireWear({ lf: 0.1 });
+
+      await rootStore.pitServiceWidget.toggleWindshield();
+
+      expect(rootStore.pitServiceWidget.isAutoActive).toBe(false);
+
+      invokeMock.mockClear();
+      await rootStore.pitServiceWidget.applyAutoOrder();
+
+      expect(invokeMock).not.toHaveBeenCalledWith(
+        'send_pit_order',
+        expect.anything()
+      );
+    });
+
+    it('takes over again on the next pit entry', async () => {
+      enableAuto();
+      rootStore.pitServiceWidget.suspendAuto();
+
+      rootStore.pitServiceWidget.handlePitRoadChange(true);
+      rootStore.pitServiceWidget.handlePitRoadChange(false);
+
+      expect(rootStore.pitServiceWidget.isAutoActive).toBe(true);
+    });
+
+    it('stays out of the sim while commands are disabled', async () => {
+      enableAuto();
+      setSettings({ enableCommands: false });
+      setTireWear({ lf: 0.1 });
+
+      await rootStore.pitServiceWidget.applyAutoOrder();
+
+      expect(rootStore.pitServiceWidget.isAutoEnabled).toBe(false);
+      expect(invokeMock).not.toHaveBeenCalledWith(
+        'send_pit_order',
+        expect.anything()
+      );
+    });
+  });
+
   it('clears the whole order with a single command', async () => {
     setSettings({ enableCommands: true });
 

@@ -7,12 +7,11 @@ import type { PitCommandRequest } from '@/types/bindings';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import type { CornerPosition } from '@utils/widget/pit-service-utils';
 import {
+  ALL_CORNERS,
+  cornersBelowWearThreshold,
   isCornerOrdered,
   orderedPressure,
 } from '@utils/widget/pit-service-utils';
-
-/** Every corner, in the order the black box lists them. */
-const ALL_CORNERS: CornerPosition[] = ['lf', 'rf', 'lr', 'rr'];
 
 // The panel lingers briefly after pit exit so the last service result stays
 // readable while the car is already accelerating away.
@@ -43,6 +42,17 @@ export class PitServiceWidgetStore {
 
   /** Outcome of the last order, shown briefly under the fuel row. */
   lastOrderResult: 'sent' | 'failed' | null = null;
+
+  /**
+   * Auto mode stands down for the rest of this pit stop because the driver
+   * touched the order by hand. Cleared on pit exit, so the next stop is
+   * automatic again.
+   *
+   * Public because both windows have to agree on it: the checkboxes are
+   * clicked in the overlay and the hotkeys fire in main, and the badge is read
+   * in the overlay — the sync layer mirrors the flag between them.
+   */
+  autoSuspended = false;
 
   private lingering = false;
   private orderFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
@@ -164,6 +174,84 @@ export class PitServiceWidgetStore {
     return order;
   }
 
+  /**
+   * Auto mode is armed: the setting is on and the widget is allowed to write
+   * to the sim at all. It says nothing about whether it will act right now —
+   * see `isAutoActive`.
+   */
+  get isAutoEnabled(): boolean {
+    return this.settings.autoService && this.canSendOrders;
+  }
+
+  /** Auto mode will build the next order itself. */
+  get isAutoActive(): boolean {
+    return this.isAutoEnabled && !this.autoSuspended;
+  }
+
+  /**
+   * Corners auto mode considers finished. Recomputed on read, so the settings
+   * panel slider and the tire grid always agree with what the next entry would
+   * order.
+   */
+  get autoTireCorners(): CornerPosition[] {
+    if (!this.settings.autoTires) {
+      return [];
+    }
+
+    return cornersBelowWearThreshold(
+      this.root.player.chassis,
+      this.settings.autoTireWearThreshold
+    );
+  }
+
+  /**
+   * The order auto mode sends on pit entry: the calculated fuel and only the
+   * corners worn past the threshold. It clears first, so the box holds exactly
+   * this and nothing left over from the previous stop.
+   */
+  get autoOrder(): PitCommandRequest[] {
+    const order: PitCommandRequest[] = [{ kind: 'clear', value: 0 }];
+    const fuel = this.plannedFuelLiters;
+
+    if (this.settings.autoFuel && fuel !== null && fuel > 0) {
+      order.push({ kind: 'fuel', value: Math.ceil(fuel) });
+    }
+
+    for (const corner of this.autoTireCorners) {
+      order.push({ kind: corner, value: 0 });
+    }
+
+    return order;
+  }
+
+  /**
+   * Builds and sends the automatic order. Called once per pit road entry, from
+   * the main window only — two windows running the same telemetry would
+   * otherwise broadcast the order twice.
+   */
+  async applyAutoOrder() {
+    if (!this.isAutoActive) {
+      return;
+    }
+
+    await this.send(this.autoOrder);
+  }
+
+  /**
+   * Hands the order back to the driver for the rest of the stop. Every manual
+   * path calls this: once a human has decided something, auto mode second
+   * guessing it is worse than doing nothing.
+   */
+  suspendAuto() {
+    if (!this.autoSuspended) {
+      this.autoSuspended = true;
+    }
+  }
+
+  setAutoSuspended(suspended: boolean) {
+    this.autoSuspended = suspended;
+  }
+
   /** Whether the sim currently has this corner checked. */
   isCornerOrdered(corner: CornerPosition): boolean {
     return isCornerOrdered(corner, this.root.player.pitService);
@@ -190,6 +278,8 @@ export class PitServiceWidgetStore {
    * state read back from the sim decides which of the two to send.
    */
   async toggleFuel() {
+    this.suspendAuto();
+
     if (this.isFuelOrdered) {
       await this.send([{ kind: 'clearFuel', value: 0 }]);
 
@@ -212,6 +302,8 @@ export class PitServiceWidgetStore {
    * pressure survives the round trip.
    */
   async toggleTire(corner: CornerPosition) {
+    this.suspendAuto();
+
     if (!this.isCornerOrdered(corner)) {
       await this.send([{ kind: corner, value: 0 }]);
 
@@ -234,6 +326,8 @@ export class PitServiceWidgetStore {
   }
 
   async toggleAllTires() {
+    this.suspendAuto();
+
     if (this.areAllTiresOrdered) {
       await this.send([{ kind: 'clearTires', value: 0 }]);
 
@@ -244,6 +338,8 @@ export class PitServiceWidgetStore {
   }
 
   async toggleFastRepair() {
+    this.suspendAuto();
+
     await this.send([
       {
         kind: this.isFastRepairOrdered ? 'clearFastRepair' : 'fastRepair',
@@ -253,6 +349,8 @@ export class PitServiceWidgetStore {
   }
 
   async toggleWindshield() {
+    this.suspendAuto();
+
     await this.send([
       {
         kind: this.isWindshieldOrdered ? 'clearWindshield' : 'windshield',
@@ -266,11 +364,15 @@ export class PitServiceWidgetStore {
    * nothing in this store calls it on a telemetry transition.
    */
   async sendPlannedOrder() {
+    this.suspendAuto();
+
     await this.send(this.plannedOrder);
   }
 
   /** Unchecks the whole pit order in the sim. */
   async sendClearOrder() {
+    this.suspendAuto();
+
     await this.send([{ kind: 'clear', value: 0 }]);
   }
 
@@ -381,6 +483,9 @@ export class PitServiceWidgetStore {
     }
 
     this.lingering = true;
+    // A new lap starts a new decision: whatever the driver overrode belonged to
+    // the stop that just ended.
+    this.autoSuspended = false;
 
     this.hideTimer = setTimeout(() => {
       this.lingering = false;
@@ -402,6 +507,7 @@ export class PitServiceWidgetStore {
     }
 
     this.lastOrderResult = null;
+    this.autoSuspended = false;
     this.manualShow = false;
     this.lingering = false;
     this.lastOnPitRoad = false;

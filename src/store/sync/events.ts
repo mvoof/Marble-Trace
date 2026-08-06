@@ -50,8 +50,21 @@ export const setupMainListeners = async (
     })
   );
 
+  unlistens.push(await listenPitServiceAutoSuspended(root));
+
   return unlistens;
 };
+
+/**
+ * Auto mode stands down for the rest of a stop as soon as the driver touches
+ * the order — and that touch can land in either window: the checkboxes are
+ * clicked in the overlay, the hotkeys are registered in main. Both windows
+ * mirror the flag so the AUTO / MANUAL badge and the pit entry trigger agree.
+ */
+const listenPitServiceAutoSuspended = (root: RootStore) =>
+  listen<boolean>('pit-service-auto-suspended', (e) => {
+    runInAction(() => root.pitServiceWidget.setAutoSuspended(e.payload));
+  });
 
 export const setupOverlayListeners = async (
   root: RootStore
@@ -159,6 +172,8 @@ export const setupOverlayListeners = async (
     })
   );
 
+  unlistens.push(await listenPitServiceAutoSuspended(root));
+
   unlistens.push(
     await listen<SessionLayoutMap>('session-layouts-changed', (e) => {
       runInAction(() => {
@@ -211,6 +226,10 @@ export const emitStandingsClassIndex = (index: number) =>
 
 export const emitPitServiceToggle = () =>
   emitToOverlays('pit-service-toggle', null);
+
+// Broadcast rather than targeted: either window can be the one that suspends.
+export const emitPitServiceAutoSuspended = (suspended: boolean) =>
+  emit('pit-service-auto-suspended', suspended);
 
 export const emitStandingsScroll = (delta: number) =>
   emitToOverlays('standings-scroll', delta);

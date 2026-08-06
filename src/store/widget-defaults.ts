@@ -673,6 +673,11 @@ const WIDGETS: WidgetConfig[] = [
       tireRrHotkey: '',
       fastRepairHotkey: '',
       windshieldHotkey: '',
+      autoService: false,
+      autoFuel: true,
+      autoTires: true,
+      autoTireWearThreshold: 60,
+      autoModeHotkey: '',
     },
   },
   {

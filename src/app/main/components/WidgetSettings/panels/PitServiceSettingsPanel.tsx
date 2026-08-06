@@ -1,8 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Switch } from 'antd';
+import { Slider, Switch } from 'antd';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
+import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
@@ -20,6 +21,12 @@ const COMMAND_HOTKEYS = [
   'fastRepairHotkey',
   'windshieldHotkey',
 ] as const satisfies ReadonlyArray<keyof PitServiceWidgetSettings>;
+
+// Remaining tread, in percent. Above 90 every fresh set would be ordered and
+// below 10 the tires are already gone, so neither end is worth offering.
+const WEAR_THRESHOLD_MIN_PCT = 10;
+const WEAR_THRESHOLD_MAX_PCT = 90;
+const WEAR_THRESHOLD_STEP_PCT = 5;
 
 export const PitServiceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -142,6 +149,79 @@ export const PitServiceSettingsPanel = observer(() => {
             onChange={(checked) => update({ enableCommands: checked })}
           />
         </SettingRow>
+
+        {/*
+          Auto mode writes the same broadcast the hotkeys do, so it stays
+          inside the commands opt-in rather than beside it.
+        */}
+        {settings.enableCommands && (
+          <>
+            <SettingRow
+              title={t('settingsPanels.pitService.autoService')}
+              desc={t('settingsPanels.pitService.autoServiceDesc')}
+            >
+              <Switch
+                checked={settings.autoService}
+                onChange={(checked) => update({ autoService: checked })}
+              />
+            </SettingRow>
+
+            {settings.autoService && (
+              <>
+                <SettingRow
+                  title={t('settingsPanels.pitService.autoFuel')}
+                  desc={t('settingsPanels.pitService.autoFuelDesc')}
+                >
+                  <Switch
+                    checked={settings.autoFuel}
+                    onChange={(checked) => update({ autoFuel: checked })}
+                  />
+                </SettingRow>
+
+                <SettingRow
+                  title={t('settingsPanels.pitService.autoTires')}
+                  desc={t('settingsPanels.pitService.autoTiresDesc')}
+                >
+                  <Switch
+                    checked={settings.autoTires}
+                    onChange={(checked) => update({ autoTires: checked })}
+                  />
+                </SettingRow>
+
+                {settings.autoTires && (
+                  <div className={styles.fieldGroup}>
+                    <div className={styles.fieldLabel}>
+                      {t('settingsPanels.pitService.autoTireWearThreshold', {
+                        percent: settings.autoTireWearThreshold,
+                      })}
+                    </div>
+
+                    <Slider
+                      min={WEAR_THRESHOLD_MIN_PCT}
+                      max={WEAR_THRESHOLD_MAX_PCT}
+                      step={WEAR_THRESHOLD_STEP_PCT}
+                      value={settings.autoTireWearThreshold}
+                      onChange={(value) =>
+                        update({ autoTireWearThreshold: value })
+                      }
+                    />
+                  </div>
+                )}
+
+                <SettingRow
+                  title={t('settingsPanels.pitService.autoModeHotkey')}
+                  desc={t('settingsPanels.pitService.autoModeHotkeyDesc')}
+                >
+                  <HotkeyRecorder
+                    currentHotkey={settings.autoModeHotkey}
+                    onApply={(hotkey) => update({ autoModeHotkey: hotkey })}
+                    onClear={() => update({ autoModeHotkey: '' })}
+                  />
+                </SettingRow>
+              </>
+            )}
+          </>
+        )}
 
         {COMMAND_HOTKEYS.map((key) => (
           <SettingRow
