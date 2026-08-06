@@ -26,6 +26,11 @@ const MS_IN_SECOND = 1000;
 // broadcast, so this only reports that the message left, not that it landed.
 const ORDER_FEEDBACK_MS = 2500;
 
+// Manual fuel steps follow the unit the driver reads: one liter, or one gallon
+// worth of liters — the sim itself only ever takes liters.
+const FUEL_STEP_L = 1;
+const LITERS_PER_GALLON = 3.785412;
+
 export class PitServiceWidgetStore {
   /** Manual override toggled by hotkey; independent of pit road state. */
   manualShow = false;
@@ -53,6 +58,14 @@ export class PitServiceWidgetStore {
    * in the overlay — the sync layer mirrors the flag between them.
    */
   autoSuspended = false;
+
+  /**
+   * Liters being dialled in right now by dragging the fuel bar. The sim is only
+   * written on release: a command per pointer move would flood the broadcast
+   * channel, and the sim reads back at 4 Hz anyway, so the bar would stutter
+   * against its own echo.
+   */
+  fuelDraftLiters: number | null = null;
 
   private lingering = false;
   private orderFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
@@ -271,6 +284,76 @@ export class PitServiceWidgetStore {
 
   get areAllTiresOrdered(): boolean {
     return ALL_CORNERS.every((corner) => this.isCornerOrdered(corner));
+  }
+
+  /** Tank size for this car; the ceiling for every manual fuel change. */
+  get fuelCapacityLiters(): number | null {
+    return this.root.session.sessionInfo?.driverCarFuelMaxLtr ?? null;
+  }
+
+  /** Liters the sim currently has on the order, zero when fuel is unchecked. */
+  get orderedFuelLiters(): number {
+    const service = this.root.player.pitService;
+
+    return service?.addFuel ? (service.fuelAmount ?? 0) : 0;
+  }
+
+  /** What the fuel bar shows: the live drag, or the sim when not dragging. */
+  get fuelDisplayLiters(): number {
+    return this.fuelDraftLiters ?? this.orderedFuelLiters;
+  }
+
+  /** One press of the manual step, in liters, matching the displayed unit. */
+  get fuelStepLiters(): number {
+    return this.root.units.unitSystem === 'metric'
+      ? FUEL_STEP_L
+      : LITERS_PER_GALLON;
+  }
+
+  private clampFuel(liters: number): number {
+    const capacity = this.fuelCapacityLiters;
+
+    return Math.max(0, capacity === null ? liters : Math.min(liters, capacity));
+  }
+
+  /** Moves the bar without touching the sim; `commitFuelDraft` sends it. */
+  setFuelDraft(liters: number) {
+    this.fuelDraftLiters = this.clampFuel(liters);
+  }
+
+  async commitFuelDraft() {
+    const draft = this.fuelDraftLiters;
+
+    this.fuelDraftLiters = null;
+
+    if (draft === null) {
+      return;
+    }
+
+    await this.setFuelLiters(draft);
+  }
+
+  /** Steps the order up or down from whatever the sim currently holds. */
+  async adjustFuel(deltaLiters: number) {
+    await this.setFuelLiters(this.fuelDisplayLiters + deltaLiters);
+  }
+
+  /**
+   * Sets the ordered fuel outright. Rounded up for the same reason the planned
+   * order is: a liter short costs a stop, a liter over costs nothing.
+   */
+  async setFuelLiters(liters: number) {
+    this.suspendAuto();
+
+    const target = Math.round(this.clampFuel(liters));
+
+    if (target <= 0) {
+      await this.send([{ kind: 'clearFuel', value: 0 }]);
+
+      return;
+    }
+
+    await this.send([{ kind: 'fuel', value: target }]);
   }
 
   /**
@@ -507,6 +590,7 @@ export class PitServiceWidgetStore {
     }
 
     this.lastOrderResult = null;
+    this.fuelDraftLiters = null;
     this.autoSuspended = false;
     this.manualShow = false;
     this.lingering = false;

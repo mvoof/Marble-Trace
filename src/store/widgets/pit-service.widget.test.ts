@@ -141,6 +141,64 @@ describe('PitServiceWidgetStore — pit orders', () => {
     });
   };
 
+  it('steps the ordered fuel up from what the sim currently holds', async () => {
+    setSettings({ enableCommands: true });
+    setFuelPlan(30, 106);
+    setPitService({ addFuel: true, fuelAmount: 40 });
+
+    await rootStore.pitServiceWidget.adjustFuel(
+      rootStore.pitServiceWidget.fuelStepLiters
+    );
+
+    expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+      requests: [{ kind: 'fuel', value: 41 }],
+    });
+  });
+
+  it('caps a manual fuel change at tank capacity', async () => {
+    setSettings({ enableCommands: true });
+    setFuelPlan(30, 106);
+
+    await rootStore.pitServiceWidget.setFuelLiters(200);
+
+    expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+      requests: [{ kind: 'fuel', value: 106 }],
+    });
+  });
+
+  it('clears fuel instead of ordering zero liters', async () => {
+    setSettings({ enableCommands: true });
+    setFuelPlan(30, 106);
+
+    await rootStore.pitServiceWidget.setFuelLiters(0);
+
+    expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+      requests: [{ kind: 'clearFuel', value: 0 }],
+    });
+  });
+
+  it('holds the drag in a draft and sends it once on release', async () => {
+    setSettings({ enableCommands: true });
+    setFuelPlan(30, 106);
+    setPitService({ addFuel: true, fuelAmount: 10 });
+
+    rootStore.pitServiceWidget.setFuelDraft(50);
+    rootStore.pitServiceWidget.setFuelDraft(64);
+
+    expect(rootStore.pitServiceWidget.fuelDisplayLiters).toBe(64);
+    expect(invokeMock).not.toHaveBeenCalledWith(
+      'send_pit_order',
+      expect.anything()
+    );
+
+    await rootStore.pitServiceWidget.commitFuelDraft();
+
+    expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+      requests: [{ kind: 'fuel', value: 64 }],
+    });
+    expect(rootStore.pitServiceWidget.fuelDraftLiters).toBeNull();
+  });
+
   it('checks a single corner without touching the rest of the order', async () => {
     setSettings({ enableCommands: true });
     setPitService({ changeRf: true });

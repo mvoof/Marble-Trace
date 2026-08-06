@@ -1,3 +1,9 @@
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxs);
+}
+
 .fuel {
   display: flex;
   flex-direction: column;
