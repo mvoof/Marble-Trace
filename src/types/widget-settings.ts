@@ -329,11 +329,6 @@ export interface PitServiceWidgetSettings {
   showFooter: boolean;
   alwaysVisible: boolean;
   toggleHotkey: string;
-  /**
-   * Allow the hotkeys below to send the pit order into the sim. Off by default:
-   * everything else in this widget only reads telemetry.
-   */
-  enableCommands: boolean;
   /** Sends the full stop in one press: clear, calculated fuel, all four tires. */
   applyOrderHotkey: string;
   clearOrderHotkey: string;
@@ -351,11 +346,10 @@ export interface PitServiceWidgetSettings {
   fastRepairHotkey: string;
   windshieldHotkey: string;
   /**
-   * Build the order by itself on every pit road entry. Requires
-   * `enableCommands` — it writes into the sim through the same channel.
+   * Auto mode checks the calculated fuel amount on pit entry. Auto mode as a
+   * whole is on whenever this or `autoTires` is — there is no separate master
+   * switch, an auto mode that orders nothing would just be off with extra steps.
    */
-  autoService: boolean;
-  /** Auto mode checks the calculated fuel amount. */
   autoFuel: boolean;
   /** Auto mode checks the corners worn past `autoTireWearThreshold`. */
   autoTires: boolean;
@@ -364,7 +358,10 @@ export interface PitServiceWidgetSettings {
    * Measured on the most worn of the three points across the tread.
    */
   autoTireWearThreshold: number;
-  /** Turns auto mode on and off without opening the settings window. */
+  /**
+   * Hands the current stop over to auto mode, or takes it back, without opening
+   * the settings window.
+   */
   autoModeHotkey: string;
 }
 

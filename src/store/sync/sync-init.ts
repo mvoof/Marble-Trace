@@ -308,7 +308,6 @@ export const initMainSync = async (root: RootStore) => {
               pitServiceSettings.tireRrHotkey,
               pitServiceSettings.fastRepairHotkey,
               pitServiceSettings.windshieldHotkey,
-              pitServiceSettings.enableCommands,
               pitServiceSettings.autoModeHotkey,
             ];
           },

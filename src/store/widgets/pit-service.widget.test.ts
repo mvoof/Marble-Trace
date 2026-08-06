@@ -82,24 +82,8 @@ describe('PitServiceWidgetStore — pit orders', () => {
     ]);
   });
 
-  it('sends nothing while commands are disabled', async () => {
+  it('invokes the backend with the planned order', async () => {
     setFuelPlan(30, 106);
-    setSettings({ enableCommands: false });
-
-    await rootStore.pitServiceWidget.sendPlannedOrder();
-    await rootStore.pitServiceWidget.sendClearOrder();
-
-    // RootStore itself invokes unrelated commands on construction, so assert on
-    // the pit channel rather than on the mock as a whole.
-    expect(invokeMock).not.toHaveBeenCalledWith(
-      'send_pit_order',
-      expect.anything()
-    );
-  });
-
-  it('invokes the backend once commands are enabled', async () => {
-    setFuelPlan(30, 106);
-    setSettings({ enableCommands: true });
 
     await rootStore.pitServiceWidget.sendPlannedOrder();
 
@@ -118,7 +102,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
   it('reports a failed order instead of throwing', async () => {
     setFuelPlan(30, 106);
-    setSettings({ enableCommands: true });
     invokeMock.mockRejectedValue(new Error('no broadcast message'));
 
     await rootStore.pitServiceWidget.sendPlannedOrder();
@@ -142,7 +125,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
   };
 
   it('steps the ordered fuel up from what the sim currently holds', async () => {
-    setSettings({ enableCommands: true });
     setFuelPlan(30, 106);
     setPitService({ addFuel: true, fuelAmount: 40 });
 
@@ -156,7 +138,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
   });
 
   it('caps a manual fuel change at tank capacity', async () => {
-    setSettings({ enableCommands: true });
     setFuelPlan(30, 106);
 
     await rootStore.pitServiceWidget.setFuelLiters(200);
@@ -167,7 +148,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
   });
 
   it('clears fuel instead of ordering zero liters', async () => {
-    setSettings({ enableCommands: true });
     setFuelPlan(30, 106);
 
     await rootStore.pitServiceWidget.setFuelLiters(0);
@@ -178,7 +158,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
   });
 
   it('holds the drag in a draft and sends it once on release', async () => {
-    setSettings({ enableCommands: true });
     setFuelPlan(30, 106);
     setPitService({ addFuel: true, fuelAmount: 10 });
 
@@ -200,7 +179,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
   });
 
   it('checks a single corner without touching the rest of the order', async () => {
-    setSettings({ enableCommands: true });
     setPitService({ changeRf: true });
 
     await rootStore.pitServiceWidget.toggleTire('lf');
@@ -211,7 +189,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
   });
 
   it('unchecks one corner by clearing all four and restoring the others', async () => {
-    setSettings({ enableCommands: true });
     setPitService({
       changeLf: true,
       changeRf: true,
@@ -232,7 +209,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
   });
 
   it('clears the tires only when all four are already ordered', async () => {
-    setSettings({ enableCommands: true });
     setPitService({
       changeLf: true,
       changeRf: true,
@@ -249,7 +225,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
   it('sends the clear variant when a box is already checked', async () => {
     setFuelPlan(30, 106);
-    setSettings({ enableCommands: true });
     setPitService({ addFuel: true, fastRepair: true, cleanWindshield: false });
 
     await rootStore.pitServiceWidget.toggleFuel();
@@ -265,20 +240,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
     expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
       requests: [{ kind: 'windshield', value: 0 }],
     });
-  });
-
-  it('keeps the per-checkbox commands behind the same opt-in', async () => {
-    setFuelPlan(30, 106);
-    setSettings({ enableCommands: false });
-
-    await rootStore.pitServiceWidget.toggleFuel();
-    await rootStore.pitServiceWidget.toggleTire('lf');
-    await rootStore.pitServiceWidget.toggleFastRepair();
-
-    expect(invokeMock).not.toHaveBeenCalledWith(
-      'send_pit_order',
-      expect.anything()
-    );
   });
 
   const setTireWear = (wearByCorner: Record<string, number>) => {
@@ -298,8 +259,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
   describe('auto mode', () => {
     const enableAuto = () =>
       setSettings({
-        enableCommands: true,
-        autoService: true,
         autoFuel: true,
         autoTires: true,
         autoTireWearThreshold: 60,
@@ -379,9 +338,9 @@ describe('PitServiceWidgetStore — pit orders', () => {
       expect(rootStore.pitServiceWidget.isAutoActive).toBe(true);
     });
 
-    it('stays out of the sim while commands are disabled', async () => {
+    it('is off entirely when neither fuel nor tires are automatic', async () => {
       enableAuto();
-      setSettings({ enableCommands: false });
+      setSettings({ autoFuel: false, autoTires: false });
       setTireWear({ lf: 0.1 });
 
       await rootStore.pitServiceWidget.applyAutoOrder();
@@ -395,8 +354,6 @@ describe('PitServiceWidgetStore — pit orders', () => {
   });
 
   it('clears the whole order with a single command', async () => {
-    setSettings({ enableCommands: true });
-
     await rootStore.pitServiceWidget.sendClearOrder();
 
     expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {

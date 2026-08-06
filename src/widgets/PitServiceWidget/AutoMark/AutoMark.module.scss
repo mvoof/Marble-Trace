@@ -1,0 +1,26 @@
+// One glyph wide on purpose: it marks what auto mode owns without taking a
+// column away from the rows it sits in.
+.mark {
+  flex: none;
+  padding: 0 sp(xxxs);
+  border-radius: radius(sm);
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+}
+
+.markActive {
+  @extend .mark;
+
+  background: rgba($race-green, 0.25);
+  color: $race-green;
+}
+
+.markSuspended {
+  @extend .mark;
+
+  background: rgba($widget-label, 0.2);
+  color: $widget-label;
+}

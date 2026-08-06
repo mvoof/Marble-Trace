@@ -150,18 +150,13 @@ export class PitServiceWidgetStore {
     return plan?.fillNow ?? null;
   }
 
-  /** Whether the hotkeys may write to the sim at all. */
-  get canSendOrders(): boolean {
-    return this.settings.enableCommands;
-  }
-
   /**
    * Whether the checkboxes in the overlay accept a click. The overlay only owns
    * the mouse in interact mode, so outside it a click cannot reach the widget
    * anyway — this keeps the affordance honest about that.
    */
   get canClickOrders(): boolean {
-    return this.canSendOrders && this.root.appSettings.interactMode;
+    return this.root.appSettings.interactMode;
   }
 
   /**
@@ -188,12 +183,21 @@ export class PitServiceWidgetStore {
   }
 
   /**
-   * Auto mode is armed: the setting is on and the widget is allowed to write
-   * to the sim at all. It says nothing about whether it will act right now —
-   * see `isAutoActive`.
+   * Auto mode is armed: at least one of the two things it can order is on.
+   * With both off there is nothing for it to build, so it is off — no separate
+   * master switch to disagree with. It says nothing about whether it will act
+   * right now — see `isAutoActive`.
    */
   get isAutoEnabled(): boolean {
-    return this.settings.autoService && this.canSendOrders;
+    return this.isAutoFuelEnabled || this.isAutoTiresEnabled;
+  }
+
+  get isAutoFuelEnabled(): boolean {
+    return this.settings.autoFuel;
+  }
+
+  get isAutoTiresEnabled(): boolean {
+    return this.settings.autoTires;
   }
 
   /** Auto mode will build the next order itself. */
@@ -459,13 +463,9 @@ export class PitServiceWidgetStore {
     await this.send([{ kind: 'clear', value: 0 }]);
   }
 
-  // The opt-in is enforced here rather than at every call site: every path into
-  // the sim goes through this method, so there is one place to get it wrong.
+  // Every path into the sim goes through this method, so the result reporting
+  // lives here rather than at each call site.
   private async send(requests: PitCommandRequest[]) {
-    if (!this.canSendOrders) {
-      return;
-    }
-
     try {
       await invoke('send_pit_order', { requests });
       this.setOrderResult('sent');

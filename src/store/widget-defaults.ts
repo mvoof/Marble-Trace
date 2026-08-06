@@ -644,6 +644,9 @@ const WIDGETS: WidgetConfig[] = [
     requiredCapabilities: ['chassis'],
     designWidth: 300,
     designHeight: 540,
+    // Blocks are switched on and off individually; a fixed height would leave
+    // an empty plate hanging under whatever is still shown.
+    autoHeight: true,
     userSettings: {
       enabled: false,
       x: 100,
@@ -662,7 +665,6 @@ const WIDGETS: WidgetConfig[] = [
       showFooter: false,
       alwaysVisible: false,
       toggleHotkey: 'F7',
-      enableCommands: false,
       applyOrderHotkey: '',
       clearOrderHotkey: '',
       fuelHotkey: '',
@@ -673,9 +675,8 @@ const WIDGETS: WidgetConfig[] = [
       tireRrHotkey: '',
       fastRepairHotkey: '',
       windshieldHotkey: '',
-      autoService: false,
-      autoFuel: true,
-      autoTires: true,
+      autoFuel: false,
+      autoTires: false,
       autoTireWearThreshold: 60,
       autoModeHotkey: '',
     },

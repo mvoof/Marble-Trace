@@ -45,6 +45,9 @@
 }
 
 .label {
+  display: flex;
+  align-items: center;
+  gap: sp(xxs);
   font-size: fs(xxs);
   letter-spacing: 0.06em;
   color: $widget-label;

@@ -134,45 +134,41 @@ export const setupHotkeys = async (
       });
     }
 
+    // Auto mode itself is switched on by the auto fuel / auto tires settings;
+    // this key only decides who owns the stop that is happening right now.
     if (pitService.autoModeHotkey) {
       addHandler(pitService.autoModeHotkey, (event) => {
         if (event.state === 'Pressed') {
-          root.widgetSettings.updateUserSettings('pit-service', {
-            autoService: !pitService.autoService,
-          });
-
-          // Turning auto back on mid-stop should act, not sit suspended by a
-          // manual change made before it was switched on.
-          root.pitServiceWidget.setAutoSuspended(false);
+          root.pitServiceWidget.setAutoSuspended(
+            !root.pitServiceWidget.autoSuspended
+          );
         }
       });
     }
 
-    // Writing to the sim stays behind an explicit opt-in, and only ever runs
-    // from a key press — never from a telemetry transition.
-    if (pitService.enableCommands) {
-      const widget = root.pitServiceWidget;
+    // Pit commands only ever run from a key press — never from a telemetry
+    // transition.
+    const widget = root.pitServiceWidget;
 
-      const pitCommands: Array<[string, () => Promise<void>]> = [
-        [pitService.applyOrderHotkey, () => widget.sendPlannedOrder()],
-        [pitService.clearOrderHotkey, () => widget.sendClearOrder()],
-        [pitService.fuelHotkey, () => widget.toggleFuel()],
-        [pitService.tiresAllHotkey, () => widget.toggleAllTires()],
-        [pitService.tireLfHotkey, () => widget.toggleTire('lf')],
-        [pitService.tireRfHotkey, () => widget.toggleTire('rf')],
-        [pitService.tireLrHotkey, () => widget.toggleTire('lr')],
-        [pitService.tireRrHotkey, () => widget.toggleTire('rr')],
-        [pitService.fastRepairHotkey, () => widget.toggleFastRepair()],
-        [pitService.windshieldHotkey, () => widget.toggleWindshield()],
-      ];
+    const pitCommands: Array<[string, () => Promise<void>]> = [
+      [pitService.applyOrderHotkey, () => widget.sendPlannedOrder()],
+      [pitService.clearOrderHotkey, () => widget.sendClearOrder()],
+      [pitService.fuelHotkey, () => widget.toggleFuel()],
+      [pitService.tiresAllHotkey, () => widget.toggleAllTires()],
+      [pitService.tireLfHotkey, () => widget.toggleTire('lf')],
+      [pitService.tireRfHotkey, () => widget.toggleTire('rf')],
+      [pitService.tireLrHotkey, () => widget.toggleTire('lr')],
+      [pitService.tireRrHotkey, () => widget.toggleTire('rr')],
+      [pitService.fastRepairHotkey, () => widget.toggleFastRepair()],
+      [pitService.windshieldHotkey, () => widget.toggleWindshield()],
+    ];
 
-      for (const [shortcut, run] of pitCommands) {
-        addHandler(shortcut, (event) => {
-          if (event.state === 'Pressed') {
-            void run();
-          }
-        });
-      }
+    for (const [shortcut, run] of pitCommands) {
+      addHandler(shortcut, (event) => {
+        if (event.state === 'Pressed') {
+          void run();
+        }
+      });
     }
 
     await Promise.all(

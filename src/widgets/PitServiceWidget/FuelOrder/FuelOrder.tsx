@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 
 import styles from './FuelOrder.module.scss';
+import { AutoMark } from '@widgets/PitServiceWidget/AutoMark/AutoMark';
 import { formatFuel } from '@utils/formatters/telemetry-format';
 import type { UnitSystem } from '@/types';
 import {
@@ -106,7 +107,10 @@ export const FuelOrder = observer(() => {
 
       <div className={styles.content}>
         <div className={styles.row}>
-          <span className={styles.label}>FUEL ADD</span>
+          <span className={styles.label}>
+            FUEL ADD
+            <AutoMark enabled={pitServiceWidget.isAutoFuelEnabled} />
+          </span>
 
           <span className={styles.value}>
             {ordered > 0 ? `+${formatFuel(ordered, units.unitSystem)}` : '—'}

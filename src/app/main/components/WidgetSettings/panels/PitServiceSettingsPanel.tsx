@@ -140,87 +140,59 @@ export const PitServiceSettingsPanel = observer(() => {
       </Card>
 
       <Card title={t('settingsPanels.pitService.commands')}>
+        {/*
+          Auto mode has no master switch: it is on exactly when it has something
+          to order, so these two toggles are the whole of it.
+        */}
         <SettingRow
-          title={t('settingsPanels.pitService.enableCommands')}
-          desc={t('settingsPanels.pitService.enableCommandsDesc')}
+          title={t('settingsPanels.pitService.autoFuel')}
+          desc={t('settingsPanels.pitService.autoFuelDesc')}
         >
           <Switch
-            checked={settings.enableCommands}
-            onChange={(checked) => update({ enableCommands: checked })}
+            checked={settings.autoFuel}
+            onChange={(checked) => update({ autoFuel: checked })}
           />
         </SettingRow>
 
-        {/*
-          Auto mode writes the same broadcast the hotkeys do, so it stays
-          inside the commands opt-in rather than beside it.
-        */}
-        {settings.enableCommands && (
-          <>
-            <SettingRow
-              title={t('settingsPanels.pitService.autoService')}
-              desc={t('settingsPanels.pitService.autoServiceDesc')}
-            >
-              <Switch
-                checked={settings.autoService}
-                onChange={(checked) => update({ autoService: checked })}
-              />
-            </SettingRow>
+        <SettingRow
+          title={t('settingsPanels.pitService.autoTires')}
+          desc={t('settingsPanels.pitService.autoTiresDesc')}
+        >
+          <Switch
+            checked={settings.autoTires}
+            onChange={(checked) => update({ autoTires: checked })}
+          />
+        </SettingRow>
 
-            {settings.autoService && (
-              <>
-                <SettingRow
-                  title={t('settingsPanels.pitService.autoFuel')}
-                  desc={t('settingsPanels.pitService.autoFuelDesc')}
-                >
-                  <Switch
-                    checked={settings.autoFuel}
-                    onChange={(checked) => update({ autoFuel: checked })}
-                  />
-                </SettingRow>
+        {settings.autoTires && (
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldLabel}>
+              {t('settingsPanels.pitService.autoTireWearThreshold', {
+                percent: settings.autoTireWearThreshold,
+              })}
+            </div>
 
-                <SettingRow
-                  title={t('settingsPanels.pitService.autoTires')}
-                  desc={t('settingsPanels.pitService.autoTiresDesc')}
-                >
-                  <Switch
-                    checked={settings.autoTires}
-                    onChange={(checked) => update({ autoTires: checked })}
-                  />
-                </SettingRow>
+            <Slider
+              min={WEAR_THRESHOLD_MIN_PCT}
+              max={WEAR_THRESHOLD_MAX_PCT}
+              step={WEAR_THRESHOLD_STEP_PCT}
+              value={settings.autoTireWearThreshold}
+              onChange={(value) => update({ autoTireWearThreshold: value })}
+            />
+          </div>
+        )}
 
-                {settings.autoTires && (
-                  <div className={styles.fieldGroup}>
-                    <div className={styles.fieldLabel}>
-                      {t('settingsPanels.pitService.autoTireWearThreshold', {
-                        percent: settings.autoTireWearThreshold,
-                      })}
-                    </div>
-
-                    <Slider
-                      min={WEAR_THRESHOLD_MIN_PCT}
-                      max={WEAR_THRESHOLD_MAX_PCT}
-                      step={WEAR_THRESHOLD_STEP_PCT}
-                      value={settings.autoTireWearThreshold}
-                      onChange={(value) =>
-                        update({ autoTireWearThreshold: value })
-                      }
-                    />
-                  </div>
-                )}
-
-                <SettingRow
-                  title={t('settingsPanels.pitService.autoModeHotkey')}
-                  desc={t('settingsPanels.pitService.autoModeHotkeyDesc')}
-                >
-                  <HotkeyRecorder
-                    currentHotkey={settings.autoModeHotkey}
-                    onApply={(hotkey) => update({ autoModeHotkey: hotkey })}
-                    onClear={() => update({ autoModeHotkey: '' })}
-                  />
-                </SettingRow>
-              </>
-            )}
-          </>
+        {(settings.autoFuel || settings.autoTires) && (
+          <SettingRow
+            title={t('settingsPanels.pitService.autoModeHotkey')}
+            desc={t('settingsPanels.pitService.autoModeHotkeyDesc')}
+          >
+            <HotkeyRecorder
+              currentHotkey={settings.autoModeHotkey}
+              onApply={(hotkey) => update({ autoModeHotkey: hotkey })}
+              onClear={() => update({ autoModeHotkey: '' })}
+            />
+          </SettingRow>
         )}
 
         {COMMAND_HOTKEYS.map((key) => (
