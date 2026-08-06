@@ -21,6 +21,8 @@
 .markSuspended {
   @extend .mark;
 
-  background: rgba($widget-label, 0.2);
+  // Not a faded $widget-label: that token is itself a color-mix on
+  // --widget-bg, which rgba() cannot take.
+  background: $widget-border-subtle;
   color: $widget-label;
 }
