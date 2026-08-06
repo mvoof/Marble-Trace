@@ -8,18 +8,6 @@
   letter-spacing: 0.06em;
 }
 
-.key {
-  padding: 0 sp(xxs);
-  border: 1px solid $widget-border-subtle;
-  border-radius: radius(sm);
-  color: $widget-text-primary;
-  font-family: $font-mono;
-}
-
-.action {
-  color: $widget-label;
-}
-
 .result {
   margin-left: auto;
 }
