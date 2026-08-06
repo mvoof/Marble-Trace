@@ -1,23 +1,40 @@
-.block {
-  display: flex;
-  flex-direction: column;
-  gap: sp(xxs);
-}
-
+// The row is its own gauge: the fill sits behind the text and grows with the
+// ordered amount, so no separate bar is needed.
 .fuel {
-  display: flex;
-  flex-direction: column;
-  gap: sp(xxxs);
+  position: relative;
+  appearance: none;
+  display: block;
+  width: 100%;
+  padding: sp(xxs) sp(xxs);
+  margin: 0;
+  border-radius: radius(sm);
+  // Transparent so the panel's own dark background stays the track; only the
+  // fill adds color.
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
   font-family: $font-widget;
+  overflow: hidden;
 }
 
 .fuelClickable {
-  cursor: pointer;
-  border-radius: radius(sm);
+  cursor: ew-resize;
+}
 
-  &:hover {
-    background: rgba($race-blue, 0.18);
-  }
+.fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba($race-blue, 0.45);
+}
+
+.content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxxs);
 }
 
 .row {
