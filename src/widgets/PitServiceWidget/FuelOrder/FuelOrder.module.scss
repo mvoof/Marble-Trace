@@ -1,0 +1,76 @@
+// The row is its own gauge: the fill sits behind the text and grows with the
+// ordered amount, so no separate bar is needed.
+.fuel {
+  position: relative;
+  appearance: none;
+  display: block;
+  width: 100%;
+  padding: sp(xxs) sp(xxs);
+  margin: 0;
+  border-radius: radius(sm);
+  // Transparent so the panel's own dark background stays the track; only the
+  // fill adds color.
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  font-family: $font-widget;
+  overflow: hidden;
+}
+
+.fuelClickable {
+  cursor: ew-resize;
+}
+
+.fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba($race-blue, 0.45);
+}
+
+.content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxxs);
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: sp(sm);
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: sp(xxs);
+  font-size: fs(xxs);
+  letter-spacing: 0.06em;
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.value {
+  font-family: $font-mono;
+  font-size: fs(xl);
+  line-height: 1;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  font-size: fs(xxs);
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.sub {
+  font-size: fs(xxs);
+  color: $widget-label;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

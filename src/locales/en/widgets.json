@@ -27,9 +27,6 @@
     "flat-flags": {
       "description": "Banner-style list of active track flags."
     },
-    "chassis": {
-      "description": "Tire pressures and brake temperatures."
-    },
     "example": {
       "description": "Raw telemetry data debugger."
     },
@@ -65,6 +62,9 @@
     },
     "stream-chat": {
       "description": "Twitch and YouTube live chat in one feed."
+    },
+    "pit-service": {
+      "description": "Pit stop order, repairs, tow time and pit lane speed."
     }
   },
   "settingsPanels": {
@@ -77,11 +77,6 @@
       "useLivePositionsTrackMapDesc": "Pick the P1 label by position on track, recomputed every tick. Off: the sim's official number, which only updates when a car crosses start/finish — a car towed back to the pits keeps the lead until then.",
       "classPositionInMulticlass": "Class Position in Multiclass",
       "classPositionInMulticlassDesc": "In a multiclass session count the position within your own class instead of the whole field. Single-class sessions are unaffected — there the two are the same number."
-    },
-    "chassis": {
-      "moduleLayout": "Module Layout",
-      "suspensionAndBrakes": "Suspension & Brakes",
-      "suspensionAndBrakesDesc": "Show tire pressures, temperatures, and brake bias panels."
     },
     "delta": {
       "deltaReference": "Delta Reference",
@@ -453,6 +448,55 @@
       "showActivityDesc": "Messages per minute, counted locally.",
       "badgeImages": "Badge artwork",
       "badgeImagesDesc": "Draw the real badges instead of text plates. Twitch needs sign-in; YouTube member badges work without it."
+    },
+    "pitService": {
+      "sections": "Sections",
+      "visibility": "Visibility",
+      "pitSpeed": "Pit Lane Speed",
+      "pitSpeedDesc": "Speed and limit as two cells; the fill crosses the divider when you exceed the limit.",
+      "fuel": "Fuel Order",
+      "fuelDesc": "Ordered fuel, the calculated recommendation and how far the order differs from it.",
+      "tires": "Tires",
+      "tiresDesc": "Per-corner order, wear, temperatures and pressure.",
+      "repairs": "Repairs",
+      "repairsDesc": "Mandatory and optional repair countdowns plus fast repairs left.",
+      "footer": "Footer",
+      "footerDesc": "Stop counter and current position.",
+      "alwaysVisible": "Always visible",
+      "alwaysVisibleDesc": "Keep the widget on screen instead of showing it only on pit road and while being towed.",
+      "toggleHotkey": "Show / hide hotkey",
+      "toggleHotkeyDesc": "Shows the widget anywhere on track — handy for building the order a lap before pitting.",
+      "position": "Position",
+      "projectedPosition": "Projected position",
+      "projectedPositionDesc": "Estimate of where the car rejoins, from the repair and tow countdowns and the gaps of the cars behind. An estimate, not a prediction — it assumes they keep their pace and do not pit.",
+      "commands": "Pit Commands",
+      "autoFuel": "Auto fuel",
+      "autoFuelDesc": "Auto mode checks the fuel amount the Fuel widget calculates, capped at tank capacity.",
+      "autoTires": "Auto tires",
+      "autoTiresDesc": "Auto mode checks the corners worn past the threshold below, one corner at a time.",
+      "autoTireWearThreshold": "Change a tire at {{percent}}% tread left",
+      "autoModeHotkey": "Auto mode hotkey",
+      "autoModeHotkeyDesc": "Hands the current stop over to auto mode, or takes it back. Auto mode itself is switched on by the auto fuel and auto tires toggles above.",
+      "applyOrderHotkey": "Full order hotkey",
+      "applyOrderHotkeyDesc": "Clears the current order, then checks the calculated fuel and all four tires.",
+      "clearOrderHotkey": "Clear order hotkey",
+      "clearOrderHotkeyDesc": "Unchecks everything in the pit service box.",
+      "fuelHotkey": "Fuel",
+      "fuelHotkeyDesc": "Toggles the calculated fuel amount without touching the rest of the order.",
+      "tiresAllHotkey": "All four tires",
+      "tiresAllHotkeyDesc": "Checks all four corners, or unchecks them if all four are already ordered.",
+      "tireLfHotkey": "Left front",
+      "tireLfHotkeyDesc": "Toggles the left front. Pressure stays at whatever you set in the garage.",
+      "tireRfHotkey": "Right front",
+      "tireRfHotkeyDesc": "Toggles the right front. Pressure stays at whatever you set in the garage.",
+      "tireLrHotkey": "Left rear",
+      "tireLrHotkeyDesc": "Toggles the left rear. Pressure stays at whatever you set in the garage.",
+      "tireRrHotkey": "Right rear",
+      "tireRrHotkeyDesc": "Toggles the right rear. Pressure stays at whatever you set in the garage.",
+      "fastRepairHotkey": "Fast repair",
+      "fastRepairHotkeyDesc": "Toggles the fast repair box, if the session grants any.",
+      "windshieldHotkey": "Windshield",
+      "windshieldHotkeyDesc": "Toggles the windshield clean, which spends one tear-off."
     }
   },
   "streamChat": {

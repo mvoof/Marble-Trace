@@ -292,6 +292,9 @@ export class SimStore {
     this.root.backendComputed.reset();
     this.root.drivingCoachWidget.reset();
     this.root.paceCar.reset();
+    // Owns timers keyed off telemetry transitions — without a reset the stop
+    // clock keeps ticking after the last frame that could have stopped it.
+    this.root.pitServiceWidget.reset();
   }
 
   private setStatus(status: TelemetryStatus) {
@@ -350,7 +353,12 @@ export class SimStore {
           if (b.car_inputs) this.root.player.updateCarInputs(b.car_inputs);
           if (b.car_positions)
             this.root.cars.updateCarPositions(b.car_positions);
-          if (b.car_status) this.root.player.updateCarStatus(b.car_status);
+          if (b.car_status) {
+            this.root.player.updateCarStatus(b.car_status);
+            this.root.pitServiceWidget.handlePitRoadChange(
+              b.car_status.on_pit_road ?? false
+            );
+          }
           if (b.lap_timing) this.root.player.updateLapTiming(b.lap_timing);
           this.root.player.updatePitTarget(
             b.pit_target_dist_m ?? null,
@@ -361,6 +369,12 @@ export class SimStore {
           if (b.environment)
             this.root.environment.updateEnvironment(b.environment);
           if (b.chassis) this.root.player.updateChassis(b.chassis);
+          if (b.pit_service) {
+            this.root.player.updatePitService(b.pit_service);
+            this.root.pitServiceWidget.handleServiceActiveChange(
+              b.pit_service.serviceActive
+            );
+          }
 
           if (b.proximity)
             this.root.backendComputed.updateProximity(b.proximity);

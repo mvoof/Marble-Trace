@@ -16,7 +16,7 @@ import { FuelSettingsPanel } from './panels/FuelSettingsPanel';
 import { DeltaSettingsPanel } from './panels/DeltaSettingsPanel';
 import { SectorMatrixSettingsPanel } from './panels/SectorMatrixSettingsPanel';
 import { LapLogSettingsPanel } from './panels/LapLogSettingsPanel';
-import { ChassisSettingsPanel } from './panels/ChassisSettingsPanel';
+import { PitServiceSettingsPanel } from './panels/PitServiceSettingsPanel';
 import { TimerSettingsPanel } from './panels/TimerSettingsPanel';
 import { StreamChatSettingsPanel } from './panels/StreamChatSettingsPanel';
 import { FlagDisplaySettingsPanel } from './panels/FlagDisplaySettingsPanel';
@@ -237,7 +237,7 @@ export const WidgetSettings = observer(
         {widgetId === 'delta' && <DeltaSettingsPanel />}
         {widgetId === 'sector-matrix' && <SectorMatrixSettingsPanel />}
         {widgetId === 'lap-log' && <LapLogSettingsPanel />}
-        {widgetId === 'chassis' && <ChassisSettingsPanel />}
+        {widgetId === 'pit-service' && <PitServiceSettingsPanel />}
         {widgetId === 'timer' && <TimerSettingsPanel />}
         {widgetId === 'stream-chat' && <StreamChatSettingsPanel />}
         {(widgetId === 'led-flags' || widgetId === 'flat-flags') && (

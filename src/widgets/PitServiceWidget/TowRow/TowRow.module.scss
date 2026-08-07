@@ -1,0 +1,45 @@
+.tow {
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxxs);
+  padding: sp(xxs) sp(xs);
+  border-radius: radius(sm);
+  background: rgba($race-red, 0.12);
+  border-left: 2px solid $race-red;
+  font-family: $font-widget;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: sp(sm);
+}
+
+.label {
+  font-size: fs(xxs);
+  letter-spacing: 0.06em;
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.value {
+  font-family: $font-mono;
+  font-size: fs(xxl);
+  line-height: 1;
+  color: $race-red;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  font-size: fs(xxs);
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.hint {
+  font-size: fs(xxxs);
+  letter-spacing: 0.06em;
+  color: $widget-label;
+  font-weight: 600;
+}

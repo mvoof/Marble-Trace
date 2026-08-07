@@ -393,6 +393,25 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     },
   },
   {
+    id: 'pit-tow',
+    label: 'Pit — towing',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      const pitService = store.player.pitService;
+
+      if (pitService) {
+        store.player.updatePitService({
+          ...pitService,
+          towTimeS: 42,
+          repairLeftS: 18.4,
+          optRepairLeftS: 6,
+        });
+      }
+
+      applyDynamics(store, { speed: 0, rpm: 1200, gear: 0 });
+    },
+  },
+  {
     id: 'pit-lane',
     label: 'Pit — no limiter',
     apply: (store) => {

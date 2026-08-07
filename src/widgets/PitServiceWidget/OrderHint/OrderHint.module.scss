@@ -1,0 +1,25 @@
+.hint {
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
+  font-family: $font-widget;
+  font-size: fs(xxs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.result {
+  margin-left: auto;
+}
+
+.resultSent {
+  @extend .result;
+
+  color: $race-green;
+}
+
+.resultFailed {
+  @extend .result;
+
+  color: $race-red;
+}

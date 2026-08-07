@@ -28,6 +28,7 @@ import {
   emitAutoSwitchLayoutsChanged,
   emitStreamChatFilters,
   emitStreamChatCleared,
+  emitPitServiceAutoSuspended,
 } from './events';
 import type { MonitorWidgetsPayload } from './events';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
@@ -35,6 +36,7 @@ import { listMonitorBounds } from './overlay-resolution';
 import { watchMonitorArrangement } from './monitor-watch';
 import type {
   StandingsWidgetSettings,
+  PitServiceWidgetSettings,
   SessionContext,
 } from '@/types/widget-settings';
 import type { RootStore } from '../root-store';
@@ -280,6 +282,11 @@ export const initMainSync = async (root: RootStore) => {
               root.widgetSettings.getSettings<StandingsWidgetSettings>(
                 'standings'
               );
+            const pitServiceSettings =
+              root.widgetSettings.getSettings<PitServiceWidgetSettings>(
+                'pit-service'
+              );
+
             return [
               root.appSettings.appSettings.dragHotkey,
               root.appSettings.appSettings.hideAllWidgetsHotkey,
@@ -290,6 +297,18 @@ export const initMainSync = async (root: RootStore) => {
               standingsSettings.classNextHotkey,
               standingsSettings.scrollUpHotkey,
               standingsSettings.scrollDownHotkey,
+              pitServiceSettings.toggleHotkey,
+              pitServiceSettings.applyOrderHotkey,
+              pitServiceSettings.clearOrderHotkey,
+              pitServiceSettings.fuelHotkey,
+              pitServiceSettings.tiresAllHotkey,
+              pitServiceSettings.tireLfHotkey,
+              pitServiceSettings.tireRfHotkey,
+              pitServiceSettings.tireLrHotkey,
+              pitServiceSettings.tireRrHotkey,
+              pitServiceSettings.fastRepairHotkey,
+              pitServiceSettings.windshieldHotkey,
+              pitServiceSettings.autoModeHotkey,
             ];
           },
           () => {
@@ -418,6 +437,23 @@ export const initMainSync = async (root: RootStore) => {
             delay: 500,
           }
         ),
+        reaction(
+          () => root.pitServiceWidget.autoSuspended,
+          (suspended) => {
+            void emitPitServiceAutoSuspended(suspended);
+          }
+        ),
+        // The automatic order is built on pit entry and sent from this window
+        // only: both windows run the same telemetry, so an overlay copy of this
+        // reaction would broadcast the same order a second time.
+        reaction(
+          () => root.pitServiceWidget.isOnPitRoad,
+          (onPitRoad) => {
+            if (onPitRoad) {
+              void root.pitServiceWidget.applyAutoOrder();
+            }
+          }
+        ),
       ];
 
       const cleanup = () => {
@@ -483,6 +519,14 @@ export const initOverlaySync = async (root: RootStore) => {
         });
       },
       { delay: 100 }
+    ),
+    // Clicks on the checkboxes land here, so this window can be the one that
+    // takes the order off auto.
+    reaction(
+      () => root.pitServiceWidget.autoSuspended,
+      (suspended) => {
+        void emitPitServiceAutoSuspended(suspended);
+      }
     ),
   ];
 

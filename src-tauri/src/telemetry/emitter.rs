@@ -23,7 +23,7 @@ use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::environment::EnvironmentFrame;
 use crate::model::lap_log::LapLogFrame;
 use crate::model::player::{
-    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
+    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
 };
 use crate::model::reference_lap::ReferenceLapData;
 use crate::model::relative::RelativeFrame;
@@ -81,6 +81,8 @@ pub struct TelemetryBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pit_stops: Option<pit_stops::PitStopsFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub pit_service: Option<PitServiceFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub lap_log: Option<LapLogFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub session: Option<SessionFrame>,
@@ -116,6 +118,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
         car_status: None,
         fuel: None,
         pit_stops: None,
+        pit_service: None,
         lap_log: None,
         session: None,
         environment: None,
@@ -283,6 +286,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
 
     if due.hz4 {
         bundle.car_status = Some(frame.car_status.clone());
+        bundle.pit_service = Some(frame.pit_service.clone());
     }
 
     if due.hz1 {

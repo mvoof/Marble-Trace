@@ -1,0 +1,21 @@
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: sp(sm);
+  // No rule of its own: the tire block below already ends on one, and two
+  // hairlines a few pixels apart read as a doubled divider.
+  padding-top: sp(xxs);
+  font-family: $font-widget;
+  font-size: fs(xs);
+  letter-spacing: 0.08em;
+  color: $widget-label;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+// The projection is an estimate, so it stays visually subordinate to the
+// position the car actually holds right now.
+.projected {
+  color: $race-amber;
+}

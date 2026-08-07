@@ -1,0 +1,55 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: sp(sm);
+  padding-bottom: sp(xxs);
+  border-bottom: 1px solid $widget-border-subtle;
+  font-family: $font-widget;
+}
+
+.title {
+  font-size: fs(xxs);
+  letter-spacing: 0.14em;
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.mode {
+  margin-left: auto;
+  padding: 0 sp(xxs);
+  border-radius: radius(sm);
+  border: 1px solid transparent;
+  font-size: fs(xxxs);
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+
+.modeAuto {
+  color: $race-green;
+  border-color: $race-green;
+}
+
+.modeManual {
+  color: $widget-label;
+  border-color: $widget-border-subtle;
+}
+
+.state {
+  font-size: fs(xxs);
+  letter-spacing: 0.08em;
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.armed {
+  color: $race-green;
+}
+
+.servicing {
+  color: $race-amber;
+}
+
+.towing {
+  color: $race-red;
+}

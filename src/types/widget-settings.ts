@@ -315,9 +315,54 @@ export interface FlagDisplaySettings {
   modeWidths?: Record<string, number>;
 }
 
-export interface ChassisWidgetSettings {
-  showSuspensionAndBrakes: boolean;
-  modeWidths?: { chassis?: number; suspensionAndBrakes?: number };
+export interface PitServiceWidgetSettings {
+  showPitSpeed: boolean;
+  /** Source of the P-number in the footer. */
+  useLivePositions: boolean;
+  /** Count the P-number within the player own class in multiclass sessions. */
+  classPositionInMulticlass: boolean;
+  /** Estimate the position the car rejoins in, based on the repair and tow waits. */
+  showProjectedPosition: boolean;
+  showFuel: boolean;
+  showTires: boolean;
+  showRepairs: boolean;
+  showFooter: boolean;
+  alwaysVisible: boolean;
+  toggleHotkey: string;
+  /** Sends the full stop in one press: clear, calculated fuel, all four tires. */
+  applyOrderHotkey: string;
+  clearOrderHotkey: string;
+  /**
+   * One hotkey per pit checkbox. Each of these toggles that box on top of
+   * whatever is already ordered — unlike `applyOrderHotkey`, they never clear
+   * the rest of the order. Empty string = unbound.
+   */
+  fuelHotkey: string;
+  tiresAllHotkey: string;
+  tireLfHotkey: string;
+  tireRfHotkey: string;
+  tireLrHotkey: string;
+  tireRrHotkey: string;
+  fastRepairHotkey: string;
+  windshieldHotkey: string;
+  /**
+   * Auto mode checks the calculated fuel amount on pit entry. Auto mode as a
+   * whole is on whenever this or `autoTires` is — there is no separate master
+   * switch, an auto mode that orders nothing would just be off with extra steps.
+   */
+  autoFuel: boolean;
+  /** Auto mode checks the corners worn past `autoTireWearThreshold`. */
+  autoTires: boolean;
+  /**
+   * Remaining tread, in percent, at or below which auto mode orders a corner.
+   * Measured on the most worn of the three points across the tread.
+   */
+  autoTireWearThreshold: number;
+  /**
+   * Hands the current stop over to auto mode, or takes it back, without opening
+   * the settings window.
+   */
+  autoModeHotkey: string;
 }
 
 export type GMeterDisplayMode = 'trail' | 'fading' | 'peak';
@@ -346,7 +391,7 @@ export interface EnginePanelWidgetSettings {
 
 export type WidgetSpecificSettings =
   | Record<never, never> // id: example widget
-  | ChassisWidgetSettings
+  | PitServiceWidgetSettings
   | FlagDisplaySettings
   | RpmLightsWidgetSettings
   | InputTraceSettings

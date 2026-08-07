@@ -35,6 +35,13 @@ $widget-text-muted: color-mix(
   contrast-color(var(--widget-bg)) 35%,
   transparent
 );
+// Small uppercase captions sitting next to a large value. Secondary is tuned
+// for running text and goes muddy at caption size, so labels get their own step.
+$widget-label: color-mix(
+  in srgb,
+  contrast-color(var(--widget-bg)) 82%,
+  transparent
+);
 $widget-text-accent: $race-green;
 $widget-text-sof: $race-lilac;
 $widget-text-best-lap: $race-purple;

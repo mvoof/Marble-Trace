@@ -836,6 +836,106 @@ export type NearbyCar = {
   clearance: number;
 };
 
+/**
+ * A single pit checkbox the sim should toggle.
+ */
+export type PitCommandKind =
+  | 'clear'
+  | 'windshield'
+  /**
+   * `value` = liters to add; 0 keeps the amount already ordered.
+   */
+  | 'fuel'
+  /**
+   * `value` = pressure in kPa; 0 keeps the pressure already ordered.
+   */
+  | 'lf'
+  | 'rf'
+  | 'lr'
+  | 'rr'
+  | 'clearTires'
+  | 'fastRepair'
+  | 'clearWindshield'
+  | 'clearFastRepair'
+  | 'clearFuel'
+  | 'tireCompound';
+
+/**
+ * One entry of a pit order. `value` is ignored by commands that take no
+ * parameter.
+ */
+export type PitCommandRequest = { kind: PitCommandKind; value?: number };
+
+/**
+ * Pit service telemetry — what the sim will do at the next stop.
+ *
+ * Everything here only changes while the car is being serviced, so the
+ * frontend widget is driven by pit road state rather than by lap progress.
+ *
+ * @see https://sajax.github.io/irsdkdocs/telemetry/
+ */
+export type PitServiceFrame = {
+  /**
+   * Raw `PitSvFlags` bitfield — decoded into the flags below.
+   */
+  flags: number | null;
+  /**
+   * Individual service checkboxes decoded from `flags`.
+   */
+  changeLf: boolean;
+  changeRf: boolean;
+  changeLr: boolean;
+  changeRr: boolean;
+  addFuel: boolean;
+  cleanWindshield: boolean;
+  fastRepair: boolean;
+  /**
+   * Ordered fuel amount in liters.
+   */
+  fuelAmount: number | null;
+  /**
+   * Ordered pressures per corner in kPa.
+   */
+  lfPressure: number | null;
+  rfPressure: number | null;
+  lrPressure: number | null;
+  rrPressure: number | null;
+  /**
+   * Selected tire compound index, when the car supports more than one.
+   */
+  tireCompound: number | null;
+  /**
+   * Mandatory repair time left in seconds — the car cannot leave until it hits zero.
+   */
+  repairLeftS: number | null;
+  /**
+   * Optional (aero) repair time left in seconds — can be skipped.
+   */
+  optRepairLeftS: number | null;
+  /**
+   * Tow countdown in seconds; greater than zero means the car is being recovered.
+   */
+  towTimeS: number | null;
+  /**
+   * Fast repairs available and already used this session.
+   */
+  fastRepairsAvailable: number | null;
+  fastRepairsUsed: number | null;
+  /**
+   * Service status reported by the sim (`PlayerCarPitSvStatus`).
+   */
+  serviceStatus: number | null;
+  /**
+   * Whether the car is in its own pit stall rather than just on pit road.
+   */
+  inPitStall: boolean;
+  /**
+   * Whether the crew is actually working on the car ().
+   * The sim reports no service duration, so this is what a stop clock runs on.
+   */
+  serviceActive: boolean;
+};
+
 export type PitState = 'none' | 'in' | 'stall' | 'exit';
 
 export type PitStopsFrame = { playerStops: number };
@@ -1140,6 +1240,7 @@ export type TelemetryBundle = {
   car_status?: CarStatusFrame | null;
   fuel?: FuelComputedFrame | null;
   pit_stops?: PitStopsFrame | null;
+  pit_service?: PitServiceFrame | null;
   lap_log?: LapLogFrame | null;
   session?: SessionFrame | null;
   environment?: EnvironmentFrame | null;

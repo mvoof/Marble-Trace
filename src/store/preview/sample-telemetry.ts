@@ -4,6 +4,7 @@ import type {
   DriverEntriesFrame,
   FuelComputedFrame,
   LapDeltaFrame,
+  PitServiceFrame,
   ProximityFrame,
   RelativeFrame,
 } from '@/types/bindings';
@@ -60,6 +61,33 @@ const buildSampleChassis = (): ChassisFrame => {
   }
 
   return frame as unknown as ChassisFrame;
+};
+
+// The pit service order the preview shows: two tires and a fuel fill, so the
+// widget renders both an ordered and a kept corner without a live session.
+export const samplePitService: PitServiceFrame = {
+  flags: null,
+  changeLf: true,
+  changeRf: true,
+  changeLr: false,
+  changeRr: false,
+  addFuel: true,
+  cleanWindshield: false,
+  fastRepair: false,
+  fuelAmount: 34.2,
+  lfPressure: 159,
+  rfPressure: 163,
+  lrPressure: 155,
+  rrPressure: 159,
+  tireCompound: null,
+  repairLeftS: 0,
+  optRepairLeftS: 0,
+  towTimeS: 0,
+  fastRepairsAvailable: 1,
+  fastRepairsUsed: 1,
+  serviceStatus: null,
+  inPitStall: false,
+  serviceActive: false,
 };
 
 export const sampleFuel: FuelComputedFrame = {
@@ -200,6 +228,11 @@ export const seedSampleTelemetry = action((store: RootStore) => {
   store.radar.visible = true;
 
   store.player.updateChassis(buildSampleChassis());
+  store.player.updatePitService(samplePitService);
+
+  // The pit service widget hides itself off pit road; the settings preview has
+  // no session, so it opts in through the same manual toggle the hotkey uses.
+  store.pitServiceWidget.manualShow = true;
   store.backendComputed.updateFuel(sampleFuel);
   store.backendComputed.updateLapDelta(sampleLapDelta);
 

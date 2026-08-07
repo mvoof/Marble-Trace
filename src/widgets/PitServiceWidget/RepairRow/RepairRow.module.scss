@@ -1,0 +1,55 @@
+.repairs {
+  display: flex;
+  gap: sp(xxs);
+  font-family: $font-widget;
+}
+
+.chip {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxxs);
+  padding: sp(xxs) sp(xs);
+  border-radius: radius(sm);
+  background: $widget-surface-cell;
+}
+
+.chipOrdered {
+  background: rgba($race-green, 0.15);
+}
+
+.chipClickable {
+  cursor: pointer;
+
+  &:hover {
+    background: rgba($race-blue, 0.18);
+  }
+}
+
+.key {
+  font-size: fs(xxxs);
+  letter-spacing: 0.08em;
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.value {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.chipRequired .value {
+  color: $race-red;
+}
+
+.chipOptional .value {
+  color: $race-amber;
+}
+
+// The stop clock is the number being watched while the car is stationary.
+.chipLive .value {
+  color: $race-amber;
+}

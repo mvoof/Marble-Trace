@@ -178,6 +178,73 @@ pub struct CarStatusFrame {
 // iRacing emits uninitialized memory (garbage floats or zeroes) for temp fields
 // during car swap. Real engine temps are always > 0°C, so anything <= 0 is invalid SDK state.
 
+/// Pit service telemetry — what the sim will do at the next stop.
+///
+/// Everything here only changes while the car is being serviced, so the
+/// frontend widget is driven by pit road state rather than by lap progress.
+///
+/// @see https://sajax.github.io/irsdkdocs/telemetry/
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PitServiceFrame {
+    /// Raw `PitSvFlags` bitfield — decoded into the flags below.
+    pub flags: Option<u32>,
+
+    /// Individual service checkboxes decoded from `flags`.
+    pub change_lf: bool,
+    pub change_rf: bool,
+    pub change_lr: bool,
+    pub change_rr: bool,
+    pub add_fuel: bool,
+    pub clean_windshield: bool,
+    pub fast_repair: bool,
+
+    /// Ordered fuel amount in liters.
+    pub fuel_amount: Option<f32>,
+
+    /// Ordered pressures per corner in kPa.
+    pub lf_pressure: Option<f32>,
+    pub rf_pressure: Option<f32>,
+    pub lr_pressure: Option<f32>,
+    pub rr_pressure: Option<f32>,
+
+    /// Selected tire compound index, when the car supports more than one.
+    pub tire_compound: Option<i32>,
+
+    /// Mandatory repair time left in seconds — the car cannot leave until it hits zero.
+    pub repair_left_s: Option<f32>,
+
+    /// Optional (aero) repair time left in seconds — can be skipped.
+    pub opt_repair_left_s: Option<f32>,
+
+    /// Tow countdown in seconds; greater than zero means the car is being recovered.
+    pub tow_time_s: Option<f32>,
+
+    /// Fast repairs available and already used this session.
+    pub fast_repairs_available: Option<i32>,
+    pub fast_repairs_used: Option<i32>,
+
+    /// Service status reported by the sim (`PlayerCarPitSvStatus`).
+    pub service_status: Option<i32>,
+
+    /// Whether the car is in its own pit stall rather than just on pit road.
+    pub in_pit_stall: bool,
+
+    /// Whether the crew is actually working on the car ().
+    /// The sim reports no service duration, so this is what a stop clock runs on.
+    pub service_active: bool,
+}
+
+/// Bit positions of `PitSvFlags` as documented by the iRacing SDK.
+pub const PIT_SV_LF_TIRE_CHANGE: u32 = 0x01;
+pub const PIT_SV_RF_TIRE_CHANGE: u32 = 0x02;
+pub const PIT_SV_LR_TIRE_CHANGE: u32 = 0x04;
+pub const PIT_SV_RR_TIRE_CHANGE: u32 = 0x08;
+pub const PIT_SV_FUEL_FILL: u32 = 0x10;
+pub const PIT_SV_WINDSHIELD_TEAROFF: u32 = 0x20;
+pub const PIT_SV_FAST_REPAIR: u32 = 0x40;
+
 /// Chassis telemetry — per-wheel tire and suspension data.
 ///
 /// Contains ride height, shock deflection, tire temperatures (3 zones),

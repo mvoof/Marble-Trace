@@ -6,6 +6,7 @@ import type {
   CarStatusFrame,
   ChassisFrame,
   LapTimingFrame,
+  PitServiceFrame,
 } from '@/types/bindings';
 
 export class PlayerStore {
@@ -13,6 +14,7 @@ export class PlayerStore {
   carInputs: CarInputsFrame | null = null;
   carStatus: CarStatusFrame | null = null;
   chassis: ChassisFrame | null = null;
+  pitService: PitServiceFrame | null = null;
   lapTiming: LapTimingFrame | null = null;
   pitTargetDistM: number | null = null;
   pitTargetType: 'pitbox' | 'pitExit' | null = null;
@@ -42,6 +44,10 @@ export class PlayerStore {
     this.chassis = frame;
   }
 
+  updatePitService(frame: PitServiceFrame) {
+    this.pitService = frame;
+  }
+
   updateLapTiming(frame: LapTimingFrame) {
     this.lapTiming = frame;
   }
@@ -61,6 +67,7 @@ export class PlayerStore {
     this.carInputs = null;
     this.carStatus = null;
     this.chassis = null;
+    this.pitService = null;
     this.lapTiming = null;
     this.pitTargetDistM = null;
     this.pitTargetType = null;
