@@ -17,11 +17,14 @@ export type InteractHotkeyMode = 'toggle' | 'hold';
 const MS_PER_SECOND = 1000;
 
 const DEFAULT_APP_SETTINGS = {
-  dragHotkey: 'F9',
-  hideAllWidgetsHotkey: 'F10',
-  // Interact mode: mouse events reach the overlay without unlocking widget dragging.
-  interactHotkey: 'F8',
-  // 'toggle' — the hotkey flips the mode on and off, 'hold' — active only while held.
+  // Keys and device buttons live in the app-level binding registry
+  // (store/hotkeys), not here — one set covers every layout.
+  // One-shot: the old per-layout `*Hotkey` fields have been lifted into it.
+  bindingsMigrated: false,
+  // Interact mode: mouse events reach the overlay without unlocking widget
+  // dragging. Whether its binding toggles or is held is a property of the
+  // action rather than of the binding, so it stays here.
+  // 'toggle' — the binding flips the mode on and off, 'hold' — active only while held.
   interactHotkeyMode: 'toggle' as InteractHotkeyMode,
   // Seconds of interact mode before it switches itself off (0 = stay on). Toggle mode only.
   interactAutoOffSeconds: 15,
@@ -283,10 +286,6 @@ export class AppSettingsStore {
     }, autoOffSeconds * MS_PER_SECOND);
   }
 
-  setInteractHotkey(key: string) {
-    this.appSettings.interactHotkey = key;
-  }
-
   setInteractHotkeyMode(mode: InteractHotkeyMode) {
     this.appSettings.interactHotkeyMode = mode;
 
@@ -309,14 +308,6 @@ export class AppSettingsStore {
 
   setStartMinimized(value: boolean) {
     this.appSettings.startMinimized = value;
-  }
-
-  setHideAllWidgetsHotkey(key: string) {
-    this.appSettings.hideAllWidgetsHotkey = key;
-  }
-
-  setDragHotkey(key: string) {
-    this.appSettings.dragHotkey = key;
   }
 
   setHideWidgetsWhenGameClosed(value: boolean) {

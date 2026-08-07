@@ -34,3 +34,7 @@ export const useWidgetSettingsStore = () => useStore().widgetSettings;
 export const useAppSettingsStore = () => useStore().appSettings;
 export const useUnitsStore = () => useStore().units;
 export const useWidgetAutoHideStore = () => useStore().widgetAutoHide;
+export const useBindingsStore = () => useStore().bindings;
+export const useBindingsUiStore = () => useStore().bindingsUi;
+export const useDeviceInputStore = () => useStore().deviceInput;
+export const useSettingsPanelUiStore = () => useStore().settingsPanelUi;

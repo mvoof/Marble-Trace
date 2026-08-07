@@ -189,7 +189,20 @@ export class PitServiceWidgetStore {
    * right now — see `isAutoActive`.
    */
   get isAutoEnabled(): boolean {
-    return this.isAutoFuelEnabled || this.isAutoTiresEnabled;
+    return (
+      this.isInActiveLayout &&
+      (this.isAutoFuelEnabled || this.isAutoTiresEnabled)
+    );
+  }
+
+  /**
+   * A widget that is not in the active layout does nothing at all — not just no
+   * rendering, but no pit orders either. Ordering fuel on behalf of a widget the
+   * driver removed from the layout is the kind of surprise that loses races, so
+   * the auto-mode settings only take effect while the widget is actually there.
+   */
+  get isInActiveLayout(): boolean {
+    return this.root.widgetSettings.isWidgetInActiveLayout('pit-service');
   }
 
   get isAutoFuelEnabled(): boolean {

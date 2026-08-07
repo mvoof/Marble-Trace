@@ -8,6 +8,7 @@ import type {
 } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
 import type { AppLanguage } from '@store/settings/app-settings.store';
+import type { BindingMap } from '@store/hotkeys/binding-types';
 import { listOverlayWindowLabels, monitorLabel } from './overlay-labels';
 
 const MAIN = 'main';
@@ -183,6 +184,12 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
+    await listen<BindingMap>('bindings-changed', (e) => {
+      runInAction(() => root.bindings.applyBindings(e.payload));
+    })
+  );
+
+  unlistens.push(
     await listen<boolean>('auto-switch-layouts-changed', (e) => {
       runInAction(() => {
         root.appSettings.appSettings.autoSwitchLayouts = e.payload;
@@ -276,3 +283,8 @@ export const emitSessionLayoutsChanged = (sessionLayouts: SessionLayoutMap) =>
 
 export const emitAutoSwitchLayoutsChanged = (val: boolean) =>
   emitToOverlays('auto-switch-layouts-changed', val);
+
+// The overlay never dispatches an action, but it does print the key that leaves
+// interact mode, so a rebind made in main has to reach it.
+export const emitBindingsChanged = (bindings: BindingMap) =>
+  emitToOverlays('bindings-changed', bindings);

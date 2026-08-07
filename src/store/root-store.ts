@@ -20,6 +20,10 @@ import { ReferenceLapStore } from './data/reference-lap.store';
 import { ChatStore } from './data/chat.store';
 import { TwitchAuthStore } from './settings/twitch-auth.store';
 import { StreamChatWidgetStore } from './widgets/stream-chat.widget';
+import { BindingsStore } from './hotkeys/bindings.store';
+import { DeviceInputStore } from './hotkeys/device-input.store';
+import { BindingsUiStore } from './hotkeys/bindings-ui.store';
+import { SettingsPanelUiStore } from './widgets/settings-panel-ui.store';
 
 export class RootStore {
   player: PlayerStore;
@@ -44,6 +48,10 @@ export class RootStore {
   twitchAuth: TwitchAuthStore;
   units: UnitsStore;
   widgetAutoHide: WidgetAutoHideStore;
+  bindings: BindingsStore;
+  deviceInput: DeviceInputStore;
+  bindingsUi: BindingsUiStore;
+  settingsPanelUi: SettingsPanelUiStore;
 
   constructor(options?: { skipInit?: boolean }) {
     this.player = new PlayerStore();
@@ -68,6 +76,10 @@ export class RootStore {
     this.streamChatWidget = new StreamChatWidgetStore(this);
     this.sim = new SimStore(this);
     this.widgetAutoHide = new WidgetAutoHideStore();
+    this.bindings = new BindingsStore();
+    this.deviceInput = new DeviceInputStore();
+    this.bindingsUi = new BindingsUiStore();
+    this.settingsPanelUi = new SettingsPanelUiStore();
 
     if (!options?.skipInit) {
       this.flags.init();

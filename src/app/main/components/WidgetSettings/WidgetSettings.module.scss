@@ -29,8 +29,10 @@
   margin: 0 !important;
 }
 
+// Groups start folded, so the default rhythm is header-to-header and has to be
+// tight; an opened group adds its own bottom margin below.
 .card {
-  margin-bottom: rem(32);
+  margin-bottom: rem(10);
 }
 
 .cardTitle {
@@ -42,6 +44,41 @@
   letter-spacing: 0.1em;
 }
 
+// Groups fold away so a long panel (Standings runs to ~30 rows) fits the 280px
+// editor drawer. Everything starts open — a group hides only once asked to.
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: rem(6);
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+
+  .cardTitle {
+    margin-bottom: 0;
+  }
+
+  &:hover .cardTitle {
+    color: #ffffff;
+  }
+}
+
+.cardChevron {
+  flex: none;
+  color: $sys-text-muted;
+  transition: transform 0.15s ease;
+  transform: rotate(-90deg);
+}
+
+.cardChevronOpen {
+  flex: none;
+  color: $sys-text-muted;
+  transition: transform 0.15s ease;
+}
+
 .cardContent {
   background: $sys-bg-card;
   backdrop-filter: blur(20px);
@@ -49,6 +86,18 @@
   border-radius: 6px;
   padding: rem(20);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  // The collapsible header sits above and owns the gap when open.
+  margin-top: rem(10);
+  margin-bottom: rem(22);
+
+  // Every block inside a group is separated from the next one, whether or not
+  // the panel wrapped it in .fieldGroup — panels that stacked bare SettingRows
+  // used to render as one unreadable pile.
+  > * + * {
+    padding-top: rem(24);
+    margin-top: rem(24);
+    border-top: 1px solid $sys-border-sub;
+  }
 }
 
 .fieldLabel {
@@ -60,16 +109,10 @@
   margin-bottom: rem(8);
 }
 
+// Kept as a semantic wrapper only — the separator itself comes from .cardContent
+// so unwrapped blocks get the same treatment.
 .fieldGroup {
-  padding-bottom: rem(24);
-  margin-bottom: rem(24);
-  border-bottom: 1px solid $sys-border-sub;
-
-  &:last-child {
-    padding-bottom: 0;
-    margin-bottom: 0;
-    border-bottom: none;
-  }
+  display: block;
 }
 
 .fieldRow {
@@ -155,16 +198,18 @@
   }
 
   .card {
-    margin-bottom: rem(16);
+    margin-bottom: rem(8);
   }
 
   .cardContent {
     padding: rem(12);
-  }
+    margin-top: rem(8);
+    margin-bottom: rem(16);
 
-  .fieldGroup {
-    padding-bottom: rem(14);
-    margin-bottom: rem(14);
+    > * + * {
+      padding-top: rem(14);
+      margin-top: rem(14);
+    }
   }
 
   .fieldRow {

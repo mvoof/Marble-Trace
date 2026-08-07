@@ -8,6 +8,7 @@ pub mod chat;
 pub mod enums;
 pub mod environment;
 pub mod flags;
+pub mod input;
 pub mod lap_log;
 pub mod pit_command;
 pub mod player;

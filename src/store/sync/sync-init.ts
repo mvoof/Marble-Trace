@@ -10,7 +10,11 @@ import {
   SETTINGS_FILE,
   Settings,
 } from './persistence';
-import { setupHotkeys, cleanupHotkeys } from './hotkeys';
+import {
+  applyKeyboardBindings,
+  cleanupKeyboardBindings,
+} from '@store/hotkeys/binding-runner';
+import { setupDeviceBindings } from '@store/hotkeys/bindings-sync';
 import {
   setupMainListeners,
   setupOverlayListeners,
@@ -29,16 +33,13 @@ import {
   emitStreamChatFilters,
   emitStreamChatCleared,
   emitPitServiceAutoSuspended,
+  emitBindingsChanged,
 } from './events';
 import type { MonitorWidgetsPayload } from './events';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
 import { listMonitorBounds } from './overlay-resolution';
 import { watchMonitorArrangement } from './monitor-watch';
-import type {
-  StandingsWidgetSettings,
-  PitServiceWidgetSettings,
-  SessionContext,
-} from '@/types/widget-settings';
+import type { SessionContext } from '@/types/widget-settings';
 import type { RootStore } from '../root-store';
 
 const STREAM_CHAT_WIDGET_ID = 'stream-chat';
@@ -90,40 +91,46 @@ export const initMainSync = async (root: RootStore) => {
         void onSave();
       });
 
-      const [overlaySettingsUnlisten, mainUnlistens, , closeRequestedUnlisten] =
-        await Promise.all([
-          listen<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
-            // An overlay window only ever speaks for the widgets on its own
-            // screen; taking the rest of its list would overwrite the other
-            // monitors with a stale copy.
-            root.widgetSettings.applySettingsSyncForMonitor(
-              e.payload.monitorName,
-              e.payload.widgets
-            );
+      const [
+        overlaySettingsUnlisten,
+        mainUnlistens,
+        ,
+        deviceBindingUnlistens,
+        closeRequestedUnlisten,
+      ] = await Promise.all([
+        listen<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
+          // An overlay window only ever speaks for the widgets on its own
+          // screen; taking the rest of its list would overwrite the other
+          // monitors with a stale copy.
+          root.widgetSettings.applySettingsSyncForMonitor(
+            e.payload.monitorName,
+            e.payload.widgets
+          );
 
-            void onSave();
-          }),
-          setupMainListeners(root),
-          setupHotkeys(root, onSave),
-          getCurrentWindow().onCloseRequested(async (event) => {
-            event.preventDefault();
+          void onSave();
+        }),
+        setupMainListeners(root),
+        applyKeyboardBindings(root),
+        setupDeviceBindings(root),
+        getCurrentWindow().onCloseRequested(async (event) => {
+          event.preventDefault();
 
-            try {
-              // The layout commit and settings save both run on debounced
-              // reactions (500ms). Closing before that timer fires would
-              // persist stale layout/widget state, so flush them here.
-              root.widgetSettings.commitActiveLayout();
-              await onSave();
-              await logSettingsSnapshot(root);
-            } catch (error) {
-              console.error('Failed to log settings snapshot on close:', error);
-            } finally {
-              cleanup();
+          try {
+            // The layout commit and settings save both run on debounced
+            // reactions (500ms). Closing before that timer fires would
+            // persist stale layout/widget state, so flush them here.
+            root.widgetSettings.commitActiveLayout();
+            await onSave();
+            await logSettingsSnapshot(root);
+          } catch (error) {
+            console.error('Failed to log settings snapshot on close:', error);
+          } finally {
+            cleanup();
 
-              await getCurrentWindow().destroy();
-            }
-          }),
-        ]);
+            await getCurrentWindow().destroy();
+          }
+        }),
+      ]);
 
       const disposers = [
         reaction(
@@ -276,45 +283,31 @@ export const initMainSync = async (root: RootStore) => {
             );
           }
         ),
+        // One binding registry, one dependency. Adding a bindable action is an
+        // entry in ACTIONS and nothing else.
         reaction(
+          () => root.bindings.mutationId,
           () => {
-            const standingsSettings =
-              root.widgetSettings.getSettings<StandingsWidgetSettings>(
-                'standings'
-              );
-            const pitServiceSettings =
-              root.widgetSettings.getSettings<PitServiceWidgetSettings>(
-                'pit-service'
-              );
-
-            return [
-              root.appSettings.appSettings.dragHotkey,
-              root.appSettings.appSettings.hideAllWidgetsHotkey,
-              root.appSettings.appSettings.interactHotkey,
-              root.appSettings.appSettings.interactHotkeyMode,
-              standingsSettings.viewModeHotkey,
-              standingsSettings.classPrevHotkey,
-              standingsSettings.classNextHotkey,
-              standingsSettings.scrollUpHotkey,
-              standingsSettings.scrollDownHotkey,
-              pitServiceSettings.toggleHotkey,
-              pitServiceSettings.applyOrderHotkey,
-              pitServiceSettings.clearOrderHotkey,
-              pitServiceSettings.fuelHotkey,
-              pitServiceSettings.tiresAllHotkey,
-              pitServiceSettings.tireLfHotkey,
-              pitServiceSettings.tireRfHotkey,
-              pitServiceSettings.tireLrHotkey,
-              pitServiceSettings.tireRrHotkey,
-              pitServiceSettings.fastRepairHotkey,
-              pitServiceSettings.windshieldHotkey,
-              pitServiceSettings.autoModeHotkey,
-            ];
-          },
-          () => {
-            void setupHotkeys(root, onSave);
+            void applyKeyboardBindings(root);
+            void emitBindingsChanged(root.bindings.bindings);
             void onSave();
           }
+        ),
+        // Reading wheels 125 times a second is only worth it while something
+        // consumes the edges: a device binding exists, or the settings screen is
+        // waiting for a button — to bind it, or to search by it.
+        reaction(
+          () => ({
+            hasDeviceBindings: root.bindings.referencedDeviceIds.length > 0,
+            isCapturing: root.bindingsUi.isCapturing,
+            isSearchingByKey: root.bindingsUi.isSearchingByKey,
+          }),
+          ({ hasDeviceBindings, isCapturing, isSearchingByKey }) => {
+            void root.deviceInput.setPollingEnabled(
+              hasDeviceBindings || isCapturing || isSearchingByKey
+            );
+          },
+          { fireImmediately: true, equals: comparer.structural }
         ),
         reaction(
           () => root.units.unitSystem,
@@ -462,9 +455,10 @@ export const initMainSync = async (root: RootStore) => {
         closeRequestedUnlisten();
 
         mainUnlistens.forEach((u) => u());
+        deviceBindingUnlistens.forEach((u) => u());
         disposers.forEach((d) => d());
 
-        cleanupHotkeys();
+        cleanupKeyboardBindings();
 
         mainSyncInitPromise = null;
       };
