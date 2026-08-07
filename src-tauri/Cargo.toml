@@ -54,6 +54,19 @@ reqwest = { version = "0.12", default-features = false, features = [
     "rustls-tls",
 ] }
 
+# Global button bindings read wheels and button boxes through DirectInput8 —
+# the only Windows API that still reports device input while the sim holds
+# foreground focus. DirectInput lives under Devices::HumanInterfaceDevice in
+# windows-rs, not under a DirectInput-named feature.
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Devices_HumanInterfaceDevice",
+    "Win32_Foundation",
+    "Win32_System_Com",
+    "Win32_System_LibraryLoader",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
 [features]
 default = []
 dev = [

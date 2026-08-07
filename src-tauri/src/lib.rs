@@ -2,6 +2,7 @@ mod capabilities;
 mod chat;
 mod commands;
 mod computations;
+mod input;
 mod logging;
 mod model;
 mod sources;
@@ -33,6 +34,8 @@ use commands::{
     start_telemetry_stream, stop_telemetry_stream,
 };
 use computations::ProcessorRegistry;
+use input::commands::{resolve_input_devices, set_input_polling_enabled, InputState};
+use input::InputRuntime;
 use telemetry::state::TelemetryState;
 
 #[cfg(feature = "dev")]
@@ -49,6 +52,8 @@ use model::chat::{
 use model::enums::{SimStatus, SimType};
 #[cfg(feature = "dev")]
 use model::environment::{EnvironmentFrame, WeatherForecastEntry};
+#[cfg(feature = "dev")]
+use model::input::{InputButtonEvent, InputDevice, InputDeviceRemap, InputDeviceResolution};
 #[cfg(feature = "dev")]
 use model::pit_command::{PitCommandKind, PitCommandRequest};
 #[cfg(feature = "dev")]
@@ -124,6 +129,12 @@ pub fn run() {
             .register::<TrackRecordingFrame>()
             .register::<ReferenceLapData>()
             .register::<ReferenceLapSample>();
+
+        types
+            .register::<InputDevice>()
+            .register::<InputButtonEvent>()
+            .register::<InputDeviceRemap>()
+            .register::<InputDeviceResolution>();
 
         Typescript::default()
             .export_to("../src/types/bindings.ts", &types)
@@ -216,6 +227,13 @@ pub fn run() {
                 }
             }
 
+            // Started here rather than in `manage` above: DirectInput needs the
+            // main window's HWND for background cooperative level, and that
+            // only exists once the windows have been created.
+            app.manage(InputState {
+                runtime: Some(InputRuntime::start(app.handle().clone())),
+            });
+
             Ok(())
         })
         .invoke_handler(generate_handler![
@@ -240,7 +258,9 @@ pub fn run() {
             twitch_poll_device_token,
             twitch_has_client_id,
             twitch_current_login,
-            twitch_sign_out
+            twitch_sign_out,
+            resolve_input_devices,
+            set_input_polling_enabled
         ])
         .manage(ChatState {
             service: Arc::new(ChatServiceState::new()),

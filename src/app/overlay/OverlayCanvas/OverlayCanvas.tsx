@@ -10,12 +10,14 @@ import { WidgetPicker } from '@app/overlay/components/WidgetPicker/WidgetPicker'
 import styles from './OverlayCanvas.module.scss';
 import {
   useAppSettingsStore,
+  useBindingsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
 export const OverlayCanvas = observer(() => {
   const appSettings = useAppSettingsStore();
   const widgetSettings = useWidgetSettingsStore();
+  const bindings = useBindingsStore();
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
@@ -58,12 +60,17 @@ export const OverlayCanvas = observer(() => {
 
   const showInteractBanner = appSettings.interactMode;
 
-  const { interactHotkey, interactHotkeyMode } = appSettings.appSettings;
+  const { interactHotkeyMode } = appSettings.appSettings;
 
-  const interactBannerText =
-    interactHotkeyMode === 'hold'
-      ? `Interact mode — release ${interactHotkey} to exit`
-      : `Interact mode — ${interactHotkey} to exit`;
+  // A device button has no name worth printing, so the banner falls back to
+  // naming the mode alone when interact mode is bound to one.
+  const interactKey = bindings.primaryAccelerator('app:toggle-interact-mode');
+
+  const interactBannerText = !interactKey
+    ? 'Interact mode'
+    : interactHotkeyMode === 'hold'
+      ? `Interact mode — release ${interactKey} to exit`
+      : `Interact mode — ${interactKey} to exit`;
 
   const handleExitDragMode = () => {
     appSettings.setDragMode(false);

@@ -30,14 +30,6 @@
     "available": "v{{version}} 版本可用",
     "updateAndRestart": "更新并重启"
   },
-  "hotkeyRecorder": {
-    "none": "无",
-    "pressKeyCombination": "请按下组合键...",
-    "rebind": "重新绑定",
-    "record": "录制",
-    "apply": "应用",
-    "clear": "清除"
-  },
   "layoutEditor": {
     "backToLayouts": "返回布局列表",
     "toggleWidgetPanel": "显示/隐藏小组件面板",
@@ -172,7 +164,7 @@
     "layerDepth": "层级深度（Z-Index）",
     "fontScale": "文字大小",
     "fontScaleDesc": "仅缩放文字，与组件的宽度/高度无关",
-    "aesthetics": "外观",
+    "aesthetics": "背景与边框",
     "background": "背景",
     "border": "边框"
   },
@@ -187,8 +179,7 @@
     "widgetDisplayOverride": {
       "title": "小组件显示覆盖",
       "hideAllTitle": "隐藏所有激活的小组件",
-      "hideAllDesc": "全局开关，用于快速隐藏或显示所有已启用的界面元素。",
-      "toggleHotkey": "切换快捷键"
+      "hideAllDesc": "全局开关，用于快速隐藏或显示所有已启用的界面元素。"
     },
     "startupBehavior": {
       "title": "启动行为",
@@ -199,17 +190,16 @@
       "title": "交互模式",
       "dragModeTitle": "界面拖拽模式",
       "dragModeDesc": "解锁小组件以在屏幕上自由移动。",
-      "dragModeHotkey": "拖拽模式快捷键",
       "interactModeTitle": "交互模式",
       "interactModeDesc": "让鼠标可以操作悬浮层（滚动、按钮），但不解锁部件拖拽。开启期间游戏无法接收鼠标。",
-      "interactModeHotkey": "交互模式快捷键",
       "interactHotkeyModeTitle": "按键方式",
       "interactHotkeyModeDesc": "「切换」按一次开、再按一次关；「按住」仅在按住按键时生效。",
       "interactToggle": "切换",
       "interactHold": "按住",
       "interactAutoOffTitle": "自动关闭",
       "interactAutoOffDesc": "自动关闭交互模式，让鼠标回到游戏。",
-      "interactAutoOffNever": "从不"
+      "interactAutoOffNever": "从不",
+      "boundTo": "已绑定到 {{accelerator}}"
     },
     "gameIntegration": {
       "title": "游戏集成",
@@ -314,6 +304,95 @@
         "codeExpired": "代码已过期，请重新开始。",
         "sessionExpired": "Twitch 会话已过期，请重新登录。"
       }
+    },
+    "nav": {
+      "groups": {
+        "application": "应用程序",
+        "overlay": "覆盖层",
+        "controls": "控制",
+        "data": "数据",
+        "maintenance": "维护"
+      },
+      "sections": {
+        "general": "常规",
+        "updates": "更新",
+        "overlay": "组件显示",
+        "interaction": "交互模式",
+        "bindings": "输入绑定",
+        "devices": "设备",
+        "trackMap": "赛道数据",
+        "streamChat": "直播聊天",
+        "maintenance": "重置与诊断"
+      }
     }
+  },
+  "bindings": {
+    "title": "输入绑定",
+    "intro": "按键和设备按钮在整个应用中生效，适用于所有布局。与模拟器自身按键的冲突无法在此检测，请在 iRacing 中确认。",
+    "searchPlaceholder": "搜索操作或绑定",
+    "resetAll": "全部重置",
+    "resetConfirm": "将所有绑定恢复为默认值？",
+    "noMatches": "没有匹配的操作。",
+    "unbound": "未绑定",
+    "addBinding": "添加绑定",
+    "removeBinding": "移除绑定",
+    "conflictWith": "也绑定到：{{actions}}",
+    "deviceOffline": "设备未连接 — 绑定已保留。",
+    "notInLayout": "不在布局中",
+    "captureTitle": "请按下按键或设备按钮",
+    "captureHint": "按 Escape 取消。在按下之前不会保存任何内容。",
+    "devicesTitle": "设备",
+    "noDevices": "未检测到游戏控制器。",
+    "deviceMeta": "VID {{vendor}} · PID {{product}} · {{buttons}} 个按钮",
+    "deviceConnected": "已连接",
+    "deviceOfflineTag": "离线",
+    "groups": {
+      "app": "应用程序"
+    },
+    "chip": {
+      "button": "按钮 {{button}}",
+      "hat": "帽键 {{hat}} {{direction}}",
+      "direction": {
+        "0": "上",
+        "1": "右",
+        "2": "下",
+        "3": "左"
+      },
+      "unknownDevice": "未知设备"
+    },
+    "actions": {
+      "toggleDragMode": "拖动模式",
+      "toggleInteractMode": "交互模式",
+      "toggleHideAllWidgets": "隐藏所有组件",
+      "standingsCycleViewMode": "切换视图模式（全部 → 分组 → 循环）",
+      "standingsClassPrev": "上一个组别（循环模式）",
+      "standingsClassNext": "下一个组别（循环模式）",
+      "standingsScrollUp": "表格向上滚动",
+      "standingsScrollDown": "表格向下滚动",
+      "pitServiceToggle": "在非维修道时临时显示进站指令窗口",
+      "pitServiceAutoMode": "把本次进站交给自动模式，或收回控制",
+      "pitServiceApplyOrder": "下达完整进站指令：计算油量与四条轮胎（替换当前指令）",
+      "pitServiceClearOrder": "取消全部指令",
+      "pitServiceFuel": "加注计算出的油量",
+      "pitServiceTiresAll": "更换四条轮胎",
+      "pitServiceTireLf": "更换左前轮",
+      "pitServiceTireRf": "更换右前轮",
+      "pitServiceTireLr": "更换左后轮",
+      "pitServiceTireRr": "更换右后轮",
+      "pitServiceFastRepair": "使用快速维修",
+      "pitServiceWindshield": "清洁挡风玻璃（消耗一张撕膜）",
+      "widgetToggleVisibility": "显示 / 隐藏“{{widget}}”"
+    },
+    "devicesIntro": "方向盘、按钮盒、摇杆和踏板会被自动识别。已绑定过的设备在拔出后仍会保留在列表中，绑定不会丢失。",
+    "boundCount": "已绑定 {{bound}} / {{total}}",
+    "notInLayoutTooltip": "该组件不在当前布局中，因此它的所有功能都不会运行 — 包括绑定以及自动进站指令等后台行为。例外是“显示 / 隐藏”按键：正是它把组件放回布局。",
+    "toggleHint": "切换该选项：再次按下会将其从指令中移除。",
+    "inert": {
+      "pitServiceAutoMode": "在组件设置中开启“自动加油”或“自动轮胎”之前，此键不起作用。"
+    },
+    "searchByKey": "按键查找",
+    "searchByKeyHint": "按下按键或设备按钮，列表会显示它绑定到了什么。",
+    "searchPressKey": "请按下按键或设备按钮…",
+    "keyIsFree": "{{key}} 尚未绑定到任何操作。"
   }
 }

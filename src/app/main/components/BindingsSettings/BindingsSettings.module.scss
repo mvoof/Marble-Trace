@@ -1,0 +1,224 @@
+.card {
+  margin-bottom: rem(32);
+}
+
+.cardTitle {
+  color: $sys-text-secondary;
+  font-weight: 500;
+  margin-bottom: rem(12);
+  font-size: rem(11);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.cardContent {
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-main;
+  border-radius: 6px;
+  padding: rem(20);
+}
+
+.intro {
+  font-size: rem(12);
+  color: $sys-text-secondary;
+  margin-bottom: rem(16);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: rem(12);
+  margin-bottom: rem(16);
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  flex: 1;
+  min-width: 0;
+}
+
+.search {
+  flex: 1;
+  min-width: 0;
+}
+
+.group {
+  border: 1px solid $sys-border-sub;
+  border-radius: 4px;
+  margin-bottom: rem(8);
+  overflow: hidden;
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  width: 100%;
+  padding: rem(10) rem(12);
+  border: none;
+  background: $sys-bg-main;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    background: $sys-bg-card;
+  }
+}
+
+.groupBody {
+  padding: rem(12);
+}
+
+// Show/hide leads the group — it keeps working when the widget is out of the
+// layout and the rows below it do not. Position and a wider gap carry that on
+// their own; a rule or a tint here only competed with the row dividers.
+.pinnedRow {
+  margin-bottom: rem(16);
+}
+
+.groupTitle {
+  font-size: rem(13);
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.groupCount {
+  margin-left: auto;
+  font-family: $font-mono;
+  font-size: rem(11);
+  color: $sys-text-muted;
+}
+
+.groupChevron {
+  color: $sys-text-secondary;
+  transition: transform 0.15s ease;
+  transform: rotate(-90deg);
+}
+
+.groupChevronOpen {
+  color: $sys-text-secondary;
+  transition: transform 0.15s ease;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(16);
+  padding-top: rem(12);
+  margin-top: rem(12);
+  border-top: 1px solid $sys-border-sub;
+
+  &:first-of-type {
+    padding-top: 0;
+    margin-top: 0;
+    border-top: none;
+  }
+}
+
+.rowTexts {
+  min-width: 0;
+}
+
+.rowLabel {
+  font-size: rem(13);
+  color: #ffffff;
+}
+
+.rowHint {
+  margin-top: rem(3);
+  font-size: rem(11);
+  color: $race-amber;
+}
+
+.chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: rem(6);
+  justify-content: flex-end;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(6);
+  padding: rem(2) rem(8);
+  border: 1px solid $sys-border-main;
+  border-radius: 4px;
+  background: $sys-bg-main;
+  font-family: $font-mono;
+  font-size: rem(11);
+  color: #ffffff;
+}
+
+// Modifier classes come after the base class they refine.
+.chipConflicting {
+  border-color: $race-amber;
+  color: $race-amber;
+}
+
+.chipOffline {
+  opacity: 0.5;
+}
+
+.chipRemove {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: $sys-text-secondary;
+
+  &:hover {
+    color: $race-red;
+  }
+}
+
+.empty {
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+.captureHint {
+  font-size: rem(13);
+  color: $sys-text-secondary;
+  margin-bottom: rem(12);
+}
+
+.captureTarget {
+  font-size: rem(15);
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: rem(8);
+}
+
+.deviceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(12);
+  padding-top: rem(12);
+  margin-top: rem(12);
+  border-top: 1px solid $sys-border-sub;
+
+  &:first-of-type {
+    padding-top: 0;
+    margin-top: 0;
+    border-top: none;
+  }
+}
+
+.deviceName {
+  font-size: rem(13);
+  color: #ffffff;
+}
+
+.deviceMeta {
+  font-size: rem(11);
+  color: $sys-text-muted;
+  font-family: $font-mono;
+}

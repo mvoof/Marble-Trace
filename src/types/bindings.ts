@@ -691,6 +691,55 @@ export type FuelLapRecord = {
 };
 
 /**
+ * One button edge. Only edges are emitted — never the held state per poll.
+ */
+export type InputButtonEvent = {
+  deviceId: string;
+  button: number;
+  pressed: boolean;
+};
+
+/**
+ * A game controller the app can bind buttons from.
+ */
+export type InputDevice = {
+  /**
+   * Stable identity, used as the binding's `deviceId`.
+   */
+  id: string;
+  vendorId: number;
+  productId: number;
+  productName: string;
+  buttonCount: number;
+  /**
+   * False while the device is remembered but not currently attached.
+   */
+  connected: boolean;
+};
+
+/**
+ * Reported when a stored device is re-matched by vendor/product after its
+ * DirectInput GUID changed, so the frontend can rewrite its bindings once.
+ */
+export type InputDeviceRemap = { previousId: string; nextId: string };
+
+/**
+ * Answer to "here is what I remember, what is actually plugged in?".
+ */
+export type InputDeviceResolution = {
+  /**
+   * Attached devices plus remembered-but-offline ones, so bindings for a
+   * device that is unplugged are shown greyed rather than disappearing.
+   */
+  devices: InputDevice[];
+  /**
+   * Ids the caller should rewrite in its stored bindings, at most once per
+   * device — see `input::identity`.
+   */
+  remaps: InputDeviceRemap[];
+};
+
+/**
  * Sector timing data for the sector matrix widget.
  * Total delta is provided directly by iRacing via LapTimingFrame delta fields.
  */

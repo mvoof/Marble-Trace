@@ -1,4 +1,4 @@
-import { TelemetryDebugWidget } from '@widgets/TelemetryDebugWidget/TelemetryDebugWidget';
+﻿import { TelemetryDebugWidget } from '@widgets/TelemetryDebugWidget/TelemetryDebugWidget';
 import { InputTraceWidget } from '@widgets/InputTraceWidget/InputTraceWidget';
 import { ProximityRadarWidget } from '@widgets/ProximityRadarWidget/ProximityRadarWidget';
 import { RadarBarWidget } from '@widgets/RadarBarWidget/RadarBarWidget';
@@ -473,11 +473,6 @@ const WIDGETS: WidgetConfig[] = [
       ...PANEL_APPEARANCE_DEFAULTS,
       rowPadding: 'narrow',
       viewMode: 'all',
-      viewModeHotkey: '',
-      classPrevHotkey: '',
-      classNextHotkey: '',
-      scrollUpHotkey: '',
-      scrollDownHotkey: '',
       scrollResetSeconds: 8,
       ...STANDINGS_COLUMN_DEFAULTS,
       showLivePosChange: true,
@@ -664,21 +659,9 @@ const WIDGETS: WidgetConfig[] = [
       showRepairs: true,
       showFooter: false,
       alwaysVisible: false,
-      toggleHotkey: 'F7',
-      applyOrderHotkey: '',
-      clearOrderHotkey: '',
-      fuelHotkey: '',
-      tiresAllHotkey: '',
-      tireLfHotkey: '',
-      tireRfHotkey: '',
-      tireLrHotkey: '',
-      tireRrHotkey: '',
-      fastRepairHotkey: '',
-      windshieldHotkey: '',
       autoFuel: false,
       autoTires: false,
       autoTireWearThreshold: 60,
-      autoModeHotkey: '',
     },
   },
   {

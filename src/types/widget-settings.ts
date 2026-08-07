@@ -97,11 +97,6 @@ export type StandingsViewMode = 'all' | 'cycling' | 'grouped';
 export interface StandingsWidgetSettings {
   rowPadding: RowPadding;
   viewMode: StandingsViewMode;
-  viewModeHotkey: string;
-  classPrevHotkey: string;
-  classNextHotkey: string;
-  scrollUpHotkey: string;
-  scrollDownHotkey: string;
   /** Seconds of inactivity after which a manual scroll returns to the automatic view (0 = keep it). */
   scrollResetSeconds: number;
   showPosChange: boolean;
@@ -328,23 +323,6 @@ export interface PitServiceWidgetSettings {
   showRepairs: boolean;
   showFooter: boolean;
   alwaysVisible: boolean;
-  toggleHotkey: string;
-  /** Sends the full stop in one press: clear, calculated fuel, all four tires. */
-  applyOrderHotkey: string;
-  clearOrderHotkey: string;
-  /**
-   * One hotkey per pit checkbox. Each of these toggles that box on top of
-   * whatever is already ordered — unlike `applyOrderHotkey`, they never clear
-   * the rest of the order. Empty string = unbound.
-   */
-  fuelHotkey: string;
-  tiresAllHotkey: string;
-  tireLfHotkey: string;
-  tireRfHotkey: string;
-  tireLrHotkey: string;
-  tireRrHotkey: string;
-  fastRepairHotkey: string;
-  windshieldHotkey: string;
   /**
    * Auto mode checks the calculated fuel amount on pit entry. Auto mode as a
    * whole is on whenever this or `autoTires` is — there is no separate master
@@ -358,11 +336,6 @@ export interface PitServiceWidgetSettings {
    * Measured on the most worn of the three points across the tread.
    */
   autoTireWearThreshold: number;
-  /**
-   * Hands the current stop over to auto mode, or takes it back, without opening
-   * the settings window.
-   */
-  autoModeHotkey: string;
 }
 
 export type GMeterDisplayMode = 'trail' | 'fading' | 'peak';

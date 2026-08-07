@@ -19,7 +19,11 @@ vi.mock('@tauri-apps/api/event', () => ({
 describe('PitServiceWidgetStore — pit orders', () => {
   let rootStore: RootStore;
 
-  const setSettings = (partial: Partial<PitServiceWidgetSettings>) => {
+  // `enabled` comes from BaseUserSettings rather than the widget's own settings,
+  // but auto mode depends on it, so the helper takes both.
+  const setSettings = (
+    partial: Partial<PitServiceWidgetSettings> & { enabled?: boolean }
+  ) => {
     runInAction(() => {
       const settings =
         rootStore.widgetSettings.getSettings<PitServiceWidgetSettings>(
@@ -257,8 +261,11 @@ describe('PitServiceWidgetStore — pit orders', () => {
   };
 
   describe('auto mode', () => {
+    // `enabled` matters as much as the auto switches: auto mode is inert for a
+    // widget that is not in the active layout.
     const enableAuto = () =>
       setSettings({
+        enabled: true,
         autoFuel: true,
         autoTires: true,
         autoTireWearThreshold: 60,
@@ -336,6 +343,23 @@ describe('PitServiceWidgetStore — pit orders', () => {
       rootStore.pitServiceWidget.handlePitRoadChange(false);
 
       expect(rootStore.pitServiceWidget.isAutoActive).toBe(true);
+    });
+
+    it('sends nothing when the widget is not in the active layout', async () => {
+      setFuelPlan(24.1, 106);
+      enableAuto();
+      setTireWear({ lf: 0.1 });
+      setSettings({ enabled: false });
+
+      invokeMock.mockClear();
+
+      await rootStore.pitServiceWidget.applyAutoOrder();
+
+      expect(rootStore.pitServiceWidget.isAutoEnabled).toBe(false);
+      expect(invokeMock).not.toHaveBeenCalledWith(
+        'send_pit_order',
+        expect.anything()
+      );
     });
 
     it('is off entirely when neither fuel nor tires are automatic', async () => {

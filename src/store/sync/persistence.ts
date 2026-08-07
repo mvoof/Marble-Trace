@@ -10,6 +10,12 @@ import type {
 import type { AppSettings } from '@store/settings/app-settings.store';
 import { mergeWithDefaults } from '@utils/deep-merge';
 import type { RootStore } from '@store/root-store';
+import type { BindingMap } from '@store/hotkeys/binding-types';
+import {
+  migrateBindings,
+  stripLegacyHotkeyFields,
+} from '@store/hotkeys/migration';
+import type { InputDevice } from '@/types/bindings';
 
 export const SETTINGS_FILE = 'settings.json';
 
@@ -23,6 +29,10 @@ export interface Settings {
   layouts: SavedLayout[];
   activeLayoutId: string | null;
   sessionLayouts?: Record<SessionContext, string | null>;
+  /** App-level input bindings. Deliberately outside `layouts` — see hotkeys/migration.ts. */
+  bindings?: BindingMap;
+  /** Devices seen before, so an unplugged one's bindings stay identifiable. */
+  inputDevices?: InputDevice[];
 }
 
 const restoreWidgets = (
@@ -118,7 +128,45 @@ export const hydrateStores = (
     if (loadedSettings.sessionLayouts) {
       root.widgetSettings.setSessionLayouts(loadedSettings.sessionLayouts);
     }
+
+    hydrateBindings(root, loadedSettings);
+
+    if (loadedSettings.inputDevices) {
+      root.deviceInput.setKnownDevices(loadedSettings.inputDevices);
+    }
   });
+};
+
+/**
+ * Bindings either come from the file, or — on the first run after the upgrade —
+ * are lifted out of the per-layout `*Hotkey` fields. The one-shot flag lives in
+ * app settings so a user who deliberately clears every binding does not get the
+ * old ones back on the next launch.
+ */
+const hydrateBindings = (
+  root: RootStore,
+  loadedSettings: Partial<Settings>
+) => {
+  if (root.appSettings.appSettings.bindingsMigrated) {
+    root.bindings.applyBindings(loadedSettings.bindings);
+
+    return;
+  }
+
+  const migrated = migrateBindings({
+    appSettings: loadedSettings.app as Record<string, unknown> | undefined,
+    layouts: root.widgetSettings.layouts,
+    activeLayoutId: root.widgetSettings.activeLayoutId,
+  });
+
+  root.bindings.applyBindings({
+    ...migrated,
+    ...(loadedSettings.bindings ?? {}),
+  });
+
+  stripLegacyHotkeyFields(root.widgetSettings.layouts);
+
+  root.appSettings.appSettings.bindingsMigrated = true;
 };
 
 interface Store {
@@ -136,6 +184,8 @@ export const buildSettings = (root: RootStore): Settings => ({
   layouts: root.widgetSettings.layouts,
   activeLayoutId: root.widgetSettings.activeLayoutId,
   sessionLayouts: root.widgetSettings.sessionLayouts,
+  bindings: root.bindings.bindings,
+  inputDevices: root.deviceInput.knownDevices,
 });
 
 export const saveSettings = async (store: Store, root: RootStore) => {

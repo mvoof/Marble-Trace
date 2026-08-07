@@ -10,6 +10,10 @@ export const TRACK_MAP_CLEAR = 'track-map:clear';
 
 // Stream chat lives outside the sim:// namespace — it keeps running with no
 // sim connected at all.
+// Game controllers, for global input bindings. Emitted by src-tauri/src/input.
+export const INPUT_DEVICES_EVENT = 'input://devices';
+export const INPUT_BUTTON_EVENT = 'input://button';
+
 export const CHAT_MESSAGE = 'chat://message';
 export const CHAT_PRESENCE = 'chat://presence';
 export const CHAT_DELETION = 'chat://deletion';
