@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
-import { load } from '@tauri-apps/plugin-store';
+import { invoke } from '@tauri-apps/api/core';
 import { getVersion } from '@tauri-apps/api/app';
 import { mergeWithDefaults } from '@utils/deep-merge';
 import { detectSystemLanguage } from '@utils/system-locale';
@@ -376,12 +376,14 @@ export class AppSettingsStore {
    * Deliberately goes straight to the file instead of through `onSave`: this is
    * the only way out of a locked settings file, so the write gate must not
    * apply to it.
+   *
+   * The file is deleted rather than emptied. `tauri-plugin-store`'s `clear()`
+   * leaves a valid but empty `{}` on disk, which the next start reads as a file
+   * that is present and yet holds no settings — the exact signature of a
+   * corrupt file, so the reset would lock the app instead of freeing it.
    */
   async resetSettings() {
-    const store = await load('settings.json');
-
-    await store.clear();
-    await store.save();
+    await invoke('delete_settings_file');
     await relaunch();
   }
 }

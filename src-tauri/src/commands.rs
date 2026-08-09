@@ -87,6 +87,34 @@ pub async fn backup_settings_file(app: AppHandle, suffix: String) -> Result<(), 
     Ok(())
 }
 
+/// Removes `settings.json` from disk.
+///
+/// The reset button is the only way out of a locked settings file, so it has to
+/// leave nothing behind: `tauri-plugin-store`'s own `clear()` + `save()` writes
+/// an empty `{}` over the file, which `settings_file_exists` then reports as a
+/// file present but unreadable — locking the app again on the next start.
+///
+/// A missing file is a fresh install, which is exactly what a reset means.
+#[tauri::command]
+pub async fn delete_settings_file(app: AppHandle) -> Result<(), String> {
+    let dir = app
+        .path()
+        .app_config_dir()
+        .map_err(|e| format!("no config dir: {e}"))?;
+
+    let target = dir.join("settings.json");
+
+    match std::fs::remove_file(&target) {
+        Ok(()) => {
+            info!("settings file deleted: {}", target.display());
+
+            Ok(())
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(format!("delete failed: {error}")),
+    }
+}
+
 #[tauri::command]
 pub async fn get_last_session_info(
     state: State<'_, TelemetryState>,
