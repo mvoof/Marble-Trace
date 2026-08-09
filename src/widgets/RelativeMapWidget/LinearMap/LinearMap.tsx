@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { TRACK_SURFACE_ON_TRACK } from '@utils/widget/widget-utils';
 import { parseClassColor } from '@utils/formatters/color-utils';
 import { CarDot } from '@/components/shared/CarDot/CarDot';
+import { shapeForClassOrder } from '@utils/widget/car-dot-shape';
 import { PaceCarMarker } from '@widgets/TrackMapWidget/TrackMapSvg/PaceCarMarker/PaceCarMarker';
 
 import styles from './LinearMap.module.scss';
@@ -18,7 +19,8 @@ import {
 export const LinearMap = observer(() => {
   const computed = useBackendComputedStore();
   const { carPositions } = useCarsStore();
-  const { sessionInfo } = useSessionStore();
+  const sessionStore = useSessionStore();
+  const { sessionInfo } = sessionStore;
   const widgetSettings = useWidgetSettingsStore();
   const paceCarStore = usePaceCarStore();
 
@@ -33,6 +35,8 @@ export const LinearMap = observer(() => {
   const paceCarColor = settings.paceCarColor ?? '#facc15';
   const paceCarRadiusPx = settings.paceCarRadiusPx ?? targetDotRadiusPx;
   const paceCarShowInPits = settings.paceCarShowInPits ?? false;
+  const classShapes = settings.classShapes ?? false;
+  const carClassOrder = sessionStore.carClassOrder;
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
 
@@ -123,6 +127,11 @@ export const LinearMap = observer(() => {
                 carNumber={d.carNumber}
                 carClassColor={d.carClassColor}
                 isPlayer={d.isPlayer}
+                shape={
+                  classShapes
+                    ? shapeForClassOrder(carClassOrder.get(d.carClassId) ?? -1)
+                    : 'circle'
+                }
                 radius={targetDotRadiusPx}
                 playerColor={playerDotColor}
               />

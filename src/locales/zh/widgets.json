@@ -207,7 +207,7 @@
       "vertical": "垂直",
       "playerMarker": "玩家标记",
       "playerDotColor": "玩家点颜色",
-      "dotRadius": "点半径（像素）"
+      "dotRadius": "车辆标记大小（像素）"
     },
     "radar": {
       "radarBehavior": "雷达行为",
@@ -373,6 +373,10 @@
       "visualElements": "视觉元素",
       "sectorsOnMap": "地图上的分段",
       "startFinishLine": "起点/终点线",
+      "classShapes": "分组形状",
+      "classShapesDesc": "除颜色外，为每个车辆分组使用各自的标记形状（圆形、方形、菱形）；分组更多时形状会重复。",
+      "showDriversInQualifying": "排位赛中显示其他车手",
+      "showDriversInQualifyingDesc": "自动：单独排位赛期间（赛道上仅一辆车）隐藏其他车手。你自己的标记始终显示。",
       "playerDotColor": "玩家点颜色",
       "playerDotColorDesc": "您的车辆的提示环和标签颜色。",
       "showYouLabel": "显示“YOU”标签",
@@ -392,7 +396,7 @@
       "trackStroke": "赛道线宽（像素）",
       "trackBorder": "赛道边框（像素）",
       "sectorStroke": "分段线宽（像素）",
-      "targetDotRadius": "目标点半径（像素）",
+      "targetDotRadius": "车辆标记大小（像素）",
       "safetyCar": "安全车",
       "paceCarUseClassColor": "使用组别颜色",
       "paceCarUseClassColorDesc": "按组别为安全车标记着色，而非自定义颜色。",

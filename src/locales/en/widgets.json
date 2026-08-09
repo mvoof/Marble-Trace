@@ -207,7 +207,7 @@
       "vertical": "Vertical",
       "playerMarker": "Player Marker",
       "playerDotColor": "Player Dot Color",
-      "dotRadius": "Dot Radius (px)"
+      "dotRadius": "Car Marker Size (px)"
     },
     "radar": {
       "radarBehavior": "Radar Behavior",
@@ -373,6 +373,10 @@
       "visualElements": "Visual Elements",
       "sectorsOnMap": "Sectors on Map",
       "startFinishLine": "Start/Finish Line",
+      "classShapes": "Class Shapes",
+      "classShapesDesc": "Give each car class its own marker shape (circle, square, diamond) on top of its color; the shapes repeat if there are more classes.",
+      "showDriversInQualifying": "Show other drivers in qualifying",
+      "showDriversInQualifyingDesc": "Auto: other drivers are hidden during lone qualifying (single car on track). Your own marker always stays.",
       "playerDotColor": "Player Dot Color",
       "playerDotColorDesc": "Ping ring and label pill color for your car.",
       "showYouLabel": "Show \"YOU\" Label",
@@ -392,7 +396,7 @@
       "trackStroke": "Track Stroke (px)",
       "trackBorder": "Track Border (px)",
       "sectorStroke": "Sector Stroke (px)",
-      "targetDotRadius": "Target Dot Radius (px)",
+      "targetDotRadius": "Car Marker Size (px)",
       "safetyCar": "Safety Car",
       "paceCarUseClassColor": "Use Class Color",
       "paceCarUseClassColorDesc": "Color the safety-car marker by its class instead of a custom color.",

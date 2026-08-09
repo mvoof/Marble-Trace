@@ -21,6 +21,54 @@ export class SessionStore {
     return this.sessionInfo.sessions[num]?.sessionType ?? null;
   }
 
+  private get currentSessionLabel(): string | null {
+    const info = this.sessionInfo;
+
+    if (!info) {
+      return null;
+    }
+
+    return info.sessions[info.currentSessionNum]?.sessionTypeLabel ?? null;
+  }
+
+  get isQualifyingSession(): boolean {
+    return this.currentSessionLabel?.toLowerCase().includes('qualify') ?? false;
+  }
+
+  /** Solo qualifying — the player is the only car allowed on track. */
+  get isLoneQualifying(): boolean {
+    return this.currentSessionLabel === 'Lone Qualify';
+  }
+
+  /**
+   * Car class id -> rank in the field, fastest class first. Drives the per-class
+   * marker shapes on the maps so both widgets agree on who gets which shape.
+   */
+  get carClassOrder(): Map<number, number> {
+    const fastestLapByClass = new Map<number, number>();
+
+    for (const car of this.sessionInfo?.cars ?? []) {
+      if (car.isPaceCar) {
+        continue;
+      }
+
+      const estLapTime =
+        car.carClassEstLapTime > 0 ? car.carClassEstLapTime : Infinity;
+      const known = fastestLapByClass.get(car.carClassId);
+
+      if (known === undefined || estLapTime < known) {
+        fastestLapByClass.set(car.carClassId, estLapTime);
+      }
+    }
+
+    const ranked = [...fastestLapByClass.entries()].sort(
+      ([leftId, leftLap], [rightId, rightLap]) =>
+        leftLap - rightLap || leftId - rightId
+    );
+
+    return new Map(ranked.map(([classId], index) => [classId, index]));
+  }
+
   updateSession(frame: SessionFrame) {
     this.session = frame;
   }

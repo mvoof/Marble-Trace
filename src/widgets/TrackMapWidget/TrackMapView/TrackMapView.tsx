@@ -12,6 +12,7 @@ import {
   rotatePoints,
   buildSvgPathAndViewBox,
 } from '@utils/widget/track-map-utils';
+import { isHiddenInQualifying } from '@utils/widget/qualifying-visibility';
 
 import styles from './TrackMapView.module.scss';
 import type { TrackMapWidgetSettings } from '@/types/widget-settings';
@@ -47,7 +48,8 @@ export const TrackMapView = observer(
     isWaitingForSF,
     onRotate,
   }: TrackMapViewProps) => {
-    const { sessionInfo } = useSessionStore();
+    const sessionStore = useSessionStore();
+    const { sessionInfo } = sessionStore;
     const { carPositions } = useCarsStore();
     const computed = useBackendComputedStore();
     const widgetSettings = useWidgetSettingsStore();
@@ -88,7 +90,18 @@ export const TrackMapView = observer(
     // never comes. The live order re-ranks him the moment the field drives past.
     const useLivePositions = rawSettings.useLivePositions ?? true;
 
-    const competitorCars: CarOnTrack[] = driverEntries.map((entry) => ({
+    // Qualifying often puts you alone on track, where the other dots are stale
+    // garage positions rather than cars you can actually meet. Same rule as the
+    // radar widgets, applied to the competitors only — your own dot stays.
+    const hideCompetitors =
+      !dragMode &&
+      isHiddenInQualifying(rawSettings.qualifyingVisibility, sessionStore);
+
+    const visibleEntries = hideCompetitors
+      ? driverEntries.filter((entry) => entry.isPlayer)
+      : driverEntries;
+
+    const competitorCars: CarOnTrack[] = visibleEntries.map((entry) => ({
       carIdx: entry.carIdx,
       carNumber: entry.carNumber,
       carClassColor: entry.carClassColor,
@@ -197,6 +210,8 @@ export const TrackMapView = observer(
           paceCarRadiusPx={
             settings.paceCarRadiusPx ?? settings.targetDotRadiusPx
           }
+          classShapes={settings.classShapes}
+          carClassOrder={sessionStore.carClassOrder}
           zoomEnabled={settings.zoomEnabled}
           zoomLevel={settings.zoomLevel}
           zoomRotate={settings.zoomRotate}

@@ -7,6 +7,7 @@ import type { SectorEntry } from '@/types/bindings';
 import type { TrackMapLeaderLabelMode } from '@/types/widget-settings';
 import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
 import { CarDot } from '@/components/shared/CarDot/CarDot';
+import { shapeForClassOrder } from '@utils/widget/car-dot-shape';
 import { PaceCarMarker } from './PaceCarMarker/PaceCarMarker';
 
 import { getSectorColor } from '@utils/widget/sector-utils';
@@ -35,6 +36,8 @@ interface TrackMapSvgProps {
   zoomEnabled?: boolean;
   zoomLevel?: number;
   zoomRotate?: boolean;
+  classShapes?: boolean;
+  carClassOrder?: Map<number, number>;
 }
 
 const MIN_ZOOM_LEVEL = 1;
@@ -64,6 +67,8 @@ export const TrackMapSvg = observer(
     zoomEnabled = false,
     zoomLevel = MIN_ZOOM_LEVEL,
     zoomRotate = false,
+    classShapes = false,
+    carClassOrder,
   }: TrackMapSvgProps) => {
     const playerCar = cars.find((c) => c.isPlayer);
     const playerClassId = playerCar?.carClassId ?? -1;
@@ -295,6 +300,13 @@ export const TrackMapSvg = observer(
                     carNumber={car.carNumber}
                     carClassColor={car.carClassColor}
                     isPlayer={car.isPlayer}
+                    shape={
+                      classShapes
+                        ? shapeForClassOrder(
+                            carClassOrder?.get(car.carClassId) ?? -1
+                          )
+                        : 'circle'
+                    }
                     radius={dotRadius}
                     label={label}
                     labelIsPlayer={car.isPlayer}
