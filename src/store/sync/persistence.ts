@@ -155,6 +155,25 @@ export const saveSettings = async (store: Store, root: RootStore) => {
 };
 
 /**
+ * Whether a settings file is actually there. The store plugin reports an empty
+ * store both for a fresh install and for a file it failed to parse, and those
+ * two must not be treated alike.
+ *
+ * Errs towards "present" when the check itself fails: locking a fresh install
+ * by mistake is recoverable in one click, seeding defaults over a file we could
+ * not read is not.
+ */
+export const settingsFileExists = async (): Promise<boolean> => {
+  try {
+    return await invoke<boolean>('settings_file_exists');
+  } catch (error) {
+    console.error('Failed to check for a settings file:', error);
+
+    return true;
+  }
+};
+
+/**
  * Copies the file aside before a migrated version is written over it. Best
  * effort: an upgrade must not be blocked by a config directory we cannot write
  * a second file into.

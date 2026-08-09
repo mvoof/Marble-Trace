@@ -5,6 +5,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { load } from '@tauri-apps/plugin-store';
 import {
   backupSettingsFile,
+  settingsFileExists,
   hydrateStores,
   saveSettings,
   logSettingsSnapshot,
@@ -62,8 +63,18 @@ const hydrateFromDisk = async (
   loaded: Settings | null | undefined,
   { backup }: { backup: boolean }
 ) => {
-  // Fresh install: nothing to migrate, and the first save stamps the version.
-  if (!loaded) return;
+  // The plugin hands back nothing both for a fresh install and for a file it
+  // could not parse — a stray BOM, a half-written save. Only the filesystem
+  // separates them, and seeding defaults over the second overwrites exactly the
+  // file this whole path exists to protect.
+  if (!loaded) {
+    if (await settingsFileExists()) {
+      console.error('Settings locked: present on disk but could not be read');
+      root.appSettings.lockSettings('corrupt');
+    }
+
+    return;
+  }
 
   const result = runMigrations(loaded);
 

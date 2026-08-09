@@ -36,6 +36,25 @@ pub async fn log_settings_snapshot(settings: serde_json::Value) -> Result<(), St
     Ok(())
 }
 
+/// Whether `settings.json` exists on disk with content in it.
+///
+/// `tauri-plugin-store` hands the frontend an empty store both for a fresh
+/// install and for a file it could not parse — a stray BOM, a truncated write.
+/// Those two need opposite responses, and only the filesystem can tell them
+/// apart: the first should be seeded with defaults, the second must never be
+/// written over.
+#[tauri::command]
+pub async fn settings_file_exists(app: AppHandle) -> Result<bool, String> {
+    let dir = app
+        .path()
+        .app_config_dir()
+        .map_err(|e| format!("no config dir: {e}"))?;
+
+    Ok(std::fs::metadata(dir.join("settings.json"))
+        .map(|meta| meta.is_file() && meta.len() > 0)
+        .unwrap_or(false))
+}
+
 /// Copies `settings.json` aside before the frontend writes a newly migrated
 /// version over it. `tauri-plugin-store` can only read and write the live file,
 /// so the copy has to happen here.
