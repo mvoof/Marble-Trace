@@ -289,7 +289,10 @@ export const initMainSync = async (root: RootStore) => {
           () => root.bindings.mutationId,
           () => {
             void applyKeyboardBindings(root);
-            void emitBindingsChanged(root.bindings.bindings);
+            // Overrides, not the effective map: the overlay layers the same
+            // registry defaults underneath, so sending them would only make
+            // every default look like a user choice on the other side.
+            void emitBindingsChanged(root.bindings.overrides);
             void onSave();
           }
         ),
