@@ -558,6 +558,8 @@ const WIDGETS: WidgetConfig[] = [
       zoomEnabled: false,
       zoomLevel: 3,
       zoomRotate: false,
+      classShapes: false,
+      qualifyingVisibility: 'always',
     },
   },
   {
@@ -584,6 +586,7 @@ const WIDGETS: WidgetConfig[] = [
       paceCarColor: '#facc15',
       paceCarRadiusPx: 10,
       paceCarShowInPits: false,
+      classShapes: false,
     },
   },
   {

@@ -197,6 +197,10 @@ export interface TrackMapWidgetSettings {
   zoomLevel?: number;
   /** Rotates the zoomed view so the player's travel direction points up. */
   zoomRotate?: boolean;
+  /** Gives every car class its own marker shape instead of a circle for all. */
+  classShapes?: boolean;
+  /** Whether other drivers stay on the map during a qualifying session. */
+  qualifyingVisibility?: RadarQualifyingVisibility;
 }
 
 export type LinearMapOrientation = 'horizontal' | 'vertical';
@@ -213,6 +217,8 @@ export interface LinearMapWidgetSettings {
   paceCarRadiusPx?: number;
   /** When true, keeps showing the safety-car marker while it's parked in its pit stall. */
   paceCarShowInPits?: boolean;
+  /** Gives every car class its own marker shape instead of a circle for all. */
+  classShapes?: boolean;
 }
 
 export interface WeatherWidgetSettings {

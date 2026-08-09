@@ -10,6 +10,7 @@ import {
   Switch,
 } from 'antd';
 import {
+  RadarQualifyingVisibility,
   TrackMapLeaderLabelMode,
   TrackMapWidgetSettings,
 } from '@/types/widget-settings';
@@ -56,6 +57,41 @@ export const TrackMapSettingsPanel = observer(() => {
               onChange={(v) => update({ showStartFinish: v })}
             />
           </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.trackMap.classShapes')}
+            desc={t('settingsPanels.trackMap.classShapesDesc')}
+          >
+            <Switch
+              checked={settings.classShapes ?? false}
+              onChange={(v) => update({ classShapes: v })}
+            />
+          </SettingRow>
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.radar.qualifying')}>
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.trackMap.showDriversInQualifying')}
+          </span>
+          <Segmented
+            block
+            value={settings.qualifyingVisibility ?? 'always'}
+            options={[
+              { label: t('settingsPanels.radar.always'), value: 'always' },
+              { label: t('settingsPanels.radar.auto'), value: 'auto' },
+              { label: t('settingsPanels.radar.never'), value: 'never' },
+            ]}
+            onChange={(v) =>
+              update({ qualifyingVisibility: v as RadarQualifyingVisibility })
+            }
+          />
+          <div className={styles.fieldDesc}>
+            {t('settingsPanels.trackMap.showDriversInQualifyingDesc')}
+          </div>
         </div>
       </Card>
 

@@ -69,6 +69,18 @@ export const LinearMapSettingsPanel = observer(() => {
             onChange={(v) => v !== null && update({ targetDotRadiusPx: v })}
           />
         </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.trackMap.classShapes')}
+            desc={t('settingsPanels.trackMap.classShapesDesc')}
+          >
+            <Switch
+              checked={settings.classShapes ?? false}
+              onChange={(v) => update({ classShapes: v })}
+            />
+          </SettingRow>
+        </div>
       </Card>
 
       <Card title={t('settingsPanels.trackMap.safetyCar')}>

@@ -2,6 +2,7 @@ import { action, makeAutoObservable, reaction } from 'mobx';
 
 import type { NearbyCar } from '@/types/bindings';
 import type { RadarSettings } from '@/types/widget-settings';
+import { isHiddenInQualifying } from '@utils/widget/qualifying-visibility';
 import type { RootStore } from '@store/root-store';
 
 export class RadarWidgetStore {
@@ -74,42 +75,17 @@ export class RadarWidgetStore {
   }
 
   get isLoneQualifying(): boolean {
-    const sessionInfo = this.root.session.sessionInfo;
-
-    if (!sessionInfo) {
-      return false;
-    }
-
-    const currentSession = sessionInfo.sessions[sessionInfo.currentSessionNum];
-
-    if (!currentSession) {
-      return false;
-    }
-
-    return currentSession.sessionTypeLabel === 'Lone Qualify';
+    return this.root.session.isLoneQualifying;
   }
 
   isHiddenInQualifyingFor(widgetId: 'proximity-radar' | 'radar-bar'): boolean {
     const settings =
       this.root.widgetSettings.getSettings<RadarSettings>(widgetId);
-    const visibility = settings.qualifyingVisibility;
 
-    if (visibility === 'never') {
-      const sessionInfo = this.root.session.sessionInfo;
-      const currentSession =
-        sessionInfo?.sessions[sessionInfo.currentSessionNum];
-      const isQualifying =
-        currentSession?.sessionTypeLabel.toLowerCase().includes('qualify') ??
-        false;
-
-      return isQualifying;
-    }
-
-    if (visibility === 'auto') {
-      return this.isLoneQualifying;
-    }
-
-    return false;
+    return isHiddenInQualifying(
+      settings.qualifyingVisibility,
+      this.root.session
+    );
   }
 
   isVisibleForWidget(widgetId: 'proximity-radar' | 'radar-bar'): boolean {

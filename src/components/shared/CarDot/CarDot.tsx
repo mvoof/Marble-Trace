@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import styles from './CarDot.module.scss';
 import { ChevronIcon, CrownIcon } from './MarkerIcons';
+import { carDotRect, type CarDotShape } from '@utils/widget/car-dot-shape';
 
 interface CarDotProps {
   carNumber: string;
@@ -8,6 +9,8 @@ interface CarDotProps {
   isPlayer: boolean;
   /** Base radius in SVG user units. Parent sets this based on coordinate space. */
   radius?: number;
+  /** Marker outline; classes get their own shape when the map enables it. */
+  shape?: CarDotShape;
   label?: string;
   labelIsPlayer?: boolean;
   playerColor?: string;
@@ -17,6 +20,7 @@ const PLAYER_RADIUS_SCALE = 1.3; // player dot is 30% larger than competitor dot
 const STROKE_TO_RADIUS = 0.25; // class-color border thickness
 const NUMBER_FONT_TO_RADIUS = 1.2; // car number font size inside the circle
 const NUMBER_DY_TO_FONT = 0.4; // vertical nudge to visually center text (SVG dy is from baseline)
+const MARKER_GAP_TO_SCALE = 8; // gap between the marker icon and the dot outline
 
 export const CarDot = observer(
   ({
@@ -24,13 +28,19 @@ export const CarDot = observer(
     carClassColor,
     isPlayer,
     radius = 10,
+    shape = 'circle',
     label,
     playerColor = '#18181b',
   }: CarDotProps) => {
     const r = isPlayer ? radius * PLAYER_RADIUS_SCALE : radius;
     const fontSize = radius * NUMBER_FONT_TO_RADIUS;
     const scale = radius / 10;
-    const markerY = -r - 8 * scale;
+    const rect = carDotRect(shape, r);
+    // The diamond's corner, not its edge, is what the marker has to clear.
+    const outerRadius = rect
+      ? rect.halfSide * (rect.rotationDeg === 0 ? 1 : Math.SQRT2)
+      : r;
+    const markerY = -outerRadius - MARKER_GAP_TO_SCALE * scale;
 
     return (
       <g
@@ -38,12 +48,27 @@ export const CarDot = observer(
           ['--car-dot-bg' as string]: isPlayer ? playerColor : '#18181b',
         }}
       >
-        <circle
-          r={r}
-          className={styles.carCircle}
-          stroke={carClassColor}
-          strokeWidth={radius * STROKE_TO_RADIUS}
-        />
+        {rect === null ? (
+          <circle
+            r={r}
+            className={styles.carCircle}
+            stroke={carClassColor}
+            strokeWidth={radius * STROKE_TO_RADIUS}
+          />
+        ) : (
+          <rect
+            x={-rect.halfSide}
+            y={-rect.halfSide}
+            width={rect.halfSide * 2}
+            height={rect.halfSide * 2}
+            rx={rect.cornerRadius}
+            ry={rect.cornerRadius}
+            transform={`rotate(${rect.rotationDeg})`}
+            className={styles.carCircle}
+            stroke={carClassColor}
+            strokeWidth={radius * STROKE_TO_RADIUS}
+          />
+        )}
 
         <text
           textAnchor="middle"

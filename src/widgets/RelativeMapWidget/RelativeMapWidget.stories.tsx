@@ -45,6 +45,26 @@ export const Wide: Story = {
   parameters: { widgetFrame: { width: 700, height: 40 } },
 };
 
+export const ClassShapes: Story = {
+  parameters: { widgetFrame: { width: 700, height: 40 } },
+  decorators: [
+    withStore((store) => {
+      if (snapshot.sessionInfo) {
+        store.session.updateSessionInfo(snapshot.sessionInfo);
+      }
+
+      store.backendComputed.updateRelative({
+        entries: MAP_ENTRIES,
+        playerCarIdx: PLAYER_CAR_IDX,
+      } as RelativeFrame);
+
+      store.widgetSettings.updateUserSettings('relative-map', {
+        classShapes: true,
+      });
+    }),
+  ],
+};
+
 const PACE_CAR_IDX = 61;
 const PACE_CAR_LAP_PCT = 0.08;
 const TRACK_SURFACE_ON_TRACK = 3;

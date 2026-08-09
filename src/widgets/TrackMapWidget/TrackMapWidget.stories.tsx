@@ -81,6 +81,23 @@ export const WithSectors: Story = {
   ],
 };
 
+export const ClassShapes: Story = {
+  decorators: [
+    withStore((store) => {
+      if (snapshot.sessionInfo)
+        store.session.updateSessionInfo(snapshot.sessionInfo);
+
+      store.backendComputed.updateStandings({
+        entries: DRIVER_ENTRIES,
+        playerCarIdx: DRIVER_ENTRIES.find((d) => d.isPlayer)?.carIdx ?? 0,
+      });
+      store.widgetSettings.updateUserSettings('track-map', {
+        classShapes: true,
+      });
+    }),
+  ],
+};
+
 export const WaitingForSF: Story = {
   args: {
     trackData: null,
