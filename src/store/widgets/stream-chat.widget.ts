@@ -8,6 +8,7 @@ import {
 import type { ChatMessage, ChatPresence } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
+import { scrollThumbFor, type ScrollThumb } from '@utils/widget/scroll-thumb';
 
 const WIDGET_ID = 'stream-chat';
 
@@ -16,8 +17,6 @@ const RATE_WINDOW_MS = 60_000;
 // How often the clock-driven getters (expiry, rate) are re-evaluated. One
 // second is enough for both and keeps the overlay off a per-frame timer.
 const TICK_MS = 1_000;
-// Floor on the scrollbar thumb so a long backlog still leaves it visible.
-const MIN_THUMB_PERCENT = 12;
 
 export class StreamChatWidgetStore {
   /** Advanced by a timer so time-based getters re-run without telemetry. */
@@ -108,32 +107,18 @@ export class StreamChatWidgetStore {
   }
 
   /**
-   * Geometry of the scrollbar thumb in percent of the track, or null when the
-   * history fits and there is nothing to indicate. The size floor keeps the
-   * thumb grabbable-looking on a long backlog, so the offset is mapped onto the
-   * leftover track rather than onto the raw message count.
+   * Geometry of the scrollbar thumb, or null when the history fits and there is
+   * nothing to indicate. The offset counts up from the newest message, so a zero
+   * offset parks the thumb at the bottom of the track.
    */
-  get scrollThumb(): { heightPercent: number; topPercent: number } | null {
+  get scrollThumb(): ScrollThumb | null {
     const total = this.filteredMessages.length;
-    const windowSize = Math.min(this.settings.maxMessages, total);
 
-    if (this.maxScrollOffset === 0 || windowSize === 0) {
-      return null;
-    }
-
-    const heightPercent = Math.max(
-      MIN_THUMB_PERCENT,
-      (windowSize / total) * 100
+    return scrollThumbFor(
+      { total, windowSize: Math.min(this.settings.maxMessages, total) },
+      this.scrollOffset,
+      'bottom'
     );
-
-    // Offset counts up from the newest message, so a zero offset parks the
-    // thumb at the bottom of the track.
-    const travelled = 1 - this.scrollOffset / this.maxScrollOffset;
-
-    return {
-      heightPercent,
-      topPercent: (100 - heightPercent) * travelled,
-    };
   }
 
   private get settings(): StreamChatWidgetSettings {

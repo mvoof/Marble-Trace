@@ -7,6 +7,7 @@ import { ClassGroupHeader } from '@widgets/StandingsWidget/ClassGroupHeader/Clas
 
 import styles from './ClassSwitcher.module.scss';
 import {
+  useAppSettingsStore,
   useStandingsWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -16,6 +17,7 @@ const FLASH_DURATION_MS = 300;
 export const ClassSwitcher = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
   const standingsWidget = useStandingsWidgetStore();
+  const appSettings = useAppSettingsStore();
 
   const settings =
     widgetSettings.getSettings<StandingsWidgetSettings>('standings');
@@ -70,11 +72,15 @@ export const ClassSwitcher = observer(() => {
 
   const paginationLabel = total > 1 ? `${activeIndex + 1}/${total}` : undefined;
 
+  // The arrows are only clickable while the mouse can reach the overlay, so
+  // outside interact mode they are dead weight over the table.
+  const navHidden = appSettings.interactMode ? '' : styles.navBtnHidden;
+
   return (
     <div className={styles.switcher}>
       <button
         type="button"
-        className={`${styles.navBtn} ${flashDir === 'prev' ? styles.navBtnFlash : ''}`}
+        className={`${styles.navBtn} ${navHidden} ${flashDir === 'prev' ? styles.navBtnFlash : ''}`}
         onClick={handlePrev}
         onMouseDown={(e) => e.stopPropagation()}
         disabled={total <= 1}
@@ -94,7 +100,7 @@ export const ClassSwitcher = observer(() => {
 
       <button
         type="button"
-        className={`${styles.navBtn} ${flashDir === 'next' ? styles.navBtnFlash : ''}`}
+        className={`${styles.navBtn} ${navHidden} ${flashDir === 'next' ? styles.navBtnFlash : ''}`}
         onClick={handleNext}
         onMouseDown={(e) => e.stopPropagation()}
         disabled={total <= 1}

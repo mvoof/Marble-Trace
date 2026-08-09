@@ -1,0 +1,27 @@
+// Indicator only: the lists that use it are windowed in their store, so there
+// is no native scrollbar to style. Sits over the rows rather than in flow to
+// avoid reserving a column when there is nothing to scroll.
+.track {
+  position: absolute;
+  top: sp(xxs);
+  right: ws(2);
+  bottom: sp(xxs);
+  width: ws(3);
+  border-radius: radius(sm);
+  background-color: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.trackInset {
+  right: ws(7);
+  width: ws(2);
+}
+
+.thumb {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  border-radius: radius(sm);
+  background-color: rgba(255, 255, 255, 0.45);
+}

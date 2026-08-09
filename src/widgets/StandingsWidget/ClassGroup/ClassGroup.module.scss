@@ -1,0 +1,7 @@
+// Anchors the class's own scroll indicator over its header and rows.
+.group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
