@@ -54,3 +54,9 @@
 .navBtnFlash {
   animation: navFlash 0.3s ease-out forwards;
 }
+
+// Kept in the DOM rather than unmounted: the switcher sizes its header through
+// `nth-child(2)`, and a removed button would shift that position.
+.navBtnHidden {
+  display: none;
+}

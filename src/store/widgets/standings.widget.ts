@@ -9,6 +9,11 @@ import type { DriverEntry } from '@/types/bindings';
 import type { DriverGroup } from '@/types';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { computeClassSof } from '@utils/widget/standings-utils';
+import {
+  scrollThumbFor,
+  type ScrollMetrics,
+  type ScrollThumb,
+} from '@utils/widget/scroll-thumb';
 import { MOVE_DURATION_MS } from '@/hooks/common/useRowMoveAnimation';
 import type { RootStore } from '@store/root-store';
 
@@ -46,8 +51,12 @@ export class StandingsWidgetStore {
    */
   scrollOffsets = new Map<number, number>();
 
-  /** Largest offset per list that still fills it — published by the rendered rows. */
-  private scrollBounds = new Map<number, number>();
+  /**
+   * Size of every drawn list against the window it is drawn into, keyed the same
+   * way as `scrollOffsets` — published by the rendered rows. The largest usable
+   * offset and the scrollbar thumb both come out of it.
+   */
+  private scrollMetrics = new Map<number, ScrollMetrics>();
 
   /**
    * First class the grouped view draws. Classes past the widget height are simply
@@ -58,6 +67,9 @@ export class StandingsWidgetStore {
 
   /** Every class in drawing order, drawn or cut off — published with the bounds. */
   private groupKeys: number[] = [];
+
+  /** How many classes fit the widget height — published with the bounds. */
+  private groupWindowSize = 0;
 
   /**
    * Class whose drivers the cursor sits on in grouped view, so the rows about to be
@@ -96,8 +108,6 @@ export class StandingsWidgetStore {
       | 'pendingPositions'
       | 'changeTimers'
       | 'disposers'
-      | 'scrollBounds'
-      | 'groupKeys'
       | 'scrollResetTimer'
     >(
       this,
@@ -106,8 +116,6 @@ export class StandingsWidgetStore {
         pendingPositions: false,
         changeTimers: false,
         disposers: false,
-        scrollBounds: false,
-        groupKeys: false,
         scrollResetTimer: false,
       },
       { autoBind: true }
@@ -623,21 +631,56 @@ export class StandingsWidgetStore {
    * `groupKeys` lists every class, drawn or not, so the scroll knows there are
    * more classes waiting below the ones that fit the widget.
    */
-  setScrollBounds(bounds: Map<number, number>, groupKeys: number[] = []) {
-    this.scrollBounds = bounds;
+  setScrollBounds(
+    metrics: Map<number, ScrollMetrics>,
+    groupKeys: number[] = [],
+    groupWindowSize = 0
+  ) {
+    this.scrollMetrics = metrics;
     this.groupKeys = groupKeys;
+    this.groupWindowSize = groupWindowSize;
 
     if (this.groupScrollIndex >= groupKeys.length) {
       this.groupScrollIndex = Math.max(0, groupKeys.length - 1);
     }
 
     for (const [key, offset] of this.scrollOffsets) {
-      const bound = bounds.get(key) ?? 0;
+      const bound = this.boundFor(key);
 
       if (offset > bound) {
         this.scrollOffsets.set(key, bound);
       }
     }
+  }
+
+  /** Largest offset for a list that still fills the window it is drawn into. */
+  private boundFor(key: number): number {
+    const metrics = this.scrollMetrics.get(key);
+
+    if (!metrics) {
+      return 0;
+    }
+
+    return Math.max(0, metrics.total - metrics.windowSize);
+  }
+
+  /** Thumb for one list, or null while all of it is on screen. */
+  listThumb(key: number): ScrollThumb | null {
+    return scrollThumbFor(
+      this.scrollMetrics.get(key),
+      this.scrollOffsetFor(key)
+    );
+  }
+
+  /**
+   * Thumb for the classes themselves in grouped view: it tracks which slice of
+   * the class list the widget height is showing, not the drivers inside them.
+   */
+  get groupThumb(): ScrollThumb | null {
+    return scrollThumbFor(
+      { total: this.groupKeys.length, windowSize: this.groupWindowSize },
+      this.groupScrollIndex
+    );
   }
 
   /**
@@ -653,8 +696,7 @@ export class StandingsWidgetStore {
     }
 
     const current = this.scrollOffsetFor(key);
-    const bound = this.scrollBounds.get(key) ?? 0;
-    const next = Math.min(Math.max(0, current + delta), bound);
+    const next = Math.min(Math.max(0, current + delta), this.boundFor(key));
 
     if (next === current) {
       return;
@@ -671,15 +713,14 @@ export class StandingsWidgetStore {
    * Scrolling back unwinds the same path.
    */
   private scrollListsInTurn(delta: number) {
-    const topKey = Array.from(this.scrollBounds.keys())[0];
+    const topKey = Array.from(this.scrollMetrics.keys())[0];
 
     if (topKey === undefined) {
       return;
     }
 
     const current = this.scrollOffsetFor(topKey);
-    const room =
-      delta < 0 ? current : (this.scrollBounds.get(topKey) ?? 0) - current;
+    const room = delta < 0 ? current : this.boundFor(topKey) - current;
 
     const taken = Math.min(Math.abs(delta), Math.max(0, room));
 

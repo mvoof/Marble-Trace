@@ -11,6 +11,7 @@ import type { DriverGroup } from '@/types';
 import type { DriverEntry } from '@/types/bindings';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import {
+  useAppSettingsStore,
   useBackendComputedStore,
   useSimStore,
   useStandingsWidgetStore,
@@ -19,9 +20,10 @@ import {
 import {
   buildVisibleRows,
   computeClassSof,
-  maxScrollOffset,
 } from '@utils/widget/standings-utils';
 import { SINGLE_LIST_SCROLL_KEY } from '@store/widgets/standings.widget';
+import type { ScrollMetrics } from '@utils/widget/scroll-thumb';
+import { ScrollIndicator } from '@/components/shared/ScrollIndicator/ScrollIndicator';
 import { useVisibleRowCount } from '@/hooks/common/useVisibleRowCount';
 import {
   useRowMoveAnimation,
@@ -46,6 +48,7 @@ export const StandingsContent = observer(() => {
   const sim = useSimStore();
   const widgetSettings = useWidgetSettingsStore();
   const standingsWidget = useStandingsWidgetStore();
+  const appSettings = useAppSettingsStore();
   const { allClassGroups } = standingsWidget;
 
   const settings =
@@ -121,25 +124,34 @@ export const StandingsContent = observer(() => {
       : driverEntries;
 
   // Grouped view draws every class as its own list, so each one gets its own limit.
-  const scrollBounds = isGrouped
+  const scrollBounds: Map<number, ScrollMetrics> = isGrouped
     ? new Map(
         drawnClassGroups.map((group) => [
           group.classId,
-          maxScrollOffset(group.drivers.length, rowsPerGroupedClass),
+          { total: group.drivers.length, windowSize: rowsPerGroupedClass },
         ])
       )
     : new Map([
         [
           SINGLE_LIST_SCROLL_KEY,
-          maxScrollOffset(singleListDrivers.length, visibleRowCount),
+          {
+            total: singleListDrivers.length,
+            windowSize: visibleRowCount,
+          },
         ],
       ]);
+
+  // How many classes the widget height actually shows, each one costing its
+  // header plus the driver rows under it — the travel the outer bar reports.
+  const visibleClassCount = isGrouped
+    ? Math.max(1, Math.floor(visibleRowCount / (rowsPerGroupedClass + 1)))
+    : 0;
 
   // A fresh Map every render would re-run the effect forever, so the limits are
   // compared by value. Published from an effect rather than during render because
   // clamping an offset writes to the store, which must not happen while rendering.
   const boundsSignature = Array.from(scrollBounds)
-    .map(([key, bound]) => `${key}:${bound}`)
+    .map(([key, metrics]) => `${key}:${metrics.total}/${metrics.windowSize}`)
     .join();
 
   const singleListOffset = standingsWidget.scrollOffsetFor(
@@ -155,12 +167,16 @@ export const StandingsContent = observer(() => {
   const latestGroupKeys = useRef(groupKeys);
   latestGroupKeys.current = groupKeys;
 
+  const latestClassCount = useRef(visibleClassCount);
+  latestClassCount.current = visibleClassCount;
+
   useEffect(() => {
     standingsWidget.setScrollBounds(
       latestBounds.current,
-      latestGroupKeys.current
+      latestGroupKeys.current,
+      latestClassCount.current
     );
-  }, [standingsWidget, boundsSignature, groupKeysSignature]);
+  }, [standingsWidget, boundsSignature, groupKeysSignature, visibleClassCount]);
 
   const visibleRows = (
     drivers: DriverEntry[],
@@ -290,11 +306,23 @@ export const StandingsContent = observer(() => {
                     ),
                   }}
                   showHeader
+                  showScrollbar
                 />
               ))
             ) : (
               <ClassGroup group={displayGroup()} />
             )}
+
+            {/* Grouped view: the outer bar tracks the classes themselves, the
+                inset ones inside each group track that class's drivers. */}
+            <ScrollIndicator
+              thumb={
+                isGrouped
+                  ? standingsWidget.groupThumb
+                  : standingsWidget.listThumb(SINGLE_LIST_SCROLL_KEY)
+              }
+              visible={appSettings.interactMode || standingsWidget.isScrolled}
+            />
           </div>
 
           <SessionFooter />
