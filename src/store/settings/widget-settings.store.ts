@@ -231,6 +231,10 @@ export class WidgetSettingsStore {
   // overlay keeps displaying the previously-active layout.
   editorPreviewMode = false;
 
+  // Widgets the overlay is actually rendering while the editor previews another
+  // layout. Null whenever the live map already is the active layout.
+  liveEnabledWidgetIds: string[] | null = null;
+
   constructor(private readonly root?: RootStore) {
     makeAutoObservable(
       this,
@@ -290,6 +294,22 @@ export class WidgetSettingsStore {
       const zB = widgetB?.userSettings.zIndex ?? 0;
       return zA - zB;
     });
+  }
+
+  /**
+   * Whether a widget is actually on screen right now — enabled in the layout the
+   * overlay is rendering, and supported by the connected sim. Everything a
+   * widget owns is gated on this: its bindings, and its background work such as
+   * the pit-service auto order.
+   *
+   * "On screen" and "in the editor" differ during a layout preview, and this
+   * follows the overlay: previewing a layout without the pit-service widget must
+   * not switch off automatic pit orders for the layout the driver is racing.
+   */
+  isWidgetInActiveLayout(widgetId: string): boolean {
+    const live = this.liveEnabledWidgetIds ?? this.enabledWidgetIds;
+
+    return live.includes(widgetId);
   }
 
   cycleStandingsViewMode() {
@@ -1382,6 +1402,14 @@ export class WidgetSettingsStore {
 
     if (!layout) return;
 
+    // Entering preview replaces the live widget map with the previewed layout's
+    // while the overlay keeps rendering the old one, so remember what is
+    // actually on screen — runtime gating has to follow the overlay, not the
+    // editor. Re-entering preview from preview must not overwrite it.
+    if (!this.editorPreviewMode) {
+      this.liveEnabledWidgetIds = this.enabledWidgetIds;
+    }
+
     this.editorPreviewMode = true;
     this.activeLayoutId = id;
 
@@ -1393,6 +1421,7 @@ export class WidgetSettingsStore {
   // Make the layout currently shown in the editor the active one in the overlay.
   activateEditorLayout() {
     this.editorPreviewMode = false;
+    this.liveEnabledWidgetIds = null;
     this.bumpMutation();
   }
 
@@ -1402,6 +1431,7 @@ export class WidgetSettingsStore {
     if (!layout) return;
 
     this.editorPreviewMode = false;
+    this.liveEnabledWidgetIds = null;
     this.activeLayoutId = id;
 
     if (layout.monitors.length > 0) {

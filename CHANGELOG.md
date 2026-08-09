@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Wheel and Button Box Bindings:** Every action that could be bound to a key can now be bound to a button on your wheel, button box, joystick or handbrake instead — read straight from the device, so it still works while iRacing has focus. Unplugging a device or moving it to another USB port keeps its bindings, and a device that is currently unplugged keeps its bindings too, shown greyed out until it comes back.
+- **One Bindings Screen:** All keys and buttons now live in a single **Input bindings** section in Settings, grouped by widget, with a search box and a warning next to any binding used by more than one action. You can assign several keys or buttons to the same action.
+- **Show and Hide Any Widget by Key:** Every widget can now be added to or removed from the current layout with a binding of its own.
+
+### Changed
+
+- **Bindings No Longer Belong to a Layout:** Keys used to be stored per layout, so switching layouts silently changed them and the same key had to be entered again in every layout. They are now app-wide — set once, and they work everywhere. Your existing keys are carried over from the layout you last had active.
+- A binding for a widget that isn't in the current layout now does nothing instead of firing invisibly in the background.
+
 ## [0.20.0] — 2026-07-29
 
 ### Added

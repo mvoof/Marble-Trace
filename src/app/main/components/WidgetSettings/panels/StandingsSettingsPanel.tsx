@@ -6,7 +6,6 @@ import type {
   StandingsViewMode,
   StandingsWidgetSettings,
 } from '@/types/widget-settings';
-import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
@@ -297,47 +296,7 @@ export const StandingsSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.standings.hotkeys')}>
-        <div className={styles.fieldGroup}>
-          <HotkeyRecorder
-            label={t('settingsPanels.standings.cycleViewModeHotkey')}
-            currentHotkey={settings.viewModeHotkey}
-            onApply={(key) => update({ viewModeHotkey: key })}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <HotkeyRecorder
-            label={t('settingsPanels.standings.previousClassHotkey')}
-            currentHotkey={settings.classPrevHotkey}
-            onApply={(key) => update({ classPrevHotkey: key })}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <HotkeyRecorder
-            label={t('settingsPanels.standings.nextClassHotkey')}
-            currentHotkey={settings.classNextHotkey}
-            onApply={(key) => update({ classNextHotkey: key })}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <HotkeyRecorder
-            label={t('settingsPanels.standings.scrollUpHotkey')}
-            currentHotkey={settings.scrollUpHotkey}
-            onApply={(key) => update({ scrollUpHotkey: key })}
-          />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <HotkeyRecorder
-            label={t('settingsPanels.standings.scrollDownHotkey')}
-            currentHotkey={settings.scrollDownHotkey}
-            onApply={(key) => update({ scrollDownHotkey: key })}
-          />
-        </div>
-
+      <Card title={t('settingsPanels.standings.scrolling')}>
         <div className={styles.fieldGroup}>
           <SettingRow
             title={t('settingsPanels.standings.scrollResetSeconds')}

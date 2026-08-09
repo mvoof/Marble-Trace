@@ -30,14 +30,6 @@
     "available": "Version v{{version}} is available",
     "updateAndRestart": "Update & Restart"
   },
-  "hotkeyRecorder": {
-    "none": "None",
-    "pressKeyCombination": "Press a key combination...",
-    "rebind": "Rebind",
-    "record": "Record",
-    "apply": "Apply",
-    "clear": "Clear"
-  },
   "layoutEditor": {
     "backToLayouts": "Back to Layouts",
     "toggleWidgetPanel": "Toggle widget panel",
@@ -174,7 +166,7 @@
     "layerDepth": "Layer Depth (Z-Index)",
     "fontScale": "Text Size",
     "fontScaleDesc": "Scales only the text, independent of widget width/height",
-    "aesthetics": "Aesthetics",
+    "aesthetics": "Background & border",
     "background": "Background",
     "border": "Border"
   },
@@ -189,8 +181,7 @@
     "widgetDisplayOverride": {
       "title": "Widget Display Override",
       "hideAllTitle": "Hide all active widgets",
-      "hideAllDesc": "Global toggle to quickly hide or show all enabled UI elements.",
-      "toggleHotkey": "Toggle Hotkey"
+      "hideAllDesc": "Global toggle to quickly hide or show all enabled UI elements."
     },
     "startupBehavior": {
       "title": "Startup Behavior",
@@ -201,17 +192,16 @@
       "title": "Interaction Mode",
       "dragModeTitle": "UI Drag Mode",
       "dragModeDesc": "Unlock widgets to move them freely across the screen.",
-      "dragModeHotkey": "Drag Mode Hotkey",
       "interactModeTitle": "Interact Mode",
       "interactModeDesc": "Let the mouse reach the overlay (scrolling, buttons) without unlocking widget dragging. While it is on, the game does not receive the mouse.",
-      "interactModeHotkey": "Interact Mode Hotkey",
       "interactHotkeyModeTitle": "Hotkey Behaviour",
       "interactHotkeyModeDesc": "Toggle switches the mode on and off, Hold keeps it on only while the key is pressed.",
       "interactToggle": "Toggle",
       "interactHold": "Hold",
       "interactAutoOffTitle": "Auto-Disable",
       "interactAutoOffDesc": "Turn interact mode off automatically so the mouse returns to the game.",
-      "interactAutoOffNever": "Never"
+      "interactAutoOffNever": "Never",
+      "boundTo": "Bound to {{accelerator}}"
     },
     "gameIntegration": {
       "title": "Game Integration",
@@ -316,6 +306,95 @@
         "codeExpired": "The code expired. Start again.",
         "sessionExpired": "The Twitch session expired. Sign in again."
       }
+    },
+    "nav": {
+      "groups": {
+        "application": "Application",
+        "overlay": "Overlay",
+        "controls": "Controls",
+        "data": "Data",
+        "maintenance": "Maintenance"
+      },
+      "sections": {
+        "general": "General",
+        "updates": "Updates",
+        "overlay": "Widget display",
+        "interaction": "Interaction modes",
+        "bindings": "Input bindings",
+        "devices": "Devices",
+        "trackMap": "Track data",
+        "streamChat": "Stream chat",
+        "maintenance": "Reset & diagnostics"
+      }
     }
+  },
+  "bindings": {
+    "title": "Input bindings",
+    "intro": "Keys and controller buttons work app-wide, in every layout. Bindings that clash with the sim’s own controls cannot be detected here — check them in iRacing.",
+    "searchPlaceholder": "Search actions or bindings",
+    "resetAll": "Reset all",
+    "resetConfirm": "Reset every binding to its default?",
+    "noMatches": "No actions match the search.",
+    "unbound": "Not bound",
+    "addBinding": "Add binding",
+    "removeBinding": "Remove binding",
+    "conflictWith": "Also bound to: {{actions}}",
+    "deviceOffline": "Device not connected — the binding is kept.",
+    "notInLayout": "not in layout",
+    "captureTitle": "Press a key or a device button",
+    "captureHint": "Press Escape to cancel. Nothing is saved until you press something.",
+    "devicesTitle": "Devices",
+    "noDevices": "No game controllers detected.",
+    "deviceMeta": "VID {{vendor}} · PID {{product}} · {{buttons}} buttons",
+    "deviceConnected": "connected",
+    "deviceOfflineTag": "offline",
+    "groups": {
+      "app": "Application"
+    },
+    "chip": {
+      "button": "btn {{button}}",
+      "hat": "hat {{hat}} {{direction}}",
+      "direction": {
+        "0": "up",
+        "1": "right",
+        "2": "down",
+        "3": "left"
+      },
+      "unknownDevice": "Unknown device"
+    },
+    "actions": {
+      "toggleDragMode": "Drag mode",
+      "toggleInteractMode": "Interact mode",
+      "toggleHideAllWidgets": "Hide all widgets",
+      "standingsCycleViewMode": "Cycle view mode (All → Grouped → Cycling)",
+      "standingsClassPrev": "Previous class (cycling mode)",
+      "standingsClassNext": "Next class (cycling mode)",
+      "standingsScrollUp": "Scroll table up",
+      "standingsScrollDown": "Scroll table down",
+      "pitServiceToggle": "Open the order box away from the pit lane (temporary)",
+      "pitServiceAutoMode": "Hand this stop to auto mode, or take it back",
+      "pitServiceApplyOrder": "Order a full stop: calculated fuel and all four tyres (replaces the current order)",
+      "pitServiceClearOrder": "Cancel the whole order",
+      "pitServiceFuel": "Add the calculated amount of fuel",
+      "pitServiceTiresAll": "Change all four tyres",
+      "pitServiceTireLf": "Change the left front tyre",
+      "pitServiceTireRf": "Change the right front tyre",
+      "pitServiceTireLr": "Change the left rear tyre",
+      "pitServiceTireRr": "Change the right rear tyre",
+      "pitServiceFastRepair": "Use a fast repair",
+      "pitServiceWindshield": "Clean the windscreen (uses a tear-off)",
+      "widgetToggleVisibility": "Show / hide «{{widget}}»"
+    },
+    "devicesIntro": "Wheels, button boxes, joysticks and pedals are detected automatically. A device you have bound something to stays listed while it is unplugged, so its bindings are not lost.",
+    "boundCount": "{{bound}} / {{total}} bound",
+    "notInLayoutTooltip": "The widget is not in the active layout, so nothing it owns runs — neither its bindings nor its background work, such as automatic pit orders. The show / hide key is the exception: it is what puts the widget back.",
+    "toggleHint": "Toggles the box: press again to take it back off the order.",
+    "inert": {
+      "pitServiceAutoMode": "Does nothing until Auto fuel or Auto tyres is switched on in the widget settings."
+    },
+    "searchByKey": "By key",
+    "searchByKeyHint": "Press a key or a device button and the list shows what it is bound to.",
+    "searchPressKey": "Press a key or a device button…",
+    "keyIsFree": "{{key}} is not bound to anything."
   }
 }

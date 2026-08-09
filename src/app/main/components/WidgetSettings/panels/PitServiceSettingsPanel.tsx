@@ -2,25 +2,10 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Slider, Switch } from 'antd';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
-import { HotkeyRecorder } from '@app/main/components/HotkeyRecorder/HotkeyRecorder';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
-
-/** Every hotkey in the commands card, in the order they are shown. */
-const COMMAND_HOTKEYS = [
-  'applyOrderHotkey',
-  'clearOrderHotkey',
-  'fuelHotkey',
-  'tiresAllHotkey',
-  'tireLfHotkey',
-  'tireRfHotkey',
-  'tireLrHotkey',
-  'tireRrHotkey',
-  'fastRepairHotkey',
-  'windshieldHotkey',
-] as const satisfies ReadonlyArray<keyof PitServiceWidgetSettings>;
 
 // Remaining tread, in percent. Above 90 every fresh set would be ordered and
 // below 10 the tires are already gone, so neither end is worth offering.
@@ -126,17 +111,6 @@ export const PitServiceSettingsPanel = observer(() => {
             onChange={(checked) => update({ alwaysVisible: checked })}
           />
         </SettingRow>
-
-        <SettingRow
-          title={t('settingsPanels.pitService.toggleHotkey')}
-          desc={t('settingsPanels.pitService.toggleHotkeyDesc')}
-        >
-          <HotkeyRecorder
-            currentHotkey={settings.toggleHotkey}
-            onApply={(hotkey) => update({ toggleHotkey: hotkey })}
-            onClear={() => update({ toggleHotkey: '' })}
-          />
-        </SettingRow>
       </Card>
 
       <Card title={t('settingsPanels.pitService.commands')}>
@@ -181,33 +155,6 @@ export const PitServiceSettingsPanel = observer(() => {
             />
           </div>
         )}
-
-        {(settings.autoFuel || settings.autoTires) && (
-          <SettingRow
-            title={t('settingsPanels.pitService.autoModeHotkey')}
-            desc={t('settingsPanels.pitService.autoModeHotkeyDesc')}
-          >
-            <HotkeyRecorder
-              currentHotkey={settings.autoModeHotkey}
-              onApply={(hotkey) => update({ autoModeHotkey: hotkey })}
-              onClear={() => update({ autoModeHotkey: '' })}
-            />
-          </SettingRow>
-        )}
-
-        {COMMAND_HOTKEYS.map((key) => (
-          <SettingRow
-            key={key}
-            title={t(`settingsPanels.pitService.${key}`)}
-            desc={t(`settingsPanels.pitService.${key}Desc`)}
-          >
-            <HotkeyRecorder
-              currentHotkey={settings[key]}
-              onApply={(hotkey) => update({ [key]: hotkey })}
-              onClear={() => update({ [key]: '' })}
-            />
-          </SettingRow>
-        ))}
       </Card>
     </>
   );
