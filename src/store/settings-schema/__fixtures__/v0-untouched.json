@@ -1,0 +1,20 @@
+{
+  "app": { "startMinimized": false, "steeringLock": 900 },
+  "widgets": [{ "id": "standings", "userSettings": { "x": 0, "y": 0 } }],
+  "layouts": [
+    {
+      "id": "main",
+      "name": "Main",
+      "createdAt": 1,
+      "monitors": [
+        {
+          "name": "DISPLAY1",
+          "bounds": { "x": 0, "y": 0, "width": 1920, "height": 1080 }
+        }
+      ],
+      "widgets": [{ "id": "standings", "userSettings": { "x": 0, "y": 0 } }],
+      "backgroundImages": {}
+    }
+  ],
+  "activeLayoutId": "main"
+}

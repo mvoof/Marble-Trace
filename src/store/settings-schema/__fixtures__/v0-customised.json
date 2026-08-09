@@ -1,0 +1,62 @@
+{
+  "app": {
+    "dragHotkey": "F10",
+    "interactHotkey": "F8",
+    "hideAllWidgetsHotkey": "",
+    "bindingsMigrated": false,
+    "startMinimized": true
+  },
+  "widgets": [
+    {
+      "id": "input-trace",
+      "userSettings": { "x": 10, "y": 10, "steeringLimit": 540 }
+    },
+    {
+      "id": "standings",
+      "userSettings": { "x": 0, "y": 0, "viewModeHotkey": "F5" }
+    }
+  ],
+  "layouts": [
+    {
+      "id": "main",
+      "name": "Main",
+      "createdAt": 1,
+      "monitors": [
+        {
+          "name": "DISPLAY1",
+          "bounds": { "x": 0, "y": 0, "width": 1920, "height": 1080 }
+        }
+      ],
+      "widgets": [
+        {
+          "id": "standings",
+          "userSettings": {
+            "x": 0,
+            "y": 0,
+            "viewModeHotkey": "F5",
+            "scrollUpHotkey": "F6"
+          }
+        },
+        {
+          "id": "input-trace",
+          "userSettings": { "x": 10, "y": 10, "steeringLimit": 540 }
+        }
+      ],
+      "backgroundImages": {}
+    },
+    {
+      "id": "other",
+      "name": "Other",
+      "createdAt": 2,
+      "monitors": [],
+      "widgets": [
+        {
+          "id": "standings",
+          "userSettings": { "x": 0, "y": 0, "viewModeHotkey": "F12" }
+        }
+      ],
+      "backgroundImages": {}
+    }
+  ],
+  "activeLayoutId": "main"
+}
