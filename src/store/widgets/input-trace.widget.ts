@@ -13,6 +13,14 @@ const advance = (previous: number, raw: number, smoothing: number): number =>
 export class InputTraceWidgetStore {
   smoothed: SmoothedInputs = { throttle: 0, brake: 0, clutch: 0 };
 
+  // Advanced once per telemetry frame, alongside `smoothed`. The trace canvas
+  // gates its ring-buffer push on this so a repeated autorun pass — settings
+  // edits, or the write to `smoothed` re-invalidating an autorun that already
+  // ran earlier in the same MobX flush — cannot append a second sample for one
+  // frame. The buffer is sized for 60 samples per second, so a double push
+  // halves the visible history.
+  frameTick = 0;
+
   private readonly disposers: IReactionDisposer[] = [];
 
   // Wired in the constructor rather than an init() step: the exponential filter
@@ -43,6 +51,8 @@ export class InputTraceWidgetStore {
               smoothing
             ),
           };
+
+          this.frameTick++;
         }
       )
     );
@@ -61,5 +71,6 @@ export class InputTraceWidgetStore {
 
   reset() {
     this.smoothed = { throttle: 0, brake: 0, clutch: 0 };
+    this.frameTick = 0;
   }
 }

@@ -12,9 +12,14 @@ import {
 import {
   createTraceBufferState,
   drawInputTrace,
+  ensureTraceBuffers,
   pushTraceSample,
   type TraceBufferState,
 } from './canvas-trace-render';
+
+// No frame has been consumed yet; the store's tick starts at 0 and reset()
+// returns it there, so the sentinel must sit outside that range.
+const NO_FRAME_CONSUMED = -1;
 
 // Not wrapped in observer() intentionally: useReactiveCanvasLoop subscribes to
 // MobX observables directly, so React re-renders are not needed for data updates.
@@ -27,6 +32,7 @@ export const CanvasTrace = () => {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bufferStateRef = useRef<TraceBufferState | null>(null);
+  const lastFrameTickRef = useRef(NO_FRAME_CONSUMED);
 
   bufferStateRef.current ??= createTraceBufferState();
 
@@ -72,17 +78,33 @@ export const CanvasTrace = () => {
 
       const smoothed = inputTrace.smoothed;
 
-      pushTraceSample(
-        state,
-        {
-          throttle: smoothed.throttle,
-          brake: smoothed.brake,
-          clutch: smoothed.clutch,
-          absActive: !!inputs?.brake_abs_active,
-          steeringWheelAngle: telemetry.carDynamics?.steering_wheel_angle ?? 0,
-        },
-        settings
-      );
+      ensureTraceBuffers(state, settings);
+
+      // This autorun runs more than once per telemetry frame: `carDynamics`
+      // and `carInputs` land in the same bundle action, and the store's
+      // smoothing reaction then writes `smoothed` from inside the same MobX
+      // flush, re-invalidating an autorun pass that already completed. Settings
+      // edits re-run it too. Appending on every pass would push ~2 samples per
+      // frame and halve the configured `historySeconds`, so the append is gated
+      // on the store's per-frame tick while the repaint below still happens.
+      const { frameTick } = inputTrace;
+
+      if (frameTick !== lastFrameTickRef.current) {
+        lastFrameTickRef.current = frameTick;
+
+        pushTraceSample(
+          state,
+          {
+            throttle: smoothed.throttle,
+            brake: smoothed.brake,
+            clutch: smoothed.clutch,
+            absActive: !!inputs?.brake_abs_active,
+            steeringWheelAngle:
+              telemetry.carDynamics?.steering_wheel_angle ?? 0,
+          },
+          settings
+        );
+      }
 
       scheduleDraw(() => draw(settings, steeringLockDeg));
     },

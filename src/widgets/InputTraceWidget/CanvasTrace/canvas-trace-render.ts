@@ -269,13 +269,12 @@ interface TraceSample {
   steeringWheelAngle: number;
 }
 
-// Resizes the circular buffers when the settings change, then appends one
-// sample. Channel values arrive already smoothed by InputTraceWidgetStore, so
-// the trace and the bars never drift apart. Mutates `state` in place — it is
-// per-instance scratch space.
-export const pushTraceSample = (
+// Resizes the circular buffers when the settings change. Split out from
+// pushTraceSample so a repaint that appends nothing (settings edit, static
+// preview) still allocates the buffers and paints the grid. Mutates `state` in
+// place — it is per-instance scratch space.
+export const ensureTraceBuffers = (
   state: TraceBufferState,
-  sample: TraceSample,
   settings: InputTraceSettings
 ) => {
   const bufferSize = bufferSizeFor(settings);
@@ -312,6 +311,21 @@ export const pushTraceSample = (
     state.head = 0;
     state.count = 0;
   }
+};
+
+// Appends exactly one sample. Channel values arrive already smoothed by
+// InputTraceWidgetStore, so the trace and the bars never drift apart. Must be
+// called at most once per telemetry frame: the buffer length encodes
+// `historySeconds` at 60 samples per second, so an extra push per frame
+// shortens the visible history proportionally.
+export const pushTraceSample = (
+  state: TraceBufferState,
+  sample: TraceSample,
+  settings: InputTraceSettings
+) => {
+  const bufferSize = bufferSizeFor(settings);
+
+  if (bufferSize === 0) return;
 
   const values: number[] = [];
 
