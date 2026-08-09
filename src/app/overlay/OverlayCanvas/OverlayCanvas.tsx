@@ -88,6 +88,13 @@ export const OverlayCanvas = observer(() => {
     return null;
   }
 
+  // The settings file could not be read, so the widget map still holds the
+  // shipped defaults. Painting those would look exactly like the user's own
+  // layout had been lost; the main window explains what happened instead.
+  if (appSettings.settingsLocked) {
+    return null;
+  }
+
   return (
     <div
       className={`${styles.canvas} ${dragMode ? styles.dragActive : ''}`}

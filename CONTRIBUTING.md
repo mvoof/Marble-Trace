@@ -94,17 +94,15 @@ If you have any questions or need help, feel free to open an issue or ask in the
 
 ## Settings schema
 
-User settings are persisted in `settings.json` via `tauri-plugin-store`. The schema is defined in `src/store/sync/persistence.ts`.
+User settings are persisted in `settings.json` via `tauri-plugin-store`, and the file is versioned: format changes go through a chain of migrations in `src/store/settings-schema/`.
 
-On every app start the loaded settings are validated against the current defaults and immediately re-saved — so unknown or removed fields are automatically purged from disk.
-
-**Adding a field** — add it with a default value in `widget-defaults.ts` (for widget settings) or `DEFAULT_APP_SETTINGS` (for app settings). It will be picked up on next load.
-
-**Renaming or removing a field** — no migration needed. The old field is dropped from disk on first launch. Users will lose only the value of the changed field and will need to set it again.
+Most changes need no migration. Adding a field with a default, removing one, or adding an action with a default binding are all picked up on the next load — unknown and removed fields are purged from disk automatically, and defaults fill the gaps. A migration is for values that would otherwise be silently misread or be expensive for the user to recreate: a field that changes meaning or unit, a value that moves between blocks, or anything inside `layouts[]`, which the default-merging never reaches.
 
 **Renaming a widget `id`** — the saved widget with the old `id` is dropped and replaced with a new one at its default position. The user will need to reposition it.
 
-If `loadSettings` throws (e.g. a type mismatch in the store file), the saved settings are automatically deleted and the app starts fresh with defaults.
+A file this build cannot read is left untouched and the app refuses to write over it, showing an explanation instead.
+
+See **[docs/settings-schema.md](docs/settings-schema.md)** for the load pipeline, the full "when do I need a migration" split, and how to write and test one.
 
 ## Car class badges
 

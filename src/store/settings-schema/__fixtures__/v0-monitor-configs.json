@@ -1,0 +1,38 @@
+{
+  "app": { "dragHotkey": "F10" },
+  "widgets": [
+    {
+      "id": "input-trace",
+      "userSettings": { "x": 10, "y": 10, "steeringLimit": 720 }
+    }
+  ],
+  "layouts": [
+    {
+      "id": "main",
+      "name": "Main",
+      "createdAt": 1,
+      "backgroundImage": "layouts/main.png",
+      "monitorConfigs": {
+        "DISPLAY1": {
+          "resolution": { "width": 1920, "height": 1080 },
+          "widgets": [
+            {
+              "id": "standings",
+              "userSettings": { "x": 100, "y": 50, "viewModeHotkey": "F5" }
+            }
+          ]
+        },
+        "DISPLAY2": {
+          "resolution": { "width": 2560, "height": 1440 },
+          "widgets": [
+            {
+              "id": "pit-service",
+              "userSettings": { "x": 20, "y": 30, "fuelHotkey": "F7" }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "activeLayoutId": "main"
+}

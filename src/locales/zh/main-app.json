@@ -24,6 +24,24 @@
     "title": "更新内容",
     "titleWithVersion": "v{{version}} 更新内容"
   },
+  "settingsLock": {
+    "from-the-future": {
+      "title": "设置由更新版本保存",
+      "description": "此版本无法读取，也不会覆盖它们。请更新 Marble Trace 以恢复您的布局和按键绑定。"
+    },
+    "too-old": {
+      "title": "设置过旧，无法自动升级",
+      "description": "保存这些设置的版本已超出此版本的转换范围。文件保持原样未被改动。"
+    },
+    "corrupt": {
+      "title": "无法读取设置文件",
+      "description": "文件保持原样，以便手动恢复。Marble Trace 正在使用默认值运行，不会覆盖该文件。"
+    },
+    "reset": "重置设置",
+    "resetConfirm": "用默认值替换设置文件？其中的布局、小部件和按键绑定将会丢失。",
+    "resetOk": "重置并重启",
+    "resetCancel": "取消"
+  },
   "updateBanner": {
     "downloading": "正在下载更新...",
     "ready": "更新已下载，正在重启...",

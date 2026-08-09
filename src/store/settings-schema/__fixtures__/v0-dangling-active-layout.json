@@ -1,0 +1,20 @@
+{
+  "app": {},
+  "widgets": [],
+  "layouts": [
+    {
+      "id": "first",
+      "name": "First",
+      "createdAt": 1,
+      "monitors": [],
+      "widgets": [
+        {
+          "id": "standings",
+          "userSettings": { "x": 0, "y": 0, "viewModeHotkey": "F4" }
+        }
+      ],
+      "backgroundImages": {}
+    }
+  ],
+  "activeLayoutId": "deleted-long-ago"
+}

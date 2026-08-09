@@ -4,12 +4,16 @@ import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { load } from '@tauri-apps/plugin-store';
 import {
+  backupSettingsFile,
+  settingsFileExists,
   hydrateStores,
   saveSettings,
   logSettingsSnapshot,
   SETTINGS_FILE,
   Settings,
 } from './persistence';
+import { runMigrations } from '@store/settings-schema';
+import type { MigrationResult } from '@store/settings-schema/types';
 import {
   applyKeyboardBindings,
   cleanupKeyboardBindings,
@@ -47,6 +51,70 @@ const STREAM_CHAT_WIDGET_ID = 'stream-chat';
 let mainSyncInitPromise: Promise<() => void> | null = null;
 let mainSyncRefCount = 0;
 
+/**
+ * Brings the settings file to the current schema and fills the stores from it.
+ *
+ * When it cannot — the file was written by a newer build, predates the chain,
+ * or is not a settings object — the settings are locked rather than repaired.
+ * A file we do not understand is worth more to the user intact than replaced
+ * with defaults, and it can be sent to us as-is.
+ */
+const hydrateFromDisk = async (
+  root: RootStore,
+  loaded: Settings | null | undefined,
+  { backup }: { backup: boolean }
+) => {
+  // The plugin hands back nothing both for a fresh install and for a file it
+  // could not parse — a stray BOM, a half-written save. Only the filesystem
+  // separates them, and seeding defaults over the second overwrites exactly the
+  // file this whole path exists to protect.
+  if (!loaded) {
+    if (await settingsFileExists()) {
+      console.error('Settings locked: present on disk but could not be read');
+      root.appSettings.lockSettings('corrupt');
+    }
+
+    return;
+  }
+
+  // A migration step reads shapes that no current type describes, straight out
+  // of a file the user may have hand-edited. A step that throws on one would
+  // otherwise take the whole window down with it — no hydration, but no lock
+  // and no banner either, which is the one outcome this path exists to avoid.
+  let result: MigrationResult;
+
+  try {
+    result = runMigrations(loaded);
+  } catch (error) {
+    console.error('Settings locked: the migration chain threw:', error);
+    root.appSettings.lockSettings('corrupt');
+
+    return;
+  }
+
+  if (
+    result.status === 'from-the-future' ||
+    result.status === 'too-old' ||
+    result.status === 'corrupt'
+  ) {
+    console.error(`Settings locked: ${result.status}`);
+    root.appSettings.lockSettings(result.status);
+
+    return;
+  }
+
+  if (result.status === 'migrated' && backup) {
+    await backupSettingsFile(result.from);
+  }
+
+  try {
+    hydrateStores(root, result.blob as Partial<Settings>);
+  } catch (error) {
+    console.error('Failed to hydrate settings:', error);
+    root.appSettings.lockSettings('corrupt');
+  }
+};
+
 export const initMainSync = async (root: RootStore) => {
   mainSyncRefCount++;
 
@@ -54,15 +122,16 @@ export const initMainSync = async (root: RootStore) => {
     mainSyncInitPromise = (async () => {
       const store = await load(SETTINGS_FILE);
       const loadedSettings = await store.get<Settings>('settings');
+      await hydrateFromDisk(root, loadedSettings, { backup: true });
 
-      if (loadedSettings) {
-        try {
-          hydrateStores(root, loadedSettings);
-          await saveSettings(store, root);
-        } catch {
-          await store.delete('settings');
-          await store.save();
-        }
+      // A file this build cannot bring to the current schema is left untouched:
+      // no hydration, no default layout, no save reactions. Everything below
+      // would otherwise overwrite it with defaults within a second, which is
+      // the exact loss the check exists to prevent.
+      if (root.appSettings.settingsLocked) {
+        return () => {
+          mainSyncInitPromise = null;
+        };
       }
 
       // Reconcile the persisted login with what the credential store actually
@@ -78,7 +147,12 @@ export const initMainSync = async (root: RootStore) => {
       // render or open a window before this lands them on the real desktop.
       root.widgetSettings.alignMonitorsToHardware(await listMonitorBounds());
 
-      const onSave = () => saveSettings(store, root);
+      // Backstop for the locked state. The init path already returns before
+      // reaching this, but every future caller goes through here.
+      const onSave = () =>
+        root.appSettings.settingsLocked
+          ? Promise.resolve()
+          : saveSettings(store, root);
 
       await onSave();
 
@@ -289,7 +363,10 @@ export const initMainSync = async (root: RootStore) => {
           () => root.bindings.mutationId,
           () => {
             void applyKeyboardBindings(root);
-            void emitBindingsChanged(root.bindings.bindings);
+            // Overrides, not the effective map: the overlay layers the same
+            // registry defaults underneath, so sending them would only make
+            // every default look like a user choice on the other side.
+            void emitBindingsChanged(root.bindings.overrides);
             void onSave();
           }
         ),
@@ -482,8 +559,16 @@ export const initOverlaySync = async (root: RootStore) => {
   const store = await load(SETTINGS_FILE);
   const loadedSettings = await store.get<Settings>('settings');
 
-  if (loadedSettings) {
-    hydrateStores(root, loadedSettings);
+  // The main window owns the backup — both windows run the chain, but only one
+  // of them may touch the file.
+  await hydrateFromDisk(root, loadedSettings, { backup: false });
+
+  // Locked: the widget map still holds the shipped defaults, so loading the
+  // active layout here would paint a default overlay across the user's screen —
+  // indistinguishable from having lost their config. OverlayCanvas draws
+  // nothing while the lock holds.
+  if (root.appSettings.settingsLocked) {
+    return () => {};
   }
 
   // hydrateStores fills the live widget map from the persisted snapshot, which

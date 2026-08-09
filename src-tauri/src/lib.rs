@@ -28,10 +28,11 @@ use chat::commands::{
 };
 use chat::state::{ChatServiceState, ChatState};
 use commands::{
-    delete_reference_lap, delete_track_shape, get_cached_track_shape, get_connection_status,
-    get_last_session_info, get_reference_lap, log_settings_snapshot, reset_pit_lane_pct,
-    send_pit_order, set_active_events, set_car_length, set_fuel_avg_window, set_pit_warning_laps,
-    start_telemetry_stream, stop_telemetry_stream,
+    backup_settings_file, delete_reference_lap, delete_settings_file, delete_track_shape,
+    get_cached_track_shape, get_connection_status, get_last_session_info, get_reference_lap,
+    log_settings_snapshot, reset_pit_lane_pct, send_pit_order, set_active_events, set_car_length,
+    set_fuel_avg_window, set_pit_warning_laps, settings_file_exists, start_telemetry_stream,
+    stop_telemetry_stream,
 };
 use computations::ProcessorRegistry;
 use input::commands::{resolve_input_devices, set_input_polling_enabled, InputState};
@@ -251,6 +252,9 @@ pub fn run() {
             get_reference_lap,
             delete_reference_lap,
             log_settings_snapshot,
+            backup_settings_file,
+            settings_file_exists,
+            delete_settings_file,
             send_pit_order,
             start_chat_stream,
             stop_chat_stream,

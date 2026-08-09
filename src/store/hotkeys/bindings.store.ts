@@ -20,8 +20,18 @@ export const defaultBindingMap = (): BindingMap => {
   return map;
 };
 
+/** The registry is static, so the shipped map is built once. */
+const DEFAULTS = defaultBindingMap();
+
 export class BindingsStore {
-  bindings: BindingMap = defaultBindingMap();
+  /**
+   * Only what the user changed — the sole persisted value. An action absent
+   * here takes its default from the registry, so a newly shipped action with a
+   * `defaultBinding` reaches existing users without a settings migration. An
+   * empty array is the explicit "unbound" marker, which is what separates
+   * "never touched" from "deliberately cleared".
+   */
+  overrides: BindingMap = {};
 
   // Bumped by every setter so reactions can depend on one number instead of
   // deep-comparing the map — same pattern as widgetSettings.changeToken.
@@ -31,58 +41,77 @@ export class BindingsStore {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  /** Replaces the whole map, dropping entries for actions that no longer exist. */
+  /** Defaults with the user's overrides on top. Everything reads this. */
+  get bindings(): BindingMap {
+    const effective = { ...DEFAULTS };
+
+    for (const [actionId, bindings] of Object.entries(this.overrides)) {
+      // Overrides for actions this build does not know are kept on disk but
+      // never dispatched — see applyBindings.
+      if (ACTION_BY_ID.has(actionId)) {
+        effective[actionId] = bindings;
+      }
+    }
+
+    return effective;
+  }
+
+  /**
+   * Replaces the override set.
+   *
+   * Unknown action ids are **kept**. A user who binds an action on a newer
+   * build and then rolls back would otherwise lose that override on the first
+   * save — the schema version is unchanged, so nothing else would catch it.
+   */
   applyBindings(saved: BindingMap | undefined) {
     if (!saved) return;
 
     const next: BindingMap = {};
 
     for (const [actionId, bindings] of Object.entries(saved)) {
-      if (!ACTION_BY_ID.has(actionId)) continue;
+      if (!Array.isArray(bindings)) continue;
 
       next[actionId] = bindings.filter(isValidBinding);
     }
 
-    this.bindings = next;
+    this.overrides = next;
     this.mutationId++;
   }
 
   bindingsFor(actionId: string): Binding[] {
-    return this.bindings[actionId] ?? [];
+    return this.overrides[actionId] ?? DEFAULTS[actionId] ?? [];
   }
 
   addBinding(actionId: string, binding: Binding) {
+    // Based on the effective list, not on the override: adding a second key to
+    // an action still on its default would otherwise drop that default.
     const existing = this.bindingsFor(actionId);
 
     if (existing.some((candidate) => bindingsEqual(candidate, binding))) {
       return;
     }
 
-    this.bindings[actionId] = [...existing, binding];
+    this.overrides[actionId] = [...existing, binding];
     this.mutationId++;
   }
 
   removeBinding(actionId: string, binding: Binding) {
-    const remaining = this.bindingsFor(actionId).filter(
+    // Never deleted: an absent entry means "use the default", which would bring
+    // back the very binding the user just removed.
+    this.overrides[actionId] = this.bindingsFor(actionId).filter(
       (candidate) => !bindingsEqual(candidate, binding)
     );
-
-    if (remaining.length === 0) {
-      delete this.bindings[actionId];
-    } else {
-      this.bindings[actionId] = remaining;
-    }
 
     this.mutationId++;
   }
 
   clearAction(actionId: string) {
-    delete this.bindings[actionId];
+    this.overrides[actionId] = [];
     this.mutationId++;
   }
 
   resetToDefaults() {
-    this.bindings = defaultBindingMap();
+    this.overrides = {};
     this.mutationId++;
   }
 
@@ -96,7 +125,9 @@ export class BindingsStore {
 
     let changed = false;
 
-    for (const [actionId, bindings] of Object.entries(this.bindings)) {
+    // Overrides only. Shipped defaults are keyboard accelerators by
+    // construction — a default cannot name a device that varies per machine.
+    for (const [actionId, bindings] of Object.entries(this.overrides)) {
       const rewritten = bindings.map((binding) =>
         binding.kind === 'device' && binding.deviceId === previousId
           ? { ...binding, deviceId: nextId }
@@ -104,7 +135,7 @@ export class BindingsStore {
       );
 
       if (rewritten.some((binding, index) => binding !== bindings[index])) {
-        this.bindings[actionId] = rewritten;
+        this.overrides[actionId] = rewritten;
         changed = true;
       }
     }
