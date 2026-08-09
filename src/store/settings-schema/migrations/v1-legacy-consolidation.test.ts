@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { mergeWithDefaults } from '@utils/deep-merge';
+import { WIDGET_BY_ID } from '@store/widget-defaults';
+import { AppSettingsStore } from '@store/settings/app-settings.store';
+import { BindingsStore } from '@store/hotkeys/bindings.store';
 import { v1LegacyConsolidation } from './v1-legacy-consolidation';
 import type { SettingsBlob } from '../types';
 import customised from '../__fixtures__/v0-customised.json';
@@ -19,8 +23,6 @@ import realCapture from '../__fixtures__/v0-real-capture.json';
 const run = (fixture: unknown): SettingsBlob =>
   v1LegacyConsolidation.migrate(structuredClone(fixture) as SettingsBlob);
 
-const keyboard = (accelerator: string) => [{ kind: 'keyboard', accelerator }];
-
 interface MigratedWidget {
   id: string;
   userSettings: Record<string, unknown>;
@@ -36,58 +38,35 @@ interface MigratedLayout {
 const layoutsOf = (blob: SettingsBlob) => blob['layouts'] as MigratedLayout[];
 const widgetsOf = (blob: SettingsBlob) => blob['widgets'] as MigratedWidget[];
 const appOf = (blob: SettingsBlob) => blob['app'] as Record<string, unknown>;
-const bindingsOf = (blob: SettingsBlob) =>
-  blob['bindings'] as Record<string, unknown>;
 
 describe('v1 — bindings', () => {
-  it('lifts app and widget hotkeys the user had set', () => {
-    const bindings = bindingsOf(run(customised));
-
-    expect(bindings['app:toggle-drag-mode']).toEqual(keyboard('F10'));
-    expect(bindings['app:toggle-interact-mode']).toEqual(keyboard('F8'));
-    expect(bindings['standings:cycle-view-mode']).toEqual(keyboard('F5'));
-    expect(bindings['standings:scroll-up']).toEqual(keyboard('F6'));
+  // The old keys are not carried over. They meant "while this layout is active"
+  // and would now mean "always"; each layout held a different copy with no right
+  // answer as to which wins; and one accelerator per action does not map onto a
+  // model that takes any number of keys and device buttons. Everyone starts from
+  // the shipped defaults instead.
+  it.each([
+    ['a customised install', customised],
+    ['an untouched install', untouched],
+    ['an install whose active layout is gone', danglingActiveLayout],
+  ])('writes no bindings for %s', (_label, fixture) => {
+    expect(run(fixture)['bindings']).toBeUndefined();
   });
 
-  it('ignores a hotkey the user had cleared to an empty string', () => {
-    expect(
-      bindingsOf(run(customised))['app:toggle-hide-all-widgets']
-    ).toBeUndefined();
-  });
+  // Nothing is written, so the store layers the registry defaults underneath and
+  // drag, interact and hide-all keep working without the migration saying a word.
+  it('leaves the defaults to the registry', () => {
+    const store = new BindingsStore();
 
-  // Every layout carried its own copy, so switching layouts used to change the
-  // bindings. Merging the copies would resurrect keys the user replaced; only
-  // what the active layout showed is real.
-  it('takes the active layout and drops the other layouts copies', () => {
-    expect(bindingsOf(run(customised))['standings:cycle-view-mode']).toEqual(
-      keyboard('F5')
-    );
-  });
+    store.applyBindings(run(customised)['bindings'] as undefined);
 
-  it('falls back to the first layout when the active one is gone', () => {
-    expect(
-      bindingsOf(run(danglingActiveLayout))['standings:cycle-view-mode']
-    ).toEqual(keyboard('F4'));
-  });
-
-  // Overrides-only: an untouched install must come out with an empty map, so
-  // every action keeps taking its default from the registry. Writing defaults
-  // in here is what made the first attempt lose bindings on upgrade.
-  it('writes nothing for an install that never customised a key', () => {
-    expect(bindingsOf(run(untouched))).toEqual({});
+    expect(store.bindingsFor('app:toggle-drag-mode')).toEqual([
+      { kind: 'keyboard', accelerator: 'F9' },
+    ]);
   });
 });
 
 describe('v1 — layout shape', () => {
-  // Load-bearing ordering: this layout has no `widgets` key at all, its widgets
-  // are nested per monitor. Reading hotkeys before flattening finds nothing.
-  it('lifts hotkeys out of a monitorConfigs-era layout', () => {
-    const bindings = bindingsOf(run(monitorConfigs));
-
-    expect(bindings['standings:cycle-view-mode']).toEqual(keyboard('F5'));
-    expect(bindings['pit-service:fuel']).toEqual(keyboard('F7'));
-  });
-
   it('flattens monitorConfigs into monitors laid side by side', () => {
     const [layout] = layoutsOf(run(monitorConfigs));
 
@@ -190,22 +169,6 @@ describe('v1 — stripping', () => {
 });
 
 describe('v1 — a real 0.20.0 file', () => {
-  it('lifts the three app keys it was actually holding', () => {
-    expect(bindingsOf(run(realCapture))).toEqual({
-      'app:toggle-drag-mode': keyboard('F9'),
-      'app:toggle-interact-mode': keyboard('F8'),
-      'app:toggle-hide-all-widgets': keyboard('F10'),
-    });
-  });
-
-  // 0.20 wrote a key for every hotkey field whether or not it was assigned, so
-  // an empty string is the common case and means "no key", not "bind nothing".
-  it('does not invent bindings for the unassigned widget hotkeys', () => {
-    for (const actionId of Object.keys(bindingsOf(run(realCapture)))) {
-      expect(actionId.startsWith('standings:')).toBe(false);
-    }
-  });
-
   it('leaves the settings it is not migrating exactly as they were', () => {
     const migrated = run(realCapture);
     const [layout] = layoutsOf(migrated);
@@ -223,10 +186,69 @@ describe('v1 — a real 0.20.0 file', () => {
     expect(appOf(migrated)['dragHotkey']).toBeUndefined();
     expect(appOf(migrated)['steeringLock']).toBe(900);
 
-    for (const widget of layoutsOf(migrated)[0].widgets) {
-      for (const key of Object.keys(widget.userSettings)) {
-        expect(key.endsWith('Hotkey'), `${widget.id}.${key}`).toBe(false);
+    for (const layout of layoutsOf(migrated)) {
+      for (const widget of layout.widgets) {
+        for (const key of Object.keys(widget.userSettings)) {
+          expect(key.endsWith('Hotkey'), `${layout.id}/${key}`).toBe(false);
+        }
       }
+    }
+  });
+
+  // Two layouts, each with its own set of standings keys, one of them holding a
+  // key the active layout never had. All of them go; none is promoted.
+  it('drops the per-layout keys from both layouts alike', () => {
+    const migrated = run(realCapture);
+
+    expect(migrated['bindings']).toBeUndefined();
+    expect(layoutsOf(migrated)).toHaveLength(2);
+  });
+
+  it('keeps the backgrounds and monitors of every layout', () => {
+    const migrated = run(realCapture);
+
+    layoutsOf(migrated).forEach((layout, index) => {
+      expect(layout.backgroundImages).toEqual(
+        realCapture.layouts[index]?.backgroundImages
+      );
+      expect(layout.monitors).toEqual(realCapture.layouts[index]?.monitors);
+    });
+  });
+});
+
+describe('v1 — survives the rest of the load pipeline', () => {
+  // mergeWithDefaults runs after the chain and resets any field whose type no
+  // longer matches its default, warning as it goes. A migration that writes the
+  // wrong type would have its work silently undone; the warning is the only
+  // signal, so the test listens for it.
+  it('writes nothing mergeWithDefaults would reject', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    try {
+      const migrated = run(realCapture);
+
+      mergeWithDefaults(
+        new AppSettingsStore().appSettings as unknown as Record<
+          string,
+          unknown
+        >,
+        appOf(migrated)
+      );
+
+      for (const widget of widgetsOf(migrated)) {
+        const defaults = WIDGET_BY_ID.get(widget.id)?.userSettings;
+
+        if (!defaults) continue;
+
+        mergeWithDefaults(
+          defaults as unknown as Record<string, unknown>,
+          widget.userSettings
+        );
+      }
+
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
     }
   });
 });
@@ -235,7 +257,7 @@ describe('v1 — degenerate files', () => {
   it('survives a file with no layouts at all', () => {
     const migrated = run(noLayouts);
 
-    expect(bindingsOf(migrated)).toEqual({});
+    expect(migrated['bindings']).toBeUndefined();
     expect(layoutsOf(migrated)).toEqual([]);
     expect(widgetsOf(migrated)).toEqual([]);
   });

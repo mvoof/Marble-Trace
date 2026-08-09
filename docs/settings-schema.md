@@ -134,9 +134,12 @@ written, or the plaintext lives on in `settings.v{n}.bak`.
 - **No I/O**, which is why the `data:` URL background fallback in
   `layout-background.ts` stays a permanent runtime fallback instead of becoming a
   migration — converting those values needs to write files.
-- **Order inside a step is yours to get right.** v1 normalises the layout shape
-  _before_ reading hotkeys out of layouts, because the oldest layout format keeps
-  its widgets nested under `monitorConfigs` and has no `widgets` key at all.
+- **Dropping a value is a legitimate option.** v1 does not carry the old
+  per-layout hotkeys over at all. They meant "while this layout is active" and
+  would now mean "always", every layout held a different copy with no honest way
+  to pick a winner, and one accelerator per action does not map onto a model that
+  takes any number of keys and device buttons. Translating a value whose meaning
+  changed is worse than asking for it again — but say so in the changelog.
 
 ## Testing
 

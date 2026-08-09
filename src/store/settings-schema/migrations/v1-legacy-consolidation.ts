@@ -11,12 +11,19 @@ import type { Migration, SettingsBlob } from '../types';
  * trace widget as `steeringLimit`.
  *
  * After: one flat layout shape with `monitors[]` and `backgroundImages`;
- * app-level `bindings` holding only what the user changed; `app.steeringLock`.
+ * `app.steeringLock`; no bindings at all.
  *
- * NOTHING HERE MAY IMPORT LIVE TYPES, DEFAULTS OR REGISTRIES. Every table below
- * is frozen as it was at 0.21 on purpose — a step that reads today's registry
- * rewrites history by tomorrow's rules. Unknown action ids are harmless: the
- * bindings store keeps them and simply ignores them.
+ * The old keys are dropped rather than carried over. They cannot be translated
+ * honestly: a key meant "while this layout is active" and would now mean
+ * "always", each layout held its own copy so there is no single right answer as
+ * to which one wins, and the old model allowed exactly one keyboard shortcut per
+ * action where the new one takes any number of keys and device buttons. What
+ * users get instead is the shipped defaults, and one pass through the new
+ * bindings screen.
+ *
+ * NOTHING HERE MAY IMPORT LIVE TYPES, DEFAULTS OR REGISTRIES. The field lists
+ * below are frozen as they were at 0.21 on purpose — a step that reads today's
+ * registry rewrites history by tomorrow's rules.
  */
 
 interface LegacyWidget {
@@ -42,112 +49,29 @@ interface LegacyMonitorConfig {
   widgets: LegacyWidget[];
 }
 
-const WIDGET_HOTKEYS: Array<{
-  widgetId: string;
-  field: string;
-  actionId: string;
-}> = [
-  {
-    widgetId: 'standings',
-    field: 'viewModeHotkey',
-    actionId: 'standings:cycle-view-mode',
-  },
-  {
-    widgetId: 'standings',
-    field: 'classPrevHotkey',
-    actionId: 'standings:class-prev',
-  },
-  {
-    widgetId: 'standings',
-    field: 'classNextHotkey',
-    actionId: 'standings:class-next',
-  },
-  {
-    widgetId: 'standings',
-    field: 'scrollUpHotkey',
-    actionId: 'standings:scroll-up',
-  },
-  {
-    widgetId: 'standings',
-    field: 'scrollDownHotkey',
-    actionId: 'standings:scroll-down',
-  },
-  {
-    widgetId: 'pit-service',
-    field: 'toggleHotkey',
-    actionId: 'pit-service:toggle',
-  },
-  {
-    widgetId: 'pit-service',
-    field: 'autoModeHotkey',
-    actionId: 'pit-service:auto-mode',
-  },
-  {
-    widgetId: 'pit-service',
-    field: 'applyOrderHotkey',
-    actionId: 'pit-service:apply-order',
-  },
-  {
-    widgetId: 'pit-service',
-    field: 'clearOrderHotkey',
-    actionId: 'pit-service:clear-order',
-  },
-  {
-    widgetId: 'pit-service',
-    field: 'fuelHotkey',
-    actionId: 'pit-service:fuel',
-  },
-  {
-    widgetId: 'pit-service',
-    field: 'tiresAllHotkey',
-    actionId: 'pit-service:tires-all',
-  },
-  {
-    widgetId: 'pit-service',
-    field: 'tireLfHotkey',
-    actionId: 'pit-service:tire-lf',
-  },
-  {
-    widgetId: 'pit-service',
-    field: 'tireRfHotkey',
-    actionId: 'pit-service:tire-rf',
-  },
-  {
-    widgetId: 'pit-service',
-    field: 'tireLrHotkey',
-    actionId: 'pit-service:tire-lr',
-  },
-  {
-    widgetId: 'pit-service',
-    field: 'tireRrHotkey',
-    actionId: 'pit-service:tire-rr',
-  },
-  {
-    widgetId: 'pit-service',
-    field: 'fastRepairHotkey',
-    actionId: 'pit-service:fast-repair',
-  },
-  {
-    widgetId: 'pit-service',
-    field: 'windshieldHotkey',
-    actionId: 'pit-service:windshield',
-  },
-];
-
-const APP_HOTKEYS: Array<{ field: string; actionId: string }> = [
-  { field: 'dragHotkey', actionId: 'app:toggle-drag-mode' },
-  { field: 'interactHotkey', actionId: 'app:toggle-interact-mode' },
-  { field: 'hideAllWidgetsHotkey', actionId: 'app:toggle-hide-all-widgets' },
-];
-
-/** Widget-level fields v1 removes once their values have been lifted. */
+/**
+ * Per-widget fields that no longer exist, cleared from `widgets[]` and from
+ * every layout.
+ *
+ * These five are the only `*Hotkey` fields any release ever wrote — pit service
+ * came after 0.20 and its keys were app-level from the start, so no user file
+ * can contain them.
+ */
 const DEAD_WIDGET_FIELDS = [
-  ...WIDGET_HOTKEYS.map((entry) => entry.field),
+  'viewModeHotkey',
+  'classPrevHotkey',
+  'classNextHotkey',
+  'scrollUpHotkey',
+  'scrollDownHotkey',
   'steeringLimit',
 ];
 
 const DEAD_APP_FIELDS = [
-  ...APP_HOTKEYS.map((entry) => entry.field),
+  'dragHotkey',
+  'interactHotkey',
+  'hideAllWidgetsHotkey',
+  // Flag of the one-shot binding migration this chain replaces. It only ever
+  // existed in unreleased builds, and is removed for their sake.
   'bindingsMigrated',
 ];
 
@@ -159,17 +83,6 @@ const asObject = (value: unknown): Record<string, unknown> | undefined =>
     : undefined;
 
 const asArray = <T>(value: unknown): T[] => (Array.isArray(value) ? value : []);
-
-const readHotkey = (
-  widgets: LegacyWidget[],
-  widgetId: string,
-  field: string
-): string | null => {
-  const value = widgets.find((widget) => widget.id === widgetId)
-    ?.userSettings?.[field];
-
-  return typeof value === 'string' && value !== '' ? value : null;
-};
 
 /**
  * Flattens one layout into the virtual-desktop shape. Ported unchanged from
@@ -272,48 +185,10 @@ const stripWidgetFields = (widgets: LegacyWidget[]): LegacyWidget[] =>
   });
 
 const migrate = (blob: SettingsBlob): SettingsBlob => {
-  // Order is load-bearing. A `monitorConfigs`-era layout has no `widgets` key at
-  // all — its widgets are nested per monitor — so reading hotkeys before the
-  // shape is flattened silently finds nothing and loses every binding.
   const layouts = asArray<LegacyLayout>(blob['layouts']).map(normalizeLayout);
 
   const app = { ...(asObject(blob['app']) ?? {}) };
   const topWidgets = asArray<LegacyWidget>(blob['widgets']);
-
-  const activeLayout =
-    layouts.find((layout) => layout.id === blob['activeLayoutId']) ??
-    layouts[0];
-  const activeWidgets = activeLayout?.widgets ?? [];
-
-  // Only the active layout's keys are taken: they are the ones the user last saw
-  // working. Other layouts' copies are dropped rather than merged — merging
-  // would resurrect keys the user had deliberately changed.
-  const bindings: Record<
-    string,
-    Array<{ kind: 'keyboard'; accelerator: string }>
-  > = {
-    ...(asObject(blob['bindings']) as typeof bindings | undefined),
-  };
-
-  for (const entry of APP_HOTKEYS) {
-    const value = app[entry.field];
-
-    if (
-      typeof value === 'string' &&
-      value !== '' &&
-      !bindings[entry.actionId]
-    ) {
-      bindings[entry.actionId] = [{ kind: 'keyboard', accelerator: value }];
-    }
-  }
-
-  for (const entry of WIDGET_HOTKEYS) {
-    const accelerator = readHotkey(activeWidgets, entry.widgetId, entry.field);
-
-    if (accelerator && !bindings[entry.actionId]) {
-      bindings[entry.actionId] = [{ kind: 'keyboard', accelerator }];
-    }
-  }
 
   if (app['steeringLock'] === undefined) {
     const savedLock = topWidgets.find(
@@ -339,12 +214,11 @@ const migrate = (blob: SettingsBlob): SettingsBlob => {
       ...layout,
       widgets: stripWidgetFields(layout.widgets ?? []),
     })),
-    bindings,
   };
 };
 
 export const v1LegacyConsolidation: Migration = {
   to: 1,
-  describe: 'app-level bindings, flat layouts, app-level steering lock',
+  describe: 'flat layouts, app-level steering lock, hotkeys dropped',
   migrate,
 };

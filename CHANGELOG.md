@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Bindings No Longer Belong to a Layout:** Keys used to be stored per layout, so switching layouts silently changed them and the same key had to be entered again in every layout. They are now app-wide — set once, and they work everywhere. Your existing keys are carried over from the layout you last had active.
+- **Bindings No Longer Belong to a Layout:** Keys used to be stored per layout, so switching layouts silently changed them and the same key had to be entered again in every layout. They are now app-wide — set once, and they work everywhere. Because of that, widget keys you had set before are not carried over: the same key meant different things in different layouts, and there is no honest way to pick a winner. Drag, interact and hide-all keep working on F9, F8 and F10; anything else takes a moment to set again on the new **Input bindings** screen, where you can now give one action several keys and wheel buttons at once.
 - A binding for a widget that isn't in the current layout now does nothing instead of firing invisibly in the background.
 - **Your Settings File Is No Longer Thrown Away:** If Marble Trace can't read your settings — because they were saved by a newer version, or the file got damaged — it now leaves the file exactly as it is and tells you what happened, instead of quietly deleting it and starting from scratch. A copy of your old settings is also kept alongside them whenever an update converts them to a new format.
 
