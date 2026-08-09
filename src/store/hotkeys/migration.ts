@@ -196,3 +196,14 @@ export const stripLegacyHotkeyFields = (layouts: SavedLayout[]) => {
     }
   }
 };
+
+/** Same, for the three app-level hotkeys that lived in `settings.app`. */
+export const stripLegacyAppHotkeyFields = (
+  appSettings: Record<string, unknown> | undefined
+) => {
+  if (!appSettings) return;
+
+  for (const entry of LEGACY_APP_HOTKEYS) {
+    delete appSettings[entry.field];
+  }
+};

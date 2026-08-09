@@ -13,8 +13,10 @@ import type { RootStore } from '@store/root-store';
 import type { BindingMap } from '@store/hotkeys/binding-types';
 import {
   migrateBindings,
+  stripLegacyAppHotkeyFields,
   stripLegacyHotkeyFields,
 } from '@store/hotkeys/migration';
+import { defaultBindingMap } from '@store/hotkeys/bindings.store';
 import type { InputDevice } from '@/types/bindings';
 
 export const SETTINGS_FILE = 'settings.json';
@@ -159,12 +161,19 @@ const hydrateBindings = (
     activeLayoutId: root.widgetSettings.activeLayoutId,
   });
 
+  // Registry defaults are the base: `migrated` only holds the legacy keys the
+  // user had actually set, so without them every action the user never touched
+  // would come out of the upgrade unbound.
   root.bindings.applyBindings({
+    ...defaultBindingMap(),
     ...migrated,
     ...(loadedSettings.bindings ?? {}),
   });
 
   stripLegacyHotkeyFields(root.widgetSettings.layouts);
+  stripLegacyAppHotkeyFields(
+    root.appSettings.appSettings as unknown as Record<string, unknown>
+  );
 
   root.appSettings.appSettings.bindingsMigrated = true;
 };
