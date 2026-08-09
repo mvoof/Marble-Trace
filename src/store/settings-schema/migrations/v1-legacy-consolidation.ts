@@ -132,7 +132,9 @@ const normalizeLayout = (layout: LegacyLayout): LegacyLayout => {
           ...widget,
           userSettings: {
             ...widget.userSettings,
-            x: (widget.userSettings?.['x'] as number) + offsetX,
+            x:
+              ((widget.userSettings?.['x'] as number | undefined) ?? 0) +
+              offsetX,
           },
         });
       }
