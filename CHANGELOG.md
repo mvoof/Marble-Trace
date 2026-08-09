@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Bindings No Longer Belong to a Layout:** Keys used to be stored per layout, so switching layouts silently changed them and the same key had to be entered again in every layout. They are now app-wide — set once, and they work everywhere. Your existing keys are carried over from the layout you last had active.
 - A binding for a widget that isn't in the current layout now does nothing instead of firing invisibly in the background.
+- **Your Settings File Is No Longer Thrown Away:** If Marble Trace can't read your settings — because they were saved by a newer version, or the file got damaged — it now leaves the file exactly as it is and tells you what happened, instead of quietly deleting it and starting from scratch. A copy of your old settings is also kept alongside them whenever an update converts them to a new format.
+
+### Fixed
+
+- **Keys Missing After Updating:** Actions you had never customised could end up with no key at all after an update, because your settings file only listed the keys you had changed by hand. Only your own changes are stored now, and everything else follows whatever the current version ships — so new actions arrive with their keys already working, and a key you deliberately cleared stays cleared.
 
 ## [0.20.0] — 2026-07-29
 
