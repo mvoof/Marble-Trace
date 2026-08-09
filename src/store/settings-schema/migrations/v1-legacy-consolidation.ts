@@ -45,9 +45,24 @@ interface LegacyLayout {
 }
 
 interface LegacyMonitorConfig {
-  resolution: { width: number; height: number };
-  widgets: LegacyWidget[];
+  resolution?: { width?: number; height?: number };
+  widgets?: LegacyWidget[];
 }
+
+/**
+ * Stands in for a legacy monitor whose resolution the file does not actually
+ * carry. Every field here is read out of a build older than this one and may
+ * have been hand-edited; a throw would reach the loader as an unreadable file
+ * and lock the user out of settings that are otherwise fine. A zero-sized
+ * monitor keeps its widgets and is parked by `alignMonitorsToHardware` like any
+ * other screen the machine no longer has.
+ */
+const MISSING_MONITOR_SIZE = 0;
+
+const asNumber = (value: unknown): number =>
+  typeof value === 'number' && Number.isFinite(value)
+    ? value
+    : MISSING_MONITOR_SIZE;
 
 /**
  * Per-widget fields that no longer exist, cleared from `widgets[]` and from
@@ -107,7 +122,11 @@ const normalizeLayout = (layout: LegacyLayout): LegacyLayout => {
 
   const legacyBackground = layout.backgroundImage;
 
-  if (layout.monitorConfigs) {
+  const monitorConfigs = asObject(layout.monitorConfigs) as
+    | Record<string, LegacyMonitorConfig>
+    | undefined;
+
+  if (monitorConfigs) {
     const monitors: Array<{
       name: string;
       bounds: { x: number; y: number; width: number; height: number };
@@ -116,18 +135,20 @@ const normalizeLayout = (layout: LegacyLayout): LegacyLayout => {
     const backgroundImages: Record<string, string> = {};
     let offsetX = 0;
 
-    for (const [name, config] of Object.entries(layout.monitorConfigs)) {
+    for (const [name, config] of Object.entries(monitorConfigs)) {
+      const width = asNumber(config?.resolution?.width);
+
       monitors.push({
         name,
         bounds: {
           x: offsetX,
           y: 0,
-          width: config.resolution.width,
-          height: config.resolution.height,
+          width,
+          height: asNumber(config?.resolution?.height),
         },
       });
 
-      for (const widget of config.widgets) {
+      for (const widget of asArray<LegacyWidget>(config?.widgets)) {
         widgets.push({
           ...widget,
           userSettings: {
@@ -143,13 +164,14 @@ const normalizeLayout = (layout: LegacyLayout): LegacyLayout => {
         backgroundImages[name] = legacyBackground;
       }
 
-      offsetX += config.resolution.width;
+      offsetX += width;
     }
 
     return { ...base, monitors, widgets, backgroundImages };
   }
 
-  const { targetResolution, targetMonitorName } = layout;
+  const targetResolution = asObject(layout.targetResolution);
+  const { targetMonitorName } = layout;
 
   return {
     ...base,
@@ -161,13 +183,13 @@ const normalizeLayout = (layout: LegacyLayout): LegacyLayout => {
               bounds: {
                 x: 0,
                 y: 0,
-                width: targetResolution.width,
-                height: targetResolution.height,
+                width: asNumber(targetResolution['width']),
+                height: asNumber(targetResolution['height']),
               },
             },
           ]
         : [],
-    widgets: layout.widgets ?? [],
+    widgets: asArray<LegacyWidget>(layout.widgets),
     backgroundImages:
       legacyBackground && targetMonitorName
         ? { [targetMonitorName]: legacyBackground }
@@ -176,8 +198,9 @@ const normalizeLayout = (layout: LegacyLayout): LegacyLayout => {
 };
 
 const stripWidgetFields = (widgets: LegacyWidget[]): LegacyWidget[] =>
-  widgets.map((widget) => {
-    const userSettings = { ...widget.userSettings };
+  widgets.map((entry) => {
+    const widget = (asObject(entry) ?? {}) as LegacyWidget;
+    const userSettings = { ...asObject(widget.userSettings) };
 
     for (const field of DEAD_WIDGET_FIELDS) {
       delete userSettings[field];
@@ -187,14 +210,18 @@ const stripWidgetFields = (widgets: LegacyWidget[]): LegacyWidget[] =>
   });
 
 const migrate = (blob: SettingsBlob): SettingsBlob => {
-  const layouts = asArray<LegacyLayout>(blob['layouts']).map(normalizeLayout);
+  // An entry that is not an object cannot be repaired into a layout, and a
+  // placeholder in its place would show up in the UI as a nameless one.
+  const layouts = asArray<unknown>(blob['layouts'])
+    .filter((layout): layout is LegacyLayout => asObject(layout) !== undefined)
+    .map(normalizeLayout);
 
   const app = { ...(asObject(blob['app']) ?? {}) };
   const topWidgets = asArray<LegacyWidget>(blob['widgets']);
 
   if (app['steeringLock'] === undefined) {
     const savedLock = topWidgets.find(
-      (widget) => widget.id === STEERING_LOCK_WIDGET
+      (widget) => widget?.id === STEERING_LOCK_WIDGET
     )?.userSettings?.['steeringLimit'];
 
     if (typeof savedLock === 'number') {
@@ -214,7 +241,7 @@ const migrate = (blob: SettingsBlob): SettingsBlob => {
     widgets: stripWidgetFields(topWidgets),
     layouts: layouts.map((layout) => ({
       ...layout,
-      widgets: stripWidgetFields(layout.widgets ?? []),
+      widgets: stripWidgetFields(asArray<LegacyWidget>(layout.widgets)),
     })),
   };
 };

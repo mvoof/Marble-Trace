@@ -13,6 +13,7 @@ import {
   Settings,
 } from './persistence';
 import { runMigrations } from '@store/settings-schema';
+import type { MigrationResult } from '@store/settings-schema/types';
 import {
   applyKeyboardBindings,
   cleanupKeyboardBindings,
@@ -76,7 +77,20 @@ const hydrateFromDisk = async (
     return;
   }
 
-  const result = runMigrations(loaded);
+  // A migration step reads shapes that no current type describes, straight out
+  // of a file the user may have hand-edited. A step that throws on one would
+  // otherwise take the whole window down with it — no hydration, but no lock
+  // and no banner either, which is the one outcome this path exists to avoid.
+  let result: MigrationResult;
+
+  try {
+    result = runMigrations(loaded);
+  } catch (error) {
+    console.error('Settings locked: the migration chain threw:', error);
+    root.appSettings.lockSettings('corrupt');
+
+    return;
+  }
 
   if (
     result.status === 'from-the-future' ||

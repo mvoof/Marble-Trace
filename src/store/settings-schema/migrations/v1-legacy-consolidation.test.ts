@@ -11,6 +11,7 @@ import monitorConfigs from '../__fixtures__/v0-monitor-configs.json';
 import danglingActiveLayout from '../__fixtures__/v0-dangling-active-layout.json';
 import noLayouts from '../__fixtures__/v0-no-layouts.json';
 import realCapture from '../__fixtures__/v0-real-capture.json';
+import brokenMonitorConfigs from '../__fixtures__/v0-broken-monitor-configs.json';
 
 /**
  * `v0-real-capture.json` is a genuine file written by 0.20.0, trimmed to two
@@ -264,6 +265,46 @@ describe('v1 — degenerate files', () => {
 
   it('leaves unrelated top-level keys untouched', () => {
     expect(run(noLayouts)['units']).toEqual({ system: 'metric' });
+  });
+
+  // The step reads shapes no current type describes, out of a file the user may
+  // have hand-edited. Throwing reaches the loader as "unreadable" and locks the
+  // whole settings file — far worse than one screen coming back the wrong size.
+  it('survives a half-written legacy file without throwing', () => {
+    expect(() => run(brokenMonitorConfigs)).not.toThrow();
+  });
+
+  it('drops layout entries that are not objects', () => {
+    expect(
+      layoutsOf(run(brokenMonitorConfigs)).map((layout) => layout.id)
+    ).toEqual(['half-written', 'no-resolution']);
+  });
+
+  it('keeps the widgets of a monitor whose resolution is missing', () => {
+    const layout = layoutsOf(run(brokenMonitorConfigs)).find(
+      (candidate) => candidate.id === 'half-written'
+    );
+
+    expect(layout?.monitors).toEqual([
+      { name: 'DISPLAY1', bounds: { x: 0, y: 0, width: 1920, height: 1080 } },
+      { name: 'DISPLAY2', bounds: { x: 1920, y: 0, width: 0, height: 0 } },
+    ]);
+    expect(layout?.widgets).toEqual([
+      { id: 'standings', userSettings: { x: 1960 } },
+    ]);
+  });
+
+  it('falls back to a zero-sized monitor when the resolution has no numbers', () => {
+    const layout = layoutsOf(run(brokenMonitorConfigs)).find(
+      (candidate) => candidate.id === 'no-resolution'
+    );
+
+    expect(layout?.monitors).toEqual([
+      { name: 'DISPLAY1', bounds: { x: 0, y: 0, width: 0, height: 0 } },
+    ]);
+    expect(layout?.widgets).toEqual([
+      { id: 'fuel', userSettings: { x: 10, y: 20 } },
+    ]);
   });
 
   it('changes nothing when run over its own output', () => {

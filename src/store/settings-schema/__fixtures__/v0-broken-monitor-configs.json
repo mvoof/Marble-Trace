@@ -1,0 +1,27 @@
+{
+  "app": { "steeringLock": 900 },
+  "widgets": [null, { "id": "input-trace", "userSettings": null }],
+  "layouts": [
+    null,
+    {
+      "id": "half-written",
+      "name": "Half written",
+      "createdAt": 1,
+      "monitorConfigs": {
+        "DISPLAY1": { "resolution": { "width": 1920, "height": 1080 } },
+        "DISPLAY2": {
+          "widgets": [{ "id": "standings", "userSettings": { "x": 40 } }]
+        }
+      }
+    },
+    {
+      "id": "no-resolution",
+      "name": "No resolution",
+      "createdAt": 2,
+      "targetMonitorName": "DISPLAY1",
+      "targetResolution": {},
+      "widgets": [{ "id": "fuel", "userSettings": { "x": 10, "y": 20 } }]
+    }
+  ],
+  "activeLayoutId": "half-written"
+}

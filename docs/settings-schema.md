@@ -61,7 +61,12 @@ holds shipped defaults and painting them looks exactly like the user losing thei
 config. The main window shows `SettingsLockBanner`.
 
 The only write left is `resetSettings()`, which goes straight to the file and
-bypasses the gate on purpose: it is the only way out.
+bypasses the gate on purpose: it is the only way out. It **deletes** the file
+through the `delete_settings_file` backend command rather than clearing the
+store — `tauri-plugin-store`'s `clear()` + `save()` leaves a valid but empty
+`{}` behind, which the next start reads as a file that is present and holds no
+settings: the exact signature of a corrupt one, so the reset would lock the app
+again instead of freeing it.
 
 Before the first save at a new version, the old file is copied to
 `settings.v{n}.bak` by the `backup_settings_file` backend command —
@@ -131,6 +136,12 @@ written, or the plaintext lives on in `settings.v{n}.bak`.
 - **Pure function of the blob.** No stores, no filesystem, no network. The runner
   clones the blob once up front so steps may mutate their own copy freely.
 - **Idempotent.** Running the chain over its own output must change nothing.
+- **Never throw.** Every field a step reads comes out of a build older than this
+  one and may have been hand-edited: guard the shape rather than trusting the
+  legacy interface. `runMigrations` is wrapped in a `try` and a throw locks the
+  whole file, so a single missing `resolution` would cost the user every setting
+  they have. Prefer a defensible fallback — v1 gives a monitor with no
+  resolution zero bounds and keeps its widgets.
 - **No I/O**, which is why the `data:` URL background fallback in
   `layout-background.ts` stays a permanent runtime fallback instead of becoming a
   migration — converting those values needs to write files.
