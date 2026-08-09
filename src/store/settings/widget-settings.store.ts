@@ -45,105 +45,6 @@ export interface PickableWidget {
   currentMonitorName: string | null;
 }
 
-interface LegacyMonitorConfig {
-  resolution: LayoutResolution;
-  widgets: WidgetDefaultConfig[];
-}
-
-/**
- * Brings persisted layouts up to the virtual-desktop format: one flat widget
- * list in desktop coordinates plus the monitors the layout covers.
- *
- * Two older shapes exist — `targetResolution` + `widgets`, and per-monitor
- * `monitorConfigs`. Both held widget coordinates relative to a single screen.
- * Converting them properly needs each monitor's real desktop position, which
- * only the OS can give, so screens are laid out side by side here and moved
- * into place by `alignMonitorsToHardware` once the monitor list has been read.
- */
-const migrateLayout = (saved: unknown): SavedLayout => {
-  const raw = saved as Record<string, unknown>;
-
-  if (Array.isArray(raw['monitors'])) {
-    return raw as unknown as SavedLayout;
-  }
-
-  const base = {
-    id: raw['id'] as string,
-    name: raw['name'] as string,
-    createdAt: raw['createdAt'] as number,
-  };
-
-  const legacyBackground = raw['backgroundImage'] as string | undefined;
-  const legacyConfigs = raw['monitorConfigs'] as
-    | Record<string, LegacyMonitorConfig>
-    | undefined;
-
-  if (legacyConfigs) {
-    const monitors: LayoutMonitor[] = [];
-    const widgets: WidgetDefaultConfig[] = [];
-    const backgroundImages: Record<string, string> = {};
-    let offsetX = 0;
-
-    for (const [name, config] of Object.entries(legacyConfigs)) {
-      monitors.push({
-        name,
-        bounds: {
-          x: offsetX,
-          y: 0,
-          width: config.resolution.width,
-          height: config.resolution.height,
-        },
-      });
-
-      for (const widget of config.widgets) {
-        widgets.push({
-          ...widget,
-          userSettings: {
-            ...widget.userSettings,
-            x: widget.userSettings.x + offsetX,
-          },
-        });
-      }
-
-      if (legacyBackground) {
-        backgroundImages[name] = legacyBackground;
-      }
-
-      offsetX += config.resolution.width;
-    }
-
-    return { ...base, monitors, widgets, backgroundImages };
-  }
-
-  const targetResolution = raw['targetResolution'] as
-    | LayoutResolution
-    | undefined;
-  const monitorName = raw['targetMonitorName'] as string | undefined;
-
-  return {
-    ...base,
-    monitors:
-      targetResolution && monitorName
-        ? [
-            {
-              name: monitorName,
-              bounds: {
-                x: 0,
-                y: 0,
-                width: targetResolution.width,
-                height: targetResolution.height,
-              },
-            },
-          ]
-        : [],
-    widgets: (raw['widgets'] as WidgetDefaultConfig[]) ?? [],
-    backgroundImages:
-      legacyBackground && monitorName
-        ? { [monitorName]: legacyBackground }
-        : {},
-  };
-};
-
 // Parks a monitor the machine no longer has to the right of every attached
 // screen. Its placeholder bounds would otherwise sit on top of a real monitor
 // in desktop space, and the centre-point test would hand its widgets over to
@@ -1188,7 +1089,7 @@ export class WidgetSettingsStore {
   }
 
   setLayouts(layouts: SavedLayout[], activeLayoutId?: string | null) {
-    this.layouts = layouts.map((layout) => migrateLayout(layout));
+    this.layouts = layouts;
 
     if (activeLayoutId !== undefined) {
       this.activeLayoutId = activeLayoutId;

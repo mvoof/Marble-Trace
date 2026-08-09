@@ -6,12 +6,14 @@ import untouched from '../__fixtures__/v0-untouched.json';
 import monitorConfigs from '../__fixtures__/v0-monitor-configs.json';
 import danglingActiveLayout from '../__fixtures__/v0-dangling-active-layout.json';
 import noLayouts from '../__fixtures__/v0-no-layouts.json';
+import realCapture from '../__fixtures__/v0-real-capture.json';
 
 /**
- * The fixtures are built from the type definitions at tag v0.20.0 rather than
- * captured from a real install — no released build wrote a `bindings` key, so
- * there is nothing in the wild these could be sanitised from. A run against a
- * genuine pre-0.21 `settings.json` stays a manual release check.
+ * `v0-real-capture.json` is a genuine file written by 0.20.0, trimmed to two
+ * widgets and one layout — the app block, the layout shape and every widget
+ * setting in it are exactly as the release wrote them. The rest are constructed
+ * from the type definitions at that tag, to reach shapes the capture happens
+ * not to contain (an older layout format, hotkeys actually assigned).
  */
 
 const run = (fixture: unknown): SettingsBlob =>
@@ -184,6 +186,48 @@ describe('v1 — stripping', () => {
     );
 
     expect(standings?.userSettings).toEqual({ x: 0, y: 0 });
+  });
+});
+
+describe('v1 — a real 0.20.0 file', () => {
+  it('lifts the three app keys it was actually holding', () => {
+    expect(bindingsOf(run(realCapture))).toEqual({
+      'app:toggle-drag-mode': keyboard('F9'),
+      'app:toggle-interact-mode': keyboard('F8'),
+      'app:toggle-hide-all-widgets': keyboard('F10'),
+    });
+  });
+
+  // 0.20 wrote a key for every hotkey field whether or not it was assigned, so
+  // an empty string is the common case and means "no key", not "bind nothing".
+  it('does not invent bindings for the unassigned widget hotkeys', () => {
+    for (const actionId of Object.keys(bindingsOf(run(realCapture)))) {
+      expect(actionId.startsWith('standings:')).toBe(false);
+    }
+  });
+
+  it('leaves the settings it is not migrating exactly as they were', () => {
+    const migrated = run(realCapture);
+    const [layout] = layoutsOf(migrated);
+    const [originalLayout] = realCapture.layouts;
+
+    expect(migrated['sessionLayouts']).toEqual(realCapture.sessionLayouts);
+    expect(migrated['units']).toEqual(realCapture.units);
+    expect(migrated['defaultWidgets']).toEqual(realCapture.defaultWidgets);
+    expect(layout.monitors).toEqual(originalLayout.monitors);
+  });
+
+  it('clears the legacy fields the release left behind', () => {
+    const migrated = run(realCapture);
+
+    expect(appOf(migrated)['dragHotkey']).toBeUndefined();
+    expect(appOf(migrated)['steeringLock']).toBe(900);
+
+    for (const widget of layoutsOf(migrated)[0].widgets) {
+      for (const key of Object.keys(widget.userSettings)) {
+        expect(key.endsWith('Hotkey'), `${widget.id}.${key}`).toBe(false);
+      }
+    }
   });
 });
 

@@ -24,6 +24,24 @@
     "title": "What's new",
     "titleWithVersion": "What's new in v{{version}}"
   },
+  "settingsLock": {
+    "from-the-future": {
+      "title": "Your settings were saved by a newer version",
+      "description": "This build cannot read them, and will not overwrite them. Update Marble Trace to get your layouts and bindings back."
+    },
+    "too-old": {
+      "title": "Your settings are too old to upgrade automatically",
+      "description": "They were saved by a version too far back for this build to convert. The file has been left untouched."
+    },
+    "corrupt": {
+      "title": "Your settings file could not be read",
+      "description": "It has been left untouched so it can be recovered by hand. Marble Trace is running on defaults and will not save over it."
+    },
+    "reset": "Reset settings",
+    "resetConfirm": "Replace the settings file with defaults? Layouts, widgets and bindings in it will be lost.",
+    "resetOk": "Reset and restart",
+    "resetCancel": "Cancel"
+  },
   "updateBanner": {
     "downloading": "Downloading update...",
     "ready": "Update downloaded. Restarting...",

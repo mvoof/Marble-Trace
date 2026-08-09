@@ -6,6 +6,7 @@ import { getVersion } from '@tauri-apps/api/app';
 import { mergeWithDefaults } from '@utils/deep-merge';
 import { detectSystemLanguage } from '@utils/system-locale';
 import i18n from '@/i18n';
+import type { SettingsLockReason } from '@store/settings-schema/types';
 
 export type AppLanguage = 'system' | 'en' | 'ru' | 'zh';
 
@@ -17,10 +18,6 @@ export type InteractHotkeyMode = 'toggle' | 'hold';
 const MS_PER_SECOND = 1000;
 
 const DEFAULT_APP_SETTINGS = {
-  // Keys and device buttons live in the app-level binding registry
-  // (store/hotkeys), not here — one set covers every layout.
-  // One-shot: the old per-layout `*Hotkey` fields have been lifted into it.
-  bindingsMigrated: false,
   // Interact mode: mouse events reach the overlay without unlocking widget
   // dragging. Whether its binding toggles or is held is a property of the
   // action rather than of the binding, so it stays here.
@@ -76,6 +73,17 @@ export type UpdateStatus =
 export class AppSettingsStore {
   appSettings: AppSettings = { ...DEFAULT_APP_SETTINGS };
 
+  /**
+   * Set when `settings.json` could not be brought to the current schema — it
+   * was written by a newer build, is older than the migration chain reaches, or
+   * is not a settings file at all.
+   *
+   * Nothing may be written while this holds. Hydration is skipped too, so the
+   * app is running on defaults it must never mistake for the user's own.
+   */
+  settingsLocked = false;
+  settingsLockReason: SettingsLockReason | null = null;
+
   dragMode = false;
   interactMode = false;
   updateStatus: UpdateStatus = 'idle';
@@ -128,6 +136,11 @@ export class AppSettingsStore {
 
       this.updateTimer = null;
     }
+  }
+
+  lockSettings(reason: SettingsLockReason) {
+    this.settingsLocked = true;
+    this.settingsLockReason = reason;
   }
 
   applySettings(saved: Partial<AppSettings>) {
@@ -359,6 +372,11 @@ export class AppSettingsStore {
     this.appSettings.editorGridSize = value;
   }
 
+  /**
+   * Deliberately goes straight to the file instead of through `onSave`: this is
+   * the only way out of a locked settings file, so the write gate must not
+   * apply to it.
+   */
   async resetSettings() {
     const store = await load('settings.json');
 

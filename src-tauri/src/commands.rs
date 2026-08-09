@@ -36,6 +36,38 @@ pub async fn log_settings_snapshot(settings: serde_json::Value) -> Result<(), St
     Ok(())
 }
 
+/// Copies `settings.json` aside before the frontend writes a newly migrated
+/// version over it. `tauri-plugin-store` can only read and write the live file,
+/// so the copy has to happen here.
+///
+/// Best effort by design: a failed backup must not stop the migration, or a
+/// user with a read-only config directory could never upgrade.
+#[tauri::command]
+pub async fn backup_settings_file(app: AppHandle, suffix: String) -> Result<(), String> {
+    if !suffix.chars().all(|c| c.is_ascii_alphanumeric()) {
+        return Err(format!("refusing suffix {suffix:?}"));
+    }
+
+    let dir = app
+        .path()
+        .app_config_dir()
+        .map_err(|e| format!("no config dir: {e}"))?;
+
+    let source = dir.join("settings.json");
+
+    if !source.exists() {
+        return Ok(());
+    }
+
+    let target = dir.join(format!("settings.{suffix}.bak"));
+
+    std::fs::copy(&source, &target).map_err(|e| format!("copy failed: {e}"))?;
+
+    info!("settings backed up to {}", target.display());
+
+    Ok(())
+}
+
 #[tauri::command]
 pub async fn get_last_session_info(
     state: State<'_, TelemetryState>,

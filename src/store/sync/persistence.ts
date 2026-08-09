@@ -11,16 +11,18 @@ import type { AppSettings } from '@store/settings/app-settings.store';
 import { mergeWithDefaults } from '@utils/deep-merge';
 import type { RootStore } from '@store/root-store';
 import type { BindingMap } from '@store/hotkeys/binding-types';
-import {
-  migrateBindings,
-  stripLegacyAppHotkeyFields,
-  stripLegacyHotkeyFields,
-} from '@store/hotkeys/migration';
+import { CURRENT_SCHEMA_VERSION } from '@store/settings-schema';
 import type { InputDevice } from '@/types/bindings';
 
 export const SETTINGS_FILE = 'settings.json';
 
 export interface Settings {
+  /**
+   * Format version of this file, stamped on every save. Absent means a file
+   * written before 0.21. See `store/settings-schema` — never compare it to the
+   * app's semver.
+   */
+  schemaVersion: number;
   app: AppSettings;
   units: {
     system: UnitSystem;
@@ -30,7 +32,11 @@ export interface Settings {
   layouts: SavedLayout[];
   activeLayoutId: string | null;
   sessionLayouts?: Record<SessionContext, string | null>;
-  /** App-level input bindings. Deliberately outside `layouts` — see hotkeys/migration.ts. */
+  /**
+   * App-level input bindings, and only the ones the user changed — an action
+   * absent here takes the registry default. Deliberately outside `layouts`: one
+   * set of keys covers every layout.
+   */
   bindings?: BindingMap;
   /** Devices seen before, so an unplugged one's bindings stay identifiable. */
   inputDevices?: InputDevice[];
@@ -73,35 +79,18 @@ const restoreWidgets = (
   return [...result, ...unseenWidgets];
 };
 
-// Steering lock used to be an Input Trace widget setting before it became an
-// app-wide one. Settings files written by older builds carry the user's value
-// only there, so it is lifted into the app settings on first load.
-const legacySteeringLock = (loadedSettings: Partial<Settings>) => {
-  if (loadedSettings.app?.steeringLock !== undefined) {
-    return undefined;
-  }
-
-  const inputTrace = loadedSettings.widgets?.find(
-    (widget) => widget.id === 'input-trace'
-  );
-  const savedLock = (inputTrace?.userSettings as { steeringLimit?: number })
-    ?.steeringLimit;
-
-  return typeof savedLock === 'number' ? savedLock : undefined;
-};
-
+/**
+ * Fills the stores from a settings blob that has already been brought to the
+ * current schema by `runMigrations`. Nothing here knows about older formats —
+ * that is the migration chain's job, and keeping it there is what makes it
+ * testable against a real old file.
+ */
 export const hydrateStores = (
   root: RootStore,
   loadedSettings: Partial<Settings>
 ) => {
   runInAction(() => {
-    const migratedLock = legacySteeringLock(loadedSettings);
-
     root.appSettings.applySettings(loadedSettings.app ?? {});
-
-    if (migratedLock !== undefined) {
-      root.appSettings.setSteeringLock(migratedLock);
-    }
 
     if (loadedSettings.units) {
       root.units.setSystem(loadedSettings.units.system);
@@ -130,49 +119,12 @@ export const hydrateStores = (
       root.widgetSettings.setSessionLayouts(loadedSettings.sessionLayouts);
     }
 
-    hydrateBindings(root, loadedSettings);
+    root.bindings.applyBindings(loadedSettings.bindings);
 
     if (loadedSettings.inputDevices) {
       root.deviceInput.setKnownDevices(loadedSettings.inputDevices);
     }
   });
-};
-
-/**
- * Bindings either come from the file, or — on the first run after the upgrade —
- * are lifted out of the per-layout `*Hotkey` fields. The one-shot flag lives in
- * app settings so a user who deliberately clears every binding does not get the
- * old ones back on the next launch.
- */
-const hydrateBindings = (
-  root: RootStore,
-  loadedSettings: Partial<Settings>
-) => {
-  if (root.appSettings.appSettings.bindingsMigrated) {
-    root.bindings.applyBindings(loadedSettings.bindings);
-
-    return;
-  }
-
-  const migrated = migrateBindings({
-    appSettings: loadedSettings.app as Record<string, unknown> | undefined,
-    layouts: root.widgetSettings.layouts,
-    activeLayoutId: root.widgetSettings.activeLayoutId,
-  });
-
-  // No defaults here: the store layers them under the overrides on read, so an
-  // action the user never touched keeps taking whatever the registry ships.
-  root.bindings.applyBindings({
-    ...migrated,
-    ...(loadedSettings.bindings ?? {}),
-  });
-
-  stripLegacyHotkeyFields(root.widgetSettings.layouts);
-  stripLegacyAppHotkeyFields(
-    root.appSettings.appSettings as unknown as Record<string, unknown>
-  );
-
-  root.appSettings.appSettings.bindingsMigrated = true;
 };
 
 interface Store {
@@ -181,6 +133,7 @@ interface Store {
 }
 
 export const buildSettings = (root: RootStore): Settings => ({
+  schemaVersion: CURRENT_SCHEMA_VERSION,
   app: { ...root.appSettings.appSettings },
   units: {
     system: root.units.unitSystem,
@@ -199,6 +152,19 @@ export const saveSettings = async (store: Store, root: RootStore) => {
 
   await store.set('settings', settings);
   await store.save();
+};
+
+/**
+ * Copies the file aside before a migrated version is written over it. Best
+ * effort: an upgrade must not be blocked by a config directory we cannot write
+ * a second file into.
+ */
+export const backupSettingsFile = async (fromVersion: number) => {
+  try {
+    await invoke('backup_settings_file', { suffix: `v${fromVersion}` });
+  } catch (error) {
+    console.error('Failed to back up settings before migrating:', error);
+  }
 };
 
 export const logSettingsSnapshot = async (root: RootStore) => {
