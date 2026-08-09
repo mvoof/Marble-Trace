@@ -68,6 +68,8 @@ export class PitServiceWidgetStore {
   fuelDraftLiters: number | null = null;
 
   private lingering = false;
+  private autoFuelSent = false;
+  private autoTiresSent = false;
   private orderFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
   private lastOnPitRoad = false;
   private lastServiceActive = false;
@@ -235,11 +237,12 @@ export class PitServiceWidgetStore {
   }
 
   /**
-   * The order auto mode sends on pit entry: the calculated fuel and only the
-   * corners worn past the threshold. It clears first, so the box holds exactly
-   * this and nothing left over from the previous stop.
+   * The first half of the automatic order, sent on pit road entry: a clear so
+   * the box holds nothing left over from the previous stop, plus the calculated
+   * fuel. The clear goes out even with `autoFuel` off — it is the start-of-stop
+   * reset the tire half relies on, not part of the fuel decision.
    */
-  get autoOrder(): PitCommandRequest[] {
+  get autoFuelOrder(): PitCommandRequest[] {
     const order: PitCommandRequest[] = [{ kind: 'clear', value: 0 }];
     const fuel = this.plannedFuelLiters;
 
@@ -247,24 +250,66 @@ export class PitServiceWidgetStore {
       order.push({ kind: 'fuel', value: Math.ceil(fuel) });
     }
 
-    for (const corner of this.autoTireCorners) {
-      order.push({ kind: corner, value: 0 });
-    }
-
     return order;
   }
 
   /**
-   * Builds and sends the automatic order. Called once per pit road entry, from
-   * the main window only — two windows running the same telemetry would
-   * otherwise broadcast the order twice.
+   * The second half, sent on entering the stall: only the corners worn past the
+   * threshold. No clear of its own — the fuel half already emptied the box, and
+   * a second `clearTires` here would be the only thing sent when nothing is worn
+   * enough to change.
    */
-  async applyAutoOrder() {
-    if (!this.isAutoActive) {
+  get autoTireOrder(): PitCommandRequest[] {
+    return this.autoTireCorners.map((corner) => ({ kind: corner, value: 0 }));
+  }
+
+  /**
+   * Kept for the settings preview and the tests: what a stop would order in
+   * total, if the wear the sim reports right now were the wear at the stall.
+   */
+  get autoOrder(): PitCommandRequest[] {
+    return [...this.autoFuelOrder, ...this.autoTireOrder];
+  }
+
+  /**
+   * Sends the fuel half. Called once per pit road entry, from the main window
+   * only — two windows running the same telemetry would otherwise broadcast the
+   * order twice.
+   */
+  async applyAutoFuelOrder() {
+    if (!this.isAutoActive || this.autoFuelSent) {
       return;
     }
 
-    await this.send(this.autoOrder);
+    this.autoFuelSent = true;
+
+    await this.send(this.autoFuelOrder);
+  }
+
+  /**
+   * Sends the tire half, on entering the stall rather than on pit entry.
+   *
+   * The sim only refreshes `*_wear_*` when the car reaches the box: on pit road
+   * those fields still hold the previous stop's numbers, or a garage-fresh 100%,
+   * so a threshold check there compares against tread that is not the tread on
+   * the car. Standing in the stall the values are current and the crew has not
+   * started yet, which is the one moment the order can be both correct and in
+   * time.
+   */
+  async applyAutoTireOrder() {
+    if (!this.isAutoActive || !this.settings.autoTires || this.autoTiresSent) {
+      return;
+    }
+
+    this.autoTiresSent = true;
+
+    const order = this.autoTireOrder;
+
+    if (order.length === 0) {
+      return;
+    }
+
+    await this.send(order);
   }
 
   /**
@@ -582,6 +627,8 @@ export class PitServiceWidgetStore {
     // A new lap starts a new decision: whatever the driver overrode belonged to
     // the stop that just ended.
     this.autoSuspended = false;
+    this.autoFuelSent = false;
+    this.autoTiresSent = false;
 
     this.hideTimer = setTimeout(() => {
       this.lingering = false;
@@ -605,6 +652,8 @@ export class PitServiceWidgetStore {
     this.lastOrderResult = null;
     this.fuelDraftLiters = null;
     this.autoSuspended = false;
+    this.autoFuelSent = false;
+    this.autoTiresSent = false;
     this.manualShow = false;
     this.lingering = false;
     this.lastOnPitRoad = false;
