@@ -3,16 +3,31 @@ import { observer } from 'mobx-react-lite';
 import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
 import styles from './EnginePanelWidget.module.scss';
 
-interface EngineCellProps {
+export interface EngineCellProps {
   label: string;
   className?: string;
+  dividerRight?: boolean;
+  dividerTop?: boolean;
   children: ReactNode;
 }
 
 export const EngineCell = observer(
-  ({ label, className = '', children }: EngineCellProps) => {
+  ({
+    label,
+    className = '',
+    dividerRight = false,
+    dividerTop = false,
+    children,
+  }: EngineCellProps) => {
+    const dividerClasses = [
+      dividerRight ? styles.dividerRight : '',
+      dividerTop ? styles.dividerTop : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
     return (
-      <div className={`${styles.cell} ${className}`}>
+      <div className={`${styles.cell} ${dividerClasses} ${className}`}>
         <div className={styles.cellHeader}>
           <WidgetLabel mono={false} uppercase className={styles.label}>
             {label}

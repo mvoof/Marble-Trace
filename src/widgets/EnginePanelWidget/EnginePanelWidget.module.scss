@@ -6,11 +6,10 @@
 }
 
 .cell {
+  position: relative;
   flex: 1 1 auto;
   min-width: 0;
   background: $widget-surface-cell;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: radius(sm);
   padding: sp(xxs) sp(xs);
   display: flex;
   flex-direction: column;
@@ -19,9 +18,29 @@
   text-align: center;
   transition:
     background-color 0.2s ease-in-out,
-    border-color 0.2s ease-in-out,
     box-shadow 0.2s ease-in-out,
     color 0.2s ease-in-out;
+}
+
+// Dividers are hairlines inset from the plate edges, never full bleed.
+.dividerRight::after {
+  content: '';
+  position: absolute;
+  top: sp(xs);
+  bottom: sp(xs);
+  right: 0;
+  width: 1px;
+  background: $widget-border-subtle;
+}
+
+.dividerTop::before {
+  content: '';
+  position: absolute;
+  left: sp(xs);
+  right: sp(xs);
+  top: 0;
+  height: 1px;
+  background: $widget-border-subtle;
 }
 
 .cellHeader {
@@ -75,11 +94,9 @@
   0%,
   100% {
     background-color: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.3);
   }
   50% {
     background-color: rgba(239, 68, 68, 0.6);
-    border-color: rgba(239, 68, 68, 0.9);
   }
 }
 
@@ -98,7 +115,6 @@
 // System activations (e.g. ABS active)
 .absActive {
   background-color: rgba(245, 197, 24, 0.2);
-  border-color: rgba(245, 197, 24, 0.5);
   box-shadow: 0 0 sp(xs) rgba(245, 197, 24, 0.1);
 
   .value {
