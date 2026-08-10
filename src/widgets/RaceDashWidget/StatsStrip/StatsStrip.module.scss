@@ -10,11 +10,14 @@
 
 // Internal hairlines use a fixed token, not var(--widget-border) — the
 // user's border-color setting must restyle only the plate outline.
+// margin-left pushes the divider and the column after it to the right edge
+// together, instead of stranding the divider mid-strip.
 .divider {
   width: 1px;
   flex-shrink: 0;
   align-self: center;
   height: ws(56);
+  margin-left: auto;
   background: $widget-border-subtle;
 }
 
@@ -25,19 +28,6 @@
   flex-direction: column;
   gap: sp(sm);
   min-width: ws(77);
-}
-
-// When the Coach section is hidden, StatsStrip grows to fill the freed
-// width — push the divider (and the column that follows it) to the right
-// edge together, instead of stranding the divider mid-strip.
-.dividerExpanded {
-  margin-left: auto;
-}
-
-// Matches the CoachTab's own margin-left (sp(lg)), so the gap from the
-// column to the plate edge equals the gap it had to the reference text
-// when the Coach section was visible.
-.columnExpanded {
   margin-right: sp(lg);
 }
 

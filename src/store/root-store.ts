@@ -7,6 +7,7 @@ import { PitServiceWidgetStore } from './widgets/pit-service.widget';
 import { StandingsWidgetStore } from './widgets/standings.widget';
 import { TrackMapWidgetStore } from './widgets/track-map.widget';
 import { DrivingCoachWidgetStore } from './widgets/driving-coach.widget';
+import { CoachWidgetStore } from './widgets/coach.widget';
 import { InputTraceWidgetStore } from './widgets/input-trace.widget';
 import { WidgetSettingsStore } from './settings/widget-settings.store';
 import { AppSettingsStore } from './settings/app-settings.store';
@@ -41,6 +42,7 @@ export class RootStore {
   pitServiceWidget: PitServiceWidgetStore;
   trackMapWidget: TrackMapWidgetStore;
   drivingCoachWidget: DrivingCoachWidgetStore;
+  coachWidget: CoachWidgetStore;
   inputTraceWidget: InputTraceWidgetStore;
   streamChatWidget: StreamChatWidgetStore;
   widgetSettings: WidgetSettingsStore;
@@ -72,6 +74,7 @@ export class RootStore {
     this.pitServiceWidget = new PitServiceWidgetStore(this);
     this.trackMapWidget = new TrackMapWidgetStore();
     this.drivingCoachWidget = new DrivingCoachWidgetStore(this);
+    this.coachWidget = new CoachWidgetStore(this);
     this.inputTraceWidget = new InputTraceWidgetStore(this);
     this.streamChatWidget = new StreamChatWidgetStore(this);
     this.sim = new SimStore(this);
@@ -88,6 +91,7 @@ export class RootStore {
       this.sim.init();
       this.appSettings.init();
       this.drivingCoachWidget.init();
+      this.coachWidget.init();
       this.streamChatWidget.init();
       void this.chat.init();
       void this.twitchAuth.init();
@@ -101,6 +105,7 @@ export class RootStore {
     this.streamChatWidget.dispose();
     this.chat.dispose();
     this.inputTraceWidget.dispose();
+    this.coachWidget.dispose();
     this.standingsWidget.dispose();
     this.flags.dispose();
     this.sim.dispose();

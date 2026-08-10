@@ -36,9 +36,6 @@ export interface RaceDashWidgetSettings {
   rpmColorHigh: string;
   rpmColorShift: string;
   rpmColorLimit: string;
-  brakeColor: string;
-  gasColor: string;
-  showReferenceSpeed: boolean;
   /** Tint the gear digit and RPM number with the zone color at high revs. */
   colorizeByRpmZone: boolean;
   /** 'fill' = colored RPM arc around the ring, 'comb' = discrete ticks on that same ring, 'glow' = rim glows near shift, 'off' = no RPM indication. */
@@ -368,6 +365,23 @@ export interface EnginePanelWidgetSettings {
   layoutSizes?: Record<string, { width: number; height: number }>;
 }
 
+export interface CoachWidgetSettings {
+  /** Draw the speed trace under the call row. Off leaves just the call row, and the plate shrinks to it. */
+  showTrace: boolean;
+  /** Half-width of the trace window in metres: it spans this far behind and ahead of the car. */
+  windowMeters: number;
+  /** Brake urgency bar under the call row. */
+  showUrgencyBar: boolean;
+  brakeColor: string;
+  gasColor: string;
+  /** Stored best lap the trace is compared against. */
+  referenceColor: string;
+  /** This lap where it is up on the reference. */
+  gainColor: string;
+  /** This lap where it is down on the reference. */
+  lossColor: string;
+}
+
 export type WidgetSpecificSettings =
   | Record<never, never> // id: example widget
   | PitServiceWidgetSettings
@@ -387,6 +401,7 @@ export type WidgetSpecificSettings =
   | GMeterWidgetSettings
   | EnginePanelWidgetSettings
   | RaceDashWidgetSettings
+  | CoachWidgetSettings
   | StreamChatWidgetSettings;
 export interface WidgetMeta {
   id: string;

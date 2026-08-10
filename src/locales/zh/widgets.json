@@ -58,13 +58,16 @@
       "description": "由发动机转速驱动的独立换挡灯条，带维修区限速动画。"
     },
     "race-dash": {
-      "description": "座舱组件：带转速弧的挡位环、显示圈数/位置/转速的速度读数、教练标签，以及带限速辅助的维修区模式。"
+      "description": "座舱组件：带转速弧的挡位环、显示圈数/位置/转速的速度读数，以及带限速辅助的维修区模式。"
     },
     "stream-chat": {
       "description": "Twitch 与 YouTube 直播聊天合并为一条信息流。"
     },
     "pit-service": {
       "description": "维修站服务项目、维修、拖车时间与维修道限速。"
+    },
+    "coach": {
+      "description": "刹车/油门提示，以及与已保存最快圈对比的速度曲线，按赢得或损失的时间着色。"
     }
   },
   "settingsPanels": {
@@ -241,13 +244,6 @@
       "steeringMarkerDesc": "在挡位圆环外缘显示与方向盘同步转动的圆点。",
       "steeringTrail": "方向盘轨迹颜色",
       "steeringTrailDesc": "方向盘指示圆点在圆环上留下的轨迹颜色。",
-      "drivingCoach": "驾驶教练",
-      "coachSection": "教练区域",
-      "coachSectionDesc": "显示刹车/油门提示和最佳圈参考速度。",
-      "brakeAccent": "刹车强调色",
-      "brakeAccentDesc": "刹车提示的颜色。",
-      "gasAccent": "油门强调色",
-      "gasAccentDesc": "油门提示的颜色。",
       "pitAssist": "维修区辅助",
       "pitLaneAssist": "维修区辅助",
       "pitLaneAssistDesc": "进入维修区时切换为维修区面板。",
@@ -472,6 +468,26 @@
       "autoTires": "自动换胎",
       "autoTiresDesc": "自动模式逐条勾选磨损超过下方阈值的轮胎。",
       "autoTireWearThreshold": "胎面剩余 {{percent}}% 时更换该轮胎"
+    },
+    "coach": {
+      "call": "提示",
+      "urgencyBar": "紧急度条",
+      "urgencyBarDesc": "提示下方的条形图，显示下一个刹车区还有多近。",
+      "brakeAccent": "刹车提示颜色",
+      "brakeAccentDesc": "BRAKE 提示的颜色。",
+      "gasAccent": "油门提示颜色",
+      "gasAccentDesc": "GAS 提示的颜色。",
+      "trace": "速度曲线",
+      "showTrace": "显示曲线",
+      "showTraceDesc": "在提示下方绘制速度曲线。关闭后仅保留提示行，组件高度随之收缩。",
+      "window": "窗口（米）",
+      "windowDesc": "曲线向车辆前后延伸的距离。",
+      "referenceColor": "最快圈颜色",
+      "referenceColorDesc": "用于对比的已保存最快圈的颜色。",
+      "gainColor": "赢得时间的颜色",
+      "gainColorDesc": "本圈快于最快圈的路段。",
+      "lossColor": "损失时间的颜色",
+      "lossColorDesc": "本圈慢于最快圈的路段。"
     }
   },
   "streamChat": {

@@ -14,11 +14,7 @@ import {
 
 import styles from './StatsStrip.module.scss';
 
-interface StatsStripProps {
-  expanded: boolean;
-}
-
-export const StatsStrip = observer(({ expanded }: StatsStripProps) => {
+export const StatsStrip = observer(() => {
   const player = usePlayerStore();
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
@@ -58,19 +54,9 @@ export const StatsStrip = observer(({ expanded }: StatsStripProps) => {
     <div className={styles.root}>
       <SpeedReadout />
 
-      <div
-        className={
-          expanded
-            ? `${styles.divider} ${styles.dividerExpanded}`
-            : styles.divider
-        }
-      />
+      <div className={styles.divider} />
 
-      <div
-        className={
-          expanded ? `${styles.column} ${styles.columnExpanded}` : styles.column
-        }
-      >
+      <div className={styles.column}>
         <div className={styles.row}>
           <span className={styles.label}>RPM</span>
           <RpmValue />

@@ -192,44 +192,6 @@ export const RaceDashSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.raceDash.drivingCoach')}>
-        <div className={styles.fieldGroup}>
-          <SettingRow
-            title={t('settingsPanels.raceDash.coachSection')}
-            desc={t('settingsPanels.raceDash.coachSectionDesc')}
-          >
-            <Switch
-              checked={settings.showReferenceSpeed}
-              onChange={(value) => update({ showReferenceSpeed: value })}
-            />
-          </SettingRow>
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SettingRow
-            title={t('settingsPanels.raceDash.brakeAccent')}
-            desc={t('settingsPanels.raceDash.brakeAccentDesc')}
-          >
-            <ColorPicker
-              value={settings.brakeColor}
-              onChange={(color) => update({ brakeColor: color.toHexString() })}
-            />
-          </SettingRow>
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SettingRow
-            title={t('settingsPanels.raceDash.gasAccent')}
-            desc={t('settingsPanels.raceDash.gasAccentDesc')}
-          >
-            <ColorPicker
-              value={settings.gasColor}
-              onChange={(color) => update({ gasColor: color.toHexString() })}
-            />
-          </SettingRow>
-        </div>
-      </Card>
-
       <Card title={t('settingsPanels.raceDash.pitAssist')}>
         <div className={styles.fieldGroup}>
           <SettingRow
