@@ -13,6 +13,11 @@ import type { Migration, SettingsBlob } from '../types';
  * After: one flat layout shape with `monitors[]` and `backgroundImages`;
  * `app.steeringLock`; no bindings at all.
  *
+ * It also splits the Race Dash coach tab out into the standalone `coach` widget.
+ * That change landed after 0.20 too, so no released build ever wrote a file with
+ * the tab gone — it belongs in this same v0 → v1 step rather than a v2 of its
+ * own, which would only ever run on unreleased local configs.
+ *
  * The old keys are dropped rather than carried over. They cannot be translated
  * honestly: a key meant "while this layout is active" and would now mean
  * "always", each layout held its own copy so there is no single right answer as
@@ -92,12 +97,57 @@ const DEAD_APP_FIELDS = [
 
 const STEERING_LOCK_WIDGET = 'input-trace';
 
+const RACE_DASH_ID = 'race-dash';
+const COACH_ID = 'coach';
+
+/**
+ * Race Dash keys that only existed to drive the coach tab, dropped along with
+ * the tab itself.
+ */
+const DEAD_RACE_DASH_FIELDS = ['showReferenceSpeed', 'brakeColor', 'gasColor'];
+
+/** Race Dash's width before and after the coach tab was removed from the plate. */
+const RACE_DASH_WIDTH_WITH_COACH = 430;
+const RACE_DASH_WIDTH_WITHOUT_COACH = 334;
+const RACE_DASH_DESIGN_HEIGHT = 104;
+
+/** The coach widget's own defaults, frozen as they shipped with this step. */
+const COACH_DEFAULTS = {
+  enabled: false,
+  x: 400,
+  y: 240,
+  currentWidth: 300,
+  currentHeight: 130,
+  opacity: 1,
+  fontScale: 1,
+  backgroundColor: 'rgba(21, 22, 26, 0.8)',
+  borderColor: 'rgba(255, 255, 255, 0.1)',
+  showTrace: true,
+  traceChannel: 'speed',
+  windowMeters: 150,
+  showUrgencyBar: true,
+  showSpeed: true,
+  showReferenceLapTime: true,
+  showTrackCondition: true,
+  brakeColor: '#ef4444',
+  gasColor: '#10b981',
+  referenceColor: '#a855f7',
+  gainColor: '#10b981',
+  lossColor: '#ef4444',
+};
+
 const asObject = (value: unknown): Record<string, unknown> | undefined =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : undefined;
 
 const asArray = <T>(value: unknown): T[] => (Array.isArray(value) ? value : []);
+
+const numberOr = (value: unknown, fallback: number): number =>
+  typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+
+const stringOr = (value: unknown, fallback: string): string =>
+  typeof value === 'string' && value.length > 0 ? value : fallback;
 
 /**
  * Flattens one layout into the virtual-desktop shape. Ported unchanged from
@@ -209,6 +259,100 @@ const stripWidgetFields = (widgets: LegacyWidget[]): LegacyWidget[] =>
     return { ...widget, userSettings };
   });
 
+/**
+ * Narrows the stored plate by the width the coach tab used to occupy, keeping
+ * the user's own scaling: the widget locks its aspect ratio to the ring, so the
+ * height has to be treated as the source of truth and the width rebuilt from it.
+ */
+const shrinkRaceDash = (
+  userSettings: Record<string, unknown>
+): Record<string, unknown> => {
+  const storedWidth = numberOr(
+    userSettings['currentWidth'],
+    RACE_DASH_WIDTH_WITH_COACH
+  );
+  const storedHeight = numberOr(
+    userSettings['currentHeight'],
+    RACE_DASH_DESIGN_HEIGHT
+  );
+
+  const scale =
+    storedHeight > 0
+      ? storedHeight / RACE_DASH_DESIGN_HEIGHT
+      : storedWidth / RACE_DASH_WIDTH_WITH_COACH;
+
+  return {
+    ...userSettings,
+    currentWidth: Math.round(RACE_DASH_WIDTH_WITHOUT_COACH * scale),
+  };
+};
+
+const stripRaceDash = (widget: LegacyWidget): LegacyWidget => {
+  const userSettings = { ...asObject(widget.userSettings) };
+
+  for (const field of DEAD_RACE_DASH_FIELDS) {
+    delete userSettings[field];
+  }
+
+  return { ...widget, userSettings: shrinkRaceDash(userSettings) };
+};
+
+/**
+ * The coach carried over from a Race Dash that had the tab on: same accent
+ * colors, enabled, and parked just under the dash so it is where the user was
+ * already looking.
+ */
+const coachFromRaceDash = (
+  raceDash: Record<string, unknown>
+): LegacyWidget => ({
+  id: COACH_ID,
+  userSettings: {
+    ...COACH_DEFAULTS,
+    enabled: true,
+    x: numberOr(raceDash['x'], COACH_DEFAULTS.x),
+    y:
+      numberOr(raceDash['y'], COACH_DEFAULTS.y) +
+      numberOr(raceDash['currentHeight'], RACE_DASH_DESIGN_HEIGHT),
+    brakeColor: stringOr(raceDash['brakeColor'], COACH_DEFAULTS.brakeColor),
+    gasColor: stringOr(raceDash['gasColor'], COACH_DEFAULTS.gasColor),
+    lossColor: stringOr(raceDash['brakeColor'], COACH_DEFAULTS.lossColor),
+    gainColor: stringOr(raceDash['gasColor'], COACH_DEFAULTS.gainColor),
+  },
+});
+
+/**
+ * Strips the dash of its coach keys, and adds the coach widget when the user had
+ * the tab switched on. A user who had it off is left alone, and picks the widget
+ * up from the catalog if they want it.
+ */
+const splitCoachOut = (widgets: LegacyWidget[]): LegacyWidget[] => {
+  const raceDash = widgets.find((widget) => widget?.id === RACE_DASH_ID);
+  const raceDashSettings = asObject(raceDash?.userSettings) ?? {};
+
+  const owedCoach =
+    raceDash !== undefined &&
+    raceDashSettings['showReferenceSpeed'] === true &&
+    raceDashSettings['enabled'] === true &&
+    !widgets.some((widget) => widget?.id === COACH_ID);
+
+  // A dash with no `showReferenceSpeed` never had the tab, so it was never the
+  // wider plate either — narrowing it again would shrink it on every run.
+  const converted = widgets.map((widget) =>
+    widget?.id === RACE_DASH_ID &&
+    asObject(widget.userSettings)?.['showReferenceSpeed'] !== undefined
+      ? stripRaceDash(widget)
+      : widget
+  );
+
+  return owedCoach
+    ? [...converted, coachFromRaceDash(raceDashSettings)]
+    : converted;
+};
+
+/** Both passes over one `widgets[]` array, in the order the file needs them. */
+const convertWidgets = (widgets: LegacyWidget[]): LegacyWidget[] =>
+  splitCoachOut(stripWidgetFields(widgets));
+
 const migrate = (blob: SettingsBlob): SettingsBlob => {
   // An entry that is not an object cannot be repaired into a layout, and a
   // placeholder in its place would show up in the UI as a nameless one.
@@ -238,16 +382,17 @@ const migrate = (blob: SettingsBlob): SettingsBlob => {
   return {
     ...blob,
     app,
-    widgets: stripWidgetFields(topWidgets),
+    widgets: convertWidgets(topWidgets),
     layouts: layouts.map((layout) => ({
       ...layout,
-      widgets: stripWidgetFields(asArray<LegacyWidget>(layout.widgets)),
+      widgets: convertWidgets(asArray<LegacyWidget>(layout.widgets)),
     })),
   };
 };
 
 export const v1LegacyConsolidation: Migration = {
   to: 1,
-  describe: 'flat layouts, app-level steering lock, hotkeys dropped',
+  describe:
+    'flat layouts, app-level steering lock, hotkeys dropped, coach split out of race dash',
   migrate,
 };

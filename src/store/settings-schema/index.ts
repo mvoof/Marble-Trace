@@ -1,6 +1,5 @@
 import type { Migration, MigrationResult, SettingsBlob } from './types';
 import { v1LegacyConsolidation } from './migrations/v1-legacy-consolidation';
-import { v2CoachWidgetSplit } from './migrations/v2-coach-widget-split';
 
 /**
  * Format version of `settings.json`. An integer, deliberately unrelated to the
@@ -10,7 +9,7 @@ import { v2CoachWidgetSplit } from './migrations/v2-coach-widget-split';
  *
  * 0 = anything written before 0.21, which carried no version field at all.
  */
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 1;
 
 /**
  * Oldest version the chain can still migrate. Bump it only when a step is
@@ -20,10 +19,7 @@ export const CURRENT_SCHEMA_VERSION = 2;
 export const OLDEST_SUPPORTED_VERSION = 0;
 
 /** Ordered chain. Each entry's `to` is the version it produces. */
-export const MIGRATIONS: Migration[] = [
-  v1LegacyConsolidation,
-  v2CoachWidgetSplit,
-];
+export const MIGRATIONS: Migration[] = [v1LegacyConsolidation];
 
 /**
  * The chain as a value, so tests can drive the runner with a synthetic one.
