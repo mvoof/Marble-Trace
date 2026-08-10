@@ -1,7 +1,9 @@
+import { cloneElement, type ReactElement } from 'react';
 import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
-import { EngineCell } from './EngineCell';
+import { getCellDividers } from '@utils/widget/grid-divider-utils';
+import { EngineCell, type EngineCellProps } from './EngineCell';
 import {
   usePlayerStore,
   useUnitsStore,
@@ -144,16 +146,26 @@ export const EnginePanelWidget = observer(() => {
     oilPressCell,
     waterCell,
     voltageCell,
-  ].filter(Boolean);
+  ].filter(Boolean) as ReactElement<EngineCellProps>[];
 
   const cols = settings.horizontal
     ? Math.max(1, Math.min(settings.horizontalColumns ?? 8, cells.length))
     : (settings.verticalColumns ?? 2);
 
+  const dividedCells = cells.map((cell, index) => {
+    const { right, top } = getCellDividers(index, cols, cells.length);
+
+    return cloneElement(cell, {
+      key: index,
+      dividerRight: right,
+      dividerTop: top,
+    });
+  });
+
   return (
     <WidgetPanel
       direction={settings.horizontal ? 'row' : 'column'}
-      gap={4}
+      gap={0}
       minWidth={0}
       className={styles.root}
       style={{
@@ -162,7 +174,7 @@ export const EnginePanelWidget = observer(() => {
         gridAutoRows: '1fr',
       }}
     >
-      {cells}
+      {dividedCells}
     </WidgetPanel>
   );
 });

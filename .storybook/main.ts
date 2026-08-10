@@ -27,6 +27,18 @@ const config: StorybookConfig = {
         __dirname,
         '../src/storybook/__mocks__/tauri-webview.ts'
       ),
+      '@tauri-apps/api/window': path.resolve(
+        __dirname,
+        '../src/storybook/__mocks__/tauri-window.ts'
+      ),
+      '@tauri-apps/api/path': path.resolve(
+        __dirname,
+        '../src/storybook/__mocks__/tauri-path.ts'
+      ),
+      '@tauri-apps/plugin-process': path.resolve(
+        __dirname,
+        '../src/storybook/__mocks__/tauri-process.ts'
+      ),
       '@tauri-apps/plugin-store': path.resolve(
         __dirname,
         '../src/storybook/__mocks__/tauri-store.ts'

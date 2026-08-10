@@ -13,10 +13,17 @@ export class WebviewWindow {
   static getByLabel = (_label: string) => null;
 }
 
-export const getCurrent = () => ({
+const makeMockWindow = (label: string) => ({
   listen: async (_event: string, _cb: unknown) => () => {},
+  once: async (_event: string, _cb: unknown) => () => {},
   emit: async (_event: string, _payload?: unknown) => {},
   setIgnoreCursorEvents: async (_ignore: boolean) => {},
   startDragging: async () => {},
-  label: 'mock-window',
+  label,
 });
+
+export const getCurrent = () => makeMockWindow('mock-window');
+
+export const getCurrentWebviewWindow = () => makeMockWindow('mock-window');
+
+export const getAllWebviewWindows = async () => [makeMockWindow('mock-window')];

@@ -8,15 +8,14 @@
 
 .grid {
   display: grid;
-  gap: sp(xxs);
   padding: 0 sp(sm);
 }
 
 .chip {
+  position: relative;
   padding: sp(xxs) sp(xs);
   background: $widget-surface-cell;
   border-left: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1px;
   display: flex;
   flex-direction: column;
   gap: sp(xxxs);
@@ -30,6 +29,27 @@
 .chipFuture {
   background: $widget-surface-cell;
   border-left-color: rgba(255, 255, 255, 0.1);
+}
+
+// Dividers are hairlines inset from the plate edges, never full bleed.
+.dividerRight::after {
+  content: '';
+  position: absolute;
+  top: sp(xxs);
+  bottom: sp(xxs);
+  right: 0;
+  width: 1px;
+  background: $widget-border-subtle;
+}
+
+.dividerTop::before {
+  content: '';
+  position: absolute;
+  left: sp(xs);
+  right: sp(xs);
+  top: 0;
+  height: 1px;
+  background: $widget-border-subtle;
 }
 
 .chipTop {

@@ -8,6 +8,7 @@ import {
   formatSectorDelta,
   getDeltaState,
 } from '@utils/widget/delta-utils';
+import { getCellDividers } from '@utils/widget/grid-divider-utils';
 import styles from './SectorGrid.module.scss';
 
 interface Props {
@@ -70,6 +71,8 @@ export const SectorGrid = observer(({ sectorCount }: Props) => {
 
         const deltaState = getDeltaState(delta);
 
+        const dividers = getCellDividers(idx, cols, sectorCount);
+
         const borderColor = isFuture
           ? undefined
           : isCurrent
@@ -85,7 +88,7 @@ export const SectorGrid = observer(({ sectorCount }: Props) => {
         return (
           <div
             key={idx}
-            className={`${styles.chip} ${isCurrent ? styles.chipCurrent : ''} ${isFuture ? styles.chipFuture : ''}`}
+            className={`${styles.chip} ${isCurrent ? styles.chipCurrent : ''} ${isFuture ? styles.chipFuture : ''} ${dividers.right ? styles.dividerRight : ''} ${dividers.top ? styles.dividerTop : ''}`}
             style={borderColor ? { borderLeftColor: borderColor } : undefined}
           >
             <div className={styles.chipTop}>
