@@ -276,14 +276,104 @@ describe('PitServiceWidgetStore — pit orders', () => {
       enableAuto();
       setTireWear({ lf: 0.55, rf: 0.62, lr: 0.9, rr: 0.6 });
 
-      await rootStore.pitServiceWidget.applyAutoOrder();
+      await rootStore.pitServiceWidget.applyAutoFuelOrder();
+      await rootStore.pitServiceWidget.applyAutoTireOrder();
 
       expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
         requests: [
           { kind: 'clear', value: 0 },
           { kind: 'fuel', value: 25 },
+        ],
+      });
+      expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+        requests: [
           { kind: 'lf', value: 0 },
           { kind: 'rr', value: 0 },
+        ],
+      });
+    });
+
+    // The whole point of the split: on pit road the sim still reports the
+    // previous stop's tread, and only the stall reading may decide the order.
+    it('orders tires from the wear read in the stall, not on pit entry', async () => {
+      setFuelPlan(24.1, 106);
+      enableAuto();
+      setTireWear({ lf: 1, rf: 1, lr: 1, rr: 1 });
+
+      await rootStore.pitServiceWidget.applyAutoFuelOrder();
+
+      expect(invokeMock).not.toHaveBeenCalledWith('send_pit_order', {
+        requests: [{ kind: 'lf', value: 0 }],
+      });
+
+      setTireWear({ lf: 0.3, rf: 1, lr: 1, rr: 1 });
+
+      await rootStore.pitServiceWidget.applyAutoTireOrder();
+
+      expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+        requests: [{ kind: 'lf', value: 0 }],
+      });
+    });
+
+    it('sends nothing for tires when no corner is worn enough', async () => {
+      enableAuto();
+      setTireWear({ lf: 1, rf: 1, lr: 1, rr: 1 });
+
+      await rootStore.pitServiceWidget.applyAutoFuelOrder();
+
+      invokeMock.mockClear();
+      await rootStore.pitServiceWidget.applyAutoTireOrder();
+
+      expect(invokeMock).not.toHaveBeenCalledWith(
+        'send_pit_order',
+        expect.anything()
+      );
+    });
+
+    // A missed pit road flag skips the fuel half, and with it the start-of-stop
+    // clear the tire half assumes has already gone out.
+    it('carries the clear itself when the fuel half never went out', async () => {
+      enableAuto();
+      setTireWear({ lf: 0.3, rf: 1, lr: 1, rr: 1 });
+
+      invokeMock.mockClear();
+      await rootStore.pitServiceWidget.applyAutoTireOrder();
+
+      expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+        requests: [
+          { kind: 'clear', value: 0 },
+          { kind: 'lf', value: 0 },
+        ],
+      });
+    });
+
+    it('sends each half once per stop', async () => {
+      setFuelPlan(24.1, 106);
+      enableAuto();
+      setTireWear({ lf: 0.3 });
+
+      await rootStore.pitServiceWidget.applyAutoFuelOrder();
+      await rootStore.pitServiceWidget.applyAutoTireOrder();
+
+      invokeMock.mockClear();
+
+      await rootStore.pitServiceWidget.applyAutoFuelOrder();
+      await rootStore.pitServiceWidget.applyAutoTireOrder();
+
+      expect(invokeMock).not.toHaveBeenCalledWith(
+        'send_pit_order',
+        expect.anything()
+      );
+
+      rootStore.pitServiceWidget.handlePitRoadChange(true);
+      rootStore.pitServiceWidget.handlePitRoadChange(false);
+
+      await rootStore.pitServiceWidget.applyAutoFuelOrder();
+
+      expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+        requests: [
+          { kind: 'clear', value: 0 },
+          { kind: 'fuel', value: 25 },
         ],
       });
     });
@@ -307,13 +397,14 @@ describe('PitServiceWidgetStore — pit orders', () => {
       setSettings({ autoFuel: false });
       setTireWear({ lf: 0.1 });
 
-      await rootStore.pitServiceWidget.applyAutoOrder();
+      await rootStore.pitServiceWidget.applyAutoFuelOrder();
+      await rootStore.pitServiceWidget.applyAutoTireOrder();
 
       expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
-        requests: [
-          { kind: 'clear', value: 0 },
-          { kind: 'lf', value: 0 },
-        ],
+        requests: [{ kind: 'clear', value: 0 }],
+      });
+      expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+        requests: [{ kind: 'lf', value: 0 }],
       });
     });
 
@@ -327,7 +418,8 @@ describe('PitServiceWidgetStore — pit orders', () => {
       expect(rootStore.pitServiceWidget.isAutoActive).toBe(false);
 
       invokeMock.mockClear();
-      await rootStore.pitServiceWidget.applyAutoOrder();
+      await rootStore.pitServiceWidget.applyAutoFuelOrder();
+      await rootStore.pitServiceWidget.applyAutoTireOrder();
 
       expect(invokeMock).not.toHaveBeenCalledWith(
         'send_pit_order',
@@ -353,7 +445,8 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
       invokeMock.mockClear();
 
-      await rootStore.pitServiceWidget.applyAutoOrder();
+      await rootStore.pitServiceWidget.applyAutoFuelOrder();
+      await rootStore.pitServiceWidget.applyAutoTireOrder();
 
       expect(rootStore.pitServiceWidget.isAutoEnabled).toBe(false);
       expect(invokeMock).not.toHaveBeenCalledWith(
@@ -367,7 +460,8 @@ describe('PitServiceWidgetStore — pit orders', () => {
       setSettings({ autoFuel: false, autoTires: false });
       setTireWear({ lf: 0.1 });
 
-      await rootStore.pitServiceWidget.applyAutoOrder();
+      await rootStore.pitServiceWidget.applyAutoFuelOrder();
+      await rootStore.pitServiceWidget.applyAutoTireOrder();
 
       expect(rootStore.pitServiceWidget.isAutoEnabled).toBe(false);
       expect(invokeMock).not.toHaveBeenCalledWith(

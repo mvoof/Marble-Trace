@@ -513,14 +513,26 @@ export const initMainSync = async (root: RootStore) => {
             void emitPitServiceAutoSuspended(suspended);
           }
         ),
-        // The automatic order is built on pit entry and sent from this window
-        // only: both windows run the same telemetry, so an overlay copy of this
-        // reaction would broadcast the same order a second time.
+        // The automatic order is sent from this window only: both windows run
+        // the same telemetry, so an overlay copy of these reactions would
+        // broadcast the same order a second time.
+        //
+        // It goes out in two halves because the sim answers the two questions at
+        // different moments — the fuel calculation is ours and ready on pit
+        // entry, while tire wear is only refreshed once the car is in the box.
         reaction(
           () => root.pitServiceWidget.isOnPitRoad,
           (onPitRoad) => {
             if (onPitRoad) {
-              void root.pitServiceWidget.applyAutoOrder();
+              void root.pitServiceWidget.applyAutoFuelOrder();
+            }
+          }
+        ),
+        reaction(
+          () => root.pitServiceWidget.isInPitStall,
+          (inPitStall) => {
+            if (inPitStall) {
+              void root.pitServiceWidget.applyAutoTireOrder();
             }
           }
         ),
