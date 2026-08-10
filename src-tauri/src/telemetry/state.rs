@@ -5,6 +5,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::computations::fuel::{FuelSettings, DEFAULT_FUEL_AVG_WINDOW, DEFAULT_PIT_WARNING_LAPS};
 use crate::computations::ProcessorRegistry;
+use crate::model::reference_lap::StoredReferenceTimes;
 use crate::model::session::SessionSnapshot;
 
 /// User-configured fuel parameters, written by commands and read once per tick
@@ -58,7 +59,7 @@ pub struct TelemetryServiceState {
     /// refreshed on every session-info update. ReferenceLapProcessor commits a
     /// new reference only when a lap beats this time, so a slower session best
     /// never overwrites a faster persisted reference.
-    pub stored_reference_lap_time: Arc<Mutex<Option<f32>>>,
+    pub stored_reference_lap_time: Arc<Mutex<StoredReferenceTimes>>,
 }
 
 /// Bitmask flags for high-frequency events.

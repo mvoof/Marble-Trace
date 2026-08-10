@@ -18,7 +18,7 @@ use computations::{
     standings::{DriverEntriesFrame, DriverEntry},
 };
 #[cfg(feature = "dev")]
-use model::reference_lap::{ReferenceLapData, ReferenceLapSample};
+use model::reference_lap::{ReferenceLapData, ReferenceLapSample, TrackCondition};
 #[cfg(feature = "dev")]
 use model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
 
@@ -129,7 +129,8 @@ pub fn run() {
             .register::<TrackShapePayload>()
             .register::<TrackRecordingFrame>()
             .register::<ReferenceLapData>()
-            .register::<ReferenceLapSample>();
+            .register::<ReferenceLapSample>()
+            .register::<TrackCondition>();
 
         types
             .register::<InputDevice>()
@@ -159,7 +160,9 @@ pub fn run() {
     let reset_reference_lap = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     let reset_reference_lap_registry = std::sync::Arc::clone(&reset_reference_lap);
     let reset_reference_lap_state = reset_reference_lap;
-    let stored_reference_lap_time = std::sync::Arc::new(Mutex::new(None));
+    let stored_reference_lap_time = std::sync::Arc::new(Mutex::new(
+        crate::model::reference_lap::StoredReferenceTimes::default(),
+    ));
     let stored_reference_lap_time_registry = std::sync::Arc::clone(&stored_reference_lap_time);
     let stored_reference_lap_time_service = stored_reference_lap_time;
 

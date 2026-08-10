@@ -1,0 +1,7 @@
+// Height follows the content: with the trace switched off the widget is just
+// the call row (see autoHeight on the widget config).
+.root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}

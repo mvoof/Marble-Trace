@@ -6,9 +6,7 @@ import {
   buildTargetSpeedProfile,
   computeDrivingAdvisory,
   extractCornerTargets,
-  getAverageTireWear,
   interpolateReferenceSample,
-  isConditionMismatch,
   NEUTRAL_ADVISORY_STATE,
   type AdvisoryState,
   type CornerTarget,
@@ -33,6 +31,43 @@ const ADVISORY_DEBOUNCE_MS = 250;
 const MAX_POSITION_EXTRAPOLATION_S = 0.2;
 /** Displayed urgency is quantized to this step to avoid re-rendering observers at 60 Hz. */
 const URGENCY_DISPLAY_STEP = 0.05;
+/**
+ * Countdowns to the next braking point and apex are quantized to this step
+ * (metres): a figure the driver glances at while approaching a corner is read
+ * in car lengths, and an unquantized one re-renders the row every frame.
+ */
+const CORNER_DISTANCE_DISPLAY_STEP_M = 5;
+/** Beyond this the next corner is not worth counting down to yet. */
+const MAX_CORNER_COUNTDOWN_M = 600;
+
+/** Why the coach is not producing an advisory — see `inactiveReason`. */
+export type CoachInactiveReason =
+  | 'no-reference'
+  | 'no-track-data'
+  | 'no-corners'
+  | 'no-telemetry';
+
+/** Lap fraction from `fromPct` forward to `toPct`, wrapping across the line. */
+const forwardGapPct = (fromPct: number, toPct: number): number =>
+  (toPct - fromPct + 1) % 1;
+
+/** Quantized metres from `fromPct` to `targetPct`, or null when too far to count down to. */
+const countdownM = (
+  fromPct: number,
+  targetPct: number,
+  trackLengthM: number
+): number | null => {
+  if (trackLengthM <= 0) return null;
+
+  const distanceM = forwardGapPct(fromPct, targetPct) * trackLengthM;
+
+  if (distanceM > MAX_CORNER_COUNTDOWN_M) return null;
+
+  return (
+    Math.round(distanceM / CORNER_DISTANCE_DISPLAY_STEP_M) *
+    CORNER_DISTANCE_DISPLAY_STEP_M
+  );
+};
 
 export class DrivingCoachWidgetStore {
   displayedAdvisory: DrivingAdvisory = 'neutral';
@@ -107,6 +142,35 @@ export class DrivingCoachWidgetStore {
     return this.root.referenceLap.data !== null;
   }
 
+  /**
+   * Why no advisory is being produced, or null while the coach is running.
+   *
+   * `advisoryInput` returns null under several conditions and the advisory then
+   * falls back to `neutral` — indistinguishable, from the outside, from "you
+   * are on the pace". A UI that reads the advisory alone therefore reports
+   * PACE while the coach is in fact switched off, so the reason is published
+   * here and shown instead.
+   */
+  get inactiveReason(): CoachInactiveReason | null {
+    if (!this.hasReferenceLap) return 'no-reference';
+
+    if ((this.root.session.sessionInfo?.trackLengthM ?? 0) <= 0) {
+      return 'no-track-data';
+    }
+
+    if (this.cornerTargets.length === 0) return 'no-corners';
+
+    if (!this.root.player.carDynamics || !this.root.player.carInputs) {
+      return 'no-telemetry';
+    }
+
+    if (this.root.player.lapTiming?.lap_dist_pct == null) {
+      return 'no-telemetry';
+    }
+
+    return null;
+  }
+
   /** Best-lap reference sample interpolated at the player's current track position. */
   get referenceSample(): ReferenceLapSample | null {
     const lapDistPct = this.root.player.lapTiming?.lap_dist_pct;
@@ -136,6 +200,76 @@ export class DrivingCoachWidgetStore {
     return speed - reference;
   }
 
+  /**
+   * How much more throttle the reference lap is carrying here than this lap is,
+   * 0-1. The GAS call's own magnitude: the advisory says to open the throttle,
+   * this says by how much of the pedal.
+   */
+  get throttleDeficit(): number {
+    const reference = this.referenceSample?.throttle;
+    const throttle = this.root.player.carInputs?.throttle;
+
+    if (reference === undefined || throttle === undefined) return 0;
+
+    return Math.min(Math.max(reference - throttle, 0), 1);
+  }
+
+  /** The corner whose apex is next ahead of the car, wrapping across the line. */
+  private get nextCornerTarget(): CornerTarget | null {
+    const currentDistPct = this.root.player.lapTiming?.lap_dist_pct;
+    const targets = this.cornerTargets;
+
+    if (currentDistPct == null || currentDistPct < 0 || targets.length === 0) {
+      return null;
+    }
+
+    let nearest: CornerTarget | null = null;
+    let nearestGap = Number.POSITIVE_INFINITY;
+
+    for (const target of targets) {
+      const gap = forwardGapPct(currentDistPct, target.distPct);
+
+      if (gap < nearestGap) {
+        nearestGap = gap;
+        nearest = target;
+      }
+    }
+
+    return nearest;
+  }
+
+  /** Metres to the next apex, quantized for display, or null when none is close enough. */
+  get apexDistanceM(): number | null {
+    const target = this.nextCornerTarget;
+    const currentDistPct = this.root.player.lapTiming?.lap_dist_pct;
+
+    if (!target || currentDistPct == null || currentDistPct < 0) return null;
+
+    return countdownM(currentDistPct, target.distPct, this.trackLengthM);
+  }
+
+  /**
+   * Metres to the point where the reference driver got on the brakes for the
+   * next corner — null once the car is inside that braking zone, where a
+   * countdown to a point already behind it would be a lie.
+   */
+  get brakePointDistanceM(): number | null {
+    const target = this.nextCornerTarget;
+    const currentDistPct = this.root.player.lapTiming?.lap_dist_pct;
+
+    if (!target || currentDistPct == null || currentDistPct < 0) return null;
+
+    const brakeGap = forwardGapPct(currentDistPct, target.brakeStartPct);
+
+    if (brakeGap > forwardGapPct(currentDistPct, target.distPct)) return null;
+
+    return countdownM(currentDistPct, target.brakeStartPct, this.trackLengthM);
+  }
+
+  private get trackLengthM(): number {
+    return this.root.session.sessionInfo?.trackLengthM ?? 0;
+  }
+
   private get cornerTargets(): CornerTarget[] {
     const data = this.root.referenceLap.data;
     const trackLengthM = this.root.session.sessionInfo?.trackLengthM ?? 0;
@@ -152,22 +286,6 @@ export class DrivingCoachWidgetStore {
     if (!data) return null;
 
     return buildTargetSpeedProfile(data.samples);
-  }
-
-  /** Whether current wetness/tire wear/fuel load have diverged too far from the reference lap's recorded conditions to trust the comparison. */
-  private get conditionsMismatched(): boolean {
-    const data = this.root.referenceLap.data;
-
-    if (!data) return false;
-
-    return isConditionMismatch({
-      currentWetness: this.root.environment.environment?.track_wetness ?? null,
-      recordedWetness: data.recordedWetness,
-      currentTireWear: getAverageTireWear(this.root.player.chassis),
-      recordedTireWear: data.recordedTireWear,
-      currentFuelLevel: this.root.player.carStatus?.fuel_level ?? null,
-      recordedFuelLevel: data.recordedFuelLevel,
-    });
   }
 
   private get advisoryInput(): DrivingAdvisoryInput | null {
@@ -188,8 +306,6 @@ export class DrivingCoachWidgetStore {
     ) {
       return null;
     }
-
-    if (this.conditionsMismatched) return null;
 
     const cornerTargets = this.cornerTargets;
 

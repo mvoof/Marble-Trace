@@ -26,6 +26,7 @@ export const useStandingsWidgetStore = () => useStore().standingsWidget;
 export const usePitServiceWidgetStore = () => useStore().pitServiceWidget;
 export const useTrackMapWidgetStore = () => useStore().trackMapWidget;
 export const useDrivingCoachWidgetStore = () => useStore().drivingCoachWidget;
+export const useCoachWidgetStore = () => useStore().coachWidget;
 export const useInputTraceWidgetStore = () => useStore().inputTraceWidget;
 export const useChatStore = () => useStore().chat;
 export const useStreamChatWidgetStore = () => useStore().streamChatWidget;

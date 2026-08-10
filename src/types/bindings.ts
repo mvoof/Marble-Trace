@@ -1054,6 +1054,12 @@ export type ReferenceLapData = {
    */
   samples: ReferenceLapSample[];
   /**
+   * Track state this lap was driven in — part of its identity, not just a note.
+   * `serde(default)` reads every reference recorded before the split as dry,
+   * which is what a single stored lap always was in practice.
+   */
+  condition?: TrackCondition;
+  /**
    * Track wetness (0=dry to 7=flooded) averaged over this lap, when available.
    */
   recordedWetness: number | null;
@@ -1300,6 +1306,14 @@ export type TelemetryBundle = {
 };
 
 export type TireCompoundEntry = { tireIndex: number; tireCompoundType: string };
+
+/**
+ * Which track state a reference lap was driven in.
+ *
+ * A dry lap is useless as a target in the rain and vice versa, so each is
+ * stored and compared against separately — one file per track+car+condition.
+ */
+export type TrackCondition = 'dry' | 'wet';
 
 export type TrackPoint = { x: number; y: number; pct: number };
 

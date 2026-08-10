@@ -19,6 +19,7 @@ import { LapLogWidget } from '@widgets/LapLogWidget/LapLogWidget';
 import { EnginePanelWidget } from '@widgets/EnginePanelWidget/EnginePanelWidget';
 import { RpmLightsWidget } from '@widgets/RpmLightsWidget/RpmLightsWidget';
 import { RaceDashWidget } from '@widgets/RaceDashWidget/RaceDashWidget';
+import { CoachWidget } from '@widgets/CoachWidget/CoachWidget';
 import { StreamChatWidget } from '@widgets/StreamChatWidget/StreamChatWidget';
 import type {
   WidgetConfig,
@@ -951,12 +952,12 @@ const WIDGETS: WidgetConfig[] = [
     id: 'race-dash',
     label: 'Race Dash',
     description:
-      'Cockpit cluster: gear ring, speed readout with lap/position/RPM, coach tab, and pit-lane mode.',
+      'Cockpit cluster: gear ring, speed readout with lap/position/RPM, and pit-lane mode.',
     component: RaceDashWidget,
     requiredCapabilities: ['playerDynamics'],
-    // The prototype plate measures 430×104: ring 104 + stats strip
-    // (16 + 96 + 14 + 1 + 14 + 77 + 10) + coach margin 12 + coach 84 + border 2.
-    designWidth: 430,
+    // The prototype plate measures 334×104: ring 104 + stats strip
+    // (16 + 96 + 14 + 1 + 14 + 77 + 10) + border 2.
+    designWidth: 334,
     designHeight: 104,
     transparentContainer: true,
     // The pit banner hangs over the plate's top edge like in the prototype —
@@ -971,7 +972,7 @@ const WIDGETS: WidgetConfig[] = [
       enabled: false,
       x: 400,
       y: 100,
-      currentWidth: 430,
+      currentWidth: 334,
       currentHeight: 104,
       ...COMMON_WIDGET_DEFAULTS,
       // Container stays transparent (transparentContainer); these colors are
@@ -987,15 +988,46 @@ const WIDGETS: WidgetConfig[] = [
       rpmColorHigh: '#ef4444',
       rpmColorShift: '#a855f7',
       rpmColorLimit: '#f97316',
-      brakeColor: '#ef4444',
-      gasColor: '#10b981',
-      showReferenceSpeed: true,
       colorizeByRpmZone: true,
       rpmIndicatorMode: 'fill',
       useLivePositions: true,
       classPositionInMulticlass: true,
       showSteeringMarker: false,
       steeringTrailColor: '#f59e0b',
+    },
+  },
+  {
+    id: 'coach',
+    label: 'Coach',
+    description:
+      'Brake/gas call and a speed trace against your stored best lap, colored by time gained or lost.',
+    component: CoachWidget,
+    requiredCapabilities: ['playerDynamics'],
+    designWidth: 300,
+    designHeight: 130,
+    // The trace can be switched off, leaving only the call row — a fixed height
+    // would hang an empty plate under it.
+    autoHeight: true,
+    userSettings: {
+      enabled: false,
+      x: 400,
+      y: 240,
+      currentWidth: 300,
+      currentHeight: 130,
+      ...COMMON_WIDGET_DEFAULTS,
+      ...PANEL_APPEARANCE_DEFAULTS,
+      showTrace: true,
+      traceChannel: 'speed',
+      windowMeters: 150,
+      showUrgencyBar: true,
+      showSpeed: true,
+      showReferenceLapTime: true,
+      showTrackCondition: true,
+      brakeColor: '#ef4444',
+      gasColor: '#10b981',
+      referenceColor: '#a855f7',
+      gainColor: '#10b981',
+      lossColor: '#ef4444',
     },
   },
 ];

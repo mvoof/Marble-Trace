@@ -1,0 +1,81 @@
+.root {
+  display: flex;
+  align-items: baseline;
+  gap: sp(md);
+  padding: sp(xxs) sp(md) sp(xs);
+  border-top: 1px solid $widget-border-subtle;
+}
+
+.group {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxs);
+}
+
+.groupEnd {
+  margin-left: auto;
+}
+
+.label {
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: $widget-text-muted;
+}
+
+.value {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: $widget-text-primary;
+}
+
+// The reference speed at the car's position shares the best-lap color, the way
+// the trace line does.
+.reference {
+  font-family: $font-mono;
+  font-size: fs(sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: $widget-text-best-lap;
+}
+
+// The stored lap's time is context, not a live reading, so it is a weight and a
+// step lighter than everything that changes — but it keeps the best-lap color
+// the reference trace is drawn in.
+.referenceLapTime {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: $widget-text-best-lap;
+}
+
+.separator {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  color: $widget-text-muted;
+}
+
+.unit {
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  letter-spacing: 0.1em;
+  color: $widget-text-muted;
+}
+
+// Which stored reference is in use. Dry is inert; wet is the exception worth
+// noticing, so only it takes a color.
+.condition {
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: $widget-text-muted;
+}
+
+.conditionWet {
+  color: $race-blue;
+}

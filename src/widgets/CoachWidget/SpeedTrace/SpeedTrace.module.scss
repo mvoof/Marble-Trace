@@ -1,0 +1,18 @@
+// Grows into whatever height the plate has left once the call row is placed —
+// the widget is autoHeight, so the plate itself is sized by designHeight.
+.container {
+  position: relative;
+  flex: 1 1 0;
+  min-height: ws(60);
+  width: 100%;
+  border-top: 1px solid $widget-border-subtle;
+  overflow: hidden;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  // Without this the element height falls back to the pixel-buffer `height`
+  // attribute (backing-store size) and overflows the container.
+  height: 100%;
+}

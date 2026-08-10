@@ -1,0 +1,107 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: sp(sm);
+  padding: sp(xs) sp(md);
+}
+
+.call {
+  font-family: $font-widget;
+  font-size: fs(xl);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.07em;
+}
+
+.callActive {
+  color: $widget-text-primary;
+}
+
+// The warning step between PACE and BRAKE. Amber is fixed rather than taken
+// from user settings so the three steps always read as one sequence.
+.callSoon {
+  color: $race-amber;
+}
+
+// Without a reference lap there is no call to make — the word is a status, not
+// an instruction, so it drops to label weight.
+.callIdle {
+  color: $widget-text-muted;
+  font-size: fs(sm);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+
+.delta {
+  margin-left: auto;
+  font-family: $font-mono;
+  font-size: fs(lg);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: $widget-text-primary;
+}
+
+.deltaUnit {
+  margin-left: sp(xxxs);
+  font-size: fs(xxs);
+  font-weight: 500;
+  color: $widget-text-muted;
+}
+
+// Distance to the next braking point or apex — a label and a figure, not a
+// signed delta, so it stays quiet next to the call.
+.countdown {
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxs);
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: $widget-text-muted;
+}
+
+.countdownValue {
+  font-family: $font-mono;
+  font-size: fs(md);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  color: $widget-text-secondary;
+}
+
+.hint {
+  margin-left: auto;
+  font-family: $font-widget;
+  font-size: fs(xxs);
+  color: $widget-text-muted;
+}
+
+.urgencyTrack {
+  width: 100%;
+  height: 3px;
+  background: $widget-border-subtle;
+}
+
+.urgencyFill {
+  height: 100%;
+}
+
+.urgencyFillSoon {
+  background: $race-amber;
+}
+
+// Approaching a braking zone with no call out yet: the bar still grows, but in
+// a neutral tone so it never reads as an instruction.
+.urgencyFillIdle {
+  background: $widget-text-muted;
+}
