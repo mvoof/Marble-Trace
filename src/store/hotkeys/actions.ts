@@ -121,10 +121,7 @@ const PIT_SERVICE_ACTIONS: HotkeyAction[] = [
       !root.pitServiceWidget.isAutoFuelEnabled &&
       !root.pitServiceWidget.isAutoTiresEnabled,
     inertHintKey: 'pitServiceAutoMode',
-    run: (root) =>
-      root.pitServiceWidget.setAutoSuspended(
-        !root.pitServiceWidget.autoSuspended
-      ),
+    run: (root) => root.pitServiceWidget.toggleAutoSuspended(),
   },
   {
     id: 'pit-service:apply-order',
@@ -146,6 +143,28 @@ const PIT_SERVICE_ACTIONS: HotkeyAction[] = [
     labelKey: 'pitServiceFuel',
     trigger: 'press',
     run: (root) => void root.pitServiceWidget.toggleFuel(),
+  },
+  // The step follows the unit the driver reads — a liter, or a gallon's worth
+  // of liters — so the number on the bar moves by what the key says it does.
+  {
+    id: 'pit-service:fuel-plus',
+    owner: 'pit-service',
+    labelKey: 'pitServiceFuelPlus',
+    trigger: 'press',
+    run: (root) =>
+      void root.pitServiceWidget.adjustFuel(
+        root.pitServiceWidget.fuelStepLiters
+      ),
+  },
+  {
+    id: 'pit-service:fuel-minus',
+    owner: 'pit-service',
+    labelKey: 'pitServiceFuelMinus',
+    trigger: 'press',
+    run: (root) =>
+      void root.pitServiceWidget.adjustFuel(
+        -root.pitServiceWidget.fuelStepLiters
+      ),
   },
   {
     id: 'pit-service:tires-all',
@@ -181,6 +200,13 @@ const PIT_SERVICE_ACTIONS: HotkeyAction[] = [
     labelKey: 'pitServiceTireRr',
     trigger: 'press',
     run: (root) => void root.pitServiceWidget.toggleTire('rr'),
+  },
+  {
+    id: 'pit-service:tire-compound',
+    owner: 'pit-service',
+    labelKey: 'pitServiceTireCompound',
+    trigger: 'press',
+    run: (root) => void root.pitServiceWidget.cycleTireCompound(),
   },
   {
     id: 'pit-service:fast-repair',

@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
 import { TireCorner } from './TireCorner/TireCorner';
-import { AutoMark } from '@widgets/PitServiceWidget/AutoMark/AutoMark';
 import styles from './TireGrid.module.scss';
+import { CompoundRow } from '../CompoundRow/CompoundRow';
 import { usePitServiceWidgetStore } from '@store/root-store-context';
 
 export const TireGrid = observer(() => {
@@ -12,13 +12,12 @@ export const TireGrid = observer(() => {
     <div className={styles.block}>
       {/*
         Sits on its own line only when auto tires are on; the grid keeps the
-        full width otherwise.
+        full width otherwise. Which half auto mode still owns is said once, on
+        the header plate, rather than repeated over every block.
       */}
       {pitService.isAutoTiresEnabled && (
         <div className={styles.header}>
           <span className={styles.label}>TIRES</span>
-
-          <AutoMark enabled />
         </div>
       )}
 
@@ -31,6 +30,8 @@ export const TireGrid = observer(() => {
 
         <TireCorner position="rr" />
       </div>
+
+      <CompoundRow />
     </div>
   );
 });

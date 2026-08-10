@@ -7,6 +7,9 @@
   width: 100%;
   padding: sp(xxs) sp(xxs);
   margin: 0;
+  // `appearance: none` leaves the UA's 2px outset button border in place, which
+  // reads as a heavy frame the moment interact mode turns the row into a button.
+  border: none;
   border-radius: radius(sm);
   // Transparent so the panel's own dark background stays the track; only the
   // fill adds color.
@@ -20,6 +23,20 @@
 
 .fuelClickable {
   cursor: ew-resize;
+  // A hairline in the same weight as the tire corners, so the clickable rows of
+  // the panel look like one family rather than a button dropped into a readout.
+  outline: 1px solid $widget-border-subtle;
+  outline-offset: -1px;
+
+  &:hover {
+    outline-color: $widget-border-default;
+  }
+
+  // The UA focus ring is a two-tone 2px halo — far too loud for a row this
+  // small, and the hairline already says where the pointer is.
+  &:focus-visible {
+    outline: 1px solid rgba($race-blue, 0.8);
+  }
 }
 
 .fill {

@@ -35,7 +35,15 @@ export const RepairRow = observer(() => {
             {isServicing ? 'SERVICE' : 'TOTAL'}
           </span>
 
-          <span className={styles.value}>{serviceTime.toFixed(1)} s</span>
+          {/*
+            Same formatter as the repair countdowns: a long stop shown as raw
+            seconds reads as a number rather than a duration — "146" is a
+            different thought from "2:26".
+          */}
+          <span className={styles.value}>
+            {formatCountdown(serviceTime)}
+            {countdownUnit(serviceTime)}
+          </span>
         </div>
       )}
 

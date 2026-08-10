@@ -666,6 +666,8 @@ const WIDGETS: WidgetConfig[] = [
       autoFuel: false,
       autoTires: false,
       autoTireWearThreshold: 60,
+      fuelAdjustStep: 1,
+      commandRevealSeconds: 5,
     },
   },
   {
