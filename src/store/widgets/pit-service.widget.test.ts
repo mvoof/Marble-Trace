@@ -454,6 +454,77 @@ describe('PitServiceWidgetStore — pit orders', () => {
       );
     });
 
+    // Correcting the fuel is the most ordinary thing a driver does on the way
+    // in, and it says nothing at all about the tires.
+    it('claims only the fuel half when the fuel is nudged by hand', async () => {
+      setFuelPlan(24.1, 106);
+      enableAuto();
+      setPitService({ addFuel: true, fuelAmount: 40 });
+      setTireWear({ lf: 0.3, rf: 1, lr: 1, rr: 1 });
+
+      await rootStore.pitServiceWidget.adjustFuel(
+        rootStore.pitServiceWidget.fuelStepLiters
+      );
+
+      expect(rootStore.pitServiceWidget.isAutoFuelPending).toBe(false);
+      expect(rootStore.pitServiceWidget.isAutoTiresPending).toBe(true);
+
+      invokeMock.mockClear();
+      await rootStore.pitServiceWidget.applyAutoFuelOrder();
+      await rootStore.pitServiceWidget.applyAutoTireOrder();
+
+      expect(pitOrderCalls()).toHaveLength(1);
+      expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+        requests: [
+          { kind: 'clearTires', value: 0 },
+          { kind: 'lf', value: 0 },
+        ],
+      });
+    });
+
+    it('claims only the tire half when a corner is toggled by hand', async () => {
+      setFuelPlan(24.1, 106);
+      enableAuto();
+      setTireWear({ lf: 0.3 });
+
+      await rootStore.pitServiceWidget.toggleTire('rf');
+
+      expect(rootStore.pitServiceWidget.isAutoTiresPending).toBe(false);
+      expect(rootStore.pitServiceWidget.isAutoFuelPending).toBe(true);
+
+      invokeMock.mockClear();
+      await rootStore.pitServiceWidget.applyAutoFuelOrder();
+      await rootStore.pitServiceWidget.applyAutoTireOrder();
+
+      expect(pitOrderCalls()).toHaveLength(1);
+      expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+        requests: [
+          { kind: 'clearFuel', value: 0 },
+          { kind: 'fuel', value: 25 },
+        ],
+      });
+    });
+
+    it('gives the fuel half back when the calculated amount is ordered', async () => {
+      setFuelPlan(24.1, 106);
+      enableAuto();
+      setPitService({ addFuel: true, fuelAmount: 40 });
+
+      await rootStore.pitServiceWidget.adjustFuel(
+        rootStore.pitServiceWidget.fuelStepLiters
+      );
+
+      expect(rootStore.pitServiceWidget.isAutoFuelPending).toBe(false);
+
+      invokeMock.mockClear();
+      await rootStore.pitServiceWidget.sendPlannedFuel();
+
+      expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+        requests: [{ kind: 'fuel', value: 25 }],
+      });
+      expect(rootStore.pitServiceWidget.isAutoFuelPending).toBe(true);
+    });
+
     it('takes over again on the next pit entry', async () => {
       enableAuto();
       rootStore.pitServiceWidget.suspendAuto();

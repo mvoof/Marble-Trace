@@ -61,6 +61,22 @@ export class PitServiceWidgetStore {
   autoSuspended = false;
 
   /**
+   * Whether each half of the automatic order is already settled for this stop —
+   * because auto mode sent it, or because the driver took that half over by
+   * hand. Either way there is nothing left for auto mode to do with it.
+   *
+   * Two flags rather than one so the halves can be claimed separately: nudging
+   * the fuel by a liter is the most ordinary thing a driver does on the way in,
+   * and it has no business switching off the tire decision as well.
+   *
+   * Public for the same reason as `autoSuspended`: clicks land in the overlay,
+   * hotkeys in main, and the badges are read in the overlay.
+   */
+  autoFuelSent = false;
+
+  autoTiresSent = false;
+
+  /**
    * Liters being dialled in right now by dragging the fuel bar. The sim is only
    * written on release: a command per pointer move would flood the broadcast
    * channel, and the sim reads back at 4 Hz anyway, so the bar would stutter
@@ -69,8 +85,6 @@ export class PitServiceWidgetStore {
   fuelDraftLiters: number | null = null;
 
   private lingering = false;
-  private autoFuelSent = false;
-  private autoTiresSent = false;
   private orderFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
   private lastOnPitRoad = false;
   private lastServiceActive = false;
@@ -219,6 +233,19 @@ export class PitServiceWidgetStore {
   /** Auto mode will build the next order itself. */
   get isAutoActive(): boolean {
     return this.isAutoEnabled && !this.autoSuspended;
+  }
+
+  /**
+   * Whether each half is still auto mode's to decide on this stop. Drives the
+   * badges: a half the driver has taken over says so on its own, instead of one
+   * badge in the header standing for a stop that is only half manual.
+   */
+  get isAutoFuelPending(): boolean {
+    return this.isAutoActive && this.isAutoFuelEnabled && !this.autoFuelSent;
+  }
+
+  get isAutoTiresPending(): boolean {
+    return this.isAutoActive && this.isAutoTiresEnabled && !this.autoTiresSent;
   }
 
   /**
@@ -378,6 +405,24 @@ export class PitServiceWidgetStore {
     this.autoSuspended = suspended;
   }
 
+  /**
+   * Takes one half of the order away from auto mode for the rest of this stop,
+   * leaving the other half alone. A driver correcting the fuel has said nothing
+   * about the tires, and the reverse holds just as well.
+   */
+  private claimFuelHalf() {
+    this.autoFuelSent = true;
+  }
+
+  private claimTireHalf() {
+    this.autoTiresSent = true;
+  }
+
+  setAutoHalvesSent(fuelSent: boolean, tiresSent: boolean) {
+    this.autoFuelSent = fuelSent;
+    this.autoTiresSent = tiresSent;
+  }
+
   /** Whether the sim currently has this corner checked. */
   isCornerOrdered(corner: CornerPosition): boolean {
     return isCornerOrdered(corner, this.root.player.pitService);
@@ -456,7 +501,7 @@ export class PitServiceWidgetStore {
    * order is: a liter short costs a stop, a liter over costs nothing.
    */
   async setFuelLiters(liters: number) {
-    this.suspendAuto();
+    this.claimFuelHalf();
 
     const target = Math.round(this.clampFuel(liters));
 
@@ -474,7 +519,7 @@ export class PitServiceWidgetStore {
    * state read back from the sim decides which of the two to send.
    */
   async toggleFuel() {
-    this.suspendAuto();
+    this.claimFuelHalf();
 
     if (this.isFuelOrdered) {
       await this.send([{ kind: 'clearFuel', value: 0 }]);
@@ -498,7 +543,7 @@ export class PitServiceWidgetStore {
    * pressure survives the round trip.
    */
   async toggleTire(corner: CornerPosition) {
-    this.suspendAuto();
+    this.claimTireHalf();
 
     if (!this.isCornerOrdered(corner)) {
       await this.send([{ kind: corner, value: 0 }]);
@@ -522,7 +567,7 @@ export class PitServiceWidgetStore {
   }
 
   async toggleAllTires() {
-    this.suspendAuto();
+    this.claimTireHalf();
 
     if (this.areAllTiresOrdered) {
       await this.send([{ kind: 'clearTires', value: 0 }]);
@@ -553,6 +598,29 @@ export class PitServiceWidgetStore {
         value: 0,
       },
     ]);
+  }
+
+  /**
+   * Orders exactly the fuel the calculation asks for, and hands the fuel half
+   * back to auto mode — the inverse of a manual nudge, and the way out of one.
+   *
+   * Releasing the claim rather than setting it is the whole point: the driver
+   * is saying "use the number you worked out", so a later recalculation on the
+   * way in should still land. Useful with auto fuel off too, as a one-key
+   * "fill what the fuel widget says".
+   */
+  async sendPlannedFuel() {
+    const fuel = this.plannedFuelLiters;
+
+    if (fuel === null || fuel <= 0) {
+      return;
+    }
+
+    await this.send([{ kind: 'fuel', value: Math.ceil(fuel) }]);
+
+    runInAction(() => {
+      this.autoFuelSent = false;
+    });
   }
 
   /**

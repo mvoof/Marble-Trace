@@ -18,7 +18,7 @@ export const TireGrid = observer(() => {
         <div className={styles.header}>
           <span className={styles.label}>TIRES</span>
 
-          <AutoMark enabled />
+          <AutoMark enabled section="tires" />
         </div>
       )}
 

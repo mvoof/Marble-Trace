@@ -394,6 +394,9 @@
       "pitServiceApplyOrder": "Order a full stop: calculated fuel and all four tyres (replaces the current order)",
       "pitServiceClearOrder": "Cancel the whole order",
       "pitServiceFuel": "Add the calculated amount of fuel",
+      "pitServiceFuelPlus": "Add a litre (a gallon in imperial) to the fuel order",
+      "pitServiceFuelMinus": "Take a litre (a gallon in imperial) off the fuel order",
+      "pitServiceFuelPlanned": "Order the calculated fuel and hand the fuel back to auto mode",
       "pitServiceTiresAll": "Change all four tyres",
       "pitServiceTireLf": "Change the left front tyre",
       "pitServiceTireRf": "Change the right front tyre",
@@ -408,7 +411,8 @@
     "notInLayoutTooltip": "The widget is not in the active layout, so nothing it owns runs — neither its bindings nor its background work, such as automatic pit orders. The show / hide key is the exception: it is what puts the widget back.",
     "toggleHint": "Toggles the box: press again to take it back off the order.",
     "inert": {
-      "pitServiceAutoMode": "Does nothing until Auto fuel or Auto tyres is switched on in the widget settings."
+      "pitServiceAutoMode": "Does nothing until Auto fuel or Auto tyres is switched on in the widget settings.",
+      "pitServiceFuelPlanned": "Does nothing until the Fuel widget has a figure to work from."
     },
     "searchByKey": "By key",
     "searchByKeyHint": "Press a key or a device button and the list shows what it is bound to.",

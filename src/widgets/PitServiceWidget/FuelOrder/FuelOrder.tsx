@@ -109,7 +109,10 @@ export const FuelOrder = observer(() => {
         <div className={styles.row}>
           <span className={styles.label}>
             FUEL ADD
-            <AutoMark enabled={pitServiceWidget.isAutoFuelEnabled} />
+            <AutoMark
+              enabled={pitServiceWidget.isAutoFuelEnabled}
+              section="fuel"
+            />
           </span>
 
           <span className={styles.value}>

@@ -52,6 +52,7 @@ export const setupMainListeners = async (
   );
 
   unlistens.push(await listenPitServiceAutoSuspended(root));
+  unlistens.push(await listenPitServiceAutoHalves(root));
 
   return unlistens;
 };
@@ -65,6 +66,18 @@ export const setupMainListeners = async (
 const listenPitServiceAutoSuspended = (root: RootStore) =>
   listen<boolean>('pit-service-auto-suspended', (e) => {
     runInAction(() => root.pitServiceWidget.setAutoSuspended(e.payload));
+  });
+
+/**
+ * Which halves of the order are already settled, for the same reason: a fuel
+ * nudge from a hotkey in main and a tire checkbox clicked in the overlay each
+ * claim one half, and both windows draw the badges off the result.
+ */
+const listenPitServiceAutoHalves = (root: RootStore) =>
+  listen<AutoHalvesSent>('pit-service-auto-halves', (e) => {
+    runInAction(() =>
+      root.pitServiceWidget.setAutoHalvesSent(e.payload.fuel, e.payload.tires)
+    );
   });
 
 export const setupOverlayListeners = async (
@@ -174,6 +187,7 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(await listenPitServiceAutoSuspended(root));
+  unlistens.push(await listenPitServiceAutoHalves(root));
 
   unlistens.push(
     await listen<SessionLayoutMap>('session-layouts-changed', (e) => {
@@ -237,6 +251,14 @@ export const emitPitServiceToggle = () =>
 // Broadcast rather than targeted: either window can be the one that suspends.
 export const emitPitServiceAutoSuspended = (suspended: boolean) =>
   emit('pit-service-auto-suspended', suspended);
+
+export interface AutoHalvesSent {
+  fuel: boolean;
+  tires: boolean;
+}
+
+export const emitPitServiceAutoHalves = (halves: AutoHalvesSent) =>
+  emit('pit-service-auto-halves', halves);
 
 export const emitStandingsScroll = (delta: number) =>
   emitToOverlays('standings-scroll', delta);

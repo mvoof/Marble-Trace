@@ -37,6 +37,7 @@ import {
   emitStreamChatFilters,
   emitStreamChatCleared,
   emitPitServiceAutoSuspended,
+  emitPitServiceAutoHalves,
   emitBindingsChanged,
 } from './events';
 import type { MonitorWidgetsPayload } from './events';
@@ -513,6 +514,16 @@ export const initMainSync = async (root: RootStore) => {
             void emitPitServiceAutoSuspended(suspended);
           }
         ),
+        reaction(
+          () => ({
+            fuel: root.pitServiceWidget.autoFuelSent,
+            tires: root.pitServiceWidget.autoTiresSent,
+          }),
+          (halves) => {
+            void emitPitServiceAutoHalves(halves);
+          },
+          { equals: comparer.structural }
+        ),
         // The automatic order is sent from this window only: both windows run
         // the same telemetry, so an overlay copy of these reactions would
         // broadcast the same order a second time.
@@ -635,12 +646,22 @@ export const initOverlaySync = async (root: RootStore) => {
       { delay: 100 }
     ),
     // Clicks on the checkboxes land here, so this window can be the one that
-    // takes the order off auto.
+    // takes the order, or one half of it, off auto.
     reaction(
       () => root.pitServiceWidget.autoSuspended,
       (suspended) => {
         void emitPitServiceAutoSuspended(suspended);
       }
+    ),
+    reaction(
+      () => ({
+        fuel: root.pitServiceWidget.autoFuelSent,
+        tires: root.pitServiceWidget.autoTiresSent,
+      }),
+      (halves) => {
+        void emitPitServiceAutoHalves(halves);
+      },
+      { equals: comparer.structural }
     ),
   ];
 

@@ -147,6 +147,39 @@ const PIT_SERVICE_ACTIONS: HotkeyAction[] = [
     trigger: 'press',
     run: (root) => void root.pitServiceWidget.toggleFuel(),
   },
+  // The step follows the unit the driver reads — a liter, or a gallon's worth
+  // of liters — so the number on the bar moves by what the key says it does.
+  {
+    id: 'pit-service:fuel-plus',
+    owner: 'pit-service',
+    labelKey: 'pitServiceFuelPlus',
+    trigger: 'press',
+    run: (root) =>
+      void root.pitServiceWidget.adjustFuel(
+        root.pitServiceWidget.fuelStepLiters
+      ),
+  },
+  {
+    id: 'pit-service:fuel-minus',
+    owner: 'pit-service',
+    labelKey: 'pitServiceFuelMinus',
+    trigger: 'press',
+    run: (root) =>
+      void root.pitServiceWidget.adjustFuel(
+        -root.pitServiceWidget.fuelStepLiters
+      ),
+  },
+  {
+    // The way back from a manual correction: orders the calculated amount and
+    // lets auto mode have the fuel half again.
+    id: 'pit-service:fuel-planned',
+    owner: 'pit-service',
+    labelKey: 'pitServiceFuelPlanned',
+    trigger: 'press',
+    isInert: (root) => root.pitServiceWidget.plannedFuelLiters === null,
+    inertHintKey: 'pitServiceFuelPlanned',
+    run: (root) => void root.pitServiceWidget.sendPlannedFuel(),
+  },
   {
     id: 'pit-service:tires-all',
     owner: 'pit-service',
