@@ -1,4 +1,5 @@
 import {
+  comparer,
   makeAutoObservable,
   reaction,
   runInAction,
@@ -19,7 +20,10 @@ import type {
   TrackCondition,
 } from '@/types/bindings';
 import { debug } from '@utils/debug';
-import { trackConditionForWetness } from '@utils/widget/track-condition';
+import {
+  nextTrackCondition,
+  trackConditionForWetness,
+} from '@utils/widget/track-condition';
 import type { TelemetryStatus } from '@/types';
 import type { RootStore } from '@store/root-store';
 import {
@@ -47,6 +51,8 @@ export class SimStore {
   error: string | null = null;
   frameCount = 0;
 
+  /** Condition the currently loaded reference lap was asked for. */
+  private referenceCondition: TrackCondition | null = null;
   private initId = 0;
   private unlistens: UnlistenFn[] = [];
   private readonly disposers: IReactionDisposer[] = [];
@@ -90,35 +96,42 @@ export class SimStore {
                 // The condition is part of the reference's identity: when the
                 // track turns wet mid-session the dry reference stops being the
                 // right target and the wet one has to be loaded in its place.
-                condition: trackConditionForWetness(
-                  this.root.environment.environment?.track_wetness ?? null
-                ),
+                trackWetness:
+                  this.root.environment.environment?.track_wetness ?? null,
               }
             : null;
         },
         (identity, previousIdentity) => {
           if (!identity) {
+            this.referenceCondition = null;
             this.root.referenceLap.reset();
 
             return;
           }
 
-          if (
-            previousIdentity &&
+          const sameCar =
+            previousIdentity !== undefined &&
+            previousIdentity !== null &&
             previousIdentity.trackId === identity.trackId &&
-            previousIdentity.carScreenName === identity.carScreenName &&
-            previousIdentity.condition === identity.condition
-          ) {
+            previousIdentity.carScreenName === identity.carScreenName;
+
+          const condition = sameCar
+            ? nextTrackCondition(this.referenceCondition, identity.trackWetness)
+            : trackConditionForWetness(identity.trackWetness);
+
+          if (sameCar && condition === this.referenceCondition) {
             return;
           }
+
+          this.referenceCondition = condition;
 
           void this.loadReferenceLap(
             identity.trackId,
             identity.carScreenName,
-            identity.condition
+            condition
           );
         },
-        { fireImmediately: true }
+        { fireImmediately: true, equals: comparer.shallow }
       )
     );
   }

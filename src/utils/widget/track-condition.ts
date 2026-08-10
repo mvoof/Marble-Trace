@@ -18,3 +18,31 @@ export const trackConditionForWetness = (
   trackWetness: number | null
 ): TrackCondition =>
   trackWetness !== null && trackWetness >= WET_THRESHOLD ? 'wet' : 'dry';
+
+/**
+ * Wetness steps the reading has to fall back below the wet boundary before the
+ * track counts as dry again.
+ */
+const WET_HYSTERESIS = 1;
+
+/**
+ * Same classification as `trackConditionForWetness`, but sticky: a reading
+ * hovering on the boundary (2↔3 as the track dries) would otherwise flip the
+ * condition every update, and each flip reloads the reference lap and blanks
+ * the coach trace. Going wet still happens on the first reading at the
+ * threshold; going back to dry needs a clearly drier track.
+ */
+export const nextTrackCondition = (
+  current: TrackCondition | null,
+  trackWetness: number | null
+): TrackCondition => {
+  if (current === null || trackWetness === null) {
+    return trackConditionForWetness(trackWetness);
+  }
+
+  if (current === 'wet') {
+    return trackWetness <= WET_THRESHOLD - WET_HYSTERESIS - 1 ? 'dry' : 'wet';
+  }
+
+  return trackWetness >= WET_THRESHOLD ? 'wet' : 'dry';
+};

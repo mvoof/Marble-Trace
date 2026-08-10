@@ -311,30 +311,10 @@ impl Processor for ReferenceLapProcessor {
             steering_wheel_angle: ctx.car_dynamics.steering_wheel_angle,
         };
 
-        if let Some(last) = self.last_bucket {
-            if bucket > last + 1 {
-                for skipped in (last + 1)..bucket {
-                    self.working[skipped] = sample;
-                }
-            }
-        }
-
-        self.working[bucket] = sample;
-        self.last_bucket = Some(bucket);
-
-        if (BASELINE_SAMPLE_LOW..BASELINE_SAMPLE_HIGH).contains(&lap_dist_pct) {
-            if let Some(previous_lap_time) = ctx.lap_timing.lap_last_lap_time {
-                self.mid_lap_last_lap_time = Some(previous_lap_time);
-            }
-        }
-
-        if let Some(wetness) = ctx.environment.track_wetness {
-            self.lap_max_wetness = Some(
-                self.lap_max_wetness
-                    .map_or(wetness, |peak| peak.max(wetness)),
-            );
-        }
-
+        // The crossing is settled *before* this tick's sample is filed: the tick
+        // that wraps past the line already belongs to the new lap, so writing it
+        // into the working buffer first would hand the completed lap a bucket of
+        // the next one's data.
         let crossed_finish_line =
             self.prev_lap_dist_pct > WRAP_HIGH_THRESHOLD && lap_dist_pct < WRAP_LOW_THRESHOLD;
         self.prev_lap_dist_pct = lap_dist_pct;
@@ -358,6 +338,30 @@ impl Processor for ReferenceLapProcessor {
             });
 
             self.reset_for_new_lap();
+        }
+
+        if let Some(last) = self.last_bucket {
+            if bucket > last + 1 {
+                for skipped in (last + 1)..bucket {
+                    self.working[skipped] = sample;
+                }
+            }
+        }
+
+        self.working[bucket] = sample;
+        self.last_bucket = Some(bucket);
+
+        if (BASELINE_SAMPLE_LOW..BASELINE_SAMPLE_HIGH).contains(&lap_dist_pct) {
+            if let Some(previous_lap_time) = ctx.lap_timing.lap_last_lap_time {
+                self.mid_lap_last_lap_time = Some(previous_lap_time);
+            }
+        }
+
+        if let Some(wetness) = ctx.environment.track_wetness {
+            self.lap_max_wetness = Some(
+                self.lap_max_wetness
+                    .map_or(wetness, |peak| peak.max(wetness)),
+            );
         }
 
         self.resolve_pending(ctx, track_id, car_screen_name)
@@ -515,7 +519,25 @@ mod tests {
         last_lap_time: Option<f32>,
         environment: &crate::model::environment::EnvironmentFrame,
     ) -> Option<ComputedOutput> {
-        let dynamics = make_dynamics(50.0);
+        run_tick_at_speed(
+            proc,
+            session,
+            lap_dist_pct,
+            last_lap_time,
+            environment,
+            50.0,
+        )
+    }
+
+    fn run_tick_at_speed(
+        proc: &mut ReferenceLapProcessor,
+        session: &SessionSnapshot,
+        lap_dist_pct: f32,
+        last_lap_time: Option<f32>,
+        environment: &crate::model::environment::EnvironmentFrame,
+        speed: f32,
+    ) -> Option<ComputedOutput> {
+        let dynamics = make_dynamics(speed);
         let inputs = make_inputs(1.0, 0.0);
         let lap_timing = make_lap_timing(lap_dist_pct, last_lap_time);
         let car_status = make_car_status();
@@ -627,6 +649,29 @@ mod tests {
                 assert_eq!(data.lap_time, 90.0);
                 let bucket_at_50pct = data.samples[500];
                 assert_eq!(bucket_at_50pct.speed, 50.0);
+            }
+            other => panic!("expected ReferenceLap output, got {other:?}"),
+        }
+    }
+
+    /// The tick that wraps past the line is the new lap's first sample. It must
+    /// not land in the buffer that is being handed over as the completed lap.
+    #[test]
+    fn the_wrapping_tick_does_not_leak_into_the_completed_lap() {
+        let mut proc = ReferenceLapProcessor::default();
+        let session = make_session(1);
+        let dry = crate::model::environment::EnvironmentFrame::default();
+
+        drive_segment(&mut proc, &session, 0.005, 0.995);
+
+        // The new lap starts at a distinctly different speed than the one just
+        // driven, so a leaked sample is visible in its bucket.
+        assert!(run_tick_at_speed(&mut proc, &session, 0.001, None, &dry, 200.0).is_none());
+
+        match run_tick_at_speed(&mut proc, &session, 0.005, Some(90.0), &dry, 200.0) {
+            Some(ComputedOutput::ReferenceLap(data)) => {
+                assert_eq!(data.samples[1].speed, 0.0);
+                assert_eq!(data.samples[500].speed, 50.0);
             }
             other => panic!("expected ReferenceLap output, got {other:?}"),
         }
