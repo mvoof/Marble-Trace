@@ -13,6 +13,8 @@ use tauri::{AppHandle, Emitter, Manager};
 use crate::utils::lock_or_recover;
 use tracing::{debug, info, warn};
 
+use crate::model::reference_lap::{StoredReferenceTimes, TrackCondition};
+
 use super::emitter::{
     emit_domain_frames, reference_lap_key, EmitContext, EVENT_CAPABILITIES, EVENT_DISCONNECTED,
     EVENT_SESSION_INFO, EVENT_STATUS, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
@@ -393,21 +395,30 @@ fn refresh_stored_reference_lap_time(app: &AppHandle, service: &TelemetryService
         return;
     };
 
-    let stored_time = app
-        .path()
-        .app_data_dir()
-        .ok()
-        .map(|data_dir| {
-            let key = reference_lap_key(track_id, &car_screen_name);
-            data_dir.join("reference_laps").join(format!("{key}.json"))
-        })
-        .and_then(|path| fs::read_to_string(path).ok())
-        .and_then(|json| serde_json::from_str::<StoredLapTime>(&json).ok())
-        .map(|stored| stored.lap_time)
-        .filter(|lap_time| *lap_time > 0.0);
+    let Ok(data_dir) = app.path().app_data_dir() else {
+        return;
+    };
+
+    let read_time = |condition: TrackCondition| {
+        let key = reference_lap_key(track_id, &car_screen_name, condition);
+
+        fs::read_to_string(data_dir.join("reference_laps").join(format!("{key}.json")))
+            .ok()
+            .and_then(|json| serde_json::from_str::<StoredLapTime>(&json).ok())
+            .map(|stored| stored.lap_time)
+            .filter(|lap_time| *lap_time > 0.0)
+    };
+
+    // Both conditions are read up front: the weather can turn at any point in
+    // the session, and the processor must already know what a wet lap has to
+    // beat by the time one is driven.
+    let stored = StoredReferenceTimes {
+        dry: read_time(TrackCondition::Dry),
+        wet: read_time(TrackCondition::Wet),
+    };
 
     if let Ok(mut lock) = service.stored_reference_lap_time.lock() {
-        *lock = stored_time;
+        *lock = stored;
     }
 }
 

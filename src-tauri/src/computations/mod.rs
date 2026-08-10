@@ -122,7 +122,9 @@ impl ProcessorRegistry {
         track_cached: std::sync::Arc<std::sync::atomic::AtomicI32>,
         reset_track_shape: std::sync::Arc<std::sync::atomic::AtomicBool>,
         reset_reference_lap: std::sync::Arc<std::sync::atomic::AtomicBool>,
-        stored_reference_lap_time: std::sync::Arc<std::sync::Mutex<Option<f32>>>,
+        stored_reference_lap_time: std::sync::Arc<
+            std::sync::Mutex<crate::model::reference_lap::StoredReferenceTimes>,
+        >,
     ) -> Self {
         Self {
             processors: vec![

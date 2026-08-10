@@ -1,8 +1,11 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, InputNumber, Switch } from 'antd';
+import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
 
-import type { CoachWidgetSettings } from '@/types/widget-settings';
+import type {
+  CoachTraceChannel,
+  CoachWidgetSettings,
+} from '@/types/widget-settings';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 
@@ -67,6 +70,44 @@ export const CoachSettingsPanel = observer(() => {
         </div>
       </Card>
 
+      <Card title={t('settingsPanels.coach.readouts')}>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.coach.showSpeed')}
+            desc={t('settingsPanels.coach.showSpeedDesc')}
+          >
+            <Switch
+              checked={settings.showSpeed}
+              onChange={(value) => update({ showSpeed: value })}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.coach.showReferenceLapTime')}
+            desc={t('settingsPanels.coach.showReferenceLapTimeDesc')}
+          >
+            <Switch
+              checked={settings.showReferenceLapTime}
+              onChange={(value) => update({ showReferenceLapTime: value })}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.coach.showTrackCondition')}
+            desc={t('settingsPanels.coach.showTrackConditionDesc')}
+          >
+            <Switch
+              checked={settings.showTrackCondition}
+              onChange={(value) => update({ showTrackCondition: value })}
+            />
+          </SettingRow>
+        </div>
+      </Card>
+
       <Card title={t('settingsPanels.coach.trace')}>
         <div className={styles.fieldGroup}>
           <SettingRow
@@ -82,6 +123,32 @@ export const CoachSettingsPanel = observer(() => {
 
         {settings.showTrace && (
           <>
+            <div className={styles.fieldGroup}>
+              <span className={styles.fieldLabel}>
+                {t('settingsPanels.coach.channel')}
+              </span>
+              <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+                {t('settingsPanels.coach.channelDesc')}
+              </div>
+              <Segmented
+                block
+                value={settings.traceChannel}
+                options={[
+                  {
+                    label: t('settingsPanels.coach.channelSpeed'),
+                    value: 'speed',
+                  },
+                  {
+                    label: t('settingsPanels.coach.channelBrake'),
+                    value: 'brake',
+                  },
+                ]}
+                onChange={(value) =>
+                  update({ traceChannel: value as CoachTraceChannel })
+                }
+              />
+            </div>
+
             <div className={styles.fieldGroup}>
               <span className={styles.fieldLabel}>
                 {t('settingsPanels.coach.window')}

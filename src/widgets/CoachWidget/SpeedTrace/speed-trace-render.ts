@@ -1,5 +1,10 @@
-import type { TracePoint, TraceWindow } from '@store/widgets/coach-trace-utils';
-import { traceSpeedRange } from '@store/widgets/coach-trace-utils';
+import {
+  traceValueRange,
+  TRACE_POINT_COUNT,
+  type TraceWindowBuffers,
+  type TraceWindowStats,
+} from '@store/widgets/coach-trace-utils';
+import type { CoachTraceChannel } from '@/types/widget-settings';
 
 export interface SpeedTraceColors {
   reference: string;
@@ -11,46 +16,82 @@ export interface SpeedTraceColors {
 
 /** Horizontal grid lines drawn behind the traces. */
 const GRID_LINE_COUNT = 3;
-/** Share of the speed range added above and below so the curves never touch the edges. */
+/** Share of the value range added above and below so the curves never touch the edges. */
 const RANGE_PADDING = 0.12;
 /** Speed range (m/s) forced open when both traces are nearly flat, so a straight does not amplify noise. */
 const MIN_SPEED_RANGE_MPS = 5;
 const REFERENCE_LINE_WIDTH = 1.75;
 const OWN_LINE_WIDTH = 2.25;
+const BRAKE_MARK_WIDTH = 1.5;
 const MARKER_RADIUS = 2.75;
-const MARKER_DASH: [number, number] = [3, 3];
+const NOW_DASH: [number, number] = [3, 3];
 /** Below this magnitude (seconds) the delta is called even and drawn neutral. */
 const EVEN_DELTA_S = 0.005;
+/** Height of the braking tick, as a share of the canvas — a stub at the bottom edge, not a full divider. */
+const BRAKE_MARK_HEIGHT_RATIO = 0.28;
 
 interface Projection {
   x: (offsetM: number) => number;
-  y: (speedMps: number) => number;
+  y: (value: number) => number;
 }
 
+/** The pair of traces the chosen channel draws. */
+interface Channel {
+  reference: Float32Array;
+  own: Float32Array;
+  /** Fixed vertical range, or null to scale to what is in the window. */
+  fixedRange: { min: number; max: number } | null;
+}
+
+const isValue = (value: number | undefined): value is number =>
+  value !== undefined && !Number.isNaN(value);
+
+const channelFor = (
+  buffers: TraceWindowBuffers,
+  channel: CoachTraceChannel
+): Channel =>
+  channel === 'brake'
+    ? {
+        reference: buffers.referenceBrake,
+        own: buffers.ownBrake,
+        // Pedal travel is already 0-1 and its absolute level is the point —
+        // autoscaling would make a feather-light brush of the pedal look like
+        // a full stop.
+        fixedRange: { min: 0, max: 1 },
+      }
+    : {
+        reference: buffers.referenceSpeed,
+        own: buffers.ownSpeed,
+        fixedRange: null,
+      };
+
 const buildProjection = (
-  points: TracePoint[],
+  buffers: TraceWindowBuffers,
+  channel: Channel,
   width: number,
   height: number
 ): Projection | null => {
-  const range = traceSpeedRange(points);
-  const first = points[0];
-  const last = points.at(-1);
+  const range =
+    channel.fixedRange ?? traceValueRange(channel.reference, channel.own);
+  const first = buffers.offsetM[0];
+  const last = buffers.offsetM.at(-1);
 
-  if (!range || !first || !last) return null;
+  if (!range || first === undefined || last === undefined) return null;
 
-  const span = Math.max(last.offsetM - first.offsetM, 1);
-  const padding = Math.max(
-    (range.max - range.min) * RANGE_PADDING,
-    MIN_SPEED_RANGE_MPS / 2
-  );
+  const span = Math.max(last - first, 1);
+  const padding = channel.fixedRange
+    ? 0
+    : Math.max(
+        (range.max - range.min) * RANGE_PADDING,
+        MIN_SPEED_RANGE_MPS / 2
+      );
   const low = range.min - padding;
-  const high = range.max + padding;
-  const speedSpan = Math.max(high - low, 1);
+  const valueSpan = Math.max(range.max + padding - low, Number.EPSILON);
 
   return {
-    x: (offsetM) => ((offsetM - first.offsetM) / span) * width,
-    // Faster is higher up, the way a speed trace is read everywhere else.
-    y: (speedMps) => height - ((speedMps - low) / speedSpan) * height,
+    x: (offsetM) => ((offsetM - first) / span) * width,
+    // More is higher up, the way a speed trace is read everywhere else.
+    y: (value) => height - ((value - low) / valueSpan) * height,
   };
 };
 
@@ -75,24 +116,30 @@ const drawGrid = (
 
 const drawReference = (
   ctx: CanvasRenderingContext2D,
-  points: TracePoint[],
+  buffers: TraceWindowBuffers,
+  values: Float32Array,
   projection: Projection,
   color: string
 ) => {
   ctx.strokeStyle = color;
   ctx.lineWidth = REFERENCE_LINE_WIDTH;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
   ctx.beginPath();
 
   let started = false;
 
-  for (const point of points) {
-    if (point.referenceSpeed === null) {
+  for (let index = 0; index < TRACE_POINT_COUNT; index++) {
+    const value = values[index];
+    const offsetM = buffers.offsetM[index];
+
+    if (!isValue(value) || !isValue(offsetM)) {
       started = false;
       continue;
     }
 
-    const x = projection.x(point.offsetM);
-    const y = projection.y(point.referenceSpeed);
+    const x = projection.x(offsetM);
+    const y = projection.y(value);
 
     if (started) {
       ctx.lineTo(x, y);
@@ -105,15 +152,33 @@ const drawReference = (
   ctx.stroke();
 };
 
+const deltaColor = (
+  deltaS: number | undefined,
+  colors: SpeedTraceColors
+): string => {
+  if (!isValue(deltaS) || Math.abs(deltaS) < EVEN_DELTA_S) {
+    return colors.marker;
+  }
+
+  return deltaS > 0 ? colors.loss : colors.gain;
+};
+
 /**
- * The lap in progress, drawn segment by segment so each one carries the color
- * of the running time delta at that point: green where this lap is up on the
- * reference, red where it is down. That is the whole point of the trace — the
- * shape says what was done, the color says what it cost.
+ * The lap in progress, colored by the running time delta: green where this lap
+ * is up on the reference, red where it is down. That is the whole point of the
+ * trace — the shape says what was done, the color says what it cost. The colour
+ * comes from the time delta whichever channel is drawn, because the pedal alone
+ * says nothing about whether it worked.
+ *
+ * Drawn as one stroked path per colour run rather than one path per segment:
+ * stroking every segment on its own leaves a visible seam at each joint and
+ * reads as a dashed line. Each run starts at the previous run's last point so
+ * the colours meet without a gap.
  */
 const drawOwnTrace = (
   ctx: CanvasRenderingContext2D,
-  points: TracePoint[],
+  buffers: TraceWindowBuffers,
+  values: Float32Array,
   projection: Projection,
   colors: SpeedTraceColors
 ) => {
@@ -121,57 +186,114 @@ const drawOwnTrace = (
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
 
-  for (let index = 1; index < points.length; index++) {
-    const previous = points[index - 1];
-    const current = points[index];
+  let runColor: string | null = null;
+  let runOpen = false;
+
+  const closeRun = () => {
+    if (runOpen) {
+      ctx.stroke();
+      runOpen = false;
+    }
+
+    runColor = null;
+  };
+
+  for (let index = 1; index < TRACE_POINT_COUNT; index++) {
+    const previousValue = values[index - 1];
+    const value = values[index];
+    const previousOffsetM = buffers.offsetM[index - 1];
+    const offsetM = buffers.offsetM[index];
 
     if (
-      !previous ||
-      !current ||
-      previous.ownSpeed === null ||
-      current.ownSpeed === null
+      !isValue(previousValue) ||
+      !isValue(value) ||
+      !isValue(previousOffsetM) ||
+      !isValue(offsetM)
     ) {
+      closeRun();
       continue;
     }
 
-    const deltaS = current.timeDeltaS;
+    const color = deltaColor(buffers.timeDeltaS[index], colors);
 
-    ctx.strokeStyle =
-      deltaS === null || Math.abs(deltaS) < EVEN_DELTA_S
-        ? colors.marker
-        : deltaS > 0
-          ? colors.loss
-          : colors.gain;
+    if (color !== runColor) {
+      closeRun();
 
-    ctx.beginPath();
-    ctx.moveTo(projection.x(previous.offsetM), projection.y(previous.ownSpeed));
-    ctx.lineTo(projection.x(current.offsetM), projection.y(current.ownSpeed));
-    ctx.stroke();
+      ctx.strokeStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(projection.x(previousOffsetM), projection.y(previousValue));
+      runColor = color;
+      runOpen = true;
+    }
+
+    ctx.lineTo(projection.x(offsetM), projection.y(value));
   }
+
+  closeRun();
+};
+
+/**
+ * Vertical stub at each braking point — where the pedal first went down. The
+ * gap between the two is the metre figure the call row prints; the marks are
+ * what let the driver see it rather than take it on trust.
+ */
+const drawBrakeMarks = (
+  ctx: CanvasRenderingContext2D,
+  stats: TraceWindowStats,
+  projection: Projection,
+  height: number,
+  colors: SpeedTraceColors
+) => {
+  const markHeight = height * BRAKE_MARK_HEIGHT_RATIO;
+
+  ctx.lineWidth = BRAKE_MARK_WIDTH;
+
+  const drawMark = (offsetM: number | null, color: string) => {
+    if (offsetM === null) return;
+
+    const x = Math.round(projection.x(offsetM)) + 0.5;
+
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x, height);
+    ctx.lineTo(x, height - markHeight);
+    ctx.stroke();
+  };
+
+  drawMark(stats.referenceBrakeOffsetM, colors.reference);
+
+  // Braking later than the reference is what costs time, so this mark takes the
+  // same colour the line does where the two diverge. With no reference mark in
+  // the window there is nothing to be earlier or later than, and claiming a
+  // gain or a loss there would be an invention — it stays neutral.
+  const ownMarkColor =
+    stats.brakeDeltaM === null
+      ? colors.marker
+      : stats.brakeDeltaM > 0
+        ? colors.loss
+        : colors.gain;
+
+  drawMark(stats.ownBrakeOffsetM, ownMarkColor);
 };
 
 /** Dashed line and dot at the car's current position — where the own trace ends. */
 const drawNowMarker = (
   ctx: CanvasRenderingContext2D,
-  points: TracePoint[],
+  buffers: TraceWindowBuffers,
+  values: Float32Array,
   projection: Projection,
   height: number,
   colors: SpeedTraceColors
 ) => {
-  const now = points.reduce<TracePoint | null>(
-    (closest, point) =>
-      closest === null || Math.abs(point.offsetM) < Math.abs(closest.offsetM)
-        ? point
-        : closest,
-    null
-  );
+  const nowIndex = (TRACE_POINT_COUNT - 1) / 2;
+  const offsetM = buffers.offsetM[nowIndex];
 
-  if (!now) return;
+  if (!isValue(offsetM)) return;
 
-  const x = Math.round(projection.x(now.offsetM)) + 0.5;
+  const x = Math.round(projection.x(offsetM)) + 0.5;
 
   ctx.save();
-  ctx.setLineDash(MARKER_DASH);
+  ctx.setLineDash(NOW_DASH);
   ctx.strokeStyle = colors.marker;
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -180,25 +302,21 @@ const drawNowMarker = (
   ctx.stroke();
   ctx.restore();
 
-  if (now.ownSpeed === null) return;
+  const value = values[nowIndex];
 
-  const deltaS = now.timeDeltaS;
+  if (!isValue(value)) return;
 
-  ctx.fillStyle =
-    deltaS === null || Math.abs(deltaS) < EVEN_DELTA_S
-      ? colors.marker
-      : deltaS > 0
-        ? colors.loss
-        : colors.gain;
-
+  ctx.fillStyle = deltaColor(buffers.timeDeltaS[nowIndex], colors);
   ctx.beginPath();
-  ctx.arc(x, projection.y(now.ownSpeed), MARKER_RADIUS, 0, Math.PI * 2);
+  ctx.arc(x, projection.y(value), MARKER_RADIUS, 0, Math.PI * 2);
   ctx.fill();
 };
 
 export const drawSpeedTrace = (
   canvas: HTMLCanvasElement,
-  window: TraceWindow,
+  buffers: TraceWindowBuffers,
+  stats: TraceWindowStats,
+  channelName: CoachTraceChannel,
   colors: SpeedTraceColors
 ) => {
   const ctx = canvas.getContext('2d');
@@ -215,11 +333,15 @@ export const drawSpeedTrace = (
 
   drawGrid(ctx, width, height, colors.grid);
 
-  const projection = buildProjection(window.points, width, height);
+  if (!stats.hasData) return;
+
+  const channel = channelFor(buffers, channelName);
+  const projection = buildProjection(buffers, channel, width, height);
 
   if (!projection) return;
 
-  drawReference(ctx, window.points, projection, colors.reference);
-  drawOwnTrace(ctx, window.points, projection, colors);
-  drawNowMarker(ctx, window.points, projection, height, colors);
+  drawReference(ctx, buffers, channel.reference, projection, colors.reference);
+  drawOwnTrace(ctx, buffers, channel.own, projection, colors);
+  drawBrakeMarks(ctx, stats, projection, height, colors);
+  drawNowMarker(ctx, buffers, channel.own, projection, height, colors);
 };

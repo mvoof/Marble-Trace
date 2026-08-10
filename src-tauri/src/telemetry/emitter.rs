@@ -25,7 +25,7 @@ use crate::model::lap_log::LapLogFrame;
 use crate::model::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
 };
-use crate::model::reference_lap::ReferenceLapData;
+use crate::model::reference_lap::{ReferenceLapData, TrackCondition};
 use crate::model::relative::RelativeFrame;
 use crate::model::session::SessionFrame;
 use crate::model::track_shape::{TrackRecordingFrame, TrackShapePayload};
@@ -352,13 +352,17 @@ fn save_track_shape(app: &AppHandle, payload: &TrackShapePayload) {
 
 /// Filesystem-safe key for a track+car reference lap file, shared with the
 /// `get_reference_lap`/`delete_reference_lap` commands.
-pub fn reference_lap_key(track_id: i32, car_screen_name: &str) -> String {
+pub fn reference_lap_key(
+    track_id: i32,
+    car_screen_name: &str,
+    condition: TrackCondition,
+) -> String {
     let sanitized: String = car_screen_name
         .chars()
         .map(|c| if c.is_alphanumeric() { c } else { '_' })
         .collect();
 
-    format!("{track_id}__{sanitized}")
+    format!("{track_id}__{sanitized}__{}", condition.as_key())
 }
 
 fn save_reference_lap(app: &AppHandle, data: &ReferenceLapData) {
@@ -381,7 +385,7 @@ fn save_reference_lap(app: &AppHandle, data: &ReferenceLapData) {
         return;
     }
 
-    let key = reference_lap_key(data.track_id, &data.car_screen_name);
+    let key = reference_lap_key(data.track_id, &data.car_screen_name, data.condition);
     let path = dir.join(format!("{key}.json"));
     let stored = StoredReferenceLap {
         version: 1,

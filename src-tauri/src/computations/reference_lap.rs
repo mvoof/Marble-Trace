@@ -1,13 +1,18 @@
 //! Reference lap processor — buffers speed/throttle/brake for the current lap,
 //! bucketed by lap distance, and commits the buffer as the new reference lap
-//! whenever `lap_best_lap_time` improves (i.e. the lap just completed was a
-//! new personal best for this track+car) AND beats the reference lap already
-//! persisted on disk, so a fresh session's best never degrades a faster
-//! stored reference.
+//! whenever the completed lap beats the one already persisted on disk *for the
+//! track condition it was driven in*.
+//!
+//! Dry and wet are kept as separate references: a dry lap is not a usable target
+//! in the rain, and a wet lap can never approach the dry time, so one stored
+//! best would leave the driver without a reference the moment it rained.
+//! Comparing per condition also keeps a fresh session's best from degrading a
+//! faster stored reference.
 use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use crate::model::reference_lap::{
-    ReferenceLapData, ReferenceLapSample, REFERENCE_LAP_BUCKET_COUNT,
+    ReferenceLapData, ReferenceLapSample, StoredReferenceTimes, TrackCondition,
+    REFERENCE_LAP_BUCKET_COUNT,
 };
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -31,13 +36,22 @@ const MAX_TICK_DIST_PCT_JUMP: f32 = 0.01;
 /// budget. A pit teleport lands the car at ~0 speed, so the speed-scaled
 /// allowance collapses back to the floor and real teleports are still caught.
 const MAX_LAG_SPIKE_S: f32 = 1.5;
+/// How long a completed lap waits for the sim to publish its time before it is
+/// dropped. Two seconds at 60 Hz — far beyond the frame or two iRacing actually
+/// takes, and short enough that a dropped lap is the one just driven.
+const MAX_PENDING_TICKS: u32 = 120;
 
 #[derive(Debug, Default)]
 pub struct ReferenceLapProcessor {
     working: Vec<ReferenceLapSample>,
     prev_lap_dist_pct: f32,
-    /// 0.0 = no best lap observed yet for the current track+car.
-    prev_best_lap_time: f32,
+    /// Highest wetness seen anywhere on the lap in progress. A lap that was
+    /// rained on part-way through is a wet lap: its fast line is the wet one
+    /// from that point, and filing it as dry would poison the dry reference.
+    lap_max_wetness: Option<i32>,
+    /// A completed lap held back until the sim publishes its time — see
+    /// `PendingLap`.
+    pending: Option<PendingLap>,
     last_track_id: Option<i32>,
     last_car_screen_name: Option<String>,
     /// Last bucket written this lap — lets us forward-fill buckets skipped
@@ -53,11 +67,30 @@ pub struct ReferenceLapProcessor {
     /// the in-memory best does not block re-recording after the stored
     /// reference file was deleted.
     reset_requested: Arc<AtomicBool>,
-    /// Lap time of the reference persisted on disk for the current track+car
-    /// (refreshed by the telemetry runtime on session-info updates). A lap is
-    /// committed only when it also beats this time, so a session best that is
-    /// slower than the stored reference never overwrites it.
-    stored_best_lap_time: Arc<Mutex<Option<f32>>>,
+    /// Lap times of the references persisted on disk for the current track+car,
+    /// one per condition (refreshed by the telemetry runtime on session-info
+    /// updates). A lap is committed only when it beats the stored time *for its
+    /// own condition* — which is also what lets a wet lap be recorded at all,
+    /// since it will never approach the dry time.
+    stored_best_lap_time: Arc<Mutex<StoredReferenceTimes>>,
+}
+
+/// A lap that has crossed the line but whose time the sim has not published yet.
+///
+/// `lap_last_lap_time` is not reliable on the crossing tick itself — iRacing
+/// sometimes updates it a frame before the lap counter and sometimes a few
+/// frames after — so the completed buffer is parked here and committed once the
+/// value actually changes from what it read before the crossing.
+#[derive(Debug)]
+struct PendingLap {
+    samples: Vec<ReferenceLapSample>,
+    condition: TrackCondition,
+    recorded_wetness: Option<f32>,
+    recorded_tire_wear: Option<f32>,
+    recorded_fuel_level: Option<f32>,
+    /// `lap_last_lap_time` as it read on the crossing tick.
+    last_lap_time_before_wrap: Option<f32>,
+    ticks_waited: u32,
 }
 
 /// Average remaining tread (0.0-1.0, 1.0=fresh) across all sampled tire zones, when any are present.
@@ -89,7 +122,7 @@ fn average_tire_wear(chassis: &crate::model::player::ChassisFrame) -> Option<f32
 impl ReferenceLapProcessor {
     pub fn new(
         reset_requested: Arc<AtomicBool>,
-        stored_best_lap_time: Arc<Mutex<Option<f32>>>,
+        stored_best_lap_time: Arc<Mutex<StoredReferenceTimes>>,
     ) -> Self {
         Self {
             reset_requested,
@@ -113,12 +146,72 @@ impl ReferenceLapProcessor {
 
         self.last_bucket = None;
         self.lap_invalidated = false;
+        self.lap_max_wetness = None;
     }
 
     fn reset_for_new_identity(&mut self) {
         self.reset_for_new_lap();
-        self.prev_best_lap_time = 0.0;
+        self.pending = None;
         self.prev_lap_dist_pct = -1.0;
+    }
+
+    /// Commits the parked lap once the sim publishes its time, or drops it if
+    /// that never happens. Returns the reference lap only when the completed
+    /// lap actually beats the stored one for its own condition.
+    fn resolve_pending(
+        &mut self,
+        ctx: &ComputeContext,
+        track_id: i32,
+        car_screen_name: String,
+    ) -> Option<ComputedOutput> {
+        let pending = self.pending.as_mut()?;
+
+        pending.ticks_waited += 1;
+
+        let lap_time = ctx.lap_timing.lap_last_lap_time.filter(|time| *time > 0.0);
+        let settled = lap_time.is_some_and(|time| {
+            pending
+                .last_lap_time_before_wrap
+                .is_none_or(|before| (time - before).abs() > BEST_TIME_EPSILON)
+        });
+
+        if !settled {
+            if pending.ticks_waited >= MAX_PENDING_TICKS {
+                self.pending = None;
+            }
+
+            return None;
+        }
+
+        let pending = self.pending.take()?;
+        let lap_time = lap_time?;
+
+        let stored_time = self
+            .stored_best_lap_time
+            .lock()
+            .ok()
+            .and_then(|stored| stored.get(pending.condition));
+        let beats_stored =
+            stored_time.is_none_or(|stored| stored <= 0.0 || lap_time < stored - BEST_TIME_EPSILON);
+
+        if !beats_stored {
+            return None;
+        }
+
+        if let Ok(mut stored) = self.stored_best_lap_time.lock() {
+            stored.set(pending.condition, Some(lap_time));
+        }
+
+        Some(ComputedOutput::ReferenceLap(ReferenceLapData {
+            track_id,
+            car_screen_name,
+            lap_time,
+            samples: pending.samples,
+            condition: pending.condition,
+            recorded_wetness: pending.recorded_wetness,
+            recorded_tire_wear: pending.recorded_tire_wear,
+            recorded_fuel_level: pending.recorded_fuel_level,
+        }))
     }
 }
 
@@ -213,53 +306,35 @@ impl Processor for ReferenceLapProcessor {
         self.working[bucket] = sample;
         self.last_bucket = Some(bucket);
 
+        if let Some(wetness) = ctx.environment.track_wetness {
+            self.lap_max_wetness = Some(
+                self.lap_max_wetness
+                    .map_or(wetness, |peak| peak.max(wetness)),
+            );
+        }
+
         let crossed_finish_line =
             self.prev_lap_dist_pct > WRAP_HIGH_THRESHOLD && lap_dist_pct < WRAP_LOW_THRESHOLD;
         self.prev_lap_dist_pct = lap_dist_pct;
 
-        if !crossed_finish_line {
-            return None;
-        }
-
-        let best_lap_time = ctx.lap_timing.lap_best_lap_time.unwrap_or(0.0);
-        let stored_time = self
-            .stored_best_lap_time
-            .lock()
-            .ok()
-            .and_then(|stored| *stored);
-        let beats_stored = stored_time
-            .is_none_or(|stored| stored <= 0.0 || best_lap_time < stored - BEST_TIME_EPSILON);
-        let is_new_best = !self.lap_invalidated
-            && best_lap_time > 0.0
-            && beats_stored
-            && (self.prev_best_lap_time <= 0.0
-                || best_lap_time < self.prev_best_lap_time - BEST_TIME_EPSILON);
-
-        self.prev_best_lap_time = best_lap_time;
-
-        if is_new_best {
-            if let Ok(mut stored) = self.stored_best_lap_time.lock() {
-                *stored = Some(best_lap_time);
-            }
-        }
-
-        let output = if is_new_best {
-            Some(ComputedOutput::ReferenceLap(ReferenceLapData {
-                track_id,
-                car_screen_name,
-                lap_time: best_lap_time,
+        if crossed_finish_line {
+            // A lap that could not be timed is dropped rather than queued, and
+            // a still-unresolved previous lap is replaced: only the lap just
+            // driven can be the one the sim is about to publish a time for.
+            self.pending = (!self.lap_invalidated).then(|| PendingLap {
                 samples: self.working.clone(),
-                recorded_wetness: ctx.environment.track_wetness.map(|wetness| wetness as f32),
+                condition: TrackCondition::from_wetness(self.lap_max_wetness),
+                recorded_wetness: self.lap_max_wetness.map(|wetness| wetness as f32),
                 recorded_tire_wear: average_tire_wear(ctx.chassis),
                 recorded_fuel_level: Some(ctx.car_status.fuel_level),
-            }))
-        } else {
-            None
-        };
+                last_lap_time_before_wrap: ctx.lap_timing.lap_last_lap_time,
+                ticks_waited: 0,
+            });
 
-        self.reset_for_new_lap();
+            self.reset_for_new_lap();
+        }
 
-        output
+        self.resolve_pending(ctx, track_id, car_screen_name)
     }
 
     fn reset(&mut self) {
@@ -306,14 +381,14 @@ mod tests {
         }
     }
 
-    fn make_lap_timing(lap_dist_pct: f32, best_lap_time: Option<f32>) -> LapTimingFrame {
+    fn make_lap_timing(lap_dist_pct: f32, last_lap_time: Option<f32>) -> LapTimingFrame {
         LapTimingFrame {
             lap: None,
             lap_dist: None,
             lap_dist_pct: Some(lap_dist_pct),
             lap_current_lap_time: 0.0,
-            lap_last_lap_time: None,
-            lap_best_lap_time: best_lap_time,
+            lap_last_lap_time: last_lap_time,
+            lap_best_lap_time: None,
             player_car_position: None,
             player_car_class_position: None,
             lap_delta_to_session_best_live: None,
@@ -396,16 +471,31 @@ mod tests {
         proc: &mut ReferenceLapProcessor,
         session: &SessionSnapshot,
         lap_dist_pct: f32,
-        best_lap_time: Option<f32>,
+        last_lap_time: Option<f32>,
+    ) -> Option<ComputedOutput> {
+        run_tick_in(
+            proc,
+            session,
+            lap_dist_pct,
+            last_lap_time,
+            &crate::model::environment::EnvironmentFrame::default(),
+        )
+    }
+
+    fn run_tick_in(
+        proc: &mut ReferenceLapProcessor,
+        session: &SessionSnapshot,
+        lap_dist_pct: f32,
+        last_lap_time: Option<f32>,
+        environment: &crate::model::environment::EnvironmentFrame,
     ) -> Option<ComputedOutput> {
         let dynamics = make_dynamics(50.0);
         let inputs = make_inputs(1.0, 0.0);
-        let lap_timing = make_lap_timing(lap_dist_pct, best_lap_time);
+        let lap_timing = make_lap_timing(lap_dist_pct, last_lap_time);
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
         let chassis = crate::model::player::ChassisFrame::default();
-        let environment = crate::model::environment::EnvironmentFrame::default();
         let ctx = make_ctx(MakeCtxArgs {
             dynamics: &dynamics,
             inputs: &inputs,
@@ -415,9 +505,35 @@ mod tests {
             car_idx: &car_idx,
             start_positions: &start_pos,
             chassis: &chassis,
-            environment: &environment,
+            environment,
         });
         proc.compute(&ctx)
+    }
+
+    /// Crosses the finish line and then runs the tick on which the sim
+    /// publishes the completed lap's time, which is when the processor decides.
+    fn cross_line(
+        proc: &mut ReferenceLapProcessor,
+        session: &SessionSnapshot,
+        lap_time: f32,
+    ) -> Option<ComputedOutput> {
+        cross_line_in(
+            proc,
+            session,
+            lap_time,
+            &crate::model::environment::EnvironmentFrame::default(),
+        )
+    }
+
+    fn cross_line_in(
+        proc: &mut ReferenceLapProcessor,
+        session: &SessionSnapshot,
+        lap_time: f32,
+        environment: &crate::model::environment::EnvironmentFrame,
+    ) -> Option<ComputedOutput> {
+        assert!(run_tick_in(proc, session, 0.05, None, environment).is_none());
+
+        run_tick_in(proc, session, 0.055, Some(lap_time), environment)
     }
 
     /// Drive `from..to` in steps small enough to stay under the teleport
@@ -475,8 +591,8 @@ mod tests {
 
         drive_segment(&mut proc, &session, 0.005, 0.995);
 
-        // Cross the finish line with a freshly-set best lap time.
-        let output = run_tick(&mut proc, &session, 0.05, Some(90.0));
+        // Cross the finish line; the sim publishes the time a tick later.
+        let output = cross_line(&mut proc, &session, 90.0);
 
         match output {
             Some(ComputedOutput::ReferenceLap(data)) => {
@@ -500,12 +616,12 @@ mod tests {
         assert!(run_tick(&mut proc, &session, 0.85, None).is_none());
         drive_segment(&mut proc, &session, 0.855, 0.995);
 
-        // Crossing with a fresh best must NOT commit the teleport-tainted buffer.
-        assert!(run_tick(&mut proc, &session, 0.05, Some(90.0)).is_none());
+        // Crossing must NOT commit the teleport-tainted buffer.
+        assert!(cross_line(&mut proc, &session, 90.0).is_none());
 
         // The next cleanly driven lap commits again.
-        drive_segment(&mut proc, &session, 0.055, 0.995);
-        assert!(run_tick(&mut proc, &session, 0.05, Some(89.0)).is_some());
+        drive_segment(&mut proc, &session, 0.06, 0.995);
+        assert!(cross_line(&mut proc, &session, 89.0).is_some());
     }
 
     #[test]
@@ -542,7 +658,22 @@ mod tests {
         });
         let _ = proc.compute(&ctx);
 
-        let lap_timing = make_lap_timing(0.05, Some(90.0));
+        // Crossing the line parks the lap; the sim publishes its time next tick.
+        let lap_timing = make_lap_timing(0.05, None);
+        let ctx = make_ctx(MakeCtxArgs {
+            dynamics: &dynamics,
+            inputs: &inputs,
+            lap_timing: &lap_timing,
+            car_status: &car_status,
+            session: &session,
+            car_idx: &car_idx,
+            start_positions: &start_pos,
+            chassis: &chassis,
+            environment: &environment,
+        });
+        assert!(proc.compute(&ctx).is_none());
+
+        let lap_timing = make_lap_timing(0.055, Some(90.0));
         let ctx = make_ctx(MakeCtxArgs {
             dynamics: &dynamics,
             inputs: &inputs,
@@ -559,11 +690,94 @@ mod tests {
         match output {
             Some(ComputedOutput::ReferenceLap(data)) => {
                 assert_eq!(data.recorded_wetness, Some(3.0));
+                // Wetness 3 is past the wet threshold, so this is a wet reference.
+                assert_eq!(data.condition, TrackCondition::Wet);
                 assert!((data.recorded_tire_wear.unwrap() - 0.8).abs() < 1e-4);
                 assert_eq!(data.recorded_fuel_level, Some(42.0));
             }
             other => panic!("expected ReferenceLap output, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn wet_lap_is_stored_against_the_wet_reference_not_the_dry_one() {
+        let stored = Arc::new(Mutex::new(StoredReferenceTimes {
+            dry: Some(85.0),
+            wet: None,
+        }));
+        let mut proc =
+            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let session = make_session(1);
+        let wet = crate::model::environment::EnvironmentFrame {
+            track_wetness: Some(5),
+            ..Default::default()
+        };
+
+        // Nowhere near the 85 s dry reference, but it is the first wet lap —
+        // which is exactly the case a single stored best could never record.
+        let mut pct = 0.005;
+        while pct < 0.995 {
+            assert!(run_tick_in(&mut proc, &session, pct, None, &wet).is_none());
+            pct += 0.005;
+        }
+
+        match cross_line_in(&mut proc, &session, 110.0, &wet) {
+            Some(ComputedOutput::ReferenceLap(data)) => {
+                assert_eq!(data.condition, TrackCondition::Wet);
+                assert_eq!(data.lap_time, 110.0);
+            }
+            other => panic!("expected a wet ReferenceLap, got {other:?}"),
+        }
+
+        let times = *stored.lock().unwrap();
+        assert_eq!(times.wet, Some(110.0));
+        // The dry reference must be left exactly as it was.
+        assert_eq!(times.dry, Some(85.0));
+    }
+
+    #[test]
+    fn a_lap_rained_on_part_way_through_counts_as_wet() {
+        let mut proc = ReferenceLapProcessor::default();
+        let session = make_session(1);
+        let dry = crate::model::environment::EnvironmentFrame::default();
+        let wet = crate::model::environment::EnvironmentFrame {
+            track_wetness: Some(4),
+            ..Default::default()
+        };
+
+        let mut pct = 0.005;
+        while pct < 0.5 {
+            assert!(run_tick_in(&mut proc, &session, pct, None, &dry).is_none());
+            pct += 0.005;
+        }
+        while pct < 0.995 {
+            assert!(run_tick_in(&mut proc, &session, pct, None, &wet).is_none());
+            pct += 0.005;
+        }
+
+        match cross_line_in(&mut proc, &session, 105.0, &wet) {
+            Some(ComputedOutput::ReferenceLap(data)) => {
+                assert_eq!(data.condition, TrackCondition::Wet);
+            }
+            other => panic!("expected a wet ReferenceLap, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn a_lap_the_sim_never_times_is_dropped() {
+        let mut proc = ReferenceLapProcessor::default();
+        let session = make_session(1);
+
+        drive_segment(&mut proc, &session, 0.005, 0.995);
+        assert!(run_tick(&mut proc, &session, 0.05, None).is_none());
+
+        // The time never arrives; the parked lap must not linger and commit
+        // itself against some later lap's time.
+        for _ in 0..MAX_PENDING_TICKS {
+            assert!(run_tick(&mut proc, &session, 0.055, None).is_none());
+        }
+
+        assert!(run_tick(&mut proc, &session, 0.06, Some(90.0)).is_none());
     }
 
     #[test]
@@ -573,58 +787,61 @@ mod tests {
 
         // First lap sets the best.
         drive_segment(&mut proc, &session, 0.005, 0.995);
-        assert!(run_tick(&mut proc, &session, 0.05, Some(90.0)).is_some());
+        assert!(cross_line(&mut proc, &session, 90.0).is_some());
 
-        // Second lap is slower — best lap time is unchanged.
-        drive_segment(&mut proc, &session, 0.055, 0.995);
-        assert!(run_tick(&mut proc, &session, 0.05, Some(90.0)).is_none());
+        // Second lap is slower — the stored reference stands.
+        drive_segment(&mut proc, &session, 0.06, 0.995);
+        assert!(cross_line(&mut proc, &session, 91.0).is_none());
     }
 
     #[test]
     fn session_best_slower_than_stored_reference_is_not_committed() {
-        let stored = Arc::new(Mutex::new(Some(85.0_f32)));
+        let stored = Arc::new(Mutex::new(StoredReferenceTimes {
+            dry: Some(85.0),
+            wet: None,
+        }));
         let mut proc =
             ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
         let session = make_session(1);
 
-        // First session best (90.0) is slower than the persisted reference (85.0).
+        // First lap (90.0) is slower than the persisted reference (85.0).
         drive_segment(&mut proc, &session, 0.005, 0.995);
-        assert!(run_tick(&mut proc, &session, 0.05, Some(90.0)).is_none());
+        assert!(cross_line(&mut proc, &session, 90.0).is_none());
 
         // A lap faster than the stored reference commits and updates the shared time.
-        drive_segment(&mut proc, &session, 0.055, 0.995);
-        assert!(run_tick(&mut proc, &session, 0.05, Some(84.0)).is_some());
-        assert_eq!(*stored.lock().unwrap(), Some(84.0));
+        drive_segment(&mut proc, &session, 0.06, 0.995);
+        assert!(cross_line(&mut proc, &session, 84.0).is_some());
+        assert_eq!(stored.lock().unwrap().dry, Some(84.0));
     }
 
     #[test]
     fn cleared_stored_reference_allows_recommit() {
-        let stored = Arc::new(Mutex::new(None::<f32>));
+        let stored = Arc::new(Mutex::new(StoredReferenceTimes::default()));
         let mut proc =
             ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
         let session = make_session(1);
 
         drive_segment(&mut proc, &session, 0.005, 0.995);
-        assert!(run_tick(&mut proc, &session, 0.05, Some(90.0)).is_some());
-        assert_eq!(*stored.lock().unwrap(), Some(90.0));
+        assert!(cross_line(&mut proc, &session, 90.0).is_some());
+        assert_eq!(stored.lock().unwrap().dry, Some(90.0));
     }
 
     #[test]
     fn track_change_resets_prior_best() {
-        let stored = Arc::new(Mutex::new(None::<f32>));
+        let stored = Arc::new(Mutex::new(StoredReferenceTimes::default()));
         let mut proc =
             ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
 
         let session1 = make_session(1);
         drive_segment(&mut proc, &session1, 0.005, 0.995);
-        assert!(run_tick(&mut proc, &session1, 0.05, Some(90.0)).is_some());
+        assert!(cross_line(&mut proc, &session1, 90.0).is_some());
 
         // Switch tracks — a slower time than the old best should still count as
         // new best. The runtime refreshes the shared stored time on the
         // session-info update that changes the track; mimic finding no file.
-        *stored.lock().unwrap() = None;
+        *stored.lock().unwrap() = StoredReferenceTimes::default();
         let session2 = make_session(2);
         drive_segment(&mut proc, &session2, 0.005, 0.995);
-        assert!(run_tick(&mut proc, &session2, 0.05, Some(95.0)).is_some());
+        assert!(cross_line(&mut proc, &session2, 95.0).is_some());
     }
 }

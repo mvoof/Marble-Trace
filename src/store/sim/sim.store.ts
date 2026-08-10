@@ -16,8 +16,10 @@ import type {
   SimStatus,
   CapabilitiesPayload,
   ReferenceLapData,
+  TrackCondition,
 } from '@/types/bindings';
 import { debug } from '@utils/debug';
+import { trackConditionForWetness } from '@utils/widget/track-condition';
 import type { TelemetryStatus } from '@/types';
 import type { RootStore } from '@store/root-store';
 import {
@@ -82,7 +84,16 @@ export class SimStore {
           );
 
           return info && car
-            ? { trackId: info.trackId, carScreenName: car.carScreenName }
+            ? {
+                trackId: info.trackId,
+                carScreenName: car.carScreenName,
+                // The condition is part of the reference's identity: when the
+                // track turns wet mid-session the dry reference stops being the
+                // right target and the wet one has to be loaded in its place.
+                condition: trackConditionForWetness(
+                  this.root.environment.environment?.track_wetness ?? null
+                ),
+              }
             : null;
         },
         (identity, previousIdentity) => {
@@ -95,12 +106,17 @@ export class SimStore {
           if (
             previousIdentity &&
             previousIdentity.trackId === identity.trackId &&
-            previousIdentity.carScreenName === identity.carScreenName
+            previousIdentity.carScreenName === identity.carScreenName &&
+            previousIdentity.condition === identity.condition
           ) {
             return;
           }
 
-          void this.loadReferenceLap(identity.trackId, identity.carScreenName);
+          void this.loadReferenceLap(
+            identity.trackId,
+            identity.carScreenName,
+            identity.condition
+          );
         },
         { fireImmediately: true }
       )
@@ -118,13 +134,18 @@ export class SimStore {
     this.disposeListeners();
   }
 
-  private async loadReferenceLap(trackId: number, carScreenName: string) {
+  private async loadReferenceLap(
+    trackId: number,
+    carScreenName: string,
+    condition: TrackCondition
+  ) {
     this.root.referenceLap.reset();
 
     try {
       const data = await invoke<ReferenceLapData | null>('get_reference_lap', {
         trackId,
         carScreenName,
+        condition,
       });
 
       if (data) {

@@ -482,12 +482,23 @@
       "showTraceDesc": "Draw the speed trace under the call. Off leaves just the call row and the widget shrinks to it.",
       "window": "Window (m)",
       "windowDesc": "How far behind and ahead of the car the trace reaches.",
-      "referenceColor": "Best Lap Color",
-      "referenceColorDesc": "Color of the stored best lap the trace is compared against.",
+      "referenceColor": "Ref Lap Color",
+      "referenceColorDesc": "Color of the stored reference lap the trace is compared against.",
       "gainColor": "Time Gained Color",
-      "gainColorDesc": "This lap where it is up on the best lap.",
+      "gainColorDesc": "This lap where it is up on the reference lap.",
       "lossColor": "Time Lost Color",
-      "lossColorDesc": "This lap where it is down on the best lap."
+      "lossColorDesc": "This lap where it is down on the reference lap.",
+      "readouts": "Readouts",
+      "showSpeed": "Speed",
+      "showSpeedDesc": "Current speed against the reference lap speed at this point.",
+      "showReferenceLapTime": "Ref Lap Time",
+      "showReferenceLapTimeDesc": "Lap time of the stored reference lap the trace is compared against.",
+      "showTrackCondition": "Track Condition",
+      "showTrackConditionDesc": "Whether the dry or the wet reference lap is in use right now.",
+      "channel": "Chart Channel",
+      "channelDesc": "Speed shows where the time goes; brake shows how the pedal was applied.",
+      "channelSpeed": "Speed",
+      "channelBrake": "Brake"
     }
   },
   "streamChat": {

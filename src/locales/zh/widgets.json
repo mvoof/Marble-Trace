@@ -482,12 +482,23 @@
       "showTraceDesc": "在提示下方绘制速度曲线。关闭后仅保留提示行，组件高度随之收缩。",
       "window": "窗口（米）",
       "windowDesc": "曲线向车辆前后延伸的距离。",
-      "referenceColor": "最快圈颜色",
-      "referenceColorDesc": "用于对比的已保存最快圈的颜色。",
+      "referenceColor": "参考圈颜色",
+      "referenceColorDesc": "用于对比的已保存参考圈的颜色。",
       "gainColor": "赢得时间的颜色",
-      "gainColorDesc": "本圈快于最快圈的路段。",
+      "gainColorDesc": "本圈快于参考圈的路段。",
       "lossColor": "损失时间的颜色",
-      "lossColorDesc": "本圈慢于最快圈的路段。"
+      "lossColorDesc": "本圈慢于参考圈的路段。",
+      "readouts": "数值显示",
+      "showSpeed": "速度",
+      "showSpeedDesc": "当前速度与参考圈在该点速度的对比。",
+      "showReferenceLapTime": "参考圈时间",
+      "showReferenceLapTimeDesc": "用于对比的已保存参考圈的圈速。",
+      "showTrackCondition": "赛道状态",
+      "showTrackConditionDesc": "当前使用的是干地还是湿地参考圈。",
+      "channel": "图表通道",
+      "channelDesc": "速度显示时间损失在哪里；刹车显示踏板如何被踩下。",
+      "channelSpeed": "速度",
+      "channelBrake": "刹车"
     }
   },
   "streamChat": {

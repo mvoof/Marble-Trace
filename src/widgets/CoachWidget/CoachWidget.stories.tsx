@@ -32,6 +32,13 @@ const speedAtPct = (pct: number, apexSpeedMps: number): number => {
   return STRAIGHT_SPEED_MPS - (STRAIGHT_SPEED_MPS - apexSpeedMps) * depth;
 };
 
+/** Brake pedal down from `brakeStartPct` until the apex, mirroring a real braking zone. */
+const brakeAtPct = (pct: number, brakeStartPct: number): number =>
+  pct >= brakeStartPct && pct <= CORNER_CENTER_PCT ? 1 : 0;
+
+/** Where the reference driver gets on the brakes for the sample corner. */
+const REFERENCE_BRAKE_PCT = CORNER_CENTER_PCT - 0.035;
+
 const referenceLap = (): ReferenceLapData => ({
   trackId: 1,
   carScreenName: 'Storybook GT3',
@@ -42,7 +49,7 @@ const referenceLap = (): ReferenceLapData => ({
     return {
       speed: speedAtPct(pct, APEX_SPEED_MPS),
       throttle: 1,
-      brake: 0,
+      brake: brakeAtPct(pct, REFERENCE_BRAKE_PCT),
       latAccel: null,
       longAccel: null,
       steeringWheelAngle: 0,
@@ -61,7 +68,13 @@ interface StoryArgs {
   showUrgencyBar: boolean;
   /** Apex speed this lap ran: below the reference loses time, above it gains. */
   ownApexSpeed: number;
+  /** Where this lap gets on the brakes — later than the reference costs time. */
+  ownBrakeOffsetPct: number;
   distPct: number;
+  showSpeed: boolean;
+  showReferenceLapTime: boolean;
+  wetReference: boolean;
+  traceChannel: CoachWidgetSettings['traceChannel'];
 }
 
 const meta: Meta<StoryArgs> = {
@@ -79,6 +92,10 @@ const meta: Meta<StoryArgs> = {
       store.widgetSettings.updateUserSettings('coach', {
         showTrace: args.showTrace,
         showUrgencyBar: args.showUrgencyBar,
+        showSpeed: args.showSpeed,
+        showReferenceLapTime: args.showReferenceLapTime,
+        showTrackCondition: true,
+        traceChannel: args.traceChannel,
         windowMeters: 150,
       } as Partial<CoachWidgetSettings>);
 
@@ -88,7 +105,10 @@ const meta: Meta<StoryArgs> = {
       } as NonNullable<typeof store.session.sessionInfo>);
 
       if (args.hasReferenceLap) {
-        store.referenceLap.updateReferenceLap(referenceLap());
+        store.referenceLap.updateReferenceLap({
+          ...referenceLap(),
+          condition: args.wetReference ? 'wet' : 'dry',
+        });
       } else {
         store.referenceLap.reset();
       }
@@ -103,17 +123,23 @@ const meta: Meta<StoryArgs> = {
       const currentBucket = Math.floor(args.distPct * BUCKET_COUNT);
 
       for (let bucket = 0; bucket <= currentBucket; bucket++) {
-        store.coachWidget.ownSpeedByBucket[bucket] = speedAtPct(
-          bucket / BUCKET_COUNT,
-          args.ownApexSpeed
+        const pct = bucket / BUCKET_COUNT;
+
+        store.coachWidget.seedBucket(
+          bucket,
+          speedAtPct(pct, args.ownApexSpeed),
+          brakeAtPct(pct, args.ownBrakeOffsetPct)
         );
       }
 
-      store.coachWidget.frameTick++;
       store.player.updateLapTiming({
         ...store.player.lapTiming,
         lap_dist_pct: args.distPct,
       } as NonNullable<typeof store.player.lapTiming>);
+
+      // The store fills the window on the telemetry frame, which a seeded
+      // preview never receives.
+      store.coachWidget.refreshFromSeed();
     },
     args: {
       advisory: 'neutral',
@@ -122,7 +148,12 @@ const meta: Meta<StoryArgs> = {
       showTrace: true,
       showUrgencyBar: true,
       ownApexSpeed: APEX_SPEED_MPS,
+      ownBrakeOffsetPct: REFERENCE_BRAKE_PCT,
       distPct: CORNER_CENTER_PCT + 0.01,
+      showSpeed: true,
+      showReferenceLapTime: true,
+      wetReference: false,
+      traceChannel: 'speed',
     },
   }),
 };
@@ -171,4 +202,38 @@ export const TraceOff: Story = {
 
 export const TraceOffNoUrgencyBar: Story = {
   args: { showTrace: false, showUrgencyBar: false },
+};
+
+// Both braking stories sit the car just past the apex so that the reference
+// mark and this lap's mark are inside the same window and can be compared.
+export const BrakingLaterThanReference: Story = {
+  args: {
+    ownBrakeOffsetPct: REFERENCE_BRAKE_PCT + 0.008,
+    ownApexSpeed: APEX_SPEED_MPS - 6,
+    distPct: CORNER_CENTER_PCT - 0.005,
+  },
+};
+
+export const BrakingEarlierThanReference: Story = {
+  args: {
+    ownBrakeOffsetPct: REFERENCE_BRAKE_PCT - 0.008,
+    ownApexSpeed: APEX_SPEED_MPS + 4,
+    distPct: CORNER_CENTER_PCT - 0.005,
+  },
+};
+
+export const NoReadouts: Story = {
+  args: { showSpeed: false, showReferenceLapTime: false },
+};
+
+export const WetReference: Story = {
+  args: { wetReference: true },
+};
+
+export const BrakeChannel: Story = {
+  args: {
+    traceChannel: 'brake',
+    ownBrakeOffsetPct: REFERENCE_BRAKE_PCT + 0.008,
+    distPct: CORNER_CENTER_PCT - 0.005,
+  },
 };

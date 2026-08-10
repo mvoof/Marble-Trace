@@ -6,9 +6,7 @@ import {
   buildTargetSpeedProfile,
   computeDrivingAdvisory,
   extractCornerTargets,
-  getAverageTireWear,
   interpolateReferenceSample,
-  isConditionMismatch,
   NEUTRAL_ADVISORY_STATE,
   type AdvisoryState,
   type CornerTarget,
@@ -33,6 +31,13 @@ const ADVISORY_DEBOUNCE_MS = 250;
 const MAX_POSITION_EXTRAPOLATION_S = 0.2;
 /** Displayed urgency is quantized to this step to avoid re-rendering observers at 60 Hz. */
 const URGENCY_DISPLAY_STEP = 0.05;
+
+/** Why the coach is not producing an advisory — see `inactiveReason`. */
+export type CoachInactiveReason =
+  | 'no-reference'
+  | 'no-track-data'
+  | 'no-corners'
+  | 'no-telemetry';
 
 export class DrivingCoachWidgetStore {
   displayedAdvisory: DrivingAdvisory = 'neutral';
@@ -107,6 +112,35 @@ export class DrivingCoachWidgetStore {
     return this.root.referenceLap.data !== null;
   }
 
+  /**
+   * Why no advisory is being produced, or null while the coach is running.
+   *
+   * `advisoryInput` returns null under several conditions and the advisory then
+   * falls back to `neutral` — indistinguishable, from the outside, from "you
+   * are on the pace". A UI that reads the advisory alone therefore reports
+   * PACE while the coach is in fact switched off, so the reason is published
+   * here and shown instead.
+   */
+  get inactiveReason(): CoachInactiveReason | null {
+    if (!this.hasReferenceLap) return 'no-reference';
+
+    if ((this.root.session.sessionInfo?.trackLengthM ?? 0) <= 0) {
+      return 'no-track-data';
+    }
+
+    if (this.cornerTargets.length === 0) return 'no-corners';
+
+    if (!this.root.player.carDynamics || !this.root.player.carInputs) {
+      return 'no-telemetry';
+    }
+
+    if (this.root.player.lapTiming?.lap_dist_pct == null) {
+      return 'no-telemetry';
+    }
+
+    return null;
+  }
+
   /** Best-lap reference sample interpolated at the player's current track position. */
   get referenceSample(): ReferenceLapSample | null {
     const lapDistPct = this.root.player.lapTiming?.lap_dist_pct;
@@ -154,22 +188,6 @@ export class DrivingCoachWidgetStore {
     return buildTargetSpeedProfile(data.samples);
   }
 
-  /** Whether current wetness/tire wear/fuel load have diverged too far from the reference lap's recorded conditions to trust the comparison. */
-  private get conditionsMismatched(): boolean {
-    const data = this.root.referenceLap.data;
-
-    if (!data) return false;
-
-    return isConditionMismatch({
-      currentWetness: this.root.environment.environment?.track_wetness ?? null,
-      recordedWetness: data.recordedWetness,
-      currentTireWear: getAverageTireWear(this.root.player.chassis),
-      recordedTireWear: data.recordedTireWear,
-      currentFuelLevel: this.root.player.carStatus?.fuel_level ?? null,
-      recordedFuelLevel: data.recordedFuelLevel,
-    });
-  }
-
   private get advisoryInput(): DrivingAdvisoryInput | null {
     const player = this.root.player;
     const dynamics = player.carDynamics;
@@ -188,8 +206,6 @@ export class DrivingCoachWidgetStore {
     ) {
       return null;
     }
-
-    if (this.conditionsMismatched) return null;
 
     const cornerTargets = this.cornerTargets;
 

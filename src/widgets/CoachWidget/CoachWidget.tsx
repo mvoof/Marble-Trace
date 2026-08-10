@@ -5,15 +5,17 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 
 import { CallRow } from './CallRow/CallRow';
+import { InfoRow } from './InfoRow/InfoRow';
 import { SpeedTrace } from './SpeedTrace/SpeedTrace';
 
 import styles from './CoachWidget.module.scss';
 
 /**
  * Driving coach: the advisory call on top, the speed trace against the stored
- * best lap underneath. With the trace switched off only the call row is
- * rendered and the widget collapses to it — the container is autoHeight, so
- * the plate follows the content instead of leaving an empty box hanging.
+ * reference lap underneath, and an optional row of readouts below it. Every section
+ * can be switched off and the widget collapses to what is left — the container
+ * is autoHeight, so the plate follows the content instead of leaving an empty
+ * box hanging.
  */
 export const CoachWidget = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
@@ -25,6 +27,8 @@ export const CoachWidget = observer(() => {
       <CallRow />
 
       {settings.showTrace ? <SpeedTrace /> : null}
+
+      <InfoRow />
     </WidgetPanel>
   );
 });

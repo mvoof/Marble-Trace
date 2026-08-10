@@ -6,7 +6,6 @@ import {
   useCoachWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import type { TraceWindow } from '@store/widgets/coach-trace-utils';
 import { drawSpeedTrace, type SpeedTraceColors } from './speed-trace-render';
 
 import styles from './SpeedTrace.module.scss';
@@ -16,8 +15,18 @@ import styles from './SpeedTrace.module.scss';
 const GRID_COLOR = 'rgba(255, 255, 255, 0.06)';
 const MARKER_COLOR = 'rgba(255, 255, 255, 0.45)';
 
+const traceColors = (settings: CoachWidgetSettings): SpeedTraceColors => ({
+  reference: settings.referenceColor,
+  gain: settings.gainColor,
+  loss: settings.lossColor,
+  grid: GRID_COLOR,
+  marker: MARKER_COLOR,
+});
+
 // Not wrapped in observer() intentionally: useReactiveCanvasLoop subscribes to
 // the store directly, so a React re-render per telemetry frame is not needed.
+// The window itself is built in the store on the telemetry frame — this
+// component only paints the buffers it already holds.
 export const SpeedTrace = () => {
   const coachTrace = useCoachWidgetStore();
   const widgetSettings = useWidgetSettingsStore();
@@ -25,14 +34,23 @@ export const SpeedTrace = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const draw = useCallback(
-    (traceWindow: TraceWindow, colors: SpeedTraceColors) => {
+    (
+      channel: CoachWidgetSettings['traceChannel'],
+      colors: SpeedTraceColors
+    ) => {
       const canvas = canvasRef.current;
 
       if (!canvas) return;
 
-      drawSpeedTrace(canvas, traceWindow, colors);
+      drawSpeedTrace(
+        canvas,
+        coachTrace.window,
+        coachTrace.windowStats,
+        channel,
+        colors
+      );
     },
-    []
+    [coachTrace]
   );
 
   useReactiveCanvasLoop(
@@ -40,19 +58,15 @@ export const SpeedTrace = () => {
       const settings = widgetSettings.getSettings<CoachWidgetSettings>('coach');
 
       // Read every drawn value inside the autorun so it is tracked: the paint
-      // itself is deferred into requestAnimationFrame, outside the tracking
-      // window, so a color change alone would otherwise never repaint.
-      const colors: SpeedTraceColors = {
-        reference: settings.referenceColor,
-        gain: settings.gainColor,
-        loss: settings.lossColor,
-        grid: GRID_COLOR,
-        marker: MARKER_COLOR,
-      };
+      // is deferred into requestAnimationFrame, outside the tracking window, so
+      // a color change alone would otherwise never repaint.
+      const colors = traceColors(settings);
 
-      const traceWindow = coachTrace.traceWindow;
+      // The buffers are plain typed arrays; this tick is what makes the store's
+      // per-frame refill visible to the loop.
+      void coachTrace.frameTick;
 
-      scheduleDraw(() => draw(traceWindow, colors));
+      scheduleDraw(() => draw(settings.traceChannel, colors));
     },
     [coachTrace, widgetSettings, draw]
   );
@@ -87,15 +101,8 @@ export const SpeedTrace = () => {
       const settings = widgetSettings.getSettings<CoachWidgetSettings>('coach');
 
       cancelAnimationFrame(resizeRafId);
-
       resizeRafId = requestAnimationFrame(() =>
-        draw(coachTrace.traceWindow, {
-          reference: settings.referenceColor,
-          gain: settings.gainColor,
-          loss: settings.lossColor,
-          grid: GRID_COLOR,
-          marker: MARKER_COLOR,
-        })
+        draw(settings.traceChannel, traceColors(settings))
       );
     });
 
@@ -105,14 +112,14 @@ export const SpeedTrace = () => {
       resizeObserver.disconnect();
       cancelAnimationFrame(resizeRafId);
     };
-  }, [coachTrace, widgetSettings, draw]);
+  }, [widgetSettings, draw]);
 
   return (
     <div className={styles.container}>
       <canvas
         ref={canvasRef}
         className={styles.canvas}
-        aria-label="Speed against best lap"
+        aria-label="Speed against reference lap"
       />
     </div>
   );

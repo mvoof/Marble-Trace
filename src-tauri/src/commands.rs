@@ -7,7 +7,7 @@ use tokio::time::sleep;
 use tracing::{debug, info, warn};
 
 use crate::model::pit_command::PitCommandRequest;
-use crate::model::reference_lap::ReferenceLapData;
+use crate::model::reference_lap::{ReferenceLapData, StoredReferenceTimes, TrackCondition};
 use crate::model::session::SessionSnapshot;
 use crate::model::track_shape::TrackShapePayload;
 use crate::sources::iracing::pit_command::send_pit_order as send_pit_order_to_sim;
@@ -283,12 +283,13 @@ pub async fn get_reference_lap(
     app: AppHandle,
     track_id: i32,
     car_screen_name: String,
+    condition: TrackCondition,
 ) -> Result<Option<ReferenceLapData>, String> {
     let Ok(data_dir) = app.path().app_data_dir() else {
         return Err("Cannot resolve app data dir".to_string());
     };
 
-    let key = reference_lap_key(track_id, &car_screen_name);
+    let key = reference_lap_key(track_id, &car_screen_name, condition);
     let path = data_dir.join("reference_laps").join(format!("{key}.json"));
 
     let Ok(bytes) = tokio::fs::read(&path).await else {
@@ -315,13 +316,18 @@ pub async fn delete_reference_lap(
         return Err("Cannot resolve app data dir".to_string());
     };
 
-    let key = reference_lap_key(track_id, &car_screen_name);
-    let path = data_dir.join("reference_laps").join(format!("{key}.json"));
+    // Both conditions go: the button means "forget my reference for this
+    // track and car", and leaving the wet one behind would silently resurrect
+    // a reference the driver just deleted the next time it rained.
+    for condition in [TrackCondition::Dry, TrackCondition::Wet] {
+        let key = reference_lap_key(track_id, &car_screen_name, condition);
+        let path = data_dir.join("reference_laps").join(format!("{key}.json"));
 
-    match tokio::fs::remove_file(&path).await {
-        Ok(_) => {}
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
-        Err(e) => return Err(e.to_string()),
+        match tokio::fs::remove_file(&path).await {
+            Ok(_) => {}
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+            Err(e) => return Err(e.to_string()),
+        }
     }
 
     // The processor keeps the session's best time in memory and would refuse
@@ -332,7 +338,7 @@ pub async fn delete_reference_lap(
         .store(true, std::sync::atomic::Ordering::Relaxed);
 
     if let Ok(mut stored) = state.service.stored_reference_lap_time.lock() {
-        *stored = None;
+        *stored = StoredReferenceTimes::default();
     }
 
     info!("Reference lap deleted for track {track_id} / {car_screen_name}");

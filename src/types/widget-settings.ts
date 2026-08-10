@@ -365,13 +365,24 @@ export interface EnginePanelWidgetSettings {
   layoutSizes?: Record<string, { width: number; height: number }>;
 }
 
+/** Which channel the trace draws: the speed carried, or the brake pedal itself. */
+export type CoachTraceChannel = 'speed' | 'brake';
+
 export interface CoachWidgetSettings {
   /** Draw the speed trace under the call row. Off leaves just the call row, and the plate shrinks to it. */
   showTrace: boolean;
+  /** Which pair of traces the chart draws. */
+  traceChannel: CoachTraceChannel;
   /** Half-width of the trace window in metres: it spans this far behind and ahead of the car. */
   windowMeters: number;
   /** Brake urgency bar under the call row. */
   showUrgencyBar: boolean;
+  /** Current speed against the best lap's speed at this point, under the trace. */
+  showSpeed: boolean;
+  /** Lap time of the stored reference lap the trace is compared against. */
+  showReferenceLapTime: boolean;
+  /** Which reference is in use right now — the dry one or the wet one. */
+  showTrackCondition: boolean;
   brakeColor: string;
   gasColor: string;
   /** Stored best lap the trace is compared against. */
