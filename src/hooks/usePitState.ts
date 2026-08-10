@@ -5,10 +5,7 @@ import {
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import type {
-  PitBoxSide,
-  RaceDashWidgetSettings,
-} from '@/types/widget-settings';
+import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import {
   formatSpeed,
   MPS_TO_KMH,
@@ -51,7 +48,6 @@ export interface PitStateResult {
   /** pit_in_pct recorded but pit_exit_pct not yet — actively traversing pit lane for calibration. */
   isPitLaneRecording: boolean;
   showPitAssist: boolean;
-  pitBoxSide: PitBoxSide;
   boxCueDistM: number;
   nearLimitDelta: number;
   throttle: number;
@@ -66,13 +62,8 @@ export const usePitState = (): PitStateResult => {
   const trackMap = useTrackMapWidgetStore();
   const isPitLaneRecording = trackMap.isPitLaneRecording;
 
-  const {
-    pitSpeedLimitOverride,
-    showPitAssist,
-    pitBoxSide,
-    boxCueDistM,
-    nearLimitDelta,
-  } = widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
+  const { pitSpeedLimitOverride, showPitAssist, boxCueDistM, nearLimitDelta } =
+    widgetSettings.getSettings<RaceDashWidgetSettings>('race-dash');
   const system = units.unitSystem;
   const speedFactor = system === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
 
@@ -180,7 +171,6 @@ export const usePitState = (): PitStateResult => {
     pitLaneLengthM,
     pitboxLanePct,
     showPitAssist,
-    pitBoxSide,
     boxCueDistM,
     nearLimitDelta,
     isPitLaneRecording,

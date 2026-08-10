@@ -104,6 +104,41 @@ export const rpmFillColor = (
   return settings.rpmColorLow;
 };
 
+// Bands of the field the P-number is tinted by. Each is an upper bound, so a
+// position is colored by the first band it fits into.
+const POSITION_BAND_WINNER = 1;
+const POSITION_BAND_PODIUM = 3;
+const POSITION_BAND_TOP5 = 5;
+const POSITION_BAND_TOP10 = 10;
+
+/** Tint for the P-number, by which band of the field the player is running in. */
+export const positionBandColor = (
+  position: number | null,
+  settings: RaceDashWidgetSettings
+): string | null => {
+  if (!settings.colorizePosition || position === null) {
+    return null;
+  }
+
+  if (position <= POSITION_BAND_WINNER) {
+    return settings.positionColorP1;
+  }
+
+  if (position <= POSITION_BAND_PODIUM) {
+    return settings.positionColorTop3;
+  }
+
+  if (position <= POSITION_BAND_TOP5) {
+    return settings.positionColorTop5;
+  }
+
+  if (position <= POSITION_BAND_TOP10) {
+    return settings.positionColorTop10;
+  }
+
+  return settings.positionColorRest;
+};
+
 /**
  * Tint for the gear digit and RPM number. Neutral (null) below the high zone
  * so the cluster does not flicker with color during normal driving.

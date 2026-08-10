@@ -1,27 +1,28 @@
-// Fixed min-width so speed going from 99 → 100 or turning red near the pit
-// limit never shifts the columns after it.
+// The caption and the number are placed into StatsStrip's grid directly, so the
+// unit shares a row with the RPM caption and the number shares a baseline with
+// the RPM number despite the two being set at different sizes.
 .root {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: sp(xxxs);
-  min-width: ws(96);
+  display: contents;
 }
 
 .value {
+  grid-area: valSpeed;
   font-family: $font-mono;
-  font-size: wfs(40);
+  font-size: wfs(38);
   font-weight: 800;
-  line-height: 0.95;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
   color: $widget-text-primary;
 }
 
 .unit {
+  grid-area: capSpeed;
   font-family: $font-widget;
-  font-size: wfs(11);
+  font-size: wfs(10);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  line-height: 1;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: $widget-text-muted;
 }

@@ -5,7 +5,10 @@
 .banner {
   position: absolute;
   top: ws(-11);
-  right: ws(24);
+  // Anchored inside the plate's straight top edge, which the symmetric pill
+  // ends at ws(52) from the right — closer to the corner and the banner would
+  // overhang the curve with nothing under it.
+  right: ws(52);
   z-index: 4;
   padding: sp(xxs) sp(lg);
   border-radius: radius(lg);
@@ -45,7 +48,9 @@
   position: absolute;
   top: ws(24);
   left: ws(16);
-  right: ws(10);
+  // The plate's right cap is a half-circle: at this row's height it takes about
+  // ws(8) out of the content box, so the inset is wider than on the left.
+  right: ws(22);
   display: flex;
   align-items: center;
   gap: ws(14);

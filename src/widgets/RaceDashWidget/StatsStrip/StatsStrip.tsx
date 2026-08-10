@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
+import { positionBandColor } from '../race-dash-utils';
 import { resolveSessionLaps } from '@utils/formatters/telemetry-format';
 import { RpmValue } from '../RpmValue/RpmValue';
 import { SpeedReadout } from '../SpeedReadout/SpeedReadout';
@@ -29,6 +30,7 @@ export const StatsStrip = observer(() => {
     settings.useLivePositions,
     settings.classPositionInMulticlass
   );
+  const positionColor = positionBandColor(position ?? null, settings);
 
   const sessions = sessionInfo?.sessions;
   const currentSession = sessions?.[sessionInfo?.currentSessionNum ?? 0];
@@ -54,24 +56,30 @@ export const StatsStrip = observer(() => {
     <div className={styles.root}>
       <SpeedReadout />
 
-      <div className={styles.divider} />
+      <div className={`${styles.divider} ${styles.dividerOne}`} />
+
+      <span className={`${styles.caption} ${styles.captionRpm}`}>RPM</span>
+
+      <div className={styles.valueRpm}>
+        <RpmValue />
+      </div>
+
+      <div className={`${styles.divider} ${styles.dividerTwo}`} />
 
       <div className={styles.column}>
         <div className={styles.row}>
-          <span className={styles.label}>RPM</span>
-          <RpmValue />
+          <span className={styles.label}>Pos</span>
+          <span
+            className={styles.value}
+            style={positionColor ? { color: positionColor } : undefined}
+          >
+            {position ?? '—'}
+          </span>
         </div>
 
         <div className={styles.row}>
           <span className={styles.label}>Lap</span>
           <span className={styles.value}>{lapText}</span>
-        </div>
-
-        <div className={styles.row}>
-          <span className={styles.label}>Pos</span>
-          <span className={styles.value}>
-            {position != null ? `P${position}` : '—'}
-          </span>
         </div>
       </div>
     </div>

@@ -1,34 +1,77 @@
+// Three cells split by hairlines: speed, revs, and the position/lap column.
+// Everything the widget shows lives on one line, so the plate has no second row
+// of leftovers and no void at its right end.
+// A grid rather than a row of blocks: the captions share one row and the two
+// numbers share the next, so they baseline-align across the hairlines even
+// though the speed is set larger than the revs. SpeedReadout's own elements are
+// placed into the `-speed` areas from its module.
 .root {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: ws(70) 1px ws(78) 1px 1fr;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    'capSpeed divOne capRpm divTwo info'
+    'valSpeed divOne valRpm divTwo info';
+  align-items: baseline;
+  align-content: center;
   flex: 1 1 0;
   min-width: 0;
   height: 100%;
-  gap: ws(14);
-  padding: 0 sp(md) 0 sp(xl);
+  column-gap: ws(12);
+  row-gap: sp(xxs);
+  // Wider on the right: the last column's numbers are flush to its edge and the
+  // plate's right cap is a half-circle, which cuts ~ws(5) off the content box at
+  // the height of these two rows. Without the extra room they read as touching
+  // the curve.
+  padding: 0 ws(30) 0 ws(12);
 }
 
 // Internal hairlines use a fixed token, not var(--widget-border) — the
 // user's border-color setting must restyle only the plate outline.
-// margin-left pushes the divider and the column after it to the right edge
-// together, instead of stranding the divider mid-strip.
 .divider {
-  width: 1px;
-  flex-shrink: 0;
   align-self: center;
-  height: ws(56);
-  margin-left: auto;
+  justify-self: stretch;
+  height: ws(52);
   background: $widget-border-subtle;
 }
 
-// Reserves room for the widest realistic values (5-digit RPM, "12/24" laps)
-// so the column never resizes as numbers change.
+.dividerOne {
+  grid-area: divOne;
+}
+
+.dividerTwo {
+  grid-area: divTwo;
+}
+
+.captionRpm {
+  grid-area: capRpm;
+}
+
+.valueRpm {
+  grid-area: valRpm;
+}
+
+.caption {
+  font-family: $font-widget;
+  font-size: wfs(10);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $widget-text-muted;
+}
+
+// Reserves room for the widest realistic values ("P24", "12/24") so the column
+// never resizes as the numbers change.
+// Spans both grid rows, so it sits outside the baseline groups and is centered
+// against the pair of numbers instead.
 .column {
+  grid-area: info;
+  align-self: center;
   display: flex;
   flex-direction: column;
   gap: sp(sm);
-  min-width: ws(77);
-  margin-right: sp(lg);
+  min-width: ws(74);
 }
 
 .row {
@@ -49,8 +92,9 @@
 
 .value {
   font-family: $font-mono;
-  font-size: wfs(16);
+  font-size: wfs(17);
   font-weight: 700;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
   color: $widget-text-primary;
 }

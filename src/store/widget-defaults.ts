@@ -957,9 +957,12 @@ const WIDGETS: WidgetConfig[] = [
       'Cockpit cluster: gear ring, speed readout with lap/position/RPM, and pit-lane mode.',
     component: RaceDashWidget,
     requiredCapabilities: ['playerDynamics'],
-    // The prototype plate measures 334×104: ring 104 + stats strip
-    // (16 + 96 + 14 + 1 + 14 + 77 + 10) + border 2.
-    designWidth: 334,
+    // The plate measures 418×104: ring 104 + three cells split by hairlines
+    // (12 + speed 70 + 12 + 1 + 12 + a 5-digit RPM block 78 + 12 + 1 + 12 +
+    // position/lap column 74 + 30) + border 2. The right padding is wider than
+    // the left: that column's numbers sit flush against its own edge, and the
+    // plate's right cap is a half-circle that cuts into the content box there.
+    designWidth: 418,
     designHeight: 104,
     transparentContainer: true,
     // The pit banner hangs over the plate's top edge like in the prototype —
@@ -974,7 +977,7 @@ const WIDGETS: WidgetConfig[] = [
       enabled: false,
       x: 400,
       y: 100,
-      currentWidth: 334,
+      currentWidth: 418,
       currentHeight: 104,
       ...COMMON_WIDGET_DEFAULTS,
       // Container stays transparent (transparentContainer); these colors are
@@ -982,7 +985,6 @@ const WIDGETS: WidgetConfig[] = [
       ...PANEL_APPEARANCE_DEFAULTS,
       pitSpeedLimitOverride: null,
       showPitAssist: true,
-      pitBoxSide: 'right',
       boxCueDistM: 50,
       nearLimitDelta: 5,
       rpmColorLow: '#10b981',
@@ -994,6 +996,12 @@ const WIDGETS: WidgetConfig[] = [
       rpmIndicatorMode: 'fill',
       useLivePositions: true,
       classPositionInMulticlass: true,
+      colorizePosition: true,
+      positionColorP1: '#fbbf24',
+      positionColorTop3: '#10b981',
+      positionColorTop5: '#38bdf8',
+      positionColorTop10: '#cbd5e1',
+      positionColorRest: '#7c8794',
       showSteeringMarker: false,
       steeringTrailColor: '#f59e0b',
     },
