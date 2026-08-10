@@ -8,6 +8,7 @@ import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import type { CornerPosition } from '@utils/widget/pit-service-utils';
 import {
   ALL_CORNERS,
+  cornerWorstWear,
   cornersBelowWearThreshold,
   isCornerOrdered,
   orderedPressure,
@@ -221,6 +222,33 @@ export class PitServiceWidgetStore {
   }
 
   /**
+   * Every wear number as one value, so a reaction can watch the whole set for
+   * the refresh the sim performs on arrival in the box. Reactions cannot watch
+   * twelve fields without either twelve disposers or a deep observer, and this
+   * is the only thing anything needs to know about them changing.
+   */
+  get tireWearSignature(): string {
+    const frame = this.root.player.chassis;
+
+    return ALL_CORNERS.map((corner) => cornerWorstWear(corner, frame)).join(
+      ','
+    );
+  }
+
+  /**
+   * Whether the wear on display was measured somewhere other than here and now.
+   *
+   * `*_wear_*` is not a sensor: the sim writes it once, when the car stops in
+   * the box, and then leaves it alone — through the whole next stint, and even
+   * after the crew has fitted a fresh set. Outside the box the numbers describe
+   * tires that may no longer be on the car, and the widget has to say so rather
+   * than present them as current.
+   */
+  get isTireWearStale(): boolean {
+    return !this.isInPitStall;
+  }
+
+  /**
    * Corners auto mode considers finished. Recomputed on read, so the settings
    * panel slider and the tire grid always agree with what the next entry would
    * order.
@@ -237,30 +265,47 @@ export class PitServiceWidgetStore {
   }
 
   /**
-   * The first half of the automatic order, sent on pit road entry: a clear so
-   * the box holds nothing left over from the previous stop, plus the calculated
-   * fuel. The clear goes out even with `autoFuel` off — it is the start-of-stop
-   * reset the tire half relies on, not part of the fuel decision.
+   * The first half of the automatic order, sent on pit road entry: the
+   * calculated fuel, and nothing else.
+   *
+   * Deliberately `clearFuel` rather than a full `clear`. The sim arms the pit
+   * box with the previous stop's order the moment the car leaves the box, and a
+   * full clear wipes that — including the tires, which this half has no
+   * business deciding on, because tire wear is not readable yet on pit road.
+   * Fast repair and the windshield are left alone for the same reason: auto
+   * mode does not own them.
    */
   get autoFuelOrder(): PitCommandRequest[] {
-    const order: PitCommandRequest[] = [{ kind: 'clear', value: 0 }];
-    const fuel = this.plannedFuelLiters;
-
-    if (this.settings.autoFuel && fuel !== null && fuel > 0) {
-      order.push({ kind: 'fuel', value: Math.ceil(fuel) });
+    if (!this.settings.autoFuel) {
+      return [];
     }
 
-    return order;
+    const fuel = this.plannedFuelLiters;
+
+    if (fuel === null || fuel <= 0) {
+      return [{ kind: 'clearFuel', value: 0 }];
+    }
+
+    return [
+      { kind: 'clearFuel', value: 0 },
+      { kind: 'fuel', value: Math.ceil(fuel) },
+    ];
   }
 
   /**
-   * The second half, sent on entering the stall: only the corners worn past the
-   * threshold. No clear of its own — the fuel half already emptied the box, and
-   * a second `clearTires` here would be the only thing sent when nothing is worn
-   * enough to change.
+   * The second half, sent once the wear read in the stall is available: the
+   * corners worn past the threshold, and a `clearTires` ahead of them so the
+   * set is exactly what auto mode decided rather than that set merged with
+   * whatever the sim had armed.
+   *
+   * An empty set is a decision too, and it is the whole order: a lone
+   * `clearTires` means "these tires stay on".
    */
   get autoTireOrder(): PitCommandRequest[] {
-    return this.autoTireCorners.map((corner) => ({ kind: corner, value: 0 }));
+    return [
+      { kind: 'clearTires', value: 0 } as PitCommandRequest,
+      ...this.autoTireCorners.map((corner) => ({ kind: corner, value: 0 })),
+    ];
   }
 
   /**
@@ -281,43 +326,41 @@ export class PitServiceWidgetStore {
       return;
     }
 
+    const order = this.autoFuelOrder;
+
+    if (order.length === 0) {
+      return;
+    }
+
     this.autoFuelSent = true;
 
-    await this.send(this.autoFuelOrder);
+    await this.send(order);
   }
 
   /**
-   * Sends the tire half, on entering the stall rather than on pit entry.
+   * Sends the tire half, once the car has reached the box rather than on pit
+   * entry.
    *
-   * The sim only refreshes `*_wear_*` when the car reaches the box: on pit road
-   * those fields still hold the previous stop's numbers, or a garage-fresh 100%,
-   * so a threshold check there compares against tread that is not the tread on
-   * the car. Standing in the stall the values are current and the crew has not
-   * started yet, which is the one moment the order can be both correct and in
-   * time.
+   * The sim only refreshes `*_wear_*` when the car stops in the box: everywhere
+   * else those fields hold the measurement taken at the *previous* stop, so a
+   * threshold check there compares against tread that is not on the car — they
+   * do not even reset when the crew fits new tires. Standing in the box the
+   * values are finally current, and that is the one moment the order can be
+   * both correct and still in time.
    *
-   * If the fuel half never went out — a missed pit road flag — this half carries
-   * the start-of-stop `clear` itself, so the box never keeps the previous stop.
+   * Which of the three signals for "we are there" arrives first is not fixed:
+   * `serviceActive` has been seen a frame ahead of `inPitStall`, and the wear
+   * numbers themselves have refreshed ahead of both. Whichever lands first
+   * calls this, and `autoTiresSent` keeps the other two from re-sending.
    */
   async applyAutoTireOrder() {
     if (!this.isAutoActive || !this.settings.autoTires || this.autoTiresSent) {
       return;
     }
 
-    const order = this.autoFuelSent
-      ? this.autoTireOrder
-      : [
-          { kind: 'clear', value: 0 } as PitCommandRequest,
-          ...this.autoTireOrder,
-        ];
-
-    if (order.length === 0) {
-      return;
-    }
-
     this.autoTiresSent = true;
 
-    await this.send(order);
+    await this.send(this.autoTireOrder);
   }
 
   /**

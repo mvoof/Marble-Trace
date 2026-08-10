@@ -90,7 +90,20 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
         </span>
       </div>
 
-      <div className={styles.zoneRow}>
+      {/*
+        The sim writes tire wear once per stop, on arrival in the box, and never
+        touches it in between — not even when the crew fits a new set. Away from
+        the box these numbers describe tires that may already be off the car, so
+        they are dimmed rather than read as live.
+      */}
+      <div
+        className={`${styles.zoneRow} ${widget.isTireWearStale ? styles.zoneRowStale : ''}`}
+        title={
+          widget.isTireWearStale
+            ? 'Tread measured at the last pit stop — the sim only refreshes it in the box'
+            : 'Tread measured on arrival in the box'
+        }
+      >
         {zones.map((zone, index) => (
           <span
             key={`wear-${index}`}

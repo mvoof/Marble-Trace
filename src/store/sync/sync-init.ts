@@ -528,10 +528,33 @@ export const initMainSync = async (root: RootStore) => {
             }
           }
         ),
+        // Three separate signals for the same moment, because their order is
+        // not fixed: arriving in the box, the crew starting, and the wear
+        // numbers refreshing have each been observed first. The tire half is
+        // idempotent per stop, so the earliest one wins and the rest are no-ops.
         reaction(
           () => root.pitServiceWidget.isInPitStall,
           (inPitStall) => {
             if (inPitStall) {
+              void root.pitServiceWidget.applyAutoTireOrder();
+            }
+          }
+        ),
+        reaction(
+          () => root.pitServiceWidget.isServiceActive,
+          (serviceActive) => {
+            if (serviceActive) {
+              void root.pitServiceWidget.applyAutoTireOrder();
+            }
+          }
+        ),
+        // A wear refresh only ever happens on arrival in the box, so on pit
+        // road it is the arrival — and it is the signal that the threshold
+        // check has something current to read, which the flags do not promise.
+        reaction(
+          () => root.pitServiceWidget.tireWearSignature,
+          () => {
+            if (root.pitServiceWidget.isOnPitRoad) {
               void root.pitServiceWidget.applyAutoTireOrder();
             }
           }

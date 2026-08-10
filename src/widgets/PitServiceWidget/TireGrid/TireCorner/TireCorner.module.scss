@@ -59,6 +59,11 @@
   text-align: center;
 }
 
+// Between stops the wear row is last stop's measurement, not a live reading.
+.zoneRowStale {
+  opacity: 0.45;
+}
+
 // Temperatures carry their own zone color — the same one that fills the tread
 // below them, so the number and the block agree without a second legend.
 .zoneTemp {
