@@ -295,19 +295,27 @@ export class PitServiceWidgetStore {
    * the car. Standing in the stall the values are current and the crew has not
    * started yet, which is the one moment the order can be both correct and in
    * time.
+   *
+   * If the fuel half never went out — a missed pit road flag — this half carries
+   * the start-of-stop `clear` itself, so the box never keeps the previous stop.
    */
   async applyAutoTireOrder() {
     if (!this.isAutoActive || !this.settings.autoTires || this.autoTiresSent) {
       return;
     }
 
-    this.autoTiresSent = true;
-
-    const order = this.autoTireOrder;
+    const order = this.autoFuelSent
+      ? this.autoTireOrder
+      : [
+          { kind: 'clear', value: 0 } as PitCommandRequest,
+          ...this.autoTireOrder,
+        ];
 
     if (order.length === 0) {
       return;
     }
+
+    this.autoTiresSent = true;
 
     await this.send(order);
   }

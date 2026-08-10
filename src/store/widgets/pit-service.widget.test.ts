@@ -319,6 +319,8 @@ describe('PitServiceWidgetStore — pit orders', () => {
       enableAuto();
       setTireWear({ lf: 1, rf: 1, lr: 1, rr: 1 });
 
+      await rootStore.pitServiceWidget.applyAutoFuelOrder();
+
       invokeMock.mockClear();
       await rootStore.pitServiceWidget.applyAutoTireOrder();
 
@@ -326,6 +328,23 @@ describe('PitServiceWidgetStore — pit orders', () => {
         'send_pit_order',
         expect.anything()
       );
+    });
+
+    // A missed pit road flag skips the fuel half, and with it the start-of-stop
+    // clear the tire half assumes has already gone out.
+    it('carries the clear itself when the fuel half never went out', async () => {
+      enableAuto();
+      setTireWear({ lf: 0.3, rf: 1, lr: 1, rr: 1 });
+
+      invokeMock.mockClear();
+      await rootStore.pitServiceWidget.applyAutoTireOrder();
+
+      expect(invokeMock).toHaveBeenCalledWith('send_pit_order', {
+        requests: [
+          { kind: 'clear', value: 0 },
+          { kind: 'lf', value: 0 },
+        ],
+      });
     });
 
     it('sends each half once per stop', async () => {
