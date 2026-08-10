@@ -16,6 +16,8 @@ export interface SpeedTraceColors {
 
 /** Horizontal grid lines drawn behind the traces. */
 const GRID_LINE_COUNT = 3;
+/** Share of the canvas height left clear above and below a braking mark. */
+const BRAKE_MARK_INSET_RATIO = 0.12;
 /** Share of the value range added above and below so the curves never touch the edges. */
 const RANGE_PADDING = 0.12;
 /** Speed range (m/s) forced open when both traces are nearly flat, so a straight does not amplify noise. */
@@ -25,10 +27,11 @@ const OWN_LINE_WIDTH = 2.25;
 const BRAKE_MARK_WIDTH = 1.5;
 const MARKER_RADIUS = 2.75;
 const NOW_DASH: [number, number] = [3, 3];
+const BRAKE_MARK_DASH: [number, number] = [2, 3];
+/** Braking marks are drawn dimmer than the lines they belong to — they mark a point, they are not a signal of their own. */
+const BRAKE_MARK_ALPHA = 0.55;
 /** Below this magnitude (seconds) the delta is called even and drawn neutral. */
 const EVEN_DELTA_S = 0.005;
-/** Height of the braking tick, as a share of the canvas — a stub at the bottom edge, not a full divider. */
-const BRAKE_MARK_HEIGHT_RATIO = 0.28;
 
 interface Projection {
   x: (offsetM: number) => number;
@@ -233,9 +236,11 @@ const drawOwnTrace = (
 };
 
 /**
- * Vertical stub at each braking point — where the pedal first went down. The
+ * Dashed vertical at each braking point — where the pedal first went down. The
  * gap between the two is the metre figure the call row prints; the marks are
- * what let the driver see it rather than take it on trust.
+ * what let the driver see it rather than take it on trust. Full height, inset
+ * top and bottom: a stub at the bottom edge disappeared under the trace exactly
+ * where the two lines diverge, which is where it is needed.
  */
 const drawBrakeMarks = (
   ctx: CanvasRenderingContext2D,
@@ -244,9 +249,12 @@ const drawBrakeMarks = (
   height: number,
   colors: SpeedTraceColors
 ) => {
-  const markHeight = height * BRAKE_MARK_HEIGHT_RATIO;
+  const inset = height * BRAKE_MARK_INSET_RATIO;
 
+  ctx.save();
   ctx.lineWidth = BRAKE_MARK_WIDTH;
+  ctx.globalAlpha = BRAKE_MARK_ALPHA;
+  ctx.setLineDash(BRAKE_MARK_DASH);
 
   const drawMark = (offsetM: number | null, color: string) => {
     if (offsetM === null) return;
@@ -255,8 +263,8 @@ const drawBrakeMarks = (
 
     ctx.strokeStyle = color;
     ctx.beginPath();
-    ctx.moveTo(x, height);
-    ctx.lineTo(x, height - markHeight);
+    ctx.moveTo(x, height - inset);
+    ctx.lineTo(x, inset);
     ctx.stroke();
   };
 
@@ -274,6 +282,8 @@ const drawBrakeMarks = (
         : colors.gain;
 
   drawMark(stats.ownBrakeOffsetM, ownMarkColor);
+
+  ctx.restore();
 };
 
 /** Dashed line and dot at the car's current position — where the own trace ends. */

@@ -23,6 +23,12 @@
   color: $widget-text-primary;
 }
 
+// The warning step between PACE and BRAKE. Amber is fixed rather than taken
+// from user settings so the three steps always read as one sequence.
+.callSoon {
+  color: $race-amber;
+}
+
 // Without a reference lap there is no call to make — the word is a status, not
 // an instruction, so it drops to label weight.
 .callIdle {
@@ -49,6 +55,30 @@
   color: $widget-text-muted;
 }
 
+// Distance to the next braking point or apex — a label and a figure, not a
+// signed delta, so it stays quiet next to the call.
+.countdown {
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxs);
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: $widget-text-muted;
+}
+
+.countdownValue {
+  font-family: $font-mono;
+  font-size: fs(md);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  color: $widget-text-secondary;
+}
+
 .hint {
   margin-left: auto;
   font-family: $font-widget;
@@ -64,4 +94,14 @@
 
 .urgencyFill {
   height: 100%;
+}
+
+.urgencyFillSoon {
+  background: $race-amber;
+}
+
+// Approaching a braking zone with no call out yet: the bar still grows, but in
+// a neutral tone so it never reads as an instruction.
+.urgencyFillIdle {
+  background: $widget-text-muted;
 }

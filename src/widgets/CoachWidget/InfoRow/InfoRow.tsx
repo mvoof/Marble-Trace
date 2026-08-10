@@ -60,26 +60,35 @@ export const InfoRow = observer(() => {
         </span>
       ) : null}
 
-      {settings.showTrackCondition ? (
-        <span
-          className={
-            condition === 'wet'
-              ? `${styles.condition} ${styles.conditionWet}`
-              : styles.condition
-          }
-        >
-          {condition === null ? NO_VALUE_TEXT : condition.toUpperCase()}
-        </span>
-      ) : null}
-
-      {settings.showReferenceLapTime ? (
+      {/* Lap time and condition are one fact — which stored reference is being
+          compared against — so they read as one line: 1:47.48 · DRY. */}
+      {settings.showReferenceLapTime || settings.showTrackCondition ? (
         <span className={`${styles.group} ${styles.groupEnd}`}>
           <span className={styles.label}>REF LAP</span>
-          <span className={styles.reference}>
-            {referenceLapTimeS === null
-              ? NO_VALUE_TEXT
-              : formatLapTime(referenceLapTimeS)}
-          </span>
+
+          {settings.showReferenceLapTime ? (
+            <span className={styles.referenceLapTime}>
+              {referenceLapTimeS === null
+                ? NO_VALUE_TEXT
+                : formatLapTime(referenceLapTimeS)}
+            </span>
+          ) : null}
+
+          {settings.showReferenceLapTime && settings.showTrackCondition ? (
+            <span className={styles.separator}>·</span>
+          ) : null}
+
+          {settings.showTrackCondition ? (
+            <span
+              className={
+                condition === 'wet'
+                  ? `${styles.condition} ${styles.conditionWet}`
+                  : styles.condition
+              }
+            >
+              {condition === null ? NO_VALUE_TEXT : condition.toUpperCase()}
+            </span>
+          ) : null}
         </span>
       ) : null}
     </div>

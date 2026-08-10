@@ -76,19 +76,25 @@ export const CallRow = observer(() => {
           : PACE_LABEL
         : ADVISORY_LABEL[advisory];
 
+  // SOON is neither the hard call nor the all-clear, so it takes neither of
+  // their colors: amber is the warning step between them, and it is fixed
+  // rather than configurable so the three steps always read as a sequence.
   const callColor =
-    inactiveReason !== null
+    inactiveReason !== null || brakeSoon
       ? undefined
-      : advisory === 'brake' || brakeSoon
+      : advisory === 'brake'
         ? settings.brakeColor
         : advisory === 'gas'
           ? settings.gasColor
           : undefined;
 
-  const callClass =
-    inactiveReason !== null
-      ? `${styles.call} ${styles.callIdle}`
-      : `${styles.call} ${styles.callActive}`;
+  const callClass = [
+    styles.call,
+    inactiveReason !== null ? styles.callIdle : styles.callActive,
+    brakeSoon ? styles.callSoon : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   // The braking-point gap is the headline whenever the window holds both marks:
   // it is the one number a driver can act on directly, and the two ticks on the
@@ -115,6 +121,38 @@ export const CallRow = observer(() => {
         ? settings.lossColor
         : settings.gainColor;
 
+  // Between calls the number that matters is not what the last corner cost but
+  // how far the next one is: the braking point while it is still ahead, the
+  // apex once the car is inside the zone.
+  const countdownM = brakeSoon ? coach.brakePointDistanceM : null;
+  const apexM = advisory === 'neutral' ? coach.apexDistanceM : null;
+
+  const countdown =
+    countdownM !== null
+      ? { label: 'BRAKE IN', value: countdownM }
+      : apexM !== null
+        ? { label: 'APEX IN', value: apexM }
+        : null;
+
+  // The bar is the continuous signal behind the discrete call: how close the
+  // last possible braking point is, and — once the call is GAS — how much of
+  // the pedal the reference is carrying that this lap is not.
+  const fillRatio = advisory === 'gas' ? coach.throttleDeficit : brakeUrgency;
+  const fillColor =
+    advisory === 'gas'
+      ? settings.gasColor
+      : brakeSoon || advisory === 'neutral'
+        ? undefined
+        : settings.brakeColor;
+
+  const fillClass = [
+    styles.urgencyFill,
+    brakeSoon ? styles.urgencyFillSoon : '',
+    !brakeSoon && advisory === 'neutral' ? styles.urgencyFillIdle : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
     <div className={styles.root}>
       <div className={styles.row}>
@@ -129,6 +167,12 @@ export const CallRow = observer(() => {
 
         {inactiveReason !== null ? (
           <span className={styles.hint}>{INACTIVE_HINT[inactiveReason]}</span>
+        ) : countdown !== null ? (
+          <span className={styles.countdown}>
+            {countdown.label}
+            <b className={styles.countdownValue}>{countdown.value}</b>
+            <small className={styles.deltaUnit}>m</small>
+          </span>
         ) : (
           <span
             className={styles.delta}
@@ -145,11 +189,11 @@ export const CallRow = observer(() => {
       {settings.showUrgencyBar ? (
         <div className={styles.urgencyTrack}>
           <div
-            className={styles.urgencyFill}
+            className={fillClass}
             style={
               {
-                width: `${Math.round(brakeUrgency * 100)}%`,
-                background: settings.brakeColor,
+                width: `${Math.round(fillRatio * 100)}%`,
+                ...(fillColor ? { background: fillColor } : {}),
               } as CSSProperties
             }
           />

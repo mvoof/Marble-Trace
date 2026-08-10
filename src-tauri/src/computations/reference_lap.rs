@@ -40,6 +40,12 @@ const MAX_LAG_SPIKE_S: f32 = 1.5;
 /// dropped. Two seconds at 60 Hz — far beyond the frame or two iRacing actually
 /// takes, and short enough that a dropped lap is the one just driven.
 const MAX_PENDING_TICKS: u32 = 120;
+/// Lap-fraction band in which `lap_last_lap_time` is sampled as the "previous
+/// lap" baseline. Anywhere in the middle of the lap the sim cannot yet be
+/// publishing the lap in progress, so the value read there is unambiguously the
+/// one the completed lap has to differ from — see `PendingLap`.
+const BASELINE_SAMPLE_LOW: f32 = 0.3;
+const BASELINE_SAMPLE_HIGH: f32 = 0.7;
 
 #[derive(Debug, Default)]
 pub struct ReferenceLapProcessor {
@@ -52,6 +58,9 @@ pub struct ReferenceLapProcessor {
     /// A completed lap held back until the sim publishes its time — see
     /// `PendingLap`.
     pending: Option<PendingLap>,
+    /// `lap_last_lap_time` as it read in the middle of the lap in progress —
+    /// the previous lap's time, whatever the sim does at the crossing.
+    mid_lap_last_lap_time: Option<f32>,
     last_track_id: Option<i32>,
     last_car_screen_name: Option<String>,
     /// Last bucket written this lap — lets us forward-fill buckets skipped
@@ -80,7 +89,13 @@ pub struct ReferenceLapProcessor {
 /// `lap_last_lap_time` is not reliable on the crossing tick itself — iRacing
 /// sometimes updates it a frame before the lap counter and sometimes a few
 /// frames after — so the completed buffer is parked here and committed once the
-/// value actually changes from what it read before the crossing.
+/// value differs from the previous lap's.
+///
+/// The baseline it is compared against is sampled in the *middle* of the lap,
+/// not on the crossing tick: when the sim publishes the time early, the crossing
+/// tick already reads the completed lap's own time, and a baseline taken there
+/// can never differ from it — the lap would then wait out `MAX_PENDING_TICKS`
+/// and be dropped, silently losing a genuine personal best.
 #[derive(Debug)]
 struct PendingLap {
     samples: Vec<ReferenceLapSample>,
@@ -88,8 +103,8 @@ struct PendingLap {
     recorded_wetness: Option<f32>,
     recorded_tire_wear: Option<f32>,
     recorded_fuel_level: Option<f32>,
-    /// `lap_last_lap_time` as it read on the crossing tick.
-    last_lap_time_before_wrap: Option<f32>,
+    /// The previous lap's `lap_last_lap_time`, sampled mid-lap where available.
+    baseline_last_lap_time: Option<f32>,
     ticks_waited: u32,
 }
 
@@ -147,6 +162,7 @@ impl ReferenceLapProcessor {
         self.last_bucket = None;
         self.lap_invalidated = false;
         self.lap_max_wetness = None;
+        self.mid_lap_last_lap_time = None;
     }
 
     fn reset_for_new_identity(&mut self) {
@@ -171,7 +187,7 @@ impl ReferenceLapProcessor {
         let lap_time = ctx.lap_timing.lap_last_lap_time.filter(|time| *time > 0.0);
         let settled = lap_time.is_some_and(|time| {
             pending
-                .last_lap_time_before_wrap
+                .baseline_last_lap_time
                 .is_none_or(|before| (time - before).abs() > BEST_TIME_EPSILON)
         });
 
@@ -306,6 +322,12 @@ impl Processor for ReferenceLapProcessor {
         self.working[bucket] = sample;
         self.last_bucket = Some(bucket);
 
+        if (BASELINE_SAMPLE_LOW..BASELINE_SAMPLE_HIGH).contains(&lap_dist_pct) {
+            if let Some(previous_lap_time) = ctx.lap_timing.lap_last_lap_time {
+                self.mid_lap_last_lap_time = Some(previous_lap_time);
+            }
+        }
+
         if let Some(wetness) = ctx.environment.track_wetness {
             self.lap_max_wetness = Some(
                 self.lap_max_wetness
@@ -327,7 +349,11 @@ impl Processor for ReferenceLapProcessor {
                 recorded_wetness: self.lap_max_wetness.map(|wetness| wetness as f32),
                 recorded_tire_wear: average_tire_wear(ctx.chassis),
                 recorded_fuel_level: Some(ctx.car_status.fuel_level),
-                last_lap_time_before_wrap: ctx.lap_timing.lap_last_lap_time,
+                // Mid-lap when the lap got that far; the crossing tick is the
+                // fallback for a lap joined past the sampling band.
+                baseline_last_lap_time: self
+                    .mid_lap_last_lap_time
+                    .or(ctx.lap_timing.lap_last_lap_time),
                 ticks_waited: 0,
             });
 
@@ -761,6 +787,38 @@ mod tests {
             }
             other => panic!("expected a wet ReferenceLap, got {other:?}"),
         }
+    }
+
+    /// iRacing sometimes publishes the completed lap's time a frame *before* the
+    /// position wraps. The crossing tick then already reads the new time and it
+    /// never changes again — a baseline taken there would wait forever and drop
+    /// a genuine personal best.
+    #[test]
+    fn a_lap_timed_before_the_line_is_still_committed() {
+        let stored = Arc::new(Mutex::new(StoredReferenceTimes {
+            dry: Some(95.0),
+            wet: None,
+        }));
+        let mut proc =
+            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let session = make_session(1);
+
+        // Through the lap the sim reports the previous lap's time.
+        let mut pct = 0.005;
+        while pct < 0.995 {
+            assert!(run_tick(&mut proc, &session, pct, Some(95.0)).is_none());
+            pct += 0.005;
+        }
+
+        // The new time lands one tick early and then stays put.
+        assert!(run_tick(&mut proc, &session, 0.998, Some(90.0)).is_none());
+
+        match run_tick(&mut proc, &session, 0.05, Some(90.0)) {
+            Some(ComputedOutput::ReferenceLap(data)) => assert_eq!(data.lap_time, 90.0),
+            other => panic!("expected ReferenceLap output, got {other:?}"),
+        }
+
+        assert_eq!(stored.lock().unwrap().dry, Some(90.0));
     }
 
     #[test]
