@@ -118,13 +118,25 @@ const PIT_SERVICE_COMMAND_REVEAL_SECONDS = 5;
 
 /**
  * Race Dash keys that only existed to drive the coach tab, dropped along with
- * the tab itself.
+ * the tab itself, plus the side the pit box cue used to sit on — nothing has
+ * read it since the pit block stopped mirroring its layout.
  */
-const DEAD_RACE_DASH_FIELDS = ['showReferenceSpeed', 'brakeColor', 'gasColor'];
+const DEAD_RACE_DASH_FIELDS = [
+  'showReferenceSpeed',
+  'brakeColor',
+  'gasColor',
+  'pitBoxSide',
+];
 
-/** Race Dash's width before and after the coach tab was removed from the plate. */
+/**
+ * Race Dash's width as 0.20 wrote it, and as this build draws it: the coach tab
+ * came off the plate, then the plate was rebuilt as a symmetric pill whose right
+ * cap needs room the square end did not. Both changes landed after 0.20, so the
+ * step targets the final width directly rather than stopping at an intermediate
+ * one no released build ever wrote.
+ */
 const RACE_DASH_WIDTH_WITH_COACH = 430;
-const RACE_DASH_WIDTH_WITHOUT_COACH = 334;
+const RACE_DASH_WIDTH_PILL = 418;
 const RACE_DASH_DESIGN_HEIGHT = 104;
 
 /** The coach widget's own defaults, frozen as they shipped with this step. */
@@ -299,7 +311,7 @@ const shrinkRaceDash = (
 
   return {
     ...userSettings,
-    currentWidth: Math.round(RACE_DASH_WIDTH_WITHOUT_COACH * scale),
+    currentWidth: Math.round(RACE_DASH_WIDTH_PILL * scale),
   };
 };
 
