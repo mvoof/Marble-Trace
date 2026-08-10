@@ -326,6 +326,7 @@ const raceDash = (overrides: Record<string, unknown> = {}) => ({
     showReferenceSpeed: true,
     brakeColor: '#ff0000',
     gasColor: '#00ff00',
+    pitBoxSide: 'left',
     rpmColorLow: '#10b981',
     ...overrides,
   },
@@ -344,16 +345,18 @@ describe('v1LegacyConsolidation: coach split out of race dash', () => {
     expect(settings).not.toHaveProperty('showReferenceSpeed');
     expect(settings).not.toHaveProperty('brakeColor');
     expect(settings).not.toHaveProperty('gasColor');
+    // The pit box side went with the block that used to mirror its layout.
+    expect(settings).not.toHaveProperty('pitBoxSide');
     // Unrelated settings must survive untouched.
     expect(settings?.['rpmColorLow']).toBe('#10b981');
   });
 
-  it('narrows the plate by the width the coach tab occupied', () => {
+  it('resizes the plate to the width this build draws', () => {
     const result = v1LegacyConsolidation.migrate({ widgets: [raceDash()] });
 
     expect(
       findWidget(result['widgets'], 'race-dash')?.userSettings?.['currentWidth']
-    ).toBe(334);
+    ).toBe(418);
   });
 
   it('keeps the scale the user resized the plate to', () => {
@@ -363,7 +366,7 @@ describe('v1LegacyConsolidation: coach split out of race dash', () => {
 
     expect(
       findWidget(result['widgets'], 'race-dash')?.userSettings?.['currentWidth']
-    ).toBe(668);
+    ).toBe(836);
   });
 
   it('leaves a dash that never carried the coach keys at its stored width', () => {

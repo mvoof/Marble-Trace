@@ -3,7 +3,6 @@ import type { CapabilitiesPayload } from '@/types/bindings';
 
 type RpmColorTheme = 'custom' | 'gradient' | 'classic';
 export type LedShape = 'square' | 'circle' | 'parallelogram';
-export type PitBoxSide = 'left' | 'right';
 
 export interface RpmLightsWidgetSettings {
   rpmColorTheme: RpmColorTheme;
@@ -28,7 +27,6 @@ export type RpmIndicatorMode = 'fill' | 'comb' | 'glow' | 'off';
 export interface RaceDashWidgetSettings {
   pitSpeedLimitOverride: number | null;
   showPitAssist: boolean;
-  pitBoxSide: PitBoxSide;
   boxCueDistM: number;
   nearLimitDelta: number;
   rpmColorLow: string;
@@ -44,6 +42,13 @@ export interface RaceDashWidgetSettings {
   useLivePositions: boolean;
   /** Count the P-number within the player's own class instead of the whole field, in multiclass sessions. */
   classPositionInMulticlass: boolean;
+  /** Tint the P-number by which band of the field the player is running in. */
+  colorizePosition: boolean;
+  positionColorP1: string;
+  positionColorTop3: string;
+  positionColorTop5: string;
+  positionColorTop10: string;
+  positionColorRest: string;
   /** Steering angle wedge riding the outer rim of the gear ring. */
   showSteeringMarker: boolean;
   /** Color of the trail the steering marker leaves behind it on the rim. */

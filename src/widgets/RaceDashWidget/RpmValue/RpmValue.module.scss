@@ -1,7 +1,8 @@
 .value {
   font-family: $font-mono;
-  font-size: wfs(16);
+  font-size: wfs(28);
   font-weight: 700;
+  line-height: 0.95;
   font-variant-numeric: tabular-nums;
   color: $widget-text-primary;
 }

@@ -3,7 +3,11 @@
 .row {
   position: absolute;
   left: ws(16);
-  right: ws(10);
+  // Lowest element in the plate, so the right cap's curve bites deepest here —
+  // about ws(12) at this height. A ws(10) inset would let the track poke
+  // through the outline (the plate is overflow: visible for the pit banner, so
+  // nothing clips it).
+  right: ws(26);
   bottom: ws(12);
   display: flex;
   align-items: center;
@@ -37,13 +41,15 @@
 }
 
 // Fixed reference point on the track — stays put through both phases so the
-// bar reads as one continuous lane, not two different views.
+// bar reads as one continuous lane, not two different views. It is a painted
+// stretch rather than a tick: it covers the few meters around the stall, so it
+// reads as the length of lane to stop in. `left` and `width` are set inline
+// from the pitbox fraction and the lane's real length.
 .pitboxZone {
   position: absolute;
-  top: ws(-3);
-  bottom: ws(-3);
-  width: ws(3);
+  top: 0;
+  bottom: 0;
   border-radius: radius(sm);
-  background: $race-green;
-  box-shadow: 0 0 ws(5) rgba($race-green, 0.8);
+  background: $race-red;
+  box-shadow: 0 0 ws(5) rgba($race-red, 0.7);
 }

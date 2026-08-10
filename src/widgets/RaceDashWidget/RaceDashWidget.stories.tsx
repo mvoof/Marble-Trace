@@ -47,11 +47,11 @@ const meta: Meta<StoryArgs> = {
     widget: RaceDashWidget,
     seedSnapshot: true,
     size: {
-      width: 430,
+      width: 418,
       height: 104,
       background: 'transparent',
       widgetBg: 'rgba(21, 22, 26, 0.8)',
-      borderRadius: '52px 14px 14px 52px',
+      borderRadius: '52px',
       overflow: 'visible',
       border: 'none',
     },

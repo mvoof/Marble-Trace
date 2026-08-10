@@ -13,11 +13,11 @@ export const SpeedReadout = observer(() => {
 
   return (
     <div className={styles.root}>
+      <span className={styles.unit}>{speedUnit(units.unitSystem)}</span>
+
       <span className={styles.value}>
         {formatSpeed(speed, units.unitSystem)}
       </span>
-
-      <span className={styles.unit}>{speedUnit(units.unitSystem)}</span>
     </div>
   );
 });
