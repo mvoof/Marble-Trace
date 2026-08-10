@@ -339,7 +339,31 @@ export interface PitServiceWidgetSettings {
    * Measured on the most worn of the three points across the tread.
    */
   autoTireWearThreshold: number;
+  /**
+   * How much one press of the fuel up / down keys moves the order, in the unit
+   * the driver reads — liters on metric, gallons on imperial. A step is a whole
+   * unit either way, so the number on the bar moves by what the setting says.
+   */
+  fuelAdjustStep: FuelAdjustStep;
+  /**
+   * Seconds the widget shows itself after a command — a tire picked, the fuel
+   * stepped, auto mode handed over — so a key pressed on track can be read back
+   * without the panel staying up for the rest of the lap. Zero switches it off.
+   *
+   * The temporary-show key is not one of these: it is a latch the driver closes
+   * themselves, and putting it on a timer would take the box away mid-edit.
+   */
+  commandRevealSeconds: number;
 }
+
+/**
+ * Fixed rather than free: the keys are pressed with a wheel-mounted button on
+ * the way into the pits, and the useful steps are "a splash", "a stint" and the
+ * couple in between, not an arbitrary figure typed in the settings.
+ */
+export const FUEL_ADJUST_STEPS = [1, 5, 10, 15, 20] as const;
+
+export type FuelAdjustStep = (typeof FUEL_ADJUST_STEPS)[number];
 
 export type GMeterDisplayMode = 'trail' | 'fading' | 'peak';
 export type GMeterColorMode = 'mono' | 'simple' | 'advanced';

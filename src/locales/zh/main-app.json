@@ -392,14 +392,14 @@
       "pitServiceApplyOrder": "下达完整进站指令：计算油量与四条轮胎（替换当前指令）",
       "pitServiceClearOrder": "取消全部指令",
       "pitServiceFuel": "加注计算出的油量",
-      "pitServiceFuelPlus": "为加油量增加一升（英制为一加仑）",
-      "pitServiceFuelMinus": "为加油量减少一升（英制为一加仑）",
-      "pitServiceFuelPlanned": "加注计算出的油量，并将加油交回自动模式",
+      "pitServiceFuelPlus": "将加油量增加一个步长（步长在小部件设置中调整）",
+      "pitServiceFuelMinus": "将加油量减少一个步长（步长在小部件设置中调整）",
       "pitServiceTiresAll": "更换四条轮胎",
       "pitServiceTireLf": "更换左前轮",
       "pitServiceTireRf": "更换右前轮",
       "pitServiceTireLr": "更换左后轮",
       "pitServiceTireRr": "更换右后轮",
+      "pitServiceTireCompound": "切换到下一种轮胎配方",
       "pitServiceFastRepair": "使用快速维修",
       "pitServiceWindshield": "清洁挡风玻璃（消耗一张撕膜）",
       "widgetToggleVisibility": "显示 / 隐藏“{{widget}}”"
@@ -409,8 +409,7 @@
     "notInLayoutTooltip": "该组件不在当前布局中，因此它的所有功能都不会运行 — 包括绑定以及自动进站指令等后台行为。例外是“显示 / 隐藏”按键：正是它把组件放回布局。",
     "toggleHint": "切换该选项：再次按下会将其从指令中移除。",
     "inert": {
-      "pitServiceAutoMode": "在组件设置中开启“自动加油”或“自动轮胎”之前，此键不起作用。",
-      "pitServiceFuelPlanned": "在加油小部件没有可用数据前不起作用。"
+      "pitServiceAutoMode": "在组件设置中开启“自动加油”或“自动轮胎”之前，此键不起作用。"
     },
     "searchByKey": "按键查找",
     "searchByKeyHint": "按下按键或设备按钮，列表会显示它绑定到了什么。",

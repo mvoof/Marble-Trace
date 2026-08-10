@@ -14,7 +14,6 @@ const STATE_LABEL = {
   towing: 'TOWING',
 } as const;
 
-const AUTO_LABEL = 'AUTO';
 const MANUAL_LABEL = 'MANUAL';
 
 export const ServiceHeader = observer(() => {
@@ -22,20 +21,22 @@ export const ServiceHeader = observer(() => {
   const widget = usePitServiceWidgetStore();
 
   const state = resolveServiceState(pitService, widget.isInPitStall);
+  const mode = widget.autoModeLabel;
 
   return (
     <header className={styles.header}>
       <span className={styles.title}>PIT SERVICE</span>
 
       {/*
-        Only shown once auto mode is switched on: with it off the order is
-        manual by definition, and a permanent "MANUAL" plate would say nothing.
+        Names the halves auto mode still owns — FUEL AUTO once the tires have
+        been picked by hand, TIRE AUTO once the fuel has. Absent entirely while
+        auto mode is off in the settings.
       */}
-      {widget.isAutoEnabled && (
+      {mode !== null && (
         <span
-          className={`${styles.mode} ${widget.isAutoActive ? styles.modeAuto : styles.modeManual}`}
+          className={`${styles.mode} ${mode === MANUAL_LABEL ? styles.modeManual : styles.modeAuto}`}
         >
-          {widget.isAutoActive ? AUTO_LABEL : MANUAL_LABEL}
+          {mode}
         </span>
       )}
 

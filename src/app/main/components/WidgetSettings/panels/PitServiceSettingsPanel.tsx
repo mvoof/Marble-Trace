@@ -1,7 +1,11 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Slider, Switch } from 'antd';
-import type { PitServiceWidgetSettings } from '@/types/widget-settings';
+import { Segmented, Slider, Switch } from 'antd';
+import type {
+  FuelAdjustStep,
+  PitServiceWidgetSettings,
+} from '@/types/widget-settings';
+import { FUEL_ADJUST_STEPS } from '@/types/widget-settings';
 import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
@@ -12,6 +16,12 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 const WEAR_THRESHOLD_MIN_PCT = 10;
 const WEAR_THRESHOLD_MAX_PCT = 90;
 const WEAR_THRESHOLD_STEP_PCT = 5;
+
+// Zero switches the reveal off; past fifteen seconds a pit entry has usually
+// shown the panel anyway.
+const REVEAL_MIN_S = 0;
+const REVEAL_MAX_S = 15;
+const REVEAL_STEP_S = 1;
 
 export const PitServiceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -111,6 +121,26 @@ export const PitServiceSettingsPanel = observer(() => {
             onChange={(checked) => update({ alwaysVisible: checked })}
           />
         </SettingRow>
+
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldLabel}>
+            {t('settingsPanels.pitService.commandRevealSeconds', {
+              seconds: settings.commandRevealSeconds,
+            })}
+          </div>
+
+          <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+            {t('settingsPanels.pitService.commandRevealSecondsDesc')}
+          </div>
+
+          <Slider
+            min={REVEAL_MIN_S}
+            max={REVEAL_MAX_S}
+            step={REVEAL_STEP_S}
+            value={settings.commandRevealSeconds}
+            onChange={(value) => update({ commandRevealSeconds: value })}
+          />
+        </div>
       </Card>
 
       <Card title={t('settingsPanels.pitService.commands')}>
@@ -155,6 +185,33 @@ export const PitServiceSettingsPanel = observer(() => {
             />
           </div>
         )}
+
+        {/*
+          Not gated on auto mode: the step belongs to the fuel up / down keys,
+          which are the driver's own hands and work whether auto mode is on or
+          not.
+        */}
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.pitService.fuelAdjustStep')}
+          </span>
+
+          <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+            {t('settingsPanels.pitService.fuelAdjustStepDesc')}
+          </div>
+
+          <Segmented
+            block
+            value={settings.fuelAdjustStep}
+            options={FUEL_ADJUST_STEPS.map((step) => ({
+              label: String(step),
+              value: step,
+            }))}
+            onChange={(value) =>
+              update({ fuelAdjustStep: value as FuelAdjustStep })
+            }
+          />
+        </div>
       </Card>
     </>
   );

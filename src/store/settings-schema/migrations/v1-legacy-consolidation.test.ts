@@ -447,3 +447,59 @@ describe('v1LegacyConsolidation: coach split out of race dash', () => {
     expect(twice).toEqual(once);
   });
 });
+
+describe('v1 — pit service settings added with the fuel keys', () => {
+  const pitService = (userSettings: Record<string, unknown>) => ({
+    id: 'pit-service',
+    userSettings,
+  });
+
+  const stepOf = (widgets: unknown) =>
+    (
+      findWidget(widgets, 'pit-service')?.userSettings as
+        | Record<string, unknown>
+        | undefined
+    )?.['fuelAdjustStep'];
+
+  // mergeWithDefaults never reaches the copies stored inside a layout, and that
+  // is the copy the driver actually uses.
+  it('fills the step in the top-level widgets and in every layout', () => {
+    const widgets = [pitService({ autoFuel: true })];
+
+    const result = v1LegacyConsolidation.migrate({
+      widgets,
+      layouts: [{ id: 'a', name: 'Race', monitors: [], widgets }],
+    });
+
+    const layout = (result['layouts'] as { widgets?: unknown }[])[0];
+
+    expect(stepOf(result['widgets'])).toBe(1);
+    expect(stepOf(layout?.widgets)).toBe(1);
+  });
+
+  // Filled key by key: a file written mid-development can carry one of the two
+  // and not the other, and a single guard would either skip the missing one or
+  // overwrite the value the driver picked.
+  it('leaves values the driver already picked alone, one key at a time', () => {
+    const result = v1LegacyConsolidation.migrate({
+      widgets: [pitService({ fuelAdjustStep: 10 })],
+    });
+
+    expect(findWidget(result['widgets'], 'pit-service')?.userSettings).toEqual({
+      fuelAdjustStep: 10,
+      commandRevealSeconds: 5,
+    });
+  });
+
+  it('keeps the rest of the widget settings', () => {
+    const result = v1LegacyConsolidation.migrate({
+      widgets: [pitService({ autoTireWearThreshold: 80 })],
+    });
+
+    expect(findWidget(result['widgets'], 'pit-service')?.userSettings).toEqual({
+      autoTireWearThreshold: 80,
+      fuelAdjustStep: 1,
+      commandRevealSeconds: 5,
+    });
+  });
+});

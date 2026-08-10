@@ -52,7 +52,7 @@ export const setupMainListeners = async (
   );
 
   unlistens.push(await listenPitServiceAutoSuspended(root));
-  unlistens.push(await listenPitServiceAutoHalves(root));
+  unlistens.push(await listenPitServiceHalvesTakenOver(root));
 
   return unlistens;
 };
@@ -73,10 +73,10 @@ const listenPitServiceAutoSuspended = (root: RootStore) =>
  * nudge from a hotkey in main and a tire checkbox clicked in the overlay each
  * claim one half, and both windows draw the badges off the result.
  */
-const listenPitServiceAutoHalves = (root: RootStore) =>
-  listen<AutoHalvesSent>('pit-service-auto-halves', (e) => {
+const listenPitServiceHalvesTakenOver = (root: RootStore) =>
+  listen<HalvesTakenOver>('pit-service-halves-taken-over', (e) => {
     runInAction(() =>
-      root.pitServiceWidget.setAutoHalvesSent(e.payload.fuel, e.payload.tires)
+      root.pitServiceWidget.setHalvesTakenOver(e.payload.fuel, e.payload.tires)
     );
   });
 
@@ -178,6 +178,14 @@ export const setupOverlayListeners = async (
     })
   );
 
+  // The key was pressed in main, where the runner lives; the panel it should
+  // pop up renders here.
+  unlistens.push(
+    await listen('pit-service-reveal', () => {
+      runInAction(() => root.pitServiceWidget.revealFromCommand());
+    })
+  );
+
   unlistens.push(
     await listen<boolean>('interact-mode-changed', (e) => {
       runInAction(() => {
@@ -187,7 +195,7 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(await listenPitServiceAutoSuspended(root));
-  unlistens.push(await listenPitServiceAutoHalves(root));
+  unlistens.push(await listenPitServiceHalvesTakenOver(root));
 
   unlistens.push(
     await listen<SessionLayoutMap>('session-layouts-changed', (e) => {
@@ -249,16 +257,19 @@ export const emitPitServiceToggle = () =>
   emitToOverlays('pit-service-toggle', null);
 
 // Broadcast rather than targeted: either window can be the one that suspends.
+export const emitPitServiceReveal = () =>
+  emitToOverlays('pit-service-reveal', null);
+
 export const emitPitServiceAutoSuspended = (suspended: boolean) =>
   emit('pit-service-auto-suspended', suspended);
 
-export interface AutoHalvesSent {
+export interface HalvesTakenOver {
   fuel: boolean;
   tires: boolean;
 }
 
-export const emitPitServiceAutoHalves = (halves: AutoHalvesSent) =>
-  emit('pit-service-auto-halves', halves);
+export const emitPitServiceHalvesTakenOver = (halves: HalvesTakenOver) =>
+  emit('pit-service-halves-taken-over', halves);
 
 export const emitStandingsScroll = (delta: number) =>
   emitToOverlays('standings-scroll', delta);

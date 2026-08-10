@@ -100,6 +100,22 @@ const STEERING_LOCK_WIDGET = 'input-trace';
 const RACE_DASH_ID = 'race-dash';
 const COACH_ID = 'coach';
 
+const PIT_SERVICE_ID = 'pit-service';
+
+/**
+ * Pit service settings that arrived with the fuel keys. Without them the keys
+ * move the order by `NaN` liters, the settings panel renders with nothing
+ * selected, and the reveal timer never fires — and `mergeWithDefaults` cannot
+ * fill them in, because it never reaches `layouts[].widgets[]`, which is where
+ * the copy the driver actually uses is stored.
+ *
+ * They ride along in this step rather than a v2 of their own for the same
+ * reason the coach split does: no released build has ever written a v1 file, so
+ * a separate step would only ever run on unreleased local configs.
+ */
+const PIT_SERVICE_FUEL_ADJUST_STEP = 1;
+const PIT_SERVICE_COMMAND_REVEAL_SECONDS = 5;
+
 /**
  * Race Dash keys that only existed to drive the coach tab, dropped along with
  * the tab itself.
@@ -349,9 +365,38 @@ const splitCoachOut = (widgets: LegacyWidget[]): LegacyWidget[] => {
     : converted;
 };
 
-/** Both passes over one `widgets[]` array, in the order the file needs them. */
+/**
+ * Only fills the gap: a file already carrying a step was written by a build
+ * that had the setting, and the driver's pick is not this step's to overwrite.
+ */
+const PIT_SERVICE_ADDED_SETTINGS: Record<string, unknown> = {
+  fuelAdjustStep: PIT_SERVICE_FUEL_ADJUST_STEP,
+  commandRevealSeconds: PIT_SERVICE_COMMAND_REVEAL_SECONDS,
+};
+
+const addPitServiceSettings = (widgets: LegacyWidget[]): LegacyWidget[] =>
+  widgets.map((widget) => {
+    if (widget?.id !== PIT_SERVICE_ID) {
+      return widget;
+    }
+
+    const userSettings = { ...asObject(widget.userSettings) };
+
+    // Each key is filled on its own: a file carrying one of them but not the
+    // other was written mid-development, and a single guard over both would
+    // either skip the missing one or overwrite the value the driver picked.
+    for (const [key, value] of Object.entries(PIT_SERVICE_ADDED_SETTINGS)) {
+      if (userSettings[key] === undefined) {
+        userSettings[key] = value;
+      }
+    }
+
+    return { ...widget, userSettings };
+  });
+
+/** Every pass over one `widgets[]` array, in the order the file needs them. */
 const convertWidgets = (widgets: LegacyWidget[]): LegacyWidget[] =>
-  splitCoachOut(stripWidgetFields(widgets));
+  addPitServiceSettings(splitCoachOut(stripWidgetFields(widgets)));
 
 const migrate = (blob: SettingsBlob): SettingsBlob => {
   // An entry that is not an object cannot be repaired into a layout, and a
@@ -393,6 +438,6 @@ const migrate = (blob: SettingsBlob): SettingsBlob => {
 export const v1LegacyConsolidation: Migration = {
   to: 1,
   describe:
-    'flat layouts, app-level steering lock, hotkeys dropped, coach split out of race dash',
+    'flat layouts, app-level steering lock, hotkeys dropped, coach split out of race dash, pit service fuel keys',
   migrate,
 };

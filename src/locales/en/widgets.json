@@ -467,7 +467,11 @@
       "autoFuelDesc": "Auto mode checks the fuel amount the Fuel widget calculates, capped at tank capacity.",
       "autoTires": "Auto tires",
       "autoTiresDesc": "Auto mode checks the corners worn past the threshold below, one corner at a time.",
-      "autoTireWearThreshold": "Change a tire at {{percent}}% tread left"
+      "autoTireWearThreshold": "Change a tire at {{percent}}% tread left",
+      "fuelAdjustStep": "Fuel key step",
+      "fuelAdjustStepDesc": "How much one press of the fuel up / down keys adds or removes, in the unit you read — litres on metric, gallons on imperial.",
+      "commandRevealSeconds": "Show for {{seconds}} s after a command",
+      "commandRevealSecondsDesc": "How long the panel shows itself after a tyre, fuel or auto-mode key, so a press on track can be read back. Zero switches it off. The temporary-show key is not affected — it stays up until pressed again."
     },
     "coach": {
       "call": "Call",

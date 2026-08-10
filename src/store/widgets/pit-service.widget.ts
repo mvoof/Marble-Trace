@@ -3,7 +3,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import { computeRefuelPlan } from '@widgets/FuelWidget/fuel-utils';
 import type { RootStore } from '@store/root-store';
-import type { PitCommandRequest } from '@/types/bindings';
+import type { PitCommandRequest, TireCompoundEntry } from '@/types/bindings';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import type { CornerPosition } from '@utils/widget/pit-service-utils';
 import {
@@ -50,9 +50,11 @@ export class PitServiceWidgetStore {
   lastOrderResult: 'sent' | 'failed' | null = null;
 
   /**
-   * Auto mode stands down for the rest of this pit stop because the driver
-   * touched the order by hand. Cleared on pit exit, so the next stop is
-   * automatic again.
+   * Auto mode is switched off, and stays off until the driver switches it back
+   * on. Only the auto-mode key sets this — a driver who reaches for that key
+   * has made a decision about the strategy, not about this one stop, so pit
+   * exit deliberately leaves it alone. The per-stop overrides are the two
+   * take-over flags below, and those are the ones a new lap clears.
    *
    * Public because both windows have to agree on it: the checkboxes are
    * clicked in the overlay and the hotkeys fire in main, and the badge is read
@@ -61,20 +63,22 @@ export class PitServiceWidgetStore {
   autoSuspended = false;
 
   /**
-   * Whether each half of the automatic order is already settled for this stop —
-   * because auto mode sent it, or because the driver took that half over by
-   * hand. Either way there is nothing left for auto mode to do with it.
+   * Whether the driver has taken each half of the order over by hand for the
+   * rest of this stop. Two flags rather than one so the halves are independent:
+   * nudging the fuel by a liter is the most ordinary thing a driver does on the
+   * way in, and it has no business switching off the tire decision as well.
    *
-   * Two flags rather than one so the halves can be claimed separately: nudging
-   * the fuel by a liter is the most ordinary thing a driver does on the way in,
-   * and it has no business switching off the tire decision as well.
+   * Deliberately not the same thing as "auto mode has already sent this half".
+   * Both stop auto mode from acting again, but only this one means the stop is
+   * no longer automatic — folding them together made the header plate read
+   * MANUAL the moment auto mode successfully did its job.
    *
    * Public for the same reason as `autoSuspended`: clicks land in the overlay,
-   * hotkeys in main, and the badges are read in the overlay.
+   * hotkeys in main, and the plate is read in the overlay.
    */
-  autoFuelSent = false;
+  fuelTakenOver = false;
 
-  autoTiresSent = false;
+  tiresTakenOver = false;
 
   /**
    * Liters being dialled in right now by dragging the fuel bar. The sim is only
@@ -83,6 +87,35 @@ export class PitServiceWidgetStore {
    * against its own echo.
    */
   fuelDraftLiters: number | null = null;
+
+  /**
+   * The panel is showing itself because a command just went out. Public so the
+   * overlay can be told to reveal by the window the key was pressed in — the
+   * runner lives in main, and the widget renders in the overlay.
+   */
+  commandRevealing = false;
+
+  /**
+   * Bumped once per command. The sync layer watches this rather than
+   * `commandRevealing`: a boolean only changes on the first press of a burst,
+   * so the second key inside an open window would never reach the overlay, and
+   * the overlay would hide on the deadline of the first press while main still
+   * held the flag — after which no rising edge was left to show it again.
+   */
+  commandRevealNonce = 0;
+
+  private revealTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // Whether auto mode has already dispatched each half this stop. Only ever
+  // read where the reactions run, so unlike the take-over flags these are not
+  // mirrored to the overlay.
+  private autoFuelSent = false;
+  private autoTiresSent = false;
+
+  // Whether the order the sim armed on its own has already been wiped this
+  // stint. One clear per stint: after it, an order the driver builds by hand is
+  // theirs, and re-clearing it every time the flags moved would be a fight.
+  private selfArmedCleared = false;
 
   private lingering = false;
   private orderFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
@@ -120,8 +153,45 @@ export class PitServiceWidgetStore {
   /** Towing is shown anywhere on track — the sim has no other countdown for it. */
   get isVisible(): boolean {
     return (
-      this.manualShow || this.isOnPitRoad || this.isTowing || this.lingering
+      this.manualShow ||
+      this.isOnPitRoad ||
+      this.isTowing ||
+      this.lingering ||
+      this.commandRevealing
     );
+  }
+
+  /**
+   * Shows the panel for a few seconds after a command, so a key pressed on
+   * track can be read back without the box staying up for the rest of the lap.
+   *
+   * Every order goes through `send`, so that is where this is triggered from —
+   * one place rather than a call at the end of a dozen methods. The
+   * temporary-show key is deliberately not one of these: it is a latch the
+   * driver closes themselves, and a timer would take the box away mid-edit.
+   */
+  private revealAfterCommand() {
+    const seconds = this.settings.commandRevealSeconds;
+
+    if (seconds <= 0) {
+      return;
+    }
+
+    if (this.revealTimer !== null) {
+      clearTimeout(this.revealTimer);
+    }
+
+    // Every press restarts the countdown, so a burst of keys keeps the panel up
+    // rather than letting the first press decide when it goes away.
+    this.commandRevealing = true;
+    this.commandRevealNonce++;
+
+    this.revealTimer = setTimeout(() => {
+      runInAction(() => {
+        this.commandRevealing = false;
+        this.revealTimer = null;
+      });
+    }, seconds * MS_IN_SECOND);
   }
 
   /**
@@ -241,11 +311,41 @@ export class PitServiceWidgetStore {
    * badge in the header standing for a stop that is only half manual.
    */
   get isAutoFuelPending(): boolean {
-    return this.isAutoActive && this.isAutoFuelEnabled && !this.autoFuelSent;
+    return this.isAutoActive && this.isAutoFuelEnabled && !this.fuelTakenOver;
   }
 
   get isAutoTiresPending(): boolean {
-    return this.isAutoActive && this.isAutoTiresEnabled && !this.autoTiresSent;
+    return this.isAutoActive && this.isAutoTiresEnabled && !this.tiresTakenOver;
+  }
+
+  /**
+   * What the header plate says: which parts of the stop auto mode is still
+   * going to decide. Naming what is left automatic rather than what was taken
+   * over is the useful direction — the driver already knows what they touched,
+   * and what they want back from the plate is what they can still stop
+   * thinking about.
+   *
+   * Null while auto mode is switched off in the settings: the order is manual
+   * by definition then, and a permanent plate would say nothing.
+   */
+  get autoModeLabel(): 'AUTO' | 'FUEL AUTO' | 'TIRE AUTO' | 'MANUAL' | null {
+    if (!this.isAutoEnabled) {
+      return null;
+    }
+
+    if (this.isAutoFuelPending && this.isAutoTiresPending) {
+      return 'AUTO';
+    }
+
+    if (this.isAutoFuelPending) {
+      return 'FUEL AUTO';
+    }
+
+    if (this.isAutoTiresPending) {
+      return 'TIRE AUTO';
+    }
+
+    return 'MANUAL';
   }
 
   /**
@@ -295,9 +395,10 @@ export class PitServiceWidgetStore {
    * The first half of the automatic order, sent on pit road entry: the
    * calculated fuel, and nothing else.
    *
-   * Deliberately `clearFuel` rather than a full `clear`. The sim arms the pit
-   * box with the previous stop's order the moment the car leaves the box, and a
-   * full clear wipes that — including the tires, which this half has no
+   * Deliberately `clearFuel` rather than a full `clear`. There may well be an
+   * order standing by the time the car reaches pit road — the driver's, or the
+   * set the sim arms on exit — and a full clear wipes all of it, including the
+   * tires, which this half has no
    * business deciding on, because tire wear is not readable yet on pit road.
    * Fast repair and the windshield are left alone for the same reason: auto
    * mode does not own them.
@@ -343,13 +444,96 @@ export class PitServiceWidgetStore {
     return [...this.autoFuelOrder, ...this.autoTireOrder];
   }
 
+  /** Raw `PitSvFlags`, zero when the sim reports no order at all. */
+  get simArmedFlags(): number {
+    return this.root.player.pitService?.flags ?? 0;
+  }
+
+  /**
+   * Wipes the order the sim arms by itself the moment the car leaves the box.
+   *
+   * On pit exit the sim checks a service set of its own: measured at 0→63 and
+   * 0→111 on two separate exits, and reported by hand as all four corners plus
+   * fuel even when the stop was ordered with less. It is not the previous
+   * order, the two exits did not match each other, and the rule behind it is
+   * not known — what is constant is that all four corners come back.
+   *
+   * Auto mode used to fight that at the box, one second before the crew
+   * commits; doing it here instead moves the whole argument to a point in the
+   * lap where nothing is under time pressure, and leaves the box arrival with
+   * nothing to do but tick the corners it wants.
+   *
+   * Of the two halves, only the ones auto mode owns are cleared. With auto mode
+   * off nothing is cleared at all: the armed order is then something the driver
+   * may well be counting on, and taking it away without being asked is exactly
+   * the surprise this widget must not spring.
+   *
+   * Fast repair and the windshield are cleared whenever this runs, even though
+   * auto mode never orders them. Not ordering them and not removing them are
+   * different rules: the sim ticks the windshield on every exit, and leaving it
+   * there means a tear-off on every stop that nobody chose. Wiping what was
+   * imposed is not the same as deciding.
+   */
+  async clearSelfArmedOrder() {
+    if (this.selfArmedCleared || !this.isAutoActive) {
+      return;
+    }
+
+    // With both halves auto mode's, the whole order is going anyway, and the
+    // SDK has no batch form — one `clear` instead of four broadcasts. The
+    // itemised form is kept for the case that makes `clear` wrong: this also
+    // runs on app start and when auto mode is switched on mid-stint, where the
+    // half auto does not own may hold work the driver did by hand.
+    const order: PitCommandRequest[] =
+      this.isAutoFuelPending && this.isAutoTiresPending
+        ? [{ kind: 'clear', value: 0 }]
+        : this.itemisedSelfArmedClear();
+
+    if (order.length === 0) {
+      return;
+    }
+
+    this.selfArmedCleared = true;
+
+    await this.send(order);
+  }
+
+  /**
+   * The half auto mode owns, plus the two boxes the sim imposes. Empty when
+   * neither half is auto mode's — there is then nothing to wipe, and the
+   * imposed boxes are left with the rest of an order this widget is not
+   * touching.
+   */
+  private itemisedSelfArmedClear(): PitCommandRequest[] {
+    const order: PitCommandRequest[] = [];
+
+    if (this.isAutoFuelPending) {
+      order.push({ kind: 'clearFuel', value: 0 });
+    }
+
+    if (this.isAutoTiresPending) {
+      order.push({ kind: 'clearTires', value: 0 });
+    }
+
+    if (order.length === 0) {
+      return order;
+    }
+
+    order.push(
+      { kind: 'clearWindshield', value: 0 },
+      { kind: 'clearFastRepair', value: 0 }
+    );
+
+    return order;
+  }
+
   /**
    * Sends the fuel half. Called once per pit road entry, from the main window
    * only — two windows running the same telemetry would otherwise broadcast the
    * order twice.
    */
   async applyAutoFuelOrder() {
-    if (!this.isAutoActive || this.autoFuelSent) {
+    if (!this.isAutoFuelPending || this.autoFuelSent) {
       return;
     }
 
@@ -381,7 +565,7 @@ export class PitServiceWidgetStore {
    * calls this, and `autoTiresSent` keeps the other two from re-sending.
    */
   async applyAutoTireOrder() {
-    if (!this.isAutoActive || !this.settings.autoTires || this.autoTiresSent) {
+    if (!this.isAutoTiresPending || this.autoTiresSent) {
       return;
     }
 
@@ -390,19 +574,48 @@ export class PitServiceWidgetStore {
     await this.send(this.autoTireOrder);
   }
 
-  /**
-   * Hands the order back to the driver for the rest of the stop. Every manual
-   * path calls this: once a human has decided something, auto mode second
-   * guessing it is worse than doing nothing.
-   */
-  suspendAuto() {
-    if (!this.autoSuspended) {
-      this.autoSuspended = true;
-    }
-  }
-
   setAutoSuspended(suspended: boolean) {
     this.autoSuspended = suspended;
+  }
+
+  /**
+   * Hands the whole stop back to auto mode, halves included.
+   *
+   * Clearing the claims is the point: a driver pressing "auto" after correcting
+   * the fuel by hand is asking for the order to be worked out again, and
+   * leaving the half they touched claimed would give them a key that reports
+   * auto mode is on while it quietly declines to do the thing they asked for.
+   */
+  resumeAuto() {
+    this.autoSuspended = false;
+    this.fuelTakenOver = false;
+    this.tiresTakenOver = false;
+    this.autoFuelSent = false;
+    this.autoTiresSent = false;
+  }
+
+  /**
+   * The auto mode key. It reads off what the header plate says rather than off
+   * `autoSuspended` alone: anything short of a fully automatic stop — suspended
+   * outright, or one half taken over by hand — goes back to `AUTO` on a press.
+   * Only from `AUTO` does the key hand the stop to the driver.
+   *
+   * Toggling on `autoSuspended` alone would strand the half-manual states: with
+   * the fuel corrected by hand the plate reads `TIRE AUTO`, and a key labelled
+   * "auto mode" would suspend rather than restore.
+   */
+  toggleAutoSuspended() {
+    // Sends nothing, so it has to ask for the reveal itself — but handing the
+    // stop over is exactly the kind of press worth seeing confirmed.
+    this.revealAfterCommand();
+
+    if (this.autoModeLabel === 'AUTO') {
+      this.autoSuspended = true;
+
+      return;
+    }
+
+    this.resumeAuto();
   }
 
   /**
@@ -411,16 +624,77 @@ export class PitServiceWidgetStore {
    * about the tires, and the reverse holds just as well.
    */
   private claimFuelHalf() {
-    this.autoFuelSent = true;
+    this.fuelTakenOver = true;
   }
 
   private claimTireHalf() {
-    this.autoTiresSent = true;
+    this.tiresTakenOver = true;
   }
 
-  setAutoHalvesSent(fuelSent: boolean, tiresSent: boolean) {
-    this.autoFuelSent = fuelSent;
-    this.autoTiresSent = tiresSent;
+  /** Entry point for the sync layer: the key was pressed in the other window. */
+  revealFromCommand() {
+    this.revealAfterCommand();
+  }
+
+  setHalvesTakenOver(fuel: boolean, tires: boolean) {
+    this.fuelTakenOver = fuel;
+    this.tiresTakenOver = tires;
+  }
+
+  /**
+   * Compounds this car can be sent out on, as the session lists them. Most cars
+   * have exactly one, and for those the whole control is pointless — hence
+   * `hasCompoundChoice` rather than rendering a row that can only say one thing.
+   */
+  get tireCompounds(): TireCompoundEntry[] {
+    return this.root.session.sessionInfo?.driverTires ?? [];
+  }
+
+  get hasCompoundChoice(): boolean {
+    return this.tireCompounds.length > 1;
+  }
+
+  /** Compound index the sim has on the order, or null when it reports none. */
+  get orderedCompoundIndex(): number | null {
+    return this.root.player.pitService?.tireCompound ?? null;
+  }
+
+  get orderedCompoundName(): string | null {
+    const index = this.orderedCompoundIndex;
+
+    if (index === null) {
+      return null;
+    }
+
+    return (
+      this.tireCompounds.find((entry) => entry.tireIndex === index)
+        ?.tireCompoundType ?? null
+    );
+  }
+
+  /**
+   * Steps to the next compound in the session's list, wrapping at the end. The
+   * SDK takes an index rather than a delta, and there is no "next" command, so
+   * the wrap is worked out here.
+   *
+   * Part of the tire half: picking a compound is as much a tire decision as
+   * ticking a corner, and auto mode has no business overruling it afterwards.
+   */
+  async cycleTireCompound() {
+    const compounds = this.tireCompounds;
+
+    if (compounds.length < 2) {
+      return;
+    }
+
+    this.claimTireHalf();
+
+    const current = compounds.findIndex(
+      (entry) => entry.tireIndex === this.orderedCompoundIndex
+    );
+    const next = compounds[(current + 1) % compounds.length];
+
+    await this.send([{ kind: 'tireCompound', value: next.tireIndex }]);
   }
 
   /** Whether the sim currently has this corner checked. */
@@ -463,9 +737,11 @@ export class PitServiceWidgetStore {
 
   /** One press of the manual step, in liters, matching the displayed unit. */
   get fuelStepLiters(): number {
+    const step = this.settings.fuelAdjustStep;
+
     return this.root.units.unitSystem === 'metric'
-      ? FUEL_STEP_L
-      : LITERS_PER_GALLON;
+      ? step * FUEL_STEP_L
+      : step * LITERS_PER_GALLON;
   }
 
   private clampFuel(liters: number): number {
@@ -578,9 +854,10 @@ export class PitServiceWidgetStore {
     await this.send(ALL_CORNERS.map((corner) => ({ kind: corner, value: 0 })));
   }
 
+  // Fast repair and the windshield are outside auto mode entirely — it never
+  // orders them and never reads them — so using one says nothing about who is
+  // deciding the fuel or the tires, and claims neither half.
   async toggleFastRepair() {
-    this.suspendAuto();
-
     await this.send([
       {
         kind: this.isFastRepairOrdered ? 'clearFastRepair' : 'fastRepair',
@@ -590,8 +867,6 @@ export class PitServiceWidgetStore {
   }
 
   async toggleWindshield() {
-    this.suspendAuto();
-
     await this.send([
       {
         kind: this.isWindshieldOrdered ? 'clearWindshield' : 'windshield',
@@ -601,41 +876,20 @@ export class PitServiceWidgetStore {
   }
 
   /**
-   * Orders exactly the fuel the calculation asks for, and hands the fuel half
-   * back to auto mode — the inverse of a manual nudge, and the way out of one.
-   *
-   * Releasing the claim rather than setting it is the whole point: the driver
-   * is saying "use the number you worked out", so a later recalculation on the
-   * way in should still land. Useful with auto fuel off too, as a one-key
-   * "fill what the fuel widget says".
-   */
-  async sendPlannedFuel() {
-    const fuel = this.plannedFuelLiters;
-
-    if (fuel === null || fuel <= 0) {
-      return;
-    }
-
-    await this.send([{ kind: 'fuel', value: Math.ceil(fuel) }]);
-
-    runInAction(() => {
-      this.autoFuelSent = false;
-    });
-  }
-
-  /**
    * Sends the planned order. Only ever reached from an explicit key press —
    * nothing in this store calls it on a telemetry transition.
    */
   async sendPlannedOrder() {
-    this.suspendAuto();
+    this.claimFuelHalf();
+    this.claimTireHalf();
 
     await this.send(this.plannedOrder);
   }
 
   /** Unchecks the whole pit order in the sim. */
   async sendClearOrder() {
-    this.suspendAuto();
+    this.claimFuelHalf();
+    this.claimTireHalf();
 
     await this.send([{ kind: 'clear', value: 0 }]);
   }
@@ -643,6 +897,8 @@ export class PitServiceWidgetStore {
   // Every path into the sim goes through this method, so the result reporting
   // lives here rather than at each call site.
   private async send(requests: PitCommandRequest[]) {
+    this.revealAfterCommand();
+
     try {
       await invoke('send_pit_order', { requests });
       this.setOrderResult('sent');
@@ -738,15 +994,21 @@ export class PitServiceWidgetStore {
 
     if (onPitRoad) {
       this.lingering = false;
+      // Armed again on the way out of this stop, so the next stint gets its own
+      // clear.
+      this.selfArmedCleared = false;
 
       return;
     }
 
     this.lingering = true;
     // A new lap starts a new decision: whatever the driver overrode belonged to
-    // the stop that just ended.
-    this.autoSuspended = false;
+    // the stop that just ended. `autoSuspended` is not one of those — it is the
+    // off switch, and pit exit silently flipping it back on was reported as the
+    // widget "putting itself into auto" on the way out of the box.
+    this.fuelTakenOver = false;
     this.autoFuelSent = false;
+    this.tiresTakenOver = false;
     this.autoTiresSent = false;
 
     this.hideTimer = setTimeout(() => {
@@ -763,6 +1025,13 @@ export class PitServiceWidgetStore {
 
     this.clearStopTimer();
 
+    if (this.revealTimer !== null) {
+      clearTimeout(this.revealTimer);
+      this.revealTimer = null;
+    }
+
+    this.commandRevealing = false;
+
     if (this.orderFeedbackTimer !== null) {
       clearTimeout(this.orderFeedbackTimer);
       this.orderFeedbackTimer = null;
@@ -771,8 +1040,11 @@ export class PitServiceWidgetStore {
     this.lastOrderResult = null;
     this.fuelDraftLiters = null;
     this.autoSuspended = false;
+    this.fuelTakenOver = false;
     this.autoFuelSent = false;
+    this.tiresTakenOver = false;
     this.autoTiresSent = false;
+    this.selfArmedCleared = false;
     this.manualShow = false;
     this.lingering = false;
     this.lastOnPitRoad = false;

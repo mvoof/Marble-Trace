@@ -121,10 +121,7 @@ const PIT_SERVICE_ACTIONS: HotkeyAction[] = [
       !root.pitServiceWidget.isAutoFuelEnabled &&
       !root.pitServiceWidget.isAutoTiresEnabled,
     inertHintKey: 'pitServiceAutoMode',
-    run: (root) =>
-      root.pitServiceWidget.setAutoSuspended(
-        !root.pitServiceWidget.autoSuspended
-      ),
+    run: (root) => root.pitServiceWidget.toggleAutoSuspended(),
   },
   {
     id: 'pit-service:apply-order',
@@ -170,17 +167,6 @@ const PIT_SERVICE_ACTIONS: HotkeyAction[] = [
       ),
   },
   {
-    // The way back from a manual correction: orders the calculated amount and
-    // lets auto mode have the fuel half again.
-    id: 'pit-service:fuel-planned',
-    owner: 'pit-service',
-    labelKey: 'pitServiceFuelPlanned',
-    trigger: 'press',
-    isInert: (root) => root.pitServiceWidget.plannedFuelLiters === null,
-    inertHintKey: 'pitServiceFuelPlanned',
-    run: (root) => void root.pitServiceWidget.sendPlannedFuel(),
-  },
-  {
     id: 'pit-service:tires-all',
     owner: 'pit-service',
     labelKey: 'pitServiceTiresAll',
@@ -214,6 +200,13 @@ const PIT_SERVICE_ACTIONS: HotkeyAction[] = [
     labelKey: 'pitServiceTireRr',
     trigger: 'press',
     run: (root) => void root.pitServiceWidget.toggleTire('rr'),
+  },
+  {
+    id: 'pit-service:tire-compound',
+    owner: 'pit-service',
+    labelKey: 'pitServiceTireCompound',
+    trigger: 'press',
+    run: (root) => void root.pitServiceWidget.cycleTireCompound(),
   },
   {
     id: 'pit-service:fast-repair',
