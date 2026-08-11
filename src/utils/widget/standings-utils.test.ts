@@ -5,6 +5,7 @@ import {
   buildVisibleRows,
   getStandingsGap,
   maxScrollOffset,
+  resolveBestLapDisplay,
 } from './standings-utils';
 
 const makeField = (count: number, playerIdx: number): DriverEntry[] =>
@@ -187,5 +188,31 @@ describe('getStandingsGap', () => {
     expect(getStandingsGap(driver, classLeader, true, false, 0).value).toBe(
       '4.2'
     );
+  });
+});
+
+const makeBestLapEntry = (bestLapTime: number, qualifyTime: number) =>
+  ({ bestLapTime, qualifyTime }) as DriverEntry;
+
+describe('resolveBestLapDisplay', () => {
+  it('prefers a lap set in this session', () => {
+    expect(resolveBestLapDisplay(makeBestLapEntry(91.2, 90.4))).toEqual({
+      time: 91.2,
+      isQualifying: false,
+    });
+  });
+
+  it('stands in the qualifying time until a lap is completed', () => {
+    expect(resolveBestLapDisplay(makeBestLapEntry(-1, 90.4))).toEqual({
+      time: 90.4,
+      isQualifying: true,
+    });
+  });
+
+  it('is empty for a car that never set a time at all', () => {
+    expect(resolveBestLapDisplay(makeBestLapEntry(-1, -1))).toEqual({
+      time: null,
+      isQualifying: false,
+    });
   });
 });

@@ -293,3 +293,10 @@
 .bestLapFastest {
   color: $race-purple;
 }
+
+// Standing in from qualifying, not set in this session — muted so the column
+// still reads as empty at a glance until real lap times arrive.
+.bestLapQualifying {
+  color: $widget-text-secondary;
+  font-weight: 400;
+}

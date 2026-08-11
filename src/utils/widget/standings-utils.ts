@@ -200,6 +200,29 @@ export const calculateLapsBehind = (
   return Math.floor(leaderAbs - driverAbs);
 };
 
+export interface BestLapDisplay {
+  time: number | null;
+  isQualifying: boolean;
+}
+
+/**
+ * What the Best column shows. Until a car completes a lap of its own it has no
+ * best lap, and in a race that lasts from the grid until the first crossing —
+ * the whole time the column would otherwise sit empty. The qualifying time
+ * stands in there, marked so it is never read as a lap set in this session.
+ */
+export const resolveBestLapDisplay = (driver: DriverEntry): BestLapDisplay => {
+  if (driver.bestLapTime > 0) {
+    return { time: driver.bestLapTime, isQualifying: false };
+  }
+
+  if (driver.qualifyTime > 0) {
+    return { time: driver.qualifyTime, isQualifying: true };
+  }
+
+  return { time: null, isQualifying: false };
+};
+
 export interface StandingsGapInfo {
   value: string;
   isLeader: boolean;

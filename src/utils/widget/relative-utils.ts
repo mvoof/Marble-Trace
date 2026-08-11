@@ -167,6 +167,7 @@ export const buildPaceCarRowEntries = (
         lapDistPct: paceLapDist,
         lastLapTime: 0,
         bestLapTime: 0,
+        qualifyTime: -1,
         f2Time: 0,
         estTime: carIdx.car_idx_est_time[idx] ?? 0,
         trackSurface: 'OnTrack',

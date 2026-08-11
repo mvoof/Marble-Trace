@@ -553,10 +553,11 @@ export type DriverEntry = {
   position: number;
   classPosition: number;
   /**
-   * Track order recomputed from lap progress every tick, in every session type.
+   * Track order recomputed from lap progress every tick, once the race is running.
    * Official `position` only refreshes when a car crosses the start/finish line,
-   * so an overtake mid-lap is invisible there; outside a race it ranks by best lap
-   * instead of track order. Which of the two is displayed is a frontend choice.
+   * so an overtake mid-lap is invisible there. Before the green flag this is the
+   * starting grid, and outside a race it mirrors the official order — see
+   * `RankingMode`. Which of the two fields is displayed is a frontend choice.
    */
   livePosition: number;
   /**
@@ -569,6 +570,13 @@ export type DriverEntry = {
   lapDistPct: number;
   lastLapTime: number;
   bestLapTime: number;
+  /**
+   * Lap time that earned the car its grid slot, from `QualifyResultsInfo`.
+   * `-1.0` when the car set no qualifying time — the same "no time" marker
+   * `best_lap_time` uses. Survives into the race, where it is the only lap
+   * time the field has until the first one is completed.
+   */
+  qualifyTime: number;
   f2Time: number;
   estTime: number;
   trackSurface: TrackSurface;
@@ -1005,6 +1013,14 @@ export type QualifyResultEntry = {
    */
   position: number;
   classPosition: number | null;
+  /**
+   * Lap time that earned the grid slot. `None` when the car set no time.
+   */
+  fastestTime: number | null;
+  /**
+   * Lap number the qualifying time was set on.
+   */
+  fastestLap: number | null;
 };
 
 /**

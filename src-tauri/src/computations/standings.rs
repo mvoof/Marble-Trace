@@ -13,6 +13,7 @@ use crate::utils::lock_or_recover;
 
 const NO_CLASS_LABEL: &str = "No Class";
 const FALLBACK_SORT_POSITION: i32 = 999;
+const NO_TIME: f32 = -1.0;
 const IR_CHANGE_SCALE_FACTOR: f64 = 200.0;
 const IR_CHANGE_OFFSET: f64 = 100.0;
 
@@ -31,10 +32,11 @@ pub struct DriverEntry {
     pub tire_compound: String,
     pub position: i32,
     pub class_position: i32,
-    /// Track order recomputed from lap progress every tick, in every session type.
+    /// Track order recomputed from lap progress every tick, once the race is running.
     /// Official `position` only refreshes when a car crosses the start/finish line,
-    /// so an overtake mid-lap is invisible there; outside a race it ranks by best lap
-    /// instead of track order. Which of the two is displayed is a frontend choice.
+    /// so an overtake mid-lap is invisible there. Before the green flag this is the
+    /// starting grid, and outside a race it mirrors the official order — see
+    /// `RankingMode`. Which of the two fields is displayed is a frontend choice.
     pub live_position: i32,
     /// Same as `live_position`, but ranked within the car's class.
     pub live_class_position: i32,
@@ -44,6 +46,11 @@ pub struct DriverEntry {
     pub lap_dist_pct: f32,
     pub last_lap_time: f32,
     pub best_lap_time: f32,
+    /// Lap time that earned the car its grid slot, from `QualifyResultsInfo`.
+    /// `-1.0` when the car set no qualifying time — the same "no time" marker
+    /// `best_lap_time` uses. Survives into the race, where it is the only lap
+    /// time the field has until the first one is completed.
+    pub qualify_time: f32,
     pub f2_time: f32,
     pub est_time: f32,
     pub track_surface: TrackSurface,
@@ -156,6 +163,15 @@ pub fn compute(
         .unwrap_or(&[]);
 
     let is_race = current_session.is_some_and(|s| s.session_type == SessionType::Race);
+    let ranking_mode = resolve_ranking_mode(is_race, session_state);
+
+    let mut qualify_times: HashMap<i32, f32> = HashMap::new();
+
+    for entry in &session.qualify_results {
+        if let Some(time) = entry.fastest_time {
+            qualify_times.insert(entry.car_idx, time);
+        }
+    }
 
     if locked_state.finished_session_num != Some(session.current_session_num) {
         locked_state.finished_session_num = Some(session.current_session_num);
@@ -303,7 +319,11 @@ pub fn compute(
                     .copied()
                     .filter(|time| *time > 0.0)
                     .or_else(|| result.and_then(|position| position.fastest_time))
-                    .unwrap_or(-1.0),
+                    .unwrap_or(NO_TIME),
+                qualify_time: qualify_times
+                    .get(&driver.car_idx)
+                    .copied()
+                    .unwrap_or(NO_TIME),
                 f2_time: car_idx.car_idx_f2_time.get(idx).copied().unwrap_or(0.0),
                 est_time: car_idx.car_idx_est_time.get(idx).copied().unwrap_or(0.0),
                 track_surface: car_idx
@@ -358,7 +378,11 @@ pub fn compute(
 
     update_tow_states(&mut entries, &mut locked_state);
 
-    assign_live_positions(&mut entries, &locked_state.towed_cars);
+    match ranking_mode {
+        RankingMode::TrackOrder => assign_live_positions(&mut entries, &locked_state.towed_cars),
+        RankingMode::Grid => assign_static_positions(&mut entries, grid_sort_key),
+        RankingMode::Official => assign_static_positions(&mut entries, official_sort_key),
+    }
 
     let player_lap_dist = entries
         .iter()
@@ -470,6 +494,51 @@ fn lap_progress(entry: &DriverEntry) -> Option<f64> {
     }
 
     Some(entry.lap as f64 + entry.lap_dist_pct as f64)
+}
+
+/// Which order `live_position` reports. Distance covered around the lap only ranks
+/// the field once the race is actually running: before the green the cars are parked
+/// across the start/finish line, so the tail of the grid reads as being a whole lap
+/// ahead of pole, and outside a race there is no track order to speak of — the sim's
+/// own position already ranks by best lap there, which is the answer that means
+/// something in practice and qualifying.
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum RankingMode {
+    TrackOrder,
+    Grid,
+    Official,
+}
+
+/// The green flag has dropped. `Checkered` and `CoolDown` are included: a race that
+/// has finished is still a race that started.
+fn race_has_started(session_state: Option<SessionState>) -> bool {
+    matches!(
+        session_state,
+        Some(SessionState::Racing) | Some(SessionState::Checkered) | Some(SessionState::CoolDown)
+    )
+}
+
+fn resolve_ranking_mode(is_race: bool, session_state: Option<SessionState>) -> RankingMode {
+    if !is_race {
+        return RankingMode::Official;
+    }
+
+    if race_has_started(session_state) {
+        return RankingMode::TrackOrder;
+    }
+
+    RankingMode::Grid
+}
+
+/// Starting grid slot, with cars that hold none pushed to the back. Falls back to
+/// the official position so a race run without qualifying — where there is no grid
+/// to read — still ranks by something the sim provided.
+fn grid_sort_key(entry: &DriverEntry) -> i32 {
+    if entry.start_pos_overall > 0 {
+        entry.start_pos_overall
+    } else {
+        FALLBACK_SORT_POSITION + official_sort_key(entry)
+    }
 }
 
 /// Official race position, with cars the sim has not placed yet pushed to the back.
@@ -626,6 +695,21 @@ fn assign_live_positions(entries: &mut [DriverEntry], towed_progress: &HashMap<i
 
     entries.clone_from_slice(&merged);
 
+    number_positions(entries);
+}
+
+/// Orders the field by a key that does not depend on where the cars are on track —
+/// the starting grid before the green, the sim's own position everywhere outside a
+/// race. `car_idx` breaks ties so cars the sim has not placed keep a stable order
+/// instead of shuffling with the entry list.
+fn assign_static_positions(entries: &mut [DriverEntry], sort_key: fn(&DriverEntry) -> i32) {
+    entries.sort_by_key(|entry| (sort_key(entry), entry.car_idx));
+
+    number_positions(entries);
+}
+
+/// Fills `live_position` and `live_class_position` from the order `entries` is in.
+fn number_positions(entries: &mut [DriverEntry]) {
     let mut class_counters: HashMap<i32, i32> = HashMap::new();
 
     for (index, entry) in entries.iter_mut().enumerate() {
@@ -1393,11 +1477,13 @@ mod tests {
                 car_idx: 0,
                 position: 0,
                 class_position: Some(0),
+                ..Default::default()
             },
             QualifyResultEntry {
                 car_idx: 5,
                 position: 1,
                 class_position: Some(1),
+                ..Default::default()
             },
         ];
 
@@ -1413,6 +1499,7 @@ mod tests {
             car_idx: 3,
             position: 2,
             class_position: None,
+            ..Default::default()
         }];
 
         let map = parse_start_positions_from_qualify(&entries);
@@ -1442,6 +1529,7 @@ mod tests {
             car_idx: 1,
             position: 0, // 0-indexed → overall=1 — different from results
             class_position: Some(0),
+            ..Default::default()
         }];
 
         let from_results = parse_start_positions(&results);
@@ -1547,6 +1635,7 @@ mod tests {
             lap_dist_pct,
             last_lap_time: -1.0,
             best_lap_time: -1.0,
+            qualify_time: -1.0,
             f2_time: 0.0,
             est_time: 0.0,
             track_surface,
@@ -1631,6 +1720,126 @@ mod tests {
 
         assert!(deltas[&0] > 0);
         assert!(deltas[&1] < 0);
+    }
+
+    #[test]
+    fn test_ranking_mode_follows_the_session() {
+        assert_eq!(
+            resolve_ranking_mode(true, Some(SessionState::Racing)),
+            RankingMode::TrackOrder
+        );
+        assert_eq!(
+            resolve_ranking_mode(true, Some(SessionState::ParadeLaps)),
+            RankingMode::Grid
+        );
+        assert_eq!(
+            resolve_ranking_mode(true, Some(SessionState::GetInCar)),
+            RankingMode::Grid
+        );
+        assert_eq!(resolve_ranking_mode(true, None), RankingMode::Grid);
+        assert_eq!(
+            resolve_ranking_mode(false, Some(SessionState::Racing)),
+            RankingMode::Official
+        );
+    }
+
+    #[test]
+    fn test_grid_order_ignores_where_the_cars_are_parked() {
+        // On the grid the field straddles the start/finish line, so the car sitting
+        // at 0.99 has covered a whole lap more than the one at 0.01 as far as lap
+        // progress is concerned. Only the qualifying slot means anything here.
+        let mut entries = vec![
+            make_live_entry(7, 3, 0, 0.99, TrackSurface::OnTrack),
+            make_live_entry(2, 1, 0, 0.01, TrackSurface::OnTrack),
+            make_live_entry(5, 2, 0, 0.995, TrackSurface::OnTrack),
+        ];
+
+        entries[0].start_pos_overall = 3;
+        entries[1].start_pos_overall = 1;
+        entries[2].start_pos_overall = 2;
+
+        assign_static_positions(&mut entries, grid_sort_key);
+
+        assert_eq!(entries[0].car_idx, 2);
+        assert_eq!(entries[1].car_idx, 5);
+        assert_eq!(entries[2].car_idx, 7);
+        assert_eq!(entries[0].live_position, 1);
+    }
+
+    #[test]
+    fn test_cars_without_a_grid_slot_line_up_behind_the_grid() {
+        // Joined after qualifying: no slot, so nothing to place it by except the
+        // official position — and never ahead of a car that actually qualified.
+        let mut entries = vec![
+            make_live_entry(4, 9, 0, 0.5, TrackSurface::OnTrack),
+            make_live_entry(1, 2, 0, 0.5, TrackSurface::OnTrack),
+        ];
+
+        entries[0].start_pos_overall = 0;
+        entries[1].start_pos_overall = 20;
+
+        assign_static_positions(&mut entries, grid_sort_key);
+
+        assert_eq!(entries[0].car_idx, 1);
+        assert_eq!(entries[1].car_idx, 4);
+    }
+
+    #[test]
+    fn test_qualifying_ranks_by_the_official_order_not_the_track() {
+        // Lone qualify: the sim ranks by best lap, the car half a lap up the road
+        // has not beaten it.
+        let mut entries = vec![
+            make_live_entry(3, 2, 4, 0.90, TrackSurface::OnTrack),
+            make_live_entry(8, 1, 4, 0.10, TrackSurface::OnTrack),
+        ];
+
+        assign_static_positions(&mut entries, official_sort_key);
+
+        assert_eq!(entries[0].car_idx, 8);
+        assert_eq!(entries[0].live_position, 1);
+        assert_eq!(entries[1].car_idx, 3);
+    }
+
+    #[test]
+    fn test_qualify_time_comes_from_the_qualify_results() {
+        let mut session = race_session();
+
+        session.qualify_results = vec![QualifyResultEntry {
+            car_idx: 0,
+            position: 0,
+            class_position: Some(0),
+            fastest_time: Some(88.5),
+            fastest_lap: Some(3),
+        }];
+
+        let state = Mutex::new(StandingsState::default());
+        let frame = compute(
+            &racing_car_idx_frame(0),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        assert_eq!(frame.entries[0].qualify_time, 88.5);
+    }
+
+    #[test]
+    fn test_qualify_time_is_absent_without_a_qualifying_lap() {
+        let session = race_session();
+        let state = Mutex::new(StandingsState::default());
+
+        let frame = compute(
+            &racing_car_idx_frame(0),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        assert_eq!(frame.entries[0].qualify_time, NO_TIME);
     }
 
     #[test]

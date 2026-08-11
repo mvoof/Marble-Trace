@@ -114,6 +114,7 @@ mod tests {
             lap_dist_pct,
             last_lap_time: -1.0,
             best_lap_time: -1.0,
+            qualify_time: -1.0,
             f2_time: 0.0,
             est_time: 0.0,
             track_surface: TrackSurface::OnTrack,
