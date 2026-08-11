@@ -1,4 +1,5 @@
 import {
+  comparer,
   makeAutoObservable,
   reaction,
   runInAction,
@@ -168,7 +169,8 @@ export class StandingsWidgetStore {
           this.root.session.sessionInfo?.currentSessionNum,
           hasRaceStarted(this.root.session.session?.session_state ?? null),
         ],
-        () => this.resetSettledOrder()
+        () => this.resetSettledOrder(),
+        { equals: comparer.structural }
       )
     );
   }
