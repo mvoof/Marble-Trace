@@ -7,11 +7,11 @@ export type CarDotShape = 'circle' | 'square' | 'diamond';
  */
 const SHAPE_CYCLE: CarDotShape[] = ['circle', 'square', 'diamond'];
 
-/** Half-side per unit of the dot radius, sized to keep the car number readable. */
-const HALF_SIDE_SCALE: Record<Exclude<CarDotShape, 'circle'>, number> = {
-  square: 0.9,
-  diamond: 1.02,
-};
+/**
+ * Half-side per unit of the dot radius, sized to keep the car number readable.
+ * The diamond is the same square, only tilted, so both share one scale.
+ */
+const HALF_SIDE_SCALE = 0.9;
 
 /** Tilt that turns the square into a diamond without rotating the car number. */
 const SHAPE_ROTATION_DEG: Record<Exclude<CarDotShape, 'circle'>, number> = {
@@ -46,7 +46,7 @@ export const carDotRect = (
     return null;
   }
 
-  const halfSide = radius * HALF_SIDE_SCALE[shape];
+  const halfSide = radius * HALF_SIDE_SCALE;
 
   return {
     halfSide,
