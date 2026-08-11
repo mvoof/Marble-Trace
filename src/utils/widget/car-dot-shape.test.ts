@@ -45,6 +45,12 @@ describe('carDotRect', () => {
     expect(rect?.cornerRadius).toBeLessThan(rect?.halfSide ?? 0);
   });
 
+  it('draws the diamond as the square, only tilted', () => {
+    expect(carDotRect('diamond', RADIUS)?.halfSide).toBe(
+      carDotRect('square', RADIUS)?.halfSide
+    );
+  });
+
   it('tilts only the diamond, so the car number stays upright', () => {
     expect(carDotRect('square', RADIUS)?.rotationDeg).toBe(0);
     expect(carDotRect('diamond', RADIUS)?.rotationDeg).toBe(45);
