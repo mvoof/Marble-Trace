@@ -180,4 +180,8 @@ pub struct QualifyResultEntry {
     /// 0-indexed (iRacing convention; frontend adds 1 for display).
     pub position: i32,
     pub class_position: Option<i32>,
+    /// Lap time that earned the grid slot. `None` when the car set no time.
+    pub fastest_time: Option<f32>,
+    /// Lap number the qualifying time was set on.
+    pub fastest_lap: Option<i32>,
 }

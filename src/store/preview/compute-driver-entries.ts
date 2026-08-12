@@ -42,6 +42,7 @@ export const computeDriverEntries = (
       lapDistPct: carIdx.car_idx_lap_dist_pct[idx] ?? 0,
       lastLapTime: carIdx.car_idx_last_lap_time[idx] ?? -1,
       bestLapTime: carIdx.car_idx_best_lap_time[idx] ?? -1,
+      qualifyTime: -1,
       f2Time: carIdx.car_idx_f2_time[idx] ?? 0,
       trackSurface:
         carIdx.car_idx_track_surface[idx] ?? TrackSurface.NotInWorld,

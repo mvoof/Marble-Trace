@@ -18,6 +18,7 @@ import {
   buildGridTemplate,
   calculateLapsBehind,
   getStandingsGap,
+  resolveBestLapDisplay,
 } from '@utils/widget/standings-utils';
 import { PosChange } from './PosChange';
 import { PositionCell } from './PositionCell';
@@ -128,6 +129,8 @@ export const DriverRow = observer(
       driver.bestLapTime > 0 &&
       classBest !== undefined &&
       driver.bestLapTime === classBest;
+
+    const bestLap = resolveBestLapDisplay(driver);
 
     const gapInfo = getStandingsGap(
       driver,
@@ -248,9 +251,9 @@ export const DriverRow = observer(
 
         <div className={`${styles.cell} ${styles.cellRight}`}>
           <span
-            className={`${styles.bestLap} ${isClassBestLap ? styles.bestLapFastest : ''}`}
+            className={`${styles.bestLap} ${isClassBestLap ? styles.bestLapFastest : ''} ${bestLap.isQualifying ? styles.bestLapQualifying : ''}`}
           >
-            {formatLapTime(driver.bestLapTime > 0 ? driver.bestLapTime : null)}
+            {formatLapTime(bestLap.time)}
           </span>
         </div>
 

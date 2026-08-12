@@ -1,4 +1,5 @@
 import {
+  comparer,
   makeAutoObservable,
   reaction,
   runInAction,
@@ -9,6 +10,7 @@ import type { DriverEntry } from '@/types/bindings';
 import type { DriverGroup } from '@/types';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { computeClassSof } from '@utils/widget/standings-utils';
+import { hasRaceStarted } from '@utils/widget/timer-utils';
 import {
   scrollThumbFor,
   type ScrollMetrics,
@@ -152,11 +154,23 @@ export class StandingsWidgetStore {
     this.disposers.push(
       reaction(
         () => this.useTrackOrder,
-        () => {
-          this.settledPositions = new Map();
-          this.pendingPositions.clear();
-          this.previousPositions.clear();
-        }
+        () => this.resetSettledOrder()
+      )
+    );
+
+    // The backend swaps how it ranks the field at these two moments — a new
+    // session, and the green flag turning the starting grid into track order.
+    // Every row changes rank at once, which is a rebuild rather than a series of
+    // overtakes; without the reset the debounce drags the table through it row
+    // by row, and a session that stops emitting frames freezes half-way.
+    this.disposers.push(
+      reaction(
+        () => [
+          this.root.session.sessionInfo?.currentSessionNum,
+          hasRaceStarted(this.root.session.session?.session_state ?? null),
+        ],
+        () => this.resetSettledOrder(),
+        { equals: comparer.structural }
       )
     );
   }
@@ -282,6 +296,13 @@ export class StandingsWidgetStore {
     this.previousPositions.clear();
     this.pendingPositions.clear();
     this.settledPositions = new Map();
+  }
+
+  // Drops the debounce so the next frame is drawn in its own order immediately.
+  private resetSettledOrder() {
+    this.settledPositions = new Map();
+    this.pendingPositions.clear();
+    this.previousPositions.clear();
   }
 
   // Holds back a car's new position until it has survived ORDER_SETTLE_MS, so

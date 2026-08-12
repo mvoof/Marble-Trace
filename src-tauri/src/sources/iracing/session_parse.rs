@@ -229,6 +229,11 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
                 car_idx: raw_result.car_idx?,
                 position: raw_result.position?,
                 class_position: raw_result.class_position,
+                // The sim writes a placeholder time for a car that never set one.
+                fastest_time: raw_result
+                    .fastest_time
+                    .filter(|time| time.is_finite() && *time > 0.0),
+                fastest_lap: raw_result.fastest_lap.filter(|lap| *lap >= 0),
             })
         })
         .collect();
@@ -444,6 +449,8 @@ struct RawQualifyResult {
     car_idx: Option<i32>,
     position: Option<i32>,
     class_position: Option<i32>,
+    fastest_time: Option<f32>,
+    fastest_lap: Option<i32>,
 }
 
 #[cfg(test)]
@@ -523,6 +530,13 @@ QualifyResultsInfo:
  - Position: 0
    ClassPosition: 0
    CarIdx: 3
+   FastestLap: 4
+   FastestTime: 88.5432
+ - Position: 1
+   ClassPosition: 1
+   CarIdx: 7
+   FastestLap: -1
+   FastestTime: -1.0000
 "#;
 
     #[test]
@@ -561,8 +575,14 @@ QualifyResultsInfo:
         assert_eq!(snapshot.driver_tires[0].tire_compound_type, "Hard");
         assert_eq!(snapshot.sectors.len(), 2);
         assert!((snapshot.sectors[1].sector_start_pct - 0.493951).abs() < 1e-9);
-        assert_eq!(snapshot.qualify_results.len(), 1);
+        assert_eq!(snapshot.qualify_results.len(), 2);
         assert_eq!(snapshot.qualify_results[0].position, 0);
+        assert_eq!(snapshot.qualify_results[0].fastest_time, Some(88.5432));
+        assert_eq!(snapshot.qualify_results[0].fastest_lap, Some(4));
+
+        // A car that never set a time: the sim writes placeholders, not absent keys.
+        assert_eq!(snapshot.qualify_results[1].fastest_time, None);
+        assert_eq!(snapshot.qualify_results[1].fastest_lap, None);
     }
 
     #[test]
