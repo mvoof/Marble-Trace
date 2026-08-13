@@ -1,0 +1,67 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: sp(xs);
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
+  border-radius: radius(md);
+  padding: sp(xxxs) sp(sm);
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  letter-spacing: 0.05em;
+  line-height: 1;
+  flex-shrink: 0;
+  color: $widget-text-secondary;
+}
+
+.pillPulse {
+  border-color: rgba($race-red, 0.5);
+  animation: statPillPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.icon {
+  width: ws(11);
+  height: ws(11);
+  flex-shrink: 0;
+}
+
+.iconMuted {
+  color: $widget-text-secondary;
+}
+
+.iconAccent {
+  color: $race-gold;
+}
+
+.iconWarning {
+  color: $widget-status-warning;
+}
+
+.iconDanger {
+  color: $widget-status-danger;
+}
+
+.label {
+  color: $widget-text-secondary;
+}
+
+.value {
+  color: $widget-text-primary;
+  font-weight: 700;
+}
+
+.valueDanger {
+  color: $widget-status-danger;
+}
+
+@keyframes statPillPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}

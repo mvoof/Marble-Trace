@@ -11,6 +11,7 @@ import {
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { SessionClock } from '@widgets/StandingsWidget/SessionClock/SessionClock';
+import { StatPill } from '@/components/shared/StatPill/StatPill';
 import styles from './SessionHeader.module.scss';
 import {
   useBackendComputedStore,
@@ -96,50 +97,27 @@ export const SessionHeader = observer(() => {
 
       <div className={styles.sessionRight}>
         {settings.showSOF && (
-          <span className={styles.statPill}>
-            <Trophy size={11} color="currentColor" className={styles.iconSof} />
-
-            <span className={styles.statLabel}>SOF</span>
-
-            <span className={styles.statValue}>
-              {formatIRating(overallSof)}
-            </span>
-          </span>
+          <StatPill icon={Trophy} iconTone="accent" label="SOF">
+            {formatIRating(overallSof)}
+          </StatPill>
         )}
 
         {settings.showTotalDrivers && (
-          <span className={styles.statPill}>
-            <Users
-              size={11}
-              color="currentColor"
-              className={styles.iconMuted}
-            />
-            <span className={styles.statValue}>{driverEntries.length}</span>
-          </span>
+          <StatPill icon={Users}>{driverEntries.length}</StatPill>
         )}
 
         {settings.showIncidentsBadge && (
-          <span
-            className={`${styles.statPill} ${
-              isNearLimit ? styles.pulseWarning : ''
-            }`}
+          <StatPill
+            icon={TriangleAlert}
+            iconTone={isNearLimit ? 'danger' : 'warning'}
+            label="INC"
+            valueDanger={isNearLimit}
+            pulse={isNearLimit}
           >
-            <TriangleAlert
-              size={11}
-              color="currentColor"
-              className={isNearLimit ? styles.iconDanger : styles.iconWarning}
-            />
-
-            <span className={styles.statLabel}>INC</span>
-
-            <span
-              className={isNearLimit ? styles.valueDanger : styles.statValue}
-            >
-              {incidentLimit === null
-                ? `${playerIncidents}x`
-                : `${playerIncidents}/${incidentLimit}x`}
-            </span>
-          </span>
+            {incidentLimit === null
+              ? `${playerIncidents}x`
+              : `${playerIncidents}/${incidentLimit}x`}
+          </StatPill>
         )}
       </div>
     </div>

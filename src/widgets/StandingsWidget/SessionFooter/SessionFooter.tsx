@@ -7,6 +7,7 @@ import { getAirTempColor, getTrackTempColor } from '@utils/widget/widget-utils';
 import { getTrackWetnessInfo } from '@utils/widget/weather-utils';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import { StatPill } from '@/components/shared/StatPill/StatPill';
 import styles from './SessionFooter.module.scss';
 import {
   useBackendComputedStore,
@@ -59,61 +60,37 @@ export const SessionFooter = observer(() => {
     <div className={styles.sessionFooter}>
       <div className={styles.footerLeft}>
         {showPitStops && (
-          <span className={styles.statPill}>
-            <Wrench
-              size={11}
-              color="currentColor"
-              className={styles.iconMuted}
-            />
-
-            <span className={styles.statLabel}>PIT</span>
-
-            <span className={styles.statValue}>{playerPitStops}</span>
-          </span>
+          <StatPill icon={Wrench} label="PIT">
+            {playerPitStops}
+          </StatPill>
         )}
       </div>
 
       <div className={styles.footerRight}>
         {showWeather && airCelsius !== null && airStr && (
-          <span className={styles.statPill}>
-            <Thermometer
-              size={11}
-              color={getAirTempColor(airCelsius)}
-              className={styles.iconColored}
-            />
-
-            <span className={styles.statLabel}>AIR</span>
-
-            <span className={styles.statValue}>{airStr}</span>
-          </span>
+          <StatPill
+            icon={Thermometer}
+            iconColor={getAirTempColor(airCelsius)}
+            label="AIR"
+          >
+            {airStr}
+          </StatPill>
         )}
 
         {showWeather && trkCelsius !== null && trkStr && (
-          <span className={styles.statPill}>
-            <Thermometer
-              size={11}
-              color={getTrackTempColor(trkCelsius)}
-              className={styles.iconColored}
-            />
-
-            <span className={styles.statLabel}>TRACK</span>
-
-            <span className={styles.statValue}>{trkStr}</span>
-          </span>
+          <StatPill
+            icon={Thermometer}
+            iconColor={getTrackTempColor(trkCelsius)}
+            label="TRACK"
+          >
+            {trkStr}
+          </StatPill>
         )}
 
         {showWeather && wetnessInfo && (
-          <span className={styles.statPill}>
-            <Waves
-              size={11}
-              color={wetnessInfo.color}
-              className={styles.iconColored}
-            />
-
-            <span className={styles.statLabel}>SURFACE</span>
-
-            <span className={styles.statValue}>{wetnessInfo.label}</span>
-          </span>
+          <StatPill icon={Waves} iconColor={wetnessInfo.color} label="SURFACE">
+            {wetnessInfo.label}
+          </StatPill>
         )}
       </div>
     </div>

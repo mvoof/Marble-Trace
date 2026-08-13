@@ -3,6 +3,7 @@ import { Trophy, Users } from 'lucide-react';
 
 import { formatIRating } from '@utils/widget/widget-utils';
 
+import { StatPill } from '@/components/shared/StatPill/StatPill';
 import styles from './ClassGroupHeader.module.scss';
 
 /** Marks the class header rows, which scroll the classes rather than the drivers. */
@@ -48,16 +49,11 @@ export const ClassGroupHeader = observer(
       </div>
 
       <div className={styles.pills}>
-        <span className={styles.pill}>
-          <Trophy size={11} color={classColor} />
-          <span className={styles.pillLabel}>SOF</span>
-          <span className={styles.pillValue}>{formatIRating(classSof)}</span>
-        </span>
+        <StatPill icon={Trophy} iconColor={classColor} label="SOF">
+          {formatIRating(classSof)}
+        </StatPill>
 
-        <span className={styles.pill}>
-          <Users size={11} />
-          <span className={styles.pillValue}>{totalDrivers}</span>
-        </span>
+        <StatPill icon={Users}>{totalDrivers}</StatPill>
       </div>
     </div>
   )
