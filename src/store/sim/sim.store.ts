@@ -5,8 +5,16 @@ import {
   runInAction,
   type IReactionDisposer,
 } from 'mobx';
-import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+
+import {
+  getConnectionStatus,
+  getLastSessionInfo,
+  setActiveEventsSilent,
+  startTelemetryStream,
+  stopTelemetryStream,
+} from '@/services/telemetry.service';
+import { getCachedTrackShape, getReferenceLap } from '@/services/track.service';
 
 import type {
   SessionSnapshot,
@@ -155,11 +163,7 @@ export class SimStore {
     this.root.referenceLap.reset();
 
     try {
-      const data = await invoke<ReferenceLapData | null>('get_reference_lap', {
-        trackId,
-        carScreenName,
-        condition,
-      });
+      const data = await getReferenceLap(trackId, carScreenName, condition);
 
       if (data) {
         runInAction(() => this.root.referenceLap.updateReferenceLap(data));
@@ -205,7 +209,7 @@ export class SimStore {
       }
     }
 
-    void invoke('set_active_events', { mask });
+    setActiveEventsSilent(mask);
   }
 
   async startStream() {
@@ -214,7 +218,7 @@ export class SimStore {
     this.disposeListeners();
 
     try {
-      await invoke('stop_telemetry_stream');
+      await stopTelemetryStream();
     } catch {
       // ignore
     }
@@ -231,9 +235,7 @@ export class SimStore {
     debug.telemetry('starting stream...');
 
     try {
-      const initialInfo = await invoke<SessionSnapshot | null>(
-        'get_last_session_info'
-      );
+      const initialInfo = await getLastSessionInfo();
 
       if (initialInfo && this.initId === currentId) {
         this.root.session.updateSessionInfo(initialInfo);
@@ -241,7 +243,7 @@ export class SimStore {
 
       await this.hydrateTrackShape(currentId);
 
-      await invoke('start_telemetry_stream');
+      await startTelemetryStream();
 
       if (this.initId === currentId) {
         debug.telemetry('stream started');
@@ -259,7 +261,7 @@ export class SimStore {
     this.disposeListeners();
 
     try {
-      await invoke('stop_telemetry_stream');
+      await stopTelemetryStream();
     } catch {
       // ignore
     }
@@ -274,8 +276,8 @@ export class SimStore {
 
     try {
       const [isConnected, initialInfo] = await Promise.all([
-        invoke<boolean>('get_connection_status'),
-        invoke<SessionSnapshot | null>('get_last_session_info'),
+        getConnectionStatus(),
+        getLastSessionInfo(),
       ]);
 
       runInAction(() => {
@@ -300,9 +302,7 @@ export class SimStore {
   // the recording overlay. Pull it explicitly on startup.
   private async hydrateTrackShape(guardId: number) {
     try {
-      const cachedShape = await invoke<TrackShapePayload | null>(
-        'get_cached_track_shape'
-      );
+      const cachedShape = await getCachedTrackShape();
 
       if (!cachedShape || this.initId !== guardId) return;
 
