@@ -1,7 +1,8 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useRef, useCallback } from 'react';
 
 import type { InputTraceSettings } from '@/types/widget-settings';
 import { useReactiveCanvasLoop } from '@/hooks/widget/useReactiveCanvasLoop';
+import { useCanvasAutoResize } from '@/hooks/common/useCanvasAutoResize';
 import styles from './CanvasTrace.module.scss';
 import {
   useAppSettingsStore,
@@ -111,50 +112,14 @@ export const CanvasTrace = () => {
     [telemetry, widgetSettings, inputTrace, appSettings, draw]
   );
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
+  const redrawOnResize = useCallback(() => {
+    const currentSettings =
+      widgetSettings.getSettings<InputTraceSettings>('input-trace');
 
-    if (!canvas) return;
-
-    let resizeRafId = 0;
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0];
-
-      if (entry) {
-        const { width, height } = entry.contentRect;
-
-        if (width <= 0 || height <= 0) return;
-
-        const dpr = window.devicePixelRatio || 1;
-
-        canvas.width = width * dpr;
-        canvas.height = height * dpr;
-
-        const ctx = canvas.getContext('2d');
-
-        if (ctx) {
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        }
-      }
-
-      const currentSettings =
-        widgetSettings.getSettings<InputTraceSettings>('input-trace');
-
-      cancelAnimationFrame(resizeRafId);
-
-      resizeRafId = requestAnimationFrame(() =>
-        draw(currentSettings, appSettings.appSettings.steeringLock)
-      );
-    });
-
-    resizeObserver.observe(canvas.parentElement ?? canvas);
-
-    return () => {
-      resizeObserver.disconnect();
-      cancelAnimationFrame(resizeRafId);
-    };
+    draw(currentSettings, appSettings.appSettings.steeringLock);
   }, [widgetSettings, appSettings, draw]);
+
+  useCanvasAutoResize(canvasRef, redrawOnResize);
 
   return (
     <div className={styles.container}>

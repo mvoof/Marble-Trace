@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { RADIUS_RATIO } from '@utils/widget/g-meter-utils';
+import { resizeCanvasToDpr } from '@utils/widget/canvas-dpr';
 
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 import styles from './GMeterRings.module.scss';
@@ -29,18 +30,11 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
       return;
     }
 
-    const ctx = canvas.getContext('2d');
+    const ctx = resizeCanvasToDpr(canvas, width, height);
 
     if (!ctx) {
       return;
     }
-
-    const dpr = window.devicePixelRatio || 1;
-
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-
-    ctx.scale(dpr, dpr);
 
     const cx = width / 2;
     const cy = height / 2;

@@ -1,6 +1,7 @@
 ﻿import { useRef, useCallback, useLayoutEffect } from 'react';
 
 import { useReactiveCanvasLoop } from '@/hooks/widget/useReactiveCanvasLoop';
+import { resizeCanvasToDpr } from '@utils/widget/canvas-dpr';
 import {
   COLOR_TURN,
   ENVELOPE_SPREAD,
@@ -60,21 +61,10 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
       mode: GMeterWidgetSettings['displayMode'],
       scale: number
     ) => {
-      const ctx = canvas.getContext('2d');
+      const { width: currentWidth, height: currentHeight } = dimsRef.current;
+      const ctx = resizeCanvasToDpr(canvas, currentWidth, currentHeight);
 
       if (!ctx) return;
-
-      const { width: currentWidth, height: currentHeight } = dimsRef.current;
-      const dpr = window.devicePixelRatio || 1;
-
-      if (
-        canvas.width !== Math.round(currentWidth * dpr) ||
-        canvas.height !== Math.round(currentHeight * dpr)
-      ) {
-        canvas.width = Math.round(currentWidth * dpr);
-        canvas.height = Math.round(currentHeight * dpr);
-        ctx.scale(dpr, dpr);
-      }
 
       const cx = currentWidth / 2;
       const cy = currentHeight / 2;

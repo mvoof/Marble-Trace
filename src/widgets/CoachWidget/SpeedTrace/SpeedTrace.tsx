@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 
 import type { CoachWidgetSettings } from '@/types/widget-settings';
 import { useReactiveCanvasLoop } from '@/hooks/widget/useReactiveCanvasLoop';
+import { useCanvasAutoResize } from '@/hooks/common/useCanvasAutoResize';
 import {
   useCoachWidgetStore,
   useWidgetSettingsStore,
@@ -71,48 +72,13 @@ export const SpeedTrace = () => {
     [coachTrace, widgetSettings, draw]
   );
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
+  const redrawOnResize = useCallback(() => {
+    const settings = widgetSettings.getSettings<CoachWidgetSettings>('coach');
 
-    if (!canvas) return;
-
-    let resizeRafId = 0;
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0];
-
-      if (entry) {
-        const { width, height } = entry.contentRect;
-
-        if (width <= 0 || height <= 0) return;
-
-        const dpr = window.devicePixelRatio || 1;
-
-        canvas.width = width * dpr;
-        canvas.height = height * dpr;
-
-        const ctx = canvas.getContext('2d');
-
-        if (ctx) {
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        }
-      }
-
-      const settings = widgetSettings.getSettings<CoachWidgetSettings>('coach');
-
-      cancelAnimationFrame(resizeRafId);
-      resizeRafId = requestAnimationFrame(() =>
-        draw(settings.traceChannel, traceColors(settings))
-      );
-    });
-
-    resizeObserver.observe(canvas.parentElement ?? canvas);
-
-    return () => {
-      resizeObserver.disconnect();
-      cancelAnimationFrame(resizeRafId);
-    };
+    draw(settings.traceChannel, traceColors(settings));
   }, [widgetSettings, draw]);
+
+  useCanvasAutoResize(canvasRef, redrawOnResize);
 
   return (
     <div className={styles.container}>
