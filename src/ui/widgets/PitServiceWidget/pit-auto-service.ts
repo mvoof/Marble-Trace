@@ -55,6 +55,7 @@ export class PitAutoService {
   // mirrored to the overlay.
   private autoFuelSent = false;
   private autoTiresSent = false;
+  private autoFastRepairSent = false;
 
   // Whether the order the sim armed on its own has already been wiped this
   // stint. One clear per stint: after it, an order the driver builds by hand is
@@ -286,6 +287,11 @@ export class PitAutoService {
 
     this.selfArmedCleared = true;
 
+    // Both forms wipe the fast repair along with the rest, so the one auto mode
+    // placed itself goes too. Releasing the latch lets it be placed again — the
+    // clear happens once a stint, so this cannot turn into a fight.
+    this.autoFastRepairSent = false;
+
     await this.store.order.send(order);
   }
 
@@ -365,6 +371,37 @@ export class PitAutoService {
     await this.store.order.send(this.autoTireOrder);
   }
 
+  /**
+   * Whether auto mode ticks the fast repair — the same command the button
+   * sends, under the same conditions: auto mode is on, and the box is not
+   * already checked.
+   *
+   * Neither damage nor the reported count gates this. The box can be checked
+   * ahead of any damage, `PitRepairLeft` stays at zero until the sim has
+   * assessed the repair, and `FastRepairAvailable` reads zero in sessions that
+   * still accept the command — every one of those would hold the order back on
+   * a stop that wanted it. The sim is the one that decides whether to take it,
+   * and it ignores what it will not grant.
+   */
+  get shouldOrderFastRepair(): boolean {
+    return this.isAutoActive && !this.store.order.isFastRepairOrdered;
+  }
+
+  /**
+   * Sends the fast repair on its own, not folded into either half: it belongs to
+   * neither the fuel nor the tire decision, and it has to survive a driver who
+   * has taken one of those over by hand.
+   */
+  async applyAutoFastRepair() {
+    if (!this.shouldOrderFastRepair || this.autoFastRepairSent) {
+      return;
+    }
+
+    this.autoFastRepairSent = true;
+
+    await this.store.order.send([{ kind: 'fastRepair', value: 0 }]);
+  }
+
   setAutoSuspended(suspended: boolean) {
     this.autoSuspended = suspended;
   }
@@ -383,6 +420,7 @@ export class PitAutoService {
     this.tiresTakenOver = false;
     this.autoFuelSent = false;
     this.autoTiresSent = false;
+    this.autoFastRepairSent = false;
   }
 
   /**
@@ -446,6 +484,7 @@ export class PitAutoService {
     this.autoFuelSent = false;
     this.tiresTakenOver = false;
     this.autoTiresSent = false;
+    this.autoFastRepairSent = false;
   }
 
   reset() {
