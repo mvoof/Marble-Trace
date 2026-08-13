@@ -1,39 +1,25 @@
 import { runInAction } from 'mobx';
 
 import {
-  emitToApp,
-  emitToOverlays,
-  emitToWindow,
   listenTo,
+  type HalvesTakenOver,
+  type MonitorWidgetsPayload,
+  type StreamChatFilters,
   type UnlistenFn,
 } from '@/services/events.service';
 import type { UnitSystem } from '@/types';
-import type {
-  LayoutMonitor,
-  SessionContext,
-  WidgetDefaultConfig,
-} from '@/types/widget-settings';
+import type { SessionContext } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
 import type { AppLanguage } from '@store/settings/app-settings.store';
 import type { BindingMap } from '@store/hotkeys/binding-types';
-import { listOverlayWindowLabels, monitorLabel } from './overlay-labels';
 
-const MAIN = 'main';
+/**
+ * Subscribes a window's stores to the events the other one sends. The transport
+ * itself lives in `services/events.service.ts`; this is the wiring that knows
+ * which store each payload belongs to.
+ */
 
 type SessionLayoutMap = Record<SessionContext, string | null>;
-
-// Widget lists always travel with the monitor they belong to. Without it an
-// edit made on one screen would overwrite the widgets of another.
-export interface MonitorWidgetsPayload {
-  monitorName: string;
-  widgets: WidgetDefaultConfig[];
-  /**
-   * The layout's monitors. An overlay window needs them to decide which
-   * widgets are its own — the test is a centre point against monitor bounds,
-   * so a window that only knew its own name could not place anything.
-   */
-  monitors?: LayoutMonitor[];
-}
 
 export const setupMainListeners = async (
   root: RootStore
@@ -224,107 +210,3 @@ export const setupOverlayListeners = async (
 
   return unlistens;
 };
-
-export const emitDragMode = (val: boolean) =>
-  emitToApp('drag-mode-changed', val);
-
-export const emitHideAllWidgets = (val: boolean) =>
-  emitToOverlays('hide-all-widgets-changed', val);
-
-export const emitHideWidgetsWhenGameClosed = (val: boolean) =>
-  emitToOverlays('hide-widgets-when-game-closed-changed', val);
-
-export const emitUnitsChanged = (system: UnitSystem) =>
-  emitToOverlays('units-changed', system);
-
-export const emitSteeringLockChanged = (degrees: number) =>
-  emitToOverlays('steering-lock-changed', degrees);
-
-export const emitLanguageChanged = (language: AppLanguage) =>
-  emitToOverlays('language-changed', language);
-
-export interface StreamChatFilters {
-  hideCommands: boolean;
-  ignoredBots: string;
-}
-
-export const emitStreamChatFilters = (filters: StreamChatFilters) =>
-  emitToOverlays('stream-chat-filters-changed', filters);
-
-export const emitStreamChatCleared = () =>
-  emitToOverlays('stream-chat-cleared', null);
-
-export const emitStandingsClassIndex = (index: number) =>
-  emitToOverlays('standings-class-index-changed', index);
-
-export const emitPitServiceToggle = () =>
-  emitToOverlays('pit-service-toggle', null);
-
-// Broadcast rather than targeted: either window can be the one that suspends.
-export const emitPitServiceReveal = () =>
-  emitToOverlays('pit-service-reveal', null);
-
-export const emitPitServiceAutoSuspended = (suspended: boolean) =>
-  emitToApp('pit-service-auto-suspended', suspended);
-
-export interface HalvesTakenOver {
-  fuel: boolean;
-  tires: boolean;
-}
-
-export const emitPitServiceHalvesTakenOver = (halves: HalvesTakenOver) =>
-  emitToApp('pit-service-halves-taken-over', halves);
-
-export const emitStandingsScroll = (delta: number) =>
-  emitToOverlays('standings-scroll', delta);
-
-export const emitInteractMode = (active: boolean) =>
-  emitToOverlays('interact-mode-changed', active);
-
-/**
- * Pushes the active layout to every open overlay window.
- *
- * Every window receives the whole widget list, not a per-monitor slice: a
- * widget dragged over a monitor edge has to appear on the neighbour, and only
- * the receiving window can decide that, by testing centre points against its
- * own bounds. The live widgets are sent rather than the layout's stored copy —
- * the layout is only written back on the debounced commit, which would lag a
- * drag by half a second.
- */
-export const emitActiveLayoutToOverlays = async (root: RootStore) => {
-  const layout = root.widgetSettings.activeLayout;
-
-  if (!layout) return;
-
-  const widgets = root.widgetSettings.allWidgets;
-  const labels = await listOverlayWindowLabels();
-
-  for (const monitor of layout.monitors) {
-    const label = monitorLabel(monitor.name);
-
-    if (!labels.includes(label)) continue;
-
-    await emitToWindow(label, 'widget-settings-updated', {
-      monitorName: monitor.name,
-      widgets,
-      monitors: layout.monitors,
-    } satisfies MonitorWidgetsPayload);
-  }
-};
-
-export const emitWidgetSettingsToMain = (payload: MonitorWidgetsPayload) =>
-  emitToWindow(MAIN, 'widget-settings-updated', payload);
-
-export const emitSessionLayoutsChanged = (sessionLayouts: SessionLayoutMap) =>
-  emitToOverlays('session-layouts-changed', sessionLayouts);
-
-export const emitAutoSwitchLayoutsChanged = (val: boolean) =>
-  emitToOverlays('auto-switch-layouts-changed', val);
-
-// The overlay never dispatches an action, but it does print the key that leaves
-// interact mode, so a rebind made in main has to reach it.
-export const emitBindingsChanged = (bindings: BindingMap) =>
-  emitToOverlays('bindings-changed', bindings);
-
-// Heard by the backend recorder, not by a window.
-export const emitTrackMapForceStart = () => emitToApp('track-map:force-start');

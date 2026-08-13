@@ -1,5 +1,8 @@
 import { DEFAULT_WIDGETS } from '@store/widget-defaults';
-import { emitPitServiceToggle, emitStandingsScroll } from '@store/sync/events';
+import {
+  emitPitServiceToggle,
+  emitStandingsScroll,
+} from '@/services/events.service';
 import { APP_OWNER, type HotkeyAction } from './binding-types';
 
 // One keypress moves the standings by a small block rather than a single row —

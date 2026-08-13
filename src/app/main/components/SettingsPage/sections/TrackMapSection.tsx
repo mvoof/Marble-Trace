@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { App, Button, Flex, Popconfirm } from 'antd';
-import { emitTrackMapForceStart } from '@store/sync/events';
+import { emitTrackMapForceStart } from '@/services/events.service';
 import {
   useSessionStore,
   useStore,

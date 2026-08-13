@@ -2,8 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import type { TrackShapePayload } from '@/types/bindings';
 import { deleteTrackShape, resetPitLanePct } from '@/services/track.service';
-import { emitToApp } from '@/services/events.service';
-import { TRACK_MAP_CLEAR } from '@store/sync/sim-events';
+import { emitTrackMapClear } from '@/services/events.service';
 import type {
   StoredTracks,
   TrackRotateDirection,
@@ -96,7 +95,7 @@ export class TrackMapWidgetStore {
     this.clearTrackShape();
 
     await Promise.allSettled([
-      emitToApp(TRACK_MAP_CLEAR),
+      emitTrackMapClear(),
       deleteTrackShape(Number(trackId)),
       this.removeStoredTrack(trackId),
     ]);

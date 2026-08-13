@@ -14,7 +14,6 @@ import {
 } from '@store/hotkeys/binding-runner';
 import { setupDeviceBindings } from '@store/hotkeys/bindings-sync';
 import {
-  setupMainListeners,
   emitDragMode,
   emitInteractMode,
   emitHideAllWidgets,
@@ -27,8 +26,9 @@ import {
   emitSessionLayoutsChanged,
   emitAutoSwitchLayoutsChanged,
   emitBindingsChanged,
-} from './events';
-import type { MonitorWidgetsPayload } from './events';
+} from '@/services/events.service';
+import { setupMainListeners } from './listeners';
+import type { MonitorWidgetsPayload } from '@/services/events.service';
 import { registerChatReactions } from './chat-sync';
 import {
   registerPitServiceAutoReactions,
@@ -42,6 +42,16 @@ import type { RootStore } from '../root-store';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
 let mainSyncRefCount = 0;
+
+/**
+ * The active layout as the overlays need it. The emitter takes plain data rather
+ * than the store, so the service layer stays free of store imports.
+ */
+const pushActiveLayout = (root: RootStore) =>
+  emitActiveLayoutToOverlays(
+    root.layouts.activeLayout?.monitors ?? [],
+    root.widgetSettings.allWidgets
+  );
 
 /** Values the overlay windows mirror. Requires a hydrated settings store. */
 const registerBroadcastReactions = (
@@ -206,16 +216,14 @@ const registerOverlayWindowReactions = (
       // widgets and its set of monitor windows.
       if (root.widgetSettings.editorPreviewMode) return;
 
-      void syncOverlayWindows(root).then(() =>
-        emitActiveLayoutToOverlays(root)
-      );
+      void syncOverlayWindows(root).then(() => pushActiveLayout(root));
     }
   ),
   reaction(
     () => root.widgetSettings.changeToken,
     () => {
       if (!root.widgetSettings.editorPreviewMode) {
-        void emitActiveLayoutToOverlays(root);
+        void pushActiveLayout(root);
       }
     },
     { delay: 16 }
@@ -349,7 +357,7 @@ export const initMainSync = async (root: RootStore) => {
       // Windows raises no event a Tauri app can subscribe to when displays are
       // rearranged, so the arrangement is polled while the app has focus.
       const stopMonitorWatch = watchMonitorArrangement(root, () => {
-        void emitActiveLayoutToOverlays(root);
+        void pushActiveLayout(root);
         void onSave();
       });
 

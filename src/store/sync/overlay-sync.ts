@@ -2,10 +2,10 @@ import { reaction } from 'mobx';
 
 import { hydrateFromDisk, readSettingsFile } from './persistence-sync';
 import {
-  setupOverlayListeners,
   emitDragMode,
   emitWidgetSettingsToMain,
-} from './events';
+} from '@/services/events.service';
+import { setupOverlayListeners } from './listeners';
 import { registerPitServiceMirrorReactions } from './pit-service-sync';
 import type { RootStore } from '../root-store';
 

@@ -24,7 +24,7 @@ import type {
   RadarSettings,
   SessionContext,
 } from '@/types/widget-settings';
-import { emitToApp } from '@/services/events.service';
+import { emitLayoutActivated } from '@/services/events.service';
 import { DEFAULT_LAYOUT_RESOLUTION } from '@utils/widget/layout-resolution';
 import {
   monitorForWidget,
@@ -899,7 +899,7 @@ export class WidgetSettingsStore {
     this.bumpMutation();
 
     if (options?.notify) {
-      void emitToApp('layout-activated', layout.name);
+      void emitLayoutActivated(layout.name);
     }
   }
 

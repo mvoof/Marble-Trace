@@ -6,7 +6,7 @@ import { dispatchBinding } from './binding-runner';
 const emitStandingsScroll = vi.hoisted(() => vi.fn());
 const emitPitServiceToggle = vi.hoisted(() => vi.fn());
 
-vi.mock('@store/sync/events', () => ({
+vi.mock('@/services/events.service', () => ({
   emitStandingsScroll,
   emitPitServiceToggle,
 }));
