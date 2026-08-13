@@ -4,6 +4,7 @@ import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
 import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
 import { getCellDividers } from '@utils/widget/grid-divider-utils';
 import { EngineCell, type EngineCellProps } from './EngineCell';
+import { AbsCell } from './AbsCell';
 import {
   usePlayerStore,
   useUnitsStore,
@@ -46,7 +47,6 @@ export const EnginePanelWidget = observer(() => {
   const settings =
     widgetSettingsStore.getSettings<EnginePanelWidgetSettings>('engine-panel');
   const carStatus = playerStore.carStatus;
-  const carInputs = playerStore.carInputs;
   const system = unitsStore.unitSystem;
 
   // Temperatures & pressures
@@ -56,11 +56,9 @@ export const EnginePanelWidget = observer(() => {
   const voltage = carStatus?.voltage ?? null;
 
   // In-car settings
-  const dcAbs = carStatus?.dc_abs ?? null;
   const dcBrakeBias = carStatus?.dc_brake_bias ?? null;
   const dcTc = carStatus?.dc_traction_control ?? null;
   const dcThrottleShape = carStatus?.dc_throttle_shape ?? null;
-  const absActive = carInputs?.brake_abs_active ?? false;
 
   const oilTempWarn = isOilTempWarning(oilTemp);
   const waterTempWarn = isWaterTempWarning(waterTemp);
@@ -70,7 +68,6 @@ export const EnginePanelWidget = observer(() => {
   const formattedOilPress = formatPressure(oilPress, system);
   const formattedVoltage = voltage !== null ? voltage.toFixed(1) : '--.-';
 
-  const formattedAbs = dcAbs !== null ? Math.round(dcAbs).toString() : '--';
   const formattedTc = dcTc !== null ? Math.round(dcTc).toString() : '--';
   const formattedBias = dcBrakeBias !== null ? dcBrakeBias.toFixed(1) : '--.-';
   const formattedMap =
@@ -107,14 +104,7 @@ export const EnginePanelWidget = observer(() => {
     </EngineCell>
   );
 
-  const absCell = settings.showAbs && (
-    <EngineCell label="ABS" className={absActive ? styles.absActive : ''}>
-      <WidgetValue
-        value={formattedAbs}
-        className={`${styles.value} ${styles.yellowValue}`}
-      />
-    </EngineCell>
-  );
+  const absCell = settings.showAbs && <AbsCell />;
 
   const tcCell = settings.showTc && (
     <EngineCell label="TC">
