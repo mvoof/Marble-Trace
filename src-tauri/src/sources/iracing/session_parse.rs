@@ -61,12 +61,27 @@ const FREE_TEXT_YAML_KEYS: [&str; 5] = [
     "DriverSetupName",
 ];
 
+/// Checks if a character is allowed in YAML according to the YAML 1.2 specification:
+/// `#x9 | #xA | #xD | [#x20-#x7E] | #x85 | [#xA0-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]`
+fn is_allowed_yaml_char(c: char) -> bool {
+    let val = c as u32;
+    val == 0x9
+        || val == 0xA
+        || val == 0xD
+        || (0x20..=0x7E).contains(&val)
+        || val == 0x85
+        || (0xA0..=0xD7FF).contains(&val)
+        || (0xE000..=0xFFFD).contains(&val)
+        || (0x10000..=0x10FFFF).contains(&val)
+}
+
 /// Quote the values of free-text keys so arbitrary driver/team names cannot
 /// break the YAML document structure.
 fn sanitize_session_yaml(yaml: &str) -> String {
-    let mut sanitized = String::with_capacity(yaml.len() + 256);
+    let cleaned: String = yaml.chars().filter(|&c| is_allowed_yaml_char(c)).collect();
+    let mut sanitized = String::with_capacity(cleaned.len() + 256);
 
-    for line in yaml.lines() {
+    for line in cleaned.lines() {
         let trimmed_start = line.trim_start();
         let key_part = trimmed_start.strip_prefix("- ").unwrap_or(trimmed_start);
 
@@ -649,5 +664,18 @@ QualifyResultsInfo:
         let parsed = parse_session(yaml).expect("yaml must parse");
 
         assert_eq!(parsed.snapshot.incident_limit, Some(25));
+    }
+
+    #[test]
+    fn filters_out_invalid_control_characters() {
+        let yaml = "WeekendInfo:\n TrackDisplayName: Okayama\u{0007} International Circuit\n";
+
+        let parsed =
+            parse_session(yaml).expect("yaml must parse despite containing control character");
+
+        assert_eq!(
+            parsed.snapshot.track_display_name,
+            "Okayama International Circuit"
+        );
     }
 }
