@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { RootStore } from '@store/root-store';
 import { RootStoreContext } from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
-import { WIDGET_BY_ID } from '@store/widget-defaults';
+import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import { widgetFrameBorderRadius } from '@ui/app/widget-frame';
@@ -67,8 +67,7 @@ export const WidgetPreview = observer(
       ]);
     }, [previewStore, widget, mutationToken]);
 
-    const config = WIDGET_BY_ID.get(widgetId);
-    const Widget = config?.component;
+    const Widget = componentForWidget(widgetId);
 
     if (!widget || !Widget) {
       return <div className={styles.empty}>{t('widgetPreview.noPreview')}</div>;

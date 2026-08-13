@@ -1,4 +1,4 @@
-import { WIDGET_BY_ID } from '@store/widget-defaults';
+import { WIDGET_BY_ID } from '@store/widget-catalog';
 import type {
   WidgetDefaultConfig,
   WidgetUserSettings,

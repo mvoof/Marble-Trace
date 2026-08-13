@@ -15,7 +15,7 @@ import {
   RootStoreContext,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { WIDGET_BY_ID } from '@store/widget-defaults';
+import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import {
@@ -475,13 +475,11 @@ export const LayoutCanvas = observer(
                 }}
               >
                 {widgetSettings.enabledWidgetIds.map((id) => {
-                  const config = WIDGET_BY_ID.get(id);
+                  const Widget = componentForWidget(id);
 
-                  if (!config) {
+                  if (!Widget) {
                     return null;
                   }
-
-                  const Widget = config.component;
 
                   return (
                     <LayoutCanvasWidget

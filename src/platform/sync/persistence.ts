@@ -4,7 +4,7 @@ import {
   logSettingsSnapshot as logSettingsSnapshotCommand,
   settingsFileExists as settingsFileExistsCommand,
 } from '@platform/services/settings.service';
-import { DEFAULT_WIDGETS } from '@store/widget-defaults';
+import { DEFAULT_WIDGETS } from '@store/widget-catalog';
 import type { UnitSystem } from '@/types';
 import type {
   SavedLayout,

@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Button } from 'antd';
 import { X, Layers, MousePointer2 } from 'lucide-react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { WIDGET_BY_ID } from '@store/widget-defaults';
+import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetContainer } from '@ui/app/overlay/components/WidgetContainer/WidgetContainer';
 import { WidgetPicker } from '@ui/app/overlay/components/WidgetPicker/WidgetPicker';
 import styles from './OverlayCanvas.module.scss';
@@ -94,11 +94,9 @@ export const OverlayCanvas = observer(() => {
           neighbouring window. */}
       <div className={styles.monitorOrigin} style={monitorOffset}>
         {widgetSettings.ownMonitorWidgets.map((widget) => {
-          const widgetDefinition = WIDGET_BY_ID.get(widget.id);
+          const WidgetComponent = componentForWidget(widget.id);
 
-          if (!widgetDefinition) return null;
-
-          const WidgetComponent = widgetDefinition.component;
+          if (!WidgetComponent) return null;
 
           return (
             <WidgetContainer key={widget.id} widgetId={widget.id}>

@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { mergeWithDefaults } from '@store/deep-merge';
-import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-defaults';
+import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-catalog';
 import {
   setCarLengthSilent,
   setFuelAvgWindowSilent,

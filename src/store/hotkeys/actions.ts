@@ -1,4 +1,4 @@
-import { DEFAULT_WIDGETS } from '@store/widget-defaults';
+import { DEFAULT_WIDGETS } from '@store/widget-catalog';
 import {
   emitPitServiceToggle,
   emitStandingsScroll,
