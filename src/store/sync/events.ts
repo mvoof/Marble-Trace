@@ -195,7 +195,7 @@ export const setupOverlayListeners = async (
   unlistens.push(
     await listenTo<SessionLayoutMap>('session-layouts-changed', (e) => {
       runInAction(() => {
-        root.widgetSettings.sessionLayouts = e.payload;
+        root.layouts.sessionLayouts = e.payload;
       });
     })
   );

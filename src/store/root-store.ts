@@ -11,6 +11,7 @@ import { CoachWidgetStore } from './widgets/coach.widget';
 import { InputTraceWidgetStore } from './widgets/input-trace.widget';
 import { WidgetSettingsStore } from './settings/widget-settings.store';
 import { WidgetDefaultsStore } from './settings/widget-defaults.store';
+import type { LayoutsStore } from './settings/layouts.store';
 import { AppSettingsStore } from './settings/app-settings.store';
 import { UnitsStore } from './settings/units.store';
 import { WidgetAutoHideStore } from './widgets/widget-auto-hide.store';
@@ -48,6 +49,7 @@ export class RootStore {
   streamChatWidget: StreamChatWidgetStore;
   widgetSettings: WidgetSettingsStore;
   widgetDefaults: WidgetDefaultsStore;
+  layouts: LayoutsStore;
   appSettings: AppSettingsStore;
   twitchAuth: TwitchAuthStore;
   units: UnitsStore;
@@ -67,6 +69,7 @@ export class RootStore {
     this.backendComputed = new BackendComputedStore();
     this.widgetDefaults = new WidgetDefaultsStore();
     this.widgetSettings = new WidgetSettingsStore(this);
+    this.layouts = this.widgetSettings.layoutRecords;
     this.appSettings = new AppSettingsStore();
     this.twitchAuth = new TwitchAuthStore(this);
     this.units = new UnitsStore();
