@@ -6,7 +6,8 @@ import {
   TRACK_SURFACE_OFF_TRACK,
 } from '@utils/widget/widget-utils';
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
-import { DriverStatusBadge } from '@/components/shared/DriverStatusBadge/DriverStatusBadge';
+import { DriverStatusBadges } from '@/components/shared/DriverStatusBadge/DriverStatusBadges';
+import { playerRowStyle } from '@utils/widget/player-row-style';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
 import { LicBadge } from '@/components/shared/RatingBadge/LicBadge';
 import { formatIr } from '@/components/shared/RatingBadge/LicBadge.utils';
@@ -93,19 +94,12 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
 
   const gridTemplate = buildRelativeGridTemplate(settings);
 
-  // Player row: fill with the user-chosen color and stack the same color in a
-  // thin band at the top/bottom edges. Layering the color over the fill makes
-  // those edges brighter in the same hue — a glow that reads like a border.
-  const playerRowStyle = driver.isPlayer
-    ? {
-        background: `linear-gradient(to bottom, ${settings.playerRowColor}, transparent 2px), linear-gradient(to top, ${settings.playerRowColor}, transparent 2px), ${settings.playerRowColor}`,
-      }
-    : undefined;
+  const rowFill = playerRowStyle(driver.isPlayer, settings.playerRowColor);
 
   return (
     <div
       className={rowClass}
-      style={{ gridTemplateColumns: gridTemplate, ...playerRowStyle }}
+      style={{ gridTemplateColumns: gridTemplate, ...rowFill }}
       data-relative-row
     >
       <div
@@ -158,27 +152,15 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
             : driver.userName}
         </span>
 
-        {flagType === 'dq' && <DriverStatusBadge status="dnf" />}
-        {driver.isTowed && flagType !== 'dq' && (
-          <DriverStatusBadge status="tow" />
-        )}
-        {isOut && !driver.isTowed && flagType !== 'dq' && (
-          <DriverStatusBadge status="out" />
-        )}
-        {isOffTrack && flagType !== 'dq' && (
-          <DriverStatusBadge status="off_track" />
-        )}
-        {settings.showPitIndicator && isPit && flagType !== 'dq' && (
-          <DriverStatusBadge
-            status={
-              pitState === 'in'
-                ? 'pit_in'
-                : pitState === 'exit'
-                  ? 'pit_exit'
-                  : 'pit'
-            }
-          />
-        )}
+        <DriverStatusBadges
+          flagType={flagType}
+          isTowed={driver.isTowed}
+          isOut={isOut}
+          isOffTrack={isOffTrack}
+          isPit={isPit}
+          pitState={pitState}
+          showPit={settings.showPitIndicator}
+        />
       </div>
 
       {settings.showLicBadge ? (

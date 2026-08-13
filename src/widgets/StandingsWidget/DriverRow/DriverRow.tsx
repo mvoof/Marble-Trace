@@ -9,7 +9,8 @@ import {
 } from '@utils/widget/widget-utils';
 import { parseDriverFlags } from '@utils/formatters/flags-utils';
 import { isSessionEnded } from '@utils/widget/timer-utils';
-import { DriverStatusBadge } from '@/components/shared/DriverStatusBadge/DriverStatusBadge';
+import { DriverStatusBadges } from '@/components/shared/DriverStatusBadge/DriverStatusBadges';
+import { playerRowStyle } from '@utils/widget/player-row-style';
 import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
 import { LicBadge } from '@/components/shared/RatingBadge/LicBadge';
 import { formatIr } from '@/components/shared/RatingBadge/LicBadge.utils';
@@ -101,14 +102,7 @@ export const DriverRow = observer(
       .filter(Boolean)
       .join(' ');
 
-    // Player row: fill with the user-chosen color and stack the same color in a
-    // thin band at the top/bottom edges. Layering the color over the fill makes
-    // those edges brighter in the same hue — a glow that reads like a border.
-    const playerRowStyle = driver.isPlayer
-      ? {
-          background: `linear-gradient(to bottom, ${settings.playerRowColor}, transparent 2px), linear-gradient(to top, ${settings.playerRowColor}, transparent 2px), ${settings.playerRowColor}`,
-        }
-      : undefined;
+    const rowFill = playerRowStyle(driver.isPlayer, settings.playerRowColor);
 
     const formattedCarNumber = formatCarNumber(driver.carNumber);
 
@@ -151,7 +145,7 @@ export const DriverRow = observer(
     return (
       <div
         className={rowClass}
-        style={{ gridTemplateColumns: gridTemplate, ...playerRowStyle }}
+        style={{ gridTemplateColumns: gridTemplate, ...rowFill }}
         data-driver-row
         data-row-key={carIdx}
       >
@@ -192,25 +186,15 @@ export const DriverRow = observer(
               : driver.userName}
           </span>
 
-          {flagType === 'dq' && <DriverStatusBadge status="dnf" />}
-          {isTowed && flagType !== 'dq' && <DriverStatusBadge status="tow" />}
-          {isOut && !isTowed && flagType !== 'dq' && !isFinished && (
-            <DriverStatusBadge status="out" />
-          )}
-          {isOffTrack && flagType !== 'dq' && !isFinished && (
-            <DriverStatusBadge status="off_track" />
-          )}
-          {isPit && flagType !== 'dq' && !isFinished && (
-            <DriverStatusBadge
-              status={
-                pitState === 'in'
-                  ? 'pit_in'
-                  : pitState === 'exit'
-                    ? 'pit_exit'
-                    : 'pit'
-              }
-            />
-          )}
+          <DriverStatusBadges
+            flagType={flagType}
+            isTowed={isTowed}
+            isOut={isOut}
+            isOffTrack={isOffTrack}
+            isPit={isPit}
+            pitState={pitState}
+            isFinished={isFinished}
+          />
         </div>
 
         {settings.showLicBadge && (
