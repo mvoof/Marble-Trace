@@ -122,9 +122,7 @@ pub struct SessionEntry {
 /// normalises whatever convention the sim's own format uses.
 pub struct ResultPosition {
     pub car_idx: i32,
-    /// 1-indexed overall position.
     pub position: i32,
-    /// 0-indexed class position (iRacing convention).
     pub class_position: Option<i32>,
     pub lap: Option<i32>,
     pub time: Option<f32>,
@@ -183,7 +181,6 @@ pub struct SectorEntry {
 /// **1-indexed**, normalised by the source layer.
 pub struct QualifyResultEntry {
     pub car_idx: i32,
-    /// 0-indexed (iRacing convention; frontend adds 1 for display).
     pub position: i32,
     pub class_position: Option<i32>,
     /// Lap time that earned the grid slot. `None` when the car set no time.

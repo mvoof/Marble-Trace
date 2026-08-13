@@ -1010,9 +1010,6 @@ export type ProximityFrame = {
  */
 export type QualifyResultEntry = {
   carIdx: number;
-  /**
-   * 0-indexed (iRacing convention; frontend adds 1 for display).
-   */
   position: number;
   classPosition: number | null;
   /**
@@ -1145,13 +1142,7 @@ export type RelativeFrame = {
  */
 export type ResultPosition = {
   carIdx: number;
-  /**
-   * 1-indexed overall position.
-   */
   position: number;
-  /**
-   * 0-indexed class position (iRacing convention).
-   */
   classPosition: number | null;
   lap: number | null;
   time: number | null;
