@@ -1,5 +1,9 @@
 import { runInAction } from 'mobx';
-import { invoke } from '@tauri-apps/api/core';
+import {
+  backupSettingsFile as backupSettingsFileCommand,
+  logSettingsSnapshot as logSettingsSnapshotCommand,
+  settingsFileExists as settingsFileExistsCommand,
+} from '@/services/settings.service';
 import { DEFAULT_WIDGETS } from '@store/widget-defaults';
 import type { UnitSystem } from '@/types';
 import type {
@@ -165,7 +169,7 @@ export const saveSettings = async (store: Store, root: RootStore) => {
  */
 export const settingsFileExists = async (): Promise<boolean> => {
   try {
-    return await invoke<boolean>('settings_file_exists');
+    return await settingsFileExistsCommand();
   } catch (error) {
     console.error('Failed to check for a settings file:', error);
 
@@ -180,12 +184,12 @@ export const settingsFileExists = async (): Promise<boolean> => {
  */
 export const backupSettingsFile = async (fromVersion: number) => {
   try {
-    await invoke('backup_settings_file', { suffix: `v${fromVersion}` });
+    await backupSettingsFileCommand(`v${fromVersion}`);
   } catch (error) {
     console.error('Failed to back up settings before migrating:', error);
   }
 };
 
 export const logSettingsSnapshot = async (root: RootStore) => {
-  await invoke('log_settings_snapshot', { settings: buildSettings(root) });
+  await logSettingsSnapshotCommand(buildSettings(root));
 };

@@ -1,8 +1,8 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
-import { invoke } from '@tauri-apps/api/core';
 import { getVersion } from '@tauri-apps/api/app';
+import { deleteSettingsFile } from '@/services/settings.service';
 import { mergeWithDefaults } from '@utils/deep-merge';
 import { detectSystemLanguage } from '@utils/system-locale';
 import i18n from '@/i18n';
@@ -383,7 +383,7 @@ export class AppSettingsStore {
    * corrupt file, so the reset would lock the app instead of freeing it.
    */
   async resetSettings() {
-    await invoke('delete_settings_file');
+    await deleteSettingsFile();
     await relaunch();
   }
 }
