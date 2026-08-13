@@ -201,6 +201,13 @@ export const resolveServiceState = (
  */
 export const OVER_RANGE_PCT = 0.2;
 
+/**
+ * Where the "hold it here" band starts, as a share of the limit. Below it the
+ * driver is giving away time, above it they are one bump away from a penalty,
+ * so it is the window the plate points at rather than the limit line itself.
+ */
+export const SWEET_SPOT_SHARE = 0.92;
+
 export const speedFillPct = (speedMs: number, limitMs: number): number => {
   if (limitMs <= 0) return 0;
 

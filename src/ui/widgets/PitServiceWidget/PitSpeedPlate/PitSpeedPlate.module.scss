@@ -8,6 +8,40 @@
   font-family: $font-widget;
 }
 
+// Static scale behind the live fill: the left half is the speed the driver is
+// allowed to use, the right half the penalty zone, so the usable window is
+// visible before the needle ever gets there.
+.trackAllowed,
+.trackPenalty {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+}
+
+.trackAllowed {
+  left: 0;
+  background: rgba($race-green, 0.08);
+}
+
+.trackPenalty {
+  right: 0;
+  background: rgba($race-red, 0.12);
+}
+
+// The last few percent below the limit — where the driver should sit.
+.sweetSpot {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba($race-green, 0.18);
+  border-right: 1px solid rgba($race-green, 0.5);
+}
+
+.sweetSpotActive {
+  background: rgba($race-green, 0.45);
+}
+
 // The fill spans both cells: the divider between them marks the limit, so the
 // left half reads as "below limit" and anything past it as overspeed.
 .fill {
@@ -16,6 +50,10 @@
   bottom: 0;
   left: 0;
   background: rgba($race-green, 0.3);
+}
+
+.fillReleased {
+  background: rgba($race-green, 0.45);
 }
 
 .fillOver {
@@ -71,6 +109,15 @@
   line-height: 0.9;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
+}
+
+.valueGo {
+  font-family: $font-widget;
+  font-size: fs(xxxl);
+  line-height: 0.9;
+  color: $race-green;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
 .unit {

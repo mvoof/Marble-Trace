@@ -488,6 +488,69 @@ describe('PitServiceWidgetStore — pit orders', () => {
       });
     });
 
+    describe('the fast repair', () => {
+      it('orders it as soon as auto mode is on', async () => {
+        enableAuto();
+        setPitService({});
+
+        sendPitOrderMock.mockClear();
+        await rootStore.pitServiceWidget.auto.applyAutoFastRepair();
+
+        expect(pitOrderPayloads()).toContainEqual({
+          requests: [{ kind: 'fastRepair', value: 0 }],
+        });
+      });
+
+      // Every one of these reads "nothing to do here" on a stop that wants the
+      // repair: the sim leaves the timers at zero until it has assessed the
+      // damage, and reports no fast repairs in sessions that still take the
+      // command. The sim decides what to grant — the widget only asks.
+      it('waits for neither damage nor a reported count', async () => {
+        enableAuto();
+        setPitService({
+          fastRepairsAvailable: 0,
+          repairLeftS: 0,
+          optRepairLeftS: 0,
+        });
+
+        sendPitOrderMock.mockClear();
+        await rootStore.pitServiceWidget.auto.applyAutoFastRepair();
+
+        expect(pitOrderPayloads()).toHaveLength(1);
+      });
+
+      it('leaves an order the sim already has alone', async () => {
+        enableAuto();
+        setPitService({ fastRepair: true });
+
+        sendPitOrderMock.mockClear();
+        await rootStore.pitServiceWidget.auto.applyAutoFastRepair();
+
+        expect(pitOrderPayloads()).toHaveLength(0);
+      });
+
+      it('sends nothing with auto mode off', async () => {
+        setSettings({ enabled: true, autoFuel: false, autoTires: false });
+        setPitService({});
+
+        sendPitOrderMock.mockClear();
+        await rootStore.pitServiceWidget.auto.applyAutoFastRepair();
+
+        expect(pitOrderPayloads()).toHaveLength(0);
+      });
+
+      it('sends once per stop', async () => {
+        enableAuto();
+        setPitService({});
+
+        sendPitOrderMock.mockClear();
+        await rootStore.pitServiceWidget.auto.applyAutoFastRepair();
+        await rootStore.pitServiceWidget.auto.applyAutoFastRepair();
+
+        expect(pitOrderPayloads()).toHaveLength(1);
+      });
+    });
+
     it('orders only the corners worn past the threshold', async () => {
       setFuelPlan(24.1, 106);
       enableAuto();

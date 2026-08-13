@@ -68,6 +68,20 @@ export const registerPitServiceAutoReactions = (
       }
     }
   ),
+  // Unlike the two halves this is not tied to pit road at all: the box can be
+  // checked anywhere, and switching auto mode on out on track is exactly when
+  // the driver expects to see it come on.
+  reaction(
+    () => root.pitServiceWidget.auto.shouldOrderFastRepair,
+    (shouldOrder) => {
+      if (shouldOrder) {
+        void root.pitServiceWidget.auto.applyAutoFastRepair();
+      }
+    },
+    // Covers auto mode already on when this window starts, rather than waiting
+    // for the next thing to change.
+    { fireImmediately: true }
+  ),
   // Watches the flags rather than pit exit itself. The sim arms the previous
   // order as the car leaves, and both land inside the same 4 Hz sample, so "on
   // exit" cannot say which happened first — a clear sent on the transition can
