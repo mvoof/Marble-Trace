@@ -1,26 +1,28 @@
 import type { TFunction } from 'i18next';
-import { DEFAULT_WIDGETS } from '@store/widget-catalog';
 import { APP_OWNER, type Binding } from '@/types/input-bindings';
 import type { HotkeyAction } from '@store/hotkeys/binding-types';
 import type { InputDevice } from '@/types/bindings';
+import type { ActionRegistry } from '@store/hotkeys/action-registry';
 import { POV_BUTTON_BASE, POV_DIRECTION_COUNT } from './pov';
 
-const WIDGET_LABEL_BY_ID = new Map(
-  DEFAULT_WIDGETS.map((widget) => [widget.id, widget.label])
-);
-
-export const ownerLabel = (owner: string, t: TFunction): string =>
-  owner === APP_OWNER
-    ? t('bindings.groups.app')
-    : (WIDGET_LABEL_BY_ID.get(owner) ?? owner);
+export const ownerLabel = (
+  owner: string,
+  registry: ActionRegistry,
+  t: TFunction
+): string =>
+  owner === APP_OWNER ? t('bindings.groups.app') : registry.widgetLabel(owner);
 
 /**
  * The per-widget "add to layout" actions all share one label key, so the widget
  * name is filled in here rather than duplicated into 40 translation entries.
  */
-export const actionLabel = (action: HotkeyAction, t: TFunction): string =>
+export const actionLabel = (
+  action: HotkeyAction,
+  registry: ActionRegistry,
+  t: TFunction
+): string =>
   t(`bindings.actions.${action.labelKey}`, {
-    widget: ownerLabel(action.owner, t),
+    widget: ownerLabel(action.owner, registry, t),
   });
 
 const povLabel = (button: number, t: TFunction): string => {

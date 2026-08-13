@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Modal } from 'antd';
 import { reaction } from 'mobx';
-import { ACTION_BY_ID } from '@store/hotkeys/actions';
 import type { Binding } from '@/types/input-bindings';
 import {
   useBindingsStore,
@@ -73,7 +72,7 @@ export const BindingCaptureModal = observer(() => {
     );
   }, [actionId, bindings, bindingsUi, deviceInput]);
 
-  const action = actionId ? ACTION_BY_ID.get(actionId) : undefined;
+  const action = actionId ? bindings.registry.byId.get(actionId) : undefined;
 
   return (
     <Modal
@@ -83,7 +82,9 @@ export const BindingCaptureModal = observer(() => {
       onCancel={() => bindingsUi.cancelCapture()}
     >
       {action && (
-        <div className={styles.captureTarget}>{actionLabel(action, t)}</div>
+        <div className={styles.captureTarget}>
+          {actionLabel(action, bindings.registry, t)}
+        </div>
       )}
 
       <div className={styles.captureHint}>{t('bindings.captureHint')}</div>

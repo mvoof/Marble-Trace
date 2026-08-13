@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Tooltip } from 'antd';
 import { X } from 'lucide-react';
 import type { Binding } from '@/types/input-bindings';
-import { ACTION_BY_ID } from '@store/hotkeys/actions';
 import {
   useBindingsStore,
   useDeviceInputStore,
@@ -50,9 +49,9 @@ export const BindingChip = observer(
         ? t('bindings.conflictWith', {
             actions: conflicts
               .map((id) => {
-                const action = ACTION_BY_ID.get(id);
+                const action = bindings.registry.byId.get(id);
 
-                return action ? actionLabel(action, t) : id;
+                return action ? actionLabel(action, bindings.registry, t) : id;
               })
               .join(', '),
           })

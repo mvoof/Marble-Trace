@@ -3,6 +3,7 @@ import { mergeWithDefaults } from '@store/deep-merge';
 import { WIDGET_BY_ID } from '@store/widget-catalog';
 import { AppSettingsStore } from '@store/settings/app-settings.store';
 import { BindingsStore } from '@store/hotkeys/bindings.store';
+import { ActionRegistry } from '@store/hotkeys/action-registry';
 import { v1LegacyConsolidation } from './v1-legacy-consolidation';
 import type { SettingsBlob } from '../types';
 import customised from '../__fixtures__/v0-customised.json';
@@ -57,7 +58,9 @@ describe('v1 — bindings', () => {
   // Nothing is written, so the store layers the registry defaults underneath and
   // drag, interact and hide-all keep working without the migration saying a word.
   it('leaves the defaults to the registry', () => {
-    const store = new BindingsStore();
+    const store = new BindingsStore(
+      new ActionRegistry(Array.from(WIDGET_BY_ID.values()))
+    );
 
     store.applyBindings(run(customised)['bindings'] as undefined);
 

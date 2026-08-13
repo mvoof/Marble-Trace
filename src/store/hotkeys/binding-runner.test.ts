@@ -1,6 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import type { RootStore } from '@store/root-store';
 import { BindingsStore } from './bindings.store';
+import { ActionRegistry } from '@store/hotkeys/action-registry';
+import { DEFAULT_WIDGETS } from '@store/widget-catalog';
+
+const registry = new ActionRegistry(DEFAULT_WIDGETS);
 import { dispatchBinding } from './binding-runner';
 
 const emitStandingsScroll = vi.hoisted(() => vi.fn());
@@ -31,7 +35,7 @@ interface TestRoot {
 }
 
 const makeRoot = (widgetsInLayout: string[]): TestRoot => ({
-  bindings: new BindingsStore(),
+  bindings: new BindingsStore(registry),
   widgetSettings: {
     isWidgetInActiveLayout: (id: string) => widgetsInLayout.includes(id),
     getWidget: (id: string) => ({

@@ -24,6 +24,8 @@ import { ChatStore } from './data/chat.store';
 import { TwitchAuthStore } from './settings/twitch-auth.store';
 import { StreamChatWidgetStore } from '@ui/widgets/StreamChatWidget/stream-chat.widget';
 import { BindingsStore } from './hotkeys/bindings.store';
+import { ActionRegistry } from '@store/hotkeys/action-registry';
+import { DEFAULT_WIDGETS } from '@store/widget-catalog';
 import { DeviceInputStore } from './hotkeys/device-input.store';
 import { BindingsUiStore } from './hotkeys/bindings-ui.store';
 import { SettingsPanelUiStore } from './widgets/settings-panel-ui.store';
@@ -85,7 +87,7 @@ export class RootStore {
     this.streamChatWidget = new StreamChatWidgetStore(this);
     this.sim = new SimStore(this);
     this.widgetAutoHide = new WidgetAutoHideStore();
-    this.bindings = new BindingsStore();
+    this.bindings = new BindingsStore(new ActionRegistry(DEFAULT_WIDGETS));
     this.deviceInput = new DeviceInputStore();
     this.bindingsUi = new BindingsUiStore();
     this.settingsPanelUi = new SettingsPanelUiStore();

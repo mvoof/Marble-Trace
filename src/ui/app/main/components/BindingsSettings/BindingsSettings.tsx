@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Popconfirm } from 'antd';
-import { ACTIONS, ACTION_OWNERS } from '@store/hotkeys/actions';
 import {
   useBindingsStore,
   useBindingsUiStore,
@@ -39,11 +38,12 @@ export const BindingsSettings = observer(() => {
   const matches = (actionId: string): boolean => {
     if (query === '') return true;
 
-    const action = ACTIONS.find((candidate) => candidate.id === actionId);
+    const action = bindings.registry.byId.get(actionId);
 
     if (!action) return false;
 
-    if (actionLabel(action, t).toLowerCase().includes(query)) return true;
+    if (actionLabel(action, bindings.registry, t).toLowerCase().includes(query))
+      return true;
 
     return bindings.bindingsFor(actionId).some((binding) =>
       bindingLabel(
@@ -58,12 +58,14 @@ export const BindingsSettings = observer(() => {
     );
   };
 
-  const groups = ACTION_OWNERS.map((owner) => ({
-    owner,
-    actionIds: ACTIONS.filter(
-      (action) => action.owner === owner && matches(action.id)
-    ).map((action) => action.id),
-  })).filter((group) => group.actionIds.length > 0);
+  const groups = bindings.registry.owners
+    .map((owner) => ({
+      owner,
+      actionIds: bindings.registry.actions
+        .filter((action) => action.owner === owner && matches(action.id))
+        .map((action) => action.id),
+    }))
+    .filter((group) => group.actionIds.length > 0);
 
   return (
     <>

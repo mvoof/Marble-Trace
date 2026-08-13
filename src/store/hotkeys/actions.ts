@@ -1,4 +1,3 @@
-import { DEFAULT_WIDGETS } from '@store/widget-catalog';
 import {
   emitPitServiceToggle,
   emitStandingsScroll,
@@ -250,45 +249,23 @@ export const widgetVisibilityActionId = (widgetId: string) =>
  * by hand, which only means anything while the widget is in the layout. Being
  * in the layout and being on screen right now are two different questions.
  */
-const WIDGET_VISIBILITY_ACTIONS: HotkeyAction[] = DEFAULT_WIDGETS.map(
-  (widget) => ({
-    id: widgetVisibilityActionId(widget.id),
-    owner: widget.id,
-    labelKey: 'widgetToggleVisibility',
-    trigger: 'press',
-    ignoreLayoutGate: true,
-    run: (root) => {
-      const isEnabled =
-        root.widgetSettings.getWidget(widget.id)?.userSettings.enabled === true;
+export const widgetVisibilityAction = (widgetId: string): HotkeyAction => ({
+  id: widgetVisibilityActionId(widgetId),
+  owner: widgetId,
+  labelKey: 'widgetToggleVisibility',
+  trigger: 'press',
+  ignoreLayoutGate: true,
+  run: (root) => {
+    const isEnabled =
+      root.widgetSettings.getWidget(widgetId)?.userSettings.enabled === true;
 
-      root.widgetSettings.setWidgetEnabled(widget.id, !isEnabled);
-    },
-  })
-);
+    root.widgetSettings.setWidgetEnabled(widgetId, !isEnabled);
+  },
+});
 
-// Adding a widget to a layout is the layout editor's job, so there is
-// deliberately no "put this widget into the layout" binding here.
-export const ACTIONS: HotkeyAction[] = [
+/** Everything that does not depend on which widgets the build ships. */
+export const STATIC_ACTIONS: HotkeyAction[] = [
   ...APP_ACTIONS,
   ...STANDINGS_ACTIONS,
   ...PIT_SERVICE_ACTIONS,
-  ...WIDGET_VISIBILITY_ACTIONS,
 ];
-
-export const ACTION_BY_ID = new Map(
-  ACTIONS.map((action) => [action.id, action])
-);
-
-/**
- * Owner ids in the order the settings UI shows them: Application, then the
- * widgets that actually have bindable actions.
- */
-export const ACTION_OWNERS: string[] = [
-  APP_OWNER,
-  ...DEFAULT_WIDGETS.map((widget) => widget.id).filter((widgetId) =>
-    ACTIONS.some((action) => action.owner === widgetId)
-  ),
-];
-
-export const actionsForOwner = (owner: string) =>
-  ACTIONS.filter((action) => action.owner === owner);

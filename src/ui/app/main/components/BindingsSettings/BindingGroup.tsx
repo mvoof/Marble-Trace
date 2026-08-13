@@ -58,7 +58,9 @@ export const BindingGroup = observer(
             className={isOpen ? styles.groupChevronOpen : styles.groupChevron}
           />
 
-          <span className={styles.groupTitle}>{ownerLabel(owner, t)}</span>
+          <span className={styles.groupTitle}>
+            {ownerLabel(owner, bindings.registry, t)}
+          </span>
 
           <span className={styles.groupCount}>
             {t('bindings.boundCount', {

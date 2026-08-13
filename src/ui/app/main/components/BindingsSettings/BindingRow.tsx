@@ -2,7 +2,6 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import { Plus } from 'lucide-react';
-import { ACTION_BY_ID } from '@store/hotkeys/actions';
 import {
   useBindingsStore,
   useBindingsUiStore,
@@ -23,7 +22,7 @@ export const BindingRow = observer(({ actionId }: BindingRowProps) => {
   const store = useStore();
   const { t } = useTranslation('main-app');
 
-  const action = ACTION_BY_ID.get(actionId);
+  const action = bindings.registry.byId.get(actionId);
 
   if (!action) {
     return null;
@@ -38,7 +37,9 @@ export const BindingRow = observer(({ actionId }: BindingRowProps) => {
   return (
     <div className={styles.row}>
       <div className={styles.rowTexts}>
-        <div className={styles.rowLabel}>{actionLabel(action, t)}</div>
+        <div className={styles.rowLabel}>
+          {actionLabel(action, bindings.registry, t)}
+        </div>
 
         {isInert && action.inertHintKey && (
           <div className={styles.rowHint}>
