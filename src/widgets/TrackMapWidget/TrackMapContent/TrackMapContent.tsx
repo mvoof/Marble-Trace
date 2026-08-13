@@ -1,12 +1,9 @@
 import { useCallback, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { listen } from '@tauri-apps/api/event';
-import { invoke } from '@tauri-apps/api/core';
 
 import { TrackMapView, type TrackData } from '../TrackMapView/TrackMapView';
-import type { StoredTracks, TrackRotateDirection } from '../types';
-import { TRACKS_STORE_KEY } from '../types';
-import { TRACK_SETTINGS_STORE } from '../track-store';
+import type { TrackRotateDirection } from '../types';
 import {
   useSessionStore,
   useTrackMapWidgetStore,
@@ -25,91 +22,28 @@ export const TrackMapContent = observer(() => {
   useEffect(() => {
     if (!trackId) return;
 
-    const trackChanged = trackMapWidget.currentTrackId !== trackId;
-
-    if (trackChanged) {
-      trackMapWidget.clearTrackShape();
-    }
-
-    const loadRotation = async () => {
-      try {
-        const { load } = await import('@tauri-apps/plugin-store');
-        const store = await load(TRACK_SETTINGS_STORE);
-        const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
-        const saved = tracks[trackId];
-
-        if (saved?.rotation != null) {
-          trackMapWidget.setTrackRotation(saved.rotation);
-        }
-      } catch {
-        // ignore
-      }
-    };
-
-    void loadRotation();
-  }, [trackId, trackMapWidget]);
-
-  const saveRotation = useCallback(
-    async (newRotation: number) => {
-      if (!trackId) return;
-
-      try {
-        const { load } = await import('@tauri-apps/plugin-store');
-        const store = await load(TRACK_SETTINGS_STORE);
-        const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
-
-        tracks[trackId] = { rotation: newRotation };
-
-        await store.set(TRACKS_STORE_KEY, tracks);
-        await store.save();
-      } catch {
-        // Silently fail
-      }
-    },
-    [trackId]
-  );
-
-  const handleClearTrack = useCallback(async () => {
-    if (!trackId) return;
-
-    trackMapWidget.clearTrackShape();
-
-    await Promise.allSettled([
-      invoke('delete_track_shape', { trackId: Number(trackId) }),
-      (async () => {
-        const { load } = await import('@tauri-apps/plugin-store');
-        const store = await load(TRACK_SETTINGS_STORE);
-        const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
-        delete tracks[trackId];
-        await store.set(TRACKS_STORE_KEY, tracks);
-        await store.save();
-      })(),
-    ]);
+    void trackMapWidget.onTrackChanged(trackId);
   }, [trackId, trackMapWidget]);
 
   useEffect(() => {
     const unlisten = listen(TRACK_MAP_CLEAR, () => {
-      void handleClearTrack();
+      if (!trackId) return;
+
+      void trackMapWidget.deleteTrackData(trackId);
     });
 
     return () => {
-      void unlisten.then((fn) => fn());
+      void unlisten.then((unlistenFn) => unlistenFn());
     };
-  }, [handleClearTrack]);
+  }, [trackId, trackMapWidget]);
 
   const handleRotate = useCallback(
     (direction: TrackRotateDirection) => {
-      if (!trackId || !trackMapWidget.trackShape) return;
+      if (!trackId) return;
 
-      const currentRotation = trackMapWidget.trackRotation;
-      let newRotation = currentRotation + (direction === 'cw' ? 90 : -90);
-      newRotation = (newRotation + 360) % 360;
-
-      trackMapWidget.setTrackRotation(newRotation);
-
-      void saveRotation(newRotation);
+      trackMapWidget.rotateTrack(trackId, direction);
     },
-    [trackId, trackMapWidget, saveRotation]
+    [trackId, trackMapWidget]
   );
 
   const trackData: TrackData | null = trackMapWidget.trackShape

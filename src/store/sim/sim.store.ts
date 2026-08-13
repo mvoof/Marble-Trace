@@ -14,7 +14,11 @@ import {
   startTelemetryStream,
   stopTelemetryStream,
 } from '@/services/telemetry.service';
-import { getCachedTrackShape, getReferenceLap } from '@/services/track.service';
+import {
+  deleteReferenceLap,
+  getCachedTrackShape,
+  getReferenceLap,
+} from '@/services/track.service';
 
 import type {
   SessionSnapshot,
@@ -171,6 +175,12 @@ export class SimStore {
     } catch (err) {
       debug.telemetry('Failed to load reference lap: %o', err);
     }
+  }
+
+  async deleteReferenceLap(trackId: number, carScreenName: string) {
+    await deleteReferenceLap(trackId, carScreenName);
+
+    this.root.referenceLap.reset();
   }
 
   private updateActiveEvents() {

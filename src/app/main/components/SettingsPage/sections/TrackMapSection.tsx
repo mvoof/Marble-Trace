@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { App, Button, Flex, Popconfirm } from 'antd';
 import { emit } from '@tauri-apps/api/event';
-import { invoke } from '@tauri-apps/api/core';
 import { TRACK_MAP_CLEAR } from '@store/sync/sim-events';
 import {
   useSessionStore,
@@ -39,7 +38,7 @@ export const TrackMapSection = observer(() => {
     setResettingPitLane(true);
 
     try {
-      await invoke('reset_pit_lane_pct', { trackId });
+      await trackMap.resetPitLaneCalibration(trackId);
       message.success(t('settingsPage.trackMap.pitLaneResetSuccess'));
     } finally {
       setResettingPitLane(false);
@@ -49,12 +48,8 @@ export const TrackMapSection = observer(() => {
   const handleDeleteReferenceLap = async () => {
     if (sessionTrackId === null || !playerCar) return;
 
-    await invoke('delete_reference_lap', {
-      trackId: sessionTrackId,
-      carScreenName: playerCar.carScreenName,
-    });
+    await store.sim.deleteReferenceLap(sessionTrackId, playerCar.carScreenName);
 
-    store.referenceLap.reset();
     message.success(t('settingsPage.trackMap.referenceLapDeleteSuccess'));
   };
 
