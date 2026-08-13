@@ -12,11 +12,11 @@ const UNKNOWN_COMPOUND = '—';
 export const CompoundRow = observer(() => {
   const pitService = usePitServiceWidgetStore();
 
-  if (!pitService.hasCompoundChoice) {
+  if (!pitService.order.hasCompoundChoice) {
     return null;
   }
 
-  const name = pitService.orderedCompoundName ?? UNKNOWN_COMPOUND;
+  const name = pitService.order.orderedCompoundName ?? UNKNOWN_COMPOUND;
 
   const content = (
     <>
@@ -26,7 +26,7 @@ export const CompoundRow = observer(() => {
     </>
   );
 
-  if (!pitService.canClickOrders) {
+  if (!pitService.order.canClickOrders) {
     return <div className={styles.compound}>{content}</div>;
   }
 
@@ -36,7 +36,7 @@ export const CompoundRow = observer(() => {
       aria-label="Tire compound on the pit order: click to step to the next one"
       className={`${styles.compound} ${styles.compoundClickable}`}
       onPointerDown={(event) => event.stopPropagation()}
-      onClick={() => void pitService.cycleTireCompound()}
+      onClick={() => void pitService.order.cycleTireCompound()}
     >
       {content}
     </button>

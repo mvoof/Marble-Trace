@@ -45,7 +45,7 @@ export const setupMainListeners = async (
  */
 const listenPitServiceAutoSuspended = (root: RootStore) =>
   listenTo<boolean>('pit-service-auto-suspended', (e) => {
-    runInAction(() => root.pitServiceWidget.setAutoSuspended(e.payload));
+    runInAction(() => root.pitServiceWidget.auto.setAutoSuspended(e.payload));
   });
 
 /**
@@ -56,7 +56,10 @@ const listenPitServiceAutoSuspended = (root: RootStore) =>
 const listenPitServiceHalvesTakenOver = (root: RootStore) =>
   listenTo<HalvesTakenOver>('pit-service-halves-taken-over', (e) => {
     runInAction(() =>
-      root.pitServiceWidget.setHalvesTakenOver(e.payload.fuel, e.payload.tires)
+      root.pitServiceWidget.auto.setHalvesTakenOver(
+        e.payload.fuel,
+        e.payload.tires
+      )
     );
   });
 
@@ -154,7 +157,7 @@ export const setupOverlayListeners = async (
 
   unlistens.push(
     await listenTo('pit-service-toggle', () => {
-      runInAction(() => root.pitServiceWidget.toggleManualShow());
+      runInAction(() => root.pitServiceWidget.panel.toggleManualShow());
     })
   );
 

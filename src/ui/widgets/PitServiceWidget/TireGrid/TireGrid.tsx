@@ -15,7 +15,7 @@ export const TireGrid = observer(() => {
         full width otherwise. Which half auto mode still owns is said once, on
         the header plate, rather than repeated over every block.
       */}
-      {pitService.isAutoTiresEnabled && (
+      {pitService.auto.isAutoTiresEnabled && (
         <div className={styles.header}>
           <span className={styles.label}>TIRES</span>
         </div>

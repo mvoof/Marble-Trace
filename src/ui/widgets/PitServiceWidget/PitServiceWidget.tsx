@@ -34,7 +34,7 @@ export const PitServiceWidget = observer(() => {
   // Hiding through the auto-hide store rather than returning null: the
   // container paints the background, so a null child would leave an empty
   // dark plate on track.
-  useWidgetAutoHide(alwaysVisible || pitService.isVisible);
+  useWidgetAutoHide(alwaysVisible || pitService.panel.isVisible);
 
   return (
     <WidgetPanel direction="column" gap={0}>

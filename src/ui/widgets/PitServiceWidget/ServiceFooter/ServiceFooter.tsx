@@ -30,7 +30,7 @@ export const ServiceFooter = observer(() => {
 
   // Repairs and tow come from the sim; the service part is what is left of a
   // stop as long as the previous one, since the sim reports no duration.
-  const secondsLost = pitServiceWidget.expectedRemainingS ?? 0;
+  const secondsLost = pitServiceWidget.panel.expectedRemainingS ?? 0;
 
   const lost = showProjectedPosition
     ? projectPositionsLost(

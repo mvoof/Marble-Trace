@@ -21,7 +21,7 @@ export const ServiceHeader = observer(() => {
   const widget = usePitServiceWidgetStore();
 
   const state = resolveServiceState(pitService, widget.isInPitStall);
-  const mode = widget.autoModeLabel;
+  const mode = widget.auto.autoModeLabel;
 
   return (
     <header className={styles.header}>

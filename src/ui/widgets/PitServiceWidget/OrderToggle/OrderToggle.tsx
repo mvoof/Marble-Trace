@@ -29,7 +29,7 @@ export const OrderToggle = observer(
   }: OrderToggleProps) => {
     const widget = usePitServiceWidgetStore();
 
-    if (!widget.canClickOrders) {
+    if (!widget.order.canClickOrders) {
       return <div className={className}>{children}</div>;
     }
 

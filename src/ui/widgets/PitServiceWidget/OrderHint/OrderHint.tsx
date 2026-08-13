@@ -16,7 +16,7 @@ const RESULT_LABEL = {
 export const OrderHint = observer(() => {
   const pitService = usePitServiceWidgetStore();
 
-  const result = pitService.lastOrderResult;
+  const result = pitService.order.lastOrderResult;
 
   if (result === null) {
     return null;

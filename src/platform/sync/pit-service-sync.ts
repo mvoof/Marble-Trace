@@ -19,15 +19,15 @@ export const registerPitServiceMirrorReactions = (
   root: RootStore
 ): IReactionDisposer[] => [
   reaction(
-    () => root.pitServiceWidget.autoSuspended,
+    () => root.pitServiceWidget.auto.autoSuspended,
     (suspended) => {
       void emitPitServiceAutoSuspended(suspended);
     }
   ),
   reaction(
     () => ({
-      fuel: root.pitServiceWidget.fuelTakenOver,
-      tires: root.pitServiceWidget.tiresTakenOver,
+      fuel: root.pitServiceWidget.auto.fuelTakenOver,
+      tires: root.pitServiceWidget.auto.tiresTakenOver,
     }),
     (halves) => {
       void emitPitServiceHalvesTakenOver(halves);
@@ -52,7 +52,7 @@ export const registerPitServiceAutoReactions = (
   // second key while the panel is already up has to restart the overlay's
   // countdown too, and a boolean has no edge left to carry that.
   reaction(
-    () => root.pitServiceWidget.commandRevealNonce,
+    () => root.pitServiceWidget.panel.commandRevealNonce,
     () => {
       void emitPitServiceReveal();
     }
@@ -64,7 +64,7 @@ export const registerPitServiceAutoReactions = (
     () => root.pitServiceWidget.isOnPitRoad,
     (onPitRoad) => {
       if (onPitRoad) {
-        void root.pitServiceWidget.applyAutoFuelOrder();
+        void root.pitServiceWidget.auto.applyAutoFuelOrder();
       }
     }
   ),
@@ -84,14 +84,14 @@ export const registerPitServiceAutoReactions = (
   // which is every app start and every reload of this window.
   reaction(
     () => ({
-      flags: root.pitServiceWidget.simArmedFlags,
+      flags: root.pitServiceWidget.order.simArmedFlags,
       onPitRoad: root.pitServiceWidget.isOnPitRoad,
-      fuelPending: root.pitServiceWidget.isAutoFuelPending,
-      tiresPending: root.pitServiceWidget.isAutoTiresPending,
+      fuelPending: root.pitServiceWidget.auto.isAutoFuelPending,
+      tiresPending: root.pitServiceWidget.auto.isAutoTiresPending,
     }),
     ({ flags, onPitRoad }) => {
       if (flags !== 0 && !onPitRoad) {
-        void root.pitServiceWidget.clearSelfArmedOrder();
+        void root.pitServiceWidget.auto.clearSelfArmedOrder();
       }
     },
     { equals: comparer.structural, fireImmediately: true }
@@ -104,7 +104,7 @@ export const registerPitServiceAutoReactions = (
     () => root.pitServiceWidget.isInPitStall,
     (inPitStall) => {
       if (inPitStall) {
-        void root.pitServiceWidget.applyAutoTireOrder();
+        void root.pitServiceWidget.auto.applyAutoTireOrder();
       }
     }
   ),
@@ -112,7 +112,7 @@ export const registerPitServiceAutoReactions = (
     () => root.pitServiceWidget.isServiceActive,
     (serviceActive) => {
       if (serviceActive) {
-        void root.pitServiceWidget.applyAutoTireOrder();
+        void root.pitServiceWidget.auto.applyAutoTireOrder();
       }
     }
   ),
@@ -120,10 +120,10 @@ export const registerPitServiceAutoReactions = (
   // is the arrival — and it is the signal that the threshold check has
   // something current to read, which the flags do not promise.
   reaction(
-    () => root.pitServiceWidget.tireWearSignature,
+    () => root.pitServiceWidget.auto.tireWearSignature,
     () => {
       if (root.pitServiceWidget.isOnPitRoad) {
-        void root.pitServiceWidget.applyAutoTireOrder();
+        void root.pitServiceWidget.auto.applyAutoTireOrder();
       }
     }
   ),

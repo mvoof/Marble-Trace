@@ -50,7 +50,7 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
       className={`${styles.corner} ${ordered ? styles.cornerOrdered : styles.cornerKept}`}
       clickableClassName={styles.cornerClickable}
       label={`Toggle ${position.toUpperCase()} tire change`}
-      onToggle={() => void widget.toggleTire(position)}
+      onToggle={() => void widget.order.toggleTire(position)}
     >
       <div className={styles.head}>
         <span className={styles.side}>{position.toUpperCase()}</span>
@@ -97,9 +97,9 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
         they are dimmed rather than read as live.
       */}
       <div
-        className={`${styles.zoneRow} ${widget.isTireWearStale ? styles.zoneRowStale : ''}`}
+        className={`${styles.zoneRow} ${widget.auto.isTireWearStale ? styles.zoneRowStale : ''}`}
         title={
-          widget.isTireWearStale
+          widget.auto.isTireWearStale
             ? 'Tread measured at the last pit stop — the sim only refreshes it in the box'
             : 'Tread measured on arrival in the box'
         }

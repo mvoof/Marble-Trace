@@ -24,8 +24,8 @@ export const RepairRow = observer(() => {
   // up while in the box, then held as the total of the last stop.
   const isServicing = widget.isServiceActive;
   const serviceTime = isServicing
-    ? widget.stopElapsedS
-    : widget.lastStopDurationS;
+    ? widget.panel.stopElapsedS
+    : widget.panel.lastStopDurationS;
 
   return (
     <div className={styles.repairs}>
@@ -81,10 +81,10 @@ export const RepairRow = observer(() => {
         appears only once it is on cannot be turned on.
       */}
       <OrderToggle
-        className={`${styles.chip} ${widget.isFastRepairOrdered ? styles.chipOrdered : ''}`}
+        className={`${styles.chip} ${widget.order.isFastRepairOrdered ? styles.chipOrdered : ''}`}
         clickableClassName={styles.chipClickable}
         label="Toggle fast repair"
-        onToggle={() => void widget.toggleFastRepair()}
+        onToggle={() => void widget.order.toggleFastRepair()}
       >
         <span className={styles.key}>FAST REPAIR</span>
 
@@ -94,15 +94,15 @@ export const RepairRow = observer(() => {
       </OrderToggle>
 
       <OrderToggle
-        className={`${styles.chip} ${widget.isWindshieldOrdered ? styles.chipOrdered : ''}`}
+        className={`${styles.chip} ${widget.order.isWindshieldOrdered ? styles.chipOrdered : ''}`}
         clickableClassName={styles.chipClickable}
         label="Toggle windshield clean"
-        onToggle={() => void widget.toggleWindshield()}
+        onToggle={() => void widget.order.toggleWindshield()}
       >
         <span className={styles.key}>WINDSHIELD</span>
 
         <span className={styles.value}>
-          {widget.isWindshieldOrdered ? 'ON' : '—'}
+          {widget.order.isWindshieldOrdered ? 'ON' : '—'}
         </span>
       </OrderToggle>
     </div>

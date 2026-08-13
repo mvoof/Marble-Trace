@@ -80,11 +80,11 @@ describe('isWidgetInActiveLayout', () => {
       });
     });
 
-    expect(root.pitServiceWidget.isAutoEnabled).toBe(true);
+    expect(root.pitServiceWidget.auto.isAutoEnabled).toBe(true);
 
     runInAction(() => root.widgetSettings.loadLayout('quali'));
 
-    expect(root.pitServiceWidget.isAutoEnabled).toBe(false);
+    expect(root.pitServiceWidget.auto.isAutoEnabled).toBe(false);
   });
 
   // Previewing a layout in the editor leaves the overlay on the previous one,

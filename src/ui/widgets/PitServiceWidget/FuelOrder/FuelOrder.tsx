@@ -33,13 +33,13 @@ export const FuelOrder = observer(() => {
   const dragging = useRef(false);
 
   // Follows the drag while the row is being moved, the sim otherwise.
-  const ordered = pitServiceWidget.fuelDisplayLiters;
+  const ordered = pitServiceWidget.order.fuelDisplayLiters;
 
   // Owned by the widget store so the number shown here is exactly the number
   // the order hotkey sends.
-  const calculated = pitServiceWidget.plannedFuelLiters;
+  const calculated = pitServiceWidget.order.plannedFuelLiters;
 
-  const capacity = pitServiceWidget.fuelCapacityLiters;
+  const capacity = pitServiceWidget.order.fuelCapacityLiters;
   const canFill = capacity !== null && capacity > 0;
   const fillRatio = canFill ? Math.min(FULL_RATIO, ordered / capacity) : 0;
 
@@ -79,7 +79,9 @@ export const FuelOrder = observer(() => {
     }
 
     dragging.current = true;
-    pitServiceWidget.setFuelDraft(litersAt(event.currentTarget, event.clientX));
+    pitServiceWidget.order.setFuelDraft(
+      litersAt(event.currentTarget, event.clientX)
+    );
   };
 
   const handlePointerUp = () => {
@@ -87,12 +89,12 @@ export const FuelOrder = observer(() => {
 
     if (dragging.current) {
       dragging.current = false;
-      void pitServiceWidget.commitFuelDraft();
+      void pitServiceWidget.order.commitFuelDraft();
 
       return;
     }
 
-    void pitServiceWidget.toggleFuel();
+    void pitServiceWidget.order.toggleFuel();
   };
 
   const content = (
@@ -124,7 +126,7 @@ export const FuelOrder = observer(() => {
     </>
   );
 
-  if (!pitServiceWidget.canClickOrders) {
+  if (!pitServiceWidget.order.canClickOrders) {
     return <div className={styles.fuel}>{content}</div>;
   }
 

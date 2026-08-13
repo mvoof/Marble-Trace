@@ -21,7 +21,7 @@ interface TestRoot {
     getWidget: (id: string) => { userSettings: { enabled: boolean } };
     setWidgetEnabled: (id: string, enabled: boolean) => void;
   };
-  pitServiceWidget: { toggleManualShow: () => void };
+  pitServiceWidget: { panel: { toggleManualShow: () => void } };
   appSettings: {
     appSettings: { interactHotkeyMode: 'toggle' | 'hold' };
     toggleDragMode: () => void;
@@ -39,7 +39,7 @@ const makeRoot = (widgetsInLayout: string[]): TestRoot => ({
     }),
     setWidgetEnabled: vi.fn(),
   },
-  pitServiceWidget: { toggleManualShow: vi.fn() },
+  pitServiceWidget: { panel: { toggleManualShow: vi.fn() } },
   appSettings: {
     appSettings: { interactHotkeyMode: 'toggle' },
     toggleDragMode: vi.fn(),
