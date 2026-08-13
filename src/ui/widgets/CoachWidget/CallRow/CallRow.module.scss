@@ -29,6 +29,12 @@
   color: $race-amber;
 }
 
+// GRIP is not an instruction either — the car is being corrected, so no pedal
+// advice applies. Muted on purpose: it must not read as loud as BRAKE or GAS.
+.callGrip {
+  color: $widget-text-secondary;
+}
+
 // Without a reference lap there is no call to make — the word is a status, not
 // an instruction, so it drops to label weight.
 .callIdle {

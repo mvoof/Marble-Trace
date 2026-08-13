@@ -19,7 +19,11 @@ const BRAKE_SOON_URGENCY = 0.7;
 const ADVISORY_LABEL = {
   brake: 'BRAKE',
   gas: 'GAS',
+  grip: 'GRIP',
 } as const;
+
+/** Pedal deficit below this reads as noise and is not worth putting a number on. */
+const MIN_DISPLAYED_THROTTLE_DEFICIT = 0.05;
 
 const SOON_LABEL = 'SOON';
 const PACE_LABEL = 'PACE';
@@ -92,25 +96,45 @@ export const CallRow = observer(() => {
     styles.call,
     inactiveReason !== null ? styles.callIdle : styles.callActive,
     brakeSoon ? styles.callSoon : '',
+    advisory === 'grip' && inactiveReason === null ? styles.callGrip : '',
   ]
     .filter(Boolean)
     .join(' ');
 
+  // One slot, filled by whichever fact the driver can act on where they are.
   // The braking-point gap is the headline whenever the window holds both marks:
-  // it is the one number a driver can act on directly, and the two ticks on the
-  // chart below are the same fact drawn. Away from a braking zone there is
-  // nothing to compare, and the time delta takes the slot instead.
+  // it is a number a driver can act on directly, and the two ticks on the chart
+  // below are the same fact drawn. Away from a braking zone there is nothing to
+  // compare, and the time delta takes the slot instead.
+  // Coming out of a corner the throttle-opening gap displaces both: it is the
+  // one thing the driver can still act on there, and unlike the time delta it
+  // names what to do about it. Once on the power with the reference's own
+  // opening point matched, the pedal deficit takes over — same fact, the only
+  // form left once the metres are settled.
+  const exitLateM = coach.displayedExitLateM;
+  const exitDeficit = coach.displayedExitThrottleDeficit;
   const brakeDeltaM = trace.displayedBrakeDeltaM;
   const windowDeltaS = trace.displayedWindowDeltaS;
-  const headlineValue = brakeDeltaM ?? windowDeltaS;
 
-  const deltaText =
-    brakeDeltaM !== null
-      ? signed(brakeDeltaM, 0)
+  const showExitDeficit =
+    exitLateM === null && exitDeficit >= MIN_DISPLAYED_THROTTLE_DEFICIT;
+  const headlineDistanceM = exitLateM ?? brakeDeltaM;
+  const headlineValue = showExitDeficit
+    ? exitDeficit
+    : (headlineDistanceM ?? windowDeltaS);
+
+  const deltaText = showExitDeficit
+    ? `−${Math.round(exitDeficit * 100)}`
+    : headlineDistanceM !== null
+      ? signed(headlineDistanceM, 0)
       : windowDeltaS === null
         ? '—'
         : signed(windowDeltaS, 2);
-  const deltaUnit = brakeDeltaM !== null ? 'm' : 's';
+  const deltaUnit = showExitDeficit
+    ? '%'
+    : headlineDistanceM !== null
+      ? 'm'
+      : 's';
 
   // Losing time is the same red as a brake call, gaining it the same green as a
   // gas call — the number and the trace line under it read as one signal.
@@ -127,8 +151,13 @@ export const CallRow = observer(() => {
   const countdownM = brakeSoon ? coach.brakePointDistanceM : null;
   const apexM = advisory === 'neutral' ? coach.apexDistanceM : null;
 
-  const countdown =
-    countdownM !== null
+  // Inside an exit the throttle figure owns the slot: counting down to the next
+  // apex there would replace the one number that scores the corner just driven.
+  const inExit = exitLateM !== null || showExitDeficit;
+
+  const countdown = inExit
+    ? null
+    : countdownM !== null
       ? { label: 'BRAKE IN', value: countdownM }
       : apexM !== null
         ? { label: 'APEX IN', value: apexM }
@@ -141,14 +170,16 @@ export const CallRow = observer(() => {
   const fillColor =
     advisory === 'gas'
       ? settings.gasColor
-      : brakeSoon || advisory === 'neutral'
-        ? undefined
-        : settings.brakeColor;
+      : advisory === 'brake' && !brakeSoon
+        ? settings.brakeColor
+        : undefined;
 
   const fillClass = [
     styles.urgencyFill,
     brakeSoon ? styles.urgencyFillSoon : '',
-    !brakeSoon && advisory === 'neutral' ? styles.urgencyFillIdle : '',
+    !brakeSoon && advisory !== 'brake' && advisory !== 'gas'
+      ? styles.urgencyFillIdle
+      : '',
   ]
     .filter(Boolean)
     .join(' ');

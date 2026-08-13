@@ -408,6 +408,8 @@ export interface CoachWidgetSettings {
   windowMeters: number;
   /** Brake urgency bar under the call row. */
   showUrgencyBar: boolean;
+  /** Judge corner exits on the throttle: how late it was opened and how much pedal is missing. */
+  showCornerExitCalls: boolean;
   /** Current speed against the best lap's speed at this point, under the trace. */
   showSpeed: boolean;
   /** Lap time of the stored reference lap the trace is compared against. */

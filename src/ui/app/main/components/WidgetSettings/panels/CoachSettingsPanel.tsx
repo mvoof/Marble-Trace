@@ -61,6 +61,18 @@ export const CoachSettingsPanel = observer(() => {
 
             <div className={styles.fieldGroup}>
               <SettingRow
+                title={t('settingsPanels.coach.cornerExitCalls')}
+                desc={t('settingsPanels.coach.cornerExitCallsDesc')}
+              >
+                <Switch
+                  checked={settings.showCornerExitCalls}
+                  onChange={(value) => update({ showCornerExitCalls: value })}
+                />
+              </SettingRow>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <SettingRow
                 title={t('settingsPanels.coach.brakeAccent')}
                 desc={t('settingsPanels.coach.brakeAccentDesc')}
               >

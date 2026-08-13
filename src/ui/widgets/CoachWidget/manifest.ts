@@ -28,6 +28,7 @@ export const COACH_MANIFEST: WidgetManifest = {
     traceChannel: 'speed',
     windowMeters: 150,
     showUrgencyBar: true,
+    showCornerExitCalls: true,
     showSpeed: true,
     showReferenceLapTime: true,
     showTrackCondition: true,
