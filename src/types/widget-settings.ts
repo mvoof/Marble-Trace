@@ -398,6 +398,8 @@ export interface EnginePanelWidgetSettings {
 export type CoachTraceChannel = 'speed' | 'brake';
 
 export interface CoachWidgetSettings {
+  /** The advisory call row on top. Off leaves the trace and the readouts alone. */
+  showCallRow: boolean;
   /** Draw the speed trace under the call row. Off leaves just the call row, and the plate shrinks to it. */
   showTrace: boolean;
   /** Which pair of traces the chart draws. */

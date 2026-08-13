@@ -23,6 +23,7 @@ export const COACH_MANIFEST: WidgetManifest = {
     currentHeight: 130,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
+    showCallRow: true,
     showTrace: true,
     traceChannel: 'speed',
     windowMeters: 150,

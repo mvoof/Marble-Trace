@@ -35,39 +35,59 @@ export const CoachSettingsPanel = observer(() => {
       <Card title={t('settingsPanels.coach.call')}>
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.coach.urgencyBar')}
-            desc={t('settingsPanels.coach.urgencyBarDesc')}
+            title={t('settingsPanels.coach.showCallRow')}
+            desc={t('settingsPanels.coach.showCallRowDesc')}
           >
             <Switch
-              checked={settings.showUrgencyBar}
-              onChange={(value) => update({ showUrgencyBar: value })}
+              checked={settings.showCallRow}
+              onChange={(value) => update({ showCallRow: value })}
             />
           </SettingRow>
         </div>
 
-        <div className={styles.fieldGroup}>
-          <SettingRow
-            title={t('settingsPanels.coach.brakeAccent')}
-            desc={t('settingsPanels.coach.brakeAccentDesc')}
-          >
-            <ColorPicker
-              value={settings.brakeColor}
-              onChange={(color) => update({ brakeColor: color.toHexString() })}
-            />
-          </SettingRow>
-        </div>
+        {settings.showCallRow && (
+          <>
+            <div className={styles.fieldGroup}>
+              <SettingRow
+                title={t('settingsPanels.coach.urgencyBar')}
+                desc={t('settingsPanels.coach.urgencyBarDesc')}
+              >
+                <Switch
+                  checked={settings.showUrgencyBar}
+                  onChange={(value) => update({ showUrgencyBar: value })}
+                />
+              </SettingRow>
+            </div>
 
-        <div className={styles.fieldGroup}>
-          <SettingRow
-            title={t('settingsPanels.coach.gasAccent')}
-            desc={t('settingsPanels.coach.gasAccentDesc')}
-          >
-            <ColorPicker
-              value={settings.gasColor}
-              onChange={(color) => update({ gasColor: color.toHexString() })}
-            />
-          </SettingRow>
-        </div>
+            <div className={styles.fieldGroup}>
+              <SettingRow
+                title={t('settingsPanels.coach.brakeAccent')}
+                desc={t('settingsPanels.coach.brakeAccentDesc')}
+              >
+                <ColorPicker
+                  value={settings.brakeColor}
+                  onChange={(color) =>
+                    update({ brakeColor: color.toHexString() })
+                  }
+                />
+              </SettingRow>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <SettingRow
+                title={t('settingsPanels.coach.gasAccent')}
+                desc={t('settingsPanels.coach.gasAccentDesc')}
+              >
+                <ColorPicker
+                  value={settings.gasColor}
+                  onChange={(color) =>
+                    update({ gasColor: color.toHexString() })
+                  }
+                />
+              </SettingRow>
+            </div>
+          </>
+        )}
       </Card>
 
       <Card title={t('settingsPanels.coach.readouts')}>

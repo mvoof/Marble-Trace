@@ -483,6 +483,8 @@
     },
     "coach": {
       "call": "Call",
+      "showCallRow": "Show Call",
+      "showCallRowDesc": "The BRAKE / GAS call row on top. Off leaves only the trace and the readouts.",
       "urgencyBar": "Urgency Bar",
       "urgencyBarDesc": "Bar under the call showing how close the next braking zone is.",
       "brakeAccent": "Brake Accent",
