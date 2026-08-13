@@ -6,7 +6,11 @@ import type {
   WidgetUserSettings,
 } from '@/types/widget-settings';
 import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
-import { useWidgetSettingsStore } from '@store/root-store-context';
+import type { WidgetDefaultsStore } from '@store/settings/widget-defaults.store';
+import {
+  useWidgetDefaultsStore,
+  useWidgetSettingsStore,
+} from '@store/root-store-context';
 
 // A small editing target so the settings panels don't care WHAT they edit. The
 // Widgets catalog binds this to the global defaults; everywhere else (layout
@@ -31,13 +35,12 @@ const liveEditor = (store: WidgetSettingsStore): WidgetEditor => ({
   pushUndo: () => store.pushUndo(),
 });
 
-const defaultsEditor = (store: WidgetSettingsStore): WidgetEditor => ({
-  getWidget: (id) => store.getDefaultWidget(id),
+const defaultsEditor = (store: WidgetDefaultsStore): WidgetEditor => ({
+  getWidget: (id) => store.getWidget(id),
   getSettings: <S extends WidgetSpecificSettings>(id: string) =>
-    store.getDefaultSettings<S>(id),
-  updateUserSettings: (id, partial) =>
-    store.updateDefaultUserSettings(id, partial),
-  getChangeToken: () => store.defaultsChangeToken,
+    store.getSettings<S>(id),
+  updateUserSettings: (id, partial) => store.updateUserSettings(id, partial),
+  getChangeToken: () => store.changeToken,
   pushUndo: () => {},
 });
 
@@ -56,7 +59,7 @@ export const DefaultsEditorProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  const store = useWidgetSettingsStore();
+  const store = useWidgetDefaultsStore();
   const editor = useMemo(() => defaultsEditor(store), [store]);
 
   return (

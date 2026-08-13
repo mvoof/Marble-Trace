@@ -489,7 +489,7 @@ export const initMainSync = async (root: RootStore) => {
           // Widgets-catalog (preview page) edits only touch `defaultWidgets`,
           // which no other reaction observes — without this they'd never be
           // persisted and would reset on restart.
-          () => root.widgetSettings.defaultsChangeToken,
+          () => root.widgetDefaults.changeToken,
           () => {
             void onSave();
           },

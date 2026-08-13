@@ -107,7 +107,7 @@ export const hydrateStores = (
     );
 
     if (loadedSettings.defaultWidgets) {
-      root.widgetSettings.setDefaultWidgets(
+      root.widgetDefaults.setWidgets(
         restoreWidgets(loadedSettings.defaultWidgets)
       );
     }
@@ -143,7 +143,7 @@ export const buildSettings = (root: RootStore): Settings => ({
     system: root.units.unitSystem,
   },
   widgets: root.widgetSettings.allWidgets,
-  defaultWidgets: Array.from(root.widgetSettings.defaultWidgets.values()),
+  defaultWidgets: Array.from(root.widgetDefaults.widgets.values()),
   layouts: root.widgetSettings.layouts,
   activeLayoutId: root.widgetSettings.activeLayoutId,
   sessionLayouts: root.widgetSettings.sessionLayouts,

@@ -32,6 +32,7 @@ export const useChatStore = () => useStore().chat;
 export const useStreamChatWidgetStore = () => useStore().streamChatWidget;
 export const useTwitchAuthStore = () => useStore().twitchAuth;
 export const useWidgetSettingsStore = () => useStore().widgetSettings;
+export const useWidgetDefaultsStore = () => useStore().widgetDefaults;
 export const useAppSettingsStore = () => useStore().appSettings;
 export const useUnitsStore = () => useStore().units;
 export const useWidgetAutoHideStore = () => useStore().widgetAutoHide;

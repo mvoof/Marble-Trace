@@ -7,6 +7,7 @@ import {
   setPitWarningLapsSilent,
 } from '@/services/settings.service';
 import { resolveMonitorByName } from '@store/sync/overlay-resolution';
+import { applyLayoutResize } from '@utils/widget/layout-resize';
 
 import type {
   WidgetDefaultConfig,
@@ -85,20 +86,6 @@ export class WidgetSettingsStore {
 
   undoStack: WidgetDefaultConfig[][] = [];
   redoStack: WidgetDefaultConfig[][] = [];
-
-  // Global widget defaults — the template edited in the Widgets catalog. Never
-  // rendered on the overlay; copied into a layout when a new layout is created.
-  // Kept fully independent from `widgets` so editing one never affects the other.
-  defaultWidgets = new Map<string, WidgetDefaultConfig>(
-    DEFAULT_WIDGETS.map((widgetConfig) => [
-      widgetConfig.id,
-      { ...widgetConfig, userSettings: { ...widgetConfig.userSettings } },
-    ])
-  );
-
-  // Bumped on every defaults mutation so the Widgets-catalog preview can react
-  // without coupling to the live-layout changeToken.
-  defaultsChangeToken = 0;
 
   layouts: SavedLayout[] = [];
   activeLayoutId: string | null = null;
@@ -631,7 +618,7 @@ export class WidgetSettingsStore {
 
     Object.assign(widget.userSettings, resolvedPartial);
 
-    this.handleLayoutResize(id, widget, prevSettings, widget.userSettings);
+    applyLayoutResize(id, widget, prevSettings, widget.userSettings);
 
     this.bumpMutation();
 
@@ -668,139 +655,6 @@ export class WidgetSettingsStore {
 
       setCarLengthSilent(resolvedPartial.carLength);
     }
-  }
-
-  private handleLayoutResize(
-    id: string,
-    widget: WidgetDefaultConfig,
-    prevSettings: WidgetUserSettings,
-    newSettings: WidgetUserSettings
-  ) {
-    const config = WIDGET_BY_ID.get(id);
-    const resolver = config?.resolveLayoutChange;
-
-    if (!resolver) return;
-
-    const result = resolver(prevSettings, newSettings, {
-      designWidth: widget.designWidth,
-      designHeight: widget.designHeight,
-      currentWidth: widget.userSettings.currentWidth,
-      currentHeight: widget.userSettings.currentHeight,
-    });
-
-    if (!result) return;
-
-    if (result.designWidth !== undefined) {
-      widget.designWidth = result.designWidth;
-    }
-
-    if (result.designHeight !== undefined) {
-      widget.designHeight = result.designHeight;
-    }
-
-    if (result.currentWidth !== undefined) {
-      widget.userSettings.currentWidth = result.currentWidth;
-    }
-
-    if (result.currentHeight !== undefined) {
-      widget.userSettings.currentHeight = result.currentHeight;
-    }
-
-    if (result.userSettingsPatch) {
-      Object.assign(widget.userSettings, result.userSettingsPatch);
-    }
-  }
-
-  // ── Global defaults (edited in the Widgets catalog) ──────────────────────
-  // These mirror the live-widget API but operate on `defaultWidgets` and never
-  // touch the overlay (no backend invokes). They drive the "what a widget looks
-  // like before it's placed in a layout" template.
-
-  getDefaultWidget(id: string): WidgetDefaultConfig | undefined {
-    return this.defaultWidgets.get(id);
-  }
-
-  getDefaultSettings<SpecificSettings extends WidgetSpecificSettings>(
-    id: string
-  ): BaseUserSettings & SpecificSettings {
-    const widget = this.defaultWidgets.get(id);
-
-    const fallback = DEFAULT_WIDGETS.find(
-      (defaultWidget) => defaultWidget.id === id
-    )?.userSettings as (BaseUserSettings & SpecificSettings) | undefined;
-
-    return (
-      (widget?.userSettings as unknown as BaseUserSettings &
-        SpecificSettings) ?? fallback
-    );
-  }
-
-  updateDefaultUserSettings(id: string, partial: Partial<WidgetUserSettings>) {
-    const widget = this.defaultWidgets.get(id);
-
-    if (!widget) return;
-
-    let resolvedPartial = partial;
-
-    if (
-      id === 'fuel' &&
-      'barWidth' in partial &&
-      partial.barWidth !== undefined
-    ) {
-      resolvedPartial = {
-        ...partial,
-        barWidth: Math.max(5, Math.min(20, partial.barWidth)),
-      };
-    }
-
-    const prevSettings = { ...widget.userSettings };
-
-    Object.assign(widget.userSettings, resolvedPartial);
-
-    this.handleLayoutResize(id, widget, prevSettings, widget.userSettings);
-
-    this.defaultsChangeToken++;
-  }
-
-  setDefaultWidgets(widgets: WidgetDefaultConfig[]) {
-    runInAction(() => {
-      DEFAULT_WIDGETS.forEach((defaultWidget) => {
-        const saved = widgets.find((widget) => widget.id === defaultWidget.id);
-
-        const mergedUserSettings = saved
-          ? mergeWithDefaults(
-              defaultWidget.userSettings,
-              saved.userSettings ?? {}
-            )
-          : { ...defaultWidget.userSettings };
-
-        const existing = this.defaultWidgets.get(defaultWidget.id);
-
-        if (existing) {
-          Object.assign(existing.userSettings, mergedUserSettings);
-
-          if (saved) {
-            const merged = mergeWithDefaults(defaultWidget, saved);
-            existing.designWidth = merged.designWidth;
-            existing.designHeight = merged.designHeight;
-          }
-        } else {
-          this.defaultWidgets.set(defaultWidget.id, {
-            ...defaultWidget,
-            userSettings: mergedUserSettings,
-          });
-        }
-      });
-
-      this.defaultsChangeToken++;
-    });
-  }
-
-  private snapshotDefaults(): WidgetDefaultConfig[] {
-    return Array.from(this.defaultWidgets.values()).map((widget) => ({
-      ...widget,
-      userSettings: { ...widget.userSettings },
-    }));
   }
 
   setOverlayResolution(resolution: LayoutResolution) {
@@ -1173,7 +1027,7 @@ export class WidgetSettingsStore {
   // positions clustered in a corner.
   // When clean is true, it returns all widgets disabled.
   private buildStarterWidgets(clean: boolean = false): WidgetDefaultConfig[] {
-    const widgets = this.snapshotDefaults();
+    const widgets = this.root?.widgetDefaults.snapshot() ?? [];
 
     if (clean) {
       for (const widget of widgets) {
