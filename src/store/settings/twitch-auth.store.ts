@@ -1,7 +1,13 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { invoke } from '@tauri-apps/api/core';
 
-import type { TwitchDeviceCode, TwitchTokenResult } from '@/types/bindings';
+import {
+  twitchCurrentLogin,
+  twitchHasClientId,
+  twitchPollDeviceToken,
+  twitchRequestDeviceCode,
+  twitchSignOut,
+} from '@/services/twitch.service';
+import type { TwitchDeviceCode } from '@/types/bindings';
 import type { RootStore } from '@store/root-store';
 
 const MS_PER_SECOND = 1000;
@@ -39,7 +45,7 @@ export class TwitchAuthStore {
 
   async init() {
     try {
-      const available = await invoke<boolean>('twitch_has_client_id');
+      const available = await twitchHasClientId();
 
       runInAction(() => {
         this.hasBakedClientId = available;
@@ -86,9 +92,7 @@ export class TwitchAuthStore {
    */
   async syncLogin() {
     try {
-      const login = await invoke<string | null>('twitch_current_login', {
-        clientId: this.clientIdOverride,
-      });
+      const login = await twitchCurrentLogin(this.clientIdOverride);
 
       const stored = this.root.appSettings.appSettings.streamChatTwitchLogin;
 
@@ -123,10 +127,7 @@ export class TwitchAuthStore {
     const clientId = this.clientIdOverride;
 
     try {
-      const code = await invoke<TwitchDeviceCode>(
-        'twitch_request_device_code',
-        { clientId }
-      );
+      const code = await twitchRequestDeviceCode(clientId);
 
       runInAction(() => {
         this.deviceCode = code;
@@ -153,7 +154,7 @@ export class TwitchAuthStore {
     this.cancel();
 
     try {
-      await invoke('twitch_sign_out');
+      await twitchSignOut();
     } catch (error) {
       console.warn('twitch sign out failed', error);
     }
@@ -201,10 +202,7 @@ export class TwitchAuthStore {
     }
 
     try {
-      const result = await invoke<TwitchTokenResult>(
-        'twitch_poll_device_token',
-        { clientId, deviceCode: code.deviceCode }
-      );
+      const result = await twitchPollDeviceToken(clientId, code.deviceCode);
 
       if (result.error) {
         runInAction(() => {

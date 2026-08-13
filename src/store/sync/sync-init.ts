@@ -1,7 +1,10 @@
 import { comparer, reaction } from 'mobx';
 import { listen } from '@tauri-apps/api/event';
-import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import {
+  startChatStreamSilent,
+  stopChatStreamSilent,
+} from '@/services/twitch.service';
 import { load } from '@tauri-apps/plugin-store';
 import {
   backupSettingsFile,
@@ -442,12 +445,12 @@ export const initMainSync = async (root: RootStore) => {
             );
 
             if (enabled && hasTarget) {
-              void invoke('start_chat_stream', { config });
+              startChatStreamSilent(config);
             } else {
               // Nothing to read, or nothing to read it with: tear the
               // connectors down and drop the buffer so re-enabling starts on
               // live messages instead of a stale backlog.
-              void invoke('stop_chat_stream');
+              stopChatStreamSilent();
               root.chat.reset();
               void emitStreamChatCleared();
             }
