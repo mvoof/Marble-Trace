@@ -99,6 +99,7 @@ export class RootStore {
       this.drivingCoachWidget.init();
       this.coachWidget.init();
       this.streamChatWidget.init();
+      this.pitServiceWidget.init();
       void this.chat.init();
       void this.twitchAuth.init();
     }
@@ -109,6 +110,7 @@ export class RootStore {
   dispose() {
     this.twitchAuth.dispose();
     this.streamChatWidget.dispose();
+    this.pitServiceWidget.dispose();
     this.chat.dispose();
     this.inputTraceWidget.dispose();
     this.coachWidget.dispose();

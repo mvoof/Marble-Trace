@@ -1,4 +1,9 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import {
+  makeAutoObservable,
+  reaction,
+  runInAction,
+  type IReactionDisposer,
+} from 'mobx';
 
 import { sendPitOrder } from '@/services/pit.service';
 
@@ -126,8 +131,42 @@ export class PitServiceWidgetStore {
   private hideTimer: ReturnType<typeof setTimeout> | null = null;
   private stopTimer: ReturnType<typeof setInterval> | null = null;
 
+  private readonly disposers: IReactionDisposer[] = [];
+
   constructor(private root: RootStore) {
     makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  /**
+   * Watches the two telemetry transitions this widget owns timers for.
+   *
+   * Both handlers are edge-guarded, and `fireImmediately` reproduces what the
+   * bundle handler used to do: a window opened while the car is already on pit
+   * road still starts the stop clock. Reading them here rather than being
+   * pushed from the telemetry dispatcher keeps the dependency pointing the way
+   * the layer rules require — widget store → data store.
+   */
+  init() {
+    this.disposers.push(
+      reaction(
+        () => this.isOnPitRoad,
+        (onPitRoad) => this.handlePitRoadChange(onPitRoad),
+        { fireImmediately: true }
+      ),
+      reaction(
+        () => this.isServiceActive,
+        (serviceActive) => this.handleServiceActiveChange(serviceActive),
+        { fireImmediately: true }
+      )
+    );
+  }
+
+  dispose() {
+    for (const disposer of this.disposers) {
+      disposer();
+    }
+
+    this.disposers.length = 0;
   }
 
   get isOnPitRoad(): boolean {

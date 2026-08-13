@@ -397,12 +397,7 @@ export class SimStore {
           if (b.car_inputs) this.root.player.updateCarInputs(b.car_inputs);
           if (b.car_positions)
             this.root.cars.updateCarPositions(b.car_positions);
-          if (b.car_status) {
-            this.root.player.updateCarStatus(b.car_status);
-            this.root.pitServiceWidget.handlePitRoadChange(
-              b.car_status.on_pit_road ?? false
-            );
-          }
+          if (b.car_status) this.root.player.updateCarStatus(b.car_status);
           if (b.lap_timing) this.root.player.updateLapTiming(b.lap_timing);
           this.root.player.updatePitTarget(
             b.pit_target_dist_m ?? null,
@@ -413,12 +408,7 @@ export class SimStore {
           if (b.environment)
             this.root.environment.updateEnvironment(b.environment);
           if (b.chassis) this.root.player.updateChassis(b.chassis);
-          if (b.pit_service) {
-            this.root.player.updatePitService(b.pit_service);
-            this.root.pitServiceWidget.handleServiceActiveChange(
-              b.pit_service.serviceActive
-            );
-          }
+          if (b.pit_service) this.root.player.updatePitService(b.pit_service);
 
           if (b.proximity)
             this.root.backendComputed.updateProximity(b.proximity);
