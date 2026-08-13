@@ -61,12 +61,27 @@ const FREE_TEXT_YAML_KEYS: [&str; 5] = [
     "DriverSetupName",
 ];
 
+/// Checks if a character is allowed in YAML according to the YAML 1.2 specification:
+/// `#x9 | #xA | #xD | [#x20-#x7E] | #x85 | [#xA0-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]`
+fn is_allowed_yaml_char(c: char) -> bool {
+    let val = c as u32;
+    val == 0x9
+        || val == 0xA
+        || val == 0xD
+        || (0x20..=0x7E).contains(&val)
+        || val == 0x85
+        || (0xA0..=0xD7FF).contains(&val)
+        || (0xE000..=0xFFFD).contains(&val)
+        || (0x10000..=0x10FFFF).contains(&val)
+}
+
 /// Quote the values of free-text keys so arbitrary driver/team names cannot
 /// break the YAML document structure.
 fn sanitize_session_yaml(yaml: &str) -> String {
-    let mut sanitized = String::with_capacity(yaml.len() + 256);
+    let cleaned: String = yaml.chars().filter(|&c| is_allowed_yaml_char(c)).collect();
+    let mut sanitized = String::with_capacity(cleaned.len() + 256);
 
-    for line in yaml.lines() {
+    for line in cleaned.lines() {
         let trimmed_start = line.trim_start();
         let key_part = trimmed_start.strip_prefix("- ").unwrap_or(trimmed_start);
 
@@ -139,8 +154,11 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
                     .filter_map(|raw_pos| {
                         Some(ResultPosition {
                             car_idx: raw_pos.car_idx?,
+                            // `Position` is 1-indexed in the session YAML but
+                            // `ClassPosition` is 0-indexed. Both leave here
+                            // 1-indexed so nothing downstream has to know that.
                             position: raw_pos.position?,
-                            class_position: raw_pos.class_position,
+                            class_position: raw_pos.class_position.map(|pos| pos + 1),
                             lap: raw_pos.lap,
                             time: raw_pos.time.filter(|t| t.is_finite()),
                             fastest_time: raw_pos
@@ -227,8 +245,10 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         .filter_map(|raw_result| {
             Some(QualifyResultEntry {
                 car_idx: raw_result.car_idx?,
-                position: raw_result.position?,
-                class_position: raw_result.class_position,
+                // QualifyResultsInfo counts both from zero, unlike
+                // ResultsPositions. Normalised to 1-indexed here.
+                position: raw_result.position? + 1,
+                class_position: raw_result.class_position.map(|pos| pos + 1),
                 // The sim writes a placeholder time for a car that never set one.
                 fastest_time: raw_result
                     .fastest_time
@@ -576,7 +596,25 @@ QualifyResultsInfo:
         assert_eq!(snapshot.sectors.len(), 2);
         assert!((snapshot.sectors[1].sector_start_pct - 0.493951).abs() < 1e-9);
         assert_eq!(snapshot.qualify_results.len(), 2);
-        assert_eq!(snapshot.qualify_results[0].position, 0);
+
+        // The YAML says `Position: 0` / `ClassPosition: 0` for the pole sitter
+        // and `1`/`1` for second; ResultsPositions counts its `Position` from
+        // one and its `ClassPosition` from zero. Everything leaves the parser
+        // 1-indexed.
+        assert_eq!(snapshot.qualify_results[0].position, 1);
+        assert_eq!(snapshot.qualify_results[0].class_position, Some(1));
+        assert_eq!(snapshot.qualify_results[1].position, 2);
+        assert_eq!(snapshot.qualify_results[1].class_position, Some(2));
+        assert_eq!(snapshot.sessions[1].results_positions[0].position, 1);
+        assert_eq!(
+            snapshot.sessions[1].results_positions[0].class_position,
+            Some(1)
+        );
+        assert_eq!(snapshot.sessions[1].results_positions[1].position, 2);
+        assert_eq!(
+            snapshot.sessions[1].results_positions[1].class_position,
+            Some(2)
+        );
         assert_eq!(snapshot.qualify_results[0].fastest_time, Some(88.5432));
         assert_eq!(snapshot.qualify_results[0].fastest_lap, Some(4));
 
@@ -626,5 +664,18 @@ QualifyResultsInfo:
         let parsed = parse_session(yaml).expect("yaml must parse");
 
         assert_eq!(parsed.snapshot.incident_limit, Some(25));
+    }
+
+    #[test]
+    fn filters_out_invalid_control_characters() {
+        let yaml = "WeekendInfo:\n TrackDisplayName: Okayama\u{0007} International Circuit\n";
+
+        let parsed =
+            parse_session(yaml).expect("yaml must parse despite containing control character");
+
+        assert_eq!(
+            parsed.snapshot.track_display_name,
+            "Okayama International Circuit"
+        );
     }
 }

@@ -9,14 +9,14 @@ import {
 import type { DriverEntry } from '@/types/bindings';
 import type { DriverGroup } from '@/types';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { computeClassSof } from '@utils/widget/standings-utils';
-import { hasRaceStarted } from '@utils/widget/timer-utils';
+import { computeClassSof } from '@utils/driver';
+import { hasRaceStarted } from '@utils/timer-utils';
 import {
   scrollThumbFor,
   type ScrollMetrics,
   type ScrollThumb,
-} from '@utils/widget/scroll-thumb';
-import { MOVE_DURATION_MS } from '@/hooks/common/useRowMoveAnimation';
+} from '@utils/canvas';
+import { MOVE_DURATION_MS } from '@utils/animation';
 import type { RootStore } from '@store/root-store';
 
 export type PositionChangeDirection = 'up' | 'down';

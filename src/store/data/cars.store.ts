@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, observable } from 'mobx';
 
 import type { CarIdxFrame, CarPositionsFrame } from '@/types/bindings';
 
@@ -6,8 +6,16 @@ export class CarsStore {
   carIdx: CarIdxFrame | null = null;
   carPositions: CarPositionsFrame | null = null;
 
+  // Every telemetry frame is replaced wholesale — nothing ever mutates one in
+  // place — so `observable.ref` is all the reactivity these need. Deep
+  // observability would rebuild a proxy for each frame, and for the per-car
+  // arrays it would convert ~15 arrays of 64 entries on every tick, purely to
+  // observe fields nobody writes.
   constructor() {
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      carIdx: observable.ref,
+      carPositions: observable.ref,
+    });
   }
 
   get leaderBestLapTime(): number | null {

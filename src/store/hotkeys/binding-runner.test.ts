@@ -1,12 +1,16 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import type { RootStore } from '@store/root-store';
 import { BindingsStore } from './bindings.store';
+import { ActionRegistry } from '@store/hotkeys/action-registry';
+import { DEFAULT_WIDGETS } from '@store/widget-catalog';
+
+const registry = new ActionRegistry(DEFAULT_WIDGETS);
 import { dispatchBinding } from './binding-runner';
 
 const emitStandingsScroll = vi.hoisted(() => vi.fn());
 const emitPitServiceToggle = vi.hoisted(() => vi.fn());
 
-vi.mock('@store/sync/events', () => ({
+vi.mock('@platform/services/events.service', () => ({
   emitStandingsScroll,
   emitPitServiceToggle,
 }));
@@ -21,7 +25,7 @@ interface TestRoot {
     getWidget: (id: string) => { userSettings: { enabled: boolean } };
     setWidgetEnabled: (id: string, enabled: boolean) => void;
   };
-  pitServiceWidget: { toggleManualShow: () => void };
+  pitServiceWidget: { panel: { toggleManualShow: () => void } };
   appSettings: {
     appSettings: { interactHotkeyMode: 'toggle' | 'hold' };
     toggleDragMode: () => void;
@@ -31,7 +35,7 @@ interface TestRoot {
 }
 
 const makeRoot = (widgetsInLayout: string[]): TestRoot => ({
-  bindings: new BindingsStore(),
+  bindings: new BindingsStore(registry),
   widgetSettings: {
     isWidgetInActiveLayout: (id: string) => widgetsInLayout.includes(id),
     getWidget: (id: string) => ({
@@ -39,7 +43,7 @@ const makeRoot = (widgetsInLayout: string[]): TestRoot => ({
     }),
     setWidgetEnabled: vi.fn(),
   },
-  pitServiceWidget: { toggleManualShow: vi.fn() },
+  pitServiceWidget: { panel: { toggleManualShow: vi.fn() } },
   appSettings: {
     appSettings: { interactHotkeyMode: 'toggle' },
     toggleDragMode: vi.fn(),

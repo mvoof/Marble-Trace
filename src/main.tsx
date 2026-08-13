@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HashRouter, Routes, Route } from 'react-router-dom';
-import { MainWindow } from './app/main/MainWindow';
-import { OverlayWindow } from './app/overlay/OverlayWindow';
+import { MainWindow } from './ui/app/main/MainWindow';
+import { OverlayWindow } from './ui/app/overlay/OverlayWindow';
 import { RootStore } from './store/root-store';
 import { RootStoreContext } from './store/root-store-context';
 import './i18n';

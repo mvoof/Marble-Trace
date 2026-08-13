@@ -1,14 +1,13 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
-import { invoke } from '@tauri-apps/api/core';
 import { getVersion } from '@tauri-apps/api/app';
-import { mergeWithDefaults } from '@utils/deep-merge';
-import { detectSystemLanguage } from '@utils/system-locale';
+import { deleteSettingsFile } from '@platform/services/settings.service';
+import { mergeWithDefaults } from '@store/deep-merge';
+import { detectSystemLanguage } from '@store/settings/system-locale';
 import i18n from '@/i18n';
-import type { SettingsLockReason } from '@store/settings-schema/types';
-
-export type AppLanguage = 'system' | 'en' | 'ru' | 'zh';
+import type { AppLanguage } from '@/types';
+import type { SettingsLockReason } from '@platform/settings-schema/types';
 
 export const resolveAppLanguage = (language: AppLanguage) =>
   language === 'system' ? detectSystemLanguage() : language;
@@ -383,7 +382,7 @@ export class AppSettingsStore {
    * corrupt file, so the reset would lock the app instead of freeing it.
    */
   async resetSettings() {
-    await invoke('delete_settings_file');
+    await deleteSettingsFile();
     await relaunch();
   }
 }

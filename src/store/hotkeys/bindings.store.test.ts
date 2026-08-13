@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { ACTIONS, ACTION_BY_ID, widgetVisibilityActionId } from './actions';
-import { DEFAULT_WIDGETS } from '@store/widget-defaults';
-import { BindingsStore, defaultBindingMap } from './bindings.store';
-import { bindingKey } from './binding-types';
+import { widgetVisibilityActionId } from './actions';
+import { DEFAULT_WIDGETS } from '@store/widget-catalog';
+import { ActionRegistry } from '@store/hotkeys/action-registry';
+import { BindingsStore } from './bindings.store';
+import { bindingKey } from '@/types/input-bindings';
+
+const registry = new ActionRegistry(DEFAULT_WIDGETS);
+const ACTIONS = registry.actions;
+const ACTION_BY_ID = registry.byId;
+const defaultBindingMap = () => registry.defaultBindings;
 
 const keyboard = (accelerator: string) =>
   ({ kind: 'keyboard', accelerator }) as const;
@@ -102,7 +108,7 @@ describe('ACTIONS registry', () => {
 
 describe('BindingsStore', () => {
   it('ships the registry defaults', () => {
-    const store = new BindingsStore();
+    const store = new BindingsStore(registry);
 
     expect(store.bindingsFor('app:toggle-drag-mode')).toEqual([keyboard('F9')]);
   });
@@ -111,7 +117,7 @@ describe('BindingsStore', () => {
   // on the newer one: the id is unknown here, so it is kept on disk and simply
   // never dispatched.
   it('keeps a binding for an unknown action without dispatching it', () => {
-    const store = new BindingsStore();
+    const store = new BindingsStore(registry);
 
     store.applyBindings({
       'gone:action': [keyboard('F1')],
@@ -124,7 +130,7 @@ describe('BindingsStore', () => {
   });
 
   it('falls back to the registry default for an action it has no override for', () => {
-    const store = new BindingsStore();
+    const store = new BindingsStore(registry);
 
     store.applyBindings({ 'pit-service:fuel': [keyboard('F1')] });
 
@@ -134,7 +140,7 @@ describe('BindingsStore', () => {
   // The whole point of overrides-only: a file written before an action existed
   // must not leave that action unbound.
   it('persists only what the user changed', () => {
-    const store = new BindingsStore();
+    const store = new BindingsStore(registry);
 
     store.applyBindings({});
     store.addBinding('pit-service:fuel', keyboard('F4'));
@@ -144,7 +150,7 @@ describe('BindingsStore', () => {
   });
 
   it('keeps the default when a second key is added on top of it', () => {
-    const store = new BindingsStore();
+    const store = new BindingsStore(registry);
 
     store.addBinding('app:toggle-drag-mode', keyboard('F2'));
 
@@ -155,7 +161,7 @@ describe('BindingsStore', () => {
   });
 
   it('does not add the same binding twice', () => {
-    const store = new BindingsStore();
+    const store = new BindingsStore(registry);
 
     store.applyBindings({});
     store.addBinding('app:toggle-drag-mode', keyboard('F9'));
@@ -165,7 +171,7 @@ describe('BindingsStore', () => {
   });
 
   it('reports a key bound to two actions as a conflict without reassigning it', () => {
-    const store = new BindingsStore();
+    const store = new BindingsStore(registry);
 
     store.applyBindings({
       'app:toggle-drag-mode': [keyboard('F9')],
@@ -187,7 +193,7 @@ describe('BindingsStore', () => {
   // An absent entry means "use the default", so deleting it would hand the user
   // back the very key they just removed. Empty array is the unbound marker.
   it('marks an action unbound rather than dropping its entry', () => {
-    const store = new BindingsStore();
+    const store = new BindingsStore(registry);
 
     store.removeBinding('app:toggle-drag-mode', keyboard('F9'));
 
@@ -196,18 +202,18 @@ describe('BindingsStore', () => {
   });
 
   it('keeps an action unbound across a save and load', () => {
-    const store = new BindingsStore();
+    const store = new BindingsStore(registry);
 
     store.clearAction('app:toggle-drag-mode');
 
-    const reloaded = new BindingsStore();
+    const reloaded = new BindingsStore(registry);
     reloaded.applyBindings(store.overrides);
 
     expect(reloaded.bindingsFor('app:toggle-drag-mode')).toEqual([]);
   });
 
   it('goes back to shipping defaults when reset', () => {
-    const store = new BindingsStore();
+    const store = new BindingsStore(registry);
 
     store.clearAction('app:toggle-drag-mode');
     store.resetToDefaults();
@@ -227,7 +233,7 @@ describe('BindingsStore', () => {
   });
 
   it('rewrites every binding of a device whose id changed', () => {
-    const store = new BindingsStore();
+    const store = new BindingsStore(registry);
 
     store.applyBindings({
       'app:toggle-drag-mode': [
@@ -251,7 +257,7 @@ describe('BindingsStore', () => {
   // The effective map always carries every default, so the assertion is about
   // the deduplication itself rather than an exact list.
   it('deduplicates the accelerators it registers with the OS', () => {
-    const store = new BindingsStore();
+    const store = new BindingsStore(registry);
 
     store.applyBindings({
       'app:toggle-drag-mode': [keyboard('F9')],

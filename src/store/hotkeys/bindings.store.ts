@@ -1,27 +1,11 @@
 import { makeAutoObservable } from 'mobx';
-import { ACTIONS, ACTION_BY_ID } from './actions';
+import type { ActionRegistry } from '@store/hotkeys/action-registry';
 import {
   bindingKey,
   bindingsEqual,
   type Binding,
   type BindingMap,
-} from './binding-types';
-
-/** The bindings an untouched install ships with, taken from the registry. */
-export const defaultBindingMap = (): BindingMap => {
-  const map: BindingMap = {};
-
-  for (const action of ACTIONS) {
-    if (action.defaultBinding) {
-      map[action.id] = [action.defaultBinding];
-    }
-  }
-
-  return map;
-};
-
-/** The registry is static, so the shipped map is built once. */
-const DEFAULTS = defaultBindingMap();
+} from '@/types/input-bindings';
 
 export class BindingsStore {
   /**
@@ -37,18 +21,18 @@ export class BindingsStore {
   // deep-comparing the map — same pattern as widgetSettings.changeToken.
   mutationId = 0;
 
-  constructor() {
-    makeAutoObservable(this, {}, { autoBind: true });
+  constructor(readonly registry: ActionRegistry) {
+    makeAutoObservable(this, { registry: false }, { autoBind: true });
   }
 
   /** Defaults with the user's overrides on top. Everything reads this. */
   get bindings(): BindingMap {
-    const effective = { ...DEFAULTS };
+    const effective = { ...this.registry.defaultBindings };
 
     for (const [actionId, bindings] of Object.entries(this.overrides)) {
       // Overrides for actions this build does not know are kept on disk but
       // never dispatched — see applyBindings.
-      if (ACTION_BY_ID.has(actionId)) {
+      if (this.registry.byId.has(actionId)) {
         effective[actionId] = bindings;
       }
     }
@@ -79,7 +63,9 @@ export class BindingsStore {
   }
 
   bindingsFor(actionId: string): Binding[] {
-    return this.overrides[actionId] ?? DEFAULTS[actionId] ?? [];
+    return (
+      this.overrides[actionId] ?? this.registry.defaultBindings[actionId] ?? []
+    );
   }
 
   addBinding(actionId: string, binding: Binding) {
@@ -149,7 +135,7 @@ export class BindingsStore {
   get actionsByBinding(): Map<string, string[]> {
     const byBinding = new Map<string, string[]>();
 
-    for (const action of ACTIONS) {
+    for (const action of this.registry.actions) {
       for (const binding of this.bindingsFor(action.id)) {
         const key = bindingKey(binding);
         const actionIds = byBinding.get(key);

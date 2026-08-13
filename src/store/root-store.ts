@@ -3,13 +3,15 @@ import { SimStore } from './sim/sim.store';
 import { FlagsStore } from './widgets/flags.widget';
 import { PaceCarStore } from './widgets/pace-car.widget';
 import { RadarWidgetStore } from './widgets/radar.widget';
-import { PitServiceWidgetStore } from './widgets/pit-service.widget';
+import { PitServiceWidgetStore } from '@ui/widgets/PitServiceWidget/pit-service.widget';
 import { StandingsWidgetStore } from './widgets/standings.widget';
-import { TrackMapWidgetStore } from './widgets/track-map.widget';
-import { DrivingCoachWidgetStore } from './widgets/driving-coach.widget';
-import { CoachWidgetStore } from './widgets/coach.widget';
-import { InputTraceWidgetStore } from './widgets/input-trace.widget';
+import { TrackMapWidgetStore } from '@ui/widgets/TrackMapWidget/track-map.widget';
+import { DrivingCoachWidgetStore } from '@ui/widgets/CoachWidget/driving-coach.widget';
+import { CoachWidgetStore } from '@ui/widgets/CoachWidget/coach.widget';
+import { InputTraceWidgetStore } from '@ui/widgets/InputTraceWidget/input-trace.widget';
 import { WidgetSettingsStore } from './settings/widget-settings.store';
+import { WidgetDefaultsStore } from './settings/widget-defaults.store';
+import type { LayoutsStore } from './settings/layouts.store';
 import { AppSettingsStore } from './settings/app-settings.store';
 import { UnitsStore } from './settings/units.store';
 import { WidgetAutoHideStore } from './widgets/widget-auto-hide.store';
@@ -20,8 +22,10 @@ import { EnvironmentStore } from './data/environment.store';
 import { ReferenceLapStore } from './data/reference-lap.store';
 import { ChatStore } from './data/chat.store';
 import { TwitchAuthStore } from './settings/twitch-auth.store';
-import { StreamChatWidgetStore } from './widgets/stream-chat.widget';
+import { StreamChatWidgetStore } from '@ui/widgets/StreamChatWidget/stream-chat.widget';
 import { BindingsStore } from './hotkeys/bindings.store';
+import { ActionRegistry } from '@store/hotkeys/action-registry';
+import { DEFAULT_WIDGETS } from '@store/widget-catalog';
 import { DeviceInputStore } from './hotkeys/device-input.store';
 import { BindingsUiStore } from './hotkeys/bindings-ui.store';
 import { SettingsPanelUiStore } from './widgets/settings-panel-ui.store';
@@ -46,6 +50,8 @@ export class RootStore {
   inputTraceWidget: InputTraceWidgetStore;
   streamChatWidget: StreamChatWidgetStore;
   widgetSettings: WidgetSettingsStore;
+  widgetDefaults: WidgetDefaultsStore;
+  layouts: LayoutsStore;
   appSettings: AppSettingsStore;
   twitchAuth: TwitchAuthStore;
   units: UnitsStore;
@@ -63,7 +69,9 @@ export class RootStore {
     this.referenceLap = new ReferenceLapStore();
     this.chat = new ChatStore();
     this.backendComputed = new BackendComputedStore();
+    this.widgetDefaults = new WidgetDefaultsStore();
     this.widgetSettings = new WidgetSettingsStore(this);
+    this.layouts = this.widgetSettings.layoutRecords;
     this.appSettings = new AppSettingsStore();
     this.twitchAuth = new TwitchAuthStore(this);
     this.units = new UnitsStore();
@@ -79,7 +87,7 @@ export class RootStore {
     this.streamChatWidget = new StreamChatWidgetStore(this);
     this.sim = new SimStore(this);
     this.widgetAutoHide = new WidgetAutoHideStore();
-    this.bindings = new BindingsStore();
+    this.bindings = new BindingsStore(new ActionRegistry(DEFAULT_WIDGETS));
     this.deviceInput = new DeviceInputStore();
     this.bindingsUi = new BindingsUiStore();
     this.settingsPanelUi = new SettingsPanelUiStore();
@@ -93,6 +101,7 @@ export class RootStore {
       this.drivingCoachWidget.init();
       this.coachWidget.init();
       this.streamChatWidget.init();
+      this.pitServiceWidget.init();
       void this.chat.init();
       void this.twitchAuth.init();
     }
@@ -103,6 +112,7 @@ export class RootStore {
   dispose() {
     this.twitchAuth.dispose();
     this.streamChatWidget.dispose();
+    this.pitServiceWidget.dispose();
     this.chat.dispose();
     this.inputTraceWidget.dispose();
     this.coachWidget.dispose();

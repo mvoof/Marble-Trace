@@ -1,0 +1,60 @@
+.sessionHeader {
+  background: rgba(24, 24, 27, $opacity-heavy);
+  padding: sp(md) sp(md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid $widget-row-border;
+  font-family: $font-mono;
+  text-transform: uppercase;
+  font-size: fs(xs);
+  font-weight: 400;
+  color: $widget-text-secondary;
+}
+
+.sessionLeft {
+  display: flex;
+  gap: sp(xl);
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.trackName {
+  color: $widget-text-primary;
+  font-weight: 900;
+}
+
+.sessionType {
+  font-weight: 700;
+}
+
+.sessionTypePractice {
+  color: $race-blue;
+}
+
+.sessionTypeQualify {
+  color: $race-purple;
+}
+
+.sessionTypeRace {
+  color: $race-green;
+}
+
+.sessionTypeOther {
+  color: $widget-text-secondary;
+}
+
+.sessionLaps {
+  color: $widget-text-primary;
+  font-weight: 900;
+}
+
+.sessionRight {
+  display: flex;
+  gap: sp(sm);
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}

@@ -501,10 +501,18 @@ export type ResolveLayoutChange = (
   current: LayoutChangeContext
 ) => LayoutChangeResult | null;
 
-export interface WidgetConfig extends WidgetMeta {
-  component: React.ComponentType;
+/**
+ * What a widget declares about itself, in its own `manifest.ts`. Plain data:
+ * no React, so the catalog the stores read carries no UI with it. The id →
+ * component map lives in `ui/widgets/registry.ts`.
+ */
+export interface WidgetManifest extends WidgetMeta {
   userSettings: WidgetUserSettings;
   resolveLayoutChange?: ResolveLayoutChange;
+}
+
+export interface WidgetConfig extends WidgetManifest {
+  component: React.ComponentType;
 }
 
 export type WidgetDefaultConfig = WidgetMeta & {

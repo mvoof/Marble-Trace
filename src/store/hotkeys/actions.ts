@@ -1,6 +1,9 @@
-import { DEFAULT_WIDGETS } from '@store/widget-defaults';
-import { emitPitServiceToggle, emitStandingsScroll } from '@store/sync/events';
-import { APP_OWNER, type HotkeyAction } from './binding-types';
+import {
+  emitPitServiceToggle,
+  emitStandingsScroll,
+} from '@platform/services/events.service';
+import { APP_OWNER } from '@/types/input-bindings';
+import type { HotkeyAction } from './binding-types';
 
 // One keypress moves the standings by a small block rather than a single row —
 // a hotkey has no inertia, so row-by-row stepping is too slow to be usable.
@@ -104,7 +107,7 @@ const PIT_SERVICE_ACTIONS: HotkeyAction[] = [
     trigger: 'press',
     defaultBinding: keyboard('F7'),
     run: (root) => {
-      root.pitServiceWidget.toggleManualShow();
+      root.pitServiceWidget.panel.toggleManualShow();
       void emitPitServiceToggle();
     },
   },
@@ -118,31 +121,31 @@ const PIT_SERVICE_ACTIONS: HotkeyAction[] = [
     // With both auto switches off there is no auto mode to hand the stop to,
     // so the key would toggle a flag nothing reads.
     isInert: (root) =>
-      !root.pitServiceWidget.isAutoFuelEnabled &&
-      !root.pitServiceWidget.isAutoTiresEnabled,
+      !root.pitServiceWidget.auto.isAutoFuelEnabled &&
+      !root.pitServiceWidget.auto.isAutoTiresEnabled,
     inertHintKey: 'pitServiceAutoMode',
-    run: (root) => root.pitServiceWidget.toggleAutoSuspended(),
+    run: (root) => root.pitServiceWidget.auto.toggleAutoSuspended(),
   },
   {
     id: 'pit-service:apply-order',
     owner: 'pit-service',
     labelKey: 'pitServiceApplyOrder',
     trigger: 'press',
-    run: (root) => void root.pitServiceWidget.sendPlannedOrder(),
+    run: (root) => void root.pitServiceWidget.order.sendPlannedOrder(),
   },
   {
     id: 'pit-service:clear-order',
     owner: 'pit-service',
     labelKey: 'pitServiceClearOrder',
     trigger: 'press',
-    run: (root) => void root.pitServiceWidget.sendClearOrder(),
+    run: (root) => void root.pitServiceWidget.order.sendClearOrder(),
   },
   {
     id: 'pit-service:fuel',
     owner: 'pit-service',
     labelKey: 'pitServiceFuel',
     trigger: 'press',
-    run: (root) => void root.pitServiceWidget.toggleFuel(),
+    run: (root) => void root.pitServiceWidget.order.toggleFuel(),
   },
   // The step follows the unit the driver reads — a liter, or a gallon's worth
   // of liters — so the number on the bar moves by what the key says it does.
@@ -152,8 +155,8 @@ const PIT_SERVICE_ACTIONS: HotkeyAction[] = [
     labelKey: 'pitServiceFuelPlus',
     trigger: 'press',
     run: (root) =>
-      void root.pitServiceWidget.adjustFuel(
-        root.pitServiceWidget.fuelStepLiters
+      void root.pitServiceWidget.order.adjustFuel(
+        root.pitServiceWidget.order.fuelStepLiters
       ),
   },
   {
@@ -162,8 +165,8 @@ const PIT_SERVICE_ACTIONS: HotkeyAction[] = [
     labelKey: 'pitServiceFuelMinus',
     trigger: 'press',
     run: (root) =>
-      void root.pitServiceWidget.adjustFuel(
-        -root.pitServiceWidget.fuelStepLiters
+      void root.pitServiceWidget.order.adjustFuel(
+        -root.pitServiceWidget.order.fuelStepLiters
       ),
   },
   {
@@ -171,56 +174,56 @@ const PIT_SERVICE_ACTIONS: HotkeyAction[] = [
     owner: 'pit-service',
     labelKey: 'pitServiceTiresAll',
     trigger: 'press',
-    run: (root) => void root.pitServiceWidget.toggleAllTires(),
+    run: (root) => void root.pitServiceWidget.order.toggleAllTires(),
   },
   {
     id: 'pit-service:tire-lf',
     owner: 'pit-service',
     labelKey: 'pitServiceTireLf',
     trigger: 'press',
-    run: (root) => void root.pitServiceWidget.toggleTire('lf'),
+    run: (root) => void root.pitServiceWidget.order.toggleTire('lf'),
   },
   {
     id: 'pit-service:tire-rf',
     owner: 'pit-service',
     labelKey: 'pitServiceTireRf',
     trigger: 'press',
-    run: (root) => void root.pitServiceWidget.toggleTire('rf'),
+    run: (root) => void root.pitServiceWidget.order.toggleTire('rf'),
   },
   {
     id: 'pit-service:tire-lr',
     owner: 'pit-service',
     labelKey: 'pitServiceTireLr',
     trigger: 'press',
-    run: (root) => void root.pitServiceWidget.toggleTire('lr'),
+    run: (root) => void root.pitServiceWidget.order.toggleTire('lr'),
   },
   {
     id: 'pit-service:tire-rr',
     owner: 'pit-service',
     labelKey: 'pitServiceTireRr',
     trigger: 'press',
-    run: (root) => void root.pitServiceWidget.toggleTire('rr'),
+    run: (root) => void root.pitServiceWidget.order.toggleTire('rr'),
   },
   {
     id: 'pit-service:tire-compound',
     owner: 'pit-service',
     labelKey: 'pitServiceTireCompound',
     trigger: 'press',
-    run: (root) => void root.pitServiceWidget.cycleTireCompound(),
+    run: (root) => void root.pitServiceWidget.order.cycleTireCompound(),
   },
   {
     id: 'pit-service:fast-repair',
     owner: 'pit-service',
     labelKey: 'pitServiceFastRepair',
     trigger: 'press',
-    run: (root) => void root.pitServiceWidget.toggleFastRepair(),
+    run: (root) => void root.pitServiceWidget.order.toggleFastRepair(),
   },
   {
     id: 'pit-service:windshield',
     owner: 'pit-service',
     labelKey: 'pitServiceWindshield',
     trigger: 'press',
-    run: (root) => void root.pitServiceWidget.toggleWindshield(),
+    run: (root) => void root.pitServiceWidget.order.toggleWindshield(),
   },
 ];
 
@@ -246,45 +249,23 @@ export const widgetVisibilityActionId = (widgetId: string) =>
  * by hand, which only means anything while the widget is in the layout. Being
  * in the layout and being on screen right now are two different questions.
  */
-const WIDGET_VISIBILITY_ACTIONS: HotkeyAction[] = DEFAULT_WIDGETS.map(
-  (widget) => ({
-    id: widgetVisibilityActionId(widget.id),
-    owner: widget.id,
-    labelKey: 'widgetToggleVisibility',
-    trigger: 'press',
-    ignoreLayoutGate: true,
-    run: (root) => {
-      const isEnabled =
-        root.widgetSettings.getWidget(widget.id)?.userSettings.enabled === true;
+export const widgetVisibilityAction = (widgetId: string): HotkeyAction => ({
+  id: widgetVisibilityActionId(widgetId),
+  owner: widgetId,
+  labelKey: 'widgetToggleVisibility',
+  trigger: 'press',
+  ignoreLayoutGate: true,
+  run: (root) => {
+    const isEnabled =
+      root.widgetSettings.getWidget(widgetId)?.userSettings.enabled === true;
 
-      root.widgetSettings.setWidgetEnabled(widget.id, !isEnabled);
-    },
-  })
-);
+    root.widgetSettings.setWidgetEnabled(widgetId, !isEnabled);
+  },
+});
 
-// Adding a widget to a layout is the layout editor's job, so there is
-// deliberately no "put this widget into the layout" binding here.
-export const ACTIONS: HotkeyAction[] = [
+/** Everything that does not depend on which widgets the build ships. */
+export const STATIC_ACTIONS: HotkeyAction[] = [
   ...APP_ACTIONS,
   ...STANDINGS_ACTIONS,
   ...PIT_SERVICE_ACTIONS,
-  ...WIDGET_VISIBILITY_ACTIONS,
 ];
-
-export const ACTION_BY_ID = new Map(
-  ACTIONS.map((action) => [action.id, action])
-);
-
-/**
- * Owner ids in the order the settings UI shows them: Application, then the
- * widgets that actually have bindable actions.
- */
-export const ACTION_OWNERS: string[] = [
-  APP_OWNER,
-  ...DEFAULT_WIDGETS.map((widget) => widget.id).filter((widgetId) =>
-    ACTIONS.some((action) => action.owner === widgetId)
-  ),
-];
-
-export const actionsForOwner = (owner: string) =>
-  ACTIONS.filter((action) => action.owner === owner);

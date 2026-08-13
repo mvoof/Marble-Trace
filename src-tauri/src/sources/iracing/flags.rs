@@ -1,6 +1,6 @@
 //! Decode iRacing session flag bit fields into a normalized `RaceFlags` struct.
 //!
-//! Bit masks mirror `src/utils/formatters/flags-utils.ts` exactly.
+//! Bit masks mirror `src/utils/flags-utils.ts` exactly.
 //! This module is the only place that reads raw iRacing flag bits.
 
 use crate::model::flags::RaceFlags;

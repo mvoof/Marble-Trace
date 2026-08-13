@@ -1,0 +1,78 @@
+import type { WidgetManifest } from '@/types/widget-settings';
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
+import {
+  COMMON_WIDGET_DEFAULTS,
+  DEFAULT_PLAYER_ACCENT_COLOR,
+  DEFAULT_PLAYER_ROW_COLOR,
+  PANEL_APPEARANCE_DEFAULTS,
+  makeColumnLayoutResolver,
+} from '@ui/widgets/widget-manifest';
+import { computeStandingsDesignWidth } from '@ui/widgets/StandingsWidget/standings-utils';
+
+const resolveStandingsLayout =
+  makeColumnLayoutResolver<StandingsWidgetSettings>(
+    [
+      'showLicBadge',
+      'showIRating',
+      'showIrChange',
+      'showLapsCompleted',
+      'showPosChange',
+      'showBrand',
+      'showTire',
+    ],
+    computeStandingsDesignWidth
+  );
+
+const STANDINGS_COLUMN_DEFAULTS = {
+  showPosChange: true,
+  showBrand: true,
+  showTire: true,
+  showLicBadge: true,
+  showIRating: true,
+  showIrChange: true,
+  showLapsCompleted: true,
+};
+const STANDINGS_DESIGN_WIDTH = computeStandingsDesignWidth(
+  STANDINGS_COLUMN_DEFAULTS as unknown as StandingsWidgetSettings
+);
+
+export const STANDINGS_MANIFEST: WidgetManifest = {
+  id: 'standings',
+  label: 'Standings',
+  description: 'Live session standings and intervals.',
+  resolveLayoutChange: resolveStandingsLayout,
+  requiredCapabilities: ['standings'],
+  designWidth: STANDINGS_DESIGN_WIDTH,
+  designHeight: 500,
+  userSettings: {
+    enabled: true,
+    x: 50,
+    y: 50,
+    currentWidth: STANDINGS_DESIGN_WIDTH,
+    currentHeight: 500,
+    ...COMMON_WIDGET_DEFAULTS,
+    ...PANEL_APPEARANCE_DEFAULTS,
+    rowPadding: 'narrow',
+    viewMode: 'all',
+    scrollResetSeconds: 8,
+    ...STANDINGS_COLUMN_DEFAULTS,
+    showLivePosChange: true,
+    useLivePositions: true,
+    driversAhead: 0,
+    driversBehind: 0,
+    groupedRowsPerClass: 0,
+    showColumnHeaders: true,
+    showSessionHeader: true,
+    showSessionTime: true,
+    showWeather: true,
+    showSOF: true,
+    showTotalDrivers: true,
+    showPitStops: true,
+    showIncidentsBadge: true,
+    abbreviateNames: false,
+    showDriverFlags: true,
+    hideRetiredDrivers: false,
+    playerRowColor: DEFAULT_PLAYER_ROW_COLOR,
+    playerAccentColor: DEFAULT_PLAYER_ACCENT_COLOR,
+  },
+};

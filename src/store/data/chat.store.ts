@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { listenTo, type UnlistenFn } from '@platform/services/events.service';
 
 import type {
   ChatDeletion,
@@ -11,7 +11,7 @@ import {
   CHAT_DELETION,
   CHAT_MESSAGE,
   CHAT_PRESENCE,
-} from '@store/sync/sim-events';
+} from '@platform/sync/sim-events';
 
 // Hard ceiling on retained messages. The widget shows far fewer; this only
 // bounds memory on a channel that never stops talking.
@@ -32,15 +32,15 @@ export class ChatStore {
   }
 
   async init() {
-    const message = await listen<ChatMessage>(CHAT_MESSAGE, (event) => {
+    const message = await listenTo<ChatMessage>(CHAT_MESSAGE, (event) => {
       runInAction(() => this.appendMessage(event.payload));
     });
 
-    const presence = await listen<ChatPresence>(CHAT_PRESENCE, (event) => {
+    const presence = await listenTo<ChatPresence>(CHAT_PRESENCE, (event) => {
       runInAction(() => this.updatePresence(event.payload));
     });
 
-    const deletion = await listen<ChatDeletion>(CHAT_DELETION, (event) => {
+    const deletion = await listenTo<ChatDeletion>(CHAT_DELETION, (event) => {
       runInAction(() => this.applyDeletion(event.payload));
     });
 

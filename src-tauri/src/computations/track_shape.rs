@@ -672,7 +672,7 @@ mod tests {
             voltage: None,
             on_pit_road: Some(false),
             is_on_track: None,
-            car_left_right: None,
+            spotter: None,
             engine_warnings: None,
             player_car_sl_shift_rpm: vec![],
             player_car_sl_blink_rpm: vec![],
@@ -698,7 +698,7 @@ mod tests {
             car_idx_track_surface: vec![],
             car_idx_tire_compound: vec![],
             car_idx_session_flags: vec![],
-            car_left_right: None,
+            spotter: None,
         }
     }
 

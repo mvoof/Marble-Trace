@@ -5,8 +5,20 @@ import {
   runInAction,
   type IReactionDisposer,
 } from 'mobx';
-import { invoke } from '@tauri-apps/api/core';
-import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { listenTo, type UnlistenFn } from '@platform/services/events.service';
+
+import {
+  getConnectionStatus,
+  getLastSessionInfo,
+  setActiveEventsSilent,
+  startTelemetryStream,
+  stopTelemetryStream,
+} from '@platform/services/telemetry.service';
+import {
+  deleteReferenceLap,
+  getCachedTrackShape,
+  getReferenceLap,
+} from '@platform/services/track.service';
 
 import type {
   SessionSnapshot,
@@ -19,11 +31,11 @@ import type {
   ReferenceLapData,
   TrackCondition,
 } from '@/types/bindings';
-import { debug } from '@utils/debug';
+import { debug } from '@store/sim/debug';
 import {
   nextTrackCondition,
   trackConditionForWetness,
-} from '@utils/widget/track-condition';
+} from '@store/sim/track-condition';
 import type { TelemetryStatus } from '@/types';
 import type { RootStore } from '@store/root-store';
 import {
@@ -36,7 +48,7 @@ import {
   SIM_CAPABILITIES,
   SIM_REFERENCE_LAP_UPDATED,
   TRACK_MAP_CLEAR,
-} from '@store/sync/sim-events';
+} from '@platform/sync/sim-events';
 
 const EVENT_CAR_DYNAMICS = 1 << 0;
 const EVENT_CAR_INPUTS = 1 << 1;
@@ -155,11 +167,7 @@ export class SimStore {
     this.root.referenceLap.reset();
 
     try {
-      const data = await invoke<ReferenceLapData | null>('get_reference_lap', {
-        trackId,
-        carScreenName,
-        condition,
-      });
+      const data = await getReferenceLap(trackId, carScreenName, condition);
 
       if (data) {
         runInAction(() => this.root.referenceLap.updateReferenceLap(data));
@@ -167,6 +175,12 @@ export class SimStore {
     } catch (err) {
       debug.telemetry('Failed to load reference lap: %o', err);
     }
+  }
+
+  async deleteReferenceLap(trackId: number, carScreenName: string) {
+    await deleteReferenceLap(trackId, carScreenName);
+
+    this.root.referenceLap.reset();
   }
 
   private updateActiveEvents() {
@@ -205,7 +219,7 @@ export class SimStore {
       }
     }
 
-    void invoke('set_active_events', { mask });
+    setActiveEventsSilent(mask);
   }
 
   async startStream() {
@@ -214,7 +228,7 @@ export class SimStore {
     this.disposeListeners();
 
     try {
-      await invoke('stop_telemetry_stream');
+      await stopTelemetryStream();
     } catch {
       // ignore
     }
@@ -231,9 +245,7 @@ export class SimStore {
     debug.telemetry('starting stream...');
 
     try {
-      const initialInfo = await invoke<SessionSnapshot | null>(
-        'get_last_session_info'
-      );
+      const initialInfo = await getLastSessionInfo();
 
       if (initialInfo && this.initId === currentId) {
         this.root.session.updateSessionInfo(initialInfo);
@@ -241,7 +253,7 @@ export class SimStore {
 
       await this.hydrateTrackShape(currentId);
 
-      await invoke('start_telemetry_stream');
+      await startTelemetryStream();
 
       if (this.initId === currentId) {
         debug.telemetry('stream started');
@@ -259,7 +271,7 @@ export class SimStore {
     this.disposeListeners();
 
     try {
-      await invoke('stop_telemetry_stream');
+      await stopTelemetryStream();
     } catch {
       // ignore
     }
@@ -274,8 +286,8 @@ export class SimStore {
 
     try {
       const [isConnected, initialInfo] = await Promise.all([
-        invoke<boolean>('get_connection_status'),
-        invoke<SessionSnapshot | null>('get_last_session_info'),
+        getConnectionStatus(),
+        getLastSessionInfo(),
       ]);
 
       runInAction(() => {
@@ -300,9 +312,7 @@ export class SimStore {
   // the recording overlay. Pull it explicitly on startup.
   private async hydrateTrackShape(guardId: number) {
     try {
-      const cachedShape = await invoke<TrackShapePayload | null>(
-        'get_cached_track_shape'
-      );
+      const cachedShape = await getCachedTrackShape();
 
       if (!cachedShape || this.initId !== guardId) return;
 
@@ -373,7 +383,7 @@ export class SimStore {
 
   private async subscribeAllEvents(guardId: number) {
     this.unlistens.push(
-      await listen<TelemetryBundle>(SIM_TELEMETRY_BUNDLE, (event) => {
+      await listenTo<TelemetryBundle>(SIM_TELEMETRY_BUNDLE, (event) => {
         if (this.initId !== guardId) return;
 
         const b = event.payload;
@@ -387,12 +397,7 @@ export class SimStore {
           if (b.car_inputs) this.root.player.updateCarInputs(b.car_inputs);
           if (b.car_positions)
             this.root.cars.updateCarPositions(b.car_positions);
-          if (b.car_status) {
-            this.root.player.updateCarStatus(b.car_status);
-            this.root.pitServiceWidget.handlePitRoadChange(
-              b.car_status.on_pit_road ?? false
-            );
-          }
+          if (b.car_status) this.root.player.updateCarStatus(b.car_status);
           if (b.lap_timing) this.root.player.updateLapTiming(b.lap_timing);
           this.root.player.updatePitTarget(
             b.pit_target_dist_m ?? null,
@@ -403,12 +408,7 @@ export class SimStore {
           if (b.environment)
             this.root.environment.updateEnvironment(b.environment);
           if (b.chassis) this.root.player.updateChassis(b.chassis);
-          if (b.pit_service) {
-            this.root.player.updatePitService(b.pit_service);
-            this.root.pitServiceWidget.handleServiceActiveChange(
-              b.pit_service.serviceActive
-            );
-          }
+          if (b.pit_service) this.root.player.updatePitService(b.pit_service);
 
           if (b.proximity)
             this.root.backendComputed.updateProximity(b.proximity);
@@ -435,7 +435,7 @@ export class SimStore {
     );
 
     this.unlistens.push(
-      await listen<SessionSnapshot>(SIM_SESSION, (event) => {
+      await listenTo<SessionSnapshot>(SIM_SESSION, (event) => {
         if (this.initId !== guardId) return;
 
         debug.telemetry('session info received: %o', event.payload);
@@ -444,7 +444,7 @@ export class SimStore {
     );
 
     this.unlistens.push(
-      await listen<SimStatus>(SIM_STATUS, (event) => {
+      await listenTo<SimStatus>(SIM_STATUS, (event) => {
         if (this.initId !== guardId) return;
 
         const payload = event.payload;
@@ -457,7 +457,7 @@ export class SimStore {
     );
 
     this.unlistens.push(
-      await listen(SIM_DISCONNECTED, () => {
+      await listenTo(SIM_DISCONNECTED, () => {
         if (this.initId !== guardId) return;
 
         debug.telemetry('stream disconnected');
@@ -467,7 +467,7 @@ export class SimStore {
     );
 
     this.unlistens.push(
-      await listen<WeatherForecastEntry[]>(SIM_WEATHER, (event) => {
+      await listenTo<WeatherForecastEntry[]>(SIM_WEATHER, (event) => {
         if (this.initId !== guardId) return;
 
         this.root.environment.updateWeatherForecast(event.payload);
@@ -475,7 +475,7 @@ export class SimStore {
     );
 
     this.unlistens.push(
-      await listen<TrackShapePayload>(SIM_TRACK_SHAPE, (event) => {
+      await listenTo<TrackShapePayload>(SIM_TRACK_SHAPE, (event) => {
         if (this.initId !== guardId) return;
 
         runInAction(() => {
@@ -485,7 +485,7 @@ export class SimStore {
     );
 
     this.unlistens.push(
-      await listen(TRACK_MAP_CLEAR, () => {
+      await listenTo(TRACK_MAP_CLEAR, () => {
         if (this.initId !== guardId) return;
 
         runInAction(() => {
@@ -495,7 +495,7 @@ export class SimStore {
     );
 
     this.unlistens.push(
-      await listen<ReferenceLapData>(SIM_REFERENCE_LAP_UPDATED, (event) => {
+      await listenTo<ReferenceLapData>(SIM_REFERENCE_LAP_UPDATED, (event) => {
         if (this.initId !== guardId) return;
 
         runInAction(() => {
@@ -505,7 +505,7 @@ export class SimStore {
     );
 
     this.unlistens.push(
-      await listen<CapabilitiesPayload>(SIM_CAPABILITIES, (event) => {
+      await listenTo<CapabilitiesPayload>(SIM_CAPABILITIES, (event) => {
         if (this.initId !== guardId) return;
 
         debug.telemetry('capabilities received: %o', event.payload);

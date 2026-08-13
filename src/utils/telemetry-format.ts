@@ -1,0 +1,143 @@
+import type { UnitSystem } from '@/types';
+
+export const MPS_TO_KMH = 3.6;
+export const MPS_TO_MPH = 2.23694;
+const LITERS_TO_GAL = 0.264172;
+const METERS_TO_FEET = 3.28084;
+
+export function formatSpeed(mps: number, unitSystem: UnitSystem): string {
+  const factor = unitSystem === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
+
+  return Math.round(mps * factor).toString();
+}
+
+export function speedUnit(unitSystem: UnitSystem): string {
+  return unitSystem === 'metric' ? 'KM/H' : 'MPH';
+}
+
+export function convertTemp(celsius: number, system: UnitSystem): number {
+  if (system === 'imperial') {
+    return celsius * 1.8 + 32;
+  }
+
+  return celsius;
+}
+
+export function formatTemp(
+  celsius: number | null,
+  unitSystem: UnitSystem
+): string {
+  if (celsius === null) return '--.-';
+
+  if (unitSystem === 'imperial') {
+    return (celsius * 1.8 + 32).toFixed(1);
+  }
+
+  return celsius.toFixed(1);
+}
+
+export function tempUnit(unitSystem: UnitSystem): string {
+  return unitSystem === 'metric' ? '\u00B0C' : '\u00B0F';
+}
+
+export function formatFuel(liters: number, unitSystem: UnitSystem): string {
+  if (unitSystem === 'imperial') {
+    return (liters * LITERS_TO_GAL).toFixed(2);
+  }
+
+  return liters.toFixed(2);
+}
+
+export function formatDistance(
+  meters: number | null | undefined,
+  unitSystem: UnitSystem
+): string {
+  if (meters == null || isNaN(meters)) {
+    return '--.-';
+  }
+
+  if (unitSystem === 'imperial') {
+    return (meters * METERS_TO_FEET).toFixed(1);
+  }
+
+  return Number(meters).toFixed(1);
+}
+
+export function distanceUnit(unitSystem: UnitSystem): string {
+  return unitSystem === 'metric' ? 'м' : 'ft';
+}
+
+export function formatGear(gear: number): string {
+  if (gear === 0) return 'N';
+  if (gear < 0) return 'R';
+  return gear.toString();
+}
+
+export function formatLapTime(seconds: number | null): string {
+  if (seconds === null || seconds <= 0) return '--:--.---';
+
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+
+  if (mins > 0) {
+    return `${mins}:${secs.toFixed(3).padStart(6, '0')}`;
+  }
+
+  return secs.toFixed(3);
+}
+
+export function formatSessionTime(seconds: number | null): string {
+  if (seconds === null || seconds <= 0) return '-:--:--';
+
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+
+  return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+export function formatPercent(fraction: number | null): string {
+  if (fraction === null) return '--%';
+  return `${Math.round(fraction * 100)}%`;
+}
+
+export const resolveSessionLaps = (
+  sessionLaps: string | null | undefined,
+  remainSecs: number | null,
+  currentLap: number | null,
+  leaderBestLapTime: number | null
+): string | null => {
+  if (!sessionLaps) return null;
+  if (sessionLaps.toLowerCase() !== 'unlimited') return sessionLaps;
+
+  if (remainSecs === null || remainSecs < 0) return null;
+  if (currentLap === null) return null;
+  if (remainSecs === 0) return String(currentLap);
+  if (leaderBestLapTime === null || leaderBestLapTime <= 0) return null;
+
+  const remainingLaps = Math.ceil(remainSecs / leaderBestLapTime);
+  return String(currentLap + remainingLaps);
+};
+
+export const NO_FUEL_DATA_PLACEHOLDER = '--.-';
+export const NO_LAPS_REMAINING_DATA_PLACEHOLDER = '--.-';
+export const NO_TIME_DATA_PLACEHOLDER = '--:--';
+export const NO_DATE_DATA_PLACEHOLDER = '-- --- ----';
+
+const KPH_TO_MS = 1 / 3.6;
+const MPH_TO_MS = 0.44704;
+
+export const parsePitSpeedLimitMs = (
+  raw: string | null | undefined
+): number => {
+  if (!raw) return 0;
+
+  const match = raw.match(/^([\d.]+)\s*(kph|mph)/i);
+
+  if (!match) return 0;
+
+  const value = parseFloat(match[1]);
+  const unit = match[2].toLowerCase();
+
+  return unit === 'mph' ? value * MPH_TO_MS : value * KPH_TO_MS;
+};

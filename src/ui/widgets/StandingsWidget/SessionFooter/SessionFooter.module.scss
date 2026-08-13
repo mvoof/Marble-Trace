@@ -1,0 +1,25 @@
+.sessionFooter {
+  background: rgba(18, 18, 20, $opacity-heavy);
+  padding: sp(xs) sp(md); // Narrower vertical padding (exactly like StandingsHeader)
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid $widget-row-border;
+  font-family: $font-mono;
+  text-transform: uppercase;
+  font-size: fs(xs);
+  font-weight: 400;
+  color: $widget-text-secondary;
+}
+
+.footerLeft {
+  display: flex;
+  gap: sp(sm);
+  align-items: center;
+}
+
+.footerRight {
+  display: flex;
+  gap: sp(sm);
+  align-items: center;
+}

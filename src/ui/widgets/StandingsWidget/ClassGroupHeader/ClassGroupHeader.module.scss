@@ -1,0 +1,55 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: sp(xs) sp(md);
+  border-bottom: 1px solid $widget-row-border;
+  flex-shrink: 0;
+}
+
+// Marks the class the wheel is about to scroll; without it there is no telling
+// whether the next notch moves this class's drivers or the classes themselves.
+.headerScrollTarget {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: sp(sm);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pagination {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
+  color: $widget-text-primary;
+  letter-spacing: 0.04em;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: radius(sm);
+  padding: sp(xxxs) sp(xs);
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+.className {
+  font-family: $font-widget;
+  font-weight: 800;
+  font-size: fs(sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.pills {
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
+  flex-shrink: 0;
+}

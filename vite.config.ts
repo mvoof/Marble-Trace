@@ -22,16 +22,39 @@ export default defineConfig(() => ({
   base: './',
 
   resolve: {
-    // TODO: add named aliases for @types, @components, @storybook in vite.config.ts (and tsconfig paths) to replace @/ prefix
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@assets': path.resolve(__dirname, './src/assets'),
-      '@store': path.resolve(__dirname, './src/store'),
-      '@widgets': path.resolve(__dirname, './src/widgets'),
-      '@hooks': path.resolve(__dirname, './src/hooks'),
-      '@utils': path.resolve(__dirname, './src/utils'),
-      '@app': path.resolve(__dirname, './src/app'),
-    },
+    // Ordered longest-prefix-first: Vite matches string aliases by prefix, so the
+    // layer aliases must come before the catch-all '@'.
+    alias: [
+      {
+        find: '@platform/services',
+        replacement: path.resolve(__dirname, './src/platform/services'),
+      },
+      {
+        find: '@platform/sync',
+        replacement: path.resolve(__dirname, './src/platform/sync'),
+      },
+      {
+        find: '@platform/settings-schema',
+        replacement: path.resolve(__dirname, './src/platform/settings-schema'),
+      },
+      { find: '@ui/app', replacement: path.resolve(__dirname, './src/ui/app') },
+      {
+        find: '@ui/widgets',
+        replacement: path.resolve(__dirname, './src/ui/widgets'),
+      },
+      {
+        find: '@ui/shared',
+        replacement: path.resolve(__dirname, './src/ui/shared'),
+      },
+      {
+        find: '@ui/hooks',
+        replacement: path.resolve(__dirname, './src/ui/hooks'),
+      },
+      { find: '@store', replacement: path.resolve(__dirname, './src/store') },
+      { find: '@utils', replacement: path.resolve(__dirname, './src/utils') },
+      { find: '@assets', replacement: path.resolve(__dirname, './src/assets') },
+      { find: '@', replacement: path.resolve(__dirname, './src') },
+    ],
   },
 
   css: {

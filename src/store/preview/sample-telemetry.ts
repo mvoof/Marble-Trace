@@ -232,7 +232,7 @@ export const seedSampleTelemetry = action((store: RootStore) => {
 
   // The pit service widget hides itself off pit road; the settings preview has
   // no session, so it opts in through the same manual toggle the hotkey uses.
-  store.pitServiceWidget.manualShow = true;
+  store.pitServiceWidget.panel.manualShow = true;
   store.backendComputed.updateFuel(sampleFuel);
   store.backendComputed.updateLapDelta(sampleLapDelta);
 

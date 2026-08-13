@@ -3,12 +3,19 @@ import { runInAction } from 'mobx';
 import { RootStore } from '@store/root-store';
 import type { SavedLayout } from '@/types/widget-settings';
 
-// setWidgets pushes a few settings to the backend and chains off the promise,
-// so the mock has to resolve rather than return undefined.
-vi.mock('@tauri-apps/api/core', () => ({
-  invoke: vi.fn(() => Promise.resolve()),
+// setWidgets pushes a few settings to the backend through the service layer,
+// which has no Tauri runtime to talk to under vitest.
+vi.mock('@platform/services/settings.service', () => ({
+  setPitWarningLapsSilent: vi.fn(),
+  setFuelAvgWindowSilent: vi.fn(),
+  setCarLengthSilent: vi.fn(),
 }));
-vi.mock('@tauri-apps/api/event', () => ({ emit: vi.fn() }));
+vi.mock('@platform/services/events.service', () => ({
+  listenTo: vi.fn().mockResolvedValue(() => {}),
+  emitToApp: vi.fn().mockResolvedValue(undefined),
+  emitToWindow: vi.fn().mockResolvedValue(undefined),
+  emitToOverlays: vi.fn().mockResolvedValue(undefined),
+}));
 
 const MONITOR = {
   name: 'DISPLAY1',
@@ -73,11 +80,11 @@ describe('isWidgetInActiveLayout', () => {
       });
     });
 
-    expect(root.pitServiceWidget.isAutoEnabled).toBe(true);
+    expect(root.pitServiceWidget.auto.isAutoEnabled).toBe(true);
 
     runInAction(() => root.widgetSettings.loadLayout('quali'));
 
-    expect(root.pitServiceWidget.isAutoEnabled).toBe(false);
+    expect(root.pitServiceWidget.auto.isAutoEnabled).toBe(false);
   });
 
   // Previewing a layout in the editor leaves the overlay on the previous one,

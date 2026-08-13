@@ -116,11 +116,13 @@ pub struct SessionEntry {
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
+/// A finishing/running position from the session results.
+///
+/// `position` and `class_position` are both **1-indexed** — the source layer
+/// normalises whatever convention the sim's own format uses.
 pub struct ResultPosition {
     pub car_idx: i32,
-    /// 1-indexed overall position.
     pub position: i32,
-    /// 0-indexed class position (iRacing convention).
     pub class_position: Option<i32>,
     pub lap: Option<i32>,
     pub time: Option<f32>,
@@ -175,9 +177,10 @@ pub struct SectorEntry {
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
+/// A qualifying result. `position` and `class_position` are both
+/// **1-indexed**, normalised by the source layer.
 pub struct QualifyResultEntry {
     pub car_idx: i32,
-    /// 0-indexed (iRacing convention; frontend adds 1 for display).
     pub position: i32,
     pub class_position: Option<i32>,
     /// Lap time that earned the grid slot. `None` when the car set no time.

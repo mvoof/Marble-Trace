@@ -1,8 +1,14 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { mergeWithDefaults } from '@utils/deep-merge';
-import { invoke } from '@tauri-apps/api/core';
-import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-defaults';
-import { resolveMonitorByName } from '@store/sync/overlay-resolution';
+import { mergeWithDefaults } from '@store/deep-merge';
+import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-catalog';
+import {
+  setCarLengthSilent,
+  setFuelAvgWindowSilent,
+  setPitWarningLapsSilent,
+} from '@platform/services/settings.service';
+import { resolveMonitorByName } from '@platform/sync/overlay-resolution';
+import { LayoutsStore } from '@store/settings/layouts.store';
+import { applyLayoutResize } from '@store/settings/layout-resize';
 
 import type {
   WidgetDefaultConfig,
@@ -18,54 +24,27 @@ import type {
   RadarSettings,
   SessionContext,
 } from '@/types/widget-settings';
-import { emit } from '@tauri-apps/api/event';
-import { DEFAULT_LAYOUT_RESOLUTION } from '@utils/widget/layout-resolution';
-import { cloneBackgroundImage } from '@utils/widget/layout-background';
+import { emitLayoutActivated } from '@platform/services/events.service';
+import { DEFAULT_LAYOUT_RESOLUTION } from '@store/settings/layout-resolution';
 import {
   monitorForWidget,
-  monitorsBounds,
   placeWidgetOnMonitor,
   widgetsOnMonitor,
-} from '@utils/widget/virtual-desktop';
+} from '@store/settings/virtual-desktop';
+import { WidgetHistory } from '@store/settings/widget-history';
+import {
+  bottomZIndex,
+  buildStarterWidgets,
+  pickableWidgetsForMonitor,
+  spotForAddedWidget,
+  topZIndex,
+  type PickableWidget,
+} from '@store/settings/widget-placement';
 import type { RootStore } from '@store/root-store';
 
-const DEFAULT_LAYOUT_NAME = 'Default';
+const LAYOUT_TOAST_DURATION_MS = 3000;
 
-// Diagonal offset applied when a freshly added widget would land on top of one
-// that is already centred on the same screen.
-const WIDGET_CASCADE_STEP = 40;
-
-/** A widget offered by the overlay's F9 "add widget" picker. */
-export interface PickableWidget {
-  id: string;
-  label: string;
-  description?: string;
-  available: boolean;
-  /** Monitor it currently lives on, or null when it isn't in the layout yet. */
-  currentMonitorName: string | null;
-}
-
-// Parks a monitor the machine no longer has to the right of every attached
-// screen. Its placeholder bounds would otherwise sit on top of a real monitor
-// in desktop space, and the centre-point test would hand its widgets over to
-// whichever screen it collided with.
-const parkedBounds = (
-  attached: LayoutMonitor[],
-  monitor: LayoutMonitor,
-  alreadyParked: LayoutMonitor[]
-) => {
-  const occupied = [...attached, ...alreadyParked];
-
-  if (occupied.length === 0) {
-    return { ...monitor.bounds, x: 0, y: 0 };
-  }
-
-  const right = Math.max(
-    ...occupied.map((candidate) => candidate.bounds.x + candidate.bounds.width)
-  );
-
-  return { ...monitor.bounds, x: right, y: 0 };
-};
+export type { PickableWidget };
 
 export class WidgetSettingsStore {
   // Live working copy of the ACTIVE layout. The overlay renders this; the layout
@@ -77,25 +56,15 @@ export class WidgetSettingsStore {
     ])
   );
 
-  undoStack: WidgetDefaultConfig[][] = [];
-  redoStack: WidgetDefaultConfig[][] = [];
+  readonly history = new WidgetHistory();
 
-  // Global widget defaults — the template edited in the Widgets catalog. Never
-  // rendered on the overlay; copied into a layout when a new layout is created.
-  // Kept fully independent from `widgets` so editing one never affects the other.
-  defaultWidgets = new Map<string, WidgetDefaultConfig>(
-    DEFAULT_WIDGETS.map((widgetConfig) => [
-      widgetConfig.id,
-      { ...widgetConfig, userSettings: { ...widgetConfig.userSettings } },
-    ])
-  );
-
-  // Bumped on every defaults mutation so the Widgets-catalog preview can react
-  // without coupling to the live-layout changeToken.
-  defaultsChangeToken = 0;
-
-  layouts: SavedLayout[] = [];
-  activeLayoutId: string | null = null;
+  /**
+   * The saved layout records. Owned here so the two always construct together,
+   * and exposed on RootStore as `root.layouts` for call sites that only need
+   * the records. Everything below that reads or writes a layout goes through
+   * it — this store keeps only the live working copy the overlay renders.
+   */
+  readonly layoutRecords = new LayoutsStore();
 
   // Monitors physically attached right now, refreshed by the arrangement
   // watcher. The editor offers these as screens a layout can be spread onto.
@@ -104,13 +73,6 @@ export class WidgetSettingsStore {
   // Set in an overlay window to the monitor that window covers. Null in the
   // main window, which edits one monitor at a time via activeMonitorName.
   ownMonitorName: string | null = null;
-
-  sessionLayouts: Record<SessionContext, string | null> = {
-    Practice: null,
-    Qualify: null,
-    Race: null,
-    Garage: null,
-  };
 
   // Logical (CSS px) resolution of the overlay window. Set by the overlay after
   // positioning, and by selectMonitorForActiveLayout when the active config
@@ -136,14 +98,35 @@ export class WidgetSettingsStore {
   // layout. Null whenever the live map already is the active layout.
   liveEnabledWidgetIds: string[] | null = null;
 
+  // Name shown in the overlay's "layout switched" toast; null once it expires.
+  layoutActivatedToast: string | null = null;
+
+  private layoutToastTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor(private readonly root?: RootStore) {
-    makeAutoObservable(
+    makeAutoObservable<WidgetSettingsStore, 'layoutToastTimer'>(
       this,
-      {},
+      {
+        layoutToastTimer: false,
+      },
       {
         autoBind: true,
       }
     );
+  }
+
+  showLayoutActivatedToast(layoutName: string) {
+    this.layoutActivatedToast = layoutName;
+
+    if (this.layoutToastTimer !== null) {
+      clearTimeout(this.layoutToastTimer);
+    }
+
+    this.layoutToastTimer = setTimeout(() => {
+      runInAction(() => {
+        this.layoutActivatedToast = null;
+      });
+    }, LAYOUT_TOAST_DURATION_MS);
   }
 
   get allWidgets(): WidgetDefaultConfig[] {
@@ -225,59 +208,31 @@ export class WidgetSettingsStore {
   }
 
   setSessionLayout(context: SessionContext, layoutId: string | null) {
-    this.sessionLayouts[context] = layoutId;
+    this.layoutRecords.setSessionLayout(context, layoutId);
     this.bumpMutation();
   }
 
   setSessionLayouts(layouts: Partial<Record<SessionContext, string | null>>) {
-    this.sessionLayouts = {
-      Practice: null,
-      Qualify: null,
-      Race: null,
-      Garage: null,
-      ...layouts,
-    };
+    this.layoutRecords.setSessionLayouts(layouts);
     this.bumpMutation();
   }
 
   pushUndo() {
-    const snapshot = this.snapshotWidgets();
-
-    if (this.undoStack.length > 0) {
-      const last = this.undoStack[this.undoStack.length - 1];
-
-      if (JSON.stringify(last) === JSON.stringify(snapshot)) {
-        return;
-      }
-    }
-
-    this.undoStack.push(snapshot);
-
-    if (this.undoStack.length > 10) {
-      this.undoStack.shift();
-    }
-
-    this.redoStack = [];
+    this.history.push(this.snapshotWidgets());
   }
 
   undo() {
-    if (this.undoStack.length === 0) return;
-
-    const previous = this.undoStack.pop()!;
-
-    this.redoStack.push(this.snapshotWidgets());
-    this.setWidgets(previous);
-    this.commitActiveLayout();
-    this.bumpMutation();
+    this.restore(this.history.undo(this.snapshotWidgets()));
   }
 
   redo() {
-    if (this.redoStack.length === 0) return;
+    this.restore(this.history.redo(this.snapshotWidgets()));
+  }
 
-    const next = this.redoStack.pop()!;
+  private restore(widgets: WidgetDefaultConfig[] | null) {
+    if (widgets === null) return;
 
-    this.undoStack.push(this.snapshotWidgets());
-    this.setWidgets(next);
+    this.setWidgets(widgets);
     this.commitActiveLayout();
     this.bumpMutation();
   }
@@ -289,17 +244,7 @@ export class WidgetSettingsStore {
 
     this.pushUndo();
 
-    let maxZ = 0;
-
-    for (const w of this.widgets.values()) {
-      if (w.id !== id) {
-        const z = w.userSettings.zIndex ?? 0;
-
-        if (z > maxZ) maxZ = z;
-      }
-    }
-
-    widget.userSettings.zIndex = maxZ + 1;
+    widget.userSettings.zIndex = topZIndex(this.allWidgets, id) + 1;
     this.bumpMutation();
   }
 
@@ -310,67 +255,8 @@ export class WidgetSettingsStore {
 
     this.pushUndo();
 
-    let minZ = 0;
-
-    for (const w of this.widgets.values()) {
-      if (w.id !== id) {
-        const z = w.userSettings.zIndex ?? 0;
-
-        if (z < minZ) minZ = z;
-      }
-    }
-
-    widget.userSettings.zIndex = minZ - 1;
+    widget.userSettings.zIndex = bottomZIndex(this.allWidgets, id) - 1;
     this.bumpMutation();
-  }
-
-  async cloneLayout(id: string) {
-    const layout = this.layouts.find((savedLayout) => savedLayout.id === id);
-
-    if (!layout) return;
-
-    const newId = crypto.randomUUID();
-    const name = `${layout.name} (Copy)`;
-
-    const backgroundImages: Record<string, string> = {};
-
-    for (const [monitorName, image] of Object.entries(
-      layout.backgroundImages ?? {}
-    )) {
-      const copied = await cloneBackgroundImage(image, newId).catch(
-        (error: unknown) => {
-          console.error('Failed to clone background image:', error);
-
-          return undefined;
-        }
-      );
-
-      if (copied) {
-        backgroundImages[monitorName] = copied;
-      }
-    }
-
-    const cloned: SavedLayout = {
-      id: newId,
-      name,
-      createdAt: Date.now(),
-      backgroundImages,
-      monitors: layout.monitors.map((monitor) => ({
-        name: monitor.name,
-        bounds: { ...monitor.bounds },
-      })),
-      widgets: layout.widgets.map((widget) => ({
-        ...widget,
-        userSettings: { ...widget.userSettings },
-      })),
-    };
-
-    runInAction(() => {
-      this.layouts = [...this.layouts, cloned];
-      this.bumpMutation();
-    });
-
-    return newId;
   }
 
   private bumpMutation() {
@@ -421,23 +307,8 @@ export class WidgetSettingsStore {
       if (fuel) {
         const settings = fuel.userSettings as unknown as FuelWidgetSettings;
 
-        void invoke('set_pit_warning_laps', {
-          laps: settings.pitWarningLaps,
-        }).catch((error) => {
-          console.error(
-            'Failed to initialize pit warning laps on backend:',
-            error
-          );
-        });
-
-        void invoke('set_fuel_avg_window', {
-          window: settings.fuelAvgWindow,
-        }).catch((error) => {
-          console.error(
-            'Failed to initialize fuel average window on backend:',
-            error
-          );
-        });
+        setPitWarningLapsSilent(settings.pitWarningLaps);
+        setFuelAvgWindowSilent(settings.fuelAvgWindow);
       }
 
       const radar =
@@ -447,11 +318,7 @@ export class WidgetSettingsStore {
         const settings = radar.userSettings as unknown as RadarSettings;
         const carLength = settings.carLength ?? 4.4;
 
-        void invoke('set_car_length', {
-          length: carLength,
-        }).catch((error) => {
-          console.error('Failed to initialize car length on backend:', error);
-        });
+        setCarLengthSilent(carLength);
       }
     });
   }
@@ -488,27 +355,13 @@ export class WidgetSettingsStore {
    * to move it instead of pretending a second copy could exist.
    */
   pickableWidgetsForMonitor(monitorName: string): PickableWidget[] {
-    const monitors = this.activeLayout?.monitors ?? [];
-    const available = new Set(this.availableWidgetIds);
-
-    const drawnHere = new Set(
-      widgetsOnMonitor(this.enabledWidgets, monitorName, monitors).map(
-        (widget) => widget.id
-      )
+    return pickableWidgetsForMonitor(
+      this.allWidgets,
+      this.enabledWidgets,
+      this.availableWidgetIds,
+      monitorName,
+      this.activeLayout?.monitors ?? []
     );
-
-    return this.allWidgets
-      .filter((widget) => !drawnHere.has(widget.id))
-      .map((widget) => ({
-        id: widget.id,
-        label: widget.label,
-        description: widget.description,
-        available: available.has(widget.id),
-        currentMonitorName: widget.userSettings.enabled
-          ? (monitorForWidget(widget, monitors)?.name ?? null)
-          : null,
-      }))
-      .sort((first, second) => first.label.localeCompare(second.label));
   }
 
   /**
@@ -526,47 +379,17 @@ export class WidgetSettingsStore {
 
     this.pushUndo();
 
-    const { bounds } = monitor;
-    const { currentWidth, currentHeight } = widget.userSettings;
-
     const occupied = widgetsOnMonitor(
       this.enabledWidgets,
       monitorName,
       this.activeLayout?.monitors ?? []
     ).filter((placed) => placed.id !== id);
 
-    let x = Math.round(bounds.x + (bounds.width - currentWidth) / 2);
-    let y = Math.round(bounds.y + (bounds.height - currentHeight) / 2);
+    const spot = spotForAddedWidget(widget, monitor, occupied, this.allWidgets);
 
-    // Cascade off anything already sitting in the middle so repeated adds don't
-    // stack into one indistinguishable pile.
-    while (
-      occupied.some(
-        (placed) =>
-          Math.abs(placed.userSettings.x - x) < WIDGET_CASCADE_STEP &&
-          Math.abs(placed.userSettings.y - y) < WIDGET_CASCADE_STEP
-      )
-    ) {
-      x += WIDGET_CASCADE_STEP;
-      y += WIDGET_CASCADE_STEP;
-    }
-
-    const maxX = Math.max(bounds.x, bounds.x + bounds.width - currentWidth);
-    const maxY = Math.max(bounds.y, bounds.y + bounds.height - currentHeight);
-
-    let maxZ = 0;
-
-    for (const other of this.widgets.values()) {
-      if (other.id === id) continue;
-
-      const zIndex = other.userSettings.zIndex ?? 0;
-
-      if (zIndex > maxZ) maxZ = zIndex;
-    }
-
-    widget.userSettings.x = Math.min(Math.max(x, bounds.x), maxX);
-    widget.userSettings.y = Math.min(Math.max(y, bounds.y), maxY);
-    widget.userSettings.zIndex = maxZ + 1;
+    widget.userSettings.x = spot.x;
+    widget.userSettings.y = spot.y;
+    widget.userSettings.zIndex = spot.zIndex;
     widget.userSettings.enabled = true;
 
     this.bumpMutation();
@@ -623,23 +446,19 @@ export class WidgetSettingsStore {
 
     Object.assign(widget.userSettings, resolvedPartial);
 
-    this.handleLayoutResize(id, widget, prevSettings, widget.userSettings);
+    applyLayoutResize(id, widget, prevSettings, widget.userSettings);
 
     this.bumpMutation();
 
     if (id === 'fuel' && 'pitWarningLaps' in resolvedPartial) {
-      void invoke('set_pit_warning_laps', {
-        laps: (resolvedPartial as FuelWidgetSettings).pitWarningLaps,
-      }).catch((error) =>
-        console.error('Failed to update pit warning laps:', error)
+      setPitWarningLapsSilent(
+        (resolvedPartial as FuelWidgetSettings).pitWarningLaps
       );
     }
 
     if (id === 'fuel' && 'fuelAvgWindow' in resolvedPartial) {
-      void invoke('set_fuel_avg_window', {
-        window: (resolvedPartial as FuelWidgetSettings).fuelAvgWindow,
-      }).catch((error) =>
-        console.error('Failed to update fuel average window:', error)
+      setFuelAvgWindowSilent(
+        (resolvedPartial as FuelWidgetSettings).fuelAvgWindow
       );
     }
 
@@ -662,234 +481,12 @@ export class WidgetSettingsStore {
         }
       }
 
-      void invoke('set_car_length', {
-        length: resolvedPartial.carLength,
-      }).catch((error) =>
-        console.error('Failed to update car length on backend:', error)
-      );
+      setCarLengthSilent(resolvedPartial.carLength);
     }
-  }
-
-  private handleLayoutResize(
-    id: string,
-    widget: WidgetDefaultConfig,
-    prevSettings: WidgetUserSettings,
-    newSettings: WidgetUserSettings
-  ) {
-    const config = WIDGET_BY_ID.get(id);
-    const resolver = config?.resolveLayoutChange;
-
-    if (!resolver) return;
-
-    const result = resolver(prevSettings, newSettings, {
-      designWidth: widget.designWidth,
-      designHeight: widget.designHeight,
-      currentWidth: widget.userSettings.currentWidth,
-      currentHeight: widget.userSettings.currentHeight,
-    });
-
-    if (!result) return;
-
-    if (result.designWidth !== undefined) {
-      widget.designWidth = result.designWidth;
-    }
-
-    if (result.designHeight !== undefined) {
-      widget.designHeight = result.designHeight;
-    }
-
-    if (result.currentWidth !== undefined) {
-      widget.userSettings.currentWidth = result.currentWidth;
-    }
-
-    if (result.currentHeight !== undefined) {
-      widget.userSettings.currentHeight = result.currentHeight;
-    }
-
-    if (result.userSettingsPatch) {
-      Object.assign(widget.userSettings, result.userSettingsPatch);
-    }
-  }
-
-  // ── Global defaults (edited in the Widgets catalog) ──────────────────────
-  // These mirror the live-widget API but operate on `defaultWidgets` and never
-  // touch the overlay (no backend invokes). They drive the "what a widget looks
-  // like before it's placed in a layout" template.
-
-  getDefaultWidget(id: string): WidgetDefaultConfig | undefined {
-    return this.defaultWidgets.get(id);
-  }
-
-  getDefaultSettings<SpecificSettings extends WidgetSpecificSettings>(
-    id: string
-  ): BaseUserSettings & SpecificSettings {
-    const widget = this.defaultWidgets.get(id);
-
-    const fallback = DEFAULT_WIDGETS.find(
-      (defaultWidget) => defaultWidget.id === id
-    )?.userSettings as (BaseUserSettings & SpecificSettings) | undefined;
-
-    return (
-      (widget?.userSettings as unknown as BaseUserSettings &
-        SpecificSettings) ?? fallback
-    );
-  }
-
-  updateDefaultUserSettings(id: string, partial: Partial<WidgetUserSettings>) {
-    const widget = this.defaultWidgets.get(id);
-
-    if (!widget) return;
-
-    let resolvedPartial = partial;
-
-    if (
-      id === 'fuel' &&
-      'barWidth' in partial &&
-      partial.barWidth !== undefined
-    ) {
-      resolvedPartial = {
-        ...partial,
-        barWidth: Math.max(5, Math.min(20, partial.barWidth)),
-      };
-    }
-
-    const prevSettings = { ...widget.userSettings };
-
-    Object.assign(widget.userSettings, resolvedPartial);
-
-    this.handleLayoutResize(id, widget, prevSettings, widget.userSettings);
-
-    this.defaultsChangeToken++;
-  }
-
-  setDefaultWidgets(widgets: WidgetDefaultConfig[]) {
-    runInAction(() => {
-      DEFAULT_WIDGETS.forEach((defaultWidget) => {
-        const saved = widgets.find((widget) => widget.id === defaultWidget.id);
-
-        const mergedUserSettings = saved
-          ? mergeWithDefaults(
-              defaultWidget.userSettings,
-              saved.userSettings ?? {}
-            )
-          : { ...defaultWidget.userSettings };
-
-        const existing = this.defaultWidgets.get(defaultWidget.id);
-
-        if (existing) {
-          Object.assign(existing.userSettings, mergedUserSettings);
-
-          if (saved) {
-            const merged = mergeWithDefaults(defaultWidget, saved);
-            existing.designWidth = merged.designWidth;
-            existing.designHeight = merged.designHeight;
-          }
-        } else {
-          this.defaultWidgets.set(defaultWidget.id, {
-            ...defaultWidget,
-            userSettings: mergedUserSettings,
-          });
-        }
-      });
-
-      this.defaultsChangeToken++;
-    });
-  }
-
-  private snapshotDefaults(): WidgetDefaultConfig[] {
-    return Array.from(this.defaultWidgets.values()).map((widget) => ({
-      ...widget,
-      userSettings: { ...widget.userSettings },
-    }));
   }
 
   setOverlayResolution(resolution: LayoutResolution) {
     this.overlayResolution = { ...resolution };
-  }
-
-  /**
-   * Puts every layout's monitors where the OS says they actually are, moving
-   * their widgets along with them. Runs on startup and whenever the display
-   * arrangement changes.
-   *
-   * Migrated layouts arrive with monitors laid out side by side from x=0,
-   * because the persisted settings never recorded desktop positions. This is
-   * the step that turns those placeholders into real coordinates — until it
-   * runs, a layout's widgets are in the right order but the wrong place.
-   */
-  alignMonitorsToHardware(attached: LayoutMonitor[]) {
-    const byName = new Map(
-      attached.map((monitor) => [monitor.name, monitor] as const)
-    );
-
-    for (const layout of this.layouts) {
-      if (layout.monitors.length === 0) continue;
-
-      // Which monitor each widget belongs to has to be resolved against the
-      // OLD bounds — once a monitor moves, the centre-point test would report
-      // the widget as belonging to whatever now covers its stale position.
-      const ownerByWidget = new Map<WidgetDefaultConfig, string>();
-
-      for (const widget of layout.widgets) {
-        const owner = monitorForWidget(widget, layout.monitors);
-
-        if (owner) {
-          ownerByWidget.set(widget, owner.name);
-        }
-      }
-
-      const previousBounds = new Map(
-        layout.monitors.map((monitor) => [monitor.name, { ...monitor.bounds }])
-      );
-
-      const parked: LayoutMonitor[] = [];
-
-      for (const monitor of layout.monitors) {
-        const match = byName.get(monitor.name);
-
-        if (match) {
-          monitor.bounds = { ...match.bounds };
-          continue;
-        }
-
-        monitor.bounds = parkedBounds(attached, monitor, parked);
-        parked.push(monitor);
-      }
-
-      layout.widgets = layout.widgets.map((widget) => {
-        const ownerName = ownerByWidget.get(widget);
-        const from = ownerName ? previousBounds.get(ownerName) : undefined;
-        const to = layout.monitors.find(
-          (monitor) => monitor.name === ownerName
-        )?.bounds;
-
-        if (!from || !to) return widget;
-
-        return placeWidgetOnMonitor(widget, from, to);
-      });
-    }
-
-    if (this.activeLayout) {
-      this.setWidgets(this.activeLayout.widgets);
-    }
-
-    this.bumpMutation();
-  }
-
-  /** Rectangle covering every monitor of the active layout. */
-  get desktopBounds() {
-    return monitorsBounds(this.activeLayout?.monitors ?? []);
-  }
-
-  // Monitors the active layout covers, empty ones included.
-  get activeMonitorNames(): string[] {
-    return (this.activeLayout?.monitors ?? []).map((monitor) => monitor.name);
-  }
-
-  monitorByName(monitorName: string): LayoutMonitor | undefined {
-    return this.activeLayout?.monitors.find(
-      (monitor) => monitor.name === monitorName
-    );
   }
 
   setAttachedMonitors(monitors: LayoutMonitor[]) {
@@ -948,82 +545,6 @@ export class WidgetSettingsStore {
           widgetsOnMonitor(enabled, monitor.name, monitors).length > 0
       )
       .map((monitor) => monitor.name);
-  }
-
-  // Adds a monitor to the layout, extending the area widgets can be dragged
-  // onto. Existing widgets are untouched — the new screen starts empty.
-  addMonitor(monitor: LayoutMonitor) {
-    const layout = this.activeLayout;
-
-    if (!layout) return;
-
-    if (layout.monitors.some((existing) => existing.name === monitor.name)) {
-      return;
-    }
-
-    layout.monitors = [
-      ...layout.monitors,
-      { name: monitor.name, bounds: { ...monitor.bounds } },
-    ];
-    this.bumpMutation();
-  }
-
-  // Drops a monitor from the layout. Its overlay window closes on the next
-  // window sync, and the widgets that lived on it move to the first remaining
-  // monitor rather than being deleted — losing them to a mis-click would be
-  // unrecoverable.
-  removeMonitor(layoutId: string, monitorName: string) {
-    const layout = this.layouts.find((candidate) => candidate.id === layoutId);
-    const removed = layout?.monitors.find(
-      (monitor) => monitor.name === monitorName
-    );
-
-    if (!layout || !removed) return;
-
-    const remaining = layout.monitors.filter(
-      (monitor) => monitor.name !== monitorName
-    );
-
-    const orphans = new Set(
-      widgetsOnMonitor(layout.widgets, monitorName, layout.monitors).map(
-        (widget) => widget.id
-      )
-    );
-
-    layout.monitors = remaining;
-
-    const fallback = remaining[0];
-
-    layout.widgets = layout.widgets.map((widget) =>
-      orphans.has(widget.id) && fallback
-        ? placeWidgetOnMonitor(widget, removed.bounds, fallback.bounds)
-        : widget
-    );
-
-    delete layout.backgroundImages?.[monitorName];
-
-    if (layout.id === this.activeLayoutId) {
-      this.setWidgets(layout.widgets);
-    }
-
-    this.bumpMutation();
-  }
-
-  setMonitorBackground(monitorName: string, image: string | undefined) {
-    const layout = this.activeLayout;
-
-    if (!layout) return;
-
-    const images = { ...(layout.backgroundImages ?? {}) };
-
-    if (image) {
-      images[monitorName] = image;
-    } else {
-      delete images[monitorName];
-    }
-
-    layout.backgroundImages = images;
-    this.bumpMutation();
   }
 
   // Applies widgets synced in from an overlay window. Only the widgets that
@@ -1089,16 +610,9 @@ export class WidgetSettingsStore {
   }
 
   setLayouts(layouts: SavedLayout[], activeLayoutId?: string | null) {
-    this.layouts = layouts;
+    this.layoutRecords.setLayouts(layouts, activeLayoutId);
 
-    if (activeLayoutId !== undefined) {
-      this.activeLayoutId = activeLayoutId;
-    }
-
-    const resolvedId = activeLayoutId ?? this.activeLayoutId;
-    const activeLayout = this.layouts.find(
-      (layout) => layout.id === resolvedId
-    );
+    const activeLayout = this.layoutRecords.activeLayout;
 
     if (activeLayout) {
       this.setWidgets(activeLayout.widgets);
@@ -1109,46 +623,21 @@ export class WidgetSettingsStore {
   // first run, anchored to the primary monitor — a layout with no monitor gets
   // no overlay window and no area to place widgets on.
   ensureDefaultLayout() {
-    if (this.layouts.length > 0) {
-      if (!this.activeLayoutId) {
-        this.activeLayoutId = this.layouts[0].id;
-      }
+    const id = this.layoutRecords.createDefaultLayout();
 
-      return;
-    }
-
-    const id = crypto.randomUUID();
-
-    this.layouts = [
-      {
-        id,
-        name: DEFAULT_LAYOUT_NAME,
-        createdAt: Date.now(),
-        monitors: [],
-        widgets: [],
-        backgroundImages: {},
-      },
-    ];
-
-    this.activeLayoutId = id;
-    this.sessionLayouts = {
-      Practice: id,
-      Qualify: id,
-      Race: id,
-      Garage: null,
-    };
+    if (!id) return;
 
     void resolveMonitorByName(null).then((monitor) => {
       if (!monitor) return;
 
       runInAction(() => {
-        const target = this.layouts.find((candidate) => candidate.id === id);
+        const target = this.layoutRecords.byId(id);
 
         if (!target || target.monitors.length > 0) return;
 
         this.overlayResolution = { ...monitor.resolution };
 
-        target.monitors = [
+        this.layoutRecords.setMonitors(id, [
           {
             name: monitor.name,
             bounds: {
@@ -1158,7 +647,7 @@ export class WidgetSettingsStore {
               height: monitor.resolution.height,
             },
           },
-        ];
+        ]);
         target.widgets = this.buildStarterWidgets();
 
         this.setWidgets(target.widgets);
@@ -1167,66 +656,18 @@ export class WidgetSettingsStore {
     });
   }
 
-  // Curated onboarding layout: the default-enabled starter widgets placed at
-  // sensible anchors for the current overlay resolution (standings top-left,
-  // relative bottom-left, radar bottom-center) instead of the raw default
-  // positions clustered in a corner.
-  // When clean is true, it returns all widgets disabled.
   private buildStarterWidgets(clean: boolean = false): WidgetDefaultConfig[] {
-    const widgets = this.snapshotDefaults();
-
-    if (clean) {
-      for (const widget of widgets) {
-        widget.userSettings.enabled = false;
-      }
-
-      return widgets;
-    }
-
-    const { width, height } = this.overlayResolution;
-    const MARGIN = 24;
-
-    const place = (id: string, x: number, y: number) => {
-      const widget = widgets.find((candidate) => candidate.id === id);
-
-      if (widget) {
-        widget.userSettings.x = Math.round(x);
-        widget.userSettings.y = Math.round(y);
-      }
-    };
-
-    const heightOf = (id: string) =>
-      widgets.find((candidate) => candidate.id === id)?.userSettings
-        .currentHeight ?? 0;
-    const widthOf = (id: string) =>
-      widgets.find((candidate) => candidate.id === id)?.userSettings
-        .currentWidth ?? 0;
-
-    place('standings', MARGIN, MARGIN);
-    place('relative', MARGIN, height - heightOf('relative') - MARGIN);
-    place(
-      'proximity-radar',
-      (width - widthOf('proximity-radar')) / 2,
-      height - heightOf('proximity-radar') - MARGIN
+    return buildStarterWidgets(
+      this.root?.widgetDefaults.snapshot() ?? [],
+      this.overlayResolution,
+      clean
     );
-
-    return widgets;
   }
 
   saveLayout(name: string) {
-    const id = crypto.randomUUID();
+    const id = this.layoutRecords.addLayout(name);
 
-    const layout: SavedLayout = {
-      id,
-      name: name.trim(),
-      createdAt: Date.now(),
-      monitors: [],
-      widgets: [],
-      backgroundImages: {},
-    };
-
-    this.layouts = [...this.layouts, layout];
-    this.activeLayoutId = id;
+    this.layoutRecords.setActiveLayoutId(id);
     this.setWidgets(this.buildStarterWidgets(true));
     this.bumpMutation();
 
@@ -1234,13 +675,11 @@ export class WidgetSettingsStore {
       if (!monitor) return;
 
       runInAction(() => {
-        const targetLayout = this.layouts.find(
-          (candidate) => candidate.id === id
-        );
+        const targetLayout = this.layoutRecords.byId(id);
 
         if (!targetLayout || targetLayout.monitors.length > 0) return;
 
-        targetLayout.monitors = [
+        this.layoutRecords.setMonitors(id, [
           {
             name: monitor.name,
             bounds: {
@@ -1250,10 +689,10 @@ export class WidgetSettingsStore {
               height: monitor.resolution.height,
             },
           },
-        ];
+        ]);
         targetLayout.widgets = this.buildStarterWidgets(true);
 
-        if (this.activeLayoutId === id) {
+        if (this.layoutRecords.activeLayoutId === id) {
           this.overlayResolution = { ...monitor.resolution };
         }
 
@@ -1263,22 +702,7 @@ export class WidgetSettingsStore {
   }
 
   get activeLayout(): SavedLayout | undefined {
-    return this.layouts.find((layout) => layout.id === this.activeLayoutId);
-  }
-
-  // Background image shown behind widgets in the layout editor (e.g. a cockpit
-  // view) so widgets can be placed relative to a virtual cockpit. Stored on the
-  // layout; undefined clears it.
-  setActiveLayoutBackground(image: string | undefined) {
-    const layout = this.activeLayout;
-
-    if (!layout) return;
-
-    // Layout-wide background is gone: each monitor carries its own image.
-    // Kept as a convenience that paints every monitor of the layout.
-    for (const monitor of layout.monitors) {
-      this.setMonitorBackground(monitor.name, image);
-    }
+    return this.layoutRecords.activeLayout;
   }
 
   // Selecting a layout loads its saved widgets into the live store. Repointing
@@ -1291,7 +715,7 @@ export class WidgetSettingsStore {
       return;
     }
 
-    this.activeLayoutId = null;
+    this.layoutRecords.setActiveLayoutId(null);
     this.bumpMutation();
   }
 
@@ -1299,7 +723,7 @@ export class WidgetSettingsStore {
   // The overlay keeps showing whatever was active before. Use activateEditorLayout()
   // or loadLayout() to make the overlay reflect the change.
   switchEditorLayout(id: string) {
-    const layout = this.layouts.find((savedLayout) => savedLayout.id === id);
+    const layout = this.layoutRecords.byId(id);
 
     if (!layout) return;
 
@@ -1312,7 +736,7 @@ export class WidgetSettingsStore {
     }
 
     this.editorPreviewMode = true;
-    this.activeLayoutId = id;
+    this.layoutRecords.setActiveLayoutId(id);
 
     this.setWidgets(layout.widgets);
 
@@ -1327,13 +751,13 @@ export class WidgetSettingsStore {
   }
 
   loadLayout(id: string, options?: { notify?: boolean }) {
-    const layout = this.layouts.find((savedLayout) => savedLayout.id === id);
+    const layout = this.layoutRecords.byId(id);
 
     if (!layout) return;
 
     this.editorPreviewMode = false;
     this.liveEnabledWidgetIds = null;
-    this.activeLayoutId = id;
+    this.layoutRecords.setActiveLayoutId(id);
 
     if (layout.monitors.length > 0) {
       this.setWidgets(layout.widgets);
@@ -1347,7 +771,7 @@ export class WidgetSettingsStore {
     this.bumpMutation();
 
     if (options?.notify) {
-      void emit('layout-activated', layout.name);
+      void emitLayoutActivated(layout.name);
     }
   }
 
@@ -1362,7 +786,7 @@ export class WidgetSettingsStore {
   }
 
   updateLayout(id: string) {
-    const layout = this.layouts.find((savedLayout) => savedLayout.id === id);
+    const layout = this.layoutRecords.byId(id);
 
     if (!layout || layout.monitors.length === 0) return;
 
@@ -1371,15 +795,17 @@ export class WidgetSettingsStore {
   }
 
   deleteLayout(id: string) {
-    this.layouts = this.layouts.filter((savedLayout) => savedLayout.id !== id);
+    const wasActive = this.layoutRecords.activeLayoutId === id;
 
-    if (this.activeLayoutId !== id) {
+    this.layoutRecords.removeLayout(id);
+
+    if (!wasActive) {
       this.bumpMutation();
 
       return;
     }
 
-    const fallbackId = this.layouts[0]?.id ?? null;
+    const fallbackId = this.layoutRecords.layouts[0]?.id ?? null;
 
     // Load the fallback's saved widgets into the live store BEFORE bumping the
     // mutation so the commit reaction doesn't clobber the fallback.
@@ -1389,17 +815,90 @@ export class WidgetSettingsStore {
       return;
     }
 
-    this.activeLayoutId = null;
+    this.layoutRecords.setActiveLayoutId(null);
     this.bumpMutation();
   }
 
   renameLayout(id: string, name: string) {
-    const layout = this.layouts.find((savedLayout) => savedLayout.id === id);
+    this.layoutRecords.renameLayout(id, name);
+    this.bumpMutation();
+  }
+
+  /**
+   * Layout-record mutations all funnel through here rather than being called on
+   * `layoutRecords` directly: `bumpMutation` is what triggers the debounced save,
+   * so a record edited behind the facade's back would never reach disk.
+   */
+  addMonitor(monitor: LayoutMonitor) {
+    this.layoutRecords.addMonitor(monitor);
+    this.bumpMutation();
+  }
+
+  removeMonitor(layoutId: string, monitorName: string) {
+    const layout = this.layoutRecords.removeMonitor(layoutId, monitorName);
 
     if (!layout) return;
 
-    layout.name = name.trim();
+    if (layout.id === this.layoutRecords.activeLayoutId) {
+      this.setWidgets(layout.widgets);
+    }
+
     this.bumpMutation();
+  }
+
+  setMonitorBackground(monitorName: string, image: string | undefined) {
+    this.layoutRecords.setMonitorBackground(monitorName, image);
+    this.bumpMutation();
+  }
+
+  setActiveLayoutBackground(image: string | undefined) {
+    this.layoutRecords.setActiveLayoutBackground(image);
+    this.bumpMutation();
+  }
+
+  async cloneLayout(id: string) {
+    const newId = await this.layoutRecords.cloneLayout(id);
+
+    runInAction(() => this.bumpMutation());
+
+    return newId;
+  }
+
+  /** Records plus the live widgets they moved — see `LayoutsStore` for the maths. */
+  alignMonitorsToHardware(attached: LayoutMonitor[]) {
+    this.layoutRecords.alignMonitorsToHardware(attached);
+
+    const activeLayout = this.layoutRecords.activeLayout;
+
+    if (activeLayout) {
+      this.setWidgets(activeLayout.widgets);
+    }
+
+    this.bumpMutation();
+  }
+
+  monitorByName(monitorName: string): LayoutMonitor | undefined {
+    return this.layoutRecords.monitorByName(monitorName);
+  }
+
+  get desktopBounds() {
+    return this.layoutRecords.desktopBounds;
+  }
+
+  get activeMonitorNames(): string[] {
+    return this.layoutRecords.activeMonitorNames;
+  }
+
+  get layouts(): SavedLayout[] {
+    return this.layoutRecords.layouts;
+  }
+
+  get activeLayoutId(): string | null {
+    return this.layoutRecords.activeLayoutId;
+  }
+
+  get sessionLayouts(): Record<SessionContext, string | null> {
+    return this.layoutRecords.sessionLayouts;
   }
 
   getSettings<SpecificSettings extends WidgetSpecificSettings>(

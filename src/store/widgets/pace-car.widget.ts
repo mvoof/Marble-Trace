@@ -60,16 +60,23 @@ export class PaceCarStore {
     );
   }
 
+  // Split off the session-derived half on purpose: the roster changes once a
+  // session, while `carPositions` arrives on the fast tier. Kept together, the
+  // filter allocated a fresh array on every frame to rebuild the same list.
+  private get paceCarIdxs(): number[] {
+    return (this.root.session.sessionInfo?.cars ?? [])
+      .filter((car) => car.isPaceCar)
+      .map((car) => car.carIdx);
+  }
+
   get isPaceCarOnTrack(): boolean {
     const carPositions = this.root.cars.carPositions;
 
     if (!carPositions) return false;
 
-    return (this.root.session.sessionInfo?.cars ?? [])
-      .filter((car) => car.isPaceCar)
-      .some(
-        (car) => carPositions.car_idx_track_surface[car.carIdx] === ON_TRACK
-      );
+    return this.paceCarIdxs.some(
+      (carIdx) => carPositions.car_idx_track_surface[carIdx] === ON_TRACK
+    );
   }
 
   getPitPhase(carIdx: number): PaceCarPitPhase {

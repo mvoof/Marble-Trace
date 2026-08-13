@@ -1,0 +1,311 @@
+import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
+import {
+  ColorPicker,
+  InputNumber,
+  Row,
+  Col,
+  Segmented,
+  Slider,
+  Switch,
+} from 'antd';
+import {
+  RadarQualifyingVisibility,
+  TrackMapLeaderLabelMode,
+  TrackMapWidgetSettings,
+} from '@/types/widget-settings';
+import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
+import { Card } from './Card';
+import { SettingRow } from './SettingRow';
+import { useWidgetEditor } from '../WidgetEditorContext';
+
+const MIN_ZOOM_LEVEL = 1.5;
+const MAX_ZOOM_LEVEL = 10;
+const ZOOM_STEP = 0.5;
+const DEFAULT_ZOOM_LEVEL = 3;
+
+export const TrackMapSettingsPanel = observer(() => {
+  const widgetSettings = useWidgetEditor();
+  const { t } = useTranslation('widgets');
+
+  const settings =
+    widgetSettings.getSettings<TrackMapWidgetSettings>('track-map');
+
+  const update = (partial: Partial<TrackMapWidgetSettings>) => {
+    widgetSettings.updateUserSettings('track-map', {
+      ...settings,
+      ...partial,
+    });
+  };
+
+  return (
+    <>
+      <Card title={t('settingsPanels.trackMap.visualElements')}>
+        <div className={styles.fieldGroup}>
+          <SettingRow title={t('settingsPanels.trackMap.sectorsOnMap')}>
+            <Switch
+              checked={settings.showSectorsOnMap}
+              onChange={(v) => update({ showSectorsOnMap: v })}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow title={t('settingsPanels.trackMap.startFinishLine')}>
+            <Switch
+              checked={settings.showStartFinish ?? true}
+              onChange={(v) => update({ showStartFinish: v })}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.trackMap.classShapes')}
+            desc={t('settingsPanels.trackMap.classShapesDesc')}
+          >
+            <Switch
+              checked={settings.classShapes ?? false}
+              onChange={(v) => update({ classShapes: v })}
+            />
+          </SettingRow>
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.radar.qualifying')}>
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.trackMap.showDriversInQualifying')}
+          </span>
+          <Segmented
+            block
+            value={settings.qualifyingVisibility ?? 'always'}
+            options={[
+              { label: t('settingsPanels.radar.always'), value: 'always' },
+              { label: t('settingsPanels.radar.auto'), value: 'auto' },
+              { label: t('settingsPanels.radar.never'), value: 'never' },
+            ]}
+            onChange={(v) =>
+              update({ qualifyingVisibility: v as RadarQualifyingVisibility })
+            }
+          />
+          <div className={styles.fieldDesc}>
+            {t('settingsPanels.trackMap.showDriversInQualifyingDesc')}
+          </div>
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.trackMap.zoomView')}>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.trackMap.zoomEnabled')}
+            desc={t('settingsPanels.trackMap.zoomEnabledDesc')}
+          >
+            <Switch
+              checked={settings.zoomEnabled ?? false}
+              onChange={(v) => update({ zoomEnabled: v })}
+            />
+          </SettingRow>
+        </div>
+
+        {settings.zoomEnabled && (
+          <div className={styles.fieldGroup}>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.trackMap.zoomLevel')}
+            </span>
+            <Slider
+              min={MIN_ZOOM_LEVEL}
+              max={MAX_ZOOM_LEVEL}
+              step={ZOOM_STEP}
+              value={settings.zoomLevel ?? DEFAULT_ZOOM_LEVEL}
+              tooltip={{ formatter: (v) => `${v}x` }}
+              onChange={(v) => update({ zoomLevel: v })}
+            />
+          </div>
+        )}
+
+        {settings.zoomEnabled && (
+          <div className={styles.fieldGroup}>
+            <SettingRow
+              title={t('settingsPanels.trackMap.zoomRotate')}
+              desc={t('settingsPanels.trackMap.zoomRotateDesc')}
+            >
+              <Switch
+                checked={settings.zoomRotate ?? false}
+                onChange={(v) => update({ zoomRotate: v })}
+              />
+            </SettingRow>
+          </div>
+        )}
+      </Card>
+
+      <Card title={t('settingsPanels.linearMap.playerMarker')}>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.trackMap.playerDotColor')}
+            desc={t('settingsPanels.trackMap.playerDotColorDesc')}
+          >
+            <ColorPicker
+              value={settings.playerDotColor}
+              onChange={(c) => update({ playerDotColor: c.toHexString() })}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.trackMap.showYouLabel')}
+            desc={t('settingsPanels.trackMap.showYouLabelDesc')}
+          >
+            <Switch
+              checked={settings.showPlayerLabel}
+              onChange={(v) => update({ showPlayerLabel: v })}
+            />
+          </SettingRow>
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.trackMap.leaderLabels')}>
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.trackMap.showP1Label')}
+          </span>
+          <Segmented
+            block
+            value={settings.leaderLabelMode}
+            options={[
+              {
+                label: t('settingsPanels.trackMap.allClasses'),
+                value: 'all',
+              },
+              {
+                label: t('settingsPanels.trackMap.ownClass'),
+                value: 'own-class',
+              },
+              { label: t('settingsPanels.trackMap.hidden'), value: 'none' },
+            ]}
+            onChange={(v) =>
+              update({ leaderLabelMode: v as TrackMapLeaderLabelMode })
+            }
+          />
+
+          <SettingRow
+            title={t('settingsPanels.common.useLivePositions')}
+            desc={t('settingsPanels.common.useLivePositionsTrackMapDesc')}
+          >
+            <Switch
+              checked={settings.useLivePositions}
+              onChange={(v) => update({ useLivePositions: v })}
+            />
+          </SettingRow>
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.trackMap.safetyCar')}>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.trackMap.paceCarUseClassColor')}
+            desc={t('settingsPanels.trackMap.paceCarUseClassColorDesc')}
+          >
+            <Switch
+              checked={settings.paceCarUseClassColor ?? false}
+              onChange={(v) => update({ paceCarUseClassColor: v })}
+            />
+          </SettingRow>
+        </div>
+
+        {!settings.paceCarUseClassColor && (
+          <div className={styles.fieldGroup}>
+            <SettingRow title={t('settingsPanels.trackMap.paceCarColor')}>
+              <ColorPicker
+                value={settings.paceCarColor ?? '#facc15'}
+                onChange={(c) => update({ paceCarColor: c.toHexString() })}
+              />
+            </SettingRow>
+          </div>
+        )}
+
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.trackMap.paceCarRadius')}
+          </span>
+          <InputNumber
+            style={{ width: '100%' }}
+            value={settings.paceCarRadiusPx ?? settings.targetDotRadiusPx}
+            min={1}
+            max={30}
+            onChange={(v) => v !== null && update({ paceCarRadiusPx: v })}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.trackMap.paceCarShowInPits')}
+            desc={t('settingsPanels.trackMap.paceCarShowInPitsDesc')}
+          >
+            <Switch
+              checked={settings.paceCarShowInPits ?? false}
+              onChange={(v) => update({ paceCarShowInPits: v })}
+            />
+          </SettingRow>
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.trackMap.trackStyling')}>
+        <Row gutter={[24, 24]}>
+          <Col span={12}>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.trackMap.trackStroke')}
+            </span>
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.trackStrokePx}
+              min={1}
+              max={30}
+              onChange={(v) => v !== null && update({ trackStrokePx: v })}
+            />
+          </Col>
+
+          <Col span={12}>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.trackMap.trackBorder')}
+            </span>
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.trackBorderPx}
+              min={0}
+              max={20}
+              onChange={(v) => v !== null && update({ trackBorderPx: v })}
+            />
+          </Col>
+
+          <Col span={12}>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.trackMap.sectorStroke')}
+            </span>
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.sectorStrokePx}
+              min={1}
+              max={20}
+              onChange={(v) => v !== null && update({ sectorStrokePx: v })}
+            />
+          </Col>
+
+          <Col span={12}>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.trackMap.targetDotRadius')}
+            </span>
+            <InputNumber
+              style={{ width: '100%' }}
+              value={settings.targetDotRadiusPx}
+              min={1}
+              max={30}
+              onChange={(v) => v !== null && update({ targetDotRadiusPx: v })}
+            />
+          </Col>
+        </Row>
+      </Card>
+    </>
+  );
+});
