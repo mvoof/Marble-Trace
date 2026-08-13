@@ -5,7 +5,7 @@ import {
   emitPitServiceHalvesTakenOver,
   emitPitServiceReveal,
 } from '@platform/services/events.service';
-import type { RootStore } from '../root-store';
+import type { RootStore } from '@store/root-store';
 
 /**
  * Which halves of the pit order the driver has taken over, mirrored to the

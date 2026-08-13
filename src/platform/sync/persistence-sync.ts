@@ -10,7 +10,7 @@ import {
 } from './persistence';
 import { runMigrations } from '@platform/settings-schema/index';
 import type { MigrationResult } from '@platform/settings-schema/types';
-import type { RootStore } from '../root-store';
+import type { RootStore } from '@store/root-store';
 
 /**
  * Settings-file bootstrap shared by both windows.

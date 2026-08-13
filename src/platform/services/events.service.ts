@@ -27,7 +27,7 @@ import { TRACK_MAP_CLEAR } from '@platform/sync/sim-events';
  * Every event the app sends has a named function here, so the payload shape is
  * declared once and the event name exists in exactly one place. Nothing in this
  * file holds state or imports a store — subscribing handlers live in
- * `store/sync/listeners.ts`, which wires them to the stores.
+ * `platform/sync/listeners.ts`, which wires them to the stores.
  *
  * Hot path: `listenTo` is a typed passthrough with no allocation of its own, so
  * `sim://telemetry/bundle` costs the same as calling `listen` directly.

@@ -7,7 +7,7 @@ import {
 } from '@platform/services/events.service';
 import { setupOverlayListeners } from './listeners';
 import { registerPitServiceMirrorReactions } from './pit-service-sync';
-import type { RootStore } from '../root-store';
+import type { RootStore } from '@store/root-store';
 
 /**
  * Everything an overlay window owns. It never writes the settings file — the

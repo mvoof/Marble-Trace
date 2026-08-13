@@ -27,15 +27,15 @@ export default defineConfig(() => ({
     alias: [
       {
         find: '@platform/services',
-        replacement: path.resolve(__dirname, './src/services'),
+        replacement: path.resolve(__dirname, './src/platform/services'),
       },
       {
         find: '@platform/sync',
-        replacement: path.resolve(__dirname, './src/store/sync'),
+        replacement: path.resolve(__dirname, './src/platform/sync'),
       },
       {
         find: '@platform/settings-schema',
-        replacement: path.resolve(__dirname, './src/store/settings-schema'),
+        replacement: path.resolve(__dirname, './src/platform/settings-schema'),
       },
       { find: '@ui/app', replacement: path.resolve(__dirname, './src/app') },
       {

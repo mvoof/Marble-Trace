@@ -23,7 +23,7 @@ export const SETTINGS_FILE = 'settings.json';
 export interface Settings {
   /**
    * Format version of this file, stamped on every save. Absent means a file
-   * written before 0.21. See `store/settings-schema` — never compare it to the
+   * written before 0.21. See `platform/settings-schema` — never compare it to the
    * app's semver.
    */
   schemaVersion: number;

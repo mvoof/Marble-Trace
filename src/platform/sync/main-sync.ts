@@ -38,7 +38,7 @@ import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
 import { listMonitorBounds } from './overlay-resolution';
 import { watchMonitorArrangement } from './monitor-watch';
 import type { SessionContext } from '@/types/widget-settings';
-import type { RootStore } from '../root-store';
+import type { RootStore } from '@store/root-store';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
 let mainSyncRefCount = 0;

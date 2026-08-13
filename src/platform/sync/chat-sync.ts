@@ -8,7 +8,7 @@ import {
   emitStreamChatCleared,
   emitStreamChatFilters,
 } from '@platform/services/events.service';
-import type { RootStore } from '../root-store';
+import type { RootStore } from '@store/root-store';
 
 const STREAM_CHAT_WIDGET_ID = 'stream-chat';
 
