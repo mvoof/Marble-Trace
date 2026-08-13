@@ -4,7 +4,22 @@
     "typeAware": true
   },
   "rules": {
-    "react-hooks/exhaustive-deps": "error"
+    "react-hooks/exhaustive-deps": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["@tauri-apps/api/core"],
+            "message": "Tauri invoke is wrapped by src/services/ — call a service instead."
+          },
+          {
+            "group": ["@tauri-apps/plugin-store"],
+            "message": "Settings-file persistence lives in src/store/sync and track-map.widget.ts."
+          }
+        ]
+      }
+    ]
   },
   "env": {
     "browser": true,
@@ -24,6 +39,31 @@
       "files": ["scripts/**/*.{js,mjs}", "vite.config.ts"],
       "env": {
         "node": true
+      }
+    },
+    {
+      "files": ["src/services/**", "src/utils/widget/layout-background.ts"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": [
+        "src/store/sync/sync-init.ts",
+        "src/store/widgets/track-map.widget.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@tauri-apps/api/core"],
+                "message": "Tauri invoke is wrapped by src/services/ — call a service instead."
+              }
+            ]
+          }
+        ]
       }
     }
   ]
