@@ -1,5 +1,8 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { invoke } from '@tauri-apps/api/core';
+import {
+  resolveInputDevices,
+  setInputPollingEnabled,
+} from '@/services/input.service';
 import type {
   InputButtonEvent,
   InputDevice,
@@ -68,10 +71,7 @@ export class DeviceInputStore {
     const known = this.knownDevices.filter((device) => retained.has(device.id));
 
     try {
-      const resolution = await invoke<InputDeviceResolution>(
-        'resolve_input_devices',
-        { known }
-      );
+      const resolution = await resolveInputDevices(known);
 
       runInAction(() => this.setDevices(resolution.devices));
 
@@ -85,7 +85,7 @@ export class DeviceInputStore {
 
   async setPollingEnabled(enabled: boolean) {
     try {
-      await invoke('set_input_polling_enabled', { enabled });
+      await setInputPollingEnabled(enabled);
     } catch (error) {
       console.error('[bindings] failed to toggle input polling', error);
     }

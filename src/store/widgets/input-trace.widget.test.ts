@@ -3,8 +3,19 @@ import { runInAction } from 'mobx';
 import { RootStore } from '../root-store';
 import type { CarInputsFrame } from '@/types/bindings';
 
-vi.mock('@tauri-apps/api/core', () => ({
-  invoke: vi.fn(),
+// RootStore construction reaches the backend through the services; they have
+// no Tauri runtime to talk to under vitest.
+vi.mock('@/services/telemetry.service', () => ({
+  startTelemetryStream: vi.fn().mockResolvedValue(undefined),
+  stopTelemetryStream: vi.fn().mockResolvedValue(undefined),
+  getConnectionStatus: vi.fn().mockResolvedValue(false),
+  getLastSessionInfo: vi.fn().mockResolvedValue(null),
+  setActiveEventsSilent: vi.fn(),
+}));
+vi.mock('@/services/settings.service', () => ({
+  setPitWarningLapsSilent: vi.fn(),
+  setFuelAvgWindowSilent: vi.fn(),
+  setCarLengthSilent: vi.fn(),
 }));
 
 // RootStore subscribes to sim events on construction; the node test

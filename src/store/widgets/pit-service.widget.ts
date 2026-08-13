@@ -1,5 +1,6 @@
-import { invoke } from '@tauri-apps/api/core';
 import { makeAutoObservable, runInAction } from 'mobx';
+
+import { sendPitOrder } from '@/services/pit.service';
 
 import { computeRefuelPlan } from '@widgets/FuelWidget/fuel-utils';
 import type { RootStore } from '@store/root-store';
@@ -900,7 +901,7 @@ export class PitServiceWidgetStore {
     this.revealAfterCommand();
 
     try {
-      await invoke('send_pit_order', { requests });
+      await sendPitOrder(requests);
       this.setOrderResult('sent');
     } catch (error) {
       console.error('[pit-service] order failed', error);
