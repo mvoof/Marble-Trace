@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { FuelLapRecord } from '@/types/bindings';
-import { FUEL_AVG_WINDOW_ALL_LAPS } from '@utils/constants/fuel-constants';
+import { FUEL_AVG_WINDOW_ALL_LAPS } from '@utils/fuel-constants';
 import {
   computeFuelHistoryStats,
   countedLaps,

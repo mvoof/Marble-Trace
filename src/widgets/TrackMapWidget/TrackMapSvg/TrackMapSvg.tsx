@@ -2,15 +2,15 @@ import { useRef, useState, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { TrackPoint } from '@/types';
-import { getPointAtPct } from '@utils/widget/track-map-utils';
+import { getPointAtPct } from '@widgets/TrackMapWidget/track-map-utils';
 import type { SectorEntry } from '@/types/bindings';
 import type { TrackMapLeaderLabelMode } from '@/types/widget-settings';
 import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
-import { CarDot } from '@/components/shared/CarDot/CarDot';
-import { shapeForClassOrder } from '@utils/widget/car-dot-shape';
+import { CarDot } from '@/components/CarDot/CarDot';
+import { shapeForClassOrder } from '@utils/canvas';
 import { PaceCarMarker } from './PaceCarMarker/PaceCarMarker';
 
-import { getSectorColor } from '@utils/widget/sector-utils';
+import { getSectorColor } from '@utils/colors';
 import { StartFinishMarker } from './StartFinishMarker/StartFinishMarker';
 
 import styles from './TrackMapSvg.module.scss';

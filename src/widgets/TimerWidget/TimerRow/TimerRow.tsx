@@ -1,7 +1,7 @@
 ﻿import { observer } from 'mobx-react-lite';
 
-import { useWallClock } from '@hooks/widget/useWallClock';
-import { formatSimDate, formatSimTime } from '@utils/widget/timer-utils';
+import { useWallClock } from '../useWallClock';
+import { formatSimDate, formatSimTime } from '@utils/timer-utils';
 import {
   useSessionStore,
   useWidgetSettingsStore,
@@ -13,7 +13,7 @@ import styles from './TimerRow.module.scss';
 import {
   NO_DATE_DATA_PLACEHOLDER,
   NO_TIME_DATA_PLACEHOLDER,
-} from '@utils/constants/data-placeholders';
+} from '@utils/telemetry-format';
 
 export const TimerRow = observer(() => {
   const { session, sessionInfo } = useSessionStore();

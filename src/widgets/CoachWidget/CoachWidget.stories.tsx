@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { ReferenceLapData, ReferenceLapSample } from '@/types/bindings';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
-import type { DrivingAdvisory } from '@store/widgets/driving-coach-utils';
+import type { DrivingAdvisory } from '@utils/driving-coach-utils';
 import { CoachWidget } from './CoachWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 

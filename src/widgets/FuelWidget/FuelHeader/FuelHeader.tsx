@@ -1,13 +1,13 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
-import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
-import { formatFuel } from '@utils/formatters/telemetry-format';
+import { WidgetValue } from '@/components/WidgetValue/WidgetValue';
+import { WidgetLabel } from '@/components/WidgetLabel/WidgetLabel';
+import { formatFuel } from '@utils/telemetry-format';
 import type { UnitSystem } from '@/types';
 
 import styles from './FuelHeader.module.scss';
 import { usePlayerStore, useUnitsStore } from '@store/root-store-context';
-import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/constants/data-placeholders';
+import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/telemetry-format';
 
 const fuelUnitWord = (unitSystem: UnitSystem): string =>
   unitSystem === 'metric' ? 'LITERS' : 'GALLONS';

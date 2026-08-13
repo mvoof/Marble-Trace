@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { mergeWithDefaults } from '@utils/deep-merge';
+import { mergeWithDefaults } from '@store/deep-merge';
 import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-defaults';
 import {
   setCarLengthSilent,
@@ -8,7 +8,7 @@ import {
 } from '@/services/settings.service';
 import { resolveMonitorByName } from '@store/sync/overlay-resolution';
 import { LayoutsStore } from '@store/settings/layouts.store';
-import { applyLayoutResize } from '@utils/widget/layout-resize';
+import { applyLayoutResize } from '@store/settings/layout-resize';
 
 import type {
   WidgetDefaultConfig,
@@ -25,12 +25,12 @@ import type {
   SessionContext,
 } from '@/types/widget-settings';
 import { emitLayoutActivated } from '@/services/events.service';
-import { DEFAULT_LAYOUT_RESOLUTION } from '@utils/widget/layout-resolution';
+import { DEFAULT_LAYOUT_RESOLUTION } from '@store/settings/layout-resolution';
 import {
   monitorForWidget,
   placeWidgetOnMonitor,
   widgetsOnMonitor,
-} from '@utils/widget/virtual-desktop';
+} from '@store/settings/virtual-desktop';
 import type { RootStore } from '@store/root-store';
 
 // Diagonal offset applied when a freshly added widget would land on top of one

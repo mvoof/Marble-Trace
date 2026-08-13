@@ -12,7 +12,7 @@ import {
   type CornerTarget,
   type DrivingAdvisory,
   type DrivingAdvisoryInput,
-} from './driving-coach-utils';
+} from '@utils/driving-coach-utils';
 
 /**
  * Debounce entry/exit into a new advisory. With the zone latch in

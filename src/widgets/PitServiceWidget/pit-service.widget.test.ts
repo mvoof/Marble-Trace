@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { runInAction } from 'mobx';
-import { RootStore } from '../root-store';
+import { RootStore } from '@store/root-store';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 
 const sendPitOrderMock = vi.hoisted(() => vi.fn());

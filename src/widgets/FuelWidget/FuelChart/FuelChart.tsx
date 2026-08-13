@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 
 import { drawBarChart, drawLineChart } from './chart-renderers';
 import { countedLaps } from '../fuel-utils';
-import { resizeCanvasToDpr } from '@utils/widget/canvas-dpr';
+import { resizeCanvasToDpr } from '@utils/canvas';
 
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import styles from './FuelChart.module.scss';

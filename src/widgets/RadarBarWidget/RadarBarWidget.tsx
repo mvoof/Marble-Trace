@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
 import { RadarBar } from './RadarBar/RadarBar';
 
 import styles from './RadarBarWidget.module.scss';

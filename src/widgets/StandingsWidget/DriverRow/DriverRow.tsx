@@ -1,26 +1,26 @@
 ﻿import { observer } from 'mobx-react-lite';
-import { formatLapTime } from '@utils/formatters/telemetry-format';
+import { formatLapTime } from '@utils/telemetry-format';
 import {
   abbreviateName,
   formatBrand,
   formatCarNumber,
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
-} from '@utils/widget/widget-utils';
-import { parseDriverFlags } from '@utils/formatters/flags-utils';
-import { isSessionEnded } from '@utils/widget/timer-utils';
-import { DriverStatusBadges } from '@/components/shared/DriverStatusBadge/DriverStatusBadges';
-import { playerRowStyle } from '@utils/widget/player-row-style';
-import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
-import { LicBadge } from '@/components/shared/RatingBadge/LicBadge';
-import { formatIr } from '@/components/shared/RatingBadge/LicBadge.utils';
-import { TireBadge } from '@/components/shared/TireBadge/TireBadge';
+} from '@utils/driver';
+import { parseDriverFlags } from '@utils/driver';
+import { isSessionEnded } from '@utils/timer-utils';
+import { DriverStatusBadges } from '@/components/DriverStatusBadge/DriverStatusBadges';
+import { playerRowStyle } from '@utils/colors';
+import { DriverFlagBadge } from '@/components/DriverFlagBadge/DriverFlagBadge';
+import { LicBadge } from '@/components/RatingBadge/LicBadge';
+import { formatIr } from '@/components/RatingBadge/LicBadge.utils';
+import { TireBadge } from '@/components/TireBadge/TireBadge';
 import {
   buildGridTemplate,
   calculateLapsBehind,
   getStandingsGap,
   resolveBestLapDisplay,
-} from '@utils/widget/standings-utils';
+} from '@widgets/StandingsWidget/standings-utils';
 import { PosChange } from './PosChange';
 import { PositionCell } from './PositionCell';
 import { IrChangeCell } from './IrChangeCell';

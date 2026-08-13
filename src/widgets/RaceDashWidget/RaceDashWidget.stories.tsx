@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { runInAction } from 'mobx';
 
-import type { DrivingAdvisory } from '@store/widgets/driving-coach-utils';
+import type { DrivingAdvisory } from '@utils/driving-coach-utils';
 import type { ReferenceLapData } from '@/types/bindings';
 import type {
   RaceDashWidgetSettings,

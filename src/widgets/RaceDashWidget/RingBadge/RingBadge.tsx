@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
-import { formatGear } from '@utils/formatters/telemetry-format';
-import { computeShiftThresholds } from '@utils/widget/shift-thresholds';
+import { formatGear } from '@utils/telemetry-format';
+import { computeShiftThresholds } from '@utils/car-signals';
 import {
   computeRpmZoneState,
   rpmFillColor,

@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import { useWidgetSettingsStore } from '@store/root-store-context';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { buildGridTemplate } from '@utils/widget/standings-utils';
+import { buildGridTemplate } from '@widgets/StandingsWidget/standings-utils';
 import { StandingsHeaderCell } from './StandingsHeaderCell';
 
 import styles from './StandingsHeader.module.scss';

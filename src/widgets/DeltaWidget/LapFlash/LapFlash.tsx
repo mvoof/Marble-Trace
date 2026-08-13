@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
-import { formatLapTime } from '@utils/formatters/telemetry-format';
-import { formatDelta, getDeltaState } from '@utils/widget/delta-utils';
+import { formatLapTime } from '@utils/telemetry-format';
+import { formatDelta, getDeltaState } from '@utils/delta-utils';
 import styles from './LapFlash.module.scss';
 
 interface Props {

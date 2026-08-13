@@ -12,7 +12,7 @@ import {
   getGameDelta,
   INITIAL_DELTA_LATCH_STATE,
   isGameDeltaOk,
-} from '@utils/widget/delta-utils';
+} from '@utils/delta-utils';
 import type { DeltaWidgetSettings } from '@/types/widget-settings';
 import { DeltaGauge } from '../DeltaGauge/DeltaGauge';
 import styles from './DeltaLive.module.scss';

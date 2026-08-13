@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { RpmLightsWidgetSettings } from '@/types/widget-settings';
-import { computeShiftThresholds } from '@utils/widget/shift-thresholds';
-import { rpmZoneColorByPct } from '@utils/widget/rpm-zone';
-import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
+import { computeShiftThresholds } from '@utils/car-signals';
+import { rpmZoneColorByPct } from '@utils/car-signals';
+import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
 import { usePitState } from '@hooks/usePitState';
 import type { PitState } from '@hooks/usePitState';
 

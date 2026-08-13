@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react-lite';
 
-import { formatFuel } from '@utils/formatters/telemetry-format';
-import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
-import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
-import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/constants/data-placeholders';
+import { formatFuel } from '@utils/telemetry-format';
+import { WidgetLabel } from '@/components/WidgetLabel/WidgetLabel';
+import { WidgetValue } from '@/components/WidgetValue/WidgetValue';
+import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/telemetry-format';
 import {
   useBackendComputedStore,
   useSessionStore,

@@ -20,16 +20,16 @@ import {
 import {
   buildVisibleRows,
   computeClassSof,
-} from '@utils/widget/standings-utils';
+} from '@widgets/StandingsWidget/standings-utils';
 import { SINGLE_LIST_SCROLL_KEY } from '@store/widgets/standings.widget';
-import type { ScrollMetrics } from '@utils/widget/scroll-thumb';
-import { ScrollIndicator } from '@/components/shared/ScrollIndicator/ScrollIndicator';
-import { useVisibleRowCount } from '@/hooks/common/useVisibleRowCount';
+import type { ScrollMetrics } from '@utils/canvas';
+import { ScrollIndicator } from '@/components/ScrollIndicator/ScrollIndicator';
+import { useVisibleRowCount } from '@/hooks/useVisibleRowCount';
 import {
   useRowMoveAnimation,
   ROW_KEY_ATTRIBUTE,
-} from '@/hooks/common/useRowMoveAnimation';
-import { NoDataPlaceholder } from '@/components/shared/NoDataPlaceholder/NoDataPlaceholder';
+} from '@/hooks/useRowMoveAnimation';
+import { NoDataPlaceholder } from '@/components/NoDataPlaceholder/NoDataPlaceholder';
 import { SessionHeader } from '@widgets/StandingsWidget/SessionHeader/SessionHeader';
 import { ClassGroup } from '@widgets/StandingsWidget/ClassGroup/ClassGroup';
 import { CLASS_HEADER_ATTRIBUTE } from '@widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';

@@ -60,8 +60,8 @@ import { LayoutList } from './LayoutList';
 import {
   saveBackgroundImage,
   deleteBackgroundImage,
-} from '@utils/widget/layout-background';
-import { monitorForWidget } from '@utils/widget/virtual-desktop';
+} from '@store/settings/layout-background';
+import { monitorForWidget } from '@store/settings/virtual-desktop';
 import styles from './LayoutEditor.module.scss';
 
 const SNAP_MARGIN = 8;

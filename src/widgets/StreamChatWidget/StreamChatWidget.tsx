@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
-import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 import { ChatBanner } from './ChatBanner/ChatBanner';
 import { ChatFooter } from './ChatFooter/ChatFooter';

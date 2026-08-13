@@ -11,8 +11,8 @@ import {
   MPS_TO_KMH,
   MPS_TO_MPH,
   speedUnit,
-} from '@utils/formatters/telemetry-format';
-import { parsePitSpeedLimitMs } from '@utils/widget/speed-utils';
+} from '@utils/telemetry-format';
+import { parsePitSpeedLimitMs } from '@utils/telemetry-format';
 
 export type PitState =
   | 'normal'

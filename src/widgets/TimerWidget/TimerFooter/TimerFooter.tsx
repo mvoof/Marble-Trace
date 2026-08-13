@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react-lite';
 
-import { resolveSessionLaps } from '@utils/formatters/telemetry-format';
+import { resolveSessionLaps } from '@utils/telemetry-format';
 import {
   formatLapCount,
   formatPosition,
   isSessionEnded,
-} from '@utils/widget/timer-utils';
+} from '@utils/timer-utils';
 import {
   useCarsStore,
   useSessionStore,

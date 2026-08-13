@@ -5,7 +5,7 @@ import { OrderToggle } from '@widgets/PitServiceWidget/OrderToggle/OrderToggle';
 import {
   countdownUnit,
   formatCountdown,
-} from '@utils/widget/pit-service-utils';
+} from '@widgets/PitServiceWidget/pit-service-utils';
 import {
   usePitServiceWidgetStore,
   usePlayerStore,

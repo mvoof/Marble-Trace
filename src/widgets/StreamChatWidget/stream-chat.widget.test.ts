@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { runInAction } from 'mobx';
-import { RootStore } from '../root-store';
+import { RootStore } from '@store/root-store';
 import type { ChatMessage, ChatPlatform } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
 

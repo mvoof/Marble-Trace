@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { useVisibleRowCount } from '@hooks/common/useVisibleRowCount';
+import { useVisibleRowCount } from '@hooks/useVisibleRowCount';
 import { DriverRow } from '@widgets/RelativeWidget/DriverRow/DriverRow';
 import { PaceCarRow } from '@widgets/RelativeWidget/PaceCarRow/PaceCarRow';
-import { NoDataPlaceholder } from '@/components/shared/NoDataPlaceholder/NoDataPlaceholder';
+import { NoDataPlaceholder } from '@/components/NoDataPlaceholder/NoDataPlaceholder';
 import {
   buildPaceCarRowEntries,
   mergePaceCarRows,
-} from '@utils/widget/relative-utils';
+} from '@widgets/RelativeWidget/relative-utils';
 import {
   useBackendComputedStore,
   useCarsStore,

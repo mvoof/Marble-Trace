@@ -1,8 +1,8 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import { DEFAULT_WIDGETS } from '@store/widget-defaults';
-import { mergeWithDefaults } from '@utils/deep-merge';
-import { applyLayoutResize } from '@utils/widget/layout-resize';
+import { mergeWithDefaults } from '@store/deep-merge';
+import { applyLayoutResize } from '@store/settings/layout-resize';
 import type {
   BaseUserSettings,
   WidgetDefaultConfig,

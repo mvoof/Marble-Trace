@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { getContrastTextColor } from '@utils/formatters/color-utils';
+import { getContrastTextColor } from '@utils/colors';
 import styles from './PaceCarMarker.module.scss';
 
 interface PaceCarMarkerProps {

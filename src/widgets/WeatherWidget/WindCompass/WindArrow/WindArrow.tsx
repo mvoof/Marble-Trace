@@ -5,7 +5,7 @@ import {
   getWindColor,
   parseWeekendFloat,
   radsToBearing,
-} from '@utils/widget/weather-utils';
+} from '@utils/weather-utils';
 import {
   useEnvironmentStore,
   usePlayerStore,

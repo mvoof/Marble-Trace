@@ -1,12 +1,12 @@
 import ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { useClickOutside } from '@hooks/common/useClickOutside';
+import { useClickOutside } from '@hooks/useClickOutside';
 import { ConfigProvider, theme } from 'antd';
 import { X } from 'lucide-react';
 import { WidgetSettings } from '@app/main/components/WidgetSettings/WidgetSettings';
 import { useWidgetSettingsStore } from '@store/root-store-context';
-import { getWidgetLabel } from '@utils/widget-i18n';
+import { getWidgetLabel } from '@app/widget-i18n';
 import styles from './WidgetSettingsPopup.module.scss';
 
 const POPUP_WIDTH = 500;

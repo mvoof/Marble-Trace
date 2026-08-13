@@ -4,18 +4,18 @@ import {
   formatCarNumber,
   TRACK_SURFACE_IN_PIT_STALL,
   TRACK_SURFACE_OFF_TRACK,
-} from '@utils/widget/widget-utils';
-import { parseDriverFlags } from '@utils/formatters/flags-utils';
-import { DriverStatusBadges } from '@/components/shared/DriverStatusBadge/DriverStatusBadges';
-import { playerRowStyle } from '@utils/widget/player-row-style';
-import { DriverFlagBadge } from '@/components/shared/DriverFlagBadge/DriverFlagBadge';
-import { LicBadge } from '@/components/shared/RatingBadge/LicBadge';
-import { formatIr } from '@/components/shared/RatingBadge/LicBadge.utils';
+} from '@utils/driver';
+import { parseDriverFlags } from '@utils/driver';
+import { DriverStatusBadges } from '@/components/DriverStatusBadge/DriverStatusBadges';
+import { playerRowStyle } from '@utils/colors';
+import { DriverFlagBadge } from '@/components/DriverFlagBadge/DriverFlagBadge';
+import { LicBadge } from '@/components/RatingBadge/LicBadge';
+import { formatIr } from '@/components/RatingBadge/LicBadge.utils';
 import {
   computeRelativeGap,
   buildRelativeGridTemplate,
   resolveRowPosition,
-} from '@utils/widget/relative-utils';
+} from '@widgets/RelativeWidget/relative-utils';
 import type { DriverEntry } from '@/types/bindings';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 

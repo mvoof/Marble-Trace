@@ -5,7 +5,7 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
-import { steeringAngleDeg, wrapToHalfTurn } from '@utils/widget/steering-angle';
+import { steeringAngleDeg, wrapToHalfTurn } from '@utils/car-signals';
 import {
   RIM_MARKER_RADIUS,
   RING_SIZE,

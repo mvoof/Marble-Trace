@@ -1,13 +1,13 @@
 import { observer } from 'mobx-react-lite';
-import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
-import { NoDataPlaceholder } from '@/components/shared/NoDataPlaceholder/NoDataPlaceholder';
+import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
+import { NoDataPlaceholder } from '@/components/NoDataPlaceholder/NoDataPlaceholder';
 import {
   useBackendComputedStore,
   usePlayerStore,
   useSimStore,
 } from '@store/root-store-context';
-import { formatLapTime } from '@utils/formatters/telemetry-format';
-import { formatDelta, getDeltaState } from '@utils/widget/delta-utils';
+import { formatLapTime } from '@utils/telemetry-format';
+import { formatDelta, getDeltaState } from '@utils/delta-utils';
 import { LapRow } from './LapRow/LapRow';
 import styles from './LapLogWidget.module.scss';
 

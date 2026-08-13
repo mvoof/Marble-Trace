@@ -1,11 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
-import { useProximityRadarData } from '@hooks/common/useProximityRadarData';
-import {
-  distanceUnit,
-  formatDistance,
-} from '@utils/formatters/telemetry-format';
-import { getBarPillColor } from '@utils/constants/radar-constants';
+import { useProximityRadarData } from '@hooks/useProximityRadarData';
+import { distanceUnit, formatDistance } from '@utils/telemetry-format';
+import { getBarPillColor } from '@utils/radar-constants';
 
 import styles from './RadarBar.module.scss';
 import { useAppSettingsStore, useUnitsStore } from '@store/root-store-context';

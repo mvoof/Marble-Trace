@@ -46,7 +46,7 @@
       }
     },
     {
-      "files": ["src/services/**", "src/utils/widget/layout-background.ts"],
+      "files": ["src/services/**", "src/store/settings/layout-background.ts"],
       "rules": {
         "no-restricted-imports": "off"
       }
@@ -54,7 +54,7 @@
     {
       "files": [
         "src/store/sync/persistence-sync.ts",
-        "src/store/widgets/track-map.widget.ts"
+        "src/widgets/TrackMapWidget/track-map.widget.ts"
       ],
       "rules": {
         "no-restricted-imports": [

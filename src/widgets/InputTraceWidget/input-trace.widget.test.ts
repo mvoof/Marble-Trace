@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { runInAction } from 'mobx';
-import { RootStore } from '../root-store';
+import { RootStore } from '@store/root-store';
 import type { CarInputsFrame } from '@/types/bindings';
 
 // RootStore construction reaches the backend through the services; they have

@@ -17,13 +17,13 @@ import {
 } from '@store/root-store-context';
 import { WIDGET_BY_ID } from '@store/widget-defaults';
 import { WidgetIdContext } from '@app/overlay/components/WidgetContainer/WidgetIdContext';
-import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import {
   seedScenario,
   DEFAULT_PREVIEW_SCENARIO_ID,
 } from '@store/preview/scenarios';
-import { resolveBackgroundSrc } from '@utils/widget/layout-background';
-import { monitorsBounds } from '@utils/widget/virtual-desktop';
+import { resolveBackgroundSrc } from '@store/settings/layout-background';
+import { monitorsBounds } from '@store/settings/virtual-desktop';
 import { seedInputHistory } from '@store/preview/preview-animator';
 import type {
   LayoutMonitor,

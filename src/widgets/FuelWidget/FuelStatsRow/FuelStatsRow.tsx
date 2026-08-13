@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { formatFuel } from '@utils/formatters/telemetry-format';
+import { formatFuel } from '@utils/telemetry-format';
 import {
   useBackendComputedStore,
   usePlayerStore,
@@ -10,7 +10,7 @@ import {
 import {
   NO_FUEL_DATA_PLACEHOLDER,
   NO_LAPS_REMAINING_DATA_PLACEHOLDER,
-} from '@utils/constants/data-placeholders';
+} from '@utils/telemetry-format';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import {
   computeFuelHistoryStats,

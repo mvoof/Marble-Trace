@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import { useWidgetSettingsStore } from '@store/root-store-context';
-import { getWidgetLabel, getWidgetDescription } from '@utils/widget-i18n';
+import { getWidgetLabel, getWidgetDescription } from '@app/widget-i18n';
 import styles from './WidgetList.module.scss';
 
 const WidgetListItem = observer(

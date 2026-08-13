@@ -8,7 +8,7 @@ import {
 import type { ChatMessage, ChatPresence } from '@/types/bindings';
 import type { StreamChatWidgetSettings } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
-import { scrollThumbFor, type ScrollThumb } from '@utils/widget/scroll-thumb';
+import { scrollThumbFor, type ScrollThumb } from '@utils/canvas';
 
 const WIDGET_ID = 'stream-chat';
 

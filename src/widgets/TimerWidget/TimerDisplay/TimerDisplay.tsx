@@ -1,6 +1,6 @@
 ﻿import { observer } from 'mobx-react-lite';
 
-import { isSessionEnded, splitTime } from '@utils/widget/timer-utils';
+import { isSessionEnded, splitTime } from '@utils/timer-utils';
 
 import { useSessionStore } from '@store/root-store-context';
 import styles from './TimerDisplay.module.scss';

@@ -1,11 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import {
-  convertTemp,
-  formatSpeed,
-  speedUnit,
-} from '@utils/formatters/telemetry-format';
-import { getSkiesLabel } from '@utils/widget/weather-utils';
+import { convertTemp, formatSpeed, speedUnit } from '@utils/telemetry-format';
+import { getSkiesLabel } from '@utils/weather-utils';
 
 import styles from './ForecastBlock.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';

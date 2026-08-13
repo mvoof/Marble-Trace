@@ -20,14 +20,14 @@ import {
 import {
   resolveBackgroundSrc,
   deleteBackgroundImage,
-} from '@utils/widget/layout-background';
+} from '@store/settings/layout-background';
 import { listOverlayMonitors } from '@store/sync/overlay-resolution';
 import {
   monitorsBounds,
   widgetsOnMonitor,
-} from '@utils/widget/virtual-desktop';
+} from '@store/settings/virtual-desktop';
 import type { SavedLayout, SessionContext } from '@/types/widget-settings';
-import { getWidgetLabel } from '@utils/widget-i18n';
+import { getWidgetLabel } from '@app/widget-i18n';
 import styles from './LayoutList.module.scss';
 
 interface LayoutPreviewProps {

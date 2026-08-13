@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { isSessionEnded, splitTime } from '@utils/widget/timer-utils';
+import { isSessionEnded, splitTime } from '@utils/timer-utils';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import {
   useSessionStore,

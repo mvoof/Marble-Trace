@@ -4,9 +4,9 @@ import {
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { formatLapTime } from '@utils/formatters/telemetry-format';
-import { getGameDelta } from '@utils/widget/delta-utils';
-import { getSectorColor } from '@utils/widget/sector-utils';
+import { formatLapTime } from '@utils/telemetry-format';
+import { getGameDelta } from '@utils/delta-utils';
+import { getSectorColor } from '@utils/colors';
 import type { SectorMatrixWidgetSettings } from '@/types/widget-settings';
 import styles from './SectorHeader.module.scss';
 

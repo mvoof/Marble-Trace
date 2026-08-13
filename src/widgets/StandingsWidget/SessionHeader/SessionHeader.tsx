@@ -1,17 +1,17 @@
 import { observer } from 'mobx-react-lite';
 import { Trophy, Users, TriangleAlert } from 'lucide-react';
 
-import { formatIRating, isNearIncidentLimit } from '@utils/widget/widget-utils';
-import { resolveSessionLaps } from '@utils/formatters/telemetry-format';
-import { computeClassSof } from '@utils/widget/standings-utils';
+import { formatIRating, isNearIncidentLimit } from '@utils/driver';
+import { resolveSessionLaps } from '@utils/telemetry-format';
+import { computeClassSof } from '@widgets/StandingsWidget/standings-utils';
 import {
   resolveSessionColorKey,
   type SessionColorKey,
-} from '@utils/widget/timer-utils';
+} from '@utils/timer-utils';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { SessionClock } from '@widgets/StandingsWidget/SessionClock/SessionClock';
-import { StatPill } from '@/components/shared/StatPill/StatPill';
+import { StatPill } from '@/components/StatPill/StatPill';
 import styles from './SessionHeader.module.scss';
 import {
   useBackendComputedStore,

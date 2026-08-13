@@ -1,8 +1,5 @@
 import type { FuelLapRecord } from '@/types/bindings';
-import {
-  FUEL_COLORS,
-  FUEL_CHART_CONFIG,
-} from '@utils/constants/fuel-constants';
+import { FUEL_COLORS, FUEL_CHART_CONFIG } from '@utils/fuel-constants';
 
 const barColor = (record: FuelLapRecord, avg: number | null): string => {
   if (record.rejected !== null) return FUEL_COLORS.rejected;

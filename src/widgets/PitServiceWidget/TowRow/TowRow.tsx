@@ -4,7 +4,7 @@ import styles from './TowRow.module.scss';
 import {
   countdownUnit,
   formatCountdown,
-} from '@utils/widget/pit-service-utils';
+} from '@widgets/PitServiceWidget/pit-service-utils';
 import { usePitServiceWidgetStore } from '@store/root-store-context';
 
 export const TowRow = observer(() => {

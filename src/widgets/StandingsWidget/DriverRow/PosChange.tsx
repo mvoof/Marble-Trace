@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
-import { hasRaceStarted } from '@utils/widget/timer-utils';
+import { hasRaceStarted } from '@utils/timer-utils';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import styles from './DriverRow.module.scss';
 import {

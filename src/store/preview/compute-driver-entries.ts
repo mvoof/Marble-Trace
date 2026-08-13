@@ -4,7 +4,7 @@ import type {
   DriverEntry,
   SessionSnapshot,
 } from '@/types/bindings';
-import { parseClassColor } from '@utils/formatters/color-utils';
+import { parseClassColor } from '@utils/colors';
 
 export const computeDriverEntries = (
   carIdx: CarIdxFrame | null,

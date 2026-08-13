@@ -1,5 +1,5 @@
 import { TrackSurface as TrackSurfaceType } from '@/types/bindings';
-import { TrackSurface } from '@/types';
+import { TrackSurface, type FlagType } from '@/types';
 
 // ─── Track surface constants ───────────────────────────────────────────────
 
@@ -50,27 +50,28 @@ export const abbreviateName = (fullName: string): string => {
   return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
 };
 
-// ─── Status color constants matching SCSS tokens in _widget-tokens.scss ─────
-
-const COLOR_STATUS_INFO = '#60a5fa'; // $widget-status-info (Blue)
-const COLOR_STATUS_WARNING = '#fbbf24'; // $widget-status-warning (Amber/Yellow)
-const COLOR_STATUS_CAUTION = '#f97316'; // $widget-status-caution/warning (Orange)
-const COLOR_STATUS_DANGER = '#ef4444'; // $widget-status-danger (Red)
-
-export const getAirTempColor = (celsius: number): string => {
-  if (celsius < 20) return COLOR_STATUS_INFO;
-  if (celsius < 28) return COLOR_STATUS_WARNING;
-  return COLOR_STATUS_DANGER;
-};
-
-export const getTrackTempColor = (celsius: number): string => {
-  if (celsius < 30) return COLOR_STATUS_INFO;
-  if (celsius < 40) return COLOR_STATUS_CAUTION;
-  return COLOR_STATUS_DANGER;
-};
-
 export const formatCarNumber = (carNumber: string): string => {
   return carNumber.length === 1 && /^\d$/.test(carNumber)
     ? `0${carNumber}`
     : carNumber;
+};
+
+const SESSION_FLAGS = {
+  checkered: 0x00000001,
+  blue: 0x00000020,
+  black: 0x00010000,
+  disqualify: 0x00020000,
+  repair: 0x00100000,
+  furled: 0x00080000,
+} as const;
+
+export const parseDriverFlags = (rawFlags: number): FlagType => {
+  if (rawFlags & SESSION_FLAGS.disqualify) return 'dq';
+  if (rawFlags & SESSION_FLAGS.repair) return 'meatball';
+  if (rawFlags & SESSION_FLAGS.black) return 'penalty';
+  if (rawFlags & SESSION_FLAGS.furled) return 'black';
+  if (rawFlags & SESSION_FLAGS.blue) return 'blue';
+  if (rawFlags & SESSION_FLAGS.checkered) return 'checkered';
+
+  return 'none';
 };

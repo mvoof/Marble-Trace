@@ -3,8 +3,8 @@ import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
 import { deleteSettingsFile } from '@/services/settings.service';
-import { mergeWithDefaults } from '@utils/deep-merge';
-import { detectSystemLanguage } from '@utils/system-locale';
+import { mergeWithDefaults } from '@store/deep-merge';
+import { detectSystemLanguage } from '@store/settings/system-locale';
 import i18n from '@/i18n';
 import type { SettingsLockReason } from '@store/settings-schema/types';
 

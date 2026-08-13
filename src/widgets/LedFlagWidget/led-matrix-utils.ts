@@ -1,5 +1,5 @@
 import type { FlagType } from '@/types';
-import { BLOCKS } from '@utils/widget/led-flag-utils';
+import { BLOCKS } from '@widgets/LedFlagWidget/led-flag-utils';
 
 export interface ColorStyles {
   colorGreen: string;

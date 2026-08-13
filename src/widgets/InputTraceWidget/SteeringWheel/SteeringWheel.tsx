@@ -5,7 +5,7 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import type { InputTraceSettings } from '@/types/widget-settings';
-import { steeringAngleDeg } from '@utils/widget/steering-angle';
+import { steeringAngleDeg } from '@utils/car-signals';
 import Logo from '@assets/logo.svg?react';
 import styles from './SteeringWheel.module.scss';
 

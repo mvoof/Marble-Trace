@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { InputNumber, Row, Col, ColorPicker, Slider } from 'antd';
-import { getWidgetLabel } from '@utils/widget-i18n';
+import { getWidgetLabel } from '@app/widget-i18n';
 import styles from './WidgetSettings.module.scss';
 import { Card, PanelWidgetProvider } from './panels/Card';
 import { RpmLightsSettingsPanel } from './panels/RpmLightsSettingsPanel';

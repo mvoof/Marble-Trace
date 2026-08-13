@@ -1,6 +1,6 @@
 import { useEffect, type RefObject } from 'react';
 
-import { resizeCanvasToDpr } from '@utils/widget/canvas-dpr';
+import { resizeCanvasToDpr } from '@utils/canvas';
 
 /**
  * Keeps a canvas' backing store in step with the size its parent gives it and

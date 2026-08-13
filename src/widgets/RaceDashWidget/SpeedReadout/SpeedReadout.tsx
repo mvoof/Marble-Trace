@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { formatSpeed, speedUnit } from '@utils/formatters/telemetry-format';
+import { formatSpeed, speedUnit } from '@utils/telemetry-format';
 import { usePlayerStore, useUnitsStore } from '@store/root-store-context';
 
 import styles from './SpeedReadout.module.scss';

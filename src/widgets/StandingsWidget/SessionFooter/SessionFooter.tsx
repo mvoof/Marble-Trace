@@ -1,13 +1,13 @@
 import { observer } from 'mobx-react-lite';
 import { Wrench, Thermometer, Waves } from 'lucide-react';
 
-import { formatTemp, tempUnit } from '@utils/formatters/telemetry-format';
-import { parseWeekendTemp } from '@utils/widget/standings-utils';
-import { getAirTempColor, getTrackTempColor } from '@utils/widget/widget-utils';
-import { getTrackWetnessInfo } from '@utils/widget/weather-utils';
+import { formatTemp, tempUnit } from '@utils/telemetry-format';
+import { parseWeekendTemp } from '@widgets/StandingsWidget/standings-utils';
+import { getAirTempColor, getTrackTempColor } from '@utils/colors';
+import { getTrackWetnessInfo } from '@utils/weather-utils';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { StatPill } from '@/components/shared/StatPill/StatPill';
+import { StatPill } from '@/components/StatPill/StatPill';
 import styles from './SessionFooter.module.scss';
 import {
   useBackendComputedStore,

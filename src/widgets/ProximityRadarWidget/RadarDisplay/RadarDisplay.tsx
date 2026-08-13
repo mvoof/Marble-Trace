@@ -1,17 +1,14 @@
 import { observer } from 'mobx-react-lite';
 
-import { useProximityRadarData } from '@hooks/common/useProximityRadarData';
-import {
-  distanceUnit,
-  formatDistance,
-} from '@utils/formatters/telemetry-format';
+import { useProximityRadarData } from '@hooks/useProximityRadarData';
+import { distanceUnit, formatDistance } from '@utils/telemetry-format';
 import {
   CAR_WIDTH,
   CAR_CORNER_RADIUS,
   SIDE_CAR_LATERAL_OFFSET,
   getCarColor,
   getSideCarColor,
-} from '@utils/constants/radar-constants';
+} from '@utils/radar-constants';
 
 import styles from './RadarDisplay.module.scss';
 import { useUnitsStore } from '@store/root-store-context';

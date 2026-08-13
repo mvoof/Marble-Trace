@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
 import { GMeterCanvas } from './GMeterCanvas/GMeterCanvas';
 import { GMeterDashboard } from './GMeterDashboard/GMeterDashboard';
 

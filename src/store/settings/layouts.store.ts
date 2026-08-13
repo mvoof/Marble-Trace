@@ -1,12 +1,12 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import { cloneBackgroundImage } from '@utils/widget/layout-background';
+import { cloneBackgroundImage } from '@store/settings/layout-background';
 import {
   monitorForWidget,
   monitorsBounds,
   placeWidgetOnMonitor,
   widgetsOnMonitor,
-} from '@utils/widget/virtual-desktop';
+} from '@store/settings/virtual-desktop';
 import type {
   LayoutMonitor,
   SavedLayout,

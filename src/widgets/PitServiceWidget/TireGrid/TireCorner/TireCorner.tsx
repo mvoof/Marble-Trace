@@ -2,14 +2,14 @@ import { observer } from 'mobx-react-lite';
 
 import styles from './TireCorner.module.scss';
 import { OrderToggle } from '@widgets/PitServiceWidget/OrderToggle/OrderToggle';
-import type { CornerPosition } from '@utils/widget/pit-service-utils';
+import type { CornerPosition } from '@widgets/PitServiceWidget/pit-service-utils';
 import {
   buildTireCorner,
   convertPressure,
   isCornerOrdered,
   orderedPressure,
   wearLevel,
-} from '@utils/widget/pit-service-utils';
+} from '@widgets/PitServiceWidget/pit-service-utils';
 import {
   usePitServiceWidgetStore,
   usePlayerStore,

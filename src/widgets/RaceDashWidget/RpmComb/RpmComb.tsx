@@ -6,7 +6,7 @@ import {
   useSessionStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { computeShiftThresholds } from '@utils/widget/shift-thresholds';
+import { computeShiftThresholds } from '@utils/car-signals';
 import { computeRpmZoneState, rpmFillColor } from '../race-dash-utils';
 import {
   ARC_SWEEP_DEG,

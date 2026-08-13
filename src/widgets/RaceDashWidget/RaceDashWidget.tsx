@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@/components/shared/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
 import { usePitState } from '@hooks/usePitState';
 
 import { PitBlock } from './PitBlock/PitBlock';

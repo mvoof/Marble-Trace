@@ -6,7 +6,7 @@ import { Settings2, ArrowLeft } from 'lucide-react';
 import type { WidgetDefaultConfig } from '@/types/widget-settings';
 import { WidgetSettings } from '../WidgetSettings/WidgetSettings';
 import { useWidgetSettingsStore } from '@store/root-store-context';
-import { getWidgetLabel } from '@utils/widget-i18n';
+import { getWidgetLabel } from '@app/widget-i18n';
 import styles from './LayoutWidgetPanel.module.scss';
 
 interface LayoutWidgetPanelProps {

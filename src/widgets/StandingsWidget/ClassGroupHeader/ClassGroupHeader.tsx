@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react-lite';
 import { Trophy, Users } from 'lucide-react';
 
-import { formatIRating } from '@utils/widget/widget-utils';
+import { formatIRating } from '@utils/driver';
 
-import { StatPill } from '@/components/shared/StatPill/StatPill';
+import { StatPill } from '@/components/StatPill/StatPill';
 import styles from './ClassGroupHeader.module.scss';
 
 /** Marks the class header rows, which scroll the classes rather than the drivers. */

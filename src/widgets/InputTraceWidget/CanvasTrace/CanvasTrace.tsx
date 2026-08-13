@@ -1,8 +1,8 @@
 import { useRef, useCallback } from 'react';
 
 import type { InputTraceSettings } from '@/types/widget-settings';
-import { useReactiveCanvasLoop } from '@/hooks/widget/useReactiveCanvasLoop';
-import { useCanvasAutoResize } from '@/hooks/common/useCanvasAutoResize';
+import { useReactiveCanvasLoop } from '@/hooks/useReactiveCanvasLoop';
+import { useCanvasAutoResize } from '@/hooks/useCanvasAutoResize';
 import styles from './CanvasTrace.module.scss';
 import {
   useAppSettingsStore,

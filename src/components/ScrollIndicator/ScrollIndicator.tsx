@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import type { ScrollThumb } from '@utils/widget/scroll-thumb';
+import type { ScrollThumb } from '@utils/canvas';
 
 import styles from './ScrollIndicator.module.scss';
 

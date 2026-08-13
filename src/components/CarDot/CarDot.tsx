@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import styles from './CarDot.module.scss';
 import { ChevronIcon, CrownIcon } from './MarkerIcons';
-import { carDotRect, type CarDotShape } from '@utils/widget/car-dot-shape';
+import { carDotRect, type CarDotShape } from '@utils/canvas';
 
 interface CarDotProps {
   carNumber: string;

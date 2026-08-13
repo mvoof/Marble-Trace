@@ -1,8 +1,8 @@
 import { useCallback, useRef } from 'react';
 
 import type { CoachWidgetSettings } from '@/types/widget-settings';
-import { useReactiveCanvasLoop } from '@/hooks/widget/useReactiveCanvasLoop';
-import { useCanvasAutoResize } from '@/hooks/common/useCanvasAutoResize';
+import { useReactiveCanvasLoop } from '@/hooks/useReactiveCanvasLoop';
+import { useCanvasAutoResize } from '@/hooks/useCanvasAutoResize';
 import {
   useCoachWidgetStore,
   useWidgetSettingsStore,

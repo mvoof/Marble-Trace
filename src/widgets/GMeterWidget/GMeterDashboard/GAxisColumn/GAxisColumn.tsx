@@ -5,7 +5,7 @@ import {
   G_CONSTANT,
   SMOOTHING,
   computeColor,
-} from '@utils/widget/g-meter-utils';
+} from '@widgets/GMeterWidget/g-meter-utils';
 
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 import styles from './GAxisColumn.module.scss';
@@ -13,8 +13,8 @@ import {
   usePlayerStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
-import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
+import { WidgetLabel } from '@/components/WidgetLabel/WidgetLabel';
+import { WidgetValue } from '@/components/WidgetValue/WidgetValue';
 
 interface GAxisColumnProps {
   axis: 'lat' | 'lon';

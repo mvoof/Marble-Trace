@@ -1,7 +1,7 @@
 import type { CarStatusFrame, SessionSnapshot } from '@/types/bindings';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
-import { computeShiftThresholds } from '@utils/widget/shift-thresholds';
-import { rpmSubZoneForPct } from '@utils/widget/rpm-zone';
+import { computeShiftThresholds } from '@utils/car-signals';
+import { rpmSubZoneForPct } from '@utils/car-signals';
 
 export type RpmZone = 'low' | 'mid' | 'high' | 'shift' | 'blink';
 

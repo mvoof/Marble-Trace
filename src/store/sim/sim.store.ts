@@ -31,11 +31,11 @@ import type {
   ReferenceLapData,
   TrackCondition,
 } from '@/types/bindings';
-import { debug } from '@utils/debug';
+import { debug } from '@store/sim/debug';
 import {
   nextTrackCondition,
   trackConditionForWetness,
-} from '@utils/widget/track-condition';
+} from '@store/sim/track-condition';
 import type { TelemetryStatus } from '@/types';
 import type { RootStore } from '@store/root-store';
 import {

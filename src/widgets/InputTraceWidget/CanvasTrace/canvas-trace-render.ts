@@ -1,5 +1,5 @@
 import type { InputTraceSettings } from '@/types/widget-settings';
-import { normalizedSteering } from '@utils/widget/steering-angle';
+import { normalizedSteering } from '@utils/car-signals';
 
 // Circular sample buffers shared by the ingest and paint passes. Channel
 // samples are interleaved: buffer[sampleIndex * channelCount + channelIndex].

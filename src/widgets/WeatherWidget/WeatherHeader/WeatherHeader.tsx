@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import { Sun, CloudSun, Cloud, CloudRain } from 'lucide-react';
 
-import { convertTemp, tempUnit } from '@utils/formatters/telemetry-format';
+import { convertTemp, tempUnit } from '@utils/telemetry-format';
 import {
   parseWeekendFloat,
   getWeatherIcon,
   getSkiesLabel,
-} from '@utils/widget/weather-utils';
+} from '@utils/weather-utils';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import {
   useEnvironmentStore,

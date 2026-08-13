@@ -3,9 +3,9 @@ import { observer } from 'mobx-react-lite';
 import {
   computeRelativeGap,
   buildRelativeGridTemplate,
-} from '@utils/widget/relative-utils';
-import type { PaceCarRowEntry } from '@utils/widget/relative-utils';
-import { formatCarNumber } from '@utils/widget/widget-utils';
+} from '@widgets/RelativeWidget/relative-utils';
+import type { PaceCarRowEntry } from '@widgets/RelativeWidget/relative-utils';
+import { formatCarNumber } from '@utils/driver';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 
 import styles from './PaceCarRow.module.scss';

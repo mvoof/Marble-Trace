@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import type { DeltaState } from '@utils/widget/delta-utils';
+import type { DeltaState } from '@utils/delta-utils';
 import styles from './LapRow.module.scss';
 
 type DeltaVariant = DeltaState | 'best';

@@ -1,11 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import type { CoachWidgetSettings } from '@/types/widget-settings';
-import {
-  formatLapTime,
-  formatSpeed,
-  speedUnit,
-} from '@utils/formatters/telemetry-format';
+import { formatLapTime, formatSpeed, speedUnit } from '@utils/telemetry-format';
 import {
   useCoachWidgetStore,
   useDrivingCoachWidgetStore,

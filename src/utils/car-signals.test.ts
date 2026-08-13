@@ -3,7 +3,7 @@ import {
   normalizedSteering,
   steeringAngleDeg,
   wrapToHalfTurn,
-} from './steering-angle';
+} from './car-signals';
 
 const HALF_TURN_RAD = Math.PI;
 const QUARTER_TURN_RAD = Math.PI / 2;

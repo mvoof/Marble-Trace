@@ -6,7 +6,7 @@ import {
   useAppSettingsStore,
   useStreamChatWidgetStore,
 } from '@store/root-store-context';
-import { ScrollIndicator } from '@/components/shared/ScrollIndicator/ScrollIndicator';
+import { ScrollIndicator } from '@/components/ScrollIndicator/ScrollIndicator';
 import { ChatMessageRow } from '../ChatMessageRow/ChatMessageRow';
 
 import styles from './ChatMessageList.module.scss';

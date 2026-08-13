@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 
 import styles from './FuelOrder.module.scss';
-import { formatFuel } from '@utils/formatters/telemetry-format';
+import { formatFuel } from '@utils/telemetry-format';
 import type { UnitSystem } from '@/types';
 import {
   usePitServiceWidgetStore,

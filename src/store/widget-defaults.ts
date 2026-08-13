@@ -31,9 +31,9 @@ import type {
   FlagDisplaySettings,
   EnginePanelWidgetSettings,
 } from '@/types/widget-settings';
-import { computeStandingsDesignWidth } from '@utils/widget/standings-utils';
-import { computeRelativeDesignWidth } from '@utils/widget/relative-utils';
-import { FUEL_AVG_WINDOW_ALL_LAPS } from '@utils/constants/fuel-constants';
+import { computeStandingsDesignWidth } from '@widgets/StandingsWidget/standings-utils';
+import { computeRelativeDesignWidth } from '@widgets/RelativeWidget/relative-utils';
+import { FUEL_AVG_WINDOW_ALL_LAPS } from '@utils/fuel-constants';
 
 // Widgets with toggleable columns/sections have a natural width that changes as
 // elements are shown/hidden. This builds a resolveLayoutChange that, when any of

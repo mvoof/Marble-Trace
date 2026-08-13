@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import {
   resolveSessionColorKey,
   type SessionColorKey,
-} from '@utils/widget/timer-utils';
+} from '@utils/timer-utils';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
 import {
   useSessionStore,

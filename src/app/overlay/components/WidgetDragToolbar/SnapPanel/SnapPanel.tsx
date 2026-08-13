@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 import { observer } from 'mobx-react-lite';
-import { useClickOutside } from '@hooks/common/useClickOutside';
+import { useClickOutside } from '@hooks/useClickOutside';
 import {
   ArrowDownLeft,
   ArrowDown,

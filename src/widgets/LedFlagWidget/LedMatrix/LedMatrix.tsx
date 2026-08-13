@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { BLOCKS, buildGridData } from '@utils/widget/led-flag-utils';
+import { BLOCKS, buildGridData } from '@widgets/LedFlagWidget/led-flag-utils';
 import { getColorClass, type ColorStyles } from '../led-matrix-utils';
 
 import styles from './LedMatrix.module.scss';

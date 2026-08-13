@@ -5,7 +5,7 @@ import {
   useBackendComputedStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { getDeltaToPreviousBest } from '@utils/widget/delta-utils';
+import { getDeltaToPreviousBest } from '@utils/delta-utils';
 import type { DeltaWidgetSettings } from '@/types/widget-settings';
 import { DeltaLive } from './DeltaLive/DeltaLive';
 import { LapFlash } from './LapFlash/LapFlash';

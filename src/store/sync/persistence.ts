@@ -12,7 +12,7 @@ import type {
   SessionContext,
 } from '@/types/widget-settings';
 import type { AppSettings } from '@store/settings/app-settings.store';
-import { mergeWithDefaults } from '@utils/deep-merge';
+import { mergeWithDefaults } from '@store/deep-merge';
 import type { RootStore } from '@store/root-store';
 import type { BindingMap } from '@store/hotkeys/binding-types';
 import { CURRENT_SCHEMA_VERSION } from '@store/settings-schema';

@@ -1,7 +1,10 @@
 import { observer } from 'mobx-react-lite';
 
 import type { FlagType } from '@/types';
-import { BLINK_FLAGS, FLAG_LABEL } from '@utils/widget/flat-flags-utils';
+import {
+  BLINK_FLAGS,
+  FLAG_LABEL,
+} from '@widgets/FlatFlagsWidget/flat-flags-utils';
 import { useFlagsStore } from '@store/root-store-context';
 
 import styles from './FlagItem.module.scss';

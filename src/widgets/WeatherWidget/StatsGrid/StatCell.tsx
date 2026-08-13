@@ -6,7 +6,7 @@ import {
   formatSpeed as _formatSpeed,
   speedUnit as _speedUnit,
   tempUnit,
-} from '@utils/formatters/telemetry-format';
+} from '@utils/telemetry-format';
 import {
   HUMIDITY_COLOR,
   airTempFraction,
@@ -19,11 +19,11 @@ import {
   trackTempFraction,
   wetnessFraction,
   windFraction,
-} from '@utils/widget/weather-utils';
-import { getAirTempColor, getTrackTempColor } from '@utils/widget/widget-utils';
+} from '@utils/weather-utils';
+import { getAirTempColor, getTrackTempColor } from '@utils/colors';
 
-import { WidgetValue } from '@/components/shared/WidgetValue/WidgetValue';
-import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
+import { WidgetValue } from '@/components/WidgetValue/WidgetValue';
+import { WidgetLabel } from '@/components/WidgetLabel/WidgetLabel';
 import styles from './StatCell.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import {

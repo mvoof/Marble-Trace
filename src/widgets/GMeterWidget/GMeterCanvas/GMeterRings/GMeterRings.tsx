@@ -1,8 +1,8 @@
 import { useContext, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { RADIUS_RATIO } from '@utils/widget/g-meter-utils';
-import { resizeCanvasToDpr } from '@utils/widget/canvas-dpr';
+import { RADIUS_RATIO } from '@widgets/GMeterWidget/g-meter-utils';
+import { resizeCanvasToDpr } from '@utils/canvas';
 
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 import styles from './GMeterRings.module.scss';

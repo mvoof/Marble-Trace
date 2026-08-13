@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetLabel } from '@/components/shared/WidgetLabel/WidgetLabel';
+import { WidgetLabel } from '@/components/WidgetLabel/WidgetLabel';
 import styles from './FuelStatsCell.module.scss';
 
 interface FuelStatsCellProps {

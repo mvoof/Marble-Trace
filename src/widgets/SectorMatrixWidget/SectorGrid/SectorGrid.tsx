@@ -7,8 +7,8 @@ import {
   formatSectorTime,
   formatSectorDelta,
   getDeltaState,
-} from '@utils/widget/delta-utils';
-import { getCellDividers } from '@utils/widget/grid-divider-utils';
+} from '@utils/delta-utils';
+import { getCellDividers } from '@utils/canvas';
 import styles from './SectorGrid.module.scss';
 
 interface Props {
