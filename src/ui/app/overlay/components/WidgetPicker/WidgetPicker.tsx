@@ -5,7 +5,7 @@ import { Button } from 'antd';
 import { Plus, Search, MoveRight } from 'lucide-react';
 import { useClickOutside } from '@ui/hooks/useClickOutside';
 import { useWidgetSettingsStore } from '@store/root-store-context';
-import type { PickableWidget } from '@store/settings/widget-settings.store';
+import type { PickableWidget } from '@store/settings/widget-placement';
 import { getWidgetDescription } from '@ui/app/widget-i18n';
 import styles from './WidgetPicker.module.scss';
 

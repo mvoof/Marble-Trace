@@ -964,7 +964,7 @@ export const LayoutEditor = observer(
                   size="small"
                   type="text"
                   icon={<Undo2 size={14} />}
-                  disabled={widgetSettings.undoStack.length === 0}
+                  disabled={!widgetSettings.history.canUndo}
                   onClick={() => widgetSettings.undo()}
                 />
               </Tooltip>
@@ -974,7 +974,7 @@ export const LayoutEditor = observer(
                   size="small"
                   type="text"
                   icon={<Redo2 size={14} />}
-                  disabled={widgetSettings.redoStack.length === 0}
+                  disabled={!widgetSettings.history.canRedo}
                   onClick={() => widgetSettings.redo()}
                 />
               </Tooltip>

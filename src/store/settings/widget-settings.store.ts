@@ -31,23 +31,20 @@ import {
   placeWidgetOnMonitor,
   widgetsOnMonitor,
 } from '@store/settings/virtual-desktop';
+import { WidgetHistory } from '@store/settings/widget-history';
+import {
+  bottomZIndex,
+  buildStarterWidgets,
+  pickableWidgetsForMonitor,
+  spotForAddedWidget,
+  topZIndex,
+  type PickableWidget,
+} from '@store/settings/widget-placement';
 import type { RootStore } from '@store/root-store';
-
-// Diagonal offset applied when a freshly added widget would land on top of one
-// that is already centred on the same screen.
-const WIDGET_CASCADE_STEP = 40;
 
 const LAYOUT_TOAST_DURATION_MS = 3000;
 
-/** A widget offered by the overlay's F9 "add widget" picker. */
-export interface PickableWidget {
-  id: string;
-  label: string;
-  description?: string;
-  available: boolean;
-  /** Monitor it currently lives on, or null when it isn't in the layout yet. */
-  currentMonitorName: string | null;
-}
+export type { PickableWidget };
 
 export class WidgetSettingsStore {
   // Live working copy of the ACTIVE layout. The overlay renders this; the layout
@@ -59,8 +56,7 @@ export class WidgetSettingsStore {
     ])
   );
 
-  undoStack: WidgetDefaultConfig[][] = [];
-  redoStack: WidgetDefaultConfig[][] = [];
+  readonly history = new WidgetHistory();
 
   /**
    * The saved layout records. Owned here so the two always construct together,
@@ -222,43 +218,21 @@ export class WidgetSettingsStore {
   }
 
   pushUndo() {
-    const snapshot = this.snapshotWidgets();
-
-    if (this.undoStack.length > 0) {
-      const last = this.undoStack[this.undoStack.length - 1];
-
-      if (JSON.stringify(last) === JSON.stringify(snapshot)) {
-        return;
-      }
-    }
-
-    this.undoStack.push(snapshot);
-
-    if (this.undoStack.length > 10) {
-      this.undoStack.shift();
-    }
-
-    this.redoStack = [];
+    this.history.push(this.snapshotWidgets());
   }
 
   undo() {
-    if (this.undoStack.length === 0) return;
-
-    const previous = this.undoStack.pop()!;
-
-    this.redoStack.push(this.snapshotWidgets());
-    this.setWidgets(previous);
-    this.commitActiveLayout();
-    this.bumpMutation();
+    this.restore(this.history.undo(this.snapshotWidgets()));
   }
 
   redo() {
-    if (this.redoStack.length === 0) return;
+    this.restore(this.history.redo(this.snapshotWidgets()));
+  }
 
-    const next = this.redoStack.pop()!;
+  private restore(widgets: WidgetDefaultConfig[] | null) {
+    if (widgets === null) return;
 
-    this.undoStack.push(this.snapshotWidgets());
-    this.setWidgets(next);
+    this.setWidgets(widgets);
     this.commitActiveLayout();
     this.bumpMutation();
   }
@@ -270,17 +244,7 @@ export class WidgetSettingsStore {
 
     this.pushUndo();
 
-    let maxZ = 0;
-
-    for (const w of this.widgets.values()) {
-      if (w.id !== id) {
-        const z = w.userSettings.zIndex ?? 0;
-
-        if (z > maxZ) maxZ = z;
-      }
-    }
-
-    widget.userSettings.zIndex = maxZ + 1;
+    widget.userSettings.zIndex = topZIndex(this.allWidgets, id) + 1;
     this.bumpMutation();
   }
 
@@ -291,17 +255,7 @@ export class WidgetSettingsStore {
 
     this.pushUndo();
 
-    let minZ = 0;
-
-    for (const w of this.widgets.values()) {
-      if (w.id !== id) {
-        const z = w.userSettings.zIndex ?? 0;
-
-        if (z < minZ) minZ = z;
-      }
-    }
-
-    widget.userSettings.zIndex = minZ - 1;
+    widget.userSettings.zIndex = bottomZIndex(this.allWidgets, id) - 1;
     this.bumpMutation();
   }
 
@@ -401,27 +355,13 @@ export class WidgetSettingsStore {
    * to move it instead of pretending a second copy could exist.
    */
   pickableWidgetsForMonitor(monitorName: string): PickableWidget[] {
-    const monitors = this.activeLayout?.monitors ?? [];
-    const available = new Set(this.availableWidgetIds);
-
-    const drawnHere = new Set(
-      widgetsOnMonitor(this.enabledWidgets, monitorName, monitors).map(
-        (widget) => widget.id
-      )
+    return pickableWidgetsForMonitor(
+      this.allWidgets,
+      this.enabledWidgets,
+      this.availableWidgetIds,
+      monitorName,
+      this.activeLayout?.monitors ?? []
     );
-
-    return this.allWidgets
-      .filter((widget) => !drawnHere.has(widget.id))
-      .map((widget) => ({
-        id: widget.id,
-        label: widget.label,
-        description: widget.description,
-        available: available.has(widget.id),
-        currentMonitorName: widget.userSettings.enabled
-          ? (monitorForWidget(widget, monitors)?.name ?? null)
-          : null,
-      }))
-      .sort((first, second) => first.label.localeCompare(second.label));
   }
 
   /**
@@ -439,47 +379,17 @@ export class WidgetSettingsStore {
 
     this.pushUndo();
 
-    const { bounds } = monitor;
-    const { currentWidth, currentHeight } = widget.userSettings;
-
     const occupied = widgetsOnMonitor(
       this.enabledWidgets,
       monitorName,
       this.activeLayout?.monitors ?? []
     ).filter((placed) => placed.id !== id);
 
-    let x = Math.round(bounds.x + (bounds.width - currentWidth) / 2);
-    let y = Math.round(bounds.y + (bounds.height - currentHeight) / 2);
+    const spot = spotForAddedWidget(widget, monitor, occupied, this.allWidgets);
 
-    // Cascade off anything already sitting in the middle so repeated adds don't
-    // stack into one indistinguishable pile.
-    while (
-      occupied.some(
-        (placed) =>
-          Math.abs(placed.userSettings.x - x) < WIDGET_CASCADE_STEP &&
-          Math.abs(placed.userSettings.y - y) < WIDGET_CASCADE_STEP
-      )
-    ) {
-      x += WIDGET_CASCADE_STEP;
-      y += WIDGET_CASCADE_STEP;
-    }
-
-    const maxX = Math.max(bounds.x, bounds.x + bounds.width - currentWidth);
-    const maxY = Math.max(bounds.y, bounds.y + bounds.height - currentHeight);
-
-    let maxZ = 0;
-
-    for (const other of this.widgets.values()) {
-      if (other.id === id) continue;
-
-      const zIndex = other.userSettings.zIndex ?? 0;
-
-      if (zIndex > maxZ) maxZ = zIndex;
-    }
-
-    widget.userSettings.x = Math.min(Math.max(x, bounds.x), maxX);
-    widget.userSettings.y = Math.min(Math.max(y, bounds.y), maxY);
-    widget.userSettings.zIndex = maxZ + 1;
+    widget.userSettings.x = spot.x;
+    widget.userSettings.y = spot.y;
+    widget.userSettings.zIndex = spot.zIndex;
     widget.userSettings.enabled = true;
 
     this.bumpMutation();
@@ -746,50 +656,12 @@ export class WidgetSettingsStore {
     });
   }
 
-  // Curated onboarding layout: the default-enabled starter widgets placed at
-  // sensible anchors for the current overlay resolution (standings top-left,
-  // relative bottom-left, radar bottom-center) instead of the raw default
-  // positions clustered in a corner.
-  // When clean is true, it returns all widgets disabled.
   private buildStarterWidgets(clean: boolean = false): WidgetDefaultConfig[] {
-    const widgets = this.root?.widgetDefaults.snapshot() ?? [];
-
-    if (clean) {
-      for (const widget of widgets) {
-        widget.userSettings.enabled = false;
-      }
-
-      return widgets;
-    }
-
-    const { width, height } = this.overlayResolution;
-    const MARGIN = 24;
-
-    const place = (id: string, x: number, y: number) => {
-      const widget = widgets.find((candidate) => candidate.id === id);
-
-      if (widget) {
-        widget.userSettings.x = Math.round(x);
-        widget.userSettings.y = Math.round(y);
-      }
-    };
-
-    const heightOf = (id: string) =>
-      widgets.find((candidate) => candidate.id === id)?.userSettings
-        .currentHeight ?? 0;
-    const widthOf = (id: string) =>
-      widgets.find((candidate) => candidate.id === id)?.userSettings
-        .currentWidth ?? 0;
-
-    place('standings', MARGIN, MARGIN);
-    place('relative', MARGIN, height - heightOf('relative') - MARGIN);
-    place(
-      'proximity-radar',
-      (width - widthOf('proximity-radar')) / 2,
-      height - heightOf('proximity-radar') - MARGIN
+    return buildStarterWidgets(
+      this.root?.widgetDefaults.snapshot() ?? [],
+      this.overlayResolution,
+      clean
     );
-
-    return widgets;
   }
 
   saveLayout(name: string) {
