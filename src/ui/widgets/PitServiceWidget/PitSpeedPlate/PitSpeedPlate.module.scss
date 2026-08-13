@@ -18,6 +18,10 @@
   background: rgba($race-green, 0.3);
 }
 
+.fillReleased {
+  background: rgba($race-green, 0.45);
+}
+
 .fillOver {
   position: absolute;
   top: 0;
@@ -71,6 +75,15 @@
   line-height: 0.9;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
+}
+
+.valueGo {
+  font-family: $font-widget;
+  font-size: fs(xxxl);
+  line-height: 0.9;
+  color: $race-green;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
 .unit {
