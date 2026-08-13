@@ -3,10 +3,12 @@ import { runInAction } from 'mobx';
 import { RootStore } from '@store/root-store';
 import type { SavedLayout } from '@/types/widget-settings';
 
-// setWidgets pushes a few settings to the backend and chains off the promise,
-// so the mock has to resolve rather than return undefined.
-vi.mock('@tauri-apps/api/core', () => ({
-  invoke: vi.fn(() => Promise.resolve()),
+// setWidgets pushes a few settings to the backend through the service layer,
+// which has no Tauri runtime to talk to under vitest.
+vi.mock('@/services/settings.service', () => ({
+  setPitWarningLapsSilent: vi.fn(),
+  setFuelAvgWindowSilent: vi.fn(),
+  setCarLengthSilent: vi.fn(),
 }));
 vi.mock('@tauri-apps/api/event', () => ({ emit: vi.fn() }));
 

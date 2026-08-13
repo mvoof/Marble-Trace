@@ -1,7 +1,11 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { mergeWithDefaults } from '@utils/deep-merge';
-import { invoke } from '@tauri-apps/api/core';
 import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-defaults';
+import {
+  setCarLengthSilent,
+  setFuelAvgWindowSilent,
+  setPitWarningLapsSilent,
+} from '@/services/settings.service';
 import { resolveMonitorByName } from '@store/sync/overlay-resolution';
 
 import type {
@@ -421,23 +425,8 @@ export class WidgetSettingsStore {
       if (fuel) {
         const settings = fuel.userSettings as unknown as FuelWidgetSettings;
 
-        void invoke('set_pit_warning_laps', {
-          laps: settings.pitWarningLaps,
-        }).catch((error) => {
-          console.error(
-            'Failed to initialize pit warning laps on backend:',
-            error
-          );
-        });
-
-        void invoke('set_fuel_avg_window', {
-          window: settings.fuelAvgWindow,
-        }).catch((error) => {
-          console.error(
-            'Failed to initialize fuel average window on backend:',
-            error
-          );
-        });
+        setPitWarningLapsSilent(settings.pitWarningLaps);
+        setFuelAvgWindowSilent(settings.fuelAvgWindow);
       }
 
       const radar =
@@ -447,11 +436,7 @@ export class WidgetSettingsStore {
         const settings = radar.userSettings as unknown as RadarSettings;
         const carLength = settings.carLength ?? 4.4;
 
-        void invoke('set_car_length', {
-          length: carLength,
-        }).catch((error) => {
-          console.error('Failed to initialize car length on backend:', error);
-        });
+        setCarLengthSilent(carLength);
       }
     });
   }
@@ -628,18 +613,14 @@ export class WidgetSettingsStore {
     this.bumpMutation();
 
     if (id === 'fuel' && 'pitWarningLaps' in resolvedPartial) {
-      void invoke('set_pit_warning_laps', {
-        laps: (resolvedPartial as FuelWidgetSettings).pitWarningLaps,
-      }).catch((error) =>
-        console.error('Failed to update pit warning laps:', error)
+      setPitWarningLapsSilent(
+        (resolvedPartial as FuelWidgetSettings).pitWarningLaps
       );
     }
 
     if (id === 'fuel' && 'fuelAvgWindow' in resolvedPartial) {
-      void invoke('set_fuel_avg_window', {
-        window: (resolvedPartial as FuelWidgetSettings).fuelAvgWindow,
-      }).catch((error) =>
-        console.error('Failed to update fuel average window:', error)
+      setFuelAvgWindowSilent(
+        (resolvedPartial as FuelWidgetSettings).fuelAvgWindow
       );
     }
 
@@ -662,11 +643,7 @@ export class WidgetSettingsStore {
         }
       }
 
-      void invoke('set_car_length', {
-        length: resolvedPartial.carLength,
-      }).catch((error) =>
-        console.error('Failed to update car length on backend:', error)
-      );
+      setCarLengthSilent(resolvedPartial.carLength);
     }
   }
 
