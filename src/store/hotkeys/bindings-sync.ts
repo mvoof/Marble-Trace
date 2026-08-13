@@ -1,4 +1,4 @@
-import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { listenTo, type UnlistenFn } from '@/services/events.service';
 import type { RootStore } from '@store/root-store';
 import type { InputButtonEvent, InputDevice } from '@/types/bindings';
 import {
@@ -18,7 +18,7 @@ export const setupDeviceBindings = async (
   const unlistens: UnlistenFn[] = [];
 
   unlistens.push(
-    await listen<InputDevice[]>(INPUT_DEVICES_EVENT, () => {
+    await listenTo<InputDevice[]>(INPUT_DEVICES_EVENT, () => {
       // The hot-plug event only says "something changed"; the reconcile round
       // trip is what carries the offline entries and the id rewrites.
       void reconcileDevices(root);
@@ -26,7 +26,7 @@ export const setupDeviceBindings = async (
   );
 
   unlistens.push(
-    await listen<InputButtonEvent>(INPUT_BUTTON_EVENT, (event) => {
+    await listenTo<InputButtonEvent>(INPUT_BUTTON_EVENT, (event) => {
       root.deviceInput.setLastEvent(event.payload);
 
       dispatchDeviceButton(

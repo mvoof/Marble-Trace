@@ -10,7 +10,12 @@ vi.mock('@/services/settings.service', () => ({
   setFuelAvgWindowSilent: vi.fn(),
   setCarLengthSilent: vi.fn(),
 }));
-vi.mock('@tauri-apps/api/event', () => ({ emit: vi.fn() }));
+vi.mock('@/services/events.service', () => ({
+  listenTo: vi.fn().mockResolvedValue(() => {}),
+  emitToApp: vi.fn().mockResolvedValue(undefined),
+  emitToWindow: vi.fn().mockResolvedValue(undefined),
+  emitToOverlays: vi.fn().mockResolvedValue(undefined),
+}));
 
 const MONITOR = {
   name: 'DISPLAY1',

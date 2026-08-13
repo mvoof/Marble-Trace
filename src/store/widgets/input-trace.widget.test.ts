@@ -20,9 +20,11 @@ vi.mock('@/services/settings.service', () => ({
 
 // RootStore subscribes to sim events on construction; the node test
 // environment has no window for the Tauri event bridge to attach to.
-vi.mock('@tauri-apps/api/event', () => ({
-  listen: vi.fn().mockResolvedValue(() => {}),
-  emit: vi.fn().mockResolvedValue(undefined),
+vi.mock('@/services/events.service', () => ({
+  listenTo: vi.fn().mockResolvedValue(() => {}),
+  emitToApp: vi.fn().mockResolvedValue(undefined),
+  emitToWindow: vi.fn().mockResolvedValue(undefined),
+  emitToOverlays: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('InputTraceWidgetStore — frameTick', () => {

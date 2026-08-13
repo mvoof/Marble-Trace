@@ -14,6 +14,10 @@
             "message": "Tauri invoke is wrapped by src/services/ — call a service instead."
           },
           {
+            "group": ["@tauri-apps/api/event"],
+            "message": "Tauri events are wrapped by src/services/events.service.ts — use listenTo/emitToApp/emitToOverlays."
+          },
+          {
             "group": ["@tauri-apps/plugin-store"],
             "message": "Settings-file persistence lives in src/store/sync and track-map.widget.ts."
           }
@@ -60,6 +64,10 @@
               {
                 "group": ["@tauri-apps/api/core"],
                 "message": "Tauri invoke is wrapped by src/services/ — call a service instead."
+              },
+              {
+                "group": ["@tauri-apps/api/event"],
+                "message": "Tauri events are wrapped by src/services/events.service.ts — use listenTo/emitToApp/emitToOverlays."
               }
             ]
           }

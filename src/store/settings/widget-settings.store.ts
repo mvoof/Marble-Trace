@@ -22,7 +22,7 @@ import type {
   RadarSettings,
   SessionContext,
 } from '@/types/widget-settings';
-import { emit } from '@tauri-apps/api/event';
+import { emitToApp } from '@/services/events.service';
 import { DEFAULT_LAYOUT_RESOLUTION } from '@utils/widget/layout-resolution';
 import { cloneBackgroundImage } from '@utils/widget/layout-background';
 import {
@@ -38,6 +38,8 @@ const DEFAULT_LAYOUT_NAME = 'Default';
 // Diagonal offset applied when a freshly added widget would land on top of one
 // that is already centred on the same screen.
 const WIDGET_CASCADE_STEP = 40;
+
+const LAYOUT_TOAST_DURATION_MS = 3000;
 
 /** A widget offered by the overlay's F9 "add widget" picker. */
 export interface PickableWidget {
@@ -140,14 +142,35 @@ export class WidgetSettingsStore {
   // layout. Null whenever the live map already is the active layout.
   liveEnabledWidgetIds: string[] | null = null;
 
+  // Name shown in the overlay's "layout switched" toast; null once it expires.
+  layoutActivatedToast: string | null = null;
+
+  private layoutToastTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor(private readonly root?: RootStore) {
-    makeAutoObservable(
+    makeAutoObservable<WidgetSettingsStore, 'layoutToastTimer'>(
       this,
-      {},
+      {
+        layoutToastTimer: false,
+      },
       {
         autoBind: true,
       }
     );
+  }
+
+  showLayoutActivatedToast(layoutName: string) {
+    this.layoutActivatedToast = layoutName;
+
+    if (this.layoutToastTimer !== null) {
+      clearTimeout(this.layoutToastTimer);
+    }
+
+    this.layoutToastTimer = setTimeout(() => {
+      runInAction(() => {
+        this.layoutActivatedToast = null;
+      });
+    }, LAYOUT_TOAST_DURATION_MS);
   }
 
   get allWidgets(): WidgetDefaultConfig[] {
@@ -1324,7 +1347,7 @@ export class WidgetSettingsStore {
     this.bumpMutation();
 
     if (options?.notify) {
-      void emit('layout-activated', layout.name);
+      void emitToApp('layout-activated', layout.name);
     }
   }
 

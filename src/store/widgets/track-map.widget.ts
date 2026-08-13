@@ -2,6 +2,8 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import type { TrackShapePayload } from '@/types/bindings';
 import { deleteTrackShape, resetPitLanePct } from '@/services/track.service';
+import { emitToApp } from '@/services/events.service';
+import { TRACK_MAP_CLEAR } from '@store/sync/sim-events';
 import type {
   StoredTracks,
   TrackRotateDirection,
@@ -85,11 +87,16 @@ export class TrackMapWidgetStore {
     await resetPitLanePct(trackId);
   }
 
-  /** Wipes the recorded shape and everything stored about the track. */
+  /**
+   * Wipes the recorded shape and everything stored about the track. The clear
+   * event fans out so every window (and the backend recorder) drops its copy;
+   * the disk-side deletion runs once, here.
+   */
   async deleteTrackData(trackId: string) {
     this.clearTrackShape();
 
     await Promise.allSettled([
+      emitToApp(TRACK_MAP_CLEAR),
       deleteTrackShape(Number(trackId)),
       this.removeStoredTrack(trackId),
     ]);

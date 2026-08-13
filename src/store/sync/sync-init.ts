@@ -1,6 +1,6 @@
 import { comparer, reaction } from 'mobx';
-import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { listenTo } from '@/services/events.service';
 import {
   startChatStreamSilent,
   stopChatStreamSilent,
@@ -177,7 +177,7 @@ export const initMainSync = async (root: RootStore) => {
         deviceBindingUnlistens,
         closeRequestedUnlisten,
       ] = await Promise.all([
-        listen<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
+        listenTo<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
           // An overlay window only ever speaks for the widgets on its own
           // screen; taking the rest of its list would overwrite the other
           // monitors with a stale copy.

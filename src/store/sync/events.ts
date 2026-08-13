@@ -1,5 +1,12 @@
 import { runInAction } from 'mobx';
-import { emit, emitTo, listen, UnlistenFn } from '@tauri-apps/api/event';
+
+import {
+  emitToApp,
+  emitToOverlays,
+  emitToWindow,
+  listenTo,
+  type UnlistenFn,
+} from '@/services/events.service';
 import type { UnitSystem } from '@/types';
 import type {
   LayoutMonitor,
@@ -28,25 +35,13 @@ export interface MonitorWidgetsPayload {
   monitors?: LayoutMonitor[];
 }
 
-// Fan-out to every open overlay window. During startup the main window can
-// react before any overlay exists, which makes Tauri log "event emitted but no
-// listeners found"; overlays hydrate the same values from disk on their own
-// boot, so skipping an emit before they are up is harmless.
-const emitToOverlays = async (event: string, payload: unknown) => {
-  const labels = await listOverlayWindowLabels();
-
-  for (const label of labels) {
-    await emitTo(label, event, payload);
-  }
-};
-
 export const setupMainListeners = async (
   root: RootStore
 ): Promise<UnlistenFn[]> => {
   const unlistens: UnlistenFn[] = [];
 
   unlistens.push(
-    await listen<boolean>('drag-mode-changed', (e) => {
+    await listenTo<boolean>('drag-mode-changed', (e) => {
       runInAction(() => root.appSettings.setDragMode(e.payload));
     })
   );
@@ -64,7 +59,7 @@ export const setupMainListeners = async (
  * mirror the flag so the AUTO / MANUAL badge and the pit entry trigger agree.
  */
 const listenPitServiceAutoSuspended = (root: RootStore) =>
-  listen<boolean>('pit-service-auto-suspended', (e) => {
+  listenTo<boolean>('pit-service-auto-suspended', (e) => {
     runInAction(() => root.pitServiceWidget.setAutoSuspended(e.payload));
   });
 
@@ -74,7 +69,7 @@ const listenPitServiceAutoSuspended = (root: RootStore) =>
  * claim one half, and both windows draw the badges off the result.
  */
 const listenPitServiceHalvesTakenOver = (root: RootStore) =>
-  listen<HalvesTakenOver>('pit-service-halves-taken-over', (e) => {
+  listenTo<HalvesTakenOver>('pit-service-halves-taken-over', (e) => {
     runInAction(() =>
       root.pitServiceWidget.setHalvesTakenOver(e.payload.fuel, e.payload.tires)
     );
@@ -86,13 +81,13 @@ export const setupOverlayListeners = async (
   const unlistens: UnlistenFn[] = [];
 
   unlistens.push(
-    await listen<boolean>('drag-mode-changed', (e) => {
+    await listenTo<boolean>('drag-mode-changed', (e) => {
       runInAction(() => root.appSettings.setDragMode(e.payload));
     })
   );
 
   unlistens.push(
-    await listen<boolean>('hide-all-widgets-changed', (e) => {
+    await listenTo<boolean>('hide-all-widgets-changed', (e) => {
       runInAction(() => {
         root.appSettings.appSettings.hideAllWidgets = e.payload;
       });
@@ -100,7 +95,7 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
-    await listen<boolean>('hide-widgets-when-game-closed-changed', (e) => {
+    await listenTo<boolean>('hide-widgets-when-game-closed-changed', (e) => {
       runInAction(() => {
         root.appSettings.appSettings.hideWidgetsWhenGameClosed = e.payload;
       });
@@ -108,19 +103,19 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
-    await listen<UnitSystem>('units-changed', (e) => {
+    await listenTo<UnitSystem>('units-changed', (e) => {
       runInAction(() => root.units.setSystem(e.payload));
     })
   );
 
   unlistens.push(
-    await listen<number>('steering-lock-changed', (e) => {
+    await listenTo<number>('steering-lock-changed', (e) => {
       runInAction(() => root.appSettings.setSteeringLock(e.payload));
     })
   );
 
   unlistens.push(
-    await listen<AppLanguage>('language-changed', (e) => {
+    await listenTo<AppLanguage>('language-changed', (e) => {
       root.appSettings.setLanguage(e.payload);
     })
   );
@@ -128,7 +123,7 @@ export const setupOverlayListeners = async (
   // The overlay renders the chat, so it needs the source-level filters even
   // though it never opens a connection itself.
   unlistens.push(
-    await listen<StreamChatFilters>('stream-chat-filters-changed', (e) => {
+    await listenTo<StreamChatFilters>('stream-chat-filters-changed', (e) => {
       runInAction(() => {
         root.appSettings.setStreamChatHideCommands(e.payload.hideCommands);
         root.appSettings.setStreamChatIgnoredBots(e.payload.ignoredBots);
@@ -139,13 +134,13 @@ export const setupOverlayListeners = async (
   // The connectors live in main, so only main knows when the feed was shut
   // down; the overlay drops its own buffer on that signal.
   unlistens.push(
-    await listen('stream-chat-cleared', () => {
+    await listenTo('stream-chat-cleared', () => {
       runInAction(() => root.chat.reset());
     })
   );
 
   unlistens.push(
-    await listen<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
+    await listenTo<MonitorWidgetsPayload>('widget-settings-updated', (e) => {
       if (e.payload.monitorName !== root.widgetSettings.ownMonitorName) return;
 
       if (e.payload.monitors) {
@@ -157,7 +152,7 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
-    await listen<number>('standings-class-index-changed', (e) => {
+    await listenTo<number>('standings-class-index-changed', (e) => {
       runInAction(() => {
         root.standingsWidget.activeClassIndex = e.payload;
       });
@@ -167,13 +162,13 @@ export const setupOverlayListeners = async (
   // Scroll travels as a delta rather than an offset: only the overlay knows how
   // many rows fit and how long the target list is, so only it can clamp.
   unlistens.push(
-    await listen<number>('standings-scroll', (e) => {
+    await listenTo<number>('standings-scroll', (e) => {
       runInAction(() => root.standingsWidget.scrollByRows(e.payload));
     })
   );
 
   unlistens.push(
-    await listen('pit-service-toggle', () => {
+    await listenTo('pit-service-toggle', () => {
       runInAction(() => root.pitServiceWidget.toggleManualShow());
     })
   );
@@ -181,13 +176,13 @@ export const setupOverlayListeners = async (
   // The key was pressed in main, where the runner lives; the panel it should
   // pop up renders here.
   unlistens.push(
-    await listen('pit-service-reveal', () => {
+    await listenTo('pit-service-reveal', () => {
       runInAction(() => root.pitServiceWidget.revealFromCommand());
     })
   );
 
   unlistens.push(
-    await listen<boolean>('interact-mode-changed', (e) => {
+    await listenTo<boolean>('interact-mode-changed', (e) => {
       runInAction(() => {
         root.appSettings.interactMode = e.payload;
       });
@@ -198,7 +193,7 @@ export const setupOverlayListeners = async (
   unlistens.push(await listenPitServiceHalvesTakenOver(root));
 
   unlistens.push(
-    await listen<SessionLayoutMap>('session-layouts-changed', (e) => {
+    await listenTo<SessionLayoutMap>('session-layouts-changed', (e) => {
       runInAction(() => {
         root.widgetSettings.sessionLayouts = e.payload;
       });
@@ -206,13 +201,21 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
-    await listen<BindingMap>('bindings-changed', (e) => {
+    await listenTo<BindingMap>('bindings-changed', (e) => {
       runInAction(() => root.bindings.applyBindings(e.payload));
     })
   );
 
   unlistens.push(
-    await listen<boolean>('auto-switch-layouts-changed', (e) => {
+    await listenTo<string>('layout-activated', (e) => {
+      runInAction(() =>
+        root.widgetSettings.showLayoutActivatedToast(e.payload)
+      );
+    })
+  );
+
+  unlistens.push(
+    await listenTo<boolean>('auto-switch-layouts-changed', (e) => {
       runInAction(() => {
         root.appSettings.appSettings.autoSwitchLayouts = e.payload;
       });
@@ -222,7 +225,8 @@ export const setupOverlayListeners = async (
   return unlistens;
 };
 
-export const emitDragMode = (val: boolean) => emit('drag-mode-changed', val);
+export const emitDragMode = (val: boolean) =>
+  emitToApp('drag-mode-changed', val);
 
 export const emitHideAllWidgets = (val: boolean) =>
   emitToOverlays('hide-all-widgets-changed', val);
@@ -261,7 +265,7 @@ export const emitPitServiceReveal = () =>
   emitToOverlays('pit-service-reveal', null);
 
 export const emitPitServiceAutoSuspended = (suspended: boolean) =>
-  emit('pit-service-auto-suspended', suspended);
+  emitToApp('pit-service-auto-suspended', suspended);
 
 export interface HalvesTakenOver {
   fuel: boolean;
@@ -269,7 +273,7 @@ export interface HalvesTakenOver {
 }
 
 export const emitPitServiceHalvesTakenOver = (halves: HalvesTakenOver) =>
-  emit('pit-service-halves-taken-over', halves);
+  emitToApp('pit-service-halves-taken-over', halves);
 
 export const emitStandingsScroll = (delta: number) =>
   emitToOverlays('standings-scroll', delta);
@@ -300,7 +304,7 @@ export const emitActiveLayoutToOverlays = async (root: RootStore) => {
 
     if (!labels.includes(label)) continue;
 
-    await emitTo(label, 'widget-settings-updated', {
+    await emitToWindow(label, 'widget-settings-updated', {
       monitorName: monitor.name,
       widgets,
       monitors: layout.monitors,
@@ -309,7 +313,7 @@ export const emitActiveLayoutToOverlays = async (root: RootStore) => {
 };
 
 export const emitWidgetSettingsToMain = (payload: MonitorWidgetsPayload) =>
-  emitTo(MAIN, 'widget-settings-updated', payload);
+  emitToWindow(MAIN, 'widget-settings-updated', payload);
 
 export const emitSessionLayoutsChanged = (sessionLayouts: SessionLayoutMap) =>
   emitToOverlays('session-layouts-changed', sessionLayouts);
@@ -321,3 +325,6 @@ export const emitAutoSwitchLayoutsChanged = (val: boolean) =>
 // interact mode, so a rebind made in main has to reach it.
 export const emitBindingsChanged = (bindings: BindingMap) =>
   emitToOverlays('bindings-changed', bindings);
+
+// Heard by the backend recorder, not by a window.
+export const emitTrackMapForceStart = () => emitToApp('track-map:force-start');

@@ -1,6 +1,5 @@
 import { useCallback, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { listen } from '@tauri-apps/api/event';
 
 import { TrackMapView, type TrackData } from '../TrackMapView/TrackMapView';
 import type { TrackRotateDirection } from '../types';
@@ -8,7 +7,6 @@ import {
   useSessionStore,
   useTrackMapWidgetStore,
 } from '@store/root-store-context';
-import { TRACK_MAP_CLEAR } from '@store/sync/sim-events';
 
 export const TrackMapContent = observer(() => {
   const sessionData = useSessionStore();
@@ -23,18 +21,6 @@ export const TrackMapContent = observer(() => {
     if (!trackId) return;
 
     void trackMapWidget.onTrackChanged(trackId);
-  }, [trackId, trackMapWidget]);
-
-  useEffect(() => {
-    const unlisten = listen(TRACK_MAP_CLEAR, () => {
-      if (!trackId) return;
-
-      void trackMapWidget.deleteTrackData(trackId);
-    });
-
-    return () => {
-      void unlisten.then((unlistenFn) => unlistenFn());
-    };
   }, [trackId, trackMapWidget]);
 
   const handleRotate = useCallback(

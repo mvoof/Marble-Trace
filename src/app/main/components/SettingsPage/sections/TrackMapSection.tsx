@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { App, Button, Flex, Popconfirm } from 'antd';
-import { emit } from '@tauri-apps/api/event';
-import { TRACK_MAP_CLEAR } from '@store/sync/sim-events';
+import { emitTrackMapForceStart } from '@store/sync/events';
 import {
   useSessionStore,
   useStore,
@@ -70,7 +69,11 @@ export const TrackMapSection = observer(() => {
             size="small"
             danger
             disabled={sessionTrackId === null}
-            onClick={() => void emit(TRACK_MAP_CLEAR)}
+            onClick={() => {
+              if (sessionTrackId === null) return;
+
+              void trackMap.deleteTrackData(String(sessionTrackId));
+            }}
           >
             {t('settingsPage.trackMap.resetCurrentTrackData')}
           </Button>
@@ -80,7 +83,7 @@ export const TrackMapSection = observer(() => {
             size="small"
             disabled={sessionTrackId === null}
             onClick={() => {
-              void emit('track-map:force-start');
+              void emitTrackMapForceStart();
               message.info(t('settingsPage.trackMap.manualStartActive'));
             }}
           >
