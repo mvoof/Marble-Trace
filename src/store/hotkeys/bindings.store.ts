@@ -5,7 +5,7 @@ import {
   bindingsEqual,
   type Binding,
   type BindingMap,
-} from './binding-types';
+} from '@/types/input-bindings';
 
 /** The bindings an untouched install ships with, taken from the registry. */
 export const defaultBindingMap = (): BindingMap => {

@@ -1,3 +1,4 @@
+import type { DriverEntry } from '@/types/bindings';
 import { TrackSurface as TrackSurfaceType } from '@/types/bindings';
 import { TrackSurface, type FlagType } from '@/types';
 
@@ -74,4 +75,17 @@ export const parseDriverFlags = (rawFlags: number): FlagType => {
   if (rawFlags & SESSION_FLAGS.checkered) return 'checkered';
 
   return 'none';
+};
+
+/**
+ * Strength of Field of a class: the plain average iRating of its drivers.
+ * Lives here rather than with the Standings widget because the standings store
+ * needs it too, and a store must not reach into the UI layer.
+ */
+export const computeClassSof = (drivers: DriverEntry[]): number => {
+  if (drivers.length === 0) return 0;
+
+  const total = drivers.reduce((sum, driver) => sum + driver.iRating, 0);
+
+  return Math.round(total / drivers.length);
 };

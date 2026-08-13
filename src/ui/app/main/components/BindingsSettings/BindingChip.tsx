@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Tooltip } from 'antd';
 import { X } from 'lucide-react';
-import type { Binding } from '@store/hotkeys/binding-types';
+import type { Binding } from '@/types/input-bindings';
 import { ACTION_BY_ID } from '@store/hotkeys/actions';
 import {
   useBindingsStore,

@@ -117,12 +117,6 @@ export const parseWeekendTemp = (
   return isNaN(num) ? null : num;
 };
 
-export const computeClassSof = (drivers: DriverEntry[]): number => {
-  if (drivers.length === 0) return 0;
-  const total = drivers.reduce((sum, d) => sum + d.iRating, 0);
-  return Math.round(total / drivers.length);
-};
-
 const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 
 // Layout constants — must mirror the SCSS: column-gap sp(xxxs)=2, padding sp(md)=10.

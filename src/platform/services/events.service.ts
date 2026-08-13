@@ -10,14 +10,13 @@ import {
   listOverlayWindowLabels,
   monitorLabel,
 } from '@platform/sync/overlay-labels';
-import type { UnitSystem } from '@/types';
+import type { AppLanguage, UnitSystem } from '@/types';
 import type {
   LayoutMonitor,
   SessionContext,
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
-import type { AppLanguage } from '@store/settings/app-settings.store';
-import type { BindingMap } from '@store/hotkeys/binding-types';
+import type { BindingMap } from '@/types/input-bindings';
 import { TRACK_MAP_CLEAR } from '@platform/sync/sim-events';
 
 /**

@@ -14,7 +14,7 @@ import type {
 import type { AppSettings } from '@store/settings/app-settings.store';
 import { mergeWithDefaults } from '@store/deep-merge';
 import type { RootStore } from '@store/root-store';
-import type { BindingMap } from '@store/hotkeys/binding-types';
+import type { BindingMap } from '@/types/input-bindings';
 import { CURRENT_SCHEMA_VERSION } from '@platform/settings-schema/index';
 import type { InputDevice } from '@/types/bindings';
 

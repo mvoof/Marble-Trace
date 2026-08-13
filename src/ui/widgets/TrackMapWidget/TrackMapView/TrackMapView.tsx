@@ -12,7 +12,7 @@ import {
   rotatePoints,
   buildSvgPathAndViewBox,
 } from '@ui/widgets/TrackMapWidget/track-map-utils';
-import { isHiddenInQualifying } from '@ui/widgets/TrackMapWidget/qualifying-visibility';
+import { isHiddenInQualifying } from '@utils/qualifying-visibility';
 
 import styles from './TrackMapView.module.scss';
 import type { TrackMapWidgetSettings } from '@/types/widget-settings';

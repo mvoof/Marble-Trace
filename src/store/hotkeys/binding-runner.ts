@@ -1,12 +1,8 @@
 import { register, unregister } from '@tauri-apps/plugin-global-shortcut';
 import type { RootStore } from '@store/root-store';
 import { ACTIONS } from './actions';
-import {
-  APP_OWNER,
-  bindingKey,
-  type Binding,
-  type HotkeyAction,
-} from './binding-types';
+import { APP_OWNER, bindingKey, type Binding } from '@/types/input-bindings';
+import type { HotkeyAction } from './binding-types';
 
 /**
  * A binding fires only when its owner is live. Checked here, at dispatch time,

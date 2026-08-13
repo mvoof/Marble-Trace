@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Tag, Tooltip } from 'antd';
 import { ChevronDown } from 'lucide-react';
-import { APP_OWNER } from '@store/hotkeys/binding-types';
+import { APP_OWNER } from '@/types/input-bindings';
 import { widgetVisibilityActionId } from '@store/hotkeys/actions';
 import {
   useBindingsStore,

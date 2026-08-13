@@ -17,10 +17,8 @@ import {
   useStandingsWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import {
-  buildVisibleRows,
-  computeClassSof,
-} from '@ui/widgets/StandingsWidget/standings-utils';
+import { buildVisibleRows } from '@ui/widgets/StandingsWidget/standings-utils';
+import { computeClassSof } from '@utils/driver';
 import { SINGLE_LIST_SCROLL_KEY } from '@store/widgets/standings.widget';
 import type { ScrollMetrics } from '@utils/canvas';
 import { ScrollIndicator } from '@ui/shared/ScrollIndicator/ScrollIndicator';

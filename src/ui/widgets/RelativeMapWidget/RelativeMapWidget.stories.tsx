@@ -5,7 +5,7 @@ import type { DriverEntry, RelativeFrame } from '@/types/bindings';
 import { driverEntries, snapshot } from '@/storybook/test-data';
 import { RelativeMapWidget } from './RelativeMapWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
-import { withStore } from '../../../.storybook/decorators';
+import { withStore } from '../../../../.storybook/decorators';
 
 const PLAYER_CAR_IDX =
   driverEntries.find((entry) => entry.isPlayer)?.carIdx ?? 0;

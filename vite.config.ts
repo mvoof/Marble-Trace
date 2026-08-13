@@ -37,18 +37,18 @@ export default defineConfig(() => ({
         find: '@platform/settings-schema',
         replacement: path.resolve(__dirname, './src/platform/settings-schema'),
       },
-      { find: '@ui/app', replacement: path.resolve(__dirname, './src/app') },
+      { find: '@ui/app', replacement: path.resolve(__dirname, './src/ui/app') },
       {
         find: '@ui/widgets',
-        replacement: path.resolve(__dirname, './src/widgets'),
+        replacement: path.resolve(__dirname, './src/ui/widgets'),
       },
       {
         find: '@ui/shared',
-        replacement: path.resolve(__dirname, './src/components'),
+        replacement: path.resolve(__dirname, './src/ui/shared'),
       },
       {
         find: '@ui/hooks',
-        replacement: path.resolve(__dirname, './src/hooks'),
+        replacement: path.resolve(__dirname, './src/ui/hooks'),
       },
       { find: '@store', replacement: path.resolve(__dirname, './src/store') },
       { find: '@utils', replacement: path.resolve(__dirname, './src/utils') },

@@ -3,7 +3,8 @@ import {
   emitPitServiceToggle,
   emitStandingsScroll,
 } from '@platform/services/events.service';
-import { APP_OWNER, type HotkeyAction } from './binding-types';
+import { APP_OWNER } from '@/types/input-bindings';
+import type { HotkeyAction } from './binding-types';
 
 // One keypress moves the standings by a small block rather than a single row —
 // a hotkey has no inertia, so row-by-row stepping is too slow to be usable.

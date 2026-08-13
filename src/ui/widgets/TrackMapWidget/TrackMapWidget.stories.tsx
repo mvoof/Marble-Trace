@@ -7,7 +7,7 @@ import {
   snapshot,
 } from '@/storybook/test-data';
 import { widgetDecorator } from '@/storybook/widgetDecorator';
-import { withStore } from '../../../.storybook/decorators';
+import { withStore } from '../../../../.storybook/decorators';
 
 const TRACK_DATA = {
   svgPath: STORED_TRACK.svgPath,

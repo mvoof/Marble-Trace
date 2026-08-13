@@ -6,9 +6,8 @@ import { deleteSettingsFile } from '@platform/services/settings.service';
 import { mergeWithDefaults } from '@store/deep-merge';
 import { detectSystemLanguage } from '@store/settings/system-locale';
 import i18n from '@/i18n';
+import type { AppLanguage } from '@/types';
 import type { SettingsLockReason } from '@platform/settings-schema/types';
-
-export type AppLanguage = 'system' | 'en' | 'ru' | 'zh';
 
 export const resolveAppLanguage = (language: AppLanguage) =>
   language === 'system' ? detectSystemLanguage() : language;

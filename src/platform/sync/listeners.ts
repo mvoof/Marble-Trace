@@ -7,11 +7,10 @@ import {
   type StreamChatFilters,
   type UnlistenFn,
 } from '@platform/services/events.service';
-import type { UnitSystem } from '@/types';
+import type { AppLanguage, UnitSystem } from '@/types';
 import type { SessionContext } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
-import type { AppLanguage } from '@store/settings/app-settings.store';
-import type { BindingMap } from '@store/hotkeys/binding-types';
+import type { BindingMap } from '@/types/input-bindings';
 
 /**
  * Subscribes a window's stores to the events the other one sends. The transport

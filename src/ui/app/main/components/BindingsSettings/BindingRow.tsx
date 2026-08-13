@@ -8,7 +8,7 @@ import {
   useBindingsUiStore,
   useStore,
 } from '@store/root-store-context';
-import { bindingKey } from '@store/hotkeys/binding-types';
+import { bindingKey } from '@/types/input-bindings';
 import { BindingChip } from './BindingChip';
 import { actionLabel } from './binding-labels';
 import styles from './BindingsSettings.module.scss';

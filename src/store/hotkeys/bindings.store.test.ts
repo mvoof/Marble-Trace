@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ACTIONS, ACTION_BY_ID, widgetVisibilityActionId } from './actions';
 import { DEFAULT_WIDGETS } from '@store/widget-defaults';
 import { BindingsStore, defaultBindingMap } from './bindings.store';
-import { bindingKey } from './binding-types';
+import { bindingKey } from '@/types/input-bindings';
 
 const keyboard = (accelerator: string) =>
   ({ kind: 'keyboard', accelerator }) as const;

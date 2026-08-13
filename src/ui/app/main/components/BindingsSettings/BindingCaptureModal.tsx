@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Modal } from 'antd';
 import { reaction } from 'mobx';
 import { ACTION_BY_ID } from '@store/hotkeys/actions';
-import type { Binding } from '@store/hotkeys/binding-types';
+import type { Binding } from '@/types/input-bindings';
 import {
   useBindingsStore,
   useBindingsUiStore,

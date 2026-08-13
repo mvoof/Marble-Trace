@@ -22,10 +22,10 @@
       "@platform/sync/*": ["./src/platform/sync/*"],
       "@platform/settings-schema/*": ["./src/platform/settings-schema/*"],
       "@store/*": ["./src/store/*"],
-      "@ui/app/*": ["./src/app/*"],
-      "@ui/widgets/*": ["./src/widgets/*"],
-      "@ui/shared/*": ["./src/components/*"],
-      "@ui/hooks/*": ["./src/hooks/*"]
+      "@ui/app/*": ["./src/ui/app/*"],
+      "@ui/widgets/*": ["./src/ui/widgets/*"],
+      "@ui/shared/*": ["./src/ui/shared/*"],
+      "@ui/hooks/*": ["./src/ui/hooks/*"]
     },
 
     /* Linting */

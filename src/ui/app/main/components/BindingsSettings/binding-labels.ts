@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 import { DEFAULT_WIDGETS } from '@store/widget-defaults';
-import { APP_OWNER, type Binding } from '@store/hotkeys/binding-types';
+import { APP_OWNER, type Binding } from '@/types/input-bindings';
 import type { HotkeyAction } from '@store/hotkeys/binding-types';
 import type { InputDevice } from '@/types/bindings';
 import { POV_BUTTON_BASE, POV_DIRECTION_COUNT } from './pov';

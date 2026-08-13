@@ -3,7 +3,7 @@ import { Trophy, Users, TriangleAlert } from 'lucide-react';
 
 import { formatIRating, isNearIncidentLimit } from '@utils/driver';
 import { resolveSessionLaps } from '@utils/telemetry-format';
-import { computeClassSof } from '@ui/widgets/StandingsWidget/standings-utils';
+import { computeClassSof } from '@utils/driver';
 import {
   resolveSessionColorKey,
   type SessionColorKey,
