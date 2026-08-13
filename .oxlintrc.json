@@ -53,7 +53,7 @@
     },
     {
       "files": [
-        "src/store/sync/sync-init.ts",
+        "src/store/sync/persistence-sync.ts",
         "src/store/widgets/track-map.widget.ts"
       ],
       "rules": {

@@ -64,7 +64,7 @@ const readSchemaVersion = (blob: SettingsBlob): number | null => {
  * Brings a settings blob up to `CURRENT_SCHEMA_VERSION`.
  *
  * Every status other than `current` and `migrated` means the caller must not
- * write the file back — see the locked mode in `sync-init`.
+ * write the file back — see the locked mode in `main-sync`.
  */
 export const runMigrations = (
   loaded: unknown,

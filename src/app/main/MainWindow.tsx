@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Layout, ConfigProvider, theme, App as AntdApp } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { initMainSync } from '@store/sync/sync-init';
+import { initMainSync } from '@store/sync/main-sync';
 import { WidgetList } from './components/WidgetList/WidgetList';
 import { WidgetWorkbench } from './components/WidgetWorkbench/WidgetWorkbench';
 import { LayoutEditor } from './components/LayoutEditor/LayoutEditor';
