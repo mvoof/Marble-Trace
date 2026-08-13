@@ -22,8 +22,8 @@ import {
 } from '@utils/weather-utils';
 import { getAirTempColor, getTrackTempColor } from '@utils/colors';
 
-import { WidgetValue } from '@/components/WidgetValue/WidgetValue';
-import { WidgetLabel } from '@/components/WidgetLabel/WidgetLabel';
+import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
+import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
 import styles from './StatCell.module.scss';
 import type { WeatherWidgetSettings } from '@/types/widget-settings';
 import {

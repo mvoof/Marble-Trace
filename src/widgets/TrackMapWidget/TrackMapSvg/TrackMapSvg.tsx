@@ -2,11 +2,11 @@ import { useRef, useState, useEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { TrackPoint } from '@/types';
-import { getPointAtPct } from '@widgets/TrackMapWidget/track-map-utils';
+import { getPointAtPct } from '@ui/widgets/TrackMapWidget/track-map-utils';
 import type { SectorEntry } from '@/types/bindings';
 import type { TrackMapLeaderLabelMode } from '@/types/widget-settings';
-import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
-import { CarDot } from '@/components/CarDot/CarDot';
+import type { CarOnTrack } from '@ui/widgets/TrackMapWidget/types';
+import { CarDot } from '@ui/shared/CarDot/CarDot';
 import { shapeForClassOrder } from '@utils/canvas';
 import { PaceCarMarker } from './PaceCarMarker/PaceCarMarker';
 

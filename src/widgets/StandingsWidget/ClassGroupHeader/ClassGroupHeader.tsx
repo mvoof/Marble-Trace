@@ -3,7 +3,7 @@ import { Trophy, Users } from 'lucide-react';
 
 import { formatIRating } from '@utils/driver';
 
-import { StatPill } from '@/components/StatPill/StatPill';
+import { StatPill } from '@ui/shared/StatPill/StatPill';
 import styles from './ClassGroupHeader.module.scss';
 
 /** Marks the class header rows, which scroll the classes rather than the drivers. */

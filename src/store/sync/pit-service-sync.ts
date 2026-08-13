@@ -4,7 +4,7 @@ import {
   emitPitServiceAutoSuspended,
   emitPitServiceHalvesTakenOver,
   emitPitServiceReveal,
-} from '@/services/events.service';
+} from '@platform/services/events.service';
 import type { RootStore } from '../root-store';
 
 /**

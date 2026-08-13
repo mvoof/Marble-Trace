@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { listenTo, type UnlistenFn } from '@/services/events.service';
+import { listenTo, type UnlistenFn } from '@platform/services/events.service';
 
 import type {
   ChatDeletion,
@@ -11,7 +11,7 @@ import {
   CHAT_DELETION,
   CHAT_MESSAGE,
   CHAT_PRESENCE,
-} from '@store/sync/sim-events';
+} from '@platform/sync/sim-events';
 
 // Hard ceiling on retained messages. The widget shows far fewer; this only
 // bounds memory on a channel that never stops talking.

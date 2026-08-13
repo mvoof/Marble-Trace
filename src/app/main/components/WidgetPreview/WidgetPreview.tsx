@@ -5,9 +5,9 @@ import { RootStore } from '@store/root-store';
 import { RootStoreContext } from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
 import { WIDGET_BY_ID } from '@store/widget-defaults';
-import { WidgetIdContext } from '@app/overlay/components/WidgetContainer/WidgetIdContext';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { widgetFrameBorderRadius } from '@app/widget-frame';
+import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
+import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
+import { widgetFrameBorderRadius } from '@ui/app/widget-frame';
 import {
   seedScenario,
   DEFAULT_PREVIEW_SCENARIO_ID,

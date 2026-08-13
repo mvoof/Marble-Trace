@@ -9,7 +9,7 @@ import type {
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 
-import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
+import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
 const MIN_WINDOW_METERS = 50;

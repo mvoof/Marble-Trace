@@ -5,14 +5,14 @@ import {
   MIN_SINGLE_LED_PX,
   computeDiodesPerBlock,
   computeSplitRows,
-} from '@widgets/LedFlagWidget/led-flag-utils';
+} from '@ui/widgets/LedFlagWidget/led-flag-utils';
 import { SingleLed } from './SingleLed/SingleLed';
 import { LedMatrix } from './LedMatrix/LedMatrix';
 import {
   useWidgetSettingsStore,
   useFlagsStore,
 } from '@store/root-store-context';
-import { useWidgetAutoHide } from '@hooks/useWidgetAutoHide';
+import { useWidgetAutoHide } from '@ui/hooks/useWidgetAutoHide';
 import type { FlagDisplaySettings } from '@/types/widget-settings';
 
 import styles from './LedFlagWidget.module.scss';

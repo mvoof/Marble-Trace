@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { ClassGroupHeader } from '@widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';
+import { ClassGroupHeader } from '@ui/widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';
 
 import styles from './ClassSwitcher.module.scss';
 import {

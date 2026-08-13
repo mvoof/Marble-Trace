@@ -5,8 +5,8 @@ import {
   setCarLengthSilent,
   setFuelAvgWindowSilent,
   setPitWarningLapsSilent,
-} from '@/services/settings.service';
-import { resolveMonitorByName } from '@store/sync/overlay-resolution';
+} from '@platform/services/settings.service';
+import { resolveMonitorByName } from '@platform/sync/overlay-resolution';
 import { LayoutsStore } from '@store/settings/layouts.store';
 import { applyLayoutResize } from '@store/settings/layout-resize';
 
@@ -24,7 +24,7 @@ import type {
   RadarSettings,
   SessionContext,
 } from '@/types/widget-settings';
-import { emitLayoutActivated } from '@/services/events.service';
+import { emitLayoutActivated } from '@platform/services/events.service';
 import { DEFAULT_LAYOUT_RESOLUTION } from '@store/settings/layout-resolution';
 import {
   monitorForWidget,

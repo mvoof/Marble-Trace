@@ -2,7 +2,7 @@ import { action, makeAutoObservable, reaction } from 'mobx';
 
 import type { NearbyCar } from '@/types/bindings';
 import type { RadarSettings } from '@/types/widget-settings';
-import { isHiddenInQualifying } from '@widgets/TrackMapWidget/qualifying-visibility';
+import { isHiddenInQualifying } from '@ui/widgets/TrackMapWidget/qualifying-visibility';
 import type { RootStore } from '@store/root-store';
 
 export class RadarWidgetStore {

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { usePitState } from '@hooks/usePitState';
-import type { PitState } from '@hooks/usePitState';
+import { usePitState } from '@ui/hooks/usePitState';
+import type { PitState } from '@ui/hooks/usePitState';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
 import {
   useStandingsWidgetStore,

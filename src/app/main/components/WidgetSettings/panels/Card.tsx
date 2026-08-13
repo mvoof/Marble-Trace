@@ -2,7 +2,7 @@ import { createContext, use, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ChevronDown } from 'lucide-react';
 import { useSettingsPanelUiStore } from '@store/root-store-context';
-import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
+import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 
 /**
  * Which widget the surrounding panel is editing. Supplied by WidgetSettings so

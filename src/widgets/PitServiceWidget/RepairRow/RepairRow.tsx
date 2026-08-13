@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react-lite';
 
 import styles from './RepairRow.module.scss';
-import { OrderToggle } from '@widgets/PitServiceWidget/OrderToggle/OrderToggle';
+import { OrderToggle } from '@ui/widgets/PitServiceWidget/OrderToggle/OrderToggle';
 import {
   countdownUnit,
   formatCountdown,
-} from '@widgets/PitServiceWidget/pit-service-utils';
+} from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import {
   usePitServiceWidgetStore,
   usePlayerStore,

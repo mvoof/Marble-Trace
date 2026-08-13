@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
 
-import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 
 import styles from './TelemetryDebugWidget.module.scss';
 

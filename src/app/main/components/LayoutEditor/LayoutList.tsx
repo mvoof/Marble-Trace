@@ -21,13 +21,13 @@ import {
   resolveBackgroundSrc,
   deleteBackgroundImage,
 } from '@store/settings/layout-background';
-import { listOverlayMonitors } from '@store/sync/overlay-resolution';
+import { listOverlayMonitors } from '@platform/sync/overlay-resolution';
 import {
   monitorsBounds,
   widgetsOnMonitor,
 } from '@store/settings/virtual-desktop';
 import type { SavedLayout, SessionContext } from '@/types/widget-settings';
-import { getWidgetLabel } from '@app/widget-i18n';
+import { getWidgetLabel } from '@ui/app/widget-i18n';
 import styles from './LayoutList.module.scss';
 
 interface LayoutPreviewProps {

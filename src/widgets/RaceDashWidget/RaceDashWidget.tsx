@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
-import { usePitState } from '@hooks/usePitState';
+import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
+import { usePitState } from '@ui/hooks/usePitState';
 
 import { PitBlock } from './PitBlock/PitBlock';
 import { RingBadge } from './RingBadge/RingBadge';

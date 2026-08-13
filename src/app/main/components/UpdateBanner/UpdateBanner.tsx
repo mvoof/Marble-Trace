@@ -1,7 +1,7 @@
 import { Alert, Button } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/ReleaseNotesButton';
+import { ReleaseNotesButton } from '@ui/app/main/components/ReleaseNotesButton/ReleaseNotesButton';
 import styles from './UpdateBanner.module.scss';
 import { useAppSettingsStore } from '@store/root-store-context';
 import { UpdateStatus } from '@store/settings/app-settings.store';

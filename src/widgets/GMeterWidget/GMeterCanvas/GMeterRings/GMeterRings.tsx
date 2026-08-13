@@ -1,13 +1,13 @@
 import { useContext, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { RADIUS_RATIO } from '@widgets/GMeterWidget/g-meter-utils';
+import { RADIUS_RATIO } from '@ui/widgets/GMeterWidget/g-meter-utils';
 import { resizeCanvasToDpr } from '@utils/canvas';
 
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 import styles from './GMeterRings.module.scss';
 import { useWidgetSettingsStore } from '@store/root-store-context';
-import { WidgetIdContext } from '@app/overlay/components/WidgetContainer/WidgetIdContext';
+import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 
 interface GMeterRingsProps {
   width: number;

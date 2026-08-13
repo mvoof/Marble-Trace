@@ -4,8 +4,8 @@ import { Button } from 'antd';
 import { X, Layers, MousePointer2 } from 'lucide-react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { WIDGET_BY_ID } from '@store/widget-defaults';
-import { WidgetContainer } from '@app/overlay/components/WidgetContainer/WidgetContainer';
-import { WidgetPicker } from '@app/overlay/components/WidgetPicker/WidgetPicker';
+import { WidgetContainer } from '@ui/app/overlay/components/WidgetContainer/WidgetContainer';
+import { WidgetPicker } from '@ui/app/overlay/components/WidgetPicker/WidgetPicker';
 import styles from './OverlayCanvas.module.scss';
 import {
   useAppSettingsStore,

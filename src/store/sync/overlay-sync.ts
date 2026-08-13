@@ -4,7 +4,7 @@ import { hydrateFromDisk, readSettingsFile } from './persistence-sync';
 import {
   emitDragMode,
   emitWidgetSettingsToMain,
-} from '@/services/events.service';
+} from '@platform/services/events.service';
 import { setupOverlayListeners } from './listeners';
 import { registerPitServiceMirrorReactions } from './pit-service-sync';
 import type { RootStore } from '../root-store';

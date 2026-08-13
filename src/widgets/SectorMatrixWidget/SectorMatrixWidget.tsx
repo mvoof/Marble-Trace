@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
-import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
-import { NoDataPlaceholder } from '@/components/NoDataPlaceholder/NoDataPlaceholder';
+import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
+import { NoDataPlaceholder } from '@ui/shared/NoDataPlaceholder/NoDataPlaceholder';
 import {
   useSessionStore,
   useSimStore,

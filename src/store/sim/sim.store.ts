@@ -5,7 +5,7 @@ import {
   runInAction,
   type IReactionDisposer,
 } from 'mobx';
-import { listenTo, type UnlistenFn } from '@/services/events.service';
+import { listenTo, type UnlistenFn } from '@platform/services/events.service';
 
 import {
   getConnectionStatus,
@@ -13,12 +13,12 @@ import {
   setActiveEventsSilent,
   startTelemetryStream,
   stopTelemetryStream,
-} from '@/services/telemetry.service';
+} from '@platform/services/telemetry.service';
 import {
   deleteReferenceLap,
   getCachedTrackShape,
   getReferenceLap,
-} from '@/services/track.service';
+} from '@platform/services/track.service';
 
 import type {
   SessionSnapshot,
@@ -48,7 +48,7 @@ import {
   SIM_CAPABILITIES,
   SIM_REFERENCE_LAP_UPDATED,
   TRACK_MAP_CLEAR,
-} from '@store/sync/sim-events';
+} from '@platform/sync/sim-events';
 
 const EVENT_CAR_DYNAMICS = 1 << 0;
 const EVENT_CAR_INPUTS = 1 << 1;

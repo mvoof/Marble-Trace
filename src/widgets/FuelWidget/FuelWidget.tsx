@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
-import { FuelChart } from '@widgets/FuelWidget/FuelChart/FuelChart';
+import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
+import { FuelChart } from '@ui/widgets/FuelWidget/FuelChart/FuelChart';
 import { FuelHeader } from './FuelHeader/FuelHeader';
 import { FuelProgress } from './FuelProgress/FuelProgress';
 import { FuelStatsRow } from './FuelStatsRow/FuelStatsRow';

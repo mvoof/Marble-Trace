@@ -3,7 +3,7 @@ import {
   TRACE_POINT_COUNT,
   type TraceWindowBuffers,
   type TraceWindowStats,
-} from '@widgets/CoachWidget/coach-trace-utils';
+} from '@ui/widgets/CoachWidget/coach-trace-utils';
 import type { CoachTraceChannel } from '@/types/widget-settings';
 
 export interface SpeedTraceColors {

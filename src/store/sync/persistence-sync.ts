@@ -8,8 +8,8 @@ import {
   SETTINGS_FILE,
   type Settings,
 } from './persistence';
-import { runMigrations } from '@store/settings-schema';
-import type { MigrationResult } from '@store/settings-schema/types';
+import { runMigrations } from '@platform/settings-schema/index';
+import type { MigrationResult } from '@platform/settings-schema/types';
 import type { RootStore } from '../root-store';
 
 /**

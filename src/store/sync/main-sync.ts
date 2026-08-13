@@ -1,7 +1,7 @@
 import { comparer, reaction, type IReactionDisposer } from 'mobx';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
-import { listenTo } from '@/services/events.service';
+import { listenTo } from '@platform/services/events.service';
 import { logSettingsSnapshot } from './persistence';
 import {
   createSaveHandle,
@@ -26,9 +26,9 @@ import {
   emitSessionLayoutsChanged,
   emitAutoSwitchLayoutsChanged,
   emitBindingsChanged,
-} from '@/services/events.service';
+} from '@platform/services/events.service';
 import { setupMainListeners } from './listeners';
-import type { MonitorWidgetsPayload } from '@/services/events.service';
+import type { MonitorWidgetsPayload } from '@platform/services/events.service';
 import { registerChatReactions } from './chat-sync';
 import {
   registerPitServiceAutoReactions,

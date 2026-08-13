@@ -6,7 +6,7 @@ import {
   type MonitorWidgetsPayload,
   type StreamChatFilters,
   type UnlistenFn,
-} from '@/services/events.service';
+} from '@platform/services/events.service';
 import type { UnitSystem } from '@/types';
 import type { SessionContext } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';

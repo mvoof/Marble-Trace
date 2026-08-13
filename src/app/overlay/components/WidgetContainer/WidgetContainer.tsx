@@ -1,10 +1,10 @@
 import React, { useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { widgetFrameBorderRadius } from '@app/widget-frame';
+import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
+import { widgetFrameBorderRadius } from '@ui/app/widget-frame';
 import styles from './WidgetContainer.module.scss';
 import { WidgetIdContext } from './WidgetIdContext';
-import { WidgetDragToolbar } from '@app/overlay/components/WidgetDragToolbar/WidgetDragToolbar';
+import { WidgetDragToolbar } from '@ui/app/overlay/components/WidgetDragToolbar/WidgetDragToolbar';
 import {
   useAppSettingsStore,
   usePlayerStore,

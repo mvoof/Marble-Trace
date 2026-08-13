@@ -2,11 +2,11 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
-import { deleteSettingsFile } from '@/services/settings.service';
+import { deleteSettingsFile } from '@platform/services/settings.service';
 import { mergeWithDefaults } from '@store/deep-merge';
 import { detectSystemLanguage } from '@store/settings/system-locale';
 import i18n from '@/i18n';
-import type { SettingsLockReason } from '@store/settings-schema/types';
+import type { SettingsLockReason } from '@platform/settings-schema/types';
 
 export type AppLanguage = 'system' | 'en' | 'ru' | 'zh';
 

@@ -8,7 +8,7 @@ import {
   usePlayerStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import type { InputChannel } from '@widgets/InputTraceWidget/input-trace.widget';
+import type { InputChannel } from '@ui/widgets/InputTraceWidget/input-trace.widget';
 
 type BarChannel = InputChannel;
 type BarWidth = 'sm' | 'md' | 'lg';

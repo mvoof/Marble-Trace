@@ -1,18 +1,18 @@
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { TrackSurface, type TrackPoint } from '@/types';
 import { parseClassColor } from '@utils/colors';
-import { RecordingOverlay } from '@widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
-import { TrackMapSvg } from '@widgets/TrackMapWidget/TrackMapSvg/TrackMapSvg';
-import type { CarOnTrack } from '@widgets/TrackMapWidget/types';
+import { RecordingOverlay } from '@ui/widgets/TrackMapWidget/RecordingOverlay/RecordingOverlay';
+import { TrackMapSvg } from '@ui/widgets/TrackMapWidget/TrackMapSvg/TrackMapSvg';
+import type { CarOnTrack } from '@ui/widgets/TrackMapWidget/types';
 import { RotationControls } from './RotationControls/RotationControls';
 import {
   rotatePoints,
   buildSvgPathAndViewBox,
-} from '@widgets/TrackMapWidget/track-map-utils';
-import { isHiddenInQualifying } from '@widgets/TrackMapWidget/qualifying-visibility';
+} from '@ui/widgets/TrackMapWidget/track-map-utils';
+import { isHiddenInQualifying } from '@ui/widgets/TrackMapWidget/qualifying-visibility';
 
 import styles from './TrackMapView.module.scss';
 import type { TrackMapWidgetSettings } from '@/types/widget-settings';

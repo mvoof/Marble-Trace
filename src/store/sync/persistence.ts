@@ -3,7 +3,7 @@ import {
   backupSettingsFile as backupSettingsFileCommand,
   logSettingsSnapshot as logSettingsSnapshotCommand,
   settingsFileExists as settingsFileExistsCommand,
-} from '@/services/settings.service';
+} from '@platform/services/settings.service';
 import { DEFAULT_WIDGETS } from '@store/widget-defaults';
 import type { UnitSystem } from '@/types';
 import type {
@@ -15,7 +15,7 @@ import type { AppSettings } from '@store/settings/app-settings.store';
 import { mergeWithDefaults } from '@store/deep-merge';
 import type { RootStore } from '@store/root-store';
 import type { BindingMap } from '@store/hotkeys/binding-types';
-import { CURRENT_SCHEMA_VERSION } from '@store/settings-schema';
+import { CURRENT_SCHEMA_VERSION } from '@platform/settings-schema/index';
 import type { InputDevice } from '@/types/bindings';
 
 export const SETTINGS_FILE = 'settings.json';

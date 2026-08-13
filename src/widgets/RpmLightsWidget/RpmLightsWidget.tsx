@@ -4,9 +4,9 @@ import { observer } from 'mobx-react-lite';
 import type { RpmLightsWidgetSettings } from '@/types/widget-settings';
 import { computeShiftThresholds } from '@utils/car-signals';
 import { rpmZoneColorByPct } from '@utils/car-signals';
-import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
-import { usePitState } from '@hooks/usePitState';
-import type { PitState } from '@hooks/usePitState';
+import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
+import { usePitState } from '@ui/hooks/usePitState';
+import type { PitState } from '@ui/hooks/usePitState';
 
 import styles from './RpmLightsWidget.module.scss';
 import {

@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { FlagItem } from '@widgets/FlatFlagsWidget/FlagItem/FlagItem';
+import { FlagItem } from '@ui/widgets/FlatFlagsWidget/FlagItem/FlagItem';
 
 import styles from './FlagList.module.scss';
 import { useFlagsStore } from '@store/root-store-context';

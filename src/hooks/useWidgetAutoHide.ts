@@ -1,6 +1,6 @@
 import { use, useEffect } from 'react';
 
-import { WidgetIdContext } from '@app/overlay/components/WidgetContainer/WidgetIdContext';
+import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { useWidgetAutoHideStore } from '@store/root-store-context';
 
 export const useWidgetAutoHide = (visible: boolean) => {

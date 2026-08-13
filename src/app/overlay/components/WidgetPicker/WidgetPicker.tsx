@@ -3,10 +3,10 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import { Plus, Search, MoveRight } from 'lucide-react';
-import { useClickOutside } from '@hooks/useClickOutside';
+import { useClickOutside } from '@ui/hooks/useClickOutside';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 import type { PickableWidget } from '@store/settings/widget-settings.store';
-import { getWidgetDescription } from '@app/widget-i18n';
+import { getWidgetDescription } from '@ui/app/widget-i18n';
 import styles from './WidgetPicker.module.scss';
 
 const PickerRow = observer(

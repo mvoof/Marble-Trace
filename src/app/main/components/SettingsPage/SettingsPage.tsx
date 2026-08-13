@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { BindingsSettings } from '@app/main/components/BindingsSettings/BindingsSettings';
-import { DevicesSettings } from '@app/main/components/BindingsSettings/DevicesSettings';
+import { BindingsSettings } from '@ui/app/main/components/BindingsSettings/BindingsSettings';
+import { DevicesSettings } from '@ui/app/main/components/BindingsSettings/DevicesSettings';
 import { StreamChatSourceCard } from './StreamChatSourceCard/StreamChatSourceCard';
 import { SettingsNav } from './SettingsNav';
 import { GeneralSection } from './sections/GeneralSection';

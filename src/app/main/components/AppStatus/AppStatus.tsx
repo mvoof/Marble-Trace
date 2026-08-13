@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import styles from './AppStatus.module.scss';
 import { useSimStore } from '@store/root-store-context';
-import { getSimDisplayName } from '@app/main/sim-name';
+import { getSimDisplayName } from '@ui/app/main/sim-name';
 
 export const AppStatus = observer(() => {
   const simStore = useSimStore();

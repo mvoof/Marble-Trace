@@ -9,7 +9,7 @@ import {
 import {
   listOverlayWindowLabels,
   monitorLabel,
-} from '@store/sync/overlay-labels';
+} from '@platform/sync/overlay-labels';
 import type { UnitSystem } from '@/types';
 import type {
   LayoutMonitor,
@@ -18,7 +18,7 @@ import type {
 } from '@/types/widget-settings';
 import type { AppLanguage } from '@store/settings/app-settings.store';
 import type { BindingMap } from '@store/hotkeys/binding-types';
-import { TRACK_MAP_CLEAR } from '@store/sync/sim-events';
+import { TRACK_MAP_CLEAR } from '@platform/sync/sim-events';
 
 /**
  * The whole frontend↔backend event channel: the only module that imports

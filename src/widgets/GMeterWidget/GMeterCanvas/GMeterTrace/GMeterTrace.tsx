@@ -1,6 +1,6 @@
 ﻿import { useRef, useCallback, useLayoutEffect } from 'react';
 
-import { useReactiveCanvasLoop } from '@/hooks/useReactiveCanvasLoop';
+import { useReactiveCanvasLoop } from '@ui/hooks/useReactiveCanvasLoop';
 import { resizeCanvasToDpr } from '@utils/canvas';
 import {
   COLOR_TURN,
@@ -11,8 +11,8 @@ import {
   SMOOTHING,
   TRACE_LENGTH,
   computeColor,
-} from '@widgets/GMeterWidget/g-meter-utils';
-import type { EnvelopePoint, TrailPoint } from '@widgets/GMeterWidget/types';
+} from '@ui/widgets/GMeterWidget/g-meter-utils';
+import type { EnvelopePoint, TrailPoint } from '@ui/widgets/GMeterWidget/types';
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 
 import styles from './GMeterTrace.module.scss';

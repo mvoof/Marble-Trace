@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { WindCompass } from './WindCompass/WindCompass';
 import { WeatherHeader } from './WeatherHeader/WeatherHeader';
 import { StatsGrid } from './StatsGrid/StatsGrid';

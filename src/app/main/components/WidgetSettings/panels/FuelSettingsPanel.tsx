@@ -6,7 +6,7 @@ import {
   FUEL_AVG_WINDOW_ALL_LAPS,
   FUEL_AVG_WINDOW_MAX,
 } from '@utils/fuel-constants';
-import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
+import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';

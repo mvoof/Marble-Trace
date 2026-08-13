@@ -2,9 +2,9 @@
 import { observer } from 'mobx-react-lite';
 import { TRACK_SURFACE_ON_TRACK } from '@utils/driver';
 import { parseClassColor } from '@utils/colors';
-import { CarDot } from '@/components/CarDot/CarDot';
+import { CarDot } from '@ui/shared/CarDot/CarDot';
 import { shapeForClassOrder } from '@utils/canvas';
-import { PaceCarMarker } from '@widgets/TrackMapWidget/TrackMapSvg/PaceCarMarker/PaceCarMarker';
+import { PaceCarMarker } from '@ui/widgets/TrackMapWidget/TrackMapSvg/PaceCarMarker/PaceCarMarker';
 
 import styles from './LinearMap.module.scss';
 import type { LinearMapWidgetSettings } from '@/types/widget-settings';

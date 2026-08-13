@@ -1,7 +1,7 @@
 import { cloneElement, type ReactElement } from 'react';
 import { observer } from 'mobx-react-lite';
-import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
-import { WidgetValue } from '@/components/WidgetValue/WidgetValue';
+import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
+import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
 import { getCellDividers } from '@utils/canvas';
 import { EngineCell, type EngineCellProps } from './EngineCell';
 import { AbsCell } from './AbsCell';

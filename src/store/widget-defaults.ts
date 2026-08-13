@@ -1,26 +1,26 @@
-﻿import { TelemetryDebugWidget } from '@widgets/TelemetryDebugWidget/TelemetryDebugWidget';
-import { InputTraceWidget } from '@widgets/InputTraceWidget/InputTraceWidget';
-import { ProximityRadarWidget } from '@widgets/ProximityRadarWidget/ProximityRadarWidget';
-import { RadarBarWidget } from '@widgets/RadarBarWidget/RadarBarWidget';
-import { StandingsWidget } from '@widgets/StandingsWidget/StandingsWidget';
-import { RelativeWidget } from '@widgets/RelativeWidget/RelativeWidget';
-import { TrackMapWidget } from '@widgets/TrackMapWidget/TrackMapWidget';
-import { RelativeMapWidget } from '@widgets/RelativeMapWidget/RelativeMapWidget';
-import { LedFlagWidget } from '@widgets/LedFlagWidget/LedFlagWidget';
-import { PitServiceWidget } from '@widgets/PitServiceWidget/PitServiceWidget';
-import { DeltaWidget } from '@widgets/DeltaWidget/DeltaWidget';
-import { TimerWidget } from '@widgets/TimerWidget/TimerWidget';
-import { WeatherWidget } from '@widgets/WeatherWidget/WeatherWidget';
-import { FuelWidget } from '@widgets/FuelWidget/FuelWidget';
-import { FlatFlagsWidget } from '@widgets/FlatFlagsWidget/FlatFlagsWidget';
-import { GMeterWidget } from '@widgets/GMeterWidget/GMeterWidget';
-import { SectorMatrixWidget } from '@widgets/SectorMatrixWidget/SectorMatrixWidget';
-import { LapLogWidget } from '@widgets/LapLogWidget/LapLogWidget';
-import { EnginePanelWidget } from '@widgets/EnginePanelWidget/EnginePanelWidget';
-import { RpmLightsWidget } from '@widgets/RpmLightsWidget/RpmLightsWidget';
-import { RaceDashWidget } from '@widgets/RaceDashWidget/RaceDashWidget';
-import { CoachWidget } from '@widgets/CoachWidget/CoachWidget';
-import { StreamChatWidget } from '@widgets/StreamChatWidget/StreamChatWidget';
+﻿import { TelemetryDebugWidget } from '@ui/widgets/TelemetryDebugWidget/TelemetryDebugWidget';
+import { InputTraceWidget } from '@ui/widgets/InputTraceWidget/InputTraceWidget';
+import { ProximityRadarWidget } from '@ui/widgets/ProximityRadarWidget/ProximityRadarWidget';
+import { RadarBarWidget } from '@ui/widgets/RadarBarWidget/RadarBarWidget';
+import { StandingsWidget } from '@ui/widgets/StandingsWidget/StandingsWidget';
+import { RelativeWidget } from '@ui/widgets/RelativeWidget/RelativeWidget';
+import { TrackMapWidget } from '@ui/widgets/TrackMapWidget/TrackMapWidget';
+import { RelativeMapWidget } from '@ui/widgets/RelativeMapWidget/RelativeMapWidget';
+import { LedFlagWidget } from '@ui/widgets/LedFlagWidget/LedFlagWidget';
+import { PitServiceWidget } from '@ui/widgets/PitServiceWidget/PitServiceWidget';
+import { DeltaWidget } from '@ui/widgets/DeltaWidget/DeltaWidget';
+import { TimerWidget } from '@ui/widgets/TimerWidget/TimerWidget';
+import { WeatherWidget } from '@ui/widgets/WeatherWidget/WeatherWidget';
+import { FuelWidget } from '@ui/widgets/FuelWidget/FuelWidget';
+import { FlatFlagsWidget } from '@ui/widgets/FlatFlagsWidget/FlatFlagsWidget';
+import { GMeterWidget } from '@ui/widgets/GMeterWidget/GMeterWidget';
+import { SectorMatrixWidget } from '@ui/widgets/SectorMatrixWidget/SectorMatrixWidget';
+import { LapLogWidget } from '@ui/widgets/LapLogWidget/LapLogWidget';
+import { EnginePanelWidget } from '@ui/widgets/EnginePanelWidget/EnginePanelWidget';
+import { RpmLightsWidget } from '@ui/widgets/RpmLightsWidget/RpmLightsWidget';
+import { RaceDashWidget } from '@ui/widgets/RaceDashWidget/RaceDashWidget';
+import { CoachWidget } from '@ui/widgets/CoachWidget/CoachWidget';
+import { StreamChatWidget } from '@ui/widgets/StreamChatWidget/StreamChatWidget';
 import type {
   WidgetConfig,
   WidgetDefaultConfig,
@@ -31,8 +31,8 @@ import type {
   FlagDisplaySettings,
   EnginePanelWidgetSettings,
 } from '@/types/widget-settings';
-import { computeStandingsDesignWidth } from '@widgets/StandingsWidget/standings-utils';
-import { computeRelativeDesignWidth } from '@widgets/RelativeWidget/relative-utils';
+import { computeStandingsDesignWidth } from '@ui/widgets/StandingsWidget/standings-utils';
+import { computeRelativeDesignWidth } from '@ui/widgets/RelativeWidget/relative-utils';
 import { FUEL_AVG_WINDOW_ALL_LAPS } from '@utils/fuel-constants';
 
 // Widgets with toggleable columns/sections have a natural width that changes as

@@ -5,20 +5,20 @@ import {
   type IReactionDisposer,
 } from 'mobx';
 
-import { sendPitOrder } from '@/services/pit.service';
+import { sendPitOrder } from '@platform/services/pit.service';
 
-import { computeRefuelPlan } from '@widgets/FuelWidget/fuel-utils';
+import { computeRefuelPlan } from '@ui/widgets/FuelWidget/fuel-utils';
 import type { RootStore } from '@store/root-store';
 import type { PitCommandRequest, TireCompoundEntry } from '@/types/bindings';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
-import type { CornerPosition } from '@widgets/PitServiceWidget/pit-service-utils';
+import type { CornerPosition } from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import {
   ALL_CORNERS,
   cornerWorstWear,
   cornersBelowWearThreshold,
   isCornerOrdered,
   orderedPressure,
-} from '@widgets/PitServiceWidget/pit-service-utils';
+} from '@ui/widgets/PitServiceWidget/pit-service-utils';
 
 // The panel lingers briefly after pit exit so the last service result stays
 // readable while the car is already accelerating away.

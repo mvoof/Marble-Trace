@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetLabel } from '@/components/WidgetLabel/WidgetLabel';
+import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
 import { NO_TIME_DATA_PLACEHOLDER } from '@utils/telemetry-format';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import { computeNextStopForecast, formatCountdown } from '../fuel-utils';

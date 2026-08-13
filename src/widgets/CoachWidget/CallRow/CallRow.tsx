@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { CoachWidgetSettings } from '@/types/widget-settings';
-import type { CoachInactiveReason } from '@widgets/CoachWidget/driving-coach.widget';
+import type { CoachInactiveReason } from '@ui/widgets/CoachWidget/driving-coach.widget';
 import {
   useCoachWidgetStore,
   useDrivingCoachWidgetStore,

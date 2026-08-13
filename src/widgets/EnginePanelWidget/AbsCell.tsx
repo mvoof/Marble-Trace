@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { WidgetValue } from '@/components/WidgetValue/WidgetValue';
+import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
 import { EngineCell } from './EngineCell';
 import { usePlayerStore } from '@store/root-store-context';
 import styles from './EnginePanelWidget.module.scss';

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import styles from './ServiceHeader.module.scss';
-import { resolveServiceState } from '@widgets/PitServiceWidget/pit-service-utils';
+import { resolveServiceState } from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import {
   usePitServiceWidgetStore,
   usePlayerStore,

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { useWidgetAutoHide } from '@hooks/useWidgetAutoHide';
-import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
+import { useWidgetAutoHide } from '@ui/hooks/useWidgetAutoHide';
+import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { FlagList } from './FlagList/FlagList';
 
 import styles from './FlatFlagsWidget.module.scss';

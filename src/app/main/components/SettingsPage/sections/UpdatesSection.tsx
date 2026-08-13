@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Select, Switch } from 'antd';
 import { AlertCircle, ArrowUpCircle, Clock, RefreshCw } from 'lucide-react';
-import { ReleaseNotesButton } from '@app/main/components/ReleaseNotesButton/ReleaseNotesButton';
+import { ReleaseNotesButton } from '@ui/app/main/components/ReleaseNotesButton/ReleaseNotesButton';
 import { useAppSettingsStore } from '@store/root-store-context';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';

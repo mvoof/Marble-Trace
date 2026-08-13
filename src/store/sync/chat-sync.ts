@@ -3,11 +3,11 @@ import { comparer, reaction, type IReactionDisposer } from 'mobx';
 import {
   startChatStreamSilent,
   stopChatStreamSilent,
-} from '@/services/twitch.service';
+} from '@platform/services/twitch.service';
 import {
   emitStreamChatCleared,
   emitStreamChatFilters,
-} from '@/services/events.service';
+} from '@platform/services/events.service';
 import type { RootStore } from '../root-store';
 
 const STREAM_CHAT_WIDGET_ID = 'stream-chat';

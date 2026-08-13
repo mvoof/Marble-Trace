@@ -1,10 +1,10 @@
-import { listenTo, type UnlistenFn } from '@/services/events.service';
+import { listenTo, type UnlistenFn } from '@platform/services/events.service';
 import type { RootStore } from '@store/root-store';
 import type { InputButtonEvent, InputDevice } from '@/types/bindings';
 import {
   INPUT_BUTTON_EVENT,
   INPUT_DEVICES_EVENT,
-} from '@store/sync/sim-events';
+} from '@platform/sync/sim-events';
 import { applyKeyboardBindings, dispatchDeviceButton } from './binding-runner';
 
 /**

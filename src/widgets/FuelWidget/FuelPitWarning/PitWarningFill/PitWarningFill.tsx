@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
 import { formatFuel } from '@utils/telemetry-format';
-import { WidgetLabel } from '@/components/WidgetLabel/WidgetLabel';
-import { WidgetValue } from '@/components/WidgetValue/WidgetValue';
+import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
+import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
 import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/telemetry-format';
 import {
   useBackendComputedStore,

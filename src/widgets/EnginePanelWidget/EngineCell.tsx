@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
-import { WidgetLabel } from '@/components/WidgetLabel/WidgetLabel';
+import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
 import styles from './EnginePanelWidget.module.scss';
 
 export interface EngineCellProps {

@@ -20,22 +20,22 @@ import {
 import {
   buildVisibleRows,
   computeClassSof,
-} from '@widgets/StandingsWidget/standings-utils';
+} from '@ui/widgets/StandingsWidget/standings-utils';
 import { SINGLE_LIST_SCROLL_KEY } from '@store/widgets/standings.widget';
 import type { ScrollMetrics } from '@utils/canvas';
-import { ScrollIndicator } from '@/components/ScrollIndicator/ScrollIndicator';
-import { useVisibleRowCount } from '@/hooks/useVisibleRowCount';
+import { ScrollIndicator } from '@ui/shared/ScrollIndicator/ScrollIndicator';
+import { useVisibleRowCount } from '@ui/hooks/useVisibleRowCount';
 import {
   useRowMoveAnimation,
   ROW_KEY_ATTRIBUTE,
-} from '@/hooks/useRowMoveAnimation';
-import { NoDataPlaceholder } from '@/components/NoDataPlaceholder/NoDataPlaceholder';
-import { SessionHeader } from '@widgets/StandingsWidget/SessionHeader/SessionHeader';
-import { ClassGroup } from '@widgets/StandingsWidget/ClassGroup/ClassGroup';
-import { CLASS_HEADER_ATTRIBUTE } from '@widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';
-import { ClassSwitcher } from '@widgets/StandingsWidget/ClassSwitcher/ClassSwitcher';
-import { StandingsHeader } from '@widgets/StandingsWidget/StandingsHeader/StandingsHeader';
-import { SessionFooter } from '@widgets/StandingsWidget/SessionFooter/SessionFooter';
+} from '@ui/hooks/useRowMoveAnimation';
+import { NoDataPlaceholder } from '@ui/shared/NoDataPlaceholder/NoDataPlaceholder';
+import { SessionHeader } from '@ui/widgets/StandingsWidget/SessionHeader/SessionHeader';
+import { ClassGroup } from '@ui/widgets/StandingsWidget/ClassGroup/ClassGroup';
+import { CLASS_HEADER_ATTRIBUTE } from '@ui/widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';
+import { ClassSwitcher } from '@ui/widgets/StandingsWidget/ClassSwitcher/ClassSwitcher';
+import { StandingsHeader } from '@ui/widgets/StandingsWidget/StandingsHeader/StandingsHeader';
+import { SessionFooter } from '@ui/widgets/StandingsWidget/SessionFooter/SessionFooter';
 
 import styles from './StandingsContent.module.scss';
 

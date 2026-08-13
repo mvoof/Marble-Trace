@@ -5,7 +5,7 @@ import type {
   LapDeltaReference,
   DeltaWidgetSettings,
 } from '@/types/widget-settings';
-import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
+import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { getDeltaReferenceDesc } from './shared';
 import { useWidgetEditor } from '../WidgetEditorContext';

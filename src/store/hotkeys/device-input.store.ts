@@ -2,7 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import {
   resolveInputDevices,
   setInputPollingEnabled,
-} from '@/services/input.service';
+} from '@platform/services/input.service';
 import type {
   InputButtonEvent,
   InputDevice,

@@ -5,7 +5,7 @@ import {
   InputTraceSettings,
   SteeringCenterDisplay,
 } from '@/types/widget-settings';
-import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
+import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';

@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { ServiceHeader } from './ServiceHeader/ServiceHeader';
 import { PitSpeedPlate } from './PitSpeedPlate/PitSpeedPlate';
 import { FuelOrder } from './FuelOrder/FuelOrder';
@@ -16,7 +16,7 @@ import {
   usePitServiceWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import { useWidgetAutoHide } from '@/hooks/useWidgetAutoHide';
+import { useWidgetAutoHide } from '@ui/hooks/useWidgetAutoHide';
 
 export const PitServiceWidget = observer(() => {
   const widgetSettings = useWidgetSettingsStore();

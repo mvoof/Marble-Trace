@@ -6,16 +6,16 @@ import {
   TRACK_SURFACE_OFF_TRACK,
 } from '@utils/driver';
 import { parseDriverFlags } from '@utils/driver';
-import { DriverStatusBadges } from '@/components/DriverStatusBadge/DriverStatusBadges';
+import { DriverStatusBadges } from '@ui/shared/DriverStatusBadge/DriverStatusBadges';
 import { playerRowStyle } from '@utils/colors';
-import { DriverFlagBadge } from '@/components/DriverFlagBadge/DriverFlagBadge';
-import { LicBadge } from '@/components/RatingBadge/LicBadge';
-import { formatIr } from '@/components/RatingBadge/LicBadge.utils';
+import { DriverFlagBadge } from '@ui/shared/DriverFlagBadge/DriverFlagBadge';
+import { LicBadge } from '@ui/shared/RatingBadge/LicBadge';
+import { formatIr } from '@ui/shared/RatingBadge/LicBadge.utils';
 import {
   computeRelativeGap,
   buildRelativeGridTemplate,
   resolveRowPosition,
-} from '@widgets/RelativeWidget/relative-utils';
+} from '@ui/widgets/RelativeWidget/relative-utils';
 import type { DriverEntry } from '@/types/bindings';
 import type { RelativeWidgetSettings } from '@/types/widget-settings';
 

@@ -4,7 +4,7 @@ import type {
   PitServiceFrame,
 } from '@/types/bindings';
 import type { UnitSystem } from '@/types';
-import { computeRelativeGap } from '@widgets/RelativeWidget/relative-utils';
+import { computeRelativeGap } from '@ui/widgets/RelativeWidget/relative-utils';
 
 export type CornerPosition = 'lf' | 'rf' | 'lr' | 'rr';
 

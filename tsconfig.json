@@ -17,11 +17,15 @@
     "paths": {
       "@/*": ["./src/*"],
       "@assets/*": ["./src/assets/*"],
-      "@store/*": ["./src/store/*"],
-      "@widgets/*": ["./src/widgets/*"],
-      "@hooks/*": ["./src/hooks/*"],
       "@utils/*": ["./src/utils/*"],
-      "@app/*": ["./src/app/*"]
+      "@platform/services/*": ["./src/services/*"],
+      "@platform/sync/*": ["./src/store/sync/*"],
+      "@platform/settings-schema/*": ["./src/store/settings-schema/*"],
+      "@store/*": ["./src/store/*"],
+      "@ui/app/*": ["./src/app/*"],
+      "@ui/widgets/*": ["./src/widgets/*"],
+      "@ui/shared/*": ["./src/components/*"],
+      "@ui/hooks/*": ["./src/hooks/*"]
     },
 
     /* Linting */

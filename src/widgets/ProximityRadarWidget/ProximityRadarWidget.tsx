@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetPanel } from '@/components/WidgetPanel/WidgetPanel';
+import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { RadarDisplay } from './RadarDisplay/RadarDisplay';
 
 import styles from './ProximityRadarWidget.module.scss';

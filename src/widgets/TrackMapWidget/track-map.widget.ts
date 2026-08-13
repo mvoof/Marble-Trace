@@ -1,14 +1,17 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import type { TrackShapePayload } from '@/types/bindings';
-import { deleteTrackShape, resetPitLanePct } from '@/services/track.service';
-import { emitTrackMapClear } from '@/services/events.service';
+import {
+  deleteTrackShape,
+  resetPitLanePct,
+} from '@platform/services/track.service';
+import { emitTrackMapClear } from '@platform/services/events.service';
 import type {
   StoredTracks,
   TrackRotateDirection,
-} from '@widgets/TrackMapWidget/types';
-import { TRACKS_STORE_KEY } from '@widgets/TrackMapWidget/types';
-import { TRACK_SETTINGS_STORE } from '@widgets/TrackMapWidget/track-store';
+} from '@ui/widgets/TrackMapWidget/types';
+import { TRACKS_STORE_KEY } from '@ui/widgets/TrackMapWidget/types';
+import { TRACK_SETTINGS_STORE } from '@ui/widgets/TrackMapWidget/track-store';
 
 const ROTATION_STEP_DEGREES = 90;
 const FULL_TURN_DEGREES = 360;

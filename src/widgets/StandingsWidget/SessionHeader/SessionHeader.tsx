@@ -3,15 +3,15 @@ import { Trophy, Users, TriangleAlert } from 'lucide-react';
 
 import { formatIRating, isNearIncidentLimit } from '@utils/driver';
 import { resolveSessionLaps } from '@utils/telemetry-format';
-import { computeClassSof } from '@widgets/StandingsWidget/standings-utils';
+import { computeClassSof } from '@ui/widgets/StandingsWidget/standings-utils';
 import {
   resolveSessionColorKey,
   type SessionColorKey,
 } from '@utils/timer-utils';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { SessionClock } from '@widgets/StandingsWidget/SessionClock/SessionClock';
-import { StatPill } from '@/components/StatPill/StatPill';
+import { SessionClock } from '@ui/widgets/StandingsWidget/SessionClock/SessionClock';
+import { StatPill } from '@ui/shared/StatPill/StatPill';
 import styles from './SessionHeader.module.scss';
 import {
   useBackendComputedStore,

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
 import type { MonitorBounds } from '@/types/widget-settings';
-import { widgetFrameBorderRadius } from '@app/widget-frame';
+import { widgetFrameBorderRadius } from '@ui/app/widget-frame';
 import styles from './LayoutCanvas.module.scss';
 
 type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';

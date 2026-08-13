@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
-import { WidgetValue } from '@/components/WidgetValue/WidgetValue';
-import { WidgetLabel } from '@/components/WidgetLabel/WidgetLabel';
+import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
+import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
 import { formatFuel } from '@utils/telemetry-format';
 import type { UnitSystem } from '@/types';
 

@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import styles from './ServiceFooter.module.scss';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
-import { projectPositionsLost } from '@widgets/PitServiceWidget/pit-service-utils';
+import { projectPositionsLost } from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import {
   useBackendComputedStore,
   usePitServiceWidgetStore,

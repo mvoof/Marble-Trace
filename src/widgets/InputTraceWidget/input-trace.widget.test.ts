@@ -5,14 +5,14 @@ import type { CarInputsFrame } from '@/types/bindings';
 
 // RootStore construction reaches the backend through the services; they have
 // no Tauri runtime to talk to under vitest.
-vi.mock('@/services/telemetry.service', () => ({
+vi.mock('@platform/services/telemetry.service', () => ({
   startTelemetryStream: vi.fn().mockResolvedValue(undefined),
   stopTelemetryStream: vi.fn().mockResolvedValue(undefined),
   getConnectionStatus: vi.fn().mockResolvedValue(false),
   getLastSessionInfo: vi.fn().mockResolvedValue(null),
   setActiveEventsSilent: vi.fn(),
 }));
-vi.mock('@/services/settings.service', () => ({
+vi.mock('@platform/services/settings.service', () => ({
   setPitWarningLapsSilent: vi.fn(),
   setFuelAvgWindowSilent: vi.fn(),
   setCarLengthSilent: vi.fn(),
@@ -20,7 +20,7 @@ vi.mock('@/services/settings.service', () => ({
 
 // RootStore subscribes to sim events on construction; the node test
 // environment has no window for the Tauri event bridge to attach to.
-vi.mock('@/services/events.service', () => ({
+vi.mock('@platform/services/events.service', () => ({
   listenTo: vi.fn().mockResolvedValue(() => {}),
   emitToApp: vi.fn().mockResolvedValue(undefined),
   emitToWindow: vi.fn().mockResolvedValue(undefined),

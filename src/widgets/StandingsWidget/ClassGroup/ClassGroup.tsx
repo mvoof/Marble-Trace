@@ -1,9 +1,9 @@
 import { observer } from 'mobx-react-lite';
 
 import type { DriverGroup } from '@/types';
-import { ClassGroupHeader } from '@widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';
-import { DriverRow } from '@widgets/StandingsWidget/DriverRow/DriverRow';
-import { ScrollIndicator } from '@/components/ScrollIndicator/ScrollIndicator';
+import { ClassGroupHeader } from '@ui/widgets/StandingsWidget/ClassGroupHeader/ClassGroupHeader';
+import { DriverRow } from '@ui/widgets/StandingsWidget/DriverRow/DriverRow';
+import { ScrollIndicator } from '@ui/shared/ScrollIndicator/ScrollIndicator';
 import {
   useAppSettingsStore,
   useStandingsWidgetStore,

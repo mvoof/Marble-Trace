@@ -16,8 +16,8 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { WIDGET_BY_ID } from '@store/widget-defaults';
-import { WidgetIdContext } from '@app/overlay/components/WidgetContainer/WidgetIdContext';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
+import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import {
   seedScenario,
   DEFAULT_PREVIEW_SCENARIO_ID,

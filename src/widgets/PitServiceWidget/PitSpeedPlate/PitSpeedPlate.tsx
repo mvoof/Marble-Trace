@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import styles from './PitSpeedPlate.module.scss';
-import { speedFillPct } from '@widgets/PitServiceWidget/pit-service-utils';
+import { speedFillPct } from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import { parsePitSpeedLimitMs } from '@utils/telemetry-format';
 import { speedUnit } from '@utils/telemetry-format';
 import {

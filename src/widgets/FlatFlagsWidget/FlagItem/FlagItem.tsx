@@ -4,7 +4,7 @@ import type { FlagType } from '@/types';
 import {
   BLINK_FLAGS,
   FLAG_LABEL,
-} from '@widgets/FlatFlagsWidget/flat-flags-utils';
+} from '@ui/widgets/FlatFlagsWidget/flat-flags-utils';
 import { useFlagsStore } from '@store/root-store-context';
 
 import styles from './FlagItem.module.scss';

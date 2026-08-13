@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { App, Button, Popconfirm } from 'antd';
 import { RotateCcw } from 'lucide-react';
-import { downloadSnapshot } from '@app/main/capture-snapshot';
+import { downloadSnapshot } from '@ui/app/main/capture-snapshot';
 import { useAppSettingsStore, useStore } from '@store/root-store-context';
 import { SettingsCard } from '../SettingsCard';
 import styles from '../SettingsPage.module.scss';

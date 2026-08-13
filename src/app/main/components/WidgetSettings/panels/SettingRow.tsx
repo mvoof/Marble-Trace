@@ -1,5 +1,5 @@
 import { type CSSProperties, type ReactNode } from 'react';
-import styles from '@app/main/components/WidgetSettings/WidgetSettings.module.scss';
+import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 
 interface SettingRowProps {
   title: string;

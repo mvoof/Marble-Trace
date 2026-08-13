@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { OverlayCanvas } from './OverlayCanvas/OverlayCanvas';
-import { initOverlaySync } from '@store/sync/overlay-sync';
+import { initOverlaySync } from '@platform/sync/overlay-sync';
 import { useStore, useSimStore } from '@store/root-store-context';
 
 // The window manager passes the monitor this window covers in the URL. Read

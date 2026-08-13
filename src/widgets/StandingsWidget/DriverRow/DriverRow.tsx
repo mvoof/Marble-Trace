@@ -9,18 +9,18 @@ import {
 } from '@utils/driver';
 import { parseDriverFlags } from '@utils/driver';
 import { isSessionEnded } from '@utils/timer-utils';
-import { DriverStatusBadges } from '@/components/DriverStatusBadge/DriverStatusBadges';
+import { DriverStatusBadges } from '@ui/shared/DriverStatusBadge/DriverStatusBadges';
 import { playerRowStyle } from '@utils/colors';
-import { DriverFlagBadge } from '@/components/DriverFlagBadge/DriverFlagBadge';
-import { LicBadge } from '@/components/RatingBadge/LicBadge';
-import { formatIr } from '@/components/RatingBadge/LicBadge.utils';
-import { TireBadge } from '@/components/TireBadge/TireBadge';
+import { DriverFlagBadge } from '@ui/shared/DriverFlagBadge/DriverFlagBadge';
+import { LicBadge } from '@ui/shared/RatingBadge/LicBadge';
+import { formatIr } from '@ui/shared/RatingBadge/LicBadge.utils';
+import { TireBadge } from '@ui/shared/TireBadge/TireBadge';
 import {
   buildGridTemplate,
   calculateLapsBehind,
   getStandingsGap,
   resolveBestLapDisplay,
-} from '@widgets/StandingsWidget/standings-utils';
+} from '@ui/widgets/StandingsWidget/standings-utils';
 import { PosChange } from './PosChange';
 import { PositionCell } from './PositionCell';
 import { IrChangeCell } from './IrChangeCell';

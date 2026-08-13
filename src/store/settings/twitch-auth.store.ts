@@ -6,7 +6,7 @@ import {
   twitchPollDeviceToken,
   twitchRequestDeviceCode,
   twitchSignOut,
-} from '@/services/twitch.service';
+} from '@platform/services/twitch.service';
 import type { TwitchDeviceCode } from '@/types/bindings';
 import type { RootStore } from '@store/root-store';
 
