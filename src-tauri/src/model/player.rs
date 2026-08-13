@@ -6,6 +6,8 @@
 /// @see https://sajax.github.io/irsdkdocs/telemetry/
 use serde::{Deserialize, Serialize};
 
+use crate::model::cars::SpotterState;
+
 use crate::model::flags::RaceFlags;
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
@@ -143,9 +145,8 @@ pub struct CarStatusFrame {
     /// @see https://sajax.github.io/irsdkdocs/telemetry/isontrack/
     pub is_on_track: Option<bool>,
 
-    /// Proximity indicator bit field for cars nearby
-    /// @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
-    pub car_left_right: Option<i32>,
+    /// What the spotter reports about cars alongside the player.
+    pub spotter: Option<SpotterState>,
 
     /// Engine warning bitmask; bit 0x10 = pit speed limiter active
     /// @see https://sajax.github.io/irsdkdocs/telemetry/enginewarnings/

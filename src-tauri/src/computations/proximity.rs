@@ -1,17 +1,8 @@
 use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
-use crate::model::cars::CarIdxFrame;
+use crate::model::cars::{CarIdxFrame, SpotterState};
 use crate::model::session::SessionSnapshot;
 use serde::{Deserialize, Serialize};
-
-// CarLeftRight enum values from iRacing SDK
-const CLR_OFF: i32 = 0;
-const CLR_CLEAR: i32 = 1;
-const CLR_CAR_LEFT: i32 = 2;
-const CLR_CAR_RIGHT: i32 = 3;
-const CLR_CAR_LEFT_RIGHT: i32 = 4;
-const CLR_CARS_2_LEFT: i32 = 5;
-const CLR_CARS_2_RIGHT: i32 = 6;
 
 const MAX_SEARCH_DIST_M: f32 = 50.0;
 const ALONGSIDE_THRESHOLD_M: f32 = 5.0;
@@ -107,15 +98,15 @@ pub fn parse_track_length(s: &str) -> f32 {
     0.0
 }
 
-fn spotter_flags(car_left_right: i32) -> (bool, bool) {
+fn spotter_flags(spotter: SpotterState) -> (bool, bool) {
     let left = matches!(
-        car_left_right,
-        CLR_CAR_LEFT | CLR_CAR_LEFT_RIGHT | CLR_CARS_2_LEFT
+        spotter,
+        SpotterState::CarLeft | SpotterState::CarLeftRight | SpotterState::TwoCarsLeft
     );
 
     let right = matches!(
-        car_left_right,
-        CLR_CAR_RIGHT | CLR_CAR_LEFT_RIGHT | CLR_CARS_2_RIGHT
+        spotter,
+        SpotterState::CarRight | SpotterState::CarLeftRight | SpotterState::TwoCarsRight
     );
 
     (left, right)
@@ -129,8 +120,8 @@ pub fn compute(
 ) -> ProximityFrame {
     let player_idx = session.player_car_idx;
 
-    let car_left_right = car_idx.car_left_right.unwrap_or(CLR_CLEAR);
-    let (spotter_left, spotter_right) = spotter_flags(car_left_right);
+    let spotter = car_idx.spotter.unwrap_or(SpotterState::Clear);
+    let (spotter_left, spotter_right) = spotter_flags(spotter);
 
     let has_left = spotter_left;
     let has_right = spotter_right;
@@ -223,7 +214,7 @@ pub fn compute(
                     LateralSide::Left
                 } else if has_right {
                     LateralSide::Right
-                } else if car_left_right == CLR_OFF {
+                } else if spotter == SpotterState::Off {
                     if lon_dist >= 0.0 {
                         LateralSide::Left
                     } else {

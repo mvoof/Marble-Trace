@@ -5,7 +5,7 @@
 //!
 //! @see https://sajax.github.io/irsdkdocs/telemetry/
 
-use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
+use crate::model::cars::{CarIdxFrame, CarPositionsFrame, SpotterState};
 use crate::model::enums::{SessionState, Skies, TrackSurface};
 use crate::model::environment::EnvironmentFrame;
 use crate::model::player::{
@@ -97,7 +97,7 @@ impl From<&IracingFrame> for CarStatusFrame {
             voltage: Some(f.voltage),
             on_pit_road: Some(f.on_pit_road),
             is_on_track: Some(f.is_on_track),
-            car_left_right: Some(f.car_left_right),
+            spotter: Some(spotter_from_iracing(f.car_left_right)),
             engine_warnings: Some(f.engine_warnings as u32),
             player_car_sl_shift_rpm: vec![f.player_car_sl_shift_rpm],
             player_car_sl_blink_rpm: vec![f.player_car_sl_blink_rpm],
@@ -283,7 +283,7 @@ impl From<&IracingFrame> for CarIdxFrame {
                 .iter()
                 .map(|&flags| flags as u32)
                 .collect(),
-            car_left_right: Some(f.car_left_right),
+            spotter: Some(spotter_from_iracing(f.car_left_right)),
         }
     }
 }
@@ -294,5 +294,50 @@ impl From<&IracingFrame> for CarPositionsFrame {
             car_idx_lap_dist_pct: f.car_idx_lap_dist_pct.clone(),
             car_idx_track_surface: f.car_idx_track_surface.clone(),
         }
+    }
+}
+
+/// `CarLeftRight` is an iRacing enum sent as a plain integer; this is the only
+/// place that knows what those numbers mean.
+///
+/// @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
+fn spotter_from_iracing(raw: i32) -> SpotterState {
+    match raw {
+        0 => SpotterState::Off,
+        1 => SpotterState::Clear,
+        2 => SpotterState::CarLeft,
+        3 => SpotterState::CarRight,
+        4 => SpotterState::CarLeftRight,
+        5 => SpotterState::TwoCarsLeft,
+        6 => SpotterState::TwoCarsRight,
+        // A value this build does not know reads as "nothing alongside" rather
+        // than as an absent spotter, which is what an unmapped value did before.
+        _ => SpotterState::Clear,
+    }
+}
+
+#[cfg(test)]
+mod spotter_tests {
+    use super::*;
+
+    // The numbers are the wire contract with the sim; nothing downstream can
+    // catch a wrong one, because every value decodes to something plausible.
+    #[test]
+    fn decodes_every_car_left_right_value() {
+        assert_eq!(spotter_from_iracing(0), SpotterState::Off);
+        assert_eq!(spotter_from_iracing(1), SpotterState::Clear);
+        assert_eq!(spotter_from_iracing(2), SpotterState::CarLeft);
+        assert_eq!(spotter_from_iracing(3), SpotterState::CarRight);
+        assert_eq!(spotter_from_iracing(4), SpotterState::CarLeftRight);
+        assert_eq!(spotter_from_iracing(5), SpotterState::TwoCarsLeft);
+        assert_eq!(spotter_from_iracing(6), SpotterState::TwoCarsRight);
+    }
+
+    // An unmapped value must not read as "spotter off" — that would switch
+    // proximity to its geometry fallback for a car that is simply unknown.
+    #[test]
+    fn unknown_values_read_as_clear() {
+        assert_eq!(spotter_from_iracing(-1), SpotterState::Clear);
+        assert_eq!(spotter_from_iracing(99), SpotterState::Clear);
     }
 }

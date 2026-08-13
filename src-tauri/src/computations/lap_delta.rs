@@ -491,7 +491,7 @@ mod tests {
             voltage: None,
             on_pit_road: Some(false),
             is_on_track: Some(true),
-            car_left_right: None,
+            spotter: None,
             engine_warnings: None,
             player_car_sl_shift_rpm: vec![],
             player_car_sl_blink_rpm: vec![],

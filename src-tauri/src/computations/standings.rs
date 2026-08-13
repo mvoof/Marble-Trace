@@ -280,12 +280,7 @@ pub fn compute(
                     .get(idx)
                     .copied()
                     .filter(|&pos| pos > 0)
-                    .or_else(|| {
-                        // `ResultsPositions` reports class position 0-indexed.
-                        result
-                            .and_then(|position| position.class_position)
-                            .map(|pos| pos + 1)
-                    })
+                    .or_else(|| result.and_then(|position| position.class_position))
                     .unwrap_or(start_class),
                 live_position: 0,
                 live_class_position: 0,
@@ -880,19 +875,18 @@ impl Processor for StandingsProcessor {
 }
 
 /// Parse start positions from the current session's ResultsPositions.
-/// Returns a map of carIdx -> (overall_position, class_position) (1-indexed).
+/// Returns a map of carIdx -> (overall_position, class_position), both 1-indexed.
 pub fn parse_start_positions(results: &[ResultPosition]) -> HashMap<i32, (i32, i32)> {
     let mut map = HashMap::new();
 
     for result_position in results {
-        // Position is 1-indexed in iRacing YAML; ClassPosition is 0-indexed.
         let class_pos = result_position
             .class_position
-            .unwrap_or(result_position.position - 1);
+            .unwrap_or(result_position.position);
 
         map.insert(
             result_position.car_idx,
-            (result_position.position, class_pos + 1),
+            (result_position.position, class_pos),
         );
     }
 
@@ -901,15 +895,15 @@ pub fn parse_start_positions(results: &[ResultPosition]) -> HashMap<i32, (i32, i
 
 /// Parse start positions from QualifyResultsInfo.
 /// Used as a fallback when ResultsPositions is empty (e.g. before a race starts).
-/// QualifyResultEntry.position is 0-indexed (iRacing convention); we convert to 1-indexed.
+/// Both fields arrive 1-indexed from the source layer.
 pub fn parse_start_positions_from_qualify(
     qualify_results: &[QualifyResultEntry],
 ) -> HashMap<i32, (i32, i32)> {
     let mut map = HashMap::new();
 
     for entry in qualify_results {
-        let overall = entry.position + 1;
-        let class = entry.class_position.unwrap_or(entry.position) + 1;
+        let overall = entry.position;
+        let class = entry.class_position.unwrap_or(entry.position);
         map.insert(entry.car_idx, (overall, class));
     }
 
@@ -964,7 +958,7 @@ mod tests {
             car_idx_track_surface: vec![TrackSurface::NotInWorld],
             car_idx_tire_compound: vec![-1],
             car_idx_session_flags: vec![0],
-            car_left_right: None,
+            spotter: None,
         }
     }
 
@@ -1037,7 +1031,7 @@ mod tests {
             car_idx_track_surface: vec![TrackSurface::OnTrack, leader_surface],
             car_idx_tire_compound: vec![-1, -1],
             car_idx_session_flags: vec![0, 0],
-            car_left_right: None,
+            spotter: None,
         }
     }
 
@@ -1379,7 +1373,8 @@ mod tests {
         let session = session_with_result(ResultPosition {
             car_idx: 0,
             position: 4,
-            class_position: Some(1),
+            // Second in class, 1-indexed as the source layer delivers it.
+            class_position: Some(2),
             lap: Some(0),
             time: Some(12.5),
             fastest_time: Some(91.2),
@@ -1471,18 +1466,18 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_start_positions_from_qualify_converts_to_1indexed() {
+    fn test_parse_start_positions_from_qualify_maps_car_idx_to_positions() {
         let entries = vec![
             QualifyResultEntry {
                 car_idx: 0,
-                position: 0,
-                class_position: Some(0),
+                position: 1,
+                class_position: Some(1),
                 ..Default::default()
             },
             QualifyResultEntry {
                 car_idx: 5,
-                position: 1,
-                class_position: Some(1),
+                position: 2,
+                class_position: Some(2),
                 ..Default::default()
             },
         ];
@@ -1497,14 +1492,14 @@ mod tests {
     fn test_parse_start_positions_from_qualify_fallback_class_pos() {
         let entries = vec![QualifyResultEntry {
             car_idx: 3,
-            position: 2,
+            position: 3,
             class_position: None,
             ..Default::default()
         }];
 
         let map = parse_start_positions_from_qualify(&entries);
 
-        // When class_position is None, falls back to overall position (0-indexed)
+        // With no class position the overall one stands in for it.
         assert_eq!(map.get(&3), Some(&(3, 3)));
     }
 
@@ -1516,7 +1511,7 @@ mod tests {
         let results = vec![ResultPosition {
             car_idx: 1,
             position: 2,
-            class_position: Some(1),
+            class_position: Some(2),
             lap: None,
             time: None,
             fastest_time: None,
@@ -1527,8 +1522,8 @@ mod tests {
 
         let qualify = vec![QualifyResultEntry {
             car_idx: 1,
-            position: 0, // 0-indexed → overall=1 — different from results
-            class_position: Some(0),
+            position: 1, // pole — different from where the results have it
+            class_position: Some(1),
             ..Default::default()
         }];
 

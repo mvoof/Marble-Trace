@@ -139,8 +139,11 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
                     .filter_map(|raw_pos| {
                         Some(ResultPosition {
                             car_idx: raw_pos.car_idx?,
+                            // `Position` is 1-indexed in the session YAML but
+                            // `ClassPosition` is 0-indexed. Both leave here
+                            // 1-indexed so nothing downstream has to know that.
                             position: raw_pos.position?,
-                            class_position: raw_pos.class_position,
+                            class_position: raw_pos.class_position.map(|pos| pos + 1),
                             lap: raw_pos.lap,
                             time: raw_pos.time.filter(|t| t.is_finite()),
                             fastest_time: raw_pos
@@ -227,8 +230,10 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         .filter_map(|raw_result| {
             Some(QualifyResultEntry {
                 car_idx: raw_result.car_idx?,
-                position: raw_result.position?,
-                class_position: raw_result.class_position,
+                // QualifyResultsInfo counts both from zero, unlike
+                // ResultsPositions. Normalised to 1-indexed here.
+                position: raw_result.position? + 1,
+                class_position: raw_result.class_position.map(|pos| pos + 1),
                 // The sim writes a placeholder time for a car that never set one.
                 fastest_time: raw_result
                     .fastest_time
@@ -576,7 +581,25 @@ QualifyResultsInfo:
         assert_eq!(snapshot.sectors.len(), 2);
         assert!((snapshot.sectors[1].sector_start_pct - 0.493951).abs() < 1e-9);
         assert_eq!(snapshot.qualify_results.len(), 2);
-        assert_eq!(snapshot.qualify_results[0].position, 0);
+
+        // The YAML says `Position: 0` / `ClassPosition: 0` for the pole sitter
+        // and `1`/`1` for second; ResultsPositions counts its `Position` from
+        // one and its `ClassPosition` from zero. Everything leaves the parser
+        // 1-indexed.
+        assert_eq!(snapshot.qualify_results[0].position, 1);
+        assert_eq!(snapshot.qualify_results[0].class_position, Some(1));
+        assert_eq!(snapshot.qualify_results[1].position, 2);
+        assert_eq!(snapshot.qualify_results[1].class_position, Some(2));
+        assert_eq!(snapshot.sessions[1].results_positions[0].position, 1);
+        assert_eq!(
+            snapshot.sessions[1].results_positions[0].class_position,
+            Some(1)
+        );
+        assert_eq!(snapshot.sessions[1].results_positions[1].position, 2);
+        assert_eq!(
+            snapshot.sessions[1].results_positions[1].class_position,
+            Some(2)
+        );
         assert_eq!(snapshot.qualify_results[0].fastest_time, Some(88.5432));
         assert_eq!(snapshot.qualify_results[0].fastest_lap, Some(4));
 

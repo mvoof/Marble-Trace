@@ -116,6 +116,10 @@ pub struct SessionEntry {
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
+/// A finishing/running position from the session results.
+///
+/// `position` and `class_position` are both **1-indexed** — the source layer
+/// normalises whatever convention the sim's own format uses.
 pub struct ResultPosition {
     pub car_idx: i32,
     /// 1-indexed overall position.
@@ -175,6 +179,8 @@ pub struct SectorEntry {
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
+/// A qualifying result. `position` and `class_position` are both
+/// **1-indexed**, normalised by the source layer.
 pub struct QualifyResultEntry {
     pub car_idx: i32,
     /// 0-indexed (iRacing convention; frontend adds 1 for display).

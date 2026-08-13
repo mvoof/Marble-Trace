@@ -181,10 +181,9 @@ export type CarIdxFrame = {
    */
   car_idx_session_flags: number[];
   /**
-   * Proximity indicator bit field for cars nearby
-   * @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
+   * What the spotter reports about cars alongside the player.
    */
-  car_left_right: number | null;
+  spotter: SpotterState | null;
 };
 
 /**
@@ -287,10 +286,9 @@ export type CarStatusFrame = {
    */
   is_on_track: boolean | null;
   /**
-   * Proximity indicator bit field for cars nearby
-   * @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
+   * What the spotter reports about cars alongside the player.
    */
-  car_left_right: number | null;
+  spotter: SpotterState | null;
   /**
    * Engine warning bitmask; bit 0x10 = pit speed limiter active
    * @see https://sajax.github.io/irsdkdocs/telemetry/enginewarnings/
@@ -1006,6 +1004,10 @@ export type ProximityFrame = {
   spotterRight: boolean;
 };
 
+/**
+ * A qualifying result. `position` and `class_position` are both
+ * **1-indexed**, normalised by the source layer.
+ */
 export type QualifyResultEntry = {
   carIdx: number;
   /**
@@ -1135,6 +1137,12 @@ export type RelativeFrame = {
   playerCarIdx: number;
 };
 
+/**
+ * A finishing/running position from the session results.
+ *
+ * `position` and `class_position` are both **1-indexed** — the source layer
+ * normalises whatever convention the sim's own format uses.
+ */
 export type ResultPosition = {
   carIdx: number;
   /**
@@ -1296,6 +1304,23 @@ export type SimStatus = { status: string; sim: SimType | null };
 export type SimType = 'IRacing';
 
 export type Skies = 'Clear' | 'PartlyCloudy' | 'MostlyCloudy' | 'Overcast';
+
+/**
+ * What the simulator's spotter reports about cars alongside.
+ *
+ * Sim-neutral on purpose: every source decodes its own encoding into this, so
+ * `computations/` never sees a raw simulator enum value. `Off` is distinct
+ * from `Clear` — a spotter that is switched off says nothing, and proximity
+ * falls back to geometry rather than trusting a "nothing alongside" answer.
+ */
+export type SpotterState =
+  | 'off'
+  | 'clear'
+  | 'carLeft'
+  | 'carRight'
+  | 'carLeftRight'
+  | 'twoCarsLeft'
+  | 'twoCarsRight';
 
 export type TelemetryBundle = {
   car_dynamics?: CarDynamicsFrame | null;

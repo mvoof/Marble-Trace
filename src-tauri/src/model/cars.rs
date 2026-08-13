@@ -9,6 +9,25 @@
 /// @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
 use serde::{Deserialize, Serialize};
 
+/// What the simulator's spotter reports about cars alongside.
+///
+/// Sim-neutral on purpose: every source decodes its own encoding into this, so
+/// `computations/` never sees a raw simulator enum value. `Off` is distinct
+/// from `Clear` — a spotter that is switched off says nothing, and proximity
+/// falls back to geometry rather than trusting a "nothing alongside" answer.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum SpotterState {
+    Off,
+    Clear,
+    CarLeft,
+    CarRight,
+    CarLeftRight,
+    TwoCarsLeft,
+    TwoCarsRight,
+}
+
 use crate::model::enums::TrackSurface;
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
@@ -63,9 +82,8 @@ pub struct CarIdxFrame {
     /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxsessionflags/
     pub car_idx_session_flags: Vec<u32>,
 
-    /// Proximity indicator bit field for cars nearby
-    /// @see https://sajax.github.io/irsdkdocs/telemetry/carleftright/
-    pub car_left_right: Option<i32>,
+    /// What the spotter reports about cars alongside the player.
+    pub spotter: Option<SpotterState>,
 }
 
 /// Lightweight per-car position frame emitted at 30Hz for smooth map rendering.
