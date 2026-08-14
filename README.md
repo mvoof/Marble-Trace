@@ -44,10 +44,11 @@ Most iRacing overlays are either bloated desktop apps or locked behind subscript
 
 Every widget is independently positioned, resized, and styled — drag it anywhere on screen, scale it to taste, adjust opacity so it never blocks your view. Each one ships with its own set of options: toggle individual data fields, switch layouts, pick colours, set visibility rules. You only see what you actually need, exactly where you want it.
 
-- **Driving HUD** — [Race Dash](#race-dash) · [RPM Lights](#rpm-lights) · [Engine Panel](#engine-panel) · [Input Trace](#input-trace) · [G-Meter](#g-meter)
+- **Driving HUD** — [Race Dash](#race-dash) · [RPM Lights](#rpm-lights) · [Engine Panel](#engine-panel) · [Input Trace](#input-trace) · [G-Meter](#g-meter) · [Coach](#coach)
 - **Timing & Standings** — [Standings](#standings) · [Relative](#relative) · [Relative Map](#relative-map) · [Delta HUD](#delta-hud) · [Sector Matrix](#sector-matrix) · [Lap Log](#lap-log) · [Timer](#timer)
 - **Awareness** — [Track Map](#track-map) · [Proximity Radar](#proximity-radar) · [Radar Bar](#radar-bar) · [Flags (LED/Flat)](#flags-led--flat)
-- **Car & Session** — [Chassis](#chassis) · [Fuel](#fuel) · [Weather](#weather)
+- **Car & Session** — [Pit Service](#pit-service) · [Fuel](#fuel) · [Weather](#weather)
+- **Streaming** — [Stream Chat](#stream-chat)
 
 ---
 
@@ -91,6 +92,14 @@ Watch your throttle, brake, and clutch inputs scroll in real time. The horizonta
 Friction circle visualising lateral and longitudinal G-forces in real time. Three display modes — **Trail** (fading line history), **Fading** (decaying envelope), **Peak** (static max-G envelope) — with three colour modes: **Mono**, **Simple** (red brake / green accel / cyan turn), and **Advanced** (smooth gradient blending). Adjustable scale from 2 G to 5 G.
 
 ![G-Meter](docs/assets/screenshots/widgets/g-metr.png)
+
+---
+
+### Coach
+
+Live braking and throttle coaching against your stored best lap. The call row tells you what to do right now — **BRAKE** with the distance left to the braking point, or a corner-exit **GAS** call — with an urgency bar that fills as the marker approaches. Underneath, a rolling speed trace plots your current lap against the reference lap in a configurable window (in metres), coloured green where you are gaining time and red where you are losing it. Footer shows current vs reference speed, the reference lap time and the track condition. Both rows can be switched off independently, and every colour is configurable.
+
+![Coach](docs/assets/screenshots/widgets/coach.png)
 
 ---
 
@@ -192,11 +201,13 @@ LED matrix and flat banner-style flag indicators with green, yellow, red, blue, 
 
 ## Car & Session
 
-### Chassis
+### Pit Service
 
-Per-corner brake & tire temperatures with optional inboard suspension data and overheat warnings.
+Everything about the stop in one plate: live pit-lane speed against the pit limit, the fuel you are about to add, repair times (required, optional and fast repairs left), windshield tear-offs, and a per-corner tire grid with carcass temperatures, tread temps and remaining wear — each corner marked with the tire set you will take or a **KEEP** if it stays on the car. The header shows your current position and whether you are in the box; the footer projects the position you will rejoin in.
 
-![Chassis](docs/assets/screenshots/widgets/chassis.png)
+Optional automation adds fuel for you and orders new tires once wear drops below a configurable threshold. Blocks (speed, fuel, tires, repairs, footer) are toggled individually.
+
+![Pit Service](docs/assets/screenshots/widgets/pit-stop.png)
 
 ---
 
@@ -218,6 +229,16 @@ Lap-by-lap consumption graph, laps remaining, add-fuel suggestion, and tank fill
 Wind direction compass, temperature, humidity, and forecast strip for dynamic weather sessions.
 
 ![Weather](docs/assets/screenshots/widgets/weather.png)
+
+---
+
+## Streaming
+
+### Stream Chat
+
+Twitch and YouTube live chat merged into a single feed on top of the sim, so you can read your stream without alt-tabbing. Messages carry a platform glyph and role badges (moderator, VIP, subscriber) as compact text plates or the original badge artwork. Channel events — raids, subs, cheers and donations — appear as highlighted rows, and the footer strip shows viewer counts, message rate and totals. Row density, message limit and auto-expiry are configurable, and every block can be turned off.
+
+![Stream Chat](docs/assets/screenshots/widgets/stream-chat.png)
 
 ---
 

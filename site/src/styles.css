@@ -159,6 +159,30 @@ a { color: var(--accent-brake); }
   border-bottom: 1px solid var(--border-sub);
 }
 
+/* Cockpit photo behind everything in the hero. It sits under the grid and the
+   glows, dimmed hard and blurred a touch so headline, buttons and lines keep
+   their contrast. */
+.heroPhoto {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: url('/assets/hero-cockpit.jpg') center 42% / cover no-repeat;
+  opacity: 0.55;
+  filter: saturate(0.8) blur(1px);
+  mask-image: linear-gradient(#000 0%, rgba(0, 0, 0, 0.75) 60%, transparent 100%);
+}
+
+/* Ink layer that pulls the photo down to the page background so text on top
+   stays readable at any viewport width. */
+.heroPhoto::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(13, 14, 18, 0.35), rgba(13, 14, 18, 0.8)),
+    radial-gradient(ellipse 65% 55% at 50% 42%, rgba(13, 14, 18, 0.72), transparent 78%);
+}
+
 /* Quiet backdrop instead of the big waves: a fine engineering grid that fades
    toward the content, plus two soft color glows. */
 .heroBackdrop {
@@ -219,16 +243,22 @@ a { color: var(--accent-brake); }
   margin-bottom: 18px;
 }
 
+/* Reserved line boxes: the RU headline and lead wrap one line longer than the
+   EN ones. Without a fixed height the hero grows on language switch, which
+   rescales the cover photo behind it and shoves everything below down. */
 h1 {
   font-size: clamp(34px, 6vw, 56px);
   line-height: 1.08;
   font-weight: 800;
   letter-spacing: 0.01em;
+  min-height: calc(3 * 1.08 * clamp(34px, 6vw, 56px));
 }
 
 .heroSub {
   color: var(--text-secondary);
   font-size: 19px;
+  line-height: 1.55;
+  min-height: calc(3 * 1.55 * 19px);
   margin: 22px auto 34px;
   max-width: 620px;
 }
@@ -277,50 +307,6 @@ h1 {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-
-/* Hero screenshot frame. Currently a composed mock of real widget renders —
-   see the IMAGE PLACEHOLDER comment in index.html for the real screenshot. */
-.heroShot {
-  position: relative;
-  max-width: 960px;
-  margin: 64px auto 0;
-}
-
-.heroShotFrame {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  border: 1px solid var(--border-main);
-  border-radius: 10px;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 110%, rgba(68, 199, 239, 0.08), transparent 70%),
-    linear-gradient(180deg, #101218 0%, #0a0b0f 55%, #121016 100%);
-}
-
-/* Faint "track" horizon line inside the mock. */
-.heroShotFrame::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 58%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(139, 142, 152, 0.35), transparent);
-}
-
-.heroShotFrame img {
-  position: absolute;
-  width: auto;
-  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.6));
-}
-
-.hsStandings { top: 5%; left: 3%; height: 42%; }
-.hsSpeed { bottom: 6%; left: 50%; transform: translateX(-50%); height: 13%; }
-.hsRadar { top: 26%; right: 5%; height: 34%; }
-.hsDelta { top: 7%; left: 50%; transform: translateX(-50%); height: 8%; }
-.hsFuel { bottom: 8%; right: 26%; height: 36%; }
-
-.heroShotImg { border: 1px solid var(--border-main); border-radius: 10px; }
 
 /* ---------- Stats strip ---------- */
 
@@ -516,8 +502,11 @@ h2 {
   filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.55));
 }
 
+/* Fixed text box: EN and RU captions wrap differently, and a card that changes
+   height on language switch makes the whole grid jump. */
 .galleryLabel {
   display: block;
+  min-height: 24px;
   margin-top: 12px;
   font-weight: 700;
   font-size: 15px;
@@ -527,6 +516,7 @@ h2 {
 
 .galleryDesc {
   display: block;
+  min-height: 40px;
   color: var(--text-muted);
   font-size: 13px;
   margin-top: 2px;
@@ -661,6 +651,54 @@ h2 {
   font-size: 15px;
 }
 
+.lightboxStage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.lightboxNav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.lightboxNav[hidden] { display: none; }
+
+.lightboxArrow {
+  background: transparent;
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  width: 36px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.lightboxArrow:hover, .lightboxArrow:focus-visible { color: var(--text-primary); border-color: var(--text-secondary); }
+
+.lightboxCounter {
+  color: var(--text-secondary);
+  font-size: 14px;
+  min-width: 52px;
+  text-align: center;
+}
+
+.galleryCount {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 2px 7px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-main);
+  background: rgba(5, 6, 9, 0.7);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
 .lightboxClose {
   position: absolute;
   top: 8px;
@@ -682,7 +720,6 @@ h2 {
   .mainNav { display: none; }
   .hero { padding: 60px 16px 50px; }
   .heroSub { font-size: 17px; }
-  .heroShot { margin-top: 44px; }
   .galleryGrid { columns: 2 160px; }
   .galleryItem img { max-height: 240px; }
 }
