@@ -23,6 +23,7 @@ import { EnginePanelWidget } from '@ui/widgets/EnginePanelWidget/EnginePanelWidg
 import { RpmLightsWidget } from '@ui/widgets/RpmLightsWidget/RpmLightsWidget';
 import { RaceDashWidget } from '@ui/widgets/RaceDashWidget/RaceDashWidget';
 import { CoachWidget } from '@ui/widgets/CoachWidget/CoachWidget';
+import { InvisibleDashWidget } from '@ui/widgets/InvisibleDashWidget/InvisibleDashWidget';
 
 /**
  * Which React component renders each widget id.
@@ -56,6 +57,7 @@ export const WIDGET_COMPONENTS: Record<string, ComponentType> = {
   'engine-panel': EnginePanelWidget,
   'rpm-lights': RpmLightsWidget,
   'race-dash': RaceDashWidget,
+  'invisible-dash': InvisibleDashWidget,
   coach: CoachWidget,
 };
 

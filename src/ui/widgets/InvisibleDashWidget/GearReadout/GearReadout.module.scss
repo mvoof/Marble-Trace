@@ -1,0 +1,10 @@
+// Sizes are doubled: the whole strip is laid out supersampled, see
+// InvisibleDashWidget.module.scss.
+$ss: 2;
+
+.gear {
+  font-size: wfs(72 * $ss);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}

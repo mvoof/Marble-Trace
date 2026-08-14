@@ -24,6 +24,45 @@ export type RpmIndicatorMode = 'fill' | 'comb' | 'glow' | 'off';
  * is not conditioned on session type; practice, qualifying and race behave alike.
  */
 
+export type InvisibleDashRenderMode = 'projection' | 'contour';
+export type InvisibleDashRpmFormat = 'absolute' | 'percent';
+
+export interface InvisibleDashWidgetSettings {
+  showSpeed: boolean;
+  showRpm: boolean;
+  showGear: boolean;
+  showPosition: boolean;
+  showLap: boolean;
+  showShiftBar: boolean;
+  /** 'projection' = bloom in the tint color, 'contour' = hairline stroke, no glow. */
+  renderMode: InvisibleDashRenderMode;
+  /** Strength of the projection bloom, 0–100. Ignored in contour mode. */
+  bloomIntensity: number;
+  /** Color the projection glows in — the halo only, not the glyphs. */
+  projectionTint: string;
+  /** Color of the digits themselves, below the high rev zone. */
+  textColor: string;
+  /**
+   * Wash behind the digits — the clusters only, never the empty middle. Carries
+   * its own alpha, so a fully transparent value leaves the digits on bare glass.
+   */
+  backdropColor: string;
+  rpmColorLow: string;
+  rpmColorMid: string;
+  rpmColorHigh: string;
+  rpmColorShift: string;
+  rpmColorLimit: string;
+  /** Tint the RPM number with the zone color at high revs. */
+  colorizeRpmByZone: boolean;
+  /** Tint the gear digit with the zone color at high revs. */
+  colorizeGearByZone: boolean;
+  /** How far the strip is pushed into the scene, 0–100: tilt, shrink and fade. */
+  depth: number;
+  rpmFormat: InvisibleDashRpmFormat;
+  useLivePositions: boolean;
+  classPositionInMulticlass: boolean;
+}
+
 export interface RaceDashWidgetSettings {
   pitSpeedLimitOverride: number | null;
   showPitAssist: boolean;
@@ -445,6 +484,7 @@ export type WidgetSpecificSettings =
   | GMeterWidgetSettings
   | EnginePanelWidgetSettings
   | RaceDashWidgetSettings
+  | InvisibleDashWidgetSettings
   | CoachWidgetSettings
   | StreamChatWidgetSettings;
 export interface WidgetMeta {

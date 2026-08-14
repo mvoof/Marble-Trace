@@ -1,0 +1,39 @@
+// Sizes are doubled: the whole strip is laid out supersampled, see
+// InvisibleDashWidget.module.scss.
+$ss: 2;
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: ws(4 * $ss);
+  // Matches the left cluster's inset so both washes read as one treatment.
+  padding: ws(8 * $ss) ws(14 * $ss);
+  border-radius: radius(md);
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: ws(8 * $ss);
+}
+
+.caption {
+  font-family: $font-widget;
+  font-size: wfs(15 * $ss);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+.value {
+  font-size: wfs(26 * $ss);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.den {
+  font-size: wfs(18 * $ss);
+  color: color-mix(in srgb, currentColor 78%, transparent);
+}

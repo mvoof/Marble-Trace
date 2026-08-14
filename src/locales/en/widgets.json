@@ -68,6 +68,9 @@
     },
     "coach": {
       "description": "Brake/gas call and a speed trace against your stored best lap, colored by time gained or lost."
+    },
+    "invisible-dash": {
+      "description": "Windscreen projection: engine column and gear on the left, position and lap on the right, empty in the middle."
     }
   },
   "settingsPanels": {
@@ -515,6 +518,51 @@
       "channelDesc": "Speed shows where the time goes; brake shows how the pedal was applied.",
       "channelSpeed": "Speed",
       "channelBrake": "Brake"
+    },
+    "invisibleDash": {
+      "projection": "Projection",
+      "render": "Render",
+      "renderDesc": "Projection glows like a head-up display. Contour outlines the glyphs instead — readable on bright tracks, where a glow washes out.",
+      "modeProjection": "Projection",
+      "modeContour": "Contour",
+      "bloom": "Bloom",
+      "bloomDesc": "Strength of the glow around the digits — {{percent}}%.",
+      "tint": "Glow Color",
+      "tintDesc": "Color of the halo around the digits. The digits themselves keep their own color.",
+      "textColor": "Digit Color",
+      "textColorDesc": "Color of the numbers below the high rev zone.",
+      "distance": "Distance",
+      "distanceDesc": "Pushes the readout into the scene — tilt, shrink and fade. The text is rendered supersampled, so it stays sharp at any distance.",
+      "blocks": "Blocks",
+      "speed": "Speed",
+      "speedDesc": "Largest number in the left cluster, in the app's unit system.",
+      "rpm": "RPM",
+      "rpmDesc": "Engine speed above the speed readout.",
+      "rpmFormat": "RPM Format",
+      "rpmFormatDesc": "Absolute revolutions, or the share of the redline reached.",
+      "formatAbsolute": "RPM",
+      "formatPercent": "%",
+      "shiftBar": "Shift Bar",
+      "shiftBarDesc": "Hairline bar over the engine column, filling with the revs in the zone color.",
+      "gear": "Gear",
+      "gearDesc": "Sits next to the engine column, the largest glyph in the strip.",
+      "position": "Position",
+      "positionDesc": "Place in the field, in the right cluster.",
+      "lap": "Lap",
+      "lapDesc": "Current lap out of the session total, under the position.",
+      "zoneColorsCard": "Rev Colors",
+      "colorizeRpm": "Colorize RPM",
+      "colorizeRpmDesc": "Tint the RPM number with the zone color at high revs.",
+      "colorizeGear": "Colorize Gear",
+      "colorizeGearDesc": "Tint the gear digit with the zone color at high revs.",
+      "positionSource": "Position Source",
+      "livePositions": "Live Positions",
+      "livePositionsDesc": "Rank by order on track instead of the sim's official number, which only refreshes at start/finish.",
+      "classPosition": "Class Position in Multiclass",
+      "classPositionDesc": "Count the position within your own class instead of the whole field.",
+      "backdrop": "Backdrop",
+      "backdropColor": "Backdrop Color",
+      "backdropColorDesc": "Wash behind the digits, alpha included. It covers the clusters only — the middle of the strip stays clear."
     }
   },
   "streamChat": {

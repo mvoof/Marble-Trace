@@ -1,44 +1,9 @@
-import type { CarStatusFrame, SessionSnapshot } from '@/types/bindings';
 import type { RaceDashWidgetSettings } from '@/types/widget-settings';
-import { computeShiftThresholds } from '@utils/car-signals';
-import { rpmSubZoneForPct } from '@utils/car-signals';
+import type { RpmZone } from '@utils/car-signals';
+import { rpmZoneDigitColor } from '@utils/car-signals';
 
-export type RpmZone = 'low' | 'mid' | 'high' | 'shift' | 'blink';
-
-export interface RpmZoneState {
-  /** RPM as a fraction of redline, clamped to 0..1 — the ring's full scale. */
-  pct: number;
-  zone: RpmZone;
-}
-
-export const computeRpmZoneState = (
-  rpm: number,
-  sessionInfo: SessionSnapshot | null,
-  carStatus: CarStatusFrame | null,
-  gear: number
-): RpmZoneState => {
-  const { shiftRpm, blinkRpm, redLine } = computeShiftThresholds(
-    sessionInfo,
-    carStatus,
-    gear
-  );
-  const pct = Math.min(Math.max(rpm / (redLine || 1), 0), 1);
-
-  if (rpm >= blinkRpm) {
-    return { pct, zone: 'blink' };
-  }
-
-  if (rpm >= shiftRpm) {
-    return { pct, zone: 'shift' };
-  }
-
-  // Same scale as RpmLightsWidget (fraction of blinkRpm, not redline) so the
-  // low/mid/high bands line up with that widget's zone coloring.
-  const zonePct = Math.min(Math.max(rpm / (blinkRpm || 1), 0), 1);
-  const subZone = rpmSubZoneForPct(zonePct);
-
-  return { pct, zone: subZone === 'limit' ? 'high' : subZone };
-};
+export type { RpmZone, RpmZoneState } from '@utils/car-signals';
+export { computeRpmZoneState } from '@utils/car-signals';
 
 // Ramp endpoints for the pit limit digit: amber while there is room left,
 // red once the limit is reached. Same hexes as $race-amber / $race-red.
@@ -151,17 +116,9 @@ export const rpmNumberColor = (
     return null;
   }
 
-  if (zone === 'blink') {
-    return settings.rpmColorLimit;
-  }
-
-  if (zone === 'shift') {
-    return settings.rpmColorShift;
-  }
-
-  if (zone === 'high') {
-    return settings.rpmColorHigh;
-  }
-
-  return null;
+  return rpmZoneDigitColor(zone, {
+    high: settings.rpmColorHigh,
+    shift: settings.rpmColorShift,
+    limit: settings.rpmColorLimit,
+  });
 };

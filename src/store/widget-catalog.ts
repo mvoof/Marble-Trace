@@ -26,6 +26,7 @@ import { ENGINE_PANEL_MANIFEST } from '@ui/widgets/EnginePanelWidget/manifest';
 import { RPM_LIGHTS_MANIFEST } from '@ui/widgets/RpmLightsWidget/manifest';
 import { RACE_DASH_MANIFEST } from '@ui/widgets/RaceDashWidget/manifest';
 import { COACH_MANIFEST } from '@ui/widgets/CoachWidget/manifest';
+import { INVISIBLE_DASH_MANIFEST } from '@ui/widgets/InvisibleDashWidget/manifest';
 
 /**
  * Every widget the app ships, assembled from the per-widget manifests.
@@ -58,6 +59,7 @@ export const WIDGETS: WidgetManifest[] = [
   ENGINE_PANEL_MANIFEST,
   RPM_LIGHTS_MANIFEST,
   RACE_DASH_MANIFEST,
+  INVISIBLE_DASH_MANIFEST,
   COACH_MANIFEST,
 ];
 

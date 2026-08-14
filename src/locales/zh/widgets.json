@@ -68,6 +68,9 @@
     },
     "coach": {
       "description": "刹车/油门提示，以及与已保存最快圈对比的速度曲线，按赢得或损失的时间着色。"
+    },
+    "invisible-dash": {
+      "description": "挡风玻璃投影：左侧是发动机列与挡位，右侧是名次与圈数，中间留空。"
     }
   },
   "settingsPanels": {
@@ -515,6 +518,51 @@
       "channelDesc": "速度显示时间损失在哪里；刹车显示踏板如何被踩下。",
       "channelSpeed": "速度",
       "channelBrake": "刹车"
+    },
+    "invisibleDash": {
+      "projection": "投影",
+      "render": "渲染",
+      "renderDesc": "投影模式像抬头显示器一样发光。轮廓模式改为描边——在明亮赛道上更易读，那里发光会被冲淡。",
+      "modeProjection": "投影",
+      "modeContour": "轮廓",
+      "bloom": "辉光",
+      "bloomDesc": "数字周围辉光的强度 — {{percent}}%。",
+      "tint": "辉光颜色",
+      "tintDesc": "数字周围光晕的颜色。数字本身保持自己的颜色。",
+      "textColor": "数字颜色",
+      "textColorDesc": "高转速区以下时数字的颜色。",
+      "distance": "距离",
+      "distanceDesc": "把读数推入场景——倾斜、缩小并淡出。文字以超采样渲染，因此在任何距离都保持锐利。",
+      "blocks": "模块",
+      "speed": "速度",
+      "speedDesc": "左侧组中最大的数字，使用应用的单位制。",
+      "rpm": "转速",
+      "rpmDesc": "位于速度读数上方的发动机转速。",
+      "rpmFormat": "转速格式",
+      "rpmFormatDesc": "绝对转速，或已达到红线的比例。",
+      "formatAbsolute": "转速",
+      "formatPercent": "%",
+      "shiftBar": "换挡条",
+      "shiftBarDesc": "发动机列上方的细条，随转速以区域颜色填充。",
+      "gear": "挡位",
+      "gearDesc": "紧邻发动机列，是整行中最大的字形。",
+      "position": "名次",
+      "positionDesc": "右侧组中的场上名次。",
+      "lap": "圈数",
+      "lapDesc": "当前圈数与总圈数，位于名次下方。",
+      "zoneColorsCard": "转速颜色",
+      "colorizeRpm": "转速上色",
+      "colorizeRpmDesc": "高转速时用区域颜色为转速数字上色。",
+      "colorizeGear": "挡位上色",
+      "colorizeGearDesc": "高转速时用区域颜色为挡位数字上色。",
+      "positionSource": "名次来源",
+      "livePositions": "实时名次",
+      "livePositionsDesc": "按赛道上的实际顺序排名，而不是模拟器只在起终点线刷新的官方名次。",
+      "classPosition": "多组别中的组内名次",
+      "classPositionDesc": "在自己的组别内计算名次，而不是整个场上。",
+      "backdrop": "衬底",
+      "backdropColor": "衬底颜色",
+      "backdropColorDesc": "数字后面的色块，含其透明度。只覆盖两侧模块——整行中间保持干净。"
     }
   },
   "streamChat": {
