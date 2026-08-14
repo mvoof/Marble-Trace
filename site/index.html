@@ -19,11 +19,11 @@
   <meta property="og:title" content="Marble Trace — Free Open-Source iRacing Telemetry Overlay">
   <meta property="og:description" content="Beautiful, lightweight iRacing overlay. 17+ widgets, Rust-powered, MIT licensed, completely free.">
   <meta property="og:url" content="https://mvoof.github.io/Marble-Trace/">
-  <meta property="og:image" content="https://mvoof.github.io/Marble-Trace/assets/widgets/standings-widget-group.png">
+  <meta property="og:image" content="https://mvoof.github.io/Marble-Trace/assets/widgets/standings.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Marble Trace — Free Open-Source iRacing Telemetry Overlay">
   <meta name="twitter:description" content="Beautiful, lightweight iRacing overlay. 17+ widgets, Rust-powered, MIT licensed, completely free.">
-  <meta name="twitter:image" content="https://mvoof.github.io/Marble-Trace/assets/widgets/standings-widget-group.png">
+  <meta name="twitter:image" content="https://mvoof.github.io/Marble-Trace/assets/widgets/standings.png">
 
   <!-- Single font with full Latin + Cyrillic coverage so the language switch
        never changes the typeface. -->
@@ -103,6 +103,7 @@
   <main id="main">
     <!-- Hero -->
     <section class="hero" aria-labelledby="heroTitle">
+      <div class="heroPhoto" aria-hidden="true"></div>
       <div class="heroBackdrop" aria-hidden="true"></div>
       <div class="heroInner">
         <div class="startLights" aria-hidden="true">
@@ -127,28 +128,12 @@
         <p class="heroNote" data-i18n="hero.note">Free forever · MIT licensed · Windows · iRacing</p>
       </div>
 
-      <!--
-        IMAGE PLACEHOLDER — hero screenshot.
-        Replace this composed mock with a single real in-game screenshot
-        (1920×1080, iRacing with the overlay active, several widgets visible)
-        saved as  public/assets/hero-ingame.jpg  and swap the div below for:
-        <img class="heroShotImg" src="assets/hero-ingame.jpg" alt="Marble Trace overlay running in iRacing">
-      -->
-      <div class="heroShot reveal" aria-label="Marble Trace widgets preview">
-        <div class="heroShotFrame">
-          <img src="assets/widgets/standings-widget.png" alt="Standings widget" class="hsStandings">
-          <img src="assets/widgets/speed-widget.png" alt="Speed and RPM widget" class="hsSpeed">
-          <img src="assets/widgets/proximity-radar-widget.png" alt="Proximity radar widget" class="hsRadar">
-          <img src="assets/widgets/lap-delta-widget.png" alt="Delta widget" class="hsDelta">
-          <img src="assets/widgets/fuel-widget.png" alt="Fuel widget" class="hsFuel">
-        </div>
-      </div>
     </section>
 
     <!-- Stats strip -->
     <section class="stats reveal" aria-label="Key numbers">
       <dl class="statsGrid">
-        <div><dt>17+</dt><dd data-i18n="stats.widgets">customizable widgets</dd></div>
+        <div><dt>20+</dt><dd data-i18n="stats.widgets">customizable widgets</dd></div>
         <div><dt>60 Hz</dt><dd data-i18n="stats.rate">live telemetry rate</dd></div>
         <div><dt>$0</dt><dd data-i18n="stats.price">now and forever</dd></div>
         <div><dt>MIT</dt><dd data-i18n="stats.license">open-source license</dd></div>
@@ -218,7 +203,7 @@
     <!-- Gallery -->
     <section class="gallery" id="gallery" aria-labelledby="galleryTitle">
       <h2 id="galleryTitle" class="reveal" data-i18n="gallery.title">The widget grid</h2>
-      <p class="sectionSub reveal" data-i18n="gallery.sub">Seventeen-plus widgets, each on its own pad. Click any of them to take a closer look.</p>
+      <p class="sectionSub reveal" data-i18n="gallery.sub">Twenty-plus widgets, each on its own pad. Click any of them to take a closer look.</p>
       <div class="galleryGrid" id="galleryGrid"></div>
     </section>
 
@@ -275,7 +260,14 @@
   <dialog id="lightbox" class="lightbox" aria-label="Widget screenshot viewer">
     <button type="button" class="lightboxClose" id="lightboxClose" aria-label="Close">✕</button>
     <figure>
-      <img id="lightboxImg" src="" alt="">
+      <div class="lightboxStage">
+        <img id="lightboxImg" src="" alt="">
+        <div class="lightboxNav" id="lightboxNav" hidden>
+          <button type="button" class="lightboxArrow" id="lightboxPrev" aria-label="Previous screenshot">‹</button>
+          <span class="lightboxCounter" id="lightboxCounter"></span>
+          <button type="button" class="lightboxArrow" id="lightboxNext" aria-label="Next screenshot">›</button>
+        </div>
+      </div>
       <figcaption id="lightboxCaption"></figcaption>
     </figure>
   </dialog>

@@ -51,7 +51,7 @@ export const I18N = {
       'Marble Trace detects the sim automatically and your telemetry appears instantly. Focus on the racing.',
     'gallery.title': 'The widget grid',
     'gallery.sub':
-      'Seventeen-plus widgets, each on its own pad. Click any of them to take a closer look.',
+      'Twenty-plus widgets, each on its own pad. Click any of them to take a closer look.',
     'faq.title': 'Questions, answered',
     'faq.q1': 'Is Marble Trace really free?',
     'faq.a1':
@@ -78,13 +78,29 @@ export const I18N = {
       ],
       relative: ['Relative', 'F3-style timing with closing-speed trends'],
       trackmap: ['Track Map', 'Live SVG map with car positions and sectors'],
-      speed: ['Speed & RPM', 'Gear, RPM ring, shift flash and tire temps'],
+      racedash: [
+        'Race Dash',
+        'Gear ring, speed, lap stats, coach tab and pit mode',
+      ],
+      rpmlights: ['RPM Lights', 'Shift-light bar with configurable zones'],
+      engine: ['Engine Panel', 'Temps, pressures, ABS, TC and brake bias'],
       inputs: ['Input Trace', 'Rolling throttle, brake and clutch history'],
       fuel: ['Fuel', 'Consumption graph and pit-stop math'],
       delta: ['Delta HUD', 'Live delta against any reference lap'],
       radar: ['Proximity Radar', '360° awareness with bumper gaps'],
       radarbar: ['Radar Bar', 'Edge indicators for side-by-side racing'],
-      chassis: ['Chassis', 'Brake temps and suspension data'],
+      pitservice: [
+        'Pit Service',
+        'Fuel, repairs, tires and pit-lane speed for the stop',
+      ],
+      coach: [
+        'Coach',
+        'Brake and throttle calls with a trace against your best lap',
+      ],
+      streamchat: [
+        'Stream Chat',
+        'Twitch and YouTube chat in one feed over the sim',
+      ],
       sectors: ['Sector Matrix', 'Per-sector times and predicted finish'],
       laplog: ['Lap Log', 'Rolling lap history with delta column'],
       timer: ['Timer', 'Session clock and laps to go'],
@@ -93,11 +109,6 @@ export const I18N = {
       flatflags: ['Flags Flat', 'Pill-style flag indicator'],
       linearmap: ['Relative Map', 'One-dimensional relative track position'],
       gmeter: ['G-Meter', 'Lateral and longitudinal friction circle'],
-      standingsgroup: [
-        'Standings — multi-class',
-        'Grouped view for multi-class races',
-      ],
-      fuelsmall: ['Fuel — compact', 'Minimal fuel readout'],
     },
   },
   ru: {
@@ -149,7 +160,7 @@ export const I18N = {
       'Marble Trace сам обнаружит симулятор, и телеметрия появится мгновенно. Сосредоточьтесь на гонке.',
     'gallery.title': 'Сетка виджетов',
     'gallery.sub':
-      'Больше семнадцати виджетов, каждый на своей подложке. Нажмите на любой, чтобы рассмотреть ближе.',
+      'Больше двадцати виджетов, каждый на своей подложке. Нажмите на любой, чтобы рассмотреть ближе.',
     'faq.title': 'Ответы на вопросы',
     'faq.q1': 'Marble Trace действительно бесплатный?',
     'faq.a1':
@@ -179,9 +190,14 @@ export const I18N = {
         'Карта трассы',
         'Живая SVG-карта с позициями машин и секторами',
       ],
-      speed: [
-        'Скорость и обороты',
-        'Передача, кольцо оборотов, шифт-фляш и температура шин',
+      racedash: [
+        'Race Dash',
+        'Кольцо оборотов, скорость, статистика круга и режим пит-лейна',
+      ],
+      rpmlights: ['Шифт-лайты', 'Полоса переключения с настраиваемыми зонами'],
+      engine: [
+        'Панель двигателя',
+        'Температуры, давления, ABS, TC и баланс тормозов',
       ],
       inputs: ['График педалей', 'История газа, тормоза и сцепления'],
       fuel: ['Топливо', 'График расхода и расчёт пит-стопа'],
@@ -191,7 +207,12 @@ export const I18N = {
         'Радар-бар',
         'Индикаторы по краям экрана для борьбы борт к борту',
       ],
-      chassis: ['Шасси', 'Температура тормозов и данные подвески'],
+      pitservice: ['Пит-стоп', 'Топливо, ремонт, шины и скорость на пит-лейне'],
+      coach: ['Коуч', 'Подсказки по тормозу и газу и трейс к лучшему кругу'],
+      streamchat: [
+        'Чат стрима',
+        'Чат Twitch и YouTube одной лентой поверх симулятора',
+      ],
       sectors: ['Матрица секторов', 'Время по секторам и прогноз круга'],
       laplog: ['Журнал кругов', 'История кругов с колонкой дельты'],
       timer: ['Таймер', 'Часы сессии и круги до финиша'],
@@ -203,11 +224,6 @@ export const I18N = {
         'Одномерная относительная позиция на трассе',
       ],
       gmeter: ['G-метр', 'Круг сцепления: боковые и продольные перегрузки'],
-      standingsgroup: [
-        'Мультикласс',
-        'Сгруппированный вид для мультиклассовых гонок',
-      ],
-      fuelsmall: ['Топливо — компакт', 'Минимальный вид расхода топлива'],
     },
   },
 };

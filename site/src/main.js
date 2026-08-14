@@ -144,7 +144,39 @@ const initialLanguage =
 
 let currentLanguage = 'en';
 
+// Translations of the same block differ in line count, so every section below
+// the viewport shifts and the page appears to jump. Pin the section that is
+// currently at the top of the screen and scroll back to it afterwards.
+const findScrollAnchor = () => {
+  let anchor = null;
+
+  for (const section of document.querySelectorAll('main > section')) {
+    const top = section.getBoundingClientRect().top;
+
+    if (top <= 1 || anchor === null) {
+      anchor = { section, top };
+    }
+  }
+
+  return anchor;
+};
+
+const restoreScrollAnchor = (anchor) => {
+  if (!anchor) {
+    return;
+  }
+
+  const shift = anchor.section.getBoundingClientRect().top - anchor.top;
+
+  if (Math.abs(shift) < 1) {
+    return;
+  }
+
+  window.scrollTo({ top: window.scrollY + shift, behavior: 'instant' });
+};
+
 const applyLanguage = (language) => {
+  const anchor = findScrollAnchor();
   currentLanguage = language;
   const dictionary = I18N[language];
   document.documentElement.lang = language;
@@ -171,6 +203,7 @@ const applyLanguage = (language) => {
   });
 
   renderGallery();
+  restoreScrollAnchor(anchor);
 };
 
 document.querySelectorAll('.langSwitch button').forEach((button) => {
@@ -179,63 +212,142 @@ document.querySelectorAll('.langSwitch button').forEach((button) => {
 
 /* ---------- Gallery ---------- */
 
-// file → i18n widget key
+// files (first one is the gallery thumbnail) → i18n widget key
 const GALLERY_ITEMS = [
-  ['standings-widget.png', 'standings'],
-  ['track-map-widget.png', 'trackmap'],
-  ['relative-widget.png', 'relative'],
-  ['speed-widget.png', 'speed'],
-  ['fuel-widget.png', 'fuel'],
-  ['proximity-radar-widget.png', 'radar'],
-  ['input-trace-widget.png', 'inputs'],
-  ['sector-matrix.png', 'sectors'],
-  ['weather-widget.png', 'weather'],
-  ['chassis-overheat.png', 'chassis'],
-  ['flat-flags-widget.png', 'flatflags'],
-  ['lap-history.png', 'laplog'],
-  ['g-meter-default.png', 'gmeter'],
-  ['flags-widget.png', 'flags'],
-  ['standings-widget-group.png', 'standingsgroup'],
-  ['timer-widget.png', 'timer'],
-  ['radar-bar-widget.png', 'radarbar'],
-  ['lap-delta-widget.png', 'delta'],
-  ['linear-map-horizontal.png', 'linearmap'],
+  [['standings.png'], 'standings'],
+  [['map.png', 'map-record.png'], 'trackmap'],
+  [['relative.png'], 'relative'],
+  [['race-dash.png', 'race-sash-pit.png'], 'racedash'],
+  [['rpm-lights.png'], 'rpmlights'],
+  [['engine.png'], 'engine'],
+  [['fuel.png', 'fuel-pit-stop.png'], 'fuel'],
+  [['proximity-radar.png'], 'radar'],
+  [['input-trace.png'], 'inputs'],
+  [['sector-matrix.png'], 'sectors'],
+  [['weather.png'], 'weather'],
+  [['pit-stop.png'], 'pitservice'],
+  [['coach.png'], 'coach'],
+  [['stream-chat.png'], 'streamchat'],
+  [['flat-flag.png'], 'flatflags'],
+  [['lap-log.png'], 'laplog'],
+  [['g-metr.png'], 'gmeter'],
+  [['led-flag-dual.png', 'led-flag-one.png'], 'flags'],
+  [['timer.png'], 'timer'],
+  [['radar-bar.png'], 'radarbar'],
+  [['delta.png', 'delta-best.png'], 'delta'],
+  [['relative-map.png'], 'linearmap'],
 ];
 
 const galleryGrid = document.getElementById('galleryGrid');
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
 const lightboxCaption = document.getElementById('lightboxCaption');
+const lightboxNav = document.getElementById('lightboxNav');
+const lightboxPrev = document.getElementById('lightboxPrev');
+const lightboxNext = document.getElementById('lightboxNext');
+const lightboxCounter = document.getElementById('lightboxCounter');
 
-const renderGallery = () => {
-  const widgetTexts = I18N[currentLanguage].widgets;
-  galleryGrid.replaceChildren();
+let openedFiles = [];
+let openedTitle = '';
+let openedDescription = '';
+let openedIndex = 0;
 
-  for (const [file, key] of GALLERY_ITEMS) {
-    const [title, description] = widgetTexts[key];
+const showOpenedImage = () => {
+  const file = openedFiles[openedIndex];
+  lightboxImg.src = `assets/widgets/${file}`;
+  lightboxImg.alt = openedTitle;
+  lightboxCaption.textContent = `${openedTitle} — ${openedDescription}`;
+  lightboxCounter.textContent = `${openedIndex + 1} / ${openedFiles.length}`;
+  lightboxNav.hidden = openedFiles.length < 2;
+};
+
+const stepOpenedImage = (step) => {
+  openedIndex = (openedIndex + step + openedFiles.length) % openedFiles.length;
+  showOpenedImage();
+};
+
+const openLightbox = (files, title, description) => {
+  openedFiles = files;
+  openedTitle = title;
+  openedDescription = description;
+  openedIndex = 0;
+  showOpenedImage();
+  lightbox.showModal();
+};
+
+// Cards are built once. Switching language only rewrites their text — a full
+// rebuild reloads every screenshot and the page jumps while the grid recollapses.
+const galleryCards = [];
+
+const buildGallery = () => {
+  for (const [files, key] of GALLERY_ITEMS) {
     const item = document.createElement('button');
     item.type = 'button';
     item.className = 'galleryItem';
     const image = document.createElement('img');
-    image.src = `assets/widgets/${file}`;
-    image.alt = `${title} — ${description}`;
+    image.src = `assets/widgets/${files[0]}`;
     image.loading = 'lazy';
     const label = document.createElement('span');
     label.className = 'galleryLabel';
-    label.textContent = title;
     const descriptionElement = document.createElement('span');
     descriptionElement.className = 'galleryDesc';
-    descriptionElement.textContent = description;
     item.append(image, label, descriptionElement);
+
+    if (files.length > 1) {
+      const count = document.createElement('span');
+      count.className = 'galleryCount';
+      count.textContent = `1 / ${files.length}`;
+      item.appendChild(count);
+    }
+
+    galleryCards.push({ files, key, image, label, descriptionElement });
     item.addEventListener('click', () => {
-      lightboxImg.src = `assets/widgets/${file}`;
-      lightboxImg.alt = title;
-      lightboxCaption.textContent = `${title} — ${description}`;
-      lightbox.showModal();
+      const [title, description] = I18N[currentLanguage].widgets[key];
+      openLightbox(files, title, description);
     });
     galleryGrid.appendChild(item);
   }
 };
+
+const renderGallery = () => {
+  const widgetTexts = I18N[currentLanguage].widgets;
+
+  if (galleryCards.length === 0) {
+    buildGallery();
+  }
+
+  for (const card of galleryCards) {
+    const [title, description] = widgetTexts[card.key];
+    card.image.alt = `${title} — ${description}`;
+    card.label.textContent = title;
+    card.descriptionElement.textContent = description;
+  }
+};
+
+lightboxPrev.addEventListener('click', (event) => {
+  event.stopPropagation();
+  stepOpenedImage(-1);
+});
+lightboxNext.addEventListener('click', (event) => {
+  event.stopPropagation();
+  stepOpenedImage(1);
+});
+
+lightbox.addEventListener('keydown', (event) => {
+  if (openedFiles.length < 2) {
+    return;
+  }
+
+  if (event.key === 'ArrowLeft') {
+    event.preventDefault();
+    stepOpenedImage(-1);
+  }
+
+  if (event.key === 'ArrowRight') {
+    event.preventDefault();
+    stepOpenedImage(1);
+  }
+});
 
 document
   .getElementById('lightboxClose')
