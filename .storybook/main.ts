@@ -1,9 +1,6 @@
 import type { StorybookConfig } from '@storybook/react-vite';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import svgr from 'vite-plugin-svgr';
+import { createStorybookAliases } from '../vite.aliases.ts';
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(ts|tsx)'],
@@ -11,51 +8,17 @@ const config: StorybookConfig = {
   framework: '@storybook/react-vite',
   staticDirs: ['../public'],
   viteFinal: (config) => {
+    config.plugins = [
+      ...(config.plugins ?? []),
+      svgr({
+        svgrOptions: {
+          icon: true,
+        },
+      }),
+    ];
+
     config.resolve = config.resolve ?? {};
-    config.resolve.alias = {
-      ...(config.resolve.alias ?? {}),
-      '@': path.resolve(__dirname, '../src'),
-      '@tauri-apps/api/core': path.resolve(
-        __dirname,
-        '../src/storybook/__mocks__/tauri-core.ts'
-      ),
-      '@tauri-apps/api/event': path.resolve(
-        __dirname,
-        '../src/storybook/__mocks__/tauri-event.ts'
-      ),
-      '@tauri-apps/api/webviewWindow': path.resolve(
-        __dirname,
-        '../src/storybook/__mocks__/tauri-webview.ts'
-      ),
-      '@tauri-apps/api/window': path.resolve(
-        __dirname,
-        '../src/storybook/__mocks__/tauri-window.ts'
-      ),
-      '@tauri-apps/api/path': path.resolve(
-        __dirname,
-        '../src/storybook/__mocks__/tauri-path.ts'
-      ),
-      '@tauri-apps/plugin-process': path.resolve(
-        __dirname,
-        '../src/storybook/__mocks__/tauri-process.ts'
-      ),
-      '@tauri-apps/plugin-store': path.resolve(
-        __dirname,
-        '../src/storybook/__mocks__/tauri-store.ts'
-      ),
-      '@tauri-apps/plugin-global-shortcut': path.resolve(
-        __dirname,
-        '../src/storybook/__mocks__/tauri-shortcut.ts'
-      ),
-      '@tauri-apps/plugin-updater': path.resolve(
-        __dirname,
-        '../src/storybook/__mocks__/tauri-updater.ts'
-      ),
-      '@tauri-apps/api/app': path.resolve(
-        __dirname,
-        '../src/storybook/__mocks__/tauri-app.ts'
-      ),
-    };
+    config.resolve.alias = createStorybookAliases();
 
     config.css = config.css ?? {};
     config.css.preprocessorOptions = {

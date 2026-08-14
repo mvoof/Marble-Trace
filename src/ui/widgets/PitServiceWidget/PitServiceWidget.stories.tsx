@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { ChassisFrame, PitServiceFrame } from '@/types/bindings';
+import type { CarEntry, ChassisFrame, PitServiceFrame } from '@/types/bindings';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import { PitServiceWidget } from './PitServiceWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
@@ -19,6 +19,15 @@ interface StoryArgs {
   changeRears: boolean;
   showFooter: boolean;
 }
+
+const STORY_FIELD_SIZE = 24;
+
+const STORY_FIELD = Array.from(
+  { length: STORY_FIELD_SIZE },
+  (_unused, index) => ({
+    carIdx: index,
+  })
+) as CarEntry[];
 
 const CORNER_TEMPS: Record<string, [number, number, number]> = {
   lf: [104, 97, 89],
@@ -89,7 +98,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/PitServiceWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: PitServiceWidget,
-    size: { width: 300, height: 340 },
+    size: { width: 300, height: 500 },
     seed: (store, args) => {
       store.player.updateCarStatus({
         on_pit_road: args.onPitRoad,
@@ -107,8 +116,11 @@ const meta: Meta<StoryArgs> = {
       store.player.updateChassis(buildChassis());
       store.player.updatePitService(buildPitService(args));
 
+      // `cars` is always present on a real SessionInfo, and the footer's field
+      // size reads it — a seed without it throws where the sim never would.
       store.session.updateSessionInfo({
         trackPitSpeedLimit: args.pitLimit,
+        cars: STORY_FIELD,
       } as Parameters<typeof store.session.updateSessionInfo>[0]);
 
       store.backendComputed.updateFuel({
