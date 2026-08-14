@@ -5,16 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.21.0] — 2026-08-14
 
 ### Added
 
+- **Coach Widget:** The driving coach leaves the Race Dash plate and becomes a widget of its own — a large advisory call on top and, optionally, a speed trace against your best lap underneath. The trace is coloured by the time you have gained or lost up to that point, so a braking point shows you what it actually cost rather than just that it was different. You can trace speed or the brake pedal, the two braking points are drawn as marks whose gap is the headline of the call row, and the coach now tells you why it is quiet instead of showing PACE when it has nothing to say.
+- **Coach — Separate Dry and Wet Reference Laps:** Reference laps are stored per track, car and condition, so a wet session is coached against a wet lap instead of going silent. An optional DRY/WET marker in the footer shows which lap you are being measured against.
+- **Coach — Corner Exit Calls:** Coming out of a corner the coach now judges you on the throttle rather than on speed, which lags the pedal by the length of the following straight — so a lazy exit is called while you can still do something about it. The call row can be switched between the available calls.
+- **Pit Service Widget:** A new widget that reads the pit box state from the sim and, behind an explicit opt-in, sends the order back: fuel, tyres per corner, tyre compound where the car has a choice, windshield and fast repair. Auto mode works out the order for you — fuel on pit entry, tyres from the wear actually measured in the box. Keys are available for stepping the fuel order up and down, ordering the calculated amount, and standing auto mode down. It replaces the Chassis widget, whose wear, temperature and pressure readings all live in the tyre grid here.
+- **Pit Service — Pit Exit Guidance:** A full-green **GO!** plate once you are past pit exit, the allowed speed window with a sweet-spot band on the pit plate, and auto mode ordering a fast repair when one is in hand.
+- **Stream Chat Widget:** A new widget showing your Twitch or YouTube chat on the overlay, working with no sim running. Twitch is read anonymously; signing in is optional and adds viewer count, uptime and badge artwork. Adds an optional header, localized room modes (subscriber-only, followers-only, slow mode) and Twitch cheers. Chat sources are set once for the app, so one channel serves every layout.
+- **Track Map — Per-Class Marker Shapes:** Cars are drawn with a different marker shape per car class, and cars can be hidden in qualifying so the map is not crowded by drivers you are not sharing the track with.
+- **Standings — Scroll Indicators:** The table shows where you are in the field while scrolling, and the class arrows appear only in interact mode instead of sitting over the table all the time.
+- **Standings — Grid Order Before the Green:** Before the race starts the table is ordered by the starting grid, and outside a race it follows the sim's official order. In practice and qualifying the Best column shows qualifying times.
+- **Standings — Finished Cars:** A car that has taken the checkered flag is marked with a checkered flag badge and its OUT / PIT status is suppressed, so a finished car rolling back to the garage no longer reads as retired.
+- **Standings — Results for Cars Out of the World:** Lap times, laps and positions now fall back to the official results when the sim clears the live values, retirements confirmed by the sim are flagged (with a setting to hide them), and the session incident limit is shown in the header.
+- **Standings and Relative — TOW Badge:** A car being towed is marked with its own badge, which the plain OUT status could not tell apart from a garage exit.
+- **Race Dash — New Plate Shape:** The plate is now a symmetric pill with matching rounded caps, your position number can be tinted by which band of the field you are in (P1, top 3, top 5, top 10, rest) with colours of your choice, and the pit box is drawn as a painted stretch of pit lane instead of a hairline.
+- **Race Dash — Steering Trail Colour:** The steering marker's trail colour is now a setting.
+- **Race Dash — Pit Limit Approach Cue:** The pit speed limit digit now ramps from amber to red as you approach the limit instead of jumping to its alert look only once you have already broken it.
+- **Race Dash and Timer — Class Position:** In multiclass sessions both show your position within your class rather than the overall number.
+- **Delta — Lap Flash and Delta Track:** Crossing the line flashes the lap with its delta, the readout is fixed-width so it stops jittering, and an auto-ranging delta gauge with scale labels was added.
+- **Fuel — Rejected Laps on the Chart:** Laps thrown out of the consumption average are kept in the history, drawn grey and skipped by the trend line, and the axis now shows real lap numbers instead of shifting every time a lap was dropped.
+- **Fuel — Green Laps Only:** Consumption now counts only real racing laps: refuelling is tracked and added back so a lap with a stop on it still yields a figure, and laps with an off-track, a caution or an impossible lap counter are rejected, as are laps far outside your recent spread. Every completed lap is logged with the reason it was dropped.
+- **Fuel — Configurable Averaging Window:** Consumption can be averaged over all laps or any window from 3 to 100, and that window now drives every figure on the widget — average, min, max, laps left, the fuel at the finish, the refuel amount and both pit window edges.
+- **Fuel — Redesigned Widget:** The summary leads the widget so the three numbers read in an apex glance, laps-to-empty folds into the consumption cells, and the pit warning shows one fill figure capped by tank capacity rather than an amount no real stop would ever take.
+- **Weather — Iconed Stat Tiles:** The weather stats are now tiles with icons and magnitude bars, plus a wind bearing readout.
+- **Input Trace — Stretch on Resize:** The chart stretches when the widget is resized by width, and scales from the corners.
+- **Add Widgets from Edit Mode:** Widgets can be added to the active layout straight from the overlay's edit mode.
+- **Engine and Sector Matrix Dividers:** Inset hairline dividers between cells.
 - **Wheel and Button Box Bindings:** Every action that could be bound to a key can now be bound to a button on your wheel, button box, joystick or handbrake instead — read straight from the device, so it still works while iRacing has focus. Unplugging a device or moving it to another USB port keeps its bindings, and a device that is currently unplugged keeps its bindings too, shown greyed out until it comes back.
 - **One Bindings Screen:** All keys and buttons now live in a single **Input bindings** section in Settings, grouped by widget, with a search box and a warning next to any binding used by more than one action. You can assign several keys or buttons to the same action.
 - **Show and Hide Any Widget by Key:** Every widget can now be added to or removed from the current layout with a binding of its own.
 
 ### Changed
 
+- **Chassis Widget Replaced:** The Chassis widget is gone; everything it showed — per-corner wear, temperatures and pressures — is in the Pit Service widget's tyre grid, next to the order those numbers are used to decide.
+- **Coach Moved Out of the Race Dash:** The coach tab is no longer part of the Race Dash, which narrows accordingly. If you had the tab switched on, a Coach widget is added to your layout in its place.
+- **Tyre Wear Away From the Box:** The sim only measures tyre wear once per stop, so the Pit Service widget dims those numbers when you are not in the box instead of presenting last stop's tread as a live reading.
 - **Bindings No Longer Belong to a Layout:** Keys used to be stored per layout, so switching layouts silently changed them and the same key had to be entered again in every layout. They are now app-wide — set once, and they work everywhere. Because of that, widget keys you had set before are not carried over: the same key meant different things in different layouts, and there is no honest way to pick a winner. Drag, interact and hide-all keep working on F9, F8 and F10; anything else takes a moment to set again on the new **Input bindings** screen, where you can now give one action several keys and wheel buttons at once.
 - A binding for a widget that isn't in the current layout now does nothing instead of firing invisibly in the background.
 - **Your Settings File Is No Longer Thrown Away:** If Marble Trace can't read your settings — because they were saved by a newer version, or the file got damaged — it now leaves the file exactly as it is and tells you what happened, instead of quietly deleting it and starting from scratch. A copy of your old settings is also kept alongside them whenever an update converts them to a new format.
@@ -22,6 +50,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Keys Missing After Updating:** Actions you had never customised could end up with no key at all after an update, because your settings file only listed the keys you had changed by hand. Only your own changes are stored now, and everything else follows whatever the current version ships — so new actions arrive with their keys already working, and a key you deliberately cleared stays cleared.
+- **A Towed Car Kept the Lead:** Fixed a car being recovered by the tow truck holding its place in the live order until a start/finish crossing that never came. Towed cars are now ranked by how far around the lap they were picked up, so the lead passes over as soon as the field drives past that point. The P1 label on the track map had the same problem and now follows the live order too.
+- **Gap Was Always to the Overall Leader:** Fixed the gap column measuring against the overall leader in the class views of a multiclass race — it is now measured against the leader of the class you are looking at.
+- **Input Trace History Half as Long as Set:** Fixed the input trace recording two samples per telemetry frame, which made the graph cover half the number of seconds configured.
+- **Pit Window a Lap Early:** Fixed the fuel widget's pit window ignoring how far around the current lap you already were, so both edges sat up to a full lap early and crept further out as the lap ran on.
+- **Fuel Column Said "AVG 10":** Fixed the consumption column always being captioned as a ten-lap average regardless of the averaging window actually in force.
+- **Layout Background Images Overwriting Each Other:** Fixed background images for different monitors and layouts being saved under the same file name, so one could replace another.
 
 ## [0.20.0] — 2026-07-29
 
