@@ -98,7 +98,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/PitServiceWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: PitServiceWidget,
-    size: { width: 300, height: 340 },
+    size: { width: 300, height: 500 },
     seed: (store, args) => {
       store.player.updateCarStatus({
         on_pit_road: args.onPitRoad,
