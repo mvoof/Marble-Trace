@@ -14,6 +14,7 @@ import { TrackMapSettingsPanel } from './panels/TrackMapSettingsPanel';
 import { WeatherSettingsPanel } from './panels/WeatherSettingsPanel';
 import { FuelSettingsPanel } from './panels/FuelSettingsPanel';
 import { DeltaSettingsPanel } from './panels/DeltaSettingsPanel';
+import { InvisibleDashSettingsPanel } from './panels/InvisibleDashSettingsPanel';
 import { SectorMatrixSettingsPanel } from './panels/SectorMatrixSettingsPanel';
 import { LapLogSettingsPanel } from './panels/LapLogSettingsPanel';
 import { PitServiceSettingsPanel } from './panels/PitServiceSettingsPanel';
@@ -154,7 +155,7 @@ export const WidgetSettings = observer(
                   {t('widgetSettings.fontScale')}
                 </span>
                 <Slider
-                  min={0.7}
+                  min={0.4}
                   max={1.8}
                   step={0.05}
                   value={userSettings.fontScale ?? 1}
@@ -237,6 +238,8 @@ export const WidgetSettings = observer(
           {widgetId === 'weather' && <WeatherSettingsPanel />}
           {widgetId === 'fuel' && <FuelSettingsPanel />}
           {widgetId === 'delta' && <DeltaSettingsPanel />}
+
+          {widgetId === 'invisible-dash' && <InvisibleDashSettingsPanel />}
           {widgetId === 'sector-matrix' && <SectorMatrixSettingsPanel />}
           {widgetId === 'lap-log' && <LapLogSettingsPanel />}
           {widgetId === 'pit-service' && <PitServiceSettingsPanel />}
