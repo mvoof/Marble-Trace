@@ -2,11 +2,13 @@ import { action, makeAutoObservable, reaction } from 'mobx';
 
 import type { RootStore } from '@store/root-store';
 import type { ReferenceLapSample } from '@/types/bindings';
+import type { CoachWidgetSettings } from '@/types/widget-settings';
 import {
   buildTargetSpeedProfile,
   computeDrivingAdvisory,
   extractCornerTargets,
   interpolateReferenceSample,
+  isSteeringUnsettled,
   NEUTRAL_ADVISORY_STATE,
   type AdvisoryState,
   type CornerTarget,
@@ -39,6 +41,17 @@ const URGENCY_DISPLAY_STEP = 0.05;
 const CORNER_DISTANCE_DISPLAY_STEP_M = 5;
 /** Beyond this the next corner is not worth counting down to yet. */
 const MAX_CORNER_COUNTDOWN_M = 600;
+/**
+ * Steering samples kept for the unsettled-car check — at 60 Hz this is a third
+ * of a second, long enough to hold a catch-and-correct and short enough that
+ * the row goes quiet again as soon as the car settles.
+ */
+const STEERING_HISTORY_SIZE = 20;
+/** The metres-late figure is quantized to this step — a distance read in car lengths. */
+const EXIT_LATE_DISPLAY_STEP_M = 1;
+
+/** The advisory input as the store can derive it from telemetry alone (see `advisoryInput`). */
+type PositionalAdvisoryInput = Omit<DrivingAdvisoryInput, 'steeringUnsettled'>;
 
 /** Why the coach is not producing an advisory — see `inactiveReason`. */
 export type CoachInactiveReason =
@@ -73,6 +86,13 @@ export class DrivingCoachWidgetStore {
   displayedAdvisory: DrivingAdvisory = 'neutral';
   /** Quantized `brakeUrgency` from the latest advisory evaluation, for pre-arm UI (0..1). */
   displayedBrakeUrgency = 0;
+  /**
+   * Metres later than the reference this exit's throttle was opened, quantized
+   * for display — counting up while still off the power, frozen once on it.
+   */
+  displayedExitLateM: number | null = null;
+  /** Pedal missing against the reference inside the current corner exit, 0-1. */
+  displayedExitThrottleDeficit = 0;
 
   /**
    * Latched advisory state fed back into `computeDrivingAdvisory` each tick —
@@ -83,6 +103,8 @@ export class DrivingCoachWidgetStore {
   private advisoryState: AdvisoryState = NEUTRAL_ADVISORY_STATE;
   /** `performance.now()` of the last observed `lap_dist_pct` change, for extrapolation. */
   private lastDistPctUpdateAt: number | null = null;
+  /** Rolling steering angles feeding `isSteeringUnsettled` — per-frame, never rendered. */
+  private steeringHistory: number[] = [];
   private pendingAdvisory: DrivingAdvisory | null = null;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private reactionDisposers: (() => void)[] = [];
@@ -90,12 +112,16 @@ export class DrivingCoachWidgetStore {
   constructor(private readonly root: RootStore) {
     makeAutoObservable<
       DrivingCoachWidgetStore,
-      'advisoryState' | 'lastDistPctUpdateAt' | 'reactionDisposers'
+      | 'advisoryState'
+      | 'lastDistPctUpdateAt'
+      | 'steeringHistory'
+      | 'reactionDisposers'
     >(
       this,
       {
         advisoryState: false,
         lastDistPctUpdateAt: false,
+        steeringHistory: false,
         reactionDisposers: false,
       },
       { autoBind: true }
@@ -120,7 +146,7 @@ export class DrivingCoachWidgetStore {
         (input) => {
           const next = input
             ? computeDrivingAdvisory(
-                this.withExtrapolatedPosition(input),
+                this.withSteeringState(this.withExtrapolatedPosition(input)),
                 this.advisoryState
               )
             : NEUTRAL_ADVISORY_STATE;
@@ -288,7 +314,12 @@ export class DrivingCoachWidgetStore {
     return buildTargetSpeedProfile(data.samples);
   }
 
-  private get advisoryInput(): DrivingAdvisoryInput | null {
+  /**
+   * Everything the advisory needs except the steering history, which is
+   * accumulated per frame in the reaction rather than derived here — a computed
+   * that appended to a buffer would rebuild it on every read.
+   */
+  private get advisoryInput(): PositionalAdvisoryInput | null {
     const player = this.root.player;
     const dynamics = player.carDynamics;
     const inputs = player.carInputs;
@@ -324,13 +355,34 @@ export class DrivingCoachWidgetStore {
       currentSteeringWheelAngle: dynamics.steering_wheel_angle,
       currentLatAccel: dynamics.lat_accel ?? null,
       currentLongAccel: dynamics.long_accel ?? null,
+      cornerExitCallsEnabled: this.settings.showCornerExitCalls,
+    };
+  }
+
+  private get settings(): CoachWidgetSettings {
+    return this.root.widgetSettings.getSettings<CoachWidgetSettings>('coach');
+  }
+
+  /** Append this frame's steering angle to the rolling window and resolve the unsettled flag. */
+  private withSteeringState(
+    input: PositionalAdvisoryInput
+  ): DrivingAdvisoryInput {
+    this.steeringHistory.push(input.currentSteeringWheelAngle);
+
+    if (this.steeringHistory.length > STEERING_HISTORY_SIZE) {
+      this.steeringHistory.shift();
+    }
+
+    return {
+      ...input,
+      steeringUnsettled: isSteeringUnsettled(this.steeringHistory),
     };
   }
 
   /** Dead-reckon `currentDistPct` forward from the last 10 Hz position update (see `MAX_POSITION_EXTRAPOLATION_S`). */
   private withExtrapolatedPosition(
-    input: DrivingAdvisoryInput
-  ): DrivingAdvisoryInput {
+    input: PositionalAdvisoryInput
+  ): PositionalAdvisoryInput {
     if (this.lastDistPctUpdateAt === null) return input;
 
     const elapsedS = Math.min(
@@ -355,6 +407,24 @@ export class DrivingCoachWidgetStore {
 
     if (quantizedUrgency !== this.displayedBrakeUrgency) {
       this.displayedBrakeUrgency = quantizedUrgency;
+    }
+
+    const quantizedLateM =
+      state.exitLateM === null
+        ? null
+        : Math.round(state.exitLateM / EXIT_LATE_DISPLAY_STEP_M) *
+          EXIT_LATE_DISPLAY_STEP_M;
+
+    if (quantizedLateM !== this.displayedExitLateM) {
+      this.displayedExitLateM = quantizedLateM;
+    }
+
+    const quantizedDeficit =
+      Math.round(state.exitThrottleDeficit / URGENCY_DISPLAY_STEP) *
+      URGENCY_DISPLAY_STEP;
+
+    if (quantizedDeficit !== this.displayedExitThrottleDeficit) {
+      this.displayedExitThrottleDeficit = quantizedDeficit;
     }
 
     this.scheduleAdvisoryChange(state.advisory);
@@ -393,7 +463,10 @@ export class DrivingCoachWidgetStore {
     this.clearDebounce();
     this.advisoryState = NEUTRAL_ADVISORY_STATE;
     this.lastDistPctUpdateAt = null;
+    this.steeringHistory = [];
     this.displayedAdvisory = 'neutral';
     this.displayedBrakeUrgency = 0;
+    this.displayedExitLateM = null;
+    this.displayedExitThrottleDeficit = 0;
   }
 }

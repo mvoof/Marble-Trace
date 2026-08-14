@@ -78,6 +78,20 @@ const GRIP_SIGNIFICANT_MPS2 = 6.0;
 const GRIP_UTILIZATION_RATIO = 0.7;
 /** Grip-headroom Gas only applies where the reference is driving (not braking) with at least this much throttle. */
 const GRIP_GAS_MIN_REF_THROTTLE = 0.5;
+/** Throttle input above this counts as "back on the power" when locating a corner exit. */
+const EXIT_THROTTLE_OPEN = 0.2;
+/** Don't scan further than this past an apex looking for where the reference reaches full throttle. */
+const MAX_EXIT_ZONE_M = 400;
+/** How far past the reference's full-throttle point the exit stays open, to catch a late opening. */
+const EXIT_TAIL_M = 100;
+/** Being this many metres later than the reference on the throttle is worth a call. */
+const EXIT_LATE_CALL_M = 5;
+/** Once on the throttle, trailing the reference pedal by this much (0-1) is worth a call. */
+const EXIT_THROTTLE_DEFICIT = 0.15;
+/** A steering reversal smaller than this (rad) is noise, not a correction. */
+const STEERING_CORRECTION_RAD = 0.02;
+/** Reversals within the sampled steering window above which the car counts as unsettled. */
+const MIN_UNSETTLED_REVERSALS = 3;
 
 export interface CornerTarget {
   /** Apex position as a fraction of lap distance. */
@@ -88,9 +102,26 @@ export interface CornerTarget {
   brakeStartPct: number;
   /** Achievable deceleration (m/s^2) derived from this reference lap's own braking zone for this corner. */
   brakingDecel: number;
+  /**
+   * Where the reference driver first got back on the throttle after this apex,
+   * as a fraction of lap distance — null when it never did within
+   * `MAX_EXIT_ZONE_M` (the lap ends, or the corner runs straight into the next).
+   */
+  throttleOpenPct: number | null;
+  /**
+   * End of the corner-exit phase: `EXIT_TAIL_M` past where the reference
+   * reaches full throttle, capped at the scan window. Null together with
+   * `throttleOpenPct`.
+   */
+  exitEndPct: number | null;
 }
 
-export type DrivingAdvisory = 'brake' | 'gas' | 'neutral';
+/**
+ * `grip` is not an instruction but a refusal to give one: the car is being
+ * caught and corrected, so the pedal is not what is costing time here and a
+ * Gas call would be wrong advice.
+ */
+export type DrivingAdvisory = 'brake' | 'gas' | 'grip' | 'neutral';
 
 /**
  * Advisory plus the latch bookkeeping needed to keep it lit across a whole
@@ -109,12 +140,34 @@ export interface AdvisoryState {
    * ahead or already slow enough; 1 = must brake now (or is braking).
    */
   brakeUrgency: number;
+  /** Apex `distPct` of the corner exit the car is currently in, or null. */
+  exitCornerPct: number | null;
+  /** Where the player first opened the throttle in this exit, or null while still off it. */
+  exitThrottleOpenPct: number | null;
+  /**
+   * Metres later than the reference the player got on the throttle: counting up
+   * while still off the pedal, frozen at the opening point once on it. Null
+   * outside an exit, or when the player is on the power at or before the
+   * reference — there is nothing to report then.
+   */
+  exitLateM: number | null;
+  /** Pedal the reference is carrying here that this lap is not, 0-1, inside an exit only. */
+  exitThrottleDeficit: number;
 }
+
+/** The exit bookkeeping at rest — outside a corner exit there is nothing to carry. */
+const IDLE_EXIT_STATE = {
+  exitCornerPct: null,
+  exitThrottleOpenPct: null,
+  exitLateM: null,
+  exitThrottleDeficit: 0,
+} as const;
 
 export const NEUTRAL_ADVISORY_STATE: AdvisoryState = {
   advisory: 'neutral',
   brakeCornerPct: null,
   brakeUrgency: 0,
+  ...IDLE_EXIT_STATE,
 };
 
 /** Distance ahead from `fromPct` to `toPct`, wrapping around the lap, as a `[0, 1)` fraction. */
@@ -289,11 +342,15 @@ export const extractCornerTargets = (
 
     if (brakingZone === null) continue;
 
+    const exitZone = deriveExitZone(samples, i, trackLengthM);
+
     targets.push({
       distPct,
       targetSpeed: speed,
       brakeStartPct: brakingZone.brakeStartPct,
       brakingDecel: brakingZone.decel,
+      throttleOpenPct: exitZone?.throttleOpenPct ?? null,
+      exitEndPct: exitZone?.exitEndPct ?? null,
     });
     lastTargetDistPct = distPct;
     runningMaxSpeed = speed;
@@ -355,6 +412,69 @@ const deriveBrakingZone = (
   return {
     brakeStartPct: brakeStartIndex / bucketCount,
     decel: (vStart ** 2 - vEnd ** 2) / (2 * deltaDistanceM),
+  };
+};
+
+interface ExitZone {
+  throttleOpenPct: number;
+  exitEndPct: number;
+}
+
+/**
+ * Walk forward from the apex to find the corner-exit phase of the reference
+ * lap: where it first opened the throttle, and where it reached full throttle
+ * (the point past which the exit is over and the ordinary flat-out Gas check
+ * takes back over). A reference that never reaches full throttle inside
+ * `MAX_EXIT_ZONE_M` — a corner feeding straight into the next one — ends the
+ * zone at the scan limit rather than dropping the exit entirely.
+ */
+const deriveExitZone = (
+  samples: ReferenceLapSample[],
+  apexIndex: number,
+  trackLengthM: number
+): ExitZone | null => {
+  const bucketCount = samples.length;
+  const scanBuckets = Math.round(
+    (MAX_EXIT_ZONE_M / trackLengthM) * bucketCount
+  );
+
+  if (scanBuckets <= 0) return null;
+
+  let openOffset: number | null = null;
+
+  for (let offset = 0; offset <= scanBuckets; offset++) {
+    const index = (apexIndex + offset) % bucketCount;
+
+    if (samples[index].throttle > EXIT_THROTTLE_OPEN) {
+      openOffset = offset;
+      break;
+    }
+  }
+
+  if (openOffset === null) return null;
+
+  let fullThrottleOffset = scanBuckets;
+
+  for (let offset = openOffset; offset <= scanBuckets; offset++) {
+    const index = (apexIndex + offset) % bucketCount;
+
+    if (samples[index].throttle >= GAS_THROTTLE_THRESHOLD) {
+      fullThrottleOffset = offset;
+      break;
+    }
+  }
+
+  // The zone runs past the reference's full-throttle point by a tail: a driver
+  // who is *late* on the power is by definition still short of it, and ending
+  // the zone there would close the measurement exactly when it starts to matter.
+  const tailBuckets = Math.round((EXIT_TAIL_M / trackLengthM) * bucketCount);
+  const endOffset = Math.min(fullThrottleOffset + tailBuckets, scanBuckets);
+
+  if (endOffset <= 0) return null;
+
+  return {
+    throttleOpenPct: ((apexIndex + openOffset) % bucketCount) / bucketCount,
+    exitEndPct: ((apexIndex + endOffset) % bucketCount) / bucketCount,
   };
 };
 
@@ -498,6 +618,10 @@ export interface DrivingAdvisoryInput {
   currentSteeringWheelAngle: number;
   currentLatAccel: number | null;
   currentLongAccel: number | null;
+  /** The car is being caught and corrected right now (see `isSteeringUnsettled`). */
+  steeringUnsettled: boolean;
+  /** Whether the corner-exit branch runs at all — the user can switch these calls off. */
+  cornerExitCallsEnabled: boolean;
 }
 
 /**
@@ -532,6 +656,141 @@ const isInsideBrakingZone = (
   return pctDistanceAhead(target.brakeStartPct, distPct) < zoneLengthPct;
 };
 
+/**
+ * Whether the steering is being worked back and forth — the driver catching the
+ * car rather than describing an arc. Counts direction reversals larger than
+ * `STEERING_CORRECTION_RAD` across the sampled window; a smooth arc, however
+ * fast the wheel moves, produces none.
+ */
+export const isSteeringUnsettled = (recentAngles: number[]): boolean => {
+  if (recentAngles.length < 3) return false;
+
+  let reversals = 0;
+  let lastDirection = 0;
+
+  for (let index = 1; index < recentAngles.length; index++) {
+    const delta = recentAngles[index] - recentAngles[index - 1];
+
+    if (Math.abs(delta) < STEERING_CORRECTION_RAD) continue;
+
+    const direction = Math.sign(delta);
+
+    if (lastDirection !== 0 && direction !== lastDirection) reversals++;
+
+    lastDirection = direction;
+  }
+
+  return reversals >= MIN_UNSETTLED_REVERSALS;
+};
+
+/** The corner whose exit phase contains `distPct`, or null when between exits. */
+const findExitZoneTarget = (
+  cornerTargets: CornerTarget[],
+  currentDistPct: number
+): CornerTarget | null => {
+  for (const target of cornerTargets) {
+    if (target.exitEndPct === null) continue;
+
+    const zoneLengthPct = pctDistanceAhead(target.distPct, target.exitEndPct);
+
+    if (pctDistanceAhead(target.distPct, currentDistPct) < zoneLengthPct) {
+      return target;
+    }
+  }
+
+  return null;
+};
+
+type ExitBookkeeping = Pick<
+  AdvisoryState,
+  'exitCornerPct' | 'exitThrottleOpenPct' | 'exitLateM' | 'exitThrottleDeficit'
+> & {
+  /** The call this exit warrants, or null when the exit is being driven on the reference. */
+  advisory: 'gas' | 'grip' | null;
+};
+
+const IDLE_EXIT_BOOKKEEPING: ExitBookkeeping = {
+  ...IDLE_EXIT_STATE,
+  advisory: null,
+};
+
+/**
+ * The corner-exit branch of the advisory: what the driver does with the
+ * throttle coming out, not how fast the car happens to be going.
+ *
+ * Speed on an exit is the *result* — it lags the pedal by the length of the
+ * following straight — so the comparison is made on the input instead: how many
+ * metres later than the reference the throttle was opened, and once open, how
+ * much pedal is missing. While the player is still off the power past the
+ * reference's own opening point the figure counts up live, which is the only
+ * window in which the driver can still act on it; it then freezes at the point
+ * they actually opened, so the number stays readable through the rest of the
+ * exit as a score for the corner just driven.
+ *
+ * A car being caught and corrected reports `grip` and no Gas call: the pedal is
+ * not what is costing time there, and telling the driver to add throttle mid-
+ * correction is actively bad advice.
+ */
+const resolveCornerExit = (
+  cornerTargets: CornerTarget[],
+  currentDistPct: number,
+  trackLengthM: number,
+  currentThrottle: number,
+  reference: ReferenceLapSample | null,
+  steeringUnsettled: boolean,
+  previous: AdvisoryState
+): ExitBookkeeping => {
+  const target = findExitZoneTarget(cornerTargets, currentDistPct);
+
+  if (
+    target === null ||
+    target.throttleOpenPct === null ||
+    reference === null
+  ) {
+    return IDLE_EXIT_BOOKKEEPING;
+  }
+
+  // Bookkeeping only carries over within the same exit — a new corner starts clean.
+  const carried =
+    previous.exitCornerPct === target.distPct
+      ? previous.exitThrottleOpenPct
+      : null;
+  const onThrottle = currentThrottle > EXIT_THROTTLE_OPEN;
+  const throttleOpenPct = carried ?? (onThrottle ? currentDistPct : null);
+
+  const pastReferenceOpenPct = (pct: number): number | null => {
+    const gap = pctDistanceAhead(target.throttleOpenPct as number, pct);
+
+    // More than half a lap "ahead" means the point is in fact behind us: the
+    // player opened before the reference did, which is not a deficit.
+    return gap > 0 && gap < 0.5 ? gap * trackLengthM : null;
+  };
+
+  const exitLateM = pastReferenceOpenPct(throttleOpenPct ?? currentDistPct);
+  const exitThrottleDeficit = Math.min(
+    Math.max(reference.throttle - currentThrottle, 0),
+    1
+  );
+
+  const advisory: ExitBookkeeping['advisory'] = steeringUnsettled
+    ? 'grip'
+    : throttleOpenPct === null &&
+        exitLateM !== null &&
+        exitLateM >= EXIT_LATE_CALL_M
+      ? 'gas'
+      : onThrottle && exitThrottleDeficit >= EXIT_THROTTLE_DEFICIT
+        ? 'gas'
+        : null;
+
+  return {
+    exitCornerPct: target.distPct,
+    exitThrottleOpenPct: throttleOpenPct,
+    exitLateM,
+    exitThrottleDeficit,
+    advisory,
+  };
+};
+
 /** Combined (vector) acceleration `√(a_lat² + a_long²)` — total grip in use — or null without lateral data. */
 const combinedAccel = (
   latAccel: number | null | undefined,
@@ -557,6 +816,12 @@ const combinedAccel = (
  * Once latched onto a corner it stays on until the target apex speed is
  * reached (within `BRAKE_EXIT_SPEED_FACTOR`) or the apex is passed — so the
  * light covers the whole braking zone.
+ *
+ * Corner exit (see `resolveCornerExit`) — judged on the throttle rather than on
+ * the speed it produces: opening later than the reference, or carrying less
+ * pedal than it once open. Reports `grip` instead of a call while the car is
+ * being corrected. Runs before the speed-based Gas check, which cannot see this
+ * phase at all — the reference is not flat out yet coming out of a corner.
  *
  * Gas — under-driving a section the reference took (near) flat out, or leaving
  * combined-grip headroom on a driving (non-braking) section, with a
@@ -586,6 +851,8 @@ export const computeDrivingAdvisory = (
     currentSteeringWheelAngle,
     currentLatAccel,
     currentLongAccel,
+    steeringUnsettled,
+    cornerExitCallsEnabled,
   } = input;
 
   if (trackLengthM <= 0) return NEUTRAL_ADVISORY_STATE;
@@ -619,6 +886,25 @@ export const computeDrivingAdvisory = (
         )
       : 0;
 
+  const exit = cornerExitCallsEnabled
+    ? resolveCornerExit(
+        cornerTargets,
+        currentDistPct,
+        trackLengthM,
+        currentThrottle,
+        reference,
+        steeringUnsettled,
+        previous
+      )
+    : IDLE_EXIT_BOOKKEEPING;
+
+  const exitState: Omit<ExitBookkeeping, 'advisory'> = {
+    exitCornerPct: exit.exitCornerPct,
+    exitThrottleOpenPct: exit.exitThrottleOpenPct,
+    exitLateM: exit.exitLateM,
+    exitThrottleDeficit: exit.exitThrottleDeficit,
+  };
+
   if (previous.advisory === 'brake' && previous.brakeCornerPct !== null) {
     const latchedTarget = cornerTargets.find(
       (target) => target.distPct === previous.brakeCornerPct
@@ -640,7 +926,7 @@ export const computeDrivingAdvisory = (
       currentSpeed > latchedTarget.targetSpeed * BRAKE_EXIT_SPEED_FACTOR;
 
     if (!apexPassed && stillOverspeed) {
-      return { ...previous, brakeUrgency: 1 };
+      return { ...previous, brakeUrgency: 1, ...exitState };
     }
   }
 
@@ -659,6 +945,7 @@ export const computeDrivingAdvisory = (
           advisory: 'brake',
           brakeCornerPct: nextTarget.distPct,
           brakeUrgency: 1,
+          ...exitState,
         };
       }
     }
@@ -675,6 +962,7 @@ export const computeDrivingAdvisory = (
         advisory: 'brake',
         brakeCornerPct: nextTarget?.distPct ?? null,
         brakeUrgency: 1,
+        ...exitState,
       };
     }
 
@@ -705,9 +993,22 @@ export const computeDrivingAdvisory = (
           advisory: 'brake',
           brakeCornerPct: nextTarget?.distPct ?? null,
           brakeUrgency: 1,
+          ...exitState,
         };
       }
     }
+  }
+
+  // The corner exit is judged on the throttle, not on the speed the throttle
+  // will produce later — and it takes precedence over the speed-based Gas check
+  // below, which is blind to this phase (the reference is not flat out yet).
+  if (exit.advisory !== null) {
+    return {
+      advisory: exit.advisory,
+      brakeCornerPct: null,
+      brakeUrgency,
+      ...exitState,
+    };
   }
 
   // Gas compares like-for-like driving states, so a different line/phase
@@ -750,7 +1051,12 @@ export const computeDrivingAdvisory = (
 
     if (underDriving) {
       if (!nextTarget || remainingToApexM === null) {
-        return { advisory: 'gas', brakeCornerPct: null, brakeUrgency };
+        return {
+          advisory: 'gas',
+          brakeCornerPct: null,
+          brakeUrgency,
+          ...exitState,
+        };
       }
 
       // Never advise Gas when the upcoming corner leaves too little braking
@@ -760,10 +1066,15 @@ export const computeDrivingAdvisory = (
         requiredBrakeDistanceM(currentSpeed, nextTarget) * GAS_MARGIN_FACTOR <
         remainingToApexM
       ) {
-        return { advisory: 'gas', brakeCornerPct: null, brakeUrgency };
+        return {
+          advisory: 'gas',
+          brakeCornerPct: null,
+          brakeUrgency,
+          ...exitState,
+        };
       }
     }
   }
 
-  return { ...NEUTRAL_ADVISORY_STATE, brakeUrgency };
+  return { ...NEUTRAL_ADVISORY_STATE, brakeUrgency, ...exitState };
 };

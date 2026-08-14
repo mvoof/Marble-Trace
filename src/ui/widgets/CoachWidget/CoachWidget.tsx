@@ -24,7 +24,7 @@ export const CoachWidget = observer(() => {
 
   return (
     <WidgetPanel gap={0} minWidth={0} className={styles.root}>
-      <CallRow />
+      {settings.showCallRow ? <CallRow /> : null}
 
       {settings.showTrace ? <SpeedTrace /> : null}
 

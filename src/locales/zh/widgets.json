@@ -483,8 +483,12 @@
     },
     "coach": {
       "call": "提示",
+      "showCallRow": "显示提示行",
+      "showCallRowDesc": "顶部的 BRAKE / GAS 提示行。关闭后仅保留曲线和读数。",
       "urgencyBar": "紧急度条",
       "urgencyBarDesc": "提示下方的条形图，显示下一个刹车区还有多近。",
+      "cornerExitCalls": "出弯提示",
+      "cornerExitCallsDesc": "以油门评判出弯：比参考圈晚开油多少米，以及还差多少踏板行程。车辆在修正时保持安静。",
       "brakeAccent": "刹车提示颜色",
       "brakeAccentDesc": "BRAKE 提示的颜色。",
       "gasAccent": "油门提示颜色",

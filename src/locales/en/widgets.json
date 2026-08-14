@@ -483,8 +483,12 @@
     },
     "coach": {
       "call": "Call",
+      "showCallRow": "Show Call",
+      "showCallRowDesc": "The BRAKE / GAS call row on top. Off leaves only the trace and the readouts.",
       "urgencyBar": "Urgency Bar",
       "urgencyBarDesc": "Bar under the call showing how close the next braking zone is.",
+      "cornerExitCalls": "Corner-Exit Calls",
+      "cornerExitCallsDesc": "Judge corner exits on the throttle: how many metres later than the reference you opened it, and how much pedal is missing. Stays quiet while the car is being corrected.",
       "brakeAccent": "Brake Accent",
       "brakeAccentDesc": "Color of the BRAKE call.",
       "gasAccent": "Gas Accent",

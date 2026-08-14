@@ -8,6 +8,7 @@ import {
   getAverageTireWear,
   interpolateReferenceSample,
   isConditionMismatch,
+  isSteeringUnsettled,
   NEUTRAL_ADVISORY_STATE,
 } from './driving-coach-utils';
 
@@ -62,6 +63,10 @@ const baseAdvisoryInput = {
   currentSteeringWheelAngle: 0,
   currentLatAccel: null,
   currentLongAccel: null,
+  steeringUnsettled: false,
+  // Off by default so the existing speed-based cases read the branch they were
+  // written for; the corner-exit block below turns it on explicitly.
+  cornerExitCallsEnabled: false,
 };
 
 describe('interpolateReferenceSample', () => {
@@ -83,6 +88,13 @@ describe('extractCornerTargets', () => {
     expect(cornerTargets).toHaveLength(1);
     expect(cornerTargets[0].targetSpeed).toBeCloseTo(10, 0);
     expect(cornerTargets[0].brakingDecel).toBeGreaterThan(0);
+  });
+
+  it('records the corner exit: where the reference got back on the throttle, and where the phase ends', () => {
+    // The fixture reference opens the throttle at bucket 460, and the zone runs
+    // EXIT_TAIL_M (100 m = 100 buckets here) past its full-throttle point.
+    expect(cornerTargets[0].throttleOpenPct).toBeCloseTo(0.46, 2);
+    expect(cornerTargets[0].exitEndPct).toBeCloseTo(0.56, 2);
   });
 
   it('records where the reference driver first pressed the brake', () => {
@@ -403,6 +415,118 @@ describe('computeDrivingAdvisory', () => {
     );
 
     expect(state.advisory).toBe('neutral');
+  });
+});
+
+describe('computeDrivingAdvisory — corner exit', () => {
+  // Out of the fixture corner: apex at 0.45, reference on the throttle at 0.46.
+  const exitInput = {
+    ...baseAdvisoryInput,
+    cornerExitCallsEnabled: true,
+    currentSpeed: 20,
+    currentThrottle: 0,
+  };
+
+  it('advises gas while still off the power past the reference opening point, counting the metres up', () => {
+    const state = computeDrivingAdvisory(
+      { ...exitInput, currentDistPct: 0.48 },
+      NEUTRAL_ADVISORY_STATE
+    );
+
+    expect(state.advisory).toBe('gas');
+    expect(state.exitLateM).toBeCloseTo(20, 0);
+    expect(state.exitCornerPct).toBeCloseTo(0.45, 2);
+  });
+
+  it('stays quiet within the call threshold of the reference opening point', () => {
+    const state = computeDrivingAdvisory(
+      { ...exitInput, currentDistPct: 0.462 },
+      NEUTRAL_ADVISORY_STATE
+    );
+
+    expect(state.advisory).toBe('neutral');
+  });
+
+  it('freezes the figure at the point the throttle was actually opened', () => {
+    const opened = computeDrivingAdvisory(
+      { ...exitInput, currentDistPct: 0.48, currentThrottle: 1 },
+      NEUTRAL_ADVISORY_STATE
+    );
+
+    expect(opened.exitThrottleOpenPct).toBeCloseTo(0.48, 3);
+
+    // 40 m further down the exit the number must not have moved.
+    const later = computeDrivingAdvisory(
+      { ...exitInput, currentDistPct: 0.52, currentThrottle: 1 },
+      opened
+    );
+
+    expect(later.exitLateM).toBeCloseTo(20, 0);
+  });
+
+  it('calls gas on a pedal deficit once on the power at the reference point', () => {
+    const state = computeDrivingAdvisory(
+      { ...exitInput, currentDistPct: 0.5, currentThrottle: 0.5 },
+      {
+        ...NEUTRAL_ADVISORY_STATE,
+        exitCornerPct: cornerTargets[0].distPct,
+        exitThrottleOpenPct: 0.46,
+      }
+    );
+
+    expect(state.advisory).toBe('gas');
+    expect(state.exitLateM).toBeNull();
+    expect(state.exitThrottleDeficit).toBeCloseTo(0.5, 2);
+  });
+
+  it('reports grip instead of a call while the car is being corrected', () => {
+    const state = computeDrivingAdvisory(
+      { ...exitInput, currentDistPct: 0.48, steeringUnsettled: true },
+      NEUTRAL_ADVISORY_STATE
+    );
+
+    expect(state.advisory).toBe('grip');
+  });
+
+  it('produces no exit bookkeeping at all when the calls are switched off', () => {
+    const state = computeDrivingAdvisory(
+      { ...exitInput, cornerExitCallsEnabled: false, currentDistPct: 0.48 },
+      NEUTRAL_ADVISORY_STATE
+    );
+
+    expect(state.advisory).toBe('neutral');
+    expect(state.exitLateM).toBeNull();
+    expect(state.exitCornerPct).toBeNull();
+  });
+
+  it('starts clean at the next corner instead of carrying the previous exit', () => {
+    const state = computeDrivingAdvisory(
+      { ...exitInput, currentDistPct: 0.48 },
+      {
+        ...NEUTRAL_ADVISORY_STATE,
+        exitCornerPct: 0.9,
+        exitThrottleOpenPct: 0.91,
+      }
+    );
+
+    expect(state.exitCornerPct).toBeCloseTo(0.45, 2);
+    expect(state.exitThrottleOpenPct).toBeNull();
+  });
+});
+
+describe('isSteeringUnsettled', () => {
+  it('flags repeated corrections and ignores a smooth arc', () => {
+    const sawtooth = [0, 0.1, 0, 0.1, 0, 0.1, 0];
+    const arc = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6];
+
+    expect(isSteeringUnsettled(sawtooth)).toBe(true);
+    expect(isSteeringUnsettled(arc)).toBe(false);
+  });
+
+  it('ignores wobble below the correction threshold', () => {
+    const noise = [0, 0.005, 0, 0.005, 0, 0.005, 0];
+
+    expect(isSteeringUnsettled(noise)).toBe(false);
   });
 });
 

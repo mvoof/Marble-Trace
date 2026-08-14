@@ -398,6 +398,8 @@ export interface EnginePanelWidgetSettings {
 export type CoachTraceChannel = 'speed' | 'brake';
 
 export interface CoachWidgetSettings {
+  /** The advisory call row on top. Off leaves the trace and the readouts alone. */
+  showCallRow: boolean;
   /** Draw the speed trace under the call row. Off leaves just the call row, and the plate shrinks to it. */
   showTrace: boolean;
   /** Which pair of traces the chart draws. */
@@ -406,6 +408,8 @@ export interface CoachWidgetSettings {
   windowMeters: number;
   /** Brake urgency bar under the call row. */
   showUrgencyBar: boolean;
+  /** Judge corner exits on the throttle: how late it was opened and how much pedal is missing. */
+  showCornerExitCalls: boolean;
   /** Current speed against the best lap's speed at this point, under the trace. */
   showSpeed: boolean;
   /** Lap time of the stored reference lap the trace is compared against. */

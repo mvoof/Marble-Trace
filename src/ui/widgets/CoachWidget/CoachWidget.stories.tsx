@@ -75,6 +75,10 @@ interface StoryArgs {
   showReferenceLapTime: boolean;
   wetReference: boolean;
   traceChannel: CoachWidgetSettings['traceChannel'];
+  /** Metres later than the reference this exit's throttle was opened, or null outside an exit. */
+  exitLateM: number | null;
+  /** Pedal missing against the reference inside a corner exit, 0-1. */
+  exitThrottleDeficit: number;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -115,6 +119,9 @@ const meta: Meta<StoryArgs> = {
 
       store.drivingCoachWidget.displayedAdvisory = args.advisory;
       store.drivingCoachWidget.displayedBrakeUrgency = args.brakeUrgency;
+      store.drivingCoachWidget.displayedExitLateM = args.exitLateM;
+      store.drivingCoachWidget.displayedExitThrottleDeficit =
+        args.exitThrottleDeficit;
 
       // Replay this lap up to the car's position, so the trace behind it has
       // something recorded to compare against the reference.
@@ -154,6 +161,8 @@ const meta: Meta<StoryArgs> = {
       showReferenceLapTime: true,
       wetReference: false,
       traceChannel: 'speed',
+      exitLateM: null,
+      exitThrottleDeficit: 0,
     },
   }),
 };
@@ -185,6 +194,32 @@ export const GasCall: Story = {
     advisory: 'gas',
     distPct: CORNER_CENTER_PCT + 0.03,
     ownApexSpeed: APEX_SPEED_MPS + 8,
+  },
+};
+
+/** Out of the corner and still off the power — the metres count up until the throttle opens. */
+export const LateOnThrottle: Story = {
+  args: {
+    advisory: 'gas',
+    distPct: CORNER_CENTER_PCT + 0.02,
+    exitLateM: 14,
+  },
+};
+
+/** On the power at the reference's own point, but carrying less of it. */
+export const ExitThrottleDeficit: Story = {
+  args: {
+    advisory: 'gas',
+    distPct: CORNER_CENTER_PCT + 0.03,
+    exitThrottleDeficit: 0.18,
+  },
+};
+
+/** The car is being caught — no pedal advice applies, so the coach says so instead. */
+export const UnsettledCar: Story = {
+  args: {
+    advisory: 'grip',
+    distPct: CORNER_CENTER_PCT + 0.02,
   },
 };
 
