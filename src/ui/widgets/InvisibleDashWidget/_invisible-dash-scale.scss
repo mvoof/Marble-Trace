@@ -1,0 +1,35 @@
+// Numbers shared by every Invisible Dash stylesheet.
+//
+// The strip is laid out at twice its final size and scaled back down in JS
+// (SUPERSAMPLE in invisible-dash-utils), so the tilted layer is rasterized from
+// a supersampled bitmap and the glyphs stay sharp. Every size in these files is
+// doubled for that reason — never add a plain px value there.
+$ss: 2;
+
+// The container the compact rules query. Named so a rule in a sub-component's
+// stylesheet says out loud which ancestor it is measuring.
+$container: invisibleDash;
+
+// Widths of the widget at which the layout changes: at `compact` it drops its
+// captions, at `tight` the denominators and the shift bar go too. Everything the
+// user asked to see stays — only the decoration around it is spent.
+//
+// In em, and the container's own font-size is ws(10) — so the thresholds follow
+// the readout's scale. Narrowing the widget only ever eats the empty middle;
+// these fire when there is no middle left to eat, whatever size the digits are.
+$compact-max: 56em;
+$tight-max: 38em;
+// What one em is worth on the container, at scale 1.
+$container-em: 10;
+
+/**
+ * Keeps a size from following --wfs all the way down: `$scaled` is the normal
+ * supersampled value, `$floor-px` the smallest it may ever render at on screen.
+ *
+ * The floor is divided by --idash-scale — the factor the strip's own transform
+ * shrinks by, supersampling and the depth tilt included — so it is a floor on
+ * what the driver actually sees, not on a layout number the transform then eats.
+ */
+@function floor-size($scaled, $floor-px) {
+  @return max(#{$scaled}, calc(#{$floor-px * 1px} / var(--idash-scale, 0.5)));
+}

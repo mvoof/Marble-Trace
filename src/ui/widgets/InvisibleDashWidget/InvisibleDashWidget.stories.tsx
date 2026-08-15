@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type {
+  InvisibleDashBackdropScope,
   InvisibleDashRenderMode,
   InvisibleDashWidgetSettings,
 } from '@/types/widget-settings';
@@ -14,10 +15,13 @@ interface StoryArgs {
   depth: number;
   renderMode: InvisibleDashRenderMode;
   backdropColor: string;
+  backdropScope: InvisibleDashBackdropScope;
   bloomIntensity: number;
 }
 
 const MPS_PER_KMH = 3.6;
+const DESIGN_WIDTH = 900;
+const DESIGN_HEIGHT = 200;
 
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/InvisibleDashWidget',
@@ -25,8 +29,8 @@ const meta: Meta<StoryArgs> = {
     widget: InvisibleDashWidget,
     seedSnapshot: true,
     size: {
-      width: 900,
-      height: 200,
+      width: DESIGN_WIDTH,
+      height: DESIGN_HEIGHT,
       background: 'transparent',
       widgetBg: 'transparent',
       border: 'none',
@@ -36,6 +40,7 @@ const meta: Meta<StoryArgs> = {
         depth: args.depth,
         renderMode: args.renderMode,
         backdropColor: args.backdropColor,
+        backdropScope: args.backdropScope,
         bloomIntensity: args.bloomIntensity,
       } as Partial<InvisibleDashWidgetSettings>);
 
@@ -57,6 +62,7 @@ const meta: Meta<StoryArgs> = {
       depth: 45,
       renderMode: 'projection',
       backdropColor: 'rgba(0, 0, 0, 0)',
+      backdropScope: 'clusters',
       bloomIntensity: 60,
     },
     argTypes: {
@@ -66,6 +72,7 @@ const meta: Meta<StoryArgs> = {
       depth: { control: { type: 'range', min: 0, max: 100, step: 5 } },
       renderMode: { control: 'radio', options: ['projection', 'contour'] },
       backdropColor: { control: 'color' },
+      backdropScope: { control: 'radio', options: ['clusters', 'full'] },
       bloomIntensity: { control: { type: 'range', min: 0, max: 100, step: 5 } },
       backdropOpacity: {
         control: { type: 'range', min: 0, max: 100, step: 5 },
@@ -100,6 +107,24 @@ export const Contour: Story = {
 // background — trees, kerbs, a car right in front.
 export const BackdropPlate: Story = {
   args: { backdropColor: 'rgba(0, 0, 0, 0.55)' },
+};
+
+// One plate behind the whole strip instead of one per cluster — it lies in the
+// strip's own tilted plane, so it foreshortens along with the digits.
+export const FullBackdrop: Story = {
+  args: { backdropColor: 'rgba(0, 0, 0, 0.55)', backdropScope: 'full' },
+};
+
+// Half width at the same height: the digits stay exactly the size they are in
+// Default — all the narrowing has eaten is the empty middle — and the captions
+// go once the clusters meet.
+export const Compact: Story = {
+  parameters: { widgetFrame: { width: 440 } },
+};
+
+// Narrow enough that the shift bar and the /total denominators go too.
+export const Tight: Story = {
+  parameters: { widgetFrame: { width: 330 } },
 };
 
 export const ShiftZone: Story = {

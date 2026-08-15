@@ -562,7 +562,11 @@
       "classPositionDesc": "Count the position within your own class instead of the whole field.",
       "backdrop": "Backdrop",
       "backdropColor": "Backdrop Color",
-      "backdropColorDesc": "Wash behind the digits, alpha included. It covers the clusters only — the middle of the strip stays clear."
+      "backdropColorDesc": "Wash behind the digits, alpha included. Where it lands is set below.",
+      "backdropScope": "Backdrop Area",
+      "scopeClusters": "Clusters",
+      "scopeFull": "Whole strip",
+      "backdropScopeDesc": "Clusters leaves the middle of the strip clear. Whole strip paints one plate behind everything, tilted along with the digits."
     }
   },
   "streamChat": {

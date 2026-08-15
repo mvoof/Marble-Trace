@@ -1,6 +1,4 @@
-// Sizes are doubled: the whole strip is laid out supersampled, see
-// InvisibleDashWidget.module.scss.
-$ss: 2;
+@use '../invisible-dash-scale' as *;
 
 .root {
   display: flex;
@@ -40,4 +38,21 @@ $ss: 2;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+// Narrow widget: the words go, the numbers stop shrinking. A caption reads as
+// half a glyph at this width anyway, and what it labels is unmistakable.
+@container #{$container} (max-width: #{$compact-max}) {
+  .caption,
+  .unit {
+    display: none;
+  }
+
+  .rpm {
+    font-size: floor-size(#{wfs(26 * $ss)}, 13);
+  }
+
+  .speed {
+    font-size: floor-size(#{wfs(64 * $ss)}, 26);
+  }
 }

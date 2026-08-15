@@ -75,6 +75,8 @@ export const SUPERSAMPLE = 2;
 export interface DepthTransform {
   transform: string;
   opacity: number;
+  /** The factor the transform shrinks by — the stylesheets floor sizes against it. */
+  scale: number;
 }
 
 export const computeDepthTransform = (depth: number): DepthTransform => {
@@ -89,6 +91,7 @@ export const computeDepthTransform = (depth: number): DepthTransform => {
   return {
     transform: `scale(${scale.toFixed(4)}) rotateX(${tilt.toFixed(2)}deg)`,
     opacity: 1 - amount * MAX_FADE,
+    scale,
   };
 };
 
@@ -112,22 +115,35 @@ const HALO_RADIUS_PX = 34;
 const CORE_ALPHA = 0.9;
 const HALO_ALPHA = 0.5;
 
+// The glow radii are absolute px, so on a shrunk widget the halo would spread
+// several glyph widths wide and swallow the digits it is meant to lift. It
+// follows the widget's own scale instead, with a floor so it never disappears
+// on a small dash.
+const MIN_BLOOM_SCALE = 0.5;
+
 /**
  * Two-layer bloom in the projection tint: a tight core and a wide halo, the way
  * a real head-up display scatters in the glass. Contour mode passes none.
+ * `readoutScale` is the widget's height over its design height — what the
+ * readout itself is sized from.
  */
-export const computeBloom = (tint: string, intensity: number): string => {
+export const computeBloom = (
+  tint: string,
+  intensity: number,
+  readoutScale: number
+): string => {
   const amount = Math.min(Math.max(intensity, 0), 100) / 100;
 
   if (amount === 0) {
     return 'none';
   }
 
+  const spread = amount * Math.min(Math.max(readoutScale, MIN_BLOOM_SCALE), 1);
   const [red, green, blue] = tintToRgb(tint);
   const core = `rgba(${red}, ${green}, ${blue}, ${(CORE_ALPHA * amount).toFixed(2)})`;
   const halo = `rgba(${red}, ${green}, ${blue}, ${(HALO_ALPHA * amount).toFixed(2)})`;
 
-  return `0 0 ${(CORE_RADIUS_PX * amount).toFixed(1)}px ${core}, 0 0 ${(HALO_RADIUS_PX * amount).toFixed(1)}px ${halo}`;
+  return `0 0 ${(CORE_RADIUS_PX * spread).toFixed(1)}px ${core}, 0 0 ${(HALO_RADIUS_PX * spread).toFixed(1)}px ${halo}`;
 };
 
 export interface BackdropStyle {
@@ -136,8 +152,8 @@ export interface BackdropStyle {
 
 /**
  * The plate behind the digits: the color's own alpha is the whole treatment.
- * It sits on the clusters, never on the strip — the empty middle is the point
- * of the widget.
+ * Where it lands is the user's call (`backdropScope`): on the clusters, leaving
+ * the empty middle clear, or on the whole strip.
  *
  * There is deliberately no backdrop blur here. The overlay is a transparent
  * window: Windows composites the sim's frame *underneath* it, so the webview

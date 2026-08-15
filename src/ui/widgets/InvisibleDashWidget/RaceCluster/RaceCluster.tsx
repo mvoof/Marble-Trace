@@ -17,7 +17,8 @@ import styles from './RaceCluster.module.scss';
 const EMPTY_VALUE = '—';
 
 interface RaceClusterProps {
-  backdrop: BackdropStyle;
+  /** Absent when the wash is painted on the whole strip instead. */
+  backdrop?: BackdropStyle;
 }
 
 export const RaceCluster = observer(({ backdrop }: RaceClusterProps) => {

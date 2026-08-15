@@ -26,6 +26,7 @@ export type RpmIndicatorMode = 'fill' | 'comb' | 'glow' | 'off';
 
 export type InvisibleDashRenderMode = 'projection' | 'contour';
 export type InvisibleDashRpmFormat = 'absolute' | 'percent';
+export type InvisibleDashBackdropScope = 'clusters' | 'full';
 
 export interface InvisibleDashWidgetSettings {
   showSpeed: boolean;
@@ -47,6 +48,12 @@ export interface InvisibleDashWidgetSettings {
    * its own alpha, so a fully transparent value leaves the digits on bare glass.
    */
   backdropColor: string;
+  /**
+   * Where the wash is painted: behind each cluster, or behind the whole strip.
+   * 'full' keeps the plate in the strip's own tilted plane, so it foreshortens
+   * with the digits instead of reading as a flat panel on the glass.
+   */
+  backdropScope: InvisibleDashBackdropScope;
   rpmColorLow: string;
   rpmColorMid: string;
   rpmColorHigh: string;

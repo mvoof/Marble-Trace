@@ -1,6 +1,4 @@
-// Sizes are doubled: the whole strip is laid out supersampled, see
-// InvisibleDashWidget.module.scss.
-$ss: 2;
+@use '../invisible-dash-scale' as *;
 
 .track {
   position: relative;
@@ -15,4 +13,19 @@ $ss: 2;
 .fill {
   position: absolute;
   inset: 0 100% 0 0;
+}
+
+// A sub-pixel bar is a smudge, not a signal — it keeps a minimum thickness.
+@container #{$container} (max-width: #{$compact-max}) {
+  .track {
+    height: floor-size(#{ws(3 * $ss)}, 2);
+  }
+}
+
+// Tighter still: the bar goes. The RPM number and the colored gear digit carry
+// the same signal, and the width they need is what is left.
+@container #{$container} (max-width: #{$tight-max}) {
+  .track {
+    display: none;
+  }
 }

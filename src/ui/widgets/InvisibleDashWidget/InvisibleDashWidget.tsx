@@ -7,6 +7,7 @@ import { useWidgetSettingsStore } from '@store/root-store-context';
 import { EngineCluster } from './EngineCluster/EngineCluster';
 import { GearReadout } from './GearReadout/GearReadout';
 import { RaceCluster } from './RaceCluster/RaceCluster';
+import { INVISIBLE_DASH_MANIFEST } from './manifest';
 import {
   computeBackdrop,
   computeBloom,
@@ -22,11 +23,20 @@ export const InvisibleDashWidget = observer(() => {
     widgetSettings.getSettings<InvisibleDashWidgetSettings>('invisible-dash');
 
   const isProjection = settings.renderMode === 'projection';
-  const { transform, opacity } = computeDepthTransform(settings.depth);
+  const { transform, opacity, scale } = computeDepthTransform(settings.depth);
+  // The readout is sized off the height (scaleFromHeight), and so is the glow —
+  // a halo keyed to the width would swell every time the dash was stretched.
+  const readoutScale =
+    settings.currentHeight / INVISIBLE_DASH_MANIFEST.designHeight;
   const bloom = isProjection
-    ? computeBloom(settings.projectionTint, settings.bloomIntensity)
+    ? computeBloom(
+        settings.projectionTint,
+        settings.bloomIntensity,
+        readoutScale
+      )
     : 'none';
   const backdrop = computeBackdrop(settings.backdropColor);
+  const isFullBackdrop = settings.backdropScope === 'full';
 
   return (
     <WidgetPanel
@@ -37,15 +47,20 @@ export const InvisibleDashWidget = observer(() => {
     >
       <div className={styles.stage}>
         <div
-          className={styles.strip}
+          className={`${styles.strip} ${isFullBackdrop ? styles.stripFilled : ''}`}
           style={{
             transform,
             opacity,
             textShadow: bloom,
             color: settings.textColor,
+            ['--idash-scale' as string]: scale,
+            ...(isFullBackdrop ? backdrop : null),
           }}
         >
-          <div className={styles.cluster} style={backdrop}>
+          <div
+            className={styles.cluster}
+            style={isFullBackdrop ? undefined : backdrop}
+          >
             <EngineCluster />
 
             {settings.showGear && (settings.showSpeed || settings.showRpm) && (
@@ -55,7 +70,7 @@ export const InvisibleDashWidget = observer(() => {
             <GearReadout />
           </div>
 
-          <RaceCluster backdrop={backdrop} />
+          <RaceCluster backdrop={isFullBackdrop ? undefined : backdrop} />
         </div>
       </div>
     </WidgetPanel>

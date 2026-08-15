@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ColorPicker, Segmented, Slider, Switch } from 'antd';
 
 import type {
+  InvisibleDashBackdropScope,
   InvisibleDashRenderMode,
   InvisibleDashRpmFormat,
   InvisibleDashWidgetSettings,
@@ -140,6 +141,34 @@ export const InvisibleDashSettingsPanel = observer(() => {
               }
             />
           </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.invisibleDash.backdropScope')}
+          </span>
+
+          <Segmented
+            block
+            value={settings.backdropScope}
+            options={[
+              {
+                label: t('settingsPanels.invisibleDash.scopeClusters'),
+                value: 'clusters',
+              },
+              {
+                label: t('settingsPanels.invisibleDash.scopeFull'),
+                value: 'full',
+              },
+            ]}
+            onChange={(value) =>
+              update({ backdropScope: value as InvisibleDashBackdropScope })
+            }
+          />
+
+          <div className={styles.fieldDesc} style={{ marginTop: 8 }}>
+            {t('settingsPanels.invisibleDash.backdropScopeDesc')}
+          </div>
         </div>
       </Card>
 

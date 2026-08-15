@@ -1,6 +1,4 @@
-// Sizes are doubled: the whole strip is laid out supersampled, see
-// InvisibleDashWidget.module.scss.
-$ss: 2;
+@use '../invisible-dash-scale' as *;
 
 .root {
   display: flex;
@@ -36,4 +34,33 @@ $ss: 2;
 .den {
   font-size: wfs(18 * $ss);
   color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+// The P and L prefixes on the values already say which number is which, so the
+// captions are what a narrow widget spends first.
+@container #{$container} (max-width: #{$compact-max}) {
+  .root {
+    padding: ws(4 * $ss) ws(8 * $ss);
+    gap: ws(2 * $ss);
+  }
+
+  .caption {
+    display: none;
+  }
+
+  .value {
+    font-size: floor-size(#{wfs(26 * $ss)}, 15);
+  }
+
+  .den {
+    font-size: floor-size(#{wfs(18 * $ss)}, 11);
+  }
+}
+
+// The field size and the race length do not change lap to lap — at this width
+// the driver's own position and lap are worth the whole column.
+@container #{$container} (max-width: #{$tight-max}) {
+  .den {
+    display: none;
+  }
 }

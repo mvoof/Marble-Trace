@@ -19,6 +19,7 @@ interface WidgetStorySize {
   borderRadius?: number | string;
   overflow?: string;
   border?: string;
+  scale?: number;
 }
 
 interface DefineWidgetStoriesOptions<Args> {

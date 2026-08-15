@@ -1,13 +1,15 @@
-// The strip is laid out at twice its final size and scaled back down in JS
-// (SUPERSAMPLE in invisible-dash-utils), so the tilted layer is rasterized from
-// a supersampled bitmap and the glyphs stay sharp. Every size below is doubled
-// for that reason — never add a plain px value here.
-$ss: 2;
+@use './invisible-dash-scale' as *;
 
 .root {
   width: 100%;
   height: 100%;
   padding: 0;
+  // The compact rules in every Invisible Dash stylesheet measure this box, not
+  // the viewport — the widget is the only thing whose width they care about.
+  container: #{$container} / inline-size;
+  // Only ever read as the em the compact thresholds are measured in — every
+  // glyph in the widget sets its own size.
+  font-size: ws($container-em);
 }
 
 .stage {
@@ -28,6 +30,7 @@ $ss: 2;
   // spread. Pre-multiplied by the supersample factor the JS transform divides
   // back out, and never shrunk: flex would otherwise pull it back to content.
   flex: 0 0 auto;
+  box-sizing: border-box;
   width: 100% * $ss;
   display: flex;
   align-items: center;
@@ -35,6 +38,14 @@ $ss: 2;
   transform-origin: center center;
   white-space: nowrap;
   font-family: $font-mono;
+}
+
+// Backdrop scope 'full': the wash sits on the strip itself, so it lies in the
+// same tilted plane as the digits and foreshortens with them. The clusters go
+// bare — two washes on top of each other would double the alpha.
+.stripFilled {
+  padding: ws(8 * $ss) ws(14 * $ss);
+  border-radius: radius(md);
 }
 
 .cluster {
@@ -61,4 +72,31 @@ $ss: 2;
 .contour .separator {
   background: rgba(0, 0, 0, 0.5);
   box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 50%, transparent);
+}
+
+// The empty middle is gone — the clusters have met. From here they sit centred
+// with a fixed gap and the decoration around the digits is what gets spent.
+@container #{$container} (max-width: #{$compact-max}) {
+  .strip {
+    justify-content: center;
+    gap: ws(20 * $ss);
+  }
+
+  .cluster {
+    padding: ws(4 * $ss) ws(8 * $ss);
+  }
+
+  .stripFilled {
+    padding: ws(4 * $ss) ws(10 * $ss);
+  }
+
+  .separator {
+    margin: 0 ws(8 * $ss);
+  }
+
+  // The stroke is a fraction of the glyph, and at this size the glyph has
+  // stopped shrinking — so the outline must stop growing relative to it.
+  .contour .strip {
+    -webkit-text-stroke-width: floor-size(#{ws(2.5 * $ss)}, 1.5);
+  }
 }

@@ -1,10 +1,14 @@
-// Sizes are doubled: the whole strip is laid out supersampled, see
-// InvisibleDashWidget.module.scss.
-$ss: 2;
+@use '../invisible-dash-scale' as *;
 
 .gear {
   font-size: wfs(72 * $ss);
   line-height: 1;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
+}
+
+@container #{$container} (max-width: #{$compact-max}) {
+  .gear {
+    font-size: floor-size(#{wfs(72 * $ss)}, 30);
+  }
 }
