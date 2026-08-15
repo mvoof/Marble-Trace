@@ -7,7 +7,6 @@
   gap: ws(4 * $ss);
   // Matches the left cluster's inset so both washes read as one treatment.
   padding: ws(8 * $ss) ws(14 * $ss);
-  border-radius: radius(md);
 }
 
 .row {
@@ -36,16 +35,11 @@
   color: color-mix(in srgb, currentColor 78%, transparent);
 }
 
-// The P and L prefixes on the values already say which number is which, so the
-// captions are what a narrow widget spends first.
+// Narrow widget: tighter inset, floors under the numbers, captions untouched.
 @container #{$container} (max-width: #{$compact-max}) {
   .root {
     padding: ws(4 * $ss) ws(8 * $ss);
     gap: ws(2 * $ss);
-  }
-
-  .caption {
-    display: none;
   }
 
   .value {
@@ -54,13 +48,5 @@
 
   .den {
     font-size: floor-size(#{wfs(18 * $ss)}, 11);
-  }
-}
-
-// The field size and the race length do not change lap to lap — at this width
-// the driver's own position and lap are worth the whole column.
-@container #{$container} (max-width: #{$tight-max}) {
-  .den {
-    display: none;
   }
 }

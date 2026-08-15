@@ -45,6 +45,7 @@ export const INVISIBLE_DASH_MANIFEST: WidgetManifest = {
     colorizeRpmByZone: true,
     colorizeGearByZone: false,
     depth: 45,
+    curvature: 30,
     rpmFormat: 'absolute',
     useLivePositions: true,
     classPositionInMulticlass: true,

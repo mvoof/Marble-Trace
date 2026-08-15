@@ -65,6 +65,11 @@ export interface InvisibleDashWidgetSettings {
   colorizeGearByZone: boolean;
   /** How far the strip is pushed into the scene, 0–100: tilt, shrink and fade. */
   depth: number;
+  /**
+   * How hard the readout wraps around the windscreen, 0–100: the two clusters
+   * yaw away from the driver and ride up toward the pillars.
+   */
+  curvature: number;
   rpmFormat: InvisibleDashRpmFormat;
   useLivePositions: boolean;
   classPositionInMulticlass: boolean;

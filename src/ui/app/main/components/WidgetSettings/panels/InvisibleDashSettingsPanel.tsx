@@ -126,6 +126,23 @@ export const InvisibleDashSettingsPanel = observer(() => {
             {t('settingsPanels.invisibleDash.distanceDesc')}
           </div>
         </div>
+
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.invisibleDash.curvature')}
+          </span>
+
+          <Slider
+            min={PERCENT_MIN}
+            max={PERCENT_MAX}
+            value={settings.curvature}
+            onChange={(value) => update({ curvature: value })}
+          />
+
+          <div className={styles.fieldDesc}>
+            {t('settingsPanels.invisibleDash.curvatureDesc')}
+          </div>
+        </div>
       </Card>
 
       <Card title={t('settingsPanels.invisibleDash.backdrop')}>

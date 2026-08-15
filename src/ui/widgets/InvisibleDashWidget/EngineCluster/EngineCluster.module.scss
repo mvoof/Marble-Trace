@@ -40,14 +40,10 @@
   color: color-mix(in srgb, currentColor 78%, transparent);
 }
 
-// Narrow widget: the words go, the numbers stop shrinking. A caption reads as
-// half a glyph at this width anyway, and what it labels is unmistakable.
+// Narrow widget: the numbers stop shrinking. The captions stay — the readout
+// keeps everything the driver asked to see, and it is the space around it that
+// the narrowing spends.
 @container #{$container} (max-width: #{$compact-max}) {
-  .caption,
-  .unit {
-    display: none;
-  }
-
   .rpm {
     font-size: floor-size(#{wfs(26 * $ss)}, 13);
   }

@@ -21,11 +21,3 @@
     height: floor-size(#{ws(3 * $ss)}, 2);
   }
 }
-
-// Tighter still: the bar goes. The RPM number and the colored gear digit carry
-// the same signal, and the width they need is what is left.
-@container #{$container} (max-width: #{$tight-max}) {
-  .track {
-    display: none;
-  }
-}

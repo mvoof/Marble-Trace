@@ -19,7 +19,11 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  perspective: ws(1400);
+  // Keyed to the widget's own width, not to --wfs: the strip spans that width,
+  // so a viewing distance tied to the height would flatten the trapezoid away
+  // every time the dash was stretched wide and squat. Clamped so the compact
+  // sizes do not swing into a fisheye.
+  perspective: clamp(ws(600), 155cqw, ws(2400));
   // The driver's eye sits above the strip, which lives down by the bonnet —
   // that vantage is what makes the far (lower) edge foreshorten.
   perspective-origin: 50% -20%;
@@ -28,24 +32,32 @@
 .strip {
   // The clusters sit on the widget's own edges — the widget's width is the
   // spread. Pre-multiplied by the supersample factor the JS transform divides
-  // back out, and never shrunk: flex would otherwise pull it back to content.
-  flex: 0 0 auto;
+  // back out.
+  //
+  // Positioned rather than laid out: at twice the stage's width the strip always
+  // overflows, and an overflowing flex item is not centred — the browser pushes
+  // it off to one side, which put the right-hand cluster past the edge. Half of
+  // its own size, taken back in the transform, centres it whatever it spans.
+  position: absolute;
+  left: 50%;
+  top: 50%;
   box-sizing: border-box;
-  width: 100% * $ss;
+  // The widget's width is the spread, and never less than the content: below
+  // that the strip grows to its own content instead of letting the right-hand
+  // cluster overflow past its box, which would put the readout off-centre just
+  // as the fit scale starts working.
+  min-width: 100% * $ss;
+  width: max-content;
   display: flex;
   align-items: center;
   justify-content: space-between;
   transform-origin: center center;
   white-space: nowrap;
   font-family: $font-mono;
-}
-
-// Backdrop scope 'full': the wash sits on the strip itself, so it lies in the
-// same tilted plane as the digits and foreshortens with them. The clusters go
-// bare — two washes on top of each other would double the alpha.
-.stripFilled {
+  // Carried whether or not a wash is painted on it: the backdrop area is a
+  // paint choice, and geometry that changed with it would move every glyph the
+  // moment the driver switched between the two.
   padding: ws(8 * $ss) ws(14 * $ss);
-  border-radius: radius(md);
 }
 
 .cluster {
@@ -54,7 +66,6 @@
   // Breathing room so the wash, when the user turns one on, never touches the
   // glyphs. With a transparent backdrop the padding is invisible.
   padding: ws(8 * $ss) ws(14 * $ss);
-  border-radius: radius(md);
 }
 
 .separator {
@@ -74,20 +85,21 @@
   box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 50%, transparent);
 }
 
-// The empty middle is gone — the clusters have met. From here they sit centred
-// with a fixed gap and the decoration around the digits is what gets spent.
+// The empty middle is nearly gone. The clusters keep their grip on the two
+// edges — never re-centred, or narrowing the widget would jerk them inward
+// instead of just closing the gap — and it is the decoration around the digits
+// that gets spent from here on. The gap is only a floor for when they meet.
 @container #{$container} (max-width: #{$compact-max}) {
   .strip {
-    justify-content: center;
     gap: ws(20 * $ss);
+  }
+
+  .strip {
+    padding: ws(4 * $ss) ws(10 * $ss);
   }
 
   .cluster {
     padding: ws(4 * $ss) ws(8 * $ss);
-  }
-
-  .stripFilled {
-    padding: ws(4 * $ss) ws(10 * $ss);
   }
 
   .separator {

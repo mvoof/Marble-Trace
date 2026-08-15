@@ -10,15 +10,13 @@ $ss: 2;
 // stylesheet says out loud which ancestor it is measuring.
 $container: invisibleDash;
 
-// Widths of the widget at which the layout changes: at `compact` it drops its
-// captions, at `tight` the denominators and the shift bar go too. Everything the
-// user asked to see stays — only the decoration around it is spent.
+// Width at which the readout stops having empty middle to give away: from here
+// the insets tighten and the digits stop following the scale down. Nothing is
+// ever hidden — narrowing only ever spends space, never content.
 //
-// In em, and the container's own font-size is ws(10) — so the thresholds follow
-// the readout's scale. Narrowing the widget only ever eats the empty middle;
-// these fire when there is no middle left to eat, whatever size the digits are.
+// In em, and the container's own font-size is ws(10), so the threshold follows
+// the readout's scale whatever size the digits are.
 $compact-max: 56em;
-$tight-max: 38em;
 // What one em is worth on the container, at scale 1.
 $container-em: 10;
 

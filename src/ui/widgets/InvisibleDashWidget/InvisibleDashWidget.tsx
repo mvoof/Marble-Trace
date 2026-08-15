@@ -11,13 +11,18 @@ import { INVISIBLE_DASH_MANIFEST } from './manifest';
 import {
   computeBackdrop,
   computeBloom,
+  computeCurvature,
   computeDepthTransform,
+  curvatureInset,
 } from './invisible-dash-utils';
+
+import { useStripFit } from './use-strip-fit';
 
 import styles from './InvisibleDashWidget.module.scss';
 
 export const InvisibleDashWidget = observer(() => {
   const widgetSettings = useWidgetSettingsStore();
+  const { stripRef, fit } = useStripFit();
 
   const settings =
     widgetSettings.getSettings<InvisibleDashWidgetSettings>('invisible-dash');
@@ -35,8 +40,11 @@ export const InvisibleDashWidget = observer(() => {
         readoutScale
       )
     : 'none';
-  const backdrop = computeBackdrop(settings.backdropColor);
   const isFullBackdrop = settings.backdropScope === 'full';
+  const backdrop = computeBackdrop(settings.backdropColor);
+  const leftCurve = computeCurvature(settings.curvature, 'left');
+  const rightCurve = computeCurvature(settings.curvature, 'right');
+  const curveInset = curvatureInset(settings.curvature);
 
   return (
     <WidgetPanel
@@ -47,19 +55,24 @@ export const InvisibleDashWidget = observer(() => {
     >
       <div className={styles.stage}>
         <div
-          className={`${styles.strip} ${isFullBackdrop ? styles.stripFilled : ''}`}
+          ref={stripRef}
+          className={styles.strip}
           style={{
-            transform,
+            transform: `translate(-50%, -50%) scale(${fit}) ${transform}`,
             opacity,
             textShadow: bloom,
             color: settings.textColor,
-            ['--idash-scale' as string]: scale,
+            ['--idash-scale' as string]: scale * fit,
             ...(isFullBackdrop ? backdrop : null),
+            // Applied in both modes: the curve needs the same room whichever
+            // box is painted, and room that appeared with the paint would shift
+            // the digits on every switch.
+            ...curveInset,
           }}
         >
           <div
             className={styles.cluster}
-            style={isFullBackdrop ? undefined : backdrop}
+            style={{ ...(isFullBackdrop ? undefined : backdrop), ...leftCurve }}
           >
             <EngineCluster />
 
@@ -70,7 +83,10 @@ export const InvisibleDashWidget = observer(() => {
             <GearReadout />
           </div>
 
-          <RaceCluster backdrop={isFullBackdrop ? undefined : backdrop} />
+          <RaceCluster
+            backdrop={isFullBackdrop ? undefined : backdrop}
+            curve={rightCurve}
+          />
         </div>
       </div>
     </WidgetPanel>

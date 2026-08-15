@@ -72,6 +72,8 @@ const MAX_FADE = 0.45;
  */
 export const SUPERSAMPLE = 2;
 
+const DEG_PER_RAD = 180 / Math.PI;
+
 export interface DepthTransform {
   transform: string;
   opacity: number;
@@ -87,9 +89,15 @@ export const computeDepthTransform = (depth: number): DepthTransform => {
   // tilting the other way reads as a table top flipped away from you.
   const tilt = -amount * MAX_TILT_DEG;
   const scale = (1 - amount * MAX_SHRINK) / SUPERSAMPLE;
+  // A real head-up display pre-distorts its image so the driver, looking at the
+  // slanted glass, still reads undistorted glyphs. Without it the tilt costs
+  // height twice over — cos(55°) alone eats nearly half of it — and the far end
+  // of the range stops being readable at all. The trapezoid and the depth are
+  // the perspective's doing and survive this untouched.
+  const preStretch = 1 / Math.cos(tilt / DEG_PER_RAD);
 
   return {
-    transform: `scale(${scale.toFixed(4)}) rotateX(${tilt.toFixed(2)}deg)`,
+    transform: `scale(${scale.toFixed(4)}) rotateX(${tilt.toFixed(2)}deg) scaleY(${preStretch.toFixed(4)})`,
     opacity: 1 - amount * MAX_FADE,
     scale,
   };
@@ -146,6 +154,83 @@ export const computeBloom = (
   return `0 0 ${(CORE_RADIUS_PX * spread).toFixed(1)}px ${core}, 0 0 ${(HALO_RADIUS_PX * spread).toFixed(1)}px ${halo}`;
 };
 
+// A windscreen is not flat: its sides wrap away from the driver and ride up
+// toward the pillars. The two clusters sit near those sides, so giving each one
+// its own yaw, lift and roll bends the readout along the glass — three flat
+// segments approximating the curve, which keeps every glyph a real glyph
+// instead of a warped bitmap.
+const MAX_CURVE_YAW_DEG = 34;
+const MAX_CURVE_LIFT_PX = 22;
+const MAX_CURVE_ROLL_DEG = 5;
+// Each cluster carries its own perspective: the strip flattens its children
+// (it has an opacity of its own), so without this the yaw would read as a plain
+// horizontal squeeze with no depth to it.
+const CURVE_PERSPECTIVE_PX = 700;
+
+export interface CurvatureStyle {
+  transform: string;
+  transformOrigin: string;
+}
+
+/**
+ * How the cluster on `side` sits on the curved glass. Undefined at zero, so a
+ * flat readout carries no transform at all.
+ */
+export const computeCurvature = (
+  curvature: number,
+  side: 'left' | 'right'
+): CurvatureStyle | undefined => {
+  const amount = Math.min(Math.max(curvature, 0), 100) / 100;
+
+  if (amount === 0) {
+    return undefined;
+  }
+
+  const direction = side === 'left' ? 1 : -1;
+  const yaw = direction * MAX_CURVE_YAW_DEG * amount;
+  const lift = -MAX_CURVE_LIFT_PX * SUPERSAMPLE * amount;
+  const roll = -direction * MAX_CURVE_ROLL_DEG * amount;
+
+  return {
+    transform: `perspective(${CURVE_PERSPECTIVE_PX * SUPERSAMPLE}px) rotateY(${yaw.toFixed(2)}deg) translateY(${lift.toFixed(1)}px) rotateZ(${roll.toFixed(2)}deg)`,
+    // The hinge is the inner edge, the one that meets the middle of the glass.
+    transformOrigin: side === 'left' ? 'right center' : 'left center',
+  };
+};
+
+// The yawed clusters lean into the ends of the plate, so the sides want a
+// little more slack than the top and bottom.
+const CURVE_SIDE_SLACK = 1;
+/** Padding the plate's own inset already carries at scale 1, supersampled. */
+const PLATE_INSET_PX = 14 * SUPERSAMPLE;
+
+export interface CurvatureInset {
+  paddingBlock: string;
+  paddingInline: string;
+}
+
+/**
+ * Room the curve needs inside a full-strip plate: the clusters ride up and the
+ * bowed ends cut into the corners, and without this they climb straight out of
+ * the wash. Undefined on a flat readout — the stylesheet's own inset stands.
+ */
+export const curvatureInset = (
+  curvature: number
+): CurvatureInset | undefined => {
+  const amount = Math.min(Math.max(curvature, 0), 100) / 100;
+
+  if (amount === 0) {
+    return undefined;
+  }
+
+  const lift = MAX_CURVE_LIFT_PX * SUPERSAMPLE * amount;
+
+  return {
+    paddingBlock: `calc(8px * ${SUPERSAMPLE} * var(--wfs, 1) + ${lift.toFixed(1)}px)`,
+    paddingInline: `calc(${PLATE_INSET_PX}px * var(--wfs, 1) + ${(lift * CURVE_SIDE_SLACK).toFixed(1)}px)`,
+  };
+};
+
 export interface BackdropStyle {
   background: string;
 }
@@ -153,7 +238,9 @@ export interface BackdropStyle {
 /**
  * The plate behind the digits: the color's own alpha is the whole treatment.
  * Where it lands is the user's call (`backdropScope`): on the clusters, leaving
- * the empty middle clear, or on the whole strip.
+ * the empty middle clear, or on the whole strip. Its corners stay square either
+ * way — the readout's shape comes from the curvature and the tilt, and a
+ * rounded plate on top of those only reads as a second, competing shape.
  *
  * There is deliberately no backdrop blur here. The overlay is a transparent
  * window: Windows composites the sim's frame *underneath* it, so the webview

@@ -13,6 +13,7 @@ interface StoryArgs {
   rpm: number;
   gear: number;
   depth: number;
+  curvature: number;
   renderMode: InvisibleDashRenderMode;
   backdropColor: string;
   backdropScope: InvisibleDashBackdropScope;
@@ -38,6 +39,7 @@ const meta: Meta<StoryArgs> = {
     seed: (store, args) => {
       store.widgetSettings.updateUserSettings('invisible-dash', {
         depth: args.depth,
+        curvature: args.curvature,
         renderMode: args.renderMode,
         backdropColor: args.backdropColor,
         backdropScope: args.backdropScope,
@@ -60,6 +62,7 @@ const meta: Meta<StoryArgs> = {
       rpm: 6840,
       gear: 5,
       depth: 45,
+      curvature: 30,
       renderMode: 'projection',
       backdropColor: 'rgba(0, 0, 0, 0)',
       backdropScope: 'clusters',
@@ -70,6 +73,7 @@ const meta: Meta<StoryArgs> = {
       rpm: { control: { type: 'number' } },
       gear: { control: { type: 'number' } },
       depth: { control: { type: 'range', min: 0, max: 100, step: 5 } },
+      curvature: { control: { type: 'range', min: 0, max: 100, step: 5 } },
       renderMode: { control: 'radio', options: ['projection', 'contour'] },
       backdropColor: { control: 'color' },
       backdropScope: { control: 'radio', options: ['clusters', 'full'] },
@@ -116,15 +120,26 @@ export const FullBackdrop: Story = {
 };
 
 // Half width at the same height: the digits stay exactly the size they are in
-// Default — all the narrowing has eaten is the empty middle — and the captions
-// go once the clusters meet.
+// Default and the clusters keep the two edges — all the narrowing has eaten is
+// the empty middle.
 export const Compact: Story = {
   parameters: { widgetFrame: { width: 440 } },
 };
 
-// Narrow enough that the shift bar and the /total denominators go too.
+// Narrow enough that the clusters have met. Nothing is dropped, the insets are
+// just at their tightest.
 export const Tight: Story = {
-  parameters: { widgetFrame: { width: 330 } },
+  parameters: { widgetFrame: { width: 355 } },
+};
+
+// The glass at its most wrapped — the sides turn away and climb to the pillars.
+export const Curved: Story = {
+  args: { curvature: 100 },
+};
+
+// Flat glass: the readout is one straight plane, curvature off.
+export const FlatGlass: Story = {
+  args: { curvature: 0 },
 };
 
 export const ShiftZone: Story = {
