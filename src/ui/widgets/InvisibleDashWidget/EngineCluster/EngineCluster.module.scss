@@ -1,6 +1,4 @@
-// Sizes are doubled: the whole strip is laid out supersampled, see
-// InvisibleDashWidget.module.scss.
-$ss: 2;
+@use '../invisible-dash-scale' as *;
 
 .root {
   display: flex;
@@ -40,4 +38,17 @@ $ss: 2;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+// Narrow widget: the numbers stop shrinking. The captions stay — the readout
+// keeps everything the driver asked to see, and it is the space around it that
+// the narrowing spends.
+@container #{$container} (max-width: #{$compact-max}) {
+  .rpm {
+    font-size: floor-size(#{wfs(26 * $ss)}, 13);
+  }
+
+  .speed {
+    font-size: floor-size(#{wfs(64 * $ss)}, 26);
+  }
 }

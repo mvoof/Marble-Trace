@@ -22,6 +22,12 @@ interface WidgetDecoratorOptions {
    * stays transparent to mimic the real overlay.
    */
   widgetBg?: string;
+  /**
+   * Value for --wfs, the widget scale WidgetContainer derives from
+   * width / designWidth. Stories that shrink the frame have to pass it, or the
+   * content keeps rendering at design size inside a smaller box.
+   */
+  scale?: number;
 }
 
 const DEFAULT_BG = 'rgba(21, 22, 26, 0.8)';
@@ -42,6 +48,7 @@ export const widgetDecorator = (
     overflow = 'hidden',
     border = WIDGET_BORDER,
     widgetBg = background,
+    scale,
   } = options;
 
   const WidgetDecoratorWrapper = (Story: Parameters<Decorator>[0]) => (
@@ -56,6 +63,7 @@ export const widgetDecorator = (
           overflow,
           display,
           minWidth,
+          ['--wfs']: scale,
           ['--widget-bg']: widgetBg,
           ['--widget-border']: WIDGET_BORDER_COLOR,
         } as React.CSSProperties

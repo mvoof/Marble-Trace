@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type {
+  InvisibleDashBackdropScope,
   InvisibleDashRenderMode,
   InvisibleDashWidgetSettings,
 } from '@/types/widget-settings';
@@ -12,12 +13,16 @@ interface StoryArgs {
   rpm: number;
   gear: number;
   depth: number;
+  curvature: number;
   renderMode: InvisibleDashRenderMode;
   backdropColor: string;
+  backdropScope: InvisibleDashBackdropScope;
   bloomIntensity: number;
 }
 
 const MPS_PER_KMH = 3.6;
+const DESIGN_WIDTH = 900;
+const DESIGN_HEIGHT = 200;
 
 const meta: Meta<StoryArgs> = {
   title: 'Widgets/InvisibleDashWidget',
@@ -25,8 +30,8 @@ const meta: Meta<StoryArgs> = {
     widget: InvisibleDashWidget,
     seedSnapshot: true,
     size: {
-      width: 900,
-      height: 200,
+      width: DESIGN_WIDTH,
+      height: DESIGN_HEIGHT,
       background: 'transparent',
       widgetBg: 'transparent',
       border: 'none',
@@ -34,8 +39,10 @@ const meta: Meta<StoryArgs> = {
     seed: (store, args) => {
       store.widgetSettings.updateUserSettings('invisible-dash', {
         depth: args.depth,
+        curvature: args.curvature,
         renderMode: args.renderMode,
         backdropColor: args.backdropColor,
+        backdropScope: args.backdropScope,
         bloomIntensity: args.bloomIntensity,
       } as Partial<InvisibleDashWidgetSettings>);
 
@@ -55,8 +62,10 @@ const meta: Meta<StoryArgs> = {
       rpm: 6840,
       gear: 5,
       depth: 45,
+      curvature: 30,
       renderMode: 'projection',
       backdropColor: 'rgba(0, 0, 0, 0)',
+      backdropScope: 'clusters',
       bloomIntensity: 60,
     },
     argTypes: {
@@ -64,8 +73,10 @@ const meta: Meta<StoryArgs> = {
       rpm: { control: { type: 'number' } },
       gear: { control: { type: 'number' } },
       depth: { control: { type: 'range', min: 0, max: 100, step: 5 } },
+      curvature: { control: { type: 'range', min: 0, max: 100, step: 5 } },
       renderMode: { control: 'radio', options: ['projection', 'contour'] },
       backdropColor: { control: 'color' },
+      backdropScope: { control: 'radio', options: ['clusters', 'full'] },
       bloomIntensity: { control: { type: 'range', min: 0, max: 100, step: 5 } },
       backdropOpacity: {
         control: { type: 'range', min: 0, max: 100, step: 5 },
@@ -100,6 +111,35 @@ export const Contour: Story = {
 // background — trees, kerbs, a car right in front.
 export const BackdropPlate: Story = {
   args: { backdropColor: 'rgba(0, 0, 0, 0.55)' },
+};
+
+// One plate behind the whole strip instead of one per cluster — it lies in the
+// strip's own tilted plane, so it foreshortens along with the digits.
+export const FullBackdrop: Story = {
+  args: { backdropColor: 'rgba(0, 0, 0, 0.55)', backdropScope: 'full' },
+};
+
+// Half width at the same height: the digits stay exactly the size they are in
+// Default and the clusters keep the two edges — all the narrowing has eaten is
+// the empty middle.
+export const Compact: Story = {
+  parameters: { widgetFrame: { width: 440 } },
+};
+
+// Narrow enough that the clusters have met. Nothing is dropped, the insets are
+// just at their tightest.
+export const Tight: Story = {
+  parameters: { widgetFrame: { width: 355 } },
+};
+
+// The glass at its most wrapped — the sides turn away and climb to the pillars.
+export const Curved: Story = {
+  args: { curvature: 100 },
+};
+
+// Flat glass: the readout is one straight plane, curvature off.
+export const FlatGlass: Story = {
+  args: { curvature: 0 },
 };
 
 export const ShiftZone: Story = {

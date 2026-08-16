@@ -13,6 +13,10 @@ export const INVISIBLE_DASH_MANIFEST: WidgetManifest = {
   designWidth: 900,
   designHeight: 200,
   transparentContainer: true,
+  // Width is the spread between the two clusters, not a scale: narrowing the
+  // dash has to eat the empty middle and leave the digits the size they were.
+  // That leaves the height as what the readout is sized from.
+  scaleFromHeight: true,
   userSettings: {
     enabled: false,
     x: 300,
@@ -32,6 +36,7 @@ export const INVISIBLE_DASH_MANIFEST: WidgetManifest = {
     projectionTint: '#bfe3ff',
     textColor: '#ffffff',
     backdropColor: 'rgba(0, 0, 0, 0)',
+    backdropScope: 'clusters',
     rpmColorLow: '#10b981',
     rpmColorMid: '#eab308',
     rpmColorHigh: '#ef4444',
@@ -40,6 +45,7 @@ export const INVISIBLE_DASH_MANIFEST: WidgetManifest = {
     colorizeRpmByZone: true,
     colorizeGearByZone: false,
     depth: 45,
+    curvature: 30,
     rpmFormat: 'absolute',
     useLivePositions: true,
     classPositionInMulticlass: true,

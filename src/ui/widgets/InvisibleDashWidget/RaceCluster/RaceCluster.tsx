@@ -10,17 +10,20 @@ import {
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
-import type { BackdropStyle } from '../invisible-dash-utils';
+import type { BackdropStyle, CurvatureStyle } from '../invisible-dash-utils';
 
 import styles from './RaceCluster.module.scss';
 
 const EMPTY_VALUE = '—';
 
 interface RaceClusterProps {
-  backdrop: BackdropStyle;
+  /** Absent when the wash is painted on the whole strip instead. */
+  backdrop?: BackdropStyle;
+  /** How this side sits on the curved glass. Absent on a flat readout. */
+  curve?: CurvatureStyle;
 }
 
-export const RaceCluster = observer(({ backdrop }: RaceClusterProps) => {
+export const RaceCluster = observer(({ backdrop, curve }: RaceClusterProps) => {
   const player = usePlayerStore();
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
@@ -54,12 +57,12 @@ export const RaceCluster = observer(({ backdrop }: RaceClusterProps) => {
     !totalLapsStr || totalLapsStr.toLowerCase() === 'unlimited';
 
   return (
-    <div className={styles.root} style={backdrop}>
+    <div className={styles.root} style={{ ...backdrop, ...curve }}>
       {settings.showPosition && (
         <div className={styles.row}>
           <span className={styles.caption}>Pos</span>
           <span className={styles.value}>
-            {position != null ? `P${position}` : EMPTY_VALUE}
+            {position != null ? position : EMPTY_VALUE}
           </span>
           {total != null && <span className={styles.den}>/{total}</span>}
         </div>

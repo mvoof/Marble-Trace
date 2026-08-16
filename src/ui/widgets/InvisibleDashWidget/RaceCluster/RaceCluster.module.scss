@@ -1,6 +1,4 @@
-// Sizes are doubled: the whole strip is laid out supersampled, see
-// InvisibleDashWidget.module.scss.
-$ss: 2;
+@use '../invisible-dash-scale' as *;
 
 .root {
   display: flex;
@@ -9,7 +7,6 @@ $ss: 2;
   gap: ws(4 * $ss);
   // Matches the left cluster's inset so both washes read as one treatment.
   padding: ws(8 * $ss) ws(14 * $ss);
-  border-radius: radius(md);
 }
 
 .row {
@@ -36,4 +33,20 @@ $ss: 2;
 .den {
   font-size: wfs(18 * $ss);
   color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+// Narrow widget: tighter inset, floors under the numbers, captions untouched.
+@container #{$container} (max-width: #{$compact-max}) {
+  .root {
+    padding: ws(4 * $ss) ws(8 * $ss);
+    gap: ws(2 * $ss);
+  }
+
+  .value {
+    font-size: floor-size(#{wfs(26 * $ss)}, 15);
+  }
+
+  .den {
+    font-size: floor-size(#{wfs(18 * $ss)}, 11);
+  }
 }

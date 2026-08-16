@@ -562,7 +562,13 @@
       "classPositionDesc": "在自己的组别内计算名次，而不是整个场上。",
       "backdrop": "衬底",
       "backdropColor": "衬底颜色",
-      "backdropColorDesc": "数字后面的色块，含其透明度。只覆盖两侧模块——整行中间保持干净。"
+      "backdropColorDesc": "数字后面的色块，含其透明度。覆盖范围在下方设置。",
+      "backdropScope": "衢底范围",
+      "scopeClusters": "两侧模块",
+      "scopeFull": "整行",
+      "backdropScopeDesc": "“两侧模块”保持整行中间干净。“整行”则在全部内容后面画一块衢底，随数字一起倾斜。",
+      "curvature": "风挡弧度",
+      "curvatureDesc": "读数贴合玻璃的程度：两侧向外偏转并朝 A 柱抬起。"
     }
   },
   "streamChat": {
