@@ -62,7 +62,7 @@ export const RaceCluster = observer(({ backdrop, curve }: RaceClusterProps) => {
         <div className={styles.row}>
           <span className={styles.caption}>Pos</span>
           <span className={styles.value}>
-            {position != null ? `P${position}` : EMPTY_VALUE}
+            {position != null ? position : EMPTY_VALUE}
           </span>
           {total != null && <span className={styles.den}>/{total}</span>}
         </div>
