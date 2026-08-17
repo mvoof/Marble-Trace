@@ -45,9 +45,6 @@ const convertTemp = (celsius: number, system: UnitSystem): number =>
 export const convertPressure = (kpa: number, system: UnitSystem): number =>
   system === 'metric' ? kpa : kpa * KPA_TO_PSI;
 
-export const pressureUnit = (system: UnitSystem): string =>
-  system === 'metric' ? 'kPa' : 'PSI';
-
 const tempColor = (tempC: number | null | undefined): string => {
   if (tempC == null) return COLOR_EMPTY;
   if (tempC < TEMP_COLD_C) return COLOR_COLD;

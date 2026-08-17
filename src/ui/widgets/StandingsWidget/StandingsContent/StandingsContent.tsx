@@ -1,7 +1,6 @@
 import {
   useCallback,
   useEffect,
-  useRef,
   type MouseEvent,
   type WheelEvent,
 } from 'react';
@@ -159,21 +158,11 @@ export const StandingsContent = observer(() => {
   const groupKeys = allClassGroups.map((group) => group.classId);
   const groupKeysSignature = groupKeys.join();
 
-  const latestBounds = useRef(scrollBounds);
-  latestBounds.current = scrollBounds;
-
-  const latestGroupKeys = useRef(groupKeys);
-  latestGroupKeys.current = groupKeys;
-
-  const latestClassCount = useRef(visibleClassCount);
-  latestClassCount.current = visibleClassCount;
-
   useEffect(() => {
-    standingsWidget.setScrollBounds(
-      latestBounds.current,
-      latestGroupKeys.current,
-      latestClassCount.current
-    );
+    standingsWidget.setScrollBounds(scrollBounds, groupKeys, visibleClassCount);
+    // The Map and the key array are rebuilt every render, so the effect keys off
+    // their value signatures instead; the closure still holds the latest values.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [standingsWidget, boundsSignature, groupKeysSignature, visibleClassCount]);
 
   const visibleRows = (

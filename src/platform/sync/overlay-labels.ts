@@ -19,6 +19,3 @@ export const listOverlayWindowLabels = async (): Promise<string[]> => {
     .map((window) => window.label)
     .filter((label) => label.startsWith(OVERLAY_LABEL_PREFIX));
 };
-
-export const hasOverlayWindows = async (): Promise<boolean> =>
-  (await listOverlayWindowLabels()).length > 0;
