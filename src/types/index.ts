@@ -53,4 +53,4 @@ export interface TrackPoint {
 export type UnitSystem = 'metric' | 'imperial';
 
 /** UI language; `system` follows the OS locale. */
-export type AppLanguage = 'system' | 'en' | 'ru' | 'zh';
+export type AppLanguage = 'system' | 'en' | 'es' | 'ru' | 'zh';

@@ -1,4 +1,4 @@
-export const SUPPORTED_LANGUAGES = ['en', 'ru', 'zh'] as const;
+export const SUPPORTED_LANGUAGES = ['en', 'es', 'ru', 'zh'] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 const FALLBACK_LANGUAGE: SupportedLanguage = 'en';

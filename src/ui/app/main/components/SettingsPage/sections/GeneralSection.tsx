@@ -15,6 +15,7 @@ export const GeneralSection = observer(() => {
   const languageOptions: { value: AppLanguage; label: string }[] = [
     { value: 'system', label: t('settingsPage.language.system') },
     { value: 'en', label: 'English' },
+    { value: 'es', label: 'Español' },
     { value: 'ru', label: 'Русский' },
     { value: 'zh', label: '中文' },
   ];

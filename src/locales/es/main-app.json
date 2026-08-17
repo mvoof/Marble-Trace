@@ -1,0 +1,476 @@
+{
+  "mainWindow": {
+    "widgetModules": "Módulos de widgets"
+  },
+  "appHeader": {
+    "sections": {
+      "layouts": "Diseños",
+      "widgets": "Widgets",
+      "settings": "Ajustes"
+    }
+  },
+  "appStatus": {
+    "connectedTo": "CONECTADO A {{sim}}",
+    "waitingForTelemetry": "ESPERANDO TELEMETRÍA",
+    "systemError": "ERROR DEL SISTEMA",
+    "waitingForGame": "ESPERANDO A QUE ARRANQUE EL JUEGO"
+  },
+  "widgetList": {
+    "unavailable": "No disponible",
+    "defaultDescription": "Configura los ajustes del widget."
+  },
+  "releaseNotes": {
+    "whatsNew": "Novedades",
+    "title": "Novedades",
+    "titleWithVersion": "Novedades de la v{{version}}"
+  },
+  "settingsLock": {
+    "from-the-future": {
+      "title": "Tus ajustes se guardaron con una versión más nueva",
+      "description": "Esta versión no puede leerlos y no los sobrescribirá. Actualiza Marble Trace para recuperar tus diseños y asignaciones."
+    },
+    "too-old": {
+      "title": "Tus ajustes son demasiado antiguos para actualizarse automáticamente",
+      "description": "Se guardaron con una versión demasiado antigua para que esta compilación pueda convertirlos. El archivo se ha dejado intacto."
+    },
+    "corrupt": {
+      "title": "No se pudo leer tu archivo de ajustes",
+      "description": "Se ha dejado intacto para que puedas recuperarlo a mano. Marble Trace funciona con los valores por defecto y no lo sobrescribirá."
+    },
+    "reset": "Restablecer ajustes",
+    "resetConfirm": "¿Reemplazar el archivo de ajustes por los valores por defecto? Se perderán los diseños, widgets y asignaciones que contiene.",
+    "resetOk": "Restablecer y reiniciar",
+    "resetCancel": "Cancelar"
+  },
+  "updateBanner": {
+    "downloading": "Descargando actualización...",
+    "ready": "Actualización descargada. Reiniciando...",
+    "available": "La versión v{{version}} está disponible",
+    "updateAndRestart": "Actualizar y reiniciar"
+  },
+  "layoutEditor": {
+    "backToLayouts": "Volver a los diseños",
+    "toggleWidgetPanel": "Mostrar u ocultar el panel de widgets",
+    "newLayoutNamePlaceholder": "Nombre del nuevo diseño",
+    "create": "Crear",
+    "cancel": "Cancelar",
+    "saveName": "Guardar nombre",
+    "selectLayoutPlaceholder": "Selecciona un diseño…",
+    "newLayout": "Nuevo diseño",
+    "rename": "Renombrar",
+    "deleteLayoutConfirm": "¿Eliminar este diseño?",
+    "delete": "Eliminar",
+    "active": "Activo",
+    "applyLayoutTooltip": "Aplicar este diseño a la superposición",
+    "makeActive": "Activar",
+    "monitorTooltip": "Elige la pantalla que quieres editar, o míralas todas a la vez. Si eliges una pantalla que el diseño aún no cubre, se añade.",
+    "monitorPlaceholder": "Pantalla…",
+    "customResolutionOption": "Resolución personalizada...",
+    "customResolutionLabel": "Personalizada ({{width}}×{{height}})",
+    "lockAspectRatio": "Bloquear la relación de aspecto",
+    "unlockAspectRatio": "Desbloquear la relación de aspecto",
+    "bringToFront": "Traer al frente",
+    "sendToBack": "Enviar al fondo",
+    "quickPlacement": "Colocación rápida",
+    "backgroundImageAria": "Imagen de fondo del diseño",
+    "undoTooltip": "Deshacer (Ctrl+Z)",
+    "redoTooltip": "Rehacer (Ctrl+Y)",
+    "toggleGridTooltip": "Mostrar u ocultar la cuadrícula de alineación",
+    "gridSizeTooltip": "Tamaño de la cuadrícula",
+    "snapToGridTooltip": "Ajustar a la cuadrícula",
+    "exitFullscreen": "Salir de pantalla completa",
+    "fullscreenPreview": "Vista previa a pantalla completa",
+    "setBackgroundTooltip": "Definir el fondo del editor (por ejemplo, la vista de cabina)",
+    "clearBackgroundTooltip": "Quitar el fondo",
+    "widgetsPanelTitle": "Widgets",
+    "hidePanel": "Ocultar el panel",
+    "customResolutionModal": {
+      "title": "Resolución de pantalla personalizada",
+      "width": "Ancho (px)",
+      "height": "Alto (px)",
+      "apply": "Aplicar"
+    },
+    "editingMonitor": "Editando: {{monitor}}",
+    "monitorAdd": "añadir",
+    "moveToMonitor": "Mover a otro monitor",
+    "allMonitors": "Todos los monitores",
+    "removeMonitor": "Quitar el monitor del diseño",
+    "addRemoteScreen": "Pantalla remota",
+    "addRemoteScreenTooltip": "Añadir un móvil o una tablet como pantalla de este diseño",
+    "addRemoteScreenConfirm": "Añadir pantalla",
+    "remoteScreenNamePlaceholder": "Nombre de la pantalla, p. ej. Tablet del volante",
+    "remoteScreenDefaultName": "Pantalla remota",
+    "remoteScreenTag": "remota",
+    "arrangeRemoteScreens": "Ordenar las pantallas remotas",
+    "arrangeRemoteScreensTooltip": "Coloca las pantallas remotas en filas bajo el escritorio, widgets incluidos"
+  },
+  "layoutList": {
+    "moduleLabel": "Diseños",
+    "title": "Gestionar los diseños de widgets",
+    "subtitleAutoSwitch": "El cambio automático está activo. Los diseños se cargarán según la sesión de juego.",
+    "subtitleManual": "Selecciona un diseño para ver sus detalles. Haz doble clic en una tarjeta para abrirlo en el editor.",
+    "toggleAutoSwitchTooltip": "Manual: un solo diseño en todas partes. Automático por sesión: los diseños cambian solos según la sesión de juego.",
+    "modeManual": "Un diseño en todas partes",
+    "modeAuto": "Automático por sesión",
+    "newLayout": "Nuevo diseño",
+    "emptyLayout": "Diseño vacío",
+    "active": "Activo",
+    "assignedTo": "Asignado a {{session}}",
+    "manualActivationOnly": "Solo activación manual",
+    "manual": "Manual",
+    "widgetsCount_one": "{{count}} widget",
+    "widgetsCount_other": "{{count}} widgets",
+    "created": "Creado:",
+    "autoSwitchAssignment": "Asignación de cambio automático",
+    "activeMonitor": "Monitor activo",
+    "none": "Ninguno",
+    "resolution": "Resolución",
+    "activeWidgets": "Widgets activos",
+    "activateLayout": "Activar diseño",
+    "activateDisabledAutoSwitch": "El cambio automático está activado: los diseños cambian solos según la sesión. Desactívalo para activarlos a mano.",
+    "openEditor": "Abrir el editor",
+    "duplicateLayout": "Duplicar diseño",
+    "deleteLayoutConfirmTitle": "¿Eliminar este diseño?",
+    "deleteLayoutConfirmDescription": "Esta acción no se puede deshacer.",
+    "deleteLayout": "Eliminar diseño",
+    "emptySelection": "Selecciona un diseño para ver sus detalles y acciones",
+    "createNewLayout": "Crear un diseño nuevo",
+    "enterLayoutName": "Escribe el nombre del diseño...",
+    "sessions": {
+      "practice": "Entrenamiento",
+      "qualify": "Clasificación",
+      "race": "Carrera",
+      "garage": "Garaje"
+    },
+    "monitorsCount_one": "{{count}} monitor",
+    "monitorsCount_other": "{{count}} monitores",
+    "noMonitors": "Sin monitores",
+    "monitors": "Monitores",
+    "removeMonitor": "Quitar este monitor del diseño",
+    "monitorOffline": "no encontrado",
+    "totalWidgets": "Widgets en total",
+    "remoteNoDevice": "sin dispositivo"
+  },
+  "layoutWidgetPanel": {
+    "back": "Atrás",
+    "onMonitor": "en {{monitor}}"
+  },
+  "widgetWorkbench": {
+    "scenario": "Escenario",
+    "noWidgets": "No hay widgets disponibles."
+  },
+  "layoutCanvas": {
+    "move": "Mover",
+    "stepSize": "paso de {{size}}",
+    "large": "Grande",
+    "remove": "Quitar",
+    "loadingBackground": "Cargando el fondo...",
+    "allMonitors": "Todos los monitores"
+  },
+  "overlayWidgetPicker": {
+    "addWidget": "Añadir widget",
+    "search": "Buscar widgets",
+    "empty": "No queda nada por añadir",
+    "moveHere": "mover desde {{monitor}}",
+    "unavailable": "No disponible en este simulador"
+  },
+  "overlayCanvas": {
+    "exitEditMode": "Salir del modo edición",
+    "interactMode": "Modo interacción",
+    "interactModeHold": "Modo interacción — suelta {{key}} para salir",
+    "interactModeToggle": "Modo interacción — pulsa {{key}} para salir",
+    "layoutSwitched": "Diseño cambiado a «{{layout}}»"
+  },
+  "widgetSettingsPopup": {
+    "ariaLabel": "Ajustes de {{label}}",
+    "close": "Cerrar"
+  },
+  "widgetPreview": {
+    "noPreview": "No hay vista previa disponible"
+  },
+  "widgetSettings": {
+    "selectToConfigure": "Selecciona un widget para configurarlo",
+    "notFound": "Widget no encontrado",
+    "moduleConfig": "Configuración del módulo",
+    "layoutAndDimensions": "Posición y tamaño",
+    "positionX": "Posición X",
+    "positionY": "Posición Y",
+    "width": "Ancho (px)",
+    "height": "Alto (px)",
+    "layerDepth": "Profundidad de capa (Z-Index)",
+    "fontScale": "Tamaño del texto",
+    "fontScaleDesc": "Escala solo el texto, independientemente del ancho y el alto del widget",
+    "aesthetics": "Fondo y borde",
+    "background": "Fondo",
+    "border": "Borde"
+  },
+  "settingsPage": {
+    "moduleLabel": "Configuración",
+    "title": "Ajustes globales de la aplicación",
+    "language": {
+      "title": "Idioma",
+      "fieldLabel": "Idioma de la aplicación",
+      "system": "Idioma del sistema"
+    },
+    "widgetDisplayOverride": {
+      "title": "Visibilidad de los widgets",
+      "hideAllTitle": "Ocultar todos los widgets activos",
+      "hideAllDesc": "Interruptor global para ocultar o mostrar rápidamente todos los elementos de interfaz activados."
+    },
+    "startupBehavior": {
+      "title": "Comportamiento al arrancar",
+      "launchMinimizedTitle": "Arrancar minimizado",
+      "launchMinimizedDesc": "Inicia la aplicación minimizada en la barra de tareas."
+    },
+    "interactionMode": {
+      "title": "Modos de interacción",
+      "dragModeTitle": "Modo de arrastre",
+      "dragModeDesc": "Desbloquea los widgets para moverlos libremente por la pantalla.",
+      "interactModeTitle": "Modo interacción",
+      "interactModeDesc": "Permite que el ratón llegue a la superposición (desplazamiento, botones) sin desbloquear el arrastre de widgets. Mientras está activo, el juego no recibe el ratón.",
+      "interactHotkeyModeTitle": "Comportamiento de la tecla",
+      "interactHotkeyModeDesc": "Alternar activa y desactiva el modo; Mantener lo deja activo solo mientras la tecla está pulsada.",
+      "interactToggle": "Alternar",
+      "interactHold": "Mantener",
+      "interactAutoOffTitle": "Desactivación automática",
+      "interactAutoOffDesc": "Desactiva el modo interacción automáticamente para que el ratón vuelva al juego.",
+      "interactAutoOffNever": "Nunca",
+      "boundTo": "Asignado a {{accelerator}}"
+    },
+    "gameIntegration": {
+      "title": "Integración con el juego",
+      "autoHideTitle": "Ocultar automáticamente",
+      "autoHideDesc": "Oculta los widgets cuando el simulador no está en marcha."
+    },
+    "systemUnits": {
+      "title": "Unidades",
+      "fieldLabel": "Sistema de medida",
+      "metric": "Métrico (km/h, °C, L)",
+      "imperial": "Imperial (mph, °F, gal)"
+    },
+    "steeringLock": {
+      "title": "Volante",
+      "rangeTitle": "Recorrido del volante",
+      "rangeDesc": "Recorrido físico de tu volante: {{full}}° (±{{half}}°). Lo comparten todos los widgets que muestran la dirección."
+    },
+    "applicationUpdates": {
+      "title": "Actualizaciones de la aplicación",
+      "autoCheckTitle": "Buscar actualizaciones automáticamente",
+      "autoCheckDesc": "Busca versiones nuevas al iniciar la aplicación.",
+      "checkIntervalTitle": "Intervalo de comprobación",
+      "checkIntervalDesc": "Con qué frecuencia se buscan actualizaciones mientras la aplicación está abierta.",
+      "everyHour": "Cada hora",
+      "every3Hours": "Cada 3 horas",
+      "every6Hours": "Cada 6 horas",
+      "every12Hours": "Cada 12 horas",
+      "daily": "A diario",
+      "currentVersion": "Versión actual:",
+      "lastChecked": "Última comprobación:",
+      "upToDate": "Tu aplicación está actualizada.",
+      "checkingForUpdates": "Buscando actualizaciones...",
+      "newVersionAvailable": "¡La nueva versión v{{version}} está disponible!",
+      "downloadingUpdate": "Descargando actualización...",
+      "updateDownloaded": "Actualización descargada. Reiniciando...",
+      "updateCheckFailed": "Falló la búsqueda de actualizaciones.",
+      "restarting": "Reiniciando...",
+      "installAndRestart": "Instalar y reiniciar",
+      "checkingEllipsis": "Comprobando...",
+      "checkForUpdates": "Buscar actualizaciones"
+    },
+    "trackMap": {
+      "title": "Mapa del circuito",
+      "reRecordTitle": "Volver a grabar el circuito",
+      "reRecordDesc": "Borra los datos actuales del mapa y empieza de cero al cruzar la línea en la próxima vuelta o al forzarlo a mano.",
+      "resetCurrentTrackData": "Borrar los datos del circuito actual",
+      "manualStartActive": "Inicio manual activo. Conduce para empezar a grabar.",
+      "forceStartRecording": "Forzar el inicio de la grabación",
+      "pitLaneCalibrationTitle": "Calibración del pit lane",
+      "pitLaneCalibrationDescWithTrack": "Borra los puntos de entrada y salida de boxes grabados para «{{track}}». Vuelve a pasar por el pit lane para recalibrar.",
+      "pitLaneCalibrationDescNoTrack": "No hay ningún circuito cargado. Carga una sesión para borrar los datos del pit lane del circuito activo.",
+      "resetPitLaneDataForTrack": "Borrar los datos del pit lane de {{track}}",
+      "resetPitLaneData": "Borrar los datos del pit lane",
+      "pitLaneResetSuccess": "Datos del pit lane borrados. Pasa por el pit lane para recalibrar.",
+      "referenceLapTitle": "Vuelta de referencia",
+      "referenceLapDescWithCar": "Elimina la mejor vuelta guardada de «{{car}}» en el circuito actual. La grabación se reinicia en la próxima vuelta completada.",
+      "referenceLapDescNoSession": "No hay ninguna sesión cargada. Carga una sesión para eliminar la vuelta de referencia del circuito y el coche activos.",
+      "deleteReferenceLapConfirm": "¿Eliminar la vuelta de referencia guardada?",
+      "deleteReferenceLap": "Eliminar la vuelta de referencia",
+      "referenceLapDeleteSuccess": "Vuelta de referencia eliminada. La grabación se reinicia en la próxima vuelta completada."
+    },
+    "reset": {
+      "title": "Restablecer",
+      "resetAllTitle": "Restablecer todos los ajustes",
+      "resetAllDesc": "Borra las posiciones, los tamaños y las preferencias de todos los widgets. La aplicación se reiniciará automáticamente.",
+      "confirmTitle": "¿Restablecer todos los ajustes?",
+      "confirmDescription": "Se perderán la disposición de los widgets y todas las preferencias.",
+      "confirmOk": "Restablecer y reiniciar",
+      "resetSettings": "Restablecer ajustes"
+    },
+    "developerTools": {
+      "title": "Herramientas de desarrollo",
+      "snapshotTitle": "Captura de telemetría",
+      "snapshotDesc": "Captura el estado actual de la telemetría.",
+      "downloadSnapshot": "Descargar la captura en JSON",
+      "snapshotSuccess": "Captura guardada: coloca el JSON en test-data/"
+    },
+    "streamChat": {
+      "title": "Chat del directo",
+      "twitchChannel": "Canal de Twitch",
+      "twitchChannelPlaceholder": "twitchdev",
+      "twitchChannelDesc": "Solo el nombre que aparece en la dirección del canal: twitch.tv/twitchdev → twitchdev. Se lee de forma anónima, sin necesidad de cuenta. Déjalo vacío para desactivar Twitch.",
+      "youtubeTarget": "Directo de YouTube",
+      "youtubeTargetPlaceholder": "@usuario o enlace del directo",
+      "youtubeTargetDesc": "Cualquiera de estos vale: @MrBeast, youtube.com/watch?v=dQw4w9WgXcQ, youtu.be/dQw4w9WgXcQ, o solo dQw4w9WgXcQ. Si indicas un canal, se busca automáticamente el directo en curso.",
+      "hideCommands": "Ocultar los comandos de bots",
+      "hideCommandsDesc": "Descarta los mensajes que empiezan por un signo de exclamación.",
+      "ignoredBots": "Cuentas ignoradas",
+      "ignoredBotsDesc": "Separadas por comas. Sus mensajes nunca llegan al widget.",
+      "signInTitle": "Iniciar sesión en Twitch",
+      "signInDesc": "Opcional. Habilita el número de espectadores y la duración del directo en el pie — el chat funciona sin esto.",
+      "clientId": "Client id de la aplicación",
+      "clientIdDesc": "Esta compilación no incluye client id, así que para iniciar sesión necesitas tu propia aplicación en dev.twitch.tv/console/apps. Regístrala como cliente público; no hace falta client secret.",
+      "signIn": "Iniciar sesión",
+      "signOut": "Cerrar sesión",
+      "signedIn": "Sesión iniciada",
+      "cancel": "Cancelar",
+      "openActivate": "Abrir twitch.tv/activate",
+      "deviceHint": "Introduce este código en twitch.tv/activate y vuelve aquí — esta ventana se actualiza sola.",
+      "errors": {
+        "clientIdRequired": "Rellena primero el client id.",
+        "codeExpired": "El código ha caducado. Empieza de nuevo.",
+        "sessionExpired": "La sesión de Twitch ha caducado. Inicia sesión otra vez."
+      }
+    },
+    "nav": {
+      "groups": {
+        "application": "Aplicación",
+        "overlay": "Superposición",
+        "controls": "Controles",
+        "data": "Datos",
+        "maintenance": "Mantenimiento",
+        "remote": "Remoto"
+      },
+      "sections": {
+        "general": "General",
+        "updates": "Actualizaciones",
+        "overlay": "Visibilidad de widgets",
+        "interaction": "Modos de interacción",
+        "bindings": "Asignaciones de control",
+        "devices": "Dispositivos",
+        "trackMap": "Datos del circuito",
+        "streamChat": "Chat del directo",
+        "maintenance": "Restablecer y diagnóstico",
+        "remoteScreens": "Pantallas remotas"
+      }
+    },
+    "remote": {
+      "title": "Pantallas remotas",
+      "enableTitle": "Servir los diseños a otros dispositivos",
+      "enableDesc": "Levanta un pequeño servidor web para que un móvil o una tablet de la misma red pueda abrir una pantalla del diseño activo en su navegador. Los dispositivos solo miran: no pueden cambiar nada.",
+      "running": "En marcha en {{ip}}:{{port}}",
+      "stopped": "Detenido",
+      "clients": "{{count}} conectados",
+      "portTitle": "Puerto y frecuencia de envío",
+      "portDesc": "Con qué frecuencia se envía la telemetría a los dispositivos, no con qué frecuencia se redibujan. 30 por segundo va fluido para un tablero y consume poco Wi-Fi; los tiempos por vuelta, el combustible y el reloj de sesión siempre llegan completos, sea cual sea este valor. Cambia el puerto solo si otra cosa ya lo está usando.",
+      "securityTitle": "Acceso a la red",
+      "securityDesc": "Los enlaces de las pantallas llevan un token de acceso. Regenéralo para dejar fuera a todos los dispositivos a los que hayas dado un enlace.",
+      "securityDescOpen": "No hay ningún token de acceso, así que cualquiera de esta red que conozca la dirección puede ver tus pantallas.",
+      "tokenTitle": "Token de acceso",
+      "tokenDesc": "Los dispositivos necesitan este token para abrir una pantalla. Ya está incluido en los enlaces y los códigos QR de abajo.",
+      "lanLabel": "Accesible desde la red local",
+      "regenerateToken": "Token nuevo",
+      "screensTitle": "Pantallas del diseño activo",
+      "screensDesc": "Abre la dirección en el dispositivo. Si la añades a la pantalla de inicio, la barra del navegador desaparece y el diseño ocupa toda la pantalla.",
+      "screensEmpty": "Todavía no hay pantallas remotas. Añade una en el editor de diseños, junto a los monitores.",
+      "serverOffline": "El servidor no está en marcha",
+      "copyUrl": "Copiar enlace",
+      "urlCopied": "Enlace copiado",
+      "deviceOnline": "Dispositivo conectado",
+      "deviceReports": "El dispositivo informa de {{width}}×{{height}} de página útil, en una pantalla de {{screenWidth}}×{{screenHeight}}.",
+      "addToHomeScreenHint": "Añade la página a la pantalla de inicio del dispositivo para quitar la barra del navegador y aprovechar toda la pantalla.",
+      "fitToDevice": "Ajustar a {{width}}×{{height}}",
+      "fitToDeviceTooltip": "Redimensiona esta pantalla a lo que informa el dispositivo. Los widgets mantienen su posición relativa a la pantalla.",
+      "sizeApplied": "Tamaño de la pantalla actualizado",
+      "lanOffHint": "Desactivado: solo este ordenador puede abrir las pantallas — útil para capturar un diseño como fuente de navegador en OBS, o para dejar fuera a todos los dispositivos sin desmontar la configuración.",
+      "showToken": "Mostrar",
+      "hideToken": "Ocultar",
+      "copyToken": "Copiar el token",
+      "tokenCopied": "Token copiado",
+      "qrHidden": "Código QR oculto"
+    }
+  },
+  "bindings": {
+    "title": "Asignaciones de control",
+    "intro": "Las teclas y los botones del mando funcionan en toda la aplicación, en cualquier diseño. Las asignaciones que choquen con los controles del simulador no se pueden detectar aquí: compruébalas en iRacing.",
+    "searchPlaceholder": "Buscar acciones o asignaciones",
+    "resetAll": "Restablecer todo",
+    "resetConfirm": "¿Restablecer todas las asignaciones a sus valores por defecto?",
+    "noMatches": "Ninguna acción coincide con la búsqueda.",
+    "unbound": "Sin asignar",
+    "addBinding": "Añadir asignación",
+    "removeBinding": "Quitar asignación",
+    "conflictWith": "También asignado a: {{actions}}",
+    "deviceOffline": "Dispositivo no conectado — la asignación se conserva.",
+    "notInLayout": "no está en el diseño",
+    "captureTitle": "Pulsa una tecla o un botón del dispositivo",
+    "captureHint": "Pulsa Escape para cancelar. No se guarda nada hasta que pulses algo.",
+    "devicesTitle": "Dispositivos",
+    "noDevices": "No se ha detectado ningún mando.",
+    "deviceMeta": "VID {{vendor}} · PID {{product}} · {{buttons}} botones",
+    "deviceConnected": "conectado",
+    "deviceOfflineTag": "desconectado",
+    "groups": {
+      "app": "Aplicación"
+    },
+    "chip": {
+      "button": "btn {{button}}",
+      "hat": "hat {{hat}} {{direction}}",
+      "direction": {
+        "0": "arriba",
+        "1": "derecha",
+        "2": "abajo",
+        "3": "izquierda"
+      },
+      "unknownDevice": "Dispositivo desconocido"
+    },
+    "actions": {
+      "toggleDragMode": "Modo de arrastre",
+      "toggleInteractMode": "Modo interacción",
+      "toggleHideAllWidgets": "Ocultar todos los widgets",
+      "standingsCycleViewMode": "Cambiar el modo de vista (Todos → Agrupado → Cíclico)",
+      "standingsClassPrev": "Clase anterior (modo cíclico)",
+      "standingsClassNext": "Clase siguiente (modo cíclico)",
+      "standingsScrollUp": "Desplazar la tabla hacia arriba",
+      "standingsScrollDown": "Desplazar la tabla hacia abajo",
+      "streamChatScrollUp": "Desplazar el chat hacia arriba",
+      "streamChatScrollDown": "Desplazar el chat hacia abajo",
+      "pitServiceToggle": "Abrir el cuadro de pedido fuera del pit lane (temporal)",
+      "pitServiceAutoMode": "Pasar esta parada al modo automático, o recuperarla",
+      "pitServiceApplyOrder": "Pedir una parada completa: el combustible calculado y los cuatro neumáticos (sustituye el pedido actual)",
+      "pitServiceClearOrder": "Cancelar todo el pedido",
+      "pitServiceFuel": "Añadir la cantidad de combustible calculada",
+      "pitServiceFuelPlus": "Añadir un paso al combustible del pedido (el tamaño del paso se fija en los ajustes del widget)",
+      "pitServiceFuelMinus": "Quitar un paso al combustible del pedido (el tamaño del paso se fija en los ajustes del widget)",
+      "pitServiceTiresAll": "Cambiar los cuatro neumáticos",
+      "pitServiceTireLf": "Cambiar el neumático delantero izquierdo",
+      "pitServiceTireRf": "Cambiar el neumático delantero derecho",
+      "pitServiceTireLr": "Cambiar el neumático trasero izquierdo",
+      "pitServiceTireRr": "Cambiar el neumático trasero derecho",
+      "pitServiceTireCompound": "Pasar al siguiente compuesto de neumático",
+      "pitServiceFastRepair": "Usar una reparación rápida",
+      "pitServiceWindshield": "Limpiar el parabrisas (gasta un tear-off)",
+      "widgetToggleVisibility": "Mostrar u ocultar «{{widget}}»"
+    },
+    "devicesIntro": "Los volantes, las botoneras, los joysticks y los pedales se detectan automáticamente. Un dispositivo al que le hayas asignado algo sigue en la lista mientras está desconectado, para no perder sus asignaciones.",
+    "boundCount": "{{bound}} / {{total}} asignadas",
+    "notInLayoutTooltip": "El widget no está en el diseño activo, así que nada de lo suyo funciona: ni sus asignaciones ni su trabajo en segundo plano, como los pedidos automáticos de boxes. La tecla de mostrar u ocultar es la excepción: es la que vuelve a poner el widget.",
+    "toggleHint": "Funciona como interruptor: púlsalo otra vez para quitarlo del pedido.",
+    "inert": {
+      "pitServiceAutoMode": "No hace nada hasta que actives Combustible automático o Neumáticos automáticos en los ajustes del widget."
+    },
+    "searchByKey": "Por tecla",
+    "searchByKeyHint": "Pulsa una tecla o un botón del dispositivo y la lista mostrará a qué está asignado.",
+    "searchPressKey": "Pulsa una tecla o un botón del dispositivo…",
+    "keyIsFree": "{{key}} no está asignado a nada."
+  }
+}
