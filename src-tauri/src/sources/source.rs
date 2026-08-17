@@ -7,6 +7,7 @@ use crate::model::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
 };
 use crate::model::session::{SessionFrame, SessionSnapshot};
+use crate::model::sim_perf::SimPerfFrame;
 use crate::telemetry::capabilities::Capabilities;
 
 /// One adapted telemetry tick: the domain model frames consumed by the
@@ -22,6 +23,7 @@ pub struct SourceFrame {
     pub pit_service: PitServiceFrame,
     pub session: SessionFrame,
     pub environment: EnvironmentFrame,
+    pub sim_perf: SimPerfFrame,
 }
 
 /// Result of one session poll: the normalized snapshot plus the

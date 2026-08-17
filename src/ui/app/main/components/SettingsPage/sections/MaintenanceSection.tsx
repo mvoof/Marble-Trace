@@ -2,27 +2,38 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { App, Button, Popconfirm } from 'antd';
 import { RotateCcw } from 'lucide-react';
-import { downloadSnapshot } from '@ui/app/main/capture-snapshot';
-import { useAppSettingsStore, useStore } from '@store/root-store-context';
+import {
+  useAppSettingsStore,
+  useDiagnosticsExportStore,
+} from '@store/root-store-context';
 import { SettingsCard } from '../SettingsCard';
+import { FpsDiagnosticsCard } from './FpsDiagnosticsCard/FpsDiagnosticsCard';
 import styles from '../SettingsPage.module.scss';
 
 const isDev = import.meta.env.DEV;
 
 export const MaintenanceSection = observer(() => {
   const appSettings = useAppSettingsStore();
-  const store = useStore();
+  const exports = useDiagnosticsExportStore();
   const { message } = App.useApp();
   const { t } = useTranslation('main-app');
 
-  const handleCaptureSnapshot = () => {
-    downloadSnapshot(store, 'iracing');
+  const handleCaptureSnapshot = async () => {
+    try {
+      const path = await exports.saveTelemetrySnapshot();
 
-    message.success(t('settingsPage.developerTools.snapshotSuccess'));
+      message.success(
+        t('settingsPage.developerTools.snapshotSuccess', { path })
+      );
+    } catch (error) {
+      message.error(String(error));
+    }
   };
 
   return (
     <>
+      <FpsDiagnosticsCard />
+
       <SettingsCard title={t('settingsPage.reset.title')}>
         <div className={styles.fieldGroup}>
           <div className={styles.fieldRow}>
@@ -65,7 +76,12 @@ export const MaintenanceSection = observer(() => {
               {t('settingsPage.developerTools.snapshotDesc')}
             </div>
 
-            <Button block size="small" onClick={handleCaptureSnapshot}>
+            <Button
+              block
+              size="small"
+              loading={exports.saving}
+              onClick={() => void handleCaptureSnapshot()}
+            >
               {t('settingsPage.developerTools.downloadSnapshot')}
             </Button>
           </div>

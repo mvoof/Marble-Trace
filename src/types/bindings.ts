@@ -1356,6 +1356,24 @@ export type SessionState =
 
 export type SessionType = 'Practice' | 'Qualify' | 'Race' | 'Unknown';
 
+export type SimPerfFrame = {
+  /**
+   * Average frames per second rendered by the sim.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/framerate/
+   */
+  frame_rate: number | null;
+  /**
+   * Percent of available time the GPU took, 1 second average.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/gpuusage/
+   */
+  gpu_usage: number | null;
+  /**
+   * Percent of available time the foreground thread took, 1 second average.
+   * @see https://sajax.github.io/irsdkdocs/telemetry/cpuusagefg/
+   */
+  cpu_usage_fg: number | null;
+};
+
 /**
  * Status payload emitted as `sim://status`.
  */
@@ -1403,6 +1421,7 @@ export type TelemetryBundle = {
   lap_log?: LapLogFrame | null;
   session?: SessionFrame | null;
   environment?: EnvironmentFrame | null;
+  sim_perf?: SimPerfFrame | null;
   track_recording?: TrackRecordingFrame | null;
   pit_target_dist_m?: number | null;
   pit_target_type?: PitTargetType | null;

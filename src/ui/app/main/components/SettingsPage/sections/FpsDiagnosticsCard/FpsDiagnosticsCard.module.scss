@@ -1,0 +1,71 @@
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.phaseLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  > :last-child {
+    flex: none;
+  }
+}
+
+.phaseLabel {
+  font-weight: 600;
+}
+
+.countdown {
+  font-family: $font-mono;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.hint {
+  opacity: 0.7;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th,
+  td {
+    padding: 6px 8px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  th:first-child,
+  td:first-child {
+    text-align: left;
+  }
+
+  thead th {
+    border-bottom: 1px solid rgba(128, 128, 128, 0.35);
+    font-weight: 600;
+    opacity: 0.75;
+  }
+
+  tbody tr + tr td {
+    border-top: 1px solid rgba(128, 128, 128, 0.15);
+  }
+}
+
+.numeric {
+  font-family: $font-mono;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}

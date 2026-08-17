@@ -28,6 +28,7 @@ use crate::model::player::{
 use crate::model::reference_lap::{ReferenceLapData, TrackCondition};
 use crate::model::relative::RelativeFrame;
 use crate::model::session::SessionFrame;
+use crate::model::sim_perf::SimPerfFrame;
 use crate::model::track_shape::{TrackRecordingFrame, TrackShapePayload};
 use crate::sources::source::SourceFrame;
 use crate::utils::lock_or_recover;
@@ -89,6 +90,8 @@ pub struct TelemetryBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub environment: Option<EnvironmentFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub sim_perf: Option<SimPerfFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub track_recording: Option<TrackRecordingFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pit_target_dist_m: Option<f32>,
@@ -122,6 +125,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
         lap_log: None,
         session: None,
         environment: None,
+        sim_perf: None,
         track_recording: None,
         pit_target_dist_m: None,
         pit_target_type: None,
@@ -292,6 +296,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
     if due.hz1 {
         bundle.session = Some(frame.session.clone());
         bundle.environment = Some(frame.environment.clone());
+        bundle.sim_perf = Some(frame.sim_perf.clone());
     }
 
     let should_emit = active_mask != 0 || due.first || due.hz10 || due.hz4 || due.hz1;

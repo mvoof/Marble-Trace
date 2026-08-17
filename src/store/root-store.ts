@@ -19,6 +19,10 @@ import { PlayerStore } from './data/player.store';
 import { CarsStore } from './data/cars.store';
 import { SessionStore } from './data/session.store';
 import { EnvironmentStore } from './data/environment.store';
+import { SimPerfStore } from './data/sim-perf.store';
+import { FpsDiagnosticsStore } from './diagnostics/fps-diagnostics.store';
+import { DiagnosticsHudStore } from './diagnostics/diagnostics-hud.store';
+import { DiagnosticsExportStore } from './diagnostics/diagnostics-export.store';
 import { ReferenceLapStore } from './data/reference-lap.store';
 import { ChatStore } from './data/chat.store';
 import { TwitchAuthStore } from './settings/twitch-auth.store';
@@ -36,6 +40,7 @@ export class RootStore {
   cars: CarsStore;
   session: SessionStore;
   environment: EnvironmentStore;
+  simPerf: SimPerfStore;
   referenceLap: ReferenceLapStore;
   chat: ChatStore;
   backendComputed: BackendComputedStore;
@@ -62,12 +67,16 @@ export class RootStore {
   bindingsUi: BindingsUiStore;
   settingsPanelUi: SettingsPanelUiStore;
   remoteDevices: RemoteDevicesStore;
+  fpsDiagnostics: FpsDiagnosticsStore;
+  diagnosticsHud: DiagnosticsHudStore;
+  diagnosticsExport: DiagnosticsExportStore;
 
   constructor(options?: { skipInit?: boolean }) {
     this.player = new PlayerStore();
     this.cars = new CarsStore();
     this.session = new SessionStore();
     this.environment = new EnvironmentStore();
+    this.simPerf = new SimPerfStore();
     this.referenceLap = new ReferenceLapStore();
     this.chat = new ChatStore();
     this.backendComputed = new BackendComputedStore();
@@ -98,6 +107,9 @@ export class RootStore {
     this.bindingsUi = new BindingsUiStore();
     this.settingsPanelUi = new SettingsPanelUiStore();
     this.remoteDevices = new RemoteDevicesStore();
+    this.fpsDiagnostics = new FpsDiagnosticsStore(this);
+    this.diagnosticsHud = new DiagnosticsHudStore();
+    this.diagnosticsExport = new DiagnosticsExportStore(this);
 
     if (!options?.skipInit) {
       this.flags.init();
@@ -117,6 +129,7 @@ export class RootStore {
   // Short-lived stores (widget previews, layout canvas, Storybook) must call
   // this on unmount — their reactions otherwise keep running against telemetry.
   dispose() {
+    this.fpsDiagnostics.dispose();
     this.twitchAuth.dispose();
     this.streamChatWidget.dispose();
     this.pitServiceWidget.dispose();

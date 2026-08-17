@@ -306,12 +306,53 @@
       "confirmOk": "Restablecer y reiniciar",
       "resetSettings": "Restablecer ajustes"
     },
+    "fpsDiagnostics": {
+      "title": "Diagnóstico de FPS",
+      "description": "Mide lo que el overlay le cuesta al simulador, usando su propio contador de fotogramas. Ejecútalo en una escena repetible: una repetición en bucle sobre el mismo tramo de pista, con tráfico alrededor.",
+      "detailed": "Ejecución detallada",
+      "detailedDesc": "También mide cada widget activo por separado. Mucho más largo, pero identifica el widget costoso y no solo la configuración costosa.",
+      "start": "Iniciar ({{minutes}} min)",
+      "cancel": "Detener",
+      "switchToSim": "Cambia al simulador y déjalo en primer plano: en segundo plano limita su tasa de fotogramas y todas las cifras perderían sentido.",
+      "phase": {
+        "countdown": "Cambia al simulador",
+        "settling": "Estabilizando",
+        "sampling": "Midiendo",
+        "done": "Listo",
+        "failed": "Error",
+        "idle": "Inactivo"
+      },
+      "step": {
+        "noOverlay": "Sin overlay",
+        "hidden": "Overlay oculto",
+        "allWidgets": "Todos los widgets"
+      },
+      "table": {
+        "config": "Configuración",
+        "fps": "FPS",
+        "fpsLow": "FPS mín.",
+        "delta": "Diferencia",
+        "gpu": "GPU %",
+        "cpu": "CPU %"
+      },
+      "error": {
+        "noWidgets": "Activa al menos un widget primero: no hay nada que medir.",
+        "noTelemetry": "No hay telemetría del simulador. Inicia una sesión e inténtalo de nuevo."
+      },
+      "hud": {
+        "progress": "Paso {{done}} de {{total}}",
+        "doneSummary": "El conjunto completo cuesta {{delta}} FPS. Resultados en Ajustes.",
+        "doneNoSummary": "Los resultados están en Ajustes."
+      },
+      "saveCsv": "Guardar CSV",
+      "saved": "Guardado en {{path}}"
+    },
     "developerTools": {
       "title": "Herramientas de desarrollo",
       "snapshotTitle": "Captura de telemetría",
-      "snapshotDesc": "Captura el estado actual de la telemetría.",
-      "downloadSnapshot": "Descargar la captura en JSON",
-      "snapshotSuccess": "Captura guardada: coloca el JSON en test-data/"
+      "snapshotDesc": "Captura el estado actual de la telemetría y lo guarda junto al archivo de ajustes.",
+      "downloadSnapshot": "Guardar instantánea JSON",
+      "snapshotSuccess": "Guardado en {{path}}"
     },
     "streamChat": {
       "title": "Chat del directo",

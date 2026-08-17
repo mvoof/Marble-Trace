@@ -1,0 +1,55 @@
+.banner {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100vh;
+  padding: 10px 16px;
+  border: 1px solid rgba(224, 224, 224, 0.18);
+  border-radius: 8px;
+  background: rgba(13, 14, 18, 0.92);
+  color: #e0e0e0;
+  font-family: $font-widget;
+  box-sizing: border-box;
+}
+
+.headline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.phase {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.counter {
+  font-family: $font-mono;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.detail {
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(224, 224, 224, 0.15);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: #e0e0e0;
+  transition: width 300ms ease;
+}
+
+.summary {
+  font-size: 15px;
+  font-weight: 600;
+}

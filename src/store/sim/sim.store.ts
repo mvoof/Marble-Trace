@@ -334,6 +334,7 @@ export class SimStore {
     this.root.cars.reset();
     this.root.session.reset();
     this.root.environment.reset();
+    this.root.simPerf.reset();
     this.root.backendComputed.reset();
     this.root.drivingCoachWidget.reset();
     this.root.paceCar.reset();

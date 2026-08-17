@@ -74,6 +74,8 @@ use model::session::SessionFrame;
 #[cfg(feature = "dev")]
 use model::session::SessionSnapshot;
 #[cfg(feature = "dev")]
+use model::sim_perf::SimPerfFrame;
+#[cfg(feature = "dev")]
 use specta::TypeCollection;
 #[cfg(feature = "dev")]
 use specta_typescript::Typescript;
@@ -108,6 +110,7 @@ pub fn run() {
             .register::<DriverEntry>()
             .register::<PitStopsFrame>()
             .register::<LapDeltaFrame>()
+            .register::<SimPerfFrame>()
             .register::<telemetry::emitter::TelemetryBundle>()
             .register::<WeatherForecastEntry>()
             .register::<CapabilitiesPayload>()
