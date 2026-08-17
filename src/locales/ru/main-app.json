@@ -178,6 +178,13 @@
     "moveHere": "перенести с {{monitor}}",
     "unavailable": "Недоступно в этом симуляторе"
   },
+  "overlayCanvas": {
+    "exitEditMode": "Выйти из режима редактирования",
+    "interactMode": "Режим взаимодействия",
+    "interactModeHold": "Режим взаимодействия — отпустите {{key}} для выхода",
+    "interactModeToggle": "Режим взаимодействия — {{key}} для выхода",
+    "layoutSwitched": "Раскладка переключена на «{{layout}}»"
+  },
   "widgetSettingsPopup": {
     "ariaLabel": "Настройки {{label}}",
     "close": "Закрыть"

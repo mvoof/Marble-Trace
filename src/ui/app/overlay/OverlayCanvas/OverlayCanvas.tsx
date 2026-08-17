@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import { X, Layers, MousePointer2 } from 'lucide-react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
@@ -17,6 +18,7 @@ export const OverlayCanvas = observer(() => {
   const appSettings = useAppSettingsStore();
   const widgetSettings = useWidgetSettingsStore();
   const bindings = useBindingsStore();
+  const { t } = useTranslation('main-app');
 
   // Both modes hand the mouse to the overlay; drag mode also unlocks widget moving.
   const mouseEnabled = appSettings.dragMode || appSettings.interactMode;
@@ -39,10 +41,10 @@ export const OverlayCanvas = observer(() => {
   const interactKey = bindings.primaryAccelerator('app:toggle-interact-mode');
 
   const interactBannerText = !interactKey
-    ? 'Interact mode'
+    ? t('overlayCanvas.interactMode')
     : interactHotkeyMode === 'hold'
-      ? `Interact mode — release ${interactKey} to exit`
-      : `Interact mode — ${interactKey} to exit`;
+      ? t('overlayCanvas.interactModeHold', { key: interactKey })
+      : t('overlayCanvas.interactModeToggle', { key: interactKey });
 
   const handleExitDragMode = () => {
     appSettings.setDragMode(false);
@@ -83,7 +85,7 @@ export const OverlayCanvas = observer(() => {
             onClick={handleExitDragMode}
             size="large"
           >
-            Exit Edit Mode
+            {t('overlayCanvas.exitEditMode')}
           </Button>
         </div>
       )}
@@ -118,7 +120,9 @@ export const OverlayCanvas = observer(() => {
           <div className={styles.toast}>
             <Layers size={14} className={styles.toastIcon} />
             <span className={styles.toastText}>
-              {`Layout switched to "${widgetSettings.layoutActivatedToast}"`}
+              {t('overlayCanvas.layoutSwitched', {
+                layout: widgetSettings.layoutActivatedToast,
+              })}
             </span>
           </div>
         )}

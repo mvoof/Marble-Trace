@@ -172,6 +172,13 @@
     "moveHere": "从 {{monitor}} 移入",
     "unavailable": "此模拟器不支持"
   },
+  "overlayCanvas": {
+    "exitEditMode": "退出编辑模式",
+    "interactMode": "交互模式",
+    "interactModeHold": "交互模式 — 松开 {{key}} 退出",
+    "interactModeToggle": "交互模式 — 按 {{key}} 退出",
+    "layoutSwitched": "布局已切换为“{{layout}}”"
+  },
   "widgetSettingsPopup": {
     "ariaLabel": "{{label}} 设置",
     "close": "关闭"
