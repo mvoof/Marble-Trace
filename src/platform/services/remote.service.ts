@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import type { RemoteScreenSnapshot } from '@/types/remote';
+import type { RemoteControlKind, RemoteScreenSnapshot } from '@/types/remote';
 import type {
   RemoteDevice,
   RemoteServerConfig,
@@ -31,6 +31,18 @@ export const publishRemoteSnapshot = async (
   slug: string,
   snapshot: RemoteScreenSnapshot
 ): Promise<void> => invoke('publish_remote_snapshot', { slug, snapshot });
+
+/**
+ * Pushes one widget command to every connected remote screen.
+ *
+ * The overlay windows receive these as Tauri events, which stop at the app
+ * boundary — a hotkey that scrolls the standings or turns the track map has to
+ * travel this way to reach a browser. The backend whitelists the kinds.
+ */
+export const publishRemoteControl = async (
+  kind: RemoteControlKind,
+  data: unknown
+): Promise<void> => invoke('publish_remote_control', { kind, data });
 
 export const remoteScreenUrl = async (slug: string): Promise<string> =>
   invoke('remote_screen_url', { slug });

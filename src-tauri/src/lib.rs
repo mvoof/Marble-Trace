@@ -39,8 +39,8 @@ use computations::ProcessorRegistry;
 use input::commands::{resolve_input_devices, set_input_polling_enabled, InputState};
 use input::InputRuntime;
 use remote::commands::{
-    get_remote_devices, get_remote_server_info, publish_remote_snapshot, remote_screen_url,
-    start_remote_server, stop_remote_server, RemoteState,
+    get_remote_devices, get_remote_server_info, publish_remote_control, publish_remote_snapshot,
+    remote_screen_url, start_remote_server, stop_remote_server, RemoteState,
 };
 use telemetry::state::TelemetryState;
 
@@ -262,6 +262,7 @@ pub fn run() {
             get_remote_server_info,
             get_remote_devices,
             publish_remote_snapshot,
+            publish_remote_control,
             remote_screen_url,
             start_telemetry_stream,
             stop_telemetry_stream,

@@ -139,6 +139,19 @@ pub async fn publish_remote_snapshot(
     Ok(())
 }
 
+/// A hotkey pressed in the main window reaches the overlay windows as a Tauri
+/// event; this is the same command on its way to a browser instead.
+#[tauri::command]
+pub async fn publish_remote_control(
+    state: State<'_, RemoteState>,
+    kind: String,
+    data: serde_json::Value,
+) -> Result<(), String> {
+    state.hub.publish_control(&kind, data);
+
+    Ok(())
+}
+
 #[tauri::command]
 pub async fn remote_screen_url(
     state: State<'_, RemoteState>,

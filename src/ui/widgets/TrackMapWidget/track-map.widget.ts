@@ -5,7 +5,10 @@ import {
   deleteTrackShape,
   resetPitLanePct,
 } from '@platform/services/track.service';
-import { emitTrackMapClear } from '@platform/services/events.service';
+import {
+  emitTrackMapClear,
+  emitTrackRotation,
+} from '@platform/services/events.service';
 import type {
   StoredTracks,
   TrackRotateDirection,
@@ -25,7 +28,22 @@ export class TrackMapWidgetStore {
   currentTrackId: string | null = null;
   trackRotation = 0;
 
-  constructor() {
+  /**
+   * Angles received from another window, by track id.
+   *
+   * A remote screen has no settings file to read them from, and the messages
+   * that carry the shape, the session and the rotation arrive in no fixed
+   * order — keeping them keyed by track means a rotation that lands before its
+   * track does is still applied when the track shows up.
+   */
+  private readonly receivedRotations = new Map<string, number>();
+
+  /** False in the layout editor's preview store, which owns no track of its own. */
+  private readonly persists: boolean;
+
+  constructor({ persists = true }: { persists?: boolean } = {}) {
+    this.persists = persists;
+
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
@@ -54,10 +72,29 @@ export class TrackMapWidgetStore {
     this.trackRotation = rotation;
   }
 
+  /**
+   * Applies an angle another window turned the map to.
+   *
+   * The value is remembered per track as well as applied, because it can reach
+   * a window before the track it belongs to has loaded there.
+   */
+  applyTrackRotation(trackId: string, rotation: number) {
+    this.receivedRotations.set(trackId, rotation);
+    this.trackRotation = rotation;
+  }
+
   /** Clears stale shape on a track change and restores the saved rotation. */
   async onTrackChanged(trackId: string) {
     if (this.currentTrackId !== trackId) {
       this.clearTrackShape();
+    }
+
+    const received = this.receivedRotations.get(trackId);
+
+    if (received != null) {
+      runInAction(() => this.setTrackRotation(received));
+
+      return;
     }
 
     try {
@@ -80,9 +117,23 @@ export class TrackMapWidgetStore {
     const newRotation =
       (this.trackRotation + step + FULL_TURN_DEGREES) % FULL_TURN_DEGREES;
 
-    this.setTrackRotation(newRotation);
+    this.rotateTo(trackId, newRotation);
+  }
 
-    void this.persistRotation(trackId, newRotation);
+  /**
+   * The single way a rotation is applied by the user: it stores the angle,
+   * writes it to disk and tells the other windows and the remote screens, so
+   * the map on a tablet ends up turned the same way as the one on the monitor.
+   */
+  rotateTo(trackId: string, rotation: number) {
+    this.setTrackRotation(rotation);
+
+    if (!this.persists) {
+      return;
+    }
+
+    void this.persistRotation(trackId, rotation);
+    void emitTrackRotation({ trackId, rotation });
   }
 
   async resetPitLaneCalibration(trackId: number) {
@@ -139,6 +190,12 @@ export class TrackMapWidgetStore {
   }
 
   private async persistRotation(trackId: string, rotation: number) {
+    // Editing a layout with no session running still turns the map on every
+    // screen; there is simply no track to file the angle under.
+    if (!trackId) {
+      return;
+    }
+
     try {
       const store = await this.openTrackSettings();
       const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};

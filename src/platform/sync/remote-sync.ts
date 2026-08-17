@@ -1,6 +1,7 @@
 import { runInAction } from 'mobx';
 
 import { openRemoteSocket } from '@platform/services/remote-socket.service';
+import type { TrackRotationPayload } from '@platform/services/events.service';
 import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import type { RemoteScreenStore } from '@store/remote/remote-screen.store';
 import type { RootStore } from '@store/root-store';
@@ -128,6 +129,39 @@ export const initRemoteSync = (
             message.data as ReferenceLapData
           );
         });
+
+        return;
+      }
+
+      // The hotkeys are registered in the main window; on the monitors they
+      // arrive as Tauri events, here as these three.
+      case 'standings-class-index': {
+        runInAction(() => {
+          root.standingsWidget.activeClassIndex = message.data as number;
+        });
+
+        return;
+      }
+
+      case 'standings-scroll': {
+        runInAction(() =>
+          root.standingsWidget.scrollByRows(message.data as number)
+        );
+
+        return;
+      }
+
+      // Replayed by the server, so a device connecting later still gets a map
+      // turned the way the user left it.
+      case 'track-rotation': {
+        const payload = message.data as TrackRotationPayload;
+
+        runInAction(() =>
+          root.trackMapWidget.applyTrackRotation(
+            payload.trackId,
+            payload.rotation
+          )
+        );
 
         return;
       }

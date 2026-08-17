@@ -28,7 +28,7 @@ const CHANNEL_CAPACITY: usize = 64;
 /// Message kinds that are replayed to a socket the moment it connects, so a
 /// tablet joining mid-session paints immediately instead of waiting for the
 /// next 1 Hz tick.
-const REPLAYED_KINDS: [&str; 7] = [
+const REPLAYED_KINDS: [&str; 8] = [
     "session",
     "status",
     "weather",
@@ -36,6 +36,20 @@ const REPLAYED_KINDS: [&str; 7] = [
     "track-shape",
     "reference-lap",
     "chat-presence",
+    // The rotation of the track map is a per-track setting the browser cannot
+    // read for itself, so it is replayed like the shape it applies to.
+    "track-rotation",
+];
+
+/// Control messages the main window may push to the remote screens.
+///
+/// A whitelist rather than a free-form kind: the value that reaches the socket
+/// is the `&'static str` from this list, so nothing a caller passes can invent
+/// a message type of its own.
+const CONTROL_KINDS: [&str; 3] = [
+    "standings-class-index",
+    "standings-scroll",
+    "track-rotation",
 ];
 
 #[derive(Serialize)]
@@ -208,6 +222,20 @@ impl RemoteHub {
         lock_or_recover(&self.snapshots).insert(slug.clone(), snapshot.clone());
 
         self.send("snapshot", SnapshotPayload { slug, snapshot }, false);
+    }
+
+    /// A command from the main window aimed at the widgets themselves — which
+    /// class the standings show, how far they are scrolled, how the track map
+    /// is turned. The overlay windows get these as Tauri events, which never
+    /// leave the app; a remote screen gets them here.
+    pub fn publish_control(&self, kind: &str, data: serde_json::Value) {
+        let Some(kind) = CONTROL_KINDS.iter().find(|known| **known == kind) else {
+            warn!("remote: ignoring unknown control message '{}'", kind);
+
+            return;
+        };
+
+        self.send(kind, data, REPLAYED_KINDS.contains(kind));
     }
 
     pub fn snapshot_for(&self, slug: &str) -> Option<serde_json::Value> {

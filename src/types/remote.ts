@@ -25,8 +25,19 @@ export interface RemoteScreenSnapshot {
   layoutName: string;
 }
 
+/**
+ * Widget commands the main window sends to a remote screen — the same things a
+ * hotkey does to an overlay window, which cannot be reached by a Tauri event.
+ * The backend keeps the identical whitelist.
+ */
+export type RemoteControlKind =
+  | 'standings-class-index'
+  | 'standings-scroll'
+  | 'track-rotation';
+
 /** Message kinds the server pushes over the socket. */
 export type RemoteMessageKind =
+  | RemoteControlKind
   | 'snapshot'
   | 'telemetry'
   | 'session'

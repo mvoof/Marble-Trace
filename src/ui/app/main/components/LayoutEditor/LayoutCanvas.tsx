@@ -6,7 +6,7 @@ import {
   useState,
   type MouseEvent as ReactMouseEvent,
 } from 'react';
-import { reaction } from 'mobx';
+import { reaction, runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Spin } from 'antd';
@@ -21,6 +21,8 @@ import {
 import { RootStore } from '@store/root-store';
 import {
   RootStoreContext,
+  useSessionStore,
+  useTrackMapWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { componentForWidget } from '@ui/widgets/registry';
@@ -45,6 +47,54 @@ import {
 } from '@utils/remote-screen';
 import { LayoutCanvasWidget } from './LayoutCanvasWidget';
 import styles from './LayoutCanvas.module.scss';
+
+/**
+ * Keeps the editor's sample map and the real one on the same angle.
+ *
+ * The editor draws a synthetic track, so rotating it there has to be filed
+ * under the track the user is actually on — the preview store owns no track of
+ * its own and never writes to disk. The reverse direction matters just as much:
+ * a map turned in an overlay must already look turned when the editor opens.
+ */
+const useTrackRotationBridge = (previewStore: RootStore) => {
+  const trackMapWidget = useTrackMapWidgetStore();
+  const sessionStore = useSessionStore();
+
+  useLayoutEffect(() => {
+    const previewMap = previewStore.trackMapWidget;
+
+    runInAction(() =>
+      previewMap.setTrackRotation(trackMapWidget.trackRotation)
+    );
+
+    const disposers = [
+      reaction(
+        () => previewMap.trackRotation,
+        (rotation) => {
+          if (rotation === trackMapWidget.trackRotation) {
+            return;
+          }
+
+          const { sessionInfo } = sessionStore;
+          const trackId =
+            sessionInfo && sessionInfo.trackId >= 0
+              ? String(sessionInfo.trackId)
+              : '';
+
+          trackMapWidget.rotateTo(trackId, rotation);
+        }
+      ),
+      reaction(
+        () => trackMapWidget.trackRotation,
+        (rotation) => {
+          runInAction(() => previewMap.setTrackRotation(rotation));
+        }
+      ),
+    ];
+
+    return () => disposers.forEach((dispose) => dispose());
+  }, [previewStore, sessionStore, trackMapWidget]);
+};
 
 interface LayoutCanvasProps {
   scenarioId?: string;
@@ -208,6 +258,17 @@ export const LayoutCanvas = observer(
     } | null>(null);
 
     useEffect(() => () => previewStore.dispose(), [previewStore]);
+
+    // The editor is the overlay in drag mode, seen from the main window, so the
+    // widgets show the same in-place controls here — the track map's rotation
+    // buttons among them.
+    useLayoutEffect(() => {
+      runInAction(() => {
+        previewStore.appSettings.dragMode = true;
+      });
+    }, [previewStore]);
+
+    useTrackRotationBridge(previewStore);
 
     useLayoutEffect(() => {
       seedScenario(previewStore, scenarioId);

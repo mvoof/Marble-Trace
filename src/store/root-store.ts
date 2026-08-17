@@ -82,7 +82,11 @@ export class RootStore {
     this.radar = new RadarWidgetStore(this);
     this.standingsWidget = new StandingsWidgetStore(this);
     this.pitServiceWidget = new PitServiceWidgetStore(this);
-    this.trackMapWidget = new TrackMapWidgetStore();
+    // A preview store shows a sample track: turning that map must not write an
+    // angle to disk under a track id the user never drove.
+    this.trackMapWidget = new TrackMapWidgetStore({
+      persists: !options?.skipInit,
+    });
     this.drivingCoachWidget = new DrivingCoachWidgetStore(this);
     this.coachWidget = new CoachWidgetStore(this);
     this.inputTraceWidget = new InputTraceWidgetStore(this);

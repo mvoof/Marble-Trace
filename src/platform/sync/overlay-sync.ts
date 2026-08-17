@@ -5,6 +5,7 @@ import {
   emitDragMode,
   emitWidgetSettingsToMain,
 } from '@platform/services/events.service';
+import { publishRemoteControl } from '@platform/services/remote.service';
 import { setupOverlayListeners } from './listeners';
 import { registerPitServiceMirrorReactions } from './pit-service-sync';
 import type { RootStore } from '@store/root-store';
@@ -58,6 +59,26 @@ export const initOverlaySync = async (root: RootStore) => {
         });
       },
       { delay: 100 }
+    ),
+    // A rotation restored from disk is never emitted — nobody turned anything,
+    // the window simply loaded the angle it had. The remote screens have no
+    // settings file of their own, so an overlay is what tells them.
+    reaction(
+      () => ({
+        trackId: root.trackMapWidget.currentTrackId,
+        rotation: root.trackMapWidget.trackRotation,
+      }),
+      ({ trackId, rotation }) => {
+        if (!trackId) return;
+
+        void publishRemoteControl('track-rotation', {
+          trackId,
+          rotation,
+        }).catch((error: unknown) =>
+          console.error('[overlay-sync] failed to publish rotation:', error)
+        );
+      },
+      { fireImmediately: true }
     ),
     // Clicks on the checkboxes land here, so this window can be the one that
     // takes the order, or one half of it, off auto.
