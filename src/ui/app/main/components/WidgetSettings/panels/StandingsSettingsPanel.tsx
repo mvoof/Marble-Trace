@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Switch, Segmented, ColorPicker } from 'antd';
+import { Switch, Segmented, ColorPicker, Slider } from 'antd';
 import type {
   RowPadding,
   StandingsViewMode,
@@ -16,7 +16,9 @@ const PLAYER_WINDOW_OPTIONS = [0, 1, 2, 3, 4, 5].map((count) => ({
   value: count,
 }));
 
-const GROUPED_ROWS_PER_CLASS_OPTIONS = [0, 2, 3, 4, 5, 6, 8];
+// 0 keeps the automatic split; above that the user picks the exact row count.
+const GROUPED_ROWS_PER_CLASS_MIN = 0;
+const GROUPED_ROWS_PER_CLASS_MAX = 30;
 
 const SCROLL_RESET_OPTIONS = [0, 5, 8, 15, 30];
 
@@ -248,22 +250,32 @@ export const StandingsSettingsPanel = observer(() => {
 
         {settings.viewMode === 'grouped' ? (
           <div className={styles.fieldGroup}>
-            <SettingRow
-              title={t('settingsPanels.standings.groupedRowsPerClass')}
-              desc={t('settingsPanels.standings.groupedRowsPerClassDesc')}
-            >
-              <Segmented<number>
-                value={settings.groupedRowsPerClass}
-                onChange={(v) => update({ groupedRowsPerClass: v })}
-                options={GROUPED_ROWS_PER_CLASS_OPTIONS.map((count) => ({
-                  label:
-                    count === 0
-                      ? t('settingsPanels.standings.rowsPerClassAuto')
-                      : String(count),
-                  value: count,
-                }))}
-              />
-            </SettingRow>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.standings.groupedRowsPerClass', {
+                value:
+                  settings.groupedRowsPerClass > 0
+                    ? settings.groupedRowsPerClass
+                    : t('settingsPanels.standings.rowsPerClassAuto'),
+              })}
+            </span>
+
+            <Slider
+              min={GROUPED_ROWS_PER_CLASS_MIN}
+              max={GROUPED_ROWS_PER_CLASS_MAX}
+              step={1}
+              value={settings.groupedRowsPerClass}
+              onChange={(value) => update({ groupedRowsPerClass: value })}
+              tooltip={{
+                formatter: (value) =>
+                  value === 0
+                    ? t('settingsPanels.standings.rowsPerClassAuto')
+                    : String(value),
+              }}
+            />
+
+            <div className={styles.fieldDesc}>
+              {t('settingsPanels.standings.groupedRowsPerClassDesc')}
+            </div>
           </div>
         ) : null}
       </Card>
