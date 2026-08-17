@@ -179,7 +179,9 @@ export const RaceDashSettingsPanel = observer(() => {
               onChange={(value) => update({ useLivePositions: value })}
             />
           </SettingRow>
+        </div>
 
+        <div className={styles.fieldGroup}>
           <SettingRow
             title={t('settingsPanels.common.classPositionInMulticlass')}
             desc={t('settingsPanels.common.classPositionInMulticlassDesc')}

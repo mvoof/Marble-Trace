@@ -33,7 +33,9 @@ export const SectorMatrixSettingsPanel = observer(() => {
               onChange={(value) => update({ showSectors: value })}
             />
           </SettingRow>
+        </div>
 
+        <div className={styles.fieldGroup}>
           <SettingRow
             title={t('settingsPanels.sectorMatrix.showPredictedLap')}
             desc={t('settingsPanels.sectorMatrix.showPredictedLapDesc')}
