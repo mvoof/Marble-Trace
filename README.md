@@ -34,7 +34,9 @@
 Most iRacing overlays are either bloated desktop apps or locked behind subscriptions. **Marble Trace** is different:
 
 - **Zero overhead** — a tiny Rust backend reads telemetry directly via [kerb](https://github.com/mvoof/kerb), our own multi-sim shared-memory telemetry library; the UI is a transparent frameless window that floats above the sim.
-- **Fully modular** — enable only the widgets you need. Each widget lives in its own transparent window and can be repositioned independently.
+- **Fully modular** — enable only the widgets you need. Every widget is positioned, scaled and styled on its own inside a single transparent overlay that spans all of your monitors.
+- **Layouts for every session** — build as many layouts as you race disciplines, arrange them across your monitors in a visual editor, and switch between them by key or automatically per session type.
+- **Any screen you own** — a layout can also feed a phone, a tablet or a second PC over your local network, with nothing to install on the device.
 - **Open source** — MIT licensed. Extend it, theme it, submit a PR.
 - **Modern stack** — Tauri v2 + React 19 + MobX + Ant Design. Fast and type-safe.
 
@@ -239,6 +241,40 @@ Wind direction compass, temperature, humidity, and forecast strip for dynamic we
 Twitch and YouTube live chat merged into a single feed on top of the sim, so you can read your stream without alt-tabbing. Messages carry a platform glyph and role badges (moderator, VIP, subscriber) as compact text plates or the original badge artwork. Channel events — raids, subs, cheers and donations — appear as highlighted rows, and the footer strip shows viewer counts, message rate and totals. Row density, message limit and auto-expiry are configurable, and every block can be turned off.
 
 ![Stream Chat](docs/assets/screenshots/widgets/stream-chat.png)
+
+---
+
+## Layouts & Screens
+
+### Layout Editor
+
+Every layout is arranged in a visual editor that mirrors your actual desktop: each monitor is drawn to scale in its Windows position, and widgets are dragged straight across a screen edge onto the neighbour. Zoom out for the whole desktop when you are moving things around, or into a single screen for detail work. Each monitor can carry its own background image so you can place widgets against a screenshot of the cockpit instead of an empty rectangle, and everything follows along if you rearrange your displays in Windows.
+
+![Layout Editor](docs/assets/screenshots/overlay/layout-editor.png)
+
+Layouts are independent of each other — build one for endurance, one for qualifying, one for ovals. Each remembers which screens it uses and which widgets sit on them. Switch between them from the toolbar, by a key or wheel button, or let the app switch automatically by session type.
+
+### Remote Screens
+
+A layout can also contain screens with **no monitor behind them**. Marble Trace serves those screens over your local network, so a phone, a tablet or a second PC opens one in its browser and shows live widgets — the same widgets, settings and telemetry as the overlay, with nothing to install on the device.
+
+- **Scan and go** — every remote screen has a QR code in Settings. Point the device's camera at it instead of typing an IP by hand, then add it to the home screen to run it full-screen.
+- **Fit to the device** — the device reports the viewport it actually has, and one click resizes the screen to match, carrying its widgets with it.
+- **Token protected** — the link carries an access token, hidden until you ask for it (so a window capture on stream never puts it on air), copyable while covered, and regenerable at any time. Serving to the network is a separate switch; with it off nothing leaves this machine.
+- **Read-only by protocol** — a connected device paints what it is sent and cannot write anything back into your settings.
+- **Tunable** — the port and the telemetry push rate (5–60 Hz) are configurable, so a phone on weak Wi-Fi can be given less to chew on.
+
+![Remote Screens](docs/assets/screenshots/overlay/remote-screens.png)
+
+Remote screens appear on the layout canvas next to your monitors, can be dragged anywhere on it, and a **Tidy remote screens** button lays them out in rows under the desktop.
+
+---
+
+## Input Devices
+
+Every action can be bound to a keyboard key **or** to a button on your wheel, button box, joystick or handbrake — read straight from the device, so bindings still fire while iRacing has focus. All of them live in one **Input bindings** screen in Settings, grouped by widget, with search and a warning next to any button used twice; one action can carry several bindings at once.
+
+Bindings are app-wide, not per layout. Devices are matched by their DirectInput instance GUID, so replugging or moving to another USB port keeps your bindings; a driver reinstall that regenerates the GUID is re-matched by vendor and product. A device that is currently unplugged keeps its bindings too, shown greyed out until it comes back.
 
 ---
 

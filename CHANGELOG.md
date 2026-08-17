@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Widgets on Your Phone or Tablet:** A layout can now have screens with no monitor behind them. Marble Trace serves those screens over your local network, so a phone, a tablet or a second PC on the same Wi-Fi opens one in its browser and shows live widgets — the same widgets, the same settings, the same telemetry as on the overlay, with nothing to install on the device. A remote screen is built like any other: it is added and dragged around the layout editor next to your monitors, its widgets travel with it, and a **Tidy remote screens** button lays them out in rows under the desktop.
+
+  The new **Remote screens** section in Settings switches the server on, shows the address it is serving on and how many devices are connected, and sets the port and how often telemetry is pushed (5–60 Hz). Every screen gets a QR code to point the device's camera at instead of typing `192.168.x.x:8787` by hand, a copy-link button, a live badge when the device is on, and a one-click fit to the size the device reports.
+
+  Links carry an access token, hidden until you ask for it — the QR code stays covered with it, so a window capture on stream does not put your address on air — copyable while covered and regenerable at any time. Serving to the network is a switch of its own, and the connection is read-only by protocol: a device paints what it is sent and cannot write anything back into your settings.
+
 ## [0.21.0] — 2026-08-14
 
 ### Added
