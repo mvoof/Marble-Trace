@@ -1421,7 +1421,6 @@ export type TelemetryBundle = {
   lap_log?: LapLogFrame | null;
   session?: SessionFrame | null;
   environment?: EnvironmentFrame | null;
-  sim_perf?: SimPerfFrame | null;
   track_recording?: TrackRecordingFrame | null;
   pit_target_dist_m?: number | null;
   pit_target_type?: PitTargetType | null;

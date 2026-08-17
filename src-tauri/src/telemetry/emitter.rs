@@ -28,7 +28,6 @@ use crate::model::player::{
 use crate::model::reference_lap::{ReferenceLapData, TrackCondition};
 use crate::model::relative::RelativeFrame;
 use crate::model::session::SessionFrame;
-use crate::model::sim_perf::SimPerfFrame;
 use crate::model::track_shape::{TrackRecordingFrame, TrackShapePayload};
 use crate::sources::source::SourceFrame;
 use crate::utils::lock_or_recover;
@@ -39,6 +38,12 @@ pub const EVENT_TELEMETRY_BUNDLE: &str = "sim://telemetry/bundle";
 pub const EVENT_SESSION_INFO: &str = "sim://session";
 pub const EVENT_WEATHER_FORECAST: &str = "sim://weather";
 pub const EVENT_STATUS: &str = "sim://status";
+/// The sim's own performance counters. Deliberately not part of the telemetry
+/// bundle: the FPS diagnostics runner is the only consumer, it lives in the
+/// main window, and folding these into the bundle would force that window to
+/// subscribe to 60 Hz telemetry it otherwise has no use for — and would hide
+/// the cost of that subscription from the very tool meant to measure it.
+pub const EVENT_SIM_PERF: &str = "sim://perf";
 pub const EVENT_DISCONNECTED: &str = "sim://disconnected";
 pub const EVENT_REFERENCE_LAP_UPDATED: &str = "sim://reference-lap/updated";
 
@@ -90,8 +95,6 @@ pub struct TelemetryBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub environment: Option<EnvironmentFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub sim_perf: Option<SimPerfFrame>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub track_recording: Option<TrackRecordingFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pit_target_dist_m: Option<f32>,
@@ -125,7 +128,6 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
         lap_log: None,
         session: None,
         environment: None,
-        sim_perf: None,
         track_recording: None,
         pit_target_dist_m: None,
         pit_target_type: None,
@@ -296,7 +298,10 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
     if due.hz1 {
         bundle.session = Some(frame.session.clone());
         bundle.environment = Some(frame.environment.clone());
-        bundle.sim_perf = Some(frame.sim_perf.clone());
+
+        if let Err(e) = app.emit(EVENT_SIM_PERF, &frame.sim_perf) {
+            warn!("Failed to emit sim perf: {}", e);
+        }
     }
 
     let should_emit = active_mask != 0 || due.first || due.hz10 || due.hz4 || due.hz1;

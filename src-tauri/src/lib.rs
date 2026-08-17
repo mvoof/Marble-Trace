@@ -5,6 +5,7 @@ mod computations;
 mod input;
 mod logging;
 mod model;
+mod process_priority;
 mod remote;
 mod sources;
 mod telemetry;
@@ -206,6 +207,8 @@ pub fn run() {
             let log_file_guard = logging::init(app);
             app.manage(log_file_guard);
             logging::log_startup_info(app);
+
+            process_priority::lower_to_below_normal();
 
             // Registered before any server can start: the hub simply drops
             // everything while no browser is connected.
