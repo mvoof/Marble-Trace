@@ -258,3 +258,12 @@
 .selectWidth {
   width: 140px;
 }
+
+// The token is meant to be read off the screen and typed into a phone, so it
+// gets input-sized monospace rather than the muted description type.
+.tokenInput {
+  width: 260px;
+  font-family: $font-mono;
+  font-size: rem(15);
+  letter-spacing: 0.06em;
+}

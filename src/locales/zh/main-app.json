@@ -366,6 +366,8 @@
       "securityTitle": "网络访问",
       "securityDesc": "屏幕链接包含访问令牌。重新生成即可让此前分发的所有链接失效。",
       "securityDescOpen": "未设置访问令牌，本网络中知道地址的任何人都能查看你的屏幕。",
+      "tokenTitle": "访问令牌",
+      "tokenDesc": "设备需要此令牌才能打开屏幕。下方的链接和二维码中已包含该令牌。",
       "lanLabel": "可从局域网访问",
       "regenerateToken": "新令牌",
       "screensTitle": "当前布局中的屏幕",

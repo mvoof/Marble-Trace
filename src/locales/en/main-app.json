@@ -368,6 +368,8 @@
       "securityTitle": "Network access",
       "securityDesc": "Screen links carry an access token. Regenerate it to lock out every device you have handed a link to.",
       "securityDescOpen": "No access token is set, so anyone on this network who knows the address can watch your screens.",
+      "tokenTitle": "Access token",
+      "tokenDesc": "Devices need this token to open a screen. It is already part of the links and QR codes below.",
       "lanLabel": "Reachable from the local network",
       "regenerateToken": "New token",
       "screensTitle": "Screens in the active layout",

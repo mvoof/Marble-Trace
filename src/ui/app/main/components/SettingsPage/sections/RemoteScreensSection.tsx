@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { App, Button, Flex, InputNumber, Switch, Tag } from 'antd';
+import {
+  App,
+  Button,
+  Flex,
+  Input,
+  InputNumber,
+  Switch,
+  Tag,
+  Tooltip,
+} from 'antd';
 import { Copy, Eye, EyeOff, RefreshCw } from 'lucide-react';
 
 import { getRemoteServerInfo } from '@platform/services/remote.service';
@@ -25,8 +34,8 @@ const MAX_HZ = 60;
 
 const ICON_SIZE = 14;
 
-/** Length of the redaction standing in for a hidden token. */
-const MASK_LENGTH = 12;
+/** Stands in for the token while it is covered. */
+const MASK = '•'.repeat(12);
 
 export const RemoteScreensSection = observer(() => {
   const appSettings = useAppSettingsStore();
@@ -184,56 +193,7 @@ export const RemoteScreensSection = observer(() => {
           <span className={styles.fieldDesc}>
             {t('settingsPage.remote.lanLabel')}
           </span>
-
-          <Button
-            size="small"
-            icon={<RefreshCw size={ICON_SIZE} />}
-            disabled={!remoteEnabled}
-            onClick={() => appSettings.regenerateRemoteToken()}
-          >
-            {t('settingsPage.remote.regenerateToken')}
-          </Button>
         </Flex>
-
-        {remoteEnabled && settings.remoteToken && (
-          <Flex align="center" gap={8} wrap>
-            <span className={styles.fieldDesc}>
-              {revealed ? settings.remoteToken : '•'.repeat(MASK_LENGTH)}
-            </span>
-
-            <Button
-              size="small"
-              icon={
-                revealed ? (
-                  <EyeOff size={ICON_SIZE} />
-                ) : (
-                  <Eye size={ICON_SIZE} />
-                )
-              }
-              onClick={() => setRevealed(!revealed)}
-            >
-              {revealed
-                ? t('settingsPage.remote.hideToken')
-                : t('settingsPage.remote.showToken')}
-            </Button>
-
-            {/* Copying works while the token stays covered — there is no reason
-                to put it on screen just to move it somewhere else. */}
-            <Button
-              size="small"
-              icon={<Copy size={ICON_SIZE} />}
-              onClick={() => {
-                void navigator.clipboard
-                  .writeText(settings.remoteToken)
-                  .then(() => {
-                    message.success(t('settingsPage.remote.tokenCopied'));
-                  });
-              }}
-            >
-              {t('settingsPage.remote.copyToken')}
-            </Button>
-          </Flex>
-        )}
 
         {!settings.remoteLan && (
           <div className={styles.fieldDesc}>
@@ -241,6 +201,87 @@ export const RemoteScreensSection = observer(() => {
           </div>
         )}
       </div>
+
+      {/* The token gets its own group: sat next to the network switch, its
+          buttons read as belonging to that toggle. */}
+      {remoteEnabled && settings.remoteToken && (
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldTitle}>
+            {t('settingsPage.remote.tokenTitle')}
+          </div>
+
+          <div
+            className={`${styles.fieldDesc} ${styles.fieldDescBeforeAction}`}
+          >
+            {t('settingsPage.remote.tokenDesc')}
+          </div>
+
+          <Flex align="center" gap={12} wrap>
+            <Input
+              readOnly
+              className={styles.tokenInput}
+              value={revealed ? settings.remoteToken : MASK}
+              suffix={
+                <Flex align="center" gap={2}>
+                  <Tooltip
+                    title={
+                      revealed
+                        ? t('settingsPage.remote.hideToken')
+                        : t('settingsPage.remote.showToken')
+                    }
+                  >
+                    <Button
+                      size="small"
+                      type="text"
+                      aria-label={
+                        revealed
+                          ? t('settingsPage.remote.hideToken')
+                          : t('settingsPage.remote.showToken')
+                      }
+                      icon={
+                        revealed ? (
+                          <EyeOff size={ICON_SIZE} />
+                        ) : (
+                          <Eye size={ICON_SIZE} />
+                        )
+                      }
+                      onClick={() => setRevealed(!revealed)}
+                    />
+                  </Tooltip>
+
+                  {/* Copying works while the token stays covered — there is no
+                      reason to put it on screen just to move it elsewhere. */}
+                  <Tooltip title={t('settingsPage.remote.copyToken')}>
+                    <Button
+                      size="small"
+                      type="text"
+                      aria-label={t('settingsPage.remote.copyToken')}
+                      icon={<Copy size={ICON_SIZE} />}
+                      onClick={() => {
+                        void navigator.clipboard
+                          .writeText(settings.remoteToken)
+                          .then(() => {
+                            message.success(
+                              t('settingsPage.remote.tokenCopied')
+                            );
+                          });
+                      }}
+                    />
+                  </Tooltip>
+                </Flex>
+              }
+            />
+
+            <Button
+              size="small"
+              icon={<RefreshCw size={ICON_SIZE} />}
+              onClick={() => appSettings.regenerateRemoteToken()}
+            >
+              {t('settingsPage.remote.regenerateToken')}
+            </Button>
+          </Flex>
+        </div>
+      )}
 
       <div className={styles.fieldGroup}>
         <div className={styles.fieldTitle}>
