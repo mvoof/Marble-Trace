@@ -31,6 +31,17 @@ import {
   placeWidgetOnMonitor,
   widgetsOnMonitor,
 } from '@store/settings/virtual-desktop';
+import {
+  boundsOverlap,
+  clearOfMonitors,
+  cloneMonitor,
+  isDisplayMonitor,
+  isRemoteMonitor,
+  nextRemoteBounds,
+  remoteScreenGrid,
+  slugFromName,
+  uniqueSlug,
+} from '@utils/remote-screen';
 import { WidgetHistory } from '@store/settings/widget-history';
 import {
   bottomZIndex,
@@ -503,10 +514,7 @@ export class WidgetSettingsStore {
 
     if (!layout) return;
 
-    layout.monitors = monitors.map((monitor) => ({
-      name: monitor.name,
-      bounds: { ...monitor.bounds },
-    }));
+    layout.monitors = monitors.map(cloneMonitor);
   }
 
   loadActiveLayoutWidgets() {
@@ -542,6 +550,7 @@ export class WidgetSettingsStore {
     return monitors
       .filter(
         (monitor) =>
+          isDisplayMonitor(monitor) &&
           widgetsOnMonitor(enabled, monitor.name, monitors).length > 0
       )
       .map((monitor) => monitor.name);
@@ -831,6 +840,179 @@ export class WidgetSettingsStore {
    */
   addMonitor(monitor: LayoutMonitor) {
     this.layoutRecords.addMonitor(monitor);
+    this.bumpMutation();
+  }
+
+  /**
+   * Adds a device screen to the active layout. It is a monitor in every way
+   * that matters for the layout — widgets belong to it by their centre point,
+   * it gets its own widget set — but the machine has no display behind it, so
+   * it is parked in free desktop space and never gets an overlay window.
+   */
+  addRemoteScreen(name: string, width: number, height: number) {
+    const layout = this.activeLayout;
+
+    if (!layout) return;
+
+    const slug = uniqueSlug(
+      slugFromName(name),
+      layout.monitors.map((monitor) => monitor.slug ?? '')
+    );
+
+    this.layoutRecords.addMonitor({
+      name,
+      kind: 'remote',
+      slug,
+      bounds: nextRemoteBounds(layout.monitors, width, height),
+    });
+
+    this.bumpMutation();
+  }
+
+  /** Applied when a device reports a viewport that differs from the size the
+   *  screen was drawn for. Never automatic: resizing moves every widget. */
+  resizeRemoteScreen(monitorName: string, width: number, height: number) {
+    const layout = this.activeLayout;
+    const monitor = layout?.monitors.find(
+      (candidate) => candidate.name === monitorName
+    );
+
+    if (!layout || !monitor) return;
+
+    // Growing a screen in place can push it into its neighbours, which the
+    // drag path refuses outright — the widened rectangle would take over the
+    // widgets whose centres it now covers. It is slid clear the short way, and
+    // its own widgets travel with it.
+    const others = layout.monitors.filter(
+      (candidate) => candidate.name !== monitorName
+    );
+
+    const grown = { ...monitor.bounds, width, height };
+    const slid = clearOfMonitors(
+      grown,
+      others.map((candidate) => candidate.bounds)
+    );
+
+    // An arrangement dense enough to leave no room nearby falls back to the
+    // free space every new screen is parked in.
+    const landed = others.some((candidate) =>
+      boundsOverlap(candidate.bounds, slid)
+    )
+      ? nextRemoteBounds(others, width, height)
+      : slid;
+
+    const carried = widgetsOnMonitor(
+      this.allWidgets,
+      monitorName,
+      layout.monitors
+    );
+
+    monitor.bounds = landed;
+
+    const dx = landed.x - grown.x;
+    const dy = landed.y - grown.y;
+
+    for (const widget of carried) {
+      widget.userSettings.x += dx;
+      widget.userSettings.y += dy;
+    }
+
+    this.commitActiveLayout();
+    this.bumpMutation();
+  }
+
+  /**
+   * Moves a remote screen across the virtual desktop, carrying its widgets with
+   * it: widget coordinates are desktop-wide and a widget belongs to the monitor
+   * containing its centre, so a screen that moved alone would leave every
+   * widget behind on whatever rectangle they landed in. A move onto another
+   * monitor is refused for the same reason — it would steal that screen's
+   * widgets.
+   *
+   * Deliberately outside undo/redo: the history holds widget snapshots only, so
+   * an undo here would put the widgets back and leave the screen moved.
+   */
+  moveRemoteScreen(monitorName: string, x: number, y: number) {
+    const layout = this.activeLayout;
+
+    if (!layout) return;
+
+    const monitor = layout.monitors.find(
+      (candidate) => candidate.name === monitorName
+    );
+
+    if (!monitor || !isRemoteMonitor(monitor)) return;
+
+    const dx = x - monitor.bounds.x;
+    const dy = y - monitor.bounds.y;
+
+    if (dx === 0 && dy === 0) return;
+
+    const target = { ...monitor.bounds, x, y };
+
+    const collides = layout.monitors.some(
+      (other) =>
+        other.name !== monitorName && boundsOverlap(other.bounds, target)
+    );
+
+    if (collides) return;
+
+    const carried = widgetsOnMonitor(
+      this.allWidgets,
+      monitorName,
+      layout.monitors
+    );
+
+    monitor.bounds = target;
+
+    for (const widget of carried) {
+      widget.userSettings.x += dx;
+      widget.userSettings.y += dy;
+    }
+
+    this.commitActiveLayout();
+    this.bumpMutation();
+  }
+
+  /**
+   * Re-parks every remote screen in rows under the real desktop. New screens
+   * are appended to the right of everything else, which turns a handful of them
+   * into a strip too wide for the editor to show at a useful scale.
+   */
+  arrangeRemoteScreens() {
+    const layout = this.activeLayout;
+
+    if (!layout) return;
+
+    const targets = remoteScreenGrid(layout.monitors);
+
+    // Ownership is read against the arrangement as it stands, before any
+    // rectangle moves — halfway through, a widget's centre could fall inside a
+    // screen that has already been re-parked.
+    const carried = new Map(
+      Object.keys(targets).map((name) => [
+        name,
+        widgetsOnMonitor(this.allWidgets, name, layout.monitors),
+      ])
+    );
+
+    for (const monitor of layout.monitors) {
+      const target = targets[monitor.name];
+
+      if (!target) continue;
+
+      const dx = target.x - monitor.bounds.x;
+      const dy = target.y - monitor.bounds.y;
+
+      monitor.bounds = target;
+
+      for (const widget of carried.get(monitor.name) ?? []) {
+        widget.userSettings.x += dx;
+        widget.userSettings.y += dy;
+      }
+    }
+
+    this.commitActiveLayout();
     this.bumpMutation();
   }
 

@@ -1,3 +1,5 @@
+import { resolve } from 'node:path';
+
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
@@ -15,7 +17,21 @@ export default defineConfig(() => ({
       },
     }),
   ],
+  // Relative, so `remote.html` served from `/r/<slug>` still resolves its
+  // assets — the remote server strips that prefix back off.
   base: './',
+
+  build: {
+    rollupOptions: {
+      input: {
+        // The windows Tauri opens.
+        main: resolve(__dirname, 'index.html'),
+        // A layout rendered in a browser on another device. A separate entry
+        // because it must not pull in the Tauri API.
+        remote: resolve(__dirname, 'remote.html'),
+      },
+    },
+  },
 
   resolve: {
     alias: createLayerAliases(),

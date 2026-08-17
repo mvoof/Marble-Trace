@@ -15,8 +15,10 @@ import {
 import {
   useWidgetSettingsStore,
   useAppSettingsStore,
+  useRemoteDevicesStore,
   useSimStore,
 } from '@store/root-store-context';
+import { isRemoteMonitor } from '@utils/remote-screen';
 import {
   resolveBackgroundSrc,
   deleteBackgroundImage,
@@ -156,6 +158,7 @@ const SESSION_LABEL_KEYS: Record<SessionContext, string> = {
 
 export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   const widgetSettings = useWidgetSettingsStore();
+  const remoteDevices = useRemoteDevicesStore();
   const appSettings = useAppSettingsStore();
   const simStore = useSimStore();
   const { t, i18n } = useTranslation('main-app');
@@ -533,9 +536,33 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                       {t('layoutList.noMonitors')}
                     </div>
                   ) : (
-                    selectedMonitors.map(({ name: monitorName, bounds }) => {
-                      const isOnline = onlineMonitorNames.has(monitorName);
+                    selectedMonitors.map((monitor) => {
+                      const { name: monitorName, bounds } = monitor;
                       const widgetCount = widgetCountOnMonitor(monitorName);
+
+                      // A remote screen has no display behind it, so "attached"
+                      // means nothing for it: what it can be is a device that
+                      // has the page open. Its size is chosen rather than
+                      // detected, so it is always known and always shown.
+                      const isRemote = isRemoteMonitor(monitor);
+
+                      const device = isRemote
+                        ? remoteDevices.bySlug(monitor.slug ?? '')
+                        : undefined;
+
+                      const isOnline = isRemote
+                        ? device?.connected === true
+                        : onlineMonitorNames.has(monitorName);
+
+                      const meta = isRemote
+                        ? `${bounds.width}×${bounds.height}${
+                            isOnline
+                              ? ''
+                              : ` · ${t('layoutList.remoteNoDevice')}`
+                          }`
+                        : isOnline
+                          ? `${bounds.width}×${bounds.height}`
+                          : t('layoutList.monitorOffline');
 
                       return (
                         <div
@@ -553,9 +580,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
                             {monitorName}
                           </span>
                           <span className={styles.monitorMeta}>
-                            {isOnline
-                              ? `${bounds.width}×${bounds.height}`
-                              : t('layoutList.monitorOffline')}
+                            {meta}
                             {` · ${widgetCount}`}
                           </span>
                           <Popconfirm

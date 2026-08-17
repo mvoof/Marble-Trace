@@ -310,3 +310,81 @@ describe('WidgetSettingsStore overlay widget picker', () => {
     );
   });
 });
+
+describe('WidgetSettingsStore remote screen geometry', () => {
+  let rootStore: RootStore;
+  const REMOTE_X = 2500;
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+    rootStore.widgetSettings.setLayouts(
+      [
+        {
+          id: 'layout-remote',
+          name: 'Remote',
+          createdAt: Date.now(),
+          monitors: [
+            {
+              name: 'DISPLAY1',
+              bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+            },
+            {
+              name: 'Tablet',
+              kind: 'remote',
+              slug: 'tablet',
+              bounds: { x: REMOTE_X, y: 0, width: 400, height: 300 },
+            },
+          ],
+          widgets: [],
+        },
+      ],
+      'layout-remote'
+    );
+  });
+
+  const remoteBounds = () =>
+    rootStore.widgetSettings.activeLayout?.monitors.find(
+      (monitor) => monitor.name === 'Tablet'
+    )?.bounds;
+
+  it('slides a screen clear of the display when fitting it to a device grows it over one', () => {
+    rootStore.widgetSettings.resizeRemoteScreen('Tablet', 1280, 800);
+
+    const bounds = remoteBounds();
+
+    expect(bounds?.width).toBe(1280);
+    expect(bounds?.x).toBeGreaterThanOrEqual(1920);
+  });
+
+  it('carries the screen widgets along when the fit displaces it', () => {
+    const [widget] = rootStore.widgetSettings.allWidgets;
+
+    rootStore.widgetSettings.setWidgetEnabled(widget.id, true);
+    rootStore.widgetSettings.updatePosition(widget.id, REMOTE_X + 10, 10);
+
+    const before = widget.userSettings.x;
+
+    rootStore.widgetSettings.resizeRemoteScreen('Tablet', 1280, 800);
+
+    const bounds = remoteBounds();
+
+    expect(widget.userSettings.x - before).toBe((bounds?.x ?? 0) - REMOTE_X);
+  });
+
+  it('refuses a drag that would land the screen on another one', () => {
+    rootStore.widgetSettings.moveRemoteScreen('Tablet', 0, 0);
+
+    expect(remoteBounds()?.x).toBe(REMOTE_X);
+  });
+
+  it('moves the screen widgets with a drag', () => {
+    const [widget] = rootStore.widgetSettings.allWidgets;
+
+    rootStore.widgetSettings.setWidgetEnabled(widget.id, true);
+    rootStore.widgetSettings.updatePosition(widget.id, REMOTE_X + 10, 10);
+
+    rootStore.widgetSettings.moveRemoteScreen('Tablet', REMOTE_X, 2000);
+
+    expect(widget.userSettings.y).toBe(2010);
+  });
+});

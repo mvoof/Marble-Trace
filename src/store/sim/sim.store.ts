@@ -31,6 +31,7 @@ import type {
   ReferenceLapData,
   TrackCondition,
 } from '@/types/bindings';
+import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import { debug } from '@store/sim/debug';
 import {
   nextTrackCondition,
@@ -341,6 +342,27 @@ export class SimStore {
     this.root.pitServiceWidget.reset();
   }
 
+  /**
+   * Entry points for a remote screen, whose frames arrive over a WebSocket
+   * instead of the Tauri event bus. The state transitions are the same ones the
+   * listeners drive — only the transport differs, so the private setters stay
+   * private and this is the whole surface a remote client touches.
+   */
+  markRemoteFrame() {
+    runInAction(() => this.onFrameReceived());
+  }
+
+  applyRemoteStatus(payload: SimStatus) {
+    runInAction(() => {
+      this.currentSim = payload.sim;
+      this.setStatus(payload.status as TelemetryStatus);
+    });
+  }
+
+  applyRemoteDisconnected() {
+    runInAction(() => this.setDisconnected());
+  }
+
   private setStatus(status: TelemetryStatus) {
     this.status = status;
 
@@ -386,51 +408,9 @@ export class SimStore {
       await listenTo<TelemetryBundle>(SIM_TELEMETRY_BUNDLE, (event) => {
         if (this.initId !== guardId) return;
 
-        const b = event.payload;
-
-        runInAction(() => {
-          if (b.car_dynamics) {
-            this.onFrameReceived();
-            this.root.player.updateCarDynamics(b.car_dynamics);
-          }
-          if (b.car_idx) this.root.cars.updateCarIdx(b.car_idx);
-          if (b.car_inputs) this.root.player.updateCarInputs(b.car_inputs);
-          if (b.car_positions)
-            this.root.cars.updateCarPositions(b.car_positions);
-          if (b.car_status) this.root.player.updateCarStatus(b.car_status);
-          if (b.lap_timing) this.root.player.updateLapTiming(b.lap_timing);
-          this.root.player.updatePitTarget(
-            b.pit_target_dist_m ?? null,
-            b.pit_target_type ?? null,
-            b.pit_lane_progress_pct ?? null
-          );
-          if (b.session) this.root.session.updateSession(b.session);
-          if (b.environment)
-            this.root.environment.updateEnvironment(b.environment);
-          if (b.chassis) this.root.player.updateChassis(b.chassis);
-          if (b.pit_service) this.root.player.updatePitService(b.pit_service);
-
-          if (b.proximity)
-            this.root.backendComputed.updateProximity(b.proximity);
-          if (b.relative) this.root.backendComputed.updateRelative(b.relative);
-          if (b.fuel) this.root.backendComputed.updateFuel(b.fuel);
-          if (b.standings)
-            this.root.backendComputed.updateStandings(b.standings);
-          if (b.pit_stops)
-            this.root.backendComputed.updatePitStops(b.pit_stops);
-          if (b.lap_delta)
-            this.root.backendComputed.updateLapDelta(b.lap_delta);
-          if (b.lap_log) this.root.backendComputed.updateLapLog(b.lap_log);
-
-          if (b.track_recording) {
-            this.root.trackMapWidget.updateRecordingStatus(
-              b.track_recording.isRecording,
-              b.track_recording.isWaitingForSf,
-              b.track_recording.progress,
-              b.track_recording.pitLaneRecording
-            );
-          }
-        });
+        applyTelemetryBundle(this.root, event.payload, () =>
+          this.onFrameReceived()
+        );
       })
     );
 

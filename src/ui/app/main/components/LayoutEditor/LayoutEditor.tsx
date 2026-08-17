@@ -45,6 +45,7 @@ import {
   ArrowDown,
   ArrowDownRight,
   LayoutGrid,
+  Rows3,
 } from 'lucide-react';
 import {
   useAppSettingsStore,
@@ -61,6 +62,8 @@ import {
   saveBackgroundImage,
   deleteBackgroundImage,
 } from '@store/settings/layout-background';
+import { isRemoteMonitor } from '@utils/remote-screen';
+import { AddRemoteScreenButton } from './AddRemoteScreenButton';
 import { monitorForWidget } from '@store/settings/virtual-desktop';
 import styles from './LayoutEditor.module.scss';
 
@@ -324,7 +327,20 @@ export const LayoutEditor = observer(
           ? `${monitor.name} · ${monitor.bounds.width}×${monitor.bounds.height}`
           : `${monitor.name} · ${t('layoutEditor.monitorAdd')}`,
       })),
+      // Remote screens live in the layout only — the machine has no display to
+      // offer them from, so they are listed straight from the layout itself.
+      ...(activeLayout?.monitors ?? [])
+        .filter(isRemoteMonitor)
+        .map((monitor) => ({
+          value: monitor.name,
+          inLayout: true,
+          label: `${monitor.name} · ${monitor.bounds.width}×${monitor.bounds.height} · ${t('layoutEditor.remoteScreenTag')}`,
+        })),
     ];
+
+    const hasRemoteScreens = (activeLayout?.monitors ?? []).some(
+      isRemoteMonitor
+    );
 
     const moveTargetOptions = (activeLayout?.monitors ?? [])
       .filter((monitor) => monitor.name !== focusedMonitorName)
@@ -345,6 +361,17 @@ export const LayoutEditor = observer(
     const handleSelectMonitor = (name: string) => {
       if (name === ALL_MONITORS) {
         setFocusedMonitorName(null);
+
+        return;
+      }
+
+      // A remote screen is already part of the layout, so selecting one only
+      // ever means focusing it.
+      if (
+        layoutMonitorNames.has(name) &&
+        !monitors.some((candidate) => candidate.name === name)
+      ) {
+        setFocusedMonitorName(name);
 
         return;
       }
@@ -643,6 +670,21 @@ export const LayoutEditor = observer(
                   onClick={handleMakeActive}
                 >
                   {t('layoutEditor.makeActive')}
+                </Button>
+              </Tooltip>
+            )}
+
+            <AddRemoteScreenButton />
+
+            {hasRemoteScreens && (
+              <Tooltip title={t('layoutEditor.arrangeRemoteScreensTooltip')}>
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<Rows3 size={14} />}
+                  onClick={() => widgetSettings.arrangeRemoteScreens()}
+                >
+                  {t('layoutEditor.arrangeRemoteScreens')}
                 </Button>
               </Tooltip>
             )}

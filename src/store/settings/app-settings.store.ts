@@ -5,6 +5,7 @@ import { getVersion } from '@tauri-apps/api/app';
 import { deleteSettingsFile } from '@platform/services/settings.service';
 import { mergeWithDefaults } from '@store/deep-merge';
 import { detectSystemLanguage } from '@store/settings/system-locale';
+import { createRemoteToken } from '@utils/remote-screen';
 import i18n from '@/i18n';
 import type { AppLanguage } from '@/types';
 import type { SettingsLockReason } from '@platform/settings-schema/types';
@@ -57,6 +58,18 @@ const DEFAULT_APP_SETTINGS = {
   streamChatAuthRevision: 0,
   streamChatHideCommands: true,
   streamChatIgnoredBots: 'Nightbot, StreamElements, Moobot',
+  /** Remote screens: serve layouts to devices on the network. App-level rather
+   *  than per layout — one server, whichever layout is active. */
+  remoteEnabled: false,
+  remotePort: 8787,
+  /** Off keeps the server on loopback, where only this machine can reach it. */
+  remoteLan: true,
+  /** Generated on first enable and embedded in the screen URLs. Empty means the
+   *  user turned the check off and the server is open to the whole network. */
+  remoteToken: '',
+  /** Frames per second pushed to browsers. A tablet cannot show 60 and the
+   *  Wi-Fi does not need to carry them. */
+  remoteTelemetryHz: 30,
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
@@ -357,6 +370,37 @@ export class AppSettingsStore {
 
   setAutoSwitchLayouts(value: boolean) {
     this.appSettings.autoSwitchLayouts = value;
+  }
+
+  setRemoteEnabled(value: boolean) {
+    this.appSettings.remoteEnabled = value;
+
+    // A server that has never had a token would otherwise come up open to the
+    // network on the very first enable.
+    if (value && !this.appSettings.remoteToken) {
+      this.appSettings.remoteToken = createRemoteToken();
+    }
+  }
+
+  setRemotePort(value: number) {
+    this.appSettings.remotePort = value;
+  }
+
+  setRemoteLan(value: boolean) {
+    this.appSettings.remoteLan = value;
+  }
+
+  setRemoteTelemetryHz(value: number) {
+    this.appSettings.remoteTelemetryHz = value;
+  }
+
+  /** Invalidates every URL already handed out — which is the point. */
+  regenerateRemoteToken() {
+    this.appSettings.remoteToken = createRemoteToken();
+  }
+
+  clearRemoteToken() {
+    this.appSettings.remoteToken = '';
   }
 
   setEditorShowGrid(value: boolean) {

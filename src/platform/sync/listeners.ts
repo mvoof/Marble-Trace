@@ -5,6 +5,7 @@ import {
   type HalvesTakenOver,
   type MonitorWidgetsPayload,
   type StreamChatFilters,
+  type TrackRotationPayload,
   type UnlistenFn,
 } from '@platform/services/events.service';
 import type { AppLanguage, UnitSystem } from '@/types';
@@ -33,9 +34,24 @@ export const setupMainListeners = async (
 
   unlistens.push(await listenPitServiceAutoSuspended(root));
   unlistens.push(await listenPitServiceHalvesTakenOver(root));
+  unlistens.push(await listenTrackRotation(root));
 
   return unlistens;
 };
+
+/**
+ * The map is turned in whichever window shows it — an overlay in drag mode, or
+ * the layout editor in main — and both windows draw the same angle afterwards.
+ */
+const listenTrackRotation = (root: RootStore) =>
+  listenTo<TrackRotationPayload>('track-rotation-changed', (e) => {
+    runInAction(() =>
+      root.trackMapWidget.applyTrackRotation(
+        e.payload.trackId,
+        e.payload.rotation
+      )
+    );
+  });
 
 /**
  * Auto mode stands down for the rest of a stop as soon as the driver touches
@@ -73,6 +89,8 @@ export const setupOverlayListeners = async (
       runInAction(() => root.appSettings.setDragMode(e.payload));
     })
   );
+
+  unlistens.push(await listenTrackRotation(root));
 
   unlistens.push(
     await listenTo<boolean>('hide-all-widgets-changed', (e) => {

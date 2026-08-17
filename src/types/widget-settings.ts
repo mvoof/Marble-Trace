@@ -596,6 +596,24 @@ export interface MonitorBounds {
 export interface LayoutMonitor {
   name: string;
   bounds: MonitorBounds;
+  /**
+   * A remote screen is a device on the network rendering the layout in a
+   * browser. It behaves as a monitor everywhere it matters — widgets belong to
+   * it by their centre point, it gets its own widget set, the editor lays it
+   * out — but no overlay window is ever opened for it. Absent means a physical
+   * display, so files written before remote screens existed stay valid.
+   */
+  kind?: 'display' | 'remote';
+  /** Remote screens only: the URL segment the device is opened at. */
+  slug?: string;
+  /**
+   * Remote screens only: a device has already reported its size and the screen
+   * was matched to it. The first connection fits the screen automatically —
+   * the size picked when creating it is a guess — but only the first, so a
+   * different device opening the same link, or a browser address bar coming
+   * and going, cannot reshuffle a layout the user has already built.
+   */
+  fittedToDevice?: boolean;
 }
 
 export type SessionContext = 'Practice' | 'Qualify' | 'Race' | 'Garage';

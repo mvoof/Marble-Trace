@@ -5,6 +5,7 @@ mod computations;
 mod input;
 mod logging;
 mod model;
+mod remote;
 mod sources;
 mod telemetry;
 mod utils;
@@ -37,6 +38,10 @@ use commands::{
 use computations::ProcessorRegistry;
 use input::commands::{resolve_input_devices, set_input_polling_enabled, InputState};
 use input::InputRuntime;
+use remote::commands::{
+    get_remote_devices, get_remote_server_info, publish_remote_control, publish_remote_snapshot,
+    remote_screen_url, start_remote_server, stop_remote_server, RemoteState,
+};
 use telemetry::state::TelemetryState;
 
 #[cfg(feature = "dev")]
@@ -61,6 +66,8 @@ use model::pit_command::{PitCommandKind, PitCommandRequest};
 use model::player::{
     CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
 };
+#[cfg(feature = "dev")]
+use model::remote::{RemoteDevice, RemoteServerConfig, RemoteServerInfo};
 #[cfg(feature = "dev")]
 use model::session::SessionFrame;
 
@@ -107,7 +114,10 @@ pub fn run() {
             .register::<SimType>()
             .register::<PitCommandKind>()
             .register::<PitCommandRequest>()
-            .register::<SimStatus>();
+            .register::<SimStatus>()
+            .register::<RemoteServerInfo>()
+            .register::<RemoteServerConfig>()
+            .register::<RemoteDevice>();
 
         types
             .register::<ChatPlatform>()
@@ -194,6 +204,12 @@ pub fn run() {
             app.manage(log_file_guard);
             logging::log_startup_info(app);
 
+            // Registered before any server can start: the hub simply drops
+            // everything while no browser is connected.
+            let remote_state = RemoteState::default();
+            remote::mirror::attach(app.handle(), std::sync::Arc::clone(&remote_state.hub));
+            app.manage(remote_state);
+
             {
                 let flag = force_track_start_listener;
                 app.listen("track-map:force-start", move |_| {
@@ -241,6 +257,13 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(generate_handler![
+            start_remote_server,
+            stop_remote_server,
+            get_remote_server_info,
+            get_remote_devices,
+            publish_remote_snapshot,
+            publish_remote_control,
+            remote_screen_url,
             start_telemetry_stream,
             stop_telemetry_stream,
             get_last_session_info,

@@ -17,7 +17,10 @@ import type {
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
 import type { BindingMap } from '@/types/input-bindings';
+import type { RemoteDevice } from '@/types/bindings';
 import { TRACK_MAP_CLEAR } from '@platform/sync/sim-events';
+import { publishRemoteControl } from '@platform/services/remote.service';
+import type { RemoteControlKind } from '@/types/remote';
 
 /**
  * The whole frontend↔backend event channel: the only module that imports
@@ -94,8 +97,31 @@ export const emitStreamChatFilters = (filters: StreamChatFilters) =>
 export const emitStreamChatCleared = () =>
   emitToOverlays('stream-chat-cleared', null);
 
+/**
+ * Fan-out to the overlay windows and to the remote screens at once.
+ *
+ * A Tauri event stops at the app: a browser showing the same widget has to be
+ * told separately, or a hotkey moves the standings on the monitors and leaves
+ * the tablet on the class it was already showing.
+ */
+const emitToOverlaysAndRemote = async (
+  event: string,
+  remoteKind: RemoteControlKind,
+  payload: unknown
+) => {
+  await emitToOverlays(event, payload);
+
+  await publishRemoteControl(remoteKind, payload).catch((error: unknown) =>
+    console.error('[events] failed to reach the remote screens:', error)
+  );
+};
+
 export const emitStandingsClassIndex = (index: number) =>
-  emitToOverlays('standings-class-index-changed', index);
+  emitToOverlaysAndRemote(
+    'standings-class-index-changed',
+    'standings-class-index',
+    index
+  );
 
 export const emitPitServiceToggle = () =>
   emitToOverlays('pit-service-toggle', null);
@@ -116,7 +142,26 @@ export const emitPitServiceHalvesTakenOver = (halves: HalvesTakenOver) =>
   emit('pit-service-halves-taken-over', halves);
 
 export const emitStandingsScroll = (delta: number) =>
-  emitToOverlays('standings-scroll', delta);
+  emitToOverlaysAndRemote('standings-scroll', 'standings-scroll', delta);
+
+export interface TrackRotationPayload {
+  trackId: string;
+  rotation: number;
+}
+
+/**
+ * Broadcast rather than targeted: the map is turned from whichever window shows
+ * it — an overlay in drag mode, or the layout editor in main — and every window
+ * plus every remote screen has to end up on the same angle.
+ */
+export const emitTrackRotation = async (payload: TrackRotationPayload) => {
+  await emit('track-rotation-changed', payload);
+
+  await publishRemoteControl('track-rotation', payload).catch(
+    (error: unknown) =>
+      console.error('[events] failed to reach the remote screens:', error)
+  );
+};
 
 export const emitInteractMode = (active: boolean) =>
   emitToOverlays('interact-mode-changed', active);
@@ -168,6 +213,10 @@ export const emitLayoutActivated = (layoutName: string) =>
   emit('layout-activated', layoutName);
 
 // Both windows and the backend recorder drop their copy of the track.
+/** A device showing a remote screen connected, resized or went away. */
+export const listenRemoteDevice = (handler: (device: RemoteDevice) => void) =>
+  listenTo<RemoteDevice>('remote://device', (event) => handler(event.payload));
+
 export const emitTrackMapClear = () => emit(TRACK_MAP_CLEAR);
 
 // Heard by the backend recorder, not by a window.

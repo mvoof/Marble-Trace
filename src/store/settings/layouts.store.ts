@@ -7,6 +7,11 @@ import {
   placeWidgetOnMonitor,
   widgetsOnMonitor,
 } from '@store/settings/virtual-desktop';
+import {
+  cloneMonitor,
+  isDisplayMonitor,
+  isRemoteMonitor,
+} from '@utils/remote-screen';
 import type {
   LayoutMonitor,
   SavedLayout,
@@ -195,10 +200,7 @@ export class LayoutsStore {
       name: `${layout.name} (Copy)`,
       createdAt: Date.now(),
       backgroundImages,
-      monitors: layout.monitors.map((monitor) => ({
-        name: monitor.name,
-        bounds: { ...monitor.bounds },
-      })),
+      monitors: layout.monitors.map(cloneMonitor),
       widgets: layout.widgets.map((widget) => ({
         ...widget,
         userSettings: { ...widget.userSettings },
@@ -220,8 +222,16 @@ export class LayoutsStore {
   }
 
   /** Monitors the active layout covers, empty ones included. */
+  // Remote screens are excluded: they are monitors for layout purposes, but no
+  // overlay window is ever opened for one.
   get activeMonitorNames(): string[] {
-    return (this.activeLayout?.monitors ?? []).map((monitor) => monitor.name);
+    return (this.activeLayout?.monitors ?? [])
+      .filter(isDisplayMonitor)
+      .map((monitor) => monitor.name);
+  }
+
+  get activeRemoteScreens(): LayoutMonitor[] {
+    return (this.activeLayout?.monitors ?? []).filter(isRemoteMonitor);
   }
 
   monitorByName(monitorName: string): LayoutMonitor | undefined {
@@ -235,10 +245,7 @@ export class LayoutsStore {
 
     if (!layout) return;
 
-    layout.monitors = monitors.map((monitor) => ({
-      name: monitor.name,
-      bounds: { ...monitor.bounds },
-    }));
+    layout.monitors = monitors.map(cloneMonitor);
   }
 
   /**
@@ -254,10 +261,10 @@ export class LayoutsStore {
       return;
     }
 
-    layout.monitors = [
-      ...layout.monitors,
-      { name: monitor.name, bounds: { ...monitor.bounds } },
-    ];
+    // Rebuilt rather than stored by reference, so a caller cannot keep a handle
+    // on the layout's copy — but `kind` and `slug` have to survive it, or a
+    // remote screen would come back as a display with no device behind it.
+    layout.monitors = [...layout.monitors, cloneMonitor(monitor)];
   }
 
   /**
@@ -340,6 +347,14 @@ export class LayoutsStore {
       const parked: LayoutMonitor[] = [];
 
       for (const monitor of layout.monitors) {
+        // A remote screen is never attached and must never be parked: its
+        // bounds are the device size the user chose. It still counts as
+        // occupied space so a parked display does not land on top of it.
+        if (isRemoteMonitor(monitor)) {
+          parked.push(monitor);
+          continue;
+        }
+
         const match = byName.get(monitor.name);
 
         if (match) {

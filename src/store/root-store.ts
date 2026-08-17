@@ -28,6 +28,7 @@ import { ActionRegistry } from '@store/hotkeys/action-registry';
 import { DEFAULT_WIDGETS } from '@store/widget-catalog';
 import { DeviceInputStore } from './hotkeys/device-input.store';
 import { BindingsUiStore } from './hotkeys/bindings-ui.store';
+import { RemoteDevicesStore } from './remote/remote-devices.store';
 import { SettingsPanelUiStore } from './widgets/settings-panel-ui.store';
 
 export class RootStore {
@@ -60,6 +61,7 @@ export class RootStore {
   deviceInput: DeviceInputStore;
   bindingsUi: BindingsUiStore;
   settingsPanelUi: SettingsPanelUiStore;
+  remoteDevices: RemoteDevicesStore;
 
   constructor(options?: { skipInit?: boolean }) {
     this.player = new PlayerStore();
@@ -80,7 +82,11 @@ export class RootStore {
     this.radar = new RadarWidgetStore(this);
     this.standingsWidget = new StandingsWidgetStore(this);
     this.pitServiceWidget = new PitServiceWidgetStore(this);
-    this.trackMapWidget = new TrackMapWidgetStore();
+    // A preview store shows a sample track: turning that map must not write an
+    // angle to disk under a track id the user never drove.
+    this.trackMapWidget = new TrackMapWidgetStore({
+      persists: !options?.skipInit,
+    });
     this.drivingCoachWidget = new DrivingCoachWidgetStore(this);
     this.coachWidget = new CoachWidgetStore(this);
     this.inputTraceWidget = new InputTraceWidgetStore(this);
@@ -91,6 +97,7 @@ export class RootStore {
     this.deviceInput = new DeviceInputStore();
     this.bindingsUi = new BindingsUiStore();
     this.settingsPanelUi = new SettingsPanelUiStore();
+    this.remoteDevices = new RemoteDevicesStore();
 
     if (!options?.skipInit) {
       this.flags.init();

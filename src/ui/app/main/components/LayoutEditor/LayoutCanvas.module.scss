@@ -13,6 +13,12 @@
   border: 1px solid #2a2c32;
 }
 
+// The stage usually meets the pane on one axis, leaving no room to drag a
+// screen out that way — so the pane stops clipping for the drag as well.
+.paneDragging {
+  overflow: visible;
+}
+
 .paneFullscreen {
   border: none;
   border-radius: 0;
@@ -30,6 +36,14 @@
   border: 1px solid #2a2c32;
   background-size: cover;
   background-position: center;
+}
+
+// A screen in hand has to be draggable past the edge of the desktop rectangle,
+// which is exactly where a new one usually goes. Clipping is dropped for the
+// drag instead of zooming the stage out, because rescaling mid-drag slides the
+// plate out from under the cursor.
+.stageDragging {
+  overflow: visible;
 }
 
 .stageFullscreen {
@@ -419,12 +433,54 @@ $edge-hover-thickness: 4px;
 
 // A monitor's area inside the desktop-space world. Sits under the widgets and
 // never takes pointer events — clicking empty space must still clear selection.
+// No z-index of its own: that would open a stacking context and trap the grab
+// bar below the widget layer. DOM order already keeps the plate underneath.
 .monitorPlate {
   position: absolute;
-  z-index: 0;
   pointer-events: none;
   border: 1px solid #2a2c32;
   background-color: #0b0c10;
   background-size: cover;
   background-position: center;
+}
+
+// Dragged over another screen: the drop will slide out of it, and the tint says
+// so before the mouse is released.
+.monitorPlateBlocked {
+  border-color: #e5484d;
+  box-shadow: inset 0 0 0 9999px rgba(229, 72, 77, 0.12);
+}
+
+// Grab bar of a remote screen. Sits above the widget layer (z-index 1) — that
+// layer covers the whole stage, so a handle drawn under it could never be hit —
+// and inside the plate rather than above it: a screen parked at the top of the
+// desktop would otherwise carry its handle off the edge of the editor.
+.plateHandle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px 2px 6px;
+  max-width: 100%;
+  border-radius: 0 0 4px 0;
+  background: rgba(42, 44, 50, 0.92);
+  color: #d5d7dd;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  pointer-events: auto;
+  cursor: grab;
+  z-index: 2;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.plateHandleLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

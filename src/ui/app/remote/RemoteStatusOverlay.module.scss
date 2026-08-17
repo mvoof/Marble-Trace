@@ -1,0 +1,61 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: sp(sm);
+  padding: sp(xl);
+  text-align: center;
+  // The text tokens are contrast-derived from --widget-bg, which only exists
+  // inside a widget frame; this chrome sits outside one and declares its own.
+  --widget-bg: #000;
+  font-family: $font-widget;
+  color: $widget-text-primary;
+  background: #000;
+}
+
+.overlayCorner {
+  position: absolute;
+  top: sp(md);
+  right: sp(md);
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
+  padding: sp(xs) sp(md);
+  border-radius: radius(md);
+  --widget-bg: #000;
+  font-family: $font-widget;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.title {
+  font-size: fs(lg);
+  font-weight: 600;
+}
+
+.hint {
+  font-size: fs(sm);
+  color: $widget-text-secondary;
+  max-width: 40ch;
+}
+
+.iconError {
+  color: $race-red;
+}
+
+.iconMuted {
+  color: $widget-text-secondary;
+}
+
+.iconSpinner {
+  color: $widget-text-secondary;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

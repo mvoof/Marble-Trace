@@ -1,0 +1,16 @@
+.window {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // The device is the frame here, not a transparent hole over a game: an
+  // explicit ground keeps the letterbox from showing the browser's own.
+  background: #000;
+  overflow: hidden;
+  // A widget screen is watched, never scrolled — a stray drag must not pull
+  // the layout out of view.
+  touch-action: none;
+  overscroll-behavior: none;
+  user-select: none;
+}

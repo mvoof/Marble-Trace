@@ -35,6 +35,7 @@ import {
   registerPitServiceMirrorReactions,
 } from './pit-service-sync';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
+import { registerRemotePublishing } from './remote-publish';
 import { listMonitorBounds } from './overlay-resolution';
 import { watchMonitorArrangement } from './monitor-watch';
 import type { SessionContext } from '@/types/widget-settings';
@@ -423,8 +424,12 @@ export const initMainSync = async (root: RootStore) => {
         ...registerPitServiceAutoReactions(root),
       ];
 
+      // Owns the remote server's lifetime, so it is torn down with the rest.
+      const stopRemotePublishing = registerRemotePublishing(root);
+
       const cleanup = () => {
         stopMonitorWatch();
+        stopRemotePublishing();
         overlaySettingsUnlisten();
         closeRequestedUnlisten();
 

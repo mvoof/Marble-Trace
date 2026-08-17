@@ -1,0 +1,21 @@
+.frame {
+  position: absolute;
+  // Same compositing hints the overlay container uses: a tablet has far less
+  // GPU headroom than the sim machine, so this matters more here, not less.
+  transform: translateZ(0);
+  will-change: transform;
+  contain: layout style;
+}
+
+.inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: rem(6);
+  border: 2px solid;
+  overflow: hidden;
+}
+
+.overflowVisible {
+  overflow: visible;
+}
