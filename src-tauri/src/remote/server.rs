@@ -9,7 +9,7 @@ use std::net::{Ipv4Addr, SocketAddr};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
+use axum::extract::ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade};
 use axum::extract::{ConnectInfo, Path, Query, State};
 use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
@@ -34,6 +34,9 @@ const REMOTE_ENTRY: &str = "remote.html";
 /// Carries a `RemoteDevice` to the main window whenever one connects,
 /// disconnects or reports a new viewport.
 pub const EVENT_REMOTE_DEVICE: &str = "remote://device";
+
+/// Policy violation — the close code the remote page reads as "wrong token".
+const CLOSE_UNAUTHORIZED: u16 = 1008;
 
 /// Where the Vite dev server lives while `tauri:dev` runs.
 const DEV_ORIGIN: &str = "http://localhost:1420";
@@ -294,8 +297,18 @@ async fn websocket(
     Query(query): Query<AuthQuery>,
     upgrade: WebSocketUpgrade,
 ) -> Response {
+    // A browser cannot read the status of a failed upgrade — it only ever sees
+    // close code 1006 and retries forever. Completing the handshake just to
+    // close with 1008 is the one way to tell the page its token is wrong.
     if !authorized(&state, &peer, query.token.as_deref()) {
-        return (StatusCode::UNAUTHORIZED, "invalid token").into_response();
+        return upgrade.on_upgrade(|mut socket| async move {
+            let _ = socket
+                .send(Message::Close(Some(CloseFrame {
+                    code: CLOSE_UNAUTHORIZED,
+                    reason: "invalid token".into(),
+                })))
+                .await;
+        });
     }
 
     let screen = query.screen.unwrap_or_default();

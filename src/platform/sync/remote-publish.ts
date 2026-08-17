@@ -83,7 +83,16 @@ const publishAll = (root: RootStore) => {
  * scales the whole layout to whatever viewport it has.
  */
 const fitScreenOnFirstConnect = (root: RootStore, device: RemoteDevice) => {
-  if (!device.connected || device.viewportWidth <= 0) return;
+  // A backgrounded tab can report a real width with a zero height; fitting to
+  // that would flatten the screen, and the one-shot flag means nothing repairs
+  // it later.
+  if (
+    !device.connected ||
+    device.viewportWidth <= 0 ||
+    device.viewportHeight <= 0
+  ) {
+    return;
+  }
 
   const monitor = root.layouts.activeRemoteScreens.find(
     (screen) => screen.slug === device.slug
