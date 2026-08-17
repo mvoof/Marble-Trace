@@ -1135,6 +1135,78 @@ export type RelativeFrame = {
 };
 
 /**
+ * What a connected device says about itself.
+ *
+ * Reported, never obeyed: the layout is drawn against the bounds stored with
+ * the screen, because the editor has to work with the device switched off.
+ * This only lets the settings UI offer to match the two up.
+ */
+export type RemoteDevice = {
+  /**
+   * Screen slug the device is showing.
+   */
+  slug: string;
+  /**
+   * Page area actually available, in CSS pixels — smaller than the screen
+   * while a browser address bar is on top of it.
+   */
+  viewportWidth: number;
+  viewportHeight: number;
+  /**
+   * The device's own screen, which is what the user recognises.
+   */
+  screenWidth: number;
+  screenHeight: number;
+  pixelRatio: number;
+  /**
+   * True while the page runs without browser chrome, where the viewport and
+   * the screen finally agree.
+   */
+  standalone: boolean;
+  connected: boolean;
+};
+
+export type RemoteServerConfig = {
+  port: number;
+  lan: boolean;
+  /**
+   * Empty disables the check. The frontend generates and persists it.
+   */
+  token: string;
+  /**
+   * Frames per second pushed to browsers, clamped to 1..=60 by the hub.
+   */
+  telemetryHz: number;
+  /**
+   * Resolved app language, for the few pages the server renders itself.
+   */
+  language: string;
+};
+
+export type RemoteServerInfo = {
+  running: boolean;
+  /**
+   * LAN address of this machine — what a tablet has to be pointed at.
+   * `localhost` here means no usable network interface was found.
+   */
+  ip: string;
+  /**
+   * The port actually bound, which can differ from the requested one when
+   * that was taken.
+   */
+  port: number;
+  /**
+   * Empty when the server runs without a token, i.e. open to the network.
+   */
+  token: string;
+  /**
+   * False when the server is bound to loopback and only the host can reach it.
+   */
+  lan: boolean;
+  clientCount: number;
+};
+
+/**
  * A finishing/running position from the session results.
  *
  * `position` and `class_position` are both **1-indexed** — the source layer

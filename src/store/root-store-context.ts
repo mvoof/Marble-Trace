@@ -41,3 +41,5 @@ export const useBindingsStore = () => useStore().bindings;
 export const useBindingsUiStore = () => useStore().bindingsUi;
 export const useDeviceInputStore = () => useStore().deviceInput;
 export const useSettingsPanelUiStore = () => useStore().settingsPanelUi;
+
+export const useRemoteDevicesStore = () => useStore().remoteDevices;

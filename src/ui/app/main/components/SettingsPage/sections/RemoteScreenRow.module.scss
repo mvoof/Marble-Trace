@@ -1,0 +1,28 @@
+/* Stand-in for the QR code while the token is hidden. Same footprint, so
+   revealing it does not shift the row.
+
+   A placeholder rather than a blurred code: a blur is a filter over pixels that
+   are still there, and a QR is exactly the kind of high-contrast grid that
+   survives one. Not drawing it is the only way it cannot be recovered from a
+   screen capture. */
+.qrPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+/* The address is safe to show; the token inside it is not. Monospace so the
+   dots read as a redaction rather than as part of the address. */
+.maskedUrl {
+  font-family: 'Consolas', monospace;
+  word-break: break-all;
+}

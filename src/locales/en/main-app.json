@@ -94,7 +94,13 @@
     "monitorAdd": "add",
     "moveToMonitor": "Move to monitor",
     "allMonitors": "All monitors",
-    "removeMonitor": "Remove monitor from layout"
+    "removeMonitor": "Remove monitor from layout",
+    "addRemoteScreen": "Remote screen",
+    "addRemoteScreenTooltip": "Add a phone or tablet as a screen of this layout",
+    "addRemoteScreenConfirm": "Add screen",
+    "remoteScreenNamePlaceholder": "Screen name, e.g. Wheel tablet",
+    "remoteScreenDefaultName": "Remote screen",
+    "remoteScreenTag": "remote"
   },
   "layoutList": {
     "moduleLabel": "Layouts",
@@ -140,7 +146,8 @@
     "monitors": "Monitors",
     "removeMonitor": "Remove this monitor from the layout",
     "monitorOffline": "not found",
-    "totalWidgets": "Total Widgets"
+    "totalWidgets": "Total Widgets",
+    "remoteNoDevice": "no device"
   },
   "layoutWidgetPanel": {
     "back": "Back",
@@ -331,7 +338,8 @@
         "overlay": "Overlay",
         "controls": "Controls",
         "data": "Data",
-        "maintenance": "Maintenance"
+        "maintenance": "Maintenance",
+        "remote": "Remote"
       },
       "sections": {
         "general": "General",
@@ -342,8 +350,42 @@
         "devices": "Devices",
         "trackMap": "Track data",
         "streamChat": "Stream chat",
-        "maintenance": "Reset & diagnostics"
+        "maintenance": "Reset & diagnostics",
+        "remoteScreens": "Remote screens"
       }
+    },
+    "remote": {
+      "title": "Remote screens",
+      "enableTitle": "Serve layouts to other devices",
+      "enableDesc": "Runs a small web server so a phone or tablet on the same network can open a screen of the active layout in its browser. Devices only watch — they cannot change anything.",
+      "running": "Running on {{ip}}:{{port}}",
+      "stopped": "Not running",
+      "clients": "{{count}} connected",
+      "portTitle": "Port and send rate",
+      "portDesc": "How often telemetry is sent to the devices — not how often they redraw. 30 per second is smooth for a dashboard and light on Wi-Fi; lap times, fuel and the session clock always arrive in full, whatever this is set to. Change the port only if something else already uses it.",
+      "securityTitle": "Network access",
+      "securityDesc": "Screen links carry an access token. Regenerate it to lock out every device you have handed a link to.",
+      "securityDescOpen": "No access token is set, so anyone on this network who knows the address can watch your screens.",
+      "lanLabel": "Reachable from the local network",
+      "regenerateToken": "New token",
+      "screensTitle": "Screens in the active layout",
+      "screensDesc": "Open the address on the device. Adding it to the home screen hides the browser bar, so the layout gets the whole display.",
+      "screensEmpty": "No remote screens yet. Add one in the layout editor, next to the monitors.",
+      "serverOffline": "Server not running",
+      "copyUrl": "Copy link",
+      "urlCopied": "Link copied",
+      "deviceOnline": "Device connected",
+      "deviceReports": "Device reports {{width}}×{{height}} of usable page, on a {{screenWidth}}×{{screenHeight}} display.",
+      "addToHomeScreenHint": "Add the page to the device home screen to drop the browser bar and get the whole display.",
+      "fitToDevice": "Match {{width}}×{{height}}",
+      "fitToDeviceTooltip": "Resize this screen to what the device reports. Widgets keep their place relative to the screen.",
+      "sizeApplied": "Screen size updated",
+      "lanOffHint": "Off: only this computer can open the screens — for capturing a layout as an OBS browser source, or for cutting every device off without taking the setup apart.",
+      "showToken": "Show",
+      "hideToken": "Hide",
+      "copyToken": "Copy token",
+      "tokenCopied": "Token copied",
+      "qrHidden": "QR code hidden"
     }
   },
   "bindings": {

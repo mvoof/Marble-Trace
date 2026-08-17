@@ -12,6 +12,7 @@ export type SettingsSectionId =
   | 'devices'
   | 'trackMap'
   | 'streamChat'
+  | 'remoteScreens'
   | 'maintenance';
 
 export interface SettingsGroup {
@@ -25,6 +26,7 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
   { id: 'overlay', sections: ['overlay', 'interaction'] },
   { id: 'controls', sections: ['bindings', 'devices'] },
   { id: 'data', sections: ['trackMap', 'streamChat'] },
+  { id: 'remote', sections: ['remoteScreens'] },
   { id: 'maintenance', sections: ['maintenance'] },
 ];
 

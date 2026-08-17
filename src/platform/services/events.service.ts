@@ -17,6 +17,7 @@ import type {
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
 import type { BindingMap } from '@/types/input-bindings';
+import type { RemoteDevice } from '@/types/bindings';
 import { TRACK_MAP_CLEAR } from '@platform/sync/sim-events';
 
 /**
@@ -168,6 +169,10 @@ export const emitLayoutActivated = (layoutName: string) =>
   emit('layout-activated', layoutName);
 
 // Both windows and the backend recorder drop their copy of the track.
+/** A device showing a remote screen connected, resized or went away. */
+export const listenRemoteDevice = (handler: (device: RemoteDevice) => void) =>
+  listenTo<RemoteDevice>('remote://device', (event) => handler(event.payload));
+
 export const emitTrackMapClear = () => emit(TRACK_MAP_CLEAR);
 
 // Heard by the backend recorder, not by a window.

@@ -54,6 +54,12 @@ reqwest = { version = "0.12", default-features = false, features = [
     "rustls-tls",
 ] }
 
+# Remote widgets: the same overlay bundle served over the LAN so a tablet can
+# render a layout screen in a browser. axum rides the tokio runtime the
+# telemetry thread already needs, so no second runtime is started.
+axum = { version = "0.8", features = ["ws"] }
+local-ip-address = "0.6"
+
 # Global button bindings read wheels and button boxes through DirectInput8 —
 # the only Windows API that still reports device input while the sim holds
 # foreground focus. DirectInput lives under Devices::HumanInterfaceDevice in

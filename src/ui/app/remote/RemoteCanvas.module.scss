@@ -1,0 +1,21 @@
+.viewport {
+  position: relative;
+  overflow: hidden;
+}
+
+.canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  // The scale is applied from the top-left so the screen's own origin stays
+  // put — a centred origin would offset every widget by half the letterbox.
+  transform-origin: top left;
+}
+
+.origin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}

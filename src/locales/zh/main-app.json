@@ -94,7 +94,13 @@
     "monitorAdd": "添加",
     "moveToMonitor": "移动到显示器",
     "allMonitors": "所有显示器",
-    "removeMonitor": "从布局中移除显示器"
+    "removeMonitor": "从布局中移除显示器",
+    "addRemoteScreen": "远程屏幕",
+    "addRemoteScreenTooltip": "将手机或平板添加为此布局的一个屏幕",
+    "addRemoteScreenConfirm": "添加屏幕",
+    "remoteScreenNamePlaceholder": "屏幕名称，例如“方向盘平板”",
+    "remoteScreenDefaultName": "远程屏幕",
+    "remoteScreenTag": "远程"
   },
   "layoutList": {
     "moduleLabel": "布局",
@@ -138,7 +144,8 @@
     "monitors": "显示器",
     "removeMonitor": "从布局中移除该显示器",
     "monitorOffline": "未找到",
-    "totalWidgets": "部件总数"
+    "totalWidgets": "部件总数",
+    "remoteNoDevice": "无设备"
   },
   "layoutWidgetPanel": {
     "back": "返回",
@@ -329,7 +336,8 @@
         "overlay": "覆盖层",
         "controls": "控制",
         "data": "数据",
-        "maintenance": "维护"
+        "maintenance": "维护",
+        "remote": "远程"
       },
       "sections": {
         "general": "常规",
@@ -340,8 +348,42 @@
         "devices": "设备",
         "trackMap": "赛道数据",
         "streamChat": "直播聊天",
-        "maintenance": "重置与诊断"
+        "maintenance": "重置与诊断",
+        "remoteScreens": "远程屏幕"
       }
+    },
+    "remote": {
+      "title": "远程屏幕",
+      "enableTitle": "将布局提供给其他设备",
+      "enableDesc": "启动一个小型网页服务器，让同一网络中的手机或平板在浏览器中打开当前布局的一个屏幕。设备只能观看，无法更改任何内容。",
+      "running": "运行于 {{ip}}:{{port}}",
+      "stopped": "未运行",
+      "clients": "已连接 {{count}} 台",
+      "portTitle": "端口与发送频率",
+      "portDesc": "遥测数据发送到设备的频率——不是设备屏幕的刷新率。每秒 30 次足以让指针平滑且不占用 Wi-Fi；无论此项如何设置，圈速、燃油和赛段计时都会完整送达。仅当端口被占用时才需要更改。",
+      "securityTitle": "网络访问",
+      "securityDesc": "屏幕链接包含访问令牌。重新生成即可让此前分发的所有链接失效。",
+      "securityDescOpen": "未设置访问令牌，本网络中知道地址的任何人都能查看你的屏幕。",
+      "lanLabel": "可从局域网访问",
+      "regenerateToken": "新令牌",
+      "screensTitle": "当前布局中的屏幕",
+      "screensDesc": "在设备上打开该地址。将其添加到主屏幕可隐藏浏览器地址栏，让布局占满整个屏幕。",
+      "screensEmpty": "尚无远程屏幕。请在布局编辑器中的显示器旁添加一个。",
+      "serverOffline": "服务器未运行",
+      "copyUrl": "复制链接",
+      "urlCopied": "链接已复制",
+      "deviceOnline": "设备已连接",
+      "deviceReports": "设备报告可用区域 {{width}}×{{height}}，屏幕为 {{screenWidth}}×{{screenHeight}}。",
+      "addToHomeScreenHint": "将页面添加到设备主屏幕，即可去掉浏览器地址栏，让布局占满整个屏幕。",
+      "fitToDevice": "适配 {{width}}×{{height}}",
+      "fitToDeviceTooltip": "将此屏幕的尺寸改为设备报告的尺寸。组件会保持相对于屏幕的位置。",
+      "sizeApplied": "屏幕尺寸已更新",
+      "lanOffHint": "关闭后：仅本机可以打开这些屏幕——适合用 OBS 浏览器源采集布局，或在不拆掉配置的情况下断开所有设备。",
+      "showToken": "显示",
+      "hideToken": "隐藏",
+      "copyToken": "复制令牌",
+      "tokenCopied": "令牌已复制",
+      "qrHidden": "二维码已隐藏"
     }
   },
   "bindings": {

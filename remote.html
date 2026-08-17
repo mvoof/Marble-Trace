@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- No user zoom: a remote screen scales itself to the viewport, and a
+         pinch would only fight that. viewport-fit covers the notch area. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <!-- Added to the home screen the page runs without an address bar, so the
+         viewport finally matches the device screen the layout was drawn for. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#000000" />
+    <title>Marble Trace</title>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/remote.tsx"></script>
+  </body>
+</html>

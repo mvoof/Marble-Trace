@@ -28,6 +28,7 @@ import { ActionRegistry } from '@store/hotkeys/action-registry';
 import { DEFAULT_WIDGETS } from '@store/widget-catalog';
 import { DeviceInputStore } from './hotkeys/device-input.store';
 import { BindingsUiStore } from './hotkeys/bindings-ui.store';
+import { RemoteDevicesStore } from './remote/remote-devices.store';
 import { SettingsPanelUiStore } from './widgets/settings-panel-ui.store';
 
 export class RootStore {
@@ -60,6 +61,7 @@ export class RootStore {
   deviceInput: DeviceInputStore;
   bindingsUi: BindingsUiStore;
   settingsPanelUi: SettingsPanelUiStore;
+  remoteDevices: RemoteDevicesStore;
 
   constructor(options?: { skipInit?: boolean }) {
     this.player = new PlayerStore();
@@ -91,6 +93,7 @@ export class RootStore {
     this.deviceInput = new DeviceInputStore();
     this.bindingsUi = new BindingsUiStore();
     this.settingsPanelUi = new SettingsPanelUiStore();
+    this.remoteDevices = new RemoteDevicesStore();
 
     if (!options?.skipInit) {
       this.flags.init();

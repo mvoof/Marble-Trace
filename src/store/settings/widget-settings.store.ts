@@ -31,6 +31,13 @@ import {
   placeWidgetOnMonitor,
   widgetsOnMonitor,
 } from '@store/settings/virtual-desktop';
+import {
+  cloneMonitor,
+  isDisplayMonitor,
+  nextRemoteBounds,
+  slugFromName,
+  uniqueSlug,
+} from '@utils/remote-screen';
 import { WidgetHistory } from '@store/settings/widget-history';
 import {
   bottomZIndex,
@@ -503,10 +510,7 @@ export class WidgetSettingsStore {
 
     if (!layout) return;
 
-    layout.monitors = monitors.map((monitor) => ({
-      name: monitor.name,
-      bounds: { ...monitor.bounds },
-    }));
+    layout.monitors = monitors.map(cloneMonitor);
   }
 
   loadActiveLayoutWidgets() {
@@ -542,6 +546,7 @@ export class WidgetSettingsStore {
     return monitors
       .filter(
         (monitor) =>
+          isDisplayMonitor(monitor) &&
           widgetsOnMonitor(enabled, monitor.name, monitors).length > 0
       )
       .map((monitor) => monitor.name);
@@ -831,6 +836,45 @@ export class WidgetSettingsStore {
    */
   addMonitor(monitor: LayoutMonitor) {
     this.layoutRecords.addMonitor(monitor);
+    this.bumpMutation();
+  }
+
+  /**
+   * Adds a device screen to the active layout. It is a monitor in every way
+   * that matters for the layout — widgets belong to it by their centre point,
+   * it gets its own widget set — but the machine has no display behind it, so
+   * it is parked in free desktop space and never gets an overlay window.
+   */
+  addRemoteScreen(name: string, width: number, height: number) {
+    const layout = this.activeLayout;
+
+    if (!layout) return;
+
+    const slug = uniqueSlug(
+      slugFromName(name),
+      layout.monitors.map((monitor) => monitor.slug ?? '')
+    );
+
+    this.layoutRecords.addMonitor({
+      name,
+      kind: 'remote',
+      slug,
+      bounds: nextRemoteBounds(layout.monitors, width, height),
+    });
+
+    this.bumpMutation();
+  }
+
+  /** Applied when a device reports a viewport that differs from the size the
+   *  screen was drawn for. Never automatic: resizing moves every widget. */
+  resizeRemoteScreen(monitorName: string, width: number, height: number) {
+    const monitor = this.activeLayout?.monitors.find(
+      (candidate) => candidate.name === monitorName
+    );
+
+    if (!monitor) return;
+
+    monitor.bounds = { ...monitor.bounds, width, height };
     this.bumpMutation();
   }
 
