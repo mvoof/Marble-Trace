@@ -33,6 +33,7 @@ import {
 } from '@store/settings/virtual-desktop';
 import {
   boundsOverlap,
+  clearOfMonitors,
   cloneMonitor,
   isDisplayMonitor,
   isRemoteMonitor,
@@ -871,13 +872,52 @@ export class WidgetSettingsStore {
   /** Applied when a device reports a viewport that differs from the size the
    *  screen was drawn for. Never automatic: resizing moves every widget. */
   resizeRemoteScreen(monitorName: string, width: number, height: number) {
-    const monitor = this.activeLayout?.monitors.find(
+    const layout = this.activeLayout;
+    const monitor = layout?.monitors.find(
       (candidate) => candidate.name === monitorName
     );
 
-    if (!monitor) return;
+    if (!layout || !monitor) return;
 
-    monitor.bounds = { ...monitor.bounds, width, height };
+    // Growing a screen in place can push it into its neighbours, which the
+    // drag path refuses outright — the widened rectangle would take over the
+    // widgets whose centres it now covers. It is slid clear the short way, and
+    // its own widgets travel with it.
+    const others = layout.monitors.filter(
+      (candidate) => candidate.name !== monitorName
+    );
+
+    const grown = { ...monitor.bounds, width, height };
+    const slid = clearOfMonitors(
+      grown,
+      others.map((candidate) => candidate.bounds)
+    );
+
+    // An arrangement dense enough to leave no room nearby falls back to the
+    // free space every new screen is parked in.
+    const landed = others.some((candidate) =>
+      boundsOverlap(candidate.bounds, slid)
+    )
+      ? nextRemoteBounds(others, width, height)
+      : slid;
+
+    const carried = widgetsOnMonitor(
+      this.allWidgets,
+      monitorName,
+      layout.monitors
+    );
+
+    monitor.bounds = landed;
+
+    const dx = landed.x - grown.x;
+    const dy = landed.y - grown.y;
+
+    for (const widget of carried) {
+      widget.userSettings.x += dx;
+      widget.userSettings.y += dy;
+    }
+
+    this.commitActiveLayout();
     this.bumpMutation();
   }
 
