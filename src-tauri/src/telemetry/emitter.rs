@@ -44,6 +44,11 @@ pub const EVENT_STATUS: &str = "sim://status";
 /// subscribe to 60 Hz telemetry it otherwise has no use for — and would hide
 /// the cost of that subscription from the very tool meant to measure it.
 pub const EVENT_SIM_PERF: &str = "sim://perf";
+/// A 1 Hz copy of `car_status` for windows that do not take the telemetry
+/// bundle. The main window drives layout auto-switching off `is_on_track`, and
+/// entering the garage a second late is fine — subscribing it to 60 Hz
+/// telemetry for one boolean is not.
+pub const EVENT_CAR_STATUS_SLOW: &str = "sim://car-status";
 pub const EVENT_DISCONNECTED: &str = "sim://disconnected";
 pub const EVENT_REFERENCE_LAP_UPDATED: &str = "sim://reference-lap/updated";
 
@@ -301,6 +306,10 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
 
         if let Err(e) = app.emit(EVENT_SIM_PERF, &frame.sim_perf) {
             warn!("Failed to emit sim perf: {}", e);
+        }
+
+        if let Err(e) = app.emit(EVENT_CAR_STATUS_SLOW, &frame.car_status) {
+            warn!("Failed to emit slow car status: {}", e);
         }
     }
 

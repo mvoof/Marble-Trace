@@ -31,6 +31,7 @@ import type {
   ReferenceLapData,
   TrackCondition,
   SimPerfFrame,
+  CarStatusFrame,
 } from '@/types/bindings';
 import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import { debug } from '@store/sim/debug';
@@ -46,6 +47,7 @@ import {
   SIM_WEATHER,
   SIM_STATUS,
   SIM_PERF,
+  SIM_CAR_STATUS_SLOW,
   SIM_DISCONNECTED,
   SIM_TRACK_SHAPE,
   SIM_CAPABILITIES,
@@ -424,6 +426,19 @@ export class SimStore {
 
     // 1 Hz and tiny, and the only thing the main window needs from the sim's
     // own counters — cheap enough to hold in every window unconditionally.
+    // Windows without the bundle still need a few live signals: the main
+    // window switches layouts on `is_on_track`. One owner, two transports —
+    // the same setter the bundle path calls, so nothing writes it twice.
+    if (!drawsWidgets()) {
+      this.unlistens.push(
+        await listenTo<CarStatusFrame>(SIM_CAR_STATUS_SLOW, (event) => {
+          if (this.initId !== guardId) return;
+
+          runInAction(() => this.root.player.updateCarStatus(event.payload));
+        })
+      );
+    }
+
     this.unlistens.push(
       await listenTo<SimPerfFrame>(SIM_PERF, (event) => {
         if (this.initId !== guardId) return;
