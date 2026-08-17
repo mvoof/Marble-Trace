@@ -14,6 +14,16 @@ const WIDGET_ID = 'stream-chat';
 
 // Sliding window for the messages-per-minute readout.
 const RATE_WINDOW_MS = 60_000;
+
+/**
+ * Rows drawn above the ones that fit. The list is bottom-anchored and clipped
+ * at the top, so the extra rows are what lets the measurement notice that more
+ * messages would fit now — without them the window could only ever shrink.
+ */
+const FIT_PROBE_ROWS = 3;
+
+/** Window assumed until the list reports its first measurement. */
+const INITIAL_FIT_ROWS = 8;
 // How often the clock-driven getters (expiry, rate) are re-evaluated. One
 // second is enough for both and keeps the overlay off a per-frame timer.
 const TICK_MS = 1_000;
@@ -29,6 +39,13 @@ export class StreamChatWidgetStore {
    * outside interact mode.
    */
   scrollOffset = 0;
+
+  /**
+   * How many rows are actually on screen, published by the rendered list. A
+   * message is as tall as its text, so only the DOM knows how many of them the
+   * widget can show — the settings limit is the history depth, not the window.
+   */
+  fittingCount = INITIAL_FIT_ROWS;
 
   private disposers: IReactionDisposer[] = [];
 
@@ -87,11 +104,36 @@ export class StreamChatWidgetStore {
     this.disposers = [];
   }
 
-  get maxScrollOffset(): number {
-    return Math.max(
-      0,
-      this.filteredMessages.length - this.settings.maxMessages
+  /** Reported by the list on every layout pass; a no-op when nothing changed. */
+  setFittingCount(count: number) {
+    const next = Math.max(1, count);
+
+    if (next === this.fittingCount) {
+      return;
+    }
+
+    this.fittingCount = next;
+    this.scrollTo(this.scrollOffset);
+  }
+
+  /** The window the user can read at once, bounded by the history depth. */
+  get windowSize(): number {
+    return Math.min(this.fittingCount, this.settings.maxMessages);
+  }
+
+  /**
+   * Rows handed to the DOM: the window plus the probe rows that get clipped.
+   * Drawing the whole history would cost a hundred rows to show eight.
+   */
+  private get renderCount(): number {
+    return Math.min(
+      this.windowSize + FIT_PROBE_ROWS,
+      this.settings.maxMessages
     );
+  }
+
+  get maxScrollOffset(): number {
+    return Math.max(0, this.filteredMessages.length - this.windowSize);
   }
 
   get isScrolled(): boolean {
@@ -115,7 +157,7 @@ export class StreamChatWidgetStore {
     const total = this.filteredMessages.length;
 
     return scrollThumbFor(
-      { total, windowSize: Math.min(this.settings.maxMessages, total) },
+      { total, windowSize: Math.min(this.windowSize, total) },
       this.scrollOffset,
       'bottom'
     );
@@ -185,23 +227,18 @@ export class StreamChatWidgetStore {
   }
 
   /**
-   * The drawn window: newest last, capped at the per-layout row count and
-   * lifted by the scroll offset while the user reads back.
+   * The drawn rows: newest last, anchored at the scroll offset and cut to
+   * `renderCount`, so the DOM never holds the whole scrollback.
    */
   get visibleMessages(): ChatMessage[] {
     const messages = this.filteredMessages;
-    const { maxMessages } = this.settings;
-
-    if (messages.length <= maxMessages) {
-      return messages;
-    }
 
     // The scroll offset is clamped here too: the buffer can shrink between a
     // wheel event and this read (expiry, a ban wiping a user's messages).
     const offset = Math.min(this.scrollOffset, this.maxScrollOffset);
     const end = messages.length - offset;
 
-    return messages.slice(end - maxMessages, end);
+    return messages.slice(Math.max(0, end - this.renderCount), end);
   }
 
   get presenceList(): ChatPresence[] {

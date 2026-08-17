@@ -434,8 +434,8 @@
     "streamChat": {
       "feed": "Feed",
       "visibleElements": "Visible elements",
-      "maxMessages": "Message limit",
-      "maxMessagesDesc": "How many rows the feed keeps on screen.",
+      "maxMessages": "History depth",
+      "maxMessagesDesc": "How many messages stay scrollable. The feed shows as many as the widget can fit.",
       "messageLifetime": "Message lifetime",
       "messageLifetimeDesc": "Seconds before a message fades out. 0 keeps everything.",
       "compactRows": "Compact rows",

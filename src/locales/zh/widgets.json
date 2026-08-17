@@ -434,8 +434,8 @@
     "streamChat": {
       "feed": "信息流",
       "visibleElements": "显示内容",
-      "maxMessages": "消息上限",
-      "maxMessagesDesc": "信息流在屏幕上保留的行数。",
+      "maxMessages": "历史深度",
+      "maxMessagesDesc": "可回滚的消息数量。屏幕上显示的条数取决于小部件能容纳多少。",
       "messageLifetime": "消息存留时间",
       "messageLifetimeDesc": "消息淡出前的秒数，0 表示不淡出。",
       "compactRows": "紧凑行",

@@ -155,6 +155,27 @@ describe('StreamChatWidgetStore', () => {
     );
   });
 
+  it('scrolls once fewer messages fit than the history holds', () => {
+    setSettings({ maxMessages: 50 });
+    seed([
+      makeMessage('1', 'a', 'one'),
+      makeMessage('2', 'b', 'two'),
+      makeMessage('3', 'c', 'three'),
+      makeMessage('4', 'd', 'four'),
+    ]);
+
+    // The rendered list reports that only two rows are on screen.
+    runInAction(() => rootStore.streamChatWidget.setFittingCount(2));
+
+    expect(rootStore.streamChatWidget.maxScrollOffset).toBe(2);
+    expect(rootStore.streamChatWidget.scrollThumb).not.toBeNull();
+
+    runInAction(() => rootStore.streamChatWidget.scrollByRows(2));
+    expect(rootStore.streamChatWidget.visibleMessages.map((m) => m.id)).toEqual(
+      ['1', '2']
+    );
+  });
+
   it('expires messages older than the configured lifetime', () => {
     setSettings({ messageLifetimeSeconds: 10 });
     seed([

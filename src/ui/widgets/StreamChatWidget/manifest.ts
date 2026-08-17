@@ -21,7 +21,7 @@ export const STREAM_CHAT_MANIFEST: WidgetManifest = {
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
     compactRows: true,
-    maxMessages: 50,
+    maxMessages: 100,
     messageLifetimeSeconds: 0,
     showPlatformGlyph: true,
     showBadges: true,
