@@ -100,7 +100,9 @@
     "addRemoteScreenConfirm": "Add screen",
     "remoteScreenNamePlaceholder": "Screen name, e.g. Wheel tablet",
     "remoteScreenDefaultName": "Remote screen",
-    "remoteScreenTag": "remote"
+    "remoteScreenTag": "remote",
+    "arrangeRemoteScreens": "Tidy remote screens",
+    "arrangeRemoteScreensTooltip": "Lay the remote screens out in rows under the desktop, widgets included"
   },
   "layoutList": {
     "moduleLabel": "Layouts",

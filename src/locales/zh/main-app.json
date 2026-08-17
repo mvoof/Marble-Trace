@@ -100,7 +100,9 @@
     "addRemoteScreenConfirm": "添加屏幕",
     "remoteScreenNamePlaceholder": "屏幕名称，例如“方向盘平板”",
     "remoteScreenDefaultName": "远程屏幕",
-    "remoteScreenTag": "远程"
+    "remoteScreenTag": "远程",
+    "arrangeRemoteScreens": "整理远程屏幕",
+    "arrangeRemoteScreensTooltip": "将远程屏幕连同其挂件排列在桌面下方的多行中"
   },
   "layoutList": {
     "moduleLabel": "布局",

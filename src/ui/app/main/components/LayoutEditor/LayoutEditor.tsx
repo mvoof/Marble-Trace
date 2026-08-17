@@ -45,6 +45,7 @@ import {
   ArrowDown,
   ArrowDownRight,
   LayoutGrid,
+  Rows3,
 } from 'lucide-react';
 import {
   useAppSettingsStore,
@@ -336,6 +337,10 @@ export const LayoutEditor = observer(
           label: `${monitor.name} · ${monitor.bounds.width}×${monitor.bounds.height} · ${t('layoutEditor.remoteScreenTag')}`,
         })),
     ];
+
+    const hasRemoteScreens = (activeLayout?.monitors ?? []).some(
+      isRemoteMonitor
+    );
 
     const moveTargetOptions = (activeLayout?.monitors ?? [])
       .filter((monitor) => monitor.name !== focusedMonitorName)
@@ -670,6 +675,19 @@ export const LayoutEditor = observer(
             )}
 
             <AddRemoteScreenButton />
+
+            {hasRemoteScreens && (
+              <Tooltip title={t('layoutEditor.arrangeRemoteScreensTooltip')}>
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<Rows3 size={14} />}
+                  onClick={() => widgetSettings.arrangeRemoteScreens()}
+                >
+                  {t('layoutEditor.arrangeRemoteScreens')}
+                </Button>
+              </Tooltip>
+            )}
 
             <Tooltip title={t('layoutEditor.monitorTooltip')}>
               <Select

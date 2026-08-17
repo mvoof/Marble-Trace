@@ -41,6 +41,139 @@ export const REMOTE_SCREEN_PRESETS = [
 const REMOTE_SCREEN_GAP = 200;
 
 /**
+ * Whether two screen rectangles share any area. Half-open on the right and
+ * bottom edge, matching `boundsContain`, so screens laid edge to edge — the
+ * normal Windows arrangement — do not read as overlapping.
+ */
+export const boundsOverlap = (
+  first: MonitorBounds,
+  second: MonitorBounds
+): boolean =>
+  first.x < second.x + second.width &&
+  second.x < first.x + first.width &&
+  first.y < second.y + second.height &&
+  second.y < first.y + first.height;
+
+/**
+ * Passes made looking for a free spot. Pushing clear of one screen can slide the
+ * rectangle into the next, so the search repeats — but a dense arrangement can
+ * bounce it back and forth, and the caller needs an answer either way.
+ */
+const CLEARANCE_PASSES = 8;
+
+/**
+ * The nearest position for `target` that overlaps none of `others`, reached by
+ * pushing it out of each screen it hits along whichever axis is closest to an
+ * edge. Dragging a screen to the far side of a monitor means crossing that
+ * monitor, so an overlap in flight is normal and only the drop has to land
+ * somewhere valid — a screen left overlapping would steal the widgets whose
+ * centres fall inside it.
+ *
+ * Returns the target unchanged when no free spot is found within the passes;
+ * the caller decides whether to keep the move at all.
+ */
+export const clearOfMonitors = (
+  target: MonitorBounds,
+  others: MonitorBounds[]
+): MonitorBounds => {
+  let placed = target;
+
+  for (let pass = 0; pass < CLEARANCE_PASSES; pass += 1) {
+    const hit = others.find((other) => boundsOverlap(other, placed));
+
+    if (!hit) {
+      return placed;
+    }
+
+    const pushLeft = hit.x - (placed.x + placed.width);
+    const pushRight = hit.x + hit.width - placed.x;
+    const pushUp = hit.y - (placed.y + placed.height);
+    const pushDown = hit.y + hit.height - placed.y;
+
+    const horizontal =
+      Math.abs(pushLeft) <= Math.abs(pushRight) ? pushLeft : pushRight;
+    const vertical = Math.abs(pushUp) <= Math.abs(pushDown) ? pushUp : pushDown;
+
+    placed =
+      Math.abs(horizontal) <= Math.abs(vertical)
+        ? { ...placed, x: placed.x + horizontal }
+        : { ...placed, y: placed.y + vertical };
+  }
+
+  return others.some((other) => boundsOverlap(other, placed)) ? target : placed;
+};
+
+/** Smallest rectangle covering the given screens, or a zero box for none. */
+const coveringBounds = (monitors: LayoutMonitor[]): MonitorBounds => {
+  if (monitors.length === 0) {
+    return { x: 0, y: 0, width: 0, height: 0 };
+  }
+
+  const left = Math.min(...monitors.map((monitor) => monitor.bounds.x));
+  const top = Math.min(...monitors.map((monitor) => monitor.bounds.y));
+  const right = Math.max(
+    ...monitors.map((monitor) => monitor.bounds.x + monitor.bounds.width)
+  );
+  const bottom = Math.max(
+    ...monitors.map((monitor) => monitor.bounds.y + monitor.bounds.height)
+  );
+
+  return { x: left, y: top, width: right - left, height: bottom - top };
+};
+
+/**
+ * Where every remote screen should sit so the layout overview stays readable:
+ * rows under the real desktop instead of one endless strip to its right. The
+ * editor fits the whole desktop rectangle into the canvas, so each screen added
+ * in a row shrinks every monitor on screen — wrapping keeps that box roughly as
+ * wide as the desktop itself.
+ *
+ * Returns the new bounds by monitor name; screens that are already in place get
+ * an entry too, and the caller filters those out by comparing.
+ */
+export const remoteScreenGrid = (
+  monitors: LayoutMonitor[]
+): Record<string, MonitorBounds> => {
+  const remotes = monitors.filter(isRemoteMonitor);
+
+  if (remotes.length === 0) {
+    return {};
+  }
+
+  const desktop = coveringBounds(monitors.filter(isDisplayMonitor));
+  const widest = Math.max(...remotes.map((monitor) => monitor.bounds.width));
+  // With no display to line up under, there is no width to match, so the grid
+  // aims for a square block instead.
+  const rowWidth =
+    desktop.width > 0
+      ? Math.max(desktop.width, widest)
+      : widest * Math.ceil(Math.sqrt(remotes.length));
+
+  const startX = desktop.x;
+  let rowY = desktop.y + desktop.height + REMOTE_SCREEN_GAP;
+  let cursorX = startX;
+  let rowHeight = 0;
+
+  const placed: Record<string, MonitorBounds> = {};
+
+  for (const monitor of remotes) {
+    const { width, height } = monitor.bounds;
+
+    if (cursorX > startX && cursorX + width > startX + rowWidth) {
+      rowY += rowHeight + REMOTE_SCREEN_GAP;
+      cursorX = startX;
+      rowHeight = 0;
+    }
+
+    placed[monitor.name] = { x: cursorX, y: rowY, width, height };
+    cursorX += width + REMOTE_SCREEN_GAP;
+    rowHeight = Math.max(rowHeight, height);
+  }
+
+  return placed;
+};
+
+/**
  * A remote screen must not overlap a real monitor: a widget is assigned to the
  * first monitor whose rectangle contains its centre, so an overlapping remote
  * rectangle would steal widgets off the desktop. New screens are parked to the

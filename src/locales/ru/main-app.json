@@ -100,7 +100,9 @@
     "addRemoteScreenConfirm": "Добавить экран",
     "remoteScreenNamePlaceholder": "Название экрана, например «Планшет на руле»",
     "remoteScreenDefaultName": "Внешний экран",
-    "remoteScreenTag": "внешний"
+    "remoteScreenTag": "внешний",
+    "arrangeRemoteScreens": "Разложить внешние экраны",
+    "arrangeRemoteScreensTooltip": "Разложить внешние экраны рядами под рабочим столом вместе с их виджетами"
   },
   "layoutList": {
     "moduleLabel": "Раскладки",

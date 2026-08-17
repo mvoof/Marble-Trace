@@ -1,4 +1,11 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from 'react';
 import { reaction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +16,7 @@ import {
   SquareArrowLeft,
   SquareArrowRight,
   Monitor,
+  GripHorizontal,
 } from 'lucide-react';
 import { RootStore } from '@store/root-store';
 import {
@@ -30,6 +38,11 @@ import type {
   MonitorBounds,
   WidgetDefaultConfig,
 } from '@/types/widget-settings';
+import {
+  boundsOverlap,
+  clearOfMonitors,
+  isRemoteMonitor,
+} from '@utils/remote-screen';
 import { LayoutCanvasWidget } from './LayoutCanvasWidget';
 import styles from './LayoutCanvas.module.scss';
 
@@ -74,6 +87,9 @@ const MonitorPlate = observer(
     view,
     showGrid,
     gridSize,
+    onDragStart,
+    bounds,
+    isBlocked = false,
   }: {
     monitor: LayoutMonitor;
     image?: string;
@@ -81,6 +97,12 @@ const MonitorPlate = observer(
     view: MonitorBounds;
     showGrid: boolean;
     gridSize: number;
+    /** Present only for screens the user may re-park — remote ones in overview. */
+    onDragStart?: (event: ReactMouseEvent) => void;
+    /** Where to draw the plate while it is being dragged, ahead of the store. */
+    bounds?: MonitorBounds;
+    /** Drawn as rejected: dropping here would land on another screen. */
+    isBlocked?: boolean;
   }) => {
     const [src, setSrc] = useState<string | undefined>();
 
@@ -106,14 +128,18 @@ const MonitorPlate = observer(
       };
     }, [image]);
 
+    const drawn = bounds ?? monitor.bounds;
+
     return (
       <div
-        className={styles.monitorPlate}
+        className={`${styles.monitorPlate} ${
+          isBlocked ? styles.monitorPlateBlocked : ''
+        }`}
         style={{
-          left: (monitor.bounds.x - view.x) * fit,
-          top: (monitor.bounds.y - view.y) * fit,
-          width: monitor.bounds.width * fit,
-          height: monitor.bounds.height * fit,
+          left: (drawn.x - view.x) * fit,
+          top: (drawn.y - view.y) * fit,
+          width: drawn.width * fit,
+          height: drawn.height * fit,
           backgroundImage: src ? `url(${src})` : undefined,
         }}
       >
@@ -127,6 +153,20 @@ const MonitorPlate = observer(
           >
             <div className={styles.axisVertical} />
             <div className={styles.axisHorizontal} />
+          </div>
+        )}
+
+        {/* The widget layer covers the plate, so a remote screen is moved by a
+            grab bar drawn above it rather than by its whole surface — which
+            also keeps a click on empty screen area clearing the selection. */}
+        {onDragStart && (
+          <div
+            className={styles.plateHandle}
+            role="presentation"
+            onMouseDown={onDragStart}
+          >
+            <GripHorizontal size={11} />
+            <span className={styles.plateHandleLabel}>{monitor.name}</span>
           </div>
         )}
       </div>
@@ -160,6 +200,12 @@ export const LayoutCanvas = observer(
 
     const paneRef = useRef<HTMLDivElement | null>(null);
     const [paneSize, setPaneSize] = useState({ width: 0, height: 0 });
+    const [frozenView, setFrozenView] = useState<MonitorBounds | null>(null);
+    const [draggedScreen, setDraggedScreen] = useState<{
+      name: string;
+      bounds: MonitorBounds;
+      isBlocked: boolean;
+    } | null>(null);
 
     useEffect(() => () => previewStore.dispose(), [previewStore]);
 
@@ -322,7 +368,13 @@ export const LayoutCanvas = observer(
     // a widget between screens. Focusing one zooms to it, because three or more
     // screens side by side leave widgets too small to grab.
     const desktop = monitorsBounds(monitors);
-    const view = focusedMonitor ? focusedMonitor.bounds : desktop;
+    // The overview zoom follows the desktop rectangle, which a screen being
+    // dragged is part of — recomputing it mid-drag would rescale the canvas
+    // under the cursor. The box is frozen for the duration and catches up on
+    // drop.
+    const view = focusedMonitor
+      ? focusedMonitor.bounds
+      : (frozenView ?? desktop);
 
     const fit =
       paneSize.width > 0 &&
@@ -334,6 +386,78 @@ export const LayoutCanvas = observer(
 
     const scaledWidth = view.width * fit;
     const scaledHeight = view.height * fit;
+
+    // Remote screens are the only rectangles the user places by hand: a real
+    // monitor's position is dictated by Windows.
+    const handleScreenDragStart = (
+      event: ReactMouseEvent,
+      monitor: LayoutMonitor
+    ) => {
+      if (event.button !== 0 || fit <= 0) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      // The zoom must not change while a screen is in hand: the plate is drawn
+      // at the stage's scale, so rescaling on grab slides it out from under the
+      // pointer. The box is frozen exactly as it was, and room outside it comes
+      // from the stage dropping its clipping for the duration instead.
+      setFrozenView(desktop);
+
+      const startMouseX = event.clientX;
+      const startMouseY = event.clientY;
+      const startX = monitor.bounds.x;
+      const startY = monitor.bounds.y;
+
+      const others = monitors
+        .filter((candidate) => candidate.name !== monitor.name)
+        .map((candidate) => ({ ...candidate.bounds }));
+
+      // The drag writes to local state only. Committing every move would have
+      // to refuse the ones that overlap, and a screen cannot reach the far side
+      // of a monitor without crossing it — the drag would stall at the edge.
+      let dropped = { ...monitor.bounds };
+
+      const onMouseMove = (moveEvent: MouseEvent) => {
+        const dx = (moveEvent.clientX - startMouseX) / fit;
+        const dy = (moveEvent.clientY - startMouseY) / fit;
+
+        let nextX = Math.round(startX + dx);
+        let nextY = Math.round(startY + dy);
+
+        if (snapToGrid) {
+          nextX = Math.round(nextX / gridSize) * gridSize;
+          nextY = Math.round(nextY / gridSize) * gridSize;
+        }
+
+        dropped = { ...monitor.bounds, x: nextX, y: nextY };
+
+        setDraggedScreen({
+          name: monitor.name,
+          bounds: dropped,
+          isBlocked: others.some((other) => boundsOverlap(other, dropped)),
+        });
+      };
+
+      const onMouseUp = () => {
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+
+        // Landing on another screen is resolved by sliding out of it the short
+        // way, so a drop half over a monitor reads as "put it beside this one"
+        // rather than as nothing happening.
+        const landed = clearOfMonitors(dropped, others);
+
+        widgetSettings.moveRemoteScreen(monitor.name, landed.x, landed.y);
+        setDraggedScreen(null);
+        setFrozenView(null);
+      };
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    };
 
     const backgroundImages = widgetSettings.activeLayout?.backgroundImages;
     // In overview every monitor paints its own image inside its rectangle; the
@@ -410,14 +534,16 @@ export const LayoutCanvas = observer(
     return (
       <RootStoreContext.Provider value={previewStore}>
         <div
-          className={`${styles.pane} ${fullscreen ? styles.paneFullscreen : ''}`}
+          className={`${styles.pane} ${
+            fullscreen ? styles.paneFullscreen : ''
+          } ${draggedScreen ? styles.paneDragging : ''}`}
           ref={paneRef}
         >
           {fit > 0 && (
             <div
               className={`${styles.stage} ${
                 fullscreen ? styles.stageFullscreen : ''
-              }`}
+              } ${draggedScreen ? styles.stageDragging : ''}`}
               style={{
                 width: scaledWidth,
                 height: scaledHeight,
@@ -454,6 +580,20 @@ export const LayoutCanvas = observer(
                   view={view}
                   showGrid={showGrid}
                   gridSize={gridSize}
+                  onDragStart={
+                    !focusedMonitor && isRemoteMonitor(monitor)
+                      ? (event) => handleScreenDragStart(event, monitor)
+                      : undefined
+                  }
+                  bounds={
+                    draggedScreen?.name === monitor.name
+                      ? draggedScreen.bounds
+                      : undefined
+                  }
+                  isBlocked={
+                    draggedScreen?.name === monitor.name &&
+                    draggedScreen.isBlocked
+                  }
                 />
               ))}
 
