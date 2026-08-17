@@ -144,6 +144,9 @@ export const emitPitServiceHalvesTakenOver = (halves: HalvesTakenOver) =>
 export const emitStandingsScroll = (delta: number) =>
   emitToOverlaysAndRemote('standings-scroll', 'standings-scroll', delta);
 
+export const emitStreamChatScroll = (delta: number) =>
+  emitToOverlaysAndRemote('stream-chat-scroll', 'stream-chat-scroll', delta);
+
 export interface TrackRotationPayload {
   trackId: string;
   rotation: number;

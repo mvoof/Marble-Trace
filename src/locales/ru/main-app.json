@@ -439,6 +439,8 @@
       "standingsClassNext": "Следующий класс (цикличный режим)",
       "standingsScrollUp": "Прокрутка таблицы вверх",
       "standingsScrollDown": "Прокрутка таблицы вниз",
+      "streamChatScrollUp": "Прокрутка чата вверх",
+      "streamChatScrollDown": "Прокрутка чата вниз",
       "pitServiceToggle": "Временно показать окно заказа вне пит-лейна",
       "pitServiceAutoMode": "Передать стоп авторежиму или забрать управление",
       "pitServiceApplyOrder": "Заказать полный стоп: расчётное топливо и все четыре шины (заменяет текущий заказ)",

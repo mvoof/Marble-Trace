@@ -46,9 +46,10 @@ const REPLAYED_KINDS: [&str; 8] = [
 /// A whitelist rather than a free-form kind: the value that reaches the socket
 /// is the `&'static str` from this list, so nothing a caller passes can invent
 /// a message type of its own.
-const CONTROL_KINDS: [&str; 3] = [
+const CONTROL_KINDS: [&str; 4] = [
     "standings-class-index",
     "standings-scroll",
+    "stream-chat-scroll",
     "track-rotation",
 ];
 

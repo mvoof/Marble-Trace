@@ -174,6 +174,12 @@ export const setupOverlayListeners = async (
   );
 
   unlistens.push(
+    await listenTo<number>('stream-chat-scroll', (e) => {
+      runInAction(() => root.streamChatWidget.scrollByRows(e.payload));
+    })
+  );
+
+  unlistens.push(
     await listenTo('pit-service-toggle', () => {
       runInAction(() => root.pitServiceWidget.panel.toggleManualShow());
     })

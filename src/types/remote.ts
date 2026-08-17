@@ -33,6 +33,7 @@ export interface RemoteScreenSnapshot {
 export type RemoteControlKind =
   | 'standings-class-index'
   | 'standings-scroll'
+  | 'stream-chat-scroll'
   | 'track-rotation';
 
 /** Message kinds the server pushes over the socket. */

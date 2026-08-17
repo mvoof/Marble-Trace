@@ -44,7 +44,9 @@ export const ChatMessageRow = observer(({ message }: ChatMessageRowProps) => {
     .join(' ');
 
   return (
-    <div className={rowClass}>
+    // Marks the row for the fit measurement, which has to tell the messages
+    // apart from the scrollbar the list draws alongside them.
+    <div className={rowClass} data-chat-row="true">
       <span className={`${styles.stripe} ${stripeClass}`} />
 
       <span className={styles.content}>

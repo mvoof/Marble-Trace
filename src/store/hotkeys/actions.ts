@@ -1,6 +1,7 @@
 import {
   emitPitServiceToggle,
   emitStandingsScroll,
+  emitStreamChatScroll,
 } from '@platform/services/events.service';
 import { APP_OWNER } from '@/types/input-bindings';
 import type { HotkeyAction } from './binding-types';
@@ -96,6 +97,25 @@ const STANDINGS_ACTIONS: HotkeyAction[] = [
     labelKey: 'standingsScrollDown',
     trigger: 'press',
     run: () => void emitStandingsScroll(SCROLL_STEP_ROWS),
+  },
+];
+
+// The chat offset counts back from the newest message, so scrolling up is the
+// positive direction — the opposite of the standings, which count down a list.
+const STREAM_CHAT_ACTIONS: HotkeyAction[] = [
+  {
+    id: 'stream-chat:scroll-up',
+    owner: 'stream-chat',
+    labelKey: 'streamChatScrollUp',
+    trigger: 'press',
+    run: () => void emitStreamChatScroll(SCROLL_STEP_ROWS),
+  },
+  {
+    id: 'stream-chat:scroll-down',
+    owner: 'stream-chat',
+    labelKey: 'streamChatScrollDown',
+    trigger: 'press',
+    run: () => void emitStreamChatScroll(-SCROLL_STEP_ROWS),
   },
 ];
 
@@ -267,5 +287,6 @@ export const widgetVisibilityAction = (widgetId: string): HotkeyAction => ({
 export const STATIC_ACTIONS: HotkeyAction[] = [
   ...APP_ACTIONS,
   ...STANDINGS_ACTIONS,
+  ...STREAM_CHAT_ACTIONS,
   ...PIT_SERVICE_ACTIONS,
 ];

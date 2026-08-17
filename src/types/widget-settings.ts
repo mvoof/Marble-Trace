@@ -327,6 +327,10 @@ export interface SectorMatrixWidgetSettings {
 export interface StreamChatWidgetSettings {
   /** Nick and text share one wrapped line, the way Twitch itself renders it. */
   compactRows: boolean;
+  /**
+   * Scrollback depth, not the number of rows on screen — how many messages fit
+   * is measured from the rendered list, since a message is as tall as its text.
+   */
   maxMessages: number;
   /** Seconds before a message fades out. 0 keeps everything. */
   messageLifetimeSeconds: number;
