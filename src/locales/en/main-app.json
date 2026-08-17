@@ -306,12 +306,53 @@
       "confirmOk": "Reset & Restart",
       "resetSettings": "Reset Settings"
     },
+    "fpsDiagnostics": {
+      "title": "FPS Diagnostics",
+      "description": "Measures what the overlay costs the sim, using the sim's own frame rate counter. Run it from a repeatable scene — a replay looping over the same stretch of track with traffic around you.",
+      "detailed": "Detailed run",
+      "detailedDesc": "Also measures every enabled widget on its own. Far longer, but names the expensive widget instead of only the expensive configuration.",
+      "start": "Start ({{minutes}} min)",
+      "cancel": "Stop",
+      "switchToSim": "Switch to the sim now and leave it focused — it throttles its frame rate in the background, which would make every number meaningless.",
+      "phase": {
+        "countdown": "Switch to the sim",
+        "settling": "Settling",
+        "sampling": "Sampling",
+        "done": "Done",
+        "failed": "Failed",
+        "idle": "Idle"
+      },
+      "step": {
+        "noOverlay": "No overlay",
+        "hidden": "Overlay hidden",
+        "allWidgets": "All widgets"
+      },
+      "table": {
+        "config": "Configuration",
+        "fps": "FPS",
+        "fpsLow": "FPS low",
+        "delta": "Delta",
+        "gpu": "GPU %",
+        "cpu": "CPU %"
+      },
+      "error": {
+        "noWidgets": "Enable at least one widget first — there is nothing to measure.",
+        "noTelemetry": "No telemetry from the sim. Start a session and try again."
+      },
+      "hud": {
+        "progress": "Step {{done}} of {{total}}",
+        "doneSummary": "Full widget set costs {{delta}} FPS. Results in Settings.",
+        "doneNoSummary": "Results are in Settings."
+      },
+      "saveCsv": "Save CSV",
+      "saved": "Saved to {{path}}"
+    },
     "developerTools": {
       "title": "Developer Tools",
       "snapshotTitle": "Telemetry Snapshot",
-      "snapshotDesc": "Capture current telemetry state.",
-      "downloadSnapshot": "Download Snapshot JSON",
-      "snapshotSuccess": "Snapshot saved — place the JSON in test-data/"
+      "snapshotDesc": "Capture current telemetry state and save it next to the settings file.",
+      "downloadSnapshot": "Save Snapshot JSON",
+      "snapshotSuccess": "Saved to {{path}}"
     },
     "streamChat": {
       "title": "Stream chat",

@@ -40,6 +40,8 @@ export const applyTelemetryBundle = (
       root.environment.updateEnvironment(bundle.environment);
     }
 
+    if (bundle.sim_perf) root.simPerf.updateSimPerf(bundle.sim_perf);
+
     if (bundle.chassis) root.player.updateChassis(bundle.chassis);
     if (bundle.pit_service) root.player.updatePitService(bundle.pit_service);
 

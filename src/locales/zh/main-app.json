@@ -304,12 +304,53 @@
       "confirmOk": "重置并重启",
       "resetSettings": "重置设置"
     },
+    "fpsDiagnostics": {
+      "title": "FPS 诊断",
+      "description": "使用模拟器自带的帧率计数器，测量叠加层给模拟器带来的开销。请在可重复的场景中运行——例如在同一段赛道上循环播放、周围有车流的回放。",
+      "detailed": "详细测量",
+      "detailedDesc": "额外单独测量每个已启用的小部件。耗时长得多，但能指出具体是哪个小部件开销大，而不仅仅是哪种配置。",
+      "start": "开始（{{minutes}} 分钟）",
+      "cancel": "停止",
+      "switchToSim": "现在切换到模拟器并保持其处于前台——在后台它会限制帧率，那样所有数据都将失去意义。",
+      "phase": {
+        "countdown": "请切换到模拟器",
+        "settling": "稳定中",
+        "sampling": "采样中",
+        "done": "完成",
+        "failed": "失败",
+        "idle": "空闲"
+      },
+      "step": {
+        "noOverlay": "无叠加层",
+        "hidden": "叠加层已隐藏",
+        "allWidgets": "全部小部件"
+      },
+      "table": {
+        "config": "配置",
+        "fps": "FPS",
+        "fpsLow": "FPS 最低",
+        "delta": "差值",
+        "gpu": "GPU %",
+        "cpu": "CPU %"
+      },
+      "error": {
+        "noWidgets": "请先启用至少一个小部件——目前没有可测量的内容。",
+        "noTelemetry": "未收到模拟器的遥测数据。请开始一个赛段后重试。"
+      },
+      "hud": {
+        "progress": "第 {{done}} / {{total}} 步",
+        "doneSummary": "全部小部件的开销为 {{delta}} FPS。结果见设置。",
+        "doneNoSummary": "结果见设置。"
+      },
+      "saveCsv": "保存 CSV",
+      "saved": "已保存到 {{path}}"
+    },
     "developerTools": {
       "title": "开发者工具",
       "snapshotTitle": "遥测数据快照",
-      "snapshotDesc": "捕获当前遥测状态。",
-      "downloadSnapshot": "下载快照 JSON",
-      "snapshotSuccess": "快照已保存 — 请将 JSON 放入 test-data/"
+      "snapshotDesc": "捕获当前遥测状态，并保存在设置文件旁边。",
+      "downloadSnapshot": "保存快照 JSON",
+      "snapshotSuccess": "已保存到 {{path}}"
     },
     "streamChat": {
       "title": "直播聊天",

@@ -14,6 +14,7 @@ use crate::model::player::{
     PIT_SV_LR_TIRE_CHANGE, PIT_SV_RF_TIRE_CHANGE, PIT_SV_RR_TIRE_CHANGE, PIT_SV_WINDSHIELD_TEAROFF,
 };
 use crate::model::session::SessionFrame;
+use crate::model::sim_perf::SimPerfFrame;
 use crate::sources::iracing::flags::decode_race_flags;
 use crate::sources::source::SourceFrame;
 use kerb::iracing::IracingFrame;
@@ -31,6 +32,17 @@ impl From<&IracingFrame> for SourceFrame {
             pit_service: PitServiceFrame::from(f),
             session: SessionFrame::from(f),
             environment: EnvironmentFrame::from(f),
+            sim_perf: SimPerfFrame::from(f),
+        }
+    }
+}
+
+impl From<&IracingFrame> for SimPerfFrame {
+    fn from(f: &IracingFrame) -> Self {
+        Self {
+            frame_rate: Some(f.frame_rate),
+            gpu_usage: Some(f.gpu_usage),
+            cpu_usage_fg: Some(f.cpu_usage_fg),
         }
     }
 }

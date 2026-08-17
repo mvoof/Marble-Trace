@@ -16,4 +16,5 @@ pub mod reference_lap;
 pub mod relative;
 pub mod remote;
 pub mod session;
+pub mod sim_perf;
 pub mod track_shape;
