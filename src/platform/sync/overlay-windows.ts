@@ -3,11 +3,7 @@ import { availableMonitors } from '@tauri-apps/api/window';
 import { PhysicalPosition, PhysicalSize } from '@tauri-apps/api/dpi';
 import type { RootStore } from '@store/root-store';
 import type { LayoutResolution } from '@/types/widget-settings';
-import {
-  monitorLabel,
-  listOverlayWindowLabels,
-  OVERLAY_LABEL_PREFIX,
-} from './overlay-labels';
+import { monitorLabel, listOverlayWindowLabels } from './overlay-labels';
 
 const WIN32_DISPLAY_PREFIX = '\\\\.\\';
 
@@ -158,15 +154,3 @@ export const syncOverlayWindows = (root: RootStore): Promise<void> => {
 
   return syncInFlight;
 };
-
-export const closeAllOverlayWindows = async (): Promise<void> => {
-  const labels = await listOverlayWindowLabels();
-
-  for (const label of labels) {
-    const existing = await WebviewWindow.getByLabel(label);
-
-    await existing?.close();
-  }
-};
-
-export { OVERLAY_LABEL_PREFIX };

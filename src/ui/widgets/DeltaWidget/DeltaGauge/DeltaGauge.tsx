@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   DELTA_GAUGE_RANGES,
@@ -25,13 +25,16 @@ const FILL_CLASS = {
 };
 
 export const DeltaGauge = observer(({ delta, range }: Props) => {
-  const autoRangeRef = useRef<number>(DELTA_GAUGE_RANGES[0]);
+  const [autoRange, setAutoRange] = useState<number>(DELTA_GAUGE_RANGES[0]);
 
-  if (range === undefined) {
-    autoRangeRef.current = resolveGaugeRange(delta, autoRangeRef.current);
+  const resolvedAutoRange =
+    range === undefined ? resolveGaugeRange(delta, autoRange) : autoRange;
+
+  if (resolvedAutoRange !== autoRange) {
+    setAutoRange(resolvedAutoRange);
   }
 
-  const activeRange = range ?? autoRangeRef.current;
+  const activeRange = range ?? resolvedAutoRange;
   const clamped = Math.max(-activeRange, Math.min(activeRange, delta ?? 0));
   const widthPct = (Math.abs(clamped) / activeRange) * HALF_TRACK_PCT;
   const leftPct = clamped >= 0 ? HALF_TRACK_PCT : HALF_TRACK_PCT - widthPct;

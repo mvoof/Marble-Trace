@@ -32,17 +32,17 @@ export class ChatStore {
   }
 
   async init() {
-    const message = await listenTo<ChatMessage>(CHAT_MESSAGE, (event) => {
-      runInAction(() => this.appendMessage(event.payload));
-    });
-
-    const presence = await listenTo<ChatPresence>(CHAT_PRESENCE, (event) => {
-      runInAction(() => this.updatePresence(event.payload));
-    });
-
-    const deletion = await listenTo<ChatDeletion>(CHAT_DELETION, (event) => {
-      runInAction(() => this.applyDeletion(event.payload));
-    });
+    const [message, presence, deletion] = await Promise.all([
+      listenTo<ChatMessage>(CHAT_MESSAGE, (event) => {
+        runInAction(() => this.appendMessage(event.payload));
+      }),
+      listenTo<ChatPresence>(CHAT_PRESENCE, (event) => {
+        runInAction(() => this.updatePresence(event.payload));
+      }),
+      listenTo<ChatDeletion>(CHAT_DELETION, (event) => {
+        runInAction(() => this.applyDeletion(event.payload));
+      }),
+    ]);
 
     this.unlisteners.push(message, presence, deletion);
   }

@@ -5,7 +5,7 @@ import {
   INPUT_BUTTON_EVENT,
   INPUT_DEVICES_EVENT,
 } from '@platform/sync/sim-events';
-import { applyKeyboardBindings, dispatchDeviceButton } from './binding-runner';
+import { dispatchDeviceButton } from './binding-runner';
 
 /**
  * Main-window only, like the keyboard registrations: a second window would
@@ -57,5 +57,3 @@ const reconcileDevices = async (root: RootStore) => {
     root.bindings.rewriteDeviceId(remap.previousId, remap.nextId);
   }
 };
-
-export const reapplyBindings = (root: RootStore) => applyKeyboardBindings(root);

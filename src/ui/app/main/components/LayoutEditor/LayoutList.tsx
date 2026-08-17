@@ -37,6 +37,9 @@ interface LayoutPreviewProps {
 }
 const PREVIEW_ASPECT = 16 / 9;
 
+const percentOf = (value: number, origin: number, span: number) =>
+  `${((value - origin) / span) * 100}%`;
+
 const LayoutPreview = observer(({ layout }: LayoutPreviewProps) => {
   const { t } = useTranslation('main-app');
   const [backgrounds, setBackgrounds] = useState<Record<string, string>>({});
@@ -89,9 +92,6 @@ const LayoutPreview = observer(({ layout }: LayoutPreviewProps) => {
     width: fitsWidth ? '100%' : `${(desktopAspect / PREVIEW_ASPECT) * 100}%`,
     height: fitsWidth ? `${(PREVIEW_ASPECT / desktopAspect) * 100}%` : '100%',
   };
-
-  const percentOf = (value: number, origin: number, span: number) =>
-    `${((value - origin) / span) * 100}%`;
 
   return (
     <div className={styles.previewWrapper}>
