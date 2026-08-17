@@ -433,6 +433,8 @@
       "standingsClassNext": "下一个组别（循环模式）",
       "standingsScrollUp": "表格向上滚动",
       "standingsScrollDown": "表格向下滚动",
+      "streamChatScrollUp": "聊天向上滚动",
+      "streamChatScrollDown": "聊天向下滚动",
       "pitServiceToggle": "在非维修道时临时显示进站指令窗口",
       "pitServiceAutoMode": "把本次进站交给自动模式，或收回控制",
       "pitServiceApplyOrder": "下达完整进站指令：计算油量与四条轮胎（替换当前指令）",

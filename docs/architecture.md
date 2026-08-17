@@ -1020,11 +1020,12 @@ Emitted from `main-sync.ts` reactions, received in `setupOverlayListeners`.
 A hotkey fires in main — the runner lives there — and must act on a widget that
 lives in the overlay.
 
-| Event                | Emitter function       | Effect                          |
-| -------------------- | ---------------------- | ------------------------------- |
-| `pit-service-toggle` | `emitPitServiceToggle` | toggle the pit service panel    |
-| `pit-service-reveal` | `emitPitServiceReveal` | reveal it                       |
-| `standings-scroll`   | `emitStandingsScroll`  | scroll the standings by a delta |
+| Event                | Emitter function       | Effect                            |
+| -------------------- | ---------------------- | --------------------------------- |
+| `pit-service-toggle` | `emitPitServiceToggle` | toggle the pit service panel      |
+| `pit-service-reveal` | `emitPitServiceReveal` | reveal it                         |
+| `standings-scroll`   | `emitStandingsScroll`  | scroll the standings by a delta   |
+| `stream-chat-scroll` | `emitStreamChatScroll` | scroll the stream chat by a delta |
 
 #### overlay → main
 

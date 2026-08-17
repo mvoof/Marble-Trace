@@ -435,6 +435,8 @@
       "standingsClassNext": "Next class (cycling mode)",
       "standingsScrollUp": "Scroll table up",
       "standingsScrollDown": "Scroll table down",
+      "streamChatScrollUp": "Scroll chat up",
+      "streamChatScrollDown": "Scroll chat down",
       "pitServiceToggle": "Open the order box away from the pit lane (temporary)",
       "pitServiceAutoMode": "Hand this stop to auto mode, or take it back",
       "pitServiceApplyOrder": "Order a full stop: calculated fuel and all four tyres (replaces the current order)",

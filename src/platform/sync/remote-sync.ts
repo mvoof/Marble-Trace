@@ -151,6 +151,14 @@ export const initRemoteSync = (
         return;
       }
 
+      case 'stream-chat-scroll': {
+        runInAction(() =>
+          root.streamChatWidget.scrollByRows(message.data as number)
+        );
+
+        return;
+      }
+
       // Replayed by the server, so a device connecting later still gets a map
       // turned the way the user left it.
       case 'track-rotation': {
