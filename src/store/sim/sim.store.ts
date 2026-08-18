@@ -30,6 +30,8 @@ import type {
   CapabilitiesPayload,
   ReferenceLapData,
   TrackCondition,
+  SimPerfFrame,
+  CarStatusFrame,
 } from '@/types/bindings';
 import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import { debug } from '@store/sim/debug';
@@ -44,6 +46,8 @@ import {
   SIM_SESSION,
   SIM_WEATHER,
   SIM_STATUS,
+  SIM_PERF,
+  SIM_CAR_STATUS_SLOW,
   SIM_DISCONNECTED,
   SIM_TRACK_SHAPE,
   SIM_CAPABILITIES,
@@ -55,6 +59,13 @@ const EVENT_CAR_DYNAMICS = 1 << 0;
 const EVENT_CAR_INPUTS = 1 << 1;
 const EVENT_LAP_DELTA = 1 << 2;
 const EVENT_CAR_POSITIONS = 1 << 3;
+
+/**
+ * True in the overlay windows, which are the only ones that render widgets and
+ * therefore the only ones that need 60 Hz telemetry.
+ */
+const drawsWidgets = () =>
+  typeof window !== 'undefined' && window.location.hash.includes('overlay');
 
 export class SimStore {
   isConnected = false;
@@ -75,10 +86,7 @@ export class SimStore {
   }
 
   init() {
-    if (
-      typeof window !== 'undefined' &&
-      !window.location.hash.includes('overlay')
-    ) {
+    if (!drawsWidgets()) {
       this.disposers.push(
         reaction(
           () => ({
@@ -405,15 +413,7 @@ export class SimStore {
   }
 
   private async subscribeAllEvents(guardId: number) {
-    this.unlistens.push(
-      await listenTo<TelemetryBundle>(SIM_TELEMETRY_BUNDLE, (event) => {
-        if (this.initId !== guardId) return;
-
-        applyTelemetryBundle(this.root, event.payload, () =>
-          this.onFrameReceived()
-        );
-      })
-    );
+    await this.subscribeBundle(guardId);
 
     this.unlistens.push(
       await listenTo<SessionSnapshot>(SIM_SESSION, (event) => {
@@ -421,6 +421,29 @@ export class SimStore {
 
         debug.telemetry('session info received: %o', event.payload);
         this.root.session.updateSessionInfo(event.payload);
+      })
+    );
+
+    // 1 Hz and tiny, and the only thing the main window needs from the sim's
+    // own counters — cheap enough to hold in every window unconditionally.
+    // Windows without the bundle still need a few live signals: the main
+    // window switches layouts on `is_on_track`. One owner, two transports —
+    // the same setter the bundle path calls, so nothing writes it twice.
+    if (!drawsWidgets()) {
+      this.unlistens.push(
+        await listenTo<CarStatusFrame>(SIM_CAR_STATUS_SLOW, (event) => {
+          if (this.initId !== guardId) return;
+
+          runInAction(() => this.root.player.updateCarStatus(event.payload));
+        })
+      );
+    }
+
+    this.unlistens.push(
+      await listenTo<SimPerfFrame>(SIM_PERF, (event) => {
+        if (this.initId !== guardId) return;
+
+        runInAction(() => this.root.simPerf.updateSimPerf(event.payload));
       })
     );
 
@@ -493,6 +516,31 @@ export class SimStore {
         runInAction(() => {
           this.capabilities = event.payload;
         });
+      })
+    );
+  }
+
+  /**
+   * Subscribes to the 60 Hz bundle only in windows that draw widgets.
+   *
+   * Tauri delivers an event solely to webviews holding a listener for it, so a
+   * window that never subscribes pays nothing: no IPC, no JSON parse, no store
+   * writes. The main window renders no widgets, reads connection state from
+   * `sim://status` and the sim's counters from `sim://perf`, so while the user
+   * is racing it has no use for 60 bundles a second.
+   */
+  private async subscribeBundle(guardId: number) {
+    if (!drawsWidgets()) {
+      return;
+    }
+
+    this.unlistens.push(
+      await listenTo<TelemetryBundle>(SIM_TELEMETRY_BUNDLE, (event) => {
+        if (this.initId !== guardId) return;
+
+        applyTelemetryBundle(this.root, event.payload, () =>
+          this.onFrameReceived()
+        );
       })
     );
   }
