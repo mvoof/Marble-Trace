@@ -21,6 +21,10 @@ const VIEWBOX_PADDING_FACTOR: f32 = 0.02;
 const SPEED_THRESHOLD_MPS: f32 = 5.0;
 /// Emit recording status every 15 60 Hz ticks (~4 Hz).
 const STATUS_EMIT_INTERVAL: u64 = 15;
+/// 60 Hz ticks the player must spend clear of the pit lane before an automatic
+/// recording may start (~3 s). A car rolling out of the pit exit is still on the
+/// pit exit road, not on the racing line, so a shape started there is skewed.
+const PIT_EXIT_CLEARANCE_TICKS: u32 = 180;
 
 struct TrackShapeState {
     points: Vec<TrackPoint>,
@@ -244,6 +248,8 @@ pub struct TrackShapeProcessor {
     prev_track_surface: Vec<TrackSurface>,
     /// Recorded pit entry pct per car; present while car is inside pit lane, awaiting exit.
     pit_in_pcts_by_car: HashMap<usize, f32>,
+    /// Consecutive 60 Hz ticks the player has been clear of the pit lane.
+    off_pit_ticks: u32,
 }
 
 impl TrackShapeProcessor {
@@ -265,6 +271,7 @@ impl TrackShapeProcessor {
             prev_on_pit_road: Vec::new(),
             prev_track_surface: Vec::new(),
             pit_in_pcts_by_car: HashMap::new(),
+            off_pit_ticks: 0,
         }
     }
 }
@@ -299,6 +306,7 @@ impl Processor for TrackShapeProcessor {
             self.prev_on_pit_road.clear();
             self.prev_track_surface.clear();
             self.pit_in_pcts_by_car.clear();
+            self.off_pit_ticks = 0;
 
             // A cached track was loaded from disk for this track_id — skip re-recording.
             if self.track_cached.swap(-1, Ordering::Relaxed) == track_id {
@@ -311,6 +319,27 @@ impl Processor for TrackShapeProcessor {
         let lap_dist_pct = ctx.lap_timing.lap_dist_pct.unwrap_or(-1.0);
         let is_moving = speed > SPEED_THRESHOLD_MPS;
         let player_idx = ctx.session.player_car_idx as usize;
+        let player_surface = ctx
+            .car_idx
+            .car_idx_track_surface
+            .get(player_idx)
+            .copied()
+            .unwrap_or(TrackSurface::OnTrack);
+        let player_in_pits = on_pit_road
+            || player_surface == TrackSurface::InPitStall
+            || player_surface == TrackSurface::AproachingPits;
+
+        if player_in_pits {
+            self.off_pit_ticks = 0;
+        } else {
+            self.off_pit_ticks = self.off_pit_ticks.saturating_add(1);
+        }
+
+        // A lap driven through the pit lane is not the track — drop it and wait for
+        // a clean start/finish crossing instead of baking the pit lane into the shape.
+        if self.state.recording && player_in_pits {
+            self.state.reset();
+        }
 
         // Reset pit tracking if commanded by the user (manual recalibrate).
         if self.reset_pit_pcts.swap(false, Ordering::Relaxed) {
@@ -397,11 +426,14 @@ impl Processor for TrackShapeProcessor {
 
         if !self.state.recording && !self.state.complete && is_moving {
             let lap_dist = ctx.lap_timing.lap_dist_pct.unwrap_or(-1.0);
+            let clear_of_pit_exit = self.off_pit_ticks >= PIT_EXIT_CLEARANCE_TICKS;
 
-            let crossed_sf =
-                !on_pit_road && self.last_lap_dist_pct > 0.8 && (0.0..0.2).contains(&lap_dist);
+            let crossed_sf = !player_in_pits
+                && clear_of_pit_exit
+                && self.last_lap_dist_pct > 0.8
+                && (0.0..0.2).contains(&lap_dist);
 
-            if (crossed_sf || force) && !on_pit_road && lap_dist >= 0.0 {
+            if (crossed_sf || force) && !player_in_pits && lap_dist >= 0.0 {
                 self.state.start();
             }
         }
@@ -454,6 +486,7 @@ impl Processor for TrackShapeProcessor {
         self.prev_on_pit_road.clear();
         self.prev_track_surface.clear();
         self.pit_in_pcts_by_car.clear();
+        self.off_pit_ticks = 0;
     }
 }
 
@@ -870,6 +903,111 @@ mod tests {
             !flag.load(Ordering::Relaxed),
             "flag should be cleared after consume"
         );
+    }
+
+    #[test]
+    fn pit_exit_does_not_start_recording_until_clear_of_the_lane() {
+        let mut proc = TrackShapeProcessor::new(
+            Arc::new(AtomicBool::new(false)),
+            Arc::new(AtomicBool::new(false)),
+            Arc::new(std::sync::atomic::AtomicI32::new(-1)),
+            Arc::new(AtomicBool::new(false)),
+        );
+
+        let session = make_session(1);
+        let dynamics = make_dynamics(30.0, 0.0);
+        let car_idx = make_car_idx();
+        let start_pos = HashMap::new();
+        let chassis = crate::model::player::ChassisFrame::default();
+        let environment = crate::model::environment::EnvironmentFrame::default();
+        let car_inputs = make_car_inputs();
+
+        let tick = |proc: &mut TrackShapeProcessor, pct: f32, on_pit_road: bool| {
+            let lap_timing = make_lap_timing(pct);
+            let mut car_status = make_car_status();
+            car_status.on_pit_road = Some(on_pit_road);
+
+            let ctx = make_ctx(MakeCtxArgs {
+                dynamics: &dynamics,
+                lap_timing: &lap_timing,
+                car_status: &car_status,
+                session: &session,
+                car_idx: &car_idx,
+                start_positions: &start_pos,
+                car_inputs: &car_inputs,
+                chassis: &chassis,
+                environment: &environment,
+            });
+            let _ = proc.compute(&ctx);
+        };
+
+        // Rolling down the pit lane and out of the exit, crossing start/finish on the way.
+        tick(&mut proc, 0.95, true);
+        tick(&mut proc, 0.98, true);
+        tick(&mut proc, 0.02, false);
+
+        assert!(
+            !proc.state.recording,
+            "a start/finish crossing on the pit exit road must not start a recording"
+        );
+
+        // Once the player has been clear of the pit lane long enough, the next crossing counts.
+        for _ in 0..PIT_EXIT_CLEARANCE_TICKS {
+            tick(&mut proc, 0.5, false);
+        }
+
+        tick(&mut proc, 0.9, false);
+        tick(&mut proc, 0.02, false);
+
+        assert!(proc.state.recording);
+    }
+
+    #[test]
+    fn entering_the_pit_lane_discards_the_recording_in_progress() {
+        let mut proc = TrackShapeProcessor::new(
+            Arc::new(AtomicBool::new(true)),
+            Arc::new(AtomicBool::new(false)),
+            Arc::new(std::sync::atomic::AtomicI32::new(-1)),
+            Arc::new(AtomicBool::new(false)),
+        );
+
+        let session = make_session(1);
+        let dynamics = make_dynamics(30.0, 0.0);
+        let car_idx = make_car_idx();
+        let start_pos = HashMap::new();
+        let chassis = crate::model::player::ChassisFrame::default();
+        let environment = crate::model::environment::EnvironmentFrame::default();
+        let car_inputs = make_car_inputs();
+
+        let tick = |proc: &mut TrackShapeProcessor, pct: f32, on_pit_road: bool| {
+            let lap_timing = make_lap_timing(pct);
+            let mut car_status = make_car_status();
+            car_status.on_pit_road = Some(on_pit_road);
+
+            let ctx = make_ctx(MakeCtxArgs {
+                dynamics: &dynamics,
+                lap_timing: &lap_timing,
+                car_status: &car_status,
+                session: &session,
+                car_idx: &car_idx,
+                start_positions: &start_pos,
+                car_inputs: &car_inputs,
+                chassis: &chassis,
+                environment: &environment,
+            });
+            let _ = proc.compute(&ctx);
+        };
+
+        tick(&mut proc, 0.5, false);
+        assert!(proc.state.recording, "force start");
+
+        tick(&mut proc, 0.9, true);
+
+        assert!(
+            !proc.state.recording,
+            "the pit lane is not the track — the partial shape is dropped"
+        );
+        assert!(proc.state.points.is_empty());
     }
 
     #[test]
