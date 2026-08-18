@@ -125,7 +125,7 @@ export class StandingsWidgetStore {
 
     this.disposers.push(
       reaction(
-        () => this.root.backendComputed.standings,
+        () => this.root.backendComputed.driverEntries,
         (frame) => {
           const entries = frame?.entries ?? [];
 
@@ -198,7 +198,7 @@ export class StandingsWidgetStore {
 
   get playerEntry(): DriverEntry | null {
     return (
-      this.root.backendComputed.standings?.entries.find(
+      this.root.backendComputed.driverEntries?.entries.find(
         (entry) => entry.isPlayer
       ) ?? null
     );
@@ -229,7 +229,7 @@ export class StandingsWidgetStore {
 
   /** More than one car class is entered, so a class position is a different number. */
   get isMultiClass(): boolean {
-    const entries = this.root.backendComputed.standings?.entries ?? [];
+    const entries = this.root.backendComputed.driverEntries?.entries ?? [];
 
     if (entries.length === 0) {
       return false;
@@ -250,7 +250,7 @@ export class StandingsWidgetStore {
     useLivePositions: boolean,
     byClass: boolean
   ): { position: number | null; total: number | null } {
-    const entries = this.root.backendComputed.standings?.entries ?? [];
+    const entries = this.root.backendComputed.driverEntries?.entries ?? [];
     const overallTotal =
       this.root.session.sessionInfo?.cars.length || entries.length || null;
     const entry = this.playerEntry;
@@ -388,7 +388,7 @@ export class StandingsWidgetStore {
    * for it. The player's own row always stays — the widget is unusable without it.
    */
   private get visibleEntries(): DriverEntry[] {
-    const entries = this.root.backendComputed.standings?.entries ?? [];
+    const entries = this.root.backendComputed.driverEntries?.entries ?? [];
 
     const hideRetired =
       this.root.widgetSettings.getSettings<StandingsWidgetSettings>(
@@ -472,10 +472,10 @@ export class StandingsWidgetStore {
   }
 
   get driverMap(): Map<number, DriverEntry> {
-    if (!this.root.backendComputed.standings) return new Map();
+    if (!this.root.backendComputed.driverEntries) return new Map();
 
     return new Map(
-      this.root.backendComputed.standings.entries.map((entry) => [
+      this.root.backendComputed.driverEntries.entries.map((entry) => [
         entry.carIdx,
         entry,
       ])
@@ -485,9 +485,9 @@ export class StandingsWidgetStore {
   get classLeaders(): Map<number, DriverEntry> {
     const result = new Map<number, DriverEntry>();
 
-    if (!this.root.backendComputed.standings) return result;
+    if (!this.root.backendComputed.driverEntries) return result;
 
-    for (const entry of this.root.backendComputed.standings.entries) {
+    for (const entry of this.root.backendComputed.driverEntries.entries) {
       if (this.classRankOf(entry) === 1) {
         result.set(entry.carClassId, entry);
       }
@@ -497,10 +497,10 @@ export class StandingsWidgetStore {
   }
 
   get overallLeader(): DriverEntry | null {
-    if (!this.root.backendComputed.standings) return null;
+    if (!this.root.backendComputed.driverEntries) return null;
 
     return (
-      this.root.backendComputed.standings.entries.find(
+      this.root.backendComputed.driverEntries.entries.find(
         (entry) => this.rankOf(entry) === 1
       ) ?? null
     );
@@ -556,9 +556,9 @@ export class StandingsWidgetStore {
   get classBestLapMap(): Map<number, number> {
     const result = new Map<number, number>();
 
-    if (!this.root.backendComputed.standings) return result;
+    if (!this.root.backendComputed.driverEntries) return result;
 
-    for (const entry of this.root.backendComputed.standings.entries) {
+    for (const entry of this.root.backendComputed.driverEntries.entries) {
       if (!(entry.bestLapTime > 0)) continue;
 
       const current = result.get(entry.carClassId);

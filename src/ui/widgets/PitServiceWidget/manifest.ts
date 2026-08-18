@@ -6,7 +6,7 @@ import {
 
 export const PIT_SERVICE_MANIFEST: WidgetManifest = {
   id: 'pit-service',
-  telemetryEvents: ['carDynamics'],
+  telemetryEvents: ['carDynamics', 'driverEntries'],
   label: 'Pit Service',
   description: 'Pit stop order, repairs, tow time and pit lane speed.',
   // The pit order itself needs no chassis telemetry, but the tire grid draws

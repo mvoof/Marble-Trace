@@ -41,7 +41,7 @@ import styles from './StandingsContent.module.scss';
 const WHEEL_STEP_ROWS = 3;
 
 export const StandingsContent = observer(() => {
-  const { standings } = useBackendComputedStore();
+  const { driverEntries: driverEntriesFrame } = useBackendComputedStore();
   const sim = useSimStore();
   const widgetSettings = useWidgetSettingsStore();
   const standingsWidget = useStandingsWidgetStore();
@@ -259,7 +259,9 @@ export const StandingsContent = observer(() => {
   };
 
   const hasData =
-    sim.isConnected && standings != null && standings.entries.length > 0;
+    sim.isConnected &&
+    driverEntriesFrame != null &&
+    driverEntriesFrame.entries.length > 0;
 
   return (
     <>

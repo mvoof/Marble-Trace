@@ -71,7 +71,7 @@ const STANDINGS_ACTIONS: HotkeyAction[] = [
     trigger: 'press',
     run: (root) =>
       root.standingsWidget.cyclePrev(
-        countStandingsClasses(root.backendComputed.standings?.entries)
+        countStandingsClasses(root.backendComputed.driverEntries?.entries)
       ),
   },
   {
@@ -81,7 +81,7 @@ const STANDINGS_ACTIONS: HotkeyAction[] = [
     trigger: 'press',
     run: (root) =>
       root.standingsWidget.cycleNext(
-        countStandingsClasses(root.backendComputed.standings?.entries)
+        countStandingsClasses(root.backendComputed.driverEntries?.entries)
       ),
   },
   {

@@ -36,7 +36,7 @@ const resolveRelativeMapLayout: ResolveLayoutChange = (prev, next, current) => {
 
 export const RELATIVE_MAP_MANIFEST: WidgetManifest = {
   id: 'relative-map',
-  telemetryEvents: ['carPositions'],
+  telemetryEvents: ['carPositions', 'relative'],
   label: 'Relative Map',
   description: 'Progress bar of car track positions.',
   resolveLayoutChange: resolveRelativeMapLayout,

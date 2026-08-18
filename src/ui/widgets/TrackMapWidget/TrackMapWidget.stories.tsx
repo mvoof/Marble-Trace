@@ -31,7 +31,7 @@ const meta: Meta<typeof TrackMapView> = {
     withStore((store) => {
       if (snapshot.sessionInfo)
         store.session.updateSessionInfo(snapshot.sessionInfo);
-      store.backendComputed.updateStandings({
+      store.backendComputed.updateDriverEntries({
         entries: DRIVER_ENTRIES.slice(0, 10),
         playerCarIdx: DRIVER_ENTRIES.find((d) => d.isPlayer)?.carIdx ?? 0,
       });
@@ -69,7 +69,7 @@ export const WithSectors: Story = {
         });
       }
 
-      store.backendComputed.updateStandings({
+      store.backendComputed.updateDriverEntries({
         entries: DRIVER_ENTRIES.slice(0, 10),
         playerCarIdx: DRIVER_ENTRIES.find((d) => d.isPlayer)?.carIdx ?? 0,
       });
@@ -87,7 +87,7 @@ export const ClassShapes: Story = {
       if (snapshot.sessionInfo)
         store.session.updateSessionInfo(snapshot.sessionInfo);
 
-      store.backendComputed.updateStandings({
+      store.backendComputed.updateDriverEntries({
         entries: DRIVER_ENTRIES,
         playerCarIdx: DRIVER_ENTRIES.find((d) => d.isPlayer)?.carIdx ?? 0,
       });
@@ -132,7 +132,7 @@ export const WithPaceCar: Story = {
         });
       }
 
-      store.backendComputed.updateStandings({
+      store.backendComputed.updateDriverEntries({
         entries: DRIVER_ENTRIES.slice(0, 10),
         playerCarIdx: player?.carIdx ?? 0,
       });

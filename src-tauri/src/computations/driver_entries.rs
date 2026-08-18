@@ -80,7 +80,7 @@ pub struct DriverEntry {
 }
 
 #[derive(Default)]
-pub struct StandingsState {
+pub struct DriverEntriesState {
     pub pit_states: HashMap<i32, PitState>,
     pub finished_cars: HashSet<i32>,
     /// Session the latched finishers belong to — a new session clears them.
@@ -115,7 +115,7 @@ pub fn compute(
     start_positions: &HashMap<i32, (i32, i32)>,
     compute_ir_delta: bool,
     session_state: Option<SessionState>,
-    state: &Mutex<StandingsState>,
+    state: &Mutex<DriverEntriesState>,
 ) -> DriverEntriesFrame {
     let player_car_idx = session.player_car_idx;
     let drivers = &session.cars;
@@ -568,7 +568,7 @@ fn is_racing(entry: &DriverEntry) -> bool {
 /// the pit lane. A normal stop always shows `on_pit_road` first, so the two cannot
 /// be confused. The flag is cleared as soon as the car is back in the world — by
 /// then it has a real lap distance of its own once more.
-fn update_tow_states(entries: &mut [DriverEntry], state: &mut StandingsState) {
+fn update_tow_states(entries: &mut [DriverEntry], state: &mut DriverEntriesState) {
     let active_car_indices: HashSet<i32> = entries.iter().map(|e| e.car_idx).collect();
 
     state
@@ -829,21 +829,21 @@ fn compute_ir_deltas(entries: &[DriverEntry], use_live: bool) -> HashMap<i32, i3
 }
 
 /// Stateful processor wrapping the standings computation.
-pub struct StandingsProcessor {
-    state: Mutex<StandingsState>,
+pub struct DriverEntriesProcessor {
+    state: Mutex<DriverEntriesState>,
 }
 
-impl Default for StandingsProcessor {
+impl Default for DriverEntriesProcessor {
     fn default() -> Self {
         Self {
-            state: Mutex::new(StandingsState::default()),
+            state: Mutex::new(DriverEntriesState::default()),
         }
     }
 }
 
-impl Processor for StandingsProcessor {
+impl Processor for DriverEntriesProcessor {
     fn id(&self) -> ProcessorId {
-        ProcessorId::Standings
+        ProcessorId::DriverEntries
     }
 
     fn required(&self) -> Capabilities {
@@ -864,12 +864,12 @@ impl Processor for StandingsProcessor {
             &self.state,
         );
 
-        Some(ComputedOutput::Standings(frame))
+        Some(ComputedOutput::DriverEntries(frame))
     }
 
     fn reset(&mut self) {
         if let Ok(mut locked) = self.state.lock() {
-            *locked = StandingsState::default();
+            *locked = DriverEntriesState::default();
         }
     }
 }
@@ -1038,7 +1038,7 @@ mod tests {
     #[test]
     fn test_a_towed_leader_loses_the_live_lead() {
         let session = two_car_race_session();
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
 
         compute(
             &two_car_frame(TrackSurface::OnTrack, 0.5, 0.3),
@@ -1087,7 +1087,7 @@ mod tests {
     #[test]
     fn test_a_car_entering_the_pits_is_not_treated_as_towed() {
         let session = two_car_race_session();
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
 
         let mut driving_in = two_car_frame(TrackSurface::OnTrack, 0.95, 0.3);
         driving_in.car_idx_on_pit_road = vec![false, true];
@@ -1122,7 +1122,7 @@ mod tests {
     #[test]
     fn test_tow_flag_clears_once_the_car_is_dropped_in_its_box() {
         let session = two_car_race_session();
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
 
         compute(
             &two_car_frame(TrackSurface::OnTrack, 0.5, 0.3),
@@ -1194,7 +1194,7 @@ mod tests {
     #[test]
     fn test_car_finishes_when_it_crosses_the_line_under_the_checkered() {
         let session = race_session();
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
 
         compute(
             &racing_car_idx_frame_on_lap(0, 12),
@@ -1233,7 +1233,7 @@ mod tests {
     #[test]
     fn test_car_absent_at_the_flag_can_still_finish() {
         let session = race_session();
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
 
         // The flag is already out on the very first tick we see: there is no
         // previous lap counter to build the baseline from.
@@ -1263,7 +1263,7 @@ mod tests {
     #[test]
     fn test_broadcast_checkered_bit_alone_does_not_finish_a_car() {
         let session = race_session();
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
 
         compute(
             &racing_car_idx_frame_on_lap(0, 12),
@@ -1291,7 +1291,7 @@ mod tests {
     #[test]
     fn test_cool_down_classifies_cars_that_never_crossed_the_line() {
         let session = race_session();
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
 
         let frame = compute(
             &racing_car_idx_frame(0),
@@ -1321,7 +1321,7 @@ mod tests {
         let mut session = race_session();
         session.sessions[0].session_type = SessionType::Practice;
 
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
 
         let frame = compute(
             &racing_car_idx_frame(BROADCAST_CHECKERED_BIT),
@@ -1338,7 +1338,7 @@ mod tests {
     #[test]
     fn test_finish_latch_clears_on_the_next_session() {
         let session = race_session();
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
 
         compute(
             &racing_car_idx_frame(0),
@@ -1383,7 +1383,7 @@ mod tests {
             reason_out_id: Some(0),
         });
 
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
         let frame = compute(
             &garaged_car_idx_frame(),
             &session,
@@ -1426,7 +1426,7 @@ mod tests {
         car_idx.car_idx_last_lap_time = vec![90.5];
         car_idx.car_idx_track_surface = vec![TrackSurface::OnTrack];
 
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
         let frame = compute(&car_idx, &session, &HashMap::new(), false, None, &state);
 
         let entry = &frame.entries[0];
@@ -1452,7 +1452,7 @@ mod tests {
             reason_out_id: Some(2),
         });
 
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
         let frame = compute(
             &garaged_car_idx_frame(),
             &session,
@@ -1807,7 +1807,7 @@ mod tests {
             fastest_lap: Some(3),
         }];
 
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
         let frame = compute(
             &racing_car_idx_frame(0),
             &session,
@@ -1823,7 +1823,7 @@ mod tests {
     #[test]
     fn test_qualify_time_is_absent_without_a_qualifying_lap() {
         let session = race_session();
-        let state = Mutex::new(StandingsState::default());
+        let state = Mutex::new(DriverEntriesState::default());
 
         let frame = compute(
             &racing_car_idx_frame(0),
@@ -1977,7 +1977,7 @@ mod tests {
 
     #[test]
     fn test_pit_state_reset_clears_all_states() {
-        let mut processor = StandingsProcessor::default();
+        let mut processor = DriverEntriesProcessor::default();
         processor.reset();
         let locked = processor.state.lock().unwrap();
         assert!(locked.pit_states.is_empty());

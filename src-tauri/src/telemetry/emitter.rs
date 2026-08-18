@@ -12,11 +12,11 @@ use tracing::warn;
 use super::scheduler::DueGroups;
 use super::state::{
     TelemetryServiceState, EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS,
-    EVENT_LAP_DELTA,
+    EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE, EVENT_STANDINGS,
 };
 use crate::capabilities::Capabilities;
 use crate::computations::{
-    fuel, lap_delta, pit_stops, proximity, standings, ComputeContext, ComputedOutput,
+    driver_entries, fuel, lap_delta, pit_stops, proximity, ComputeContext, ComputedOutput,
     ProcessorRegistry, TickRate,
 };
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
@@ -84,7 +84,7 @@ pub struct TelemetryBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub relative: Option<RelativeFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub standings: Option<standings::DriverEntriesFrame>,
+    pub driver_entries: Option<driver_entries::DriverEntriesFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub car_status: Option<CarStatusFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -125,7 +125,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
         lap_timing: None,
         proximity: None,
         relative: None,
-        standings: None,
+        driver_entries: None,
         car_status: None,
         fuel: None,
         pit_stops: None,
@@ -313,6 +313,22 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
         }
     }
 
+    // Drop what nobody asked for. Deliberately after the processors have run:
+    // the mask gates publication, never computation, so a widget switched on
+    // mid-race finds the driver table, the gaps and the history intact
+    // instead of rebuilding them from the tick it became visible.
+    if (active_mask & EVENT_STANDINGS) == 0 {
+        bundle.driver_entries = None;
+    }
+
+    if (active_mask & EVENT_RELATIVE) == 0 {
+        bundle.relative = None;
+    }
+
+    if (active_mask & EVENT_PROXIMITY) == 0 {
+        bundle.proximity = None;
+    }
+
     let should_emit = active_mask != 0 || due.first || due.hz10 || due.hz4 || due.hz1;
 
     if should_emit {
@@ -330,7 +346,7 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
         ComputedOutput::PitStops(frame) => bundle.pit_stops = Some(frame),
         ComputedOutput::Proximity(frame) => bundle.proximity = Some(frame),
         ComputedOutput::Relative(frame) => bundle.relative = Some(frame),
-        ComputedOutput::Standings(frame) => bundle.standings = Some(frame),
+        ComputedOutput::DriverEntries(frame) => bundle.driver_entries = Some(frame),
         ComputedOutput::TrackRecording(frame) => bundle.track_recording = Some(frame),
         ComputedOutput::TrackShape(_) => {} // handled in Hz60 loop directly
         ComputedOutput::ReferenceLap(_) => {} // handled in Hz60 loop directly

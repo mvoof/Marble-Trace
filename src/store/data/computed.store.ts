@@ -17,7 +17,7 @@ export class BackendComputedStore {
   proximity: ProximityFrame | null = null;
   fuel: FuelComputedFrame | null = null;
   relative: RelativeFrame | null = null;
-  standings: DriverEntriesFrame | null = null;
+  driverEntries: DriverEntriesFrame | null = null;
   pitStops: PitStopsFrame | null = null;
   lapDelta: LapDeltaFrame | null = null;
   lapHistory: LapHistoryEntry[] = [];
@@ -33,7 +33,7 @@ export class BackendComputedStore {
       proximity: observable.ref,
       fuel: observable.ref,
       relative: observable.ref,
-      standings: observable.ref,
+      driverEntries: observable.ref,
       pitStops: observable.ref,
       lapDelta: observable.ref,
       lapHistory: observable.ref,
@@ -57,8 +57,8 @@ export class BackendComputedStore {
     this.fuel = frame;
   }
 
-  updateStandings(frame: DriverEntriesFrame) {
-    this.standings = frame;
+  updateDriverEntries(frame: DriverEntriesFrame) {
+    this.driverEntries = frame;
   }
 
   updatePitStops(frame: PitStopsFrame) {
@@ -78,7 +78,7 @@ export class BackendComputedStore {
     this.proximity = null;
     this.fuel = null;
     this.relative = null;
-    this.standings = null;
+    this.driverEntries = null;
     this.pitStops = null;
     this.lapDelta = null;
     this.lapHistory = [];

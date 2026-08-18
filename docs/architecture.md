@@ -354,12 +354,12 @@ The backend does not emit everything 60 times a second. Fields are grouped by ho
 fast they actually change, and each tick emits one bundle containing only the
 tiers that are due.
 
-| Rate  | Fields                                                       |
-| ----- | ------------------------------------------------------------ |
-| 60 Hz | `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta`   |
-| 10 Hz | `car_idx`, `chassis`, `lap_timing`, `proximity`, `standings` |
-| 4 Hz  | `car_status`, `fuel`, `pit_stops`                            |
-| 1 Hz  | `session`, `environment`                                     |
+| Rate  | Fields                                                            |
+| ----- | ----------------------------------------------------------------- |
+| 60 Hz | `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta`        |
+| 10 Hz | `car_idx`, `chassis`, `lap_timing`, `proximity`, `driver_entries` |
+| 4 Hz  | `car_status`, `fuel`, `pit_stops`                                 |
+| 1 Hz  | `session`, `environment`                                          |
 
 ```mermaid
 flowchart LR
@@ -386,10 +386,26 @@ The emitter also handles side-channel work that is not part of the periodic
 bundle: saving a discovered track shape, persisting a reference lap, and patching
 pit lane percentages once they become known (which re-emits the track shape).
 
-### Demand gating on the 60 Hz tier
+### Demand gating
 
-Being due is necessary but not sufficient: the four 60 Hz fields are filled only
-while some widget actually wants them. Each widget names what it reads in its own
+Being due is necessary but not sufficient: a gated field is filled only while
+some widget actually wants it. Two groups are gated — the four raw 60 Hz frames,
+where the whole cost is downstream of the sim, and the three per-car frames on
+the 10 Hz tier, which are by far the largest payloads the app moves (a
+`DriverEntry` is ~35 fields including nine strings, times the whole field).
+
+> [!NOTE]
+> `driver_entries` is the table of the whole field — positions, laps, times, pit
+> state, licence, class — not "the Standings widget's data". Six widgets read it;
+> the Standings widget is only the one that draws all of it. The processor that
+> builds it is `computations/driver_entries.rs`.
+
+| Gated field                                                | Tier  |
+| ---------------------------------------------------------- | ----- |
+| `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta` | 60 Hz |
+| `driver_entries`, `relative`, `proximity`                  | 10 Hz |
+
+Everything else is small, infrequent, or both, and is always sent. Each widget names what it reads in its own
 `manifest.ts`:
 
 ```ts
@@ -418,8 +434,10 @@ flowchart LR
 > state — fuel, lap log, pit stops, standings, the reference lap — runs on every
 > tick regardless, so a widget enabled mid-race finds its history intact. Only a
 > field that is a pure snapshot of the current tick may be skipped at the source,
-> which is why the mask covers the raw 60 Hz frames and `lap_delta` (whose state
-> is owned by the reference-lap processor, not by the delta itself).
+> which is why the mask covers the raw 60 Hz frames, `lap_delta` (whose state is
+> owned by the reference-lap processor, not by the delta itself) and the three
+> per-car frames, which are dropped from the bundle _after_ their processors have
+> run.
 >
 > What is saved is everything downstream of the computation: the serialization,
 > the IPC hop into _each_ window and remote screen, the parse, and the store
@@ -1234,7 +1252,7 @@ flowchart TB
 | Technique                                        | Where                                                | The failure it prevents                                                                                                                 |
 | ------------------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Rate tiers                                       | `telemetry/scheduler.rs`                             | sending standings 60 times a second when it changes 10 times                                                                            |
-| Demand gating (`telemetryEvents`)                | widget manifests → `telemetry/emitter.rs`            | serializing and parsing a 60 Hz frame in every window when no widget on screen reads it                                                 |
+| Demand gating (`telemetryEvents`)                | widget manifests → `telemetry/emitter.rs`            | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
 | `observable.ref` on frame buffers                | `store/data/cars.store.ts`, `computed.store.ts`      | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
 | Split computeds                                  | `store/data/computed.store.ts` and the widget stores | one changed field invalidating an unrelated derived value                                                                               |
 | `observer()` on every component                  | all of `ui/`                                         | a parent re-render cascading into leaves that did not change                                                                            |

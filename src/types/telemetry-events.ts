@@ -16,13 +16,19 @@ export type TelemetryEventName =
   | 'carDynamics'
   | 'carInputs'
   | 'lapDelta'
-  | 'carPositions';
+  | 'carPositions'
+  | 'driverEntries'
+  | 'relative'
+  | 'proximity';
 
 export const TELEMETRY_EVENT_BITS: Record<TelemetryEventName, number> = {
   carDynamics: 1 << 0,
   carInputs: 1 << 1,
   lapDelta: 1 << 2,
   carPositions: 1 << 3,
+  driverEntries: 1 << 4,
+  relative: 1 << 5,
+  proximity: 1 << 6,
 };
 
 export const telemetryEventsToMask = (

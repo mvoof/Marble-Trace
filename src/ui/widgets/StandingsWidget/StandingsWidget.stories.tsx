@@ -94,7 +94,7 @@ const meta: Meta<StoryArgs> = {
     size: { width: 796, height: 500 },
     seedSnapshot: true,
     seed: (store, args) => {
-      store.backendComputed.updateStandings({
+      store.backendComputed.updateDriverEntries({
         entries: args.entries,
         playerCarIdx: PLAYER_CAR_IDX,
       } as DriverEntriesFrame);

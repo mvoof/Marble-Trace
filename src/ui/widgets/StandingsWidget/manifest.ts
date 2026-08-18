@@ -38,6 +38,7 @@ const STANDINGS_DESIGN_WIDTH = computeStandingsDesignWidth(
 
 export const STANDINGS_MANIFEST: WidgetManifest = {
   id: 'standings',
+  telemetryEvents: ['driverEntries'],
   label: 'Standings',
   description: 'Live session standings and intervals.',
   resolveLayoutChange: resolveStandingsLayout,

@@ -199,7 +199,7 @@ const withBadges = (entry: DriverEntry, index: number): DriverEntry => {
 };
 
 const applyTableBadges = (store: RootStore) => {
-  const standings = store.backendComputed.standings;
+  const standings = store.backendComputed.driverEntries;
   const relative = store.backendComputed.relative;
 
   if (standings) {
@@ -208,7 +208,7 @@ const applyTableBadges = (store: RootStore) => {
       entries: patchEntries(standings.entries, withBadges),
     };
 
-    store.backendComputed.updateStandings(frame);
+    store.backendComputed.updateDriverEntries(frame);
   }
 
   if (relative) {

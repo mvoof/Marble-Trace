@@ -3,7 +3,7 @@
 /// Computed by `RelativeProcessor` and emitted in `TelemetryBundle`.
 use serde::{Deserialize, Serialize};
 
-use crate::computations::standings::DriverEntry;
+use crate::computations::driver_entries::DriverEntry;
 
 /// Relative frame — emitted at 10 Hz in `TelemetryBundle.relative`.
 ///

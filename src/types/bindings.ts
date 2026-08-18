@@ -1413,7 +1413,7 @@ export type TelemetryBundle = {
   lap_timing?: LapTimingFrame | null;
   proximity?: ProximityFrame | null;
   relative?: RelativeFrame | null;
-  standings?: DriverEntriesFrame | null;
+  driver_entries?: DriverEntriesFrame | null;
   car_status?: CarStatusFrame | null;
   fuel?: FuelComputedFrame | null;
   pit_stops?: PitStopsFrame | null;
