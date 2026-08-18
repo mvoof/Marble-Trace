@@ -312,6 +312,10 @@ fn reset_telemetry_state(
     // treated as still delivered — the next connection republishes in full.
     lock_or_recover(&service.publications).reset();
 
+    service
+        .car_class_count
+        .store(0, std::sync::atomic::Ordering::Relaxed);
+
     app.emit(
         EVENT_STATUS,
         &SimStatus {

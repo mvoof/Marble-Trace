@@ -1466,6 +1466,12 @@ export type TelemetrySlowBundle = {
   lap_timing: LapTimingFrame;
   pit_service: PitServiceFrame;
   fuel?: FuelComputedFrame | null;
+  /**
+   * Distinct car classes in the field. A count rather than the entries: the
+   * standings class hotkeys only need to know where the cycle wraps, and the
+   * per-car frame is exactly what main is off the bundle to avoid.
+   */
+  car_class_count: number;
 };
 
 export type TireCompoundEntry = { tireIndex: number; tireCompoundType: string };

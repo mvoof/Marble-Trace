@@ -557,6 +557,10 @@ export class SimStore {
           this.root.player.updateLapTiming(slow.lap_timing);
           this.root.player.updatePitService(slow.pit_service);
 
+          this.root.backendComputed.updateSlowCarClassCount(
+            slow.car_class_count
+          );
+
           if (slow.fuel) {
             this.root.backendComputed.updateFuel(slow.fuel);
           }

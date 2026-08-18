@@ -76,6 +76,12 @@ pub struct TelemetryServiceState {
     /// new reference only when a lap beats this time, so a slower session best
     /// never overwrites a faster persisted reference.
     pub stored_reference_lap_time: Arc<Mutex<StoredReferenceTimes>>,
+    /// How many distinct car classes the last computed `driver_entries` held.
+    /// Recorded on every Hz10 tick, before the demand gate, so the slow slice
+    /// can carry it to the main window: the hotkey runner lives there and has
+    /// to know how far the standings class cycle wraps without taking the
+    /// per-car frame itself.
+    pub car_class_count: AtomicU32,
 }
 
 /// Bitmask flags for high-frequency events.
