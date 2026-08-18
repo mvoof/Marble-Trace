@@ -1,4 +1,5 @@
 import type { Migration, SettingsBlob } from '../types';
+import { asArray, asObject, mapEveryWidget } from '../blob';
 
 /**
  * v0 → v1. Consolidates every format change made before 0.21, so that
@@ -34,6 +35,7 @@ import type { Migration, SettingsBlob } from '../types';
 interface LegacyWidget {
   id?: string;
   userSettings?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 interface LegacyLayout {
@@ -163,13 +165,6 @@ const COACH_DEFAULTS = {
   gainColor: '#10b981',
   lossColor: '#ef4444',
 };
-
-const asObject = (value: unknown): Record<string, unknown> | undefined =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : undefined;
-
-const asArray = <T>(value: unknown): T[] => (Array.isArray(value) ? value : []);
 
 const numberOr = (value: unknown, fallback: number): number =>
   typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -434,17 +429,12 @@ const migrate = (blob: SettingsBlob): SettingsBlob => {
     delete app[field];
   }
 
-  // Layout copies have to be cleaned here: `mergeWithDefaults` only reaches the
-  // top-level `widgets` and the app block, never `layouts[].widgets[]`.
-  return {
-    ...blob,
-    app,
-    widgets: convertWidgets(topWidgets),
-    layouts: layouts.map((layout) => ({
-      ...layout,
-      widgets: convertWidgets(asArray<LegacyWidget>(layout.widgets)),
-    })),
-  };
+  // `mapEveryWidget` is what cleans the layout copies as well as the top-level
+  // list — `mergeWithDefaults` runs later and never reaches
+  // `layouts[].widgets[]`, so nothing else would.
+  return mapEveryWidget({ ...blob, app, layouts }, (widgets) =>
+    convertWidgets(widgets as LegacyWidget[])
+  );
 };
 
 export const v1LegacyConsolidation: Migration = {
