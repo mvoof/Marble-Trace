@@ -263,7 +263,7 @@ describe('v1 — degenerate files', () => {
 
     expect(migrated['bindings']).toBeUndefined();
     expect(layoutsOf(migrated)).toEqual([]);
-    expect(widgetsOf(migrated)).toEqual([]);
+    expect(migrated['widgets']).toBeUndefined();
   });
 
   it('leaves unrelated top-level keys untouched', () => {

@@ -123,6 +123,12 @@ export const buildRows = (
 
       const branch = isBranch(kind);
       const length = kind === 'array' ? (value as unknown[]).length : undefined;
+      const childCount =
+        kind === 'array'
+          ? (value as unknown[]).length
+          : kind === 'object'
+            ? Object.keys(value as Record<string, unknown>).length
+            : 0;
       const expanded = branch && options.expanded.has(path);
 
       rows.push({
@@ -132,7 +138,7 @@ export const buildRows = (
         kind,
         value,
         length,
-        expandable: branch && length !== 0,
+        expandable: branch && childCount !== 0,
         expanded,
       });
 

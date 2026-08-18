@@ -102,11 +102,21 @@ describe('mapEveryWidget', () => {
     expect(JSON.stringify(original)).toBe(snapshot);
   });
 
-  it('survives a file with no widgets and no layouts', () => {
+  // A key the file never had stays absent: an empty array here would read as
+  // "the user deleted every layout" to the defaulting that runs afterwards.
+  it('leaves absent widgets and layouts absent', () => {
     const result = mapEveryWidget({ app: {} }, (widgets) => widgets);
 
-    expect(result['widgets']).toEqual([]);
-    expect(result['layouts']).toEqual([]);
+    expect('widgets' in result).toBe(false);
+    expect('layouts' in result).toBe(false);
+  });
+
+  it('leaves a layout without widgets untouched', () => {
+    const result = mapEveryWidget({ layouts: [{ id: 'one' }] }, () => [
+      { id: 'invented' },
+    ]);
+
+    expect(result['layouts']).toEqual([{ id: 'one' }]);
   });
 
   // Deciding what a corrupt layout should have been is not a migration's job.

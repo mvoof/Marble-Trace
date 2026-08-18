@@ -45,22 +45,37 @@ export const asArray = <T>(value: unknown): T[] =>
 export const mapEveryWidget = (
   blob: SettingsBlob,
   transform: (widgets: BlobWidget[]) => BlobWidget[]
-): SettingsBlob => ({
-  ...blob,
-  widgets: transform(asArray<BlobWidget>(blob['widgets'])),
-  layouts: asArray<unknown>(blob['layouts']).map((layout) => {
-    const entry = asObject(layout);
+): SettingsBlob => {
+  const mapped: SettingsBlob = { ...blob };
 
-    if (!entry) {
-      return layout;
-    }
+  // A key the file does not have stays absent. Writing an empty array here
+  // would turn "this file predates layouts" into "this user deleted every
+  // layout", and the defaulting that runs afterwards tells those apart.
+  if ('widgets' in blob) {
+    mapped['widgets'] = transform(asArray<BlobWidget>(blob['widgets']));
+  }
 
-    return {
-      ...entry,
-      widgets: transform(asArray<BlobWidget>(entry['widgets'])),
-    };
-  }),
-});
+  if ('layouts' in blob) {
+    mapped['layouts'] = asArray<unknown>(blob['layouts']).map((layout) => {
+      const entry = asObject(layout);
+
+      if (!entry) {
+        return layout;
+      }
+
+      if (!('widgets' in entry)) {
+        return entry;
+      }
+
+      return {
+        ...entry,
+        widgets: transform(asArray<BlobWidget>(entry['widgets'])),
+      };
+    });
+  }
+
+  return mapped;
+};
 
 /**
  * Rewrites the `userSettings` of every copy of one widget. `patch` receives the
@@ -123,3 +138,16 @@ export const dropWidgetSettings = (
 
     return settings;
   });
+
+/**
+ * Deletes every copy of the given widget ids. Used when a widget is removed from
+ * the build: the entry survives in both arrays otherwise, and the layout mounts
+ * an id the component registry no longer answers.
+ */
+export const removeWidgets = (
+  blob: SettingsBlob,
+  ids: readonly string[]
+): SettingsBlob =>
+  mapEveryWidget(blob, (widgets) =>
+    widgets.filter((widget) => !ids.includes(String(widget?.id)))
+  );
