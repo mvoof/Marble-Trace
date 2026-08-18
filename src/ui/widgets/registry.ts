@@ -10,7 +10,6 @@ import { RelativeMapWidget } from '@ui/widgets/RelativeMapWidget/RelativeMapWidg
 import { LedFlagWidget } from '@ui/widgets/LedFlagWidget/LedFlagWidget';
 import { FlatFlagsWidget } from '@ui/widgets/FlatFlagsWidget/FlatFlagsWidget';
 import { PitServiceWidget } from '@ui/widgets/PitServiceWidget/PitServiceWidget';
-import { TelemetryDebugWidget } from '@ui/widgets/TelemetryDebugWidget/TelemetryDebugWidget';
 import { DeltaWidget } from '@ui/widgets/DeltaWidget/DeltaWidget';
 import { TimerWidget } from '@ui/widgets/TimerWidget/TimerWidget';
 import { StreamChatWidget } from '@ui/widgets/StreamChatWidget/StreamChatWidget';
@@ -45,7 +44,6 @@ export const WIDGET_COMPONENTS: Record<string, ComponentType> = {
   'led-flags': LedFlagWidget,
   'flat-flags': FlatFlagsWidget,
   'pit-service': PitServiceWidget,
-  example: TelemetryDebugWidget,
   delta: DeltaWidget,
   timer: TimerWidget,
   'stream-chat': StreamChatWidget,

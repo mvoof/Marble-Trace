@@ -1387,6 +1387,30 @@ export type SimType = 'IRacing';
 export type Skies = 'Clear' | 'PartlyCloudy' | 'MostlyCloudy' | 'Overcast';
 
 /**
+ * One adapted telemetry tick: the domain model frames consumed by the
+ * telemetry emitter, filled by whichever sim adapter is connected.
+ *
+ * Serializable because the telemetry inspector reads it whole. It is
+ * deliberately a superset of `TelemetryBundle`: the bundle is what the app
+ * chose to forward — tiered, demand-gated and quantized — while this is what
+ * the sim actually gave us, which is the only useful thing for an inspector to
+ * show.
+ */
+export type SourceFrame = {
+  car_dynamics: CarDynamicsFrame;
+  car_inputs: CarInputsFrame;
+  car_positions: CarPositionsFrame;
+  car_idx: CarIdxFrame;
+  chassis: ChassisFrame;
+  lap_timing: LapTimingFrame;
+  car_status: CarStatusFrame;
+  pit_service: PitServiceFrame;
+  session: SessionFrame;
+  environment: EnvironmentFrame;
+  sim_perf: SimPerfFrame;
+};
+
+/**
  * What the simulator's spotter reports about cars alongside.
  *
  * Sim-neutral on purpose: every source decodes its own encoding into this, so

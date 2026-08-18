@@ -23,6 +23,7 @@ import { SimPerfStore } from './data/sim-perf.store';
 import { FpsDiagnosticsStore } from './diagnostics/fps-diagnostics.store';
 import { DiagnosticsHudStore } from './diagnostics/diagnostics-hud.store';
 import { DiagnosticsExportStore } from './diagnostics/diagnostics-export.store';
+import { TelemetryInspectorStore } from './diagnostics/telemetry-inspector.store';
 import { ReferenceLapStore } from './data/reference-lap.store';
 import { ChatStore } from './data/chat.store';
 import { TwitchAuthStore } from './settings/twitch-auth.store';
@@ -70,6 +71,7 @@ export class RootStore {
   fpsDiagnostics: FpsDiagnosticsStore;
   diagnosticsHud: DiagnosticsHudStore;
   diagnosticsExport: DiagnosticsExportStore;
+  telemetryInspector: TelemetryInspectorStore;
 
   constructor(options?: { skipInit?: boolean }) {
     this.player = new PlayerStore();
@@ -110,6 +112,7 @@ export class RootStore {
     this.fpsDiagnostics = new FpsDiagnosticsStore(this);
     this.diagnosticsHud = new DiagnosticsHudStore();
     this.diagnosticsExport = new DiagnosticsExportStore(this);
+    this.telemetryInspector = new TelemetryInspectorStore(this);
 
     if (!options?.skipInit) {
       this.flags.init();

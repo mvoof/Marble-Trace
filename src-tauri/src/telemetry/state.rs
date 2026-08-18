@@ -7,6 +7,7 @@ use crate::computations::fuel::{FuelSettings, DEFAULT_FUEL_AVG_WINDOW, DEFAULT_P
 use crate::computations::ProcessorRegistry;
 use crate::model::reference_lap::StoredReferenceTimes;
 use crate::model::session::SessionSnapshot;
+use crate::sources::source::SourceFrame;
 use crate::telemetry::publications::Publications;
 
 /// User-configured fuel parameters, written by commands and read once per tick
@@ -51,6 +52,16 @@ pub struct TelemetryServiceState {
     pub pit_exit_pct: Mutex<Option<f32>>,
     /// Bitmask of active high-frequency events to emit.
     pub active_events: AtomicU32,
+    /// The telemetry inspector in the settings window is open. While this is
+    /// false nothing below is written at all — the inspector costs the running
+    /// app exactly nothing when nobody is looking at it, which is why it pulls
+    /// instead of subscribing: the settings window must never take the 60 Hz
+    /// bundle again.
+    pub inspector_active: AtomicBool,
+    /// Last adapted frame, refreshed on the 4 Hz tier while the inspector is
+    /// open. 4 Hz because that is already faster than a person can read a table
+    /// of a hundred numbers.
+    pub inspector_frame: Mutex<Option<SourceFrame>>,
     /// What was last put on the wire, so an unchanged frame can be held back.
     /// Lives with the connection: a reconnect clears it, because the windows
     /// have reset their stores too and need a full bundle again.

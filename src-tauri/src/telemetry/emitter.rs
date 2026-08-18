@@ -299,6 +299,13 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
     if due.hz4 {
         bundle.car_status = Some(frame.car_status.clone());
         bundle.pit_service = Some(frame.pit_service.clone());
+
+        // The inspector pulls this over a command instead of subscribing, so the
+        // settings window never takes the bundle. Nothing is written — not even
+        // the clone — while its panel is closed.
+        if ctx.service.inspector_active.load(Ordering::Relaxed) {
+            *lock_or_recover(&ctx.service.inspector_frame) = Some(frame.clone());
+        }
     }
 
     if due.hz1 {

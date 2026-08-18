@@ -486,6 +486,41 @@ the next real change to see anything.
 > nothing to suppress, and they feed the smoothing in the coach and the input
 > trace.
 
+### The telemetry inspector pulls, it does not subscribe
+
+Its own section under Settings → Maintenance. It browses the two raw streams the
+app receives, as a lazily expanded tree:
+
+| Source      | Where it comes from                                                      |
+| ----------- | ------------------------------------------------------------------------ |
+| `telemetry` | the live `SourceFrame`, pulled from the backend at 4 Hz                  |
+| `session`   | the parsed session snapshot, already in this window from `sim://session` |
+
+The telemetry side shows every field the adapter produced, including the ones no
+widget is sent — which makes it the one place that sees what the bundle
+deliberately hides. Selecting the session side **stops** the feed outright:
+nothing would be reading the frames.
+
+It is built the opposite way round from a widget:
+
+|                        | Widgets                        | Inspector                                                               |
+| ---------------------- | ------------------------------ | ----------------------------------------------------------------------- |
+| Direction              | push, `sim://telemetry/bundle` | pull, `get_inspector_frame`                                             |
+| Rate                   | 60 / 10 / 4 / 1 Hz             | 4 Hz while its panel is mounted                                         |
+| Cost when nobody looks | —                              | **nothing**: `inspector_active` is false and the backend keeps no frame |
+
+> [!WARNING]
+> **The settings window must never subscribe to the telemetry bundle.** It was
+> taken off it on purpose (a window that draws no widgets has no use for 60
+> bundles a second), and an inspector that listened for the bundle would hand
+> that entire cost straight back. `TelemetryInspectorStore` therefore imports no
+> event API at all — only two commands.
+
+4 Hz is not a compromise: nobody reads a table of a hundred numbers sixty times a
+second. The same feed backs the snapshot export, which opens it for one frame and
+closes it again — before that, the export read this window's stores and wrote a
+file whose dynamics, inputs, per-car arrays and lap timing were all `null`.
+
 A held-back field is a field a newcomer never sees, so the 1 Hz tier forces a
 full bundle: an overlay that just reloaded, or a phone that just opened a remote
 screen, starts with empty stores and would otherwise stay empty until something

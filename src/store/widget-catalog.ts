@@ -13,7 +13,6 @@ import { RELATIVE_MAP_MANIFEST } from '@ui/widgets/RelativeMapWidget/manifest';
 import { LED_FLAGS_MANIFEST } from '@ui/widgets/LedFlagWidget/manifest';
 import { FLAT_FLAGS_MANIFEST } from '@ui/widgets/FlatFlagsWidget/manifest';
 import { PIT_SERVICE_MANIFEST } from '@ui/widgets/PitServiceWidget/manifest';
-import { EXAMPLE_MANIFEST } from '@ui/widgets/TelemetryDebugWidget/manifest';
 import { DELTA_MANIFEST } from '@ui/widgets/DeltaWidget/manifest';
 import { TIMER_MANIFEST } from '@ui/widgets/TimerWidget/manifest';
 import { STREAM_CHAT_MANIFEST } from '@ui/widgets/StreamChatWidget/manifest';
@@ -47,7 +46,6 @@ export const WIDGETS: WidgetManifest[] = [
   LED_FLAGS_MANIFEST,
   FLAT_FLAGS_MANIFEST,
   PIT_SERVICE_MANIFEST,
-  EXAMPLE_MANIFEST,
   DELTA_MANIFEST,
   TIMER_MANIFEST,
   STREAM_CHAT_MANIFEST,

@@ -347,6 +347,20 @@
       "saveCsv": "Guardar CSV",
       "saved": "Guardado en {{path}}"
     },
+    "telemetryInspector": {
+      "title": "Inspector de telemetría",
+      "description": "Los datos en bruto del simulador al completo: el fotograma de telemetría con todos los campos, incluidos los que no se envían a ningún widget, y el session YAML analizado. Se actualiza cuatro veces por segundo mientras esta página está abierta y no cuesta nada cuando está cerrada.",
+      "filterPlaceholder": "Buscar por nombre de campo",
+      "hideAbsent": "Ocultar ausentes ({{count}})",
+      "waiting": "Esperando al simulador…",
+      "absentCount": "{{count}} sin reportar",
+      "absent": "ausente",
+      "sourceTelemetry": "Telemetría",
+      "sourceSession": "Sesión (YAML)",
+      "rowCount": "{{count}} filas",
+      "waitingSession": "Esperando datos de sesión…",
+      "showAll": "Mostrar los {{count}} restantes"
+    },
     "developerTools": {
       "title": "Herramientas de desarrollo",
       "snapshotTitle": "Captura de telemetría",
@@ -401,6 +415,7 @@
         "trackMap": "Datos del circuito",
         "streamChat": "Chat del directo",
         "maintenance": "Restablecer y diagnóstico",
+        "telemetryInspector": "Inspector de telemetría",
         "remoteScreens": "Pantallas remotas"
       }
     },

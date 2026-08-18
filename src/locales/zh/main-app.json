@@ -345,6 +345,20 @@
       "saveCsv": "保存 CSV",
       "saved": "已保存到 {{path}}"
     },
+    "telemetryInspector": {
+      "title": "遥测检查器",
+      "description": "来自模拟器的完整原始数据——包含全部字段的遥测帧（含不会发送给任何小部件的字段），以及解析后的 session YAML。此页面打开时每秒刷新四次，关闭时不产生任何开销。",
+      "filterPlaceholder": "按字段名搜索",
+      "hideAbsent": "隐藏缺失项（{{count}}）",
+      "waiting": "等待模拟器…",
+      "absentCount": "{{count}} 项未报告",
+      "absent": "无",
+      "sourceTelemetry": "遥测",
+      "sourceSession": "会话（YAML）",
+      "rowCount": "{{count}} 行",
+      "waitingSession": "等待会话数据…",
+      "showAll": "显示其余 {{count}} 项"
+    },
     "developerTools": {
       "title": "开发者工具",
       "snapshotTitle": "遥测数据快照",
@@ -399,6 +413,7 @@
         "trackMap": "赛道数据",
         "streamChat": "直播聊天",
         "maintenance": "重置与诊断",
+        "telemetryInspector": "遥测检查器",
         "remoteScreens": "远程屏幕"
       }
     },

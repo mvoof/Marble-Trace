@@ -5,7 +5,7 @@ import {
   saveTextFileAndReveal,
 } from '@platform/services/file-export.service';
 import type { RootStore } from '@store/root-store';
-import { captureSnapshot } from './telemetry-snapshot';
+import type { TelemetrySnapshot } from '@/types/telemetry-snapshot';
 import { resultsToCsv } from './report';
 
 const EXPORT_DIR = 'diagnostics';
@@ -35,8 +35,29 @@ export class DiagnosticsExportStore {
     );
   }
 
+  /**
+   * The frame is pulled from the backend, not read out of this window's stores.
+   * The settings window is not subscribed to the telemetry bundle, so those
+   * stores hold only the fields that arrive on their own 1 Hz events — a capture
+   * taken from them had null dynamics, inputs, per-car arrays and lap timing.
+   *
+   * `sessionInfo` still comes from the store: it arrives on `sim://session`,
+   * which this window does receive.
+   */
   async saveTelemetrySnapshot(): Promise<string> {
-    const snapshot = captureSnapshot(this.root);
+    const frame = await this.root.telemetryInspector.captureOnce();
+
+    const snapshot: TelemetrySnapshot = {
+      capturedAt: new Date().toISOString(),
+      carDynamics: frame?.car_dynamics ?? null,
+      carIdx: frame?.car_idx ?? null,
+      carInputs: frame?.car_inputs ?? null,
+      carStatus: frame?.car_status ?? null,
+      environment: frame?.environment ?? null,
+      lapTiming: frame?.lap_timing ?? null,
+      session: frame?.session ?? null,
+      sessionInfo: this.root.session.sessionInfo,
+    };
 
     return this.save(
       `telemetry-snapshot-${fileStamp()}.json`,
