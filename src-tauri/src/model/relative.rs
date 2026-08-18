@@ -10,7 +10,7 @@ use crate::computations::driver_entries::DriverEntry;
 /// Entries are sorted by `relative_lap_dist` descending so that cars ahead
 /// of the player appear first (positive values), the player is in the middle,
 /// and cars behind (negative values) appear last.
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
 pub struct RelativeFrame {

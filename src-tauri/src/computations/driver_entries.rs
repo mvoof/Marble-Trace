@@ -18,7 +18,7 @@ const IR_CHANGE_SCALE_FACTOR: f64 = 200.0;
 const IR_CHANGE_OFFSET: f64 = 100.0;
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DriverEntry {
     pub car_idx: i32,
@@ -102,7 +102,7 @@ pub struct DriverEntriesState {
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DriverEntriesFrame {
     pub entries: Vec<DriverEntry>,

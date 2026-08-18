@@ -7,6 +7,7 @@ use crate::computations::fuel::{FuelSettings, DEFAULT_FUEL_AVG_WINDOW, DEFAULT_P
 use crate::computations::ProcessorRegistry;
 use crate::model::reference_lap::StoredReferenceTimes;
 use crate::model::session::SessionSnapshot;
+use crate::telemetry::publications::Publications;
 
 /// User-configured fuel parameters, written by commands and read once per tick
 /// by the telemetry thread.
@@ -50,6 +51,10 @@ pub struct TelemetryServiceState {
     pub pit_exit_pct: Mutex<Option<f32>>,
     /// Bitmask of active high-frequency events to emit.
     pub active_events: AtomicU32,
+    /// What was last put on the wire, so an unchanged frame can be held back.
+    /// Lives with the connection: a reconnect clears it, because the windows
+    /// have reset their stores too and need a full bundle again.
+    pub publications: Mutex<Publications>,
     /// Configurable player car length in meters.
     pub car_length_m: Mutex<f32>,
     /// Set when a cached track was loaded from disk; consumed by TrackShapeProcessor

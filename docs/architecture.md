@@ -448,6 +448,51 @@ a field it does not read makes every other window pay for the traffic. The
 declaration therefore lives next to the widget, not in a list somewhere else —
 a list is what drifts.
 
+### Quantization and repeat suppression
+
+Gating removes fields nobody wants. The other half of the saving is removing
+_ticks_ nobody needs, and it takes two steps that only work together.
+
+```mermaid
+flowchart LR
+    P["processors"] --> G["gating<br/><i>mask</i>"] --> Q["quantize.rs<br/><i>round to what is drawn</i>"] --> R["publications.rs<br/><i>drop repeats</i>"] --> E["emit"]
+```
+
+**Quantize** (`telemetry/quantize.rs`) rounds the per-car frames to the precision
+a widget actually draws — positions to 4 dp, gaps to 2 dp, lap times to 3 dp,
+distances to 2 dp. Every one of those is at least one decimal finer than the
+`toFixed` that renders it.
+
+**Suppress repeats** (`telemetry/publications.rs`) compares each frame against
+the last one published and drops it if they are equal.
+
+The order is the point. A raw simulator float is never bit-identical two ticks
+running: a car parked in its pit box still jitters in the seventh decimal of
+`car_idx_lap_dist_pct`, so nothing would ever compare equal and the second step
+alone would save nothing. Rounding first is what turns "visually unchanged" into
+"literally unchanged". Both steps run _after_ gating, so a field the mask removed
+is never recorded as published — otherwise re-enabling its widget would wait for
+the next real change to see anything.
+
+> [!IMPORTANT]
+> Rounding happens at publication, never on the way in. `computations/` always
+> sees raw values: a processor that integrates over time or compares against a
+> threshold — fuel projection, lap delta, anything differencing consecutive
+> frames — would accumulate the error. This is the same publication-only rule the
+> mask follows, for the same reason.
+>
+> `car_dynamics` and `car_inputs` are deliberately left unrounded. They are two
+> small structs that genuinely change every tick while driving, so there is
+> nothing to suppress, and they feed the smoothing in the coach and the input
+> trace.
+
+A held-back field is a field a newcomer never sees, so the 1 Hz tier forces a
+full bundle: an overlay that just reloaded, or a phone that just opened a remote
+screen, starts with empty stores and would otherwise stay empty until something
+changed. That bounds the blindness to one second and costs one full bundle per
+second. A disconnect clears the record entirely, because the windows have reset
+too.
+
 ## `input/`, `chat/` and the command surface
 
 | Module              | Role                                                                                           |
@@ -1253,6 +1298,7 @@ flowchart TB
 | ------------------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Rate tiers                                       | `telemetry/scheduler.rs`                             | sending standings 60 times a second when it changes 10 times                                                                            |
 | Demand gating (`telemetryEvents`)                | widget manifests → `telemetry/emitter.rs`            | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
+| Quantization + repeat suppression                | `telemetry/quantize.rs`, `telemetry/publications.rs` | resending a frame whose only change is in a decimal no widget prints                                                                    |
 | `observable.ref` on frame buffers                | `store/data/cars.store.ts`, `computed.store.ts`      | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
 | Split computeds                                  | `store/data/computed.store.ts` and the widget stores | one changed field invalidating an unrelated derived value                                                                               |
 | `observer()` on every component                  | all of `ui/`                                         | a parent re-render cascading into leaves that did not change                                                                            |

@@ -31,7 +31,7 @@ pub enum SpotterState {
 use crate::model::enums::TrackSurface;
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct CarIdxFrame {
     /// Percentage distance around lap for each car (-1 = not on track)
     /// @see https://sajax.github.io/irsdkdocs/telemetry/caridxlapdistpct/
@@ -88,7 +88,7 @@ pub struct CarIdxFrame {
 
 /// Lightweight per-car position frame emitted at 30Hz for smooth map rendering.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct CarPositionsFrame {
     /// Lap distance percentage for each car (-1 = not on track)
     pub car_idx_lap_dist_pct: Vec<f32>,

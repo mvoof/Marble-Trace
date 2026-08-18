@@ -308,6 +308,10 @@ fn reset_telemetry_state(
         reg.reset_all();
     }
 
+    // The windows drop their frames on disconnect, so nothing held back may be
+    // treated as still delivered — the next connection republishes in full.
+    lock_or_recover(&service.publications).reset();
+
     app.emit(
         EVENT_STATUS,
         &SimStatus {

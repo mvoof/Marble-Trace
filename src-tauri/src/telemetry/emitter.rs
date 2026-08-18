@@ -9,6 +9,7 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager};
 use tracing::warn;
 
+use super::quantize;
 use super::scheduler::DueGroups;
 use super::state::{
     TelemetryServiceState, EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS,
@@ -329,12 +330,45 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
         bundle.proximity = None;
     }
 
+    // Round to what a widget can actually draw, then drop whatever is identical
+    // to the last thing published. Order matters both ways: rounding before the
+    // comparison is what makes repeats compare equal at all, and both run after
+    // the gating above so a field the mask removed is never recorded as sent.
+    quantize_bundle(&mut bundle);
+
+    // The 1 Hz tier carries a full bundle. See `publications` — it is what a
+    // window that just reloaded, or a phone that just opened a remote screen,
+    // needs in order to paint anything at all.
+    lock_or_recover(&ctx.service.publications).prune(&mut bundle, due.first || due.hz1);
+
     let should_emit = active_mask != 0 || due.first || due.hz10 || due.hz4 || due.hz1;
 
     if should_emit {
         if let Err(e) = app.emit(EVENT_TELEMETRY_BUNDLE, &bundle) {
             warn!("Failed to emit telemetry bundle: {}", e);
         }
+    }
+}
+
+fn quantize_bundle(bundle: &mut TelemetryBundle) {
+    if let Some(frame) = bundle.car_positions.as_mut() {
+        quantize::car_positions(frame);
+    }
+
+    if let Some(frame) = bundle.car_idx.as_mut() {
+        quantize::car_idx(frame);
+    }
+
+    if let Some(frame) = bundle.driver_entries.as_mut() {
+        quantize::driver_entries(frame);
+    }
+
+    if let Some(frame) = bundle.relative.as_mut() {
+        quantize::relative(frame);
+    }
+
+    if let Some(frame) = bundle.proximity.as_mut() {
+        quantize::proximity(frame);
     }
 }
 

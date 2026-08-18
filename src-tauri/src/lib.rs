@@ -312,6 +312,7 @@ pub fn run() {
                 pit_in_pct: Mutex::new(None),
                 pit_exit_pct: Mutex::new(None),
                 active_events: AtomicU32::new(0xFFFFFFFF),
+                publications: Default::default(),
                 car_length_m: Mutex::new(4.4),
                 track_cached: track_cached_service,
                 stored_reference_lap_time: stored_reference_lap_time_service,
