@@ -185,6 +185,11 @@
   z-index: 10;
   height: 100%;
   overflow-y: auto;
+  // Hold the scrollbar's width whether or not it is showing. Without it any
+  // section that grows past the viewport — expanding a row in the telemetry
+  // inspector, opening a long list — makes the bar appear and shifts the whole
+  // pane sideways by its width.
+  scrollbar-gutter: stable;
   padding: rem(48);
 }
 

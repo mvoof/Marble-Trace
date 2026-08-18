@@ -42,6 +42,10 @@
   flex-direction: column;
   max-height: 60vh;
   overflow-y: auto;
+  // Same reason as the settings pane: filtering and expanding change the row
+  // count constantly, and the list must not twitch sideways each time it
+  // crosses its own height.
+  scrollbar-gutter: stable;
   border: 1px solid rgb(255 255 255 / 8%);
   border-radius: 6px;
 }
