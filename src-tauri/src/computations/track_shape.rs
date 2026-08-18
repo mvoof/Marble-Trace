@@ -963,6 +963,74 @@ mod tests {
     }
 
     #[test]
+    fn pit_surfaces_gate_recording_even_when_on_pit_road_is_false() {
+        for surface in [TrackSurface::InPitStall, TrackSurface::AproachingPits] {
+            let force = Arc::new(AtomicBool::new(false));
+            let mut proc = TrackShapeProcessor::new(
+                Arc::clone(&force),
+                Arc::new(AtomicBool::new(false)),
+                Arc::new(std::sync::atomic::AtomicI32::new(-1)),
+                Arc::new(AtomicBool::new(false)),
+            );
+
+            let session = make_session(1);
+            let dynamics = make_dynamics(30.0, 0.0);
+            let start_pos = HashMap::new();
+            let chassis = crate::model::player::ChassisFrame::default();
+            let environment = crate::model::environment::EnvironmentFrame::default();
+            let car_inputs = make_car_inputs();
+
+            let tick = |proc: &mut TrackShapeProcessor, pct: f32, player_surface: TrackSurface| {
+                let lap_timing = make_lap_timing(pct);
+                let car_status = make_car_status();
+                let mut car_idx = make_car_idx();
+                car_idx.car_idx_track_surface = vec![player_surface];
+
+                let ctx = make_ctx(MakeCtxArgs {
+                    dynamics: &dynamics,
+                    lap_timing: &lap_timing,
+                    car_status: &car_status,
+                    session: &session,
+                    car_idx: &car_idx,
+                    start_positions: &start_pos,
+                    car_inputs: &car_inputs,
+                    chassis: &chassis,
+                    environment: &environment,
+                });
+                let _ = proc.compute(&ctx);
+            };
+
+            // on_pit_road stays false throughout — only the surface says we are in the pits.
+            tick(&mut proc, 0.9, surface);
+            tick(&mut proc, 0.02, surface);
+
+            assert!(
+                !proc.state.recording,
+                "{surface:?} must block the automatic start at start/finish"
+            );
+
+            // Back on track, clear of the lane: the next crossing starts a recording.
+            for _ in 0..PIT_EXIT_CLEARANCE_TICKS {
+                tick(&mut proc, 0.5, TrackSurface::OnTrack);
+            }
+
+            tick(&mut proc, 0.9, TrackSurface::OnTrack);
+            tick(&mut proc, 0.02, TrackSurface::OnTrack);
+
+            assert!(proc.state.recording, "{surface:?}: clean lap must record");
+            assert!(!proc.state.points.is_empty());
+
+            tick(&mut proc, 0.1, surface);
+
+            assert!(
+                !proc.state.recording,
+                "{surface:?} must discard the recording in progress"
+            );
+            assert!(proc.state.points.is_empty(), "{surface:?}: points cleared");
+        }
+    }
+
+    #[test]
     fn entering_the_pit_lane_discards_the_recording_in_progress() {
         let mut proc = TrackShapeProcessor::new(
             Arc::new(AtomicBool::new(true)),
