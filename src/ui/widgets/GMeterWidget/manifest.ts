@@ -6,6 +6,7 @@ import {
 
 export const G_METER_MANIFEST: WidgetManifest = {
   id: 'g-meter',
+  telemetryEvents: ['carDynamics'],
   label: 'G-Meter',
   description: 'Lateral and longitudinal G-force friction circle.',
   requiredCapabilities: ['playerDynamics'],

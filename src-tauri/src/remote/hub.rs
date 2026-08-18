@@ -315,7 +315,7 @@ const SLOW_FIELD_KEYS: [&str; 14] = [
     "\"chassis\"",
     "\"lap_timing\"",
     "\"proximity\"",
-    "\"standings\"",
+    "\"driver_entries\"",
     "\"relative\"",
     "\"car_status\"",
     "\"fuel\"",

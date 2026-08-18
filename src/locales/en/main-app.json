@@ -347,6 +347,20 @@
       "saveCsv": "Save CSV",
       "saved": "Saved to {{path}}"
     },
+    "telemetryInspector": {
+      "title": "Telemetry inspector",
+      "description": "The raw data from the simulator in full — the telemetry frame with every field, including those no widget is sent, and the parsed session YAML. Refreshes four times a second while this page is open, and costs the app nothing while it is closed.",
+      "filterPlaceholder": "Search by field name",
+      "hideAbsent": "Hide absent ({{count}})",
+      "waiting": "Waiting for the simulator…",
+      "absentCount": "{{count}} not reported",
+      "absent": "absent",
+      "sourceTelemetry": "Telemetry",
+      "sourceSession": "Session (YAML)",
+      "rowCount": "{{count}} rows",
+      "waitingSession": "Waiting for session data…",
+      "showAll": "Show the remaining {{count}}"
+    },
     "developerTools": {
       "title": "Developer Tools",
       "snapshotTitle": "Telemetry Snapshot",
@@ -401,6 +415,7 @@
         "trackMap": "Track data",
         "streamChat": "Stream chat",
         "maintenance": "Reset & diagnostics",
+        "telemetryInspector": "Telemetry inspector",
         "remoteScreens": "Remote screens"
       }
     },

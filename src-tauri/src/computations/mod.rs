@@ -1,3 +1,4 @@
+pub mod driver_entries;
 pub mod fuel;
 pub mod lap_delta;
 pub mod lap_log;
@@ -5,7 +6,6 @@ pub mod pit_stops;
 pub mod proximity;
 pub mod reference_lap;
 pub mod relative;
-pub mod standings;
 pub mod track_shape;
 
 use std::collections::HashMap;
@@ -23,6 +23,7 @@ use crate::model::track_shape::{TrackRecordingFrame, TrackShapePayload};
 use crate::model::lap_log::LapLogFrame;
 use crate::model::reference_lap::ReferenceLapData;
 use crate::model::relative::RelativeFrame;
+use driver_entries::{DriverEntriesFrame, DriverEntriesProcessor};
 use fuel::{FuelComputedFrame, FuelProcessor};
 use lap_delta::{LapDeltaFrame, LapDeltaProcessor};
 use lap_log::LapLogProcessor;
@@ -30,7 +31,6 @@ use pit_stops::{PitStopsFrame, PitStopsProcessor};
 use proximity::{ProximityFrame, ProximityProcessor};
 use reference_lap::ReferenceLapProcessor;
 use relative::RelativeProcessor;
-use standings::{DriverEntriesFrame, StandingsProcessor};
 use track_shape::TrackShapeProcessor;
 
 /// Processor identity — reserved for diagnostics and per-processor gating (Этап 3+).
@@ -44,7 +44,7 @@ pub enum ProcessorId {
     Proximity,
     ReferenceLap,
     Relative,
-    Standings,
+    DriverEntries,
     TrackShape,
 }
 
@@ -79,7 +79,7 @@ pub struct ComputeContext<'a> {
     pub session_num: Option<i32>,
     /// Remaining session time in seconds (used by fuel for timed races).
     pub session_time_remain: Option<f64>,
-    /// Session state from the telemetry frame (used by standings to latch finishers).
+    /// Session state from the telemetry frame (used by driver entries to latch finishers).
     pub session_state: Option<SessionState>,
 }
 
@@ -92,7 +92,7 @@ pub enum ComputedOutput {
     Proximity(ProximityFrame),
     ReferenceLap(ReferenceLapData),
     Relative(RelativeFrame),
-    Standings(DriverEntriesFrame),
+    DriverEntries(DriverEntriesFrame),
     TrackShape(TrackShapePayload),
     TrackRecording(TrackRecordingFrame),
     PitLanePct {
@@ -138,7 +138,7 @@ impl ProcessorRegistry {
                     stored_reference_lap_time,
                 )),
                 Box::new(RelativeProcessor::default()),
-                Box::new(StandingsProcessor::default()),
+                Box::new(DriverEntriesProcessor::default()),
                 Box::new(TrackShapeProcessor::new(
                     force_track_start,
                     reset_pit_pcts,

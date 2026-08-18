@@ -4,6 +4,8 @@
 
 pub mod capabilities;
 pub mod emitter;
+pub mod publications;
+pub mod quantize;
 pub mod runtime;
 pub mod scheduler;
 pub mod state;

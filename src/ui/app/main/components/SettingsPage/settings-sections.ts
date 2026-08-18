@@ -13,7 +13,8 @@ export type SettingsSectionId =
   | 'trackMap'
   | 'streamChat'
   | 'remoteScreens'
-  | 'maintenance';
+  | 'maintenance'
+  | 'telemetryInspector';
 
 export interface SettingsGroup {
   /** i18n key under `settingsPage.nav.groups`. */
@@ -27,7 +28,7 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
   { id: 'controls', sections: ['bindings', 'devices'] },
   { id: 'data', sections: ['trackMap', 'streamChat'] },
   { id: 'remote', sections: ['remoteScreens'] },
-  { id: 'maintenance', sections: ['maintenance'] },
+  { id: 'maintenance', sections: ['maintenance', 'telemetryInspector'] },
 ];
 
 export const DEFAULT_SECTION: SettingsSectionId = 'general';

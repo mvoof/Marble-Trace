@@ -13,7 +13,6 @@ import { RELATIVE_MAP_MANIFEST } from '@ui/widgets/RelativeMapWidget/manifest';
 import { LED_FLAGS_MANIFEST } from '@ui/widgets/LedFlagWidget/manifest';
 import { FLAT_FLAGS_MANIFEST } from '@ui/widgets/FlatFlagsWidget/manifest';
 import { PIT_SERVICE_MANIFEST } from '@ui/widgets/PitServiceWidget/manifest';
-import { EXAMPLE_MANIFEST } from '@ui/widgets/TelemetryDebugWidget/manifest';
 import { DELTA_MANIFEST } from '@ui/widgets/DeltaWidget/manifest';
 import { TIMER_MANIFEST } from '@ui/widgets/TimerWidget/manifest';
 import { STREAM_CHAT_MANIFEST } from '@ui/widgets/StreamChatWidget/manifest';
@@ -47,7 +46,6 @@ export const WIDGETS: WidgetManifest[] = [
   LED_FLAGS_MANIFEST,
   FLAT_FLAGS_MANIFEST,
   PIT_SERVICE_MANIFEST,
-  EXAMPLE_MANIFEST,
   DELTA_MANIFEST,
   TIMER_MANIFEST,
   STREAM_CHAT_MANIFEST,
@@ -67,9 +65,15 @@ export const WIDGET_BY_ID = new Map(
   WIDGETS.map((manifest) => [manifest.id, manifest])
 );
 
-// `resolveLayoutChange` is a function, so it cannot survive a round trip
-// through settings.json — the saved copy holds data only.
-const NON_SERIALIZABLE_WIDGET_KEYS = new Set(['resolveLayoutChange']);
+// Keys the saved copy must not carry. `resolveLayoutChange` is a function and
+// could not survive the round trip through settings.json anyway;
+// `telemetryEvents` could, and that is exactly the problem — it is what this
+// build's widget reads, not a user choice, and a stale copy on disk would
+// outlive the widget that declared it.
+const NON_SERIALIZABLE_WIDGET_KEYS = new Set([
+  'resolveLayoutChange',
+  'telemetryEvents',
+]);
 
 export const DEFAULT_WIDGETS: WidgetDefaultConfig[] = WIDGETS.map(
   (manifest) => {

@@ -7,6 +7,8 @@ use crate::computations::fuel::{FuelSettings, DEFAULT_FUEL_AVG_WINDOW, DEFAULT_P
 use crate::computations::ProcessorRegistry;
 use crate::model::reference_lap::StoredReferenceTimes;
 use crate::model::session::SessionSnapshot;
+use crate::sources::source::SourceFrame;
+use crate::telemetry::publications::Publications;
 
 /// User-configured fuel parameters, written by commands and read once per tick
 /// by the telemetry thread.
@@ -50,6 +52,20 @@ pub struct TelemetryServiceState {
     pub pit_exit_pct: Mutex<Option<f32>>,
     /// Bitmask of active high-frequency events to emit.
     pub active_events: AtomicU32,
+    /// The telemetry inspector in the settings window is open. While this is
+    /// false nothing below is written at all — the inspector costs the running
+    /// app exactly nothing when nobody is looking at it, which is why it pulls
+    /// instead of subscribing: the settings window must never take the 60 Hz
+    /// bundle again.
+    pub inspector_active: AtomicBool,
+    /// Last adapted frame, refreshed on the 4 Hz tier while the inspector is
+    /// open. 4 Hz because that is already faster than a person can read a table
+    /// of a hundred numbers.
+    pub inspector_frame: Mutex<Option<SourceFrame>>,
+    /// What was last put on the wire, so an unchanged frame can be held back.
+    /// Lives with the connection: a reconnect clears it, because the windows
+    /// have reset their stores too and need a full bundle again.
+    pub publications: Mutex<Publications>,
     /// Configurable player car length in meters.
     pub car_length_m: Mutex<f32>,
     /// Set when a cached track was loaded from disk; consumed by TrackShapeProcessor
@@ -63,10 +79,22 @@ pub struct TelemetryServiceState {
 }
 
 /// Bitmask flags for high-frequency events.
+///
+/// The frontend composes the mask from the `telemetryEvents` each widget
+/// manifest declares; the names and these same bit values are mirrored in
+/// `src/types/telemetry-events.ts`, and the two halves have to be changed
+/// together.
 pub const EVENT_CAR_DYNAMICS: u32 = 1 << 0;
 pub const EVENT_CAR_INPUTS: u32 = 1 << 1;
 pub const EVENT_LAP_DELTA: u32 = 1 << 2;
 pub const EVENT_CAR_POSITIONS: u32 = 1 << 3;
+/// The heavy per-car frames. They are computed on every due tick no matter what
+/// — their processors carry state — but a frame nobody reads is left out of the
+/// bundle rather than serialized, shipped to every window and remote screen,
+/// parsed there and written into a store.
+pub const EVENT_STANDINGS: u32 = 1 << 4;
+pub const EVENT_RELATIVE: u32 = 1 << 5;
+pub const EVENT_PROXIMITY: u32 = 1 << 6;
 
 /// Compose domain-specific states.
 pub struct TelemetryState {

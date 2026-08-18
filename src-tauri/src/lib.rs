@@ -13,11 +13,11 @@ mod utils;
 
 #[cfg(feature = "dev")]
 use computations::{
+    driver_entries::{DriverEntriesFrame, DriverEntry},
     fuel::FuelComputedFrame,
     lap_delta::LapDeltaFrame,
     pit_stops::PitStopsFrame,
     proximity::{LateralSide, NearbyCar, ProximityFrame, RadarDistances},
-    standings::{DriverEntriesFrame, DriverEntry},
 };
 #[cfg(feature = "dev")]
 use model::reference_lap::{ReferenceLapData, ReferenceLapSample, TrackCondition};
@@ -31,10 +31,10 @@ use chat::commands::{
 use chat::state::{ChatServiceState, ChatState};
 use commands::{
     backup_settings_file, delete_reference_lap, delete_settings_file, delete_track_shape,
-    get_cached_track_shape, get_connection_status, get_last_session_info, get_reference_lap,
-    log_settings_snapshot, reset_pit_lane_pct, send_pit_order, set_active_events, set_car_length,
-    set_fuel_avg_window, set_pit_warning_laps, settings_file_exists, start_telemetry_stream,
-    stop_telemetry_stream,
+    get_cached_track_shape, get_connection_status, get_inspector_frame, get_last_session_info,
+    get_reference_lap, log_settings_snapshot, reset_pit_lane_pct, send_pit_order,
+    set_active_events, set_car_length, set_fuel_avg_window, set_inspector_active,
+    set_pit_warning_laps, settings_file_exists, start_telemetry_stream, stop_telemetry_stream,
 };
 use computations::ProcessorRegistry;
 use input::commands::{resolve_input_devices, set_input_polling_enabled, InputState};
@@ -113,6 +113,7 @@ pub fn run() {
             .register::<LapDeltaFrame>()
             .register::<SimPerfFrame>()
             .register::<telemetry::emitter::TelemetryBundle>()
+            .register::<sources::source::SourceFrame>()
             .register::<WeatherForecastEntry>()
             .register::<CapabilitiesPayload>()
             .register::<SimType>()
@@ -276,6 +277,8 @@ pub fn run() {
             set_pit_warning_laps,
             set_fuel_avg_window,
             set_active_events,
+            set_inspector_active,
+            get_inspector_frame,
             set_car_length,
             get_connection_status,
             delete_track_shape,
@@ -312,6 +315,9 @@ pub fn run() {
                 pit_in_pct: Mutex::new(None),
                 pit_exit_pct: Mutex::new(None),
                 active_events: AtomicU32::new(0xFFFFFFFF),
+                publications: Default::default(),
+                inspector_active: AtomicBool::new(false),
+                inspector_frame: Mutex::new(None),
                 car_length_m: Mutex::new(4.4),
                 track_cached: track_cached_service,
                 stored_reference_lap_time: stored_reference_lap_time_service,

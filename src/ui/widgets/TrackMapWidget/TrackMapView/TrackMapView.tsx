@@ -66,7 +66,7 @@ export const TrackMapView = observer(
 
     const sectors = sessionInfo?.sectors;
 
-    const driverEntries = computed.standings?.entries ?? [];
+    const driverEntries = computed.driverEntries?.entries ?? [];
 
     const rotatedTrackData = useMemo(() => {
       if (!trackData) return null;

@@ -11,6 +11,7 @@ use crate::model::reference_lap::{ReferenceLapData, StoredReferenceTimes, TrackC
 use crate::model::session::SessionSnapshot;
 use crate::model::track_shape::TrackShapePayload;
 use crate::sources::iracing::pit_command::send_pit_order as send_pit_order_to_sim;
+use crate::sources::source::SourceFrame;
 use crate::telemetry::emitter::reference_lap_key;
 use crate::telemetry::runtime::{load_cached_track_shape, spawn_telemetry_thread};
 use crate::telemetry::state::TelemetryState;
@@ -170,6 +171,41 @@ pub async fn set_active_events(state: State<'_, TelemetryState>, mask: u32) -> R
     debug!("Active events mask updated to: {:#b}", mask);
 
     Ok(())
+}
+
+/// Opens and closes the telemetry inspector's data feed.
+///
+/// The inspector deliberately pulls rather than subscribing: resubscribing the
+/// settings window to the telemetry bundle is exactly the cost that was removed
+/// from it. While this is off the backend keeps no frame at all.
+#[tauri::command]
+pub async fn set_inspector_active(
+    state: State<'_, TelemetryState>,
+    active: bool,
+) -> Result<(), String> {
+    state
+        .service
+        .inspector_active
+        .store(active, Ordering::Relaxed);
+
+    if !active {
+        *lock_or_recover(&state.service.inspector_frame) = None;
+    }
+
+    debug!("Telemetry inspector active: {active}");
+
+    Ok(())
+}
+
+/// The last adapted frame, or `None` when the sim is not connected or the feed
+/// was only just switched on. Deliberately the whole `SourceFrame` and not the
+/// bundle: the point of the inspector is to show what the sim gives us,
+/// including the fields the app does not forward to any widget.
+#[tauri::command]
+pub async fn get_inspector_frame(
+    state: State<'_, TelemetryState>,
+) -> Result<Option<SourceFrame>, String> {
+    Ok(lock_or_recover(&state.service.inspector_frame).clone())
 }
 
 #[tauri::command]

@@ -1,0 +1,120 @@
+.hint {
+  opacity: 0.7;
+  margin-bottom: 12px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+
+  > :nth-child(2) {
+    flex: 1 1 220px;
+    min-width: 0;
+  }
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  white-space: nowrap;
+}
+
+.alert {
+  margin-bottom: 12px;
+}
+
+.summary {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+// The frame is a hundred-odd rows before anything is opened, and a session
+// snapshot is thousands. The list scrolls inside the card instead of making the
+// page taller than the window.
+.rows {
+  display: flex;
+  flex-direction: column;
+  max-height: 60vh;
+  overflow-y: auto;
+  // Same reason as the settings pane: filtering and expanding change the row
+  // count constantly, and the list must not twitch sideways each time it
+  // crosses its own height.
+  scrollbar-gutter: stable;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 6px;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 10px;
+
+  &:nth-child(odd) {
+    background: rgb(255 255 255 / 2%);
+  }
+}
+
+.rowBranch {
+  font-weight: 600;
+}
+
+.rowAbsent {
+  opacity: 0.45;
+}
+
+.caret {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.caretSpacer {
+  flex: none;
+  width: 16px;
+}
+
+.name {
+  font-family: $font-mono;
+  font-size: 12px;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.value {
+  font-family: $font-mono;
+  font-size: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.more {
+  padding: 0 10px;
+}

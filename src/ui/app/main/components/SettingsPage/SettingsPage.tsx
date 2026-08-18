@@ -11,6 +11,7 @@ import { OverlaySection } from './sections/OverlaySection';
 import { InteractionSection } from './sections/InteractionSection';
 import { TrackMapSection } from './sections/TrackMapSection';
 import { MaintenanceSection } from './sections/MaintenanceSection';
+import { TelemetryInspectorSection } from './sections/TelemetryInspectorSection/TelemetryInspectorSection';
 import { RemoteScreensSection } from './sections/RemoteScreensSection';
 import {
   DEFAULT_SECTION,
@@ -31,6 +32,7 @@ const SECTION_COMPONENTS: Record<SettingsSectionId, () => React.ReactElement> =
     streamChat: StreamChatSourceCard,
     remoteScreens: RemoteScreensSection,
     maintenance: MaintenanceSection,
+    telemetryInspector: TelemetryInspectorSection,
   };
 
 export const SettingsPage = observer(() => {

@@ -42,7 +42,8 @@ Four things about this order matter:
 3. **It does not reach everywhere.** It is applied to `widgets[].userSettings`
    (via `restoreWidgets`) and to the app block, but **not** to
    `layouts[].widgets[].userSettings`, which `setLayouts` takes as-is.
-   **A migration must clean the layout copies itself.** Nothing else will.
+   **A migration must clean the layout copies itself.** Nothing else will — use
+   the `blob.ts` helpers so it is not something you can forget.
 4. **Both windows run the chain**, each on its own parse of the file, but only
    the main window writes. That is why a migration must be pure — a side effect
    would happen twice.
@@ -127,8 +128,47 @@ widgets. `v0-real-capture.json` was made this way.
 If a future migration touches a secret, strip it **before** the backup is
 written, or the plaintext lives on in `settings.v{n}.bak`.
 
+### Walking the blob — use `blob.ts`
+
+**A widget is in the file twice.** Once in the top-level `widgets[]`, and again
+inside every entry of `layouts[].widgets[]`. `mergeWithDefaults` runs after the
+chain and repairs only the first — it never descends into layouts. A migration
+that touches the top-level array and stops there leaves every layout carrying the
+old shape, and the failure is quiet: the app starts, the widget looks right, and
+the bad copy only surfaces when the user switches layout.
+
+`settings-schema/blob.ts` exists so that forgetting is not possible:
+
+| Helper                                    | Use it for                                  |
+| ----------------------------------------- | ------------------------------------------- |
+| `mapEveryWidget(blob, fn)`                | any rewrite of the widget list itself       |
+| `patchWidgetSettings(blob, id, fn)`       | changing one widget's `userSettings`        |
+| `renameWidgetSetting(blob, id, from, to)` | a key that changed name                     |
+| `dropWidgetSettings(blob, id, keys)`      | settings that no longer exist               |
+| `asObject` / `asArray`                    | guarding a shape read out of an older build |
+
+```ts
+const migrate = (blob: SettingsBlob): SettingsBlob =>
+  renameWidgetSetting(blob, 'fuel', 'avgWindow', 'averageWindowLaps');
+```
+
+All of them are purely structural: they know no widget id, no setting name and
+no default, so using them does not breach the rule below about live imports.
+`v1-legacy-consolidation` is written on top of `mapEveryWidget` — copy its shape.
+
+Two behaviours are deliberate and worth knowing before you fight them:
+
+- **A widget the file does not contain is never added.** The widget map is filled
+  from the shipped defaults afterwards; an entry invented by a migration would
+  outrank them.
+- **A key that is absent is not written as `undefined`.** `renameWidgetSetting`
+  skips a widget with no old value, because `undefined` survives into the merge
+  and beats the shipped default — which is the value the user should actually
+  get.
+
 ### Rules for the migration itself
 
+- **Walk the blob with `blob.ts`,** never by hand — see above.
 - **Never import live types, defaults or registries.** Freeze whatever you need
   as a literal in the migration file. A step that reads today's `ACTIONS` starts
   rewriting history by next year's rules. This is why the v1 hotkey tables are
@@ -163,7 +203,12 @@ Each migration gets its own test next to it, from fixtures. Mandatory cases:
 
 - the values it is meant to lift end up where they belong;
 - the legacy fields are gone — from the app block, from `widgets[]` **and** from
-  every `layouts[].widgets[]`;
+  every `layouts[].widgets[]` (free if you used `blob.ts`, but assert it anyway:
+  the assertion is what catches a later rewrite that stops using the helper);
+- nothing the step writes is a type `mergeWithDefaults` would reject — it runs
+  _after_ the chain and silently resets a wrong-typed field to its default, so a
+  migration can otherwise appear to work and do nothing. `v1` covers this in
+  "writes nothing mergeWithDefaults would reject";
 - everything it does not touch is untouched;
 - degenerate files do not throw: no `layouts` key, empty `layouts`, an
   `activeLayoutId` pointing at a layout that no longer exists;

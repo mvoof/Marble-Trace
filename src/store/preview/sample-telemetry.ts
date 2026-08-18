@@ -174,7 +174,7 @@ export const seedSampleTelemetry = action((store: RootStore) => {
       playerEntry.trackSurface = TrackSurface.OnTrack;
     }
 
-    store.backendComputed.updateStandings({
+    store.backendComputed.updateDriverEntries({
       entries,
       playerCarIdx,
     } as DriverEntriesFrame);

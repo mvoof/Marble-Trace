@@ -18,7 +18,7 @@ pub enum LateralSide {
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct NearbyCar {
     pub car_idx: i32,
@@ -30,7 +30,7 @@ pub struct NearbyCar {
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RadarDistances {
     pub front_dist: f32,
@@ -40,7 +40,7 @@ pub struct RadarDistances {
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ProximityFrame {
     pub nearby_cars: Vec<NearbyCar>,

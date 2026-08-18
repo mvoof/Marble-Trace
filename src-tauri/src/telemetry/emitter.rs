@@ -9,14 +9,15 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager};
 use tracing::warn;
 
+use super::quantize;
 use super::scheduler::DueGroups;
 use super::state::{
     TelemetryServiceState, EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS,
-    EVENT_LAP_DELTA,
+    EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE, EVENT_STANDINGS,
 };
 use crate::capabilities::Capabilities;
 use crate::computations::{
-    fuel, lap_delta, pit_stops, proximity, standings, ComputeContext, ComputedOutput,
+    driver_entries, fuel, lap_delta, pit_stops, proximity, ComputeContext, ComputedOutput,
     ProcessorRegistry, TickRate,
 };
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
@@ -84,7 +85,7 @@ pub struct TelemetryBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub relative: Option<RelativeFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub standings: Option<standings::DriverEntriesFrame>,
+    pub driver_entries: Option<driver_entries::DriverEntriesFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub car_status: Option<CarStatusFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -125,7 +126,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
         lap_timing: None,
         proximity: None,
         relative: None,
-        standings: None,
+        driver_entries: None,
         car_status: None,
         fuel: None,
         pit_stops: None,
@@ -298,6 +299,13 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
     if due.hz4 {
         bundle.car_status = Some(frame.car_status.clone());
         bundle.pit_service = Some(frame.pit_service.clone());
+
+        // The inspector pulls this over a command instead of subscribing, so the
+        // settings window never takes the bundle. Nothing is written — not even
+        // the clone — while its panel is closed.
+        if ctx.service.inspector_active.load(Ordering::Relaxed) {
+            *lock_or_recover(&ctx.service.inspector_frame) = Some(frame.clone());
+        }
     }
 
     if due.hz1 {
@@ -313,12 +321,61 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
         }
     }
 
+    // Drop what nobody asked for. Deliberately after the processors have run:
+    // the mask gates publication, never computation, so a widget switched on
+    // mid-race finds the driver table, the gaps and the history intact
+    // instead of rebuilding them from the tick it became visible.
+    if (active_mask & EVENT_STANDINGS) == 0 {
+        bundle.driver_entries = None;
+    }
+
+    if (active_mask & EVENT_RELATIVE) == 0 {
+        bundle.relative = None;
+    }
+
+    if (active_mask & EVENT_PROXIMITY) == 0 {
+        bundle.proximity = None;
+    }
+
+    // Round to what a widget can actually draw, then drop whatever is identical
+    // to the last thing published. Order matters both ways: rounding before the
+    // comparison is what makes repeats compare equal at all, and both run after
+    // the gating above so a field the mask removed is never recorded as sent.
+    quantize_bundle(&mut bundle);
+
+    // The 1 Hz tier carries a full bundle. See `publications` — it is what a
+    // window that just reloaded, or a phone that just opened a remote screen,
+    // needs in order to paint anything at all.
+    lock_or_recover(&ctx.service.publications).prune(&mut bundle, due.first || due.hz1);
+
     let should_emit = active_mask != 0 || due.first || due.hz10 || due.hz4 || due.hz1;
 
     if should_emit {
         if let Err(e) = app.emit(EVENT_TELEMETRY_BUNDLE, &bundle) {
             warn!("Failed to emit telemetry bundle: {}", e);
         }
+    }
+}
+
+fn quantize_bundle(bundle: &mut TelemetryBundle) {
+    if let Some(frame) = bundle.car_positions.as_mut() {
+        quantize::car_positions(frame);
+    }
+
+    if let Some(frame) = bundle.car_idx.as_mut() {
+        quantize::car_idx(frame);
+    }
+
+    if let Some(frame) = bundle.driver_entries.as_mut() {
+        quantize::driver_entries(frame);
+    }
+
+    if let Some(frame) = bundle.relative.as_mut() {
+        quantize::relative(frame);
+    }
+
+    if let Some(frame) = bundle.proximity.as_mut() {
+        quantize::proximity(frame);
     }
 }
 
@@ -330,7 +387,7 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
         ComputedOutput::PitStops(frame) => bundle.pit_stops = Some(frame),
         ComputedOutput::Proximity(frame) => bundle.proximity = Some(frame),
         ComputedOutput::Relative(frame) => bundle.relative = Some(frame),
-        ComputedOutput::Standings(frame) => bundle.standings = Some(frame),
+        ComputedOutput::DriverEntries(frame) => bundle.driver_entries = Some(frame),
         ComputedOutput::TrackRecording(frame) => bundle.track_recording = Some(frame),
         ComputedOutput::TrackShape(_) => {} // handled in Hz60 loop directly
         ComputedOutput::ReferenceLap(_) => {} // handled in Hz60 loop directly

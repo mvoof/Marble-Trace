@@ -28,7 +28,7 @@ const SESSION_TYPE_CLASS: Record<SessionColorKey, string> = {
 };
 
 export const SessionHeader = observer(() => {
-  const { standings } = useBackendComputedStore();
+  const { driverEntries: driverEntriesFrame } = useBackendComputedStore();
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
   const widgetSettings = useWidgetSettingsStore();
@@ -41,7 +41,7 @@ export const SessionHeader = observer(() => {
   }
 
   const sessionInfoData = sessionInfo;
-  const driverEntries = standings?.entries ?? [];
+  const driverEntries = driverEntriesFrame?.entries ?? [];
   const overallSof = computeClassSof(driverEntries);
 
   const playerIncidents =

@@ -20,6 +20,7 @@ export const useSimPerfStore = () => useStore().simPerf;
 export const useFpsDiagnosticsStore = () => useStore().fpsDiagnostics;
 export const useDiagnosticsHudStore = () => useStore().diagnosticsHud;
 export const useDiagnosticsExportStore = () => useStore().diagnosticsExport;
+export const useTelemetryInspectorStore = () => useStore().telemetryInspector;
 export const useBackendComputedStore = () => useStore().backendComputed;
 export const useSimStore = () => useStore().sim;
 export const useFlagsStore = () => useStore().flags;

@@ -6,6 +6,7 @@ import {
 
 export const INVISIBLE_DASH_MANIFEST: WidgetManifest = {
   id: 'invisible-dash',
+  telemetryEvents: ['carDynamics', 'driverEntries'],
   label: 'Invisible Dash',
   description:
     'Windscreen projection: engine column and gear on the left, position and lap on the right, empty in the middle.',

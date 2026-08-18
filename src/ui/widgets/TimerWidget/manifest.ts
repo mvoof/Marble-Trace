@@ -6,6 +6,7 @@ import {
 
 export const TIMER_MANIFEST: WidgetManifest = {
   id: 'timer',
+  telemetryEvents: ['driverEntries'],
   label: 'Timer',
   description: 'Stint and total session timers.',
   autoHeight: true,

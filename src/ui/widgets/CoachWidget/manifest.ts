@@ -6,6 +6,7 @@ import {
 
 export const COACH_MANIFEST: WidgetManifest = {
   id: 'coach',
+  telemetryEvents: ['carDynamics', 'carInputs'],
   label: 'Coach',
   description:
     'Brake/gas call and a speed trace against your stored best lap, colored by time gained or lost.',

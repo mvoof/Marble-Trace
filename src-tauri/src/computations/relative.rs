@@ -1,5 +1,5 @@
 use crate::capabilities::Capabilities;
-use crate::computations::standings::DriverEntry;
+use crate::computations::driver_entries::DriverEntry;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use crate::model::relative::RelativeFrame;
 
@@ -33,13 +33,15 @@ pub fn compute(entries: &[DriverEntry], player_car_idx: i32) -> RelativeFrame {
 /// Runs at 10 Hz — same cadence as standings so the data is always fresh.
 /// Required capability: `RELATIVE` (already set by `IracingSource`).
 pub struct RelativeProcessor {
-    state: std::sync::Mutex<crate::computations::standings::StandingsState>,
+    state: std::sync::Mutex<crate::computations::driver_entries::DriverEntriesState>,
 }
 
 impl Default for RelativeProcessor {
     fn default() -> Self {
         Self {
-            state: std::sync::Mutex::new(crate::computations::standings::StandingsState::default()),
+            state: std::sync::Mutex::new(
+                crate::computations::driver_entries::DriverEntriesState::default(),
+            ),
         }
     }
 }
@@ -65,7 +67,7 @@ impl Processor for RelativeProcessor {
             return None;
         }
 
-        let standings_frame = crate::computations::standings::compute(
+        let standings_frame = crate::computations::driver_entries::compute(
             ctx.car_idx,
             ctx.session,
             ctx.start_positions,
@@ -81,7 +83,7 @@ impl Processor for RelativeProcessor {
 
     fn reset(&mut self) {
         if let Ok(mut locked) = self.state.lock() {
-            *locked = crate::computations::standings::StandingsState::default();
+            *locked = crate::computations::driver_entries::DriverEntriesState::default();
         }
     }
 }
@@ -89,7 +91,7 @@ impl Processor for RelativeProcessor {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::computations::standings::DriverEntry;
+    use crate::computations::driver_entries::DriverEntry;
     use crate::model::enums::{PitState, TrackSurface};
 
     fn make_entry(car_idx: i32, lap_dist_pct: f32, is_player: bool) -> DriverEntry {

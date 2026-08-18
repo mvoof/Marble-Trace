@@ -1,5 +1,7 @@
 //! Sim-agnostic telemetry source trait.
 
+use serde::Serialize;
+
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::enums::SimType;
 use crate::model::environment::{EnvironmentFrame, WeatherForecastEntry};
@@ -12,6 +14,14 @@ use crate::telemetry::capabilities::Capabilities;
 
 /// One adapted telemetry tick: the domain model frames consumed by the
 /// telemetry emitter, filled by whichever sim adapter is connected.
+///
+/// Serializable because the telemetry inspector reads it whole. It is
+/// deliberately a superset of `TelemetryBundle`: the bundle is what the app
+/// chose to forward — tiered, demand-gated and quantized — while this is what
+/// the sim actually gave us, which is the only useful thing for an inspector to
+/// show.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Debug, Clone)]
 pub struct SourceFrame {
     pub car_dynamics: CarDynamicsFrame,
     pub car_inputs: CarInputsFrame,

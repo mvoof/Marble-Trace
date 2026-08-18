@@ -354,12 +354,12 @@ The backend does not emit everything 60 times a second. Fields are grouped by ho
 fast they actually change, and each tick emits one bundle containing only the
 tiers that are due.
 
-| Rate  | Fields                                                       |
-| ----- | ------------------------------------------------------------ |
-| 60 Hz | `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta`   |
-| 10 Hz | `car_idx`, `chassis`, `lap_timing`, `proximity`, `standings` |
-| 4 Hz  | `car_status`, `fuel`, `pit_stops`                            |
-| 1 Hz  | `session`, `environment`                                     |
+| Rate  | Fields                                                            |
+| ----- | ----------------------------------------------------------------- |
+| 60 Hz | `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta`        |
+| 10 Hz | `car_idx`, `chassis`, `lap_timing`, `proximity`, `driver_entries` |
+| 4 Hz  | `car_status`, `fuel`, `pit_stops`                                 |
+| 1 Hz  | `session`, `environment`                                          |
 
 ```mermaid
 flowchart LR
@@ -385,6 +385,148 @@ flowchart LR
 The emitter also handles side-channel work that is not part of the periodic
 bundle: saving a discovered track shape, persisting a reference lap, and patching
 pit lane percentages once they become known (which re-emits the track shape).
+
+### Demand gating
+
+Being due is necessary but not sufficient: a gated field is filled only while
+some widget actually wants it. Two groups are gated — the four raw 60 Hz frames,
+where the whole cost is downstream of the sim, and the three per-car frames on
+the 10 Hz tier, which are by far the largest payloads the app moves (a
+`DriverEntry` is ~35 fields including nine strings, times the whole field).
+
+> [!NOTE]
+> `driver_entries` is the table of the whole field — positions, laps, times, pit
+> state, licence, class — not "the Standings widget's data". Six widgets read it;
+> the Standings widget is only the one that draws all of it. The processor that
+> builds it is `computations/driver_entries.rs`.
+
+| Gated field                                                | Tier  |
+| ---------------------------------------------------------- | ----- |
+| `car_dynamics`, `car_inputs`, `car_positions`, `lap_delta` | 60 Hz |
+| `driver_entries`, `relative`, `proximity`                  | 10 Hz |
+
+Everything else is small, infrequent, or both, and is always sent. Each widget names what it reads in its own
+`manifest.ts`:
+
+```ts
+export const G_METER_MANIFEST: WidgetManifest = {
+  id: 'g-meter',
+  telemetryEvents: ['carDynamics'],
+  ...
+};
+```
+
+`SimStore.updateActiveEvents` unions the declarations of the enabled widgets in
+the active layout and sends the result to `set_active_events` as a bitmask;
+`emitter.rs` reads it and leaves an unrequested field out of the bundle. The
+names and their bit values live in `src/types/telemetry-events.ts` and mirror
+`telemetry/state.rs`.
+
+```mermaid
+flowchart LR
+    M["manifests<br/><i>telemetryEvents</i>"] --> U["SimStore<br/>union of enabled widgets"]
+    U -->|"set_active_events(mask)"| S["TelemetryServiceState<br/><i>active_events</i>"]
+    S --> E["emitter: fill or skip"]
+```
+
+> [!IMPORTANT]
+> **The mask gates publication, not computation.** Every processor that carries
+> state — fuel, lap log, pit stops, standings, the reference lap — runs on every
+> tick regardless, so a widget enabled mid-race finds its history intact. Only a
+> field that is a pure snapshot of the current tick may be skipped at the source,
+> which is why the mask covers the raw 60 Hz frames, `lap_delta` (whose state is
+> owned by the reference-lap processor, not by the delta itself) and the three
+> per-car frames, which are dropped from the bundle _after_ their processors have
+> run.
+>
+> What is saved is everything downstream of the computation: the serialization,
+> the IPC hop into _each_ window and remote screen, the parse, and the store
+> write. For a 60 Hz frame that is the entire cost.
+
+A widget reading a gated field without declaring it renders empty; one declaring
+a field it does not read makes every other window pay for the traffic. The
+declaration therefore lives next to the widget, not in a list somewhere else —
+a list is what drifts.
+
+### Quantization and repeat suppression
+
+Gating removes fields nobody wants. The other half of the saving is removing
+_ticks_ nobody needs, and it takes two steps that only work together.
+
+```mermaid
+flowchart LR
+    P["processors"] --> G["gating<br/><i>mask</i>"] --> Q["quantize.rs<br/><i>round to what is drawn</i>"] --> R["publications.rs<br/><i>drop repeats</i>"] --> E["emit"]
+```
+
+**Quantize** (`telemetry/quantize.rs`) rounds the per-car frames to the precision
+a widget actually draws — positions to 4 dp, gaps to 2 dp, lap times to 3 dp,
+distances to 2 dp. Every one of those is at least one decimal finer than the
+`toFixed` that renders it.
+
+**Suppress repeats** (`telemetry/publications.rs`) compares each frame against
+the last one published and drops it if they are equal.
+
+The order is the point. A raw simulator float is never bit-identical two ticks
+running: a car parked in its pit box still jitters in the seventh decimal of
+`car_idx_lap_dist_pct`, so nothing would ever compare equal and the second step
+alone would save nothing. Rounding first is what turns "visually unchanged" into
+"literally unchanged". Both steps run _after_ gating, so a field the mask removed
+is never recorded as published — otherwise re-enabling its widget would wait for
+the next real change to see anything.
+
+> [!IMPORTANT]
+> Rounding happens at publication, never on the way in. `computations/` always
+> sees raw values: a processor that integrates over time or compares against a
+> threshold — fuel projection, lap delta, anything differencing consecutive
+> frames — would accumulate the error. This is the same publication-only rule the
+> mask follows, for the same reason.
+>
+> `car_dynamics` and `car_inputs` are deliberately left unrounded. They are two
+> small structs that genuinely change every tick while driving, so there is
+> nothing to suppress, and they feed the smoothing in the coach and the input
+> trace.
+
+### The telemetry inspector pulls, it does not subscribe
+
+Its own section under Settings → Maintenance. It browses the two raw streams the
+app receives, as a lazily expanded tree:
+
+| Source      | Where it comes from                                                      |
+| ----------- | ------------------------------------------------------------------------ |
+| `telemetry` | the live `SourceFrame`, pulled from the backend at 4 Hz                  |
+| `session`   | the parsed session snapshot, already in this window from `sim://session` |
+
+The telemetry side shows every field the adapter produced, including the ones no
+widget is sent — which makes it the one place that sees what the bundle
+deliberately hides. Selecting the session side **stops** the feed outright:
+nothing would be reading the frames.
+
+It is built the opposite way round from a widget:
+
+|                        | Widgets                        | Inspector                                                               |
+| ---------------------- | ------------------------------ | ----------------------------------------------------------------------- |
+| Direction              | push, `sim://telemetry/bundle` | pull, `get_inspector_frame`                                             |
+| Rate                   | 60 / 10 / 4 / 1 Hz             | 4 Hz while its panel is mounted                                         |
+| Cost when nobody looks | —                              | **nothing**: `inspector_active` is false and the backend keeps no frame |
+
+> [!WARNING]
+> **The settings window must never subscribe to the telemetry bundle.** It was
+> taken off it on purpose (a window that draws no widgets has no use for 60
+> bundles a second), and an inspector that listened for the bundle would hand
+> that entire cost straight back. `TelemetryInspectorStore` therefore imports no
+> event API at all — only two commands.
+
+4 Hz is not a compromise: nobody reads a table of a hundred numbers sixty times a
+second. The same feed backs the snapshot export, which opens it for one frame and
+closes it again — before that, the export read this window's stores and wrote a
+file whose dynamics, inputs, per-car arrays and lap timing were all `null`.
+
+A held-back field is a field a newcomer never sees, so the 1 Hz tier forces a
+full bundle: an overlay that just reloaded, or a phone that just opened a remote
+screen, starts with empty stores and would otherwise stay empty until something
+changed. That bounds the blindness to one second and costs one full bundle per
+second. A disconnect clears the record entirely, because the windows have reset
+too.
 
 ## `input/`, `chat/` and the command surface
 
@@ -1190,6 +1332,8 @@ flowchart TB
 | Technique                                        | Where                                                | The failure it prevents                                                                                                                 |
 | ------------------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Rate tiers                                       | `telemetry/scheduler.rs`                             | sending standings 60 times a second when it changes 10 times                                                                            |
+| Demand gating (`telemetryEvents`)                | widget manifests → `telemetry/emitter.rs`            | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
+| Quantization + repeat suppression                | `telemetry/quantize.rs`, `telemetry/publications.rs` | resending a frame whose only change is in a decimal no widget prints                                                                    |
 | `observable.ref` on frame buffers                | `store/data/cars.store.ts`, `computed.store.ts`      | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
 | Split computeds                                  | `store/data/computed.store.ts` and the widget stores | one changed field invalidating an unrelated derived value                                                                               |
 | `observer()` on every component                  | all of `ui/`                                         | a parent re-render cascading into leaves that did not change                                                                            |

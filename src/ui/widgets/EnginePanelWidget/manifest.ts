@@ -120,6 +120,7 @@ const resolveEnginePanelLayout: ResolveLayoutChange = (prev, next, current) => {
 
 export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
   id: 'engine-panel',
+  telemetryEvents: ['carInputs'],
   label: 'Engine Panel',
   description:
     'Liquid temperatures, pressures, and system adjustments (ABS, TC, Brake Bias, Engine Map).',

@@ -21,7 +21,7 @@ use super::emitter::{
 };
 use super::scheduler::EmitScheduler;
 use super::state::TelemetryServiceState;
-use crate::computations::{standings, ProcessorRegistry};
+use crate::computations::{driver_entries, ProcessorRegistry};
 use crate::model::capabilities::CapabilitiesPayload;
 use crate::model::enums::{SimStatus, SimType};
 use crate::model::session::SessionSnapshot;
@@ -308,6 +308,10 @@ fn reset_telemetry_state(
         reg.reset_all();
     }
 
+    // The windows drop their frames on disconnect, so nothing held back may be
+    // treated as still delivered — the next connection republishes in full.
+    lock_or_recover(&service.publications).reset();
+
     app.emit(
         EVENT_STATUS,
         &SimStatus {
@@ -447,7 +451,8 @@ fn update_start_positions(
 
     // Qualify results are immutable — always safe to refresh from them.
     if !session.qualify_results.is_empty() {
-        let new_positions = standings::parse_start_positions_from_qualify(&session.qualify_results);
+        let new_positions =
+            driver_entries::parse_start_positions_from_qualify(&session.qualify_results);
         if let Ok(mut lock) = start_positions.lock() {
             *lock = new_positions;
         }
@@ -475,7 +480,7 @@ fn update_start_positions(
         .map(|s| s.results_positions.as_slice())
         .unwrap_or(&[]);
 
-    let new_positions = standings::parse_start_positions(results);
+    let new_positions = driver_entries::parse_start_positions(results);
     if !new_positions.is_empty() {
         if let Ok(mut lock) = start_positions.lock() {
             *lock = new_positions;
