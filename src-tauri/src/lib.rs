@@ -113,6 +113,7 @@ pub fn run() {
             .register::<LapDeltaFrame>()
             .register::<SimPerfFrame>()
             .register::<telemetry::emitter::TelemetryBundle>()
+            .register::<telemetry::emitter::TelemetrySlowBundle>()
             .register::<sources::source::SourceFrame>()
             .register::<WeatherForecastEntry>()
             .register::<CapabilitiesPayload>()

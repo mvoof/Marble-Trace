@@ -45,11 +45,12 @@ pub const EVENT_STATUS: &str = "sim://status";
 /// subscribe to 60 Hz telemetry it otherwise has no use for — and would hide
 /// the cost of that subscription from the very tool meant to measure it.
 pub const EVENT_SIM_PERF: &str = "sim://perf";
-/// A 1 Hz copy of `car_status` for windows that do not take the telemetry
-/// bundle. The main window drives layout auto-switching off `is_on_track`, and
-/// entering the garage a second late is fine — subscribing it to 60 Hz
-/// telemetry for one boolean is not.
-pub const EVENT_CAR_STATUS_SLOW: &str = "sim://car-status";
+/// A 4 Hz slice for windows that do not take the telemetry bundle. The main
+/// window drives layout auto-switching off `is_on_track` and the automatic pit
+/// order off the fuel calculation and the sim's own order — subscribing it to
+/// 60 Hz telemetry to read four frames at four hertz is not the way to get
+/// them.
+pub const EVENT_TELEMETRY_SLOW: &str = "sim://telemetry/slow";
 pub const EVENT_DISCONNECTED: &str = "sim://disconnected";
 pub const EVENT_REFERENCE_LAP_UPDATED: &str = "sim://reference-lap/updated";
 
@@ -108,6 +109,24 @@ pub struct TelemetryBundle {
     pub pit_target_type: Option<crate::model::enums::PitTargetType>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pit_lane_progress_pct: Option<f32>,
+}
+
+/// The 4 Hz slice a window that does not draw widgets still needs.
+///
+/// The main window is off the bundle (see `SimStore.subscribeBundle`), but it
+/// still owns the hotkey runner and the automatic pit order, and both of those
+/// decide off these four frames: the fuel calculation, what the sim has on the
+/// order, where the car is on pit road, and the lap it is on. Sending them on
+/// their own event keeps main at 4 Hz instead of 60 while leaving it able to
+/// answer a key press.
+#[derive(Debug, serde::Serialize, Clone)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+pub struct TelemetrySlowBundle {
+    pub car_status: CarStatusFrame,
+    pub lap_timing: LapTimingFrame,
+    pub pit_service: PitServiceFrame,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fuel: Option<fuel::FuelComputedFrame>,
 }
 
 pub fn emit_domain_frames(ctx: EmitContext<'_>) {
@@ -300,6 +319,20 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
         bundle.car_status = Some(frame.car_status.clone());
         bundle.pit_service = Some(frame.pit_service.clone());
 
+        // Built from the bundle's own frames, so a window off the bundle reads
+        // exactly what the overlay reads rather than a second calculation of
+        // it. Sent before the gating below, which only concerns the bundle.
+        let slow = TelemetrySlowBundle {
+            car_status: frame.car_status.clone(),
+            lap_timing: frame.lap_timing.clone(),
+            pit_service: frame.pit_service.clone(),
+            fuel: bundle.fuel.clone(),
+        };
+
+        if let Err(e) = app.emit(EVENT_TELEMETRY_SLOW, &slow) {
+            warn!("Failed to emit slow telemetry bundle: {}", e);
+        }
+
         // The inspector pulls this over a command instead of subscribing, so the
         // settings window never takes the bundle. Nothing is written — not even
         // the clone — while its panel is closed.
@@ -314,10 +347,6 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
 
         if let Err(e) = app.emit(EVENT_SIM_PERF, &frame.sim_perf) {
             warn!("Failed to emit sim perf: {}", e);
-        }
-
-        if let Err(e) = app.emit(EVENT_CAR_STATUS_SLOW, &frame.car_status) {
-            warn!("Failed to emit slow car status: {}", e);
         }
     }
 

@@ -31,7 +31,7 @@ import type {
   ReferenceLapData,
   TrackCondition,
   SimPerfFrame,
-  CarStatusFrame,
+  TelemetrySlowBundle,
 } from '@/types/bindings';
 import { applyTelemetryBundle } from '@store/sim/apply-bundle';
 import { debug } from '@store/sim/debug';
@@ -52,7 +52,7 @@ import {
   SIM_WEATHER,
   SIM_STATUS,
   SIM_PERF,
-  SIM_CAR_STATUS_SLOW,
+  SIM_TELEMETRY_SLOW,
   SIM_DISCONNECTED,
   SIM_TRACK_SHAPE,
   SIM_CAPABILITIES,
@@ -417,20 +417,7 @@ export class SimStore {
       })
     );
 
-    // 1 Hz and tiny, and the only thing the main window needs from the sim's
-    // own counters — cheap enough to hold in every window unconditionally.
-    // Windows without the bundle still need a few live signals: the main
-    // window switches layouts on `is_on_track`. One owner, two transports —
-    // the same setter the bundle path calls, so nothing writes it twice.
-    if (!drawsWidgets()) {
-      this.unlistens.push(
-        await listenTo<CarStatusFrame>(SIM_CAR_STATUS_SLOW, (event) => {
-          if (this.initId !== guardId) return;
-
-          runInAction(() => this.root.player.updateCarStatus(event.payload));
-        })
-      );
-    }
+    await this.subscribeSlowBundle(guardId);
 
     this.unlistens.push(
       await listenTo<SimPerfFrame>(SIM_PERF, (event) => {
@@ -534,6 +521,46 @@ export class SimStore {
         applyTelemetryBundle(this.root, event.payload, () =>
           this.onFrameReceived()
         );
+      })
+    );
+  }
+
+  /**
+   * Subscribes a window that is off the bundle to the 4 Hz slice instead.
+   *
+   * Not drawing widgets is not the same as needing no telemetry: the main
+   * window runs the hotkey runner and the automatic pit order, and both decide
+   * off the sim rather than off settings — the fuel calculation, what the sim
+   * has on the order, where the car is on pit road — while layout
+   * auto-switching reads `is_on_track`. Without these it answers a key press
+   * with an order that silently leaves the fuel out.
+   *
+   * Four flat frames at 4 Hz, no per-car arrays: on the order of one percent of
+   * what the bundle costs, so the point of staying off the bundle survives.
+   *
+   * One owner, two transports — these call the same setters the bundle path
+   * calls, and only one of the two is ever subscribed, so nothing writes twice.
+   */
+  private async subscribeSlowBundle(guardId: number) {
+    if (drawsWidgets()) {
+      return;
+    }
+
+    this.unlistens.push(
+      await listenTo<TelemetrySlowBundle>(SIM_TELEMETRY_SLOW, (event) => {
+        if (this.initId !== guardId) return;
+
+        const slow = event.payload;
+
+        runInAction(() => {
+          this.root.player.updateCarStatus(slow.car_status);
+          this.root.player.updateLapTiming(slow.lap_timing);
+          this.root.player.updatePitService(slow.pit_service);
+
+          if (slow.fuel) {
+            this.root.backendComputed.updateFuel(slow.fuel);
+          }
+        });
       })
     );
   }
