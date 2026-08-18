@@ -50,6 +50,11 @@ pub struct TelemetryServiceState {
     pub track_length_m: Mutex<Option<f32>>,
     pub pit_in_pct: Mutex<Option<f32>>,
     pub pit_exit_pct: Mutex<Option<f32>>,
+    /// Lap distance where the player's `on_pit_road` last went true, cleared on
+    /// the way out. The recorded `pit_in_pct` says how long the lane is; this
+    /// says where this particular entry began, which is what the pit approach
+    /// rail counts from.
+    pub live_pit_in_pct: Mutex<Option<f32>>,
     /// Bitmask of active high-frequency events to emit.
     pub active_events: AtomicU32,
     /// The telemetry inspector in the settings window is open. While this is

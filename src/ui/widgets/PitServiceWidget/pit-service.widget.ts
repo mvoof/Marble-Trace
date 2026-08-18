@@ -5,6 +5,7 @@ import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import { PitAutoService } from '@ui/widgets/PitServiceWidget/pit-auto-service';
 import { PitOrder } from '@ui/widgets/PitServiceWidget/pit-order';
 import { PitPanelState } from '@ui/widgets/PitServiceWidget/pit-panel';
+import { distanceToPitEntryM } from '@ui/widgets/PitServiceWidget/pit-approach';
 
 /**
  * The widget's entry point, and the three things it is made of:
@@ -80,6 +81,44 @@ export class PitServiceWidgetStore {
 
   get isOnPitRoad(): boolean {
     return this.root.player.carStatus?.on_pit_road ?? false;
+  }
+
+  /**
+   * Meters to the pit entry line, or null off a recorded lane. Counts the whole
+   * lap ahead, so it is only a statement about approaching the pits together
+   * with the reveal distance below.
+   */
+  get distToPitEntryM(): number | null {
+    if (this.isOnPitRoad) {
+      return null;
+    }
+
+    return distanceToPitEntryM(
+      this.root.player.lapTiming?.lap_dist_pct,
+      this.root.trackMapWidget.trackShape?.pitInPct,
+      this.root.session.sessionInfo?.trackLengthM
+    );
+  }
+
+  /**
+   * The car is close enough to the pit entry that the box is worth showing.
+   *
+   * Distance is the only honest signal — the sim reports nothing about
+   * intention — so it is deliberately a short window: the order still has to be
+   * changeable before the entry, but a lap of the box hanging over the track
+   * because the pit entry happens to be round the next corner is worse than not
+   * showing it at all. Zero switches it off.
+   */
+  get isApproachingPit(): boolean {
+    const revealM = this.settings.revealOnApproachM;
+
+    if (revealM <= 0) {
+      return false;
+    }
+
+    const distM = this.distToPitEntryM;
+
+    return distM !== null && distM <= revealM;
   }
 
   get isInPitStall(): boolean {

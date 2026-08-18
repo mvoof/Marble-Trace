@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { ServiceHeader } from './ServiceHeader/ServiceHeader';
 import { PitSpeedPlate } from './PitSpeedPlate/PitSpeedPlate';
+import { PitApproachRail } from './PitApproachRail/PitApproachRail';
 import { FuelOrder } from './FuelOrder/FuelOrder';
 import { OrderHint } from './OrderHint/OrderHint';
 import { RepairRow } from './RepairRow/RepairRow';
@@ -24,6 +25,11 @@ export const PitServiceWidget = observer(() => {
 
   const {
     showPitSpeed,
+    showPitApproach,
+    pitApproachPlacement,
+    pitApproachSide,
+    pitApproachCueDistM,
+    showPitBrakeCue,
     showFuel,
     showTires,
     showRepairs,
@@ -36,8 +42,22 @@ export const PitServiceWidget = observer(() => {
   // dark plate on track.
   useWidgetAutoHide(alwaysVisible || pitService.panel.isVisible);
 
+  const rail = showPitApproach ? (
+    <PitApproachRail
+      placement={pitApproachPlacement}
+      side={pitApproachSide}
+      cueDistM={pitApproachCueDistM}
+      withBrakeCue={showPitBrakeCue}
+    />
+  ) : null;
+
+  const isSideRail = pitApproachPlacement === 'side';
+
   return (
-    <WidgetPanel direction="column" gap={0}>
+    // A side rail turns the panel into a row: the stack keeps its own width and
+    // the rail hangs against the edge, which is why the manifest widens
+    // designWidth by the rail instead of letting it eat into the columns.
+    <WidgetPanel direction={isSideRail ? 'row' : 'column'} gap={0}>
       <div className={styles.stack}>
         <ServiceHeader />
 
@@ -49,6 +69,8 @@ export const PitServiceWidget = observer(() => {
         */}
         {pitService.isTowing ? <TowRow /> : showPitSpeed && <PitSpeedPlate />}
 
+        {!isSideRail && rail}
+
         {showFuel && <FuelOrder />}
 
         <OrderHint />
@@ -59,6 +81,8 @@ export const PitServiceWidget = observer(() => {
 
         {showFooter && <ServiceFooter />}
       </div>
+
+      {isSideRail && rail}
     </WidgetPanel>
   );
 });

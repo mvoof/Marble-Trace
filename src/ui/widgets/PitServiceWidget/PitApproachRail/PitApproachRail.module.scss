@@ -1,0 +1,188 @@
+// The rail carries its urgency through one variable so the readout, the fill
+// and the car marker never disagree about how close the box is.
+.rail {
+  --rail-accent: #{$race-neutral};
+
+  position: relative;
+  display: flex;
+  background: $widget-surface-cell;
+  border-radius: radius(md);
+  font-family: $font-widget;
+  overflow: hidden;
+}
+
+.railInline {
+  flex-direction: column;
+  align-items: stretch;
+  gap: sp(xxs);
+  padding: sp(xxs) sp(xs) sp(xs);
+}
+
+.railVertical {
+  flex-direction: column;
+  align-items: center;
+  gap: sp(xs);
+  width: ws(52);
+  padding: sp(xs) sp(xxs);
+  margin-left: sp(xs);
+}
+
+.railLeft {
+  margin-left: 0;
+  margin-right: sp(xs);
+  order: -1;
+}
+
+.railIdle {
+  --rail-accent: #{$widget-label};
+}
+
+.urgencynear {
+  --rail-accent: #{$race-amber};
+}
+
+.urgencybrake {
+  --rail-accent: #{$race-red};
+
+  animation: railPulse 0.4s steps(2, end) infinite;
+}
+
+.urgencyarrived {
+  --rail-accent: #{$race-green};
+}
+
+@keyframes railPulse {
+  0% {
+    background: $widget-surface-cell;
+  }
+
+  100% {
+    background: rgba($race-red, 0.22);
+  }
+}
+
+.readout {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: sp(xxs);
+
+  .railVertical & {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+}
+
+.value {
+  font-family: $font-mono;
+  font-size: fs(xxl);
+  line-height: 0.9;
+  color: var(--rail-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  font-size: fs(xxxs);
+  letter-spacing: 0.08em;
+  color: $widget-label;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+// The lane itself: entry at the start, exit at the end, the stall painted where
+// it actually is rather than at the middle of a generic bar.
+.track {
+  position: relative;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: radius(sm);
+  overflow: hidden;
+
+  .railInline & {
+    height: ws(10);
+    width: 100%;
+  }
+
+  .railVertical & {
+    flex: 1 1 0;
+    min-height: ws(80);
+    width: ws(10);
+  }
+}
+
+.fill {
+  position: absolute;
+  background: rgba($race-blue, 0.35);
+
+  .railInline & {
+    top: 0;
+    bottom: 0;
+  }
+
+  .railVertical & {
+    left: 0;
+    right: 0;
+  }
+}
+
+.boxZone {
+  position: absolute;
+  background: rgba($race-green, 0.45);
+  box-shadow: 0 0 0 1px rgba($race-green, 0.7) inset;
+
+  .railInline & {
+    top: 0;
+    bottom: 0;
+  }
+
+  .railVertical & {
+    left: 0;
+    right: 0;
+  }
+}
+
+// Where braking has to start to roll to a stop in the stall.
+.brakeMarker {
+  position: absolute;
+  background: $race-red;
+
+  .railInline & {
+    top: 0;
+    bottom: 0;
+    width: 2px;
+  }
+
+  .railVertical & {
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+}
+
+.carMarker {
+  position: absolute;
+  background: $widget-text-primary;
+
+  .railInline & {
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    transform: translateX(-1px);
+  }
+
+  .railVertical & {
+    left: 0;
+    right: 0;
+    height: 2px;
+    transform: translateY(1px);
+  }
+}
+
+.ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: fs(xxxs);
+  letter-spacing: 0.1em;
+  color: $widget-label;
+  font-weight: 600;
+}

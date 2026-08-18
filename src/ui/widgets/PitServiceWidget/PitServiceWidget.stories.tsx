@@ -1,7 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { CarEntry, ChassisFrame, PitServiceFrame } from '@/types/bindings';
-import type { PitServiceWidgetSettings } from '@/types/widget-settings';
+import type {
+  CarEntry,
+  ChassisFrame,
+  PitServiceFrame,
+  TrackShapePayload,
+} from '@/types/bindings';
+import type {
+  PitApproachPlacement,
+  PitServiceWidgetSettings,
+} from '@/types/widget-settings';
 import { PitServiceWidget } from './PitServiceWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
@@ -18,9 +26,28 @@ interface StoryArgs {
   changeFronts: boolean;
   changeRears: boolean;
   showFooter: boolean;
+  distToBoxM: number;
+  approachPlacement: PitApproachPlacement;
 }
 
 const STORY_FIELD_SIZE = 24;
+
+// A 4 km track whose pit lane runs from 2% to 12% of the lap with the stall two
+// thirds of the way down it — enough for the rail to have a real box patch.
+const STORY_TRACK_LENGTH_M = 4000;
+const STORY_PIT_IN_PCT = 0.02;
+const STORY_PIT_EXIT_PCT = 0.12;
+const STORY_PIT_BOX_PCT = 0.09;
+const STORY_LANE_LENGTH_M =
+  (STORY_PIT_EXIT_PCT - STORY_PIT_IN_PCT) * STORY_TRACK_LENGTH_M;
+
+const STORY_TRACK_SHAPE = {
+  trackId: 1,
+  svgPath: '',
+  viewBox: '0 0 100 100',
+  pitInPct: STORY_PIT_IN_PCT,
+  pitExitPct: STORY_PIT_EXIT_PCT,
+} as unknown as TrackShapePayload;
 
 const STORY_FIELD = Array.from(
   { length: STORY_FIELD_SIZE },
@@ -113,6 +140,20 @@ const meta: Meta<StoryArgs> = {
         player_car_position: 7,
       } as Parameters<typeof store.player.updateLapTiming>[0]);
 
+      store.trackMapWidget.onTrackShapeReceived(STORY_TRACK_SHAPE);
+
+      // The rail reads the lane the same way the overlay does: progress along
+      // the lane, not a bar filled to match the distance.
+      const boxLanePct =
+        (STORY_PIT_BOX_PCT - STORY_PIT_IN_PCT) /
+        (STORY_PIT_EXIT_PCT - STORY_PIT_IN_PCT);
+
+      store.player.updatePitTarget(
+        args.distToBoxM,
+        'pitbox',
+        Math.max(boxLanePct - args.distToBoxM / STORY_LANE_LENGTH_M, 0)
+      );
+
       store.player.updateChassis(buildChassis());
       store.player.updatePitService(buildPitService(args));
 
@@ -120,6 +161,8 @@ const meta: Meta<StoryArgs> = {
       // size reads it — a seed without it throws where the sim never would.
       store.session.updateSessionInfo({
         trackPitSpeedLimit: args.pitLimit,
+        trackLengthM: STORY_TRACK_LENGTH_M,
+        driverPitTrkPct: STORY_PIT_BOX_PCT,
         cars: STORY_FIELD,
       } as Parameters<typeof store.session.updateSessionInfo>[0]);
 
@@ -132,6 +175,8 @@ const meta: Meta<StoryArgs> = {
           'pit-service'
         ),
         showFooter: args.showFooter,
+        showPitApproach: true,
+        pitApproachPlacement: args.approachPlacement,
         alwaysVisible: true,
       });
     },
@@ -148,9 +193,16 @@ const meta: Meta<StoryArgs> = {
       changeFronts: true,
       changeRears: true,
       showFooter: true,
+      distToBoxM: 180,
+      approachPlacement: 'inline',
     },
     argTypes: {
       speedMs: { control: { type: 'range', min: 0, max: 30, step: 0.5 } },
+      distToBoxM: { control: { type: 'range', min: 0, max: 350, step: 5 } },
+      approachPlacement: {
+        control: { type: 'inline-radio' },
+        options: ['inline', 'side'],
+      },
     },
   }),
 };
@@ -184,4 +236,16 @@ export const Towing: Story = {
 
 export const FooterOff: Story = {
   args: { showFooter: false },
+};
+
+export const ApproachingBox: Story = {
+  args: { distToBoxM: 60, speedMs: 18 },
+};
+
+export const BrakeForBox: Story = {
+  args: { distToBoxM: 30, speedMs: 18 },
+};
+
+export const ApproachSideRail: Story = {
+  args: { approachPlacement: 'side', distToBoxM: 90 },
 };
