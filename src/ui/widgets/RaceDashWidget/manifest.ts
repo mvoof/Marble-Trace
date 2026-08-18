@@ -6,6 +6,7 @@ import {
 
 export const RACE_DASH_MANIFEST: WidgetManifest = {
   id: 'race-dash',
+  telemetryEvents: ['carDynamics'],
   label: 'Race Dash',
   description:
     'Cockpit cluster: gear ring, speed readout with lap/position/RPM, and pit-lane mode.',

@@ -40,6 +40,11 @@ import {
   trackConditionForWetness,
 } from '@store/sim/track-condition';
 import type { TelemetryStatus } from '@/types';
+import {
+  telemetryEventsToMask,
+  type TelemetryEventName,
+} from '@/types/telemetry-events';
+import { WIDGET_BY_ID } from '@store/widget-catalog';
 import type { RootStore } from '@store/root-store';
 import {
   SIM_TELEMETRY_BUNDLE,
@@ -54,11 +59,6 @@ import {
   SIM_REFERENCE_LAP_UPDATED,
   TRACK_MAP_CLEAR,
 } from '@platform/sync/sim-events';
-
-const EVENT_CAR_DYNAMICS = 1 << 0;
-const EVENT_CAR_INPUTS = 1 << 1;
-const EVENT_LAP_DELTA = 1 << 2;
-const EVENT_CAR_POSITIONS = 1 << 3;
 
 /**
  * True in the overlay windows, which are the only ones that render widgets and
@@ -192,43 +192,36 @@ export class SimStore {
     this.root.referenceLap.reset();
   }
 
+  /**
+   * Rebuilds the mask of high-frequency bundle fields the backend has to fill.
+   *
+   * The answer comes from the manifests: every enabled widget of the active
+   * layout contributes its own `telemetryEvents`, so a widget declares its
+   * appetite next to itself and nothing here has to be kept in step with it.
+   * Hiding everything asks for nothing at all.
+   */
   private updateActiveEvents() {
-    const widgets = this.root.widgetSettings.allWidgets;
     const hideAll = this.root.appSettings.appSettings.hideAllWidgets;
 
-    let mask = 0;
+    if (hideAll) {
+      setActiveEventsSilent(0);
 
-    if (!hideAll) {
-      const isEnabled = (id: string) =>
-        widgets.find((w) => w.id === id)?.userSettings.enabled ?? false;
+      return;
+    }
 
-      if (
-        isEnabled('g-meter') ||
-        isEnabled('weather') ||
-        isEnabled('track-map') ||
-        isEnabled('race-dash')
-      ) {
-        mask |= EVENT_CAR_DYNAMICS;
-      }
+    const requested = new Set<TelemetryEventName>();
 
-      if (isEnabled('input-trace') || isEnabled('race-dash')) {
-        mask |= EVENT_CAR_INPUTS;
-      }
+    for (const widget of this.root.widgetSettings.allWidgets) {
+      if (!widget.userSettings.enabled) continue;
 
-      if (isEnabled('delta')) {
-        mask |= EVENT_LAP_DELTA;
-      }
+      const manifest = WIDGET_BY_ID.get(widget.id);
 
-      if (
-        isEnabled('track-map') ||
-        isEnabled('relative-map') ||
-        isEnabled('relative')
-      ) {
-        mask |= EVENT_CAR_POSITIONS;
+      for (const event of manifest?.telemetryEvents ?? []) {
+        requested.add(event);
       }
     }
 
-    setActiveEventsSilent(mask);
+    setActiveEventsSilent(telemetryEventsToMask(requested));
   }
 
   async startStream() {

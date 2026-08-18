@@ -386,6 +386,50 @@ The emitter also handles side-channel work that is not part of the periodic
 bundle: saving a discovered track shape, persisting a reference lap, and patching
 pit lane percentages once they become known (which re-emits the track shape).
 
+### Demand gating on the 60 Hz tier
+
+Being due is necessary but not sufficient: the four 60 Hz fields are filled only
+while some widget actually wants them. Each widget names what it reads in its own
+`manifest.ts`:
+
+```ts
+export const G_METER_MANIFEST: WidgetManifest = {
+  id: 'g-meter',
+  telemetryEvents: ['carDynamics'],
+  ...
+};
+```
+
+`SimStore.updateActiveEvents` unions the declarations of the enabled widgets in
+the active layout and sends the result to `set_active_events` as a bitmask;
+`emitter.rs` reads it and leaves an unrequested field out of the bundle. The
+names and their bit values live in `src/types/telemetry-events.ts` and mirror
+`telemetry/state.rs`.
+
+```mermaid
+flowchart LR
+    M["manifests<br/><i>telemetryEvents</i>"] --> U["SimStore<br/>union of enabled widgets"]
+    U -->|"set_active_events(mask)"| S["TelemetryServiceState<br/><i>active_events</i>"]
+    S --> E["emitter: fill or skip"]
+```
+
+> [!IMPORTANT]
+> **The mask gates publication, not computation.** Every processor that carries
+> state — fuel, lap log, pit stops, standings, the reference lap — runs on every
+> tick regardless, so a widget enabled mid-race finds its history intact. Only a
+> field that is a pure snapshot of the current tick may be skipped at the source,
+> which is why the mask covers the raw 60 Hz frames and `lap_delta` (whose state
+> is owned by the reference-lap processor, not by the delta itself).
+>
+> What is saved is everything downstream of the computation: the serialization,
+> the IPC hop into _each_ window and remote screen, the parse, and the store
+> write. For a 60 Hz frame that is the entire cost.
+
+A widget reading a gated field without declaring it renders empty; one declaring
+a field it does not read makes every other window pay for the traffic. The
+declaration therefore lives next to the widget, not in a list somewhere else —
+a list is what drifts.
+
 ## `input/`, `chat/` and the command surface
 
 | Module              | Role                                                                                           |
@@ -1190,6 +1234,7 @@ flowchart TB
 | Technique                                        | Where                                                | The failure it prevents                                                                                                                 |
 | ------------------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Rate tiers                                       | `telemetry/scheduler.rs`                             | sending standings 60 times a second when it changes 10 times                                                                            |
+| Demand gating (`telemetryEvents`)                | widget manifests → `telemetry/emitter.rs`            | serializing and parsing a 60 Hz frame in every window when no widget on screen reads it                                                 |
 | `observable.ref` on frame buffers                | `store/data/cars.store.ts`, `computed.store.ts`      | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
 | Split computeds                                  | `store/data/computed.store.ts` and the widget stores | one changed field invalidating an unrelated derived value                                                                               |
 | `observer()` on every component                  | all of `ui/`                                         | a parent re-render cascading into leaves that did not change                                                                            |

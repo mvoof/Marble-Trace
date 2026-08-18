@@ -67,9 +67,15 @@ export const WIDGET_BY_ID = new Map(
   WIDGETS.map((manifest) => [manifest.id, manifest])
 );
 
-// `resolveLayoutChange` is a function, so it cannot survive a round trip
-// through settings.json — the saved copy holds data only.
-const NON_SERIALIZABLE_WIDGET_KEYS = new Set(['resolveLayoutChange']);
+// Keys the saved copy must not carry. `resolveLayoutChange` is a function and
+// could not survive the round trip through settings.json anyway;
+// `telemetryEvents` could, and that is exactly the problem — it is what this
+// build's widget reads, not a user choice, and a stale copy on disk would
+// outlive the widget that declared it.
+const NON_SERIALIZABLE_WIDGET_KEYS = new Set([
+  'resolveLayoutChange',
+  'telemetryEvents',
+]);
 
 export const DEFAULT_WIDGETS: WidgetDefaultConfig[] = WIDGETS.map(
   (manifest) => {

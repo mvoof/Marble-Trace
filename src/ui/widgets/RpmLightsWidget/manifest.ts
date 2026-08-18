@@ -6,6 +6,7 @@ import {
 
 export const RPM_LIGHTS_MANIFEST: WidgetManifest = {
   id: 'rpm-lights',
+  telemetryEvents: ['carDynamics'],
   label: 'RPM Lights',
   description:
     'Standalone shift-light LED bar driven by engine RPM, with pit-limiter animations.',

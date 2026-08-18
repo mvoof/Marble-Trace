@@ -6,6 +6,7 @@ import {
 
 export const WEATHER_MANIFEST: WidgetManifest = {
   id: 'weather',
+  telemetryEvents: ['carDynamics'],
   label: 'Weather',
   description: 'Track conditions and wind information.',
   autoHeight: true,

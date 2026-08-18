@@ -63,10 +63,22 @@ pub struct TelemetryServiceState {
 }
 
 /// Bitmask flags for high-frequency events.
+///
+/// The frontend composes the mask from the `telemetryEvents` each widget
+/// manifest declares; the names and these same bit values are mirrored in
+/// `src/types/telemetry-events.ts`, and the two halves have to be changed
+/// together.
 pub const EVENT_CAR_DYNAMICS: u32 = 1 << 0;
 pub const EVENT_CAR_INPUTS: u32 = 1 << 1;
 pub const EVENT_LAP_DELTA: u32 = 1 << 2;
 pub const EVENT_CAR_POSITIONS: u32 = 1 << 3;
+/// The heavy per-car frames. They are computed on every due tick no matter what
+/// — their processors carry state — but a frame nobody reads is left out of the
+/// bundle rather than serialized, shipped to every window and remote screen,
+/// parsed there and written into a store.
+pub const EVENT_STANDINGS: u32 = 1 << 4;
+pub const EVENT_RELATIVE: u32 = 1 << 5;
+pub const EVENT_PROXIMITY: u32 = 1 << 6;
 
 /// Compose domain-specific states.
 pub struct TelemetryState {

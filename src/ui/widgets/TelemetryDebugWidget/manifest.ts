@@ -6,6 +6,7 @@ import {
 
 export const EXAMPLE_MANIFEST: WidgetManifest = {
   id: 'example',
+  telemetryEvents: ['carDynamics', 'carInputs'],
   label: 'Telemetry Debug',
   description: 'Raw telemetry data debugger.',
   requiredCapabilities: ['playerDynamics'],

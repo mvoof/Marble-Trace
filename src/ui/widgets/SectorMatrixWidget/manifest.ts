@@ -6,6 +6,7 @@ import {
 
 export const SECTOR_MATRIX_MANIFEST: WidgetManifest = {
   id: 'sector-matrix',
+  telemetryEvents: ['lapDelta'],
   label: 'Sector Matrix',
   description:
     'Sector-by-sector timing with progress bar, live delta per sector, LAST and BEST.',

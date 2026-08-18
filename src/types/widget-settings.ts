@@ -1,5 +1,6 @@
 import type React from 'react';
 import type { CapabilitiesPayload } from '@/types/bindings';
+import type { TelemetryEventName } from '@/types/telemetry-events';
 
 type RpmColorTheme = 'custom' | 'gradient' | 'classic';
 export type LedShape = 'square' | 'circle' | 'parallelogram';
@@ -569,6 +570,16 @@ export type ResolveLayoutChange = (
 export interface WidgetManifest extends WidgetMeta {
   userSettings: WidgetUserSettings;
   resolveLayoutChange?: ResolveLayoutChange;
+  /**
+   * High-frequency bundle fields this widget reads. The backend fills them only
+   * while some enabled widget of the active layout asks for them — declaring
+   * nothing means the widget lives on the fields that are always sent.
+   *
+   * Get this wrong in the omitting direction and the widget renders stale or
+   * empty; in the adding direction it costs everyone else the traffic. Both are
+   * why it belongs here rather than in a list somewhere else.
+   */
+  telemetryEvents?: TelemetryEventName[];
 }
 
 export interface WidgetConfig extends WidgetManifest {
