@@ -142,7 +142,9 @@ full.
 
 - **main** — the settings application: layout editor, widget settings panels, key
   bindings, Twitch connection. Ant Design. Owns persistence, the hotkey runner and
-  overlay window management.
+  overlay window management. Renders no widgets, so it is **off the telemetry
+  bundle** and takes [the slow slice](#the-slow-slice) instead — enough to decide
+  what a hotkey does, not enough to draw anything.
 - **overlay** — transparent, always on top, click-through except where a widget is
   interactive. Renders _every_ widget through a single `OverlayCanvas`; there is no
   window-per-widget. One overlay window per monitor, labelled by monitor name.
@@ -385,6 +387,42 @@ flowchart LR
 The emitter also handles side-channel work that is not part of the periodic
 bundle: saving a discovered track shape, persisting a reference lap, and patching
 pit lane percentages once they become known (which re-emits the track shape).
+
+### The slow slice
+
+Tauri delivers an event only to webviews that hold a listener for it, so a window
+which never subscribes to the bundle pays nothing at all: no IPC, no parse, no
+store write. Only windows that draw widgets subscribe — `SimStore.subscribeBundle`
+gates on the `overlay` hash — which leaves the main window off 60 bundles a second
+it would render nothing from.
+
+Not rendering is not the same as not deciding. The main window owns the hotkey
+runner and the automatic pit order, and both decide off the sim rather than off
+settings: the fuel calculation, what the sim currently has on the order, whether
+the car is on pit road. Layout auto-switching reads `is_on_track` from the same
+place. `sim://telemetry/slow` carries exactly that and nothing else.
+
+| Field         | Read by                                                          |
+| ------------- | ---------------------------------------------------------------- |
+| `car_status`  | layout auto-switching (`is_on_track`), the fuel level            |
+| `lap_timing`  | the lap an action is deciding on                                 |
+| `pit_service` | what the sim has on the order — pit road, the box, the armed set |
+| `fuel`        | the refuel calculation every pit action sends                    |
+
+Four flat frames at 4 Hz, no per-car arrays: on the order of one percent of what
+the bundle costs, so the point of staying off the bundle survives. They are built
+from the bundle's own frames rather than recomputed, so main and the overlay can
+never disagree about what was ordered.
+
+> [!WARNING]
+> **An action in `ACTIONS` may read only what the slow slice carries.** There is
+> nothing in the type system to stop one reading a frame that main does not have,
+> and the failure is silent in the worst way: the key registers, the widget
+> reports the order as sent, and the field is quietly missing from it. That is
+> precisely how the pit order lost its fuel when the main window was first taken
+> off the bundle — every pit hotkey kept working, and none of them ordered any
+> fuel. A new frame goes into the slice, in `emitter.rs` and in
+> `SimStore.subscribeSlowBundle`; it does not go back to the bundle.
 
 ### Demand gating
 
@@ -785,6 +823,10 @@ Keyboard shortcuts and controller buttons are **app-level, not per layout**.
   pressed state.
 - **The runner lives in the main window only.** Overlays are reached through
   `emitToOverlays` inside an action's `run`.
+- **An action reads telemetry only from the slow slice.** The main window is off
+  the bundle, so `car_status`, `lap_timing`, `pit_service` and `fuel` are all it
+  has — see [The slow slice](#the-slow-slice). Anything else reads `null` there
+  and the action silently does half its job.
 - Conflicts (one key on two actions) are allowed and only warned about.
 
 ## `ui/` — everything that renders
@@ -1113,19 +1155,21 @@ expecting anything back — a fire-and-forget command, not an event.
 Names are constants in `platform/sync/sim-events.ts`; handlers are wired in
 `platform/sync/listeners.ts`.
 
-| Event                                                    | Emitted by                  | Rate                          | Lands in                            |
-| -------------------------------------------------------- | --------------------------- | ----------------------------- | ----------------------------------- |
-| `sim://telemetry/bundle`                                 | `telemetry/emitter.rs`      | every tick, tiered            | the `data/` stores                  |
-| `sim://session`                                          | session polling             | on change                     | `session.store.ts`                  |
-| `sim://weather`                                          | weather decoding            | async                         | `environment.store.ts`              |
-| `sim://status`                                           | connection lifecycle        | on change                     | `sim.store.ts`                      |
-| `sim://disconnected`                                     | connection lifecycle        | on loss                       | `sim.store.ts` — triggers `reset()` |
-| `sim://capabilities`                                     | `telemetry/capabilities.rs` | on connect                    | `sim.store.ts`                      |
-| `sim://track-shape`                                      | `telemetry/emitter.rs`      | on discovery or pit-pct patch | the track map widget store          |
-| `sim://reference-lap/updated`                            | `telemetry/emitter.rs`      | on capture                    | `reference-lap.store.ts`            |
-| `input://devices`                                        | `input/runtime.rs`          | on device change              | `device-input.store.ts`             |
-| `input://button`                                         | `input/runtime.rs`          | on press/release              | `binding-runner.ts`                 |
-| `chat://message` · `chat://presence` · `chat://deletion` | `chat/`                     | async                         | `chat.store.ts`                     |
+| Event                                                    | Emitted by                  | Rate                          | Lands in                                             |
+| -------------------------------------------------------- | --------------------------- | ----------------------------- | ---------------------------------------------------- |
+| `sim://telemetry/bundle`                                 | `telemetry/emitter.rs`      | every tick, tiered            | the `data/` stores                                   |
+| `sim://session`                                          | session polling             | on change                     | `session.store.ts`                                   |
+| `sim://weather`                                          | weather decoding            | async                         | `environment.store.ts`                               |
+| `sim://status`                                           | connection lifecycle        | on change                     | `sim.store.ts`                                       |
+| `sim://disconnected`                                     | connection lifecycle        | on loss                       | `sim.store.ts` — triggers `reset()`                  |
+| `sim://capabilities`                                     | `telemetry/capabilities.rs` | on connect                    | `sim.store.ts`                                       |
+| `sim://track-shape`                                      | `telemetry/emitter.rs`      | on discovery or pit-pct patch | the track map widget store                           |
+| `sim://reference-lap/updated`                            | `telemetry/emitter.rs`      | on capture                    | `reference-lap.store.ts`                             |
+| `sim://telemetry/slow`                                   | `telemetry/emitter.rs`      | 4 Hz                          | the `data/` stores — **windows off the bundle only** |
+| `sim://perf`                                             | `telemetry/emitter.rs`      | 1 Hz                          | `sim-perf.store.ts`                                  |
+| `input://devices`                                        | `input/runtime.rs`          | on device change              | `device-input.store.ts`                              |
+| `input://button`                                         | `input/runtime.rs`          | on press/release              | `binding-runner.ts`                                  |
+| `chat://message` · `chat://presence` · `chat://deletion` | `chat/`                     | async                         | `chat.store.ts`                                      |
 
 ### Channel ③ — main ↔ overlay
 

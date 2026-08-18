@@ -1451,6 +1451,23 @@ export type TelemetryBundle = {
   pit_lane_progress_pct?: number | null;
 };
 
+/**
+ * The 4 Hz slice a window that does not draw widgets still needs.
+ *
+ * The main window is off the bundle (see `SimStore.subscribeBundle`), but it
+ * still owns the hotkey runner and the automatic pit order, and both of those
+ * decide off these four frames: the fuel calculation, what the sim has on the
+ * order, where the car is on pit road, and the lap it is on. Sending them on
+ * their own event keeps main at 4 Hz instead of 60 while leaving it able to
+ * answer a key press.
+ */
+export type TelemetrySlowBundle = {
+  car_status: CarStatusFrame;
+  lap_timing: LapTimingFrame;
+  pit_service: PitServiceFrame;
+  fuel?: FuelComputedFrame | null;
+};
+
 export type TireCompoundEntry = { tireIndex: number; tireCompoundType: string };
 
 /**
