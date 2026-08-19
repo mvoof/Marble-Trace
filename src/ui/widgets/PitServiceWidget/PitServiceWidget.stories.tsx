@@ -41,13 +41,14 @@ const STORY_PIT_BOX_PCT = 0.09;
 const STORY_LANE_LENGTH_M =
   (STORY_PIT_EXIT_PCT - STORY_PIT_IN_PCT) * STORY_TRACK_LENGTH_M;
 
-const STORY_TRACK_SHAPE = {
+const STORY_TRACK_SHAPE: TrackShapePayload = {
   trackId: 1,
   svgPath: '',
   viewBox: '0 0 100 100',
+  points: [],
   pitInPct: STORY_PIT_IN_PCT,
   pitExitPct: STORY_PIT_EXIT_PCT,
-} as unknown as TrackShapePayload;
+};
 
 const STORY_FIELD = Array.from(
   { length: STORY_FIELD_SIZE },
