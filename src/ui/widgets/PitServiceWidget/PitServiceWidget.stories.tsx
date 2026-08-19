@@ -149,10 +149,18 @@ const meta: Meta<StoryArgs> = {
         (STORY_PIT_BOX_PCT - STORY_PIT_IN_PCT) /
         (STORY_PIT_EXIT_PCT - STORY_PIT_IN_PCT);
 
-      store.player.updatePitTarget(
+      // Further back than the entry line there is no lane left to stand on, so
+      // the control is capped there instead of showing a distance the progress
+      // below has already clamped away.
+      const distToBoxM = Math.min(
         args.distToBoxM,
+        boxLanePct * STORY_LANE_LENGTH_M
+      );
+
+      store.player.updatePitTarget(
+        distToBoxM,
         'pitbox',
-        Math.max(boxLanePct - args.distToBoxM / STORY_LANE_LENGTH_M, 0)
+        boxLanePct - distToBoxM / STORY_LANE_LENGTH_M
       );
 
       store.player.updateChassis(buildChassis());
