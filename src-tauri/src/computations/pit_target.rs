@@ -35,7 +35,7 @@ const WRAP_MARGIN_M: f32 = 10.0;
 
 /// Positive fraction of a lap from `from` to `to`, going forwards.
 fn forward_pct(from: f32, to: f32) -> f32 {
-    (to - from + 1.0) % 1.0
+    (to - from).rem_euclid(1.0)
 }
 
 /// `pit_in_pct` / `pit_exit_pct` are the recorded lane; `live_pit_in_pct` is the
