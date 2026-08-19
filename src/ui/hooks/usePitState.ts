@@ -35,6 +35,10 @@ export interface PitStateResult {
   pitSubLabel: string;
   /** Meters remaining to pit exit line. null = pit pcts not yet calibrated for this track. */
   distToExitM: number | null;
+  /** The sim reports the car on pit road. */
+  isOnPitRoad: boolean;
+  /** Meters to the pit entry line, or null on pit road / off a recorded lane. */
+  distToPitEntryM: number | null;
   /** Whether the distance counts down to pitbox or pitExit. */
   distMode: 'pitbox' | 'pitExit' | null;
   /** The distance value in meters to the current target (pitbox or pitexit). */
@@ -140,6 +144,20 @@ export const usePitState = (): PitStateResult => {
     return ((pitExitPct - pitInPct + 1) % 1) * trackLengthM;
   })();
 
+  const distToPitEntryM = (() => {
+    const lapDistPct = player.lapTiming?.lap_dist_pct;
+
+    if (onPitRoad || pitInPct === null || trackLengthM <= 0) {
+      return null;
+    }
+
+    if (lapDistPct === undefined || lapDistPct === null) {
+      return null;
+    }
+
+    return ((pitInPct - lapDistPct + 1) % 1) * trackLengthM;
+  })();
+
   const pitboxLanePct = (() => {
     if (pitInPct === null || pitExitPct === null || pitboxPct === null)
       return null;
@@ -165,6 +183,8 @@ export const usePitState = (): PitStateResult => {
     pitSubLabel,
     distToExitM:
       player.pitTargetType === 'pitExit' ? player.pitTargetDistM : null,
+    isOnPitRoad: onPitRoad,
+    distToPitEntryM,
     distMode: player.pitTargetType,
     distM: player.pitTargetDistM,
     pitLaneProgressPct: player.pitLaneProgressPct,

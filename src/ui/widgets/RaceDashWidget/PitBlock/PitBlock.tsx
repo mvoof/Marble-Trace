@@ -16,6 +16,11 @@ import styles from './PitBlock.module.scss';
 // Final stretch to the box turns the countdown green — "almost there".
 const BOX_NEAR_M = 50;
 
+// The backend resolves a target for every lap position, so out on track with
+// the limiter armed the box reads a whole lap away. The cue is only honest on
+// pit road, or on the short approach to the entry line.
+const BOX_CUE_APPROACH_M = 400;
+
 const isLimiterSafe = (pitState: PitState): boolean =>
   pitState === 'limiter-active' ||
   pitState === 'limiter-near-exit' ||
@@ -32,6 +37,8 @@ export const PitBlock = observer(() => {
     distMode,
     distM,
     nearLimitDelta,
+    isOnPitRoad,
+    distToPitEntryM,
   } = usePitState();
 
   const isSafe = isLimiterSafe(pitState);
@@ -57,7 +64,10 @@ export const PitBlock = observer(() => {
     nearLimitDelta
   );
 
-  const showBoxCue = distMode !== null && distM !== null;
+  const isApproachingEntry =
+    distToPitEntryM !== null && distToPitEntryM <= BOX_CUE_APPROACH_M;
+  const showBoxCue =
+    (isOnPitRoad || isApproachingEntry) && distMode !== null && distM !== null;
   const isNearBox = distM !== null && distM <= BOX_NEAR_M;
   const boxCueLabel = distMode === 'pitExit' ? 'Exit' : 'Box';
 
