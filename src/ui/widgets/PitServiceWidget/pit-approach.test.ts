@@ -68,6 +68,19 @@ describe('buildPitApproachView', () => {
     expect(view.brakeMarker).toBeNull();
   });
 
+  it('keeps the box patch inside the lane at either end', () => {
+    const atStart = buildPitApproachView({ ...baseInput, boxLanePct: 0 });
+    const atEnd = buildPitApproachView({ ...baseInput, boxLanePct: 1 });
+
+    for (const view of [atStart, atEnd]) {
+      expect(view.boxLeft).not.toBeNull();
+      expect(view.boxWidth).not.toBeNull();
+      expect(view.boxLeft!).toBeGreaterThanOrEqual(0);
+      expect(view.boxWidth!).toBeGreaterThan(0);
+      expect(view.boxLeft! + view.boxWidth!).toBeLessThanOrEqual(1);
+    }
+  });
+
   it('places the brake marker one braking distance before the stall', () => {
     const view = buildPitApproachView(baseInput);
     const expected =

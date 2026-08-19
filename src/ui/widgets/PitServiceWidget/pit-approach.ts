@@ -113,7 +113,7 @@ export const buildPitApproachView = (
   const isTargetExit = distMode === 'pitExit';
   const brakeDistM = pitBrakeDistanceM(speedMs);
 
-  const boxWidth =
+  const desiredBoxWidth =
     boxLanePct === null
       ? null
       : laneLengthM !== null && laneLengthM > 0
@@ -123,10 +123,21 @@ export const buildPitApproachView = (
           )
         : BOX_ZONE_MIN;
 
+  // A stall at either end of the lane would push half the patch past the rail,
+  // where CSS clips it: both edges are clamped and the width taken from them,
+  // so the patch keeps its place instead of hanging off the end.
   const boxLeft =
-    boxLanePct === null || boxWidth === null
+    boxLanePct === null || desiredBoxWidth === null
       ? null
-      : clamp01(boxLanePct - boxWidth / 2);
+      : clamp01(boxLanePct - desiredBoxWidth / 2);
+
+  const boxRight =
+    boxLanePct === null || desiredBoxWidth === null
+      ? null
+      : clamp01(boxLanePct + desiredBoxWidth / 2);
+
+  const boxWidth =
+    boxLeft === null || boxRight === null ? null : boxRight - boxLeft;
 
   const urgency: PitApproachUrgency = (() => {
     // Past the stall the rail stops nagging: the target is the exit line, and
