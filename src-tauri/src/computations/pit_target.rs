@@ -49,7 +49,14 @@ pub fn resolve_pit_target(
     pitbox_pct: Option<f32>,
     track_length_m: f32,
 ) -> Option<PitTarget> {
-    if track_length_m <= 0.0 {
+    if track_length_m <= 0.0 || !track_length_m.is_finite() {
+        return None;
+    }
+
+    // A non-finite lap position poisons every comparison below — `NaN < x` is
+    // false, so the range guards would wave it through and the bundle would
+    // carry a NaN distance, which is exactly what a payload may never hold.
+    if !lap_dist_pct.is_finite() || !pit_in_pct.is_finite() || !pit_exit_pct.is_finite() {
         return None;
     }
 
@@ -210,5 +217,25 @@ mod tests {
     fn rejects_a_lane_with_no_length_and_a_track_with_no_length() {
         assert!(resolve_pit_target(0.5, 0.9, 0.9, None, None, TRACK_M).is_none());
         assert!(resolve_pit_target(0.5, PIT_IN, PIT_EXIT, None, None, 0.0).is_none());
+    }
+
+    #[test]
+    fn rejects_non_finite_inputs_instead_of_publishing_a_nan_distance() {
+        for bad in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY] {
+            assert!(
+                resolve_pit_target(bad, PIT_IN, PIT_EXIT, None, Some(PITBOX), TRACK_M).is_none()
+            );
+            assert!(resolve_pit_target(0.95, bad, PIT_EXIT, None, Some(PITBOX), TRACK_M).is_none());
+            assert!(resolve_pit_target(0.95, PIT_IN, bad, None, Some(PITBOX), TRACK_M).is_none());
+            assert!(resolve_pit_target(0.95, PIT_IN, PIT_EXIT, None, Some(PITBOX), bad).is_none());
+        }
+    }
+
+    #[test]
+    fn a_resolved_target_is_always_finite() {
+        let target = resolve(0.95, None);
+
+        assert!(target.dist_m.is_finite());
+        assert!(target.lane_progress.is_finite());
     }
 }
