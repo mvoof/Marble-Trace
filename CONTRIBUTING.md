@@ -67,6 +67,11 @@ Before creating an issue please ensure that the problem is not [already reported
    git push --force-with-lease
    ```
 
+   > [!IMPORTANT]
+   > Never run `git pull` on your branch after a rebase. The rebase rewrote your
+   > commits, so local and remote have diverged; `pull` merges the two and brings
+   > the pre-rebase copies back as duplicates. Force-push instead.
+
 7. **Create a Pull Request**
 
 ## Commit messages
