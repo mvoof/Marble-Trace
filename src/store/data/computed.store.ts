@@ -23,6 +23,13 @@ export class BackendComputedStore {
   lapHistory: LapHistoryEntry[] = [];
   lastCompletedLap: LastCompletedLap | null = null;
 
+  /**
+   * Distinct car classes as counted by the backend and carried on the slow
+   * slice. Only windows off the bundle ever read it — one that has
+   * `driverEntries` counts them itself, below.
+   */
+  slowCarClassCount = 0;
+
   // Every telemetry frame is replaced wholesale — nothing ever mutates one in
   // place — so `observable.ref` is all the reactivity these need. Deep
   // observability would rebuild a proxy for each frame, and for the per-car
@@ -41,6 +48,21 @@ export class BackendComputedStore {
     });
   }
 
+  /**
+   * How far the standings class cycle wraps. The overlay counts the entries it
+   * already holds; the main window, which is off the bundle but owns the hotkey
+   * runner, falls back to the count the slow slice brings it.
+   */
+  get carClassCount(): number {
+    if (this.driverEntries) {
+      return new Set(
+        this.driverEntries.entries.map((entry) => entry.carClassId)
+      ).size;
+    }
+
+    return this.slowCarClassCount;
+  }
+
   get relativeEntries(): DriverEntry[] {
     return this.relative?.entries ?? [];
   }
@@ -51,6 +73,10 @@ export class BackendComputedStore {
 
   updateProximity(frame: ProximityFrame) {
     this.proximity = frame;
+  }
+
+  updateSlowCarClassCount(count: number) {
+    this.slowCarClassCount = count;
   }
 
   updateFuel(frame: FuelComputedFrame) {
@@ -83,5 +109,6 @@ export class BackendComputedStore {
     this.lapDelta = null;
     this.lapHistory = [];
     this.lastCompletedLap = null;
+    this.slowCarClassCount = 0;
   }
 }

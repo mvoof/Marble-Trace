@@ -127,6 +127,10 @@ pub struct TelemetrySlowBundle {
     pub pit_service: PitServiceFrame,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fuel: Option<fuel::FuelComputedFrame>,
+    /// Distinct car classes in the field. A count rather than the entries: the
+    /// standings class hotkeys only need to know where the cycle wraps, and the
+    /// per-car frame is exactly what main is off the bundle to avoid.
+    pub car_class_count: u32,
 }
 
 pub fn emit_domain_frames(ctx: EmitContext<'_>) {
@@ -300,6 +304,14 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
             for output in registry.run(TickRate::Hz10, ctx.capabilities, &compute_ctx) {
                 scatter_output(&mut bundle, output);
             }
+
+            // Recorded before the demand gate below, so the count survives even
+            // when no widget asks for the entries themselves.
+            if let Some(entries) = &bundle.driver_entries {
+                ctx.service
+                    .car_class_count
+                    .store(count_car_classes(entries), Ordering::Relaxed);
+            }
         }
 
         if due.hz4 {
@@ -327,6 +339,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
             lap_timing: frame.lap_timing.clone(),
             pit_service: frame.pit_service.clone(),
             fuel: bundle.fuel.clone(),
+            car_class_count: ctx.service.car_class_count.load(Ordering::Relaxed),
         };
 
         if let Err(e) = app.emit(EVENT_TELEMETRY_SLOW, &slow) {
@@ -406,6 +419,18 @@ fn quantize_bundle(bundle: &mut TelemetryBundle) {
     if let Some(frame) = bundle.proximity.as_mut() {
         quantize::proximity(frame);
     }
+}
+
+fn count_car_classes(frame: &driver_entries::DriverEntriesFrame) -> u32 {
+    let mut seen: Vec<i32> = Vec::new();
+
+    for entry in &frame.entries {
+        if !seen.contains(&entry.car_class_id) {
+            seen.push(entry.car_class_id);
+        }
+    }
+
+    seen.len() as u32
 }
 
 fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {

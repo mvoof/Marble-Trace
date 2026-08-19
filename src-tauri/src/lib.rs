@@ -318,6 +318,7 @@ pub fn run() {
                 active_events: AtomicU32::new(0xFFFFFFFF),
                 publications: Default::default(),
                 inspector_active: AtomicBool::new(false),
+                car_class_count: AtomicU32::new(0),
                 inspector_frame: Mutex::new(None),
                 car_length_m: Mutex::new(4.4),
                 track_cached: track_cached_service,

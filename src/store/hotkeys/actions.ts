@@ -52,10 +52,6 @@ const APP_ACTIONS: HotkeyAction[] = [
   },
 ];
 
-const countStandingsClasses = (
-  entries: Array<{ carClassId: number }> | undefined
-) => new Set((entries ?? []).map((entry) => entry.carClassId)).size;
-
 const STANDINGS_ACTIONS: HotkeyAction[] = [
   {
     id: 'standings:cycle-view-mode',
@@ -70,9 +66,7 @@ const STANDINGS_ACTIONS: HotkeyAction[] = [
     labelKey: 'standingsClassPrev',
     trigger: 'press',
     run: (root) =>
-      root.standingsWidget.cyclePrev(
-        countStandingsClasses(root.backendComputed.driverEntries?.entries)
-      ),
+      root.standingsWidget.cyclePrev(root.backendComputed.carClassCount),
   },
   {
     id: 'standings:class-next',
@@ -80,9 +74,7 @@ const STANDINGS_ACTIONS: HotkeyAction[] = [
     labelKey: 'standingsClassNext',
     trigger: 'press',
     run: (root) =>
-      root.standingsWidget.cycleNext(
-        countStandingsClasses(root.backendComputed.driverEntries?.entries)
-      ),
+      root.standingsWidget.cycleNext(root.backendComputed.carClassCount),
   },
   {
     id: 'standings:scroll-up',
