@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Segmented, Slider, Switch } from 'antd';
 import type {
   FuelAdjustStep,
+  PitApproachPlacement,
+  PitApproachSide,
   PitServiceWidgetSettings,
 } from '@/types/widget-settings';
 import { FUEL_ADJUST_STEPS } from '@/types/widget-settings';
@@ -16,6 +18,18 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 const WEAR_THRESHOLD_MIN_PCT = 10;
 const WEAR_THRESHOLD_MAX_PCT = 90;
 const WEAR_THRESHOLD_STEP_PCT = 5;
+
+// The countdown warns from this far out. Below 20 m the warning arrives after
+// the braking, and past 250 m every lap of the pit lane would be amber.
+const CUE_MIN_M = 20;
+const CUE_MAX_M = 250;
+const CUE_STEP_M = 10;
+
+// The pit entry countdown. Below 100 m the box arrives after the braking, and
+// past 1 km it is up for most of a lap on a short track. Zero switches it off.
+const APPROACH_MIN_M = 0;
+const APPROACH_MAX_M = 1000;
+const APPROACH_STEP_M = 50;
 
 // Zero switches the reveal off; past fifteen seconds a pit entry has usually
 // shown the panel anyway.
@@ -43,6 +57,12 @@ export const PitServiceSettingsPanel = observer(() => {
       descKey: 'settingsPanels.pitService.pitSpeedDesc',
       value: settings.showPitSpeed,
       key: 'showPitSpeed',
+    },
+    {
+      titleKey: 'settingsPanels.pitService.approach',
+      descKey: 'settingsPanels.pitService.approachDesc',
+      value: settings.showPitApproach,
+      key: 'showPitApproach',
     },
     {
       titleKey: 'settingsPanels.pitService.fuel',
@@ -87,6 +107,94 @@ export const PitServiceSettingsPanel = observer(() => {
         ))}
       </Card>
 
+      {settings.showPitApproach && (
+        <Card title={t('settingsPanels.pitService.approachCard')}>
+          <div className={styles.fieldGroup}>
+            <span className={styles.fieldLabel}>
+              {t('settingsPanels.pitService.approachPlacement')}
+            </span>
+
+            <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+              {t('settingsPanels.pitService.approachPlacementDesc')}
+            </div>
+
+            <Segmented
+              block
+              value={settings.pitApproachPlacement}
+              options={[
+                {
+                  label: t('settingsPanels.pitService.approachInline'),
+                  value: 'inline',
+                },
+                {
+                  label: t('settingsPanels.pitService.approachSide'),
+                  value: 'side',
+                },
+              ]}
+              onChange={(value) =>
+                update({ pitApproachPlacement: value as PitApproachPlacement })
+              }
+            />
+          </div>
+
+          {settings.pitApproachPlacement === 'side' && (
+            <div className={styles.fieldGroup}>
+              <span className={styles.fieldLabel}>
+                {t('settingsPanels.pitService.approachEdge')}
+              </span>
+
+              <Segmented
+                block
+                value={settings.pitApproachSide}
+                options={[
+                  {
+                    label: t('settingsPanels.pitService.approachEdgeLeft'),
+                    value: 'left',
+                  },
+                  {
+                    label: t('settingsPanels.pitService.approachEdgeRight'),
+                    value: 'right',
+                  },
+                ]}
+                onChange={(value) =>
+                  update({ pitApproachSide: value as PitApproachSide })
+                }
+              />
+            </div>
+          )}
+
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldLabel}>
+              {t('settingsPanels.pitService.approachCueDist', {
+                meters: settings.pitApproachCueDistM,
+              })}
+            </div>
+
+            <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+              {t('settingsPanels.pitService.approachCueDistDesc')}
+            </div>
+
+            <Slider
+              min={CUE_MIN_M}
+              max={CUE_MAX_M}
+              step={CUE_STEP_M}
+              value={settings.pitApproachCueDistM}
+              onChange={(value) => update({ pitApproachCueDistM: value })}
+            />
+          </div>
+
+          <SettingRow
+            title={t('settingsPanels.pitService.brakeCue')}
+            desc={t('settingsPanels.pitService.brakeCueDesc')}
+          >
+            <Switch
+              checked={settings.showPitBrakeCue}
+              onChange={(checked) => update({ showPitBrakeCue: checked })}
+            />
+          </SettingRow>
+        </Card>
+      )}
+
       <Card title={t('settingsPanels.pitService.position')}>
         <SettingRow
           title={t('settingsPanels.common.classPositionInMulticlass')}
@@ -121,6 +229,26 @@ export const PitServiceSettingsPanel = observer(() => {
             onChange={(checked) => update({ alwaysVisible: checked })}
           />
         </SettingRow>
+
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldLabel}>
+            {t('settingsPanels.pitService.revealOnApproach', {
+              meters: settings.revealOnApproachM,
+            })}
+          </div>
+
+          <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
+            {t('settingsPanels.pitService.revealOnApproachDesc')}
+          </div>
+
+          <Slider
+            min={APPROACH_MIN_M}
+            max={APPROACH_MAX_M}
+            step={APPROACH_STEP_M}
+            value={settings.revealOnApproachM}
+            onChange={(value) => update({ revealOnApproachM: value })}
+          />
+        </div>
 
         <div className={styles.fieldGroup}>
           <div className={styles.fieldLabel}>

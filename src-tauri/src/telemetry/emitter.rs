@@ -242,7 +242,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
             }
         }
 
-        // Compute real-time pit target distance and type
+        // Where the car is in the pit lane, and how far its box or the exit is.
         let lap_dist_pct = frame.lap_timing.lap_dist_pct;
         let pit_in_pct = ctx
             .service
@@ -258,45 +258,37 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
             .unwrap_or(None);
         let pitbox_pct = session.driver_pit_trk_pct;
 
+        // The entry this stint actually used: taken on the first frame the sim
+        // reports pit road, dropped on the way out. Anchoring the lane on it
+        // keeps the rail from filling the moment the car turns in, where the
+        // recorded entry point sits a few meters the other side of the car.
+        let live_pit_in_pct = {
+            let on_pit_road = frame.car_status.on_pit_road.unwrap_or(false);
+            let mut live = lock_or_recover(&ctx.service.live_pit_in_pct);
+
+            if !on_pit_road {
+                *live = None;
+            } else if live.is_none() {
+                *live = lap_dist_pct.filter(|dist| *dist >= 0.0);
+            }
+
+            *live
+        };
+
         if let (Some(lap_dist), Some(pit_in), Some(pit_exit)) =
             (lap_dist_pct, pit_in_pct, pit_exit_pct)
         {
-            if track_length > 0.0 {
-                let raw_lane_length = (pit_exit - pit_in + 1.0) % 1.0;
-                let lane_length_pct = if raw_lane_length == 0.0 {
-                    1.0
-                } else {
-                    raw_lane_length
-                };
-                let traveled_pct = (lap_dist - pit_in + 1.0) % 1.0;
-                let progress = (traveled_pct / lane_length_pct).min(1.0);
-                let dist_to_exit_m = (1.0 - progress) * lane_length_pct * track_length;
-
-                let mut target_dist = dist_to_exit_m;
-                let mut target_type = crate::model::enums::PitTargetType::PitExit;
-
-                if let Some(pitbox) = pitbox_pct {
-                    let mut dist_to_pitbox = (pitbox - lap_dist) * track_length;
-                    let half_track = track_length * 0.5;
-                    let wrap_threshold = half_track + 10.0;
-
-                    if dist_to_pitbox.abs() > wrap_threshold {
-                        if dist_to_pitbox > 0.0 {
-                            dist_to_pitbox -= track_length;
-                        } else {
-                            dist_to_pitbox += track_length;
-                        }
-                    }
-
-                    if dist_to_pitbox > -10.0 {
-                        target_dist = dist_to_pitbox.max(0.0);
-                        target_type = crate::model::enums::PitTargetType::Pitbox;
-                    }
-                }
-
-                bundle.pit_target_dist_m = Some(target_dist);
-                bundle.pit_target_type = Some(target_type);
-                bundle.pit_lane_progress_pct = Some(progress);
+            if let Some(pit_target) = crate::computations::pit_target::resolve_pit_target(
+                lap_dist,
+                pit_in,
+                pit_exit,
+                live_pit_in_pct,
+                pitbox_pct,
+                track_length,
+            ) {
+                bundle.pit_target_dist_m = Some(pit_target.dist_m);
+                bundle.pit_target_type = Some(pit_target.target);
+                bundle.pit_lane_progress_pct = Some(pit_target.lane_progress);
             }
         }
 

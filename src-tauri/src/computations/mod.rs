@@ -3,6 +3,7 @@ pub mod fuel;
 pub mod lap_delta;
 pub mod lap_log;
 pub mod pit_stops;
+pub mod pit_target;
 pub mod proximity;
 pub mod reference_lap;
 pub mod relative;

@@ -64,6 +64,7 @@ export class PitPanelState {
   get isVisible(): boolean {
     return (
       this.manualShow ||
+      this.store.isApproachingPit ||
       this.store.isOnPitRoad ||
       this.store.isTowing ||
       this.lingering ||

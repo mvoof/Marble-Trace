@@ -315,6 +315,7 @@ pub fn run() {
                 track_length_m: Mutex::new(None),
                 pit_in_pct: Mutex::new(None),
                 pit_exit_pct: Mutex::new(None),
+                live_pit_in_pct: Mutex::new(None),
                 active_events: AtomicU32::new(0xFFFFFFFF),
                 publications: Default::default(),
                 inspector_active: AtomicBool::new(false),
