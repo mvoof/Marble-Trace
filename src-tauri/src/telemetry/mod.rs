@@ -9,3 +9,11 @@ pub mod quantize;
 pub mod runtime;
 pub mod scheduler;
 pub mod state;
+
+/// The two bundles this layer assembles.
+#[cfg(feature = "dev")]
+pub fn register_types(types: &mut specta::TypeCollection) {
+    types
+        .register::<emitter::TelemetryBundle>()
+        .register::<emitter::TelemetrySlowBundle>();
+}

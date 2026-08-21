@@ -22,6 +22,7 @@ use crate::telemetry::capabilities::Capabilities;
 /// show.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct SourceFrame {
     pub car_dynamics: CarDynamicsFrame,
     pub car_inputs: CarInputsFrame,

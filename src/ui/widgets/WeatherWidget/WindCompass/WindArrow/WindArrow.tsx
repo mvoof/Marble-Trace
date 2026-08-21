@@ -22,9 +22,9 @@ export const WindArrow = observer(() => {
   const carYawDeg = carYawRad * (180 / Math.PI);
 
   const windVelMps =
-    env?.wind_vel ?? parseWeekendFloat(sessionInfo?.trackWindVel);
+    env?.windVel ?? parseWeekendFloat(sessionInfo?.trackWindVel);
   const windDirRad =
-    env?.wind_dir ?? parseWeekendFloat(sessionInfo?.trackWindDir);
+    env?.windDir ?? parseWeekendFloat(sessionInfo?.trackWindDir);
   const windBearing = windDirRad !== null ? radsToBearing(windDirRad) : 0;
   const arrowColor = getWindColor(windVelMps);
 

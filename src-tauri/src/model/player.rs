@@ -377,3 +377,20 @@ pub struct LapTimingFrame {
     pub lap_delta_to_session_optimal_lap_dd: Option<bool>,
     pub lap_delta_to_session_optimal_lap_ok: Option<bool>,
 }
+
+/// Where the car is along the pit lane, and how far the current target still is.
+///
+/// One frame rather than three loose scalars on the bundle: as a struct it can
+/// be quantized and held back when unchanged like every other per-tick frame,
+/// and the frontend writes it under a single `if` instead of on every tick
+/// whether or not the car is anywhere near the pits.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[serde(rename_all = "camelCase")]
+pub struct PitTargetFrame {
+    /// Meters to the current target.
+    pub dist_m: f32,
+    pub target: crate::model::enums::PitTargetType,
+    /// Position along the pit lane, 0..1.
+    pub lane_progress_pct: f32,
+}

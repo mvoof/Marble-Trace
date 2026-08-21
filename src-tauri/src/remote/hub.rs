@@ -14,6 +14,7 @@ use serde::Serialize;
 use tokio::sync::broadcast;
 use tracing::warn;
 
+use crate::model::events::{RemoteControlKind, RemoteStreamKind, Replayed, WireName};
 use crate::model::remote::RemoteDevice;
 use crate::utils::lock_or_recover;
 
@@ -24,34 +25,6 @@ pub const DEFAULT_TELEMETRY_HZ: u32 = 30;
 /// Bounded so a stalled socket cannot grow the queue without limit — a client
 /// that falls this far behind is dropped and reconnects.
 const CHANNEL_CAPACITY: usize = 64;
-
-/// Message kinds that are replayed to a socket the moment it connects, so a
-/// tablet joining mid-session paints immediately instead of waiting for the
-/// next 1 Hz tick.
-const REPLAYED_KINDS: [&str; 8] = [
-    "session",
-    "status",
-    "weather",
-    "capabilities",
-    "track-shape",
-    "reference-lap",
-    "chat-presence",
-    // The rotation of the track map is a per-track setting the browser cannot
-    // read for itself, so it is replayed like the shape it applies to.
-    "track-rotation",
-];
-
-/// Control messages the main window may push to the remote screens.
-///
-/// A whitelist rather than a free-form kind: the value that reaches the socket
-/// is the `&'static str` from this list, so nothing a caller passes can invent
-/// a message type of its own.
-const CONTROL_KINDS: [&str; 4] = [
-    "standings-class-index",
-    "standings-scroll",
-    "stream-chat-scroll",
-    "track-rotation",
-];
 
 #[derive(Serialize)]
 struct Envelope<'a, T: Serialize> {
@@ -181,7 +154,10 @@ impl RemoteHub {
             self.last_telemetry_us
                 .store(self.started.elapsed().as_micros() as u64, Ordering::Relaxed);
 
-            let _ = self.tx.send(Arc::new(wrap_raw("telemetry", json)));
+            let _ = self.tx.send(Arc::new(wrap_raw(
+                RemoteStreamKind::Telemetry.wire_name(),
+                json,
+            )));
 
             return;
         }
@@ -195,22 +171,25 @@ impl RemoteHub {
 
         self.last_telemetry_us.store(now_us, Ordering::Relaxed);
 
-        let _ = self.tx.send(Arc::new(wrap_raw("telemetry", json)));
+        let _ = self.tx.send(Arc::new(wrap_raw(
+            RemoteStreamKind::Telemetry.wire_name(),
+            json,
+        )));
     }
 
     /// Session, status, weather and capabilities: rare, and every one of them
     /// is replayed to a socket that connects later.
-    pub fn publish_raw_event(&self, kind: &'static str, json: &str) {
-        let replay = REPLAYED_KINDS.contains(&kind);
+    pub fn publish_raw_event(&self, kind: RemoteStreamKind, json: &str) {
+        let replay = kind.replayed();
 
         if !replay && !self.has_clients() {
             return;
         }
 
-        let encoded = Arc::new(wrap_raw(kind, json));
+        let encoded = Arc::new(wrap_raw(kind.wire_name(), json));
 
         if replay {
-            lock_or_recover(&self.replay).insert(kind, Arc::clone(&encoded));
+            lock_or_recover(&self.replay).insert(kind.wire_name(), Arc::clone(&encoded));
         }
 
         let _ = self.tx.send(encoded);
@@ -222,7 +201,11 @@ impl RemoteHub {
     pub fn publish_snapshot(&self, slug: String, snapshot: serde_json::Value) {
         lock_or_recover(&self.snapshots).insert(slug.clone(), snapshot.clone());
 
-        self.send("snapshot", SnapshotPayload { slug, snapshot }, false);
+        self.send(
+            RemoteStreamKind::Snapshot.wire_name(),
+            SnapshotPayload { slug, snapshot },
+            RemoteStreamKind::Snapshot.replayed(),
+        );
     }
 
     /// A command from the main window aimed at the widgets themselves — which
@@ -230,13 +213,13 @@ impl RemoteHub {
     /// is turned. The overlay windows get these as Tauri events, which never
     /// leave the app; a remote screen gets them here.
     pub fn publish_control(&self, kind: &str, data: serde_json::Value) {
-        let Some(kind) = CONTROL_KINDS.iter().find(|known| **known == kind) else {
+        let Some(kind) = RemoteControlKind::from_wire(kind) else {
             warn!("remote: ignoring unknown control message '{}'", kind);
 
             return;
         };
 
-        self.send(kind, data, REPLAYED_KINDS.contains(kind));
+        self.send(kind.wire_name(), data, kind.replayed());
     }
 
     pub fn snapshot_for(&self, slug: &str) -> Option<serde_json::Value> {
@@ -310,21 +293,27 @@ impl RemoteHub {
 /// Fields that arrive at 10 Hz or slower. `serde` omits the absent ones, so
 /// their presence in the encoded bundle is what marks a tick as carrying
 /// something the rate limit must not throw away.
+///
+/// These are the *wire* names, which `TelemetryBundle` renames to camelCase.
+/// A rename that missed this list would not fail anything — it would quietly
+/// make every bundle look 60 Hz-only and start throwing away the session clock
+/// along with the motion data, which is why the test below pins them to the
+/// real serialization.
 const SLOW_FIELD_KEYS: [&str; 14] = [
-    "\"car_idx\"",
+    "\"carIdx\"",
     "\"chassis\"",
-    "\"lap_timing\"",
+    "\"lapTiming\"",
     "\"proximity\"",
-    "\"driver_entries\"",
+    "\"driverEntries\"",
     "\"relative\"",
-    "\"car_status\"",
+    "\"carStatus\"",
     "\"fuel\"",
-    "\"pit_stops\"",
-    "\"pit_service\"",
+    "\"pitStops\"",
+    "\"pitService\"",
     "\"session\"",
     "\"environment\"",
-    "\"lap_log\"",
-    "\"track_recording\"",
+    "\"lapLog\"",
+    "\"trackRecording\"",
 ];
 
 /// Whether this bundle carries anything below 60 Hz.
@@ -372,7 +361,33 @@ struct SnapshotPayload {
 
 #[cfg(test)]
 mod tests {
-    use super::{carries_slow_fields, tokens_match};
+    use super::tokens_match;
+    use super::{carries_slow_fields, SLOW_FIELD_KEYS};
+
+    /// The rate limit reads these keys out of an already-encoded bundle, so
+    /// they have to be the names `serde` actually writes. A `rename_all` added
+    /// to `TelemetryBundle` without touching this list would not fail anything
+    /// — it would quietly make every bundle look 60 Hz-only and start throwing
+    /// the session clock and the fuel numbers off every remote screen.
+    #[test]
+    fn the_slow_field_keys_are_the_names_serde_writes() {
+        let bundle = crate::telemetry::emitter::TelemetryBundle {
+            environment: Some(Default::default()),
+            ..Default::default()
+        };
+
+        let encoded = serde_json::to_string(&bundle).unwrap();
+
+        assert!(encoded.contains("\"environment\""));
+        assert!(carries_slow_fields(&encoded));
+
+        for key in SLOW_FIELD_KEYS {
+            assert!(
+                !key.contains('_'),
+                "{key} is a snake_case name; the bundle is serialized camelCase"
+            );
+        }
+    }
 
     #[test]
     fn accepts_only_the_exact_token() {

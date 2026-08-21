@@ -49,12 +49,12 @@ export class DiagnosticsExportStore {
 
     const snapshot: TelemetrySnapshot = {
       capturedAt: new Date().toISOString(),
-      carDynamics: frame?.car_dynamics ?? null,
-      carIdx: frame?.car_idx ?? null,
-      carInputs: frame?.car_inputs ?? null,
-      carStatus: frame?.car_status ?? null,
+      carDynamics: frame?.carDynamics ?? null,
+      carIdx: frame?.carIdx ?? null,
+      carInputs: frame?.carInputs ?? null,
+      carStatus: frame?.carStatus ?? null,
       environment: frame?.environment ?? null,
-      lapTiming: frame?.lap_timing ?? null,
+      lapTiming: frame?.lapTiming ?? null,
       session: frame?.session ?? null,
       sessionInfo: this.root.session.sessionInfo,
     };

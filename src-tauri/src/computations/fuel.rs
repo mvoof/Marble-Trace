@@ -27,14 +27,12 @@ const OUTLIER_IQR_FACTOR: f32 = 2.0;
 /// consistent stint the IQR collapses and would start rejecting good laps.
 const OUTLIER_MEAN_TOLERANCE: f32 = 0.15;
 
-/// Laps of margin kept between the close of the pit window and a dry tank —
-/// the same one-lap cushion `fuel_to_add_with_buffer` adds to the refuel
-/// figure, so the two agree on what "with a lap in hand" means.
-const PIT_WINDOW_END_BUFFER_LAPS: f32 = 1.0;
-
-pub const DEFAULT_PIT_WARNING_LAPS: f32 = 3.0;
-/// Averaging window in laps. 0 = every recorded lap of the session.
-pub const DEFAULT_FUEL_AVG_WINDOW: usize = 0;
+/// The pit window, the refuel buffer and the widget's own "pit now" threshold
+/// all describe the same one-lap cushion, and the frontend reads it too — so it
+/// is declared once, on the contract, along with the two fuel defaults.
+pub use crate::model::defaults::{
+    DEFAULT_FUEL_AVG_WINDOW, DEFAULT_PIT_WARNING_LAPS, PIT_WINDOW_END_BUFFER_LAPS,
+};
 
 /// User-tunable fuel parameters, snapshotted once per tick.
 #[derive(Debug, Clone, Copy)]
@@ -296,6 +294,41 @@ impl FuelState {
     }
 }
 
+/// Last, average, minimum and maximum consumption over the *whole* recorded
+/// history, deliberately ignoring the user's averaging window.
+///
+/// That window already drives `avg_per_lap` and every strategy figure with it;
+/// repeating it here would make the stats row restate the summary instead of
+/// adding to it. Reading the two side by side is what tells the driver whether
+/// the current pace runs richer or leaner than the stint has averaged.
+///
+/// Rejected laps are skipped outright, so an out-lap or a lap behind the safety
+/// car cannot become MIN or MAX however far it sits from the rest.
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[serde(rename_all = "camelCase")]
+pub struct FuelHistoryStats {
+    pub last: Option<f32>,
+    pub avg: Option<f32>,
+    pub min: Option<f32>,
+    pub max: Option<f32>,
+}
+
+/// How the outstanding fuel is split across the stops left to make.
+///
+/// Splitting the total evenly would recommend an amount no real stop uses:
+/// drivers fill to the brim early and take the remainder last, so `fill_now` is
+/// capped by tank capacity rather than divided.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[serde(rename_all = "camelCase")]
+pub struct RefuelPlan {
+    /// Stops needed to take on the whole amount; 1 when a single tank covers it.
+    pub stops: i32,
+    /// What to dial in at this stop — a full tank while more stops remain.
+    pub fill_now: f32,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[serde(rename_all = "camelCase")]
@@ -313,6 +346,61 @@ pub struct FuelComputedFrame {
     pub pit_window_end: Option<i32>,
     pub is_timed_race: bool,
     pub lap_fuel_history: Vec<FuelLapRecord>,
+    pub history_stats: FuelHistoryStats,
+    /// How `fuel_to_add_with_buffer` splits across the stops left to make —
+    /// the buffered figure, because that is the one both the widget and the pit
+    /// order dial in. `None` when nothing has to be added.
+    pub refuel_plan: Option<RefuelPlan>,
+}
+
+/// Walks the counted laps once for all four figures.
+pub fn history_stats(history: &[FuelLapRecord]) -> FuelHistoryStats {
+    let mut stats = FuelHistoryStats::default();
+    let mut sum = 0.0;
+    let mut count = 0u32;
+
+    for record in history.iter().filter(|record| record.counts()) {
+        stats.last = Some(record.used);
+        stats.min = Some(
+            stats
+                .min
+                .map_or(record.used, |min: f32| min.min(record.used)),
+        );
+        stats.max = Some(
+            stats
+                .max
+                .map_or(record.used, |max: f32| max.max(record.used)),
+        );
+
+        sum += record.used;
+        count += 1;
+    }
+
+    if count > 0 {
+        stats.avg = Some(sum / count as f32);
+    }
+
+    stats
+}
+
+/// The refuel split for an outstanding amount and a tank capacity.
+///
+/// An unknown or nonsensical capacity still yields a single stop: the driver
+/// gets the honest total rather than nothing at all.
+pub fn refuel_plan(fuel_to_add: Option<f32>, fuel_max: Option<f32>) -> Option<RefuelPlan> {
+    let to_add = fuel_to_add.filter(|value| *value > 0.0)?;
+
+    let Some(max) = fuel_max.filter(|value| *value > 0.0) else {
+        return Some(RefuelPlan {
+            stops: 1,
+            fill_now: to_add,
+        });
+    };
+
+    Some(RefuelPlan {
+        stops: (to_add / max).ceil() as i32,
+        fill_now: to_add.min(max),
+    })
 }
 
 pub fn compute(
@@ -425,6 +513,8 @@ pub fn compute(
         pit_window_start,
         pit_window_end,
         is_timed_race,
+        history_stats: history_stats(&fuel_state.lap_fuel_history),
+        refuel_plan: refuel_plan(fuel_to_add_with_buffer, session.driver_car_fuel_max_ltr),
         lap_fuel_history: fuel_state.lap_fuel_history.clone(),
     }
 }
@@ -870,5 +960,77 @@ mod tests {
         // Identical laps give a zero interquartile range; without the mean
         // tolerance the fence would be a point and reject every next lap.
         assert!(!is_outlier(2.55, &[2.5, 2.5, 2.5, 2.5]));
+    }
+
+    fn record(lap: i32, used: f32, rejected: Option<&str>) -> FuelLapRecord {
+        FuelLapRecord {
+            lap,
+            used,
+            rejected: rejected.map(str::to_string),
+        }
+    }
+
+    #[test]
+    fn history_stats_are_empty_without_a_counted_lap() {
+        assert_eq!(history_stats(&[]), FuelHistoryStats::default());
+        assert_eq!(
+            history_stats(&[record(1, 9.0, Some("out-lap"))]),
+            FuelHistoryStats::default(),
+            "a rejected lap must not become the average"
+        );
+    }
+
+    #[test]
+    fn history_stats_ignore_rejected_laps_for_every_figure() {
+        let stats = history_stats(&[
+            record(1, 9.0, Some("out-lap")),
+            record(2, 2.0, None),
+            record(3, 4.0, None),
+            record(4, 3.0, None),
+        ]);
+
+        assert_eq!(stats.last, Some(3.0));
+        assert_eq!(stats.min, Some(2.0));
+        assert_eq!(stats.max, Some(4.0));
+        assert_eq!(stats.avg, Some(3.0));
+    }
+
+    #[test]
+    fn a_single_tank_is_one_stop_for_the_whole_amount() {
+        assert_eq!(
+            refuel_plan(Some(42.6), Some(65.0)),
+            Some(RefuelPlan {
+                stops: 1,
+                fill_now: 42.6
+            })
+        );
+    }
+
+    #[test]
+    fn more_than_a_tank_fills_to_the_brim_now() {
+        assert_eq!(
+            refuel_plan(Some(142.6), Some(65.0)),
+            Some(RefuelPlan {
+                stops: 3,
+                fill_now: 65.0
+            })
+        );
+    }
+
+    #[test]
+    fn nothing_to_add_is_no_plan() {
+        assert_eq!(refuel_plan(None, Some(65.0)), None);
+        assert_eq!(refuel_plan(Some(0.0), Some(65.0)), None);
+    }
+
+    #[test]
+    fn an_unknown_capacity_still_names_the_total() {
+        assert_eq!(
+            refuel_plan(Some(42.6), None),
+            Some(RefuelPlan {
+                stops: 1,
+                fill_now: 42.6
+            })
+        );
     }
 }

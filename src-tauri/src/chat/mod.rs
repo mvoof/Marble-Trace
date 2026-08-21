@@ -13,12 +13,7 @@ pub mod state;
 pub mod twitch;
 pub mod youtube;
 
-/// One normalized message. Emitted per message, so the frontend appends.
-pub const EVENT_CHAT_MESSAGE: &str = "chat://message";
-/// Per-platform status and viewer count. Slow cadence, replaces previous state.
-pub const EVENT_CHAT_PRESENCE: &str = "chat://presence";
-/// A row must disappear — moderator deleted a message or banned an author.
-pub const EVENT_CHAT_DELETION: &str = "chat://deletion";
+pub use crate::model::events::{EVENT_CHAT_DELETION, EVENT_CHAT_MESSAGE, EVENT_CHAT_PRESENCE};
 
 /// Palette mirrored from `_widget-tokens.scss` ($race-*). YouTube gives authors
 /// no colour, so one is derived from the name — a grey wall of identical nicks

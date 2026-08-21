@@ -37,10 +37,10 @@ export const SessionFooter = observer(() => {
   const playerPitStops = pitStops?.playerStops ?? 0;
 
   const airCelsius =
-    environment?.air_temp ?? parseWeekendTemp(sessionInfo?.trackAirTemp);
+    environment?.airTemp ?? parseWeekendTemp(sessionInfo?.trackAirTemp);
 
   const trkCelsius =
-    environment?.track_temp ?? parseWeekendTemp(sessionInfo?.trackSurfaceTemp);
+    environment?.trackTemp ?? parseWeekendTemp(sessionInfo?.trackSurfaceTemp);
 
   const tUnit = tempUnit(unitSystem);
 
@@ -54,7 +54,7 @@ export const SessionFooter = observer(() => {
       ? `${formatTemp(trkCelsius, unitSystem)}${tUnit}`
       : null;
 
-  const wetnessInfo = getTrackWetnessInfo(environment?.track_wetness);
+  const wetnessInfo = getTrackWetnessInfo(environment?.trackWetness);
 
   return (
     <div className={styles.sessionFooter}>

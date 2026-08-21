@@ -31,9 +31,7 @@ use crate::utils::lock_or_recover;
 /// pulls no Tauri API, so it also runs in a plain browser.
 const REMOTE_ENTRY: &str = "remote.html";
 
-/// Carries a `RemoteDevice` to the main window whenever one connects,
-/// disconnects or reports a new viewport.
-pub const EVENT_REMOTE_DEVICE: &str = "remote://device";
+pub use crate::model::events::EVENT_REMOTE_DEVICE;
 
 /// Policy violation — the close code the remote page reads as "wrong token".
 const CLOSE_UNAUTHORIZED: u16 = 1008;

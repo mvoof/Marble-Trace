@@ -146,7 +146,7 @@ describe('FpsDiagnosticsStore', () => {
       COUNTDOWN_SECONDS + store.plannedSteps.length * ROUNDS * STEP_SECONDS;
 
     for (let second = 0; second < totalSeconds; second += 1) {
-      fake.pushCounter({ frame_rate: 60, gpu_usage: 0.5, cpu_usage_fg: 0.4 });
+      fake.pushCounter({ frameRate: 60, gpuUsage: 0.5, cpuUsageFg: 0.4 });
       vi.advanceTimersByTime(1000);
     }
 

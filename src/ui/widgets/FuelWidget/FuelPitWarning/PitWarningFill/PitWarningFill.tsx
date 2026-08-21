@@ -6,21 +6,20 @@ import { WidgetValue } from '@ui/shared/WidgetValue/WidgetValue';
 import { NO_FUEL_DATA_PLACEHOLDER } from '@utils/telemetry-format';
 import {
   useBackendComputedStore,
-  useSessionStore,
   useUnitsStore,
 } from '@store/root-store-context';
-import { computeRefuelPlan } from '../../fuel-utils';
 import styles from './PitWarningFill.module.scss';
 
 export const PitWarningFill = observer(() => {
   const { fuel } = useBackendComputedStore();
-  const { sessionInfo } = useSessionStore();
   const { unitSystem } = useUnitsStore();
 
-  const fuelMax = sessionInfo?.driverCarFuelMaxLtr ?? null;
   const fuelToAdd = fuel?.fuelToAddWithBuffer ?? null;
 
-  const plan = computeRefuelPlan(fuelToAdd, fuelMax);
+  // The split across remaining stops is `computations/fuel.rs`'s: it already
+  // holds the amount and the tank capacity, and the pit order has to dial in
+  // the very same number from the main window, which is off the bundle.
+  const plan = fuel?.refuelPlan ?? null;
   const isMultiStop = plan !== null && plan.stops > 1;
 
   return (

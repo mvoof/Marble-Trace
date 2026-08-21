@@ -54,10 +54,30 @@ describe('PitServiceWidgetStore — pit orders', () => {
     });
   };
 
+  // The split across stops is the backend's now, so the fixture seeds the
+  // frame the widget actually reads rather than the two inputs it used to
+  // divide itself.
   const setFuelPlan = (toAdd: number | null, tankMax: number | null) => {
+    const fillNow =
+      toAdd === null || toAdd <= 0
+        ? null
+        : tankMax === null || tankMax <= 0
+          ? toAdd
+          : Math.min(toAdd, tankMax);
+
     runInAction(() => {
       rootStore.backendComputed.fuel = {
         fuelToAddWithBuffer: toAdd,
+        refuelPlan:
+          fillNow === null
+            ? null
+            : {
+                stops:
+                  tankMax !== null && tankMax > 0
+                    ? Math.ceil(toAdd! / tankMax)
+                    : 1,
+                fillNow,
+              },
       } as never;
 
       rootStore.session.sessionInfo = {

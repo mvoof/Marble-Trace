@@ -52,7 +52,7 @@ const MIN_BADGE_TOKEN_LENGTH: usize = 2;
 const NON_BADGE_TOKENS: [&str; 4] = ["racing", "car", "cup", "series"];
 
 /// Fallback color for cars with no class color reported.
-const DEFAULT_CLASS_COLOR: &str = "#888888";
+pub use crate::model::defaults::DEFAULT_CLASS_COLOR;
 
 /// iRacing session YAML reports class colors as "0xRRGGBB" strings.
 /// Some telemetry colors don't match what iRacing displays in-game.

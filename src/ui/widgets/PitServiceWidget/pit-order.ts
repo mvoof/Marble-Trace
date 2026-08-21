@@ -1,7 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import { sendPitOrder } from '@platform/services/pit.service';
-import { computeRefuelPlan } from '@ui/widgets/FuelWidget/fuel-utils';
 import type { PitCommandRequest, TireCompoundEntry } from '@/types/bindings';
 import type { CornerPosition } from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import {
@@ -47,16 +46,13 @@ export class PitOrder {
   }
 
   /**
-   * Liters the Fuel widget recommends, capped at tank capacity. Shared with
-   * `FuelOrder` so the number the driver reads is the number that gets sent.
+   * Liters the Fuel widget recommends, capped at tank capacity. Read off the
+   * fuel frame rather than recomputed, so the number the driver reads is
+   * literally the number that gets sent — and so this keeps working from the
+   * main window, which sees only the 4 Hz slow slice.
    */
   get plannedFuelLiters(): number | null {
-    const plan = computeRefuelPlan(
-      this.store.root.backendComputed.fuel?.fuelToAddWithBuffer ?? null,
-      this.store.root.session.sessionInfo?.driverCarFuelMaxLtr ?? null
-    );
-
-    return plan?.fillNow ?? null;
+    return this.store.root.backendComputed.fuel?.refuelPlan?.fillNow ?? null;
   }
 
   /**

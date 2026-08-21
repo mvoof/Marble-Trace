@@ -3,58 +3,15 @@ import { describe, expect, it } from 'vitest';
 import type { FuelLapRecord } from '@/types/bindings';
 import { FUEL_AVG_WINDOW_ALL_LAPS } from '@utils/fuel-constants';
 import {
-  computeFuelHistoryStats,
   countedLaps,
   computeLapsToEmpty,
   computeNextStopForecast,
-  computeRefuelPlan,
   formatCountdown,
   getFuelStatLabel,
   getSummaryAvgLabel,
   isPitNow,
   resolveLapsStatus,
 } from './fuel-utils';
-
-const counted = (used: number[]): FuelLapRecord[] =>
-  used.map((value, index) => ({
-    lap: index + 1,
-    used: value,
-    rejected: null,
-  }));
-
-describe('computeFuelHistoryStats', () => {
-  it('returns nulls for an empty history', () => {
-    expect(computeFuelHistoryStats([])).toEqual({
-      last: null,
-      avg: null,
-      min: null,
-      max: null,
-    });
-  });
-
-  it('spans the whole history so it cannot restate the summary window', () => {
-    const stats = computeFuelHistoryStats(counted([9.0, 2.0, 3.0, 4.0]));
-
-    expect(stats).toEqual({ last: 4.0, avg: 4.5, min: 2.0, max: 9.0 });
-  });
-
-  it('leaves rejected laps out of every stat, MIN and MAX included', () => {
-    const stats = computeFuelHistoryStats([
-      { lap: 1, used: 9.0, rejected: 'out-lap' },
-      { lap: 2, used: 2.0, rejected: null },
-      { lap: 3, used: 0.4, rejected: 'caution' },
-      { lap: 4, used: 4.0, rejected: null },
-    ]);
-
-    expect(stats).toEqual({ last: 4.0, avg: 3.0, min: 2.0, max: 4.0 });
-  });
-
-  it('returns nulls when no lap counted', () => {
-    expect(
-      computeFuelHistoryStats([{ lap: 1, used: 9.0, rejected: 'out-lap' }]).avg
-    ).toBeNull();
-  });
-});
 
 describe('countedLaps', () => {
   it('keeps the laps that count, in order', () => {
@@ -113,26 +70,6 @@ describe('computeLapsToEmpty', () => {
     expect(computeLapsToEmpty(28, null)).toBeNull();
     expect(computeLapsToEmpty(28, 0)).toBeNull();
     expect(computeLapsToEmpty(0, 2.8)).toBeNull();
-  });
-});
-
-describe('computeRefuelPlan', () => {
-  it('fills the whole amount when one tank covers it', () => {
-    expect(computeRefuelPlan(42.6, 65)).toEqual({ stops: 1, fillNow: 42.6 });
-  });
-
-  it('caps this stop at tank capacity instead of splitting evenly', () => {
-    // An even split would recommend 47.5 — an amount no real stop takes.
-    expect(computeRefuelPlan(142.6, 65)).toEqual({ stops: 3, fillNow: 65 });
-  });
-
-  it('returns null when there is nothing to add', () => {
-    expect(computeRefuelPlan(null, 65)).toBeNull();
-    expect(computeRefuelPlan(0, 65)).toBeNull();
-  });
-
-  it('falls back to a single stop without a known capacity', () => {
-    expect(computeRefuelPlan(42.6, null)).toEqual({ stops: 1, fillNow: 42.6 });
   });
 });
 

@@ -91,6 +91,8 @@ export const samplePitService: PitServiceFrame = {
 };
 
 export const sampleFuel: FuelComputedFrame = {
+  historyStats: { last: 2.7, avg: 2.6, min: 2.4, max: 2.9 },
+  refuelPlan: { stops: 1, fillNow: 14 },
   avgPerLap: 2.6,
   lapsRemaining: 9,
   lapsToFinish: 14,
