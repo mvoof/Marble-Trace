@@ -452,6 +452,8 @@
       "showFooterDesc": "观众数与连接状态。",
       "showActivity": "聊天活跃度",
       "showActivityDesc": "每分钟消息数，本地统计。",
+      "showPlaceholder": "空闲占位文字",
+      "showPlaceholderDesc": "聊天室安静时显示“等待消息”提示。",
       "badgeImages": "徽章图片",
       "badgeImagesDesc": "显示真实徽章而非文字标记。Twitch 需要登录；YouTube 会员徽章无需登录。"
     },

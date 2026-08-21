@@ -32,5 +32,6 @@ export const STREAM_CHAT_MANIFEST: WidgetManifest = {
     showFooter: true,
     showActivity: true,
     showEvents: true,
+    showPlaceholder: true,
   },
 };

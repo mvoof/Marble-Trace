@@ -15,6 +15,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   Links carry an access token, hidden until you ask for it — the QR code stays covered with it, so a window capture on stream does not put your address on air — copyable while covered and regenerable at any time. Serving to the network is a switch of its own, and the connection is read-only by protocol: a device paints what it is sent and cannot write anything back into your settings.
 
+- **Invisible Dash Widget:** A windscreen projection that puts the numbers in your field of view instead of in a panel: the engine column and gear on the left, position and lap on the right, nothing in the middle. It can be drawn as a projection bloom or a hairline contour, a distance control tilts the strip into the scene, and the rev colours are the same ones the Race Dash uses. Shrinking it folds the strip into a compact layout, and the widget font scale now goes down to 0.4x on every widget.
+- **Pit Service — Pit Approach Rail:** A guide along the pit lane showing how far you still have to the box, where the box is, and when to brake for it. The rail can sit inline or on either side of the widget, with its own warning distance, braking cues, and an option to reveal the pit panels automatically as you come up on pit entry.
+- **Stream Chat — Scroll Keys:** The chat feed can be scrolled with a key or a wheel button, on the overlay and on remote screens alike, the way the standings table already could.
+- **Stream Chat — Optional Idle Placeholder:** The “Waiting for messages…” line can be switched off, leaving the widget blank until something is actually said — for an overlay that sits on camera all session.
+- **Standings — Any Number of Rows per Class:** The rows-per-class value in the grouped view is typed in freely instead of being picked from a short list.
+- **Spanish:** The app is now available in Spanish, and the text drawn on the overlay's canvases is translated along with the rest of the interface.
+- **FPS Impact Check:** A new maintenance tool measures what the overlay costs you in frames, using the sim's own frame counters rather than a guess, and the result can be exported.
+
+### Changed
+
+- **The Overlay Only Asks for What It Draws:** Telemetry is now sent per field, and a field is only sent while a widget in your layout actually reads it, only when it has changed, and only to the windows that draw widgets. The settings window no longer takes the full 60 Hz feed it never rendered. Nothing changes on screen; the app simply moves a fraction of the data it used to, which leaves more of your frame budget to the sim.
+
+### Fixed
+
+- **Sector Matrix Was Empty:** Fixed the sector matrix reading a telemetry field it never asked the backend for, so it rendered with nothing in it.
+- **Track Map Recorded the Pit Lane:** Fixed a track shape being recorded from a lap through the pit lane, or from a shape started on pit exit, which bent the map away from the racing line.
+- **Missing Dividers in Settings:** Fixed grouped rows in the widget settings sharing one divider, so some settings ran into each other without a line between them.
+
 ## [0.21.0] — 2026-08-14
 
 ### Added

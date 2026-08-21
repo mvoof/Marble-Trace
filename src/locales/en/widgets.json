@@ -452,6 +452,8 @@
       "showFooterDesc": "Viewer counts and connection state.",
       "showActivity": "Chat activity",
       "showActivityDesc": "Messages per minute, counted locally.",
+      "showPlaceholder": "Idle placeholder",
+      "showPlaceholderDesc": "Show the “waiting for messages” line while the chat is quiet.",
       "badgeImages": "Badge artwork",
       "badgeImagesDesc": "Draw the real badges instead of text plates. Twitch needs sign-in; YouTube member badges work without it."
     },
