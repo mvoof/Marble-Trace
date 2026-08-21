@@ -80,6 +80,12 @@ export const StreamChatSettingsPanel = observer(() => {
       value: settings.showActivity,
       key: 'showActivity',
     },
+    {
+      titleKey: 'settingsPanels.streamChat.showPlaceholder',
+      descKey: 'settingsPanels.streamChat.showPlaceholderDesc',
+      value: settings.showPlaceholder,
+      key: 'showPlaceholder',
+    },
   ] as const;
 
   return (

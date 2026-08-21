@@ -452,6 +452,8 @@
       "showFooterDesc": "Número de espectadores y estado de la conexión.",
       "showActivity": "Actividad del chat",
       "showActivityDesc": "Mensajes por minuto, contados localmente.",
+      "showPlaceholder": "Marcador de inactividad",
+      "showPlaceholderDesc": "Mostrar la línea «esperando mensajes» mientras el chat está en silencio.",
       "badgeImages": "Imágenes de los distintivos",
       "badgeImagesDesc": "Dibuja los distintivos reales en lugar de placas de texto. Twitch requiere iniciar sesión; los distintivos de miembro de YouTube funcionan sin ella."
     },

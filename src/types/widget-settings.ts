@@ -349,6 +349,12 @@ export interface StreamChatWidgetSettings {
   showActivity: boolean;
   /** Subscriptions, raids and Super Chat rows. */
   showEvents: boolean;
+  /**
+   * The "waiting for messages" line while the feed is idle. Off leaves the
+   * widget blank until something arrives, which is what an overlay that sits
+   * on camera the whole session wants.
+   */
+  showPlaceholder: boolean;
 }
 
 export interface TimerWidgetSettings {
