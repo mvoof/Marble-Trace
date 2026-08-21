@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.22.0] — 2026-08-22
 
 ### Added
 
@@ -33,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sector Matrix Was Empty:** Fixed the sector matrix reading a telemetry field it never asked the backend for, so it rendered with nothing in it.
 - **Track Map Recorded the Pit Lane:** Fixed a track shape being recorded from a lap through the pit lane, or from a shape started on pit exit, which bent the map away from the racing line.
 - **Unnamed Windows in the Task Manager:** Fixed the overlay and the diagnostics HUD having no window title, which listed them as blank entries under the process in the Windows Task Manager. The overlay is now named after the monitor it covers.
+- **Twitch Chat Kept Asking You to Sign In Again:** Fixed the Twitch session being dropped on a passing network error or an expired token, which signed you out mid-stream and asked you to authorize the app again. The session is now refreshed ahead of time and cleared only when Twitch itself revokes it.
+- **New Settings Missing in Other Layouts:** Fixed widget settings shipped with an update reaching only the widgets in the layout you had open, so the same widget in another layout was left without them.
 - **Missing Dividers in Settings:** Fixed grouped rows in the widget settings sharing one divider, so some settings ran into each other without a line between them.
 
 ## [0.21.0] — 2026-08-14
