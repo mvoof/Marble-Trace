@@ -529,10 +529,39 @@ pub async fn run_presence_poll(
     let channel = channel.trim().trim_start_matches('#').to_lowercase();
 
     while service.is_current(generation) {
-        let Some(access_token) = secrets::access_token() else {
-            debug!("no twitch token stored, viewer poll idle");
+        let access_token = match secrets::access_token() {
+            Some(token) => token,
+            // The access token can expire out of the store while the refresh
+            // token behind it is still good — mint a new pair rather than
+            // reading a half-empty store as a sign-out.
+            None if secrets::refresh_token().is_some() => {
+                match refresh_stored_token(&client_id).await {
+                    Ok(result) if result.authorized => continue,
+                    Ok(result) => warn!(
+                        "twitch refresh failed: {}",
+                        result.error.unwrap_or_default()
+                    ),
+                    Err(error) => warn!("twitch refresh error: {error}"),
+                }
 
-            return;
+                // Either the grant is gone, in which case the store is already
+                // cleared and the next pass exits, or it was transient and the
+                // ordinary wait applies.
+                for _ in 0..POLL_INTERVAL_SECONDS {
+                    if !service.is_current(generation) {
+                        return;
+                    }
+
+                    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                }
+
+                continue;
+            }
+            None => {
+                debug!("no twitch token stored, viewer poll idle");
+
+                return;
+            }
         };
 
         match fetch_stream(&client_id, &access_token, &channel).await {
@@ -596,42 +625,55 @@ pub async fn run_token_refresh(service: Arc<ChatServiceState>, generation: u64, 
     const RETRY_SECONDS: u64 = 2 * 60;
 
     while service.is_current(generation) {
-        if !secrets::is_signed_in() {
+        // A stored refresh token counts as signed in on its own: it is the
+        // long-lived half, and the access token it mints is the one that
+        // expires.
+        if !secrets::has_credentials() {
             debug!("no twitch token stored, refresh loop idle");
 
             return;
         }
 
-        let sleep_seconds = match token_lifetime_seconds().await {
-            Some(remaining) if remaining > REFRESH_MARGIN_SECONDS => {
-                (remaining - REFRESH_MARGIN_SECONDS).min(MAX_SLEEP_SECONDS)
-            }
-            Some(remaining) => {
-                debug!(remaining, "twitch token near expiry, refreshing");
+        let refresh_now = || async {
+            match refresh_stored_token(&client_id).await {
+                Ok(result) if result.authorized => {
+                    info!("twitch token refreshed");
 
-                match refresh_stored_token(&client_id).await {
-                    Ok(result) if result.authorized => {
-                        info!("twitch token refreshed");
+                    MAX_SLEEP_SECONDS.min(REFRESH_MARGIN_SECONDS)
+                }
+                Ok(result) => {
+                    warn!(
+                        "twitch refresh failed: {}",
+                        result.error.unwrap_or_default()
+                    );
 
-                        MAX_SLEEP_SECONDS.min(REFRESH_MARGIN_SECONDS)
-                    }
-                    Ok(result) => {
-                        warn!(
-                            "twitch refresh failed: {}",
-                            result.error.unwrap_or_default()
-                        );
+                    RETRY_SECONDS
+                }
+                Err(error) => {
+                    warn!("twitch refresh error: {error}");
 
-                        RETRY_SECONDS
-                    }
-                    Err(error) => {
-                        warn!("twitch refresh error: {error}");
-
-                        RETRY_SECONDS
-                    }
+                    RETRY_SECONDS
                 }
             }
-            // Validation itself did not answer — offline, most likely.
-            None => RETRY_SECONDS,
+        };
+
+        let sleep_seconds = if secrets::access_token().is_none() {
+            debug!("twitch access token missing, refreshing from the stored grant");
+
+            refresh_now().await
+        } else {
+            match token_lifetime_seconds().await {
+                Some(remaining) if remaining > REFRESH_MARGIN_SECONDS => {
+                    (remaining - REFRESH_MARGIN_SECONDS).min(MAX_SLEEP_SECONDS)
+                }
+                Some(remaining) => {
+                    debug!(remaining, "twitch token near expiry, refreshing");
+
+                    refresh_now().await
+                }
+                // Validation itself did not answer — offline, most likely.
+                None => RETRY_SECONDS,
+            }
         };
 
         for _ in 0..sleep_seconds {

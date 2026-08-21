@@ -81,6 +81,13 @@ pub fn is_signed_in() -> bool {
     access_token().is_some()
 }
 
+/// Whether anything usable is stored. An access token can be gone while the
+/// refresh token that mints new ones is still there — treating that as signed
+/// out throws away a live grant.
+pub fn has_credentials() -> bool {
+    access_token().is_some() || refresh_token().is_some()
+}
+
 /// Stores a freshly issued pair. An absent refresh token leaves the stored one
 /// untouched — Twitch rotates it, but a response may legitimately omit it.
 ///
