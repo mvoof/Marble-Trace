@@ -49,6 +49,18 @@ pub fn start(app: AppHandle, service: Arc<ChatServiceState>, config: ChatConfig)
     // Artwork is per channel, so never carry the previous channel's over.
     service.clear_badges();
 
+    // Independent of the channel: the token has to stay alive even when only
+    // YouTube is configured, so that signing in stays a one-time act.
+    if signed_in {
+        if let Some(client_id) = client_id.clone() {
+            tokio::spawn(helix::run_token_refresh(
+                Arc::clone(&service),
+                generation,
+                client_id,
+            ));
+        }
+    }
+
     if let Some(channel) = twitch_channel.clone() {
         // Badge images come only from Helix — Twitch retired the anonymous
         // badge host — so this is a no-op until the user signs in. Failure just

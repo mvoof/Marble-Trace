@@ -83,14 +83,19 @@ pub fn is_signed_in() -> bool {
 
 /// Stores a freshly issued pair. An absent refresh token leaves the stored one
 /// untouched — Twitch rotates it, but a response may legitimately omit it.
+///
+/// Both writes must land. Twitch invalidates the old refresh token the moment
+/// it issues a new one, so keeping the fresh access token next to a stale
+/// refresh token buys four more hours and then signs the user out for good —
+/// worse than reporting the failure while the old pair still works.
 pub fn save(access: &str, refresh: Option<&str>) -> bool {
-    let stored = write(ACCESS_ACCOUNT, access);
-
     if let Some(refresh) = refresh.filter(|value| !value.is_empty()) {
-        write(REFRESH_ACCOUNT, refresh);
+        if !write(REFRESH_ACCOUNT, refresh) {
+            return false;
+        }
     }
 
-    stored
+    write(ACCESS_ACCOUNT, access)
 }
 
 pub fn clear() {
