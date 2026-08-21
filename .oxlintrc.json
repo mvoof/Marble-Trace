@@ -234,6 +234,29 @@
       }
     },
     {
+      "files": ["src/platform/settings-schema/migrations/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "@store/**",
+                  "@ui/**",
+                  "@platform/**",
+                  "@utils/**",
+                  "@/**",
+                  "@tauri-apps/**"
+                ],
+                "message": "A migration must keep meaning what it meant the day it was written, and live types, defaults and registries move under it. Freeze what you need as a literal, and walk the blob with the structural helpers in ../blob."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "files": [
         "src/**/*.test.ts",
         "src/**/*.test.tsx",
