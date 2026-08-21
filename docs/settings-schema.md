@@ -39,9 +39,10 @@ Four things about this order matter:
    field to its default and logs a `console.warn`. It runs _after_ migrations, so
    a migration that writes a wrong-typed value has its work silently undone. Test
    for it — see below.
-3. **It reaches the layout copies too, but only for defaults.**
-   `widgets[].userSettings` goes through `restoreWidgets`, and every
-   `layouts[].widgets[]` through `restoreLayoutWidgets`, which is the same repair
+3. **Restoration reaches the layout copies too, but only for defaults.**
+   `mergeWithDefaults` merges one settings object; `hydrateStores` is what applies
+   it everywhere — `widgets[].userSettings` through `restoreWidgets`, and every
+   loaded layout's `widgets[]` through `restoreLayoutWidgets`, the same repair
    plus one rule: a widget the layout never had is forced to `enabled: false`, so
    filling a hole in an old file cannot put a new widget on someone's overlay.
    The app block is merged separately.
@@ -141,11 +142,14 @@ written, or the plaintext lives on in `settings.v{n}.bak`.
 ### Walking the blob — use `blob.ts`
 
 **A widget is in the file twice.** Once in the top-level `widgets[]`, and again
-inside every entry of `layouts[].widgets[]`. `mergeWithDefaults` runs after the
-chain and repairs only the first — it never descends into layouts. A migration
-that touches the top-level array and stops there leaves every layout carrying the
-old shape, and the failure is quiet: the app starts, the widget looks right, and
-the bad copy only surfaces when the user switches layout.
+inside every entry of `layouts[].widgets[]`. Restoration reaches both —
+`hydrateStores` runs `restoreWidgets` over the first and `restoreLayoutWidgets`
+over each loaded layout — but all it does is fill in **missing** keys from the
+shipped defaults. A value the file already holds is left exactly as found, in
+every copy. So a migration that rewrites values and touches only the top-level
+array leaves every layout carrying the old ones, and the failure is quiet: the
+app starts, the widget looks right, and the bad copy only surfaces when the user
+switches layout.
 
 `settings-schema/blob.ts` exists so that forgetting is not possible:
 
