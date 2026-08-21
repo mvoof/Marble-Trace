@@ -68,7 +68,9 @@ pub async fn twitch_poll_device_token(
 /// Called on startup so the settings page can show the right state.
 #[tauri::command]
 pub async fn twitch_current_login(client_id: Option<String>) -> Result<Option<String>, String> {
-    if !secrets::is_signed_in() {
+    // Refresh-only is still signed in: the fall-through below mints a fresh
+    // access token from it.
+    if !secrets::has_credentials() {
         return Ok(None);
     }
 

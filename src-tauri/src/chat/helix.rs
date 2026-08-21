@@ -9,7 +9,7 @@
 //! never reach the frontend.
 
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 use tauri::{AppHandle, Emitter};
 use tracing::{debug, info, warn};
@@ -170,6 +170,12 @@ pub async fn poll_device_token(
 /// tokens last about four hours, so without this the viewer count quietly dies
 /// mid-stream. Public clients send no secret — that is the point of the flow.
 pub async fn refresh_stored_token(client_id: &str) -> Result<TwitchTokenResult, String> {
+    // Read, exchange, store and clear under one lock: the viewer poll and the
+    // background refresh loop both land here, and two overlapping refreshes
+    // would race to store — or, worse, let a loser's failure clear the pair a
+    // winner had just written.
+    let _guard = refresh_lock().lock().await;
+
     let Some(refresh) = secrets::refresh_token() else {
         return Ok(rejected("no refresh token stored"));
     };
@@ -194,10 +200,16 @@ pub async fn refresh_stored_token(client_id: &str) -> Result<TwitchTokenResult, 
     let parsed: serde_json::Value = serde_json::from_str(&body).unwrap_or_default();
 
     if !status.is_success() {
-        // The grant is gone for good; retrying would loop forever.
-        secrets::clear();
-
         let message = parsed["message"].as_str().unwrap_or("").to_string();
+
+        // Only a revoked grant is permanent. A 429, a 5xx or a captive portal
+        // answering for id.twitch.tv are all transient, and clearing the store
+        // on one of those is what turns a hiccup into "sign in again".
+        if grant_is_dead(status, &message) {
+            secrets::clear();
+
+            warn!("twitch grant revoked, credentials cleared");
+        }
 
         return Ok(rejected(if message.is_empty() {
             format!("refresh rejected ({status})")
@@ -207,6 +219,29 @@ pub async fn refresh_stored_token(client_id: &str) -> Result<TwitchTokenResult, 
     }
 
     store_token_response(&parsed).await
+}
+
+/// Serializes every refresh attempt across the polling tasks.
+fn refresh_lock() -> &'static tokio::sync::Mutex<()> {
+    static LOCK: OnceLock<tokio::sync::Mutex<()>> = OnceLock::new();
+
+    LOCK.get_or_init(|| tokio::sync::Mutex::new(()))
+}
+
+/// Whether a failed refresh means the user must sign in again, as opposed to
+/// "try later". Twitch answers a dead grant with 400 or 401 and says so in the
+/// body; everything else is treated as temporary.
+fn grant_is_dead(status: reqwest::StatusCode, message: &str) -> bool {
+    if status != reqwest::StatusCode::BAD_REQUEST && status != reqwest::StatusCode::UNAUTHORIZED {
+        return false;
+    }
+
+    let lowered = message.to_lowercase();
+
+    // Only the refresh token itself being dead is permanent. An invalid client
+    // is our own misconfiguration or a transient twitch answer — clearing the
+    // user's credentials over it signs out a session that was never at fault.
+    lowered.contains("invalid refresh token") || lowered.contains("invalid_grant")
 }
 
 /// Returns the login name the token belongs to. Doubles as a liveness check —
@@ -229,6 +264,36 @@ pub async fn validate_token(access_token: &str) -> Result<String, String> {
         .map_err(|error| format!("validate json: {error}"))?;
 
     Ok(parsed["login"].as_str().unwrap_or_default().to_string())
+}
+
+/// Seconds the stored access token has left, or None when there is no usable
+/// token. Twitch reports this on every validate call, so the remaining life is
+/// never guessed or persisted alongside the token.
+pub async fn token_lifetime_seconds() -> Option<u64> {
+    let token = secrets::access_token()?;
+
+    let response = client()
+        .ok()?
+        .get(VALIDATE_URL)
+        .header("Authorization", format!("OAuth {token}"))
+        .send()
+        .await
+        .ok()?;
+
+    // Only a rejected token means "no life left". A 429, a 5xx or a captive
+    // portal answering for id.twitch.tv say nothing about the token, so the
+    // caller retries the probe instead of spending a refresh on them.
+    if !response.status().is_success() {
+        if response.status() == reqwest::StatusCode::UNAUTHORIZED {
+            return Some(0);
+        }
+
+        return None;
+    }
+
+    let parsed: serde_json::Value = response.json().await.ok()?;
+
+    Some(parsed["expires_in"].as_u64().unwrap_or(0))
 }
 
 /// Login of the currently stored token, or None when signed out.
@@ -464,10 +529,39 @@ pub async fn run_presence_poll(
     let channel = channel.trim().trim_start_matches('#').to_lowercase();
 
     while service.is_current(generation) {
-        let Some(access_token) = secrets::access_token() else {
-            debug!("no twitch token stored, viewer poll idle");
+        let access_token = match secrets::access_token() {
+            Some(token) => token,
+            // The access token can expire out of the store while the refresh
+            // token behind it is still good — mint a new pair rather than
+            // reading a half-empty store as a sign-out.
+            None if secrets::refresh_token().is_some() => {
+                match refresh_stored_token(&client_id).await {
+                    Ok(result) if result.authorized => continue,
+                    Ok(result) => warn!(
+                        "twitch refresh failed: {}",
+                        result.error.unwrap_or_default()
+                    ),
+                    Err(error) => warn!("twitch refresh error: {error}"),
+                }
 
-            return;
+                // Either the grant is gone, in which case the store is already
+                // cleared and the next pass exits, or it was transient and the
+                // ordinary wait applies.
+                for _ in 0..POLL_INTERVAL_SECONDS {
+                    if !service.is_current(generation) {
+                        return;
+                    }
+
+                    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                }
+
+                continue;
+            }
+            None => {
+                debug!("no twitch token stored, viewer poll idle");
+
+                return;
+            }
         };
 
         match fetch_stream(&client_id, &access_token, &channel).await {
@@ -490,25 +584,99 @@ pub async fn run_presence_poll(
                         // Next iteration picks up the new token immediately.
                         continue;
                     }
-                    Ok(result) => {
-                        warn!(
-                            "twitch refresh failed: {}",
-                            result.error.unwrap_or_default()
-                        );
-
-                        return;
-                    }
-                    Err(error) => {
-                        warn!("twitch refresh error: {error}");
-
-                        return;
-                    }
+                    // A failed refresh is not the end of the poll: a revoked
+                    // grant already cleared the store and the next iteration
+                    // exits on the missing token, while a transient failure
+                    // deserves the ordinary wait and another try.
+                    Ok(result) => warn!(
+                        "twitch refresh failed: {}",
+                        result.error.unwrap_or_default()
+                    ),
+                    Err(error) => warn!("twitch refresh error: {error}"),
                 }
             }
             Err(StreamError::Other(error)) => warn!("twitch viewer poll failed: {error}"),
         }
 
         for _ in 0..POLL_INTERVAL_SECONDS {
+            if !service.is_current(generation) {
+                return;
+            }
+
+            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+        }
+    }
+}
+
+/// Keeps the stored token alive for as long as the app runs.
+///
+/// Device code access tokens last about four hours and the refresh token
+/// behind them is good until the user revokes it, so a signed-in user should
+/// never see the sign-in screen again. Refreshing only when a request comes
+/// back 401 is not enough: the viewer poll runs solely while a channel is
+/// connected, and without it nothing would touch the token until the next
+/// launch.
+pub async fn run_token_refresh(service: Arc<ChatServiceState>, generation: u64, client_id: String) {
+    /// Refresh this far ahead of expiry rather than waiting for the 401.
+    const REFRESH_MARGIN_SECONDS: u64 = 30 * 60;
+    /// Ceiling on a single sleep, so a suspended machine re-checks promptly.
+    const MAX_SLEEP_SECONDS: u64 = 15 * 60;
+    /// Wait after a failed probe or a transient refresh error.
+    const RETRY_SECONDS: u64 = 2 * 60;
+
+    while service.is_current(generation) {
+        // A stored refresh token counts as signed in on its own: it is the
+        // long-lived half, and the access token it mints is the one that
+        // expires.
+        if !secrets::has_credentials() {
+            debug!("no twitch token stored, refresh loop idle");
+
+            return;
+        }
+
+        let refresh_now = || async {
+            match refresh_stored_token(&client_id).await {
+                Ok(result) if result.authorized => {
+                    info!("twitch token refreshed");
+
+                    MAX_SLEEP_SECONDS.min(REFRESH_MARGIN_SECONDS)
+                }
+                Ok(result) => {
+                    warn!(
+                        "twitch refresh failed: {}",
+                        result.error.unwrap_or_default()
+                    );
+
+                    RETRY_SECONDS
+                }
+                Err(error) => {
+                    warn!("twitch refresh error: {error}");
+
+                    RETRY_SECONDS
+                }
+            }
+        };
+
+        let sleep_seconds = if secrets::access_token().is_none() {
+            debug!("twitch access token missing, refreshing from the stored grant");
+
+            refresh_now().await
+        } else {
+            match token_lifetime_seconds().await {
+                Some(remaining) if remaining > REFRESH_MARGIN_SECONDS => {
+                    (remaining - REFRESH_MARGIN_SECONDS).min(MAX_SLEEP_SECONDS)
+                }
+                Some(remaining) => {
+                    debug!(remaining, "twitch token near expiry, refreshing");
+
+                    refresh_now().await
+                }
+                // Validation itself did not answer — offline, most likely.
+                None => RETRY_SECONDS,
+            }
+        };
+
+        for _ in 0..sleep_seconds {
             if !service.is_current(generation) {
                 return;
             }
@@ -542,6 +710,28 @@ mod tests {
             parse_rfc3339_seconds("2024-02-29T12:00:00Z"),
             Some(1_709_208_000)
         );
+    }
+
+    #[test]
+    fn only_a_revoked_grant_clears_the_store() {
+        use reqwest::StatusCode;
+
+        assert!(grant_is_dead(
+            StatusCode::BAD_REQUEST,
+            "Invalid refresh token"
+        ));
+        assert!(grant_is_dead(StatusCode::UNAUTHORIZED, "invalid_grant"));
+
+        // Transient: the user stays signed in and the loop retries.
+        assert!(!grant_is_dead(StatusCode::TOO_MANY_REQUESTS, "rate limit"));
+        assert!(!grant_is_dead(StatusCode::SERVICE_UNAVAILABLE, ""));
+        assert!(!grant_is_dead(StatusCode::BAD_GATEWAY, "proxy error"));
+        assert!(!grant_is_dead(StatusCode::BAD_REQUEST, "missing parameter"));
+        assert!(!grant_is_dead(StatusCode::BAD_REQUEST, "invalid client"));
+        assert!(!grant_is_dead(
+            StatusCode::UNAUTHORIZED,
+            "client is not valid"
+        ));
     }
 
     #[test]
