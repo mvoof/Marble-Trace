@@ -9,7 +9,7 @@
 //! never reach the frontend.
 
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 use tauri::{AppHandle, Emitter};
 use tracing::{debug, info, warn};
@@ -170,6 +170,12 @@ pub async fn poll_device_token(
 /// tokens last about four hours, so without this the viewer count quietly dies
 /// mid-stream. Public clients send no secret — that is the point of the flow.
 pub async fn refresh_stored_token(client_id: &str) -> Result<TwitchTokenResult, String> {
+    // Read, exchange, store and clear under one lock: the viewer poll and the
+    // background refresh loop both land here, and two overlapping refreshes
+    // would race to store — or, worse, let a loser's failure clear the pair a
+    // winner had just written.
+    let _guard = refresh_lock().lock().await;
+
     let Some(refresh) = secrets::refresh_token() else {
         return Ok(rejected("no refresh token stored"));
     };
@@ -215,6 +221,13 @@ pub async fn refresh_stored_token(client_id: &str) -> Result<TwitchTokenResult, 
     store_token_response(&parsed).await
 }
 
+/// Serializes every refresh attempt across the polling tasks.
+fn refresh_lock() -> &'static tokio::sync::Mutex<()> {
+    static LOCK: OnceLock<tokio::sync::Mutex<()>> = OnceLock::new();
+
+    LOCK.get_or_init(|| tokio::sync::Mutex::new(()))
+}
+
 /// Whether a failed refresh means the user must sign in again, as opposed to
 /// "try later". Twitch answers a dead grant with 400 or 401 and says so in the
 /// body; everything else is treated as temporary.
@@ -225,10 +238,10 @@ fn grant_is_dead(status: reqwest::StatusCode, message: &str) -> bool {
 
     let lowered = message.to_lowercase();
 
-    lowered.contains("invalid refresh token")
-        || lowered.contains("invalid_grant")
-        || lowered.contains("invalid client")
-        || lowered.contains("client is not valid")
+    // Only the refresh token itself being dead is permanent. An invalid client
+    // is our own misconfiguration or a transient twitch answer — clearing the
+    // user's credentials over it signs out a session that was never at fault.
+    lowered.contains("invalid refresh token") || lowered.contains("invalid_grant")
 }
 
 /// Returns the login name the token belongs to. Doubles as a liveness check —
@@ -267,8 +280,15 @@ pub async fn token_lifetime_seconds() -> Option<u64> {
         .await
         .ok()?;
 
+    // Only a rejected token means "no life left". A 429, a 5xx or a captive
+    // portal answering for id.twitch.tv say nothing about the token, so the
+    // caller retries the probe instead of spending a refresh on them.
     if !response.status().is_success() {
-        return Some(0);
+        if response.status() == reqwest::StatusCode::UNAUTHORIZED {
+            return Some(0);
+        }
+
+        return None;
     }
 
     let parsed: serde_json::Value = response.json().await.ok()?;
@@ -665,6 +685,11 @@ mod tests {
         assert!(!grant_is_dead(StatusCode::SERVICE_UNAVAILABLE, ""));
         assert!(!grant_is_dead(StatusCode::BAD_GATEWAY, "proxy error"));
         assert!(!grant_is_dead(StatusCode::BAD_REQUEST, "missing parameter"));
+        assert!(!grant_is_dead(StatusCode::BAD_REQUEST, "invalid client"));
+        assert!(!grant_is_dead(
+            StatusCode::UNAUTHORIZED,
+            "client is not valid"
+        ));
     }
 
     #[test]
