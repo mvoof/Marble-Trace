@@ -39,11 +39,19 @@ Four things about this order matter:
    field to its default and logs a `console.warn`. It runs _after_ migrations, so
    a migration that writes a wrong-typed value has its work silently undone. Test
    for it — see below.
-3. **It does not reach everywhere.** It is applied to `widgets[].userSettings`
-   (via `restoreWidgets`) and to the app block, but **not** to
-   `layouts[].widgets[].userSettings`, which `setLayouts` takes as-is.
-   **A migration must clean the layout copies itself.** Nothing else will — use
-   the `blob.ts` helpers so it is not something you can forget.
+3. **It reaches the layout copies too, but only for defaults.**
+   `widgets[].userSettings` goes through `restoreWidgets`, and every
+   `layouts[].widgets[]` through `restoreLayoutWidgets`, which is the same repair
+   plus one rule: a widget the layout never had is forced to `enabled: false`, so
+   filling a hole in an old file cannot put a new widget on someone's overlay.
+   The app block is merged separately.
+
+   That covers **a missing key**, which is why adding a setting needs no
+   migration even though the widget is stored twice. It does **not** cover a key
+   that is present and now means something else — merging keeps the value it
+   finds. A migration that rewrites values still has to walk both copies itself,
+   with the `blob.ts` helpers.
+
 4. **Both windows run the chain**, each on its own parse of the file, but only
    the main window writes. That is why a migration must be pure — a side effect
    would happen twice.
@@ -76,8 +84,8 @@ Before the first save at a new version, the old file is copied to
 ## When you do NOT need a migration
 
 - **Adding a field with a default.** `mergeWithDefaults` fills it in on the next
-  load. Add it to `DEFAULT_APP_SETTINGS` or to the widget's defaults in
-  `widget-defaults.ts`.
+  load, in the top-level `widgets[]` and in every layout's copy alike. Add it to
+  `DEFAULT_APP_SETTINGS` or to the widget's manifest defaults.
 - **Removing a field.** It is pruned from disk on the next save.
 - **Renaming a field whose value the user can trivially re-enter.** They set it
   again once; a migration is not worth its permanent cost.
@@ -96,7 +104,9 @@ Before the first save at a new version, the old file is copied to
   calibration, a hand-drawn layout.
 - Any **shape change inside a persisted array**, since `mergeWithDefaults` will
   not reconcile array elements for you.
-- **Anything inside `layouts[]`** — see point 3 above.
+- **A value inside `layouts[]` that changes meaning, moves or is renamed.**
+  Defaults are filled in for you (point 3 above), but nothing rewrites a value
+  that is already there — and it sits in every layout, not just the active one.
 
 ## Adding a migration, step by step
 

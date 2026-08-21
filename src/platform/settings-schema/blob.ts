@@ -5,10 +5,11 @@ import type { SettingsBlob } from './types';
  *
  * These exist for one reason: **a widget appears in the file twice.** Once in
  * the top-level `widgets[]`, and once more inside every entry of
- * `layouts[].widgets[]`. `mergeWithDefaults` runs after the chain and repairs
- * only the first copy — it never descends into layouts — so a migration that
- * touches the top-level array and stops there leaves every layout carrying the
- * old shape. That failure is quiet: the app starts, the widget looks right until
+ * `layouts[].widgets[]`. Defaulting reaches both copies (`restoreLayoutWidgets`
+ * in `sync/persistence.ts`), but it only fills in what is missing — a value the
+ * file already holds is left exactly as found. So a migration that rewrites
+ * values and touches the top-level array only leaves every layout carrying the
+ * old one. That failure is quiet: the app starts, the widget looks right until
  * the user switches layout, and the bad copy outlives the build that wrote it.
  *
  * Using {@link mapEveryWidget} makes forgetting structurally impossible, which
