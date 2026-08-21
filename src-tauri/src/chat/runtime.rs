@@ -37,6 +37,10 @@ pub fn start(app: AppHandle, service: Arc<ChatServiceState>, config: ChatConfig)
     // supplied one of their own.
     let client_id = resolve_client_id(config.twitch_client_id.as_deref());
     let signed_in = secrets::is_signed_in();
+    // The refresh token alone is enough to get back to a live access token, so
+    // the loops that can refresh start on it; the badge fetch below needs a
+    // token in hand right now and stays on `signed_in`.
+    let has_credentials = secrets::has_credentials();
 
     info!(
         generation,
@@ -51,7 +55,7 @@ pub fn start(app: AppHandle, service: Arc<ChatServiceState>, config: ChatConfig)
 
     // Independent of the channel: the token has to stay alive even when only
     // YouTube is configured, so that signing in stays a one-time act.
-    if signed_in {
+    if has_credentials {
         if let Some(client_id) = client_id.clone() {
             tokio::spawn(helix::run_token_refresh(
                 Arc::clone(&service),
@@ -110,8 +114,9 @@ pub fn start(app: AppHandle, service: Arc<ChatServiceState>, config: ChatConfig)
             .await;
         });
 
-        // Viewer count and uptime exist only behind a token.
-        if signed_in {
+        // Viewer count and uptime exist only behind a token; the poll mints
+        // one from the refresh token when the access token is gone.
+        if has_credentials {
             if let Some(client_id) = client_id {
                 tokio::spawn(helix::run_presence_poll(
                     app.clone(),
