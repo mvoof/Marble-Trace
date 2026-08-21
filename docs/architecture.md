@@ -208,9 +208,14 @@ rather than silently leaving the two halves on different numbers.
 ### Everything on the wire is camelCase
 
 `TelemetryBundle`, `TelemetrySlowBundle` and `SourceFrame` all carry
-`#[serde(rename_all = "camelCase")]`, like the frames nested inside them. The
-outer bundles used to be the exception, which produced reads like
+`#[serde(rename_all = "camelCase")]`, so every field _they_ name is camelCase.
+The outer bundles used to be the exception, which produced reads like
 `bundle.track_recording.isRecording` — two conventions in one expression.
+
+The nested frames each carry the rename or not on their own, and several of the
+raw sim frames still do not: `CarStatusFrame.fuel_level` and the
+`LapTimingFrame.lap_delta_to_*` fields keep the sim's own snake_case. Check
+`bindings.ts` for the frame you are reading rather than assuming.
 
 > [!WARNING]
 > If you add or change a rename, check `SLOW_FIELD_KEYS` in `remote/hub.rs`. It

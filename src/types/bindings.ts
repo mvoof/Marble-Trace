@@ -680,7 +680,9 @@ export type FuelComputedFrame = {
   lapFuelHistory: FuelLapRecord[];
   historyStats: FuelHistoryStats;
   /**
-   * `None` when nothing has to be added — the tank already covers the race.
+   * How `fuel_to_add_with_buffer` splits across the stops left to make —
+   * the buffered figure, because that is the one both the widget and the pit
+   * order dial in. `None` when nothing has to be added.
    */
   refuelPlan: RefuelPlan | null;
 };

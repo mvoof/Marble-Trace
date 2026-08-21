@@ -383,11 +383,21 @@ pub fn history_stats(history: &[FuelLapRecord]) -> FuelHistoryStats {
     stats
 }
 
-/// The refuel split for an outstanding amount and a tank capacity.
+/// The refuel split for an outstanding amount, a tank capacity and what is
+/// already on board.
+///
+/// This stop is bounded by the *free* space in the tank, not by the tank: a car
+/// running 50 L of a 65 L tank cannot take 30 L however much it needs, and a
+/// figure the sim would silently clamp is the one number the driver must not be
+/// given — it is what the pit order dials in.
 ///
 /// An unknown or nonsensical capacity still yields a single stop: the driver
 /// gets the honest total rather than nothing at all.
-pub fn refuel_plan(fuel_to_add: Option<f32>, fuel_max: Option<f32>) -> Option<RefuelPlan> {
+pub fn refuel_plan(
+    fuel_to_add: Option<f32>,
+    fuel_max: Option<f32>,
+    fuel_level: f32,
+) -> Option<RefuelPlan> {
     let to_add = fuel_to_add.filter(|value| *value > 0.0)?;
 
     let Some(max) = fuel_max.filter(|value| *value > 0.0) else {
@@ -397,9 +407,30 @@ pub fn refuel_plan(fuel_to_add: Option<f32>, fuel_max: Option<f32>) -> Option<Re
         });
     };
 
+    // A level the sim has not reported yet reads as zero, and a full tank that
+    // still wants fuel is a contradiction — both fall back to the capacity cap
+    // rather than recommending a stop that takes nothing.
+    let free = (max - fuel_level.max(0.0)).min(max);
+
+    if free <= 0.0 {
+        return Some(RefuelPlan {
+            stops: (to_add / max).ceil() as i32,
+            fill_now: to_add.min(max),
+        });
+    }
+
+    if to_add <= free {
+        return Some(RefuelPlan {
+            stops: 1,
+            fill_now: to_add,
+        });
+    }
+
+    // The first stop is capped by the space there is now; every stop after it
+    // starts from a tank drained low enough to take a full one.
     Some(RefuelPlan {
-        stops: (to_add / max).ceil() as i32,
-        fill_now: to_add.min(max),
+        stops: 1 + ((to_add - free) / max).ceil() as i32,
+        fill_now: free,
     })
 }
 
@@ -514,7 +545,11 @@ pub fn compute(
         pit_window_end,
         is_timed_race,
         history_stats: history_stats(&fuel_state.lap_fuel_history),
-        refuel_plan: refuel_plan(fuel_to_add_with_buffer, session.driver_car_fuel_max_ltr),
+        refuel_plan: refuel_plan(
+            fuel_to_add_with_buffer,
+            session.driver_car_fuel_max_ltr,
+            fuel_level,
+        ),
         lap_fuel_history: fuel_state.lap_fuel_history.clone(),
     }
 }
@@ -998,7 +1033,7 @@ mod tests {
     #[test]
     fn a_single_tank_is_one_stop_for_the_whole_amount() {
         assert_eq!(
-            refuel_plan(Some(42.6), Some(65.0)),
+            refuel_plan(Some(42.6), Some(65.0), 0.0),
             Some(RefuelPlan {
                 stops: 1,
                 fill_now: 42.6
@@ -1009,7 +1044,7 @@ mod tests {
     #[test]
     fn more_than_a_tank_fills_to_the_brim_now() {
         assert_eq!(
-            refuel_plan(Some(142.6), Some(65.0)),
+            refuel_plan(Some(142.6), Some(65.0), 0.0),
             Some(RefuelPlan {
                 stops: 3,
                 fill_now: 65.0
@@ -1018,15 +1053,51 @@ mod tests {
     }
 
     #[test]
+    fn this_stop_is_capped_by_the_space_left_in_the_tank() {
+        // 50 L on board of 65 leaves room for 15, so 30 L cannot be taken in
+        // one go however much the strategy wants it — and the remainder is a
+        // second stop the driver has to be told about.
+        assert_eq!(
+            refuel_plan(Some(30.0), Some(65.0), 50.0),
+            Some(RefuelPlan {
+                stops: 2,
+                fill_now: 15.0
+            })
+        );
+    }
+
+    #[test]
+    fn a_partly_filled_tank_with_room_to_spare_is_still_one_stop() {
+        assert_eq!(
+            refuel_plan(Some(10.0), Some(65.0), 50.0),
+            Some(RefuelPlan {
+                stops: 1,
+                fill_now: 10.0
+            })
+        );
+    }
+
+    #[test]
+    fn a_full_tank_that_still_wants_fuel_falls_back_to_the_capacity_cap() {
+        assert_eq!(
+            refuel_plan(Some(30.0), Some(65.0), 65.0),
+            Some(RefuelPlan {
+                stops: 1,
+                fill_now: 30.0
+            })
+        );
+    }
+
+    #[test]
     fn nothing_to_add_is_no_plan() {
-        assert_eq!(refuel_plan(None, Some(65.0)), None);
-        assert_eq!(refuel_plan(Some(0.0), Some(65.0)), None);
+        assert_eq!(refuel_plan(None, Some(65.0), 0.0), None);
+        assert_eq!(refuel_plan(Some(0.0), Some(65.0), 0.0), None);
     }
 
     #[test]
     fn an_unknown_capacity_still_names_the_total() {
         assert_eq!(
-            refuel_plan(Some(42.6), None),
+            refuel_plan(Some(42.6), None, 0.0),
             Some(RefuelPlan {
                 stops: 1,
                 fill_now: 42.6
