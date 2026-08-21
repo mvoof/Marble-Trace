@@ -84,6 +84,38 @@ const restoreWidgets = (
 };
 
 /**
+ * The same repair for the copy of the widgets a layout carries. A layout holds
+ * every widget, enabled or not (`snapshotWidgets` in the widget settings store),
+ * so a widget the file has never seen belongs here as much as it does in the
+ * top-level array.
+ *
+ * Without this pass `mergeWithDefaults` reaches only the top-level `widgets[]`
+ * and every layout keeps whatever shape it was written with. A setting added to
+ * an already-shipped widget then reads as `undefined` in each layout — `false`
+ * for a boolean — which is the opposite of its default, and it happens silently
+ * on the first layout switch. That gap is why anything touching
+ * `layouts[].widgets[]` used to need a migration step of its own.
+ *
+ * A widget the layout never had is forced to `enabled: false` regardless of what
+ * it ships as: filling a hole in an old file must not put a new widget on
+ * someone's overlay by itself.
+ */
+export const restoreLayoutWidgets = (
+  savedWidgets: WidgetDefaultConfig[]
+): WidgetDefaultConfig[] => {
+  const savedIds = new Set(savedWidgets.map((widget) => widget.id));
+
+  return restoreWidgets(savedWidgets).map((widget) =>
+    savedIds.has(widget.id)
+      ? widget
+      : {
+          ...widget,
+          userSettings: { ...widget.userSettings, enabled: false },
+        }
+  );
+};
+
+/**
  * Fills the stores from a settings blob that has already been brought to the
  * current schema by `runMigrations`. Nothing here knows about older formats —
  * that is the migration chain's job, and keeping it there is what makes it
@@ -114,7 +146,10 @@ export const hydrateStores = (
 
     if (loadedSettings.layouts) {
       root.widgetSettings.setLayouts(
-        loadedSettings.layouts,
+        loadedSettings.layouts.map((layout) => ({
+          ...layout,
+          widgets: restoreLayoutWidgets(layout.widgets ?? []),
+        })),
         loadedSettings.activeLayoutId ?? null
       );
     }
