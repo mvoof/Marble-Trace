@@ -47,7 +47,9 @@ const createOverlayWindow = async (monitor: PhysicalMonitor) => {
 
   const overlay = new WebviewWindow(label, {
     url: `index.html#/overlay?monitor=${encodeURIComponent(monitor.name)}`,
-    title: '',
+    // Named, not empty: the window shows up in the Task Manager process tree,
+    // where a blank title is indistinguishable from a stray webview.
+    title: `Marble Trace Overlay - ${monitor.name}`,
     transparent: true,
     decorations: false,
     alwaysOnTop: true,

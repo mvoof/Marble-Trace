@@ -30,7 +30,7 @@ export const openDiagnosticsHud = async (): Promise<void> => {
 
   const hud = new WebviewWindow(DIAGNOSTICS_HUD_LABEL, {
     url: 'index.html#/diagnostics-hud',
-    title: '',
+    title: 'Marble Trace Diagnostics',
     width: HUD_WIDTH,
     height: HUD_HEIGHT,
     transparent: true,
