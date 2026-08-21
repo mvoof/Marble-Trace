@@ -17,10 +17,7 @@ mod runtime;
 #[cfg(windows)]
 pub use runtime::InputRuntime;
 
-/// Emitted whenever the set of attached devices changes.
-pub const INPUT_DEVICES_EVENT: &str = "input://devices";
-/// Emitted on every button edge.
-pub const INPUT_BUTTON_EVENT: &str = "input://button";
+pub use crate::model::events::{INPUT_BUTTON_EVENT, INPUT_DEVICES_EVENT};
 
 #[cfg(not(windows))]
 pub struct InputRuntime;

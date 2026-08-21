@@ -614,27 +614,27 @@ export type EnvironmentFrame = {
    * Ambient air temperature in °C
    * @see https://sajax.github.io/irsdkdocs/telemetry/airtemp/
    */
-  air_temp: number | null;
+  airTemp: number | null;
   /**
    * Track surface temperature in °C
    * @see https://sajax.github.io/irsdkdocs/telemetry/tracktemp/
    */
-  track_temp: number | null;
+  trackTemp: number | null;
   /**
    * Wind velocity in m/s
    * @see https://sajax.github.io/irsdkdocs/telemetry/windvel/
    */
-  wind_vel: number | null;
+  windVel: number | null;
   /**
    * Wind direction in radians
    * @see https://sajax.github.io/irsdkdocs/telemetry/winddir/
    */
-  wind_dir: number | null;
+  windDir: number | null;
   /**
    * Relative humidity (0.0 to 1.0)
    * @see https://sajax.github.io/irsdkdocs/telemetry/relativehumidity/
    */
-  relative_humidity: number | null;
+  relativeHumidity: number | null;
   /**
    * Skies (0=clear, 1=partly cloudy, 2=mostly cloudy, 3=overcast)
    * @see https://sajax.github.io/irsdkdocs/telemetry/skies/
@@ -647,19 +647,19 @@ export type EnvironmentFrame = {
   /**
    * Estimate of overall track wetness (0=dry to 7=flooded)
    */
-  track_wetness: number | null;
+  trackWetness: number | null;
   /**
    * Whether rain tires are officially allowed
    */
-  weather_declared_wet: boolean | null;
+  weatherDeclaredWet: boolean | null;
   /**
    * Weather dynamics (Constant vs Dynamic)
    */
-  weather_type: number | null;
+  weatherType: number | null;
   /**
    * Weather system version
    */
-  weather_version: number | null;
+  weatherVersion: number | null;
 };
 
 export type FuelComputedFrame = {
@@ -678,6 +678,32 @@ export type FuelComputedFrame = {
   pitWindowEnd: number | null;
   isTimedRace: boolean;
   lapFuelHistory: FuelLapRecord[];
+  historyStats: FuelHistoryStats;
+  /**
+   * How `fuel_to_add_with_buffer` splits across the stops left to make —
+   * the buffered figure, because that is the one both the widget and the pit
+   * order dial in. `None` when nothing has to be added.
+   */
+  refuelPlan: RefuelPlan | null;
+};
+
+/**
+ * Last, average, minimum and maximum consumption over the *whole* recorded
+ * history, deliberately ignoring the user's averaging window.
+ *
+ * That window already drives `avg_per_lap` and every strategy figure with it;
+ * repeating it here would make the stats row restate the summary instead of
+ * adding to it. Reading the two side by side is what tells the driver whether
+ * the current pace runs richer or leaner than the stint has averaged.
+ *
+ * Rejected laps are skipped outright, so an out-lap or a lap behind the safety
+ * car cannot become MIN or MAX however far it sits from the rest.
+ */
+export type FuelHistoryStats = {
+  last: number | null;
+  avg: number | null;
+  min: number | null;
+  max: number | null;
 };
 
 /**
@@ -995,6 +1021,26 @@ export type PitState = 'none' | 'in' | 'stall' | 'exit';
 
 export type PitStopsFrame = { playerStops: number };
 
+/**
+ * Where the car is along the pit lane, and how far the current target still is.
+ *
+ * One frame rather than three loose scalars on the bundle: as a struct it can
+ * be quantized and held back when unchanged like every other per-tick frame,
+ * and the frontend writes it under a single `if` instead of on every tick
+ * whether or not the car is anywhere near the pits.
+ */
+export type PitTargetFrame = {
+  /**
+   * Meters to the current target.
+   */
+  distM: number;
+  target: PitTargetType;
+  /**
+   * Position along the pit lane, 0..1.
+   */
+  laneProgressPct: number;
+};
+
 export type PitTargetType = 'pitbox' | 'pitExit';
 
 export type ProximityFrame = {
@@ -1117,6 +1163,24 @@ export type ReferenceLapSample = {
 };
 
 /**
+ * How the outstanding fuel is split across the stops left to make.
+ *
+ * Splitting the total evenly would recommend an amount no real stop uses:
+ * drivers fill to the brim early and take the remainder last, so `fill_now` is
+ * capped by tank capacity rather than divided.
+ */
+export type RefuelPlan = {
+  /**
+   * Stops needed to take on the whole amount; 1 when a single tank covers it.
+   */
+  stops: number;
+  /**
+   * What to dial in at this stop — a full tank while more stops remain.
+   */
+  fillNow: number;
+};
+
+/**
  * Relative frame — emitted at 10 Hz in `TelemetryBundle.relative`.
  *
  * Entries are sorted by `relative_lap_dist` descending so that cars ahead
@@ -1133,6 +1197,23 @@ export type RelativeFrame = {
    */
   playerCarIdx: number;
 };
+
+/**
+ * Control messages the main window may push to the remote screens.
+ *
+ * A whitelist rather than a free-form kind: the value reaching the socket is
+ * one of these or nothing, so a typo in the main window cannot invent a
+ * message the browser will never understand.
+ *
+ * **A Tauri event never leaves the app.** Anything a hotkey does to a widget
+ * needs a variant here too, or the monitors move and the tablet stays where it
+ * was.
+ */
+export type RemoteControlKind =
+  | 'standings-class-index'
+  | 'standings-scroll'
+  | 'stream-chat-scroll'
+  | 'track-rotation';
 
 /**
  * What a connected device says about itself.
@@ -1205,6 +1286,30 @@ export type RemoteServerInfo = {
   lan: boolean;
   clientCount: number;
 };
+
+/**
+ * Message kinds the server pushes on its own — the mirrored sim events, plus
+ * the two the hub originates.
+ */
+export type RemoteStreamKind =
+  /**
+   * The screen's own widget layout, published by the main window.
+   */
+  | 'snapshot'
+  /**
+   * A whole `TelemetryBundle`, forwarded already serialized.
+   */
+  | 'telemetry'
+  | 'session'
+  | 'status'
+  | 'weather'
+  | 'capabilities'
+  | 'disconnected'
+  | 'track-shape'
+  | 'reference-lap'
+  | 'chat-message'
+  | 'chat-presence'
+  | 'chat-deletion';
 
 /**
  * A finishing/running position from the session results.
@@ -1361,17 +1466,17 @@ export type SimPerfFrame = {
    * Average frames per second rendered by the sim.
    * @see https://sajax.github.io/irsdkdocs/telemetry/framerate/
    */
-  frame_rate: number | null;
+  frameRate: number | null;
   /**
    * Percent of available time the GPU took, 1 second average.
    * @see https://sajax.github.io/irsdkdocs/telemetry/gpuusage/
    */
-  gpu_usage: number | null;
+  gpuUsage: number | null;
   /**
    * Percent of available time the foreground thread took, 1 second average.
    * @see https://sajax.github.io/irsdkdocs/telemetry/cpuusagefg/
    */
-  cpu_usage_fg: number | null;
+  cpuUsageFg: number | null;
 };
 
 /**
@@ -1397,17 +1502,17 @@ export type Skies = 'Clear' | 'PartlyCloudy' | 'MostlyCloudy' | 'Overcast';
  * show.
  */
 export type SourceFrame = {
-  car_dynamics: CarDynamicsFrame;
-  car_inputs: CarInputsFrame;
-  car_positions: CarPositionsFrame;
-  car_idx: CarIdxFrame;
+  carDynamics: CarDynamicsFrame;
+  carInputs: CarInputsFrame;
+  carPositions: CarPositionsFrame;
+  carIdx: CarIdxFrame;
   chassis: ChassisFrame;
-  lap_timing: LapTimingFrame;
-  car_status: CarStatusFrame;
-  pit_service: PitServiceFrame;
+  lapTiming: LapTimingFrame;
+  carStatus: CarStatusFrame;
+  pitService: PitServiceFrame;
   session: SessionFrame;
   environment: EnvironmentFrame;
-  sim_perf: SimPerfFrame;
+  simPerf: SimPerfFrame;
 };
 
 /**
@@ -1428,27 +1533,25 @@ export type SpotterState =
   | 'twoCarsRight';
 
 export type TelemetryBundle = {
-  car_dynamics?: CarDynamicsFrame | null;
-  car_inputs?: CarInputsFrame | null;
-  car_positions?: CarPositionsFrame | null;
-  lap_delta?: LapDeltaFrame | null;
-  car_idx?: CarIdxFrame | null;
+  carDynamics?: CarDynamicsFrame | null;
+  carInputs?: CarInputsFrame | null;
+  carPositions?: CarPositionsFrame | null;
+  lapDelta?: LapDeltaFrame | null;
+  carIdx?: CarIdxFrame | null;
   chassis?: ChassisFrame | null;
-  lap_timing?: LapTimingFrame | null;
+  lapTiming?: LapTimingFrame | null;
   proximity?: ProximityFrame | null;
   relative?: RelativeFrame | null;
-  driver_entries?: DriverEntriesFrame | null;
-  car_status?: CarStatusFrame | null;
+  driverEntries?: DriverEntriesFrame | null;
+  carStatus?: CarStatusFrame | null;
   fuel?: FuelComputedFrame | null;
-  pit_stops?: PitStopsFrame | null;
-  pit_service?: PitServiceFrame | null;
-  lap_log?: LapLogFrame | null;
+  pitStops?: PitStopsFrame | null;
+  pitService?: PitServiceFrame | null;
+  lapLog?: LapLogFrame | null;
   session?: SessionFrame | null;
   environment?: EnvironmentFrame | null;
-  track_recording?: TrackRecordingFrame | null;
-  pit_target_dist_m?: number | null;
-  pit_target_type?: PitTargetType | null;
-  pit_lane_progress_pct?: number | null;
+  trackRecording?: TrackRecordingFrame | null;
+  pitTarget?: PitTargetFrame | null;
 };
 
 /**
@@ -1462,16 +1565,16 @@ export type TelemetryBundle = {
  * answer a key press.
  */
 export type TelemetrySlowBundle = {
-  car_status: CarStatusFrame;
-  lap_timing: LapTimingFrame;
-  pit_service: PitServiceFrame;
+  carStatus: CarStatusFrame;
+  lapTiming: LapTimingFrame;
+  pitService: PitServiceFrame;
   fuel?: FuelComputedFrame | null;
   /**
    * Distinct car classes in the field. A count rather than the entries: the
    * standings class hotkeys only need to know where the cycle wraps, and the
    * per-car frame is exactly what main is off the bundle to avoid.
    */
-  car_class_count: number;
+  carClassCount: number;
 };
 
 export type TireCompoundEntry = { tireIndex: number; tireCompoundType: string };

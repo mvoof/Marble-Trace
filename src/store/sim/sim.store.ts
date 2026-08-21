@@ -118,7 +118,7 @@ export class SimStore {
                 // track turns wet mid-session the dry reference stops being the
                 // right target and the wet one has to be loaded in its place.
                 trackWetness:
-                  this.root.environment.environment?.track_wetness ?? null,
+                  this.root.environment.environment?.trackWetness ?? null,
               }
             : null;
         },
@@ -553,13 +553,11 @@ export class SimStore {
         const slow = event.payload;
 
         runInAction(() => {
-          this.root.player.updateCarStatus(slow.car_status);
-          this.root.player.updateLapTiming(slow.lap_timing);
-          this.root.player.updatePitService(slow.pit_service);
+          this.root.player.updateCarStatus(slow.carStatus);
+          this.root.player.updateLapTiming(slow.lapTiming);
+          this.root.player.updatePitService(slow.pitService);
 
-          this.root.backendComputed.updateSlowCarClassCount(
-            slow.car_class_count
-          );
+          this.root.backendComputed.updateSlowCarClassCount(slow.carClassCount);
 
           if (slow.fuel) {
             this.root.backendComputed.updateFuel(slow.fuel);

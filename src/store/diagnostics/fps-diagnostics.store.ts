@@ -297,16 +297,16 @@ export class FpsDiagnosticsStore {
           return;
         }
 
-        if (frame.frame_rate !== null) {
-          bucket.fps.push(frame.frame_rate);
+        if (frame.frameRate !== null) {
+          bucket.fps.push(frame.frameRate);
         }
 
-        if (frame.gpu_usage !== null) {
-          bucket.gpu.push(frame.gpu_usage * LOAD_FRACTION_TO_PERCENT);
+        if (frame.gpuUsage !== null) {
+          bucket.gpu.push(frame.gpuUsage * LOAD_FRACTION_TO_PERCENT);
         }
 
-        if (frame.cpu_usage_fg !== null) {
-          bucket.cpu.push(frame.cpu_usage_fg * LOAD_FRACTION_TO_PERCENT);
+        if (frame.cpuUsageFg !== null) {
+          bucket.cpu.push(frame.cpuUsageFg * LOAD_FRACTION_TO_PERCENT);
         }
       }
     );

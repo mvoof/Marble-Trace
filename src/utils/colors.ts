@@ -1,17 +1,16 @@
+import { DEFAULT_CLASS_COLOR } from '@utils/backend-constants';
 import type { CSSProperties } from 'react';
-
-const FALLBACK_CLASS_COLOR = '#888888';
 
 /**
  * Normalize a raw iRacing class/licence color string (e.g. "0xffda59" or
  * "ffda59") into a CSS hex color. Falls back to a neutral grey when empty.
  */
 export const parseClassColor = (raw: string | null | undefined): string => {
-  if (!raw) return FALLBACK_CLASS_COLOR;
+  if (!raw) return DEFAULT_CLASS_COLOR;
 
   const hex = raw.replace('0x', '').replace('#', '');
 
-  return hex.length >= 6 ? `#${hex.slice(-6)}` : FALLBACK_CLASS_COLOR;
+  return hex.length >= 6 ? `#${hex.slice(-6)}` : DEFAULT_CLASS_COLOR;
 };
 
 const LUMINANCE_MIDPOINT = 0.6;

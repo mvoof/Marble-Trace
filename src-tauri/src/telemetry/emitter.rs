@@ -13,7 +13,7 @@ use super::quantize;
 use super::scheduler::DueGroups;
 use super::state::{
     TelemetryServiceState, EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS,
-    EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE, EVENT_STANDINGS,
+    EVENT_DRIVER_ENTRIES, EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE,
 };
 use crate::capabilities::Capabilities;
 use crate::computations::{
@@ -24,7 +24,8 @@ use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::environment::EnvironmentFrame;
 use crate::model::lap_log::LapLogFrame;
 use crate::model::player::{
-    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
+    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame,
+    PitServiceFrame, PitTargetFrame,
 };
 use crate::model::reference_lap::{ReferenceLapData, TrackCondition};
 use crate::model::relative::RelativeFrame;
@@ -33,26 +34,14 @@ use crate::model::track_shape::{TrackRecordingFrame, TrackShapePayload};
 use crate::sources::source::SourceFrame;
 use crate::utils::lock_or_recover;
 
-pub const EVENT_TRACK_SHAPE: &str = "sim://track-shape";
-pub const EVENT_CAPABILITIES: &str = "sim://capabilities";
-pub const EVENT_TELEMETRY_BUNDLE: &str = "sim://telemetry/bundle";
-pub const EVENT_SESSION_INFO: &str = "sim://session";
-pub const EVENT_WEATHER_FORECAST: &str = "sim://weather";
-pub const EVENT_STATUS: &str = "sim://status";
-/// The sim's own performance counters. Deliberately not part of the telemetry
-/// bundle: the FPS diagnostics runner is the only consumer, it lives in the
-/// main window, and folding these into the bundle would force that window to
-/// subscribe to 60 Hz telemetry it otherwise has no use for — and would hide
-/// the cost of that subscription from the very tool meant to measure it.
-pub const EVENT_SIM_PERF: &str = "sim://perf";
-/// A 4 Hz slice for windows that do not take the telemetry bundle. The main
-/// window drives layout auto-switching off `is_on_track` and the automatic pit
-/// order off the fuel calculation and the sim's own order — subscribing it to
-/// 60 Hz telemetry to read four frames at four hertz is not the way to get
-/// them.
-pub const EVENT_TELEMETRY_SLOW: &str = "sim://telemetry/slow";
-pub const EVENT_DISCONNECTED: &str = "sim://disconnected";
-pub const EVENT_REFERENCE_LAP_UPDATED: &str = "sim://reference-lap/updated";
+// The names themselves live on the contract in `model/events.rs`, where the
+// remote hub and the generated TypeScript read them too. Re-exported here
+// because this is the module that emits them.
+pub use crate::model::events::{
+    EVENT_CAPABILITIES, EVENT_DISCONNECTED, EVENT_REFERENCE_LAP_UPDATED, EVENT_SESSION_INFO,
+    EVENT_SIM_PERF, EVENT_STATUS, EVENT_TELEMETRY_BUNDLE, EVENT_TELEMETRY_SLOW, EVENT_TRACK_SHAPE,
+    EVENT_WEATHER_FORECAST,
+};
 
 pub struct EmitContext<'a> {
     pub app: &'a AppHandle,
@@ -64,8 +53,9 @@ pub struct EmitContext<'a> {
     pub capabilities: Capabilities,
 }
 
-#[derive(Debug, serde::Serialize, Clone)]
+#[derive(Debug, serde::Serialize, Clone, Default)]
 #[cfg_attr(feature = "dev", derive(specta::Type))]
+#[serde(rename_all = "camelCase")]
 pub struct TelemetryBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub car_dynamics: Option<CarDynamicsFrame>,
@@ -104,11 +94,7 @@ pub struct TelemetryBundle {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub track_recording: Option<TrackRecordingFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pit_target_dist_m: Option<f32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub pit_target_type: Option<crate::model::enums::PitTargetType>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub pit_lane_progress_pct: Option<f32>,
+    pub pit_target: Option<PitTargetFrame>,
 }
 
 /// The 4 Hz slice a window that does not draw widgets still needs.
@@ -121,6 +107,7 @@ pub struct TelemetryBundle {
 /// answer a key press.
 #[derive(Debug, serde::Serialize, Clone)]
 #[cfg_attr(feature = "dev", derive(specta::Type))]
+#[serde(rename_all = "camelCase")]
 pub struct TelemetrySlowBundle {
     pub car_status: CarStatusFrame,
     pub lap_timing: LapTimingFrame,
@@ -139,29 +126,9 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
     let due = ctx.due;
 
     let active_mask = ctx.service.active_events.load(Ordering::Relaxed);
-    let mut bundle = TelemetryBundle {
-        car_dynamics: None,
-        car_inputs: None,
-        car_positions: None,
-        lap_delta: None,
-        car_idx: None,
-        chassis: None,
-        lap_timing: None,
-        proximity: None,
-        relative: None,
-        driver_entries: None,
-        car_status: None,
-        fuel: None,
-        pit_stops: None,
-        pit_service: None,
-        lap_log: None,
-        session: None,
-        environment: None,
-        track_recording: None,
-        pit_target_dist_m: None,
-        pit_target_type: None,
-        pit_lane_progress_pct: None,
-    };
+    // Every field is an `Option` the tiers below fill in, so the empty bundle
+    // is the derived default rather than twenty-two `None`s written out.
+    let mut bundle = TelemetryBundle::default();
 
     // 60 Hz — raw frames
     if (active_mask & EVENT_CAR_DYNAMICS) != 0 {
@@ -286,9 +253,11 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
                 pitbox_pct,
                 track_length,
             ) {
-                bundle.pit_target_dist_m = Some(pit_target.dist_m);
-                bundle.pit_target_type = Some(pit_target.target);
-                bundle.pit_lane_progress_pct = Some(pit_target.lane_progress);
+                bundle.pit_target = Some(PitTargetFrame {
+                    dist_m: pit_target.dist_m,
+                    target: pit_target.target,
+                    lane_progress_pct: pit_target.lane_progress,
+                });
             }
         }
 
@@ -359,7 +328,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
     // the mask gates publication, never computation, so a widget switched on
     // mid-race finds the driver table, the gaps and the history intact
     // instead of rebuilding them from the tick it became visible.
-    if (active_mask & EVENT_STANDINGS) == 0 {
+    if (active_mask & EVENT_DRIVER_ENTRIES) == 0 {
         bundle.driver_entries = None;
     }
 
@@ -410,6 +379,10 @@ fn quantize_bundle(bundle: &mut TelemetryBundle) {
 
     if let Some(frame) = bundle.proximity.as_mut() {
         quantize::proximity(frame);
+    }
+
+    if let Some(frame) = bundle.pit_target.as_mut() {
+        quantize::pit_target(frame);
     }
 }
 

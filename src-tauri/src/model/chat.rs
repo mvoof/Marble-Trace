@@ -208,3 +208,21 @@ pub struct TwitchTokenResult {
     pub login: Option<String>,
     pub error: Option<String>,
 }
+
+#[cfg(feature = "dev")]
+pub fn register_types(types: &mut specta::TypeCollection) {
+    types
+        .register::<ChatPlatform>()
+        .register::<ChatConnectionStatus>()
+        .register::<ChatFragment>()
+        .register::<ChatBadge>()
+        .register::<ChatHighlightKind>()
+        .register::<ChatHighlight>()
+        .register::<ChatMessage>()
+        .register::<ChatDeletion>()
+        .register::<ChatRoomMode>()
+        .register::<ChatPresence>()
+        .register::<ChatConfig>()
+        .register::<TwitchDeviceCode>()
+        .register::<TwitchTokenResult>();
+}

@@ -16,23 +16,22 @@ export const applyTelemetryBundle = (
   onFrame?: () => void
 ) => {
   runInAction(() => {
-    if (bundle.car_dynamics) {
+    if (bundle.carDynamics) {
       onFrame?.();
-      root.player.updateCarDynamics(bundle.car_dynamics);
+      root.player.updateCarDynamics(bundle.carDynamics);
     }
 
-    if (bundle.car_idx) root.cars.updateCarIdx(bundle.car_idx);
-    if (bundle.car_inputs) root.player.updateCarInputs(bundle.car_inputs);
-    if (bundle.car_positions)
-      root.cars.updateCarPositions(bundle.car_positions);
-    if (bundle.car_status) root.player.updateCarStatus(bundle.car_status);
-    if (bundle.lap_timing) root.player.updateLapTiming(bundle.lap_timing);
+    if (bundle.carIdx) root.cars.updateCarIdx(bundle.carIdx);
+    if (bundle.carInputs) root.player.updateCarInputs(bundle.carInputs);
+    if (bundle.carPositions) root.cars.updateCarPositions(bundle.carPositions);
+    if (bundle.carStatus) root.player.updateCarStatus(bundle.carStatus);
+    if (bundle.lapTiming) root.player.updateLapTiming(bundle.lapTiming);
 
-    root.player.updatePitTarget(
-      bundle.pit_target_dist_m ?? null,
-      bundle.pit_target_type ?? null,
-      bundle.pit_lane_progress_pct ?? null
-    );
+    // Unconditional on purpose: an absent frame means the car is nowhere near
+    // the pits, which the rail has to clear rather than keep showing. The frame
+    // is unpacked into plain observables and arrives quantized, so a car
+    // standing in its box assigns the same three numbers and wakes nobody.
+    root.player.updatePitTarget(bundle.pitTarget ?? null);
 
     if (bundle.session) root.session.updateSession(bundle.session);
 
@@ -41,24 +40,24 @@ export const applyTelemetryBundle = (
     }
 
     if (bundle.chassis) root.player.updateChassis(bundle.chassis);
-    if (bundle.pit_service) root.player.updatePitService(bundle.pit_service);
+    if (bundle.pitService) root.player.updatePitService(bundle.pitService);
 
     if (bundle.proximity)
       root.backendComputed.updateProximity(bundle.proximity);
     if (bundle.relative) root.backendComputed.updateRelative(bundle.relative);
     if (bundle.fuel) root.backendComputed.updateFuel(bundle.fuel);
-    if (bundle.driver_entries)
-      root.backendComputed.updateDriverEntries(bundle.driver_entries);
-    if (bundle.pit_stops) root.backendComputed.updatePitStops(bundle.pit_stops);
-    if (bundle.lap_delta) root.backendComputed.updateLapDelta(bundle.lap_delta);
-    if (bundle.lap_log) root.backendComputed.updateLapLog(bundle.lap_log);
+    if (bundle.driverEntries)
+      root.backendComputed.updateDriverEntries(bundle.driverEntries);
+    if (bundle.pitStops) root.backendComputed.updatePitStops(bundle.pitStops);
+    if (bundle.lapDelta) root.backendComputed.updateLapDelta(bundle.lapDelta);
+    if (bundle.lapLog) root.backendComputed.updateLapLog(bundle.lapLog);
 
-    if (bundle.track_recording) {
+    if (bundle.trackRecording) {
       root.trackMapWidget.updateRecordingStatus(
-        bundle.track_recording.isRecording,
-        bundle.track_recording.isWaitingForSf,
-        bundle.track_recording.progress,
-        bundle.track_recording.pitLaneRecording
+        bundle.trackRecording.isRecording,
+        bundle.trackRecording.isWaitingForSf,
+        bundle.trackRecording.progress,
+        bundle.trackRecording.pitLaneRecording
       );
     }
   });

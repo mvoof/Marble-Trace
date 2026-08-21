@@ -194,3 +194,18 @@ where
     ProcessorRegistry: Send,
 {
 }
+
+/// Registers the computed frames this layer publishes.
+#[cfg(feature = "dev")]
+pub fn register_types(types: &mut specta::TypeCollection) {
+    types
+        .register::<driver_entries::DriverEntriesFrame>()
+        .register::<driver_entries::DriverEntry>()
+        .register::<fuel::FuelComputedFrame>()
+        .register::<lap_delta::LapDeltaFrame>()
+        .register::<pit_stops::PitStopsFrame>()
+        .register::<proximity::LateralSide>()
+        .register::<proximity::NearbyCar>()
+        .register::<proximity::ProximityFrame>()
+        .register::<proximity::RadarDistances>();
+}

@@ -1,3 +1,5 @@
+#[cfg(feature = "dev")]
+mod bindings;
 mod capabilities;
 mod chat;
 mod commands;
@@ -10,19 +12,6 @@ mod remote;
 mod sources;
 mod telemetry;
 mod utils;
-
-#[cfg(feature = "dev")]
-use computations::{
-    driver_entries::{DriverEntriesFrame, DriverEntry},
-    fuel::FuelComputedFrame,
-    lap_delta::LapDeltaFrame,
-    pit_stops::PitStopsFrame,
-    proximity::{LateralSide, NearbyCar, ProximityFrame, RadarDistances},
-};
-#[cfg(feature = "dev")]
-use model::reference_lap::{ReferenceLapData, ReferenceLapSample, TrackCondition};
-#[cfg(feature = "dev")]
-use model::track_shape::{TrackPoint, TrackRecordingFrame, TrackShapePayload};
 
 use chat::commands::{
     start_chat_stream, stop_chat_stream, twitch_current_login, twitch_has_client_id,
@@ -45,41 +34,6 @@ use remote::commands::{
 };
 use telemetry::state::TelemetryState;
 
-#[cfg(feature = "dev")]
-use model::capabilities::CapabilitiesPayload;
-#[cfg(feature = "dev")]
-use model::cars::CarIdxFrame;
-#[cfg(feature = "dev")]
-use model::chat::{
-    ChatBadge, ChatConfig, ChatConnectionStatus, ChatDeletion, ChatFragment, ChatHighlight,
-    ChatHighlightKind, ChatMessage, ChatPlatform, ChatPresence, ChatRoomMode, TwitchDeviceCode,
-    TwitchTokenResult,
-};
-#[cfg(feature = "dev")]
-use model::enums::{SimStatus, SimType};
-#[cfg(feature = "dev")]
-use model::environment::{EnvironmentFrame, WeatherForecastEntry};
-#[cfg(feature = "dev")]
-use model::input::{InputButtonEvent, InputDevice, InputDeviceRemap, InputDeviceResolution};
-#[cfg(feature = "dev")]
-use model::pit_command::{PitCommandKind, PitCommandRequest};
-#[cfg(feature = "dev")]
-use model::player::{
-    CarDynamicsFrame, CarInputsFrame, CarStatusFrame, ChassisFrame, LapTimingFrame, PitServiceFrame,
-};
-#[cfg(feature = "dev")]
-use model::remote::{RemoteDevice, RemoteServerConfig, RemoteServerInfo};
-#[cfg(feature = "dev")]
-use model::session::SessionFrame;
-
-#[cfg(feature = "dev")]
-use model::session::SessionSnapshot;
-#[cfg(feature = "dev")]
-use model::sim_perf::SimPerfFrame;
-#[cfg(feature = "dev")]
-use specta::TypeCollection;
-#[cfg(feature = "dev")]
-use specta_typescript::Typescript;
 use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32};
 use std::sync::{Arc, Mutex};
 use tauri::{generate_context, generate_handler, Builder, Listener, Manager, WindowEvent};
@@ -89,75 +43,7 @@ use tauri_plugin_store::StoreExt;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[cfg(feature = "dev")]
-    {
-        let mut types = TypeCollection::default();
-        types
-            .register::<CarDynamicsFrame>()
-            .register::<CarIdxFrame>()
-            .register::<CarInputsFrame>()
-            .register::<CarStatusFrame>()
-            .register::<ChassisFrame>()
-            .register::<PitServiceFrame>()
-            .register::<LapTimingFrame>()
-            .register::<SessionFrame>()
-            .register::<EnvironmentFrame>()
-            .register::<NearbyCar>()
-            .register::<RadarDistances>()
-            .register::<LateralSide>()
-            .register::<SessionSnapshot>()
-            .register::<ProximityFrame>()
-            .register::<FuelComputedFrame>()
-            .register::<DriverEntriesFrame>()
-            .register::<DriverEntry>()
-            .register::<PitStopsFrame>()
-            .register::<LapDeltaFrame>()
-            .register::<SimPerfFrame>()
-            .register::<telemetry::emitter::TelemetryBundle>()
-            .register::<telemetry::emitter::TelemetrySlowBundle>()
-            .register::<sources::source::SourceFrame>()
-            .register::<WeatherForecastEntry>()
-            .register::<CapabilitiesPayload>()
-            .register::<SimType>()
-            .register::<PitCommandKind>()
-            .register::<PitCommandRequest>()
-            .register::<SimStatus>()
-            .register::<RemoteServerInfo>()
-            .register::<RemoteServerConfig>()
-            .register::<RemoteDevice>();
-
-        types
-            .register::<ChatPlatform>()
-            .register::<ChatConnectionStatus>()
-            .register::<ChatFragment>()
-            .register::<ChatBadge>()
-            .register::<ChatHighlightKind>()
-            .register::<ChatHighlight>()
-            .register::<ChatMessage>()
-            .register::<ChatDeletion>()
-            .register::<ChatRoomMode>()
-            .register::<ChatPresence>()
-            .register::<ChatConfig>()
-            .register::<TwitchDeviceCode>()
-            .register::<TwitchTokenResult>();
-
-        types
-            .register::<TrackPoint>()
-            .register::<TrackShapePayload>()
-            .register::<TrackRecordingFrame>()
-            .register::<ReferenceLapData>()
-            .register::<ReferenceLapSample>()
-            .register::<TrackCondition>();
-
-        types
-            .register::<InputDevice>()
-            .register::<InputButtonEvent>()
-            .register::<InputDeviceRemap>()
-            .register::<InputDeviceResolution>();
-
-        Typescript::default()
-            .export_to("../src/types/bindings.ts", &types)
-            .unwrap();
-    }
+    bindings::export();
 
     let aptabase_key = option_env!("APTABASE_KEY").unwrap_or("");
     let force_track_start = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
@@ -321,7 +207,7 @@ pub fn run() {
                 inspector_active: AtomicBool::new(false),
                 car_class_count: AtomicU32::new(0),
                 inspector_frame: Mutex::new(None),
-                car_length_m: Mutex::new(4.4),
+                car_length_m: Mutex::new(model::defaults::DEFAULT_CAR_LENGTH_M),
                 track_cached: track_cached_service,
                 stored_reference_lap_time: stored_reference_lap_time_service,
             }),

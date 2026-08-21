@@ -1,3 +1,4 @@
+import { DEFAULT_CAR_LENGTH_M } from '@utils/backend-constants';
 import type { WidgetManifest } from '@/types/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
@@ -22,7 +23,7 @@ export const RADAR_BAR_MANIFEST: WidgetManifest = {
     ...TRANSPARENT_APPEARANCE_DEFAULTS,
     proximityThreshold: 3,
     hideDelay: 2,
-    carLength: 4.4,
+    carLength: DEFAULT_CAR_LENGTH_M,
     qualifyingVisibility: 'auto',
     showDistance: true,
   },

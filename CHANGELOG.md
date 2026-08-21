@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Refuel Amount Ignored the Fuel Already on Board:** Fixed the pit warning and the pit order recommending more fuel than the tank had room for — with 50 litres still in a 65-litre tank it would ask for the full amount needed rather than the 15 that would fit, and count it as one stop. The figure is now capped by the space actually left, and a fill that no longer fits in one go is counted as the extra stop it really is.
 - **Sector Matrix Was Empty:** Fixed the sector matrix reading a telemetry field it never asked the backend for, so it rendered with nothing in it.
 - **Track Map Recorded the Pit Lane:** Fixed a track shape being recorded from a lap through the pit lane, or from a shape started on pit exit, which bent the map away from the racing line.
 - **Missing Dividers in Settings:** Fixed grouped rows in the widget settings sharing one divider, so some settings ran into each other without a line between them.

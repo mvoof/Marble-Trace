@@ -17,3 +17,9 @@ pub fn create_source(sim: SimType) -> Option<Box<dyn TelemetrySource>> {
         }
     }
 }
+
+/// The raw adapted frame, which the telemetry inspector reads whole.
+#[cfg(feature = "dev")]
+pub fn register_types(types: &mut specta::TypeCollection) {
+    types.register::<source::SourceFrame>();
+}

@@ -103,7 +103,7 @@ pub const EVENT_CAR_POSITIONS: u32 = 1 << 3;
 /// — their processors carry state — but a frame nobody reads is left out of the
 /// bundle rather than serialized, shipped to every window and remote screen,
 /// parsed there and written into a store.
-pub const EVENT_STANDINGS: u32 = 1 << 4;
+pub const EVENT_DRIVER_ENTRIES: u32 = 1 << 4;
 pub const EVENT_RELATIVE: u32 = 1 << 5;
 pub const EVENT_PROXIMITY: u32 = 1 << 6;
 

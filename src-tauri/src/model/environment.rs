@@ -10,6 +10,7 @@ use crate::model::enums::Skies;
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct EnvironmentFrame {
     /// Ambient air temperature in °C
     /// @see https://sajax.github.io/irsdkdocs/telemetry/airtemp/

@@ -156,6 +156,20 @@ The boundary between the halves is generated, not hand-written. Rust types in
 [specta](https://github.com/specta-rs/specta), and `npm run tauri:dev` regenerates
 `src/types/bindings.ts` from them.
 
+The export itself lives in `src-tauri/src/bindings.rs`, and every module
+registers its own types in a `register_types` next to where they are declared —
+`model/`, `computations/`, `sources/`, `telemetry/`. A type registered nowhere
+does not fail the build; it simply vanishes from `bindings.ts` and fails at the
+frontend instead, which is why the registration sits beside the declaration
+rather than in one list in `lib.rs`.
+
+To regenerate without launching the app:
+
+```bash
+UPDATE_BINDINGS=1 cargo test --features dev regenerates_the_contract
+npm run format   # the checked-in copy is oxfmt-formatted
+```
+
 ```mermaid
 flowchart LR
     A["<b>src-tauri/src/model/*.rs</b><br/>#[derive(specta::Type)]<br/>struct FuelFrame"]
@@ -169,6 +183,46 @@ flowchart LR
 > interface that duplicates a backend payload.** If a shape is wrong, fix the Rust
 > struct and regenerate. A hand-written duplicate will drift, and nothing will
 > tell you.
+
+### Values are not types, and do not go through specta
+
+Specta exports _types_. A default like `carLength = 4.4`, a limit the backend
+validates against, or an event name is a **value** — and the frontend needs these
+as compile-time literals, because widget manifests are read while the module is
+still being imported, long before anything could `await` a command.
+
+So they are declared once in Rust, through the `ts_values!` macro in
+`src-tauri/src/model/ts_values.rs`, which emits both the Rust `const` and the
+TypeScript from a single list:
+
+| Rust                | Generated TypeScript             |
+| ------------------- | -------------------------------- |
+| `model/defaults.rs` | `src/utils/backend-constants.ts` |
+| `model/events.rs`   | `src/utils/backend-events.ts`    |
+
+They land in `src/utils/` rather than `src/types/` for the same reason they skip
+specta: `types/` holds types. Both generated files are checked in and pinned by
+a test, so a constant changed in Rust without regenerating fails `cargo test`
+rather than silently leaving the two halves on different numbers.
+
+### Everything on the wire is camelCase
+
+`TelemetryBundle`, `TelemetrySlowBundle` and `SourceFrame` all carry
+`#[serde(rename_all = "camelCase")]`, so every field _they_ name is camelCase.
+The outer bundles used to be the exception, which produced reads like
+`bundle.track_recording.isRecording` — two conventions in one expression.
+
+The nested frames each carry the rename or not on their own, and several of the
+raw sim frames still do not: `CarStatusFrame.fuel_level` and the
+`LapTimingFrame.lap_delta_to_*` fields keep the sim's own snake_case. Check
+`bindings.ts` for the frame you are reading rather than assuming.
+
+> [!WARNING]
+> If you add or change a rename, check `SLOW_FIELD_KEYS` in `remote/hub.rs`. It
+> matches field names against the **already-encoded** bundle to decide whether a
+> tick carries anything below 60 Hz, and a stale entry there fails nothing — it
+> quietly makes every bundle look 60 Hz-only and starts throwing the session
+> clock and the fuel numbers off every remote screen.
 
 ---
 
@@ -568,16 +622,16 @@ too.
 
 ## `input/`, `chat/` and the command surface
 
-| Module              | Role                                                                                           |
-| ------------------- | ---------------------------------------------------------------------------------------------- |
-| `input/dinput.rs`   | DirectInput8 game-controller polling                                                           |
-| `input/identity.rs` | device identity and re-matching after a driver reinstall                                       |
-| `input/runtime.rs`  | the polling thread                                                                             |
-| `input/commands.rs` | `resolve_input_devices`, `set_input_polling_enabled`                                           |
-| `chat/`             | Twitch chat stream — independent of any sim connection                                         |
-| `commands.rs`       | the main Tauri command surface (see [Command catalogue](#command-catalogue-frontend--backend)) |
-| `capabilities.rs`   | per-sim feature reporting                                                                      |
-| `logging.rs`        | tracing setup — `RUST_LOG=marble_trace_lib=debug npm run tauri:dev`                            |
+| Module              | Role                                                                                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `input/dinput.rs`   | DirectInput8 game-controller polling                                                                                                                          |
+| `input/identity.rs` | device identity and re-matching after a driver reinstall                                                                                                      |
+| `input/runtime.rs`  | the polling thread                                                                                                                                            |
+| `input/commands.rs` | `resolve_input_devices`, `set_input_polling_enabled`                                                                                                          |
+| `chat/`             | Twitch chat stream — independent of any sim connection                                                                                                        |
+| `commands/`         | the Tauri command surface, split by what it touches — `settings`, `telemetry`, `track`, `pit` (see [Command catalogue](#command-catalogue-frontend--backend)) |
+| `capabilities.rs`   | per-sim feature reporting                                                                                                                                     |
+| `logging.rs`        | tracing setup — `RUST_LOG=marble_trace_lib=debug npm run tauri:dev`                                                                                           |
 
 Device ids are DirectInput `guidInstance`, so replugging and port changes keep
 bindings intact. A driver reinstall that regenerates the GUID is re-matched by
@@ -722,11 +776,12 @@ The one part of `platform/` allowed to read stores.
 | `overlay-windows.ts`                         | creating, labelling and tearing down overlay windows                                          |
 | `overlay-labels.ts`                          | the monitor-name → window-label mapping                                                       |
 | `overlay-resolution.ts` · `monitor-watch.ts` | monitor geometry and hot-plug                                                                 |
-| `sim-events.ts`                              | **every backend event name constant**                                                         |
+| `sim-events.ts`                              | **every backend event name constant**, re-exported from the generated `@utils/backend-events` |
 
 > [!IMPORTANT]
 > Import event names from `sim-events.ts`. Never type an event name as a string
-> literal at a call site.
+> literal at a call site. The names themselves are declared in
+> `src-tauri/src/model/events.rs` — that is where you add one, not here.
 
 ### `settings-schema/`
 
@@ -1152,7 +1207,8 @@ expecting anything back — a fire-and-forget command, not an event.
 
 ### Channel ② — backend → frontend
 
-Names are constants in `platform/sync/sim-events.ts`; handlers are wired in
+Names come from `src-tauri/src/model/events.rs` through the generated
+`@utils/backend-events`, re-exported by `platform/sync/sim-events.ts`; handlers are wired in
 `platform/sync/listeners.ts`.
 
 | Event                                                    | Emitted by                  | Rate                          | Lands in                                             |

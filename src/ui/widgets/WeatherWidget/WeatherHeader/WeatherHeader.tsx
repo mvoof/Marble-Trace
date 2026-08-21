@@ -43,9 +43,9 @@ export const WeatherHeader = observer(() => {
   const tUnit = tempUnit(unitSystem);
 
   const airTempC =
-    environment?.air_temp ?? parseWeekendFloat(sessionInfo?.trackAirTemp);
+    environment?.airTemp ?? parseWeekendFloat(sessionInfo?.trackAirTemp);
   const skies = environment?.skies;
-  const wetness = environment?.track_wetness;
+  const wetness = environment?.trackWetness;
 
   const iconName = getWeatherIcon(skies, wetness);
   const WeatherIcon = ICON_MAP[iconName] ?? Sun;

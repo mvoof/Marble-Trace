@@ -30,6 +30,7 @@
 use crate::computations::driver_entries::{DriverEntriesFrame, DriverEntry};
 use crate::computations::proximity::ProximityFrame;
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
+use crate::model::player::PitTargetFrame;
 use crate::model::relative::RelativeFrame;
 
 /// Position around the lap, 0..1. 4 dp is 0.01 % of a lap — about 0.5 m on a
@@ -67,6 +68,20 @@ fn round_opt(value: &mut Option<f32>, decimals: u32) {
     if let Some(inner) = value.as_mut() {
         *inner = round(*inner, decimals);
     }
+}
+
+/// The pit rail draws the distance to the metre and the lane progress as a bar
+/// a few hundred pixels wide, so a centimetre and a hundredth of the lane are
+/// both a decimal finer than anything visible.
+///
+/// Not held back by `Publications` like the per-car frames are: here an absent
+/// frame means *no target* — the car is nowhere near the pits — and the overlay
+/// has to clear the rail when it stops arriving. Rounding still earns its keep,
+/// because the frontend unpacks the frame into plain observables and MobX wakes
+/// no observer for a value that did not change.
+pub fn pit_target(frame: &mut PitTargetFrame) {
+    frame.dist_m = round(frame.dist_m, DISTANCE_DP);
+    frame.lane_progress_pct = round(frame.lane_progress_pct, GAP_DP);
 }
 
 pub fn car_positions(frame: &mut CarPositionsFrame) {

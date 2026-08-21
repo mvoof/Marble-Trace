@@ -346,10 +346,10 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
       seedSampleTelemetry(store);
       applyWeather(store, {
         precipitation: 0.6,
-        track_wetness: 5,
+        trackWetness: 5,
         skies: 'Overcast',
-        weather_declared_wet: true,
-        relative_humidity: 0.85,
+        weatherDeclaredWet: true,
+        relativeHumidity: 0.85,
       });
     },
   },

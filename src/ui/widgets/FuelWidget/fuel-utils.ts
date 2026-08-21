@@ -1,4 +1,4 @@
-import type { FuelLapRecord } from '@/types/bindings';
+import type { FuelHistoryStats, FuelLapRecord } from '@/types/bindings';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import {
   FUEL_AVG_WINDOW_ALL_LAPS,
@@ -9,38 +9,16 @@ import {
 export const countedLaps = (history: FuelLapRecord[]): FuelLapRecord[] =>
   history.filter((record) => record.rejected === null);
 
-export interface FuelHistoryStats {
-  last: number | null;
-  avg: number | null;
-  min: number | null;
-  max: number | null;
-}
-
 /**
- * The whole recorded history, deliberately ignoring the user's averaging
- * window: that window already drives the summary row and every strategy figure
- * with it. Repeating it here made this row restate the summary instead of
- * adding to it — reading the two side by side is what tells the driver whether
- * the current pace runs richer or leaner than the stint has averaged.
- *
- * Rejected laps are skipped outright, so an out-lap or a lap behind the safety
- * car cannot become MIN or MAX however far it sits from the rest.
+ * Read off `FuelComputedFrame.historyStats`, which `computations/fuel.rs`
+ * fills. The shape is kept here as the widget's own name for it, and this is
+ * what a frame with no history yet reads as.
  */
-export const computeFuelHistoryStats = (
-  history: FuelLapRecord[]
-): FuelHistoryStats => {
-  const used = countedLaps(history).map((record) => record.used);
-
-  if (used.length === 0) {
-    return { last: null, avg: null, min: null, max: null };
-  }
-
-  const last = used[used.length - 1];
-  const avg = used.reduce((sum, value) => sum + value, 0) / used.length;
-  const min = Math.min(...used);
-  const max = Math.max(...used);
-
-  return { last, avg, min, max };
+export const EMPTY_FUEL_HISTORY_STATS: FuelHistoryStats = {
+  last: null,
+  avg: null,
+  min: null,
+  max: null,
 };
 
 export type FuelStatKey = keyof FuelHistoryStats;
@@ -129,36 +107,6 @@ export const resolveLapsStatus = (
   }
 
   return 'warning';
-};
-
-export interface RefuelPlan {
-  /** Stops needed to take on the whole amount, 1 when a single tank covers it. */
-  stops: number;
-  /** What to dial in at this stop — a full tank while more stops remain. */
-  fillNow: number;
-}
-
-/**
- * Splitting the total evenly across stops would recommend an amount no real
- * stop uses. Drivers fill to the brim early and take the remainder last, so
- * `fillNow` is capped by tank capacity instead.
- */
-export const computeRefuelPlan = (
-  fuelToAdd: number | null,
-  fuelMax: number | null
-): RefuelPlan | null => {
-  if (fuelToAdd === null || fuelToAdd <= 0) {
-    return null;
-  }
-
-  if (fuelMax === null || fuelMax <= 0) {
-    return { stops: 1, fillNow: fuelToAdd };
-  }
-
-  return {
-    stops: Math.ceil(fuelToAdd / fuelMax),
-    fillNow: Math.min(fuelToAdd, fuelMax),
-  };
 };
 
 const SECONDS_IN_MINUTE = 60;

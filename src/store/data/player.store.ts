@@ -7,6 +7,7 @@ import type {
   ChassisFrame,
   LapTimingFrame,
   PitServiceFrame,
+  PitTargetFrame,
 } from '@/types/bindings';
 
 export class PlayerStore {
@@ -64,14 +65,10 @@ export class PlayerStore {
     this.lapTiming = frame;
   }
 
-  updatePitTarget(
-    dist: number | null,
-    type: 'pitbox' | 'pitExit' | null,
-    progress: number | null
-  ) {
-    this.pitTargetDistM = dist;
-    this.pitTargetType = type;
-    this.pitLaneProgressPct = progress;
+  updatePitTarget(frame: PitTargetFrame | null) {
+    this.pitTargetDistM = frame?.distM ?? null;
+    this.pitTargetType = frame?.target ?? null;
+    this.pitLaneProgressPct = frame?.laneProgressPct ?? null;
   }
 
   reset() {

@@ -1,3 +1,5 @@
+import { PIT_WINDOW_END_BUFFER_LAPS } from '@utils/backend-constants';
+
 /**
  * Shared constants and thresholds for the FuelWidget.
  */
@@ -42,20 +44,22 @@ export const FUEL_CHART_CONFIG = {
   MAX_SCALE: 1.05,
 } as const;
 
-/** `fuelAvgWindow` value meaning "average every recorded lap of the session". */
-export const FUEL_AVG_WINDOW_ALL_LAPS = 0;
-
-/** Longest averaging window; must match `MAX_FUEL_AVG_WINDOW` in commands.rs. */
-export const FUEL_AVG_WINDOW_MAX = 100;
+// The window bounds are the backend's — it validates `set_fuel_avg_window`
+// against them — so they are re-exported from the generated file rather than
+// restated here.
+export {
+  FUEL_AVG_WINDOW_ALL_LAPS,
+  FUEL_AVG_WINDOW_MAX,
+} from '@utils/backend-constants';
 
 export const FUEL_THRESHOLDS = {
   /** Additional laps of fuel beyond pitWarningLaps to consider "Safe" */
   LAPS_LEFT_GREEN_BUFFER: 2,
   /**
    * Laps of fuel left at which the pit window has run out of laps to offer and
-   * the header stops naming one. `pit_window_end` is computed as the dry-tank
-   * lap minus the same one-lap cushion (`PIT_WINDOW_END_BUFFER_LAPS` in
-   * `fuel.rs`), so the two describe the same moment.
+   * the header stops naming one — the same one-lap cushion the backend takes
+   * off the dry-tank lap to get `pitWindowEnd`, which is why it comes from the
+   * generated file instead of a number repeated here.
    */
-  PIT_NOW_LAPS: 1,
+  PIT_NOW_LAPS: PIT_WINDOW_END_BUFFER_LAPS,
 } as const;

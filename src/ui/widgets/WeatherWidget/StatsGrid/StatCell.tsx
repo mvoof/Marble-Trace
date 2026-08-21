@@ -92,7 +92,7 @@ export const StatCell = observer(({ type }: StatCellProps) => {
 
   if (type === 'airTemp') {
     const airTempC =
-      env?.air_temp ?? parseWeekendFloat(sessionInfo?.trackAirTemp);
+      env?.airTemp ?? parseWeekendFloat(sessionInfo?.trackAirTemp);
 
     label = 'AIR';
     value = formatTemp(airTempC, unitSystem);
@@ -104,7 +104,7 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     }
   } else if (type === 'trackTemp') {
     const trackTempC =
-      env?.track_temp ?? parseWeekendFloat(sessionInfo?.trackSurfaceTemp);
+      env?.trackTemp ?? parseWeekendFloat(sessionInfo?.trackSurfaceTemp);
 
     label = 'TRACK';
     value = formatTemp(trackTempC, unitSystem);
@@ -116,9 +116,9 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     }
   } else if (type === 'wind') {
     const windVelMps =
-      env?.wind_vel ?? parseWeekendFloat(sessionInfo?.trackWindVel);
+      env?.windVel ?? parseWeekendFloat(sessionInfo?.trackWindVel);
     const windDirRad =
-      env?.wind_dir ?? parseWeekendFloat(sessionInfo?.trackWindDir);
+      env?.windDir ?? parseWeekendFloat(sessionInfo?.trackWindDir);
 
     label = 'WIND';
 
@@ -136,8 +136,8 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     fillFraction = windFraction(windVelMps);
   } else if (type === 'humidity') {
     const rawHumidity =
-      env?.relative_humidity !== undefined && env?.relative_humidity !== null
-        ? env.relative_humidity * 100
+      env?.relativeHumidity !== undefined && env?.relativeHumidity !== null
+        ? env.relativeHumidity * 100
         : parseWeekendFloat(sessionInfo?.trackRelativeHumidity);
 
     label = 'HUMIDITY';
@@ -146,7 +146,7 @@ export const StatCell = observer(({ type }: StatCellProps) => {
     accentColor = HUMIDITY_COLOR;
     fillFraction = humidityFraction(rawHumidity);
   } else if (type === 'trackWetness') {
-    const wetness = env?.track_wetness;
+    const wetness = env?.trackWetness;
     const info = getTrackWetnessInfo(wetness);
 
     label = 'SURFACE';

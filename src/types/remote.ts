@@ -26,31 +26,19 @@ export interface RemoteScreenSnapshot {
 }
 
 /**
- * Widget commands the main window sends to a remote screen — the same things a
+ * Control messages the main window pushes to the remote screens — whatever a
  * hotkey does to an overlay window, which cannot be reached by a Tauri event.
- * The backend keeps the identical whitelist.
+ *
+ * Declared in `src-tauri/src/model/events.rs` and generated into `bindings.ts`,
+ * so the whitelist cannot drift: the hub resolves the same enum, and a kind
+ * added on one side no longer compiles on the other.
  */
-export type RemoteControlKind =
-  | 'standings-class-index'
-  | 'standings-scroll'
-  | 'stream-chat-scroll'
-  | 'track-rotation';
+export type { RemoteControlKind, RemoteStreamKind } from '@/types/bindings';
+
+import type { RemoteControlKind, RemoteStreamKind } from '@/types/bindings';
 
 /** Message kinds the server pushes over the socket. */
-export type RemoteMessageKind =
-  | RemoteControlKind
-  | 'snapshot'
-  | 'telemetry'
-  | 'session'
-  | 'status'
-  | 'weather'
-  | 'capabilities'
-  | 'disconnected'
-  | 'track-shape'
-  | 'reference-lap'
-  | 'chat-message'
-  | 'chat-presence'
-  | 'chat-deletion';
+export type RemoteMessageKind = RemoteControlKind | RemoteStreamKind;
 
 export interface RemoteMessage {
   type: RemoteMessageKind;

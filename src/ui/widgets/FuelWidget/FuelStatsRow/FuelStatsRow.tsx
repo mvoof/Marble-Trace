@@ -13,8 +13,8 @@ import {
 } from '@utils/telemetry-format';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import {
-  computeFuelHistoryStats,
   computeLapsToEmpty,
+  EMPTY_FUEL_HISTORY_STATS,
   getFuelStatLabel,
   getVisibleFuelStatKeys,
 } from '../fuel-utils';
@@ -34,10 +34,13 @@ export const FuelStatsRow = observer(() => {
     return null;
   }
 
-  const history = fuel?.lapFuelHistory ?? [];
   const fuelLevel = carStatus?.fuel_level ?? null;
 
-  const stats = computeFuelHistoryStats(history);
+  // Computed in `computations/fuel.rs` alongside the average it is read
+  // against, so the same history is not walked a second time here on every
+  // frame — and so a remote screen gets the figures instead of recomputing
+  // them per device.
+  const stats = fuel?.historyStats ?? EMPTY_FUEL_HISTORY_STATS;
 
   const formatConsumption = (value: number | null): string =>
     value !== null ? formatFuel(value, unitSystem) : NO_FUEL_DATA_PLACEHOLDER;

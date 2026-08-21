@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct SimPerfFrame {
     /// Average frames per second rendered by the sim.
     /// @see https://sajax.github.io/irsdkdocs/telemetry/framerate/
