@@ -106,8 +106,12 @@ Before the first save at a new version, the old file is copied to
 - Any **shape change inside a persisted array**, since `mergeWithDefaults` will
   not reconcile array elements for you.
 - **A value inside `layouts[]` that changes meaning, moves or is renamed.**
-  Defaults are filled in for you (point 3 above), but nothing rewrites a value
-  that is already there — and it sits in every layout, not just the active one.
+  Defaults are filled in for you (point 3 above), and restoration keeps a value
+  it finds only when it is still a **known key of the right type**: a key absent
+  from the defaults is pruned, and one whose type no longer matches is reset to
+  the default with a `console.warn`. What it never does is reinterpret a value
+  that is still valid and now means something else — that is the migration's job,
+  in every layout's copy, not just the active one's.
 
 ## Adding a migration, step by step
 
