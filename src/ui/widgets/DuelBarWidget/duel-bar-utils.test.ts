@@ -237,6 +237,19 @@ describe('resolveAxisRange', () => {
     expect(resolveAxisRange(gap, 20, 25, true)).toBe(25);
   });
 
+  it('climbs the imperial ladder when the unit system is feet', () => {
+    // 38 m is 125 ft, and with the headroom 143 ft — the ±150 ft rung.
+    expect(resolveAxisRange(gap, 38, 10, false)).toBeCloseTo(
+      toMeters(150, false),
+      3
+    );
+    // And a distance threshold lands on the rung that holds it, in feet.
+    expect(resolveAxisRange(distance(20), 0, 10, false)).toBeCloseTo(
+      toMeters(75, false),
+      3
+    );
+  });
+
   it('never goes past the widest step', () => {
     expect(resolveAxisRange(gap, 5000, 50, true)).toBe(200);
   });

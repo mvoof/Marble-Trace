@@ -104,20 +104,59 @@ pub fn normalize_class_color(raw: &str) -> String {
         .unwrap_or(normalized)
 }
 
+/// Separators the sim joins two words with, as surely as a space does.
+const JOINERS: [char; 2] = ['-', '/'];
+
 /// Strips the filler words off a class label, whatever produced it. Everything
 /// that reaches a badge column goes through here, so the same class reads the
 /// same in every widget. A label that is *only* filler is left alone — an empty
 /// badge says less than a clumsy one.
+///
+/// Filler is recognised across the separators the sim actually uses, so
+/// "GT3 Class", "GT3-Class" and "GT3 / Class" all land on `GT3`. The parts of a
+/// hyphenated name are only dropped when they are filler themselves, which is
+/// what keeps "MX-5" whole.
 pub fn tidy_class_badge(raw: &str) -> String {
-    let kept: Vec<&str> = raw
+    let is_filler = |part: &str| {
+        let word = part
+            .trim_matches(|c: char| !c.is_ascii_alphanumeric())
+            .to_lowercase();
+
+        !word.is_empty() && BADGE_FILLER_WORDS.contains(&word.as_str())
+    };
+
+    let kept: Vec<String> = raw
         .split_whitespace()
-        .filter(|word| {
-            !BADGE_FILLER_WORDS.contains(
-                &word
-                    .trim_matches(|c: char| !c.is_ascii_alphanumeric())
-                    .to_lowercase()
-                    .as_str(),
-            )
+        .filter_map(|word| {
+            if is_filler(word) {
+                return None;
+            }
+
+            // A separator left standing on its own once the word beside it went
+            // ("GT3 / Class") carries nothing.
+            if !word.chars().any(|c| c.is_ascii_alphanumeric()) {
+                return None;
+            }
+
+            // A hyphen or a slash joins two words as surely as a space does,
+            // and only the filler halves are dropped: "MX-5" has none.
+            let parts: Vec<&str> = word
+                .split(JOINERS)
+                .filter(|part| !is_filler(part))
+                .collect();
+
+            if parts.len() == word.split(JOINERS).count() {
+                return Some(word.to_string());
+            }
+
+            let rejoined = parts.join("-");
+            let trimmed = rejoined.trim_matches(JOINERS);
+
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some(trimmed.to_string())
+            }
         })
         .collect();
 
@@ -267,6 +306,12 @@ mod tests {
         assert_eq!(tidy_class_badge("GT3 Class"), "GT3");
         assert_eq!(tidy_class_badge("Class C"), "C");
         assert_eq!(tidy_class_badge("GT3"), "GT3");
+        assert_eq!(tidy_class_badge("GT3-Class"), "GT3");
+        assert_eq!(tidy_class_badge("GT3 / Class"), "GT3");
+        assert_eq!(tidy_class_badge("Class/GTP"), "GTP");
+        // A hyphenated name whose parts are not filler survives intact.
+        assert_eq!(tidy_class_badge("MX-5"), "MX-5");
+        assert_eq!(tidy_class_badge("MX-5 Cup Class"), "MX-5 Cup");
         // Only filler left: a clumsy badge still beats an empty one.
         assert_eq!(tidy_class_badge("Class"), "Class");
         assert_eq!(tidy_class_badge(""), "");
