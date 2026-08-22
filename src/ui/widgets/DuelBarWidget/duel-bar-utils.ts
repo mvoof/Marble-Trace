@@ -1,0 +1,370 @@
+import type { DriverEntry, NearbyCar } from '@/types/bindings';
+import type { DuelBarWidgetSettings } from '@/types/widget-settings';
+import { computeRelativeGap } from '@ui/widgets/RelativeWidget/relative-utils';
+
+/**
+ * The axis ends short of the widget edge: the outermost tick label and the
+ * plate of a car sitting at the full range have to fit somewhere.
+ */
+const AXIS_EDGE_INSET_PCT = 9;
+
+/** Half of the axis, in percent of the widget height. */
+const AXIS_HALF_PCT = 50 - AXIS_EDGE_INSET_PCT;
+
+/** Percent of the height a tick label eats out of the dashed line. */
+export const TICK_GAP_PCT = 4;
+
+/** Meters between two tick labels, per axis range. */
+const TICK_STEP_BY_RANGE: Record<number, number> = {
+  25: 10,
+  50: 25,
+  100: 25,
+};
+
+const METERS_TO_FEET = 3.28084;
+
+export interface DuelOpponent {
+  carIdx: number;
+  /** Positive = ahead, negative = behind (meters). */
+  longitudinalDist: number;
+  /** Absolute distance in meters. */
+  clearance: number;
+  /** Relative gap in seconds, Relative-widget convention: ahead negative, behind positive. */
+  gapSeconds: number;
+  entry: DriverEntry;
+  isOtherClass: boolean;
+  isAhead: boolean;
+}
+
+/** A dashed piece of the axis line, so a tick label never sits on the dashes. */
+export interface AxisSegment {
+  topPct: number;
+  heightPct: number;
+}
+
+export interface AxisTick {
+  topPct: number;
+  meters: number;
+}
+
+export const axisTicks = (axisRange: number): AxisTick[] => {
+  const step = TICK_STEP_BY_RANGE[axisRange] ?? axisRange / 2;
+  const ticks: AxisTick[] = [];
+
+  for (let meters = step; meters <= axisRange; meters += step) {
+    ticks.push({ topPct: distanceToTopPct(meters, axisRange), meters });
+    ticks.push({ topPct: distanceToTopPct(-meters, axisRange), meters });
+  }
+
+  return ticks.sort((first, second) => first.topPct - second.topPct);
+};
+
+/**
+ * The dashed line is drawn as pieces rather than one gradient: a label sitting
+ * on top of the dashes is unreadable at a glance, which is the only speed the
+ * widget is read at.
+ */
+export const buildAxisSegments = (ticks: AxisTick[]): AxisSegment[] => {
+  const holes = ticks
+    .map((tick) => ({
+      from: tick.topPct - TICK_GAP_PCT / 2,
+      to: tick.topPct + TICK_GAP_PCT / 2,
+    }))
+    .sort((first, second) => first.from - second.from);
+
+  const segments: AxisSegment[] = [];
+  let cursor = 0;
+
+  for (const hole of holes) {
+    const height = hole.from - cursor;
+
+    if (height > 0) {
+      segments.push({ topPct: cursor, heightPct: height });
+    }
+
+    cursor = Math.max(cursor, hole.to);
+  }
+
+  if (cursor < 100) {
+    segments.push({ topPct: cursor, heightPct: 100 - cursor });
+  }
+
+  return segments;
+};
+
+/** Ahead goes up, behind goes down — the reading order of the Relative widget. */
+export const distanceToTopPct = (
+  longitudinalDist: number,
+  axisRange: number
+): number => {
+  const ratio = Math.max(-1, Math.min(1, longitudinalDist / axisRange));
+
+  return 50 - ratio * AXIS_HALF_PCT;
+};
+
+/**
+ * A plate is ws(40) tall on a 420 px design height — a hair under a tenth of
+ * the axis. Two cars metres apart would otherwise draw on top of each other.
+ */
+export const PLATE_SLOT_PCT = 11;
+
+/** The two thresholds are stored apart; this picks the one in force. */
+export const activeThreshold = (settings: DuelBarWidgetSettings): number =>
+  settings.trigger === 'distance'
+    ? settings.distanceThreshold
+    : settings.gapThreshold;
+
+/** One drawn plate: the nearest car of the group, and whoever it stands for. */
+export interface DuelPlateGroup {
+  /** Stable across ticks while the group keeps its cars — the React key. */
+  key: number;
+  leader: DuelOpponent;
+  /** Cars sharing the leader's spot on the axis, nearest first. */
+  merged: DuelOpponent[];
+  topPct: number;
+}
+
+/**
+ * How far apart two cars must drift before a merged pair is split again.
+ *
+ * Cars in a fight cross the merge threshold constantly, and a plate that merges
+ * and splits every tenth of a second is unreadable. Once merged, they stay
+ * merged until they are clearly apart.
+ */
+const SPLIT_HYSTERESIS = 1.6;
+
+/**
+ * Which plates are drawn, and where.
+ *
+ * The axis is honest about distance, but two cars a metre apart map to the same
+ * spot. Merging is the honest answer: one plate carrying both drivers, because
+ * two plates shoved apart claim a gap that is not there. With merging off they
+ * are pushed apart instead, nearest car first — the one in your mirrors keeps
+ * its true position, the others give way.
+ *
+ * `mergeDistance` is that "same spot" in meters — a car length or two, set by
+ * the user. `held` is the set of cars that were merged into some plate on the
+ * previous tick; they get the wider split threshold, which is what stops the
+ * plate from flickering while the two cars trade a metre back and forth.
+ *
+ * Either way a plate is clamped inside the widget, so the outermost one never
+ * hangs off the edge.
+ */
+export const buildPlateGroups = (
+  opponents: DuelOpponent[],
+  axisRange: number,
+  mergeOverlapping: boolean,
+  mergeDistance: number,
+  held: ReadonlySet<number> = new Set()
+): DuelPlateGroup[] => {
+  const half = PLATE_SLOT_PCT / 2;
+  const clamp = (top: number) => Math.max(half, Math.min(100 - half, top));
+
+  const groups: DuelPlateGroup[] = [];
+
+  for (const opponent of opponents) {
+    const wanted = clamp(
+      distanceToTopPct(opponent.longitudinalDist, axisRange)
+    );
+
+    // Merging is decided in meters, not in pixels: two cars share a plate
+    // because they are side by side on the track, not because the axis happens
+    // to be zoomed out far enough to stack them.
+    const mergeLimit = held.has(opponent.carIdx)
+      ? mergeDistance * SPLIT_HYSTERESIS
+      : mergeDistance;
+
+    const collision = groups.find(
+      (group) =>
+        Math.abs(group.leader.longitudinalDist - opponent.longitudinalDist) <=
+        mergeLimit
+    );
+
+    if (collision && mergeOverlapping) {
+      // The key stays the leader's car: rewriting it when a lower carIdx joins
+      // would remount the plate mid-duel and drop its position transition.
+      collision.merged.push(opponent);
+      continue;
+    }
+
+    let top = wanted;
+
+    for (const group of groups) {
+      if (Math.abs(top - group.topPct) < PLATE_SLOT_PCT) {
+        top =
+          top >= group.topPct
+            ? group.topPct + PLATE_SLOT_PCT
+            : group.topPct - PLATE_SLOT_PCT;
+      }
+    }
+
+    groups.push({
+      key: opponent.carIdx,
+      leader: opponent,
+      merged: [],
+      topPct: clamp(top),
+    });
+  }
+
+  return groups;
+};
+
+/** Every car currently drawn as part of somebody else's plate. */
+export const mergedCarIdxs = (groups: DuelPlateGroup[]): Set<number> =>
+  new Set(
+    groups.flatMap((group) => group.merged.map((opponent) => opponent.carIdx))
+  );
+
+export const isWithinThreshold = (
+  opponent: DuelOpponent,
+  settings: DuelBarWidgetSettings,
+  hysteresis: number
+): boolean => {
+  const limit = activeThreshold(settings) * hysteresis;
+
+  const value =
+    settings.trigger === 'distance'
+      ? opponent.clearance
+      : Math.abs(opponent.gapSeconds);
+
+  return value <= limit;
+};
+
+/** The ranges the automatic axis may settle on, in meters. */
+export const AXIS_RANGE_STEPS = [10, 25, 50, 100, 200];
+
+/** Headroom above the farthest car, so its plate is not glued to the edge. */
+const AUTO_RANGE_HEADROOM = 1.15;
+
+/**
+ * The axis range the widget actually draws.
+ *
+ * A fixed ±50 m axis puts two cars a metre apart on the same pixel, and the
+ * plates then have to shove each other aside — the picture stops being true.
+ * On `'auto'` the axis zooms to the farthest car instead, so a close fight is
+ * drawn on a ±10 m axis where a metre is a visible gap.
+ *
+ * `held` is the range in force: the axis only zooms back out once the car is
+ * clear of the current step, and only zooms in when the step below has real
+ * room to spare, so it does not flip between two steps every tick.
+ */
+export const resolveAxisRange = (
+  setting: DuelBarWidgetSettings['axisRange'],
+  farthestMeters: number,
+  held: number
+): number => {
+  if (setting !== 'auto') {
+    return setting;
+  }
+
+  const needed = farthestMeters * AUTO_RANGE_HEADROOM;
+
+  const fitting =
+    AXIS_RANGE_STEPS.find((step) => step >= needed) ??
+    AXIS_RANGE_STEPS[AXIS_RANGE_STEPS.length - 1];
+
+  if (fitting > held) {
+    return fitting;
+  }
+
+  // Shrinking needs room to spare, or a car hovering on a step boundary would
+  // flip the whole axis back and forth every tick.
+  if (fitting < held && needed < fitting * 0.75) {
+    return fitting;
+  }
+
+  return held;
+};
+
+export const matchesSides = (
+  opponent: DuelOpponent,
+  sides: DuelBarWidgetSettings['sides']
+): boolean => {
+  if (sides === 'both') {
+    return true;
+  }
+
+  if (sides === 'ahead') {
+    return opponent.isAhead;
+  }
+
+  return !opponent.isAhead;
+};
+
+/**
+ * The opponents worth drawing.
+ *
+ * Pace cars are dropped rather than merely absent: the widget answers "who is
+ * racing me", and behind a safety car nobody is. The gap to it belongs to the
+ * relative table, which already synthesises those rows on purpose.
+ */
+export const buildOpponents = (
+  nearbyCars: NearbyCar[],
+  entries: DriverEntry[],
+  paceCarIdxs: ReadonlySet<number> = new Set()
+): DuelOpponent[] => {
+  const player = entries.find((entry) => entry.isPlayer) ?? null;
+
+  if (!player) {
+    return [];
+  }
+
+  const byCarIdx = new Map(entries.map((entry) => [entry.carIdx, entry]));
+
+  return nearbyCars.flatMap((car) => {
+    const entry = byCarIdx.get(car.carIdx);
+
+    if (!entry || entry.isPlayer || paceCarIdxs.has(car.carIdx)) {
+      return [];
+    }
+
+    return [
+      {
+        carIdx: car.carIdx,
+        longitudinalDist: car.longitudinalDist,
+        clearance: car.clearance,
+        gapSeconds: computeRelativeGap(entry, player),
+        entry,
+        isOtherClass: entry.carClassId !== player.carClassId,
+        isAhead: car.longitudinalDist >= 0,
+      },
+    ];
+  });
+};
+
+/**
+ * The gap keeps the Relative widget's convention exactly: a car ahead reads
+ * negative and blue, a car behind reads positive and red. Two widgets telling
+ * the same story with opposite signs is worse than either of them alone.
+ */
+export const formatDuelGap = (gapSeconds: number): string =>
+  gapSeconds > 0 ? `+${gapSeconds.toFixed(2)}` : gapSeconds.toFixed(2);
+
+export const formatDuelDistance = (
+  clearance: number,
+  isMetric: boolean
+): string => {
+  const value = isMetric ? clearance : clearance * METERS_TO_FEET;
+
+  return `${Math.round(value)}${isMetric ? ' m' : ' ft'}`;
+};
+
+/**
+ * Distant plates shrink, but never past a third — below that the row stops
+ * being readable and the size no longer says anything useful about distance.
+ */
+export const plateScale = (clearance: number, axisRange: number): number => {
+  const MIN_SCALE = 2 / 3;
+  const ratio = Math.max(0, Math.min(1, clearance / axisRange));
+
+  return 1 - (1 - MIN_SCALE) * ratio;
+};
+
+/** 0 at the glow range, 1 in the player's bumper. */
+export const glowIntensity = (clearance: number, glowRange: number): number => {
+  if (glowRange <= 0) {
+    return 0;
+  }
+
+  return Math.max(0, Math.min(1, 1 - clearance / glowRange));
+};

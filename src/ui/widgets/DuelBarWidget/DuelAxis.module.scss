@@ -1,0 +1,123 @@
+.axis {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.line {
+  position: absolute;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: repeating-linear-gradient(
+    180deg,
+    $widget-text-muted 0 ws(4),
+    transparent ws(4) ws(11)
+  );
+  opacity: 0.55;
+}
+
+// The axis itself only moves when the automatic range changes step, which is
+// rare — but when it does, sliding beats teleporting.
+.line,
+.tick {
+  transition:
+    top 200ms ease-out,
+    height 200ms ease-out;
+}
+
+.tick {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: sp(lg);
+  transform: translateY(-50%);
+
+  &::before,
+  &::after {
+    content: '';
+    width: ws(26);
+    height: 1px;
+    background: $widget-text-muted;
+    opacity: 0.4;
+  }
+}
+
+.tickLabel {
+  font-family: $font-widget;
+  font-size: fs(xxs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: $widget-text-muted;
+}
+
+// Both halves are cut at the player line: a car behind lights only the road
+// behind, a car ahead only the road ahead.
+// Opacity and the blips move on the same 10 Hz frame as the plates, so they
+// get the same transition — a step in the glow is as visible as a jump in a row.
+.glowAhead,
+.glowBehind {
+  position: absolute;
+  transition: opacity 140ms linear;
+  left: 50%;
+  width: ws(330);
+  height: ws(170);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.glowAhead {
+  bottom: 50%;
+  background: radial-gradient(
+    50% 100% at 50% 100%,
+    rgba($race-blue, 0.5),
+    rgba($race-blue, 0.16) 45%,
+    rgba($race-blue, 0) 100%
+  );
+}
+
+.glowBehind {
+  top: 50%;
+  background: radial-gradient(
+    50% 100% at 50% 0%,
+    rgba($race-red, 0.55),
+    rgba($race-red, 0.18) 45%,
+    rgba($race-red, 0) 100%
+  );
+}
+
+.blip {
+  position: absolute;
+  left: 50%;
+  transition: top 140ms linear;
+  width: ws(30);
+  height: ws(4);
+  border-radius: radius(sm);
+  transform: translate(-50%, -50%);
+}
+
+// The player: short and thin on purpose — it is the one mark that never moves,
+// so it needs no weight to be found.
+.player {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: ws(120);
+  height: 2px;
+  border-radius: radius(sm);
+  background: $widget-text-primary;
+  transform: translate(-50%, -50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glowAhead,
+  .glowBehind,
+  .blip,
+  .line,
+  .tick {
+    transition: none;
+  }
+}

@@ -50,6 +50,9 @@ $widget-text-best-lap: $race-purple;
 $widget-surface-base: rgba(0, 0, 0, 0.75);
 $widget-surface-overlay: rgba(0, 0, 0, 0.8);
 $widget-surface-cell: rgba(16, 16, 18, 0.65);
+// Opaque plate for widgets that draw free-standing rows over the track rather
+// than inside a panel — a see-through row loses its own edges against a corner.
+$widget-surface-plate: #17181c;
 
 // Race Dash cluster — panel plates and the text-legibility scrim base
 $widget-dash-panel-top: rgba(30, 33, 40, 0.95);

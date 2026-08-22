@@ -1,0 +1,181 @@
+// Position is a transform on a stage-height layer, so its percent is a percent
+// of the stage — and a transform is composited, which is what lets the 10 Hz
+// proximity frame be smoothed into continuous motion by a transition instead of
+// a per-frame JS animation.
+$plate-move-duration: 140ms;
+
+.slot {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  will-change: transform;
+  transition: transform $plate-move-duration linear;
+}
+
+.plate {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  transform: translateY(-50%) scale(var(--plate-scale, 1));
+  transition: transform $plate-move-duration ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot,
+  .plate {
+    transition: none;
+  }
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: sp(sm);
+  width: 100%;
+  height: ws(40);
+  padding-right: sp(lg);
+  border-radius: radius(lg);
+  overflow: hidden;
+  background: $widget-surface-plate;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 2px 6px rgba(0, 0, 0, 0.45);
+  font-family: $font-widget;
+  font-variant-numeric: tabular-nums;
+}
+
+.rail {
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: ws(5);
+}
+
+// In a single-model class the sim puts the car name here ("BMW M2 Racing
+// (G87)"), which would eat the row the driver's name needs.
+.className {
+  flex: 0 1 auto;
+  max-width: 8ch;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: fs(sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+// "P4", not a bare number, and in the same weight as the rest of the row: a
+// position that has to be decoded is a position nobody reads mid-corner.
+.position {
+  min-width: 3ch;
+  text-align: center;
+  font-size: fs(md);
+  font-weight: 700;
+  color: $widget-text-primary;
+}
+
+// A car sharing this spot on the axis, named rather than counted. It rides
+// right of the driver it shares the plate with, in the same order the axis
+// would have put them.
+.companion {
+  display: inline-flex;
+  // Shares what the leader's name leaves rather than living in a fixed box:
+  // with one companion it stretches, with three they split the room evenly.
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: sp(xxs);
+  padding: 0 sp(xs);
+  border-radius: radius(md);
+  background: rgba(255, 255, 255, 0.07);
+  font-size: fs(xs);
+  font-weight: 700;
+  color: $widget-text-secondary;
+}
+
+.companionRail {
+  flex: 0 0 auto;
+  width: ws(3);
+  height: fs(sm);
+  border-radius: radius(sm);
+}
+
+.companionNumber {
+  color: $widget-text-primary;
+}
+
+// The second driver is a driver, not a footnote: the surname carries the same
+// weight and color as the one it stands beside.
+.companionName {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  color: $widget-text-primary;
+}
+
+// The car number is an identifier, not a footnote: white in its own lighter
+// box, so it reads as a badge against the plate rather than as more text.
+.carNumber {
+  padding: 0 sp(xs);
+  border-radius: radius(md);
+  background: rgba(255, 255, 255, 0.1);
+  font-size: fs(xs);
+  font-weight: 700;
+  color: $widget-text-primary;
+}
+
+// At speed the eye catches the surname and skips the rest, so the two carry
+// different weights instead of competing.
+.name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: fs(lg);
+}
+
+.givenName {
+  font-weight: 500;
+  color: $widget-text-secondary;
+}
+
+.surname {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: $widget-text-primary;
+}
+
+// Meters answer "will he reach me in this corner" — read as often as the gap,
+// so it is not a muted footnote either.
+.distance {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: fs(sm);
+  font-weight: 600;
+  color: $widget-text-primary;
+}
+
+// Same signs and the same colors as the Relative widget: ahead is negative and
+// blue, behind is positive and red.
+.gap {
+  flex: 0 0 auto;
+  min-width: 6ch;
+  white-space: nowrap;
+  text-align: right;
+  font-size: fs(xl);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.gapAhead {
+  color: $widget-status-info;
+}
+
+.gapBehind {
+  color: $widget-status-danger;
+}

@@ -144,6 +144,71 @@ export interface RadarSettings {
   showDistance: boolean;
 }
 
+export type DuelTrigger = 'gap' | 'distance';
+
+export type DuelSides = 'both' | 'ahead' | 'behind';
+
+export type DuelOtherClass = 'show' | 'dim' | 'hide';
+
+export type DuelAxisRange = 'auto' | number;
+
+export interface DuelBarWidgetSettings {
+  /** What counts as "close": a gap in seconds, or a real distance in meters. */
+  trigger: DuelTrigger;
+  /** Seconds. Kept apart from the distance threshold so switching the trigger
+   * never carries a value into a range where it is invalid. */
+  gapThreshold: number;
+  /** Meters, the radar's own lower bound: below 5 m you are already touching. */
+  distanceThreshold: number;
+  /** Seconds a row stays after the opponent left the threshold. */
+  hideDelay: number;
+  sides: DuelSides;
+  maxRows: number;
+  /**
+   * Half-length of the axis in meters — what the top and bottom edge mean.
+   * `'auto'` follows the farthest opponent on screen, which is what keeps two
+   * cars a metre apart from landing on the same spot.
+   */
+  axisRange: DuelAxisRange;
+  showTicks: boolean;
+  /** Axis only: no plates, no names, no numbers. */
+  compactMode: boolean;
+  showDistance: boolean;
+  /** Class position of the opponent — shown for everyone, or for nobody. */
+  showPosition: boolean;
+  /**
+   * Cars that land in the same spot on the axis are drawn as one plate with a
+   * `+N` badge instead of shoving each other aside.
+   */
+  mergeOverlapping: boolean;
+  /**
+   * How close two cars must be, in meters, to share a plate. A car length or
+   * two: at that range they are genuinely side by side, and the axis has
+   * nothing left to separate them with.
+   */
+  mergeDistance: number;
+  /** Nothing to fight on pit road, so the widget leaves while you are on it. */
+  hideInPits: boolean;
+  /**
+   * Same rule as the radar and the track map: `auto` blanks the widget in solo
+   * qualifying, where the cars it would name are not on track with you.
+   */
+  qualifyingVisibility: RadarQualifyingVisibility;
+  /**
+   * Opacity of the plate itself, 0.3–1. Opaque by default: a see-through row
+   * loses its own edges against a corner. The only other thing that fades a
+   * plate is `otherClass: 'dim'`, and that one means something.
+   */
+  plateOpacity: number;
+  showClassBadge: boolean;
+  /** Distant plates shrink, never past a third of their size. */
+  scaleByDistance: boolean;
+  otherClass: DuelOtherClass;
+  /** Meters at which the glow starts to build (0 = no glow). */
+  glowRange: number;
+  raceOnly: boolean;
+}
+
 export type RowPadding = 'narrow' | 'medium' | 'wide';
 
 export type StandingsViewMode = 'all' | 'cycling' | 'grouped';
@@ -523,6 +588,7 @@ export type WidgetSpecificSettings =
   | RpmLightsWidgetSettings
   | InputTraceSettings
   | RadarSettings
+  | DuelBarWidgetSettings
   | StandingsWidgetSettings
   | RelativeWidgetSettings
   | TrackMapWidgetSettings

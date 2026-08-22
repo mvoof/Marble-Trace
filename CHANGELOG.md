@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Duel Bar Widget:** A widget for the fight you are actually in, rather than the table of everyone in the session. Cars near you stand on a vertical distance axis running through the widget — ahead above, behind below, you as a short white line in the middle — and each plate sits at the distance the car really is at instead of being queued in a list. A plate carries the class rail and badge, the car number, the driver's surname, the distance in metres and the gap in seconds; the signs and colours are the ones the Relative table already uses, so a car ahead reads negative and blue and a car behind positive and red. A red glow builds up from below when someone is closing on your bumper and a blue one from above when you are closing on someone, each cut off at your own line so the side it comes from is the answer to "from where".
+
 ## [0.22.1] — 2026-08-22
 
 ### Fixed
