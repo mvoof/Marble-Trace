@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Signing In to Twitch Failed in the Released Build:** Fixed Twitch rejecting the sign-in with `invalid client` in the downloaded app, while the same sign-in worked when the app was built from source. The released build carried the wrong Twitch application identifier, so the chat widget could not be authorized at all.
+
 ## [0.22.0] — 2026-08-22
 
 ### Added
