@@ -45,6 +45,7 @@ export class DuelBarWidgetStore {
   heldMerged: ReadonlySet<number> = new Set();
 
   private hideTimer: ReturnType<typeof setTimeout> | null = null;
+  private hideTimerDelay = 0;
 
   private disposers: IReactionDisposer[] = [];
 
@@ -93,9 +94,14 @@ export class DuelBarWidgetStore {
           }
 
           if (this.hideTimer) {
-            return;
+            if (this.hideTimerDelay === delay) {
+              return;
+            }
+
+            this.clearHideTimer();
           }
 
+          this.hideTimerDelay = delay;
           this.hideTimer = setTimeout(
             action(() => {
               this.visible = false;

@@ -81,6 +81,7 @@ $plate-move-duration: 140ms;
 // would have put them.
 .companion {
   display: inline-flex;
+
   // Shares what the leader's name leaves rather than living in a fixed box:
   // with one companion it stretches, with three they split the room evenly.
   flex: 1 1 auto;
