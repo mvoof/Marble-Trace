@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { NearbyCar, ProximityFrame } from '@/types/bindings';
-import type { DuelBarWidgetSettings } from '@/types/widget-settings';
+import type {
+  DuelBarWidgetSettings,
+  DuelNameMode,
+} from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
 import { DUEL_BAR_MANIFEST } from './manifest';
 import { DuelBarWidget } from './DuelBarWidget';
@@ -11,7 +14,7 @@ interface StoryArgs {
   /** Signed longitudinal distances in meters: positive ahead, negative behind. */
   distances: number[];
   compactMode: boolean;
-  showPosition: boolean;
+  nameMode: DuelNameMode;
   maxRows: number;
 }
 
@@ -57,7 +60,7 @@ const seed = (store: RootStore, args: StoryArgs) => {
     maxRows: args.maxRows,
     raceOnly: false,
     compactMode: args.compactMode,
-    showPosition: args.showPosition,
+    nameMode: args.nameMode,
   });
 
   store.duelBarWidget.visible = true;
@@ -80,7 +83,7 @@ const meta: Meta<StoryArgs> = {
     args: {
       distances: [-8],
       compactMode: false,
-      showPosition: false,
+      nameMode: 'initial',
       maxRows: 3,
     },
   }),
@@ -99,8 +102,12 @@ export const ThreeInTheFight: Story = {
   args: { distances: [-8, 45, 85] },
 };
 
-export const WithPositions: Story = {
-  args: { distances: [-8, 45], showPosition: true },
+export const FullNames: Story = {
+  args: { distances: [-8, 45], nameMode: 'full' },
+};
+
+export const SurnamesOnly: Story = {
+  args: { distances: [-8, 45], nameMode: 'surname' },
 };
 
 export const CompactAxisOnly: Story = {

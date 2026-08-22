@@ -150,6 +150,9 @@ export type DuelSides = 'both' | 'ahead' | 'behind';
 
 export type DuelOtherClass = 'show' | 'dim' | 'hide';
 
+/** How much of the opponent's name the plate spends its width on. */
+export type DuelNameMode = 'surname' | 'initial' | 'full';
+
 export interface DuelBarWidgetSettings {
   /** What counts as "close": a gap in seconds, or a real distance in meters. */
   trigger: DuelTrigger;
@@ -168,8 +171,7 @@ export interface DuelBarWidgetSettings {
   /** Axis only: no plates, no names, no numbers. */
   compactMode: boolean;
   showDistance: boolean;
-  /** Class position of the opponent — shown for everyone, or for nobody. */
-  showPosition: boolean;
+  nameMode: DuelNameMode;
   /**
    * Cars that land in the same spot on the axis are drawn as one plate with a
    * `+N` badge instead of shoving each other aside.

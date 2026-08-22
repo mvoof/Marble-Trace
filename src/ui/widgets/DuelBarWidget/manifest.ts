@@ -31,7 +31,7 @@ export const DUEL_BAR_MANIFEST: WidgetManifest = {
     showTickLabels: true,
     compactMode: false,
     showDistance: true,
-    showPosition: false,
+    nameMode: 'initial',
     mergeOverlapping: true,
     mergeDistance: 2,
     hideInPits: true,

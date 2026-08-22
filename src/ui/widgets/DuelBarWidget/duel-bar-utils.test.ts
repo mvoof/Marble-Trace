@@ -7,6 +7,7 @@ import {
   formatDuelDistance,
   formatDuelGap,
   glowIntensity,
+  duelDriverName,
   plateScale,
   PLATE_SLOT_PCT,
   resolveAxisRange,
@@ -98,6 +99,24 @@ describe('formatDuelDistance', () => {
   it('renders meters or feet', () => {
     expect(formatDuelDistance(45, true)).toBe('45 m');
     expect(formatDuelDistance(45, false)).toBe('148 ft');
+  });
+});
+
+describe('duelDriverName', () => {
+  it('keeps the surname in every mode', () => {
+    expect(duelDriverName('Ayrton Senna', 'surname')).toEqual({
+      givenName: '',
+      surname: 'Senna',
+    });
+    expect(duelDriverName('Ayrton Senna', 'initial').givenName).toBe('A.');
+    expect(duelDriverName('Ayrton Senna', 'full').givenName).toBe('Ayrton');
+  });
+
+  it('leaves a single-word name alone', () => {
+    expect(duelDriverName('Senna', 'full')).toEqual({
+      givenName: '',
+      surname: 'Senna',
+    });
   });
 });
 

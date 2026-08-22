@@ -1,6 +1,7 @@
 import type { DriverEntry, NearbyCar } from '@/types/bindings';
 import type { DuelBarWidgetSettings } from '@/types/widget-settings';
 import { computeRelativeGap } from '@ui/widgets/RelativeWidget/relative-utils';
+import { splitDriverName } from '@utils/driver';
 
 /**
  * The axis ends short of the widget edge: the outermost tick label and the
@@ -391,6 +392,28 @@ export const plateScale = (clearance: number): number => {
   const ratio = Math.max(0, Math.min(1, clearance / PLATE_SHRINK_METERS));
 
   return 1 - (1 - MIN_PLATE_SCALE) * ratio;
+};
+
+/**
+ * The name as the plate spends its width on it. The surname is never dropped —
+ * it is the part the eye catches at speed; what the mode decides is how much of
+ * the given name earns the room in front of it.
+ */
+export const duelDriverName = (
+  userName: string,
+  mode: DuelBarWidgetSettings['nameMode']
+): { givenName: string; surname: string } => {
+  const { givenName, surname } = splitDriverName(userName);
+
+  if (mode === 'surname' || !givenName) {
+    return { givenName: '', surname };
+  }
+
+  if (mode === 'initial') {
+    return { givenName: `${givenName[0]}.`, surname };
+  }
+
+  return { givenName, surname };
 };
 
 /** 0 at the glow range, 1 in the player's bumper. */

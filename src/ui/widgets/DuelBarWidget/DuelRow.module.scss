@@ -66,16 +66,6 @@ $plate-move-duration: 140ms;
   letter-spacing: 0.06em;
 }
 
-// "P4", not a bare number, and in the same weight as the rest of the row: a
-// position that has to be decoded is a position nobody reads mid-corner.
-.position {
-  min-width: 3ch;
-  text-align: center;
-  font-size: fs(md);
-  font-weight: 700;
-  color: $widget-text-primary;
-}
-
 // A car sharing this spot on the axis, named rather than counted. It rides
 // right of the driver it shares the plate with, in the same order the axis
 // would have put them.
@@ -118,13 +108,14 @@ $plate-move-duration: 140ms;
 }
 
 // The car number is an identifier, not a footnote: white in its own lighter
-// box, so it reads as a badge against the plate rather than as more text.
+// box, so it reads as a badge against the plate rather than as more text — and
+// at the size of the surname beside it, because it is read the same way.
 .carNumber {
   padding: 0 sp(xs);
   border-radius: radius(md);
   background: rgba(255, 255, 255, 0.1);
-  font-size: fs(xs);
-  font-weight: 700;
+  font-size: fs(lg);
+  font-weight: 500;
   color: $widget-text-primary;
 }
 
@@ -151,13 +142,14 @@ $plate-move-duration: 140ms;
   color: $widget-text-primary;
 }
 
-// Meters answer "will he reach me in this corner" — read as often as the gap,
-// so it is not a muted footnote either.
+// Meters answer "will he reach me in this corner" — read as often as the gap
+// and at a glance, so it carries the gap's size rather than a footnote's.
 .distance {
   flex: 0 0 auto;
   white-space: nowrap;
-  font-size: fs(sm);
-  font-weight: 600;
+  font-size: fs(xl);
+  font-weight: 500;
+  line-height: 1;
   color: $widget-text-primary;
 }
 

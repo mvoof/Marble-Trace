@@ -5,6 +5,7 @@ import { InputNumber, Segmented, Slider, Switch } from 'antd';
 import type {
   RadarQualifyingVisibility,
   DuelBarWidgetSettings,
+  DuelNameMode,
   DuelOtherClass,
   DuelSides,
   DuelTrigger,
@@ -272,12 +273,23 @@ export const DuelBarSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.showPosition')}
-            desc={t('settingsPanels.duelBar.showPositionDesc')}
+            title={t('settingsPanels.duelBar.nameMode')}
+            desc={t('settingsPanels.duelBar.nameModeDesc')}
           >
-            <Switch
-              checked={settings.showPosition}
-              onChange={(checked) => update({ showPosition: checked })}
+            <Segmented<DuelNameMode>
+              value={settings.nameMode}
+              onChange={(value) => update({ nameMode: value })}
+              options={[
+                {
+                  label: t('settingsPanels.duelBar.nameSurname'),
+                  value: 'surname',
+                },
+                {
+                  label: t('settingsPanels.duelBar.nameInitial'),
+                  value: 'initial',
+                },
+                { label: t('settingsPanels.duelBar.nameFull'), value: 'full' },
+              ]}
             />
           </SettingRow>
         </div>

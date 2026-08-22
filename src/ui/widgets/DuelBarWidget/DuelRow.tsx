@@ -8,6 +8,7 @@ import {
 } from '@store/root-store-context';
 import type { DuelBarWidgetSettings } from '@/types/widget-settings';
 import {
+  duelDriverName,
   formatDuelDistance,
   formatDuelGap,
   plateScale,
@@ -48,7 +49,10 @@ export const DuelRow = observer(({ group }: DuelRowProps) => {
 
   const gapClass = opponent.isAhead ? styles.gapAhead : styles.gapBehind;
 
-  const { givenName, surname } = splitDriverName(entry.userName);
+  const { givenName, surname } = duelDriverName(
+    entry.userName,
+    settings.nameMode
+  );
 
   // A merged plate names the cars it stands for instead of counting them: "+2"
   // says there is traffic, the surnames say who. Only when even the surnames
@@ -83,10 +87,6 @@ export const DuelRow = observer(({ group }: DuelRowProps) => {
             >
               {entry.carClassShortName}
             </span>
-          )}
-
-          {settings.showPosition && (
-            <span className={styles.position}>P{entry.classPosition}</span>
           )}
 
           <span className={styles.carNumber}>
