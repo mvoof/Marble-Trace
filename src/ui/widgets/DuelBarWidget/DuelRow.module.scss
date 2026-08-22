@@ -30,10 +30,23 @@ $plate-move-duration: 140ms;
   }
 }
 
+// A grid, not a flex row: every column has a width of its own and keeps it even
+// when what belongs in it is switched off, so nothing after a hidden distance
+// slides left. A plate whose columns resize with their content dances on every
+// tick, and a number that moves is a number you have to find again.
+//
+// Each child names its own column, which is what lets an optional one simply
+// not be rendered.
 .row {
-  display: flex;
+  display: grid;
+  grid-template-columns:
+    [number-col] minmax(3ch, auto) [class-col] 10ch
+    [name-col] minmax(0, 1fr) [distance-col] 5ch [gap-col] 7ch;
   align-items: center;
-  gap: sp(sm);
+
+  // No gap before the class block: the number and the class are one unit at the
+  // left of the plate, separated by a shadow rather than by air.
+  column-gap: 0;
   width: 100%;
   height: ws(40);
   padding-right: sp(lg);
@@ -47,23 +60,89 @@ $plate-move-duration: 140ms;
   font-variant-numeric: tabular-nums;
 }
 
-.rail {
-  flex: 0 0 auto;
-  align-self: stretch;
-  width: ws(5);
+// With the class badge switched off there is no class at all — not a chip, not
+// a stripe — so its column goes with it and the name takes the room back.
+.rowNoClass {
+  grid-template-columns:
+    [number-col] minmax(3ch, auto)
+    [name-col] minmax(0, 1fr) [distance-col] 5ch [gap-col] 7ch;
+
+  // The zero column gap exists so the number and the class chip read as one
+  // unit; with no chip between them, the name needs the air back.
+  .identity {
+    padding-left: sp(md);
+  }
 }
 
-// In a single-model class the sim puts the car name here ("BMW M2 Racing
-// (G87)"), which would eat the row the driver's name needs.
+// The class block is a solid slab of the class color spanning the plate's full
+// height, cut diagonally on its trailing edge — a livery panel rather than a
+// label, which is what lets it be read from the corner of the eye. A woven
+// texture is laid over it in `multiply` so a saturated class color loses its
+// flatness without losing its hue.
+//
+// The badge is always black. The sim's class colors are picked to be bright
+// enough to tell apart on a track map, so black holds on every one of them, and
+// a label that switched to white on the darker classes would make the column
+// flicker between two looks for no gain.
+//
+// The box is fixed at the width of the badges that matter ("GT3", "LMP2",
+// "FF1600") so the name behind it never shifts — in a single-model class the
+// sim can put a whole car name here, and it is cut rather than let it push the
+// row around.
 .className {
-  flex: 0 1 auto;
-  max-width: 8ch;
+  position: relative;
+  display: flex;
+  grid-column: class-col;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+
+  // The right edge is sliced, so the label needs the room back on that side or
+  // it would sit under the cut.
+  padding: 0 sp(lg) 0 sp(sm);
+  margin-right: sp(md);
+  clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);
+  overflow: hidden;
+  color: #111111;
+  text-transform: uppercase;
+  font-size: fs(md);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+// The weave: a diagonal twill rib, then warp and weft threads. Multiplied over
+// the class color rather than mixed into it, so every class keeps its own hue.
+.classTexture {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      -60deg,
+      rgba(0, 0, 0, 0.15) 0 1px,
+      transparent 1px 4px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.1) 0 1px,
+      transparent 1px 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.1) 0 1px,
+      transparent 1px 3px
+    );
+  mix-blend-mode: multiply;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.classLabel {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: fs(sm);
-  font-weight: 700;
-  letter-spacing: 0.06em;
 }
 
 // A car sharing this spot on the axis, named rather than counted. It rides
@@ -107,27 +186,50 @@ $plate-move-duration: 140ms;
   color: $widget-text-primary;
 }
 
-// The car number is an identifier, not a footnote: white in its own lighter
-// box, so it reads as a badge against the plate rather than as more text — and
-// at the size of the surname beside it, because it is read the same way.
+// The number opens the plate: recessed into the surface at the far left and
+// rounded with the plate's own corner, so it and the class block read as the
+// two halves of one identity tab rather than as two floating chips. A third
+// smaller than the name beside it — read at a glance, never mistaken for the
+// thing the eye is meant to land on first.
 .carNumber {
-  padding: 0 sp(xs);
-  border-radius: radius(md);
-  background: rgba(255, 255, 255, 0.1);
-  font-size: fs(lg);
+  display: flex;
+  grid-column: number-col;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  padding: 0 sp(lg);
+  border-radius: radius(lg) 0 0 radius(lg);
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  font-size: fs(md);
   font-weight: 500;
   color: $widget-text-primary;
+}
+
+// The driver and whoever shares the plate with them: the one column with no
+// fixed length, so it takes every pixel the fixed ones leave. The name starts
+// at its left edge — a name that centres itself moves with its own length, and
+// the eye then has to find it again on every plate. That is also what pins the distance and the gap to the right edge
+// — they are pushed there by this column rather than trailing the name.
+.identity {
+  display: flex;
+  grid-column: name-col;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-start;
+  gap: sp(sm);
+  overflow: hidden;
 }
 
 // At speed the eye catches the surname and skips the rest, so the two carry
 // different weights instead of competing.
 .name {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: fs(lg);
+  font-size: fs(xl);
 }
 
 .givenName {
@@ -145,9 +247,14 @@ $plate-move-duration: 140ms;
 // Meters answer "will he reach me in this corner" — read as often as the gap
 // and at a glance, so it carries the gap's size rather than a footnote's.
 .distance {
-  flex: 0 0 auto;
+  grid-column: distance-col;
+
+  // The row has no column gap, so the two numbers would touch: the gap's sign
+  // needs air of its own or it reads as part of the distance.
+  margin-right: ws(5);
   white-space: nowrap;
-  font-size: fs(xl);
+  text-align: right;
+  font-size: fs(sm);
   font-weight: 500;
   line-height: 1;
   color: $widget-text-primary;
@@ -156,8 +263,7 @@ $plate-move-duration: 140ms;
 // Same signs and the same colors as the Relative widget: ahead is negative and
 // blue, behind is positive and red.
 .gap {
-  flex: 0 0 auto;
-  min-width: 6ch;
+  grid-column: gap-col;
   white-space: nowrap;
   text-align: right;
   font-size: fs(xl);

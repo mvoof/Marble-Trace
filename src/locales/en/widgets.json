@@ -238,7 +238,7 @@
       "gap": "Gap",
       "distance": "Distance",
       "thresholdSeconds": "Threshold (s)",
-      "thresholdMeters": "Threshold (m)",
+      "thresholdDistance": "Threshold ({{unit}})",
       "thresholdDesc": "An opponent inside this shows up; the plate leaves at 1.3 x this value. Each trigger keeps its own number.",
       "hideDelay": "Fade Out Delay (s)",
       "hideDelayDesc": "How long a row stays after the opponent left the threshold.",

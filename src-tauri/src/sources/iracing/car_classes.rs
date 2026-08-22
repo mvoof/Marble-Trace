@@ -7,7 +7,11 @@
 //! ("BMW M4 GT4", "Toyota GR86"). In AI and hosted sessions it is empty for every
 //! car, so the label is resolved in this order:
 //!
-//! 1. `CarClassShortName` — whatever the sim reports, untouched;
+//! 1. `CarClassShortName` — whatever the sim reports, minus the filler words
+//!    ([`tidy_class_badge`]): a badge column three characters wide has no room
+//!    for "GT3 Class" when the class is GT3. Kept only if it is badge-shaped:
+//!    in a single-model class the sim puts the whole car name here, and a
+//!    curated badge beats "Porsche 911 GT3 Cup (992)" every time;
 //! 2. [`CLASS_BADGE_BY_ID`] — curated badge for a known `CarClassID`;
 //! 3. [`derive_badge_from_car_names`] — tokens shared by every model in the class;
 //! 4. `CarScreenNameShort` — the car name, as a last resort.
@@ -47,6 +51,14 @@ const CLASS_BADGE_BY_ID: [(i32, &str); 8] = [
 ];
 
 const MIN_BADGE_TOKEN_LENGTH: usize = 2;
+
+/// Longest a sim label may be and still read as a badge rather than a car name.
+/// "LMP2", "GTP", "TCR" fit; "Global Mazda MX-5 Cup" does not.
+const MAX_SIM_BADGE_LENGTH: usize = 6;
+
+/// Words the sim pads a class label with that say nothing the badge needs:
+/// "GT3 Class" is GT3, "Class C" is C. Dropped whatever the case.
+const BADGE_FILLER_WORDS: [&str; 2] = ["class", "division"];
 
 /// Words shared by unrelated models in a class carry no class meaning.
 const NON_BADGE_TOKENS: [&str; 4] = ["racing", "car", "cup", "series"];
@@ -92,6 +104,30 @@ pub fn normalize_class_color(raw: &str) -> String {
         .unwrap_or(normalized)
 }
 
+/// Strips the filler words off a class label, whatever produced it. Everything
+/// that reaches a badge column goes through here, so the same class reads the
+/// same in every widget. A label that is *only* filler is left alone — an empty
+/// badge says less than a clumsy one.
+pub fn tidy_class_badge(raw: &str) -> String {
+    let kept: Vec<&str> = raw
+        .split_whitespace()
+        .filter(|word| {
+            !BADGE_FILLER_WORDS.contains(
+                &word
+                    .trim_matches(|c: char| !c.is_ascii_alphanumeric())
+                    .to_lowercase()
+                    .as_str(),
+            )
+        })
+        .collect();
+
+    if kept.is_empty() {
+        return raw.trim().to_string();
+    }
+
+    kept.join(" ")
+}
+
 fn tokenize_car_name(name: &str) -> Vec<String> {
     name.split_whitespace()
         .map(|token| {
@@ -133,10 +169,28 @@ fn derive_badge_from_car_names(car_names: &[&str]) -> String {
 /// the resolution order documented at the module level. Entries the sim already
 /// labeled are never overwritten.
 pub fn apply_class_badges(cars: &mut [CarEntry]) {
+    for car in cars.iter_mut() {
+        car.car_class_short_name = tidy_class_badge(&car.car_class_short_name);
+    }
+
+    // A label the sim filled with a car name is treated as no label at all, so
+    // the curated badge and the shared-token derivation both get their turn. If
+    // neither produces anything the original label is put back below — it is
+    // clumsy, but it is still the name of the class.
+    let needs_badge = |car: &CarEntry| {
+        car.car_class_short_name.is_empty()
+            || car.car_class_short_name.chars().count() > MAX_SIM_BADGE_LENGTH
+    };
+
+    let sim_labels: Vec<String> = cars
+        .iter()
+        .map(|car| car.car_class_short_name.clone())
+        .collect();
+
     let unnamed_class_ids: Vec<i32> = {
         let mut ids: Vec<i32> = cars
             .iter()
-            .filter(|car| car.car_class_short_name.is_empty())
+            .filter(|car| needs_badge(car))
             .map(|car| car.car_class_id)
             .collect();
         ids.sort_unstable();
@@ -164,15 +218,19 @@ pub fn apply_class_badges(cars: &mut [CarEntry]) {
             curated
         };
 
-        for car in cars
+        for (index, car) in cars
             .iter_mut()
-            .filter(|car| car.car_class_id == class_id && car.car_class_short_name.is_empty())
+            .enumerate()
+            .filter(|(_, car)| car.car_class_id == class_id && needs_badge(car))
         {
-            car.car_class_short_name = if badge.is_empty() {
-                car.car_screen_name_short.clone()
+            let fallback = if sim_labels[index].is_empty() {
+                &car.car_screen_name_short
             } else {
-                badge.clone()
+                &sim_labels[index]
             };
+
+            car.car_class_short_name =
+                tidy_class_badge(if badge.is_empty() { fallback } else { &badge });
         }
     }
 }
@@ -205,7 +263,17 @@ mod tests {
     }
 
     #[test]
-    fn class_badges_fill_in_only_what_the_sim_left_empty() {
+    fn tidies_filler_words_out_of_any_badge() {
+        assert_eq!(tidy_class_badge("GT3 Class"), "GT3");
+        assert_eq!(tidy_class_badge("Class C"), "C");
+        assert_eq!(tidy_class_badge("GT3"), "GT3");
+        // Only filler left: a clumsy badge still beats an empty one.
+        assert_eq!(tidy_class_badge("Class"), "Class");
+        assert_eq!(tidy_class_badge(""), "");
+    }
+
+    #[test]
+    fn class_badges_fill_in_what_the_sim_left_empty_or_filled_with_a_car_name() {
         let make_car = |car_idx: i32, class_id: i32, model: &str, sim_label: &str| CarEntry {
             car_idx,
             car_class_id: class_id,
@@ -221,6 +289,8 @@ mod tests {
             make_car(3, 74, "MX-5 Cup", "Global Mazda MX-5 Cup"),
             make_car(4, 5001, "Oreca 07 LMP2", ""),
             make_car(5, 5001, "Dallara P217 LMP2", ""),
+            make_car(6, 4110, "Porsche 992 GT3 Cup", "GT3 Class"),
+            make_car(7, 9001, "Ligier JS P320", "Prototype Challenge"),
         ];
 
         apply_class_badges(&mut cars);
@@ -228,9 +298,15 @@ mod tests {
         assert_eq!(cars[0].car_class_short_name, "GT3");
         assert_eq!(cars[1].car_class_short_name, "GT3");
         assert_eq!(cars[2].car_class_short_name, "GR86");
-        assert_eq!(cars[3].car_class_short_name, "Global Mazda MX-5 Cup");
+        // A car name is not a badge: the curated label for the class wins.
+        assert_eq!(cars[3].car_class_short_name, "MX-5");
         assert_eq!(cars[4].car_class_short_name, "LMP2");
         assert_eq!(cars[5].car_class_short_name, "LMP2");
+        // A sim label is kept, but not its filler.
+        assert_eq!(cars[6].car_class_short_name, "GT3");
+        // Nothing to replace a long label with: it is kept rather than swapped
+        // for the car name.
+        assert_eq!(cars[7].car_class_short_name, "Prototype Challenge");
     }
 
     #[test]

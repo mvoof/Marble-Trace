@@ -140,7 +140,8 @@ export class DuelBarWidgetStore {
     return resolveAxisRange(
       this.settings,
       this.farthestClearance,
-      this.heldAxisRange
+      this.heldAxisRange,
+      this.root.units.isMetric
     );
   }
 

@@ -10,6 +10,11 @@ import type {
   DuelSides,
   DuelTrigger,
 } from '@/types/widget-settings';
+import { useUnitsStore } from '@store/root-store-context';
+import {
+  toDisplayDistance,
+  toMeters,
+} from '@ui/widgets/DuelBarWidget/duel-bar-utils';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
@@ -17,12 +22,19 @@ import { useWidgetEditor } from '../WidgetEditorContext';
 
 const ROW_COUNTS = [1, 2, 3];
 
-/** Meters. The lower bound is the radar's: below 5 m you are already touching. */
+/**
+ * Meters — the number is always stored metric, whatever the user reads. The
+ * lower bound is the radar's: below 5 m you are already touching.
+ */
 const MIN_DISTANCE_THRESHOLD = 5;
 const MAX_DISTANCE_THRESHOLD = 200;
 
+/** Feet round to fives, so the field steps by five of whatever it shows. */
+const DISTANCE_STEP = 5;
+
 export const DuelBarSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
+  const units = useUnitsStore();
   const { t } = useTranslation('widgets');
 
   const settings =
@@ -33,6 +45,12 @@ export const DuelBarSettingsPanel = observer(() => {
   };
 
   const isGapTrigger = settings.trigger === 'gap';
+  const isMetric = units.isMetric;
+
+  // The field shows the unit the widget draws in and stores meters regardless,
+  // so switching the unit system never rewrites what the user chose.
+  const asDisplay = (meters: number) =>
+    Math.round(toDisplayDistance(meters, isMetric));
 
   return (
     <>
@@ -61,7 +79,9 @@ export const DuelBarSettingsPanel = observer(() => {
             title={
               isGapTrigger
                 ? t('settingsPanels.duelBar.thresholdSeconds')
-                : t('settingsPanels.duelBar.thresholdMeters')
+                : t('settingsPanels.duelBar.thresholdDistance', {
+                    unit: isMetric ? 'm' : 'ft',
+                  })
             }
             desc={t('settingsPanels.duelBar.thresholdDesc')}
           >
@@ -82,13 +102,13 @@ export const DuelBarSettingsPanel = observer(() => {
               />
             ) : (
               <InputNumber
-                value={settings.distanceThreshold}
-                min={MIN_DISTANCE_THRESHOLD}
-                max={MAX_DISTANCE_THRESHOLD}
-                step={5}
+                value={asDisplay(settings.distanceThreshold)}
+                min={asDisplay(MIN_DISTANCE_THRESHOLD)}
+                max={asDisplay(MAX_DISTANCE_THRESHOLD)}
+                step={DISTANCE_STEP}
                 onChange={(value) => {
                   if (value !== null) {
-                    update({ distanceThreshold: value });
+                    update({ distanceThreshold: toMeters(value, isMetric) });
                   }
                 }}
               />

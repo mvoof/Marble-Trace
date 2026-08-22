@@ -15,7 +15,11 @@ const AXIS_HALF_PCT = 50 - AXIS_EDGE_INSET_PCT;
 /** Percent of the height a tick label eats out of the dashed line. */
 export const TICK_GAP_PCT = 4;
 
-/** Meters between two tick labels, per axis range. */
+/**
+ * Distance between two tick labels, keyed by the axis range they sit on — one
+ * table per unit, because a tick every 25 m is round and every 82 ft is not.
+ * Both are in the unit the label is printed in.
+ */
 const TICK_STEP_BY_RANGE: Record<number, number> = {
   5: 2,
   10: 5,
@@ -23,6 +27,15 @@ const TICK_STEP_BY_RANGE: Record<number, number> = {
   50: 25,
   100: 25,
   200: 50,
+};
+
+const TICK_STEP_BY_RANGE_FEET: Record<number, number> = {
+  15: 5,
+  30: 10,
+  75: 25,
+  150: 50,
+  300: 100,
+  600: 200,
 };
 
 const METERS_TO_FEET = 3.28084;
@@ -48,16 +61,33 @@ export interface AxisSegment {
 
 export interface AxisTick {
   topPct: number;
-  meters: number;
+  /** What the label prints: meters or feet, matching the unit setting. */
+  label: number;
 }
 
-export const axisTicks = (axisRange: number): AxisTick[] => {
-  const step = TICK_STEP_BY_RANGE[axisRange] ?? axisRange / 2;
+/** Meters into the unit the widget prints, and back. */
+export const toDisplayDistance = (meters: number, isMetric: boolean): number =>
+  isMetric ? meters : meters * METERS_TO_FEET;
+
+export const toMeters = (display: number, isMetric: boolean): number =>
+  isMetric ? display : display / METERS_TO_FEET;
+
+/**
+ * The ticks, laid out in the unit they are read in. The axis itself stays in
+ * meters — everything the sim reports is — so a tick is placed by its metric
+ * position and labeled by its imperial value.
+ */
+export const axisTicks = (axisRange: number, isMetric: boolean): AxisTick[] => {
+  const range = Math.round(toDisplayDistance(axisRange, isMetric));
+  const table = isMetric ? TICK_STEP_BY_RANGE : TICK_STEP_BY_RANGE_FEET;
+  const step = table[range] ?? range / 2;
   const ticks: AxisTick[] = [];
 
-  for (let meters = step; meters <= axisRange; meters += step) {
-    ticks.push({ topPct: distanceToTopPct(meters, axisRange), meters });
-    ticks.push({ topPct: distanceToTopPct(-meters, axisRange), meters });
+  for (let label = step; label <= range; label += step) {
+    const meters = toMeters(label, isMetric);
+
+    ticks.push({ topPct: distanceToTopPct(meters, axisRange), label });
+    ticks.push({ topPct: distanceToTopPct(-meters, axisRange), label });
   }
 
   return ticks.sort((first, second) => first.topPct - second.topPct);
@@ -234,8 +264,14 @@ export const isWithinThreshold = (
   return value <= limit;
 };
 
-/** The ranges the axis may settle on, in meters. */
+/**
+ * The ranges the axis may settle on — one ladder per unit, in that unit. Both
+ * cover the same ground; the imperial rungs are simply the round numbers a
+ * reader of feet expects to see on a tick.
+ */
 export const AXIS_RANGE_STEPS = [5, 10, 25, 50, 100, 200];
+
+export const AXIS_RANGE_STEPS_FEET = [15, 30, 75, 150, 300, 600];
 
 /** Headroom above the farthest car, so its plate is not glued to the edge. */
 const AUTO_RANGE_HEADROOM = 1.15;
@@ -243,10 +279,18 @@ const AUTO_RANGE_HEADROOM = 1.15;
 /** How much of a narrower step must stay free before the axis drops to it. */
 const SHRINK_MARGIN = 0.75;
 
-/** The narrowest step that still holds `meters`, capped at the widest one. */
-const fittingStep = (meters: number): number =>
-  AXIS_RANGE_STEPS.find((step) => step >= meters) ??
-  AXIS_RANGE_STEPS[AXIS_RANGE_STEPS.length - 1];
+/**
+ * The narrowest step that still holds `meters`, capped at the widest one. The
+ * ladder is picked by unit and the answer converted back, so the range always
+ * lands on a number that ticks divide evenly.
+ */
+const fittingStep = (meters: number, isMetric: boolean): number => {
+  const steps = isMetric ? AXIS_RANGE_STEPS : AXIS_RANGE_STEPS_FEET;
+  const wanted = toDisplayDistance(meters, isMetric);
+  const step = steps.find((rung) => rung >= wanted) ?? steps[steps.length - 1];
+
+  return toMeters(step, isMetric);
+};
 
 /**
  * The axis range the widget actually draws — derived from the threshold that
@@ -267,16 +311,17 @@ const fittingStep = (meters: number): number =>
 export const resolveAxisRange = (
   settings: DuelBarWidgetSettings,
   farthestMeters: number,
-  held: number
+  held: number,
+  isMetric: boolean
 ): number => {
   if (settings.trigger === 'distance') {
     // No headroom here: a car sitting exactly at the threshold belongs at the
     // edge of the axis, which the edge inset already keeps off the border.
-    return fittingStep(settings.distanceThreshold);
+    return fittingStep(settings.distanceThreshold, isMetric);
   }
 
   const needed = farthestMeters * AUTO_RANGE_HEADROOM;
-  const fitting = fittingStep(needed);
+  const fitting = fittingStep(needed, isMetric);
 
   if (fitting > held) {
     return fitting;
@@ -285,7 +330,7 @@ export const resolveAxisRange = (
   // Shrinking needs room to spare, or a car hovering on a step boundary would
   // flip the whole axis back and forth every tick: the step it drops to is the
   // one the car still fits in with a quarter of the range left over.
-  const shrunk = fittingStep(needed / SHRINK_MARGIN);
+  const shrunk = fittingStep(needed / SHRINK_MARGIN, isMetric);
 
   if (shrunk < held) {
     return shrunk;

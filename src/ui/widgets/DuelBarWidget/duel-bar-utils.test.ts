@@ -8,6 +8,7 @@ import {
   formatDuelGap,
   glowIntensity,
   duelDriverName,
+  toMeters,
   plateScale,
   PLATE_SLOT_PCT,
   resolveAxisRange,
@@ -50,7 +51,7 @@ describe('distanceToTopPct', () => {
 
 describe('buildAxisSegments', () => {
   it('leaves a hole around every tick label', () => {
-    const ticks = [{ topPct: 50, meters: 25 }];
+    const ticks = [{ topPct: 50, label: 25 }];
     const segments = buildAxisSegments(ticks);
 
     expect(segments).toEqual([
@@ -64,7 +65,7 @@ describe('buildAxisSegments', () => {
   });
 
   it('never overlaps a label of a real tick set', () => {
-    const ticks = axisTicks(50);
+    const ticks = axisTicks(50, true);
     const segments = buildAxisSegments(ticks);
 
     for (const tick of ticks) {
@@ -81,10 +82,19 @@ describe('buildAxisSegments', () => {
 
 describe('axisTicks', () => {
   it('mirrors every tick around the player', () => {
-    const ticks = axisTicks(50);
+    const ticks = axisTicks(50, true);
 
-    expect(ticks.map((tick) => tick.meters)).toEqual([50, 25, 25, 50]);
+    expect(ticks.map((tick) => tick.label)).toEqual([50, 25, 25, 50]);
     expect(ticks[0].topPct).toBe(100 - ticks[3].topPct);
+  });
+
+  it('labels an imperial axis in round feet', () => {
+    // The ±150 ft rung of the imperial ladder, in the meters the axis works in.
+    const range = toMeters(150, false);
+
+    expect(axisTicks(range, false).map((tick) => tick.label)).toEqual([
+      150, 100, 50, 50, 100, 150,
+    ]);
   });
 });
 
@@ -208,27 +218,27 @@ describe('resolveAxisRange', () => {
     ({ trigger: 'distance', distanceThreshold }) as DuelBarWidgetSettings;
 
   it('derives the range from a distance threshold, whatever is on screen', () => {
-    expect(resolveAxisRange(distance(50), 4, 10)).toBe(50);
+    expect(resolveAxisRange(distance(50), 4, 10, true)).toBe(50);
   });
 
   it('never collapses the axis on a tiny distance threshold', () => {
-    expect(resolveAxisRange(distance(1), 0, 50)).toBe(5);
+    expect(resolveAxisRange(distance(1), 0, 50, true)).toBe(5);
   });
 
   it('zooms in on a close fight when the threshold is a gap', () => {
-    expect(resolveAxisRange(gap, 4, 50)).toBe(10);
+    expect(resolveAxisRange(gap, 4, 50, true)).toBe(10);
   });
 
   it('zooms out as soon as a car passes the held range', () => {
-    expect(resolveAxisRange(gap, 60, 50)).toBe(100);
+    expect(resolveAxisRange(gap, 60, 50, true)).toBe(100);
   });
 
   it('holds the current range instead of flipping on the boundary', () => {
-    expect(resolveAxisRange(gap, 20, 25)).toBe(25);
+    expect(resolveAxisRange(gap, 20, 25, true)).toBe(25);
   });
 
   it('never goes past the widest step', () => {
-    expect(resolveAxisRange(gap, 5000, 50)).toBe(200);
+    expect(resolveAxisRange(gap, 5000, 50, true)).toBe(200);
   });
 });
 

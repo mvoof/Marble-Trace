@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import {
   useDuelBarWidgetStore,
+  useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import type { DuelBarWidgetSettings } from '@/types/widget-settings';
@@ -24,13 +25,14 @@ import styles from './DuelAxis.module.scss';
 export const DuelAxis = observer(() => {
   const duelBar = useDuelBarWidgetStore();
   const widgetSettings = useWidgetSettingsStore();
+  const units = useUnitsStore();
 
   const settings =
     widgetSettings.getSettings<DuelBarWidgetSettings>('duel-bar');
 
   const axisRange = duelBar.axisRange;
 
-  const ticks = settings.showTicks ? axisTicks(axisRange) : [];
+  const ticks = settings.showTicks ? axisTicks(axisRange, units.isMetric) : [];
 
   // The line is only cut where a number sits on it. With the numbers off the
   // marks are narrow enough to hang either side of an unbroken axis.
@@ -60,14 +62,14 @@ export const DuelAxis = observer(() => {
 
       {ticks.map((tick) => (
         <div
-          key={`${tick.topPct}-${tick.meters}`}
+          key={`${tick.topPct}-${tick.label}`}
           className={
             showTickLabels ? styles.tick : `${styles.tick} ${styles.tickBare}`
           }
           style={{ top: `${tick.topPct}%` }}
         >
           {showTickLabels && (
-            <span className={styles.tickLabel}>{tick.meters}</span>
+            <span className={styles.tickLabel}>{tick.label}</span>
           )}
         </div>
       ))}

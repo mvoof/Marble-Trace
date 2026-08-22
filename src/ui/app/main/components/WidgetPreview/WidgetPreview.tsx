@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { RootStore } from '@store/root-store';
-import { RootStoreContext } from '@store/root-store-context';
+import { RootStoreContext, useUnitsStore } from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
 import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
@@ -29,6 +29,7 @@ export const WidgetPreview = observer(
     scenarioId = DEFAULT_PREVIEW_SCENARIO_ID,
   }: WidgetPreviewProps) => {
     const editor = useWidgetEditor();
+    const units = useUnitsStore();
     const { t } = useTranslation('main-app');
 
     const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
@@ -42,6 +43,13 @@ export const WidgetPreview = observer(
     useEffect(() => {
       seedInputHistory(previewStore);
     }, [previewStore, scenarioId]);
+
+    // The preview store is its own world, units included — without this it
+    // stays metric while the app is set to imperial, and every distance in the
+    // preview contradicts the widget on the overlay.
+    useLayoutEffect(() => {
+      previewStore.units.setSystem(units.unitSystem);
+    }, [previewStore, units.unitSystem]);
 
     const widget = editor.getWidget(widgetId);
 

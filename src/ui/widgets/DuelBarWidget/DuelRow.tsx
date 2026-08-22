@@ -74,50 +74,59 @@ export const DuelRow = observer(({ group }: DuelRowProps) => {
         className={styles.plate}
         style={{ '--plate-scale': scale } as CSSProperties}
       >
-        <div className={styles.row} style={{ opacity }}>
-          <div
-            className={styles.rail}
-            style={{ background: entry.carClassColor }}
-          />
-
-          {settings.showClassBadge && entry.carClassShortName && (
-            <span
-              className={styles.className}
-              style={{ color: entry.carClassColor }}
-            >
-              {entry.carClassShortName}
-            </span>
-          )}
-
+        <div
+          className={
+            settings.showClassBadge
+              ? styles.row
+              : `${styles.row} ${styles.rowNoClass}`
+          }
+          style={{ opacity }}
+        >
           <span className={styles.carNumber}>
             {formatCarNumber(entry.carNumber)}
           </span>
 
-          <span className={styles.name}>
-            {/* A shared plate spends its width on the second driver instead of
-                on a given name nobody reads at speed. */}
-            {givenName && companions.length === 0 && (
-              <span className={styles.givenName}>{givenName} </span>
-            )}
-            <span className={styles.surname}>{surname}</span>
-          </span>
-
-          {companions.map((companion) => (
-            <span key={companion.carIdx} className={styles.companion}>
-              <span
-                className={styles.companionRail}
-                style={{ background: companion.entry.carClassColor }}
-              />
-              <span className={styles.companionNumber}>
-                {formatCarNumber(companion.entry.carNumber)}
-              </span>
-              <span className={styles.companionName}>
-                {splitDriverName(companion.entry.userName).surname}
+          {settings.showClassBadge && (
+            <span
+              className={styles.className}
+              style={{ background: entry.carClassColor }}
+            >
+              <span className={styles.classTexture} />
+              <span className={styles.classLabel}>
+                {entry.carClassShortName}
               </span>
             </span>
-          ))}
+          )}
 
-          {unnamed > 0 && <span className={styles.companion}>+{unnamed}</span>}
+          <span className={styles.identity}>
+            <span className={styles.name}>
+              {/* A shared plate spends its width on the second driver instead
+                  of on a given name nobody reads at speed. */}
+              {givenName && companions.length === 0 && (
+                <span className={styles.givenName}>{givenName} </span>
+              )}
+              <span className={styles.surname}>{surname}</span>
+            </span>
+
+            {companions.map((companion) => (
+              <span key={companion.carIdx} className={styles.companion}>
+                <span
+                  className={styles.companionRail}
+                  style={{ background: companion.entry.carClassColor }}
+                />
+                <span className={styles.companionNumber}>
+                  {formatCarNumber(companion.entry.carNumber)}
+                </span>
+                <span className={styles.companionName}>
+                  {splitDriverName(companion.entry.userName).surname}
+                </span>
+              </span>
+            ))}
+
+            {unnamed > 0 && (
+              <span className={styles.companion}>+{unnamed}</span>
+            )}
+          </span>
 
           {settings.showDistance && (
             <span className={styles.distance}>

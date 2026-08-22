@@ -23,6 +23,7 @@ import {
   RootStoreContext,
   useSessionStore,
   useTrackMapWidgetStore,
+  useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 import { componentForWidget } from '@ui/widgets/registry';
@@ -241,6 +242,7 @@ export const LayoutCanvas = observer(
     focusedMonitorName = null,
   }: LayoutCanvasProps) => {
     const widgetSettings = useWidgetSettingsStore();
+    const units = useUnitsStore();
     const monitors = widgetSettings.activeLayout?.monitors ?? [];
     const focusedMonitor = focusedMonitorName
       ? monitors.find((monitor) => monitor.name === focusedMonitorName)
@@ -269,6 +271,12 @@ export const LayoutCanvas = observer(
     }, [previewStore]);
 
     useTrackRotationBridge(previewStore);
+
+    // The preview store carries its own units; mirror the app's, or the editor
+    // shows metres while the overlay shows feet.
+    useLayoutEffect(() => {
+      previewStore.units.setSystem(units.unitSystem);
+    }, [previewStore, units.unitSystem]);
 
     useLayoutEffect(() => {
       seedScenario(previewStore, scenarioId);
