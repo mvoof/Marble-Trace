@@ -31,7 +31,11 @@ export const DuelAxis = observer(() => {
   const axisRange = duelBar.axisRange;
 
   const ticks = settings.showTicks ? axisTicks(axisRange) : [];
-  const segments = buildAxisSegments(ticks);
+
+  // The line is only cut where a number sits on it. With the numbers off the
+  // marks are narrow enough to hang either side of an unbroken axis.
+  const showTickLabels = settings.showTicks && settings.showTickLabels;
+  const segments = buildAxisSegments(showTickLabels ? ticks : []);
 
   const behind = duelBar.nearestBehind;
   const ahead = duelBar.nearestAhead;
@@ -57,10 +61,14 @@ export const DuelAxis = observer(() => {
       {ticks.map((tick) => (
         <div
           key={`${tick.topPct}-${tick.meters}`}
-          className={styles.tick}
+          className={
+            showTickLabels ? styles.tick : `${styles.tick} ${styles.tickBare}`
+          }
           style={{ top: `${tick.topPct}%` }}
         >
-          <span className={styles.tickLabel}>{tick.meters}</span>
+          {showTickLabels && (
+            <span className={styles.tickLabel}>{tick.meters}</span>
+          )}
         </div>
       ))}
 

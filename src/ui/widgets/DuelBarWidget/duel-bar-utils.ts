@@ -16,9 +16,12 @@ export const TICK_GAP_PCT = 4;
 
 /** Meters between two tick labels, per axis range. */
 const TICK_STEP_BY_RANGE: Record<number, number> = {
+  5: 2,
+  10: 5,
   25: 10,
   50: 25,
   100: 25,
+  200: 50,
 };
 
 const METERS_TO_FEET = 3.28084;
@@ -230,47 +233,61 @@ export const isWithinThreshold = (
   return value <= limit;
 };
 
-/** The ranges the automatic axis may settle on, in meters. */
-export const AXIS_RANGE_STEPS = [10, 25, 50, 100, 200];
+/** The ranges the axis may settle on, in meters. */
+export const AXIS_RANGE_STEPS = [5, 10, 25, 50, 100, 200];
 
 /** Headroom above the farthest car, so its plate is not glued to the edge. */
 const AUTO_RANGE_HEADROOM = 1.15;
 
+/** How much of a narrower step must stay free before the axis drops to it. */
+const SHRINK_MARGIN = 0.75;
+
+/** The narrowest step that still holds `meters`, capped at the widest one. */
+const fittingStep = (meters: number): number =>
+  AXIS_RANGE_STEPS.find((step) => step >= meters) ??
+  AXIS_RANGE_STEPS[AXIS_RANGE_STEPS.length - 1];
+
 /**
- * The axis range the widget actually draws.
+ * The axis range the widget actually draws — derived from the threshold that
+ * makes the widget appear, never set apart from it. An axis wider than the
+ * threshold can only ever draw its middle, and one narrower would clamp the
+ * very cars the threshold let in.
  *
- * A fixed ±50 m axis puts two cars a metre apart on the same pixel, and the
- * plates then have to shove each other aside — the picture stops being true.
- * On `'auto'` the axis zooms to the farthest car instead, so a close fight is
- * drawn on a ±10 m axis where a metre is a visible gap.
+ * A distance threshold is already meters, so the axis is simply the step that
+ * fits it: threshold 1 m still lands on the ±5 m step, because a plate is a
+ * ninth of the axis tall and an axis of one metre says nothing.
  *
- * `held` is the range in force: the axis only zooms back out once the car is
- * clear of the current step, and only zooms in when the step below has real
- * room to spare, so it does not flip between two steps every tick.
+ * A gap threshold is seconds, and two seconds is 40 m in a hairpin and 150 m on
+ * a straight — there is no fixed range to derive, so the axis zooms to the
+ * farthest car instead. `held` is the range in force: it only zooms back out
+ * once a car passes the current step, and only zooms in when the step below has
+ * real room to spare, so it does not flip between two steps every tick.
  */
 export const resolveAxisRange = (
-  setting: DuelBarWidgetSettings['axisRange'],
+  settings: DuelBarWidgetSettings,
   farthestMeters: number,
   held: number
 ): number => {
-  if (setting !== 'auto') {
-    return setting;
+  if (settings.trigger === 'distance') {
+    // No headroom here: a car sitting exactly at the threshold belongs at the
+    // edge of the axis, which the edge inset already keeps off the border.
+    return fittingStep(settings.distanceThreshold);
   }
 
   const needed = farthestMeters * AUTO_RANGE_HEADROOM;
-
-  const fitting =
-    AXIS_RANGE_STEPS.find((step) => step >= needed) ??
-    AXIS_RANGE_STEPS[AXIS_RANGE_STEPS.length - 1];
+  const fitting = fittingStep(needed);
 
   if (fitting > held) {
     return fitting;
   }
 
   // Shrinking needs room to spare, or a car hovering on a step boundary would
-  // flip the whole axis back and forth every tick.
-  if (fitting < held && needed < fitting * 0.75) {
-    return fitting;
+  // flip the whole axis back and forth every tick: the step it drops to is the
+  // one the car still fits in with a quarter of the range left over.
+  const shrunk = fittingStep(needed / SHRINK_MARGIN);
+
+  if (shrunk < held) {
+    return shrunk;
   }
 
   return held;
@@ -349,15 +366,31 @@ export const formatDuelDistance = (
   return `${Math.round(value)}${isMetric ? ' m' : ' ft'}`;
 };
 
+/** The plate never shrinks past this: below it the row stops being readable. */
+const MIN_PLATE_SCALE = 2 / 3;
+
+/**
+ * The distance at which a plate reaches its smallest size, in meters.
+ *
+ * Fixed on purpose, rather than a fraction of the axis: a car five metres away
+ * is a car five metres away whether the axis is ±5 m or ±100 m, and scaling by
+ * the fraction shrank a plate to its floor merely because the threshold was
+ * tight — the widget then said "far" about a car in your mirrors, and did it in
+ * type too small to read at the edge of the axis.
+ *
+ * So a close threshold barely shrinks anything (at ±5 m the outermost plate is
+ * still 97% of full size), and a wide one spends the whole third it is allowed.
+ */
+const PLATE_SHRINK_METERS = 50;
+
 /**
  * Distant plates shrink, but never past a third — below that the row stops
  * being readable and the size no longer says anything useful about distance.
  */
-export const plateScale = (clearance: number, axisRange: number): number => {
-  const MIN_SCALE = 2 / 3;
-  const ratio = Math.max(0, Math.min(1, clearance / axisRange));
+export const plateScale = (clearance: number): number => {
+  const ratio = Math.max(0, Math.min(1, clearance / PLATE_SHRINK_METERS));
 
-  return 1 - (1 - MIN_SCALE) * ratio;
+  return 1 - (1 - MIN_PLATE_SCALE) * ratio;
 };
 
 /** 0 at the glow range, 1 in the player's bumper. */

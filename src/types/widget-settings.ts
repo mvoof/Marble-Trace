@@ -150,8 +150,6 @@ export type DuelSides = 'both' | 'ahead' | 'behind';
 
 export type DuelOtherClass = 'show' | 'dim' | 'hide';
 
-export type DuelAxisRange = 'auto' | number;
-
 export interface DuelBarWidgetSettings {
   /** What counts as "close": a gap in seconds, or a real distance in meters. */
   trigger: DuelTrigger;
@@ -164,13 +162,9 @@ export interface DuelBarWidgetSettings {
   hideDelay: number;
   sides: DuelSides;
   maxRows: number;
-  /**
-   * Half-length of the axis in meters — what the top and bottom edge mean.
-   * `'auto'` follows the farthest opponent on screen, which is what keeps two
-   * cars a metre apart from landing on the same spot.
-   */
-  axisRange: DuelAxisRange;
   showTicks: boolean;
+  /** The meters printed on the ticks. Off leaves the marks and drops the digits. */
+  showTickLabels: boolean;
   /** Axis only: no plates, no names, no numbers. */
   compactMode: boolean;
   showDistance: boolean;

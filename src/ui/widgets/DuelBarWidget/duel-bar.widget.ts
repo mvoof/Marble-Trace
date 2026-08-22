@@ -138,7 +138,7 @@ export class DuelBarWidgetStore {
   /** What the top and bottom edge of the widget mean right now, in meters. */
   get axisRange(): number {
     return resolveAxisRange(
-      this.settings.axisRange,
+      this.settings,
       this.farthestClearance,
       this.heldAxisRange
     );

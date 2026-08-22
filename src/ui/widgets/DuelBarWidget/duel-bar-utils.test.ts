@@ -15,6 +15,7 @@ import {
   TICK_GAP_PCT,
   type DuelOpponent,
 } from './duel-bar-utils';
+import type { DuelBarWidgetSettings } from '@/types/widget-settings';
 
 /** Meters, the shipped default: a car length or two. */
 const MERGE_DISTANCE = 2;
@@ -102,9 +103,15 @@ describe('formatDuelDistance', () => {
 
 describe('plateScale', () => {
   it('never shrinks a plate past a third', () => {
-    expect(plateScale(0, 50)).toBe(1);
-    expect(plateScale(50, 50)).toBeCloseTo(2 / 3);
-    expect(plateScale(500, 50)).toBeCloseTo(2 / 3);
+    expect(plateScale(0)).toBe(1);
+    expect(plateScale(50)).toBeCloseTo(2 / 3);
+    expect(plateScale(500)).toBeCloseTo(2 / 3);
+  });
+
+  it('scales by meters, not by where the car sits on the axis', () => {
+    // A car five metres away is the same size whatever the axis is showing.
+    expect(plateScale(5)).toBeCloseTo(0.967, 3);
+    expect(plateScale(25)).toBeCloseTo(0.833, 3);
   });
 });
 
@@ -177,24 +184,32 @@ describe('buildPlateGroups', () => {
 });
 
 describe('resolveAxisRange', () => {
-  it('returns a fixed range untouched', () => {
-    expect(resolveAxisRange(25, 200, 50)).toBe(25);
+  const gap = { trigger: 'gap' } as DuelBarWidgetSettings;
+  const distance = (distanceThreshold: number) =>
+    ({ trigger: 'distance', distanceThreshold }) as DuelBarWidgetSettings;
+
+  it('derives the range from a distance threshold, whatever is on screen', () => {
+    expect(resolveAxisRange(distance(50), 4, 10)).toBe(50);
   });
 
-  it('zooms in on a close fight so the plates get room', () => {
-    expect(resolveAxisRange('auto', 4, 50)).toBe(10);
+  it('never collapses the axis on a tiny distance threshold', () => {
+    expect(resolveAxisRange(distance(1), 0, 50)).toBe(5);
+  });
+
+  it('zooms in on a close fight when the threshold is a gap', () => {
+    expect(resolveAxisRange(gap, 4, 50)).toBe(10);
   });
 
   it('zooms out as soon as a car passes the held range', () => {
-    expect(resolveAxisRange('auto', 60, 50)).toBe(100);
+    expect(resolveAxisRange(gap, 60, 50)).toBe(100);
   });
 
   it('holds the current range instead of flipping on the boundary', () => {
-    expect(resolveAxisRange('auto', 20, 25)).toBe(25);
+    expect(resolveAxisRange(gap, 20, 25)).toBe(25);
   });
 
   it('never goes past the widest step', () => {
-    expect(resolveAxisRange('auto', 5000, 50)).toBe(200);
+    expect(resolveAxisRange(gap, 5000, 50)).toBe(200);
   });
 });
 

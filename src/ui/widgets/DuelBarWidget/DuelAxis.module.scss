@@ -46,6 +46,11 @@
   }
 }
 
+// Numbers off: the marks stay, and the gap only has to clear the axis line.
+.tickBare {
+  gap: sp(md);
+}
+
 .tickLabel {
   font-family: $font-widget;
   font-size: fs(xxs);

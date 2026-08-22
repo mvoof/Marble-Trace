@@ -340,6 +340,32 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
     },
   },
   {
+    id: 'duel-fight',
+    label: 'Duel — ahead, behind, merged',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // One plate ahead, one behind, and a pair close enough to share a third:
+      // the three shapes the Duel Bar can draw, in one frame. The recorded
+      // snapshot only ever holds whatever traffic happened to be around, so the
+      // merged pair in particular has to be forced. Cars beyond the widget's
+      // `maxRows` are dropped, nearest first — raise it to see all three.
+      applyProximity(store, {
+        nearbyCars: [
+          buildNearbyCar(3, -5.2, 'center'),
+          buildNearbyCar(7, 9.4, 'center'),
+          buildNearbyCar(12, -16, 'center'),
+          buildNearbyCar(19, -17.1, 'center'),
+        ],
+        radarDistances: {
+          frontDist: 9.4,
+          rearDist: 5.2,
+          leftDist: null,
+          rightDist: null,
+        },
+      });
+    },
+  },
+  {
     id: 'rain',
     label: 'Rain',
     apply: (store) => {

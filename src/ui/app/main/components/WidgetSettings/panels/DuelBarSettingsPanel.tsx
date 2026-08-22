@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { InputNumber, Segmented, Slider, Switch } from 'antd';
 
 import type {
-  DuelAxisRange,
   RadarQualifyingVisibility,
   DuelBarWidgetSettings,
   DuelOtherClass,
@@ -15,7 +14,6 @@ import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
-const AXIS_RANGES = [25, 50, 100];
 const ROW_COUNTS = [1, 2, 3];
 
 /** Meters. The lower bound is the radar's: below 5 m you are already touching. */
@@ -204,25 +202,6 @@ export const DuelBarSettingsPanel = observer(() => {
       <Card title={t('settingsPanels.duelBar.axis')}>
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.axisRange')}
-            desc={t('settingsPanels.duelBar.axisRangeDesc')}
-          >
-            <Segmented<DuelAxisRange>
-              value={settings.axisRange}
-              onChange={(value) => update({ axisRange: value })}
-              options={[
-                { label: t('settingsPanels.duelBar.axisAuto'), value: 'auto' },
-                ...AXIS_RANGES.map((range) => ({
-                  label: `±${range} m`,
-                  value: range,
-                })),
-              ]}
-            />
-          </SettingRow>
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SettingRow
             title={t('settingsPanels.duelBar.glowRange')}
             desc={t('settingsPanels.duelBar.glowRangeDesc')}
           >
@@ -245,6 +224,16 @@ export const DuelBarSettingsPanel = observer(() => {
             <Switch
               checked={settings.showTicks}
               onChange={(checked) => update({ showTicks: checked })}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow title={t('settingsPanels.duelBar.showTickLabels')}>
+            <Switch
+              checked={settings.showTickLabels}
+              disabled={!settings.showTicks}
+              onChange={(checked) => update({ showTickLabels: checked })}
             />
           </SettingRow>
         </div>

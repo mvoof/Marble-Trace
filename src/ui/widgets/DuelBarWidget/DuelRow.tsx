@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 
 import { formatCarNumber, splitDriverName } from '@utils/driver';
 import {
-  useDuelBarWidgetStore,
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
@@ -37,7 +36,6 @@ interface DuelRowProps {
  */
 export const DuelRow = observer(({ group }: DuelRowProps) => {
   const { leader: opponent, topPct } = group;
-  const duelBar = useDuelBarWidgetStore();
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
@@ -46,9 +44,7 @@ export const DuelRow = observer(({ group }: DuelRowProps) => {
 
   const { entry } = opponent;
 
-  const scale = settings.scaleByDistance
-    ? plateScale(opponent.clearance, duelBar.axisRange)
-    : 1;
+  const scale = settings.scaleByDistance ? plateScale(opponent.clearance) : 1;
 
   const gapClass = opponent.isAhead ? styles.gapAhead : styles.gapBehind;
 
