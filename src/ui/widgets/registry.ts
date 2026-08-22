@@ -3,6 +3,7 @@ import type { ComponentType } from 'react';
 import { InputTraceWidget } from '@ui/widgets/InputTraceWidget/InputTraceWidget';
 import { ProximityRadarWidget } from '@ui/widgets/ProximityRadarWidget/ProximityRadarWidget';
 import { RadarBarWidget } from '@ui/widgets/RadarBarWidget/RadarBarWidget';
+import { DuelBarWidget } from '@ui/widgets/DuelBarWidget/DuelBarWidget';
 import { StandingsWidget } from '@ui/widgets/StandingsWidget/StandingsWidget';
 import { RelativeWidget } from '@ui/widgets/RelativeWidget/RelativeWidget';
 import { TrackMapWidget } from '@ui/widgets/TrackMapWidget/TrackMapWidget';
@@ -37,6 +38,7 @@ export const WIDGET_COMPONENTS: Record<string, ComponentType> = {
   'input-trace': InputTraceWidget,
   'proximity-radar': ProximityRadarWidget,
   'radar-bar': RadarBarWidget,
+  'duel-bar': DuelBarWidget,
   standings: StandingsWidget,
   relative: RelativeWidget,
   'track-map': TrackMapWidget,
