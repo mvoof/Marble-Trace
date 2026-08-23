@@ -8,9 +8,9 @@ import {
 } from '@store/root-store-context';
 import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
 import {
+  battleDistanceParts,
   battleDriverName,
-  formatBattleDistance,
-  formatBattleGap,
+  battleGapParts,
   plateScale,
   type BattleOpponent,
 } from './close-battle-utils';
@@ -28,6 +28,12 @@ interface BattleRowProps {
    * still claims a single position for all of them.
    */
   stackIndex: number;
+  /**
+   * Whether the lap column is drawn at all. Decided for the widget rather than
+   * for the plate: a column that appears on one plate of a deck and not on the
+   * next would shift every number in it against its neighbour.
+   */
+  showLaps: boolean;
 }
 
 /**
@@ -41,7 +47,7 @@ interface BattleRowProps {
  * what turns the 10 Hz proximity frame into continuous motion.
  */
 export const BattleRow = observer(
-  ({ opponent, topPct, stackIndex }: BattleRowProps) => {
+  ({ opponent, topPct, stackIndex, showLaps }: BattleRowProps) => {
     const units = useUnitsStore();
     const widgetSettings = useWidgetSettingsStore();
 
@@ -53,6 +59,9 @@ export const BattleRow = observer(
     const scale = settings.scaleByDistance ? plateScale(opponent.clearance) : 1;
 
     const gapClass = opponent.isAhead ? styles.gapAhead : styles.gapBehind;
+
+    const distance = battleDistanceParts(opponent.clearance, units.isMetric);
+    const gap = battleGapParts(opponent.gapSeconds);
 
     const { givenName, surname } = battleDriverName(
       entry.userName,
@@ -84,11 +93,13 @@ export const BattleRow = observer(
           }
         >
           <div
-            className={
-              settings.showClassBadge
-                ? styles.row
-                : `${styles.row} ${styles.rowNoClass}`
-            }
+            className={[
+              styles.row,
+              settings.showClassBadge ? '' : styles.rowNoClass,
+              showLaps ? styles.rowLaps : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             style={{ opacity }}
           >
             <span className={styles.carNumber}>
@@ -119,12 +130,21 @@ export const BattleRow = observer(
 
             {settings.showDistance && (
               <span className={styles.distance}>
-                {formatBattleDistance(opponent.clearance, units.isMetric)}
+                <span className={styles.distanceValue}>{distance.value}</span>
+                <span className={styles.distanceUnit}>{distance.unit}</span>
+              </span>
+            )}
+
+            {showLaps && (
+              <span className={styles.laps}>
+                {opponent.lapsApart > 0 ? `${opponent.lapsApart}L` : ''}
               </span>
             )}
 
             <span className={`${styles.gap} ${gapClass}`}>
-              {formatBattleGap(opponent.gapSeconds)}
+              <span className={styles.gapWhole}>{gap.whole}</span>
+              <span className={styles.gapPoint}>.</span>
+              <span className={styles.gapFraction}>{gap.fraction}</span>
             </span>
           </div>
         </div>

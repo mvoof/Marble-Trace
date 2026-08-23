@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   axisTicks,
+  battleDistanceParts,
+  battleGapParts,
   buildAxisSegments,
   distanceToTopPct,
   formatBattleDistance,
@@ -109,6 +111,23 @@ describe('formatBattleDistance', () => {
   it('renders meters or feet', () => {
     expect(formatBattleDistance(45, true)).toBe('45 m');
     expect(formatBattleDistance(45, false)).toBe('148 ft');
+  });
+});
+
+describe('battleGapParts', () => {
+  it('splits at the point so the digits either side stay put', () => {
+    expect(battleGapParts(1.05)).toEqual({ whole: '+1', fraction: '05' });
+    expect(battleGapParts(-12.4)).toEqual({ whole: '-12', fraction: '40' });
+  });
+});
+
+describe('battleDistanceParts', () => {
+  it('keeps the unit in a slot of its own', () => {
+    expect(battleDistanceParts(45, true)).toEqual({ value: '45', unit: 'm' });
+    expect(battleDistanceParts(45, false)).toEqual({
+      value: '148',
+      unit: 'ft',
+    });
   });
 });
 

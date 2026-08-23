@@ -40,6 +40,25 @@ const TICK_STEP_BY_RANGE_FEET: Record<number, number> = {
 
 const METERS_TO_FEET = 3.28084;
 
+/**
+ * Past this much of a lap apart the two cars are no longer racing each other,
+ * they are traffic to one another — the same threshold the Relative widget
+ * uses to call a car lapped.
+ */
+const LAPPED_THRESHOLD = 0.5;
+
+/** Whole laps between two cars, `0` while they are on the same one. */
+const lapsBetween = (driver: DriverEntry, player: DriverEntry): number => {
+  const delta =
+    driver.lap + driver.lapDistPct - (player.lap + player.lapDistPct);
+
+  if (Math.abs(delta) < LAPPED_THRESHOLD) {
+    return 0;
+  }
+
+  return Math.max(1, Math.round(Math.abs(delta)));
+};
+
 export interface BattleOpponent {
   carIdx: number;
   /** Positive = ahead, negative = behind (meters). */
@@ -51,6 +70,14 @@ export interface BattleOpponent {
   entry: DriverEntry;
   isOtherClass: boolean;
   isAhead: boolean;
+  /**
+   * Whole laps between this car and the player, unsigned — `0` for anyone on
+   * the same lap. Which side of the lap they are on is left to the axis: a
+   * plate above the player line is ahead and one below is behind, said louder
+   * by its position than any sign could, and a sign here would have to
+   * contradict the gap column, where ahead reads negative.
+   */
+  lapsApart: number;
 }
 
 /** A dashed piece of the axis line, so a tick label never sits on the dashes. */
@@ -390,6 +417,7 @@ export const buildOpponents = (
         entry,
         isOtherClass: entry.carClassId !== player.carClassId,
         isAhead: car.longitudinalDist >= 0,
+        lapsApart: lapsBetween(entry, player),
       },
     ];
   });
@@ -410,6 +438,40 @@ export const formatBattleDistance = (
   const value = isMetric ? clearance : clearance * METERS_TO_FEET;
 
   return `${Math.round(value)}${isMetric ? ' m' : ' ft'}`;
+};
+
+/**
+ * The same distance, split at the unit.
+ *
+ * A right-aligned "9 m" becoming "10 m" pushes every digit of it one character
+ * left, and at 10 Hz that reads as the number twitching in place. Split, the
+ * unit owns a slot of its own and the digits grow into theirs, so the only
+ * thing that changes on screen is the digit that actually changed.
+ */
+export const battleDistanceParts = (
+  clearance: number,
+  isMetric: boolean
+): { value: string; unit: string } => {
+  const value = isMetric ? clearance : clearance * METERS_TO_FEET;
+
+  return {
+    value: String(Math.round(value)),
+    unit: isMetric ? 'm' : 'ft',
+  };
+};
+
+/**
+ * The gap, split at the decimal point — which is then the one thing on the
+ * plate that never moves. Whole seconds grow leftwards into their own slot and
+ * hundredths sit in theirs, so `9.95` turning into `10.02` shifts nothing but
+ * the digits that changed.
+ */
+export const battleGapParts = (
+  gapSeconds: number
+): { whole: string; fraction: string } => {
+  const [whole, fraction = '00'] = formatBattleGap(gapSeconds).split('.');
+
+  return { whole, fraction };
 };
 
 /** The plate never shrinks past this: below it the row stops being readable. */
