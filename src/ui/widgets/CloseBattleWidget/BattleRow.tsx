@@ -110,7 +110,7 @@ export const BattleRow = observer(
               <span className={styles.classSlab}>
                 <span
                   className={styles.className}
-                  style={{ background: entry.carClassColor }}
+                  style={{ backgroundColor: entry.carClassColor }}
                 >
                   <span className={styles.classLabel}>
                     {entry.carClassShortName}

@@ -265,6 +265,8 @@
       "compactModeDesc": "Axis only: positions and glow, no plates, names or numbers.",
       "plates": "Plates",
       "showDistance": "Show distance",
+      "showLapGap": "Show lap gap",
+      "showLapGapDesc": "Whole laps between you and the car, as \"1L\" beside the gap.",
       "showClassBadge": "Show class badge",
       "nameMode": "Driver name",
       "nameModeDesc": "How much of the name the plate carries. The surname always stays — it is what the eye catches at speed.",

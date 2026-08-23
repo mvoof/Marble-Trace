@@ -292,6 +292,18 @@ export const CloseBattleSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.closeBattle.showLapGap')}
+            desc={t('settingsPanels.closeBattle.showLapGapDesc')}
+          >
+            <Switch
+              checked={settings.showLapGap}
+              onChange={(checked) => update({ showLapGap: checked })}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
           <SettingRow title={t('settingsPanels.closeBattle.showClassBadge')}>
             <Switch
               checked={settings.showClassBadge}

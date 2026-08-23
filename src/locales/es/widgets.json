@@ -265,6 +265,8 @@
       "compactModeDesc": "Solo el eje: posiciones y brillo, sin placas, nombres ni números.",
       "plates": "Placas",
       "showDistance": "Mostrar la distancia",
+      "showLapGap": "Mostrar la diferencia en vueltas",
+      "showLapGapDesc": "Vueltas completas entre tú y el coche, como «1L» junto a la diferencia.",
       "showClassBadge": "Mostrar clase",
       "nameMode": "Nombre del piloto",
       "nameModeDesc": "Cuánto del nombre lleva la placa. El apellido nunca se quita: es lo que el ojo capta en marcha.",

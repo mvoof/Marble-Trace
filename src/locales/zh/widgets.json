@@ -265,6 +265,8 @@
       "compactModeDesc": "仅显示轴：位置与光晕，无卡片、姓名和数字。",
       "plates": "卡片",
       "showDistance": "显示距离",
+      "showLapGap": "显示圈数差",
+      "showLapGapDesc": "你与该车之间相差的整圈数，以「1L」显示在时间差旁边。",
       "showClassBadge": "显示组别",
       "nameMode": "车手姓名",
       "nameModeDesc": "卡片显示多少姓名。姓氏始终保留——高速下最先被看到的就是它。",

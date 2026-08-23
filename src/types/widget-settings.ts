@@ -171,6 +171,11 @@ export interface CloseBattleWidgetSettings {
   /** Axis only: no plates, no names, no numbers. */
   compactMode: boolean;
   showDistance: boolean;
+  /**
+   * The whole laps between you and the car, as `1L` beside the gap. Off in a
+   * sprint, where nobody is ever a lap apart and the column is pure width.
+   */
+  showLapGap: boolean;
   nameMode: BattleNameMode;
   /**
    * Cars that land in the same spot on the axis are drawn as one plate with a
