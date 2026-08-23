@@ -53,8 +53,8 @@ $plate-move-duration: 140ms;
   // whole row, and every number in it lands somewhere new.
   grid-template-columns:
     [number-col] minmax(3ch, auto) [class-col] var(--class-col, 8ch)
-    [name-col] minmax(0, 1fr) [distance-col] 5ch
-    [lap-col] var(--lap-col, 0ch) [gap-col] 7ch;
+    [brand-col] var(--brand-col, 0ch) [name-col] minmax(0, 1fr)
+    [distance-col] 5ch [lap-col] var(--lap-col, 0ch) [gap-col] 7ch;
   align-items: center;
 
   // No gap before the class block: the number and the class are one unit at the
@@ -92,6 +92,40 @@ $plate-move-duration: 140ms;
   .identity {
     padding-left: sp(md);
   }
+}
+
+// The make sits with the identity rather than with the numbers: it answers
+// "what is he driving", the same question the number and the class answer, and
+// from here it can never push the gap around.
+.rowBrand {
+  --brand-col: 6ch;
+}
+
+// Three letters of the make, and they must not read as the first word of the
+// driver's name. The plate already speaks in blocks — the number is a recessed
+// tab, the class a lit slab — so the make takes the third shape rather than a
+// third shade of the same text: a chip cut into the plate, plainly an object.
+// That is cheaper for the eye than any color would be, because an object is
+// skipped whole when it is not what you came to read.
+.brand {
+  display: flex;
+  grid-column: brand-col;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  margin-right: sp(sm);
+  padding: ws(2) 0;
+  border-radius: radius(md);
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
+  color: $widget-text-secondary;
 }
 
 // Laps only cost width in a race that has them. The decision is the widget's,
@@ -266,7 +300,7 @@ $plate-move-duration: 140ms;
   overflow: hidden;
   white-space: nowrap;
   text-align: right;
-  font-size: fs(xs);
+  font-size: fs(md);
   font-weight: 700;
   line-height: 1;
   color: $widget-text-secondary;

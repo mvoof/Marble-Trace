@@ -267,6 +267,8 @@
       "showDistance": "Show distance",
       "showLapGap": "Show lap gap",
       "showLapGapDesc": "Whole laps between you and the car, as \"1L\" beside the gap.",
+      "showBrand": "Show car make",
+      "showBrandDesc": "The make abbreviated to three letters, as in Standings.",
       "showClassBadge": "Show class badge",
       "nameMode": "Driver name",
       "nameModeDesc": "How much of the name the plate carries. The surname always stays — it is what the eye catches at speed.",

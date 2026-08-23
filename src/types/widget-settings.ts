@@ -176,6 +176,11 @@ export interface CloseBattleWidgetSettings {
    * sprint, where nobody is ever a lap apart and the column is pure width.
    */
   showLapGap: boolean;
+  /**
+   * The make, abbreviated the way Standings abbreviates it — "MER", "POR".
+   * Worth its column in a multi-make class and pure noise in a one-make one.
+   */
+  showBrand: boolean;
   nameMode: BattleNameMode;
   /**
    * Cars that land in the same spot on the axis are drawn as one plate with a

@@ -267,6 +267,8 @@
       "showDistance": "Mostrar la distancia",
       "showLapGap": "Mostrar la diferencia en vueltas",
       "showLapGapDesc": "Vueltas completas entre tú y el coche, como «1L» junto a la diferencia.",
+      "showBrand": "Mostrar la marca del coche",
+      "showBrandDesc": "La marca abreviada a tres letras, como en la clasificación.",
       "showClassBadge": "Mostrar clase",
       "nameMode": "Nombre del piloto",
       "nameModeDesc": "Cuánto del nombre lleva la placa. El apellido nunca se quita: es lo que el ojo capta en marcha.",

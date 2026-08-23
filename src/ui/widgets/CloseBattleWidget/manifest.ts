@@ -32,6 +32,7 @@ export const CLOSE_BATTLE_MANIFEST: WidgetManifest = {
     compactMode: false,
     showDistance: true,
     showLapGap: true,
+    showBrand: false,
     nameMode: 'initial',
     mergeOverlapping: true,
     mergeDistance: 2,

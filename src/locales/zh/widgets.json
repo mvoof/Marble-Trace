@@ -267,6 +267,8 @@
       "showDistance": "显示距离",
       "showLapGap": "显示圈数差",
       "showLapGapDesc": "你与该车之间相差的整圈数，以「1L」显示在时间差旁边。",
+      "showBrand": "显示车辆厂商",
+      "showBrandDesc": "厂商名称缩写为三个字母，与排名表一致。",
       "showClassBadge": "显示组别",
       "nameMode": "车手姓名",
       "nameModeDesc": "卡片显示多少姓名。姓氏始终保留——高速下最先被看到的就是它。",

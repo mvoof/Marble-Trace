@@ -304,6 +304,18 @@ export const CloseBattleSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.closeBattle.showBrand')}
+            desc={t('settingsPanels.closeBattle.showBrandDesc')}
+          >
+            <Switch
+              checked={settings.showBrand}
+              onChange={(checked) => update({ showBrand: checked })}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
           <SettingRow title={t('settingsPanels.closeBattle.showClassBadge')}>
             <Switch
               checked={settings.showClassBadge}

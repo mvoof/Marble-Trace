@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { formatCarNumber } from '@utils/driver';
+import { formatBrand, formatCarNumber } from '@utils/driver';
 import {
   useUnitsStore,
   useWidgetSettingsStore,
@@ -97,6 +97,7 @@ export const BattleRow = observer(
               styles.row,
               settings.showClassBadge ? '' : styles.rowNoClass,
               showLaps ? styles.rowLaps : '',
+              settings.showBrand ? styles.rowBrand : '',
             ]
               .filter(Boolean)
               .join(' ')}
@@ -116,6 +117,12 @@ export const BattleRow = observer(
                     {entry.carClassShortName}
                   </span>
                 </span>
+              </span>
+            )}
+
+            {settings.showBrand && (
+              <span className={styles.brand} title={entry.carScreenName}>
+                {formatBrand(entry.carScreenName)}
               </span>
             )}
 
