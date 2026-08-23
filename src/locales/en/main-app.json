@@ -253,6 +253,11 @@
       "rangeTitle": "Steering Lock",
       "rangeDesc": "Physical range of your wheel: {{full}}° (±{{half}}°). Shared by every widget that shows steering."
     },
+    "carLength": {
+      "title": "Car",
+      "valueTitle": "Car length",
+      "valueDesc": "The length of a car in meters. Turns the distance between car centres into the gap between bumpers, so cars nose to tail read zero. Shared by the radars and Close Battle."
+    },
     "applicationUpdates": {
       "title": "Application Updates",
       "autoCheckTitle": "Auto-Check for Updates",
@@ -402,6 +407,7 @@
         "overlay": "Overlay",
         "controls": "Controls",
         "data": "Data",
+        "chat": "Chat",
         "maintenance": "Maintenance",
         "remote": "Remote"
       },
@@ -413,6 +419,7 @@
         "bindings": "Input bindings",
         "devices": "Devices",
         "trackMap": "Track data",
+        "sharedValues": "Shared values",
         "streamChat": "Stream chat",
         "maintenance": "Reset & diagnostics",
         "telemetryInspector": "Telemetry inspector",

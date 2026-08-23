@@ -253,6 +253,11 @@
       "rangeTitle": "Recorrido del volante",
       "rangeDesc": "Recorrido físico de tu volante: {{full}}° (±{{half}}°). Lo comparten todos los widgets que muestran la dirección."
     },
+    "carLength": {
+      "title": "Coche",
+      "valueTitle": "Longitud del coche",
+      "valueDesc": "La longitud de un coche en metros. Convierte la distancia entre centros en el hueco entre parachoques, así los coches pegados marcan cero. Compartida por los radares y Close Battle."
+    },
     "applicationUpdates": {
       "title": "Actualizaciones de la aplicación",
       "autoCheckTitle": "Buscar actualizaciones automáticamente",
@@ -402,6 +407,7 @@
         "overlay": "Superposición",
         "controls": "Controles",
         "data": "Datos",
+        "chat": "Chat",
         "maintenance": "Mantenimiento",
         "remote": "Remoto"
       },
@@ -413,6 +419,7 @@
         "bindings": "Asignaciones de control",
         "devices": "Dispositivos",
         "trackMap": "Datos del circuito",
+        "sharedValues": "Valores compartidos",
         "streamChat": "Chat del directo",
         "maintenance": "Restablecer y diagnóstico",
         "telemetryInspector": "Inspector de telemetría",

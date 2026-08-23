@@ -251,6 +251,11 @@
       "rangeTitle": "方向盘转角范围",
       "rangeDesc": "方向盘的物理转角范围：{{full}}°（±{{half}}°）。所有显示转向的挂件共用此设置。"
     },
+    "carLength": {
+      "title": "车辆",
+      "valueTitle": "车身长度",
+      "valueDesc": "车身长度（米）。将车辆中心之间的距离换算为保险杠之间的间隙，因此紧贴行驶的车辆显示为零。雷达与 Close Battle 共用此数值。"
+    },
     "applicationUpdates": {
       "title": "应用更新",
       "autoCheckTitle": "自动检查更新",
@@ -400,6 +405,7 @@
         "overlay": "覆盖层",
         "controls": "控制",
         "data": "数据",
+        "chat": "聊天",
         "maintenance": "维护",
         "remote": "远程"
       },
@@ -411,6 +417,7 @@
         "bindings": "输入绑定",
         "devices": "设备",
         "trackMap": "赛道数据",
+        "sharedValues": "通用数值",
         "streamChat": "直播聊天",
         "maintenance": "重置与诊断",
         "telemetryInspector": "遥测检查器",

@@ -139,7 +139,6 @@ export type RadarQualifyingVisibility = 'always' | 'never' | 'auto';
 export interface RadarSettings {
   proximityThreshold: number;
   hideDelay: number;
-  carLength: number;
   qualifyingVisibility: RadarQualifyingVisibility;
   showDistance: boolean;
 }

@@ -222,7 +222,6 @@
       "radarBehavior": "Comportamiento del radar",
       "activationRange": "Alcance de activación (m)",
       "fadeOutDelay": "Retardo de desvanecido (s)",
-      "carLength": "Longitud del coche (m)",
       "showDistance": "Mostrar la distancia",
       "qualifying": "Clasificación",
       "showInQualifying": "Mostrar en clasificación",

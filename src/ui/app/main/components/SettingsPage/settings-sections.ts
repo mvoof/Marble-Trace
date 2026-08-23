@@ -11,6 +11,7 @@ export type SettingsSectionId =
   | 'bindings'
   | 'devices'
   | 'trackMap'
+  | 'sharedValues'
   | 'streamChat'
   | 'remoteScreens'
   | 'maintenance'
@@ -26,7 +27,11 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
   { id: 'application', sections: ['general', 'updates'] },
   { id: 'overlay', sections: ['overlay', 'interaction'] },
   { id: 'controls', sections: ['bindings', 'devices'] },
-  { id: 'data', sections: ['trackMap', 'streamChat'] },
+  // Widget data: what the widgets draw from, and the values several of them
+  // read at once. The chat is not either of those — it is a source of its own,
+  // wired to an account rather than to a session, so it keeps its own group.
+  { id: 'data', sections: ['trackMap', 'sharedValues'] },
+  { id: 'chat', sections: ['streamChat'] },
   { id: 'remote', sections: ['remoteScreens'] },
   { id: 'maintenance', sections: ['maintenance', 'telemetryInspector'] },
 ];

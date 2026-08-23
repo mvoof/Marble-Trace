@@ -11,7 +11,7 @@ import {
 } from '@utils/radar-constants';
 
 import styles from './RadarDisplay.module.scss';
-import { useUnitsStore } from '@store/root-store-context';
+import { useAppSettingsStore, useUnitsStore } from '@store/root-store-context';
 
 const RADAR_RENDER_RANGE = 10;
 const PX_PER_METER = 22;
@@ -40,6 +40,7 @@ const CarIcon = observer(
 
 export const RadarDisplay = observer(() => {
   const units = useUnitsStore();
+  const appSettings = useAppSettingsStore();
 
   const { proximity, spotterLeft, spotterRight, visible, radarSettings } =
     useProximityRadarData('proximity-radar', RADAR_SEARCH_RADIUS);
@@ -54,7 +55,7 @@ export const RadarDisplay = observer(() => {
   const formatDistanceFn = (meters: number) => formatDistance(meters, system);
   const distanceUnitLabel = distanceUnit(system);
 
-  const { carLength } = radarSettings;
+  const { carLength } = appSettings.appSettings;
 
   const showFront = frontDist < RADAR_RENDER_RANGE;
   const showRear = rearDist < RADAR_RENDER_RANGE;

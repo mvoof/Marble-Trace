@@ -2,7 +2,10 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
-import { deleteSettingsFile } from '@platform/services/settings.service';
+import {
+  deleteSettingsFile,
+  setCarLengthSilent,
+} from '@platform/services/settings.service';
 import { mergeWithDefaults } from '@store/deep-merge';
 import { detectSystemLanguage } from '@store/settings/system-locale';
 import { createRemoteToken } from '@utils/remote-screen';
@@ -42,6 +45,11 @@ const DEFAULT_APP_SETTINGS = {
   // A property of the hardware rather than of any one widget or layout, so
   // every steering visual (input trace, race dash marker) reads it from here.
   steeringLock: 900,
+  // Length of a car in meters, used to turn a centre-to-centre distance into
+  // the gap between bumpers. A property of the field rather than of any one
+  // widget — the radars and Close Battle must not disagree about how far away
+  // the same car is — and the backend keeps exactly one of it per process.
+  carLength: 4.4,
   // Stream chat source. A channel is a property of the account, not of a
   // layout — the same reasoning as steeringLock above. Keeping it here also
   // means one connection serves every layout instead of reconnecting on each
@@ -158,6 +166,11 @@ export class AppSettingsStore {
   applySettings(saved: Partial<AppSettings>) {
     const merged = mergeWithDefaults(DEFAULT_APP_SETTINGS, saved);
     Object.assign(this.appSettings, merged);
+
+    // The backend holds its own copy for the proximity computation, and it
+    // starts on the shipped default: a file that says otherwise has to be
+    // pushed across on the way in, not on the first time the user touches it.
+    setCarLengthSilent(this.appSettings.carLength);
     void i18n.changeLanguage(resolveAppLanguage(this.appSettings.language));
   }
 
@@ -341,6 +354,11 @@ export class AppSettingsStore {
 
   setSteeringLock(value: number) {
     this.appSettings.steeringLock = value;
+  }
+
+  setCarLength(value: number) {
+    this.appSettings.carLength = value;
+    setCarLengthSilent(value);
   }
 
   setStreamChatTwitchChannel(value: string) {
