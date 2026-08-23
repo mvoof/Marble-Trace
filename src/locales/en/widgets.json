@@ -9,7 +9,7 @@
     "radar-bar": {
       "description": "Full-width side proximity indicators."
     },
-    "duel-bar": {
+    "close-battle": {
       "description": "Who is fighting you right now, on a vertical distance axis."
     },
     "standings": {
@@ -231,7 +231,7 @@
       "never": "Never",
       "autoDesc": "Auto: hidden during lone qualifying (single car on track)"
     },
-    "duelBar": {
+    "closeBattle": {
       "appearsWhen": "Appears When",
       "trigger": "Trigger",
       "triggerDesc": "What counts as \"close\": a gap in seconds, or a real distance in meters.",
@@ -247,7 +247,7 @@
       "ahead": "Ahead",
       "behind": "Behind",
       "maxRows": "Max Plates",
-      "maxRowsDesc": "More than three is a pack, not a duel.",
+      "maxRowsDesc": "More than three is a pack, not a battle.",
       "otherClass": "Other Class",
       "otherClassDesc": "Traffic from another class: full, dimmed, or not shown at all.",
       "show": "Show",

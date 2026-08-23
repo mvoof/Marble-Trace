@@ -6,23 +6,23 @@ import {
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import type { DuelBarWidgetSettings } from '@/types/widget-settings';
+import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
 import {
-  duelDriverName,
-  formatDuelDistance,
-  formatDuelGap,
+  battleDriverName,
+  formatBattleDistance,
+  formatBattleGap,
   plateScale,
-  type DuelPlateGroup,
-} from './duel-bar-utils';
+  type BattlePlateGroup,
+} from './close-battle-utils';
 
-import styles from './DuelRow.module.scss';
+import styles from './BattleRow.module.scss';
 
 /** Beyond this the surnames stop fitting and the rest become a count. */
 const MAX_NAMED_COMPANIONS = 2;
 
-interface DuelRowProps {
+interface BattleRowProps {
   /** The nearest car of this spot on the axis, plus whoever shares it. */
-  group: DuelPlateGroup;
+  group: BattlePlateGroup;
 }
 
 /**
@@ -35,13 +35,13 @@ interface DuelRowProps {
  * therefore transforms — composited, and cheap enough to transition, which is
  * what turns the 10 Hz proximity frame into continuous motion.
  */
-export const DuelRow = observer(({ group }: DuelRowProps) => {
+export const BattleRow = observer(({ group }: BattleRowProps) => {
   const { leader: opponent, topPct } = group;
   const units = useUnitsStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const settings =
-    widgetSettings.getSettings<DuelBarWidgetSettings>('duel-bar');
+    widgetSettings.getSettings<CloseBattleWidgetSettings>('close-battle');
 
   const { entry } = opponent;
 
@@ -49,7 +49,7 @@ export const DuelRow = observer(({ group }: DuelRowProps) => {
 
   const gapClass = opponent.isAhead ? styles.gapAhead : styles.gapBehind;
 
-  const { givenName, surname } = duelDriverName(
+  const { givenName, surname } = battleDriverName(
     entry.userName,
     settings.nameMode
   );
@@ -131,12 +131,12 @@ export const DuelRow = observer(({ group }: DuelRowProps) => {
 
           {settings.showDistance && (
             <span className={styles.distance}>
-              {formatDuelDistance(opponent.clearance, units.isMetric)}
+              {formatBattleDistance(opponent.clearance, units.isMetric)}
             </span>
           )}
 
           <span className={`${styles.gap} ${gapClass}`}>
-            {formatDuelGap(opponent.gapSeconds)}
+            {formatBattleGap(opponent.gapSeconds)}
           </span>
         </div>
       </div>

@@ -6,7 +6,7 @@ import {
 } from 'mobx';
 
 import { isHiddenInQualifying } from '@utils/qualifying-visibility';
-import type { DuelBarWidgetSettings } from '@/types/widget-settings';
+import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
 import {
   buildOpponents,
@@ -15,11 +15,11 @@ import {
   matchesSides,
   mergedCarIdxs,
   resolveAxisRange,
-  type DuelOpponent,
-  type DuelPlateGroup,
-} from './duel-bar-utils';
+  type BattleOpponent,
+  type BattlePlateGroup,
+} from './close-battle-utils';
 
-const WIDGET_ID = 'duel-bar';
+const WIDGET_ID = 'close-battle';
 
 const setsMatch = (first: Set<number>, second: Set<number>): boolean =>
   first.size === second.size && [...first].every((idx) => second.has(idx));
@@ -27,7 +27,7 @@ const setsMatch = (first: Set<number>, second: Set<number>): boolean =>
 /** A row leaves at 1.3 × the threshold, or it blinks on every straight. */
 const LEAVE_HYSTERESIS = 1.3;
 
-export class DuelBarWidgetStore {
+export class CloseBattleWidgetStore {
   visible = false;
 
   /**
@@ -125,7 +125,7 @@ export class DuelBarWidgetStore {
   }
 
   /** The plates as drawn: one per spot on the axis, merged cars folded in. */
-  get plateGroups(): DuelPlateGroup[] {
+  get plateGroups(): BattlePlateGroup[] {
     return buildPlateGroups(
       this.opponents,
       this.axisRange,
@@ -167,8 +167,8 @@ export class DuelBarWidgetStore {
     );
   }
 
-  get settings(): DuelBarWidgetSettings {
-    return this.root.widgetSettings.getSettings<DuelBarWidgetSettings>(
+  get settings(): CloseBattleWidgetSettings {
+    return this.root.widgetSettings.getSettings<CloseBattleWidgetSettings>(
       WIDGET_ID
     );
   }
@@ -178,7 +178,7 @@ export class DuelBarWidgetStore {
    * the whole list rather than per row: a car that is already drawn stays until
    * it passes 1.3 × the threshold, and the hide timer does the rest.
    */
-  get opponents(): DuelOpponent[] {
+  get opponents(): BattleOpponent[] {
     const proximity = this.root.backendComputed.proximity;
 
     if (!proximity) {
@@ -220,11 +220,11 @@ export class DuelBarWidgetStore {
   }
 
   /** The nearest car behind, and the nearest ahead — the glow reads only these. */
-  get nearestBehind(): DuelOpponent | null {
+  get nearestBehind(): BattleOpponent | null {
     return this.opponents.find((opponent) => !opponent.isAhead) ?? null;
   }
 
-  get nearestAhead(): DuelOpponent | null {
+  get nearestAhead(): BattleOpponent | null {
     return this.opponents.find((opponent) => opponent.isAhead) ?? null;
   }
 

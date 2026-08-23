@@ -2,36 +2,36 @@ import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import {
-  useDuelBarWidgetStore,
+  useCloseBattleWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import type { DuelBarWidgetSettings } from '@/types/widget-settings';
-import { DuelAxis } from './DuelAxis';
-import { DuelRow } from './DuelRow';
+import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
+import { BattleAxis } from './BattleAxis';
+import { BattleRow } from './BattleRow';
 
-import styles from './DuelBarWidget.module.scss';
+import styles from './CloseBattleWidget.module.scss';
 
-export const DuelBarWidget = observer(() => {
-  const duelBar = useDuelBarWidgetStore();
+export const CloseBattleWidget = observer(() => {
+  const closeBattle = useCloseBattleWidgetStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const settings =
-    widgetSettings.getSettings<DuelBarWidgetSettings>('duel-bar');
+    widgetSettings.getSettings<CloseBattleWidgetSettings>('close-battle');
 
   // Nobody in the threshold means nothing to fight over: the axis alone is
   // permanent noise on the screen, so the widget leaves entirely.
-  if (!duelBar.isVisible) {
+  if (!closeBattle.isVisible) {
     return null;
   }
 
   return (
     <WidgetPanel className={styles.root} minWidth={200} gap={0}>
       <div className={styles.stage}>
-        <DuelAxis />
+        <BattleAxis />
 
         {!settings.compactMode &&
-          duelBar.plateGroups.map((group) => (
-            <DuelRow key={group.key} group={group} />
+          closeBattle.plateGroups.map((group) => (
+            <BattleRow key={group.key} group={group} />
           ))}
       </div>
     </WidgetPanel>

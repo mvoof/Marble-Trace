@@ -4,10 +4,10 @@ import {
   TRANSPARENT_APPEARANCE_DEFAULTS,
 } from '@ui/widgets/widget-manifest';
 
-export const DUEL_BAR_MANIFEST: WidgetManifest = {
-  id: 'duel-bar',
+export const CLOSE_BATTLE_MANIFEST: WidgetManifest = {
+  id: 'close-battle',
   telemetryEvents: ['proximity', 'relative', 'driverEntries'],
-  label: 'Duel Bar',
+  label: 'Close Battle',
   description: 'Who is fighting you right now, on a vertical distance axis.',
   requiredCapabilities: ['radar'],
   designWidth: 440,

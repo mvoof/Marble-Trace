@@ -122,7 +122,7 @@ $plate-move-duration: 140ms;
   overflow: hidden;
   color: #111111;
   text-transform: uppercase;
-  font-size: fs(md);
+  font-size: fs(sm);
   font-weight: 900;
   letter-spacing: -0.02em;
 }
@@ -233,7 +233,7 @@ $plate-move-duration: 140ms;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: fs(xl);
+  font-size: fs(lg);
 }
 
 .givenName {
@@ -259,7 +259,7 @@ $plate-move-duration: 140ms;
   margin-right: sp(lg);
   white-space: nowrap;
   text-align: right;
-  font-size: fs(xs);
+  font-size: fs(md);
   font-weight: 500;
   line-height: 1;
   color: $widget-text-primary;

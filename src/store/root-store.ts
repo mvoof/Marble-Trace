@@ -3,7 +3,7 @@ import { SimStore } from './sim/sim.store';
 import { FlagsStore } from './widgets/flags.widget';
 import { PaceCarStore } from './widgets/pace-car.widget';
 import { RadarWidgetStore } from './widgets/radar.widget';
-import { DuelBarWidgetStore } from '@ui/widgets/DuelBarWidget/duel-bar.widget';
+import { CloseBattleWidgetStore } from '@ui/widgets/CloseBattleWidget/close-battle.widget';
 import { PitServiceWidgetStore } from '@ui/widgets/PitServiceWidget/pit-service.widget';
 import { StandingsWidgetStore } from './widgets/standings.widget';
 import { TrackMapWidgetStore } from '@ui/widgets/TrackMapWidget/track-map.widget';
@@ -50,7 +50,7 @@ export class RootStore {
   flags: FlagsStore;
   paceCar: PaceCarStore;
   radar: RadarWidgetStore;
-  duelBarWidget: DuelBarWidgetStore;
+  closeBattleWidget: CloseBattleWidgetStore;
   standingsWidget: StandingsWidgetStore;
   pitServiceWidget: PitServiceWidgetStore;
   trackMapWidget: TrackMapWidgetStore;
@@ -93,7 +93,7 @@ export class RootStore {
     this.flags = new FlagsStore(this);
     this.paceCar = new PaceCarStore(this);
     this.radar = new RadarWidgetStore(this);
-    this.duelBarWidget = new DuelBarWidgetStore(this);
+    this.closeBattleWidget = new CloseBattleWidgetStore(this);
     this.standingsWidget = new StandingsWidgetStore(this);
     this.pitServiceWidget = new PitServiceWidgetStore(this);
     // A preview store shows a sample track: turning that map must not write an
@@ -121,7 +121,7 @@ export class RootStore {
       this.flags.init();
       this.paceCar.init();
       this.radar.init();
-      this.duelBarWidget.init();
+      this.closeBattleWidget.init();
       this.sim.init();
       this.appSettings.init();
       this.drivingCoachWidget.init();
@@ -136,7 +136,7 @@ export class RootStore {
   // Short-lived stores (widget previews, layout canvas, Storybook) must call
   // this on unmount — their reactions otherwise keep running against telemetry.
   dispose() {
-    this.duelBarWidget.dispose();
+    this.closeBattleWidget.dispose();
     this.fpsDiagnostics.dispose();
     this.twitchAuth.dispose();
     this.streamChatWidget.dispose();

@@ -144,18 +144,18 @@ export interface RadarSettings {
   showDistance: boolean;
 }
 
-export type DuelTrigger = 'gap' | 'distance';
+export type BattleTrigger = 'gap' | 'distance';
 
-export type DuelSides = 'both' | 'ahead' | 'behind';
+export type BattleSides = 'both' | 'ahead' | 'behind';
 
-export type DuelOtherClass = 'show' | 'dim' | 'hide';
+export type BattleOtherClass = 'show' | 'dim' | 'hide';
 
 /** How much of the opponent's name the plate spends its width on. */
-export type DuelNameMode = 'surname' | 'initial' | 'full';
+export type BattleNameMode = 'surname' | 'initial' | 'full';
 
-export interface DuelBarWidgetSettings {
+export interface CloseBattleWidgetSettings {
   /** What counts as "close": a gap in seconds, or a real distance in meters. */
-  trigger: DuelTrigger;
+  trigger: BattleTrigger;
   /** Seconds. Kept apart from the distance threshold so switching the trigger
    * never carries a value into a range where it is invalid. */
   gapThreshold: number;
@@ -163,7 +163,7 @@ export interface DuelBarWidgetSettings {
   distanceThreshold: number;
   /** Seconds a row stays after the opponent left the threshold. */
   hideDelay: number;
-  sides: DuelSides;
+  sides: BattleSides;
   maxRows: number;
   showTicks: boolean;
   /** The meters printed on the ticks. Off leaves the marks and drops the digits. */
@@ -171,7 +171,7 @@ export interface DuelBarWidgetSettings {
   /** Axis only: no plates, no names, no numbers. */
   compactMode: boolean;
   showDistance: boolean;
-  nameMode: DuelNameMode;
+  nameMode: BattleNameMode;
   /**
    * Cars that land in the same spot on the axis are drawn as one plate with a
    * `+N` badge instead of shoving each other aside.
@@ -199,7 +199,7 @@ export interface DuelBarWidgetSettings {
   showClassBadge: boolean;
   /** Distant plates shrink, never past a third of their size. */
   scaleByDistance: boolean;
-  otherClass: DuelOtherClass;
+  otherClass: BattleOtherClass;
   /** Meters at which the glow starts to build (0 = no glow). */
   glowRange: number;
   raceOnly: boolean;
@@ -584,7 +584,7 @@ export type WidgetSpecificSettings =
   | RpmLightsWidgetSettings
   | InputTraceSettings
   | RadarSettings
-  | DuelBarWidgetSettings
+  | CloseBattleWidgetSettings
   | StandingsWidgetSettings
   | RelativeWidgetSettings
   | TrackMapWidgetSettings

@@ -9,7 +9,7 @@
     "radar-bar": {
       "description": "全宽侧向接近指示器。"
     },
-    "duel-bar": {
+    "close-battle": {
       "description": "谁正在与你缠斗，显示在垂直距离轴上。"
     },
     "standings": {
@@ -231,7 +231,7 @@
       "never": "从不",
       "autoDesc": "自动：单独排位赛期间隐藏（赛道上仅一辆车）"
     },
-    "duelBar": {
+    "closeBattle": {
       "appearsWhen": "出现条件",
       "trigger": "触发方式",
       "triggerDesc": "以什么算“接近”：以秒计的差距，或以米计的实际距离。",

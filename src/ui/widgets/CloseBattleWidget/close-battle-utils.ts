@@ -1,5 +1,5 @@
 import type { DriverEntry, NearbyCar } from '@/types/bindings';
-import type { DuelBarWidgetSettings } from '@/types/widget-settings';
+import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
 import { computeRelativeGap } from '@ui/widgets/RelativeWidget/relative-utils';
 import { splitDriverName } from '@utils/driver';
 
@@ -40,7 +40,7 @@ const TICK_STEP_BY_RANGE_FEET: Record<number, number> = {
 
 const METERS_TO_FEET = 3.28084;
 
-export interface DuelOpponent {
+export interface BattleOpponent {
   carIdx: number;
   /** Positive = ahead, negative = behind (meters). */
   longitudinalDist: number;
@@ -143,18 +143,18 @@ export const distanceToTopPct = (
 export const PLATE_SLOT_PCT = 11;
 
 /** The two thresholds are stored apart; this picks the one in force. */
-export const activeThreshold = (settings: DuelBarWidgetSettings): number =>
+export const activeThreshold = (settings: CloseBattleWidgetSettings): number =>
   settings.trigger === 'distance'
     ? settings.distanceThreshold
     : settings.gapThreshold;
 
 /** One drawn plate: the nearest car of the group, and whoever it stands for. */
-export interface DuelPlateGroup {
+export interface BattlePlateGroup {
   /** Stable across ticks while the group keeps its cars — the React key. */
   key: number;
-  leader: DuelOpponent;
+  leader: BattleOpponent;
   /** Cars sharing the leader's spot on the axis, nearest first. */
-  merged: DuelOpponent[];
+  merged: BattleOpponent[];
   topPct: number;
 }
 
@@ -185,16 +185,16 @@ const SPLIT_HYSTERESIS = 1.6;
  * hangs off the edge.
  */
 export const buildPlateGroups = (
-  opponents: DuelOpponent[],
+  opponents: BattleOpponent[],
   axisRange: number,
   mergeOverlapping: boolean,
   mergeDistance: number,
   held: ReadonlySet<number> = new Set()
-): DuelPlateGroup[] => {
+): BattlePlateGroup[] => {
   const half = PLATE_SLOT_PCT / 2;
   const clamp = (top: number) => Math.max(half, Math.min(100 - half, top));
 
-  const groups: DuelPlateGroup[] = [];
+  const groups: BattlePlateGroup[] = [];
 
   for (const opponent of opponents) {
     const wanted = clamp(
@@ -216,7 +216,7 @@ export const buildPlateGroups = (
 
     if (collision && mergeOverlapping) {
       // The key stays the leader's car: rewriting it when a lower carIdx joins
-      // would remount the plate mid-duel and drop its position transition.
+      // would remount the plate mid-battle and drop its position transition.
       collision.merged.push(opponent);
       continue;
     }
@@ -244,14 +244,14 @@ export const buildPlateGroups = (
 };
 
 /** Every car currently drawn as part of somebody else's plate. */
-export const mergedCarIdxs = (groups: DuelPlateGroup[]): Set<number> =>
+export const mergedCarIdxs = (groups: BattlePlateGroup[]): Set<number> =>
   new Set(
     groups.flatMap((group) => group.merged.map((opponent) => opponent.carIdx))
   );
 
 export const isWithinThreshold = (
-  opponent: DuelOpponent,
-  settings: DuelBarWidgetSettings,
+  opponent: BattleOpponent,
+  settings: CloseBattleWidgetSettings,
   hysteresis: number
 ): boolean => {
   const limit = activeThreshold(settings) * hysteresis;
@@ -309,7 +309,7 @@ const fittingStep = (meters: number, isMetric: boolean): number => {
  * real room to spare, so it does not flip between two steps every tick.
  */
 export const resolveAxisRange = (
-  settings: DuelBarWidgetSettings,
+  settings: CloseBattleWidgetSettings,
   farthestMeters: number,
   held: number,
   isMetric: boolean
@@ -340,8 +340,8 @@ export const resolveAxisRange = (
 };
 
 export const matchesSides = (
-  opponent: DuelOpponent,
-  sides: DuelBarWidgetSettings['sides']
+  opponent: BattleOpponent,
+  sides: CloseBattleWidgetSettings['sides']
 ): boolean => {
   if (sides === 'both') {
     return true;
@@ -365,7 +365,7 @@ export const buildOpponents = (
   nearbyCars: NearbyCar[],
   entries: DriverEntry[],
   paceCarIdxs: ReadonlySet<number> = new Set()
-): DuelOpponent[] => {
+): BattleOpponent[] => {
   const player = entries.find((entry) => entry.isPlayer) ?? null;
 
   if (!player) {
@@ -400,10 +400,10 @@ export const buildOpponents = (
  * negative and blue, a car behind reads positive and red. Two widgets telling
  * the same story with opposite signs is worse than either of them alone.
  */
-export const formatDuelGap = (gapSeconds: number): string =>
+export const formatBattleGap = (gapSeconds: number): string =>
   gapSeconds > 0 ? `+${gapSeconds.toFixed(2)}` : gapSeconds.toFixed(2);
 
-export const formatDuelDistance = (
+export const formatBattleDistance = (
   clearance: number,
   isMetric: boolean
 ): string => {
@@ -444,9 +444,9 @@ export const plateScale = (clearance: number): number => {
  * it is the part the eye catches at speed; what the mode decides is how much of
  * the given name earns the room in front of it.
  */
-export const duelDriverName = (
+export const battleDriverName = (
   userName: string,
-  mode: DuelBarWidgetSettings['nameMode']
+  mode: CloseBattleWidgetSettings['nameMode']
 ): { givenName: string; surname: string } => {
   const { givenName, surname } = splitDriverName(userName);
 

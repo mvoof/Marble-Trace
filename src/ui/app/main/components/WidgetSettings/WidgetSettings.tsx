@@ -7,7 +7,7 @@ import { Card, PanelWidgetProvider } from './panels/Card';
 import { RpmLightsSettingsPanel } from './panels/RpmLightsSettingsPanel';
 import { InputTraceSettingsPanel } from './panels/InputTraceSettingsPanel';
 import { RadarSettingsPanel } from './panels/RadarSettingsPanel';
-import { DuelBarSettingsPanel } from './panels/DuelBarSettingsPanel';
+import { CloseBattleSettingsPanel } from './panels/CloseBattleSettingsPanel';
 import { StandingsSettingsPanel } from './panels/StandingsSettingsPanel';
 import { RelativeSettingsPanel } from './panels/RelativeSettingsPanel';
 import { LinearMapSettingsPanel } from './panels/LinearMapSettingsPanel';
@@ -232,7 +232,7 @@ export const WidgetSettings = observer(
           {(widgetId === 'proximity-radar' || widgetId === 'radar-bar') && (
             <RadarSettingsPanel widgetId={widgetId} />
           )}
-          {widgetId === 'duel-bar' && <DuelBarSettingsPanel />}
+          {widgetId === 'close-battle' && <CloseBattleSettingsPanel />}
           {widgetId === 'standings' && <StandingsSettingsPanel />}
           {widgetId === 'relative' && <RelativeSettingsPanel />}
           {widgetId === 'relative-map' && <LinearMapSettingsPanel />}

@@ -9,7 +9,7 @@
     "radar-bar": {
       "description": "Indicadores laterales de proximidad a todo lo ancho."
     },
-    "duel-bar": {
+    "close-battle": {
       "description": "Quien pelea contigo ahora mismo, en un eje vertical de distancia."
     },
     "standings": {
@@ -231,7 +231,7 @@
       "never": "Nunca",
       "autoDesc": "Automático: se oculta durante la clasificación en solitario (un solo coche en pista)"
     },
-    "duelBar": {
+    "closeBattle": {
       "appearsWhen": "Cuando aparece",
       "trigger": "Disparador",
       "triggerDesc": "Qué cuenta como \"cerca\": una diferencia en segundos o una distancia real en metros.",
@@ -247,7 +247,7 @@
       "ahead": "Delante",
       "behind": "Detrás",
       "maxRows": "Placas máximas",
-      "maxRowsDesc": "Más de tres es un pelotón, no un duelo.",
+      "maxRowsDesc": "Más de tres es un pelotón, no una batalla.",
       "otherClass": "Otra clase",
       "otherClassDesc": "Trafico de otra clase: mostrar, atenuar u ocultar.",
       "show": "Mostrar",

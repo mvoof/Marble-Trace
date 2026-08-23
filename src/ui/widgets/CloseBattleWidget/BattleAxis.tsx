@@ -1,19 +1,19 @@
 import { observer } from 'mobx-react-lite';
 
 import {
-  useDuelBarWidgetStore,
+  useCloseBattleWidgetStore,
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-import type { DuelBarWidgetSettings } from '@/types/widget-settings';
+import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
 import {
   axisTicks,
   buildAxisSegments,
   distanceToTopPct,
   glowIntensity,
-} from './duel-bar-utils';
+} from './close-battle-utils';
 
-import styles from './DuelAxis.module.scss';
+import styles from './BattleAxis.module.scss';
 
 /**
  * The axis, the player and the glow.
@@ -22,15 +22,15 @@ import styles from './DuelAxis.module.scss';
  * centred on it: a car behind must light the road behind, and a full circle
  * would claim both sides at once.
  */
-export const DuelAxis = observer(() => {
-  const duelBar = useDuelBarWidgetStore();
+export const BattleAxis = observer(() => {
+  const closeBattle = useCloseBattleWidgetStore();
   const widgetSettings = useWidgetSettingsStore();
   const units = useUnitsStore();
 
   const settings =
-    widgetSettings.getSettings<DuelBarWidgetSettings>('duel-bar');
+    widgetSettings.getSettings<CloseBattleWidgetSettings>('close-battle');
 
-  const axisRange = duelBar.axisRange;
+  const axisRange = closeBattle.axisRange;
 
   const ticks = settings.showTicks ? axisTicks(axisRange, units.isMetric) : [];
 
@@ -39,8 +39,8 @@ export const DuelAxis = observer(() => {
   const showTickLabels = settings.showTicks && settings.showTickLabels;
   const segments = buildAxisSegments(showTickLabels ? ticks : []);
 
-  const behind = duelBar.nearestBehind;
-  const ahead = duelBar.nearestAhead;
+  const behind = closeBattle.nearestBehind;
+  const ahead = closeBattle.nearestAhead;
 
   const behindGlow = behind
     ? glowIntensity(behind.clearance, settings.glowRange)
@@ -83,7 +83,7 @@ export const DuelAxis = observer(() => {
       )}
 
       {settings.compactMode &&
-        duelBar.opponents.map((opponent) => (
+        closeBattle.opponents.map((opponent) => (
           <div
             key={opponent.carIdx}
             className={styles.blip}

@@ -2,19 +2,19 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import type { NearbyCar, ProximityFrame } from '@/types/bindings';
 import type {
-  DuelBarWidgetSettings,
-  DuelNameMode,
+  CloseBattleWidgetSettings,
+  BattleNameMode,
 } from '@/types/widget-settings';
 import type { RootStore } from '@store/root-store';
-import { DUEL_BAR_MANIFEST } from './manifest';
-import { DuelBarWidget } from './DuelBarWidget';
+import { CLOSE_BATTLE_MANIFEST } from './manifest';
+import { CloseBattleWidget } from './CloseBattleWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
 interface StoryArgs {
   /** Signed longitudinal distances in meters: positive ahead, negative behind. */
   distances: number[];
   compactMode: boolean;
-  nameMode: DuelNameMode;
+  nameMode: BattleNameMode;
   maxRows: number;
 }
 
@@ -53,8 +53,8 @@ const buildNearbyCars = (
 };
 
 const seed = (store: RootStore, args: StoryArgs) => {
-  store.widgetSettings.updateUserSettings('duel-bar', {
-    ...(DUEL_BAR_MANIFEST.userSettings as unknown as DuelBarWidgetSettings),
+  store.widgetSettings.updateUserSettings('close-battle', {
+    ...(CLOSE_BATTLE_MANIFEST.userSettings as unknown as CloseBattleWidgetSettings),
     trigger: 'distance',
     distanceThreshold: 200,
     maxRows: args.maxRows,
@@ -63,7 +63,7 @@ const seed = (store: RootStore, args: StoryArgs) => {
     nameMode: args.nameMode,
   });
 
-  store.duelBarWidget.visible = true;
+  store.closeBattleWidget.visible = true;
 
   store.backendComputed.updateProximity({
     radarDistances: EMPTY_RADAR,
@@ -74,9 +74,9 @@ const seed = (store: RootStore, args: StoryArgs) => {
 };
 
 const meta: Meta<StoryArgs> = {
-  title: 'Widgets/DuelBarWidget',
+  title: 'Widgets/CloseBattleWidget',
   ...defineWidgetStories<StoryArgs>({
-    widget: DuelBarWidget,
+    widget: CloseBattleWidget,
     size: { width: 440, height: 420, background: '#0e0f12' },
     seedSnapshot: true,
     seed,

@@ -4,17 +4,17 @@ import { InputNumber, Segmented, Slider, Switch } from 'antd';
 
 import type {
   RadarQualifyingVisibility,
-  DuelBarWidgetSettings,
-  DuelNameMode,
-  DuelOtherClass,
-  DuelSides,
-  DuelTrigger,
+  CloseBattleWidgetSettings,
+  BattleNameMode,
+  BattleOtherClass,
+  BattleSides,
+  BattleTrigger,
 } from '@/types/widget-settings';
 import { useUnitsStore } from '@store/root-store-context';
 import {
   toDisplayDistance,
   toMeters,
-} from '@ui/widgets/DuelBarWidget/duel-bar-utils';
+} from '@ui/widgets/CloseBattleWidget/close-battle-utils';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
@@ -32,16 +32,19 @@ const MAX_DISTANCE_THRESHOLD = 200;
 /** Feet round to fives, so the field steps by five of whatever it shows. */
 const DISTANCE_STEP = 5;
 
-export const DuelBarSettingsPanel = observer(() => {
+export const CloseBattleSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const units = useUnitsStore();
   const { t } = useTranslation('widgets');
 
   const settings =
-    widgetSettings.getSettings<DuelBarWidgetSettings>('duel-bar');
+    widgetSettings.getSettings<CloseBattleWidgetSettings>('close-battle');
 
-  const update = (partial: Partial<DuelBarWidgetSettings>) => {
-    widgetSettings.updateUserSettings('duel-bar', { ...settings, ...partial });
+  const update = (partial: Partial<CloseBattleWidgetSettings>) => {
+    widgetSettings.updateUserSettings('close-battle', {
+      ...settings,
+      ...partial,
+    });
   };
 
   const isGapTrigger = settings.trigger === 'gap';
@@ -54,19 +57,19 @@ export const DuelBarSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title={t('settingsPanels.duelBar.appearsWhen')}>
+      <Card title={t('settingsPanels.closeBattle.appearsWhen')}>
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.trigger')}
-            desc={t('settingsPanels.duelBar.triggerDesc')}
+            title={t('settingsPanels.closeBattle.trigger')}
+            desc={t('settingsPanels.closeBattle.triggerDesc')}
           >
-            <Segmented<DuelTrigger>
+            <Segmented<BattleTrigger>
               value={settings.trigger}
               onChange={(value) => update({ trigger: value })}
               options={[
-                { label: t('settingsPanels.duelBar.gap'), value: 'gap' },
+                { label: t('settingsPanels.closeBattle.gap'), value: 'gap' },
                 {
-                  label: t('settingsPanels.duelBar.distance'),
+                  label: t('settingsPanels.closeBattle.distance'),
                   value: 'distance',
                 },
               ]}
@@ -78,12 +81,12 @@ export const DuelBarSettingsPanel = observer(() => {
           <SettingRow
             title={
               isGapTrigger
-                ? t('settingsPanels.duelBar.thresholdSeconds')
-                : t('settingsPanels.duelBar.thresholdDistance', {
+                ? t('settingsPanels.closeBattle.thresholdSeconds')
+                : t('settingsPanels.closeBattle.thresholdDistance', {
                     unit: isMetric ? 'm' : 'ft',
                   })
             }
-            desc={t('settingsPanels.duelBar.thresholdDesc')}
+            desc={t('settingsPanels.closeBattle.thresholdDesc')}
           >
             {/* Each trigger keeps its own number: seconds and meters share no
                 range, so one field would show 5 as invalid the moment the
@@ -118,8 +121,8 @@ export const DuelBarSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.hideDelay')}
-            desc={t('settingsPanels.duelBar.hideDelayDesc')}
+            title={t('settingsPanels.closeBattle.hideDelay')}
+            desc={t('settingsPanels.closeBattle.hideDelayDesc')}
           >
             <InputNumber
               value={settings.hideDelay}
@@ -136,14 +139,20 @@ export const DuelBarSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.duelBar.sides')}>
-            <Segmented<DuelSides>
+          <SettingRow title={t('settingsPanels.closeBattle.sides')}>
+            <Segmented<BattleSides>
               value={settings.sides}
               onChange={(value) => update({ sides: value })}
               options={[
-                { label: t('settingsPanels.duelBar.both'), value: 'both' },
-                { label: t('settingsPanels.duelBar.ahead'), value: 'ahead' },
-                { label: t('settingsPanels.duelBar.behind'), value: 'behind' },
+                { label: t('settingsPanels.closeBattle.both'), value: 'both' },
+                {
+                  label: t('settingsPanels.closeBattle.ahead'),
+                  value: 'ahead',
+                },
+                {
+                  label: t('settingsPanels.closeBattle.behind'),
+                  value: 'behind',
+                },
               ]}
             />
           </SettingRow>
@@ -151,8 +160,8 @@ export const DuelBarSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.maxRows')}
-            desc={t('settingsPanels.duelBar.maxRowsDesc')}
+            title={t('settingsPanels.closeBattle.maxRows')}
+            desc={t('settingsPanels.closeBattle.maxRowsDesc')}
           >
             <Segmented<number>
               value={settings.maxRows}
@@ -164,16 +173,16 @@ export const DuelBarSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.otherClass')}
-            desc={t('settingsPanels.duelBar.otherClassDesc')}
+            title={t('settingsPanels.closeBattle.otherClass')}
+            desc={t('settingsPanels.closeBattle.otherClassDesc')}
           >
-            <Segmented<DuelOtherClass>
+            <Segmented<BattleOtherClass>
               value={settings.otherClass}
               onChange={(value) => update({ otherClass: value })}
               options={[
-                { label: t('settingsPanels.duelBar.show'), value: 'show' },
-                { label: t('settingsPanels.duelBar.dim'), value: 'dim' },
-                { label: t('settingsPanels.duelBar.hide'), value: 'hide' },
+                { label: t('settingsPanels.closeBattle.show'), value: 'show' },
+                { label: t('settingsPanels.closeBattle.dim'), value: 'dim' },
+                { label: t('settingsPanels.closeBattle.hide'), value: 'hide' },
               ]}
             />
           </SettingRow>
@@ -181,8 +190,8 @@ export const DuelBarSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.hideInPits')}
-            desc={t('settingsPanels.duelBar.hideInPitsDesc')}
+            title={t('settingsPanels.closeBattle.hideInPits')}
+            desc={t('settingsPanels.closeBattle.hideInPitsDesc')}
           >
             <Switch
               checked={settings.hideInPits}
@@ -192,7 +201,7 @@ export const DuelBarSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.duelBar.raceOnly')}>
+          <SettingRow title={t('settingsPanels.closeBattle.raceOnly')}>
             <Switch
               checked={settings.raceOnly}
               onChange={(checked) => update({ raceOnly: checked })}
@@ -220,11 +229,11 @@ export const DuelBarSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.duelBar.axis')}>
+      <Card title={t('settingsPanels.closeBattle.axis')}>
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.glowRange')}
-            desc={t('settingsPanels.duelBar.glowRangeDesc')}
+            title={t('settingsPanels.closeBattle.glowRange')}
+            desc={t('settingsPanels.closeBattle.glowRangeDesc')}
           >
             <InputNumber
               value={settings.glowRange}
@@ -241,7 +250,7 @@ export const DuelBarSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.duelBar.showTicks')}>
+          <SettingRow title={t('settingsPanels.closeBattle.showTicks')}>
             <Switch
               checked={settings.showTicks}
               onChange={(checked) => update({ showTicks: checked })}
@@ -250,7 +259,7 @@ export const DuelBarSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.duelBar.showTickLabels')}>
+          <SettingRow title={t('settingsPanels.closeBattle.showTickLabels')}>
             <Switch
               checked={settings.showTickLabels}
               disabled={!settings.showTicks}
@@ -261,8 +270,8 @@ export const DuelBarSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.compactMode')}
-            desc={t('settingsPanels.duelBar.compactModeDesc')}
+            title={t('settingsPanels.closeBattle.compactMode')}
+            desc={t('settingsPanels.closeBattle.compactModeDesc')}
           >
             <Switch
               checked={settings.compactMode}
@@ -272,9 +281,9 @@ export const DuelBarSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.duelBar.plates')}>
+      <Card title={t('settingsPanels.closeBattle.plates')}>
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.duelBar.showDistance')}>
+          <SettingRow title={t('settingsPanels.closeBattle.showDistance')}>
             <Switch
               checked={settings.showDistance}
               onChange={(checked) => update({ showDistance: checked })}
@@ -283,7 +292,7 @@ export const DuelBarSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.duelBar.showClassBadge')}>
+          <SettingRow title={t('settingsPanels.closeBattle.showClassBadge')}>
             <Switch
               checked={settings.showClassBadge}
               onChange={(checked) => update({ showClassBadge: checked })}
@@ -293,22 +302,25 @@ export const DuelBarSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.nameMode')}
-            desc={t('settingsPanels.duelBar.nameModeDesc')}
+            title={t('settingsPanels.closeBattle.nameMode')}
+            desc={t('settingsPanels.closeBattle.nameModeDesc')}
           >
-            <Segmented<DuelNameMode>
+            <Segmented<BattleNameMode>
               value={settings.nameMode}
               onChange={(value) => update({ nameMode: value })}
               options={[
                 {
-                  label: t('settingsPanels.duelBar.nameSurname'),
+                  label: t('settingsPanels.closeBattle.nameSurname'),
                   value: 'surname',
                 },
                 {
-                  label: t('settingsPanels.duelBar.nameInitial'),
+                  label: t('settingsPanels.closeBattle.nameInitial'),
                   value: 'initial',
                 },
-                { label: t('settingsPanels.duelBar.nameFull'), value: 'full' },
+                {
+                  label: t('settingsPanels.closeBattle.nameFull'),
+                  value: 'full',
+                },
               ]}
             />
           </SettingRow>
@@ -316,8 +328,8 @@ export const DuelBarSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.plateOpacity')}
-            desc={t('settingsPanels.duelBar.plateOpacityDesc')}
+            title={t('settingsPanels.closeBattle.plateOpacity')}
+            desc={t('settingsPanels.closeBattle.plateOpacityDesc')}
           >
             <Slider
               style={{ width: 160 }}
@@ -335,8 +347,8 @@ export const DuelBarSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.mergeOverlapping')}
-            desc={t('settingsPanels.duelBar.mergeOverlappingDesc')}
+            title={t('settingsPanels.closeBattle.mergeOverlapping')}
+            desc={t('settingsPanels.closeBattle.mergeOverlappingDesc')}
           >
             <Switch
               checked={settings.mergeOverlapping}
@@ -347,8 +359,8 @@ export const DuelBarSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.mergeDistance')}
-            desc={t('settingsPanels.duelBar.mergeDistanceDesc')}
+            title={t('settingsPanels.closeBattle.mergeDistance')}
+            desc={t('settingsPanels.closeBattle.mergeDistanceDesc')}
           >
             <InputNumber
               value={settings.mergeDistance}
@@ -367,8 +379,8 @@ export const DuelBarSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SettingRow
-            title={t('settingsPanels.duelBar.scaleByDistance')}
-            desc={t('settingsPanels.duelBar.scaleByDistanceDesc')}
+            title={t('settingsPanels.closeBattle.scaleByDistance')}
+            desc={t('settingsPanels.closeBattle.scaleByDistanceDesc')}
           >
             <Switch
               checked={settings.scaleByDistance}

@@ -4,10 +4,10 @@ import {
   axisTicks,
   buildAxisSegments,
   distanceToTopPct,
-  formatDuelDistance,
-  formatDuelGap,
+  formatBattleDistance,
+  formatBattleGap,
   glowIntensity,
-  duelDriverName,
+  battleDriverName,
   toMeters,
   plateScale,
   PLATE_SLOT_PCT,
@@ -15,14 +15,14 @@ import {
   buildPlateGroups,
   mergedCarIdxs,
   TICK_GAP_PCT,
-  type DuelOpponent,
-} from './duel-bar-utils';
-import type { DuelBarWidgetSettings } from '@/types/widget-settings';
+  type BattleOpponent,
+} from './close-battle-utils';
+import type { CloseBattleWidgetSettings } from '@/types/widget-settings';
 
 /** Meters, the shipped default: a car length or two. */
 const MERGE_DISTANCE = 2;
 
-const opponentAt = (carIdx: number, longitudinalDist: number): DuelOpponent =>
+const opponentAt = (carIdx: number, longitudinalDist: number): BattleOpponent =>
   ({
     carIdx,
     longitudinalDist,
@@ -30,7 +30,7 @@ const opponentAt = (carIdx: number, longitudinalDist: number): DuelOpponent =>
     gapSeconds: 0,
     isAhead: longitudinalDist >= 0,
     isOtherClass: false,
-  }) as DuelOpponent;
+  }) as BattleOpponent;
 
 describe('distanceToTopPct', () => {
   it('puts the player in the middle', () => {
@@ -98,32 +98,32 @@ describe('axisTicks', () => {
   });
 });
 
-describe('formatDuelGap', () => {
+describe('formatBattleGap', () => {
   it('keeps the Relative convention: ahead negative, behind positive', () => {
-    expect(formatDuelGap(-0.21)).toBe('-0.21');
-    expect(formatDuelGap(1.05)).toBe('+1.05');
+    expect(formatBattleGap(-0.21)).toBe('-0.21');
+    expect(formatBattleGap(1.05)).toBe('+1.05');
   });
 });
 
-describe('formatDuelDistance', () => {
+describe('formatBattleDistance', () => {
   it('renders meters or feet', () => {
-    expect(formatDuelDistance(45, true)).toBe('45 m');
-    expect(formatDuelDistance(45, false)).toBe('148 ft');
+    expect(formatBattleDistance(45, true)).toBe('45 m');
+    expect(formatBattleDistance(45, false)).toBe('148 ft');
   });
 });
 
-describe('duelDriverName', () => {
+describe('battleDriverName', () => {
   it('keeps the surname in every mode', () => {
-    expect(duelDriverName('Ayrton Senna', 'surname')).toEqual({
+    expect(battleDriverName('Ayrton Senna', 'surname')).toEqual({
       givenName: '',
       surname: 'Senna',
     });
-    expect(duelDriverName('Ayrton Senna', 'initial').givenName).toBe('A.');
-    expect(duelDriverName('Ayrton Senna', 'full').givenName).toBe('Ayrton');
+    expect(battleDriverName('Ayrton Senna', 'initial').givenName).toBe('A.');
+    expect(battleDriverName('Ayrton Senna', 'full').givenName).toBe('Ayrton');
   });
 
   it('leaves a single-word name alone', () => {
-    expect(duelDriverName('Senna', 'full')).toEqual({
+    expect(battleDriverName('Senna', 'full')).toEqual({
       givenName: '',
       surname: 'Senna',
     });
@@ -213,9 +213,9 @@ describe('buildPlateGroups', () => {
 });
 
 describe('resolveAxisRange', () => {
-  const gap = { trigger: 'gap' } as DuelBarWidgetSettings;
+  const gap = { trigger: 'gap' } as CloseBattleWidgetSettings;
   const distance = (distanceThreshold: number) =>
-    ({ trigger: 'distance', distanceThreshold }) as DuelBarWidgetSettings;
+    ({ trigger: 'distance', distanceThreshold }) as CloseBattleWidgetSettings;
 
   it('derives the range from a distance threshold, whatever is on screen', () => {
     expect(resolveAxisRange(distance(50), 4, 10, true)).toBe(50);
