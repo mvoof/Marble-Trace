@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { formatCarNumber, splitDriverName } from '@utils/driver';
+import { formatCarNumber } from '@utils/driver';
 import {
   useUnitsStore,
   useWidgetSettingsStore,
@@ -12,17 +12,22 @@ import {
   formatBattleDistance,
   formatBattleGap,
   plateScale,
-  type BattlePlateGroup,
+  type BattleOpponent,
 } from './close-battle-utils';
 
 import styles from './BattleRow.module.scss';
 
-/** Beyond this the surnames stop fitting and the rest become a count. */
-const MAX_NAMED_COMPANIONS = 2;
-
 interface BattleRowProps {
-  /** The nearest car of this spot on the axis, plus whoever shares it. */
-  group: BattlePlateGroup;
+  opponent: BattleOpponent;
+  /** Where this car's spot sits on the axis, as a percent of the stage. */
+  topPct: number;
+  /**
+   * How far down the stack this plate sits. Cars close enough to share one
+   * spot are drawn as a stack under it rather than as one plate carrying
+   * several names: each keeps its own number, distance and gap, and the axis
+   * still claims a single position for all of them.
+   */
+  stackIndex: number;
 }
 
 /**
@@ -35,111 +40,95 @@ interface BattleRowProps {
  * therefore transforms — composited, and cheap enough to transition, which is
  * what turns the 10 Hz proximity frame into continuous motion.
  */
-export const BattleRow = observer(({ group }: BattleRowProps) => {
-  const { leader: opponent, topPct } = group;
-  const units = useUnitsStore();
-  const widgetSettings = useWidgetSettingsStore();
+export const BattleRow = observer(
+  ({ opponent, topPct, stackIndex }: BattleRowProps) => {
+    const units = useUnitsStore();
+    const widgetSettings = useWidgetSettingsStore();
 
-  const settings =
-    widgetSettings.getSettings<CloseBattleWidgetSettings>('close-battle');
+    const settings =
+      widgetSettings.getSettings<CloseBattleWidgetSettings>('close-battle');
 
-  const { entry } = opponent;
+    const { entry } = opponent;
 
-  const scale = settings.scaleByDistance ? plateScale(opponent.clearance) : 1;
+    const scale = settings.scaleByDistance ? plateScale(opponent.clearance) : 1;
 
-  const gapClass = opponent.isAhead ? styles.gapAhead : styles.gapBehind;
+    const gapClass = opponent.isAhead ? styles.gapAhead : styles.gapBehind;
 
-  const { givenName, surname } = battleDriverName(
-    entry.userName,
-    settings.nameMode
-  );
+    const { givenName, surname } = battleDriverName(
+      entry.userName,
+      settings.nameMode
+    );
 
-  // A merged plate names the cars it stands for instead of counting them: "+2"
-  // says there is traffic, the surnames say who. Only when even the surnames
-  // stop fitting does the rest fall back to a count.
-  const companions = group.merged.slice(0, MAX_NAMED_COMPANIONS);
-  const unnamed = group.merged.length - companions.length;
+    // Two reasons a plate fades, and they multiply rather than fight: the user's
+    // own opacity, and the deliberate dimming of another class.
+    const isDimmed = settings.otherClass === 'dim' && opponent.isOtherClass;
+    const opacity = settings.plateOpacity * (isDimmed ? 0.55 : 1);
 
-  // Two reasons a plate fades, and they multiply rather than fight: the user's
-  // own opacity, and the deliberate dimming of another class.
-  const isDimmed = settings.otherClass === 'dim' && opponent.isOtherClass;
-  const opacity = settings.plateOpacity * (isDimmed ? 0.55 : 1);
-
-  return (
-    <div
-      className={styles.slot}
-      style={{ transform: `translateY(${topPct}%)` }}
-    >
+    return (
       <div
-        className={styles.plate}
-        style={{ '--plate-scale': scale } as CSSProperties}
+        className={styles.slot}
+        style={
+          {
+            transform: `translateY(${topPct}%)`,
+            '--stack-index': stackIndex,
+          } as CSSProperties
+        }
       >
         <div
-          className={
-            settings.showClassBadge
-              ? styles.row
-              : `${styles.row} ${styles.rowNoClass}`
+          className={styles.plate}
+          style={
+            {
+              '--plate-scale': scale,
+              '--stack-index': stackIndex,
+            } as CSSProperties
           }
-          style={{ opacity }}
         >
-          <span className={styles.carNumber}>
-            {formatCarNumber(entry.carNumber)}
-          </span>
-
-          {settings.showClassBadge && (
-            <span className={styles.classSlab}>
-              <span
-                className={styles.className}
-                style={{ background: entry.carClassColor }}
-              >
-                <span className={styles.classLabel}>
-                  {entry.carClassShortName}
-                </span>
-              </span>
-            </span>
-          )}
-
-          <span className={styles.identity}>
-            <span className={styles.name}>
-              {/* A shared plate spends its width on the second driver instead
-                  of on a given name nobody reads at speed. */}
-              {givenName && companions.length === 0 && (
-                <span className={styles.givenName}>{givenName} </span>
-              )}
-              <span className={styles.surname}>{surname}</span>
+          <div
+            className={
+              settings.showClassBadge
+                ? styles.row
+                : `${styles.row} ${styles.rowNoClass}`
+            }
+            style={{ opacity }}
+          >
+            <span className={styles.carNumber}>
+              {formatCarNumber(entry.carNumber)}
             </span>
 
-            {companions.map((companion) => (
-              <span key={companion.carIdx} className={styles.companion}>
+            {settings.showClassBadge && (
+              <span className={styles.classSlab}>
                 <span
-                  className={styles.companionRail}
-                  style={{ background: companion.entry.carClassColor }}
-                />
-                <span className={styles.companionNumber}>
-                  {formatCarNumber(companion.entry.carNumber)}
-                </span>
-                <span className={styles.companionName}>
-                  {splitDriverName(companion.entry.userName).surname}
+                  className={styles.className}
+                  style={{ background: entry.carClassColor }}
+                >
+                  <span className={styles.classLabel}>
+                    {entry.carClassShortName}
+                  </span>
                 </span>
               </span>
-            ))}
-
-            {unnamed > 0 && (
-              <span className={styles.companion}>+{unnamed}</span>
             )}
-          </span>
 
-          {settings.showDistance && (
-            <span className={styles.distance}>
-              {formatBattleDistance(opponent.clearance, units.isMetric)}
+            <span className={styles.identity}>
+              <span className={styles.name}>
+                {givenName && (
+                  <span className={styles.givenName}>{givenName} </span>
+                )}
+                <span className={styles.surname}>{surname}</span>
+              </span>
             </span>
-          )}
 
-          <span className={`${styles.gap} ${gapClass}`}>
-            {formatBattleGap(opponent.gapSeconds)}
-          </span>
+            {settings.showDistance && (
+              <span className={styles.distance}>
+                {formatBattleDistance(opponent.clearance, units.isMetric)}
+              </span>
+            )}
+
+            <span className={`${styles.gap} ${gapClass}`}>
+              {formatBattleGap(opponent.gapSeconds)}
+            </span>
+          </div>
         </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);

@@ -6,6 +6,7 @@ $plate-move-duration: 140ms;
 
 .slot {
   position: absolute;
+  z-index: calc(100 - var(--stack-index, 0));
   inset: 0;
   pointer-events: none;
   will-change: transform;
@@ -19,7 +20,15 @@ $plate-move-duration: 140ms;
   right: 0;
   display: flex;
   justify-content: center;
-  transform: translateY(-50%) scale(var(--plate-scale, 1));
+  // A deck, not a list: cars sharing one spot on the axis are stacked under the
+  // nearest of them and only their bottom edge shows, because the axis claims a
+  // single position for all of them and three full plates would claim three.
+  //
+  // Right to left: the shift is applied first and therefore scaled with the
+  // plate, so a deck of shrunken plates keeps its spacing proportional instead
+  // of tearing open as they get smaller.
+  transform: translateY(-50%) scale(var(--plate-scale, 1))
+    translateY(calc(var(--stack-index, 0) * #{ws(9)}));
   transition: transform $plate-move-duration ease-out;
 }
 
@@ -47,10 +56,10 @@ $plate-move-duration: 140ms;
   // No gap before the class block: the number and the class are one unit at the
   // left of the plate, separated by a shadow rather than by air.
   column-gap: 0;
-  width: 100%;
   height: ws(40);
   padding-right: sp(lg);
   border-radius: radius(lg);
+  width: calc(100% - var(--stack-index, 0) * #{ws(26)});
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.8);
   background: linear-gradient(
@@ -138,47 +147,6 @@ $plate-move-duration: 140ms;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-// A car sharing this spot on the axis, named rather than counted. It rides
-// right of the driver it shares the plate with, in the same order the axis
-// would have put them.
-.companion {
-  display: inline-flex;
-
-  // Shares what the leader's name leaves rather than living in a fixed box:
-  // with one companion it stretches, with three they split the room evenly.
-  flex: 1 1 auto;
-  min-width: 0;
-  align-items: center;
-  gap: sp(xxs);
-  padding: 0 sp(xs);
-  border-radius: radius(md);
-  background: rgba(255, 255, 255, 0.07);
-  font-size: fs(xs);
-  font-weight: 700;
-  color: $widget-text-secondary;
-}
-
-.companionRail {
-  flex: 0 0 auto;
-  width: ws(3);
-  height: fs(sm);
-  border-radius: radius(sm);
-}
-
-.companionNumber {
-  color: $widget-text-primary;
-}
-
-// The second driver is a driver, not a footnote: the surname carries the same
-// weight and color as the one it stands beside.
-.companionName {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  color: $widget-text-primary;
 }
 
 // The number opens the plate: recessed into the surface at the far left and

@@ -29,10 +29,20 @@ export const CloseBattleWidget = observer(() => {
       <div className={styles.stage}>
         <BattleAxis />
 
+        {/* A group is one spot on the axis, not one plate: the leader draws at
+            the spot and everyone sharing it stacks underneath, each keeping its
+            own number, distance and gap. */}
         {!settings.compactMode &&
-          closeBattle.plateGroups.map((group) => (
-            <BattleRow key={group.key} group={group} />
-          ))}
+          closeBattle.plateGroups.flatMap((group) =>
+            [group.leader, ...group.merged].map((opponent, stackIndex) => (
+              <BattleRow
+                key={opponent.carIdx}
+                opponent={opponent}
+                topPct={group.topPct}
+                stackIndex={stackIndex}
+              />
+            ))
+          )}
       </div>
     </WidgetPanel>
   );
