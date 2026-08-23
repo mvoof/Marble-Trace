@@ -87,13 +87,14 @@ export const DuelRow = observer(({ group }: DuelRowProps) => {
           </span>
 
           {settings.showClassBadge && (
-            <span
-              className={styles.className}
-              style={{ background: entry.carClassColor }}
-            >
-              <span className={styles.classTexture} />
-              <span className={styles.classLabel}>
-                {entry.carClassShortName}
+            <span className={styles.classSlab}>
+              <span
+                className={styles.className}
+                style={{ background: entry.carClassColor }}
+              >
+                <span className={styles.classLabel}>
+                  {entry.carClassShortName}
+                </span>
               </span>
             </span>
           )}

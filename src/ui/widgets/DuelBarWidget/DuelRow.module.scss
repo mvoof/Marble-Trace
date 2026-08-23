@@ -52,10 +52,19 @@ $plate-move-duration: 140ms;
   padding-right: sp(lg);
   border-radius: radius(lg);
   overflow: hidden;
-  background: $widget-surface-plate;
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  background: linear-gradient(
+    180deg,
+    $widget-plate-top 0%,
+    $widget-plate-bottom 100%
+  );
+
+  // The lit top edge and the shadow the plate casts: without the first the
+  // gradient reads as a flat wash, without the second the plate sits in the
+  // track rather than over it.
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 2px 6px rgba(0, 0, 0, 0.45);
+    inset 0 1px 1px rgba(255, 255, 255, 0.08),
+    0 4px 10px rgba(0, 0, 0, 0.5);
   font-family: $font-widget;
   font-variant-numeric: tabular-nums;
 }
@@ -76,9 +85,7 @@ $plate-move-duration: 140ms;
 
 // The class block is a solid slab of the class color spanning the plate's full
 // height, cut diagonally on its trailing edge — a livery panel rather than a
-// label, which is what lets it be read from the corner of the eye. A woven
-// texture is laid over it in `multiply` so a saturated class color loses its
-// flatness without losing its hue.
+// label, which is what lets it be read from the corner of the eye.
 //
 // The badge is always black. The sim's class colors are picked to be bright
 // enough to tell apart on a track map, so black holds on every one of them, and
@@ -89,56 +96,44 @@ $plate-move-duration: 140ms;
 // "FF1600") so the name behind it never shifts — in a single-model class the
 // sim can put a whole car name here, and it is cut rather than let it push the
 // row around.
-.className {
-  position: relative;
+// The slab is cut on its trailing edge, and the shadow that follows the cut has
+// to live on a layer above it: clip-path clips an element's own filter, so a
+// drop-shadow set here would be sliced off with the corner it is meant to trace.
+.classSlab {
   display: flex;
   grid-column: class-col;
   align-self: stretch;
+  margin-right: sp(md);
+  filter: drop-shadow(1px 0 0 rgba(0, 0, 0, 0.6));
+}
+
+.className {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
   align-items: center;
   justify-content: center;
 
   // The right edge is sliced, so the label needs the room back on that side or
   // it would sit under the cut.
   padding: 0 sp(lg) 0 sp(sm);
-  margin-right: sp(md);
-  clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);
+  clip-path: polygon(0 0, 100% 0, 80% 100%, 0 100%);
   overflow: hidden;
   color: #111111;
   text-transform: uppercase;
   font-size: fs(md);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-// The weave: a diagonal twill rib, then warp and weft threads. Multiplied over
-// the class color rather than mixed into it, so every class keeps its own hue.
-.classTexture {
-  position: absolute;
-  inset: 0;
-  background-image:
-    repeating-linear-gradient(
-      -60deg,
-      rgba(0, 0, 0, 0.15) 0 1px,
-      transparent 1px 4px
-    ),
-    repeating-linear-gradient(
-      0deg,
-      rgba(255, 255, 255, 0.1) 0 1px,
-      transparent 1px 2px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(0, 0, 0, 0.1) 0 1px,
-      transparent 1px 3px
-    );
-  mix-blend-mode: multiply;
-  opacity: 0.7;
-  pointer-events: none;
+  font-weight: 900;
+  letter-spacing: -0.02em;
 }
 
 .classLabel {
   position: relative;
   z-index: 1;
+
+  // Pulled back off the diagonal so the badge reads as centred in the slab
+  // rather than pushed against its cut edge.
+  transform: translateX(-#{ws(4)});
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
@@ -197,12 +192,21 @@ $plate-move-duration: 140ms;
   align-self: stretch;
   align-items: center;
   justify-content: center;
-  padding: 0 sp(lg);
+  min-width: 5ch;
+  padding: 0 sp(md);
+  border-right: 1px solid rgba(0, 0, 0, 0.6);
   border-radius: radius(lg) 0 0 radius(lg);
-  background: rgba(0, 0, 0, 0.45);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  background: linear-gradient(
+    180deg,
+    $widget-plate-tab-top 0%,
+    $widget-plate-tab-bottom 100%
+  );
+
+  // The tab's own trailing highlight, so the seam with the class block is a
+  // lit edge rather than a line drawn on it.
+  box-shadow: inset -1px 0 1px rgba(255, 255, 255, 0.1);
   font-size: fs(md);
-  font-weight: 500;
+  font-weight: 700;
   color: $widget-text-primary;
 }
 
@@ -244,17 +248,18 @@ $plate-move-duration: 140ms;
   color: $widget-text-primary;
 }
 
-// Meters answer "will he reach me in this corner" — read as often as the gap
-// and at a glance, so it carries the gap's size rather than a footnote's.
+// Meters answer "will he reach me in this corner", but the gap is what the eye
+// lands on first — so the distance stays white and legible at a smaller size
+// rather than competing with the number beside it.
 .distance {
   grid-column: distance-col;
 
   // The row has no column gap, so the two numbers would touch: the gap's sign
   // needs air of its own or it reads as part of the distance.
-  margin-right: ws(5);
+  margin-right: sp(lg);
   white-space: nowrap;
   text-align: right;
-  font-size: fs(sm);
+  font-size: fs(xs);
   font-weight: 500;
   line-height: 1;
   color: $widget-text-primary;
@@ -266,7 +271,11 @@ $plate-move-duration: 140ms;
   grid-column: gap-col;
   white-space: nowrap;
   text-align: right;
-  font-size: fs(xl);
+
+  // Monospaced rather than merely tabular: the gap is the one number that
+  // changes every tick, and it holds its width against the distance beside it.
+  font-family: $font-mono;
+  font-size: fs(lg);
   font-weight: 700;
   line-height: 1;
 }
