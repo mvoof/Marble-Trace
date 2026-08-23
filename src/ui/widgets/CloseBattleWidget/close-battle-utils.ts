@@ -61,9 +61,14 @@ const lapsBetween = (driver: DriverEntry, player: DriverEntry): number => {
 
 export interface BattleOpponent {
   carIdx: number;
-  /** Positive = ahead, negative = behind (meters). */
+  /**
+   * Bumper to bumper, positive ahead and negative behind, in meters — not the
+   * centre-to-centre distance the axis used to be drawn from. Two cars nose to
+   * tail read zero, which is what a driver means by "he is right there", and
+   * it is the same number the radar prints for its front and rear gaps.
+   */
   longitudinalDist: number;
-  /** Absolute distance in meters. */
+  /** Absolute bumper-to-bumper distance in meters. */
   clearance: number;
   /** Relative gap in seconds, Relative-widget convention: ahead negative, behind positive. */
   gapSeconds: number;
@@ -411,8 +416,8 @@ export const buildOpponents = (
     return [
       {
         carIdx: car.carIdx,
-        longitudinalDist: car.longitudinalDist,
-        clearance: car.clearance,
+        longitudinalDist: car.bumperDist,
+        clearance: Math.abs(car.bumperDist),
         gapSeconds: computeRelativeGap(entry, player),
         entry,
         isOtherClass: entry.carClassId !== player.carClassId,

@@ -915,6 +915,18 @@ export type NearbyCar = {
    * Absolute longitudinal distance in meters
    */
   clearance: number;
+  /**
+   * Longitudinal distance from bumper to bumper, in meters: `clearance`
+   * less one car length, floored at zero. Signed like `longitudinal_dist`.
+   *
+   * This is the number a driver means by "how far is he" — two cars nose to
+   * tail read `0` here and a car length apart in `clearance`. One car length
+   * serves for every car on track, so in a multiclass field it is an
+   * estimate; the reference point iRacing reports is not exactly the centre
+   * of the body either. Both are far closer to the truth than centre to
+   * centre.
+   */
+  bumperDist: number;
 };
 
 /**

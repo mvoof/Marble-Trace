@@ -58,6 +58,9 @@ const applyFlags = (store: RootStore, overrides: Partial<RaceFlags>) => {
   syncFlagDisplay(store);
 };
 
+/** The shipped default; the preview has no backend to take a real one from. */
+const PREVIEW_CAR_LENGTH_M = 4.4;
+
 const buildNearbyCar = (
   carIdx: number,
   longitudinalDist: number,
@@ -67,6 +70,9 @@ const buildNearbyCar = (
   longitudinalDist,
   lateralSide,
   clearance: Math.abs(longitudinalDist),
+  bumperDist:
+    Math.max(0, Math.abs(longitudinalDist) - PREVIEW_CAR_LENGTH_M) *
+    Math.sign(longitudinalDist),
 });
 
 const applyProximity = (
