@@ -47,10 +47,11 @@ export const widgetFrameStyle = ({
   autoHeight = false,
   hidden = false,
 }: WidgetFrameStyleInput): CSSProperties => {
-  const backgroundColor = withAlphaFactor(
-    userSettings.backgroundColor ?? DEFAULT_WIDGET_BACKGROUND,
-    userSettings.backgroundOpacity ?? 1
-  );
+  const pickedBackground =
+    userSettings.backgroundColor ?? DEFAULT_WIDGET_BACKGROUND;
+
+  const backgroundOpacity = userSettings.backgroundOpacity ?? 1;
+  const backgroundColor = withAlphaFactor(pickedBackground, backgroundOpacity);
 
   const borderColor = userSettings.borderColor ?? DEFAULT_WIDGET_BORDER;
   const isPlateless = transparentContainer || hidden;
@@ -66,7 +67,10 @@ export const widgetFrameStyle = ({
     ),
     ['--wfs']: widgetScale,
     ['--font-scale']: userSettings.fontScale ?? 1,
-    ['--widget-bg']: backgroundColor,
+    // The text tokens are contrast-derived from --widget-bg, so it keeps the
+    // color the user picked: fading the plate must not flip the text to black.
+    ['--widget-bg']: pickedBackground,
+    ['--widget-bg-opacity']: backgroundOpacity,
     ['--widget-border']: borderColor,
   } as CSSProperties;
 };

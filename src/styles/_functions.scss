@@ -13,6 +13,18 @@ $base-font-size: 16px;
   @return calc(#{$px}px * var(--wfs, 1));
 }
 
+// A widget's own plate, faded by the user's background-opacity setting.
+// --widget-bg-opacity is set inline by the frame that hosts the widget
+// (widget-frame.ts); text and graphics never go through this, which is what
+// keeps them readable while the plate behind them fades out.
+@function plate($color) {
+  @return color-mix(
+    in srgb,
+    #{$color} calc(var(--widget-bg-opacity, 1) * 100%),
+    transparent
+  );
+}
+
 // ─── Widget design tokens ───────────────────────────────────────────────
 // Semantic scales layered on top of ws(). Use these instead of raw ws($px)
 // for fonts and spacing so sizing stays consistent across all widgets.
