@@ -7,6 +7,9 @@ import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['engine-panel'];
+
 export const EnginePanelSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');

@@ -28,6 +28,9 @@ const STAT_COLUMN_ROWS: StatColumnRow[] = [
   { key: 'showStatMax', labelKey: 'settingsPanels.fuel.statMax' },
 ];
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['fuel'];
+
 export const FuelSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');

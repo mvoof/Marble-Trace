@@ -22,6 +22,9 @@ const GROUPED_ROWS_PER_CLASS_MAX = 30;
 
 const SCROLL_RESET_OPTIONS = [0, 5, 8, 15, 30];
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['standings'];
+
 export const StandingsSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');

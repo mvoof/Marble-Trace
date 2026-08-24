@@ -24,6 +24,9 @@ const MAX_ZOOM_LEVEL = 10;
 const ZOOM_STEP = 0.5;
 const DEFAULT_ZOOM_LEVEL = 3;
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['track-map'];
+
 export const TrackMapSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');

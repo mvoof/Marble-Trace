@@ -19,6 +19,9 @@ const WIDGET_ID = 'invisible-dash';
 const PERCENT_MIN = 0;
 const PERCENT_MAX = 100;
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['invisible-dash'];
+
 export const InvisibleDashSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');

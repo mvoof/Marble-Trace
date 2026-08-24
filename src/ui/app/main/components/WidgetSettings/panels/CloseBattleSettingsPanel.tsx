@@ -32,6 +32,9 @@ const MAX_DISTANCE_THRESHOLD = 200;
 /** Feet round to fives, so the field steps by five of whatever it shows. */
 const DISTANCE_STEP = 5;
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['close-battle'];
+
 export const CloseBattleSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const units = useUnitsStore();

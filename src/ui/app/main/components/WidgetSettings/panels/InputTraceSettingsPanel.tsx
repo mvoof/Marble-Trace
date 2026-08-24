@@ -11,6 +11,9 @@ import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 import { useAppSettingsStore } from '@store/root-store-context';
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['input-trace'];
+
 export const InputTraceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const appSettings = useAppSettingsStore();

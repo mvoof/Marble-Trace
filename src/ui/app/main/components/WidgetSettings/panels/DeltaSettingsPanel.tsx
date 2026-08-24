@@ -10,6 +10,9 @@ import { Card } from './Card';
 import { getDeltaReferenceDesc } from './shared';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['delta'];
+
 export const DeltaSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');

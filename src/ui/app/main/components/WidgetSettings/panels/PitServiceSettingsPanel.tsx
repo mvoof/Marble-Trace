@@ -37,6 +37,9 @@ const REVEAL_MIN_S = 0;
 const REVEAL_MAX_S = 15;
 const REVEAL_STEP_S = 1;
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['pit-service'];
+
 export const PitServiceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');

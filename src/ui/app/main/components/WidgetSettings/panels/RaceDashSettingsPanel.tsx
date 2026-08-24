@@ -14,6 +14,9 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { useUnitsStore } from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['race-dash'];
+
 export const RaceDashSettingsPanel = observer(() => {
   const units = useUnitsStore();
   const widgetSettings = useWidgetEditor();

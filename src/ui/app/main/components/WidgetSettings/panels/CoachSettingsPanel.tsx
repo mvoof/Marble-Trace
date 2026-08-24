@@ -17,6 +17,9 @@ const MAX_WINDOW_METERS = 500;
 const WINDOW_METERS_STEP = 25;
 const DEFAULT_WINDOW_METERS = 150;
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['coach'];
+
 export const CoachSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');

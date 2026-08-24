@@ -9,6 +9,9 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['proximity-radar', 'radar-bar'];
+
 export const RadarSettingsPanel = observer(
   ({ widgetId }: { widgetId: 'proximity-radar' | 'radar-bar' }) => {
     const widgetSettings = useWidgetEditor();
