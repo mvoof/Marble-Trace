@@ -202,6 +202,8 @@
     "fontScaleDesc": "Scales only the text, independent of widget width/height",
     "aesthetics": "Background & border",
     "background": "Background",
+    "backgroundOpacity": "Background opacity",
+    "backgroundOpacityDesc": "Fades the panel background only — text and graphics stay fully visible",
     "border": "Border"
   },
   "settingsPage": {

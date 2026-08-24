@@ -2,6 +2,7 @@ import React, { useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import { widgetFrameBorderRadius } from '@ui/app/widget-frame';
+import { withAlphaFactor } from '@utils/colors';
 import styles from './WidgetContainer.module.scss';
 import { WidgetIdContext } from './WidgetIdContext';
 import { WidgetDragToolbar } from '@ui/app/overlay/components/WidgetDragToolbar/WidgetDragToolbar';
@@ -63,8 +64,10 @@ export const WidgetContainer = observer(
       (!isOnTrack && isConnected && !dragMode && shouldHideInGarage) ||
       (!widgetAutoHide.isVisible(widgetId) && !dragMode);
 
-    const backgroundColor =
-      widget?.userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)';
+    const backgroundColor = withAlphaFactor(
+      widget?.userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)',
+      widget?.userSettings.backgroundOpacity ?? 1
+    );
 
     const borderColor =
       widget?.userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';

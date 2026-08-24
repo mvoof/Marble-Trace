@@ -223,6 +223,32 @@ export const WidgetSettings = observer(
                     </div>
                   </div>
                 </Col>
+
+                <Col span={24}>
+                  <div className={styles.sectionDivider} />
+                  <span className={styles.fieldLabel}>
+                    {t('widgetSettings.backgroundOpacity')}
+                  </span>
+                  <Slider
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={userSettings.backgroundOpacity ?? 1}
+                    tooltip={{
+                      formatter: (value) =>
+                        `${Math.round((value ?? 1) * 100)}%`,
+                    }}
+                    onChangeComplete={() => widgetSettings.pushUndo?.()}
+                    onChange={(v) => {
+                      widgetSettings.updateUserSettings(widgetId, {
+                        backgroundOpacity: v,
+                      });
+                    }}
+                  />
+                  <div className={styles.fieldDesc}>
+                    {t('widgetSettings.backgroundOpacityDesc')}
+                  </div>
+                </Col>
               </Row>
             </Card>
           )}

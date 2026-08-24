@@ -13,6 +13,7 @@ import {
   DEFAULT_PREVIEW_SCENARIO_ID,
 } from '@store/preview/scenarios';
 import { seedInputHistory } from '@store/preview/preview-animator';
+import { withAlphaFactor } from '@utils/colors';
 import styles from './WidgetPreview.module.scss';
 
 interface WidgetPreviewProps {
@@ -84,8 +85,10 @@ export const WidgetPreview = observer(
     const { userSettings, designWidth, autoHeight, overflowVisible } = widget;
     const widgetScale = userSettings.currentWidth / designWidth;
     const fontScale = userSettings.fontScale ?? 1;
-    const backgroundColor =
-      userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)';
+    const backgroundColor = withAlphaFactor(
+      userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)',
+      userSettings.backgroundOpacity ?? 1
+    );
     const borderColor = userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
     const background = widget.transparentContainer
       ? 'transparent'

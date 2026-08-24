@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
 import type { MonitorBounds } from '@/types/widget-settings';
 import { widgetFrameBorderRadius } from '@ui/app/widget-frame';
+import { withAlphaFactor } from '@utils/colors';
 import styles from './LayoutCanvas.module.scss';
 
 type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
@@ -112,8 +113,10 @@ export const LayoutCanvasWidget = observer(
 
     const fontScale = widget?.userSettings.fontScale ?? 1;
 
-    const backgroundColor =
-      widget?.userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)';
+    const backgroundColor = withAlphaFactor(
+      widget?.userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)',
+      widget?.userSettings.backgroundOpacity ?? 1
+    );
     const borderColor =
       widget?.userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
     const background = transparentContainer ? 'transparent' : backgroundColor;

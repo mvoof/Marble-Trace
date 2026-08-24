@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
 import { widgetFrameBorderRadius } from '@ui/app/widget-frame';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
+import { withAlphaFactor } from '@utils/colors';
 import styles from './RemoteWidgetFrame.module.scss';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 
@@ -41,9 +42,12 @@ export const RemoteWidgetFrame = observer(
       ? height / widget.designHeight
       : width / widget.designWidth;
 
-    const background = transparentContainer
-      ? 'transparent'
-      : userSettings.backgroundColor;
+    const backgroundColor = withAlphaFactor(
+      userSettings.backgroundColor,
+      userSettings.backgroundOpacity ?? 1
+    );
+
+    const background = transparentContainer ? 'transparent' : backgroundColor;
 
     const borderColor = transparentContainer
       ? 'transparent'
@@ -77,7 +81,7 @@ export const RemoteWidgetFrame = observer(
                 borderRadius,
                 ['--wfs']: widgetScale,
                 ['--font-scale']: userSettings.fontScale,
-                ['--widget-bg']: userSettings.backgroundColor,
+                ['--widget-bg']: backgroundColor,
                 ['--widget-border']: userSettings.borderColor,
               } as React.CSSProperties
             }

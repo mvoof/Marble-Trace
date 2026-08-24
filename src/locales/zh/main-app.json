@@ -200,6 +200,8 @@
     "fontScaleDesc": "仅缩放文字，与组件的宽度/高度无关",
     "aesthetics": "背景与边框",
     "background": "背景",
+    "backgroundOpacity": "背景不透明度",
+    "backgroundOpacityDesc": "仅淡化面板背景——文字与图形保持完全可见",
     "border": "边框"
   },
   "settingsPage": {
