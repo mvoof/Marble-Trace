@@ -1,8 +1,7 @@
 import React, { useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
-import { widgetFrameBorderRadius } from '@ui/app/widget-frame';
-import { withAlphaFactor } from '@utils/colors';
+import { widgetFrameStyle } from '@ui/app/widget-frame';
 import styles from './WidgetContainer.module.scss';
 import { WidgetIdContext } from './WidgetIdContext';
 import { WidgetDragToolbar } from '@ui/app/overlay/components/WidgetDragToolbar/WidgetDragToolbar';
@@ -64,14 +63,6 @@ export const WidgetContainer = observer(
       (!isOnTrack && isConnected && !dragMode && shouldHideInGarage) ||
       (!widgetAutoHide.isVisible(widgetId) && !dragMode);
 
-    const backgroundColor = withAlphaFactor(
-      widget?.userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)',
-      widget?.userSettings.backgroundOpacity ?? 1
-    );
-
-    const borderColor =
-      widget?.userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
-
     const x = widget?.userSettings.x ?? 100;
     const y = widget?.userSettings.y ?? 100;
 
@@ -89,12 +80,6 @@ export const WidgetContainer = observer(
     const widgetScale = scaleFromHeight
       ? height / designHeight
       : width / designWidth;
-    const fontScale = widget?.userSettings.fontScale ?? 1;
-
-    const background =
-      shouldHide || transparentContainer ? 'transparent' : backgroundColor;
-    const containerBorderColor =
-      shouldHide || transparentContainer ? 'transparent' : borderColor;
 
     const handleDragMouseDown = useCallback(
       (e: React.MouseEvent) => {
@@ -258,10 +243,16 @@ export const WidgetContainer = observer(
         ? ['e', 'w', 'ne', 'nw', 'se', 'sw']
         : ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
 
-    const borderRadius = widgetFrameBorderRadius(
+    const frameStyle = widgetFrameStyle({
       widgetId,
-      (widget?.userSettings ?? {}) as unknown as Record<string, unknown>
-    );
+      userSettings: widget?.userSettings ?? {},
+      widgetScale,
+      transparentContainer,
+      autoHeight,
+      hidden: shouldHide,
+    });
+
+    const borderRadius = frameStyle.borderRadius;
 
     return (
       <div
@@ -283,19 +274,7 @@ export const WidgetContainer = observer(
           <ErrorBoundary>
             <div
               className={`${styles.widgetInner} ${overflowVisible ? styles.overflowVisible : ''}`}
-              style={
-                {
-                  ...(autoHeight ? { height: 'auto' } : undefined),
-                  background,
-                  borderColor: containerBorderColor,
-                  borderWidth: transparentContainer ? 0 : undefined,
-                  borderRadius,
-                  ['--wfs']: widgetScale,
-                  ['--font-scale']: fontScale,
-                  ['--widget-bg']: backgroundColor,
-                  ['--widget-border']: borderColor,
-                } as React.CSSProperties
-              }
+              style={frameStyle}
             >
               <WidgetIdContext.Provider value={widgetId}>
                 {children}
