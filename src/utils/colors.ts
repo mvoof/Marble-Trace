@@ -80,3 +80,49 @@ export const playerRowStyle = (
         background: `linear-gradient(to bottom, ${playerRowColor}, transparent 2px), linear-gradient(to top, ${playerRowColor}, transparent 2px), ${playerRowColor}`,
       }
     : undefined;
+
+/**
+ * Scale the alpha channel of any CSS color by a 0..1 factor, so a panel's
+ * background can be faded without touching the text drawn on top of it.
+ * Unparseable colors (named colors, gradients) are returned untouched.
+ */
+export const withAlphaFactor = (color: string, factor: number): string => {
+  if (factor >= 1) return color;
+
+  if (color === 'transparent') return color;
+
+  const rgbaMatch = color
+    .trim()
+    .match(
+      /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)(?:[\s,/]+([\d.]+))?\s*\)$/i
+    );
+
+  if (rgbaMatch) {
+    const [, red, green, blue, alpha] = rgbaMatch;
+    const scaled = (alpha === undefined ? 1 : Number(alpha)) * factor;
+
+    return `rgba(${red}, ${green}, ${blue}, ${scaled.toFixed(3)})`;
+  }
+
+  const hex = color.trim().match(/^#([0-9a-f]{3,8})$/i);
+
+  if (hex) {
+    const digits = hex[1];
+    const isShort = digits.length <= 4;
+
+    const channel = (index: number): number => {
+      const raw = isShort
+        ? digits[index]!.repeat(2)
+        : digits.slice(index * 2, index * 2 + 2);
+
+      return parseInt(raw, 16);
+    };
+
+    const hasAlpha = digits.length === 4 || digits.length === 8;
+    const alpha = hasAlpha ? channel(3) / 255 : 1;
+
+    return `rgba(${channel(0)}, ${channel(1)}, ${channel(2)}, ${(alpha * factor).toFixed(3)})`;
+  }
+
+  return color;
+};

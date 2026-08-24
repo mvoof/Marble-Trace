@@ -27,6 +27,16 @@ pub struct NearbyCar {
     pub lateral_side: LateralSide,
     /// Absolute longitudinal distance in meters
     pub clearance: f32,
+    /// Longitudinal distance from bumper to bumper, in meters: `clearance`
+    /// less one car length, floored at zero. Signed like `longitudinal_dist`.
+    ///
+    /// This is the number a driver means by "how far is he" — two cars nose to
+    /// tail read `0` here and a car length apart in `clearance`. One car length
+    /// serves for every car on track, so in a multiclass field it is an
+    /// estimate; the reference point iRacing reports is not exactly the centre
+    /// of the body either. Both are far closer to the truth than centre to
+    /// centre.
+    pub bumper_dist: f32,
 }
 
 #[cfg_attr(feature = "dev", derive(specta::Type))]
@@ -232,6 +242,7 @@ pub fn compute(
                 longitudinal_dist: lon_dist,
                 lateral_side,
                 clearance,
+                bumper_dist: (clearance - car_length_m).max(0.0) * lon_dist.signum(),
             }
         })
         .collect();

@@ -61,24 +61,6 @@ export const RadarSettingsPanel = observer(
                 }}
               />
             </Col>
-
-            <Col span={8}>
-              <span className={styles.fieldLabel}>
-                {t('settingsPanels.radar.carLength')}
-              </span>
-              <InputNumber
-                style={{ width: '100%' }}
-                value={settings.carLength}
-                min={1}
-                max={10}
-                step={0.1}
-                onChange={(v) => {
-                  if (v !== null) {
-                    update({ carLength: v });
-                  }
-                }}
-              />
-            </Col>
           </Row>
 
           <Row gutter={24} className={styles.fieldGroup}>

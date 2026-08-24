@@ -124,6 +124,7 @@ pub fn proximity(frame: &mut ProximityFrame) {
     for car in frame.nearby_cars.iter_mut() {
         car.longitudinal_dist = round(car.longitudinal_dist, DISTANCE_DP);
         car.clearance = round(car.clearance, DISTANCE_DP);
+        car.bumper_dist = round(car.bumper_dist, DISTANCE_DP);
     }
 
     frame.radar_distances.front_dist = round(frame.radar_distances.front_dist, DISTANCE_DP);

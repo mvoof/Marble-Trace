@@ -2,12 +2,12 @@ import { useEffect, useLayoutEffect, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { RootStore } from '@store/root-store';
-import { RootStoreContext } from '@store/root-store-context';
+import { RootStoreContext, useUnitsStore } from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetSettings/WidgetEditorContext';
 import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
-import { widgetFrameBorderRadius } from '@ui/app/widget-frame';
+import { widgetFrameStyle } from '@ui/app/widget-frame';
 import {
   seedScenario,
   DEFAULT_PREVIEW_SCENARIO_ID,
@@ -29,6 +29,7 @@ export const WidgetPreview = observer(
     scenarioId = DEFAULT_PREVIEW_SCENARIO_ID,
   }: WidgetPreviewProps) => {
     const editor = useWidgetEditor();
+    const units = useUnitsStore();
     const { t } = useTranslation('main-app');
 
     const previewStore = useMemo(() => new RootStore({ skipInit: true }), []);
@@ -42,6 +43,13 @@ export const WidgetPreview = observer(
     useEffect(() => {
       seedInputHistory(previewStore);
     }, [previewStore, scenarioId]);
+
+    // The preview store is its own world, units included — without this it
+    // stays metric while the app is set to imperial, and every distance in the
+    // preview contradicts the widget on the overlay.
+    useLayoutEffect(() => {
+      previewStore.units.setSystem(units.unitSystem);
+    }, [previewStore, units.unitSystem]);
 
     const widget = editor.getWidget(widgetId);
 
@@ -75,18 +83,13 @@ export const WidgetPreview = observer(
 
     const { userSettings, designWidth, autoHeight, overflowVisible } = widget;
     const widgetScale = userSettings.currentWidth / designWidth;
-    const fontScale = userSettings.fontScale ?? 1;
-    const backgroundColor =
-      userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)';
-    const borderColor = userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
-    const background = widget.transparentContainer
-      ? 'transparent'
-      : backgroundColor;
-
-    const frameBorderRadius = widgetFrameBorderRadius(
+    const frameStyle = widgetFrameStyle({
       widgetId,
-      userSettings as unknown as Record<string, unknown>
-    );
+      userSettings,
+      widgetScale,
+      transparentContainer: widget.transparentContainer,
+      autoHeight,
+    });
 
     return (
       <RootStoreContext.Provider value={previewStore}>
@@ -95,22 +98,11 @@ export const WidgetPreview = observer(
             className={`${styles.widgetInner} ${
               overflowVisible ? styles.overflowVisible : ''
             }`}
-            style={
-              {
-                width: userSettings.currentWidth,
-                height: autoHeight ? 'auto' : userSettings.currentHeight,
-                background,
-                borderColor: widget.transparentContainer
-                  ? 'transparent'
-                  : borderColor,
-                borderWidth: widget.transparentContainer ? 0 : undefined,
-                borderRadius: frameBorderRadius,
-                ['--wfs']: widgetScale,
-                ['--font-scale']: fontScale,
-                ['--widget-bg']: backgroundColor,
-                ['--widget-border']: borderColor,
-              } as React.CSSProperties
-            }
+            style={{
+              width: userSettings.currentWidth,
+              height: autoHeight ? 'auto' : userSettings.currentHeight,
+              ...frameStyle,
+            }}
           >
             <ErrorBoundary>
               <WidgetIdContext.Provider value={widgetId}>

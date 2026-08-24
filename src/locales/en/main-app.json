@@ -202,6 +202,8 @@
     "fontScaleDesc": "Scales only the text, independent of widget width/height",
     "aesthetics": "Background & border",
     "background": "Background",
+    "backgroundOpacity": "Background opacity",
+    "backgroundOpacityDesc": "Fades the panel background only — text and graphics stay fully visible",
     "border": "Border"
   },
   "settingsPage": {
@@ -252,6 +254,11 @@
       "title": "Steering Wheel",
       "rangeTitle": "Steering Lock",
       "rangeDesc": "Physical range of your wheel: {{full}}° (±{{half}}°). Shared by every widget that shows steering."
+    },
+    "carLength": {
+      "title": "Car",
+      "valueTitle": "Car length",
+      "valueDesc": "The length of a car in meters. Turns the distance between car centres into the gap between bumpers, so cars nose to tail read zero. Shared by the radars and Close Battle."
     },
     "applicationUpdates": {
       "title": "Application Updates",
@@ -402,6 +409,7 @@
         "overlay": "Overlay",
         "controls": "Controls",
         "data": "Data",
+        "chat": "Chat",
         "maintenance": "Maintenance",
         "remote": "Remote"
       },
@@ -413,6 +421,7 @@
         "bindings": "Input bindings",
         "devices": "Devices",
         "trackMap": "Track data",
+        "sharedValues": "Shared values",
         "streamChat": "Stream chat",
         "maintenance": "Reset & diagnostics",
         "telemetryInspector": "Telemetry inspector",

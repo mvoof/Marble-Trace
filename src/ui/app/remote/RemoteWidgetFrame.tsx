@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import type { ReactNode } from 'react';
 
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
-import { widgetFrameBorderRadius } from '@ui/app/widget-frame';
+import { widgetFrameStyle } from '@ui/app/widget-frame';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 import styles from './RemoteWidgetFrame.module.scss';
 import { useWidgetSettingsStore } from '@store/root-store-context';
@@ -41,18 +41,13 @@ export const RemoteWidgetFrame = observer(
       ? height / widget.designHeight
       : width / widget.designWidth;
 
-    const background = transparentContainer
-      ? 'transparent'
-      : userSettings.backgroundColor;
-
-    const borderColor = transparentContainer
-      ? 'transparent'
-      : userSettings.borderColor;
-
-    const borderRadius = widgetFrameBorderRadius(
+    const frameStyle = widgetFrameStyle({
       widgetId,
-      userSettings as unknown as Record<string, unknown>
-    );
+      userSettings,
+      widgetScale,
+      transparentContainer,
+      autoHeight,
+    });
 
     return (
       <div
@@ -68,19 +63,7 @@ export const RemoteWidgetFrame = observer(
         <ErrorBoundary>
           <div
             className={`${styles.inner} ${widget.overflowVisible ? styles.overflowVisible : ''}`}
-            style={
-              {
-                ...(autoHeight ? { height: 'auto' } : undefined),
-                background,
-                borderColor,
-                borderWidth: transparentContainer ? 0 : undefined,
-                borderRadius,
-                ['--wfs']: widgetScale,
-                ['--font-scale']: userSettings.fontScale,
-                ['--widget-bg']: userSettings.backgroundColor,
-                ['--widget-border']: userSettings.borderColor,
-              } as React.CSSProperties
-            }
+            style={frameStyle}
           >
             <WidgetIdContext.Provider value={widgetId}>
               {children}

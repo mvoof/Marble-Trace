@@ -7,6 +7,7 @@ import { Card, PanelWidgetProvider } from './panels/Card';
 import { RpmLightsSettingsPanel } from './panels/RpmLightsSettingsPanel';
 import { InputTraceSettingsPanel } from './panels/InputTraceSettingsPanel';
 import { RadarSettingsPanel } from './panels/RadarSettingsPanel';
+import { CloseBattleSettingsPanel } from './panels/CloseBattleSettingsPanel';
 import { StandingsSettingsPanel } from './panels/StandingsSettingsPanel';
 import { RelativeSettingsPanel } from './panels/RelativeSettingsPanel';
 import { LinearMapSettingsPanel } from './panels/LinearMapSettingsPanel';
@@ -222,6 +223,32 @@ export const WidgetSettings = observer(
                     </div>
                   </div>
                 </Col>
+
+                <Col span={24}>
+                  <div className={styles.sectionDivider} />
+                  <span className={styles.fieldLabel}>
+                    {t('widgetSettings.backgroundOpacity')}
+                  </span>
+                  <Slider
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={userSettings.backgroundOpacity ?? 1}
+                    tooltip={{
+                      formatter: (value) =>
+                        `${Math.round((value ?? 1) * 100)}%`,
+                    }}
+                    onChangeComplete={() => widgetSettings.pushUndo?.()}
+                    onChange={(v) => {
+                      widgetSettings.updateUserSettings(widgetId, {
+                        backgroundOpacity: v,
+                      });
+                    }}
+                  />
+                  <div className={styles.fieldDesc}>
+                    {t('widgetSettings.backgroundOpacityDesc')}
+                  </div>
+                </Col>
               </Row>
             </Card>
           )}
@@ -231,6 +258,7 @@ export const WidgetSettings = observer(
           {(widgetId === 'proximity-radar' || widgetId === 'radar-bar') && (
             <RadarSettingsPanel widgetId={widgetId} />
           )}
+          {widgetId === 'close-battle' && <CloseBattleSettingsPanel />}
           {widgetId === 'standings' && <StandingsSettingsPanel />}
           {widgetId === 'relative' && <RelativeSettingsPanel />}
           {widgetId === 'relative-map' && <LinearMapSettingsPanel />}

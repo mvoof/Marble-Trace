@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
 import type { MonitorBounds } from '@/types/widget-settings';
-import { widgetFrameBorderRadius } from '@ui/app/widget-frame';
+import { widgetFrameStyle } from '@ui/app/widget-frame';
 import styles from './LayoutCanvas.module.scss';
 
 type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
@@ -110,21 +110,15 @@ export const LayoutCanvasWidget = observer(
       ? height / designHeight
       : width / designWidth;
 
-    const fontScale = widget?.userSettings.fontScale ?? 1;
-
-    const backgroundColor =
-      widget?.userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)';
-    const borderColor =
-      widget?.userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)';
-    const background = transparentContainer ? 'transparent' : backgroundColor;
-    const containerBorderColor = transparentContainer
-      ? 'transparent'
-      : borderColor;
-
-    const frameBorderRadius = widgetFrameBorderRadius(
+    const frameStyle = widgetFrameStyle({
       widgetId,
-      (widget?.userSettings ?? {}) as unknown as Record<string, unknown>
-    );
+      userSettings: widget?.userSettings ?? {},
+      widgetScale,
+      transparentContainer,
+      autoHeight,
+    });
+
+    const frameBorderRadius = frameStyle.borderRadius;
 
     const handleDragMouseDown = useCallback(
       (event: React.MouseEvent) => {
@@ -393,19 +387,7 @@ export const LayoutCanvasWidget = observer(
             className={`${styles.widgetInner} ${
               overflowVisible ? styles.overflowVisible : ''
             }`}
-            style={
-              {
-                ...(autoHeight ? { height: 'auto' } : undefined),
-                background,
-                borderColor: containerBorderColor,
-                borderWidth: transparentContainer ? 0 : undefined,
-                borderRadius: frameBorderRadius,
-                ['--wfs']: widgetScale,
-                ['--font-scale']: fontScale,
-                ['--widget-bg']: backgroundColor,
-                ['--widget-border']: borderColor,
-              } as React.CSSProperties
-            }
+            style={frameStyle}
           >
             {children}
           </div>

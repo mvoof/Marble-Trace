@@ -6,6 +6,24 @@ import type {
 } from '@/types/bindings';
 import { parseClassColor } from '@utils/colors';
 
+/**
+ * Badges for the classes in the recorded snapshot.
+ *
+ * In the app the badge is resolved in Rust (`sources/iracing/car_classes.rs`)
+ * before the frontend ever sees an entry. The preview has no backend, and the
+ * snapshot stores the raw session — every car's `CarClassShortName` is empty,
+ * so without this the preview shows car names ("BMW M2 Racing (G87)") in a
+ * column the app fills with "M2". Fixture data, not a second resolver: it only
+ * covers the class ids this snapshot holds.
+ */
+const PREVIEW_CLASS_BADGES: Record<number, string> = {
+  74: 'MX-5',
+  3002: 'FVee',
+  4012: 'GR86',
+  4102: 'M2',
+  4109: 'GT3',
+};
+
 export const computeDriverEntries = (
   carIdx: CarIdxFrame | null,
   sessionInfo: SessionSnapshot | null
@@ -27,7 +45,8 @@ export const computeDriverEntries = (
       userName: car.userName,
       carNumber: car.carNumber || String(idx),
       carClassId: car.carClassId,
-      carClassShortName: car.carScreenNameShort,
+      carClassShortName:
+        PREVIEW_CLASS_BADGES[car.carClassId] ?? car.carScreenNameShort,
       carClassColor: parseClassColor(car.carClassColor),
       carScreenName: car.carScreenName,
       carScreenNameShort: car.carScreenNameShort,

@@ -48,7 +48,7 @@ Every widget is independently positioned, resized, and styled — drag it anywhe
 
 - **Driving HUD** — [Race Dash](#race-dash) · [RPM Lights](#rpm-lights) · [Engine Panel](#engine-panel) · [Input Trace](#input-trace) · [G-Meter](#g-meter) · [Coach](#coach)
 - **Timing & Standings** — [Standings](#standings) · [Relative](#relative) · [Relative Map](#relative-map) · [Delta HUD](#delta-hud) · [Sector Matrix](#sector-matrix) · [Lap Log](#lap-log) · [Timer](#timer)
-- **Awareness** — [Track Map](#track-map) · [Proximity Radar](#proximity-radar) · [Radar Bar](#radar-bar) · [Flags (LED/Flat)](#flags-led--flat)
+- **Awareness** — [Track Map](#track-map) · [Proximity Radar](#proximity-radar) · [Radar Bar](#radar-bar) · [Close Battle](#close-battle) · [Flags (LED/Flat)](#flags-led--flat)
 - **Car & Session** — [Pit Service](#pit-service) · [Fuel](#fuel) · [Weather](#weather)
 - **Streaming** — [Stream Chat](#stream-chat)
 
@@ -188,6 +188,16 @@ Circular radar centred on your car with a configurable render range, bumper-to-b
 Full-width edge indicators for side-by-side situations — a quick-glance signal for cars in your blind spot.
 
 ![Radar Bar](docs/assets/screenshots/widgets/radar-bar.png)
+
+---
+
+### Close Battle
+
+The cars actually fighting you, drawn on a vertical distance axis instead of a list: ahead goes up, behind goes down, and the plate sits where the car is. It appears on its own — set it off by a gap in seconds or a real distance, and the axis then scales itself to that threshold, in metres or feet to match your unit setting.
+
+Each plate carries the car number, the class on its livery panel, the driver, the distance and the gap; cars landing on the same spot share one plate that names both of them rather than shoving each other aside. Plates shrink with distance, and the road glows red behind you or blue ahead as a car closes in.
+
+![Close Battle](docs/assets/screenshots/widgets/close-battle.png)
 
 ---
 

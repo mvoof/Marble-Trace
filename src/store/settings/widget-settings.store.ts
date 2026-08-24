@@ -2,7 +2,6 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { mergeWithDefaults } from '@store/deep-merge';
 import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-catalog';
 import {
-  setCarLengthSilent,
   setFuelAvgWindowSilent,
   setPitWarningLapsSilent,
 } from '@platform/services/settings.service';
@@ -21,7 +20,6 @@ import type {
   StandingsWidgetSettings,
   WidgetSpecificSettings,
   WidgetUserSettings,
-  RadarSettings,
   SessionContext,
 } from '@/types/widget-settings';
 import { emitLayoutActivated } from '@platform/services/events.service';
@@ -321,16 +319,6 @@ export class WidgetSettingsStore {
         setPitWarningLapsSilent(settings.pitWarningLaps);
         setFuelAvgWindowSilent(settings.fuelAvgWindow);
       }
-
-      const radar =
-        this.widgets.get('proximity-radar') ?? this.widgets.get('radar-bar');
-
-      if (radar) {
-        const settings = radar.userSettings as unknown as RadarSettings;
-        const carLength = settings.carLength ?? 4.4;
-
-        setCarLengthSilent(carLength);
-      }
     });
   }
 
@@ -471,28 +459,6 @@ export class WidgetSettingsStore {
       setFuelAvgWindowSilent(
         (resolvedPartial as FuelWidgetSettings).fuelAvgWindow
       );
-    }
-
-    if (
-      (id === 'proximity-radar' || id === 'radar-bar') &&
-      'carLength' in resolvedPartial &&
-      resolvedPartial.carLength !== undefined
-    ) {
-      const otherId =
-        id === 'proximity-radar' ? 'radar-bar' : 'proximity-radar';
-
-      const otherWidget = this.getWidget(otherId);
-
-      if (otherWidget) {
-        const otherSettings =
-          otherWidget.userSettings as unknown as RadarSettings;
-
-        if (otherSettings.carLength !== resolvedPartial.carLength) {
-          otherSettings.carLength = resolvedPartial.carLength;
-        }
-      }
-
-      setCarLengthSilent(resolvedPartial.carLength);
     }
   }
 

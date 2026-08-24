@@ -1,0 +1,350 @@
+// Position is a transform on a stage-height layer, so its percent is a percent
+// of the stage — and a transform is composited, which is what lets the 10 Hz
+// proximity frame be smoothed into continuous motion by a transition instead of
+// a per-frame JS animation.
+$plate-move-duration: 140ms;
+
+.slot {
+  position: absolute;
+  z-index: calc(100 - var(--stack-index, 0));
+  inset: 0;
+  pointer-events: none;
+  will-change: transform;
+  transition: transform $plate-move-duration linear;
+}
+
+.plate {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  // A deck, not a list: cars sharing one spot on the axis are stacked under the
+  // nearest of them and only their bottom edge shows, because the axis claims a
+  // single position for all of them and three full plates would claim three.
+  //
+  // Right to left: the shift is applied first and therefore scaled with the
+  // plate, so a deck of shrunken plates keeps its spacing proportional instead
+  // of tearing open as they get smaller.
+  transform: translateY(-50%) scale(var(--plate-scale, 1))
+    translateY(calc(var(--stack-index, 0) * #{ws(9)}));
+  transition: transform $plate-move-duration ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot,
+  .plate {
+    transition: none;
+  }
+}
+
+// A grid, not a flex row: every column has a width of its own and keeps it even
+// when what belongs in it is switched off, so nothing after a hidden distance
+// slides left. A plate whose columns resize with their content dances on every
+// tick, and a number that moves is a number you have to find again.
+//
+// Each child names its own column, which is what lets an optional one simply
+// not be rendered.
+.row {
+  display: grid;
+  // The optional columns keep their place in the template and lose their width
+  // instead of leaving it: a template that gains and drops columns re-lays the
+  // whole row, and every number in it lands somewhere new.
+  grid-template-columns:
+    [number-col] minmax(3ch, auto) [class-col] var(--class-col, 8ch)
+    [brand-col] var(--brand-col, 0ch) [name-col] minmax(0, 1fr)
+    [distance-col] 5ch [lap-col] var(--lap-col, 0ch) [gap-col] 7ch;
+  align-items: center;
+
+  // No gap before the class block: the number and the class are one unit at the
+  // left of the plate, separated by a shadow rather than by air.
+  column-gap: 0;
+  height: ws(40);
+  padding-right: sp(lg);
+  border-radius: radius(lg);
+  width: calc(100% - var(--stack-index, 0) * #{ws(26)});
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  background: linear-gradient(
+    180deg,
+    $widget-plate-top 0%,
+    $widget-plate-bottom 100%
+  );
+
+  // The lit top edge and the shadow the plate casts: without the first the
+  // gradient reads as a flat wash, without the second the plate sits in the
+  // track rather than over it.
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.08),
+    0 4px 10px rgba(0, 0, 0, 0.5);
+  font-family: $font-widget;
+  font-variant-numeric: tabular-nums;
+}
+
+// With the class badge switched off there is no class at all — not a chip, not
+// a stripe — so its column goes with it and the name takes the room back.
+.rowNoClass {
+  --class-col: 0ch;
+
+  // The zero column gap exists so the number and the class chip read as one
+  // unit; with no chip between them, the name needs the air back.
+  .identity {
+    padding-left: sp(md);
+  }
+}
+
+// The make sits with the identity rather than with the numbers: it answers
+// "what is he driving", the same question the number and the class answer, and
+// from here it can never push the gap around.
+.rowBrand {
+  --brand-col: 6ch;
+}
+
+// Three letters of the make, and they must not read as the first word of the
+// driver's name. The plate already speaks in blocks — the number is a recessed
+// tab, the class a lit slab — so the make takes the third shape rather than a
+// third shade of the same text: a chip cut into the plate, plainly an object.
+// That is cheaper for the eye than any color would be, because an object is
+// skipped whole when it is not what you came to read.
+.brand {
+  display: flex;
+  grid-column: brand-col;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  margin-right: sp(sm);
+  padding: ws(2) 0;
+  border-radius: radius(md);
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 700;
+  color: $widget-text-secondary;
+}
+
+// Laps only cost width in a race that has them. The decision is the widget's,
+// so every plate opens the column at the same moment and the numbers to the
+// right of it stay on one line down the deck.
+.rowLaps {
+  --lap-col: 3.5ch;
+}
+
+// The class block is a solid slab of the class color spanning the plate's full
+// height, cut diagonally on its trailing edge — a livery panel rather than a
+// label, which is what lets it be read from the corner of the eye.
+//
+// The badge is always black. The sim's class colors are picked to be bright
+// enough to tell apart on a track map, so black holds on every one of them, and
+// a label that switched to white on the darker classes would make the column
+// flicker between two looks for no gain.
+//
+// The box is fixed at the width of the badges that matter ("GT3", "LMP2",
+// "FF1600") so the name behind it never shifts — in a single-model class the
+// sim can put a whole car name here, and it is cut rather than let it push the
+// row around.
+.classSlab {
+  display: flex;
+  grid-column: class-col;
+  align-self: stretch;
+  margin-right: sp(md);
+}
+
+.className {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 sp(sm);
+
+  // The slab is lit like the plate it sits in — the same fall from a raised top
+  // edge to a shaded floor, laid over the class color rather than mixed into
+  // it, so every class keeps its own hue and none of them reads as flat paint.
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(0, 0, 0, 0.32) 100%
+  );
+  border-right: 1px solid rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  color: #111111;
+  text-transform: uppercase;
+  font-size: fs(sm);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.classLabel {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+// The number opens the plate: recessed into the surface at the far left and
+// rounded with the plate's own corner, so it and the class block read as the
+// two halves of one identity tab rather than as two floating chips. A third
+// smaller than the name beside it — read at a glance, never mistaken for the
+// thing the eye is meant to land on first.
+.carNumber {
+  display: flex;
+  grid-column: number-col;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  min-width: 5ch;
+  padding: 0 sp(md);
+  border-right: 1px solid rgba(0, 0, 0, 0.6);
+  border-radius: radius(lg) 0 0 radius(lg);
+  background: linear-gradient(
+    180deg,
+    $widget-plate-tab-top 0%,
+    $widget-plate-tab-bottom 100%
+  );
+
+  // The tab's own trailing highlight, so the seam with the class block is a
+  // lit edge rather than a line drawn on it.
+  box-shadow: inset -1px 0 1px rgba(255, 255, 255, 0.1);
+  font-size: fs(md);
+  font-weight: 700;
+  color: $widget-text-primary;
+}
+
+// The driver and whoever shares the plate with them: the one column with no
+// fixed length, so it takes every pixel the fixed ones leave. The name starts
+// at its left edge — a name that centres itself moves with its own length, and
+// the eye then has to find it again on every plate. That is also what pins the distance and the gap to the right edge
+// — they are pushed there by this column rather than trailing the name.
+.identity {
+  display: flex;
+  grid-column: name-col;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-start;
+  gap: sp(sm);
+  overflow: hidden;
+}
+
+// At speed the eye catches the surname and skips the rest, so the two carry
+// different weights instead of competing.
+.name {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: fs(lg);
+}
+
+.givenName {
+  font-weight: 500;
+  color: $widget-text-secondary;
+}
+
+.surname {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: $widget-text-primary;
+}
+
+// Meters answer "will he reach me in this corner", but the gap is what the eye
+// lands on first — so the distance stays white and legible at a smaller size
+// rather than competing with the number beside it.
+//
+// Two slots rather than one string: the unit holds its own place and the digits
+// grow leftwards into theirs, so "9 m" becoming "10 m" moves one digit instead
+// of sliding the whole reading sideways.
+.distance {
+  display: flex;
+  grid-column: distance-col;
+  align-items: baseline;
+  gap: sp(xxs);
+
+  // The row has no column gap, so the two numbers would touch: the gap's sign
+  // needs air of its own or it reads as part of the distance.
+  margin-right: sp(sm);
+  white-space: nowrap;
+  font-size: fs(md);
+  font-weight: 500;
+  line-height: 1;
+  color: $widget-text-primary;
+}
+
+.distanceValue {
+  flex: 1 1 auto;
+  text-align: right;
+}
+
+.distanceUnit {
+  flex: 0 0 2ch;
+  text-align: left;
+  color: $widget-text-secondary;
+}
+
+// Whole laps between the two cars, never a signed number: which side of the lap
+// the car is on is what the axis is for, and a sign here would have to disagree
+// with the gap, where ahead reads negative.
+.laps {
+  grid-column: lap-col;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: right;
+  font-size: fs(md);
+  font-weight: 700;
+  line-height: 1;
+  color: $widget-text-secondary;
+}
+
+// Same signs and the same colors as the Relative widget: ahead is negative and
+// blue, behind is positive and red.
+.gap {
+  display: flex;
+  grid-column: gap-col;
+  align-items: baseline;
+  justify-content: flex-end;
+  white-space: nowrap;
+
+  // Monospaced rather than merely tabular: the gap is the one number that
+  // changes every tick, and it holds its width against the distance beside it.
+  font-family: $font-mono;
+  font-size: fs(lg);
+  font-weight: 700;
+  line-height: 1;
+}
+
+// The decimal point is pinned and the two halves grow away from it. Right
+// alignment alone would drag every digit left the moment the gap passes ten
+// seconds — the one number on the plate that changes every tick is the one that
+// must never move.
+.gapWhole {
+  flex: 1 1 auto;
+  text-align: right;
+}
+
+.gapPoint {
+  flex: 0 0 auto;
+}
+
+.gapFraction {
+  flex: 0 0 2ch;
+  text-align: left;
+}
+
+.gapAhead {
+  color: $widget-status-info;
+}
+
+.gapBehind {
+  color: $widget-status-danger;
+}

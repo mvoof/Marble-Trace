@@ -6,6 +6,7 @@ import type {
 import { INPUT_TRACE_MANIFEST } from '@ui/widgets/InputTraceWidget/manifest';
 import { PROXIMITY_RADAR_MANIFEST } from '@ui/widgets/ProximityRadarWidget/manifest';
 import { RADAR_BAR_MANIFEST } from '@ui/widgets/RadarBarWidget/manifest';
+import { CLOSE_BATTLE_MANIFEST } from '@ui/widgets/CloseBattleWidget/manifest';
 import { STANDINGS_MANIFEST } from '@ui/widgets/StandingsWidget/manifest';
 import { RELATIVE_MANIFEST } from '@ui/widgets/RelativeWidget/manifest';
 import { TRACK_MAP_MANIFEST } from '@ui/widgets/TrackMapWidget/manifest';
@@ -39,6 +40,7 @@ export const WIDGETS: WidgetManifest[] = [
   INPUT_TRACE_MANIFEST,
   PROXIMITY_RADAR_MANIFEST,
   RADAR_BAR_MANIFEST,
+  CLOSE_BATTLE_MANIFEST,
   STANDINGS_MANIFEST,
   RELATIVE_MANIFEST,
   TRACK_MAP_MANIFEST,

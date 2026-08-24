@@ -58,6 +58,9 @@ const applyFlags = (store: RootStore, overrides: Partial<RaceFlags>) => {
   syncFlagDisplay(store);
 };
 
+/** The shipped default; the preview has no backend to take a real one from. */
+const PREVIEW_CAR_LENGTH_M = 4.4;
+
 const buildNearbyCar = (
   carIdx: number,
   longitudinalDist: number,
@@ -67,6 +70,9 @@ const buildNearbyCar = (
   longitudinalDist,
   lateralSide,
   clearance: Math.abs(longitudinalDist),
+  bumperDist:
+    Math.max(0, Math.abs(longitudinalDist) - PREVIEW_CAR_LENGTH_M) *
+    Math.sign(longitudinalDist),
 });
 
 const applyProximity = (
@@ -335,6 +341,32 @@ export const PREVIEW_SCENARIOS: PreviewScenario[] = [
           rearDist: 5,
           leftDist: 1.2,
           rightDist: 1.6,
+        },
+      });
+    },
+  },
+  {
+    id: 'close-battle',
+    label: 'Close battle — ahead, behind, merged',
+    apply: (store) => {
+      seedSampleTelemetry(store);
+      // One plate ahead, one behind, and a pair close enough to share a third:
+      // the three shapes Close Battle can draw, in one frame. The recorded
+      // snapshot only ever holds whatever traffic happened to be around, so the
+      // merged pair in particular has to be forced. Cars beyond the widget's
+      // `maxRows` are dropped, nearest first — raise it to see all three.
+      applyProximity(store, {
+        nearbyCars: [
+          buildNearbyCar(3, -5.2, 'center'),
+          buildNearbyCar(7, 9.4, 'center'),
+          buildNearbyCar(12, -16, 'center'),
+          buildNearbyCar(19, -17.1, 'center'),
+        ],
+        radarDistances: {
+          frontDist: 9.4,
+          rearDist: 5.2,
+          leftDist: null,
+          rightDist: null,
         },
       });
     },

@@ -16,6 +16,7 @@ interface RadarBarProps {
 
 export const RadarBar = observer(({ side }: RadarBarProps) => {
   const units = useUnitsStore();
+  const appSettings = useAppSettingsStore();
   const { unitSystem: system } = units;
 
   const { dragMode } = useAppSettingsStore();
@@ -39,7 +40,7 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
     return <div className={styles.bar} />;
   }
 
-  const { carLength } = radarSettings;
+  const { carLength } = appSettings.appSettings;
   const topPercent = (100 * -rawDist) / carLength;
   const bottomPercent = (100 * (carLength - rawDist)) / carLength;
 

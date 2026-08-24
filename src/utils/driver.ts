@@ -51,6 +51,28 @@ export const abbreviateName = (fullName: string): string => {
   return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`;
 };
 
+/**
+ * Splits a driver name into the part the eye skips and the part it reads.
+ *
+ * At speed only the surname registers, so widgets set it apart — light given
+ * name, heavy surname. Everything before the last word counts as the given
+ * name; a single-word name is all surname.
+ */
+export const splitDriverName = (
+  fullName: string
+): { givenName: string; surname: string } => {
+  const parts = fullName.trim().split(/\s+/);
+
+  if (parts.length < 2) {
+    return { givenName: '', surname: fullName.trim() };
+  }
+
+  return {
+    givenName: parts.slice(0, -1).join(' '),
+    surname: parts[parts.length - 1],
+  };
+};
+
 export const formatCarNumber = (carNumber: string): string => {
   return carNumber.length === 1 && /^\d$/.test(carNumber)
     ? `0${carNumber}`

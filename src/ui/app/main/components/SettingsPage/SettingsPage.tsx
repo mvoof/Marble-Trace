@@ -10,6 +10,7 @@ import { UpdatesSection } from './sections/UpdatesSection';
 import { OverlaySection } from './sections/OverlaySection';
 import { InteractionSection } from './sections/InteractionSection';
 import { TrackMapSection } from './sections/TrackMapSection';
+import { SharedValuesSection } from './sections/SharedValuesSection';
 import { MaintenanceSection } from './sections/MaintenanceSection';
 import { TelemetryInspectorSection } from './sections/TelemetryInspectorSection/TelemetryInspectorSection';
 import { RemoteScreensSection } from './sections/RemoteScreensSection';
@@ -29,6 +30,7 @@ const SECTION_COMPONENTS: Record<SettingsSectionId, () => React.ReactElement> =
     bindings: BindingsSettings,
     devices: DevicesSettings,
     trackMap: TrackMapSection,
+    sharedValues: SharedValuesSection,
     streamChat: StreamChatSourceCard,
     remoteScreens: RemoteScreensSection,
     maintenance: MaintenanceSection,

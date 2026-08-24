@@ -27,6 +27,7 @@ export const useFlagsStore = () => useStore().flags;
 export const usePaceCarStore = () => useStore().paceCar;
 
 export const useRadarWidgetStore = () => useStore().radar;
+export const useCloseBattleWidgetStore = () => useStore().closeBattleWidget;
 export const useStandingsWidgetStore = () => useStore().standingsWidget;
 export const usePitServiceWidgetStore = () => useStore().pitServiceWidget;
 export const useTrackMapWidgetStore = () => useStore().trackMapWidget;

@@ -202,6 +202,8 @@
     "fontScaleDesc": "Escala solo el texto, independientemente del ancho y el alto del widget",
     "aesthetics": "Fondo y borde",
     "background": "Fondo",
+    "backgroundOpacity": "Opacidad del fondo",
+    "backgroundOpacityDesc": "Atenúa solo el fondo del panel: el texto y los gráficos siguen visibles",
     "border": "Borde"
   },
   "settingsPage": {
@@ -252,6 +254,11 @@
       "title": "Volante",
       "rangeTitle": "Recorrido del volante",
       "rangeDesc": "Recorrido físico de tu volante: {{full}}° (±{{half}}°). Lo comparten todos los widgets que muestran la dirección."
+    },
+    "carLength": {
+      "title": "Coche",
+      "valueTitle": "Longitud del coche",
+      "valueDesc": "La longitud de un coche en metros. Convierte la distancia entre centros en el hueco entre parachoques, así los coches pegados marcan cero. Compartida por los radares y Close Battle."
     },
     "applicationUpdates": {
       "title": "Actualizaciones de la aplicación",
@@ -402,6 +409,7 @@
         "overlay": "Superposición",
         "controls": "Controles",
         "data": "Datos",
+        "chat": "Chat",
         "maintenance": "Mantenimiento",
         "remote": "Remoto"
       },
@@ -413,6 +421,7 @@
         "bindings": "Asignaciones de control",
         "devices": "Dispositivos",
         "trackMap": "Datos del circuito",
+        "sharedValues": "Valores compartidos",
         "streamChat": "Chat del directo",
         "maintenance": "Restablecer y diagnóstico",
         "telemetryInspector": "Inspector de telemetría",
