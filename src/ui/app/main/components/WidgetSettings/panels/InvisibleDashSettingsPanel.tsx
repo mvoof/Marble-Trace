@@ -23,7 +23,7 @@ const PERCENT_MAX = 100;
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['invisible-dash'];
 
-const { SwitchRow, ColorRow } = panelRows<InvisibleDashWidgetSettings>();
+const { ColorRow, SwitchRow } = panelRows<InvisibleDashWidgetSettings>();
 
 export const InvisibleDashSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -105,15 +105,12 @@ export const InvisibleDashSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <ColorRow
+            settingKey="textColor"
             title={t('settingsPanels.invisibleDash.textColor')}
             desc={t('settingsPanels.invisibleDash.textColorDesc')}
-          >
-            <ColorPicker
-              value={settings.textColor}
-              onChange={(color) => update({ textColor: color.toHexString() })}
-            />
-          </SettingRow>
+            hex
+          />
         </div>
 
         <div className={styles.fieldGroup}>

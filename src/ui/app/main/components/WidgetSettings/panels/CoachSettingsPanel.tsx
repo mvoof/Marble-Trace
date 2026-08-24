@@ -1,13 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, InputNumber, Segmented } from 'antd';
+import { InputNumber, Segmented } from 'antd';
 
 import type {
   CoachTraceChannel,
   CoachWidgetSettings,
 } from '@/types/widget-settings';
 import { Card } from './Card';
-import { SettingRow } from './SettingRow';
 
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { useWidgetEditor } from '../WidgetEditorContext';
@@ -21,7 +20,7 @@ const DEFAULT_WINDOW_METERS = 150;
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['coach'];
 
-const { SwitchRow } = panelRows<CoachWidgetSettings>();
+const { ColorRow, SwitchRow } = panelRows<CoachWidgetSettings>();
 
 export const CoachSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -66,31 +65,21 @@ export const CoachSettingsPanel = observer(() => {
             </div>
 
             <div className={styles.fieldGroup}>
-              <SettingRow
+              <ColorRow
+                settingKey="brakeColor"
                 title={t('settingsPanels.coach.brakeAccent')}
                 desc={t('settingsPanels.coach.brakeAccentDesc')}
-              >
-                <ColorPicker
-                  value={settings.brakeColor}
-                  onChange={(color) =>
-                    update({ brakeColor: color.toHexString() })
-                  }
-                />
-              </SettingRow>
+                hex
+              />
             </div>
 
             <div className={styles.fieldGroup}>
-              <SettingRow
+              <ColorRow
+                settingKey="gasColor"
                 title={t('settingsPanels.coach.gasAccent')}
                 desc={t('settingsPanels.coach.gasAccentDesc')}
-              >
-                <ColorPicker
-                  value={settings.gasColor}
-                  onChange={(color) =>
-                    update({ gasColor: color.toHexString() })
-                  }
-                />
-              </SettingRow>
+                hex
+              />
             </div>
           </>
         )}
@@ -179,45 +168,30 @@ export const CoachSettingsPanel = observer(() => {
             </div>
 
             <div className={styles.fieldGroup}>
-              <SettingRow
+              <ColorRow
+                settingKey="referenceColor"
                 title={t('settingsPanels.coach.referenceColor')}
                 desc={t('settingsPanels.coach.referenceColorDesc')}
-              >
-                <ColorPicker
-                  value={settings.referenceColor}
-                  onChange={(color) =>
-                    update({ referenceColor: color.toHexString() })
-                  }
-                />
-              </SettingRow>
+                hex
+              />
             </div>
 
             <div className={styles.fieldGroup}>
-              <SettingRow
+              <ColorRow
+                settingKey="gainColor"
                 title={t('settingsPanels.coach.gainColor')}
                 desc={t('settingsPanels.coach.gainColorDesc')}
-              >
-                <ColorPicker
-                  value={settings.gainColor}
-                  onChange={(color) =>
-                    update({ gainColor: color.toHexString() })
-                  }
-                />
-              </SettingRow>
+                hex
+              />
             </div>
 
             <div className={styles.fieldGroup}>
-              <SettingRow
+              <ColorRow
+                settingKey="lossColor"
                 title={t('settingsPanels.coach.lossColor')}
                 desc={t('settingsPanels.coach.lossColorDesc')}
-              >
-                <ColorPicker
-                  value={settings.lossColor}
-                  onChange={(color) =>
-                    update({ lossColor: color.toHexString() })
-                  }
-                />
-              </SettingRow>
+                hex
+              />
             </div>
           </>
         )}

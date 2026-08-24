@@ -21,8 +21,12 @@ import { useWidgetEditor } from '../WidgetEditorContext';
  * `settingKey` restricted to the keys of that widget's settings which actually
  * hold the right type.
  */
+// NonNullable so an optional setting (`animate?: boolean`) still counts as a
+// boolean key — a row falls back to `fallback` while it is unset.
 type KeysOfType<Settings, Value> = {
-  [Key in keyof Settings]-?: Settings[Key] extends Value ? Key : never;
+  [Key in keyof Settings]-?: NonNullable<Settings[Key]> extends Value
+    ? Key
+    : never;
 }[keyof Settings];
 
 interface RowProps {
@@ -31,6 +35,10 @@ interface RowProps {
   desc?: string;
   disabled?: boolean;
   style?: CSSProperties;
+  /** What the row shows while the setting itself is undefined. */
+  fallback?: boolean | string;
+  /** Colors: write `#rrggbb` instead of `rgba(...)`. */
+  hex?: boolean;
 }
 
 const useBoundSetting = (settingKey: string) => {
@@ -52,13 +60,13 @@ const useBoundSetting = (settingKey: string) => {
 };
 
 const SwitchSettingRow = observer(
-  ({ settingKey, title, desc, disabled, style }: RowProps) => {
+  ({ settingKey, title, desc, disabled, style, fallback }: RowProps) => {
     const { value, write } = useBoundSetting(settingKey);
 
     return (
       <SettingRow title={title} desc={desc} style={style}>
         <Switch
-          checked={value === true}
+          checked={value === undefined ? fallback === true : value === true}
           disabled={disabled}
           onChange={(next) => write(next)}
         />
@@ -68,15 +76,17 @@ const SwitchSettingRow = observer(
 );
 
 const ColorSettingRow = observer(
-  ({ settingKey, title, desc, disabled, style }: RowProps) => {
+  ({ settingKey, title, desc, disabled, style, fallback, hex }: RowProps) => {
     const { value, write } = useBoundSetting(settingKey);
 
     return (
       <SettingRow title={title} desc={desc} style={style}>
         <ColorPicker
-          value={value as string}
+          value={(value ?? fallback) as string}
           disabled={disabled}
-          onChange={(color) => write(color.toRgbString())}
+          onChange={(color) =>
+            write(hex ? color.toHexString() : color.toRgbString())
+          }
         />
       </SettingRow>
     );

@@ -8,7 +8,6 @@ import type {
   RpmIndicatorMode,
 } from '@/types/widget-settings';
 import { Card } from './Card';
-import { SettingRow } from './SettingRow';
 
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { useUnitsStore } from '@store/root-store-context';
@@ -18,7 +17,7 @@ import { panelRows } from './setting-rows';
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['race-dash'];
 
-const { SwitchRow } = panelRows<RaceDashWidgetSettings>();
+const { ColorRow, SwitchRow } = panelRows<RaceDashWidgetSettings>();
 
 export const RaceDashSettingsPanel = observer(() => {
   const units = useUnitsStore();
@@ -151,17 +150,12 @@ export const RaceDashSettingsPanel = observer(() => {
 
         {settings.showSteeringMarker && (
           <div className={styles.fieldGroup}>
-            <SettingRow
+            <ColorRow
+              settingKey="steeringTrailColor"
               title={t('settingsPanels.raceDash.steeringTrail')}
               desc={t('settingsPanels.raceDash.steeringTrailDesc')}
-            >
-              <ColorPicker
-                value={settings.steeringTrailColor}
-                onChange={(color) =>
-                  update({ steeringTrailColor: color.toHexString() })
-                }
-              />
-            </SettingRow>
+              hex
+            />
           </div>
         )}
       </Card>

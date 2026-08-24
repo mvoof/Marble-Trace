@@ -14,7 +14,7 @@ import { panelRows } from './setting-rows';
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['relative'];
 
-const { SwitchRow, ColorRow } = panelRows<RelativeWidgetSettings>();
+const { ColorRow, SwitchRow } = panelRows<RelativeWidgetSettings>();
 
 export const RelativeSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -128,15 +128,12 @@ export const RelativeSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.trackMap.safetyCar')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="paceCarShowInPits"
             title={t('settingsPanels.trackMap.paceCarShowInPits')}
             desc={t('settingsPanels.trackMap.paceCarShowInPitsDesc')}
-          >
-            <Switch
-              checked={settings.paceCarShowInPits ?? false}
-              onChange={(v) => update({ paceCarShowInPits: v })}
-            />
-          </SettingRow>
+            fallback={false}
+          />
         </div>
       </Card>
     </>
