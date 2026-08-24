@@ -6,6 +6,7 @@ import {
 
 export const RACE_DASH_MANIFEST: WidgetManifest = {
   id: 'race-dash',
+  order: 220,
   telemetryEvents: ['carDynamics', 'driverEntries'],
   label: 'Race Dash',
   description:

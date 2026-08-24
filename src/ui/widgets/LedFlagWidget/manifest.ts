@@ -44,6 +44,7 @@ const resolveLedFlagsLayout: ResolveLayoutChange = (prev, next, current) => {
 
 export const LED_FLAGS_MANIFEST: WidgetManifest = {
   id: 'led-flags',
+  order: 90,
   label: 'LED Flags',
   description: 'LED matrix display of track flags.',
   resolveLayoutChange: resolveLedFlagsLayout,

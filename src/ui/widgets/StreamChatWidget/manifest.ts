@@ -6,6 +6,7 @@ import {
 
 export const STREAM_CHAT_MANIFEST: WidgetManifest = {
   id: 'stream-chat',
+  order: 140,
   label: 'Stream Chat',
   description: 'Twitch and YouTube live chat in one feed.',
   // No requiredCapabilities on purpose: chat is not sim data and stays

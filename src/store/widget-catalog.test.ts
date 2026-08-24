@@ -3,34 +3,29 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_WIDGETS, WIDGETS } from '@store/widget-catalog';
 import { TELEMETRY_EVENT_BITS } from '@/types/telemetry-events';
 
-// The catalog lists its manifests by hand rather than discovering them, because
-// the order it produces is the order widgets are written to settings.json. This
-// is the guard that makes the hand-written list safe: a manifest that exists on
-// disk but was never added is a widget that silently does not ship.
-describe('widget catalog completeness', () => {
-  it('lists every manifest that exists on disk', () => {
-    const found = import.meta.glob<{ [key: string]: unknown }>(
-      '../ui/widgets/*/manifest.ts',
-      { eager: true }
+// The catalog collects its manifests from disk, so nothing can be missing from
+// a list. What it can get wrong is the order — that is what the user sees in
+// the catalog and what reaches settings.json — and what it must not leak is the
+// ordering hint itself.
+describe('widget catalog collection', () => {
+  it('collects every manifest under a unique id', () => {
+    const ids = WIDGETS.map((manifest) => manifest.id);
+
+    expect(ids.length).toBeGreaterThan(0);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('orders the catalog by the order each manifest declares', () => {
+    const declared = WIDGETS.map(
+      (manifest) => manifest.order ?? Number.MAX_SAFE_INTEGER
     );
 
-    const onDisk = Object.values(found).flatMap((module) =>
-      Object.values(module)
-        .filter(
-          (exported): exported is { id: string } =>
-            typeof exported === 'object' &&
-            exported !== null &&
-            typeof (exported as { id?: unknown }).id === 'string'
-        )
-        .map((manifest) => manifest.id)
-    );
+    expect([...declared].sort((left, right) => left - right)).toEqual(declared);
+  });
 
-    const registered = new Set(WIDGETS.map((manifest) => manifest.id));
-
-    expect(onDisk.length).toBeGreaterThan(0);
-
-    for (const id of onDisk) {
-      expect(registered, `${id} is missing from WIDGETS`).toContain(id);
+  it('keeps the ordering hint out of the persisted defaults', () => {
+    for (const widget of DEFAULT_WIDGETS) {
+      expect(widget).not.toHaveProperty('order');
     }
   });
 });
