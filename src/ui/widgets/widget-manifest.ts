@@ -13,7 +13,6 @@ import type { ResolveLayoutChange } from '@/types/widget-settings';
 // entries can still override a value if a future widget needs to.
 export const COMMON_WIDGET_DEFAULTS = {
   opacity: 1,
-  backgroundOpacity: 1,
   fontScale: 1,
 };
 

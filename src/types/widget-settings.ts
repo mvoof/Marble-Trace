@@ -640,9 +640,6 @@ export interface BaseUserSettings {
   /** Multiplier applied to fs() font sizes only — independent of --wfs (width scale). */
   fontScale: number;
   backgroundColor: string;
-  /** Fades the panel background only — the text and graphics on top of it keep
-   * their own opacity. 1 = the background color as picked. */
-  backgroundOpacity: number;
   borderColor: string;
   zIndex?: number;
 }

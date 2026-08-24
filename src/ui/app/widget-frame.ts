@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react';
 import type { WidgetUserSettings } from '@/types/widget-settings';
-import { withAlphaFactor } from '@utils/colors';
 
 // Widgets whose plate is not a plain rounded rectangle need the frame that
 // hosts them (overlay container, widget preview, layout editor) to clip with
@@ -47,11 +46,8 @@ export const widgetFrameStyle = ({
   autoHeight = false,
   hidden = false,
 }: WidgetFrameStyleInput): CSSProperties => {
-  const pickedBackground =
+  const backgroundColor =
     userSettings.backgroundColor ?? DEFAULT_WIDGET_BACKGROUND;
-
-  const backgroundOpacity = userSettings.backgroundOpacity ?? 1;
-  const backgroundColor = withAlphaFactor(pickedBackground, backgroundOpacity);
 
   const borderColor = userSettings.borderColor ?? DEFAULT_WIDGET_BORDER;
   const isPlateless = transparentContainer || hidden;
@@ -67,10 +63,7 @@ export const widgetFrameStyle = ({
     ),
     ['--wfs']: widgetScale,
     ['--font-scale']: userSettings.fontScale ?? 1,
-    // The text tokens are contrast-derived from --widget-bg, so it keeps the
-    // color the user picked: fading the plate must not flip the text to black.
-    ['--widget-bg']: pickedBackground,
-    ['--widget-bg-opacity']: backgroundOpacity,
+    ['--widget-bg']: backgroundColor,
     ['--widget-border']: borderColor,
   } as CSSProperties;
 };
