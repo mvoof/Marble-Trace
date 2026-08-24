@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
+import { ColorPicker, InputNumber, Segmented } from 'antd';
 
 import type {
   CoachTraceChannel,
@@ -11,6 +11,7 @@ import { SettingRow } from './SettingRow';
 
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
 
 const MIN_WINDOW_METERS = 50;
 const MAX_WINDOW_METERS = 500;
@@ -19,6 +20,8 @@ const DEFAULT_WINDOW_METERS = 150;
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['coach'];
+
+const { SwitchRow } = panelRows<CoachWidgetSettings>();
 
 export const CoachSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -37,41 +40,29 @@ export const CoachSettingsPanel = observer(() => {
     <>
       <Card title={t('settingsPanels.coach.call')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showCallRow"
             title={t('settingsPanels.coach.showCallRow')}
             desc={t('settingsPanels.coach.showCallRowDesc')}
-          >
-            <Switch
-              checked={settings.showCallRow}
-              onChange={(value) => update({ showCallRow: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         {settings.showCallRow && (
           <>
             <div className={styles.fieldGroup}>
-              <SettingRow
+              <SwitchRow
+                settingKey="showUrgencyBar"
                 title={t('settingsPanels.coach.urgencyBar')}
                 desc={t('settingsPanels.coach.urgencyBarDesc')}
-              >
-                <Switch
-                  checked={settings.showUrgencyBar}
-                  onChange={(value) => update({ showUrgencyBar: value })}
-                />
-              </SettingRow>
+              />
             </div>
 
             <div className={styles.fieldGroup}>
-              <SettingRow
+              <SwitchRow
+                settingKey="showCornerExitCalls"
                 title={t('settingsPanels.coach.cornerExitCalls')}
                 desc={t('settingsPanels.coach.cornerExitCallsDesc')}
-              >
-                <Switch
-                  checked={settings.showCornerExitCalls}
-                  onChange={(value) => update({ showCornerExitCalls: value })}
-                />
-              </SettingRow>
+              />
             </div>
 
             <div className={styles.fieldGroup}>
@@ -107,53 +98,37 @@ export const CoachSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.coach.readouts')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showSpeed"
             title={t('settingsPanels.coach.showSpeed')}
             desc={t('settingsPanels.coach.showSpeedDesc')}
-          >
-            <Switch
-              checked={settings.showSpeed}
-              onChange={(value) => update({ showSpeed: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showReferenceLapTime"
             title={t('settingsPanels.coach.showReferenceLapTime')}
             desc={t('settingsPanels.coach.showReferenceLapTimeDesc')}
-          >
-            <Switch
-              checked={settings.showReferenceLapTime}
-              onChange={(value) => update({ showReferenceLapTime: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showTrackCondition"
             title={t('settingsPanels.coach.showTrackCondition')}
             desc={t('settingsPanels.coach.showTrackConditionDesc')}
-          >
-            <Switch
-              checked={settings.showTrackCondition}
-              onChange={(value) => update({ showTrackCondition: value })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.coach.trace')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showTrace"
             title={t('settingsPanels.coach.showTrace')}
             desc={t('settingsPanels.coach.showTraceDesc')}
-          >
-            <Switch
-              checked={settings.showTrace}
-              onChange={(value) => update({ showTrace: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         {settings.showTrace && (

@@ -965,10 +965,17 @@ order written to settings.json). Shipped widgets are spaced by ten; a manifest
 without one sorts last, equal numbers fall back to the id, and the field is
 stripped from `DEFAULT_WIDGETS` before anything is persisted.
 
+Inside a panel, a plain toggle or color is one element: `panelRows<Settings>()`
+returns `SwitchRow` and `ColorRow`, which take a `settingKey`, read the widget
+from the panel context and write it back themselves — with the key checked
+against that widget's settings type. Anything with logic of its own (a clamped
+number, a unit conversion, a `Segmented`) is still written out by hand.
+
 Settings panels are collected the same way — each exports `PANEL_WIDGET_IDS`
-— but into their own registry rather than into `mount.ts`: the overlay window
-imports the widget registry, and a mount carrying its Ant Design panel would put
-the whole settings UI into the overlay bundle.
+— but into their own registry rather than into `mount.ts`: the remote screen
+renders widgets through the widget registry and is a plain browser page, so a
+mount carrying its Ant Design panel would ship the whole settings UI to every
+phone on the LAN.
 
 `WidgetContainer` applies scale, opacity and the radial-gradient background from
 user settings, so a widget never hardcodes its own background.

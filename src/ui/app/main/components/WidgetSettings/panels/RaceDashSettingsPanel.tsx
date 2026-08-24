@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
+import { ColorPicker, InputNumber, Segmented } from 'antd';
 
 import { speedUnit } from '@utils/telemetry-format';
 import type {
@@ -13,9 +13,12 @@ import { SettingRow } from './SettingRow';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { useUnitsStore } from '@store/root-store-context';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['race-dash'];
+
+const { SwitchRow } = panelRows<RaceDashWidgetSettings>();
 
 export const RaceDashSettingsPanel = observer(() => {
   const units = useUnitsStore();
@@ -112,15 +115,11 @@ export const RaceDashSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="colorizeByRpmZone"
             title={t('settingsPanels.raceDash.colorizeDigits')}
             desc={t('settingsPanels.raceDash.colorizeDigitsDesc')}
-          >
-            <Switch
-              checked={settings.colorizeByRpmZone}
-              onChange={(value) => update({ colorizeByRpmZone: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
@@ -143,15 +142,11 @@ export const RaceDashSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showSteeringMarker"
             title={t('settingsPanels.raceDash.steeringMarker')}
             desc={t('settingsPanels.raceDash.steeringMarkerDesc')}
-          >
-            <Switch
-              checked={settings.showSteeringMarker}
-              onChange={(value) => update({ showSteeringMarker: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         {settings.showSteeringMarker && (
@@ -173,39 +168,27 @@ export const RaceDashSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.common.positions')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="useLivePositions"
             title={t('settingsPanels.common.useLivePositions')}
             desc={t('settingsPanels.common.useLivePositionsDesc')}
-          >
-            <Switch
-              checked={settings.useLivePositions}
-              onChange={(value) => update({ useLivePositions: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="classPositionInMulticlass"
             title={t('settingsPanels.common.classPositionInMulticlass')}
             desc={t('settingsPanels.common.classPositionInMulticlassDesc')}
-          >
-            <Switch
-              checked={settings.classPositionInMulticlass}
-              onChange={(value) => update({ classPositionInMulticlass: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="colorizePosition"
             title={t('settingsPanels.raceDash.colorizePosition')}
             desc={t('settingsPanels.raceDash.colorizePositionDesc')}
-          >
-            <Switch
-              checked={settings.colorizePosition}
-              onChange={(value) => update({ colorizePosition: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         {settings.colorizePosition && (
@@ -289,15 +272,11 @@ export const RaceDashSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.raceDash.pitAssist')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showPitAssist"
             title={t('settingsPanels.raceDash.pitLaneAssist')}
             desc={t('settingsPanels.raceDash.pitLaneAssistDesc')}
-          >
-            <Switch
-              checked={settings.showPitAssist}
-              onChange={(value) => update({ showPitAssist: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>

@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, Segmented, Slider, Switch } from 'antd';
+import { ColorPicker, Segmented, Slider } from 'antd';
 
 import type {
   InvisibleDashBackdropScope,
@@ -13,6 +13,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
 
 const WIDGET_ID = 'invisible-dash';
 
@@ -21,6 +22,8 @@ const PERCENT_MAX = 100;
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['invisible-dash'];
+
+const { SwitchRow, ColorRow } = panelRows<InvisibleDashWidgetSettings>();
 
 export const InvisibleDashSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -150,17 +153,11 @@ export const InvisibleDashSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.invisibleDash.backdrop')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <ColorRow
+            settingKey="backdropColor"
             title={t('settingsPanels.invisibleDash.backdropColor')}
             desc={t('settingsPanels.invisibleDash.backdropColorDesc')}
-          >
-            <ColorPicker
-              value={settings.backdropColor}
-              onChange={(color) =>
-                update({ backdropColor: color.toRgbString() })
-              }
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
@@ -275,53 +272,37 @@ export const InvisibleDashSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="colorizeRpmByZone"
             title={t('settingsPanels.invisibleDash.colorizeRpm')}
             desc={t('settingsPanels.invisibleDash.colorizeRpmDesc')}
-          >
-            <Switch
-              checked={settings.colorizeRpmByZone}
-              onChange={(value) => update({ colorizeRpmByZone: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="colorizeGearByZone"
             title={t('settingsPanels.invisibleDash.colorizeGear')}
             desc={t('settingsPanels.invisibleDash.colorizeGearDesc')}
-          >
-            <Switch
-              checked={settings.colorizeGearByZone}
-              onChange={(value) => update({ colorizeGearByZone: value })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.invisibleDash.blocks')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showSpeed"
             title={t('settingsPanels.invisibleDash.speed')}
             desc={t('settingsPanels.invisibleDash.speedDesc')}
-          >
-            <Switch
-              checked={settings.showSpeed}
-              onChange={(value) => update({ showSpeed: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showRpm"
             title={t('settingsPanels.invisibleDash.rpm')}
             desc={t('settingsPanels.invisibleDash.rpmDesc')}
-          >
-            <Switch
-              checked={settings.showRpm}
-              onChange={(value) => update({ showRpm: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
@@ -349,77 +330,53 @@ export const InvisibleDashSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showShiftBar"
             title={t('settingsPanels.invisibleDash.shiftBar')}
             desc={t('settingsPanels.invisibleDash.shiftBarDesc')}
-          >
-            <Switch
-              checked={settings.showShiftBar}
-              onChange={(value) => update({ showShiftBar: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showGear"
             title={t('settingsPanels.invisibleDash.gear')}
             desc={t('settingsPanels.invisibleDash.gearDesc')}
-          >
-            <Switch
-              checked={settings.showGear}
-              onChange={(value) => update({ showGear: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showPosition"
             title={t('settingsPanels.invisibleDash.position')}
             desc={t('settingsPanels.invisibleDash.positionDesc')}
-          >
-            <Switch
-              checked={settings.showPosition}
-              onChange={(value) => update({ showPosition: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showLap"
             title={t('settingsPanels.invisibleDash.lap')}
             desc={t('settingsPanels.invisibleDash.lapDesc')}
-          >
-            <Switch
-              checked={settings.showLap}
-              onChange={(value) => update({ showLap: value })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.invisibleDash.positionSource')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="useLivePositions"
             title={t('settingsPanels.invisibleDash.livePositions')}
             desc={t('settingsPanels.invisibleDash.livePositionsDesc')}
-          >
-            <Switch
-              checked={settings.useLivePositions}
-              onChange={(value) => update({ useLivePositions: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="classPositionInMulticlass"
             title={t('settingsPanels.invisibleDash.classPosition')}
             desc={t('settingsPanels.invisibleDash.classPositionDesc')}
-          >
-            <Switch
-              checked={settings.classPositionInMulticlass}
-              onChange={(value) => update({ classPositionInMulticlass: value })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
     </>

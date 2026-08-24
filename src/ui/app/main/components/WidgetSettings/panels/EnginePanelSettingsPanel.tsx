@@ -6,9 +6,12 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['engine-panel'];
+
+const { SwitchRow } = panelRows<EnginePanelWidgetSettings>();
 
 export const EnginePanelSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -83,15 +86,11 @@ export const EnginePanelSettingsPanel = observer(() => {
   return (
     <Card title={t('settingsPanels.enginePanel.moduleParameters')}>
       <div className={styles.fieldGroup}>
-        <SettingRow
+        <SwitchRow
+          settingKey="horizontal"
           title={t('settingsPanels.enginePanel.horizontalLayout')}
           desc={t('settingsPanels.enginePanel.horizontalLayoutDesc')}
-        >
-          <Switch
-            checked={settings.horizontal}
-            onChange={(v) => update({ horizontal: v })}
-          />
-        </SettingRow>
+        />
       </div>
 
       {settings.horizontal ? (

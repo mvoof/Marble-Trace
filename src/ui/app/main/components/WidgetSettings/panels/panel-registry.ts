@@ -11,6 +11,11 @@ import type { ComponentType } from 'react';
  *
  * A panel is always passed `widgetId`; the two that serve a pair of widgets
  * (radar, flags) read it, the rest ignore it.
+ *
+ * Kept out of `mount.ts` on purpose: the remote screen renders widgets through
+ * the widget registry and must stay a plain browser page, so a mount that
+ * carried its Ant Design settings panel would ship the whole main-window
+ * settings UI to every phone on the LAN.
  */
 interface PanelModule {
   PANEL_WIDGET_IDS?: string[];

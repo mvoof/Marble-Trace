@@ -12,6 +12,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
 
 // Remaining tread, in percent. Above 90 every fresh set would be ordered and
 // below 10 the tires are already gone, so neither end is worth offering.
@@ -39,6 +40,8 @@ const REVEAL_STEP_S = 1;
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['pit-service'];
+
+const { SwitchRow } = panelRows<PitServiceWidgetSettings>();
 
 export const PitServiceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -186,15 +189,11 @@ export const PitServiceSettingsPanel = observer(() => {
             />
           </div>
 
-          <SettingRow
+          <SwitchRow
+            settingKey="showPitBrakeCue"
             title={t('settingsPanels.pitService.brakeCue')}
             desc={t('settingsPanels.pitService.brakeCueDesc')}
-          >
-            <Switch
-              checked={settings.showPitBrakeCue}
-              onChange={(checked) => update({ showPitBrakeCue: checked })}
-            />
-          </SettingRow>
+          />
         </Card>
       )}
 
@@ -211,27 +210,19 @@ export const PitServiceSettingsPanel = observer(() => {
           />
         </SettingRow>
 
-        <SettingRow
+        <SwitchRow
+          settingKey="showProjectedPosition"
           title={t('settingsPanels.pitService.projectedPosition')}
           desc={t('settingsPanels.pitService.projectedPositionDesc')}
-        >
-          <Switch
-            checked={settings.showProjectedPosition}
-            onChange={(checked) => update({ showProjectedPosition: checked })}
-          />
-        </SettingRow>
+        />
       </Card>
 
       <Card title={t('settingsPanels.pitService.visibility')}>
-        <SettingRow
+        <SwitchRow
+          settingKey="alwaysVisible"
           title={t('settingsPanels.pitService.alwaysVisible')}
           desc={t('settingsPanels.pitService.alwaysVisibleDesc')}
-        >
-          <Switch
-            checked={settings.alwaysVisible}
-            onChange={(checked) => update({ alwaysVisible: checked })}
-          />
-        </SettingRow>
+        />
 
         <div className={styles.fieldGroup}>
           <div className={styles.fieldLabel}>
@@ -279,25 +270,17 @@ export const PitServiceSettingsPanel = observer(() => {
           Auto mode has no master switch: it is on exactly when it has something
           to order, so these two toggles are the whole of it.
         */}
-        <SettingRow
+        <SwitchRow
+          settingKey="autoFuel"
           title={t('settingsPanels.pitService.autoFuel')}
           desc={t('settingsPanels.pitService.autoFuelDesc')}
-        >
-          <Switch
-            checked={settings.autoFuel}
-            onChange={(checked) => update({ autoFuel: checked })}
-          />
-        </SettingRow>
+        />
 
-        <SettingRow
+        <SwitchRow
+          settingKey="autoTires"
           title={t('settingsPanels.pitService.autoTires')}
           desc={t('settingsPanels.pitService.autoTiresDesc')}
-        >
-          <Switch
-            checked={settings.autoTires}
-            onChange={(checked) => update({ autoTires: checked })}
-          />
-        </SettingRow>
+        />
 
         {settings.autoTires && (
           <div className={styles.fieldGroup}>

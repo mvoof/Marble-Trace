@@ -18,6 +18,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
 
 const MIN_ZOOM_LEVEL = 1.5;
 const MAX_ZOOM_LEVEL = 10;
@@ -26,6 +27,8 @@ const DEFAULT_ZOOM_LEVEL = 3;
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['track-map'];
+
+const { SwitchRow } = panelRows<TrackMapWidgetSettings>();
 
 export const TrackMapSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -45,12 +48,10 @@ export const TrackMapSettingsPanel = observer(() => {
     <>
       <Card title={t('settingsPanels.trackMap.visualElements')}>
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.trackMap.sectorsOnMap')}>
-            <Switch
-              checked={settings.showSectorsOnMap}
-              onChange={(v) => update({ showSectorsOnMap: v })}
-            />
-          </SettingRow>
+          <SwitchRow
+            settingKey="showSectorsOnMap"
+            title={t('settingsPanels.trackMap.sectorsOnMap')}
+          />
         </div>
 
         <div className={styles.fieldGroup}>
@@ -156,15 +157,11 @@ export const TrackMapSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showPlayerLabel"
             title={t('settingsPanels.trackMap.showYouLabel')}
             desc={t('settingsPanels.trackMap.showYouLabelDesc')}
-          >
-            <Switch
-              checked={settings.showPlayerLabel}
-              onChange={(v) => update({ showPlayerLabel: v })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
 
@@ -192,15 +189,11 @@ export const TrackMapSettingsPanel = observer(() => {
             }
           />
 
-          <SettingRow
+          <SwitchRow
+            settingKey="useLivePositions"
             title={t('settingsPanels.common.useLivePositions')}
             desc={t('settingsPanels.common.useLivePositionsTrackMapDesc')}
-          >
-            <Switch
-              checked={settings.useLivePositions}
-              onChange={(v) => update({ useLivePositions: v })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
 

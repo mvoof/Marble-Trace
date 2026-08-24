@@ -6,9 +6,12 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['timer'];
+
+const { SwitchRow } = panelRows<TimerWidgetSettings>();
 
 export const TimerSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -85,27 +88,19 @@ export const TimerSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.common.positions')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="useLivePositions"
             title={t('settingsPanels.common.useLivePositions')}
             desc={t('settingsPanels.common.useLivePositionsDesc')}
-          >
-            <Switch
-              checked={settings.useLivePositions}
-              onChange={(value) => update({ useLivePositions: value })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="classPositionInMulticlass"
             title={t('settingsPanels.common.classPositionInMulticlass')}
             desc={t('settingsPanels.common.classPositionInMulticlassDesc')}
-          >
-            <Switch
-              checked={settings.classPositionInMulticlass}
-              onChange={(value) => update({ classPositionInMulticlass: value })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
     </>
