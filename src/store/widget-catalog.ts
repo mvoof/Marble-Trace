@@ -28,14 +28,26 @@ const manifestOf = (module: Record<string, WidgetManifest>): WidgetManifest =>
 
 const DEFAULT_ORDER = Number.MAX_SAFE_INTEGER;
 
+/** Catalog order: the declared `order`, then the id so a tie is deterministic. */
+export const compareManifests = (
+  left: WidgetManifest,
+  right: WidgetManifest
+): number => {
+  const byOrder =
+    (left.order ?? DEFAULT_ORDER) - (right.order ?? DEFAULT_ORDER);
+
+  if (byOrder !== 0) {
+    return byOrder;
+  }
+
+  // Code-unit comparison, not localeCompare: the tie-break must land the same
+  // way on every machine, and collation depends on the runtime's locale data.
+  return left.id < right.id ? -1 : left.id > right.id ? 1 : 0;
+};
+
 export const WIDGETS: WidgetManifest[] = Object.values(manifestModules)
   .map(manifestOf)
-  .sort((left, right) => {
-    const byOrder =
-      (left.order ?? DEFAULT_ORDER) - (right.order ?? DEFAULT_ORDER);
-
-    return byOrder !== 0 ? byOrder : left.id.localeCompare(right.id);
-  });
+  .sort(compareManifests);
 
 export const WIDGET_BY_ID = new Map(
   WIDGETS.map((manifest) => [manifest.id, manifest])
