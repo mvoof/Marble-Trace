@@ -586,6 +586,13 @@ export interface CoachWidgetSettings {
   lossColor: string;
 }
 
+// Every widget's own settings, in one union. It is not what makes a panel
+// type-safe -- a panel gets that from its own `getSettings<T>()` and its local
+// `update(partial: Partial<T>)`, and this union happily accepts one widget's key
+// on another widget. What it does catch is a key that belongs to no widget at
+// all: a typo in a manifest's shipped `userSettings`, or in a direct
+// `updateUserSettings` call, plus the wrong value type for a known key. That is
+// worth the one line a new widget adds here.
 export type WidgetSpecificSettings =
   | Record<never, never> // id: example widget
   | PitServiceWidgetSettings
