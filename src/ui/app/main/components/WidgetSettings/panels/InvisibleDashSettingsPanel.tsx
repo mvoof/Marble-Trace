@@ -90,18 +90,13 @@ export const InvisibleDashSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <ColorRow
+            settingKey="projectionTint"
             title={t('settingsPanels.invisibleDash.tint')}
             desc={t('settingsPanels.invisibleDash.tintDesc')}
-          >
-            <ColorPicker
-              value={settings.projectionTint}
-              disabled={!isProjection}
-              onChange={(color) =>
-                update({ projectionTint: color.toHexString() })
-              }
-            />
-          </SettingRow>
+            hex
+            disabled={!isProjection}
+          />
         </div>
 
         <div className={styles.fieldGroup}>

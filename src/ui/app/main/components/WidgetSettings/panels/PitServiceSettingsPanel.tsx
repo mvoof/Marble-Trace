@@ -198,17 +198,11 @@ export const PitServiceSettingsPanel = observer(() => {
       )}
 
       <Card title={t('settingsPanels.pitService.position')}>
-        <SettingRow
+        <SwitchRow
+          settingKey="classPositionInMulticlass"
           title={t('settingsPanels.common.classPositionInMulticlass')}
           desc={t('settingsPanels.common.classPositionInMulticlassDesc')}
-        >
-          <Switch
-            checked={settings.classPositionInMulticlass}
-            onChange={(checked) =>
-              update({ classPositionInMulticlass: checked })
-            }
-          />
-        </SettingRow>
+        />
 
         <SwitchRow
           settingKey="showProjectedPosition"
