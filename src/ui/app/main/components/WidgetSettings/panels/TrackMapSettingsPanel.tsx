@@ -1,14 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import {
-  ColorPicker,
-  InputNumber,
-  Row,
-  Col,
-  Segmented,
-  Slider,
-  Switch,
-} from 'antd';
+import { InputNumber, Row, Col, Segmented, Slider } from 'antd';
 import {
   RadarQualifyingVisibility,
   TrackMapLeaderLabelMode,
@@ -16,13 +8,18 @@ import {
 } from '@/types/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
-import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
 
 const MIN_ZOOM_LEVEL = 1.5;
 const MAX_ZOOM_LEVEL = 10;
 const ZOOM_STEP = 0.5;
 const DEFAULT_ZOOM_LEVEL = 3;
+
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['track-map'];
+
+const { ColorRow, SwitchRow } = panelRows<TrackMapWidgetSettings>();
 
 export const TrackMapSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -42,33 +39,27 @@ export const TrackMapSettingsPanel = observer(() => {
     <>
       <Card title={t('settingsPanels.trackMap.visualElements')}>
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.trackMap.sectorsOnMap')}>
-            <Switch
-              checked={settings.showSectorsOnMap}
-              onChange={(v) => update({ showSectorsOnMap: v })}
-            />
-          </SettingRow>
+          <SwitchRow
+            settingKey="showSectorsOnMap"
+            title={t('settingsPanels.trackMap.sectorsOnMap')}
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.trackMap.startFinishLine')}>
-            <Switch
-              checked={settings.showStartFinish ?? true}
-              onChange={(v) => update({ showStartFinish: v })}
-            />
-          </SettingRow>
+          <SwitchRow
+            settingKey="showStartFinish"
+            title={t('settingsPanels.trackMap.startFinishLine')}
+            fallback
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="classShapes"
             title={t('settingsPanels.trackMap.classShapes')}
             desc={t('settingsPanels.trackMap.classShapesDesc')}
-          >
-            <Switch
-              checked={settings.classShapes ?? false}
-              onChange={(v) => update({ classShapes: v })}
-            />
-          </SettingRow>
+            fallback={false}
+          />
         </div>
       </Card>
 
@@ -97,15 +88,12 @@ export const TrackMapSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.trackMap.zoomView')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="zoomEnabled"
             title={t('settingsPanels.trackMap.zoomEnabled')}
             desc={t('settingsPanels.trackMap.zoomEnabledDesc')}
-          >
-            <Switch
-              checked={settings.zoomEnabled ?? false}
-              onChange={(v) => update({ zoomEnabled: v })}
-            />
-          </SettingRow>
+            fallback={false}
+          />
         </div>
 
         {settings.zoomEnabled && (
@@ -126,42 +114,32 @@ export const TrackMapSettingsPanel = observer(() => {
 
         {settings.zoomEnabled && (
           <div className={styles.fieldGroup}>
-            <SettingRow
+            <SwitchRow
+              settingKey="zoomRotate"
               title={t('settingsPanels.trackMap.zoomRotate')}
               desc={t('settingsPanels.trackMap.zoomRotateDesc')}
-            >
-              <Switch
-                checked={settings.zoomRotate ?? false}
-                onChange={(v) => update({ zoomRotate: v })}
-              />
-            </SettingRow>
+              fallback={false}
+            />
           </div>
         )}
       </Card>
 
       <Card title={t('settingsPanels.linearMap.playerMarker')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <ColorRow
+            settingKey="playerDotColor"
             title={t('settingsPanels.trackMap.playerDotColor')}
             desc={t('settingsPanels.trackMap.playerDotColorDesc')}
-          >
-            <ColorPicker
-              value={settings.playerDotColor}
-              onChange={(c) => update({ playerDotColor: c.toHexString() })}
-            />
-          </SettingRow>
+            hex
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showPlayerLabel"
             title={t('settingsPanels.trackMap.showYouLabel')}
             desc={t('settingsPanels.trackMap.showYouLabelDesc')}
-          >
-            <Switch
-              checked={settings.showPlayerLabel}
-              onChange={(v) => update({ showPlayerLabel: v })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
 
@@ -189,39 +167,32 @@ export const TrackMapSettingsPanel = observer(() => {
             }
           />
 
-          <SettingRow
+          <SwitchRow
+            settingKey="useLivePositions"
             title={t('settingsPanels.common.useLivePositions')}
             desc={t('settingsPanels.common.useLivePositionsTrackMapDesc')}
-          >
-            <Switch
-              checked={settings.useLivePositions}
-              onChange={(v) => update({ useLivePositions: v })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.trackMap.safetyCar')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="paceCarUseClassColor"
             title={t('settingsPanels.trackMap.paceCarUseClassColor')}
             desc={t('settingsPanels.trackMap.paceCarUseClassColorDesc')}
-          >
-            <Switch
-              checked={settings.paceCarUseClassColor ?? false}
-              onChange={(v) => update({ paceCarUseClassColor: v })}
-            />
-          </SettingRow>
+            fallback={false}
+          />
         </div>
 
         {!settings.paceCarUseClassColor && (
           <div className={styles.fieldGroup}>
-            <SettingRow title={t('settingsPanels.trackMap.paceCarColor')}>
-              <ColorPicker
-                value={settings.paceCarColor ?? '#facc15'}
-                onChange={(c) => update({ paceCarColor: c.toHexString() })}
-              />
-            </SettingRow>
+            <ColorRow
+              settingKey="paceCarColor"
+              title={t('settingsPanels.trackMap.paceCarColor')}
+              fallback={'#facc15'}
+              hex
+            />
           </div>
         )}
 
@@ -239,15 +210,12 @@ export const TrackMapSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="paceCarShowInPits"
             title={t('settingsPanels.trackMap.paceCarShowInPits')}
             desc={t('settingsPanels.trackMap.paceCarShowInPitsDesc')}
-          >
-            <Switch
-              checked={settings.paceCarShowInPits ?? false}
-              onChange={(v) => update({ paceCarShowInPits: v })}
-            />
-          </SettingRow>
+            fallback={false}
+          />
         </div>
       </Card>
 

@@ -6,6 +6,7 @@ import {
 
 export const LAP_LOG_MANIFEST: WidgetManifest = {
   id: 'lap-log',
+  order: 190,
   label: 'Lap Log',
   description:
     'Last 8 laps with time and delta vs personal best. Best lap highlighted.',

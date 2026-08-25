@@ -4,29 +4,8 @@ import { InputNumber, Row, Col, ColorPicker, Slider } from 'antd';
 import { getWidgetLabel } from '@ui/app/widget-i18n';
 import styles from './WidgetSettings.module.scss';
 import { Card, PanelWidgetProvider } from './panels/Card';
-import { RpmLightsSettingsPanel } from './panels/RpmLightsSettingsPanel';
-import { InputTraceSettingsPanel } from './panels/InputTraceSettingsPanel';
-import { RadarSettingsPanel } from './panels/RadarSettingsPanel';
-import { CloseBattleSettingsPanel } from './panels/CloseBattleSettingsPanel';
-import { StandingsSettingsPanel } from './panels/StandingsSettingsPanel';
-import { RelativeSettingsPanel } from './panels/RelativeSettingsPanel';
-import { LinearMapSettingsPanel } from './panels/LinearMapSettingsPanel';
-import { TrackMapSettingsPanel } from './panels/TrackMapSettingsPanel';
-import { WeatherSettingsPanel } from './panels/WeatherSettingsPanel';
-import { FuelSettingsPanel } from './panels/FuelSettingsPanel';
-import { DeltaSettingsPanel } from './panels/DeltaSettingsPanel';
-import { InvisibleDashSettingsPanel } from './panels/InvisibleDashSettingsPanel';
-import { SectorMatrixSettingsPanel } from './panels/SectorMatrixSettingsPanel';
-import { LapLogSettingsPanel } from './panels/LapLogSettingsPanel';
-import { PitServiceSettingsPanel } from './panels/PitServiceSettingsPanel';
-import { TimerSettingsPanel } from './panels/TimerSettingsPanel';
-import { StreamChatSettingsPanel } from './panels/StreamChatSettingsPanel';
-import { FlagDisplaySettingsPanel } from './panels/FlagDisplaySettingsPanel';
-import { GMeterSettingsPanel } from './panels/GMeterSettingsPanel';
-import { EnginePanelSettingsPanel } from './panels/EnginePanelSettingsPanel';
-import { RaceDashSettingsPanel } from './panels/RaceDashSettingsPanel';
-import { CoachSettingsPanel } from './panels/CoachSettingsPanel';
 import { useWidgetEditor } from './WidgetEditorContext';
+import { settingsPanelForWidget } from './panels/panel-registry';
 
 export const WidgetSettings = observer(
   ({ widgetId }: { widgetId: string | null }) => {
@@ -50,6 +29,7 @@ export const WidgetSettings = observer(
     }
 
     const userSettings = widget.userSettings;
+    const SettingsPanel = settingsPanelForWidget(widgetId);
 
     return (
       <PanelWidgetProvider widgetId={widgetId}>
@@ -223,63 +203,11 @@ export const WidgetSettings = observer(
                     </div>
                   </div>
                 </Col>
-
-                <Col span={24}>
-                  <div className={styles.sectionDivider} />
-                  <span className={styles.fieldLabel}>
-                    {t('widgetSettings.backgroundOpacity')}
-                  </span>
-                  <Slider
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    value={userSettings.backgroundOpacity ?? 1}
-                    tooltip={{
-                      formatter: (value) =>
-                        `${Math.round((value ?? 1) * 100)}%`,
-                    }}
-                    onChangeComplete={() => widgetSettings.pushUndo?.()}
-                    onChange={(v) => {
-                      widgetSettings.updateUserSettings(widgetId, {
-                        backgroundOpacity: v,
-                      });
-                    }}
-                  />
-                  <div className={styles.fieldDesc}>
-                    {t('widgetSettings.backgroundOpacityDesc')}
-                  </div>
-                </Col>
               </Row>
             </Card>
           )}
 
-          {widgetId === 'rpm-lights' && <RpmLightsSettingsPanel />}
-          {widgetId === 'input-trace' && <InputTraceSettingsPanel />}
-          {(widgetId === 'proximity-radar' || widgetId === 'radar-bar') && (
-            <RadarSettingsPanel widgetId={widgetId} />
-          )}
-          {widgetId === 'close-battle' && <CloseBattleSettingsPanel />}
-          {widgetId === 'standings' && <StandingsSettingsPanel />}
-          {widgetId === 'relative' && <RelativeSettingsPanel />}
-          {widgetId === 'relative-map' && <LinearMapSettingsPanel />}
-          {widgetId === 'track-map' && <TrackMapSettingsPanel />}
-          {widgetId === 'weather' && <WeatherSettingsPanel />}
-          {widgetId === 'fuel' && <FuelSettingsPanel />}
-          {widgetId === 'delta' && <DeltaSettingsPanel />}
-
-          {widgetId === 'invisible-dash' && <InvisibleDashSettingsPanel />}
-          {widgetId === 'sector-matrix' && <SectorMatrixSettingsPanel />}
-          {widgetId === 'lap-log' && <LapLogSettingsPanel />}
-          {widgetId === 'pit-service' && <PitServiceSettingsPanel />}
-          {widgetId === 'timer' && <TimerSettingsPanel />}
-          {widgetId === 'stream-chat' && <StreamChatSettingsPanel />}
-          {(widgetId === 'led-flags' || widgetId === 'flat-flags') && (
-            <FlagDisplaySettingsPanel widgetId={widgetId} />
-          )}
-          {widgetId === 'g-meter' && <GMeterSettingsPanel />}
-          {widgetId === 'race-dash' && <RaceDashSettingsPanel />}
-          {widgetId === 'coach' && <CoachSettingsPanel />}
-          {widgetId === 'engine-panel' && <EnginePanelSettingsPanel />}
+          {SettingsPanel && <SettingsPanel widgetId={widgetId} />}
         </div>
       </PanelWidgetProvider>
     );

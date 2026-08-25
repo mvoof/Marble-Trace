@@ -15,6 +15,7 @@ const SIDE_RAIL_WIDTH = 60;
 
 export const PIT_SERVICE_MANIFEST: WidgetManifest = {
   id: 'pit-service',
+  order: 110,
   telemetryEvents: ['carDynamics', 'driverEntries'],
   label: 'Pit Service',
   description: 'Pit stop order, repairs, tow time and pit lane speed.',

@@ -6,6 +6,7 @@ import {
 
 export const INVISIBLE_DASH_MANIFEST: WidgetManifest = {
   id: 'invisible-dash',
+  order: 230,
   telemetryEvents: ['carDynamics', 'driverEntries'],
   label: 'Invisible Dash',
   description:

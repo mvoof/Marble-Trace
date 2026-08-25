@@ -17,6 +17,9 @@ import {
 
 import styles from './BattleRow.module.scss';
 
+// How far back a row of another class is pushed when the user asks for it.
+const OTHER_CLASS_DIM = 0.55;
+
 interface BattleRowProps {
   opponent: BattleOpponent;
   /** Where this car's spot sits on the axis, as a percent of the stage. */
@@ -68,10 +71,12 @@ export const BattleRow = observer(
       settings.nameMode
     );
 
-    // Two reasons a plate fades, and they multiply rather than fight: the user's
-    // own opacity, and the deliberate dimming of another class.
+    // Two reasons a plate fades, and they do different things. The user's own
+    // opacity fades the plate itself and leaves the numbers on it at full
+    // strength -- a translucent row is still a row you read at a glance.
+    // Dimming another class is the opposite on purpose: it pushes the whole
+    // row back, text included, because that row is not the one you are racing.
     const isDimmed = settings.otherClass === 'dim' && opponent.isOtherClass;
-    const opacity = settings.plateOpacity * (isDimmed ? 0.55 : 1);
 
     return (
       <div
@@ -101,7 +106,12 @@ export const BattleRow = observer(
             ]
               .filter(Boolean)
               .join(' ')}
-            style={{ opacity }}
+            style={
+              {
+                opacity: isDimmed ? OTHER_CLASS_DIM : undefined,
+                '--widget-bg-opacity': settings.plateOpacity,
+              } as CSSProperties
+            }
           >
             <span className={styles.carNumber}>
               {formatCarNumber(entry.carNumber)}

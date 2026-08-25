@@ -279,7 +279,7 @@
       "mergeDistance": "Merge within (m)",
       "mergeDistanceDesc": "How close two cars must be on track to share a plate — a car length or two. Decided in meters, not in pixels: cars merge because they are side by side, not because the axis is zoomed out.",
       "plateOpacity": "Plate opacity",
-      "plateOpacityDesc": "Opaque by default — a see-through row loses its own edges against a corner. The only other thing that fades a plate is dimming another class, and that one means something.",
+      "plateOpacityDesc": "Fades the plate itself -- the numbers on it stay at full strength. The only other thing that fades a row is dimming another class, and that one pushes the whole row back, text included.",
       "scaleByDistance": "Shrink by distance",
       "scaleByDistanceDesc": "Distant plates get smaller, never past a third."
     },

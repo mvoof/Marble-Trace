@@ -6,6 +6,7 @@ import {
 
 export const DELTA_MANIFEST: WidgetManifest = {
   id: 'delta',
+  order: 120,
   label: 'Delta HUD',
   description: 'Live delta HUD — one glance, am I faster or slower?',
   requiredCapabilities: ['sectors'],

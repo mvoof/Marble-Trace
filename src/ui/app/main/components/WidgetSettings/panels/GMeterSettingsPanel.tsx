@@ -10,6 +10,9 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['g-meter'];
+
 export const GMeterSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');

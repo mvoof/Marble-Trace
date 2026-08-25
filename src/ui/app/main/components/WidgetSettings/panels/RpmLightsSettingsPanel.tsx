@@ -7,6 +7,9 @@ import { Card } from './Card';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { useWidgetEditor } from '../WidgetEditorContext';
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['rpm-lights'];
+
 export const RpmLightsSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');

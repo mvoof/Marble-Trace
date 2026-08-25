@@ -6,6 +6,7 @@ import {
 
 export const PROXIMITY_RADAR_MANIFEST: WidgetManifest = {
   id: 'proximity-radar',
+  order: 20,
   telemetryEvents: ['proximity'],
   label: 'Proximity Radar',
   description: 'Visual radar for nearby traffic.',

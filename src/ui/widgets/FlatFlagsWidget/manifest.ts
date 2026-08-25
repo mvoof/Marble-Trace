@@ -6,6 +6,7 @@ import {
 
 export const FLAT_FLAGS_MANIFEST: WidgetManifest = {
   id: 'flat-flags',
+  order: 100,
   label: 'Flat Flags',
   description: 'Banner-style list of active track flags.',
   autoHeight: true,

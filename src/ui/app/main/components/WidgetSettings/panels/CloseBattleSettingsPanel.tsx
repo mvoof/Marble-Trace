@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { InputNumber, Segmented, Slider, Switch } from 'antd';
+import { InputNumber, Segmented, Slider } from 'antd';
 
 import type {
   RadarQualifyingVisibility,
@@ -19,6 +19,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
 
 const ROW_COUNTS = [1, 2, 3];
 
@@ -31,6 +32,11 @@ const MAX_DISTANCE_THRESHOLD = 200;
 
 /** Feet round to fives, so the field steps by five of whatever it shows. */
 const DISTANCE_STEP = 5;
+
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['close-battle'];
+
+const { SwitchRow } = panelRows<CloseBattleWidgetSettings>();
 
 export const CloseBattleSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -189,24 +195,18 @@ export const CloseBattleSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="hideInPits"
             title={t('settingsPanels.closeBattle.hideInPits')}
             desc={t('settingsPanels.closeBattle.hideInPitsDesc')}
-          >
-            <Switch
-              checked={settings.hideInPits}
-              onChange={(checked) => update({ hideInPits: checked })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.closeBattle.raceOnly')}>
-            <Switch
-              checked={settings.raceOnly}
-              onChange={(checked) => update({ raceOnly: checked })}
-            />
-          </SettingRow>
+          <SwitchRow
+            settingKey="raceOnly"
+            title={t('settingsPanels.closeBattle.raceOnly')}
+          />
         </div>
       </Card>
 
@@ -250,78 +250,58 @@ export const CloseBattleSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.closeBattle.showTicks')}>
-            <Switch
-              checked={settings.showTicks}
-              onChange={(checked) => update({ showTicks: checked })}
-            />
-          </SettingRow>
+          <SwitchRow
+            settingKey="showTicks"
+            title={t('settingsPanels.closeBattle.showTicks')}
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.closeBattle.showTickLabels')}>
-            <Switch
-              checked={settings.showTickLabels}
-              disabled={!settings.showTicks}
-              onChange={(checked) => update({ showTickLabels: checked })}
-            />
-          </SettingRow>
+          <SwitchRow
+            settingKey="showTickLabels"
+            title={t('settingsPanels.closeBattle.showTickLabels')}
+            disabled={!settings.showTicks}
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="compactMode"
             title={t('settingsPanels.closeBattle.compactMode')}
             desc={t('settingsPanels.closeBattle.compactModeDesc')}
-          >
-            <Switch
-              checked={settings.compactMode}
-              onChange={(checked) => update({ compactMode: checked })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.closeBattle.plates')}>
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.closeBattle.showDistance')}>
-            <Switch
-              checked={settings.showDistance}
-              onChange={(checked) => update({ showDistance: checked })}
-            />
-          </SettingRow>
+          <SwitchRow
+            settingKey="showDistance"
+            title={t('settingsPanels.closeBattle.showDistance')}
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showLapGap"
             title={t('settingsPanels.closeBattle.showLapGap')}
             desc={t('settingsPanels.closeBattle.showLapGapDesc')}
-          >
-            <Switch
-              checked={settings.showLapGap}
-              onChange={(checked) => update({ showLapGap: checked })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showBrand"
             title={t('settingsPanels.closeBattle.showBrand')}
             desc={t('settingsPanels.closeBattle.showBrandDesc')}
-          >
-            <Switch
-              checked={settings.showBrand}
-              onChange={(checked) => update({ showBrand: checked })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.closeBattle.showClassBadge')}>
-            <Switch
-              checked={settings.showClassBadge}
-              onChange={(checked) => update({ showClassBadge: checked })}
-            />
-          </SettingRow>
+          <SwitchRow
+            settingKey="showClassBadge"
+            title={t('settingsPanels.closeBattle.showClassBadge')}
+          />
         </div>
 
         <div className={styles.fieldGroup}>
@@ -370,15 +350,11 @@ export const CloseBattleSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="mergeOverlapping"
             title={t('settingsPanels.closeBattle.mergeOverlapping')}
             desc={t('settingsPanels.closeBattle.mergeOverlappingDesc')}
-          >
-            <Switch
-              checked={settings.mergeOverlapping}
-              onChange={(checked) => update({ mergeOverlapping: checked })}
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
@@ -402,15 +378,11 @@ export const CloseBattleSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="scaleByDistance"
             title={t('settingsPanels.closeBattle.scaleByDistance')}
             desc={t('settingsPanels.closeBattle.scaleByDistanceDesc')}
-          >
-            <Switch
-              checked={settings.scaleByDistance}
-              onChange={(checked) => update({ scaleByDistance: checked })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
     </>

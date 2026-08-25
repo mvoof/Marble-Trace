@@ -9,7 +9,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
  * a card can remember its folded state per widget without every panel having to
  * thread the id through forty call sites.
  */
-const PanelWidgetContext = createContext<string | null>(null);
+export const PanelWidgetContext = createContext<string | null>(null);
 
 export const PanelWidgetProvider = ({
   widgetId,

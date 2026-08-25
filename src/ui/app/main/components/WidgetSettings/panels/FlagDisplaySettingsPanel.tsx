@@ -1,11 +1,16 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Slider, Switch } from 'antd';
+import { Slider } from 'antd';
 import { FlagDisplaySettings } from '@/types/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
-import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
+
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['led-flags', 'flat-flags'];
+
+const { SwitchRow } = panelRows<FlagDisplaySettings>();
 
 export const FlagDisplaySettingsPanel = observer(
   ({ widgetId }: { widgetId: 'led-flags' | 'flat-flags' }) => {
@@ -23,15 +28,11 @@ export const FlagDisplaySettingsPanel = observer(
     return (
       <Card title={t('settingsPanels.flagDisplay.displayMode')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="alwaysShow"
             title={t('settingsPanels.flagDisplay.alwaysShow')}
             desc={t('settingsPanels.flagDisplay.alwaysShowDesc')}
-          >
-            <Switch
-              checked={settings.alwaysShow}
-              onChange={(v) => update({ alwaysShow: v })}
-            />
-          </SettingRow>
+          />
         </div>
 
         {!settings.alwaysShow && (
@@ -57,39 +58,30 @@ export const FlagDisplaySettingsPanel = observer(
         {widgetId === 'led-flags' && (
           <>
             <div className={styles.fieldGroup}>
-              <SettingRow
+              <SwitchRow
+                settingKey="forceSingleLed"
                 title={t('settingsPanels.flagDisplay.forceSingleLed')}
                 desc={t('settingsPanels.flagDisplay.forceSingleLedDesc')}
-              >
-                <Switch
-                  checked={settings.forceSingleLed ?? false}
-                  onChange={(v) => update({ forceSingleLed: v })}
-                />
-              </SettingRow>
+                fallback={false}
+              />
             </div>
 
             <div className={styles.fieldGroup}>
-              <SettingRow
+              <SwitchRow
+                settingKey="split"
                 title={t('settingsPanels.flagDisplay.splitDisplay')}
                 desc={t('settingsPanels.flagDisplay.splitDisplayDesc')}
-              >
-                <Switch
-                  checked={settings.split ?? false}
-                  onChange={(v) => update({ split: v })}
-                />
-              </SettingRow>
+                fallback={false}
+              />
             </div>
 
             <div className={styles.fieldGroup}>
-              <SettingRow
+              <SwitchRow
+                settingKey="animate"
                 title={t('settingsPanels.flagDisplay.animateLeds')}
                 desc={t('settingsPanels.flagDisplay.animateLedsDesc')}
-              >
-                <Switch
-                  checked={settings.animate ?? true}
-                  onChange={(v) => update({ animate: v })}
-                />
-              </SettingRow>
+                fallback
+              />
             </div>
           </>
         )}

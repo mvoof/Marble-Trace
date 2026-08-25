@@ -10,6 +10,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
 
 interface StatColumnRow {
   key: keyof Pick<
@@ -28,6 +29,11 @@ const STAT_COLUMN_ROWS: StatColumnRow[] = [
   { key: 'showStatMax', labelKey: 'settingsPanels.fuel.statMax' },
 ];
 
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['fuel'];
+
+const { SwitchRow } = panelRows<FuelWidgetSettings>();
+
 export const FuelSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');
@@ -44,16 +50,12 @@ export const FuelSettingsPanel = observer(() => {
   return (
     <Card title={t('settingsPanels.fuel.analyticsAndWarnings')}>
       <div className={styles.fieldGroup}>
-        <SettingRow
+        <SwitchRow
+          settingKey="showChart"
           title={t('settingsPanels.fuel.historyChart')}
           desc={t('settingsPanels.fuel.historyChartDesc')}
           style={{ marginBottom: settings.showChart ? 16 : 0 }}
-        >
-          <Switch
-            checked={settings.showChart}
-            onChange={(v) => update({ showChart: v })}
-          />
-        </SettingRow>
+        />
         {settings.showChart && (
           <>
             <Segmented
@@ -98,15 +100,11 @@ export const FuelSettingsPanel = observer(() => {
       </div>
 
       <div className={styles.fieldGroup}>
-        <SettingRow
+        <SwitchRow
+          settingKey="showNextStopForecast"
           title={t('settingsPanels.fuel.nextStopForecast')}
           desc={t('settingsPanels.fuel.nextStopForecastDesc')}
-        >
-          <Switch
-            checked={settings.showNextStopForecast}
-            onChange={(v) => update({ showNextStopForecast: v })}
-          />
-        </SettingRow>
+        />
       </div>
 
       <div className={styles.fieldGroup}>

@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Switch, Segmented, ColorPicker, Slider } from 'antd';
+import { Switch, Segmented, Slider } from 'antd';
 import type {
   RowPadding,
   StandingsViewMode,
@@ -10,6 +10,7 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
 
 const PLAYER_WINDOW_OPTIONS = [0, 1, 2, 3, 4, 5].map((count) => ({
   label: String(count),
@@ -21,6 +22,11 @@ const GROUPED_ROWS_PER_CLASS_MIN = 0;
 const GROUPED_ROWS_PER_CLASS_MAX = 30;
 
 const SCROLL_RESET_OPTIONS = [0, 5, 8, 15, 30];
+
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['standings'];
+
+const { SwitchRow, ColorRow } = panelRows<StandingsWidgetSettings>();
 
 export const StandingsSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -183,45 +189,29 @@ export const StandingsSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <ColorRow
+            settingKey="playerRowColor"
             title={t('settingsPanels.relative.playerRowColor')}
             desc={t('settingsPanels.relative.playerRowColorDesc')}
-          >
-            <ColorPicker
-              value={settings.playerRowColor}
-              onChange={(color) =>
-                update({ playerRowColor: color.toRgbString() })
-              }
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <ColorRow
+            settingKey="playerAccentColor"
             title={t('settingsPanels.relative.playerNumberColor')}
             desc={t('settingsPanels.relative.playerNumberColorDesc')}
-          >
-            <ColorPicker
-              value={settings.playerAccentColor}
-              onChange={(color) =>
-                update({ playerAccentColor: color.toRgbString() })
-              }
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.common.positions')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="useLivePositions"
             title={t('settingsPanels.common.useLivePositions')}
             desc={t('settingsPanels.common.useLivePositionsStandingsDesc')}
-          >
-            <Switch
-              checked={settings.useLivePositions}
-              onChange={(v) => update({ useLivePositions: v })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
 

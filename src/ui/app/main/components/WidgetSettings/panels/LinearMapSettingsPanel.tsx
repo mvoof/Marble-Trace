@@ -1,14 +1,19 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, InputNumber, Segmented, Switch } from 'antd';
+import { InputNumber, Segmented } from 'antd';
 import {
   LinearMapOrientation,
   LinearMapWidgetSettings,
 } from '@/types/widget-settings';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
-import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
+
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['relative-map'];
+
+const { ColorRow, SwitchRow } = panelRows<LinearMapWidgetSettings>();
 
 export const LinearMapSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -51,12 +56,11 @@ export const LinearMapSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.linearMap.playerMarker')}>
         <div className={styles.fieldGroup}>
-          <SettingRow title={t('settingsPanels.linearMap.playerDotColor')}>
-            <ColorPicker
-              value={settings.playerDotColor}
-              onChange={(c) => update({ playerDotColor: c.toHexString() })}
-            />
-          </SettingRow>
+          <ColorRow
+            settingKey="playerDotColor"
+            title={t('settingsPanels.linearMap.playerDotColor')}
+            hex
+          />
 
           <span className={styles.fieldLabel}>
             {t('settingsPanels.linearMap.dotRadius')}
@@ -71,39 +75,33 @@ export const LinearMapSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="classShapes"
             title={t('settingsPanels.trackMap.classShapes')}
             desc={t('settingsPanels.trackMap.classShapesDesc')}
-          >
-            <Switch
-              checked={settings.classShapes ?? false}
-              onChange={(v) => update({ classShapes: v })}
-            />
-          </SettingRow>
+            fallback={false}
+          />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.trackMap.safetyCar')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="paceCarUseClassColor"
             title={t('settingsPanels.trackMap.paceCarUseClassColor')}
             desc={t('settingsPanels.trackMap.paceCarUseClassColorDesc')}
-          >
-            <Switch
-              checked={settings.paceCarUseClassColor ?? false}
-              onChange={(v) => update({ paceCarUseClassColor: v })}
-            />
-          </SettingRow>
+            fallback={false}
+          />
         </div>
 
         {!settings.paceCarUseClassColor && (
           <div className={styles.fieldGroup}>
-            <SettingRow title={t('settingsPanels.trackMap.paceCarColor')}>
-              <ColorPicker
-                value={settings.paceCarColor ?? '#facc15'}
-                onChange={(c) => update({ paceCarColor: c.toHexString() })}
-              />
-            </SettingRow>
+            <ColorRow
+              settingKey="paceCarColor"
+              title={t('settingsPanels.trackMap.paceCarColor')}
+              fallback={'#facc15'}
+              hex
+            />
           </div>
         )}
 
@@ -121,15 +119,12 @@ export const LinearMapSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="paceCarShowInPits"
             title={t('settingsPanels.trackMap.paceCarShowInPits')}
             desc={t('settingsPanels.trackMap.paceCarShowInPitsDesc')}
-          >
-            <Switch
-              checked={settings.paceCarShowInPits ?? false}
-              onChange={(v) => update({ paceCarShowInPits: v })}
-            />
-          </SettingRow>
+            fallback={false}
+          />
         </div>
       </Card>
     </>

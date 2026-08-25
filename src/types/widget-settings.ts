@@ -586,6 +586,13 @@ export interface CoachWidgetSettings {
   lossColor: string;
 }
 
+// Every widget's own settings, in one union. It is not what makes a panel
+// type-safe -- a panel gets that from its own `getSettings<T>()` and its local
+// `update(partial: Partial<T>)`, and this union happily accepts one widget's key
+// on another widget. What it does catch is a key that belongs to no widget at
+// all: a typo in a manifest's shipped `userSettings`, or in a direct
+// `updateUserSettings` call, plus the wrong value type for a known key. That is
+// worth the one line a new widget adds here.
 export type WidgetSpecificSettings =
   | Record<never, never> // id: example widget
   | PitServiceWidgetSettings
@@ -640,9 +647,6 @@ export interface BaseUserSettings {
   /** Multiplier applied to fs() font sizes only — independent of --wfs (width scale). */
   fontScale: number;
   backgroundColor: string;
-  /** Fades the panel background only — the text and graphics on top of it keep
-   * their own opacity. 1 = the background color as picked. */
-  backgroundOpacity: number;
   borderColor: string;
   zIndex?: number;
 }
@@ -677,6 +681,12 @@ export type ResolveLayoutChange = (
  */
 export interface WidgetManifest extends WidgetMeta {
   userSettings: WidgetUserSettings;
+  /**
+   * Where the widget sits in the catalog list. Shipped widgets are spaced by
+   * ten so one can be slotted between two without renumbering; a widget that
+   * declares nothing sorts last, and equal numbers fall back to the id.
+   */
+  order?: number;
   resolveLayoutChange?: ResolveLayoutChange;
   /**
    * High-frequency bundle fields this widget reads. The backend fills them only

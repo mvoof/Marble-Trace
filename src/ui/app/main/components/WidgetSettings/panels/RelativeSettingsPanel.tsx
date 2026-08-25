@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Switch, Segmented, ColorPicker } from 'antd';
+import { Switch, Segmented } from 'antd';
 import type {
   RowPadding,
   RelativeWidgetSettings,
@@ -9,6 +9,12 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
+
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['relative'];
+
+const { ColorRow, SwitchRow } = panelRows<RelativeWidgetSettings>();
 
 export const RelativeSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -84,45 +90,29 @@ export const RelativeSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <ColorRow
+            settingKey="playerRowColor"
             title={t('settingsPanels.relative.playerRowColor')}
             desc={t('settingsPanels.relative.playerRowColorDesc')}
-          >
-            <ColorPicker
-              value={settings.playerRowColor}
-              onChange={(color) =>
-                update({ playerRowColor: color.toRgbString() })
-              }
-            />
-          </SettingRow>
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <ColorRow
+            settingKey="playerAccentColor"
             title={t('settingsPanels.relative.playerNumberColor')}
             desc={t('settingsPanels.relative.playerNumberColorDesc')}
-          >
-            <ColorPicker
-              value={settings.playerAccentColor}
-              onChange={(color) =>
-                update({ playerAccentColor: color.toRgbString() })
-              }
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
 
       <Card title={t('settingsPanels.common.positions')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="useLivePositions"
             title={t('settingsPanels.common.useLivePositions')}
             desc={t('settingsPanels.common.useLivePositionsRelativeDesc')}
-          >
-            <Switch
-              checked={settings.useLivePositions}
-              onChange={(value) => update({ useLivePositions: value })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
 
@@ -138,15 +128,12 @@ export const RelativeSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.trackMap.safetyCar')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="paceCarShowInPits"
             title={t('settingsPanels.trackMap.paceCarShowInPits')}
             desc={t('settingsPanels.trackMap.paceCarShowInPitsDesc')}
-          >
-            <Switch
-              checked={settings.paceCarShowInPits ?? false}
-              onChange={(v) => update({ paceCarShowInPits: v })}
-            />
-          </SettingRow>
+            fallback={false}
+          />
         </div>
       </Card>
     </>

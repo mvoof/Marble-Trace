@@ -17,6 +17,9 @@ const MAX_LIFETIME_SECONDS = 600;
  * Presentation only. The channel, sign-in and filters are app-wide and live in
  * the Settings page, because a chat source is not a property of a layout.
  */
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['stream-chat'];
+
 export const StreamChatSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
   const { t } = useTranslation('widgets');

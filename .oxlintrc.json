@@ -214,7 +214,7 @@
       }
     },
     {
-      "files": ["src/store/root-store.ts", "src/store/widget-catalog.ts"],
+      "files": ["src/store/root-store.ts"],
       "rules": {
         "no-restricted-imports": [
           "error",

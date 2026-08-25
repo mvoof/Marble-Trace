@@ -6,6 +6,7 @@ import {
 
 export const RPM_LIGHTS_MANIFEST: WidgetManifest = {
   id: 'rpm-lights',
+  order: 210,
   telemetryEvents: ['carDynamics'],
   label: 'RPM Lights',
   description:

@@ -9,7 +9,13 @@ import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
+import { panelRows } from './setting-rows';
 import { useAppSettingsStore } from '@store/root-store-context';
+
+// Widget ids this panel configures — read by the panel registry.
+export const PANEL_WIDGET_IDS = ['input-trace'];
+
+const { SwitchRow } = panelRows<InputTraceSettings>();
 
 export const InputTraceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -103,15 +109,11 @@ export const InputTraceSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showSteering"
             title={t('settingsPanels.inputTrace.steeringWheel')}
             desc={t('settingsPanels.inputTrace.steeringWheelDesc')}
-          >
-            <Switch
-              checked={settings.showSteering}
-              onChange={(v) => update({ showSteering: v })}
-            />
-          </SettingRow>
+          />
         </div>
 
         {settings.showSteering && (
@@ -181,15 +183,11 @@ export const InputTraceSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.inputTrace.layout')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <SwitchRow
+            settingKey="showTrace"
             title={t('settingsPanels.inputTrace.traceGraph')}
             desc={t('settingsPanels.inputTrace.traceGraphDesc')}
-          >
-            <Switch
-              checked={settings.showTrace}
-              onChange={(v) => update({ showTrace: v })}
-            />
-          </SettingRow>
+          />
         </div>
       </Card>
 

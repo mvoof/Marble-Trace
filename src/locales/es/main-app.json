@@ -202,8 +202,6 @@
     "fontScaleDesc": "Escala solo el texto, independientemente del ancho y el alto del widget",
     "aesthetics": "Fondo y borde",
     "background": "Fondo",
-    "backgroundOpacity": "Opacidad del fondo",
-    "backgroundOpacityDesc": "Atenúa solo el fondo del panel: el texto y los gráficos siguen visibles",
     "border": "Borde"
   },
   "settingsPage": {
