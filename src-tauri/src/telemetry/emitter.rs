@@ -13,12 +13,12 @@ use super::quantize;
 use super::scheduler::DueGroups;
 use super::state::{
     TelemetryServiceState, EVENT_CAR_DYNAMICS, EVENT_CAR_INPUTS, EVENT_CAR_POSITIONS,
-    EVENT_DRIVER_ENTRIES, EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE,
+    EVENT_DRIVER_ENTRIES, EVENT_INCIDENTS, EVENT_LAP_DELTA, EVENT_PROXIMITY, EVENT_RELATIVE,
 };
 use crate::capabilities::Capabilities;
 use crate::computations::{
-    driver_entries, fuel, lap_delta, pit_stops, proximity, ComputeContext, ComputedOutput,
-    ProcessorRegistry, TickRate,
+    driver_entries, fuel, incidents, lap_delta, pit_stops, proximity, ComputeContext,
+    ComputedOutput, ProcessorRegistry, TickRate,
 };
 use crate::model::cars::{CarIdxFrame, CarPositionsFrame};
 use crate::model::environment::EnvironmentFrame;
@@ -73,6 +73,8 @@ pub struct TelemetryBundle {
     pub lap_timing: Option<LapTimingFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub proximity: Option<proximity::ProximityFrame>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub incidents: Option<incidents::IncidentsFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub relative: Option<RelativeFrame>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -340,6 +342,10 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
         bundle.proximity = None;
     }
 
+    if (active_mask & EVENT_INCIDENTS) == 0 {
+        bundle.incidents = None;
+    }
+
     // Round to what a widget can actually draw, then drop whatever is identical
     // to the last thing published. Order matters both ways: rounding before the
     // comparison is what makes repeats compare equal at all, and both run after
@@ -405,6 +411,7 @@ fn scatter_output(bundle: &mut TelemetryBundle, output: ComputedOutput) {
         ComputedOutput::LapLog(frame) => bundle.lap_log = Some(frame),
         ComputedOutput::PitStops(frame) => bundle.pit_stops = Some(frame),
         ComputedOutput::Proximity(frame) => bundle.proximity = Some(frame),
+        ComputedOutput::Incidents(frame) => bundle.incidents = Some(frame),
         ComputedOutput::Relative(frame) => bundle.relative = Some(frame),
         ComputedOutput::DriverEntries(frame) => bundle.driver_entries = Some(frame),
         ComputedOutput::TrackRecording(frame) => bundle.track_recording = Some(frame),

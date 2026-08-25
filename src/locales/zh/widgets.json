@@ -216,7 +216,15 @@
       "vertical": "垂直",
       "playerMarker": "玩家标记",
       "playerDotColor": "玩家点颜色",
-      "dotRadius": "车辆标记大小（像素）"
+      "dotRadius": "车辆标记大小（像素）",
+      "flagZoneStyle": "区域样式",
+      "flagZoneStyleFilled": "填充",
+      "flagZoneStyleOutline": "描边",
+      "flagZoneStyleDesc": "描边保持相同的颜色和不透明度，但只绘制边缘，区域下方的赛道表面依然可见。",
+      "incidentZones": "事故",
+      "showIncidentZones": "显示事故",
+      "showIncidentZonesDesc": "在停在赛道上或冲出赛道的赛车周围标出警示路段。iRacing 不提供黄旗或碎片旗的位置，因此定位的是事故本身。",
+      "blinkIncidentZones": "活动时闪烁"
     },
     "radar": {
       "radarBehavior": "雷达行为",
@@ -465,7 +473,15 @@
       "paceCarColor": "安全车颜色",
       "paceCarRadius": "安全车大小（像素）",
       "paceCarShowInPits": "在维修区显示",
-      "paceCarShowInPitsDesc": "安全车停在维修位时仍然显示。"
+      "paceCarShowInPitsDesc": "安全车停在维修位时仍然显示。",
+      "flagZoneStyle": "区域样式",
+      "flagZoneStyleFilled": "填充",
+      "flagZoneStyleOutline": "描边",
+      "flagZoneStyleDesc": "描边保持相同的颜色和不透明度，但只绘制边缘，区域下方的赛道表面依然可见。",
+      "incidentZones": "事故",
+      "showIncidentZones": "显示事故",
+      "showIncidentZonesDesc": "在停在赛道上或冲出赛道的赛车周围标出警示路段。iRacing 不提供黄旗或碎片旗的位置，因此定位的是事故本身。",
+      "blinkIncidentZones": "活动时闪烁"
     },
     "weather": {
       "moduleParameters": "模块参数",

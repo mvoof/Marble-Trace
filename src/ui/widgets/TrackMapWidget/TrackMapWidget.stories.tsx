@@ -149,3 +149,52 @@ export const WithPaceCar: Story = {
     }),
   ],
 };
+
+const INCIDENT_LAP_DIST_PCT = 0.43;
+const CLEARED_LAP_DIST_PCT = 0.78;
+
+const withIncidents = (flagZoneStyle: 'filled' | 'outline') =>
+  withStore((store) => {
+    if (snapshot.sessionInfo)
+      store.session.updateSessionInfo(snapshot.sessionInfo);
+
+    store.backendComputed.updateDriverEntries({
+      entries: DRIVER_ENTRIES.slice(0, 10),
+      playerCarIdx: DRIVER_ENTRIES.find((d) => d.isPlayer)?.carIdx ?? 0,
+    });
+    store.backendComputed.updateIncidents({
+      incidents: [
+        {
+          carIdx: 1,
+          lapDistPct: INCIDENT_LAP_DIST_PCT,
+          kind: 'stopped',
+          isActive: true,
+        },
+        {
+          carIdx: 2,
+          lapDistPct: CLEARED_LAP_DIST_PCT,
+          kind: 'offTrack',
+          isActive: false,
+        },
+      ],
+    });
+    store.widgetSettings.updateUserSettings('track-map', {
+      showIncidentZones: true,
+      blinkIncidentZones: true,
+      flagZoneStyle,
+    });
+  });
+
+export const WithIncidentZones: Story = {
+  decorators: [
+    withIncidents('filled'),
+    widgetDecorator({ width: DESIGN_SIZE, height: DESIGN_SIZE }),
+  ],
+};
+
+export const WithOutlinedIncidentZones: Story = {
+  decorators: [
+    withIncidents('outline'),
+    widgetDecorator({ width: DESIGN_SIZE, height: DESIGN_SIZE }),
+  ],
+};

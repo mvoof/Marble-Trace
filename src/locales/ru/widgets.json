@@ -216,7 +216,15 @@
       "vertical": "Вертикальная",
       "playerMarker": "Маркер игрока",
       "playerDotColor": "Цвет точки игрока",
-      "dotRadius": "Размер маркера машины (px)"
+      "dotRadius": "Размер маркера машины (px)",
+      "flagZoneStyle": "Стиль зоны",
+      "flagZoneStyleFilled": "Заливка",
+      "flagZoneStyleOutline": "Обводка",
+      "flagZoneStyleDesc": "Обводка сохраняет тот же цвет и прозрачность, но красит только края — поверхность трассы под зоной остаётся видна.",
+      "incidentZones": "Инциденты",
+      "showIncidentZones": "Показывать инциденты",
+      "showIncidentZonesDesc": "Отмечает участок круга вокруг машин, стоящих на трассе или съехавших с неё. iRacing не сообщает, где именно жёлтый флаг или debris, поэтому находится сам инцидент.",
+      "blinkIncidentZones": "Мигание, пока активен"
     },
     "radar": {
       "radarBehavior": "Поведение радара",
@@ -465,7 +473,15 @@
       "paceCarColor": "Цвет машины безопасности",
       "paceCarRadius": "Размер машины безопасности (px)",
       "paceCarShowInPits": "Показывать на пит-лейн",
-      "paceCarShowInPitsDesc": "Не скрывать машину безопасности, пока она стоит в своём боксе."
+      "paceCarShowInPitsDesc": "Не скрывать машину безопасности, пока она стоит в своём боксе.",
+      "flagZoneStyle": "Стиль зоны",
+      "flagZoneStyleFilled": "Заливка",
+      "flagZoneStyleOutline": "Обводка",
+      "flagZoneStyleDesc": "Обводка сохраняет тот же цвет и прозрачность, но красит только края — поверхность трассы под зоной остаётся видна.",
+      "incidentZones": "Инциденты",
+      "showIncidentZones": "Показывать инциденты",
+      "showIncidentZonesDesc": "Отмечает участок круга вокруг машин, стоящих на трассе или съехавших с неё. iRacing не сообщает, где именно жёлтый флаг или debris, поэтому находится сам инцидент.",
+      "blinkIncidentZones": "Мигание, пока активен"
     },
     "weather": {
       "moduleParameters": "Параметры модуля",

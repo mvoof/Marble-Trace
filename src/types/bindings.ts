@@ -723,6 +723,36 @@ export type FuelLapRecord = {
 };
 
 /**
+ * Why a car is marked. The widgets colour every kind the same for now; the
+ * distinction is here because the answer to "is it still there" differs.
+ */
+export type IncidentKind =
+  /**
+   * The car is off the racing surface.
+   */
+  | 'offTrack'
+  /**
+   * The car is on track and not moving.
+   */
+  | 'stopped';
+
+export type IncidentPoint = {
+  carIdx: number;
+  /**
+   * Where the car was when it was last seen in trouble.
+   */
+  lapDistPct: number;
+  kind: IncidentKind;
+  /**
+   * True while the car is still in trouble; false once it recovered and the
+   * marker is only lingering.
+   */
+  isActive: boolean;
+};
+
+export type IncidentsFrame = { incidents: IncidentPoint[] };
+
+/**
  * One button edge. Only edges are emitted — never the held state per poll.
  */
 export type InputButtonEvent = {
@@ -1553,6 +1583,7 @@ export type TelemetryBundle = {
   chassis?: ChassisFrame | null;
   lapTiming?: LapTimingFrame | null;
   proximity?: ProximityFrame | null;
+  incidents?: IncidentsFrame | null;
   relative?: RelativeFrame | null;
   driverEntries?: DriverEntriesFrame | null;
   carStatus?: CarStatusFrame | null;

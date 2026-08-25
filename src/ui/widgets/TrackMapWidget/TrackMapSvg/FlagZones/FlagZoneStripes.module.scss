@@ -1,0 +1,39 @@
+.zoneLayer {
+  pointer-events: none;
+}
+
+// A square wave rather than a fade: on the edge of vision a hazard has to
+// switch, not breathe.
+.zoneLayerBlink {
+  animation: hazardPulse 1.1s steps(1, end) infinite;
+}
+
+.zoneLayerCleared {
+  opacity: 0.45;
+}
+
+@keyframes hazardPulse {
+  0%,
+  55% {
+    opacity: 1;
+  }
+
+  56%,
+  100% {
+    opacity: 0.42;
+  }
+}
+
+.zoneGlow {
+  opacity: 0.14;
+}
+
+.zoneSurface {
+  opacity: 0.95;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zoneLayerBlink {
+    animation: none;
+  }
+}

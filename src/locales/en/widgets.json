@@ -216,7 +216,15 @@
       "vertical": "Vertical",
       "playerMarker": "Player Marker",
       "playerDotColor": "Player Dot Color",
-      "dotRadius": "Car Marker Size (px)"
+      "dotRadius": "Car Marker Size (px)",
+      "flagZoneStyle": "Zone Style",
+      "flagZoneStyleFilled": "Filled",
+      "flagZoneStyleOutline": "Outline",
+      "flagZoneStyleDesc": "Outline keeps the same colour and opacity but paints only the edges, leaving the track surface under the zone visible.",
+      "incidentZones": "Incidents",
+      "showIncidentZones": "Show Incidents",
+      "showIncidentZonesDesc": "Mark a warning stretch of the lap around cars stopped on track or sitting off it. iRacing gives no position for a yellow or a debris flag, so the incident itself is what gets located.",
+      "blinkIncidentZones": "Blink While Active"
     },
     "radar": {
       "radarBehavior": "Radar Behavior",
@@ -465,7 +473,15 @@
       "paceCarColor": "Safety Car Color",
       "paceCarRadius": "Safety Car Size (px)",
       "paceCarShowInPits": "Show In Pits",
-      "paceCarShowInPitsDesc": "Keep showing the safety car while it's parked in its pit stall."
+      "paceCarShowInPitsDesc": "Keep showing the safety car while it's parked in its pit stall.",
+      "flagZoneStyle": "Zone Style",
+      "flagZoneStyleFilled": "Filled",
+      "flagZoneStyleOutline": "Outline",
+      "flagZoneStyleDesc": "Outline keeps the same colour and opacity but paints only the edges, leaving the track surface under the zone visible.",
+      "incidentZones": "Incidents",
+      "showIncidentZones": "Show Incidents",
+      "showIncidentZonesDesc": "Mark a warning stretch of the lap around cars stopped on track or sitting off it. iRacing gives no position for a yellow or a debris flag, so the incident itself is what gets located.",
+      "blinkIncidentZones": "Blink While Active"
     },
     "weather": {
       "moduleParameters": "Module Parameters",

@@ -216,7 +216,15 @@
       "vertical": "Vertical",
       "playerMarker": "Marcador del jugador",
       "playerDotColor": "Color del punto del jugador",
-      "dotRadius": "Tamaño del marcador de coche (px)"
+      "dotRadius": "Tamaño del marcador de coche (px)",
+      "flagZoneStyle": "Estilo de zona",
+      "flagZoneStyleFilled": "Relleno",
+      "flagZoneStyleOutline": "Contorno",
+      "flagZoneStyleDesc": "El contorno mantiene el mismo color y opacidad pero pinta solo los bordes, dejando visible la superficie de la pista.",
+      "incidentZones": "Incidentes",
+      "showIncidentZones": "Mostrar incidentes",
+      "showIncidentZonesDesc": "Marca un tramo de aviso alrededor de los coches parados en pista o fuera de ella. iRacing no indica dónde está la bandera amarilla o de restos, así que se localiza el incidente en sí.",
+      "blinkIncidentZones": "Parpadear mientras esté activo"
     },
     "radar": {
       "radarBehavior": "Comportamiento del radar",
@@ -465,7 +473,15 @@
       "paceCarColor": "Color del coche de seguridad",
       "paceCarRadius": "Tamaño del coche de seguridad (px)",
       "paceCarShowInPits": "Mostrar en boxes",
-      "paceCarShowInPitsDesc": "Sigue mostrando el coche de seguridad mientras está aparcado en su plaza de boxes."
+      "paceCarShowInPitsDesc": "Sigue mostrando el coche de seguridad mientras está aparcado en su plaza de boxes.",
+      "flagZoneStyle": "Estilo de zona",
+      "flagZoneStyleFilled": "Relleno",
+      "flagZoneStyleOutline": "Contorno",
+      "flagZoneStyleDesc": "El contorno mantiene el mismo color y opacidad pero pinta solo los bordes, dejando visible la superficie de la pista.",
+      "incidentZones": "Incidentes",
+      "showIncidentZones": "Mostrar incidentes",
+      "showIncidentZonesDesc": "Marca un tramo de aviso alrededor de los coches parados en pista o fuera de ella. iRacing no indica dónde está la bandera amarilla o de restos, así que se localiza el incidente en sí.",
+      "blinkIncidentZones": "Parpadear mientras esté activo"
     },
     "weather": {
       "moduleParameters": "Parámetros del módulo",

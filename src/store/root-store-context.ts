@@ -25,6 +25,7 @@ export const useBackendComputedStore = () => useStore().backendComputed;
 export const useSimStore = () => useStore().sim;
 export const useFlagsStore = () => useStore().flags;
 export const usePaceCarStore = () => useStore().paceCar;
+export const useIncidentsWidgetStore = () => useStore().incidentsWidget;
 
 export const useRadarWidgetStore = () => useStore().radar;
 export const useCloseBattleWidgetStore = () => useStore().closeBattleWidget;

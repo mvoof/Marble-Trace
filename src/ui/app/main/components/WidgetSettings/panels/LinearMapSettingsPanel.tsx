@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { InputNumber, Segmented } from 'antd';
 import {
+  FlagZoneStyle,
   LinearMapOrientation,
   LinearMapWidgetSettings,
 } from '@/types/widget-settings';
@@ -82,6 +83,53 @@ export const LinearMapSettingsPanel = observer(() => {
             fallback={false}
           />
         </div>
+      </Card>
+
+      <Card title={t('settingsPanels.linearMap.incidentZones')}>
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.linearMap.flagZoneStyle')}
+          </span>
+          <Segmented
+            block
+            value={settings.flagZoneStyle ?? 'filled'}
+            options={[
+              {
+                label: t('settingsPanels.linearMap.flagZoneStyleFilled'),
+                value: 'filled',
+              },
+              {
+                label: t('settingsPanels.linearMap.flagZoneStyleOutline'),
+                value: 'outline',
+              },
+            ]}
+            onChange={(value) =>
+              update({ flagZoneStyle: value as FlagZoneStyle })
+            }
+          />
+          <span className={styles.fieldDesc}>
+            {t('settingsPanels.linearMap.flagZoneStyleDesc')}
+          </span>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showIncidentZones"
+            title={t('settingsPanels.linearMap.showIncidentZones')}
+            desc={t('settingsPanels.linearMap.showIncidentZonesDesc')}
+            fallback
+          />
+        </div>
+
+        {(settings.showIncidentZones ?? true) && (
+          <div className={styles.fieldGroup}>
+            <SwitchRow
+              settingKey="blinkIncidentZones"
+              title={t('settingsPanels.linearMap.blinkIncidentZones')}
+              fallback
+            />
+          </div>
+        )}
       </Card>
 
       <Card title={t('settingsPanels.trackMap.safetyCar')}>

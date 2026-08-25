@@ -1,6 +1,7 @@
 import { BackendComputedStore } from './data/computed.store';
 import { SimStore } from './sim/sim.store';
 import { FlagsStore } from './widgets/flags.widget';
+import { IncidentsWidgetStore } from './widgets/incidents.widget';
 import { PaceCarStore } from './widgets/pace-car.widget';
 import { RadarWidgetStore } from './widgets/radar.widget';
 import { CloseBattleWidgetStore } from '@ui/widgets/CloseBattleWidget/close-battle.widget';
@@ -49,6 +50,7 @@ export class RootStore {
   sim: SimStore;
   flags: FlagsStore;
   paceCar: PaceCarStore;
+  incidentsWidget: IncidentsWidgetStore;
   radar: RadarWidgetStore;
   closeBattleWidget: CloseBattleWidgetStore;
   standingsWidget: StandingsWidgetStore;
@@ -92,6 +94,7 @@ export class RootStore {
     this.units = new UnitsStore();
     this.flags = new FlagsStore(this);
     this.paceCar = new PaceCarStore(this);
+    this.incidentsWidget = new IncidentsWidgetStore(this);
     this.radar = new RadarWidgetStore(this);
     this.closeBattleWidget = new CloseBattleWidgetStore(this);
     this.standingsWidget = new StandingsWidgetStore(this);
