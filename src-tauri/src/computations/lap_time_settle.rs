@@ -23,6 +23,12 @@ pub const SETTLE_GRACE_S: f32 = 1.0;
 /// Guards against float-equality false negatives when comparing lap times.
 const LAP_TIME_EPSILON: f32 = 1e-4;
 
+/// Whether `reading` differs from what stood before the crossing, which alone
+/// proves the sim has published.
+fn differs_from_baseline(reading: f32, baseline: Option<f32>) -> bool {
+    baseline.is_none_or(|before| (reading - before).abs() > LAP_TIME_EPSILON)
+}
+
 /// Whether `reading` is the just-completed lap's own time rather than the
 /// previous lap's still standing there.
 ///
@@ -36,11 +42,45 @@ pub fn is_settled(reading: f32, baseline: Option<f32>, new_lap_elapsed_s: f32) -
         return false;
     }
 
-    if new_lap_elapsed_s >= SETTLE_GRACE_S {
+    if differs_from_baseline(reading, baseline) {
         return true;
     }
 
-    baseline.is_none_or(|before| (reading - before).abs() > LAP_TIME_EPSILON)
+    new_lap_elapsed_s >= SETTLE_GRACE_S
+}
+
+/// The same question, asked the way the reference lap has to ask it.
+///
+/// The lap log writes every lap and shows it, so accepting an ambiguous reading
+/// costs it one wrong row that the next lap corrects. The reference lap instead
+/// *keeps* what it accepts, under a lap time it will be compared against for
+/// the rest of the session — a completed lap labelled with the previous lap's
+/// time is a wrong reference that outlives the mistake.
+///
+/// So past the grace window the reading is taken only when the sim's own
+/// `lap_best_lap_time` confirms it published for this lap: a lap the sim has
+/// registered as the session best is a lap it has finished timing. Without that
+/// confirmation the lap simply stays parked until the next crossing replaces
+/// it — no reference is better than a mislabelled one.
+pub fn is_settled_for_reference(
+    reading: f32,
+    baseline: Option<f32>,
+    new_lap_elapsed_s: f32,
+    session_best: Option<f32>,
+) -> bool {
+    if reading == 0.0 {
+        return false;
+    }
+
+    if differs_from_baseline(reading, baseline) {
+        return true;
+    }
+
+    if new_lap_elapsed_s < SETTLE_GRACE_S {
+        return false;
+    }
+
+    session_best.is_some_and(|best| best > 0.0 && (reading - best).abs() <= LAP_TIME_EPSILON)
 }
 
 #[cfg(test)]
@@ -72,5 +112,43 @@ mod tests {
     #[test]
     fn an_invalidated_lap_settles_so_the_caller_can_act_on_it() {
         assert!(is_settled(-1.0, Some(90.0), 0.0));
+    }
+
+    #[test]
+    fn the_reference_takes_a_reading_that_differs_without_asking_the_best() {
+        assert!(is_settled_for_reference(89.0, Some(90.0), 0.0, None));
+    }
+
+    #[test]
+    fn the_reference_takes_an_ambiguous_reading_the_session_best_confirms() {
+        assert!(is_settled_for_reference(
+            90.0,
+            Some(90.0),
+            SETTLE_GRACE_S,
+            Some(90.0)
+        ));
+    }
+
+    #[test]
+    fn the_reference_leaves_an_ambiguous_reading_nothing_confirms() {
+        // The sim is timing a lap it does not consider the session best, so a
+        // reading equal to the previous lap's may still be the previous lap's.
+        assert!(!is_settled_for_reference(
+            90.0,
+            Some(90.0),
+            SETTLE_GRACE_S,
+            Some(88.0)
+        ));
+        assert!(!is_settled_for_reference(
+            90.0,
+            Some(90.0),
+            SETTLE_GRACE_S,
+            None
+        ));
+    }
+
+    #[test]
+    fn the_reference_waits_out_the_grace_window_like_the_lap_log() {
+        assert!(!is_settled_for_reference(90.0, Some(90.0), 0.5, Some(90.0)));
     }
 }

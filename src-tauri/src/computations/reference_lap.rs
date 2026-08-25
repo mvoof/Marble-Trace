@@ -9,7 +9,7 @@
 //! Comparing per condition also keeps a fresh session's best from degrading a
 //! faster stored reference.
 use crate::capabilities::Capabilities;
-use crate::computations::lap_time_settle::is_settled;
+use crate::computations::lap_time_settle::is_settled_for_reference;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use crate::model::reference_lap::{
     ReferenceLapData, ReferenceLapSample, StoredReferenceTimes, TrackCondition,
@@ -194,10 +194,11 @@ impl ReferenceLapProcessor {
         // there is no reference to record from a lap that did not count.
         let lap_time = ctx.lap_timing.lap_last_lap_time.filter(|time| *time > 0.0);
         let settled = ctx.lap_timing.lap_last_lap_time.is_some_and(|reading| {
-            is_settled(
+            is_settled_for_reference(
                 reading,
                 pending.baseline_last_lap_time,
                 ctx.lap_timing.lap_current_lap_time,
+                ctx.lap_timing.lap_best_lap_time,
             )
         });
 
@@ -439,21 +440,22 @@ mod tests {
     }
 
     fn make_lap_timing(lap_dist_pct: f32, last_lap_time: Option<f32>) -> LapTimingFrame {
-        make_lap_timing_at(lap_dist_pct, last_lap_time, 0.0)
+        make_lap_timing_at(lap_dist_pct, last_lap_time, 0.0, None)
     }
 
     fn make_lap_timing_at(
         lap_dist_pct: f32,
         last_lap_time: Option<f32>,
         current_lap_time: f32,
+        session_best: Option<f32>,
     ) -> LapTimingFrame {
         LapTimingFrame {
             lap: None,
             lap_dist: None,
             lap_dist_pct: Some(lap_dist_pct),
             lap_current_lap_time: current_lap_time,
+            lap_best_lap_time: session_best,
             lap_last_lap_time: last_lap_time,
-            lap_best_lap_time: None,
             player_car_position: None,
             player_car_class_position: None,
             lap_delta_to_session_best_live: None,
@@ -565,17 +567,20 @@ mod tests {
     }
 
     /// Runs a tick with an explicit `lap_current_lap_time` — how far into the
-    /// new lap the car is, which is what settles a pending lap's time.
+    /// new lap the car is — and an explicit session best, which is what settles
+    /// a pending lap whose time reads the same as the previous lap's.
     fn run_tick_at_lap_time(
         proc: &mut ReferenceLapProcessor,
         session: &SessionSnapshot,
         lap_dist_pct: f32,
         last_lap_time: Option<f32>,
         current_lap_time: f32,
+        session_best: Option<f32>,
     ) -> Option<ComputedOutput> {
         let dynamics = make_dynamics(50.0);
         let inputs = make_inputs(1.0, 0.0);
-        let lap_timing = make_lap_timing_at(lap_dist_pct, last_lap_time, current_lap_time);
+        let lap_timing =
+            make_lap_timing_at(lap_dist_pct, last_lap_time, current_lap_time, session_best);
         let car_status = make_car_status();
         let car_idx = make_car_idx();
         let start_pos = HashMap::new();
@@ -993,9 +998,18 @@ mod tests {
 
         // The completed lap is timed 89.0 too, so the reading never differs
         // from the baseline. Inside the grace window it is still ambiguous.
-        assert!(run_tick_at_lap_time(&mut proc, &session, 0.05, Some(89.0), 0.1).is_none());
+        assert!(
+            run_tick_at_lap_time(&mut proc, &session, 0.05, Some(89.0), 0.1, Some(89.0)).is_none()
+        );
 
-        let out = run_tick_at_lap_time(&mut proc, &session, 0.055, Some(89.0), SETTLE_GRACE_S);
+        let out = run_tick_at_lap_time(
+            &mut proc,
+            &session,
+            0.055,
+            Some(89.0),
+            SETTLE_GRACE_S,
+            Some(89.0),
+        );
 
         match out {
             Some(ComputedOutput::ReferenceLap(data)) => assert_eq!(data.lap_time, 89.0),
@@ -1063,6 +1077,40 @@ mod tests {
             out.is_some(),
             "faster lap than the stored reference was not committed"
         );
+    }
+
+    /// The other side of the same reading: the sim is late, so what stands is
+    /// still the previous lap's time. Committing it would file the lap just
+    /// driven under a time it did not set, so the lap stays parked instead.
+    #[test]
+    fn an_ambiguous_reading_the_session_best_denies_is_not_committed() {
+        let stored = Arc::new(Mutex::new(StoredReferenceTimes {
+            dry: Some(90.0),
+            wet: None,
+        }));
+        let mut proc =
+            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
+        let session = make_session(1);
+
+        let mut pct = 0.005;
+        while pct < 0.995 {
+            assert!(run_tick(&mut proc, &session, pct, Some(89.0)).is_none());
+            pct += 0.005;
+        }
+
+        // 89.0 still stands, but the sim's best is 87.0 — it has not registered
+        // a lap at 89.0 for this crossing, so the reading proves nothing.
+        assert!(run_tick_at_lap_time(
+            &mut proc,
+            &session,
+            0.05,
+            Some(89.0),
+            SETTLE_GRACE_S,
+            Some(87.0)
+        )
+        .is_none());
+
+        assert_eq!(stored.lock().unwrap().dry, Some(90.0));
     }
 
     #[test]
