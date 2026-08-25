@@ -58,15 +58,19 @@ pub fn is_settled(reading: f32, baseline: Option<f32>, new_lap_elapsed_s: f32) -
 /// time is a wrong reference that outlives the mistake.
 ///
 /// So past the grace window the reading is taken only when the sim's own
-/// `lap_best_lap_time` confirms it published for this lap: a lap the sim has
-/// registered as the session best is a lap it has finished timing. Without that
-/// confirmation the lap simply stays parked until the next crossing replaces
-/// it — no reference is better than a mislabelled one.
+/// `lap_best_lap_time` confirms it published for this lap: it has to *become*
+/// this reading, having read something else before the crossing. A best that
+/// already stood at this value proves nothing — the previous lap was the
+/// session best, and both fields sitting on its time is exactly what a sim that
+/// has not published yet looks like. Without the transition the lap stays
+/// parked until the next crossing replaces it: no reference is better than a
+/// mislabelled one.
 pub fn is_settled_for_reference(
     reading: f32,
     baseline: Option<f32>,
     new_lap_elapsed_s: f32,
     session_best: Option<f32>,
+    baseline_best: Option<f32>,
 ) -> bool {
     if reading == 0.0 {
         return false;
@@ -80,7 +84,11 @@ pub fn is_settled_for_reference(
         return false;
     }
 
-    session_best.is_some_and(|best| best > 0.0 && (reading - best).abs() <= LAP_TIME_EPSILON)
+    session_best.is_some_and(|best| {
+        best > 0.0
+            && (reading - best).abs() <= LAP_TIME_EPSILON
+            && differs_from_baseline(best, baseline_best)
+    })
 }
 
 #[cfg(test)]
@@ -116,16 +124,34 @@ mod tests {
 
     #[test]
     fn the_reference_takes_a_reading_that_differs_without_asking_the_best() {
-        assert!(is_settled_for_reference(89.0, Some(90.0), 0.0, None));
+        assert!(is_settled_for_reference(89.0, Some(90.0), 0.0, None, None));
     }
 
     #[test]
-    fn the_reference_takes_an_ambiguous_reading_the_session_best_confirms() {
+    fn the_reference_takes_an_ambiguous_reading_the_session_best_moved_to() {
+        // The best was 91.0 before the crossing and now reads what the last lap
+        // reads: the sim published, and the two laps simply tied.
         assert!(is_settled_for_reference(
             90.0,
             Some(90.0),
             SETTLE_GRACE_S,
-            Some(90.0)
+            Some(90.0),
+            Some(91.0)
+        ));
+    }
+
+    /// The case that makes matching alone useless: last and best both stood at
+    /// 89.0 before the crossing because the previous lap was the session best,
+    /// and the sim has published nothing since. Every field agrees, and every
+    /// one of them is stale.
+    #[test]
+    fn the_reference_leaves_a_best_that_already_stood_at_the_reading() {
+        assert!(!is_settled_for_reference(
+            89.0,
+            Some(89.0),
+            SETTLE_GRACE_S,
+            Some(89.0),
+            Some(89.0)
         ));
     }
 
@@ -137,18 +163,26 @@ mod tests {
             90.0,
             Some(90.0),
             SETTLE_GRACE_S,
+            Some(88.0),
             Some(88.0)
         ));
         assert!(!is_settled_for_reference(
             90.0,
             Some(90.0),
             SETTLE_GRACE_S,
+            None,
             None
         ));
     }
 
     #[test]
     fn the_reference_waits_out_the_grace_window_like_the_lap_log() {
-        assert!(!is_settled_for_reference(90.0, Some(90.0), 0.5, Some(90.0)));
+        assert!(!is_settled_for_reference(
+            90.0,
+            Some(90.0),
+            0.5,
+            Some(90.0),
+            Some(91.0)
+        ));
     }
 }

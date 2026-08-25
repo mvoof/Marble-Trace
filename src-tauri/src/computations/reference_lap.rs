@@ -59,6 +59,8 @@ pub struct ReferenceLapProcessor {
     /// `lap_last_lap_time` as it read in the middle of the lap in progress —
     /// the previous lap's time, whatever the sim does at the crossing.
     mid_lap_last_lap_time: Option<f32>,
+    /// `lap_best_lap_time` sampled in the same band and for the same reason.
+    mid_lap_best_lap_time: Option<f32>,
     last_track_id: Option<i32>,
     last_car_screen_name: Option<String>,
     /// Last bucket written this lap — lets us forward-fill buckets skipped
@@ -103,6 +105,9 @@ struct PendingLap {
     recorded_fuel_level: Option<f32>,
     /// The previous lap's `lap_last_lap_time`, sampled mid-lap where available.
     baseline_last_lap_time: Option<f32>,
+    /// `lap_best_lap_time` as it read before the crossing, sampled the same way.
+    /// The completed lap's time is confirmed by the best *moving* to it.
+    baseline_best_lap_time: Option<f32>,
 }
 
 /// Average remaining tread (0.0-1.0, 1.0=fresh) across all sampled tire zones, when any are present.
@@ -160,6 +165,7 @@ impl ReferenceLapProcessor {
         self.lap_invalidated = false;
         self.lap_max_wetness = None;
         self.mid_lap_last_lap_time = None;
+        self.mid_lap_best_lap_time = None;
     }
 
     /// Marks the lap in progress unusable. Logged on the transition only —
@@ -199,6 +205,7 @@ impl ReferenceLapProcessor {
                 pending.baseline_last_lap_time,
                 ctx.lap_timing.lap_current_lap_time,
                 ctx.lap_timing.lap_best_lap_time,
+                pending.baseline_best_lap_time,
             )
         });
 
@@ -362,6 +369,9 @@ impl Processor for ReferenceLapProcessor {
                 baseline_last_lap_time: self
                     .mid_lap_last_lap_time
                     .or(ctx.lap_timing.lap_last_lap_time),
+                baseline_best_lap_time: self
+                    .mid_lap_best_lap_time
+                    .or(ctx.lap_timing.lap_best_lap_time),
             });
 
             self.reset_for_new_lap();
@@ -381,6 +391,10 @@ impl Processor for ReferenceLapProcessor {
         if (BASELINE_SAMPLE_LOW..BASELINE_SAMPLE_HIGH).contains(&lap_dist_pct) {
             if let Some(previous_lap_time) = ctx.lap_timing.lap_last_lap_time {
                 self.mid_lap_last_lap_time = Some(previous_lap_time);
+            }
+
+            if let Some(previous_best) = ctx.lap_timing.lap_best_lap_time {
+                self.mid_lap_best_lap_time = Some(previous_best);
             }
         }
 
@@ -977,8 +991,9 @@ mod tests {
 
     /// The reported bug: the sim publishes a time equal to the previous lap's
     /// reading, so the equality test alone never settles the lap and a genuine
-    /// personal best is silently lost. Once the new lap is past the grace
-    /// window the reading is accepted as the completed lap's own.
+    /// personal best is silently lost. Past the grace window the reading is
+    /// taken once the session best moves to it, which is the sim confirming it
+    /// finished timing this lap.
     #[test]
     fn a_lap_timed_the_same_as_the_previous_reading_settles_after_the_grace_window() {
         let stored = Arc::new(Mutex::new(StoredReferenceTimes {
@@ -989,19 +1004,24 @@ mod tests {
             ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
         let session = make_session(1);
 
-        // Mid-lap the sim reports 89.0 as the previous lap's time.
+        // Mid-lap the sim reports 89.0 as the previous lap's time, with the
+        // session best still standing at 91.0.
         let mut pct = 0.005;
         while pct < 0.995 {
-            assert!(run_tick(&mut proc, &session, pct, Some(89.0)).is_none());
+            assert!(
+                run_tick_at_lap_time(&mut proc, &session, pct, Some(89.0), 0.0, Some(91.0))
+                    .is_none()
+            );
             pct += 0.005;
         }
 
         // The completed lap is timed 89.0 too, so the reading never differs
         // from the baseline. Inside the grace window it is still ambiguous.
         assert!(
-            run_tick_at_lap_time(&mut proc, &session, 0.05, Some(89.0), 0.1, Some(89.0)).is_none()
+            run_tick_at_lap_time(&mut proc, &session, 0.05, Some(89.0), 0.1, Some(91.0)).is_none()
         );
 
+        // The best moves to 89.0: the sim has published for this lap.
         let out = run_tick_at_lap_time(
             &mut proc,
             &session,
@@ -1019,44 +1039,11 @@ mod tests {
         assert_eq!(stored.lock().unwrap().dry, Some(89.0));
     }
 
+    /// A best that already stood at the reading confirms nothing: the previous
+    /// lap was the session best, so last and best both sit on its time and that
+    /// is exactly what a sim which has published nothing since looks like.
     #[test]
-    fn slower_lap_does_not_overwrite_reference() {
-        let mut proc = ReferenceLapProcessor::default();
-        let session = make_session(1);
-
-        // First lap sets the best.
-        drive_segment(&mut proc, &session, 0.005, 0.995);
-        assert!(cross_line(&mut proc, &session, 90.0).is_some());
-
-        // Second lap is slower — the stored reference stands.
-        drive_segment(&mut proc, &session, 0.06, 0.995);
-        assert!(cross_line(&mut proc, &session, 91.0).is_none());
-    }
-
-    #[test]
-    fn session_best_slower_than_stored_reference_is_not_committed() {
-        let stored = Arc::new(Mutex::new(StoredReferenceTimes {
-            dry: Some(85.0),
-            wet: None,
-        }));
-        let mut proc =
-            ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
-        let session = make_session(1);
-
-        // First lap (90.0) is slower than the persisted reference (85.0).
-        drive_segment(&mut proc, &session, 0.005, 0.995);
-        assert!(cross_line(&mut proc, &session, 90.0).is_none());
-
-        // A lap faster than the stored reference commits and updates the shared time.
-        drive_segment(&mut proc, &session, 0.06, 0.995);
-        assert!(cross_line(&mut proc, &session, 84.0).is_some());
-        assert_eq!(stored.lock().unwrap().dry, Some(84.0));
-    }
-
-    /// Realistic feed: mid-lap the sim reports the previous lap's time, which is
-    /// the baseline a completed lap's published time must differ from.
-    #[test]
-    fn a_faster_lap_commits_when_the_sim_reports_the_previous_time_mid_lap() {
+    fn a_best_that_already_stood_at_the_reading_does_not_settle_the_lap() {
         let stored = Arc::new(Mutex::new(StoredReferenceTimes {
             dry: Some(90.0),
             wet: None,
@@ -1065,18 +1052,42 @@ mod tests {
             ReferenceLapProcessor::new(Arc::new(AtomicBool::new(false)), Arc::clone(&stored));
         let session = make_session(1);
 
+        // The previous lap was 89.0 and was the session best, so both fields
+        // read 89.0 for the whole lap in progress.
         let mut pct = 0.005;
         while pct < 0.995 {
-            assert!(run_tick(&mut proc, &session, pct, Some(90.0)).is_none());
+            assert!(
+                run_tick_at_lap_time(&mut proc, &session, pct, Some(89.0), 0.0, Some(89.0))
+                    .is_none()
+            );
             pct += 0.005;
         }
 
-        assert!(run_tick(&mut proc, &session, 0.05, Some(90.0)).is_none());
-        let out = run_tick(&mut proc, &session, 0.055, Some(89.0));
+        // Nothing the sim reports changes across the crossing, and the grace
+        // window passing does not make the stale reading any more this lap's.
         assert!(
-            out.is_some(),
-            "faster lap than the stored reference was not committed"
+            run_tick_at_lap_time(&mut proc, &session, 0.05, Some(89.0), 0.1, Some(89.0)).is_none()
         );
+        assert!(run_tick_at_lap_time(
+            &mut proc,
+            &session,
+            0.055,
+            Some(89.0),
+            SETTLE_GRACE_S,
+            Some(89.0)
+        )
+        .is_none());
+        assert!(run_tick_at_lap_time(
+            &mut proc,
+            &session,
+            0.06,
+            Some(89.0),
+            SETTLE_GRACE_S * 5.0,
+            Some(89.0)
+        )
+        .is_none());
+
+        assert_eq!(stored.lock().unwrap().dry, Some(90.0));
     }
 
     /// The other side of the same reading: the sim is late, so what stands is
