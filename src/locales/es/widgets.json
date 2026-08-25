@@ -236,7 +236,38 @@
       "always": "Siempre",
       "auto": "Automático",
       "never": "Nunca",
-      "autoDesc": "Automático: se oculta durante la clasificación en solitario (un solo coche en pista)"
+      "autoDesc": "Automático: se oculta durante la clasificación en solitario (un solo coche en pista)",
+      "activationRangeDesc": "Bumper to bumper — the widget appears once someone is this close.",
+      "scope": "Scope",
+      "scaleMode": "Scale",
+      "scaleModes": {
+        "fixed-scope": "Fixed view",
+        "fixed-cars": "Fixed car size",
+        "manual": "Set view manually"
+      },
+      "scaleModeDesc": {
+        "fixed-scope": "The circle always covers the same distance. Resizing the widget zooms the whole picture, like every other widget.",
+        "fixed-cars": "Cars keep the same size on screen. A bigger widget fits more track into the circle.",
+        "manual": "You set how far the circle reaches. The further it reaches, the smaller the cars."
+      },
+      "scopeRange": "View radius (m)",
+      "scopeReadout": "Around your car: {{range}}. Rings: {{rings}}. Ticks on the axis every {{ladder}}.",
+      "showAxes": "Coordinate axes",
+      "showAxesDesc": "Crosshair plus distance ticks along the track — the one direction the sim measures.",
+      "showRangeRings": "Range rings",
+      "showBeam": "Tracking beam",
+      "showBeamDesc": "A sector as wide as the opponent, following it while it stays in the circle.",
+      "texture": "Background texture",
+      "texturePattern": "Pattern",
+      "textureDesc": "Drawn over the background color, or on its own when the background is transparent.",
+      "textureOpacity": "Density (%)",
+      "textures": {
+        "none": "None",
+        "polar-dots": "Dots",
+        "polar-mesh": "Mesh",
+        "hatch": "Hatch",
+        "scanlines": "Scanlines"
+      }
     },
     "closeBattle": {
       "appearsWhen": "Cuando aparece",
