@@ -1,8 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 
+import { REFERENCE_LAP_BUCKET_COUNT } from '@utils/backend-constants';
 import type { ReferenceLapData, ReferenceLapSample } from '@/types/bindings';
-
-const BUCKET_COUNT = 1000;
 
 export class ReferenceLapStore {
   data: ReferenceLapData | null = null;
@@ -20,8 +19,8 @@ export class ReferenceLapStore {
     if (!this.data) return null;
 
     const bucket = Math.min(
-      Math.max(Math.floor(lapDistPct * BUCKET_COUNT), 0),
-      BUCKET_COUNT - 1
+      Math.max(Math.floor(lapDistPct * REFERENCE_LAP_BUCKET_COUNT), 0),
+      REFERENCE_LAP_BUCKET_COUNT - 1
     );
 
     return this.data.samples[bucket] ?? null;
