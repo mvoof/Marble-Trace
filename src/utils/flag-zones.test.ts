@@ -74,6 +74,18 @@ describe('computeIncidentZones', () => {
     expect(zone.endPct).toBeCloseTo(0.04);
   });
 
+  it('merges two cars stranded either side of the start/finish line', () => {
+    const zones = computeIncidentZones(
+      [incident(0.995, true, 1), incident(0.005, false, 2)],
+      TRACK_M
+    );
+
+    expect(zones).toHaveLength(1);
+    expect(zones[0].startPct).toBeCloseTo(0.995 - BEFORE_PCT);
+    expect(zones[0].endPct).toBeCloseTo(0.005 + AFTER_PCT);
+    expect(zones[0].isActive).toBe(true);
+  });
+
   it('marks a zone cleared once every car in it recovered', () => {
     const [zone] = computeIncidentZones([incident(0.5, false)], TRACK_M);
 

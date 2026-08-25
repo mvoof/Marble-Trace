@@ -80,6 +80,8 @@ pub struct CarState {
     last_lap_dist_pct: Option<f32>,
     /// Seconds the car has held a trouble condition without a break.
     trouble_seconds: f32,
+    /// Which condition those seconds belong to.
+    trouble_kind: Option<IncidentKind>,
     /// Seconds left before a cleared marker is dropped. Zero when not marked.
     linger_seconds: f32,
     marked_at_pct: f32,
@@ -145,6 +147,7 @@ pub fn compute(
         if surface == TrackSurface::NotInWorld || lap_dist_pct < 0.0 {
             state.last_lap_dist_pct = None;
             state.trouble_seconds = 0.0;
+            state.trouble_kind = None;
             // A car that left the world mid-incident keeps its marker: it was
             // towed away from a place that is still worth knowing about.
             state.linger_seconds = (state.linger_seconds - tick).max(0.0);
@@ -161,11 +164,16 @@ pub fn compute(
             continue;
         }
 
-        let speed_kmh = state.last_lap_dist_pct.map(|previous| {
-            let moved_m = lap_delta_pct(previous, lap_dist_pct).abs() * track_length_m;
+        // Without a track length the movement cannot be turned into a speed at
+        // all, and a zero would read as "stopped" for every car on the grid.
+        let speed_kmh = state
+            .last_lap_dist_pct
+            .filter(|_| track_length_m > 0.0)
+            .map(|previous| {
+                let moved_m = lap_delta_pct(previous, lap_dist_pct).abs() * track_length_m;
 
-            moved_m / tick * 3.6
-        });
+                moved_m / tick * 3.6
+            });
 
         state.last_lap_dist_pct = Some(lap_dist_pct);
 
@@ -179,6 +187,13 @@ pub fn compute(
         };
 
         if let Some(kind) = trouble {
+            // The two kinds confirm at different speeds, so the seconds spent
+            // in one are not credit towards the other.
+            if state.trouble_kind != Some(kind) {
+                state.trouble_seconds = 0.0;
+                state.trouble_kind = Some(kind);
+            }
+
             state.trouble_seconds += tick;
 
             if state.trouble_seconds >= confirm_seconds {
@@ -197,6 +212,7 @@ pub fn compute(
             }
         } else {
             state.trouble_seconds = 0.0;
+            state.trouble_kind = None;
         }
 
         state.linger_seconds = (state.linger_seconds - tick).max(0.0);

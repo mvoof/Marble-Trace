@@ -54,21 +54,18 @@ export const FlagZoneStripes = observer(
     const segments = zones.flatMap((zone, zoneIndex) =>
       splitFlagZoneAtStartFinish(zone).map((segment, segmentIndex) => ({
         key: `${zoneIndex}-${segmentIndex}`,
+        isActive: zone.isActive,
         startDist: segment.startPct * pathLength,
         length: (segment.endPct - segment.startPct) * pathLength,
       }))
     );
 
     // A zone whose car has recovered is still information — marbles and a slow
-    // rejoin outlive the spin — but it stops flashing and steps back.
-    const isActive = zones.some((zone) => zone.isActive);
-    const layerClass = [
-      styles.zoneLayer,
-      isActive ? '' : styles.zoneLayerCleared,
-      blink && isActive ? styles.zoneLayerBlink : '',
-    ]
-      .filter(Boolean)
-      .join(' ');
+    // rejoin outlive the spin — but it stops flashing and steps back. That is
+    // per zone: one car still stranded must not drag every cleared marker back
+    // up to full strength with it, so the two states are two layers.
+    const activeSegments = segments.filter((segment) => segment.isActive);
+    const clearedSegments = segments.filter((segment) => !segment.isActive);
 
     // Outline style keeps the same pattern, colour and opacity and only takes
     // the middle out: a mask paints the full surface width, then knocks the
@@ -78,8 +75,59 @@ export const FlagZoneStripes = observer(
     const isOutline = zoneStyle === 'outline';
     const innerWidth = strokeWidth * (1 - 2 * OUTLINE_RAIL_RATIO);
 
+    const renderLayer = (
+      layerSegments: typeof segments,
+      layerIsActive: boolean
+    ) => {
+      if (layerSegments.length === 0) {
+        return null;
+      }
+
+      const layerClass = [
+        styles.zoneLayer,
+        layerIsActive ? '' : styles.zoneLayerCleared,
+        blink && layerIsActive ? styles.zoneLayerBlink : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+
+      return (
+        <g className={layerClass}>
+          {/* The glow is an inner wash, so the outline style does without it. */}
+          {!isOutline &&
+            layerSegments.map((segment) => (
+              <path
+                key={`glow-${segment.key}`}
+                d={svgPath}
+                fill="none"
+                stroke={BAR_COLOR}
+                strokeWidth={strokeWidth * GLOW_WIDTH_RATIO}
+                strokeLinecap="butt"
+                strokeDasharray={`0 ${segment.startDist} ${segment.length} ${pathLength}`}
+                className={styles.zoneGlow}
+              />
+            ))}
+
+          <g mask={isOutline ? `url(#${maskId})` : undefined}>
+            {layerSegments.map((segment) => (
+              <path
+                key={`surface-${segment.key}`}
+                d={svgPath}
+                fill="none"
+                stroke={`url(#${patternId})`}
+                strokeWidth={strokeWidth}
+                strokeLinecap="butt"
+                strokeDasharray={`0 ${segment.startDist} ${segment.length} ${pathLength}`}
+                className={styles.zoneSurface}
+              />
+            ))}
+          </g>
+        </g>
+      );
+    };
+
     return (
-      <g className={layerClass} pointerEvents="none">
+      <g pointerEvents="none">
         <defs>
           <pattern
             id={patternId}
@@ -135,35 +183,8 @@ export const FlagZoneStripes = observer(
           )}
         </defs>
 
-        {/* The glow is an inner wash, so the outline style does without it. */}
-        {!isOutline &&
-          segments.map((segment) => (
-            <path
-              key={`glow-${segment.key}`}
-              d={svgPath}
-              fill="none"
-              stroke={BAR_COLOR}
-              strokeWidth={strokeWidth * GLOW_WIDTH_RATIO}
-              strokeLinecap="butt"
-              strokeDasharray={`0 ${segment.startDist} ${segment.length} ${pathLength}`}
-              className={styles.zoneGlow}
-            />
-          ))}
-
-        <g mask={isOutline ? `url(#${maskId})` : undefined}>
-          {segments.map((segment) => (
-            <path
-              key={`surface-${segment.key}`}
-              d={svgPath}
-              fill="none"
-              stroke={`url(#${patternId})`}
-              strokeWidth={strokeWidth}
-              strokeLinecap="butt"
-              strokeDasharray={`0 ${segment.startDist} ${segment.length} ${pathLength}`}
-              className={styles.zoneSurface}
-            />
-          ))}
-        </g>
+        {renderLayer(clearedSegments, false)}
+        {renderLayer(activeSegments, true)}
       </g>
     );
   }

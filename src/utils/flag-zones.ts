@@ -46,6 +46,18 @@ const normalizePct = (pct: number): number => {
 };
 
 /**
+ * A zone on an unwrapped axis, before the lap fraction is folded back into
+ * `[0, 1)`. An incident just after the start/finish line starts at a negative
+ * fraction here and one just before it ends past 1, which is what lets two
+ * halves of the same hazard be recognised as touching.
+ */
+interface RawZone {
+  startRaw: number;
+  endRaw: number;
+  isActive: boolean;
+}
+
+/**
  * Builds the warning zones for the incidents the backend located.
  *
  * The distances are metres rather than a lap fraction so the zone means the
@@ -73,41 +85,53 @@ export const computeIncidentZones = (
     (left, right) => left.lapDistPct - right.lapDistPct
   );
 
-  const zones: FlagZone[] = [];
+  const raw: RawZone[] = [];
 
   for (const incident of sorted) {
-    const startPct = normalizePct(incident.lapDistPct - beforePct);
-    const endPct = normalizePct(incident.lapDistPct + afterPct);
-    const previous = zones[zones.length - 1];
+    const startRaw = incident.lapDistPct - beforePct;
+    const endRaw = incident.lapDistPct + afterPct;
+    const previous = raw[raw.length - 1];
 
     // Sorted by position, so a zone can only ever merge with the last one.
-    if (previous && startPct - previous.endPct <= MERGE_GAP_PCT) {
-      previous.endPct = endPct;
+    if (previous && startRaw - previous.endRaw <= MERGE_GAP_PCT) {
+      previous.endRaw = Math.max(previous.endRaw, endRaw);
       previous.isActive = previous.isActive || incident.isActive;
 
       continue;
     }
 
-    zones.push({ startPct, endPct, isActive: incident.isActive });
+    raw.push({ startRaw, endRaw, isActive: incident.isActive });
   }
 
   // The first and last zones may be one incident straddling the start/finish
   // line, which a sort by lap percentage always splits in two.
-  if (zones.length > 1) {
-    const first = zones[0];
-    const last = zones[zones.length - 1];
+  if (raw.length > 1) {
+    const first = raw[0];
+    const last = raw[raw.length - 1];
 
-    if (1 - last.endPct + first.startPct <= MERGE_GAP_PCT) {
-      zones.pop();
-      zones[0] = {
-        startPct: last.startPct,
-        endPct: first.endPct,
+    if (first.startRaw + 1 - last.endRaw <= MERGE_GAP_PCT) {
+      raw.pop();
+      raw[0] = {
+        startRaw: last.startRaw - 1,
+        endRaw: first.endRaw,
         isActive: first.isActive || last.isActive,
       };
     }
   }
 
-  return zones;
+  return raw.map(({ startRaw, endRaw, isActive }) => {
+    // Merged all the way round: the zone is the lap, and drawing it as a wrap
+    // would fold it onto itself.
+    if (endRaw - startRaw >= 1) {
+      return { startPct: 0, endPct: 1, isActive };
+    }
+
+    return {
+      startPct: normalizePct(startRaw),
+      endPct: normalizePct(endRaw),
+      isActive,
+    };
+  });
 };
 
 /** Lap fraction the zone covers, following the wrap when there is one. */
