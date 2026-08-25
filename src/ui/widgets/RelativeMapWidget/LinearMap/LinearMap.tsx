@@ -6,6 +6,8 @@ import { CarDot } from '@ui/shared/CarDot/CarDot';
 import { shapeForClassOrder } from '@utils/canvas';
 import { PaceCarMarker } from '@ui/widgets/TrackMapWidget/TrackMapSvg/PaceCarMarker/PaceCarMarker';
 
+import { FlagBands } from '../FlagBands/FlagBands';
+
 import styles from './LinearMap.module.scss';
 import type { LinearMapWidgetSettings } from '@/types/widget-settings';
 import {
@@ -115,6 +117,13 @@ export const LinearMap = observer(() => {
 
   return (
     <div ref={containerRef} className={`${styles.linearMap} ${sizeClass}`}>
+      {player && (
+        <FlagBands
+          playerLapDistPct={player.lapDistPct}
+          isHorizontal={isHorizontal}
+        />
+      )}
+
       <div
         className={`${styles.mapCenterLine} ${isHorizontal ? styles.mapCenterLineH : styles.mapCenterLineV}`}
       />

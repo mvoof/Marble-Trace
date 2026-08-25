@@ -44,6 +44,9 @@ export const applyTelemetryBundle = (
 
     if (bundle.proximity)
       root.backendComputed.updateProximity(bundle.proximity);
+
+    if (bundle.incidents)
+      root.backendComputed.updateIncidents(bundle.incidents);
     if (bundle.relative) root.backendComputed.updateRelative(bundle.relative);
     if (bundle.fuel) root.backendComputed.updateFuel(bundle.fuel);
     if (bundle.driverEntries)

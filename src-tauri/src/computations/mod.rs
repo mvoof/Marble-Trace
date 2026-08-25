@@ -1,5 +1,6 @@
 pub mod driver_entries;
 pub mod fuel;
+pub mod incidents;
 pub mod lap_delta;
 pub mod lap_log;
 pub mod lap_time_settle;
@@ -27,6 +28,7 @@ use crate::model::reference_lap::ReferenceLapData;
 use crate::model::relative::RelativeFrame;
 use driver_entries::{DriverEntriesFrame, DriverEntriesProcessor};
 use fuel::{FuelComputedFrame, FuelProcessor};
+use incidents::{IncidentsFrame, IncidentsProcessor};
 use lap_delta::{LapDeltaFrame, LapDeltaProcessor};
 use lap_log::LapLogProcessor;
 use pit_stops::{PitStopsFrame, PitStopsProcessor};
@@ -44,6 +46,7 @@ pub enum ProcessorId {
     LapLog,
     PitStops,
     Proximity,
+    Incidents,
     ReferenceLap,
     Relative,
     DriverEntries,
@@ -92,6 +95,7 @@ pub enum ComputedOutput {
     LapLog(LapLogFrame),
     PitStops(PitStopsFrame),
     Proximity(ProximityFrame),
+    Incidents(IncidentsFrame),
     ReferenceLap(ReferenceLapData),
     Relative(RelativeFrame),
     DriverEntries(DriverEntriesFrame),
@@ -135,6 +139,7 @@ impl ProcessorRegistry {
                 Box::new(LapLogProcessor::default()),
                 Box::new(PitStopsProcessor::default()),
                 Box::new(ProximityProcessor),
+                Box::new(IncidentsProcessor::default()),
                 Box::new(ReferenceLapProcessor::new(
                     reset_reference_lap,
                     stored_reference_lap_time,
@@ -203,6 +208,9 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<driver_entries::DriverEntriesFrame>()
         .register::<driver_entries::DriverEntry>()
         .register::<fuel::FuelComputedFrame>()
+        .register::<incidents::IncidentKind>()
+        .register::<incidents::IncidentPoint>()
+        .register::<incidents::IncidentsFrame>()
         .register::<lap_delta::LapDeltaFrame>()
         .register::<pit_stops::PitStopsFrame>()
         .register::<proximity::LateralSide>()

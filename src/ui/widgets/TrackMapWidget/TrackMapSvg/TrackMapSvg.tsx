@@ -9,6 +9,7 @@ import type { CarOnTrack } from '@ui/widgets/TrackMapWidget/types';
 import { CarDot } from '@ui/shared/CarDot/CarDot';
 import { shapeForClassOrder } from '@utils/canvas';
 import { PaceCarMarker } from './PaceCarMarker/PaceCarMarker';
+import { FlagZones } from './FlagZones/FlagZones';
 
 import { getSectorColor } from '@utils/colors';
 import { StartFinishMarker } from './StartFinishMarker/StartFinishMarker';
@@ -230,6 +231,13 @@ export const TrackMapSvg = observer(
                 />
               );
             })}
+
+          {/* Flag zones — over the surface, under the cars */}
+          <FlagZones
+            svgPath={svgPath}
+            pathLength={pathLength}
+            strokeWidth={trackStrokePx * renderScale}
+          />
 
           {/* Start/Finish marker */}
           {showStartFinish &&

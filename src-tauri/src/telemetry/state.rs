@@ -106,6 +106,7 @@ pub const EVENT_CAR_POSITIONS: u32 = 1 << 3;
 pub const EVENT_DRIVER_ENTRIES: u32 = 1 << 4;
 pub const EVENT_RELATIVE: u32 = 1 << 5;
 pub const EVENT_PROXIMITY: u32 = 1 << 6;
+pub const EVENT_INCIDENTS: u32 = 1 << 7;
 
 /// Compose domain-specific states.
 pub struct TelemetryState {

@@ -4,6 +4,7 @@ import type {
   DriverEntriesFrame,
   DriverEntry,
   FuelComputedFrame,
+  IncidentsFrame,
   LapDeltaFrame,
   LapHistoryEntry,
   LapLogFrame,
@@ -17,6 +18,7 @@ export class BackendComputedStore {
   proximity: ProximityFrame | null = null;
   fuel: FuelComputedFrame | null = null;
   relative: RelativeFrame | null = null;
+  incidents: IncidentsFrame | null = null;
   driverEntries: DriverEntriesFrame | null = null;
   pitStops: PitStopsFrame | null = null;
   lapDelta: LapDeltaFrame | null = null;
@@ -40,6 +42,7 @@ export class BackendComputedStore {
       proximity: observable.ref,
       fuel: observable.ref,
       relative: observable.ref,
+      incidents: observable.ref,
       driverEntries: observable.ref,
       pitStops: observable.ref,
       lapDelta: observable.ref,
@@ -75,6 +78,10 @@ export class BackendComputedStore {
     this.proximity = frame;
   }
 
+  updateIncidents(frame: IncidentsFrame) {
+    this.incidents = frame;
+  }
+
   updateSlowCarClassCount(count: number) {
     this.slowCarClassCount = count;
   }
@@ -104,6 +111,7 @@ export class BackendComputedStore {
     this.proximity = null;
     this.fuel = null;
     this.relative = null;
+    this.incidents = null;
     this.driverEntries = null;
     this.pitStops = null;
     this.lapDelta = null;

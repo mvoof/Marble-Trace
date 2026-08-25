@@ -19,7 +19,8 @@ export type TelemetryEventName =
   | 'carPositions'
   | 'driverEntries'
   | 'relative'
-  | 'proximity';
+  | 'proximity'
+  | 'incidents';
 
 export const TELEMETRY_EVENT_BITS: Record<TelemetryEventName, number> = {
   carDynamics: 1 << 0,
@@ -29,6 +30,7 @@ export const TELEMETRY_EVENT_BITS: Record<TelemetryEventName, number> = {
   driverEntries: 1 << 4,
   relative: 1 << 5,
   proximity: 1 << 6,
+  incidents: 1 << 7,
 };
 
 export const telemetryEventsToMask = (

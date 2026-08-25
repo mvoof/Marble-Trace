@@ -287,6 +287,13 @@ export interface RelativeWidgetSettings {
   paceCarShowInPits?: boolean;
 }
 
+/**
+ * How a flag zone is painted: `filled` covers the whole track surface,
+ * `outline` keeps the same colour and opacity but only along each edge of it,
+ * leaving the surface underneath visible.
+ */
+export type FlagZoneStyle = 'filled' | 'outline';
+
 type TrackMapRotationMode = 'fixed' | 'heading-up';
 export type TrackMapLeaderLabelMode = 'all' | 'own-class' | 'none';
 
@@ -323,6 +330,17 @@ export interface TrackMapWidgetSettings {
   zoomRotate?: boolean;
   /** Gives every car class its own marker shape instead of a circle for all. */
   classShapes?: boolean;
+  /**
+   * Paints a warning stretch of the lap around every car the backend found
+   * stopped on track or off it. iRacing gives no position for a yellow or a
+   * debris flag, so the incident itself is what gets located — see
+   * `computations/incidents.rs`.
+   */
+  showIncidentZones?: boolean;
+  /** Blinks an active incident zone instead of holding it steady. */
+  blinkIncidentZones?: boolean;
+  /** Whether a flag zone is a full fill or only an outline along its edges. */
+  flagZoneStyle?: FlagZoneStyle;
   /** Whether other drivers stay on the map during a qualifying session. */
   qualifyingVisibility?: RadarQualifyingVisibility;
 }
@@ -343,6 +361,17 @@ export interface LinearMapWidgetSettings {
   paceCarShowInPits?: boolean;
   /** Gives every car class its own marker shape instead of a circle for all. */
   classShapes?: boolean;
+  /**
+   * Paints a warning stretch of the lap around every car the backend found
+   * stopped on track or off it. iRacing gives no position for a yellow or a
+   * debris flag, so the incident itself is what gets located — see
+   * `computations/incidents.rs`.
+   */
+  showIncidentZones?: boolean;
+  /** Blinks an active incident zone instead of holding it steady. */
+  blinkIncidentZones?: boolean;
+  /** Whether a flag zone is a full fill or only an outline along its edges. */
+  flagZoneStyle?: FlagZoneStyle;
 }
 
 export interface WeatherWidgetSettings {

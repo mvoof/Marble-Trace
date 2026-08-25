@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { InputNumber, Row, Col, Segmented, Slider } from 'antd';
 import {
+  FlagZoneStyle,
   RadarQualifyingVisibility,
   TrackMapLeaderLabelMode,
   TrackMapWidgetSettings,
@@ -173,6 +174,53 @@ export const TrackMapSettingsPanel = observer(() => {
             desc={t('settingsPanels.common.useLivePositionsTrackMapDesc')}
           />
         </div>
+      </Card>
+
+      <Card title={t('settingsPanels.trackMap.incidentZones')}>
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.trackMap.flagZoneStyle')}
+          </span>
+          <Segmented
+            block
+            value={settings.flagZoneStyle ?? 'filled'}
+            options={[
+              {
+                label: t('settingsPanels.trackMap.flagZoneStyleFilled'),
+                value: 'filled',
+              },
+              {
+                label: t('settingsPanels.trackMap.flagZoneStyleOutline'),
+                value: 'outline',
+              },
+            ]}
+            onChange={(value) =>
+              update({ flagZoneStyle: value as FlagZoneStyle })
+            }
+          />
+          <span className={styles.fieldDesc}>
+            {t('settingsPanels.trackMap.flagZoneStyleDesc')}
+          </span>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showIncidentZones"
+            title={t('settingsPanels.trackMap.showIncidentZones')}
+            desc={t('settingsPanels.trackMap.showIncidentZonesDesc')}
+            fallback
+          />
+        </div>
+
+        {(settings.showIncidentZones ?? true) && (
+          <div className={styles.fieldGroup}>
+            <SwitchRow
+              settingKey="blinkIncidentZones"
+              title={t('settingsPanels.trackMap.blinkIncidentZones')}
+              fallback
+            />
+          </div>
+        )}
       </Card>
 
       <Card title={t('settingsPanels.trackMap.safetyCar')}>
