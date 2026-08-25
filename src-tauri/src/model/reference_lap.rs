@@ -3,8 +3,9 @@
 //! `sim://reference-lap/updated`, not part of the tiered `TelemetryBundle`.
 use serde::{Deserialize, Serialize};
 
-/// Number of lap-distance buckets a reference lap is sampled into (≈0.1% resolution).
-pub const REFERENCE_LAP_BUCKET_COUNT: usize = 1000;
+// Declared with the other values the frontend needs as literals — the coach
+// records the lap in progress on this same grid.
+pub use crate::model::defaults::REFERENCE_LAP_BUCKET_COUNT;
 
 /// Track wetness (0=dry to 7=flooded) at or above which a lap counts as wet.
 ///

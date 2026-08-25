@@ -2,6 +2,7 @@ pub mod driver_entries;
 pub mod fuel;
 pub mod lap_delta;
 pub mod lap_log;
+pub mod lap_time_settle;
 pub mod pit_stops;
 pub mod pit_target;
 pub mod proximity;

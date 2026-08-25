@@ -10,7 +10,7 @@ import {
   type TraceWindowBuffers,
 } from './coach-trace-utils';
 
-const BUCKET_COUNT = 1000;
+import { REFERENCE_LAP_BUCKET_COUNT as BUCKET_COUNT } from '@utils/backend-constants';
 const TRACK_LENGTH_M = 4000;
 const WINDOW_M = 150;
 const NOW_INDEX = (TRACE_POINT_COUNT - 1) / 2;

@@ -36,6 +36,12 @@ ts_values! {
 
     /// Shown for a car whose class the sim reported without a colour.
     pub const DEFAULT_CLASS_COLOR: &str = "#888888" => DEFAULT_CLASS_COLOR;
+
+    /// Distance buckets a reference lap is recorded into: index `i` covers
+    /// `lap_dist_pct` in `[i / count, (i+1) / count)`. The coach records the lap
+    /// in progress on the same grid to compare the two traces bucket for
+    /// bucket, so a change here re-buckets both sides at once or neither.
+    pub const REFERENCE_LAP_BUCKET_COUNT: usize = 1000 => REFERENCE_LAP_BUCKET_COUNT;
 }
 
 #[cfg(all(test, feature = "dev"))]

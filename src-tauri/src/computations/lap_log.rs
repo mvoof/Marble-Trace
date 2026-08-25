@@ -1,9 +1,13 @@
-/// Lap log processor — mirrors the frontend `LapStore` state machine.
+/// Lap log processor — tracks lap completion events, handles iRacing SDK quirks
+/// around `lap_last_lap_time` delivery timing, and maintains a capped history of
+/// completed laps for the player.
 ///
-/// Tracks lap completion events, handles iRacing SDK quirks around
-/// `lap_last_lap_time` delivery timing, and maintains a capped history
-/// of completed laps for the player.
+/// Lap completion is read off the `lap` counter here; `ReferenceLapProcessor`
+/// reads it off the `lap_dist_pct` wrap instead, because it has to cut its
+/// sample buffer at the line tick-exact. The two share only when the published
+/// time may be believed — `lap_time_settle`.
 use crate::capabilities::Capabilities;
+use crate::computations::lap_time_settle::is_settled;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use crate::model::lap_log::{LapHistoryEntry, LapLogFrame, LastCompletedLap};
 
@@ -164,18 +168,15 @@ impl LapLogState {
                 return self.current_frame();
             }
 
-            // `0` means `lap_last_lap_time` is not yet initialised — keep waiting.
-            if lap_last_lap_time == 0.0 {
-                return self.current_frame();
-            }
-
-            // `lap_last_lap_time` still shows the previous lap's time — SDK hasn't
-            // updated yet. Keep waiting unless >1 s has elapsed (same-time guard).
-            // Guard applies to negative values too: if the previous lap was invalid
-            // (-1.0) and the current lap is also invalid, the SDK still lags and may
-            // update from -1.0 to a valid positive time. Skipping the guard here would
-            // record a valid lap as invalid and permanently lose its time.
-            if lap_last_lap_time == self.last_recorded_lap_time && lap_current_lap_time < 1.0 {
+            // The reading may still be the previous lap's — including when both
+            // laps were invalid (-1.0), where the SDK still lags and may yet
+            // update to a valid time. Recording that as invalid would lose a
+            // real lap permanently, so the same wait applies to negatives.
+            if !is_settled(
+                lap_last_lap_time,
+                Some(self.last_recorded_lap_time),
+                lap_current_lap_time,
+            ) {
                 return self.current_frame();
             }
 

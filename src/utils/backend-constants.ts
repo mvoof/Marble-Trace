@@ -35,3 +35,11 @@ export const DEFAULT_CAR_LENGTH_M = 4.4;
  * Shown for a car whose class the sim reported without a colour.
  */
 export const DEFAULT_CLASS_COLOR = '#888888';
+
+/**
+ * Distance buckets a reference lap is recorded into: index `i` covers
+ * `lap_dist_pct` in `[i / count, (i+1) / count)`. The coach records the lap
+ * in progress on the same grid to compare the two traces bucket for
+ * bucket, so a change here re-buckets both sides at once or neither.
+ */
+export const REFERENCE_LAP_BUCKET_COUNT = 1000;

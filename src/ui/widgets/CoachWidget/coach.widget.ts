@@ -1,5 +1,6 @@
 import { makeAutoObservable, reaction, type IReactionDisposer } from 'mobx';
 
+import { REFERENCE_LAP_BUCKET_COUNT } from '@utils/backend-constants';
 import type { RootStore } from '@store/root-store';
 import type { ReferenceLapSample, TrackCondition } from '@/types/bindings';
 import type { CoachWidgetSettings } from '@/types/widget-settings';
@@ -11,13 +12,6 @@ import {
   type TraceWindowBuffers,
   type TraceWindowStats,
 } from './coach-trace-utils';
-
-/**
- * Buckets the lap in progress is recorded into. Must match the reference lap's
- * own resolution (`REFERENCE_LAP_BUCKET_COUNT` on the Rust side) so both traces
- * are sampled on the same grid.
- */
-const LAP_BUCKET_COUNT = 1000;
 
 /**
  * A backwards jump larger than this (in lap fraction) is a teleport — a pit
@@ -75,12 +69,12 @@ export class CoachWidgetStore {
   /** Scalars produced alongside the window on the same pass. */
   windowStats: TraceWindowStats = EMPTY_TRACE_STATS;
 
-  private readonly ownSpeedByBucket = new Float32Array(LAP_BUCKET_COUNT).fill(
-    NO_VALUE
-  );
-  private readonly ownBrakeByBucket = new Float32Array(LAP_BUCKET_COUNT).fill(
-    NO_VALUE
-  );
+  private readonly ownSpeedByBucket = new Float32Array(
+    REFERENCE_LAP_BUCKET_COUNT
+  ).fill(NO_VALUE);
+  private readonly ownBrakeByBucket = new Float32Array(
+    REFERENCE_LAP_BUCKET_COUNT
+  ).fill(NO_VALUE);
 
   private previousDistPct: number | null = null;
   /** Last bucket written this lap, for forward-filling the ones jumped over. */
@@ -172,8 +166,8 @@ export class CoachWidgetStore {
     }
 
     const bucket = Math.min(
-      Math.floor(lapDistPct * LAP_BUCKET_COUNT),
-      LAP_BUCKET_COUNT - 1
+      Math.floor(lapDistPct * REFERENCE_LAP_BUCKET_COUNT),
+      REFERENCE_LAP_BUCKET_COUNT - 1
     );
     const brake = this.root.player.carInputs?.brake ?? 0;
 
@@ -253,7 +247,7 @@ export class CoachWidgetStore {
    * `init()` and so have no telemetry frame to record on.
    */
   seedBucket(bucket: number, speed: number, brake: number) {
-    if (bucket < 0 || bucket >= LAP_BUCKET_COUNT) return;
+    if (bucket < 0 || bucket >= REFERENCE_LAP_BUCKET_COUNT) return;
 
     this.ownSpeedByBucket[bucket] = speed;
     this.ownBrakeByBucket[bucket] = brake;
