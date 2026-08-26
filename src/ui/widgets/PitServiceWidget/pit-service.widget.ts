@@ -6,6 +6,7 @@ import { PitAutoService } from '@ui/widgets/PitServiceWidget/pit-auto-service';
 import { PitOrder } from '@ui/widgets/PitServiceWidget/pit-order';
 import { PitPanelState } from '@ui/widgets/PitServiceWidget/pit-panel';
 import { distanceToPitEntryM } from '@ui/widgets/PitServiceWidget/pit-approach';
+import { PIT_LIMITER_BIT } from '@ui/hooks/usePitState';
 
 /**
  * The widget's entry point, and the three things it is made of:
@@ -119,6 +120,27 @@ export class PitServiceWidgetStore {
     const distM = this.distToPitEntryM;
 
     return distM !== null && distM <= revealM;
+  }
+
+  /** The sim's pit limiter flag, straight off the engine warning bitmask. */
+  get isLimiterOn(): boolean {
+    return (
+      ((this.root.player.carStatus?.engine_warnings ?? 0) & PIT_LIMITER_BIT) !==
+      0
+    );
+  }
+
+  /**
+   * The car is out of the pits and the lane's limit no longer binds it — the
+   * moment the speed row stops policing a number and turns into the go-ahead.
+   *
+   * Being off pit road is not enough on its own: the widget shows itself on the
+   * approach as well (`revealOnApproachM`), and a green GO in front of a driver
+   * braking for the entry is the opposite of the truth. On the way in the limit
+   * still applies in a few hundred meters, so the row stays a scale.
+   */
+  get isPitLimitReleased(): boolean {
+    return !this.isOnPitRoad && !this.isLimiterOn && !this.isApproachingPit;
   }
 
   get isInPitStall(): boolean {

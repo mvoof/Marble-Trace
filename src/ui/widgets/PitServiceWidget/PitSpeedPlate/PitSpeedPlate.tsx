@@ -7,7 +7,6 @@ import {
   SPEED_GREEN_SHARE,
 } from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import { parsePitSpeedLimitMs, speedUnit } from '@utils/telemetry-format';
-import { PIT_LIMITER_BIT } from '@ui/hooks/usePitState';
 import {
   usePitServiceWidgetStore,
   usePlayerStore,
@@ -35,14 +34,10 @@ export const PitSpeedPlate = observer(() => {
   const factor = units.speedFactor;
   const unit = speedUnit(units.unitSystem);
 
-  const isLimiterOn =
-    ((player.carStatus?.engine_warnings ?? 0) & PIT_LIMITER_BIT) !== 0;
-
-  // Past the pit exit the limit no longer applies, so the row becomes the
-  // go-ahead instead of policing a speed nobody is bound by any more.
-  const isReleased = !pitService.isOnPitRoad && !isLimiterOn;
-
-  if (isReleased) {
+  // Both states are the store's to decide: the limiter bit and what counts as
+  // being out of the pits are read by the auto-service reactions too, and two
+  // answers to "are we still bound by the limit" is one too many.
+  if (pitService.isPitLimitReleased) {
     return (
       <div className={`${styles.row} ${styles.rowReleased}`}>
         <span className={styles.label}>PIT EXIT</span>
@@ -52,7 +47,7 @@ export const PitSpeedPlate = observer(() => {
     );
   }
 
-  if (isLimiterOn) {
+  if (pitService.isLimiterOn) {
     return (
       <div className={`${styles.row} ${styles.rowLimiter}`}>
         <span className={styles.label}>PIT LIMITER</span>
