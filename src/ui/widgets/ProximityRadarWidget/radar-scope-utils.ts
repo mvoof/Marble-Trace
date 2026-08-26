@@ -464,7 +464,7 @@ export const drawBeam = (
     opacity,
   }: BeamInput
 ): void => {
-  const fade = Math.max(0.15, 1 - distanceMeters / rangeMeters) * opacity;
+  const fade = Math.max(0.15, 1 - distanceMeters / rangeMeters);
   const stop = Math.min(
     0.92,
     Math.max(0.08, (distanceMeters * pxPerMeter) / radiusPx)
@@ -479,7 +479,7 @@ export const drawBeam = (
     radiusPx
   );
   gradient.addColorStop(0, withAlpha(color, 0));
-  gradient.addColorStop(stop, withAlpha(color, 0.3 * fade + 0.06));
+  gradient.addColorStop(stop, withAlpha(color, (0.3 * fade + 0.06) * opacity));
   gradient.addColorStop(1, withAlpha(color, 0.02 * opacity));
 
   ctx.save();
