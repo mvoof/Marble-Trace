@@ -606,11 +606,11 @@
       "approachEdge": "Edge",
       "approachEdgeLeft": "Left",
       "approachEdgeRight": "Right",
-      "approachCueDist": "Warn from {{meters}} m out",
+      "approachCueDist": "Warn from {{distance}} out",
       "approachCueDistDesc": "Distance to the stall at which the countdown turns amber.",
       "brakeCue": "Braking cue",
       "brakeCueDesc": "Mark where braking has to start to roll to a stop in the stall at the current speed, and flash the rail once you are there.",
-      "revealOnApproach": "Show {{meters}} m before pit entry",
+      "revealOnApproach": "Show {{distance}} before pit entry",
       "revealOnApproachDesc": "The sim reports nothing about heading for the pits, so this is pure distance to the pit entry line — enough to change the order on the way in. Zero switches it off and the box appears on pit road as before."
     },
     "coach": {

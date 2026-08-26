@@ -606,11 +606,11 @@
       "approachEdge": "Borde",
       "approachEdgeLeft": "Izquierda",
       "approachEdgeRight": "Derecha",
-      "approachCueDist": "Avisar desde {{meters}} m",
+      "approachCueDist": "Avisar desde {{distance}}",
       "approachCueDistDesc": "Distancia al box a la que la cuenta atrás se pone ámbar.",
       "brakeCue": "Aviso de frenada",
       "brakeCueDesc": "Marca dónde hay que empezar a frenar para detenerse en el box a la velocidad actual, y hace parpadear la barra al llegar.",
-      "revealOnApproach": "Mostrar {{meters}} m antes de la entrada al pit",
+      "revealOnApproach": "Mostrar {{distance}} antes de la entrada al pit",
       "revealOnApproachDesc": "El simulador no informa de la intención de entrar, así que es pura distancia a la línea de entrada al pit lane — lo justo para cambiar el pedido de camino. Cero lo desactiva y el panel aparece en el pit lane como antes."
     },
     "coach": {

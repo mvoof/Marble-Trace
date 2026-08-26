@@ -3,7 +3,7 @@ import type { UnitSystem } from '@/types';
 export const MPS_TO_KMH = 3.6;
 export const MPS_TO_MPH = 2.23694;
 const LITERS_TO_GAL = 0.264172;
-const METERS_TO_FEET = 3.28084;
+export const METERS_TO_FEET = 3.28084;
 
 export function formatSpeed(mps: number, unitSystem: UnitSystem): string {
   const factor = unitSystem === 'metric' ? MPS_TO_KMH : MPS_TO_MPH;
@@ -62,6 +62,23 @@ export function formatDistance(
 
   return Number(meters).toFixed(1);
 }
+
+/**
+ * A distance the user reads or types, from the meters everything is stored and
+ * compared in. Settings keep meters whatever the driver's unit system is —
+ * a slider that wrote feet into a field named `...M` would quietly mean
+ * something different on two machines — so the conversion belongs at the edge,
+ * in the control and in the readout.
+ */
+export const metersToDisplayDistance = (
+  meters: number,
+  unitSystem: UnitSystem
+): number => (unitSystem === 'imperial' ? meters * METERS_TO_FEET : meters);
+
+export const displayDistanceToMeters = (
+  value: number,
+  unitSystem: UnitSystem
+): number => (unitSystem === 'imperial' ? value / METERS_TO_FEET : value);
 
 export function distanceUnit(unitSystem: UnitSystem): string {
   return unitSystem === 'metric' ? 'м' : 'ft';

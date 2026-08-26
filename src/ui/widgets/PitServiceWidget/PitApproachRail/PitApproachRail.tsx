@@ -8,10 +8,11 @@ import type {
 } from '@/types/widget-settings';
 import { buildPitApproachView } from '@ui/widgets/PitServiceWidget/pit-approach';
 
+import { METERS_TO_FEET } from '@utils/telemetry-format';
+
 import styles from './PitApproachRail.module.scss';
 
 const PCT = 100;
-const METERS_TO_FEET = 3.28084;
 
 interface PitApproachRailProps {
   placement: PitApproachPlacement;
