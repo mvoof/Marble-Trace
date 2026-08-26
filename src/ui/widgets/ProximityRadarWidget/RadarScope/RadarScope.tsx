@@ -35,16 +35,6 @@ import styles from './RadarScope.module.scss';
  */
 const SEARCH_RADIUS_M = 40;
 
-/**
- * The car-opacity setting is the alpha of a car at the centre of the scope, so
- * 100% draws it solid. Distance only fades it away from that ceiling, down to
- * this share of it at the rim, so depth still reads without a legend.
- */
-const RIM_BODY_FADE = 0.32;
-
-const bodyFade = (gapMeters: number, rangeMeters: number): number =>
-  Math.max(RIM_BODY_FADE, 1 - gapMeters / (rangeMeters * 1.5));
-
 export const RadarScope = observer(() => {
   // A ref would be null on the first render — the scope renders nothing until
   // there is traffic — and an effect keyed on a ref never learns that the
@@ -165,7 +155,7 @@ export const RadarScope = observer(() => {
         x: 0,
         y: 0,
         color: SCOPE_INK.player,
-        alpha: 1,
+        alpha: scope.carOpacity,
         pxPerMeter,
         carLengthM: carLength,
       });
@@ -246,7 +236,7 @@ const drawCenterLane = (
         x: 0,
         y,
         color: body,
-        alpha: bodyFade(gapMeters, rangeMeters) * scope.carOpacity,
+        alpha: scope.carOpacity,
         pxPerMeter,
         carLengthM,
       });
@@ -344,7 +334,6 @@ const drawSideLane = (
       x,
       y,
       color: body,
-      // Alongside carries no depth of its own — the lane is one car wide.
       alpha: scope.carOpacity,
       pxPerMeter,
       carLengthM,
