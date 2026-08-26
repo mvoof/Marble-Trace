@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { v3Radars } from './v3-radars';
 
 const SQUARE = { currentWidth: 180, currentHeight: 180 };
+const SQUARE_DESIGN = { designWidth: 180, designHeight: 180 };
 
 describe('v3 — car length to app settings', () => {
   it('lifts the value out of the radar and drops it from both copies', () => {
@@ -20,12 +21,14 @@ describe('v3 — car length to app settings', () => {
 
     expect(migrated['app']).toEqual({ steeringLock: 900, carLength: 5.2 });
     expect(migrated['widgets']).toEqual([
-      { id: 'proximity-radar', userSettings: SQUARE },
+      { id: 'proximity-radar', ...SQUARE_DESIGN, userSettings: SQUARE },
     ]);
     expect(migrated['layouts']).toEqual([
       {
         id: 'race',
-        widgets: [{ id: 'proximity-radar', userSettings: SQUARE }],
+        widgets: [
+          { id: 'proximity-radar', ...SQUARE_DESIGN, userSettings: SQUARE },
+        ],
       },
     ]);
   });
@@ -74,14 +77,37 @@ describe('v3 — the radar becomes a square scope', () => {
     });
 
     expect(migrated['widgets']).toEqual([
-      { id: 'proximity-radar', userSettings: { ...SQUARE, x: 40 } },
+      {
+        id: 'proximity-radar',
+        ...SQUARE_DESIGN,
+        userSettings: { ...SQUARE, x: 40 },
+      },
       { id: 'radar-bar', userSettings: { currentWidth: 90 } },
     ]);
     expect(migrated['layouts']).toEqual([
       {
         id: 'race',
-        widgets: [{ id: 'proximity-radar', userSettings: SQUARE }],
+        widgets: [
+          { id: 'proximity-radar', ...SQUARE_DESIGN, userSettings: SQUARE },
+        ],
       },
+    ]);
+  });
+
+  it('squares the stored design size a portrait plate left behind', () => {
+    const migrated = v3Radars.migrate({
+      widgets: [
+        {
+          id: 'proximity-radar',
+          designWidth: 200,
+          designHeight: 300,
+          userSettings: { currentWidth: 200, currentHeight: 300 },
+        },
+      ],
+    });
+
+    expect(migrated['widgets']).toEqual([
+      { id: 'proximity-radar', ...SQUARE_DESIGN, userSettings: SQUARE },
     ]);
   });
 });

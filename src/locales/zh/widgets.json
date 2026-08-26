@@ -237,39 +237,39 @@
       "auto": "自动",
       "never": "从不",
       "autoDesc": "自动：单独排位赛期间隐藏（赛道上仅一辆车）",
-      "activationRangeDesc": "Bumper to bumper — the widget appears once someone is this close.",
-      "scope": "Scope",
-      "scaleMode": "Scale",
+      "activationRangeDesc": "以保险杠间距计算——有人靠近到该距离时组件才出现。",
+      "scope": "视野圆",
+      "scaleMode": "缩放",
       "scaleModes": {
-        "fixed-scope": "Fixed view",
-        "fixed-cars": "Fixed car size",
-        "manual": "Set view manually"
+        "fixed-scope": "固定视野",
+        "fixed-cars": "固定车辆大小",
+        "manual": "手动设置视野"
       },
       "scaleModeDesc": {
-        "fixed-scope": "The circle always covers the same distance. Resizing the widget zooms the whole picture, like every other widget.",
-        "fixed-cars": "Cars keep the same size on screen. A bigger widget fits more track into the circle.",
-        "manual": "You set how far the circle reaches. The further it reaches, the smaller the cars."
+        "fixed-scope": "圆圈始终覆盖相同距离。调整组件尺寸会整体缩放画面，与其他组件一致。",
+        "fixed-cars": "车辆在屏幕上保持相同大小。组件越大，圆圈内容纳的赛道越多。",
+        "manual": "由你设定圆圈覆盖的距离。覆盖越远，车辆越小。"
       },
-      "scopeRange": "View radius (m)",
-      "scopeReadout": "Around your car: {{range}}. Rings: {{rings}}. Ticks on the axis every {{ladder}}.",
-      "showAxes": "Coordinate axes",
-      "showAxesDesc": "Crosshair plus distance ticks along the track — the one direction the sim measures.",
+      "scopeRange": "视野半径（米）",
+      "scopeReadout": "你车周围：{{range}}。圆环：{{rings}}。坐标轴每 {{ladder}} 一个刻度。",
+      "showAxes": "坐标轴",
+      "showAxesDesc": "十字准线与沿赛道方向的距离刻度——模拟器唯一测量的方向。",
       "showAxisTicks": "坐标轴刻度",
       "showAxisTicksDesc": "沿垂直轴的距离刻度。",
-      "showRangeRings": "Range rings",
-      "showBeam": "Tracking beam",
-      "showBeamDesc": "A sector as wide as the opponent, following it while it stays in the circle.",
+      "showRangeRings": "距离圆环",
+      "showBeam": "跟踪光束",
+      "showBeamDesc": "与对手同宽的扇区，只要对手在圆内就一直跟随。",
       "monochromeCars": "白色车辆",
       "monochromeCarsDesc": "关闭后：每辆车按危险程度着色。",
-      "texture": "Background texture",
-      "texturePattern": "Pattern",
-      "textureDesc": "Drawn over the background color, or on its own when the background is transparent.",
+      "texture": "背景纹理",
+      "texturePattern": "图案",
+      "textureDesc": "绘制在背景色之上；背景透明时单独显示。",
       "textures": {
-        "none": "None",
-        "polar-dots": "Dots",
-        "polar-mesh": "Mesh",
-        "hatch": "Hatch",
-        "scanlines": "Scanlines"
+        "none": "无",
+        "polar-dots": "圆点",
+        "polar-mesh": "网格",
+        "hatch": "斜线",
+        "scanlines": "扫描线"
       }
     },
     "closeBattle": {

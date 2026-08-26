@@ -59,20 +59,28 @@ export const RadarScope = observer(() => {
   // Read once per frame inside the draw loop rather than through props: the
   // canvas is redrawn on RAF anyway, and a store read in the render body would
   // rebuild the effect on every telemetry tick.
-  const frameRef = useRef({ nearbyCars, carLength: 4.6 });
-  frameRef.current = {
+  const frameRef = useRef({
     nearbyCars,
     carLength: appSettings.appSettings.carLength,
-  };
+  });
 
   const settings =
     widgetSettings.getSettings<ProximityRadarSettings>('proximity-radar');
 
   const settingsRef = useRef(settings);
-  settingsRef.current = settings;
-
   const unitSystemRef = useRef(units.unitSystem);
-  unitSystemRef.current = units.unitSystem;
+
+  // Written after the render rather than during it: a render body that mutates
+  // a ref is not replayable, and the draw loop only ever reads them on the next
+  // frame anyway. No dependency list — every render carries a newer tick.
+  useLayoutEffect(() => {
+    frameRef.current = {
+      nearbyCars,
+      carLength: appSettings.appSettings.carLength,
+    };
+    settingsRef.current = settings;
+    unitSystemRef.current = units.unitSystem;
+  });
 
   useLayoutEffect(() => {
     if (!canvas) {

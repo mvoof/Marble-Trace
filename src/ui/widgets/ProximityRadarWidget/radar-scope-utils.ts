@@ -156,7 +156,15 @@ export const resolveScopeScale = ({
   }
 
   if (scaleMode === 'manual') {
-    return { pxPerMeter: radiusPx / scopeRange, rangeMeters: scopeRange };
+    // A hand-edited file can carry a zero or a negative here, and a scope of
+    // zero meters is an infinite pxPerMeter — every car drawn as a full-screen
+    // block. Fall back to the design range instead.
+    const range =
+      Number.isFinite(scopeRange) && scopeRange > 0
+        ? scopeRange
+        : DESIGN_SCOPE_RANGE_M;
+
+    return { pxPerMeter: radiusPx / range, rangeMeters: range };
   }
 
   const pxPerMeter = designPxPerMeter * widgetScale;
@@ -552,14 +560,21 @@ export const drawBodyText = (
     return;
   }
 
+  const available = CAR_WIDTH_M * pxPerMeter - LABEL_SIDE_PADDING_PX * 2;
+
   ctx.save();
-  ctx.font = `${weight} ${fontPx}px Rajdhani, sans-serif`;
 
-  const fits =
-    ctx.measureText(text).width <=
-    CAR_WIDTH_M * pxPerMeter - LABEL_SIDE_PADDING_PX * 2;
+  // A body 1.8 m wide is narrow at any sane widget size, so the label earns its
+  // place by shrinking first — down to MIN_LABEL_PX, never past it.
+  let size = fontPx;
+  ctx.font = `${weight} ${size}px Rajdhani, sans-serif`;
 
-  if (!fits) {
+  while (ctx.measureText(text).width > available && size > MIN_LABEL_PX) {
+    size -= 1;
+    ctx.font = `${weight} ${size}px Rajdhani, sans-serif`;
+  }
+
+  if (ctx.measureText(text).width > available) {
     ctx.restore();
 
     return;

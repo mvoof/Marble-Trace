@@ -1,10 +1,5 @@
 import type { Migration, SettingsBlob } from '../types';
-import {
-  asArray,
-  asObject,
-  dropWidgetSettings,
-  patchWidgetSettings,
-} from '../blob';
+import { asArray, asObject, dropWidgetSettings, mapEveryWidget } from '../blob';
 
 /**
  * v2 → v3. Everything this release changes about the two radars.
@@ -28,7 +23,10 @@ import {
  * **2. The proximity radar becomes a round scope.** It used to be a 200×300
  * portrait plate; the disc is square, and a saved rectangle would be clipped to
  * an ellipse. The stored size is reset to the new design size rather than
- * scaled, because the old height described a shape that no longer exists.
+ * scaled, because the old height described a shape that no longer exists. The
+ * saved *design* size is squared with it: it is stored per widget and wins over
+ * the manifest on load, so a portrait one left behind would keep skewing the
+ * scale factor long after the plate became a disc.
  *
  * Every literal here is frozen on purpose: this step has to keep meaning "move
  * carLength, square up the radar" however the widgets are named or defaulted
@@ -86,13 +84,22 @@ export const v3Radars: Migration = {
       withApp
     );
 
-    return patchWidgetSettings(
-      withoutCarLength,
-      PROXIMITY_RADAR_ID,
-      (settings) => ({
-        ...settings,
-        currentWidth: SCOPE_SIDE_PX,
-        currentHeight: SCOPE_SIDE_PX,
+    return mapEveryWidget(withoutCarLength, (widgets) =>
+      widgets.map((widget) => {
+        if (widget?.id !== PROXIMITY_RADAR_ID) {
+          return widget;
+        }
+
+        return {
+          ...widget,
+          designWidth: SCOPE_SIDE_PX,
+          designHeight: SCOPE_SIDE_PX,
+          userSettings: {
+            ...(asObject(widget.userSettings) ?? {}),
+            currentWidth: SCOPE_SIDE_PX,
+            currentHeight: SCOPE_SIDE_PX,
+          },
+        };
       })
     );
   },
