@@ -12,6 +12,12 @@ export const widgetFrameBorderRadius = (
     return `calc(12px * var(--wfs, 1)) 9999px 9999px calc(12px * var(--wfs, 1))`;
   }
 
+  // The proximity radar is a scope: its plate is the circle the user colors
+  // through the ordinary background and border settings.
+  if (widgetId === 'proximity-radar') {
+    return '50%';
+  }
+
   if (widgetId === 'race-dash') {
     return `calc(52px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(52px * var(--wfs, 1))`;
   }

@@ -63,8 +63,11 @@ export class RadarWidgetStore {
       return true;
     }
 
+    // The threshold is the number the driver reads in the settings, so it is
+    // measured the way a driver means it: bumper to bumper, not centre to
+    // centre — those differ by a whole car length.
     return proximity.nearbyCars.some(
-      (car) => car.clearance <= proximityThreshold
+      (car) => Math.abs(car.bumperDist) <= proximityThreshold
     );
   }
 

@@ -236,7 +236,41 @@
       "always": "Siempre",
       "auto": "Automático",
       "never": "Nunca",
-      "autoDesc": "Automático: se oculta durante la clasificación en solitario (un solo coche en pista)"
+      "autoDesc": "Automático: se oculta durante la clasificación en solitario (un solo coche en pista)",
+      "activationRangeDesc": "Parachoques con parachoques: el widget aparece cuando alguien se acerca tanto.",
+      "scope": "Círculo",
+      "scaleMode": "Escala",
+      "scaleModes": {
+        "fixed-scope": "Vista fija",
+        "fixed-cars": "Coches de tamaño fijo",
+        "manual": "Vista manual"
+      },
+      "scaleModeDesc": {
+        "fixed-scope": "El círculo siempre cubre la misma distancia. Redimensionar el widget amplía toda la imagen, como en los demás widgets.",
+        "fixed-cars": "Los coches mantienen su tamaño en pantalla. Un widget más grande abarca más pista dentro del círculo.",
+        "manual": "Tú decides hasta dónde llega el círculo. Cuanto más lejos llegue, más pequeños serán los coches."
+      },
+      "scopeRange": "Radio de vista (m)",
+      "scopeReadout": "Alrededor de tu coche: {{range}}. Anillos: {{rings}}. Marcas en el eje cada {{ladder}}.",
+      "showAxes": "Ejes de coordenadas",
+      "showAxesDesc": "Retícula y marcas de distancia a lo largo de la pista, la única dirección que mide el simulador.",
+      "showAxisTicks": "Marcas del eje",
+      "showAxisTicksDesc": "Marcas de distancia a lo largo del eje vertical.",
+      "showRangeRings": "Anillos de distancia",
+      "showBeam": "Haz de seguimiento",
+      "showBeamDesc": "Un sector tan ancho como el rival, que lo sigue mientras permanece en el círculo.",
+      "monochromeCars": "Coches blancos",
+      "monochromeCarsDesc": "Desactivado: cada coche toma el color del peligro.",
+      "texture": "Textura de fondo",
+      "texturePattern": "Patrón",
+      "textureDesc": "Se dibuja sobre el color de fondo, o sola cuando el fondo es transparente.",
+      "textures": {
+        "none": "Ninguna",
+        "polar-dots": "Puntos",
+        "polar-mesh": "Malla",
+        "hatch": "Trama",
+        "scanlines": "Líneas"
+      }
     },
     "closeBattle": {
       "appearsWhen": "Cuando aparece",

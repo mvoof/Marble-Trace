@@ -143,6 +143,45 @@ export interface RadarSettings {
   showDistance: boolean;
 }
 
+/**
+ * What the widget's own size does to the picture. The scope covers
+ * `radius / pxPerMeter` meters, so fixing any two of the three fixes the third
+ * — this is which two the user pins.
+ */
+export type RadarScaleMode =
+  /** The scope is a constant of the design; the widget's size zooms it all. */
+  | 'fixed-scope'
+  /** The metres-to-pixels ratio is constant; a bigger widget sees further. */
+  | 'fixed-cars'
+  /** The scope is typed in by hand and the cars follow it. */
+  | 'manual';
+
+export type RadarBackgroundTexture =
+  | 'none'
+  | 'polar-dots'
+  | 'polar-mesh'
+  | 'hatch'
+  | 'scanlines';
+
+/**
+ * The round scope adds what only it can draw. `RadarSettings` stays the pair's
+ * shared contract — the bar reads the same activation range and visibility.
+ */
+export interface ProximityRadarSettings extends RadarSettings {
+  scaleMode: RadarScaleMode;
+  /** Radius in meters the circle covers. Read only when `scaleMode` is manual. */
+  scopeRange: number;
+  backgroundTexture: RadarBackgroundTexture;
+  showAxes: boolean;
+  /** Distance ticks along the vertical axis, drawn only with the axes. */
+  showAxisTicks: boolean;
+  showRangeRings: boolean;
+  /** The beam that follows an opponent for as long as it is in the scope. */
+  showBeam: boolean;
+  /** White bodies; off paints each car in its own threat color. */
+  monochromeCars: boolean;
+}
+
 export type BattleTrigger = 'gap' | 'distance';
 
 export type BattleSides = 'both' | 'ahead' | 'behind';
@@ -629,6 +668,7 @@ export type WidgetSpecificSettings =
   | RpmLightsWidgetSettings
   | InputTraceSettings
   | RadarSettings
+  | ProximityRadarSettings
   | CloseBattleWidgetSettings
   | StandingsWidgetSettings
   | RelativeWidgetSettings

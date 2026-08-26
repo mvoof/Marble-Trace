@@ -65,6 +65,17 @@ const restoreWidgets = (
       saved.userSettings ?? {}
     );
 
+    // A locked ratio is part of the widget's shape, not a resize preference:
+    // a file written before the widget locked it (or edited by hand) would
+    // otherwise render at a size the widget cannot draw.
+    if (widgetDefaults.lockAspectRatio && widgetDefaults.designWidth > 0) {
+      const ratio = widgetDefaults.designHeight / widgetDefaults.designWidth;
+
+      mergedUserSettings.currentHeight = Math.round(
+        mergedUserSettings.currentWidth * ratio
+      );
+    }
+
     result.push({
       id: widgetDefaults.id,
       label: widgetDefaults.label,
