@@ -611,7 +611,7 @@
       "brakeCue": "Braking cue",
       "brakeCueDesc": "Mark where braking has to start to roll to a stop in the stall at the current speed, and flash the rail once you are there.",
       "revealOnApproach": "Show {{distance}} before pit entry",
-      "revealOnApproachDesc": "The sim reports nothing about heading for the pits, so the panel appears on distance to the pit entry line — but only once the service is ordered or the limiter is armed, or the entry on the racing line would show it every lap. Zero switches it off."
+      "revealOnApproachDesc": "The sim reports nothing about heading for the pits, so this is pure distance to the pit entry line — enough to change the order on the way in. Zero switches it off and the box appears on pit road as before."
     },
     "coach": {
       "call": "Call",

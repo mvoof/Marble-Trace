@@ -611,7 +611,7 @@
       "brakeCue": "Aviso de frenada",
       "brakeCueDesc": "Marca dónde hay que empezar a frenar para detenerse en el box a la velocidad actual, y hace parpadear la barra al llegar.",
       "revealOnApproach": "Mostrar {{distance}} antes de la entrada al pit",
-      "revealOnApproachDesc": "El sim no informa de la intención de entrar a boxes, así que el panel aparece por distancia a la línea de entrada — pero solo con el servicio pedido o el limitador activado; si no, una entrada en la trazada lo mostraría cada vuelta. Cero lo desactiva."
+      "revealOnApproachDesc": "El simulador no informa de la intención de entrar, así que es pura distancia a la línea de entrada al pit lane — lo justo para cambiar el pedido de camino. Cero lo desactiva y el panel aparece en el pit lane como antes."
     },
     "coach": {
       "call": "Indicación",
