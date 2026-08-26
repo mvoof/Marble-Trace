@@ -97,7 +97,7 @@
   }
 }
 
-// Position cell — stretch to row edges for class color border + gradient
+// Position cell — stretches to the row edges so padding matches the row
 .posCell {
   align-self: stretch;
   margin-top: calc(-1 * sp(xxxs));
@@ -109,6 +109,7 @@
 // Car number cell
 .carNumberCell {
   padding: 0 sp(xxxs);
+  justify-content: center;
 }
 
 // Name cell — overflow truncation
@@ -171,7 +172,11 @@
 .carNumber {
   font-family: $font-mono;
   font-size: fs(md);
-  color: $widget-text-muted;
+  font-weight: 700;
+  line-height: 1;
+  padding: sp(xxxs) sp(xxs);
+  border-radius: radius(md);
+  white-space: nowrap;
 }
 
 // Driver name

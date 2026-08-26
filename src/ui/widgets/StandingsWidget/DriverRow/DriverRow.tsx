@@ -10,7 +10,7 @@ import {
 import { parseDriverFlags } from '@utils/driver';
 import { isSessionEnded } from '@utils/timer-utils';
 import { DriverStatusBadges } from '@ui/shared/DriverStatusBadge/DriverStatusBadges';
-import { playerRowStyle } from '@utils/colors';
+import { getContrastTextColor, playerRowStyle } from '@utils/colors';
 import { DriverFlagBadge } from '@ui/shared/DriverFlagBadge/DriverFlagBadge';
 import { LicBadge } from '@ui/shared/RatingBadge/LicBadge';
 import { formatIr } from '@ui/shared/RatingBadge/LicBadge.utils';
@@ -151,24 +151,23 @@ export const DriverRow = observer(
       >
         <PositionCell carIdx={carIdx} />
 
+        <div className={`${styles.cell} ${styles.carNumberCell}`}>
+          <span
+            className={styles.carNumber}
+            style={{
+              backgroundColor: driver.carClassColor,
+              color: getContrastTextColor(driver.carClassColor),
+            }}
+          >
+            {formattedCarNumber}
+          </span>
+        </div>
+
         {settings.showPosChange && (
           <div className={`${styles.cell} ${styles.cellCenter}`}>
             <PosChange carIdx={carIdx} />
           </div>
         )}
-
-        <div className={`${styles.cell} ${styles.carNumberCell}`}>
-          <span
-            className={styles.carNumber}
-            style={
-              driver.isPlayer
-                ? { color: settings.playerAccentColor }
-                : undefined
-            }
-          >
-            #{formattedCarNumber}
-          </span>
-        </div>
 
         <div className={`${styles.cell} ${styles.nameCell}`}>
           {settings.showDriverFlags &&
