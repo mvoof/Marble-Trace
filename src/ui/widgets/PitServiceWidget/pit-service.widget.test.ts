@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { runInAction } from 'mobx';
 import { RootStore } from '@store/root-store';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
+import { PIT_LIMITER_BIT } from '@ui/hooks/usePitState';
 
 const sendPitOrderMock = vi.hoisted(() => vi.fn());
 
@@ -1038,6 +1039,67 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
       expect(rootStore.pitServiceWidget.auto.tiresTakenOver).toBe(true);
       expect(rootStore.pitServiceWidget.auto.fuelTakenOver).toBe(false);
+    });
+  });
+
+  describe('when the pit limit stops binding', () => {
+    const LAP_LENGTH_M = 4000;
+    const PIT_IN_PCT = 0.5;
+
+    const placeCar = (options: {
+      onPitRoad: boolean;
+      limiter?: boolean;
+      lapDistPct?: number;
+    }) => {
+      runInAction(() => {
+        rootStore.player.carStatus = {
+          on_pit_road: options.onPitRoad,
+          engine_warnings: options.limiter === true ? PIT_LIMITER_BIT : 0,
+        } as never;
+
+        rootStore.player.lapTiming = {
+          lap_dist_pct: options.lapDistPct ?? 0,
+        } as never;
+
+        rootStore.trackMapWidget.trackShape = {
+          pitInPct: PIT_IN_PCT,
+        } as never;
+
+        rootStore.session.sessionInfo = {
+          trackLengthM: LAP_LENGTH_M,
+        } as never;
+      });
+    };
+
+    it('releases the car once it is out of the pits', () => {
+      setSettings({ revealOnApproachM: 400 });
+      placeCar({ onPitRoad: false, lapDistPct: PIT_IN_PCT + 0.25 });
+
+      expect(rootStore.pitServiceWidget.isPitLimitReleased).toBe(true);
+    });
+
+    it('keeps policing the speed while the car is on pit road', () => {
+      placeCar({ onPitRoad: true });
+
+      expect(rootStore.pitServiceWidget.isPitLimitReleased).toBe(false);
+    });
+
+    it('keeps policing it while the limiter is engaged off pit road', () => {
+      placeCar({ onPitRoad: false, limiter: true });
+
+      expect(rootStore.pitServiceWidget.isPitLimitReleased).toBe(false);
+      expect(rootStore.pitServiceWidget.isLimiterOn).toBe(true);
+    });
+
+    // The widget shows itself on the way in, and a green "GO" in front of a
+    // driver braking for the entry is the opposite of what they need.
+    it('does not release the car on the approach the widget appeared for', () => {
+      setSettings({ revealOnApproachM: 400 });
+      // 200 m short of the entry line on a 4 km lap.
+      placeCar({ onPitRoad: false, lapDistPct: PIT_IN_PCT - 0.05 });
+
+      expect(rootStore.pitServiceWidget.isApproachingPit).toBe(true);
+      expect(rootStore.pitServiceWidget.isPitLimitReleased).toBe(false);
     });
   });
 

@@ -1,25 +1,26 @@
 .hint {
+  position: absolute;
+  top: sp(xs);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
   display: flex;
   align-items: center;
-  gap: sp(xs);
+  padding: sp(xxxs) sp(xs);
+  border-radius: radius(sm);
+  background: rgba(0, 0, 0, 0.75);
   font-family: $font-widget;
   font-size: fs(xxs);
   font-weight: 600;
   letter-spacing: 0.06em;
-}
-
-.result {
-  margin-left: auto;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .resultSent {
-  @extend .result;
-
   color: $race-green;
 }
 
 .resultFailed {
-  @extend .result;
-
   color: $race-red;
 }

@@ -3,9 +3,12 @@
 .fuel {
   position: relative;
   appearance: none;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: sp(xxs);
   width: 100%;
-  padding: sp(xxs) sp(xxs);
+  height: ws(16);
+  padding: 0 sp(xs);
   margin: 0;
   // `appearance: none` leaves the UA's 2px outset button border in place, which
   // reads as a heavy frame the moment interact mode turns the row into a button.
@@ -19,6 +22,10 @@
   text-align: left;
   font-family: $font-widget;
   overflow: hidden;
+
+  > * {
+    position: relative;
+  }
 }
 
 .fuelClickable {
@@ -47,47 +54,32 @@
   background: rgba($race-blue, 0.45);
 }
 
-.content {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: sp(xxxs);
+.icon {
+  flex: none;
+  color: $widget-label;
 }
 
-.row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: sp(sm);
-}
-
-.label {
-  display: flex;
-  align-items: center;
-  gap: sp(xxs);
-  font-size: fs(xxs);
-  letter-spacing: 0.06em;
+.calc {
+  font-family: $font-mono;
+  font-size: fs(xxxs);
   color: $widget-label;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .value {
+  margin-left: auto;
+  min-width: 5ch;
   font-family: $font-mono;
-  font-size: fs(xl);
+  font-size: fs(xs);
   line-height: 1;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .unit {
-  font-size: fs(xxs);
+  font-size: fs(xxxs);
   color: $widget-label;
   font-weight: 600;
-}
-
-.sub {
-  font-size: fs(xxs);
-  color: $widget-label;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
 }

@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
-import { ServiceHeader } from './ServiceHeader/ServiceHeader';
 import { PitSpeedPlate } from './PitSpeedPlate/PitSpeedPlate';
 import { PitApproachRail } from './PitApproachRail/PitApproachRail';
 import { FuelOrder } from './FuelOrder/FuelOrder';
@@ -9,6 +8,7 @@ import { OrderHint } from './OrderHint/OrderHint';
 import { RepairRow } from './RepairRow/RepairRow';
 import { TowRow } from './TowRow/TowRow';
 import { TireGrid } from './TireGrid/TireGrid';
+import { OrderChips } from './OrderChips/OrderChips';
 import { ServiceFooter } from './ServiceFooter/ServiceFooter';
 
 import styles from './PitServiceWidget.module.scss';
@@ -53,35 +53,57 @@ export const PitServiceWidget = observer(() => {
 
   const isSideRail = pitApproachPlacement === 'side';
 
-  return (
-    // A side rail turns the panel into a row: the stack keeps its own width and
-    // the rail hangs against the edge, which is why the manifest widens
-    // designWidth by the rail instead of letting it eat into the columns.
-    <WidgetPanel direction={isSideRail ? 'row' : 'column'} gap={0}>
-      <div className={styles.stack}>
-        <ServiceHeader />
+  // One slot, three tenants. Standing in the box the speed is zero and the
+  // repair countdowns are the numbers being watched; under tow neither applies
+  // and the only thing to wait on is the arrival. All three rows are the same
+  // height, so the panel does not resize as the stop runs.
+  const slot = (() => {
+    if (pitService.isTowing) {
+      return <TowRow />;
+    }
 
-        {/*
-          Being towed replaces the speed block — the car is not moving, and the
-          countdown is the only number that matters up there. Everything below
-          stays: the service order can still be changed while under tow, and it
-          is applied the moment the car is dropped in the box.
-        */}
-        {pitService.isTowing ? <TowRow /> : showPitSpeed && <PitSpeedPlate />}
+    // Standing in the box, whether or not the crew has started: the speed is
+    // zero from the moment the car stops, and the repair countdowns run before
+    // the first tire comes off.
+    if (pitService.isInPitStall || pitService.isServiceActive) {
+      return showRepairs ? <RepairRow /> : null;
+    }
+
+    return showPitSpeed ? <PitSpeedPlate /> : null;
+  })();
+
+  return (
+    // The docked rail hangs *outside* the panel, on the edge the driver picked:
+    // it is a glance target, not a column of the widget, and neither switching
+    // it on nor moving it may resize the box or squeeze a single row inside it.
+    // That is what `overflowVisible` in the manifest is for.
+    <WidgetPanel
+      direction="column"
+      gap={0}
+      className={isSideRail ? styles.panelWithRail : undefined}
+    >
+      <div className={styles.stack}>
+        <OrderHint />
+
+        {slot}
 
         {!isSideRail && rail}
 
         {showFuel && <FuelOrder />}
 
-        <OrderHint />
-
-        {showRepairs && <RepairRow />}
-
         {showTires && <TireGrid />}
+
+        {showRepairs && <OrderChips />}
 
         {showFooter && <ServiceFooter />}
       </div>
 
+      {/*
+        A child of the panel, not of the stack: the stack is the growing half of
+        the flexbox and can run past the plate when the content is taller than
+        the box, and a rail anchored to it would hang below the widget instead
+        of standing alongside it.
+      */}
       {isSideRail && rail}
     </WidgetPanel>
   );

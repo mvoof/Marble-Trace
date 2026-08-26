@@ -1,7 +1,7 @@
 import type { Migration, MigrationResult, SettingsBlob } from './types';
 import { v1LegacyConsolidation } from './migrations/v1-legacy-consolidation';
 import { v2DropExampleWidget } from './migrations/v2-drop-example-widget';
-import { v3Radars } from './migrations/v3-radars';
+import { v3WidgetShapes } from './migrations/v3-widget-shapes';
 
 /**
  * Format version of `settings.json`. An integer, deliberately unrelated to the
@@ -24,7 +24,7 @@ export const OLDEST_SUPPORTED_VERSION = 0;
 export const MIGRATIONS: Migration[] = [
   v1LegacyConsolidation,
   v2DropExampleWidget,
-  v3Radars,
+  v3WidgetShapes,
 ];
 
 /**

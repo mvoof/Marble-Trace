@@ -192,29 +192,88 @@ export const resolveServiceState = (
 };
 
 /**
- * Fraction of the speed plate the fill covers. The left half maps 0..limit and
- * the right half maps limit..limit+OVER_RANGE, so the divider between the two
- * cells always marks the limit itself and a small overspeed is still visible.
+ * Share of the speed row the green track covers: everything up to the limit.
+ * The short red remainder is the overspeed tip, so the seam between them is the
+ * limit itself and a small overspeed is still visible instead of pinning.
  */
+export const SPEED_GREEN_SHARE = 0.82;
+
+/** How far past the limit the red tip reaches, as a share of the limit. */
 export const OVER_RANGE_PCT = 0.2;
 
+/** Reaction time granted to the driver before the lift has to happen. */
+const LIFT_LEAD_S = 0.3;
+
+export interface SpeedRowView {
+  /** Fill inside the green track, 0..SPEED_GREEN_SHARE. */
+  fill: number;
+  /** Fill inside the red tip, 0..(1 - SPEED_GREEN_SHARE). */
+  overFill: number;
+  /** Speed left before the limit, in the display unit. Negative once over. */
+  margin: number;
+  isOver: boolean;
+  /**
+   * Band the car coasts into if the throttle is held for `LIFT_LEAD_S` more.
+   * `null` while the car is not gaining speed — there is nothing to lift for.
+   */
+  liftStart: number | null;
+  liftWidth: number | null;
+}
+
+const clamp01 = (value: number): number => Math.min(1, Math.max(0, value));
+
 /**
- * Where the "hold it here" band starts, as a share of the limit. Below it the
- * driver is giving away time, above it they are one bump away from a penalty,
- * so it is the window the plate points at rather than the limit line itself.
+ * Everything the speed row draws, from the two numbers the sim gives and the
+ * longitudinal acceleration. Kept out of the component so the thresholds are
+ * testable and the row stays a rendering of them.
  */
-export const SWEET_SPOT_SHARE = 0.92;
-
-export const speedFillPct = (speedMs: number, limitMs: number): number => {
-  if (limitMs <= 0) return 0;
-
-  if (speedMs <= limitMs) {
-    return (speedMs / limitMs) * 0.5;
+export const buildSpeedRow = (
+  speedMs: number,
+  limitMs: number,
+  longAccelMs2: number | null,
+  speedFactor: number
+): SpeedRowView => {
+  if (limitMs <= 0) {
+    return {
+      fill: 0,
+      overFill: 0,
+      margin: 0,
+      isOver: false,
+      liftStart: null,
+      liftWidth: null,
+    };
   }
 
-  const overShare = (speedMs - limitMs) / (limitMs * OVER_RANGE_PCT);
+  const isOver = speedMs > limitMs;
+  const margin = (limitMs - speedMs) * speedFactor;
 
-  return 0.5 + Math.min(overShare, 1) * 0.5;
+  const fill = clamp01(speedMs / limitMs) * SPEED_GREEN_SHARE;
+  const overShare = clamp01((speedMs - limitMs) / (limitMs * OVER_RANGE_PCT));
+  const overFill = isOver ? overShare * (1 - SPEED_GREEN_SHARE) : 0;
+
+  // Where the car ends up if nothing changes. Below the limit that band is the
+  // last moment to lift; at or past it the red fill already says the same.
+  const projected = speedMs + Math.max(0, longAccelMs2 ?? 0) * LIFT_LEAD_S;
+  const hasLift = !isOver && projected > speedMs;
+  const liftEnd = hasLift
+    ? clamp01(projected / limitMs) * SPEED_GREEN_SHARE
+    : null;
+
+  return {
+    fill,
+    overFill,
+    margin,
+    isOver,
+    liftStart: liftEnd === null ? null : fill,
+    liftWidth: liftEnd === null ? null : Math.max(0, liftEnd - fill),
+  };
+};
+
+/** `-12` / `+2` — the sign is the whole message, so it is always written. */
+export const formatSpeedMargin = (margin: number): string => {
+  const rounded = Math.round(margin);
+
+  return rounded > 0 ? `-${rounded}` : `+${Math.abs(rounded)}`;
 };
 
 /**

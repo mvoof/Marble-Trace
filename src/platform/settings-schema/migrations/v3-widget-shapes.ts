@@ -2,9 +2,9 @@ import type { Migration, SettingsBlob } from '../types';
 import { asArray, asObject, dropWidgetSettings, mapEveryWidget } from '../blob';
 
 /**
- * v2 → v3. Everything this release changes about the two radars.
+ * v2 → v3. Every widget this release changes the *shape* of.
  *
- * Two edits, one step: the version has not shipped yet, and a file migrated
+ * Three edits, one step: the version has not shipped yet, and a file migrated
  * through a version no build ever wrote is history nobody has.
  *
  * **1. `carLength` out of the widgets and into `app`.**
@@ -28,14 +28,71 @@ import { asArray, asObject, dropWidgetSettings, mapEveryWidget } from '../blob';
  * the manifest on load, so a portrait one left behind would keep skewing the
  * scale factor long after the plate became a disc.
  *
+ * **3. Pit Service is rebuilt half the height and 40 px narrower.** The blocks
+ * it draws changed shape — the speed plate became one row, the tire corners
+ * lost their headings — so the design size that describes it changed with them:
+ * 300×540 to 235×330. The docked approach rail no longer widens the panel — it
+ * is carved out of it — so a file that was 360 wide for the rail lands on the
+ * same 235 as everyone else.
+ *
+ * The stored size is *rescaled* rather than reset: unlike the radar, the widget
+ * is the same shape as before, only tighter, so a driver who had made it half
+ * again as large meant that and keeps it. Left alone, the re-base would ambush
+ * them instead — the resolver that follows the rail placement recomputes the
+ * width from the manifest's base, so the first time they moved the rail the
+ * widget would jump to a size they never asked for.
+ *
  * Every literal here is frozen on purpose: this step has to keep meaning "move
- * carLength, square up the radar" however the widgets are named or defaulted
- * later.
+ * carLength, square up the radar, rescale the pit box" however the widgets are
+ * named or defaulted later.
  */
 const RADAR_IDS = ['proximity-radar', 'radar-bar'] as const;
 
 const PROXIMITY_RADAR_ID = 'proximity-radar';
 const SCOPE_SIDE_PX = 180;
+
+const PIT_SERVICE_ID = 'pit-service';
+const PIT_OLD_WIDTH_PX = 300;
+const PIT_OLD_SIDE_RAIL_WIDTH_PX = 360;
+const PIT_NEW_WIDTH_PX = 235;
+const PIT_NEW_HEIGHT_PX = 330;
+
+const asNumber = (value: unknown): number | null =>
+  typeof value === 'number' && Number.isFinite(value) && value > 0
+    ? value
+    : null;
+
+/**
+ * The pit box, at the size the driver had it. `settings` is the widget's saved
+ * `userSettings`; a file whose rail was docked was measured against the wider of
+ * the two old bases, and one that never stored a size keeps the default of the
+ * day. There is only one new width: the rail is drawn inside it now.
+ */
+const rescalePitService = (
+  widget: SettingsBlob,
+  settings: SettingsBlob
+): SettingsBlob => {
+  const hadSideRail =
+    settings.showPitApproach !== false &&
+    settings.pitApproachPlacement === 'side';
+
+  const oldWidth =
+    asNumber(widget.designWidth) ??
+    (hadSideRail ? PIT_OLD_SIDE_RAIL_WIDTH_PX : PIT_OLD_WIDTH_PX);
+
+  const scale = (asNumber(settings.currentWidth) ?? oldWidth) / oldWidth;
+
+  return {
+    ...widget,
+    designWidth: PIT_NEW_WIDTH_PX,
+    designHeight: PIT_NEW_HEIGHT_PX,
+    userSettings: {
+      ...settings,
+      currentWidth: Math.round(PIT_NEW_WIDTH_PX * scale),
+      currentHeight: Math.round(PIT_NEW_HEIGHT_PX * scale),
+    },
+  };
+};
 
 /** The command that receives it refuses anything outside this range. */
 const MIN_CAR_LENGTH_M = 0.5;
@@ -65,9 +122,10 @@ const readCarLength = (blob: SettingsBlob): number | undefined => {
   return undefined;
 };
 
-export const v3Radars: Migration = {
+export const v3WidgetShapes: Migration = {
   to: 3,
-  describe: 'move the car length to app settings, square up the radar',
+  describe:
+    'move the car length to app settings, square up the radar, rescale the pit box',
   migrate: (blob: SettingsBlob): SettingsBlob => {
     const carLength = readCarLength(blob);
 
@@ -86,6 +144,10 @@ export const v3Radars: Migration = {
 
     return mapEveryWidget(withoutCarLength, (widgets) =>
       widgets.map((widget) => {
+        if (widget?.id === PIT_SERVICE_ID) {
+          return rescalePitService(widget, asObject(widget.userSettings) ?? {});
+        }
+
         if (widget?.id !== PROXIMITY_RADAR_ID) {
           return widget;
         }

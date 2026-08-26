@@ -2,11 +2,11 @@ import { observer } from 'mobx-react-lite';
 
 import styles from './PitSpeedPlate.module.scss';
 import {
-  speedFillPct,
-  SWEET_SPOT_SHARE,
+  buildSpeedRow,
+  formatSpeedMargin,
+  SPEED_GREEN_SHARE,
 } from '@ui/widgets/PitServiceWidget/pit-service-utils';
-import { parsePitSpeedLimitMs } from '@utils/telemetry-format';
-import { speedUnit } from '@utils/telemetry-format';
+import { parsePitSpeedLimitMs, speedUnit } from '@utils/telemetry-format';
 import {
   usePitServiceWidgetStore,
   usePlayerStore,
@@ -14,9 +14,15 @@ import {
   useUnitsStore,
 } from '@store/root-store-context';
 
-const HALF = 0.5;
 const PCT = 100;
 
+/**
+ * One row, three states. With the limiter engaged the sim holds the speed, so
+ * the row stops being a gauge and simply names both numbers. Without it the row
+ * is a scale whose readout is the margin left before the limit rather than the
+ * speed itself — "how much more can I give it" is the question being asked, and
+ * a raw speed answers it only after the driver does the subtraction.
+ */
 export const PitSpeedPlate = observer(() => {
   const player = usePlayerStore();
   const { sessionInfo } = useSessionStore();
@@ -25,84 +31,88 @@ export const PitSpeedPlate = observer(() => {
 
   const speedMs = player.carDynamics?.speed ?? 0;
   const limitMs = parsePitSpeedLimitMs(sessionInfo?.trackPitSpeedLimit);
-
   const factor = units.speedFactor;
-  const fill = speedFillPct(speedMs, limitMs);
+  const unit = speedUnit(units.unitSystem);
 
-  // Past the pit exit the limit no longer applies: the plate turns fully green
-  // and the limit cell becomes the go-ahead, so the driver reads "clear" from
-  // the block that was policing them a second ago.
-  const isReleased = !pitService.isOnPitRoad;
-  const isOver = !isReleased && limitMs > 0 && speedMs > limitMs;
+  // Both states are the store's to decide: the limiter bit and what counts as
+  // being out of the pits are read by the auto-service reactions too, and two
+  // answers to "are we still bound by the limit" is one too many.
+  if (pitService.isPitLimitReleased) {
+    return (
+      <div className={`${styles.row} ${styles.rowReleased}`}>
+        <span className={styles.label}>PIT EXIT</span>
 
-  const greenWidth = isReleased ? PCT : Math.min(fill, HALF) * PCT;
-  const redWidth = isReleased ? 0 : Math.max(fill - HALF, 0) * PCT;
+        <span className={styles.value}>GO!</span>
+      </div>
+    );
+  }
 
-  const sweetSpotLeft = SWEET_SPOT_SHARE * HALF * PCT;
-  const sweetSpotWidth = (1 - SWEET_SPOT_SHARE) * HALF * PCT;
-  const isInSweetSpot =
-    !isReleased && !isOver && fill >= SWEET_SPOT_SHARE * HALF;
+  if (pitService.isLimiterOn) {
+    return (
+      <div className={`${styles.row} ${styles.rowLimiter}`}>
+        <span className={styles.label}>PIT LIMITER</span>
+
+        <span className={`${styles.value} ${styles.valueWide}`}>
+          {Math.round(speedMs * factor)}/
+          {limitMs > 0 ? Math.round(limitMs * factor) : '—'}
+        </span>
+
+        <span className={styles.unit}>{unit}</span>
+      </div>
+    );
+  }
+
+  const view = buildSpeedRow(
+    speedMs,
+    limitMs,
+    player.carDynamics?.long_accel ?? null,
+    factor
+  );
 
   return (
-    <div className={styles.plate}>
-      {/*
-        The two tracks and the band are painted whether or not the car is moving:
-        the point of the plate is that the driver can see how much throttle is
-        left before the limit without first having to approach it.
-      */}
-      {!isReleased && (
-        <>
-          <span className={styles.trackAllowed} />
-          <span className={styles.trackPenalty} />
+    <div className={styles.row}>
+      <span className={styles.trackAllowed} />
 
-          <span
-            className={`${styles.sweetSpot} ${isInSweetSpot ? styles.sweetSpotActive : ''}`}
-            style={{ left: `${sweetSpotLeft}%`, width: `${sweetSpotWidth}%` }}
-          />
-        </>
-      )}
+      <span className={styles.trackPenalty} />
 
-      <span
-        className={`${styles.fill} ${isReleased ? styles.fillReleased : ''}`}
-        style={{ width: `${greenWidth}%` }}
-      />
+      <span className={styles.fill} style={{ width: `${view.fill * PCT}%` }} />
 
-      {redWidth > 0 && (
+      {view.overFill > 0 && (
         <span
           className={styles.fillOver}
-          style={{ left: `${HALF * PCT}%`, width: `${redWidth}%` }}
+          style={{
+            left: `${SPEED_GREEN_SHARE * PCT}%`,
+            width: `${view.overFill * PCT}%`,
+          }}
         />
       )}
 
-      <div className={`${styles.cell} ${styles.cellNow}`}>
-        <span className={styles.key}>SPEED</span>
-
-        <span className={`${styles.value} ${isOver ? styles.valueOver : ''}`}>
-          {Math.round(speedMs * factor)}
-        </span>
-
-        <span className={styles.unit}>{speedUnit(units.unitSystem)}</span>
-      </div>
-
-      {isReleased ? (
-        <div className={styles.cell}>
-          <span className={styles.key}>PIT EXIT</span>
-
-          <span className={styles.valueGo}>GO!</span>
-
-          <span className={styles.unit}>NO LIMIT</span>
-        </div>
-      ) : (
-        <div className={styles.cell}>
-          <span className={styles.key}>PIT LIMIT</span>
-
-          <span className={styles.valueLimit}>
-            {limitMs > 0 ? Math.round(limitMs * factor) : '—'}
-          </span>
-
-          <span className={styles.unit}>{speedUnit(units.unitSystem)}</span>
-        </div>
+      {/*
+        Where the car coasts to at the current throttle. Once the fill reaches
+        into this band the limit is already spoken for — lifting here is what
+        keeps the stop legal, which no static "sweet spot" could say.
+      */}
+      {view.liftStart !== null && view.liftWidth !== null && (
+        <span
+          className={styles.liftZone}
+          style={{
+            left: `${view.liftStart * PCT}%`,
+            width: `${view.liftWidth * PCT}%`,
+          }}
+        />
       )}
+
+      <span className={styles.limitTick} />
+
+      <span className={styles.label}>PIT SPEED</span>
+
+      <span
+        className={`${styles.value} ${view.isOver ? styles.valueOver : styles.valueUnder}`}
+      >
+        {limitMs > 0 ? formatSpeedMargin(view.margin) : '—'}
+      </span>
+
+      <span className={styles.unit}>{unit}</span>
     </div>
   );
 });

@@ -1,127 +1,136 @@
-.plate {
+// The row is the gauge: two tracks side by side, the seam between them the pit
+// limit. Everything drawn in it is absolutely positioned behind the readout.
+.row {
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
+  height: ws(26);
+  padding: 0 sp(xs);
   background: $widget-surface-cell;
   border-radius: radius(md);
   overflow: hidden;
   font-family: $font-widget;
+
+  // Everything the row draws is painted behind the readout, so the readout
+  // carries a shadow rather than a plate: a plate would hide the fill it stands
+  // on, which is the one thing the row is for.
+  > * {
+    position: relative;
+    text-shadow:
+      0 0 3px #000,
+      0 0 6px #000;
+  }
 }
 
-// Static scale behind the live fill: the left half is the speed the driver is
-// allowed to use, the right half the penalty zone, so the usable window is
-// visible before the needle ever gets there.
+.rowLimiter {
+  background: rgba($race-blue, 0.28);
+}
+
+.rowReleased {
+  background: rgba($race-green, 0.35);
+}
+
+// The long green track is everything below the limit, the short red one the
+// overspeed the driver still has time to correct.
 .trackAllowed,
 .trackPenalty {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 50%;
 }
 
 .trackAllowed {
   left: 0;
-  background: rgba($race-green, 0.08);
+  width: 82%;
+  background: rgba($race-green, 0.1);
 }
 
 .trackPenalty {
   right: 0;
-  background: rgba($race-red, 0.12);
+  width: 18%;
+  background: rgba($race-red, 0.14);
 }
 
-// The last few percent below the limit — where the driver should sit.
-.sweetSpot {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  background: rgba($race-green, 0.18);
-  border-right: 1px solid rgba($race-green, 0.5);
-}
-
-.sweetSpotActive {
-  background: rgba($race-green, 0.45);
-}
-
-// The fill spans both cells: the divider between them marks the limit, so the
-// left half reads as "below limit" and anything past it as overspeed.
 .fill {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
-  background: rgba($race-green, 0.3);
-}
-
-.fillReleased {
-  background: rgba($race-green, 0.45);
+  background: rgba($race-green, 0.34);
 }
 
 .fillOver {
   position: absolute;
   top: 0;
   bottom: 0;
-  background: rgba($race-red, 0.45);
+  background: rgba($race-red, 0.5);
 }
 
-.cell {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: sp(xxxs);
-  padding: sp(xxs) sp(xs) sp(xs);
-}
-
-// Hairline divider inset from the plate edges, never full bleed.
-.cellNow::after {
-  content: '';
+// Hatched, so it never reads as a fill of its own: it is a warning about where
+// the car is going, not a measurement of where it is.
+.liftZone {
   position: absolute;
-  top: sp(xs);
-  bottom: sp(xs);
-  right: 0;
-  width: 1px;
-  background: $widget-border-subtle;
+  top: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    rgba($race-amber, 0.55) 0 3px,
+    rgba($race-amber, 0) 3px 6px
+  );
+  border-right: 1px solid rgba($race-amber, 0.8);
 }
 
-.key {
-  font-size: fs(xxxs);
-  letter-spacing: 0.12em;
+.limitTick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 82%;
+  width: 1px;
+  background: rgba($race-red, 0.8);
+}
+
+.label {
+  font-size: fs(xxs);
+  letter-spacing: 0.1em;
   color: $widget-label;
   font-weight: 600;
 }
 
+.rowLimiter .label,
+.rowReleased .label {
+  color: $widget-text-primary;
+}
+
+// A fixed slot at the right end of the row, as far from the label as the row
+// allows: the margin swings between one and two digits and changes sign, and
+// none of that may move anything else. The shadow above keeps it legible where
+// it crosses the overspeed tip.
 .value {
+  margin-left: auto;
+  min-width: 4ch;
   font-family: $font-mono;
-  font-size: fs(xxxl);
-  line-height: 0.9;
-  color: $race-green;
+  font-size: fs(lg);
+  line-height: 1;
+  color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.valueWide {
+  min-width: 6ch;
+}
+
+.valueUnder {
+  color: $race-green;
 }
 
 .valueOver {
   color: $race-red;
 }
 
-.valueLimit {
-  font-family: $font-mono;
-  font-size: fs(xxxl);
-  line-height: 0.9;
-  color: $widget-text-primary;
-  font-variant-numeric: tabular-nums;
-}
-
-.valueGo {
-  font-family: $font-widget;
-  font-size: fs(xxxl);
-  line-height: 0.9;
-  color: $race-green;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
-
 .unit {
-  font-size: fs(xxxs);
+  font-size: fs(xxs);
   letter-spacing: 0.08em;
   color: $widget-label;
   font-weight: 600;

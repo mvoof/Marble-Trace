@@ -1,0 +1,62 @@
+.chips {
+  display: flex;
+  align-items: stretch;
+  gap: sp(xxs);
+  font-family: $font-widget;
+}
+
+// The chips share the row rather than sitting at their text width: the row is
+// as wide as the tire grid above it, and chips that ended early would leave a
+// gap at the right edge that no other block in the panel has. Sharing it also
+// keeps the row honest when the compound chip is absent, or a translation is
+// longer than the English label.
+.chip {
+  // Grow to share the row; shrink only when the row genuinely runs out, and
+  // then by trimming the label rather than wrapping it — a chip that wraps its
+  // own text takes the whole row's height with it.
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: sp(xxs);
+  padding: sp(xxxs);
+  border-radius: radius(sm);
+  background: $widget-surface-cell;
+}
+
+.chipOrdered {
+  background: rgba($race-green, 0.15);
+}
+
+.chipClickable {
+  cursor: pointer;
+
+  &:hover {
+    background: rgba($race-blue, 0.18);
+  }
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: fs(xxs);
+  letter-spacing: 0.06em;
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.chipOrdered .label {
+  color: $race-green;
+}
+
+.value {
+  // The count is the point of the chip; whatever has to give is the word.
+  flex: none;
+  font-family: $font-mono;
+  font-size: fs(xs);
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+}

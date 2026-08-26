@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { Check } from 'lucide-react';
 
 import styles from './TireCorner.module.scss';
 import { OrderToggle } from '@ui/widgets/PitServiceWidget/OrderToggle/OrderToggle';
@@ -18,6 +19,10 @@ import {
 
 const WEAR_TO_PCT = 100;
 const MIN_FILL_PCT = 5;
+// Heavier and larger than an inline icon: it is read at a glance over a busy
+// tread, not next to a label.
+const CHECK_SIZE = 30;
+const CHECK_STROKE = 3.2;
 
 interface TireCornerProps {
   position: CornerPosition;
@@ -32,12 +37,14 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
   const ordered = isCornerOrdered(position, pitService);
   const orderedKpa = orderedPressure(position, pitService);
 
-  const orderLabel =
-    ordered && orderedKpa !== null && orderedKpa > 0
-      ? `SET ${Math.round(convertPressure(orderedKpa, units.unitSystem))}`
-      : ordered
-        ? 'SET'
-        : 'KEEP';
+  // Which corner this is says itself from the place it holds in the grid, so
+  // the row that used to name it (LF · SET 165) is gone. What the order sets is
+  // said inside the tread instead: a check for the change, and under it the
+  // pressure being fitted — the current one belongs to a tire coming off.
+  const orderedBar =
+    orderedKpa !== null && orderedKpa > 0
+      ? Math.round(convertPressure(orderedKpa, units.unitSystem))
+      : null;
 
   const zones = [
     { wear: data.wearL, temp: data.tempL, color: data.tempColorL },
@@ -52,12 +59,6 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
       label={`Toggle ${position.toUpperCase()} tire change`}
       onToggle={() => void widget.order.toggleTire(position)}
     >
-      <div className={styles.head}>
-        <span className={styles.side}>{position.toUpperCase()}</span>
-
-        <span className={styles.order}>{orderLabel}</span>
-      </div>
-
       <div className={styles.zoneRow}>
         {zones.map((zone, index) => (
           <span
@@ -85,9 +86,25 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
           </span>
         ))}
 
-        <span className={styles.pressure}>
-          {data.pressure === null ? '—' : Math.round(data.pressure)}
-        </span>
+        {ordered ? (
+          <>
+            <Check
+              size={CHECK_SIZE}
+              strokeWidth={CHECK_STROKE}
+              className={styles.check}
+            />
+
+            {orderedBar !== null && (
+              <span className={`${styles.pressure} ${styles.pressureOrdered}`}>
+                {orderedBar}
+              </span>
+            )}
+          </>
+        ) : (
+          <span className={styles.pressure}>
+            {data.pressure === null ? '—' : Math.round(data.pressure)}
+          </span>
+        )}
       </div>
 
       {/*

@@ -1,7 +1,6 @@
 .footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: sp(sm);
   // No rule of its own: the tire block below already ends on one, and two
   // hairlines a few pixels apart read as a doubled divider.
@@ -18,4 +17,36 @@
 // position the car actually holds right now.
 .projected {
   color: $race-amber;
+}
+
+.state {
+  letter-spacing: 0.1em;
+  color: $widget-label;
+}
+
+.armed {
+  color: $race-green;
+}
+
+.servicing {
+  color: $race-amber;
+}
+
+.towing {
+  color: $race-red;
+}
+
+.modeAuto {
+  color: $race-green;
+  opacity: 0.85;
+}
+
+.modeManual {
+  color: $widget-label;
+}
+
+// The stop count and the position are the pair that was here before; they keep
+// the right-hand end so the states read as a prefix rather than a new column.
+.stops {
+  margin-left: auto;
 }

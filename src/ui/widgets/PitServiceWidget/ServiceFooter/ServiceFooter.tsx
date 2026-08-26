@@ -2,16 +2,30 @@ import { observer } from 'mobx-react-lite';
 
 import styles from './ServiceFooter.module.scss';
 import type { PitServiceWidgetSettings } from '@/types/widget-settings';
-import { projectPositionsLost } from '@ui/widgets/PitServiceWidget/pit-service-utils';
+import {
+  projectPositionsLost,
+  resolveServiceState,
+} from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import {
   useBackendComputedStore,
   usePitServiceWidgetStore,
+  usePlayerStore,
   useStandingsWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
+const STATE_LABEL = {
+  idle: 'NO ORDER',
+  armed: 'ARMED',
+  servicing: 'IN BOX',
+  towing: 'TOWING',
+} as const;
+
+const MANUAL_LABEL = 'MANUAL';
+
 export const ServiceFooter = observer(() => {
   const { pitStops, relative } = useBackendComputedStore();
+  const { pitService } = usePlayerStore();
   const pitServiceWidget = usePitServiceWidgetStore();
   const standingsWidget = useStandingsWidgetStore();
   const widgetSettings = useWidgetSettingsStore();
@@ -50,12 +64,37 @@ export const ServiceFooter = observer(() => {
         ? position + lost
         : Math.min(position + lost, total);
 
+  // The header this widget used to carry said "PIT SERVICE" and nothing else,
+  // while the footer ran half empty — so the two states that were up there come
+  // down here instead of costing a row of their own.
+  const state = resolveServiceState(pitService, pitServiceWidget.isInPitStall);
+  const mode = pitServiceWidget.auto.autoModeLabel;
+
   return (
     <footer className={styles.footer}>
-      <span>STOP {stops}</span>
+      <span className={`${styles.state} ${styles[state]}`}>
+        {STATE_LABEL[state]}
+      </span>
+
+      {/*
+        Names the halves auto mode still owns — FUEL AUTO once the tires have
+        been picked by hand, TIRE AUTO once the fuel has. Absent entirely while
+        auto mode is off in the settings.
+      */}
+      {mode !== null && (
+        <span
+          className={
+            mode === MANUAL_LABEL ? styles.modeManual : styles.modeAuto
+          }
+        >
+          {mode}
+        </span>
+      )}
+
+      <span className={styles.stops}>STOP {stops}</span>
 
       {position !== null && (
-        <span>
+        <span className={styles.position}>
           P{position}
           {projected !== null && projected > position && (
             <span className={styles.projected}> → P{projected}</span>

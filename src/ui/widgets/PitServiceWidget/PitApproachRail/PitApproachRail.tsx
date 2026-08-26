@@ -8,10 +8,11 @@ import type {
 } from '@/types/widget-settings';
 import { buildPitApproachView } from '@ui/widgets/PitServiceWidget/pit-approach';
 
+import { METERS_TO_FEET } from '@utils/telemetry-format';
+
 import styles from './PitApproachRail.module.scss';
 
 const PCT = 100;
-const METERS_TO_FEET = 3.28084;
 
 interface PitApproachRailProps {
   placement: PitApproachPlacement;
@@ -98,13 +99,23 @@ export const PitApproachRail = observer(
           .filter(Boolean)
           .join(' ')}
       >
-        <div className={styles.readout}>
-          <span className={styles.value}>{distValue}</span>
+        {/*
+          The side rail keeps the readout above the lane — it is a column, and
+          the number is what the column is for. Inline the two are one row: the
+          lane is the row's background and the distance rides inside it, so the
+          block costs a single line rather than three.
+        */}
+        {/*
+          The column is two digits wide, so it carries the distance and the unit
+          and nothing else — the target is what the lane underneath is drawing.
+        */}
+        {isVertical && (
+          <div className={styles.readout}>
+            <span className={styles.value}>{distValue}</span>
 
-          <span className={styles.unit}>
-            {isImperial ? 'ft' : 'm'} → {targetLabel}
-          </span>
-        </div>
+            <span className={styles.unit}>{isImperial ? 'ft' : 'm'}</span>
+          </div>
+        )}
 
         <div className={styles.track}>
           {!isIdle && (
@@ -126,19 +137,17 @@ export const PitApproachRail = observer(
           )}
 
           <span className={styles.carMarker} style={markerStyle(view.fill)} />
-        </div>
 
-        {/*
-          The end labels only fit the horizontal block — on a rail the width of
-          two digits they would crowd out the number that matters, and the fill
-          growing upwards already says which end is the entry.
-        */}
-        {!isVertical && (
-          <div className={styles.ends}>
-            <span>IN</span>
-            <span>OUT</span>
-          </div>
-        )}
+          {!isVertical && (
+            <span className={styles.inlineReadout}>
+              <span className={styles.inlineValue}>{distValue}</span>
+
+              <span className={styles.unit}>
+                {isImperial ? 'ft' : 'm'} → {targetLabel}
+              </span>
+            </span>
+          )}
+        </div>
       </div>
     );
   }

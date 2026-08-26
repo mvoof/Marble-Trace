@@ -9,9 +9,12 @@ const RESULT_LABEL = {
 } as const;
 
 /**
- * How the last order went. The sim never acknowledges a broadcast, so "sent"
- * means the message left this app — the tire checkboxes above are the real
- * confirmation.
+ * How the last order went, as a toast across the top of the panel rather than a
+ * row in the stack: it is on screen for seconds at a time, and a row would push
+ * every block below it down and back each time an order is sent.
+ *
+ * The sim never acknowledges a broadcast, so "sent" means the message left this
+ * app — the tire checkboxes underneath are the real confirmation.
  */
 export const OrderHint = observer(() => {
   const pitService = usePitServiceWidgetStore();

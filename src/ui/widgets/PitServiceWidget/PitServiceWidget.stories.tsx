@@ -126,7 +126,9 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/PitServiceWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: PitServiceWidget,
-    size: { width: 300, height: 500 },
+    // The docked approach rail is drawn outside the panel, the way the overlay
+    // container lets it through with `overflowVisible` in the manifest.
+    size: { width: 235, height: 330, overflow: 'visible' },
     seed: (store, args) => {
       store.player.updateCarStatus({
         on_pit_road: args.onPitRoad,
