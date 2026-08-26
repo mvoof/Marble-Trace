@@ -305,11 +305,14 @@ export const AXIS_RANGE_STEPS = [5, 10, 25, 50, 100, 200];
 
 export const AXIS_RANGE_STEPS_FEET = [15, 30, 75, 150, 300, 600];
 
-/** Headroom above the farthest car, so its plate is not glued to the edge. */
-const AUTO_RANGE_HEADROOM = 1.15;
-
-/** How much of a narrower step must stay free before the axis drops to it. */
-const SHRINK_MARGIN = 0.75;
+/**
+ * Seconds of gap are turned into meters at a fixed reference speed rather than
+ * at the speed of the moment: the axis has to mean the same thing every lap,
+ * and a range that breathed with the corner would move every plate for reasons
+ * the driver has nothing to do with. 50 m/s is 180 km/h — racing speed on the
+ * part of the lap where a fight is decided.
+ */
+const GAP_REFERENCE_SPEED_MPS = 50;
 
 /**
  * The narrowest step that still holds `meters`, capped at the widest one. The
@@ -326,24 +329,21 @@ const fittingStep = (meters: number, isMetric: boolean): number => {
 
 /**
  * The axis range the widget actually draws — derived from the threshold that
- * makes the widget appear, never set apart from it. An axis wider than the
- * threshold can only ever draw its middle, and one narrower would clamp the
- * very cars the threshold let in.
+ * makes the widget appear, and from nothing else. It is fixed for a given
+ * setting: an axis that zoomed to the farthest car redrew its own ticks and
+ * slid every plate the moment somebody arrived or left, so the same gap read
+ * as two different pictures depending on who else was around.
  *
  * A distance threshold is already meters, so the axis is simply the step that
  * fits it: threshold 1 m still lands on the ±5 m step, because a plate is a
  * ninth of the axis tall and an axis of one metre says nothing.
  *
- * A gap threshold is seconds, and two seconds is 40 m in a hairpin and 150 m on
- * a straight — there is no fixed range to derive, so the axis zooms to the
- * farthest car instead. `held` is the range in force: it only zooms back out
- * once a car passes the current step, and only zooms in when the step below has
- * real room to spare, so it does not flip between two steps every tick.
+ * A gap threshold is seconds, converted at a fixed reference speed. Cars
+ * farther out than the step are clamped to the edge of the axis, which is
+ * where "as far away as this widget cares about" belongs anyway.
  */
 export const resolveAxisRange = (
   settings: CloseBattleWidgetSettings,
-  farthestMeters: number,
-  held: number,
   isMetric: boolean
 ): number => {
   if (settings.trigger === 'distance') {
@@ -352,23 +352,7 @@ export const resolveAxisRange = (
     return fittingStep(settings.distanceThreshold, isMetric);
   }
 
-  const needed = farthestMeters * AUTO_RANGE_HEADROOM;
-  const fitting = fittingStep(needed, isMetric);
-
-  if (fitting > held) {
-    return fitting;
-  }
-
-  // Shrinking needs room to spare, or a car hovering on a step boundary would
-  // flip the whole axis back and forth every tick: the step it drops to is the
-  // one the car still fits in with a quarter of the range left over.
-  const shrunk = fittingStep(needed / SHRINK_MARGIN, isMetric);
-
-  if (shrunk < held) {
-    return shrunk;
-  }
-
-  return held;
+  return fittingStep(settings.gapThreshold * GAP_REFERENCE_SPEED_MPS, isMetric);
 };
 
 export const matchesSides = (

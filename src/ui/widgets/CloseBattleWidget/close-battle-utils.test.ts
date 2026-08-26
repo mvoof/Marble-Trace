@@ -232,45 +232,38 @@ describe('buildPlateGroups', () => {
 });
 
 describe('resolveAxisRange', () => {
-  const gap = { trigger: 'gap' } as CloseBattleWidgetSettings;
+  const gap = (gapThreshold: number) =>
+    ({ trigger: 'gap', gapThreshold }) as CloseBattleWidgetSettings;
   const distance = (distanceThreshold: number) =>
     ({ trigger: 'distance', distanceThreshold }) as CloseBattleWidgetSettings;
 
   it('derives the range from a distance threshold, whatever is on screen', () => {
-    expect(resolveAxisRange(distance(50), 4, 10, true)).toBe(50);
+    expect(resolveAxisRange(distance(50), true)).toBe(50);
   });
 
   it('never collapses the axis on a tiny distance threshold', () => {
-    expect(resolveAxisRange(distance(1), 0, 50, true)).toBe(5);
+    expect(resolveAxisRange(distance(1), true)).toBe(5);
   });
 
-  it('zooms in on a close fight when the threshold is a gap', () => {
-    expect(resolveAxisRange(gap, 4, 50, true)).toBe(10);
+  it('derives a fixed range from a gap threshold', () => {
+    // Two seconds at the reference speed is 100 m — the ±100 m rung.
+    expect(resolveAxisRange(gap(2), true)).toBe(100);
   });
 
-  it('zooms out as soon as a car passes the held range', () => {
-    expect(resolveAxisRange(gap, 60, 50, true)).toBe(100);
-  });
-
-  it('holds the current range instead of flipping on the boundary', () => {
-    expect(resolveAxisRange(gap, 20, 25, true)).toBe(25);
+  it('keeps the same range whoever is on the axis', () => {
+    expect(resolveAxisRange(gap(1), true)).toBe(resolveAxisRange(gap(1), true));
+    expect(resolveAxisRange(gap(1), true)).toBe(50);
   });
 
   it('climbs the imperial ladder when the unit system is feet', () => {
-    // 38 m is 125 ft, and with the headroom 143 ft — the ±150 ft rung.
-    expect(resolveAxisRange(gap, 38, 10, false)).toBeCloseTo(
-      toMeters(150, false),
-      3
-    );
-    // And a distance threshold lands on the rung that holds it, in feet.
-    expect(resolveAxisRange(distance(20), 0, 10, false)).toBeCloseTo(
+    expect(resolveAxisRange(distance(20), false)).toBeCloseTo(
       toMeters(75, false),
       3
     );
   });
 
   it('never goes past the widest step', () => {
-    expect(resolveAxisRange(gap, 5000, 50, true)).toBe(200);
+    expect(resolveAxisRange(gap(30), true)).toBe(200);
   });
 });
 

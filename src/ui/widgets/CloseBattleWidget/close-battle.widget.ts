@@ -31,13 +31,6 @@ export class CloseBattleWidgetStore {
   visible = false;
 
   /**
-   * The automatic axis range currently in force. Held in the store rather than
-   * recomputed from scratch every tick so the axis does not flip between two
-   * steps while a car sits on the boundary.
-   */
-  heldAxisRange = 50;
-
-  /**
    * The cars drawn inside somebody else's plate on the previous tick. Feeding
    * them back in is what gives the merge its hysteresis — without it two cars
    * trading a metre would split and re-merge several times a second.
@@ -61,18 +54,6 @@ export class CloseBattleWidgetStore {
           this.heldMerged = merged;
         }),
         { equals: setsMatch }
-      )
-    );
-
-    // The resolved range is written back so the next tick compares against the
-    // range actually in force — without it the hysteresis has nothing to hold.
-    this.disposers.push(
-      reaction(
-        () => this.axisRange,
-        action((range: number) => {
-          this.heldAxisRange = range;
-        }),
-        { fireImmediately: true }
       )
     );
 
@@ -137,19 +118,7 @@ export class CloseBattleWidgetStore {
 
   /** What the top and bottom edge of the widget mean right now, in meters. */
   get axisRange(): number {
-    return resolveAxisRange(
-      this.settings,
-      this.farthestClearance,
-      this.heldAxisRange,
-      this.root.units.isMetric
-    );
-  }
-
-  private get farthestClearance(): number {
-    return this.opponents.reduce(
-      (farthest, opponent) => Math.max(farthest, opponent.clearance),
-      0
-    );
+    return resolveAxisRange(this.settings, this.root.units.isMetric);
   }
 
   /**
