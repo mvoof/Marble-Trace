@@ -447,9 +447,12 @@ interface BeamInput {
   pxPerMeter: number;
   radiusPx: number;
   color: string;
-  /** User opacity, multiplied into the beam's own distance fade. */
+  /** The beam's alpha at its densest stop; distance fades it from there. */
   opacity: number;
 }
+
+/** What is left of the beam's alpha where it runs out at the rim. */
+const BEAM_TAIL_FADE = 0.06;
 
 /** The sector that follows an opponent for as long as it is in the scope. */
 export const drawBeam = (
@@ -479,8 +482,8 @@ export const drawBeam = (
     radiusPx
   );
   gradient.addColorStop(0, withAlpha(color, 0));
-  gradient.addColorStop(stop, withAlpha(color, (0.3 * fade + 0.06) * opacity));
-  gradient.addColorStop(1, withAlpha(color, 0.02 * opacity));
+  gradient.addColorStop(stop, withAlpha(color, fade * opacity));
+  gradient.addColorStop(1, withAlpha(color, BEAM_TAIL_FADE * fade * opacity));
 
   ctx.save();
   ctx.rotate(span.center);
