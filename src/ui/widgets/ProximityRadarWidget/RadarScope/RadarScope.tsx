@@ -35,16 +35,6 @@ import styles from './RadarScope.module.scss';
  */
 const SEARCH_RADIUS_M = 40;
 
-/** Faded to this at the rim, so depth reads without a legend. */
-const MIN_BODY_ALPHA = 0.3;
-const MAX_BODY_ALPHA = 0.95;
-
-/** Alongside carries no depth of its own — the lane is one car wide. */
-const SIDE_BODY_ALPHA = 0.85;
-
-const bodyAlpha = (gapMeters: number, rangeMeters: number): number =>
-  Math.max(MIN_BODY_ALPHA, MAX_BODY_ALPHA - gapMeters / (rangeMeters * 1.5));
-
 export const RadarScope = observer(() => {
   // A ref would be null on the first render — the scope renders nothing until
   // there is traffic — and an effect keyed on a ref never learns that the
@@ -165,7 +155,7 @@ export const RadarScope = observer(() => {
         x: 0,
         y: 0,
         color: SCOPE_INK.player,
-        alpha: 1,
+        alpha: scope.carOpacity,
         pxPerMeter,
         carLengthM: carLength,
       });
@@ -246,7 +236,7 @@ const drawCenterLane = (
         x: 0,
         y,
         color: body,
-        alpha: bodyAlpha(gapMeters, rangeMeters) * scope.carOpacity,
+        alpha: scope.carOpacity,
         pxPerMeter,
         carLengthM,
       });
@@ -344,7 +334,7 @@ const drawSideLane = (
       x,
       y,
       color: body,
-      alpha: SIDE_BODY_ALPHA * scope.carOpacity,
+      alpha: scope.carOpacity,
       pxPerMeter,
       carLengthM,
     });

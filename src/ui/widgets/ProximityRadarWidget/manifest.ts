@@ -48,7 +48,9 @@ export const PROXIMITY_RADAR_MANIFEST: WidgetManifest = {
     showBeam: true,
     monochromeCars: true,
     carOpacity: 1,
-    beamOpacity: 1,
+    // The setting is the beam's alpha outright, and a solid sector would bury
+    // the scope behind it — the shipped beam is a wash, not a fill.
+    beamOpacity: 0.35,
     showEdgeMarkers: true,
   },
 };
