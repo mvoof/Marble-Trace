@@ -180,6 +180,12 @@ export interface ProximityRadarSettings extends RadarSettings {
   showBeam: boolean;
   /** White bodies; off paints each car in its own threat color. */
   monochromeCars: boolean;
+  /** 0..1 multiplier over the depth fade the car bodies already carry. */
+  carOpacity: number;
+  /** 0..1 multiplier over the tracking beam's own distance fade. */
+  beamOpacity: number;
+  /** Arc markers parking a car that is past the rim at its bearing. */
+  showEdgeMarkers: boolean;
 }
 
 export type BattleTrigger = 'gap' | 'distance';

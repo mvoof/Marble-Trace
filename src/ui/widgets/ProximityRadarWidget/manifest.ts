@@ -47,5 +47,8 @@ export const PROXIMITY_RADAR_MANIFEST: WidgetManifest = {
     showRangeRings: true,
     showBeam: true,
     monochromeCars: true,
+    carOpacity: 1,
+    beamOpacity: 1,
+    showEdgeMarkers: true,
   },
 };

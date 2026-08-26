@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Col, InputNumber, Row, Segmented, Select, Switch } from 'antd';
+import { Col, InputNumber, Row, Segmented, Select, Slider, Switch } from 'antd';
 import type {
   BaseUserSettings,
   RadarBackgroundTexture,
@@ -29,6 +29,12 @@ export const PANEL_WIDGET_IDS = ['proximity-radar', 'radar-bar'];
 const MIN_SCOPE_RANGE_M = 5;
 const MAX_SCOPE_RANGE_M = 30;
 const SCOPE_RANGE_STEP_M = 1;
+
+const MIN_OPACITY = 0.1;
+const MAX_OPACITY = 1;
+const OPACITY_STEP = 0.05;
+
+const asPercent = (opacity: number): number => Math.round(opacity * 100);
 
 const { SwitchRow } = panelRows<ProximityRadarSettings>();
 
@@ -181,11 +187,57 @@ const ScopeCard = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SwitchRow
+            settingKey="showEdgeMarkers"
+            title={t('settingsPanels.radar.showEdgeMarkers')}
+            desc={t('settingsPanels.radar.showEdgeMarkersDesc')}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
             settingKey="showBeam"
             title={t('settingsPanels.radar.showBeam')}
             desc={t('settingsPanels.radar.showBeamDesc')}
           />
         </div>
+
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldLabel}>
+            {t('settingsPanels.radar.carOpacity', {
+              percent: asPercent(settings.carOpacity),
+            })}
+          </div>
+          <Slider
+            min={MIN_OPACITY}
+            max={MAX_OPACITY}
+            step={OPACITY_STEP}
+            value={settings.carOpacity}
+            onChange={(value) => update({ carOpacity: value })}
+          />
+          <div className={styles.fieldDesc}>
+            {t('settingsPanels.radar.carOpacityDesc')}
+          </div>
+        </div>
+
+        {settings.showBeam && (
+          <div className={styles.fieldGroup}>
+            <div className={styles.fieldLabel}>
+              {t('settingsPanels.radar.beamOpacity', {
+                percent: asPercent(settings.beamOpacity),
+              })}
+            </div>
+            <Slider
+              min={MIN_OPACITY}
+              max={MAX_OPACITY}
+              step={OPACITY_STEP}
+              value={settings.beamOpacity}
+              onChange={(value) => update({ beamOpacity: value })}
+            />
+            <div className={styles.fieldDesc}>
+              {t('settingsPanels.radar.beamOpacityDesc')}
+            </div>
+          </div>
+        )}
       </Card>
 
       <Card title={t('settingsPanels.radar.texture')}>
