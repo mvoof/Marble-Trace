@@ -1095,11 +1095,73 @@ describe('PitServiceWidgetStore — pit orders', () => {
     // driver braking for the entry is the opposite of what they need.
     it('does not release the car on the approach the widget appeared for', () => {
       setSettings({ revealOnApproachM: 400 });
-      // 200 m short of the entry line on a 4 km lap.
-      placeCar({ onPitRoad: false, lapDistPct: PIT_IN_PCT - 0.05 });
+      // 200 m short of the entry line on a 4 km lap, limiter already armed.
+      placeCar({
+        onPitRoad: false,
+        limiter: true,
+        lapDistPct: PIT_IN_PCT - 0.05,
+      });
 
       expect(rootStore.pitServiceWidget.isApproachingPit).toBe(true);
       expect(rootStore.pitServiceWidget.isPitLimitReleased).toBe(false);
+    });
+  });
+
+  describe('the approach the widget shows itself for', () => {
+    const LAP_LENGTH_M = 4000;
+    const PIT_IN_PCT = 0.5;
+    // 200 m short of the entry line on a 4 km lap.
+    const JUST_BEFORE_ENTRY_PCT = PIT_IN_PCT - 0.05;
+
+    const driveTowardsEntry = (limiter: boolean) => {
+      runInAction(() => {
+        rootStore.player.carStatus = {
+          on_pit_road: false,
+          engine_warnings: limiter ? PIT_LIMITER_BIT : 0,
+        } as never;
+
+        rootStore.player.lapTiming = {
+          lap_dist_pct: JUST_BEFORE_ENTRY_PCT,
+        } as never;
+
+        rootStore.trackMapWidget.trackShape = { pitInPct: PIT_IN_PCT } as never;
+        rootStore.session.sessionInfo = {
+          trackLengthM: LAP_LENGTH_M,
+        } as never;
+      });
+
+      setSettings({ revealOnApproachM: 400 });
+    };
+
+    // On most tracks the entry sits on the racing line: distance alone would
+    // put the panel on screen every single lap of the race.
+    it('stays away while the car is only driving past the entry', () => {
+      driveTowardsEntry(false);
+
+      expect(rootStore.pitServiceWidget.isApproachingPit).toBe(false);
+    });
+
+    it('shows itself once the limiter is armed', () => {
+      driveTowardsEntry(true);
+
+      expect(rootStore.pitServiceWidget.isApproachingPit).toBe(true);
+    });
+
+    it('shows itself once the service is ordered', () => {
+      driveTowardsEntry(false);
+
+      runInAction(() => {
+        rootStore.player.pitService = { addFuel: true } as never;
+      });
+
+      expect(rootStore.pitServiceWidget.isApproachingPit).toBe(true);
+    });
+
+    it('stays away past the reveal distance even with an order armed', () => {
+      driveTowardsEntry(true);
+      setSettings({ revealOnApproachM: 100 });
+
+      expect(rootStore.pitServiceWidget.isApproachingPit).toBe(false);
     });
   });
 

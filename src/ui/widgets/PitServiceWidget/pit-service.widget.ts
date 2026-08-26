@@ -6,6 +6,7 @@ import { PitAutoService } from '@ui/widgets/PitServiceWidget/pit-auto-service';
 import { PitOrder } from '@ui/widgets/PitServiceWidget/pit-order';
 import { PitPanelState } from '@ui/widgets/PitServiceWidget/pit-panel';
 import { distanceToPitEntryM } from '@ui/widgets/PitServiceWidget/pit-approach';
+import { resolveServiceState } from '@ui/widgets/PitServiceWidget/pit-service-utils';
 import { PIT_LIMITER_BIT } from '@ui/hooks/usePitState';
 
 /**
@@ -102,18 +103,38 @@ export class PitServiceWidgetStore {
   }
 
   /**
-   * The car is close enough to the pit entry that the box is worth showing.
+   * The two things a driver about to pit does that the sim actually reports:
+   * they set the service up, and they arm the limiter. Neither is a promise —
+   * an order can sit armed for a whole stint — but together they are the only
+   * statement of intent iRacing makes, and without one of them a car passing
+   * the pit entry at racing speed is simply passing it.
+   */
+  private get hasPitIntent(): boolean {
+    if (this.isLimiterOn) {
+      return true;
+    }
+
+    return (
+      resolveServiceState(this.root.player.pitService, this.isInPitStall) ===
+      'armed'
+    );
+  }
+
+  /**
+   * The car is close enough to the pit entry that the box is worth showing —
+   * and is heading in rather than driving past.
    *
-   * Distance is the only honest signal — the sim reports nothing about
-   * intention — so it is deliberately a short window: the order still has to be
-   * changeable before the entry, but a lap of the box hanging over the track
-   * because the pit entry happens to be round the next corner is worse than not
-   * showing it at all. Zero switches it off.
+   * The distance alone is not enough: on a lot of tracks the entry sits on the
+   * racing line, so a plain radius pops the panel up every single lap. The
+   * sim reports nothing about intention, so the gate is the pair above. The
+   * window stays short on top of that — the order has to be changeable before
+   * the entry, and a box hanging over the track for half a lap is worse than
+   * not showing it at all. Zero switches the reveal off.
    */
   get isApproachingPit(): boolean {
     const revealM = this.settings.revealOnApproachM;
 
-    if (revealM <= 0) {
+    if (revealM <= 0 || !this.hasPitIntent) {
       return false;
     }
 
