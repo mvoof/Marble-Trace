@@ -41,6 +41,8 @@ const TEXTURE_RING_COUNT = 5;
 const TEXTURE_DOTS_PER_RING = 8;
 const TEXTURE_MESH_STEP_DEG = 15;
 const TEXTURE_HATCH_STEP_PX = 7;
+/** The ink every texture is drawn with — a wash, not a user-tuned dial. */
+const TEXTURE_ALPHA = 0.02;
 const TEXTURE_SCANLINE_STEP_PX = 4;
 const EDGE_MARKER_HALF_ANGLE_RAD = 0.16;
 
@@ -243,14 +245,13 @@ export const labelFontPx = (pxPerMeter: number): number =>
 export const drawTexture = (
   ctx: CanvasRenderingContext2D,
   texture: RadarBackgroundTexture,
-  opacity: number,
   radiusPx: number
 ): void => {
-  if (texture === 'none' || opacity <= 0) {
+  if (texture === 'none') {
     return;
   }
 
-  const ink = `rgba(250, 250, 250, ${opacity})`;
+  const ink = `rgba(250, 250, 250, ${TEXTURE_ALPHA})`;
 
   ctx.save();
   ctx.strokeStyle = ink;
@@ -296,16 +297,26 @@ export const drawTexture = (
   }
 
   if (texture === 'hatch') {
+    // The lines run at 45 degrees, so the family is swept along its own
+    // perpendicular: sweeping x instead leaves the disc covered on one side
+    // and bare on the other.
+    const halfDiagonal = radiusPx * Math.SQRT2;
+
+    ctx.save();
+    ctx.rotate(Math.PI / 4);
+
     for (
-      let offset = -radiusPx * 2;
-      offset < radiusPx * 2;
+      let offset = -halfDiagonal;
+      offset <= halfDiagonal;
       offset += TEXTURE_HATCH_STEP_PX
     ) {
       ctx.beginPath();
-      ctx.moveTo(offset, -radiusPx);
-      ctx.lineTo(offset + radiusPx * 2, radiusPx);
+      ctx.moveTo(offset, -halfDiagonal);
+      ctx.lineTo(offset, halfDiagonal);
       ctx.stroke();
     }
+
+    ctx.restore();
   }
 
   if (texture === 'scanlines') {
@@ -326,6 +337,7 @@ interface GridInput {
   rangeMeters: number;
   carLengthM: number;
   showAxes: boolean;
+  showAxisTicks: boolean;
   showRangeRings: boolean;
 }
 
@@ -341,6 +353,7 @@ export const drawGrid = (
     rangeMeters,
     carLengthM,
     showAxes,
+    showAxisTicks,
     showRangeRings,
   }: GridInput
 ): void => {
@@ -384,6 +397,12 @@ export const drawGrid = (
   ctx.moveTo(0, bodyGap);
   ctx.lineTo(0, radiusPx);
   ctx.stroke();
+
+  if (!showAxisTicks) {
+    ctx.restore();
+
+    return;
+  }
 
   ctx.strokeStyle = LADDER_INK;
 

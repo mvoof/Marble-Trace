@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Col, InputNumber, Row, Segmented, Switch } from 'antd';
+import { Col, InputNumber, Row, Segmented, Select, Switch } from 'antd';
 import type {
   BaseUserSettings,
   RadarBackgroundTexture,
@@ -29,9 +29,6 @@ export const PANEL_WIDGET_IDS = ['proximity-radar', 'radar-bar'];
 const MIN_SCOPE_RANGE_M = 5;
 const MAX_SCOPE_RANGE_M = 30;
 const SCOPE_RANGE_STEP_M = 1;
-
-const TEXTURE_OPACITY_PERCENT_STEP = 2;
-const MAX_TEXTURE_OPACITY_PERCENT = 40;
 
 const { SwitchRow } = panelRows<ProximityRadarSettings>();
 
@@ -104,10 +101,11 @@ const ScopeCard = observer(() => {
             <span className={styles.fieldLabel}>
               {t('settingsPanels.radar.scaleMode')}
             </span>
-            <Segmented
+            <Select
+              style={{ width: '100%' }}
               value={settings.scaleMode}
-              onChange={(value) => {
-                update({ scaleMode: value as RadarScaleMode });
+              onChange={(value: RadarScaleMode) => {
+                update({ scaleMode: value });
               }}
               options={SCALE_MODES.map((mode) => ({
                 label: t(`settingsPanels.radar.scaleModes.${mode}`),
@@ -160,6 +158,14 @@ const ScopeCard = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SwitchRow
+            settingKey="showAxisTicks"
+            title={t('settingsPanels.radar.showAxisTicks')}
+            desc={t('settingsPanels.radar.showAxisTicksDesc')}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
             settingKey="showRangeRings"
             title={t('settingsPanels.radar.showRangeRings')}
           />
@@ -180,10 +186,11 @@ const ScopeCard = observer(() => {
             <span className={styles.fieldLabel}>
               {t('settingsPanels.radar.texturePattern')}
             </span>
-            <Segmented
+            <Select
+              style={{ width: '100%' }}
               value={settings.backgroundTexture}
-              onChange={(value) => {
-                update({ backgroundTexture: value as RadarBackgroundTexture });
+              onChange={(value: RadarBackgroundTexture) => {
+                update({ backgroundTexture: value });
               }}
               options={TEXTURES.map((texture) => ({
                 label: t(`settingsPanels.radar.textures.${texture}`),
@@ -193,27 +200,6 @@ const ScopeCard = observer(() => {
             <div className={styles.fieldDesc}>
               {t('settingsPanels.radar.textureDesc')}
             </div>
-          </Col>
-        </Row>
-
-        <Row gutter={24} className={styles.fieldGroup}>
-          <Col span={8}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.radar.textureOpacity')}
-            </span>
-            <InputNumber
-              style={{ width: '100%' }}
-              value={Math.round(settings.textureOpacity * 100)}
-              min={0}
-              max={MAX_TEXTURE_OPACITY_PERCENT}
-              step={TEXTURE_OPACITY_PERCENT_STEP}
-              disabled={settings.backgroundTexture === 'none'}
-              onChange={(value) => {
-                if (value !== null) {
-                  update({ textureOpacity: value / 100 });
-                }
-              }}
-            />
           </Col>
         </Row>
       </Card>

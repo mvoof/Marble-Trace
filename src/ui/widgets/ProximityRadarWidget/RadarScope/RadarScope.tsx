@@ -121,13 +121,14 @@ export const RadarScope = observer(() => {
       ctx.arc(0, 0, radiusPx, 0, Math.PI * 2);
       ctx.clip();
 
-      drawTexture(ctx, scope.backgroundTexture, scope.textureOpacity, radiusPx);
+      drawTexture(ctx, scope.backgroundTexture, radiusPx);
       drawGrid(ctx, {
         radiusPx,
         pxPerMeter,
         rangeMeters,
         carLengthM: carLength,
         showAxes: scope.showAxes,
+        showAxisTicks: scope.showAxisTicks,
         showRangeRings: scope.showRangeRings,
       });
 

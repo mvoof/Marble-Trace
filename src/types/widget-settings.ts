@@ -172,9 +172,9 @@ export interface ProximityRadarSettings extends RadarSettings {
   /** Radius in meters the circle covers. Read only when `scaleMode` is manual. */
   scopeRange: number;
   backgroundTexture: RadarBackgroundTexture;
-  /** 0..1, the texture's ink over whatever the plate is filled with. */
-  textureOpacity: number;
   showAxes: boolean;
+  /** Distance ticks along the vertical axis, drawn only with the axes. */
+  showAxisTicks: boolean;
   showRangeRings: boolean;
   /** The beam that follows an opponent for as long as it is in the scope. */
   showBeam: boolean;
