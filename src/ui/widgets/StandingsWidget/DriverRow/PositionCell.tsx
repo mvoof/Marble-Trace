@@ -39,15 +39,7 @@ export const PositionCell = observer(({ carIdx }: PositionCellProps) => {
     : undefined;
 
   return (
-    <div
-      className={`${styles.cell} ${styles.posCell}`}
-      style={{
-        borderLeft: `3px solid ${driver.carClassColor}`,
-        background: driver.isPlayer
-          ? undefined
-          : `linear-gradient(to right, color-mix(in srgb, ${driver.carClassColor} 20%, transparent), transparent)`,
-      }}
-    >
+    <div className={`${styles.cell} ${styles.posCell}`}>
       {change === 'up' && (
         <ArrowBigUp
           className={styles.livePosArrowUp}

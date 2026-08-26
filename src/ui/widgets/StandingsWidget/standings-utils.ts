@@ -136,9 +136,9 @@ interface ColSpec {
 }
 
 const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
-  { px: 28, show: true }, // pos      "00" (fs lg, bold) — wider for class color
-  { px: 38, show: settings.showPosChange }, // +/- pos  "▲12" — between pos and carNum
-  { px: 40, show: true }, // carNum   "#000" + cell padding
+  { px: 28, show: true }, // pos      "00" (fs md, bold)
+  { px: 40, show: true }, // carNum   class-colored badge, right after pos
+  { px: 38, show: settings.showPosChange }, // +/- pos  "▲12"
   { px: NAME_NATURAL_PX, show: true, flex: true }, // name — flexes, never collapses
   { px: 60, show: settings.showLicBadge }, // lic badge "A 4.99" — matches Relative for equal PIT↔SR gap
   { px: 42, show: settings.showIRating }, // iRating  "9.9k"

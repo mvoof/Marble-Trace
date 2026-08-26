@@ -97,7 +97,7 @@
   }
 }
 
-// Position cell — stretch to row edges for class color border + gradient
+// Position cell — stretches to the row edges so padding matches the row
 .posCell {
   align-self: stretch;
   margin-top: calc(-1 * sp(xxxs));
@@ -109,6 +109,7 @@
 // Car number cell
 .carNumberCell {
   padding: 0 sp(xxxs);
+  justify-content: flex-end;
 }
 
 // Name cell — overflow truncation
@@ -167,11 +168,20 @@
   justify-content: center;
 }
 
-// Car number — muted, class identity comes from pos column color
+// Car number — the badge carries the class color
 .carNumber {
   font-family: $font-mono;
   font-size: fs(md);
-  color: $widget-text-muted;
+  font-weight: 700;
+  line-height: 1;
+  padding: sp(xxxs) sp(xxs);
+  border-radius: radius(md);
+  white-space: nowrap;
+
+  // Sized for the widest number the field can hold, so a one-digit badge is the
+  // same box as a three-digit one and the column stays a straight edge.
+  min-width: 3ch;
+  text-align: center;
 }
 
 // Driver name

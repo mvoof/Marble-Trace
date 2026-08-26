@@ -7,7 +7,7 @@ import {
 } from '@utils/driver';
 import { parseDriverFlags } from '@utils/driver';
 import { DriverStatusBadges } from '@ui/shared/DriverStatusBadge/DriverStatusBadges';
-import { playerRowStyle } from '@utils/colors';
+import { getContrastTextColor, playerRowStyle } from '@utils/colors';
 import { DriverFlagBadge } from '@ui/shared/DriverFlagBadge/DriverFlagBadge';
 import { LicBadge } from '@ui/shared/RatingBadge/LicBadge';
 import { formatIr } from '@ui/shared/RatingBadge/LicBadge.utils';
@@ -102,15 +102,7 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
       style={{ gridTemplateColumns: gridTemplate, ...rowFill }}
       data-relative-row
     >
-      <div
-        className={styles.posBlock}
-        style={{
-          borderLeft: `3px solid ${driver.carClassColor}`,
-          background: driver.isPlayer
-            ? undefined
-            : `linear-gradient(to right, color-mix(in srgb, ${driver.carClassColor} 20%, transparent), transparent)`,
-        }}
-      >
+      <div className={styles.posBlock}>
         <span
           className={`${styles.driverPosition} ${driver.isPlayer ? styles.driverPositionPlayer : ''}`}
           style={
@@ -124,11 +116,12 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
       <div className={styles.carNumberCell}>
         <span
           className={styles.driverCarNumber}
-          style={
-            driver.isPlayer ? { color: settings.playerAccentColor } : undefined
-          }
+          style={{
+            backgroundColor: driver.carClassColor,
+            color: getContrastTextColor(driver.carClassColor),
+          }}
         >
-          #{formattedCarNumber}
+          {formattedCarNumber}
         </span>
       </div>
 
