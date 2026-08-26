@@ -213,6 +213,7 @@ const drawCenterLane = (
       }
 
       const threat = threatColorForGap(gapMeters);
+      const body = scope.monochromeCars ? SCOPE_INK.opponent : threat;
 
       if (scope.showBeam) {
         drawBeam(ctx, {
@@ -230,7 +231,7 @@ const drawCenterLane = (
       drawCar(ctx, {
         x: 0,
         y,
-        color: SCOPE_INK.opponent,
+        color: body,
         alpha: bodyAlpha(gapMeters, rangeMeters),
         pxPerMeter,
         carLengthM,
@@ -242,7 +243,7 @@ const drawCenterLane = (
           formatDistance(gapMeters, unitSystem),
           0,
           y,
-          SCOPE_INK.opponent,
+          body,
           pxPerMeter
         );
       }
@@ -318,25 +319,21 @@ const drawSideLane = (
   inScope.forEach((row) => {
     const y = -row.longitudinal * pxPerMeter;
 
+    const body = scope.monochromeCars
+      ? SCOPE_INK.opponent
+      : threatColorForGap(Math.abs(row.longitudinal));
+
     drawCar(ctx, {
       x,
       y,
-      color: SCOPE_INK.opponent,
+      color: body,
       alpha: 0.85,
       pxPerMeter,
       carLengthM,
     });
 
     if (row.count > 1) {
-      drawBodyText(
-        ctx,
-        `×${row.count}`,
-        x,
-        y,
-        SCOPE_INK.opponent,
-        pxPerMeter,
-        700
-      );
+      drawBodyText(ctx, `×${row.count}`, x, y, body, pxPerMeter, 700);
     }
   });
 };

@@ -46,5 +46,6 @@ export const PROXIMITY_RADAR_MANIFEST: WidgetManifest = {
     showAxisTicks: true,
     showRangeRings: true,
     showBeam: true,
+    monochromeCars: true,
   },
 };

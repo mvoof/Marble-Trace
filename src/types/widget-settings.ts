@@ -178,6 +178,8 @@ export interface ProximityRadarSettings extends RadarSettings {
   showRangeRings: boolean;
   /** The beam that follows an opponent for as long as it is in the scope. */
   showBeam: boolean;
+  /** White bodies; off paints each car in its own threat color. */
+  monochromeCars: boolean;
 }
 
 export type BattleTrigger = 'gap' | 'distance';

@@ -259,6 +259,8 @@
       "showRangeRings": "Range rings",
       "showBeam": "Tracking beam",
       "showBeamDesc": "A sector as wide as the opponent, following it while it stays in the circle.",
+      "monochromeCars": "白色车辆",
+      "monochromeCarsDesc": "关闭后：每辆车按危险程度着色。",
       "texture": "Background texture",
       "texturePattern": "Pattern",
       "textureDesc": "Drawn over the background color, or on its own when the background is transparent.",

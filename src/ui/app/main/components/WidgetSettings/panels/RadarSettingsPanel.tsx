@@ -173,6 +173,14 @@ const ScopeCard = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SwitchRow
+            settingKey="monochromeCars"
+            title={t('settingsPanels.radar.monochromeCars')}
+            desc={t('settingsPanels.radar.monochromeCarsDesc')}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
             settingKey="showBeam"
             title={t('settingsPanels.radar.showBeam')}
             desc={t('settingsPanels.radar.showBeamDesc')}
