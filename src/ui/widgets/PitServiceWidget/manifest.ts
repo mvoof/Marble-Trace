@@ -1,19 +1,16 @@
-import type {
-  PitServiceWidgetSettings,
-  WidgetManifest,
-} from '@/types/widget-settings';
+import type { WidgetManifest } from '@/types/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
-  makeColumnLayoutResolver,
   PANEL_APPEARANCE_DEFAULTS,
 } from '@ui/widgets/widget-manifest';
 
-// Panel width without the side rail, and what the rail adds to it — the rail's
-// own width plus the gap it sits behind (ws(52) + sp(xs) in the stylesheet).
-// The base is what the tire grid needs: three tread sections per corner, with
-// no room reserved for a corner heading any more.
-const BASE_DESIGN_WIDTH = 260;
-const SIDE_RAIL_WIDTH = 58;
+// The tire grid is what the width has to hold: two corners of three tread
+// sections each (ws(26) x 3 + 2 px gaps = 82), 4 px of air around every tread,
+// the gap between the corners and the same 4 px at the panel edge. The toggle
+// row underneath asks for a little more than that — FAST REP, WINDSHIELD and
+// the compound side by side, none of them allowed to wrap — and it is what sets
+// the final number.
+const BASE_DESIGN_WIDTH = 235;
 
 export const PIT_SERVICE_MANIFEST: WidgetManifest = {
   id: 'pit-service',
@@ -29,6 +26,9 @@ export const PIT_SERVICE_MANIFEST: WidgetManifest = {
   // Blocks are switched on and off individually; a fixed height would leave
   // an empty plate hanging under whatever is still shown.
   autoHeight: true,
+  // The docked approach rail is drawn outside the panel, against the edge it is
+  // parked on — the container must not clip it.
+  overflowVisible: true,
   userSettings: {
     enabled: false,
     x: 100,
@@ -58,14 +58,4 @@ export const PIT_SERVICE_MANIFEST: WidgetManifest = {
     fuelAdjustStep: 1,
     commandRevealSeconds: 5,
   },
-  // The side rail is a column of its own, so the widget grows by its width
-  // instead of squeezing the tire grid; --wfs stays where the driver put it.
-  resolveLayoutChange: makeColumnLayoutResolver<PitServiceWidgetSettings>(
-    ['showPitApproach', 'pitApproachPlacement'],
-    (settings) =>
-      BASE_DESIGN_WIDTH +
-      (settings.showPitApproach && settings.pitApproachPlacement === 'side'
-        ? SIDE_RAIL_WIDTH
-        : 0)
-  ),
 };

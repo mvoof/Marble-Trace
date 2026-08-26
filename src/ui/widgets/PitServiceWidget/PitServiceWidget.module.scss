@@ -1,3 +1,11 @@
+// The panel clips its own children; the docked rail is drawn past its edge and
+// would be cut in half by that. It also anchors the rail, so the rail spans the
+// plate exactly — top and bottom flush with the widget's own edges.
+.panelWithRail {
+  position: relative;
+  overflow: visible;
+}
+
 .stack {
   display: flex;
   flex-direction: column;
@@ -7,5 +15,11 @@
   flex: 1 1 0;
   min-width: 0;
   width: 100%;
-  padding: sp(xxs) sp(xs) sp(xs);
+  // Same air as the tire corners keep around their tread: the grid is what sets
+  // the panel's width, and anything wider here is a margin around a margin.
+  padding: sp(xxs) sp(xxs) sp(xxs);
+  // The order toast is pinned inside the panel rather than given a row of its
+  // own — it appears for a few seconds and would otherwise resize the widget
+  // every time an order is sent.
+  position: relative;
 }

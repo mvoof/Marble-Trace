@@ -19,18 +19,31 @@
 }
 
 .railVertical {
+  // Parked against the outside of the panel: taken out of the flow so nothing
+  // in the stack moves when it appears, and hung past the edge so nothing in
+  // the stack narrows either. The panel drops its clipping for it.
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
   flex-direction: column;
   align-items: center;
-  gap: sp(xs);
-  width: ws(52);
-  padding: sp(xs) sp(xxs);
-  margin-left: sp(xs);
+  gap: sp(xxs);
+  width: ws(40);
+  margin-left: sp(xxs);
+  padding: sp(xxs) 2px;
+  // Outside the panel it is a plate of its own, so it paints the plate the user
+  // chose rather than the cell color it would inherit from the stack: the two
+  // read as one widget only if the background and the border match.
+  background: var(--widget-bg, #{$widget-surface-cell});
+  border: 1px solid var(--widget-border, transparent);
 }
 
 .railLeft {
+  left: auto;
+  right: 100%;
   margin-left: 0;
-  margin-right: sp(xs);
-  order: -1;
+  margin-right: sp(xxs);
 }
 
 .railIdle {
@@ -76,7 +89,7 @@
 
 .value {
   font-family: $font-mono;
-  font-size: fs(xxl);
+  font-size: fs(lg);
   line-height: 0.9;
   color: var(--rail-accent);
   font-variant-numeric: tabular-nums;
@@ -88,6 +101,13 @@
   color: $widget-label;
   font-weight: 600;
   white-space: nowrap;
+}
+
+// The column is as wide as two digits; anything the readout cannot fit is
+// clipped rather than allowed to spill over the widget beside it.
+.railVertical .readout {
+  max-width: 100%;
+  overflow: hidden;
 }
 
 // The lane itself: entry at the start, exit at the end, the stall painted where
@@ -111,7 +131,7 @@
   .railVertical & {
     flex: 1 1 0;
     min-height: ws(80);
-    width: ws(10);
+    width: ws(8);
   }
 }
 

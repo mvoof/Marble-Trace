@@ -5,11 +5,21 @@
   font-family: $font-widget;
 }
 
+// The chips share the row rather than sitting at their text width: the row is
+// as wide as the tire grid above it, and chips that ended early would leave a
+// gap at the right edge that no other block in the panel has. Sharing it also
+// keeps the row honest when the compound chip is absent, or a translation is
+// longer than the English label.
 .chip {
+  // Grow to share the row, but never shrink below the label: a chip that wraps
+  // its own text is worse than a row that is a few pixels wider.
+  flex: 1 0 auto;
+  white-space: nowrap;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: sp(xxs);
-  padding: sp(xxxs) sp(xs);
+  padding: sp(xxxs);
   border-radius: radius(sm);
   background: $widget-surface-cell;
 }

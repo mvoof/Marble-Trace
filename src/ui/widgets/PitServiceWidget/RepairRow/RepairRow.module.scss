@@ -13,7 +13,7 @@
   align-items: center;
   gap: sp(xxs);
   height: ws(26);
-  padding: 0 sp(xs);
+  padding: 0 sp(xxs);
   border-radius: radius(md);
   background: $widget-surface-cell;
 }
@@ -24,10 +24,13 @@
 }
 
 // A stop runs 6.5 s or 2:11 — the slot is sized for the longer form and the
-// number grows into it, so the icon beside it never shifts.
+// number grows into it, so the icon beside it never shifts. Never wrapped: with
+// three cells in the row the unit would drop to a second line and take the row's
+// height with it.
 .value {
   margin-left: auto;
   min-width: 4ch;
+  white-space: nowrap;
   font-family: $font-mono;
   font-size: fs(md);
   line-height: 1;

@@ -2,6 +2,9 @@
   display: flex;
   flex-direction: column;
   gap: sp(xxxs);
+  // Five pixels of air around the tread and no more: three treads plus their
+  // gaps are what sets the whole panel's width, so every pixel spent here is
+  // spent twice over.
   padding: sp(xxxs) sp(xxs) sp(xxs);
   border-radius: radius(sm);
   background: $widget-surface-cell;
@@ -15,8 +18,12 @@
   background: rgba($race-green, 0.16);
 }
 
+// A corner not on the order is told apart by its plain background alone. It
+// used to be dimmed as a whole, which took the tread colors and both rows of
+// numbers down with it — and those are readings, not order state: a temperature
+// is worth exactly as much on a tire nobody is changing.
 .cornerKept {
-  opacity: 0.6;
+  background: $widget-surface-cell;
 }
 
 .cornerClickable {
@@ -35,9 +42,11 @@
   text-align: center;
 }
 
-// Between stops the wear row is last stop's measurement, not a live reading.
+// Between stops the wear row is last stop's measurement, not a live reading —
+// said with a step down in weight, not by fading the digits until they have to
+// be squinted at.
 .zoneRowStale {
-  opacity: 0.45;
+  opacity: 0.75;
 }
 
 // Temperatures carry their own zone color — the same one that fills the tread

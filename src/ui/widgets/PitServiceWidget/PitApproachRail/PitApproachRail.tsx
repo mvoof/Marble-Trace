@@ -104,13 +104,15 @@ export const PitApproachRail = observer(
           lane is the row's background and the distance rides inside it, so the
           block costs a single line rather than three.
         */}
+        {/*
+          The column is two digits wide, so it carries the distance and the unit
+          and nothing else — the target is what the lane underneath is drawing.
+        */}
         {isVertical && (
           <div className={styles.readout}>
             <span className={styles.value}>{distValue}</span>
 
-            <span className={styles.unit}>
-              {isImperial ? 'ft' : 'm'} → {targetLabel}
-            </span>
+            <span className={styles.unit}>{isImperial ? 'ft' : 'm'}</span>
           </div>
         )}
 

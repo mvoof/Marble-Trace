@@ -73,18 +73,23 @@ export const PitServiceWidget = observer(() => {
   })();
 
   return (
-    // A side rail turns the panel into a row: the stack keeps its own width and
-    // the rail hangs against the edge, which is why the manifest widens
-    // designWidth by the rail instead of letting it eat into the columns.
-    <WidgetPanel direction={isSideRail ? 'row' : 'column'} gap={0}>
+    // The docked rail hangs *outside* the panel, on the edge the driver picked:
+    // it is a glance target, not a column of the widget, and neither switching
+    // it on nor moving it may resize the box or squeeze a single row inside it.
+    // That is what `overflowVisible` in the manifest is for.
+    <WidgetPanel
+      direction="column"
+      gap={0}
+      className={isSideRail ? styles.panelWithRail : undefined}
+    >
       <div className={styles.stack}>
+        <OrderHint />
+
         {slot}
 
         {!isSideRail && rail}
 
         {showFuel && <FuelOrder />}
-
-        <OrderHint />
 
         {showTires && <TireGrid />}
 
@@ -93,6 +98,12 @@ export const PitServiceWidget = observer(() => {
         {showFooter && <ServiceFooter />}
       </div>
 
+      {/*
+        A child of the panel, not of the stack: the stack is the growing half of
+        the flexbox and can run past the plate when the content is taller than
+        the box, and a rail anchored to it would hang below the widget instead
+        of standing alongside it.
+      */}
       {isSideRail && rail}
     </WidgetPanel>
   );

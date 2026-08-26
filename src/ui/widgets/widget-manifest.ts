@@ -37,10 +37,19 @@ export const DEFAULT_PLAYER_ACCENT_COLOR = '#f5c518';
 
 // Widgets with toggleable columns/sections have a natural width that changes as
 // elements are shown/hidden. This builds a resolveLayoutChange that, when any of
-// the given toggle keys flips, recomputes designWidth from the visible content AND
-// scales currentWidth by the same factor — keeping --wfs (and thus font/row size)
-// constant while the widget grows/shrinks to fit. Only WIDTH-changing toggles need
-// this; height-changing toggles don't affect --wfs (width-only).
+// the given toggle keys flips, widens or narrows the widget by exactly what the
+// toggle is worth AND scales currentWidth by the same factor — keeping --wfs (and
+// thus font/row size) constant while the widget grows/shrinks to fit. Only
+// WIDTH-changing toggles need this; height-changing toggles don't affect --wfs
+// (width-only).
+//
+// The change is applied as a *delta* on the widget's own stored designWidth, not
+// as the computed width outright. The two are the same number for a widget still
+// on its shipped size — but a saved designWidth outlives the manifest, so after a
+// widget is redesigned narrower they differ by the redesign. Assigning the
+// computed width there would fold that redesign into the first column toggle, and
+// the widget would jump to a size the driver never asked for the moment they
+// flicked an unrelated switch.
 export const makeColumnLayoutResolver = <Settings>(
   toggleKeys: (keyof Settings)[],
   computeDesignWidth: (settings: Settings) => number
@@ -57,7 +66,9 @@ export const makeColumnLayoutResolver = <Settings>(
       return null;
     }
 
-    const newDesignWidth = computeDesignWidth(nextSettings);
+    const delta =
+      computeDesignWidth(nextSettings) - computeDesignWidth(prevSettings);
+    const newDesignWidth = Math.max(1, current.designWidth + delta);
     const scale = current.designWidth
       ? current.currentWidth / current.designWidth
       : 1;
