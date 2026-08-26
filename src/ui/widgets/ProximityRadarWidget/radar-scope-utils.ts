@@ -447,14 +447,24 @@ interface BeamInput {
   pxPerMeter: number;
   radiusPx: number;
   color: string;
+  /** User opacity, multiplied into the beam's own distance fade. */
+  opacity: number;
 }
 
 /** The sector that follows an opponent for as long as it is in the scope. */
 export const drawBeam = (
   ctx: CanvasRenderingContext2D,
-  { span, distanceMeters, rangeMeters, pxPerMeter, radiusPx, color }: BeamInput
+  {
+    span,
+    distanceMeters,
+    rangeMeters,
+    pxPerMeter,
+    radiusPx,
+    color,
+    opacity,
+  }: BeamInput
 ): void => {
-  const fade = Math.max(0.15, 1 - distanceMeters / rangeMeters);
+  const fade = Math.max(0.15, 1 - distanceMeters / rangeMeters) * opacity;
   const stop = Math.min(
     0.92,
     Math.max(0.08, (distanceMeters * pxPerMeter) / radiusPx)
@@ -470,7 +480,7 @@ export const drawBeam = (
   );
   gradient.addColorStop(0, withAlpha(color, 0));
   gradient.addColorStop(stop, withAlpha(color, 0.3 * fade + 0.06));
-  gradient.addColorStop(1, withAlpha(color, 0.02));
+  gradient.addColorStop(1, withAlpha(color, 0.02 * opacity));
 
   ctx.save();
   ctx.rotate(span.center);

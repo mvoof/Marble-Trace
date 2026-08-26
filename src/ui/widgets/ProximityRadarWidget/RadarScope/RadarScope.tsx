@@ -39,6 +39,9 @@ const SEARCH_RADIUS_M = 40;
 const MIN_BODY_ALPHA = 0.3;
 const MAX_BODY_ALPHA = 0.95;
 
+/** Alongside carries no depth of its own — the lane is one car wide. */
+const SIDE_BODY_ALPHA = 0.85;
+
 const bodyAlpha = (gapMeters: number, rangeMeters: number): number =>
   Math.max(MIN_BODY_ALPHA, MAX_BODY_ALPHA - gapMeters / (rangeMeters * 1.5));
 
@@ -215,7 +218,9 @@ const drawCenterLane = (
       const gapMeters = Math.abs(car.bumperDist);
 
       if (Math.abs(centerMeters) > rangeMeters) {
-        drawEdgeMarker(ctx, centerMeters >= 0 ? 0 : Math.PI, radiusPx);
+        if (scope.showEdgeMarkers) {
+          drawEdgeMarker(ctx, centerMeters >= 0 ? 0 : Math.PI, radiusPx);
+        }
 
         return;
       }
@@ -231,6 +236,7 @@ const drawCenterLane = (
           pxPerMeter,
           radiusPx,
           color: threat,
+          opacity: scope.beamOpacity,
         });
       }
 
@@ -240,7 +246,7 @@ const drawCenterLane = (
         x: 0,
         y,
         color: body,
-        alpha: bodyAlpha(gapMeters, rangeMeters),
+        alpha: bodyAlpha(gapMeters, rangeMeters) * scope.carOpacity,
         pxPerMeter,
         carLengthM,
       });
@@ -286,11 +292,13 @@ const drawSideLane = (
     (row) => Math.hypot(lateral, row.longitudinal) <= rangeMeters
   );
 
-  rows
-    .filter((row) => !inScope.includes(row))
-    .forEach((row) => {
-      drawEdgeMarker(ctx, Math.atan2(lateral, row.longitudinal), radiusPx);
-    });
+  if (scope.showEdgeMarkers) {
+    rows
+      .filter((row) => !inScope.includes(row))
+      .forEach((row) => {
+        drawEdgeMarker(ctx, Math.atan2(lateral, row.longitudinal), radiusPx);
+      });
+  }
 
   if (inScope.length === 0) {
     return;
@@ -319,6 +327,7 @@ const drawSideLane = (
       pxPerMeter,
       radiusPx,
       color: threat,
+      opacity: scope.beamOpacity,
     });
   }
 
@@ -335,7 +344,7 @@ const drawSideLane = (
       x,
       y,
       color: body,
-      alpha: 0.85,
+      alpha: SIDE_BODY_ALPHA * scope.carOpacity,
       pxPerMeter,
       carLengthM,
     });
