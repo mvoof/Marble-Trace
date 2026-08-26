@@ -180,9 +180,9 @@ export interface ProximityRadarSettings extends RadarSettings {
   showBeam: boolean;
   /** White bodies; off paints each car in its own threat color. */
   monochromeCars: boolean;
-  /** 0..1 multiplier over the depth fade the car bodies already carry. */
+  /** 0..1 alpha every car body is drawn at, the player's own included. */
   carOpacity: number;
-  /** 0..1 multiplier over the tracking beam's own distance fade. */
+  /** 0..1 alpha of the tracking beam at its densest stop. */
   beamOpacity: number;
   /** Arc markers parking a car that is past the rim at its bearing. */
   showEdgeMarkers: boolean;

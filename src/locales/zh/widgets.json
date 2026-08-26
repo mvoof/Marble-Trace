@@ -262,7 +262,7 @@
       "showEdgeMarkers": "边缘标记",
       "showEdgeMarkersDesc": "为圆外但仍近到可唤醒雷达的车辆在边缘绘制一段圆弧。",
       "carOpacity": "车辆不透明度 — {{percent}}%",
-      "carOpacityDesc": "雷达中心处车辆的不透明度；距离越远越淡出。",
+      "carOpacityDesc": "雷达上所有车辆（含自己）的绘制不透明度。",
       "beamOpacity": "光束不透明度 — {{percent}}%",
       "beamOpacityDesc": "光束最密处的不透明度；距离越远越淡出。",
       "monochromeCars": "白色车辆",

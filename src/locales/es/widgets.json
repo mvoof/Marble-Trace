@@ -262,7 +262,7 @@
       "showEdgeMarkers": "Marcas en el borde",
       "showEdgeMarkersDesc": "Un arco en el borde para un coche que está fuera del círculo pero aún lo bastante cerca como para activar el radar.",
       "carOpacity": "Opacidad de los coches — {{percent}}%",
-      "carOpacityDesc": "Opacidad de un coche en el centro del radar; la distancia lo desvanece desde ahí.",
+      "carOpacityDesc": "La opacidad con la que se dibuja cada coche del radar, incluido el tuyo.",
       "beamOpacity": "Opacidad del haz — {{percent}}%",
       "beamOpacityDesc": "Opacidad del haz en su punto más denso; la distancia lo desvanece desde ahí.",
       "monochromeCars": "Coches blancos",

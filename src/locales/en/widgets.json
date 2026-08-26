@@ -262,7 +262,7 @@
       "showEdgeMarkers": "Edge markers",
       "showEdgeMarkersDesc": "An arc on the rim for a car that is outside the circle but still close enough to wake the radar.",
       "carOpacity": "Car opacity — {{percent}}%",
-      "carOpacityDesc": "Opacity of a car in the centre of the scope; distance fades it from there.",
+      "carOpacityDesc": "The alpha every car on the scope is drawn at, yours included.",
       "beamOpacity": "Beam opacity — {{percent}}%",
       "beamOpacityDesc": "Opacity of the beam at its densest point; distance fades it from there.",
       "monochromeCars": "White cars",
