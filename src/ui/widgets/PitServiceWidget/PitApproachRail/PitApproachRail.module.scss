@@ -12,10 +12,10 @@
 }
 
 .railInline {
-  flex-direction: column;
-  align-items: stretch;
-  gap: sp(xxs);
-  padding: sp(xxs) sp(xs) sp(xs);
+  // One row: the lane itself is the block, no readout stacked above it and no
+  // end labels — at this height they would outweigh the distance.
+  padding: 0;
+  background: transparent;
 }
 
 .railVertical {
@@ -99,8 +99,13 @@
   overflow: hidden;
 
   .railInline & {
-    height: ws(10);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: sp(xxs);
+    height: ws(18);
     width: 100%;
+    padding: 0 sp(xs);
   }
 
   .railVertical & {
@@ -178,11 +183,24 @@
   }
 }
 
-.ends {
+// Sits on top of the lane, so it takes a shadow rather than a background: a
+// plate behind it would hide the very fill it is standing on.
+.inlineReadout {
+  position: relative;
   display: flex;
-  justify-content: space-between;
-  font-size: fs(xxxs);
-  letter-spacing: 0.1em;
-  color: $widget-label;
-  font-weight: 600;
+  align-items: baseline;
+  gap: sp(xxxs);
+  text-shadow:
+    0 0 3px #000,
+    0 0 6px #000;
+}
+
+.inlineValue {
+  min-width: 4ch;
+  font-family: $font-mono;
+  font-size: fs(xs);
+  line-height: 1;
+  color: var(--rail-accent);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }

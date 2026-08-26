@@ -1,0 +1,45 @@
+.chips {
+  display: flex;
+  align-items: stretch;
+  gap: sp(xxs);
+  font-family: $font-widget;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: sp(xxs);
+  padding: sp(xxxs) sp(xs);
+  border-radius: radius(sm);
+  background: $widget-surface-cell;
+}
+
+.chipOrdered {
+  background: rgba($race-green, 0.15);
+}
+
+.chipClickable {
+  cursor: pointer;
+
+  &:hover {
+    background: rgba($race-blue, 0.18);
+  }
+}
+
+.label {
+  font-size: fs(xxs);
+  letter-spacing: 0.06em;
+  color: $widget-label;
+  font-weight: 600;
+}
+
+.chipOrdered .label {
+  color: $race-green;
+}
+
+.value {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
+}

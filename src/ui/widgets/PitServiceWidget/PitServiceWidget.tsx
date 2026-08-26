@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
-import { ServiceHeader } from './ServiceHeader/ServiceHeader';
 import { PitSpeedPlate } from './PitSpeedPlate/PitSpeedPlate';
 import { PitApproachRail } from './PitApproachRail/PitApproachRail';
 import { FuelOrder } from './FuelOrder/FuelOrder';
@@ -9,6 +8,7 @@ import { OrderHint } from './OrderHint/OrderHint';
 import { RepairRow } from './RepairRow/RepairRow';
 import { TowRow } from './TowRow/TowRow';
 import { TireGrid } from './TireGrid/TireGrid';
+import { OrderChips } from './OrderChips/OrderChips';
 import { ServiceFooter } from './ServiceFooter/ServiceFooter';
 
 import styles from './PitServiceWidget.module.scss';
@@ -53,21 +53,32 @@ export const PitServiceWidget = observer(() => {
 
   const isSideRail = pitApproachPlacement === 'side';
 
+  // One slot, three tenants. Standing in the box the speed is zero and the
+  // repair countdowns are the numbers being watched; under tow neither applies
+  // and the only thing to wait on is the arrival. All three rows are the same
+  // height, so the panel does not resize as the stop runs.
+  const slot = (() => {
+    if (pitService.isTowing) {
+      return <TowRow />;
+    }
+
+    // Standing in the box, whether or not the crew has started: the speed is
+    // zero from the moment the car stops, and the repair countdowns run before
+    // the first tire comes off.
+    if (pitService.isInPitStall || pitService.isServiceActive) {
+      return showRepairs ? <RepairRow /> : null;
+    }
+
+    return showPitSpeed ? <PitSpeedPlate /> : null;
+  })();
+
   return (
     // A side rail turns the panel into a row: the stack keeps its own width and
     // the rail hangs against the edge, which is why the manifest widens
     // designWidth by the rail instead of letting it eat into the columns.
     <WidgetPanel direction={isSideRail ? 'row' : 'column'} gap={0}>
       <div className={styles.stack}>
-        <ServiceHeader />
-
-        {/*
-          Being towed replaces the speed block — the car is not moving, and the
-          countdown is the only number that matters up there. Everything below
-          stays: the service order can still be changed while under tow, and it
-          is applied the moment the car is dropped in the box.
-        */}
-        {pitService.isTowing ? <TowRow /> : showPitSpeed && <PitSpeedPlate />}
+        {slot}
 
         {!isSideRail && rail}
 
@@ -75,9 +86,9 @@ export const PitServiceWidget = observer(() => {
 
         <OrderHint />
 
-        {showRepairs && <RepairRow />}
-
         {showTires && <TireGrid />}
+
+        {showRepairs && <OrderChips />}
 
         {showFooter && <ServiceFooter />}
       </div>

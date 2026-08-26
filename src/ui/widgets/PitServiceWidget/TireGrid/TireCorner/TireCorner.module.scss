@@ -2,17 +2,17 @@
   display: flex;
   flex-direction: column;
   gap: sp(xxxs);
-  padding: sp(xxs) sp(xs);
+  padding: sp(xxxs) sp(xxs) sp(xxs);
   border-radius: radius(sm);
   background: $widget-surface-cell;
-  border-left: 2px solid $widget-border-subtle;
   font-family: $font-widget;
   font-variant-numeric: tabular-nums;
 }
 
+// The order is the whole background, not a stripe beside it: one signal per
+// state reads faster than an edge and a tint saying the same thing.
 .cornerOrdered {
-  border-left-color: $race-green;
-  background: rgba($race-green, 0.1);
+  background: rgba($race-green, 0.16);
 }
 
 .cornerKept {
@@ -27,33 +27,9 @@
   }
 }
 
-.head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: sp(xs);
-}
-
-.side {
-  font-size: fs(xxs);
-  letter-spacing: 0.1em;
-  color: $widget-label;
-  font-weight: 600;
-}
-
-.order {
-  font-size: fs(xs);
-  color: $widget-text-primary;
-}
-
-.cornerKept .order {
-  color: $widget-label;
-  font-weight: 600;
-}
-
 .zoneRow {
   display: grid;
-  grid-template-columns: repeat(3, ws(30));
+  grid-template-columns: repeat(3, ws(26));
   gap: 2px;
   justify-content: center;
   text-align: center;
@@ -120,6 +96,17 @@
     background-color 0.5s ease;
 }
 
+.check {
+  position: absolute;
+  top: sp(xxs);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  color: $race-green;
+  filter: drop-shadow(0 0 3px #000) drop-shadow(0 0 6px #000);
+  pointer-events: none;
+}
+
 .pressure {
   position: absolute;
   inset: 0;
@@ -132,6 +119,21 @@
     0 0 3px #000,
     0 0 6px #000;
   pointer-events: none;
+}
+
+// With a change ordered the check owns the middle of the tread, so the pressure
+// being fitted sits under it rather than behind it.
+.pressureOrdered {
+  align-items: flex-end;
+  padding-bottom: sp(xxxs);
+  font-family: $font-mono;
+  font-size: fs(sm);
+  color: $race-green;
+  font-weight: 600;
+  text-shadow:
+    0 0 2px #000,
+    0 0 4px #000,
+    0 0 8px #000;
 }
 
 @keyframes puncturePulse {

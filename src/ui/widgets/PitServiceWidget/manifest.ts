@@ -10,8 +10,10 @@ import {
 
 // Panel width without the side rail, and what the rail adds to it — the rail's
 // own width plus the gap it sits behind (ws(52) + sp(xs) in the stylesheet).
-const BASE_DESIGN_WIDTH = 300;
-const SIDE_RAIL_WIDTH = 60;
+// The base is what the tire grid needs: three tread sections per corner, with
+// no room reserved for a corner heading any more.
+const BASE_DESIGN_WIDTH = 260;
+const SIDE_RAIL_WIDTH = 58;
 
 export const PIT_SERVICE_MANIFEST: WidgetManifest = {
   id: 'pit-service',
@@ -23,7 +25,7 @@ export const PIT_SERVICE_MANIFEST: WidgetManifest = {
   // temperatures and wear from it — without them half the widget is blank.
   requiredCapabilities: ['chassis'],
   designWidth: BASE_DESIGN_WIDTH,
-  designHeight: 540,
+  designHeight: 330,
   // Blocks are switched on and off individually; a fixed height would leave
   // an empty plate hanging under whatever is still shown.
   autoHeight: true,
@@ -32,7 +34,7 @@ export const PIT_SERVICE_MANIFEST: WidgetManifest = {
     x: 100,
     y: 100,
     currentWidth: BASE_DESIGN_WIDTH,
-    currentHeight: 540,
+    currentHeight: 330,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
     showPitSpeed: true,

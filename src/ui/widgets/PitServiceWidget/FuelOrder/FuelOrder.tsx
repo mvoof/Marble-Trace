@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { Fuel } from 'lucide-react';
 import { useRef } from 'react';
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
 
@@ -13,6 +14,8 @@ import {
 // The sim always reports fuel in liters; only the readout follows the setting.
 const fuelUnit = (unitSystem: UnitSystem): string =>
   unitSystem === 'metric' ? 'L' : 'gal';
+
+const ICON_SIZE = 12;
 
 const FULL_RATIO = 1;
 const PERCENT = 100;
@@ -106,23 +109,23 @@ export const FuelOrder = observer(() => {
         />
       )}
 
-      <div className={styles.content}>
-        <div className={styles.row}>
-          <span className={styles.label}>FUEL ADD</span>
+      <Fuel size={ICON_SIZE} className={styles.icon} />
 
-          <span className={styles.value}>
-            {ordered > 0 ? `+${formatFuel(ordered, units.unitSystem)}` : '—'}
-            <span className={styles.unit}> {fuelUnit(units.unitSystem)}</span>
-          </span>
-        </div>
+      {calculated !== null && (
+        <span className={styles.calc}>
+          CALC {formatFuel(calculated, units.unitSystem)}
+        </span>
+      )}
 
-        {calculated !== null && (
-          <span className={styles.sub}>
-            CALC +{formatFuel(calculated, units.unitSystem)}{' '}
-            {fuelUnit(units.unitSystem)}
-          </span>
-        )}
-      </div>
+      {/*
+        Fixed slot, right-aligned: the amount swings between one and three
+        digits as it is dragged, and the icon beside it must not move with it.
+      */}
+      <span className={styles.value}>
+        {ordered > 0 ? `+${formatFuel(ordered, units.unitSystem)}` : '—'}
+      </span>
+
+      <span className={styles.unit}>{fuelUnit(units.unitSystem)}</span>
     </>
   );
 

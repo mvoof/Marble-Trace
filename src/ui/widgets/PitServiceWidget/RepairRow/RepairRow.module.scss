@@ -4,52 +4,61 @@
   font-family: $font-widget;
 }
 
-.chip {
+// Same height as the speed row it stands in for, so the panel does not jump
+// when the car comes to a stop in the box.
+.cell {
   flex: 1 1 0;
   min-width: 0;
   display: flex;
-  flex-direction: column;
-  gap: sp(xxxs);
-  padding: sp(xxs) sp(xs);
-  border-radius: radius(sm);
+  align-items: center;
+  gap: sp(xxs);
+  height: ws(26);
+  padding: 0 sp(xs);
+  border-radius: radius(md);
   background: $widget-surface-cell;
 }
 
-.chipOrdered {
-  background: rgba($race-green, 0.15);
-}
-
-.chipClickable {
-  cursor: pointer;
-
-  &:hover {
-    background: rgba($race-blue, 0.18);
-  }
-}
-
-.key {
-  font-size: fs(xxxs);
-  letter-spacing: 0.08em;
+.icon {
+  flex: none;
   color: $widget-label;
-  font-weight: 600;
 }
 
+// A stop runs 6.5 s or 2:11 — the slot is sized for the longer form and the
+// number grows into it, so the icon beside it never shifts.
 .value {
+  margin-left: auto;
+  min-width: 4ch;
   font-family: $font-mono;
-  font-size: fs(sm);
+  font-size: fs(md);
+  line-height: 1;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
-.chipRequired .value {
+.cellRequired {
+  background: rgba($race-red, 0.14);
+}
+
+.cellRequired .icon,
+.cellRequired .value {
   color: $race-red;
 }
 
-.chipOptional .value {
+.cellOptional {
+  background: rgba($race-amber, 0.14);
+}
+
+.cellOptional .icon,
+.cellOptional .value {
   color: $race-amber;
 }
 
 // The stop clock is the number being watched while the car is stationary.
-.chipLive .value {
+.cellLive {
+  background: rgba($race-amber, 0.14);
+}
+
+.cellLive .value {
   color: $race-amber;
 }
