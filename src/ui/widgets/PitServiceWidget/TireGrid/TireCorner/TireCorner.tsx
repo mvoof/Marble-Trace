@@ -19,7 +19,10 @@ import {
 
 const WEAR_TO_PCT = 100;
 const MIN_FILL_PCT = 5;
-const CHECK_SIZE = 22;
+// Heavier and larger than an inline icon: it is read at a glance over a busy
+// tread, not next to a label.
+const CHECK_SIZE = 30;
+const CHECK_STROKE = 3.2;
 
 interface TireCornerProps {
   position: CornerPosition;
@@ -85,7 +88,11 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
 
         {ordered ? (
           <>
-            <Check size={CHECK_SIZE} className={styles.check} />
+            <Check
+              size={CHECK_SIZE}
+              strokeWidth={CHECK_STROKE}
+              className={styles.check}
+            />
 
             {orderedBar !== null && (
               <span className={`${styles.pressure} ${styles.pressureOrdered}`}>

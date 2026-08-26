@@ -4,8 +4,9 @@
   gap: sp(xxxs);
   padding: sp(xxs) sp(xs);
   border-radius: radius(sm);
-  background: rgba($race-red, 0.12);
-  border-left: 2px solid $race-red;
+  // The state is the whole tint, like every other block in the panel — an edge
+  // stripe on top of it says the same thing twice.
+  background: rgba($race-red, 0.16);
   font-family: $font-widget;
 }
 
