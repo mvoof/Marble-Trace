@@ -89,7 +89,7 @@
   margin-top: calc(-1 * sp(xxxs));
   margin-bottom: calc(-1 * sp(xxxs));
   margin-left: calc(-1 * sp(md));
-  padding: sp(xxxs) sp(xs) sp(xxxs) sp(md);
+  padding: sp(xxxs) sp(xxxs) sp(xxxs) sp(md);
 }
 
 // Position — primary emphasis
@@ -97,7 +97,6 @@
   font-weight: 700;
   font-size: fs(md);
   color: $widget-text-primary;
-  font-family: $font-mono;
 }
 
 .driverPositionPlayer {
@@ -108,8 +107,8 @@
 .carNumberCell {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 sp(xxxs);
+  justify-content: flex-end;
+  padding: 0 sp(sm) 0 0;
 }
 
 // Car number — the badge carries the class color
@@ -121,6 +120,10 @@
   padding: sp(xxxs) sp(xxs);
   border-radius: radius(md);
   white-space: nowrap;
+  // Sized for the widest number the field can hold, so a one-digit badge is the
+  // same box as a three-digit one and the column stays a straight edge.
+  min-width: 3ch;
+  text-align: center;
 }
 
 // Info block — name only, fills 1fr grid column

@@ -109,7 +109,7 @@
 // Car number cell
 .carNumberCell {
   padding: 0 sp(xxxs);
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 // Name cell — overflow truncation
@@ -177,6 +177,10 @@
   padding: sp(xxxs) sp(xxs);
   border-radius: radius(md);
   white-space: nowrap;
+  // Sized for the widest number the field can hold, so a one-digit badge is the
+  // same box as a three-digit one and the column stays a straight edge.
+  min-width: 3ch;
+  text-align: center;
 }
 
 // Driver name

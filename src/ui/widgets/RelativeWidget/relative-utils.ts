@@ -20,7 +20,7 @@ interface ColSpec {
 // match the render order in DriverRow.tsx.
 const colSpecs = (settings: RelativeWidgetSettings): ColSpec[] => [
   { px: 28, show: true }, // pos
-  { px: 36, show: true }, // carNum — class-colored badge, right after pos
+  { px: 40, show: true }, // carNum — class-colored badge, right after pos
   { px: NAME_NATURAL_PX, show: true, flex: true }, // name
   { px: 60, show: settings.showLicBadge }, // lic badge
   { px: 36, show: settings.showIRating }, // iRating

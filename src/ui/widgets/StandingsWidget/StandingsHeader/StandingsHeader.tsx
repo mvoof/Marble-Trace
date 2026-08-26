@@ -25,13 +25,12 @@ export const StandingsHeader = observer(() => {
     >
       <StandingsHeaderCell>Pos</StandingsHeaderCell>
 
+      <StandingsHeaderCell align="right">#</StandingsHeaderCell>
+
       {settings.showPosChange && (
         <StandingsHeaderCell align="center">±</StandingsHeaderCell>
       )}
 
-      <StandingsHeaderCell className={styles.carNumHeader}>
-        #
-      </StandingsHeaderCell>
       <StandingsHeaderCell>Driver</StandingsHeaderCell>
 
       {settings.showLicBadge && (
