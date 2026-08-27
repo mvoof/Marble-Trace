@@ -57,6 +57,15 @@ $plate-move-duration: 140ms;
     [distance-col] 5ch [lap-col] var(--lap-col, 0ch) [gap-col] 7ch;
   align-items: center;
 
+  // Every column above is measured in `ch`, and `ch` is read from *this*
+  // element's font size — which, unset, is the window's 16px and does not move
+  // with the widget's scale. The text inside the columns does, so scaling the
+  // widget up used to grow the numbers inside columns that stayed put, and the
+  // row tore apart. Naming the row's own font size in the same scaled unit as
+  // its children ties the two together; wfs(16) is the browser default, so the
+  // columns keep exactly the widths they were tuned at.
+  font-size: wfs(16);
+
   // No gap before the class block: the number and the class are one unit at the
   // left of the plate, separated by a shadow rather than by air.
   column-gap: 0;
