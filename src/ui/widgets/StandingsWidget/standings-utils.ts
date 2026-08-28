@@ -306,3 +306,55 @@ export const getStandingsGap = (
 
   return { value: '--.-', isLeader: false, isEmpty: true };
 };
+
+const UNLIMITED_LAPS = 'unlimited';
+
+/**
+ * A lap-limited race counts down laps; a timed one counts down the clock. The
+ * one that ends the session is the header's lead value, the other is secondary.
+ */
+export const isLapLimitedSession = (
+  sessionLaps: string | null | undefined
+): boolean =>
+  Boolean(sessionLaps) && sessionLaps!.toLowerCase() !== UNLIMITED_LAPS;
+
+export interface LapProgress {
+  value: string;
+  isFinalLap: boolean;
+  /** Longest the value can grow to, so the pill reserves its width up front. */
+  widthChars: number;
+}
+
+/**
+ * The leader's lap against the session length. On the last lap the count is
+ * replaced by the fact that matters more than the number.
+ */
+export const buildLapProgress = (
+  leaderLap: number | null,
+  totalLaps: string | null,
+  isEstimated: boolean
+): LapProgress | null => {
+  if (leaderLap === null) {
+    return null;
+  }
+
+  if (totalLaps === null || totalLaps.toLowerCase() === UNLIMITED_LAPS) {
+    return {
+      value: String(leaderLap),
+      isFinalLap: false,
+      widthChars: String(leaderLap).length,
+    };
+  }
+
+  const totalCount = Number(totalLaps);
+  const isFinalLap =
+    !isEstimated && Number.isFinite(totalCount) && leaderLap >= totalCount;
+
+  if (isFinalLap) {
+    return { value: 'FINAL', isFinalLap: true, widthChars: 5 };
+  }
+
+  const value = `${leaderLap}/${isEstimated ? `~${totalLaps}` : totalLaps}`;
+
+  return { value, isFinalLap: false, widthChars: value.length };
+};

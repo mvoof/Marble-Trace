@@ -1,7 +1,19 @@
-// Matches the track name in the same header row — font, color and size.
-.sessionClock {
-  font-family: $font-mono;
+.clockPill {
+  font-variant-numeric: tabular-nums;
+}
+
+// The value that ends the session reads as the header's headline; the other
+// stays at the weight of the surrounding stat pills.
+.clockPillLead .clockValue {
   font-size: fs(xs);
-  color: $widget-text-primary;
   font-weight: 900;
+}
+
+.clockPillMuted {
+  opacity: 0.75;
+}
+
+.clockValue {
+  display: inline-block;
+  text-align: right;
 }

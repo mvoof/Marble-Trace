@@ -1,9 +1,13 @@
 import { observer } from 'mobx-react-lite';
-import { Trophy, Users, TriangleAlert } from 'lucide-react';
+import { Trophy, Users, TriangleAlert, Flag } from 'lucide-react';
 
 import { formatIRating, isNearIncidentLimit } from '@utils/driver';
 import { resolveSessionLaps } from '@utils/telemetry-format';
 import { computeClassSof } from '@utils/driver';
+import {
+  buildLapProgress,
+  isLapLimitedSession,
+} from '@ui/widgets/StandingsWidget/standings-utils';
 import {
   resolveSessionColorKey,
   type SessionColorKey,
@@ -69,6 +73,11 @@ export const SessionHeader = observer(() => {
       )
     : null;
 
+  // A timed race has its remaining laps estimated from the leader's best lap —
+  // shown as "~", and never allowed to announce a final lap.
+  const isLapLimited = isLapLimitedSession(currentSession?.sessionLaps);
+  const lapProgress = buildLapProgress(leaderLap, totalLaps, !isLapLimited);
+
   return (
     <div className={styles.sessionHeader}>
       <div className={styles.sessionLeft}>
@@ -84,12 +93,21 @@ export const SessionHeader = observer(() => {
           </span>
         )}
 
-        {leaderLap !== null && (
-          <span className={styles.sessionLaps}>
-            {totalLaps && totalLaps.toLowerCase() !== 'unlimited'
-              ? `LAP: ${leaderLap}/${totalLaps}`
-              : `LAP: ${leaderLap}`}
-          </span>
+        {lapProgress && (
+          <StatPill
+            icon={Flag}
+            iconTone={lapProgress.isFinalLap ? 'warning' : 'muted'}
+            label="LAP"
+            pulse={lapProgress.isFinalLap}
+            className={`${styles.lapPill} ${isLapLimited ? styles.lapPillLead : styles.lapPillMuted}`}
+          >
+            <span
+              className={styles.lapValue}
+              style={{ minWidth: `${lapProgress.widthChars}ch` }}
+            >
+              {lapProgress.value}
+            </span>
+          </StatPill>
         )}
 
         <SessionClock />

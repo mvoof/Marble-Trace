@@ -14,7 +14,7 @@
 
 .sessionLeft {
   display: flex;
-  gap: sp(xl);
+  gap: sp(sm);
   align-items: center;
   min-width: 0;
   overflow: hidden;
@@ -46,9 +46,23 @@
   color: $widget-text-secondary;
 }
 
-.sessionLaps {
-  color: $widget-text-primary;
+.lapPill {
+  font-variant-numeric: tabular-nums;
+}
+
+// The value that ends the session leads the header; the other one recedes.
+.lapPillLead .lapValue {
+  font-size: fs(xs);
   font-weight: 900;
+}
+
+.lapPillMuted {
+  opacity: 0.75;
+}
+
+.lapValue {
+  display: inline-block;
+  text-align: right;
 }
 
 .sessionRight {

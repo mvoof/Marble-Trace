@@ -162,3 +162,27 @@ export const formatPosition = (
 
   return `POS P${position}${totalLabel}`;
 };
+
+/** How close a countdown is to running out — drives the clock's tone. */
+export type ClockUrgency = 'normal' | 'warning' | 'critical';
+
+const CLOCK_WARNING_SECONDS = 300;
+const CLOCK_CRITICAL_SECONDS = 60;
+
+export const resolveClockUrgency = (
+  remainSeconds: number | null
+): ClockUrgency => {
+  if (remainSeconds === null || remainSeconds < 0) {
+    return 'normal';
+  }
+
+  if (remainSeconds <= CLOCK_CRITICAL_SECONDS) {
+    return 'critical';
+  }
+
+  if (remainSeconds <= CLOCK_WARNING_SECONDS) {
+    return 'warning';
+  }
+
+  return 'normal';
+};
