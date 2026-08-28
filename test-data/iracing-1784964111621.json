@@ -289,17 +289,17 @@
     "dc_throttle_shape": 0
   },
   "environment": {
-    "air_temp": 26.111113,
-    "track_temp": 46.111115,
-    "wind_vel": 0.8940799,
-    "wind_dir": 0,
-    "relative_humidity": 0.45000002,
+    "airTemp": 26.111113,
+    "trackTemp": 46.111115,
+    "windVel": 0.8940799,
+    "windDir": 0,
+    "relativeHumidity": 0.45000002,
     "skies": "PartlyCloudy",
     "precipitation": 0,
-    "track_wetness": 1,
-    "weather_declared_wet": false,
-    "weather_type": null,
-    "weather_version": null
+    "trackWetness": 1,
+    "weatherDeclaredWet": false,
+    "weatherType": null,
+    "weatherVersion": null
   },
   "lapTiming": {
     "lap": 2,
