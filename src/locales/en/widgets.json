@@ -452,7 +452,7 @@
       "sessionTime": "Session Time",
       "sessionTimeDesc": "Time remaining (or elapsed) in the header, same clock as the Timer widget.",
       "liveWeatherInfo": "Live Weather Info",
-      "liveWeatherInfoDesc": "Wind and temperature row in the header.",
+      "liveWeatherInfoDesc": "Wind and temperature row in the footer.",
       "sof": "Strength of Field (SOF)",
       "sofDesc": "Average iRating of all registered drivers.",
       "pitStopCounter": "Pit Stop Counter (player only)",

@@ -262,7 +262,7 @@ describe('buildLapProgress', () => {
     expect(buildLapProgress(9, '45', false)).toEqual({
       value: '9/45',
       isFinalLap: false,
-      widthChars: 4,
+      widthChars: 5,
     });
   });
 });

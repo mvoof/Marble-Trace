@@ -21,8 +21,9 @@ const URGENCY_CLASS: Record<ClockUrgency, string> = {
   critical: styles.clockCritical,
 };
 
-// hh:mm:ss — the clock holds this width whatever the remaining time is.
-const CLOCK_WIDTH_CHARS = 8;
+// +hh:mm:ss — the widest the clock gets, so the header does not shift when a
+// countdown runs out and the elapsed time takes over.
+const CLOCK_WIDTH_CHARS = 9;
 
 export const SessionClock = observer(() => {
   const { session, sessionInfo } = useSessionStore();

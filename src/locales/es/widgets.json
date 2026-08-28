@@ -452,7 +452,7 @@
       "sessionTime": "Tiempo de sesión",
       "sessionTimeDesc": "Tiempo restante (o transcurrido) en la cabecera, el mismo reloj que el widget Cronómetro.",
       "liveWeatherInfo": "Meteorología en vivo",
-      "liveWeatherInfoDesc": "Fila de viento y temperatura en la cabecera.",
+      "liveWeatherInfoDesc": "Fila de viento y temperatura en el pie.",
       "sof": "Nivel de la parrilla (SOF)",
       "sofDesc": "iRating medio de todos los pilotos inscritos.",
       "pitStopCounter": "Contador de paradas (solo tú)",

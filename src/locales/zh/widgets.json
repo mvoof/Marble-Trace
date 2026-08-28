@@ -452,7 +452,7 @@
       "sessionTime": "会话时间",
       "sessionTimeDesc": "标题中的剩余（或已用）时间，与计时器小组件一致。",
       "liveWeatherInfo": "实时天气信息",
-      "liveWeatherInfoDesc": "标题中的风速和温度行。",
+      "liveWeatherInfoDesc": "页脚中的风速和温度行。",
       "sof": "参赛强度（SOF）",
       "sofDesc": "所有注册车手的平均 iRating。",
       "pitStopCounter": "进站计数器（仅玩家）",

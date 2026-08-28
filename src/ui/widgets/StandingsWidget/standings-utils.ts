@@ -309,6 +309,9 @@ export const getStandingsGap = (
 
 const UNLIMITED_LAPS = 'unlimited';
 
+// Replaces the count on the last lap — the fact matters more than the number.
+const FINAL_LAP_LABEL = 'FINAL';
+
 /**
  * A lap-limited race counts down laps; a timed one counts down the clock. The
  * one that ends the session is the header's lead value, the other is secondary.
@@ -350,13 +353,20 @@ export const buildLapProgress = (
   const isFinalLap =
     !isEstimated && Number.isFinite(totalCount) && leaderLap >= totalCount;
 
+  // Width is reserved for the widest lap the session can reach, not for the
+  // one on screen — otherwise the header shifts on the way from 9 to 10.
+  const widthChars = Math.max(
+    FINAL_LAP_LABEL.length,
+    totalLaps.length * 2 + (isEstimated ? 2 : 1)
+  );
+
   if (isFinalLap) {
-    return { value: 'FINAL', isFinalLap: true, widthChars: 5 };
+    return { value: FINAL_LAP_LABEL, isFinalLap: true, widthChars };
   }
 
   const value = `${leaderLap}/${isEstimated ? `~${totalLaps}` : totalLaps}`;
 
-  return { value, isFinalLap: false, widthChars: value.length };
+  return { value, isFinalLap: false, widthChars };
 };
 
 /**
