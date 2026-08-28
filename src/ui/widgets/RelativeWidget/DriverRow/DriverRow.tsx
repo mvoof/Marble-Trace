@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   abbreviateName,
@@ -96,12 +97,16 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
 
   const rowFill = playerRowStyle(driver.isPlayer, settings.playerRowColor);
 
+  // The stripe is painted by a pseudo-element, so the class color reaches it
+  // through a variable — the same marker Standings rows carry.
+  const rowStyle = {
+    gridTemplateColumns: gridTemplate,
+    ...rowFill,
+    '--row-class-marker': driver.carClassColor,
+  } as CSSProperties;
+
   return (
-    <div
-      className={rowClass}
-      style={{ gridTemplateColumns: gridTemplate, ...rowFill }}
-      data-relative-row
-    >
+    <div className={rowClass} style={rowStyle} data-relative-row>
       <div className={styles.posBlock}>
         <span
           className={`${styles.driverPosition} ${driver.isPlayer ? styles.driverPositionPlayer : ''}`}

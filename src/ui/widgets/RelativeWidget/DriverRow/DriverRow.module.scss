@@ -13,6 +13,19 @@
   border-bottom: 1px solid $widget-row-border;
   line-height: 1.15;
   font-size: fs(md);
+
+  // Class marker, matching the one the standings rows and the class header
+  // carry. A pseudo-element rather than a border so the grid columns keep
+  // their measured width.
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--row-class-marker, transparent);
+  }
 }
 
 .rowOdd {
