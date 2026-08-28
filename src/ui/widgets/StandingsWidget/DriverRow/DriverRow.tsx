@@ -1,4 +1,5 @@
-﻿import { observer } from 'mobx-react-lite';
+﻿import type { CSSProperties } from 'react';
+import { observer } from 'mobx-react-lite';
 import { formatLapTime } from '@utils/telemetry-format';
 import {
   abbreviateName,
@@ -104,6 +105,14 @@ export const DriverRow = observer(
 
     const rowFill = playerRowStyle(driver.isPlayer, settings.playerRowColor);
 
+    // The stripe is painted by a pseudo-element, so the class color reaches it
+    // through a variable — the same 3px marker the class header carries.
+    const rowStyle = {
+      gridTemplateColumns: gridTemplate,
+      ...rowFill,
+      '--row-class-marker': driver.carClassColor,
+    } as CSSProperties;
+
     const formattedCarNumber = formatCarNumber(driver.carNumber);
 
     // Get leader of current class/group from cached store for gap/deficit calculation
@@ -145,7 +154,7 @@ export const DriverRow = observer(
     return (
       <div
         className={rowClass}
-        style={{ gridTemplateColumns: gridTemplate, ...rowFill }}
+        style={rowStyle}
         data-driver-row
         data-row-key={carIdx}
       >

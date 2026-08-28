@@ -358,3 +358,15 @@ export const buildLapProgress = (
 
   return { value, isFinalLap: false, widthChars: value.length };
 };
+
+/**
+ * Whether the table itself draws per-class headers — grouped stacks one above
+ * each class, cycling shows the one class on screen. Both carry that class's own
+ * SOF, so the field-wide average in the session header is at best a duplicate
+ * and in multiclass a number that describes no one.
+ */
+export const drawsClassHeaders = (
+  viewMode: StandingsWidgetSettings['viewMode'],
+  classGroupCount: number
+): boolean =>
+  (viewMode === 'grouped' || viewMode === 'cycling') && classGroupCount > 0;

@@ -444,6 +444,7 @@
       "hideRetiredDrivers": "Hide Retired Drivers",
       "hideRetiredDriversDesc": "Remove rows for cars that left the session for good. Your own row always stays.",
       "headerInfo": "Header Info",
+      "footerInfo": "Footer Info",
       "columnHeaders": "Column Headers",
       "columnHeadersDesc": "Show labels above each data column.",
       "sessionProgressInfo": "Session Progress Info",

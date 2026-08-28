@@ -444,6 +444,7 @@
       "hideRetiredDrivers": "Ocultar a los pilotos retirados",
       "hideRetiredDriversDesc": "Quita las filas de los coches que han abandonado la sesión definitivamente. Tu propia fila siempre se mantiene.",
       "headerInfo": "Información de la cabecera",
+      "footerInfo": "Información del pie",
       "columnHeaders": "Encabezados de columna",
       "columnHeadersDesc": "Muestra las etiquetas sobre cada columna de datos.",
       "sessionProgressInfo": "Progreso de la sesión",

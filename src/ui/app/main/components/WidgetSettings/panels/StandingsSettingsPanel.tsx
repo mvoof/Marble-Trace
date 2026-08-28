@@ -131,17 +131,20 @@ export const StandingsSettingsPanel = observer(() => {
       key: 'showSessionTime',
     },
     {
-      titleKey: 'settingsPanels.standings.liveWeatherInfo',
-      descKey: 'settingsPanels.standings.liveWeatherInfoDesc',
-      value: settings.showWeather,
-      key: 'showWeather',
-    },
-    {
       titleKey: 'settingsPanels.standings.sof',
       descKey: 'settingsPanels.standings.sofDesc',
       value: settings.showSOF,
       key: 'showSOF',
     },
+    {
+      titleKey: 'settingsPanels.standings.totalDriversCount',
+      descKey: 'settingsPanels.standings.totalDriversCountDesc',
+      value: settings.showTotalDrivers,
+      key: 'showTotalDrivers',
+    },
+  ] as const;
+
+  const footerInfo = [
     {
       titleKey: 'settingsPanels.standings.pitStopCounter',
       descKey: 'settingsPanels.standings.pitStopCounterDesc',
@@ -155,10 +158,10 @@ export const StandingsSettingsPanel = observer(() => {
       key: 'showIncidentsBadge',
     },
     {
-      titleKey: 'settingsPanels.standings.totalDriversCount',
-      descKey: 'settingsPanels.standings.totalDriversCountDesc',
-      value: settings.showTotalDrivers,
-      key: 'showTotalDrivers',
+      titleKey: 'settingsPanels.standings.liveWeatherInfo',
+      descKey: 'settingsPanels.standings.liveWeatherInfoDesc',
+      value: settings.showWeather,
+      key: 'showWeather',
     },
   ] as const;
 
@@ -334,6 +337,19 @@ export const StandingsSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.standings.headerInfo')}>
         {headerInfo.map((item) => (
+          <div key={item.key} className={styles.fieldGroup}>
+            <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
+              <Switch
+                checked={item.value}
+                onChange={(v) => update({ [item.key]: v })}
+              />
+            </SettingRow>
+          </div>
+        ))}
+      </Card>
+
+      <Card title={t('settingsPanels.standings.footerInfo')}>
+        {footerInfo.map((item) => (
           <div key={item.key} className={styles.fieldGroup}>
             <SettingRow title={t(item.titleKey)} desc={t(item.descKey)}>
               <Switch

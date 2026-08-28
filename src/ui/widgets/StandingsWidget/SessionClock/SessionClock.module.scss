@@ -1,19 +1,38 @@
-.clockPill {
+.clock {
+  display: inline-block;
+  text-align: right;
+  font-family: $font-mono;
   font-variant-numeric: tabular-nums;
+  font-size: fs(xs);
+  color: $widget-text-primary;
 }
 
-// The value that ends the session reads as the header's headline; the other
-// stays at the weight of the surrounding stat pills.
-.clockPillLead .clockValue {
-  font-size: fs(xs);
+// The value that ends the session is the header's headline; the other recedes.
+.clockLead {
   font-weight: 900;
 }
 
-.clockPillMuted {
-  opacity: 0.75;
+.clockMuted {
+  font-weight: 700;
+  opacity: 0.7;
 }
 
-.clockValue {
-  display: inline-block;
-  text-align: right;
+.clockWarning {
+  color: $widget-status-warning;
+}
+
+.clockCritical {
+  color: $widget-status-danger;
+  animation: sessionClockPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes sessionClockPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
 }

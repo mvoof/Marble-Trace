@@ -444,6 +444,7 @@
       "hideRetiredDrivers": "隐藏退赛车手",
       "hideRetiredDriversDesc": "移除已彻底退出本场比赛的车辆行。你自己的行始终保留。",
       "headerInfo": "标题信息",
+      "footerInfo": "页脚信息",
       "columnHeaders": "列标题",
       "columnHeadersDesc": "在每个数据列上方显示标签。",
       "sessionProgressInfo": "会话进度信息",

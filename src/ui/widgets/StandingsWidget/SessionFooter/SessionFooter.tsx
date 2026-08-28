@@ -1,10 +1,11 @@
 import { observer } from 'mobx-react-lite';
-import { Wrench, Thermometer, Waves } from 'lucide-react';
+import { Wrench, Thermometer, Waves, TriangleAlert } from 'lucide-react';
 
 import { formatTemp, tempUnit } from '@utils/telemetry-format';
 import { parseWeekendTemp } from '@ui/widgets/StandingsWidget/standings-utils';
 import { getAirTempColor, getTrackTempColor } from '@utils/colors';
 import { getTrackWetnessInfo } from '@utils/weather-utils';
+import { isNearIncidentLimit } from '@utils/driver';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { StatPill } from '@ui/shared/StatPill/StatPill';
@@ -18,7 +19,8 @@ import {
 } from '@store/root-store-context';
 
 export const SessionFooter = observer(() => {
-  const { pitStops } = useBackendComputedStore();
+  const { pitStops, driverEntries: driverEntriesFrame } =
+    useBackendComputedStore();
   const { sessionInfo } = useSessionStore();
   const { environment } = useEnvironmentStore();
   const { unitSystem } = useUnitsStore();
@@ -29,10 +31,20 @@ export const SessionFooter = observer(() => {
 
   const showWeather = settings.showWeather;
   const showPitStops = settings.showPitStops;
+  const showIncidents = settings.showIncidentsBadge;
 
-  if (!showWeather && !showPitStops) {
+  if (!showWeather && !showPitStops && !showIncidents) {
     return null;
   }
+
+  const driverEntries = driverEntriesFrame?.entries ?? [];
+
+  const playerIncidents =
+    driverEntries.find((entry) => entry.isPlayer)?.incidents ?? 0;
+
+  // Null in practice and most hosted sessions, where incidents are uncapped.
+  const incidentLimit = sessionInfo?.incidentLimit ?? null;
+  const isNearLimit = isNearIncidentLimit(playerIncidents, incidentLimit);
 
   const playerPitStops = pitStops?.playerStops ?? 0;
 
@@ -62,6 +74,20 @@ export const SessionFooter = observer(() => {
         {showPitStops && (
           <StatPill icon={Wrench} label="PIT">
             {playerPitStops}
+          </StatPill>
+        )}
+
+        {showIncidents && (
+          <StatPill
+            icon={TriangleAlert}
+            iconTone={isNearLimit ? 'danger' : 'warning'}
+            label="INC"
+            valueDanger={isNearLimit}
+            pulse={isNearLimit}
+          >
+            {incidentLimit === null
+              ? `${playerIncidents}x`
+              : `${playerIncidents}/${incidentLimit}x`}
           </StatPill>
         )}
       </div>

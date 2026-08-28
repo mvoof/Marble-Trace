@@ -4,6 +4,7 @@ import type { DriverEntry } from '@/types/bindings';
 import {
   buildLapProgress,
   buildVisibleRows,
+  drawsClassHeaders,
   isLapLimitedSession,
   getStandingsGap,
   maxScrollOffset,
@@ -263,5 +264,14 @@ describe('buildLapProgress', () => {
       isFinalLap: false,
       widthChars: 4,
     });
+  });
+});
+
+describe('drawsClassHeaders', () => {
+  it('is true only where the table renders a class header of its own', () => {
+    expect(drawsClassHeaders('grouped', 2)).toBe(true);
+    expect(drawsClassHeaders('cycling', 1)).toBe(true);
+    expect(drawsClassHeaders('all', 2)).toBe(false);
+    expect(drawsClassHeaders('grouped', 0)).toBe(false);
   });
 });
