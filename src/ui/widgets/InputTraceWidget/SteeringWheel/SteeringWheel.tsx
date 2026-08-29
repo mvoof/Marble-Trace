@@ -90,15 +90,17 @@ export const SteeringWheel = observer(() => {
             <WheelArt className={styles.art} />
           </div>
 
-          <div
-            className={
-              settings.steeringCenterPlate
-                ? `${styles.artCenter} ${styles.artCenterPlate}`
-                : styles.artCenter
-            }
-          >
-            <WheelCenter />
-          </div>
+          {settings.steeringCenterDisplay !== 'none' && (
+            <div
+              className={
+                settings.steeringCenterPlate
+                  ? `${styles.artCenter} ${styles.artCenterPlate}`
+                  : styles.artCenter
+              }
+            >
+              <WheelCenter />
+            </div>
+          )}
         </div>
       </div>
     );
