@@ -50,12 +50,13 @@ export const Bar = observer(
   ({ channel, width = 'md', rounded = true }: BarProps) => {
     const trackRef = useRef<HTMLDivElement>(null);
     const labelRef = useRef<HTMLSpanElement>(null);
-    const coverPoint = useValueCoverPoint(trackRef, labelRef);
     const { carInputs } = usePlayerStore();
     const widgetSettings = useWidgetSettingsStore();
     const inputTrace = useInputTraceWidgetStore();
     const settings =
       widgetSettings.getSettings<InputTraceSettings>('input-trace');
+    const showValue = settings.showInputValues;
+    const coverPoint = useValueCoverPoint(trackRef, labelRef, showValue);
 
     if (!settings[CHANNEL_VISIBILITY_KEY[channel]]) {
       return null;
@@ -65,7 +66,6 @@ export const Bar = observer(
     const isAbsActive =
       channel === 'brake' && (carInputs?.brake_abs_active ?? false);
 
-    const showValue = settings.showInputValues;
     const valueText = `${Math.round(clamped * 100)}`;
 
     const color = isAbsActive

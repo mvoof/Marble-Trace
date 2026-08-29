@@ -8,11 +8,13 @@ const FULLY_COVERED = 1;
  * The label is a fixed number of pixels tall while the track's height follows
  * the widget's size, so the level where the digits stop sitting on the track
  * and start sitting on the fill is different at every scale — it has to be
- * measured rather than assumed. Recomputed whenever the track resizes.
+ * measured rather than assumed. Recomputed whenever the track resizes, and
+ * when the readout is switched on — there is no label to measure until then.
  */
 export const useValueCoverPoint = (
   trackRef: RefObject<HTMLElement | null>,
-  labelRef: RefObject<HTMLElement | null>
+  labelRef: RefObject<HTMLElement | null>,
+  hasLabel: boolean
 ): number => {
   const [coverPoint, setCoverPoint] = useState(FULLY_COVERED);
 
@@ -45,7 +47,7 @@ export const useValueCoverPoint = (
     resizeObserver.observe(track);
 
     return () => resizeObserver.disconnect();
-  }, [trackRef, labelRef]);
+  }, [trackRef, labelRef, hasLabel]);
 
   return coverPoint;
 };

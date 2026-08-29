@@ -10,7 +10,8 @@ import {
 // Bar width = rem(20) @ 16px base = 20px; bar gap = $space-sm = rem(4) = 4px.
 // WidgetPanel gap={8} raw px; edgeInset padding: 2px × 2 = 4px total.
 // Wheel natural width = designHeight (aspect-ratio 1:1, height: 100%).
-// INPUT_TRACE_CHART_DESIGN_PX chosen so all-visible defaults sum to 520px.
+// INPUT_TRACE_CHART_DESIGN_PX gives the trace its share; all-visible defaults
+// sum to 534px.
 const INPUT_TRACE_BAR_PX = 20;
 const INPUT_TRACE_BAR_GAP_PX = 4;
 const INPUT_TRACE_WHEEL_PX = 120;

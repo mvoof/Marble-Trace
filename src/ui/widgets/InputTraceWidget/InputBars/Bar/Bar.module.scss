@@ -48,6 +48,7 @@
   right: 0;
   text-align: center;
   font-family: $font-mono;
+
   // The bar keeps its width whether the readout is on or not, so three
   // digits have to live inside it — hence the tight mono size, and the label
   // sitting outside the clipping track.
@@ -55,6 +56,7 @@
   letter-spacing: rem(-0.5);
   font-weight: 700;
   line-height: 1;
+
   // The color on the empty track; once the fill reaches the digits they are
   // repainted by getContrastTextColor() against the bar's own color.
   color: $widget-text-primary;
