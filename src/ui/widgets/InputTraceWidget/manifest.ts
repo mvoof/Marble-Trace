@@ -7,11 +7,11 @@ import {
 } from '@ui/widgets/widget-manifest';
 
 // Layout constants matching JSX/SCSS values in InputTraceWidget.
-// Bar width = rem(18) @ 16px base = 18px; bar gap = $space-sm = rem(4) = 4px.
+// Bar width = rem(20) @ 16px base = 20px; bar gap = $space-sm = rem(4) = 4px.
 // WidgetPanel gap={8} raw px; edgeInset padding: 2px × 2 = 4px total.
 // Wheel natural width = designHeight (aspect-ratio 1:1, height: 100%).
 // INPUT_TRACE_CHART_DESIGN_PX chosen so all-visible defaults sum to 520px.
-const INPUT_TRACE_BAR_PX = 18;
+const INPUT_TRACE_BAR_PX = 20;
 const INPUT_TRACE_BAR_GAP_PX = 4;
 const INPUT_TRACE_WHEEL_PX = 120;
 const INPUT_TRACE_PANEL_GAP_PX = 8;
@@ -66,6 +66,7 @@ const INPUT_TRACE_VISIBILITY_DEFAULTS = {
   showThrottle: true,
   showBrake: true,
   showClutch: true,
+  showInputValues: false,
 };
 const INPUT_TRACE_DESIGN_WIDTH = computeInputTraceDesignWidth(
   INPUT_TRACE_VISIBILITY_DEFAULTS as unknown as InputTraceSettings

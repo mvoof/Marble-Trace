@@ -1,4 +1,5 @@
 .verticalContainer {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -25,7 +26,8 @@
 }
 
 .trackWidth-lg {
-  width: $bar-height-lg;
+  // Two pixels wider than $bar-height-lg so a three-digit readout fits.
+  width: rem(20);
 }
 
 .verticalFill {
@@ -37,4 +39,24 @@
 
 .noRadius {
   border-radius: 0;
+}
+
+.value {
+  position: absolute;
+  top: $space-xs;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: $font-mono;
+  // The bar keeps its width whether the readout is on or not, so three
+  // digits have to live inside it — hence the tight mono size, and the label
+  // sitting outside the clipping track.
+  font-size: rem(12);
+  letter-spacing: rem(-0.5);
+  font-weight: 700;
+  line-height: 1;
+  // The color on the empty track; once the fill reaches the digits they are
+  // repainted by getContrastTextColor() against the bar's own color.
+  color: $widget-text-primary;
+  pointer-events: none;
 }

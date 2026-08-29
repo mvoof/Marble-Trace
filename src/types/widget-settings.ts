@@ -121,6 +121,7 @@ export interface InputTraceSettings {
   showClutch: boolean;
   showSteering: boolean;
   showTrace: boolean;
+  showInputValues: boolean;
   throttleColor: string;
   brakeColor: string;
   clutchColor: string;
