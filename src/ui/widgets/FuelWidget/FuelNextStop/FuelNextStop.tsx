@@ -4,7 +4,6 @@ import { WidgetLabel } from '@ui/shared/WidgetLabel/WidgetLabel';
 import { NO_TIME_DATA_PLACEHOLDER } from '@utils/telemetry-format';
 import type { FuelWidgetSettings } from '@/types/widget-settings';
 import { computeNextStopForecast, formatCountdown } from '../fuel-utils';
-import { ReservedSlot } from '@ui/shared/ReservedSlot/ReservedSlot';
 import styles from './FuelNextStop.module.scss';
 import {
   useBackendComputedStore,
@@ -13,12 +12,6 @@ import {
 } from '@store/root-store-context';
 
 const NO_LAP_PLACEHOLDER = '--';
-
-/**
- * Caption over one reading, inside `sp(sm)` of padding top and bottom — the
- * shape `.nextStop` and its two children add up to at design scale.
- */
-const NEXT_STOP_HEIGHT_PX = 52;
 
 export const FuelNextStop = observer(() => {
   const { fuel } = useBackendComputedStore();
@@ -43,13 +36,8 @@ export const FuelNextStop = observer(() => {
     lapTimeSec,
   });
 
-  // No forecast yet means no laps run yet, not a block the driver switched
-  // off — it arrives mid-stint and would push everything under it down. The
-  // room stays reserved so the widget keeps the height it was placed at.
   if (forecast === null) {
-    return (
-      <ReservedSlot height={NEXT_STOP_HEIGHT_PX} label="Next pit window" />
-    );
+    return null;
   }
 
   const lapText =
