@@ -28,12 +28,15 @@ export type PitApproachUrgency = 'far' | 'near' | 'brake' | 'arrived';
 
 export interface PitApproachView {
   urgency: PitApproachUrgency;
-  /** Lane fill, 0..1. */
+  /**
+   * Fill of the current leg, 0..1. The rail is never the whole pit lane: on the
+   * way in it runs from the entry to the stall, and 100% *is* the box; once the
+   * box is behind us it runs from the stall to the exit, and 100% is the exit
+   * line. A bar whose end is the thing being driven at is one the driver can
+   * read without measuring where along it the target happens to sit.
+   */
   fill: number;
-  /** Stall patch along the lane, both 0..1. Null while the lane is unrecorded. */
-  boxLeft: number | null;
-  boxWidth: number | null;
-  /** Where braking has to start, 0..1 along the lane. Null when it does not apply. */
+  /** Where braking has to start, 0..1 along the leg. Null when it does not apply. */
   brakeMarker: number | null;
   /** Braking distance at the current speed, in meters. */
   brakeDistM: number;
@@ -47,12 +50,6 @@ export interface PitApproachView {
  * telling the driver to arrive too fast.
  */
 export const PIT_BRAKE_DECEL_MPS2 = 5;
-
-/** Meters either side of the stall painted as the box patch. */
-const BOX_ZONE_M = 6;
-/** On a long lane the patch would collapse to a hairline without a floor. */
-const BOX_ZONE_MIN = 0.02;
-const BOX_ZONE_MAX = 0.14;
 
 /** Within this many meters the car is at the stall — stop, do not creep. */
 const ARRIVED_M = 3;
@@ -113,31 +110,18 @@ export const buildPitApproachView = (
   const isTargetExit = distMode === 'pitExit';
   const brakeDistM = pitBrakeDistanceM(speedMs);
 
-  const desiredBoxWidth =
-    boxLanePct === null
-      ? null
-      : laneLengthM !== null && laneLengthM > 0
-        ? Math.min(
-            Math.max(BOX_ZONE_M / laneLengthM, BOX_ZONE_MIN),
-            BOX_ZONE_MAX
-          )
-        : BOX_ZONE_MIN;
+  // The leg the rail is drawing: entry → stall on the way in, stall → exit on
+  // the way out. Until the lane has been recorded there is no stall to split it
+  // at, so the whole lane stands in for the leg.
+  const legStart = boxLanePct === null ? 0 : isTargetExit ? boxLanePct : 0;
+  const legEnd = boxLanePct === null ? 1 : isTargetExit ? 1 : boxLanePct;
+  const legSpan = legEnd - legStart;
 
-  // A stall at either end of the lane would push half the patch past the rail,
-  // where CSS clips it: both edges are clamped and the width taken from them,
-  // so the patch keeps its place instead of hanging off the end.
-  const boxLeft =
-    boxLanePct === null || desiredBoxWidth === null
-      ? null
-      : clamp01(boxLanePct - desiredBoxWidth / 2);
+  const legLengthM =
+    laneLengthM === null || laneLengthM <= 0 ? null : legSpan * laneLengthM;
 
-  const boxRight =
-    boxLanePct === null || desiredBoxWidth === null
-      ? null
-      : clamp01(boxLanePct + desiredBoxWidth / 2);
-
-  const boxWidth =
-    boxLeft === null || boxRight === null ? null : boxRight - boxLeft;
+  const fill =
+    legSpan <= 0 ? 1 : clamp01(((progressPct ?? 0) - legStart) / legSpan);
 
   const urgency: PitApproachUrgency = (() => {
     // Past the stall the rail stops nagging: the target is the exit line, and
@@ -157,31 +141,29 @@ export const buildPitApproachView = (
     return distM <= cueDistM ? 'near' : 'far';
   })();
 
-  // The marker only means something while it is still ahead of the car and
-  // inside the lane — a stop that needs more room than is left is not a cue,
-  // it is the brake urgency above.
+  // The leg ends at the stall, so the marker is one braking distance back from
+  // its far end. It only means something while it is still inside the leg — a
+  // stop that needs more room than the leg has is not a cue, it is the brake
+  // urgency above.
   const brakeMarker = (() => {
     if (
       !withBrakeCue ||
       isTargetExit ||
-      boxLanePct === null ||
-      laneLengthM === null ||
-      laneLengthM <= 0 ||
+      legLengthM === null ||
+      legLengthM <= 0 ||
       brakeDistM <= 0
     ) {
       return null;
     }
 
-    const marker = boxLanePct - brakeDistM / laneLengthM;
+    const marker = 1 - brakeDistM / legLengthM;
 
     return marker <= 0 ? null : marker;
   })();
 
   return {
     urgency,
-    fill: clamp01(progressPct ?? 0),
-    boxLeft,
-    boxWidth,
+    fill,
     brakeMarker,
     brakeDistM,
     isTargetExit,

@@ -26,8 +26,6 @@ export const PitServiceWidget = observer(() => {
   const {
     showPitSpeed,
     showPitApproach,
-    pitApproachPlacement,
-    pitApproachSide,
     pitApproachCueDistM,
     showPitBrakeCue,
     showFuel,
@@ -44,14 +42,10 @@ export const PitServiceWidget = observer(() => {
 
   const rail = showPitApproach ? (
     <PitApproachRail
-      placement={pitApproachPlacement}
-      side={pitApproachSide}
       cueDistM={pitApproachCueDistM}
       withBrakeCue={showPitBrakeCue}
     />
   ) : null;
-
-  const isSideRail = pitApproachPlacement === 'side';
 
   // One slot, three tenants. Standing in the box the speed is zero and the
   // repair countdowns are the numbers being watched; under tow neither applies
@@ -73,21 +67,13 @@ export const PitServiceWidget = observer(() => {
   })();
 
   return (
-    // The docked rail hangs *outside* the panel, on the edge the driver picked:
-    // it is a glance target, not a column of the widget, and neither switching
-    // it on nor moving it may resize the box or squeeze a single row inside it.
-    // That is what `overflowVisible` in the manifest is for.
-    <WidgetPanel
-      direction="column"
-      gap={0}
-      className={isSideRail ? styles.panelWithRail : undefined}
-    >
+    <WidgetPanel direction="column" gap={0}>
       <div className={styles.stack}>
         <OrderHint />
 
         {slot}
 
-        {!isSideRail && rail}
+        {rail}
 
         {showFuel && <FuelOrder />}
 
@@ -97,14 +83,6 @@ export const PitServiceWidget = observer(() => {
 
         {showFooter && <ServiceFooter />}
       </div>
-
-      {/*
-        A child of the panel, not of the stack: the stack is the growing half of
-        the flexbox and can run past the plate when the content is taller than
-        the box, and a rail anchored to it would hang below the widget instead
-        of standing alongside it.
-      */}
-      {isSideRail && rail}
     </WidgetPanel>
   );
 });

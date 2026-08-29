@@ -1,49 +1,14 @@
 // The rail carries its urgency through one variable so the readout, the fill
-// and the car marker never disagree about how close the box is.
+// and the car marker never disagree about how close the target is.
 .rail {
   --rail-accent: #{$race-neutral};
 
   position: relative;
   display: flex;
-  background: $widget-surface-cell;
+  background: transparent;
   border-radius: radius(md);
   font-family: $font-widget;
   overflow: hidden;
-}
-
-.railInline {
-  // One row: the lane itself is the block, no readout stacked above it and no
-  // end labels — at this height they would outweigh the distance.
-  padding: 0;
-  background: transparent;
-}
-
-.railVertical {
-  // Parked against the outside of the panel: taken out of the flow so nothing
-  // in the stack moves when it appears, and hung past the edge so nothing in
-  // the stack narrows either. The panel drops its clipping for it.
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 100%;
-  flex-direction: column;
-  align-items: center;
-  gap: sp(xxs);
-  width: ws(40);
-  margin-left: sp(xxs);
-  padding: sp(xxs) 2px;
-  // Outside the panel it is a plate of its own, so it paints the plate the user
-  // chose rather than the cell color it would inherit from the stack: the two
-  // read as one widget only if the background and the border match.
-  background: var(--widget-bg, #{$widget-surface-cell});
-  border: 1px solid var(--widget-border, transparent);
-}
-
-.railLeft {
-  left: auto;
-  right: 100%;
-  margin-left: 0;
-  margin-right: sp(xxs);
 }
 
 .railIdle {
@@ -74,138 +39,62 @@
   }
 }
 
-.readout {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: sp(xxs);
-
-  .railVertical & {
-    flex-direction: column;
-    align-items: center;
-    gap: 0;
-  }
-}
-
-.value {
-  font-family: $font-mono;
-  font-size: fs(lg);
-  line-height: 0.9;
-  color: var(--rail-accent);
-  font-variant-numeric: tabular-nums;
-}
-
-.unit {
-  font-size: fs(xxxs);
-  letter-spacing: 0.08em;
-  color: $widget-label;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-// The column is as wide as two digits; anything the readout cannot fit is
-// clipped rather than allowed to spill over the widget beside it.
-.railVertical .readout {
-  max-width: 100%;
-  overflow: hidden;
-}
-
-// The lane itself: entry at the start, exit at the end, the stall painted where
-// it actually is rather than at the middle of a generic bar.
+// The leg being driven: the car at the start, the target — the stall on the way
+// in, the exit line on the way out — at the far end.
 .track {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: sp(xxs);
+  height: ws(18);
+  width: 100%;
+  padding: 0 sp(xs);
   background: rgba(255, 255, 255, 0.06);
   border-radius: radius(sm);
   overflow: hidden;
-
-  .railInline & {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: sp(xxs);
-    height: ws(18);
-    width: 100%;
-    padding: 0 sp(xs);
-  }
-
-  .railVertical & {
-    flex: 1 1 0;
-    min-height: ws(80);
-    width: ws(8);
-  }
 }
 
 .fill {
   position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
   background: rgba($race-blue, 0.35);
-
-  .railInline & {
-    top: 0;
-    bottom: 0;
-  }
-
-  .railVertical & {
-    left: 0;
-    right: 0;
-  }
 }
 
-.boxZone {
+// 100% of the rail is the target, so it is capped rather than patched.
+.targetCap {
   position: absolute;
-  background: rgba($race-green, 0.45);
-  box-shadow: 0 0 0 1px rgba($race-green, 0.7) inset;
-
-  .railInline & {
-    top: 0;
-    bottom: 0;
-  }
-
-  .railVertical & {
-    left: 0;
-    right: 0;
-  }
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: ws(4);
+  background: rgba($race-green, 0.55);
+  box-shadow: 0 0 0 1px rgba($race-green, 0.8) inset;
 }
 
 // Where braking has to start to roll to a stop in the stall.
 .brakeMarker {
   position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
   background: $race-red;
-
-  .railInline & {
-    top: 0;
-    bottom: 0;
-    width: 2px;
-  }
-
-  .railVertical & {
-    left: 0;
-    right: 0;
-    height: 2px;
-  }
 }
 
 .carMarker {
   position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  transform: translateX(-1px);
   background: $widget-text-primary;
-
-  .railInline & {
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    transform: translateX(-1px);
-  }
-
-  .railVertical & {
-    left: 0;
-    right: 0;
-    height: 2px;
-    transform: translateY(1px);
-  }
 }
 
 // Sits on top of the lane, so it takes a shadow rather than a background: a
 // plate behind it would hide the very fill it is standing on.
-.inlineReadout {
+.readout {
   position: relative;
   display: flex;
   align-items: baseline;
@@ -215,7 +104,7 @@
     0 0 6px #000;
 }
 
-.inlineValue {
+.value {
   min-width: 4ch;
   font-family: $font-mono;
   font-size: fs(xs);
@@ -223,4 +112,12 @@
   color: var(--rail-accent);
   font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+.unit {
+  font-size: fs(xxxs);
+  letter-spacing: 0.08em;
+  color: $widget-label;
+  font-weight: 600;
+  white-space: nowrap;
 }

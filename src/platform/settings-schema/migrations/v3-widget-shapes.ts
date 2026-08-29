@@ -37,10 +37,11 @@ import { asArray, asObject, dropWidgetSettings, mapEveryWidget } from '../blob';
  *
  * The stored size is *rescaled* rather than reset: unlike the radar, the widget
  * is the same shape as before, only tighter, so a driver who had made it half
- * again as large meant that and keeps it. Left alone, the re-base would ambush
- * them instead — the resolver that follows the rail placement recomputes the
- * width from the manifest's base, so the first time they moved the rail the
- * widget would jump to a size they never asked for.
+ * again as large meant that and keeps it.
+ *
+ * The docked rail itself is gone in the same step — the bar is always a block in
+ * the stack — so `pitApproachPlacement` and `pitApproachSide` are read for the
+ * old width and then dropped.
  *
  * **4. Close Battle's width follows its columns.** Its plate spans the widget,
  * and every optional column on it — the class slab, the make, the metres, the
@@ -158,12 +159,21 @@ const rescalePitService = (
 
   const scale = (asNumber(settings.currentWidth) ?? oldWidth) / oldWidth;
 
+  // The placement is gone with the docked rail: the approach bar is always a
+  // block in the stack now, so both keys are dropped rather than left behind to
+  // be merged back in by a default that no longer exists.
+  const {
+    pitApproachPlacement: _placement,
+    pitApproachSide: _side,
+    ...kept
+  } = settings;
+
   return {
     ...widget,
     designWidth: PIT_NEW_WIDTH_PX,
     designHeight: PIT_NEW_HEIGHT_PX,
     userSettings: {
-      ...settings,
+      ...kept,
       currentWidth: Math.round(PIT_NEW_WIDTH_PX * scale),
       currentHeight: Math.round(PIT_NEW_HEIGHT_PX * scale),
     },

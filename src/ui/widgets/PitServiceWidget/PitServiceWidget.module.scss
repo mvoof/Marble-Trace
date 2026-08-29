@@ -1,17 +1,8 @@
-// The panel clips its own children; the docked rail is drawn past its edge and
-// would be cut in half by that. It also anchors the rail, so the rail spans the
-// plate exactly — top and bottom flush with the widget's own edges.
-.panelWithRail {
-  position: relative;
-  overflow: visible;
-}
-
 .stack {
   display: flex;
   flex-direction: column;
   gap: sp(xs);
-  // Sole child in the default column layout, and the growing half of the row
-  // once the approach rail is docked to an edge.
+  // Sole child of the panel.
   flex: 1 1 0;
   min-width: 0;
   width: 100%;

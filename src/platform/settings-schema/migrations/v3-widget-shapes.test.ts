@@ -157,7 +157,7 @@ describe('v3WidgetShapes — pit service', () => {
     ]);
   });
 
-  it('measures a docked rail against the old wider base, and lands on the one width', () => {
+  it('measures a docked rail against the old wider base, then drops the placement', () => {
     const migrated = v3WidgetShapes.migrate({
       widgets: [
         {
@@ -183,7 +183,6 @@ describe('v3WidgetShapes — pit service', () => {
           currentWidth: 235,
           currentHeight: 330,
           showPitApproach: true,
-          pitApproachPlacement: 'side',
         },
       },
     ]);

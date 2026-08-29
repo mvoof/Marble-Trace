@@ -2,10 +2,6 @@ import { observer } from 'mobx-react-lite';
 
 import { usePitState } from '@ui/hooks/usePitState';
 import { usePitServiceWidgetStore } from '@store/root-store-context';
-import type {
-  PitApproachPlacement,
-  PitApproachSide,
-} from '@/types/widget-settings';
 import { buildPitApproachView } from '@ui/widgets/PitServiceWidget/pit-approach';
 
 import { METERS_TO_FEET } from '@utils/telemetry-format';
@@ -17,21 +13,19 @@ import styles from './PitApproachRail.module.scss';
 const PCT = 100;
 
 /**
- * The inline rail is one lane and nothing else — `.track` under `.railInline`
- * is `ws(18)`, and the readout is drawn on top of it rather than above it. Kept
- * as a number here so the slot the rail leaves behind is exactly the rail.
+ * The rail is one lane and nothing else — `.track` is `ws(18)`, and the readout
+ * is drawn on top of it rather than above it. Kept as a number here so the slot
+ * the rail leaves behind is exactly the rail.
  */
-const INLINE_RAIL_HEIGHT_PX = 18;
+const RAIL_HEIGHT_PX = 18;
 
 interface PitApproachRailProps {
-  placement: PitApproachPlacement;
-  side: PitApproachSide;
   cueDistM: number;
   withBrakeCue: boolean;
 }
 
 export const PitApproachRail = observer(
-  ({ placement, side, cueDistM, withBrakeCue }: PitApproachRailProps) => {
+  ({ cueDistM, withBrakeCue }: PitApproachRailProps) => {
     const pitService = usePitServiceWidgetStore();
     const {
       distM,
@@ -54,16 +48,8 @@ export const PitApproachRail = observer(
       withBrakeCue,
     });
 
-    const isVertical = placement === 'side';
-
     // Off pit road, or on a track whose pit lane has not been recorded yet,
     // there is no lane to draw.
-    //
-    // The inline block simply goes away — the stack closes over it. The side
-    // rail does not: it is the column the widget was widened for, and dropping
-    // it would leave the panel the same width with the stack stretched across
-    // the empty strip. It stays as an idle rail instead, which is also what the
-    // layout editor and `alwaysVisible` have to show.
     const isIdle = !pitService.isOnPitRoad || pitLaneProgressPct === null;
 
     // Before the entry line the rail counts down to the entry instead of the
@@ -74,13 +60,11 @@ export const PitApproachRail = observer(
       : null;
     const isApproach = isIdle && entryDistM !== null;
 
-    // The lane goes away, but not the room it stands in: the inline rail
-    // appears on the way to the box, and a widget that grew a row at that
-    // moment would be one the driver placed against a different bottom edge.
-    if (isIdle && !isVertical && !isApproach) {
-      return (
-        <ReservedSlot height={INLINE_RAIL_HEIGHT_PX} label="Pit approach" />
-      );
+    // The lane goes away, but not the room it stands in: the rail appears on
+    // the way to the box, and a widget that grew a row at that moment would be
+    // one the driver placed against a different bottom edge.
+    if (isIdle && !isApproach) {
+      return <ReservedSlot height={RAIL_HEIGHT_PX} label="Pit approach" />;
     }
 
     const isImperial = system === 'imperial';
@@ -94,73 +78,49 @@ export const PitApproachRail = observer(
 
     const targetLabel = isIdle ? 'IN' : view.isTargetExit ? 'EXIT' : 'BOX';
 
-    const spanStyle = (start: number, size: number) =>
-      isVertical
-        ? { bottom: `${start * PCT}%`, height: `${size * PCT}%` }
-        : { left: `${start * PCT}%`, width: `${size * PCT}%` };
-
-    const markerStyle = (at: number) =>
-      isVertical ? { bottom: `${at * PCT}%` } : { left: `${at * PCT}%` };
-
     return (
       <div
         className={[
           styles.rail,
-          isVertical ? styles.railVertical : styles.railInline,
-          isVertical && side === 'left' && styles.railLeft,
           isIdle ? styles.railIdle : styles[`urgency${view.urgency}`],
         ]
           .filter(Boolean)
           .join(' ')}
       >
-        {/*
-          The side rail keeps the readout above the lane — it is a column, and
-          the number is what the column is for. Inline the two are one row: the
-          lane is the row's background and the distance rides inside it, so the
-          block costs a single line rather than three.
-        */}
-        {/*
-          The column is two digits wide, so it carries the distance and the unit
-          and nothing else — the target is what the lane underneath is drawing.
-        */}
-        {isVertical && (
-          <div className={styles.readout}>
-            <span className={styles.value}>{distValue}</span>
-
-            <span className={styles.unit}>{isImperial ? 'ft' : 'm'}</span>
-          </div>
-        )}
-
         <div className={styles.track}>
           {!isIdle && (
-            <span className={styles.fill} style={spanStyle(0, view.fill)} />
-          )}
-
-          {view.boxLeft !== null && view.boxWidth !== null && (
             <span
-              className={styles.boxZone}
-              style={spanStyle(view.boxLeft, view.boxWidth)}
+              className={styles.fill}
+              style={{ width: `${view.fill * PCT}%` }}
             />
           )}
 
           {!isIdle && view.brakeMarker !== null && (
             <span
               className={styles.brakeMarker}
-              style={markerStyle(view.brakeMarker)}
+              style={{ left: `${view.brakeMarker * PCT}%` }}
             />
           )}
 
-          <span className={styles.carMarker} style={markerStyle(view.fill)} />
+          {/*
+            The far end of the rail is the target itself — the stall on the way
+            in, the exit line on the way out — so it is drawn as an end cap
+            rather than as a patch somewhere along a full-lane bar.
+          */}
+          <span className={styles.targetCap} />
 
-          {!isVertical && (
-            <span className={styles.inlineReadout}>
-              <span className={styles.inlineValue}>{distValue}</span>
+          <span
+            className={styles.carMarker}
+            style={{ left: `${view.fill * PCT}%` }}
+          />
 
-              <span className={styles.unit}>
-                {isImperial ? 'ft' : 'm'} → {targetLabel}
-              </span>
+          <span className={styles.readout}>
+            <span className={styles.value}>{distValue}</span>
+
+            <span className={styles.unit}>
+              {isImperial ? 'ft' : 'm'} → {targetLabel}
             </span>
-          )}
+          </span>
         </div>
       </div>
     );

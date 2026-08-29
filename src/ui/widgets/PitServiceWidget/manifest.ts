@@ -26,9 +26,6 @@ export const PIT_SERVICE_MANIFEST: WidgetManifest = {
   // Blocks are switched on and off individually; a fixed height would leave
   // an empty plate hanging under whatever is still shown.
   autoHeight: true,
-  // The docked approach rail is drawn outside the panel, against the edge it is
-  // parked on — the container must not clip it.
-  overflowVisible: true,
   userSettings: {
     enabled: false,
     x: 100,
@@ -39,8 +36,6 @@ export const PIT_SERVICE_MANIFEST: WidgetManifest = {
     ...PANEL_APPEARANCE_DEFAULTS,
     showPitSpeed: true,
     showPitApproach: true,
-    pitApproachPlacement: 'inline',
-    pitApproachSide: 'right',
     pitApproachCueDistM: 100,
     revealOnApproachM: 400,
     showPitBrakeCue: true,
