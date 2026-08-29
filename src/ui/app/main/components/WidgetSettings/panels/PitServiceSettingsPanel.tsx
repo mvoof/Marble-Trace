@@ -3,8 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Segmented, Slider, Switch } from 'antd';
 import type {
   FuelAdjustStep,
-  PitApproachPlacement,
-  PitApproachSide,
   PitServiceWidgetSettings,
 } from '@/types/widget-settings';
 import { FUEL_ADJUST_STEPS } from '@/types/widget-settings';
@@ -185,60 +183,6 @@ export const PitServiceSettingsPanel = observer(() => {
 
       {settings.showPitApproach && (
         <Card title={t('settingsPanels.pitService.approachCard')}>
-          <div className={styles.fieldGroup}>
-            <span className={styles.fieldLabel}>
-              {t('settingsPanels.pitService.approachPlacement')}
-            </span>
-
-            <div className={styles.fieldDesc} style={{ marginBottom: 8 }}>
-              {t('settingsPanels.pitService.approachPlacementDesc')}
-            </div>
-
-            <Segmented
-              block
-              value={settings.pitApproachPlacement}
-              options={[
-                {
-                  label: t('settingsPanels.pitService.approachInline'),
-                  value: 'inline',
-                },
-                {
-                  label: t('settingsPanels.pitService.approachSide'),
-                  value: 'side',
-                },
-              ]}
-              onChange={(value) =>
-                update({ pitApproachPlacement: value as PitApproachPlacement })
-              }
-            />
-          </div>
-
-          {settings.pitApproachPlacement === 'side' && (
-            <div className={styles.fieldGroup}>
-              <span className={styles.fieldLabel}>
-                {t('settingsPanels.pitService.approachEdge')}
-              </span>
-
-              <Segmented
-                block
-                value={settings.pitApproachSide}
-                options={[
-                  {
-                    label: t('settingsPanels.pitService.approachEdgeLeft'),
-                    value: 'left',
-                  },
-                  {
-                    label: t('settingsPanels.pitService.approachEdgeRight'),
-                    value: 'right',
-                  },
-                ]}
-                onChange={(value) =>
-                  update({ pitApproachSide: value as PitApproachSide })
-                }
-              />
-            </div>
-          )}
-
           <div className={styles.fieldGroup}>
             <div className={styles.fieldLabel}>
               {t('settingsPanels.pitService.approachCueDist', {

@@ -157,3 +157,10 @@ $widget-tire-new-bg: rgba(161, 161, 170, 0.1);
 $widget-tire-wet-color: $race-blue;
 $widget-tire-wet-border: rgba($race-blue, 0.5);
 $widget-tire-wet-bg: rgba($race-blue, 0.1);
+
+// Pit Service — the column the readouts of the speed row and the approach rail
+// both end on. On the speed row it is also the pit limit seam, which is what
+// fixes the number: the margin is read against that line. The rail has no seam
+// of its own and simply follows, so the two numbers stack in one column instead
+// of the eye hunting for each of them in turn.
+$pit-readout-seam: 82%;

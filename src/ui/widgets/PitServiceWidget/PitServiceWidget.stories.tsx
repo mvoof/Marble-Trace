@@ -6,10 +6,7 @@ import type {
   PitServiceFrame,
   TrackShapePayload,
 } from '@/types/bindings';
-import type {
-  PitApproachPlacement,
-  PitServiceWidgetSettings,
-} from '@/types/widget-settings';
+import type { PitServiceWidgetSettings } from '@/types/widget-settings';
 import { PitServiceWidget } from './PitServiceWidget';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 
@@ -27,7 +24,6 @@ interface StoryArgs {
   changeRears: boolean;
   showFooter: boolean;
   distToBoxM: number;
-  approachPlacement: PitApproachPlacement;
 }
 
 const STORY_FIELD_SIZE = 24;
@@ -187,7 +183,6 @@ const meta: Meta<StoryArgs> = {
         ),
         showFooter: args.showFooter,
         showPitApproach: true,
-        pitApproachPlacement: args.approachPlacement,
         alwaysVisible: true,
       });
     },
@@ -205,15 +200,10 @@ const meta: Meta<StoryArgs> = {
       changeRears: true,
       showFooter: true,
       distToBoxM: 180,
-      approachPlacement: 'inline',
     },
     argTypes: {
       speedMs: { control: { type: 'range', min: 0, max: 30, step: 0.5 } },
       distToBoxM: { control: { type: 'range', min: 0, max: 350, step: 5 } },
-      approachPlacement: {
-        control: { type: 'inline-radio' },
-        options: ['inline', 'side'],
-      },
     },
   }),
 };
@@ -255,8 +245,4 @@ export const ApproachingBox: Story = {
 
 export const BrakeForBox: Story = {
   args: { distToBoxM: 30, speedMs: 18 },
-};
-
-export const ApproachSideRail: Story = {
-  args: { approachPlacement: 'side', distToBoxM: 90 },
 };

@@ -1,3 +1,9 @@
+// Where the allowed track ends and the overspeed one begins — the pit limit.
+// The readout is parked against it, so the seam is a number and a line rather
+// than two things at opposite ends of the row. Shared with the approach rail,
+// which lines its distance up on the same column.
+$speed-limit-seam: $pit-readout-seam;
+
 // The row is the gauge: two tracks side by side, the seam between them the pit
 // limit. Everything drawn in it is absolutely positioned behind the readout.
 .row {
@@ -42,13 +48,13 @@
 
 .trackAllowed {
   left: 0;
-  width: 82%;
+  width: $speed-limit-seam;
   background: rgba($race-green, 0.1);
 }
 
 .trackPenalty {
   right: 0;
-  width: 18%;
+  width: 100% - $speed-limit-seam;
   background: rgba($race-red, 0.14);
 }
 
@@ -58,6 +64,7 @@
   bottom: 0;
   left: 0;
   background: rgba($race-green, 0.34);
+  transition: width 80ms linear;
 }
 
 .fillOver {
@@ -85,7 +92,7 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 82%;
+  left: $speed-limit-seam;
   width: 1px;
   background: rgba($race-red, 0.8);
 }
@@ -102,15 +109,26 @@
   color: $widget-text-primary;
 }
 
-// A fixed slot at the right end of the row, as far from the label as the row
-// allows: the margin swings between one and two digits and changes sign, and
-// none of that may move anything else. The shadow above keeps it legible where
-// it crosses the overspeed tip.
-.value {
+// The readout group: pushed to the right of the label and stopped at the limit
+// seam, so the number ends where the line it is measured against begins. The
+// percentage resolves against the row's content box and the seam against its
+// padding box, which leaves a few pixels of air before the line — which is what
+// keeps the digits off it.
+.readout {
+  display: flex;
+  align-items: baseline;
+  gap: sp(xxs);
   margin-left: auto;
+  margin-right: 100% - $speed-limit-seam;
+}
+
+// The width is fixed because the margin swings between one and two digits and
+// changes sign, and none of that may move anything else.
+.value {
   min-width: 4ch;
   font-family: $font-mono;
   font-size: fs(lg);
+  font-weight: 700;
   line-height: 1;
   color: $widget-text-primary;
   font-variant-numeric: tabular-nums;
@@ -130,8 +148,11 @@
 }
 
 .unit {
-  font-size: fs(xxs);
+  // Named once, quietly: the number is what moves, and at speed the unit is
+  // read from the label above it rather than off the row.
+  font-size: fs(xxxs);
   letter-spacing: 0.08em;
   color: $widget-label;
   font-weight: 600;
+  opacity: 0.85;
 }

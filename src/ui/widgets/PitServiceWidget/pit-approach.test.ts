@@ -68,30 +68,46 @@ describe('buildPitApproachView', () => {
     expect(view.brakeMarker).toBeNull();
   });
 
-  it('keeps the box patch inside the lane at either end', () => {
-    const atStart = buildPitApproachView({ ...baseInput, boxLanePct: 0 });
-    const atEnd = buildPitApproachView({ ...baseInput, boxLanePct: 1 });
+  it('fills the entry-to-stall leg on the way in, so 100% is the box', () => {
+    // Halfway to a stall that sits at 0.6 of the lane.
+    const view = buildPitApproachView({ ...baseInput, progressPct: 0.3 });
 
-    for (const view of [atStart, atEnd]) {
-      expect(view.boxLeft).not.toBeNull();
-      expect(view.boxWidth).not.toBeNull();
-      expect(view.boxLeft!).toBeGreaterThanOrEqual(0);
-      expect(view.boxWidth!).toBeGreaterThan(0);
-      expect(view.boxLeft! + view.boxWidth!).toBeLessThanOrEqual(1);
-    }
+    expect(view.fill).toBeCloseTo(0.5, 6);
   });
 
-  it('places the brake marker one braking distance before the stall', () => {
+  it('fills the stall-to-exit leg once the box is behind us', () => {
+    const view = buildPitApproachView({
+      ...baseInput,
+      distMode: 'pitExit',
+      progressPct: 0.8,
+    });
+
+    expect(view.fill).toBeCloseTo(0.5, 6);
+    expect(view.isTargetExit).toBe(true);
+  });
+
+  it('falls back to the whole lane until the stall has been recorded', () => {
+    const view = buildPitApproachView({
+      ...baseInput,
+      boxLanePct: null,
+      laneLengthM: null,
+      progressPct: 0.35,
+    });
+
+    expect(view.fill).toBeCloseTo(0.35, 6);
+    expect(view.brakeMarker).toBeNull();
+  });
+
+  it('places the brake marker one braking distance before the end of the leg', () => {
     const view = buildPitApproachView(baseInput);
-    const expected =
-      baseInput.boxLanePct! -
-      pitBrakeDistanceM(baseInput.speedMs) / baseInput.laneLengthM!;
+    const legLengthM = baseInput.boxLanePct! * baseInput.laneLengthM!;
+    const expected = 1 - pitBrakeDistanceM(baseInput.speedMs) / legLengthM;
 
     expect(view.brakeMarker).toBeCloseTo(expected, 6);
   });
 
-  it('drops the brake marker when the stop needs more lane than there is', () => {
-    // 40 m/s needs 160 m to stop, further back than the stall sits.
+  it('drops the brake marker when the stop needs more lane than the leg has', () => {
+    // 40 m/s needs 160 m to stop, more than the 80 m leg to a stall at 0.2.
     const view = buildPitApproachView({
       ...baseInput,
       speedMs: 40,
@@ -101,18 +117,7 @@ describe('buildPitApproachView', () => {
     expect(view.brakeMarker).toBeNull();
   });
 
-  it('leaves the box patch out until the pit lane has been recorded', () => {
-    const view = buildPitApproachView({
-      ...baseInput,
-      boxLanePct: null,
-      laneLengthM: null,
-    });
-
-    expect(view.boxLeft).toBeNull();
-    expect(view.boxWidth).toBeNull();
-  });
-
-  it('clamps the lane fill to the bar', () => {
+  it('clamps the leg fill to the bar', () => {
     expect(buildPitApproachView({ ...baseInput, progressPct: 1.4 }).fill).toBe(
       1
     );

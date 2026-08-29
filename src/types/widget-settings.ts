@@ -545,26 +545,15 @@ export interface FlagDisplaySettings {
   modeWidths?: Record<string, number>;
 }
 
-export type PitApproachPlacement = 'inline' | 'side';
-
-export type PitApproachSide = 'left' | 'right';
-
 export interface PitServiceWidgetSettings {
   showPitSpeed: boolean;
   /**
-   * The approach rail: distance to the stall over a picture of the pit lane,
-   * with the braking cue. Read together with the speed plate it answers the
-   * whole of "how fast, how far" from one place.
+   * The approach rail: a bar that fills to the stall on the way in and to the
+   * pit exit once the box is behind us, with the braking cue on it. Read
+   * together with the speed plate it answers the whole of "how fast, how far"
+   * from one place.
    */
   showPitApproach: boolean;
-  /**
-   * `inline` puts the rail in the widget stack as a horizontal block; `side`
-   * hangs it as a vertical rail against the panel edge, where it stays readable
-   * with the eyes on the road.
-   */
-  pitApproachPlacement: PitApproachPlacement;
-  /** Which edge the `side` rail sits on. */
-  pitApproachSide: PitApproachSide;
   /** Distance to the stall, in meters, at which the countdown starts warning. */
   pitApproachCueDistM: number;
   /**
