@@ -85,9 +85,9 @@ const CLOSE_BATTLE_COLUMNS_PX = {
 
 /** The name column, per name mode. A file with no mode was shipped 'initial'. */
 const CLOSE_BATTLE_NAME_PX: Record<string, number> = {
-  surname: 96,
-  initial: 116,
-  full: 156,
+  surname: 78,
+  initial: 96,
+  full: 128,
 };
 
 /** A toggle absent from an old file was on — that is what every default was. */

@@ -574,9 +574,9 @@ const ROW_PAD_RIGHT_PX = 12;
  * surname the eye reads by its first syllables anyway.
  */
 const NAME_COL_PX: Record<CloseBattleWidgetSettings['nameMode'], number> = {
-  surname: 96,
-  initial: 116,
-  full: 156,
+  surname: 78,
+  initial: 96,
+  full: 128,
 };
 
 export const computeCloseBattleDesignWidth = (

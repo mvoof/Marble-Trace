@@ -219,9 +219,9 @@ describe('v3WidgetShapes — pit service', () => {
     expect(migrated['widgets']).toEqual([
       {
         id: 'close-battle',
-        designWidth: 394,
+        designWidth: 374,
         designHeight: 420,
-        userSettings: { currentWidth: 591, currentHeight: 630 },
+        userSettings: { currentWidth: 561, currentHeight: 630 },
       },
     ]);
   });
@@ -245,9 +245,9 @@ describe('v3WidgetShapes — pit service', () => {
     expect(migrated['widgets']).toEqual([
       {
         id: 'close-battle',
-        designWidth: 254,
+        designWidth: 234,
         userSettings: {
-          currentWidth: 508,
+          currentWidth: 468,
           showClassBadge: false,
           showDistance: false,
           showLapGap: false,
