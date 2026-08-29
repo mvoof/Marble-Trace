@@ -3,6 +3,7 @@ mod bindings;
 mod capabilities;
 mod chat;
 mod commands;
+mod companions;
 mod computations;
 mod input;
 mod logging;
@@ -19,12 +20,15 @@ use chat::commands::{
 };
 use chat::state::{ChatServiceState, ChatState};
 use commands::{
-    backup_settings_file, delete_reference_lap, delete_settings_file, delete_track_shape,
-    get_cached_track_shape, get_connection_status, get_inspector_frame, get_last_session_info,
-    get_reference_lap, log_settings_snapshot, reset_pit_lane_pct, send_pit_order,
-    set_active_events, set_car_length, set_fuel_avg_window, set_inspector_active,
-    set_pit_warning_laps, settings_file_exists, start_telemetry_stream, stop_telemetry_stream,
+    backup_settings_file, close_companion_app, close_companion_apps, companion_app_icon,
+    companion_app_statuses, delete_reference_lap, delete_settings_file, delete_track_shape,
+    detect_companion_apps, get_cached_track_shape, get_connection_status, get_inspector_frame,
+    get_last_session_info, get_reference_lap, launch_companion_app, log_settings_snapshot,
+    reset_pit_lane_pct, send_pit_order, set_active_events, set_car_length, set_fuel_avg_window,
+    set_inspector_active, set_pit_warning_laps, settings_file_exists, start_telemetry_stream,
+    stop_telemetry_stream,
 };
+use companions::CompanionsState;
 use computations::ProcessorRegistry;
 use input::commands::{resolve_input_devices, set_input_polling_enabled, InputState};
 use input::InputRuntime;
@@ -85,6 +89,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_aptabase::Builder::new(aptabase_key).build());
 
     #[cfg(feature = "dev")]
@@ -186,8 +191,15 @@ pub fn run() {
             twitch_current_login,
             twitch_sign_out,
             resolve_input_devices,
-            set_input_polling_enabled
+            set_input_polling_enabled,
+            detect_companion_apps,
+            companion_app_statuses,
+            launch_companion_app,
+            close_companion_app,
+            close_companion_apps,
+            companion_app_icon
         ])
+        .manage(CompanionsState::default())
         .manage(ChatState {
             service: Arc::new(ChatServiceState::new()),
         })
@@ -235,6 +247,10 @@ pub fn run() {
                             let _ = overlay.destroy();
                         }
                     }
+
+                    // Only the instances this app started, and only the ones
+                    // still marked to close with it — see `companions::close`.
+                    companions::close_all_owned(&window.app_handle().state::<CompanionsState>());
                 }
             }
             WindowEvent::Resized(size) => {

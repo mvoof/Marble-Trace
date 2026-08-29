@@ -6,6 +6,7 @@
 export type SettingsSectionId =
   | 'general'
   | 'updates'
+  | 'companionApps'
   | 'overlay'
   | 'interaction'
   | 'bindings'
@@ -24,7 +25,7 @@ export interface SettingsGroup {
 }
 
 export const SETTINGS_GROUPS: SettingsGroup[] = [
-  { id: 'application', sections: ['general', 'updates'] },
+  { id: 'application', sections: ['general', 'companionApps', 'updates'] },
   { id: 'overlay', sections: ['overlay', 'interaction'] },
   { id: 'controls', sections: ['bindings', 'devices'] },
   // Widget data: what the widgets draw from, and the values several of them

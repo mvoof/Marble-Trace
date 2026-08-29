@@ -15,6 +15,7 @@ import { WidgetSettingsStore } from './settings/widget-settings.store';
 import { WidgetDefaultsStore } from './settings/widget-defaults.store';
 import type { LayoutsStore } from './settings/layouts.store';
 import { AppSettingsStore } from './settings/app-settings.store';
+import { CompanionAppsStore } from './settings/companion-apps.store';
 import { UnitsStore } from './settings/units.store';
 import { WidgetAutoHideStore } from './widgets/widget-auto-hide.store';
 import { PlayerStore } from './data/player.store';
@@ -64,6 +65,7 @@ export class RootStore {
   widgetDefaults: WidgetDefaultsStore;
   layouts: LayoutsStore;
   appSettings: AppSettingsStore;
+  companionApps: CompanionAppsStore;
   twitchAuth: TwitchAuthStore;
   units: UnitsStore;
   widgetAutoHide: WidgetAutoHideStore;
@@ -90,6 +92,7 @@ export class RootStore {
     this.widgetSettings = new WidgetSettingsStore(this);
     this.layouts = this.widgetSettings.layoutRecords;
     this.appSettings = new AppSettingsStore();
+    this.companionApps = new CompanionAppsStore(this);
     this.twitchAuth = new TwitchAuthStore(this);
     this.units = new UnitsStore();
     this.flags = new FlagsStore(this);
@@ -145,6 +148,7 @@ export class RootStore {
     this.streamChatWidget.dispose();
     this.pitServiceWidget.dispose();
     this.chat.dispose();
+    this.companionApps.dispose();
     this.inputTraceWidget.dispose();
     this.coachWidget.dispose();
     this.standingsWidget.dispose();

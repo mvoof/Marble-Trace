@@ -11,6 +11,7 @@ import { detectSystemLanguage } from '@store/settings/system-locale';
 import { createRemoteToken } from '@utils/remote-screen';
 import i18n from '@/i18n';
 import type { AppLanguage } from '@/types';
+import type { CompanionApp } from '@/types/bindings';
 import type { SettingsLockReason } from '@platform/settings-schema/types';
 
 export const resolveAppLanguage = (language: AppLanguage) =>
@@ -78,6 +79,10 @@ const DEFAULT_APP_SETTINGS = {
   /** Frames per second pushed to browsers. A tablet cannot show 60 and the
    *  Wi-Fi does not need to carry them. */
   remoteTelemetryHz: 30,
+  /** Other programs the rig needs running, started and stopped with the app.
+   *  App-level for the same reason the wheel range is: a rig runs one set of
+   *  them, whichever layout is on screen. */
+  companionApps: [] as CompanionApp[],
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;

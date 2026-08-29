@@ -413,6 +413,7 @@
       },
       "sections": {
         "general": "General",
+        "companionApps": "Companion apps",
         "updates": "Updates",
         "overlay": "Widget display",
         "interaction": "Interaction modes",
@@ -460,6 +461,28 @@
       "copyToken": "Copy token",
       "tokenCopied": "Token copied",
       "qrHidden": "QR code hidden"
+    },
+    "companions": {
+      "add": "Add",
+      "addDesc": "Detection looks for the sim tools in the folders their installers use. Anything else is added by hand.",
+      "addTitle": "Add a program",
+      "browse": "Add program…",
+      "close": "Close now",
+      "closeWithApp": "Close with app",
+      "detect": "Detect installed",
+      "detectedDesc": "Not in your list yet.",
+      "detectedTitle": "Found on this PC",
+      "empty": "No programs yet.",
+      "launch": "Start now",
+      "launchWithApp": "Start with app",
+      "listDesc": "Started with Marble Trace when they are not already running. Closing the app closes the ones you marked for it, whoever started them — a program that needs administrator rights cannot be closed this way.",
+      "listTitle": "Your programs",
+      "missing": "File missing",
+      "notOurs": "Started outside Marble Trace — close it where you started it.",
+      "removeConfirm": "Remove this program from the list?",
+      "running": "Running",
+      "stopped": "Not running",
+      "title": "Companion apps"
     }
   },
   "bindings": {
