@@ -110,12 +110,16 @@ def mask_to_subpaths(mask: np.ndarray, tolerance: float) -> tuple[list[str], int
     # The pad gives find_contours a border to close shapes against; the offsets
     # take it back off and centre the wheel in a square box, so that one square
     # slot holds every wheel at the same scale however wide it was shot.
+    #
+    # The 0.5 is the level find_contours traced at: in the padded array the
+    # shape's edges lie half a pixel outside it, so shifting by the pad's full
+    # pixel would push the far side out of the viewBox.
     cropped = np.pad(mask[top:bottom, left:right], 1)
     width = right - left
     height = bottom - top
     side = int(max(width, height))
-    offset_x = (side - width) / 2 - 1
-    offset_y = (side - height) / 2 - 1
+    offset_x = (side - width) / 2 - 0.5
+    offset_y = (side - height) / 2 - 0.5
 
     subpaths = []
 

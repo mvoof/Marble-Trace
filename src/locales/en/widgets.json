@@ -190,7 +190,17 @@
       "steeringWheelDesc": "Show steering wheel block and graph trace.",
       "wheelStyle": "Wheel Style",
       "wheelStyleDesc": "Which steering wheel silhouette the block draws.",
-      "wheelStyleDefault": "Default dial",
+      "wheelStyles": {
+        "default": "Default dial",
+        "gt-round": "GT round",
+        "flat-bottom": "Flat bottom",
+        "bagel": "Bagel",
+        "formula-open": "Formula open",
+        "formula-compact": "Formula compact",
+        "formula-conspit": "Formula wide",
+        "formula-conspit-pro": "Formula wide pro",
+        "formula-gt-hybrid": "Formula GT hybrid"
+      },
       "centerDisplay": "Center Display",
       "centerDisplayDesc": "What to show in the center of the steering wheel.",
       "centerNone": "None",

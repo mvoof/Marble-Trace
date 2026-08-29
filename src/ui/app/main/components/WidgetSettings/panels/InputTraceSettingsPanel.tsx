@@ -6,7 +6,7 @@ import {
   SteeringCenterDisplay,
   SteeringWheelStyle,
 } from '@/types/widget-settings';
-import { STEERING_WHEEL_STYLE_OPTIONS } from '@ui/widgets/InputTraceWidget/SteeringWheel/wheel-styles';
+import { STEERING_WHEEL_STYLE_IDS } from '@ui/widgets/InputTraceWidget/SteeringWheel/wheel-styles';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
@@ -127,12 +127,11 @@ export const InputTraceSettingsPanel = observer(() => {
               >
                 <Select
                   value={settings.steeringWheelStyle}
-                  options={STEERING_WHEEL_STYLE_OPTIONS.map((option) => ({
-                    value: option.id,
-                    label:
-                      option.id === 'default'
-                        ? t('settingsPanels.inputTrace.wheelStyleDefault')
-                        : option.label,
+                  options={STEERING_WHEEL_STYLE_IDS.map((styleId) => ({
+                    value: styleId,
+                    label: t(
+                      `settingsPanels.inputTrace.wheelStyles.${styleId}`
+                    ),
                   }))}
                   onChange={(value) =>
                     update({ steeringWheelStyle: value as SteeringWheelStyle })

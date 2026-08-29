@@ -190,7 +190,17 @@
       "steeringWheelDesc": "Показать блок руля и след графика.",
       "wheelStyle": "Тип руля",
       "wheelStyleDesc": "Какой силуэт руля рисуется в блоке.",
-      "wheelStyleDefault": "Стандартный",
+      "wheelStyles": {
+        "default": "Стандартный",
+        "gt-round": "GT круглый",
+        "flat-bottom": "Со срезом снизу",
+        "bagel": "Бублик",
+        "formula-open": "Формула открытый",
+        "formula-compact": "Формула компактный",
+        "formula-conspit": "Формула широкий",
+        "formula-conspit-pro": "Формула широкий Pro",
+        "formula-gt-hybrid": "Формула GT гибрид"
+      },
       "centerDisplay": "Центральный дисплей",
       "centerDisplayDesc": "Что показывать в центре руля.",
       "centerNone": "Нет",
