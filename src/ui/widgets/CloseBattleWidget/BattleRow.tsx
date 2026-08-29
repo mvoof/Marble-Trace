@@ -101,6 +101,7 @@ export const BattleRow = observer(
             className={[
               styles.row,
               settings.showClassBadge ? '' : styles.rowNoClass,
+              settings.showDistance ? '' : styles.rowNoDistance,
               showLaps ? styles.rowLaps : '',
               settings.showBrand ? styles.rowBrand : '',
             ]

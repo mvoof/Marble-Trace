@@ -203,4 +203,56 @@ describe('v3WidgetShapes — pit service', () => {
       },
     ]);
   });
+
+  it('rebases a Close Battle on the shipped columns, keeping its scale', () => {
+    const migrated = v3WidgetShapes.migrate({
+      widgets: [
+        {
+          id: 'close-battle',
+          designWidth: 440,
+          designHeight: 420,
+          userSettings: { currentWidth: 660, currentHeight: 630 },
+        },
+      ],
+    });
+
+    expect(migrated['widgets']).toEqual([
+      {
+        id: 'close-battle',
+        designWidth: 394,
+        designHeight: 420,
+        userSettings: { currentWidth: 591, currentHeight: 630 },
+      },
+    ]);
+  });
+
+  it('narrows a Close Battle whose columns were switched off, keeping its scale', () => {
+    const migrated = v3WidgetShapes.migrate({
+      widgets: [
+        {
+          id: 'close-battle',
+          designWidth: 440,
+          userSettings: {
+            currentWidth: 880,
+            showClassBadge: false,
+            showDistance: false,
+            showLapGap: false,
+          },
+        },
+      ],
+    });
+
+    expect(migrated['widgets']).toEqual([
+      {
+        id: 'close-battle',
+        designWidth: 254,
+        userSettings: {
+          currentWidth: 508,
+          showClassBadge: false,
+          showDistance: false,
+          showLapGap: false,
+        },
+      },
+    ]);
+  });
 });
