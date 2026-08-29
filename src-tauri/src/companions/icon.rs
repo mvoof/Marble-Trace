@@ -125,9 +125,9 @@ pub fn icon_data_url(path: &str) -> Option<String> {
             return None;
         }
 
-        let opaque = buffer.chunks_exact(4).all(|pixel| pixel[3] == 0);
+        let opaque = buffer.as_chunks::<4>().0.iter().all(|pixel| pixel[3] == 0);
 
-        for pixel in buffer.chunks_exact_mut(4) {
+        for pixel in buffer.as_chunks_mut::<4>().0 {
             pixel.swap(0, 2);
 
             // A 24-bit icon carries no alpha channel at all, and the buffer
