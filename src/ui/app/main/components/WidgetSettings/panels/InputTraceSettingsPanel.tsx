@@ -1,10 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, Segmented, Slider, Space, Switch } from 'antd';
+import { ColorPicker, Segmented, Select, Slider, Space, Switch } from 'antd';
 import {
   InputTraceSettings,
   SteeringCenterDisplay,
+  SteeringWheelStyle,
 } from '@/types/widget-settings';
+import { STEERING_WHEEL_STYLE_IDS } from '@ui/widgets/InputTraceWidget/SteeringWheel/wheel-styles';
 import styles from '@ui/app/main/components/WidgetSettings/WidgetSettings.module.scss';
 import { Card } from './Card';
 import { SettingRow } from './SettingRow';
@@ -120,12 +122,37 @@ export const InputTraceSettingsPanel = observer(() => {
           <>
             <div className={styles.fieldGroup}>
               <SettingRow
+                title={t('settingsPanels.inputTrace.wheelStyle')}
+                desc={t('settingsPanels.inputTrace.wheelStyleDesc')}
+              >
+                <Select
+                  value={settings.steeringWheelStyle}
+                  options={STEERING_WHEEL_STYLE_IDS.map((styleId) => ({
+                    value: styleId,
+                    label: t(
+                      `settingsPanels.inputTrace.wheelStyles.${styleId}`
+                    ),
+                  }))}
+                  onChange={(value) =>
+                    update({ steeringWheelStyle: value as SteeringWheelStyle })
+                  }
+                  style={{ width: 180 }}
+                />
+              </SettingRow>
+            </div>
+
+            <div className={styles.fieldGroup}>
+              <SettingRow
                 title={t('settingsPanels.inputTrace.centerDisplay')}
                 desc={t('settingsPanels.inputTrace.centerDisplayDesc')}
               >
                 <Segmented
                   value={settings.steeringCenterDisplay}
                   options={[
+                    {
+                      label: t('settingsPanels.inputTrace.centerNone'),
+                      value: 'none',
+                    },
                     {
                       label: t('settingsPanels.inputTrace.logo'),
                       value: 'logo',
@@ -155,6 +182,17 @@ export const InputTraceSettingsPanel = observer(() => {
                 />
               </SettingRow>
             </div>
+
+            {settings.steeringWheelStyle !== 'default' &&
+              settings.steeringCenterDisplay !== 'none' && (
+                <div className={styles.fieldGroup}>
+                  <SwitchRow
+                    settingKey="steeringCenterPlate"
+                    title={t('settingsPanels.inputTrace.centerPlate')}
+                    desc={t('settingsPanels.inputTrace.centerPlateDesc')}
+                  />
+                </div>
+              )}
 
             <div className={styles.fieldGroup}>
               <SettingRow

@@ -96,6 +96,8 @@ export const INPUT_TRACE_MANIFEST: WidgetManifest = {
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
     steeringCenterDisplay: 'logo',
+    steeringWheelStyle: 'default',
+    steeringCenterPlate: false,
     throttleColor: '#10b981',
     brakeColor: '#ef4444',
     clutchColor: '#3b82f6',

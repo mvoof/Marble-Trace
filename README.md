@@ -85,6 +85,8 @@ Liquid temperatures, oil pressure, voltage, and live system adjustments — ABS,
 
 Watch your throttle, brake, and clutch inputs scroll in real time. The horizontal trace mode shows a rolling history so you can see exactly where you're trail-braking, blipping, or lifting early. Switch to vertical bars for a clean side-by-side view of all three pedals at once.
 
+The steering block draws either the built-in dial or one of several wheel silhouettes, with your choice of gear, speed, angle or nothing at all in the middle. Adding another wheel is a traced product photo — see [docs/steering-wheel-assets.md](docs/steering-wheel-assets.md).
+
 ![Input Trace](docs/assets/screenshots/widgets/input-trace.png)
 
 ---
