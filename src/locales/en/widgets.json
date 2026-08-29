@@ -200,6 +200,8 @@
       "layout": "Layout",
       "traceGraph": "Trace Graph",
       "traceGraphDesc": "Show the scrolling input history graph.",
+      "inputValues": "Pedal Values",
+      "inputValuesDesc": "Show throttle, brake and clutch percentages inside the bars.",
       "graphSettings": "Graph Settings",
       "historyLength": "History Length",
       "historyLengthDesc": "Visible history: {{seconds}}s",

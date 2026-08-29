@@ -189,6 +189,14 @@ export const InputTraceSettingsPanel = observer(() => {
             desc={t('settingsPanels.inputTrace.traceGraphDesc')}
           />
         </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showInputValues"
+            title={t('settingsPanels.inputTrace.inputValues')}
+            desc={t('settingsPanels.inputTrace.inputValuesDesc')}
+          />
+        </div>
       </Card>
 
       <Card title={t('settingsPanels.inputTrace.graphSettings')}>

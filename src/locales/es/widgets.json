@@ -200,6 +200,8 @@
       "layout": "Disposición",
       "traceGraph": "Gráfico de trazas",
       "traceGraphDesc": "Muestra el histórico desplazable de los mandos.",
+      "inputValues": "Valores de pedales",
+      "inputValuesDesc": "Mostrar los porcentajes de acelerador, freno y embrague dentro de las barras.",
       "graphSettings": "Ajustes del gráfico",
       "historyLength": "Duración del histórico",
       "historyLengthDesc": "Histórico visible: {{seconds}} s",

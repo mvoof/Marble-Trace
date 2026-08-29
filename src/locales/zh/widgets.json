@@ -200,6 +200,8 @@
       "layout": "布局",
       "traceGraph": "轨迹图",
       "traceGraphDesc": "显示滚动的输入历史图表。",
+      "inputValues": "踏板数值",
+      "inputValuesDesc": "在柱状条内显示油门、刹车和离合器的百分比。",
       "graphSettings": "图表设置",
       "historyLength": "历史长度",
       "historyLengthDesc": "可见历史：{{seconds}} 秒",

@@ -1,6 +1,11 @@
+import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
 import type { InputTraceSettings } from '@/types/widget-settings';
+
+import { getContrastTextColor } from '@utils/colors';
+
+import { useValueCoverPoint } from './useValueCoverPoint';
 
 import styles from './Bar.module.scss';
 import {
@@ -43,11 +48,15 @@ const CHANNEL_VISIBILITY_KEY: Record<
 
 export const Bar = observer(
   ({ channel, width = 'md', rounded = true }: BarProps) => {
+    const trackRef = useRef<HTMLDivElement>(null);
+    const labelRef = useRef<HTMLSpanElement>(null);
     const { carInputs } = usePlayerStore();
     const widgetSettings = useWidgetSettingsStore();
     const inputTrace = useInputTraceWidgetStore();
     const settings =
       widgetSettings.getSettings<InputTraceSettings>('input-trace');
+    const showValue = settings.showInputValues;
+    const coverPoint = useValueCoverPoint(trackRef, labelRef, showValue);
 
     if (!settings[CHANNEL_VISIBILITY_KEY[channel]]) {
       return null;
@@ -57,6 +66,8 @@ export const Bar = observer(
     const isAbsActive =
       channel === 'brake' && (carInputs?.brake_abs_active ?? false);
 
+    const valueText = `${Math.round(clamped * 100)}`;
+
     const color = isAbsActive
       ? settings.absColor
       : getChannelColor(widgetSettings, channel);
@@ -64,6 +75,7 @@ export const Bar = observer(
     return (
       <div className={styles.verticalContainer}>
         <div
+          ref={trackRef}
           className={`${styles.verticalTrack} ${styles[`trackWidth-${width}`]}${
             !rounded ? ` ${styles.noRadius}` : ''
           }`}
@@ -73,6 +85,19 @@ export const Bar = observer(
             style={{ height: `${clamped * 100}%`, background: color }}
           />
         </div>
+
+        {showValue && (
+          <span
+            ref={labelRef}
+            className={styles.value}
+            style={{
+              color:
+                clamped >= coverPoint ? getContrastTextColor(color) : undefined,
+            }}
+          >
+            {valueText}
+          </span>
+        )}
       </div>
     );
   }
