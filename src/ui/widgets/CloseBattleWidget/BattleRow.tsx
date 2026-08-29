@@ -31,12 +31,6 @@ interface BattleRowProps {
    * still claims a single position for all of them.
    */
   stackIndex: number;
-  /**
-   * Whether the lap column is drawn at all. Decided for the widget rather than
-   * for the plate: a column that appears on one plate of a deck and not on the
-   * next would shift every number in it against its neighbour.
-   */
-  showLaps: boolean;
 }
 
 /**
@@ -50,7 +44,7 @@ interface BattleRowProps {
  * what turns the 10 Hz proximity frame into continuous motion.
  */
 export const BattleRow = observer(
-  ({ opponent, topPct, stackIndex, showLaps }: BattleRowProps) => {
+  ({ opponent, topPct, stackIndex }: BattleRowProps) => {
     const units = useUnitsStore();
     const widgetSettings = useWidgetSettingsStore();
 
@@ -58,6 +52,13 @@ export const BattleRow = observer(
       widgetSettings.getSettings<CloseBattleWidgetSettings>('close-battle');
 
     const { entry } = opponent;
+
+    // The lap column follows the setting alone, never whether anyone happens to
+    // be lapped right now. It is what the widget's width is calculated from —
+    // and that width is a design constant, so a column that opened the moment a
+    // car went a lap down would leave its share of the plate to the name column
+    // until then, and shift every number on the row when it arrived.
+    const showLaps = settings.showLapGap;
 
     const scale = settings.scaleByDistance ? plateScale(opponent.clearance) : 1;
 
