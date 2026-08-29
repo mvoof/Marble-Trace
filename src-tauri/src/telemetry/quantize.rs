@@ -70,9 +70,11 @@ fn round_opt(value: &mut Option<f32>, decimals: u32) {
     }
 }
 
-/// The pit rail draws the distance to the metre and the lane progress as a bar
-/// a few hundred pixels wide, so a centimetre and a hundredth of the lane are
-/// both a decimal finer than anything visible.
+/// The pit rail draws the distance to the metre, and the lane progress as a bar
+/// a few hundred pixels wide — but the bar is one *leg* of the lane, so a
+/// hundredth of the lane is several pixels of step and the fill visibly ticks
+/// along instead of sliding. Progress is rounded like every other lap position
+/// instead, which is a decimal finer than the widest rail can show.
 ///
 /// Not held back by `Publications` like the per-car frames are: here an absent
 /// frame means *no target* — the car is nowhere near the pits — and the overlay
@@ -81,7 +83,7 @@ fn round_opt(value: &mut Option<f32>, decimals: u32) {
 /// no observer for a value that did not change.
 pub fn pit_target(frame: &mut PitTargetFrame) {
     frame.dist_m = round(frame.dist_m, DISTANCE_DP);
-    frame.lane_progress_pct = round(frame.lane_progress_pct, GAP_DP);
+    frame.lane_progress_pct = round(frame.lane_progress_pct, POSITION_DP);
 }
 
 pub fn car_positions(frame: &mut CarPositionsFrame) {

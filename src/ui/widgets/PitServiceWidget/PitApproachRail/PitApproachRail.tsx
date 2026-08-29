@@ -117,9 +117,9 @@ export const PitApproachRail = observer(
           <span className={styles.readout}>
             <span className={styles.value}>{distValue}</span>
 
-            <span className={styles.unit}>
-              {isImperial ? 'ft' : 'm'} → {targetLabel}
-            </span>
+            <span className={styles.unit}>{isImperial ? 'ft' : 'm'}</span>
+
+            <span className={styles.target}>→ {targetLabel}</span>
           </span>
         </div>
       </div>

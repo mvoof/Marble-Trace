@@ -1,3 +1,7 @@
+// One telemetry frame of catch-up: long enough to smooth the steps the sim
+// sends the progress in, short enough that the bar is never behind the car.
+$rail-glide: 120ms;
+
 // The rail carries its urgency through one variable so the readout, the fill
 // and the car marker never disagree about how close the target is.
 .rail {
@@ -45,7 +49,10 @@
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  // The readout sits at the near end, where the driver is: the far end carries
+  // the target cap and, on the way in, the braking mark — a number printed over
+  // either of them is a number read twice.
+  justify-content: flex-start;
   gap: sp(xxs);
   height: ws(18);
   width: 100%;
@@ -61,6 +68,9 @@
   bottom: 0;
   left: 0;
   background: rgba($race-blue, 0.35);
+  // The lane progress lands in steps, one telemetry frame at a time; a bar that
+  // catches up over a frame's worth of time reads as the car rolling.
+  transition: width $rail-glide linear;
 }
 
 // 100% of the rail is the target, so it is capped rather than patched.
@@ -90,6 +100,7 @@
   width: 2px;
   transform: translateX(-1px);
   background: $widget-text-primary;
+  transition: left $rail-glide linear;
 }
 
 // Sits on top of the lane, so it takes a shadow rather than a background: a
@@ -107,7 +118,8 @@
 .value {
   min-width: 4ch;
   font-family: $font-mono;
-  font-size: fs(xs);
+  font-size: fs(sm);
+  font-weight: 700;
   line-height: 1;
   color: var(--rail-accent);
   font-variant-numeric: tabular-nums;
@@ -116,8 +128,20 @@
 
 .unit {
   font-size: fs(xxxs);
+  opacity: 0.85;
   letter-spacing: 0.08em;
   color: $widget-label;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+// Which end the rail is measuring to. Quieter than the unit even: it changes
+// once a stop, and the bar underneath is already saying it.
+.target {
+  font-size: fs(xxxs);
+  letter-spacing: 0.08em;
+  color: $widget-label;
+  font-weight: 600;
+  opacity: 0.7;
   white-space: nowrap;
 }

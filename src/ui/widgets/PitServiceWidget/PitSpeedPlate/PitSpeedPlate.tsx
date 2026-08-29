@@ -42,7 +42,9 @@ export const PitSpeedPlate = observer(() => {
       <div className={`${styles.row} ${styles.rowReleased}`}>
         <span className={styles.label}>PIT EXIT</span>
 
-        <span className={styles.value}>GO!</span>
+        <span className={styles.readout}>
+          <span className={styles.value}>GO!</span>
+        </span>
       </div>
     );
   }
@@ -52,12 +54,14 @@ export const PitSpeedPlate = observer(() => {
       <div className={`${styles.row} ${styles.rowLimiter}`}>
         <span className={styles.label}>PIT LIMITER</span>
 
-        <span className={`${styles.value} ${styles.valueWide}`}>
-          {Math.round(speedMs * factor)}/
-          {limitMs > 0 ? Math.round(limitMs * factor) : '—'}
-        </span>
+        <span className={styles.readout}>
+          <span className={`${styles.value} ${styles.valueWide}`}>
+            {Math.round(speedMs * factor)}/
+            {limitMs > 0 ? Math.round(limitMs * factor) : '—'}
+          </span>
 
-        <span className={styles.unit}>{unit}</span>
+          <span className={styles.unit}>{unit}</span>
+        </span>
       </div>
     );
   }
@@ -106,13 +110,20 @@ export const PitSpeedPlate = observer(() => {
 
       <span className={styles.label}>PIT SPEED</span>
 
-      <span
-        className={`${styles.value} ${view.isOver ? styles.valueOver : styles.valueUnder}`}
-      >
-        {limitMs > 0 ? formatSpeedMargin(view.margin) : '—'}
-      </span>
+      {/*
+        Parked against the limit seam rather than against the row's own edge:
+        the number the driver reads and the line it is being read against sit
+        together, and the overspeed band past the seam stays clear of text.
+      */}
+      <span className={styles.readout}>
+        <span
+          className={`${styles.value} ${view.isOver ? styles.valueOver : styles.valueUnder}`}
+        >
+          {limitMs > 0 ? formatSpeedMargin(view.margin) : '—'}
+        </span>
 
-      <span className={styles.unit}>{unit}</span>
+        <span className={styles.unit}>{unit}</span>
+      </span>
     </div>
   );
 });
