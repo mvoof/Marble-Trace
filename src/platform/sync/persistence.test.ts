@@ -67,6 +67,30 @@ describe('restoreLayoutWidgets', () => {
     );
   });
 
+  it('drops a stale design size a locked-ratio widget was saved with', () => {
+    const shipped = DEFAULT_WIDGETS.find(
+      (widget) => widget.lockAspectRatio && widget.designWidth > 0
+    );
+
+    if (!shipped) {
+      throw new Error('the catalog ships no locked-ratio widget');
+    }
+
+    const restored = restoreLayoutWidgets([
+      {
+        ...shipped,
+        designWidth: shipped.designWidth + 20,
+        designHeight: shipped.designHeight + 120,
+        userSettings: { ...shipped.userSettings },
+      } as unknown as WidgetDefaultConfig,
+    ]);
+
+    const locked = restored.find((widget) => widget.id === shipped.id)!;
+
+    expect(locked.designWidth).toBe(shipped.designWidth);
+    expect(locked.designHeight).toBe(shipped.designHeight);
+  });
+
   it('leaves a widget the layout already had enabled alone', () => {
     const restored = restoreLayoutWidgets([
       savedChat({ ...settingsBag(shippedChat()), enabled: true }),
