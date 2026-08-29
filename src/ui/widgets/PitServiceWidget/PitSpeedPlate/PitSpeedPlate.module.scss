@@ -1,7 +1,8 @@
 // Where the allowed track ends and the overspeed one begins — the pit limit.
 // The readout is parked against it, so the seam is a number and a line rather
-// than two things at opposite ends of the row.
-$speed-limit-seam: 82%;
+// than two things at opposite ends of the row. Shared with the approach rail,
+// which lines its distance up on the same column.
+$speed-limit-seam: $pit-readout-seam;
 
 // The row is the gauge: two tracks side by side, the seam between them the pit
 // limit. Everything drawn in it is absolutely positioned behind the readout.

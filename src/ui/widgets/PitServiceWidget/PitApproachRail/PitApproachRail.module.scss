@@ -49,10 +49,6 @@ $rail-glide: 120ms;
   position: relative;
   display: flex;
   align-items: center;
-  // The readout sits at the near end, where the driver is: the far end carries
-  // the target cap and, on the way in, the braking mark — a number printed over
-  // either of them is a number read twice.
-  justify-content: flex-start;
   gap: sp(xxs);
   height: ws(18);
   width: 100%;
@@ -105,11 +101,17 @@ $rail-glide: 120ms;
 
 // Sits on top of the lane, so it takes a shadow rather than a background: a
 // plate behind it would hide the very fill it is standing on.
+//
+// It ends on the same column as the speed row's number one line above, which is
+// what lets the driver read both off one glance down the widget rather than
+// tracking a number that moves with the row it is in.
 .readout {
   position: relative;
   display: flex;
   align-items: baseline;
   gap: sp(xxxs);
+  margin-left: auto;
+  margin-right: 100% - $pit-readout-seam;
   text-shadow:
     0 0 3px #000,
     0 0 6px #000;
