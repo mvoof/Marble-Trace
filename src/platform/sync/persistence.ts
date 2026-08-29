@@ -65,10 +65,13 @@ const restoreWidgets = (
       saved.userSettings ?? {}
     );
 
+    const hasLockedRatio =
+      !!widgetDefaults.lockAspectRatio && widgetDefaults.designWidth > 0;
+
     // A locked ratio is part of the widget's shape, not a resize preference:
     // a file written before the widget locked it (or edited by hand) would
     // otherwise render at a size the widget cannot draw.
-    if (widgetDefaults.lockAspectRatio && widgetDefaults.designWidth > 0) {
+    if (hasLockedRatio) {
       const ratio = widgetDefaults.designHeight / widgetDefaults.designWidth;
 
       mergedUserSettings.currentHeight = Math.round(
@@ -76,12 +79,24 @@ const restoreWidgets = (
       );
     }
 
+    // A saved design size only means something for widgets that recompute it
+    // from their visible columns; for a locked ratio it *is* the ratio, so a
+    // stale pair from an older shape has to give way to the manifest — kept,
+    // it stretches the widget back into that shape on the next resize.
+    const designWidth = hasLockedRatio
+      ? widgetDefaults.designWidth
+      : (saved.designWidth ?? widgetDefaults.designWidth);
+
+    const designHeight = hasLockedRatio
+      ? widgetDefaults.designHeight
+      : (saved.designHeight ?? widgetDefaults.designHeight);
+
     result.push({
       id: widgetDefaults.id,
       label: widgetDefaults.label,
       description: widgetDefaults.description,
-      designWidth: saved.designWidth ?? widgetDefaults.designWidth,
-      designHeight: saved.designHeight ?? widgetDefaults.designHeight,
+      designWidth,
+      designHeight,
       userSettings: mergedUserSettings,
     });
   }
