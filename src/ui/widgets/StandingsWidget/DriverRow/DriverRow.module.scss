@@ -11,6 +11,18 @@
   &:hover:not(.driverRowPlayer) {
     background-color: $widget-row-hover;
   }
+
+  // Class marker, matching the one the class header carries. A pseudo-element
+  // rather than a border so the grid columns keep their measured width.
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--row-class-marker, transparent);
+  }
 }
 
 .rowOdd {

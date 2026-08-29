@@ -1,9 +1,14 @@
 import { observer } from 'mobx-react-lite';
-import { Trophy, Users, TriangleAlert } from 'lucide-react';
+import { Trophy, Users } from 'lucide-react';
 
-import { formatIRating, isNearIncidentLimit } from '@utils/driver';
+import { formatIRating } from '@utils/driver';
 import { resolveSessionLaps } from '@utils/telemetry-format';
 import { computeClassSof } from '@utils/driver';
+import {
+  buildLapProgress,
+  drawsClassHeaders,
+  isLapLimitedSession,
+} from '@ui/widgets/StandingsWidget/standings-utils';
 import {
   resolveSessionColorKey,
   type SessionColorKey,
@@ -11,14 +16,17 @@ import {
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { SessionClock } from '@ui/widgets/StandingsWidget/SessionClock/SessionClock';
-import { StatPill } from '@ui/shared/StatPill/StatPill';
 import styles from './SessionHeader.module.scss';
 import {
   useBackendComputedStore,
   useCarsStore,
   useSessionStore,
+  useStandingsWidgetStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+
+// Matches the icon size the footer's stat pills use.
+const STAT_ICON_SIZE_PX = 11;
 
 const SESSION_TYPE_CLASS: Record<SessionColorKey, string> = {
   practice: styles.sessionTypePractice,
@@ -31,6 +39,7 @@ export const SessionHeader = observer(() => {
   const { driverEntries: driverEntriesFrame } = useBackendComputedStore();
   const { sessionInfo, session } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
+  const standingsWidget = useStandingsWidgetStore();
   const widgetSettings = useWidgetSettingsStore();
 
   const settings =
@@ -44,12 +53,13 @@ export const SessionHeader = observer(() => {
   const driverEntries = driverEntriesFrame?.entries ?? [];
   const overallSof = computeClassSof(driverEntries);
 
-  const playerIncidents =
-    driverEntries.find((entry) => entry.isPlayer)?.incidents ?? 0;
-
-  // Null in practice and most hosted sessions, where incidents are uncapped.
-  const incidentLimit = sessionInfo?.incidentLimit ?? null;
-  const isNearLimit = isNearIncidentLimit(playerIncidents, incidentLimit);
+  // Per-class headers own the SOF in those view modes.
+  const showSof =
+    settings.showSOF &&
+    !drawsClassHeaders(
+      settings.viewMode,
+      standingsWidget.allClassGroups.length
+    );
 
   const sessions = sessionInfoData?.sessions;
   const currentSession = sessions?.[sessionInfoData?.currentSessionNum ?? 0];
@@ -69,10 +79,19 @@ export const SessionHeader = observer(() => {
       )
     : null;
 
+  // A timed race has its remaining laps estimated from the leader's best lap —
+  // shown as "~", and never allowed to announce a final lap.
+  const isLapLimited = isLapLimitedSession(currentSession?.sessionLaps);
+  const lapProgress = buildLapProgress(leaderLap, totalLaps, !isLapLimited);
+
   return (
     <div className={styles.sessionHeader}>
       <div className={styles.sessionLeft}>
         {trackName && <span className={styles.trackName}>{trackName}</span>}
+
+        {trackName && currentSession && (
+          <span className={styles.divider} aria-hidden="true" />
+        )}
 
         {currentSession && (
           <span
@@ -84,41 +103,56 @@ export const SessionHeader = observer(() => {
           </span>
         )}
 
-        {leaderLap !== null && (
-          <span className={styles.sessionLaps}>
-            {totalLaps && totalLaps.toLowerCase() !== 'unlimited'
-              ? `LAP: ${leaderLap}/${totalLaps}`
-              : `LAP: ${leaderLap}`}
-          </span>
+        {settings.showTotalDrivers && (
+          <>
+            <span className={styles.divider} aria-hidden="true" />
+
+            <span className={styles.stat}>
+              <Users size={STAT_ICON_SIZE_PX} className={styles.statIcon} />
+              <span className={styles.statValue}>{driverEntries.length}</span>
+            </span>
+          </>
         )}
 
-        <SessionClock />
+        {showSof && (
+          <>
+            <span className={styles.divider} aria-hidden="true" />
+
+            <span className={styles.stat}>
+              <Trophy
+                size={STAT_ICON_SIZE_PX}
+                className={`${styles.statIcon} ${styles.statIconAccent}`}
+              />
+
+              <span className={styles.statValue}>
+                {formatIRating(overallSof)}
+              </span>
+            </span>
+          </>
+        )}
       </div>
 
       <div className={styles.sessionRight}>
-        {settings.showSOF && (
-          <StatPill icon={Trophy} iconTone="accent" label="SOF">
-            {formatIRating(overallSof)}
-          </StatPill>
-        )}
-
-        {settings.showTotalDrivers && (
-          <StatPill icon={Users}>{driverEntries.length}</StatPill>
-        )}
-
-        {settings.showIncidentsBadge && (
-          <StatPill
-            icon={TriangleAlert}
-            iconTone={isNearLimit ? 'danger' : 'warning'}
-            label="INC"
-            valueDanger={isNearLimit}
-            pulse={isNearLimit}
+        {lapProgress && (
+          <span
+            className={`${styles.laps} ${isLapLimited ? styles.lapsLead : styles.lapsMuted} ${lapProgress.isFinalLap ? styles.lapsFinal : ''}`}
           >
-            {incidentLimit === null
-              ? `${playerIncidents}x`
-              : `${playerIncidents}/${incidentLimit}x`}
-          </StatPill>
+            <span className={styles.statLabel}>LAP</span>
+
+            <span
+              className={styles.lapsValue}
+              style={{ minWidth: `${lapProgress.widthChars}ch` }}
+            >
+              {lapProgress.value}
+            </span>
+          </span>
         )}
+
+        {lapProgress && settings.showSessionTime && (
+          <span className={styles.divider} aria-hidden="true" />
+        )}
+
+        <SessionClock />
       </div>
     </div>
   );

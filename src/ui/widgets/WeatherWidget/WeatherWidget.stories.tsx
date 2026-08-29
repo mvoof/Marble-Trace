@@ -51,12 +51,12 @@ const meta: Meta<StoryArgs> = {
       store.units.setSystem(args.system);
 
       store.environment.updateEnvironment({
-        air_temp: args.airTempC,
-        track_temp: args.trackTempC,
-        wind_vel: args.windVelMps,
-        wind_dir: args.windDirRad,
-        relative_humidity: args.humidity / 100,
-        track_wetness: args.trackWetness,
+        airTemp: args.airTempC,
+        trackTemp: args.trackTempC,
+        windVel: args.windVelMps,
+        windDir: args.windDirRad,
+        relativeHumidity: args.humidity / 100,
+        trackWetness: args.trackWetness,
       } as EnvironmentFrame);
 
       store.session.updateSessionInfo({

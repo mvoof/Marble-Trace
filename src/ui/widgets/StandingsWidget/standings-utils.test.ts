@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import type { DriverEntry } from '@/types/bindings';
 import {
+  buildLapProgress,
   buildVisibleRows,
+  drawsClassHeaders,
+  isLapLimitedSession,
   getStandingsGap,
   maxScrollOffset,
   resolveBestLapDisplay,
@@ -214,5 +217,61 @@ describe('resolveBestLapDisplay', () => {
       time: null,
       isQualifying: false,
     });
+  });
+});
+
+describe('isLapLimitedSession', () => {
+  it('is true only for a numeric lap count', () => {
+    expect(isLapLimitedSession('45')).toBe(true);
+    expect(isLapLimitedSession('unlimited')).toBe(false);
+    expect(isLapLimitedSession(null)).toBe(false);
+    expect(isLapLimitedSession(undefined)).toBe(false);
+  });
+});
+
+describe('buildLapProgress', () => {
+  it('returns nothing before any car has a lap', () => {
+    expect(buildLapProgress(null, '45', false)).toBeNull();
+  });
+
+  it('shows the leader lap alone when the session has no length', () => {
+    expect(buildLapProgress(7, null, true)).toEqual({
+      value: '7',
+      isFinalLap: false,
+      widthChars: 1,
+    });
+  });
+
+  it('announces the final lap of a lap-limited race', () => {
+    expect(buildLapProgress(45, '45', false)).toEqual({
+      value: 'FINAL',
+      isFinalLap: true,
+      widthChars: 5,
+    });
+  });
+
+  it('marks an estimated total and never calls it a final lap', () => {
+    expect(buildLapProgress(20, '20', true)).toEqual({
+      value: '20/~20',
+      isFinalLap: false,
+      widthChars: 6,
+    });
+  });
+
+  it('reserves the width of the value it renders', () => {
+    expect(buildLapProgress(9, '45', false)).toEqual({
+      value: '9/45',
+      isFinalLap: false,
+      widthChars: 5,
+    });
+  });
+});
+
+describe('drawsClassHeaders', () => {
+  it('is true only where the table renders a class header of its own', () => {
+    expect(drawsClassHeaders('grouped', 2)).toBe(true);
+    expect(drawsClassHeaders('cycling', 1)).toBe(true);
+    expect(drawsClassHeaders('all', 2)).toBe(false);
+    expect(drawsClassHeaders('grouped', 0)).toBe(false);
   });
 });
