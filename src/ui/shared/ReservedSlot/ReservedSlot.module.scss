@@ -1,0 +1,28 @@
+.slot {
+  border: 1px dashed rgba(255, 255, 255, 0.35);
+  border-radius: radius(sm);
+  background: rgba(255, 255, 255, 0.04);
+
+  // --wfs is unitless, so the design-scale height is turned into px here the
+  // same way ws() would do it inside the block being stood in for.
+  height: calc(var(--reserved-height) * 1px * var(--wfs, 1));
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.label {
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $widget-text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 sp(xxs);
+}
