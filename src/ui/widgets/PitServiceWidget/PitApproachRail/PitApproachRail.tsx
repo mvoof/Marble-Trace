@@ -10,9 +10,18 @@ import { buildPitApproachView } from '@ui/widgets/PitServiceWidget/pit-approach'
 
 import { METERS_TO_FEET } from '@utils/telemetry-format';
 
+import { ReservedSlot } from '@ui/shared/ReservedSlot/ReservedSlot';
+
 import styles from './PitApproachRail.module.scss';
 
 const PCT = 100;
+
+/**
+ * The inline rail is one lane and nothing else — `.track` under `.railInline`
+ * is `ws(18)`, and the readout is drawn on top of it rather than above it. Kept
+ * as a number here so the slot the rail leaves behind is exactly the rail.
+ */
+const INLINE_RAIL_HEIGHT_PX = 18;
 
 interface PitApproachRailProps {
   placement: PitApproachPlacement;
@@ -65,8 +74,13 @@ export const PitApproachRail = observer(
       : null;
     const isApproach = isIdle && entryDistM !== null;
 
+    // The lane goes away, but not the room it stands in: the inline rail
+    // appears on the way to the box, and a widget that grew a row at that
+    // moment would be one the driver placed against a different bottom edge.
     if (isIdle && !isVertical && !isApproach) {
-      return null;
+      return (
+        <ReservedSlot height={INLINE_RAIL_HEIGHT_PX} label="Pit approach" />
+      );
     }
 
     const isImperial = system === 'imperial';

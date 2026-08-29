@@ -7,10 +7,13 @@ import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { componentForWidget } from '@ui/widgets/registry';
 import { WidgetContainer } from '@ui/app/overlay/components/WidgetContainer/WidgetContainer';
 import { WidgetPicker } from '@ui/app/overlay/components/WidgetPicker/WidgetPicker';
+import { usePreviewContentStore } from '@ui/app/preview-content-store';
 import styles from './OverlayCanvas.module.scss';
 import {
+  RootStoreContext,
   useAppSettingsStore,
   useBindingsStore,
+  useSimStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
 
@@ -18,6 +21,7 @@ export const OverlayCanvas = observer(() => {
   const appSettings = useAppSettingsStore();
   const widgetSettings = useWidgetSettingsStore();
   const bindings = useBindingsStore();
+  const simStore = useSimStore();
   const { t } = useTranslation('main-app');
 
   // Both modes hand the mouse to the overlay; drag mode also unlocks widget moving.
@@ -31,6 +35,13 @@ export const OverlayCanvas = observer(() => {
 
   const { dragMode } = appSettings;
   const { hideAllWidgets } = appSettings.appSettings;
+
+  // Placing widgets with the game closed, the real stores are empty and every
+  // widget draws a fraction of its running self. Sample telemetry stands in for
+  // the session so the driver places the widget at the size it will be.
+  const previewStore = usePreviewContentStore(
+    dragMode && simStore.status !== 'connected'
+  );
 
   const showInteractBanner = appSettings.interactMode;
 
@@ -102,7 +113,13 @@ export const OverlayCanvas = observer(() => {
 
           return (
             <WidgetContainer key={widget.id} widgetId={widget.id}>
-              <WidgetComponent />
+              {previewStore ? (
+                <RootStoreContext.Provider value={previewStore}>
+                  <WidgetComponent />
+                </RootStoreContext.Provider>
+              ) : (
+                <WidgetComponent />
+              )}
             </WidgetContainer>
           );
         })}
