@@ -520,3 +520,77 @@ export const glowIntensity = (clearance: number, glowRange: number): number => {
 
   return Math.max(0, Math.min(1, 1 - clearance / glowRange));
 };
+
+/**
+ * The plate spans the widget, so the widget's natural width *is* the plate's:
+ * every column the user switches off has to leave with its width, or the name
+ * column simply swallows it and the plate keeps the length it had with the
+ * information on it.
+ *
+ * The numbers mirror the `ch` template in `BattleRow.module.scss` at the row's
+ * own `wfs(16)` — one `ch` of Rajdhani is half its em — plus the margins each
+ * column carries. They do not have to be exact: the name column is the only
+ * flexible one, so any drift lands there rather than on a number.
+ */
+const CH_PX = 8;
+
+/** Number tab: 5ch of digits inside sp(md) padding on both sides. */
+const NUMBER_COL_PX = 5 * CH_PX + 20;
+
+/** Class slab: 8ch of badge plus its sp(md) margin. */
+const CLASS_COL_PX = 8 * CH_PX + 10;
+
+/**
+ * With the slab gone the name takes its own air back instead (`.rowNoClass`
+ * pads the identity by sp(md)), so switching the class off is worth the slab
+ * minus that padding.
+ */
+const NO_CLASS_PAD_PX = 10;
+
+/** Brand chip: 6ch plus its sp(sm) margin. */
+const BRAND_COL_PX = 6 * CH_PX + 8;
+
+/** Distance: 5ch of value and unit plus the sp(sm) that keeps it off the gap. */
+const DISTANCE_COL_PX = 5 * CH_PX + 8;
+
+/** Laps: 3.5ch, opened by the widget whenever the user allows the column. */
+const LAP_COL_PX = 3.5 * CH_PX;
+
+/** The gap is never optional — it is the reason the widget exists. */
+const GAP_COL_PX = 7 * CH_PX;
+
+/** The plate's own trailing padding, sp(lg). */
+const ROW_PAD_RIGHT_PX = 12;
+
+/**
+ * A name long enough to read at speed and no longer — including the sliver of
+ * air that keeps a clipped one off the number beside it.
+ *
+ * The name is the plate's only flexible column, so it is where every pixel the
+ * widget is not spending on a fixed column ends up. Sized generously it does
+ * not look generous; it looks like a hole between the surname and the laps,
+ * because the name is set from the left. So the column is cut to the longest
+ * name the mode can actually produce and anything past it is ellipsed — a
+ * surname the eye reads by its first syllables anyway.
+ */
+const NAME_COL_PX: Record<CloseBattleWidgetSettings['nameMode'], number> = {
+  surname: 78,
+  initial: 96,
+  full: 128,
+};
+
+export const computeCloseBattleDesignWidth = (
+  settings: CloseBattleWidgetSettings
+): number => {
+  const columns =
+    NUMBER_COL_PX +
+    (settings.showClassBadge ? CLASS_COL_PX : NO_CLASS_PAD_PX) +
+    (settings.showBrand ? BRAND_COL_PX : 0) +
+    (settings.showDistance ? DISTANCE_COL_PX : 0) +
+    (settings.showLapGap ? LAP_COL_PX : 0) +
+    GAP_COL_PX;
+
+  return Math.round(
+    columns + NAME_COL_PX[settings.nameMode] + ROW_PAD_RIGHT_PX
+  );
+};

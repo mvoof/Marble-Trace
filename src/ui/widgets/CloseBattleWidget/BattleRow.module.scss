@@ -54,7 +54,8 @@ $plate-move-duration: 140ms;
   grid-template-columns:
     [number-col] minmax(3ch, auto) [class-col] var(--class-col, 8ch)
     [brand-col] var(--brand-col, 0ch) [name-col] minmax(0, 1fr)
-    [distance-col] 5ch [lap-col] var(--lap-col, 0ch) [gap-col] 7ch;
+    [distance-col] var(--distance-col, 5ch) [lap-col] var(--lap-col, 0ch)
+    [gap-col] 7ch;
   align-items: center;
 
   // Every column above is measured in `ch`, and `ch` is read from *this*
@@ -69,7 +70,7 @@ $plate-move-duration: 140ms;
   // No gap before the class block: the number and the class are one unit at the
   // left of the plate, separated by a shadow rather than by air.
   column-gap: 0;
-  height: ws(40);
+  height: ws(30);
   padding-right: sp(lg);
   border-radius: radius(lg);
   width: calc(100% - var(--stack-index, 0) * #{ws(26)});
@@ -101,6 +102,13 @@ $plate-move-duration: 140ms;
   .identity {
     padding-left: sp(md);
   }
+}
+
+// Metres are the first thing a driver switches off once the gap alone tells
+// them enough, so the column leaves with them rather than staying behind as a
+// blank the name would silently absorb — the plate is meant to get shorter.
+.rowNoDistance {
+  --distance-col: 0ch;
 }
 
 // The make sits with the identity rather than with the numbers: it answers
@@ -241,6 +249,11 @@ $plate-move-duration: 140ms;
   align-items: center;
   justify-content: flex-start;
   gap: sp(sm);
+
+  // The column is cut to the longest name the mode can produce, so a longer one
+  // ends in an ellipsis — and an ellipsis that touches the number beside it
+  // reads as part of it. This is the air that keeps them apart.
+  padding-right: sp(sm);
   overflow: hidden;
 }
 

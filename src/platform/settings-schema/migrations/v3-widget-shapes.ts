@@ -42,6 +42,15 @@ import { asArray, asObject, dropWidgetSettings, mapEveryWidget } from '../blob';
  * width from the manifest's base, so the first time they moved the rail the
  * widget would jump to a size they never asked for.
  *
+ * **4. Close Battle's width follows its columns.** Its plate spans the widget,
+ * and every optional column on it — the class slab, the make, the metres, the
+ * lap count — used to leave its width behind for the name to swallow, so a
+ * driver who switched everything off got the same 440 px plate with a hole in
+ * it. The width is now derived from the visible columns, which the widget
+ * recomputes whenever one is toggled — but only on the toggle, so a file whose
+ * columns were switched off before this release would keep the stale 440
+ * forever. Here it is rebased once, at the scale the driver had set.
+ *
  * Every literal here is frozen on purpose: this step has to keep meaning "move
  * carLength, square up the radar, rescale the pit box" however the widgets are
  * named or defaulted later.
@@ -56,6 +65,73 @@ const PIT_OLD_WIDTH_PX = 300;
 const PIT_OLD_SIDE_RAIL_WIDTH_PX = 360;
 const PIT_NEW_WIDTH_PX = 235;
 const PIT_NEW_HEIGHT_PX = 330;
+
+const CLOSE_BATTLE_ID = 'close-battle';
+const CLOSE_BATTLE_OLD_WIDTH_PX = 440;
+
+/**
+ * The plate's columns in px at design scale, frozen at the shape they had when
+ * this step was written. They sum to the old 440 on the shipped defaults, which
+ * is what makes the rebase a no-op for everyone who never touched a toggle.
+ */
+const CLOSE_BATTLE_COLUMNS_PX = {
+  fixed: 40 + 20 + 7 * 8 + 12,
+  classSlab: 8 * 8 + 10,
+  noClassPad: 10,
+  brand: 6 * 8 + 8,
+  distance: 5 * 8 + 8,
+  laps: 3.5 * 8,
+};
+
+/** The name column, per name mode. A file with no mode was shipped 'initial'. */
+const CLOSE_BATTLE_NAME_PX: Record<string, number> = {
+  surname: 78,
+  initial: 96,
+  full: 128,
+};
+
+/** A toggle absent from an old file was on — that is what every default was. */
+const isOn = (value: unknown): boolean => value !== false;
+
+const closeBattleWidth = (settings: SettingsBlob): number => {
+  const name =
+    CLOSE_BATTLE_NAME_PX[String(settings.nameMode)] ??
+    CLOSE_BATTLE_NAME_PX.initial;
+
+  const columns =
+    CLOSE_BATTLE_COLUMNS_PX.fixed +
+    name +
+    (isOn(settings.showClassBadge)
+      ? CLOSE_BATTLE_COLUMNS_PX.classSlab
+      : CLOSE_BATTLE_COLUMNS_PX.noClassPad) +
+    (settings.showBrand === true ? CLOSE_BATTLE_COLUMNS_PX.brand : 0) +
+    (isOn(settings.showDistance) ? CLOSE_BATTLE_COLUMNS_PX.distance : 0) +
+    (isOn(settings.showLapGap) ? CLOSE_BATTLE_COLUMNS_PX.laps : 0);
+
+  return Math.round(columns);
+};
+
+/**
+ * Width only: the axis the plates stand on owns the height, and it does not
+ * change with a column.
+ */
+const rebaseCloseBattle = (
+  widget: SettingsBlob,
+  settings: SettingsBlob
+): SettingsBlob => {
+  const oldWidth = asNumber(widget.designWidth) ?? CLOSE_BATTLE_OLD_WIDTH_PX;
+  const scale = (asNumber(settings.currentWidth) ?? oldWidth) / oldWidth;
+  const newWidth = closeBattleWidth(settings);
+
+  return {
+    ...widget,
+    designWidth: newWidth,
+    userSettings: {
+      ...settings,
+      currentWidth: Math.round(newWidth * scale),
+    },
+  };
+};
 
 const asNumber = (value: unknown): number | null =>
   typeof value === 'number' && Number.isFinite(value) && value > 0
@@ -125,7 +201,7 @@ const readCarLength = (blob: SettingsBlob): number | undefined => {
 export const v3WidgetShapes: Migration = {
   to: 3,
   describe:
-    'move the car length to app settings, square up the radar, rescale the pit box',
+    'move the car length to app settings, square up the radar, rescale the pit box, rebase Close Battle on its columns',
   migrate: (blob: SettingsBlob): SettingsBlob => {
     const carLength = readCarLength(blob);
 
@@ -144,6 +220,10 @@ export const v3WidgetShapes: Migration = {
 
     return mapEveryWidget(withoutCarLength, (widgets) =>
       widgets.map((widget) => {
+        if (widget?.id === CLOSE_BATTLE_ID) {
+          return rebaseCloseBattle(widget, asObject(widget.userSettings) ?? {});
+        }
+
         if (widget?.id === PIT_SERVICE_ID) {
           return rescalePitService(widget, asObject(widget.userSettings) ?? {});
         }

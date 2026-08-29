@@ -18,13 +18,6 @@ export const CloseBattleWidget = observer(() => {
   const settings =
     widgetSettings.getSettings<CloseBattleWidgetSettings>('close-battle');
 
-  // The lap column is opened for the widget, not for the plate that needs it:
-  // one plate of a deck carrying a column its neighbour lacks would put the
-  // same number at two different places on two rows.
-  const showLaps =
-    settings.showLapGap &&
-    closeBattle.opponents.some((opponent) => opponent.lapsApart > 0);
-
   // Nobody in the threshold means nothing to fight over: the axis alone is
   // permanent noise on the screen, so the widget leaves entirely.
   if (!closeBattle.isVisible) {
@@ -47,7 +40,6 @@ export const CloseBattleWidget = observer(() => {
                 opponent={opponent}
                 topPct={group.topPct}
                 stackIndex={stackIndex}
-                showLaps={showLaps}
               />
             ))
           )}
