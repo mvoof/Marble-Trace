@@ -149,7 +149,9 @@ async fn resolve_video_id(target: &str) -> Result<String, String> {
 }
 
 struct ChatSession {
-    api_key: String,
+    /// YouTube's public INNERTUBE key, read from the live_chat page HTML — the
+    /// same value every anonymous visitor gets, not a user credential.
+    innertube_key: String,
     context: serde_json::Value,
     continuation: String,
 }
@@ -185,7 +187,7 @@ async fn open_session(video_id: &str) -> Result<ChatSession, String> {
         .await
         .map_err(|error| format!("live_chat body: {error}"))?;
 
-    let api_key = extract_string_after(&body, "\"INNERTUBE_API_KEY\":")
+    let innertube_key = extract_string_after(&body, "\"INNERTUBE_API_KEY\":")
         .ok_or_else(|| "no INNERTUBE_API_KEY on the page".to_string())?;
 
     // Reusing the page's whole context object keeps the session valid far
@@ -206,7 +208,7 @@ async fn open_session(video_id: &str) -> Result<ChatSession, String> {
         find_continuation(&initial).ok_or_else(|| "no continuation token".to_string())?;
 
     Ok(ChatSession {
-        api_key,
+        innertube_key,
         context,
         continuation,
     })
@@ -558,7 +560,7 @@ pub async fn run(app: AppHandle, service: Arc<ChatServiceState>, generation: u64
                 break;
             }
 
-            let url = format!("{CHAT_ENDPOINT}?key={}", session.api_key);
+            let url = format!("{CHAT_ENDPOINT}?key={}", session.innertube_key);
             let body = serde_json::json!({
                 "context": session.context,
                 "continuation": session.continuation,
