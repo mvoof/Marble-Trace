@@ -289,12 +289,7 @@ pub fn scan_installed() -> Vec<DetectedApp> {
                 .get_value::<String, _>("DisplayIcon")
                 .ok()
                 .and_then(|icon| executable_from_icon(&icon))
-                .or_else(|| {
-                    entry
-                        .get_value::<String, _>("InstallLocation")
-                        .ok()
-                        .and_then(|location| executable_from_folder(&location, &display_name))
-                });
+                .or_else(|| executable_from_folder(&install_location, &display_name));
 
             let Some(executable) = executable else {
                 continue;

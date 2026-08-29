@@ -221,8 +221,21 @@ mod platform {
                 .collect()
         };
 
+        // `split_args` took the quotes off; the shell takes a single string and
+        // would split a path argument back apart at its spaces without them.
+        let quoted: Vec<String> = args
+            .iter()
+            .map(|argument| {
+                if argument.contains(' ') {
+                    format!("\"{argument}\"")
+                } else {
+                    argument.clone()
+                }
+            })
+            .collect();
+
         let file = to_wide(path);
-        let parameters = to_wide(&args.join(" "));
+        let parameters = to_wide(&quoted.join(" "));
         let directory = to_wide(
             &std::path::Path::new(path)
                 .parent()

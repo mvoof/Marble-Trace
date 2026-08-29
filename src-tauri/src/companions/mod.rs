@@ -173,13 +173,18 @@ pub fn close(app: &CompanionApp, state: &CompanionsState) -> Result<bool, String
         return Ok(false);
     };
 
-    state.owned.forget(&app.id);
-
     if !process::is_alive(pid) {
+        state.owned.forget(&app.id);
+
         return Ok(false);
     }
 
+    // Dropped only once the process is really gone. Forgetting it first would
+    // turn a refused termination — an elevated program, a handle we cannot
+    // open — into an instance nothing may retry and the exit hook ignores.
     process::terminate(pid)?;
+
+    state.owned.forget(&app.id);
 
     tracing::info!(app = %app.name, pid, "companion app closed");
 

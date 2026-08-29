@@ -62,6 +62,12 @@ export class CompanionAppsStore {
   private pollTimer: ReturnType<typeof setInterval> | null = null;
   private pollers = 0;
 
+  /** The startup launches, while they are still running. */
+  private startup: Promise<void> | null = null;
+
+  /** Set once the app is on its way out; no further program may be started. */
+  private stopping = false;
+
   constructor(private root: RootStore) {
     makeAutoObservable(this, {}, { autoBind: true });
   }
@@ -82,14 +88,27 @@ export class CompanionAppsStore {
    * Starts everything marked to launch with the app. Called once, after the
    * settings have been hydrated — before that the list is still empty.
    */
-  async launchOnStart() {
+  launchOnStart(): Promise<void> {
+    this.startup = this.runStartupLaunches();
+
+    return this.startup;
+  }
+
+  private async runStartupLaunches() {
     for (const app of this.apps) {
+      // Startup takes seconds — long enough for the user to close the window
+      // in the middle of it. Anything started past that point would outlive
+      // the close that was meant to take it down with the app.
+      if (this.stopping) break;
+
       if (!app.launchWithApp) continue;
 
       await this.launch(app.id);
 
       await new Promise((resolve) => setTimeout(resolve, LAUNCH_SPACING_MS));
     }
+
+    if (this.stopping) return;
 
     await this.refreshStatuses();
   }
@@ -322,14 +341,26 @@ export class CompanionAppsStore {
    * takes a moment to exit would outlive the app that was told to close it.
    */
   async closeOnExit(): Promise<string[]> {
-    if (this.apps.every((app) => !app.closeWithApp)) return [];
+    runInAction(() => {
+      this.stopping = true;
+    });
+
+    // A launch still in flight has to land before anything is counted, or the
+    // program it starts is the one nothing closes.
+    await this.startup?.catch(() => undefined);
+
+    const marked = this.apps.filter((app) => app.closeWithApp);
+
+    if (marked.length === 0) return [];
 
     try {
       return await closeCompanionApps(this.apps.map((app) => ({ ...app })));
     } catch (error) {
       console.error('Failed to close companion apps:', error);
 
-      return [];
+      // A failed call closed nothing, so every marked program is still up.
+      // Reporting none would say the opposite of what happened.
+      return marked.map((app) => app.name);
     }
   }
 

@@ -96,7 +96,13 @@ export type UpdateStatus =
   | 'error';
 
 export class AppSettingsStore {
-  appSettings: AppSettings = { ...DEFAULT_APP_SETTINGS };
+  // The spread is shallow, so the one array among the defaults has to be copied
+  // by hand — a store that pushed into it would be editing the defaults, and
+  // every other store built from them.
+  appSettings: AppSettings = {
+    ...DEFAULT_APP_SETTINGS,
+    companionApps: [...DEFAULT_APP_SETTINGS.companionApps],
+  };
 
   /**
    * Set when `settings.json` could not be brought to the current schema — it
