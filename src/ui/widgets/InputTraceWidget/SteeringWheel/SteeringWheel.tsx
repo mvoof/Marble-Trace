@@ -7,6 +7,7 @@ import {
 import type { InputTraceSettings } from '@/types/widget-settings';
 import { steeringAngleDeg } from '@utils/car-signals';
 import Logo from '@assets/logo.svg?react';
+import { getWheelArt } from './WheelArt';
 import styles from './SteeringWheel.module.scss';
 
 const WheelCenter = observer(() => {
@@ -23,6 +24,9 @@ const WheelCenter = observer(() => {
   const gearLabel = gear === 0 ? 'N' : gear === -1 ? 'R' : String(gear);
 
   switch (settings.steeringCenterDisplay) {
+    case 'none':
+      return null;
+
     case 'gear':
       return <span className={styles.centerText}>{gearLabel}</span>;
 
@@ -73,16 +77,39 @@ export const SteeringWheel = observer(() => {
   }
 
   const rawAngle = telemetry.carDynamics?.steering_wheel_angle ?? 0;
+  const WheelArt = getWheelArt(settings.steeringWheelStyle);
+  const rotation = `rotate(${-rawAngle}rad)`;
+
+  // A traced wheel turns as a whole, so it replaces both the groove it would
+  // hide and the rim marker it already reads as.
+  if (WheelArt) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.dial}>
+          <div className={styles.artRotator} style={{ transform: rotation }}>
+            <WheelArt className={styles.art} />
+          </div>
+
+          <div
+            className={
+              settings.steeringCenterPlate
+                ? `${styles.artCenter} ${styles.artCenterPlate}`
+                : styles.artCenter
+            }
+          >
+            <WheelCenter />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
       <div className={styles.dial}>
         <div className={styles.groove} />
 
-        <div
-          className={styles.rotator}
-          style={{ transform: `rotate(${-rawAngle}rad)` }}
-        >
+        <div className={styles.rotator} style={{ transform: rotation }}>
           <div className={styles.indicatorMarker} />
         </div>
 

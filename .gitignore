@@ -40,3 +40,7 @@ storybook-static
 
 # Telemetry snapshots (captured from live iRacing sessions)
 # test-data/*.json — tracked in git for CI typecheck / Storybook
+
+# Local python env for scripts/trace-wheel-svg.py
+.venv/
+__pycache__/

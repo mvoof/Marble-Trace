@@ -109,6 +109,20 @@ A file this build cannot read is left untouched and the app refuses to write ove
 
 See **[docs/settings-schema.md](docs/settings-schema.md)** for the load pipeline, the full "when do I need a migration" split, and how to write and test one.
 
+## Steering wheel silhouettes
+
+The Input Trace widget's steering block can draw a wheel silhouette instead of the built-in dial. Each one is a single SVG in `src/assets/wheels/`, traced from a product photograph by `scripts/trace-wheel-svg.py`:
+
+```bash
+npm run wheel:trace -- <photo.jpg> <asset-name>
+```
+
+The script declares its own Python dependencies inline and is run through [uv](https://docs.astral.sh/uv/), so there is no install step and no Python environment inside the repo — you only need uv on `PATH` (`winget install --id=astral-sh.uv -e`).
+
+The photo has to be a **head-on shot of a dark wheel on a plain light background** — watermarks, buttons and screens are handled, a cockpit shot or an angled one is not. Adding the traced file to the picker is three one-line registrations and needs no settings migration.
+
+See **[docs/steering-wheel-assets.md](docs/steering-wheel-assets.md)** for the photo requirements in full, installing uv, the flags to reach for when a trace comes out wrong, and the three files to register it in.
+
 ## Car class badges
 
 Everything class-related — constants, resolution logic, tests — lives in `src-tauri/src/sources/iracing/car_classes.rs`. `session_parse.rs` only calls `apply_class_badges()` and `normalize_class_color()`.

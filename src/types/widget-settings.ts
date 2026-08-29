@@ -108,14 +108,34 @@ export interface RaceDashWidgetSettings {
 }
 
 export type SteeringCenterDisplay =
+  | 'none'
   | 'logo'
   | 'gear'
   | 'speed'
   | 'angle'
   | 'speed-gear';
 
+/**
+ * `default` is the drawn dial with the running rim marker; every other value
+ * names a traced wheel silhouette in `SteeringWheel/wheel-styles.ts`.
+ */
+export type SteeringWheelStyle =
+  | 'default'
+  | 'gt-round'
+  | 'flat-bottom'
+  | 'bagel'
+  | 'formula-open'
+  | 'formula-compact'
+  | 'formula-conspit'
+  | 'formula-conspit-pro'
+  | 'formula-gt-hybrid';
+
 export interface InputTraceSettings {
   steeringCenterDisplay: SteeringCenterDisplay;
+  steeringWheelStyle: SteeringWheelStyle;
+  /** Round backdrop under the readout. Only the wheel silhouettes offer it —
+   *  the drawn dial has a centre pad of its own. */
+  steeringCenterPlate: boolean;
   showThrottle: boolean;
   showBrake: boolean;
   showClutch: boolean;

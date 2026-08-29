@@ -153,3 +153,70 @@ $groove-px: 8;
   color: rgba(255, 255, 255, 0.7);
   line-height: 1;
 }
+
+/* A traced wheel is wider than it is tall, so it turns without the circular
+   clip the drawn dial's rotator uses. */
+.artRotator {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* The wheel is drawn as a body, not a stencil: the same dark surface the dial's
+   centre pad uses, outlined so the shape still reads against a bright track.
+   The outline sits at the secondary text step — at full contrast it would make
+   the wheel the brightest thing in the widget, which it is not.
+   The stroke is device-width rather than viewBox-width, so wheels traced from
+   photos of different resolutions all draw the same line. */
+.art {
+  width: 100%;
+  height: 100%;
+  color: $widget-text-secondary;
+
+  path {
+    fill: rgba(22, 22, 28, 0.92);
+    stroke: currentColor;
+    stroke-width: 1.25px;
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+/* By default the readout sits straight on the wheel's dark body — the
+   silhouette is already the backdrop the drawn dial needed a pad for. Where a
+   value overhangs a gap between the spokes it would be left on whatever is
+   behind the overlay, so `steeringCenterPlate` puts a disc back under it. */
+.artCenter {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 52%;
+  height: 34%;
+
+  .centerText {
+    font-size: wfs($groove-px * 2.2);
+  }
+
+  .speedGearSpeed,
+  .speedGearGear {
+    font-size: wfs($groove-px * 1.7);
+  }
+}
+
+/* Round, unlike the drawn dial's pad, because it sits on a wheel rather than
+   filling one — a circle centred on the hub reads as part of the wheel. It
+   borrows the dial's own hub gradient: flat fill in the wheel's body colour
+   would do the hiding but disappear into the silhouette. */
+.artCenterPlate {
+  width: 42%;
+  height: 42%;
+  border-radius: 50%;
+  border: 1px solid #40404618;
+  background: radial-gradient(circle, #25252b 0%, #16161c 100%);
+}
