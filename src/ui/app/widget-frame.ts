@@ -73,3 +73,55 @@ export const widgetFrameStyle = ({
     ['--widget-border']: borderColor,
   } as CSSProperties;
 };
+
+export type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
+
+const ALL_DIRECTIONS: ResizeDirection[] = [
+  'n',
+  's',
+  'e',
+  'w',
+  'ne',
+  'nw',
+  'se',
+  'sw',
+];
+
+const HORIZONTAL_DIRECTIONS: ResizeDirection[] = ['e', 'w'];
+
+// Aspect-locked widgets keep the corners so they can be scaled up as a whole,
+// but never the n/s edges — height is derived, not dragged.
+const LOCKED_RATIO_DIRECTIONS: ResizeDirection[] = [
+  'e',
+  'w',
+  'ne',
+  'nw',
+  'se',
+  'sw',
+];
+
+interface ResizeConstraints {
+  autoHeight?: boolean;
+  lockAspectRatio?: boolean;
+  scaleFromHeight?: boolean;
+}
+
+/**
+ * Which handles a widget offers. Shared by the overlay's drag mode and the
+ * layout editor so both grow the same affordances from the same rule.
+ */
+export const resizeDirectionsFor = ({
+  autoHeight = false,
+  lockAspectRatio = false,
+  scaleFromHeight = false,
+}: ResizeConstraints): ResizeDirection[] => {
+  if (autoHeight) {
+    return HORIZONTAL_DIRECTIONS;
+  }
+
+  if (lockAspectRatio || scaleFromHeight) {
+    return LOCKED_RATIO_DIRECTIONS;
+  }
+
+  return ALL_DIRECTIONS;
+};

@@ -1,7 +1,11 @@
 import React, { useCallback, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ErrorBoundary } from '@ui/shared/ErrorBoundary';
-import { widgetFrameStyle } from '@ui/app/widget-frame';
+import {
+  resizeDirectionsFor,
+  widgetFrameStyle,
+  type ResizeDirection,
+} from '@ui/app/widget-frame';
 import styles from './WidgetContainer.module.scss';
 import { WidgetIdContext } from './WidgetIdContext';
 import { WidgetDragToolbar } from '@ui/app/overlay/components/WidgetDragToolbar/WidgetDragToolbar';
@@ -12,8 +16,6 @@ import {
   useWidgetAutoHideStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
-
-type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
 interface WidgetContainerProps {
   widgetId: string;
@@ -237,11 +239,11 @@ export const WidgetContainer = observer(
       ]
     );
 
-    const resizeDirections: ResizeDirection[] = autoHeight
-      ? ['e', 'w']
-      : widget?.lockAspectRatio || scaleFromHeight
-        ? ['e', 'w', 'ne', 'nw', 'se', 'sw']
-        : ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
+    const resizeDirections: ResizeDirection[] = resizeDirectionsFor({
+      autoHeight,
+      lockAspectRatio: widget?.lockAspectRatio,
+      scaleFromHeight,
+    });
 
     const frameStyle = widgetFrameStyle({
       widgetId,

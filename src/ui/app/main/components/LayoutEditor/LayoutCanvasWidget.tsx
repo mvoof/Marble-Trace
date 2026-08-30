@@ -2,32 +2,12 @@ import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { WidgetSettingsStore } from '@store/settings/widget-settings.store';
 import type { MonitorBounds } from '@/types/widget-settings';
-import { widgetFrameStyle } from '@ui/app/widget-frame';
+import {
+  resizeDirectionsFor,
+  widgetFrameStyle,
+  type ResizeDirection,
+} from '@ui/app/widget-frame';
 import styles from './LayoutCanvas.module.scss';
-
-type ResizeDirection = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
-
-const ALL_DIRECTIONS: ResizeDirection[] = [
-  'n',
-  's',
-  'e',
-  'w',
-  'ne',
-  'nw',
-  'se',
-  'sw',
-];
-const HORIZONTAL_DIRECTIONS: ResizeDirection[] = ['e', 'w'];
-
-// Aspect-locked widgets keep the corners so they can be scaled up as a whole.
-const LOCKED_RATIO_DIRECTIONS: ResizeDirection[] = [
-  'e',
-  'w',
-  'ne',
-  'nw',
-  'se',
-  'sw',
-];
 
 // Snap distance (overlay px) for centering a widget on the canvas axes.
 const SNAP_CENTER_THRESHOLD = 24;
@@ -361,11 +341,11 @@ export const LayoutCanvasWidget = observer(
       ]
     );
 
-    const resizeDirections = autoHeight
-      ? HORIZONTAL_DIRECTIONS
-      : widget?.lockAspectRatio || scaleFromHeight
-        ? LOCKED_RATIO_DIRECTIONS
-        : ALL_DIRECTIONS;
+    const resizeDirections = resizeDirectionsFor({
+      autoHeight,
+      lockAspectRatio: widget?.lockAspectRatio,
+      scaleFromHeight,
+    });
 
     return (
       <div
