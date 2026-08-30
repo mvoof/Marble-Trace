@@ -4,7 +4,7 @@ import {
   logSettingsSnapshot as logSettingsSnapshotCommand,
   settingsFileExists as settingsFileExistsCommand,
 } from '@platform/services/settings.service';
-import { DEFAULT_WIDGETS } from '@store/widget-catalog';
+import { DEFAULT_WIDGETS, WIDGET_BY_ID } from '@store/widget-catalog';
 import type { UnitSystem } from '@/types';
 import type {
   SavedLayout,
@@ -83,9 +83,32 @@ const restoreWidgets = (
     // from their visible columns; for a locked ratio it *is* the ratio, so a
     // stale pair from an older shape has to give way to the manifest — kept,
     // it stretches the widget back into that shape on the next resize.
+    // A table whose width *is* the sum of its columns derives it rather than
+    // remembering it: a stored width from an older column set would survive as
+    // dead space at the right edge of every row. The widget keeps the size the
+    // user gave it — `currentWidth` is rescaled by the same factor, so `--wfs`,
+    // and with it the text, does not move.
+    const deriveDesignWidth = WIDGET_BY_ID.get(saved.id)?.deriveDesignWidth;
+    let normalizedDesignWidth: number | null = null;
+
+    if (!hasLockedRatio && deriveDesignWidth) {
+      const derivedWidth = Math.max(1, deriveDesignWidth(mergedUserSettings));
+      const storedWidth = saved.designWidth ?? widgetDefaults.designWidth;
+
+      if (storedWidth > 0 && derivedWidth !== storedWidth) {
+        mergedUserSettings.currentWidth = Math.round(
+          (mergedUserSettings.currentWidth / storedWidth) * derivedWidth
+        );
+      }
+
+      normalizedDesignWidth = derivedWidth;
+    }
+
     const designWidth = hasLockedRatio
       ? widgetDefaults.designWidth
-      : (saved.designWidth ?? widgetDefaults.designWidth);
+      : (normalizedDesignWidth ??
+        saved.designWidth ??
+        widgetDefaults.designWidth);
 
     const designHeight = hasLockedRatio
       ? widgetDefaults.designHeight

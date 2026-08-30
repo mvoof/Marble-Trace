@@ -388,3 +388,46 @@ describe('WidgetSettingsStore remote screen geometry', () => {
     expect(widget.userSettings.y).toBe(2010);
   });
 });
+
+describe('derived design width', () => {
+  it('rebuilds a stale design width when a layout copy is installed', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.widgetSettings;
+    const relative = store.getWidget('relative');
+
+    expect(relative).toBeDefined();
+
+    const shippedWidth = relative!.designWidth;
+
+    // What a layout snapshot written by an older build looks like: the settings
+    // say one width, the stored number says another. Left alone it reaches
+    // `--wfs` as `currentWidth / designWidth` and the row stops matching the
+    // frame around it — the widget appears to jump on the layout switch.
+    store.setWidgets([
+      {
+        ...relative!,
+        designWidth: shippedWidth + 120,
+        userSettings: { ...relative!.userSettings },
+      },
+    ]);
+
+    expect(store.getWidget('relative')!.designWidth).toBe(shippedWidth);
+  });
+
+  it('follows the name column width without touching other widgets', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.widgetSettings;
+    const before = store.getWidget('standings')!.designWidth;
+    const timerWidth = store.getWidget('timer')!.designWidth;
+
+    store.updateUserSettings('standings', { nameColumnWidth: 150 });
+
+    const standings = store.getWidget('standings')!;
+
+    expect(before - standings.designWidth).toBe(
+      200 -
+        (standings.userSettings as { nameColumnWidth: number }).nameColumnWidth
+    );
+    expect(store.getWidget('timer')!.designWidth).toBe(timerWidth);
+  });
+});

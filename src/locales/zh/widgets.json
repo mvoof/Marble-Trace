@@ -78,6 +78,8 @@
   },
   "settingsPanels": {
     "common": {
+      "nameColumnWidth": "姓名列宽度",
+      "nameColumnWidthDesc": "车手姓名列的宽度（以组件设计比例下的像素计）。表格宽度等于可见列宽度之和，因此缩窄姓名列会缩窄整个表格，而不是缩小文字。",
       "positions": "名次",
       "useLivePositions": "使用实时名次",
       "useLivePositionsDesc": "按赛道上的位置排名，每帧重算。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。适用于所有场次类型。",

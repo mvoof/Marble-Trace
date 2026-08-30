@@ -122,24 +122,37 @@ const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 // Layout constants — must mirror the SCSS: column-gap sp(xxxs)=2, padding sp(md)=10.
 const COL_GAP_PX = 2;
 const ROW_PAD_X_PX = 10;
-// Name column flexes (minmax → 1fr); NAME_MIN never truncates, NAME_NATURAL is
-// the comfortable width used when computing the widget's natural design width.
-const NAME_MIN_PX = 120;
-const NAME_NATURAL_PX = 200;
+// The name column is fixed, not elastic: an elastic name swallows every pixel
+// freed by a hidden column, so the only way left to narrow the table is to drag
+// its edge — which scales the text down with it. Its width is a user setting,
+// bounded so a name is neither unreadable nor wider than the rest of the table.
+export const NAME_COLUMN_MIN_PX = 80;
+export const NAME_COLUMN_MAX_PX = 320;
+export const NAME_COLUMN_DEFAULT_PX = 200;
+
+const clampNameColumnWidth = (width: number | undefined) => {
+  if (!Number.isFinite(width)) {
+    return NAME_COLUMN_DEFAULT_PX;
+  }
+
+  return Math.min(
+    NAME_COLUMN_MAX_PX,
+    Math.max(NAME_COLUMN_MIN_PX, Math.round(width as number))
+  );
+};
 
 // Single source of truth for column order + widths (px at scale 1). Order here
 // MUST match the render order in DriverRow.tsx and StandingsHeader.tsx.
 interface ColSpec {
   px: number;
   show: boolean;
-  flex?: boolean; // the name column — minmax(NAME_MIN, 1fr)
 }
 
 const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
   { px: 28, show: true }, // pos      "00" (fs md, bold)
   { px: 40, show: true }, // carNum   class-colored badge, right after pos
   { px: 38, show: settings.showPosChange }, // +/- pos  "▲12"
-  { px: NAME_NATURAL_PX, show: true, flex: true }, // name — flexes, never collapses
+  { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
   { px: 60, show: settings.showLicBadge }, // lic badge "A 4.99" — matches Relative for equal PIT↔SR gap
   { px: 42, show: settings.showIRating }, // iRating  "9.9k"
   { px: 42, show: settings.showIrChange }, // ΔiR     "+123"
@@ -158,7 +171,7 @@ export const buildGridTemplate = (
 
   for (const col of colSpecs(settings)) {
     if (col.show) {
-      parts.push(col.flex ? `minmax(${ws(NAME_MIN_PX)}, 1fr)` : ws(col.px));
+      parts.push(ws(col.px));
     }
   }
 

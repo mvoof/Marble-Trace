@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import type { DriverEntry } from '@/types/bindings';
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import {
+  NAME_COLUMN_DEFAULT_PX,
+  NAME_COLUMN_MAX_PX,
+  NAME_COLUMN_MIN_PX,
+  buildGridTemplate,
+  computeStandingsDesignWidth,
   buildLapProgress,
   buildVisibleRows,
   drawsClassHeaders,
@@ -273,5 +279,45 @@ describe('drawsClassHeaders', () => {
     expect(drawsClassHeaders('cycling', 1)).toBe(true);
     expect(drawsClassHeaders('all', 2)).toBe(false);
     expect(drawsClassHeaders('grouped', 0)).toBe(false);
+  });
+});
+
+describe('name column width', () => {
+  const settingsWith = (nameColumnWidth: number) =>
+    ({
+      nameColumnWidth,
+      showPosChange: false,
+      showLicBadge: false,
+      showIRating: false,
+      showIrChange: false,
+      showLapsCompleted: false,
+      showBrand: false,
+      showTire: false,
+    }) as unknown as StandingsWidgetSettings;
+
+  it('narrows the widget by exactly what the name column loses', () => {
+    const wide = computeStandingsDesignWidth(
+      settingsWith(NAME_COLUMN_DEFAULT_PX)
+    );
+    const narrow = computeStandingsDesignWidth(
+      settingsWith(NAME_COLUMN_DEFAULT_PX - 40)
+    );
+
+    expect(wide - narrow).toBe(40);
+  });
+
+  it('clamps a width outside the slider range', () => {
+    expect(computeStandingsDesignWidth(settingsWith(5))).toBe(
+      computeStandingsDesignWidth(settingsWith(NAME_COLUMN_MIN_PX))
+    );
+    expect(computeStandingsDesignWidth(settingsWith(9999))).toBe(
+      computeStandingsDesignWidth(settingsWith(NAME_COLUMN_MAX_PX))
+    );
+  });
+
+  it('has no elastic column at all — the row is exactly its columns wide', () => {
+    const template = buildGridTemplate(settingsWith(NAME_COLUMN_DEFAULT_PX));
+
+    expect(template).not.toContain('fr');
   });
 });

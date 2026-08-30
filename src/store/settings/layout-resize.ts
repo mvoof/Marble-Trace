@@ -51,3 +51,31 @@ export const applyLayoutResize = (
     Object.assign(widget.userSettings, result.userSettingsPatch);
   }
 };
+
+/**
+ * The design width a widget's settings imply, for the widgets that declare
+ * `deriveDesignWidth` — the tables, whose width *is* the sum of their columns.
+ *
+ * For them a stored design width is not state, it is a cache of an arithmetic
+ * that its own settings already answer, and every copy of it — the file, each
+ * layout's snapshot, the undo history — is a chance for the two to drift apart.
+ * They show it the same way: the columns scale by `--wfs = currentWidth /
+ * designWidth`, so the row stops matching the frame around it the moment the
+ * pair disagrees, and the widget appears to jump on the next layout switch.
+ *
+ * Deriving it wherever widgets are installed means the drift cannot outlive a
+ * single write. Everything else keeps its stored size untouched.
+ */
+export const deriveWidgetDesignWidth = (
+  id: string,
+  userSettings: WidgetUserSettings,
+  storedDesignWidth: number
+) => {
+  const derive = WIDGET_BY_ID.get(id)?.deriveDesignWidth;
+
+  if (!derive) {
+    return storedDesignWidth;
+  }
+
+  return Math.max(1, derive(userSettings));
+};

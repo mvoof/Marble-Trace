@@ -11,6 +11,10 @@ import { Card } from './Card';
 import { SettingRow } from './SettingRow';
 import { useWidgetEditor } from '../WidgetEditorContext';
 import { panelRows } from './setting-rows';
+import {
+  NAME_COLUMN_MAX_PX,
+  NAME_COLUMN_MIN_PX,
+} from '@ui/widgets/StandingsWidget/standings-utils';
 
 const PLAYER_WINDOW_OPTIONS = [0, 1, 2, 3, 4, 5].map((count) => ({
   label: String(count),
@@ -22,6 +26,10 @@ const GROUPED_ROWS_PER_CLASS_MIN = 0;
 const GROUPED_ROWS_PER_CLASS_MAX = 30;
 
 const SCROLL_RESET_OPTIONS = [0, 5, 8, 15, 30];
+
+// Pixel granularity of the name-column slider — finer steps are invisible on screen.
+const NAME_COLUMN_STEP_PX = 5;
+const NAME_COLUMN_SLIDER_WIDTH_PX = 160;
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['standings'];
@@ -187,6 +195,23 @@ export const StandingsSettingsPanel = observer(() => {
                 },
                 { label: t('settingsPanels.relative.wide'), value: 'wide' },
               ]}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.common.nameColumnWidth')}
+            desc={t('settingsPanels.common.nameColumnWidthDesc')}
+          >
+            <Slider
+              style={{ width: NAME_COLUMN_SLIDER_WIDTH_PX }}
+              min={NAME_COLUMN_MIN_PX}
+              max={NAME_COLUMN_MAX_PX}
+              step={NAME_COLUMN_STEP_PX}
+              value={settings.nameColumnWidth}
+              tooltip={{ formatter: (value) => `${value ?? 0} px` }}
+              onChange={(value) => update({ nameColumnWidth: value })}
             />
           </SettingRow>
         </div>

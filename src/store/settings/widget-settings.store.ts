@@ -7,7 +7,10 @@ import {
 } from '@platform/services/settings.service';
 import { resolveMonitorByName } from '@platform/sync/overlay-resolution';
 import { LayoutsStore } from '@store/settings/layouts.store';
-import { applyLayoutResize } from '@store/settings/layout-resize';
+import {
+  applyLayoutResize,
+  deriveWidgetDesignWidth,
+} from '@store/settings/layout-resize';
 
 import type {
   WidgetDefaultConfig,
@@ -296,16 +299,27 @@ export class WidgetSettingsStore {
             existing.designWidth = merged.designWidth;
             existing.designHeight = merged.designHeight;
           }
-        } else {
-          this.widgets.set(
+
+          existing.designWidth = deriveWidgetDesignWidth(
             defaultWidget.id,
-            savedWidget
-              ? {
-                  ...mergeWithDefaults(defaultWidget, savedWidget),
-                  userSettings: mergedUserSettings,
-                }
-              : { ...defaultWidget, userSettings: mergedUserSettings }
+            existing.userSettings,
+            existing.designWidth
           );
+        } else {
+          const installed = savedWidget
+            ? {
+                ...mergeWithDefaults(defaultWidget, savedWidget),
+                userSettings: mergedUserSettings,
+              }
+            : { ...defaultWidget, userSettings: mergedUserSettings };
+
+          installed.designWidth = deriveWidgetDesignWidth(
+            defaultWidget.id,
+            installed.userSettings,
+            installed.designWidth
+          );
+
+          this.widgets.set(defaultWidget.id, installed);
         }
       });
 
@@ -330,7 +344,11 @@ export class WidgetSettingsStore {
         if (!existing) continue;
 
         Object.assign(existing.userSettings, incoming.userSettings);
-        existing.designWidth = incoming.designWidth;
+        existing.designWidth = deriveWidgetDesignWidth(
+          incoming.id,
+          existing.userSettings,
+          incoming.designWidth
+        );
         existing.designHeight = incoming.designHeight;
       }
 

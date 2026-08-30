@@ -5,16 +5,21 @@ import {
   DEFAULT_PLAYER_ACCENT_COLOR,
   DEFAULT_PLAYER_ROW_COLOR,
   PANEL_APPEARANCE_DEFAULTS,
-  makeColumnLayoutResolver,
+  makeExactColumnLayoutResolver,
 } from '@ui/widgets/widget-manifest';
-import { computeRelativeDesignWidth } from '@ui/widgets/RelativeWidget/relative-utils';
+import {
+  NAME_COLUMN_DEFAULT_PX,
+  computeRelativeDesignWidth,
+} from '@ui/widgets/RelativeWidget/relative-utils';
 
-const resolveRelativeLayout = makeColumnLayoutResolver<RelativeWidgetSettings>(
-  ['showLicBadge', 'showIRating'],
-  computeRelativeDesignWidth
-);
+const resolveRelativeLayout =
+  makeExactColumnLayoutResolver<RelativeWidgetSettings>(
+    ['showLicBadge', 'showIRating', 'nameColumnWidth'],
+    computeRelativeDesignWidth
+  );
 
 const RELATIVE_COLUMN_DEFAULTS = {
+  nameColumnWidth: NAME_COLUMN_DEFAULT_PX,
   showLicBadge: true,
   showIRating: true,
 };
@@ -29,6 +34,8 @@ export const RELATIVE_MANIFEST: WidgetManifest = {
   label: 'Relative',
   description: 'Gaps to cars ahead and behind you.',
   resolveLayoutChange: resolveRelativeLayout,
+  deriveDesignWidth: (settings) =>
+    computeRelativeDesignWidth(settings as RelativeWidgetSettings),
   requiredCapabilities: ['relative'],
   designWidth: RELATIVE_DESIGN_WIDTH,
   designHeight: 400,

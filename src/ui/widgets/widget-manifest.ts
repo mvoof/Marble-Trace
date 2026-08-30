@@ -79,3 +79,39 @@ export const makeColumnLayoutResolver = <Settings>(
     };
   };
 };
+
+// Same trigger as `makeColumnLayoutResolver`, but the design width is *assigned*
+// rather than nudged by a delta. For a table whose every column is a fixed
+// number of design px, `computeDesignWidth` is not an estimate of the natural
+// size — it IS the width the row occupies, so a stored designWidth that differs
+// from it can only be drift left by an older build. Delta-patching would carry
+// that drift forever, and the difference shows up as dead space at the right
+// edge of every row: the columns scale by `--wfs = currentWidth / designWidth`,
+// so they fill the widget exactly only while the two numbers agree.
+export const makeExactColumnLayoutResolver = <Settings>(
+  toggleKeys: (keyof Settings)[],
+  computeDesignWidth: (settings: Settings) => number
+): ResolveLayoutChange => {
+  return (prev, next, current) => {
+    const prevSettings = prev as unknown as Settings;
+    const nextSettings = next as unknown as Settings;
+
+    const changed = toggleKeys.some(
+      (key) => prevSettings[key] !== nextSettings[key]
+    );
+
+    if (!changed) {
+      return null;
+    }
+
+    const newDesignWidth = Math.max(1, computeDesignWidth(nextSettings));
+    const scale = current.designWidth
+      ? current.currentWidth / current.designWidth
+      : 1;
+
+    return {
+      designWidth: newDesignWidth,
+      currentWidth: Math.round(newDesignWidth * scale),
+    };
+  };
+};
