@@ -519,3 +519,129 @@ describe('derived design width', () => {
     expect(store.getWidget('timer')!.designWidth).toBe(timerWidth);
   });
 });
+
+describe('the active layout owns the widgets', () => {
+  let rootStore: RootStore;
+
+  const MONITOR = {
+    name: 'DISPLAY1',
+    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+  };
+
+  const layout = (id: string) => ({
+    id,
+    name: id,
+    createdAt: Date.now(),
+    monitors: [MONITOR],
+    widgets: [],
+  });
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+    rootStore.widgetSettings.setLayouts(
+      [layout('layout-race'), layout('layout-garage')],
+      'layout-race'
+    );
+  });
+
+  it('writes an edit straight into the layout record, with nothing to commit', () => {
+    const store = rootStore.widgetSettings;
+
+    store.updatePosition('fuel', 640, 480);
+
+    const stored = store.activeLayout!.widgets.find(
+      (widget) => widget.id === 'fuel'
+    )!.userSettings;
+
+    expect(stored.x).toBe(640);
+    expect(stored.y).toBe(480);
+  });
+
+  // The debounce used to be the only thing writing edits back into the layout,
+  // so anything that switched layouts inside its 500 ms window took the old
+  // layout's widgets with it and dropped the edit.
+  it('keeps an edit made immediately before a layout switch', () => {
+    const store = rootStore.widgetSettings;
+
+    store.updatePosition('fuel', 640, 480);
+    store.loadLayout('layout-garage');
+    store.loadLayout('layout-race');
+
+    expect(store.getWidget('fuel')!.userSettings.x).toBe(640);
+  });
+
+  it('does not leak an edit into the layout that was not active', () => {
+    const store = rootStore.widgetSettings;
+
+    store.updatePosition('fuel', 640, 480);
+
+    const other = store.layouts
+      .find((entry) => entry.id === 'layout-garage')!
+      .widgets.find((widget) => widget.id === 'fuel');
+
+    expect(other?.userSettings.x).not.toBe(640);
+  });
+
+  it('undoes an edit on the layout record itself', () => {
+    const store = rootStore.widgetSettings;
+    const before = store.getWidget('fuel')!.userSettings.x;
+
+    store.pushUndo();
+    store.updatePosition('fuel', 640, 480);
+    store.undo();
+
+    expect(store.getWidget('fuel')!.userSettings.x).toBe(before);
+    expect(
+      store.activeLayout!.widgets.find((widget) => widget.id === 'fuel')!
+        .userSettings.x
+    ).toBe(before);
+  });
+
+  it('falls back to the shipped defaults while no layout is active', () => {
+    const store = rootStore.widgetSettings;
+
+    store.selectLayout(null);
+
+    expect(store.activeLayout).toBeUndefined();
+    expect(store.getWidget('fuel')).toBeDefined();
+  });
+});
+
+describe('a layout with no monitors is not written to', () => {
+  // Removing a layout's last screen leaves its widgets in the record. Loading
+  // it falls back to a blank starter set, and that set must not be mistaken for
+  // an edit and saved over the arrangement the driver still has.
+  it('keeps the saved widgets when the layout is loaded without a screen', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.widgetSettings;
+
+    store.setLayouts(
+      [
+        {
+          id: 'layout-screenless',
+          name: 'Screenless',
+          createdAt: Date.now(),
+          monitors: [],
+          widgets: [
+            {
+              id: 'fuel',
+              designWidth: 300,
+              designHeight: 200,
+              userSettings: { x: 111, y: 222 },
+            } as unknown as (typeof store.allWidgets)[number],
+          ],
+        },
+      ],
+      'layout-screenless'
+    );
+
+    store.loadLayout('layout-screenless');
+
+    const saved = store.layouts[0].widgets.find(
+      (widget) => widget.id === 'fuel'
+    )!.userSettings;
+
+    expect(saved.x).toBe(111);
+    expect(saved.y).toBe(222);
+  });
+});

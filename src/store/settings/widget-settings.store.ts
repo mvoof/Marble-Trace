@@ -60,9 +60,45 @@ const LAYOUT_TOAST_DURATION_MS = 3000;
 export type { PickableWidget };
 
 export class WidgetSettingsStore {
-  // Live working copy of the ACTIVE layout. The overlay renders this; the layout
-  // editor and F9 drag mode edit this.
-  widgets = new Map<string, WidgetDefaultConfig>(
+  /**
+   * Widgets of the active layout, keyed by id.
+   *
+   * A *projection*, not a copy: the objects are the active layout's own, so
+   * every edit the overlay or the editor makes lands in the layout record
+   * itself. There is nothing to commit afterwards and nothing that can drift
+   * out of step with it — the layout is the single owner of a widget's state.
+   */
+  get widgets(): Map<string, WidgetDefaultConfig> {
+    const layout = this.widgetOwner;
+
+    if (!layout) {
+      return this.detachedWidgets;
+    }
+
+    return new Map(layout.widgets.map((widget) => [widget.id, widget]));
+  }
+
+  /**
+   * The layout an edit belongs to, or null when there is nowhere to put one.
+   *
+   * A layout with no monitors is not an owner: it has no area to place a widget
+   * on, and the widgets it already holds are the ones it had when its last
+   * screen was removed. Writing to it would replace a saved arrangement with
+   * the blank starter set the window falls back to meanwhile.
+   */
+  private get widgetOwner(): SavedLayout | null {
+    const layout = this.layoutRecords.activeLayout;
+
+    return layout && layout.monitors.length > 0 ? layout : null;
+  }
+
+  /**
+   * Stand-in for the window that has no active layout yet: the settings file is
+   * still loading, the config is locked, or every layout has just been deleted.
+   * Holding the shipped defaults here keeps `widgets` a total function, so no
+   * caller has to guard against a layout that has not arrived.
+   */
+  private detachedWidgets = new Map<string, WidgetDefaultConfig>(
     DEFAULT_WIDGETS.map((widgetConfig) => [
       widgetConfig.id,
       { ...widgetConfig, userSettings: { ...widgetConfig.userSettings } },
@@ -246,7 +282,6 @@ export class WidgetSettingsStore {
     if (widgets === null) return;
 
     this.setWidgets(widgets);
-    this.commitActiveLayout();
     this.bumpMutation();
   }
 
@@ -276,45 +311,50 @@ export class WidgetSettingsStore {
     this.changeToken++;
   }
 
+  /**
+   * Brings a saved widget list up to the current shape and installs it as the
+   * active layout's widgets: missing widgets are filled in from the manifest,
+   * stored settings are merged over the shipped defaults, and a design width
+   * that is derived rather than stored is recomputed.
+   *
+   * Normalizing here rather than on read is what lets `widgets` be a plain
+   * projection: a widget is repaired once, when the layout is installed, and
+   * the repair is written to the record everything else reads.
+   */
   setWidgets(widgets: WidgetDefaultConfig[]) {
     runInAction(() => {
-      DEFAULT_WIDGETS.forEach((defaultWidget) => {
+      const normalized = DEFAULT_WIDGETS.map((defaultWidget) => {
         const savedWidget = widgets.find(
           (widget) => widget.id === defaultWidget.id
         );
 
-        const mergedUserSettings = savedWidget
-          ? mergeWithDefaults(
-              defaultWidget.userSettings,
-              savedWidget.userSettings ?? {}
-            )
-          : { ...defaultWidget.userSettings };
+        const installed: WidgetDefaultConfig = savedWidget
+          ? {
+              ...mergeWithDefaults(defaultWidget, savedWidget),
+              userSettings: mergeWithDefaults(
+                defaultWidget.userSettings,
+                savedWidget.userSettings ?? {}
+              ),
+            }
+          : {
+              ...defaultWidget,
+              userSettings: { ...defaultWidget.userSettings },
+            };
 
-        const existing = this.widgets.get(defaultWidget.id);
+        applyDerivedDesignWidth(defaultWidget.id, installed);
 
-        if (existing) {
-          Object.assign(existing.userSettings, mergedUserSettings);
-
-          if (savedWidget) {
-            const merged = mergeWithDefaults(defaultWidget, savedWidget);
-            existing.designWidth = merged.designWidth;
-            existing.designHeight = merged.designHeight;
-          }
-
-          applyDerivedDesignWidth(defaultWidget.id, existing);
-        } else {
-          const installed = savedWidget
-            ? {
-                ...mergeWithDefaults(defaultWidget, savedWidget),
-                userSettings: mergedUserSettings,
-              }
-            : { ...defaultWidget, userSettings: mergedUserSettings };
-
-          applyDerivedDesignWidth(defaultWidget.id, installed);
-
-          this.widgets.set(defaultWidget.id, installed);
-        }
+        return installed;
       });
+
+      const layout = this.widgetOwner;
+
+      if (layout) {
+        layout.widgets = normalized;
+      } else {
+        this.detachedWidgets = new Map(
+          normalized.map((widget) => [widget.id, widget])
+        );
+      }
 
       this.bumpMutation();
 
@@ -595,9 +635,12 @@ export class WidgetSettingsStore {
     this.bumpMutation();
   }
 
+  /**
+   * A detached deep-ish copy of the active layout's widgets, for the two
+   * callers that need one: the undo stack, and copying this layout's widgets
+   * into a different layout record. (structuredClone throws on MobX proxies.)
+   */
   private snapshotWidgets(): WidgetDefaultConfig[] {
-    // Spread into plain object literals so each layout owns a detached copy of
-    // the live widgets. (structuredClone throws on MobX observable proxies.)
     return this.allWidgets.map((widget) => ({
       ...widget,
       userSettings: { ...widget.userSettings },
@@ -643,10 +686,15 @@ export class WidgetSettingsStore {
             },
           },
         ]);
-        target.widgets = this.buildStarterWidgets();
 
-        this.setWidgets(target.widgets);
-        this.bumpMutation();
+        // The monitor resolved asynchronously; the driver may have selected a
+        // different layout while it did. Its widgets are not this layout's to
+        // overwrite, so the starter set goes to the record directly.
+        if (this.layoutRecords.activeLayoutId === id) {
+          this.setWidgets(this.buildStarterWidgets());
+        } else {
+          target.widgets = this.buildStarterWidgets();
+        }
       });
     });
   }
@@ -768,16 +816,6 @@ export class WidgetSettingsStore {
     if (options?.notify) {
       void emitLayoutActivated(layout.name);
     }
-  }
-
-  // Auto-commit: writes the live widgets back into the active layout. Skipped
-  // for a layout with no monitors — it has no area to hold them yet.
-  commitActiveLayout() {
-    const layout = this.activeLayout;
-
-    if (!layout || layout.monitors.length === 0) return;
-
-    layout.widgets = this.snapshotWidgets();
   }
 
   updateLayout(id: string) {
@@ -903,7 +941,6 @@ export class WidgetSettingsStore {
       widget.userSettings.y += dy;
     }
 
-    this.commitActiveLayout();
     this.bumpMutation();
   }
 
@@ -956,7 +993,6 @@ export class WidgetSettingsStore {
       widget.userSettings.y += dy;
     }
 
-    this.commitActiveLayout();
     this.bumpMutation();
   }
 
@@ -998,7 +1034,6 @@ export class WidgetSettingsStore {
       }
     }
 
-    this.commitActiveLayout();
     this.bumpMutation();
   }
 

@@ -12,7 +12,7 @@ const MAX_UNDO_DEPTH = 10;
  *
  * Holds snapshots and nothing else — it never touches the store, and the store
  * never reaches into the stacks. Restoring a snapshot is the caller's job,
- * because that is where `commitActiveLayout` and the mutation bump belong.
+ * because that is where installing it into the active layout belongs.
  */
 export class WidgetHistory {
   private undoStack: WidgetDefaultConfig[][] = [];

@@ -4,7 +4,7 @@ import { asArray, asObject, dropWidgetSettings, mapEveryWidget } from '../blob';
 /**
  * v2 → v3. Every widget this release changes the *shape* of.
  *
- * Three edits, one step: the version has not shipped yet, and a file migrated
+ * Four edits, one step: the version has not shipped yet, and a file migrated
  * through a version no build ever wrote is history nobody has.
  *
  * **1. `carLength` out of the widgets and into `app`.**
@@ -184,34 +184,106 @@ const rescalePitService = (
 const MIN_CAR_LENGTH_M = 0.5;
 const MAX_CAR_LENGTH_M = 15;
 
+/**
+ * Every widget the file holds, in the order the value should be trusted: the
+ * layouts first, because that is where a driver's radar actually lives, and the
+ * dying top-level list only as a fallback for a file that predates layouts.
+ *
+ * Reading the top-level list alone would have found nothing in any real file —
+ * one car length per process, and the layouts are what carry it.
+ */
+const everyWidget = (blob: SettingsBlob): Record<string, unknown>[] => {
+  const fromLayouts = asArray<unknown>(blob['layouts']).flatMap((layout) =>
+    asArray<unknown>(asObject(layout)?.['widgets'])
+  );
+
+  return [...fromLayouts, ...asArray<unknown>(blob['widgets'])]
+    .map((candidate) => asObject(candidate))
+    .filter(
+      (candidate): candidate is Record<string, unknown> =>
+        candidate !== undefined
+    );
+};
+
+const validCarLength = (widget: Record<string, unknown>) => {
+  const value = asObject(widget['userSettings'])?.['carLength'];
+
+  if (
+    typeof value === 'number' &&
+    Number.isFinite(value) &&
+    value >= MIN_CAR_LENGTH_M &&
+    value <= MAX_CAR_LENGTH_M
+  ) {
+    return value;
+  }
+
+  return undefined;
+};
+
+/**
+ * The car length the app settings inherit, preferring the proximity radar over
+ * the bar as the old startup code did.
+ *
+ * Every copy of a radar is examined, not just the first one found: each layout
+ * carries its own, and the driver may well have set the length on one of them
+ * and left the rest untouched. Stopping at the first copy would read a layout
+ * that happens to be missing the value and conclude nobody ever chose one.
+ */
 const readCarLength = (blob: SettingsBlob): number | undefined => {
-  const widgets = asArray<unknown>(blob.widgets);
+  const widgets = everyWidget(blob);
 
   for (const id of RADAR_IDS) {
-    const widget = widgets
-      .map((candidate) => asObject(candidate))
-      .find((candidate) => candidate?.id === id);
+    const found = widgets
+      .filter((candidate) => candidate['id'] === id)
+      .map(validCarLength)
+      .find((value) => value !== undefined);
 
-    const settings = asObject(widget?.userSettings);
-    const value = settings?.carLength;
-
-    if (
-      typeof value === 'number' &&
-      Number.isFinite(value) &&
-      value >= MIN_CAR_LENGTH_M &&
-      value <= MAX_CAR_LENGTH_M
-    ) {
-      return value;
+    if (found !== undefined) {
+      return found;
     }
   }
 
   return undefined;
 };
 
+/**
+ * **4. The top-level `widgets[]` is dropped.**
+ *
+ * It is the last trace of the single-layout app: since layouts arrived, the
+ * active layout owns the widgets, and this copy was written on every save and
+ * then discarded on the next load. Keeping it only invited the two to disagree.
+ *
+ * A file whose `layouts` is empty is the one case where it still carries
+ * something — it predates layouts entirely, so this array *is* that driver's
+ * setup. It is moved into `defaultWidgets`, the template catalogue a first
+ * layout is built from, so their widgets come back in the layout the app
+ * creates for them instead of being replaced by the shipped defaults. A file
+ * that already has a catalogue keeps it: that one was chosen deliberately.
+ */
+const dropTopLevelWidgets = (blob: SettingsBlob): SettingsBlob => {
+  if (!('widgets' in blob)) {
+    return blob;
+  }
+
+  const rest = { ...blob };
+
+  delete rest['widgets'];
+
+  const topWidgets = asArray<unknown>(blob['widgets']);
+  const hasLayouts = asArray<unknown>(blob['layouts']).length > 0;
+  const hasCatalogue = asArray<unknown>(blob['defaultWidgets']).length > 0;
+
+  if (hasLayouts || hasCatalogue || topWidgets.length === 0) {
+    return rest;
+  }
+
+  return { ...rest, defaultWidgets: topWidgets };
+};
+
 export const v3WidgetShapes: Migration = {
   to: 3,
   describe:
-    'move the car length to app settings, square up the radar, rescale the pit box, rebase Close Battle on its columns',
+    'move the car length to app settings, square up the radar, rescale the pit box, rebase Close Battle on its columns, drop the top-level widget list',
   migrate: (blob: SettingsBlob): SettingsBlob => {
     const carLength = readCarLength(blob);
 
@@ -228,7 +300,7 @@ export const v3WidgetShapes: Migration = {
       withApp
     );
 
-    return mapEveryWidget(withoutCarLength, (widgets) =>
+    const reshaped = mapEveryWidget(withoutCarLength, (widgets) =>
       widgets.map((widget) => {
         if (widget?.id === CLOSE_BATTLE_ID) {
           return rebaseCloseBattle(widget, asObject(widget.userSettings) ?? {});
@@ -254,5 +326,7 @@ export const v3WidgetShapes: Migration = {
         };
       })
     );
+
+    return dropTopLevelWidgets(reshaped);
   },
 };

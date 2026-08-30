@@ -249,13 +249,14 @@ const registerOverlayWindowReactions = (
     { delay: 500 }
   ),
   reaction(
-    // Commit on local edits (changeToken) AND on edits synced in from the
-    // overlay's F9 drag mode (syncToken) so live tweaks persist into the active
-    // layout. Only this reaction watches syncToken — the emit reaction must
-    // not, or main↔overlay would loop.
+    // Save on local edits (changeToken) AND on edits synced in from the
+    // overlay's F9 drag mode (syncToken). Only this reaction watches syncToken
+    // — the emit reaction must not, or main↔overlay would loop.
+    //
+    // Nothing is committed into the active layout first: the edits were made on
+    // the layout's own widgets, so the debounce delays only the write to disk.
     () => [root.widgetSettings.changeToken, root.widgetSettings.syncToken],
     () => {
-      root.widgetSettings.commitActiveLayout();
       void onSave();
     },
     { delay: 500 }
@@ -417,7 +418,6 @@ export const initMainSync = async (root: RootStore) => {
               );
             }
 
-            root.widgetSettings.commitActiveLayout();
             await onSave();
             await logSettingsSnapshot(root);
           } catch (error) {
