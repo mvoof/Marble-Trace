@@ -228,13 +228,7 @@ mod platform {
         // would split a path argument back apart at its spaces without them.
         let quoted: Vec<String> = args
             .iter()
-            .map(|argument| {
-                if argument.contains(' ') {
-                    format!("\"{argument}\"")
-                } else {
-                    argument.clone()
-                }
-            })
+            .map(|argument| quote_argument(argument))
             .collect();
 
         let file = to_wide(path);
@@ -278,6 +272,41 @@ mod platform {
 
             Ok(pid)
         }
+    }
+
+    /// Wraps one argument the way `CommandLineToArgvW` reads it back: a quote
+    /// is escaped, and the backslashes in front of one — including the run at
+    /// the end that would otherwise escape the closing quote — are doubled.
+    fn quote_argument(argument: &str) -> String {
+        if !argument.is_empty() && !argument.contains([' ', '\t', '"']) {
+            return argument.to_string();
+        }
+
+        let mut quoted = String::from('"');
+        let mut backslashes = 0;
+
+        for character in argument.chars() {
+            if character == '\\' {
+                backslashes += 1;
+
+                continue;
+            }
+
+            if character == '"' {
+                quoted.extend(std::iter::repeat_n('\\', backslashes * 2 + 1));
+                backslashes = 0;
+            } else {
+                quoted.extend(std::iter::repeat_n('\\', backslashes));
+                backslashes = 0;
+            }
+
+            quoted.push(character);
+        }
+
+        quoted.extend(std::iter::repeat_n('\\', backslashes * 2));
+        quoted.push('"');
+
+        quoted
     }
 
     pub fn terminate(pid: u32) -> Result<(), String> {
