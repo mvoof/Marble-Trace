@@ -6,6 +6,7 @@ import { BindingsStore } from '@store/hotkeys/bindings.store';
 import { ActionRegistry } from '@store/hotkeys/action-registry';
 import { v1LegacyConsolidation } from './v1-legacy-consolidation';
 import type { SettingsBlob } from '../types';
+import { asArray, type BlobWidget } from '../blob';
 import customised from '../__fixtures__/v0-customised.json';
 import untouched from '../__fixtures__/v0-untouched.json';
 import monitorConfigs from '../__fixtures__/v0-monitor-configs.json';
@@ -180,12 +181,18 @@ describe('v1 — a real 0.20.0 file', () => {
 
     expect(migrated['sessionLayouts']).toEqual(realCapture.sessionLayouts);
     expect(migrated['units']).toEqual(realCapture.units);
-    expect(migrated['defaultWidgets']).toEqual(realCapture.defaultWidgets);
     expect(layout.monitors).toEqual(originalLayout.monitors);
   });
 
   it('clears the legacy fields the release left behind', () => {
     const migrated = run(realCapture);
+
+    // The template catalogue is a widget array like any other, so the same
+    // hotkey strip has to reach it — a layout built from it later would
+    // otherwise carry the legacy key back in.
+    for (const widget of asArray<BlobWidget>(migrated['defaultWidgets'])) {
+      expect(widget.userSettings).not.toHaveProperty('viewModeHotkey');
+    }
 
     expect(appOf(migrated)['dragHotkey']).toBeUndefined();
     expect(appOf(migrated)['steeringLock']).toBe(900);
