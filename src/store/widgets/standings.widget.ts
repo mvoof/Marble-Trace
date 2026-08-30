@@ -252,7 +252,7 @@ export class StandingsWidgetStore {
   ): { position: number | null; total: number | null } {
     const entries = this.root.backendComputed.driverEntries?.entries ?? [];
     const overallTotal =
-      this.root.session.sessionInfo?.cars.length || entries.length || null;
+      this.root.session.competingCarCount || entries.length || null;
     const entry = this.playerEntry;
 
     if (!byClass || !this.isMultiClass || !entry) {

@@ -49,6 +49,17 @@ export class SessionStore {
   }
 
   /**
+   * Cars that actually take a position in the results. The session car list also
+   * carries the pace car and spectators, so counting it raw reports one place
+   * too many — the per-class counts come from `driverEntries`, which drops them.
+   */
+  get competingCarCount(): number {
+    return (this.sessionInfo?.cars ?? []).filter(
+      (car) => !car.isPaceCar && !car.isSpectator
+    ).length;
+  }
+
+  /**
    * Car class id -> rank in the field, fastest class first. Drives the per-class
    * marker shapes on the maps so both widgets agree on who gets which shape.
    */
