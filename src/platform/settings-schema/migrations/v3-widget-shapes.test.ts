@@ -41,6 +41,41 @@ describe('v3 — car length to app settings', () => {
     expect(migrated['app']).toEqual({ carLength: 4.8 });
   });
 
+  it('reads past a layout whose radar never carried the value', () => {
+    const migrated = v3WidgetShapes.migrate({
+      layouts: [
+        { id: 'race', widgets: [{ id: 'proximity-radar', userSettings: {} }] },
+        {
+          id: 'garage',
+          widgets: [
+            { id: 'proximity-radar', userSettings: { carLength: 5.2 } },
+          ],
+        },
+      ],
+    });
+
+    expect(migrated['app']).toEqual({ carLength: 5.2 });
+  });
+
+  it('skips a copy holding a value out of range for one that is not', () => {
+    const migrated = v3WidgetShapes.migrate({
+      layouts: [
+        {
+          id: 'race',
+          widgets: [{ id: 'proximity-radar', userSettings: { carLength: 0 } }],
+        },
+        {
+          id: 'garage',
+          widgets: [
+            { id: 'proximity-radar', userSettings: { carLength: 4.6 } },
+          ],
+        },
+      ],
+    });
+
+    expect(migrated['app']).toEqual({ carLength: 4.6 });
+  });
+
   it('leaves the app default alone for a value out of range', () => {
     const migrated = v3WidgetShapes.migrate(
       inLayout([{ id: 'radar-bar', userSettings: { carLength: 0 } }])

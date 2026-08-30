@@ -205,22 +205,41 @@ const everyWidget = (blob: SettingsBlob): Record<string, unknown>[] => {
     );
 };
 
+const validCarLength = (widget: Record<string, unknown>) => {
+  const value = asObject(widget['userSettings'])?.['carLength'];
+
+  if (
+    typeof value === 'number' &&
+    Number.isFinite(value) &&
+    value >= MIN_CAR_LENGTH_M &&
+    value <= MAX_CAR_LENGTH_M
+  ) {
+    return value;
+  }
+
+  return undefined;
+};
+
+/**
+ * The car length the app settings inherit, preferring the proximity radar over
+ * the bar as the old startup code did.
+ *
+ * Every copy of a radar is examined, not just the first one found: each layout
+ * carries its own, and the driver may well have set the length on one of them
+ * and left the rest untouched. Stopping at the first copy would read a layout
+ * that happens to be missing the value and conclude nobody ever chose one.
+ */
 const readCarLength = (blob: SettingsBlob): number | undefined => {
   const widgets = everyWidget(blob);
 
   for (const id of RADAR_IDS) {
-    const widget = widgets.find((candidate) => candidate['id'] === id);
+    const found = widgets
+      .filter((candidate) => candidate['id'] === id)
+      .map(validCarLength)
+      .find((value) => value !== undefined);
 
-    const settings = asObject(widget?.userSettings);
-    const value = settings?.carLength;
-
-    if (
-      typeof value === 'number' &&
-      Number.isFinite(value) &&
-      value >= MIN_CAR_LENGTH_M &&
-      value <= MAX_CAR_LENGTH_M
-    ) {
-      return value;
+    if (found !== undefined) {
+      return found;
     }
   }
 

@@ -606,3 +606,42 @@ describe('the active layout owns the widgets', () => {
     expect(store.getWidget('fuel')).toBeDefined();
   });
 });
+
+describe('a layout with no monitors is not written to', () => {
+  // Removing a layout's last screen leaves its widgets in the record. Loading
+  // it falls back to a blank starter set, and that set must not be mistaken for
+  // an edit and saved over the arrangement the driver still has.
+  it('keeps the saved widgets when the layout is loaded without a screen', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.widgetSettings;
+
+    store.setLayouts(
+      [
+        {
+          id: 'layout-screenless',
+          name: 'Screenless',
+          createdAt: Date.now(),
+          monitors: [],
+          widgets: [
+            {
+              id: 'fuel',
+              designWidth: 300,
+              designHeight: 200,
+              userSettings: { x: 111, y: 222 },
+            } as unknown as (typeof store.allWidgets)[number],
+          ],
+        },
+      ],
+      'layout-screenless'
+    );
+
+    store.loadLayout('layout-screenless');
+
+    const saved = store.layouts[0].widgets.find(
+      (widget) => widget.id === 'fuel'
+    )!.userSettings;
+
+    expect(saved.x).toBe(111);
+    expect(saved.y).toBe(222);
+  });
+});

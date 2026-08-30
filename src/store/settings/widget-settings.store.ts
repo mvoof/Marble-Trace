@@ -69,13 +69,27 @@ export class WidgetSettingsStore {
    * out of step with it — the layout is the single owner of a widget's state.
    */
   get widgets(): Map<string, WidgetDefaultConfig> {
-    const layout = this.layoutRecords.activeLayout;
+    const layout = this.widgetOwner;
 
     if (!layout) {
       return this.detachedWidgets;
     }
 
     return new Map(layout.widgets.map((widget) => [widget.id, widget]));
+  }
+
+  /**
+   * The layout an edit belongs to, or null when there is nowhere to put one.
+   *
+   * A layout with no monitors is not an owner: it has no area to place a widget
+   * on, and the widgets it already holds are the ones it had when its last
+   * screen was removed. Writing to it would replace a saved arrangement with
+   * the blank starter set the window falls back to meanwhile.
+   */
+  private get widgetOwner(): SavedLayout | null {
+    const layout = this.layoutRecords.activeLayout;
+
+    return layout && layout.monitors.length > 0 ? layout : null;
   }
 
   /**
@@ -332,7 +346,7 @@ export class WidgetSettingsStore {
         return installed;
       });
 
-      const layout = this.layoutRecords.activeLayout;
+      const layout = this.widgetOwner;
 
       if (layout) {
         layout.widgets = normalized;
@@ -672,7 +686,15 @@ export class WidgetSettingsStore {
             },
           },
         ]);
-        this.setWidgets(this.buildStarterWidgets());
+
+        // The monitor resolved asynchronously; the driver may have selected a
+        // different layout while it did. Its widgets are not this layout's to
+        // overwrite, so the starter set goes to the record directly.
+        if (this.layoutRecords.activeLayoutId === id) {
+          this.setWidgets(this.buildStarterWidgets());
+        } else {
+          target.widgets = this.buildStarterWidgets();
+        }
       });
     });
   }
