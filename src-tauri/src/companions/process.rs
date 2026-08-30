@@ -117,6 +117,9 @@ mod platform {
     /// The user dismissed the consent dialog.
     const ERROR_CANCELLED: i32 = 1223;
 
+    /// `OpenProcess` reports a pid that no longer exists this way.
+    const ERROR_INVALID_PARAMETER: i32 = 87;
+
     /// Every running process as (lowercased exe name, pid).
     pub fn running_processes() -> Vec<(String, u32)> {
         let mut found = Vec::new();
@@ -279,10 +282,18 @@ mod platform {
 
     pub fn terminate(pid: u32) -> Result<(), String> {
         // SAFETY: the handle is opened for termination only and closed right
-        // after; a pid that has already exited fails the open and returns Ok.
+        // after; a pid that has already exited fails the open, and only that
+        // failure is success.
         unsafe {
-            let Ok(handle) = OpenProcess(PROCESS_TERMINATE, false, pid) else {
-                return Ok(());
+            let handle = match OpenProcess(PROCESS_TERMINATE, false, pid) {
+                Ok(handle) => handle,
+                // The pid is gone — nothing left to close, which is what the
+                // caller asked for. Every other failure, an elevated program
+                // above all, refused us and must not read as closed.
+                Err(error) if error.code().0 as u32 & 0xFFFF == ERROR_INVALID_PARAMETER as u32 => {
+                    return Ok(())
+                }
+                Err(error) => return Err(error.to_string()),
             };
 
             let result = TerminateProcess(handle, 0);

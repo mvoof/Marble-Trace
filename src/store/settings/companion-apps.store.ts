@@ -204,6 +204,12 @@ export class CompanionAppsStore {
       });
     } catch (error) {
       console.error('Failed to read companion app icon:', error);
+
+      // The claim is dropped again: keeping it would cache a transient
+      // failure as "this file has no icon" for the rest of the session.
+      runInAction(() => {
+        delete this.icons[path];
+      });
     }
   }
 
