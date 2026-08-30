@@ -12,6 +12,8 @@ import type {
 } from '@/types/widget-settings';
 import { useUnitsStore } from '@store/root-store-context';
 import {
+  NAME_COLUMN_MAX_PX,
+  NAME_COLUMN_MIN_PX,
   toDisplayDistance,
   toMeters,
 } from '@ui/widgets/CloseBattleWidget/close-battle-utils';
@@ -35,6 +37,9 @@ const MAX_DISTANCE_THRESHOLD = 200;
 
 /** Feet round to fives, so the field steps by five of whatever it shows. */
 const DISTANCE_STEP = 5;
+
+const NAME_COLUMN_STEP_PX = 5;
+const NAME_COLUMN_SLIDER_WIDTH_PX = 160;
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['close-battle'];
@@ -358,6 +363,23 @@ export const CloseBattleSettingsPanel = observer(() => {
                   value: 'full',
                 },
               ]}
+            />
+          </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={t('settingsPanels.common.nameColumnWidth')}
+            desc={t('settingsPanels.common.nameColumnWidthDesc')}
+          >
+            <Slider
+              style={{ width: NAME_COLUMN_SLIDER_WIDTH_PX }}
+              min={NAME_COLUMN_MIN_PX}
+              max={NAME_COLUMN_MAX_PX}
+              step={NAME_COLUMN_STEP_PX}
+              value={settings.nameColumnWidth}
+              tooltip={{ formatter: (value) => `${value ?? 0} px` }}
+              onChange={(value) => update({ nameColumnWidth: value })}
             />
           </SettingRow>
         </div>

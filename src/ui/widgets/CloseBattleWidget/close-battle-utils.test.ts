@@ -15,6 +15,9 @@ import {
   PLATE_SLOT_PCT,
   resolveAxisRange,
   buildPlateGroups,
+  computeCloseBattleDesignWidth,
+  NAME_COLUMN_MAX_PX,
+  NAME_COLUMN_MIN_PX,
   mergedCarIdxs,
   TICK_GAP_PCT,
   type BattleOpponent,
@@ -342,5 +345,33 @@ describe('merge distance', () => {
     const cars = [opponentAt(1, 100), opponentAt(2, 106)];
 
     expect(buildPlateGroups(cars, 200, true, 8)).toHaveLength(1);
+  });
+});
+
+describe('computeCloseBattleDesignWidth', () => {
+  const settingsWith = (nameColumnWidth: number) =>
+    ({
+      nameColumnWidth,
+      nameMode: 'initial',
+      showClassBadge: true,
+      showBrand: false,
+      showDistance: true,
+      showLapGap: true,
+    }) as CloseBattleWidgetSettings;
+
+  it('grows the plate by exactly what the name column gained', () => {
+    const narrow = computeCloseBattleDesignWidth(settingsWith(80));
+    const wide = computeCloseBattleDesignWidth(settingsWith(120));
+
+    expect(wide - narrow).toBe(40);
+  });
+
+  it('clamps a width outside the allowed range', () => {
+    expect(computeCloseBattleDesignWidth(settingsWith(10))).toBe(
+      computeCloseBattleDesignWidth(settingsWith(NAME_COLUMN_MIN_PX))
+    );
+    expect(computeCloseBattleDesignWidth(settingsWith(9000))).toBe(
+      computeCloseBattleDesignWidth(settingsWith(NAME_COLUMN_MAX_PX))
+    );
   });
 });
