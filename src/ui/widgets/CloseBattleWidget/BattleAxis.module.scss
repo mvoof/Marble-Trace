@@ -104,8 +104,9 @@
   transform: translate(-50%, -50%);
 }
 
-// The player: short and thin on purpose — it is the one mark that never moves,
-// so it needs no weight to be found.
+// The player: short, thin and faded on purpose — it is the one mark that never
+// moves, so it needs no weight to be found, and at full strength it competes
+// with the plates that do carry data. The color is user-set inline.
 .player {
   position: absolute;
   left: 50%;
@@ -114,6 +115,7 @@
   height: 2px;
   border-radius: radius(sm);
   background: $widget-text-primary;
+  opacity: 0.7;
   transform: translate(-50%, -50%);
 }
 

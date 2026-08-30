@@ -277,6 +277,15 @@ export interface CloseBattleWidgetSettings {
   otherClass: BattleOtherClass;
   /** Meters at which the glow starts to build (0 = no glow). */
   glowRange: number;
+  /**
+   * The dashed distance axis and its ticks. Off leaves the plates, the glow and
+   * the player line alone on the screen — the axis is scenery, not data.
+   */
+  showAxis: boolean;
+  /** The horizontal line marking the player, at the centre of the axis. */
+  showPlayerLine: boolean;
+  /** Color of that line, `#rrggbb`. */
+  playerLineColor: string;
   raceOnly: boolean;
 }
 
