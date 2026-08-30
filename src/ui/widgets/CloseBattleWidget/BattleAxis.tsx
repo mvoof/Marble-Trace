@@ -32,11 +32,15 @@ export const BattleAxis = observer(() => {
 
   const axisRange = closeBattle.axisRange;
 
-  const ticks = settings.showTicks ? axisTicks(axisRange, units.isMetric) : [];
+  const showAxis = settings.showAxis !== false;
+
+  const ticks =
+    showAxis && settings.showTicks ? axisTicks(axisRange, units.isMetric) : [];
 
   // The line is only cut where a number sits on it. With the numbers off the
   // marks are narrow enough to hang either side of an unbroken axis.
-  const showTickLabels = settings.showTicks && settings.showTickLabels;
+  const showTickLabels =
+    showAxis && settings.showTicks && settings.showTickLabels;
   const segments = buildAxisSegments(showTickLabels ? ticks : []);
 
   const behind = closeBattle.nearestBehind;
@@ -52,13 +56,17 @@ export const BattleAxis = observer(() => {
 
   return (
     <div className={styles.axis}>
-      {segments.map((segment) => (
-        <div
-          key={segment.topPct}
-          className={styles.line}
-          style={{ top: `${segment.topPct}%`, height: `${segment.heightPct}%` }}
-        />
-      ))}
+      {showAxis &&
+        segments.map((segment) => (
+          <div
+            key={segment.topPct}
+            className={styles.line}
+            style={{
+              top: `${segment.topPct}%`,
+              height: `${segment.heightPct}%`,
+            }}
+          />
+        ))}
 
       {ticks.map((tick) => (
         <div
@@ -94,7 +102,12 @@ export const BattleAxis = observer(() => {
           />
         ))}
 
-      <div className={styles.player} />
+      {settings.showPlayerLine !== false && (
+        <div
+          className={styles.player}
+          style={{ background: settings.playerLineColor }}
+        />
+      )}
     </div>
   );
 });

@@ -23,6 +23,9 @@ import { panelRows } from './setting-rows';
 
 const ROW_COUNTS = [1, 2, 3];
 
+/** What the picker shows for a settings file written before the color existed. */
+const PLAYER_LINE_FALLBACK_COLOR = '#ffffff';
+
 /**
  * Meters — the number is always stored metric, whatever the user reads. The
  * lower bound is the radar's: below 5 m you are already touching.
@@ -36,7 +39,7 @@ const DISTANCE_STEP = 5;
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['close-battle'];
 
-const { SwitchRow } = panelRows<CloseBattleWidgetSettings>();
+const { SwitchRow, ColorRow } = panelRows<CloseBattleWidgetSettings>();
 
 export const CloseBattleSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -251,8 +254,18 @@ export const CloseBattleSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <SwitchRow
+            settingKey="showAxis"
+            title={t('settingsPanels.closeBattle.showAxis')}
+            desc={t('settingsPanels.closeBattle.showAxisDesc')}
+            fallback
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
             settingKey="showTicks"
             title={t('settingsPanels.closeBattle.showTicks')}
+            disabled={settings.showAxis === false}
           />
         </div>
 
@@ -260,7 +273,26 @@ export const CloseBattleSettingsPanel = observer(() => {
           <SwitchRow
             settingKey="showTickLabels"
             title={t('settingsPanels.closeBattle.showTickLabels')}
-            disabled={!settings.showTicks}
+            disabled={settings.showAxis === false || !settings.showTicks}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="showPlayerLine"
+            title={t('settingsPanels.closeBattle.showPlayerLine')}
+            desc={t('settingsPanels.closeBattle.showPlayerLineDesc')}
+            fallback
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <ColorRow
+            settingKey="playerLineColor"
+            title={t('settingsPanels.closeBattle.playerLineColor')}
+            disabled={settings.showPlayerLine === false}
+            fallback={PLAYER_LINE_FALLBACK_COLOR}
+            hex
           />
         </div>
 

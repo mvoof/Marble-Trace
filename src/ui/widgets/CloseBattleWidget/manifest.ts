@@ -31,6 +31,9 @@ const CLOSE_BATTLE_DESIGN_WIDTH = computeCloseBattleDesignWidth(
   CLOSE_BATTLE_COLUMN_DEFAULTS as unknown as CloseBattleWidgetSettings
 );
 
+/** White: the line sits on the widget's own background, whatever that is. */
+const PLAYER_LINE_DEFAULT_COLOR = '#ffffff';
+
 export const CLOSE_BATTLE_MANIFEST: WidgetManifest = {
   id: 'close-battle',
   order: 40,
@@ -68,6 +71,9 @@ export const CLOSE_BATTLE_MANIFEST: WidgetManifest = {
     scaleByDistance: true,
     otherClass: 'dim',
     glowRange: 30,
+    showAxis: true,
+    showPlayerLine: true,
+    playerLineColor: PLAYER_LINE_DEFAULT_COLOR,
     raceOnly: true,
   },
 };
