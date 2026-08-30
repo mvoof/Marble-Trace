@@ -137,16 +137,16 @@ const restoreWidgets = (
 };
 
 /**
- * The same repair for the copy of the widgets a layout carries. A layout holds
- * every widget, enabled or not (`snapshotWidgets` in the widget settings store),
- * so a widget the file has never seen belongs here as much as it does in the
- * top-level array.
+ * The same repair for the widgets a layout carries. Since the active layout owns
+ * the widgets outright, these are the only copies a driver actually sees; a
+ * layout holds every widget, enabled or not (`snapshotWidgets` in the widget
+ * settings store), so a widget the file has never seen belongs here as much as
+ * it does in `defaultWidgets`.
  *
- * Without this pass `mergeWithDefaults` reaches only the top-level `widgets[]`
- * and every layout keeps whatever shape it was written with. A setting added to
- * an already-shipped widget then reads as `undefined` in each layout — `false`
- * for a boolean — which is the opposite of its default, and it happens silently
- * on the first layout switch. That gap is why anything touching
+ * Without this pass every layout keeps whatever shape it was written with. A
+ * setting added to an already-shipped widget then reads as `undefined` in each
+ * layout — `false` for a boolean — which is the opposite of its default, and it
+ * happens silently on the first layout switch. That gap is why anything touching
  * `layouts[].widgets[]` used to need a migration step of its own.
  *
  * A widget the layout never had is forced to `enabled: false` regardless of what

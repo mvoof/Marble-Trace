@@ -7,7 +7,7 @@ to write one.
 
 User settings are persisted to `settings.json` in the app config directory
 (`%APPDATA%/com.voof.marble-trace` on Windows) through `tauri-plugin-store`. The
-shape is `Settings` in `src/store/sync/persistence.ts`.
+shape is `Settings` in `src/platform/sync/persistence.ts`.
 
 The file carries a `schemaVersion` at its top level. It is an **integer** and is
 deliberately unrelated to the app's semver:
@@ -18,16 +18,29 @@ deliberately unrelated to the app's semver:
 
 A file with no `schemaVersion` is version 0 — anything written before 0.21.
 
+### Who owns the widgets
+
+`layouts[]` is where the widgets live. The active layout **owns** them outright:
+the store's live widget map is a projection of that layout's own objects, so an
+edit in the overlay or the editor lands in the layout record itself — there is no
+second copy to commit, debounce or lose.
+
+`defaultWidgets[]` beside it is only the template catalogue a _new_ layout is
+built from, never what is on screen.
+
+Before v3 the file also carried a top-level `widgets[]`. It was written on every
+save and discarded on the next load, and it is gone.
+
 ## Load pipeline
 
 ```
 store.get('settings')
       ▼
-runMigrations(blob)          ← store/settings-schema, pure, works on raw JSON
+runMigrations(blob)          ← platform/settings-schema, pure, works on raw JSON
       ▼
-hydrateStores(root, blob)    ← store/sync/persistence
+hydrateStores(root, blob)    ← platform/sync/persistence
       ▼
-mergeWithDefaults(...)       ← utils/deep-merge, per widget and for app settings
+mergeWithDefaults(...)       ← store/deep-merge, per widget and for app settings
 ```
 
 Four things about this order matter:
@@ -39,19 +52,19 @@ Four things about this order matter:
    field to its default and logs a `console.warn`. It runs _after_ migrations, so
    a migration that writes a wrong-typed value has its work silently undone. Test
    for it — see below.
-3. **Restoration reaches the layout copies too, but only for defaults.**
+3. **Restoration reaches every layout's copy too, but only for defaults.**
    `mergeWithDefaults` merges one settings object; `hydrateStores` is what applies
-   it everywhere — `widgets[].userSettings` through `restoreWidgets`, and every
-   loaded layout's `widgets[]` through `restoreLayoutWidgets`, the same repair
-   plus one rule: a widget the layout never had is forced to `enabled: false`, so
-   filling a hole in an old file cannot put a new widget on someone's overlay.
-   The app block is merged separately.
+   it everywhere — `defaultWidgets[]` through `restoreWidgets`, and every loaded
+   layout's `widgets[]` through `restoreLayoutWidgets`, the same repair plus one
+   rule: a widget the layout never had is forced to `enabled: false`, so filling a
+   hole in an old file cannot put a new widget on someone's overlay. The app block
+   is merged separately.
 
    That covers **a missing key**, which is why adding a setting needs no
-   migration even though the widget is stored twice. It does **not** cover a key
-   that is present and now means something else — merging keeps the value it
-   finds. A migration that rewrites values still has to walk both copies itself,
-   with the `blob.ts` helpers.
+   migration even though the widget is stored once per layout. It does **not**
+   cover a key that is present and now means something else — merging keeps the
+   value it finds. A migration that rewrites values still has to walk every copy
+   itself, with the `blob.ts` helpers.
 
 4. **Both windows run the chain**, each on its own parse of the file, but only
    the main window writes. That is why a migration must be pure — a side effect
@@ -85,7 +98,7 @@ Before the first save at a new version, the old file is copied to
 ## When you do NOT need a migration
 
 - **Adding a field with a default.** `mergeWithDefaults` fills it in on the next
-  load, in the top-level `widgets[]` and in every layout's copy alike. Add it to
+  load, in `defaultWidgets[]` and in every layout's copy alike. Add it to
   `DEFAULT_APP_SETTINGS` or to the widget's manifest defaults.
 - **Removing a field.** It is pruned from disk on the next save.
 - **Renaming a field whose value the user can trivially re-enter.** They set it
@@ -115,7 +128,9 @@ Before the first save at a new version, the old file is copied to
 
 ## Adding a migration, step by step
 
-1. **Bump `CURRENT_SCHEMA_VERSION`** in `src/store/settings-schema/index.ts`.
+1. **Bump `CURRENT_SCHEMA_VERSION`** in `src/platform/settings-schema/index.ts`
+   — but only if the current version has already shipped. See
+   [One version per release](#one-version-per-release).
 2. **Add `migrations/v{n}-{slug}.ts`** exporting a `Migration` with `to: n` and a
    header comment saying what the format looked like before and after.
 3. **Append it to `MIGRATIONS`.** Order is the array's order; a test asserts the
@@ -124,6 +139,17 @@ Before the first save at a new version, the old file is copied to
 4. **Capture a fixture** (below) and write tests.
 5. **Never edit a shipped migration.** Fix a broken one with a new step on top —
    users who already ran the old one will not run it again.
+
+### One version per release
+
+A version is bumped **once**, and only after the current one has actually reached
+users — that is, only when the newest step is already contained in a release tag
+(`git tag --contains <commit>`). While the newest step is still unreleased, a new
+format change **joins that step** rather than adding another one on top: v3
+carries four unrelated edits for exactly this reason.
+
+Migrating a file through a version no build ever wrote is history nobody has, and
+it strands the settings of everyone running a dev build off `main`.
 
 ### Capturing a fixture
 
@@ -145,15 +171,18 @@ written, or the plaintext lives on in `settings.v{n}.bak`.
 
 ### Walking the blob — use `blob.ts`
 
-**A widget is in the file twice.** Once in the top-level `widgets[]`, and again
-inside every entry of `layouts[].widgets[]`. Restoration reaches both —
-`hydrateStores` runs `restoreWidgets` over the first and `restoreLayoutWidgets`
-over each loaded layout — but all it does is fill in **missing** keys from the
-shipped defaults. A value the file already holds is left exactly as found, in
-every copy. So a migration that rewrites values and touches only the top-level
-array leaves every layout carrying the old ones, and the failure is quiet: the
-app starts, the widget looks right, and the bad copy only surfaces when the user
-switches layout.
+**A widget is in the file once per layout, plus once more.** Every entry of
+`layouts[].widgets[]` carries the full catalogue — the active layout _owns_ the
+widgets a driver sees — and `defaultWidgets[]` carries the templates a new layout
+is built from. (A file written before v3 also has a top-level `widgets[]`; the
+helpers still visit it, so an old blob migrates cleanly.) Restoration reaches all
+of them — `hydrateStores` runs `restoreWidgets` over `defaultWidgets` and
+`restoreLayoutWidgets` over each loaded layout — but all it does is fill in
+**missing** keys from the shipped defaults. A value the file already holds is
+left exactly as found, in every copy. So a migration that rewrites values and
+touches one array leaves every other copy carrying the old ones, and the failure
+is quiet: the app starts, the widget looks right, and the bad copy only surfaces
+when the user switches layout.
 
 `settings-schema/blob.ts` exists so that forgetting is not possible:
 
@@ -220,8 +249,8 @@ idempotency.
 Each migration gets its own test next to it, from fixtures. Mandatory cases:
 
 - the values it is meant to lift end up where they belong;
-- the legacy fields are gone — from the app block, from `widgets[]` **and** from
-  every `layouts[].widgets[]` (free if you used `blob.ts`, but assert it anyway:
+- the legacy fields are gone — from the app block, from `defaultWidgets[]`
+  **and** from every `layouts[].widgets[]` (free if you used `blob.ts`, but assert it anyway:
   the assertion is what catches a later rewrite that stops using the helper);
 - nothing the step writes is a type `mergeWithDefaults` would reject — it runs
   _after_ the chain and silently resets a wrong-typed field to its default, so a
