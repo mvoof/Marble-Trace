@@ -7,7 +7,10 @@ import {
   TRANSPARENT_APPEARANCE_DEFAULTS,
   makeColumnLayoutResolver,
 } from '@ui/widgets/widget-manifest';
-import { computeCloseBattleDesignWidth } from '@ui/widgets/CloseBattleWidget/close-battle-utils';
+import {
+  NAME_COLUMN_DEFAULT_PX,
+  computeCloseBattleDesignWidth,
+} from '@ui/widgets/CloseBattleWidget/close-battle-utils';
 
 // Every column on the plate is optional except the number, the name and the
 // gap, and the plate spans the widget — so a switched-off column has to take
@@ -15,7 +18,14 @@ import { computeCloseBattleDesignWidth } from '@ui/widgets/CloseBattleWidget/clo
 // hole in it instead of the short one they asked for.
 const resolveCloseBattleLayout =
   makeColumnLayoutResolver<CloseBattleWidgetSettings>(
-    ['showClassBadge', 'showBrand', 'showDistance', 'showLapGap', 'nameMode'],
+    [
+      'showClassBadge',
+      'showBrand',
+      'showDistance',
+      'showLapGap',
+      'nameMode',
+      'nameColumnWidth',
+    ],
     computeCloseBattleDesignWidth
   );
 
@@ -25,6 +35,7 @@ const CLOSE_BATTLE_COLUMN_DEFAULTS = {
   showDistance: true,
   showLapGap: true,
   nameMode: 'initial',
+  nameColumnWidth: NAME_COLUMN_DEFAULT_PX,
 } as const;
 
 const CLOSE_BATTLE_DESIGN_WIDTH = computeCloseBattleDesignWidth(

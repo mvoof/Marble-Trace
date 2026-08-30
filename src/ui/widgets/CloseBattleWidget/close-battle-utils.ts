@@ -579,6 +579,26 @@ const NAME_COL_PX: Record<CloseBattleWidgetSettings['nameMode'], number> = {
   full: 128,
 };
 
+/**
+ * The user's own answer to that, bounded the way Standings bounds its name
+ * column: narrow enough to cut the plate down to the numbers, wide enough that
+ * a full name still fits before the ellipsis.
+ */
+export const NAME_COLUMN_MIN_PX = 60;
+export const NAME_COLUMN_MAX_PX = 200;
+export const NAME_COLUMN_DEFAULT_PX = NAME_COL_PX.initial;
+
+export const clampNameColumnWidth = (width: number | undefined): number => {
+  if (!Number.isFinite(width)) {
+    return NAME_COLUMN_DEFAULT_PX;
+  }
+
+  return Math.min(
+    NAME_COLUMN_MAX_PX,
+    Math.max(NAME_COLUMN_MIN_PX, Math.round(width as number))
+  );
+};
+
 export const computeCloseBattleDesignWidth = (
   settings: CloseBattleWidgetSettings
 ): number => {
@@ -591,6 +611,6 @@ export const computeCloseBattleDesignWidth = (
     GAP_COL_PX;
 
   return Math.round(
-    columns + NAME_COL_PX[settings.nameMode] + ROW_PAD_RIGHT_PX
+    columns + clampNameColumnWidth(settings.nameColumnWidth) + ROW_PAD_RIGHT_PX
   );
 };

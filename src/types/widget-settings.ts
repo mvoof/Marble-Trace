@@ -248,6 +248,12 @@ export interface CloseBattleWidgetSettings {
   showBrand: boolean;
   nameMode: BattleNameMode;
   /**
+   * Width of the name column in pixels at the widget's design scale. The plate
+   * is exactly as wide as its columns, so narrowing the name narrows the whole
+   * plate instead of shrinking the text.
+   */
+  nameColumnWidth: number;
+  /**
    * Cars that land in the same spot on the axis are drawn as one plate with a
    * `+N` badge instead of shoving each other aside.
    */
