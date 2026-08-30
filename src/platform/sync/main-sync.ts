@@ -191,6 +191,15 @@ const registerAppSettingsSaveReactions = (
       void onSave();
     }
   ),
+  // One counter covers adding, removing, renaming and every toggle on the
+  // companion list - the entries are objects, and a reaction on the array
+  // itself would not see a field change inside one.
+  reaction(
+    () => root.companionApps.revision,
+    () => {
+      void onSave();
+    }
+  ),
 ];
 
 /**
@@ -342,6 +351,11 @@ export const initMainSync = async (root: RootStore) => {
       // value from disk and the UI claims a signed-in session that is gone.
       void root.twitchAuth.syncLogin();
 
+      // Companion programs start once the list has been read from disk, and
+      // are stopped by the backend on the way out - the window is already
+      // gone by then, so nothing here can do it.
+      void root.companionApps.launchOnStart();
+
       root.widgetSettings.ensureDefaultLayout();
 
       // Migrated layouts carry placeholder monitor positions — persisted
@@ -390,6 +404,19 @@ export const initMainSync = async (root: RootStore) => {
             // The layout commit and settings save both run on debounced
             // reactions (500ms). Closing before that timer fires would
             // persist stale layout/widget state, so flush them here.
+            // Before the settings are written and the window goes: the
+            // programs the user asked to close with the app are still
+            // reachable here, and the backend exit hook is too late for
+            // one that needs a moment to shut down.
+            const stillRunning = await root.companionApps.closeOnExit();
+
+            if (stillRunning.length > 0) {
+              console.warn(
+                'Companion apps still running at exit:',
+                stillRunning.join(', ')
+              );
+            }
+
             root.widgetSettings.commitActiveLayout();
             await onSave();
             await logSettingsSnapshot(root);

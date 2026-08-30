@@ -411,6 +411,7 @@
       },
       "sections": {
         "general": "常规",
+        "companionApps": "配套程序",
         "updates": "更新",
         "overlay": "组件显示",
         "interaction": "交互模式",
@@ -458,6 +459,28 @@
       "copyToken": "复制令牌",
       "tokenCopied": "令牌已复制",
       "qrHidden": "二维码已隐藏"
+    },
+    "companions": {
+      "add": "添加",
+      "addDesc": "自动检测会在安装程序默认使用的目录中查找模拟赛车工具，其他程序需手动添加。",
+      "addTitle": "添加程序",
+      "browse": "添加程序…",
+      "close": "立即关闭",
+      "closeWithApp": "随应用关闭",
+      "detect": "检测已安装",
+      "detectedDesc": "尚未加入你的列表。",
+      "detectedTitle": "在本机找到",
+      "empty": "暂无程序。",
+      "launch": "立即启动",
+      "launchWithApp": "随应用启动",
+      "listDesc": "若尚未运行，将随 Marble Trace 一起启动。关闭应用时会关闭已勾选的程序，无论由谁启动——需要管理员权限的程序无法以此方式关闭。",
+      "listTitle": "你的程序",
+      "missing": "文件缺失",
+      "notOurs": "该程序不是由 Marble Trace 启动的，请在启动它的地方关闭。",
+      "removeConfirm": "要将该程序移出列表吗？",
+      "running": "运行中",
+      "stopped": "未运行",
+      "title": "配套程序"
     }
   },
   "bindings": {

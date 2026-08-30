@@ -6,6 +6,7 @@ import { DevicesSettings } from '@ui/app/main/components/BindingsSettings/Device
 import { StreamChatSourceCard } from './StreamChatSourceCard/StreamChatSourceCard';
 import { SettingsNav } from './SettingsNav';
 import { GeneralSection } from './sections/GeneralSection';
+import { CompanionAppsSection } from './sections/CompanionAppsSection';
 import { UpdatesSection } from './sections/UpdatesSection';
 import { OverlaySection } from './sections/OverlaySection';
 import { InteractionSection } from './sections/InteractionSection';
@@ -24,6 +25,7 @@ import styles from './SettingsPage.module.scss';
 const SECTION_COMPONENTS: Record<SettingsSectionId, () => React.ReactElement> =
   {
     general: GeneralSection,
+    companionApps: CompanionAppsSection,
     updates: UpdatesSection,
     overlay: OverlaySection,
     interaction: InteractionSection,

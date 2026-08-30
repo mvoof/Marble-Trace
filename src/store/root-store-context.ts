@@ -42,6 +42,7 @@ export const useWidgetSettingsStore = () => useStore().widgetSettings;
 export const useWidgetDefaultsStore = () => useStore().widgetDefaults;
 export const useLayoutsStore = () => useStore().layouts;
 export const useAppSettingsStore = () => useStore().appSettings;
+export const useCompanionAppsStore = () => useStore().companionApps;
 export const useUnitsStore = () => useStore().units;
 export const useWidgetAutoHideStore = () => useStore().widgetAutoHide;
 export const useBindingsStore = () => useStore().bindings;

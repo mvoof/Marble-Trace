@@ -11,6 +11,7 @@ import { detectSystemLanguage } from '@store/settings/system-locale';
 import { createRemoteToken } from '@utils/remote-screen';
 import i18n from '@/i18n';
 import type { AppLanguage } from '@/types';
+import type { CompanionApp } from '@/types/bindings';
 import type { SettingsLockReason } from '@platform/settings-schema/types';
 
 export const resolveAppLanguage = (language: AppLanguage) =>
@@ -78,6 +79,10 @@ const DEFAULT_APP_SETTINGS = {
   /** Frames per second pushed to browsers. A tablet cannot show 60 and the
    *  Wi-Fi does not need to carry them. */
   remoteTelemetryHz: 30,
+  /** Other programs the rig needs running, started and stopped with the app.
+   *  App-level for the same reason the wheel range is: a rig runs one set of
+   *  them, whichever layout is on screen. */
+  companionApps: [] as CompanionApp[],
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
@@ -91,7 +96,13 @@ export type UpdateStatus =
   | 'error';
 
 export class AppSettingsStore {
-  appSettings: AppSettings = { ...DEFAULT_APP_SETTINGS };
+  // The spread is shallow, so the one array among the defaults has to be copied
+  // by hand — a store that pushed into it would be editing the defaults, and
+  // every other store built from them.
+  appSettings: AppSettings = {
+    ...DEFAULT_APP_SETTINGS,
+    companionApps: [...DEFAULT_APP_SETTINGS.companionApps],
+  };
 
   /**
    * Set when `settings.json` could not be brought to the current schema — it

@@ -413,6 +413,7 @@
       },
       "sections": {
         "general": "General",
+        "companionApps": "Aplicaciones complementarias",
         "updates": "Actualizaciones",
         "overlay": "Visibilidad de widgets",
         "interaction": "Modos de interacción",
@@ -460,6 +461,28 @@
       "copyToken": "Copiar el token",
       "tokenCopied": "Token copiado",
       "qrHidden": "Código QR oculto"
+    },
+    "companions": {
+      "add": "Añadir",
+      "addDesc": "La detección busca las utilidades de simracing en las carpetas que usan sus instaladores. Lo demás se añade a mano.",
+      "addTitle": "Añadir un programa",
+      "browse": "Añadir programa…",
+      "close": "Cerrar ahora",
+      "closeWithApp": "Cerrar con la app",
+      "detect": "Detectar instalados",
+      "detectedDesc": "Todavía no están en tu lista.",
+      "detectedTitle": "Encontrados en este PC",
+      "empty": "Aún no hay programas.",
+      "launch": "Iniciar ahora",
+      "launchWithApp": "Iniciar con la app",
+      "listDesc": "Se inician con Marble Trace si no están ya en marcha. Al cerrar la aplicación se cierran las marcadas, las haya iniciado quien las haya iniciado; un programa que requiere permisos de administrador no puede cerrarse así.",
+      "listTitle": "Tus programas",
+      "missing": "Archivo no encontrado",
+      "notOurs": "Iniciado fuera de Marble Trace: ciérralo donde lo iniciaste.",
+      "removeConfirm": "¿Quitar este programa de la lista?",
+      "running": "En ejecución",
+      "stopped": "Detenido",
+      "title": "Aplicaciones complementarias"
     }
   },
   "bindings": {
