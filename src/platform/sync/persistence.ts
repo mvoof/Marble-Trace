@@ -31,7 +31,11 @@ export interface Settings {
   units: {
     system: UnitSystem;
   };
-  widgets: WidgetDefaultConfig[];
+  /**
+   * The widget templates a new layout is built from. The widgets a driver
+   * actually sees live in `layouts[].widgets[]` and nowhere else — the active
+   * layout owns them.
+   */
   defaultWidgets: WidgetDefaultConfig[];
   layouts: SavedLayout[];
   activeLayoutId: string | null;
@@ -181,12 +185,6 @@ export const hydrateStores = (
       root.units.setSystem(loadedSettings.units.system);
     }
 
-    root.widgetSettings.setWidgets(
-      loadedSettings.widgets
-        ? restoreWidgets(loadedSettings.widgets)
-        : DEFAULT_WIDGETS
-    );
-
     if (loadedSettings.defaultWidgets) {
       root.widgetDefaults.setWidgets(
         restoreWidgets(loadedSettings.defaultWidgets)
@@ -226,7 +224,6 @@ export const buildSettings = (root: RootStore): Settings => ({
   units: {
     system: root.units.unitSystem,
   },
-  widgets: root.widgetSettings.allWidgets,
   defaultWidgets: Array.from(root.widgetDefaults.widgets.values()),
   layouts: root.widgetSettings.layouts,
   activeLayoutId: root.widgetSettings.activeLayoutId,
