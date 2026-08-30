@@ -310,6 +310,13 @@ export interface StandingsWidgetSettings {
   showWeather: boolean;
   showSOF: boolean;
   showTotalDrivers: boolean;
+  /**
+   * Width of the driver-name column in design px (before `--wfs`). The column is
+   * fixed rather than elastic so the table's total width is the sum of its
+   * visible columns: narrowing the name narrows the widget instead of shrinking
+   * the text, which dragging the widget's edge would do.
+   */
+  nameColumnWidth: number;
   showBrand: boolean;
   showTire: boolean;
   showLicBadge: boolean;
@@ -340,6 +347,13 @@ export interface RelativeWidgetSettings {
    */
   useLivePositions: boolean;
   rowPadding: RowPadding;
+  /**
+   * Width of the driver-name column in design px (before `--wfs`). The column is
+   * fixed rather than elastic so the table's total width is the sum of its
+   * visible columns: narrowing the name narrows the widget instead of shrinking
+   * the text, which dragging the widget's edge would do.
+   */
+  nameColumnWidth: number;
   showLicBadge: boolean;
   showIRating: boolean;
   showPitIndicator: boolean;
@@ -773,6 +787,15 @@ export interface WidgetManifest extends WidgetMeta {
    */
   order?: number;
   resolveLayoutChange?: ResolveLayoutChange;
+  /**
+   * For a widget whose width is literally the sum of its columns (the standings
+   * and relative tables), the design width the settings imply. The saved copy is
+   * normalized against it on load: a stored width left by an older shape would
+   * otherwise survive as dead space at the right edge of every row, since the
+   * columns scale by `--wfs = currentWidth / designWidth` and fill the widget
+   * exactly only while the two agree.
+   */
+  deriveDesignWidth?: (settings: WidgetUserSettings) => number;
   /**
    * High-frequency bundle fields this widget reads. The backend fills them only
    * while some enabled widget of the active layout asks for them — declaring

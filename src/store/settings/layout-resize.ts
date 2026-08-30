@@ -51,3 +51,65 @@ export const applyLayoutResize = (
     Object.assign(widget.userSettings, result.userSettingsPatch);
   }
 };
+
+/**
+ * The design width a widget's settings imply, for the widgets that declare
+ * `deriveDesignWidth` — the tables, whose width *is* the sum of their columns.
+ *
+ * For them a stored design width is not state, it is a cache of an arithmetic
+ * that its own settings already answer, and every copy of it — the file, each
+ * layout's snapshot, the undo history — is a chance for the two to drift apart.
+ * They show it the same way: the columns scale by `--wfs = currentWidth /
+ * designWidth`, so the row stops matching the frame around it the moment the
+ * pair disagrees, and the widget appears to jump on the next layout switch.
+ *
+ * Deriving it wherever widgets are installed means the drift cannot outlive a
+ * single write. Everything else keeps its stored size untouched.
+ */
+export const deriveWidgetDesignWidth = (
+  id: string,
+  userSettings: WidgetUserSettings,
+  storedDesignWidth: number
+) => {
+  const derive = WIDGET_BY_ID.get(id)?.deriveDesignWidth;
+
+  if (!derive) {
+    return storedDesignWidth;
+  }
+
+  return Math.max(1, derive(userSettings));
+};
+
+/**
+ * Installs the derived design width on a widget, keeping `--wfs` where it was:
+ * `currentWidth` is rescaled by the same ratio, so repairing a stale width
+ * resizes the frame around the table without resizing the text inside it. This
+ * is the repair the load path performs, and it has to read the same here — a
+ * widget must not change size depending on whether it arrived from the file or
+ * from a layout snapshot.
+ *
+ * A width that already agrees leaves both numbers untouched, which is every
+ * call after the first repair.
+ */
+export const applyDerivedDesignWidth = (
+  id: string,
+  widget: WidgetDefaultConfig
+) => {
+  const previousWidth = widget.designWidth;
+  const derivedWidth = deriveWidgetDesignWidth(
+    id,
+    widget.userSettings,
+    previousWidth
+  );
+
+  if (derivedWidth === previousWidth || previousWidth <= 0) {
+    widget.designWidth = derivedWidth;
+
+    return;
+  }
+
+  widget.designWidth = derivedWidth;
+  widget.userSettings.currentWidth = Math.round(
+    (widget.userSettings.currentWidth / previousWidth) * derivedWidth
+  );
+};

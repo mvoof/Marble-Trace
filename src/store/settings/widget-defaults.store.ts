@@ -2,7 +2,10 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import { DEFAULT_WIDGETS } from '@store/widget-catalog';
 import { mergeWithDefaults } from '@store/deep-merge';
-import { applyLayoutResize } from '@store/settings/layout-resize';
+import {
+  applyLayoutResize,
+  deriveWidgetDesignWidth,
+} from '@store/settings/layout-resize';
 import type {
   BaseUserSettings,
   WidgetDefaultConfig,
@@ -110,11 +113,25 @@ export class WidgetDefaultsStore {
             existing.designWidth = merged.designWidth;
             existing.designHeight = merged.designHeight;
           }
+
+          existing.designWidth = deriveWidgetDesignWidth(
+            defaultWidget.id,
+            existing.userSettings,
+            existing.designWidth
+          );
         } else {
-          this.widgets.set(defaultWidget.id, {
+          const installed = {
             ...defaultWidget,
             userSettings: mergedUserSettings,
-          });
+          };
+
+          installed.designWidth = deriveWidgetDesignWidth(
+            defaultWidget.id,
+            installed.userSettings,
+            installed.designWidth
+          );
+
+          this.widgets.set(defaultWidget.id, installed);
         }
       });
 

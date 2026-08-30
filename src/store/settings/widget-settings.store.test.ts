@@ -388,3 +388,134 @@ describe('WidgetSettingsStore remote screen geometry', () => {
     expect(widget.userSettings.y).toBe(2010);
   });
 });
+
+describe('derived design width', () => {
+  it('rebuilds a stale design width when a layout copy is installed', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.widgetSettings;
+    const relative = store.getWidget('relative');
+
+    expect(relative).toBeDefined();
+
+    const shippedWidth = relative!.designWidth;
+
+    // What a layout snapshot written by an older build looks like: the settings
+    // say one width, the stored number says another. Left alone it reaches
+    // `--wfs` as `currentWidth / designWidth` and the row stops matching the
+    // frame around it — the widget appears to jump on the layout switch.
+    store.setWidgets([
+      {
+        ...relative!,
+        designWidth: shippedWidth + 120,
+        userSettings: { ...relative!.userSettings },
+      },
+    ]);
+
+    expect(store.getWidget('relative')!.designWidth).toBe(shippedWidth);
+  });
+
+  it('rescales currentWidth with it, so the repair does not resize the text', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.widgetSettings;
+    const relative = store.getWidget('relative')!;
+    const shippedWidth = relative.designWidth;
+    const staleWidth = shippedWidth + 120;
+
+    store.setWidgets([
+      {
+        ...relative,
+        designWidth: staleWidth,
+        userSettings: { ...relative.userSettings, currentWidth: staleWidth },
+      },
+    ]);
+
+    const repaired = store.getWidget('relative')!;
+
+    // --wfs is currentWidth / designWidth; the pair moved together, so it did not.
+    expect(repaired.designWidth).toBe(shippedWidth);
+    expect(repaired.userSettings.currentWidth).toBe(shippedWidth);
+  });
+
+  it('leaves the size alone when the derived width already agrees', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.widgetSettings;
+    const relative = store.getWidget('relative')!;
+    const userChosenWidth = relative.designWidth * 2;
+
+    store.setWidgets([
+      {
+        ...relative,
+        userSettings: {
+          ...relative.userSettings,
+          currentWidth: userChosenWidth,
+        },
+      },
+    ]);
+
+    expect(store.getWidget('relative')!.userSettings.currentWidth).toBe(
+      userChosenWidth
+    );
+  });
+
+  it('rebuilds it from settings synced in by an overlay window', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.widgetSettings;
+
+    const monitorName = 'DISPLAY1';
+    const monitors = [
+      { name: monitorName, bounds: { x: 0, y: 0, width: 1920, height: 1080 } },
+    ];
+
+    store.setLayouts(
+      [
+        {
+          id: 'layout-1',
+          name: 'Default',
+          createdAt: 0,
+          monitors,
+          widgets: [],
+        },
+      ],
+      'layout-1'
+    );
+
+    const standings = store.getWidget('standings')!;
+    const shippedWidth = standings.designWidth;
+
+    // What the overlay sends back: settings for a narrower name column, and its
+    // own stored width, which it had no reason to recompute.
+    store.applySettingsSyncForMonitor(monitorName, [
+      {
+        ...standings,
+        designWidth: shippedWidth,
+        userSettings: {
+          ...standings.userSettings,
+          x: 100,
+          y: 100,
+          nameColumnWidth: 100,
+        },
+      },
+    ]);
+
+    const synced = store.getWidget('standings')!;
+
+    expect(synced.designWidth).toBe(shippedWidth - (200 - 100));
+  });
+
+  it('follows the name column width without touching other widgets', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.widgetSettings;
+    const before = store.getWidget('standings')!.designWidth;
+    const timerWidth = store.getWidget('timer')!.designWidth;
+
+    store.updateUserSettings('standings', { nameColumnWidth: 150 });
+
+    const standings = store.getWidget('standings')!;
+
+    expect(before - standings.designWidth).toBe(
+      200 -
+        (standings.userSettings as { nameColumnWidth: number }).nameColumnWidth
+    );
+    expect(store.getWidget('timer')!.designWidth).toBe(timerWidth);
+  });
+});

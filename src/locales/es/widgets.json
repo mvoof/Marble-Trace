@@ -78,6 +78,8 @@
   },
   "settingsPanels": {
     "common": {
+      "nameColumnWidth": "Ancho de la Columna de Nombre",
+      "nameColumnWidthDesc": "Ancho de la columna del nombre del piloto, en píxeles a la escala de diseño del widget. La tabla mide exactamente lo que suman sus columnas visibles, así que estrechar el nombre estrecha toda la tabla en lugar de reducir el texto.",
       "positions": "Posiciones",
       "useLivePositions": "Usar posiciones en vivo",
       "useLivePositionsDesc": "Ordena por la posición en pista, recalculada en cada tick. Desactivado: el número oficial del simulador, que solo se actualiza cuando un coche cruza la meta. Se aplica a cualquier tipo de sesión.",

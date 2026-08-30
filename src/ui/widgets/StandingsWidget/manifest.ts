@@ -5,12 +5,15 @@ import {
   DEFAULT_PLAYER_ACCENT_COLOR,
   DEFAULT_PLAYER_ROW_COLOR,
   PANEL_APPEARANCE_DEFAULTS,
-  makeColumnLayoutResolver,
+  makeExactColumnLayoutResolver,
 } from '@ui/widgets/widget-manifest';
-import { computeStandingsDesignWidth } from '@ui/widgets/StandingsWidget/standings-utils';
+import {
+  NAME_COLUMN_DEFAULT_PX,
+  computeStandingsDesignWidth,
+} from '@ui/widgets/StandingsWidget/standings-utils';
 
 const resolveStandingsLayout =
-  makeColumnLayoutResolver<StandingsWidgetSettings>(
+  makeExactColumnLayoutResolver<StandingsWidgetSettings>(
     [
       'showLicBadge',
       'showIRating',
@@ -19,11 +22,13 @@ const resolveStandingsLayout =
       'showPosChange',
       'showBrand',
       'showTire',
+      'nameColumnWidth',
     ],
     computeStandingsDesignWidth
   );
 
 const STANDINGS_COLUMN_DEFAULTS = {
+  nameColumnWidth: NAME_COLUMN_DEFAULT_PX,
   showPosChange: true,
   showBrand: true,
   showTire: true,
@@ -43,6 +48,8 @@ export const STANDINGS_MANIFEST: WidgetManifest = {
   label: 'Standings',
   description: 'Live session standings and intervals.',
   resolveLayoutChange: resolveStandingsLayout,
+  deriveDesignWidth: (settings) =>
+    computeStandingsDesignWidth(settings as StandingsWidgetSettings),
   requiredCapabilities: ['standings'],
   designWidth: STANDINGS_DESIGN_WIDTH,
   designHeight: 500,

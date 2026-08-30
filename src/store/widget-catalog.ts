@@ -60,6 +60,7 @@ export const WIDGET_BY_ID = new Map(
 // outlive the widget that declared it.
 const NON_SERIALIZABLE_WIDGET_KEYS = new Set([
   'resolveLayoutChange',
+  'deriveDesignWidth',
   'telemetryEvents',
   'order',
 ]);
