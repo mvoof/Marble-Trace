@@ -8,6 +8,7 @@ import {
 import { resolveMonitorByName } from '@platform/sync/overlay-resolution';
 import { LayoutsStore } from '@store/settings/layouts.store';
 import {
+  applyDerivedDesignWidth,
   applyLayoutResize,
   deriveWidgetDesignWidth,
 } from '@store/settings/layout-resize';
@@ -300,11 +301,7 @@ export class WidgetSettingsStore {
             existing.designHeight = merged.designHeight;
           }
 
-          existing.designWidth = deriveWidgetDesignWidth(
-            defaultWidget.id,
-            existing.userSettings,
-            existing.designWidth
-          );
+          applyDerivedDesignWidth(defaultWidget.id, existing);
         } else {
           const installed = savedWidget
             ? {
@@ -313,11 +310,7 @@ export class WidgetSettingsStore {
               }
             : { ...defaultWidget, userSettings: mergedUserSettings };
 
-          installed.designWidth = deriveWidgetDesignWidth(
-            defaultWidget.id,
-            installed.userSettings,
-            installed.designWidth
-          );
+          applyDerivedDesignWidth(defaultWidget.id, installed);
 
           this.widgets.set(defaultWidget.id, installed);
         }

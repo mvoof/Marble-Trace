@@ -414,6 +414,49 @@ describe('derived design width', () => {
     expect(store.getWidget('relative')!.designWidth).toBe(shippedWidth);
   });
 
+  it('rescales currentWidth with it, so the repair does not resize the text', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.widgetSettings;
+    const relative = store.getWidget('relative')!;
+    const shippedWidth = relative.designWidth;
+    const staleWidth = shippedWidth + 120;
+
+    store.setWidgets([
+      {
+        ...relative,
+        designWidth: staleWidth,
+        userSettings: { ...relative.userSettings, currentWidth: staleWidth },
+      },
+    ]);
+
+    const repaired = store.getWidget('relative')!;
+
+    // --wfs is currentWidth / designWidth; the pair moved together, so it did not.
+    expect(repaired.designWidth).toBe(shippedWidth);
+    expect(repaired.userSettings.currentWidth).toBe(shippedWidth);
+  });
+
+  it('leaves the size alone when the derived width already agrees', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.widgetSettings;
+    const relative = store.getWidget('relative')!;
+    const userChosenWidth = relative.designWidth * 2;
+
+    store.setWidgets([
+      {
+        ...relative,
+        userSettings: {
+          ...relative.userSettings,
+          currentWidth: userChosenWidth,
+        },
+      },
+    ]);
+
+    expect(store.getWidget('relative')!.userSettings.currentWidth).toBe(
+      userChosenWidth
+    );
+  });
+
   it('rebuilds it from settings synced in by an overlay window', () => {
     const rootStore = new RootStore({ skipInit: true });
     const store = rootStore.widgetSettings;

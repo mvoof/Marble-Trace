@@ -79,3 +79,37 @@ export const deriveWidgetDesignWidth = (
 
   return Math.max(1, derive(userSettings));
 };
+
+/**
+ * Installs the derived design width on a widget, keeping `--wfs` where it was:
+ * `currentWidth` is rescaled by the same ratio, so repairing a stale width
+ * resizes the frame around the table without resizing the text inside it. This
+ * is the repair the load path performs, and it has to read the same here — a
+ * widget must not change size depending on whether it arrived from the file or
+ * from a layout snapshot.
+ *
+ * A width that already agrees leaves both numbers untouched, which is every
+ * call after the first repair.
+ */
+export const applyDerivedDesignWidth = (
+  id: string,
+  widget: WidgetDefaultConfig
+) => {
+  const previousWidth = widget.designWidth;
+  const derivedWidth = deriveWidgetDesignWidth(
+    id,
+    widget.userSettings,
+    previousWidth
+  );
+
+  if (derivedWidth === previousWidth || previousWidth <= 0) {
+    widget.designWidth = derivedWidth;
+
+    return;
+  }
+
+  widget.designWidth = derivedWidth;
+  widget.userSettings.currentWidth = Math.round(
+    (widget.userSettings.currentWidth / previousWidth) * derivedWidth
+  );
+};
