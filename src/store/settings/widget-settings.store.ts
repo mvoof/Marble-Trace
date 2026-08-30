@@ -564,6 +564,15 @@ export class WidgetSettingsStore {
 
       if (live) {
         Object.assign(live.userSettings, widget.userSettings);
+
+        // Derived from the settings just applied, never from the incoming copy:
+        // the overlay knows only its own monitor, so its stored width can be
+        // stale even when the settings it sends are not.
+        live.designWidth = deriveWidgetDesignWidth(
+          widget.id,
+          live.userSettings,
+          live.designWidth
+        );
       }
     }
 

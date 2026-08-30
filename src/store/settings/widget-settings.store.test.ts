@@ -414,6 +414,51 @@ describe('derived design width', () => {
     expect(store.getWidget('relative')!.designWidth).toBe(shippedWidth);
   });
 
+  it('rebuilds it from settings synced in by an overlay window', () => {
+    const rootStore = new RootStore({ skipInit: true });
+    const store = rootStore.widgetSettings;
+
+    const monitorName = 'DISPLAY1';
+    const monitors = [
+      { name: monitorName, bounds: { x: 0, y: 0, width: 1920, height: 1080 } },
+    ];
+
+    store.setLayouts(
+      [
+        {
+          id: 'layout-1',
+          name: 'Default',
+          createdAt: 0,
+          monitors,
+          widgets: [],
+        },
+      ],
+      'layout-1'
+    );
+
+    const standings = store.getWidget('standings')!;
+    const shippedWidth = standings.designWidth;
+
+    // What the overlay sends back: settings for a narrower name column, and its
+    // own stored width, which it had no reason to recompute.
+    store.applySettingsSyncForMonitor(monitorName, [
+      {
+        ...standings,
+        designWidth: shippedWidth,
+        userSettings: {
+          ...standings.userSettings,
+          x: 100,
+          y: 100,
+          nameColumnWidth: 100,
+        },
+      },
+    ]);
+
+    const synced = store.getWidget('standings')!;
+
+    expect(synced.designWidth).toBe(shippedWidth - (200 - 100));
+  });
+
   it('follows the name column width without touching other widgets', () => {
     const rootStore = new RootStore({ skipInit: true });
     const store = rootStore.widgetSettings;
