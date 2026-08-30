@@ -3,14 +3,17 @@ import type { SettingsBlob } from './types';
 /**
  * Structural helpers for walking a raw `settings.json` blob.
  *
- * These exist for one reason: **a widget appears in the file twice.** Once in
- * the top-level `widgets[]`, and once more inside every entry of
- * `layouts[].widgets[]`. Defaulting reaches both copies (`restoreLayoutWidgets`
- * in `sync/persistence.ts`), but it only fills in what is missing — a value the
- * file already holds is left exactly as found. So a migration that rewrites
- * values and touches the top-level array only leaves every layout carrying the
- * old one. That failure is quiet: the app starts, the widget looks right until
- * the user switches layout, and the bad copy outlives the build that wrote it.
+ * These exist for one reason: **a widget appears in the file many times.** Once
+ * inside every entry of `layouts[].widgets[]` — each layout carries the full
+ * catalogue, enabled or not — once in `defaultWidgets[]`, the template list a
+ * new layout is built from, and, in a file written before v3, once more in the
+ * long-gone top-level `widgets[]`. Defaulting reaches all of them
+ * (`restoreLayoutWidgets` in `sync/persistence.ts`), but it only fills in what
+ * is missing — a value the file already holds is left exactly as found. So a
+ * migration that rewrites values and visits one array leaves every other copy
+ * carrying the old one. That failure is quiet: the app starts, the widget looks
+ * right until the user switches layout, and the bad copy outlives the build
+ * that wrote it.
  *
  * Using {@link mapEveryWidget} makes forgetting structurally impossible, which
  * is the whole point of putting it here rather than in a paragraph of the docs.
@@ -37,11 +40,12 @@ export const asArray = <T>(value: unknown): T[] =>
   Array.isArray(value) ? value : [];
 
 /**
- * Applies `transform` to the top-level `widgets[]` and to the `widgets[]` of
- * every layout, returning a new blob. Anything else in the file is passed
- * through untouched, including layouts that are not objects — those are left
- * exactly as found rather than repaired, because a migration is not the place to
- * decide what a corrupt layout should have been.
+ * Applies `transform` to every widget array in the file — `defaultWidgets[]`,
+ * the `widgets[]` of every layout, and the pre-v3 top-level `widgets[]` — and
+ * returns a new blob. Anything else is passed through untouched, including
+ * layouts that are not objects: those are left exactly as found rather than
+ * repaired, because a migration is not the place to decide what a corrupt
+ * layout should have been.
  */
 export const mapEveryWidget = (
   blob: SettingsBlob,
@@ -54,6 +58,12 @@ export const mapEveryWidget = (
   // layout", and the defaulting that runs afterwards tells those apart.
   if ('widgets' in blob) {
     mapped['widgets'] = transform(asArray<BlobWidget>(blob['widgets']));
+  }
+
+  if ('defaultWidgets' in blob) {
+    mapped['defaultWidgets'] = transform(
+      asArray<BlobWidget>(blob['defaultWidgets'])
+    );
   }
 
   if ('layouts' in blob) {

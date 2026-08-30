@@ -1496,7 +1496,7 @@ the file and hydrating the stores.
 flowchart LR
     FILE["settings.json<br/>on disk"]
     CHAIN["<b>settings-schema/</b><br/>migration chain<br/><i>pure functions, raw blob</i>"]
-    MERGE["mergeWithDefaults<br/><i>does not reach layouts[].widgets[]</i>"]
+    MERGE["mergeWithDefaults<br/><i>fills defaults in every layout copy</i>"]
     STORES["settings stores"]
 
     FILE --> CHAIN --> MERGE --> STORES
@@ -1507,11 +1507,35 @@ flowchart LR
 
 Three rules, each of which exists because breaking it corrupts real users' files:
 
-| Rule                                                                                                                                | Why                                                                           |
-| ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| A migration is a **pure function** and must **never import live types, defaults or registries** — freeze what it needs as a literal | otherwise a step written today silently rewrites history by next year's rules |
-| `mergeWithDefaults` runs _after_ the chain and never reaches `layouts[].widgets[]`                                                  | a migration must clean those copies itself                                    |
-| A file this build cannot migrate **locks settings against every write**                                                             | better a read-only session than a repaired-or-deleted file                    |
+| Rule                                                                                                                                           | Why                                                                                                                              |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| A migration is a **pure function** and must **never import live types, defaults or registries** — freeze what it needs as a literal            | otherwise a step written today silently rewrites history by next year's rules                                                    |
+| `mergeWithDefaults` runs _after_ the chain, over `defaultWidgets[]` and every `layouts[].widgets[]` — but it only fills in what is **missing** | a new setting with a default needs no migration; rewriting a value that is already there is still the chain's job, in every copy |
+| A file this build cannot migrate **locks settings against every write**                                                                        | better a read-only session than a repaired-or-deleted file                                                                       |
+
+### The active layout owns the widgets
+
+The widgets a driver sees live in `layouts[].widgets[]` and nowhere else.
+`WidgetSettingsStore.widgets` is a **projection** of the active layout's own
+objects — the same objects, not a copy — so every edit the overlay or the editor
+makes lands in the layout record directly. There is nothing to commit afterwards,
+which is why the old `commitActiveLayout` and its 500 ms debounce (and the forced
+flush on window close that existed only to beat that timer) are gone. Saving is
+still debounced; nothing is lost when it does not fire, because there is no
+second copy to lose.
+
+Two rules keep the projection honest:
+
+- **A layout with no monitors is not an owner.** Removing a layout's last screen
+  leaves its widgets in the record but gives it no area to draw on, so both the
+  projection and the install fall back to a detached map rather than saving a
+  blank starter set over the saved arrangement.
+- **A starter set is written to the layout that asked for it,** never to whatever
+  is active by the time the monitor resolves — the resolution is asynchronous,
+  and the driver may have selected another layout meanwhile.
+
+`defaultWidgets[]` in the file is the template catalogue a first layout is built
+from, not what is on screen.
 
 Most changes need no migration at all. Full guide:
 [`docs/settings-schema.md`](./settings-schema.md).

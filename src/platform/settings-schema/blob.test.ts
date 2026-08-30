@@ -17,6 +17,7 @@ const blobWithWidgetEverywhere = (): SettingsBlob => ({
     { id: 'fuel', userSettings: { enabled: true, oldName: 7 } },
     { id: 'timer', userSettings: { enabled: false } },
   ],
+  defaultWidgets: [{ id: 'fuel', userSettings: { enabled: true, oldName: 5 } }],
   layouts: [
     {
       id: 'a',
@@ -41,7 +42,11 @@ const fuelSettingsEverywhere = (blob: SettingsBlob) => {
       layout.widgets.find((widget) => widget.id === 'fuel')?.userSettings
   );
 
-  return [top, ...inLayouts];
+  const inCatalogue = (
+    blob['defaultWidgets'] as { id: string; userSettings: unknown }[]
+  ).find((widget) => widget.id === 'fuel')?.userSettings;
+
+  return [top, inCatalogue, ...inLayouts];
 };
 
 describe('asObject / asArray', () => {
@@ -60,21 +65,23 @@ describe('asObject / asArray', () => {
 });
 
 describe('mapEveryWidget', () => {
-  // The reason this module exists: mergeWithDefaults never descends into
-  // layouts, so a migration that misses them leaves the old shape behind.
-  it('reaches the layout copies, not just the top-level list', () => {
+  // The reason this module exists: defaulting fills in only what is missing, so
+  // a migration that rewrites values and misses a copy leaves the old shape
+  // behind in it.
+  it('reaches every widget array in the file', () => {
     const result = mapEveryWidget(blobWithWidgetEverywhere(), (widgets) =>
       widgets.map((widget) => ({ ...widget, visited: true }))
     );
 
     const everyWidget = [
       ...(result['widgets'] as { visited?: boolean }[]),
+      ...(result['defaultWidgets'] as { visited?: boolean }[]),
       ...(result['layouts'] as { widgets: { visited?: boolean }[] }[]).flatMap(
         (layout) => layout.widgets
       ),
     ];
 
-    expect(everyWidget).toHaveLength(4);
+    expect(everyWidget).toHaveLength(5);
 
     for (const widget of everyWidget) {
       expect(widget.visited).toBe(true);
@@ -108,6 +115,7 @@ describe('mapEveryWidget', () => {
     const result = mapEveryWidget({ app: {} }, (widgets) => widgets);
 
     expect('widgets' in result).toBe(false);
+    expect('defaultWidgets' in result).toBe(false);
     expect('layouts' in result).toBe(false);
   });
 
@@ -185,6 +193,7 @@ describe('renameWidgetSetting', () => {
 
     expect(fuelSettingsEverywhere(result)).toEqual([
       { enabled: true, newName: 7 },
+      { enabled: true, newName: 5 },
       { enabled: true, newName: 3 },
       { enabled: false, newName: 9 },
     ]);
@@ -213,6 +222,7 @@ describe('dropWidgetSettings', () => {
     ]);
 
     expect(fuelSettingsEverywhere(result)).toEqual([
+      { enabled: true },
       { enabled: true },
       { enabled: true },
       { enabled: false },
