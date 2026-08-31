@@ -343,6 +343,8 @@ export interface StandingsWidgetSettings {
   showLapsCompleted: boolean;
   showIncidentsBadge: boolean;
   abbreviateNames: boolean;
+  /** Driver's profile country flag, in its own column before the name. */
+  showCountryFlag: boolean;
   showDriverFlags: boolean;
   /**
    * Drop rows for cars the sim marked as retired or disqualified. The player's own
@@ -373,6 +375,8 @@ export interface RelativeWidgetSettings {
   showIRating: boolean;
   showPitIndicator: boolean;
   abbreviateNames: boolean;
+  /** Driver's profile country flag, in its own column before the name. */
+  showCountryFlag: boolean;
   showDriverFlags: boolean;
   /** Highlight color for the player's own row. */
   playerRowColor: string;

@@ -64,6 +64,8 @@ export const PaceCarRow = observer(({ driver, index }: PaceCarRowProps) => {
         <span className={styles.carNumber}>#{formattedCarNumber}</span>
       </div>
 
+      {settings.showCountryFlag && <div />}
+
       <span className={styles.centerLabel}>{driver.userName}</span>
 
       <div className={styles.gapBlock}>

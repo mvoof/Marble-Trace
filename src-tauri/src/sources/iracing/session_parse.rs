@@ -194,6 +194,7 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
                 ),
                 car_screen_name: raw_driver.car_screen_name.unwrap_or_default(),
                 car_screen_name_short: raw_driver.car_screen_name_short.unwrap_or_default(),
+                flair_id: raw_driver.flair_id.unwrap_or(0),
                 i_rating: raw_driver.i_rating.unwrap_or(0),
                 lic_string: raw_driver.lic_string.unwrap_or_default(),
                 lic_color: raw_driver.lic_color.unwrap_or_default(),
@@ -427,6 +428,8 @@ struct RawDriver {
     car_class_color: Option<String>,
     car_screen_name: Option<String>,
     car_screen_name_short: Option<String>,
+    #[serde(rename = "FlairID")]
+    flair_id: Option<i32>,
     #[serde(rename = "IRating")]
     i_rating: Option<i32>,
     lic_string: Option<String>,

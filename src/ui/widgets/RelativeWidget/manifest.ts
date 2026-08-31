@@ -14,7 +14,7 @@ import {
 
 const resolveRelativeLayout =
   makeExactColumnLayoutResolver<RelativeWidgetSettings>(
-    ['showLicBadge', 'showIRating', 'nameColumnWidth'],
+    ['showLicBadge', 'showIRating', 'showCountryFlag', 'nameColumnWidth'],
     computeRelativeDesignWidth
   );
 
@@ -22,6 +22,7 @@ const RELATIVE_COLUMN_DEFAULTS = {
   nameColumnWidth: NAME_COLUMN_DEFAULT_PX,
   showLicBadge: true,
   showIRating: true,
+  showCountryFlag: false,
 };
 const RELATIVE_DESIGN_WIDTH = computeRelativeDesignWidth(
   RELATIVE_COLUMN_DEFAULTS as unknown as RelativeWidgetSettings

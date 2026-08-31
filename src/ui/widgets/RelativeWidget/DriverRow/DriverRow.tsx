@@ -9,6 +9,7 @@ import {
 import { parseDriverFlags } from '@utils/driver';
 import { DriverStatusBadges } from '@ui/shared/DriverStatusBadge/DriverStatusBadges';
 import { getContrastTextColor, playerRowStyle } from '@utils/colors';
+import { CountryFlag } from '@ui/shared/CountryFlag/CountryFlag';
 import { DriverFlagBadge } from '@ui/shared/DriverFlagBadge/DriverFlagBadge';
 import { LicBadge } from '@ui/shared/RatingBadge/LicBadge';
 import { formatIr } from '@ui/shared/RatingBadge/LicBadge.utils';
@@ -129,6 +130,12 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
           {formattedCarNumber}
         </span>
       </div>
+
+      {settings.showCountryFlag && (
+        <div className={styles.countryFlagCell}>
+          <CountryFlag flairId={driver.flairId} />
+        </div>
+      )}
 
       <div className={styles.infoBlock}>
         {settings.showDriverFlags && flagType !== 'none' && (

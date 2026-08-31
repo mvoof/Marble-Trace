@@ -20,6 +20,7 @@ const resolveStandingsLayout =
       'showIrChange',
       'showLapsCompleted',
       'showPosChange',
+      'showCountryFlag',
       'showBrand',
       'showTire',
       'nameColumnWidth',
@@ -30,6 +31,7 @@ const resolveStandingsLayout =
 const STANDINGS_COLUMN_DEFAULTS = {
   nameColumnWidth: NAME_COLUMN_DEFAULT_PX,
   showPosChange: true,
+  showCountryFlag: false,
   showBrand: true,
   showTire: true,
   showLicBadge: true,

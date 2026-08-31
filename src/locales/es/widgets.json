@@ -411,6 +411,8 @@
       "pitIndicatorDesc": "Muestra un icono cuando el piloto está en boxes.",
       "abbreviateNames": "Abreviar los nombres",
       "abbreviateNamesDesc": "Usa nombres cortos para ahorrar espacio.",
+      "countryFlag": "Bandera del país",
+      "countryFlagDesc": "Muestra la bandera del país del perfil del piloto antes del nombre.",
       "driverFlags": "Banderas del piloto",
       "driverFlagsDesc": "Muestra las banderas de aviso activas junto al nombre del piloto."
     },
@@ -464,6 +466,8 @@
       "lapsCompletedDesc": "Número de vueltas completadas por cada piloto.",
       "abbreviateNames": "Abreviar los nombres de los pilotos",
       "abbreviateNamesDesc": "Acorta los nombres para ahorrar espacio de columna.",
+      "countryFlag": "Bandera del país",
+      "countryFlagDesc": "Muestra la bandera del país del perfil del piloto antes del nombre.",
       "driverFlags": "Banderas del piloto",
       "driverFlagsDesc": "Muestra las banderas de aviso activas (por ejemplo, daño mecánico) junto al nombre del piloto.",
       "hideRetiredDrivers": "Ocultar a los pilotos retirados",

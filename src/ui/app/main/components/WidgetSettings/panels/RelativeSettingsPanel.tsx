@@ -64,6 +64,12 @@ export const RelativeSettingsPanel = observer(() => {
       onChange: (v: boolean) => update({ abbreviateNames: v }),
     },
     {
+      titleKey: 'settingsPanels.relative.countryFlag',
+      descKey: 'settingsPanels.relative.countryFlagDesc',
+      value: settings.showCountryFlag,
+      onChange: (v: boolean) => update({ showCountryFlag: v }),
+    },
+    {
       titleKey: 'settingsPanels.relative.driverFlags',
       descKey: 'settingsPanels.relative.driverFlagsDesc',
       value: settings.showDriverFlags,

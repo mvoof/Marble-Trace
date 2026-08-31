@@ -16,6 +16,13 @@ import { parseClassColor } from '@utils/colors';
  * column the app fills with "M2". Fixture data, not a second resolver: it only
  * covers the class ids this snapshot holds.
  */
+/**
+ * The recorded snapshot predates `FlairID`, so the country-flag column would be
+ * blank in every preview. Cycling a handful of ids gives the column something
+ * representative to draw without pretending to be anyone's real flag.
+ */
+const PREVIEW_FLAIR_IDS = [70, 77, 101, 146, 198, 203, 222, 223];
+
 const PREVIEW_CLASS_BADGES: Record<number, string> = {
   74: 'MX-5',
   3002: 'FVee',
@@ -48,6 +55,7 @@ export const computeDriverEntries = (
       carClassShortName:
         PREVIEW_CLASS_BADGES[car.carClassId] ?? car.carScreenNameShort,
       carClassColor: parseClassColor(car.carClassColor),
+      flairId: car.flairId || PREVIEW_FLAIR_IDS[idx % PREVIEW_FLAIR_IDS.length],
       carScreenName: car.carScreenName,
       carScreenNameShort: car.carScreenNameShort,
       tireCompound: '',

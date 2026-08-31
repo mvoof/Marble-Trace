@@ -1,0 +1,17 @@
+.flag {
+  width: ws(18);
+  height: ws(13);
+  border-radius: 1px;
+  // The sprite is a background image, so the package's `:before` spacer would
+  // add a space character's worth of width on top of the box.
+  line-height: 1;
+
+  &::before {
+    content: none;
+  }
+}
+
+.flagPlaceholder {
+  width: ws(18);
+  height: ws(13);
+}

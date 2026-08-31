@@ -1,0 +1,11 @@
+// Country flags for the driver-flag column in Standings and Relative.
+// Rectangular sprites only: the square variants would double the SVGs shipped
+// with the build for a shape neither table uses.
+// Global on purpose — `.fi`/`.fi-<code>` come from the package and must not be
+// hashed by CSS Modules, so this is imported from the entry stylesheet.
+// The path is spelled from this file, not from the package: Vite rebases the
+// `url()`s the package emits against the stylesheet that pulled them in.
+@use '../../node_modules/flag-icons/sass/flag-icons' with (
+  $flag-icons-path: '../../node_modules/flag-icons/flags',
+  $flag-icons-use-square: false
+);

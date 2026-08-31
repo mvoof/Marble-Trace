@@ -149,6 +149,9 @@ pub struct CarEntry {
     pub car_class_color: String,
     pub car_screen_name: String,
     pub car_screen_name_short: String,
+    /// iRacing's `FlairID` — the country flag the driver picked for their profile.
+    /// `0` is "no flag chosen"; the id → ISO code table lives on the frontend.
+    pub flair_id: i32,
     pub i_rating: i32,
     pub lic_string: String,
     pub lic_color: String,

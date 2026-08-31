@@ -411,6 +411,8 @@
       "pitIndicatorDesc": "车手在维修区时显示图标。",
       "abbreviateNames": "缩写姓名",
       "abbreviateNamesDesc": "使用简短姓名以节省空间。",
+      "countryFlag": "国家旗帜",
+      "countryFlagDesc": "在车手姓名前显示其资料中的国家旗帜。",
       "driverFlags": "车手旗帜",
       "driverFlagsDesc": "在车手姓名旁显示激活的警告旗帜。"
     },
@@ -464,6 +466,8 @@
       "lapsCompletedDesc": "每位车手完成的圈数。",
       "abbreviateNames": "缩写车手姓名",
       "abbreviateNamesDesc": "缩短姓名以节省列宽。",
+      "countryFlag": "国家旗帜",
+      "countryFlagDesc": "在车手姓名前显示其资料中的国家旗帜。",
       "driverFlags": "车手旗帜",
       "driverFlagsDesc": "在车手姓名旁显示激活的警告旗帜（例如机械损坏/肉丸旗）。",
       "hideRetiredDrivers": "隐藏退赛车手",

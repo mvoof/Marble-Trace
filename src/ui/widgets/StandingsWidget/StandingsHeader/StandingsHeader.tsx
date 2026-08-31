@@ -31,6 +31,8 @@ export const StandingsHeader = observer(() => {
         <StandingsHeaderCell align="center">±</StandingsHeaderCell>
       )}
 
+      {settings.showCountryFlag && <StandingsHeaderCell> </StandingsHeaderCell>}
+
       <StandingsHeaderCell>Driver</StandingsHeaderCell>
 
       {settings.showLicBadge && (

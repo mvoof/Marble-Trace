@@ -116,6 +116,13 @@
   color: $widget-text-primary;
 }
 
+// Country flag cell
+.countryFlagCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 // Car number cell
 .carNumberCell {
   display: flex;

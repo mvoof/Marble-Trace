@@ -12,6 +12,7 @@ import { parseDriverFlags } from '@utils/driver';
 import { isSessionEnded } from '@utils/timer-utils';
 import { DriverStatusBadges } from '@ui/shared/DriverStatusBadge/DriverStatusBadges';
 import { getContrastTextColor, playerRowStyle } from '@utils/colors';
+import { CountryFlag } from '@ui/shared/CountryFlag/CountryFlag';
 import { DriverFlagBadge } from '@ui/shared/DriverFlagBadge/DriverFlagBadge';
 import { LicBadge } from '@ui/shared/RatingBadge/LicBadge';
 import { formatIr } from '@ui/shared/RatingBadge/LicBadge.utils';
@@ -175,6 +176,12 @@ export const DriverRow = observer(
         {settings.showPosChange && (
           <div className={`${styles.cell} ${styles.cellCenter}`}>
             <PosChange carIdx={carIdx} />
+          </div>
+        )}
+
+        {settings.showCountryFlag && (
+          <div className={`${styles.cell} ${styles.cellCenter}`}>
+            <CountryFlag flairId={driver.flairId} />
           </div>
         )}
 

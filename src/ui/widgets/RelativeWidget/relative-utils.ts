@@ -34,6 +34,7 @@ interface ColSpec {
 const colSpecs = (settings: RelativeWidgetSettings): ColSpec[] => [
   { px: 28, show: true }, // pos
   { px: 40, show: true }, // carNum — class-colored badge, right after pos
+  { px: 22, show: settings.showCountryFlag }, // country flag, right before the name
   { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
   { px: 60, show: settings.showLicBadge }, // lic badge
   { px: 36, show: settings.showIRating }, // iRating
@@ -167,6 +168,7 @@ export const buildPaceCarRowEntries = (
         carClassId: paceCar.carClassId,
         carClassShortName: '',
         carClassColor: parseClassColor(paceCar.carClassColor),
+        flairId: 0,
         carScreenName: '',
         carScreenNameShort: '',
         tireCompound: '',
