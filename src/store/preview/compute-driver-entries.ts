@@ -19,7 +19,9 @@ import { parseClassColor } from '@utils/colors';
 /**
  * The recorded snapshot predates `FlairID`, so the country-flag column would be
  * blank in every preview. Cycling a handful of ids gives the column something
- * representative to draw without pretending to be anyone's real flag.
+ * representative to draw. The player's own row is deliberately left out: a
+ * stand-in flag on the row carrying the user's real name reads as their own
+ * profile flag resolved wrongly, not as sample data.
  */
 const PREVIEW_FLAIR_IDS = [70, 77, 101, 146, 198, 203, 222, 223];
 
@@ -55,7 +57,11 @@ export const computeDriverEntries = (
       carClassShortName:
         PREVIEW_CLASS_BADGES[car.carClassId] ?? car.carScreenNameShort,
       carClassColor: parseClassColor(car.carClassColor),
-      flairId: car.flairId || PREVIEW_FLAIR_IDS[idx % PREVIEW_FLAIR_IDS.length],
+      flairId:
+        car.flairId ||
+        (idx === playerCarIdx
+          ? 0
+          : PREVIEW_FLAIR_IDS[idx % PREVIEW_FLAIR_IDS.length]),
       carScreenName: car.carScreenName,
       carScreenNameShort: car.carScreenNameShort,
       tireCompound: '',
