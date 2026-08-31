@@ -133,7 +133,7 @@ export const DriverRow = observer(({ driver, index }: DriverRowProps) => {
 
       {settings.showCountryFlag && (
         <div className={styles.countryFlagCell}>
-          <CountryFlag flairId={driver.flairId} />
+          <CountryFlag flairId={driver.flairId} isAi={driver.isAi} />
         </div>
       )}
 

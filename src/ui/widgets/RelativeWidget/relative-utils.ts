@@ -169,6 +169,7 @@ export const buildPaceCarRowEntries = (
         carClassShortName: '',
         carClassColor: parseClassColor(paceCar.carClassColor),
         flairId: 0,
+        isAi: false,
         carScreenName: '',
         carScreenNameShort: '',
         tireCompound: '',

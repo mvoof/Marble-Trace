@@ -106,6 +106,7 @@ mod tests {
             car_screen_name: String::new(),
             car_screen_name_short: String::new(),
             flair_id: 0,
+            is_ai: false,
             tire_compound: String::new(),
             position: 0,
             class_position: 0,

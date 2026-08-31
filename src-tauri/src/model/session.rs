@@ -157,6 +157,9 @@ pub struct CarEntry {
     pub lic_color: String,
     pub incident_count: i32,
     pub is_pace_car: bool,
+    /// The sim is driving this car. AI drivers carry no `flair_id`, so this is
+    /// what the country-flag column falls back on.
+    pub is_ai: bool,
     pub is_spectator: bool,
     pub car_class_est_lap_time: f32,
 }
