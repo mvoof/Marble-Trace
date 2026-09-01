@@ -156,6 +156,18 @@ export const LayoutEditor = observer(
 
     const isEditingLayoutActive = prevActiveId === null;
 
+    // The session auto-switch stands down while the editor is on screen —
+    // otherwise going on track swaps the layout being edited out from under the
+    // user. Closing the editor re-runs that reaction, so a session change that
+    // happened meanwhile is applied then.
+    useEffect(() => {
+      widgetSettings.setLayoutEditorOpen(activeMode === 'editor');
+
+      return () => {
+        widgetSettings.setLayoutEditorOpen(false);
+      };
+    }, [activeMode, widgetSettings]);
+
     const showGrid = appSettings.appSettings.editorShowGrid;
     const snapToGrid = appSettings.appSettings.editorSnapToGrid;
     const gridSize = appSettings.appSettings.editorGridSize;
