@@ -121,10 +121,21 @@ const registerLayoutAutoSwitchReaction = (root: RootStore): IReactionDisposer =>
       sessionType: root.session.currentSessionType,
       autoSwitchLayouts: root.appSettings.appSettings.autoSwitchLayouts,
       sessionLayouts: JSON.stringify(root.layouts.sessionLayouts),
+      // Tracked, not just read: closing the editor re-runs this and applies the
+      // session change that was skipped while it was open.
+      isEditorOpen:
+        root.widgetSettings.layoutEditorOpen ||
+        root.widgetSettings.editorPreviewMode,
     }),
-    ({ isConnected, isOnTrack, sessionType, autoSwitchLayouts }) => {
+    ({
+      isConnected,
+      isOnTrack,
+      sessionType,
+      autoSwitchLayouts,
+      isEditorOpen,
+    }) => {
       if (!autoSwitchLayouts) return;
-      if (root.widgetSettings.editorPreviewMode) return;
+      if (isEditorOpen) return;
       if (!isConnected) return;
 
       let context: SessionContext | null = null;

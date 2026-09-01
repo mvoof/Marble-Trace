@@ -143,6 +143,15 @@ export class WidgetSettingsStore {
   // overlay keeps displaying the previously-active layout.
   editorPreviewMode = false;
 
+  // True while the layout editor is on screen, whatever layout it edits. The
+  // session auto-switch stands down for as long as it is set: pulling the
+  // layout out from under someone editing it loses their place, and when the
+  // editor edits the active layout `editorPreviewMode` is false, so that flag
+  // alone does not cover it. Being observable, clearing it re-runs the
+  // auto-switch reaction, which then applies whichever session change happened
+  // while the editor was open.
+  layoutEditorOpen = false;
+
   // Widgets the overlay is actually rendering while the editor previews another
   // layout. Null whenever the live map already is the active layout.
   liveEnabledWidgetIds: string[] | null = null;
@@ -760,6 +769,10 @@ export class WidgetSettingsStore {
 
     this.layoutRecords.setActiveLayoutId(null);
     this.bumpMutation();
+  }
+
+  setLayoutEditorOpen(open: boolean) {
+    this.layoutEditorOpen = open;
   }
 
   // Load a layout into the editor without pushing it to the overlay.
