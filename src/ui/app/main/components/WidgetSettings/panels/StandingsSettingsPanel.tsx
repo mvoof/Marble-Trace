@@ -106,6 +106,12 @@ export const StandingsSettingsPanel = observer(() => {
       key: 'abbreviateNames',
     },
     {
+      titleKey: 'settingsPanels.standings.countryFlag',
+      descKey: 'settingsPanels.standings.countryFlagDesc',
+      value: settings.showCountryFlag,
+      key: 'showCountryFlag',
+    },
+    {
       titleKey: 'settingsPanels.standings.driverFlags',
       descKey: 'settingsPanels.standings.driverFlagsDesc',
       value: settings.showDriverFlags,

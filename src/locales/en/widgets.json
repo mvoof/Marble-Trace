@@ -411,6 +411,8 @@
       "pitIndicatorDesc": "Show icon when driver is in pits.",
       "abbreviateNames": "Abbreviate Names",
       "abbreviateNamesDesc": "Use short names to save space.",
+      "countryFlag": "Country Flag",
+      "countryFlagDesc": "Show the driver's profile country flag before the name.",
       "driverFlags": "Driver Flags",
       "driverFlagsDesc": "Show active warning flags next to driver name."
     },
@@ -464,6 +466,8 @@
       "lapsCompletedDesc": "Number of laps completed by each driver.",
       "abbreviateNames": "Abbreviate Driver Names",
       "abbreviateNamesDesc": "Shorten names to save column space.",
+      "countryFlag": "Country Flag",
+      "countryFlagDesc": "Show the driver's profile country flag before the name.",
       "driverFlags": "Driver Flags",
       "driverFlagsDesc": "Display active warning flags (e.g. Mechanical Damage/Meatball) next to driver name.",
       "hideRetiredDrivers": "Hide Retired Drivers",

@@ -194,11 +194,13 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
                 ),
                 car_screen_name: raw_driver.car_screen_name.unwrap_or_default(),
                 car_screen_name_short: raw_driver.car_screen_name_short.unwrap_or_default(),
+                flair_id: raw_driver.flair_id.unwrap_or(0),
                 i_rating: raw_driver.i_rating.unwrap_or(0),
                 lic_string: raw_driver.lic_string.unwrap_or_default(),
                 lic_color: raw_driver.lic_color.unwrap_or_default(),
                 incident_count: raw_driver.cur_driver_incident_count.unwrap_or(0),
                 is_pace_car: raw_driver.car_is_pace_car == Some(1),
+                is_ai: raw_driver.car_is_ai == Some(1),
                 is_spectator: raw_driver.is_spectator == Some(1),
                 car_class_est_lap_time: raw_driver
                     .car_class_est_lap_time
@@ -427,12 +429,16 @@ struct RawDriver {
     car_class_color: Option<String>,
     car_screen_name: Option<String>,
     car_screen_name_short: Option<String>,
+    #[serde(rename = "FlairID")]
+    flair_id: Option<i32>,
     #[serde(rename = "IRating")]
     i_rating: Option<i32>,
     lic_string: Option<String>,
     lic_color: Option<String>,
     cur_driver_incident_count: Option<i32>,
     car_is_pace_car: Option<i32>,
+    #[serde(rename = "CarIsAI")]
+    car_is_ai: Option<i32>,
     is_spectator: Option<i32>,
     car_class_est_lap_time: Option<f64>,
 }
@@ -534,8 +540,13 @@ DriverInfo:
    LicColor: 0x0153db
    CurDriverIncidentCount: 2
    CarIsPaceCar: 0
+   CarIsAI: 0
+   FlairID: 203
    IsSpectator: 0
    CarClassEstLapTime: 99.1
+ - CarIdx: 5
+   UserName: AI Driver
+   CarIsAI: 1
  - CarIdx: 0
    UserName: Pace Car
    CarIsPaceCar: 1
@@ -582,7 +593,7 @@ QualifyResultsInfo:
         assert_eq!(snapshot.driver_car_red_line, Some(7200.0));
         assert_eq!(snapshot.driver_car_sl_shift_rpm, Some(6900.0));
         assert_eq!(snapshot.driver_car_sl_blink_rpm, Some(7100.0));
-        assert_eq!(snapshot.cars.len(), 2);
+        assert_eq!(snapshot.cars.len(), 3);
 
         let player = &snapshot.cars[0];
         assert_eq!(player.car_class_id, 4011);
@@ -590,7 +601,13 @@ QualifyResultsInfo:
         assert_eq!(player.car_class_color, "#ffd259");
         assert_eq!(player.i_rating, 2350);
         assert!(!player.is_pace_car);
-        assert!(snapshot.cars[1].is_pace_car);
+        // An AI session publishes no `FlairID` at all, so the robot badge in the
+        // country-flag column hangs on this flag alone.
+        assert_eq!(player.flair_id, 203);
+        assert!(!player.is_ai);
+        assert_eq!(snapshot.cars[1].flair_id, 0);
+        assert!(snapshot.cars[1].is_ai);
+        assert!(snapshot.cars[2].is_pace_car);
 
         assert_eq!(snapshot.driver_tires[0].tire_compound_type, "Hard");
         assert_eq!(snapshot.sectors.len(), 2);

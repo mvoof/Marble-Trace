@@ -109,11 +109,21 @@ export type CarEntry = {
   carClassColor: string;
   carScreenName: string;
   carScreenNameShort: string;
+  /**
+   * iRacing's `FlairID` — the country flag the driver picked for their profile.
+   * `0` is "no flag chosen"; the id → ISO code table lives on the frontend.
+   */
+  flairId: number;
   iRating: number;
   licString: string;
   licColor: string;
   incidentCount: number;
   isPaceCar: boolean;
+  /**
+   * The sim is driving this car. AI drivers carry no `flair_id`, so this is
+   * what the country-flag column falls back on.
+   */
+  isAi: boolean;
   isSpectator: boolean;
   carClassEstLapTime: number;
 };
@@ -620,6 +630,14 @@ export type DriverEntry = {
   carClassColor: string;
   carScreenName: string;
   carScreenNameShort: string;
+  /**
+   * iRacing's `FlairID` — the country flag on the driver's profile, `0` when unset.
+   */
+  flairId: number;
+  /**
+   * The sim drives this car. AI entries never carry a flair.
+   */
+  isAi: boolean;
   tireCompound: string;
   position: number;
   classPosition: number;

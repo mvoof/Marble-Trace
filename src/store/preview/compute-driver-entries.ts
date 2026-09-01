@@ -48,6 +48,8 @@ export const computeDriverEntries = (
       carClassShortName:
         PREVIEW_CLASS_BADGES[car.carClassId] ?? car.carScreenNameShort,
       carClassColor: parseClassColor(car.carClassColor),
+      flairId: car.flairId,
+      isAi: car.isAi,
       carScreenName: car.carScreenName,
       carScreenNameShort: car.carScreenNameShort,
       tireCompound: '',

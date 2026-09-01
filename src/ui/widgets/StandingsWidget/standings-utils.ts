@@ -152,6 +152,7 @@ const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
   { px: 28, show: true }, // pos      "00" (fs md, bold)
   { px: 40, show: true }, // carNum   class-colored badge, right after pos
   { px: 38, show: settings.showPosChange }, // +/- pos  "▲12"
+  { px: 22, show: settings.showCountryFlag }, // country flag, right before the name
   { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
   { px: 60, show: settings.showLicBadge }, // lic badge "A 4.99" — matches Relative for equal PIT↔SR gap
   { px: 42, show: settings.showIRating }, // iRating  "9.9k"

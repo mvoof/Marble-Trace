@@ -149,11 +149,17 @@ pub struct CarEntry {
     pub car_class_color: String,
     pub car_screen_name: String,
     pub car_screen_name_short: String,
+    /// iRacing's `FlairID` — the country flag the driver picked for their profile.
+    /// `0` is "no flag chosen"; the id → ISO code table lives on the frontend.
+    pub flair_id: i32,
     pub i_rating: i32,
     pub lic_string: String,
     pub lic_color: String,
     pub incident_count: i32,
     pub is_pace_car: bool,
+    /// The sim is driving this car. AI drivers carry no `flair_id`, so this is
+    /// what the country-flag column falls back on.
+    pub is_ai: bool,
     pub is_spectator: bool,
     pub car_class_est_lap_time: f32,
 }

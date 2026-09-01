@@ -29,6 +29,10 @@ pub struct DriverEntry {
     pub car_class_color: String,
     pub car_screen_name: String,
     pub car_screen_name_short: String,
+    /// iRacing's `FlairID` — the country flag on the driver's profile, `0` when unset.
+    pub flair_id: i32,
+    /// The sim drives this car. AI entries never carry a flair.
+    pub is_ai: bool,
     pub tire_compound: String,
     pub position: i32,
     pub class_position: i32,
@@ -263,6 +267,8 @@ pub fn compute(
                 car_class_color: driver.car_class_color.clone(),
                 car_screen_name: driver.car_screen_name.clone(),
                 car_screen_name_short,
+                flair_id: driver.flair_id,
+                is_ai: driver.is_ai,
                 tire_compound,
                 position: car_idx
                     .car_idx_position
@@ -1619,6 +1625,8 @@ mod tests {
             car_class_color: String::new(),
             car_screen_name: String::new(),
             car_screen_name_short: String::new(),
+            flair_id: 0,
+            is_ai: false,
             tire_compound: String::new(),
             position,
             class_position: position,
