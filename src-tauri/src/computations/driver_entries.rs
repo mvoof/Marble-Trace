@@ -8,6 +8,7 @@ use crate::capabilities::Capabilities;
 use crate::computations::{ComputeContext, ComputedOutput, Processor, ProcessorId, TickRate};
 use crate::model::cars::CarIdxFrame;
 use crate::model::enums::{PitState, SessionState, TrackSurface};
+use crate::model::flags::CHECKERED;
 use crate::model::session::{QualifyResultEntry, ResultPosition, SessionSnapshot, SessionType};
 use crate::utils::lock_or_recover;
 
@@ -413,10 +414,15 @@ pub fn compute(
     // is covered too: its lap had already incremented on the tick the flag appeared.
     // Whatever is left over is classified when the race itself ends (`CoolDown`).
     if is_race {
-        let checkered_is_out = matches!(
-            session_state,
-            Some(SessionState::Checkered) | Some(SessionState::CoolDown)
-        );
+        // `SessionState::Checkered` is not the flag coming out. In a timed race the
+        // sim enters that state the moment the clock expires — while the leader is
+        // still running the white-flag lap — so a baseline taken there latches every
+        // car one crossing early, and a player a lap down gets a checkered badge on
+        // the lap they were shown the white flag. The broadcast checkered bit is the
+        // signal that the leader has actually taken it; `CoolDown` is the backstop.
+        let checkered_is_out = matches!(session_state, Some(SessionState::CoolDown))
+            || (matches!(session_state, Some(SessionState::Checkered))
+                && entries.iter().any(|entry| entry.raw_flags & CHECKERED != 0));
 
         if checkered_is_out && locked_state.laps_at_checkered.is_none() {
             let baseline = locked_state.previous_laps.clone();
@@ -1002,10 +1008,6 @@ mod tests {
         }
     }
 
-    /// The checkered flag bit the sim broadcasts to the whole field once the leader
-    /// takes it — never a per-car finish signal.
-    const BROADCAST_CHECKERED_BIT: u32 = 0x0000_0001;
-
     fn two_car_race_session() -> SessionSnapshot {
         let mut session = race_session();
 
@@ -1213,7 +1215,7 @@ mod tests {
 
         // The flag comes out on the tick the leader's lap counter ticks over.
         let frame = compute(
-            &racing_car_idx_frame_on_lap(BROADCAST_CHECKERED_BIT, 13),
+            &racing_car_idx_frame_on_lap(CHECKERED, 13),
             &session,
             &HashMap::new(),
             false,
@@ -1244,7 +1246,7 @@ mod tests {
         // The flag is already out on the very first tick we see: there is no
         // previous lap counter to build the baseline from.
         let frame = compute(
-            &racing_car_idx_frame_on_lap(BROADCAST_CHECKERED_BIT, 12),
+            &racing_car_idx_frame_on_lap(CHECKERED, 12),
             &session,
             &HashMap::new(),
             false,
@@ -1283,7 +1285,7 @@ mod tests {
         // The leader has taken the flag, so the sim shows the checkered bit to this
         // car too — but it is still a lap away from the line.
         let frame = compute(
-            &racing_car_idx_frame_on_lap(BROADCAST_CHECKERED_BIT, 12),
+            &racing_car_idx_frame_on_lap(CHECKERED, 12),
             &session,
             &HashMap::new(),
             false,
@@ -1292,6 +1294,56 @@ mod tests {
         );
 
         assert!(!frame.entries[0].is_finished);
+    }
+
+    #[test]
+    fn test_checkered_session_state_without_the_flag_does_not_finish_a_car() {
+        let session = race_session();
+        let state = Mutex::new(DriverEntriesState::default());
+
+        compute(
+            &racing_car_idx_frame_on_lap(0, 12),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Racing),
+            &state,
+        );
+
+        // A timed race whose clock has expired: the sim is already in `Checkered`,
+        // but the leader is still on the white-flag lap and no car has been shown
+        // the flag. Crossing the line here starts the last lap, it does not end it.
+        let frame = compute(
+            &racing_car_idx_frame_on_lap(0, 13),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            &state,
+        );
+
+        assert!(!frame.entries[0].is_finished);
+
+        // The leader takes the flag, and this car finishes on its next crossing.
+        compute(
+            &racing_car_idx_frame_on_lap(CHECKERED, 13),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            &state,
+        );
+
+        let frame = compute(
+            &racing_car_idx_frame_on_lap(CHECKERED, 14),
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            &state,
+        );
+
+        assert!(frame.entries[0].is_finished);
     }
 
     #[test]
@@ -1330,7 +1382,7 @@ mod tests {
         let state = Mutex::new(DriverEntriesState::default());
 
         let frame = compute(
-            &racing_car_idx_frame(BROADCAST_CHECKERED_BIT),
+            &racing_car_idx_frame(CHECKERED),
             &session,
             &HashMap::new(),
             false,

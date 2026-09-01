@@ -1,27 +1,12 @@
 //! Decode iRacing session flag bit fields into a normalized `RaceFlags` struct.
 //!
-//! Bit masks mirror `src/utils/flags-utils.ts` exactly.
-//! This module is the only place that reads raw iRacing flag bits.
+//! The bit masks live in `model/flags.rs`, so `computations/` can read the same
+//! numbers without reaching into this layer. This module owns the decoding.
 
-use crate::model::flags::RaceFlags;
-
-const CHECKERED: u32 = 0x0000_0001;
-const WHITE: u32 = 0x0000_0002;
-const GREEN: u32 = 0x0000_0004;
-const YELLOW: u32 = 0x0000_0008;
-const RED: u32 = 0x0000_0010;
-const BLUE: u32 = 0x0000_0020;
-const DEBRIS: u32 = 0x0000_0040;
-const YELLOW_WAVING: u32 = 0x0000_0100;
-const CAUTION: u32 = 0x0000_4000;
-const CAUTION_WAVING: u32 = 0x0000_8000;
-const BLACK: u32 = 0x0001_0000;
-const DISQUALIFY: u32 = 0x0002_0000;
-const SERVICIBLE: u32 = 0x0004_0000;
-const FURLED: u32 = 0x0008_0000;
-const REPAIR: u32 = 0x0010_0000;
-
-const MEATBALL_MASK: u32 = SERVICIBLE | REPAIR;
+use crate::model::flags::{
+    RaceFlags, BLACK, BLUE, CAUTION, CAUTION_WAVING, CHECKERED, DEBRIS, DISQUALIFY, FURLED, GREEN,
+    MEATBALL_MASK, RED, REPAIR, WHITE, YELLOW, YELLOW_WAVING,
+};
 
 /// Decode raw iRacing session flag bit fields into a normalized [`RaceFlags`].
 ///
@@ -55,6 +40,7 @@ pub fn decode_race_flags(session_bits: u32, player_car_bits: u32) -> RaceFlags {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::model::flags::SERVICIBLE;
 
     #[test]
     fn no_bits_gives_empty_flags() {
