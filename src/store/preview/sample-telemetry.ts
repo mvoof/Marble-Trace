@@ -26,15 +26,18 @@ export const syncFlagDisplay = action((store: RootStore) => {
 // Neutral sample-telemetry fixture shared by any consumer that needs to render
 // widgets against representative data (in-app widget preview, Storybook, …).
 // It depends on neither the app UI nor Storybook — consumers depend on it.
-const snapshotModules = import.meta.glob('../../../test-data/iracing-*.json', {
-  eager: true,
-  import: 'default',
-});
+const snapshotModules = import.meta.glob(
+  '../../../test-data/telemetry-snapshot-*.json',
+  {
+    eager: true,
+    import: 'default',
+  }
+);
 
 const firstSnapshot = Object.values(snapshotModules)[0];
 
 if (!firstSnapshot) {
-  throw new Error('No iracing-*.json snapshot found in test-data/');
+  throw new Error('No telemetry-snapshot-*.json found in test-data/');
 }
 
 export const sampleSnapshot = firstSnapshot as unknown as TelemetrySnapshot;
