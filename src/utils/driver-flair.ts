@@ -2,9 +2,17 @@
  * iRacing's `FlairID` — the country flag a driver picked for their profile —
  * mapped to the ISO 3166 code the `flag-icons` sprite sheet is keyed by. The
  * sim ships no country field of its own, so this table is the only way from a
- * driver entry to a flag; `0` and anything unlisted mean "no flag".
+ * driver entry to a flag; anything unlisted means "no flag".
+ *
+ * The country ids run 3..242 in alphabetical order; everything below that is a
+ * flair iRacing offers that is not a country: `2` is the sim's "Global", drawn
+ * with the UN flag as the sprite sheet's closest match, and `1` gets the
+ * sheet's own "unknown flag" tile. `0` stays unmapped — it is what a driver who
+ * picked nothing carries, and every AI entry with it.
  */
 const FLAIR_ID_TO_COUNTRY_CODE: Record<number, string> = {
+  1: 'xx', // unknown flag
+  2: 'un', // "Global" in the sim
   3: 'af', // Afghanistan
   4: 'ax', // Åland Islands
   5: 'al', // Albania
