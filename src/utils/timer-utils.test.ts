@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { hasRaceStarted, resolveClockUrgency } from './timer-utils';
+import {
+  hasRaceStarted,
+  isUnlimitedSessionTime,
+  resolveClockUrgency,
+  resolveSessionClock,
+} from './timer-utils';
 
 describe('hasRaceStarted', () => {
   it('is false while the field is still forming on the grid', () => {
@@ -37,5 +42,49 @@ describe('resolveClockUrgency', () => {
   it('treats an unknown or elapsed-time clock as normal', () => {
     expect(resolveClockUrgency(null)).toBe('normal');
     expect(resolveClockUrgency(-1)).toBe('normal');
+  });
+});
+
+const ONE_WEEK_SECONDS = 7 * 24 * 3600;
+
+describe('isUnlimitedSessionTime', () => {
+  it('recognises the week iRacing sends for a lap-limited race', () => {
+    expect(isUnlimitedSessionTime(ONE_WEEK_SECONDS)).toBe(true);
+  });
+
+  it('leaves a real countdown alone, however long', () => {
+    expect(isUnlimitedSessionTime(null)).toBe(false);
+    expect(isUnlimitedSessionTime(0)).toBe(false);
+    expect(isUnlimitedSessionTime(12 * 3600)).toBe(false);
+  });
+});
+
+describe('resolveSessionClock', () => {
+  it('counts the remaining time down while there is a limit', () => {
+    expect(resolveSessionClock(1800, 600)).toEqual({
+      seconds: 1800,
+      isCountdown: true,
+    });
+  });
+
+  it('counts elapsed time up in a lap race instead of printing the sentinel', () => {
+    expect(resolveSessionClock(ONE_WEEK_SECONDS, 754)).toEqual({
+      seconds: 754,
+      isCountdown: false,
+    });
+  });
+
+  it('counts up once a timed session runs past its clock', () => {
+    expect(resolveSessionClock(-1, 3600)).toEqual({
+      seconds: 3600,
+      isCountdown: false,
+    });
+  });
+
+  it('falls back to zero when neither value is known', () => {
+    expect(resolveSessionClock(null, null)).toEqual({
+      seconds: 0,
+      isCountdown: false,
+    });
   });
 });

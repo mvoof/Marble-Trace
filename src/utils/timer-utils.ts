@@ -129,6 +129,36 @@ export const resolveSessionColorKey = (
   return 'other';
 };
 
+/**
+ * A lap-limited session has no time limit, but iRacing still fills
+ * `SessionTimeRemain` — with a week. Anything at that scale is the sentinel,
+ * not a countdown, so the clock counts up from `session_time` instead of
+ * printing 168:00:00.
+ */
+const UNLIMITED_TIME_SENTINEL_SECONDS = 24 * SECONDS_IN_HOUR;
+
+export const isUnlimitedSessionTime = (remainSeconds: number | null): boolean =>
+  remainSeconds !== null && remainSeconds >= UNLIMITED_TIME_SENTINEL_SECONDS;
+
+/**
+ * What the session clock should show: the remaining time while there is a real
+ * one, otherwise the elapsed time counting up.
+ */
+export const resolveSessionClock = (
+  remainSeconds: number | null,
+  elapsedSeconds: number | null
+): { seconds: number; isCountdown: boolean } => {
+  const isCountdown =
+    remainSeconds !== null &&
+    remainSeconds >= 0 &&
+    !isUnlimitedSessionTime(remainSeconds);
+
+  return {
+    seconds: (isCountdown ? remainSeconds : elapsedSeconds) ?? 0,
+    isCountdown,
+  };
+};
+
 export const splitTime = (seconds: number): { main: string; secs: string } => {
   const total = Math.max(0, Math.floor(seconds));
   const hours = String(Math.floor(total / SECONDS_IN_HOUR)).padStart(2, '0');

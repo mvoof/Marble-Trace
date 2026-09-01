@@ -1,4 +1,5 @@
 import type { UnitSystem } from '@/types';
+import { isUnlimitedSessionTime } from '@utils/timer-utils';
 
 export const MPS_TO_KMH = 3.6;
 export const MPS_TO_MPH = 2.23694;
@@ -127,7 +128,10 @@ export const resolveSessionLaps = (
   if (!sessionLaps) return null;
   if (sessionLaps.toLowerCase() !== 'unlimited') return sessionLaps;
 
+  // A session with no time limit either carries the sentinel remain or none at
+  // all — there is no clock to turn into a lap count.
   if (remainSecs === null || remainSecs < 0) return null;
+  if (isUnlimitedSessionTime(remainSecs)) return null;
   if (currentLap === null) return null;
   if (remainSecs === 0) return String(currentLap);
   if (leaderBestLapTime === null || leaderBestLapTime <= 0) return null;

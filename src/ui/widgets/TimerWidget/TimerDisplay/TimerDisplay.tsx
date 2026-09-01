@@ -1,6 +1,10 @@
 ﻿import { observer } from 'mobx-react-lite';
 
-import { isSessionEnded, splitTime } from '@utils/timer-utils';
+import {
+  isSessionEnded,
+  resolveSessionClock,
+  splitTime,
+} from '@utils/timer-utils';
 
 import { useSessionStore } from '@store/root-store-context';
 import styles from './TimerDisplay.module.scss';
@@ -18,11 +22,10 @@ export const TimerDisplay = observer(() => {
     );
   }
 
-  const remain = session?.session_time_remain ?? null;
-  const elapsed = session?.session_time ?? null;
-
-  const isCountdown = remain !== null && remain >= 0;
-  const rawSeconds = isCountdown ? (remain ?? 0) : (elapsed ?? 0);
+  const { seconds: rawSeconds } = resolveSessionClock(
+    session?.session_time_remain ?? null,
+    session?.session_time ?? null
+  );
 
   const { main: timeMain, secs: timeSeconds } = splitTime(rawSeconds);
 

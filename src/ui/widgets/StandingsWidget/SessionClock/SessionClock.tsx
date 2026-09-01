@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import {
   isSessionEnded,
   resolveClockUrgency,
+  resolveSessionClock,
   splitTime,
   type ClockUrgency,
 } from '@utils/timer-utils';
@@ -43,10 +44,12 @@ export const SessionClock = observer(() => {
   }
 
   const remain = session?.session_time_remain ?? null;
-  const elapsed = session?.session_time ?? null;
 
-  const isCountdown = remain !== null && remain >= 0;
-  const rawSeconds = isCountdown ? (remain ?? 0) : (elapsed ?? 0);
+  const { seconds: rawSeconds, isCountdown } = resolveSessionClock(
+    remain,
+    session?.session_time ?? null
+  );
+
   const urgency = isCountdown ? resolveClockUrgency(remain) : 'normal';
 
   const { main, secs } = splitTime(rawSeconds);
