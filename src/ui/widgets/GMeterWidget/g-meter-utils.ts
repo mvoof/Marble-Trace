@@ -7,8 +7,8 @@ export const FADING_DECAY = 0.9992;
 export const ENVELOPE_SPREAD = 10;
 export const RADIUS_RATIO = 0.78;
 
-/** The axes extend past the outer ring to the value badges. */
-export const AXIS_OVERHANG = 1.18;
+/** The axes extend to the outer scale ring. */
+export const AXIS_OVERHANG = 1.0;
 
 /**
  * Ring numbers sit on the 45° diagonal of the upper-right quadrant instead of

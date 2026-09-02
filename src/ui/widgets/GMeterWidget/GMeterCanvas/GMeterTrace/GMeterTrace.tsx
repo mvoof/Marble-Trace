@@ -1,4 +1,4 @@
-import { useRef, useCallback, useLayoutEffect } from 'react';
+import { useRef, useCallback, useLayoutEffect, useContext } from 'react';
 
 import { useReactiveCanvasLoop } from '@ui/hooks/useReactiveCanvasLoop';
 import { resizeCanvasToDpr } from '@utils/canvas';
@@ -20,12 +20,10 @@ import {
   usePlayerStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 
 const BADGE_BASE_WIDTH_PX = 240;
-const BADGE_FONT_SIZE_PX = 12;
-const BADGE_PILL_W_PX = 38;
-const BADGE_PILL_H_PX = 18;
-const BADGE_CORNER_R_PX = 4;
+const BADGE_FONT_SIZE_PX = 13;
 
 interface AxisPeaks {
   top: number;
@@ -34,84 +32,75 @@ interface AxisPeaks {
   right: number;
 }
 
-const drawStyledBadge = (
+const drawDynamicAxisIndicator = (
   ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number,
+  cx: number,
+  cy: number,
+  radius: number,
+  canvasWidth: number,
+  canvasHeight: number,
+  centerAngle: number,
   isActive: boolean,
   activeColor: string,
-  text: string,
-  rotateRad: number,
-  pipOnBottom: boolean,
-  fontSize: number
+  liveG: number,
+  peakG: number,
+  scale: number,
+  rotAngle: number,
+  fontSize: number,
+  scaleRatio: number
 ) => {
-  ctx.save();
-  ctx.translate(x, y);
+  const displayVal = isActive ? liveG : peakG;
+  const valStr = displayVal.toFixed(2);
 
-  if (rotateRad !== 0) {
-    ctx.rotate(rotateRad);
-  }
+  // Outer rim radius running right along the circular widget perimeter
+  const rRim = Math.min(canvasWidth, canvasHeight) * 0.485;
+  // Position text exactly in the middle between outer ring and widget rim
+  const textR = (radius + rRim) / 2;
 
-  const halfW = w / 2;
-  const halfH = h / 2;
+  ctx.font = `700 ${fontSize}px 'Rajdhani', sans-serif`;
+  const textWidth = ctx.measureText(valStr).width;
 
-  // Active glow
-  if (isActive) {
+  // Maximum arc half-sweep along the rim extends 5px beyond the edges of the digits
+  const maxHalfSweep = (textWidth / 2 + 5 * scaleRatio) / rRim;
+  const gRatio = Math.min(1, Math.max(0, displayVal / scale));
+
+  // Dynamic arc on the rim: grows from 0 to the exact text block width as load increases
+  if (isActive && gRatio > 0.01) {
+    const sweep = gRatio * maxHalfSweep;
     ctx.save();
+    ctx.lineCap = 'round';
     ctx.shadowColor = activeColor;
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = 4 * scaleRatio;
     ctx.beginPath();
-    if (typeof ctx.roundRect === 'function') {
-      ctx.roundRect(-halfW, -halfH, w, h, r);
-    } else {
-      ctx.rect(-halfW, -halfH, w, h);
-    }
-    ctx.fillStyle = activeColor;
-    ctx.globalAlpha = 0.2;
-    ctx.fill();
+    ctx.arc(cx, cy, rRim, centerAngle - sweep, centerAngle + sweep);
+    ctx.strokeStyle = activeColor;
+    ctx.lineWidth = 1;
+    ctx.stroke();
     ctx.restore();
   }
 
-  // Dark plate background
-  ctx.beginPath();
-  if (typeof ctx.roundRect === 'function') {
-    ctx.roundRect(-halfW, -halfH, w, h, r);
-  } else {
-    ctx.rect(-halfW, -halfH, w, h);
+  // Floating numeric text
+  const tx = cx + Math.cos(centerAngle) * textR;
+  const ty = cy + Math.sin(centerAngle) * textR;
+
+  ctx.save();
+  ctx.translate(tx, ty);
+  if (rotAngle !== 0) {
+    ctx.rotate(rotAngle);
   }
-  ctx.fillStyle = isActive
-    ? 'rgba(12, 14, 18, 0.96)'
-    : 'rgba(18, 20, 26, 0.88)';
-  ctx.fill();
 
-  // Border outline
-  ctx.lineWidth = isActive ? 1.5 : 1;
-  ctx.strokeStyle = isActive ? activeColor : 'rgba(75, 80, 92, 0.5)';
-  ctx.stroke();
-
-  // Outer accent bar / pip
-  const pipW = Math.round(w * 0.5);
-  const pipH = 2.5;
-  const pipY = pipOnBottom ? halfH - pipH : -halfH;
-  ctx.beginPath();
-  if (typeof ctx.roundRect === 'function') {
-    ctx.roundRect(-pipW / 2, pipY, pipW, pipH, 1);
-  } else {
-    ctx.rect(-pipW / 2, pipY, pipW, pipH);
-  }
-  ctx.fillStyle = isActive ? activeColor : 'rgba(90, 95, 108, 0.5)';
-  ctx.fill();
-
-  // Typography
-  ctx.font = `700 ${fontSize}px 'Rajdhani', sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = isActive ? '#ffffff' : 'rgba(175, 180, 192, 0.85)';
-  ctx.fillText(text, 0, pipOnBottom ? -1 : 1);
 
+  if (isActive) {
+    ctx.shadowColor = activeColor;
+    ctx.shadowBlur = 4 * scaleRatio;
+    ctx.fillStyle = '#ffffff';
+  } else {
+    ctx.fillStyle = 'rgba(160, 165, 178, 0.75)';
+  }
+
+  ctx.fillText(valStr, 0, 0);
   ctx.restore();
 };
 
@@ -121,88 +110,95 @@ const drawAxisBadges = (
   cy: number,
   radius: number,
   canvasWidth: number,
+  canvasHeight: number,
   latG: number,
   lonG: number,
   peaks: AxisPeaks,
+  scale: number,
+  fontScale: number,
   color: string
 ) => {
-  const scaleRatio = canvasWidth / BADGE_BASE_WIDTH_PX;
-  const fontSize = Math.max(10, Math.round(BADGE_FONT_SIZE_PX * scaleRatio));
-  const pillW = Math.round(BADGE_PILL_W_PX * scaleRatio);
-  const pillH = Math.round(BADGE_PILL_H_PX * scaleRatio);
-  const pillR = Math.max(2, Math.round(BADGE_CORNER_R_PX * scaleRatio));
-  const badgeDist = radius * 1.14;
+  const scaleRatio = (canvasWidth / BADGE_BASE_WIDTH_PX) * fontScale;
+  const fontSize = Math.max(8, Math.round(BADGE_FONT_SIZE_PX * scaleRatio));
 
   // Top (Brake / Decel): active when lonG < -0.08
   const isTopActive = lonG < -0.08;
-  const topVal = isTopActive ? Math.abs(lonG) : peaks.top;
-  drawStyledBadge(
+  drawDynamicAxisIndicator(
     ctx,
     cx,
-    cy - badgeDist,
-    pillW,
-    pillH,
-    pillR,
+    cy,
+    radius,
+    canvasWidth,
+    canvasHeight,
+    -Math.PI / 2,
     isTopActive,
     color,
-    topVal.toFixed(2),
+    Math.abs(lonG),
+    peaks.top,
+    scale,
     0,
-    false,
-    fontSize
+    fontSize,
+    scaleRatio
   );
 
   // Bottom (Accel): active when lonG > 0.08
   const isBottomActive = lonG > 0.08;
-  const bottomVal = isBottomActive ? lonG : peaks.bottom;
-  drawStyledBadge(
+  drawDynamicAxisIndicator(
     ctx,
     cx,
-    cy + badgeDist,
-    pillW,
-    pillH,
-    pillR,
+    cy,
+    radius,
+    canvasWidth,
+    canvasHeight,
+    Math.PI / 2,
     isBottomActive,
     color,
-    bottomVal.toFixed(2),
+    lonG,
+    peaks.bottom,
+    scale,
     0,
-    true,
-    fontSize
+    fontSize,
+    scaleRatio
   );
 
   // Left (Left Turn): active when latG < -0.08
   const isLeftActive = latG < -0.08;
-  const leftVal = isLeftActive ? Math.abs(latG) : peaks.left;
-  drawStyledBadge(
+  drawDynamicAxisIndicator(
     ctx,
-    cx - badgeDist,
+    cx,
     cy,
-    pillW,
-    pillH,
-    pillR,
+    radius,
+    canvasWidth,
+    canvasHeight,
+    Math.PI,
     isLeftActive,
     color,
-    leftVal.toFixed(2),
+    Math.abs(latG),
+    peaks.left,
+    scale,
     -Math.PI / 2,
-    false,
-    fontSize
+    fontSize,
+    scaleRatio
   );
 
   // Right (Right Turn): active when latG > 0.08
   const isRightActive = latG > 0.08;
-  const rightVal = isRightActive ? latG : peaks.right;
-  drawStyledBadge(
+  drawDynamicAxisIndicator(
     ctx,
-    cx + badgeDist,
+    cx,
     cy,
-    pillW,
-    pillH,
-    pillR,
+    radius,
+    canvasWidth,
+    canvasHeight,
+    0,
     isRightActive,
     color,
-    rightVal.toFixed(2),
+    latG,
+    peaks.right,
+    scale,
     Math.PI / 2,
-    false,
-    fontSize
+    fontSize,
+    scaleRatio
   );
 };
 
@@ -215,6 +211,7 @@ interface GMeterTraceProps {
 // MobX observables directly, so React re-renders are not needed for data updates.
 // observer() would cause 60 Hz React re-renders on every carDynamics change.
 export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
+  const widgetId = useContext(WidgetIdContext);
   const telemetry = usePlayerStore();
   const widgetSettings = useWidgetSettingsStore();
 
@@ -248,6 +245,7 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
     (
       canvas: HTMLCanvasElement,
       settings: GMeterWidgetSettings,
+      fontScale: number,
       color: string
     ) => {
       const mode = settings.displayMode;
@@ -358,6 +356,7 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
         cy,
         radius,
         currentWidth,
+        currentHeight,
         state.smoothedLatG,
         state.smoothedLonG,
         {
@@ -366,6 +365,8 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
           left: state.peakLeft,
           right: state.peakRight,
         },
+        scale,
+        fontScale,
         color
       );
     },
@@ -377,6 +378,8 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
       const dynamics = telemetry.carDynamics;
       const settings =
         widgetSettings.getSettings<GMeterWidgetSettings>('g-meter');
+      const fontScale =
+        widgetSettings.getWidget(widgetId)?.userSettings.fontScale ?? 1;
       const canvas = canvasRef.current;
 
       if (!canvas) return;
@@ -474,10 +477,10 @@ export const GMeterTrace = ({ width, height }: GMeterTraceProps) => {
       }
 
       scheduleDraw(() => {
-        drawTrace(canvas, settings, color);
+        drawTrace(canvas, settings, fontScale, color);
       });
     },
-    [telemetry, widgetSettings, drawTrace, width, height]
+    [telemetry, widgetSettings, widgetId, drawTrace, width, height]
   );
 
   return (
