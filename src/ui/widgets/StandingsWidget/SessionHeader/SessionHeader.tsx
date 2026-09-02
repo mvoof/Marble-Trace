@@ -7,9 +7,9 @@ import { computeClassSof } from '@utils/driver';
 import {
   buildLapProgress,
   drawsClassHeaders,
-  isLapLimitedSession,
 } from '@ui/widgets/StandingsWidget/standings-utils';
 import {
+  isLapLimitedSession,
   resolveSessionColorKey,
   type SessionColorKey,
 } from '@utils/timer-utils';

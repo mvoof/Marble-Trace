@@ -1,0 +1,11 @@
+// A cell as wide as the font's "0" — every digit occupies the same advance,
+// whatever glyph is in it.
+.digit {
+  display: inline-block;
+  width: 1ch;
+  text-align: center;
+}
+
+.separator {
+  display: inline-block;
+}

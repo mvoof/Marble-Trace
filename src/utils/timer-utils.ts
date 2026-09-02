@@ -129,6 +129,14 @@ export const resolveSessionColorKey = (
   return 'other';
 };
 
+const UNLIMITED_LAPS = 'unlimited';
+
+/** Whether the session ends on a lap count rather than on the clock. */
+export const isLapLimitedSession = (
+  sessionLaps: string | null | undefined
+): boolean =>
+  Boolean(sessionLaps) && sessionLaps!.toLowerCase() !== UNLIMITED_LAPS;
+
 /**
  * A lap-limited session has no time limit, but iRacing still fills
  * `SessionTimeRemain` — with a week. Anything at that scale is the sentinel,
@@ -143,12 +151,19 @@ export const isUnlimitedSessionTime = (remainSeconds: number | null): boolean =>
 /**
  * What the session clock should show: the remaining time while there is a real
  * one, otherwise the elapsed time counting up.
+ *
+ * `isLapLimited` comes from the session's own lap count and outranks the
+ * number: a lap race has no time limit at all, so whatever iRacing left in
+ * `SessionTimeRemain` — a week, a day, or a day minus the tick it has already
+ * counted down — is never a countdown.
  */
 export const resolveSessionClock = (
   remainSeconds: number | null,
-  elapsedSeconds: number | null
+  elapsedSeconds: number | null,
+  isLapLimited = false
 ): { seconds: number; isCountdown: boolean } => {
   const isCountdown =
+    !isLapLimited &&
     remainSeconds !== null &&
     remainSeconds >= 0 &&
     !isUnlimitedSessionTime(remainSeconds);

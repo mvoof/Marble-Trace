@@ -1,13 +1,13 @@
 import { observer } from 'mobx-react-lite';
 
 import {
+  isLapLimitedSession,
   isSessionEnded,
   resolveClockUrgency,
   resolveSessionClock,
   splitTime,
   type ClockUrgency,
 } from '@utils/timer-utils';
-import { isLapLimitedSession } from '@ui/widgets/StandingsWidget/standings-utils';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import {
   useSessionStore,
@@ -45,20 +45,23 @@ export const SessionClock = observer(() => {
 
   const remain = session?.session_time_remain ?? null;
 
+  const currentSession =
+    sessionInfo?.sessions?.[sessionInfo?.currentSessionNum ?? 0];
+
+  // In a lap race the clock is context, not the thing that ends the session.
+  const isLapLimited = isLapLimitedSession(currentSession?.sessionLaps);
+
   const { seconds: rawSeconds, isCountdown } = resolveSessionClock(
     remain,
-    session?.session_time ?? null
+    session?.session_time ?? null,
+    isLapLimited
   );
 
   const urgency = isCountdown ? resolveClockUrgency(remain) : 'normal';
 
   const { main, secs } = splitTime(rawSeconds);
 
-  const currentSession =
-    sessionInfo?.sessions?.[sessionInfo?.currentSessionNum ?? 0];
-
-  // In a lap race the clock is context, not the thing that ends the session.
-  const isLead = !isLapLimitedSession(currentSession?.sessionLaps);
+  const isLead = !isLapLimited;
 
   // A session past its clock counts up — the "+" is what tells the two apart
   // now that neither carries an icon.

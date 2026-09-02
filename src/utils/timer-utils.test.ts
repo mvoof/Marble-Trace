@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   hasRaceStarted,
+  isLapLimitedSession,
   isUnlimitedSessionTime,
   resolveClockUrgency,
   resolveSessionClock,
@@ -84,6 +85,29 @@ describe('resolveSessionClock', () => {
   it('falls back to zero when neither value is known', () => {
     expect(resolveSessionClock(null, null)).toEqual({
       seconds: 0,
+      isCountdown: false,
+    });
+  });
+});
+
+describe('isLapLimitedSession', () => {
+  it('is true only for a session that ends on a lap count', () => {
+    expect(isLapLimitedSession('45')).toBe(true);
+    expect(isLapLimitedSession('unlimited')).toBe(false);
+    expect(isLapLimitedSession(null)).toBe(false);
+    expect(isLapLimitedSession(undefined)).toBe(false);
+  });
+});
+
+describe('resolveSessionClock in a lap race', () => {
+  it('counts up whatever the sim left in the remain field', () => {
+    // A day minus one tick is below the sentinel but still not a countdown.
+    expect(resolveSessionClock(86399, 42, true)).toEqual({
+      seconds: 42,
+      isCountdown: false,
+    });
+    expect(resolveSessionClock(1800, 42, true)).toEqual({
+      seconds: 42,
       isCountdown: false,
     });
   });
