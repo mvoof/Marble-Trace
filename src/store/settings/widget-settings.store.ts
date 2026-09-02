@@ -26,6 +26,7 @@ import type {
   WidgetSpecificSettings,
   WidgetUserSettings,
   SessionContext,
+  RemoteScreenPurpose,
 } from '@/types/widget-settings';
 import { emitLayoutActivated } from '@platform/services/events.service';
 import { DEFAULT_LAYOUT_RESOLUTION } from '@store/settings/layout-resolution';
@@ -739,6 +740,21 @@ export class WidgetSettingsStore {
     this.setWidgets(layout.widgets);
   }
 
+  /**
+   * The enabled widgets standing on one named screen of the active layout.
+   *
+   * `ownMonitorWidgets` answers the same question for the window asking; this
+   * answers it about a screen the caller names, which is what the settings page
+   * needs to list a remote screen's widgets without being one.
+   */
+  widgetsOnMonitorNamed(monitorName: string): WidgetDefaultConfig[] {
+    return widgetsOnMonitor(
+      this.enabledWidgets,
+      monitorName,
+      this.activeLayout?.monitors ?? []
+    );
+  }
+
   // Widgets drawn by this overlay window: the ones whose centre falls on its
   // monitor. Dragging a widget over an edge hands it to the neighbour.
   get ownMonitorWidgets(): WidgetDefaultConfig[] {
@@ -1074,7 +1090,12 @@ export class WidgetSettingsStore {
    * it gets its own widget set — but the machine has no display behind it, so
    * it is parked in free desktop space and never gets an overlay window.
    */
-  addRemoteScreen(name: string, width: number, height: number) {
+  addRemoteScreen(
+    name: string,
+    width: number,
+    height: number,
+    purpose: RemoteScreenPurpose = 'device'
+  ) {
     const layout = this.activeLayout;
 
     if (!layout) return;
@@ -1088,7 +1109,13 @@ export class WidgetSettingsStore {
       name,
       kind: 'remote',
       slug,
+      purpose,
       bounds: nextRemoteBounds(layout.monitors, width, height),
+      // A stream screen is the canvas the user is broadcasting at, and they
+      // chose it here. Marking it fitted is what stops the first browser source
+      // that connects from reporting its own size and reshuffling a layout that
+      // was already built for 1920×1080.
+      fittedToDevice: purpose === 'stream',
     });
 
     this.bumpMutation();

@@ -14,3 +14,12 @@
   overscroll-behavior: none;
   user-select: none;
 }
+
+// Painted into an encoder, not onto a device: OBS composites this over the game
+// capture below it, so the page must contribute no ground at all. Anything
+// opaque here would be a black plate across the whole scene.
+.windowStream {
+  @extend .window;
+
+  background: transparent;
+}

@@ -25,6 +25,10 @@ export const cloneMonitor = (monitor: LayoutMonitor): LayoutMonitor => ({
   ...(monitor.kind ? { kind: monitor.kind } : {}),
   ...(monitor.slug ? { slug: monitor.slug } : {}),
   ...(monitor.fittedToDevice ? { fittedToDevice: true } : {}),
+  // Dropped here, a stream screen would come back as a device screen: it would
+  // paint on black and let the first browser source that connects resize the
+  // layout the user had already built.
+  ...(monitor.purpose ? { purpose: monitor.purpose } : {}),
 });
 
 /** Common device sizes offered when adding a screen, in logical pixels. */
@@ -35,6 +39,19 @@ export const REMOTE_SCREEN_PRESETS = [
   { label: 'iPad portrait', width: 820, height: 1180 },
   { label: 'Phone landscape', width: 844, height: 390 },
   { label: 'Phone portrait', width: 390, height: 844 },
+] as const;
+
+/**
+ * Canvases people stream at, offered when a screen is created for OBS.
+ *
+ * Deliberately not the device list: a browser source is sized to the broadcast
+ * canvas, not to any physical panel, and 1080p is what almost every stream is
+ * encoded at whatever the streamer is playing on.
+ */
+export const STREAM_SCREEN_PRESETS = [
+  { label: '1080p', width: 1920, height: 1080 },
+  { label: '1440p', width: 2560, height: 1440 },
+  { label: '720p', width: 1280, height: 720 },
 ] as const;
 
 /** Gap left between the desktop and a remote screen placed beside it. */

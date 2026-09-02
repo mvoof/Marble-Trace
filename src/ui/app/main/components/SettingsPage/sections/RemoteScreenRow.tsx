@@ -39,6 +39,23 @@ export const RemoteScreenRow = observer(
     const { message } = App.useApp();
     const { t } = useTranslation('main-app');
 
+    const isStream = screen.purpose === 'stream';
+
+    // Every widget standing on this screen, offered one at a time: a browser
+    // source per widget is how a streamer arranges them in their own scene
+    // instead of laying the screen out here.
+    const screenWidgets = widgetSettings.widgetsOnMonitorNamed(screen.name);
+
+    const handleCopyWidget = (widgetId: string) => {
+      const separator = url.includes('?') ? '&' : '?';
+
+      void navigator.clipboard
+        .writeText(`${url}${separator}widget=${encodeURIComponent(widgetId)}`)
+        .then(() => {
+          message.success(t('settingsPage.remote.urlCopied'));
+        });
+    };
+
     const handleCopy = () => {
       void navigator.clipboard.writeText(url).then(() => {
         message.success(t('settingsPage.remote.urlCopied'));
@@ -81,7 +98,10 @@ export const RemoteScreenRow = observer(
               a camera. The lowest correction level keeps the modules as large
               as possible, which is what matters on a screen nobody is going to
               smudge. */}
-          {url && !revealed ? (
+          {/* A stream screen is opened by OBS on this machine, so there is
+              nothing to point a camera at — the address is copied, never
+              scanned. */}
+          {!isStream && url && !revealed ? (
             <div
               className={rowStyles.qrPlaceholder}
               style={{ width: QR_SIZE, height: QR_SIZE }}
@@ -91,7 +111,7 @@ export const RemoteScreenRow = observer(
             </div>
           ) : null}
 
-          {url && revealed ? (
+          {!isStream && url && revealed ? (
             <QRCode
               type="svg"
               value={url}
@@ -111,6 +131,8 @@ export const RemoteScreenRow = observer(
                 {screen.bounds.width}×{screen.bounds.height}
               </span>
 
+              {isStream && <Tag color="purple">OBS</Tag>}
+
               {device?.connected && (
                 <Tag color="green">{t('settingsPage.remote.deviceOnline')}</Tag>
               )}
@@ -123,6 +145,15 @@ export const RemoteScreenRow = observer(
                   : maskToken(url)
                 : t('settingsPage.remote.serverOffline')}
             </span>
+
+            {isStream && (
+              <span className={styles.fieldDesc}>
+                {t('settingsPage.remote.obsHint', {
+                  width: screen.bounds.width,
+                  height: screen.bounds.height,
+                })}
+              </span>
+            )}
 
             {reported && (
               <span className={styles.fieldDesc}>
@@ -150,6 +181,19 @@ export const RemoteScreenRow = observer(
               >
                 {t('settingsPage.remote.copyUrl')}
               </Button>
+
+              {isStream &&
+                screenWidgets.map((widget) => (
+                  <Button
+                    key={widget.id}
+                    size="small"
+                    icon={<Copy size={ICON_SIZE} />}
+                    disabled={!url}
+                    onClick={() => handleCopyWidget(widget.id)}
+                  >
+                    {widget.label}
+                  </Button>
+                ))}
 
               {mismatched && (
                 <Tooltip title={t('settingsPage.remote.fitToDeviceTooltip')}>

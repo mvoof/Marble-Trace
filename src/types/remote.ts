@@ -23,6 +23,13 @@ export interface RemoteScreenSnapshot {
   steeringLock: number;
   /** Name of the layout these widgets came from, shown while connecting. */
   layoutName: string;
+  /**
+   * Whether this screen is being painted for a person or for a stream encoder.
+   * A stream screen paints no background of its own and keeps its status
+   * messages off the canvas — a black rectangle mid-reconnect is worse on a
+   * broadcast than nothing at all. Absent means a device.
+   */
+  purpose?: 'device' | 'stream';
 }
 
 /**

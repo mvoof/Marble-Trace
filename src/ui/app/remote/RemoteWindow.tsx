@@ -43,7 +43,7 @@ export const RemoteWindow = observer(() => {
   }, [screen]);
 
   return (
-    <div className={styles.window}>
+    <div className={screen.isStream ? styles.windowStream : styles.window}>
       {screen.isReady && <RemoteCanvas />}
 
       <RemoteStatusOverlay />

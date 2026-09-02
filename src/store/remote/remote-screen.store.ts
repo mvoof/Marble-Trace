@@ -1,6 +1,9 @@
 import { makeAutoObservable } from 'mobx';
 
-import type { MonitorBounds } from '@/types/widget-settings';
+import type {
+  MonitorBounds,
+  WidgetDefaultConfig,
+} from '@/types/widget-settings';
 import type {
   RemoteConnectionState,
   RemoteScreenSnapshot,
@@ -24,10 +27,31 @@ export class RemoteScreenStore {
   viewportWidth = 0;
   viewportHeight = 0;
 
-  constructor(slug: string) {
+  /**
+   * One widget instead of the whole screen, when the page was opened with
+   * `?widget=<instance id>`.
+   *
+   * That is how a widget reaches OBS as a source of its own: the page becomes
+   * the widget's own rectangle with nothing around it, so the streamer places
+   * and scales it in their scene rather than laying the screen out here. Empty
+   * means the whole screen, which is what a tablet opens.
+   */
+  readonly soloWidgetId: string;
+
+  constructor(slug: string, soloWidgetId = '') {
     this.slug = slug;
+    this.soloWidgetId = soloWidgetId;
 
     makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  /**
+   * Painted for an encoder rather than for a person: no ground of its own, and
+   * no status card. A solo widget is always that — nothing but OBS asks for
+   * one — whatever the screen it was taken from is marked as.
+   */
+  get isStream(): boolean {
+    return this.soloWidgetId !== '' || this.snapshot?.purpose === 'stream';
   }
 
   setConnection(state: RemoteConnectionState) {
@@ -44,16 +68,53 @@ export class RemoteScreenStore {
   }
 
   get bounds(): MonitorBounds | null {
+    const solo = this.soloWidget;
+
+    // The widget's own rectangle, in the same virtual-desktop coordinates the
+    // screen uses — the canvas shifts by the origin either way, so a solo
+    // widget lands at 0,0 with no padding around it.
+    if (solo) {
+      return {
+        x: solo.userSettings.x,
+        y: solo.userSettings.y,
+        width: solo.userSettings.currentWidth,
+        height: solo.userSettings.currentHeight,
+      };
+    }
+
     return this.snapshot?.bounds ?? null;
+  }
+
+  private get soloWidget(): WidgetDefaultConfig | null {
+    if (this.soloWidgetId === '') return null;
+
+    return (
+      this.snapshot?.widgets.find(
+        (widget) => widget.id === this.soloWidgetId
+      ) ?? null
+    );
   }
 
   /** True once there is something to draw — a socket that is up but has not
    * delivered a snapshot yet still shows the waiting screen. */
   get isReady(): boolean {
+    if (this.soloWidgetId !== '') {
+      return this.soloWidget !== null;
+    }
+
     return this.snapshot !== null;
   }
 
-  get enabledWidgets() {
+  get enabledWidgets(): WidgetDefaultConfig[] {
+    const solo = this.soloWidget;
+
+    // A solo widget is drawn whether or not the layout has it switched on: the
+    // streamer asked for this one by its id, and a blank source with no
+    // explanation is the worst answer to that.
+    if (this.soloWidgetId !== '') {
+      return solo ? [solo] : [];
+    }
+
     return (this.snapshot?.widgets ?? []).filter(
       (widget) => widget.userSettings.enabled
     );

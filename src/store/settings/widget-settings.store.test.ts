@@ -844,3 +844,54 @@ describe('several copies of one widget in a layout', () => {
     expect(store.isWidgetInActiveLayout('standings')).toBe(false);
   });
 });
+
+describe('a screen added for a stream', () => {
+  let rootStore: RootStore;
+
+  beforeEach(() => {
+    rootStore = new RootStore({ skipInit: true });
+    rootStore.widgetSettings.setLayouts(
+      [
+        {
+          id: 'layout-race',
+          name: 'Race',
+          createdAt: 0,
+          monitors: [
+            {
+              name: 'DISPLAY1',
+              bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+            },
+          ],
+          widgets: [],
+        },
+      ],
+      'layout-race'
+    );
+  });
+
+  const streamScreen = () =>
+    rootStore.widgetSettings.activeLayout!.monitors.find(
+      (monitor) => monitor.name === 'Stream'
+    )!;
+
+  // The size is the canvas being broadcast at, and the user chose it here.
+  // Marking it fitted is what stops the first browser source that connects
+  // from reporting its own size and reshuffling a finished layout.
+  it('is created already fitted, so OBS cannot resize it', () => {
+    rootStore.widgetSettings.addRemoteScreen('Stream', 1920, 1080, 'stream');
+
+    expect(streamScreen().purpose).toBe('stream');
+    expect(streamScreen().fittedToDevice).toBe(true);
+  });
+
+  it('leaves a device screen open to being fitted, as before', () => {
+    rootStore.widgetSettings.addRemoteScreen('Tablet', 1280, 800);
+
+    const tablet = rootStore.widgetSettings.activeLayout!.monitors.find(
+      (monitor) => monitor.name === 'Tablet'
+    )!;
+
+    expect(tablet.purpose).toBe('device');
+    expect(tablet.fittedToDevice).toBeFalsy();
+  });
+});

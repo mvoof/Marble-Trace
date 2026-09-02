@@ -53,6 +53,7 @@ const snapshotFor = (
     language: root.appSettings.appSettings.language,
     steeringLock: root.appSettings.appSettings.steeringLock,
     layoutName: layout.name,
+    purpose: monitor.purpose,
   };
 };
 
