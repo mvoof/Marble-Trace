@@ -1,6 +1,8 @@
 .sessionFooter {
   background: rgba(18, 18, 20, $opacity-heavy);
-  padding: sp(xs) sp(md); // Narrower vertical padding (exactly like StandingsHeader)
+  // A peer of the rows above it, not a second header: the vertical padding is the
+  // one a narrow row carries, so the strip never grows past a single line.
+  padding: sp(xxxs) sp(md);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -14,12 +16,12 @@
 
 .footerLeft {
   display: flex;
-  gap: sp(sm);
+  gap: sp(lg);
   align-items: center;
 }
 
 .footerRight {
   display: flex;
-  gap: sp(sm);
+  gap: sp(lg);
   align-items: center;
 }

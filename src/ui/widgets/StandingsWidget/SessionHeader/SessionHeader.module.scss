@@ -1,6 +1,12 @@
 .sessionHeader {
-  background: rgba(24, 24, 27, $opacity-heavy);
-  padding: sp(md) sp(md);
+  // Lit from the top, so the bar reads as the widget's frame rather than as one
+  // more row — the height it gains comes from the type, not from padding.
+  background: linear-gradient(
+    180deg,
+    rgba(30, 30, 35, $opacity-heavy) 0%,
+    rgba(19, 19, 22, $opacity-heavy) 100%
+  );
+  padding: sp(xs) sp(md);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -33,9 +39,16 @@
   flex-shrink: 0;
 }
 
+// The widget's headline — a step above the driver names below it, and the one
+// item in the bar that keeps its own casing at that size.
 .trackName {
   color: $widget-text-primary;
-  font-weight: 900;
+  font-family: $font-widget;
+  font-size: fs(lg);
+  font-weight: 700;
+  text-transform: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sessionType {
@@ -84,6 +97,7 @@
 
 .statValue {
   color: $widget-text-primary;
+  font-size: fs(sm);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -96,9 +110,12 @@
   color: $widget-text-primary;
 }
 
+// Lap count and clock are the two numbers read mid-corner — the largest type in
+// the widget, matching each other so the pair reads as one readout.
 .lapsValue {
   display: inline-block;
   text-align: right;
+  font-size: fs(lg);
   font-variant-numeric: tabular-nums;
 }
 

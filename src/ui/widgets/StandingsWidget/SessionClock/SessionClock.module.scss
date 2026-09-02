@@ -3,7 +3,8 @@
   text-align: right;
   font-family: $font-mono;
   font-variant-numeric: tabular-nums;
-  font-size: fs(xs);
+  // Matches .lapsValue in SessionHeader — the two sit side by side as one readout.
+  font-size: fs(lg);
   color: $widget-text-primary;
 }
 

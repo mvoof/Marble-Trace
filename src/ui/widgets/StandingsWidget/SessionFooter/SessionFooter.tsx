@@ -8,7 +8,7 @@ import { getTrackWetnessInfo } from '@utils/weather-utils';
 import { isNearIncidentLimit } from '@utils/driver';
 
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { StatPill } from '@ui/shared/StatPill/StatPill';
+import { StatPill, type StatPillVariant } from '@ui/shared/StatPill/StatPill';
 import styles from './SessionFooter.module.scss';
 import {
   useBackendComputedStore,
@@ -17,6 +17,10 @@ import {
   useUnitsStore,
   useWidgetSettingsStore,
 } from '@store/root-store-context';
+
+// Boxed chips would make the strip taller than the rows it sits under, which is
+// the one thing the footer must not be.
+const PILL_VARIANT: StatPillVariant = 'inline';
 
 export const SessionFooter = observer(() => {
   const { pitStops, driverEntries: driverEntriesFrame } =
@@ -72,7 +76,12 @@ export const SessionFooter = observer(() => {
     <div className={styles.sessionFooter}>
       <div className={styles.footerLeft}>
         {showPitStops && (
-          <StatPill icon={Wrench} label="PIT">
+          <StatPill
+            icon={Wrench}
+            iconTone="accent"
+            label="PIT"
+            variant={PILL_VARIANT}
+          >
             {playerPitStops}
           </StatPill>
         )}
@@ -82,6 +91,7 @@ export const SessionFooter = observer(() => {
             icon={TriangleAlert}
             iconTone={isNearLimit ? 'danger' : 'warning'}
             label="INC"
+            variant={PILL_VARIANT}
             valueDanger={isNearLimit}
             pulse={isNearLimit}
           >
@@ -98,6 +108,7 @@ export const SessionFooter = observer(() => {
             icon={Thermometer}
             iconColor={getAirTempColor(airCelsius)}
             label="AIR"
+            variant={PILL_VARIANT}
           >
             {airStr}
           </StatPill>
@@ -108,13 +119,19 @@ export const SessionFooter = observer(() => {
             icon={Thermometer}
             iconColor={getTrackTempColor(trkCelsius)}
             label="TRACK"
+            variant={PILL_VARIANT}
           >
             {trkStr}
           </StatPill>
         )}
 
         {showWeather && wetnessInfo && (
-          <StatPill icon={Waves} iconColor={wetnessInfo.color} label="SURFACE">
+          <StatPill
+            icon={Waves}
+            iconColor={wetnessInfo.color}
+            label="SURFACE"
+            variant={PILL_VARIANT}
+          >
             {wetnessInfo.label}
           </StatPill>
         )}
