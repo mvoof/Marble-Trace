@@ -5,7 +5,7 @@ export const SMOOTHING = 0.12;
 export const TRACE_LENGTH = 100;
 export const FADING_DECAY = 0.9992;
 export const ENVELOPE_SPREAD = 10;
-export const RADIUS_RATIO = 0.76;
+export const RADIUS_RATIO = 0.855;
 
 /** The axes run a little past the outer ring, so the cross reads as a cross. */
 export const AXIS_OVERHANG = 1.06;

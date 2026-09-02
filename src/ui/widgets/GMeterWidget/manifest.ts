@@ -27,6 +27,7 @@ export const G_METER_MANIFEST: WidgetManifest = {
     currentHeight: G_METER_DESIGN_SIZE_PX,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
+    borderColor: 'transparent',
     displayMode: 'fading',
     scale: 4,
     colorMode: 'advanced',
