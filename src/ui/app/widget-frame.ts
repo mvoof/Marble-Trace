@@ -18,6 +18,12 @@ export const widgetFrameBorderRadius = (
     return '50%';
   }
 
+  // The g-meter is a friction circle: its plate is that circle, so the frame
+  // clips round the same way the scope does.
+  if (widgetId === 'g-meter') {
+    return '50%';
+  }
+
   if (widgetId === 'race-dash') {
     return `calc(52px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(52px * var(--wfs, 1))`;
   }

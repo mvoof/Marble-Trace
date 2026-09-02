@@ -52,6 +52,13 @@ import { asArray, asObject, dropWidgetSettings, mapEveryWidget } from '../blob';
  * columns were switched off before this release would keep the stale 440
  * forever. Here it is rebased once, at the scale the driver had set.
  *
+ * **5. The g-meter becomes a round dial.** Its friction circle now fills the
+ * plate and the numbers moved onto the rings, so the 240×280 box — a circle
+ * with a two-column footer under it — describes a widget that no longer exists,
+ * and its extra height would clip the disc to an ellipse. It is squared on the
+ * width the driver had set: unlike the radar the circle itself is unchanged, so
+ * a dial made half again as large stays that size.
+ *
  * Every literal here is frozen on purpose: this step has to keep meaning "move
  * carLength, square up the radar, rescale the pit box" however the widgets are
  * named or defaulted later.
@@ -66,6 +73,10 @@ const PIT_OLD_WIDTH_PX = 300;
 const PIT_OLD_SIDE_RAIL_WIDTH_PX = 360;
 const PIT_NEW_WIDTH_PX = 235;
 const PIT_NEW_HEIGHT_PX = 330;
+
+const G_METER_ID = 'g-meter';
+const G_METER_OLD_WIDTH_PX = 240;
+const G_METER_SIDE_PX = 240;
 
 const CLOSE_BATTLE_ID = 'close-battle';
 const CLOSE_BATTLE_OLD_WIDTH_PX = 440;
@@ -180,6 +191,30 @@ const rescalePitService = (
   };
 };
 
+/**
+ * The dial, at the width the driver had it. The width is the honest half of the
+ * old box — the height was the footer that is gone — so it becomes the side.
+ */
+const squareGMeter = (
+  widget: SettingsBlob,
+  settings: SettingsBlob
+): SettingsBlob => {
+  const oldWidth = asNumber(widget.designWidth) ?? G_METER_OLD_WIDTH_PX;
+  const scale = (asNumber(settings.currentWidth) ?? oldWidth) / oldWidth;
+  const side = Math.round(G_METER_SIDE_PX * scale);
+
+  return {
+    ...widget,
+    designWidth: G_METER_SIDE_PX,
+    designHeight: G_METER_SIDE_PX,
+    userSettings: {
+      ...settings,
+      currentWidth: side,
+      currentHeight: side,
+    },
+  };
+};
+
 /** The command that receives it refuses anything outside this range. */
 const MIN_CAR_LENGTH_M = 0.5;
 const MAX_CAR_LENGTH_M = 15;
@@ -283,7 +318,7 @@ const dropTopLevelWidgets = (blob: SettingsBlob): SettingsBlob => {
 export const v3WidgetShapes: Migration = {
   to: 3,
   describe:
-    'move the car length to app settings, square up the radar, rescale the pit box, rebase Close Battle on its columns, drop the top-level widget list',
+    'move the car length to app settings, square up the radar and the g-meter, rescale the pit box, rebase Close Battle on its columns, drop the top-level widget list',
   migrate: (blob: SettingsBlob): SettingsBlob => {
     const carLength = readCarLength(blob);
 
@@ -304,6 +339,10 @@ export const v3WidgetShapes: Migration = {
       widgets.map((widget) => {
         if (widget?.id === CLOSE_BATTLE_ID) {
           return rebaseCloseBattle(widget, asObject(widget.userSettings) ?? {});
+        }
+
+        if (widget?.id === G_METER_ID) {
+          return squareGMeter(widget, asObject(widget.userSettings) ?? {});
         }
 
         if (widget?.id === PIT_SERVICE_ID) {

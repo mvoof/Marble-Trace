@@ -1,13 +1,29 @@
 import { useContext, useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { RADIUS_RATIO } from '@ui/widgets/GMeterWidget/g-meter-utils';
+import {
+  AXIS_OVERHANG,
+  OUTER_ARC_CENTERS,
+  OUTER_ARC_HALF_SWEEP,
+  OUTER_ARC_RADIUS_RATIO,
+  RADIUS_RATIO,
+  RING_LABEL_ANGLE,
+  RING_LABEL_GAP_PX,
+} from '@ui/widgets/GMeterWidget/g-meter-utils';
 import { resizeCanvasToDpr } from '@utils/canvas';
 
 import type { GMeterWidgetSettings } from '@/types/widget-settings';
 import styles from './GMeterRings.module.scss';
 import { useWidgetSettingsStore } from '@store/root-store-context';
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
+
+const RING_COLOR = 'rgba(42,43,48,0.8)';
+const OUTER_RING_COLOR = 'rgba(72,74,82,1)';
+const AXIS_COLOR = 'rgba(58,59,64,0.8)';
+const ARC_COLOR = 'rgba(58,59,64,0.7)';
+const RING_LABEL_COLOR = 'rgba(120,120,130,0.7)';
+const LABEL_BASE_WIDTH_PX = 240;
+const LABEL_BASE_SIZE_PX = 13;
 
 interface GMeterRingsProps {
   width: number;
@@ -38,63 +54,80 @@ export const GMeterRings = observer(({ width, height }: GMeterRingsProps) => {
 
     const cx = width / 2;
     const cy = height / 2;
-
     const radius = Math.min(width, height) * RADIUS_RATIO * 0.5;
-
     const pxPerG = radius / scale;
 
     ctx.clearRect(0, 0, width, height);
 
-    ctx.lineWidth = 1;
-
-    for (let gValue = 1; gValue <= scale; gValue++) {
-      ctx.beginPath();
-
-      ctx.arc(cx, cy, gValue * pxPerG, 0, Math.PI * 2);
-
-      ctx.strokeStyle =
-        gValue === scale ? 'rgba(58,59,64,1)' : 'rgba(42,43,48,0.8)';
-
-      ctx.stroke();
-    }
-
-    const labelSize = Math.round(14 * (width / 240) * fontScale);
+    const labelSize = Math.round(
+      LABEL_BASE_SIZE_PX * (width / LABEL_BASE_WIDTH_PX) * fontScale
+    );
 
     ctx.font = `600 ${labelSize}px 'Rajdhani', sans-serif`;
-    ctx.fillStyle = 'rgba(120,120,130,0.7)';
-
-    const pad = 3;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.lineWidth = 1;
 
     for (let gValue = 1; gValue <= scale; gValue++) {
       const ringRadius = gValue * pxPerG;
-
       const label = String(gValue);
+      const labelWidth = ctx.measureText(label).width;
+      // The number stands in the ring rather than beside it, so the ring is cut
+      // where the glyphs sit instead of being drawn through them.
+      const halfGap = Math.min(
+        Math.PI / 3,
+        (labelWidth / 2 + RING_LABEL_GAP_PX) / ringRadius
+      );
 
-      const textWidth = ctx.measureText(label).width;
+      ctx.beginPath();
+      ctx.arc(
+        cx,
+        cy,
+        ringRadius,
+        RING_LABEL_ANGLE + halfGap,
+        RING_LABEL_ANGLE - halfGap + Math.PI * 2
+      );
+      ctx.strokeStyle = gValue === scale ? OUTER_RING_COLOR : RING_COLOR;
+      ctx.stroke();
 
-      ctx.textBaseline = 'bottom';
-      ctx.fillText(label, cx - textWidth / 2, cy - ringRadius - pad);
-
-      ctx.textBaseline = 'top';
-      ctx.fillText(label, cx - textWidth / 2, cy + ringRadius + pad);
-
-      ctx.textBaseline = 'middle';
-
-      ctx.fillText(label, cx - ringRadius - textWidth - pad, cy);
-      ctx.fillText(label, cx + ringRadius + pad, cy);
+      ctx.fillStyle = RING_LABEL_COLOR;
+      ctx.fillText(
+        label,
+        cx + Math.cos(RING_LABEL_ANGLE) * ringRadius,
+        cy + Math.sin(RING_LABEL_ANGLE) * ringRadius
+      );
     }
 
+    const axisReach = radius * AXIS_OVERHANG;
+
     ctx.beginPath();
-
-    ctx.moveTo(cx, cy - radius);
-    ctx.lineTo(cx, cy + radius);
-    ctx.moveTo(cx - radius, cy);
-    ctx.lineTo(cx + radius, cy);
-
-    ctx.strokeStyle = 'rgba(58,59,64,0.8)';
-    ctx.lineWidth = 1;
-
+    ctx.moveTo(cx, cy - axisReach);
+    ctx.lineTo(cx, cy + axisReach);
+    ctx.moveTo(cx - axisReach, cy);
+    ctx.lineTo(cx + axisReach, cy);
+    ctx.strokeStyle = AXIS_COLOR;
     ctx.stroke();
+
+    // The four outer arcs are the frame at rest and the over-range warning when
+    // the trace layer lights them, so they are drawn here even while dim.
+    const arcRadius = radius * OUTER_ARC_RADIUS_RATIO;
+
+    ctx.strokeStyle = ARC_COLOR;
+    ctx.lineCap = 'round';
+
+    OUTER_ARC_CENTERS.forEach((center) => {
+      ctx.beginPath();
+      ctx.arc(
+        cx,
+        cy,
+        arcRadius,
+        center - OUTER_ARC_HALF_SWEEP,
+        center + OUTER_ARC_HALF_SWEEP
+      );
+      ctx.stroke();
+    });
+
+    ctx.lineCap = 'butt';
   }, [width, height, scale, fontScale]);
 
   return (

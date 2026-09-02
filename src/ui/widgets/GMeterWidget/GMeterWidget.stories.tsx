@@ -21,7 +21,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/GMeter',
   ...defineWidgetStories<StoryArgs>({
     widget: GMeterWidget,
-    size: { width: 240, height: 280, background: 'rgba(21, 22, 26, 0.8)' },
+    size: { width: 240, height: 240, background: 'rgba(21, 22, 26, 0.8)' },
     seed: (store, args) => {
       store.player.updateCarDynamics({
         lat_accel: args.latG * G_CONSTANT,
