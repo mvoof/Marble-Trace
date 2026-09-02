@@ -14,6 +14,7 @@ import {
 } from '@store/root-store-context';
 import type { TimerWidgetSettings } from '@/types/widget-settings';
 
+import { FixedDigits } from '../FixedDigits/FixedDigits';
 import styles from './TimerFooter.module.scss';
 
 export const TimerFooter = observer(() => {
@@ -64,15 +65,17 @@ export const TimerFooter = observer(() => {
   return (
     <div className={styles.footer}>
       {showLaps && (
-        <span className={styles.footerItem}>
-          {formatLapCount(currentLap, totalLaps)}
-        </span>
+        <FixedDigits
+          className={styles.footerItem}
+          text={formatLapCount(currentLap, totalLaps)}
+        />
       )}
 
       {showPosition && (
-        <span className={styles.footerItem}>
-          {formatPosition(position, totalDrivers)}
-        </span>
+        <FixedDigits
+          className={styles.footerItem}
+          text={formatPosition(position, totalDrivers)}
+        />
       )}
     </div>
   );

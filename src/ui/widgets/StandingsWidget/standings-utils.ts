@@ -326,15 +326,6 @@ const UNLIMITED_LAPS = 'unlimited';
 // Replaces the count on the last lap — the fact matters more than the number.
 const FINAL_LAP_LABEL = 'FINAL';
 
-/**
- * A lap-limited race counts down laps; a timed one counts down the clock. The
- * one that ends the session is the header's lead value, the other is secondary.
- */
-export const isLapLimitedSession = (
-  sessionLaps: string | null | undefined
-): boolean =>
-  Boolean(sessionLaps) && sessionLaps!.toLowerCase() !== UNLIMITED_LAPS;
-
 export interface LapProgress {
   value: string;
   isFinalLap: boolean;

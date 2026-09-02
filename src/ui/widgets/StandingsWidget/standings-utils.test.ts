@@ -11,7 +11,6 @@ import {
   buildLapProgress,
   buildVisibleRows,
   drawsClassHeaders,
-  isLapLimitedSession,
   getStandingsGap,
   maxScrollOffset,
   resolveBestLapDisplay,
@@ -223,15 +222,6 @@ describe('resolveBestLapDisplay', () => {
       time: null,
       isQualifying: false,
     });
-  });
-});
-
-describe('isLapLimitedSession', () => {
-  it('is true only for a numeric lap count', () => {
-    expect(isLapLimitedSession('45')).toBe(true);
-    expect(isLapLimitedSession('unlimited')).toBe(false);
-    expect(isLapLimitedSession(null)).toBe(false);
-    expect(isLapLimitedSession(undefined)).toBe(false);
   });
 });
 
