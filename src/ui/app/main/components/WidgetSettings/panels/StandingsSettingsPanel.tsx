@@ -123,6 +123,12 @@ export const StandingsSettingsPanel = observer(() => {
       value: settings.hideRetiredDrivers,
       key: 'hideRetiredDrivers',
     },
+    {
+      titleKey: 'settingsPanels.standings.hideDriversWithoutLap',
+      descKey: 'settingsPanels.standings.hideDriversWithoutLapDesc',
+      value: settings.hideDriversWithoutLap,
+      key: 'hideDriversWithoutLap',
+    },
   ] as const;
 
   const headerInfo = [
@@ -220,6 +226,14 @@ export const StandingsSettingsPanel = observer(() => {
               onChange={(value) => update({ nameColumnWidth: value })}
             />
           </SettingRow>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="dimSecondaryColumns"
+            title={t('settingsPanels.standings.dimSecondaryColumns')}
+            desc={t('settingsPanels.standings.dimSecondaryColumnsDesc')}
+          />
         </div>
 
         <div className={styles.fieldGroup}>

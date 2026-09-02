@@ -9,7 +9,7 @@ import {
 import type { DriverEntry } from '@/types/bindings';
 import type { DriverGroup } from '@/types';
 import type { StandingsWidgetSettings } from '@/types/widget-settings';
-import { computeClassSof } from '@utils/driver';
+import { computeClassSof, hasSetALap } from '@utils/driver';
 import { hasRaceStarted } from '@utils/timer-utils';
 import {
   scrollThumbFor,
@@ -384,22 +384,41 @@ export class StandingsWidgetStore {
   }
 
   /**
-   * Cars the sim classified as retired or disqualified, dropped when the user asked
-   * for it. The player's own row always stays — the widget is unusable without it.
+   * Cars the sim classified as retired or disqualified, and — in the timed
+   * sessions — cars still without a lap, dropped when the user asked for it. The
+   * player's own row always stays: the widget is unusable without it.
    */
   private get visibleEntries(): DriverEntry[] {
     const entries = this.root.backendComputed.driverEntries?.entries ?? [];
 
-    const hideRetired =
+    const settings =
       this.root.widgetSettings.getSettings<StandingsWidgetSettings>(
         'standings'
-      ).hideRetiredDrivers;
+      );
 
-    if (!hideRetired) {
+    const sessionType = this.root.session.currentSessionType;
+
+    // A race orders itself by position, so an unset lap says nothing there —
+    // only practice and qualifying rank by the clock.
+    const hideLapless =
+      settings.hideDriversWithoutLap &&
+      (sessionType === 'Practice' || sessionType === 'Qualify');
+
+    if (!settings.hideRetiredDrivers && !hideLapless) {
       return entries;
     }
 
-    return entries.filter((entry) => !entry.isRetired || entry.isPlayer);
+    return entries.filter((entry) => {
+      if (entry.isPlayer) {
+        return true;
+      }
+
+      if (settings.hideRetiredDrivers && entry.isRetired) {
+        return false;
+      }
+
+      return !hideLapless || hasSetALap(entry);
+    });
   }
 
   /** Field ordered by the debounced positions — the order the table renders. */

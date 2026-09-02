@@ -83,6 +83,8 @@ export const STANDINGS_MANIFEST: WidgetManifest = {
     abbreviateNames: false,
     showDriverFlags: true,
     hideRetiredDrivers: false,
+    hideDriversWithoutLap: false,
+    dimSecondaryColumns: false,
     playerRowColor: DEFAULT_PLAYER_ROW_COLOR,
     playerAccentColor: DEFAULT_PLAYER_ACCENT_COLOR,
   },

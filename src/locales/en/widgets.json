@@ -490,7 +490,11 @@
       "incidentsBadgeDesc": "Incident count accumulated by the player car.",
       "totalDriversCount": "Total Drivers Count",
       "totalDriversCountDesc": "Total number of drivers in the session.",
-      "scrolling": "Scrolling"
+      "scrolling": "Scrolling",
+      "dimSecondaryColumns": "Dim Secondary Columns",
+      "dimSecondaryColumnsDesc": "Paint last lap, laps, gap, brand and iRating in the muted text color.",
+      "hideDriversWithoutLap": "Hide Drivers Without a Lap",
+      "hideDriversWithoutLapDesc": "In practice and qualifying, drop rows for cars that have not set a lap time yet. Your own row always stays."
     },
     "timer": {
       "visibleElements": "Visible Elements",
