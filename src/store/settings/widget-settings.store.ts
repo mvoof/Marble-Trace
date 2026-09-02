@@ -138,6 +138,14 @@ export class WidgetSettingsStore {
   // those external edits (the layout editor preview) can still react to it.
   syncToken = 0;
 
+  /**
+   * Overlay side: the layout id of the last widget list main pushed here. It
+   * travels back on every echo so main can tell whether the window is still
+   * speaking for the layout that is active now — an echo in flight across a
+   * layout switch otherwise lands in the wrong layout record.
+   */
+  syncedLayoutId: string | null = null;
+
   // When true the editor is showing a layout that is NOT the overlay-active one.
   // The overlay-sync reaction skips emitting while this flag is set so the
   // overlay keeps displaying the previously-active layout.
@@ -302,7 +310,7 @@ export class WidgetSettingsStore {
     this.pushUndo();
 
     widget.userSettings.zIndex = topZIndex(this.allWidgets, id) + 1;
-    this.bumpMutation();
+    this.bumpMutation(id);
   }
 
   sendToBack(id: string) {
@@ -313,11 +321,55 @@ export class WidgetSettingsStore {
     this.pushUndo();
 
     widget.userSettings.zIndex = bottomZIndex(this.allWidgets, id) - 1;
-    this.bumpMutation();
+    this.bumpMutation(id);
   }
 
-  private bumpMutation() {
+  /**
+   * Widgets mutated locally since the last drain, and the flag that says the
+   * whole map was replaced instead. The overlay reports its edits to main as a
+   * patch of exactly these widgets — a full list is both wasteful and unsafe,
+   * since a window's copy of the other screens is stale by construction.
+   */
+  private touchedWidgetIds = new Set<string>();
+  private touchedEveryWidget = false;
+
+  private bumpMutation(widgetId?: string) {
+    if (widgetId === undefined) {
+      this.touchedEveryWidget = true;
+    } else {
+      this.touchedWidgetIds.add(widgetId);
+    }
+
     this.changeToken++;
+  }
+
+  /**
+   * Takes the widgets edited here since the last call and forgets them.
+   * `everyWidget` means the map was installed wholesale (a layout load, an
+   * undo) and only a full list describes it.
+   */
+  drainTouchedWidgets(): {
+    everyWidget: boolean;
+    widgets: WidgetDefaultConfig[];
+  } {
+    const everyWidget = this.touchedEveryWidget;
+    const ids = this.touchedWidgetIds;
+
+    this.touchedEveryWidget = false;
+    this.touchedWidgetIds = new Set<string>();
+
+    if (everyWidget) {
+      return { everyWidget, widgets: this.allWidgets };
+    }
+
+    return {
+      everyWidget,
+      widgets: [...ids]
+        .map((id) => this.widgets.get(id))
+        .filter(
+          (widget): widget is WidgetDefaultConfig => widget !== undefined
+        ),
+    };
   }
 
   /**
@@ -451,7 +503,7 @@ export class WidgetSettingsStore {
     widget.userSettings.zIndex = spot.zIndex;
     widget.userSettings.enabled = true;
 
-    this.bumpMutation();
+    this.bumpMutation(id);
   }
 
   updatePosition(id: string, x: number, y: number) {
@@ -464,7 +516,7 @@ export class WidgetSettingsStore {
       widget.userSettings.x = x;
       widget.userSettings.y = y;
 
-      this.bumpMutation();
+      this.bumpMutation(id);
     }
   }
 
@@ -479,7 +531,7 @@ export class WidgetSettingsStore {
       widget.userSettings.currentWidth = width;
       widget.userSettings.currentHeight = height;
 
-      this.bumpMutation();
+      this.bumpMutation(id);
     }
   }
 
@@ -507,7 +559,7 @@ export class WidgetSettingsStore {
 
     applyLayoutResize(id, widget, prevSettings, widget.userSettings);
 
-    this.bumpMutation();
+    this.bumpMutation(id);
 
     if (id === 'fuel' && 'pitWarningLaps' in resolvedPartial) {
       setPitWarningLapsSilent(
@@ -641,7 +693,7 @@ export class WidgetSettingsStore {
 
     widget.userSettings.x = moved.userSettings.x;
     widget.userSettings.y = moved.userSettings.y;
-    this.bumpMutation();
+    this.bumpMutation(widgetId);
   }
 
   /**

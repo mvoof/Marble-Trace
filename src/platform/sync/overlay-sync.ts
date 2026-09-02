@@ -53,9 +53,18 @@ export const initOverlaySync = async (root: RootStore) => {
 
         if (!monitorName) return;
 
+        // Only what was edited here travels back. A drag reports one widget
+        // instead of the whole layout, and a list this window never touched
+        // can no longer overwrite the record main holds for it.
+        const { widgets } = root.widgetSettings.drainTouchedWidgets();
+
+        if (widgets.length === 0) return;
+
         void emitWidgetSettingsToMain({
           monitorName,
-          widgets: root.widgetSettings.allWidgets,
+          widgets,
+          layoutId:
+            root.widgetSettings.syncedLayoutId ?? root.layouts.activeLayoutId,
         });
       },
       { delay: 100 }

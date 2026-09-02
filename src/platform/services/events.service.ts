@@ -41,9 +41,19 @@ type SessionLayoutMap = Record<SessionContext, string | null>;
 
 // Widget lists always travel with the monitor they belong to. Without it an
 // edit made on one screen would overwrite the widgets of another.
+//
+// Main pushes the whole active layout; an overlay answers with a patch of the
+// widgets it actually edited, so the two directions carry the same shape but
+// very different amounts of it.
 export interface MonitorWidgetsPayload {
   monitorName: string;
   widgets: WidgetDefaultConfig[];
+  /**
+   * The layout these widgets belong to. Main stamps it on every push and the
+   * overlay echoes back the one it last received, so a list emitted just before
+   * a layout switch cannot be written into the layout that switched in.
+   */
+  layoutId?: string | null;
   /**
    * The layout's monitors. An overlay window needs them to decide which
    * widgets are its own — the test is a centre point against monitor bounds,
@@ -181,7 +191,8 @@ export const emitInteractMode = (active: boolean) =>
  */
 export const emitActiveLayoutToOverlays = async (
   monitors: LayoutMonitor[],
-  widgets: WidgetDefaultConfig[]
+  widgets: WidgetDefaultConfig[],
+  layoutId: string | null
 ) => {
   const labels = await listOverlayWindowLabels();
 
@@ -194,6 +205,7 @@ export const emitActiveLayoutToOverlays = async (
       monitorName: monitor.name,
       widgets,
       monitors,
+      layoutId,
     } satisfies MonitorWidgetsPayload);
   }
 };
