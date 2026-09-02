@@ -2,7 +2,7 @@
   background: rgba(18, 18, 20, $opacity-heavy);
   // A peer of the rows above it, not a second header — but the text still needs
   // room to sit off both edges, so the strip is one line with air, not a squeeze.
-  padding: sp(xxs) sp(md);
+  padding: sp(sm) sp(md);
   // Mirrors the header's three tracks: the player's own numbers hold the centre
   // under the rows, and the track conditions frame them from both edges.
   display: grid;
@@ -12,7 +12,7 @@
   border-top: 1px solid $widget-row-border;
   font-family: $font-mono;
   text-transform: uppercase;
-  font-size: fs(xs);
+  font-size: fs(md);
   font-weight: 400;
   color: $widget-text-secondary;
 }

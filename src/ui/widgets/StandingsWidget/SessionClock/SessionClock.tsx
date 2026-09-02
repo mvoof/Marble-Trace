@@ -78,7 +78,7 @@ export const SessionClock = observer(() => {
 
   return (
     <span
-      className={`${styles.clock} ${isLead ? styles.clockLead : styles.clockMuted} ${URGENCY_CLASS[urgency]}`}
+      className={`${styles.clock} ${isLead ? '' : styles.clockMuted} ${URGENCY_CLASS[urgency]}`}
     >
       <Timer size={ICON_SIZE_PX} className={styles.clockIcon} />
 

@@ -51,20 +51,21 @@
   flex-shrink: 0;
 }
 
-// The widget's headline — one step above the rest of the bar, and the one item
-// in it that keeps its own casing.
+// The one item in the bar that carries weight — everything else around it is set
+// at a single weight, so the title is the only thing the eye is pulled to.
 .trackName {
   color: $widget-text-primary;
   font-family: $font-widget;
   font-size: fs(md);
-  font-weight: 700;
+  font-weight: 400;
+  letter-spacing: 0.03em;
   text-transform: none;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .sessionType {
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .sessionTypePractice {
@@ -97,14 +98,30 @@
   color: $widget-text-secondary;
 }
 
+// Each icon carries the color of what it counts: the field is information, the
+// SOF is the trophy, and the lap/clock pair shares one hue so it reads as a
+// single readout — which is also why neither is yellow or red at rest.
 .statIconAccent {
   color: $race-gold;
+}
+
+.statIconField {
+  color: $race-blue;
+}
+
+.statIconProgress {
+  color: $race-green;
+}
+
+.statLabel {
+  color: $widget-text-secondary;
+  font-size: fs(xxs);
+  letter-spacing: 0.06em;
 }
 
 .statValue {
   color: $widget-text-primary;
   font-size: fs(sm);
-  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -117,7 +134,7 @@
 }
 
 // Lap count and clock are the two numbers read mid-corner — one step over the
-// footer's pills, and matched to each other so the pair reads as one readout.
+// footer, and matched to each other so the pair reads as one readout.
 .lapsValue {
   display: inline-block;
   text-align: right;
@@ -125,17 +142,10 @@
   font-variant-numeric: tabular-nums;
 }
 
-// The value that ends the session leads the header; the other one recedes.
-.lapsLead .lapsValue {
-  font-weight: 900;
-}
-
+// The value that ends the session leads the header; the other one recedes. Held
+// apart by opacity alone — weight is spent on the track name and nothing else.
 .lapsMuted {
   opacity: 0.7;
-
-  .lapsValue {
-    font-weight: 700;
-  }
 }
 
 // The flag goes warning-colored with the count it belongs to.

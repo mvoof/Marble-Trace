@@ -107,7 +107,11 @@ export const SessionHeader = observer(() => {
 
         {settings.showTotalDrivers && (
           <span className={styles.stat}>
-            <Users size={STAT_ICON_SIZE_PX} className={styles.statIcon} />
+            <Users
+              size={STAT_ICON_SIZE_PX}
+              className={`${styles.statIcon} ${styles.statIconField}`}
+            />
+
             <span className={styles.statValue}>{driverEntries.length}</span>
           </span>
         )}
@@ -123,6 +127,8 @@ export const SessionHeader = observer(() => {
               className={`${styles.statIcon} ${styles.statIconAccent}`}
             />
 
+            <span className={styles.statLabel}>SOF</span>
+
             <span className={styles.statValue}>
               {formatIRating(overallSof)}
             </span>
@@ -137,9 +143,12 @@ export const SessionHeader = observer(() => {
       <div className={styles.sessionRight}>
         {lapProgress && (
           <span
-            className={`${styles.laps} ${isLapLimited ? styles.lapsLead : styles.lapsMuted} ${lapProgress.isFinalLap ? styles.lapsFinal : ''}`}
+            className={`${styles.laps} ${isLapLimited ? '' : styles.lapsMuted} ${lapProgress.isFinalLap ? styles.lapsFinal : ''}`}
           >
-            <Flag size={STAT_ICON_SIZE_PX} className={styles.statIcon} />
+            <Flag
+              size={STAT_ICON_SIZE_PX}
+              className={`${styles.statIcon} ${styles.statIconProgress}`}
+            />
 
             <span
               className={styles.lapsValue}
