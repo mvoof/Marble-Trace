@@ -7,10 +7,13 @@
     rgba(19, 19, 22, $opacity-heavy) 100%
   );
   padding: sp(xxs) sp(md);
-  // Three tracks rather than two ends: the centre column is measured from the
-  // bar itself, so the track name stays put however long the stats beside it get.
+  // Three tracks rather than two ends, and the title holds the elastic one: the
+  // stats and the lap/clock readout are sized to their content and never give
+  // way, so a bar too narrow for everything truncates the track name instead of
+  // pushing the readout out of the widget. A centre track measured from the bar
+  // itself would centre the title perfectly and clip the clock to do it.
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   column-gap: sp(sm);
   border-bottom: 1px solid $widget-row-border;
