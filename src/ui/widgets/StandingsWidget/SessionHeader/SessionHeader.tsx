@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { Trophy, Users } from 'lucide-react';
+import { Flag, Trophy, Users } from 'lucide-react';
 
 import { formatIRating } from '@utils/driver';
 import { resolveSessionLaps } from '@utils/telemetry-format';
@@ -137,7 +137,7 @@ export const SessionHeader = observer(() => {
           <span
             className={`${styles.laps} ${isLapLimited ? styles.lapsLead : styles.lapsMuted} ${lapProgress.isFinalLap ? styles.lapsFinal : ''}`}
           >
-            <span className={styles.statLabel}>LAP</span>
+            <Flag size={STAT_ICON_SIZE_PX} className={styles.statIcon} />
 
             <span
               className={styles.lapsValue}

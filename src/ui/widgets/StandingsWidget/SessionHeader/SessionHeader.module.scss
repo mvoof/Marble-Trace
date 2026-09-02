@@ -6,7 +6,7 @@
     rgba(30, 30, 35, $opacity-heavy) 0%,
     rgba(19, 19, 22, $opacity-heavy) 100%
   );
-  padding: sp(xs) sp(md);
+  padding: sp(xxs) sp(md);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -39,12 +39,12 @@
   flex-shrink: 0;
 }
 
-// The widget's headline — a step above the driver names below it, and the one
-// item in the bar that keeps its own casing at that size.
+// The widget's headline — one step above the rest of the bar, and the one item
+// in it that keeps its own casing.
 .trackName {
   color: $widget-text-primary;
   font-family: $font-widget;
-  font-size: fs(lg);
+  font-size: fs(md);
   font-weight: 700;
   text-transform: none;
   overflow: hidden;
@@ -89,12 +89,6 @@
   color: $race-gold;
 }
 
-.statLabel {
-  color: $widget-text-secondary;
-  font-size: fs(xxs);
-  letter-spacing: 0.06em;
-}
-
 .statValue {
   color: $widget-text-primary;
   font-size: fs(sm);
@@ -104,18 +98,18 @@
 
 .laps {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: sp(xxs);
   flex-shrink: 0;
   color: $widget-text-primary;
 }
 
-// Lap count and clock are the two numbers read mid-corner — the largest type in
-// the widget, matching each other so the pair reads as one readout.
+// Lap count and clock are the two numbers read mid-corner — one step over the
+// footer's pills, and matched to each other so the pair reads as one readout.
 .lapsValue {
   display: inline-block;
   text-align: right;
-  font-size: fs(lg);
+  font-size: fs(sm);
   font-variant-numeric: tabular-nums;
 }
 
@@ -132,22 +126,12 @@
   }
 }
 
+// The flag goes warning-colored with the count it belongs to.
 .lapsFinal {
   color: $widget-status-warning;
   opacity: 1;
 
   .statIcon {
-    width: ws(11);
-    height: ws(11);
-    flex-shrink: 0;
-    color: $widget-text-secondary;
-  }
-
-  .statIconAccent {
-    color: $race-gold;
-  }
-
-  .statLabel {
     color: $widget-status-warning;
   }
 }

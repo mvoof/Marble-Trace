@@ -1,8 +1,8 @@
 .sessionFooter {
   background: rgba(18, 18, 20, $opacity-heavy);
-  // A peer of the rows above it, not a second header: the vertical padding is the
-  // one a narrow row carries, so the strip never grows past a single line.
-  padding: sp(xxxs) sp(md);
+  // A peer of the rows above it, not a second header — but the text still needs
+  // room to sit off both edges, so the strip is one line with air, not a squeeze.
+  padding: sp(xxs) sp(md);
   display: flex;
   align-items: center;
   justify-content: space-between;

@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { Timer } from 'lucide-react';
 
 import {
   isLapLimitedSession,
@@ -26,6 +27,9 @@ const URGENCY_CLASS: Record<ClockUrgency, string> = {
 // countdown runs out and the elapsed time takes over.
 const CLOCK_WIDTH_CHARS = 9;
 
+// Matches the icons the rest of the header carries.
+const ICON_SIZE_PX = 11;
+
 export const SessionClock = observer(() => {
   const { session, sessionInfo } = useSessionStore();
   const widgetSettings = useWidgetSettingsStore();
@@ -40,7 +44,12 @@ export const SessionClock = observer(() => {
   const sessionState = session?.session_state ?? null;
 
   if (isSessionEnded(sessionState)) {
-    return <span className={styles.clock}>END</span>;
+    return (
+      <span className={styles.clock}>
+        <Timer size={ICON_SIZE_PX} className={styles.clockIcon} />
+        END
+      </span>
+    );
   }
 
   const remain = session?.session_time_remain ?? null;
@@ -70,9 +79,15 @@ export const SessionClock = observer(() => {
   return (
     <span
       className={`${styles.clock} ${isLead ? styles.clockLead : styles.clockMuted} ${URGENCY_CLASS[urgency]}`}
-      style={{ minWidth: `${CLOCK_WIDTH_CHARS}ch` }}
     >
-      {`${prefix}${main}${secs}`}
+      <Timer size={ICON_SIZE_PX} className={styles.clockIcon} />
+
+      <span
+        className={styles.clockValue}
+        style={{ minWidth: `${CLOCK_WIDTH_CHARS}ch` }}
+      >
+        {`${prefix}${main}${secs}`}
+      </span>
     </span>
   );
 });
