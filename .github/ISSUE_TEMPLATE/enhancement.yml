@@ -3,6 +3,11 @@ description: A small improvement to an existing widget, setting, or screen.
 title: "[Enhancement]: "
 labels: ["enhancement"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Want to talk the idea through first? Join the [Discord](https://discord.gg/ArvRGpg4Rb).
+
   - type: input
     id: target
     attributes:

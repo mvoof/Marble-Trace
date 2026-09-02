@@ -22,7 +22,7 @@
   Got a bug, an idea, or just want to share your setup? Join the community on Discord.
 </p>
 <p align="center">
-  <a href="https://discord.gg/GVaRsHbjxV">
+  <a href="https://discord.gg/tkdS9sn49b">
     <img src="https://discordapp.com/api/guilds/1342905186041073684/widget.png?style=shield" alt="Discord">
   </a>
 </p>
