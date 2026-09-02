@@ -492,7 +492,9 @@
       "totalDriversCountDesc": "Número total de pilotos en la sesión.",
       "scrolling": "Desplazamiento",
       "dimSecondaryColumns": "Atenuar columnas secundarias",
-      "dimSecondaryColumnsDesc": "Muestra última vuelta, vueltas, diferencia, marca e iRating en el color de texto atenuado."
+      "dimSecondaryColumnsDesc": "Muestra última vuelta, vueltas, diferencia, marca e iRating en el color de texto atenuado.",
+      "hideDriversWithoutLap": "Ocultar pilotos sin vuelta",
+      "hideDriversWithoutLapDesc": "En práctica y clasificación, quita las filas de los coches que aún no han marcado tiempo. Tu propia fila siempre se mantiene."
     },
     "timer": {
       "visibleElements": "Elementos visibles",

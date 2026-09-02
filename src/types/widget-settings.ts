@@ -352,6 +352,12 @@ export interface StandingsWidgetSettings {
    */
   hideRetiredDrivers: boolean;
   /**
+   * In practice and qualifying, drop rows for cars that have not set a lap yet —
+   * the sim lists the whole entry list from the green flag, most of it in the
+   * garage. The player's own row is always kept.
+   */
+  hideDriversWithoutLap: boolean;
+  /**
    * Paint the informational columns — last lap, laps completed, gap, brand and
    * iRating — in the secondary text color, so position, name and best lap keep
    * the row's accent to themselves.

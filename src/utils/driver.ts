@@ -111,3 +111,12 @@ export const computeClassSof = (drivers: DriverEntry[]): number => {
 
   return Math.round(total / drivers.length);
 };
+
+/**
+ * Whether the car has a lap time to be ranked by — its own in this session, or
+ * the qualifying time standing in for it before the first flying lap.
+ */
+export const hasSetALap = (driver: {
+  bestLapTime: number;
+  qualifyTime: number;
+}): boolean => driver.bestLapTime > 0 || driver.qualifyTime > 0;

@@ -492,7 +492,9 @@
       "totalDriversCountDesc": "Общее количество гонщиков в сессии.",
       "scrolling": "Прокрутка",
       "dimSecondaryColumns": "Приглушать второстепенные колонки",
-      "dimSecondaryColumnsDesc": "Показывать последний круг, круги, гэп, марку и iRating второстепенным цветом."
+      "dimSecondaryColumnsDesc": "Показывать последний круг, круги, гэп, марку и iRating второстепенным цветом.",
+      "hideDriversWithoutLap": "Скрывать без времени круга",
+      "hideDriversWithoutLapDesc": "В практике и квалификации убирать строки машин, ещё не показавших время круга. Своя строка остаётся всегда."
     },
     "timer": {
       "visibleElements": "Видимые элементы",
