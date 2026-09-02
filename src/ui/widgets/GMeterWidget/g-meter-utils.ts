@@ -5,7 +5,20 @@ export const SMOOTHING = 0.12;
 export const TRACE_LENGTH = 100;
 export const FADING_DECAY = 0.9992;
 export const ENVELOPE_SPREAD = 10;
-export const RADIUS_RATIO = 0.76;
+export const RADIUS_RATIO = 0.78;
+
+/** The axes extend to the outer scale ring. */
+export const AXIS_OVERHANG = 1.0;
+
+/**
+ * Ring numbers sit on the 45° diagonal of the upper-right quadrant instead of
+ * on an axis: the axes are the busiest part of the circle, and the diagonal is
+ * the one direction a trace crosses least.
+ */
+export const RING_LABEL_ANGLE = -Math.PI / 4;
+
+/** Clearance either side of a ring number, in px, before the ring resumes. */
+export const RING_LABEL_GAP_PX = 5;
 
 export const COLOR_TURN = '#3b82f6';
 const COLOR_BRAKE = '#ef4444';

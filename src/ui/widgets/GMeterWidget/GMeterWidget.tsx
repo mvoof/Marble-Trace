@@ -2,7 +2,6 @@ import { observer } from 'mobx-react-lite';
 
 import { WidgetPanel } from '@ui/shared/WidgetPanel/WidgetPanel';
 import { GMeterCanvas } from './GMeterCanvas/GMeterCanvas';
-import { GMeterDashboard } from './GMeterDashboard/GMeterDashboard';
 
 import styles from './GMeterWidget.module.scss';
 
@@ -11,8 +10,6 @@ export const GMeterWidget = observer(() => {
     <WidgetPanel minWidth={80} gap={0}>
       <div className={styles.root}>
         <GMeterCanvas />
-
-        <GMeterDashboard />
       </div>
     </WidgetPanel>
   );

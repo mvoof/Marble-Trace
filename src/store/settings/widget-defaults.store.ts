@@ -42,12 +42,14 @@ export class WidgetDefaultsStore {
   }
 
   getWidget(id: string): WidgetDefaultConfig | undefined {
+    void this.changeToken;
     return this.widgets.get(id);
   }
 
   getSettings<SpecificSettings extends WidgetSpecificSettings>(
     id: string
   ): BaseUserSettings & SpecificSettings {
+    void this.changeToken;
     const widget = this.widgets.get(id);
 
     const fallback = DEFAULT_WIDGETS.find(

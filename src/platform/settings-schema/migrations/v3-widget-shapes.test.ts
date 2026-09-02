@@ -165,6 +165,61 @@ describe('v3 — the radar becomes a square scope', () => {
   });
 });
 
+describe('v3 — the g-meter becomes a round dial', () => {
+  it('squares the box on the width, dropping the footer height', () => {
+    const migrated = v3WidgetShapes.migrate(
+      inLayout([
+        {
+          id: 'g-meter',
+          designWidth: 240,
+          designHeight: 280,
+          userSettings: { currentWidth: 240, currentHeight: 280, x: 12 },
+        },
+      ])
+    );
+
+    expect(layoutWidgets(migrated)).toEqual([
+      {
+        id: 'g-meter',
+        designWidth: 240,
+        designHeight: 240,
+        userSettings: {
+          currentWidth: 240,
+          currentHeight: 240,
+          borderColor: 'transparent',
+          x: 12,
+        },
+      },
+    ]);
+  });
+
+  it('keeps a dial the driver had enlarged at that size', () => {
+    const migrated = v3WidgetShapes.migrate(
+      inLayout([
+        {
+          id: 'g-meter',
+          designWidth: 240,
+          designHeight: 280,
+          userSettings: { currentWidth: 360, currentHeight: 420 },
+        },
+      ])
+    );
+
+    expect(layoutWidgets(migrated)).toEqual([
+      {
+        id: 'g-meter',
+        designWidth: 240,
+        designHeight: 240,
+        userSettings: {
+          currentWidth: 360,
+          currentHeight: 360,
+          borderColor: 'transparent',
+        },
+      },
+    ]);
+  });
+});
+
 describe('v3WidgetShapes — pit service', () => {
   it('rebases a default-sized pit box onto the new design size', () => {
     const migrated = v3WidgetShapes.migrate(
