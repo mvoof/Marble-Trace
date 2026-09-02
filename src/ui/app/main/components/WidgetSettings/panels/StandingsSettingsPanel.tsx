@@ -82,10 +82,22 @@ export const StandingsSettingsPanel = observer(() => {
       key: 'showLicBadge',
     },
     {
+      titleKey: 'settingsPanels.standings.licenseLetter',
+      descKey: 'settingsPanels.standings.licenseLetterDesc',
+      value: settings.showLicenseLetter,
+      key: 'showLicenseLetter',
+    },
+    {
       titleKey: 'settingsPanels.standings.iRating',
       descKey: 'settingsPanels.standings.iRatingDesc',
       value: settings.showIRating,
       key: 'showIRating',
+    },
+    {
+      titleKey: 'settingsPanels.standings.abbreviateIRating',
+      descKey: 'settingsPanels.standings.abbreviateIRatingDesc',
+      value: settings.abbreviateIRating,
+      key: 'abbreviateIRating',
     },
     {
       titleKey: 'settingsPanels.standings.iRatingDelta',
@@ -155,6 +167,12 @@ export const StandingsSettingsPanel = observer(() => {
       descKey: 'settingsPanels.standings.sofDesc',
       value: settings.showSOF,
       key: 'showSOF',
+    },
+    {
+      titleKey: 'settingsPanels.standings.abbreviateSof',
+      descKey: 'settingsPanels.standings.abbreviateSofDesc',
+      value: settings.abbreviateSof,
+      key: 'abbreviateSof',
     },
     {
       titleKey: 'settingsPanels.standings.totalDriversCount',

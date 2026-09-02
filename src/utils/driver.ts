@@ -31,9 +31,9 @@ export const isNearIncidentLimit = (
 
 // ─── Formatters ───────────────────────────────────────────────────────────
 
-export const formatIRating = (ir: number): string => {
+export const formatIRating = (ir: number, abbreviate = true): string => {
   if (ir <= 0) return '—';
-  if (ir >= 1000) return `${(ir / 1000).toFixed(1)}k`;
+  if (abbreviate && ir >= 1000) return `${(ir / 1000).toFixed(1)}k`;
   return ir.toString();
 };
 

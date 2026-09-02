@@ -3,7 +3,9 @@ import { Trophy, Users } from 'lucide-react';
 
 import { formatIRating } from '@utils/driver';
 
+import type { StandingsWidgetSettings } from '@/types/widget-settings';
 import { StatPill } from '@ui/shared/StatPill/StatPill';
+import { useWidgetSettingsStore } from '@store/root-store-context';
 import styles from './ClassGroupHeader.module.scss';
 
 /** Marks the class header rows, which scroll the classes rather than the drivers. */
@@ -29,32 +31,39 @@ export const ClassGroupHeader = observer(
     totalDrivers,
     paginationLabel,
     isScrollTarget = false,
-  }: ClassGroupHeaderProps) => (
-    <div
-      className={`${styles.header} ${isScrollTarget ? styles.headerScrollTarget : ''}`}
-      data-class-header
-      style={{
-        background: `linear-gradient(90deg, color-mix(in srgb, ${classColor} 13%, transparent) 0%, rgba(24,24,27,0.4) 38%, transparent 100%)`,
-        borderLeft: `3px solid ${classColor}`,
-      }}
-    >
-      <div className={styles.left}>
-        {paginationLabel && (
-          <span className={styles.pagination}>{paginationLabel}</span>
-        )}
+  }: ClassGroupHeaderProps) => {
+    const widgetSettings = useWidgetSettingsStore();
 
-        <span className={styles.className} style={{ color: classColor }}>
-          {classShortName || className}
-        </span>
+    const settings =
+      widgetSettings.getSettings<StandingsWidgetSettings>('standings');
+
+    return (
+      <div
+        className={`${styles.header} ${isScrollTarget ? styles.headerScrollTarget : ''}`}
+        data-class-header
+        style={{
+          background: `linear-gradient(90deg, color-mix(in srgb, ${classColor} 13%, transparent) 0%, rgba(24,24,27,0.4) 38%, transparent 100%)`,
+          borderLeft: `3px solid ${classColor}`,
+        }}
+      >
+        <div className={styles.left}>
+          {paginationLabel && (
+            <span className={styles.pagination}>{paginationLabel}</span>
+          )}
+
+          <span className={styles.className} style={{ color: classColor }}>
+            {classShortName || className}
+          </span>
+        </div>
+
+        <div className={styles.pills}>
+          <StatPill icon={Trophy} iconColor={classColor} label="SOF">
+            {formatIRating(classSof, settings.abbreviateSof)}
+          </StatPill>
+
+          <StatPill icon={Users}>{totalDrivers}</StatPill>
+        </div>
       </div>
-
-      <div className={styles.pills}>
-        <StatPill icon={Trophy} iconColor={classColor} label="SOF">
-          {formatIRating(classSof)}
-        </StatPill>
-
-        <StatPill icon={Users}>{totalDrivers}</StatPill>
-      </div>
-    </div>
-  )
+    );
+  }
 );

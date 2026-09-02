@@ -130,7 +130,7 @@ export const SessionHeader = observer(() => {
             <span className={styles.statLabel}>SOF</span>
 
             <span className={styles.statValue}>
-              {formatIRating(overallSof)}
+              {formatIRating(overallSof, settings.abbreviateSof)}
             </span>
           </span>
         )}

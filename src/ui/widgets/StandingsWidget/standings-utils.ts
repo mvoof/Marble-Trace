@@ -154,8 +154,17 @@ const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
   { px: 38, show: settings.showPosChange }, // +/- pos  "▲12"
   { px: 22, show: settings.showCountryFlag }, // country flag, right before the name
   { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
-  { px: 60, show: settings.showLicBadge }, // lic badge "A 4.99" — matches Relative for equal PIT↔SR gap
-  { px: 42, show: settings.showIRating }, // iRating  "9.9k"
+  {
+    // "A 4.99" — matches Relative for an equal PIT↔SR gap; without the class
+    // letter the badge is four characters and the column follows it in.
+    px: settings.showLicenseLetter ? 60 : 42,
+    show: settings.showLicBadge,
+  },
+  {
+    // "9.9k" abbreviated, "12345" spelled out — five mono digits need the room.
+    px: settings.abbreviateIRating ? 42 : 52,
+    show: settings.showIRating,
+  },
   { px: 42, show: settings.showIrChange }, // ΔiR     "+123"
   { px: 28, show: settings.showLapsCompleted }, // laps "00"
   { px: 50, show: true }, // gap      "+123.4" / "12 L"
