@@ -1,4 +1,5 @@
-﻿import { observer } from 'mobx-react-lite';
+﻿import type { CSSProperties } from 'react';
+import { observer } from 'mobx-react-lite';
 import {
   usePlayerStore,
   useUnitsStore,
@@ -88,7 +89,15 @@ export const SteeringWheel = observer(() => {
     return (
       <div className={styles.container}>
         <div className={styles.dial}>
-          <div className={styles.artRotator} style={{ transform: rotation }}>
+          <div
+            className={styles.artRotator}
+            style={
+              {
+                transform: rotation,
+                '--steering-marker-color': settings.steeringMarkerColor,
+              } as CSSProperties
+            }
+          >
             <WheelArt className={styles.art} />
           </div>
 

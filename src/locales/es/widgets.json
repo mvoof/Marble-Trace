@@ -213,6 +213,8 @@
       "speedGear": "Vel.+marcha",
       "centerPlate": "Fondo central",
       "centerPlateDesc": "Placa redonda tras el valor, para que siga legible sobre un hueco del volante.",
+      "markerColor": "Color de la marca",
+      "markerColorDesc": "Color de la franja recta marcada en el aro del volante.",
       "steeringZoom": "Zoom de dirección",
       "steeringZoomDesc": "El gráfico muestra ±{{angle}}° ({{zoom}}x) del recorrido de {{lock}}° — cámbialo en Ajustes › Volante",
       "layout": "Disposición",

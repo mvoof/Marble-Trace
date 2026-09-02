@@ -3,5 +3,5 @@
     <!-- Straight centre-grip stripe, fixed to the rim's own coordinates rather
          than laid on top by the widget, so it never needs guessing the rim's
          width/thickness for a style it wasn't measured against. -->
-    <rect x="430" y="0" width="70" height="78" rx="8" fill="#eab308" />
+    <rect x="430" y="0" width="70" height="78" rx="8" fill="var(--steering-marker-color, #eab308)" />
 </svg>

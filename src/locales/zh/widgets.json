@@ -213,6 +213,8 @@
       "speedGear": "速度+挡位",
       "centerPlate": "中心衬底",
       "centerPlateDesc": "读数下方的圆形衬板，使其在方向盘镂空处仍清晰可读。",
+      "markerColor": "标记颜色",
+      "markerColorDesc": "方向盘边缘直条中心标记的颜色。",
       "steeringZoom": "转向缩放",
       "steeringZoomDesc": "图表显示 {{lock}}° 转角范围中的 ±{{angle}}°（{{zoom}}x）——转角范围在「设置 › 方向盘」中修改",
       "layout": "布局",

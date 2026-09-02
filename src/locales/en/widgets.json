@@ -213,6 +213,8 @@
       "speedGear": "Spd+Gear",
       "centerPlate": "Center Backdrop",
       "centerPlateDesc": "Round plate behind the readout, so it stays legible over a gap in the wheel.",
+      "markerColor": "Marker Color",
+      "markerColorDesc": "Color of the straight center-grip stripe painted on the rim.",
       "steeringZoom": "Steering Zoom",
       "steeringZoomDesc": "Graph shows ±{{angle}}° ({{zoom}}x) of the {{lock}}° steering lock — change the lock in Settings › Steering Wheel",
       "layout": "Layout",
