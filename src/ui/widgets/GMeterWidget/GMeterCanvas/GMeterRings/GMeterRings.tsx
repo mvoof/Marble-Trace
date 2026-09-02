@@ -19,7 +19,7 @@ const OUTER_RING_COLOR = 'rgba(72,74,82,1)';
 const AXIS_COLOR = 'rgba(64,66,74,0.85)';
 const RING_LABEL_COLOR = 'rgba(120,120,130,0.7)';
 const LABEL_BASE_WIDTH_PX = 240;
-const LABEL_BASE_SIZE_PX = 13;
+const LABEL_BASE_SIZE_PX = 14;
 
 interface GMeterRingsProps {
   width: number;

@@ -23,7 +23,7 @@ import {
 import { WidgetIdContext } from '@ui/app/overlay/components/WidgetContainer/WidgetIdContext';
 
 const BADGE_BASE_WIDTH_PX = 240;
-const BADGE_FONT_SIZE_PX = 13;
+const BADGE_FONT_SIZE_PX = 18;
 
 interface AxisPeaks {
   top: number;
