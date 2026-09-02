@@ -88,6 +88,13 @@
 
 // Spans from the name column through wherever lic/iR would be, so the label
 // centers across the whole row rather than just its own narrow column.
+// The flag placeholder must be placed explicitly: an auto-placed item cannot
+// fit beside a label that spans to the last column, and grid would push it onto
+// a second row — making the pace car row taller than every driver row.
+.flagCell {
+  grid-column: 3;
+}
+
 .centerLabel {
   grid-column: 3 / -2;
   text-align: center;
@@ -99,6 +106,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.centerLabelWithFlag {
+  grid-column: 4 / -2;
 }
 
 .gapBlock {
