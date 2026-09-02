@@ -322,3 +322,10 @@
   color: $widget-text-secondary;
   font-weight: 400;
 }
+
+// Opt-in muting of the informational columns — declared last so it wins over
+// every column's own color.
+.cellDimmed {
+  color: $widget-text-secondary;
+  font-weight: 400;
+}

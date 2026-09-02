@@ -223,6 +223,14 @@ export const StandingsSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
+          <SwitchRow
+            settingKey="dimSecondaryColumns"
+            title={t('settingsPanels.standings.dimSecondaryColumns')}
+            desc={t('settingsPanels.standings.dimSecondaryColumnsDesc')}
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
           <ColorRow
             settingKey="playerRowColor"
             title={t('settingsPanels.relative.playerRowColor')}

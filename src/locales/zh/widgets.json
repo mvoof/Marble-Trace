@@ -490,7 +490,9 @@
       "incidentsBadgeDesc": "玩家车辆累计的违规次数。",
       "totalDriversCount": "车手总数",
       "totalDriversCountDesc": "会话中的车手总数。",
-      "scrolling": "滚动"
+      "scrolling": "滚动",
+      "dimSecondaryColumns": "淡化次要列",
+      "dimSecondaryColumnsDesc": "以次要文字颜色显示最后一圈、圈数、差距、品牌和 iRating。"
     },
     "timer": {
       "visibleElements": "可见元素",

@@ -144,12 +144,16 @@ export const DriverRow = observer(
       lapsBehind
     );
 
+    // One switch mutes every informational column at once, so the row's accent
+    // is left to the position, the name and the best lap.
+    const dimClass = settings.dimSecondaryColumns ? styles.cellDimmed : '';
+
     const gapContent = gapInfo.isLeader ? (
-      <span className={styles.gapLeader}>{gapInfo.value}</span>
+      <span className={`${styles.gapLeader} ${dimClass}`}>{gapInfo.value}</span>
     ) : gapInfo.isEmpty ? (
-      <span className={styles.gapLeader}>{gapInfo.value}</span>
+      <span className={`${styles.gapLeader} ${dimClass}`}>{gapInfo.value}</span>
     ) : (
-      <span className={styles.gapValue}>{gapInfo.value}</span>
+      <span className={`${styles.gapValue} ${dimClass}`}>{gapInfo.value}</span>
     );
 
     return (
@@ -220,7 +224,9 @@ export const DriverRow = observer(
 
         {settings.showIRating && (
           <div className={`${styles.cell} ${styles.cellRight}`}>
-            <span className={styles.irValue}>{formatIr(driver.iRating)}</span>
+            <span className={`${styles.irValue} ${dimClass}`}>
+              {formatIr(driver.iRating)}
+            </span>
           </div>
         )}
 
@@ -232,14 +238,16 @@ export const DriverRow = observer(
 
         {settings.showLapsCompleted && (
           <div className={`${styles.cell} ${styles.cellCenter}`}>
-            <span className={styles.lapsCompleted}>{driver.lap}</span>
+            <span className={`${styles.lapsCompleted} ${dimClass}`}>
+              {driver.lap}
+            </span>
           </div>
         )}
 
         <div className={`${styles.cell} ${styles.cellRight}`}>{gapContent}</div>
 
         <div className={`${styles.cell} ${styles.cellRight}`}>
-          <span className={styles.lastLap}>
+          <span className={`${styles.lastLap} ${dimClass}`}>
             {isPit
               ? '-'
               : formatLapTime(
@@ -258,7 +266,10 @@ export const DriverRow = observer(
 
         {settings.showBrand && (
           <div className={`${styles.cell} ${styles.cellCenter}`}>
-            <span className={styles.brandLabel} title={driver.carScreenName}>
+            <span
+              className={`${styles.brandLabel} ${dimClass}`}
+              title={driver.carScreenName}
+            >
               {formatBrand(driver.carScreenName)}
             </span>
           </div>

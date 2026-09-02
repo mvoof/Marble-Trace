@@ -490,7 +490,9 @@
       "incidentsBadgeDesc": "Incidentes acumulados por tu coche.",
       "totalDriversCount": "Número total de pilotos",
       "totalDriversCountDesc": "Número total de pilotos en la sesión.",
-      "scrolling": "Desplazamiento"
+      "scrolling": "Desplazamiento",
+      "dimSecondaryColumns": "Atenuar columnas secundarias",
+      "dimSecondaryColumnsDesc": "Muestra última vuelta, vueltas, diferencia, marca e iRating en el color de texto atenuado."
     },
     "timer": {
       "visibleElements": "Elementos visibles",

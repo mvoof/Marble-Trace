@@ -490,7 +490,9 @@
       "incidentsBadgeDesc": "Количество инцидентов, накопленных машиной игрока.",
       "totalDriversCount": "Общее количество гонщиков",
       "totalDriversCountDesc": "Общее количество гонщиков в сессии.",
-      "scrolling": "Прокрутка"
+      "scrolling": "Прокрутка",
+      "dimSecondaryColumns": "Приглушать второстепенные колонки",
+      "dimSecondaryColumnsDesc": "Показывать последний круг, круги, гэп, марку и iRating второстепенным цветом."
     },
     "timer": {
       "visibleElements": "Видимые элементы",

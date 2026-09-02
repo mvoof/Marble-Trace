@@ -351,6 +351,12 @@ export interface StandingsWidgetSettings {
    * row is always kept, and cars merely sitting in the garage are not affected.
    */
   hideRetiredDrivers: boolean;
+  /**
+   * Paint the informational columns — last lap, laps completed, gap, brand and
+   * iRating — in the secondary text color, so position, name and best lap keep
+   * the row's accent to themselves.
+   */
+  dimSecondaryColumns: boolean;
   /** Highlight color for the player's own row. */
   playerRowColor: string;
   /** Color of the player's position number and car number. */

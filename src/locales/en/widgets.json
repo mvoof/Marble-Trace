@@ -490,7 +490,9 @@
       "incidentsBadgeDesc": "Incident count accumulated by the player car.",
       "totalDriversCount": "Total Drivers Count",
       "totalDriversCountDesc": "Total number of drivers in the session.",
-      "scrolling": "Scrolling"
+      "scrolling": "Scrolling",
+      "dimSecondaryColumns": "Dim Secondary Columns",
+      "dimSecondaryColumnsDesc": "Paint last lap, laps, gap, brand and iRating in the muted text color."
     },
     "timer": {
       "visibleElements": "Visible Elements",
