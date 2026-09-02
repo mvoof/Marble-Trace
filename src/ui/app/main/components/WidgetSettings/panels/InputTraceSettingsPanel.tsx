@@ -17,7 +17,11 @@ import { useAppSettingsStore } from '@store/root-store-context';
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['input-trace'];
 
-const { SwitchRow } = panelRows<InputTraceSettings>();
+const { SwitchRow, ColorRow } = panelRows<InputTraceSettings>();
+
+// Only the wheel arts that draw the centre-grip stripe in their own SVG
+// (see wheels/gt-round.svg, wheels/flat-bottom-wheel.svg) read this color.
+const STYLES_WITH_MARKER: SteeringWheelStyle[] = ['gt-round', 'flat-bottom'];
 
 export const InputTraceSettingsPanel = observer(() => {
   const widgetSettings = useWidgetEditor();
@@ -182,6 +186,17 @@ export const InputTraceSettingsPanel = observer(() => {
                 />
               </SettingRow>
             </div>
+
+            {STYLES_WITH_MARKER.includes(settings.steeringWheelStyle) && (
+              <div className={styles.fieldGroup}>
+                <ColorRow
+                  settingKey="steeringMarkerColor"
+                  hex
+                  title={t('settingsPanels.inputTrace.markerColor')}
+                  desc={t('settingsPanels.inputTrace.markerColorDesc')}
+                />
+              </div>
+            )}
 
             {settings.steeringWheelStyle !== 'default' &&
               settings.steeringCenterDisplay !== 'none' && (

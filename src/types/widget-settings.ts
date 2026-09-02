@@ -136,6 +136,10 @@ export interface InputTraceSettings {
   /** Round backdrop under the readout. Only the wheel silhouettes offer it —
    *  the drawn dial has a centre pad of its own. */
   steeringCenterPlate: boolean;
+  /** Centre-grip stripe baked into the round wheel art (gt-round,
+   *  flat-bottom) — read as a CSS variable, since the SVGs draw it with
+   *  `fill="var(--steering-marker-color)"` rather than a fixed color. */
+  steeringMarkerColor: string;
   showThrottle: boolean;
   showBrake: boolean;
   showClutch: boolean;
